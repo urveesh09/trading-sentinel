@@ -1,0 +1,88 @@
+services:
+  # The Shield: Nginx Reverse Proxy
+  nginx:
+    image: nginx:alpine
+    container_name: quant_nginx
+    restart: always
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./node-gateway/nginx/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+    networks:
+      - sentinel-net
+    depends_on:
+      - node-gateway
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # Container A: The Command Center (MERN Gateway)
+  node-gateway:
+    build: ./node-gateway
+    container_name: node-gateway
+    restart: unless-stopped
+    expose:
+      - "3000"  # Hidden from the public internet, accessible only to Nginx and Container B
+    volumes:
+      - trading_data:/data
+    environment:
+      - NODE_OPTIONS=--dns-result-order=ipv4first
+    env_file:
+      - ./node-gateway/.env
+    networks:
+      - sentinel-net
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # Container B: The Quant Engine (Python Math)
+  python-engine:
+    build: ./python-engine
+    container_name: python-engine
+    restart: unless-stopped
+    environment:
+      - TZ=Asia/Kolkata
+    env_file:
+      - ./.env
+    expose:
+      - "8000" # Hidden from the public internet, accessible only to Container A
+    depends_on:
+      - node-gateway
+    networks:
+      - sentinel-net
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # Container C: The Reasoning Engine (Placeholder for now)
+  agent:
+    build: ./agent
+    container_name: agent
+    restart: unless-stopped
+    environment:
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+      - TZ=Asia/Kolkata
+    env_file:
+      - ./.env
+    networks:
+      - sentinel-net
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+networks:
+  sentinel-net:
+    driver: bridge
+
+volumes:
+  trading_data:
+    driver: local

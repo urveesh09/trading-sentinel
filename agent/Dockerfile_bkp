@@ -1,0 +1,23 @@
+FROM python:3.11-slim-bookworm
+
+# Set environment variables for Python and Timezone (Crucial for IST scheduling)
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    TZ=Asia/Kolkata
+
+RUN apt-get update && apt-get install -y tzdata && \
+    ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone && \
+    rm -rf /var/lib/apt/lists/*
+
+WORKDIR /app
+
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+COPY agent.py .
+
+# Run as an unprivileged user for security
+RUN useradd -m appuser
+USER appuser
+
+CMD ["python", "agent.py"]

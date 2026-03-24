@@ -1,0 +1,19 @@
+# Web & Validation
+fastapi==0.110.0
+uvicorn==0.27.1
+pydantic==2.6.3
+pydantic-settings==2.2.1
+
+# Data & Math (Strictly Deterministic)
+pandas==2.2.1
+
+numpy==1.26.4
+
+
+# Async & IO
+httpx==0.27.0
+aiosqlite==0.20.0
+apscheduler==3.10.4
+
+# Observability
+structlog==24.1.0
