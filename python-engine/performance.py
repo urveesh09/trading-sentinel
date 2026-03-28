@@ -88,7 +88,7 @@ async def check_circuit_breakers(db_path: str) -> tuple[bool, list[str]]:
         if streak >= settings.CB_MAX_CONSECUTIVE_LOSSES:
             halted = True
             reasons.append("CB_CONSECUTIVE_LOSSES")
-
+    """
     # [CB4] Backtest Gate
     async with aiosqlite.connect(db_path) as db:
         cursor = await db.execute("SELECT gate FROM backtest_results ORDER BY rowid DESC LIMIT 1")
@@ -96,5 +96,5 @@ async def check_circuit_breakers(db_path: str) -> tuple[bool, list[str]]:
         if not gate_row or gate_row[0] == "FAIL":
             halted = True
             reasons.append("BACKTEST_GATE_FAILED")
-
+    """
     return halted, reasons

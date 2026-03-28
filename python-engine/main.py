@@ -57,6 +57,7 @@ async def startup():
     scheduler.add_job(kite.refresh_instrument_cache, 'cron', hour=8, minute=0)
     scheduler.add_job(run_screener, 'cron', hour=9, minute=20)
     scheduler.add_job(run_screener, 'cron', hour=14, minute=45)
+    #scheduler.add_job(run_screener, 'cron', minute=0)
     scheduler.add_job(daily_post_market, 'cron', hour=15, minute=45)
     scheduler.start()
 
@@ -69,6 +70,7 @@ async def post_login_initialization():
         if not df.empty:
             await run_backtest(settings.DB_PATH, {"RELIANCE": df}, settings.STRATEGY_VERSION)
             logger.info("initial_backtest_complete")
+        await run_screener()
     except Exception as e:
         logger.error("initial_backtest_error", error=str(e))
 
