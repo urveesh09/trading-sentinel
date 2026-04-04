@@ -73,7 +73,7 @@ async function executeSignal(signal, action) {
         tradingsymbol: signal.ticker,
         transaction_type: "BUY",
         quantity: signal.shares,
-                product: "CNC", // Strictly Delivery, NOT MIS
+        product: "CNC", // Strictly Delivery, NOT MIS
         order_type: "MARKET",
         validity: "DAY",
         tag: "QUANT_SENTINEL"
