@@ -4,7 +4,10 @@ import math
 import structlog
 from typing import Dict, Any, Tuple
 
+from config import settings
+
 logger = structlog.get_logger()
+
 
 # ---------------------------------------------------------
 # INDICATORS
@@ -91,7 +94,8 @@ def evaluate_signal(
     ticker: str,
     df: pd.DataFrame,
     bankroll: float,
-    risk_pct: float
+    risk_pct: float,
+    market_regime: str = "BULL"
 ) -> Tuple[bool, Dict[str, Any]]:
 
     if len(df) < 200:
@@ -121,10 +125,13 @@ def evaluate_signal(
     # FILTERS
     # -----------------------------------------------------
 
-    if not (c > e200 and e50 > e200):
-        return False, {}
-
-    if not (e21 * 0.97 <= c <= e21 * 1.01):
+    # [RS-FILTER] In BEAR_RS_ONLY mode, we bypass the absolute trend check (C1)
+    if market_regime != "BEAR_RS_ONLY":
+        if not (c > e200 and e50 > e200):
+            return False, {}
+    
+    # All other filters (C2-C8) still apply
+    if not (e21 * 0.97 <= c <= e21 * 1.1):
         return False, {}
 
     if vol_ratio < 1.5:
@@ -186,8 +193,9 @@ def evaluate_signal(
     # EXPECTED VALUE
     # -----------------------------------------------------
 
-    cost_per_side = c * shares * 0.001
-    total_round_trip = cost_per_side * 2
+    # Accurate cost model
+    # Estimate exit at T2 for cost calculation
+    total_round_trip = calc_zerodha_costs(c, target_2, shares, is_intraday=False)
 
     gross_profit_t1 = (target_1 - c) * shares * 0.5
     gross_profit_t2 = (target_2 - c) * shares * 0.5
@@ -266,7 +274,255 @@ def evaluate_signal(
         "capital_at_risk": shares * (c - stop_loss),
         "net_ev": net_ev,
         "score": score,
-		"trailing_stop": stop_loss
+        "trailing_stop": stop_loss
     }
 
     return True, res
+
+
+def calc_zerodha_costs(
+    entry_price: float,
+    exit_price: float,
+    shares: int,
+    is_intraday: bool
+) -> float:
+    """
+    Accurate Zerodha cost model for NSE equity trades.
+    
+    Delivery (CNC): STT on sell side only (0.1%)
+    Intraday (MIS): STT on sell side only (0.025%)
+    
+    Returns total round-trip cost in rupees.
+    """
+    buy_value  = entry_price * shares
+    sell_value = exit_price  * shares
+
+        # Brokerage: min(0.03% of turnover, ₹20) per executed order
+    brokerage_buy  = min(buy_value  * settings.ZERODHA_BROKERAGE_PCT, settings.ZERODHA_BROKERAGE_MAX)
+    brokerage_sell = min(sell_value * settings.ZERODHA_BROKERAGE_PCT, settings.ZERODHA_BROKERAGE_MAX)
+
+    # STT (Securities Transaction Tax) — sell side only
+    stt_rate = settings.ZERODHA_STT_MIS if is_intraday else settings.ZERODHA_STT_CNC
+    stt = sell_value * stt_rate
+
+    # Exchange transaction charges (NSE): 0.00345% both sides
+    exchange_txn = (buy_value + sell_value) * settings.ZERODHA_EXCHANGE_PCT
+
+    # Stamp duty: 0.015% on buy side only
+    stamp_duty = buy_value * settings.ZERODHA_STAMP_DUTY_PCT
+
+    # SEBI turnover fee: ₹10 per crore = 0.0001% both sides
+    sebi = (buy_value + sell_value) * settings.ZERODHA_SEBI_PCT
+
+    # GST: 18% on (brokerage + exchange charges)
+    gst = (brokerage_buy + brokerage_sell + exchange_txn) * settings.ZERODHA_GST_PCT
+
+
+    total = (brokerage_buy + brokerage_sell + stt +
+             exchange_txn + stamp_duty + sebi + gst)
+
+    return round(total, 4)
+
+
+def is_cost_viable(
+    entry_price: float,
+    shares: int,
+    risk_per_trade: float,
+    r_target: float = 2.0,
+    max_cost_ratio: float = 0.25,
+    is_intraday: bool = True
+) -> tuple[bool, float]:
+    """
+    Rejects momentum trades where costs eat >25% of expected profit.
+    Uses estimated exit at r_target × R above entry.
+    Returns (is_viable, cost_ratio).
+    """
+    r_distance     = risk_per_trade / shares   # stop distance per share
+    estimated_exit = entry_price + (r_target * r_distance)
+    total_cost     = calc_zerodha_costs(
+        entry_price, estimated_exit, shares, is_intraday
+    )
+    expected_gross = risk_per_trade * r_target
+    cost_ratio     = total_cost / expected_gross if expected_gross > 0 else 1.0
+    return cost_ratio <= max_cost_ratio, round(cost_ratio, 4)
+
+
+def calc_relative_strength(
+    stock_close: pd.Series,
+    nifty_close: pd.Series,
+    periods: int = 20
+) -> float:
+    """
+    [RS1] Relative Strength vs Nifty 50 over N periods.
+    RS = stock_return_pct - nifty_return_pct over last `periods` bars.
+    Positive RS = stock outperforming Nifty.
+    """
+    if len(stock_close) < periods + 1 or len(nifty_close) < periods + 1:
+        return -999.0   # sentinel: insufficient data
+
+    stock_return = (stock_close.iloc[-1] - stock_close.iloc[-periods]) \
+                   / stock_close.iloc[-periods] * 100
+    nifty_return = (nifty_close.iloc[-1] - nifty_close.iloc[-periods]) \
+                   / nifty_close.iloc[-periods] * 100
+
+    return round(stock_return - nifty_return, 4)
+
+
+
+def calc_vwap(df: pd.DataFrame) -> pd.Series:
+    """
+    [MOM1] VWAP calculation for intraday candles.
+    VWAP = cumsum(typical_price × volume) / cumsum(volume)
+    Typical price = (high + low + close) / 3
+    Resets at start of each day — caller must pass only today's candles.
+    df must have columns: high, low, close, volume
+    Returns pd.Series indexed same as df.
+    """
+    typical_price  = (df['high'] + df['low'] + df['close']) / 3
+    cumulative_tpv = (typical_price * df['volume']).cumsum()
+    cumulative_vol = df['volume'].cumsum()
+    vwap = cumulative_tpv / cumulative_vol
+    return vwap
+
+def calc_volume_consistency(volume: pd.Series, n_days: int = 5,
+                            lookback: int = 20) -> bool:
+    if len(volume) < lookback + n_days + 1:
+        return False
+    avg_vol = volume.iloc[-(lookback + n_days + 1):-(n_days + 1)].mean()
+    recent_vols = volume.iloc[-n_days-1:-1]   # last 5 completed sessions
+ 
+    days_above = sum(1 for v in recent_vols if v > avg_vol)
+    return days_above >= 3
+
+def evaluate_momentum_signal(
+    ticker: str,
+    df: pd.DataFrame,
+    prev_day_high: float,
+    bankroll: float,
+    momentum_pool: float,
+    min_candles: int = 4
+) -> tuple[bool, dict]:
+    """
+    [MOM2] Intraday momentum signal evaluation.
+    df must contain ONLY today's 15-minute candles (VWAP resets daily).
+    
+    Entry conditions (ALL must be true):
+      [MC1] Minimum candles: len(df) >= min_candles
+      [MC2] Price crossed ABOVE VWAP in the LAST candle
+            (prev candle close was below VWAP, current close is above)
+      [MC3] Last candle volume >= 300% of previous 10-candle avg volume
+      [MC4] Current close > prev_day_high (structural breakout)
+    
+    Risk:
+      [MR1] Stop loss = low of the breakout candle (last candle)
+      [MR2] Target = entry + 2.0R
+      [MR3] Product type decision: MIS if position_value < ₹5,000,
+            CNC if position_value >= ₹5,000 (for this bankroll, will
+            almost always be MIS — system squares at 3:15pm either way)
+    """
+    if len(df) < min_candles:
+        return False, {}
+
+    df = df.copy()
+    vwap = calc_vwap(df)
+
+    current_close = df['close'].iloc[-1]
+    prev_close    = df['close'].iloc[-2]
+    current_vwap  = vwap.iloc[-1]
+    prev_vwap     = vwap.iloc[-2]
+
+    # [MC2] VWAP crossover: was below, now above
+    if not (prev_close <= prev_vwap and current_close > current_vwap):
+        return False, {}
+
+    # [MC3] Volume surge: 300% of available intraday average
+    if len(df) < 2:
+        return False, {}
+
+    # Use whatever candles we have (up to 10) for the average
+    lookback = min(len(df) - 1, 10)
+    avg_vol_lookback = df['volume'].iloc[-lookback-1:-1].mean()
+
+    if avg_vol_lookback == 0:
+        return False, {}
+
+    current_vol = df['volume'].iloc[-1]
+    vol_ratio_intraday = current_vol / avg_vol_lookback
+    if vol_ratio_intraday < settings.MOMENTUM_VOL_SURGE_PCT:
+        return False, {}
+
+
+    # [MC4] Structural breakout: above previous day's high
+    if current_close <= prev_day_high:
+        return False, {}
+
+    # [MR1] Stop loss = low of breakout candle
+    breakout_candle_low = df['low'].iloc[-1]
+    stop_loss = breakout_candle_low
+
+    risk_per_share = current_close - stop_loss
+    if risk_per_share <= 0:
+        return False, {}
+
+    # Position sizing: 1% of momentum pool
+    momentum_risk = momentum_pool * 0.01
+    shares = math.floor(momentum_risk / risk_per_share)
+    if shares == 0:
+        return False, {}
+
+    position_value = shares * current_close
+    
+    # [SEBI-COMPLIANCE] Ensure position doesn't exceed pool
+    if position_value > momentum_pool:
+        # Resize to fit pool if risk allows
+        shares = math.floor(momentum_pool / current_close)
+        if shares == 0:
+            return False, {}
+        position_value = shares * current_close
+
+    # [MR2] Target: 2.0R
+
+    r_distance = current_close - stop_loss
+    target     = current_close + (2.0 * r_distance)
+
+    # [MR3] Product type decision
+    product_type = "MIS" if position_value < 5000 else "CNC"
+
+        # Cost viability check
+    viable, cost_ratio = is_cost_viable(
+        entry_price=current_close, shares=shares,
+        risk_per_trade=momentum_risk, r_target=settings.MOMENTUM_R_TARGET,
+        max_cost_ratio=settings.MOMENTUM_MAX_COST_RATIO, is_intraday=True
+    )
+    if not viable:
+        return False, {}
+
+    # Accurate cost for net_ev
+    estimated_exit = current_close + (settings.MOMENTUM_R_TARGET * r_distance)
+    total_cost = calc_zerodha_costs(
+        current_close, estimated_exit, shares, is_intraday=True
+    )
+    net_ev = (momentum_risk * settings.MOMENTUM_R_TARGET) - total_cost
+
+    if net_ev <= 0:
+        return False, {}
+
+    result = {
+        "close":               round(current_close, 2),
+        "vwap":                round(current_vwap, 2),
+        "prev_day_high":       round(prev_day_high, 2),
+        "stop_loss":           round(stop_loss, 2),
+        "target_1":            round(target, 2),
+        "target_2":            round(target, 2),   # single target for momentum
+        "trailing_stop":       round(stop_loss, 2),
+        "shares":              shares,
+        "capital_deployed":    round(position_value, 2),
+        "capital_at_risk":     round(shares * risk_per_share, 2),
+        "net_ev":              round(net_ev, 2),
+        "cost_ratio":          cost_ratio,
+        "volume_ratio":        round(vol_ratio_intraday, 2),
+        "product_type":        product_type,
+        "strategy_type":       "MOMENTUM",
+    }
+    return True, result
+

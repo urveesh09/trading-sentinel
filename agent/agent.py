@@ -98,35 +98,127 @@ def scrape_sentiment(ticker: str) -> str:
         return ""
     return f"YAHOO FINANCE FEED:\n{yahoo_news}\n\nBROADER MARKET FEED:\n{google_news}"
 
-def analyze_with_gemini(signal: Dict, sentiment_text: str) -> Optional[Dict]:
+def analyze_with_gemini(
+    signal: Dict,
+    sentiment_text: str,
+    market_regime: str = "UNKNOWN"
+) -> Optional[Dict]:
     ticker = signal.get("ticker", "UNKNOWN")
     price = signal.get("close", 0)     # FIX: Aligned with models.py
     target = signal.get("target_1", 0) # FIX: Aligned with models.py
     stop_loss = signal.get("stop_loss", 0)
-    
+
     prompt = f"""
-    You are an elite quantitative trading architect evaluating a swing trade.
-    
-    QUANT DATA:
-    Ticker: {ticker}
-    Current Price: {price}
-    Target: {target}
-    Stop Loss: {stop_loss}
-    
-    MULTI-SOURCE SENTIMENT DATA:
-    {sentiment_text if sentiment_text else "CRITICAL: No recent news available. Evaluate strictly on technicals with high caution."}
-    
-    EVALUATION RULES:
-    1. CONTRADICTION CHECK: If the Quant Data suggests a long position, but the Sentiment Data contains critical legal, regulatory, or catastrophic news, you MUST lower the conviction_score significantly.
-    2. DO NOT override the quant edge unless a strong contradiction exists. Do not overreact to weak or routine news.
-    3. NO HALLUCINATION: Base your rationale ONLY on the text provided above. Do not invent news.
-    4. SCORING: 
-       - 80-100: Perfect alignment between technicals and sentiment.
-       - 60-79: Acceptable setup, standard market risks.
-       - 0-59: Conflicting data, high risk of false positive.
-       
-    Provide your output in strict JSON format.
+    You are a cynical, risk-first quantitative trading analyst.
+    Your job is NOT to find reasons to approve trades.
+    Your job is to find reasons to REJECT them.
+    Only approve a trade if the evidence is overwhelmingly clean.
+
+    ═══════════════════════════════════════════
+    TRADE CONTEXT
+    ═══════════════════════════════════════════
+    Strategy Type : {signal.get('strategy_type', 'SWING')}
+    Market Regime : {market_regime}
+    Ticker        : {ticker}
+    Entry Price   : ₹{price}
+    Stop Loss     : ₹{stop_loss}
+    Target        : ₹{target}
+    Net EV        : ₹{signal.get('net_ev', 'N/A')}
+    Score         : {signal.get('score', 'N/A')}/100
+    Volume Ratio  : {signal.get('volume_ratio', 'N/A')}x
+    RSI           : {signal.get('rsi_14', 'N/A')}
+    RS Score      : {signal.get('rs_score', 'N/A')} (vs Nifty, 20-day)
+
+    ═══════════════════════════════════════════
+    REGIME-SPECIFIC INSTRUCTIONS
+    ═══════════════════════════════════════════
+
+    IF regime is "BEAR_RS_ONLY":
+    Be EXTREMELY cynical. The broad market is falling.
+    This stock is only being evaluated because its math shows
+    outperformance vs the Nifty. Your primary job here is to
+    determine WHY it is outperforming:
+    - Quiet institutional accumulation (VALID) → keep conviction high
+    - Unverified rumour, single contract win, retail social media hype → 
+        REDUCE conviction_score below 50 immediately
+    - Short-covering rally in a falling stock → REDUCE below 40
+    - If you cannot determine a credible structural reason from the
+        sentiment data: REDUCE below 55
+
+    IF strategy is "MOMENTUM" (intraday):
+    Evaluate whether the news/catalyst justifies a 3-hour sustained
+    move, not just a 15-minute spike.
+    - Genuine earnings beat, sector tailwind → conviction can be high
+    - Single news headline with no follow-through evidence → max 65
+    - No news at all (pure technical breakout) → max 70
+    - Negative news despite price rising → REDUCE below 45
+
+    IF regime is "CAUTION":
+    Apply the same cynicism as BEAR_RS_ONLY but one level less severe.
+    Reduce all scores by 10 points before outputting.
+
+    IF regime is "BULL" and strategy is "SWING":
+    Standard evaluation. Do not manufacture cynicism.
+    Follow the contradiction check rules below.
+
+    ═══════════════════════════════════════════
+    UNIVERSAL EVALUATION RULES
+    ═══════════════════════════════════════════
+
+    1. CONTRADICTION CHECK:
+    If sentiment reveals critical legal, regulatory, fraud,
+    accounting irregularity, or catastrophic operational news
+    that contradicts a long position: REDUCE below 35.
+
+    2. NO HALLUCINATION:
+    Base rationale ONLY on the text provided.
+    Do not invent news. Do not cite sources not in the data.
+    If no sentiment data: say so explicitly in rationale.
+
+    3. DO NOT over-react to routine market news.
+    Quarterly results in line with estimates = neutral.
+    Standard analyst upgrades/downgrades = minor adjustment only.
+
+    4. SCORING SCALE:
+    80-100 : Clean setup, sentiment confirms technicals
+    60-79  : Acceptable, standard market risks present
+    50-59  : Marginal, one significant concern exists
+    0-49   : High risk of false positive, do not execute
+
+    ═══════════════════════════════════════════
+    MULTI-SOURCE SENTIMENT DATA
+    ═══════════════════════════════════════════
+    {sentiment_text if sentiment_text else
+    "NO SENTIMENT DATA AVAILABLE. Evaluate on technicals only. "
+    "Apply caution: absence of news for an active signal is unusual. "
+    "Cap conviction at 70 unless regime is BULL."}
+
+    Respond in strict JSON matching the required schema.
+    No markdown. No explanation outside the JSON fields.
     """
+    # prompt = f"""
+    # You are an elite quantitative trading architect evaluating a swing trade.
+    
+    # QUANT DATA:
+    # Ticker: {ticker}
+    # Current Price: {price}
+    # Target: {target}
+    # Stop Loss: {stop_loss}
+    
+    # MULTI-SOURCE SENTIMENT DATA:
+    # {sentiment_text if sentiment_text else "CRITICAL: No recent news available. Evaluate strictly on technicals with high caution."}
+    
+    # EVALUATION RULES:
+    # 1. CONTRADICTION CHECK: If the Quant Data suggests a long position, but the Sentiment Data contains critical legal, regulatory, or catastrophic news, you MUST lower the conviction_score significantly.
+    # 2. DO NOT override the quant edge unless a strong contradiction exists. Do not overreact to weak or routine news.
+    # 3. NO HALLUCINATION: Base your rationale ONLY on the text provided above. Do not invent news.
+    # 4. SCORING: 
+    #    - 80-100: Perfect alignment between technicals and sentiment.
+    #    - 60-79: Acceptable setup, standard market risks.
+    #    - 0-59: Conflicting data, high risk of false positive.
+       
+    # Provide your output in strict JSON format.
+    # """
     try:
         response = client.models.generate_content(
             model='gemini-2.5-flash',
@@ -201,9 +293,120 @@ def system_health_check(event_type: str):
     except Exception as e:
         logger.error(f"Failed to send heartbeat to Telegram: {e}")
 
+MOMENTUM_ENGINE_URL = os.getenv(
+    "QUANT_ENGINE_URL", "http://python-engine:8000"
+).replace("/signals", "") + "/momentum-signals"
+
+def run_momentum_pipeline():
+    """Poll Container B momentum signals and process them."""
+    logger.info("Starting momentum signal pipeline...")
+    try:
+        resp = requests.get(MOMENTUM_ENGINE_URL, timeout=10)
+        resp.raise_for_status()
+        data           = resp.json()
+        signals        = data.get("signals", [])
+        regime         = data.get("market_regime", "UNKNOWN")
+        momentum_pool  = data.get("momentum_pool", 0)
+    except Exception as e:
+        logger.error(f"Failed to fetch momentum signals: {e}")
+        return
+
+    if not signals:
+        return
+
+    for signal in signals:
+        ticker  = signal.get("ticker")
+        sig_id  = f"{ticker}_MOM"   # prevent collision with swing dedup
+
+        if not ticker:
+            continue
+        if sig_id in processed_signals_today:
+            logger.info(f"Momentum signal {sig_id} already processed. Skipping.")
+            continue
+
+        sentiment_text = scrape_sentiment(ticker)
+        analysis       = analyze_with_gemini(signal, sentiment_text, regime)
+
+        if analysis and analysis.get('conviction_score', 0) < 50:
+            logger.info(f"Momentum {ticker} skipped. Low conviction: "
+                        f"{analysis.get('conviction_score')}")
+            processed_signals_today.add(sig_id)
+            continue
+
+        send_momentum_telegram_alert(signal, analysis, momentum_pool)
+        processed_signals_today.add(sig_id)
+        time.sleep(2)
+
+def send_momentum_telegram_alert(
+    signal: Dict, analysis: Dict, momentum_pool: float
+):
+    """Distinct format from swing alerts — clearly labelled INTRADAY."""
+    url    = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage"
+    ticker = signal.get("ticker", "UNKNOWN")
+    price  = signal.get("close")
+    target = signal.get("target_1")
+    sl     = signal.get("stop_loss")
+    vwap   = signal.get("vwap")
+    ptype  = signal.get("product_type", "MIS")
+    ratio  = signal.get("cost_ratio", 0)
+
+    header = f"⚡ INTRADAY MOMENTUM: {ticker} ({ptype})"
+
+    if not analysis:
+        text = (f"{header}\n"
+                f"Price: ₹{price} | VWAP: ₹{vwap}\n"
+                f"Target: ₹{target} | SL: ₹{sl}\n"
+                f"⚠️ AI analysis failed. Manual review required.\n"
+                f"Auto-square at 15:15 IST.")
+    else:
+        text = (f"{header}\n\n"
+                f"Entry: ₹{price} | VWAP: ₹{vwap}\n"
+                f"Target: ₹{target} | SL: ₹{sl}\n"
+                f"Cost ratio: {ratio:.1%} of expected profit\n"
+                f"Conviction: {analysis.get('conviction_score')}/100\n\n"
+                f"Pitch: {analysis.get('pitch', 'N/A')}\n"
+                f"Risk: {analysis.get('risks', 'N/A')}\n\n"
+                f"⚠️ INTRADAY: Auto-square at 15:15 IST regardless of P&L.")
+
+    sig_id = f"{ticker}_MOM"[:40]
+    keyboard = {
+        "inline_keyboard": [[
+            {"text": "✅ EXECUTE INTRADAY",
+             "callback_data": json.dumps(
+                 {"a": "EM", "i": sig_id}, separators=(',', ':')
+             )},
+            {"text": "❌ REJECT",
+             "callback_data": json.dumps(
+                 {"a": "R", "i": sig_id}, separators=(',', ':')
+             )}
+        ]]
+    }
+    payload = {
+        "chat_id":      TELEGRAM_CHAT_ID,
+        "text":         text,
+        "parse_mode":   "Markdown",
+        "reply_markup": json.dumps(keyboard)
+    }
+    try:
+        res = requests.post(url, json=payload, timeout=10)
+        res.raise_for_status()
+        logger.info(f"Momentum Telegram sent: {ticker}")
+    except Exception as e:
+        logger.error(f"Momentum Telegram failed: {ticker}: {e}")
+
 def run_pipeline():
+    # Fetch regime from Container B health/signals endpoint
     logger.info("Starting scheduled signal pipeline...")
-    signals = fetch_signals()
+    try:
+        resp = requests.get(
+            QUANT_ENGINE_URL, timeout=10
+        )
+        data       = resp.json()
+        signals    = data.get("signals", [])
+        regime     = data.get("market_regime", "UNKNOWN")
+    except Exception as e:
+        logger.error(f"Failed to fetch signals: {e}")
+        return
     
     if not signals:
         logger.info("No signals found or Quant Engine unreachable. Pipeline sleeping.")
@@ -221,9 +424,9 @@ def run_pipeline():
             
         logger.info(f"Processing signal for {ticker}...")
         sentiment_text = scrape_sentiment(ticker)
-        analysis = analyze_with_gemini(signal, sentiment_text)
+        analysis = analyze_with_gemini(signal, sentiment_text,regime)
         
-        if analysis and analysis.get('conviction_score', 0) < 60:
+        if analysis and analysis.get('conviction_score', 0) < 50:
             logger.info(f"Skipped {ticker}. Low conviction score: {analysis.get('conviction_score')}")
             processed_signals_today.add(sig_id)
             continue
@@ -302,7 +505,10 @@ def main():
         getattr(schedule.every(), day).at("15:30").do(system_health_check, event_type="CLOSE")
 
     schedule.every().day.at("00:00").do(clear_memory)
-
+    momentum_hours = ["10:55", "11:55", "12:55", "13:55", "14:55"]
+    for day in days:
+        for t in momentum_hours:
+            getattr(schedule.every(), day).at(t).do(run_momentum_pipeline)
     while True:
         schedule.run_pending()
         time.sleep(30)

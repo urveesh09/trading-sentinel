@@ -3,7 +3,8 @@ const router = express.Router();
 const { z } = require('zod');
 const { signalsDb } = require('../db/index');
 const executor = require('../services/executor');
-const { requireSession } = require('../middleware/auth');
+const { requireSession, requireInternalSecret } = require('../middleware/auth');
+const kite = require('../services/kite');
 const { validate } = require('../middleware/validate');
 const { ReplayAttackError } = require('../utils/errors');
 
@@ -11,7 +12,73 @@ const executeSchema = z.object({
   signal_id: z.string().uuid()
 });
 
+const squareOffSchema = z.object({
+  ticker: z.string().min(1),
+  shares: z.number().int().positive(),
+  order_type: z.enum(['MARKET', 'LIMIT']),
+  limit_price: z.number().optional(),
+  product_type: z.enum(['MIS', 'CNC']),
+  reason: z.string().optional()
+});
+
+// GET /api/orders/ltp?ticker=RELIANCE
+// Called by Container B before square-off order type decision
+router.get('/ltp', requireInternalSecret, async (req, res, next) => {
+  try {
+    const { ticker } = req.query;
+    if (!ticker) return res.status(400).json({ error: 'missing_ticker' });
+
+    const fullTicker = `NSE:${ticker}`;
+    const ltpData = await kite.getLTP([fullTicker]);
+    
+    if (!ltpData || !ltpData[fullTicker]) {
+      return res.status(404).json({ error: 'ticker_not_found' });
+    }
+
+    res.json({
+      ticker,
+      ltp: ltpData[fullTicker].last_price,
+      timestamp: new Date().toISOString()
+    });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// POST /api/orders/square-off
+// Called by Container B at 15:15 IST for momentum auto-square
+router.post('/square-off', requireInternalSecret, validate(squareOffSchema, 'body'), async (req, res, next) => {
+  try {
+    const { ticker, shares, order_type, limit_price, product_type, reason } = req.body;
+    
+    const orderParams = {
+      exchange: 'NSE',
+      tradingsymbol: ticker,
+      transaction_type: 'SELL',
+      quantity: shares,
+      order_type: order_type,
+      product: product_type,
+      tag: 'QUANT_SENTINEL'
+    };
+
+    if (order_type === 'LIMIT') {
+      if (!limit_price) return res.status(400).json({ error: 'limit_price_required' });
+      orderParams.price = limit_price;
+    }
+
+    const orderId = await kite.placeOrder(orderParams);
+    
+    // Log the square-off event
+    console.log(`[SQUARE-OFF] ${ticker} | Qty: ${shares} | Type: ${order_type} | Reason: ${reason || 'N/A'}`);
+
+    res.json({ success: true, order_id: orderId });
+  } catch (err) {
+    next(err);
+  }
+});
+
 // Web fallback for Telegram execution
+
 router.post('/execute', requireSession, validate(executeSchema, 'body'), async (req, res, next) => {
   try {
     const { signal_id } = req.body;

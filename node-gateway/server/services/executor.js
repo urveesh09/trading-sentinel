@@ -76,8 +76,9 @@ async function executeSignal(signal, action) {
         product: "CNC", // Strictly Delivery, NOT MIS
         order_type: "MARKET",
         validity: "DAY",
-        tag: "QUANT_A_BOT"
+        tag: "QUANT_SENTINEL"
       });
+
     }, 1, 2000); // 1 retry on OrderException
   } catch (err) {
     throw new OrderExecutionError(`Order Placement Failed: ${err.message}`);

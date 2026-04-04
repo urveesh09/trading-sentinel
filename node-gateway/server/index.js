@@ -31,26 +31,30 @@ telegram.bot.on('callback_query', async (query) => {
       return;
     }
 
-    // 3. Execution Lock / Idempotency Gate
-    const row = signalsDb.prepare(`SELECT status, payload_json FROM received_signals WHERE signal_id = ?`).get(signal_id);
-    if (!row) {
+        // 3. Execution Lock / Idempotency Gate
+    const isMomentum = action === 'EM';
+    const cleanId = isMomentum ? signal_id.replace('_MOM', '') : signal_id;
+
+    const row = signalsDb.prepare(`SELECT status, payload_json FROM received_signals WHERE signal_id = ?`).get(cleanId);
+    
+    if (!row && !isMomentum) {
       return telegram.bot.answerCallbackQuery(query.id, { text: "Signal not found in DB." });
     }
     
-    if (row.status !== 'PENDING') {
+    if (row && row.status !== 'PENDING') {
       await telegram.bot.answerCallbackQuery(query.id, { text: `Already ${row.status}. No action taken.`, show_alert: true });
       return;
     }
 
     // 4. Market Hours Check (Only for Executions)
-    if (action === 'EXEC' && !isMarketOpen()) {
+    if ((action === 'EXEC' || action === 'EM') && !isMarketOpen()) {
       await telegram.bot.answerCallbackQuery(query.id, { text: "Market closed. Cannot execute now.", show_alert: true });
       return;
     }
 
     // 5. Reject Action
-    if (action === 'REJ') {
-      signalsDb.prepare(`UPDATE received_signals SET status = 'REJECTED' WHERE signal_id = ?`).run(signal_id);
+    if (action === 'R' || action === 'REJ') {
+      if (row) signalsDb.prepare(`UPDATE received_signals SET status = 'REJECTED' WHERE signal_id = ?`).run(cleanId);
       await telegram.bot.answerCallbackQuery(query.id, { text: "Signal Rejected" });
       await telegram.bot.editMessageText(query.message.text + '\n\n— REJECTED', {
         chat_id: query.message.chat.id,
@@ -60,32 +64,17 @@ telegram.bot.on('callback_query', async (query) => {
       return;
     }
 
-    // 6. Execute Action
+    // 6. Execute Action (Swing)
     if (action === 'EXEC') {
-      // Immediate Lock
-      signalsDb.prepare(`UPDATE received_signals SET status = 'EXECUTING' WHERE signal_id = ?`).run(signal_id);
-      await telegram.bot.answerCallbackQuery(query.id, { text: "Processing order..." });
-      
-      const signalData = JSON.parse(row.payload_json);
-      
-      try {
-        const result = await executor.executeSignal(signalData, 'EXEC');
-        signalsDb.prepare(`UPDATE received_signals SET status = 'EXECUTED' WHERE signal_id = ?`).run(signal_id);
-        
-        await telegram.bot.editMessageText(query.message.text + `\n\n— EXECUTED (Fill: ₹${result.fillPrice})`, {
-          chat_id: query.message.chat.id,
-          message_id: query.message.message_id
-        });
-      } catch (err) {
-        // Unlock for retry on execution failure
-        signalsDb.prepare(`UPDATE received_signals SET status = 'PENDING' WHERE signal_id = ?`).run(signal_id);
-        await telegram.bot.editMessageText(query.message.text + `\n\n— FAILED: ${err.message}\nTap Execute again to retry.`, {
-          chat_id: query.message.chat.id,
-          message_id: query.message.message_id,
-          reply_markup: query.message.reply_markup // Keep buttons
-        });
-      }
+      // ... existing code ...
     }
+
+    // 7. Execute Action (Momentum)
+    if (action === 'EM') {
+        await telegram.bot.answerCallbackQuery(query.id, { text: "Momentum execution not yet linked to DB. Manual execution required." });
+        return;
+    }
+
   } catch (err) {
     logger.error({ event_type: 'telegram_callback_error', err: err.message });
   }
