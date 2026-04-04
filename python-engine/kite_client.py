@@ -46,11 +46,7 @@ class KiteClient:
             "X-Kite-Version": "3",
             "Authorization": f"token {api_key}:{token}"
         })
-    """
-    def set_token(self, token: str):
-        self.access_token = token
-        self.client.headers.update({"X-Kite-Version": "3", "Authorization": f"token {token}"})
-    """
+
     async def _init_db(self):
         async with aiosqlite.connect(self.db_path) as db:
             await db.execute("""
@@ -61,6 +57,35 @@ class KiteClient:
                 )
             """)
             await db.commit()
+
+    async def _init_intraday_db(self):
+        async with aiosqlite.connect(self.db_path) as db:
+            await db.execute("""
+                CREATE TABLE IF NOT EXISTS intraday_cache (
+                    ticker   TEXT,
+                    datetime TEXT,
+                    open     REAL,
+                    high     REAL,
+                    low      REAL,
+                    close    REAL,
+                    volume   INTEGER,
+                    fetched_at TIMESTAMP,
+                    PRIMARY KEY (ticker, datetime)
+                )
+            """)
+            await db.commit()
+
+    async def clear_intraday_cache(self):
+        """Purge yesterday's intraday candles at midnight."""
+        from datetime import datetime, timedelta
+        yesterday = (datetime.utcnow() - timedelta(days=1)).strftime("%Y-%m-%d")
+        async with aiosqlite.connect(self.db_path) as db:
+            await db.execute(
+                "DELETE FROM intraday_cache WHERE datetime < ?",
+                (yesterday + " 23:59:59",)
+            )
+            await db.commit()
+        logger.info("intraday_cache_cleared", before=yesterday)
 
     async def refresh_instrument_cache(self):
         if not self.access_token:
@@ -99,8 +124,6 @@ class KiteClient:
         # Cache Miss -> API
         logger.info("data_fetch", event_type="cache_miss", ticker=ticker)
         instrument_token = self.instrument_cache.get(ticker)
-        #if ticker=="NIFTY 50":
-         #   instrument_token="256265"
         if not instrument_token:
             raise ValueError(f"Unknown ticker: {ticker}")
         
@@ -141,4 +164,94 @@ class KiteClient:
                 continue
         
         logger.error("max_retries_exceeded", ticker=ticker)
+        return pd.DataFrame()
+
+    async def get_intraday(
+        self,
+        ticker: str,
+        from_datetime: str,
+        to_datetime: str,
+        interval: str = "15minute"
+    ) -> pd.DataFrame:
+        """
+        Fetch intraday candles (15-minute default).
+        Cache TTL: current trading day only.
+        Cache is invalidated at next day's 00:00 IST.
+        
+        from_datetime / to_datetime format: "YYYY-MM-DD HH:MM:SS"
+        """
+        await self._init_intraday_db()
+        trade_date = from_datetime[:10]   # YYYY-MM-DD portion
+
+        # Check cache: only use if all rows are from today
+        async with aiosqlite.connect(self.db_path) as db:
+            cursor = await db.execute(
+                """SELECT datetime, open, high, low, close, volume
+                   FROM intraday_cache
+                   WHERE ticker=? AND datetime >= ? AND datetime <= ?
+                   ORDER BY datetime""",
+                (ticker, from_datetime, to_datetime)
+            )
+            rows = await cursor.fetchall()
+            if rows and len(rows) >= 4:   # minimum 4 candles for VWAP
+                logger.info("data_fetch", event_type="intraday_cache_hit",
+                            ticker=ticker, candles=len(rows))
+                df = pd.DataFrame(
+                    rows, columns=['datetime','open','high','low','close','volume']
+                )
+                df['datetime'] = pd.to_datetime(df['datetime'])
+                df.set_index('datetime', inplace=True)
+                return df
+
+        # Cache miss → API
+        logger.info("data_fetch", event_type="intraday_cache_miss", ticker=ticker)
+        instrument_token = self.instrument_cache.get(ticker)
+        if not instrument_token:
+            raise ValueError(f"Unknown ticker: {ticker}")
+
+        for attempt in range(5):
+            await self.limiter.acquire()
+            try:
+                resp = await self.client.get(
+                    f"/instruments/historical/{instrument_token}/{interval}",
+                    params={"from": from_datetime, "to": to_datetime}
+                )
+                resp.raise_for_status()
+                data = resp.json().get("data", {}).get("candles", [])
+                if not data:
+                    return pd.DataFrame()
+
+                df = pd.DataFrame(
+                    data, columns=['datetime','open','high','low','close','volume']
+                )
+                df['datetime'] = pd.to_datetime(df['datetime']).dt.tz_localize(None)
+
+                # Write to intraday cache
+                async with aiosqlite.connect(self.db_path) as db:
+                    for _, row in df.iterrows():
+                        await db.execute(
+                            """INSERT OR REPLACE INTO intraday_cache
+                               (ticker, datetime, open, high, low, close,
+                                volume, fetched_at)
+                               VALUES (?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)""",
+                            (ticker,
+                             row['datetime'].strftime("%Y-%m-%d %H:%M:%S"),
+                             row['open'], row['high'], row['low'],
+                             row['close'], row['volume'])
+                        )
+                    await db.commit()
+
+                df.set_index('datetime', inplace=True)
+                return df
+
+            except httpx.HTTPStatusError as e:
+                if e.response.status_code in (429, 503):
+                    await asyncio.sleep(2 ** attempt)
+                    continue
+                raise
+            except httpx.RequestError:
+                await asyncio.sleep(2 ** attempt)
+                continue
+
+        logger.error("max_retries_exceeded_intraday", ticker=ticker)
         return pd.DataFrame()

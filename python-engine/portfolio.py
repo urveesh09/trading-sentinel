@@ -1,10 +1,61 @@
 import math
 import structlog
 from typing import List, Dict
-from models import Signal
+from models import Signal, MomentumSignal
 from config import settings
 
 logger = structlog.get_logger()
+
+def filter_momentum_signals(
+    signals: List[Dict],
+    open_momentum_positions: List[Dict],
+    momentum_pool: float,
+    max_momentum_positions: int = 2
+) -> tuple[List[MomentumSignal], List[Dict]]:
+    """
+    Second-pass allocator for momentum signals.
+    Enforces momentum capital pool limits independently from swing.
+    """
+    accepted = []
+    rejected = []
+
+    remaining_slots = max_momentum_positions - len(open_momentum_positions)
+    deployed_pool   = sum(
+        p['entry_price'] * p['shares'] for p in open_momentum_positions
+    )
+
+    # Sort by net_ev DESC, then volume_ratio DESC
+    valid = sorted(
+        [s for s in signals if s.get('net_ev', 0) > 0],
+        key=lambda x: (x['net_ev'], x['volume_ratio']),
+        reverse=True
+    )
+
+    for sig in valid:
+        if remaining_slots <= 0:
+            sig['reject_reason'] = "MAX_MOMENTUM_POSITIONS"
+            rejected.append(sig)
+            continue
+
+        ticker = sig['ticker']
+        if any(p['ticker'] == ticker for p in open_momentum_positions):
+            sig['reject_reason'] = "MOMENTUM_ALREADY_OPEN"
+            rejected.append(sig)
+            continue
+
+        # [SEBI-COMPLIANCE] Cash-Only (No Leverage) Check
+        if deployed_pool + sig['capital_deployed'] > momentum_pool:
+            sig['reject_reason'] = "MOMENTUM_POOL_EXHAUSTED"
+            rejected.append(sig)
+            continue
+
+        deployed_pool   += sig['capital_deployed']
+
+        remaining_slots -= 1
+        sig['portfolio_slot'] = max_momentum_positions - remaining_slots
+        accepted.append(MomentumSignal(**sig))
+
+    return accepted, rejected
 
 def filter_and_allocate(signals: List[Dict], open_positions: List[Dict], bankroll: float) -> tuple[List[Signal], List[Dict]]:
     accepted = []
@@ -72,7 +123,15 @@ def filter_and_allocate(signals: List[Dict], open_positions: List[Dict], bankrol
             rejected.append(raw_sig)
             continue
 
+        # [SEBI-COMPLIANCE] Cash-Only (No Leverage) Check
+        # Position value must not exceed allocated pool (bankroll here is the available liquidity)
+        if raw_sig['capital_deployed'] > bankroll:
+            raw_sig['reject_reason'] = "INSUFFICIENT_LIQUIDITY_CNC"
+            rejected.append(raw_sig)
+            continue
+
         # Inviolable Rule Check: Must never exceed risk limit
+
         risk_per_trade = bankroll * settings.RISK_PCT
         assert round(raw_sig['capital_at_risk'], 2) <= round(risk_per_trade + 0.05, 2), "CRITICAL: Capital at risk exceeds risk limit."
 

@@ -35,6 +35,11 @@ class Signal(BaseModel):
     portfolio_slot: Optional[int] = None
     stale_data: bool = False
     strategy_version: str
+    strategy_type: Optional[Literal["SWING", "MOMENTUM"]] = "SWING"
+    rs_score: Optional[float] = None
+    volume_consistent: Optional[bool] = None
+    cost_ratio: Optional[float] = None   # for momentum signals
+    
     
     _round_2dp = field_validator(
         "close", "ema_21", "ema_50", "ema_200", "atr_14", "volume_ratio", 
@@ -44,9 +49,39 @@ class Signal(BaseModel):
     
     _round_4dp = field_validator("slope_5", mode="after")(round_float_4dp)
 
+class MomentumSignal(BaseModel):
+    """Intraday momentum signal. Subset of Signal fields."""
+    ticker:            str
+    exchange:          str = "NSE"
+    signal_time:       datetime
+    strategy_type:     Literal["MOMENTUM"] = "MOMENTUM"
+    close:             float
+    vwap:              float
+    prev_day_high:     float
+    stop_loss:         float
+    target_1:          float
+    trailing_stop:     float
+    shares:            int
+    capital_deployed:  float
+    capital_at_risk:   float
+    net_ev:            float
+    cost_ratio:        float
+    volume_ratio:      float
+    product_type:      Literal["MIS", "CNC"]
+    sector:            str = "UNKNOWN"
+    portfolio_slot:    Optional[int] = None
+    stale_data:        bool = False
+    strategy_version:  str
+
+    _round_2dp = field_validator(
+        "close", "vwap", "prev_day_high", "stop_loss", "target_1",
+        "trailing_stop", "capital_deployed", "capital_at_risk",
+        "net_ev", "cost_ratio", "volume_ratio", mode="after"
+    )(round_float_2dp)
+
 class PortfolioResponse(BaseModel):
     run_time: datetime
-    market_regime: Literal["BULL", "CAUTION", "BEAR", "UNKNOWN"]
+    market_regime: Literal["BULL", "CAUTION", "BEAR_RS_ONLY", "UNKNOWN"]
     backtest_gate: Literal["PASS", "FAIL", "NOT_RUN"]
     trading_halted: bool
     halt_reasons: List[str]
@@ -57,6 +92,8 @@ class PortfolioResponse(BaseModel):
     open_positions_count: int
     remaining_slots: int
     signals: List[Signal]
+    momentum_signals: List[MomentumSignal] = []
+    momentum_pool:    float = 0.0
 
     _round_2dp = field_validator(
         "total_capital_at_risk", "total_capital_deployed", 
@@ -90,7 +127,7 @@ class OpenPosition(BaseModel):
     atr_14_at_entry: float
     highest_close_since_entry: float
     status: Literal["OPEN", "CLOSED_T1", "CLOSED_T2", "STOPPED_OUT", "CLOSED_TIME", "CLOSED_MANUAL"]
-    source: Literal["SYSTEM", "MANUAL"]
+    source: Literal["SYSTEM", "MANUAL", "MOMENTUM"]
     exit_price: Optional[float] = None
     exit_date: Optional[datetime] = None
     realised_pnl: Optional[float] = None

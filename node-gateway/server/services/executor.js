@@ -73,11 +73,12 @@ async function executeSignal(signal, action) {
         tradingsymbol: signal.ticker,
         transaction_type: "BUY",
         quantity: signal.shares,
-        product: "CNC", // Strictly Delivery, NOT MIS
+                product: "CNC", // Strictly Delivery, NOT MIS
         order_type: "MARKET",
         validity: "DAY",
-        tag: "QUANT_A_BOT"
+        tag: "QUANT_SENTINEL"
       });
+
     }, 1, 2000); // 1 retry on OrderException
   } catch (err) {
     throw new OrderExecutionError(`Order Placement Failed: ${err.message}`);

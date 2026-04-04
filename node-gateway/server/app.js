@@ -97,6 +97,8 @@ app.use('/api/orders', security.limiters.orders, require('./routes/orders'));
 app.use('/api/token', security.limiters.token, require('./routes/token'));
 app.use('/api/proxy', require('./routes/proxy'));
 app.use('/api/health', require('./routes/health'));
+app.use('/api/internal', require('./routes/internal'));
+
 
 // 7. React Static File Serving
 //app.use(express.static(path.join(__dirname, '../public')));

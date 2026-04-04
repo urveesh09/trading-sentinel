@@ -3,6 +3,7 @@ from datetime import datetime
 import structlog
 from typing import List
 from models import OpenPosition
+from engine import calc_zerodha_costs
 
 logger = structlog.get_logger()
 
@@ -30,14 +31,23 @@ async def update_daily_positions(db_path: str, kite_client, current_date_str: st
     
     for pos in open_pos:
         ticker = pos['ticker']
+        # MOMENTUM positions are squared intraday — skip daily update
+        if pos.get('source') == 'MOMENTUM':
+            continue
+
         df = await kite_client.get_historical(ticker, current_date_str, current_date_str)
+
         if df.empty: continue
         
         today_close = df['close'].iloc[-1]
         highest_close = max(pos['highest_close_since_entry'], today_close)
         
-        # [R6] Trailing Stop Update
+                # [R6] Trailing Stop Update
+        if pos.get('source') == 'MOMENTUM':
+            continue
+            
         new_trail = highest_close - (1.5 * pos['atr_14_at_entry'])
+
         trailing_stop = max(pos['trailing_stop_current'], new_trail)
         
         status = "OPEN"
@@ -64,7 +74,7 @@ async def update_daily_positions(db_path: str, kite_client, current_date_str: st
         r_multiple = None
         if status != "OPEN":
             gross = (exit_price - pos['entry_price']) * pos['shares']
-            costs = (pos['entry_price'] + exit_price) * pos['shares'] * 0.001
+            costs = calc_zerodha_costs(pos['entry_price'], exit_price, pos['shares'], is_intraday=False)
             realised_pnl = gross - costs
             risk_initial = (pos['entry_price'] - pos['stop_loss_initial']) * pos['shares']
             r_multiple = realised_pnl / risk_initial if risk_initial > 0 else 0
