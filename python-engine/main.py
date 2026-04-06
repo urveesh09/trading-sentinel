@@ -7,7 +7,7 @@ import structlog
 import aiosqlite
 from config import settings
 from kite_client import KiteClient
-from market_calendar import is_trading_day
+from market_calendar import is_trading_day, prev_trading_day
 from engine import evaluate_signal, calc_ema, evaluate_momentum_signal, calc_zerodha_costs
 
 from portfolio import filter_and_allocate, filter_momentum_signals
@@ -121,14 +121,21 @@ async def run_screener():
         logger.info("market_closed")
         return
 
-    halted, reasons = await check_circuit_breakers(settings.DB_PATH)
-    if halted:
-        logger.warning("screener_halted", reasons=reasons)
+        # Check for login/token
+    if not kite.access_token:
+        logger.warning("screener_skipped", reason="no_access_token")
         return
 
-    # Regime Filter [MR1]
+
+        # Regime Filter [MR1]
+    # NIFTY 50 ticker might be different depending on Kite's instrument list
+    # Usually it's "NIFTY 50" but we should be sure.
     nifty_df = await kite.get_historical("NIFTY 50", (today - pd.Timedelta(days=120)).strftime("%Y-%m-%d"), today.strftime("%Y-%m-%d"))
-    if nifty_df.empty: return
+    if nifty_df.empty:
+        # Fallback to "NIFTY BANK" or log error
+        logger.error("nifty_data_missing", ticker="NIFTY 50")
+        return
+
     
     nifty_close = nifty_df['close'].iloc[-1]
     nifty_ema50 = calc_ema(50, nifty_df['close']).iloc[-1]
@@ -260,10 +267,11 @@ async def run_momentum_screener():
     if not await is_trading_day(today, settings.DB_PATH):
         return
 
-    halted, reasons = await check_circuit_breakers(settings.DB_PATH)
-    if halted:
-        logger.warning("momentum_screener_halted", reasons=reasons)
+        # Check for login/token
+    if not kite.access_token:
+        logger.warning("momentum_screener_skipped", reason="no_access_token")
         return
+
 
     bankroll       = await current_bankroll(settings.DB_PATH)
     momentum_pool  = bankroll * 0.20
@@ -275,8 +283,16 @@ async def run_momentum_screener():
                        threshold=settings.INITIAL_BANKROLL * 0.80)
         return
 
-    from_dt = f"{today.strftime('%Y-%m-%d')} 09:15:00"
-    to_dt   = datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S")
+    now_utc = datetime.utcnow()
+    # Market opens at 03:45 UTC (09:15 IST)
+    from_dt = now_utc.strftime('%Y-%m-%d 03:45:00')
+    to_dt   = now_utc.strftime('%Y-%m-%d %H:%M:%S')
+
+    # If it's before 03:45 UTC, we shouldn't really be running or we should adjust from_dt
+    if now_utc.time() < datetime.strptime("03:45:00", "%H:%M:%S").time():
+        logger.info("momentum_scan_skip", reason="before_market_open_utc")
+        return
+
 
     try:
         universe = pd.read_csv(settings.UNIVERSE_PATH)
@@ -310,14 +326,23 @@ async def run_momentum_screener():
                 continue
 
             # Get previous day's high from daily cache
-            yesterday = (today - pd.Timedelta(days=3)).strftime("%Y-%m-%d")
+            # Need to go back far enough to cover weekends/holidays for the last trading day
+            yesterday_date = await prev_trading_day(today, settings.DB_PATH)
+            from_date_for_prev = (yesterday_date - pd.Timedelta(days=7)).strftime("%Y-%m-%d")
             df_daily  = await kite.get_historical(
-                ticker, yesterday, today.strftime("%Y-%m-%d")
+                ticker, from_date_for_prev, today.strftime("%Y-%m-%d")
             )
-            if df_daily.empty or len(df_daily) < 2:
+            if df_daily.empty or len(df_daily) < 1:
                 continue
 
-            prev_day_high = float(df_daily['high'].iloc[-2])
+            # The last row in df_daily (if it's before today) or second to last (if today's daily candle exists)
+            # is the previous trading day.
+            # To be safe, we filter for dates < today.
+            df_prev = df_daily[df_daily.index.date < today]
+            if df_prev.empty:
+                continue
+            prev_day_high = float(df_prev['high'].iloc[-1])
+
 
             fired, sig_data = evaluate_momentum_signal(
                 ticker=ticker,
@@ -389,8 +414,9 @@ async def auto_square_momentum():
     momentum_pos = [p for p in open_pos if p.get('source') == 'MOMENTUM']
 
     if not momentum_pos:
-        logger.info("auto_square", event="no_momentum_positions")
+        logger.info("auto_square_none", message="no_momentum_positions")
         return
+
 
     container_a_url = settings.CONTAINER_A_URL
 
@@ -486,7 +512,45 @@ async def _notify_telegram_square_off_failure(ticker: str, pos: dict):
     except Exception as e:
         logger.error("telegram_notification_failed", error=str(e))
 
+@app.post("/positions/manual")
+async def add_manual_position(request: Request):
+    """
+    Called by Container A after a successful execution.
+    Creates a new position in the database.
+    """
+    data = await request.json()
+    secret = request.headers.get("X-Internal-Secret", "")
+    if secret != settings.INTERNAL_API_SECRET:
+        raise HTTPException(status_code=403, detail="Unauthorized")
+
+    ticker      = data["ticker"]
+    entry_price = float(data["entry_price"])
+    shares      = int(data["shares"])
+    # If source is explicitly sent (e.g. MOMENTUM), use it. 
+    # Default to SYSTEM for swing.
+    source      = data.get("source", "SYSTEM")
+    
+    stop_loss   = float(data.get("stop_loss", entry_price * 0.95))
+    target_1    = float(data.get("target_1", entry_price * 1.05))
+    target_2    = float(data.get("target_2", entry_price * 1.10))
+    
+    async with aiosqlite.connect(settings.DB_PATH) as db:
+        await db.execute("""
+            INSERT INTO positions (
+                ticker, exchange, entry_date, entry_price, shares,
+                stop_loss_initial, trailing_stop_current, target_1, target_2,
+                atr_14_at_entry, highest_close_since_entry, status, source
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        """, (ticker, data.get("exchange", "NSE"), datetime.utcnow().isoformat(),
+              entry_price, shares, stop_loss, stop_loss, target_1, target_2,
+              0.0, entry_price, "OPEN", source))
+        await db.commit()
+    
+    logger.info("position_added_manually", ticker=ticker, source=source)
+    return {"status": "ok"}
+
 @app.post("/positions/close")
+
 async def close_position(request: Request):
     """
     Called by Container A after a square-off order is confirmed.
@@ -542,29 +606,36 @@ async def inject_token(request: Request):
     kite.set_token(data["access_token"])
     await post_login_initialization()
     return {"status": "ok"}
-"""
-@app.get("/performance")
-async def get_performance():
-    # Placeholder to stop 404 errors until fully implemented
-    return []
-"""
+
 @app.get("/performance", response_model=PerformanceReport)
 async def get_performance():
     bankroll = await current_bankroll(settings.DB_PATH)
+    open_pos = await get_open_positions(settings.DB_PATH)
+    
+    async with aiosqlite.connect(settings.DB_PATH) as db:
+        cursor = await db.execute("SELECT * FROM positions WHERE status != 'OPEN'")
+        closed_trades = await cursor.fetchall()
+        
+    # Simple metrics for now
+    total_trades = len(closed_trades) + len(open_pos)
+    win_count = sum(1 for t in closed_trades if (t[14] or 0) > 0) # realised_pnl is at index 14
+    loss_count = sum(1 for t in closed_trades if (t[14] or 0) < 0)
+    total_pnl = sum(t[14] or 0 for t in closed_trades)
+    
     return PerformanceReport(
         as_of=datetime.utcnow(),
-        total_trades_taken=0,
-        open_positions_count=0,
-        closed_trades_count=0,
-        win_count=0,
-        loss_count=0,
-        win_rate=0.0,
-        avg_r_multiple=0.0,
+        total_trades_taken=total_trades,
+        open_positions_count=len(open_pos),
+        closed_trades_count=len(closed_trades),
+        win_count=win_count,
+        loss_count=loss_count,
+        win_rate=win_count/len(closed_trades) if closed_trades else 0,
+        avg_r_multiple=sum(t[15] or 0 for t in closed_trades)/len(closed_trades) if closed_trades else 0,
         avg_winner_r=0.0,
         avg_loser_r=0.0,
         profit_factor=0.0,
-        total_realised_pnl=0.0,
-        current_bankroll=bankroll,  # <-- THIS IS WHERE REACT FINDS YOUR 5000!
+        total_realised_pnl=total_pnl,
+        current_bankroll=bankroll,
         max_drawdown_pct=0.0,
         current_drawdown_pct=0.0,
         consecutive_losses=0,
@@ -573,17 +644,12 @@ async def get_performance():
         worst_trade_r=0.0,
         avg_hold_days=0.0
     )
-"""
-@app.get("/positions")
-async def get_positions():
-    # Placeholder to stop 404 errors until fully implemented
-    return []
-"""
-# --- MISSING DASHBOARD ROUTES ---
+
 @app.get("/positions", response_model=list[OpenPosition])
 async def get_positions_route():
-    # React expects a list of OpenPosition objects. An empty list is valid here.
-    return []
+    open_pos = await get_open_positions(settings.DB_PATH)
+    return open_pos
+
 @app.get("/bankroll")
 async def get_bankroll_route():
     val = await current_bankroll(settings.DB_PATH)

@@ -64,16 +64,76 @@ telegram.bot.on('callback_query', async (query) => {
       return;
     }
 
-    // 6. Execute Action (Swing)
+        // 6. Execute Action (Swing)
     if (action === 'EXEC') {
-      // ... existing code ...
+      try {
+        const signalData = JSON.parse(row.payload_json);
+        signalsDb.prepare(`UPDATE received_signals SET status = 'EXECUTING' WHERE signal_id = ?`).run(cleanId);
+        
+        await telegram.bot.answerCallbackQuery(query.id, { text: "Executing Swing Trade..." });
+        const result = await executor.executeSignal(signalData, 'EXEC', false);
+        
+        signalsDb.prepare(`UPDATE received_signals SET status = 'EXECUTED' WHERE signal_id = ?`).run(cleanId);
+        await telegram.bot.editMessageText(query.message.text + `\n\n✅ EXECUTED: ${result.orderId}`, {
+          chat_id: query.message.chat.id,
+          message_id: query.message.message_id
+        });
+      } catch (err) {
+        signalsDb.prepare(`UPDATE received_signals SET status = 'PENDING' WHERE signal_id = ?`).run(cleanId);
+        logger.error({ event_type: 'execution_failed', err: err.message });
+        await telegram.bot.answerCallbackQuery(query.id, { text: `Execution Failed: ${err.message}`, show_alert: true });
+      }
+      return;
     }
 
     // 7. Execute Action (Momentum)
     if (action === 'EM') {
-        await telegram.bot.answerCallbackQuery(query.id, { text: "Momentum execution not yet linked to DB. Manual execution required." });
-        return;
+      try {
+        // Momentum signals might not be in DB yet as they come from Container C directly sometimes
+        // But the pipeline now ensures they are handled. 
+        // For Momentum, we allow 'row' to be null if we can find it in 'current_momentum_signals' (Engine)
+        // But easier is to just use the data sent in the callback if we had it.
+        // Since we only have the ID, we must fetch the signal from Container B.
+        
+        await telegram.bot.answerCallbackQuery(query.id, { text: "Fetching Momentum Data..." });
+        
+        const ticker = signal_id.replace('_MOM', '');
+        const engineUrl = config.PYTHON_ENGINE_URL;
+        const resp = await fetch(`${engineUrl}/momentum-signals`, {
+           headers: { 'X-Internal-Secret': config.INTERNAL_API_SECRET }
+        });
+        const data = await resp.json();
+        const signalData = data.signals.find(s => s.ticker === ticker);
+
+        if (!signalData) {
+          throw new Error("Momentum signal not found in Engine state.");
+        }
+
+        await telegram.bot.answerCallbackQuery(query.id, { text: "Executing Momentum Trade..." });
+        const result = await executor.executeSignal(signalData, 'EM', true);
+
+        // Update DB (Manually create the signal record if it doesn't exist)
+        if (!row) {
+          signalsDb.prepare(`
+            INSERT INTO received_signals (signal_id, ticker, signal_time, received_at, payload_json, status)
+            VALUES (?, ?, ?, ?, ?, 'EXECUTED')
+          `).run(cleanId, ticker, new Date().toISOString(), new Date().toISOString(), JSON.stringify(signalData), 'EXECUTED');
+        } else {
+          signalsDb.prepare(`UPDATE received_signals SET status = 'EXECUTED' WHERE signal_id = ?`).run(cleanId);
+        }
+
+        await telegram.bot.editMessageText(query.message.text + `\n\n⚡ EXECUTED (MIS): ${result.orderId}`, {
+          chat_id: query.message.chat.id,
+          message_id: query.message.message_id
+        });
+
+      } catch (err) {
+        logger.error({ event_type: 'momentum_execution_failed', err: err.message });
+        await telegram.bot.answerCallbackQuery(query.id, { text: `Momentum Failed: ${err.message}`, show_alert: true });
+      }
+      return;
     }
+
 
   } catch (err) {
     logger.error({ event_type: 'telegram_callback_error', err: err.message });

@@ -40,8 +40,8 @@ async function syncToEngine(payload) {
 /**
  * CORE EXECUTION ENGINE
  */
-async function executeSignal(signal, action) {
-  logger.info({ event_type: 'execution_started', ticker: signal.ticker, id: signal.signal_id });
+async function executeSignal(signal, action, isIntraday = false) {
+  logger.info({ event_type: 'execution_started', ticker: signal.ticker, id: signal.signal_id, isIntraday });
 
   // 1. Token & Pre-checks
   if (!require('./token-store').isValid()) throw new TokenExpiredError();
@@ -73,7 +73,7 @@ async function executeSignal(signal, action) {
         tradingsymbol: signal.ticker,
         transaction_type: "BUY",
         quantity: signal.shares,
-        product: "CNC", // Strictly Delivery, NOT MIS
+        product: isIntraday ? "MIS" : "CNC",
         order_type: "MARKET",
         validity: "DAY",
         tag: "QUANT_SENTINEL"
@@ -83,6 +83,7 @@ async function executeSignal(signal, action) {
   } catch (err) {
     throw new OrderExecutionError(`Order Placement Failed: ${err.message}`);
   }
+
 
   const orderId = orderResponse.order_id;
   
@@ -134,53 +135,56 @@ async function executeSignal(signal, action) {
     logger.warn({ event_type: 'fill_unconfirmed', orderId });
   }
 
-  // 5. GTT Order Execution
+    // 5. GTT Order Execution (Only for CNC/Swing)
   let gttStopId = null;
   let gttTargetId = null;
   
-  try {
-    // Stop-loss Leg
-    const stopRes = await kite.placeGTT({
-      trigger_type: "single",
-      tradingsymbol: signal.ticker,
-      exchange: "NSE",
-      trigger_values: [signal.stop_loss],
-      last_price: ltp,
-      orders: [{
-        transaction_type: "SELL",
-        quantity: signal.shares,
-        order_type: "LIMIT",
-        product: "CNC",
-        //price: Number((signal.stop_loss * 1.002).toFixed(2)) // Sell above trigger
-        price: Math.round((signal.stop_loss * 1.002) * 20) / 20 // Rounds to nearest 0.05
+  if (!isIntraday) {
+    try {
+      // Stop-loss Leg
+      const stopRes = await kite.placeGTT({
+        trigger_type: "single",
+        tradingsymbol: signal.ticker,
+        exchange: "NSE",
+        trigger_values: [signal.stop_loss],
+        last_price: ltp,
+        orders: [{
+          transaction_type: "SELL",
+          quantity: signal.shares,
+          order_type: "LIMIT",
+          product: "CNC",
+          //price: Number((signal.stop_loss * 1.002).toFixed(2)) // Sell above trigger
+          price: Math.round((signal.stop_loss * 1.002) * 20) / 20 // Rounds to nearest 0.05
+        }]
+      });
+      gttStopId = stopRes.trigger_id;
+
+      // Target Leg (Half quantity for T1)
+      const t1Shares = Math.floor(signal.shares / 2) || 1;
+      const targetRes = await kite.placeGTT({
+        trigger_type: "single",
+        tradingsymbol: signal.ticker,
+        exchange: "NSE",
+        trigger_values: [signal.target_1],
+        last_price: ltp,
+        orders: [{
+          transaction_type: "SELL",
+          quantity: t1Shares,
+          order_type: "LIMIT",
+          product: "CNC",
+          //price: Number((signal.target_1 * 0.998).toFixed(2)) // Small buffer below trigger
+          price: Math.round((signal.target_1 * 0.998) * 20) / 20 // Rounds to nearest 0.05  
       }]
-    });
-    gttStopId = stopRes.trigger_id;
+      });
+      gttTargetId = targetRes.trigger_id;
 
-    // Target Leg (Half quantity for T1)
-    const t1Shares = Math.floor(signal.shares / 2) || 1;
-    const targetRes = await kite.placeGTT({
-      trigger_type: "single",
-      tradingsymbol: signal.ticker,
-      exchange: "NSE",
-      trigger_values: [signal.target_1],
-      last_price: ltp,
-      orders: [{
-        transaction_type: "SELL",
-        quantity: t1Shares,
-        order_type: "LIMIT",
-        product: "CNC",
-        //price: Number((signal.target_1 * 0.998).toFixed(2)) // Small buffer below trigger
-        price: Math.round((signal.target_1 * 0.998) * 20) / 20 // Rounds to nearest 0.05  
-    }]
-    });
-    gttTargetId = targetRes.trigger_id;
-
-  } catch (err) {
-    logger.error({ event_type: 'gtt_placement_error', err: err.message });
-    // Note: We don't throw here. Market order is already placed. We must sync the open position.
-    telegram.sendAlert(`⚠️ GTT placement failed for ${signal.ticker} (Order ${orderId}). Please place manual exit orders.`);
+    } catch (err) {
+      logger.error({ event_type: 'gtt_placement_error', err: err.message });
+      // Note: We don't throw here. Market order is already placed. We must sync the open position.
+      telegram.sendAlert(`⚠️ GTT placement failed for ${signal.ticker} (Order ${orderId}). Please place manual exit orders.`);
+    }
   }
+
 
   // Update DB with Fill + GTTs
   signalsDb.prepare(`
@@ -189,7 +193,7 @@ async function executeSignal(signal, action) {
     WHERE order_id = ?
   `).run(fillPrice, new Date().toISOString(), gttStopId, gttTargetId, finalNotes, orderId);
 
-  // 6. Sync to Container B
+    // 6. Sync to Container B
   const syncPayload = {
     ticker: signal.ticker,
     exchange: "NSE",
@@ -198,11 +202,13 @@ async function executeSignal(signal, action) {
     stop_loss: signal.stop_loss,
     target_1: signal.target_1,
     target_2: signal.target_2,
+    source: isIntraday ? "MOMENTUM" : "SYSTEM",
     order_id: String(orderId),
     gtt_stop_id: gttStopId ? String(gttStopId) : null,
     gtt_target_id: gttTargetId ? String(gttTargetId) : null,
     notes: finalNotes
   };
+
 
   try {
     await withRetry(() => syncToEngine(syncPayload), 3, 5000);
