@@ -75,9 +75,14 @@ class KiteClient:
             """)
             await db.commit()
 
+
+
+
     async def clear_intraday_cache(self):
         """Purge yesterday's intraday candles at midnight."""
+        await self._init_intraday_db()
         from datetime import datetime, timedelta
+
         yesterday = (datetime.utcnow() - timedelta(days=1)).strftime("%Y-%m-%d")
         async with aiosqlite.connect(self.db_path) as db:
             await db.execute(
