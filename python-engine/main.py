@@ -113,7 +113,29 @@ async def post_login_initialization():
     except Exception as e:
         logger.error("post_login_init_error", error=str(e))
 
+NIFTY_100_TICKERS = [
+    "RELIANCE", "TCS", "HDFCBANK", "ICICIBANK", "INFY", "HINDUNILVR", "ITC", "SBIN", "BHARTIARTL", "KOTAKBANK",
+    "LT", "BAJFINANCE", "AXISBANK", "ASIANPAINT", "MARUTI", "TITAN", "SUNPHARMA", "HCLTECH", "ADANIENT", "TATAMOTORS",
+    "NTPC", "JSWSTEEL", "ONGC", "M&M", "POWERGRID", "TATASTEEL", "ADANIPORTS", "COALINDIA", "BAJAJFINSV", "NESTLEIND",
+    "GRASIM", "TECHM", "EICHERMOT", "BRITANNIA", "HINDALCO", "INDUSINDBK", "ADANIPOWER", "TATACONSUM", "HDFCLIFE", "SBILIFE",
+    "DRREDDY", "CIPLA", "APOLLOHOSP", "DIVISLAB", "LTIM", "BAJAJ-AUTO", "HEROMOTOCO", "ULTRACEMCO", "BPCL", "WIPRO"
+]
+
+NIFTY_100_TICKERS = [
+    "ABB", "ADANIENSOL", "ADANIENT", "ADANIGREEN", "ADANIPORTS", "ADANIPOWER", "ATGL", "AMBUJACEM", "APOLLOHOSP", "ASIANPAINT",
+    "DMART", "AXISBANK", "BAJAJ-AUTO", "BAJFINANCE", "BAJAJFINSV", "BAJAJHLDNG", "BANKBARODA", "BERGEPAINT", "BEL", "BHARTIARTL",
+    "BPCL", "BRITANNIA", "CANBK", "CHOLAFIN", "CIPLA", "COALINDIA", "COLPAL", "DLF", "DRREDDY", "EICHERMOT",
+    "GAIL", "GICRE", "GODREJCP", "GRASIM", "HAVELLS", "HCLTECH", "HDFCBANK", "HDFCLIFE", "HEROMOTOCO", "HINDALCO",
+    "HAL", "HINDUNILVR", "ICICIBANK", "ICICIGI", "ICICIPRULI", "IDBI", "ITC", "IOC", "IRCTC", "IRFC",
+    "INDUSINDBK", "INFY", "INDIGO", "JSWSTEEL", "JSL", "KOTAKBANK", "LT", "LTIM", "LICHSGFIN", "LICI",
+    "M&M", "MARICO", "MARUTI", "NTPC", "NESTLEIND", "ONGC", "PIDILITIND", "PFC", "POWERGRID", "PNB",
+    "RELIANCE", "RECLTD", "SBICARD", "SBILIFE", "SRF", "MOTHERSON", "SHREECEM", "SHRIRAMFIN", "SIEMENS", "SBIN",
+    "SUNPHARMA", "SUNTV", "TATACOMM", "TATACONSUM", "TATAELXSI", "TATAMOTORS", "TATAPOWER", "TATASTEEL", "TCS", "TECHM",
+    "TITAN", "TRENT", "TVSMOTOR", "ULTRACEMCO", "UNITDSPR", "VBL", "VEDL", "WIPRO", "ZOMATO", "ZYDUSLIFE"
+]
+
 async def run_screener():
+
     global current_signals, rejected_signals, market_regime, last_run
     
     today = datetime.utcnow().date()
@@ -158,17 +180,30 @@ async def run_screener():
         universe = pd.read_csv(settings.UNIVERSE_PATH)
     except Exception:
         logger.warning("universe_csv_missing_fallback")
-        universe = pd.DataFrame({"tradingsymbol": ["RELIANCE", "TCS", "HDFCBANK", "INFY"], "exchange": ["NSE"]*4, "sector": ["Energy", "IT", "Financial", "IT"]})
+        universe = pd.DataFrame({
+            "tradingsymbol": NIFTY_100_TICKERS,
+            "exchange": ["NSE"] * len(NIFTY_100_TICKERS),
+            "sector": ["UNKNOWN"] * len(NIFTY_100_TICKERS)
+        })
+
 
     raw_signals = []
+    total_evaluated = 0
+    raw_rejected = []
     for _, row in universe.iterrows():
+        total_evaluated += 1
         ticker = row['tradingsymbol']
         df = await kite.get_historical(ticker, (today - pd.Timedelta(days=120)).strftime("%Y-%m-%d"), today.strftime("%Y-%m-%d"))
-        if df.empty: continue
+        if df.empty:
+            raw_rejected.append({"ticker": ticker, "reject_reason": "historical_data_empty"})
+            continue
         
         valid, sig_data = evaluate_signal(ticker, df, bankroll, risk_pct, market_regime)
         if not valid:
+            sig_data["ticker"] = ticker
+            raw_rejected.append(sig_data)
             continue
+
 
         # [RS-FILTER] BEAR_RS_ONLY regime: apply RS gate
         if market_regime == "BEAR_RS_ONLY":
@@ -217,7 +252,12 @@ async def run_screener():
     
     async with state_lock:
         current_signals, rejected_signals = filter_and_allocate(raw_signals, open_pos, bankroll)
+        # Combine all rejections
+        from typing import List, Dict
+        all_rejected: List[Dict] = raw_rejected + rejected_signals
         last_run = datetime.utcnow()
+        await notify_screener_results("SWING", current_signals, all_rejected, market_regime, bankroll)
+
 
 async def daily_post_market():
     today_str = datetime.utcnow().strftime("%Y-%m-%d")
@@ -299,10 +339,11 @@ async def run_momentum_screener():
     except Exception:
         logger.warning("universe_csv_missing_fallback_momentum")
         universe = pd.DataFrame({
-            "tradingsymbol": ["RELIANCE","TCS","HDFCBANK","INFY","ICICIBANK"],
-            "exchange":      ["NSE"] * 5,
-            "sector":        ["Energy","IT","Financial","IT","Financial"]
+            "tradingsymbol": NIFTY_100_TICKERS,
+            "exchange":      ["NSE"] * len(NIFTY_100_TICKERS),
+            "sector":        ["UNKNOWN"] * len(NIFTY_100_TICKERS)
         })
+
 
     open_pos          = await get_open_positions(settings.DB_PATH)
     open_momentum_pos = [p for p in open_pos if p.get('source') == 'MOMENTUM']
@@ -311,18 +352,24 @@ async def run_momentum_screener():
     }
 
     raw_momentum = []
+    raw_rejected_momentum = []
 
     for _, row in universe.iterrows():
         ticker = row['tradingsymbol']
 
         # SWING WINS: skip if swing position open for this ticker
         if ticker in open_swing_tickers:
+            raw_rejected_momentum.append({"ticker": ticker, "reject_reason": "swing_position_exists"})
             continue
 
         try:
             # Get today's intraday candles
             df_intra = await kite.get_intraday(ticker, from_dt, to_dt)
-            if df_intra.empty or len(df_intra) < 4:
+            if df_intra.empty:
+                raw_rejected_momentum.append({"ticker": ticker, "reject_reason": "intraday_data_empty"})
+                continue
+            if len(df_intra) < 4:
+                raw_rejected_momentum.append({"ticker": ticker, "reject_reason": "insufficient_intraday_candles", "count": len(df_intra)})
                 continue
 
             # Get previous day's high from daily cache
@@ -333,6 +380,7 @@ async def run_momentum_screener():
                 ticker, from_date_for_prev, today.strftime("%Y-%m-%d")
             )
             if df_daily.empty or len(df_daily) < 1:
+                raw_rejected_momentum.append({"ticker": ticker, "reject_reason": "daily_data_missing_for_prev_high"})
                 continue
 
             # The last row in df_daily (if it's before today) or second to last (if today's daily candle exists)
@@ -340,6 +388,7 @@ async def run_momentum_screener():
             # To be safe, we filter for dates < today.
             df_prev = df_daily[df_daily.index.date < today]
             if df_prev.empty:
+                raw_rejected_momentum.append({"ticker": ticker, "reject_reason": "prev_day_data_not_found"})
                 continue
             prev_day_high = float(df_prev['high'].iloc[-1])
 
@@ -364,9 +413,13 @@ async def run_momentum_screener():
                     "target_2": sig_data["target_1"],
                 })
                 raw_momentum.append(sig_data)
+            else:
+                sig_data["ticker"] = ticker
+                raw_rejected_momentum.append(sig_data)
 
         except Exception as e:
             logger.error("momentum_scan_error", ticker=ticker, error=str(e))
+            raw_rejected_momentum.append({"ticker": ticker, "reject_reason": f"exception: {str(e)}"})
             continue   # NEVER crash the full scan on one ticker failure
 
     accepted, rejected_mom = filter_momentum_signals(
@@ -376,6 +429,9 @@ async def run_momentum_screener():
 
     async with state_lock:
         current_momentum_signals = accepted
+        all_rejected_mom = raw_rejected_momentum + rejected_mom
+        await notify_screener_results("MOMENTUM", accepted, all_rejected_mom, market_regime, bankroll, momentum_pool)
+
 
     logger.info("momentum_scan_complete",
                 tickers_scanned=len(universe),
@@ -663,6 +719,71 @@ async def get_circuit_breaker():
 @app.get("/rejected")
 async def get_rejected_signals():
     return {"data": []}
+async def notify_screener_results(
+    strategy_type: str,
+    accepted: list,
+    rejected: list,
+    regime: str,
+    bankroll: float,
+    pool: float = None
+):
+    """
+    Sends a detailed summary of the screener run to Telegram via Container A.
+    """
+    import httpx as _httpx
+    
+    msg = f"🔍 **{strategy_type} Screener Run**\n"
+    msg += f"Regime: `{regime}` | Bankroll: `₹{bankroll:,.2f}`\n"
+    if pool:
+        msg += f"Strategy Pool: `₹{pool:,.2f}`\n"
+    msg += "---"
+    
+    if accepted:
+        msg += f"\n✅ **Signals Found ({len(accepted)}):**\n"
+        for s in accepted:
+            ticker = s.ticker if hasattr(s, 'ticker') else s.get('ticker')
+            price = s.close if hasattr(s, 'close') else s.get('close')
+            shares = s.shares if hasattr(s, 'shares') else s.get('shares')
+            msg += f"• **{ticker}** @ {price} (Qty: {shares})\n"
+    else:
+        msg += "\n❌ No signals passed all filters."
+
+
+    if rejected:
+        # Group rejections by reason
+        reason_counts = {}
+        for r in rejected:
+            reason = r.get('reject_reason', 'unknown')
+            reason_counts[reason] = reason_counts.get(reason, 0) + 1
+        
+        msg += "\n\n **Rejection Summary:**\n"
+        # Sort by count descending
+        for reason, count in sorted(reason_counts.items(), key=lambda x: x[1], reverse=True):
+            # Clean up reason string for display
+            display_reason = reason.replace("_", " ").title()
+            msg += f"• {display_reason}: {count}\n"
+        
+        if len(rejected) > 0:
+            # Add a few examples of why things are failing
+            msg += "\n*Examples:*\n"
+            for r in rejected[:3]:
+                ticker = r.get('ticker', '???')
+                reason = r.get('reject_reason', 'unknown').replace("_", " ")
+                msg += f"• {ticker}: {reason}\n"
+
+            
+    # Send to Container A for Telegram delivery
+    try:
+        await _httpx.AsyncClient().post(
+            f"{settings.CONTAINER_A_URL}/api/internal/notify",
+            json={"message": msg},
+            headers={"X-Internal-Secret": settings.INTERNAL_API_SECRET},
+            timeout=5.0
+        )
+    except Exception as e:
+        logger.error("telegram_notification_failed", error=str(e))
+
 @app.get("/health")
+
 async def health_check():
     return {"status": "ok"}
