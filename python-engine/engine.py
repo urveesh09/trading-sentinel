@@ -99,7 +99,7 @@ def evaluate_signal(
 ) -> Tuple[bool, Dict[str, Any]]:
 
     if len(df) < 200:
-        return False, {}
+        return False, {"reject_reason": "insufficient_data_200_days"}
     df = df.copy()
     close = df["close"]
 
@@ -128,29 +128,29 @@ def evaluate_signal(
     # [RS-FILTER] In BEAR_RS_ONLY mode, we bypass the absolute trend check (C1)
     if market_regime != "BEAR_RS_ONLY":
         if not (c > e200 and e50 > e200):
-            return False, {}
+            return False, {"reject_reason": "trend_filter_failed", "close": c, "ema50": e50, "ema200": e200}
     
     # All other filters (C2-C8) still apply
     if not (e21 * 0.97 <= c <= e21 * 1.1):
-        return False, {}
+        return False, {"reject_reason": "ema21_proximity_failed", "close": c, "ema21": e21}
 
     if vol_ratio < 1.5:
-        return False, {}
+        return False, {"reject_reason": "volume_ratio_low", "vol_ratio": vol_ratio}
 
     if not (45 <= rsi14 <= 72):
-        return False, {}
+        return False, {"reject_reason": "rsi_out_of_range", "rsi": rsi14}
 
     if c < 50:
-        return False, {}
+        return False, {"reject_reason": "price_too_low", "close": c}
 
     if avg_20d_vol < 100_000:
-        return False, {}
+        return False, {"reject_reason": "avg_volume_low", "avg_20d_vol": avg_20d_vol}
 
     if slope5 <= 0:
-        return False, {}
+        return False, {"reject_reason": "negative_slope", "slope": slope5}
 
     if a14 <= 0:
-        return False, {}
+        return False, {"reject_reason": "invalid_atr", "atr": a14}
 
     # -----------------------------------------------------
     # RISK MANAGEMENT
@@ -166,19 +166,20 @@ def evaluate_signal(
 
     if risk_per_share <= 0:
         logger.warning("negative_risk_per_share", ticker=ticker)
-        return False, {}
+        return False, {"reject_reason": "negative_risk_per_share"}
 
     raw_shares = risk_per_trade / risk_per_share
     shares = math.floor(raw_shares)
 
     if shares <= 0:
         logger.info("shares_zero", ticker=ticker)
-        return False, {}
+        return False, {"reject_reason": "zero_shares_calculated", "risk_per_trade": risk_per_trade, "risk_per_share": risk_per_share}
 
     capital_required = shares * c
 
     if capital_required > bankroll:
-        return False, {}
+        return False, {"reject_reason": "insufficient_bankroll", "required": capital_required, "available": bankroll}
+
 
     # -----------------------------------------------------
     # TARGETS
@@ -206,7 +207,8 @@ def evaluate_signal(
 
     if net_ev <= 0:
         logger.warning("negative_net_ev", ticker=ticker)
-        return False, {}
+        return False, {"reject_reason": "negative_net_ev", "net_ev": net_ev}
+
 
     # -----------------------------------------------------
     # SIGNAL SCORE
@@ -421,7 +423,7 @@ def evaluate_momentum_signal(
             almost always be MIS — system squares at 3:15pm either way)
     """
     if len(df) < min_candles:
-        return False, {}
+        return False, {"reject_reason": "min_candles_not_met", "count": len(df)}
 
     df = df.copy()
     vwap = calc_vwap(df)
@@ -433,28 +435,28 @@ def evaluate_momentum_signal(
 
     # [MC2] VWAP crossover: was below, now above
     if not (prev_close <= prev_vwap and current_close > current_vwap):
-        return False, {}
+        return False, {"reject_reason": "no_vwap_crossover", "current_close": current_close, "current_vwap": current_vwap, "prev_close": prev_close, "prev_vwap": prev_vwap}
 
     # [MC3] Volume surge: 300% of available intraday average
     if len(df) < 2:
-        return False, {}
+        return False, {"reject_reason": "insufficient_candles_for_vol"}
 
     # Use whatever candles we have (up to 10) for the average
     lookback = min(len(df) - 1, 10)
     avg_vol_lookback = df['volume'].iloc[-lookback-1:-1].mean()
 
     if avg_vol_lookback == 0:
-        return False, {}
+        return False, {"reject_reason": "zero_avg_volume"}
 
     current_vol = df['volume'].iloc[-1]
     vol_ratio_intraday = current_vol / avg_vol_lookback
     if vol_ratio_intraday < settings.MOMENTUM_VOL_SURGE_PCT:
-        return False, {}
+        return False, {"reject_reason": "volume_surge_insufficient", "ratio": vol_ratio_intraday, "threshold": settings.MOMENTUM_VOL_SURGE_PCT}
 
 
     # [MC4] Structural breakout: above previous day's high
     if current_close <= prev_day_high:
-        return False, {}
+        return False, {"reject_reason": "below_prev_day_high", "close": current_close, "prev_high": prev_day_high}
 
     # [MR1] Stop loss = low of breakout candle
     breakout_candle_low = df['low'].iloc[-1]
@@ -462,13 +464,13 @@ def evaluate_momentum_signal(
 
     risk_per_share = current_close - stop_loss
     if risk_per_share <= 0:
-        return False, {}
+        return False, {"reject_reason": "negative_risk_per_share"}
 
     # Position sizing: 1% of momentum pool
     momentum_risk = momentum_pool * 0.01
     shares = math.floor(momentum_risk / risk_per_share)
     if shares == 0:
-        return False, {}
+        return False, {"reject_reason": "zero_shares_momentum", "risk": momentum_risk, "risk_per_share": risk_per_share}
 
     position_value = shares * current_close
     
@@ -477,7 +479,7 @@ def evaluate_momentum_signal(
         # Resize to fit pool if risk allows
         shares = math.floor(momentum_pool / current_close)
         if shares == 0:
-            return False, {}
+            return False, {"reject_reason": "insufficient_pool_for_one_share"}
         position_value = shares * current_close
 
     # [MR2] Target: 2.0R
@@ -495,7 +497,7 @@ def evaluate_momentum_signal(
         max_cost_ratio=settings.MOMENTUM_MAX_COST_RATIO, is_intraday=True
     )
     if not viable:
-        return False, {}
+        return False, {"reject_reason": "cost_not_viable", "cost_ratio": cost_ratio}
 
     # Accurate cost for net_ev
     estimated_exit = current_close + (settings.MOMENTUM_R_TARGET * r_distance)
@@ -505,7 +507,8 @@ def evaluate_momentum_signal(
     net_ev = (momentum_risk * settings.MOMENTUM_R_TARGET) - total_cost
 
     if net_ev <= 0:
-        return False, {}
+        return False, {"reject_reason": "negative_net_ev_final", "net_ev": net_ev}
+
 
     result = {
         "close":               round(current_close, 2),
