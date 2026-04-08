@@ -1,10 +1,12 @@
 from fastapi import FastAPI, HTTPException, Request
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
-from datetime import datetime
+from datetime import datetime, timedelta
+import pytz
 import asyncio
 import pandas as pd
 import structlog
 import aiosqlite
+
 from config import settings
 from kite_client import KiteClient
 from market_calendar import is_trading_day, prev_trading_day
@@ -49,14 +51,18 @@ last_run = None
     # scheduler.add_job(daily_post_market, 'cron', hour=15, minute=45)
     # scheduler.start()
 
+IST = pytz.timezone("Asia/Kolkata")
+
 @app.on_event("startup")
 async def startup():
     await init_positions_db(settings.DB_PATH)
     await init_ledger(settings.DB_PATH)
     
-    # Removed the immediate cache refresh and backtest from here!
+    # Refresh cache on startup so it's never empty
+    asyncio.create_task(kite.refresh_instrument_cache())
     
     scheduler.add_job(kite.refresh_instrument_cache, 'cron', hour=8, minute=0)
+
     scheduler.add_job(run_screener, 'cron', hour=9, minute=20)
     scheduler.add_job(run_screener, 'cron', hour=14, minute=45)
     #scheduler.add_job(run_screener, 'cron', minute=0)
@@ -138,10 +144,13 @@ async def run_screener():
 
     global current_signals, rejected_signals, market_regime, last_run
     
-    today = datetime.utcnow().date()
+    now_ist = datetime.now(IST)
+    today = now_ist.date()
+    
     if not await is_trading_day(today, settings.DB_PATH):
         logger.info("market_closed")
         return
+
 
         # Check for login/token
     if not kite.access_token:
@@ -296,42 +305,35 @@ async def get_signals():
 async def run_momentum_screener():
     """
     Hourly intraday momentum scanner.
-    Runs from 10:15 IST to 14:15 IST at :15 of each hour.
-    Uses Nifty 100 universe filtered from the Nifty 500 CSV
-    (momentum requires liquid, fast-moving stocks).
-    Full Nifty 500 scanned: lag accepted by design.
     """
     global current_momentum_signals
 
-    today = datetime.utcnow().date()
+    now_ist = datetime.now(IST)
+    today = now_ist.date()
+    
     if not await is_trading_day(today, settings.DB_PATH):
+        logger.info("momentum_scan_skip", reason="market_closed_today")
         return
 
-        # Check for login/token
     if not kite.access_token:
         logger.warning("momentum_screener_skipped", reason="no_access_token")
         return
 
-
     bankroll       = await current_bankroll(settings.DB_PATH)
     momentum_pool  = bankroll * 0.20
 
-    # Momentum pool freeze check
-    if bankroll < settings.INITIAL_BANKROLL * 0.80:
-        logger.warning("momentum_pool_frozen",
-                       bankroll=bankroll,
-                       threshold=settings.INITIAL_BANKROLL * 0.80)
+    # Market opens at 09:15 IST
+    market_open = now_ist.replace(hour=9, minute=15, second=0, microsecond=0)
+    
+    if now_ist < market_open:
+        logger.info("momentum_scan_skip", reason="before_market_open_ist")
         return
 
-    now_utc = datetime.utcnow()
-    # Market opens at 03:45 UTC (09:15 IST)
-    from_dt = now_utc.strftime('%Y-%m-%d 03:45:00')
-    to_dt   = now_utc.strftime('%Y-%m-%d %H:%M:%S')
+    from_dt = market_open.strftime('%Y-%m-%d %H:%M:%S')
+    to_dt   = now_ist.strftime('%Y-%m-%d %H:%M:%S')
 
-    # If it's before 03:45 UTC, we shouldn't really be running or we should adjust from_dt
-    if now_utc.time() < datetime.strptime("03:45:00", "%H:%M:%S").time():
-        logger.info("momentum_scan_skip", reason="before_market_open_utc")
-        return
+    logger.info("momentum_scan_start", from_dt=from_dt, to_dt=to_dt)
+
 
 
     try:
@@ -465,6 +467,7 @@ async def auto_square_momentum():
     Uses smart order selection based on P&L state and market conditions.
     """
     import httpx as _httpx
+    from datetime import time
 
     open_pos = await get_open_positions(settings.DB_PATH)
     momentum_pos = [p for p in open_pos if p.get('source') == 'MOMENTUM']
@@ -497,12 +500,13 @@ async def auto_square_momentum():
             # 2. After 15:00 IST → always market order (time constraint)
             # 3. Fast-moving stock (LTP far from entry) → market order
             # 4. Low liquidity → limit order to avoid slippage
-            now_ist = datetime.utcnow()   # scheduler is IST-aware
+            now_ist = datetime.now(IST)
 
             price_movement_pct = abs(ltp - pos['entry_price']) / pos['entry_price']
             is_fast_moving     = price_movement_pct > 0.02
 
-            if is_profitable and not is_fast_moving:
+            # FIX: Enforce the 15:00 cutoff for LIMIT orders
+            if is_profitable and not is_fast_moving and now_ist.time() < time(15, 0):
                 order_type  = "LIMIT"
                 limit_price = round(ltp * 0.999, 2)  # 0.1% below LTP
             else:
@@ -510,6 +514,7 @@ async def auto_square_momentum():
                 limit_price = None
 
             payload = {
+
                 "ticker":       ticker,
                 "shares":       pos['shares'],
                 "order_type":   order_type,
@@ -783,7 +788,14 @@ async def notify_screener_results(
     except Exception as e:
         logger.error("telegram_notification_failed", error=str(e))
 
+@app.post("/test-momentum")
+async def test_momentum_screener():
+    """Manual trigger for testing the momentum scanner."""
+    asyncio.create_task(run_momentum_screener())
+    return {"status": "momentum_scan_triggered"}
+
 @app.get("/health")
+
 
 async def health_check():
     return {"status": "ok"}

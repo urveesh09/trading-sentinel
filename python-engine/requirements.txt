@@ -18,3 +18,5 @@ apscheduler==3.10.4
 # Observability
 structlog==24.1.0
 pytest==8.0.0
+pytz==2024.1
+
