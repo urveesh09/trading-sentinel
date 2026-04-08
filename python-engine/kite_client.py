@@ -79,11 +79,13 @@ class KiteClient:
 
 
     async def clear_intraday_cache(self):
-        """Purge yesterday's intraday candles at midnight."""
+        """Purge yesterday's intraday candles at midnight using explicit IST."""
         await self._init_intraday_db()
-        from datetime import datetime, timedelta
-
-        yesterday = (datetime.utcnow() - timedelta(days=1)).strftime("%Y-%m-%d")
+        from datetime import timedelta
+        import pytz
+        IST = pytz.timezone("Asia/Kolkata")
+        now_ist = datetime.now(IST)
+        yesterday = (now_ist - timedelta(days=1)).strftime("%Y-%m-%d")
         async with aiosqlite.connect(self.db_path) as db:
             await db.execute(
                 "DELETE FROM intraday_cache WHERE datetime < ?",
@@ -92,39 +94,68 @@ class KiteClient:
             await db.commit()
         logger.info("intraday_cache_cleared", before=yesterday)
 
+
     async def refresh_instrument_cache(self):
         if not self.access_token:
             return
         async with self._cache_lock:
             try:
-                resp = await self.client.get("/instruments/NSE")
-                resp.raise_for_status()
-                lines = resp.text.split("\n")
-                if len(lines) > 1:
-                    for line in lines[1:]:
-                        parts = line.split(",")
-                        if len(parts) > 2:
-                            self.instrument_cache[parts[2].strip('"')] = parts[0]
+                # Fetch both NSE and INDICES to ensure NIFTY 50 etc are found
+                for segment in ["NSE", "INDICES"]:
+                    resp = await self.client.get(f"/instruments/{segment}")
+                    resp.raise_for_status()
+                    lines = resp.text.split("\n")
+                    if len(lines) > 1:
+                        for line in lines[1:]:
+                            parts = line.split(",")
+                            if len(parts) > 2:
+                                symbol = parts[2].strip('"').upper()
+                                self.instrument_cache[symbol] = parts[0]
                 logger.info("instruments_refreshed", count=len(self.instrument_cache))
+
             except (httpx.RequestError, httpx.HTTPStatusError) as e:
                 logger.error("instrument_refresh_failed", error=str(e))
 
+
     async def get_historical(self, ticker: str, from_date: str, to_date: str) -> pd.DataFrame:
         await self._init_db()
+        ticker = ticker.upper()
         
         # Check Cache
         async with aiosqlite.connect(self.db_path) as db:
             cursor = await db.execute(
-                "SELECT date, open, high, low, close, volume FROM ohlcv_cache WHERE ticker=? AND date >= ? AND date <= ? ORDER BY date",
+                "SELECT date, open, high, low, close, volume, fetched_at FROM ohlcv_cache WHERE ticker=? AND date >= ? AND date <= ? ORDER BY date",
                 (ticker, from_date, to_date)
             )
             rows = await cursor.fetchall()
+            
             if rows and len(rows) >= 60: 
-                logger.info("data_fetch", event_type="cache_hit", ticker=ticker)
-                df = pd.DataFrame(rows, columns=['date', 'open', 'high', 'low', 'close', 'volume'])
-                df['date'] = pd.to_datetime(df['date'])
-                df.set_index('date', inplace=True)
-                return df
+                # Check if the cache is actually fresh (fetched within the last 24 hours)
+                last_fetched_str = rows[-1][6] # fetched_at is index 6
+                try:
+                    last_fetched = datetime.strptime(last_fetched_str, "%Y-%m-%d %H:%M:%S")
+                    if (datetime.utcnow() - last_fetched).total_seconds() < 86400:
+                        logger.info("data_fetch", event_type="cache_hit", ticker=ticker)
+                        df = pd.DataFrame(rows, columns=['date', 'open', 'high', 'low', 'close', 'volume', 'fetched_at'])
+                        df.drop(columns=['fetched_at'], inplace=True)
+                        df['date'] = pd.to_datetime(df['date'])
+                        df.set_index('date', inplace=True)
+                        return df
+                except (ValueError, TypeError):
+                    pass
+
+        # async with aiosqlite.connect(self.db_path) as db:
+        #     cursor = await db.execute(
+        #         "SELECT date, open, high, low, close, volume FROM ohlcv_cache WHERE ticker=? AND date >= ? AND date <= ? ORDER BY date",
+        #         (ticker, from_date, to_date)
+        #     )
+        #     rows = await cursor.fetchall()
+        #     if rows and len(rows) >= 60: 
+        #         logger.info("data_fetch", event_type="cache_hit", ticker=ticker)
+        #         df = pd.DataFrame(rows, columns=['date', 'open', 'high', 'low', 'close', 'volume'])
+        #         df['date'] = pd.to_datetime(df['date'])
+        #         df.set_index('date', inplace=True)
+        #         return df
 
         # Cache Miss -> API
         logger.info("data_fetch", event_type="cache_miss", ticker=ticker)
@@ -186,7 +217,9 @@ class KiteClient:
         from_datetime / to_datetime format: "YYYY-MM-DD HH:MM:SS"
         """
         await self._init_intraday_db()
+        ticker = ticker.upper()
         trade_date = from_datetime[:10]   # YYYY-MM-DD portion
+
 
         # Check cache: only use if all rows are from today
         async with aiosqlite.connect(self.db_path) as db:
