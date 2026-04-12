@@ -433,12 +433,31 @@ def evaluate_momentum_signal(
     current_vwap  = vwap.iloc[-1]
     prev_vwap     = vwap.iloc[-2]
 
-    # [MC2] VWAP crossover: was below, now above
-    if not (prev_close <= prev_vwap and current_close > current_vwap):
-        return False, {"reject_reason": "no_vwap_crossover", "current_close": current_close, "current_vwap": current_vwap, "prev_close": prev_close, "prev_vwap": prev_vwap}
+    # [MC2] VWAP crossover: was below, now above (Lookback 3 candles to avoid "sniper blindness")
+    # This checks if the crossover happened in any of the last 3 candles.
+    crossed = False
+    for i in range(1, 4): # Check index -1, -2, -3
+        if len(df) < i + 1:
+            break
+        c_close = df['close'].iloc[-i]
+        p_close = df['close'].iloc[-(i+1)]
+        c_vwap  = vwap.iloc[-i]
+        p_vwap  = vwap.iloc[-(i+1)]
+        
+        if p_close <= p_vwap and c_close > c_vwap:
+            crossed = True
+            break
+            
+    if not crossed:
+        return False, {
+            "reject_reason": "no_recent_vwap_crossover", 
+            "current_close": current_close, 
+            "current_vwap": current_vwap
+        }
 
-    # [MC3] Volume surge: 300% of available intraday average
+    # [MC3] Volume surge: Use setting from config
     if len(df) < 2:
+
         return False, {"reject_reason": "insufficient_candles_for_vol"}
 
     # Use whatever candles we have (up to 10) for the average
@@ -466,10 +485,11 @@ def evaluate_momentum_signal(
     if risk_per_share <= 0:
         return False, {"reject_reason": "negative_risk_per_share"}
 
-    # Position sizing: 1% of momentum pool
-    momentum_risk = momentum_pool * 0.01
+    # Position sizing: User-defined 7% risk of momentum pool
+    momentum_risk = momentum_pool * settings.MOMENTUM_RISK_PCT
     shares = math.floor(momentum_risk / risk_per_share)
     if shares == 0:
+
         return False, {"reject_reason": "zero_shares_momentum", "risk": momentum_risk, "risk_per_share": risk_per_share}
 
     position_value = shares * current_close
