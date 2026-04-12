@@ -26,30 +26,31 @@ class Settings(BaseSettings):
     
         # Core Bankroll (Only used for INITIAL seeding)
     INITIAL_BANKROLL: float = 5000.0
-    RISK_PCT: float = 0.04 # 4% Risk per Swing Trade (Optimized Aggression)
-    
+    RISK_PCT: float = 0.10 # 10% Risk per Swing Trade (Hyper-Aggressive)
+
     # Portfolio Limits
     MAX_OPEN_POSITIONS: int = 6 
     MAX_CAPITAL_PER_TRADE_PCT: float = 0.50 # Increased to allow larger trades
     MAX_SECTOR_EXPOSURE_PCT: float = 0.40
     MAX_CORRELATED_POSITIONS: int = 2
-    MAX_TOTAL_RISK_PCT: float = 0.4
-    
+    MAX_TOTAL_RISK_PCT: float = 0.6 # Increased to match high risk
+
     # Circuit Breakers
-    CB_DAILY_LOSS_PCT: float = 0.10 # Allow 10% daily loss (prevents instant halt from 1 loss)
-    CB_MAX_CONSECUTIVE_LOSSES: int = 5 # Allow 5 losers in a row
-    CB_MAX_DRAWDOWN_PCT: float = 0.25 # Allow 25% total drawdown
-    CB_FLOOR_PCT: float = 0.50
+    CB_DAILY_LOSS_PCT: float = 0.20 # Allow 20% daily loss (allows 2 full stop-outs)
+    CB_MAX_CONSECUTIVE_LOSSES: int = 5 
+    CB_MAX_DRAWDOWN_PCT: float = 0.50 # Allow 50% total drawdown
+    CB_FLOOR_PCT: float = 0.40
 
     # Momentum
     MAX_MOMENTUM_POSITIONS:   int   = 5
-    MOMENTUM_POOL_PCT:        float = 0.50    # 50% of bankroll for intraday
-    MOMENTUM_POOL_FREEZE_PCT: float = 0.80    # freeze if bankroll < 80% of initial
+    MOMENTUM_POOL_PCT:        float = 0.50    
+    MOMENTUM_POOL_FREEZE_PCT: float = 0.80    
     MOMENTUM_MIN_CANDLES:     int   = 4
-    MOMENTUM_VOL_SURGE_PCT:   float = 2.0     # 200% of 10-candle avg
+    MOMENTUM_VOL_SURGE_PCT:   float = 2.0     
     MOMENTUM_R_TARGET:        float = 2.0
-    MOMENTUM_MAX_COST_RATIO:  float = 0.25    # reject if costs > 25% of expected profit
-    MOMENTUM_RISK_PCT:        float = 0.04    # 4% risk per trade in momentum pool
+    MOMENTUM_MAX_COST_RATIO:  float = 0.25    
+    MOMENTUM_RISK_PCT:        float = 0.10    # 10% risk per trade in momentum pool
+
 
 
     MOMENTUM_FIRST_SCAN_HOUR: int   = 10
