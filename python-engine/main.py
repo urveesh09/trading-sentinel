@@ -76,11 +76,13 @@ async def startup():
         hour=15, minute=15, id="momentum_auto_square"
     )
     for hour in [10, 11, 12, 13, 14]:
-        scheduler.add_job(
-            run_momentum_screener, 'cron',
-            hour=hour, minute=15,
-            id=f"momentum_scan_{hour}15"
-        )
+        for minute in [0, 15, 30, 45]:
+            scheduler.add_job(
+                run_momentum_screener, 'cron',
+                hour=hour, minute=minute,
+                id=f"momentum_scan_{hour}{minute}"
+            )
+
 
     # Intraday cache cleanup at midnight
     scheduler.add_job(
@@ -133,11 +135,11 @@ NIFTY_100_TICKERS = [
     "BPCL", "BRITANNIA", "CANBK", "CHOLAFIN", "CIPLA", "COALINDIA", "COLPAL", "DLF", "DRREDDY", "EICHERMOT",
     "GAIL", "GICRE", "GODREJCP", "GRASIM", "HAVELLS", "HCLTECH", "HDFCBANK", "HDFCLIFE", "HEROMOTOCO", "HINDALCO",
     "HAL", "HINDUNILVR", "ICICIBANK", "ICICIGI", "ICICIPRULI", "IDBI", "ITC", "IOC", "IRCTC", "IRFC",
-    "INDUSINDBK", "INFY", "INDIGO", "JSWSTEEL", "JSL", "KOTAKBANK", "LT", "LTIM", "LICHSGFIN", "LICI",
+    "INDUSINDBK", "INFY", "INDIGO", "JSWSTEEL", "JSL", "KOTAKBANK", "LT", "LTM", "LICHSGFIN", "LICI",
     "M&M", "MARICO", "MARUTI", "NTPC", "NESTLEIND", "ONGC", "PIDILITIND", "PFC", "POWERGRID", "PNB",
     "RELIANCE", "RECLTD", "SBICARD", "SBILIFE", "SRF", "MOTHERSON", "SHREECEM", "SHRIRAMFIN", "SIEMENS", "SBIN",
-    "SUNPHARMA", "SUNTV", "TATACOMM", "TATACONSUM", "TATAELXSI", "TATAMOTORS", "TATAPOWER", "TATASTEEL", "TCS", "TECHM",
-    "TITAN", "TRENT", "TVSMOTOR", "ULTRACEMCO", "UNITDSPR", "VBL", "VEDL", "WIPRO", "ZOMATO", "ZYDUSLIFE"
+    "SUNPHARMA", "SUNTV", "TATACOMM", "TATACONSUM", "TATAELXSI", "TMPV", "TATAPOWER", "TATASTEEL", "TCS", "TECHM",
+    "TITAN", "TRENT", "TVSMOTOR", "ULTRACEMCO", "UNITDSPR", "VBL", "VEDL", "WIPRO", "ETERNAL", "ZYDUSLIFE"
 ]
 
 async def run_screener():
@@ -761,7 +763,7 @@ async def notify_screener_results(
             reason = r.get('reject_reason', 'unknown')
             reason_counts[reason] = reason_counts.get(reason, 0) + 1
         
-        msg += "\n\n **Rejection Summary:**\n"
+        msg += "\n\n📊 **Rejection Summary:**\n"
         # Sort by count descending
         for reason, count in sorted(reason_counts.items(), key=lambda x: x[1], reverse=True):
             # Clean up reason string for display
@@ -769,15 +771,22 @@ async def notify_screener_results(
             msg += f"• {display_reason}: {count}\n"
         
         if len(rejected) > 0:
-            # Add a few examples of why things are failing
-            msg += "\n*Examples:*\n"
-            for r in rejected[:3]:
+            # Group specific rejections by ticker for meaningful examples
+            msg += "\n🔍 **Rejected Tickers:**\n"
+            # Sort rejections to show the most "interesting" ones first (e.g. not empty data)
+            interesting_rejections = [r for r in rejected if "empty" not in r.get('reject_reason', '').lower()]
+            if not interesting_rejections:
+                interesting_rejections = rejected
+
+            # Show up to 10 examples to be comprehensive
+            for r in interesting_rejections[:10]:
                 ticker = r.get('ticker', '???')
-                reason = r.get('reject_reason', 'unknown').replace("_", " ")
+                reason = r.get('reject_reason', 'unknown').replace("_", " ").title()
                 msg += f"• {ticker}: {reason}\n"
 
             
     # Send to Container A for Telegram delivery
+
     try:
         await _httpx.AsyncClient().post(
             f"{settings.CONTAINER_A_URL}/api/internal/notify",
