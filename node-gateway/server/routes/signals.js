@@ -7,6 +7,7 @@ const { signalsDb } = require('../db/index');
 const telegram = require('../services/telegram');
 const { logger } = require('../middleware/logger');
 const { StaleSignalError } = require('../utils/errors');
+const config = require('../config');
 
 // Zod Schema for Signal
 const signalSchema = z.object({
@@ -17,8 +18,9 @@ const signalSchema = z.object({
   target_1: z.number().positive(),
   target_2: z.number().positive(),
   shares: z.number().int().min(1).max(10000),
-  capital_at_risk: z.number().positive().max(50), // Hard limit enforced here
+  capital_at_risk: z.number().positive().max(1500), // Hard limit enforced here
   score: z.number().int().min(0).max(100),
+
   signal_time: z.string().datetime(),
   sector: z.string().optional(),
   market_regime: z.string().optional(),

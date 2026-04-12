@@ -43,12 +43,13 @@ async function syncToEngine(payload) {
 async function executeSignal(signal, action, isIntraday = false) {
   logger.info({ event_type: 'execution_started', ticker: signal.ticker, id: signal.signal_id, isIntraday });
 
-  // 1. Token & Pre-checks
+    // 1. Token & Pre-checks
   if (!require('./token-store').isValid()) throw new TokenExpiredError();
   if (!isMarketOpen()) throw new MarketClosedError();
-  //if (signal.capital_at_risk > 50) throw new ValidationError('Capital at risk exceeds ₹50 limit.');
-  if (signal.capital_at_risk > 60) throw new ValidationError('Capital at risk exceeds ₹60 buffer limit.');
+  if (signal.capital_at_risk > 1500) throw new ValidationError('Capital at risk exceeds absolute maximum limit.');
+  
   // 2. Price Drift Check
+
   let ltpData;
   try {
     ltpData = await kite.getLTP([`NSE:${signal.ticker}`]);
