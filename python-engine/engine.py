@@ -433,7 +433,7 @@ def evaluate_momentum_signal(
     current_vwap  = vwap.iloc[-1]
     prev_vwap     = vwap.iloc[-2]
 
-    # [MC2] VWAP crossover: was below, now above (Lookback 3 candles to avoid "sniper blindness")
+        # [MC2] VWAP crossover: was below, now above (Lookback 3 candles to avoid "sniper blindness")
     # This checks if the crossover happened in any of the last 3 candles.
     crossed = False
     for i in range(1, 4): # Check index -1, -2, -3
@@ -455,7 +455,17 @@ def evaluate_momentum_signal(
             "current_vwap": current_vwap
         }
 
+
+    # [MC2.1] Holding Check: Ensure we haven't crashed back below VWAP right now
+    if current_close <= current_vwap:
+        return False, {
+            "reject_reason": "crossed_but_failed_holding_vwap",
+            "current_close": current_close,
+            "current_vwap": current_vwap
+        }
+
     # [MC3] Volume surge: Use setting from config
+
     if len(df) < 2:
 
         return False, {"reject_reason": "insufficient_candles_for_vol"}

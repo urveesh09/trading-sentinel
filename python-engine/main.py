@@ -77,11 +77,16 @@ async def startup():
     )
     for hour in [10, 11, 12, 13, 14]:
         for minute in [0, 15, 30, 45]:
+            # Skip 10:00 AM because 4 candles (09:15, 09:30, 09:45, 10:00) don't exist until 10:00:01
+            # Actually at 10:00, the 10:00 candle just STARTS. So we only have 3 COMPLETED candles.
+            if hour == 10 and minute == 0:
+                continue
             scheduler.add_job(
                 run_momentum_screener, 'cron',
                 hour=hour, minute=minute,
                 id=f"momentum_scan_{hour}{minute}"
             )
+
 
 
     # Intraday cache cleanup at midnight
@@ -153,7 +158,6 @@ async def run_screener():
         logger.info("market_closed")
         return
 
-
         # Check for login/token
     if not kite.access_token:
         logger.warning("screener_skipped", reason="no_access_token")
@@ -163,7 +167,7 @@ async def run_screener():
         # Regime Filter [MR1]
     # NIFTY 50 ticker might be different depending on Kite's instrument list
     # Usually it's "NIFTY 50" but we should be sure.
-    nifty_df = await kite.get_historical("NIFTY 50", (today - pd.Timedelta(days=120)).strftime("%Y-%m-%d"), today.strftime("%Y-%m-%d"))
+    nifty_df = await kite.get_historical("NIFTY 50", (today - pd.Timedelta(days=365)).strftime("%Y-%m-%d"), today.strftime("%Y-%m-%d"))
     if nifty_df.empty:
         # Fallback to "NIFTY BANK" or log error
         logger.error("nifty_data_missing", ticker="NIFTY 50")
@@ -204,10 +208,11 @@ async def run_screener():
     for _, row in universe.iterrows():
         total_evaluated += 1
         ticker = row['tradingsymbol']
-        df = await kite.get_historical(ticker, (today - pd.Timedelta(days=120)).strftime("%Y-%m-%d"), today.strftime("%Y-%m-%d"))
+        df = await kite.get_historical(ticker, (today - pd.Timedelta(days=365)).strftime("%Y-%m-%d"), today.strftime("%Y-%m-%d"))
         if df.empty:
             raw_rejected.append({"ticker": ticker, "reject_reason": "historical_data_empty"})
             continue
+
         
         valid, sig_data = evaluate_signal(ticker, df, bankroll, risk_pct, market_regime)
         if not valid:
@@ -676,7 +681,8 @@ async def get_performance():
     open_pos = await get_open_positions(settings.DB_PATH)
     
     async with aiosqlite.connect(settings.DB_PATH) as db:
-        cursor = await db.execute("SELECT * FROM positions WHERE status != 'OPEN'")
+        # cursor = await db.execute("SELECT * FROM positions WHERE status != 'OPEN'")
+        cursor = await db.execute("SELECT * FROM positions WHERE status NOT IN ('OPEN', 'CLOSED_T1')")
         closed_trades = await cursor.fetchall()
         
     # Simple metrics for now
