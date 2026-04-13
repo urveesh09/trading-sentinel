@@ -122,6 +122,7 @@ class KiteClient:
         ticker = ticker.upper()
         
         # Check Cache
+# Check Cache
         async with aiosqlite.connect(self.db_path) as db:
             cursor = await db.execute(
                 "SELECT date, open, high, low, close, volume, fetched_at FROM ohlcv_cache WHERE ticker=? AND date >= ? AND date <= ? ORDER BY date",
@@ -130,19 +131,22 @@ class KiteClient:
             rows = await cursor.fetchall()
             
             if rows and len(rows) >= 60: 
-                # Check if the cache is actually fresh (fetched within the last 24 hours)
-                last_fetched_str = rows[-1][6] # fetched_at is index 6
-                try:
-                    last_fetched = datetime.strptime(last_fetched_str, "%Y-%m-%d %H:%M:%S")
-                    if (datetime.utcnow() - last_fetched).total_seconds() < 86400:
-                        logger.info("data_fetch", event_type="cache_hit", ticker=ticker)
-                        df = pd.DataFrame(rows, columns=['date', 'open', 'high', 'low', 'close', 'volume', 'fetched_at'])
-                        df.drop(columns=['fetched_at'], inplace=True)
-                        df['date'] = pd.to_datetime(df['date'])
-                        df.set_index('date', inplace=True)
-                        return df
-                except (ValueError, TypeError):
-                    pass
+                last_cached_date = rows[-1][0] # Index 0 is 'date'
+                
+                # 🚨 FIX: Force a cache miss if the DB doesn't have today's live candle yet!
+                if last_cached_date >= to_date:
+                    last_fetched_str = rows[-1][6] # fetched_at is index 6
+                    try:
+                        last_fetched = datetime.strptime(last_fetched_str, "%Y-%m-%d %H:%M:%S")
+                        if (datetime.utcnow() - last_fetched).total_seconds() < 86400:
+                            logger.info("data_fetch", event_type="cache_hit", ticker=ticker)
+                            df = pd.DataFrame(rows, columns=['date', 'open', 'high', 'low', 'close', 'volume', 'fetched_at'])
+                            df.drop(columns=['fetched_at'], inplace=True)
+                            df['date'] = pd.to_datetime(df['date'])
+                            df.set_index('date', inplace=True)
+                            return df
+                    except (ValueError, TypeError):
+                        pass
 
         # async with aiosqlite.connect(self.db_path) as db:
         #     cursor = await db.execute(

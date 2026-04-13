@@ -43,17 +43,26 @@ def filter_momentum_signals(
             rejected.append(sig)
             continue
 
-        # [SEBI-COMPLIANCE] Cash-Only (No Leverage) Check
+        # [SEBI-COMPLIANCE] Downsize to fit available pool instead of outright rejection
         if deployed_pool + sig['capital_deployed'] > momentum_pool:
-            sig['reject_reason'] = "MOMENTUM_POOL_EXHAUSTED"
-            rejected.append(sig)
-            continue
+            available_cash = momentum_pool - deployed_pool
+            new_shares = math.floor(available_cash / sig['close'])
+            if new_shares == 0:
+                sig['reject_reason'] = "MOMENTUM_POOL_EXHAUSTED"
+                rejected.append(sig)
+                continue
+            
+            # Recalculate metrics for downsized position
+            sig['shares'] = new_shares
+            sig['capital_deployed'] = new_shares * sig['close']
+            sig['capital_at_risk'] = new_shares * (sig['close'] - sig['stop_loss'])
 
         deployed_pool   += sig['capital_deployed']
 
         remaining_slots -= 1
         sig['portfolio_slot'] = max_momentum_positions - remaining_slots
         accepted.append(MomentumSignal(**sig))
+
 
     return accepted, rejected
 
