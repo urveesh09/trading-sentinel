@@ -31,6 +31,11 @@ current_momentum_signals = []
 market_regime = "UNKNOWN"
 last_run = None
 
+# 🚨 FIX: Add short-term memory to prevent 15-minute spam
+signaled_momentum_today = set()
+last_momentum_date = None
+
+
 # @app.on_event("startup")
 # async def startup():
 #     await init_positions_db(settings.DB_PATH)
@@ -437,14 +442,34 @@ async def run_momentum_screener():
     )
 
     async with state_lock:
+        global signaled_momentum_today, last_momentum_date
+        # Clear short-term memory at the start of a new trading day
+        if today != last_momentum_date:
+            signaled_momentum_today.clear()
+            last_momentum_date = today
+
         current_momentum_signals = accepted
         all_rejected_mom = raw_rejected_momentum + rejected_mom
-        await notify_screener_results("MOMENTUM", accepted, all_rejected_mom, market_regime, bankroll, momentum_pool)
+
+        # Filter for completely new signals that haven't been alerted today
+        new_alerts = []
+        for s in accepted:
+            ticker = s.ticker if hasattr(s, 'ticker') else s.get('ticker')
+            if ticker not in signaled_momentum_today:
+                new_alerts.append(s)
+                signaled_momentum_today.add(ticker)
+
+        # 🚨 FIX: ONLY send a Telegram ping if we found a NEW valid signal
+        if len(new_alerts) > 0:
+            await notify_screener_results("MOMENTUM", new_alerts, all_rejected_mom, market_regime, bankroll, momentum_pool)
+        else:
+            logger.info("momentum_scan_silent", reason="no_new_signals_found")
 
 
     logger.info("momentum_scan_complete",
                 tickers_scanned=len(universe),
                 signals_found=len(accepted))
+
 
 @app.get("/momentum-signals")
 async def get_momentum_signals():

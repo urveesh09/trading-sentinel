@@ -12,9 +12,14 @@ if (config.TELEGRAM_MODE === 'webhook') {
     .then(() => logger.info({ event_type: 'telegram_init' }, 'Telegram Webhook set'))
     .catch(err => logger.error({ event_type: 'telegram_error', err }, 'Failed to set webhook'));
 } else {
-  bot = new TelegramBot(config.TELEGRAM_BOT_TOKEN, { polling: { interval: 300, timeout: 10 } });
+    bot = new TelegramBot(config.TELEGRAM_BOT_TOKEN, { polling: { interval: 300, timeout: 10 } });
   logger.info({ event_type: 'telegram_init' }, 'Telegram Polling started');
+  // 🚨 FIX: Catch polling errors to prevent fatal crashes and allow auto-reconnection
+  bot.on('polling_error', (error) => {
+    logger.warn({ event_type: 'telegram_polling_error', message: error.message });
+  });
 }
+
 
 /**
  * Validates chat ID to prevent processing unauthorized commands/callbacks.
