@@ -218,9 +218,9 @@ class TestCalcSlope:
     #     slope = calc_slope(series, n=5)
     #     assert slope == 0.0
     def test_slope_flat(self):
-            series = pd.Series([100.0, 100.0, 100.0, 100.0, 100.0])
-            slope = calc_slope(series, n=5)
-            assert abs(slope) < 1e-9  # FIX: Accounts for floating point drift
+        series = pd.Series([100.0, 100.0, 100.0, 100.0, 100.0])
+        slope = calc_slope(series, n=5)
+        assert abs(slope) < 1e-9  # FIX: Accounts for floating point drift
 
     def test_slope_insufficient_data(self):
         series = pd.Series([100.0, 101.0])
