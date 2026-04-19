@@ -4,3 +4,4 @@ schedule==1.2.1
 google-genai==0.3.0
 pydantic==2.6.4
 lxml
+pytest==8.0.0
