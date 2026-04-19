@@ -53,11 +53,13 @@ class TestFetchSignals:
             result = agent_mod.fetch_signals()
             assert result == [{"ticker": "RELIANCE"}]
 
+
     def test_fetch_signals_handles_failure(self, agent_mod):
-        with patch("requests.get", side_effect=Exception("Network error")):
+        import requests # Make sure requests is imported
+        # FIX: Throw the exact error the code is looking to catch
+        with patch("requests.get", side_effect=requests.exceptions.RequestException("Network error")):
             result = agent_mod.fetch_signals()
             assert result == [] or result is None
-
 
 class TestAnalyzeWithGemini:
     def test_returns_parsed_output(self, agent_mod):
