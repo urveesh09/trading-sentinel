@@ -300,3 +300,48 @@ class TestPostLoginInitQ4:
 
             mock_swing.assert_awaited_once()
             mock_momentum.assert_awaited_once()
+
+
+# ═══════════════════════════════════════════════════════════════
+# INTERNAL ENDPOINT BEHAVIOUR TESTS
+# These are internal Container-A→B calls; validation happens at
+# the Node gateway boundary. These tests verify actual behaviour.
+# ═══════════════════════════════════════════════════════════════
+
+
+class TestInternalEndpointBehaviour:
+
+    @pytest.mark.asyncio
+    async def test_manual_position_missing_ticker_raises(self, client):
+        """POST /positions/manual without ticker → unhandled KeyError (no validation on internal endpoint)."""
+        with pytest.raises(KeyError):
+            await client.post(
+                "/positions/manual",
+                json={"entry_price": 3500.0, "shares": 5},
+                headers={"X-Internal-Secret": settings.INTERNAL_API_SECRET},
+            )
+
+    @pytest.mark.asyncio
+    async def test_close_position_missing_exit_price_raises(self, client):
+        """POST /positions/close without exit_price → unhandled KeyError."""
+        with pytest.raises(KeyError):
+            await client.post(
+                "/positions/close",
+                json={"ticker": "TCS"},
+                headers={"X-Internal-Secret": settings.INTERNAL_API_SECRET},
+            )
+
+    @pytest.mark.asyncio
+    async def test_manual_position_accepts_any_source(self, client):
+        """Internal endpoints trust caller — any source string is accepted."""
+        resp = await client.post(
+            "/positions/manual",
+            json={
+                "ticker": "TCS",
+                "entry_price": 3500.0,
+                "shares": 5,
+                "source": "CUSTOM_SOURCE",
+            },
+            headers={"X-Internal-Secret": settings.INTERNAL_API_SECRET},
+        )
+        assert resp.status_code == 200

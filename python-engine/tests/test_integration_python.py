@@ -406,3 +406,63 @@ class TestCautionRegime:
             # The test verifies the regime is set (exact assertion depends on data)
             # The key behavioral check is that risk_pct is halved in CAUTION mode
             # This is verified structurally: run_screener sets risk_pct = settings.RISK_PCT * 0.5
+
+
+# ─────────────────────────────────────────────────────────────────────
+# Test: Momentum screener skips before market open (09:15 IST)
+# ─────────────────────────────────────────────────────────────────────
+
+class TestMomentumMarketTimeWindow:
+
+    @pytest.mark.asyncio
+    async def test_momentum_skips_before_0915_ist(self, patch_settings):
+        """Momentum screener must return early if now_ist < 09:15 IST."""
+        from main import run_momentum_screener, kite
+        import pytz
+
+        IST = pytz.timezone("Asia/Kolkata")
+        # 09:14 IST — one minute before market opens
+        mock_now = datetime(2025, 6, 10, 9, 14, 0, tzinfo=IST)
+
+        with patch("main.is_trading_day", new_callable=AsyncMock, return_value=True), \
+             patch.object(kite, "access_token", "valid_token"), \
+             patch("main.datetime") as mock_dt, \
+             patch("main.current_bankroll", new_callable=AsyncMock, return_value=5000.0), \
+             patch("main.get_open_positions", new_callable=AsyncMock, return_value=[]), \
+             patch.object(kite, "get_intraday", new_callable=AsyncMock) as mock_intra:
+
+            mock_dt.now.return_value = mock_now
+            mock_dt.utcnow.return_value = datetime.utcnow()
+            mock_dt.side_effect = lambda *a, **kw: datetime(*a, **kw)
+
+            await run_momentum_screener()
+
+            # get_intraday should never be called since we returned early
+            mock_intra.assert_not_called()
+
+    @pytest.mark.asyncio
+    async def test_momentum_proceeds_at_1000_ist(self, patch_settings):
+        """Momentum screener should proceed (not skip) at 10:00 IST."""
+        from main import run_momentum_screener, kite
+        import pytz
+
+        IST = pytz.timezone("Asia/Kolkata")
+        mock_now = datetime(2025, 6, 10, 10, 0, 0, tzinfo=IST)
+
+        with patch("main.is_trading_day", new_callable=AsyncMock, return_value=True), \
+             patch.object(kite, "access_token", "valid_token"), \
+             patch("main.datetime") as mock_dt, \
+             patch("main.current_bankroll", new_callable=AsyncMock, return_value=5000.0), \
+             patch("main.get_open_positions", new_callable=AsyncMock, return_value=[]), \
+             patch("main.filter_momentum_signals", return_value=([], [])), \
+             patch("main.notify_screener_results", new_callable=AsyncMock), \
+             patch.object(kite, "get_intraday", new_callable=AsyncMock, return_value=pd.DataFrame()), \
+             patch.object(kite, "get_historical", new_callable=AsyncMock, return_value=pd.DataFrame()), \
+             patch("main.prev_trading_day", new_callable=AsyncMock, return_value=date(2025, 6, 9)):
+
+            mock_dt.now.return_value = mock_now
+            mock_dt.utcnow.return_value = datetime.utcnow()
+            mock_dt.side_effect = lambda *a, **kw: datetime(*a, **kw)
+
+            # Should not raise — it proceeds past the time gate
+            await run_momentum_screener()
