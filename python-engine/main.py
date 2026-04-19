@@ -6,19 +6,19 @@ import asyncio
 import pandas as pd
 import structlog
 import aiosqlite
-
+from pydantic import BaseModel
 from config import settings
 from kite_client import KiteClient
 from market_calendar import is_trading_day, prev_trading_day
 from engine import evaluate_signal, calc_ema, evaluate_momentum_signal, calc_zerodha_costs
-
+from contextlib import asynccontextmanager
 from portfolio import filter_and_allocate, filter_momentum_signals
 from position_tracker import update_daily_positions, get_open_positions, init_positions_db
 from performance import init_ledger, current_bankroll, record_trade_close, check_circuit_breakers
 from models import PortfolioResponse, HealthResponse, ManualPositionRequest, BankrollAdjustment, Signal
 from backtest import run_backtest
 from models import PerformanceReport, OpenPosition
-app = FastAPI(title="Quant Engine Container B")
+# app = FastAPI(title="Quant Engine Container B")
 logger = structlog.get_logger()
 kite = KiteClient(settings.DB_PATH)
 scheduler = AsyncIOScheduler(timezone="Asia/Kolkata")
@@ -58,48 +58,76 @@ last_momentum_date = None
 
 IST = pytz.timezone("Asia/Kolkata")
 
-@app.on_event("startup")
-async def startup():
+from contextlib import asynccontextmanager
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
     await init_positions_db(settings.DB_PATH)
     await init_ledger(settings.DB_PATH)
     
-    # Refresh cache on startup so it's never empty
     asyncio.create_task(kite.refresh_instrument_cache())
-    
     scheduler.add_job(kite.refresh_instrument_cache, 'cron', hour=8, minute=0)
-
     scheduler.add_job(run_screener, 'cron', hour=9, minute=20)
     scheduler.add_job(run_screener, 'cron', hour=14, minute=45)
-    #scheduler.add_job(run_screener, 'cron', minute=0)
     scheduler.add_job(daily_post_market, 'cron', hour=15, minute=45)
-    scheduler.add_job(
-        momentum_eod_warning, 'cron',
-        hour=15, minute=10, id="momentum_eod_warning"
-    )
-    scheduler.add_job(
-        auto_square_momentum, 'cron',
-        hour=15, minute=15, id="momentum_auto_square"
-    )
+    scheduler.add_job(momentum_eod_warning, 'cron', hour=15, minute=10, id="momentum_eod_warning")
+    scheduler.add_job(auto_square_momentum, 'cron', hour=15, minute=15, id="momentum_auto_square")
+    
     for hour in [10, 11, 12, 13, 14]:
         for minute in [0, 15, 30, 45]:
-            # Skip 10:00 AM because 4 candles (09:15, 09:30, 09:45, 10:00) don't exist until 10:00:01
-            # Actually at 10:00, the 10:00 candle just STARTS. So we only have 3 COMPLETED candles.
             if hour == 10 and minute == 0:
                 continue
-            scheduler.add_job(
-                run_momentum_screener, 'cron',
-                hour=hour, minute=minute,
-                id=f"momentum_scan_{hour}{minute}"
-            )
+            scheduler.add_job(run_momentum_screener, 'cron', hour=hour, minute=minute, id=f"momentum_scan_{hour}{minute}")
 
-
-
-    # Intraday cache cleanup at midnight
-    scheduler.add_job(
-        kite.clear_intraday_cache, 'cron',
-        hour=0, minute=5, id="intraday_cache_cleanup"
-    )
+    scheduler.add_job(kite.clear_intraday_cache, 'cron', hour=0, minute=5, id="intraday_cache_cleanup")
     scheduler.start()
+    yield
+
+app = FastAPI(title="Quant Engine Container B", lifespan=lifespan)
+# (Delete the old @app.on_event("startup") and async def startup(): lines completely)
+
+# @app.on_event("startup")
+# async def startup():
+#     await init_positions_db(settings.DB_PATH)
+#     await init_ledger(settings.DB_PATH)
+    
+#     # Refresh cache on startup so it's never empty
+#     asyncio.create_task(kite.refresh_instrument_cache())
+    
+#     scheduler.add_job(kite.refresh_instrument_cache, 'cron', hour=8, minute=0)
+
+#     scheduler.add_job(run_screener, 'cron', hour=9, minute=20)
+#     scheduler.add_job(run_screener, 'cron', hour=14, minute=45)
+#     #scheduler.add_job(run_screener, 'cron', minute=0)
+#     scheduler.add_job(daily_post_market, 'cron', hour=15, minute=45)
+#     scheduler.add_job(
+#         momentum_eod_warning, 'cron',
+#         hour=15, minute=10, id="momentum_eod_warning"
+#     )
+#     scheduler.add_job(
+#         auto_square_momentum, 'cron',
+#         hour=15, minute=15, id="momentum_auto_square"
+#     )
+#     for hour in [10, 11, 12, 13, 14]:
+#         for minute in [0, 15, 30, 45]:
+#             # Skip 10:00 AM because 4 candles (09:15, 09:30, 09:45, 10:00) don't exist until 10:00:01
+#             # Actually at 10:00, the 10:00 candle just STARTS. So we only have 3 COMPLETED candles.
+#             if hour == 10 and minute == 0:
+#                 continue
+#             scheduler.add_job(
+#                 run_momentum_screener, 'cron',
+#                 hour=hour, minute=minute,
+#                 id=f"momentum_scan_{hour}{minute}"
+#             )
+
+
+
+#     # Intraday cache cleanup at midnight
+#     scheduler.add_job(
+#         kite.clear_intraday_cache, 'cron',
+#         hour=0, minute=5, id="intraday_cache_cleanup"
+#     )
+#     scheduler.start()
 
 # async def post_login_initialization():
 #     try:
@@ -691,14 +719,25 @@ async def close_position(request: Request):
             "realised_pnl": round(realised_pnl, 2),
             "r_multiple":   round(r_multiple, 4)}
 
+# @app.post("/token")
+# async def inject_token(request: Request):
+#     data = await request.json()
+# #    if data.get("secret") != settings.TOKEN_INJECTION_SECRET:
+#  #       raise HTTPException(status_code=403, detail="Unauthorized")
+#     kite.set_token(data["access_token"])
+#     await post_login_initialization()
+#     return {"status": "ok"}
+
+
+class TokenPayload(BaseModel):
+    access_token: str
+
 @app.post("/token")
-async def inject_token(request: Request):
-    data = await request.json()
-#    if data.get("secret") != settings.TOKEN_INJECTION_SECRET:
- #       raise HTTPException(status_code=403, detail="Unauthorized")
-    kite.set_token(data["access_token"])
+async def inject_token(payload: TokenPayload):
+    kite.set_token(payload.access_token)
     await post_login_initialization()
     return {"status": "ok"}
+
 
 @app.get("/performance", response_model=PerformanceReport)
 async def get_performance():

@@ -343,9 +343,15 @@ class TestGetIntraday:
 
         await client._init_intraday_db()
         async with aiosqlite.connect(patch_settings.DB_PATH) as db:
+            # for i in range(5):
             for i in range(5):
-                dt = f"2025-06-10 {9+i//4:02d}:{15 + (i%4)*15:02d}:00"
+                mins = 15 + (i * 15)
+                hrs = 9 + (mins // 60)
+                mins = mins % 60
+                dt = f"2025-06-10 {hrs:02d}:{mins:02d}:00"
                 await db.execute(
+                # dt = f"2025-06-10 {9+i//4:02d}:{15 + (i%4)*15:02d}:00"
+                # await db.execute(
                     "INSERT INTO intraday_cache (ticker, datetime, open, high, low, close, volume, fetched_at) VALUES (?,?,?,?,?,?,?,?)",
                     ("TCS", dt, 3000+i, 3010+i, 2990+i, 3005+i, 100000, datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S"))
                 )

@@ -2,10 +2,12 @@ from pydantic import BaseModel, Field, field_validator, ConfigDict
 from typing import List, Optional, Literal
 from datetime import datetime
 
-def round_float_2dp(cls, v: float) -> float:
+def round_float_2dp(cls, v: float | None) -> float | None:
+    if v is None: return None
     return round(float(v), 2)
 
-def round_float_4dp(cls, v: float) -> float:
+def round_float_4dp(cls, v: float | None) -> float | None:
+    if v is None: return None
     return round(float(v), 4)
 
 class Signal(BaseModel):
