@@ -71,30 +71,38 @@ const telegram = require('../../services/telegram');
 const executor = require('../../services/executor');
 const { isMarketOpen } = require('../../utils/market-hours');
 
-// Now require index.js — this registers the bot.on('callback_query') handler
-// We capture it from the mock
+// Mock http before requiring index.js
+jest.mock('http', () => ({
+  createServer: jest.fn(() => ({
+    listen: jest.fn((port, cb) => cb && cb()),
+    close: jest.fn(),
+  })),
+}));
+
+// Mock app.js to prevent express/session/SQLite side effects
+jest.mock('../../app', () => ({}));
+
+// Mock logger to prevent pino side effects
+jest.mock('../../middleware/logger', () => ({
+  logger: { info: jest.fn(), error: jest.fn(), warn: jest.fn(), debug: jest.fn() },
+  httpLogger: jest.fn(),
+}));
+
+// Now require index.js at module scope — this registers the bot.on('callback_query') handler
+// We capture it from the mock synchronously
 let callbackHandler;
 
-beforeAll(() => {
-  // index.js registers bot.on('callback_query', handler)
-  // We need to import it to trigger registration
-  jest.isolateModules(() => {
-    // Need to handle the server.listen — mock http.createServer
-    jest.doMock('http', () => ({
-      createServer: jest.fn(() => ({
-        listen: jest.fn(),
-        close: jest.fn(),
-      })),
-    }));
-    require('../../index');
-  });
+try {
+  require('../../index');
+} catch (e) {
+  // Swallow — we only need the bot.on registration side effect
+}
 
-  // Find the callback_query handler from bot.on calls
-  const callbackCall = mockBotOn.mock.calls.find(c => c[0] === 'callback_query');
-  if (callbackCall) {
-    callbackHandler = callbackCall[1];
-  }
-});
+// Find the callback_query handler from bot.on calls
+const callbackCall = mockBotOn.mock.calls.find(c => c[0] === 'callback_query');
+if (callbackCall) {
+  callbackHandler = callbackCall[1];
+}
 
 // ── Helpers ──
 function makeCallbackQuery(action, signalId, overrides = {}) {
@@ -289,5 +297,126 @@ describe('Telegram Callback Handler', () => {
     await callbackHandler(query);
 
     expect(executor.executeSignal).not.toHaveBeenCalled();
+  });
+
+  // ─── 12. EXEC with PriceDriftError (>2%) — execution aborted ───
+  runTest('EXEC with price drift >2% — execution aborted, user notified', async () => {
+    const { PriceDriftError } = require('../../utils/errors');
+    executor.executeSignal.mockRejectedValue(
+      new PriceDriftError('LTP 1025 drifted 3% from signal 1000')
+    );
+    const query = makeCallbackQuery('EXEC', 'RELIANCE');
+    await callbackHandler(query);
+
+    // Should revert to PENDING (execution failed)
+    const revertCalls = mockPrepare.mock.calls
+      .filter(c => typeof c[0] === 'string' && c[0].includes("status = 'PENDING'"));
+    expect(revertCalls.length).toBeGreaterThanOrEqual(1);
+
+    // User should be notified via answerCallbackQuery with drift message
+    expect(mockAnswerCallbackQuery).toHaveBeenCalledWith(
+      'cb-query-1',
+      expect.objectContaining({ text: expect.stringContaining('drift') })
+    );
+  });
+
+  // ─── 13. EXEC with shares == 0 — no order placed ───
+  runTest('EXEC with shares == 0 — execution fails safely', async () => {
+    const zeroSharesPayload = JSON.stringify({
+      signal_id: 'ZEROSHARES',
+      ticker: 'ZEROSHARES',
+      close: 1000,
+      shares: 0,
+      stop_loss: 950,
+      target_1: 1075,
+      target_2: 1150,
+      capital_at_risk: 0,
+    });
+    mockGet.mockReturnValue({ status: 'PENDING', payload_json: zeroSharesPayload });
+    // Executor should reject shares=0 by throwing
+    const { ValidationError } = require('../../utils/errors');
+    executor.executeSignal.mockRejectedValue(
+      new ValidationError('shares must be > 0')
+    );
+
+    const query = makeCallbackQuery('EXEC', 'ZEROSHARES');
+    await callbackHandler(query);
+
+    // Executor was called but threw — status should revert to PENDING
+    const revertCalls = mockPrepare.mock.calls
+      .filter(c => typeof c[0] === 'string' && c[0].includes("status = 'PENDING'"));
+    expect(revertCalls.length).toBeGreaterThanOrEqual(1);
+  });
+
+  // ─── 14. EXEC with TokenExpiredError — token refresh needed ───
+  runTest('EXEC with expired token — execution blocked, user told to re-login', async () => {
+    const { TokenExpiredError } = require('../../utils/errors');
+    executor.executeSignal.mockRejectedValue(new TokenExpiredError());
+
+    const query = makeCallbackQuery('EXEC', 'RELIANCE');
+    await callbackHandler(query);
+
+    // Status reverts to PENDING so user can retry after login
+    const revertCalls = mockPrepare.mock.calls
+      .filter(c => typeof c[0] === 'string' && c[0].includes("status = 'PENDING'"));
+    expect(revertCalls.length).toBeGreaterThanOrEqual(1);
+
+    // User notified about token expiry
+    expect(mockAnswerCallbackQuery).toHaveBeenCalledWith(
+      'cb-query-1',
+      expect.objectContaining({ text: expect.stringContaining('xpired') })
+    );
+  });
+
+  // ─── 15. EXEC with MarketClosedError from executor ───
+  runTest('EXEC where executor detects market closed — blocked with message', async () => {
+    // Market hours check inside callback handler passes, but executor's own check fails
+    const { MarketClosedError } = require('../../utils/errors');
+    executor.executeSignal.mockRejectedValue(new MarketClosedError());
+
+    const query = makeCallbackQuery('EXEC', 'RELIANCE');
+    await callbackHandler(query);
+
+    const revertCalls = mockPrepare.mock.calls
+      .filter(c => typeof c[0] === 'string' && c[0].includes("status = 'PENDING'"));
+    expect(revertCalls.length).toBeGreaterThanOrEqual(1);
+  });
+
+  // ─── 16. REJ for already EXECUTED signal — no change ───
+  runTest('REJ for already EXECUTED signal — no status change', async () => {
+    mockGet.mockReturnValue({ status: 'EXECUTED', payload_json: samplePayload });
+    const query = makeCallbackQuery('REJ', 'RELIANCE');
+    await callbackHandler(query);
+
+    // Should NOT call executeSignal
+    expect(executor.executeSignal).not.toHaveBeenCalled();
+    // Already EXECUTED, so the idempotency gate stops it
+    expect(mockAnswerCallbackQuery).toHaveBeenCalledWith(
+      'cb-query-1',
+      expect.objectContaining({ text: expect.stringContaining('Already') })
+    );
+  });
+
+  // ─── 17. Callback with exactly 60s age — NOT stale (boundary) ───
+  runTest('callback at exactly 60s boundary — still valid', async () => {
+    const boundaryTs = Math.floor(Date.now() / 1000) - 60;
+    const query = makeCallbackQuery('EXEC', 'RELIANCE', { timestamp: boundaryTs });
+    await callbackHandler(query);
+
+    // 60s means nowTs - ts === 60 which is NOT > 60, so it should proceed
+    expect(executor.executeSignal).toHaveBeenCalled();
+  });
+
+  // ─── 18. Callback at 61s — stale ───
+  runTest('callback at 61s — stale and rejected', async () => {
+    const staleTs = Math.floor(Date.now() / 1000) - 61;
+    const query = makeCallbackQuery('EXEC', 'RELIANCE', { timestamp: staleTs });
+    await callbackHandler(query);
+
+    expect(executor.executeSignal).not.toHaveBeenCalled();
+    expect(mockAnswerCallbackQuery).toHaveBeenCalledWith(
+      'cb-query-1',
+      expect.objectContaining({ text: expect.stringContaining('expired') })
+    );
   });
 });
