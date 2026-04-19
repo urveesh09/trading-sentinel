@@ -12,7 +12,7 @@ from models import Signal, MomentumSignal
 # ═══════════════════════════════════════════════════════════════
 
 def _raw_signal(ticker="RELIANCE", score=70, close=500.0, volume_ratio=2.0,
-                stop_loss=475.0, net_ev=100.0, sector="ENERGY", shares=10):
+                stop_loss=475.0, net_ev=100.0, sector="ENERGY", shares=4): # FIX: Changed to 4
     """Create a raw signal dict as produced by evaluate_signal."""
     return {
         "ticker": ticker, "exchange": "NSE",
@@ -21,10 +21,10 @@ def _raw_signal(ticker="RELIANCE", score=70, close=500.0, volume_ratio=2.0,
         "atr_14": 15.0, "volume_ratio": volume_ratio, "rsi_14": 58.0,
         "slope_5": 0.005, "stop_loss": stop_loss, "target_1": 537.5,
         "target_2": 575.0, "trailing_stop": stop_loss, "shares": shares,
-        "capital_deployed": shares * close,
-        "capital_at_risk": shares * (close - stop_loss),
+        "capital_deployed": close * shares,                     # Ensures it matches shares
+        "capital_at_risk": shares * (close - stop_loss),        # Ensures it matches shares
         "net_ev": net_ev, "score": score, "sector": sector,
-        "strategy_version": "1.0.0", "strategy_type": "SWING"
+        "strategy_version": "1.0", "strategy_type": "SWING"
     }
 
 
