@@ -29,7 +29,8 @@ COPY . .
 # Set up permissions for the app and the persistent data directory [cite: 117]
 RUN chown -R quantuser:quantuser /app && \
     mkdir -p /data && \
-    chown -R quantuser:quantuser /data
+    chown -R quantuser:quantuser /data && \
+    chmod +x /app/entrypoint.sh
 
 USER quantuser
 
@@ -41,4 +42,5 @@ HEALTHCHECK --interval=30s --timeout=10s --retries=3 \
   CMD curl -f http://localhost:8000/health || exit 1
 
 EXPOSE 8000
+ENTRYPOINT ["/app/entrypoint.sh"]
 CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
