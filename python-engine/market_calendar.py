@@ -2,10 +2,24 @@ import aiosqlite
 #import aiosqlite
 import httpx
 import sqlite3
-from datetime import date, timedelta
+from datetime import date, timedelta, time
 import structlog
 from datetime import datetime
+import pytz
+
 logger = structlog.get_logger()
+
+IST = pytz.timezone("Asia/Kolkata")
+
+def is_market_open() -> bool:
+    """Check if current time is within NSE market hours: 09:15–15:30 IST (inclusive)."""
+    now_ist = datetime.now(IST)
+    if now_ist.weekday() >= 5:
+        return False
+    market_open = time(9, 15)
+    market_close = time(15, 30)
+    current_time = now_ist.time()
+    return market_open <= current_time <= market_close
 
 async def get_holiday_cache(db_path: str) -> list[date]:
     holidays = []

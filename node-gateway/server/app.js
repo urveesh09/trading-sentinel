@@ -69,7 +69,7 @@ app.use(session({
   rolling: true // Refresh session maxAge on activity
 }));*/
 // 5. Secure Session Management (SQLite Persistent)
-const DATA_DIR = path.join(__dirname, 'session_store'); // Changed to local app directory
+const DATA_DIR = config.NODE_ENV === 'production' ? '/data' : path.join(__dirname, 'session_store');
 const fs = require('fs');
 
 // Ensure the directory exists so SQLite doesn't crash trying to make the file

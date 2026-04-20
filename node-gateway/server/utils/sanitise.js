@@ -1,6 +1,7 @@
 const SENSITIVE_KEYS = new Set([
   'token', 'secret', 'password', 'access_token', 
-  'api_key', 'api_secret', 'session'
+  'api_key', 'api_secret', 'session', 'authorization',
+  'cookie', 'telegram_token'
 ]);
 
 /**

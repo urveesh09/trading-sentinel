@@ -196,7 +196,7 @@ def evaluate_signal(
 
     # Accurate cost model
     # Estimate exit at T2 for cost calculation
-    total_round_trip = calc_zerodha_costs(c, target_2, shares, is_intraday=False)
+    total_round_trip = calc_zerodha_costs(c, target_2, shares, is_intraday=False, for_gate=True)
 
     gross_profit_t1 = (target_1 - c) * shares * 0.5
     gross_profit_t2 = (target_2 - c) * shares * 0.5
@@ -286,7 +286,8 @@ def calc_zerodha_costs(
     entry_price: float,
     exit_price: float,
     shares: int,
-    is_intraday: bool
+    is_intraday: bool,
+    for_gate: bool = False
 ) -> float:
     """
     Accurate Zerodha cost model for NSE equity trades.
@@ -294,18 +295,14 @@ def calc_zerodha_costs(
     Delivery (CNC): STT on sell side only (0.1%)
     Intraday (MIS): STT on sell side only (0.025%)
     
+    When for_gate=True, brokerage (₹20 cap), STT, and GST are zeroed
+    for signal viability checks only. Actual P&L tracking always uses
+    the full cost model (for_gate=False).
+    
     Returns total round-trip cost in rupees.
     """
     buy_value  = entry_price * shares
     sell_value = exit_price  * shares
-
-        # Brokerage: min(0.03% of turnover, ₹20) per executed order
-    brokerage_buy  = min(buy_value  * settings.ZERODHA_BROKERAGE_PCT, settings.ZERODHA_BROKERAGE_MAX)
-    brokerage_sell = min(sell_value * settings.ZERODHA_BROKERAGE_PCT, settings.ZERODHA_BROKERAGE_MAX)
-
-    # STT (Securities Transaction Tax) — sell side only
-    stt_rate = settings.ZERODHA_STT_MIS if is_intraday else settings.ZERODHA_STT_CNC
-    stt = sell_value * stt_rate
 
     # Exchange transaction charges (NSE): 0.00345% both sides
     exchange_txn = (buy_value + sell_value) * settings.ZERODHA_EXCHANGE_PCT
@@ -316,8 +313,28 @@ def calc_zerodha_costs(
     # SEBI turnover fee: ₹10 per crore = 0.0001% both sides
     sebi = (buy_value + sell_value) * settings.ZERODHA_SEBI_PCT
 
-    # GST: 18% on (brokerage + exchange charges)
-    gst = (brokerage_buy + brokerage_sell + exchange_txn) * settings.ZERODHA_GST_PCT
+    # ── TEMPORARY: Brokerage + STT + GST zeroed for gate calculations ──
+    # At ₹5,000 bankroll the ₹20 flat brokerage + STT + GST kill most
+    # viable signals.  These are skipped ONLY for signal viability gates;
+    # actual P&L tracking (position_tracker, close_position) still uses
+    # the full cost model.
+    # TODO(urveesh): Remove for_gate bypass when bankroll reaches ₹50,000+
+    if for_gate:
+        brokerage_buy  = 0.0
+        brokerage_sell = 0.0
+        stt            = 0.0
+        gst            = 0.0
+    else:
+        # Brokerage: min(0.03% of turnover, ₹20) per executed order
+        brokerage_buy  = min(buy_value  * settings.ZERODHA_BROKERAGE_PCT, settings.ZERODHA_BROKERAGE_MAX)
+        brokerage_sell = min(sell_value * settings.ZERODHA_BROKERAGE_PCT, settings.ZERODHA_BROKERAGE_MAX)
+
+        # STT (Securities Transaction Tax) — sell side only
+        stt_rate = settings.ZERODHA_STT_MIS if is_intraday else settings.ZERODHA_STT_CNC
+        stt = sell_value * stt_rate
+
+        # GST: 18% on (brokerage + exchange charges)
+        gst = (brokerage_buy + brokerage_sell + exchange_txn) * settings.ZERODHA_GST_PCT
 
 
     total = (brokerage_buy + brokerage_sell + stt +
@@ -336,13 +353,13 @@ def is_cost_viable(
 ) -> tuple[bool, float]:
     """
     Rejects momentum trades where costs eat >25% of expected profit.
-    Uses estimated exit at r_target × R above entry.
+    Uses estimated exit at r_target x R above entry.
     Returns (is_viable, cost_ratio).
     """
     r_distance     = risk_per_trade / shares   # stop distance per share
     estimated_exit = entry_price + (r_target * r_distance)
     total_cost     = calc_zerodha_costs(
-        entry_price, estimated_exit, shares, is_intraday
+        entry_price, estimated_exit, shares, is_intraday, for_gate=True
     )
     expected_gross = risk_per_trade * r_target
     cost_ratio     = total_cost / expected_gross if expected_gross > 0 else 1.0
@@ -532,7 +549,7 @@ def evaluate_momentum_signal(
     # Accurate cost for net_ev
     estimated_exit = current_close + (settings.MOMENTUM_R_TARGET * r_distance)
     total_cost = calc_zerodha_costs(
-        current_close, estimated_exit, shares, is_intraday=True
+        current_close, estimated_exit, shares, is_intraday=True, for_gate=True
     )
     net_ev = (momentum_risk * settings.MOMENTUM_R_TARGET) - total_cost
 

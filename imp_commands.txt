@@ -1,0 +1,2 @@
+cd ~/trading-sentinel/node-gateway/server
+sudo docker run --rm -v "$PWD":/app -w /app node:20 npm install

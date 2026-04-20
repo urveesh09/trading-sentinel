@@ -1,6 +1,6 @@
 from fastapi import FastAPI, HTTPException, Request
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 import pytz
 import asyncio
 import pandas as pd
@@ -9,7 +9,7 @@ import aiosqlite
 from pydantic import BaseModel
 from config import settings
 from kite_client import KiteClient
-from market_calendar import is_trading_day, prev_trading_day
+from market_calendar import is_trading_day, prev_trading_day, is_market_open
 from engine import evaluate_signal, calc_ema, evaluate_momentum_signal, calc_zerodha_costs
 from contextlib import asynccontextmanager
 from portfolio import filter_and_allocate, filter_momentum_signals
@@ -148,7 +148,7 @@ async def post_login_initialization():
         await kite.refresh_instrument_cache()
         df = await kite.get_historical(
             "RELIANCE", "2024-01-01",
-            datetime.utcnow().strftime("%Y-%m-%d")
+            datetime.now(IST).strftime("%Y-%m-%d")
         )
         if not df.empty:
             await run_backtest(
@@ -290,7 +290,7 @@ async def run_screener():
 
         sig_data.update({
             "ticker": ticker, "exchange": row.get('exchange', 'NSE'), 
-            "sector": row.get('sector', 'UNKNOWN'), "signal_time": datetime.utcnow(),
+            "sector": row.get('sector', 'UNKNOWN'), "signal_time": datetime.now(timezone.utc),
             "strategy_version": settings.STRATEGY_VERSION,
             "strategy_type": "SWING"
         })
@@ -304,12 +304,16 @@ async def run_screener():
         # Combine all rejections
         from typing import List, Dict
         all_rejected: List[Dict] = raw_rejected + rejected_signals
-        last_run = datetime.utcnow()
-        await notify_screener_results("SWING", current_signals, all_rejected, market_regime, bankroll)
+        last_run = datetime.now(timezone.utc)
+        if is_market_open():
+            await notify_screener_results("SWING", current_signals, all_rejected, market_regime, bankroll)
+        else:
+            logger.info("swing_scan_silent", reason="outside_market_hours_notification_suppressed",
+                        signals_found=len(current_signals))
 
 
 async def daily_post_market():
-    today_str = datetime.utcnow().strftime("%Y-%m-%d")
+    today_str = datetime.now(IST).strftime("%Y-%m-%d")
     await update_daily_positions(settings.DB_PATH, kite, today_str, lambda t, p: record_trade_close(settings.DB_PATH, t, p))
 
 @app.get("/signals", response_model=PortfolioResponse)
@@ -324,16 +328,16 @@ async def get_signals():
         
         # Mark stale
         for s in current_signals:
-            s.stale_data = (datetime.utcnow() - s.signal_time).total_seconds() > 3600
+            s.stale_data = (datetime.now(timezone.utc) - s.signal_time).total_seconds() > 3600
 
         return PortfolioResponse(
-            run_time=last_run or datetime.utcnow(),
+            run_time=last_run or datetime.now(timezone.utc),
             market_regime=market_regime,
             bankroll=bankroll,
             backtest_gate="PASS" if "BACKTEST_GATE_FAILED" not in reasons else "FAIL",
             trading_halted=halted,
             halt_reasons=reasons,
-            stale_data=bool(last_run and (datetime.utcnow() - last_run).total_seconds() > 3600),
+            stale_data=bool(last_run and (datetime.now(timezone.utc) - last_run).total_seconds() > 3600),
             total_capital_at_risk=risk,
             total_capital_deployed=deployed,
             bankroll_utilization_pct=deployed / bankroll if bankroll else 0,
@@ -448,7 +452,7 @@ async def run_momentum_screener():
                     "ticker":           ticker,
                     "exchange":         row.get('exchange', 'NSE'),
                     "sector":           row.get('sector', 'UNKNOWN'),
-                    "signal_time":      datetime.utcnow(),
+                    "signal_time":      datetime.now(timezone.utc),
                     "strategy_version": settings.STRATEGY_VERSION,
                     "ema_21": 0.0, "ema_50": 0.0, "ema_200": 0.0,
                     "atr_14": 0.0, "rsi_14": 0.0, "slope_5": 0.0,
@@ -492,6 +496,11 @@ async def run_momentum_screener():
             await notify_screener_results("MOMENTUM", new_alerts, all_rejected_mom, market_regime, bankroll, momentum_pool)
         else:
             logger.info("momentum_scan_silent", reason="no_new_signals_found")
+            # Heartbeat: notify user the scan ran even with no signals
+            await _notify_momentum_heartbeat(
+                now_ist, len(universe), len(raw_momentum),
+                len(accepted), len(all_rejected_mom), momentum_pool
+            )
 
 
     logger.info("momentum_scan_complete",
@@ -508,7 +517,7 @@ async def get_momentum_signals():
 
         for s in current_momentum_signals:
             s.stale_data = (
-                datetime.utcnow() - s.signal_time
+                datetime.now(timezone.utc) - s.signal_time
             ).total_seconds() > 1800   # 30 min stale for intraday
 
         return {
@@ -543,12 +552,13 @@ async def auto_square_momentum():
         ticker = pos['ticker']
         try:
             # Fetch current LTP to decide order type
-            ltp_resp = await _httpx.AsyncClient().get(
-                f"{container_a_url}/api/orders/ltp",
-                headers={"X-Internal-Secret": settings.INTERNAL_API_SECRET},
-                params={"ticker": ticker},
-                timeout=5.0
-            )
+            async with _httpx.AsyncClient() as _client:
+                ltp_resp = await _client.get(
+                    f"{container_a_url}/api/orders/ltp",
+                    headers={"X-Internal-Secret": settings.INTERNAL_API_SECRET},
+                    params={"ticker": ticker},
+                    timeout=5.0
+                )
             ltp_data = ltp_resp.json()
             ltp = float(ltp_data.get("ltp", pos['entry_price']))
 
@@ -583,12 +593,13 @@ async def auto_square_momentum():
                 "reason":       "AUTO_SQUARE_EOD"
             }
 
-            resp = await _httpx.AsyncClient().post(
-                f"{container_a_url}/api/orders/square-off",
-                json=payload,
-                headers={"X-Internal-Secret": settings.INTERNAL_API_SECRET},
-                timeout=10.0
-            )
+            async with _httpx.AsyncClient() as _client:
+                resp = await _client.post(
+                    f"{container_a_url}/api/orders/square-off",
+                    json=payload,
+                    headers={"X-Internal-Secret": settings.INTERNAL_API_SECRET},
+                    timeout=10.0
+                )
             resp.raise_for_status()
             logger.info("auto_square_sent", ticker=ticker,
                         order_type=order_type, pnl_estimate=current_pnl)
@@ -610,12 +621,13 @@ async def momentum_eod_warning():
     # Uses existing Telegram notification mechanism in Container A
     import httpx as _httpx
     try:
-        await _httpx.AsyncClient().post(
-            f"{settings.CONTAINER_A_URL}/api/internal/notify",
-            json={"message": f"⚠️ AUTO-SQUARE in 5 min: {tickers}"},
-            headers={"X-Internal-Secret": settings.INTERNAL_API_SECRET},
-            timeout=5.0
-        )
+        async with _httpx.AsyncClient() as _client:
+            await _client.post(
+                f"{settings.CONTAINER_A_URL}/api/internal/notify",
+                json={"message": f"⚠️ AUTO-SQUARE in 5 min: {tickers}"},
+                headers={"X-Internal-Secret": settings.INTERNAL_API_SECRET},
+                timeout=5.0
+            )
     except Exception as e:
         logger.error("eod_warning_failed", error=str(e))
 
@@ -624,14 +636,47 @@ async def _notify_telegram_square_off_failure(ticker: str, pos: dict):
     import httpx as _httpx
     msg = f"🚨 **CRITICAL: Auto-Square Failed** 🚨\nTicker: {ticker}\nShares: {pos['shares']}\nPlease square off manually in Zerodha immediately!"
     try:
-        await _httpx.AsyncClient().post(
-            f"{settings.CONTAINER_A_URL}/api/internal/notify",
-            json={"message": msg},
-            headers={"X-Internal-Secret": settings.INTERNAL_API_SECRET},
-            timeout=5.0
-        )
+        async with _httpx.AsyncClient() as _client:
+            await _client.post(
+                f"{settings.CONTAINER_A_URL}/api/internal/notify",
+                json={"message": msg},
+                headers={"X-Internal-Secret": settings.INTERNAL_API_SECRET},
+                timeout=5.0
+            )
     except Exception as e:
         logger.error("telegram_notification_failed", error=str(e))
+
+
+async def _notify_momentum_heartbeat(
+    scan_time,
+    tickers_scanned: int,
+    raw_signals_count: int,
+    accepted_count: int,
+    rejected_count: int,
+    momentum_pool: float
+):
+    """Send a brief heartbeat to Telegram so the user knows the momentum scan ran."""
+    import httpx as _httpx
+    time_str = scan_time.strftime("%H:%M IST")
+    msg = (
+        f"⏱️ **Momentum Scan @ {time_str}**\n"
+        f"Scanned: `{tickers_scanned}` tickers\n"
+        f"Raw hits: `{raw_signals_count}` | Accepted: `{accepted_count}` | Rejected: `{rejected_count}`\n"
+        f"Pool: `₹{momentum_pool:,.2f}`\n"
+    )
+    if accepted_count == 0:
+        msg += "No new signals — all gates filtered out."
+    try:
+        async with _httpx.AsyncClient() as _client:
+            await _client.post(
+                f"{settings.CONTAINER_A_URL}/api/internal/notify",
+                json={"message": msg},
+                headers={"X-Internal-Secret": settings.INTERNAL_API_SECRET},
+                timeout=5.0
+            )
+    except Exception as e:
+        logger.error("momentum_heartbeat_failed", error=str(e))
+
 
 @app.post("/positions/manual")
 async def add_manual_position(request: Request):
@@ -662,7 +707,7 @@ async def add_manual_position(request: Request):
                 stop_loss_initial, trailing_stop_current, target_1, target_2,
                 atr_14_at_entry, highest_close_since_entry, status, source
             ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-        """, (ticker, data.get("exchange", "NSE"), datetime.utcnow().isoformat(),
+        """, (ticker, data.get("exchange", "NSE"), datetime.now(timezone.utc).isoformat(),
               entry_price, shares, stop_loss, stop_loss, target_1, target_2,
               0.0, entry_price, "OPEN", source))
         await db.commit()
@@ -707,7 +752,7 @@ async def close_position(request: Request):
             SET status='CLOSED_MANUAL', exit_price=?, exit_date=?,
                 realised_pnl=?, r_multiple=?
             WHERE ticker=? AND source='MOMENTUM' AND status='OPEN'
-        """, (exit_price, datetime.utcnow().isoformat(),
+        """, (exit_price, datetime.now(timezone.utc).isoformat(),
               realised_pnl, r_multiple, ticker))
         await db.commit()
 
@@ -756,7 +801,7 @@ async def get_performance():
     total_pnl = sum(t[14] or 0 for t in closed_trades)
     
     return PerformanceReport(
-        as_of=datetime.utcnow(),
+        as_of=datetime.now(timezone.utc),
         total_trades_taken=total_trades,
         open_positions_count=len(open_pos),
         closed_trades_count=len(closed_trades),
@@ -858,12 +903,13 @@ async def notify_screener_results(
     # Send to Container A for Telegram delivery
 
     try:
-        await _httpx.AsyncClient().post(
-            f"{settings.CONTAINER_A_URL}/api/internal/notify",
-            json={"message": msg},
-            headers={"X-Internal-Secret": settings.INTERNAL_API_SECRET},
-            timeout=5.0
-        )
+        async with _httpx.AsyncClient() as _client:
+            await _client.post(
+                f"{settings.CONTAINER_A_URL}/api/internal/notify",
+                json={"message": msg},
+                headers={"X-Internal-Secret": settings.INTERNAL_API_SECRET},
+                timeout=5.0
+            )
     except Exception as e:
         logger.error("telegram_notification_failed", error=str(e))
 

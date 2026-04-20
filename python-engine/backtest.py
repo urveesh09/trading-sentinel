@@ -1,7 +1,7 @@
 import pandas as pd
 import numpy as np
 import aiosqlite
-from datetime import datetime
+from datetime import datetime, timezone
 from engine import evaluate_signal
 
 async def run_backtest(db_path: str, historical_data: dict[str, pd.DataFrame], version: str) -> dict:
@@ -72,7 +72,7 @@ async def run_backtest(db_path: str, historical_data: dict[str, pd.DataFrame], v
     gate = "PASS"    
     res = {
         "strategy_version": version,
-        "run_date": datetime.utcnow().isoformat(),
+        "run_date": datetime.now(timezone.utc).isoformat(),
         "total_trades": len(trades),
         "win_rate": round(win_rate * 100, 2),
         "avg_r_multiple": round(np.mean(trades) / 50.0, 2),
@@ -84,9 +84,14 @@ async def run_backtest(db_path: str, historical_data: dict[str, pd.DataFrame], v
     }
     
     async with aiosqlite.connect(db_path) as db:
-        await db.execute("CREATE TABLE IF NOT EXISTS backtest_results (version TEXT, gate TEXT, data JSON)")
+        await db.execute("""CREATE TABLE IF NOT EXISTS backtest_results (
+            timestamp TEXT, strategy_version TEXT, gate TEXT, metrics_json TEXT
+        )""")
         import json
-        await db.execute("INSERT INTO backtest_results VALUES (?, ?, ?)", (version, gate, json.dumps(res)))
+        await db.execute(
+            "INSERT INTO backtest_results (timestamp, strategy_version, gate, metrics_json) VALUES (?, ?, ?, ?)",
+            (res['run_date'], version, gate, json.dumps(res))
+        )
         await db.commit()
         
     return res

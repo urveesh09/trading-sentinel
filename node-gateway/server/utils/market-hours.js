@@ -1,6 +1,44 @@
 /**
+ * NSE Trading Holidays for 2026.
+ * UPDATE ANNUALLY from: https://www.nseindia.com/regulations/holiday-calendar
+ * Format: 'YYYY-MM-DD' (IST calendar date)
+ */
+const NSE_HOLIDAYS = new Set([
+  '2026-01-26', // Republic Day
+  '2026-03-10', // Maha Shivaratri
+  '2026-03-17', // Holi
+  '2026-03-31', // Id-Ul-Fitr (Ramadan)
+  '2026-04-03', // Good Friday
+  '2026-04-14', // Dr. Ambedkar Jayanti
+  '2026-05-01', // Maharashtra Day
+  '2026-06-07', // Id-Ul-Adha (Bakri Id)
+  '2026-07-07', // Muharram
+  '2026-08-15', // Independence Day
+  '2026-08-26', // Janmashtami
+  '2026-09-05', // Milad-un-Nabi (Prophet's Birthday)
+  '2026-10-02', // Mahatma Gandhi Jayanti
+  '2026-10-20', // Dussehra
+  '2026-11-09', // Diwali (Laxmi Puja)
+  '2026-11-10', // Diwali (Balipratipada)
+  '2026-11-27', // Guru Nanak Jayanti
+  '2026-12-25', // Christmas
+]);
+
+/**
+ * Returns the current date in IST as 'YYYY-MM-DD'.
+ */
+function getISTDate() {
+  return new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'Asia/Kolkata',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit'
+  }).format(new Date());
+}
+
+/**
  * Checks if the current time in IST is within active market hours.
- * Market Hours: 09:15 - 15:30 IST, Monday to Friday.
+ * Market Hours: 09:15 - 15:30 IST, Monday to Friday, excluding NSE holidays.
  */
 function isMarketOpen() {
   const options = { timeZone: 'Asia/Kolkata', hour12: false };
@@ -23,6 +61,11 @@ function isMarketOpen() {
   const minute = parseInt(getPart('minute'), 10);
   
   if (weekday === 'Sat' || weekday === 'Sun') {
+    return false;
+  }
+
+  // NSE holiday check
+  if (NSE_HOLIDAYS.has(getISTDate())) {
     return false;
   }
   
@@ -66,4 +109,4 @@ function isPreMarket() {
   return timeInMinutes >= preMarketOpen && timeInMinutes < marketOpen;
 }
 
-module.exports = { isMarketOpen, isPreMarket };
+module.exports = { isMarketOpen, isPreMarket, NSE_HOLIDAYS, getISTDate };

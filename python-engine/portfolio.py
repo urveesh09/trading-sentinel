@@ -140,9 +140,14 @@ def filter_and_allocate(signals: List[Dict], open_positions: List[Dict], bankrol
             continue
 
         # Inviolable Rule Check: Must never exceed risk limit
-
         risk_per_trade = bankroll * settings.RISK_PCT
-        assert round(raw_sig['capital_at_risk'], 2) <= round(risk_per_trade + 0.05, 2), "CRITICAL: Capital at risk exceeds risk limit."
+        if round(raw_sig['capital_at_risk'], 2) > round(risk_per_trade + 0.05, 2):
+            raw_sig['reject_reason'] = "CRITICAL_RISK_LIMIT_EXCEEDED"
+            rejected.append(raw_sig)
+            logger.error("risk_limit_exceeded", ticker=ticker,
+                         capital_at_risk=raw_sig['capital_at_risk'],
+                         risk_limit=risk_per_trade)
+            continue
 
         sector_exposure[sec] = sector_exposure.get(sec, 0) + raw_sig['capital_deployed']
         total_risk += raw_sig['capital_at_risk']

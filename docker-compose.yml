@@ -49,6 +49,8 @@ services:
       - TZ=Asia/Kolkata
     env_file:
       - ./.env
+    volumes:
+      - trading_data:/data
     expose:
       - "8000" # Hidden from the public internet, accessible only to Container A
     depends_on:
