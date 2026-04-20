@@ -15,8 +15,8 @@ RUN pip install --upgrade pip && \
 # Run Stage
 FROM python:3.11-slim
 
-# Install curl for HEALTHCHECK
-RUN apt-get update && apt-get install -y curl && rm -rf /var/lib/apt/lists/*
+# Install curl for HEALTHCHECK and gosu for privilege drop in entrypoint
+RUN apt-get update && apt-get install -y curl gosu && rm -rf /var/lib/apt/lists/*
 
 # Create the non-root user for production security
 RUN useradd -m -s /bin/bash quantuser
@@ -31,8 +31,6 @@ RUN chown -R quantuser:quantuser /app && \
     mkdir -p /data && \
     chown -R quantuser:quantuser /data && \
     chmod +x /app/entrypoint.sh
-
-USER quantuser
 
 # Ensure the local bin is in PATH so uvicorn can be found
 ENV PATH=/home/quantuser/.local/bin:$PATH

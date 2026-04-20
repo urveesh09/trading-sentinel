@@ -1,20 +1,16 @@
 #!/bin/bash
 set -e
 
-# Ensure the /data directory exists and test writability
-# This handles cases where a volume mount has different owner permissions
-if [ ! -d /data ]; then
-    echo "ERROR: /data directory does not exist"
+# Ensure volume mount exists, then repair ownership/permissions if needed.
+mkdir -p /data
+
+# Chown can fail on some non-local volume drivers; fall back to permissive mode.
+chown -R quantuser:quantuser /data 2>/dev/null || chmod -R 0777 /data
+
+if ! su -s /bin/bash quantuser -c 'touch /data/.write_test && rm -f /data/.write_test'; then
+    echo "ERROR: /data is not writable even after permission repair"
     exit 1
 fi
 
-# Test if we can write to /data by touching a test file
-if ! touch /data/.write_test 2>/dev/null; then
-    echo "ERROR: /data is not writable by quantuser. Run on host:"
-    echo "  docker run --rm -v trading_data:/data alpine chmod 777 /data"
-    exit 1
-fi
-rm -f /data/.write_test
-
-# Execute the main command
-exec "$@"
+# Drop privileges for the app process.
+exec gosu quantuser "$@"
