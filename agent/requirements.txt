@@ -5,3 +5,4 @@ google-genai==0.3.0
 pydantic==2.6.4
 lxml
 pytest==8.0.0
+pytest-cov==4.1.0

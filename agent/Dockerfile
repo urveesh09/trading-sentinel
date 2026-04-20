@@ -17,7 +17,7 @@ COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy script
-COPY agent.py .
+COPY . .
 
 # Run as unprivileged user
 RUN useradd -m appuser
