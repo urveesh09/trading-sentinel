@@ -1,9 +1,11 @@
 import aiosqlite
-from datetime import datetime
+from datetime import datetime, timezone
+import pytz
 import structlog
 from config import settings
 
 logger = structlog.get_logger()
+IST = pytz.timezone("Asia/Kolkata")
 
 async def init_ledger(db_path: str):
     async with aiosqlite.connect(db_path) as db:
@@ -25,7 +27,7 @@ async def init_ledger(db_path: str):
         if count == 0:
             await db.execute(
                 "INSERT INTO bankroll_ledger (timestamp, event_type, pnl, bankroll_before, bankroll_after) VALUES (?, ?, ?, ?, ?)",
-                (datetime.utcnow().isoformat(), "INITIAL", 0.0, settings.INITIAL_BANKROLL, settings.INITIAL_BANKROLL)
+                (datetime.now(timezone.utc).isoformat(), "INITIAL", 0.0, settings.INITIAL_BANKROLL, settings.INITIAL_BANKROLL)
             )
         await db.commit()
 
@@ -42,7 +44,7 @@ async def record_trade_close(db_path: str, ticker: str, pnl: float):
     async with aiosqlite.connect(db_path) as db:
         await db.execute(
             "INSERT INTO bankroll_ledger (timestamp, event_type, ticker, pnl, bankroll_before, bankroll_after) VALUES (?, ?, ?, ?, ?, ?)",
-            (datetime.utcnow().isoformat(), "TRADE_CLOSED", ticker, pnl, before, after)
+            (datetime.now(timezone.utc).isoformat(), "TRADE_CLOSED", ticker, pnl, before, after)
         )
         await db.commit()
 
@@ -66,8 +68,8 @@ async def check_circuit_breakers(db_path: str) -> tuple[bool, list[str]]:
         halted = True
         reasons.append("CB_MAX_DRAWDOWN")
 
-    # [CB1] Daily loss
-    today = datetime.utcnow().date().isoformat()
+    # [CB1] Daily loss — uses IST date since trading day is defined in IST
+    today = datetime.now(IST).date().isoformat()
     async with aiosqlite.connect(db_path) as db:
         cursor = await db.execute(
             "SELECT SUM(pnl) FROM bankroll_ledger WHERE event_type='TRADE_CLOSED' AND date(timestamp) = ?", (today,)

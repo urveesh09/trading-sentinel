@@ -1,6 +1,8 @@
 from pydantic import BaseModel, Field, field_validator, ConfigDict
 from typing import List, Optional, Literal
 from datetime import datetime
+from annotated_types import Ge
+from typing import Annotated
 
 def round_float_2dp(cls, v: float | None) -> float | None:
     if v is None: return None
@@ -28,7 +30,7 @@ class Signal(BaseModel):
     target_1: float
     target_2: float
     trailing_stop: float
-    shares: int
+    shares: int = Field(ge=1)
     capital_deployed: float
     capital_at_risk: float
     net_ev: float
@@ -63,7 +65,7 @@ class MomentumSignal(BaseModel):
     stop_loss:         float
     target_1:          float
     trailing_stop:     float
-    shares:            int
+    shares:            int = Field(ge=1)
     capital_deployed:  float
     capital_at_risk:   float
     net_ev:            float

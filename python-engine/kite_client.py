@@ -5,7 +5,7 @@ import httpx
 import sqlite3
 import pandas as pd
 import structlog
-from datetime import datetime
+from datetime import datetime, timezone
 import aiosqlite
 
 logger = structlog.get_logger()
@@ -37,7 +37,7 @@ class KiteClient:
         self.limiter = RateLimiter(rate=3.0, burst=1)
         self.instrument_cache = {}
         self._cache_lock = asyncio.Lock()
-        self.client = httpx.AsyncClient(base_url="https://api.kite.trade")
+        self.client = httpx.AsyncClient(base_url="https://api.kite.trade", timeout=15.0)
 
     def set_token(self, token: str):
         self.access_token = token
@@ -137,8 +137,8 @@ class KiteClient:
                 if last_cached_date >= to_date:
                     last_fetched_str = rows[-1][6] # fetched_at is index 6
                     try:
-                        last_fetched = datetime.strptime(last_fetched_str, "%Y-%m-%d %H:%M:%S")
-                        if (datetime.utcnow() - last_fetched).total_seconds() < 86400:
+                        last_fetched = datetime.strptime(last_fetched_str, "%Y-%m-%d %H:%M:%S").replace(tzinfo=timezone.utc)
+                        if (datetime.now(timezone.utc) - last_fetched).total_seconds() < 86400:
                             logger.info("data_fetch", event_type="cache_hit", ticker=ticker)
                             df = pd.DataFrame(rows, columns=['date', 'open', 'high', 'low', 'close', 'volume', 'fetched_at'])
                             df.drop(columns=['fetched_at'], inplace=True)
