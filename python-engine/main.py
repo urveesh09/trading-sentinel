@@ -2,6 +2,7 @@ from fastapi import FastAPI, HTTPException, Request
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from datetime import datetime, timedelta, timezone
 import pytz
+import os
 import asyncio
 import pandas as pd
 import structlog
@@ -62,6 +63,10 @@ from contextlib import asynccontextmanager
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+
+    db_dir = os.path.dirname(settings.DB_PATH)
+    if db_dir:
+        os.makedirs(db_dir, exist_ok=True)
     await init_positions_db(settings.DB_PATH)
     await init_ledger(settings.DB_PATH)
     
