@@ -195,7 +195,7 @@ class KiteClient:
                 return df
 
             except httpx.HTTPStatusError as e:
-                if e.response.status_code in (429, 503):
+                if e.response.status_code in (429, 503, 504):  # 504 = Zerodha gateway timeout, also retried
                     await asyncio.sleep(2 ** attempt)
                     continue
                 raise
@@ -287,7 +287,7 @@ class KiteClient:
                 return df
 
             except httpx.HTTPStatusError as e:
-                if e.response.status_code in (429, 503):
+                if e.response.status_code in (429, 503, 504):  # 504 = Zerodha gateway timeout, also retried
                     await asyncio.sleep(2 ** attempt)
                     continue
                 raise

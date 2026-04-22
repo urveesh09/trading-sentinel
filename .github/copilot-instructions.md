@@ -30,13 +30,14 @@ Before any stock is scanned, the engine evaluates the "Market Weather" using the
 *   **Rule:** Price must have crossed from below VWAP to above VWAP within the last 3 candles.
 *   **Justification:** VWAP (Volume Weighted Average Price) is the benchmark used by big banks and hedge funds. If the price is above VWAP, the "Big Money" is in profit and likely to continue buying.
 
-### Gate MC3: The Power Gate (Volume Surge > 200%)
-*   **Rule:** The current candle's volume must be at least 2.0x the average of the last 10 candles.
-*   **Justification:** A price breakout without volume is a "Fakeout." High volume proves that the move is backed by massive capital, not just a few retail orders.
+### Gate MC3: The Power Gate (Volume Surge > 150%)
+*   **Rule:** The current candle's volume must be at least 1.5x the average of the last 10 candles.
+*   **Justification:** A price breakout without volume is a "Fakeout." Volume confirms institutional participation. Threshold lowered from 2.0x to 1.5x to reduce missed opportunities on moderate-volume breakouts — still filters pure noise.
 
-### Gate MC4: The Structural Breakout (Price > Prev Day High)
-*   **Rule:** The stock must be trading higher than yesterday's highest price.
-*   **Justification:** Previous Day High is a major psychological barrier. Clearing it confirms the stock has established a new "High Ground" and is in a state of true price discovery.
+### Gate MC4: The Intraday Range Strength Gate (Close in Top 20% of Day's Range)
+*   **Rule:** The current close must be at or above `intraday_low + 80% × (intraday_high − intraday_low)`. In plain English: the stock must be trading near its intraday high.
+*   **Justification:** The old MC4 (close > prev_day_high) filtered out 100% of signals on any weak market day (e.g. NIFTY −0.81%). Replaced with intraday range strength, which measures where price sits *within today's session* rather than comparing to yesterday. Stocks closing in the top quintile of their day's range are showing genuine intraday momentum.
+*   **Legacy gate preserved:** The original `close > prev_day_high` check is commented out in engine.py with label `[MC4-LEGACY]` — see Known Quirk [Q13].
 
 ---
 
@@ -354,6 +355,28 @@ Unlike the previous "BEAR" regime which returned early and emitted
 nothing, "BEAR_RS_ONLY" falls through to the screener loop and
 applies additional RS filters. The regime filter no longer has an
 early return in bear conditions. Do not revert this to an early return.
+
+### [Q13] MC4 gate replaced with intraday range check — old code preserved
+The original [MC4] gate `current_close > prev_day_high` (structural
+breakout) was eliminating 100% of momentum signals on down-market days
+because the market itself could not clear its own previous high.
+It has been replaced with an intraday range strength check:
+  close >= intraday_low + 0.80 × (intraday_high − intraday_low)
+(i.e. close in the top 20% of today's session range).
+The old gate code is preserved as a comment block labelled
+`[MC4-LEGACY — commented out]` in engine.py immediately below the
+new check. Do not delete that comment. Uncomment it to re-enable the
+strict breakout gate if strategy changes require it.
+
+### [Q14] MC3 volume threshold lowered from 2.0x to 1.5x; swing gate thresholds relaxed
+Following analysis of a live trading day where all 100 momentum signals
+were filtered out by aggressive thresholds:
+- MC3 `MOMENTUM_VOL_SURGE_PCT` in config.py: 2.0x → 1.5x
+- Swing EMA21 proximity band: 97%–110% → 93%–120%
+- Swing volume ratio minimum: 1.5x → 1.2x
+These changes widen the opportunity funnel while retaining meaningful
+filters. Do not tighten these back to the old values without explicit
+instruction — those values were calibrated against real market data.
 
 ════════════════════════════════════════════════════════════════════════
 ## SECTION 9 — WHAT TO DO WHEN UNCERTAIN

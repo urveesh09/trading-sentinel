@@ -436,6 +436,28 @@ nothing, "BEAR_RS_ONLY" falls through to the screener loop and
 applies additional RS filters. The regime filter no longer has an
 early return in bear conditions. Do not revert this to an early return.
 
+### [Q13] MC4 gate replaced with intraday range check — old code preserved
+The original [MC4] gate `current_close > prev_day_high` (structural
+breakout) was eliminating 100% of momentum signals on down-market days
+because the market itself could not clear its own previous high.
+It has been replaced with an intraday range strength check:
+  close >= intraday_low + 0.80 × (intraday_high − intraday_low)
+(i.e. close in the top 20% of today's session range).
+The old gate code is preserved as a comment block labelled
+`[MC4-LEGACY — commented out]` in engine.py immediately below the
+new check. Do not delete that comment. Uncomment it to re-enable the
+strict breakout gate if strategy changes require it.
+
+### [Q14] MC3 volume threshold lowered from 2.0x to 1.5x; swing gate thresholds relaxed
+Following analysis of a live trading day where all 100 momentum signals
+were filtered out by aggressive thresholds:
+- MC3 `MOMENTUM_VOL_SURGE_PCT` in config.py: 2.0x → 1.5x
+- Swing EMA21 proximity band: 97%–110% → 93%–120%
+- Swing volume ratio minimum: 1.5x → 1.2x
+These changes widen the opportunity funnel while retaining meaningful
+filters. Do not tighten these back to the old values without explicit
+instruction — those values were calibrated against real market data.
+
 ════════════════════════════════════════════════════════════════════════
 ## SECTION 8 — WHAT TO DO WHEN UNCERTAIN
 ════════════════════════════════════════════════════════════════════════
