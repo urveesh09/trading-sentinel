@@ -15,7 +15,7 @@ export default function App() {
 
   // If endpoint fails entirely, show safe fallback
   if (isError) {
-    return <div className="min-h-screen bg-gray-950 flex items-center justify-center text-red-500 font-mono">Data unavailable — retrying</div>;
+    return <div className="min-h-screen bg-gray-950 flex items-center justify-center text-red-500 font-mono">Data unavailable - retrying</div>;
   }
 
   // If token is not active, force Login

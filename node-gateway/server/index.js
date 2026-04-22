@@ -24,7 +24,7 @@ telegram.bot.on('callback_query', async (query) => {
     const nowTs = Math.floor(Date.now() / 1000);
     if (nowTs - ts > 60) {
       await telegram.bot.answerCallbackQuery(query.id, { text: "Signal expired", show_alert: true });
-      await telegram.bot.editMessageText(query.message.text + '\n\n— EXPIRED', {
+      await telegram.bot.editMessageText(query.message.text + '\n\n- EXPIRED', {
         chat_id: query.message.chat.id,
         message_id: query.message.message_id
       });
@@ -56,7 +56,7 @@ telegram.bot.on('callback_query', async (query) => {
     if (action === 'R' || action === 'REJ') {
       if (row) signalsDb.prepare(`UPDATE received_signals SET status = 'REJECTED' WHERE signal_id = ?`).run(cleanId);
       await telegram.bot.answerCallbackQuery(query.id, { text: "Signal Rejected" });
-      await telegram.bot.editMessageText(query.message.text + '\n\n— REJECTED', {
+      await telegram.bot.editMessageText(query.message.text + '\n\n- REJECTED', {
         chat_id: query.message.chat.id,
         message_id: query.message.message_id
       });

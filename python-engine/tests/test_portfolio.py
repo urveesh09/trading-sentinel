@@ -1,5 +1,5 @@
 """
-Tests for python-engine/portfolio.py — signal allocation, sector limits, momentum pool.
+Tests for python-engine/portfolio.py - signal allocation, sector limits, momentum pool.
 """
 import pytest
 from datetime import datetime

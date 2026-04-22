@@ -1,5 +1,5 @@
 """
-Tests for python-engine/main.py — FastAPI endpoints via TestClient.
+Tests for python-engine/main.py - FastAPI endpoints via TestClient.
 Uses httpx.AsyncClient + app for async endpoint tests.
 """
 import pytest
@@ -45,7 +45,7 @@ class TestHealthEndpoint:
 
     @pytest.mark.asyncio
     async def test_no_auth_required(self, client):
-        """Health endpoint is public — no token needed."""
+        """Health endpoint is public - no token needed."""
         resp = await client.get("/health")
         assert resp.status_code == 200
 
@@ -333,7 +333,7 @@ class TestInternalEndpointBehaviour:
 
     @pytest.mark.asyncio
     async def test_manual_position_accepts_any_source(self, client):
-        """Internal endpoints trust caller — any source string is accepted."""
+        """Internal endpoints trust caller - any source string is accepted."""
         resp = await client.post(
             "/positions/manual",
             json={

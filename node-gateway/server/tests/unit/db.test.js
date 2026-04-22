@@ -1,5 +1,5 @@
 /**
- * Tests for db/ — WAL mode (Q5), schema, table separation (Q7).
+ * Tests for db/ - WAL mode (Q5), schema, table separation (Q7).
  *
  * We don't import db/index.js directly (it creates files on disk and
  * imports config). Instead, we replicate the setup using in-memory SQLite
@@ -19,7 +19,7 @@ function createTestDb() {
   return db;
 }
 
-describe('Database — WAL mode (Q5)', () => {
+describe('Database - WAL mode (Q5)', () => {
   test('WAL mode is set on a new connection', () => {
     const db = createTestDb();
     const result = db.pragma('journal_mode');
@@ -55,7 +55,7 @@ describe('Database — WAL mode (Q5)', () => {
   });
 });
 
-describe('Database — Schema', () => {
+describe('Database - Schema', () => {
   let db;
 
   beforeAll(() => {
@@ -122,7 +122,7 @@ describe('Database — Schema', () => {
   });
 });
 
-describe('Database — Table Independence', () => {
+describe('Database - Table Independence', () => {
   let db;
 
   beforeEach(() => {

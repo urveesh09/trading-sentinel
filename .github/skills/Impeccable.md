@@ -58,7 +58,7 @@ Choose fonts that are beautiful, unique, and interesting. Pair a distinctive dis
 Always apply these â€” do not consult a reference, just do them:
 
 - Use a modular type scale with fluid sizing (clamp) for headings on marketing/content pages. Use fixed `rem` scales for app UIs and dashboards (no major design system uses fluid type in product UI).
-- Use fewer sizes with more contrast. A 5-step scale with at least a 1.25 ratio between steps creates clearer hierarchy than 8 sizes that are 1.1Ã— apart.
+- Use fewer sizes with more contrast. A 5-step scale with at least a 1.25 ratio between steps creates clearer hierarchy than 8 sizes that are 1.1Ã- apart.
 - Line-height scales inversely with line length. Narrow columns want tighter leading, wide columns want more. For light text on dark backgrounds, ADD 0.05-0.1 to your normal line-height â€” light type reads as lighter weight and needs more breathing room.
 - Cap line length at ~65-75ch. Body text wider than that is fatiguing.
 </typography_principles>

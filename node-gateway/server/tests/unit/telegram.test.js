@@ -68,7 +68,7 @@ describe('isValidChat()', () => {
 });
 
 // ─────────────────────────────────────────────────────────────────────
-// formatSignalMessage (internal — access via sendSignalAlert behaviour)
+// formatSignalMessage (internal - access via sendSignalAlert behaviour)
 // We can't directly import formatSignalMessage since it's not exported,
 // but we test it indirectly through sendSignalAlert's message content.
 // ─────────────────────────────────────────────────────────────────────
@@ -115,7 +115,7 @@ describe('sendSignalAlert() message format', () => {
 });
 
 // ─────────────────────────────────────────────────────────────────────
-// sendSignalAlert — callback buttons
+// sendSignalAlert - callback buttons
 // ─────────────────────────────────────────────────────────────────────
 
 describe('sendSignalAlert() callback buttons', () => {

@@ -131,7 +131,7 @@ async function executeSignal(signal, action, isIntraday = false) {
     throw new OrderExecutionError(`Order rejected by broker: ${rejectionReason}`);
   }
 
-  const finalNotes = isFilled ? "Executed via Telegram" : "fill_unconfirmed — using signal close as estimate";
+  const finalNotes = isFilled ? "Executed via Telegram" : "fill_unconfirmed - using signal close as estimate";
   if (!isFilled) {
     logger.warn({ event_type: 'fill_unconfirmed', orderId });
   }

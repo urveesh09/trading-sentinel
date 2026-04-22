@@ -1,5 +1,5 @@
 """
-Tests for python-engine/position_tracker.py — position state, trailing stops, Q8/Q10.
+Tests for python-engine/position_tracker.py - position state, trailing stops, Q8/Q10.
 """
 import pytest
 import pytest_asyncio

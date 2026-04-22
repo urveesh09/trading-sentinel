@@ -1,5 +1,5 @@
 /**
- * Tests for utils/errors.js — custom error classes.
+ * Tests for utils/errors.js - custom error classes.
  */
 const {
   AppError,

@@ -13,7 +13,7 @@ class Settings(BaseSettings):
       drawdown_halt_threshold   = ₹500  (10%)
 
     This is deliberately conservative. The primary goal at this
-    bankroll size is capital preservation and system validation —
+    bankroll size is capital preservation and system validation -
     not return maximisation. All limits scale naturally as bankroll
     grows because they are expressed as percentages.
     """
@@ -46,7 +46,7 @@ class Settings(BaseSettings):
     MOMENTUM_POOL_PCT:        float = 0.50    
     MOMENTUM_POOL_FREEZE_PCT: float = 0.80    
     MOMENTUM_MIN_CANDLES:     int   = 4
-    MOMENTUM_VOL_SURGE_PCT:   float = 1.5     # [Q13] Lowered from 2.0x — see Known Quirks
+    MOMENTUM_VOL_SURGE_PCT:   float = 1.5     # [Q13] Lowered from 2.0x - see Known Quirks
     MOMENTUM_R_TARGET:        float = 2.0
     MOMENTUM_MAX_COST_RATIO:  float = 0.25    
     MOMENTUM_RISK_PCT:        float = 0.10    # 10% risk per trade in momentum pool

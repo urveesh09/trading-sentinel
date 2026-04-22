@@ -1,5 +1,5 @@
 /**
- * Tests for services/executor.js — order execution engine.
+ * Tests for services/executor.js - order execution engine.
  *
  * Heavy mocking required: kite, token-store, market-hours, db, telegram, config, fetch.
  */

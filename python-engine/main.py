@@ -218,8 +218,8 @@ async def run_screener():
     if nifty_close < nifty_ema50:
         market_regime = "BEAR_RS_ONLY"
         logger.info("regime_filter", regime="BEAR_RS_ONLY",
-                    reason="Nifty below EMA50 — switching to RS-only mode")
-        # DO NOT return early — fall through to screener loop
+                    reason="Nifty below EMA50 - switching to RS-only mode")
+        # DO NOT return early - fall through to screener loop
         # The screener loop will apply RS filters based on market_regime
     elif nifty_close < nifty_ema50 * 1.02:
         market_regime = "CAUTION"
@@ -290,7 +290,7 @@ async def run_screener():
         }
         if ticker in open_momentum_tickers:
             logger.info("swing_priority", ticker=ticker,
-                        reason="Momentum position already open — swing wins")
+                        reason="Momentum position already open - swing wins")
             continue
 
         sig_data.update({
@@ -671,7 +671,7 @@ async def _notify_momentum_heartbeat(
         f"Rejected: `{rejected_count}` | Pool: `₹{momentum_pool:,.2f}`\n"
     )
     if accepted_count == 0:
-        msg += "❌ No new signals — all gates filtered out.\n"
+        msg += "❌ No new signals - all gates filtered out.\n"
 
     if rejected:
         # Group rejections by reason

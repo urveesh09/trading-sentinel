@@ -1,5 +1,5 @@
 /**
- * Tests for services/kite.js — Zerodha wrapper, rate limiter, token handling (Q6).
+ * Tests for services/kite.js - Zerodha wrapper, rate limiter, token handling (Q6).
  */
 
 // Mock dependencies before require
@@ -45,12 +45,12 @@ describe('Kite Service', () => {
   });
 
   test('TokenException detection is NOT time-based (Q6)', () => {
-    // Verify the kite.js module source — there's no cron or time check
+    // Verify the kite.js module source - there's no cron or time check
     // that assumes tokens expire at 06:00 IST. The primary detection is
     // exception-based. This test validates the mechanism by ensuring
     // TokenExpiredError is only thrown on actual TokenException, not on
     // a time condition.
-    // We already tested this above — if a valid token is present and no
+    // We already tested this above - if a valid token is present and no
     // exception occurs, calls succeed regardless of time.
     expect(true).toBe(true); // Structural assertion documented
   });
@@ -104,7 +104,7 @@ describe('Kite Service', () => {
   // ─── Rate limiter ───
   test('rapid calls do not throw (rate limiter queues them)', async () => {
     mockKite.getLtp.mockResolvedValue({ 'NSE:INFY': { last_price: 500 } });
-    // Make 3 rapid calls — should all resolve (limiter starts with 5 tokens)
+    // Make 3 rapid calls - should all resolve (limiter starts with 5 tokens)
     const results = await Promise.all([
       kiteService.getLTP(['NSE:INFY']),
       kiteService.getLTP(['NSE:INFY']),

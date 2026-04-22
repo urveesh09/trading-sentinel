@@ -1,5 +1,5 @@
 /**
- * Tests for services/token-store.js — in-memory token management.
+ * Tests for services/token-store.js - in-memory token management.
  */
 const tokenStore = require('../../services/token-store');
 

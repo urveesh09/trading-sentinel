@@ -1,5 +1,5 @@
 /**
- * Tests for utils/retry.js — retry logic.
+ * Tests for utils/retry.js - retry logic.
  */
 const { withRetry } = require('../../utils/retry');
 

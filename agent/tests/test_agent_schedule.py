@@ -1,7 +1,7 @@
 """
 Tests for agent.py schedule registration (Q3, Q9).
 
-Q3: schedule uses getattr loop — each weekday must get DISTINCT job objects.
+Q3: schedule uses getattr loop - each weekday must get DISTINCT job objects.
 Q9: Momentum pipeline runs at :55, NOT :15.
 """
 
@@ -174,7 +174,7 @@ class TestMomentumSchedule:
         for j in momentum_jobs:
             minute = j.at_time.strftime("%M")
             assert minute not in bad_minutes, (
-                f"Momentum job found at minute :{minute} — should only be at :55"
+                f"Momentum job found at minute :{minute} - should only be at :55"
             )
 
     def test_total_momentum_jobs(self, load_agent_main):

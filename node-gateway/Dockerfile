@@ -1,4 +1,4 @@
-# Stage 1 — React build
+# Stage 1 - React build
 FROM node:20-alpine AS client-build
 WORKDIR /app/client
 COPY client/package*.json ./
@@ -7,7 +7,7 @@ COPY client/ ./
 RUN npm run build
 # Output -> /app/client/dist
 
-# Stage 2 — Server
+# Stage 2 - Server
 FROM node:20-alpine
 # Create non-root user
 RUN addgroup -S appgroup && adduser -S appuser -G appgroup

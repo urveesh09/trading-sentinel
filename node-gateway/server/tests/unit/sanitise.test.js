@@ -1,5 +1,5 @@
 /**
- * Tests for utils/sanitise.js — sensitive data redaction.
+ * Tests for utils/sanitise.js - sensitive data redaction.
  */
 const { sanitise } = require('../../utils/sanitise');
 
@@ -67,7 +67,7 @@ describe('sanitise()', () => {
   });
 
   test('case-insensitive key matching', () => {
-    // Key contains 'token' — should redact
+    // Key contains 'token' - should redact
     const result = sanitise({ myTokenValue: 'sensitive' });
     expect(result.myTokenValue).toBe('[REDACTED]');
   });

@@ -36,7 +36,7 @@ const formatSignalMessage = (signal) => {
 
   const text = `
 \`\`\`text
-SIGNAL — ${signal.ticker.padEnd(12)} Score: ${signal.score}/100
+SIGNAL - ${signal.ticker.padEnd(12)} Score: ${signal.score}/100
 Sector: ${signal.sector || 'N/A'} Regime: ${signal.market_regime || 'N/A'}
 
 Entry     ₹${signal.close}

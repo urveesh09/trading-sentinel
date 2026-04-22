@@ -140,7 +140,7 @@ describeIf('🔴 LIVE: Telegram Button → Callback Verification', () => {
     // Answer the callback (clears the spinning indicator)
     await tgApi('answerCallbackQuery', {
       callback_query_id: callback.id,
-      text: '✅ TEST PASSED — Execute callback verified!',
+      text: '✅ TEST PASSED - Execute callback verified!',
     });
 
     // Edit the message to show success
@@ -199,7 +199,7 @@ describeIf('🔴 LIVE: Telegram Button → Callback Verification', () => {
 
     await tgApi('answerCallbackQuery', {
       callback_query_id: callback.id,
-      text: '✅ TEST PASSED — Reject callback verified!',
+      text: '✅ TEST PASSED - Reject callback verified!',
     });
 
     await tgApi('editMessageText', {
@@ -247,7 +247,7 @@ describeIf('🔴 LIVE: Telegram Button → Callback Verification', () => {
 
     await tgApi('answerCallbackQuery', {
       callback_query_id: callback.id,
-      text: '✅ TEST PASSED — Momentum callback verified!',
+      text: '✅ TEST PASSED - Momentum callback verified!',
     });
 
     await tgApi('editMessageText', {
@@ -257,7 +257,7 @@ describeIf('🔴 LIVE: Telegram Button → Callback Verification', () => {
     });
   }, 120_000);
 
-  // ─── TEST 4: Staleness — callback_data timestamp survives round-trip ──
+  // ─── TEST 4: Staleness - callback_data timestamp survives round-trip ──
   test('callback_data timestamp survives base64 round-trip', async () => {
     const signalId = `TEST_TS_${Date.now()}`;
     const ts = Math.floor(Date.now() / 1000);

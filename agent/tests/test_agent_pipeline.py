@@ -1,5 +1,5 @@
 """
-Tests for agent.py pipeline functions — fetch, analyze, alert.
+Tests for agent.py pipeline functions - fetch, analyze, alert.
 """
 
 import json
