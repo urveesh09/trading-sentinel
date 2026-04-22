@@ -1,11 +1,11 @@
-# Trading Sentinel — AI Assistant Context File
+# Trading Sentinel - AI Assistant Context File
 # Version: 1.0 (Live Production)
 # READ THIS ENTIRE FILE BEFORE GENERATING ANY CODE.
 # If you are uncertain about any architectural decision, ASK before
 # implementing. Do not guess. Do not "improve" without being asked.
 
 ════════════════════════════════════════════════════════════════════════
-## SECTION 1 — PROJECT IDENTITY
+## SECTION 1 - PROJECT IDENTITY
 ════════════════════════════════════════════════════════════════════════
 
 **Name:** Trading Sentinel
@@ -19,7 +19,7 @@
                 Max 4 open positions simultaneously.
 
 ════════════════════════════════════════════════════════════════════════
-## SECTION 2 — SYSTEM ARCHITECTURE
+## SECTION 2 - SYSTEM ARCHITECTURE
 ════════════════════════════════════════════════════════════════════════
 
 Three Docker containers on a bridge network named `trading_net`.
@@ -37,7 +37,7 @@ Container A  (node-gateway)        ← ONLY internet-facing container
     └──→ Container C  (agent)        internal: agent:PORT
 ```
 
-**Container A — Node.js Gateway**
+**Container A - Node.js Gateway**
 - The sole internet entry point. Nothing else is publicly accessible.
 - Responsibilities: Zerodha OAuth, session/token lifecycle, React
   dashboard (static build), Telegram bot, trade execution,
@@ -47,7 +47,7 @@ Container A  (node-gateway)        ← ONLY internet-facing container
   (official Node SDK), node-telegram-bot-api, Zod, helmet,
   express-rate-limit, node-cron, axios.
 
-**Container B — Python Quant Engine**
+**Container B - Python Quant Engine**
 - The mathematical brain. Never exposed to internet.
 - Responsibilities: Nifty 500 screening, indicator calculation,
   signal generation, portfolio risk management, position tracking,
@@ -57,7 +57,7 @@ Container A  (node-gateway)        ← ONLY internet-facing container
   aiosqlite, structlog, httpx.
 - Runs screener at 09:20 IST and 14:45 IST via APScheduler.
 
-**Container C — Intelligence Orchestrator**
+**Container C - Intelligence Orchestrator**
 - The communication and AI reasoning layer.
 - Responsibilities: polls Container B for signals, fetches news
   sentiment, runs Gemini AI analysis, sends interactive Telegram
@@ -66,7 +66,7 @@ Container A  (node-gateway)        ← ONLY internet-facing container
   httpx, python-telegram-bot.
 
 ════════════════════════════════════════════════════════════════════════
-## SECTION 3 — FILE STRUCTURE (complete, do not deviate)
+## SECTION 3 - FILE STRUCTURE (complete, do not deviate)
 ════════════════════════════════════════════════════════════════════════
 ```
 trading-sentinel/                  ← repo root
@@ -157,7 +157,7 @@ trading-sentinel/                  ← repo root
 ```
 17 directories, 65 files
 ════════════════════════════════════════════════════════════════════════
-## SECTION 4 — ENVIRONMENT VARIABLES
+## SECTION 4 - ENVIRONMENT VARIABLES
 ════════════════════════════════════════════════════════════════════════
 
 Single `.env` file at repo root. Injected into all containers via
@@ -184,7 +184,7 @@ GEMINI_API_KEY=
 ```
 
 ════════════════════════════════════════════════════════════════════════
-## SECTION 5 — API CONTRACTS (exact schemas, do not invent fields)
+## SECTION 5 - API CONTRACTS (exact schemas, do not invent fields)
 ════════════════════════════════════════════════════════════════════════
 
 These are the original JSON schemas flowing between containers though during the development they could have been altered.
@@ -302,16 +302,16 @@ Container B health:
   placed_at, filled_at, sync_to_b (0=pending,1=done,2=failed), notes
 
 ════════════════════════════════════════════════════════════════════════
-## SECTION 6 — INVIOLABLE RULES
+## SECTION 6 - INVIOLABLE RULES
 ════════════════════════════════════════════════════════════════════════
 
 Violating any rule below is a critical bug. No exceptions.
 
 ### Security
 - No hardcoded secrets, tokens, keys, or passwords anywhere
-- No wildcard CORS — explicit origin whitelist only
-- No access_token in localStorage — memory + httpOnly cookie only
-- No logging of sensitive fields — use sanitise.js / sanitiseForLog()
+- No wildcard CORS - explicit origin whitelist only
+- No access_token in localStorage - memory + httpOnly cookie only
+- No logging of sensitive fields - use sanitise.js / sanitiseForLog()
 - All inbound payloads validated with Zod (Node) or Pydantic (Python)
 - Telegram callbacks verified: not stale (>60s), not already executed
 - Order execution hard-blocked outside 09:15–15:30 IST
@@ -330,9 +330,9 @@ Violating any rule below is a critical bug. No exceptions.
 ### Code quality
 - No ML libraries in Container B (no sklearn, tensorflow, statsmodels)
 - No random(), no mock data, no TODO placeholders in production code
-- No bare except: — catch specific exception types only
-- No pandas SettingWithCopyWarning — use .loc[] and .copy() always
-- No raw IEEE 754 floats in JSON — all floats explicitly rounded
+- No bare except: - catch specific exception types only
+- No pandas SettingWithCopyWarning - use .loc[] and .copy() always
+- No raw IEEE 754 floats in JSON - all floats explicitly rounded
 - No synchronous file I/O in request handlers
 - All external HTTP calls must have explicit timeouts
 - All async calls must have .catch() or try/catch
@@ -346,28 +346,28 @@ Violating any rule below is a critical bug. No exceptions.
 - All display to user in IST
 
 ════════════════════════════════════════════════════════════════════════
-## SECTION 7 — KNOWN QUIRKS (DO NOT REVERT THESE)
+## SECTION 7 - KNOWN QUIRKS (DO NOT REVERT THESE)
 ════════════════════════════════════════════════════════════════════════
 
 These are deliberate decisions, hotfixes, or workarounds for external
 API limitations. They may look wrong. They are not. Do not "clean up",
 refactor, or revert any of them without explicit instruction.
 
-### [Q1] NIFTY 50 instrument token — kite_client.py
+### [Q1] NIFTY 50 instrument token - kite_client.py
 The Zerodha instruments API does not reliably return a consistent
 token for the "NIFTY 50" index. If `ticker == "NIFTY 50"`, the
 instrument_token lookup follows a special resolution path in
 kite_client.py. Do not convert this to a hardcoded token value and
 do not remove the special-case branch.
 
-### [Q2] CB4 Backtest Gate removed — performance.py
+### [Q2] CB4 Backtest Gate removed - performance.py
 The [CB4] circuit breaker (which halted the system if a backtest
 had not passed) has been intentionally removed from performance.py.
 The live system scans and signals without requiring a backtest gate.
 Do not re-implement CB4. The `backtest_gate` field in health responses
 should return "DISABLED", not "FAIL".
 
-### [Q3] Schedule object generation — agent.py (Container C)
+### [Q3] Schedule object generation - agent.py (Container C)
 The schedule library is invoked using:
   `getattr(schedule.every(), day).at(time_str).do(job)`
 inside a loop. This pattern forces the creation of distinct job
@@ -377,20 +377,20 @@ or any form of variable assignment inside the loop. Doing so causes
 schedule objects to overwrite each other, resulting in only the last
 day's job being registered.
 
-### [Q4] Ignition switch — main.py (Container B)
+### [Q4] Ignition switch - main.py (Container B)
 At the end of `post_login_initialization()`, `run_screener()` is
 explicitly awaited. This is intentional. It ensures the instrument
 cache is populated and the market is scanned immediately when the user
 logs in via the browser, rather than waiting for the next scheduled
 run. Do not move this call, make it non-blocking, or remove it.
 
-### [Q5] WAL mode on every connection — db/index.js (Container A)
+### [Q5] WAL mode on every connection - db/index.js (Container A)
 `PRAGMA journal_mode=WAL` is set on every SQLite connection open,
-not just on database creation. This is deliberate — WAL mode must be
+not just on database creation. This is deliberate - WAL mode must be
 re-confirmed on each connection in the better-sqlite3 usage pattern
 to ensure consistent behaviour after container restarts.
 
-### [Q6] Token detection via TokenException — kite.js (Container A)
+### [Q6] Token detection via TokenException - kite.js (Container A)
 Token expiry is NOT assumed to occur at 06:00 IST. The primary
 detection mechanism is catching `TokenException` from the Zerodha API
 at the point of any API call. The 06:05 IST cron job is a secondary
@@ -404,13 +404,13 @@ them. Do not modify `ohlcv_cache` schema.
 
 ### [Q8] MOMENTUM positions are exempt from daily trailing stop updates
 `update_daily_positions()` in `position_tracker.py` explicitly skips
-positions with `source='MOMENTUM'`. This is intentional — momentum
+positions with `source='MOMENTUM'`. This is intentional - momentum
 positions are squared intraday and never carry overnight. The trailing
 stop logic is irrelevant for them and would cause incorrect P&L.
 
 ### [Q9] Momentum pipeline runs at :55 not :15
 Container C's `run_momentum_pipeline()` runs at 10:55, 11:55, 12:55,
-13:55, 14:55 IST — 40 minutes after Container B's scan at :15.
+13:55, 14:55 IST - 40 minutes after Container B's scan at :15.
 This lag is intentional: Nifty 500 takes ~3 minutes to scan, plus
 Gemini analysis per signal takes 2–5 seconds each. The 40-minute
 window ensures Container C processes fresh, complete signals rather
@@ -422,11 +422,11 @@ the same day, the momentum signal is silently dropped before it
 reaches `filter_momentum_signals()`. This happens in both
 `run_screener()` (skips tickers with open momentum positions) and
 `run_momentum_screener()` (skips tickers in open swing positions).
-Do not add UI to let the user choose — the rule is deterministic.
+Do not add UI to let the user choose - the rule is deterministic.
 
 ### [Q11] cost_ratio field is momentum-only
 The `cost_ratio` field exists only on `MomentumSignal`, not on `Signal`.
-This is by design — for swing trades held 7–15 days, cost ratio is
+This is by design - for swing trades held 7–15 days, cost ratio is
 negligible and not displayed. For intraday trades, it is critical.
 Do not add cost_ratio to the swing Signal model.
 
@@ -436,8 +436,30 @@ nothing, "BEAR_RS_ONLY" falls through to the screener loop and
 applies additional RS filters. The regime filter no longer has an
 early return in bear conditions. Do not revert this to an early return.
 
+### [Q13] MC4 gate replaced with intraday range check - old code preserved
+The original [MC4] gate `current_close > prev_day_high` (structural
+breakout) was eliminating 100% of momentum signals on down-market days
+because the market itself could not clear its own previous high.
+It has been replaced with an intraday range strength check:
+  close >= intraday_low + 0.80 × (intraday_high − intraday_low)
+(i.e. close in the top 20% of today's session range).
+The old gate code is preserved as a comment block labelled
+`[MC4-LEGACY - commented out]` in engine.py immediately below the
+new check. Do not delete that comment. Uncomment it to re-enable the
+strict breakout gate if strategy changes require it.
+
+### [Q14] MC3 volume threshold lowered from 2.0x to 1.5x; swing gate thresholds relaxed
+Following analysis of a live trading day where all 100 momentum signals
+were filtered out by aggressive thresholds:
+- MC3 `MOMENTUM_VOL_SURGE_PCT` in config.py: 2.0x → 1.5x
+- Swing EMA21 proximity band: 97%–110% → 93%–120%
+- Swing volume ratio minimum: 1.5x → 1.2x
+These changes widen the opportunity funnel while retaining meaningful
+filters. Do not tighten these back to the old values without explicit
+instruction - those values were calibrated against real market data.
+
 ════════════════════════════════════════════════════════════════════════
-## SECTION 8 — WHAT TO DO WHEN UNCERTAIN
+## SECTION 8 - WHAT TO DO WHEN UNCERTAIN
 ════════════════════════════════════════════════════════════════════════
 
 If you are unsure about any of the following, STOP and ask:
@@ -453,7 +475,7 @@ A wrong assumption in a prompt costs seconds to fix.
 A wrong assumption in deployed code costs money.
 
 ════════════════════════════════════════════════════════════════════════
-## SECTION 9 — DELIBERATE ARCHITECTURAL DECISIONS & WHY
+## SECTION 9 - DELIBERATE ARCHITECTURAL DECISIONS & WHY
 ════════════════════════════════════════════════════════════════════════
 
 These decisions look unconventional. Here is the reasoning so you
@@ -482,7 +504,7 @@ logout). A single source of truth prevents race conditions and
 desync between containers both trying to manage the same token.
 
 ════════════════════════════════════════════════════════════════════════
-## SECTION 10 — QUICK REFERENCE: KEY THRESHOLDS
+## SECTION 10 - QUICK REFERENCE: KEY THRESHOLDS
 ════════════════════════════════════════════════════════════════════════
 
 These values are in config and env vars. Listed here for reference they may change based on enrichment during development

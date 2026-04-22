@@ -1,5 +1,5 @@
 /**
- * Tests for utils/market-hours.js — IST market window enforcement.
+ * Tests for utils/market-hours.js - IST market window enforcement.
  */
 const { isMarketOpen, isPreMarket } = require('../../utils/market-hours');
 
@@ -82,9 +82,9 @@ describe('isMarketOpen()', () => {
   });
 
   test('uses Asia/Kolkata timezone (not server local time)', () => {
-    // This tests indirectly — the function must use Intl with Asia/Kolkata
+    // This tests indirectly - the function must use Intl with Asia/Kolkata
     // If it used local time, results would differ in non-IST zones
-    // 2026-01-07 Wednesday 12:00 IST = 06:30 UTC — market should be open
+    // 2026-01-07 Wednesday 12:00 IST = 06:30 UTC - market should be open
     withMockedTime('2026-01-07T06:30:00Z', () => {
       expect(isMarketOpen()).toBe(true);
     });

@@ -68,7 +68,7 @@ async def check_circuit_breakers(db_path: str) -> tuple[bool, list[str]]:
         halted = True
         reasons.append("CB_MAX_DRAWDOWN")
 
-    # [CB1] Daily loss — uses IST date since trading day is defined in IST
+    # [CB1] Daily loss - uses IST date since trading day is defined in IST
     today = datetime.now(IST).date().isoformat()
     async with aiosqlite.connect(db_path) as db:
         cursor = await db.execute(

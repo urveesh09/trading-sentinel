@@ -105,7 +105,7 @@ class TestRunScreener:
 
     @pytest.mark.asyncio
     async def test_bear_rs_only_regime_does_not_early_return_q12(self, patch_settings):
-        """Q12: BEAR_RS_ONLY does NOT early-return — screener loop is entered."""
+        """Q12: BEAR_RS_ONLY does NOT early-return - screener loop is entered."""
         from main import run_screener, kite, NIFTY_100_TICKERS
 
         nifty_df = _make_bear_nifty_df()
@@ -131,7 +131,7 @@ class TestRunScreener:
 
             import main
             assert main.market_regime == "BEAR_RS_ONLY"
-            # Screener loop was entered — at least some tickers were scanned
+            # Screener loop was entered - at least some tickers were scanned
             assert len(tickers_scanned) > 0, "BEAR_RS_ONLY should NOT early-return; screener loop must be entered"
 
     @pytest.mark.asyncio
@@ -155,7 +155,7 @@ class TestRunScreener:
 
 
 # ─────────────────────────────────────────────────────────────────────
-# Test: Q10 — Swing wins over momentum for same ticker
+# Test: Q10 - Swing wins over momentum for same ticker
 # ─────────────────────────────────────────────────────────────────────
 
 class TestSwingWinsOverMomentumQ10:
@@ -276,7 +276,7 @@ class TestRunMomentumScreener:
 
 
 # ─────────────────────────────────────────────────────────────────────
-# Test: Q4 — post_login_initialization calls both screeners
+# Test: Q4 - post_login_initialization calls both screeners
 # ─────────────────────────────────────────────────────────────────────
 
 class TestPostLoginInitQ4:
@@ -421,7 +421,7 @@ class TestMomentumMarketTimeWindow:
         import pytz
 
         IST = pytz.timezone("Asia/Kolkata")
-        # 09:14 IST — one minute before market opens
+        # 09:14 IST - one minute before market opens
         mock_now = datetime(2025, 6, 10, 9, 14, 0, tzinfo=IST)
 
         with patch("main.is_trading_day", new_callable=AsyncMock, return_value=True), \
@@ -464,5 +464,5 @@ class TestMomentumMarketTimeWindow:
             mock_dt.utcnow.return_value = datetime.utcnow()
             mock_dt.side_effect = lambda *a, **kw: datetime(*a, **kw)
 
-            # Should not raise — it proceeds past the time gate
+            # Should not raise - it proceeds past the time gate
             await run_momentum_screener()

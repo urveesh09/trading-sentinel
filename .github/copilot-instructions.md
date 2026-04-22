@@ -14,7 +14,7 @@ Before any stock is scanned, the engine evaluates the "Market Weather" using the
 
 *   **BULL Mode:** (Nifty > 50 EMA). Permissive mode. Bot hunts for breakouts.
 *   **CAUTION Mode:** (Nifty < 50 EMA * 1.02). Risk per trade is halved.
-*   **BEAR Mode:** (Nifty < 50 EMA). Defensive mode. The bot switches to **Relative Strength (RS) Only**—it will only buy stocks that are moving up while the market is moving down.
+*   **BEAR Mode:** (Nifty < 50 EMA). Defensive mode. The bot switches to **Relative Strength (RS) Only**-it will only buy stocks that are moving up while the market is moving down.
 *   **Justification:** Trading with the trend increases the probability of success. Fighting a bear market is the #1 cause of account blowups.
 
 ---
@@ -24,19 +24,20 @@ Before any stock is scanned, the engine evaluates the "Market Weather" using the
 
 ### Gate MC1: Temporal Baseline (Candle Count >= 4)
 *   **Rule:** The stock must have at least four 15-minute candles.
-*   **Justification:** The first 60 minutes of the Indian market are "The Amateur Hour"—extreme volatility with no direction. Waiting 1 hour allows institutional intent to become visible.
+*   **Justification:** The first 60 minutes of the Indian market are "The Amateur Hour"-extreme volatility with no direction. Waiting 1 hour allows institutional intent to become visible.
 
 ### Gate MC2: The Institutional Value Gate (VWAP Crossover)
 *   **Rule:** Price must have crossed from below VWAP to above VWAP within the last 3 candles.
 *   **Justification:** VWAP (Volume Weighted Average Price) is the benchmark used by big banks and hedge funds. If the price is above VWAP, the "Big Money" is in profit and likely to continue buying.
 
-### Gate MC3: The Power Gate (Volume Surge > 200%)
-*   **Rule:** The current candle's volume must be at least 2.0x the average of the last 10 candles.
-*   **Justification:** A price breakout without volume is a "Fakeout." High volume proves that the move is backed by massive capital, not just a few retail orders.
+### Gate MC3: The Power Gate (Volume Surge > 150%)
+*   **Rule:** The current candle's volume must be at least 1.5x the average of the last 10 candles.
+*   **Justification:** A price breakout without volume is a "Fakeout." Volume confirms institutional participation. Threshold lowered from 2.0x to 1.5x to reduce missed opportunities on moderate-volume breakouts - still filters pure noise.
 
-### Gate MC4: The Structural Breakout (Price > Prev Day High)
-*   **Rule:** The stock must be trading higher than yesterday's highest price.
-*   **Justification:** Previous Day High is a major psychological barrier. Clearing it confirms the stock has established a new "High Ground" and is in a state of true price discovery.
+### Gate MC4: The Intraday Range Strength Gate (Close in Top 20% of Day's Range)
+*   **Rule:** The current close must be at or above `intraday_low + 80% × (intraday_high − intraday_low)`. In plain English: the stock must be trading near its intraday high.
+*   **Justification:** The old MC4 (close > prev_day_high) filtered out 100% of signals on any weak market day (e.g. NIFTY −0.81%). Replaced with intraday range strength, which measures where price sits *within today's session* rather than comparing to yesterday. Stocks closing in the top quintile of their day's range are showing genuine intraday momentum.
+*   **Legacy gate preserved:** The original `close > prev_day_high` check is commented out in engine.py with label `[MC4-LEGACY]` - see Known Quirk [Q13].
 
 ---
 
@@ -81,7 +82,7 @@ These protect you from "Black Swan" events:
 
 
 ════════════════════════════════════════════════════════════════════════
-## SECTION 6 — FILE STRUCTURE (complete)
+## SECTION 6 - FILE STRUCTURE (complete)
 ════════════════════════════════════════════════════════════════════════
 ```
 trading-sentinel/                  ← repo root
@@ -211,16 +212,16 @@ trading-sentinel/                  ← repo root
 
 
 ════════════════════════════════════════════════════════════════════════
-## SECTION 7 — INVIOLABLE RULES
+## SECTION 7 - INVIOLABLE RULES
 ════════════════════════════════════════════════════════════════════════
 
 Violating any rule below is a critical bug. No exceptions.
 
 ### Security
 - No hardcoded secrets, tokens, keys, or passwords anywhere
-- No wildcard CORS — explicit origin whitelist only
-- No access_token in localStorage — memory + httpOnly cookie only
-- No logging of sensitive fields — use sanitise.js / sanitiseForLog()
+- No wildcard CORS - explicit origin whitelist only
+- No access_token in localStorage - memory + httpOnly cookie only
+- No logging of sensitive fields - use sanitise.js / sanitiseForLog()
 - All inbound payloads validated with Zod (Node) or Pydantic (Python)
 - Telegram callbacks verified: not stale (>60s), not already executed
 - Order execution hard-blocked outside 09:15–15:30 IST
@@ -239,9 +240,9 @@ Violating any rule below is a critical bug. No exceptions.
 ### Code quality
 - No ML libraries in Container B (no sklearn, tensorflow, statsmodels)
 - No random(), no mock data, no TODO placeholders in production code
-- No bare except: — catch specific exception types only
-- No pandas SettingWithCopyWarning — use .loc[] and .copy() always
-- No raw IEEE 754 floats in JSON — all floats explicitly rounded
+- No bare except: - catch specific exception types only
+- No pandas SettingWithCopyWarning - use .loc[] and .copy() always
+- No raw IEEE 754 floats in JSON - all floats explicitly rounded
 - No synchronous file I/O in request handlers
 - All external HTTP calls must have explicit timeouts
 - All async calls must have .catch() or try/catch
@@ -256,7 +257,7 @@ Violating any rule below is a critical bug. No exceptions.
 
 
 ════════════════════════════════════════════════════════════════════════
-## SECTION 8 — KNOWN QUIRKS
+## SECTION 8 - KNOWN QUIRKS
 ════════════════════════════════════════════════════════════════════════
 
 These are deliberate decisions, hotfixes, or workarounds for external
@@ -264,14 +265,14 @@ API limitations. They may look wrong. They are not. Do not "clean up",
 refactor, or revert any of them without explicit instruction.
 In case you want to clean up or change then just ask me and justify to me and I will agree if need be
 
-### [Q1] NIFTY 50 instrument token — kite_client.py
+### [Q1] NIFTY 50 instrument token - kite_client.py
 The Zerodha instruments API does not reliably return a consistent
 token for the "NIFTY 50" index. If `ticker == "NIFTY 50"`, the
 instrument_token lookup follows a special resolution path in
 kite_client.py. Do not convert this to a hardcoded token value and
 do not remove the special-case branch.
 
-### [Q2] CB4 Backtest Gate removed — performance.py
+### [Q2] CB4 Backtest Gate removed - performance.py
 The [CB4] circuit breaker (which halted the system if a backtest
 had not passed) has been intentionally removed (commented out) from
 performance.py. The live system scans and signals without requiring
@@ -281,7 +282,7 @@ The `/signals` endpoint returns `"PASS"` unless `BACKTEST_GATE_FAILED`
 appears in circuit breaker reasons (which it never will since CB4 is
 commented out). Do not change this to `"DISABLED"`.
 
-### [Q3] Schedule object generation — agent.py (Container C)
+### [Q3] Schedule object generation - agent.py (Container C)
 The schedule library is invoked using:
   `getattr(schedule.every(), day).at(time_str).do(job)`
 inside a loop. This pattern forces the creation of distinct job
@@ -291,7 +292,7 @@ or any form of variable assignment inside the loop. Doing so causes
 schedule objects to overwrite each other, resulting in only the last
 day's job being registered.
 
-### [Q4] Ignition switch — main.py (Container B)
+### [Q4] Ignition switch - main.py (Container B)
 At the end of `post_login_initialization()`, both `run_screener()`
 and `run_momentum_screener()` are explicitly awaited. This is
 intentional. It ensures the instrument cache is populated and the
@@ -299,13 +300,13 @@ market is scanned immediately when the user logs in via the browser,
 rather than waiting for the next scheduled run. Do not move these
 calls, make them non-blocking, or remove them.
 
-### [Q5] WAL mode on every connection — db/index.js (Container A)
+### [Q5] WAL mode on every connection - db/index.js (Container A)
 `PRAGMA journal_mode=WAL` is set on every SQLite connection open,
-not just on database creation. This is deliberate — WAL mode must be
+not just on database creation. This is deliberate - WAL mode must be
 re-confirmed on each connection in the better-sqlite3 usage pattern
 to ensure consistent behaviour after container restarts.
 
-### [Q6] Token detection via TokenException — kite.js (Container A)
+### [Q6] Token detection via TokenException - kite.js (Container A)
 Token expiry is NOT assumed to occur at 06:00 IST. The primary
 detection mechanism is catching `TokenException` from the Zerodha API
 at the point of any API call. The 06:05 IST cron job is a secondary
@@ -319,7 +320,7 @@ them. Do not modify `ohlcv_cache` schema.
 
 ### [Q8] MOMENTUM positions are exempt from daily trailing stop updates
 `update_daily_positions()` in `position_tracker.py` explicitly skips
-positions with `source='MOMENTUM'`. This is intentional — momentum
+positions with `source='MOMENTUM'`. This is intentional - momentum
 positions are squared intraday and never carry overnight. The trailing
 stop logic is irrelevant for them and would cause incorrect P&L.
 
@@ -327,7 +328,7 @@ stop logic is irrelevant for them and would cause incorrect P&L.
 Container B's `run_momentum_screener()` runs every 15 minutes at
 :00, :15, :30, :45 for hours 10–14 IST (skipping 10:00 because
 only 3 completed candles exist at that point). Container C's
-`run_momentum_pipeline()` runs at :55 (10:55, 11:55, etc.) — 40
+`run_momentum_pipeline()` runs at :55 (10:55, 11:55, etc.) - 40
 minutes after Container B's scan. This lag is intentional: it
 ensures Container C processes fresh, complete signals. Do not move
 Container C's pipeline to :15, and do not change Container B's
@@ -339,7 +340,7 @@ the same day, the momentum signal is silently dropped before it
 reaches `filter_momentum_signals()`. This happens in both
 `run_screener()` (skips tickers with open momentum positions) and
 `run_momentum_screener()` (skips tickers in open swing positions).
-Do not add UI to let the user choose — the rule is deterministic.
+Do not add UI to let the user choose - the rule is deterministic.
 
 ### [Q11] cost_ratio field semantics differ between Signal and MomentumSignal
 The `cost_ratio` field is `Optional[float] = None` on `Signal` and
@@ -347,7 +348,7 @@ a required `float` on `MomentumSignal`. For swing trades, it is
 optional and typically None. For intraday momentum trades, it is
 required and critical for the 25% cost viability gate.
 Additionally, `MomentumSignal.product_type` allows both `"MIS"`
-and `"CNC"` — positions under ₹5,000 use MIS, above use CNC.
+and `"CNC"` - positions under ₹5,000 use MIS, above use CNC.
 
 ### [Q12] BEAR_RS_ONLY does not halt the swing screener
 Unlike the previous "BEAR" regime which returned early and emitted
@@ -355,8 +356,30 @@ nothing, "BEAR_RS_ONLY" falls through to the screener loop and
 applies additional RS filters. The regime filter no longer has an
 early return in bear conditions. Do not revert this to an early return.
 
+### [Q13] MC4 gate replaced with intraday range check - old code preserved
+The original [MC4] gate `current_close > prev_day_high` (structural
+breakout) was eliminating 100% of momentum signals on down-market days
+because the market itself could not clear its own previous high.
+It has been replaced with an intraday range strength check:
+  close >= intraday_low + 0.80 × (intraday_high − intraday_low)
+(i.e. close in the top 20% of today's session range).
+The old gate code is preserved as a comment block labelled
+`[MC4-LEGACY - commented out]` in engine.py immediately below the
+new check. Do not delete that comment. Uncomment it to re-enable the
+strict breakout gate if strategy changes require it.
+
+### [Q14] MC3 volume threshold lowered from 2.0x to 1.5x; swing gate thresholds relaxed
+Following analysis of a live trading day where all 100 momentum signals
+were filtered out by aggressive thresholds:
+- MC3 `MOMENTUM_VOL_SURGE_PCT` in config.py: 2.0x → 1.5x
+- Swing EMA21 proximity band: 97%–110% → 93%–120%
+- Swing volume ratio minimum: 1.5x → 1.2x
+These changes widen the opportunity funnel while retaining meaningful
+filters. Do not tighten these back to the old values without explicit
+instruction - those values were calibrated against real market data.
+
 ════════════════════════════════════════════════════════════════════════
-## SECTION 9 — WHAT TO DO WHEN UNCERTAIN
+## SECTION 9 - WHAT TO DO WHEN UNCERTAIN
 ════════════════════════════════════════════════════════════════════════
 
 If you are unsure about any of the following, STOP and ask:
@@ -372,7 +395,7 @@ A wrong assumption in a prompt costs seconds to fix.
 A wrong assumption in deployed code costs money.
 
 ════════════════════════════════════════════════════════════════════════
-## SECTION 10 — DELIBERATE ARCHITECTURAL DECISIONS & WHY
+## SECTION 10 - DELIBERATE ARCHITECTURAL DECISIONS & WHY
 ════════════════════════════════════════════════════════════════════════
 
 These decisions look unconventional. Here is the reasoning so you

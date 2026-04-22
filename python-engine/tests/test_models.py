@@ -1,5 +1,5 @@
 """
-Tests for python-engine/models.py — Pydantic model validation.
+Tests for python-engine/models.py - Pydantic model validation.
 Verifies field types, validators, rounding, and enums.
 """
 import pytest

@@ -218,8 +218,8 @@ async def run_screener():
     if nifty_close < nifty_ema50:
         market_regime = "BEAR_RS_ONLY"
         logger.info("regime_filter", regime="BEAR_RS_ONLY",
-                    reason="Nifty below EMA50 — switching to RS-only mode")
-        # DO NOT return early — fall through to screener loop
+                    reason="Nifty below EMA50 - switching to RS-only mode")
+        # DO NOT return early - fall through to screener loop
         # The screener loop will apply RS filters based on market_regime
     elif nifty_close < nifty_ema50 * 1.02:
         market_regime = "CAUTION"
@@ -290,7 +290,7 @@ async def run_screener():
         }
         if ticker in open_momentum_tickers:
             logger.info("swing_priority", ticker=ticker,
-                        reason="Momentum position already open — swing wins")
+                        reason="Momentum position already open - swing wins")
             continue
 
         sig_data.update({
@@ -369,7 +369,7 @@ async def run_momentum_screener():
         return
 
     bankroll       = await current_bankroll(settings.DB_PATH)
-    momentum_pool  = bankroll * 0.20
+    momentum_pool  = bankroll * settings.MOMENTUM_POOL_PCT  # 50% of bankroll = ₹2,500 at ₹5k
 
     # Market opens at 09:15 IST
     market_open = now_ist.replace(hour=9, minute=15, second=0, microsecond=0)
@@ -504,7 +504,7 @@ async def run_momentum_screener():
             # Heartbeat: notify user the scan ran even with no signals
             await _notify_momentum_heartbeat(
                 now_ist, len(universe), len(raw_momentum),
-                len(accepted), len(all_rejected_mom), momentum_pool
+                len(accepted), all_rejected_mom, momentum_pool
             )
 
 
@@ -517,7 +517,7 @@ async def run_momentum_screener():
 async def get_momentum_signals():
     async with state_lock:
         bankroll      = await current_bankroll(settings.DB_PATH)
-        momentum_pool = bankroll * 0.20
+        momentum_pool = bankroll * settings.MOMENTUM_POOL_PCT  # 50% of bankroll = ₹2,500 at ₹5k
         halted, reasons = await check_circuit_breakers(settings.DB_PATH)
 
         for s in current_momentum_signals:
@@ -657,20 +657,60 @@ async def _notify_momentum_heartbeat(
     tickers_scanned: int,
     raw_signals_count: int,
     accepted_count: int,
-    rejected_count: int,
+    rejected: list,
     momentum_pool: float
 ):
-    """Send a brief heartbeat to Telegram so the user knows the momentum scan ran."""
+    """Send a detailed heartbeat to Telegram showing per-gate rejection breakdown."""
     import httpx as _httpx
-    time_str = scan_time.strftime("%H:%M IST")
+    time_str      = scan_time.strftime("%H:%M IST")
+    rejected_count = len(rejected)
+
     msg = (
         f"⏱️ **Momentum Scan @ {time_str}**\n"
-        f"Scanned: `{tickers_scanned}` tickers\n"
-        f"Raw hits: `{raw_signals_count}` | Accepted: `{accepted_count}` | Rejected: `{rejected_count}`\n"
-        f"Pool: `₹{momentum_pool:,.2f}`\n"
+        f"Scanned: `{tickers_scanned}` | Raw hits: `{raw_signals_count}` | Accepted: `{accepted_count}`\n"
+        f"Rejected: `{rejected_count}` | Pool: `₹{momentum_pool:,.2f}`\n"
     )
     if accepted_count == 0:
-        msg += "No new signals — all gates filtered out."
+        msg += "❌ No new signals - all gates filtered out.\n"
+
+    if rejected:
+        # Group rejections by reason
+        reason_counts: dict = {}
+        for r in rejected:
+            reason = r.get("reject_reason", "unknown")
+            reason_counts[reason] = reason_counts.get(reason, 0) + 1
+
+        msg += "\n📊 **Gate Rejection Breakdown:**\n"
+        for reason, count in sorted(reason_counts.items(), key=lambda x: x[1], reverse=True):
+            display = reason.replace("_", " ").title()
+            msg += f"• {display}: `{count}`\n"
+
+        # Show up to 8 informative rejected tickers (skip trivial data-missing reasons)
+        _skip = {
+            "intraday_data_empty", "insufficient_intraday_candles",
+            "swing_position_exists", "daily_data_missing_for_prev_high",
+            "prev_day_data_not_found",
+        }
+        interesting = [r for r in rejected if r.get("reject_reason") not in _skip]
+        if interesting:
+            msg += "\n🔍 **Sample Gate Failures:**\n"
+            for r in interesting[:8]:
+                ticker = r.get("ticker", "???")
+                reason = r.get("reject_reason", "unknown").replace("_", " ").title()
+                detail = ""
+                try:
+                    if "ratio" in r:
+                        detail = f" [vol: {r['ratio']:.2f}x]"
+                    elif "intraday_high" in r:
+                        detail = f" [close:{r.get('close', 0):.1f} hi:{r['intraday_high']:.1f} thr:{r.get('threshold', 0):.1f}]"
+                    elif "current_vwap" in r:
+                        detail = f" [close:{r.get('current_close', 0):.1f} vwap:{r['current_vwap']:.1f}]"
+                    elif "prev_high" in r:
+                        detail = f" [close:{r.get('close', 0):.1f} prevhi:{r['prev_high']:.1f}]"
+                except (TypeError, ValueError, KeyError):
+                    detail = ""
+                msg += f"• **{ticker}**: {reason}{detail}\n"
+
     try:
         async with _httpx.AsyncClient() as _client:
             await _client.post(

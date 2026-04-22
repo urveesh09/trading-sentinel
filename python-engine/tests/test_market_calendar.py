@@ -1,5 +1,5 @@
 """
-Tests for python-engine/market_calendar.py — trading days, holidays, weekends.
+Tests for python-engine/market_calendar.py - trading days, holidays, weekends.
 """
 import pytest
 import pytest_asyncio
@@ -23,7 +23,7 @@ async def cal_db(db_path):
         # Known NSE holidays for testing (Republic Day, Independence Day, Diwali-ish)
         holidays = [
             "2026-01-26",  # Republic Day (Monday)
-            "2026-08-15",  # Independence Day (Saturday — weekend anyway)
+            "2026-08-15",  # Independence Day (Saturday - weekend anyway)
             "2026-10-02",  # Gandhi Jayanti (Friday)
             "2026-11-04",  # Diwali (Wednesday)
         ]

@@ -1,5 +1,5 @@
 """
-Tests for kite_client.py — RateLimiter, KiteClient, cache behaviour, Q1, Q7.
+Tests for kite_client.py - RateLimiter, KiteClient, cache behaviour, Q1, Q7.
 
 Mocks httpx.AsyncClient so no real Zerodha calls are made.
 Uses in-memory-like temp SQLite DB from conftest.patch_settings.
@@ -55,7 +55,7 @@ class TestRateLimiter:
 
     @pytest.mark.asyncio
     async def test_rate_3_burst_1_defaults(self):
-        """Default config: rate=3.0, burst=1 — matches KiteClient init."""
+        """Default config: rate=3.0, burst=1 - matches KiteClient init."""
         limiter = RateLimiter(rate=3.0, burst=1)
         assert limiter.rate == 3.0
         assert limiter.burst == 1
@@ -63,7 +63,7 @@ class TestRateLimiter:
 
 
 # ─────────────────────────────────────────────────────────────────────
-# KiteClient — Initialisation & Token
+# KiteClient - Initialisation & Token
 # ─────────────────────────────────────────────────────────────────────
 
 class TestKiteClientInit:
@@ -92,7 +92,7 @@ class TestKiteClientInit:
 
 
 # ─────────────────────────────────────────────────────────────────────
-# KiteClient — refresh_instrument_cache
+# KiteClient - refresh_instrument_cache
 # ─────────────────────────────────────────────────────────────────────
 
 class TestRefreshInstrumentCache:
@@ -150,7 +150,7 @@ class TestRefreshInstrumentCache:
 
 
 # ─────────────────────────────────────────────────────────────────────
-# KiteClient — get_historical (daily OHLCV) + ohlcv_cache
+# KiteClient - get_historical (daily OHLCV) + ohlcv_cache
 # ─────────────────────────────────────────────────────────────────────
 
 class TestGetHistorical:
@@ -295,7 +295,7 @@ class TestGetHistorical:
 
 
 # ─────────────────────────────────────────────────────────────────────
-# KiteClient — get_intraday + intraday_cache (Q7)
+# KiteClient - get_intraday + intraday_cache (Q7)
 # ─────────────────────────────────────────────────────────────────────
 
 class TestGetIntraday:
@@ -447,7 +447,7 @@ class TestCacheSeparationQ7:
 
 
 # ─────────────────────────────────────────────────────────────────────
-# KiteClient — clear_intraday_cache
+# KiteClient - clear_intraday_cache
 # ─────────────────────────────────────────────────────────────────────
 
 class TestClearIntradayCache:
@@ -485,7 +485,7 @@ class TestClearIntradayCache:
 
 
 # ─────────────────────────────────────────────────────────────────────
-# KiteClient — writes to correct cache table
+# KiteClient - writes to correct cache table
 # ─────────────────────────────────────────────────────────────────────
 
 class TestCacheWriteIsolation:

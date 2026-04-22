@@ -131,10 +131,10 @@ def evaluate_signal(
             return False, {"reject_reason": "trend_filter_failed", "close": c, "ema50": e50, "ema200": e200}
     
     # All other filters (C2-C8) still apply
-    if not (e21 * 0.97 <= c <= e21 * 1.1):
+    if not (e21 * 0.93 <= c <= e21 * 1.20):  # widened from 97–110% to 93–120%
         return False, {"reject_reason": "ema21_proximity_failed", "close": c, "ema21": e21}
 
-    if vol_ratio < 1.5:
+    if vol_ratio < 1.2:  # lowered from 1.5x to 1.2x
         return False, {"reject_reason": "volume_ratio_low", "vol_ratio": vol_ratio}
 
     if not (45 <= rsi14 <= 72):
@@ -329,7 +329,7 @@ def calc_zerodha_costs(
         brokerage_buy  = min(buy_value  * settings.ZERODHA_BROKERAGE_PCT, settings.ZERODHA_BROKERAGE_MAX)
         brokerage_sell = min(sell_value * settings.ZERODHA_BROKERAGE_PCT, settings.ZERODHA_BROKERAGE_MAX)
 
-        # STT (Securities Transaction Tax) — sell side only
+        # STT (Securities Transaction Tax) - sell side only
         stt_rate = settings.ZERODHA_STT_MIS if is_intraday else settings.ZERODHA_STT_CNC
         stt = sell_value * stt_rate
 
@@ -393,7 +393,7 @@ def calc_vwap(df: pd.DataFrame) -> pd.Series:
     [MOM1] VWAP calculation for intraday candles.
     VWAP = cumsum(typical_price × volume) / cumsum(volume)
     Typical price = (high + low + close) / 3
-    Resets at start of each day — caller must pass only today's candles.
+    Resets at start of each day - caller must pass only today's candles.
     df must have columns: high, low, close, volume
     Returns pd.Series indexed same as df.
     """
@@ -429,15 +429,16 @@ def evaluate_momentum_signal(
       [MC1] Minimum candles: len(df) >= min_candles
       [MC2] Price crossed ABOVE VWAP in the LAST candle
             (prev candle close was below VWAP, current close is above)
-      [MC3] Last candle volume >= 300% of previous 10-candle avg volume
-      [MC4] Current close > prev_day_high (structural breakout)
+      [MC3] Last candle volume >= 150% of previous 10-candle avg volume
+      [MC4] Current close in top 20% of today's intraday session range
+            (Legacy MC4 "close > prev_day_high" preserved as comment - [Q13])
     
     Risk:
       [MR1] Stop loss = low of the breakout candle (last candle)
       [MR2] Target = entry + 2.0R
       [MR3] Product type decision: MIS if position_value < ₹5,000,
             CNC if position_value >= ₹5,000 (for this bankroll, will
-            almost always be MIS — system squares at 3:15pm either way)
+            almost always be MIS - system squares at 3:15pm either way)
     """
     if len(df) < min_candles:
         return False, {"reject_reason": "min_candles_not_met", "count": len(df)}
@@ -500,9 +501,23 @@ def evaluate_momentum_signal(
         return False, {"reject_reason": "volume_surge_insufficient", "ratio": vol_ratio_intraday, "threshold": settings.MOMENTUM_VOL_SURGE_PCT}
 
 
-    # [MC4] Structural breakout: above previous day's high
-    if current_close <= prev_day_high:
-        return False, {"reject_reason": "below_prev_day_high", "close": current_close, "prev_high": prev_day_high}
+    # [MC4] REPLACED: Close must be in top 20% of today's intraday session range (intraday strength).
+    # Old [MC4] gate (price > prev_day_high) is preserved below - uncomment to re-enable [Q13].
+    intraday_high = df['high'].max()
+    intraday_low  = df['low'].min()
+    intraday_range = intraday_high - intraday_low
+    if intraday_range > 0 and current_close < (intraday_low + 0.80 * intraday_range):
+        return False, {
+            "reject_reason": "not_in_top_20pct_intraday_range",
+            "close": current_close,
+            "intraday_low": round(intraday_low, 2),
+            "intraday_high": round(intraday_high, 2),
+            "threshold": round(intraday_low + 0.80 * intraday_range, 2),
+        }
+    # [MC4-LEGACY - commented out] Structural breakout: above previous day's high.
+    # Uncomment to restore strict prev-day-high gate for confirmed breakout strategy.
+    # if current_close <= prev_day_high:
+    #     return False, {"reject_reason": "below_prev_day_high", "close": current_close, "prev_high": prev_day_high}
 
     # [MR1] Stop loss = low of breakout candle
     breakout_candle_low = df['low'].iloc[-1]

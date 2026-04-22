@@ -341,7 +341,7 @@ def run_momentum_pipeline():
 def send_momentum_telegram_alert(
     signal: Dict, analysis: Dict, momentum_pool: float
 ):
-    """Distinct format from swing alerts — clearly labelled INTRADAY."""
+    """Distinct format from swing alerts - clearly labelled INTRADAY."""
     url    = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage"
     ticker = signal.get("ticker", "UNKNOWN")
     price  = signal.get("close")

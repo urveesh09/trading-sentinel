@@ -1,6 +1,6 @@
 """
 Shared test fixtures for Trading Sentinel Python Engine.
-All fixtures use deterministic data — no random().
+All fixtures use deterministic data - no random().
 """
 import os
 import sys
@@ -92,7 +92,7 @@ def fake_ohlcv_df():
 
 @pytest.fixture
 def fake_ohlcv_short():
-    """Only 50 rows — insufficient for evaluate_signal (needs 200)."""
+    """Only 50 rows - insufficient for evaluate_signal (needs 200)."""
     n = 50
     close = np.linspace(500, 525, n)
     df = pd.DataFrame({
@@ -139,7 +139,7 @@ def fake_momentum_candles():
 
 @pytest.fixture
 def fake_momentum_candles_no_crossover():
-    """All candles above VWAP — no crossover event."""
+    """All candles above VWAP - no crossover event."""
     n = 10
     base = 1000.0
     data = {

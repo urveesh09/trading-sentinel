@@ -71,7 +71,7 @@ class TestCalcEMA:
 
 
 class TestCalcATR:
-    """Tests for calc_atr (Average True Range — Wilder smoothing)."""
+    """Tests for calc_atr (Average True Range - Wilder smoothing)."""
 
     def test_atr_positive(self, fake_ohlcv_df):
         atr = calc_atr(fake_ohlcv_df["high"], fake_ohlcv_df["low"], fake_ohlcv_df["close"])
@@ -402,7 +402,7 @@ class TestIsCostViable:
             risk_per_trade=0.1, r_target=2.0,
             max_cost_ratio=0.25, is_intraday=True
         )
-        # With for_gate=True, only minor fees remain — tiny position now passes
+        # With for_gate=True, only minor fees remain - tiny position now passes
         assert viable is True
         assert ratio < 0.25
 
@@ -765,7 +765,7 @@ def test_relative_strength_insufficient_data():
 
 
 def test_volume_consistency_passes():
-    """Volume above average on 4 of last 5 days — should pass."""
+    """Volume above average on 4 of last 5 days - should pass."""
     avg = 100_000
     volume = pd.Series(
         [avg] * 20 +          # 20-day baseline
@@ -777,7 +777,7 @@ def test_volume_consistency_passes():
 
 
 def test_volume_consistency_fails():
-    """Volume above average on only 1 of last 5 days — should fail."""
+    """Volume above average on only 1 of last 5 days - should fail."""
     avg = 100_000
     volume = pd.Series(
         [avg] * 20 +

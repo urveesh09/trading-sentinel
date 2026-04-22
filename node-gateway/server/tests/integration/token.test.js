@@ -2,8 +2,8 @@
  * Integration tests for routes/token.js
  *
  * Tests:
- * - GET /api/token — returns token data with internal auth
- * - POST /api/token/invalidate — marks token expired, sends Telegram alert
+ * - GET /api/token - returns token data with internal auth
+ * - POST /api/token/invalidate - marks token expired, sends Telegram alert
  */
 
 // ── Mock dependencies BEFORE require ──

@@ -1,5 +1,5 @@
 """
-Tests for python-engine/performance.py — circuit breakers, bankroll ledger, P&L.
+Tests for python-engine/performance.py - circuit breakers, bankroll ledger, P&L.
 All tests use temp SQLite files (aiosqlite needs file paths, not :memory: for multi-connection).
 """
 import pytest
