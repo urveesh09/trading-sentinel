@@ -1,2 +1,15 @@
 cd ~/trading-sentinel/node-gateway/server
 sudo docker run --rm -v "$PWD":/app -w /app node:20 npm install
+sudo docker compose exec -u root agent pytest tests/ --cov=. --cov-report=term-missing -v
+sudo docker compose exec python-engine pytest tests/ --cov=. --cov-report=term-missing -v
+sudo docker compose exec node-gateway npx jest --verbose --coverage
+
+# in case it does not show some libs but requirements has it
+cd ~/trading-sentinel
+sudo docker compose build --no-cache python-engine
+sudo docker compose up -d python-engine
+
+# worst case scenario for python if pytest not found 
+
+
+sudo docker compose exec -e PYTHONPATH=/home/quantuser/.local/lib/python3.11/site-packages:/app python-engine pytest tests/ --cov=. --cov-report=term-missing -v

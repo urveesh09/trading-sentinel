@@ -57,9 +57,13 @@ Vol Ratio ${signal.volume_ratio || 'N/A'}x     RSI: ${signal.rsi_14 || 'N/A'}
 const sendSignalAlert = async (signal) => {
   const text = formatSignalMessage(signal);
   
-  // callback_data strict size limit is 64 bytes. We use short keys.
-  const cbExecute = Buffer.from(JSON.stringify({ a: 'EXEC', id: signal.signal_id, t: Math.floor(Date.now()/1000) })).toString('base64');
-  const cbReject = Buffer.from(JSON.stringify({ a: 'REJ', id: signal.signal_id, t: Math.floor(Date.now()/1000) })).toString('base64');
+  // callback_data hard limit is 64 bytes.
+  // Format: ACTION:shortId:unix_ts  (max ~26 bytes)
+  // shortId = first 8 chars of UUID (lowercase hex) — distinct from ticker names (uppercase)
+  const ts = Math.floor(Date.now() / 1000);
+  const shortId = signal.signal_id.substring(0, 8);
+  const cbExecute = `EXEC:${shortId}:${ts}`;
+  const cbReject  = `REJ:${shortId}:${ts}`;
 
   const options = {
     parse_mode: 'MarkdownV2',

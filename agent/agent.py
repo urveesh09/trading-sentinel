@@ -3,6 +3,7 @@ import sys
 import time
 import json
 import logging
+import threading
 import urllib.parse
 from typing import List, Dict, Optional
 import requests
@@ -219,21 +220,38 @@ def analyze_with_gemini(
        
     # Provide your output in strict JSON format.
     # """
-    try:
-        response = client.models.generate_content(
-            model='gemini-2.0-flash',
-            contents=prompt,
+    # [LOW-004] Enforce a 30-second timeout on the Gemini API call to prevent
+    # blocking the entire synchronous pipeline if the API hangs.
+    result_holder: Dict = {}
 
-            config=types.GenerateContentConfig(
-                response_mime_type="application/json",
-                response_schema=SignalOutput,
-                temperature=0.0
-            ),
-        )
-        return response.parsed.model_dump() if response.parsed else json.loads(response.text)
-    except Exception as e:
-        logger.error(f"Gemini Analysis failed for {ticker}: {e}")
+    def _call_gemini():
+        try:
+            resp = client.models.generate_content(
+                model='gemini-2.0-flash',
+                contents=prompt,
+                config=types.GenerateContentConfig(
+                    response_mime_type="application/json",
+                    response_schema=SignalOutput,
+                    temperature=0.0
+                ),
+            )
+            result_holder['response'] = resp
+        except Exception as exc:
+            result_holder['error'] = exc
+
+    gemini_thread = threading.Thread(target=_call_gemini, daemon=True)
+    gemini_thread.start()
+    gemini_thread.join(timeout=30)
+
+    if gemini_thread.is_alive():
+        logger.error(f"Gemini timeout (30s) for {ticker} - analysis skipped")
         return None
+    if 'error' in result_holder:
+        logger.error(f"Gemini Analysis failed for {ticker}: {result_holder['error']}")
+        return None
+
+    response = result_holder['response']
+    return response.parsed.model_dump() if response.parsed else json.loads(response.text)
 
 def send_telegram_alert(signal: Dict, analysis: Dict):
     url = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage"
@@ -249,12 +267,16 @@ def send_telegram_alert(signal: Dict, analysis: Dict):
     else:
         text = f"📊 **TRADE ALERT: {ticker}**\n\n**Metrics:** Price: {price} | TGT: {target} | SL: {sl}\n**Conviction Score:** {analysis.get('conviction_score', 'N/A')}/100\n\n**Pitch:**\n{analysis.get('pitch', 'N/A')}\n\n**Rationale:**\n{analysis.get('rationale', 'N/A')}\n\n**Risks:**\n{analysis.get('risks', 'N/A')}"
 
-    safe_sig_id = str(sig_id)[:40] 
+    # [CRIT-001/002] Unified callback format: ACTION:signal_id:unix_ts
+    # Keeps payload well under Telegram's 64-byte callback_data limit.
+    # Action EXEC matches the handler in node-gateway/server/index.js.
+    safe_sig_id = str(sig_id)[:40]
+    ts = int(time.time())
     keyboard = {
         "inline_keyboard": [
             [
-                {"text": "✅ EXECUTE", "callback_data": json.dumps({"a": "E", "i": safe_sig_id}, separators=(',', ':'))},
-                {"text": "❌ REJECT", "callback_data": json.dumps({"a": "R", "i": safe_sig_id}, separators=(',', ':'))}
+                {"text": "✅ EXECUTE", "callback_data": f"EXEC:{safe_sig_id}:{ts}"},
+                {"text": "❌ REJECT",  "callback_data": f"REJ:{safe_sig_id}:{ts}"}
             ]
         ]
     }
@@ -369,17 +391,15 @@ def send_momentum_telegram_alert(
                 f"Risk: {analysis.get('risks', 'N/A')}\n\n"
                 f"⚠️ INTRADAY: Auto-square at 15:15 IST regardless of P&L.")
 
+    # [CRIT-001/002] Unified callback format: ACTION:signal_id:unix_ts
     sig_id = f"{ticker}_MOM"[:40]
+    ts = int(time.time())
     keyboard = {
         "inline_keyboard": [[
             {"text": "✅ EXECUTE INTRADAY",
-             "callback_data": json.dumps(
-                 {"a": "EM", "i": sig_id}, separators=(',', ':')
-             )},
+             "callback_data": f"EM:{sig_id}:{ts}"},
             {"text": "❌ REJECT",
-             "callback_data": json.dumps(
-                 {"a": "R", "i": sig_id}, separators=(',', ':')
-             )}
+             "callback_data": f"REJ:{sig_id}:{ts}"}
         ]]
     }
     payload = {

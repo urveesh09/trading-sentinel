@@ -22,7 +22,8 @@ class Settings(BaseSettings):
     STRATEGY_VERSION: str = "1.0.0"
     DB_PATH: str = "/data/cache.db"
     UNIVERSE_PATH: str = "/data/nifty500.csv"
-    TOKEN_INJECTION_SECRET: str = "default_secret"
+    # TOKEN_INJECTION_SECRET removed — the /token endpoint no longer uses it.
+    # The old commented-out endpoint that checked this secret has been removed.
     
         # Core Bankroll (Only used for INITIAL seeding)
     INITIAL_BANKROLL: float = 5000.0
