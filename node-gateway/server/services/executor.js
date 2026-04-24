@@ -102,7 +102,9 @@ async function executeSignal(signal, action, isIntraday = false) {
 
   // 4. Fill Verification (8 attempts x 1500ms = 12s)
   let isFilled = false;
-  let fillPrice = signal.close; // Default estimate
+  // [MED-003] Use LTP (fetched during drift check, ~60s more recent than signal.close)
+  // as the fill estimate when order confirmation times out.
+  let fillPrice = ltp;
   let rejectionReason = null;
 
   for (let i = 0; i < 8; i++) {
@@ -173,8 +175,12 @@ async function executeSignal(signal, action, isIntraday = false) {
           quantity: t1Shares,
           order_type: "LIMIT",
           product: "CNC",
-          //price: Number((signal.target_1 * 0.998).toFixed(2)) // Small buffer below trigger
-          price: Math.round((signal.target_1 * 0.998) * 20) / 20 // Rounds to nearest 0.05  
+          // [MED-012] Target GTT uses 0.998× (BELOW trigger) — intentional.
+          // For a SELL order: setting limit slightly below trigger ensures immediate
+          // fill when the target price is touched. This is the opposite of the stop-loss
+          // leg (1.002× ABOVE trigger) but both approaches guarantee execution.
+          // The inviolable rule "trigger * 1.002" applies to stop-loss legs only.
+          price: Math.round((signal.target_1 * 0.998) * 20) / 20 // Rounds to nearest 0.05
       }]
       });
       gttTargetId = targetRes.trigger_id;
@@ -204,6 +210,9 @@ async function executeSignal(signal, action, isIntraday = false) {
     target_1: signal.target_1,
     target_2: signal.target_2,
     source: isIntraday ? "MOMENTUM" : "SYSTEM",
+    // [MED-008] Pass product_type so Container B can store it in the positions table
+    // and auto_square_momentum() can read the correct product type for square-off orders.
+    product_type: isIntraday ? "MIS" : "CNC",
     order_id: String(orderId),
     gtt_stop_id: gttStopId ? String(gttStopId) : null,
     gtt_target_id: gttTargetId ? String(gttTargetId) : null,

@@ -16,14 +16,22 @@ telegram.bot.on('callback_query', async (query) => {
   try {
     if (!telegram.isValidChat(query.message.chat.id)) return;
 
-    // 1. Parse & Decode
-    const rawData = Buffer.from(query.data, 'base64').toString('utf-8');
-    const { a: action, id: signal_id, t: ts } = JSON.parse(rawData);
+    // 1. Parse unified callback format: ACTION:signal_id:unix_ts
+    // Built by telegram.js (EXEC:8charUUID:ts) and agent.py (EXEC:TICKER:ts / EM:TICKER_MOM:ts)
+    const colonIdx1    = query.data.indexOf(':');
+    const colonIdxLast = query.data.lastIndexOf(':');
+    if (colonIdx1 === -1 || colonIdxLast === colonIdx1) {
+      logger.warn({ event_type: 'callback_parse_error', data: query.data.substring(0, 32) });
+      return telegram.bot.answerCallbackQuery(query.id, { text: 'Invalid callback format.' });
+    }
+    const action    = query.data.substring(0, colonIdx1);
+    const signal_id = query.data.substring(colonIdx1 + 1, colonIdxLast);
+    const ts        = parseInt(query.data.substring(colonIdxLast + 1), 10);
 
-    // 2. Staleness Check (> 60s)
+    // 2. Staleness Check (> 5 minutes — allows reasonable human review time)
     const nowTs = Math.floor(Date.now() / 1000);
-    if (nowTs - ts > 60) {
-      await telegram.bot.answerCallbackQuery(query.id, { text: "Signal expired", show_alert: true });
+    if (!isNaN(ts) && nowTs - ts > 300) {
+      await telegram.bot.answerCallbackQuery(query.id, { text: 'Signal expired (> 5 min)', show_alert: true });
       await telegram.bot.editMessageText(query.message.text + '\n\n- EXPIRED', {
         chat_id: query.message.chat.id,
         message_id: query.message.message_id
@@ -31,31 +39,38 @@ telegram.bot.on('callback_query', async (query) => {
       return;
     }
 
-        // 3. Execution Lock / Idempotency Gate
-    const isMomentum = action === 'EM';
-    const cleanId = isMomentum ? signal_id.replace('_MOM', '') : signal_id;
+    // 3. Resolve signal from DB
+    // Container A swing signals: shortId is 8 lowercase hex chars (UUID prefix)
+    // Container C signals: signal_id is a ticker name (uppercase letters / hyphens) or TICKER_MOM
+    const isMomentum        = action === 'EM';
+    const cleanId           = isMomentum ? signal_id.replace('_MOM', '') : signal_id;
+    const isContainerASignal = /^[0-9a-f]{8}$/.test(signal_id);
 
-    const row = signalsDb.prepare(`SELECT status, payload_json FROM received_signals WHERE signal_id = ?`).get(cleanId);
-    
-    if (!row && !isMomentum) {
-      return telegram.bot.answerCallbackQuery(query.id, { text: "Signal not found in DB." });
+    let row = null;
+    if (isContainerASignal) {
+      row = signalsDb.prepare(
+        `SELECT signal_id, status, payload_json FROM received_signals WHERE signal_id LIKE ?`
+      ).get(signal_id + '%');
     }
-    
+
+    // 4. For DB-backed signals, enforce PENDING-only execution
     if (row && row.status !== 'PENDING') {
       await telegram.bot.answerCallbackQuery(query.id, { text: `Already ${row.status}. No action taken.`, show_alert: true });
       return;
     }
 
-    // 4. Market Hours Check (Only for Executions)
+    // 5. Market Hours Check (Only for Executions)
     if ((action === 'EXEC' || action === 'EM') && !isMarketOpen()) {
-      await telegram.bot.answerCallbackQuery(query.id, { text: "Market closed. Cannot execute now.", show_alert: true });
+      await telegram.bot.answerCallbackQuery(query.id, { text: 'Market closed. Cannot execute now.', show_alert: true });
       return;
     }
 
-    // 5. Reject Action
-    if (action === 'R' || action === 'REJ') {
-      if (row) signalsDb.prepare(`UPDATE received_signals SET status = 'REJECTED' WHERE signal_id = ?`).run(cleanId);
-      await telegram.bot.answerCallbackQuery(query.id, { text: "Signal Rejected" });
+    // 6. Reject Action
+    if (action === 'REJ') {
+      if (row) {
+        signalsDb.prepare(`UPDATE received_signals SET status = 'REJECTED' WHERE signal_id = ?`).run(row.signal_id);
+      }
+      await telegram.bot.answerCallbackQuery(query.id, { text: 'Signal Rejected' });
       await telegram.bot.editMessageText(query.message.text + '\n\n- REJECTED', {
         chat_id: query.message.chat.id,
         message_id: query.message.message_id
@@ -64,76 +79,120 @@ telegram.bot.on('callback_query', async (query) => {
       return;
     }
 
-        // 6. Execute Action (Swing)
+    // 7. Execute Action (Swing) — handles both Container A (DB-backed) and Container C (live fetch)
     if (action === 'EXEC') {
+      let signalData;
+      let fullSignalId = null;
+
+      if (row) {
+        // Container A path: signal pre-stored in DB with full UUID
+        signalData   = JSON.parse(row.payload_json);
+        fullSignalId = row.signal_id; // full UUID from DB row
+        signalsDb.prepare(`UPDATE received_signals SET status = 'EXECUTING' WHERE signal_id = ?`).run(fullSignalId);
+        await telegram.bot.answerCallbackQuery(query.id, { text: 'Executing Swing Trade...' });
+      } else {
+        // Container C path: signal not in DB, fetch live from Container B
+        await telegram.bot.answerCallbackQuery(query.id, { text: 'Fetching Signal Data...' });
+        try {
+          const controller = new AbortController();
+          const timeout = setTimeout(() => controller.abort(), config.PYTHON_ENGINE_TIMEOUT_MS);
+          const resp = await fetch(`${config.PYTHON_ENGINE_URL}/signals`, {
+            headers: { 'X-Internal-Secret': config.INTERNAL_API_SECRET },
+            signal: controller.signal
+          });
+          clearTimeout(timeout);
+          const data = await resp.json();
+          signalData = data.signals?.find(s => s.ticker === signal_id.toUpperCase());
+          if (!signalData) {
+            await telegram.bot.answerCallbackQuery(query.id, { text: 'Signal not found. It may have expired.', show_alert: true });
+            return;
+          }
+        } catch (err) {
+          await telegram.bot.answerCallbackQuery(query.id, { text: `Fetch failed: ${err.message}`, show_alert: true });
+          return;
+        }
+      }
+
       try {
-        const signalData = JSON.parse(row.payload_json);
-        signalsDb.prepare(`UPDATE received_signals SET status = 'EXECUTING' WHERE signal_id = ?`).run(cleanId);
-        
-        await telegram.bot.answerCallbackQuery(query.id, { text: "Executing Swing Trade..." });
         const result = await executor.executeSignal(signalData, 'EXEC', false);
-        
-        signalsDb.prepare(`UPDATE received_signals SET status = 'EXECUTED' WHERE signal_id = ?`).run(cleanId);
+        if (fullSignalId) {
+          signalsDb.prepare(`UPDATE received_signals SET status = 'EXECUTED' WHERE signal_id = ?`).run(fullSignalId);
+        }
         await telegram.bot.editMessageText(query.message.text + `\n\n✅ EXECUTED: ${result.orderId}`, {
           chat_id: query.message.chat.id,
           message_id: query.message.message_id
         });
       } catch (err) {
-        signalsDb.prepare(`UPDATE received_signals SET status = 'PENDING' WHERE signal_id = ?`).run(cleanId);
+        if (fullSignalId) {
+          signalsDb.prepare(`UPDATE received_signals SET status = 'PENDING' WHERE signal_id = ?`).run(fullSignalId);
+        }
         logger.error({ event_type: 'execution_failed', err: err.message });
         await telegram.bot.answerCallbackQuery(query.id, { text: `Execution Failed: ${err.message}`, show_alert: true });
       }
       return;
     }
 
-    // 7. Execute Action (Momentum)
+    // 8. Execute Action (Momentum) — with atomic idempotency lock
     if (action === 'EM') {
+      const today         = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
+      const momentumLockId = `${cleanId}_MOM_${today}`;
+
+      // Atomic lock: INSERT fails on duplicate → second click is rejected
+      const lockTx = signalsDb.transaction(() => {
+        const existing = signalsDb.prepare(
+          `SELECT status FROM received_signals WHERE signal_id = ?`
+        ).get(momentumLockId);
+        if (existing) return { locked: true, status: existing.status };
+        signalsDb.prepare(`
+          INSERT INTO received_signals (signal_id, ticker, signal_time, received_at, payload_json, status)
+          VALUES (?, ?, ?, ?, '{}', 'EXECUTING')
+        `).run(momentumLockId, cleanId, new Date().toISOString(), new Date().toISOString());
+        return { locked: false };
+      });
+
+      const lockResult = lockTx();
+      if (lockResult.locked) {
+        await telegram.bot.answerCallbackQuery(query.id, { text: `Already ${lockResult.status}. No double orders.`, show_alert: true });
+        return;
+      }
+
       try {
-        // Momentum signals might not be in DB yet as they come from Container C directly sometimes
-        // But the pipeline now ensures they are handled. 
-        // For Momentum, we allow 'row' to be null if we can find it in 'current_momentum_signals' (Engine)
-        // But easier is to just use the data sent in the callback if we had it.
-        // Since we only have the ID, we must fetch the signal from Container B.
-        
-        await telegram.bot.answerCallbackQuery(query.id, { text: "Fetching Momentum Data..." });
-        
-        const ticker = signal_id.replace('_MOM', '');
-        const engineUrl = config.PYTHON_ENGINE_URL;
-        const resp = await fetch(`${engineUrl}/momentum-signals`, {
-           headers: { 'X-Internal-Secret': config.INTERNAL_API_SECRET }
+        await telegram.bot.answerCallbackQuery(query.id, { text: 'Fetching Momentum Data...' });
+
+        const controller = new AbortController();
+        const timeout    = setTimeout(() => controller.abort(), config.PYTHON_ENGINE_TIMEOUT_MS);
+        const resp       = await fetch(`${config.PYTHON_ENGINE_URL}/momentum-signals`, {
+          headers: { 'X-Internal-Secret': config.INTERNAL_API_SECRET },
+          signal: controller.signal
         });
-        const data = await resp.json();
-        const signalData = data.signals.find(s => s.ticker === ticker);
+        clearTimeout(timeout);
+        const data       = await resp.json();
+        const signalData = data.signals?.find(s => s.ticker === cleanId);
 
         if (!signalData) {
-          throw new Error("Momentum signal not found in Engine state.");
+          signalsDb.prepare(`UPDATE received_signals SET status = 'PENDING' WHERE signal_id = ?`).run(momentumLockId);
+          throw new Error('Momentum signal not found in Engine state.');
         }
 
-        await telegram.bot.answerCallbackQuery(query.id, { text: "Executing Momentum Trade..." });
         const result = await executor.executeSignal(signalData, 'EM', true);
 
-        // Update DB (Manually create the signal record if it doesn't exist)
-        if (!row) {
-          signalsDb.prepare(`
-            INSERT INTO received_signals (signal_id, ticker, signal_time, received_at, payload_json, status)
-            VALUES (?, ?, ?, ?, ?, 'EXECUTED')
-          `).run(cleanId, ticker, new Date().toISOString(), new Date().toISOString(), JSON.stringify(signalData), 'EXECUTED');
-        } else {
-          signalsDb.prepare(`UPDATE received_signals SET status = 'EXECUTED' WHERE signal_id = ?`).run(cleanId);
-        }
+        // Persist full payload now that we have it, mark EXECUTED
+        signalsDb.prepare(`
+          UPDATE received_signals SET status = 'EXECUTED', payload_json = ? WHERE signal_id = ?
+        `).run(JSON.stringify(signalData), momentumLockId);
 
         await telegram.bot.editMessageText(query.message.text + `\n\n⚡ EXECUTED (MIS): ${result.orderId}`, {
           chat_id: query.message.chat.id,
           message_id: query.message.message_id
         });
-
       } catch (err) {
+        // Release lock so user can retry
+        signalsDb.prepare(`UPDATE received_signals SET status = 'PENDING' WHERE signal_id = ?`).run(momentumLockId);
         logger.error({ event_type: 'momentum_execution_failed', err: err.message });
         await telegram.bot.answerCallbackQuery(query.id, { text: `Momentum Failed: ${err.message}`, show_alert: true });
       }
       return;
     }
-
 
   } catch (err) {
     logger.error({ event_type: 'telegram_callback_error', err: err.message });
@@ -145,6 +204,15 @@ telegram.bot.on('callback_query', async (query) => {
 // ─────────────────────────────────────────────────────────────────────────────
 async function runStartupRecovery() {
   logger.info({ event_type: 'startup_recovery' }, 'Checking for unsynced completed orders...');
+
+  // [HIGH-005] Reset signals stuck in EXECUTING state (process crash mid-execution)
+  const stuckResult = signalsDb.prepare(
+    `UPDATE received_signals SET status = 'PENDING' WHERE status = 'EXECUTING'`
+  ).run();
+  if (stuckResult.changes > 0) {
+    logger.warn({ event_type: 'stuck_signal_recovery', count: stuckResult.changes },
+      `Reset ${stuckResult.changes} stuck EXECUTING signal(s) to PENDING`);
+  }
   
   const unsynced = signalsDb.prepare(`
     SELECT e.*, r.payload_json 

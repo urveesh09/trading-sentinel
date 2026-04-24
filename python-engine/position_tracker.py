@@ -14,9 +14,16 @@ async def init_positions_db(db_path: str):
                 ticker TEXT, exchange TEXT, entry_date TEXT, entry_price REAL, shares INTEGER,
                 stop_loss_initial REAL, trailing_stop_current REAL, target_1 REAL, target_2 REAL,
                 atr_14_at_entry REAL, highest_close_since_entry REAL, status TEXT, source TEXT,
-                exit_price REAL, exit_date TEXT, realised_pnl REAL, r_multiple REAL
+                exit_price REAL, exit_date TEXT, realised_pnl REAL, r_multiple REAL,
+                product_type TEXT DEFAULT 'CNC'
             )
         """)
+        # [MED-008] Migration: add product_type column to pre-existing tables on the
+        # persistent volume. ALTER TABLE silently fails if the column already exists.
+        try:
+            await db.execute("ALTER TABLE positions ADD COLUMN product_type TEXT DEFAULT 'CNC'")
+        except Exception:
+            pass  # Column already present — safe to ignore
         await db.commit()
 
 async def get_open_positions(db_path: str) -> List[dict]:

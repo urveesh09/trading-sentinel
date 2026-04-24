@@ -609,6 +609,29 @@ async def auto_square_momentum():
             logger.info("auto_square_sent", ticker=ticker,
                         order_type=order_type, pnl_estimate=current_pnl)
 
+            # [MED-009] Record position close in Container B's DB using LTP as the
+            # estimated fill price. The square-off order was just placed; we do not
+            # have broker fill confirmation, so LTP is the best estimate available.
+            gross        = (ltp - pos['entry_price']) * pos['shares']
+            costs        = calc_zerodha_costs(pos['entry_price'], ltp, pos['shares'], is_intraday=True)
+            realised_pnl = gross - costs
+            risk_initial = (pos['entry_price'] - pos.get('stop_loss_initial', pos['entry_price'] * 0.95)) * pos['shares']
+            r_multiple   = realised_pnl / risk_initial if risk_initial > 0 else 0
+
+            async with aiosqlite.connect(settings.DB_PATH) as db:
+                await db.execute("""
+                    UPDATE positions
+                    SET status='CLOSED_MANUAL', exit_price=?, exit_date=?,
+                        realised_pnl=?, r_multiple=?
+                    WHERE ticker=? AND source='MOMENTUM' AND status='OPEN'
+                """, (ltp, datetime.now(timezone.utc).isoformat(),
+                      realised_pnl, r_multiple, ticker))
+                await db.commit()
+
+            await record_trade_close(settings.DB_PATH, ticker, realised_pnl)
+            logger.info("auto_square_position_closed", ticker=ticker,
+                        exit_price=ltp, pnl=round(realised_pnl, 2), r=round(r_multiple, 4))
+
         except Exception as e:
             logger.error("auto_square_failed", ticker=ticker, error=str(e))
             # On failure: send Telegram alert for manual intervention
@@ -740,6 +763,8 @@ async def add_manual_position(request: Request):
     # If source is explicitly sent (e.g. MOMENTUM), use it. 
     # Default to SYSTEM for swing.
     source      = data.get("source", "SYSTEM")
+    # [MED-008] Persist product_type so auto_square_momentum() can read it correctly.
+    product_type = data.get("product_type", "CNC")
     
     stop_loss   = float(data.get("stop_loss", entry_price * 0.95))
     target_1    = float(data.get("target_1", entry_price * 1.05))
@@ -750,11 +775,11 @@ async def add_manual_position(request: Request):
             INSERT INTO positions (
                 ticker, exchange, entry_date, entry_price, shares,
                 stop_loss_initial, trailing_stop_current, target_1, target_2,
-                atr_14_at_entry, highest_close_since_entry, status, source
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                atr_14_at_entry, highest_close_since_entry, status, source, product_type
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """, (ticker, data.get("exchange", "NSE"), datetime.now(timezone.utc).isoformat(),
               entry_price, shares, stop_loss, stop_loss, target_1, target_2,
-              0.0, entry_price, "OPEN", source))
+              0.0, entry_price, "OPEN", source, product_type))
         await db.commit()
     
     logger.info("position_added_manually", ticker=ticker, source=source)
