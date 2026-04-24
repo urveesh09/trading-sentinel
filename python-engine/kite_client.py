@@ -5,7 +5,7 @@ import httpx
 import sqlite3
 import pandas as pd
 import structlog
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 import aiosqlite
 
 logger = structlog.get_logger()
@@ -236,14 +236,24 @@ class KiteClient:
             )
             rows = await cursor.fetchall()
             if rows and len(rows) >= 4:   # minimum 4 candles for VWAP
-                logger.info("data_fetch", event_type="intraday_cache_hit",
-                            ticker=ticker, candles=len(rows))
-                df = pd.DataFrame(
-                    rows, columns=['datetime','open','high','low','close','volume']
-                )
-                df['datetime'] = pd.to_datetime(df['datetime'])
-                df.set_index('datetime', inplace=True)
-                return df
+                last_cached_dt = datetime.strptime(rows[-1][0], "%Y-%m-%d %H:%M:%S")
+                to_dt_obj      = datetime.strptime(to_datetime,  "%Y-%m-%d %H:%M:%S")
+                # Cache is fresh only if the last stored candle covers up to the
+                # expected latest complete candle (one interval before scan time).
+                # If stale, fall through to API so new candles are fetched.
+                expected_latest = to_dt_obj - timedelta(minutes=15)
+                if last_cached_dt >= expected_latest:
+                    logger.info("data_fetch", event_type="intraday_cache_hit",
+                                ticker=ticker, candles=len(rows))
+                    df = pd.DataFrame(
+                        rows, columns=['datetime','open','high','low','close','volume']
+                    )
+                    df['datetime'] = pd.to_datetime(df['datetime'])
+                    df.set_index('datetime', inplace=True)
+                    return df
+                logger.info("data_fetch", event_type="intraday_cache_stale",
+                            ticker=ticker, last_candle=str(last_cached_dt),
+                            expected=str(expected_latest))
 
         # Cache miss → API
         logger.info("data_fetch", event_type="intraday_cache_miss", ticker=ticker)
