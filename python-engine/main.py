@@ -385,11 +385,16 @@ async def run_momentum_screener():
     bankroll       = await current_bankroll(settings.DB_PATH)
     momentum_pool  = bankroll * settings.MOMENTUM_POOL_PCT  # 50% of bankroll = ₹2,500 at ₹5k
 
-    # Market opens at 09:15 IST
-    market_open = now_ist.replace(hour=9, minute=15, second=0, microsecond=0)
-    
+    # Market opens at 09:15 IST, closes at 15:30 IST
+    market_open  = now_ist.replace(hour=9,  minute=15, second=0, microsecond=0)
+    market_close = now_ist.replace(hour=15, minute=30, second=0, microsecond=0)
+
     if now_ist < market_open:
         logger.info("momentum_scan_skip", reason="before_market_open_ist")
+        return
+
+    if now_ist > market_close:
+        logger.info("momentum_scan_skip", reason="after_market_close_ist")
         return
 
     from_dt = market_open.strftime('%Y-%m-%d %H:%M:%S')
