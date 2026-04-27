@@ -32,6 +32,13 @@ current_momentum_signals = []
 market_regime = "UNKNOWN"
 last_run = None
 
+# Guard against concurrent post_login_initialization runs.
+# node-gateway retries the /token endpoint up to 4 times (3 retries + initial)
+# because post_login_initialization blocks for 20+ seconds while the handler
+# has a 2-second AbortController. Without this flag, 4 concurrent screener
+# runs fire simultaneously, each fetching the full universe from the Kite API.
+_init_running = False
+
 # 🚨 FIX: Add short-term memory to prevent 15-minute spam
 signaled_momentum_today = set()
 last_momentum_date = None
@@ -148,6 +155,11 @@ app = FastAPI(title="Quant Engine Container B", lifespan=lifespan)
 #         logger.error("initial_backtest_error", error=str(e))
 
 async def post_login_initialization():
+    global _init_running
+    if _init_running:
+        logger.info("post_login_init_skipped_already_running")
+        return
+    _init_running = True
     try:
         logger.info("running_post_login_setup")
         await kite.refresh_instrument_cache()
@@ -163,6 +175,8 @@ async def post_login_initialization():
         await run_momentum_screener()  # NEW: momentum scan on login
     except Exception as e:
         logger.error("post_login_init_error", error=str(e))
+    finally:
+        _init_running = False
 
 NIFTY_100_TICKERS = [
     "RELIANCE", "TCS", "HDFCBANK", "ICICIBANK", "INFY", "HINDUNILVR", "ITC", "SBIN", "BHARTIARTL", "KOTAKBANK",
@@ -850,7 +864,10 @@ class TokenPayload(BaseModel):
 @app.post("/token")
 async def inject_token(payload: TokenPayload):
     kite.set_token(payload.access_token)
-    await post_login_initialization()
+    # Fire-and-forget: return 200 immediately so node-gateway's 2-second
+    # AbortController does not trigger retries that spawn concurrent screener runs.
+    # post_login_initialization runs in the background (Q4 behaviour is preserved).
+    asyncio.create_task(post_login_initialization())
     return {"status": "ok"}
 
 
