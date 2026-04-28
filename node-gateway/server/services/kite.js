@@ -71,7 +71,7 @@ module.exports = {
   },
   
   getLTP: async (instruments) => {
-    const res = await withKite('getLTP', () => kite.getLtp(instruments));
+    const res = await withKite('getLTP', () => kite.getLTP(instruments));
     return res;
   },
   

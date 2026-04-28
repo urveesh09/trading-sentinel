@@ -8,7 +8,7 @@ jest.mock('kiteconnect', () => {
     getLoginURL: jest.fn().mockReturnValue('https://kite.zerodha.com/connect/login?v=3&api_key=fake'),
     generateSession: jest.fn(),
     setAccessToken: jest.fn(),
-    getLtp: jest.fn(),
+    getLTP: jest.fn(),
     placeOrder: jest.fn(),
     getOrderHistory: jest.fn(),
     placeGTT: jest.fn(),
@@ -38,7 +38,7 @@ describe('Kite Service', () => {
   test('TokenException triggers markExpired and throws TokenExpiredError (Q6)', async () => {
     const tokenError = new Error('Token expired');
     tokenError.name = 'TokenException';
-    mockKite.getLtp.mockRejectedValue(tokenError);
+    mockKite.getLTP.mockRejectedValue(tokenError);
 
     await expect(kiteService.getLTP(['NSE:RELIANCE'])).rejects.toThrow(TokenExpiredError);
     expect(tokenStore.markExpired).toHaveBeenCalled();
@@ -72,7 +72,7 @@ describe('Kite Service', () => {
 
   // ─── Happy path ───
   test('getLTP returns LTP data', async () => {
-    mockKite.getLtp.mockResolvedValue({ 'NSE:RELIANCE': { last_price: 1000 } });
+    mockKite.getLTP.mockResolvedValue({ 'NSE:RELIANCE': { last_price: 1000 } });
     const result = await kiteService.getLTP(['NSE:RELIANCE']);
     expect(result['NSE:RELIANCE'].last_price).toBe(1000);
   });
@@ -103,7 +103,7 @@ describe('Kite Service', () => {
 
   // ─── Rate limiter ───
   test('rapid calls do not throw (rate limiter queues them)', async () => {
-    mockKite.getLtp.mockResolvedValue({ 'NSE:INFY': { last_price: 500 } });
+    mockKite.getLTP.mockResolvedValue({ 'NSE:INFY': { last_price: 500 } });
     // Make 3 rapid calls - should all resolve (limiter starts with 5 tokens)
     const results = await Promise.all([
       kiteService.getLTP(['NSE:INFY']),
@@ -111,12 +111,12 @@ describe('Kite Service', () => {
       kiteService.getLTP(['NSE:INFY']),
     ]);
     expect(results).toHaveLength(3);
-    expect(mockKite.getLtp).toHaveBeenCalledTimes(3);
+    expect(mockKite.getLTP).toHaveBeenCalledTimes(3);
   });
 
   // ─── setAccessToken is called on each API call ───
   test('setAccessToken is called before each API call', async () => {
-    mockKite.getLtp.mockResolvedValue({});
+    mockKite.getLTP.mockResolvedValue({});
     await kiteService.getLTP(['NSE:INFY']);
     expect(mockKite.setAccessToken).toHaveBeenCalledWith('fake_token');
   });
