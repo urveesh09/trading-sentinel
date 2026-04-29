@@ -57,8 +57,11 @@ async function executeSignal(signal, action, isIntraday = false) {
     throw new OrderExecutionError(`Failed to fetch LTP for drift check: ${err.message}`);
   }
   
-  const ltp = ltpData[`NSE:${signal.ticker}`]?.last_price;
-  if (!ltp) throw new OrderExecutionError('Invalid LTP response');
+  const ltp = ltpData?.[`NSE:${signal.ticker}`]?.last_price;
+  if (!ltp) {
+    logger.warn({ event_type: 'ltp_invalid_response', ticker: signal.ticker, ltpData });
+    throw new OrderExecutionError('Invalid LTP response');
+  }
   
   const drift = Math.abs(ltp - signal.close) / signal.close;
   if (drift > 0.02) {

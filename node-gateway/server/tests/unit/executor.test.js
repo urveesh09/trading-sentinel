@@ -223,6 +223,11 @@ describe('executeSignal()', () => {
     await expect(executeSignal(makeSignal(), 'EXEC')).rejects.toThrow(OrderExecutionError);
   });
 
+  test('throws OrderExecutionError when LTP resolves to undefined', async () => {
+    kite.getLTP.mockResolvedValue(undefined);
+    await expect(executeSignal(makeSignal(), 'EXEC')).rejects.toThrow(OrderExecutionError);
+  });
+
   // ─── Order placement failure ───
   test('throws OrderExecutionError when order placement fails after retries', async () => {
     kite.placeOrder.mockRejectedValue(new Error('Kite unavailable'));
