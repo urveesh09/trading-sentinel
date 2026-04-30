@@ -71,8 +71,51 @@ module.exports = {
   },
   
   getLTP: async (instruments) => {
-    const res = await withKite('getLTP', () => kite.getLTP(instruments));
-    return res;
+    let lastErr;
+    for (let attempt = 1; attempt <= 3; attempt++) {
+      try {
+        const res = await withKite('getLTP', () => kite.getLTP(instruments));
+
+        // SDK silently resolves undefined when response.data.data is absent from
+        // Zerodha's JSON body (e.g. {"status":"success"} with no data field).
+        if (res == null) {
+          throw new OrderExecutionError(
+            `Zerodha getLTP returned no data for [${instruments.join(', ')}]`
+          );
+        }
+
+        // SDK resolves with { error_type, message } instead of throwing when the
+        // response Content-Type header doesn't exactly match "application/json"
+        // (e.g. "application/json; charset=utf-8"). This is a known v3.2.0 SDK quirk.
+        if (res.error_type) {
+          throw new OrderExecutionError(
+            `Zerodha getLTP SDK error [${res.error_type}]: ${res.message}`
+          );
+        }
+
+        return res;
+      } catch (err) {
+        // Token expiry requires user re-login — retrying is pointless.
+        if (err.name === 'TokenExpiredError') throw err;
+
+        lastErr = err;
+        if (attempt < 3) {
+          logger.warn({
+            event_type: 'ltp_retry',
+            instruments,
+            attempt,
+            reason: err.message
+          }, `getLTP attempt ${attempt} failed, retrying in ${500 * attempt}ms`);
+          await new Promise(resolve => setTimeout(resolve, 500 * attempt));
+        }
+      }
+    }
+    logger.error({
+      event_type: 'ltp_all_retries_failed',
+      instruments,
+      reason: lastErr.message
+    }, 'getLTP failed after 3 attempts');
+    throw lastErr;
   },
   
   placeOrder: async (params) => {
