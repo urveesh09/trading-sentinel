@@ -120,4 +120,43 @@ describe('Kite Service', () => {
     await kiteService.getLTP(['NSE:INFY']);
     expect(mockKite.setAccessToken).toHaveBeenCalledWith('fake_token');
   });
+
+  // ─── getLTP response validation ───
+  test('getLTP throws OrderExecutionError when SDK resolves undefined (missing data field)', async () => {
+    // Reproduces the production bug: SDK's response interceptor returns response.data.data
+    // which is undefined when Zerodha's JSON body has no `data` field.
+    mockKite.getLTP.mockResolvedValue(undefined);
+    await expect(kiteService.getLTP(['NSE:LICHSGFIN'])).rejects.toThrow(OrderExecutionError);
+    await expect(kiteService.getLTP(['NSE:LICHSGFIN'])).rejects.toThrow('no data');
+  }, 10000);
+
+  test('getLTP throws OrderExecutionError when SDK resolves DataException error object', async () => {
+    // SDK returns { error_type, message } instead of throwing when Content-Type header
+    // is "application/json; charset=utf-8" (doesn't exactly match "application/json").
+    mockKite.getLTP.mockResolvedValue({
+      error_type: 'DataException',
+      message: 'Unknown content type (application/json; charset=utf-8)',
+    });
+    await expect(kiteService.getLTP(['NSE:ADANIPORTS'])).rejects.toThrow(OrderExecutionError);
+    await expect(kiteService.getLTP(['NSE:ADANIPORTS'])).rejects.toThrow('DataException');
+  }, 10000);
+
+  test('getLTP retries and succeeds when first attempt returns undefined', async () => {
+    // First call fails (undefined), second succeeds. Trade should go through.
+    mockKite.getLTP
+      .mockResolvedValueOnce(undefined)
+      .mockResolvedValue({ 'NSE:RELIANCE': { last_price: 2500 } });
+    const result = await kiteService.getLTP(['NSE:RELIANCE']);
+    expect(result['NSE:RELIANCE'].last_price).toBe(2500);
+    expect(mockKite.getLTP).toHaveBeenCalledTimes(2);
+  }, 5000);
+
+  test('getLTP does NOT retry on TokenExpiredError', async () => {
+    const tokenError = new Error('Token expired');
+    tokenError.name = 'TokenException';
+    mockKite.getLTP.mockRejectedValue(tokenError);
+    await expect(kiteService.getLTP(['NSE:RELIANCE'])).rejects.toThrow(TokenExpiredError);
+    // Should have been called only ONCE — no retry on auth failure
+    expect(mockKite.getLTP).toHaveBeenCalledTimes(1);
+  });
 });
