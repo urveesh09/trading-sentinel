@@ -106,12 +106,13 @@ describe('Kite Service', () => {
     );
   });
 
-  test('getLTP passes instruments as query param', async () => {
+  test('getLTP serialises instruments as repeated params (no brackets)', async () => {
+    // Zerodha requires i=NSE:A&i=NSE:B — axios default produces i[]=NSE:A which Zerodha rejects.
+    // The fix uses URLSearchParams.append() so the URL contains i=NSE:INFY (no brackets).
     await kiteService.getLTP(['NSE:INFY']);
-    expect(axios.get).toHaveBeenCalledWith(
-      expect.any(String),
-      expect.objectContaining({ params: { i: ['NSE:INFY'] } })
-    );
+    const calledUrl = axios.get.mock.calls[0][0];
+    expect(calledUrl).toContain('i=NSE%3AINFY');
+    expect(calledUrl).not.toContain('i[]=');
   });
 
   test('placeOrder calls kite.placeOrder with regular variety', async () => {
