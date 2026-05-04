@@ -85,8 +85,12 @@ module.exports = {
     let lastErr;
     for (let attempt = 1; attempt <= 3; attempt++) {
       try {
-        const response = await axios.get(`${KITE_API_ROOT}/quote/ltp`, {
-          params: { i: instruments },
+        // Zerodha expects repeated params without brackets: i=NSE:A&i=NSE:B
+        // Axios default serialises arrays as i[]=NSE:A which Zerodha rejects.
+        const searchParams = new URLSearchParams();
+        instruments.forEach(inst => searchParams.append('i', inst));
+
+        const response = await axios.get(`${KITE_API_ROOT}/quote/ltp?${searchParams.toString()}`, {
           headers: {
             'X-Kite-Version': '3',
             'Authorization': `token ${config.ZERODHA_API_KEY}:${accessToken}`,
@@ -103,6 +107,8 @@ module.exports = {
           bodyStatus: response.data?.status,
           hasDataField: response.data != null && 'data' in response.data,
           dataIsNull: response.data?.data == null,
+          zerodhaErrorType: response.data?.error_type ?? null,
+          zerodhaErrorMessage: response.data?.message ?? null,
         });
 
         // Zerodha can return 200 OK with an error body (e.g. token expired mid-call)
