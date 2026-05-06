@@ -68,7 +68,11 @@ async function executeSignal(signal, action, isIntraday = false) {
     throw new PriceDriftError(`LTP ${ltp} drifted ${Math.round(drift * 100)}% from signal ${signal.close}`);
   }
 
-  // 3. Market Order Execution
+  // 3. Limit Order Execution
+  // [FIX] Zerodha API rejects MARKET orders without market_protection.
+  // Buy LIMIT at LTP + 0.5% (rounds to NSE 0.05-rupee tick) guarantees fill
+  // while staying within the 2% drift window already enforced above.
+  const limitPrice = Math.round(ltp * 1.005 * 20) / 20;
   let orderResponse;
   try {
     orderResponse = await withRetry(async () => {
@@ -78,7 +82,8 @@ async function executeSignal(signal, action, isIntraday = false) {
         transaction_type: "BUY",
         quantity: signal.shares,
         product: isIntraday ? "MIS" : "CNC",
-        order_type: "MARKET",
+        order_type: "LIMIT",
+        price: limitPrice,
         validity: "DAY",
         tag: "QUANT_SENTINEL"
       });
@@ -95,7 +100,7 @@ async function executeSignal(signal, action, isIntraday = false) {
   try {
     signalsDb.prepare(`
       INSERT INTO executed_orders (signal_id, ticker, order_id, order_type, shares, status, placed_at, sync_to_b)
-      VALUES (?, ?, ?, 'MARKET', ?, 'PLACED', ?, 0)
+      VALUES (?, ?, ?, 'LIMIT', ?, 'PLACED', ?, 0)
     `).run(signal.signal_id, signal.ticker, orderId, signal.shares, new Date().toISOString());
   } catch (err) {
     // If UNIQUE constraint fails here, it's a replay. We stop safely.

@@ -104,11 +104,14 @@ telegram.bot.on('callback_query', async (query) => {
           const data = await resp.json();
           signalData = data.signals?.find(s => s.ticker === signal_id.toUpperCase());
           if (!signalData) {
-            await telegram.bot.answerCallbackQuery(query.id, { text: 'Signal not found. It may have expired.', show_alert: true });
+            // [FIX] callback already answered above; second answerCallbackQuery silently fails.
+            // Use sendAlert so the user actually sees this.
+            await telegram.sendAlert(`❌ Signal for ${signal_id.toUpperCase()} not found in Engine — it may have expired. No order placed.`);
             return;
           }
         } catch (err) {
-          await telegram.bot.answerCallbackQuery(query.id, { text: `Fetch failed: ${err.message}`, show_alert: true });
+          // [FIX] same — callback already answered, use sendAlert instead.
+          await telegram.sendAlert(`❌ Failed to fetch signal for ${signal_id.toUpperCase()}: ${err.message}`);
           return;
         }
       }
@@ -127,7 +130,9 @@ telegram.bot.on('callback_query', async (query) => {
           signalsDb.prepare(`UPDATE received_signals SET status = 'PENDING' WHERE signal_id = ?`).run(fullSignalId);
         }
         logger.error({ event_type: 'execution_failed', err: err.message });
-        await telegram.bot.answerCallbackQuery(query.id, { text: `Execution Failed: ${err.message}`, show_alert: true });
+        // [FIX] callback was already answered with 'Executing...' — second call silently fails.
+        // sendAlert ensures the user sees the failure.
+        await telegram.sendAlert(`❌ Swing execution FAILED for ${signalData?.ticker || signal_id}:\n${err.message}\n\nSignal reset to PENDING.`);
       }
       return;
     }
@@ -189,7 +194,9 @@ telegram.bot.on('callback_query', async (query) => {
         // Release lock so user can retry
         signalsDb.prepare(`UPDATE received_signals SET status = 'PENDING' WHERE signal_id = ?`).run(momentumLockId);
         logger.error({ event_type: 'momentum_execution_failed', err: err.message });
-        await telegram.bot.answerCallbackQuery(query.id, { text: `Momentum Failed: ${err.message}`, show_alert: true });
+        // [FIX] callback was already answered with 'Fetching Momentum Data...' — second call silently fails.
+        // sendAlert ensures the user sees the failure and knows to retry.
+        await telegram.sendAlert(`❌ Momentum buy FAILED for ${cleanId}:\n${err.message}\n\nSignal reset to PENDING — retry the button.`);
       }
       return;
     }

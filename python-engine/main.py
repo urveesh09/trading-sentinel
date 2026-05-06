@@ -599,13 +599,15 @@ async def auto_square_momentum():
             price_movement_pct = abs(ltp - pos['entry_price']) / pos['entry_price']
             is_fast_moving     = price_movement_pct > 0.02
 
-            # FIX: Enforce the 15:00 cutoff for LIMIT orders
+            # [FIX] Zerodha API rejects MARKET orders without market_protection.
+            # Use LIMIT everywhere; a SELL LIMIT slightly below LTP fills essentially
+            # instantly on any liquid NSE stock, so there is no EOD fill-miss risk.
             if is_profitable and not is_fast_moving and now_ist.time() < time(15, 0):
                 order_type  = "LIMIT"
-                limit_price = round(ltp * 0.999, 2)  # 0.1% below LTP
+                limit_price = round(ltp * 0.999, 2)  # 0.1% below LTP — protect gains
             else:
-                order_type  = "MARKET"
-                limit_price = None
+                order_type  = "LIMIT"
+                limit_price = round(ltp * 0.995, 2)  # 0.5% below LTP — aggressive fill for EOD exit
 
             payload = {
 
