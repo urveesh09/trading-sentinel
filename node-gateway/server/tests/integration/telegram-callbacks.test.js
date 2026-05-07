@@ -33,7 +33,7 @@ jest.mock('../../utils/market-hours', () => ({
 }));
 
 const mockPrepare = jest.fn();
-const mockRun = jest.fn();
+const mockRun = jest.fn().mockReturnValue({ changes: 0, lastInsertRowid: 0 });
 const mockGet = jest.fn();
 const mockAll = jest.fn().mockReturnValue([]);
 mockPrepare.mockReturnValue({ run: mockRun, get: mockGet, all: mockAll });

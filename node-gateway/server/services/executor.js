@@ -11,6 +11,20 @@ const {
 const { logger } = require('../middleware/logger');
 
 /**
+ * Snap a price to the nearest valid NSE tick (0.10 rupee).
+ * 0.10 is the LCM of all NSE equity tick sizes (0.05 and 0.10),
+ * so any multiple of 0.10 is always accepted by Zerodha regardless of the stock.
+ * dir=1 → round UP (buy orders — guarantees fill above ask)
+ * dir=-1 → round DOWN (sell orders — guarantees fill below bid)
+ * Uses integer arithmetic to avoid IEEE-754 drift (e.g. 804.10 * 10 = 8041.0000001).
+ */
+function snapToTick(price, dir = 1) {
+  const inTenths = Math.round(price * 10 * 100) / 100; // isolate tenths with 2dp guard
+  const fn = dir >= 0 ? Math.ceil : Math.floor;
+  return fn(inTenths) / 10;
+}
+
+/**
  * SYNC TO CONTAINER B
  */
 async function syncToEngine(payload) {
@@ -70,9 +84,10 @@ async function executeSignal(signal, action, isIntraday = false) {
 
   // 3. Limit Order Execution
   // [FIX] Zerodha API rejects MARKET orders without market_protection.
-  // Buy LIMIT at LTP + 0.5% (rounds to NSE 0.05-rupee tick) guarantees fill
-  // while staying within the 2% drift window already enforced above.
-  const limitPrice = Math.round(ltp * 1.005 * 20) / 20;
+  // Buy LIMIT at LTP + 0.5%, snapped UP to the nearest 0.10-rupee tick.
+  // 0.10 satisfies both NSE tick sizes (0.05 and 0.10); stays inside the
+  // 2% drift window already enforced above.
+  const limitPrice = snapToTick(ltp * 1.005, 1);
   let orderResponse;
   try {
     orderResponse = await withRetry(async () => {
@@ -103,9 +118,12 @@ async function executeSignal(signal, action, isIntraday = false) {
       VALUES (?, ?, ?, 'LIMIT', ?, 'PLACED', ?, 0)
     `).run(signal.signal_id, signal.ticker, orderId, signal.shares, new Date().toISOString());
   } catch (err) {
-    // If UNIQUE constraint fails here, it's a replay. We stop safely.
-    logger.error({ event_type: 'layer_2_idempotency_catch', orderId });
-    throw new OrderExecutionError('Order tracking collision detected.');
+    // The INSERT can fail for two distinct reasons:
+    //   a) signal_id FK/NOT NULL violation (momentum signal missing signal_id field)
+    //   b) order_id UNIQUE violation (genuine replay attack, order already tracked)
+    // Both are safety stops: the order is placed but we cannot track it safely.
+    logger.error({ event_type: 'layer_2_idempotency_catch', orderId, err: err.message });
+    throw new OrderExecutionError('Order tracking failed: ' + err.message);
   }
 
   // 4. Fill Verification (8 attempts x 1500ms = 12s)
@@ -164,8 +182,9 @@ async function executeSignal(signal, action, isIntraday = false) {
           quantity: signal.shares,
           order_type: "LIMIT",
           product: "CNC",
-          //price: Number((signal.stop_loss * 1.002).toFixed(2)) // Sell above trigger
-          price: Math.round((signal.stop_loss * 1.002) * 20) / 20 // Rounds to nearest 0.05
+          // Stop-loss SELL limit must be AT OR ABOVE the trigger to guarantee execution.
+          // snapToTick(..., 1) rounds UP to the nearest 0.10-rupee tick.
+          price: snapToTick(signal.stop_loss * 1.002, 1)
         }]
       });
       gttStopId = stopRes.trigger_id;
@@ -188,7 +207,8 @@ async function executeSignal(signal, action, isIntraday = false) {
           // fill when the target price is touched. This is the opposite of the stop-loss
           // leg (1.002× ABOVE trigger) but both approaches guarantee execution.
           // The inviolable rule "trigger * 1.002" applies to stop-loss legs only.
-          price: Math.round((signal.target_1 * 0.998) * 20) / 20 // Rounds to nearest 0.05
+          // snapToTick(..., -1) rounds DOWN to nearest 0.10-rupee tick.
+          price: snapToTick(signal.target_1 * 0.998, -1)
       }]
       });
       gttTargetId = targetRes.trigger_id;
