@@ -142,17 +142,33 @@ telegram.bot.on('callback_query', async (query) => {
       const today         = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
       const momentumLockId = `${cleanId}_MOM_${today}`;
 
-      // Atomic lock: INSERT fails on duplicate → second click is rejected
+      // Atomic lock:
+      //   - First press: INSERT with EXECUTING status.
+      //   - Retry after failure (PENDING): UPDATE to EXECUTING — allow the user to retry.
+      //   - In-flight (EXECUTING) or done (EXECUTED): block — no double orders.
       const lockTx = signalsDb.transaction(() => {
         const existing = signalsDb.prepare(
           `SELECT status FROM received_signals WHERE signal_id = ?`
         ).get(momentumLockId);
-        if (existing) return { locked: true, status: existing.status };
-        signalsDb.prepare(`
-          INSERT INTO received_signals (signal_id, ticker, signal_time, received_at, payload_json, status)
-          VALUES (?, ?, ?, ?, '{}', 'EXECUTING')
-        `).run(momentumLockId, cleanId, new Date().toISOString(), new Date().toISOString());
-        return { locked: false };
+
+        if (!existing) {
+          signalsDb.prepare(`
+            INSERT INTO received_signals (signal_id, ticker, signal_time, received_at, payload_json, status)
+            VALUES (?, ?, ?, ?, '{}', 'EXECUTING')
+          `).run(momentumLockId, cleanId, new Date().toISOString(), new Date().toISOString());
+          return { locked: false };
+        }
+
+        if (existing.status === 'PENDING') {
+          // [FIX] A previous attempt failed and was reset to PENDING.
+          // Allow the user to retry by flipping back to EXECUTING.
+          signalsDb.prepare(`UPDATE received_signals SET status = 'EXECUTING' WHERE signal_id = ?`)
+            .run(momentumLockId);
+          return { locked: false };
+        }
+
+        // EXECUTING (in-flight) or EXECUTED (already done) — block duplicate
+        return { locked: true, status: existing.status };
       });
 
       const lockResult = lockTx();
@@ -178,6 +194,11 @@ telegram.bot.on('callback_query', async (query) => {
           signalsDb.prepare(`UPDATE received_signals SET status = 'PENDING' WHERE signal_id = ?`).run(momentumLockId);
           throw new Error('Momentum signal not found in Engine state.');
         }
+
+        // [FIX] MomentumSignal model has no signal_id field; without this the executor's
+        // INSERT into executed_orders gets NULL for signal_id and fails the NOT NULL
+        // constraint, which was being mislabelled as "Order tracking collision detected."
+        signalData.signal_id = momentumLockId;
 
         const result = await executor.executeSignal(signalData, 'EM', true);
 

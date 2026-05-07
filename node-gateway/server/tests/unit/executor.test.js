@@ -146,23 +146,23 @@ describe('executeSignal()', () => {
     expect(kite.placeGTT).not.toHaveBeenCalled();
   });
 
-  test('GTT stop price is above trigger (trigger * 1.002, rounded to ₹0.05)', async () => {
+  test('GTT stop price is above trigger (trigger * 1.002, rounded UP to ₹0.10 tick)', async () => {
     const signal = makeSignal({ stop_loss: 950 });
     await executeSignal(signal, 'EXEC', false);
     const stopCall = kite.placeGTT.mock.calls[0][0];
     const stopPrice = stopCall.orders[0].price;
-    // 950 * 1.002 = 951.9 → rounded to nearest 0.05 = 951.90
-    expect(stopPrice).toBe(Math.round((950 * 1.002) * 20) / 20);
+    // 950 * 1.002 = 951.9 → snapToTick UP to nearest 0.10 = 951.9 (already a multiple of 0.10)
+    expect(stopPrice).toBe(Math.ceil(Math.round(950 * 1.002 * 10 * 100) / 100) / 10);
     expect(stopPrice).toBeGreaterThan(950);
   });
 
-  test('GTT target price is below trigger (trigger * 0.998, rounded to ₹0.05)', async () => {
+  test('GTT target price is below trigger (trigger * 0.998, rounded DOWN to ₹0.10 tick)', async () => {
     const signal = makeSignal({ target_1: 1075 });
     await executeSignal(signal, 'EXEC', false);
     const targetCall = kite.placeGTT.mock.calls[1][0];
     const targetPrice = targetCall.orders[0].price;
-    // 1075 * 0.998 = 1072.85 → rounded to 0.05 = 1072.85
-    expect(targetPrice).toBe(Math.round((1075 * 0.998) * 20) / 20);
+    // 1075 * 0.998 = 1072.85 → snapToTick DOWN to nearest 0.10 = 1072.8
+    expect(targetPrice).toBe(Math.floor(Math.round(1075 * 0.998 * 10 * 100) / 100) / 10);
     expect(targetPrice).toBeLessThan(1075);
   });
 

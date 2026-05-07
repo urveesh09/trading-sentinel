@@ -24,6 +24,19 @@ logger = structlog.get_logger()
 kite = KiteClient(settings.DB_PATH)
 scheduler = AsyncIOScheduler(timezone="Asia/Kolkata")
 
+def snap_to_tick(price: float, direction: int = -1) -> float:
+    """
+    Snap a price to the nearest valid NSE tick (0.10 rupee).
+    0.10 is the LCM of all NSE equity tick sizes (0.05 and 0.10).
+    direction=-1 → round DOWN (sell orders, ensures limit is below current price)
+    direction=+1 → round UP  (buy orders)
+    Uses integer arithmetic to avoid IEEE-754 floating-point drift.
+    """
+    import math
+    in_tenths = round(price * 10 * 100) / 100  # guard against micro-errors
+    fn = math.ceil if direction >= 0 else math.floor
+    return fn(in_tenths) / 10
+
 # Shared State
 state_lock = asyncio.Lock()
 current_signals = []
@@ -602,12 +615,14 @@ async def auto_square_momentum():
             # [FIX] Zerodha API rejects MARKET orders without market_protection.
             # Use LIMIT everywhere; a SELL LIMIT slightly below LTP fills essentially
             # instantly on any liquid NSE stock, so there is no EOD fill-miss risk.
+            # snap_to_tick(..., -1) rounds DOWN to the nearest 0.10-rupee tick,
+            # which satisfies both 0.05 and 0.10 tick-size stocks.
             if is_profitable and not is_fast_moving and now_ist.time() < time(15, 0):
                 order_type  = "LIMIT"
-                limit_price = round(ltp * 0.999, 2)  # 0.1% below LTP — protect gains
+                limit_price = snap_to_tick(ltp * 0.999, -1)  # 0.1% below LTP — protect gains
             else:
                 order_type  = "LIMIT"
-                limit_price = round(ltp * 0.995, 2)  # 0.5% below LTP — aggressive fill for EOD exit
+                limit_price = snap_to_tick(ltp * 0.995, -1)  # 0.5% below LTP — aggressive fill for EOD exit
 
             payload = {
 
