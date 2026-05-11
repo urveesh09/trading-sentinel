@@ -921,20 +921,26 @@ async def inject_token(payload: TokenPayload):
 async def get_performance():
     bankroll = await current_bankroll(settings.DB_PATH)
     open_pos = await get_open_positions(settings.DB_PATH)
-    
+
     async with aiosqlite.connect(settings.DB_PATH) as db:
-        # cursor = await db.execute("SELECT * FROM positions WHERE status != 'OPEN'")
-        cursor = await db.execute("SELECT * FROM positions WHERE status NOT IN ('OPEN', 'CLOSED_T1')")
-        closed_trades = await cursor.fetchall()
-        
-    # Simple metrics for now
+        db.row_factory = aiosqlite.Row   # named column access — never use positional indices
+        async with db.execute(
+            "SELECT * FROM positions WHERE status NOT IN ('OPEN', 'CLOSED_T1')"
+        ) as cursor:
+            closed_trades = [dict(row) for row in await cursor.fetchall()]
+
+    def _pnl(t: dict) -> float:
+        return float(t.get("realised_pnl") or 0)
+
+    def _r(t: dict) -> float:
+        return float(t.get("r_multiple") or 0)
+
     total_trades = len(closed_trades) + len(open_pos)
-    # t[14] = realised_pnl, t[15] = r_multiple — SQLite returns TEXT columns as str,
-    # so we cast explicitly. `or 0` handles NULL→None before the cast.
-    win_count  = sum(1 for t in closed_trades if float(t[14] or 0) > 0)
-    loss_count = sum(1 for t in closed_trades if float(t[14] or 0) < 0)
-    total_pnl  = sum(float(t[14] or 0) for t in closed_trades)
-    
+    win_count    = sum(1 for t in closed_trades if _pnl(t) > 0)
+    loss_count   = sum(1 for t in closed_trades if _pnl(t) < 0)
+    total_pnl    = sum(_pnl(t) for t in closed_trades)
+    avg_r        = sum(_r(t) for t in closed_trades) / len(closed_trades) if closed_trades else 0.0
+
     return PerformanceReport(
         as_of=datetime.now(timezone.utc),
         total_trades_taken=total_trades,
@@ -942,8 +948,8 @@ async def get_performance():
         closed_trades_count=len(closed_trades),
         win_count=win_count,
         loss_count=loss_count,
-        win_rate=win_count/len(closed_trades) if closed_trades else 0,
-        avg_r_multiple=sum(float(t[15] or 0) for t in closed_trades)/len(closed_trades) if closed_trades else 0,
+        win_rate=win_count / len(closed_trades) if closed_trades else 0.0,
+        avg_r_multiple=avg_r,
         avg_winner_r=0.0,
         avg_loser_r=0.0,
         profit_factor=0.0,

@@ -98,15 +98,21 @@ export default function Dashboard({ healthData, navigateToPositions }) {
       <footer className="bg-gray-900 border-t border-gray-800 p-4">
         <div className="max-w-7xl mx-auto flex justify-between items-center text-sm font-mono">
           <div className="text-gray-400">
-            Bankroll: <span className="text-white">₹{performance?.current_bankroll || '---'}</span>
-          </div>
-          <div className="text-gray-400">
-            Total P&L: <span className={performance?.total_pnl >= 0 ? 'text-green-400' : 'text-red-400'}>
-              {performance?.total_pnl >= 0 ? '+' : ''}₹{performance?.total_pnl || '0.00'}
+            Bankroll: <span className="text-white">
+              ₹{performance?.current_bankroll != null ? Number(performance.current_bankroll).toFixed(2) : '---'}
             </span>
           </div>
           <div className="text-gray-400">
-            Win Rate: <span className="text-white">{performance?.win_rate || '---'}%</span>
+            Total P&L: <span className={performance?.total_realised_pnl >= 0 ? 'text-green-400' : 'text-red-400'}>
+              {performance?.total_realised_pnl != null
+                ? `${performance.total_realised_pnl >= 0 ? '+' : ''}₹${Number(performance.total_realised_pnl).toFixed(2)}`
+                : '₹0.00'}
+            </span>
+          </div>
+          <div className="text-gray-400">
+            Win Rate: <span className="text-white">
+              {performance?.win_rate != null ? (performance.win_rate * 100).toFixed(1) : '---'}%
+            </span>
           </div>
         </div>
       </footer>
