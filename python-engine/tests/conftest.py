@@ -48,7 +48,6 @@ def patch_settings(monkeypatch, tmp_path):
     monkeypatch.setattr(settings, "MOMENTUM_MIN_CANDLES", 4)
     monkeypatch.setattr(settings, "CONTAINER_A_URL", "http://localhost:9999")
     monkeypatch.setattr(settings, "INTERNAL_API_SECRET", "test_secret")
-    monkeypatch.setattr(settings, "TOKEN_INJECTION_SECRET", "test_secret")
     monkeypatch.setattr(settings, "STRATEGY_VERSION", "1.0.0-test")
     return settings
 
@@ -185,4 +184,40 @@ def nifty_bear_df():
         "volume": [1_000_000] * n
     })
     df.index = pd.date_range("2025-06-01", periods=n, freq="B")
+    return df
+
+
+@pytest.fixture
+def minimal_daily_df():
+    """14+ daily OHLCV rows so calc_atr() has enough data. ATR will be ~10 pts."""
+    n = 20
+    dates = pd.date_range("2026-04-01", periods=n, freq="B")
+    return pd.DataFrame({
+        "open":   [100.0] * n,
+        "high":   [105.0] * n,
+        "low":    [95.0]  * n,
+        "close":  [102.0] * n,
+        "volume": [500_000] * n,
+    }, index=dates)
+
+
+@pytest.fixture
+def base_momentum_df():
+    """
+    6-candle intraday df that passes MC1, MC2, MC4.
+    Volume ratio on last candle is ~1.6x average.
+    VWAP crossover: penultimate candle below VWAP, last candle above.
+    Close in top 20% of intraday range (MC4 passes).
+    intraday_high=101.5, intraday_low=98.5 (range=3 pts).
+    """
+    n = 6
+    timestamps = pd.date_range("2026-05-11 09:15", periods=n, freq="15min")
+    avg_vol = 100_000
+    df = pd.DataFrame({
+        "open":   [99.0, 99.5, 99.8, 100.0, 100.2, 100.5],
+        "high":   [99.5, 100.0, 100.2, 100.5, 100.8, 101.5],
+        "low":    [98.5,  99.0,  99.5,  99.8, 100.0, 100.0],
+        "close":  [99.2,  99.6,  99.9, 100.1,  98.0, 101.2],  # penultimate drops below VWAP
+        "volume": [avg_vol] * (n - 1) + [int(avg_vol * 1.6)],
+    }, index=timestamps)
     return df

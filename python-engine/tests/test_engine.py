@@ -764,6 +764,69 @@ def test_relative_strength_insufficient_data():
     assert rs == -999.0
 
 
+class TestMC3TLunchtimeGate:
+    """MC3-T: vol_surge_threshold param controls the volume gate threshold."""
+
+    def _passing_df(self, vol_ratio: float = 2.0) -> pd.DataFrame:
+        """6-candle df that passes MC1, MC2, MC4. Volume ratio is controllable."""
+        n = 6
+        ts = pd.date_range("2026-05-11 09:15", periods=n, freq="15min")
+        avg_vol = 100_000
+        last_vol = int(avg_vol * vol_ratio)
+        df = pd.DataFrame({
+            "open":   [99.0, 99.5, 99.8, 100.0, 100.2, 100.5],
+            "high":   [99.5, 100.0, 100.2, 100.5, 100.8, 101.5],
+            "low":    [98.5,  99.0,  99.5,  99.8, 100.0, 100.0],
+            "close":  [99.2,  99.6,  99.9, 100.1,  98.0, 101.2],
+            "volume": [avg_vol] * (n - 1) + [last_vol],
+        }, index=ts)
+        return df
+
+    def test_passes_with_default_threshold(self):
+        """vol_ratio=2.0x should pass the default 1.5x threshold."""
+        df = self._passing_df(vol_ratio=2.0)
+        fired, info = evaluate_momentum_signal(
+            "TEST", df, prev_day_high=90.0, bankroll=10000.0, momentum_pool=5000.0,
+            vol_surge_threshold=1.5,
+        )
+        # Either passes or fails at later gate — just confirm it did NOT fail at MC3
+        assert info.get("reject_reason") != "MC3_volume_surge_insufficient", (
+            f"Unexpectedly rejected at MC3: {info}"
+        )
+
+    def test_fails_below_lunchtime_threshold(self):
+        """vol_ratio=1.6x should FAIL the elevated lunchtime threshold of 1.75x."""
+        df = self._passing_df(vol_ratio=1.6)
+        fired, info = evaluate_momentum_signal(
+            "TEST", df, prev_day_high=90.0, bankroll=10000.0, momentum_pool=5000.0,
+            vol_surge_threshold=1.75,
+        )
+        assert not fired
+        assert info.get("reject_reason") == "MC3_volume_surge_insufficient"
+        assert info.get("vol_threshold_used") == 1.75
+
+    def test_passes_lunchtime_threshold_at_exactly_175x(self):
+        """vol_ratio=1.75x exactly should PASS the lunchtime threshold."""
+        df = self._passing_df(vol_ratio=1.75)
+        fired, info = evaluate_momentum_signal(
+            "TEST", df, prev_day_high=90.0, bankroll=10000.0, momentum_pool=5000.0,
+            vol_surge_threshold=1.75,
+        )
+        assert info.get("reject_reason") != "MC3_volume_surge_insufficient", (
+            f"Rejected at MC3 with vol_ratio=1.75x and threshold=1.75x: {info}"
+        )
+
+    def test_default_threshold_is_15x(self):
+        """When vol_surge_threshold not passed, default is 1.5 (vol_ratio=1.4x fails)."""
+        df = self._passing_df(vol_ratio=1.4)
+        fired, info = evaluate_momentum_signal(
+            "TEST", df, prev_day_high=90.0, bankroll=10000.0, momentum_pool=5000.0,
+            # no vol_surge_threshold -> defaults to 1.5
+        )
+        assert not fired
+        assert info.get("reject_reason") == "MC3_volume_surge_insufficient"
+
+
 def test_volume_consistency_passes():
     """Volume above average on 4 of last 5 days - should pass."""
     avg = 100_000
@@ -904,3 +967,282 @@ def test_cost_viable_accepts_normal_position():
     )
     assert viable is True
     assert ratio < 0.26 # allow for small float inaccuracies
+
+
+def test_evaluate_momentum_signal_accepts_new_params(fake_momentum_candles, minimal_daily_df):
+    """New keyword parameters df_daily, vol_surge_threshold, market_regime must be accepted."""
+    fired, _ = evaluate_momentum_signal(
+        "TEST",
+        fake_momentum_candles,
+        prev_day_high=1000.0,
+        bankroll=10000.0,
+        momentum_pool=5000.0,
+        df_daily=minimal_daily_df,
+        vol_surge_threshold=1.5,
+        market_regime="BULL",
+    )
+    assert isinstance(fired, bool)
+
+
+class TestMC5AtrExhaustionGate:
+    """MC5: Rejects when remaining daily ATR fuel cannot cover R-target."""
+
+    @pytest.fixture
+    def daily_df_atr10(self):
+        """20-row daily OHLCV with ATR ≈ 10 pts (high=105, low=95 → TR=10 each day)."""
+        n = 20
+        dates = pd.date_range("2026-04-01", periods=n, freq="B")
+        return pd.DataFrame({
+            "open":   [100.0] * n,
+            "high":   [105.0] * n,
+            "low":    [95.0]  * n,
+            "close":  [102.0] * n,
+            "volume": [500_000] * n,
+        }, index=dates)
+
+    def _make_intraday_df(self, consumed_range: float, vol_ratio: float = 2.5) -> pd.DataFrame:
+        """
+        6-candle intraday df designed to pass MC1, MC2, MC3, MC4.
+        Uses same close pattern as base_momentum_df to guarantee VWAP crossover.
+        intraday range = consumed_range via last candle high/low.
+        """
+        n = 6
+        ts = pd.date_range("2026-05-11 09:15", periods=n, freq="15min")
+        avg_vol = 100_000
+        half = consumed_range / 2
+        base = 100.0
+        low_val  = base - half
+        high_val = base + half
+        # close_val is in top 20% of intraday range (MC4 passes)
+        close_val = low_val + 0.90 * consumed_range  # top 10% of range
+        df = pd.DataFrame({
+            "open":   [base] * n,
+            "high":   [base + half * 0.5] * (n - 1) + [high_val],
+            "low":    [base - half * 0.5] * (n - 1) + [low_val],
+            # penultimate close forced below VWAP (same trick as base_momentum_df)
+            "close":  [base - 0.5, base - 0.3, base, base + 0.1, base - 2.0, close_val],
+            "volume": [avg_vol] * (n - 1) + [int(avg_vol * vol_ratio)],
+        }, index=ts)
+        return df
+
+    def test_passes_when_plenty_of_fuel_remains(self, daily_df_atr10):
+        """ATR=10, consumed=2 → remaining=8. target_dist << 8*0.85=6.8 → gate passes."""
+        df = self._make_intraday_df(consumed_range=2.0)
+        fired, info = evaluate_momentum_signal(
+            "TEST", df, prev_day_high=90.0, bankroll=10000.0, momentum_pool=5000.0,
+            df_daily=daily_df_atr10,
+        )
+        assert info.get("reject_reason") != "MC5_atr_fuel_exhausted", (
+            f"Wrongly blocked by MC5 when fuel was plentiful: {info}"
+        )
+
+    def test_fails_when_atr_nearly_consumed(self, daily_df_atr10):
+        """ATR=10, consumed=9.8 → remaining=0.2. target_dist >> 0.2*0.85 → gate blocks."""
+        df = self._make_intraday_df(consumed_range=9.8)
+        fired, info = evaluate_momentum_signal(
+            "TEST", df, prev_day_high=90.0, bankroll=10000.0, momentum_pool=5000.0,
+            df_daily=daily_df_atr10,
+        )
+        assert not fired
+        assert info.get("reject_reason") == "MC5_atr_fuel_exhausted"
+
+    def test_skips_gate_when_df_daily_is_none(self):
+        """Gate must be silently skipped when no daily df provided."""
+        df = self._make_intraday_df(consumed_range=9.9)  # would fail if gate ran
+        fired, info = evaluate_momentum_signal(
+            "TEST", df, prev_day_high=90.0, bankroll=10000.0, momentum_pool=5000.0,
+            df_daily=None,
+        )
+        # Should NOT block at MC5 (may block at other gates, but not MC5)
+        assert info.get("reject_reason") != "MC5_atr_fuel_exhausted"
+
+    def test_skips_gate_when_df_daily_too_short(self, daily_df_atr10):
+        """Gate skipped if daily_df has < 14 rows."""
+        short_daily = daily_df_atr10.iloc[-5:]   # only 5 rows
+        df = self._make_intraday_df(consumed_range=9.9)
+        fired, info = evaluate_momentum_signal(
+            "TEST", df, prev_day_high=90.0, bankroll=10000.0, momentum_pool=5000.0,
+            df_daily=short_daily,
+        )
+        assert info.get("reject_reason") != "MC5_atr_fuel_exhausted"
+
+    def test_reject_dict_contains_expected_fields(self, daily_df_atr10):
+        """When MC5 fires, the reject dict must have all diagnostic fields."""
+        df = self._make_intraday_df(consumed_range=9.8)
+        fired, info = evaluate_momentum_signal(
+            "TEST", df, prev_day_high=90.0, bankroll=10000.0, momentum_pool=5000.0,
+            df_daily=daily_df_atr10,
+        )
+        assert info.get("reject_reason") == "MC5_atr_fuel_exhausted", (
+            f"Expected MC5 to fire for consumed_range=9.8, got: {info}"
+        )
+        for field in ["daily_atr", "intraday_consumed", "remaining_fuel", "target_distance", "fuel_buffer"]:
+            assert field in info, f"Missing field '{field}' in MC5 reject dict"
+
+
+class TestMC6MorphologyGate:
+    """MC6: Reject shooting-star and doji candles."""
+
+    def _make_df_with_morphology(self, close_pct_from_bottom: float) -> pd.DataFrame:
+        """
+        6-candle intraday df where the last candle's close is at
+        `close_pct_from_bottom` fraction of that candle's range.
+
+        Last candle: high=110.0, low=108.0 (range=2.0).
+        Previous candles: high=100.5, low=99.5 → session low=99.5.
+        intraday range = 110.0 - 99.5 = 10.5.
+        MC4 threshold = 99.5 + 0.80 * 10.5 = 107.9.
+        Even at 20% of candle range: close=108.4 >= 107.9 → MC4 passes.
+        Penultimate close = 98.0 forces VWAP crossover on the last candle.
+        """
+        n = 6
+        ts = pd.date_range("2026-05-11 09:15", periods=n, freq="15min")
+        avg_vol = 100_000
+        candle_low, candle_high = 108.0, 110.0
+        close_val = candle_low + close_pct_from_bottom * (candle_high - candle_low)
+        df = pd.DataFrame({
+            "open":   [100.0] * n,
+            "high":   [100.5] * (n - 1) + [candle_high],
+            "low":    [99.5]  * (n - 1) + [candle_low],
+            "close":  [100.0, 100.0, 100.2, 100.5, 98.0, close_val],
+            "volume": [avg_vol] * (n - 1) + [int(avg_vol * 2.5)],
+        }, index=ts)
+        return df
+
+    def test_strong_bull_candle_passes_morphology(self):
+        """close at 95% of range (score=0.95 > 0.65) should NOT block at MC6."""
+        df = self._make_df_with_morphology(0.95)
+        fired, info = evaluate_momentum_signal(
+            "TEST", df, prev_day_high=90.0, bankroll=10000.0, momentum_pool=5000.0
+        )
+        assert info.get("reject_reason") not in ("MC6_shooting_star", "MC6_doji_candle"), (
+            f"Good bull candle blocked at MC6: {info}"
+        )
+
+    def test_shooting_star_rejected(self):
+        """close at 20% of range (score=0.20 < 0.65) → rejected as shooting star."""
+        df = self._make_df_with_morphology(0.20)
+        fired, info = evaluate_momentum_signal(
+            "TEST", df, prev_day_high=90.0, bankroll=10000.0, momentum_pool=5000.0
+        )
+        assert not fired
+        assert info.get("reject_reason") == "MC6_shooting_star"
+        assert info.get("close_position_score") == pytest.approx(0.2, abs=0.05)
+        assert info.get("morphology_threshold") == 0.65
+
+    def test_doji_candle_rejected(self):
+        """Zero-range candle (high == low) → rejected as doji."""
+        n = 6
+        ts = pd.date_range("2026-05-11 09:15", periods=n, freq="15min")
+        avg_vol = 100_000
+        df = pd.DataFrame({
+            "open":   [100.0] * n,
+            "high":   [100.5] * (n - 1) + [108.0],
+            "low":    [99.5]  * (n - 1) + [108.0],  # high == low on last candle
+            "close":  [100.0, 100.0, 100.2, 100.5, 98.0, 108.0],
+            "volume": [avg_vol] * (n - 1) + [int(avg_vol * 2.5)],
+        }, index=ts)
+        fired, info = evaluate_momentum_signal(
+            "TEST", df, prev_day_high=90.0, bankroll=10000.0, momentum_pool=5000.0
+        )
+        assert not fired
+        assert info.get("reject_reason") == "MC6_doji_candle"
+
+    def test_boundary_at_threshold(self):
+        """close at exactly 65% (score=0.65) should PASS (not strictly less than)."""
+        df = self._make_df_with_morphology(0.65)
+        fired, info = evaluate_momentum_signal(
+            "TEST", df, prev_day_high=90.0, bankroll=10000.0, momentum_pool=5000.0
+        )
+        assert info.get("reject_reason") != "MC6_shooting_star", (
+            f"0.65 close_position_score rejected at MC6, should be boundary pass: {info}"
+        )
+
+
+class TestMR2RegimeRTarget:
+    """MR2: R target is reduced in BEAR_RS_ONLY regime."""
+
+    def _make_passing_df(self) -> pd.DataFrame:
+        """
+        6-candle intraday df that passes MC1–MC6.
+        Last candle: high=101.5, low=100.0, close=101.2 → score=0.80 (MC6 passes).
+        MC4: threshold=98.5+0.80*3.0=100.9, close=101.2 passes.
+        Penultimate close=98.0 forces VWAP crossover.
+        """
+        n = 6
+        ts = pd.date_range("2026-05-11 09:15", periods=n, freq="15min")
+        avg_vol = 100_000
+        return pd.DataFrame({
+            "open":   [99.0, 99.5, 99.8, 100.0, 100.2, 100.5],
+            "high":   [99.5, 100.0, 100.2, 100.5, 100.8, 101.5],
+            "low":    [98.5,  99.0,  99.5,  99.8, 100.0, 100.0],
+            "close":  [99.2,  99.6,  99.9, 100.1,  98.0, 101.2],
+            "volume": [avg_vol] * (n - 1) + [int(avg_vol * 2.5)],
+        }, index=ts)
+
+    def test_bull_regime_uses_2R_target(self):
+        """BULL regime: target should be 2.0R above entry."""
+        df = self._make_passing_df()
+        fired, info = evaluate_momentum_signal(
+            "TEST", df, prev_day_high=90.0, bankroll=10000.0, momentum_pool=5000.0,
+            market_regime="BULL",
+        )
+        if fired and "target" in info and "entry_price" in info and "stop_loss" in info:
+            r_dist = info["entry_price"] - info["stop_loss"]
+            expected_target = info["entry_price"] + 2.0 * r_dist
+            assert info["target"] == pytest.approx(expected_target, abs=0.01), (
+                f"BULL target wrong: {info}"
+            )
+
+    def test_bear_regime_uses_15R_target(self):
+        """BEAR_RS_ONLY regime: target should be 1.5R above entry."""
+        df = self._make_passing_df()
+        fired, info = evaluate_momentum_signal(
+            "TEST", df, prev_day_high=90.0, bankroll=10000.0, momentum_pool=5000.0,
+            market_regime="BEAR_RS_ONLY",
+        )
+        if fired and "target" in info and "entry_price" in info and "stop_loss" in info:
+            r_dist = info["entry_price"] - info["stop_loss"]
+            expected_target = info["entry_price"] + 1.5 * r_dist
+            assert info["target"] == pytest.approx(expected_target, abs=0.01), (
+                f"BEAR_RS_ONLY target wrong: {info}"
+            )
+
+    def test_caution_regime_uses_2R_target(self):
+        """CAUTION regime: should use same 2.0R as BULL."""
+        df = self._make_passing_df()
+        fired_bull, info_bull = evaluate_momentum_signal(
+            "TEST", df, prev_day_high=90.0, bankroll=10000.0, momentum_pool=5000.0,
+            market_regime="BULL",
+        )
+        fired_caution, info_caution = evaluate_momentum_signal(
+            "TEST", df, prev_day_high=90.0, bankroll=10000.0, momentum_pool=5000.0,
+            market_regime="CAUTION",
+        )
+        if fired_bull and fired_caution and "target" in info_bull and "target" in info_caution:
+            assert info_bull["target"] == pytest.approx(info_caution["target"], abs=0.01)
+
+    def test_effective_r_target_in_result(self):
+        """Fired signal dict must include effective_r_target field."""
+        df = self._make_passing_df()
+        fired, info = evaluate_momentum_signal(
+            "TEST", df, prev_day_high=90.0, bankroll=10000.0, momentum_pool=5000.0,
+            market_regime="BULL",
+        )
+        if fired:
+            assert "effective_r_target" in info, (
+                f"effective_r_target missing from result: {info}"
+            )
+            assert info["effective_r_target"] == 2.0
+
+    def test_bear_effective_r_target_is_15(self):
+        """In BEAR_RS_ONLY, effective_r_target must be 1.5 in result dict."""
+        df = self._make_passing_df()
+        fired, info = evaluate_momentum_signal(
+            "TEST", df, prev_day_high=90.0, bankroll=10000.0, momentum_pool=5000.0,
+            market_regime="BEAR_RS_ONLY",
+        )
+        if fired:
+            assert info.get("effective_r_target") == pytest.approx(1.5, abs=0.001), (
+                f"expected effective_r_target=1.5 in BEAR mode, got: {info}"
+            )

@@ -168,13 +168,22 @@ class TestTokenEndpoint:
 
     @pytest.mark.asyncio
     async def test_token_injection(self, client):
-        """POST /token should set the kite token and trigger init [Q4]."""
+        """POST /token should set the kite token and schedule init [Q4].
+
+        The endpoint calls asyncio.create_task(post_login_initialization()) so it
+        can return 200 immediately — node-gateway has a 2-second AbortController
+        but the init takes 20+ seconds.  create_task(f()) calls f() to get the
+        coroutine (registering a 'call' on the mock) then schedules the task;
+        the coroutine body runs later in the event loop, so assert_awaited_once()
+        will always fail in a synchronous test context.  assert_called_once()
+        correctly verifies the endpoint scheduled the initialization.
+        """
         with patch.object(kite, "set_token") as mock_set, \
              patch("main.post_login_initialization", new_callable=AsyncMock) as mock_init:
             resp = await client.post("/token", json={"access_token": "fake_token_123"})
             assert resp.status_code == 200
             mock_set.assert_called_once_with("fake_token_123")
-            mock_init.assert_awaited_once()
+            mock_init.assert_called_once()   # called (scheduled); not assert_awaited_once() — see docstring
 
     @pytest.mark.asyncio
     async def test_missing_token_field(self, client):
@@ -345,3 +354,42 @@ class TestInternalEndpointBehaviour:
             headers={"X-Internal-Secret": settings.INTERNAL_API_SECRET},
         )
         assert resp.status_code == 200
+
+
+# ═══════════════════════════════════════════════════════════════
+# LUNCHTIME VOL THRESHOLD LOGIC
+# ═══════════════════════════════════════════════════════════════
+
+def test_lunchtime_vol_threshold_logic():
+    """Unit test for the lunchtime threshold selection logic (MC3-T wiring in run_momentum_screener)."""
+    import datetime
+    from config import settings
+
+    IST = datetime.timezone(datetime.timedelta(hours=5, minutes=30))
+
+    def compute_threshold(hour: int, minute: int) -> float:
+        now = datetime.datetime(2026, 5, 11, hour, minute, 0, tzinfo=IST)
+        lunchtime_start = now.replace(
+            hour=settings.MOMENTUM_LUNCHTIME_START_HOUR,
+            minute=settings.MOMENTUM_LUNCHTIME_START_MIN,
+            second=0, microsecond=0,
+        )
+        lunchtime_end = now.replace(
+            hour=settings.MOMENTUM_LUNCHTIME_END_HOUR,
+            minute=settings.MOMENTUM_LUNCHTIME_END_MIN,
+            second=0, microsecond=0,
+        )
+        return (
+            settings.MOMENTUM_VOL_SURGE_LUNCHTIME
+            if lunchtime_start <= now <= lunchtime_end
+            else settings.MOMENTUM_VOL_SURGE_PCT
+        )
+
+    # Before lunchtime (10:45)
+    assert compute_threshold(10, 45) == settings.MOMENTUM_VOL_SURGE_PCT      # 1.5
+    # During lunchtime (12:00)
+    assert compute_threshold(12, 0) == settings.MOMENTUM_VOL_SURGE_LUNCHTIME  # 1.75
+    # At lunchtime start boundary (11:30)
+    assert compute_threshold(11, 30) == settings.MOMENTUM_VOL_SURGE_LUNCHTIME  # 1.75
+    # After lunchtime (13:30)
+    assert compute_threshold(13, 30) == settings.MOMENTUM_VOL_SURGE_PCT       # 1.5

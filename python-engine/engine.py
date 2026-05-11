@@ -419,26 +419,31 @@ def evaluate_momentum_signal(
     prev_day_high: float,
     bankroll: float,
     momentum_pool: float,
-    min_candles: int = 4
+    min_candles: int = 4,
+    df_daily: "pd.DataFrame | None" = None,
+    vol_surge_threshold: float = 1.5,
+    market_regime: str = "BULL",
 ) -> tuple[bool, dict]:
     """
     [MOM2] Intraday momentum signal evaluation.
     df must contain ONLY today's 15-minute candles (VWAP resets daily).
-    
+    df_daily must contain at least 14 daily OHLCV rows for ATR calculation (MC5).
+
     Entry conditions (ALL must be true):
       [MC1] Minimum candles: len(df) >= min_candles
-      [MC2] Price crossed ABOVE VWAP in the LAST candle
-            (prev candle close was below VWAP, current close is above)
-      [MC3] Last candle volume >= 150% of previous 10-candle avg volume
+      [MC2] Price crossed ABOVE VWAP in the LAST 3 candles + holding check
+      [MC3] Last candle volume >= vol_surge_threshold (time-aware, set by caller)
+            [MC3-T] Caller raises threshold to 1.75x during 11:30-13:15 IST
       [MC4] Current close in top 20% of today's intraday session range
-            (Legacy MC4 "close > prev_day_high" preserved as comment - [Q13])
-    
+      [MC5] Daily ATR exhaustion: target_distance <= remaining_fuel * ATR_FUEL_BUFFER
+      [MC6] Morphology: close_position_score >= MOMENTUM_MORPHOLOGY_MIN_SCORE
+
     Risk:
       [MR1] Stop loss = low of the breakout candle (last candle)
-      [MR2] Target = entry + 2.0R
-      [MR3] Product type decision: MIS if position_value < ₹5,000,
-            CNC if position_value >= ₹5,000 (for this bankroll, will
-            almost always be MIS - system squares at 3:15pm either way)
+      [MR2] Target = r_target x R  where r_target is regime-adjusted:
+            BULL: settings.MOMENTUM_R_TARGET (2.0)
+            BEAR_RS_ONLY: settings.MOMENTUM_R_TARGET_BEAR (1.5)
+      [MR3] Product type decision: MIS if position_value < 5000, else CNC
     """
     if len(df) < min_candles:
         return False, {"reject_reason": "min_candles_not_met", "count": len(df)}
@@ -497,8 +502,12 @@ def evaluate_momentum_signal(
 
     current_vol = df['volume'].iloc[-1]
     vol_ratio_intraday = current_vol / avg_vol_lookback
-    if vol_ratio_intraday < settings.MOMENTUM_VOL_SURGE_PCT:
-        return False, {"reject_reason": "volume_surge_insufficient", "ratio": vol_ratio_intraday, "threshold": settings.MOMENTUM_VOL_SURGE_PCT}
+    if vol_ratio_intraday < vol_surge_threshold:   # [MC3-T] threshold is time-aware; elevated during lunchtime by caller
+        return False, {
+            "reject_reason":      "MC3_volume_surge_insufficient",
+            "vol_ratio":          round(vol_ratio_intraday, 3),
+            "vol_threshold_used": round(vol_surge_threshold, 3),
+        }
 
 
     # [MC4] REPLACED: Close must be in top 20% of today's intraday session range (intraday strength).
@@ -518,6 +527,24 @@ def evaluate_momentum_signal(
     # Uncomment to restore strict prev-day-high gate for confirmed breakout strategy.
     # if current_close <= prev_day_high:
     #     return False, {"reject_reason": "below_prev_day_high", "close": current_close, "prev_high": prev_day_high}
+
+    # [MC6] Morphology gate — reject shooting-star and doji candles
+    # A close near the bottom of the candle's range signals seller control.
+    last_high    = float(df["high"].iloc[-1])
+    last_low     = float(df["low"].iloc[-1])
+    candle_range = last_high - last_low
+    if candle_range <= 0.0:
+        return False, {
+            "reject_reason": "MC6_doji_candle",
+            "close_position_score": 0.0,
+        }
+    close_position_score = round((current_close - last_low) / candle_range, 4)
+    if close_position_score < settings.MOMENTUM_MORPHOLOGY_MIN_SCORE:
+        return False, {
+            "reject_reason": "MC6_shooting_star",
+            "close_position_score": close_position_score,
+            "morphology_threshold": settings.MOMENTUM_MORPHOLOGY_MIN_SCORE,
+        }
 
     # [MR1] Stop loss = low of breakout candle
     breakout_candle_low = df['low'].iloc[-1]
@@ -544,29 +571,54 @@ def evaluate_momentum_signal(
             return False, {"reject_reason": "insufficient_pool_for_one_share"}
         position_value = shares * current_close
 
-    # [MR2] Target: 2.0R
-
+    # [MR2] Regime-adjusted R target
+    effective_r_target: float = (
+        settings.MOMENTUM_R_TARGET_BEAR
+        if market_regime == "BEAR_RS_ONLY"
+        else settings.MOMENTUM_R_TARGET
+    )
     r_distance = current_close - stop_loss
-    target     = current_close + (2.0 * r_distance)
+    target     = current_close + effective_r_target * r_distance
 
     # [MR3] Product type decision
     product_type = "MIS" if position_value < 5000 else "CNC"
 
-        # Cost viability check
+    # [MC5] Daily ATR exhaustion gate
+    # Prevents entry when the day's typical range is already consumed and there is
+    # insufficient "fuel" left for price to reach the R-target.
+    # calc_atr() requires >= 14 rows; gate skipped if df_daily not provided.
+    if df_daily is not None and len(df_daily) >= 14:
+        daily_atr_val: float = float(calc_atr(df_daily["high"], df_daily["low"], df_daily["close"]).iloc[-1])
+        intraday_consumed: float = float(intraday_high - intraday_low)
+        remaining_fuel: float = max(0.0, daily_atr_val - intraday_consumed)
+        r_distance_atr: float = float(current_close - stop_loss)
+        target_distance: float = r_distance_atr * effective_r_target  # [AUDIT-003] use regime-adjusted target, not hardcoded 2.0R
+        if target_distance > remaining_fuel * settings.MOMENTUM_ATR_FUEL_BUFFER:
+            return False, {
+                "reject_reason":     "MC5_atr_fuel_exhausted",
+                "daily_atr":         round(daily_atr_val, 2),
+                "intraday_consumed": round(intraday_consumed, 2),
+                "remaining_fuel":    round(remaining_fuel, 2),
+                "target_distance":   round(target_distance, 2),
+                "fuel_buffer":       settings.MOMENTUM_ATR_FUEL_BUFFER,
+            }
+
+    # Cost viability check — use effective_r_target so bear-mode trades are assessed
+    # against their actual 1.5R projected profit, not the default 2.0R.
     viable, cost_ratio = is_cost_viable(
         entry_price=current_close, shares=shares,
-        risk_per_trade=momentum_risk, r_target=settings.MOMENTUM_R_TARGET,
+        risk_per_trade=momentum_risk, r_target=effective_r_target,  # [AUDIT-004]
         max_cost_ratio=settings.MOMENTUM_MAX_COST_RATIO, is_intraday=True
     )
     if not viable:
         return False, {"reject_reason": "cost_not_viable", "cost_ratio": cost_ratio}
 
-    # Accurate cost for net_ev
-    estimated_exit = current_close + (settings.MOMENTUM_R_TARGET * r_distance)
+    # Accurate cost for net_ev — must use effective_r_target to avoid inflated EV in bear mode
+    estimated_exit = current_close + (effective_r_target * r_distance)  # [AUDIT-004]
     total_cost = calc_zerodha_costs(
         current_close, estimated_exit, shares, is_intraday=True, for_gate=True
     )
-    net_ev = (momentum_risk * settings.MOMENTUM_R_TARGET) - total_cost
+    net_ev = (momentum_risk * effective_r_target) - total_cost  # [AUDIT-004]
 
     if net_ev <= 0:
         return False, {"reject_reason": "negative_net_ev_final", "net_ev": net_ev}
@@ -588,6 +640,9 @@ def evaluate_momentum_signal(
         "volume_ratio":        round(vol_ratio_intraday, 2),
         "product_type":        product_type,
         "strategy_type":       "MOMENTUM",
+        "effective_r_target":  effective_r_target,
+        "entry_price":         round(current_close, 2),
+        "target":              round(target, 2),
     }
     return True, result
 
