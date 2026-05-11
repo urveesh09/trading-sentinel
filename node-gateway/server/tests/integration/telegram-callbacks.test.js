@@ -36,10 +36,11 @@ const mockPrepare = jest.fn();
 const mockRun = jest.fn().mockReturnValue({ changes: 0, lastInsertRowid: 0 });
 const mockGet = jest.fn();
 const mockAll = jest.fn().mockReturnValue([]);
+const mockTransaction = jest.fn(fn => () => fn());
 mockPrepare.mockReturnValue({ run: mockRun, get: mockGet, all: mockAll });
 
 jest.mock('../../db/index', () => ({
-  signalsDb: { prepare: mockPrepare },
+  signalsDb: { prepare: mockPrepare, transaction: mockTransaction },
   appDb: { prepare: mockPrepare },
 }));
 
@@ -106,10 +107,8 @@ if (callbackCall) {
 
 // ── Helpers ──
 function makeCallbackQuery(action, signalId, overrides = {}) {
-  const now = Math.floor(Date.now() / 1000);
-  const data = Buffer.from(
-    JSON.stringify({ a: action, id: signalId, t: overrides.timestamp || now })
-  ).toString('base64');
+  const ts = overrides.timestamp || Math.floor(Date.now() / 1000);
+  const data = `${action}:${signalId}:${ts}`;
 
   return {
     id: overrides.queryId || 'cb-query-1',
@@ -139,7 +138,7 @@ describe('Telegram Callback Handler', () => {
     jest.clearAllMocks();
     telegram.isValidChat.mockReturnValue(true);
     isMarketOpen.mockReturnValue(true);
-    mockGet.mockReturnValue({ status: 'PENDING', payload_json: samplePayload });
+    mockGet.mockReturnValue({ signal_id: 'a1b2c3d4-full-uuid-here', status: 'PENDING', payload_json: samplePayload });
     executor.executeSignal.mockResolvedValue({ orderId: 'ORD-001' });
   });
 
@@ -148,7 +147,7 @@ describe('Telegram Callback Handler', () => {
 
   // ─── 1. APPROVE happy path (EXEC) ───
   runTest('EXEC - happy path: PENDING → EXECUTING → EXECUTED', async () => {
-    const query = makeCallbackQuery('EXEC', 'RELIANCE');
+    const query = makeCallbackQuery('EXEC', 'a1b2c3d4');
     await callbackHandler(query);
 
     // Should transition: PENDING → EXECUTING → EXECUTED
@@ -165,7 +164,7 @@ describe('Telegram Callback Handler', () => {
 
   // ─── 2. REJECT happy path ───
   runTest('REJ - marks signal as REJECTED, no order placed', async () => {
-    const query = makeCallbackQuery('REJ', 'RELIANCE');
+    const query = makeCallbackQuery('REJ', 'a1b2c3d4');
     await callbackHandler(query);
 
     expect(executor.executeSignal).not.toHaveBeenCalled();
@@ -176,16 +175,16 @@ describe('Telegram Callback Handler', () => {
 
   // R action also works as reject
   runTest('R - also marks signal as REJECTED', async () => {
-    const query = makeCallbackQuery('R', 'RELIANCE');
+    const query = makeCallbackQuery('R', 'a1b2c3d4');
     await callbackHandler(query);
 
     expect(executor.executeSignal).not.toHaveBeenCalled();
   });
 
-  // ─── 3. Stale callback (>60s) ───
-  runTest('stale callback (>60s) - EXPIRED, no execution', async () => {
-    const staleTs = Math.floor(Date.now() / 1000) - 90;
-    const query = makeCallbackQuery('EXEC', 'RELIANCE', { timestamp: staleTs });
+  // ─── 3. Stale callback (>5 min) ───
+  runTest('stale callback (>5 min) - EXPIRED, no execution', async () => {
+    const staleTs = Math.floor(Date.now() / 1000) - 400; // 400s > 300s threshold
+    const query = makeCallbackQuery('EXEC', 'a1b2c3d4', { timestamp: staleTs });
     await callbackHandler(query);
 
     expect(executor.executeSignal).not.toHaveBeenCalled();
@@ -198,11 +197,11 @@ describe('Telegram Callback Handler', () => {
   // ─── 4. Duplicate callback - idempotency ───
   runTest('duplicate EXEC callback - second call is no-op', async () => {
     // First call succeeds
-    const query = makeCallbackQuery('EXEC', 'RELIANCE');
+    const query = makeCallbackQuery('EXEC', 'a1b2c3d4');
     await callbackHandler(query);
 
     // After first call, status is EXECUTED
-    mockGet.mockReturnValue({ status: 'EXECUTED', payload_json: samplePayload });
+    mockGet.mockReturnValue({ signal_id: 'a1b2c3d4-full-uuid-here', status: 'EXECUTED', payload_json: samplePayload });
 
     // Second identical call
     await callbackHandler(query);
@@ -219,7 +218,7 @@ describe('Telegram Callback Handler', () => {
   // ─── 5. EXEC outside market hours ───
   runTest('EXEC outside market hours - blocked', async () => {
     isMarketOpen.mockReturnValue(false);
-    const query = makeCallbackQuery('EXEC', 'RELIANCE');
+    const query = makeCallbackQuery('EXEC', 'a1b2c3d4');
     await callbackHandler(query);
 
     expect(executor.executeSignal).not.toHaveBeenCalled();
@@ -231,8 +230,8 @@ describe('Telegram Callback Handler', () => {
 
   // ─── 6. EXEC for non-PENDING signal ───
   runTest('EXEC for already EXECUTED signal - no-op', async () => {
-    mockGet.mockReturnValue({ status: 'EXECUTED', payload_json: samplePayload });
-    const query = makeCallbackQuery('EXEC', 'RELIANCE');
+    mockGet.mockReturnValue({ signal_id: 'a1b2c3d4-full-uuid-here', status: 'EXECUTED', payload_json: samplePayload });
+    const query = makeCallbackQuery('EXEC', 'a1b2c3d4');
     await callbackHandler(query);
 
     expect(executor.executeSignal).not.toHaveBeenCalled();
@@ -260,7 +259,7 @@ describe('Telegram Callback Handler', () => {
   // ─── 9. Execution failure reverts to PENDING ───
   runTest('EXEC failure reverts signal status to PENDING', async () => {
     executor.executeSignal.mockRejectedValue(new Error('Broker down'));
-    const query = makeCallbackQuery('EXEC', 'RELIANCE');
+    const query = makeCallbackQuery('EXEC', 'a1b2c3d4');
     await callbackHandler(query);
 
     // Should revert to PENDING
@@ -305,7 +304,7 @@ describe('Telegram Callback Handler', () => {
     executor.executeSignal.mockRejectedValue(
       new PriceDriftError('LTP 1025 drifted 3% from signal 1000')
     );
-    const query = makeCallbackQuery('EXEC', 'RELIANCE');
+    const query = makeCallbackQuery('EXEC', 'a1b2c3d4');
     await callbackHandler(query);
 
     // Should revert to PENDING (execution failed)
@@ -313,17 +312,16 @@ describe('Telegram Callback Handler', () => {
       .filter(c => typeof c[0] === 'string' && c[0].includes("status = 'PENDING'"));
     expect(revertCalls.length).toBeGreaterThanOrEqual(1);
 
-    // User should be notified via answerCallbackQuery with drift message
-    expect(mockAnswerCallbackQuery).toHaveBeenCalledWith(
-      'cb-query-1',
-      expect.objectContaining({ text: expect.stringContaining('drift') })
+    // User notified via sendAlert (callback was already answered — second call silently fails)
+    expect(telegram.sendAlert).toHaveBeenCalledWith(
+      expect.stringContaining('drift')
     );
   });
 
   // ─── 13. EXEC with shares == 0 - no order placed ───
   runTest('EXEC with shares == 0 - execution fails safely', async () => {
     const zeroSharesPayload = JSON.stringify({
-      signal_id: 'ZEROSHARES',
+      signal_id: 'a1b2c3d4-full-uuid-here',
       ticker: 'ZEROSHARES',
       close: 1000,
       shares: 0,
@@ -332,14 +330,14 @@ describe('Telegram Callback Handler', () => {
       target_2: 1150,
       capital_at_risk: 0,
     });
-    mockGet.mockReturnValue({ status: 'PENDING', payload_json: zeroSharesPayload });
+    mockGet.mockReturnValue({ signal_id: 'a1b2c3d4-full-uuid-here', status: 'PENDING', payload_json: zeroSharesPayload });
     // Executor should reject shares=0 by throwing
     const { ValidationError } = require('../../utils/errors');
     executor.executeSignal.mockRejectedValue(
       new ValidationError('shares must be > 0')
     );
 
-    const query = makeCallbackQuery('EXEC', 'ZEROSHARES');
+    const query = makeCallbackQuery('EXEC', 'a1b2c3d4');
     await callbackHandler(query);
 
     // Executor was called but threw - status should revert to PENDING
@@ -353,7 +351,7 @@ describe('Telegram Callback Handler', () => {
     const { TokenExpiredError } = require('../../utils/errors');
     executor.executeSignal.mockRejectedValue(new TokenExpiredError());
 
-    const query = makeCallbackQuery('EXEC', 'RELIANCE');
+    const query = makeCallbackQuery('EXEC', 'a1b2c3d4');
     await callbackHandler(query);
 
     // Status reverts to PENDING so user can retry after login
@@ -361,10 +359,9 @@ describe('Telegram Callback Handler', () => {
       .filter(c => typeof c[0] === 'string' && c[0].includes("status = 'PENDING'"));
     expect(revertCalls.length).toBeGreaterThanOrEqual(1);
 
-    // User notified about token expiry
-    expect(mockAnswerCallbackQuery).toHaveBeenCalledWith(
-      'cb-query-1',
-      expect.objectContaining({ text: expect.stringContaining('xpired') })
+    // User notified via sendAlert (callback was already answered — second call silently fails)
+    expect(telegram.sendAlert).toHaveBeenCalledWith(
+      expect.stringContaining('xpired')
     );
   });
 
@@ -374,7 +371,7 @@ describe('Telegram Callback Handler', () => {
     const { MarketClosedError } = require('../../utils/errors');
     executor.executeSignal.mockRejectedValue(new MarketClosedError());
 
-    const query = makeCallbackQuery('EXEC', 'RELIANCE');
+    const query = makeCallbackQuery('EXEC', 'a1b2c3d4');
     await callbackHandler(query);
 
     const revertCalls = mockPrepare.mock.calls
@@ -384,8 +381,8 @@ describe('Telegram Callback Handler', () => {
 
   // ─── 16. REJ for already EXECUTED signal - no change ───
   runTest('REJ for already EXECUTED signal - no status change', async () => {
-    mockGet.mockReturnValue({ status: 'EXECUTED', payload_json: samplePayload });
-    const query = makeCallbackQuery('REJ', 'RELIANCE');
+    mockGet.mockReturnValue({ signal_id: 'a1b2c3d4-full-uuid-here', status: 'EXECUTED', payload_json: samplePayload });
+    const query = makeCallbackQuery('REJ', 'a1b2c3d4');
     await callbackHandler(query);
 
     // Should NOT call executeSignal
@@ -397,20 +394,20 @@ describe('Telegram Callback Handler', () => {
     );
   });
 
-  // ─── 17. Callback with exactly 60s age - NOT stale (boundary) ───
-  runTest('callback at exactly 60s boundary - still valid', async () => {
+  // ─── 17. Callback 60s old - NOT stale (well under 5-min threshold) ───
+  runTest('callback 60s old - still valid (threshold is 300s)', async () => {
     const boundaryTs = Math.floor(Date.now() / 1000) - 60;
-    const query = makeCallbackQuery('EXEC', 'RELIANCE', { timestamp: boundaryTs });
+    const query = makeCallbackQuery('EXEC', 'a1b2c3d4', { timestamp: boundaryTs });
     await callbackHandler(query);
 
-    // 60s means nowTs - ts === 60 which is NOT > 60, so it should proceed
+    // 60s is NOT > 300s, so it should proceed to execution
     expect(executor.executeSignal).toHaveBeenCalled();
   });
 
-  // ─── 18. Callback at 61s - stale ───
-  runTest('callback at 61s - stale and rejected', async () => {
-    const staleTs = Math.floor(Date.now() / 1000) - 61;
-    const query = makeCallbackQuery('EXEC', 'RELIANCE', { timestamp: staleTs });
+  // ─── 18. Callback at 301s - stale (exceeds 5-min threshold) ───
+  runTest('callback at 301s - stale and rejected', async () => {
+    const staleTs = Math.floor(Date.now() / 1000) - 301; // 301 > 300 threshold
+    const query = makeCallbackQuery('EXEC', 'a1b2c3d4', { timestamp: staleTs });
     await callbackHandler(query);
 
     expect(executor.executeSignal).not.toHaveBeenCalled();

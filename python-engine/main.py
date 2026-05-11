@@ -437,6 +437,23 @@ async def run_momentum_screener():
     raw_momentum = []
     raw_rejected_momentum = []
 
+    # [MC3-T] Time-aware volume threshold: elevated during lunchtime dead zone
+    lunchtime_start = now_ist.replace(
+        hour=settings.MOMENTUM_LUNCHTIME_START_HOUR,
+        minute=settings.MOMENTUM_LUNCHTIME_START_MIN,
+        second=0, microsecond=0
+    )
+    lunchtime_end = now_ist.replace(
+        hour=settings.MOMENTUM_LUNCHTIME_END_HOUR,
+        minute=settings.MOMENTUM_LUNCHTIME_END_MIN,
+        second=0, microsecond=0
+    )
+    vol_threshold = (
+        settings.MOMENTUM_VOL_SURGE_LUNCHTIME
+        if lunchtime_start <= now_ist <= lunchtime_end
+        else settings.MOMENTUM_VOL_SURGE_PCT
+    )
+
     for _, row in universe.iterrows():
         ticker = row['tradingsymbol']
 
@@ -455,33 +472,34 @@ async def run_momentum_screener():
                 raw_rejected_momentum.append({"ticker": ticker, "reject_reason": "insufficient_intraday_candles", "count": len(df_intra)})
                 continue
 
-            # Get previous day's high from daily cache
-            # Need to go back far enough to cover weekends/holidays for the last trading day
+            # Get daily OHLCV: need ≥14 trading days for MC5 ATR gate + prev_day_high.
+            # 30 calendar days guarantees 14+ trading days even across long holiday runs.
             yesterday_date = await prev_trading_day(today, settings.DB_PATH)
-            from_date_for_prev = (yesterday_date - pd.Timedelta(days=7)).strftime("%Y-%m-%d")
-            df_daily  = await kite.get_historical(
-                ticker, from_date_for_prev, today.strftime("%Y-%m-%d")
+            from_date_for_daily = (yesterday_date - pd.Timedelta(days=30)).strftime("%Y-%m-%d")
+            df_daily = await kite.get_historical(
+                ticker, from_date_for_daily, today.strftime("%Y-%m-%d")
             )
             if df_daily.empty or len(df_daily) < 1:
                 raw_rejected_momentum.append({"ticker": ticker, "reject_reason": "daily_data_missing_for_prev_high"})
                 continue
 
-            # The last row in df_daily (if it's before today) or second to last (if today's daily candle exists)
-            # is the previous trading day.
-            # To be safe, we filter for dates < today.
+            # Filter out today's partial candle before using daily data.
+            # Today's daily high/low are incomplete mid-session and would skew ATR.
             df_prev = df_daily[df_daily.index.date < today]
             if df_prev.empty:
                 raw_rejected_momentum.append({"ticker": ticker, "reject_reason": "prev_day_data_not_found"})
                 continue
             prev_day_high = float(df_prev['high'].iloc[-1])
 
-
             fired, sig_data = evaluate_momentum_signal(
                 ticker=ticker,
                 df=df_intra,
                 prev_day_high=prev_day_high,
                 bankroll=bankroll,
-                momentum_pool=momentum_pool
+                momentum_pool=momentum_pool,
+                df_daily=df_prev,          # filtered: no partial today candle; ≥14 rows for MC5 ATR
+                vol_surge_threshold=vol_threshold,
+                market_regime=market_regime,
             )
 
             if fired:
@@ -528,16 +546,22 @@ async def run_momentum_screener():
                 new_alerts.append(s)
                 signaled_momentum_today.add(ticker)
 
-        # 🚨 FIX: ONLY send a Telegram ping if we found a NEW valid signal
-        if len(new_alerts) > 0:
-            await notify_screener_results("MOMENTUM", new_alerts, all_rejected_mom, market_regime, bankroll, momentum_pool)
+        # Only send Telegram notifications during market hours (BUG-001 fix: mirrors swing screener guard).
+        # The Q4 ignition call still runs this function pre-market to populate the cache,
+        # but we must not spam Telegram at 08:30 IST with empty scan results.
+        if is_market_open():
+            if len(new_alerts) > 0:
+                await notify_screener_results("MOMENTUM", new_alerts, all_rejected_mom, market_regime, bankroll, momentum_pool)
+            else:
+                logger.info("momentum_scan_silent", reason="no_new_signals_found")
+                # Heartbeat: notify user the scan ran even with no signals
+                await _notify_momentum_heartbeat(
+                    now_ist, len(universe), len(raw_momentum),
+                    len(accepted), all_rejected_mom, momentum_pool
+                )
         else:
-            logger.info("momentum_scan_silent", reason="no_new_signals_found")
-            # Heartbeat: notify user the scan ran even with no signals
-            await _notify_momentum_heartbeat(
-                now_ist, len(universe), len(raw_momentum),
-                len(accepted), all_rejected_mom, momentum_pool
-            )
+            logger.info("momentum_scan_pre_market", reason="outside_market_hours_notification_suppressed",
+                        accepted=len(accepted), scan_time=now_ist.isoformat())
 
 
     logger.info("momentum_scan_complete",

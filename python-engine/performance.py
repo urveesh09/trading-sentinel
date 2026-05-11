@@ -68,11 +68,20 @@ async def check_circuit_breakers(db_path: str) -> tuple[bool, list[str]]:
         halted = True
         reasons.append("CB_MAX_DRAWDOWN")
 
-    # [CB1] Daily loss - uses IST date since trading day is defined in IST
+    # [CB1] Daily loss - uses IST date since trading day is defined in IST.
+    # Timestamps are stored as UTC ISO-8601 with timezone suffix (e.g. "2026-05-11T04:30:00+00:00").
+    # SQLite's date() does NOT parse timezone suffixes and returns NULL for such strings,
+    # so we shift the UTC timestamp by +5.5h inside SQL before extracting the date.
     today = datetime.now(IST).date().isoformat()
     async with aiosqlite.connect(db_path) as db:
         cursor = await db.execute(
-            "SELECT SUM(pnl) FROM bankroll_ledger WHERE event_type='TRADE_CLOSED' AND date(timestamp) = ?", (today,)
+            """SELECT SUM(pnl) FROM bankroll_ledger
+               WHERE event_type='TRADE_CLOSED'
+               AND date(datetime(
+                   REPLACE(REPLACE(timestamp, '+00:00', ''), 'Z', ''),
+                   '+5 hours', '+30 minutes'
+               )) = ?""",
+            (today,)
         )
         daily_pnl = (await cursor.fetchone())[0] or 0.0
         if daily_pnl <= -(bankroll * settings.CB_DAILY_LOSS_PCT):
