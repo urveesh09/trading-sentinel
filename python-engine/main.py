@@ -929,9 +929,11 @@ async def get_performance():
         
     # Simple metrics for now
     total_trades = len(closed_trades) + len(open_pos)
-    win_count = sum(1 for t in closed_trades if (t[14] or 0) > 0) # realised_pnl is at index 14
-    loss_count = sum(1 for t in closed_trades if (t[14] or 0) < 0)
-    total_pnl = sum(t[14] or 0 for t in closed_trades)
+    # t[14] = realised_pnl, t[15] = r_multiple — SQLite returns TEXT columns as str,
+    # so we cast explicitly. `or 0` handles NULL→None before the cast.
+    win_count  = sum(1 for t in closed_trades if float(t[14] or 0) > 0)
+    loss_count = sum(1 for t in closed_trades if float(t[14] or 0) < 0)
+    total_pnl  = sum(float(t[14] or 0) for t in closed_trades)
     
     return PerformanceReport(
         as_of=datetime.now(timezone.utc),
@@ -941,7 +943,7 @@ async def get_performance():
         win_count=win_count,
         loss_count=loss_count,
         win_rate=win_count/len(closed_trades) if closed_trades else 0,
-        avg_r_multiple=sum(t[15] or 0 for t in closed_trades)/len(closed_trades) if closed_trades else 0,
+        avg_r_multiple=sum(float(t[15] or 0) for t in closed_trades)/len(closed_trades) if closed_trades else 0,
         avg_winner_r=0.0,
         avg_loser_r=0.0,
         profit_factor=0.0,
