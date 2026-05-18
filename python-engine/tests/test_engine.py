@@ -439,34 +439,39 @@ class TestEvaluateSignal:
         assert isinstance(result, dict)
 
     def test_trend_filter_rejects_downtrend_in_bull(self):
-        """In BULL mode, close < EMA200 must reject."""
+        """In BULL mode, close < EMA200 must reject (with valid regime-aware preconditions)."""
         n = 250
         close = np.linspace(500, 300, n)
+        # Rising then falling: high RSI pct (not overbought so percentile check passes),
+        # and varying volume so vol_zscore passes the threshold.
+        volume = [200_000 + i * 500 for i in range(n)]  # gradually increasing
         df = pd.DataFrame({
             "open": close + 1, "high": close + 5,
             "low": close - 5, "close": close,
-            "volume": [200_000] * n
+            "volume": volume,
         })
         df.index = pd.date_range("2025-01-01", periods=n, freq="B")
-        fired, result = evaluate_signal("TEST", df, 5000, 0.10, market_regime="BULL")
+        # Stable mid-range RSI history — percentile should be ~50 (not >= 20 threshold)
+        rsi_history = pd.Series([55.0] * 126)
+        fired, result = evaluate_signal("TEST", df, 5000, 0.10, market_regime="BULL", rsi_history=rsi_history)
         assert fired is False
         assert result["reject_reason"] == "trend_filter_failed"
 
     def test_bear_rs_only_bypasses_trend_filter(self):
-        """In BEAR_RS_ONLY mode, trend filter (c > e200) is bypassed."""
+        """In BEAR_RS_ONLY mode, the c > e200 check is bypassed."""
         n = 250
-        close = np.concatenate([
-            np.linspace(500, 600, 200),
-            np.linspace(600, 520, 50),
-        ])
+        close = np.linspace(500, 300, n)  # declining → c < e200
+        volume = np.linspace(200_000, 900_000, n)
         df = pd.DataFrame({
-            "open": close - 1, "high": close + 5,
-            "low": close - 5, "close": close,
-            "volume": [200_000] * n
+            "open": close - 1, "high": close + 3,
+            "low": close - 3, "close": close,
+            "volume": volume,
         })
         df.index = pd.date_range("2025-01-01", periods=n, freq="B")
         fired, result = evaluate_signal("TEST", df, 5000, 0.10, market_regime="BEAR_RS_ONLY")
-        # Should NOT be rejected by trend_filter_failed
+        # Must NOT be rejected by trend_filter_failed — that's the bypass being tested.
+        # May fail on RSI/percentile for other reasons — that's fine; the point is
+        # the trend check was bypassed, not that the signal is valid.
         if not fired:
             assert result["reject_reason"] != "trend_filter_failed"
 

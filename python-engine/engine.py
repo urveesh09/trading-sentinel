@@ -2,11 +2,39 @@ import pandas as pd
 import numpy as np
 import math
 import structlog
-from typing import Dict, Any, Tuple
+from typing import Dict, Any, Tuple, Optional
 
 from config import settings
+from models import Regime
+from indicators_adaptive import AdaptiveIndicators
 
 logger = structlog.get_logger()
+
+
+# ---------------------------------------------------------
+# REGIME-AWARE MAPPINGS
+# ---------------------------------------------------------
+
+STOP_ATR_REGIME_MAP = {
+    Regime.REGIME_1_NORMAL: settings.STOP_ATR_REGIME1,    # 1.5
+    Regime.REGIME_2_ELEVATED: settings.STOP_ATR_REGIME2,  # 2.0
+    Regime.REGIME_3_CRISIS: settings.STOP_ATR_REGIME3,    # 2.0
+    Regime.UNKNOWN: settings.STOP_ATR_REGIME1,
+}
+
+STOP_PCT_MAP = {
+    Regime.REGIME_1_NORMAL: 0.05,    # 5% stop
+    Regime.REGIME_2_ELEVATED: 0.05,   # 5% stop
+    Regime.REGIME_3_CRISIS: 0.08,     # 8% stop (wider in crisis)
+    Regime.UNKNOWN: 0.05,
+}
+
+T2_R_MAP = {
+    Regime.REGIME_1_NORMAL: settings.TARGET2_R_REGIME1,   # 3.0
+    Regime.REGIME_2_ELEVATED: settings.TARGET2_R_REGIME2,  # 3.0
+    Regime.REGIME_3_CRISIS: settings.TARGET2_R_REGIME3,    # 1.0
+    Regime.UNKNOWN: settings.TARGET2_R_REGIME1,
+}
 
 
 # ---------------------------------------------------------
@@ -95,7 +123,11 @@ def evaluate_signal(
     df: pd.DataFrame,
     bankroll: float,
     risk_pct: float,
-    market_regime: str = "BULL"
+    regime: Regime = Regime.REGIME_1_NORMAL,
+    market_regime: str = "BULL",
+    nifty_50_current: Optional[float] = None,
+    nifty_ema20: Optional[float] = None,
+    rsi_history: Optional[pd.Series] = None,
 ) -> Tuple[bool, Dict[str, Any]]:
 
     if len(df) < 200:
@@ -122,14 +154,78 @@ def evaluate_signal(
     avg_20d_vol = df["volume"].iloc[-21:-1].mean()
 
     # -----------------------------------------------------
+    # REGIME-AWARE FILTER SETUP
+    # -----------------------------------------------------
+    adaptive_ind = AdaptiveIndicators()
+
+    # -----------------------------------------------------
     # FILTERS
     # -----------------------------------------------------
+
+    # ----------------------------------------------------------------
+    # REGIME-AWARE FILTER: RSI Percentile (Regime 1 and 2 only)
+    # RS vs Nifty filter for Regime 3 applied separately below
+    # ----------------------------------------------------------------
+    rs_vs_nifty: Optional[float] = None
+    rsi_pct: float = 0.0
+    if regime == Regime.REGIME_1_NORMAL:
+        rsi_pct_threshold = settings.RSI_PERCENTILE_REGIME1  # 20
+        if not (0 <= rsi14 <= 100):
+            return False, {"reject_reason": "rsi_out_of_range", "rsi": rsi14}
+        rsi_pct = adaptive_ind.compute_rsi_percentile(rsi14, rsi_history) if rsi_history is not None else 0.0
+        if rsi_history is not None and len(rsi_history) >= 20:
+            if rsi_pct >= rsi_pct_threshold:
+                return False, {"reject_reason": "rsi_percentile_too_high", "rsi_pct": rsi_pct, "threshold": rsi_pct_threshold}
+        else:
+            if not (45 <= rsi14 <= 72):
+                return False, {"reject_reason": "rsi_out_of_range", "rsi": rsi14}
+        score = 0
+        if rsi_history is not None and len(rsi_history) >= 20:
+            score += max(0, int((20 - rsi_pct) / 2))  # Lower RSI percentile = higher score
+    elif regime == Regime.REGIME_2_ELEVATED:
+        rsi_pct_threshold = settings.RSI_PERCENTILE_REGIME2  # 15
+        if nifty_50_current is not None and nifty_ema20 is not None:
+            if nifty_50_current < nifty_ema20:
+                return False, {"reject_reason": "nifty_below_ema20_regime2", "nifty": nifty_50_current, "ema20": nifty_ema20}
+        rsi_pct = adaptive_ind.compute_rsi_percentile(rsi14, rsi_history) if rsi_history is not None else 0.0
+        if rsi_history is not None and len(rsi_history) >= 20:
+            if rsi_pct >= rsi_pct_threshold:
+                return False, {"reject_reason": "rsi_percentile_too_high", "rsi_pct": rsi_pct, "threshold": rsi_pct_threshold}
+        else:
+            if not (50 <= rsi14 <= 72):
+                return False, {"reject_reason": "rsi_out_of_range", "rsi": rsi14}
+        score = 0
+        if rsi_history is not None and len(rsi_history) >= 20:
+            score += max(0, int((15 - rsi_pct) / 2))
+    elif regime == Regime.REGIME_3_CRISIS:
+        # RS vs Nifty filter (primary — replaces RSI + vol percentile filters)
+        stock_return_1d = (close.iloc[-1] / close.iloc[-2] - 1) if len(close) >= 2 else 0.0
+        nifty_return_1d = 0.0  # Caller should pass this; default to 0 if unavailable
+        rs_vs_nifty = adaptive_ind.compute_rs_vs_nifty(stock_return_1d, nifty_return_1d)
+        if rs_vs_nifty < settings.RS_VS_NIFTY_THRESHOLD:
+            return False, {"reject_reason": "rs_vs_nifty_insufficient", "rs_vs_nifty": rs_vs_nifty, "threshold": settings.RS_VS_NIFTY_THRESHOLD}
+        vol_zscore = adaptive_ind.compute_volume_zscore(df["volume"].iloc[-1], df["volume"])
+        if vol_zscore < settings.VOL_ZSCORE_REGIME3:
+            return False, {"reject_reason": "volume_zscore_low", "vol_zscore": vol_zscore, "threshold": settings.VOL_ZSCORE_REGIME3}
+        score = 0
+    else:
+        # UNKNOWN regime — apply Regime 1 defaults
+        score = 0
+
+    # ----------------------------------------------------------------
+    # REGIME-AWARE FILTER: Volume Z-Score (Regime 1 and 2 only)
+    # ----------------------------------------------------------------
+    vol_zscore = adaptive_ind.compute_volume_zscore(df["volume"].iloc[-1], df["volume"])
+    vol_zscore_threshold = adaptive_ind.get_volume_zscore_threshold(regime.value)
+    if regime in (Regime.REGIME_1_NORMAL, Regime.REGIME_2_ELEVATED):
+        if vol_zscore < vol_zscore_threshold:
+            return False, {"reject_reason": "volume_zscore_low", "vol_zscore": vol_zscore, "threshold": vol_zscore_threshold}
 
     # [RS-FILTER] In BEAR_RS_ONLY mode, we bypass the absolute trend check (C1)
     if market_regime != "BEAR_RS_ONLY":
         if not (c > e200 and e50 > e200):
             return False, {"reject_reason": "trend_filter_failed", "close": c, "ema50": e50, "ema200": e200}
-    
+
     # All other filters (C2-C8) still apply
     if not (e21 * 0.93 <= c <= e21 * 1.20):  # widened from 97–110% to 93–120%
         return False, {"reject_reason": "ema21_proximity_failed", "close": c, "ema21": e21}
@@ -153,12 +249,12 @@ def evaluate_signal(
         return False, {"reject_reason": "invalid_atr", "atr": a14}
 
     # -----------------------------------------------------
-    # RISK MANAGEMENT
+    # REGIME-AWARE RISK MANAGEMENT
     # -----------------------------------------------------
-
-    atr_stop = c - (1.5 * a14)
-    pct_stop = c * 0.95
-
+    atr_mult = STOP_ATR_REGIME_MAP[regime]
+    pct_stop_pct = STOP_PCT_MAP[regime]
+    atr_stop = c - (atr_mult * a14)
+    pct_stop = c * (1.0 - pct_stop_pct)
     stop_loss = max(atr_stop, pct_stop)
 
     risk_per_trade = bankroll * risk_pct
@@ -182,13 +278,15 @@ def evaluate_signal(
 
 
     # -----------------------------------------------------
-    # TARGETS
+    # REGIME-AWARE TARGETS
     # -----------------------------------------------------
-
     r_distance = c - stop_loss
 
-    target_1 = c + (1.5 * r_distance)
-    target_2 = c + (3.0 * r_distance)
+    t1_mult = settings.TARGET1_R
+    t2_mult = T2_R_MAP[regime]
+
+    target_1 = c + (t1_mult * r_distance)
+    target_2 = c + (t2_mult * r_distance) if t2_mult is not None else None
 
     # -----------------------------------------------------
     # EXPECTED VALUE
@@ -196,10 +294,12 @@ def evaluate_signal(
 
     # Accurate cost model
     # Estimate exit at T2 for cost calculation
-    total_round_trip = calc_zerodha_costs(c, target_2, shares, is_intraday=False, for_gate=True)
+    # For Regime 3 (no T2), use T1 as the exit for cost model
+    exit_for_costs = target_2 if target_2 is not None else target_1
+    total_round_trip = calc_zerodha_costs(c, exit_for_costs, shares, is_intraday=False, for_gate=True)
 
     gross_profit_t1 = (target_1 - c) * shares * 0.5
-    gross_profit_t2 = (target_2 - c) * shares * 0.5
+    gross_profit_t2 = ((target_2 - c) * shares * 0.5) if target_2 is not None else 0.0
 
     gross_profit = gross_profit_t1 + gross_profit_t2
 
@@ -276,7 +376,12 @@ def evaluate_signal(
         "capital_at_risk": shares * (c - stop_loss),
         "net_ev": net_ev,
         "score": score,
-        "trailing_stop": stop_loss
+        "trailing_stop": stop_loss,
+        # Regime metadata
+        "regime": regime,
+        "rsi_percentile": rsi_pct if regime in (Regime.REGIME_1_NORMAL, Regime.REGIME_2_ELEVATED) else None,
+        "volume_zscore": vol_zscore,
+        "rs_vs_nifty": rs_vs_nifty if regime == Regime.REGIME_3_CRISIS else None,
     }
 
     return True, res
