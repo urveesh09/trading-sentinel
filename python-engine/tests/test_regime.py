@@ -75,12 +75,32 @@ class TestRegimeEngine:
         """UNKNOWN -> any regime: immediate on first scan.
         Transitions between ESTABLISHED regimes require 2 consecutive scans."""
         engine = RegimeEngine()
-        # First scan: UNKNOWN -> R2 immediately (initial establishment is instant)
+        # First scan: UNKNOWN -> R2 immediately (counter: 1+1=2 >= 2 -> transition)
         engine.update_regime(vix=21.0, nifty_50=25000, nifty_ema20=24900, breadth=0.50)
         assert engine.current_regime == Regime.REGIME_2_ELEVATED
-        # Second scan: same regime -> stays
+        # Second scan: same regime, stays R2
         engine.update_regime(vix=21.0, nifty_50=25000, nifty_ema20=24900, breadth=0.50)
         assert engine.current_regime == Regime.REGIME_2_ELEVATED
+
+    def test_hysteresis_prevents_flip_flopping(self):
+        """Once in R2, score 70-74 should stay R2 (need 75+ to re-enter R1)."""
+        engine = RegimeEngine()
+        # Establish R1
+        engine.update_regime(vix=12.0, nifty_50=25000, nifty_ema20=24900, breadth=0.55)
+        engine.update_regime(vix=12.0, nifty_50=25000, nifty_ema20=24900, breadth=0.55)
+        assert engine.current_regime == Regime.REGIME_1_NORMAL
+
+        # Transition R1 -> R2 (score=65 < 70 boundary)
+        engine.update_regime(vix=19.0, nifty_50=25000, nifty_ema20=24900, breadth=0.55)
+        assert engine.current_regime == Regime.REGIME_2_ELEVATED
+
+        # Score=72.5 (70 <= score < 75): hysteresis says stay in R2
+        engine.update_regime(vix=17.6, nifty_50=25000, nifty_ema20=24900, breadth=0.55)
+        assert engine.current_regime == Regime.REGIME_2_ELEVATED
+
+        # Score=75+ (hysteresis cleared): R2 -> R1
+        engine.update_regime(vix=14.0, nifty_50=25000, nifty_ema20=24900, breadth=0.55)
+        assert engine.current_regime == Regime.REGIME_1_NORMAL
 
     def test_score_clamped_to_0_100(self):
         """Score must never go outside 0-100."""
@@ -111,9 +131,12 @@ class TestRegimeEngine:
         assert engine.get_risk_pct() == 0.05
 
     def test_update_regime_returns_state(self):
-        """update_regime returns a RegimeState."""
+        """update_regime returns a RegimeState with correct regime, score, and consecutive_scans."""
         engine = RegimeEngine()
-        state = engine.update_regime(vix=17.0, nifty_50=25000, nifty_ema20=24900, breadth=0.55)
-        assert state.regime in (Regime.REGIME_1_NORMAL, Regime.REGIME_2_ELEVATED)
+        # First scan: UNKNOWN -> R2 on scan 1 (transition fires immediately)
+        state = engine.update_regime(vix=21.0, nifty_50=25000, nifty_ema20=24900, breadth=0.50)
+        assert state.regime == Regime.REGIME_2_ELEVATED
+        assert state.regime_score == 55.0
+        assert state.vix == 21.0
+        assert state.consecutive_scans == 2
         assert 0 <= state.regime_score <= 100
-        assert state.vix == 17.0
