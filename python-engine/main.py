@@ -12,6 +12,8 @@ from config import settings
 from kite_client import KiteClient
 from market_calendar import is_trading_day, prev_trading_day, is_market_open
 from engine import evaluate_signal, calc_ema, evaluate_momentum_signal, calc_zerodha_costs
+from regime import RegimeEngine
+from models import Regime
 from contextlib import asynccontextmanager
 from portfolio import filter_and_allocate, filter_momentum_signals
 from position_tracker import update_daily_positions, get_open_positions, init_positions_db
@@ -241,7 +243,22 @@ async def run_screener():
     
     nifty_close = nifty_df['close'].iloc[-1]
     nifty_ema50 = calc_ema(50, nifty_df['close']).iloc[-1]
-    
+
+    # Fetch VIX for regime detection
+    vix_data = await kite.get_historical("INDIAVIX", (today - pd.Timedelta(days=30)).strftime("%Y-%m-%d"), today.strftime("%Y-%m-%d"))
+    vix = float(vix_data['close'].iloc[-1]) if not vix_data.empty else None
+
+    # Initialize regime engine once per scan
+    regime_engine = RegimeEngine()
+    nifty_ema20 = calc_ema(20, nifty_df['close']).iloc[-1]
+    regime_state = regime_engine.update_regime(
+        vix=vix,
+        nifty_50=nifty_close,
+        nifty_ema20=nifty_ema20,
+        breadth=0.5,  # placeholder until breadth is implemented
+    )
+    current_regime = regime_state.regime
+
     if nifty_close < nifty_ema50:
         market_regime = "BEAR_RS_ONLY"
         logger.info("regime_filter", regime="BEAR_RS_ONLY",
@@ -279,7 +296,13 @@ async def run_screener():
             continue
 
         
-        valid, sig_data = evaluate_signal(ticker, df, bankroll, risk_pct, market_regime)
+        valid, sig_data = evaluate_signal(
+            ticker, df, bankroll, risk_pct,
+            regime=current_regime,
+            market_regime=market_regime,
+            nifty_50_current=nifty_close,
+            nifty_ema20=nifty_ema20,
+        )
         if not valid:
             sig_data["ticker"] = ticker
             raw_rejected.append(sig_data)
@@ -332,7 +355,7 @@ async def run_screener():
 
     
     async with state_lock:
-        current_signals, rejected_signals = filter_and_allocate(raw_signals, open_pos, bankroll)
+        current_signals, rejected_signals = filter_and_allocate(raw_signals, open_pos, bankroll, regime=current_regime)
         # Combine all rejections
         from typing import List, Dict
         all_rejected: List[Dict] = raw_rejected + rejected_signals

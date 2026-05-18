@@ -1,7 +1,7 @@
 import math
 import structlog
 from typing import List, Dict
-from models import Signal, MomentumSignal
+from models import Signal, MomentumSignal, Regime
 from config import settings
 
 logger = structlog.get_logger()
@@ -66,7 +66,7 @@ def filter_momentum_signals(
 
     return accepted, rejected
 
-def filter_and_allocate(signals: List[Dict], open_positions: List[Dict], bankroll: float) -> tuple[List[Signal], List[Dict]]:
+def filter_and_allocate(signals: List[Dict], open_positions: List[Dict], bankroll: float, regime: Regime = Regime.REGIME_1_NORMAL) -> tuple[List[Signal], List[Dict]]:
     accepted = []
     rejected = []
     
