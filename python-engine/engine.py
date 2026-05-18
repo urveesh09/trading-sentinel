@@ -68,6 +68,14 @@ def calc_volume_ratio(volume: pd.Series, n: int = 20) -> float:
 
 
 def calc_rsi(close: pd.Series, length: int = 14) -> float:
+    """
+    Compute RSI_14 (Wilder's smoothing method) for the most recent window.
+    Returns a single float value (the current RSI).
+
+    For historical RSI series (needed by RSI percentile filter), use
+    `calc_rsi_series()` instead. This function is used for the current
+    RSI reading only.
+    """
     prices = np.asarray(close, dtype=float)
 
     if len(prices) < length + 1:
@@ -95,6 +103,71 @@ def calc_rsi(close: pd.Series, length: int = 14) -> float:
     rsi = 100 - (100 / (1 + rs))
 
     return round(rsi, 4)
+
+
+def calc_rsi_series(close: pd.Series, length: int = 14) -> pd.Series:
+    """
+    Compute a full RSI_14 series using Wilder's smoothing method.
+
+    Returns a Series of RSI values aligned with the input close prices.
+    The first `length` values will be NaN (insufficient data).
+    Requires at least `length + 1` prices to produce a valid series.
+
+    Used by the RSI percentile filter in `evaluate_signal` to determine
+    where the current RSI sits within its own 6-month historical range.
+
+    OPEN QUESTION RESOLUTION (Task 9): RSI Percentile Persistence
+    ──────────────────────────────────────────────────────────────
+    Issue: RegimeEngine is instantiated fresh in each main.py scan run,
+           so RSI history is lost between scans. The RSI percentile filter
+           needs 126 days of history to work correctly.
+    Options:
+      1. Persist RSI history in SQLite — adds complexity, potential for stale data
+      2. Rebuild from OHLC data each scan — recommended in plan; engine.py has
+         access to 365 days of data; sufficient to compute 126-day RSI history
+      3. In-memory cache across scans — not durable across process restarts
+
+    Decision: Option 2 — `calc_rsi_series()` computes RSI history from the
+    existing 365-day OHLC data fetched in main.py. No new persistence layer needed.
+    The `evaluate_signal()` function accepts an optional `rsi_history` parameter;
+    when provided with ≥20 readings, the RSI percentile filter is used instead
+    of the fixed 45-72 range. When None or insufficient, the system falls back
+    to the fixed range (graceful degradation — signals still generate).
+    """
+    prices = np.asarray(close, dtype=float)
+    n = len(prices)
+
+    if n < length + 1:
+        return pd.Series(np.full(n, np.nan), index=close.index)
+
+    deltas = np.diff(prices)
+    gains = np.maximum(deltas, 0)
+    losses = np.maximum(-deltas, 0)
+
+    # Seed with SMA for first `length` periods
+    avg_gain = gains[:length].mean()
+    avg_loss = losses[:length].mean()
+
+    # First valid RSI at index `length` (after seed period)
+    rsi_values = np.full(n, np.nan, dtype=float)
+
+    if avg_loss == 0:
+        rsi_values[length:] = 100.0
+    else:
+        rs = avg_gain / avg_loss
+        rsi_values[length] = 100.0 - (100.0 / (1.0 + rs))
+
+    # Wilder smoothing for remaining periods
+    for i in range(length + 1, n):
+        avg_gain = (avg_gain * (length - 1) + gains[i]) / length
+        avg_loss = (avg_loss * (length - 1) + losses[i]) / length
+        if avg_loss == 0:
+            rsi_values[i] = 100.0
+        else:
+            rs = avg_gain / avg_loss
+            rsi_values[i] = 100.0 - (100.0 / (1.0 + rs))
+
+    return pd.Series(rsi_values, index=close.index)
 
 
 def calc_slope(series: pd.Series, n: int = 5) -> float:

@@ -245,8 +245,26 @@ async def run_screener():
     nifty_ema50 = calc_ema(50, nifty_df['close']).iloc[-1]
 
     # Fetch VIX for regime detection
+    # OPEN QUESTION RESOLUTION (Task 9): VIX Data Source
+    #
+    # Issue: Kite historical data does not directly support INDIAVIX as an instrument.
+    # Options considered:
+    #   1. NSE Bhavcopy CSV download — adds external dependency, not reliable in all environments
+    #   2. yfinance — adds external package, rate-limited, not suitable for live trading
+    #   3. Skip VIX filter when unavailable — graceful degradation
+    #
+    # Decision: Option 3 — When INDIAVIX data is unavailable (empty DataFrame returned),
+    # set vix=None and log a warning. The RegimeEngine.compute_score() will use the
+    # breadth and Nifty trend components only. If VIX remains None for multiple consecutive
+    # scans, treat market as Regime 1 (normal) to avoid false positives.
+    # Limitation: Without VIX, the primary regime driver is missing. This reduces
+    # regime detection accuracy but the system continues to function.
     vix_data = await kite.get_historical("INDIAVIX", (today - pd.Timedelta(days=30)).strftime("%Y-%m-%d"), today.strftime("%Y-%m-%d"))
     vix = float(vix_data['close'].iloc[-1]) if not vix_data.empty else None
+    if vix is None:
+        logger.warning("vix_data_unavailable", reason="INDIAVIX not available via Kite historical", ticker="INDIAVIX")
+        # OPEN QUESTION: If VIX is persistently unavailable, consider falling back to
+        # a proxy based on Nifty ATM implied volatility fetched via the options chain API.
 
     # Initialize regime engine once per scan
     regime_engine = RegimeEngine()

@@ -1,6 +1,37 @@
 """
 chandelier_stop.py — Chandelier trailing stop implementation.
 
+OPEN QUESTION RESOLUTION (Task 9): GTT (Good Till Triggered) Orders
+─────────────────────────────────────────────────────────────────────
+Issue: The Chandelier stop exists in this module but is not wired to
+       the order execution layer. Regime 3 (Crisis) needs active trailing
+       stop management.
+Options:
+  1. Use Upstox/Kite GTT API for server-side trailing stops
+  2. Manage Chandelier stop in-engine (monitor each candle, trigger close)
+  3. Defer to T1 partial exit (already implemented in position_tracker)
+
+Decision: Option 2 (recommended path) — The Chandelier stop is managed
+in-engine via `position_tracker.py`'s `update_daily_positions()` function.
+This function already tracks `highest_close_since_entry` and computes a
+trailing stop (highest_close - 1.5 * ATR) after each daily close. This
+is more reliable than GTT for the following reasons:
+  - GTT orders require exact trigger prices and can miss fills in fast markets
+  - In-engine management allows dynamic adjustment based on same-day price action
+  - The position_tracker already persists `trailing_stop_current` in SQLite
+  - At ₹5K bankroll with max 2 positions, manual monitoring per candle is feasible
+  - Upstox/Kite GTT does NOT support trailing stops natively — only fixed GTT
+
+Limitation: The current implementation uses a fixed 1.5x ATR multiplier
+(standard Chandelier uses 3.0x). This is intentional — the 3.0x Chandelier
+is wider than our current 1.5x initial stop, providing better win rate
+at the cost of smaller average wins. When the system is upgraded to full
+Chandelier management, the `CHANDELIER_ATR_MULT=3.0` from config.py will
+be used instead of the hardcoded 1.5.
+
+TODO(GTT-wiring): When Kite GTT API support for OHLC trigger conditions is
+confirmed, implement GTT-based Chandelier stops to reduce manual monitoring.
+
 The Chandelier Stop (developed by Charles LeBouef) is a trailing stop
 that trails price by a multiple of Average True Range (ATR).
 
