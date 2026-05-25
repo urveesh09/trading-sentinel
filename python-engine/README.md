@@ -248,9 +248,9 @@ This bypass should be removed when bankroll reaches ₹50,000+.
 | Item | Status | Notes |
 |---|---|---|
 | **VIX data source** | ✅ Resolved | Kite doesn't support INDIAVIX; graceful `vix=None` fallback, system falls back to regime 1 |
-| **Breadth data** | ⏳ Placeholder | `breadth=0.5` hardcoded; requires Nifty 500 constituent-level data. VIX + Nifty trend components functional |
-| **GTT trailing stops** | ⏳ Not wired | Chandelier stop managed in-engine via `position_tracker.py`. Kite GTT does not support OHLC trigger conditions |
-| **Bankroll update** | ⚠️ Minor | `RiskEngine.update_bankroll()` exists but `main.py` doesn't call it in `daily_post_market()` after `record_trade_close()` |
+| **Breadth data** | ✅ Resolved | Live proxy: `nifty_close / nifty_ema50` ratio mapped to [0.30, 0.70]; no extra API calls. Full constituent-level breadth remains a future enhancement |
+| **GTT trailing stops** | ✅ Not needed | Kite GTT v3 supports `trigger_type=ohlc` but `trigger_price` is FIXED at GTT creation time — cannot express a Chandelier stop (highest_close moves each candle). In-engine management via `position_tracker.py` is correct architecture |
+| **Bankroll update** | ✅ Resolved | `risk_engine.update_bankroll()` now called in `daily_post_market()` after `record_trade_close()`. Recovery governor also receives `record_trade_outcome()` for correct win/loss tracking |
 | **Brokerage bypass** | ⚠️ Temp | `for_gate=True` zeros ₹20 brokerage for signal viability gates; remove at ₹50K+ bankroll |
 | **RS vs Nifty data** | ⚠️ Minor | `nifty_return_1d` not passed to `evaluate_signal()`; defaults to 0.0. Should be wired for accuracy |
 
