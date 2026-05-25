@@ -3,34 +3,30 @@ chandelier_stop.py — Chandelier trailing stop implementation.
 
 OPEN QUESTION RESOLUTION (Task 9): GTT (Good Till Triggered) Orders
 ─────────────────────────────────────────────────────────────────────
-Issue: The Chandelier stop exists in this module but is not wired to
-       the order execution layer. Regime 3 (Crisis) needs active trailing
-       stop management.
-Options:
-  1. Use Upstox/Kite GTT API for server-side trailing stops
-  2. Manage Chandelier stop in-engine (monitor each candle, trigger close)
-  3. Defer to T1 partial exit (already implemented in position_tracker)
+Issue: Can Kite GTT API replace the in-engine Chandelier trailing stop?
 
-Decision: Option 2 (recommended path) — The Chandelier stop is managed
-in-engine via `position_tracker.py`'s `update_daily_positions()` function.
-This function already tracks `highest_close_since_entry` and computes a
-trailing stop (highest_close - 1.5 * ATR) after each daily close. This
-is more reliable than GTT for the following reasons:
-  - GTT orders require exact trigger prices and can miss fills in fast markets
-  - In-engine management allows dynamic adjustment based on same-day price action
-  - The position_tracker already persists `trailing_stop_current` in SQLite
-  - At ₹5K bankroll with max 2 positions, manual monitoring per candle is feasible
-  - Upstox/Kite GTT does NOT support trailing stops natively — only fixed GTT
+Kite GTT API v3 supports OHLC trigger conditions:
+  - trigger_type: "ohlc"  with comparison operators (>, <, >=, <=)
+  - Compares last_price against OHLC fields (open, high, low, close)
+  - BUT: trigger_price is FIXED at GTT creation time
 
-Limitation: The current implementation uses a fixed 1.5x ATR multiplier
-(standard Chandelier uses 3.0x). This is intentional — the 3.0x Chandelier
-is wider than our current 1.5x initial stop, providing better win rate
-at the cost of smaller average wins. When the system is upgraded to full
-Chandelier management, the `CHANDELIER_ATR_MULT=3.0` from config.py will
-be used instead of the hardcoded 1.5.
+Chandelier stop challenge:
+  - trigger_price = highest_close_since_entry - (atr_mult × ATR)
+  - highest_close increases whenever a new closing high is made
+  - This means the trigger price would need to be updated every time
+    a new high is recorded — potentially once per candle
+  - GTT has no server-side arithmetic; trigger_price cannot reference
+    a moving highest_close variable
 
-TODO(GTT-wiring): When Kite GTT API support for OHLC trigger conditions is
-confirmed, implement GTT-based Chandelier stops to reduce manual monitoring.
+Practical reality: GTT cannot natively express a Chandelier stop without
+constant API updates on every candle, which is rate-limited (3 req/s),
+unnecessary for intraday (auto-square-off at 15:15), and already handled
+correctly by position_tracker's daily-end tracking for swing trades.
+
+Decision: In-engine Chandelier management via `position_tracker.py` is the
+correct architecture. It is updated once per day after market close (not
+per-candle), persists to SQLite, and correctly tracks highest_close_since_entry
+across all open swing positions. No GTT wiring needed.
 
 The Chandelier Stop (developed by Charles LeBouef) is a trailing stop
 that trails price by a multiple of Average True Range (ATR).
