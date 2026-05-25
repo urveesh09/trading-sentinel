@@ -289,7 +289,7 @@ def evaluate_signal(
     # REGIME-AWARE FILTER: Volume Z-Score (Regime 1 and 2 only)
     # ----------------------------------------------------------------
     vol_zscore = adaptive_ind.compute_volume_zscore(df["volume"].iloc[-1], df["volume"])
-    vol_zscore_threshold = adaptive_ind.get_volume_zscore_threshold(regime.value)
+    vol_zscore_threshold = adaptive_ind.get_volume_zscore_threshold(regime)
     if regime in (Regime.REGIME_1_NORMAL, Regime.REGIME_2_ELEVATED):
         if vol_zscore < vol_zscore_threshold:
             return False, {"reject_reason": "volume_zscore_low", "vol_zscore": vol_zscore, "threshold": vol_zscore_threshold}

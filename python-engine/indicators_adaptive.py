@@ -69,11 +69,19 @@ class AdaptiveIndicators:
         percentile = (count_below / len(hist)) * 100.0
         return float(round(percentile, 2))
 
-    def get_rsi_percentile_threshold(self, regime: Regime) -> float:
-        """Return the RSI percentile threshold for a given regime."""
+    def get_rsi_percentile_threshold(self, regime: Regime) -> Optional[float]:
+        """Return the RSI percentile threshold for a given regime.
+        
+        R1 (Normal)    → 20.0 (bottom 20% of RSI history)
+        R2 (Elevated)  → 15.0 (bottom 15% — tighter)
+        R3 (Crisis)    → None (RSI percentile not used; RS vs Nifty filter applies instead)
+        UNKNOWN        → 20.0 (same as R1, safe default)
+        """
         if regime == Regime.REGIME_2_ELEVATED:
             return settings.RSI_PERCENTILE_REGIME2
-        return settings.RSI_PERCENTILE_REGIME1  # R1 and UNKNOWN use R1 threshold
+        elif regime == Regime.REGIME_3_CRISIS:
+            return None  # Not used in R3 — RS vs Nifty filter is the primary gate
+        return settings.RSI_PERCENTILE_REGIME1  # R1 and UNKNOWN
 
     # ------------------------------------------------------------------
     # Volume Z-Score
@@ -116,12 +124,20 @@ class AdaptiveIndicators:
         return float(round(zscore, 4))
 
     def get_volume_zscore_threshold(self, regime: Regime) -> float:
-        """Return the volume z-score threshold for a given regime."""
+        """Return volume z-score threshold for the given regime.
+        
+        R1 (Normal)    → 1.5  — loose, allow quieter setups
+        R2 (Elevated)  → 2.0  — stricter, require confirmation
+        R3 (Crisis)    → 2.5  — strictest
+        UNKNOWN        → 1.5  — safe default (same as R1)
+        """
         if regime == Regime.REGIME_2_ELEVATED:
             return settings.VOL_ZSCORE_REGIME2
         elif regime == Regime.REGIME_3_CRISIS:
             return settings.VOL_ZSCORE_REGIME3
-        return settings.VOL_ZSCORE_REGIME1
+        else:
+            # R1_NORMAL and UNKNOWN both use R1 threshold
+            return settings.VOL_ZSCORE_REGIME1
 
     # ------------------------------------------------------------------
     # Relative Strength vs Nifty

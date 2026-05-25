@@ -140,7 +140,14 @@ def filter_and_allocate(signals: List[Dict], open_positions: List[Dict], bankrol
             continue
 
         # Inviolable Rule Check: Must never exceed risk limit
-        risk_per_trade = bankroll * settings.RISK_PCT
+        # [INV] Inviolable Rule: per-trade risk must respect regime-based limit
+        risk_pct_by_regime = {
+            Regime.REGIME_1_NORMAL:  settings.RISK_PCT_REGIME1,
+            Regime.REGIME_2_ELEVATED: settings.RISK_PCT_REGIME2,
+            Regime.REGIME_3_CRISIS:  settings.RISK_PCT_REGIME3,
+            Regime.UNKNOWN:          settings.RISK_PCT_REGIME1,
+        }
+        risk_per_trade = bankroll * risk_pct_by_regime.get(regime, settings.RISK_PCT_REGIME1)
         if round(raw_sig['capital_at_risk'], 2) > round(risk_per_trade + 0.05, 2):
             raw_sig['reject_reason'] = "CRITICAL_RISK_LIMIT_EXCEEDED"
             rejected.append(raw_sig)

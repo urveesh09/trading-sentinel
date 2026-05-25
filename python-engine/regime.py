@@ -48,7 +48,8 @@ class RegimeEngine:
         self.current_regime: Regime = Regime.UNKNOWN
         self.current_score: float = 100.0
         self._prior_regime: Regime = Regime.UNKNOWN
-        self._consecutive_in_range: int = 1  # Start at 1 so first candidate triggers transition
+        # Start at 0 so first scan → 1 (need 2 to transition), second scan → 2 (fires)
+        self._consecutive_in_range: int = 0
 
     def compute_score(
         self,
@@ -152,7 +153,8 @@ class RegimeEngine:
         score = self.compute_score(vix, nifty_50, nifty_ema20, breadth)
 
         if candidate == self.current_regime:
-            self._consecutive_in_range = settings.REGIME_TRANSITION_SCANS
+            # Same regime: reset to 1 so next differing scan starts counting from 1
+            self._consecutive_in_range = 1
         else:
             self._consecutive_in_range += 1
 

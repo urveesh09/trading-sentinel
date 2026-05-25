@@ -72,13 +72,17 @@ class TestRegimeEngine:
         assert regime == Regime.REGIME_3_CRISIS
 
     def test_regime_transition_requires_2_scans(self):
-        """UNKNOWN -> any regime: immediate on first scan.
-        Transitions between ESTABLISHED regimes require 2 consecutive scans."""
+        """UNKNOWN -> any regime: requires 2 consecutive scans to transition.
+        Scan 1: UNKNOWN stays UNKNOWN (counter=1, not yet 2).
+        Scan 2: UNKNOWN -> R2 (counter=2, fires transition).
+        Scan 3: stay in R2 (counter reset to 1, then incremented to 2).
+        """
         engine = RegimeEngine()
-        # First scan: UNKNOWN -> R2 immediately (counter: 1+1=2 >= 2 -> transition)
+        # Scan 1: UNKNOWN candidate, counter 0->1, still UNKNOWN (not yet 2)
         engine.update_regime(vix=21.0, nifty_50=25000, nifty_ema20=24900, breadth=0.50)
-        assert engine.current_regime == Regime.REGIME_2_ELEVATED
-        # Second scan: same regime, stays R2
+        assert engine.current_regime == Regime.UNKNOWN
+
+        # Scan 2: still R2 candidate, counter 1->2, hits threshold -> transition fires
         engine.update_regime(vix=21.0, nifty_50=25000, nifty_ema20=24900, breadth=0.50)
         assert engine.current_regime == Regime.REGIME_2_ELEVATED
 
@@ -131,12 +135,21 @@ class TestRegimeEngine:
         assert engine.get_risk_pct() == 0.05
 
     def test_update_regime_returns_state(self):
-        """update_regime returns a RegimeState with correct regime, score, and consecutive_scans."""
+        """update_regime returns a RegimeState with correct regime, score, and consecutive_scans.
+        
+        UNKNOWN -> any regime requires 2 consecutive scans.
+        Scan 1: UNKNOWN (consecutive_scans=1).
+        Scan 2: R2 (consecutive_scans=2, transition fires).
+        """
         engine = RegimeEngine()
-        # First scan: UNKNOWN -> R2 on scan 1 (transition fires immediately)
+        # Scan 1: UNKNOWN (counter=1, below threshold)
         state = engine.update_regime(vix=21.0, nifty_50=25000, nifty_ema20=24900, breadth=0.50)
-        assert state.regime == Regime.REGIME_2_ELEVATED
+        assert state.regime == Regime.UNKNOWN
         assert state.regime_score == 55.0
         assert state.vix == 21.0
-        assert state.consecutive_scans == 2
+        assert state.consecutive_scans == 1
+
+        # Scan 2: R2 (counter=2, transition fires)
+        state = engine.update_regime(vix=21.0, nifty_50=25000, nifty_ema20=24900, breadth=0.50)
+        assert state.regime == Regime.REGIME_2_ELEVATED
         assert 0 <= state.regime_score <= 100
