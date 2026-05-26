@@ -152,95 +152,6 @@ class RegimeEngine:
         return pctile
 
     # ------------------------------------------------------------------
-    # Core score computation  (unified VIX + VIX-free in one method)
-    # ------------------------------------------------------------------
-
-    def compute_score(
-        self,
-        # --- VIX-free signals (primary interface) ---
-        nifty_atr_current: float = 0.0,
-        nifty_atr_baseline: float = 0.0,
-        realized_vol: float = 0.0,
-        nifty_close: float = 0.0,
-        nifty_ema20: float = 0.0,
-        banknifty_close: float = 0.0,
-        nb_ratio_history: Optional[list] = None,
-        breadth: float = 0.50,
-        # --- VIX-backward-compat (legacy tests only) ---
-        vix: Optional[float] = None,   # None = VIX-free mode; value = VIX mode
-        nifty_50: float = 0.0,
-    ) -> float:
-        """
-        Compute the continuous regime score (0-100).
-
-        TWO MODES:
-
-        VIX-FREE mode (primary):
-            Pass nifty_atr_current > 0. Uses ATR compression ratio + realized
-            volatility + Nifty/BankNifty ratio breadth.
-
-            Architecture:
-              vol_score = ATR_score × 0.60 + RV_score × 0.40
-            Then:
-              trend penalty   ×0.7  when nifty_close < nifty_ema20
-              breadth penalty ×0.8  when NB ratio percentile < 0.30
-
-        VIX BACKWARD-COMPAT mode (deprecated, tests only):
-            Pass vix keyword argument (any value including None).
-            Uses the India VIX formula so existing tests pass.
-        """
-        import warnings
-        import numpy as np
-
-        # Detect which mode:
-        #  vix is not None  → VIX backward-compat path
-        #  else             → VIX-free primary path (needs nifty_atr_current or realized_vol)
-        if vix is not None:
-            # ── VIX BACKWARD-COMPAT ─────────────────────────────────────────
-            # Warns but still calls the old formula so tests keep passing.
-            warnings.warn(
-                "regime.py: VIX mode is DEPRECATED. India VIX unavailable via "
-                "Kite Connect. Replace with compute_score(VIX-free signals).",
-                DeprecationWarning,
-                stacklevel=2,
-            )
-            effective_vix = vix if vix is not None else VIX_DEFAULT
-            vix_factor = max(0.0, min(100.0, 100.0 - (effective_vix - 12.0) * 5.0))
-            if nifty_50 < nifty_ema20:
-                vix_factor *= 0.7
-            if breadth < 0.30:
-                vix_factor *= 0.8
-            return max(0.0, min(100.0, vix_factor))
-
-        # ── VIX-FREE PRIMARY PATH ───────────────────────────────────────────
-        if nb_ratio_history is None:
-            nb_ratio_history = []
-
-        # 1. ATR compression ratio → score
-        rv_ratio = self._calc_rv_ratio(nifty_atr_current, nifty_atr_baseline)
-        atr_score = self._calc_atr_score(rv_ratio)
-
-        # 2. Realized volatility → score
-        rv_score = self._calc_rv_score(
-            realized_vol if realized_vol > 0 else settings.RV_NORMAL_ANNUAL
-        )
-
-        # 3. Combine into vol_score  (ATR 60% + RV 40%)
-        vol_score = atr_score * settings.RV_ATR_WEIGHT + rv_score * settings.RV_RV_WEIGHT
-
-        # 4. Trend penalty: Nifty below EMA20 → ×0.7
-        if nifty_close < nifty_ema20:
-            vol_score *= 0.7
-
-        # 5. Breadth penalty: NB ratio percentile < 0.30 → ×0.8
-        nb_ratio = nifty_close / banknifty_close if banknifty_close > 0 else 1.0
-        nb_pctile = self._calc_nb_pctile(nb_ratio, nb_ratio_history)
-        if nb_pctile < settings.NB_RATIO_LO_PCT:
-            vol_score *= 0.8
-
-        return max(0.0, min(100.0, vol_score))
-
-    # ------------------------------------------------------------------
     # Full update with all signals
     # ------------------------------------------------------------------
 
@@ -478,6 +389,44 @@ class RegimeEngine:
         bkc_mode = vix is not None  # tests pass vix=21.0 etc.
 
         rv_ratio = self._calc_rv_ratio(nifty_atr_current, nifty_atr_baseline)
+        bkc_mode = vix is not None  # tests pass vix=21.0 etc.
+
+        # ── ATR CIRCUIT BREAKER — immediate R3, no 2-scan guard needed ─────
+        # When volatility explodes beyond 1.50× the 200-day ATR baseline,
+        # the market is in flash-crash territory. Skip the 2-scan confirmation
+        # and force REGIME_3_CRISIS immediately.
+        if (
+            not bkc_mode
+            and rv_ratio > settings.ATR_CB_THRESHOLD
+        ):
+            if self.current_regime != Regime.REGIME_3_CRISIS:
+                logger.warning(
+                    "regime_cb_override",
+                    from_regime=self.current_regime.value,
+                    to_regime="REGIME_3_CRISIS",
+                    rv_ratio=round(rv_ratio, 4),
+                    threshold=settings.ATR_CB_THRESHOLD,
+                    reason="ATR circuit breaker — immediate transition, no scan delay",
+                )
+                self._prior_regime = self.current_regime
+                self.current_regime = Regime.REGIME_3_CRISIS
+                self._consecutive_in_range = settings.REGIME_TRANSITION_SCANS
+            nb_ratio = nifty_close / banknifty_close if banknifty_close > 0 else 1.0
+            self.current_score = max(
+                0.0,
+                min(100.0, self._calc_atr_score(rv_ratio) * settings.RV_ATR_WEIGHT),
+            )
+            return RegimeState(
+                regime=self.current_regime,
+                regime_score=self.current_score,
+                rv_ratio=rv_ratio,
+                realized_vol=realized_vol,
+                nb_ratio=nb_ratio,
+                nifty_50=nifty_close,
+                nifty_ema20=nifty_ema20,
+                breadth=breadth,
+                consecutive_scans=self._consecutive_in_range,
+            )
 
         if candidate == self.current_regime:
             pass  # stay stable — counter just keeps accumulating naturally

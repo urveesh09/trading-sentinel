@@ -283,8 +283,10 @@ async def run_screener():
     banknifty_close = float(banknifty_df['close'].iloc[-1])
 
     # Build 60-day rolling Nifty/BankNifty ratio history
+    # Guard: cap at available rows to prevent IndexError on thin data
+    max_days = min(60, len(nifty_df), len(banknifty_df))
     nb_ratios = []
-    for i in range(60):
+    for i in range(max_days):
         idx = -(i + 1)
         nb_ratios.append(float(nifty_df['close'].iloc[idx] / banknifty_df['close'].iloc[idx]))
     nb_ratio_history = nb_ratios[::-1]
