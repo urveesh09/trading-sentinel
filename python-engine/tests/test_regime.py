@@ -71,11 +71,10 @@ class TestRegimeEngine:
         regime = engine.get_regime_for_scan(vix=41.0, nifty_50=25000, nifty_ema20=24900, breadth=0.60)
         assert regime == Regime.REGIME_3_CRISIS
 
-    def test_regime_transition_requires_2_scans(self):
-        """UNKNOWN -> any regime: requires 2 consecutive scans to transition.
-        Scan 1: UNKNOWN stays UNKNOWN (counter=1, not yet 2).
-        Scan 2: UNKNOWN -> R2 (counter=2, fires transition).
-        Scan 3: stay in R2 (counter reset to 1, then incremented to 2).
+    def test_regime_transition_unlocked_on_second_scan(self):
+        """UNKNOWN -> any regime transitions when counter reaches 2 on the second scan.
+        Scan 1: UNKNOWN candidate, counter=1 (below threshold of 2) → stays UNKNOWN.
+        Scan 2: R2 candidate, counter=2 (≥ 2) → fires transition to R2.
         """
         engine = RegimeEngine()
         # Scan 1: UNKNOWN candidate, counter 0->1, still UNKNOWN (not yet 2)
