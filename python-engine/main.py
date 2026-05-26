@@ -253,6 +253,8 @@ async def run_screener():
     
     nifty_close = nifty_df['close'].iloc[-1]
     nifty_ema50 = calc_ema(50, nifty_df['close']).iloc[-1]
+    # Bug 7 fix: compute 1-day nifty return for RS vs Nifty filter in REGIME_3_CRISIS
+    nifty_return_1d = (nifty_close / nifty_df['close'].iloc[-2] - 1) if len(nifty_df) >= 2 else 0.0
 
     # Fetch VIX for regime detection
     # OPEN QUESTION RESOLUTION (Task 9): VIX Data Source
@@ -353,6 +355,7 @@ async def run_screener():
             market_regime=market_regime,
             nifty_50_current=nifty_close,
             nifty_ema20=nifty_ema20,
+            nifty_return_1d=nifty_return_1d,
             rsi_history=rsi_hist,
         )
         if not valid:

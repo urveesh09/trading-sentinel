@@ -174,6 +174,7 @@ def evaluate_signal(
     market_regime: str = "BULL",
     nifty_50_current: Optional[float] = None,
     nifty_ema20: Optional[float] = None,
+    nifty_return_1d: Optional[float] = None,
     rsi_history: Optional[pd.Series] = None,
 ) -> Tuple[bool, Dict[str, Any]]:
 
@@ -254,8 +255,10 @@ def evaluate_signal(
     elif regime == Regime.REGIME_3_CRISIS:
         # RS vs Nifty filter (primary — replaces RSI + vol percentile filters)
         stock_return_1d = (close.iloc[-1] / close.iloc[-2] - 1) if len(close) >= 2 else 0.0
-        nifty_return_1d = 0.0  # Caller should pass this; default to 0 if unavailable
-        rs_vs_nifty = adaptive_ind.compute_rs_vs_nifty(stock_return_1d, nifty_return_1d)
+        rs_vs_nifty = adaptive_ind.compute_rs_vs_nifty(
+            stock_return_1d,
+            nifty_return_1d if nifty_return_1d is not None else 0.0,
+        )
         if rs_vs_nifty < settings.RS_VS_NIFTY_THRESHOLD:
             return False, {"reject_reason": "rs_vs_nifty_insufficient", "rs_vs_nifty": rs_vs_nifty, "threshold": settings.RS_VS_NIFTY_THRESHOLD}
         vol_zscore_r3 = adaptive_ind.compute_volume_zscore(df["volume"].iloc[-1], df["volume"])
