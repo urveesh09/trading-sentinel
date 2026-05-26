@@ -11,7 +11,7 @@ from pydantic import BaseModel
 from config import settings
 from kite_client import KiteClient
 from market_calendar import is_trading_day, prev_trading_day, is_market_open
-from engine import evaluate_signal, calc_ema, evaluate_momentum_signal, calc_zerodha_costs, calc_rsi_series
+from engine import evaluate_signal, calc_ema, evaluate_momentum_signal, calc_zerodha_costs, calc_rsi_series, calc_atr
 from regime import RegimeEngine
 from models import Regime
 from contextlib import asynccontextmanager
@@ -53,9 +53,19 @@ last_run = None
 # partial exits, and post-drawdown recovery sizing.
 risk_engine = None
 
+# Regime engine singleton — initialized once on first scan and reused
+# across subsequent scheduler runs (09:20 and 14:45 IST). This preserves
+# _consecutive_in_range counter and current_regime for the 2-scan
+# confirmation logic for regime transitions.
+_global_regime_engine = None
+
 # Tracks when a Regime-3 (Crisis) scan was observed so daily_post_market
 # can enter drawdown recovery mode after a crisis period ends.
 _last_regime_was_crisis = False
+
+# Stores the last RegimeState from run_screener so get_signals() can
+# expose regime + regime_score in the PortfolioResponse.
+_last_regime_state = None
 
 # Guard against concurrent post_login_initialization runs.
 # node-gateway retries the /token endpoint up to 4 times (3 retries + initial)
@@ -256,27 +266,28 @@ async def run_screener():
     # Bug 7 fix: compute 1-day nifty return for RS vs Nifty filter in REGIME_3_CRISIS
     nifty_return_1d = (nifty_close / nifty_df['close'].iloc[-2] - 1) if len(nifty_df) >= 2 else 0.0
 
-    # Fetch VIX for regime detection
-    # OPEN QUESTION RESOLUTION (Task 9): VIX Data Source
-    #
-    # Issue: Kite historical data does not directly support INDIAVIX as an instrument.
-    # Options considered:
-    #   1. NSE Bhavcopy CSV download — adds external dependency, not reliable in all environments
-    #   2. yfinance — adds external package, rate-limited, not suitable for live trading
-    #   3. Skip VIX filter when unavailable — graceful degradation
-    #
-    # Decision: Option 3 — When INDIAVIX data is unavailable (empty DataFrame returned),
-    # set vix=None and log a warning. The RegimeEngine.compute_score() will use the
-    # breadth and Nifty trend components only. If VIX remains None for multiple consecutive
-    # scans, treat market as Regime 1 (normal) to avoid false positives.
-    # Limitation: Without VIX, the primary regime driver is missing. This reduces
-    # regime detection accuracy but the system continues to function.
-    vix_data = await kite.get_historical("INDIAVIX", (today - pd.Timedelta(days=30)).strftime("%Y-%m-%d"), today.strftime("%Y-%m-%d"))
-    vix = float(vix_data['close'].iloc[-1]) if not vix_data.empty else None
-    if vix is None:
-        logger.warning("vix_data_unavailable", reason="INDIAVIX not available via Kite historical", ticker="INDIAVIX")
-        # OPEN QUESTION: If VIX is persistently unavailable, consider falling back to
-        # a proxy based on Nifty ATM implied volatility fetched via the options chain API.
+    # VIX-free regime signals [VIX-FREE]
+    # Compute ATR from Nifty data
+    nifty_atr = calc_atr(nifty_df['high'], nifty_df['low'], nifty_df['close'])
+    nifty_atr_current = float(nifty_atr.iloc[-1])
+    nifty_atr_sma200 = nifty_atr.rolling(200).mean()
+    nifty_atr_baseline = float(nifty_atr_sma200.iloc[-1])
+
+    # Compute 20-day annualized realized volatility
+    import numpy as np
+    log_returns = np.diff(np.log(nifty_df['close'].values))
+    realized_vol = float(np.std(log_returns[-20:]) * np.sqrt(252)) if len(log_returns) >= 20 else 0.18
+
+    # Fetch BankNifty for Nifty/BankNifty ratio history
+    banknifty_df = await kite.get_historical("NIFTY BANK", (today - pd.Timedelta(days=90)).strftime("%Y-%m-%d"), today.strftime("%Y-%m-%d"))
+    banknifty_close = float(banknifty_df['close'].iloc[-1])
+
+    # Build 60-day rolling Nifty/BankNifty ratio history
+    nb_ratios = []
+    for i in range(60):
+        idx = -(i + 1)
+        nb_ratios.append(float(nifty_df['close'].iloc[idx] / banknifty_df['close'].iloc[idx]))
+    nb_ratio_history = nb_ratios[::-1]
 
     # Breadth: Nifty 50 EMA50 proximity as a live market-internal breadth proxy.
     # close/ema50 ratio > 1.0 → Nifty above its average → healthy breadth.
@@ -286,15 +297,28 @@ async def run_screener():
     nifty_breadth_ratio = nifty_close / nifty_ema50 if nifty_ema50 > 0 else 1.0
     breadth = max(0.30, min(0.70, 0.30 + (nifty_breadth_ratio - 0.98) * 10.0))
 
-    # Initialize regime engine once per scan
-    regime_engine = RegimeEngine()
+    # Initialize regime engine once on first scan, reuse on subsequent scans
+    # to preserve _consecutive_in_range counter and current_regime across
+    # scheduler runs (09:20 and 14:45 IST) for 2-scan confirmation logic.
+    global _global_regime_engine
+    if _global_regime_engine is None:
+        _global_regime_engine = RegimeEngine()
+    regime_engine = _global_regime_engine
     nifty_ema20 = calc_ema(20, nifty_df['close']).iloc[-1]
     regime_state = regime_engine.update_regime(
-        vix=vix,
-        nifty_50=nifty_close,
+        nifty_atr_current=nifty_atr_current,
+        nifty_atr_baseline=nifty_atr_baseline,
+        realized_vol=realized_vol,
+        nifty_close=nifty_close,
         nifty_ema20=nifty_ema20,
+        banknifty_close=banknifty_close,
+        nb_ratio_history=nb_ratio_history,
         breadth=breadth,
+        vix=None,  # VIX-free mode
+        nifty_50=nifty_close,
     )
+    global _last_regime_state
+    _last_regime_state = regime_state
     current_regime = regime_state.regime
 
     if nifty_close < nifty_ema50:
@@ -500,7 +524,9 @@ async def get_signals():
             bankroll_utilization_pct=deployed / bankroll if bankroll else 0,
             open_positions_count=len(open_pos),
             remaining_slots=settings.MAX_OPEN_POSITIONS - len(open_pos),
-            signals=current_signals
+            signals=current_signals,
+            regime=_last_regime_state.regime if _last_regime_state else Regime.UNKNOWN,
+            regime_score=_last_regime_state.regime_score if _last_regime_state else 100.0,
         )
 
 async def run_momentum_screener():

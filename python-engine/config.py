@@ -84,12 +84,46 @@ class Settings(BaseSettings):
     ZERODHA_GST_PCT:          float = 0.18
 
     # ============================================================
-    # REGIME ENGINE — Adaptive Market Condition Detection
+    # REGIME ENGINE — VIX-Free Volatility Detection
+    # Replaces India VIX with ATR Compression + Realized Volatility
     # ============================================================
 
-    # VIX boundaries (defines regime thresholds)
-    REGIME_VIX_BOUNDARY_12: float = 18.0   # Regime 1/2 boundary
-    REGIME_VIX_BOUNDARY_23: float = 25.0   # Regime 2/3 boundary
+    # ATR Compression Ratio — replaces VIX as primary volatility driver
+    # rv_ratio = ATR_14 / ATR_14_SMA_200
+    # rv_ratio <= 0.70 = compressed (calm baseline → score 100)
+    # rv_ratio  1.00  = normal                       → score ~50
+    # rv_ratio >= 1.20 = expansion (elevated stress) → score ~20
+    RV_ATR_COMPRESS_THRESHOLD: float = 0.70   # compressed = calm baseline
+    RV_ATR_NORMAL:              float = 0.95   # mid-point of normal range
+    RV_ATR_EXPANSION:           float = 1.20   # expansion threshold
+    RV_ATR_CB_THRESHOLD:        float = 1.50   # circuit breaker — forces R3
+    RV_ATR_SPAN:                float = 0.50   # (RV_ATR_EXPANSION - RV_ATR_COMPRESS_THRESHOLD)
+    RV_ATR_SCORE_SCALE:         float = 200.0  # scale factor for linear mapping
+
+    # Realized Volatility — secondary volatility signal (20-day, annualized)
+    # rv_12% → score 100; rv_20% → score 60; rv_32% → score 0
+    RV_NORMAL_ANNUAL:  float = 0.18   # 18% annualized = normal vol baseline
+    RV_CRISIS_ANNUAL:   float = 0.28   # 28% annualized = crisis threshold
+    RV_SPAN:           float = 0.16   # (RV_CRISIS_ANNUAL - RV_NORMAL_ANNUAL)
+    RV_SCORE_SCALE:    float = 625.0  # scale factor: 100 / 0.16
+
+    # Volatility component weights (must sum to 1.0)
+    RV_ATR_WEIGHT: float = 0.60   # ATR compression = primary (60%)
+    RV_RV_WEIGHT:  float = 0.40   # realized vol   = secondary (40%)
+
+    # Circuit breaker override
+    ATR_CB_THRESHOLD: float = 1.50   # rv_ratio > 1.50 → force REGIME_3_CRISIS
+
+    # Nifty/BankNifty ratio — breadth proxy (replaces weak EMA50-proxy)
+    # nb_ratio percentile below 0.30 → weak breadth → ×0.8 penalty
+    NB_RATIO_LO_PCT:    float = 0.30   # breadth penalty threshold
+    NB_RATIO_WINDOW:    int   = 60     # lookback window for percentile rank
+
+    # VIX parameters — DECOMMISSIONED (kept for backward compat with tests)
+    # India VIX unavailable via Kite → replaced by ATR compression + RV
+    REGIME_VIX_BOUNDARY_12: float = 18.0
+    REGIME_VIX_BOUNDARY_23: float = 25.0
+    VIX_CB_THRESHOLD:        float = 40.0   # DEPRECATED — use ATR_CB_THRESHOLD
 
     # RSI Percentile thresholds (bottom % of 6-month rolling range)
     RSI_PERCENTILE_REGIME1: float = 20.0   # Regime 1: bottom 20%
