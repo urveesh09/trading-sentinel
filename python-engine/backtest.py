@@ -86,6 +86,8 @@ def _simulate_trade(
             break
 
     # If loop ended without any exit event (end of available data)
+    # exit_reason is already set by a break above if a legitimate exit occurred.
+    # Only set end_of_data when no exit was triggered in the loop.
     if exit_reason is None:
         last_row = df_slice.iloc[-1]
         exit_reason = "end_of_data"
