@@ -21,13 +21,18 @@ from models import Regime
 
 logger = structlog.get_logger()
 
+# Default VIX when live data is unavailable (e.g., INDIAVIX not supported by Kite).
+# Calibrated to produce Regime 1 (score=100, no penalty) with the standard
+# 100.0 - (vix - 12.0) * 5.0 formula: 18.0 → 100.0 - 30.0 = 70.0.
+VIX_DEFAULT = 18.0
+
 
 @dataclass
 class RegimeState:
     """Snapshot of the regime engine state at a point in time."""
     regime: Regime
     regime_score: float
-    vix: float
+    vix: Optional[float]  # None when live INDIAVIX data is unavailable
     nifty_50: float
     nifty_ema20: float
     breadth: float
@@ -53,7 +58,7 @@ class RegimeEngine:
 
     def compute_score(
         self,
-        vix: float,
+        vix: Optional[float],
         nifty_50: float,
         nifty_ema20: float,
         breadth: float,
@@ -63,9 +68,15 @@ class RegimeEngine:
 
         Score starts at 100 when VIX = 12 (calm) and decays as VIX rises.
         Penalties apply for Nifty below EMA20 (downtrend) and weak breadth.
+
+        When vix is None (live data unavailable), uses VIX_DEFAULT (18.0) as a
+        neutral calm-market fallback so the rest of the signal still functions.
         """
+        # Use neutral default when VIX data is unavailable
+        effective_vix = vix if vix is not None else VIX_DEFAULT
+
         # Primary driver: VIX (12 = calm, 32 = maximum stress)
-        vix_factor = max(0.0, min(100.0, 100.0 - (vix - 12.0) * 5.0))
+        vix_factor = max(0.0, min(100.0, 100.0 - (effective_vix - 12.0) * 5.0))
 
         # Trend penalty: Nifty below its 20-day EMA signals bearish environment
         if nifty_50 < nifty_ema20:
@@ -109,7 +120,7 @@ class RegimeEngine:
 
     def get_regime_for_scan(
         self,
-        vix: float,
+        vix: Optional[float],
         nifty_50: float,
         nifty_ema20: float,
         breadth: float,
@@ -119,8 +130,9 @@ class RegimeEngine:
 
         If VIX exceeds the circuit breaker threshold (40), forces Regime 3
         regardless of score to protect capital during extreme stress.
+        Skips circuit breaker when vix is None (data unavailable).
         """
-        if vix > settings.VIX_CB_THRESHOLD:
+        if vix is not None and vix > settings.VIX_CB_THRESHOLD:
             return Regime.REGIME_3_CRISIS
 
         score = self.compute_score(
@@ -133,7 +145,7 @@ class RegimeEngine:
 
     def update_regime(
         self,
-        vix: float,
+        vix: Optional[float],
         nifty_50: float,
         nifty_ema20: float,
         breadth: float,
