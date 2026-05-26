@@ -51,7 +51,6 @@ def _simulate_trade(
     entry_idx = df_slice.index.get_loc(entry_date)
 
     stop = stop_loss
-    exited = False
     exit_reason = None
     exit_price = None
     exit_date = None
@@ -86,8 +85,8 @@ def _simulate_trade(
             exit_date = day_idx
             break
 
-    # If we never broke out of the loop (no exit event in slice)
-    if not exited:
+    # If loop ended without any exit event (end of available data)
+    if exit_reason is None:
         last_row = df_slice.iloc[-1]
         exit_reason = "end_of_data"
         exit_price = last_row[exit_col]
