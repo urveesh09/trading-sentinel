@@ -110,6 +110,11 @@ class Settings(BaseSettings):
     STOP_ATR_REGIME2: float = 2.0        # 2.0x ATR
     STOP_ATR_REGIME3: float = 2.0        # 2.0x ATR
 
+    # Stop loss by regime (% of close below price — for pct_stop branch)
+    STOP_PCT_REGIME1: float = 0.05      # 5% stop
+    STOP_PCT_REGIME2: float = 0.05      # 5% stop
+    STOP_PCT_REGIME3: float = 0.08      # 8% stop (wider in crisis)
+
     # Target structure (R-multiples)
     TARGET1_R: float = 1.5                # T1 = 1.5R (all regimes)
     TARGET2_R_REGIME1: float = 3.0        # T2 = 3.0R (Regime 1)

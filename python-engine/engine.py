@@ -12,32 +12,6 @@ logger = structlog.get_logger()
 
 
 # ---------------------------------------------------------
-# REGIME-AWARE MAPPINGS
-# ---------------------------------------------------------
-
-STOP_ATR_REGIME_MAP = {
-    Regime.REGIME_1_NORMAL: settings.STOP_ATR_REGIME1,    # 1.5
-    Regime.REGIME_2_ELEVATED: settings.STOP_ATR_REGIME2,  # 2.0
-    Regime.REGIME_3_CRISIS: settings.STOP_ATR_REGIME3,    # 2.0
-    Regime.UNKNOWN: settings.STOP_ATR_REGIME1,
-}
-
-STOP_PCT_MAP = {
-    Regime.REGIME_1_NORMAL: 0.05,    # 5% stop
-    Regime.REGIME_2_ELEVATED: 0.05,   # 5% stop
-    Regime.REGIME_3_CRISIS: 0.08,     # 8% stop (wider in crisis)
-    Regime.UNKNOWN: 0.05,
-}
-
-T2_R_MAP = {
-    Regime.REGIME_1_NORMAL: settings.TARGET2_R_REGIME1,   # 3.0
-    Regime.REGIME_2_ELEVATED: settings.TARGET2_R_REGIME2,  # 3.0
-    Regime.REGIME_3_CRISIS: settings.TARGET2_R_REGIME3,    # 1.0
-    Regime.UNKNOWN: settings.TARGET2_R_REGIME1,
-}
-
-
-# ---------------------------------------------------------
 # INDICATORS
 # ---------------------------------------------------------
 
@@ -325,8 +299,20 @@ def evaluate_signal(
     # -----------------------------------------------------
     # REGIME-AWARE RISK MANAGEMENT
     # -----------------------------------------------------
-    atr_mult = STOP_ATR_REGIME_MAP[regime]
-    pct_stop_pct = STOP_PCT_MAP[regime]
+    atr_mult_map = {
+        Regime.REGIME_1_NORMAL: settings.STOP_ATR_REGIME1,
+        Regime.REGIME_2_ELEVATED: settings.STOP_ATR_REGIME2,
+        Regime.REGIME_3_CRISIS: settings.STOP_ATR_REGIME3,
+        Regime.UNKNOWN: settings.STOP_ATR_REGIME1,
+    }
+    pct_stop_map = {
+        Regime.REGIME_1_NORMAL: settings.STOP_PCT_REGIME1,
+        Regime.REGIME_2_ELEVATED: settings.STOP_PCT_REGIME2,
+        Regime.REGIME_3_CRISIS: settings.STOP_PCT_REGIME3,
+        Regime.UNKNOWN: settings.STOP_PCT_REGIME1,
+    }
+    atr_mult = atr_mult_map[regime]
+    pct_stop_pct = pct_stop_map[regime]
     atr_stop = c - (atr_mult * a14)
     pct_stop = c * (1.0 - pct_stop_pct)
     stop_loss = max(atr_stop, pct_stop)
@@ -357,7 +343,13 @@ def evaluate_signal(
     r_distance = c - stop_loss
 
     t1_mult = settings.TARGET1_R
-    t2_mult = T2_R_MAP[regime]
+    t2_mult_map = {
+        Regime.REGIME_1_NORMAL: settings.TARGET2_R_REGIME1,
+        Regime.REGIME_2_ELEVATED: settings.TARGET2_R_REGIME2,
+        Regime.REGIME_3_CRISIS: settings.TARGET2_R_REGIME3,
+        Regime.UNKNOWN: settings.TARGET2_R_REGIME1,
+    }
+    t2_mult = t2_mult_map[regime]
 
     target_1 = c + (t1_mult * r_distance)
     target_2 = c + (t2_mult * r_distance) if t2_mult is not None else None
