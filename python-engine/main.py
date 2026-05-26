@@ -11,9 +11,12 @@ from pydantic import BaseModel
 from config import settings
 from kite_client import KiteClient
 from market_calendar import is_trading_day, prev_trading_day, is_market_open
-from engine import evaluate_signal, calc_ema, evaluate_momentum_signal, calc_zerodha_costs
+from engine import evaluate_signal, calc_ema, evaluate_momentum_signal, calc_zerodha_costs, calc_rsi_series
+from regime import RegimeEngine
+from models import Regime
 from contextlib import asynccontextmanager
 from portfolio import filter_and_allocate, filter_momentum_signals
+from risk_engine import RiskEngine
 from position_tracker import update_daily_positions, get_open_positions, init_positions_db
 from performance import init_ledger, current_bankroll, record_trade_close, check_circuit_breakers
 from models import PortfolioResponse, HealthResponse, ManualPositionRequest, BankrollAdjustment, Signal
@@ -44,6 +47,15 @@ rejected_signals = []
 current_momentum_signals = []
 market_regime = "UNKNOWN"
 last_run = None
+
+# Risk engine singleton — initialized in post_login_initialization
+# after bankroll and regime risk_pct are known. Governs position sizing,
+# partial exits, and post-drawdown recovery sizing.
+risk_engine = None
+
+# Tracks when a Regime-3 (Crisis) scan was observed so daily_post_market
+# can enter drawdown recovery mode after a crisis period ends.
+_last_regime_was_crisis = False
 
 # Guard against concurrent post_login_initialization runs.
 # node-gateway retries the /token endpoint up to 4 times (3 retries + initial)
@@ -168,7 +180,7 @@ app = FastAPI(title="Quant Engine Container B", lifespan=lifespan)
 #         logger.error("initial_backtest_error", error=str(e))
 
 async def post_login_initialization():
-    global _init_running
+    global _init_running, risk_engine
     if _init_running:
         logger.info("post_login_init_skipped_already_running")
         return
@@ -241,7 +253,50 @@ async def run_screener():
     
     nifty_close = nifty_df['close'].iloc[-1]
     nifty_ema50 = calc_ema(50, nifty_df['close']).iloc[-1]
-    
+    # Bug 7 fix: compute 1-day nifty return for RS vs Nifty filter in REGIME_3_CRISIS
+    nifty_return_1d = (nifty_close / nifty_df['close'].iloc[-2] - 1) if len(nifty_df) >= 2 else 0.0
+
+    # Fetch VIX for regime detection
+    # OPEN QUESTION RESOLUTION (Task 9): VIX Data Source
+    #
+    # Issue: Kite historical data does not directly support INDIAVIX as an instrument.
+    # Options considered:
+    #   1. NSE Bhavcopy CSV download — adds external dependency, not reliable in all environments
+    #   2. yfinance — adds external package, rate-limited, not suitable for live trading
+    #   3. Skip VIX filter when unavailable — graceful degradation
+    #
+    # Decision: Option 3 — When INDIAVIX data is unavailable (empty DataFrame returned),
+    # set vix=None and log a warning. The RegimeEngine.compute_score() will use the
+    # breadth and Nifty trend components only. If VIX remains None for multiple consecutive
+    # scans, treat market as Regime 1 (normal) to avoid false positives.
+    # Limitation: Without VIX, the primary regime driver is missing. This reduces
+    # regime detection accuracy but the system continues to function.
+    vix_data = await kite.get_historical("INDIAVIX", (today - pd.Timedelta(days=30)).strftime("%Y-%m-%d"), today.strftime("%Y-%m-%d"))
+    vix = float(vix_data['close'].iloc[-1]) if not vix_data.empty else None
+    if vix is None:
+        logger.warning("vix_data_unavailable", reason="INDIAVIX not available via Kite historical", ticker="INDIAVIX")
+        # OPEN QUESTION: If VIX is persistently unavailable, consider falling back to
+        # a proxy based on Nifty ATM implied volatility fetched via the options chain API.
+
+    # Breadth: Nifty 50 EMA50 proximity as a live market-internal breadth proxy.
+    # close/ema50 ratio > 1.0 → Nifty above its average → healthy breadth.
+    # Clamped to [0.30, 0.70] to stay within the regime engine's breadth penalty zone.
+    # Full constituent breadth (Nifty 500 stocks above their SMA50) requires a separate
+    # batch download and is tracked as a future enhancement.
+    nifty_breadth_ratio = nifty_close / nifty_ema50 if nifty_ema50 > 0 else 1.0
+    breadth = max(0.30, min(0.70, 0.30 + (nifty_breadth_ratio - 0.98) * 10.0))
+
+    # Initialize regime engine once per scan
+    regime_engine = RegimeEngine()
+    nifty_ema20 = calc_ema(20, nifty_df['close']).iloc[-1]
+    regime_state = regime_engine.update_regime(
+        vix=vix,
+        nifty_50=nifty_close,
+        nifty_ema20=nifty_ema20,
+        breadth=breadth,
+    )
+    current_regime = regime_state.regime
+
     if nifty_close < nifty_ema50:
         market_regime = "BEAR_RS_ONLY"
         logger.info("regime_filter", regime="BEAR_RS_ONLY",
@@ -254,7 +309,16 @@ async def run_screener():
         market_regime = "BULL"
 
     bankroll = await current_bankroll(settings.DB_PATH)
-    risk_pct = settings.RISK_PCT if market_regime != "CAUTION" else settings.RISK_PCT * 0.5
+    risk_pct = regime_engine.get_risk_pct()
+
+    # Initialize RiskEngine singleton with known bankroll and regime risk_pct.
+    # Used for: post-drawdown recovery sizing governor, partial exit checks, and
+    # share count recalculation if needed during the scan cycle.
+    global risk_engine
+    if risk_engine is None:
+        from config import settings as cfg
+        risk_engine = RiskEngine(bankroll=bankroll, regime_risk_pct=risk_pct)
+        logger.info("risk_engine_initialized", bankroll=bankroll, risk_pct=risk_pct)
     
     try:
         universe = pd.read_csv(settings.UNIVERSE_PATH)
@@ -279,7 +343,21 @@ async def run_screener():
             continue
 
         
-        valid, sig_data = evaluate_signal(ticker, df, bankroll, risk_pct, market_regime)
+        # Build RSI history for adaptive RSI percentile filter
+        try:
+            rsi_hist = calc_rsi_series(df["close"])
+        except (IndexError, Exception):
+            rsi_hist = None
+
+        valid, sig_data = evaluate_signal(
+            ticker, df, bankroll, risk_pct,
+            regime=current_regime,
+            market_regime=market_regime,
+            nifty_50_current=nifty_close,
+            nifty_ema20=nifty_ema20,
+            nifty_return_1d=nifty_return_1d,
+            rsi_history=rsi_hist,
+        )
         if not valid:
             sig_data["ticker"] = ticker
             raw_rejected.append(sig_data)
@@ -332,7 +410,7 @@ async def run_screener():
 
     
     async with state_lock:
-        current_signals, rejected_signals = filter_and_allocate(raw_signals, open_pos, bankroll)
+        current_signals, rejected_signals = filter_and_allocate(raw_signals, open_pos, bankroll, regime=current_regime)
         # Combine all rejections
         from typing import List, Dict
         all_rejected: List[Dict] = raw_rejected + rejected_signals
@@ -343,10 +421,57 @@ async def run_screener():
             logger.info("swing_scan_silent", reason="outside_market_hours_notification_suppressed",
                         signals_found=len(current_signals))
 
+    # Track crisis regime so daily_post_market can react accordingly
+    global _last_regime_was_crisis
+    if current_regime == Regime.REGIME_3_CRISIS:
+        _last_regime_was_crisis = True
+
 
 async def daily_post_market():
     today_str = datetime.now(IST).strftime("%Y-%m-%d")
+    global risk_engine
+
+    # Snapshot open positions BEFORE update so we can diff closed trades
+    open_pos_before = await get_open_positions(settings.DB_PATH)
+    open_tickers_before = {p["ticker"] for p in open_pos_before}
+
+    # Update all daily positions (calls record_trade_close for each closed trade)
     await update_daily_positions(settings.DB_PATH, kite, today_str, lambda t, p: record_trade_close(settings.DB_PATH, t, p))
+
+    # Snapshot open positions AFTER update — anything gone was closed today
+    open_pos_after = await get_open_positions(settings.DB_PATH)
+    closed_tickers = open_tickers_before - {p["ticker"] for p in open_pos_after}
+
+    # Record outcomes in RiskEngine for recovery governor tracking
+    if risk_engine is not None and closed_tickers:
+        async with aiosqlite.connect(settings.DB_PATH) as db:
+            db.row_factory = aiosqlite.Row
+            placeholders = ",".join(["?"] * len(closed_tickers))
+            cursor = await db.execute(
+                f"SELECT ticker, realised_pnl FROM positions WHERE ticker IN ({placeholders}) AND exit_date=?",
+                list(closed_tickers) + [today_str]
+            )
+            closed_trades = [dict(row) for row in await cursor.fetchall()]
+
+        for trade in closed_trades:
+            win = trade["realised_pnl"] > 0
+            in_recovery = risk_engine._recovery_trades_remaining > 0
+            risk_engine.record_trade_outcome(win=win, in_recovery=in_recovery)
+
+    # Sync RiskEngine bankroll to ledger after all closes are recorded
+    if risk_engine is not None:
+        new_bankroll = await current_bankroll(settings.DB_PATH)
+        risk_engine.update_bankroll(new_bankroll)
+        logger.info("risk_engine_bankroll_updated", new_bankroll=new_bankroll)
+
+    # If run_screener observed a Regime-3 (Crisis) scan at any point today,
+    # enter drawdown recovery mode to govern sizing for subsequent trades.
+    global _last_regime_was_crisis
+    if _last_regime_was_crisis and risk_engine is not None:
+        risk_engine.enter_recovery_mode()
+        logger.info("drawdown_recovery_entered_daily",
+                    recovery_trades=risk_engine._recovery_trades_remaining)
+    _last_regime_was_crisis = False
 
 @app.get("/signals", response_model=PortfolioResponse)
 async def get_signals():

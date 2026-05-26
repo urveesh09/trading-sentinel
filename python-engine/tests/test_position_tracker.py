@@ -176,13 +176,13 @@ class TestTrailingStop:
             target_1=530.0, target_2=560.0
         )
         # Today close = 520 → new highest = 520
-        # new_trail = 520 - 1.5*10 = 505 > 485 → update to 505
+        # Chandelier trail = 520 - 3.0*10 = 490
         kite = _mock_kite(520.0)
         record_cb = AsyncMock()
         await update_daily_positions(pos_db, kite, "2025-10-10", record_cb)
 
         positions = await get_open_positions(pos_db)
-        assert positions[0]["trailing_stop_current"] == 505.0
+        assert positions[0]["trailing_stop_current"] == 490.0
         assert positions[0]["highest_close_since_entry"] == 520.0
 
     @pytest.mark.asyncio

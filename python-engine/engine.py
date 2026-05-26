@@ -2,9 +2,11 @@ import pandas as pd
 import numpy as np
 import math
 import structlog
-from typing import Dict, Any, Tuple
+from typing import Dict, Any, Tuple, Optional
 
 from config import settings
+from models import Regime
+from indicators_adaptive import AdaptiveIndicators
 
 logger = structlog.get_logger()
 
@@ -40,6 +42,14 @@ def calc_volume_ratio(volume: pd.Series, n: int = 20) -> float:
 
 
 def calc_rsi(close: pd.Series, length: int = 14) -> float:
+    """
+    Compute RSI_14 (Wilder's smoothing method) for the most recent window.
+    Returns a single float value (the current RSI).
+
+    For historical RSI series (needed by RSI percentile filter), use
+    `calc_rsi_series()` instead. This function is used for the current
+    RSI reading only.
+    """
     prices = np.asarray(close, dtype=float)
 
     if len(prices) < length + 1:
@@ -69,6 +79,71 @@ def calc_rsi(close: pd.Series, length: int = 14) -> float:
     return round(rsi, 4)
 
 
+def calc_rsi_series(close: pd.Series, length: int = 14) -> pd.Series:
+    """
+    Compute a full RSI_14 series using Wilder's smoothing method.
+
+    Returns a Series of RSI values aligned with the input close prices.
+    The first `length` values will be NaN (insufficient data).
+    Requires at least `length + 1` prices to produce a valid series.
+
+    Used by the RSI percentile filter in `evaluate_signal` to determine
+    where the current RSI sits within its own 6-month historical range.
+
+    OPEN QUESTION RESOLUTION (Task 9): RSI Percentile Persistence
+    ──────────────────────────────────────────────────────────────
+    Issue: RegimeEngine is instantiated fresh in each main.py scan run,
+           so RSI history is lost between scans. The RSI percentile filter
+           needs 126 days of history to work correctly.
+    Options:
+      1. Persist RSI history in SQLite — adds complexity, potential for stale data
+      2. Rebuild from OHLC data each scan — recommended in plan; engine.py has
+         access to 365 days of data; sufficient to compute 126-day RSI history
+      3. In-memory cache across scans — not durable across process restarts
+
+    Decision: Option 2 — `calc_rsi_series()` computes RSI history from the
+    existing 365-day OHLC data fetched in main.py. No new persistence layer needed.
+    The `evaluate_signal()` function accepts an optional `rsi_history` parameter;
+    when provided with ≥20 readings, the RSI percentile filter is used instead
+    of the fixed 45-72 range. When None or insufficient, the system falls back
+    to the fixed range (graceful degradation — signals still generate).
+    """
+    prices = np.asarray(close, dtype=float)
+    n = len(prices)
+
+    if n < length + 1:
+        return pd.Series(np.full(n, np.nan), index=close.index)
+
+    deltas = np.diff(prices)
+    gains = np.maximum(deltas, 0)
+    losses = np.maximum(-deltas, 0)
+
+    # Seed with SMA for first `length` periods
+    avg_gain = gains[:length].mean()
+    avg_loss = losses[:length].mean()
+
+    # First valid RSI at index `length` (after seed period)
+    rsi_values = np.full(n, np.nan, dtype=float)
+
+    if avg_loss == 0:
+        rsi_values[length:] = 100.0
+    else:
+        rs = avg_gain / avg_loss
+        rsi_values[length] = 100.0 - (100.0 / (1.0 + rs))
+
+    # Wilder smoothing for remaining periods
+    for i in range(length + 1, n):
+        avg_gain = (avg_gain * (length - 1) + gains[i]) / length
+        avg_loss = (avg_loss * (length - 1) + losses[i]) / length
+        if avg_loss == 0:
+            rsi_values[i] = 100.0
+        else:
+            rs = avg_gain / avg_loss
+            rsi_values[i] = 100.0 - (100.0 / (1.0 + rs))
+
+    return pd.Series(rsi_values, index=close.index)
+
+
 def calc_slope(series: pd.Series, n: int = 5) -> float:
     if len(series) < n:
         return 0.0
@@ -95,7 +170,12 @@ def evaluate_signal(
     df: pd.DataFrame,
     bankroll: float,
     risk_pct: float,
-    market_regime: str = "BULL"
+    regime: Regime = Regime.REGIME_1_NORMAL,
+    market_regime: str = "BULL",
+    nifty_50_current: Optional[float] = None,
+    nifty_ema20: Optional[float] = None,
+    nifty_return_1d: Optional[float] = None,
+    rsi_history: Optional[pd.Series] = None,
 ) -> Tuple[bool, Dict[str, Any]]:
 
     if len(df) < 200:
@@ -122,14 +202,86 @@ def evaluate_signal(
     avg_20d_vol = df["volume"].iloc[-21:-1].mean()
 
     # -----------------------------------------------------
+    # REGIME-AWARE FILTER SETUP
+    # -----------------------------------------------------
+    adaptive_ind = AdaptiveIndicators()
+
+    # Score accumulates regime-specific RSI percentile bonus throughout the
+    # regime-filter blocks below; line 390's scoring loop then adds to it.
+    score: int = 0
+
+    # -----------------------------------------------------
     # FILTERS
     # -----------------------------------------------------
+
+    # ----------------------------------------------------------------
+    # REGIME-AWARE FILTER: RSI Percentile (Regime 1 and 2 only)
+    # RS vs Nifty filter for Regime 3 applied separately below
+    # ----------------------------------------------------------------
+    rs_vs_nifty: Optional[float] = None
+    rsi_pct: float = 0.0
+    if regime == Regime.REGIME_1_NORMAL:
+        rsi_pct_threshold = settings.RSI_PERCENTILE_REGIME1  # 20
+        if not (0 <= rsi14 <= 100):
+            return False, {"reject_reason": "rsi_out_of_range", "rsi": rsi14}
+        rsi_pct = adaptive_ind.compute_rsi_percentile(rsi14, rsi_history) if rsi_history is not None else 0.0
+        if rsi_history is not None and len(rsi_history) >= 20:
+            # Accept: RSI above bottom X% of its 6-month range = not oversold
+            # Reject: RSI in bottom X% = too weak / oversold territory
+            if rsi_pct < rsi_pct_threshold:
+                return False, {"reject_reason": "rsi_percentile_too_low", "rsi_pct": rsi_pct, "threshold": rsi_pct_threshold}
+        else:
+            if not (45 <= rsi14 <= 72):
+                return False, {"reject_reason": "rsi_out_of_range", "rsi": rsi14}
+        if rsi_history is not None and len(rsi_history) >= 20:
+            # Sweet spot: mid-range percentile (40-60) scores highest; extremes score 0
+            score += max(0, int(min(rsi_pct, 20) / 2))
+    elif regime == Regime.REGIME_2_ELEVATED:
+        rsi_pct_threshold = settings.RSI_PERCENTILE_REGIME2  # 15
+        if nifty_50_current is not None and nifty_ema20 is not None:
+            if nifty_50_current < nifty_ema20:
+                return False, {"reject_reason": "nifty_below_ema20_regime2", "nifty": nifty_50_current, "ema20": nifty_ema20}
+        rsi_pct = adaptive_ind.compute_rsi_percentile(rsi14, rsi_history) if rsi_history is not None else 0.0
+        if rsi_history is not None and len(rsi_history) >= 20:
+            # Accept: RSI above bottom X% of its 6-month range = not oversold
+            # Reject: RSI in bottom X% = too weak / oversold territory
+            if rsi_pct < rsi_pct_threshold:
+                return False, {"reject_reason": "rsi_percentile_too_low", "rsi_pct": rsi_pct, "threshold": rsi_pct_threshold}
+        else:
+            if not (50 <= rsi14 <= 72):
+                return False, {"reject_reason": "rsi_out_of_range", "rsi": rsi14}
+        if rsi_history is not None and len(rsi_history) >= 20:
+            score += max(0, int(min(rsi_pct, 15) / 2))
+    elif regime == Regime.REGIME_3_CRISIS:
+        # RS vs Nifty filter (primary — replaces RSI + vol percentile filters)
+        stock_return_1d = (close.iloc[-1] / close.iloc[-2] - 1) if len(close) >= 2 else 0.0
+        rs_vs_nifty = adaptive_ind.compute_rs_vs_nifty(
+            stock_return_1d,
+            nifty_return_1d if nifty_return_1d is not None else 0.0,
+        )
+        if rs_vs_nifty < settings.RS_VS_NIFTY_THRESHOLD:
+            return False, {"reject_reason": "rs_vs_nifty_insufficient", "rs_vs_nifty": rs_vs_nifty, "threshold": settings.RS_VS_NIFTY_THRESHOLD}
+        vol_zscore_r3 = adaptive_ind.compute_volume_zscore(df["volume"].iloc[-1], df["volume"])
+        if vol_zscore_r3 < settings.VOL_ZSCORE_REGIME3:
+            return False, {"reject_reason": "volume_zscore_low", "vol_zscore": vol_zscore_r3, "threshold": settings.VOL_ZSCORE_REGIME3}
+    else:
+        # UNKNOWN regime — apply Regime 1 defaults (no score bonus)
+        pass
+
+    # ----------------------------------------------------------------
+    # REGIME-AWARE FILTER: Volume Z-Score (Regime 1 and 2 only)
+    # ----------------------------------------------------------------
+    vol_zscore = adaptive_ind.compute_volume_zscore(df["volume"].iloc[-1], df["volume"])
+    vol_zscore_threshold = adaptive_ind.get_volume_zscore_threshold(regime)
+    if regime in (Regime.REGIME_1_NORMAL, Regime.REGIME_2_ELEVATED):
+        if vol_zscore < vol_zscore_threshold:
+            return False, {"reject_reason": "volume_zscore_low", "vol_zscore": vol_zscore, "threshold": vol_zscore_threshold}
 
     # [RS-FILTER] In BEAR_RS_ONLY mode, we bypass the absolute trend check (C1)
     if market_regime != "BEAR_RS_ONLY":
         if not (c > e200 and e50 > e200):
             return False, {"reject_reason": "trend_filter_failed", "close": c, "ema50": e50, "ema200": e200}
-    
+
     # All other filters (C2-C8) still apply
     if not (e21 * 0.93 <= c <= e21 * 1.20):  # widened from 97–110% to 93–120%
         return False, {"reject_reason": "ema21_proximity_failed", "close": c, "ema21": e21}
@@ -153,12 +305,24 @@ def evaluate_signal(
         return False, {"reject_reason": "invalid_atr", "atr": a14}
 
     # -----------------------------------------------------
-    # RISK MANAGEMENT
+    # REGIME-AWARE RISK MANAGEMENT
     # -----------------------------------------------------
-
-    atr_stop = c - (1.5 * a14)
-    pct_stop = c * 0.95
-
+    atr_mult_map = {
+        Regime.REGIME_1_NORMAL: settings.STOP_ATR_REGIME1,
+        Regime.REGIME_2_ELEVATED: settings.STOP_ATR_REGIME2,
+        Regime.REGIME_3_CRISIS: settings.STOP_ATR_REGIME3,
+        Regime.UNKNOWN: settings.STOP_ATR_REGIME1,
+    }
+    pct_stop_map = {
+        Regime.REGIME_1_NORMAL: settings.STOP_PCT_REGIME1,
+        Regime.REGIME_2_ELEVATED: settings.STOP_PCT_REGIME2,
+        Regime.REGIME_3_CRISIS: settings.STOP_PCT_REGIME3,
+        Regime.UNKNOWN: settings.STOP_PCT_REGIME1,
+    }
+    atr_mult = atr_mult_map[regime]
+    pct_stop_pct = pct_stop_map[regime]
+    atr_stop = c - (atr_mult * a14)
+    pct_stop = c * (1.0 - pct_stop_pct)
     stop_loss = max(atr_stop, pct_stop)
 
     risk_per_trade = bankroll * risk_pct
@@ -182,13 +346,21 @@ def evaluate_signal(
 
 
     # -----------------------------------------------------
-    # TARGETS
+    # REGIME-AWARE TARGETS
     # -----------------------------------------------------
-
     r_distance = c - stop_loss
 
-    target_1 = c + (1.5 * r_distance)
-    target_2 = c + (3.0 * r_distance)
+    t1_mult = settings.TARGET1_R
+    t2_mult_map = {
+        Regime.REGIME_1_NORMAL: settings.TARGET2_R_REGIME1,
+        Regime.REGIME_2_ELEVATED: settings.TARGET2_R_REGIME2,
+        Regime.REGIME_3_CRISIS: settings.TARGET2_R_REGIME3,
+        Regime.UNKNOWN: settings.TARGET2_R_REGIME1,
+    }
+    t2_mult = t2_mult_map[regime]
+
+    target_1 = c + (t1_mult * r_distance)
+    target_2 = c + (t2_mult * r_distance) if t2_mult is not None else None
 
     # -----------------------------------------------------
     # EXPECTED VALUE
@@ -196,10 +368,12 @@ def evaluate_signal(
 
     # Accurate cost model
     # Estimate exit at T2 for cost calculation
-    total_round_trip = calc_zerodha_costs(c, target_2, shares, is_intraday=False, for_gate=True)
+    # For Regime 3 (no T2), use T1 as the exit for cost model
+    exit_for_costs = target_2 if target_2 is not None else target_1
+    total_round_trip = calc_zerodha_costs(c, exit_for_costs, shares, is_intraday=False, for_gate=True)
 
     gross_profit_t1 = (target_1 - c) * shares * 0.5
-    gross_profit_t2 = (target_2 - c) * shares * 0.5
+    gross_profit_t2 = ((target_2 - c) * shares * 0.5) if target_2 is not None else 0.0
 
     gross_profit = gross_profit_t1 + gross_profit_t2
 
@@ -213,8 +387,8 @@ def evaluate_signal(
     # -----------------------------------------------------
     # SIGNAL SCORE
     # -----------------------------------------------------
-
-    score = 0
+    # score already carries the regime-specific RSI percentile bonus (from above).
+    # The general scoring loop adds to it rather than replacing it.
 
     if vol_ratio >= 2.5:
         score += 30
@@ -276,7 +450,12 @@ def evaluate_signal(
         "capital_at_risk": shares * (c - stop_loss),
         "net_ev": net_ev,
         "score": score,
-        "trailing_stop": stop_loss
+        "trailing_stop": stop_loss,
+        # Regime metadata
+        "regime": regime,
+        "rsi_percentile": rsi_pct if regime in (Regime.REGIME_1_NORMAL, Regime.REGIME_2_ELEVATED) else None,
+        "volume_zscore": vol_zscore,
+        "rs_vs_nifty": rs_vs_nifty if regime == Regime.REGIME_3_CRISIS else None,
     }
 
     return True, res

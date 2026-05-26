@@ -3,6 +3,16 @@ from typing import List, Optional, Literal
 from datetime import datetime
 from annotated_types import Ge
 from typing import Annotated
+from enum import Enum
+
+
+class Regime(Enum):
+    """Market volatility regime. Computed each scan cycle."""
+    REGIME_1_NORMAL = "REGIME_1_NORMAL"
+    REGIME_2_ELEVATED = "REGIME_2_ELEVATED"
+    REGIME_3_CRISIS = "REGIME_3_CRISIS"
+    UNKNOWN = "UNKNOWN"
+
 
 def round_float_2dp(cls, v: float | None) -> float | None:
     if v is None: return None
@@ -40,15 +50,21 @@ class Signal(BaseModel):
     stale_data: bool = False
     strategy_version: str
     strategy_type: Optional[Literal["SWING", "MOMENTUM"]] = "SWING"
+    regime: Optional[Regime] = None        # Market regime at signal generation
+    rsi_percentile: Optional[float] = None  # RSI percentile (0-100)
+    volume_zscore: Optional[float] = None    # Volume z-score
+    rs_vs_nifty: Optional[float] = None     # Relative strength vs Nifty 50 (decimal)
+    regime_score: Optional[float] = None    # Continuous regime score (0-100)
     rs_score: Optional[float] = None
     volume_consistent: Optional[bool] = None
     cost_ratio: Optional[float] = None   # for momentum signals
     
     
     _round_2dp = field_validator(
-        "close", "ema_21", "ema_50", "ema_200", "atr_14", "volume_ratio", 
-        "stop_loss", "target_1", "target_2", "trailing_stop", 
-        "capital_deployed", "capital_at_risk", "net_ev", mode="after"
+        "close", "ema_21", "ema_50", "ema_200", "atr_14", "volume_ratio",
+        "stop_loss", "target_1", "target_2", "trailing_stop",
+        "capital_deployed", "capital_at_risk", "net_ev",
+        "rsi_percentile", "volume_zscore", "rs_vs_nifty", "regime_score", mode="after"
     )(round_float_2dp)
     
     _round_4dp = field_validator("slope_5", mode="after")(round_float_4dp)
@@ -76,6 +92,8 @@ class MomentumSignal(BaseModel):
     portfolio_slot:    Optional[int] = None
     stale_data:        bool = False
     strategy_version:  str
+    regime: Optional[Regime] = None
+    regime_score: Optional[float] = None
 
     _round_2dp = field_validator(
         "close", "vwap", "prev_day_high", "stop_loss", "target_1",
@@ -98,6 +116,8 @@ class PortfolioResponse(BaseModel):
     signals: List[Signal]
     momentum_signals: List[MomentumSignal] = []
     momentum_pool:    float = 0.0
+    regime: Regime = Regime.UNKNOWN
+    regime_score: float = 100.0
 
     _round_2dp = field_validator(
         "total_capital_at_risk", "total_capital_deployed", 

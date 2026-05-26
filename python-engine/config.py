@@ -83,5 +83,63 @@ class Settings(BaseSettings):
     ZERODHA_SEBI_PCT:         float = 0.000001
     ZERODHA_GST_PCT:          float = 0.18
 
+    # ============================================================
+    # REGIME ENGINE — Adaptive Market Condition Detection
+    # ============================================================
+
+    # VIX boundaries (defines regime thresholds)
+    REGIME_VIX_BOUNDARY_12: float = 18.0   # Regime 1/2 boundary
+    REGIME_VIX_BOUNDARY_23: float = 25.0   # Regime 2/3 boundary
+
+    # RSI Percentile thresholds (bottom % of 6-month rolling range)
+    RSI_PERCENTILE_REGIME1: float = 20.0   # Regime 1: bottom 20%
+    RSI_PERCENTILE_REGIME2: float = 15.0   # Regime 2: bottom 15% (tighter)
+
+    # Volume Z-score thresholds
+    VOL_ZSCORE_REGIME1: float = 1.5       # Regime 1: 1.5 std devs above mean
+    VOL_ZSCORE_REGIME2: float = 2.0       # Regime 2: 2.0 std devs
+    VOL_ZSCORE_REGIME3: float = 2.5       # Regime 3: 2.5 std devs
+
+    # Position sizing by regime (% of bankroll per trade)
+    RISK_PCT_REGIME1: float = 0.10        # 10% — normal market
+    RISK_PCT_REGIME2: float = 0.07        # 7%  — elevated uncertainty
+    RISK_PCT_REGIME3: float = 0.05        # 5%  — crisis
+
+    # Stop loss by regime (ATR multipliers)
+    STOP_ATR_REGIME1: float = 1.5        # 1.5x ATR
+    STOP_ATR_REGIME2: float = 2.0        # 2.0x ATR
+    STOP_ATR_REGIME3: float = 2.0        # 2.0x ATR
+
+    # Stop loss by regime (% of close below price — for pct_stop branch)
+    STOP_PCT_REGIME1: float = 0.05      # 5% stop
+    STOP_PCT_REGIME2: float = 0.05      # 5% stop
+    STOP_PCT_REGIME3: float = 0.08      # 8% stop (wider in crisis)
+
+    # Target structure (R-multiples)
+    TARGET1_R: float = 1.5                # T1 = 1.5R (all regimes)
+    TARGET2_R_REGIME1: float = 3.0        # T2 = 3.0R (Regime 1)
+    TARGET2_R_REGIME2: float = 3.0        # T2 = 3.0R (Regime 2)
+    TARGET2_R_REGIME3: float = 1.0        # T2 = 1.0R (Regime 3 — no T2, exit at T1)
+
+    # Partial exit at T1 (fraction of shares to exit)
+    PARTIAL_EXIT_T1_PCT: float = 0.50    # Exit 50% at T1
+
+    # Chandelier trailing stop
+    CHANDELIER_ATR_MULT: float = 3.0      # Highest close since entry - (3 * ATR)
+
+    # Regime transition guards
+    REGIME_TRANSITION_SCANS: int = 2      # Score must hold for 2 consecutive scans
+    REGIME_HYSTERESIS: float = 5.0       # Must cross threshold by 5 points to transition
+
+    # RS vs Nifty filter (Regime 3 only)
+    RS_VS_NIFTY_THRESHOLD: float = 0.05  # 5% outperformance required
+
+    # Drawdown governor (post-crisis recovery)
+    DRAWDOWN_RECOVERY_TRADES: int = 5    # Reduced sizing for next 5 trades post-crisis
+    DRAWDOWN_RECOVERY_MULT: float = 0.7  # 30% size reduction during recovery
+
+    # Circuit breaker override
+    VIX_CB_THRESHOLD: float = 40.0       # If VIX > 40, force Regime 3 regardless of score
+
 
 settings = Settings()
