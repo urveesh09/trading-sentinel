@@ -279,9 +279,9 @@ def evaluate_signal(
         rs_vs_nifty = adaptive_ind.compute_rs_vs_nifty(stock_return_1d, nifty_return_1d)
         if rs_vs_nifty < settings.RS_VS_NIFTY_THRESHOLD:
             return False, {"reject_reason": "rs_vs_nifty_insufficient", "rs_vs_nifty": rs_vs_nifty, "threshold": settings.RS_VS_NIFTY_THRESHOLD}
-        vol_zscore = adaptive_ind.compute_volume_zscore(df["volume"].iloc[-1], df["volume"])
-        if vol_zscore < settings.VOL_ZSCORE_REGIME3:
-            return False, {"reject_reason": "volume_zscore_low", "vol_zscore": vol_zscore, "threshold": settings.VOL_ZSCORE_REGIME3}
+        vol_zscore_r3 = adaptive_ind.compute_volume_zscore(df["volume"].iloc[-1], df["volume"])
+        if vol_zscore_r3 < settings.VOL_ZSCORE_REGIME3:
+            return False, {"reject_reason": "volume_zscore_low", "vol_zscore": vol_zscore_r3, "threshold": settings.VOL_ZSCORE_REGIME3}
     else:
         # UNKNOWN regime — apply Regime 1 defaults (no score bonus)
         pass
