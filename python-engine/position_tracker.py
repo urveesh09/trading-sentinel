@@ -4,6 +4,8 @@ import structlog
 from typing import List
 from models import OpenPosition
 from engine import calc_zerodha_costs
+from chandelier_stop import ChandelierStop
+from config import settings
 
 logger = structlog.get_logger()
 
@@ -45,8 +47,18 @@ async def update_daily_positions(db_path: str, kite_client, current_date_str: st
         if df.empty: continue
         today_close = df['close'].iloc[-1]
         highest_close = max(pos['highest_close_since_entry'], today_close)
-        new_trail = highest_close - (1.5 * pos['atr_14_at_entry'])
-        trailing_stop = max(pos['trailing_stop_current'], new_trail)
+        # Chandelier stop: highest_close_since_entry - (atr_mult * ATR)
+        # atr_mult comes from CHANDELIER_ATR_MULT (3.0) via settings
+        cs = ChandelierStop(
+            entry_price=pos['entry_price'],
+            atr=pos['atr_14_at_entry'],
+            atr_mult=settings.CHANDELIER_ATR_MULT,
+        )
+        # Seed highest_close with yesterday's value so stop trails from there, not entry
+        cs._highest_close = highest_close
+        cs.update(close=today_close, high=today_close, low=today_close)
+        # Chandelier stop can only move up (one-way ratchet), never down
+        trailing_stop = max(pos['trailing_stop_current'], cs.get_stop())
         current_status = pos['status']
         status = current_status
         exit_price = None
