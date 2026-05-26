@@ -231,6 +231,10 @@ def evaluate_signal(
     # -----------------------------------------------------
     adaptive_ind = AdaptiveIndicators()
 
+    # Score accumulates regime-specific RSI percentile bonus throughout the
+    # regime-filter blocks below; line 390's scoring loop then adds to it.
+    score: int = 0
+
     # -----------------------------------------------------
     # FILTERS
     # -----------------------------------------------------
@@ -252,7 +256,6 @@ def evaluate_signal(
         else:
             if not (45 <= rsi14 <= 72):
                 return False, {"reject_reason": "rsi_out_of_range", "rsi": rsi14}
-        score = 0
         if rsi_history is not None and len(rsi_history) >= 20:
             score += max(0, int((20 - rsi_pct) / 2))  # Lower RSI percentile = higher score
     elif regime == Regime.REGIME_2_ELEVATED:
@@ -267,7 +270,6 @@ def evaluate_signal(
         else:
             if not (50 <= rsi14 <= 72):
                 return False, {"reject_reason": "rsi_out_of_range", "rsi": rsi14}
-        score = 0
         if rsi_history is not None and len(rsi_history) >= 20:
             score += max(0, int((15 - rsi_pct) / 2))
     elif regime == Regime.REGIME_3_CRISIS:
@@ -280,10 +282,9 @@ def evaluate_signal(
         vol_zscore = adaptive_ind.compute_volume_zscore(df["volume"].iloc[-1], df["volume"])
         if vol_zscore < settings.VOL_ZSCORE_REGIME3:
             return False, {"reject_reason": "volume_zscore_low", "vol_zscore": vol_zscore, "threshold": settings.VOL_ZSCORE_REGIME3}
-        score = 0
     else:
-        # UNKNOWN regime — apply Regime 1 defaults
-        score = 0
+        # UNKNOWN regime — apply Regime 1 defaults (no score bonus)
+        pass
 
     # ----------------------------------------------------------------
     # REGIME-AWARE FILTER: Volume Z-Score (Regime 1 and 2 only)
@@ -386,8 +387,8 @@ def evaluate_signal(
     # -----------------------------------------------------
     # SIGNAL SCORE
     # -----------------------------------------------------
-
-    score = 0
+    # score already carries the regime-specific RSI percentile bonus (from above).
+    # The general scoring loop adds to it rather than replacing it.
 
     if vol_ratio >= 2.5:
         score += 30
