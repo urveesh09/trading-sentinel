@@ -441,19 +441,20 @@ class TestEvaluateSignal:
     def test_trend_filter_rejects_downtrend_in_bull(self):
         """In BULL mode, close < EMA200 must reject (with valid regime-aware preconditions)."""
         n = 250
-        close = np.linspace(500, 300, n)
-        # Rising then falling: high RSI pct (not overbought so percentile check passes),
-        # and varying volume so vol_zscore passes the threshold.
-        volume = [200_000 + i * 500 for i in range(n)]  # gradually increasing
+        # Close declines 400→300, triggering the trend filter (c > e200 fails).
+        # Oscillations in close give a valid RSI of ~69 (in the 45-72 range),
+        # which passes the fixed-range check — so trend_filter is the reject reason.
+        close = np.linspace(400, 300, n) + 20 * np.sin(np.linspace(0, 6*np.pi, n))
+        volume = np.linspace(200_000, 900_000, n)
         df = pd.DataFrame({
             "open": close + 1, "high": close + 5,
             "low": close - 5, "close": close,
             "volume": volume,
         })
         df.index = pd.date_range("2025-01-01", periods=n, freq="B")
-        # Stable mid-range RSI history — percentile should be ~50 (not >= 20 threshold)
-        rsi_history = pd.Series([55.0] * 126)
-        fired, result = evaluate_signal("TEST", df, 5000, 0.10, market_regime="BULL", rsi_history=rsi_history)
+        # No rsi_history: falls back to fixed 45-72 range check (RSI≈69 passes).
+        # The declining close then correctly triggers trend_filter_failed.
+        fired, result = evaluate_signal("TEST", df, 5000, 0.10, market_regime="BULL")
         assert fired is False
         assert result["reject_reason"] == "trend_filter_failed"
 

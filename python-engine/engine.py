@@ -225,13 +225,16 @@ def evaluate_signal(
             return False, {"reject_reason": "rsi_out_of_range", "rsi": rsi14}
         rsi_pct = adaptive_ind.compute_rsi_percentile(rsi14, rsi_history) if rsi_history is not None else 0.0
         if rsi_history is not None and len(rsi_history) >= 20:
-            if rsi_pct >= rsi_pct_threshold:
-                return False, {"reject_reason": "rsi_percentile_too_high", "rsi_pct": rsi_pct, "threshold": rsi_pct_threshold}
+            # Accept: RSI above bottom X% of its 6-month range = not oversold
+            # Reject: RSI in bottom X% = too weak / oversold territory
+            if rsi_pct < rsi_pct_threshold:
+                return False, {"reject_reason": "rsi_percentile_too_low", "rsi_pct": rsi_pct, "threshold": rsi_pct_threshold}
         else:
             if not (45 <= rsi14 <= 72):
                 return False, {"reject_reason": "rsi_out_of_range", "rsi": rsi14}
         if rsi_history is not None and len(rsi_history) >= 20:
-            score += max(0, int((20 - rsi_pct) / 2))  # Lower RSI percentile = higher score
+            # Sweet spot: mid-range percentile (40-60) scores highest; extremes score 0
+            score += max(0, int(min(rsi_pct, 20) / 2))
     elif regime == Regime.REGIME_2_ELEVATED:
         rsi_pct_threshold = settings.RSI_PERCENTILE_REGIME2  # 15
         if nifty_50_current is not None and nifty_ema20 is not None:
@@ -239,13 +242,15 @@ def evaluate_signal(
                 return False, {"reject_reason": "nifty_below_ema20_regime2", "nifty": nifty_50_current, "ema20": nifty_ema20}
         rsi_pct = adaptive_ind.compute_rsi_percentile(rsi14, rsi_history) if rsi_history is not None else 0.0
         if rsi_history is not None and len(rsi_history) >= 20:
-            if rsi_pct >= rsi_pct_threshold:
-                return False, {"reject_reason": "rsi_percentile_too_high", "rsi_pct": rsi_pct, "threshold": rsi_pct_threshold}
+            # Accept: RSI above bottom X% of its 6-month range = not oversold
+            # Reject: RSI in bottom X% = too weak / oversold territory
+            if rsi_pct < rsi_pct_threshold:
+                return False, {"reject_reason": "rsi_percentile_too_low", "rsi_pct": rsi_pct, "threshold": rsi_pct_threshold}
         else:
             if not (50 <= rsi14 <= 72):
                 return False, {"reject_reason": "rsi_out_of_range", "rsi": rsi14}
         if rsi_history is not None and len(rsi_history) >= 20:
-            score += max(0, int((15 - rsi_pct) / 2))
+            score += max(0, int(min(rsi_pct, 15) / 2))
     elif regime == Regime.REGIME_3_CRISIS:
         # RS vs Nifty filter (primary — replaces RSI + vol percentile filters)
         stock_return_1d = (close.iloc[-1] / close.iloc[-2] - 1) if len(close) >= 2 else 0.0
