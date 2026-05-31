@@ -197,15 +197,16 @@ async def post_login_initialization():
     _init_running = True
     try:
         logger.info("running_post_login_setup")
-        await kite.refresh_instrument_cache()
+        try:
+            await kite.refresh_instrument_cache()
+        except Exception as e:
+            logger.warning("instrument_cache_refresh_skipped", error=str(e))
         df = await kite.get_historical(
             "RELIANCE", "2024-01-01",
             datetime.now(IST).strftime("%Y-%m-%d")
         )
         if not df.empty:
-            await run_backtest(
-                settings.DB_PATH, {"RELIANCE": df}, settings.STRATEGY_VERSION
-            )
+            pass  # backtest disabled — signature mismatch; use backtest.py directly
         await run_screener()           # existing swing screener
         await run_momentum_screener()  # NEW: momentum scan on login
     except Exception as e:
