@@ -100,8 +100,8 @@ class KiteClient:
             return
         async with self._cache_lock:
             try:
-                # Fetch both NSE and INDICES to ensure NIFTY 50 etc are found
-                for segment in ["NSE", "INDICES"]:
+                # Fetch NSE instruments only — INDICES segment returns 403 on this plan
+                for segment in ["NSE"]:
                     resp = await self.client.get(f"/instruments/{segment}")
                     resp.raise_for_status()
                     lines = resp.text.split("\n")
@@ -114,10 +114,7 @@ class KiteClient:
                 logger.info("instruments_refreshed", count=len(self.instrument_cache))
 
             except (httpx.RequestError, httpx.HTTPStatusError) as e:
-                if isinstance(e, httpx.HTTPStatusError) and e.response.status_code == 403:
-                    logger.warning("instrument_refresh_403_skipped", error=str(e))
-                else:
-                    logger.error("instrument_refresh_failed", error=str(e))
+                logger.error("instrument_refresh_failed", error=str(e))
 
 
     async def get_historical(self, ticker: str, from_date: str, to_date: str) -> pd.DataFrame:
