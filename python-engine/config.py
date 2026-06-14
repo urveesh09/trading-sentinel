@@ -175,5 +175,10 @@ class Settings(BaseSettings):
     # Circuit breaker override
     VIX_CB_THRESHOLD: float = 40.0       # If VIX > 40, force Regime 3 regardless of score
 
+    # Kite endpoint — direct (prod/VPS) or via OCI relay (home desktop).
+    # Relay is a path-preserving forward proxy; auth + X-Kite-Version headers pass through.
+    # Override with KITE_BASE_URL in .env (e.g. http://161.118.160.180:31527).
+    KITE_BASE_URL: str = "https://api.kite.trade"
+
 
 settings = Settings()

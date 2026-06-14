@@ -5,10 +5,11 @@ const tokenStore = require('./token-store');
 const { TokenExpiredError, OrderExecutionError } = require('../utils/errors');
 const { logger } = require('../middleware/logger');
 
-const KITE_API_ROOT = 'https://api.kite.trade';
+const KITE_API_ROOT = process.env.KITE_BASE_URL || 'https://api.kite.trade';
 
 const kite = new KiteConnect({
-  api_key: config.ZERODHA_API_KEY
+  api_key: config.ZERODHA_API_KEY,
+  root: KITE_API_ROOT,
 });
 
 // TOKEN BUCKET RATE LIMITER: Max 5 req/sec

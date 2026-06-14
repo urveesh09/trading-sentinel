@@ -2,7 +2,10 @@
 FROM node:20-alpine AS client-build
 WORKDIR /app/client
 COPY client/package*.json ./
-RUN npm ci --omit=dev
+# NOTE: must include devDependencies here — vite/postcss/tailwind are devDeps
+# and `npm run build` needs them. The server stage below still uses --omit=dev
+# because production runtime doesn't need vite.
+RUN npm ci
 COPY client/ ./
 RUN npm run build
 # Output -> /app/client/dist

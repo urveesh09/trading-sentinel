@@ -7,6 +7,7 @@ import pandas as pd
 import structlog
 from datetime import datetime, timedelta, timezone
 import aiosqlite
+from config import settings
 
 logger = structlog.get_logger()
 
@@ -37,7 +38,9 @@ class KiteClient:
         self.limiter = RateLimiter(rate=3.0, burst=1)
         self.instrument_cache = {}
         self._cache_lock = asyncio.Lock()
-        self.client = httpx.AsyncClient(base_url="https://api.kite.trade", timeout=15.0)
+        # KITE_BASE_URL: direct = "https://api.kite.trade" (default); via OCI relay = "http://161.118.160.180:31527"
+        # Relay is a path-preserving forward proxy. Auth + X-Kite-Version headers pass through unchanged.
+        self.client = httpx.AsyncClient(base_url=settings.KITE_BASE_URL, timeout=15.0)
 
     def set_token(self, token: str):
         self.access_token = token
