@@ -83,5 +83,97 @@ class Settings(BaseSettings):
     ZERODHA_SEBI_PCT:         float = 0.000001
     ZERODHA_GST_PCT:          float = 0.18
 
+    # ============================================================
+    # REGIME ENGINE — VIX-Free Volatility Detection
+    # Replaces India VIX with ATR Compression + Realized Volatility
+    # ============================================================
+
+    # ATR Compression Ratio — replaces VIX as primary volatility driver
+    # rv_ratio = ATR_14 / ATR_14_SMA_200
+    # rv_ratio <= 0.70 = compressed (calm baseline → score 100)
+    # rv_ratio  1.00  = normal                       → score ~50
+    # rv_ratio >= 1.20 = expansion (elevated stress) → score ~20
+    RV_ATR_COMPRESS_THRESHOLD: float = 0.70   # compressed = calm baseline
+    RV_ATR_NORMAL:              float = 0.95   # mid-point of normal range
+    RV_ATR_EXPANSION:           float = 1.20   # expansion threshold
+    RV_ATR_CB_THRESHOLD:        float = 1.50   # circuit breaker — forces R3
+    RV_ATR_SPAN:                float = 0.50   # (RV_ATR_EXPANSION - RV_ATR_COMPRESS_THRESHOLD)
+    RV_ATR_SCORE_SCALE:         float = 200.0  # scale factor for linear mapping
+
+    # Realized Volatility — secondary volatility signal (20-day, annualized)
+    # rv_12% → score 100; rv_20% → score 60; rv_32% → score 0
+    RV_NORMAL_ANNUAL:  float = 0.18   # 18% annualized = normal vol baseline
+    RV_CRISIS_ANNUAL:   float = 0.28   # 28% annualized = crisis threshold
+    RV_SPAN:           float = 0.16   # (RV_CRISIS_ANNUAL - RV_NORMAL_ANNUAL)
+    RV_SCORE_SCALE:    float = 625.0  # scale factor: 100 / 0.16
+
+    # Volatility component weights (must sum to 1.0)
+    RV_ATR_WEIGHT: float = 0.60   # ATR compression = primary (60%)
+    RV_RV_WEIGHT:  float = 0.40   # realized vol   = secondary (40%)
+
+    # Circuit breaker override
+    ATR_CB_THRESHOLD: float = 1.50   # rv_ratio > 1.50 → force REGIME_3_CRISIS
+
+    # Nifty/BankNifty ratio — breadth proxy (replaces weak EMA50-proxy)
+    # nb_ratio percentile below 0.30 → weak breadth → ×0.8 penalty
+    NB_RATIO_LO_PCT:    float = 0.30   # breadth penalty threshold
+    NB_RATIO_WINDOW:    int   = 60     # lookback window for percentile rank
+
+    # VIX parameters — DECOMMISSIONED (kept for backward compat with tests)
+    # India VIX unavailable via Kite → replaced by ATR compression + RV
+    REGIME_VIX_BOUNDARY_12: float = 18.0
+    REGIME_VIX_BOUNDARY_23: float = 25.0
+    VIX_CB_THRESHOLD:        float = 40.0   # DEPRECATED — use ATR_CB_THRESHOLD
+
+    # RSI Percentile thresholds (bottom % of 6-month rolling range)
+    RSI_PERCENTILE_REGIME1: float = 20.0   # Regime 1: bottom 20%
+    RSI_PERCENTILE_REGIME2: float = 15.0   # Regime 2: bottom 15% (tighter)
+
+    # Volume Z-score thresholds
+    VOL_ZSCORE_REGIME1: float = 1.5       # Regime 1: 1.5 std devs above mean
+    VOL_ZSCORE_REGIME2: float = 2.0       # Regime 2: 2.0 std devs
+    VOL_ZSCORE_REGIME3: float = 2.5       # Regime 3: 2.5 std devs
+
+    # Position sizing by regime (% of bankroll per trade)
+    RISK_PCT_REGIME1: float = 0.10        # 10% — normal market
+    RISK_PCT_REGIME2: float = 0.07        # 7%  — elevated uncertainty
+    RISK_PCT_REGIME3: float = 0.05        # 5%  — crisis
+
+    # Stop loss by regime (ATR multipliers)
+    STOP_ATR_REGIME1: float = 1.5        # 1.5x ATR
+    STOP_ATR_REGIME2: float = 2.0        # 2.0x ATR
+    STOP_ATR_REGIME3: float = 2.0        # 2.0x ATR
+
+    # Stop loss by regime (% of close below price — for pct_stop branch)
+    STOP_PCT_REGIME1: float = 0.05      # 5% stop
+    STOP_PCT_REGIME2: float = 0.05      # 5% stop
+    STOP_PCT_REGIME3: float = 0.08      # 8% stop (wider in crisis)
+
+    # Target structure (R-multiples)
+    TARGET1_R: float = 1.5                # T1 = 1.5R (all regimes)
+    TARGET2_R_REGIME1: float = 3.0        # T2 = 3.0R (Regime 1)
+    TARGET2_R_REGIME2: float = 3.0        # T2 = 3.0R (Regime 2)
+    TARGET2_R_REGIME3: float = 1.0        # T2 = 1.0R (Regime 3 — no T2, exit at T1)
+
+    # Partial exit at T1 (fraction of shares to exit)
+    PARTIAL_EXIT_T1_PCT: float = 0.50    # Exit 50% at T1
+
+    # Chandelier trailing stop
+    CHANDELIER_ATR_MULT: float = 3.0      # Highest close since entry - (3 * ATR)
+
+    # Regime transition guards
+    REGIME_TRANSITION_SCANS: int = 2      # Score must hold for 2 consecutive scans
+    REGIME_HYSTERESIS: float = 5.0       # Must cross threshold by 5 points to transition
+
+    # RS vs Nifty filter (Regime 3 only)
+    RS_VS_NIFTY_THRESHOLD: float = 0.05  # 5% outperformance required
+
+    # Drawdown governor (post-crisis recovery)
+    DRAWDOWN_RECOVERY_TRADES: int = 5    # Reduced sizing for next 5 trades post-crisis
+    DRAWDOWN_RECOVERY_MULT: float = 0.7  # 30% size reduction during recovery
+
+    # Circuit breaker override
+    VIX_CB_THRESHOLD: float = 40.0       # If VIX > 40, force Regime 3 regardless of score
+
 
 settings = Settings()

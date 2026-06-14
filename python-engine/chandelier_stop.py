@@ -1,0 +1,184 @@
+"""
+chandelier_stop.py — Chandelier trailing stop implementation.
+
+OPEN QUESTION RESOLUTION (Task 9): GTT (Good Till Triggered) Orders
+─────────────────────────────────────────────────────────────────────
+Issue: Can Kite GTT API replace the in-engine Chandelier trailing stop?
+
+Kite GTT API v3 supports OHLC trigger conditions:
+  - trigger_type: "ohlc"  with comparison operators (>, <, >=, <=)
+  - Compares last_price against OHLC fields (open, high, low, close)
+  - BUT: trigger_price is FIXED at GTT creation time
+
+Chandelier stop challenge:
+  - trigger_price = highest_close_since_entry - (atr_mult × ATR)
+  - highest_close increases whenever a new closing high is made
+  - This means the trigger price would need to be updated every time
+    a new high is recorded — potentially once per candle
+  - GTT has no server-side arithmetic; trigger_price cannot reference
+    a moving highest_close variable
+
+Practical reality: GTT cannot natively express a Chandelier stop without
+constant API updates on every candle, which is rate-limited (3 req/s),
+unnecessary for intraday (auto-square-off at 15:15), and already handled
+correctly by position_tracker's daily-end tracking for swing trades.
+
+Decision: In-engine Chandelier management via `position_tracker.py` is the
+correct architecture. It is updated once per day after market close (not
+per-candle), persists to SQLite, and correctly tracks highest_close_since_entry
+across all open swing positions. No GTT wiring needed.
+
+The Chandelier Stop (developed by Charles LeBouef) is a trailing stop
+that trails price by a multiple of Average True Range (ATR).
+
+Formula:
+    stop = highest_close_since_entry - (atr_mult * ATR_14)
+
+Unlike a fixed stop, the Chandelier stop:
+  1. ONLY moves up (tracks highest close) — never down
+  2. Gives winners room to run within their natural volatility
+  3. Locks in profit when a trend reverses by the ATR distance
+
+This implementation is for LONG (buy) positions only.
+
+Usage:
+    cs = ChandelierStop(entry_price=2500.0, atr=50.0, atr_mult=3.0)
+    cs.update(close=2550.0, high=2560.0, low=2530.0)
+    if cs.check_stop_out(close=todays_close)[0]:
+        print("Stop out!")
+"""
+
+import structlog
+
+logger = structlog.get_logger()
+
+
+class StopResult:
+    """Result of a stop-out check."""
+    def __init__(self, triggered: bool, price: float, stop_level: float, is_profitable: bool):
+        self.triggered = triggered
+        self.price = price
+        self.stop_level = stop_level
+        self.is_profitable = is_profitable
+
+    def __repr__(self):
+        return f"StopResult(triggered={self.triggered}, price={self.price}, stop={self.stop_level:.2f}, profitable={self.is_profitable})"
+
+
+class ChandelierStop:
+    """
+    Chandelier trailing stop calculator for long positions.
+
+    Tracks the highest closing price since entry and maintains a stop
+    at highest_close - (atr_mult * ATR) below it. The stop only moves up.
+    """
+
+    def __init__(
+        self,
+        entry_price: float,
+        atr: float,
+        atr_mult: float = 3.0,
+    ):
+        """
+        Args:
+            entry_price: The price at which the position was entered.
+            atr: The current ATR_14 value at entry.
+            atr_mult: The ATR multiplier (default 3.0 as per original formula).
+        """
+        self.entry_price = entry_price
+        self._atr = atr
+        self._atr_mult = atr_mult
+        self._highest_close = entry_price  # Chandelier starts from entry
+        self._current_atr = atr  # ATR can be updated each candle
+
+    def update(self, close: float, high: float, low: float, atr: float | None = None) -> None:
+        """
+        Update the Chandelier stop after a new candle closes.
+
+        The highest close since entry is updated if the current close is higher.
+        ATR is also updated if provided (allows for dynamic ATR recomputation).
+
+        Args:
+            close: The closing price of the current candle.
+            high: The high of the current candle.
+            low: The low of the current candle.
+            atr: Optional new ATR value. If None, uses the last known ATR.
+        """
+        if atr is not None:
+            self._current_atr = atr
+
+        # Update highest close — Chandelier ONLY moves up
+        if close > self._highest_close:
+            self._highest_close = close
+            logger.debug(
+                "chandelier_new_high",
+                highest_close=self._highest_close,
+                atr=self._current_atr,
+                stop=self.get_stop(),
+            )
+
+    def get_stop(self) -> float:
+        """
+        Get the current Chandelier stop level.
+
+        Returns:
+            The stop price = highest_close_since_entry - (atr_mult * ATR)
+        """
+        return self._highest_close - (self._atr_mult * self._current_atr)
+
+    def get_stop_distance_from_close(self, current_close: float) -> float:
+        """
+        Get the distance (in rupees) between current close and the stop.
+
+        Useful for R-multiple calculations.
+        """
+        return current_close - self.get_stop()
+
+    def get_r_multiple(self, current_close: float) -> float:
+        """
+        Get the current R-multiple of the trade (profit measured in risk units).
+
+        R = (current_close - entry_price) / (entry_price - initial_stop)
+        """
+        risk_distance = self.entry_price - (self.entry_price - (self._atr_mult * self._atr))
+        if risk_distance <= 0:
+            return 0.0
+        return (current_close - self.entry_price) / risk_distance
+
+    def is_profitable(self) -> bool:
+        """Returns True if the stop level is now above the entry price."""
+        return self.get_stop() > self.entry_price
+
+    def check_stop_out(self, close: float) -> tuple[bool, float]:
+        """
+        Check if the position has been stopped out.
+
+        A stop-out occurs when the closing price falls below the stop level.
+
+        Args:
+            close: The current closing price.
+
+        Returns:
+            (triggered: bool, price: float) — triggered is True if stopped out,
+            price is the close at which stop was triggered.
+        """
+        stop_level = self.get_stop()
+        if close <= stop_level:
+            logger.info(
+                "chandelier_stop_out",
+                entry=self.entry_price,
+                stop_level=stop_level,
+                close=close,
+                highest_close=self._highest_close,
+            )
+            return True, close
+        return False, close
+
+    def __repr__(self) -> str:
+        return (
+            f"ChandelierStop(entry={self.entry_price}, "
+            f"highest_close={self._highest_close}, "
+            f"atr={self._current_atr}, "
+            f"atr_mult={self._atr_mult}, "
+            f"stop={self.get_stop():.2f})"
+        )

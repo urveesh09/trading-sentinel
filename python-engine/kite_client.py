@@ -100,8 +100,8 @@ class KiteClient:
             return
         async with self._cache_lock:
             try:
-                # Fetch both NSE and INDICES to ensure NIFTY 50 etc are found
-                for segment in ["NSE", "INDICES"]:
+                # Fetch NSE instruments only — INDICES segment returns 403 on this plan
+                for segment in ["NSE"]:
                     resp = await self.client.get(f"/instruments/{segment}")
                     resp.raise_for_status()
                     lines = resp.text.split("\n")
