@@ -180,5 +180,19 @@ class Settings(BaseSettings):
     # Override with KITE_BASE_URL in .env (e.g. http://161.118.160.180:31527).
     KITE_BASE_URL: str = "https://api.kite.trade"
 
+    # === Breadth Enrichment (2026-06-14) ===
+    BREADTH_ENRICHMENT_ENABLED:         bool  = False   # Feature flag — OFF by default
+    BREADTH_UNIVERSE:                   str   = "NIFTY100"
+    BREADTH_CACHE_TTL_SECONDS:          int   = 3600    # Tier 1 stale-while-revalidate window
+    BREADTH_FETCH_TIMEOUT_SECONDS:      int   = 90      # Max time for Tier 1 fetch
+    BREADTH_NARROW_RALLY_THRESHOLD:     float = 0.40    # R1 gate fires below this
+    BREADTH_NARROW_GATE_EXEMPT_RANK:    float = 0.80    # Top quintile bypasses R1 gate
+    BREADTH_RANK_BONUS_TOP:             int   = 15      # +15 if rank >= 0.80
+    BREADTH_RANK_BONUS_MID:             int   = 7       # +7 if rank >= 0.60
+    BREADTH_RANK_PENALTY_BOTTOM:        int   = -10     # -10 if rank < 0.20
+    BREADTH_RANK_MULTIPLIER:            float = 1.2     # Top quintile score × this
+    BREADTH_DATA_DEGRADED_THRESHOLD:    float = 0.10    # >10% fetch failures = degraded
+    BREADTH_TIER1_PARALLELISM:          int   = 4       # Concurrent Kite historical fetches
+
 
 settings = Settings()
