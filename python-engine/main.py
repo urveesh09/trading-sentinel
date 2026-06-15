@@ -22,10 +22,90 @@ from performance import init_ledger, current_bankroll, record_trade_close, check
 from models import PortfolioResponse, HealthResponse, ManualPositionRequest, BankrollAdjustment, Signal
 from backtest import run_backtest
 from models import PerformanceReport, OpenPosition
+from breadth import BreadthEngine
+from universe import Universe
 # app = FastAPI(title="Quant Engine Container B")
 logger = structlog.get_logger()
 kite = KiteClient(settings.DB_PATH)
 scheduler = AsyncIOScheduler(timezone="Asia/Kolkata")
+
+# Module-level breadth engine global — set once when the feature flag is on,
+# reused across scan cycles. Mirrors the `risk_engine` pattern above.
+breadth_engine = None
+
+
+# ── Breadth wiring helpers (Task 7, 2026-06-14) ──────────────────
+# These are extracted as module-level functions so they're testable in
+# isolation. The scan loop in run_screener() calls them in two places:
+#   1) Once at scan start:  breadth_engine = build_breadth_engine(kite, settings)
+#   2) Once per ticker:     kwargs.update(build_breadth_kwargs(token, breadth_result))
+# The helpers are pure (no I/O of their own) so tests can drive them with
+# mocks and small tmp data dirs.
+
+def build_breadth_engine(kite, settings):
+    """Build the BreadthEngine singleton. Returns None when the feature flag
+    is off or Universe load fails (fail-soft — engine.py will just no-op).
+
+    Wraps kite.get_historical (which is symbol-keyed) behind a token-keyed
+    adapter using Universe.token_to_symbol().
+    """
+    if not settings.BREADTH_ENRICHMENT_ENABLED:
+        return None
+    try:
+        from universe import Universe  # local import keeps main.py import-clean
+
+        breadth_universe = Universe(
+            os.path.join(os.path.dirname(__file__), settings.BREADTH_DATA_DIR, "nifty100.json"),
+            instrument_cache=kite.instrument_cache,
+        )
+
+        async def kite_historical_async(token: int, period: str, interval: str):
+            # Universe stores tokens; kite.get_historical wants a symbol.
+            symbol = breadth_universe.token_to_symbol(token)
+            if symbol is None:
+                raise ValueError(f"token {token} not in Nifty 100 universe")
+            # Convert period+interval ("60d" / "day") to a date range.
+            days = int(period.rstrip("d")) if period.endswith("d") else 60
+            tz = pytz.timezone("Asia/Kolkata")
+            to_date = datetime.now(tz).strftime("%Y-%m-%d")
+            from_date = (datetime.now(tz) - timedelta(days=days)).strftime("%Y-%m-%d")
+            return await kite.get_historical(symbol, from_date, to_date)
+
+        engine = BreadthEngine(
+            universe=breadth_universe,
+            kite_historical_fn=kite_historical_async,
+            cache_ttl_seconds=settings.BREADTH_CACHE_TTL_SECONDS,
+            degraded_threshold=settings.BREADTH_DATA_DEGRADED_THRESHOLD,
+            tier1_parallelism=settings.BREADTH_TIER1_PARALLELISM,
+        )
+        logger.info(
+            "breadth_engine_enabled",
+            tokens=len(breadth_universe.get_nifty100_tokens()),
+        )
+        return engine
+    except Exception as e:
+        logger.error("breadth_engine_init_failed", error=str(e))
+        return None
+
+
+def build_breadth_kwargs(token: int, breadth_result) -> dict:
+    """Return the kwargs dict to pass to evaluate_signal() for a single ticker.
+
+    Pulls the token's breadth rank and the engine-wide breadth_pct_above_sma50.
+    Returns {} when the engine is not initialized or the token is not in the
+    Nifty 100 universe (small-caps outside breadth coverage). engine.py treats
+    empty kwargs as "no breadth adjustment" — the existing scoring path runs
+    untouched.
+    """
+    if breadth_result is None:
+        return {}
+    if token not in breadth_result.rank_map:
+        return {}
+    return {
+        "breadth_pct_above_sma50": breadth_result.breadth_pct_above_sma50,
+        "breadth_rank": breadth_result.rank_map[token],
+    }
+
 
 def snap_to_tick(price: float, direction: int = -1) -> float:
     """
