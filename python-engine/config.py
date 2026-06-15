@@ -193,6 +193,7 @@ class Settings(BaseSettings):
     BREADTH_RANK_MULTIPLIER:            float = 1.2     # Top quintile score × this
     BREADTH_DATA_DEGRADED_THRESHOLD:    float = 0.10    # >10% fetch failures = degraded
     BREADTH_TIER1_PARALLELISM:          int   = 4       # Concurrent Kite historical fetches
+    BREADTH_DATA_DIR:                   str   = "data"   # Path (relative to python-engine/) to nifty100.json
 
 
 settings = Settings()

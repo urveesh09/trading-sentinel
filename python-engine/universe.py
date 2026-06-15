@@ -28,6 +28,7 @@ class Universe:
 
     def __init__(self, json_path: str, instrument_cache: Optional[Dict[str, int]] = None):
         self._tokens: Set[int] = set()
+        self._token_to_symbol: Dict[int, str] = {}
         cache = instrument_cache if instrument_cache is not None else {}
         self._load(json_path, cache)
 
@@ -56,6 +57,7 @@ class Universe:
                 missing.append(symbol)
                 continue
             self._tokens.add(token)
+            self._token_to_symbol[token] = symbol
             resolved += 1
 
         if missing:
@@ -68,3 +70,7 @@ class Universe:
     def get_nifty100_tokens(self) -> Set[int]:
         """Return the resolved Nifty 100 instrument tokens. Cached after first call."""
         return self._tokens.copy()
+
+    def token_to_symbol(self, token: int) -> Optional[str]:
+        """Reverse lookup: instrument_token → NSE symbol."""
+        return self._token_to_symbol.get(token)
