@@ -15,9 +15,7 @@ import asyncio
 import logging
 import time
 from dataclasses import dataclass, field
-from typing import Callable, Dict, Optional, Set
-
-import pandas as pd
+from typing import Callable, Dict, Optional
 
 logger = logging.getLogger(__name__)
 
