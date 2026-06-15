@@ -1,6 +1,6 @@
 # Breadth Enrichment — Design Spec
 **Date:** 2026-06-14
-**Status:** Awaiting user approval
+**Status:** OQs resolved — awaiting final user approval
 **Scope:** New `python-engine/breadth.py`, `python-engine/universe.py`; hooks in `python-engine/main.py`, `python-engine/engine.py`; feature flag in `python-engine/config.py`
 **No changes to:** Node Gateway, Agent, regime.py core logic, DB schema, models.py, VIX-free regime engine, scan cadence, scheduler timing
 
@@ -58,53 +58,85 @@ Defines and serves the breadth-eligible ticker list. Pure config + caching.
 
 Computes breadth metrics and per-stock relative-strength rank.
 
-**Inputs (per scan cycle):**
+**Inputs:**
 - Nifty 100 instrument tokens from `universe.py`
-- For each token: 50-day daily close series (cached, refreshed daily)
+- **Tier 1** (hourly, 60-day daily history per token): fetched from Kite, cached in-memory
+- **Tier 2** (per scan, no fetches): live LTP from the scan pass itself
 
 **Outputs:**
 - `breadth_pct_above_sma50` — float 0.0–1.0 (e.g. 0.42 = 42 of 100 stocks above their SMA50)
 - `breadth_rank_map` — `dict[instrument_token, float 0.0–1.0]` where 1.0 = top of distribution
+- `nb_ratio_distribution_pct` — float 0.0–1.0 (OQ1 future-use field, not wired to regime)
 
-**Algorithm:**
+**Two-tier algorithm (hourly breadth %, scan-time rank with fresh intraday price):**
+
+**Tier 1 — Hourly (slow-moving breadth state):**
 ```
+# Computed at most once per BREADTH_CACHE_TTL_SECONDS (1h).
+# Cached aggressively; recomputed on cache miss or TTL expiry.
 for token in nifty100_universe:
-    closes = kite.historical(token, period=60d, interval="day")
+    closes = kite.historical(token, period=60d, interval="day")  # 60-day fetch
     sma50 = closes["close"].rolling(50).mean().iloc[-1]
     last_close = closes["close"].iloc[-1]
     distance_pct = (last_close - sma50) / sma50       # signed % above/below SMA50
     is_above = last_close > sma50
 
 breadth_pct_above_sma50 = count(is_above) / len(universe)
+# Stash the raw distance_pct array — used by Tier 2 to recompute rank each scan
+distance_pct_cache[token] = distance_pct
+```
 
-# Rank by distance_pct (most above = top)
-sorted_distances = sorted(all_distance_pcts)
-for token, dist in zip(universe, all_distances):
+**Tier 2 — Per-scan (fresh rank, no 60-day re-fetch):**
+```
+# Runs every scan (15 min). Uses cached distance_pct + fresh intraday price.
+# No historical fetches; reuses Tier 1 data + live LTP from the scan pass itself.
+for token in nifty100_universe:
+    # Refresh distance_pct with today's close (vs yesterday's)
+    live_close = scan_ltp[token]
+    sma50 = cached_sma50[token]      # from Tier 1
+    distance_pct_live[token] = (live_close - sma50) / sma50
+
+breadth_pct_above_sma50 = count(distance_pct_live > 0) / len(universe)
+
+# Rank by live distance_pct (most above = top)
+sorted_distances = sorted(distance_pct_live.values())
+for token, dist in distance_pct_live.items():
     breadth_rank[token] = percentile_rank(dist, sorted_distances)
 ```
 
 **Performance:**
-- 100 tickers × 60-day daily history × 4 scans/hour = 400 fetches/hour
-- At 3 req/s = ~2 min cumulative fetch time spread across scans. Acceptable.
-- Use a **stale-while-revalidate cache**: if breadth was computed < 1 hour ago, return cached; otherwise recompute. Reduces live fetches to once per hour max.
+- Tier 1: 100 tickers × 60-day daily history = 100 fetches per hour. At 3 req/s = ~33s of fetch time per hour.
+- Tier 2: zero Kite calls (uses scan pass's LTP + cached SMA50). Recomputes 100 percentile ranks in ~5ms.
+- Total: **~100 Kite calls/hour for breadth, vs 400 with the single-tier design.**
 
 **Failure handling:**
-- If Kite historical fetch fails for >10% of universe, return `breadth_pct_above_sma50 = None` and an empty `breadth_rank_map`. Signal flag this as `breadth_data_degraded=True` in scan logs.
+- If Tier 1 Kite historical fetch fails for >10% of universe, return `breadth_pct_above_sma50 = None` and an empty `breadth_rank_map`. Signal flag this as `breadth_data_degraded=True` in scan logs.
+- If Tier 2 runs but Tier 1 cache is empty (cold start, TTL not yet hit), skip rank computation, return degraded.
 - Caller decides what to do with `None` (see §7.1).
+
+**Future-use field (per OQ1):**
+- `BreadthEngine` also computes and caches `nb_ratio_distribution_pct` — % of universe with Nifty/BankNifty ratio above 30th percentile. Not wired to regime.py in this spec; reserved for a follow-up PR.
 
 ### Layer 3 — Integration (MODIFIED: `python-engine/engine.py` + `python-engine/main.py`)
 
 Three integration points, all gated by feature flag `BREADTH_ENRICHMENT_ENABLED`.
 
-#### Integration Point A: Stock-level scoring bonus (always on when flag enabled)
+#### Integration Point A: Stock-level scoring (bonus + score multiplier; always on when flag enabled)
 - In `engine.py` signal scoring block (~line 430, after the existing 7 scoring factors), add:
   ```python
   if BREADTH_ENRICHMENT_ENABLED and breadth_rank is not None:
+      # Base score bonus (counter-trend enabler: works in R2/R3 too)
       if breadth_rank >= 0.80:    score += 15   # top 20% of universe
       elif breadth_rank >= 0.60:  score += 7    # top 40%
       elif breadth_rank < 0.20:   score -= 10   # bottom 20% (laggard penalty)
+
+      # Score multiplier for top quintile (OQ2): push borderline signals above MIN_SIGNAL_SCORE
+      if breadth_rank >= 0.80:
+          score = int(score * BREADTH_RANK_MULTIPLIER)   # default 1.2
+          score = min(score, 100)
   ```
-- This is the **counter-trend enabler**: in R2/R3, a stock in the top 20% of the breadth distribution still gets +15, keeping it in signal-eligible territory even when most stocks are below SMA50.
+- The **base bonus** is the **counter-trend enabler**: in R2/R3, a stock in the top 20% of the breadth distribution still gets +15, keeping it in signal-eligible territory even when most stocks are below SMA50.
+- The **multiplier** (OQ2) is a lighter touch than a size bump: borderline top-rank signals get nudged above `MIN_SIGNAL_SCORE` to fire, but position size stays regime-only.
 
 #### Integration Point B: R1 narrow-rally gate (R1 regime only)
 - After score is finalised, if `regime == R1` and `breadth_pct_above_sma50 < 0.40`:
@@ -145,14 +177,16 @@ All new settings go in `python-engine/config.py`:
 # === Breadth Enrichment (2026-06-14) ===
 BREADTH_ENRICHMENT_ENABLED:    bool  = False   # Feature flag — OFF by default
 BREADTH_UNIVERSE:              str   = "NIFTY100"   # Reserved for future
-BREADTH_CACHE_TTL_SECONDS:     int   = 3600    # 1h stale-while-revalidate
-BREADTH_FETCH_TIMEOUT_SECONDS: int   = 90      # Max time to compute breadth
+BREADTH_CACHE_TTL_SECONDS:     int   = 3600    # 1h stale-while-revalidate (Tier 1)
+BREADTH_FETCH_TIMEOUT_SECONDS: int   = 90      # Max time for Tier 1 fetch
 BREADTH_NARROW_RALLY_THRESHOLD: float = 0.40   # R1 gate fires below this
 BREADTH_NARWAY_GATE_EXEMPT_RANK: float = 0.80  # Top quintile bypasses gate
 BREADTH_RANK_BONUS_TOP:        int   = 15      # +15 if rank >= 0.80
 BREADTH_RANK_BONUS_MID:        int   = 7       # +7 if rank >= 0.60
 BREADTH_RANK_PENALTY_BOTTOM:   int   = -10     # -10 if rank < 0.20
+BREADTH_RANK_MULTIPLIER:       float = 1.2     # Top quintile score × this (OQ2)
 BREADTH_DATA_DEGRADED_THRESHOLD: float = 0.10  # >10% fetch failures = degraded
+BREADTH_TIER1_PARALLELISM:     int   = 4       # Concurrent Kite historical fetches
 ```
 
 ### 6.4 Why Nifty 100 (recap)
@@ -169,15 +203,20 @@ BREADTH_DATA_DEGRADED_THRESHOLD: float = 0.10  # >10% fetch failures = degraded
 
 ```
 main.py scan tick
-  └── breadth_engine.get_or_compute()              # cache hit → <10ms
-        ├── (cache miss) compute_breadth()
+  └── breadth_engine.get_or_compute()              # Tier 2 path, <50ms when Tier 1 cached
+        ├── Tier 1 (cache miss or TTL expired):
         │     ├── universe.get_nifty100_tokens()  # ~1ms, in-memory
-        │     ├── kite.historical(t, 60d, "day")   # parallel, 100 fetches
+        │     ├── kite.historical(t, 60d, "day")   # 4-way parallel, 100 fetches
         │     ├── sma50 + distance_pct per token   # ~50ms numpy
-        │     └── rank → breadth_rank_map          # ~5ms
+        │     └── cache result for 1h
+        ├── Tier 2 (every scan):
+        │     ├── fetch scan_ltp from scan pass (in-memory)
+        │     ├── distance_pct_live = (ltp - cached_sma50) / cached_sma50
+        │     ├── compute breadth_pct_above_sma50 from live distances
+        │     └── rank → breadth_rank_map
         └── returns (breadth_pct, rank_map, degraded=False)
   └── engine.score_signal(stock_data, regime, breadth_rank=stock's rank)
-        ├── Integration Point A: score += bonus
+        ├── Integration Point A: score += bonus; top-quintile score *= 1.2
         └── Integration Point B: if R1 + narrow → maybe reject
   └── scan log records breadth_pct + degraded flag
 ```
@@ -212,11 +251,14 @@ main.py scan tick
 ## 9. Testing Strategy
 
 ### 9.1 Unit tests (`test_breadth.py`)
-- `compute_breadth` with synthetic universe: 60 stocks above SMA50, 40 below → returns 0.60
-- `rank_breadth` with known distance_pct distribution → verify percentile mapping
+- `compute_tier1` with synthetic universe: 60 stocks above SMA50, 40 below → returns 0.60
+- `compute_tier1` returns cached `distance_pct_cache` and `sma50_map` for use by Tier 2
+- `compute_tier2` with synthetic cached SMA50 + live LTP → verify distance_pct_live and rank map
+- `compute_tier2` with empty Tier 1 cache → returns degraded (no fallback to live fetch)
 - Cache TTL: first call fetches, second call within TTL returns cached
 - Cache TTL expiry: mock time, verify refetch
 - Degraded path: mock 15% Kite failures → returns `degraded=True`, `breadth_pct=None`
+- `nb_ratio_distribution_pct` future-use field computed and returned but not asserted on (OQ1)
 
 ### 9.2 Unit tests (`test_universe.py`)
 - Loads Nifty 100 JSON, verifies 100 tokens
@@ -224,14 +266,18 @@ main.py scan tick
 - Raises `UniverseError` on missing/malformed JSON
 
 ### 9.3 Engine integration tests (`test_engine.py` modifications)
-- Score signal with `breadth_rank=0.85` (R1, healthy breadth) → +15 bonus applied
+- Score signal with `breadth_rank=0.85` (R1, healthy breadth) → +15 bonus + 1.2× multiplier applied
+- Score signal with `breadth_rank=0.65` (R1, healthy breadth) → +7 bonus, no multiplier
 - Score signal with `breadth_rank=0.15` (R1, healthy breadth) → -10 penalty applied
-- Score signal with `breadth_rank=None` → no bonus/penalty
+- Score signal with `breadth_rank=None` → no bonus/penalty/multiplier
+- Score signal: top-quintile with score 80 → 80 × 1.2 = 96, clamped to 100 (no overflow)
 - R1 narrow-rally: `breadth_pct=0.30, rank=0.50` → rejected with `narrow_rally_filtered=True`
 - R1 narrow-rally: `breadth_pct=0.30, rank=0.90` → accepted (top quintile exempt)
 - R1 narrow-rally: `breadth_pct=0.30, rank=None` (degraded) → accepted (skip gate)
 - R2 narrow-rally: gate does NOT fire (R1 only)
 - R3 narrow-rally: gate does NOT fire (R1 only)
+- Two-tier cache: Tier 1 with mock time=0, Tier 2 with mock time=30min → returns cached Tier 1 data + fresh Tier 2 rank
+- Two-tier cache expiry: Tier 1 with mock time=0, Tier 2 with mock time=2h → triggers Tier 1 refetch
 
 ### 9.4 Backtest validation (manual, not automated)
 - Run `backtest.py` over 2023-06 to 2024-06 with `BREADTH_ENRICHMENT_ENABLED=False` (baseline) and `=True` (with breadth)
@@ -257,12 +303,12 @@ main.py scan tick
 
 ---
 
-## 11. Open Questions
+## 11. Resolved Decisions (OQ log)
 
-1. **Should `breadth.py` also compute Nifty/BankNifty ratio distribution across the universe?** (The existing regime penalty uses a single Nifty/BankNifty close ratio; an "Nifty-BN ratio breadth" — % of stocks with NB ratio above 30th percentile — would be richer. Deferred — not in current design.)
-2. **Should the breadth rank also feed `risk_engine.position_sizer`?** (Top-ranked stocks could get a size bump.) Deferred — would require extra risk-engine testing.
-3. **Refresh cadence: should breadth recompute on every scan or hourly?** Design defaults to hourly via stale-while-revalidate. Will validate in Stage 1.
+1. **OQ1 — Nifty/BankNifty ratio distribution breadth:** **Compute but don't wire to regime.** `BreadthEngine` will compute and cache `nb_ratio_distribution_pct` as a future-use field; regime.py remains untouched in this spec. If validated in production, wired in a follow-up PR.
+2. **OQ2 — Position sizer integration:** **Score multiplier (×1.2) for top-quintile stocks, no size bump.** Borderline top-rank signals get nudged above `MIN_SIGNAL_SCORE`; position size stays regime-only.
+3. **OQ3 — Recompute cadence:** **Two-tier.** Tier 1 (60-day historical + SMA50 + raw distance_pct) runs hourly with 1h stale-while-revalidate cache. Tier 2 (live LTP + cached SMA50 → fresh rank) runs every scan with zero Kite calls. Total: ~100 Kite calls/hour.
 
 ---
 
-*Spec written by: Hermes (brainstorming session, 2026-06-14). Awaiting user review before proceeding to writing-plans skill.*
+*Spec written by: Hermes (brainstorming session, 2026-06-14). All 3 open questions resolved in-session. Awaiting final user review before proceeding to writing-plans skill.*
