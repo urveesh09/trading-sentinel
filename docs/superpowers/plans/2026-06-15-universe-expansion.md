@@ -2,20 +2,20 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Expand the swing-trading universe from Nifty 100 (100 names) to Nifty 500 (500 names) so the system surfaces 3-5× more signals. Apply a basic liquidity filter (top 400 by ADV) to drop illiquid Nifty 500 tail. Keep Tier 1 breadth computation on Nifty 100 (stable, fast) — a decoupled design that's already implied by the breadth spec's OQ3.
+**Goal:** Expand **BOTH** the swing and momentum screeners from Nifty 100 (100 names) to Nifty 500 (500 names) so the system surfaces 3-5× more signals on each leg. Apply a basic liquidity filter (top 400 by ADV) to drop illiquid Nifty 500 tail. Keep Tier 1 breadth computation on Nifty 100 (stable, fast) — a decoupled design that's already implied by the breadth spec's OQ3.
 
 **Architecture:**
 - New data file `data/nifty500.json` mirroring the `nifty100.json` structure (500 unique tickers). Hand-curated from publicly-known Nifty 500 constituent list (committed once, not scraped).
 - New `data/nifty500.csv` mirroring the format that `UNIVERSE_PATH` expects (`tradingsymbol`, `exchange`, `sector` columns). Sector field can be "UNKNOWN" for v1, matching current Nifty 100 behavior.
 - `universe.py` generalised: rename `get_nifty100_tokens()` → `get_tokens()` + add `size` property. The class itself becomes universe-agnostic; the JSON file is the only thing that changes size.
 - `breadth.py` reads the existing `BREADTH_UNIVERSE` setting (currently a reserved string `"NIFTY100"`) and dispatches to the right JSON. For v1 we still hard-wire Tier 1 to Nifty 100 (Option B in the design rationale below) because Tier 1 cost on 500 tokens would exceed the 90s timeout. This is a documented design decision, not a constraint.
-- `main.py` swing screener stops using the hardcoded `NIFTY_100_TICKERS` fallback. New fallback: try the CSV at `UNIVERSE_PATH`, then try the in-code Nifty 500 list, then crash loudly. The in-code NIFTY_500_TICKERS is the source of truth, mirrored into both files.
+- `main.py` BOTH `run_screener` (swing, L431) AND `run_momentum_screener` (momentum, L717) stop using the hardcoded `NIFTY_100_TICKERS` fallback. New fallback: try the CSV at `UNIVERSE_PATH`, then try the in-code Nifty 500 list, then crash loudly. The in-code NIFTY_500_TICKERS is the source of truth, mirrored into both files. The fallback is refactored into a shared helper `_load_universe_with_fallback()` to avoid duplication.
 - New `config.py` setting: `UNIVERSE_TICKERS_PATH` pointing to a JSON file with a `tickers` list (the same format as nifty100.json). This is a sibling setting to `BREADTH_DATA_DIR`/`BREADTH_DATA_FILE`, but for the swing screener. The CSV path is preserved for backward compatibility.
 - Liquidity filter at scan start: compute a 20-day median traded value per ticker, drop bottom 20%. Implemented in `main.py` (single dict lookup, not in `engine.py`).
 
 **Tech Stack:** Python 3.11, pandas, pytest, structlog. No new dependencies.
 
-**No changes to:** Node Gateway, agent, DB schema, models, the swing engine scoring logic (engine.py is untouched for swing signals), the momentum screener (separate concern, separate spec).
+**No changes to:** Node Gateway, agent, DB schema, models, the engine scoring logic (engine.py is untouched for both swing and momentum signal evaluation).
 
 ---
 
@@ -23,18 +23,18 @@
 
 | File | Action | What changes |
 |------|--------|--------------|
-| `docs/superpowers/specs/2026-06-15-universe-expansion-design.md` | NEW | Spec capturing the 4 design decisions (Tier 1 decoupling, liquidity filter, sector data deferred, BREADTH_UNIVERSE dispatch) |
+| `docs/superpowers/specs/2026-06-15-universe-expansion-design.md` | NEW | Spec capturing the 4 design decisions (Tier 1 decoupling, liquidity filter, sector data deferred, BREADTH_UNIVERSE dispatch) — covers BOTH swing and momentum screeners |
 | `python-engine/data/nifty500.json` | NEW | 500 unique Nifty 500 tickers, same structure as `nifty100.json` |
-| `python-engine/data/nifty500.csv` | NEW | Mirror of `nifty500.json` in CSV format (tradingsymbol, exchange, sector) for the existing `UNIVERSE_PATH` reader |
+| `python-engine/data/nifty500.csv` | NEW | Mirror of `nifty500.json` in CSV format (tradingsymbol, exchange, sector) for the existing `UNIVERSE_PATH` reader (used by BOTH `run_screener` and `run_momentum_screener`) |
 | `python-engine/universe.py` | MODIFY | Rename `get_nifty100_tokens()` → `get_tokens()`; add `size` property; backward-compat alias |
 | `python-engine/breadth.py` | MODIFY | Read `BREADTH_UNIVERSE` setting, dispatch to correct JSON file (still hard-wired to NIFTY100 in v1) |
-| `python-engine/main.py` | MODIFY | Replace `NIFTY_100_TICKERS` fallback with `NIFTY_500_TICKERS`; add 3rd NIFTY_500_TICKERS block; add liquidity filter helper; new "tried CSV → tried code → crash" fallback chain |
+| `python-engine/main.py` | MODIFY | Replace `NIFTY_100_TICKERS` fallback with `NIFTY_500_TICKERS` in BOTH `run_screener` (L431-438) and `run_momentum_screener` (L717-724); add 3rd NIFTY_500_TICKERS block; add liquidity filter helper; new "tried CSV → tried code → crash" fallback chain in BOTH screeners |
 | `python-engine/config.py` | MODIFY | Add 4 new settings: `UNIVERSE_SIZE`, `UNIVERSE_TICKERS_FILE`, `UNIVERSE_MIN_ADV_CRORE`, `UNIVERSE_LIQUIDITY_LOOKBACK_DAYS` |
 | `python-engine/tests/test_universe.py` | MODIFY | Add tests for Nifty 500 loading, `size` property, fallback alias for `get_nifty100_tokens` |
 | `python-engine/tests/test_main_breadth_helpers.py` | MODIFY | Add test that `build_breadth_engine` correctly dispatches on `BREADTH_UNIVERSE` value |
-| `python-engine/tests/test_universe_expansion.py` | NEW | Tests for the new liquidity filter + Nifty 500 fallback chain in main.py |
-| `docs/runbooks/universe-expansion.md` | NEW | Operator runbook: how to add/remove a ticker, how the liquidity filter works, how Tier 1 decoupling was decided |
-| `docs/evolution/UNIVERSE_EXPANSION_CHANGES.md` | NEW | Change summary following the breadth-enrichment pattern |
+| `python-engine/tests/test_universe_expansion.py` | NEW | Tests for the new liquidity filter + Nifty 500 fallback chain in BOTH `run_screener` (swing) AND `run_momentum_screener` (momentum) |
+| `docs/runbooks/universe-expansion.md` | NEW | Operator runbook: how to add/remove a ticker, how the liquidity filter works, how Tier 1 decoupling was decided, momentum-screener cost analysis |
+| `docs/evolution/UNIVERSE_EXPANSION_CHANGES.md` | NEW | Change summary following the breadth-enrichment pattern (covers both screeners) |
 
 ---
 
@@ -69,28 +69,33 @@ Before writing code, the spec must capture these 4 design decisions so the plan 
 
 This task exists so the plan engineer writes down the 4 design decisions before touching code. Without it, the engineer is reading this plan and inventing the design as they go.
 
-- [ ] **Step 1: Create the spec file**
+> **Note (2026-06-15):** The spec at `docs/superpowers/specs/2026-06-15-universe-expansion-design.md` has ALREADY been written and committed in `c13194f`. The engineer should read the existing spec, verify it captures the 4 design decisions + the BOTH-screener scope, and update it if anything is missing. Do NOT rewrite the spec from scratch — it already exists and is correct after the 2026-06-15 revision that expanded scope from swing-only to swing + momentum.
 
-Create `docs/superpowers/specs/2026-06-15-universe-expansion-design.md` with this content:
+The current spec is summarised below (for the engineer's reference — see the file on disk for the canonical version):
 
 ```markdown
 # Universe Expansion to Nifty 500 — Design Spec
 **Date:** 2026-06-15
-**Status:** Approved (built on prior approval of breadth-enrichment follow-ups)
+**Status:** Revised 2026-06-15 (covers BOTH swing and momentum screeners)
+
 **Scope:** `python-engine/main.py`, `python-engine/universe.py`, `python-engine/breadth.py`, `python-engine/config.py`, `python-engine/data/`
-**No changes to:** Engine scoring (engine.py), Node Gateway, agent, DB schema, models, momentum screener
+
+**No changes to:** Engine scoring (engine.py), Node Gateway, agent, DB schema, models
 
 ---
 
 ## 1. Context
 
-The swing screener currently scans 100 Nifty 100 names. The system is configured
-to scan Nifty 500 (`UNIVERSE_PATH=/data/nifty500.csv`) but falls back to the
-hardcoded `NIFTY_100_TICKERS` list because the CSV doesn't exist.
+Both screeners currently scan 100 Nifty 100 names. The system is configured
+to scan Nifty 500 (`UNIVERSE_PATH=/data/nifty500.csv`) but BOTH screeners
+fall back to the hardcoded `NIFTY_100_TICKERS` list because the CSV doesn't
+exist. `run_screener` (swing) falls back at main.py:431-438, `run_momentum_screener`
+(momentum) falls back at main.py:717-724.
 
-**Goal:** Make the Nifty 500 scan actually work. Expected impact: 3-5× more
-swing signals (the breadth enrichment work is already done, so the system
-can now evaluate 400+ names with regime + RS filter without over-gating).
+**Goal:** Make the Nifty 500 scan actually work for **BOTH** swing and momentum
+screeners. Expected impact: 3-5× more swing signals + 3-5× more momentum signals
+(the breadth enrichment work is already done, so the system can now evaluate
+400+ names with regime + RS filter without over-gating).
 
 ## 2. Design Decisions
 
@@ -147,13 +152,16 @@ universe additions are a one-line config change.
 
 ### `python-engine/main.py`
 - Add `NIFTY_500_TICKERS` (third list, ~500 entries) below the existing two
-- Replace the `NIFTY_100_TICKERS` fallback in the universe loader with
+- Replace the `NIFTY_100_TICKERS` fallback in **BOTH** universe loaders
+  (`run_screener` at L431-438 + `run_momentum_screener` at L717-724) with
   a 3-tier chain:
     1. Try CSV at `UNIVERSE_PATH`
     2. Try `NIFTY_500_TICKERS` constant (hand-curated)
     3. Crash loudly with a clear error
 - Add `_filter_by_liquidity(universe, kite, today, min_adv_crore)` helper
   that drops tickers below the ADV threshold
+- Call `_filter_by_liquidity` from **BOTH** screeners (after the universe
+  load, before the scan loop)
 
 ### `python-engine/config.py`
 Add 4 new settings:
@@ -779,6 +787,30 @@ def _make_historical_df(closes):
     })
 
 
+def _make_intraday_df(n_candles: int = 30) -> pd.DataFrame:
+    """Create a minimal intraday 5-min DF with a clean uptrend.
+
+    Used by the run_momentum_screener tests (Task 8). The 30-candle
+    default ≈ 2.5 hours of 5-min data (covers the morning session
+    up to 12:00 IST), which is enough to trigger the MC3-T / MC5 /
+    MC6 gates in evaluate_momentum_signal. The test mocks
+    `evaluate_momentum_signal` to return False, so the actual
+    indicator values don't matter — the DF just needs to be
+    non-empty and well-formed so the `len(df_intra) < 4` check
+    in run_momentum_screener passes.
+    """
+    times = pd.date_range("2025-01-15 09:15", periods=n_candles, freq="5min")
+    closes = [100.0 + i * 0.1 for i in range(n_candles)]
+    return pd.DataFrame({
+        "date": times,
+        "open": [c - 0.05 for c in closes],
+        "high": [c + 0.10 for c in closes],
+        "low":  [c - 0.10 for c in closes],
+        "close": closes,
+        "volume": [10_000] * n_candles,
+    })
+
+
 @pytest.mark.asyncio
 async def test_filter_by_liquidity_drops_below_threshold(monkeypatch):
     """Tickers with 20-day median ADV below threshold are dropped."""
@@ -968,10 +1000,16 @@ git commit -m "feat(main): add _filter_by_liquidity helper (20-day median ADV fl
 
 ---
 
-## Task 8: Wire Nifty 500 fallback chain + liquidity filter into `run_screener`
+## Task 8: Wire Nifty 500 fallback chain + liquidity filter into BOTH `run_screener` (swing) AND `run_momentum_screener` (momentum)
 
 **Files:**
-- Modify: `python-engine/main.py`
+- Modify: `python-engine/main.py` (TWO call sites: L431 swing, L717 momentum)
+- Modify: `python-engine/tests/test_universe_expansion.py` (add 1 new test for momentum)
+
+This task expands the universe to Nifty 500 in **both** screeners.
+The expected signal-count change is:
+- Swing: 15-25/day (Nifty 100) → 40-80/day (Nifty 500, ~20% filtered by liquidity)
+- Momentum: 2-5/day (Nifty 100) → 5-12/day (Nifty 500, MC3-T/MC5/MC6 gates do most filtering)
 
 - [ ] **Step 1: Write the failing integration test**
 
@@ -1082,6 +1120,60 @@ async def test_run_screener_calls_liquidity_filter(monkeypatch, db_path):
 
     # _filter_by_liquidity should have been called at least once
     assert mock_filter.await_count >= 1, "run_screener should call _filter_by_liquidity"
+
+
+@pytest.mark.asyncio
+async def test_run_momentum_screener_uses_nifty500_fallback_when_csv_missing(monkeypatch, db_path):
+    """When UNIVERSE_PATH CSV is missing, run_momentum_screener falls back to in-code NIFTY_500_TICKERS.
+
+    Mirrors the run_screener test above, but for the momentum leg.
+    The momentum screener (main.py:717-724) shares the same universe loader,
+    so both should be expanded to 500. This test guards against the case
+    where the swing fallback is wired but the momentum one is forgotten.
+    """
+    from performance import init_ledger
+    from position_tracker import init_positions_db
+    await init_ledger(db_path)
+    await init_positions_db(db_path)
+
+    import main
+    from config import settings
+
+    monkeypatch.setattr(settings, "UNIVERSE_PATH", "/tmp/does_not_exist_xyz.csv")
+    monkeypatch.setattr(settings, "UNIVERSE_MIN_ADV_CRORE", 0.0)  # disable liquidity filter for this test
+    monkeypatch.setattr(settings, "BREADTH_ENRICHMENT_ENABLED", False)
+    main.breadth_engine = None
+
+    # Sanity check: the in-code list should have ~500 entries
+    assert len(main.NIFTY_500_TICKERS) >= 400, (
+        f"NIFTY_500_TICKERS should have ~500 entries, got {len(main.NIFTY_500_TICKERS)}"
+    )
+
+    with patch.object(main, "is_trading_day", new=AsyncMock(return_value=True)), \
+         patch.object(main, "kite") as mock_kite, \
+         patch.object(main.kite, "access_token", new="fake_token"), \
+         patch.object(main, "evaluate_momentum_signal", return_value=(False, {"reject_reason": "test"})), \
+         patch.object(main, "filter_momentum_signals", return_value=([], [])), \
+         patch.object(main, "get_open_positions", new=AsyncMock(return_value=[])), \
+         patch.object(main, "notify_screener_results", new=AsyncMock()), \
+         patch.object(main, "current_bankroll", new=AsyncMock(return_value=5000.0)):
+
+        mock_kite.instrument_cache = {}
+        # Mock get_intraday + get_historical for the momentum screener
+        def make_intra_df(*args, **kwargs):
+            return _make_intraday_df()  # 5-min candles for the morning session
+        def make_hist_df(*args, **kwargs):
+            return _make_historical_df([100.0] * 30).assign(volume=[100_000] * 30)
+        mock_kite.get_intraday = AsyncMock(side_effect=make_intra_df)
+        mock_kite.get_historical = AsyncMock(side_effect=make_hist_df)
+
+        main.current_regime = MagicMock()
+        main.market_regime = "BULL"
+        main.signaled_momentum_today = set()
+        main.last_momentum_date = None
+
+        # run_momentum_screener should complete without raising FileNotFoundError
+        await main.run_momentum_screener()
 ```
 
 - [ ] **Step 2: Run the new tests to verify they fail**
@@ -1092,8 +1184,9 @@ source .venv/bin/activate
 python -m pytest tests/test_universe_expansion.py -k "nifty500 or liquidity_filter" -v
 ```
 
-Expected: Both tests FAIL (NIFTY_500_TICKERS doesn't exist, and the
-filter isn't called yet).
+Expected: All 3 tests FAIL (`NIFTY_500_TICKERS` doesn't exist, and the
+filter isn't called yet, and the momentum screener still uses the old
+100-ticker fallback).
 
 - [ ] **Step 3: Add NIFTY_500_TICKERS to main.py and wire the fallback chain**
 
@@ -1118,9 +1211,11 @@ breadth-enrichment work established this constraint — NSE blocks
 bots and the list already exists in code as 100 unique tickers,
 mirrored from NIFTY_100_TICKERS in main.py:225).
 
-- [ ] **Step 4: Wire the 3-tier fallback chain into `run_screener`**
+- [ ] **Step 4: Wire the 3-tier fallback chain into BOTH `run_screener` AND `run_momentum_screener`**
 
-Find the universe-loading code in `run_screener` (around L431):
+**Both screeners share the same universe loader pattern** (try CSV → fallback). Apply the same 3-tier chain in both places.
+
+**Site 1: `run_screener` (swing, around L431-438)**
 
 Find the existing `try: universe = pd.read_csv(settings.UNIVERSE_PATH)`
 block. Replace it with the 3-tier chain:
@@ -1154,12 +1249,24 @@ block. Replace it with the 3-tier chain:
             )
 ```
 
-- [ ] **Step 5: Wire the liquidity filter into `run_screener`**
+**Site 2: `run_momentum_screener` (momentum, around L717-724)**
 
-Right after the universe fallback chain (after the `universe = ...`
-assignment), insert the liquidity filter call. Find the line that
-starts with `raw_signals = []` in `run_screener` (around L441). Insert
-BEFORE that line:
+Find the SECOND `try: universe = pd.read_csv(settings.UNIVERSE_PATH)`
+block (the one in `run_momentum_screener`, with fallback
+`universe_csv_missing_fallback_momentum`). Apply the **exact same
+3-tier chain** as Site 1. Do not duplicate the code — refactor it
+into a helper function `_load_universe_with_fallback(logger)` at
+module scope and call it from both places.
+
+- [ ] **Step 5: Wire the liquidity filter into BOTH screeners**
+
+The liquidity filter call is the same in both screeners. Insert it
+right after the universe fallback chain (after the `universe = ...`
+assignment), BEFORE the scan loop begins.
+
+**Site 1: `run_screener`** — find the line that starts with
+`raw_signals = []` in `run_screener` (around L441). Insert BEFORE
+that line:
 
 ```python
     # Liquidity filter (Task 7+8, 2026-06-15): drop tickers with 20-day
@@ -1169,6 +1276,25 @@ BEFORE that line:
     logger.info("universe_after_liquidity_filter", count=len(universe))
 ```
 
+**Site 2: `run_momentum_screener`** — find the line that starts with
+`raw_momentum = []` in `run_momentum_screener` (around L733). Insert
+BEFORE that line. The exact same call:
+
+```python
+    # Liquidity filter (Task 7+8, 2026-06-15): same as in run_screener.
+    universe = await _filter_by_liquidity(universe, kite, today=pd.Timestamp(today))
+    logger.info("momentum_universe_after_liquidity_filter", count=len(universe))
+```
+
+**Note on cost:** The liquidity filter does N+1 API calls per scan
+(one per ticker to fetch 20-day history). With 500 names and 8-way
+parallelism, this is ~62s. For `run_screener` (run 2×/day) this is
+negligible. For `run_momentum_screener` (run hourly), this is
+~62s × 6.25 hours of trading = ~6.5 min of compute per day, which
+is fine. The filter result is NOT cached across runs (today's traded
+volume is the latest data point, so caching for 1 hour would be
+safe but not necessary).
+
 - [ ] **Step 6: Run the new tests to verify they pass**
 
 ```bash
@@ -1177,7 +1303,8 @@ source .venv/bin/activate
 python -m pytest tests/test_universe_expansion.py -v
 ```
 
-Expected: All 5 tests PASS (3 from Task 7 + 2 from Task 8).
+Expected: All 6 tests PASS (3 from Task 7 + 3 from Task 8: 2 for
+swing + 1 for momentum).
 
 - [ ] **Step 7: Run the full suite**
 
@@ -1185,24 +1312,31 @@ Expected: All 5 tests PASS (3 from Task 7 + 2 from Task 8).
 python -m pytest tests/ 2>&1 | tail -3
 ```
 
-Expected: 357+ passed. No regressions.
+Expected: 358+ passed. No regressions.
 
 - [ ] **Step 8: Commit**
 
 ```bash
 cd ~/trading-sentinel
 git add python-engine/main.py python-engine/tests/test_universe_expansion.py
-git commit -m "feat(main): wire Nifty 500 fallback chain + liquidity filter into run_screener
+git commit -m "feat(main): wire Nifty 500 fallback chain + liquidity filter into BOTH screeners
 
-Replaces the silent NIFTY_100_TICKERS fallback with a 3-tier chain:
+Replaces the silent NIFTY_100_TICKERS fallback with a 3-tier chain in
+BOTH run_screener (L431) AND run_momentum_screener (L717):
 1. CSV at UNIVERSE_PATH (operator-editable)
 2. In-code NIFTY_500_TICKERS (hand-curated, ~500 entries)
 3. RuntimeError with a clear message (no silent fallback)
 
-The liquidity filter drops tickers below the 20-day median ADV
-floor before the scan loop, so we don't waste compute on illiquid
-Nifty 500 names. With UNIVERSE_MIN_ADV_CRORE=2.0 default, we
-expect to keep ~400 of 500 names."
+The fallback chain is refactored into _load_universe_with_fallback()
+to avoid duplication. The liquidity filter is called from both screeners
+after the universe load, dropping tickers below the 20-day median ADV
+floor before the scan loop. With UNIVERSE_MIN_ADV_CRORE=2.0 default,
+we expect to keep ~400 of 500 names.
+
+Cost analysis:
+- run_screener: +62s liquidity filter (run 2x/day = +2 min/day)
+- run_momentum_screener: +62s liquidity filter (run hourly = +6.5 min/day)
+- Total: +8.5 min/day of API-bound compute, well within Kite's 3 req/s limit."
 ```
 
 ---
@@ -1227,9 +1361,18 @@ Create `docs/runbooks/universe-expansion.md` with this content:
 
 ## What this feature does
 
-Expands the swing-trading universe from Nifty 100 to Nifty 500
-(default), with a 20-day median ADV filter that drops the bottom 20%
-of names by traded value. Expected impact: 3-5× more swing signals.
+Expands **BOTH** the swing and momentum screeners from Nifty 100 to
+Nifty 500 (default), with a 20-day median ADV filter that drops the
+bottom ~20% of names by traded value.
+
+**Expected impact (per leg):**
+- **Swing:** 15-25 signals/day (Nifty 100) → 40-80 signals/day (Nifty 500, ~20% filtered by liquidity)
+- **Momentum:** 2-5 signals/day (Nifty 100) → 5-12 signals/day (Nifty 500, MC3-T/MC5/MC6 gates do most filtering)
+
+**Cost impact:**
+- `run_screener` (2×/day): +62s liquidity filter → +2 min/day
+- `run_momentum_screener` (hourly): +62s liquidity filter → +6.5 min/day
+- **Total: +8.5 min/day of API-bound compute, well within Kite's 3 req/s limit.**
 
 ## Quick diagnostics
 
@@ -1306,9 +1449,10 @@ format of `docs/evolution/BREADTH_ENRICHMENT_CHANGES.md`:
 
 ## Overview
 
-Expands the swing-trading universe from 100 Nifty 100 names to
-500 Nifty 500 names (with a 20-day median ADV filter that drops
-~100 illiquid names). Expected impact: 3-5× more swing signals.
+Expands **BOTH** the swing screener and the momentum screener from
+100 Nifty 100 names to 500 Nifty 500 names (with a 20-day median ADV
+filter that drops ~100 illiquid names). Expected impact: 3-5× more
+swing signals + 3-5× more momentum signals.
 
 ## File map
 
@@ -1414,7 +1558,7 @@ source .venv/bin/activate
 python -m pytest tests/ 2>&1 | tail -3
 ```
 
-Expected: 357+ passed. No regressions vs. pre-change baseline.
+Expected: 360+ passed. No regressions vs. pre-change baseline.
 
 - [ ] **Step 3: Confirm feature defaults are safe**
 

@@ -1,20 +1,25 @@
 # Universe Expansion to Nifty 500 — Design Spec
 **Date:** 2026-06-15
-**Status:** Approved (built on prior approval of breadth-enrichment follow-ups)
+**Status:** Revised 2026-06-15 (was "Approved" covering swing only; now covers BOTH swing and momentum screeners per user direction)
+
 **Scope:** `python-engine/main.py`, `python-engine/universe.py`, `python-engine/breadth.py`, `python-engine/config.py`, `python-engine/data/`
-**No changes to:** Engine scoring (engine.py), Node Gateway, agent, DB schema, models, momentum screener
+
+**No changes to:** Engine scoring (engine.py), Node Gateway, agent, DB schema, models
 
 ---
 
 ## 1. Context
 
-The swing screener currently scans 100 Nifty 100 names. The system is configured
-to scan Nifty 500 (`UNIVERSE_PATH=/data/nifty500.csv`) but falls back to the
-hardcoded `NIFTY_100_TICKERS` list because the CSV doesn't exist.
+Both screeners currently scan 100 Nifty 100 names. The system is configured
+to scan Nifty 500 (`UNIVERSE_PATH=/data/nifty500.csv`) but BOTH screeners
+fall back to the hardcoded `NIFTY_100_TICKERS` list because the CSV doesn't
+exist. `run_screener` (swing) falls back at main.py:431-438, `run_momentum_screener`
+(momentum) falls back at main.py:717-724.
 
-**Goal:** Make the Nifty 500 scan actually work. Expected impact: 3-5× more
-swing signals (the breadth enrichment work is already done, so the system
-can now evaluate 400+ names with regime + RS filter without over-gating).
+**Goal:** Make the Nifty 500 scan actually work for **BOTH** swing and momentum
+screeners. Expected impact: 3-5× more swing signals + 3-5× more momentum signals
+(the breadth enrichment work is already done, so the system can now evaluate
+400+ names with regime + RS filter without over-gating).
 
 ## 2. Design Decisions
 
@@ -116,18 +121,31 @@ TCS,NSE,UNKNOWN
 
 - `test_universe.py`: add tests for Nifty 500 loading, `size` property, `get_nifty100_tokens` deprecated alias
 - `test_main_breadth_helpers.py`: add test that `build_breadth_engine` correctly dispatches on `BREADTH_UNIVERSE` value
-- `test_universe_expansion.py` (NEW): tests for liquidity filter + Nifty 500 fallback chain
+- `test_universe_expansion.py` (NEW): tests for liquidity filter + Nifty 500 fallback chain + BOTH
+  `run_screener` (swing) and `run_momentum_screener` (momentum) loaders
 
 ## 5. Rollout
 
 `UNIVERSE_SIZE=500` and `UNIVERSE_MIN_ADV_CRORE=2.0` are the new defaults.
 The CSV/JSON are committed to the repo. Rollout is feature-flag-free
 because the previous run (without these files) just hits the in-code
-`NIFTY_100_TICKERS` fallback. To roll back: delete the files + revert
-the new config defaults.
+`NIFTY_100_TICKERS` fallback in BOTH `run_screener` and `run_momentum_screener`.
+To roll back: delete the files + revert the new config defaults.
+
+**Momentum screener caveats:**
+- Hourly scans of 500 names ≈ 1000 API calls/scan (2 per ticker: intraday + 30-day daily for MC5 ATR).
+- With `BREADTH_FETCH_PARALLELISM=8`, the per-scan wall time grows from ~8s (100 names) to ~62s (500 names).
+- This is still <2% of the 1-hour scan interval, so the throughput budget is fine.
+- Kite's rate limit is 1 req/s on intraday + 1 req/s on historical, so 8-way parallelism is the sweet spot.
+- Stage 1 will monitor: scan wall time, Kite rate-limit warnings, momentum signal count delta.
+
+**Signal count expectations (per leg, Stage 0 → Stage 1):**
+- Swing: 15-25 signals/day (Nifty 100) → 40-80 signals/day (Nifty 500, ~20% filtered by liquidity).
+- Momentum: 2-5 signals/day (Nifty 100) → 5-12 signals/day (Nifty 500, MC3-T/MC5/MC6 gates do most filtering).
 
 ## 6. Open follow-ups
 
 - Real sector data (NSE/BSE/paid feed) — out of scope for v1
 - Tier 1 on Nifty 500 (DD1) — needs raised timeout + parallel tuning
 - ADV filter tuning: monitor for over/under-filtering in Stage 1
+- Real sector data will unlock portfolio concentration limits (currently use ticker count only)
