@@ -157,3 +157,16 @@ def test_build_breadth_kwargs_handles_none_pct():
 
     out = build_breadth_kwargs(12345, fake_result)
     assert out == {"breadth_pct_above_sma50": None, "breadth_rank": 0.75}
+
+
+def test_build_breadth_kwargs_returns_empty_when_token_is_none():
+    """When token is None (ticker not in kite.instrument_cache), return {}."""
+    from main import build_breadth_kwargs
+
+    fake_result = MagicMock()
+    fake_result.breadth_pct_above_sma50 = 0.55
+    fake_result.rank_map = {12345: 0.82}
+
+    # This is the common case for tickers Kite doesn't know about
+    # (delisted, F&O-only, etc.) — the scan loop passes token=None.
+    assert build_breadth_kwargs(None, fake_result) == {}

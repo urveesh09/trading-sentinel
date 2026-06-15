@@ -88,18 +88,18 @@ def build_breadth_engine(kite, settings):
         return None
 
 
-def build_breadth_kwargs(token: int, breadth_result) -> dict:
+def build_breadth_kwargs(token, breadth_result) -> dict:
     """Return the kwargs dict to pass to evaluate_signal() for a single ticker.
 
     Pulls the token's breadth rank and the engine-wide breadth_pct_above_sma50.
-    Returns {} when the engine is not initialized or the token is not in the
-    Nifty 100 universe (small-caps outside breadth coverage). engine.py treats
-    empty kwargs as "no breadth adjustment" — the existing scoring path runs
-    untouched.
+    Returns {} when the engine is not initialized, the token is missing/None,
+    or the token is not in the Nifty 100 universe (small-caps outside breadth
+    coverage). engine.py treats empty kwargs as "no breadth adjustment" — the
+    existing scoring path runs untouched.
     """
     if breadth_result is None:
         return {}
-    if token not in breadth_result.rank_map:
+    if token is None or token not in breadth_result.rank_map:
         return {}
     return {
         "breadth_pct_above_sma50": breadth_result.breadth_pct_above_sma50,
@@ -438,9 +438,41 @@ async def run_screener():
         })
 
 
+    # ── Breadth enrichment wiring (Task 7, 2026-06-14) ─────────────
+    # Init the breadth engine singleton + run Tier 1 (hourly SMA50 cache)
+    # BEFORE the scan loop. Tier 2 (per-scan rank) needs the live LTPs
+    # collected during the loop, so it runs AFTER the loop. The scan
+    # itself runs in two passes:
+    #   Pass 1: fetch df + collect scan_ltp_by_token (breadth Tier 2 input)
+    #   Pass 2: re-walk the cached dfs, call evaluate_signal with the
+    #           now-computed breadth_pct_above_sma50 + breadth_rank
+    # The two-pass split is necessary because Tier 2 needs ALL the LTPs
+    # to compute the percentile rank, but the gate in engine.py needs
+    # the rank. No extra Kite calls — only the dict cache adds overhead.
+    global breadth_engine
+    breadth_result = None
+    if breadth_engine is None:
+        breadth_engine = build_breadth_engine(kite, settings)
+    if breadth_engine is not None:
+        try:
+            breadth_result = await breadth_engine.compute_tier1()
+            if breadth_result.degraded:
+                logger.warning(
+                    "breadth_tier1_degraded",
+                    reason="tier1 fetch failures exceeded threshold",
+                    n_resolved=breadth_result.n_resolved,
+                )
+        except Exception as e:
+            logger.error("breadth_tier1_failed", error=str(e))
+            breadth_result = None
+
     raw_signals = []
     total_evaluated = 0
     raw_rejected = []
+    # Pass 1 cache: ticker → historical df (reused in Pass 2) and
+    # token → live LTP (fed to Tier 2).
+    df_cache: Dict[str, pd.DataFrame] = {}
+    scan_ltp_by_token: Dict[int, float] = {}
     for _, row in universe.iterrows():
         total_evaluated += 1
         ticker = row['tradingsymbol']
@@ -449,13 +481,42 @@ async def run_screener():
             raw_rejected.append({"ticker": ticker, "reject_reason": "historical_data_empty"})
             continue
 
-        
+        # Cache the df for Pass 2 + capture the live LTP for Tier 2.
+        df_cache[ticker] = df
+        token = kite.instrument_cache.get(ticker)
+        if token is not None:
+            scan_ltp_by_token[token] = float(df['close'].iloc[-1])
+
+    # Pass 2: now that Tier 2 has been computed, re-walk the cached dfs
+    # and call evaluate_signal with the breadth kwargs. Skipped entirely
+    # when the breadth feature flag is off (or Tier 1 was cold/degraded) —
+    # in that case `breadth_result` is None and build_breadth_kwargs
+    # returns {} for every ticker, so evaluate_signal runs untouched.
+    if breadth_engine is not None and scan_ltp_by_token:
+        try:
+            breadth_result = await breadth_engine.compute_tier2(scan_ltp_by_token)
+            if breadth_result.degraded:
+                logger.warning("breadth_tier2_degraded", n_resolved=breadth_result.n_resolved)
+        except Exception as e:
+            logger.error("breadth_tier2_failed", error=str(e))
+            # Don't clear breadth_result — Tier 1's pct is still useful for the gate.
+            # Just leave rank_map empty (gate fires for low-pct tickers, which is
+            # the conservative/safe behavior in a degraded Tier 2).
+
+    for _, row in universe.iterrows():
+        ticker = row['tradingsymbol']
+        df = df_cache.get(ticker)
+        if df is None:
+            # Already rejected in Pass 1 (empty df). Skip in Pass 2.
+            continue
+
         # Build RSI history for adaptive RSI percentile filter
         try:
             rsi_hist = calc_rsi_series(df["close"])
         except (IndexError, Exception):
             rsi_hist = None
 
+        token = kite.instrument_cache.get(ticker)
         valid, sig_data = evaluate_signal(
             ticker, df, bankroll, risk_pct,
             regime=current_regime,
@@ -464,6 +525,7 @@ async def run_screener():
             nifty_ema20=nifty_ema20,
             nifty_return_1d=nifty_return_1d,
             rsi_history=rsi_hist,
+            **build_breadth_kwargs(token, breadth_result),
         )
         if not valid:
             sig_data["ticker"] = ticker
