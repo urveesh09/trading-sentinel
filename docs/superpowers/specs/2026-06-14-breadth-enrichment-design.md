@@ -1,6 +1,6 @@
 # Breadth Enrichment — Design Spec
 **Date:** 2026-06-14
-**Status:** OQs resolved — awaiting final user approval
+**Status:** Approved — proceeding to writing-plans
 **Scope:** New `python-engine/breadth.py`, `python-engine/universe.py`; hooks in `python-engine/main.py`, `python-engine/engine.py`; feature flag in `python-engine/config.py`
 **No changes to:** Node Gateway, Agent, regime.py core logic, DB schema, models.py, VIX-free regime engine, scan cadence, scheduler timing
 
@@ -180,7 +180,7 @@ BREADTH_UNIVERSE:              str   = "NIFTY100"   # Reserved for future
 BREADTH_CACHE_TTL_SECONDS:     int   = 3600    # 1h stale-while-revalidate (Tier 1)
 BREADTH_FETCH_TIMEOUT_SECONDS: int   = 90      # Max time for Tier 1 fetch
 BREADTH_NARROW_RALLY_THRESHOLD: float = 0.40   # R1 gate fires below this
-BREADTH_NARWAY_GATE_EXEMPT_RANK: float = 0.80  # Top quintile bypasses gate
+BREADTH_NARROW_GATE_EXEMPT_RANK: float = 0.80  # Top quintile bypasses gate
 BREADTH_RANK_BONUS_TOP:        int   = 15      # +15 if rank >= 0.80
 BREADTH_RANK_BONUS_MID:        int   = 7       # +7 if rank >= 0.60
 BREADTH_RANK_PENALTY_BOTTOM:   int   = -10     # -10 if rank < 0.20
