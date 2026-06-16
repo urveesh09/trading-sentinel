@@ -267,7 +267,12 @@ async def lifespan(app: FastAPI):
     scheduler.add_job(run_screener, 'cron', hour=14, minute=45)
     scheduler.add_job(daily_post_market, 'cron', hour=15, minute=45)
     scheduler.add_job(momentum_eod_warning, 'cron', hour=15, minute=10, id="momentum_eod_warning")
-    scheduler.add_job(auto_square_momentum, 'cron', hour=15, minute=15, id="momentum_auto_square")
+    # [MOMENTUM-EOD 2026-06-16] 15:15 auto-square: only when MOMENTUM_ALLOW_OVERNIGHT=False.
+    # When True, let momentum winners run past 3:15 IST (operator takes the risk).
+    if not settings.MOMENTUM_ALLOW_OVERNIGHT:
+        scheduler.add_job(auto_square_momentum, 'cron', hour=15, minute=15, id="momentum_auto_square")
+    else:
+        logger.info("momentum_overnight_enabled", message="15:15 auto-square DISABLED per MOMENTUM_ALLOW_OVERNIGHT=True")
     
     for hour in [10, 11, 12, 13, 14]:
         for minute in [0, 15, 30, 45]:
@@ -964,6 +969,22 @@ async def run_momentum_screener():
             raw_rejected_momentum.append({"ticker": ticker, "reject_reason": f"exception: {str(e)}"})
             continue   # NEVER crash the full scan on one ticker failure
 
+    # [MOMENTUM-R3-CAP 2026-06-16] Soft cap: total R3 positions (open + newly
+    # accepted this scan) <= MOMENTUM_R3_MAX_POSITIONS. Replaces hard block.
+    if today_regime == Regime.REGIME_3_CRISIS:
+        r3_count_open = sum(1 for p in open_momentum_pos if p.get('regime_at_entry') == 'REGIME_3_CRISIS')
+        cap_remaining = max(0, settings.MOMENTUM_R3_MAX_POSITIONS - r3_count_open)
+        if cap_remaining == 0:
+            logger.info("momentum_r3_cap_reached", open_r3=r3_count_open, cap=settings.MOMENTUM_R3_MAX_POSITIONS)
+            raw_momentum = []
+        else:
+            # Truncate this scan's R3 candidates to remaining capacity
+            r3_candidates = [s for s in raw_momentum if s.get('regime') == 'REGIME_3_CRISIS']
+            non_r3 = [s for s in raw_momentum if s.get('regime') != 'REGIME_3_CRISIS']
+            raw_momentum = non_r3 + r3_candidates[:cap_remaining]
+            logger.info("momentum_r3_cap_truncated", open_r3=r3_count_open, cap=settings.MOMENTUM_R3_MAX_POSITIONS,
+                        candidates=len(r3_candidates), kept=min(len(r3_candidates), cap_remaining))
+
     accepted, rejected_mom = filter_momentum_signals(
         raw_momentum, open_momentum_pos, momentum_pool,
         settings.MAX_MOMENTUM_POSITIONS
@@ -1008,6 +1029,57 @@ async def run_momentum_screener():
     logger.info("momentum_scan_complete",
                 tickers_scanned=len(universe),
                 signals_found=len(accepted))
+
+    # [MOMENTUM-SIGNAL-LOG 2026-06-16] Append-only CSV of every scan's outcome
+    # (accepted AND rejected) for offline backtest + post-hoc review.
+    # Path: /data/momentum_signals.csv (operator-mountable volume).
+    try:
+        import csv as _csv
+        from pathlib import Path as _Path
+
+        def _get(obj, key, default=""):
+            """Compat accessor: works for dict, pydantic model, and unknown objects."""
+            if obj is None:
+                return default
+            if isinstance(obj, dict):
+                return obj.get(key, default)
+            return getattr(obj, key, default)
+
+        _log_path = _Path(settings.DB_PATH).parent / "momentum_signals.csv"
+        _log_exists = _log_path.exists()
+        with _log_path.open("a", newline="") as _f:
+            _w = _csv.writer(_f)
+            if not _log_exists:
+                _w.writerow([
+                    "scan_time_ist", "regime", "ticker", "accepted",
+                    "close", "stop_loss", "target_1", "shares",
+                    "r_target", "vol_ratio", "reject_reason",
+                ])
+            for s in accepted:
+                _w.writerow([
+                    now_ist.isoformat(),
+                    today_regime.name,
+                    _get(s, "ticker"),
+                    1,
+                    _get(s, "close"),
+                    _get(s, "stop_loss"),
+                    _get(s, "target_1"),
+                    _get(s, "shares"),
+                    _get(s, "effective_r_target"),
+                    _get(s, "volume_ratio"),
+                    "",
+                ])
+            for r in all_rejected_mom:
+                _w.writerow([
+                    now_ist.isoformat(),
+                    today_regime.name,
+                    _get(r, "ticker"),
+                    0,
+                    "", "", "", "", "", "",
+                    _get(r, "reject_reason"),
+                ])
+    except Exception as _e:
+        logger.warning("momentum_signal_log_failed", error=str(_e))
 
 
 @app.get("/momentum-signals")
