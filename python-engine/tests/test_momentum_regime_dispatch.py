@@ -33,17 +33,17 @@ class TestResolveMomentumRegimeParams:
     """
 
     def test_regime_1_returns_r1_params_no_block(self):
-        """R1 = 2.0R target, 7% risk, no block."""
+        """[MOMENTUM-AGGRESSIVE 2026-06-16] R1 = 2.0R target, 10% risk, no block."""
         r_target, risk_pct, block = resolve_momentum_regime_params(Regime.REGIME_1_NORMAL)
         assert r_target == 2.0
-        assert risk_pct == 0.07
+        assert risk_pct == 0.10
         assert block is False
 
     def test_regime_2_returns_r2_params_no_block(self):
-        """R2 = 1.5R target, 5% risk, no block (just smaller + tighter)."""
+        """[MOMENTUM-AGGRESSIVE 2026-06-16] R2 = 1.5R target, 7% risk, no block."""
         r_target, risk_pct, block = resolve_momentum_regime_params(Regime.REGIME_2_ELEVATED)
         assert r_target == 1.5
-        assert risk_pct == 0.05
+        assert risk_pct == 0.07
         assert block is False
 
     def test_regime_3_blocks_when_block_setting_true(self):

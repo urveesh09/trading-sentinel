@@ -25,23 +25,26 @@ from config import settings
 class TestMomentumRegimeSettingsExist:
     """[MOMENTUM-REGIME 2026-06-16] The 6 new regime-aware settings exist."""
 
-    def test_block_r3_entries_default_true(self):
-        """Default: block R3 entries. Pure defense — most likely correct on day 1."""
+    def test_block_r3_entries_default_false(self):
+        """[MOMENTUM-AGGRESSIVE 2026-06-16] Default: R3 block OFF.
+        R3 still cannot trade by default because MOMENTUM_RISK_PCT_R3=0.00.
+        Defense-in-depth: opt-in to R3 trading by setting R3 risk > 0 in .env.
+        """
         assert hasattr(settings, "MOMENTUM_BLOCK_R3_ENTRIES")
-        assert settings.MOMENTUM_BLOCK_R3_ENTRIES is True
+        assert settings.MOMENTUM_BLOCK_R3_ENTRIES is False
 
-    def test_risk_pct_r1_default_0_07(self):
-        """R1 = 7% of momentum pool (same as legacy MOMENTUM_RISK_PCT)."""
+    def test_risk_pct_r1_default_0_10(self):
+        """[MOMENTUM-AGGRESSIVE 2026-06-16] R1 = 10% of momentum pool (aggressive, restored from legacy)."""
         assert hasattr(settings, "MOMENTUM_RISK_PCT_R1")
-        assert settings.MOMENTUM_RISK_PCT_R1 == 0.07
+        assert settings.MOMENTUM_RISK_PCT_R1 == 0.10
 
-    def test_risk_pct_r2_default_0_05(self):
-        """R2 = 5% of momentum pool (smaller in elevated regime)."""
+    def test_risk_pct_r2_default_0_07(self):
+        """[MOMENTUM-AGGRESSIVE 2026-06-16] R2 = 7% of momentum pool."""
         assert hasattr(settings, "MOMENTUM_RISK_PCT_R2")
-        assert settings.MOMENTUM_RISK_PCT_R2 == 0.05
+        assert settings.MOMENTUM_RISK_PCT_R2 == 0.07
 
     def test_risk_pct_r3_default_0_00(self):
-        """R3 = 0% of momentum pool (block). Even if BLOCK_R3=False, R3 is 0."""
+        """R3 = 0% of momentum pool. Even with BLOCK_R3=False, R3 cannot open positions."""
         assert hasattr(settings, "MOMENTUM_RISK_PCT_R3")
         assert settings.MOMENTUM_RISK_PCT_R3 == 0.0
 
@@ -73,9 +76,9 @@ class TestMomentumRegimeSettingsExist:
         assert hasattr(settings, "MOMENTUM_RISK_PCT")
         # Legacy value preserved
         assert settings.MOMENTUM_RISK_PCT == 0.10
-        # R1 is a NEW conservative default (less than legacy)
-        assert settings.MOMENTUM_RISK_PCT_R1 == 0.07
-        assert settings.MOMENTUM_RISK_PCT_R1 < settings.MOMENTUM_RISK_PCT
+        # [MOMENTUM-AGGRESSIVE 2026-06-16] R1 now matches legacy (was 0.07, now 0.10)
+        assert settings.MOMENTUM_RISK_PCT_R1 == 0.10
+        assert settings.MOMENTUM_RISK_PCT_R1 == settings.MOMENTUM_RISK_PCT
 
 
 class TestMomentumRegimeSettingsEnvOverride:

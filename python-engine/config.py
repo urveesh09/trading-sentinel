@@ -66,17 +66,27 @@ class Settings(BaseSettings):
 
     # [MOMENTUM-REGIME 2026-06-16] Regime-aware momentum settings.
     # Replaces the single 'market_regime' string dispatch (BULL/BEAR_RS_ONLY)
-    # with the 3-regime system already used for swing. Pure defense +
-    # smaller size in elevated regimes, full block in crisis.
+    # with the 3-regime system already used for swing. Slight-risk tilt
+    # toward activity: R1/R2 sized aggressively, R3 has the *option* to trade
+    # (default risk=0% is a guardrail — flip to 0.05+ in .env to allow R3 entries).
     #
-    # Defaults preserve current behavior in Regime 1 (calm) — no P&L change
-    # unless the system actually shifts to R2/R3.
-    MOMENTUM_BLOCK_R3_ENTRIES:  bool  = True    # Block all new momentum entries in Regime 3 (Crisis)
-    MOMENTUM_RISK_PCT_R1:       float = 0.07    # 7% of momentum pool in R1 (calm)
-    MOMENTUM_RISK_PCT_R2:       float = 0.05    # 5% in R2 (elevated) — smaller position
-    MOMENTUM_RISK_PCT_R3:       float = 0.00    # 0% in R3 (defense-in-depth: even if BLOCK=False, R3 = 0)
+    # [MOMENTUM-AGGRESSIVE 2026-06-16] User feedback: momentum was 1-2 sigs/day,
+    # wanted more P&L. Restored pre-regime sizes (10% / 7%) for R1/R2.
+    # MOMENTUM_BLOCK_R3_ENTRIES default flipped to False (R3 *can* trade when
+    # R3 risk > 0), defense-in-depth via MOMENTUM_RISK_PCT_R3=0% remains.
+    MOMENTUM_BLOCK_R3_ENTRIES:  bool  = False   # OFF: don't hard-block R3; guardrail is RISK_PCT_R3=0.00
+    MOMENTUM_RISK_PCT_R1:       float = 0.10    # 10% of momentum pool in R1 (calm, aggressive)
+    MOMENTUM_RISK_PCT_R2:       float = 0.07    # 7% in R2 (elevated) — smaller position
+    MOMENTUM_RISK_PCT_R3:       float = 0.00    # 0% in R3 default (defense-in-depth: raise in .env to enable)
     MOMENTUM_R_TARGET_R1:       float = 2.0     # 2.0R target in R1 (let winners run)
     MOMENTUM_R_TARGET_R2:       float = 1.5     # 1.5R target in R2 (faster take-profit)
+
+    # [MOMENTUM-EOD 2026-06-16] Auto-square-off at 15:15 IST is on by default
+    # (MIS = intraday product; broker auto-squares anyway). Flip to True in .env
+    # to let momentum winners run past 3:15 IST. Only effective when the engine
+    # has switched positions to CNC (see evaluate_momentum_signal [MR3]).
+    MOMENTUM_ALLOW_OVERNIGHT:   bool  = False   # False = 15:15 auto-square stays; True = hold to trailing-stop only
+    MOMENTUM_R3_MAX_POSITIONS:  int   = 1       # Soft cap for R3 entries (replaces hard block)
 
 
 

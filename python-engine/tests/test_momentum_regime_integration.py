@@ -266,8 +266,8 @@ async def test_run_momentum_screener_uses_tighter_sizing_in_regime_2(monkeypatch
 
         await main.run_momentum_screener()
 
-    # All captured signals should be sized 0.05 / 1.5R (Regime 2)
+    # [MOMENTUM-AGGRESSIVE 2026-06-16] All captured signals should be sized 0.07 / 1.5R (Regime 2)
     for sig in captured[0]:
-        assert sig["position_size_pct"] == pytest.approx(0.05), f"Regime 2 sizing wrong: {sig}"
+        assert sig["position_size_pct"] == pytest.approx(0.07), f"Regime 2 sizing wrong: {sig}"
         assert sig["r_target"] == pytest.approx(1.5), f"Regime 2 r_target wrong: {sig}"
         assert sig["regime"] == "REGIME_2_ELEVATED"
