@@ -633,9 +633,65 @@ def calc_volume_consistency(volume: pd.Series, n_days: int = 5,
         return False
     avg_vol = volume.iloc[-(lookback + n_days + 1):-(n_days + 1)].mean()
     recent_vols = volume.iloc[-n_days-1:-1]   # last 5 completed sessions
- 
+
     days_above = sum(1 for v in recent_vols if v > avg_vol)
     return days_above >= 3
+
+
+def resolve_momentum_regime_params(
+    regime: Optional[Regime],
+) -> Tuple[float, float, bool]:
+    """
+    [MOMENTUM-REGIME 2026-06-16] Pure helper. Resolves the 3-regime
+    system into concrete momentum parameters: (r_target, risk_pct, should_block).
+
+    Returns:
+      r_target:    R-multiple for the position target
+      risk_pct:    Fraction of momentum pool to risk
+      should_block: True if the caller should reject the signal entirely
+                    (skip MC1-MC6 gates) — applies in Regime 3 with BLOCK=True.
+
+    The legacy market_regime string dispatch (BULL/BEAR_RS_ONLY) lives
+    in evaluate_momentum_signal. This function is the NEW 3-regime path.
+    When regime is None, falls back to R1 (safe default) — backward compat.
+
+    Settings used:
+      MOMENTUM_BLOCK_R3_ENTRIES  — gate to short-circuit in R3
+      MOMENTUM_R_TARGET_R1/R2    — target R-multiples
+      MOMENTUM_RISK_PCT_R1/R2/R3 — position sizing per regime
+    """
+    if regime is None or regime == Regime.REGIME_1_NORMAL or regime == Regime.UNKNOWN:
+        # R1: 2.0R target, 7% risk. Default for unknown / backward compat.
+        return (
+            settings.MOMENTUM_R_TARGET_R1,
+            settings.MOMENTUM_RISK_PCT_R1,
+            False,
+        )
+    elif regime == Regime.REGIME_2_ELEVATED:
+        # R2: tighter target (1.5R) + smaller size (5%). Not blocked —
+        # still allow some participation but with discipline.
+        return (
+            settings.MOMENTUM_R_TARGET_R2,
+            settings.MOMENTUM_RISK_PCT_R2,
+            False,
+        )
+    elif regime == Regime.REGIME_3_CRISIS:
+        # R3: block by default. If operator disables BLOCK_R3, still
+        # give 0% risk so no positions open. Defense in depth.
+        return (
+            settings.MOMENTUM_R_TARGET_R2,  # conservative r_target (unused when blocked)
+            settings.MOMENTUM_RISK_PCT_R3,  # 0% — no shares
+            settings.MOMENTUM_BLOCK_R3_ENTRIES,
+        )
+    else:
+        # Unknown enum value — be safe
+        logger.warning("momentum_unknown_regime_enum", regime=str(regime))
+        return (
+            settings.MOMENTUM_R_TARGET_R1,
+            settings.MOMENTUM_RISK_PCT_R1,
+            False,
+        )
+
 
 def evaluate_momentum_signal(
     ticker: str,
@@ -647,6 +703,7 @@ def evaluate_momentum_signal(
     df_daily: "pd.DataFrame | None" = None,
     vol_surge_threshold: float = 1.5,
     market_regime: str = "BULL",
+    regime: "Regime | None" = None,
 ) -> tuple[bool, dict]:
     """
     [MOM2] Intraday momentum signal evaluation.
@@ -778,8 +835,21 @@ def evaluate_momentum_signal(
     if risk_per_share <= 0:
         return False, {"reject_reason": "negative_risk_per_share"}
 
-    # Position sizing: User-defined 7% risk of momentum pool
-    momentum_risk = momentum_pool * settings.MOMENTUM_RISK_PCT
+    # [MR-3REG] 3-regime dispatch (overrides legacy 4-state market_regime string)
+    # If caller passed regime=None, this is a no-op and we fall through to the
+    # legacy logic below. When regime is set, we use the configured R-target +
+    # risk_pct for the regime, and gate the entire signal in R3 if BLOCK=True.
+    regime_r_target, regime_risk_pct, should_block = resolve_momentum_regime_params(
+        regime=regime,
+    )
+    if should_block:
+        return False, {"reject_reason": "regime_r3_block", "regime": regime.name if regime else None}
+
+    # Position sizing: regime-aware risk % of momentum pool
+    if regime is not None:
+        momentum_risk = momentum_pool * regime_risk_pct
+    else:
+        momentum_risk = momentum_pool * settings.MOMENTUM_RISK_PCT
     shares = math.floor(momentum_risk / risk_per_share)
     if shares == 0:
 
@@ -796,11 +866,16 @@ def evaluate_momentum_signal(
         position_value = shares * current_close
 
     # [MR2] Regime-adjusted R target
-    effective_r_target: float = (
-        settings.MOMENTUM_R_TARGET_BEAR
-        if market_regime == "BEAR_RS_ONLY"
-        else settings.MOMENTUM_R_TARGET
-    )
+    # Legacy 4-state string path. The 3-regime system (when `regime` is set)
+    # overrides this with its configured r_target via the dispatcher above.
+    if regime is not None:
+        effective_r_target: float = regime_r_target
+    else:
+        effective_r_target: float = (
+            settings.MOMENTUM_R_TARGET_BEAR
+            if market_regime == "BEAR_RS_ONLY"
+            else settings.MOMENTUM_R_TARGET
+        )
     r_distance = current_close - stop_loss
     target     = current_close + effective_r_target * r_distance
 

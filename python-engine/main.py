@@ -207,6 +207,15 @@ _last_regime_was_crisis = False
 # expose regime + regime_score in the PortfolioResponse.
 _last_regime_state = None
 
+# [MR-3REG] Cached 3-regime state for the momentum screener. Set by
+# run_screener() after it computes the daily regime at 09:20 IST, then
+# read by run_momentum_screener() on each of its 19 daily scans.
+# Momentum does NOT recompute regime intraday (would flip too often with
+# 19 scans/day); it carries forward the swing's value for the day.
+# Set to Regime.REGIME_1_NORMAL (or whatever the engine returns) by swing;
+# to None on startup until the first swing scan completes.
+_momentum_regime_for_today = None
+
 # Guard against concurrent post_login_initialization runs.
 # node-gateway retries the /token endpoint up to 4 times (3 retries + initial)
 # because post_login_initialization blocks for 20+ seconds while the handler
@@ -522,6 +531,13 @@ async def run_screener():
     global _last_regime_state
     _last_regime_state = regime_state
     current_regime = regime_state.regime
+
+    # [MR-3REG] Cache today's 3-regime for the momentum screener.
+    # Momentum does 19 scans/day; if it recomputed each time, the regime
+    # would flip 5x in a noisy session. We carry forward the swing's
+    # 09:20 IST computation for the rest of the day.
+    global _momentum_regime_for_today
+    _momentum_regime_for_today = current_regime
 
     if nifty_close < nifty_ema50:
         market_regime = "BEAR_RS_ONLY"
@@ -852,6 +868,11 @@ async def run_momentum_screener():
         p['ticker'] for p in open_pos if p.get('source') != 'MOMENTUM'
     }
 
+    # [MR-3REG] Read today's regime from the swing screener's cache.
+    # If swing hasn't run yet (e.g., first scan of the day at 10:15),
+    # fall back to Regime.REGIME_1_NORMAL (safe default, no block).
+    today_regime = _momentum_regime_for_today or Regime.REGIME_1_NORMAL
+
     raw_momentum = []
     raw_rejected_momentum = []
 
@@ -918,6 +939,7 @@ async def run_momentum_screener():
                 df_daily=df_prev,          # filtered: no partial today candle; ≥14 rows for MC5 ATR
                 vol_surge_threshold=vol_threshold,
                 market_regime=market_regime,
+                regime=today_regime,        # [MR-3REG] pass 3-regime state to dispatcher
             )
 
             if fired:
@@ -930,6 +952,7 @@ async def run_momentum_screener():
                     "ema_21": 0.0, "ema_50": 0.0, "ema_200": 0.0,
                     "atr_14": 0.0, "rsi_14": 0.0, "slope_5": 0.0,
                     "target_2": sig_data["target_1"],
+                    "regime":  today_regime.name,  # [MR-3REG] stamp for analytics/audit
                 })
                 raw_momentum.append(sig_data)
             else:
