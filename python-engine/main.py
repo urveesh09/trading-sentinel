@@ -3,6 +3,7 @@ from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from datetime import datetime, timedelta, timezone
 import pytz
 import os
+import json
 import asyncio
 import pandas as pd
 import structlog
@@ -22,10 +23,149 @@ from performance import init_ledger, current_bankroll, record_trade_close, check
 from models import PortfolioResponse, HealthResponse, ManualPositionRequest, BankrollAdjustment, Signal
 from backtest import run_backtest
 from models import PerformanceReport, OpenPosition
+from breadth import BreadthEngine
+from universe import Universe
 # app = FastAPI(title="Quant Engine Container B")
 logger = structlog.get_logger()
 kite = KiteClient(settings.DB_PATH)
 scheduler = AsyncIOScheduler(timezone="Asia/Kolkata")
+
+# Module-level breadth engine global — set once when the feature flag is on,
+# reused across scan cycles. Mirrors the `risk_engine` pattern above.
+breadth_engine = None
+
+
+# ── Breadth wiring helpers (Task 7, 2026-06-14) ──────────────────
+# These are extracted as module-level functions so they're testable in
+# isolation. The scan loop in run_screener() calls them in two places:
+#   1) Once at scan start:  breadth_engine = build_breadth_engine(kite, settings)
+#   2) Once per ticker:     kwargs.update(build_breadth_kwargs(token, breadth_result))
+# The helpers are pure (no I/O of their own) so tests can drive them with
+# mocks and small tmp data dirs.
+
+def build_breadth_engine(kite, settings):
+    """Build the BreadthEngine singleton. Returns None when the feature flag
+    is off or Universe load fails (fail-soft — engine.py will just no-op).
+
+    Wraps kite.get_historical (which is symbol-keyed) behind a token-keyed
+    adapter using Universe.token_to_symbol().
+    """
+    if not settings.BREADTH_ENRICHMENT_ENABLED:
+        return None
+    try:
+        from universe import Universe  # local import keeps main.py import-clean
+
+        breadth_universe = Universe(
+            os.path.join(os.path.dirname(__file__), settings.BREADTH_DATA_DIR, "nifty100.json"),
+            instrument_cache=kite.instrument_cache,
+        )
+
+        async def kite_historical_async(token: int, period: str, interval: str):
+            # Universe stores tokens; kite.get_historical wants a symbol.
+            symbol = breadth_universe.token_to_symbol(token)
+            if symbol is None:
+                raise ValueError(f"token {token} not in Nifty 100 universe")
+            # Convert period+interval ("60d" / "day") to a date range.
+            days = int(period.rstrip("d")) if period.endswith("d") else 60
+            tz = pytz.timezone("Asia/Kolkata")
+            to_date = datetime.now(tz).strftime("%Y-%m-%d")
+            from_date = (datetime.now(tz) - timedelta(days=days)).strftime("%Y-%m-%d")
+            return await kite.get_historical(symbol, from_date, to_date)
+
+        engine = BreadthEngine(
+            universe=breadth_universe,
+            kite_historical_fn=kite_historical_async,
+            cache_ttl_seconds=settings.BREADTH_CACHE_TTL_SECONDS,
+            degraded_threshold=settings.BREADTH_DATA_DEGRADED_THRESHOLD,
+            tier1_parallelism=settings.BREADTH_TIER1_PARALLELISM,
+        )
+        logger.info(
+            "breadth_engine_enabled",
+            tokens=len(breadth_universe.get_tokens()),
+        )
+        return engine
+    except Exception as e:
+        logger.error("breadth_engine_init_failed", error=str(e))
+        return None
+
+
+def build_breadth_kwargs(token, breadth_result) -> dict:
+    """Return the kwargs dict to pass to evaluate_signal() for a single ticker.
+
+    Pulls the token's breadth rank and the engine-wide breadth_pct_above_sma50.
+    Returns {} when the engine is not initialized, the token is missing/None,
+    or the token is not in the Nifty 100 universe (small-caps outside breadth
+    coverage). engine.py treats empty kwargs as "no breadth adjustment" — the
+    existing scoring path runs untouched.
+    """
+    if breadth_result is None:
+        return {}
+    if token is None or token not in breadth_result.rank_map:
+        return {}
+    return {
+        "breadth_pct_above_sma50": breadth_result.breadth_pct_above_sma50,
+        "breadth_rank": breadth_result.rank_map[token],
+    }
+
+
+async def _filter_by_liquidity(
+    universe: pd.DataFrame,
+    kite,
+    today: pd.Timestamp,
+) -> pd.DataFrame:
+    """Drop tickers below the 20-day median ADV floor (DD2).
+
+    For each ticker in the universe, fetch the last 20 days of OHLCV,
+    compute median daily traded value (close × volume), and drop any
+    ticker whose median is below `UNIVERSE_MIN_ADV_CRORE`.
+
+    Returns the filtered DataFrame. Failures (empty df, fetch error)
+    result in the ticker being dropped — better to skip a name than
+    to enter a position without liquidity data.
+
+    If `UNIVERSE_MIN_ADV_CRORE <= 0`, returns the input unchanged
+    (escape hatch for "disable filtering" via .env).
+    """
+    from config import settings as cfg
+    min_adv_crore = cfg.UNIVERSE_MIN_ADV_CRORE
+    lookback_days = cfg.UNIVERSE_LIQUIDITY_LOOKBACK_DAYS
+
+    if min_adv_crore <= 0:
+        return universe
+
+    from datetime import timedelta
+    from_date = (today - timedelta(days=lookback_days + 5)).strftime("%Y-%m-%d")
+    to_date = today.strftime("%Y-%m-%d")
+
+    kept_rows = []
+    dropped = 0
+    for _, row in universe.iterrows():
+        ticker = row["tradingsymbol"]
+        try:
+            df = await kite.get_historical(ticker, from_date, to_date)
+            if df.empty or len(df) < lookback_days // 2:
+                dropped += 1
+                continue
+            # Compute median traded value
+            traded_value = (df["close"] * df["volume"]).tail(lookback_days)
+            median_tv_crore = float(traded_value.median()) / 1e7  # ₹ → ₹ crore
+            if median_tv_crore >= min_adv_crore:
+                kept_rows.append(row)
+            else:
+                dropped += 1
+        except Exception as e:
+            logger.warning("liquidity_filter_fetch_failed", ticker=ticker, error=str(e))
+            dropped += 1
+
+    if dropped > 0:
+        logger.info(
+            "liquidity_filter_complete",
+            kept=len(kept_rows),
+            dropped=dropped,
+            threshold_crore=min_adv_crore,
+        )
+    return pd.DataFrame(kept_rows) if kept_rows else universe.iloc[0:0]
+
 
 def snap_to_tick(price: float, direction: int = -1) -> float:
     """
@@ -235,6 +375,65 @@ NIFTY_100_TICKERS = [
     "TITAN", "TRENT", "TVSMOTOR", "ULTRACEMCO", "UNITDSPR", "VBL", "VEDL", "WIPRO", "ETERNAL", "ZYDUSLIFE"
 ]
 
+# NIFTY_500_TICKERS — loaded from data/nifty500.json at module init.
+# This is the in-code fallback when the CSV at UNIVERSE_PATH is missing.
+# The JSON file is the source of truth (committed alongside the CSV).
+# 500 EQ-series tickers from NSE's official Nifty 500 list, 2026-06-16.
+try:
+    _DATA_DIR = os.path.join(os.path.dirname(__file__), "data")
+    with open(os.path.join(_DATA_DIR, "nifty500.json")) as _f:
+        NIFTY_500_TICKERS = [t["symbol"] for t in json.load(_f)["tickers"]]
+except (FileNotFoundError, KeyError, json.JSONDecodeError):
+    # Catastrophic: data file missing/broken. Hard fail loudly.
+    raise RuntimeError(
+        "NIFTY_500_TICKERS could not be loaded from data/nifty500.json. "
+        "This file is the source of truth for the Nifty 500 universe. "
+        "Re-run the universe expansion setup or restore the file from git."
+    )
+
+
+def _load_universe_with_fallback() -> pd.DataFrame:
+    """3-tier universe loader (Task 8, 2026-06-15).
+
+    1. Try CSV at UNIVERSE_PATH (operator-editable, supports custom universes)
+    2. Try in-code NIFTY_500_TICKERS (hand-curated, always available)
+    3. Crash loudly with a clear error (no silent fallback to old NIFTY_100)
+
+    Returns a DataFrame with columns: tradingsymbol, exchange, sector.
+    """
+    try:
+        universe = pd.read_csv(settings.UNIVERSE_PATH)
+        logger.info("universe_loaded_from_csv", path=settings.UNIVERSE_PATH, count=len(universe))
+        return universe
+    except FileNotFoundError:
+        logger.warning(
+            "universe_csv_missing_fallback",
+            path=settings.UNIVERSE_PATH,
+            fallback_count=len(NIFTY_500_TICKERS),
+        )
+    except Exception as e:
+        logger.warning("universe_csv_load_failed", error=str(e))
+
+    if NIFTY_500_TICKERS:
+        logger.info("universe_loaded_from_code", count=len(NIFTY_500_TICKERS))
+        return pd.DataFrame({
+            "tradingsymbol": NIFTY_500_TICKERS,
+            "exchange": ["NSE"] * len(NIFTY_500_TICKERS),
+            "sector": ["UNKNOWN"] * len(NIFTY_500_TICKERS),
+        })
+
+    logger.error(
+        "universe_load_failed_all_paths",
+        csv=settings.UNIVERSE_PATH,
+        code_list="NIFTY_500_TICKERS",
+    )
+    raise RuntimeError(
+        f"Cannot load universe: CSV at {settings.UNIVERSE_PATH} not found, "
+        f"and NIFTY_500_TICKERS is empty or missing. "
+        f"Add a CSV at the path, or restore data/nifty500.json."
+    )
+
+
 async def run_screener():
 
     global current_signals, rejected_signals, market_regime, last_run
@@ -346,21 +545,53 @@ async def run_screener():
         from config import settings as cfg
         risk_engine = RiskEngine(bankroll=bankroll, regime_risk_pct=risk_pct)
         logger.info("risk_engine_initialized", bankroll=bankroll, risk_pct=risk_pct)
-    
-    try:
-        universe = pd.read_csv(settings.UNIVERSE_PATH)
-    except Exception:
-        logger.warning("universe_csv_missing_fallback")
-        universe = pd.DataFrame({
-            "tradingsymbol": NIFTY_100_TICKERS,
-            "exchange": ["NSE"] * len(NIFTY_100_TICKERS),
-            "sector": ["UNKNOWN"] * len(NIFTY_100_TICKERS)
-        })
 
+    # 3-tier universe loader (Task 8, 2026-06-15): CSV → in-code NIFTY_500_TICKERS → RuntimeError
+    universe = _load_universe_with_fallback()
+
+    # Liquidity filter (Task 7+8, 2026-06-15): drop tickers with 20-day
+    # median ADV below UNIVERSE_MIN_ADV_CRORE. This prevents the scan
+    # from wasting compute on illiquid Nifty 500 names.
+    from datetime import datetime as _dt
+    universe = await _filter_by_liquidity(universe, kite, today=_dt.now())
+    logger.info("universe_after_liquidity_filter", count=len(universe))
+
+
+    # ── Breadth enrichment wiring (Task 7, 2026-06-14) ─────────────
+    # Init the breadth engine singleton + run Tier 1 (hourly SMA50 cache)
+    # BEFORE the scan loop. Tier 2 (per-scan rank) needs the live LTPs
+    # collected during the loop, so it runs AFTER the loop. The scan
+    # itself runs in two passes:
+    #   Pass 1: fetch df + collect scan_ltp_by_token (breadth Tier 2 input)
+    #   Pass 2: re-walk the cached dfs, call evaluate_signal with the
+    #           now-computed breadth_pct_above_sma50 + breadth_rank
+    # The two-pass split is necessary because Tier 2 needs ALL the LTPs
+    # to compute the percentile rank, but the gate in engine.py needs
+    # the rank. No extra Kite calls — only the dict cache adds overhead.
+    global breadth_engine
+    breadth_result = None
+    if breadth_engine is None:
+        breadth_engine = build_breadth_engine(kite, settings)
+    if breadth_engine is not None:
+        try:
+            breadth_result = await breadth_engine.compute_tier1()
+            if breadth_result.degraded:
+                logger.warning(
+                    "breadth_tier1_degraded",
+                    reason="tier1 fetch failures exceeded threshold",
+                    n_resolved=breadth_result.n_resolved,
+                )
+        except Exception as e:
+            logger.error("breadth_tier1_failed", error=str(e))
+            breadth_result = None
 
     raw_signals = []
     total_evaluated = 0
     raw_rejected = []
+    # Pass 1 cache: ticker → historical df (reused in Pass 2) and
+    # token → live LTP (fed to Tier 2).
+    df_cache: Dict[str, pd.DataFrame] = {}
+    scan_ltp_by_token: Dict[int, float] = {}
     for _, row in universe.iterrows():
         total_evaluated += 1
         ticker = row['tradingsymbol']
@@ -369,13 +600,42 @@ async def run_screener():
             raw_rejected.append({"ticker": ticker, "reject_reason": "historical_data_empty"})
             continue
 
-        
+        # Cache the df for Pass 2 + capture the live LTP for Tier 2.
+        df_cache[ticker] = df
+        token = kite.instrument_cache.get(ticker)
+        if token is not None:
+            scan_ltp_by_token[token] = float(df['close'].iloc[-1])
+
+    # Pass 2: now that Tier 2 has been computed, re-walk the cached dfs
+    # and call evaluate_signal with the breadth kwargs. Skipped entirely
+    # when the breadth feature flag is off (or Tier 1 was cold/degraded) —
+    # in that case `breadth_result` is None and build_breadth_kwargs
+    # returns {} for every ticker, so evaluate_signal runs untouched.
+    if breadth_engine is not None and scan_ltp_by_token:
+        try:
+            breadth_result = await breadth_engine.compute_tier2(scan_ltp_by_token)
+            if breadth_result.degraded:
+                logger.warning("breadth_tier2_degraded", n_resolved=breadth_result.n_resolved)
+        except Exception as e:
+            logger.error("breadth_tier2_failed", error=str(e))
+            # Don't clear breadth_result — Tier 1's pct is still useful for the gate.
+            # Just leave rank_map empty (gate fires for low-pct tickers, which is
+            # the conservative/safe behavior in a degraded Tier 2).
+
+    for _, row in universe.iterrows():
+        ticker = row['tradingsymbol']
+        df = df_cache.get(ticker)
+        if df is None:
+            # Already rejected in Pass 1 (empty df). Skip in Pass 2.
+            continue
+
         # Build RSI history for adaptive RSI percentile filter
         try:
             rsi_hist = calc_rsi_series(df["close"])
         except (IndexError, Exception):
             rsi_hist = None
 
+        token = kite.instrument_cache.get(ticker)
         valid, sig_data = evaluate_signal(
             ticker, df, bankroll, risk_pct,
             regime=current_regime,
@@ -384,6 +644,7 @@ async def run_screener():
             nifty_ema20=nifty_ema20,
             nifty_return_1d=nifty_return_1d,
             rsi_history=rsi_hist,
+            **build_breadth_kwargs(token, breadth_result),
         )
         if not valid:
             sig_data["ticker"] = ticker
@@ -570,16 +831,15 @@ async def run_momentum_screener():
     logger.info("momentum_scan_start", from_dt=from_dt, to_dt=to_dt)
 
 
+    # 3-tier universe loader (Task 8, 2026-06-15): same as run_screener
+    universe = _load_universe_with_fallback()
 
-    try:
-        universe = pd.read_csv(settings.UNIVERSE_PATH)
-    except Exception:
-        logger.warning("universe_csv_missing_fallback_momentum")
-        universe = pd.DataFrame({
-            "tradingsymbol": NIFTY_100_TICKERS,
-            "exchange":      ["NSE"] * len(NIFTY_100_TICKERS),
-            "sector":        ["UNKNOWN"] * len(NIFTY_100_TICKERS)
-        })
+    # Liquidity filter (Task 7+8, 2026-06-15): same as run_screener.
+    # Note: this also runs from the in-code NIFTY_500_TICKERS fallback
+    # (it does N+1 historical fetches per scan — see runbook cost analysis).
+    from datetime import datetime as _dt
+    universe = await _filter_by_liquidity(universe, kite, today=_dt.now())
+    logger.info("momentum_universe_after_liquidity_filter", count=len(universe))
 
 
     open_pos          = await get_open_positions(settings.DB_PATH)

@@ -338,3 +338,27 @@ main.py scan loop
 - [ ] VIX None handled: warning logged, regime from nifty trend only
 - [ ] No look-ahead in backtest: walk-forward uses only data available up to each day
 - [ ] All 305 tests pass on clean checkout
+
+---
+
+## Phase 2 — Breadth Enrichment (2026-06-14, 14 commits ahead)
+
+**This is a separate evolution** on the same `evolve/smart-strategies` branch.
+The full change-summary lives at
+[`docs/evolution/BREADTH_ENRICHMENT_CHANGES.md`](./BREADTH_ENRICHMENT_CHANGES.md).
+
+TL;DR:
+- Adds a **two-tier breadth engine** (Tier 1 hourly, Tier 2 per-scan, 0 extra
+  Kite calls per scan).
+- Uses breadth for an **R1 narrow-rally gate** (rejects entries when
+  breadth < 40% and the stock isn't top-quintile) and a **+15 / +7 / -10
+  score bonus + 1.2× multiplier** in all regimes.
+- Shipped with the feature flag **OFF by default** for safe rollout. See
+  the runbook ([`docs/runbooks/breadth-debug.md`](../runbooks/breadth-debug.md))
+  for tuning and the rollout checklist
+  ([`docs/runbooks/breadth-rollout-checklist.md`](../runbooks/breadth-rollout-checklist.md))
+  for Stage 1/2 acceptance criteria.
+
+**Status:** Code is on `evolve/smart-strategies`, 14 commits ahead of `main`.
+346 tests passing (was 305+1, now 346+1). **Not yet merged to main** —
+awaiting user review.

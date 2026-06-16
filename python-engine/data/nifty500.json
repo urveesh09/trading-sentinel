@@ -1,0 +1,2006 @@
+{
+  "as_of_date": "2026-06-15",
+  "source": "Hand-curated from NSE official Nifty 500 constituent list (https://archives.nseindia.com/content/indices/ind_nifty500list.csv), EQ series only, 2026-06-15. 4 Vedanta-group BE-series entries (VAML, VEDPOWER, VISL, VOGL) excluded as they trade on the BE segment, not the standard EQ NSE series used by Kite.",
+  "tickers": [
+    {
+      "symbol": "360ONE",
+      "instrument_token": null
+    },
+    {
+      "symbol": "3MINDIA",
+      "instrument_token": null
+    },
+    {
+      "symbol": "AADHARHFC",
+      "instrument_token": null
+    },
+    {
+      "symbol": "AARTIIND",
+      "instrument_token": null
+    },
+    {
+      "symbol": "AAVAS",
+      "instrument_token": null
+    },
+    {
+      "symbol": "ABB",
+      "instrument_token": null
+    },
+    {
+      "symbol": "ABBOTINDIA",
+      "instrument_token": null
+    },
+    {
+      "symbol": "ABCAPITAL",
+      "instrument_token": null
+    },
+    {
+      "symbol": "ABDL",
+      "instrument_token": null
+    },
+    {
+      "symbol": "ABFRL",
+      "instrument_token": null
+    },
+    {
+      "symbol": "ABLBL",
+      "instrument_token": null
+    },
+    {
+      "symbol": "ABREL",
+      "instrument_token": null
+    },
+    {
+      "symbol": "ABSLAMC",
+      "instrument_token": null
+    },
+    {
+      "symbol": "ACC",
+      "instrument_token": null
+    },
+    {
+      "symbol": "ACE",
+      "instrument_token": null
+    },
+    {
+      "symbol": "ACMESOLAR",
+      "instrument_token": null
+    },
+    {
+      "symbol": "ACUTAAS",
+      "instrument_token": null
+    },
+    {
+      "symbol": "ADANIENSOL",
+      "instrument_token": null
+    },
+    {
+      "symbol": "ADANIENT",
+      "instrument_token": null
+    },
+    {
+      "symbol": "ADANIGREEN",
+      "instrument_token": null
+    },
+    {
+      "symbol": "ADANIPORTS",
+      "instrument_token": null
+    },
+    {
+      "symbol": "ADANIPOWER",
+      "instrument_token": null
+    },
+    {
+      "symbol": "AEGISLOG",
+      "instrument_token": null
+    },
+    {
+      "symbol": "AEGISVOPAK",
+      "instrument_token": null
+    },
+    {
+      "symbol": "AFCONS",
+      "instrument_token": null
+    },
+    {
+      "symbol": "AFFLE",
+      "instrument_token": null
+    },
+    {
+      "symbol": "AIAENG",
+      "instrument_token": null
+    },
+    {
+      "symbol": "AIIL",
+      "instrument_token": null
+    },
+    {
+      "symbol": "AJANTPHARM",
+      "instrument_token": null
+    },
+    {
+      "symbol": "ALKEM",
+      "instrument_token": null
+    },
+    {
+      "symbol": "AMBER",
+      "instrument_token": null
+    },
+    {
+      "symbol": "AMBUJACEM",
+      "instrument_token": null
+    },
+    {
+      "symbol": "ANANDRATHI",
+      "instrument_token": null
+    },
+    {
+      "symbol": "ANANTRAJ",
+      "instrument_token": null
+    },
+    {
+      "symbol": "ANGELONE",
+      "instrument_token": null
+    },
+    {
+      "symbol": "ANTHEM",
+      "instrument_token": null
+    },
+    {
+      "symbol": "ANURAS",
+      "instrument_token": null
+    },
+    {
+      "symbol": "APARINDS",
+      "instrument_token": null
+    },
+    {
+      "symbol": "APLAPOLLO",
+      "instrument_token": null
+    },
+    {
+      "symbol": "APOLLOHOSP",
+      "instrument_token": null
+    },
+    {
+      "symbol": "APOLLOTYRE",
+      "instrument_token": null
+    },
+    {
+      "symbol": "APTUS",
+      "instrument_token": null
+    },
+    {
+      "symbol": "ARE&M",
+      "instrument_token": null
+    },
+    {
+      "symbol": "ASAHIINDIA",
+      "instrument_token": null
+    },
+    {
+      "symbol": "ASHOKLEY",
+      "instrument_token": null
+    },
+    {
+      "symbol": "ASIANPAINT",
+      "instrument_token": null
+    },
+    {
+      "symbol": "ASTERDM",
+      "instrument_token": null
+    },
+    {
+      "symbol": "ASTRAL",
+      "instrument_token": null
+    },
+    {
+      "symbol": "ATGL",
+      "instrument_token": null
+    },
+    {
+      "symbol": "ATHERENERG",
+      "instrument_token": null
+    },
+    {
+      "symbol": "ATUL",
+      "instrument_token": null
+    },
+    {
+      "symbol": "AUBANK",
+      "instrument_token": null
+    },
+    {
+      "symbol": "AUROPHARMA",
+      "instrument_token": null
+    },
+    {
+      "symbol": "AWL",
+      "instrument_token": null
+    },
+    {
+      "symbol": "AXISBANK",
+      "instrument_token": null
+    },
+    {
+      "symbol": "BAJAJ-AUTO",
+      "instrument_token": null
+    },
+    {
+      "symbol": "BAJAJFINSV",
+      "instrument_token": null
+    },
+    {
+      "symbol": "BAJAJHFL",
+      "instrument_token": null
+    },
+    {
+      "symbol": "BAJAJHLDNG",
+      "instrument_token": null
+    },
+    {
+      "symbol": "BAJFINANCE",
+      "instrument_token": null
+    },
+    {
+      "symbol": "BALKRISIND",
+      "instrument_token": null
+    },
+    {
+      "symbol": "BALRAMCHIN",
+      "instrument_token": null
+    },
+    {
+      "symbol": "BANDHANBNK",
+      "instrument_token": null
+    },
+    {
+      "symbol": "BANKBARODA",
+      "instrument_token": null
+    },
+    {
+      "symbol": "BANKINDIA",
+      "instrument_token": null
+    },
+    {
+      "symbol": "BATAINDIA",
+      "instrument_token": null
+    },
+    {
+      "symbol": "BAYERCROP",
+      "instrument_token": null
+    },
+    {
+      "symbol": "BBTC",
+      "instrument_token": null
+    },
+    {
+      "symbol": "BDL",
+      "instrument_token": null
+    },
+    {
+      "symbol": "BEL",
+      "instrument_token": null
+    },
+    {
+      "symbol": "BELRISE",
+      "instrument_token": null
+    },
+    {
+      "symbol": "BEML",
+      "instrument_token": null
+    },
+    {
+      "symbol": "BERGEPAINT",
+      "instrument_token": null
+    },
+    {
+      "symbol": "BHARATFORG",
+      "instrument_token": null
+    },
+    {
+      "symbol": "BHARTIARTL",
+      "instrument_token": null
+    },
+    {
+      "symbol": "BHARTIHEXA",
+      "instrument_token": null
+    },
+    {
+      "symbol": "BHEL",
+      "instrument_token": null
+    },
+    {
+      "symbol": "BIKAJI",
+      "instrument_token": null
+    },
+    {
+      "symbol": "BIOCON",
+      "instrument_token": null
+    },
+    {
+      "symbol": "BLS",
+      "instrument_token": null
+    },
+    {
+      "symbol": "BLUEDART",
+      "instrument_token": null
+    },
+    {
+      "symbol": "BLUEJET",
+      "instrument_token": null
+    },
+    {
+      "symbol": "BLUESTARCO",
+      "instrument_token": null
+    },
+    {
+      "symbol": "BOSCHLTD",
+      "instrument_token": null
+    },
+    {
+      "symbol": "BPCL",
+      "instrument_token": null
+    },
+    {
+      "symbol": "BRIGADE",
+      "instrument_token": null
+    },
+    {
+      "symbol": "BRITANNIA",
+      "instrument_token": null
+    },
+    {
+      "symbol": "BSE",
+      "instrument_token": null
+    },
+    {
+      "symbol": "BSOFT",
+      "instrument_token": null
+    },
+    {
+      "symbol": "CAMS",
+      "instrument_token": null
+    },
+    {
+      "symbol": "CANBK",
+      "instrument_token": null
+    },
+    {
+      "symbol": "CANFINHOME",
+      "instrument_token": null
+    },
+    {
+      "symbol": "CANHLIFE",
+      "instrument_token": null
+    },
+    {
+      "symbol": "CAPLIPOINT",
+      "instrument_token": null
+    },
+    {
+      "symbol": "CARBORUNIV",
+      "instrument_token": null
+    },
+    {
+      "symbol": "CARTRADE",
+      "instrument_token": null
+    },
+    {
+      "symbol": "CASTROLIND",
+      "instrument_token": null
+    },
+    {
+      "symbol": "CCL",
+      "instrument_token": null
+    },
+    {
+      "symbol": "CDSL",
+      "instrument_token": null
+    },
+    {
+      "symbol": "CEATLTD",
+      "instrument_token": null
+    },
+    {
+      "symbol": "CEMPRO",
+      "instrument_token": null
+    },
+    {
+      "symbol": "CENTRALBK",
+      "instrument_token": null
+    },
+    {
+      "symbol": "CESC",
+      "instrument_token": null
+    },
+    {
+      "symbol": "CGCL",
+      "instrument_token": null
+    },
+    {
+      "symbol": "CGPOWER",
+      "instrument_token": null
+    },
+    {
+      "symbol": "CHALET",
+      "instrument_token": null
+    },
+    {
+      "symbol": "CHAMBLFERT",
+      "instrument_token": null
+    },
+    {
+      "symbol": "CHENNPETRO",
+      "instrument_token": null
+    },
+    {
+      "symbol": "CHOICEIN",
+      "instrument_token": null
+    },
+    {
+      "symbol": "CHOLAFIN",
+      "instrument_token": null
+    },
+    {
+      "symbol": "CHOLAHLDNG",
+      "instrument_token": null
+    },
+    {
+      "symbol": "CIEINDIA",
+      "instrument_token": null
+    },
+    {
+      "symbol": "CIPLA",
+      "instrument_token": null
+    },
+    {
+      "symbol": "CLEAN",
+      "instrument_token": null
+    },
+    {
+      "symbol": "COALINDIA",
+      "instrument_token": null
+    },
+    {
+      "symbol": "COCHINSHIP",
+      "instrument_token": null
+    },
+    {
+      "symbol": "COFORGE",
+      "instrument_token": null
+    },
+    {
+      "symbol": "COHANCE",
+      "instrument_token": null
+    },
+    {
+      "symbol": "COLPAL",
+      "instrument_token": null
+    },
+    {
+      "symbol": "CONCOR",
+      "instrument_token": null
+    },
+    {
+      "symbol": "CONCORDBIO",
+      "instrument_token": null
+    },
+    {
+      "symbol": "COROMANDEL",
+      "instrument_token": null
+    },
+    {
+      "symbol": "CPPLUS",
+      "instrument_token": null
+    },
+    {
+      "symbol": "CRAFTSMAN",
+      "instrument_token": null
+    },
+    {
+      "symbol": "CREDITACC",
+      "instrument_token": null
+    },
+    {
+      "symbol": "CRISIL",
+      "instrument_token": null
+    },
+    {
+      "symbol": "CROMPTON",
+      "instrument_token": null
+    },
+    {
+      "symbol": "CUB",
+      "instrument_token": null
+    },
+    {
+      "symbol": "CUMMINSIND",
+      "instrument_token": null
+    },
+    {
+      "symbol": "CYIENT",
+      "instrument_token": null
+    },
+    {
+      "symbol": "DABUR",
+      "instrument_token": null
+    },
+    {
+      "symbol": "DALBHARAT",
+      "instrument_token": null
+    },
+    {
+      "symbol": "DATAPATTNS",
+      "instrument_token": null
+    },
+    {
+      "symbol": "DCMSHRIRAM",
+      "instrument_token": null
+    },
+    {
+      "symbol": "DEEPAKFERT",
+      "instrument_token": null
+    },
+    {
+      "symbol": "DEEPAKNTR",
+      "instrument_token": null
+    },
+    {
+      "symbol": "DELHIVERY",
+      "instrument_token": null
+    },
+    {
+      "symbol": "DEVYANI",
+      "instrument_token": null
+    },
+    {
+      "symbol": "DIVISLAB",
+      "instrument_token": null
+    },
+    {
+      "symbol": "DIXON",
+      "instrument_token": null
+    },
+    {
+      "symbol": "DLF",
+      "instrument_token": null
+    },
+    {
+      "symbol": "DMART",
+      "instrument_token": null
+    },
+    {
+      "symbol": "DOMS",
+      "instrument_token": null
+    },
+    {
+      "symbol": "DRREDDY",
+      "instrument_token": null
+    },
+    {
+      "symbol": "ECLERX",
+      "instrument_token": null
+    },
+    {
+      "symbol": "EICHERMOT",
+      "instrument_token": null
+    },
+    {
+      "symbol": "EIDPARRY",
+      "instrument_token": null
+    },
+    {
+      "symbol": "EIHOTEL",
+      "instrument_token": null
+    },
+    {
+      "symbol": "ELECON",
+      "instrument_token": null
+    },
+    {
+      "symbol": "ELGIEQUIP",
+      "instrument_token": null
+    },
+    {
+      "symbol": "EMAMILTD",
+      "instrument_token": null
+    },
+    {
+      "symbol": "EMCURE",
+      "instrument_token": null
+    },
+    {
+      "symbol": "EMMVEE",
+      "instrument_token": null
+    },
+    {
+      "symbol": "ENDURANCE",
+      "instrument_token": null
+    },
+    {
+      "symbol": "ENGINERSIN",
+      "instrument_token": null
+    },
+    {
+      "symbol": "ENRIN",
+      "instrument_token": null
+    },
+    {
+      "symbol": "ERIS",
+      "instrument_token": null
+    },
+    {
+      "symbol": "ESCORTS",
+      "instrument_token": null
+    },
+    {
+      "symbol": "ETERNAL",
+      "instrument_token": null
+    },
+    {
+      "symbol": "EXIDEIND",
+      "instrument_token": null
+    },
+    {
+      "symbol": "FACT",
+      "instrument_token": null
+    },
+    {
+      "symbol": "FEDERALBNK",
+      "instrument_token": null
+    },
+    {
+      "symbol": "FINCABLES",
+      "instrument_token": null
+    },
+    {
+      "symbol": "FIRSTCRY",
+      "instrument_token": null
+    },
+    {
+      "symbol": "FIVESTAR",
+      "instrument_token": null
+    },
+    {
+      "symbol": "FLUOROCHEM",
+      "instrument_token": null
+    },
+    {
+      "symbol": "FORCEMOT",
+      "instrument_token": null
+    },
+    {
+      "symbol": "FORTIS",
+      "instrument_token": null
+    },
+    {
+      "symbol": "FSL",
+      "instrument_token": null
+    },
+    {
+      "symbol": "GABRIEL",
+      "instrument_token": null
+    },
+    {
+      "symbol": "GAIL",
+      "instrument_token": null
+    },
+    {
+      "symbol": "GALLANTT",
+      "instrument_token": null
+    },
+    {
+      "symbol": "GESHIP",
+      "instrument_token": null
+    },
+    {
+      "symbol": "GICRE",
+      "instrument_token": null
+    },
+    {
+      "symbol": "GILLETTE",
+      "instrument_token": null
+    },
+    {
+      "symbol": "GLAND",
+      "instrument_token": null
+    },
+    {
+      "symbol": "GLAXO",
+      "instrument_token": null
+    },
+    {
+      "symbol": "GLENMARK",
+      "instrument_token": null
+    },
+    {
+      "symbol": "GMDCLTD",
+      "instrument_token": null
+    },
+    {
+      "symbol": "GMRAIRPORT",
+      "instrument_token": null
+    },
+    {
+      "symbol": "GODFRYPHLP",
+      "instrument_token": null
+    },
+    {
+      "symbol": "GODIGIT",
+      "instrument_token": null
+    },
+    {
+      "symbol": "GODREJCP",
+      "instrument_token": null
+    },
+    {
+      "symbol": "GODREJIND",
+      "instrument_token": null
+    },
+    {
+      "symbol": "GODREJPROP",
+      "instrument_token": null
+    },
+    {
+      "symbol": "GPIL",
+      "instrument_token": null
+    },
+    {
+      "symbol": "GRANULES",
+      "instrument_token": null
+    },
+    {
+      "symbol": "GRAPHITE",
+      "instrument_token": null
+    },
+    {
+      "symbol": "GRASIM",
+      "instrument_token": null
+    },
+    {
+      "symbol": "GRAVITA",
+      "instrument_token": null
+    },
+    {
+      "symbol": "GROWW",
+      "instrument_token": null
+    },
+    {
+      "symbol": "GRSE",
+      "instrument_token": null
+    },
+    {
+      "symbol": "GVT&D",
+      "instrument_token": null
+    },
+    {
+      "symbol": "HAL",
+      "instrument_token": null
+    },
+    {
+      "symbol": "HAVELLS",
+      "instrument_token": null
+    },
+    {
+      "symbol": "HBLENGINE",
+      "instrument_token": null
+    },
+    {
+      "symbol": "HCLTECH",
+      "instrument_token": null
+    },
+    {
+      "symbol": "HDBFS",
+      "instrument_token": null
+    },
+    {
+      "symbol": "HDFCAMC",
+      "instrument_token": null
+    },
+    {
+      "symbol": "HDFCBANK",
+      "instrument_token": null
+    },
+    {
+      "symbol": "HDFCLIFE",
+      "instrument_token": null
+    },
+    {
+      "symbol": "HEG",
+      "instrument_token": null
+    },
+    {
+      "symbol": "HEROMOTOCO",
+      "instrument_token": null
+    },
+    {
+      "symbol": "HEXT",
+      "instrument_token": null
+    },
+    {
+      "symbol": "HFCL",
+      "instrument_token": null
+    },
+    {
+      "symbol": "HINDALCO",
+      "instrument_token": null
+    },
+    {
+      "symbol": "HINDCOPPER",
+      "instrument_token": null
+    },
+    {
+      "symbol": "HINDPETRO",
+      "instrument_token": null
+    },
+    {
+      "symbol": "HINDUNILVR",
+      "instrument_token": null
+    },
+    {
+      "symbol": "HINDZINC",
+      "instrument_token": null
+    },
+    {
+      "symbol": "HOMEFIRST",
+      "instrument_token": null
+    },
+    {
+      "symbol": "HONASA",
+      "instrument_token": null
+    },
+    {
+      "symbol": "HONAUT",
+      "instrument_token": null
+    },
+    {
+      "symbol": "HSCL",
+      "instrument_token": null
+    },
+    {
+      "symbol": "HUDCO",
+      "instrument_token": null
+    },
+    {
+      "symbol": "HYUNDAI",
+      "instrument_token": null
+    },
+    {
+      "symbol": "ICICIAMC",
+      "instrument_token": null
+    },
+    {
+      "symbol": "ICICIBANK",
+      "instrument_token": null
+    },
+    {
+      "symbol": "ICICIGI",
+      "instrument_token": null
+    },
+    {
+      "symbol": "ICICIPRULI",
+      "instrument_token": null
+    },
+    {
+      "symbol": "IDBI",
+      "instrument_token": null
+    },
+    {
+      "symbol": "IDEA",
+      "instrument_token": null
+    },
+    {
+      "symbol": "IDFCFIRSTB",
+      "instrument_token": null
+    },
+    {
+      "symbol": "IEX",
+      "instrument_token": null
+    },
+    {
+      "symbol": "IFCI",
+      "instrument_token": null
+    },
+    {
+      "symbol": "IGIL",
+      "instrument_token": null
+    },
+    {
+      "symbol": "IGL",
+      "instrument_token": null
+    },
+    {
+      "symbol": "IIFL",
+      "instrument_token": null
+    },
+    {
+      "symbol": "IKS",
+      "instrument_token": null
+    },
+    {
+      "symbol": "INDGN",
+      "instrument_token": null
+    },
+    {
+      "symbol": "INDHOTEL",
+      "instrument_token": null
+    },
+    {
+      "symbol": "INDIACEM",
+      "instrument_token": null
+    },
+    {
+      "symbol": "INDIAMART",
+      "instrument_token": null
+    },
+    {
+      "symbol": "INDIANB",
+      "instrument_token": null
+    },
+    {
+      "symbol": "INDIGO",
+      "instrument_token": null
+    },
+    {
+      "symbol": "INDUSINDBK",
+      "instrument_token": null
+    },
+    {
+      "symbol": "INDUSTOWER",
+      "instrument_token": null
+    },
+    {
+      "symbol": "INFY",
+      "instrument_token": null
+    },
+    {
+      "symbol": "INOXWIND",
+      "instrument_token": null
+    },
+    {
+      "symbol": "INTELLECT",
+      "instrument_token": null
+    },
+    {
+      "symbol": "IOB",
+      "instrument_token": null
+    },
+    {
+      "symbol": "IOC",
+      "instrument_token": null
+    },
+    {
+      "symbol": "IPCALAB",
+      "instrument_token": null
+    },
+    {
+      "symbol": "IRB",
+      "instrument_token": null
+    },
+    {
+      "symbol": "IRCON",
+      "instrument_token": null
+    },
+    {
+      "symbol": "IRCTC",
+      "instrument_token": null
+    },
+    {
+      "symbol": "IREDA",
+      "instrument_token": null
+    },
+    {
+      "symbol": "IRFC",
+      "instrument_token": null
+    },
+    {
+      "symbol": "ITC",
+      "instrument_token": null
+    },
+    {
+      "symbol": "ITCHOTELS",
+      "instrument_token": null
+    },
+    {
+      "symbol": "ITI",
+      "instrument_token": null
+    },
+    {
+      "symbol": "J&KBANK",
+      "instrument_token": null
+    },
+    {
+      "symbol": "JAINREC",
+      "instrument_token": null
+    },
+    {
+      "symbol": "JBCHEPHARM",
+      "instrument_token": null
+    },
+    {
+      "symbol": "JBMA",
+      "instrument_token": null
+    },
+    {
+      "symbol": "JINDALSAW",
+      "instrument_token": null
+    },
+    {
+      "symbol": "JINDALSTEL",
+      "instrument_token": null
+    },
+    {
+      "symbol": "JIOFIN",
+      "instrument_token": null
+    },
+    {
+      "symbol": "JKCEMENT",
+      "instrument_token": null
+    },
+    {
+      "symbol": "JKTYRE",
+      "instrument_token": null
+    },
+    {
+      "symbol": "JMFINANCIL",
+      "instrument_token": null
+    },
+    {
+      "symbol": "JPPOWER",
+      "instrument_token": null
+    },
+    {
+      "symbol": "JSL",
+      "instrument_token": null
+    },
+    {
+      "symbol": "JSWCEMENT",
+      "instrument_token": null
+    },
+    {
+      "symbol": "JSWDULUX",
+      "instrument_token": null
+    },
+    {
+      "symbol": "JSWENERGY",
+      "instrument_token": null
+    },
+    {
+      "symbol": "JSWINFRA",
+      "instrument_token": null
+    },
+    {
+      "symbol": "JSWSTEEL",
+      "instrument_token": null
+    },
+    {
+      "symbol": "JUBLFOOD",
+      "instrument_token": null
+    },
+    {
+      "symbol": "JUBLINGREA",
+      "instrument_token": null
+    },
+    {
+      "symbol": "JUBLPHARMA",
+      "instrument_token": null
+    },
+    {
+      "symbol": "JWL",
+      "instrument_token": null
+    },
+    {
+      "symbol": "JYOTICNC",
+      "instrument_token": null
+    },
+    {
+      "symbol": "KAJARIACER",
+      "instrument_token": null
+    },
+    {
+      "symbol": "KALYANKJIL",
+      "instrument_token": null
+    },
+    {
+      "symbol": "KARURVYSYA",
+      "instrument_token": null
+    },
+    {
+      "symbol": "KAYNES",
+      "instrument_token": null
+    },
+    {
+      "symbol": "KEC",
+      "instrument_token": null
+    },
+    {
+      "symbol": "KEI",
+      "instrument_token": null
+    },
+    {
+      "symbol": "KFINTECH",
+      "instrument_token": null
+    },
+    {
+      "symbol": "KIMS",
+      "instrument_token": null
+    },
+    {
+      "symbol": "KIRLOSENG",
+      "instrument_token": null
+    },
+    {
+      "symbol": "KOTAKBANK",
+      "instrument_token": null
+    },
+    {
+      "symbol": "KPIL",
+      "instrument_token": null
+    },
+    {
+      "symbol": "KPITTECH",
+      "instrument_token": null
+    },
+    {
+      "symbol": "KPRMILL",
+      "instrument_token": null
+    },
+    {
+      "symbol": "LALPATHLAB",
+      "instrument_token": null
+    },
+    {
+      "symbol": "LATENTVIEW",
+      "instrument_token": null
+    },
+    {
+      "symbol": "LAURUSLABS",
+      "instrument_token": null
+    },
+    {
+      "symbol": "LEMONTREE",
+      "instrument_token": null
+    },
+    {
+      "symbol": "LENSKART",
+      "instrument_token": null
+    },
+    {
+      "symbol": "LGEINDIA",
+      "instrument_token": null
+    },
+    {
+      "symbol": "LICHSGFIN",
+      "instrument_token": null
+    },
+    {
+      "symbol": "LICI",
+      "instrument_token": null
+    },
+    {
+      "symbol": "LINDEINDIA",
+      "instrument_token": null
+    },
+    {
+      "symbol": "LLOYDSME",
+      "instrument_token": null
+    },
+    {
+      "symbol": "LODHA",
+      "instrument_token": null
+    },
+    {
+      "symbol": "LT",
+      "instrument_token": null
+    },
+    {
+      "symbol": "LTF",
+      "instrument_token": null
+    },
+    {
+      "symbol": "LTFOODS",
+      "instrument_token": null
+    },
+    {
+      "symbol": "LTM",
+      "instrument_token": null
+    },
+    {
+      "symbol": "LTTS",
+      "instrument_token": null
+    },
+    {
+      "symbol": "LUPIN",
+      "instrument_token": null
+    },
+    {
+      "symbol": "M&M",
+      "instrument_token": null
+    },
+    {
+      "symbol": "M&MFIN",
+      "instrument_token": null
+    },
+    {
+      "symbol": "MAHABANK",
+      "instrument_token": null
+    },
+    {
+      "symbol": "MANAPPURAM",
+      "instrument_token": null
+    },
+    {
+      "symbol": "MANKIND",
+      "instrument_token": null
+    },
+    {
+      "symbol": "MAPMYINDIA",
+      "instrument_token": null
+    },
+    {
+      "symbol": "MARICO",
+      "instrument_token": null
+    },
+    {
+      "symbol": "MARUTI",
+      "instrument_token": null
+    },
+    {
+      "symbol": "MAXHEALTH",
+      "instrument_token": null
+    },
+    {
+      "symbol": "MAZDOCK",
+      "instrument_token": null
+    },
+    {
+      "symbol": "MCX",
+      "instrument_token": null
+    },
+    {
+      "symbol": "MEDANTA",
+      "instrument_token": null
+    },
+    {
+      "symbol": "MEESHO",
+      "instrument_token": null
+    },
+    {
+      "symbol": "MFSL",
+      "instrument_token": null
+    },
+    {
+      "symbol": "MGL",
+      "instrument_token": null
+    },
+    {
+      "symbol": "MINDACORP",
+      "instrument_token": null
+    },
+    {
+      "symbol": "MMTC",
+      "instrument_token": null
+    },
+    {
+      "symbol": "MOTHERSON",
+      "instrument_token": null
+    },
+    {
+      "symbol": "MOTILALOFS",
+      "instrument_token": null
+    },
+    {
+      "symbol": "MPHASIS",
+      "instrument_token": null
+    },
+    {
+      "symbol": "MRF",
+      "instrument_token": null
+    },
+    {
+      "symbol": "MRPL",
+      "instrument_token": null
+    },
+    {
+      "symbol": "MSUMI",
+      "instrument_token": null
+    },
+    {
+      "symbol": "MUTHOOTFIN",
+      "instrument_token": null
+    },
+    {
+      "symbol": "NAM-INDIA",
+      "instrument_token": null
+    },
+    {
+      "symbol": "NATCOPHARM",
+      "instrument_token": null
+    },
+    {
+      "symbol": "NATIONALUM",
+      "instrument_token": null
+    },
+    {
+      "symbol": "NAUKRI",
+      "instrument_token": null
+    },
+    {
+      "symbol": "NAVA",
+      "instrument_token": null
+    },
+    {
+      "symbol": "NAVINFLUOR",
+      "instrument_token": null
+    },
+    {
+      "symbol": "NBCC",
+      "instrument_token": null
+    },
+    {
+      "symbol": "NCC",
+      "instrument_token": null
+    },
+    {
+      "symbol": "NESTLEIND",
+      "instrument_token": null
+    },
+    {
+      "symbol": "NETWEB",
+      "instrument_token": null
+    },
+    {
+      "symbol": "NEULANDLAB",
+      "instrument_token": null
+    },
+    {
+      "symbol": "NEWGEN",
+      "instrument_token": null
+    },
+    {
+      "symbol": "NH",
+      "instrument_token": null
+    },
+    {
+      "symbol": "NHPC",
+      "instrument_token": null
+    },
+    {
+      "symbol": "NIACL",
+      "instrument_token": null
+    },
+    {
+      "symbol": "NIVABUPA",
+      "instrument_token": null
+    },
+    {
+      "symbol": "NLCINDIA",
+      "instrument_token": null
+    },
+    {
+      "symbol": "NMDC",
+      "instrument_token": null
+    },
+    {
+      "symbol": "NSLNISP",
+      "instrument_token": null
+    },
+    {
+      "symbol": "NTPC",
+      "instrument_token": null
+    },
+    {
+      "symbol": "NTPCGREEN",
+      "instrument_token": null
+    },
+    {
+      "symbol": "NUVAMA",
+      "instrument_token": null
+    },
+    {
+      "symbol": "NUVOCO",
+      "instrument_token": null
+    },
+    {
+      "symbol": "NYKAA",
+      "instrument_token": null
+    },
+    {
+      "symbol": "OBEROIRLTY",
+      "instrument_token": null
+    },
+    {
+      "symbol": "OFSS",
+      "instrument_token": null
+    },
+    {
+      "symbol": "OIL",
+      "instrument_token": null
+    },
+    {
+      "symbol": "OLAELEC",
+      "instrument_token": null
+    },
+    {
+      "symbol": "OLECTRA",
+      "instrument_token": null
+    },
+    {
+      "symbol": "ONESOURCE",
+      "instrument_token": null
+    },
+    {
+      "symbol": "ONGC",
+      "instrument_token": null
+    },
+    {
+      "symbol": "PAGEIND",
+      "instrument_token": null
+    },
+    {
+      "symbol": "PARADEEP",
+      "instrument_token": null
+    },
+    {
+      "symbol": "PATANJALI",
+      "instrument_token": null
+    },
+    {
+      "symbol": "PAYTM",
+      "instrument_token": null
+    },
+    {
+      "symbol": "PCBL",
+      "instrument_token": null
+    },
+    {
+      "symbol": "PERSISTENT",
+      "instrument_token": null
+    },
+    {
+      "symbol": "PETRONET",
+      "instrument_token": null
+    },
+    {
+      "symbol": "PFC",
+      "instrument_token": null
+    },
+    {
+      "symbol": "PFIZER",
+      "instrument_token": null
+    },
+    {
+      "symbol": "PGEL",
+      "instrument_token": null
+    },
+    {
+      "symbol": "PHOENIXLTD",
+      "instrument_token": null
+    },
+    {
+      "symbol": "PIDILITIND",
+      "instrument_token": null
+    },
+    {
+      "symbol": "PIIND",
+      "instrument_token": null
+    },
+    {
+      "symbol": "PINELABS",
+      "instrument_token": null
+    },
+    {
+      "symbol": "PIRAMALFIN",
+      "instrument_token": null
+    },
+    {
+      "symbol": "PNB",
+      "instrument_token": null
+    },
+    {
+      "symbol": "PNBHOUSING",
+      "instrument_token": null
+    },
+    {
+      "symbol": "POLICYBZR",
+      "instrument_token": null
+    },
+    {
+      "symbol": "POLYCAB",
+      "instrument_token": null
+    },
+    {
+      "symbol": "POLYMED",
+      "instrument_token": null
+    },
+    {
+      "symbol": "POONAWALLA",
+      "instrument_token": null
+    },
+    {
+      "symbol": "POWERGRID",
+      "instrument_token": null
+    },
+    {
+      "symbol": "POWERINDIA",
+      "instrument_token": null
+    },
+    {
+      "symbol": "PPLPHARMA",
+      "instrument_token": null
+    },
+    {
+      "symbol": "PREMIERENE",
+      "instrument_token": null
+    },
+    {
+      "symbol": "PRESTIGE",
+      "instrument_token": null
+    },
+    {
+      "symbol": "PTCIL",
+      "instrument_token": null
+    },
+    {
+      "symbol": "PVRINOX",
+      "instrument_token": null
+    },
+    {
+      "symbol": "PWL",
+      "instrument_token": null
+    },
+    {
+      "symbol": "RADICO",
+      "instrument_token": null
+    },
+    {
+      "symbol": "RAILTEL",
+      "instrument_token": null
+    },
+    {
+      "symbol": "RAINBOW",
+      "instrument_token": null
+    },
+    {
+      "symbol": "RAMCOCEM",
+      "instrument_token": null
+    },
+    {
+      "symbol": "RBLBANK",
+      "instrument_token": null
+    },
+    {
+      "symbol": "RECLTD",
+      "instrument_token": null
+    },
+    {
+      "symbol": "REDINGTON",
+      "instrument_token": null
+    },
+    {
+      "symbol": "RELIANCE",
+      "instrument_token": null
+    },
+    {
+      "symbol": "RHIM",
+      "instrument_token": null
+    },
+    {
+      "symbol": "RITES",
+      "instrument_token": null
+    },
+    {
+      "symbol": "RKFORGE",
+      "instrument_token": null
+    },
+    {
+      "symbol": "RPOWER",
+      "instrument_token": null
+    },
+    {
+      "symbol": "RRKABEL",
+      "instrument_token": null
+    },
+    {
+      "symbol": "RVNL",
+      "instrument_token": null
+    },
+    {
+      "symbol": "SAGILITY",
+      "instrument_token": null
+    },
+    {
+      "symbol": "SAIL",
+      "instrument_token": null
+    },
+    {
+      "symbol": "SAILIFE",
+      "instrument_token": null
+    },
+    {
+      "symbol": "SAMMAANCAP",
+      "instrument_token": null
+    },
+    {
+      "symbol": "SAPPHIRE",
+      "instrument_token": null
+    },
+    {
+      "symbol": "SARDAEN",
+      "instrument_token": null
+    },
+    {
+      "symbol": "SAREGAMA",
+      "instrument_token": null
+    },
+    {
+      "symbol": "SBFC",
+      "instrument_token": null
+    },
+    {
+      "symbol": "SBICARD",
+      "instrument_token": null
+    },
+    {
+      "symbol": "SBILIFE",
+      "instrument_token": null
+    },
+    {
+      "symbol": "SBIN",
+      "instrument_token": null
+    },
+    {
+      "symbol": "SCHAEFFLER",
+      "instrument_token": null
+    },
+    {
+      "symbol": "SCHNEIDER",
+      "instrument_token": null
+    },
+    {
+      "symbol": "SCI",
+      "instrument_token": null
+    },
+    {
+      "symbol": "SHREECEM",
+      "instrument_token": null
+    },
+    {
+      "symbol": "SHRIRAMFIN",
+      "instrument_token": null
+    },
+    {
+      "symbol": "SHYAMMETL",
+      "instrument_token": null
+    },
+    {
+      "symbol": "SIEMENS",
+      "instrument_token": null
+    },
+    {
+      "symbol": "SIGNATURE",
+      "instrument_token": null
+    },
+    {
+      "symbol": "SJVN",
+      "instrument_token": null
+    },
+    {
+      "symbol": "SOBHA",
+      "instrument_token": null
+    },
+    {
+      "symbol": "SOLARINDS",
+      "instrument_token": null
+    },
+    {
+      "symbol": "SONACOMS",
+      "instrument_token": null
+    },
+    {
+      "symbol": "SONATSOFTW",
+      "instrument_token": null
+    },
+    {
+      "symbol": "SPLPETRO",
+      "instrument_token": null
+    },
+    {
+      "symbol": "SRF",
+      "instrument_token": null
+    },
+    {
+      "symbol": "STARHEALTH",
+      "instrument_token": null
+    },
+    {
+      "symbol": "SUMICHEM",
+      "instrument_token": null
+    },
+    {
+      "symbol": "SUNDARMFIN",
+      "instrument_token": null
+    },
+    {
+      "symbol": "SUNPHARMA",
+      "instrument_token": null
+    },
+    {
+      "symbol": "SUNTV",
+      "instrument_token": null
+    },
+    {
+      "symbol": "SUPREMEIND",
+      "instrument_token": null
+    },
+    {
+      "symbol": "SUZLON",
+      "instrument_token": null
+    },
+    {
+      "symbol": "SWANCORP",
+      "instrument_token": null
+    },
+    {
+      "symbol": "SWIGGY",
+      "instrument_token": null
+    },
+    {
+      "symbol": "SYNGENE",
+      "instrument_token": null
+    },
+    {
+      "symbol": "SYRMA",
+      "instrument_token": null
+    },
+    {
+      "symbol": "TARIL",
+      "instrument_token": null
+    },
+    {
+      "symbol": "TATACAP",
+      "instrument_token": null
+    },
+    {
+      "symbol": "TATACHEM",
+      "instrument_token": null
+    },
+    {
+      "symbol": "TATACOMM",
+      "instrument_token": null
+    },
+    {
+      "symbol": "TATACONSUM",
+      "instrument_token": null
+    },
+    {
+      "symbol": "TATAELXSI",
+      "instrument_token": null
+    },
+    {
+      "symbol": "TATAINVEST",
+      "instrument_token": null
+    },
+    {
+      "symbol": "TATAPOWER",
+      "instrument_token": null
+    },
+    {
+      "symbol": "TATASTEEL",
+      "instrument_token": null
+    },
+    {
+      "symbol": "TATATECH",
+      "instrument_token": null
+    },
+    {
+      "symbol": "TBOTEK",
+      "instrument_token": null
+    },
+    {
+      "symbol": "TCS",
+      "instrument_token": null
+    },
+    {
+      "symbol": "TECHM",
+      "instrument_token": null
+    },
+    {
+      "symbol": "TECHNOE",
+      "instrument_token": null
+    },
+    {
+      "symbol": "TEGA",
+      "instrument_token": null
+    },
+    {
+      "symbol": "TEJASNET",
+      "instrument_token": null
+    },
+    {
+      "symbol": "TENNIND",
+      "instrument_token": null
+    },
+    {
+      "symbol": "THELEELA",
+      "instrument_token": null
+    },
+    {
+      "symbol": "THERMAX",
+      "instrument_token": null
+    },
+    {
+      "symbol": "TIINDIA",
+      "instrument_token": null
+    },
+    {
+      "symbol": "TIMKEN",
+      "instrument_token": null
+    },
+    {
+      "symbol": "TITAGARH",
+      "instrument_token": null
+    },
+    {
+      "symbol": "TITAN",
+      "instrument_token": null
+    },
+    {
+      "symbol": "TMCV",
+      "instrument_token": null
+    },
+    {
+      "symbol": "TMPV",
+      "instrument_token": null
+    },
+    {
+      "symbol": "TORNTPHARM",
+      "instrument_token": null
+    },
+    {
+      "symbol": "TORNTPOWER",
+      "instrument_token": null
+    },
+    {
+      "symbol": "TRAVELFOOD",
+      "instrument_token": null
+    },
+    {
+      "symbol": "TRENT",
+      "instrument_token": null
+    },
+    {
+      "symbol": "TRIDENT",
+      "instrument_token": null
+    },
+    {
+      "symbol": "TRITURBINE",
+      "instrument_token": null
+    },
+    {
+      "symbol": "TTML",
+      "instrument_token": null
+    },
+    {
+      "symbol": "TVSMOTOR",
+      "instrument_token": null
+    },
+    {
+      "symbol": "UBL",
+      "instrument_token": null
+    },
+    {
+      "symbol": "UCOBANK",
+      "instrument_token": null
+    },
+    {
+      "symbol": "ULTRACEMCO",
+      "instrument_token": null
+    },
+    {
+      "symbol": "UNIONBANK",
+      "instrument_token": null
+    },
+    {
+      "symbol": "UNITDSPR",
+      "instrument_token": null
+    },
+    {
+      "symbol": "UNOMINDA",
+      "instrument_token": null
+    },
+    {
+      "symbol": "UPL",
+      "instrument_token": null
+    },
+    {
+      "symbol": "URBANCO",
+      "instrument_token": null
+    },
+    {
+      "symbol": "USHAMART",
+      "instrument_token": null
+    },
+    {
+      "symbol": "UTIAMC",
+      "instrument_token": null
+    },
+    {
+      "symbol": "VBL",
+      "instrument_token": null
+    },
+    {
+      "symbol": "VEDL",
+      "instrument_token": null
+    },
+    {
+      "symbol": "VIJAYA",
+      "instrument_token": null
+    },
+    {
+      "symbol": "VMM",
+      "instrument_token": null
+    },
+    {
+      "symbol": "VOLTAS",
+      "instrument_token": null
+    },
+    {
+      "symbol": "VTL",
+      "instrument_token": null
+    },
+    {
+      "symbol": "WAAREEENER",
+      "instrument_token": null
+    },
+    {
+      "symbol": "WELCORP",
+      "instrument_token": null
+    },
+    {
+      "symbol": "WELSPUNLIV",
+      "instrument_token": null
+    },
+    {
+      "symbol": "WHIRLPOOL",
+      "instrument_token": null
+    },
+    {
+      "symbol": "WIPRO",
+      "instrument_token": null
+    },
+    {
+      "symbol": "WOCKPHARMA",
+      "instrument_token": null
+    },
+    {
+      "symbol": "YESBANK",
+      "instrument_token": null
+    },
+    {
+      "symbol": "ZEEL",
+      "instrument_token": null
+    },
+    {
+      "symbol": "ZENSARTECH",
+      "instrument_token": null
+    },
+    {
+      "symbol": "ZENTEC",
+      "instrument_token": null
+    },
+    {
+      "symbol": "ZFCVINDIA",
+      "instrument_token": null
+    },
+    {
+      "symbol": "ZYDUSLIFE",
+      "instrument_token": null
+    },
+    {
+      "symbol": "ZYDUSWELL",
+      "instrument_token": null
+    }
+  ]
+}

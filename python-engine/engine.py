@@ -176,11 +176,37 @@ def evaluate_signal(
     nifty_ema20: Optional[float] = None,
     nifty_return_1d: Optional[float] = None,
     rsi_history: Optional[pd.Series] = None,
+    breadth_rank: Optional[float] = None,
+    breadth_pct_above_sma50: Optional[float] = None,
 ) -> Tuple[bool, Dict[str, Any]]:
 
     if len(df) < 200:
         return False, {"reject_reason": "insufficient_data_200_days"}
     df = df.copy()
+
+    # -----------------------------------------------------
+    # BREADTH ENRICHMENT (Task 6, 2026-06-14)
+    # R1 narrow-rally gate runs FIRST, before any signal-quality filter.
+    # This is a *market-context* filter, not a signal filter: when breadth
+    # is bad, we don't even bother evaluating individual signals. Skipped
+    # entirely if breadth data is degraded (breadth_pct is None) or the
+    # feature flag is off.
+    # -----------------------------------------------------
+    narrow_rally_filtered = (
+        settings.BREADTH_ENRICHMENT_ENABLED
+        and regime == Regime.REGIME_1_NORMAL
+        and breadth_pct_above_sma50 is not None
+        and breadth_pct_above_sma50 < settings.BREADTH_NARROW_RALLY_THRESHOLD
+        and (breadth_rank is None or breadth_rank < settings.BREADTH_NARROW_GATE_EXEMPT_RANK)
+    )
+    if narrow_rally_filtered:
+        return False, {
+            "reject_reason": "narrow_rally_filtered",
+            "breadth_pct_above_sma50": breadth_pct_above_sma50,
+            "breadth_rank": breadth_rank,
+            "threshold": settings.BREADTH_NARROW_RALLY_THRESHOLD,
+            "exempt_rank": settings.BREADTH_NARROW_GATE_EXEMPT_RANK,
+        }
     close = df["close"]
 
     ema21 = calc_ema(21, close)
@@ -430,6 +456,24 @@ def evaluate_signal(
     score = min(score, 100)
 
     # -----------------------------------------------------
+    # BREADTH SCORING BONUS (Task 6, 2026-06-14)
+    # Counter-trend enabler: top-breadth stocks get a bonus + 1.2x multiplier
+    # even in R2/R3. Bottom-rank stocks get a penalty. Works only when the
+    # feature flag is on AND breadth_rank is provided (not degraded).
+    # -----------------------------------------------------
+    if settings.BREADTH_ENRICHMENT_ENABLED and breadth_rank is not None:
+        if breadth_rank >= 0.80:
+            score += settings.BREADTH_RANK_BONUS_TOP       # default +15
+        elif breadth_rank >= 0.60:
+            score += settings.BREADTH_RANK_BONUS_MID       # default +7
+        elif breadth_rank < 0.20:
+            score += settings.BREADTH_RANK_PENALTY_BOTTOM  # default -10
+        # Top quintile also gets a score multiplier to nudge borderline signals
+        if breadth_rank >= 0.80:
+            score = int(score * settings.BREADTH_RANK_MULTIPLIER)  # default ×1.2
+            score = min(score, 100)
+
+    # -----------------------------------------------------
     # RESULT
     # -----------------------------------------------------
 
@@ -453,6 +497,7 @@ def evaluate_signal(
         "trailing_stop": stop_loss,
         # Regime metadata
         "regime": regime,
+        "narrow_rally_filtered": False,  # Default; True branch is handled by the early-return gate above
         "rsi_percentile": rsi_pct if regime in (Regime.REGIME_1_NORMAL, Regime.REGIME_2_ELEVATED) else None,
         "volume_zscore": vol_zscore,
         "rs_vs_nifty": rs_vs_nifty if regime == Regime.REGIME_3_CRISIS else None,

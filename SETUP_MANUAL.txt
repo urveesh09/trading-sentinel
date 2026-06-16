@@ -1,0 +1,217 @@
+================================================================
+TRADING SENTINEL — SETUP & DAILY RUN MANUAL
+Last updated: 2026-06-14
+Author: Hermes session w/ Uru
+================================================================
+
+WHAT THIS SYSTEM DOES
+---------------------
+Desktop runs the trading stack (node-gateway + python-engine) in
+Docker.  python-engine talks to Zerodha Kite via a relay on a free
+Oracle Cloud VM (161.118.160.180:31527).  The relay is needed
+because your home ISP cannot reach api.kite.trade directly.  The
+desktop -> relay hop is whitelisted by Kite, so all orders/quotes
+work from home.
+
+ngrok is RETIRED.  The Oracle VM's public IP replaces it.  Do not
+reinstall ngrok.  The ZERODHA_REDIRECT_URL now points to localhost
+(served by nginx), not ngrok.
+
+
+ONE-TIME SETUP (do these once, in this order)
+---------------------------------------------
+
+[1] EDIT node-gateway env file
+    File: /home/urveesh/Desktop/trading-sentinel/node-gateway/.env
+    Add or change two lines:
+
+        ZERODHA_REDIRECT_URL=http://localhost/api/auth/callback
+        KITE_BASE_URL=http://161.118.160.180:31527
+
+    Save and close.
+
+[2] VERIFY python-engine env file
+    File: /home/urveesh/Desktop/trading-sentinel/python-engine/.env
+    Confirm it contains:
+
+        KITE_BASE_URL=http://161.118.160.180:31527
+
+    (created in earlier session, should already be there)
+
+[3] PERSIST iptables rule on the OCI VM
+    SSH into 161.118.160.180, then run:
+
+        sudo apt install -y iptables-persistent
+        sudo netfilter-persistent save
+        sudo iptables -L -n --line-numbers | grep 31527
+        curl -s ifconfig.me
+
+    The first command installs the persistence package.
+    The second saves the current iptables rules so they survive
+    reboots.  The third confirms the 31527 ACCEPT rule is in place.
+    The fourth prints the VM's public IP — note this for step 4.
+
+[4] PROMOTE VM public IP to Reserved (free while attached)
+    OCI Web Console (do this in browser):
+        Networking -> Virtual Cloud Networks -> <your VCN>
+            -> <your subnet> -> <the security list>
+            OR Networking -> IPs -> 161.118.160.180 -> Edit
+    Promote 161.118.160.180 to a Reserved Public IP.
+    This stops the IP from rotating when the VM stops/starts.
+
+[5] WHITELIST the VM IP in Zerodha
+    Kite developer console (kite.trade -> Developer -> My apps
+        -> <your app> -> API):
+        Add the IP printed in step 3 to "Allowed IP addresses".
+    Re-check this whenever the VM IP changes (should be a one-time
+    thing if you did step 4).
+
+
+DAILY MORNING RITUAL (~08:55 IST, before 09:20 first scan)
+----------------------------------------------------------
+
+Open a terminal on your DESKTOP (not SSH, not headless — needs
+a real terminal emulator so xdg-open works).  Paste this whole
+block:
+
+    cd /home/urveesh/Desktop/trading-sentinel
+    bash python-engine/smoke_relay.sh
+    docker compose up -d
+    sleep 10
+    xdg-open http://localhost/api/auth/login
+
+What each line does:
+  1. cd into the project
+  2. smoke test — confirms the OCI relay is reachable on
+     161.118.160.180:31527.  Expect "[1/2] status=200" and
+     "[2/2] status=200".  If step 1 fails, SSH to the VM and
+     check that the relay process is still running.
+  3. starts the 4 containers (nginx, node-gateway, python-engine,
+     agent) in the background.  Use `docker compose down` to
+     stop them at end of day if you want.
+  4. waits 10 seconds for node-gateway to finish booting
+  5. opens the Zerodha login page in your default browser
+
+Now do the BROWSER steps:
+  - log in to Zerodha with your credentials
+  - enter 2FA code
+  - browser redirects to http://localhost/ (your dashboard)
+  - Telegram alert: "Zerodha authenticated successfully"
+  - you are done with login
+
+Optional belt-and-braces restart (your old GCP habit, harmless):
+
+    docker restart python-engine
+
+Watch the 09:20 IST first scan (engine has scheduled jobs at
+09:20 and 14:45):
+
+    docker logs -f python-engine 2>&1 | grep -iE 'kite|signal|position'
+
+Expect to see HTTP 200 responses from Kite calls (quotes, etc.).
+If you see 401s, the access token expired — re-run the login
+ritual (you can re-trigger the browser step at any time, the
+token is single-day).
+
+To STOP the system at end of day:
+
+    docker compose down         # graceful, drops containers
+    # or
+    docker compose stop         # pauses containers, keeps state
+
+
+USEFUL ONE-LINERS
+-----------------
+
+List running containers and their status:
+
+    docker ps --format 'table {{.Names}}\t{{.Status}}\t{{.Ports}}'
+
+Tail logs of a specific container (last 50 lines, follow mode):
+
+    docker logs -f --tail 50 python-engine
+    docker logs -f --tail 50 node-gateway
+    docker logs -f --tail 50 quant_nginx
+
+Test the OCI relay from desktop (should print 200):
+
+    curl -v -m 5 http://161.118.160.180:31527/
+
+Check the engine's KITE_BASE_URL setting (run inside container):
+
+    docker exec python-engine env | grep KITE_BASE_URL
+
+Check the engine's Kite client base_url (confirms the env var
+made it into Settings):
+
+    docker exec python-engine python3 -c \
+        "from config import settings; print(settings.KITE_BASE_URL)"
+
+Restart just one container (after editing a file, e.g.):
+
+    docker restart python-engine
+    docker restart node-gateway
+
+Check ngrok is NOT installed (sanity check):
+
+    which ngrok      # should print nothing (empty)
+
+
+TROUBLESHOOTING
+---------------
+
+Problem: smoke_relay.sh shows "permission denied" on docker
+  Cause: docker socket group/permissions, or terminal sandbox.
+  Fix on desktop: 
+      sudo usermod -aG docker $USER
+      exec su -l $USER
+      docker ps     # should not error
+
+Problem: "No route to host" from desktop curl to 161.118.160.180
+  Cause: VM iptables lost the 31527 ACCEPT rule.
+  Fix on VM:
+      sudo iptables -I INPUT 5 -p tcp --dport 31527 -j ACCEPT
+      sudo netfilter-persistent save
+
+Problem: engine restarts in a loop with "ValidationError: kite_base_url"
+  Cause: KITE_BASE_URL not declared in config.py Settings.
+  Fix: re-apply the patch from this session — declare
+       KITE_BASE_URL in /python-engine/config.py.
+
+Problem: login browser redirects to localhost and shows "site not reachable"
+  Cause: nginx container is down.
+  Fix: 
+      docker compose up -d
+      curl http://localhost/api/health   # should return 200
+
+Problem: engine returns 401 from Kite calls
+  Cause: access token expired (normal next morning).
+  Fix: re-run the browser login step of the daily ritual.
+
+Problem: Kite says "IP not whitelisted"
+  Cause: VM IP changed (forgot to do step 4 of one-time setup).
+  Fix: 
+      curl -s ifconfig.me    # on VM
+      Add this new IP to kite developer console.
+
+
+ENVIRONMENT REMINDER
+--------------------
+
+Working dir:    /home/urveesh/Desktop/trading-sentinel
+Relay host:     161.118.160.180  (Oracle Cloud Always-Free VM)
+Relay port:     31527
+Kite redirect:  http://localhost/api/auth/callback
+Engine port:    8000  (internal, nginx fronts it)
+Gateway port:   3000  (internal, nginx fronts it)
+Nginx ports:    80, 443  (host-side)
+
+Daily scans:    09:20 IST, 14:45 IST
+Bankroll:       INR 5,000
+Risk per trade: 10%
+Max positions:  4
+Engine quirks:  14 (Q1-Q14 in GEMINI.md — DO NOT MODIFY)
+
+================================================================
+END OF MANUAL
+================================================================
