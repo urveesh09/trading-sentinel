@@ -80,7 +80,7 @@ def build_breadth_engine(kite, settings):
         )
         logger.info(
             "breadth_engine_enabled",
-            tokens=len(breadth_universe.get_nifty100_tokens()),
+            tokens=len(breadth_universe.get_tokens()),
         )
         return engine
     except Exception as e:

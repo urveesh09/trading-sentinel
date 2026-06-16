@@ -67,9 +67,37 @@ class Universe:
             )
         logger.info(f"Universe loaded: {resolved} tokens from {len(data['tickers'])} entries")
 
-    def get_nifty100_tokens(self) -> Set[int]:
-        """Return the resolved Nifty 100 instrument tokens. Cached after first call."""
+    @property
+    def size(self) -> int:
+        """Number of resolved tokens in this universe.
+
+        Added for Task 5 (universe expansion, 2026-06-15). Returns
+        len(self._tokens) — same value `get_tokens()` returns as the
+        length of the set.
+        """
+        return len(self._tokens)
+
+    def get_tokens(self) -> Set[int]:
+        """Return the resolved instrument tokens for this universe.
+
+        Added for Task 5 (universe expansion, 2026-06-15) as the
+        universe-agnostic replacement for `get_nifty100_tokens()`.
+        The Nifty 100 implementation is unchanged; only the name is
+        generalised.
+        """
         return self._tokens.copy()
+
+    def get_nifty100_tokens(self) -> Set[int]:
+        """DEPRECATED alias for `get_tokens()`.
+
+        Kept for backward compatibility with breadth-enrichment code
+        that calls this name. New code should use `get_tokens()`
+        (universe-agnostic) or the `size` property.
+
+        Removal plan: drop after the breadth-enrichment rollout
+        completes Stage 2 (currently estimated Q3 2026).
+        """
+        return self.get_tokens()
 
     def token_to_symbol(self, token: int) -> Optional[str]:
         """Reverse lookup: instrument_token → NSE symbol."""

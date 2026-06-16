@@ -87,3 +87,35 @@ def test_universe_token_to_symbol_roundtrip(fake_kite_cache, tmp_path):
     assert u.token_to_symbol(100043) == "SYM043"
     # An unknown token returns None (not KeyError)
     assert u.token_to_symbol(999999) is None
+
+
+# ─────────────────────────────────────────────────────────────────
+# Generalised Universe (Task 5, 2026-06-15)
+# ─────────────────────────────────────────────────────────────────
+
+
+def test_universe_get_tokens_returns_same_as_get_nifty100_tokens(fake_kite_cache, tmp_path):
+    """get_tokens() is the new name; get_nifty100_tokens() is a deprecated alias."""
+    data_file = tmp_path / "nifty100.json"
+    data_file.write_text(json.dumps({
+        "as_of_date": "2026-06-14",
+        "tickers": [{"symbol": f"SYM{i:03d}", "instrument_token": None} for i in range(100)]
+    }))
+
+    u = Universe(str(data_file), instrument_cache=fake_kite_cache)
+    new_method = u.get_tokens()
+    old_method = u.get_nifty100_tokens()
+    assert new_method == old_method
+
+
+def test_universe_size_property_reflects_loaded_count(fake_kite_cache, tmp_path):
+    """Universe.size returns the number of resolved tokens."""
+    data_file = tmp_path / "nifty500.json"
+    data_file.write_text(json.dumps({
+        "as_of_date": "2026-06-15",
+        "tickers": [{"symbol": f"SYM{i:03d}", "instrument_token": None} for i in range(100)]
+    }))
+
+    u = Universe(str(data_file), instrument_cache=fake_kite_cache)
+    # fake_kite_cache has SYM042 = None (unresolvable), so 99 resolved
+    assert u.size == 99
