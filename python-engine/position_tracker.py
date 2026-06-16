@@ -17,13 +17,21 @@ async def init_positions_db(db_path: str):
                 stop_loss_initial REAL, trailing_stop_current REAL, target_1 REAL, target_2 REAL,
                 atr_14_at_entry REAL, highest_close_since_entry REAL, status TEXT, source TEXT,
                 exit_price REAL, exit_date TEXT, realised_pnl REAL, r_multiple REAL,
-                product_type TEXT DEFAULT 'CNC'
+                product_type TEXT DEFAULT 'CNC',
+                regime_at_entry TEXT
             )
         """)
         # [MED-008] Migration: add product_type column to pre-existing tables on the
         # persistent volume. ALTER TABLE silently fails if the column already exists.
         try:
             await db.execute("ALTER TABLE positions ADD COLUMN product_type TEXT DEFAULT 'CNC'")
+        except Exception:
+            pass  # Column already present — safe to ignore
+        # [TRAILING-EXITS 2026-06-16] Migration: add regime_at_entry column
+        # for the regime-aware Chandelier trailing stop. NULL = legacy
+        # 3.0x ATR behavior (backward compat for pre-existing positions).
+        try:
+            await db.execute("ALTER TABLE positions ADD COLUMN regime_at_entry TEXT")
         except Exception:
             pass  # Column already present — safe to ignore
         await db.commit()
@@ -47,18 +55,52 @@ async def update_daily_positions(db_path: str, kite_client, current_date_str: st
         if df.empty: continue
         today_close = df['close'].iloc[-1]
         highest_close = max(pos['highest_close_since_entry'], today_close)
+        # [TRAILING-EXITS 2026-06-16] Regime-aware Chandelier multiplier.
+        # Wider trail in calm markets (Regime 1 = 3.5x ATR) gives mid-cap
+        # trends room to breathe. Tighter in crisis (Regime 3 = 2.5x ATR)
+        # cuts losses fast. Backward compat: NULL regime → legacy 3.0x.
+        regime_at_entry = pos.get('regime_at_entry')
+        if regime_at_entry == 'REGIME_1_NORMAL':
+            chandelier_mult = settings.CHANDELIER_ATR_REGIME1_MULT
+        elif regime_at_entry == 'REGIME_2_ELEVATED':
+            chandelier_mult = settings.CHANDELIER_ATR_REGIME2_MULT
+        elif regime_at_entry == 'REGIME_3_CRISIS':
+            chandelier_mult = settings.CHANDELIER_ATR_REGIME3_MULT
+        else:
+            # Legacy / NULL regime — use original single setting
+            chandelier_mult = settings.CHANDELIER_ATR_MULT
         # Chandelier stop: highest_close_since_entry - (atr_mult * ATR)
-        # atr_mult comes from CHANDELIER_ATR_MULT (3.0) via settings
         cs = ChandelierStop(
             entry_price=pos['entry_price'],
             atr=pos['atr_14_at_entry'],
-            atr_mult=settings.CHANDELIER_ATR_MULT,
+            atr_mult=chandelier_mult,
         )
         # Seed highest_close with yesterday's value so stop trails from there, not entry
         cs._highest_close = highest_close
         cs.update(close=today_close, high=today_close, low=today_close)
         # Chandelier stop can only move up (one-way ratchet), never down
         trailing_stop = max(pos['trailing_stop_current'], cs.get_stop())
+
+        # [TRAILING-EXITS 2026-06-16] Apply HARD_CAP_R_REGIME1 ceiling.
+        # The hard cap is min(target_2, entry + HARD_CAP_R * risk_per_share).
+        # This is a safety valve: even if target_2 is configured higher, the
+        # position is force-closed at the 5R ceiling in Regime 1.
+        effective_target_2 = pos['target_2']
+        if regime_at_entry == 'REGIME_1_NORMAL':
+            risk_per_share = pos['entry_price'] - pos['stop_loss_initial']
+            if risk_per_share > 0:
+                hard_cap_price = pos['entry_price'] + (settings.HARD_CAP_R_REGIME1 * risk_per_share)
+                # The effective T2 is the lesser of (configured target_2, hard cap)
+                if effective_target_2 is None or effective_target_2 > hard_cap_price:
+                    effective_target_2 = hard_cap_price
+                    logger.info(
+                        "trailing_exits_hard_cap_applied",
+                        ticker=ticker,
+                        configured_target_2=pos['target_2'],
+                        hard_cap_price=hard_cap_price,
+                        hard_cap_r=settings.HARD_CAP_R_REGIME1,
+                    )
+
         current_status = pos['status']
         status = current_status
         exit_price = None
@@ -69,9 +111,9 @@ async def update_daily_positions(db_path: str, kite_client, current_date_str: st
         if today_close <= trailing_stop:
             status = "STOPPED_OUT"
             exit_price = trailing_stop
-        elif today_close >= pos['target_2']:
+        elif today_close >= effective_target_2:
             status = "CLOSED_T2"
-            exit_price = pos['target_2']
+            exit_price = effective_target_2
         elif today_close >= pos['target_1'] and current_status == "OPEN":
             status = "CLOSED_T1"
             exit_price = pos['target_1']

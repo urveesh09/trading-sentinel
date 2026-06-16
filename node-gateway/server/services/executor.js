@@ -241,6 +241,11 @@ async function executeSignal(signal, action, isIntraday = false) {
     // [MED-008] Pass product_type so Container B can store it in the positions table
     // and auto_square_momentum() can read the correct product type for square-off orders.
     product_type: isIntraday ? "MIS" : "CNC",
+    // [TRAILING-EXITS 2026-06-16] Forward regime at entry so the position row
+    // records it and position_tracker can pick the regime-aware Chandelier
+    // multiplier (3.5x R1, 3.0x R2, 2.5x R3). Null when the screener didn't
+    // tag it (backward compat — legacy 3.0x trail).
+    regime_at_entry: signal.regime ?? null,
     order_id: String(orderId),
     gtt_stop_id: gttStopId ? String(gttStopId) : null,
     gtt_target_id: gttTargetId ? String(gttTargetId) : null,

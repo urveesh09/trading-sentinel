@@ -169,15 +169,28 @@ class Settings(BaseSettings):
 
     # Target structure (R-multiples)
     TARGET1_R: float = 1.5                # T1 = 1.5R (all regimes)
-    TARGET2_R_REGIME1: float = 3.0        # T2 = 3.0R (Regime 1)
+    TARGET2_R_REGIME1: float = 4.5        # T2 = 4.5R (Regime 1, was 3.0 — let winners run)
     TARGET2_R_REGIME2: float = 3.0        # T2 = 3.0R (Regime 2)
     TARGET2_R_REGIME3: float = 1.0        # T2 = 1.0R (Regime 3 — no T2, exit at T1)
+
+    # Hard ceiling on Regime 1 positions — never hold past this R-multiple.
+    # Rationale: the trailing Chandelier can technically let a runaway trend
+    # sit forever; this is a safety valve to ensure we bank the gains.
+    HARD_CAP_R_REGIME1: float = 5.0       # Absolute ceiling in Regime 1
 
     # Partial exit at T1 (fraction of shares to exit)
     PARTIAL_EXIT_T1_PCT: float = 0.50    # Exit 50% at T1
 
-    # Chandelier trailing stop
+    # Chandelier trailing stop — legacy single multiplier (kept for backward compat)
     CHANDELIER_ATR_MULT: float = 3.0      # Highest close since entry - (3 * ATR)
+
+    # Regime-aware Chandelier multipliers (override the legacy single setting)
+    # Regime 1 (calm): wider trail (3.5x) — gives mid-cap trends room to breathe
+    # Regime 2 (elevated): default trail (3.0x) — unchanged
+    # Regime 3 (crisis): tighter trail (2.5x) — cut losses fast
+    CHANDELIER_ATR_REGIME1_MULT: float = 3.5
+    CHANDELIER_ATR_REGIME2_MULT: float = 3.0
+    CHANDELIER_ATR_REGIME3_MULT: float = 2.5
 
     # Regime transition guards
     REGIME_TRANSITION_SCANS: int = 2      # Score must hold for 2 consecutive scans

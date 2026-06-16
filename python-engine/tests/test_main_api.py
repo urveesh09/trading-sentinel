@@ -228,6 +228,54 @@ class TestManualPositionEndpoint:
         )
         assert resp.status_code == 403
 
+    @pytest.mark.asyncio
+    async def test_manual_position_stores_regime_at_entry(self, client):
+        """
+        [TRAILING-EXITS 2026-06-16] When the screener passes regime_at_entry,
+        it must persist on the position row so position_tracker can pick the
+        regime-aware Chandelier multiplier.
+        """
+        resp = await client.post(
+            "/positions/manual",
+            json={
+                "ticker": "TCS",
+                "entry_price": 3500.0,
+                "shares": 5,
+                "source": "SYSTEM",
+                "regime_at_entry": "REGIME_1_NORMAL",
+            },
+            headers={"X-Internal-Secret": settings.INTERNAL_API_SECRET}
+        )
+        assert resp.status_code == 200
+
+        resp2 = await client.get("/positions")
+        positions = resp2.json()
+        assert len(positions) == 1
+        assert positions[0]["regime_at_entry"] == "REGIME_1_NORMAL"
+
+    @pytest.mark.asyncio
+    async def test_manual_position_regime_defaults_to_null(self, client):
+        """
+        [TRAILING-EXITS 2026-06-16] Backward compat: when regime_at_entry is
+        omitted, the column stays NULL so position_tracker falls back to the
+        legacy 3.0x Chandelier trail.
+        """
+        resp = await client.post(
+            "/positions/manual",
+            json={
+                "ticker": "INFY",
+                "entry_price": 1500.0,
+                "shares": 3,
+                "source": "SYSTEM",
+            },
+            headers={"X-Internal-Secret": settings.INTERNAL_API_SECRET}
+        )
+        assert resp.status_code == 200
+
+        resp2 = await client.get("/positions")
+        positions = resp2.json()
+        assert positions[0]["regime_at_entry"] is None
+
 
 # ═══════════════════════════════════════════════════════════════
 # POST /positions/close  (internal API, requires secret)
