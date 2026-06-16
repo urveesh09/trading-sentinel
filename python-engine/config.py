@@ -88,7 +88,29 @@ class Settings(BaseSettings):
     MOMENTUM_ALLOW_OVERNIGHT:   bool  = False   # False = 15:15 auto-square stays; True = hold to trailing-stop only
     MOMENTUM_R3_MAX_POSITIONS:  int   = 1       # Soft cap for R3 entries (replaces hard block)
 
+    # [MOMENTUM-ENTRY-V2 2026-06-16] Optional additive entry filters.
+    # All default OFF — opt-in via .env. Each filter is independently gated by
+    # its own MOMENTUM_USE_* flag. Skip first 15-min + last 30-min chop by default
+    # (MOMENTUM_USE_TIME_GATE=True is the recommended safe default).
+    # References: 4-variant ORB study (dailybulls.in 2026), Nifty 8yr backtest
+    # (intradaylab.com 2026), 190k-trade ORB study (orbsetups.com 2026).
+    MOMENTUM_USE_RVOL:          bool  = False   # [MC7] Relative-volume vs 20-bar 15-min avg
+    MOMENTUM_RVOL_MIN_RATIO:    float = 1.5     # [MC7] RVOL threshold (last bar vol / avg)
+    MOMENTUM_RVOL_LOOKBACK:     int   = 20      # [MC7] Lookback bars (15-min each)
+    MOMENTUM_USE_TIME_GATE:     bool  = True    # [MC0] Skip 9:15-9:30 + 15:00-15:30
+    MOMENTUM_ENTRY_START_MIN:   int   = 45      # [MC0] Minutes from 9:15 IST when entries allowed (45 = 10:00)
+    MOMENTUM_ENTRY_END_MIN:     int   = 840     # [MC0] Minutes from 9:15 IST after which entries blocked (840 = 14:45)
+    MOMENTUM_USE_RSI_TRIM:      bool  = False   # [MC8] Partial trim 50% at RSI(7)>=70 on 15-min
+    MOMENTUM_RSI_TRIM_LENGTH:   int   = 7       # [MC8] RSI length (7 is the orbsetups sweet spot)
+    MOMENTUM_RSI_TRIM_THRESHOLD: float = 70.0   # [MC8] RSI >= this -> partial trim fires
 
+    # [MOMENTUM-LOG 2026-06-16] Append-only signal log to /data/momentum_signals.csv
+    # and SQLite table `momentum_signals`. Both are opt-in so the operator can
+    # disable on disk-constrained systems. The CSV is the easy one to grep /
+    # backtest on; the SQLite table is for future API-driven backtest queries.
+    MOMENTUM_LOG_ENABLED:       bool  = True    # Master switch — set False to disable entirely
+    MOMENTUM_LOG_CSV_PATH:      str   = "/data/momentum_signals.csv"
+    MOMENTUM_LOG_DB_TABLE:      str   = "momentum_signals"
 
     MOMENTUM_FIRST_SCAN_HOUR: int   = 10
     MOMENTUM_FIRST_SCAN_MIN:  int   = 15
