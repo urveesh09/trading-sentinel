@@ -49,8 +49,12 @@ class Settings(BaseSettings):
     MOMENTUM_MIN_CANDLES:     int   = 4
     MOMENTUM_VOL_SURGE_PCT:   float = 1.5     # [Q13] Lowered from 2.0x - see Known Quirks
     MOMENTUM_R_TARGET:        float = 2.0
-    MOMENTUM_MAX_COST_RATIO:  float = 0.25    
-    MOMENTUM_RISK_PCT:        float = 0.10    # 10% risk per trade in momentum pool
+    MOMENTUM_MAX_COST_RATIO:  float = 0.25
+    # [MOMENTUM-REGIME 2026-06-16] Legacy 10% risk per trade.
+    # Kept for backward compat — new code should use MOMENTUM_RISK_PCT_R{1,2,3}.
+    # R1 default (0.07) is MORE conservative than the legacy 0.10 — a deliberate
+    # tightening since we now have regime gating to back it up.
+    MOMENTUM_RISK_PCT:        float = 0.10    # Legacy 10% — pre-regime value
     MOMENTUM_ATR_FUEL_BUFFER:          float = 0.85   # [MC5] ATR exhaustion gate: target must fit within remaining_fuel * buffer
     MOMENTUM_VOL_SURGE_LUNCHTIME:      float = 1.75   # [MC3-T] Volume threshold during lunchtime dead zone (11:30–13:15 IST)
     MOMENTUM_LUNCHTIME_START_HOUR:     int   = 11     # [MC3-T] Lunchtime start hour (IST)
@@ -59,6 +63,20 @@ class Settings(BaseSettings):
     MOMENTUM_LUNCHTIME_END_MIN:        int   = 15     # [MC3-T] Lunchtime end minute (IST)
     MOMENTUM_MORPHOLOGY_MIN_SCORE:     float = 0.65   # [MC6] Minimum close_position_score to reject shooting-star candles
     MOMENTUM_R_TARGET_BEAR:            float = 1.5    # [MR2] R target in BEAR_RS_ONLY regime (reduced from 2.0R)
+
+    # [MOMENTUM-REGIME 2026-06-16] Regime-aware momentum settings.
+    # Replaces the single 'market_regime' string dispatch (BULL/BEAR_RS_ONLY)
+    # with the 3-regime system already used for swing. Pure defense +
+    # smaller size in elevated regimes, full block in crisis.
+    #
+    # Defaults preserve current behavior in Regime 1 (calm) — no P&L change
+    # unless the system actually shifts to R2/R3.
+    MOMENTUM_BLOCK_R3_ENTRIES:  bool  = True    # Block all new momentum entries in Regime 3 (Crisis)
+    MOMENTUM_RISK_PCT_R1:       float = 0.07    # 7% of momentum pool in R1 (calm)
+    MOMENTUM_RISK_PCT_R2:       float = 0.05    # 5% in R2 (elevated) — smaller position
+    MOMENTUM_RISK_PCT_R3:       float = 0.00    # 0% in R3 (defense-in-depth: even if BLOCK=False, R3 = 0)
+    MOMENTUM_R_TARGET_R1:       float = 2.0     # 2.0R target in R1 (let winners run)
+    MOMENTUM_R_TARGET_R2:       float = 1.5     # 1.5R target in R2 (faster take-profit)
 
 
 
