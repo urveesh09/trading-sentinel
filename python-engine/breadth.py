@@ -62,6 +62,25 @@ class BreadthEngine:
         self.sma50_map: Dict[int, float] = {}
         self.distance_pct_cache: Dict[int, float] = {}
 
+        # [BREADTH_UNIVERSE dispatch, Task 6, 2026-06-15]
+        # For v1, only "NIFTY100" is supported. Other values log a
+        # warning and the engine continues to operate on the universe
+        # passed in by the caller. Future PRs will add NIFTY200 /
+        # NIFTY500 dispatch here.
+        from config import settings
+        if settings.BREADTH_UNIVERSE != "NIFTY100":
+            logger.warning(
+                "breadth_universe_unsupported value=%s supported=%s fallback=%s",
+                settings.BREADTH_UNIVERSE,
+                "NIFTY100",
+                "NIFTY100 (caller-provided universe)",
+            )
+        else:
+            logger.info(
+                "breadth_universe_dispatched value=%s",
+                settings.BREADTH_UNIVERSE,
+            )
+
     async def compute_tier1(self) -> BreadthResult:
         """Hourly: fetch 60-day history for all Nifty 100, compute SMA50 + distance_pct."""
         now = time.time()
