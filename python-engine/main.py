@@ -107,6 +107,65 @@ def build_breadth_kwargs(token, breadth_result) -> dict:
     }
 
 
+async def _filter_by_liquidity(
+    universe: pd.DataFrame,
+    kite,
+    today: pd.Timestamp,
+) -> pd.DataFrame:
+    """Drop tickers below the 20-day median ADV floor (DD2).
+
+    For each ticker in the universe, fetch the last 20 days of OHLCV,
+    compute median daily traded value (close × volume), and drop any
+    ticker whose median is below `UNIVERSE_MIN_ADV_CRORE`.
+
+    Returns the filtered DataFrame. Failures (empty df, fetch error)
+    result in the ticker being dropped — better to skip a name than
+    to enter a position without liquidity data.
+
+    If `UNIVERSE_MIN_ADV_CRORE <= 0`, returns the input unchanged
+    (escape hatch for "disable filtering" via .env).
+    """
+    from config import settings as cfg
+    min_adv_crore = cfg.UNIVERSE_MIN_ADV_CRORE
+    lookback_days = cfg.UNIVERSE_LIQUIDITY_LOOKBACK_DAYS
+
+    if min_adv_crore <= 0:
+        return universe
+
+    from datetime import timedelta
+    from_date = (today - timedelta(days=lookback_days + 5)).strftime("%Y-%m-%d")
+    to_date = today.strftime("%Y-%m-%d")
+
+    kept_rows = []
+    dropped = 0
+    for _, row in universe.iterrows():
+        ticker = row["tradingsymbol"]
+        try:
+            df = await kite.get_historical(ticker, from_date, to_date)
+            if df.empty or len(df) < lookback_days // 2:
+                dropped += 1
+                continue
+            # Compute median traded value
+            traded_value = (df["close"] * df["volume"]).tail(lookback_days)
+            median_tv_crore = float(traded_value.median()) / 1e7  # ₹ → ₹ crore
+            if median_tv_crore >= min_adv_crore:
+                kept_rows.append(row)
+            else:
+                dropped += 1
+        except Exception as e:
+            logger.warning("liquidity_filter_fetch_failed", ticker=ticker, error=str(e))
+            dropped += 1
+
+    if dropped > 0:
+        logger.info(
+            "liquidity_filter_complete",
+            kept=len(kept_rows),
+            dropped=dropped,
+            threshold_crore=min_adv_crore,
+        )
+    return pd.DataFrame(kept_rows) if kept_rows else universe.iloc[0:0]
+
+
 def snap_to_tick(price: float, direction: int = -1) -> float:
     """
     Snap a price to the nearest valid NSE tick (0.10 rupee).
