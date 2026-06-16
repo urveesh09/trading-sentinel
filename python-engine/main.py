@@ -3,6 +3,7 @@ from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from datetime import datetime, timedelta, timezone
 import pytz
 import os
+import json
 import asyncio
 import pandas as pd
 import structlog
@@ -374,6 +375,65 @@ NIFTY_100_TICKERS = [
     "TITAN", "TRENT", "TVSMOTOR", "ULTRACEMCO", "UNITDSPR", "VBL", "VEDL", "WIPRO", "ETERNAL", "ZYDUSLIFE"
 ]
 
+# NIFTY_500_TICKERS — loaded from data/nifty500.json at module init.
+# This is the in-code fallback when the CSV at UNIVERSE_PATH is missing.
+# The JSON file is the source of truth (committed alongside the CSV).
+# 500 EQ-series tickers from NSE's official Nifty 500 list, 2026-06-16.
+try:
+    _DATA_DIR = os.path.join(os.path.dirname(__file__), "data")
+    with open(os.path.join(_DATA_DIR, "nifty500.json")) as _f:
+        NIFTY_500_TICKERS = [t["symbol"] for t in json.load(_f)["tickers"]]
+except (FileNotFoundError, KeyError, json.JSONDecodeError):
+    # Catastrophic: data file missing/broken. Hard fail loudly.
+    raise RuntimeError(
+        "NIFTY_500_TICKERS could not be loaded from data/nifty500.json. "
+        "This file is the source of truth for the Nifty 500 universe. "
+        "Re-run the universe expansion setup or restore the file from git."
+    )
+
+
+def _load_universe_with_fallback() -> pd.DataFrame:
+    """3-tier universe loader (Task 8, 2026-06-15).
+
+    1. Try CSV at UNIVERSE_PATH (operator-editable, supports custom universes)
+    2. Try in-code NIFTY_500_TICKERS (hand-curated, always available)
+    3. Crash loudly with a clear error (no silent fallback to old NIFTY_100)
+
+    Returns a DataFrame with columns: tradingsymbol, exchange, sector.
+    """
+    try:
+        universe = pd.read_csv(settings.UNIVERSE_PATH)
+        logger.info("universe_loaded_from_csv", path=settings.UNIVERSE_PATH, count=len(universe))
+        return universe
+    except FileNotFoundError:
+        logger.warning(
+            "universe_csv_missing_fallback",
+            path=settings.UNIVERSE_PATH,
+            fallback_count=len(NIFTY_500_TICKERS),
+        )
+    except Exception as e:
+        logger.warning("universe_csv_load_failed", error=str(e))
+
+    if NIFTY_500_TICKERS:
+        logger.info("universe_loaded_from_code", count=len(NIFTY_500_TICKERS))
+        return pd.DataFrame({
+            "tradingsymbol": NIFTY_500_TICKERS,
+            "exchange": ["NSE"] * len(NIFTY_500_TICKERS),
+            "sector": ["UNKNOWN"] * len(NIFTY_500_TICKERS),
+        })
+
+    logger.error(
+        "universe_load_failed_all_paths",
+        csv=settings.UNIVERSE_PATH,
+        code_list="NIFTY_500_TICKERS",
+    )
+    raise RuntimeError(
+        f"Cannot load universe: CSV at {settings.UNIVERSE_PATH} not found, "
+        f"and NIFTY_500_TICKERS is empty or missing. "
+        f"Add a CSV at the path, or restore data/nifty500.json."
+    )
+
+
 async def run_screener():
 
     global current_signals, rejected_signals, market_regime, last_run
@@ -485,16 +545,16 @@ async def run_screener():
         from config import settings as cfg
         risk_engine = RiskEngine(bankroll=bankroll, regime_risk_pct=risk_pct)
         logger.info("risk_engine_initialized", bankroll=bankroll, risk_pct=risk_pct)
-    
-    try:
-        universe = pd.read_csv(settings.UNIVERSE_PATH)
-    except Exception:
-        logger.warning("universe_csv_missing_fallback")
-        universe = pd.DataFrame({
-            "tradingsymbol": NIFTY_100_TICKERS,
-            "exchange": ["NSE"] * len(NIFTY_100_TICKERS),
-            "sector": ["UNKNOWN"] * len(NIFTY_100_TICKERS)
-        })
+
+    # 3-tier universe loader (Task 8, 2026-06-15): CSV → in-code NIFTY_500_TICKERS → RuntimeError
+    universe = _load_universe_with_fallback()
+
+    # Liquidity filter (Task 7+8, 2026-06-15): drop tickers with 20-day
+    # median ADV below UNIVERSE_MIN_ADV_CRORE. This prevents the scan
+    # from wasting compute on illiquid Nifty 500 names.
+    from datetime import datetime as _dt
+    universe = await _filter_by_liquidity(universe, kite, today=_dt.now())
+    logger.info("universe_after_liquidity_filter", count=len(universe))
 
 
     # ── Breadth enrichment wiring (Task 7, 2026-06-14) ─────────────
@@ -771,16 +831,15 @@ async def run_momentum_screener():
     logger.info("momentum_scan_start", from_dt=from_dt, to_dt=to_dt)
 
 
+    # 3-tier universe loader (Task 8, 2026-06-15): same as run_screener
+    universe = _load_universe_with_fallback()
 
-    try:
-        universe = pd.read_csv(settings.UNIVERSE_PATH)
-    except Exception:
-        logger.warning("universe_csv_missing_fallback_momentum")
-        universe = pd.DataFrame({
-            "tradingsymbol": NIFTY_100_TICKERS,
-            "exchange":      ["NSE"] * len(NIFTY_100_TICKERS),
-            "sector":        ["UNKNOWN"] * len(NIFTY_100_TICKERS)
-        })
+    # Liquidity filter (Task 7+8, 2026-06-15): same as run_screener.
+    # Note: this also runs from the in-code NIFTY_500_TICKERS fallback
+    # (it does N+1 historical fetches per scan — see runbook cost analysis).
+    from datetime import datetime as _dt
+    universe = await _filter_by_liquidity(universe, kite, today=_dt.now())
+    logger.info("momentum_universe_after_liquidity_filter", count=len(universe))
 
 
     open_pos          = await get_open_positions(settings.DB_PATH)
