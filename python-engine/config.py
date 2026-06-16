@@ -195,5 +195,11 @@ class Settings(BaseSettings):
     BREADTH_TIER1_PARALLELISM:          int   = 4       # Concurrent Kite historical fetches
     BREADTH_DATA_DIR:                   str   = "data"   # Path (relative to python-engine/) to nifty100.json
 
+    # === Universe Expansion (2026-06-15) ===
+    UNIVERSE_SIZE:                     int   = 500      # 100 or 500 — current trading universe size
+    UNIVERSE_TICKERS_FILE:             str   = "nifty500.json"  # Filename inside BREADTH_DATA_DIR; same format as nifty100.json
+    UNIVERSE_MIN_ADV_CRORE:            float = 2.0      # Drop tickers with 20-day median ADV below this (₹ crore)
+    UNIVERSE_LIQUIDITY_LOOKBACK_DAYS:  int   = 20       # Lookback window for the median ADV computation
+
 
 settings = Settings()
