@@ -61,6 +61,9 @@ const makeSignal = (overrides = {}) => ({
   target_1: 1075,
   target_2: 1150,
   capital_at_risk: 250,
+  // [TRAILING-EXITS 2026-06-16] Regime is forwarded by the screener (string
+  // from pydantic enum serialization). Default null = legacy behavior.
+  regime: null,
   ...overrides,
 });
 
@@ -205,6 +208,22 @@ describe('executeSignal()', () => {
     const fetchCall = global.fetch.mock.calls[0];
     const body = JSON.parse(fetchCall[1].body);
     expect(body.source).toBe('SYSTEM');
+  });
+
+  // [TRAILING-EXITS 2026-06-16] Regime at entry must be forwarded so
+  // position_tracker can pick the regime-aware Chandelier multiplier.
+  test('forwards regime_at_entry to Container B when present', async () => {
+    await executeSignal(makeSignal({ regime: 'REGIME_1_NORMAL' }), 'EXEC');
+    const fetchCall = global.fetch.mock.calls[0];
+    const body = JSON.parse(fetchCall[1].body);
+    expect(body.regime_at_entry).toBe('REGIME_1_NORMAL');
+  });
+
+  test('sends regime_at_entry=null when regime is missing (legacy compat)', async () => {
+    await executeSignal(makeSignal({ regime: null }), 'EXEC');
+    const fetchCall = global.fetch.mock.calls[0];
+    const body = JSON.parse(fetchCall[1].body);
+    expect(body.regime_at_entry).toBeNull();
   });
 
   // ─── DB idempotency ───

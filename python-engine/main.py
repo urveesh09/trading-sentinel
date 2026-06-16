@@ -687,10 +687,14 @@ async def run_screener():
             continue
 
         sig_data.update({
-            "ticker": ticker, "exchange": row.get('exchange', 'NSE'), 
+            "ticker": ticker, "exchange": row.get('exchange', 'NSE'),
             "sector": row.get('sector', 'UNKNOWN'), "signal_time": datetime.now(timezone.utc),
             "strategy_version": settings.STRATEGY_VERSION,
-            "strategy_type": "SWING"
+            "strategy_type": "SWING",
+            # [TRAILING-EXITS 2026-06-16] Pass regime to the executor so the
+            # position row records regime_at_entry and position_tracker can
+            # pick the regime-aware Chandelier multiplier.
+            "regime": current_regime,
         })
         raw_signals.append(sig_data)
 
@@ -1234,29 +1238,34 @@ async def add_manual_position(request: Request):
     ticker      = data["ticker"]
     entry_price = float(data["entry_price"])
     shares      = int(data["shares"])
-    # If source is explicitly sent (e.g. MOMENTUM), use it. 
+    # If source is explicitly sent (e.g. MOMENTUM), use it.
     # Default to SYSTEM for swing.
     source      = data.get("source", "SYSTEM")
     # [MED-008] Persist product_type so auto_square_momentum() can read it correctly.
     product_type = data.get("product_type", "CNC")
-    
+    # [TRAILING-EXITS 2026-06-16] Persist regime_at_entry so position_tracker
+    # can pick the regime-aware Chandelier multiplier (3.5x for R1, 3.0x for
+    # R2, 2.5x for R3). NULL = legacy 3.0x trail (backward compat).
+    regime_at_entry = data.get("regime_at_entry", None)
+
     stop_loss   = float(data.get("stop_loss", entry_price * 0.95))
     target_1    = float(data.get("target_1", entry_price * 1.05))
     target_2    = float(data.get("target_2", entry_price * 1.10))
-    
+
     async with aiosqlite.connect(settings.DB_PATH) as db:
         await db.execute("""
             INSERT INTO positions (
                 ticker, exchange, entry_date, entry_price, shares,
                 stop_loss_initial, trailing_stop_current, target_1, target_2,
-                atr_14_at_entry, highest_close_since_entry, status, source, product_type
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                atr_14_at_entry, highest_close_since_entry, status, source, product_type,
+                regime_at_entry
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """, (ticker, data.get("exchange", "NSE"), datetime.now(timezone.utc).isoformat(),
               entry_price, shares, stop_loss, stop_loss, target_1, target_2,
-              0.0, entry_price, "OPEN", source, product_type))
+              0.0, entry_price, "OPEN", source, product_type, regime_at_entry))
         await db.commit()
-    
-    logger.info("position_added_manually", ticker=ticker, source=source)
+
+    logger.info("position_added_manually", ticker=ticker, source=source, regime=regime_at_entry)
     return {"status": "ok"}
 
 @app.post("/positions/close")
