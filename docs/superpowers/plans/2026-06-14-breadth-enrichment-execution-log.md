@@ -1,27 +1,27 @@
-# Breadth Enrichment — Execution Log
+# Breadth Enrichment -- Execution Log
 **Plan:** `2026-06-14-breadth-enrichment.md`
 **Branch:** `evolve/smart-strategies`
 **Started:** 2026-06-14
 **Completed:** 2026-06-15
-**Status:** ✅ Tasks 1–10 complete. 14 commits on branch. Not yet merged.
+**Status:** [OK] Tasks 1-10 complete. 14 commits on branch. Not yet merged.
 
 ---
 
-## Task → Commit map
+## Task -> Commit map
 
 | Task | Plan steps | Commit(s) | Tests added | Notes |
 |------|------------|-----------|-------------|-------|
 | **1. config.py** | Add 12 BREADTH settings, flag OFF | `8ceffaf` | 0 (settings only) | `BREADTH_DATA_DIR` and `BREADTH_FETCH_TIMEOUT_SECONDS` added in Task 7 / 9 respectively (incremental additions). |
 | **2. data/nifty100.json** | Mirror 100 unique tickers from main.py:225 | `59c0953` | 0 (data only) | Verified JSON valid + 100 unique symbols. Avoided NSE scraping (it blocks bots). |
-| **3. universe.py** | `Universe` class with token resolution + fail-fast | `062260b` | 5 → 6 in Task 7.1 | Constructor-injection pattern `Universe(json_path, instrument_cache=...)` because `kite_client.instrument_cache` is an instance attribute, not module-level. |
-| **4+5. breadth.py** | `BreadthEngine` (Tier 1 + Tier 2) | `10f2659` | 14 | Combined into one commit — Tier 2 is ~20 lines, shares the module, splitting would churn. |
-| **6. engine.py** | `evaluate_signal` kwargs + R1 gate + bonus + multiplier | `abb1bde` | 12 | One test fixture had rsi=100 (rejected by L150 hard band before the gate) — fixed the fixture, not the implementation. |
-| **7.1. main.py data prep** | `BREADTH_DATA_DIR` + `Universe.token_to_symbol()` | `25c77f3` | +1 (token↔symbol round-trip) | Needed for token→symbol reverse lookup when wrapping kite.get_historical. |
+| **3. universe.py** | `Universe` class with token resolution + fail-fast | `062260b` | 5 -> 6 in Task 7.1 | Constructor-injection pattern `Universe(json_path, instrument_cache=...)` because `kite_client.instrument_cache` is an instance attribute, not module-level. |
+| **4+5. breadth.py** | `BreadthEngine` (Tier 1 + Tier 2) | `10f2659` | 14 | Combined into one commit -- Tier 2 is ~20 lines, shares the module, splitting would churn. |
+| **6. engine.py** | `evaluate_signal` kwargs + R1 gate + bonus + multiplier | `abb1bde` | 12 | One test fixture had rsi=100 (rejected by L150 hard band before the gate) -- fixed the fixture, not the implementation. |
+| **7.1. main.py data prep** | `BREADTH_DATA_DIR` + `Universe.token_to_symbol()` | `25c77f3` | +1 (token<->symbol round-trip) | Needed for token->symbol reverse lookup when wrapping kite.get_historical. |
 | **7.2. main.py helpers** | `build_breadth_engine()` + `build_breadth_kwargs()` | `4f0e34d` | 7 | Extracted as pure module-level functions so they're testable in isolation. |
 | **7.3. main.py wiring** | `run_screener` Pass 1 + Tier 2 + Pass 2 | `153dd9c` | 2 (integration) | Two-pass scan loop (no extra Kite calls). |
 | **8. Runbook** | `docs/runbooks/breadth-debug.md` | `ef45371` | n/a (docs) | 208 lines: diagnostics, flag ref, tuning, escalation, rollout checklist. |
-| **9. Integration audit** | Cross-check + orphan-import scan | `1415408` | 0 (cleanup only) | Found 2 dead imports in `breadth.py` (`Set`, `pandas as pd`) — dropped. |
-| **10. Final state** | Working tree clean, flag OFF, suite green | (no commit — final verification step) | 0 | 346 passed, 1 skipped. All cross-refs accurate. |
+| **9. Integration audit** | Cross-check + orphan-import scan | `1415408` | 0 (cleanup only) | Found 2 dead imports in `breadth.py` (`Set`, `pandas as pd`) -- dropped. |
+| **10. Final state** | Working tree clean, flag OFF, suite green | (no commit -- final verification step) | 0 | 346 passed, 1 skipped. All cross-refs accurate. |
 
 ---
 
@@ -31,7 +31,7 @@
 
 **Why:** Tier 1 (60-day history for 100 tokens) is expensive. Caching it
 for 1 hour means we only pay that cost on the first scan of the hour.
-Tier 2 only needs live LTP (already in the scan cache) → 0 extra Kite
+Tier 2 only needs live LTP (already in the scan cache) -> 0 extra Kite
 calls per scan.
 
 **Alternative considered:** Single tier that recomputes every scan.
@@ -81,7 +81,7 @@ week, and only enable when the operator is confident.
 
 ### 7. 13 BREADTH_* settings, not 11
 
-**Why:** Spec §6 listed 11. We added `BREADTH_DATA_DIR` (path to
+**Why:** Spec Section6 listed 11. We added `BREADTH_DATA_DIR` (path to
 nifty100.json) and `BREADTH_FETCH_TIMEOUT_SECONDS` (hard cap on Tier 1
 fetch time) because the spec underspecified both. The defaults are
 documented in `config.py` and explained in the runbook.
@@ -91,7 +91,7 @@ documented in `config.py` and explained in the runbook.
 **Why:** R1 (normal) is when narrow rallies are most likely to fool
 the trend filter. In R2/R3 the system is already cautious via other
 mechanisms (RS filter in R2, etc.). The bonus/multiplier DOES apply in
-R2/R3 — those are the "counter-trend enabler" cases where top-breadth
+R2/R3 -- those are the "counter-trend enabler" cases where top-breadth
 stocks are the safest longs.
 
 ### 9. Top-quintile exempt from the gate
@@ -101,7 +101,7 @@ statistically the best risk-on names. Letting them in is the whole
 point of the gate. The exemption is `rank >= 0.80` (top 20% of the
 100-token distribution = top quintile).
 
-### 10. Score multiplier (×1.2) instead of size bump
+### 10. Score multiplier (x1.2) instead of size bump
 
 **Why:** Conservative first rollout. A score multiplier nudges borderline
 signals (say 50/60) over the threshold, which is a smaller change than
@@ -134,7 +134,7 @@ are still under-sized, we add a sizing override in a follow-up PR.
 ## Open follow-ups (not blocking this PR)
 
 - OQ1: wire `nb_ratio_distribution_pct` to the regime classifier
-  (needs a `kite.quote()` call per stock — different spec).
+  (needs a `kite.quote()` call per stock -- different spec).
 - OQ2: add a position-sizing override for top-breadth signals
   (gated on Stage 1 monitoring results).
 - Generalise `Universe` to support Nifty 200 / Nifty 500 (the

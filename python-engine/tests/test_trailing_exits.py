@@ -8,7 +8,7 @@ def test_target2_r_regime1_default_is_4_5():
 
 
 def test_target2_r_regime2_unchanged():
-    """Regime 2 stays at 3.0R — only Regime 1 widens (calm markets have trends)."""
+    """Regime 2 stays at 3.0R -- only Regime 1 widens (calm markets have trends)."""
     from config import settings
     assert settings.TARGET2_R_REGIME2 == 3.0
 
@@ -20,7 +20,7 @@ def test_target2_r_regime3_unchanged():
 
 
 def test_hard_cap_r_regime1_default_is_5_0():
-    """HARD_CAP_R_REGIME1 is the absolute ceiling — never hold past 5R even in trends."""
+    """HARD_CAP_R_REGIME1 is the absolute ceiling -- never hold past 5R even in trends."""
     from config import settings
     assert settings.HARD_CAP_R_REGIME1 == 5.0
 

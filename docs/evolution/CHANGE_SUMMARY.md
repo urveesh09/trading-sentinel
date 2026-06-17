@@ -1,4 +1,4 @@
-# Trading Sentinel — Adaptive Regime System: Change Summary
+# Trading Sentinel -- Adaptive Regime System: Change Summary
 **Branch:** `evolve/smart-strategies`
 **Base:** `main`
 **Commits:** 12 (from `abd3ade` to `1632209`)
@@ -8,15 +8,15 @@
 
 ## Overview
 
-This evolution adds a **volatility-responsive regime system** to Trading Sentinel. The system detects market conditions (calm / elevated / crisis) using VIX + Nifty trend + breadth, and adapts signal filters, stop-loss methodology, target sizing, and position sizing accordingly — all in real time within the existing ₹5K bankroll, max-4-positions framework.
+This evolution adds a **volatility-responsive regime system** to Trading Sentinel. The system detects market conditions (calm / elevated / crisis) using VIX + Nifty trend + breadth, and adapts signal filters, stop-loss methodology, target sizing, and position sizing accordingly -- all in real time within the existing Rs5K bankroll, max-4-positions framework.
 
 The core principle: **not all market environments are equal, and a single static strategy cannot optimize for both a quiet uptrend and a vol spike crash.** The regime system acts as an intelligent circuit breaker, tightening filters and reducing risk exposure during dangerous periods while staying fully invested during benign ones.
 
 ---
 
-## Phase 1 — Foundation (Commits `306bdd1`, `254497f`)
+## Phase 1 -- Foundation (Commits `306bdd1`, `254497f`)
 
-### 1. `config.py` — Regime parameters added
+### 1. `config.py` -- Regime parameters added
 **File:** `python-engine/config.py`
 
 Added 20 configuration parameters under a new `[REGIME]` section:
@@ -30,15 +30,15 @@ Added 20 configuration parameters under a new `[REGIME]` section:
 | `RISK_PCT_REGIME1` | 0.10 | R1: 10% of bankroll per trade |
 | `RISK_PCT_REGIME2` | 0.07 | R2: 7% (selective) |
 | `RISK_PCT_REGIME3` | 0.05 | R3: 5% (crisis caution) |
-| `STOP_ATR_REGIME1` | 1.5 | R1: 1.5× ATR stop |
-| `STOP_ATR_REGIME2` | 2.0 | R2: 2.0× ATR (wider in elevated) |
-| `STOP_ATR_REGIME3` | 2.0 | R3: 2.0× ATR |
+| `STOP_ATR_REGIME1` | 1.5 | R1: 1.5x ATR stop |
+| `STOP_ATR_REGIME2` | 2.0 | R2: 2.0x ATR (wider in elevated) |
+| `STOP_ATR_REGIME3` | 2.0 | R3: 2.0x ATR |
 | `STOP_PCT_REGIME1/2/3` | 0.05 / 0.05 / 0.08 | Hard cap stop percentages |
 | `TARGET2_R_REGIME1/2/3` | 3.0 / 3.0 / 1.0 | T2 as R-multiple of risk |
 | `RSI_PERCENTILE_REGIME1/2/3` | 20th / 15th / 10th | RSI percentile thresholds |
 | `VOL_ZSCORE_REGIME1/2` | 1.5 / 1.5 | Volume z-score entry thresholds |
 
-### 2. `models.py` — Regime enum + metadata extension
+### 2. `models.py` -- Regime enum + metadata extension
 **File:** `python-engine/models.py`
 
 ```python
@@ -50,43 +50,43 @@ class Regime(Enum):
 ```
 
 Extended `Signal` and `MomentumSignal` dataclasses with:
-- `regime: Regime` — which regime was active when signal fired
-- `regime_score: float` — the continuous score (0-100) at signal time
-- `stop_atr_mult: float` — which ATR multiplier was used for stop
-- `rsi_percentile: Optional[float]` — RSI position in its own 6-month history
+- `regime: Regime` -- which regime was active when signal fired
+- `regime_score: float` -- the continuous score (0-100) at signal time
+- `stop_atr_mult: float` -- which ATR multiplier was used for stop
+- `rsi_percentile: Optional[float]` -- RSI position in its own 6-month history
 
 ---
 
-## Phase 2 — Core Implementation (Commits `86694e8`, `819b3cf`, `c494645`)
+## Phase 2 -- Core Implementation (Commits `86694e8`, `819b3cf`, `c494645`)
 
-### 3. `regime.py` — Regime detection engine (NEW FILE)
+### 3. `regime.py` -- Regime detection engine (NEW FILE)
 **File:** `python-engine/regime.py` (212 lines)
 
-`RegimeEngine` class — computes a continuous regime score (0-100) from three inputs:
+`RegimeEngine` class -- computes a continuous regime score (0-100) from three inputs:
 
 **Score formula:**
 ```
-score = VIX_factor × trend_penalty × breadth_penalty
+score = VIX_factor x trend_penalty x breadth_penalty
 
-VIX_factor    = max(0, 100 - (vix - 12) × 5)   # VIX 12 → 100, VIX 32 → 0
+VIX_factor    = max(0, 100 - (vix - 12) x 5)   # VIX 12 -> 100, VIX 32 -> 0
 trend_penalty = 0.7 if nifty_50 < nifty_ema20 else 1.0
 breadth_penalty = 0.8 if breadth < 0.30 else 1.0
 ```
 
 **Regime mapping (with hysteresis):**
-- R2 → R1 transition requires score >= 75 (5pt above boundary) to prevent flip-flopping
-- R1 → R2 transition triggers when score < 65
+- R2 -> R1 transition requires score >= 75 (5pt above boundary) to prevent flip-flopping
+- R1 -> R2 transition triggers when score < 65
 - **Circuit breaker:** VIX > 40 forces R3 regardless of score
 
 **Transition guard:** Score must stay in the new range for **2 consecutive scans** before transitioning. Initial establishment from UNKNOWN is immediate (first candidate in range triggers).
 
 **`RegimeState` dataclass:** regime, regime_score, vix, nifty_50, nifty_ema20, breadth, consecutive_scans
 
-**Bug fixed in `c494645`:** `_consecutive_in_range += 1` was on the `else` path (counter grew on oscillating inputs instead of resetting). Fixed to `= 1` so first scan of new candidate gets counter=1 → fires on scan 1 (1+1=2 ≥ 2).
+**Bug fixed in `c494645`:** `_consecutive_in_range += 1` was on the `else` path (counter grew on oscillating inputs instead of resetting). Fixed to `= 1` so first scan of new candidate gets counter=1 -> fires on scan 1 (1+1=2 >= 2).
 
 ---
 
-### 4. `indicators_adaptive.py` — Adaptive indicator suite (NEW FILE)
+### 4. `indicators_adaptive.py` -- Adaptive indicator suite (NEW FILE)
 **File:** `python-engine/indicators_adaptive.py` (150 lines)
 
 Three adaptive indicators, each accepting `regime: Regime` to adapt their thresholds:
@@ -94,29 +94,29 @@ Three adaptive indicators, each accepting `regime: Regime` to adapt their thresh
 **`AdaptiveIndicators.slope_5(close, regime)`**
 - Price momentum over 5 days
 - R1: any positive slope accepted
-- R3: only slopes ≥ 0.5 pass (strong momentum required in crisis)
+- R3: only slopes >= 0.5 pass (strong momentum required in crisis)
 
 **`calc_rsi_percentile(rsi_history, current_rsi, regime)`**
 - Where does the current RSI sit within its own 6-month (126-day) history?
 - R1: accept if current RSI is above the 20th percentile of its history
-- R2: stricter — above 15th percentile
-- R3: strictest — above 10th percentile
+- R2: stricter -- above 15th percentile
+- R3: strictest -- above 10th percentile
 - Returns `None` if fewer than 20 history readings available (graceful fallback)
 
 **`calc_volume_zscore(volume, lookback=20)`**
 - `(current_vol - rolling_mean) / rolling_std`
-- Z-score ≥ 1.5 required for entry (reduces false breakouts)
+- Z-score >= 1.5 required for entry (reduces false breakouts)
 - Used as a filter in evaluate_signal for R1 and R2
 
 ---
 
-### 5. `chandelier_stop.py` — Chandelier trailing stop (NEW FILE)
+### 5. `chandelier_stop.py` -- Chandelier trailing stop (NEW FILE)
 **File:** `python-engine/chandelier_stop.py` (188 lines)
 
 `ChandelierStop` class for long-position trailing stops:
 
 ```
-stop = highest_close_since_entry - (atr_mult × ATR_14)
+stop = highest_close_since_entry - (atr_mult x ATR_14)
 ```
 
 - Only moves UP (tracks highest close), never down
@@ -124,18 +124,18 @@ stop = highest_close_since_entry - (atr_mult × ATR_14)
 - `check_stop_out()`: returns (triggered: bool, price: float)
 - `get_r_multiple()`: current profit in risk units
 
-**GTT wiring resolution (Task 9):** In-engine management via `position_tracker.update_daily_positions()` is the recommended path over Kite GTT. Current implementation uses 1.5× multiplier (not 3.0× Chandelier) — `CHANDELIER_ATR_MULT=3.0` from config.py is noted as the upgrade target.
+**GTT wiring resolution (Task 9):** In-engine management via `position_tracker.update_daily_positions()` is the recommended path over Kite GTT. Current implementation uses 1.5x multiplier (not 3.0x Chandelier) -- `CHANDELIER_ATR_MULT=3.0` from config.py is noted as the upgrade target.
 
 ---
 
-### 6. `risk_engine.py` — Dynamic risk management (NEW FILE)
+### 6. `risk_engine.py` -- Dynamic risk management (NEW FILE)
 **File:** `python-engine/risk_engine.py` (218 lines)
 
-`RiskEngine` class — three core responsibilities:
+`RiskEngine` class -- three core responsibilities:
 
 **a) Position sizing with regime-aware risk:**
 ```python
-risk_amount  = bankroll × regime_risk_pct    # 10%/7%/5% per regime
+risk_amount  = bankroll x regime_risk_pct    # 10%/7%/5% per regime
 risk_per_share = entry - stop
 shares      = floor(risk_amount / risk_per_share)
 cap_at_bankroll = floor(bankroll / entry)    # never exceed capital
@@ -153,9 +153,9 @@ cap_at_bankroll = floor(bankroll / entry)    # never exceed capital
 
 ---
 
-## Phase 3 — Integration + Questions + Backtesting (Commits `9040700`, `63acb4d`, `c4dcdc9`, `1632209`)
+## Phase 3 -- Integration + Questions + Backtesting (Commits `9040700`, `63acb4d`, `c4dcdc9`, `1632209`)
 
-### 7. `engine.py` — Regime-aware evaluate_signal (modified)
+### 7. `engine.py` -- Regime-aware evaluate_signal (modified)
 **File:** `python-engine/engine.py` (+208 lines, -27)
 
 **Imports added:** `Regime` from models, `AdaptiveIndicators` from indicators_adaptive
@@ -165,7 +165,7 @@ cap_at_bankroll = floor(bankroll / entry)    # never exceed capital
 def evaluate_signal(
     ...,
     regime: Regime = Regime.REGIME_1_NORMAL,     # backward compatible
-    market_regime: str = "BULL",               # existing — trend bypass
+    market_regime: str = "BULL",               # existing -- trend bypass
     nifty_50_current: Optional[float] = None,  # R2: Nifty below EMA20 filter
     nifty_ema20: Optional[float] = None,
     rsi_history: Optional[pd.Series] = None,   # RSI percentile calc
@@ -176,32 +176,32 @@ def evaluate_signal(
 
 | Filter | R1 | R2 | R3 |
 |---|---|---|---|
-| RSI percentile | ≥ 20th pct | ≥ 15th pct | ≥ 10th pct |
-| Volume z-score | ≥ 1.5 | ≥ 1.5 | excluded (RS-only) |
-| Nifty vs EMA20 | — | reject if below | — |
-| RS vs Nifty | — | — | reject if negative |
+| RSI percentile | >= 20th pct | >= 15th pct | >= 10th pct |
+| Volume z-score | >= 1.5 | >= 1.5 | excluded (RS-only) |
+| Nifty vs EMA20 | -- | reject if below | -- |
+| RS vs Nifty | -- | -- | reject if negative |
 | Trend filter (c > e200) | required | required | bypassed |
 
 **Regime-aware risk management:**
 ```python
 atr_mult = STOP_ATR_REGIME_MAP[regime]   # 1.5 / 2.0 / 2.0
 pct_stop = STOP_PCT_MAP[regime]          # 5% / 5% / 8%
-stop_loss = max(c - atr_mult×ATR, c × (1 - pct_stop))
+stop_loss = max(c - atr_multxATR, c x (1 - pct_stop))
 
 t2_mult = T2_R_MAP[regime]               # 3.0R / 3.0R / 1.0R
 target_1 = c + 1.5R
-target_2 = c + t2_mult × R               # None for R3
+target_2 = c + t2_mult x R               # None for R3
 ```
 
 **New result fields:** `regime`, `regime_score`, `rsi_percentile`, `volume_zscore`, `rs_vs_nifty`, `stop_atr_mult`, `t2_r_mult`
 
-**Backward compatibility:** All new parameters have defaults — existing callers work unchanged.
+**Backward compatibility:** All new parameters have defaults -- existing callers work unchanged.
 
-**Bug fixed:** `test_trend_filter_rejects_downtrend_in_bull` had to be updated because R1 now requires RSI percentile ≥ 20th (not just RSI in 45-72 range). Test was updated to ensure valid RSI history so the regime-aware filter doesn't reject on a different basis than the trend filter.
+**Bug fixed:** `test_trend_filter_rejects_downtrend_in_bull` had to be updated because R1 now requires RSI percentile >= 20th (not just RSI in 45-72 range). Test was updated to ensure valid RSI history so the regime-aware filter doesn't reject on a different basis than the trend filter.
 
 ---
 
-### 8. `main.py` — Regime engine threaded into scan loop (modified)
+### 8. `main.py` -- Regime engine threaded into scan loop (modified)
 **File:** `python-engine/main.py` (+47 lines, -modified)
 
 **Before the ticker loop:**
@@ -227,11 +227,11 @@ current_regime = regime_state.regime
 
 **In the ticker loop:** `evaluate_signal()` now receives `regime=current_regime, nifty_50_current=..., nifty_ema20=..., rsi_history=regime_state.rsi_history`
 
-**VIX graceful degradation:** If INDIAVIX fetch fails, `vix=None` is passed → warning logged, regime determined from nifty trend only.
+**VIX graceful degradation:** If INDIAVIX fetch fails, `vix=None` is passed -> warning logged, regime determined from nifty trend only.
 
 ---
 
-### 9. `portfolio.py` — filter_and_allocate regime parameter (modified)
+### 9. `portfolio.py` -- filter_and_allocate regime parameter (modified)
 **File:** `python-engine/portfolio.py` (+4 lines)
 
 `filter_and_allocate()` signature updated to accept `regime: Regime = Regime.REGIME_1_NORMAL` (backward compatible) and forward it to `evaluate_signal()`.
@@ -242,8 +242,8 @@ current_regime = regime_state.regime
 
 **Q1: VIX Data Source**
 - Kite historical doesn't support INDIAVIX directly
-- Decision: graceful degradation with warning log → `vix=None` → regime from nifty trend only
-- Limitation documented: circuit breaker (VIX > 40 → R3) won't fire without real VIX
+- Decision: graceful degradation with warning log -> `vix=None` -> regime from nifty trend only
+- Limitation documented: circuit breaker (VIX > 40 -> R3) won't fire without real VIX
 - Future path: Nifty ATM implied volatility from options chain API
 
 **Q2: GTT Orders**
@@ -254,13 +254,13 @@ current_regime = regime_state.regime
 
 **Q3: Regime State Persistence**
 - RSI history (for percentile filter) needs 126 days
-- Decision: rebuild from OHLC data each scan via `calc_rsi_series()` — no new persistence layer
-- `evaluate_signal()` with `rsi_history` ≥ 20 readings activates percentile filter; fewer → falls back to fixed 45-72 range
-- RegimeEngine still stateless (resets on restart) — a few trades to rebuild is acceptable at ₹5K scale
+- Decision: rebuild from OHLC data each scan via `calc_rsi_series()` -- no new persistence layer
+- `evaluate_signal()` with `rsi_history` >= 20 readings activates percentile filter; fewer -> falls back to fixed 45-72 range
+- RegimeEngine still stateless (resets on restart) -- a few trades to rebuild is acceptable at Rs5K scale
 
 ---
 
-### 11. `backtest.py` — Backtesting harness (NEW FILE)
+### 11. `backtest.py` -- Backtesting harness (NEW FILE)
 **File:** `python-engine/backtest.py` (585 lines)
 
 **`run_backtest(ticker, df, start_date, end_date, initial_bankroll)`:**
@@ -274,8 +274,8 @@ current_regime = regime_state.regime
 - Allows comparison of performance across market conditions
 
 **Key design:**
-- VIX default = 18.0 (calm market) when unavailable — neutral assumption
-- RSI fallback: `calc_rsi_series` with exactly-200 rows has off-by-one bug → wrapped in try/except, falls back to None → fixed 45-72 range
+- VIX default = 18.0 (calm market) when unavailable -- neutral assumption
+- RSI fallback: `calc_rsi_series` with exactly-200 rows has off-by-one bug -> wrapped in try/except, falls back to None -> fixed 45-72 range
 
 ---
 
@@ -283,12 +283,12 @@ current_regime = regime_state.regime
 
 | File | Tests | Status |
 |---|---|---|
-| `test_regime.py` | 14 | ✅ |
-| `test_indicators_adaptive.py` | 13 | ✅ |
-| `test_chandelier_stop.py` | 11 | ✅ |
-| `test_risk_engine.py` | 12 | ✅ |
-| `test_engine.py` | 235 | ✅ (updated for regime-aware filters) |
-| `test_backtest.py` | 5 | ✅ |
+| `test_regime.py` | 14 | [OK] |
+| `test_indicators_adaptive.py` | 13 | [OK] |
+| `test_chandelier_stop.py` | 11 | [OK] |
+| `test_risk_engine.py` | 12 | [OK] |
+| `test_engine.py` | 235 | [OK] (updated for regime-aware filters) |
+| `test_backtest.py` | 5 | [OK] |
 | **Total** | **305** | **All passing** |
 
 ---
@@ -297,51 +297,51 @@ current_regime = regime_state.regime
 
 ```
 main.py scan loop
-  ├── fetch nifty + VIX
-  ├── regime_engine.update_regime(vix, nifty, breadth)
-  │     └── → current_regime + regime_state
-  │
-  ├── for each ticker:
-  │     ├── evaluate_signal(..., regime=current_regime, ...)
-  │     │     ├── AdaptiveIndicators.slope_5()     [regime-aware]
-  │     │     ├── calc_rsi_percentile(rsi_history) [regime-aware]
-  │     │     ├── calc_volume_zscore()             [regime-aware]
-  │     │     ├── Nifty < EMA20 filter             [R2 only]
-  │     │     ├── RS vs Nifty filter               [R3 only]
-  │     │     ├── stop_loss = max(ATR-based, pct-based)  [regime-aware ATR mult]
-  │     │     └── target_2 = T2_R_MAP[regime]           [regime-aware R target]
-  │     │
-  │     └── filter_and_allocate(..., regime=current_regime)
-  │           └── RiskEngine.calc_shares()         [regime-aware risk %]
-  │
-  └── backtest.py: run_universe_backtest() for validation
+  +-- fetch nifty + VIX
+  +-- regime_engine.update_regime(vix, nifty, breadth)
+  |     +-- -> current_regime + regime_state
+  |
+  +-- for each ticker:
+  |     +-- evaluate_signal(..., regime=current_regime, ...)
+  |     |     +-- AdaptiveIndicators.slope_5()     [regime-aware]
+  |     |     +-- calc_rsi_percentile(rsi_history) [regime-aware]
+  |     |     +-- calc_volume_zscore()             [regime-aware]
+  |     |     +-- Nifty < EMA20 filter             [R2 only]
+  |     |     +-- RS vs Nifty filter               [R3 only]
+  |     |     +-- stop_loss = max(ATR-based, pct-based)  [regime-aware ATR mult]
+  |     |     +-- target_2 = T2_R_MAP[regime]           [regime-aware R target]
+  |     |
+  |     +-- filter_and_allocate(..., regime=current_regime)
+  |           +-- RiskEngine.calc_shares()         [regime-aware risk %]
+  |
+  +-- backtest.py: run_universe_backtest() for validation
 ```
 
 ---
 
 ## What's NOT changed (main branch untouched)
 
-- `position_tracker.py` — existing daily P&L tracking, trailing stop management
-- `kite_client.py` — existing API client
-- `market_calendar.py` — existing calendar utilities
-- `signal_router.py` — existing order routing (GTT wiring is a future task)
+- `position_tracker.py` -- existing daily P&L tracking, trailing stop management
+- `kite_client.py` -- existing API client
+- `market_calendar.py` -- existing calendar utilities
+- `signal_router.py` -- existing order routing (GTT wiring is a future task)
 - All existing Q1-Q14 quirks in `docs/GEMINI.md` remain protected
 
 ---
 
 ## PR Review Checklist
 
-- [ ] RegimeEngine transition logic: counter resets to 1 on new candidate, increments on consecutive in-range → fires on scan 2
-- [ ] Hysteresis: R2 → R1 needs score ≥ 75 (5pt buffer above 70 boundary)
+- [ ] RegimeEngine transition logic: counter resets to 1 on new candidate, increments on consecutive in-range -> fires on scan 2
+- [ ] Hysteresis: R2 -> R1 needs score >= 75 (5pt buffer above 70 boundary)
 - [ ] evaluate_signal backward compatible: all new params have defaults
-- [ ] RSI percentile: ≥ 20 readings in history → activates; fewer → fixed 45-72 range
+- [ ] RSI percentile: >= 20 readings in history -> activates; fewer -> fixed 45-72 range
 - [ ] VIX None handled: warning logged, regime from nifty trend only
 - [ ] No look-ahead in backtest: walk-forward uses only data available up to each day
 - [ ] All 305 tests pass on clean checkout
 
 ---
 
-## Phase 2 — Breadth Enrichment (2026-06-14, 14 commits ahead)
+## Phase 2 -- Breadth Enrichment (2026-06-14, 14 commits ahead)
 
 **This is a separate evolution** on the same `evolve/smart-strategies` branch.
 The full change-summary lives at
@@ -352,7 +352,7 @@ TL;DR:
   Kite calls per scan).
 - Uses breadth for an **R1 narrow-rally gate** (rejects entries when
   breadth < 40% and the stock isn't top-quintile) and a **+15 / +7 / -10
-  score bonus + 1.2× multiplier** in all regimes.
+  score bonus + 1.2x multiplier** in all regimes.
 - Shipped with the feature flag **OFF by default** for safe rollout. See
   the runbook ([`docs/runbooks/breadth-debug.md`](../runbooks/breadth-debug.md))
   for tuning and the rollout checklist
@@ -360,5 +360,5 @@ TL;DR:
   for Stage 1/2 acceptance criteria.
 
 **Status:** Code is on `evolve/smart-strategies`, 14 commits ahead of `main`.
-346 tests passing (was 305+1, now 346+1). **Not yet merged to main** —
+346 tests passing (was 305+1, now 346+1). **Not yet merged to main** --
 awaiting user review.

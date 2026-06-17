@@ -13,9 +13,9 @@ from performance import (
 )
 
 
-# ═══════════════════════════════════════════════════════════════
+# ===============================================================
 # HELPERS
-# ═══════════════════════════════════════════════════════════════
+# ===============================================================
 
 @pytest_asyncio.fixture
 async def seeded_db(db_path):
@@ -24,9 +24,9 @@ async def seeded_db(db_path):
     return db_path
 
 
-# ═══════════════════════════════════════════════════════════════
+# ===============================================================
 # LEDGER BASICS
-# ═══════════════════════════════════════════════════════════════
+# ===============================================================
 
 
 class TestLedgerInit:
@@ -68,9 +68,9 @@ class TestLedgerInit:
         assert bankroll == 5250.0
 
 
-# ═══════════════════════════════════════════════════════════════
+# ===============================================================
 # CIRCUIT BREAKERS
-# ═══════════════════════════════════════════════════════════════
+# ===============================================================
 
 
 class TestCircuitBreakers:
@@ -85,7 +85,7 @@ class TestCircuitBreakers:
     @pytest.mark.asyncio
     async def test_cb_floor_breached(self, seeded_db):
         """[CB3/BK5] Bankroll < INITIAL * CB_FLOOR_PCT (0.40) = 2000 triggers floor breach."""
-        # Lose 3100 → bankroll = 1900 < 2000
+        # Lose 3100 -> bankroll = 1900 < 2000
         await record_trade_close(seeded_db, "LOSS1", -3100.0)
         halted, reasons = await check_circuit_breakers(seeded_db)
         assert halted is True
@@ -101,7 +101,7 @@ class TestCircuitBreakers:
     @pytest.mark.asyncio
     async def test_cb_max_drawdown(self, seeded_db):
         """CB_MAX_DRAWDOWN: peak-to-trough >= 50% triggers halt."""
-        # First grow to 10000, then drop to 5000 → 50% drawdown
+        # First grow to 10000, then drop to 5000 -> 50% drawdown
         await record_trade_close(seeded_db, "WIN", 5000.0)   # peak = 10000
         await record_trade_close(seeded_db, "LOSS", -5000.0)  # current = 5000
         halted, reasons = await check_circuit_breakers(seeded_db)
@@ -123,7 +123,7 @@ class TestCircuitBreakers:
         await record_trade_close(seeded_db, "BIG_LOSS", -1000.0)
         halted, reasons = await check_circuit_breakers(seeded_db)
         # Bankroll is now 4000, daily_pnl = -1000
-        # Threshold = -(4000 * 0.20) = -800. -1000 <= -800 → triggered
+        # Threshold = -(4000 * 0.20) = -800. -1000 <= -800 -> triggered
         assert halted is True
         assert "CB_DAILY_LOSS" in reasons
 

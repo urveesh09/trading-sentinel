@@ -12,7 +12,7 @@ logger = structlog.get_logger()
 IST = pytz.timezone("Asia/Kolkata")
 
 def is_market_open() -> bool:
-    """Check if current time is within NSE market hours: 09:15–15:30 IST (inclusive)."""
+    """Check if current time is within NSE market hours: 09:15-15:30 IST (inclusive)."""
     now_ist = datetime.now(IST)
     if now_ist.weekday() >= 5:
         return False

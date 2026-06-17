@@ -8,9 +8,9 @@ from datetime import date
 from market_calendar import is_trading_day, next_trading_day, prev_trading_day
 
 
-# ═══════════════════════════════════════════════════════════════
+# ===============================================================
 # HELPERS
-# ═══════════════════════════════════════════════════════════════
+# ===============================================================
 
 @pytest_asyncio.fixture
 async def cal_db(db_path):
@@ -37,9 +37,9 @@ async def cal_db(db_path):
     return db_path
 
 
-# ═══════════════════════════════════════════════════════════════
+# ===============================================================
 # WEEKENDS
-# ═══════════════════════════════════════════════════════════════
+# ===============================================================
 
 
 class TestWeekends:
@@ -55,9 +55,9 @@ class TestWeekends:
         assert await is_trading_day(date(2026, 1, 4), cal_db) is False
 
 
-# ═══════════════════════════════════════════════════════════════
+# ===============================================================
 # HOLIDAYS
-# ═══════════════════════════════════════════════════════════════
+# ===============================================================
 
 
 class TestHolidays:
@@ -78,9 +78,9 @@ class TestHolidays:
         assert await is_trading_day(date(2026, 11, 4), cal_db) is False
 
 
-# ═══════════════════════════════════════════════════════════════
+# ===============================================================
 # NORMAL TRADING DAYS
-# ═══════════════════════════════════════════════════════════════
+# ===============================================================
 
 
 class TestTradingDays:
@@ -98,9 +98,9 @@ class TestTradingDays:
         assert await is_trading_day(date(2026, 1, 9), cal_db) is True
 
 
-# ═══════════════════════════════════════════════════════════════
+# ===============================================================
 # NEXT / PREV TRADING DAY
-# ═══════════════════════════════════════════════════════════════
+# ===============================================================
 
 
 class TestNextPrevTradingDay:
@@ -115,7 +115,7 @@ class TestNextPrevTradingDay:
     @pytest.mark.asyncio
     async def test_next_skips_holiday(self, cal_db):
         """Next trading day should skip holidays."""
-        # 2026-01-25 is Sunday → Monday Jan 26 is Republic Day
+        # 2026-01-25 is Sunday -> Monday Jan 26 is Republic Day
         # Next trading day from Jan 25 should be Jan 27 (Tuesday)
         nxt = await next_trading_day(date(2026, 1, 25), cal_db)
         assert nxt == date(2026, 1, 27)

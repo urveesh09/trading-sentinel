@@ -1,4 +1,4 @@
-# Momentum Gate Improvements — Implementation Plan
+# Momentum Gate Improvements -- Implementation Plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
@@ -34,7 +34,7 @@ Open `python-engine/config.py`. Find the `# Momentum` block (currently ends at `
 
 ```python
     MOMENTUM_ATR_FUEL_BUFFER:          float = 0.85   # [MC5] ATR exhaustion gate: target must fit within remaining_fuel * buffer
-    MOMENTUM_VOL_SURGE_LUNCHTIME:      float = 1.75   # [MC3-T] Volume threshold during lunchtime dead zone (11:30–13:15 IST)
+    MOMENTUM_VOL_SURGE_LUNCHTIME:      float = 1.75   # [MC3-T] Volume threshold during lunchtime dead zone (11:30-13:15 IST)
     MOMENTUM_LUNCHTIME_START_HOUR:     int   = 11     # [MC3-T] Lunchtime start hour (IST)
     MOMENTUM_LUNCHTIME_START_MIN:      int   = 30     # [MC3-T] Lunchtime start minute (IST)
     MOMENTUM_LUNCHTIME_END_HOUR:       int   = 13     # [MC3-T] Lunchtime end hour (IST)
@@ -64,7 +64,7 @@ git commit -m "feat(config): add MC5/MC3-T/MC6/bear-R momentum gate settings"
 ## Task 2: Extend `evaluate_momentum_signal()` signature
 
 **Files:**
-- Modify: `python-engine/engine.py` (function signature and docstring only — no gate logic yet)
+- Modify: `python-engine/engine.py` (function signature and docstring only -- no gate logic yet)
 
 The current signature is:
 ```python
@@ -95,7 +95,7 @@ def test_evaluate_momentum_signal_accepts_new_params(minimal_intraday_df, minima
         vol_surge_threshold=1.5,
         market_regime="BULL",
     )
-    # We only care that it accepts the params without TypeError — result doesn't matter yet
+    # We only care that it accepts the params without TypeError -- result doesn't matter yet
     assert isinstance(fired, bool)
 ```
 
@@ -123,7 +123,7 @@ cd python-engine
 python -m pytest tests/test_engine.py::test_evaluate_momentum_signal_accepts_new_params -v
 ```
 
-Expected: `FAILED` — `TypeError: evaluate_momentum_signal() got unexpected keyword argument 'df_daily'`
+Expected: `FAILED` -- `TypeError: evaluate_momentum_signal() got unexpected keyword argument 'df_daily'`
 
 - [ ] **Step 3: Update the function signature and docstring**
 
@@ -150,21 +150,21 @@ def evaluate_momentum_signal(
       [MC1] Minimum candles: len(df) >= min_candles
       [MC2] Price crossed ABOVE VWAP in the LAST 3 candles + holding check
       [MC3] Last candle volume >= vol_surge_threshold (time-aware, set by caller)
-            [MC3-T] Caller raises threshold to 1.75x during 11:30–13:15 IST
+            [MC3-T] Caller raises threshold to 1.75x during 11:30-13:15 IST
       [MC4] Current close in top 20% of today's intraday session range
       [MC5] Daily ATR exhaustion: target_distance <= remaining_fuel * ATR_FUEL_BUFFER
       [MC6] Morphology: close_position_score >= MOMENTUM_MORPHOLOGY_MIN_SCORE
 
     Risk:
       [MR1] Stop loss = low of the breakout candle (last candle)
-      [MR2] Target = r_target × R  where r_target is regime-adjusted:
+      [MR2] Target = r_target x R  where r_target is regime-adjusted:
             BULL: settings.MOMENTUM_R_TARGET (2.0)
             BEAR_RS_ONLY: settings.MOMENTUM_R_TARGET_BEAR (1.5)
-      [MR3] Product type decision: MIS if position_value < ₹5,000, else CNC
+      [MR3] Product type decision: MIS if position_value < Rs5,000, else CNC
     """
 ```
 
-- [ ] **Step 4: Run test — should now pass**
+- [ ] **Step 4: Run test -- should now pass**
 
 ```bash
 cd python-engine
@@ -195,8 +195,8 @@ In `python-engine/tests/test_engine.py`, add:
 
 ```python
 def test_mc3_uses_vol_surge_threshold_rejects_below(base_momentum_df, minimal_daily_df):
-    """MC3: volume ratio below vol_surge_threshold → rejected."""
-    # base_momentum_df has volume_ratio just above 1.5 — pass threshold=2.0 to force rejection
+    """MC3: volume ratio below vol_surge_threshold -> rejected."""
+    # base_momentum_df has volume_ratio just above 1.5 -- pass threshold=2.0 to force rejection
     fired, result = evaluate_momentum_signal(
         ticker="TEST",
         df=base_momentum_df,
@@ -212,7 +212,7 @@ def test_mc3_uses_vol_surge_threshold_rejects_below(base_momentum_df, minimal_da
 
 
 def test_mc3_uses_vol_surge_threshold_passes_above(base_momentum_df, minimal_daily_df):
-    """MC3: volume ratio above vol_surge_threshold → not rejected by MC3."""
+    """MC3: volume ratio above vol_surge_threshold -> not rejected by MC3."""
     fired, result = evaluate_momentum_signal(
         ticker="TEST",
         df=base_momentum_df,
@@ -227,7 +227,7 @@ def test_mc3_uses_vol_surge_threshold_passes_above(base_momentum_df, minimal_dai
     assert result.get("reject_reason") != "volume_surge_insufficient"
 ```
 
-Note: `base_momentum_df` must be a fixture that produces a valid intraday df with a VWAP crossover and volume ratio of ~1.6. Check `conftest.py` — if it doesn't exist yet, add it:
+Note: `base_momentum_df` must be a fixture that produces a valid intraday df with a VWAP crossover and volume ratio of ~1.6. Check `conftest.py` -- if it doesn't exist yet, add it:
 
 ```python
 @pytest.fixture
@@ -271,14 +271,14 @@ Find the `[MC3]` block in `evaluate_momentum_signal`. It currently reads:
 Replace with:
 
 ```python
-    # [MC3-T] Volume threshold is time-aware — caller passes the correct threshold.
-    # During lunchtime (11:30–13:15 IST): vol_surge_threshold = settings.MOMENTUM_VOL_SURGE_LUNCHTIME (1.75x)
+    # [MC3-T] Volume threshold is time-aware -- caller passes the correct threshold.
+    # During lunchtime (11:30-13:15 IST): vol_surge_threshold = settings.MOMENTUM_VOL_SURGE_LUNCHTIME (1.75x)
     # Outside lunchtime: vol_surge_threshold = settings.MOMENTUM_VOL_SURGE_PCT (1.5x)
     if vol_ratio_intraday < vol_surge_threshold:
         return False, {"reject_reason": "volume_surge_insufficient", "ratio": round(vol_ratio_intraday, 4), "threshold": vol_surge_threshold}
 ```
 
-- [ ] **Step 4: Run tests — should pass**
+- [ ] **Step 4: Run tests -- should pass**
 
 ```bash
 cd python-engine
@@ -291,12 +291,12 @@ Expected: both `PASSED`
 
 ```bash
 git add python-engine/engine.py python-engine/tests/test_engine.py
-git commit -m "feat(engine): MC3-T — vol_surge_threshold is now caller-supplied (time-aware)"
+git commit -m "feat(engine): MC3-T -- vol_surge_threshold is now caller-supplied (time-aware)"
 ```
 
 ---
 
-## Task 4: Implement MC5 — Daily ATR Exhaustion Gate
+## Task 4: Implement MC5 -- Daily ATR Exhaustion Gate
 
 **Files:**
 - Modify: `python-engine/engine.py` (add MC5 block after MC4)
@@ -317,14 +317,14 @@ def test_mc5_rejects_when_target_exceeds_remaining_fuel(base_momentum_df, minima
     tight_daily = pd.DataFrame({
         "open":   [100.0] * n,
         "high":   [102.5] * n,
-        "low":    [97.5]  * n,  # ATR ≈ 5 pts
+        "low":    [97.5]  * n,  # ATR ~= 5 pts
         "close":  [101.0] * n,
         "volume": [500000] * n,
     }, index=dates)
-    # base_momentum_df has intraday_high=101.5, intraday_low=98.5 → range = 3 pts
+    # base_momentum_df has intraday_high=101.5, intraday_low=98.5 -> range = 3 pts
     # remaining_fuel = 5 - 3 = 2 pts
     # stop = 100.0 (last candle low), close = 101.2, r_distance = 1.2
-    # target_distance = 2.0 * 1.2 = 2.4 pts > 2 * 0.85 = 1.7 → reject
+    # target_distance = 2.0 * 1.2 = 2.4 pts > 2 * 0.85 = 1.7 -> reject
     fired, result = evaluate_momentum_signal(
         ticker="TEST",
         df=base_momentum_df,
@@ -343,11 +343,11 @@ def test_mc5_passes_when_fuel_sufficient(base_momentum_df, minimal_daily_df):
     """MC5: if remaining_fuel is large enough, gate passes."""
     n = 20
     dates = pd.date_range("2026-04-01", periods=n, freq="B")
-    # Wide daily ATR: 50-pt range every day → plenty of fuel
+    # Wide daily ATR: 50-pt range every day -> plenty of fuel
     wide_daily = pd.DataFrame({
         "open":   [100.0] * n,
         "high":   [125.0] * n,
-        "low":    [75.0]  * n,  # ATR ≈ 50 pts
+        "low":    [75.0]  * n,  # ATR ~= 50 pts
         "close":  [101.0] * n,
         "volume": [500000] * n,
     }, index=dates)
@@ -404,7 +404,7 @@ Find the comment `# [MR1] Stop loss = low of breakout candle` in `evaluate_momen
 
 Note: `intraday_high` and `intraday_low` are already computed above this point by MC4. Use them directly.
 
-- [ ] **Step 4: Run tests — should pass**
+- [ ] **Step 4: Run tests -- should pass**
 
 ```bash
 cd python-engine
@@ -422,7 +422,7 @@ git commit -m "feat(engine): add MC5 daily ATR exhaustion gate"
 
 ---
 
-## Task 5: Implement MC6 — Morphology Gate
+## Task 5: Implement MC6 -- Morphology Gate
 
 **Files:**
 - Modify: `python-engine/engine.py` (add MC6 block after MC5)
@@ -437,7 +437,7 @@ def test_mc6_rejects_shooting_star_candle(minimal_daily_df):
     n = 6
     timestamps = pd.date_range("2026-05-11 09:15", periods=n, freq="15min")
     avg_vol = 100_000
-    # Last candle: open=100, high=110, low=99, close=100.5 → score=(100.5-99)/(110-99)=0.136 → reject
+    # Last candle: open=100, high=110, low=99, close=100.5 -> score=(100.5-99)/(110-99)=0.136 -> reject
     df = pd.DataFrame({
         "open":   [99.0, 99.5, 99.8, 100.0, 100.2, 100.0],
         "high":   [99.5, 100.0, 100.2, 100.5, 100.8, 110.0],
@@ -504,7 +504,7 @@ Insert immediately after the MC5 block (before `# [MR1] Stop loss`):
             }
 ```
 
-- [ ] **Step 4: Run tests — should pass**
+- [ ] **Step 4: Run tests -- should pass**
 
 ```bash
 cd python-engine
@@ -522,7 +522,7 @@ git commit -m "feat(engine): add MC6 morphology (shooting-star) gate"
 
 ---
 
-## Task 6: Implement MR2 — Regime-Adjusted R Target
+## Task 6: Implement MR2 -- Regime-Adjusted R Target
 
 **Files:**
 - Modify: `python-engine/engine.py` (MR2 block)
@@ -593,7 +593,7 @@ Replace with:
 ```python
     # [MR2] Target: regime-adjusted R
     # BULL / CAUTION: settings.MOMENTUM_R_TARGET (2.0R)
-    # BEAR_RS_ONLY: settings.MOMENTUM_R_TARGET_BEAR (1.5R) — bear markets structurally
+    # BEAR_RS_ONLY: settings.MOMENTUM_R_TARGET_BEAR (1.5R) -- bear markets structurally
     # compress intraday upside; 2R targets are mathematically unreachable.
     r_distance = current_close - stop_loss
     r_target   = settings.MOMENTUM_R_TARGET_BEAR if market_regime == "BEAR_RS_ONLY" else settings.MOMENTUM_R_TARGET
@@ -605,7 +605,7 @@ Also update the `is_cost_viable()` call immediately below to use `r_target`:
 ```python
     viable, cost_ratio = is_cost_viable(
         entry_price=current_close, shares=shares,
-        risk_per_trade=momentum_risk, r_target=r_target,   # ← was settings.MOMENTUM_R_TARGET
+        risk_per_trade=momentum_risk, r_target=r_target,   # <- was settings.MOMENTUM_R_TARGET
         max_cost_ratio=settings.MOMENTUM_MAX_COST_RATIO, is_intraday=True
     )
 ```
@@ -613,14 +613,14 @@ Also update the `is_cost_viable()` call immediately below to use `r_target`:
 And update the `net_ev` calculation:
 
 ```python
-    estimated_exit = current_close + (r_target * r_distance)  # ← was settings.MOMENTUM_R_TARGET
+    estimated_exit = current_close + (r_target * r_distance)  # <- was settings.MOMENTUM_R_TARGET
     total_cost = calc_zerodha_costs(
         current_close, estimated_exit, shares, is_intraday=True, for_gate=True
     )
-    net_ev = (momentum_risk * r_target) - total_cost  # ← was settings.MOMENTUM_R_TARGET
+    net_ev = (momentum_risk * r_target) - total_cost  # <- was settings.MOMENTUM_R_TARGET
 ```
 
-- [ ] **Step 4: Run test — should pass**
+- [ ] **Step 4: Run test -- should pass**
 
 ```bash
 cd python-engine
@@ -655,7 +655,7 @@ async def test_momentum_screener_passes_lunchtime_threshold_during_lunchtime(
     client, mock_kite_with_intraday, monkeypatch
 ):
     """
-    During lunchtime (11:30–13:15 IST), run_momentum_screener must call
+    During lunchtime (11:30-13:15 IST), run_momentum_screener must call
     evaluate_momentum_signal with vol_surge_threshold=1.75.
     """
     import python_engine.engine as eng_module
@@ -668,7 +668,7 @@ async def test_momentum_screener_passes_lunchtime_threshold_during_lunchtime(
 
     monkeypatch.setattr(eng_module, "evaluate_momentum_signal", capturing_eval)
 
-    # Simulate 12:00 IST — inside lunchtime window
+    # Simulate 12:00 IST -- inside lunchtime window
     import pytz
     from datetime import datetime
     IST = pytz.timezone("Asia/Kolkata")
@@ -698,7 +698,7 @@ Inside `run_momentum_screener()`, find the block that computes `from_dt` / `to_d
 
 ```python
     # [MC3-T] Compute time-aware volume threshold.
-    # Engine functions must remain pure — time logic lives here, threshold passed as parameter.
+    # Engine functions must remain pure -- time logic lives here, threshold passed as parameter.
     _lunchtime_start = now_ist.replace(
         hour=settings.MOMENTUM_LUNCHTIME_START_HOUR,
         minute=settings.MOMENTUM_LUNCHTIME_START_MIN,
@@ -734,7 +734,7 @@ Then find the `evaluate_momentum_signal(...)` call inside the ticker loop. Repla
 
 Note: `df_daily` is already fetched in this loop as part of the `prev_day_high` logic. `market_regime` is the global variable already set by `run_screener()`. Both are already in scope.
 
-- [ ] **Step 4: Run integration test — should pass**
+- [ ] **Step 4: Run integration test -- should pass**
 
 ```bash
 cd python-engine
@@ -755,7 +755,7 @@ git commit -m "feat(main): wire MC3-T threshold + df_daily + market_regime into 
 ## Task 8: Full regression run
 
 **Files:**
-- No code changes — verification only
+- No code changes -- verification only
 
 - [ ] **Step 1: Run all engine tests**
 
@@ -805,7 +805,7 @@ Expected: `engine OK`
 
 ```bash
 git add -A
-git commit -m "test: full regression pass — momentum gate improvements complete"
+git commit -m "test: full regression pass -- momentum gate improvements complete"
 ```
 
 ---
@@ -829,12 +829,12 @@ Before closing, verify these Known Quirks are unaffected:
 MC1  Candle count >= 4
 MC2  VWAP crossover in last 3 candles + holding check
 MC3  Volume >= vol_surge_threshold
-     [MC3-T] 1.5x outside 11:30–13:15 IST | 1.75x inside lunchtime
+     [MC3-T] 1.5x outside 11:30-13:15 IST | 1.75x inside lunchtime
 MC4  Close in top 20% of intraday session range
-MC5  Daily ATR exhaustion: target_distance <= remaining_fuel * 0.85   ← NEW
-MC6  Morphology: close_position_score >= 0.65                         ← NEW
+MC5  Daily ATR exhaustion: target_distance <= remaining_fuel * 0.85   <- NEW
+MC6  Morphology: close_position_score >= 0.65                         <- NEW
 MR1  Stop loss = breakout candle low
-MR2  Target = r_target × R  (BULL: 2.0R | BEAR_RS_ONLY: 1.5R)        ← MODIFIED
+MR2  Target = r_target x R  (BULL: 2.0R | BEAR_RS_ONLY: 1.5R)        <- MODIFIED
 MR3  Product type: MIS / CNC
      Cost viability: cost_ratio <= 25%
      Net EV > 0

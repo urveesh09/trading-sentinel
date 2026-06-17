@@ -178,7 +178,7 @@ class TestMomentumSchedule:
             )
 
     def test_total_momentum_jobs(self, load_agent_main):
-        """5 time slots × 5 weekdays = 25 momentum jobs total."""
+        """5 time slots x 5 weekdays = 25 momentum jobs total."""
         momentum_jobs = [
             j for j in schedule.get_jobs()
             if "run_momentum_pipeline" in str(j.job_func)

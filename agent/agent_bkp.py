@@ -161,11 +161,11 @@ def send_telegram_alert(signal: Dict, analysis: Dict):
     sig_id = signal.get("signal_id", "000")
     
     if not analysis:
-        text = f"🚨 **SYSTEM FALLBACK: {ticker}** 🚨\n" \
+        text = f"[CRIT] **SYSTEM FALLBACK: {ticker}** [CRIT]\n" \
                f"Price: {price} | TGT: {target} | SL: {sl}\n" \
-               f"⚠️ AI Sentiment analysis failed. Manual review required."
+               f"[!] AI Sentiment analysis failed. Manual review required."
     else:
-        text = f"📊 **TRADE ALERT: {ticker}**\n\n" \
+        text = f"[STATS] **TRADE ALERT: {ticker}**\n\n" \
                f"**Metrics:** Price: {price} | TGT: {target} | SL: {sl}\n" \
                f"**Conviction Score:** {analysis.get('conviction_score', 'N/A')}/100\n\n" \
                f"**Pitch:**\n{analysis.get('pitch', 'N/A')}\n\n" \
@@ -178,11 +178,11 @@ def send_telegram_alert(signal: Dict, analysis: Dict):
         "inline_keyboard": [
             [
                 {
-                    "text": "✅ EXECUTE", 
+                    "text": "[OK] EXECUTE", 
                     "callback_data": json.dumps({"a": "E", "i": safe_sig_id}, separators=(',', ':'))
                 },
                 {
-                    "text": "❌ REJECT", 
+                    "text": "[X] REJECT", 
                     "callback_data": json.dumps({"a": "R", "i": safe_sig_id}, separators=(',', ':'))
                 }
             ]

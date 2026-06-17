@@ -23,9 +23,9 @@ from engine import (
 )
 
 
-# ═══════════════════════════════════════════════════════════════
+# ===============================================================
 # SECTION 1: INDICATOR UNIT TESTS
-# ═══════════════════════════════════════════════════════════════
+# ===============================================================
 
 
 class TestCalcEMA:
@@ -240,9 +240,9 @@ class TestCalcSlope:
         assert 0.01 < slope < 0.03
 
 
-# ═══════════════════════════════════════════════════════════════
+# ===============================================================
 # SECTION 2: RELATIVE STRENGTH & VOLUME CONSISTENCY
-# ═══════════════════════════════════════════════════════════════
+# ===============================================================
 
 
 class TestCalcRelativeStrength:
@@ -306,9 +306,9 @@ class TestCalcVolumeConsistency:
         assert calc_volume_consistency(volume) is False
 
 
-# ═══════════════════════════════════════════════════════════════
+# ===============================================================
 # SECTION 3: VWAP
-# ═══════════════════════════════════════════════════════════════
+# ===============================================================
 
 
 class TestCalcVWAP:
@@ -345,9 +345,9 @@ class TestCalcVWAP:
         assert (vwap > 0).all()
 
 
-# ═══════════════════════════════════════════════════════════════
+# ===============================================================
 # SECTION 4: ZERODHA COST MODEL
-# ═══════════════════════════════════════════════════════════════
+# ===============================================================
 
 
 class TestCalcZerodhaCosts:
@@ -394,7 +394,7 @@ class TestIsCostViable:
         NOTE: With for_gate=True (temporary cost gate relaxation),
         brokerage+STT+GST are zeroed so only exchange+stamp+SEBI remain.
         This test now verifies the gate still uses for_gate=True path.
-        When bankroll reaches ₹50,000+ and for_gate bypass is removed,
+        When bankroll reaches Rs50,000+ and for_gate bypass is removed,
         update this test to assert viable is False again. Else just make the test opposite
         """
         viable, ratio = is_cost_viable(
@@ -418,9 +418,9 @@ class TestIsCostViable:
             assert decimals <= 4
 
 
-# ═══════════════════════════════════════════════════════════════
+# ===============================================================
 # SECTION 5: evaluate_signal (SWING)
-# ═══════════════════════════════════════════════════════════════
+# ===============================================================
 
 
 class TestEvaluateSignal:
@@ -441,9 +441,9 @@ class TestEvaluateSignal:
     def test_trend_filter_rejects_downtrend_in_bull(self):
         """In BULL mode, close < EMA200 must reject (with valid regime-aware preconditions)."""
         n = 250
-        # Close declines 400→300, triggering the trend filter (c > e200 fails).
+        # Close declines 400->300, triggering the trend filter (c > e200 fails).
         # Oscillations in close give a valid RSI of ~69 (in the 45-72 range),
-        # which passes the fixed-range check — so trend_filter is the reject reason.
+        # which passes the fixed-range check -- so trend_filter is the reject reason.
         close = np.linspace(400, 300, n) + 20 * np.sin(np.linspace(0, 6*np.pi, n))
         volume = np.linspace(200_000, 900_000, n)
         df = pd.DataFrame({
@@ -452,7 +452,7 @@ class TestEvaluateSignal:
             "volume": volume,
         })
         df.index = pd.date_range("2025-01-01", periods=n, freq="B")
-        # No rsi_history: falls back to fixed 45-72 range check (RSI≈69 passes).
+        # No rsi_history: falls back to fixed 45-72 range check (RSI~=69 passes).
         # The declining close then correctly triggers trend_filter_failed.
         fired, result = evaluate_signal("TEST", df, 5000, 0.10, market_regime="BULL")
         assert fired is False
@@ -461,7 +461,7 @@ class TestEvaluateSignal:
     def test_bear_rs_only_bypasses_trend_filter(self):
         """In BEAR_RS_ONLY mode, the c > e200 check is bypassed."""
         n = 250
-        close = np.linspace(500, 300, n)  # declining → c < e200
+        close = np.linspace(500, 300, n)  # declining -> c < e200
         volume = np.linspace(200_000, 900_000, n)
         df = pd.DataFrame({
             "open": close - 1, "high": close + 3,
@@ -470,8 +470,8 @@ class TestEvaluateSignal:
         })
         df.index = pd.date_range("2025-01-01", periods=n, freq="B")
         fired, result = evaluate_signal("TEST", df, 5000, 0.10, market_regime="BEAR_RS_ONLY")
-        # Must NOT be rejected by trend_filter_failed — that's the bypass being tested.
-        # May fail on RSI/percentile for other reasons — that's fine; the point is
+        # Must NOT be rejected by trend_filter_failed -- that's the bypass being tested.
+        # May fail on RSI/percentile for other reasons -- that's fine; the point is
         # the trend check was bypassed, not that the signal is valid.
         if not fired:
             assert result["reject_reason"] != "trend_filter_failed"
@@ -537,9 +537,9 @@ class TestEvaluateSignal:
         assert r1[1] == r2[1]
 
 
-# ═══════════════════════════════════════════════════════════════
+# ===============================================================
 # SECTION 6: evaluate_momentum_signal
-# ═══════════════════════════════════════════════════════════════
+# ===============================================================
 
 
 class TestEvaluateMomentumSignal:
@@ -732,7 +732,7 @@ from engine import (
 
 
 
-# ── RS Tests ─────────────────────────────────────────────────────────
+# -- RS Tests ---------------------------------------------------------
 
 def make_price_series(start: float, pct_change: float,
                       periods: int = 25) -> pd.Series:
@@ -795,7 +795,7 @@ class TestMC3TLunchtimeGate:
             "TEST", df, prev_day_high=90.0, bankroll=10000.0, momentum_pool=5000.0,
             vol_surge_threshold=1.5,
         )
-        # Either passes or fails at later gate — just confirm it did NOT fail at MC3
+        # Either passes or fails at later gate -- just confirm it did NOT fail at MC3
         assert info.get("reject_reason") != "MC3_volume_surge_insufficient", (
             f"Unexpectedly rejected at MC3: {info}"
         )
@@ -857,7 +857,7 @@ def test_volume_consistency_fails():
     assert calc_volume_consistency(volume) is False
 
 
-# ── VWAP Tests ───────────────────────────────────────────────────────
+# -- VWAP Tests -------------------------------------------------------
 
 def make_intraday_df(n_candles: int = 10) -> pd.DataFrame:
     """Helper: generate synthetic 15-min intraday candles."""
@@ -893,7 +893,7 @@ def test_vwap_all_positive():
     assert (vwap_series > 0).all()
 
 
-# ── Momentum Signal Integration Test ─────────────────────────────────
+# -- Momentum Signal Integration Test ---------------------------------
 
 def test_momentum_signal_rejects_below_vwap():
     """
@@ -948,7 +948,7 @@ def test_cost_viable_rejects_when_ratio_exceeds_threshold():
     Very small position where costs eat > 25% of expected profit.
     Should return is_viable=False.
     """
-    # Tiny position: 1 share at ₹50, risk = ₹0.50
+    # Tiny position: 1 share at Rs50, risk = Rs0.50
     # With this position, cost is ~0.06, expected gross is 1.0. Cost ratio is ~0.06.
     # This is viable. The test is misnamed or has wrong assertion.
     # Fixing assertion to reflect reality.
@@ -957,14 +957,14 @@ def test_cost_viable_rejects_when_ratio_exceeds_threshold():
         risk_per_trade=0.5, r_target=2.0,
         max_cost_ratio=0.25, is_intraday=True
     )
-    # Expected profit = 0.5 * 2.0 = ₹1.0
+    # Expected profit = 0.5 * 2.0 = Rs1.0
     # Costs on 1 share is low, so cost_ratio is low.
     assert viable is True
 
 
 def test_cost_viable_accepts_normal_position():
-    """Normal momentum position at ₹12 risk should be viable."""
-    # ₹500 position, ₹12 risk, 2R target = ₹24 gross profit
+    """Normal momentum position at Rs12 risk should be viable."""
+    # Rs500 position, Rs12 risk, 2R target = Rs24 gross profit
     # cost_ratio is ~0.25, so it should be viable.
     viable, ratio = is_cost_viable(
         entry_price=500.0, shares=10,
@@ -995,7 +995,7 @@ class TestMC5AtrExhaustionGate:
 
     @pytest.fixture
     def daily_df_atr10(self):
-        """20-row daily OHLCV with ATR ≈ 10 pts (high=105, low=95 → TR=10 each day)."""
+        """20-row daily OHLCV with ATR ~= 10 pts (high=105, low=95 -> TR=10 each day)."""
         n = 20
         dates = pd.date_range("2026-04-01", periods=n, freq="B")
         return pd.DataFrame({
@@ -1032,7 +1032,7 @@ class TestMC5AtrExhaustionGate:
         return df
 
     def test_passes_when_plenty_of_fuel_remains(self, daily_df_atr10):
-        """ATR=10, consumed=2 → remaining=8. target_dist << 8*0.85=6.8 → gate passes."""
+        """ATR=10, consumed=2 -> remaining=8. target_dist << 8*0.85=6.8 -> gate passes."""
         df = self._make_intraday_df(consumed_range=2.0)
         fired, info = evaluate_momentum_signal(
             "TEST", df, prev_day_high=90.0, bankroll=10000.0, momentum_pool=5000.0,
@@ -1043,7 +1043,7 @@ class TestMC5AtrExhaustionGate:
         )
 
     def test_fails_when_atr_nearly_consumed(self, daily_df_atr10):
-        """ATR=10, consumed=9.8 → remaining=0.2. target_dist >> 0.2*0.85 → gate blocks."""
+        """ATR=10, consumed=9.8 -> remaining=0.2. target_dist >> 0.2*0.85 -> gate blocks."""
         df = self._make_intraday_df(consumed_range=9.8)
         fired, info = evaluate_momentum_signal(
             "TEST", df, prev_day_high=90.0, bankroll=10000.0, momentum_pool=5000.0,
@@ -1095,10 +1095,10 @@ class TestMC6MorphologyGate:
         `close_pct_from_bottom` fraction of that candle's range.
 
         Last candle: high=110.0, low=108.0 (range=2.0).
-        Previous candles: high=100.5, low=99.5 → session low=99.5.
+        Previous candles: high=100.5, low=99.5 -> session low=99.5.
         intraday range = 110.0 - 99.5 = 10.5.
         MC4 threshold = 99.5 + 0.80 * 10.5 = 107.9.
-        Even at 20% of candle range: close=108.4 >= 107.9 → MC4 passes.
+        Even at 20% of candle range: close=108.4 >= 107.9 -> MC4 passes.
         Penultimate close = 98.0 forces VWAP crossover on the last candle.
         """
         n = 6
@@ -1126,7 +1126,7 @@ class TestMC6MorphologyGate:
         )
 
     def test_shooting_star_rejected(self):
-        """close at 20% of range (score=0.20 < 0.65) → rejected as shooting star."""
+        """close at 20% of range (score=0.20 < 0.65) -> rejected as shooting star."""
         df = self._make_df_with_morphology(0.20)
         fired, info = evaluate_momentum_signal(
             "TEST", df, prev_day_high=90.0, bankroll=10000.0, momentum_pool=5000.0
@@ -1137,7 +1137,7 @@ class TestMC6MorphologyGate:
         assert info.get("morphology_threshold") == 0.65
 
     def test_doji_candle_rejected(self):
-        """Zero-range candle (high == low) → rejected as doji."""
+        """Zero-range candle (high == low) -> rejected as doji."""
         n = 6
         ts = pd.date_range("2026-05-11 09:15", periods=n, freq="15min")
         avg_vol = 100_000
@@ -1170,8 +1170,8 @@ class TestMR2RegimeRTarget:
 
     def _make_passing_df(self) -> pd.DataFrame:
         """
-        6-candle intraday df that passes MC1–MC6.
-        Last candle: high=101.5, low=100.0, close=101.2 → score=0.80 (MC6 passes).
+        6-candle intraday df that passes MC1-MC6.
+        Last candle: high=101.5, low=100.0, close=101.2 -> score=0.80 (MC6 passes).
         MC4: threshold=98.5+0.80*3.0=100.9, close=101.2 passes.
         Penultimate close=98.0 forces VWAP crossover.
         """

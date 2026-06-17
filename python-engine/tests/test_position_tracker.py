@@ -17,9 +17,9 @@ from position_tracker import (
 from engine import calc_zerodha_costs
 
 
-# ═══════════════════════════════════════════════════════════════
+# ===============================================================
 # HELPERS
-# ═══════════════════════════════════════════════════════════════
+# ===============================================================
 
 async def _insert_position(db_path, **kwargs):
     """Insert a test position into the positions table."""
@@ -76,9 +76,9 @@ def _mock_kite(today_close):
     return kite
 
 
-# ═══════════════════════════════════════════════════════════════
+# ===============================================================
 # POSITION TABLE BASICS
-# ═══════════════════════════════════════════════════════════════
+# ===============================================================
 
 
 class TestPositionDB:
@@ -120,9 +120,9 @@ class TestPositionDB:
         assert len(positions) == 0
 
 
-# ═══════════════════════════════════════════════════════════════
+# ===============================================================
 # Q8: MOMENTUM POSITIONS EXEMPT FROM TRAILING STOP
-# ═══════════════════════════════════════════════════════════════
+# ===============================================================
 
 
 class TestMomentumExemptQ8:
@@ -160,9 +160,9 @@ class TestMomentumExemptQ8:
         assert positions[0]["trailing_stop_current"] >= 475.0
 
 
-# ═══════════════════════════════════════════════════════════════
+# ===============================================================
 # TRAILING STOP UPDATES
-# ═══════════════════════════════════════════════════════════════
+# ===============================================================
 
 
 class TestTrailingStop:
@@ -175,7 +175,7 @@ class TestTrailingStop:
             trailing_stop_current=485.0, highest_close_since_entry=500.0,
             target_1=530.0, target_2=560.0
         )
-        # Today close = 520 → new highest = 520
+        # Today close = 520 -> new highest = 520
         # Chandelier trail = 520 - 3.0*10 = 490
         kite = _mock_kite(520.0)
         record_cb = AsyncMock()
@@ -193,8 +193,8 @@ class TestTrailingStop:
             trailing_stop_current=505.0, highest_close_since_entry=520.0,
             target_1=530.0, target_2=560.0
         )
-        # Today close = 510 → highest stays 520
-        # new_trail = 520 - 15 = 505 = current → no change
+        # Today close = 510 -> highest stays 520
+        # new_trail = 520 - 15 = 505 = current -> no change
         kite = _mock_kite(510.0)
         record_cb = AsyncMock()
         await update_daily_positions(pos_db, kite, "2025-10-10", record_cb)
@@ -203,16 +203,16 @@ class TestTrailingStop:
         assert positions[0]["trailing_stop_current"] >= 505.0
 
 
-# ═══════════════════════════════════════════════════════════════
+# ===============================================================
 # STATUS TRANSITIONS
-# ═══════════════════════════════════════════════════════════════
+# ===============================================================
 
 
 class TestStatusTransitions:
 
     @pytest.mark.asyncio
     async def test_stopped_out(self, pos_db):
-        """Close <= trailing_stop → STOPPED_OUT."""
+        """Close <= trailing_stop -> STOPPED_OUT."""
         await _insert_position(
             pos_db, entry_price=500.0, atr_14_at_entry=10.0,
             trailing_stop_current=490.0, highest_close_since_entry=500.0,
@@ -232,7 +232,7 @@ class TestStatusTransitions:
 
     @pytest.mark.asyncio
     async def test_target_2_hit(self, pos_db):
-        """Close >= target_2 → CLOSED_T2."""
+        """Close >= target_2 -> CLOSED_T2."""
         await _insert_position(
             pos_db, entry_price=500.0, atr_14_at_entry=10.0,
             trailing_stop_current=490.0, highest_close_since_entry=500.0,
@@ -250,7 +250,7 @@ class TestStatusTransitions:
 
     @pytest.mark.asyncio
     async def test_target_1_partial_close(self, pos_db):
-        """Close >= target_1 and status OPEN → CLOSED_T1, shares halved."""
+        """Close >= target_1 and status OPEN -> CLOSED_T1, shares halved."""
         await _insert_position(
             pos_db, entry_price=500.0, shares=10, atr_14_at_entry=10.0,
             trailing_stop_current=490.0, highest_close_since_entry=500.0,
@@ -273,7 +273,7 @@ class TestStatusTransitions:
 
     @pytest.mark.asyncio
     async def test_time_expiry_15_days(self, pos_db):
-        """Position held >= 15 days → CLOSED_TIME."""
+        """Position held >= 15 days -> CLOSED_TIME."""
         entry_date = "2025-09-20"
         await _insert_position(
             pos_db, entry_date=entry_date, entry_price=500.0,

@@ -1,10 +1,10 @@
-# Breadth Enrichment — Implementation Plan
+# Breadth Enrichment -- Implementation Plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Add real market-breadth signals (Nifty 100 % above SMA50 + per-stock relative-strength rank) into the existing signal scoring, so the system surfaces winners in any regime (including R2/R3 down markets) and tightens R1 entries during narrow rallies.
 
-**Architecture:** Two new modules — `universe.py` (static Nifty 100 ticker list with cache) and `breadth.py` (two-tier BreadthEngine: Tier 1 hourly with 1h cache for SMA50/distances; Tier 2 per-scan with zero Kite calls for fresh rank using scan LTP). Hooks into `engine.py` (score bonus + multiplier + R1 narrow-rally gate) and `main.py` (wire BreadthEngine into the scan cycle). Shipped behind `BREADTH_ENRICHMENT_ENABLED` feature flag, default OFF for safe rollout.
+**Architecture:** Two new modules -- `universe.py` (static Nifty 100 ticker list with cache) and `breadth.py` (two-tier BreadthEngine: Tier 1 hourly with 1h cache for SMA50/distances; Tier 2 per-scan with zero Kite calls for fresh rank using scan LTP). Hooks into `engine.py` (score bonus + multiplier + R1 narrow-rally gate) and `main.py` (wire BreadthEngine into the scan cycle). Shipped behind `BREADTH_ENRICHMENT_ENABLED` feature flag, default OFF for safe rollout.
 
 **Tech Stack:** Python 3.11, pandas, numpy, pytest, pytest-asyncio, asyncio. Reuses `kite_client.historical()` (already in the codebase) and `pydantic-settings` (already used by `config.py`).
 
@@ -40,7 +40,7 @@ Open `python-engine/config.py`. Find the line `settings = Settings()` (last line
 
 ```python
     # === Breadth Enrichment (2026-06-14) ===
-    BREADTH_ENRICHMENT_ENABLED:         bool  = False   # Feature flag — OFF by default
+    BREADTH_ENRICHMENT_ENABLED:         bool  = False   # Feature flag -- OFF by default
     BREADTH_UNIVERSE:                   str   = "NIFTY100"
     BREADTH_CACHE_TTL_SECONDS:          int   = 3600    # Tier 1 stale-while-revalidate window
     BREADTH_FETCH_TIMEOUT_SECONDS:      int   = 90      # Max time for Tier 1 fetch
@@ -49,7 +49,7 @@ Open `python-engine/config.py`. Find the line `settings = Settings()` (last line
     BREADTH_RANK_BONUS_TOP:             int   = 15      # +15 if rank >= 0.80
     BREADTH_RANK_BONUS_MID:             int   = 7       # +7 if rank >= 0.60
     BREADTH_RANK_PENALTY_BOTTOM:        int   = -10     # -10 if rank < 0.20
-    BREADTH_RANK_MULTIPLIER:            float = 1.2     # Top quintile score × this
+    BREADTH_RANK_MULTIPLIER:            float = 1.2     # Top quintile score x this
     BREADTH_DATA_DEGRADED_THRESHOLD:    float = 0.10    # >10% fetch failures = degraded
     BREADTH_TIER1_PARALLELISM:          int   = 4       # Concurrent Kite historical fetches
 ```
@@ -317,7 +317,7 @@ git commit -m "feat(universe): static Nifty 100 loader with cache + fail-fast va
 
 ---
 
-## Task 4: Create the `BreadthEngine` module (TDD) — Tier 1 only
+## Task 4: Create the `BreadthEngine` module (TDD) -- Tier 1 only
 
 **Files:**
 - Create: `python-engine/breadth.py`
@@ -347,7 +347,7 @@ def make_closes(above_sma: int, total: int = 100) -> pd.DataFrame:
     """Synthesize a 60-day daily close series where the last close is either
     above or below its 50-day SMA. For 'above' stocks, last close is +5% of SMA;
     for 'below' stocks, last close is -5% of SMA. Earlier 50 closes are flat
-    around 100 (so SMA50 ≈ 100)."""
+    around 100 (so SMA50 ~= 100)."""
     n_above = above_sma
     n_below = total - above_sma
     above_returns = [+0.001] * 49 + [+0.05]  # drift up 0.1% per day, +5% last day
@@ -387,7 +387,7 @@ def kite_historical_factory():
 
 @pytest.mark.asyncio
 async def test_compute_tier1_60_above_40_below(universe_100, kite_historical_factory):
-    """Tier 1: 60 stocks above SMA50, 40 below → breadth_pct = 0.60."""
+    """Tier 1: 60 stocks above SMA50, 40 below -> breadth_pct = 0.60."""
     engine = BreadthEngine(universe_100, kite_historical_factory(), cache_ttl_seconds=3600)
     result = await engine.compute_tier1()
 
@@ -579,7 +579,7 @@ class BreadthEngine:
                 sma50_map[token] = sma50
                 distance_pct_map[token] = distance_pct
                 # NB ratio placeholder: real implementation pulls NB close from kite.quote
-                # For this spec, we record 0.0 as a stub (OQ1 — wired in follow-up PR)
+                # For this spec, we record 0.0 as a stub (OQ1 -- wired in follow-up PR)
                 nb_ratios.append(0.0)
             except Exception as e:
                 logger.warning(f"Tier 1 fetch failed for token {token}: {e}")
@@ -880,7 +880,7 @@ def _make_df():
 
 
 def test_breadth_rank_top_quintile_gets_bonus_and_multiplier():
-    """breadth_rank >= 0.80 → +15 bonus + 1.2x multiplier."""
+    """breadth_rank >= 0.80 -> +15 bonus + 1.2x multiplier."""
     df = _make_df()
     bankroll = 100_000
     # Build a baseline (no breadth_rank) and a top-rank variant
@@ -892,11 +892,11 @@ def test_breadth_rank_top_quintile_gets_bonus_and_multiplier():
     # The top-rank score should be at least +15 and * 1.2
     # i.e. expected >= base + 15 then * 1.2 (clamped to 100)
     expected_min = min(100, int((base["score"] + 15) * 1.2))
-    assert top["score"] >= expected_min - 1  # Allow ±1 for rounding
+    assert top["score"] >= expected_min - 1  # Allow +/-1 for rounding
 
 
 def test_breadth_rank_mid_gets_bonus_no_multiplier():
-    """0.60 <= breadth_rank < 0.80 → +7 bonus, no multiplier."""
+    """0.60 <= breadth_rank < 0.80 -> +7 bonus, no multiplier."""
     df = _make_df()
     bankroll = 100_000
     _, base = evaluate_signal("TEST", df, bankroll, 0.02, regime=Regime.REGIME_1_NORMAL)
@@ -908,7 +908,7 @@ def test_breadth_rank_mid_gets_bonus_no_multiplier():
 
 
 def test_breadth_rank_bottom_gets_penalty():
-    """breadth_rank < 0.20 → -10 penalty."""
+    """breadth_rank < 0.20 -> -10 penalty."""
     df = _make_df()
     bankroll = 100_000
     _, base = evaluate_signal("TEST", df, bankroll, 0.02, regime=Regime.REGIME_1_NORMAL)
@@ -920,7 +920,7 @@ def test_breadth_rank_bottom_gets_penalty():
 
 
 def test_breadth_rank_none_no_effect():
-    """breadth_rank=None (degraded) → no scoring changes."""
+    """breadth_rank=None (degraded) -> no scoring changes."""
     df = _make_df()
     bankroll = 100_000
     _, base = evaluate_signal("TEST", df, bankroll, 0.02, regime=Regime.REGIME_1_NORMAL)
@@ -932,7 +932,7 @@ def test_breadth_rank_none_no_effect():
 
 
 def test_breadth_narrow_rally_gate_r1_rejects_non_leader():
-    """R1 + breadth_pct < 0.40 + rank < 0.80 → rejected."""
+    """R1 + breadth_pct < 0.40 + rank < 0.80 -> rejected."""
     df = _make_df()
     bankroll = 100_000
     ok, res = evaluate_signal(
@@ -946,7 +946,7 @@ def test_breadth_narrow_rally_gate_r1_rejects_non_leader():
 
 
 def test_breadth_narrow_rally_gate_r1_exempts_top_quintile():
-    """R1 + breadth_pct < 0.40 + rank >= 0.80 → accepted."""
+    """R1 + breadth_pct < 0.40 + rank >= 0.80 -> accepted."""
     df = _make_df()
     bankroll = 100_000
     ok, res = evaluate_signal(
@@ -960,7 +960,7 @@ def test_breadth_narrow_rally_gate_r1_exempts_top_quintile():
 
 
 def test_breadth_narrow_rally_gate_r1_skips_when_degraded():
-    """R1 + breadth_pct=None (degraded) → gate skipped, signal allowed."""
+    """R1 + breadth_pct=None (degraded) -> gate skipped, signal allowed."""
     df = _make_df()
     bankroll = 100_000
     ok, res = evaluate_signal(
@@ -973,7 +973,7 @@ def test_breadth_narrow_rally_gate_r1_skips_when_degraded():
 
 
 def test_breadth_narrow_rally_gate_does_not_fire_in_r2():
-    """R2 + breadth_pct < 0.40 + rank < 0.80 → gate does NOT fire (R1 only)."""
+    """R2 + breadth_pct < 0.40 + rank < 0.80 -> gate does NOT fire (R1 only)."""
     df = _make_df()
     bankroll = 100_000
     ok, res = evaluate_signal(
@@ -987,7 +987,7 @@ def test_breadth_narrow_rally_gate_does_not_fire_in_r2():
 
 
 def test_breadth_narrow_rally_gate_does_not_fire_in_r3():
-    """R3 + breadth_pct < 0.40 + rank < 0.80 → gate does NOT fire (R1 only)."""
+    """R3 + breadth_pct < 0.40 + rank < 0.80 -> gate does NOT fire (R1 only)."""
     df = _make_df()
     bankroll = 100_000
     ok, res = evaluate_signal(
@@ -1048,7 +1048,7 @@ In `engine.py`, find the `score = min(score, 100)` line (around line 430). Inser
             score += settings.BREADTH_RANK_PENALTY_BOTTOM               # -10
         # Top quintile also gets a score multiplier to nudge borderline signals
         if breadth_rank >= 0.80:
-            score = int(score * settings.BREADTH_RANK_MULTIPLIER)       # ×1.2
+            score = int(score * settings.BREADTH_RANK_MULTIPLIER)       # x1.2
             score = min(score, 100)
 
     # -----------------------------------------------------
@@ -1119,8 +1119,8 @@ In `engine.py`, find the line `if len(df) < 200:` at line 181. Add the early-ret
 **Important:** The `narrow_rally_filtered` flag is computed in step 5 (after the main score block). The early-return in step 7 must use the value computed there. To make this work, you must **move the `narrow_rally_filtered = False` initialisation and the gate evaluation block from step 5 to BEFORE the `if len(df) < 200:` check**. The cleanest layout:
 
 1. At the top of `evaluate_signal` (right after the signature), initialise `narrow_rally_filtered = False` and `score = 0`.
-2. Keep the gate evaluation block in its current location (after the main score block) — but make it a **no-op for the early return** by also adding a guard: the early return only fires if the flag is `True`.
-3. Alternatively (simpler): do the gate evaluation **before** `if len(df) < 200:`. Since the gate only depends on `regime`, `breadth_pct_above_sma50`, and `breadth_rank` — none of which need the `df` — this is safe.
+2. Keep the gate evaluation block in its current location (after the main score block) -- but make it a **no-op for the early return** by also adding a guard: the early return only fires if the flag is `True`.
+3. Alternatively (simpler): do the gate evaluation **before** `if len(df) < 200:`. Since the gate only depends on `regime`, `breadth_pct_above_sma50`, and `breadth_rank` -- none of which need the `df` -- this is safe.
 
 **Recommended layout (move the gate up):**
 
@@ -1318,7 +1318,7 @@ git commit -m "feat(main): wire BreadthEngine into scan cycle (Tier 1 hourly + T
 Create `docs/runbooks/breadth-debug.md` with this content:
 
 ```markdown
-# Breadth Enrichment — Operator Runbook
+# Breadth Enrichment -- Operator Runbook
 
 **Audience:** Whoever is on-call when the bot starts behaving strangely.
 **Spec:** `docs/superpowers/specs/2026-06-14-breadth-enrichment-design.md`
@@ -1330,7 +1330,7 @@ every hour (Tier 1) and refreshes the per-stock rank every 15 minutes
 (Tier 2). The system uses breadth to:
 - Give a +15 / +7 / -10 score bonus to stocks in the top 40% / bottom 20%
   of the breadth distribution (works in all regimes including R2/R3)
-- Apply a 1.2× score multiplier to top-quintile stocks (pushes borderline
+- Apply a 1.2x score multiplier to top-quintile stocks (pushes borderline
   signals above the score threshold)
 - In R1 (normal) regime, when breadth is below 40%, only allow entry into
   top-quintile stocks (narrow-rally gate)
@@ -1385,7 +1385,7 @@ restart.
 
 ### "Score feels inflated" complaint
 
-**What it means:** The 1.2× multiplier is pushing borderline signals
+**What it means:** The 1.2x multiplier is pushing borderline signals
 above `MIN_SIGNAL_SCORE` more than expected.
 
 **How to check:** Look at top-quintile signal scores in scan logs and
@@ -1405,12 +1405,12 @@ the +15 base bonus.
 | `BREADTH_RANK_BONUS_TOP` | `15` | +15 to top 20% of breadth distribution |
 | `BREADTH_RANK_BONUS_MID` | `7` | +7 to top 40% |
 | `BREADTH_RANK_PENALTY_BOTTOM` | `-10` | -10 to bottom 20% |
-| `BREADTH_RANK_MULTIPLIER` | `1.2` | Top quintile score × this |
+| `BREADTH_RANK_MULTIPLIER` | `1.2` | Top quintile score x this |
 | `BREADTH_CACHE_TTL_SECONDS` | `3600` | Tier 1 stale-while-revalidate window |
 | `BREADTH_TIER1_PARALLELISM` | `4` | Concurrent Kite historical fetches |
 
 All defaults are defined in `python-engine/config.py` and can be
-overridden via `.env`. The flag is the kill switch — set it to `False`
+overridden via `.env`. The flag is the kill switch -- set it to `False`
 for instant revert with no code rollback.
 
 ## Rollout checklist

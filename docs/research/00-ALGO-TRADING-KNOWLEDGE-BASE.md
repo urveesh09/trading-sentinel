@@ -3,13 +3,13 @@
 
 ## Quick Navigation
 
-- [**Phase 1: Momentum / Breakout Strategies**](#momentum) — 5.6K words
-- [**Phase 2: Volume & Price Action**](#volume) — 4.1K words
-- [**Phase 3: Mean Reversion Strategies**](#mean_reversion) — 5.1K words
-- [**Phase 4: Trend-Following & Macro**](#trend_macro) — 3.0K words
-- [**Phase 5: Statistical Arbitrage & Market-Making**](#stat_arb) — 3.1K words
-- [**Phase 6: NSE India Market Structure**](#nse_india) — 5.1K words
-- [**Phase 7: Risk Management & Portfolio Overlay**](#risk) — 4.3K words
+- [**Phase 1: Momentum / Breakout Strategies**](#momentum) -- 5.6K words
+- [**Phase 2: Volume & Price Action**](#volume) -- 4.1K words
+- [**Phase 3: Mean Reversion Strategies**](#mean_reversion) -- 5.1K words
+- [**Phase 4: Trend-Following & Macro**](#trend_macro) -- 3.0K words
+- [**Phase 5: Statistical Arbitrage & Market-Making**](#stat_arb) -- 3.1K words
+- [**Phase 6: NSE India Market Structure**](#nse_india) -- 5.1K words
+- [**Phase 7: Risk Management & Portfolio Overlay**](#risk) -- 4.3K words
 
 ---
 
@@ -19,7 +19,7 @@
 **Word count:** 5,608 words
 
 **Key sections:**
-- NSE Swing Trading — Deep Reference Document
+- NSE Swing Trading -- Deep Reference Document
 - Table of Contents
 - 1. Indicator Variations
 - #1.1 MACD Variants
@@ -29,7 +29,7 @@
 - 2. Academic Momentum Factor Research
 - #2.1 Carhart 4-Factor Model (1997)
 - #2.2 Fama-French 3-Factor Model (1993)
-- #2.3 Asymmetric Momentum — Novus Research (2019)
+- #2.3 Asymmetric Momentum -- Novus Research (2019)
 - #2.4 Time-Series Momentum (Moskowitz, Ooi, Pedersen, 2012)
 
 ---
@@ -127,11 +127,11 @@
 - Table of Contents
 - 1. Market Structure
 - #1.1 T+1 Settlement
-- #1.2 Pre-Open Session (09:00–09:15 IST)
-- #1.3 Intraday Auction Session (14:00–14:45 IST)
-- #1.4 Closing Session (15:30–15:40 IST)
+- #1.2 Pre-Open Session (09:00-09:15 IST)
+- #1.3 Intraday Auction Session (14:00-14:45 IST)
+- #1.4 Closing Session (15:30-15:40 IST)
 - #1.5 Block Deals
-- #1.6 Post-Broadcast Session (15:40–17:00 IST)
+- #1.6 Post-Broadcast Session (15:40-17:00 IST)
 - 2. Liquidity Patterns
 - #2.1 Average Daily Volume by Market Cap Tier
 - #2.2 Impact Cost Data
@@ -155,7 +155,7 @@
 - #2.1 Correlation in Drawdowns
 - #2.2 Sector Concentration Limits
 - #2.3 Maximum Loss Per Strategy/Period
-- 3. Circuit Breakers (CB1–CB5)
+- 3. Circuit Breakers (CB1-CB5)
 - #CB1: Daily Loss Halt
 
 ---

@@ -30,14 +30,14 @@ class TestChandelierStop:
         cs.update(close=120.0, high=122.0, low=118.0)
         # Highest close: 120. Stop: 120 - 15 = 105
         assert cs.get_stop() == 105.0
-        # Now stop is ABOVE entry — trade is profitable
+        # Now stop is ABOVE entry -- trade is profitable
         assert cs.is_profitable()
 
     def test_stop_not_triggered_by_pullback(self):
-        """Stop should NOT move down on a pullback — it only tracks highest closes."""
+        """Stop should NOT move down on a pullback -- it only tracks highest closes."""
         cs = ChandelierStop(entry_price=100.0, atr=5.0, atr_mult=3.0)
         cs.update(close=110.0, high=112.0, low=108.0)  # Highest close = 110, stop = 95
-        cs.update(close=105.0, high=106.0, low=100.0)  # Pullback — highest close still 110
+        cs.update(close=105.0, high=106.0, low=100.0)  # Pullback -- highest close still 110
         # Stop should still be 95 (based on highest close of 110)
         assert cs.get_stop() == 95.0
 
@@ -45,7 +45,7 @@ class TestChandelierStop:
         """Stop should trigger when price closes below the stop level."""
         cs = ChandelierStop(entry_price=100.0, atr=5.0, atr_mult=3.0)
         cs.update(close=110.0, high=112.0, low=108.0)  # Stop = 95
-        # Price drops to 93 — below stop of 95
+        # Price drops to 93 -- below stop of 95
         triggered, price = cs.check_stop_out(close=93.0)
         assert triggered is True
         assert price == 93.0
@@ -54,13 +54,13 @@ class TestChandelierStop:
         """Stop should NOT trigger if price stays above stop."""
         cs = ChandelierStop(entry_price=100.0, atr=5.0, atr_mult=3.0)
         cs.update(close=110.0, high=112.0, low=108.0)  # Stop = 95
-        # Price pulls back to 97 — still above stop
+        # Price pulls back to 97 -- still above stop
         triggered, price = cs.check_stop_out(close=97.0)
         assert triggered is False
         assert price == 97.0
 
     def test_atr_can_increase(self):
-        """ATR can change over time — stop should use current ATR each update."""
+        """ATR can change over time -- stop should use current ATR each update."""
         cs = ChandelierStop(entry_price=100.0, atr=5.0, atr_mult=3.0)
         cs.update(close=110.0, high=112.0, low=108.0)  # Stop = 110 - 15 = 95 (ATR=5)
         # ATR increases to 8 (market getting volatile)

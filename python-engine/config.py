@@ -4,13 +4,13 @@ from typing import ClassVar
 class Settings(BaseSettings):
     """
     POSITION SIZING PHILOSOPHY:
-    At ₹5,000 bankroll:
-      risk_per_trade (1%)       = ₹50
+    At Rs5,000 bankroll:
+      risk_per_trade (1%)       = Rs50
       max_positions             = 4
-      max_total_risk (4%)       = ₹200  across all open trades
-      max_per_trade capital     = ₹1,500 (30%)
-      daily_loss_halt_threshold = ₹100  (2%)
-      drawdown_halt_threshold   = ₹500  (10%)
+      max_total_risk (4%)       = Rs200  across all open trades
+      max_per_trade capital     = Rs1,500 (30%)
+      daily_loss_halt_threshold = Rs100  (2%)
+      drawdown_halt_threshold   = Rs500  (10%)
 
     This is deliberately conservative. The primary goal at this
     bankroll size is capital preservation and system validation -
@@ -22,7 +22,7 @@ class Settings(BaseSettings):
     STRATEGY_VERSION: str = "1.0.0"
     DB_PATH: str = "/data/cache.db"
     UNIVERSE_PATH: str = "/data/nifty500.csv"
-    # TOKEN_INJECTION_SECRET removed — the /token endpoint no longer uses it.
+    # TOKEN_INJECTION_SECRET removed -- the /token endpoint no longer uses it.
     # The old commented-out endpoint that checked this secret has been removed.
     
         # Core Bankroll (Only used for INITIAL seeding)
@@ -51,12 +51,12 @@ class Settings(BaseSettings):
     MOMENTUM_R_TARGET:        float = 2.0
     MOMENTUM_MAX_COST_RATIO:  float = 0.25
     # [MOMENTUM-REGIME 2026-06-16] Legacy 10% risk per trade.
-    # Kept for backward compat — new code should use MOMENTUM_RISK_PCT_R{1,2,3}.
-    # R1 default (0.07) is MORE conservative than the legacy 0.10 — a deliberate
+    # Kept for backward compat -- new code should use MOMENTUM_RISK_PCT_R{1,2,3}.
+    # R1 default (0.07) is MORE conservative than the legacy 0.10 -- a deliberate
     # tightening since we now have regime gating to back it up.
-    MOMENTUM_RISK_PCT:        float = 0.10    # Legacy 10% — pre-regime value
+    MOMENTUM_RISK_PCT:        float = 0.10    # Legacy 10% -- pre-regime value
     MOMENTUM_ATR_FUEL_BUFFER:          float = 0.85   # [MC5] ATR exhaustion gate: target must fit within remaining_fuel * buffer
-    MOMENTUM_VOL_SURGE_LUNCHTIME:      float = 1.75   # [MC3-T] Volume threshold during lunchtime dead zone (11:30–13:15 IST)
+    MOMENTUM_VOL_SURGE_LUNCHTIME:      float = 1.75   # [MC3-T] Volume threshold during lunchtime dead zone (11:30-13:15 IST)
     MOMENTUM_LUNCHTIME_START_HOUR:     int   = 11     # [MC3-T] Lunchtime start hour (IST)
     MOMENTUM_LUNCHTIME_START_MIN:      int   = 30     # [MC3-T] Lunchtime start minute (IST)
     MOMENTUM_LUNCHTIME_END_HOUR:       int   = 13     # [MC3-T] Lunchtime end hour (IST)
@@ -68,7 +68,7 @@ class Settings(BaseSettings):
     # Replaces the single 'market_regime' string dispatch (BULL/BEAR_RS_ONLY)
     # with the 3-regime system already used for swing. Slight-risk tilt
     # toward activity: R1/R2 sized aggressively, R3 has the *option* to trade
-    # (default risk=0% is a guardrail — flip to 0.05+ in .env to allow R3 entries).
+    # (default risk=0% is a guardrail -- flip to 0.05+ in .env to allow R3 entries).
     #
     # [MOMENTUM-AGGRESSIVE 2026-06-16] User feedback: momentum was 1-2 sigs/day,
     # wanted more P&L. Restored pre-regime sizes (10% / 7%) for R1/R2.
@@ -76,7 +76,7 @@ class Settings(BaseSettings):
     # R3 risk > 0), defense-in-depth via MOMENTUM_RISK_PCT_R3=0% remains.
     MOMENTUM_BLOCK_R3_ENTRIES:  bool  = False   # OFF: don't hard-block R3; guardrail is RISK_PCT_R3=0.00
     MOMENTUM_RISK_PCT_R1:       float = 0.10    # 10% of momentum pool in R1 (calm, aggressive)
-    MOMENTUM_RISK_PCT_R2:       float = 0.07    # 7% in R2 (elevated) — smaller position
+    MOMENTUM_RISK_PCT_R2:       float = 0.07    # 7% in R2 (elevated) -- smaller position
     MOMENTUM_RISK_PCT_R3:       float = 0.00    # 0% in R3 default (defense-in-depth: raise in .env to enable)
     MOMENTUM_R_TARGET_R1:       float = 2.0     # 2.0R target in R1 (let winners run)
     MOMENTUM_R_TARGET_R2:       float = 1.5     # 1.5R target in R2 (faster take-profit)
@@ -89,7 +89,7 @@ class Settings(BaseSettings):
     MOMENTUM_R3_MAX_POSITIONS:  int   = 1       # Soft cap for R3 entries (replaces hard block)
 
     # [MOMENTUM-ENTRY-V2 2026-06-16] Optional additive entry filters.
-    # All default OFF — opt-in via .env. Each filter is independently gated by
+    # All default OFF -- opt-in via .env. Each filter is independently gated by
     # its own MOMENTUM_USE_* flag. Skip first 15-min + last 30-min chop by default
     # (MOMENTUM_USE_TIME_GATE=True is the recommended safe default).
     # References: 4-variant ORB study (dailybulls.in 2026), Nifty 8yr backtest
@@ -108,7 +108,7 @@ class Settings(BaseSettings):
     # and SQLite table `momentum_signals`. Both are opt-in so the operator can
     # disable on disk-constrained systems. The CSV is the easy one to grep /
     # backtest on; the SQLite table is for future API-driven backtest queries.
-    MOMENTUM_LOG_ENABLED:       bool  = True    # Master switch — set False to disable entirely
+    MOMENTUM_LOG_ENABLED:       bool  = True    # Master switch -- set False to disable entirely
     MOMENTUM_LOG_CSV_PATH:      str   = "/data/momentum_signals.csv"
     MOMENTUM_LOG_DB_TABLE:      str   = "momentum_signals"
 
@@ -125,7 +125,7 @@ class Settings(BaseSettings):
 
     # Cost model
     ZERODHA_BROKERAGE_PCT:    float = 0.0003  # 0.03%
-    ZERODHA_BROKERAGE_MAX:    float = 20.0    # ₹20 cap
+    ZERODHA_BROKERAGE_MAX:    float = 20.0    # Rs20 cap
     ZERODHA_STT_CNC:          float = 0.001   # 0.1% sell side
     ZERODHA_STT_MIS:          float = 0.00025 # 0.025% sell side
     ZERODHA_EXCHANGE_PCT:     float = 0.0000345
@@ -134,24 +134,24 @@ class Settings(BaseSettings):
     ZERODHA_GST_PCT:          float = 0.18
 
     # ============================================================
-    # REGIME ENGINE — VIX-Free Volatility Detection
+    # REGIME ENGINE -- VIX-Free Volatility Detection
     # Replaces India VIX with ATR Compression + Realized Volatility
     # ============================================================
 
-    # ATR Compression Ratio — replaces VIX as primary volatility driver
+    # ATR Compression Ratio -- replaces VIX as primary volatility driver
     # rv_ratio = ATR_14 / ATR_14_SMA_200
-    # rv_ratio <= 0.70 = compressed (calm baseline → score 100)
-    # rv_ratio  1.00  = normal                       → score ~50
-    # rv_ratio >= 1.20 = expansion (elevated stress) → score ~20
+    # rv_ratio <= 0.70 = compressed (calm baseline -> score 100)
+    # rv_ratio  1.00  = normal                       -> score ~50
+    # rv_ratio >= 1.20 = expansion (elevated stress) -> score ~20
     RV_ATR_COMPRESS_THRESHOLD: float = 0.70   # compressed = calm baseline
     RV_ATR_NORMAL:              float = 0.95   # mid-point of normal range
     RV_ATR_EXPANSION:           float = 1.20   # expansion threshold
-    RV_ATR_CB_THRESHOLD:        float = 1.50   # circuit breaker — forces R3
+    RV_ATR_CB_THRESHOLD:        float = 1.50   # circuit breaker -- forces R3
     RV_ATR_SPAN:                float = 0.50   # (RV_ATR_EXPANSION - RV_ATR_COMPRESS_THRESHOLD)
     RV_ATR_SCORE_SCALE:         float = 200.0  # scale factor for linear mapping
 
-    # Realized Volatility — secondary volatility signal (20-day, annualized)
-    # rv_12% → score 100; rv_20% → score 60; rv_32% → score 0
+    # Realized Volatility -- secondary volatility signal (20-day, annualized)
+    # rv_12% -> score 100; rv_20% -> score 60; rv_32% -> score 0
     RV_NORMAL_ANNUAL:  float = 0.18   # 18% annualized = normal vol baseline
     RV_CRISIS_ANNUAL:   float = 0.28   # 28% annualized = crisis threshold
     RV_SPAN:           float = 0.16   # (RV_CRISIS_ANNUAL - RV_NORMAL_ANNUAL)
@@ -162,18 +162,18 @@ class Settings(BaseSettings):
     RV_RV_WEIGHT:  float = 0.40   # realized vol   = secondary (40%)
 
     # Circuit breaker override
-    ATR_CB_THRESHOLD: float = 1.50   # rv_ratio > 1.50 → force REGIME_3_CRISIS
+    ATR_CB_THRESHOLD: float = 1.50   # rv_ratio > 1.50 -> force REGIME_3_CRISIS
 
-    # Nifty/BankNifty ratio — breadth proxy (replaces weak EMA50-proxy)
-    # nb_ratio percentile below 0.30 → weak breadth → ×0.8 penalty
+    # Nifty/BankNifty ratio -- breadth proxy (replaces weak EMA50-proxy)
+    # nb_ratio percentile below 0.30 -> weak breadth -> x0.8 penalty
     NB_RATIO_LO_PCT:    float = 0.30   # breadth penalty threshold
     NB_RATIO_WINDOW:    int   = 60     # lookback window for percentile rank
 
-    # VIX parameters — DECOMMISSIONED (kept for backward compat with tests)
-    # India VIX unavailable via Kite → replaced by ATR compression + RV
+    # VIX parameters -- DECOMMISSIONED (kept for backward compat with tests)
+    # India VIX unavailable via Kite -> replaced by ATR compression + RV
     REGIME_VIX_BOUNDARY_12: float = 18.0
     REGIME_VIX_BOUNDARY_23: float = 25.0
-    VIX_CB_THRESHOLD:        float = 40.0   # DEPRECATED — use ATR_CB_THRESHOLD
+    VIX_CB_THRESHOLD:        float = 40.0   # DEPRECATED -- use ATR_CB_THRESHOLD
 
     # RSI Percentile thresholds (bottom % of 6-month rolling range)
     RSI_PERCENTILE_REGIME1: float = 20.0   # Regime 1: bottom 20%
@@ -185,27 +185,27 @@ class Settings(BaseSettings):
     VOL_ZSCORE_REGIME3: float = 2.5       # Regime 3: 2.5 std devs
 
     # Position sizing by regime (% of bankroll per trade)
-    RISK_PCT_REGIME1: float = 0.10        # 10% — normal market
-    RISK_PCT_REGIME2: float = 0.07        # 7%  — elevated uncertainty
-    RISK_PCT_REGIME3: float = 0.05        # 5%  — crisis
+    RISK_PCT_REGIME1: float = 0.10        # 10% -- normal market
+    RISK_PCT_REGIME2: float = 0.07        # 7%  -- elevated uncertainty
+    RISK_PCT_REGIME3: float = 0.05        # 5%  -- crisis
 
     # Stop loss by regime (ATR multipliers)
     STOP_ATR_REGIME1: float = 1.5        # 1.5x ATR
     STOP_ATR_REGIME2: float = 2.0        # 2.0x ATR
     STOP_ATR_REGIME3: float = 2.0        # 2.0x ATR
 
-    # Stop loss by regime (% of close below price — for pct_stop branch)
+    # Stop loss by regime (% of close below price -- for pct_stop branch)
     STOP_PCT_REGIME1: float = 0.05      # 5% stop
     STOP_PCT_REGIME2: float = 0.05      # 5% stop
     STOP_PCT_REGIME3: float = 0.08      # 8% stop (wider in crisis)
 
     # Target structure (R-multiples)
     TARGET1_R: float = 1.5                # T1 = 1.5R (all regimes)
-    TARGET2_R_REGIME1: float = 4.5        # T2 = 4.5R (Regime 1, was 3.0 — let winners run)
+    TARGET2_R_REGIME1: float = 4.5        # T2 = 4.5R (Regime 1, was 3.0 -- let winners run)
     TARGET2_R_REGIME2: float = 3.0        # T2 = 3.0R (Regime 2)
-    TARGET2_R_REGIME3: float = 1.0        # T2 = 1.0R (Regime 3 — no T2, exit at T1)
+    TARGET2_R_REGIME3: float = 1.0        # T2 = 1.0R (Regime 3 -- no T2, exit at T1)
 
-    # Hard ceiling on Regime 1 positions — never hold past this R-multiple.
+    # Hard ceiling on Regime 1 positions -- never hold past this R-multiple.
     # Rationale: the trailing Chandelier can technically let a runaway trend
     # sit forever; this is a safety valve to ensure we bank the gains.
     HARD_CAP_R_REGIME1: float = 5.0       # Absolute ceiling in Regime 1
@@ -213,13 +213,13 @@ class Settings(BaseSettings):
     # Partial exit at T1 (fraction of shares to exit)
     PARTIAL_EXIT_T1_PCT: float = 0.50    # Exit 50% at T1
 
-    # Chandelier trailing stop — legacy single multiplier (kept for backward compat)
+    # Chandelier trailing stop -- legacy single multiplier (kept for backward compat)
     CHANDELIER_ATR_MULT: float = 3.0      # Highest close since entry - (3 * ATR)
 
     # Regime-aware Chandelier multipliers (override the legacy single setting)
-    # Regime 1 (calm): wider trail (3.5x) — gives mid-cap trends room to breathe
-    # Regime 2 (elevated): default trail (3.0x) — unchanged
-    # Regime 3 (crisis): tighter trail (2.5x) — cut losses fast
+    # Regime 1 (calm): wider trail (3.5x) -- gives mid-cap trends room to breathe
+    # Regime 2 (elevated): default trail (3.0x) -- unchanged
+    # Regime 3 (crisis): tighter trail (2.5x) -- cut losses fast
     CHANDELIER_ATR_REGIME1_MULT: float = 3.5
     CHANDELIER_ATR_REGIME2_MULT: float = 3.0
     CHANDELIER_ATR_REGIME3_MULT: float = 2.5
@@ -238,13 +238,13 @@ class Settings(BaseSettings):
     # Circuit breaker override
     VIX_CB_THRESHOLD: float = 40.0       # If VIX > 40, force Regime 3 regardless of score
 
-    # Kite endpoint — direct (prod/VPS) or via OCI relay (home desktop).
+    # Kite endpoint -- direct (prod/VPS) or via OCI relay (home desktop).
     # Relay is a path-preserving forward proxy; auth + X-Kite-Version headers pass through.
     # Override with KITE_BASE_URL in .env (e.g. http://161.118.160.180:31527).
     KITE_BASE_URL: str = "https://api.kite.trade"
 
     # === Breadth Enrichment (2026-06-14) ===
-    BREADTH_ENRICHMENT_ENABLED:         bool  = False   # Feature flag — OFF by default
+    BREADTH_ENRICHMENT_ENABLED:         bool  = False   # Feature flag -- OFF by default
     BREADTH_UNIVERSE:                   str   = "NIFTY100"
     BREADTH_CACHE_TTL_SECONDS:          int   = 3600    # Tier 1 stale-while-revalidate window
     BREADTH_FETCH_TIMEOUT_SECONDS:      int   = 90      # Max time for Tier 1 fetch
@@ -253,7 +253,7 @@ class Settings(BaseSettings):
     BREADTH_RANK_BONUS_TOP:             int   = 15      # +15 if rank >= 0.80
     BREADTH_RANK_BONUS_MID:             int   = 7       # +7 if rank >= 0.60
     BREADTH_RANK_PENALTY_BOTTOM:        int   = -10     # -10 if rank < 0.20
-    BREADTH_RANK_MULTIPLIER:            float = 1.2     # Top quintile score × this
+    BREADTH_RANK_MULTIPLIER:            float = 1.2     # Top quintile score x this
     BREADTH_DATA_DEGRADED_THRESHOLD:    float = 0.10    # >10% fetch failures = degraded
     BREADTH_TIER1_PARALLELISM:          int   = 4       # Concurrent Kite historical fetches
     BREADTH_DATA_DIR:                   str   = "data"   # Path (relative to python-engine/) to nifty100.json

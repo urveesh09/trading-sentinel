@@ -156,7 +156,7 @@ class OpenPosition(BaseModel):
     exit_date: Optional[datetime] = None
     realised_pnl: Optional[float] = None
     r_multiple: Optional[float] = None
-    # [TRAILING-EXITS 2026-06-16] Regime at entry — drives the regime-aware
+    # [TRAILING-EXITS 2026-06-16] Regime at entry -- drives the regime-aware
     # Chandelier trail (3.5x R1, 3.0x R2, 2.5x R3). NULL = legacy 3.0x trail.
     regime_at_entry: Optional[Literal["REGIME_1_NORMAL", "REGIME_2_ELEVATED", "REGIME_3_CRISIS"]] = None
 

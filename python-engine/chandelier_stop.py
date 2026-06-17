@@ -1,8 +1,8 @@
 """
-chandelier_stop.py — Chandelier trailing stop implementation.
+chandelier_stop.py -- Chandelier trailing stop implementation.
 
 OPEN QUESTION RESOLUTION (Task 9): GTT (Good Till Triggered) Orders
-─────────────────────────────────────────────────────────────────────
+---------------------------------------------------------------------
 Issue: Can Kite GTT API replace the in-engine Chandelier trailing stop?
 
 Kite GTT API v3 supports OHLC trigger conditions:
@@ -11,10 +11,10 @@ Kite GTT API v3 supports OHLC trigger conditions:
   - BUT: trigger_price is FIXED at GTT creation time
 
 Chandelier stop challenge:
-  - trigger_price = highest_close_since_entry - (atr_mult × ATR)
+  - trigger_price = highest_close_since_entry - (atr_mult x ATR)
   - highest_close increases whenever a new closing high is made
   - This means the trigger price would need to be updated every time
-    a new high is recorded — potentially once per candle
+    a new high is recorded -- potentially once per candle
   - GTT has no server-side arithmetic; trigger_price cannot reference
     a moving highest_close variable
 
@@ -35,7 +35,7 @@ Formula:
     stop = highest_close_since_entry - (atr_mult * ATR_14)
 
 Unlike a fixed stop, the Chandelier stop:
-  1. ONLY moves up (tracks highest close) — never down
+  1. ONLY moves up (tracks highest close) -- never down
   2. Gives winners room to run within their natural volatility
   3. Locks in profit when a trend reverses by the ATR distance
 
@@ -107,7 +107,7 @@ class ChandelierStop:
         if atr is not None:
             self._current_atr = atr
 
-        # Update highest close — Chandelier ONLY moves up
+        # Update highest close -- Chandelier ONLY moves up
         if close > self._highest_close:
             self._highest_close = close
             logger.debug(
@@ -159,7 +159,7 @@ class ChandelierStop:
             close: The current closing price.
 
         Returns:
-            (triggered: bool, price: float) — triggered is True if stopped out,
+            (triggered: bool, price: float) -- triggered is True if stopped out,
             price is the close at which stop was triggered.
         """
         stop_level = self.get_stop()

@@ -165,7 +165,7 @@ VWAP represents the average price weighted by volume, serving as the intraday be
 
 **Formula:**
 ```
-VWAP = Σ(Price × Volume) / Σ(Volume)
+VWAP = Sum(Price x Volume) / Sum(Volume)
 ```
 
 **Running VWAP Calculation:**
@@ -239,9 +239,9 @@ A/D uses the close position within the daily range (close location value) multip
 **Formula:**
 ```
 Money Flow Multiplier = [(Close - Low) - (High - Close)] / (High - Low)
-                        = (2 × Close - High - Low) / (High - Low)
+                        = (2 x Close - High - Low) / (High - Low)
 
-Money Flow Volume = Money Flow Multiplier × Volume
+Money Flow Volume = Money Flow Multiplier x Volume
 A/D = Cumulative Sum of Money Flow Volume
 ```
 
@@ -267,18 +267,18 @@ def calculate_ad_line(candles: list) -> list:
 
 ### 3.3 Money Flow Index (MFI)
 
-MFI is volume-weighted RSI—measuring the rate at which money flows in and out of a security.
+MFI is volume-weighted RSI--measuring the rate at which money flows in and out of a security.
 
 **Algorithm:**
 ```
 1. Typical Price = (High + Low + Close) / 3
-2. Raw Money Flow = Typical Price × Volume
+2. Raw Money Flow = Typical Price x Volume
 3. Classify as Positive or Negative Money Flow based on TP vs Previous TP
 4. Money Ratio = Sum(Positive Money Flow) / Sum(Negative Money Flow)
 5. MFI = 100 - (100 / (1 + Money Ratio))
 
 Alternatively:
-MFI = 100 × (Positive Money Flow / (Positive Money Flow + Negative Money Flow))
+MFI = 100 x (Positive Money Flow / (Positive Money Flow + Negative Money Flow))
 ```
 
 **Pseudocode:**
@@ -400,11 +400,11 @@ Volume confirms the validity of price moves.
 
 | Volume | Price | Interpretation |
 |--------|-------|----------------|
-| ↑ | ↑ | Strong bullish (follow through likely) |
-| ↑ | ↓ | Strong bearish (follow through likely) |
-| ↓ | ↑ | Weak bullish (reversal possible) |
-| ↓ | ↓ | Weak bearish (reversal possible) |
-| ↑ | Flat | Accumulation/distribution (watch for breakout) |
+| up | up | Strong bullish (follow through likely) |
+| up | down | Strong bearish (follow through likely) |
+| down | up | Weak bullish (reversal possible) |
+| down | down | Weak bearish (reversal possible) |
+| up | Flat | Accumulation/distribution (watch for breakout) |
 
 ---
 
@@ -536,7 +536,7 @@ def is_morning_star(candles: list, i: int) -> bool:
 
 | Pattern | Candles | Type | Key Requirement |
 |---------|---------|------|-----------------|
-| Doji | 1 | Reversal | Open ≈ Close |
+| Doji | 1 | Reversal | Open ~= Close |
 | Hammer | 1 | Reversal | Long lower shadow |
 | Engulfing | 2 | Reversal | Body 2 engulfs Body 1 |
 | Morning Star | 3 | Reversal | Gap + small middle |
@@ -574,13 +574,13 @@ Standard pivot points use previous period's high, low, and close.
 ```
 Pivot Point (PP) = (Previous High + Previous Low + Previous Close) / 3
 
-Support 1 (S1) = (2 × PP) - Previous High
+Support 1 (S1) = (2 x PP) - Previous High
 Support 2 (S2) = PP - (Previous High - Previous Low)
-Support 3 (S3) = Previous Low - 2 × (Previous High - PP)
+Support 3 (S3) = Previous Low - 2 x (Previous High - PP)
 
-Resistance 1 (R1) = (2 × PP) - Previous Low
+Resistance 1 (R1) = (2 x PP) - Previous Low
 Resistance 2 (R2) = PP + (Previous High - Previous Low)
-Resistance 3 (R3) = Previous High + 2 × (PP - Previous Low)
+Resistance 3 (R3) = Previous High + 2 x (PP - Previous Low)
 ```
 
 **Pseudocode:**
@@ -704,7 +704,7 @@ def detect_volume_support_resistance(candles: list, num_price_bins: int = 50,
 def detect_supply_demand_zones(candles: list, impulse_threshold: float = 2.0) -> list:
     """
     Identify supply and demand zones based on impulse moves.
-    impulse_threshold: Volume multiple for impulse认定 (e.g., 2.0 = 2x average)
+    impulse_threshold: Volume multiple for impulse[rentong]定 (e.g., 2.0 = 2x average)
     """
     zones = []
     avg_volume = sum(c['volume'] for c in candles) / len(candles)
@@ -818,14 +818,14 @@ def confirm_breakout(price: float, resistance: float,
 
 | Price Action | Volume | Signal Strength |
 |--------------|--------|-----------------|
-| Breakout ↑ | Volume ↑ | Very Strong |
-| Breakout ↑ | Volume ↓ | Weak (false breakout risk) |
-| Breakdown ↓ | Volume ↑ | Very Strong |
-| Breakdown ↓ | Volume ↓ | Weak (false breakdown risk) |
-| Price ↑ | Volume ↑ | Strong Uptrend |
-| Price ↑ | Volume ↓ | Weak (exhaustion risk) |
-| Price ↓ | Volume ↑ | Strong Downtrend |
-| Price ↓ | Volume ↓ | Weak (exhaustion risk) |
+| Breakout up | Volume up | Very Strong |
+| Breakout up | Volume down | Weak (false breakout risk) |
+| Breakdown down | Volume up | Very Strong |
+| Breakdown down | Volume down | Weak (false breakdown risk) |
+| Price up | Volume up | Strong Uptrend |
+| Price up | Volume down | Weak (exhaustion risk) |
+| Price down | Volume up | Strong Downtrend |
+| Price down | Volume down | Weak (exhaustion risk) |
 
 ---
 
@@ -853,7 +853,7 @@ def calculate_turnover(candle: Candle) -> float:
 
 | Metric | Liquid Stock | Illiquid Stock |
 |--------|-------------|----------------|
-| Average Daily Turnover | > ₹5 Crores | < ₹1 Crore |
+| Average Daily Turnover | > Rs5 Crores | < Rs1 Crore |
 | Bid-Ask Spread | < 0.2% | > 0.5% |
 | Impact Cost | < 0.1% | > 0.3% |
 | Delivery Percentage | 20-60% typical | > 80% or < 10% |

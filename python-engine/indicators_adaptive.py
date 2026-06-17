@@ -1,5 +1,5 @@
 """
-indicators_adaptive.py — Adaptive indicator calculations.
+indicators_adaptive.py -- Adaptive indicator calculations.
 
 Replaces fixed thresholds with stock-specific relative measures:
   1. RSI Percentile: current RSI vs its own 6-month rolling distribution
@@ -72,15 +72,15 @@ class AdaptiveIndicators:
     def get_rsi_percentile_threshold(self, regime: Regime) -> Optional[float]:
         """Return the RSI percentile threshold for a given regime.
         
-        R1 (Normal)    → 20.0 (bottom 20% of RSI history)
-        R2 (Elevated)  → 15.0 (bottom 15% — tighter)
-        R3 (Crisis)    → None (RSI percentile not used; RS vs Nifty filter applies instead)
-        UNKNOWN        → 20.0 (same as R1, safe default)
+        R1 (Normal)    -> 20.0 (bottom 20% of RSI history)
+        R2 (Elevated)  -> 15.0 (bottom 15% -- tighter)
+        R3 (Crisis)    -> None (RSI percentile not used; RS vs Nifty filter applies instead)
+        UNKNOWN        -> 20.0 (same as R1, safe default)
         """
         if regime == Regime.REGIME_2_ELEVATED:
             return settings.RSI_PERCENTILE_REGIME2
         elif regime == Regime.REGIME_3_CRISIS:
-            return None  # Not used in R3 — RS vs Nifty filter is the primary gate
+            return None  # Not used in R3 -- RS vs Nifty filter is the primary gate
         return settings.RSI_PERCENTILE_REGIME1  # R1 and UNKNOWN
 
     # ------------------------------------------------------------------
@@ -100,10 +100,10 @@ class AdaptiveIndicators:
         Returns 0.0 if there is insufficient volume history (less than 20 days).
 
         Interpretation:
-          z = 0.0  → volume is exactly at the 20-day average
-          z = 1.5  → volume is 1.5 standard deviations above average (unusual)
-          z = 2.5  → volume is 2.5 standard deviations above average (highly unusual)
-          z = -1.0 → volume is 1 std dev below average (below normal)
+          z = 0.0  -> volume is exactly at the 20-day average
+          z = 1.5  -> volume is 1.5 standard deviations above average (unusual)
+          z = 2.5  -> volume is 2.5 standard deviations above average (highly unusual)
+          z = -1.0 -> volume is 1 std dev below average (below normal)
 
         A positive z-score is required for a breakout signal.
         """
@@ -126,10 +126,10 @@ class AdaptiveIndicators:
     def get_volume_zscore_threshold(self, regime: Regime) -> float:
         """Return volume z-score threshold for the given regime.
         
-        R1 (Normal)    → 1.5  — loose, allow quieter setups
-        R2 (Elevated)  → 2.0  — stricter, require confirmation
-        R3 (Crisis)    → 2.5  — strictest
-        UNKNOWN        → 1.5  — safe default (same as R1)
+        R1 (Normal)    -> 1.5  -- loose, allow quieter setups
+        R2 (Elevated)  -> 2.0  -- stricter, require confirmation
+        R3 (Crisis)    -> 2.5  -- strictest
+        UNKNOWN        -> 1.5  -- safe default (same as R1)
         """
         if regime == Regime.REGIME_2_ELEVATED:
             return settings.VOL_ZSCORE_REGIME2

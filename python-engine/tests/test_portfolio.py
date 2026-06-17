@@ -7,9 +7,9 @@ from portfolio import filter_and_allocate, filter_momentum_signals
 from models import Signal, MomentumSignal
 
 
-# ═══════════════════════════════════════════════════════════════
+# ===============================================================
 # HELPERS
-# ═══════════════════════════════════════════════════════════════
+# ===============================================================
 
 def _raw_signal(ticker="RELIANCE", score=70, close=500.0, volume_ratio=2.0,
                 stop_loss=475.0, net_ev=100.0, sector="ENERGY", shares=4): # FIX: Changed to 4
@@ -56,9 +56,9 @@ def _open_pos(ticker="INFY", sector="IT", entry_price=1500.0, shares=5,
     }
 
 
-# ═══════════════════════════════════════════════════════════════
+# ===============================================================
 # FILTER AND ALLOCATE (SWING)
-# ═══════════════════════════════════════════════════════════════
+# ===============================================================
 
 
 class TestFilterAndAllocate:
@@ -70,7 +70,7 @@ class TestFilterAndAllocate:
         assert isinstance(accepted[0], Signal)
 
     def test_rejects_when_max_positions_reached(self):
-        """[P1] No slots left → reject."""
+        """[P1] No slots left -> reject."""
         open_pos = [_open_pos(ticker=f"STOCK{i}", sector=f"SEC{i}") for i in range(6)]
         signals = [_raw_signal(ticker="NEW")]
         accepted, rejected = filter_and_allocate(signals, open_pos, 50000.0)
@@ -78,7 +78,7 @@ class TestFilterAndAllocate:
         assert rejected[0]["reject_reason"] == "MAX_POSITIONS_REACHED"
 
     def test_rejects_duplicate_ticker(self):
-        """[C8] Ticker already in open positions → reject."""
+        """[C8] Ticker already in open positions -> reject."""
         open_pos = [_open_pos(ticker="RELIANCE")]
         signals = [_raw_signal(ticker="RELIANCE")]
         accepted, rejected = filter_and_allocate(signals, open_pos, 50000.0)
@@ -86,7 +86,7 @@ class TestFilterAndAllocate:
         assert rejected[0]["reject_reason"] == "ALREADY_OPEN"
 
     def test_max_correlated_sector(self):
-        """[P4] Already 2 positions in same sector → reject 3rd."""
+        """[P4] Already 2 positions in same sector -> reject 3rd."""
         open_pos = [
             _open_pos(ticker="A", sector="ENERGY"),
             _open_pos(ticker="B", sector="ENERGY"),
@@ -97,8 +97,8 @@ class TestFilterAndAllocate:
         assert rejected[0]["reject_reason"] == "MAX_CORRELATED_SECTOR"
 
     def test_max_capital_per_trade_downsizes(self):
-        """[P2] Capital > 50% of bankroll → shares downsized."""
-        # 10 shares × 500 = 5000 > 5000 * 0.50 = 2500
+        """[P2] Capital > 50% of bankroll -> shares downsized."""
+        # 10 shares x 500 = 5000 > 5000 * 0.50 = 2500
         signals = [_raw_signal(shares=10, close=500.0)]
         accepted, rejected = filter_and_allocate(signals, [], 5000.0)
         if len(accepted) > 0:
@@ -129,9 +129,9 @@ class TestFilterAndAllocate:
         assert len(accepted) == 0
 
 
-# ═══════════════════════════════════════════════════════════════
+# ===============================================================
 # FILTER MOMENTUM SIGNALS
-# ═══════════════════════════════════════════════════════════════
+# ===============================================================
 
 
 class TestFilterMomentumSignals:
@@ -143,7 +143,7 @@ class TestFilterMomentumSignals:
         assert isinstance(accepted[0], MomentumSignal)
 
     def test_max_momentum_positions(self):
-        """Default max = 2 in the function. Exceeding → reject."""
+        """Default max = 2 in the function. Exceeding -> reject."""
         signals = [
             _raw_momentum(ticker="A"),
             _raw_momentum(ticker="B"),
@@ -155,7 +155,7 @@ class TestFilterMomentumSignals:
         assert rejected[0]["reject_reason"] == "MAX_MOMENTUM_POSITIONS"
 
     def test_duplicate_ticker_rejected(self):
-        """Ticker already open → MOMENTUM_ALREADY_OPEN."""
+        """Ticker already open -> MOMENTUM_ALREADY_OPEN."""
         open_mom = [{"ticker": "TCS", "entry_price": 3500, "shares": 5}]
         signals = [_raw_momentum(ticker="TCS")]
         accepted, rejected = filter_momentum_signals(signals, open_mom, 100000.0)
@@ -163,11 +163,11 @@ class TestFilterMomentumSignals:
         assert rejected[0]["reject_reason"] == "MOMENTUM_ALREADY_OPEN"
 
     def test_pool_exhausted(self):
-        """If pool is used up → MOMENTUM_POOL_EXHAUSTED."""
-        # Pool = 100, signal needs 17500 (5 shares × 3500)
+        """If pool is used up -> MOMENTUM_POOL_EXHAUSTED."""
+        # Pool = 100, signal needs 17500 (5 shares x 3500)
         signals = [_raw_momentum()]
         accepted, rejected = filter_momentum_signals(signals, [], 100.0)
-        # It should try to downsize. If can't fit even 1 share → exhausted
+        # It should try to downsize. If can't fit even 1 share -> exhausted
         if len(accepted) == 0:
             assert rejected[0]["reject_reason"] == "MOMENTUM_POOL_EXHAUSTED"
 
@@ -183,7 +183,7 @@ class TestFilterMomentumSignals:
 
     def test_downsizes_to_fit_pool(self):
         """If signal doesn't fit pool, shares are reduced to fit."""
-        # Pool = 5000, signal at 3500 per share × 5 = 17500
+        # Pool = 5000, signal at 3500 per share x 5 = 17500
         signals = [_raw_momentum(shares=5, close=3500.0)]
         accepted, rejected = filter_momentum_signals(signals, [], 5000.0)
         if len(accepted) == 1:

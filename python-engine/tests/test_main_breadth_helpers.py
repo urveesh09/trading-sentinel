@@ -2,7 +2,7 @@
 Tests for the main.py breadth wiring helpers (Task 7 step 2).
 
 The actual run_screener() body is too tangled to test directly (touches kite,
-NIFTY_100_TICKERS, sqlite, regime fetcher, nifty CSV, …). So we extract two
+NIFTY_100_TICKERS, sqlite, regime fetcher, nifty CSV, ...). So we extract two
 small, pure helpers into main.py and test those in isolation:
 
     build_breadth_engine(kite, settings) -> Optional[BreadthEngine]
@@ -31,13 +31,13 @@ if ENGINE_DIR not in sys.path:
     sys.path.insert(0, ENGINE_DIR)
 
 
-# ─────────────────────────────────────────────────────────────────
+# -----------------------------------------------------------------
 # build_breadth_engine
-# ─────────────────────────────────────────────────────────────────
+# -----------------------------------------------------------------
 
 
 def test_build_breadth_engine_returns_none_when_flag_off(monkeypatch, tmp_path):
-    """If BREADTH_ENRICHMENT_ENABLED is False, helper must return None — no I/O."""
+    """If BREADTH_ENRICHMENT_ENABLED is False, helper must return None -- no I/O."""
     from main import build_breadth_engine
     from config import settings
 
@@ -101,14 +101,14 @@ def test_build_breadth_engine_returns_none_on_universe_load_failure(monkeypatch,
     fake_kite = MagicMock()
     fake_kite.instrument_cache = {}
 
-    # Should not raise — should return None
+    # Should not raise -- should return None
     result = build_breadth_engine(fake_kite, settings)
     assert result is None
 
 
-# ─────────────────────────────────────────────────────────────────
+# -----------------------------------------------------------------
 # build_breadth_kwargs
-# ─────────────────────────────────────────────────────────────────
+# -----------------------------------------------------------------
 
 
 def test_build_breadth_kwargs_returns_empty_dict_when_breadth_unavailable():
@@ -168,5 +168,5 @@ def test_build_breadth_kwargs_returns_empty_when_token_is_none():
     fake_result.rank_map = {12345: 0.82}
 
     # This is the common case for tickers Kite doesn't know about
-    # (delisted, F&O-only, etc.) — the scan loop passes token=None.
+    # (delisted, F&O-only, etc.) -- the scan loop passes token=None.
     assert build_breadth_kwargs(None, fake_result) == {}

@@ -69,7 +69,7 @@ def test_universe_caches_tokens_on_second_call(fake_kite_cache, tmp_path):
 def test_universe_token_to_symbol_roundtrip(fake_kite_cache, tmp_path):
     """token_to_symbol should map a resolved token back to its NSE symbol.
 
-    Added for Task 7: the breadth wiring needs to convert token → symbol
+    Added for Task 7: the breadth wiring needs to convert token -> symbol
     when calling kite.get_historical (which is keyed by symbol).
     """
     data_file = tmp_path / "nifty100.json"
@@ -79,7 +79,7 @@ def test_universe_token_to_symbol_roundtrip(fake_kite_cache, tmp_path):
     }))
 
     u = Universe(str(data_file), instrument_cache=fake_kite_cache)
-    # Token 100042 is the missing one (set to None) — should NOT be in the map
+    # Token 100042 is the missing one (set to None) -- should NOT be in the map
     assert u.token_to_symbol(100042) is None
     # Tokens 0..98 and 43..99 should round-trip
     assert u.token_to_symbol(100000) == "SYM000"

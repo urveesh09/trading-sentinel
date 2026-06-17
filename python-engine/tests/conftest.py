@@ -17,7 +17,7 @@ from datetime import datetime, date
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
 
-# ── Fake Settings ────────────────────────────────────────────────────
+# -- Fake Settings ----------------------------------------------------
 
 @pytest.fixture(autouse=True)
 def patch_settings(monkeypatch, tmp_path):
@@ -52,7 +52,7 @@ def patch_settings(monkeypatch, tmp_path):
     return settings
 
 
-# ── Temp DB Path ────────────────────────────────────────────────────
+# -- Temp DB Path ----------------------------------------------------
 
 @pytest.fixture
 def db_path(tmp_path):
@@ -60,7 +60,7 @@ def db_path(tmp_path):
     return str(tmp_path / "test_cache.db")
 
 
-# ── OHLCV DataFrame (daily, 250 rows) ──────────────────────────────
+# -- OHLCV DataFrame (daily, 250 rows) ------------------------------
 
 @pytest.fixture
 def fake_ohlcv_df():
@@ -103,7 +103,7 @@ def fake_ohlcv_short():
     return df
 
 
-# ── Intraday Candles (15-min) ───────────────────────────────────────
+# -- Intraday Candles (15-min) ---------------------------------------
 
 @pytest.fixture
 def fake_momentum_candles():
@@ -121,7 +121,7 @@ def fake_momentum_candles():
         "close":  [base + i * 2 + 1 for i in range(n)],
         "volume": [100_000] * n,
     }
-    # Spike volume on last candle (3× avg = 300% surge)
+    # Spike volume on last candle (3x avg = 300% surge)
     data["volume"][-1] = 300_000
 
     # Make VWAP crossover happen on last candle:
@@ -152,11 +152,11 @@ def fake_momentum_candles_no_crossover():
     return pd.DataFrame(data)
 
 
-# ── Nifty Data (for regime tests) ──────────────────────────────────
+# -- Nifty Data (for regime tests) ----------------------------------
 
 @pytest.fixture
 def nifty_bull_df():
-    """NIFTY data where close > EMA50 * 1.02 → BULL regime."""
+    """NIFTY data where close > EMA50 * 1.02 -> BULL regime."""
     n = 60
     # Steady uptrend: close well above any 50-EMA
     close = np.linspace(18000, 19500, n)
@@ -171,7 +171,7 @@ def nifty_bull_df():
 
 @pytest.fixture
 def nifty_bear_df():
-    """NIFTY data where close < EMA50 → BEAR_RS_ONLY regime."""
+    """NIFTY data where close < EMA50 -> BEAR_RS_ONLY regime."""
     n = 60
     # Downtrend: close drops below EMA50
     close_arr = np.concatenate([

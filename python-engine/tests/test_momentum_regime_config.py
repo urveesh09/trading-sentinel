@@ -6,12 +6,12 @@ momentum. They replace the single 'market_regime' string dispatch
 (BULL/BEAR_RS_ONLY) with the 3-regime system already used for swing.
 
 Settings to test:
-  MOMENTUM_BLOCK_R3_ENTRIES:       bool  (default True)  — block all new entries in R3
-  MOMENTUM_RISK_PCT_R1:            float (0.07)          — 7% of momentum pool in R1
-  MOMENTUM_RISK_PCT_R2:            float (0.05)          — 5% of momentum pool in R2
-  MOMENTUM_RISK_PCT_R3:            float (0.00)          — 0% in R3 (gated by BLOCK_R3)
-  MOMENTUM_R_TARGET_R1:            float (2.0)           — 2.0R target in R1 (was MOMENTUM_R_TARGET)
-  MOMENTUM_R_TARGET_R2:            float (1.5)           — 1.5R target in R2 (was MOMENTUM_R_TARGET_BEAR)
+  MOMENTUM_BLOCK_R3_ENTRIES:       bool  (default True)  -- block all new entries in R3
+  MOMENTUM_RISK_PCT_R1:            float (0.07)          -- 7% of momentum pool in R1
+  MOMENTUM_RISK_PCT_R2:            float (0.05)          -- 5% of momentum pool in R2
+  MOMENTUM_RISK_PCT_R3:            float (0.00)          -- 0% in R3 (gated by BLOCK_R3)
+  MOMENTUM_R_TARGET_R1:            float (2.0)           -- 2.0R target in R1 (was MOMENTUM_R_TARGET)
+  MOMENTUM_R_TARGET_R2:            float (1.5)           -- 1.5R target in R2 (was MOMENTUM_R_TARGET_BEAR)
 
 Backward compat:
   MOMENTUM_R_TARGET and MOMENTUM_RISK_PCT must remain as defaults
@@ -59,17 +59,17 @@ class TestMomentumRegimeSettingsExist:
         assert settings.MOMENTUM_R_TARGET_R2 == 1.5
 
     def test_risk_pct_decreases_with_regime(self):
-        """R1 > R2 > R3 — monotonic decrease as conditions deteriorate."""
+        """R1 > R2 > R3 -- monotonic decrease as conditions deteriorate."""
         assert settings.MOMENTUM_RISK_PCT_R1 > settings.MOMENTUM_RISK_PCT_R2
         assert settings.MOMENTUM_RISK_PCT_R2 > settings.MOMENTUM_RISK_PCT_R3
 
     def test_r_target_decreases_with_regime(self):
-        """R1 target > R2 target — tighter take-profit in elevated regime."""
+        """R1 target > R2 target -- tighter take-profit in elevated regime."""
         assert settings.MOMENTUM_R_TARGET_R1 > settings.MOMENTUM_R_TARGET_R2
 
     def test_legacy_settings_still_present(self):
         """Backward compat: MOMENTUM_R_TARGET and MOMENTUM_RISK_PCT must remain.
-        MOMENTUM_RISK_PCT stays at the legacy 0.10 value — new code uses
+        MOMENTUM_RISK_PCT stays at the legacy 0.10 value -- new code uses
         MOMENTUM_RISK_PCT_R{1,2,3}. Don't conflate them.
         """
         assert hasattr(settings, "MOMENTUM_R_TARGET")

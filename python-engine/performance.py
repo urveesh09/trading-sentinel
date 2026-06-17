@@ -53,7 +53,7 @@ async def record_trade_close(db_path: str, ticker: str, pnl: float, r_multiple: 
         from analytics import record_trade_outcome
         await record_trade_outcome(db_path, ticker, pnl, r_multiple=r_multiple, notes=notes)
     except Exception:
-        # Don't propagate — analytics failure must not break ledger writes.
+        # Don't propagate -- analytics failure must not break ledger writes.
         pass
 
 async def check_circuit_breakers(db_path: str) -> tuple[bool, list[str]]:

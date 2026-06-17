@@ -13,14 +13,14 @@ Statistical arbitrage (stat arb) exploits persistent mispricings between related
 - Spread must revert to a constant mean or long-run equilibrium relationship
 
 **Residual Mean-Reversion**
-- Model: `spread_t = μ + ρ·spread_{t-1} + ε_t` where |ρ| < 1 for mean-reversion
-- Half-life of deviation: `h = -ln(2)/ln(ρ)`
-- Speed of mean-reversion (ρ) is critical — too slow means资本占用 too high
+- Model: `spread_t = mu + rho.spread_{t-1} + epsilon_t` where |rho| < 1 for mean-reversion
+- Half-life of deviation: `h = -ln(2)/ln(rho)`
+- Speed of mean-reversion (rho) is critical -- too slow means[ziben]本占用 too high
 - Cointegration implies a specific linear combination of non-stationary series is stationary
 
 **Factor Models in Stat Arb**
-- **CAPM**: `E[R_i] = R_f + β_i·(E[R_m] - R_f)` — residuals (alpha) are candidates for stat arb
-- **APT**: Multi-factor: `E[R_i] = R_f + Σβ_{ij}·F_j` — mispriced residuals across factors
+- **CAPM**: `E[R_i] = R_f + beta_i.(E[R_m] - R_f)` -- residuals (alpha) are candidates for stat arb
+- **APT**: Multi-factor: `E[R_i] = R_f + Sumbeta_{ij}.F_j` -- mispriced residuals across factors
 - Industry-specific factor models (Fama-French 3/5 factor) extract alphas
 - Stat arb on residuals after factor exposure removes systematic risk
 
@@ -28,21 +28,21 @@ Statistical arbitrage (stat arb) exploits persistent mispricings between related
 
 ## 2. Pairs Trading: Deep Dive
 
-Pairs trading is the canonical stat arb strategy — going long one asset and short a correlated asset when their spread widens/narrows.
+Pairs trading is the canonical stat arb strategy -- going long one asset and short a correlated asset when their spread widens/narrows.
 
 ### 2.1 Distance Method (Z-Score)
 
 **Normalized Price Ratio**
 ```
 ratio_t = P_a,t / P_b,t
-z_t = (ratio_t - μ_ratio) / σ_ratio
+z_t = (ratio_t - mu_ratio) / sigma_ratio
 ```
 
 **Implementation Steps**
 1. Select candidate pairs (sector, correlation > 0.7)
-2. Compute rolling mean and std of price ratio (lookback: 20–60 min)
-3. Entry: z-score > ±2σ → short spread (short A, long B)
-4. Exit: z-score reverts to ±0.5σ or time-based stop
+2. Compute rolling mean and std of price ratio (lookback: 20-60 min)
+3. Entry: z-score > +/-2sigma -> short spread (short A, long B)
+4. Exit: z-score reverts to +/-0.5sigma or time-based stop
 
 **Issues with Distance Method**
 - Sensitive to lookback window
@@ -55,15 +55,15 @@ z_t = (ratio_t - μ_ratio) / σ_ratio
 Tests whether two non-stationary series have a stable long-run equilibrium.
 
 ```
-Δε_t = α + γ·t + ρ·ε_{t-1} + Σδ_i·Δε_{t-i} + u_t
+Deltaepsilon_t = alpha + gamma.t + rho.epsilon_{t-1} + Sumdelta_i.Deltaepsilon_{t-i} + u_t
 ```
-- Null: No cointegration (ρ = 0)
-- Reject H₀ at 5% CV → cointegration exists
+- Null: No cointegration (rho = 0)
+- Reject H0 at 5% CV -> cointegration exists
 
 **Engle-Granger Two-Step**
-1. Regress Y on X: `Y_t = α + β·X_t + ε_t`
-2. Test residuals ε_t for stationarity (ADF test)
-3. If stationary: form pairs trade on `ε_t`
+1. Regress Y on X: `Y_t = alpha + beta.X_t + epsilon_t`
+2. Test residuals epsilon_t for stationarity (ADF test)
+3. If stationary: form pairs trade on `epsilon_t`
 
 **Johansen Test**
 - Eigenvalue-based test for multiple cointegrating relationships
@@ -72,30 +72,30 @@ Tests whether two non-stationary series have a stable long-run equilibrium.
 
 ### 2.3 Kalman Filter Adaptive Pairs Trading
 
-The Kalman filter dynamically estimates the hedge ratio (β), adapting to regime changes without requiring a fixed lookback window.
+The Kalman filter dynamically estimates the hedge ratio (beta), adapting to regime changes without requiring a fixed lookback window.
 
 **State-Space Model**
 ```
-State equation:  β_t = β_{t-1} + η_t          (random walk hedge ratio)
-Measurement:     Y_t = α_t + β_t·X_t + ε_t    (spread observation)
+State equation:  beta_t = beta_{t-1} + η_t          (random walk hedge ratio)
+Measurement:     Y_t = alpha_t + beta_t.X_t + epsilon_t    (spread observation)
 ```
 
 **Kalman Filter Recursions**
 ```
 Prediction:
-  β_t|t-1 = β_{t-1|t-1}
+  beta_t|t-1 = beta_{t-1|t-1}
   P_t|t-1 = P_{t-1|t-1} + Q                    (Q = state noise variance)
 
 Update:
   K_t = P_t|t-1 / (P_t|t-1 + R)               (Kalman gain)
-  β_t|t = β_t|t-1 + K_t·(Y_t - α - β_t|t-1·X_t)
-  P_t|t = (1 - K_t)·P_t|t-1                   (R = measurement noise)
+  beta_t|t = beta_t|t-1 + K_t.(Y_t - alpha - beta_t|t-1.X_t)
+  P_t|t = (1 - K_t).P_t|t-1                   (R = measurement noise)
 ```
 
 **Spread & Z-Score with Kalman**
 ```
-spread_t = Y_t - β_t·X_t
-z_t = spread_t / √(P_t|t)                      (normalized by filter uncertainty)
+spread_t = Y_t - beta_t.X_t
+z_t = spread_t / sqrt(P_t|t)                      (normalized by filter uncertainty)
 ```
 
 **Advantages over Fixed Window**
@@ -136,11 +136,11 @@ Index arbitrage exploits mispricings between an index (or index ETF) and its con
 
 **The Arbitrage Relationship**
 ```
-Fair ETF value = Σ(w_i · P_i)        (weighted sum of constituents)
+Fair ETF value = Sum(w_i . P_i)        (weighted sum of constituents)
 Basis = ETF_price - Fair_value
 
-If basis > transaction_costs → buy basket, short ETF
-If basis < -transaction_costs → buy ETF, short basket
+If basis > transaction_costs -> buy basket, short ETF
+If basis < -transaction_costs -> buy ETF, short basket
 ```
 
 **Execution Mechanics**
@@ -152,17 +152,17 @@ If basis < -transaction_costs → buy ETF, short basket
 
 **Futures Pricing Relationship**
 ```
-F_t,T = S_t · e^(r-q)(T-t)           (cost-of-carry model)
+F_t,T = S_t . e^(r-q)(T-t)           (cost-of-carry model)
 Basis = F_t,T - S_t
 
-If F > S·e^(r-q)(T-t) → futures overpriced → short futures, long spot
-If F < S·e^(r-q)(T-t) → futures underpriced → long futures, short spot
+If F > S.e^(r-q)(T-t) -> futures overpriced -> short futures, long spot
+If F < S.e^(r-q)(T-t) -> futures underpriced -> long futures, short spot
 ```
 
 **Arbitrage Trigger Thresholds**
 ```
-Trigger_buy = S_t · e^(r-q)(T-t) + tc   (futures expensive)
-Trigger_sell = S_t · e^(r-q)(T-t) - tc  (futures cheap)
+Trigger_buy = S_t . e^(r-q)(T-t) + tc   (futures expensive)
+Trigger_sell = S_t . e^(r-q)(T-t) - tc  (futures cheap)
 
 Practical triggers add buffer for:
   - Bid-ask spread on both legs
@@ -183,12 +183,12 @@ Practical triggers add buffer for:
 1. AP (Authorized Participant) buys underlying stocks
 2. Submits creation order to ETF issuer
 3. Receives ETF shares (in large blocks called "creation units")
-4. Redeem: reverse process → ETF share → underlying stocks
+4. Redeem: reverse process -> ETF share -> underlying stocks
 
 **Arbitrage Band**
 ```
-ETF_price > NAV + costs → AP creates new ETF shares (buys stocks, sells ETF)
-ETF_price < NAV - costs → AP redeems ETF shares (buys ETF, sells stocks)
+ETF_price > NAV + costs -> AP creates new ETF shares (buys stocks, sells ETF)
+ETF_price < NAV - costs -> AP redeems ETF shares (buys ETF, sells stocks)
 
 This keeps ETF market price close to NAV throughout trading day.
 ```
@@ -203,7 +203,7 @@ Market makers (MM) provide liquidity by simultaneously quoting bid and ask price
 
 **Spread Components**
 ```
-Total Spread = 2·s
+Total Spread = 2.s
 s = s_orderflow + s_inventory + s_adverse_selection + s_operation
 
 Microstructure sources:
@@ -216,11 +216,11 @@ Microstructure sources:
 **Garman (1976) Model**
 For a MM quoting in a pure orderflow-driven market:
 ```
-Optimal spread = 2·σ · √(λ·C / μ)
-σ = asset volatility
-λ = order arrival rate (Poisson)
+Optimal spread = 2.sigma . sqrt(lambda.C / mu)
+sigma = asset volatility
+lambda = order arrival rate (Poisson)
 C = cost per trade
-μ = expected profit per trade
+mu = expected profit per trade
 ```
 
 **Stoll (1978) Decomposition**
@@ -239,37 +239,37 @@ The canonical quantitative MM model by Marco Avellaneda & Sasha Stoikov (2008).
 
 **Reservation Price**
 ```
-r_t = s_t - q_t·γ·σ²·(T-t)
+r_t = s_t - q_t.gamma.sigma^2.(T-t)
 
 s_t = mid-price
-γ = inventory risk aversion parameter
-σ = volatility
+gamma = inventory risk aversion parameter
+sigma = volatility
 T = expiry / liquidation horizon
 (T-t) = time remaining
 ```
 
-As `q_t` increases (more long inventory), `r_t` decreases → MM lowers bid to buy less / encourage selling.
+As `q_t` increases (more long inventory), `r_t` decreases -> MM lowers bid to buy less / encourage selling.
 
 **Optimal Bid-Ask Quotes**
 ```
-Bid: p_b = r_t - δ·σ·√(T-t)
-Ask: p_a = r_t + δ·σ·√(T-t)
+Bid: p_b = r_t - delta.sigma.sqrt(T-t)
+Ask: p_a = r_t + delta.sigma.sqrt(T-t)
 
-δ = constant capturing spread parameter (often δ ≈ 0.3–0.6)
+delta = constant capturing spread parameter (often delta ~= 0.3-0.6)
 ```
 
-**Spread Widens Over Time**: As (T-t) decreases, the spread widens (σ·√(T-t) shrinks, but the whole term becomes more dominated by δ).
+**Spread Widens Over Time**: As (T-t) decreases, the spread widens (sigma.sqrt(T-t) shrinks, but the whole term becomes more dominated by delta).
 
 **Maximizing Expected Utility**
 MM maximizes `E[U(W_T)]` where `W_T` is terminal wealth with CRRA utility:
 ```
 max E[U(W_T)] subject to inventory dynamics
-U(W) = W^(1-γ_u) / (1-γ_u), γ_u = risk aversion
+U(W) = W^(1-gamma_u) / (1-gamma_u), gamma_u = risk aversion
 ```
 
 **Practical Adjustments**
 - Add sensitivity to order flow imbalance (OFI)
-- Tweak γ based on current inventory levels
+- Tweak gamma based on current inventory levels
 - Cap maximum inventory `|q_t| < Q_max`
 - Add jump risk for sudden price moves
 
@@ -285,13 +285,13 @@ OBI ∈ [-1, +1]
 ```
 
 **OBI as a Signal**
-- Positive OBI → price likely to rise → MM can skew quotes (wider ask, tighter bid)
-- Negative OBI → price likely to fall → MM skews opposite
+- Positive OBI -> price likely to rise -> MM can skew quotes (wider ask, tighter bid)
+- Negative OBI -> price likely to fall -> MM skews opposite
 - OBI reverts faster than price, giving predictive signal
 
 **Multi-Level OBI**
 ```
-OBI_weighted = Σ(v_i·w_i) / Σ|v_i|
+OBI_weighted = Sum(v_i.w_i) / Sum|v_i|
 v_i = volume at level i (positive for bid, negative for ask)
 w_i = weight (higher weight for closer levels)
 ```
@@ -305,9 +305,9 @@ Informed traders (who know true value) hit the "wrong" side of MM quotes, causin
 
 1. **Quote Skewing**: Adjust quotes based on OFI or flow toxicity
    ```
-   p_b = r_t - δ·σ·√(T-t)·(1 - α·OBI)
-   p_a = r_t + δ·σ·√(T-t)·(1 + α·OBI)
-   α = adverse selection sensitivity
+   p_b = r_t - delta.sigma.sqrt(T-t).(1 - alpha.OBI)
+   p_a = r_t + delta.sigma.sqrt(T-t).(1 + alpha.OBI)
+   alpha = adverse selection sensitivity
    ```
 
 2. **Flow Toxicity Detection**: Track order flow in short windows
@@ -370,7 +370,7 @@ Level 2: B2, Vb2                Level 2: A2, Va2
 
 **Predictive Signals from LOB**
 - **Order Flow Imbalance**: Predictive of next price move at high frequency
-- **Queue Depletion**: When bid queue is almost exhausted → price likely to drop
+- **Queue Depletion**: When bid queue is almost exhausted -> price likely to drop
 - **Resilience**: How fast liquidity returns after large market order
 
 ### 5.3 High-Frequency Market Making
@@ -383,7 +383,7 @@ Level 2: B2, Vb2                Level 2: A2, Va2
 
 **HFT MM Profit Model**
 ```
-P = Σ(ξ_i · s_i) - C_market - C_adverse
+P = Sum(ξ_i . s_i) - C_market - C_adverse
 
 ξ_i = indicator if trade occurs at i (1 = hit ask, 0 = no fill)
 s_i = half-spread at time of fill
@@ -400,11 +400,11 @@ C_adverse = adverse selection loss (informed trader hitting you)
 **Implied Volatility (IV)**
 - Derived from option prices via Black-Scholes inversion
 - Market's expectation of future realized volatility
-- Different strikes give different IV → volatility smile/skew
+- Different strikes give different IV -> volatility smile/skew
 
 **Realized Volatility (RV)**
 ```
-RV = √(Σ ln(r_i)²) · √(252)     (r_i = log returns, 1-min bars)
+RV = sqrt(Sum ln(r_i)^2) . sqrt(252)     (r_i = log returns, 1-min bars)
    = OLS estimator of daily vol
 
 Alternative: Parkinson, Garman-Klass, Rogers-Satchell estimators
@@ -470,7 +470,7 @@ Pairs trading assumes correlation holds. During stress events:
 **Mitigation**
 - Dynamic pair selection (rolling correlation windows)
 - Stress testing: check performance in 2008, 2020-type scenarios
-- Stop-loss triggers based on spread deviation exceeding 3σ
+- Stop-loss triggers based on spread deviation exceeding 3sigma
 - Diversify across uncorrelated pairs
 
 ### 7.2 Drawdown Controls
@@ -497,10 +497,10 @@ Max Drawdown = max(DD_t) over backtest period
 **Constraints by Strategy**
 | Strategy | Capacity | Notes |
 |----------|----------|-------|
-| Pairs Trading | $50M–$500M | Depends on liquidity of pair |
+| Pairs Trading | $50M-$500M | Depends on liquidity of pair |
 | Index Arb | $1B+ | Large capital, small edge |
-| Market Making | $100M–$2B | Bid-ask spread widens with size |
-| HFT | $10M–$100M | Speed advantage degrades with size |
+| Market Making | $100M-$2B | Bid-ask spread widens with size |
+| HFT | $10M-$100M | Speed advantage degrades with size |
 
 **Capacity Scaling**
 - More liquid pairs = higher capacity
@@ -514,16 +514,16 @@ Max Drawdown = max(DD_t) over backtest period
 ### 8.1 Pairs Trading Performance
 
 **Classic Performance Benchmarks**
-- Annual return: 5–15% (retail / small fund)
-- Sharpe ratio: 0.5–1.5 (before costs)
-- Max drawdown: 5–15% in normal conditions
+- Annual return: 5-15% (retail / small fund)
+- Sharpe ratio: 0.5-1.5 (before costs)
+- Max drawdown: 5-15% in normal conditions
 
 **Key Metrics**
 ```
 Spread Hit Rate: % of pairs where spread mean-reverts
 Avg Holding Period: typically 1 day to 1 week
 Turnover: high (daily rebalancing of pairs)
-Slippage: typically 1–5 bps for liquid pairs
+Slippage: typically 1-5 bps for liquid pairs
 ```
 
 **Slippage Impact Example**
@@ -533,8 +533,8 @@ Slippage: typically 1–5 bps for liquid pairs
 ### 8.2 Market Making Performance
 
 **Industry Spreads**
-- US Equity ETFs: 1–3 bps (retail), <0.5 bps (institutional)
-- FX majors (EUR/USD): 0.1–0.3 pips (0.001–0.003%)
+- US Equity ETFs: 1-3 bps (retail), <0.5 bps (institutional)
+- FX majors (EUR/USD): 0.1-0.3 pips (0.001-0.003%)
 - Options: depends heavily on IV rank and product
 
 **MM Profitability Metrics**
@@ -548,8 +548,8 @@ Cancel rate: % of orders cancelled before fill (HFT: 95%+)
 **MM P&L Decomposition**
 ```
 Total P&L = Spread earned + Inventory gains/losses + Adverse selection losses
-Spread earned ≈ 80% of gross in liquid markets
-Adverse selection ≈ 15–20% drag
+Spread earned ~= 80% of gross in liquid markets
+Adverse selection ~= 15-20% drag
 ```
 
 ### 8.3 Risk Metrics Summary
@@ -578,12 +578,12 @@ Adverse selection ≈ 15–20% drag
    - Cointegration testing (Engle-Granger or Johansen)
 
 2. Signal Generation
-   - Compute spread = Y - β·X (Kalman or rolling OLS)
+   - Compute spread = Y - beta.X (Kalman or rolling OLS)
    - z-score = (spread - rolling_mean) / rolling_std
    - Entry: |z| > 2.0; Exit: |z| < 0.5
 
 3. Risk Management
-   - Max positions: 10–20 pairs simultaneously
+   - Max positions: 10-20 pairs simultaneously
    - Position sizing: equal weight or Kelly-based
    - Stop-loss: |z| > 3.0 triggers close
    - Drawdown halt: stop new entries if DD > 5%
@@ -598,7 +598,7 @@ Adverse selection ≈ 15–20% drag
 ```
 1. Quote Generation
    - Compute reservation price r_t via Avellaneda-Stoikov
-   - Quote bid/ask around r_t with spread parameter δ
+   - Quote bid/ask around r_t with spread parameter delta
 
 2. Inventory Management
    - Track real-time inventory q_t
@@ -607,7 +607,7 @@ Adverse selection ≈ 15–20% drag
 
 3. Adverse Selection Monitoring
    - Win rate tracking per side
-   - If fill rate asymmetry → recalibrate quote widths
+   - If fill rate asymmetry -> recalibrate quote widths
    - Cancel passive orders if toxic flow detected
 
 4. Execution & Cancellation
@@ -622,14 +622,14 @@ Adverse selection ≈ 15–20% drag
 
 | Topic | Key Reference |
 |-------|---------------|
-| Pairs Trading | Gatev et al. (2006) — "Pairs Trading: Performance of a Relative Value Arbitrage Rule" |
-| Cointegration | Engle & Granger (1987) — "Cointegration and Error Correction" |
-| Kalman Filter Pairs | Elliot et al. (2008) — "Pairs Trading with Cointegration" |
-| Market Making | Avellaneda & Stoikov (2008) — "High-Frequency Trading in a Limit Order Book" |
-| Market Making Theory | Garman (1976) — "Market Microstructure" |
-| Volatility Arbitrage | Bondarenko (2003) — "Statistical Arbitrage and Market Efficiency" |
-| Index Arbitrage | Burgess (1999) — "Index Arbitrage and the futures market" |
-| HFT LOB | Cont et al. (2010) — "Stochastic Models of Order Book Dynamics" |
+| Pairs Trading | Gatev et al. (2006) -- "Pairs Trading: Performance of a Relative Value Arbitrage Rule" |
+| Cointegration | Engle & Granger (1987) -- "Cointegration and Error Correction" |
+| Kalman Filter Pairs | Elliot et al. (2008) -- "Pairs Trading with Cointegration" |
+| Market Making | Avellaneda & Stoikov (2008) -- "High-Frequency Trading in a Limit Order Book" |
+| Market Making Theory | Garman (1976) -- "Market Microstructure" |
+| Volatility Arbitrage | Bondarenko (2003) -- "Statistical Arbitrage and Market Efficiency" |
+| Index Arbitrage | Burgess (1999) -- "Index Arbitrage and the futures market" |
+| HFT LOB | Cont et al. (2010) -- "Stochastic Models of Order Book Dynamics" |
 
 ---
 

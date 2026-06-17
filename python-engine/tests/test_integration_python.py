@@ -2,7 +2,7 @@
 Integration tests for the Python Engine full screener pipeline.
 
 Tests run_screener() and run_momentum_screener() end-to-end, covering:
-- Regime detection → gate evaluation → portfolio allocation → signal emission
+- Regime detection -> gate evaluation -> portfolio allocation -> signal emission
 - Q4: post_login_initialization calls both screeners
 - Q12: BEAR_RS_ONLY does not early-return from screener
 - Q10: Swing wins over momentum for same ticker
@@ -25,12 +25,12 @@ from unittest.mock import AsyncMock, MagicMock, patch
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
 
-# ─────────────────────────────────────────────────────────────────────
+# ---------------------------------------------------------------------
 # Helpers
-# ─────────────────────────────────────────────────────────────────────
+# ---------------------------------------------------------------------
 
 def _make_bull_nifty_df():
-    """NIFTY data where close is well above EMA50 → BULL regime."""
+    """NIFTY data where close is well above EMA50 -> BULL regime."""
     n = 60
     close = np.linspace(18000, 19500, n)
     df = pd.DataFrame({
@@ -43,7 +43,7 @@ def _make_bull_nifty_df():
 
 
 def _make_bear_nifty_df():
-    """NIFTY data where close is well below EMA50 → BEAR_RS_ONLY."""
+    """NIFTY data where close is well below EMA50 -> BEAR_RS_ONLY."""
     n = 60
     close_arr = np.concatenate([
         np.linspace(19000, 19500, 30),
@@ -75,9 +75,9 @@ def _make_passing_stock_df(base=500.0, n=250):
     return df
 
 
-# ─────────────────────────────────────────────────────────────────────
+# ---------------------------------------------------------------------
 # Test: run_screener swing pipeline
-# ─────────────────────────────────────────────────────────────────────
+# ---------------------------------------------------------------------
 
 class TestRunScreener:
 
@@ -154,9 +154,9 @@ class TestRunScreener:
             await run_screener()
 
 
-# ─────────────────────────────────────────────────────────────────────
+# ---------------------------------------------------------------------
 # Test: Q10 - Swing wins over momentum for same ticker
-# ─────────────────────────────────────────────────────────────────────
+# ---------------------------------------------------------------------
 
 class TestSwingWinsOverMomentumQ10:
 
@@ -206,9 +206,9 @@ class TestSwingWinsOverMomentumQ10:
                 assert "RELIANCE" not in signal_tickers, "RELIANCE should be skipped (open momentum position)"
 
 
-# ─────────────────────────────────────────────────────────────────────
+# ---------------------------------------------------------------------
 # Test: run_momentum_screener
-# ─────────────────────────────────────────────────────────────────────
+# ---------------------------------------------------------------------
 
 class TestRunMomentumScreener:
 
@@ -275,9 +275,9 @@ class TestRunMomentumScreener:
             # (The rejected list is internal, but we can verify it wasn't in accepted signals)
 
 
-# ─────────────────────────────────────────────────────────────────────
+# ---------------------------------------------------------------------
 # Test: Q4 - post_login_initialization calls both screeners
-# ─────────────────────────────────────────────────────────────────────
+# ---------------------------------------------------------------------
 
 class TestPostLoginInitQ4:
 
@@ -326,9 +326,9 @@ class TestPostLoginInitQ4:
             assert "momentum" in call_order
 
 
-# ─────────────────────────────────────────────────────────────────────
+# ---------------------------------------------------------------------
 # Test: Circuit breaker halts screener signals
-# ─────────────────────────────────────────────────────────────────────
+# ---------------------------------------------------------------------
 
 class TestCircuitBreakerHaltsScreener:
 
@@ -358,9 +358,9 @@ class TestCircuitBreakerHaltsScreener:
             assert len(data["halt_reasons"]) > 0
 
 
-# ─────────────────────────────────────────────────────────────────────
+# ---------------------------------------------------------------------
 # Test: Caution regime halves risk
-# ─────────────────────────────────────────────────────────────────────
+# ---------------------------------------------------------------------
 
 class TestCautionRegime:
 
@@ -402,15 +402,15 @@ class TestCautionRegime:
             await run_screener()
 
             import main
-            # If close >= ema50 but < ema50 * 1.02 → CAUTION
+            # If close >= ema50 but < ema50 * 1.02 -> CAUTION
             # The test verifies the regime is set (exact assertion depends on data)
             # The key behavioral check is that risk_pct is halved in CAUTION mode
             # This is verified structurally: run_screener sets risk_pct = settings.RISK_PCT * 0.5
 
 
-# ─────────────────────────────────────────────────────────────────────
+# ---------------------------------------------------------------------
 # Test: Momentum screener skips before market open (09:15 IST)
-# ─────────────────────────────────────────────────────────────────────
+# ---------------------------------------------------------------------
 
 class TestMomentumMarketTimeWindow:
 

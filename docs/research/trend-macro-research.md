@@ -17,8 +17,8 @@ The Donchian Channel is a trend-following indicator formed by price bands derive
 - Long-term: 55-200 periods
 
 **Trading Rules:**
-- **Long Entry**: Price closes above upper band → buy
-- **Short Entry**: Price closes below lower band → sell short
+- **Long Entry**: Price closes above upper band -> buy
+- **Short Entry**: Price closes below lower band -> sell short
 - **Exit**: Price reverses to middle band or opposite signal
 
 **Variations:**
@@ -63,17 +63,17 @@ The Turtle trading system is one of the most famous trend-following approaches, 
 
 **Exponential Moving Average (EMA):**
 - More weight on recent prices
-- Formula: EMA = (Price × k) + (Previous EMA × (1-k)), where k = 2/(n+1)
+- Formula: EMA = (Price x k) + (Previous EMA x (1-k)), where k = 2/(n+1)
 - Best for: Short-to-medium term, faster signal generation
 
 **Weighted Moving Average (WMA):**
 - Linear weighting (most recent = highest weight)
-- Formula: WMA = (P1×1 + P2×2 + ... + Pn×n) / (1+2+...+n)
+- Formula: WMA = (P1x1 + P2x2 + ... + Pnxn) / (1+2+...+n)
 - Best for: Medium-term, balances responsiveness vs. smoothness
 
 **Dual Moving Average Systems:**
-- **Golden Cross**: Short MA crosses above long MA → Buy signal
-- **Death Cross**: Short MA crosses below long MA → Sell signal
+- **Golden Cross**: Short MA crosses above long MA -> Buy signal
+- **Death Cross**: Short MA crosses below long MA -> Sell signal
 - **Common Pairs:**
   - 5/20-day (short-term)
   - 20/50-day (medium-term)
@@ -108,7 +108,7 @@ The Turtle trading system is one of the most famous trend-following approaches, 
 **Methodology:**
 ```
 Signal(t) = sign of return(t-12, t-1)
-Position = Signal × (1/Volatility)
+Position = Signal x (1/Volatility)
 ```
 
 ### 2.2 Volatility Scaling
@@ -117,13 +117,13 @@ Position = Signal × (1/Volatility)
 
 **Implementation:**
 - Target volatility = 40% annualized (or asset-specific)
-- Position = (Target Vol / Realized Vol) × Signal
+- Position = (Target Vol / Realized Vol) x Signal
 - Lookback for volatility: 60-90 days
 
 **Exponential Volatility Estimation:**
 ```
-σ²(t) = λ × σ²(t-1) + (1-λ) × r²(t-1)
-where λ typically 0.94-0.96
+sigma^2(t) = lambda x sigma^2(t-1) + (1-lambda) x r^2(t-1)
+where lambda typically 0.94-0.96
 ```
 
 ### 2.3 Rebalancing Frequency
@@ -268,7 +268,7 @@ where λ typically 0.94-0.96
 **Correlation Structure:**
 ```
 Traditional Portfolio: 
-  Bonds (-) ↔ Stocks (+), low correlation when most needed
+  Bonds (-) <-> Stocks (+), low correlation when most needed
 
 Trend-Following Portfolio:
   Often negatively correlated to stocks in bear markets
@@ -312,9 +312,9 @@ Tertiary: Intraday (execution)
 
 **Combined Signal:**
 ```
-Weekly Return (12M) → Direction bias
-Daily Return (20D) → Entry signal
-Intraday (4H) → Refinement
+Weekly Return (12M) -> Direction bias
+Daily Return (20D) -> Entry signal
+Intraday (4H) -> Refinement
 ```
 
 **Filter Approach:**
@@ -337,11 +337,11 @@ Intraday (4H) → Refinement
 
 **Calculation:**
 ```
-Upper Band = (High + Low) / 2 + Multiplier × ATR
-Lower Band = (High + Low) / 2 - Multiplier × ATR
+Upper Band = (High + Low) / 2 + Multiplier x ATR
+Lower Band = (High + Low) / 2 - Multiplier x ATR
 Supertrend = 
-  If close > upper band → Bullish
-  If close < lower band → Bearish
+  If close > upper band -> Bullish
+  If close < lower band -> Bearish
 ```
 
 ### 6.2 Ichimoku Cloud
@@ -367,7 +367,7 @@ Supertrend =
 
 **Calculation:**
 ```
-SAR(t) = SAR(t-1) + AF × (EP - SAR(t-1))
+SAR(t) = SAR(t-1) + AF x (EP - SAR(t-1))
 where EP = Extreme Price (highest high for longs, lowest low for shorts)
 ```
 
@@ -422,13 +422,13 @@ TQS = (Higher Highs + Higher Lows) / (Total Price Movements)
 
 **Formula:**
 ```
-Position Size = (Risk Allocation) / (ATR × Multiplier)
+Position Size = (Risk Allocation) / (ATR x Multiplier)
 ```
 
 **Example:**
 - Risk allocation per trade: 1% of portfolio
 - 20-day ATR: $2,000
-- Position = $10,000 / ($2,000 × 2) = 2.5 contracts
+- Position = $10,000 / ($2,000 x 2) = 2.5 contracts
 
 **Benefits:**
 - Equal risk contribution across instruments
@@ -476,8 +476,8 @@ Else:
 **Methods:**
 
 **Volatility-Based:**
-- High volatility → longer lookback (smoother signals)
-- Low volatility → shorter lookback (faster signals)
+- High volatility -> longer lookback (smoother signals)
+- Low volatility -> shorter lookback (faster signals)
 
 **State-Space Models:**
 - Hidden Markov Models to detect market regimes
@@ -485,7 +485,7 @@ Else:
 
 **Adaptive Donchian:**
 ```
-Lookback = Base × (Current ATR / Historical ATR)
+Lookback = Base x (Current ATR / Historical ATR)
 ```
 
 ### 8.3 Regime Detection Indicators

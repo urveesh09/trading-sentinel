@@ -12,9 +12,9 @@ dispatch wired into `evaluate_momentum_signal`. Swing regime computed at
 
 | Regime | Position size | R target | Entry? |
 |--------|---------------|----------|--------|
-| R1 Normal | 7% of pool | 2.0R | ✅ Yes |
-| R2 Elevated | 5% of pool | 1.5R | ✅ Yes (tighter) |
-| R3 Crisis | 0% of pool | — | ⛔ **Blocked** (default) |
+| R1 Normal | 7% of pool | 2.0R | [OK] Yes |
+| R2 Elevated | 5% of pool | 1.5R | [OK] Yes (tighter) |
+| R3 Crisis | 0% of pool | -- | [NO ENTRY] **Blocked** (default) |
 
 **Before:** Momentum used a 4-state string (`BULL` / `BEAR_RS_ONLY` /
 `CAUTION` / `UNKNOWN`) and sized at flat 7% with 2.0/1.5R target based on
@@ -32,13 +32,13 @@ in R3 by default** (`MOMENTUM_BLOCK_R3_ENTRIES=True`).
 
 | Setting | Default | Effect |
 |---------|---------|--------|
-| `MOMENTUM_BLOCK_R3_ENTRIES` | `True` | R3 → no entries. Set to `False` to allow (still 0% risk, so still nothing fires). |
+| `MOMENTUM_BLOCK_R3_ENTRIES` | `True` | R3 -> no entries. Set to `False` to allow (still 0% risk, so still nothing fires). |
 | `MOMENTUM_RISK_PCT_R1` | `0.07` | R1 sizing (% of momentum pool). |
 | `MOMENTUM_RISK_PCT_R2` | `0.05` | R2 sizing. |
-| `MOMENTUM_RISK_PCT_R3` | `0.00` | R3 sizing. Defense in depth — even with BLOCK off, 0% risk = no shares. |
+| `MOMENTUM_RISK_PCT_R3` | `0.00` | R3 sizing. Defense in depth -- even with BLOCK off, 0% risk = no shares. |
 | `MOMENTUM_R_TARGET_R1` | `2.0` | R1 target (R-multiples). |
 | `MOMENTUM_R_TARGET_R2` | `1.5` | R2 target. |
-| `MOMENTUM_RISK_PCT` | `0.10` | **Legacy** — still respected when caller does NOT pass `regime=` (backward compat). |
+| `MOMENTUM_RISK_PCT` | `0.10` | **Legacy** -- still respected when caller does NOT pass `regime=` (backward compat). |
 
 ---
 
@@ -47,7 +47,7 @@ in R3 by default** (`MOMENTUM_BLOCK_R3_ENTRIES=True`).
 1. `run_screener()` (swing) computes the regime at 09:20 IST using the
    full Nifty/BankNifty/ATR/breadth pipeline.
 2. It writes the result to `main._momentum_regime_for_today`.
-3. All 19 momentum scans in the day (10:15–14:45) read that cached value.
+3. All 19 momentum scans in the day (10:15-14:45) read that cached value.
 4. **Why not recompute per scan?** With 19 scans/day, recomputing on each
    would flip the regime 5+ times in a noisy session. The swing's 09:20
    compute has hysteresis + 2-scan confirmation; carrying it forward
@@ -88,12 +88,12 @@ MOMENTUM_BLOCK_R3_ENTRIES=False
 
 This allows R3 evaluations to reach MC1-MC6, but `MOMENTUM_RISK_PCT_R3=0.0`
 still produces 0 shares. So the **only behavioral change is rejection
-reason**: `regime_r3_block` → one of the MC1-MC6 gates (e.g.,
+reason**: `regime_r3_block` -> one of the MC1-MC6 gates (e.g.,
 `insufficient_intraday_candles`).
 
 For full removal of regime dispatch, revert the call sites in
 `main.py:run_momentum_screener` and `engine.py:evaluate_momentum_signal`.
-No migration needed — the legacy `MOMENTUM_RISK_PCT` / `MOMENTUM_R_TARGET`
+No migration needed -- the legacy `MOMENTUM_RISK_PCT` / `MOMENTUM_R_TARGET`
 defaults are preserved.
 
 ---
@@ -102,13 +102,13 @@ defaults are preserved.
 
 After merge to `main` and Kite restart:
 
-1. **Day 1–3:** Compare accept rate vs. pre-regime baseline. Expect a
+1. **Day 1-3:** Compare accept rate vs. pre-regime baseline. Expect a
    small dip in R3 days (those were losers anyway). No action needed.
-2. **Day 4–7:** Check that the regime in `MomentumSignal` matches the
+2. **Day 4-7:** Check that the regime in `MomentumSignal` matches the
    swing's logged regime. If mismatch, cache isn't writing.
-3. **Day 8–14:** Compare win rate × avg R-multiple vs. last 30 trading
+3. **Day 8-14:** Compare win rate x avg R-multiple vs. last 30 trading
    days. Expect R2 days to have *higher* win rate (tighter targets =
    fewer "ran past target and reversed" losses).
 4. **Day 15:** Roll decision. If win rate unchanged AND R2 day count
    < 5, keep the feature. If R2 day count > 10 and win rate is worse,
-   tighten `MOMENTUM_R_TARGET_R2` from 1.5 → 1.25.
+   tighten `MOMENTUM_R_TARGET_R2` from 1.5 -> 1.25.

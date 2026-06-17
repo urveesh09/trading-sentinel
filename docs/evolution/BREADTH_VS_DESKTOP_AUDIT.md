@@ -1,13 +1,13 @@
-# Branch vs Desktop — Compatibility Audit
+# Branch vs Desktop -- Compatibility Audit
 
 **Goal:** Verify the `evolve/smart-strategies` branch (15 breadth-enrichment
 commits) will not break the running Desktop system when merged to `main`.
 
 **Method:** Read-only inspection of the diff, set comparison of
-nifty100.json ↔ Desktop's NIFTY_100_TICKERS, full test suite run.
+nifty100.json <-> Desktop's NIFTY_100_TICKERS, full test suite run.
 
 **Date:** 2026-06-15
-**Result:** ✅ **Safe to merge.** Zero risk to the running system.
+**Result:** [OK] **Safe to merge.** Zero risk to the running system.
 
 ---
 
@@ -17,21 +17,21 @@ nifty100.json ↔ Desktop's NIFTY_100_TICKERS, full test suite run.
 - **HEAD:** `176f1d8 feat(infra): OCI relay + Dockerfile vite devDeps fix`
 - **Working tree:** clean
 - **Ahead of origin/main by 1 commit** (the `176f1d8` is unpushed)
-- **Python-engine service is running** (per user) — must not be disturbed
+- **Python-engine service is running** (per user) -- must not be disturbed
 
 ## Branch (the work to merge)
 
 - **Branch:** `evolve/smart-strategies`
 - **15 commits** ahead of `main`
-- **18 files changed** — 13 new, 5 modified
+- **18 files changed** -- 13 new, 5 modified
 - **Test suite:** 346 passed, 1 skipped
-- **Feature flag:** `BREADTH_ENRICHMENT_ENABLED=False` (default — safe)
+- **Feature flag:** `BREADTH_ENRICHMENT_ENABLED=False` (default -- safe)
 
 ---
 
 ## Modified files (the 5 that could affect the running system)
 
-### 1. `python-engine/config.py` — PURE ADDITIONS, no risk
+### 1. `python-engine/config.py` -- PURE ADDITIONS, no risk
 
 Added 13 BREADTH_* settings at lines 184-196. **No existing settings
 were modified.** All new settings have safe defaults. The Settings
@@ -40,16 +40,16 @@ just extra attributes on the existing object.
 
 **Risk to running system:** None.
 
-### 2. `python-engine/engine.py` — ADDITIVE KWARGS, no risk
+### 2. `python-engine/engine.py` -- ADDITIVE KWARGS, no risk
 
 Changes:
 1. Two new optional kwargs at the END of `evaluate_signal`'s signature:
    `breadth_rank: Optional[float] = None`,
    `breadth_pct_above_sma50: Optional[float] = None`.
-2. A new R1 narrow-rally gate (L195-209) — **guarded by
+2. A new R1 narrow-rally gate (L195-209) -- **guarded by
    `if settings.BREADTH_ENRICHMENT_ENABLED`** and **`breadth_pct_above_sma50 is not None`**.
    With flag OFF (the default), this block is a no-op.
-3. A new scoring bonus block (L464-474) — **guarded by
+3. A new scoring bonus block (L464-474) -- **guarded by
    `if settings.BREADTH_ENRICHMENT_ENABLED and breadth_rank is not None`**.
    With flag OFF or rank=None, this block is a no-op.
 4. A new field `narrow_rally_filtered: False` added to the result dict.
@@ -57,16 +57,16 @@ Changes:
    key outside of `test_engine_breadth.py`.
 
 **Call-site analysis** (3 sites in the running system):
-- `main.py:379` (scan loop) — passes 8 kwargs, no breadth kwargs. New
-  kwargs default to None → flag-off path is a no-op.
-- `backtest.py:356` (backtest engine) — passes 8 kwargs, no breadth
-  kwargs. Same: new kwargs default to None → no-op.
-- `main_bkp.py:94` (dead backup file) — not in the import chain, irrelevant.
+- `main.py:379` (scan loop) -- passes 8 kwargs, no breadth kwargs. New
+  kwargs default to None -> flag-off path is a no-op.
+- `backtest.py:356` (backtest engine) -- passes 8 kwargs, no breadth
+  kwargs. Same: new kwargs default to None -> no-op.
+- `main_bkp.py:94` (dead backup file) -- not in the import chain, irrelevant.
 
 **Risk to running system:** None. All existing call sites continue
 to work identically. New behaviour is gated behind the flag.
 
-### 3. `python-engine/main.py` — TWO-PASS SCAN LOOP, low risk
+### 3. `python-engine/main.py` -- TWO-PASS SCAN LOOP, low risk
 
 Changes:
 1. Two new top-level imports: `from breadth import BreadthEngine`,
@@ -75,32 +75,32 @@ Changes:
 2. `breadth_engine = None` module-level global. (Mirrors the existing
    `risk_engine` pattern.)
 3. `build_breadth_engine(kite, settings)` helper (L45-89): with flag
-   OFF, **returns `None` at the first line** — no I/O, no init.
+   OFF, **returns `None` at the first line** -- no I/O, no init.
 4. `build_breadth_kwargs(token, breadth_result)` helper (L91-107): with
    `breadth_result is None` (the flag-off case), **returns `{}`**.
 5. `run_screener` restructured (L448-528):
    - **Pre-loop:** `breadth_engine = build_breadth_engine(kite, settings)`
-     → with flag OFF, `breadth_engine` stays `None`. No Tier 1 call.
+     -> with flag OFF, `breadth_engine` stays `None`. No Tier 1 call.
    - **Pass 1:** same as before (fetches dfs, populates `df_cache`
      and `scan_ltp_by_token` dicts for breadth use, but they don't
      affect any existing logic).
    - **Between passes:** `if breadth_engine is not None and
-     scan_ltp_by_token:` → with flag OFF, `breadth_engine is None` →
+     scan_ltp_by_token:` -> with flag OFF, `breadth_engine is None` ->
      no Tier 2 call.
    - **Pass 2:** walks the cached dfs, calls `evaluate_signal(...)` with
-     `**build_breadth_kwargs(token, breadth_result)` → with flag OFF,
+     `**build_breadth_kwargs(token, breadth_result)` -> with flag OFF,
      this is `**{}` (no-op).
 
 **Behavioral diff with flag OFF (the running system scenario):**
-- ✅ **Same signals fire.** The scan produces the same `raw_signals`
+- [OK] **Same signals fire.** The scan produces the same `raw_signals`
   list because every change is a no-op.
-- ✅ **Same rejection reasons.** No new rejection reason is added in
+- [OK] **Same rejection reasons.** No new rejection reason is added in
   the flag-off path.
-- ⚠️ **Slightly later signal emission within the function.** The
-  function now does Pass 1 → (skipped Tier 2) → Pass 2, where it used
+- [!] **Slightly later signal emission within the function.** The
+  function now does Pass 1 -> (skipped Tier 2) -> Pass 2, where it used
   to do the work inline. Total wall time is similar (no extra Kite
   calls). End-to-end behaviour is identical.
-- ⚠️ **New structlog events** in the function output:
+- [!] **New structlog events** in the function output:
   `breadth_tier1_degraded`, `breadth_tier2_degraded`, etc. These
   fire on the FLAG-ON path only; with flag OFF, only
   `breadth_engine_init_failed` would fire (and only on an init error).
@@ -109,14 +109,14 @@ Changes:
 **Risk to running system:** None. Same outputs, same signal flow,
 same end-to-end behaviour.
 
-### 4. `docs/evolution/CHANGE_SUMMARY.md` — PURE DOCS, no risk
+### 4. `docs/evolution/CHANGE_SUMMARY.md` -- PURE DOCS, no risk
 
-Added a "Phase 2 — Breadth Enrichment" section at the end (24 lines).
+Added a "Phase 2 -- Breadth Enrichment" section at the end (24 lines).
 **No code, no API changes.** Docs are not loaded at runtime.
 
 **Risk to running system:** None.
 
-### 5. (Implicit) All 13 NEW files — PURE ADDITIONS, no risk
+### 5. (Implicit) All 13 NEW files -- PURE ADDITIONS, no risk
 
 New files: `universe.py`, `breadth.py`, `data/nifty100.json`,
 5 new test files, 3 new doc files. None of these are imported by
@@ -127,7 +127,7 @@ imports are guarded by the flag).
 
 ---
 
-## Set comparison: branch nifty100.json ↔ desktop NIFTY_100_TICKERS
+## Set comparison: branch nifty100.json <-> desktop NIFTY_100_TICKERS
 
 The branch's `python-engine/data/nifty100.json` (100 unique tickers) is
 **byte-for-byte identical** (as a set) to the desktop's live
@@ -143,7 +143,7 @@ Identical? True
 **Implication:** if the running system ever loads nifty100.json
 (say, if the flag is enabled on the desktop), the breadth universe
 will be exactly the same as the universe currently in
-NIFTY_100_TICKERS. ✅
+NIFTY_100_TICKERS. [OK]
 
 ---
 
@@ -154,7 +154,7 @@ baseline (which was 304 passed, 1 skipped at the start of this work;
 +42 new breadth tests added across 5 new test files).
 
 The pre-existing skipped test is `test_regime_classifier_during_holiday`
-(unrelated to breadth — VIX data unavailable in test fixtures).
+(unrelated to breadth -- VIX data unavailable in test fixtures).
 
 ---
 
@@ -163,18 +163,18 @@ The pre-existing skipped test is `test_regime_classifier_during_holiday`
 1. **Module import error at python-engine startup** if `breadth.py`
    or `universe.py` has a syntax/import error. **Verified clean:**
    `python -m py_compile main.py engine.py config.py breadth.py
-   universe.py` → all compile. And the 346-test suite passes, which
+   universe.py` -> all compile. And the 346-test suite passes, which
    imports `main` (transitively importing both new modules).
 
 2. **A new test file picks up the wrong `main.py`** (i.e., the
    branch's main.py imports something the desktop's main.py doesn't).
    **Verified clean:** test_main_api.py (the most comprehensive
-   integration test) passes — it imports `main` and exercises
+   integration test) passes -- it imports `main` and exercises
    `/health`, `/signals`, `/positions`, etc. end-to-end.
 
 3. **nifty100.json contains a ticker the desktop's Kite cache doesn't
    recognise.** This would only matter when the flag is enabled
-   (Tier 1 fetches fail → degraded path → existing scoring runs).
+   (Tier 1 fetches fail -> degraded path -> existing scoring runs).
    With flag OFF, the file is never read.
 
 4. **An existing consumer breaks on the new `narrow_rally_filtered: False`

@@ -5,9 +5,9 @@ These verify the wiring from main.run_momentum_screener:
   - Reads the cached regime (set by run_screener at 09:20 IST) via main._momentum_regime_for_today
   - Stamps sig_data['regime'] for any fired signals
   - Passes regime to evaluate_momentum_signal as keyword arg
-  - R3 regime → all tickers rejected with reason "regime_r3_block"
-  - R2 regime → 5% sizing + 1.5R target
-  - R1 regime → 7% sizing + 2.0R target (legacy behavior)
+  - R3 regime -> all tickers rejected with reason "regime_r3_block"
+  - R2 regime -> 5% sizing + 1.5R target
+  - R1 regime -> 7% sizing + 2.0R target (legacy behavior)
 
 We mock the heavy bits (kite, historical fetches) and only assert
 what the momentum screener itself does with the regime signal.
@@ -101,7 +101,7 @@ async def test_run_momentum_screener_stamps_regime_on_fired_signal(monkeypatch, 
     }
 
     def fake_eval(**kwargs):
-        # Regime is passed in as keyword → the wiring happened
+        # Regime is passed in as keyword -> the wiring happened
         assert "regime" in kwargs, "evaluate_momentum_signal must receive regime kwarg"
         assert kwargs["regime"] == Regime.REGIME_1_NORMAL
         return True, fired_sig_dict
@@ -118,7 +118,7 @@ async def test_run_momentum_screener_stamps_regime_on_fired_signal(monkeypatch, 
          patch.object(main, "evaluate_momentum_signal", side_effect=fake_eval), \
          patch("main.datetime", wraps=RealDT) as mock_dt, \
          patch("pandas.read_csv", return_value=_universe_df()):
-        # Force datetime.now(IST) → 11:00 IST 2026-06-16 (inside market hours).
+        # Force datetime.now(IST) -> 11:00 IST 2026-06-16 (inside market hours).
         # `wraps=RealDT` keeps the rest of datetime (UTC, side_effect) working.
         mock_dt.now = lambda tz=None: fake_now.astimezone(tz) if tz else fake_now
         mock_kite.get_intraday = AsyncMock(return_value=_make_intraday_df())
@@ -141,7 +141,7 @@ async def test_run_momentum_screener_stamps_regime_on_fired_signal(monkeypatch, 
 async def test_run_momentum_screener_blocks_all_signals_in_regime_3(monkeypatch, db_path):
     """
     When regime is REGIME_3_CRISIS, evaluate_momentum_signal must be called
-    with the crisis regime, and the dispatcher must return None → no fired signals.
+    with the crisis regime, and the dispatcher must return None -> no fired signals.
     """
     from performance import init_ledger
     from position_tracker import init_positions_db
