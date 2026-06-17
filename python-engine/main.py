@@ -260,6 +260,10 @@ async def lifespan(app: FastAPI):
         os.makedirs(db_dir, exist_ok=True)
     await init_positions_db(settings.DB_PATH)
     await init_ledger(settings.DB_PATH)
+    # [ANALYTICS 2026-06-16] Create the trade_outcomes table for the
+    # self-improvement loop. Idempotent.
+    from analytics import init_analytics_db
+    await init_analytics_db(settings.DB_PATH)
     
     asyncio.create_task(kite.refresh_instrument_cache())
     scheduler.add_job(kite.refresh_instrument_cache, 'cron', hour=8, minute=0)
@@ -990,6 +994,49 @@ async def run_momentum_screener():
         settings.MAX_MOMENTUM_POSITIONS
     )
 
+    # [MOMENTUM-LOG 2026-06-16] Append every signal (accepted + rejected) to the
+    # CSV + SQLite log. Source of truth for future backtests. Gated by
+    # MOMENTUM_LOG_ENABLED. Failures here must NOT break the live scan.
+    if settings.MOMENTUM_LOG_ENABLED:
+        try:
+            from signal_log import (
+                build_row, init_momentum_log_db, log_momentum_batch,
+                make_scan_id, now_utc_iso,
+            )
+            # Lazy table creation — only needs to run once but is idempotent.
+            await init_momentum_log_db(settings.DB_PATH)
+            scan_id = make_scan_id()
+            scanned_at = now_utc_iso()
+            rows = []
+            for s in raw_momentum:
+                rows.append(build_row(
+                    ticker=s.get("ticker", "UNKNOWN"),
+                    accepted=True,
+                    result=s,
+                    scan_id=scan_id,
+                    scanned_at=scanned_at,
+                    regime=today_regime.name if today_regime else None,
+                    bankroll=bankroll,
+                    momentum_pool=momentum_pool,
+                ))
+            # Rejected signals: include both pre-gate (raw_rejected_momentum) and
+            # post-gate (rejected_mom) so the log captures the full funnel.
+            for s in (raw_rejected_momentum + rejected_mom):
+                ticker = s.get("ticker", "UNKNOWN") if isinstance(s, dict) else getattr(s, "ticker", "UNKNOWN")
+                rows.append(build_row(
+                    ticker=ticker,
+                    accepted=False,
+                    result=s if isinstance(s, dict) else vars(s),
+                    scan_id=scan_id,
+                    scanned_at=scanned_at,
+                    regime=today_regime.name if today_regime else None,
+                    bankroll=bankroll,
+                    momentum_pool=momentum_pool,
+                ))
+            await log_momentum_batch(settings.DB_PATH, rows)
+        except Exception as e:
+            logger.error("momentum_log_failed", error=str(e))
+
     async with state_lock:
         global signaled_momentum_today, last_momentum_date
         # Clear short-term memory at the start of a new trading day
@@ -1201,7 +1248,7 @@ async def auto_square_momentum():
                       realised_pnl, r_multiple, ticker))
                 await db.commit()
 
-            await record_trade_close(settings.DB_PATH, ticker, realised_pnl)
+            await record_trade_close(settings.DB_PATH, ticker, realised_pnl, r_multiple=r_multiple, notes="auto_square")
             logger.info("auto_square_position_closed", ticker=ticker,
                         exit_price=ltp, pnl=round(realised_pnl, 2), r=round(r_multiple, 4))
 
@@ -1404,7 +1451,7 @@ async def close_position(request: Request):
               realised_pnl, r_multiple, ticker))
         await db.commit()
 
-    await record_trade_close(settings.DB_PATH, ticker, realised_pnl)
+    await record_trade_close(settings.DB_PATH, ticker, realised_pnl, r_multiple=r_multiple, notes="manual")
     logger.info("momentum_position_closed", ticker=ticker,
                 exit_price=exit_price, pnl=realised_pnl, r=r_multiple)
 
@@ -1500,6 +1547,26 @@ async def get_circuit_breaker():
 @app.get("/rejected")
 async def get_rejected_signals():
     return {"data": []}
+
+# [ANALYTICS 2026-06-16] Self-improvement endpoints.
+# GET /analytics/funnel?days=7     -> gate rejection counts (JSON)
+# GET /analytics/suggestions?days=14 -> actionable suggestions (JSON)
+# GET /analytics/outcomes?days=14  -> outcome correlator (JSON)
+# CLI: `python -m analytics --days 14`  for a human terminal report.
+@app.get("/analytics/funnel")
+async def get_funnel(days: int = 7):
+    from analytics import gate_funnel_report
+    return await gate_funnel_report(settings.DB_PATH, days=days)
+
+@app.get("/analytics/outcomes")
+async def get_outcomes(days: int = 14):
+    from analytics import outcome_correlator
+    return await outcome_correlator(settings.DB_PATH, days=days)
+
+@app.get("/analytics/suggestions")
+async def get_suggestions(days: int = 14):
+    from analytics import strategy_suggestions
+    return await strategy_suggestions(settings.DB_PATH, days=days)
 async def notify_screener_results(
     strategy_type: str,
     accepted: list,

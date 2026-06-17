@@ -718,6 +718,10 @@ def evaluate_momentum_signal(
       [MC4] Current close in top 20% of today's intraday session range
       [MC5] Daily ATR exhaustion: target_distance <= remaining_fuel * ATR_FUEL_BUFFER
       [MC6] Morphology: close_position_score >= MOMENTUM_MORPHOLOGY_MIN_SCORE
+      [MC0] Time-of-day gate: minutes-from-915 within [MOMENTUM_ENTRY_START_MIN, MOMENTUM_ENTRY_END_MIN]
+            (only if MOMENTUM_USE_TIME_GATE=True; default ON to skip open/close chop)
+      [MC7] RVOL filter: last-bar volume >= MOMENTUM_RVOL_MIN_RATIO × avg(lookback bars)
+            (only if MOMENTUM_USE_RVOL=True; default OFF — well-evidenced but new)
 
     Risk:
       [MR1] Stop loss = low of the breakout candle (last candle)
@@ -728,6 +732,30 @@ def evaluate_momentum_signal(
     """
     if len(df) < min_candles:
         return False, {"reject_reason": "min_candles_not_met", "count": len(df)}
+
+    # [MC0] Time-of-day gate (opt-in via MOMENTUM_USE_TIME_GATE; default ON)
+    # Skip the first 15-min open chop and the last 30-min profit-taking noise.
+    # Minutes are measured from 9:15 IST; defaults = 10:00 (45 min) to 14:45 (840 min).
+    if settings.MOMENTUM_USE_TIME_GATE and len(df) > 0:
+        last_bar_ts = df.index[-1]
+        ts_hour   = getattr(last_bar_ts, "hour", None)
+        ts_minute = getattr(last_bar_ts, "minute", None)
+        if ts_hour is not None and ts_minute is not None:
+            minutes_from_open = (ts_hour - 9) * 60 + ts_minute - 15
+            if minutes_from_open < settings.MOMENTUM_ENTRY_START_MIN:
+                return False, {
+                    "reject_reason":     "MC0_too_early",
+                    "minutes_from_open": minutes_from_open,
+                    "min_required":      settings.MOMENTUM_ENTRY_START_MIN,
+                }
+            if minutes_from_open > settings.MOMENTUM_ENTRY_END_MIN:
+                return False, {
+                    "reject_reason":     "MC0_too_late",
+                    "minutes_from_open": minutes_from_open,
+                    "max_allowed":       settings.MOMENTUM_ENTRY_END_MIN,
+                }
+        # If index has no hour/minute (e.g. unit tests with int index) — skip gate
+        # rather than crashing. The operator can spot this in the signal log.
 
     df = df.copy()
     vwap = calc_vwap(df)
@@ -789,6 +817,27 @@ def evaluate_momentum_signal(
             "vol_ratio":          round(vol_ratio_intraday, 3),
             "vol_threshold_used": round(vol_surge_threshold, 3),
         }
+
+    # [MC7] RVOL filter (opt-in via MOMENTUM_USE_RVOL; default OFF)
+    # Compares last-bar volume against a longer-term 15-min average.
+    # Distinct from MC3 which uses a 10-bar lookback — MC7 catches "above-average
+    # for the day" vs MC3's "above-recent-15-min-bar" signal. Backed by every
+    # credible ORB / momentum study (orbsetups.com 2026, dailybulls.in 2026,
+    # intradaylab.com 2026). Default OFF: opt-in once the operator has 30+ trades
+    # of signal-log data confirming the threshold is appropriate for this universe.
+    if settings.MOMENTUM_USE_RVOL:
+        lookback_rvol = min(len(df) - 1, settings.MOMENTUM_RVOL_LOOKBACK)
+        if lookback_rvol >= 5:
+            avg_vol_rvol = df['volume'].iloc[-lookback_rvol-1:-1].mean()
+            if avg_vol_rvol > 0:
+                rvol_ratio = current_vol / avg_vol_rvol
+                if rvol_ratio < settings.MOMENTUM_RVOL_MIN_RATIO:
+                    return False, {
+                        "reject_reason":    "MC7_rvol_insufficient",
+                        "rvol_ratio":       round(rvol_ratio, 3),
+                        "rvol_threshold":   settings.MOMENTUM_RVOL_MIN_RATIO,
+                        "rvol_lookback":    settings.MOMENTUM_RVOL_LOOKBACK,
+                    }
 
 
     # [MC4] REPLACED: Close must be in top 20% of today's intraday session range (intraday strength).
@@ -942,6 +991,67 @@ def evaluate_momentum_signal(
         "effective_r_target":  effective_r_target,
         "entry_price":         round(current_close, 2),
         "target":              round(target, 2),
+        # [MOMENTUM-LOG 2026-06-16] Extra context for the signal log so a
+        # future backtest can reconstruct why this signal was accepted. These
+        # are also written to raw_rejected_momentum in the caller.
+        "intraday_high":       round(intraday_high, 2),
+        "intraday_low":        round(intraday_low, 2),
     }
+    # Attach minutes_from_open + rvol_ratio + rsi_7 if available (gate already
+    # computed these, but they're locals — easiest to leave for the caller to
+    # compute from the same df if needed for the log). The caller has the df
+    # so the log enrichment happens in main.py's scan loop.
     return True, result
+
+
+def evaluate_mc8_rsi_trim(
+    df_intra: pd.DataFrame,
+) -> dict:
+    """
+    [MC8] RSI-based partial-trim evaluator (opt-in via MOMENTUM_USE_RSI_TRIM).
+
+    Returns a dict describing whether a 50% partial trim should fire, plus the
+    RSI(7) value for the signal log. The caller (position_tracker) is responsible
+    for actually executing the trim — this function is the decision only.
+
+    Logic: if RSI(length=MOMENTUM_RSI_TRIM_LENGTH, default 7) on the last closed
+    15-min bar >= MOMENTUM_RSI_TRIM_THRESHOLD (default 70), recommend trim_50.
+    RSI(7) >= 70 on 15-min is the published sweet spot for the 71% win-rate
+    variant in the 4-variant ORB study (dailybulls.in 2026). Default OFF — opt
+    in once the operator has signal-log data on whether the threshold fits this
+    universe (Indian mid-caps may have very different RSI dynamics than US ETFs).
+
+    Returns:
+      {"should_trim": bool, "rsi_7": float|None, "threshold": float, "reason": str}
+    """
+    out = {
+        "should_trim": False,
+        "rsi_7":       None,
+        "threshold":   settings.MOMENTUM_RSI_TRIM_THRESHOLD,
+        "reason":      "MC8_disabled",
+    }
+    if not settings.MOMENTUM_USE_RSI_TRIM:
+        return out
+    if df_intra is None or len(df_intra) < settings.MOMENTUM_RSI_TRIM_LENGTH + 1:
+        out["reason"] = "MC8_insufficient_candles"
+        return out
+
+    try:
+        close_series = df_intra["close"]
+        rsi_series = calc_rsi_series(
+            close_series, length=settings.MOMENTUM_RSI_TRIM_LENGTH
+        )
+        rsi_val = float(rsi_series.iloc[-1])
+        out["rsi_7"] = round(rsi_val, 2)
+        if rsi_val >= settings.MOMENTUM_RSI_TRIM_THRESHOLD:
+            out["should_trim"] = True
+            out["reason"]      = "MC8_rsi_overbought"
+        else:
+            out["reason"]      = "MC8_rsi_under_threshold"
+        return out
+    except Exception as e:
+        out["reason"] = f"MC8_calc_error:{e}"
+        return out
+
+
 
