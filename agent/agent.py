@@ -263,9 +263,9 @@ def send_telegram_alert(signal: Dict, analysis: Dict):
     sig_id = ticker                 # FIX: Deduplication ID is now the ticker
     
     if not analysis:
-        text = f"[CRIT] **SYSTEM FALLBACK: {ticker}** [CRIT]\nPrice: {price} | TGT: {target} | SL: {sl}\n[!] AI Sentiment analysis failed. Manual review required."
+        text = f"🚨 **SYSTEM FALLBACK: {ticker}** 🚨\nPrice: {price} | TGT: {target} | SL: {sl}\n⚠️ AI Sentiment analysis failed. Manual review required."
     else:
-        text = f"[STATS] **TRADE ALERT: {ticker}**\n\n**Metrics:** Price: {price} | TGT: {target} | SL: {sl}\n**Conviction Score:** {analysis.get('conviction_score', 'N/A')}/100\n\n**Pitch:**\n{analysis.get('pitch', 'N/A')}\n\n**Rationale:**\n{analysis.get('rationale', 'N/A')}\n\n**Risks:**\n{analysis.get('risks', 'N/A')}"
+        text = f"📊 **TRADE ALERT: {ticker}**\n\n**Metrics:** Price: {price} | TGT: {target} | SL: {sl}\n**Conviction Score:** {analysis.get('conviction_score', 'N/A')}/100\n\n**Pitch:**\n{analysis.get('pitch', 'N/A')}\n\n**Rationale:**\n{analysis.get('rationale', 'N/A')}\n\n**Risks:**\n{analysis.get('risks', 'N/A')}"
 
     # [CRIT-001/002] Unified callback format: ACTION:signal_id:unix_ts
     # Keeps payload well under Telegram's 64-byte callback_data limit.
@@ -275,8 +275,8 @@ def send_telegram_alert(signal: Dict, analysis: Dict):
     keyboard = {
         "inline_keyboard": [
             [
-                {"text": "[OK] EXECUTE", "callback_data": f"EXEC:{safe_sig_id}:{ts}"},
-                {"text": "[X] REJECT",  "callback_data": f"REJ:{safe_sig_id}:{ts}"}
+                {"text": "✅ EXECUTE", "callback_data": f"EXEC:{safe_sig_id}:{ts}"},
+                {"text": "❌ REJECT",  "callback_data": f"REJ:{safe_sig_id}:{ts}"}
             ]
         ]
     }
@@ -301,13 +301,13 @@ def system_health_check(event_type: str):
         res.raise_for_status()
         
         if event_type == "OPEN":
-            msg = "[OK] **MARKET OPEN**\nTrading Sentinel is ONLINE.\nQuant Engine: [OK] Healthy\nAgent: [OK] Active\nReady to hunt. [LIVE]"
+            msg = "✅ **MARKET OPEN**\nTrading Sentinel is ONLINE.\nQuant Engine: ✅ Healthy\nAgent: ✅ Active\nReady to hunt. 🦅"
         else:
-            msg = "[STOP] **MARKET CLOSED**\nTrading Sentinel is SLEEPING.\nQuant Engine: [OK] Survived the day\nSee you tomorrow. [NIGHT]"
-            
+            msg = "🛑 **MARKET CLOSED**\nTrading Sentinel is SLEEPING.\nQuant Engine: ✅ Survived the day\nSee you tomorrow. 🌙"
+
     except Exception as e:
         # The Engine is dead or unreachable
-        msg = f"[CRIT] **CRITICAL SYSTEM FAILURE** [CRIT]\nEvent: {event_type}\nError: Quant Engine Unreachable!\nDetails: `{e}`\n[!] Wake up and check Docker!"
+        msg = f"🚨 **CRITICAL SYSTEM FAILURE** 🚨\nEvent: {event_type}\nError: Quant Engine Unreachable!\nDetails: `{e}`\n⚠️ Wake up and check Docker!"
 
     url = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage"
     payload = {"chat_id": TELEGRAM_CHAT_ID, "text": msg, "parse_mode": "Markdown"}
@@ -373,13 +373,13 @@ def send_momentum_telegram_alert(
     ptype  = signal.get("product_type", "MIS")
     ratio  = signal.get("cost_ratio", 0)
 
-    header = f"[HOT] INTRADAY MOMENTUM: {ticker} ({ptype})"
+    header = f"⚡ INTRADAY MOMENTUM: {ticker} ({ptype})"
 
     if not analysis:
         text = (f"{header}\n"
                 f"Price: Rs{price} | VWAP: Rs{vwap}\n"
                 f"Target: Rs{target} | SL: Rs{sl}\n"
-                f"[!] AI analysis failed. Manual review required.\n"
+                f"⚠️ AI analysis failed. Manual review required.\n"
                 f"Auto-square at 15:15 IST.")
     else:
         text = (f"{header}\n\n"
@@ -389,16 +389,16 @@ def send_momentum_telegram_alert(
                 f"Conviction: {analysis.get('conviction_score')}/100\n\n"
                 f"Pitch: {analysis.get('pitch', 'N/A')}\n"
                 f"Risk: {analysis.get('risks', 'N/A')}\n\n"
-                f"[!] INTRADAY: Auto-square at 15:15 IST regardless of P&L.")
+                f"⚠️ INTRADAY: Auto-square at 15:15 IST regardless of P&L.")
 
     # [CRIT-001/002] Unified callback format: ACTION:signal_id:unix_ts
     sig_id = f"{ticker}_MOM"[:40]
     ts = int(time.time())
     keyboard = {
         "inline_keyboard": [[
-            {"text": "[OK] EXECUTE INTRADAY",
+            {"text": "✅ EXECUTE INTRADAY",
              "callback_data": f"EM:{sig_id}:{ts}"},
-            {"text": "[X] REJECT",
+            {"text": "❌ REJECT",
              "callback_data": f"REJ:{sig_id}:{ts}"}
         ]]
     }

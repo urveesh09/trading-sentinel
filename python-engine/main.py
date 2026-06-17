@@ -1154,7 +1154,7 @@ async def momentum_eod_warning():
         async with _httpx.AsyncClient() as _client:
             await _client.post(
                 f"{settings.CONTAINER_A_URL}/api/internal/notify",
-                json={"message": f"[!] AUTO-SQUARE in 5 min: {tickers}"},
+                json={"message": f"⚠️ AUTO-SQUARE in 5 min: {tickers}"},
                 headers={"X-Internal-Secret": settings.INTERNAL_API_SECRET},
                 timeout=5.0
             )
@@ -1164,7 +1164,7 @@ async def momentum_eod_warning():
 async def _notify_telegram_square_off_failure(ticker: str, pos: dict):
     """Notify Telegram about auto-square failure for manual intervention."""
     import httpx as _httpx
-    msg = f"[CRIT] **CRITICAL: Auto-Square Failed** [CRIT]\nTicker: {ticker}\nShares: {pos['shares']}\nPlease square off manually in Zerodha immediately!"
+    msg = f"🚨 **CRITICAL: Auto-Square Failed** 🚨\nTicker: {ticker}\nShares: {pos['shares']}\nPlease square off manually in Zerodha immediately!"
     try:
         async with _httpx.AsyncClient() as _client:
             await _client.post(
@@ -1191,12 +1191,12 @@ async def _notify_momentum_heartbeat(
     rejected_count = len(rejected)
 
     msg = (
-        f"[TIME] **Momentum Scan @ {time_str}**\n"
+        f"⏱ **Momentum Scan @ {time_str}**\n"
         f"Scanned: `{tickers_scanned}` | Raw hits: `{raw_signals_count}` | Accepted: `{accepted_count}`\n"
         f"Rejected: `{rejected_count}` | Pool: `Rs{momentum_pool:,.2f}`\n"
     )
     if accepted_count == 0:
-        msg += "[X] No new signals - all gates filtered out.\n"
+        msg += "❌ No new signals - all gates filtered out.\n"
 
     if rejected:
         # Group rejections by reason
@@ -1218,7 +1218,7 @@ async def _notify_momentum_heartbeat(
         }
         interesting = [r for r in rejected if r.get("reject_reason") not in _skip]
         if interesting:
-            msg += "\n[SEARCH] **Sample Gate Failures:**\n"
+            msg += "\n🔍 **Sample Gate Failures:**\n"
             for r in interesting[:8]:
                 ticker = r.get("ticker", "???")
                 reason = r.get("reject_reason", "unknown").replace("_", " ").title()
@@ -1462,21 +1462,21 @@ async def notify_screener_results(
     """
     import httpx as _httpx
     
-    msg = f"[SEARCH] **{strategy_type} Screener Run**\n"
+    msg = f"🔍 **{strategy_type} Screener Run**\n"
     msg += f"Regime: `{regime}` | Bankroll: `Rs{bankroll:,.2f}`\n"
     if pool:
         msg += f"Strategy Pool: `Rs{pool:,.2f}`\n"
     msg += "---"
     
     if accepted:
-        msg += f"\n[OK] **Signals Found ({len(accepted)}):**\n"
+        msg += f"\n✅ **Signals Found ({len(accepted)}):**\n"
         for s in accepted:
             ticker = s.ticker if hasattr(s, 'ticker') else s.get('ticker')
             price = s.close if hasattr(s, 'close') else s.get('close')
             shares = s.shares if hasattr(s, 'shares') else s.get('shares')
             msg += f"* **{ticker}** @ {price} (Qty: {shares})\n"
     else:
-        msg += "\n[X] No signals passed all filters."
+        msg += "\n❌ No signals passed all filters."
 
 
     if rejected:
@@ -1495,7 +1495,7 @@ async def notify_screener_results(
         
         if len(rejected) > 0:
             # Group specific rejections by ticker for meaningful examples
-            msg += "\n[SEARCH] **Rejected Tickers:**\n"
+            msg += "\n🔍 **Rejected Tickers:**\n"
             # Sort rejections to show the most "interesting" ones first (e.g. not empty data)
             interesting_rejections = [r for r in rejected if "empty" not in r.get('reject_reason', '').lower()]
             if not interesting_rejections:
