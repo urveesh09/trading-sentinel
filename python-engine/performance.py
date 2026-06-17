@@ -37,7 +37,7 @@ async def current_bankroll(db_path: str) -> float:
         row = await cursor.fetchone()
         return row[0] if row else settings.INITIAL_BANKROLL
 
-async def record_trade_close(db_path: str, ticker: str, pnl: float):
+async def record_trade_close(db_path: str, ticker: str, pnl: float, r_multiple: float | None = None, notes: str | None = None):
     # [BK2]
     before = await current_bankroll(db_path)
     after = before + pnl
@@ -47,6 +47,14 @@ async def record_trade_close(db_path: str, ticker: str, pnl: float):
             (datetime.now(timezone.utc).isoformat(), "TRADE_CLOSED", ticker, pnl, before, after)
         )
         await db.commit()
+    # [ANALYTICS 2026-06-16] Side-effect: record the trade outcome + join with
+    # the signal-log row that birthed it. Best-effort; never raises.
+    try:
+        from analytics import record_trade_outcome
+        await record_trade_outcome(db_path, ticker, pnl, r_multiple=r_multiple, notes=notes)
+    except Exception:
+        # Don't propagate — analytics failure must not break ledger writes.
+        pass
 
 async def check_circuit_breakers(db_path: str) -> tuple[bool, list[str]]:
     halted = False

@@ -200,6 +200,10 @@ async def lifespan(app: FastAPI):
         os.makedirs(db_dir, exist_ok=True)
     await init_positions_db(settings.DB_PATH)
     await init_ledger(settings.DB_PATH)
+    # [ANALYTICS 2026-06-16] Create the trade_outcomes table for the
+    # self-improvement loop. Idempotent.
+    from analytics import init_analytics_db
+    await init_analytics_db(settings.DB_PATH)
     
     asyncio.create_task(kite.refresh_instrument_cache())
     scheduler.add_job(kite.refresh_instrument_cache, 'cron', hour=8, minute=0)
@@ -1126,7 +1130,7 @@ async def auto_square_momentum():
                       realised_pnl, r_multiple, ticker))
                 await db.commit()
 
-            await record_trade_close(settings.DB_PATH, ticker, realised_pnl)
+            await record_trade_close(settings.DB_PATH, ticker, realised_pnl, r_multiple=r_multiple, notes="auto_square")
             logger.info("auto_square_position_closed", ticker=ticker,
                         exit_price=ltp, pnl=round(realised_pnl, 2), r=round(r_multiple, 4))
 
@@ -1329,7 +1333,7 @@ async def close_position(request: Request):
               realised_pnl, r_multiple, ticker))
         await db.commit()
 
-    await record_trade_close(settings.DB_PATH, ticker, realised_pnl)
+    await record_trade_close(settings.DB_PATH, ticker, realised_pnl, r_multiple=r_multiple, notes="manual")
     logger.info("momentum_position_closed", ticker=ticker,
                 exit_price=exit_price, pnl=realised_pnl, r=r_multiple)
 
@@ -1425,6 +1429,26 @@ async def get_circuit_breaker():
 @app.get("/rejected")
 async def get_rejected_signals():
     return {"data": []}
+
+# [ANALYTICS 2026-06-16] Self-improvement endpoints.
+# GET /analytics/funnel?days=7     -> gate rejection counts (JSON)
+# GET /analytics/suggestions?days=14 -> actionable suggestions (JSON)
+# GET /analytics/outcomes?days=14  -> outcome correlator (JSON)
+# CLI: `python -m analytics --days 14`  for a human terminal report.
+@app.get("/analytics/funnel")
+async def get_funnel(days: int = 7):
+    from analytics import gate_funnel_report
+    return await gate_funnel_report(settings.DB_PATH, days=days)
+
+@app.get("/analytics/outcomes")
+async def get_outcomes(days: int = 14):
+    from analytics import outcome_correlator
+    return await outcome_correlator(settings.DB_PATH, days=days)
+
+@app.get("/analytics/suggestions")
+async def get_suggestions(days: int = 14):
+    from analytics import strategy_suggestions
+    return await strategy_suggestions(settings.DB_PATH, days=days)
 async def notify_screener_results(
     strategy_type: str,
     accepted: list,
