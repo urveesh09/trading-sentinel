@@ -22,9 +22,9 @@ from position_tracker import (
 )
 
 
-# ─────────────────────────────────────────────────────────────────
+# -----------------------------------------------------------------
 # Regime-aware Chandelier (1: wider trail in calm markets)
-# ─────────────────────────────────────────────────────────────────
+# -----------------------------------------------------------------
 
 
 @pytest.mark.asyncio
@@ -33,7 +33,7 @@ async def test_regime1_wider_trail_does_not_trigger_stop_on_3pct_pullback(db_pat
 
     Setup: position at 500, ATR=10, regime=REGIME_1. Expected stop = high - 3.5*10 = high - 35.
     If high=560, stop = 525. A pullback to 530 should NOT trigger (still 5pts above stop).
-    With old 3.0x ATR, stop would be 530 — exactly at close, would trigger.
+    With old 3.0x ATR, stop would be 530 -- exactly at close, would trigger.
     """
     await init_positions_db(db_path)
     await _insert_position(
@@ -68,7 +68,7 @@ async def test_regime3_tighter_trail_triggers_on_2pct_pullback(db_path):
 
     Setup: position at 500, ATR=10, regime=REGIME_3. Expected stop = high - 2.5*10 = high - 25.
     If high=560, stop = 535. A pullback to 530 SHOULD trigger (5pts below stop).
-    With old 3.0x ATR, stop would be 530 — same as close, would NOT trigger.
+    With old 3.0x ATR, stop would be 530 -- same as close, would NOT trigger.
     """
     await init_positions_db(db_path)
     await _insert_position(
@@ -104,9 +104,9 @@ async def test_regime3_tighter_trail_triggers_on_2pct_pullback(db_path):
         assert True, "Position correctly closed by tighter Regime 3 trail"
 
 
-# ─────────────────────────────────────────────────────────────────
+# -----------------------------------------------------------------
 # Hard cap on Regime 1 (5R absolute ceiling)
-# ─────────────────────────────────────────────────────────────────
+# -----------------------------------------------------------------
 
 
 @pytest.mark.asyncio
@@ -127,7 +127,7 @@ async def test_regime1_hard_cap_fires_above_5R(db_path):
         target_1=537.5,
         target_2=800.0,  # Intentionally above 5R cap
         atr_14_at_entry=10.0,
-        highest_close_since_entry=650.0,  # 6R — above the 5R cap
+        highest_close_since_entry=650.0,  # 6R -- above the 5R cap
         status="OPEN",
         regime_at_entry="REGIME_1_NORMAL",
     )
@@ -146,9 +146,9 @@ async def test_regime1_hard_cap_fires_above_5R(db_path):
     )
 
 
-# ─────────────────────────────────────────────────────────────────
-# Backward compatibility — no regime_at_entry uses legacy mult
-# ─────────────────────────────────────────────────────────────────
+# -----------------------------------------------------------------
+# Backward compatibility -- no regime_at_entry uses legacy mult
+# -----------------------------------------------------------------
 
 
 @pytest.mark.asyncio
@@ -175,7 +175,7 @@ async def test_legacy_position_uses_legacy_chandelier_mult(db_path):
         atr_14_at_entry=10.0,
         highest_close_since_entry=560.0,
         status="OPEN",
-        # NOTE: no regime_at_entry set — defaults to None/legacy
+        # NOTE: no regime_at_entry set -- defaults to None/legacy
     )
 
     # Day 2: price pulls back to 528 (just below legacy 3.0x trail = 530)
@@ -193,9 +193,9 @@ async def test_legacy_position_uses_legacy_chandelier_mult(db_path):
     # Either way, the legacy path is using 3.0x (not Regime 1's 3.5x)
 
 
-# ─────────────────────────────────────────────────────────────────
-# Insert helper (local copy — extends the file's existing _insert_position)
-# ─────────────────────────────────────────────────────────────────
+# -----------------------------------------------------------------
+# Insert helper (local copy -- extends the file's existing _insert_position)
+# -----------------------------------------------------------------
 
 
 async def _insert_position(db_path, **kwargs):

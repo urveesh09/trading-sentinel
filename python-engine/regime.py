@@ -1,5 +1,5 @@
 """
-regime.py — VIX-Free Volatility-Responsive Market Regime Detection Engine.
+regime.py -- VIX-Free Volatility-Responsive Market Regime Detection Engine.
 
 Replaces India VIX (unavailable via Kite) with a dual-component volatility signal:
   1. ATR Compression Ratio  (primary, 60% weight): Nifty ATR_14 / ATR_14_SMA_200
@@ -26,7 +26,7 @@ logger = structlog.get_logger()
 
 # Default VIX when live data is unavailable (used in VIX-backward-compat mode only).
 # Calibrated to produce Regime 1 (score=100, no penalty) with the standard
-# 100.0 - (vix - 12.0) * 5.0 formula: 18.0 → 100.0 - 30.0 = 70.0.
+# 100.0 - (vix - 12.0) * 5.0 formula: 18.0 -> 100.0 - 30.0 = 70.0.
 VIX_DEFAULT = 18.0
 
 
@@ -71,7 +71,7 @@ class RegimeEngine:
         self.current_regime: Regime = Regime.UNKNOWN
         self.current_score: float = 100.0
         self._prior_regime: Regime = Regime.UNKNOWN
-        # Start at 0 so first scan → 1 (need 2 to transition), second scan → 2 (fires)
+        # Start at 0 so first scan -> 1 (need 2 to transition), second scan -> 2 (fires)
         self._consecutive_in_range: int = 0
 
     # ------------------------------------------------------------------
@@ -95,11 +95,11 @@ class RegimeEngine:
         Convert ATR compression ratio to a 0-100 score.
 
         Score map (with slope = 100 / 0.50 = 200):
-          rv_ratio 0.70 → score 100 (compressed baseline)
-          rv_ratio 0.95 → score  75.0 (mild compression above baseline)
-          rv_ratio 1.20 → score  50.0 (normal expansion)
-          rv_ratio 1.45 → score  25.0 (elevated stress)
-          rv_ratio 1.70 → score   0.0 (extreme expansion, clamped)
+          rv_ratio 0.70 -> score 100 (compressed baseline)
+          rv_ratio 0.95 -> score  75.0 (mild compression above baseline)
+          rv_ratio 1.20 -> score  50.0 (normal expansion)
+          rv_ratio 1.45 -> score  25.0 (elevated stress)
+          rv_ratio 1.70 -> score   0.0 (extreme expansion, clamped)
         """
         if rv_ratio <= settings.RV_ATR_COMPRESS_THRESHOLD:
             return 100.0
@@ -109,7 +109,7 @@ class RegimeEngine:
     def _calc_realized_vol(self, close_series) -> float:
         """
         Compute 20-day annualized realized volatility from a close price series.
-        Uses log returns: ln(close_t / close_t-1) × sqrt(252).
+        Uses log returns: ln(close_t / close_t-1) x sqrt(252).
         Returns annualized volatility as a float (e.g., 0.18 = 18% annualized vol).
         """
         import pandas as pd
@@ -127,10 +127,10 @@ class RegimeEngine:
         Convert 20-day annualized realized volatility to a 0-100 score.
 
         Score map:
-          rv = 12% → score 100 (historically low vol = calm)
-          rv = 18% → score  62.5 (normal vol baseline)
-          rv = 28% → score  37.5 (elevated stress)
-          rv = 34% → score  ~0 (clamped, extreme)
+          rv = 12% -> score 100 (historically low vol = calm)
+          rv = 18% -> score  62.5 (normal vol baseline)
+          rv = 28% -> score  37.5 (elevated stress)
+          rv = 34% -> score  ~0 (clamped, extreme)
         """
         if realized_vol <= settings.RV_NORMAL_ANNUAL:
             return 100.0
@@ -145,7 +145,7 @@ class RegimeEngine:
         """
         import numpy as np
         if not nb_ratio_history or len(nb_ratio_history) < 5:
-            return 0.50  # insufficient history → neutral
+            return 0.50  # insufficient history -> neutral
         arr = np.array(nb_ratio_history, dtype=float)
         # percentile rank: fraction of history below today's ratio
         pctile = float(np.sum(arr < nb_ratio) / len(arr))
@@ -172,11 +172,11 @@ class RegimeEngine:
         """
         import numpy as np
 
-        # 1. ATR compression ratio → ATR score
+        # 1. ATR compression ratio -> ATR score
         rv_ratio = self._calc_rv_ratio(nifty_atr_current, nifty_atr_baseline)
         atr_score = self._calc_atr_score(rv_ratio)
 
-        # 2. Realized volatility → RV score
+        # 2. Realized volatility -> RV score
         rv_score = self._calc_rv_score(realized_vol)
 
         # 3. Combine into vol_score
@@ -222,13 +222,13 @@ class RegimeEngine:
         warnings.warn(
             "regime.py: compute_score with vix= parameter is DEPRECATED. "
             "Use compute_score_full() with VIX-free signals. "
-            "India VIX unavailable via Kite Connect — replaced by "
+            "India VIX unavailable via Kite Connect -- replaced by "
             "ATR Compression + Realized Volatility.",
             DeprecationWarning,
             stacklevel=2,
         )
         if vix is not None:
-            # OLD formula (VIX-based) — kept for backward compat with existing tests
+            # OLD formula (VIX-based) -- kept for backward compat with existing tests
             effective_vix = vix
             vix_factor = max(0.0, min(100.0, 100.0 - (effective_vix - 12.0) * 5.0))
             if nifty_50 < nifty_ema20:
@@ -270,7 +270,7 @@ class RegimeEngine:
             else:
                 return Regime.REGIME_2_ELEVATED
         else:
-            # No prior regime — use raw boundaries
+            # No prior regime -- use raw boundaries
             if score >= 70:
                 return Regime.REGIME_1_NORMAL
             elif score >= 40:
@@ -319,18 +319,18 @@ class RegimeEngine:
         Compute regime for a scan cycle, with ATR circuit breaker override.
 
         VIX-BACKWARD-COMPAT path (deprecated, tests only):
-            Pass vix keyword argument (any value) → uses old VIX formula.
+            Pass vix keyword argument (any value) -> uses old VIX formula.
 
         VIX-FREE path (primary):
-            Pass nifty_atr_current > 0 → uses ATR compression circuit breaker.
+            Pass nifty_atr_current > 0 -> uses ATR compression circuit breaker.
         """
         if vix is not self._BKC:
-            # ── VIX BACKWARD-COMPAT PATH ──────────────────────────────────
+            # -- VIX BACKWARD-COMPAT PATH ----------------------------------
             # Used by existing tests: get_regime_for_scan(vix=41.0, ...)
             score = self._compute_bk_score(vix, nifty_50, nifty_ema20, breadth)
             return self.get_regime(score, prior_regime=self.current_regime)
 
-        # ── VIX-FREE PRIMARY PATH ─────────────────────────────────────────
+        # -- VIX-FREE PRIMARY PATH -----------------------------------------
         if nb_ratio_history is None:
             nb_ratio_history = []
         rv_ratio = self._calc_rv_ratio(nifty_atr_current, nifty_atr_baseline)
@@ -360,7 +360,7 @@ class RegimeEngine:
         banknifty_close: float = 0.0,
         nb_ratio_history: Optional[list] = None,
         breadth: float = 0.50,
-        # VIX backward-compat  (deprecated — tests only)
+        # VIX backward-compat  (deprecated -- tests only)
         vix: Optional[float] = None,
         nifty_50: float = 0.0,
     ) -> RegimeState:
@@ -391,8 +391,8 @@ class RegimeEngine:
         rv_ratio = self._calc_rv_ratio(nifty_atr_current, nifty_atr_baseline)
         bkc_mode = vix is not None  # tests pass vix=21.0 etc.
 
-        # ── ATR CIRCUIT BREAKER — immediate R3, no 2-scan guard needed ─────
-        # When volatility explodes beyond 1.50× the 200-day ATR baseline,
+        # -- ATR CIRCUIT BREAKER -- immediate R3, no 2-scan guard needed -----
+        # When volatility explodes beyond 1.50x the 200-day ATR baseline,
         # the market is in flash-crash territory. Skip the 2-scan confirmation
         # and force REGIME_3_CRISIS immediately.
         if (
@@ -406,7 +406,7 @@ class RegimeEngine:
                     to_regime="REGIME_3_CRISIS",
                     rv_ratio=round(rv_ratio, 4),
                     threshold=settings.ATR_CB_THRESHOLD,
-                    reason="ATR circuit breaker — immediate transition, no scan delay",
+                    reason="ATR circuit breaker -- immediate transition, no scan delay",
                 )
                 self._prior_regime = self.current_regime
                 self.current_regime = Regime.REGIME_3_CRISIS
@@ -429,7 +429,7 @@ class RegimeEngine:
             )
 
         if candidate == self.current_regime:
-            pass  # stay stable — counter just keeps accumulating naturally
+            pass  # stay stable -- counter just keeps accumulating naturally
         else:
             self._consecutive_in_range += 1
 
@@ -450,8 +450,8 @@ class RegimeEngine:
         nb_ratio = nifty_close / banknifty_close if banknifty_close > 0 else 1.0
 
         # Compute score using the formula matching the active path:
-        #   backward-compat VIX path → old VIX formula (matches get_regime_for_scan)
-        #   VIX-free path          → ATR+RV formula
+        #   backward-compat VIX path -> old VIX formula (matches get_regime_for_scan)
+        #   VIX-free path          -> ATR+RV formula
         if bkc_mode:
             self.current_score = self._compute_bk_score(
                 vix, nifty_50, nifty_ema20, breadth

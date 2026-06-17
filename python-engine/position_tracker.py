@@ -26,14 +26,14 @@ async def init_positions_db(db_path: str):
         try:
             await db.execute("ALTER TABLE positions ADD COLUMN product_type TEXT DEFAULT 'CNC'")
         except Exception:
-            pass  # Column already present — safe to ignore
+            pass  # Column already present -- safe to ignore
         # [TRAILING-EXITS 2026-06-16] Migration: add regime_at_entry column
         # for the regime-aware Chandelier trailing stop. NULL = legacy
         # 3.0x ATR behavior (backward compat for pre-existing positions).
         try:
             await db.execute("ALTER TABLE positions ADD COLUMN regime_at_entry TEXT")
         except Exception:
-            pass  # Column already present — safe to ignore
+            pass  # Column already present -- safe to ignore
         await db.commit()
 
 async def get_open_positions(db_path: str) -> List[dict]:
@@ -58,7 +58,7 @@ async def update_daily_positions(db_path: str, kite_client, current_date_str: st
         # [TRAILING-EXITS 2026-06-16] Regime-aware Chandelier multiplier.
         # Wider trail in calm markets (Regime 1 = 3.5x ATR) gives mid-cap
         # trends room to breathe. Tighter in crisis (Regime 3 = 2.5x ATR)
-        # cuts losses fast. Backward compat: NULL regime → legacy 3.0x.
+        # cuts losses fast. Backward compat: NULL regime -> legacy 3.0x.
         regime_at_entry = pos.get('regime_at_entry')
         if regime_at_entry == 'REGIME_1_NORMAL':
             chandelier_mult = settings.CHANDELIER_ATR_REGIME1_MULT
@@ -67,7 +67,7 @@ async def update_daily_positions(db_path: str, kite_client, current_date_str: st
         elif regime_at_entry == 'REGIME_3_CRISIS':
             chandelier_mult = settings.CHANDELIER_ATR_REGIME3_MULT
         else:
-            # Legacy / NULL regime — use original single setting
+            # Legacy / NULL regime -- use original single setting
             chandelier_mult = settings.CHANDELIER_ATR_MULT
         # Chandelier stop: highest_close_since_entry - (atr_mult * ATR)
         cs = ChandelierStop(

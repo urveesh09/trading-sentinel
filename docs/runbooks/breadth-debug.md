@@ -1,9 +1,9 @@
-# Breadth Enrichment — Operator Runbook
+# Breadth Enrichment -- Operator Runbook
 
 **Audience:** Whoever is on-call when the bot starts behaving strangely.
 **Spec:** `docs/superpowers/specs/2026-06-14-breadth-enrichment-design.md`
 **Plan:** `docs/superpowers/plans/2026-06-14-breadth-enrichment.md`
-**Branch:** `evolve/smart-strategies` (Tasks 1–7 done; Tasks 8–10 in progress)
+**Branch:** `evolve/smart-strategies` (Tasks 1-7 done; Tasks 8-10 in progress)
 
 ## What this feature does
 
@@ -13,12 +13,12 @@ hourly (Tier 1, cached 1 h) and refreshes the per-stock rank every scan
 
 - Give a +15 / +7 / -10 score bonus to stocks in the top 20% / top 40% /
   bottom 20% of the breadth distribution. Works in all regimes (R1/R2/R3).
-- Apply a 1.2× score multiplier to top-quintile stocks (pushes borderline
+- Apply a 1.2x score multiplier to top-quintile stocks (pushes borderline
   signals above the score threshold).
 - In R1 (normal) regime, when breadth is below 40%, only allow entry into
   top-quintile stocks (narrow-rally gate). Top quintile is exempted.
 
-Tier 1 = hourly batch fetch (100 Nifty 100 tokens × 60-day history).
+Tier 1 = hourly batch fetch (100 Nifty 100 tokens x 60-day history).
 Tier 2 = per-scan rank refresh using the LTPs already in the scan cache
 (zero extra Kite calls).
 
@@ -31,7 +31,7 @@ threshold n_resolved=<N>` OR `breadth_tier2_degraded n_resolved=<N>`.
 
 **What it means:** Tier 1 or Tier 2 failed on >10% of Nifty 100 fetches.
 The system falls back to regime-only filtering (no bonus, no multiplier, no
-narrow-rally gate — `evaluate_signal` runs as if pre-breadth).
+narrow-rally gate -- `evaluate_signal` runs as if pre-breadth).
 
 **How to check (on Oracle VM or wherever python-engine runs):**
 ```bash
@@ -47,17 +47,17 @@ curl -H "Authorization: token $KITE_API_KEY:$KITE_ACCESS_TOKEN" \
 
 **Common causes:**
 - Kite API rate limit hit (3 req/s). Tier 1 fires 100 fetches with
-  `BREADTH_TIER1_PARALLELISM=4` default → ~25s burst, well within limits,
+  `BREADTH_TIER1_PARALLELISM=4` default -> ~25s burst, well within limits,
   but if the bot restarted mid-fetch you may catch a stale burst.
-  → Wait 60s, retry.
-- Kite historical endpoint down. → Check status.kite.trade.
-- Access token expired. → Re-login via the OCI ngrok flow (see
+  -> Wait 60s, retry.
+- Kite historical endpoint down. -> Check status.kite.trade.
+- Access token expired. -> Re-login via the OCI ngrok flow (see
   `docs/runbooks/zerodha-auth.md` if it exists, otherwise the daily
   ritual in the user's notes).
 - `nifty100.json` has stale symbols (Kite instrument cache not refreshed).
-  → Run the instrument-cache refresh (search `kite_client.py` for the
+  -> Run the instrument-cache refresh (search `kite_client.py` for the
   refresh function, e.g. `kite.refresh_instruments()`).
-- OCI relay (`aiohttp` on `:31527`) is down. → Check
+- OCI relay (`aiohttp` on `:31527`) is down. -> Check
   `ss -tlnp | grep 31527` on the OCI VM, restart the relay container.
 
 **Recovery:** Setting `BREADTH_ENRICHMENT_ENABLED=False` in `.env` disables
@@ -88,7 +88,7 @@ aggressive, raise `BREADTH_NARROW_GATE_EXEMPT_RANK` (default `0.80`) toward
 ### "Score feels inflated" complaint
 
 **Symptom:** Win rate is up but R-multiples are down (taking more trades,
-smaller winners). The 1.2× multiplier is pushing borderline signals above
+smaller winners). The 1.2x multiplier is pushing borderline signals above
 `MIN_SIGNAL_SCORE` more than expected.
 
 **How to check:** Look at top-quintile signal scores in scan logs and
@@ -104,7 +104,7 @@ in `.env`. Setting it to `1.0` disables the multiplier while keeping the
 **Symptom:** `breadth_tier2_stale=True` in some log lines.
 
 **What it means:** Tier 1 cache expired and Tier 2 had to re-run from
-scratch. Normally this is fine — Tier 1 is stale-while-revalidate.
+scratch. Normally this is fine -- Tier 1 is stale-while-revalidate.
 It only matters if you see this firing on every scan (i.e., Tier 1 is
 never landing within the TTL window).
 
@@ -121,7 +121,7 @@ sees a fresh Tier 1.
 
 All settings are defined in `python-engine/config.py` and can be
 overridden via `.env`. The `BREADTH_ENRICHMENT_ENABLED` flag is the kill
-switch — set it to `False` for instant revert with no code rollback.
+switch -- set it to `False` for instant revert with no code rollback.
 
 | Env var                                | Default | What it does                                          |
 |----------------------------------------|---------|-------------------------------------------------------|
@@ -134,7 +134,7 @@ switch — set it to `False` for instant revert with no code rollback.
 | `BREADTH_RANK_BONUS_TOP`               | `15`    | +15 to top 20% of breadth distribution                |
 | `BREADTH_RANK_BONUS_MID`               | `7`     | +7 to top 40%                                         |
 | `BREADTH_RANK_PENALTY_BOTTOM`          | `-10`   | -10 to bottom 20%                                     |
-| `BREADTH_RANK_MULTIPLIER`              | `1.2`   | Top quintile score × this                             |
+| `BREADTH_RANK_MULTIPLIER`              | `1.2`   | Top quintile score x this                             |
 | `BREADTH_DATA_DEGRADED_THRESHOLD`      | `0.10`  | >10% fetch failures = degraded path                   |
 | `BREADTH_TIER1_PARALLELISM`            | `4`     | Concurrent Kite historical fetches (Tier 1)            |
 | `BREADTH_DATA_DIR`                     | `data`  | Path (relative to `python-engine/`) to `nifty100.json` |
@@ -142,10 +142,10 @@ switch — set it to `False` for instant revert with no code rollback.
 ### Changing a setting
 
 ```bash
-# 1. Edit .env (NOT config.py — env vars override defaults at runtime)
+# 1. Edit .env (NOT config.py -- env vars override defaults at runtime)
 echo "BREADTH_NARROW_RALLY_THRESHOLD=0.35" >> python-engine/.env
 
-# 2. Restart python-engine (no systemd per user preference — SSH+restart)
+# 2. Restart python-engine (no systemd per user preference -- SSH+restart)
 ssh oracle-vm "docker restart python-engine"
 
 # 3. Verify
@@ -157,14 +157,14 @@ ssh oracle-vm "docker logs python-engine --tail 30 | grep -i 'breadth'"
 - **Why two tiers?** Tier 1 is the expensive batch (100 Nifty 100
   fetches). We cache it for 1 hour. Tier 2 only needs the live LTP
   (already in the scan cache from the universe pass), so it costs zero
-  extra Kite calls per scan — only the rank recompute.
+  extra Kite calls per scan -- only the rank recompute.
 - **Why the narrow-rally gate only in R1?** R1 (normal) is when narrow
   rallies are most likely to fool the trend filter. In R2/R3 the system
   is already cautious via other mechanisms (RS filter in R2, etc.).
 - **Why top-quintile exempt from the gate?** When 90%+ of Nifty 100 is
   below SMA50, the few survivors are statistically the best risk-on names.
   Letting them in is the whole point of the gate.
-- **Why the 1.2× multiplier?** In backtests, top-quintile stocks that
+- **Why the 1.2x multiplier?** In backtests, top-quintile stocks that
   almost-pass the score threshold (say 50/60) had a higher win rate
   than the median. The multiplier nudges them over the line.
 
@@ -176,8 +176,8 @@ ssh oracle-vm "docker logs python-engine --tail 30 | grep -i 'breadth'"
   `breadth_engine_enabled` (once) and `breadth_tier1_degraded=False`
   (every scan). No signal-flow change.
 - [ ] **Stage 1:** `BREADTH_ENRICHMENT_ENABLED=True`. Run 1 week. Monitor:
-  - Signal count delta (expect 5–20% reduction from narrow-rally filter)
-  - Win rate (expect 1–3 pp improvement)
+  - Signal count delta (expect 5-20% reduction from narrow-rally filter)
+  - Win rate (expect 1-3 pp improvement)
   - Breadth-degraded alerts (expect zero)
   - Tier 2 stale rate (expect <1/day)
 - [ ] **Stage 2:** After 2 clean weeks, flip the default in
@@ -187,7 +187,7 @@ ssh oracle-vm "docker logs python-engine --tail 30 | grep -i 'breadth'"
 
 - Spec: `docs/superpowers/specs/2026-06-14-breadth-enrichment-design.md`
 - Plan: `docs/superpowers/plans/2026-06-14-breadth-enrichment.md`
-- Settings source of truth: `python-engine/config.py` (lines 184–196)
+- Settings source of truth: `python-engine/config.py` (lines 184-196)
 - Engine gate logic: `python-engine/engine.py` (`narrow_rally_filtered` block)
 - Engine score adjustments: `python-engine/engine.py` (`BREADTH SCORING BONUS` block)
 - Wiring helpers: `python-engine/main.py` (`build_breadth_engine`, `build_breadth_kwargs`)
@@ -201,7 +201,7 @@ Open a high-priority ticket (or page the on-call) if:
 - `breadth_tier1_degraded` fires on >50% of scans for 3+ hours straight
 - `BREADTH_ENRICHMENT_ENABLED` is stuck on `True` but no signals have
   fired in 24 hours (the gate may be over-aggressive due to bad Nifty 100
-  data — set flag to `False` to confirm)
+  data -- set flag to `False` to confirm)
 - Tier 2 stale rate >10/day (Tier 1 is broken)
 
 For non-urgent tuning questions, leave the flag on and adjust thresholds

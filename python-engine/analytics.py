@@ -3,22 +3,22 @@
 
 Three things this module does, all from the data we already persist:
 
-1. Gate-funnel report — counts which MC-gate rejection reasons kill the most
+1. Gate-funnel report -- counts which MC-gate rejection reasons kill the most
    signals. The first place to look when "I'm getting too few / too many
    signals" or "entries aren't great" is this.
 
-2. Outcome correlator — joins closed trades (from positions + bankroll_ledger)
+2. Outcome correlator -- joins closed trades (from positions + bankroll_ledger)
    with their original signal-log row (from momentum_signals) to compute
    "what was the gate fingerprint of trades that won vs lost." Reveals which
    gates actually predict success.
 
-3. Strategy suggestions — turns (1) + (2) into 3-5 actionable changes the
+3. Strategy suggestions -- turns (1) + (2) into 3-5 actionable changes the
    operator can A/B. Always returns the reasoning + the data backing it, so
    nothing is a black-box recommendation.
 
 Public API (all async, all take db_path):
-  init_analytics_db(db_path)                          — idempotent
-  record_trade_outcome(db_path, ticker, pnl, r_mult)   — wired in main.py on close
+  init_analytics_db(db_path)                          -- idempotent
+  record_trade_outcome(db_path, ticker, pnl, r_mult)   -- wired in main.py on close
   gate_funnel_report(db_path, days)                    -> dict
   outcome_correlator(db_path, days)                    -> dict
   strategy_suggestions(db_path, days)                  -> dict
@@ -47,9 +47,9 @@ from config import settings
 logger = structlog.get_logger()
 
 
-# ────────────────────────────────────────────────────────────────────
+# --------------------------------------------------------------------
 # Schema
-# ────────────────────────────────────────────────────────────────────
+# --------------------------------------------------------------------
 
 # trade_outcomes: one row per CLOSED momentum trade. Joins closed position
 # with the signal-log row that produced it (so we can correlate gate state
@@ -93,9 +93,9 @@ async def init_analytics_db(db_path: str) -> None:
         logger.error("analytics_init_failed", error=str(e))
 
 
-# ────────────────────────────────────────────────────────────────────
+# --------------------------------------------------------------------
 # 1. Record a trade outcome (called from main.py on position close)
-# ────────────────────────────────────────────────────────────────────
+# --------------------------------------------------------------------
 
 async def record_trade_outcome(
     db_path: str,
@@ -107,9 +107,9 @@ async def record_trade_outcome(
     """Record a closed trade + join with the latest signal-log row for that ticker.
 
     Returns the scan_id of the matched signal-log row, or None if no match.
-    Idempotent on (ticker, closed_at) — re-recording the same close is a no-op.
+    Idempotent on (ticker, closed_at) -- re-recording the same close is a no-op.
     """
-    # Idempotent — safe to call on every close
+    # Idempotent -- safe to call on every close
     try:
         await init_analytics_db(db_path)
     except Exception:
@@ -131,7 +131,7 @@ async def record_trade_outcome(
                 )
                 row = await cur.fetchone()
             except aiosqlite.OperationalError:
-                # Table doesn't exist yet — log a minimal outcome
+                # Table doesn't exist yet -- log a minimal outcome
                 await db.execute(
                     """INSERT OR IGNORE INTO trade_outcomes
                        (ticker, closed_at, realised_pnl, r_multiple, notes)
@@ -142,7 +142,7 @@ async def record_trade_outcome(
                 await db.commit()
                 return None
             if not row:
-                # No matched signal — log a minimal outcome so we still have the P&L
+                # No matched signal -- log a minimal outcome so we still have the P&L
                 await db.execute(
                     """INSERT OR IGNORE INTO trade_outcomes
                        (ticker, closed_at, realised_pnl, r_multiple, notes)
@@ -170,9 +170,9 @@ async def record_trade_outcome(
         return None
 
 
-# ────────────────────────────────────────────────────────────────────
+# --------------------------------------------------------------------
 # 2. Gate-funnel report
-# ────────────────────────────────────────────────────────────────────
+# --------------------------------------------------------------------
 
 async def gate_funnel_report(db_path: str, days: int = 7) -> dict:
     """Count rejections by reason over the last `days`.
@@ -206,7 +206,7 @@ async def gate_funnel_report(db_path: str, days: int = 7) -> dict:
                 )
                 r = await cur.fetchone()
             except aiosqlite.OperationalError:
-                # Table doesn't exist yet — fresh DB. Return empty funnel.
+                # Table doesn't exist yet -- fresh DB. Return empty funnel.
                 return {
                     "days": days, "scanned_total": 0, "accepted": 0,
                     "rejected": 0, "rejection_rate": 0.0,
@@ -244,9 +244,9 @@ async def gate_funnel_report(db_path: str, days: int = 7) -> dict:
         return {"days": days, "error": str(e), "by_reason": []}
 
 
-# ────────────────────────────────────────────────────────────────────
+# --------------------------------------------------------------------
 # 3. Outcome correlator
-# ────────────────────────────────────────────────────────────────────
+# --------------------------------------------------------------------
 
 async def outcome_correlator(db_path: str, days: int = 14) -> dict:
     """Correlate gate fingerprint with realized P&L.
@@ -346,9 +346,9 @@ async def outcome_correlator(db_path: str, days: int = 14) -> dict:
         return {"days": days, "n_trades": 0, "predictive_gates": [], "error": str(e)}
 
 
-# ────────────────────────────────────────────────────────────────────
+# --------------------------------------------------------------------
 # 4. Strategy suggestions
-# ────────────────────────────────────────────────────────────────────
+# --------------------------------------------------------------------
 
 async def strategy_suggestions(db_path: str, days: int = 14) -> dict:
     """Reads funnel + outcomes, returns 3-5 actionable suggestions.
@@ -366,10 +366,10 @@ async def strategy_suggestions(db_path: str, days: int = 14) -> dict:
          "Gates A, B differ between winners and losers by >20%. Consider
           tighter threshold on the side that's worse for winners."
       3. If win_rate < 0.40 AND n_trades >= 10:
-         "Win rate below 40% — consider raising the entry bar (require more
+         "Win rate below 40% -- consider raising the entry bar (require more
           gates to pass, e.g. enable MC7 RVOL)."
       4. If avg_r_losers < -1.5R:
-         "Losers exceed -1.5R avg — consider tighter stop or position sizing."
+         "Losers exceed -1.5R avg -- consider tighter stop or position sizing."
       5. If by_regime shows R1 winning >60% AND R2/R3 < 40%:
          "R1 is your edge. Consider disabling R2 entries until you have more
           R2 data."
@@ -423,9 +423,9 @@ async def strategy_suggestions(db_path: str, days: int = 14) -> dict:
     win_rate = outcomes.get("win_rate", 0.0)
     if win_rate < 0.40 and n_trades >= 10:
         suggestions.append({
-            "headline":  f"Win rate is {win_rate*100:.0f}% (target ≥ 40%)",
+            "headline":  f"Win rate is {win_rate*100:.0f}% (target >= 40%)",
             "evidence":  f"{outcomes.get('n_winners', 0)} wins / {n_trades} trades in last {days} days",
-            "action":    "Tighten the entry bar — enable MOMENTUM_USE_RVOL=True (MC7) to filter further",
+            "action":    "Tighten the entry bar -- enable MOMENTUM_USE_RVOL=True (MC7) to filter further",
             "confidence": confidence,
             "rule":      "low_win_rate",
         })
@@ -434,7 +434,7 @@ async def strategy_suggestions(db_path: str, days: int = 14) -> dict:
     avg_rl = outcomes.get("avg_r_losers", 0.0)
     if avg_rl is not None and avg_rl < -1.5:
         suggestions.append({
-            "headline":  f"Average losing trade is {avg_rl:.2f}R (target ≥ -1.0R)",
+            "headline":  f"Average losing trade is {avg_rl:.2f}R (target >= -1.0R)",
             "evidence":  f"avg_r_losers={avg_rl:.2f} from {outcomes.get('n_losers', 0)} losing trades",
             "action":    "Tighten stop-loss or reduce position size; check MOMENTUM_ATR_FUEL_BUFFER",
             "confidence": confidence,
@@ -488,15 +488,15 @@ async def strategy_suggestions(db_path: str, days: int = 14) -> dict:
     }
 
 
-# ────────────────────────────────────────────────────────────────────
+# --------------------------------------------------------------------
 # 5. Human report (CLI)
-# ────────────────────────────────────────────────────────────────────
+# --------------------------------------------------------------------
 
 def _bar(label: str, count: int, max_count: int, width: int = 40) -> str:
     if max_count <= 0:
         return f"  {label}: (no data)"
     filled = int(width * count / max_count)
-    return f"  {label:<42} {'█' * filled:<{width}} {count}"
+    return f"  {label:<42} {'#' * filled:<{width}} {count}"
 
 
 async def print_report(db_path: str, days: int = 14) -> None:
@@ -505,7 +505,7 @@ async def print_report(db_path: str, days: int = 14) -> None:
     sugg     = await strategy_suggestions(db_path, days=days)
 
     print("=" * 70)
-    print(f"  TRADING SENTINEL — ANALYTICS REPORT (last {days} days)")
+    print(f"  TRADING SENTINEL -- ANALYTICS REPORT (last {days} days)")
     print(f"  As of: {sugg.get('as_of', '?')}")
     print("=" * 70)
     print()
@@ -539,7 +539,7 @@ async def print_report(db_path: str, days: int = 14) -> None:
         if pred:
             print(f"    Predictive gates: {', '.join(pred)}")
         else:
-            print("    Predictive gates: (none — no field differs >20% between W/L)")
+            print("    Predictive gates: (none -- no field differs >20% between W/L)")
         br = outcomes.get("by_regime", [])
         if br:
             print("    By regime:")
@@ -562,9 +562,9 @@ async def print_report(db_path: str, days: int = 14) -> None:
     print("=" * 70)
 
 
-# ────────────────────────────────────────────────────────────────────
+# --------------------------------------------------------------------
 # CLI entry: python -m analytics --days 14
-# ────────────────────────────────────────────────────────────────────
+# --------------------------------------------------------------------
 
 if __name__ == "__main__":
     import argparse

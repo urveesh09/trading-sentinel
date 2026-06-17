@@ -1,5 +1,5 @@
 """
-Tests for the analytics module — the self-improvement loop.
+Tests for the analytics module -- the self-improvement loop.
 Covers: trade_outcomes persistence, gate funnel, outcome correlator,
 strategy suggestions, and CLI report (smoke test).
 """
@@ -23,9 +23,9 @@ if ENGINE_DIR not in sys.path:
     sys.path.insert(0, ENGINE_DIR)
 
 
-# ────────────────────────────────────────────────────────────────────
+# --------------------------------------------------------------------
 # Helpers
-# ────────────────────────────────────────────────────────────────────
+# --------------------------------------------------------------------
 
 async def _seed_signal_log(db_path: str, rows: list[dict]) -> None:
     """Insert N rows into momentum_signals to drive funnel tests."""
@@ -64,9 +64,9 @@ def _days_ago(n: int) -> str:
     return (datetime.now(timezone.utc) - timedelta(days=n)).isoformat()
 
 
-# ────────────────────────────────────────────────────────────────────
+# --------------------------------------------------------------------
 # Schema
-# ────────────────────────────────────────────────────────────────────
+# --------------------------------------------------------------------
 
 class TestAnalyticsSchema:
     @pytest.mark.asyncio
@@ -90,9 +90,9 @@ class TestAnalyticsSchema:
             assert (await cur.fetchone())[0] == 0
 
 
-# ────────────────────────────────────────────────────────────────────
+# --------------------------------------------------------------------
 # record_trade_outcome
-# ────────────────────────────────────────────────────────────────────
+# --------------------------------------------------------------------
 
 class TestRecordTradeOutcome:
     @pytest.mark.asyncio
@@ -125,7 +125,7 @@ class TestRecordTradeOutcome:
     @pytest.mark.asyncio
     async def test_no_signal_match_still_records(self, db_path):
         from analytics import record_trade_outcome
-        # No signal log seeded + no analytics init — table-missing branch fires
+        # No signal log seeded + no analytics init -- table-missing branch fires
         scan_id = await record_trade_outcome(
             db_path, "NSE:UNKNOWN", realised_pnl=-50.0, r_multiple=-0.5
         )
@@ -138,7 +138,7 @@ class TestRecordTradeOutcome:
         assert row is not None
         # Without a signal_log table, notes = "no_signal_log_table" (table-missing
         # branch). With an empty signal log, notes = "no_matched_signal" (no-row
-        # branch). Either is acceptable — just confirm one of them.
+        # branch). Either is acceptable -- just confirm one of them.
         assert row[0] in ("no_matched_signal", "no_signal_log_table")
 
     @pytest.mark.asyncio
@@ -146,16 +146,16 @@ class TestRecordTradeOutcome:
         """Two closes of the same ticker at the same microsecond collapse
         via the UNIQUE(ticker, closed_at) constraint.
         Back-to-back datetime.now() can return the same microsecond on
-        fast hardware — that's the case we test."""
+        fast hardware -- that's the case we test."""
         from analytics import record_trade_outcome
         import time
-        # Same ticker, same microsecond — must collapse to 1 row
+        # Same ticker, same microsecond -- must collapse to 1 row
         await record_trade_outcome(db_path, "NSE:A", 10.0, r_multiple=0.5)
         await record_trade_outcome(db_path, "NSE:A", 10.0, r_multiple=0.5)
         async with aiosqlite.connect(db_path) as db:
             cur = await db.execute("SELECT COUNT(*) FROM trade_outcomes")
             count = (await cur.fetchone())[0]
-        # Either 1 (collapsed) or 2 (microsecond-different) — both valid; the
+        # Either 1 (collapsed) or 2 (microsecond-different) -- both valid; the
         # important thing is the UNIQUE constraint exists and is exercised.
         # The previous bug was UNIQUE absence, which would have given N=infinity.
         assert count in (1, 2)
@@ -166,9 +166,9 @@ class TestRecordTradeOutcome:
             assert (await cur.fetchone())[0] == count + 1
 
 
-# ────────────────────────────────────────────────────────────────────
+# --------------------------------------------------------------------
 # Gate funnel
-# ────────────────────────────────────────────────────────────────────
+# --------------------------------------------------------------------
 
 class TestGateFunnel:
     @pytest.mark.asyncio
@@ -233,13 +233,13 @@ class TestGateFunnel:
         """Old rows (>7 days) should be excluded."""
         from analytics import gate_funnel_report
         await _seed_signal_log(db_path, [
-            # Old: 20 days ago — must be ignored
+            # Old: 20 days ago -- must be ignored
             {"scan_id": "old1", "scanned_at": _days_ago(20),
              "ticker": "NSE:OLD", "accepted": 0,
              "reject_reason": "old_reason", "regime": "REGIME_1_NORMAL",
              "strategy_version": "1.0.0", "close": 100.0, "stop_loss": 98.0,
              "target_1": 104.0, "shares": 0, "volume_ratio": 1.0},
-            # Recent: 1 day ago — must be counted
+            # Recent: 1 day ago -- must be counted
             {"scan_id": "new1", "scanned_at": _days_ago(1),
              "ticker": "NSE:NEW", "accepted": 1, "reject_reason": "",
              "regime": "REGIME_1_NORMAL", "strategy_version": "1.0.0",
@@ -252,9 +252,9 @@ class TestGateFunnel:
         assert result["rejected"] == 0
 
 
-# ────────────────────────────────────────────────────────────────────
+# --------------------------------------------------------------------
 # Outcome correlator
-# ────────────────────────────────────────────────────────────────────
+# --------------------------------------------------------------------
 
 class TestOutcomeCorrelator:
     @pytest.mark.asyncio
@@ -290,11 +290,11 @@ class TestOutcomeCorrelator:
         assert result["n_winners"] == 3
         assert result["n_losers"] == 2
         assert result["win_rate"] == 0.6
-        # Winners avg vol = (3.0 + 2.5 + 2.8) / 3 = 2.7666... → rounds to 2.767 at 3dp
+        # Winners avg vol = (3.0 + 2.5 + 2.8) / 3 = 2.7666... -> rounds to 2.767 at 3dp
         assert result["winners_avg"]["volume_ratio"] == round((3.0+2.5+2.8)/3, 3)
         # Losers avg vol = (1.0 + 0.8) / 2 = 0.9
         assert result["losers_avg"]["volume_ratio"] == round(0.9, 3)
-        # volume_ratio differs by ~2x between winners and losers → predictive
+        # volume_ratio differs by ~2x between winners and losers -> predictive
         assert "volume_ratio" in result["predictive_gates"]
 
     @pytest.mark.asyncio
@@ -316,16 +316,16 @@ class TestOutcomeCorrelator:
         assert by_regime["REGIME_2_ELEVATED"]["win_rate"] == 0.0
 
 
-# ────────────────────────────────────────────────────────────────────
+# --------------------------------------------------------------------
 # Strategy suggestions
-# ────────────────────────────────────────────────────────────────────
+# --------------------------------------------------------------------
 
 class TestStrategySuggestions:
     @pytest.mark.asyncio
     async def test_insufficient_data_suggestion(self, db_path):
         from analytics import strategy_suggestions
         result = await strategy_suggestions(db_path, days=14)
-        # No data at all → insufficient_data suggestion
+        # No data at all -> insufficient_data suggestion
         assert result["n_trades"] == 0
         assert result["confidence"] == "low"
         assert any(s["rule"] == "insufficient_data" for s in result["suggestions"])
@@ -349,7 +349,7 @@ class TestStrategySuggestions:
                "shares": 0, "volume_ratio": 1.0} for i in range(2)],
         ])
         result = await strategy_suggestions(db_path, days=14)
-        # 8/10 = 80% → dominant
+        # 8/10 = 80% -> dominant
         dom = [s for s in result["suggestions"] if s["rule"] == "dominant_rejection"]
         assert len(dom) == 1
         assert "MC3_volume_surge_insufficient" in dom[0]["headline"]
@@ -357,7 +357,7 @@ class TestStrategySuggestions:
     @pytest.mark.asyncio
     async def test_low_win_rate_suggestion(self, db_path):
         from analytics import strategy_suggestions
-        # 12 trades, only 3 winners (25% win rate) → low_win_rate
+        # 12 trades, only 3 winners (25% win rate) -> low_win_rate
         await _seed_outcomes(db_path, [
             *[{"ticker": f"NSE:W{i}", "closed_at": _days_ago(1), "realised_pnl": 50.0,
                "r_multiple": 0.5, "regime": "REGIME_1_NORMAL", "close": 100.0,
@@ -374,7 +374,7 @@ class TestStrategySuggestions:
     @pytest.mark.asyncio
     async def test_predictive_gate_suggestion(self, db_path):
         from analytics import strategy_suggestions
-        # 12 trades total: 6 winners (vol 3.0) + 6 losers (vol 1.0) → predictive
+        # 12 trades total: 6 winners (vol 3.0) + 6 losers (vol 1.0) -> predictive
         # Rule 2 requires n_trades >= 10, hence the 12 rows.
         await _seed_outcomes(db_path, [
             *[{"ticker": f"NSE:W{i}", "closed_at": _days_ago(1), "realised_pnl": 100.0,
@@ -393,9 +393,9 @@ class TestStrategySuggestions:
         assert any("volume_ratio" in s["headline"] for s in pred)
 
 
-# ────────────────────────────────────────────────────────────────────
+# --------------------------------------------------------------------
 # CLI smoke test
-# ────────────────────────────────────────────────────────────────────
+# --------------------------------------------------------------------
 
 class TestCLI:
     @pytest.mark.asyncio

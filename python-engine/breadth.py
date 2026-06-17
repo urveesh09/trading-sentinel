@@ -124,7 +124,7 @@ class BreadthEngine:
                 sma50_map[token] = sma50
                 distance_pct_map[token] = distance_pct
                 # NB ratio placeholder: real impl will pull NB close from kite.quote
-                # in a follow-up PR (OQ1 — wired to regime in a separate spec).
+                # in a follow-up PR (OQ1 -- wired to regime in a separate spec).
                 # Recording 0.0 as a stub so nb_ratio_distribution_pct is computable.
                 nb_ratios.append(0.0)
             except Exception as e:

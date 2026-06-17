@@ -103,7 +103,7 @@ class KiteClient:
             return
         async with self._cache_lock:
             try:
-                # Fetch NSE instruments only — INDICES segment returns 403 on this plan
+                # Fetch NSE instruments only -- INDICES segment returns 403 on this plan
                 for segment in ["NSE"]:
                     resp = await self.client.get(f"/instruments/{segment}")
                     resp.raise_for_status()
@@ -136,7 +136,7 @@ class KiteClient:
             if rows and len(rows) >= 60: 
                 last_cached_date = rows[-1][0] # Index 0 is 'date'
                 
-                # 🚨 FIX: Force a cache miss if the DB doesn't have today's live candle yet!
+                # [CRIT] FIX: Force a cache miss if the DB doesn't have today's live candle yet!
                 if last_cached_date >= to_date:
                     last_fetched_str = rows[-1][6] # fetched_at is index 6
                     try:
@@ -258,7 +258,7 @@ class KiteClient:
                             ticker=ticker, last_candle=str(last_cached_dt),
                             expected=str(expected_latest))
 
-        # Cache miss → API
+        # Cache miss -> API
         logger.info("data_fetch", event_type="intraday_cache_miss", ticker=ticker)
         instrument_token = self.instrument_cache.get(ticker)
         if not instrument_token:

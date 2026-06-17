@@ -2,11 +2,11 @@
 Tests for momentum signal regime dispatch.
 
 [MOMENTUM-REGIME 2026-06-16] The 3-regime dispatch for evaluate_momentum_signal:
-  - Regime 3 → reject all signals (BLOCK_R3_ENTRIES=True)
-  - Regime 1 → MOMENTUM_RISK_PCT_R1 (7%) + MOMENTUM_R_TARGET_R1 (2.0R)
-  - Regime 2 → MOMENTUM_RISK_PCT_R2 (5%) + MOMENTUM_R_TARGET_R2 (1.5R)
-  - Regime 3 (with BLOCK=False) → MOMENTUM_RISK_PCT_R3 (0%) — defense-in-depth
-  - UNKNOWN → conservative default: R1 sizing (safe)
+  - Regime 3 -> reject all signals (BLOCK_R3_ENTRIES=True)
+  - Regime 1 -> MOMENTUM_RISK_PCT_R1 (7%) + MOMENTUM_R_TARGET_R1 (2.0R)
+  - Regime 2 -> MOMENTUM_RISK_PCT_R2 (5%) + MOMENTUM_R_TARGET_R2 (1.5R)
+  - Regime 3 (with BLOCK=False) -> MOMENTUM_RISK_PCT_R3 (0%) -- defense-in-depth
+  - UNKNOWN -> conservative default: R1 sizing (safe)
 
 The core signal evaluation (gates MC1-MC6) is unchanged. We only modify:
   1. effective_r_target (was: BULL=2.0, BEAR_RS_ONLY=1.5, now: R1=2.0, R2=1.5, R3=block)
@@ -47,7 +47,7 @@ class TestResolveMomentumRegimeParams:
         assert block is False
 
     def test_regime_3_blocks_when_block_setting_true(self):
-        """R3 with BLOCK_R3_ENTRIES=True → block (don't even evaluate)."""
+        """R3 with BLOCK_R3_ENTRIES=True -> block (don't even evaluate)."""
         with patch.object(settings, "MOMENTUM_BLOCK_R3_ENTRIES", True):
             r_target, risk_pct, block = resolve_momentum_regime_params(Regime.REGIME_3_CRISIS)
             assert block is True
@@ -58,7 +58,7 @@ class TestResolveMomentumRegimeParams:
             assert risk_pct == settings.MOMENTUM_RISK_PCT_R3  # 0%
 
     def test_regime_3_risk_is_zero_even_when_not_blocked(self):
-        """R3 with BLOCK_R3_ENTRIES=False → don't block, but 0% risk = no shares."""
+        """R3 with BLOCK_R3_ENTRIES=False -> don't block, but 0% risk = no shares."""
         with patch.object(settings, "MOMENTUM_BLOCK_R3_ENTRIES", False):
             r_target, risk_pct, block = resolve_momentum_regime_params(Regime.REGIME_3_CRISIS)
             assert block is False
@@ -166,7 +166,7 @@ class TestEvaluateMomentumSignalRegimeDispatch:
                 regime=Regime.REGIME_2_ELEVATED,
             )
             if fired_r1 and fired_r2:
-                # R2 has 5/7 the risk budget → fewer shares
+                # R2 has 5/7 the risk budget -> fewer shares
                 assert result_r2["shares"] < result_r1["shares"], (
                     f"R2 should produce fewer shares than R1. "
                     f"R1: {result_r1['shares']}, R2: {result_r2['shares']}"
@@ -178,7 +178,7 @@ class TestEvaluateMomentumSignalRegimeDispatch:
         via the existing BULL/BEAR_RS_ONLY logic. R target = MOMENTUM_R_TARGET
         (2.0R for BULL default)."""
         from engine import evaluate_momentum_signal
-        # regime=None, market_regime="BULL" (default) → 2.0R legacy
+        # regime=None, market_regime="BULL" (default) -> 2.0R legacy
         fired, result = evaluate_momentum_signal(
             "TEST", good_momentum_candles,
             prev_day_high=100.0, bankroll=5000, momentum_pool=1000,

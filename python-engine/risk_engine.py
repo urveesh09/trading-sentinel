@@ -1,5 +1,5 @@
 """
-risk_engine.py — Dynamic risk management.
+risk_engine.py -- Dynamic risk management.
 
 Provides:
   1. Dynamic position sizing based on regime and bankroll
@@ -185,12 +185,12 @@ class RiskEngine:
             if win:
                 self._consecutive_wins_in_recovery += 1
                 if self._consecutive_wins_in_recovery >= 2:
-                    # Recovery complete — reset
+                    # Recovery complete -- reset
                     logger.info("drawdown_recovery_complete")
                     self._recovery_trades_remaining = 0
                     self._consecutive_wins_in_recovery = 0
             else:
-                # Loss during recovery — reset win counter but keep recovery active
+                # Loss during recovery -- reset win counter but keep recovery active
                 self._consecutive_wins_in_recovery = 0
                 self._recovery_trades_remaining = max(
                     0, self._recovery_trades_remaining - 1

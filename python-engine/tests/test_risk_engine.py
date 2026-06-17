@@ -91,7 +91,7 @@ class TestRiskEngine:
         # Win 1 during recovery
         re.record_trade_outcome(win=True, in_recovery=True)
         assert math.isclose(re.get_effective_risk_pct(recovery_active=True), 0.07, abs_tol=0.001)
-        # Win 2 — recovery ends, full 10% restored
+        # Win 2 -- recovery ends, full 10% restored
         re.record_trade_outcome(win=True, in_recovery=True)
         assert re.get_effective_risk_pct(recovery_active=False) == 0.10
 

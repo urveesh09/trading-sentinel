@@ -8,7 +8,7 @@ Every momentum signal evaluation (accepted or rejected) is persisted to:
 This is the data source for future backtests of new entry filters (MC7 RVOL,
 MC8 RSI trim, ORB structure, etc.). Without it, every filter change is a guess.
 
-Schema (stable contract — do NOT rename columns, only add):
+Schema (stable contract -- do NOT rename columns, only add):
   scan_id        TEXT   -- uuid per scan (groups all rows from one scan call)
   scanned_at     TEXT   -- ISO8601 UTC timestamp
   ticker         TEXT
@@ -36,7 +36,7 @@ Schema (stable contract — do NOT rename columns, only add):
 
 The CSV is the primary write target (operator-friendly, grep-friendly, easy to
 backtest with pandas). The SQLite table is a structured mirror for API queries.
-Both are gated by MOMENTUM_LOG_ENABLED — set False to disable entirely.
+Both are gated by MOMENTUM_LOG_ENABLED -- set False to disable entirely.
 """
 from __future__ import annotations
 
@@ -188,7 +188,7 @@ async def log_momentum_batch(
 
     scan_id = rows_list[0]["scan_id"]
 
-    # ── CSV write (append mode) ──
+    # -- CSV write (append mode) --
     csv_path = settings.MOMENTUM_LOG_CSV_PATH
     try:
         _ensure_csv_header(csv_path)
@@ -198,12 +198,12 @@ async def log_momentum_batch(
                 writer.writerow(row)
     except OSError as e:
         # Don't crash a live scan because the log disk is full / read-only
-        # — but make it visible in the next log line.
+        # -- but make it visible in the next log line.
         import structlog
         log = structlog.get_logger()
         log.error("momentum_log_csv_write_failed", path=csv_path, error=str(e))
 
-    # ── SQLite write (bulk insert) ──
+    # -- SQLite write (bulk insert) --
     table = settings.MOMENTUM_LOG_DB_TABLE
     try:
         placeholders = ",".join(["?"] * len(_COLUMNS))

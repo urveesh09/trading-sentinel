@@ -5,7 +5,7 @@ start, actually receives the right inputs from run_screener.
 Patches the breadth-related code path + DB calls to verify:
   - breadth_engine is built (via build_breadth_engine) when the flag is on
   - compute_tier1 is awaited once before the scan loop
-  - Pass 1 collects LTPs (token → close)
+  - Pass 1 collects LTPs (token -> close)
   - compute_tier2 is awaited once AFTER the loop with those LTPs
   - Pass 2's evaluate_signal call gets the breadth kwargs via build_breadth_kwargs
 """
@@ -46,7 +46,7 @@ def _make_df():
 
 @pytest.mark.asyncio
 async def test_run_screener_calls_breadth_tier1_and_tier2(monkeypatch, db_path):
-    """End-to-end: flag on → breadth engine built → Tier 1 + Tier 2 awaited → kwargs passed."""
+    """End-to-end: flag on -> breadth engine built -> Tier 1 + Tier 2 awaited -> kwargs passed."""
     # Init the DBs (run_screener hits both)
     from performance import init_ledger
     from position_tracker import init_positions_db
@@ -123,7 +123,7 @@ async def test_run_screener_calls_breadth_tier1_and_tier2(monkeypatch, db_path):
     assert fake_engine.compute_tier1.await_count == 1, "Tier 1 should be awaited once"
     # Tier 2 awaited exactly once
     assert fake_engine.compute_tier2.await_count == 1, "Tier 2 should be awaited once"
-    # Tier 2 was called with a token→ltp dict containing all 3 tokens
+    # Tier 2 was called with a token->ltp dict containing all 3 tokens
     t2_call = fake_engine.compute_tier2.call_args
     assert t2_call is not None
     scan_ltp = t2_call.args[0] if t2_call.args else t2_call.kwargs.get("scan_ltp")

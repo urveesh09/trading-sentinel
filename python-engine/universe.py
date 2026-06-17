@@ -100,5 +100,5 @@ class Universe:
         return self.get_tokens()
 
     def token_to_symbol(self, token: int) -> Optional[str]:
-        """Reverse lookup: instrument_token → NSE symbol."""
+        """Reverse lookup: instrument_token -> NSE symbol."""
         return self._token_to_symbol.get(token)

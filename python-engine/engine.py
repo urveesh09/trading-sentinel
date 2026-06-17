@@ -91,22 +91,22 @@ def calc_rsi_series(close: pd.Series, length: int = 14) -> pd.Series:
     where the current RSI sits within its own 6-month historical range.
 
     OPEN QUESTION RESOLUTION (Task 9): RSI Percentile Persistence
-    ──────────────────────────────────────────────────────────────
+    --------------------------------------------------------------
     Issue: RegimeEngine is instantiated fresh in each main.py scan run,
            so RSI history is lost between scans. The RSI percentile filter
            needs 126 days of history to work correctly.
     Options:
-      1. Persist RSI history in SQLite — adds complexity, potential for stale data
-      2. Rebuild from OHLC data each scan — recommended in plan; engine.py has
+      1. Persist RSI history in SQLite -- adds complexity, potential for stale data
+      2. Rebuild from OHLC data each scan -- recommended in plan; engine.py has
          access to 365 days of data; sufficient to compute 126-day RSI history
-      3. In-memory cache across scans — not durable across process restarts
+      3. In-memory cache across scans -- not durable across process restarts
 
-    Decision: Option 2 — `calc_rsi_series()` computes RSI history from the
+    Decision: Option 2 -- `calc_rsi_series()` computes RSI history from the
     existing 365-day OHLC data fetched in main.py. No new persistence layer needed.
     The `evaluate_signal()` function accepts an optional `rsi_history` parameter;
-    when provided with ≥20 readings, the RSI percentile filter is used instead
+    when provided with >=20 readings, the RSI percentile filter is used instead
     of the fixed 45-72 range. When None or insufficient, the system falls back
-    to the fixed range (graceful degradation — signals still generate).
+    to the fixed range (graceful degradation -- signals still generate).
     """
     prices = np.asarray(close, dtype=float)
     n = len(prices)
@@ -279,7 +279,7 @@ def evaluate_signal(
         if rsi_history is not None and len(rsi_history) >= 20:
             score += max(0, int(min(rsi_pct, 15) / 2))
     elif regime == Regime.REGIME_3_CRISIS:
-        # RS vs Nifty filter (primary — replaces RSI + vol percentile filters)
+        # RS vs Nifty filter (primary -- replaces RSI + vol percentile filters)
         stock_return_1d = (close.iloc[-1] / close.iloc[-2] - 1) if len(close) >= 2 else 0.0
         rs_vs_nifty = adaptive_ind.compute_rs_vs_nifty(
             stock_return_1d,
@@ -291,7 +291,7 @@ def evaluate_signal(
         if vol_zscore_r3 < settings.VOL_ZSCORE_REGIME3:
             return False, {"reject_reason": "volume_zscore_low", "vol_zscore": vol_zscore_r3, "threshold": settings.VOL_ZSCORE_REGIME3}
     else:
-        # UNKNOWN regime — apply Regime 1 defaults (no score bonus)
+        # UNKNOWN regime -- apply Regime 1 defaults (no score bonus)
         pass
 
     # ----------------------------------------------------------------
@@ -309,7 +309,7 @@ def evaluate_signal(
             return False, {"reject_reason": "trend_filter_failed", "close": c, "ema50": e50, "ema200": e200}
 
     # All other filters (C2-C8) still apply
-    if not (e21 * 0.93 <= c <= e21 * 1.20):  # widened from 97–110% to 93–120%
+    if not (e21 * 0.93 <= c <= e21 * 1.20):  # widened from 97-110% to 93-120%
         return False, {"reject_reason": "ema21_proximity_failed", "close": c, "ema21": e21}
 
     if vol_ratio < 1.2:  # lowered from 1.5x to 1.2x
@@ -470,7 +470,7 @@ def evaluate_signal(
             score += settings.BREADTH_RANK_PENALTY_BOTTOM  # default -10
         # Top quintile also gets a score multiplier to nudge borderline signals
         if breadth_rank >= 0.80:
-            score = int(score * settings.BREADTH_RANK_MULTIPLIER)  # default ×1.2
+            score = int(score * settings.BREADTH_RANK_MULTIPLIER)  # default x1.2
             score = min(score, 100)
 
     # -----------------------------------------------------
@@ -519,7 +519,7 @@ def calc_zerodha_costs(
     Delivery (CNC): STT on sell side only (0.1%)
     Intraday (MIS): STT on sell side only (0.025%)
     
-    When for_gate=True, brokerage (₹20 cap), STT, and GST are zeroed
+    When for_gate=True, brokerage (Rs20 cap), STT, and GST are zeroed
     for signal viability checks only. Actual P&L tracking always uses
     the full cost model (for_gate=False).
     
@@ -534,22 +534,22 @@ def calc_zerodha_costs(
     # Stamp duty: 0.015% on buy side only
     stamp_duty = buy_value * settings.ZERODHA_STAMP_DUTY_PCT
 
-    # SEBI turnover fee: ₹10 per crore = 0.0001% both sides
+    # SEBI turnover fee: Rs10 per crore = 0.0001% both sides
     sebi = (buy_value + sell_value) * settings.ZERODHA_SEBI_PCT
 
-    # ── TEMPORARY: Brokerage + STT + GST zeroed for gate calculations ──
-    # At ₹5,000 bankroll the ₹20 flat brokerage + STT + GST kill most
+    # -- TEMPORARY: Brokerage + STT + GST zeroed for gate calculations --
+    # At Rs5,000 bankroll the Rs20 flat brokerage + STT + GST kill most
     # viable signals.  These are skipped ONLY for signal viability gates;
     # actual P&L tracking (position_tracker, close_position) still uses
     # the full cost model.
-    # TODO(urveesh): Remove for_gate bypass when bankroll reaches ₹50,000+
+    # TODO(urveesh): Remove for_gate bypass when bankroll reaches Rs50,000+
     if for_gate:
         brokerage_buy  = 0.0
         brokerage_sell = 0.0
         stt            = 0.0
         gst            = 0.0
     else:
-        # Brokerage: min(0.03% of turnover, ₹20) per executed order
+        # Brokerage: min(0.03% of turnover, Rs20) per executed order
         brokerage_buy  = min(buy_value  * settings.ZERODHA_BROKERAGE_PCT, settings.ZERODHA_BROKERAGE_MAX)
         brokerage_sell = min(sell_value * settings.ZERODHA_BROKERAGE_PCT, settings.ZERODHA_BROKERAGE_MAX)
 
@@ -615,7 +615,7 @@ def calc_relative_strength(
 def calc_vwap(df: pd.DataFrame) -> pd.Series:
     """
     [MOM1] VWAP calculation for intraday candles.
-    VWAP = cumsum(typical_price × volume) / cumsum(volume)
+    VWAP = cumsum(typical_price x volume) / cumsum(volume)
     Typical price = (high + low + close) / 3
     Resets at start of each day - caller must pass only today's candles.
     df must have columns: high, low, close, volume
@@ -649,16 +649,16 @@ def resolve_momentum_regime_params(
       r_target:    R-multiple for the position target
       risk_pct:    Fraction of momentum pool to risk
       should_block: True if the caller should reject the signal entirely
-                    (skip MC1-MC6 gates) — applies in Regime 3 with BLOCK=True.
+                    (skip MC1-MC6 gates) -- applies in Regime 3 with BLOCK=True.
 
     The legacy market_regime string dispatch (BULL/BEAR_RS_ONLY) lives
     in evaluate_momentum_signal. This function is the NEW 3-regime path.
-    When regime is None, falls back to R1 (safe default) — backward compat.
+    When regime is None, falls back to R1 (safe default) -- backward compat.
 
     Settings used:
-      MOMENTUM_BLOCK_R3_ENTRIES  — gate to short-circuit in R3
-      MOMENTUM_R_TARGET_R1/R2    — target R-multiples
-      MOMENTUM_RISK_PCT_R1/R2/R3 — position sizing per regime
+      MOMENTUM_BLOCK_R3_ENTRIES  -- gate to short-circuit in R3
+      MOMENTUM_R_TARGET_R1/R2    -- target R-multiples
+      MOMENTUM_RISK_PCT_R1/R2/R3 -- position sizing per regime
     """
     if regime is None or regime == Regime.REGIME_1_NORMAL or regime == Regime.UNKNOWN:
         # R1: 2.0R target, 7% risk. Default for unknown / backward compat.
@@ -668,7 +668,7 @@ def resolve_momentum_regime_params(
             False,
         )
     elif regime == Regime.REGIME_2_ELEVATED:
-        # R2: tighter target (1.5R) + smaller size (5%). Not blocked —
+        # R2: tighter target (1.5R) + smaller size (5%). Not blocked --
         # still allow some participation but with discipline.
         return (
             settings.MOMENTUM_R_TARGET_R2,
@@ -680,11 +680,11 @@ def resolve_momentum_regime_params(
         # give 0% risk so no positions open. Defense in depth.
         return (
             settings.MOMENTUM_R_TARGET_R2,  # conservative r_target (unused when blocked)
-            settings.MOMENTUM_RISK_PCT_R3,  # 0% — no shares
+            settings.MOMENTUM_RISK_PCT_R3,  # 0% -- no shares
             settings.MOMENTUM_BLOCK_R3_ENTRIES,
         )
     else:
-        # Unknown enum value — be safe
+        # Unknown enum value -- be safe
         logger.warning("momentum_unknown_regime_enum", regime=str(regime))
         return (
             settings.MOMENTUM_R_TARGET_R1,
@@ -720,8 +720,8 @@ def evaluate_momentum_signal(
       [MC6] Morphology: close_position_score >= MOMENTUM_MORPHOLOGY_MIN_SCORE
       [MC0] Time-of-day gate: minutes-from-915 within [MOMENTUM_ENTRY_START_MIN, MOMENTUM_ENTRY_END_MIN]
             (only if MOMENTUM_USE_TIME_GATE=True; default ON to skip open/close chop)
-      [MC7] RVOL filter: last-bar volume >= MOMENTUM_RVOL_MIN_RATIO × avg(lookback bars)
-            (only if MOMENTUM_USE_RVOL=True; default OFF — well-evidenced but new)
+      [MC7] RVOL filter: last-bar volume >= MOMENTUM_RVOL_MIN_RATIO x avg(lookback bars)
+            (only if MOMENTUM_USE_RVOL=True; default OFF -- well-evidenced but new)
 
     Risk:
       [MR1] Stop loss = low of the breakout candle (last candle)
@@ -754,7 +754,7 @@ def evaluate_momentum_signal(
                     "minutes_from_open": minutes_from_open,
                     "max_allowed":       settings.MOMENTUM_ENTRY_END_MIN,
                 }
-        # If index has no hour/minute (e.g. unit tests with int index) — skip gate
+        # If index has no hour/minute (e.g. unit tests with int index) -- skip gate
         # rather than crashing. The operator can spot this in the signal log.
 
     df = df.copy()
@@ -820,7 +820,7 @@ def evaluate_momentum_signal(
 
     # [MC7] RVOL filter (opt-in via MOMENTUM_USE_RVOL; default OFF)
     # Compares last-bar volume against a longer-term 15-min average.
-    # Distinct from MC3 which uses a 10-bar lookback — MC7 catches "above-average
+    # Distinct from MC3 which uses a 10-bar lookback -- MC7 catches "above-average
     # for the day" vs MC3's "above-recent-15-min-bar" signal. Backed by every
     # credible ORB / momentum study (orbsetups.com 2026, dailybulls.in 2026,
     # intradaylab.com 2026). Default OFF: opt-in once the operator has 30+ trades
@@ -858,7 +858,7 @@ def evaluate_momentum_signal(
     # if current_close <= prev_day_high:
     #     return False, {"reject_reason": "below_prev_day_high", "close": current_close, "prev_high": prev_day_high}
 
-    # [MC6] Morphology gate — reject shooting-star and doji candles
+    # [MC6] Morphology gate -- reject shooting-star and doji candles
     # A close near the bottom of the candle's range signals seller control.
     last_high    = float(df["high"].iloc[-1])
     last_low     = float(df["low"].iloc[-1])
@@ -951,7 +951,7 @@ def evaluate_momentum_signal(
                 "fuel_buffer":       settings.MOMENTUM_ATR_FUEL_BUFFER,
             }
 
-    # Cost viability check — use effective_r_target so bear-mode trades are assessed
+    # Cost viability check -- use effective_r_target so bear-mode trades are assessed
     # against their actual 1.5R projected profit, not the default 2.0R.
     viable, cost_ratio = is_cost_viable(
         entry_price=current_close, shares=shares,
@@ -961,7 +961,7 @@ def evaluate_momentum_signal(
     if not viable:
         return False, {"reject_reason": "cost_not_viable", "cost_ratio": cost_ratio}
 
-    # Accurate cost for net_ev — must use effective_r_target to avoid inflated EV in bear mode
+    # Accurate cost for net_ev -- must use effective_r_target to avoid inflated EV in bear mode
     estimated_exit = current_close + (effective_r_target * r_distance)  # [AUDIT-004]
     total_cost = calc_zerodha_costs(
         current_close, estimated_exit, shares, is_intraday=True, for_gate=True
@@ -998,7 +998,7 @@ def evaluate_momentum_signal(
         "intraday_low":        round(intraday_low, 2),
     }
     # Attach minutes_from_open + rvol_ratio + rsi_7 if available (gate already
-    # computed these, but they're locals — easiest to leave for the caller to
+    # computed these, but they're locals -- easiest to leave for the caller to
     # compute from the same df if needed for the log). The caller has the df
     # so the log enrichment happens in main.py's scan loop.
     return True, result
@@ -1012,12 +1012,12 @@ def evaluate_mc8_rsi_trim(
 
     Returns a dict describing whether a 50% partial trim should fire, plus the
     RSI(7) value for the signal log. The caller (position_tracker) is responsible
-    for actually executing the trim — this function is the decision only.
+    for actually executing the trim -- this function is the decision only.
 
     Logic: if RSI(length=MOMENTUM_RSI_TRIM_LENGTH, default 7) on the last closed
     15-min bar >= MOMENTUM_RSI_TRIM_THRESHOLD (default 70), recommend trim_50.
     RSI(7) >= 70 on 15-min is the published sweet spot for the 71% win-rate
-    variant in the 4-variant ORB study (dailybulls.in 2026). Default OFF — opt
+    variant in the 4-variant ORB study (dailybulls.in 2026). Default OFF -- opt
     in once the operator has signal-log data on whether the threshold fits this
     universe (Indian mid-caps may have very different RSI dynamics than US ETFs).
 

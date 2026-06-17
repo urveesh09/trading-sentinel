@@ -42,9 +42,9 @@ def _simulate_trade(
 
     Exit hierarchy:
       1. Stop-out (price penetrates stop_loss)
-      2. T1 hit  → move stop to breakeven, continue
-      3. T2 hit  → close full position
-      4. Time-out (15 days) → close at current close
+      2. T1 hit  -> move stop to breakeven, continue
+      3. T2 hit  -> close full position
+      4. Time-out (15 days) -> close at current close
 
     Returns a trade dict with entry/exit details and R multiple.
     """
@@ -67,11 +67,11 @@ def _simulate_trade(
             exit_date = day_idx
             break
 
-        # T1 hit — lock in partial profit, move stop to breakeven
+        # T1 hit -- lock in partial profit, move stop to breakeven
         if curr_close >= target_1:
             stop = entry_price  # breakeven
 
-        # T2 hit — full exit
+        # T2 hit -- full exit
         if target_2 is not None and curr_close >= target_2:
             exit_reason = "target_2"
             exit_price = target_2
@@ -293,7 +293,7 @@ def run_backtest(
     # Build Nifty proxy series for regime engine
     nifty_proxy = _build_nifty_series(df)
 
-    # Regime engine — VIX not available for historical backtest (use None)
+    # Regime engine -- VIX not available for historical backtest (use None)
     regime_engine = RegimeEngine()
 
     trades: list[dict] = []
@@ -343,7 +343,7 @@ def run_backtest(
         # Build RSI history for evaluate_signal.
         # calc_rsi_series has a pre-existing off-by-one for exactly-200-row
         # windows (IndexError on gains[199]). Pass None to let evaluate_signal
-        # fall back to the fixed 45-72 RSI range — no signals lost.
+        # fall back to the fixed 45-72 RSI range -- no signals lost.
         try:
             rsi_hist = calc_rsi_series(lookback["close"])
         except (IndexError, Exception):
@@ -368,7 +368,7 @@ def run_backtest(
         if not valid:
             continue
 
-        # Record trade — use next day's open as entry price
+        # Record trade -- use next day's open as entry price
         scan_loc = df.index.get_loc(scan_date)
         if scan_loc + 1 >= len(df):
             continue
@@ -444,7 +444,7 @@ def run_universe_backtest(
     end_date : str
         End date ("YYYY-MM-DD").
     historical_data : dict[str, pd.DataFrame]
-        Mapping of ticker → OHLCV DataFrame.
+        Mapping of ticker -> OHLCV DataFrame.
     initial_bankroll : float
         Per-ticker starting capital (default 5000.0).
 

@@ -75,11 +75,11 @@ def _accept_kwargs():
     )
 
 
-# ── Scoring bonus tests (Integration Point A) ────────────────────────
+# -- Scoring bonus tests (Integration Point A) ------------------------
 
 
 def test_breadth_rank_top_quintile_gets_bonus_and_multiplier(breadth_enabled):
-    """breadth_rank >= 0.80 → +15 bonus + 1.2x score multiplier (when fired)."""
+    """breadth_rank >= 0.80 -> +15 bonus + 1.2x score multiplier (when fired)."""
     df = _make_df()
     bankroll = 100_000
     kw = _accept_kwargs()
@@ -97,7 +97,7 @@ def test_breadth_rank_top_quintile_gets_bonus_and_multiplier(breadth_enabled):
 
 
 def test_breadth_rank_mid_gets_bonus_no_multiplier(breadth_enabled):
-    """0.60 <= breadth_rank < 0.80 → +7 bonus, no multiplier (when fired)."""
+    """0.60 <= breadth_rank < 0.80 -> +7 bonus, no multiplier (when fired)."""
     df = _make_df()
     bankroll = 100_000
     kw = _accept_kwargs()
@@ -111,7 +111,7 @@ def test_breadth_rank_mid_gets_bonus_no_multiplier(breadth_enabled):
 
 
 def test_breadth_rank_bottom_gets_penalty(breadth_enabled):
-    """breadth_rank < 0.20 → -10 penalty (when fired)."""
+    """breadth_rank < 0.20 -> -10 penalty (when fired)."""
     df = _make_df()
     bankroll = 100_000
     kw = _accept_kwargs()
@@ -125,7 +125,7 @@ def test_breadth_rank_bottom_gets_penalty(breadth_enabled):
 
 
 def test_breadth_rank_none_no_effect(breadth_enabled):
-    """breadth_rank=None (degraded) → no scoring changes (when fired)."""
+    """breadth_rank=None (degraded) -> no scoring changes (when fired)."""
     df = _make_df()
     bankroll = 100_000
     kw = _accept_kwargs()
@@ -160,11 +160,11 @@ def test_breadth_rank_relative_ordering_is_correct(breadth_enabled):
         assert top["score"] > mid["score"] > bot["score"]
 
 
-# ── R1 narrow-rally gate tests (Integration Point B) ─────────────────
+# -- R1 narrow-rally gate tests (Integration Point B) -----------------
 
 
 def test_breadth_narrow_rally_gate_r1_rejects_non_leader(breadth_enabled):
-    """R1 + breadth_pct < 0.40 + rank < 0.80 → rejected with narrow_rally_filtered=True."""
+    """R1 + breadth_pct < 0.40 + rank < 0.80 -> rejected with narrow_rally_filtered=True."""
     df = _make_df()
     bankroll = 100_000
     kw = _accept_kwargs()
@@ -183,7 +183,7 @@ def test_breadth_narrow_rally_gate_r1_rejects_non_leader(breadth_enabled):
 
 
 def test_breadth_narrow_rally_gate_r1_exempts_top_quintile(breadth_enabled):
-    """R1 + breadth_pct < 0.40 + rank >= 0.80 → gate does NOT reject."""
+    """R1 + breadth_pct < 0.40 + rank >= 0.80 -> gate does NOT reject."""
     df = _make_df()
     bankroll = 100_000
     kw = _accept_kwargs()
@@ -199,7 +199,7 @@ def test_breadth_narrow_rally_gate_r1_exempts_top_quintile(breadth_enabled):
 
 
 def test_breadth_narrow_rally_gate_r1_skips_when_degraded(breadth_enabled):
-    """R1 + breadth_pct=None (degraded) → gate skipped, signal proceeds normally."""
+    """R1 + breadth_pct=None (degraded) -> gate skipped, signal proceeds normally."""
     df = _make_df()
     bankroll = 100_000
     kw = _accept_kwargs()
@@ -215,7 +215,7 @@ def test_breadth_narrow_rally_gate_r1_skips_when_degraded(breadth_enabled):
 
 
 def test_breadth_narrow_rally_gate_does_not_fire_in_r2(breadth_enabled):
-    """R2 + breadth_pct < 0.40 + rank < 0.80 → gate does NOT fire."""
+    """R2 + breadth_pct < 0.40 + rank < 0.80 -> gate does NOT fire."""
     df = _make_df()
     bankroll = 100_000
     kw = _accept_kwargs()
@@ -231,7 +231,7 @@ def test_breadth_narrow_rally_gate_does_not_fire_in_r2(breadth_enabled):
 
 
 def test_breadth_narrow_rally_gate_does_not_fire_in_r3(breadth_enabled):
-    """R3 + breadth_pct < 0.40 + rank < 0.80 → gate does NOT fire."""
+    """R3 + breadth_pct < 0.40 + rank < 0.80 -> gate does NOT fire."""
     df = _make_df()
     bankroll = 100_000
     ok, res = evaluate_signal(
@@ -245,7 +245,7 @@ def test_breadth_narrow_rally_gate_does_not_fire_in_r3(breadth_enabled):
 
 
 def test_breadth_narrow_rally_gate_r1_passes_with_healthy_breadth(breadth_enabled):
-    """R1 + breadth_pct >= 0.40 → gate does NOT fire (only narrow rallies trigger it)."""
+    """R1 + breadth_pct >= 0.40 -> gate does NOT fire (only narrow rallies trigger it)."""
     df = _make_df()
     bankroll = 100_000
     kw = _accept_kwargs()
@@ -253,14 +253,14 @@ def test_breadth_narrow_rally_gate_r1_passes_with_healthy_breadth(breadth_enable
         "TEST", df, bankroll, 0.02,
         regime=Regime.REGIME_1_NORMAL,
         breadth_rank=0.50,
-        breadth_pct_above_sma50=0.60,  # Healthy breadth → gate doesn't fire
+        breadth_pct_above_sma50=0.60,  # Healthy breadth -> gate doesn't fire
         **kw,
     )
     if not ok:
         assert res.get("reject_reason") != "narrow_rally_filtered"
 
 
-# ── Feature flag test ────────────────────────────────────────────────
+# -- Feature flag test ------------------------------------------------
 
 
 def test_breadth_feature_flag_off_means_no_breadth_effect():

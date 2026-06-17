@@ -1,5 +1,5 @@
 """
-Tests for [MOMENTUM-ENTRY-V2 2026-06-16] — MC0 time-of-day gate, MC7 RVOL filter,
+Tests for [MOMENTUM-ENTRY-V2 2026-06-16] -- MC0 time-of-day gate, MC7 RVOL filter,
 MC8 RSI partial-trim evaluator, and the signal_log module.
 
 These tests focus on the NEW gates and log mechanics. The full MC1-MC6
@@ -26,9 +26,9 @@ if ENGINE_DIR not in sys.path:
     sys.path.insert(0, ENGINE_DIR)
 
 
-# ────────────────────────────────────────────────────────────────────
+# --------------------------------------------------------------------
 # Test fixtures
-# ────────────────────────────────────────────────────────────────────
+# --------------------------------------------------------------------
 
 def _make_intraday_late_morning(
     start_hour: int = 10,
@@ -72,12 +72,12 @@ def _make_daily_df() -> pd.DataFrame:
     }, index=dates)
 
 
-# ────────────────────────────────────────────────────────────────────
+# --------------------------------------------------------------------
 # MC0: time-of-day gate
-# ────────────────────────────────────────────────────────────────────
+# --------------------------------------------------------------------
 
 class TestMC0TimeGate:
-    """MOMENTUM_USE_TIME_GATE=True by default — entries only after MOMENTUM_ENTRY_START_MIN minutes
+    """MOMENTUM_USE_TIME_GATE=True by default -- entries only after MOMENTUM_ENTRY_START_MIN minutes
     from 9:15 IST, and before MOMENTUM_ENTRY_END_MIN minutes."""
 
     def test_too_early_returns_mc0_reject(self, monkeypatch):
@@ -85,7 +85,7 @@ class TestMC0TimeGate:
         monkeypatch.setattr(settings, "MOMENTUM_USE_TIME_GATE", True)
         # Use 200 min as the floor so we can safely test 9:15-9:45 (last bar at 9:45 = 30 min)
         monkeypatch.setattr(settings, "MOMENTUM_ENTRY_START_MIN", 200)
-        # 9:15-9:45 with 10-min bars → last bar 9:45 = 30 min from open
+        # 9:15-9:45 with 10-min bars -> last bar 9:45 = 30 min from open
         idx = pd.date_range("2026-06-16 09:15", periods=4, freq="10min")
         df = pd.DataFrame({
             "open": [100.0]*4, "high": [101.0]*4, "low": [99.0]*4,
@@ -107,7 +107,7 @@ class TestMC0TimeGate:
         monkeypatch.setattr(settings, "MOMENTUM_USE_TIME_GATE", True)
         monkeypatch.setattr(settings, "MOMENTUM_ENTRY_START_MIN", 45)
         monkeypatch.setattr(settings, "MOMENTUM_ENTRY_END_MIN", 840)
-        # 10:00 IST = 45 min from 9:15 → should NOT be rejected for too_early
+        # 10:00 IST = 45 min from 9:15 -> should NOT be rejected for too_early
         df = _make_intraday_late_morning(start_hour=10, start_minute=0)
         from engine import evaluate_momentum_signal
         fired, result = evaluate_momentum_signal(
@@ -125,8 +125,8 @@ class TestMC0TimeGate:
         monkeypatch.setattr(settings, "MOMENTUM_USE_TIME_GATE", True)
         # 30 min as the max so we can test 9:15-9:45 (last bar at 9:45 = 30 min)
         monkeypatch.setattr(settings, "MOMENTUM_ENTRY_END_MIN", 30)
-        # 9:15-9:45 with 10-min bars → last bar 9:45 = 30 min from open
-        # (MC0 uses strict `>`, so 30 == max passes; 30 + freq=10 min later is 40 > 30 → reject)
+        # 9:15-9:45 with 10-min bars -> last bar 9:45 = 30 min from open
+        # (MC0 uses strict `>`, so 30 == max passes; 30 + freq=10 min later is 40 > 30 -> reject)
         idx = pd.date_range("2026-06-16 09:55", periods=4, freq="10min")
         df = pd.DataFrame({
             "open": [100.0]*4, "high": [101.0]*4, "low": [99.0]*4,
@@ -144,7 +144,7 @@ class TestMC0TimeGate:
     def test_gate_disabled_skips_check(self, monkeypatch):
         from config import settings
         monkeypatch.setattr(settings, "MOMENTUM_USE_TIME_GATE", False)
-        # 9:15 candle — would normally fail MC0
+        # 9:15 candle -- would normally fail MC0
         idx = pd.date_range("2026-06-16 09:15", periods=5, freq="15min")
         df = pd.DataFrame({
             "open": [100.0]*5, "high": [101.0]*5, "low": [99.0]*5,
@@ -155,7 +155,7 @@ class TestMC0TimeGate:
             ticker="TEST", df=df, prev_day_high=99.0,
             bankroll=50_000, momentum_pool=25_000, min_candles=4,
         )
-        # MC0 didn't fire — should be a different reject (likely MC2/3/4)
+        # MC0 didn't fire -- should be a different reject (likely MC2/3/4)
         if not fired:
             assert result["reject_reason"] != "MC0_too_early"
 
@@ -178,12 +178,12 @@ class TestMC0TimeGate:
             assert "MC0" not in result.get("reject_reason", "")
 
 
-# ────────────────────────────────────────────────────────────────────
+# --------------------------------------------------------------------
 # MC7: RVOL filter
-# ────────────────────────────────────────────────────────────────────
+# --------------------------------------------------------------------
 
 class TestMC7RVOLFilter:
-    """MOMENTUM_USE_RVOL defaults OFF — opt-in."""
+    """MOMENTUM_USE_RVOL defaults OFF -- opt-in."""
 
     def test_disabled_by_default_passes_through(self, monkeypatch):
         from config import settings
@@ -215,7 +215,7 @@ class TestMC7RVOLFilter:
         # because typical price includes the wide high. Then on recovery close
         # crosses above VWAP. Last bar volume = 1.5x avg.
         idx = pd.date_range("2026-06-16 10:00", periods=6, freq="15min")
-        # Bars 0-3: close flat at 100, high=110, low=100 → typical=103.3 > close
+        # Bars 0-3: close flat at 100, high=110, low=100 -> typical=103.3 > close
         # Bar 4: recovery close=105, typical=105
         # Bar 5: pop close=110, typical=110, vol=75k (1.5x)
         close  = [100.0, 100.0, 100.0, 100.0, 105.0, 110.0]
@@ -231,13 +231,13 @@ class TestMC7RVOLFilter:
             bankroll=50_000, momentum_pool=25_000, min_candles=4,
             df_daily=_make_daily_df(),
         )
-        # The test passes if MC7 fires — no skip needed if data is right
+        # The test passes if MC7 fires -- no skip needed if data is right
         if not fired and result.get("reject_reason") == "no_recent_vwap_crossover":
             pytest.fail(
                 f"Data didn't trigger VWAP cross. close={close}, "
                 f"reject={result.get('reject_reason')}"
             )
-        # 75k / 50k = 1.5 < MC7 threshold 2.0 → MC7_rvol_insufficient
+        # 75k / 50k = 1.5 < MC7 threshold 2.0 -> MC7_rvol_insufficient
         assert not fired, f"Expected rejection, got fired: {result}"
         assert result["reject_reason"] == "MC7_rvol_insufficient", \
             f"Expected MC7, got: {result.get('reject_reason')}"
@@ -247,8 +247,8 @@ class TestMC7RVOLFilter:
         monkeypatch.setattr(settings, "MOMENTUM_USE_RVOL", True)
         monkeypatch.setattr(settings, "MOMENTUM_RVOL_MIN_RATIO", 1.5)
         monkeypatch.setattr(settings, "MOMENTUM_RVOL_LOOKBACK", 5)
-        # 4x volume surge on last bar — passes both MC3 and MC7
-        df = _make_intraday_late_morning()  # last bar = 200k, others 50k → 4x
+        # 4x volume surge on last bar -- passes both MC3 and MC7
+        df = _make_intraday_late_morning()  # last bar = 200k, others 50k -> 4x
         from engine import evaluate_momentum_signal
         fired, result = evaluate_momentum_signal(
             ticker="TEST", df=df, prev_day_high=99.0,
@@ -258,7 +258,7 @@ class TestMC7RVOLFilter:
         if not fired:
             # If rejected, must NOT be MC7
             assert result.get("reject_reason") != "MC7_rvol_insufficient", \
-                f"MC7 fired on 4x volume — should pass: {result}"
+                f"MC7 fired on 4x volume -- should pass: {result}"
 
     def test_short_history_skips_mc7_safely(self, monkeypatch):
         from config import settings
@@ -277,12 +277,12 @@ class TestMC7RVOLFilter:
             assert result.get("reject_reason") != "MC7_rvol_insufficient"
 
 
-# ────────────────────────────────────────────────────────────────────
+# --------------------------------------------------------------------
 # MC8: RSI partial-trim evaluator
-# ────────────────────────────────────────────────────────────────────
+# --------------------------------------------------------------------
 
 class TestMC8RSITrim:
-    """evaluate_mc8_rsi_trim — decision-only function. position_tracker calls it."""
+    """evaluate_mc8_rsi_trim -- decision-only function. position_tracker calls it."""
 
     def test_disabled_returns_should_trim_false(self, monkeypatch):
         from config import settings
@@ -314,7 +314,7 @@ class TestMC8RSITrim:
         # calc_rsi_series has a pre-existing off-by-one that OOBs at n=length+2
         # (gains has size n-1 but loop tries index n-1). With exactly length+1
         # bars the seed-only path runs and avoids the bug. For real production
-        # the engine should be patched, but that's out of scope for this PR —
+        # the engine should be patched, but that's out of scope for this PR --
         # MC8 just needs length+1 to fire.
         idx = pd.date_range("2026-06-16 10:00", periods=8, freq="15min")
         close = [100.0, 101.0, 102.0, 103.0, 104.0, 105.0, 106.0, 107.0]
@@ -336,7 +336,7 @@ class TestMC8RSITrim:
         monkeypatch.setattr(settings, "MOMENTUM_RSI_TRIM_THRESHOLD", 70.0)
         from engine import evaluate_mc8_rsi_trim
         # 8 bars with first 4 down, last 4 sideways (close < prev close at step 7)
-        # → avg_loss > avg_gain → RSI < 50
+        # -> avg_loss > avg_gain -> RSI < 50
         idx = pd.date_range("2026-06-16 10:00", periods=8, freq="15min")
         close = [100.0, 99.0, 98.0, 97.0, 97.0, 97.0, 97.0, 96.5]
         df = pd.DataFrame({
@@ -357,9 +357,9 @@ class TestMC8RSITrim:
         assert result["reason"] == "MC8_insufficient_candles"
 
 
-# ────────────────────────────────────────────────────────────────────
+# --------------------------------------------------------------------
 # signal_log module
-# ────────────────────────────────────────────────────────────────────
+# --------------------------------------------------------------------
 
 class TestSignalLog:
     """The signal log is the data source for future backtests."""

@@ -14,9 +14,9 @@ from performance import init_ledger
 from position_tracker import init_positions_db
 
 
-# ═══════════════════════════════════════════════════════════════
+# ===============================================================
 # FIXTURES
-# ═══════════════════════════════════════════════════════════════
+# ===============================================================
 
 @pytest_asyncio.fixture
 async def client(db_path, monkeypatch):
@@ -29,9 +29,9 @@ async def client(db_path, monkeypatch):
         yield ac
 
 
-# ═══════════════════════════════════════════════════════════════
+# ===============================================================
 # GET /health
-# ═══════════════════════════════════════════════════════════════
+# ===============================================================
 
 
 class TestHealthEndpoint:
@@ -50,9 +50,9 @@ class TestHealthEndpoint:
         assert resp.status_code == 200
 
 
-# ═══════════════════════════════════════════════════════════════
+# ===============================================================
 # GET /signals
-# ═══════════════════════════════════════════════════════════════
+# ===============================================================
 
 
 class TestSignalsEndpoint:
@@ -88,9 +88,9 @@ class TestSignalsEndpoint:
         assert body["remaining_slots"] == settings.MAX_OPEN_POSITIONS
 
 
-# ═══════════════════════════════════════════════════════════════
+# ===============================================================
 # GET /performance
-# ═══════════════════════════════════════════════════════════════
+# ===============================================================
 
 
 class TestPerformanceEndpoint:
@@ -113,9 +113,9 @@ class TestPerformanceEndpoint:
         assert body["loss_count"] == 0
 
 
-# ═══════════════════════════════════════════════════════════════
+# ===============================================================
 # GET /positions
-# ═══════════════════════════════════════════════════════════════
+# ===============================================================
 
 
 class TestPositionsEndpoint:
@@ -127,9 +127,9 @@ class TestPositionsEndpoint:
         assert resp.json() == []
 
 
-# ═══════════════════════════════════════════════════════════════
+# ===============================================================
 # GET /bankroll
-# ═══════════════════════════════════════════════════════════════
+# ===============================================================
 
 
 class TestBankrollEndpoint:
@@ -143,9 +143,9 @@ class TestBankrollEndpoint:
         assert body["bankroll"] == settings.INITIAL_BANKROLL
 
 
-# ═══════════════════════════════════════════════════════════════
+# ===============================================================
 # GET /circuit-breaker
-# ═══════════════════════════════════════════════════════════════
+# ===============================================================
 
 
 class TestCircuitBreakerEndpoint:
@@ -159,9 +159,9 @@ class TestCircuitBreakerEndpoint:
         assert body["halt_reasons"] == []
 
 
-# ═══════════════════════════════════════════════════════════════
+# ===============================================================
 # POST /token  (triggers post_login_initialization)
-# ═══════════════════════════════════════════════════════════════
+# ===============================================================
 
 
 class TestTokenEndpoint:
@@ -171,7 +171,7 @@ class TestTokenEndpoint:
         """POST /token should set the kite token and schedule init [Q4].
 
         The endpoint calls asyncio.create_task(post_login_initialization()) so it
-        can return 200 immediately — node-gateway has a 2-second AbortController
+        can return 200 immediately -- node-gateway has a 2-second AbortController
         but the init takes 20+ seconds.  create_task(f()) calls f() to get the
         coroutine (registering a 'call' on the mock) then schedules the task;
         the coroutine body runs later in the event loop, so assert_awaited_once()
@@ -183,7 +183,7 @@ class TestTokenEndpoint:
             resp = await client.post("/token", json={"access_token": "fake_token_123"})
             assert resp.status_code == 200
             mock_set.assert_called_once_with("fake_token_123")
-            mock_init.assert_called_once()   # called (scheduled); not assert_awaited_once() — see docstring
+            mock_init.assert_called_once()   # called (scheduled); not assert_awaited_once() -- see docstring
 
     @pytest.mark.asyncio
     async def test_missing_token_field(self, client):
@@ -192,9 +192,9 @@ class TestTokenEndpoint:
         assert resp.status_code in (400, 422, 500)
 
 
-# ═══════════════════════════════════════════════════════════════
+# ===============================================================
 # POST /positions/manual  (internal API, requires secret)
-# ═══════════════════════════════════════════════════════════════
+# ===============================================================
 
 
 class TestManualPositionEndpoint:
@@ -277,9 +277,9 @@ class TestManualPositionEndpoint:
         assert positions[0]["regime_at_entry"] is None
 
 
-# ═══════════════════════════════════════════════════════════════
+# ===============================================================
 # POST /positions/close  (internal API, requires secret)
-# ═══════════════════════════════════════════════════════════════
+# ===============================================================
 
 
 class TestClosePositionEndpoint:
@@ -302,9 +302,9 @@ class TestClosePositionEndpoint:
         assert resp.status_code == 404
 
 
-# ═══════════════════════════════════════════════════════════════
+# ===============================================================
 # GET /momentum-signals
-# ═══════════════════════════════════════════════════════════════
+# ===============================================================
 
 
 class TestMomentumSignalsEndpoint:
@@ -319,9 +319,9 @@ class TestMomentumSignalsEndpoint:
         assert "trading_halted" in body
 
 
-# ═══════════════════════════════════════════════════════════════
+# ===============================================================
 # POST /test-momentum
-# ═══════════════════════════════════════════════════════════════
+# ===============================================================
 
 
 class TestMomentumTrigger:
@@ -335,9 +335,9 @@ class TestMomentumTrigger:
             assert resp.json()["status"] == "momentum_scan_triggered"
 
 
-# ═══════════════════════════════════════════════════════════════
+# ===============================================================
 # Q4: post_login_initialization calls run_screener + run_momentum_screener
-# ═══════════════════════════════════════════════════════════════
+# ===============================================================
 
 
 class TestPostLoginInitQ4:
@@ -359,18 +359,18 @@ class TestPostLoginInitQ4:
             mock_momentum.assert_awaited_once()
 
 
-# ═══════════════════════════════════════════════════════════════
+# ===============================================================
 # INTERNAL ENDPOINT BEHAVIOUR TESTS
-# These are internal Container-A→B calls; validation happens at
+# These are internal Container-A->B calls; validation happens at
 # the Node gateway boundary. These tests verify actual behaviour.
-# ═══════════════════════════════════════════════════════════════
+# ===============================================================
 
 
 class TestInternalEndpointBehaviour:
 
     @pytest.mark.asyncio
     async def test_manual_position_missing_ticker_raises(self, client):
-        """POST /positions/manual without ticker → unhandled KeyError (no validation on internal endpoint)."""
+        """POST /positions/manual without ticker -> unhandled KeyError (no validation on internal endpoint)."""
         with pytest.raises(KeyError):
             await client.post(
                 "/positions/manual",
@@ -380,7 +380,7 @@ class TestInternalEndpointBehaviour:
 
     @pytest.mark.asyncio
     async def test_close_position_missing_exit_price_raises(self, client):
-        """POST /positions/close without exit_price → unhandled KeyError."""
+        """POST /positions/close without exit_price -> unhandled KeyError."""
         with pytest.raises(KeyError):
             await client.post(
                 "/positions/close",
@@ -404,9 +404,9 @@ class TestInternalEndpointBehaviour:
         assert resp.status_code == 200
 
 
-# ═══════════════════════════════════════════════════════════════
+# ===============================================================
 # LUNCHTIME VOL THRESHOLD LOGIC
-# ═══════════════════════════════════════════════════════════════
+# ===============================================================
 
 def test_lunchtime_vol_threshold_logic():
     """Unit test for the lunchtime threshold selection logic (MC3-T wiring in run_momentum_screener)."""

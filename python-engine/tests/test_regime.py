@@ -37,9 +37,9 @@ class TestRegimeEngine:
     def test_nifty_downtrend_penalty(self):
         """Nifty below EMA20 applies 0.7x penalty to score."""
         engine = RegimeEngine()
-        # Bull: nifty_50=25200 > ema20=25100 → no penalty → 100.0
+        # Bull: nifty_50=25200 > ema20=25100 -> no penalty -> 100.0
         score_bull = engine.compute_score(vix=12.0, nifty_50=25200, nifty_ema20=25100, breadth=0.60)
-        # Bear: nifty_50=24900 < ema20=25100 → 0.7x penalty → 70.0
+        # Bear: nifty_50=24900 < ema20=25100 -> 0.7x penalty -> 70.0
         score_bear = engine.compute_score(vix=12.0, nifty_50=24900, nifty_ema20=25100, breadth=0.60)
         assert score_bear < score_bull
         assert score_bull == 100.0
@@ -51,7 +51,7 @@ class TestRegimeEngine:
         score_good = engine.compute_score(vix=12.0, nifty_50=25000, nifty_ema20=24900, breadth=0.60)
         score_weak = engine.compute_score(vix=12.0, nifty_50=25000, nifty_ema20=24900, breadth=0.20)
         assert score_weak < score_good
-        # VIX=12→100, breadth 0.6 → 100.0; breadth 0.2 → 80.0 (0.8x)
+        # VIX=12->100, breadth 0.6 -> 100.0; breadth 0.2 -> 80.0 (0.8x)
         assert score_good == 100.0
         assert score_weak == 80.0
 
@@ -73,8 +73,8 @@ class TestRegimeEngine:
 
     def test_regime_transition_unlocked_on_second_scan(self):
         """UNKNOWN -> any regime transitions when counter reaches 2 on the second scan.
-        Scan 1: UNKNOWN candidate, counter=1 (below threshold of 2) → stays UNKNOWN.
-        Scan 2: R2 candidate, counter=2 (≥ 2) → fires transition to R2.
+        Scan 1: UNKNOWN candidate, counter=1 (below threshold of 2) -> stays UNKNOWN.
+        Scan 2: R2 candidate, counter=2 (>= 2) -> fires transition to R2.
         """
         engine = RegimeEngine()
         # Scan 1: UNKNOWN candidate, counter 0->1, still UNKNOWN (not yet 2)

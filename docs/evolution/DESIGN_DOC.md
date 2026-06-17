@@ -2,9 +2,9 @@
 ## Design Document v1.0
 
 **Project:** Trading Sentinel System Upgrade
-**Phase:** Phase 2 — Design Specification
+**Phase:** Phase 2 -- Design Specification
 **Date:** May 2025
-**Status:** Draft — Pending Implementation
+**Status:** Draft -- Pending Implementation
 
 ---
 
@@ -45,9 +45,9 @@ regime_score = max(0, min(100, base_score))
 ```
 
 **Regime mapping:**
-- `regime_score >= 70` — **Regime 1 (Normal)**
-- `regime_score 40-69` — **Regime 2 (Elevated)**
-- `regime_score < 40` — **Regime 3 (Crisis)**
+- `regime_score >= 70` -- **Regime 1 (Normal)**
+- `regime_score 40-69` -- **Regime 2 (Elevated)**
+- `regime_score < 40` -- **Regime 3 (Crisis)**
 
 ### 2.3 Regime Transition Rules
 
@@ -66,7 +66,7 @@ regime_score = max(0, min(100, base_score))
 | Volume threshold | Z-score greater than 1.5 | Z-score greater than 2.0 | Z-score greater than 2.5 |
 | Target 1 | 1.5R (50% exit) | 1.5R (50% exit) | 1.0R (50% exit) |
 | Target 2 | 3.0R | 3.0R | None |
-| Intraday momentum | Allowed | Allowed (if Nifty filter passes) | No — swing only |
+| Intraday momentum | Allowed | Allowed (if Nifty filter passes) | No -- swing only |
 | Chandelier stop | Optional | Default | Default |
 
 ---
@@ -88,7 +88,7 @@ current_rsi_percentile = percentile_rank(current_rsi, rolling_6_month_rsi_series
 **Signal entry criterion:**
 - Regime 1: RSI_percentile less than 20 (stock is at bottom 20% of its own historical RSI range)
 - Regime 2: RSI_percentile less than 15 (tighter because we are in elevated uncertainty)
-- Regime 3: Not used — replaced by RS vs Nifty requirement
+- Regime 3: Not used -- replaced by RS vs Nifty requirement
 
 **Why this is better:** A stock at RSI 55 might be oversold relative to its own history (if it typically trades RSI 65-80) or overbought relative to its history (if it typically trades RSI 35-50). Percentile captures this context. Fixed band treats a stock at RSI 55 the same whether it is historically a 70-RSI stock or a 45-RSI stock.
 
@@ -141,11 +141,11 @@ chandelier_stop = highest_close_since_entry - (3 * ATR_14)
 
 The stop trails the highest closing price since entry. It locks in profits when a stock rises strongly, but does not get triggered by normal pullbacks within a trend.
 
-- **Regime 1:** Optional — user can choose static ATR or Chandelier via config flag
-- **Regime 2:** Default — Chandelier is recommended for uncertain markets
-- **Regime 3:** Mandatory — static ATR is too vulnerable to intraday noise in high-vol environments
+- **Regime 1:** Optional -- user can choose static ATR or Chandelier via config flag
+- **Regime 2:** Default -- Chandelier is recommended for uncertain markets
+- **Regime 3:** Mandatory -- static ATR is too vulnerable to intraday noise in high-vol environments
 
-**Note:** Chandelier stop does not replace the entry stop loss. It IS the stop loss — once the entry stop is set at 2.0x ATR, the Chandelier becomes the trailing stop and will be tighter than the initial ATR stop once the stock moves favorably.
+**Note:** Chandelier stop does not replace the entry stop loss. It IS the stop loss -- once the entry stop is set at 2.0x ATR, the Chandelier becomes the trailing stop and will be tighter than the initial ATR stop once the stock moves favorably.
 
 ---
 
@@ -195,7 +195,7 @@ After any Regime 3 period, the following applies for the next 5 trading sessions
 effective_risk_pct = configured_risk_pct * 0.7   # 30% reduction
 ```
 
-This means after a crisis (where the system is already at 5% position size), the next 5 trades are at 3.5% risk. This is an automatic recovery-speed governor — it prevents the system from chasing losses by immediately sizing back up after a drawdown.
+This means after a crisis (where the system is already at 5% position size), the next 5 trades are at 3.5% risk. This is an automatic recovery-speed governor -- it prevents the system from chasing losses by immediately sizing back up after a drawdown.
 
 Reset condition: After 2 consecutive winning trades in the 5-session window, normal regime sizing resumes.
 
@@ -261,7 +261,7 @@ DRAWDOWN_RECOVERY_MULT = 0.7  # 30% size reduction
 | Stock Volume 20-day history | OHLC service | Per scan per stock | Rolling 20-day per stock |
 | Regime transitions | Computed | Per scan | Logger output |
 
-**Implementation note:** RSI and volume history must be maintained in memory (or persisted to Redis/memory DB) between scan cycles. The 6-month RSI percentile requires ~126 RSI readings per stock. At 50 stocks, this is ~6,300 float values — well within memory constraints.
+**Implementation note:** RSI and volume history must be maintained in memory (or persisted to Redis/memory DB) between scan cycles. The 6-month RSI percentile requires ~126 RSI readings per stock. At 50 stocks, this is ~6,300 float values -- well within memory constraints.
 
 ---
 
@@ -271,7 +271,7 @@ DRAWDOWN_RECOVERY_MULT = 0.7  # 30% size reduction
 
 | File | Purpose |
 |---|---|
-| regime.py | Regime detection engine — computes regime score, handles transitions |
+| regime.py | Regime detection engine -- computes regime score, handles transitions |
 | indicators_adaptive.py | RSI percentile, volume z-score calculations |
 | chandelier_stop.py | Chandelier trailing stop logic |
 | risk_engine.py | Dynamic position sizing, partial exit management |
@@ -287,7 +287,7 @@ DRAWDOWN_RECOVERY_MULT = 0.7  # 30% size reduction
 
 ### 7.3 Backward Compatibility
 
-All existing signals, portfolio rules, and circuit breakers remain functional. The adaptive layer sits **on top of** the existing system — it filters signals before they reach the allocation engine, not after.
+All existing signals, portfolio rules, and circuit breakers remain functional. The adaptive layer sits **on top of** the existing system -- it filters signals before they reach the allocation engine, not after.
 
 If the regime engine fails (e.g., VIX data unavailable), the system falls back to Regime 1 (normal mode) as the conservative default.
 

@@ -30,12 +30,12 @@ logger = structlog.get_logger()
 kite = KiteClient(settings.DB_PATH)
 scheduler = AsyncIOScheduler(timezone="Asia/Kolkata")
 
-# Module-level breadth engine global — set once when the feature flag is on,
+# Module-level breadth engine global -- set once when the feature flag is on,
 # reused across scan cycles. Mirrors the `risk_engine` pattern above.
 breadth_engine = None
 
 
-# ── Breadth wiring helpers (Task 7, 2026-06-14) ──────────────────
+# -- Breadth wiring helpers (Task 7, 2026-06-14) ------------------
 # These are extracted as module-level functions so they're testable in
 # isolation. The scan loop in run_screener() calls them in two places:
 #   1) Once at scan start:  breadth_engine = build_breadth_engine(kite, settings)
@@ -45,7 +45,7 @@ breadth_engine = None
 
 def build_breadth_engine(kite, settings):
     """Build the BreadthEngine singleton. Returns None when the feature flag
-    is off or Universe load fails (fail-soft — engine.py will just no-op).
+    is off or Universe load fails (fail-soft -- engine.py will just no-op).
 
     Wraps kite.get_historical (which is symbol-keyed) behind a token-keyed
     adapter using Universe.token_to_symbol().
@@ -95,7 +95,7 @@ def build_breadth_kwargs(token, breadth_result) -> dict:
     Pulls the token's breadth rank and the engine-wide breadth_pct_above_sma50.
     Returns {} when the engine is not initialized, the token is missing/None,
     or the token is not in the Nifty 100 universe (small-caps outside breadth
-    coverage). engine.py treats empty kwargs as "no breadth adjustment" — the
+    coverage). engine.py treats empty kwargs as "no breadth adjustment" -- the
     existing scoring path runs untouched.
     """
     if breadth_result is None:
@@ -171,8 +171,8 @@ def snap_to_tick(price: float, direction: int = -1) -> float:
     """
     Snap a price to the nearest valid NSE tick (0.10 rupee).
     0.10 is the LCM of all NSE equity tick sizes (0.05 and 0.10).
-    direction=-1 → round DOWN (sell orders, ensures limit is below current price)
-    direction=+1 → round UP  (buy orders)
+    direction=-1 -> round DOWN (sell orders, ensures limit is below current price)
+    direction=+1 -> round UP  (buy orders)
     Uses integer arithmetic to avoid IEEE-754 floating-point drift.
     """
     import math
@@ -188,12 +188,12 @@ current_momentum_signals = []
 market_regime = "UNKNOWN"
 last_run = None
 
-# Risk engine singleton — initialized in post_login_initialization
+# Risk engine singleton -- initialized in post_login_initialization
 # after bankroll and regime risk_pct are known. Governs position sizing,
 # partial exits, and post-drawdown recovery sizing.
 risk_engine = None
 
-# Regime engine singleton — initialized once on first scan and reused
+# Regime engine singleton -- initialized once on first scan and reused
 # across subsequent scheduler runs (09:20 and 14:45 IST). This preserves
 # _consecutive_in_range counter and current_regime for the 2-scan
 # confirmation logic for regime transitions.
@@ -223,7 +223,7 @@ _momentum_regime_for_today = None
 # runs fire simultaneously, each fetching the full universe from the Kite API.
 _init_running = False
 
-# 🚨 FIX: Add short-term memory to prevent 15-minute spam
+# [CRIT] FIX: Add short-term memory to prevent 15-minute spam
 signaled_momentum_today = set()
 last_momentum_date = None
 
@@ -364,7 +364,7 @@ async def post_login_initialization():
             datetime.now(IST).strftime("%Y-%m-%d")
         )
         if not df.empty:
-            pass  # backtest disabled — signature mismatch; use backtest.py directly
+            pass  # backtest disabled -- signature mismatch; use backtest.py directly
         await run_screener()           # existing swing screener
         await run_momentum_screener()  # NEW: momentum scan on login
     except Exception as e:
@@ -510,7 +510,7 @@ async def run_screener():
     nb_ratio_history = nb_ratios[::-1]
 
     # Breadth: Nifty 50 EMA50 proximity as a live market-internal breadth proxy.
-    # close/ema50 ratio > 1.0 → Nifty above its average → healthy breadth.
+    # close/ema50 ratio > 1.0 -> Nifty above its average -> healthy breadth.
     # Clamped to [0.30, 0.70] to stay within the regime engine's breadth penalty zone.
     # Full constituent breadth (Nifty 500 stocks above their SMA50) requires a separate
     # batch download and is tracked as a future enhancement.
@@ -582,7 +582,7 @@ async def run_screener():
     logger.info("universe_after_liquidity_filter", count=len(universe))
 
 
-    # ── Breadth enrichment wiring (Task 7, 2026-06-14) ─────────────
+    # -- Breadth enrichment wiring (Task 7, 2026-06-14) -------------
     # Init the breadth engine singleton + run Tier 1 (hourly SMA50 cache)
     # BEFORE the scan loop. Tier 2 (per-scan rank) needs the live LTPs
     # collected during the loop, so it runs AFTER the loop. The scan
@@ -592,7 +592,7 @@ async def run_screener():
     #           now-computed breadth_pct_above_sma50 + breadth_rank
     # The two-pass split is necessary because Tier 2 needs ALL the LTPs
     # to compute the percentile rank, but the gate in engine.py needs
-    # the rank. No extra Kite calls — only the dict cache adds overhead.
+    # the rank. No extra Kite calls -- only the dict cache adds overhead.
     global breadth_engine
     breadth_result = None
     if breadth_engine is None:
@@ -613,8 +613,8 @@ async def run_screener():
     raw_signals = []
     total_evaluated = 0
     raw_rejected = []
-    # Pass 1 cache: ticker → historical df (reused in Pass 2) and
-    # token → live LTP (fed to Tier 2).
+    # Pass 1 cache: ticker -> historical df (reused in Pass 2) and
+    # token -> live LTP (fed to Tier 2).
     df_cache: Dict[str, pd.DataFrame] = {}
     scan_ltp_by_token: Dict[int, float] = {}
     for _, row in universe.iterrows():
@@ -633,7 +633,7 @@ async def run_screener():
 
     # Pass 2: now that Tier 2 has been computed, re-walk the cached dfs
     # and call evaluate_signal with the breadth kwargs. Skipped entirely
-    # when the breadth feature flag is off (or Tier 1 was cold/degraded) —
+    # when the breadth feature flag is off (or Tier 1 was cold/degraded) --
     # in that case `breadth_result` is None and build_breadth_kwargs
     # returns {} for every ticker, so evaluate_signal runs untouched.
     if breadth_engine is not None and scan_ltp_by_token:
@@ -643,7 +643,7 @@ async def run_screener():
                 logger.warning("breadth_tier2_degraded", n_resolved=breadth_result.n_resolved)
         except Exception as e:
             logger.error("breadth_tier2_failed", error=str(e))
-            # Don't clear breadth_result — Tier 1's pct is still useful for the gate.
+            # Don't clear breadth_result -- Tier 1's pct is still useful for the gate.
             # Just leave rank_map empty (gate fires for low-pct tickers, which is
             # the conservative/safe behavior in a degraded Tier 2).
 
@@ -755,7 +755,7 @@ async def daily_post_market():
     # Update all daily positions (calls record_trade_close for each closed trade)
     await update_daily_positions(settings.DB_PATH, kite, today_str, lambda t, p: record_trade_close(settings.DB_PATH, t, p))
 
-    # Snapshot open positions AFTER update — anything gone was closed today
+    # Snapshot open positions AFTER update -- anything gone was closed today
     open_pos_after = await get_open_positions(settings.DB_PATH)
     closed_tickers = open_tickers_before - {p["ticker"] for p in open_pos_after}
 
@@ -840,7 +840,7 @@ async def run_momentum_screener():
         return
 
     bankroll       = await current_bankroll(settings.DB_PATH)
-    momentum_pool  = bankroll * settings.MOMENTUM_POOL_PCT  # 50% of bankroll = ₹2,500 at ₹5k
+    momentum_pool  = bankroll * settings.MOMENTUM_POOL_PCT  # 50% of bankroll = Rs2,500 at Rs5k
 
     # Market opens at 09:15 IST, closes at 15:30 IST
     market_open  = now_ist.replace(hour=9,  minute=15, second=0, microsecond=0)
@@ -920,7 +920,7 @@ async def run_momentum_screener():
                 raw_rejected_momentum.append({"ticker": ticker, "reject_reason": "insufficient_intraday_candles", "count": len(df_intra)})
                 continue
 
-            # Get daily OHLCV: need ≥14 trading days for MC5 ATR gate + prev_day_high.
+            # Get daily OHLCV: need >=14 trading days for MC5 ATR gate + prev_day_high.
             # 30 calendar days guarantees 14+ trading days even across long holiday runs.
             yesterday_date = await prev_trading_day(today, settings.DB_PATH)
             from_date_for_daily = (yesterday_date - pd.Timedelta(days=30)).strftime("%Y-%m-%d")
@@ -945,7 +945,7 @@ async def run_momentum_screener():
                 prev_day_high=prev_day_high,
                 bankroll=bankroll,
                 momentum_pool=momentum_pool,
-                df_daily=df_prev,          # filtered: no partial today candle; ≥14 rows for MC5 ATR
+                df_daily=df_prev,          # filtered: no partial today candle; >=14 rows for MC5 ATR
                 vol_surge_threshold=vol_threshold,
                 market_regime=market_regime,
                 regime=today_regime,        # [MR-3REG] pass 3-regime state to dispatcher
@@ -1003,7 +1003,7 @@ async def run_momentum_screener():
                 build_row, init_momentum_log_db, log_momentum_batch,
                 make_scan_id, now_utc_iso,
             )
-            # Lazy table creation — only needs to run once but is idempotent.
+            # Lazy table creation -- only needs to run once but is idempotent.
             await init_momentum_log_db(settings.DB_PATH)
             scan_id = make_scan_id()
             scanned_at = now_utc_iso()
@@ -1133,7 +1133,7 @@ async def run_momentum_screener():
 async def get_momentum_signals():
     async with state_lock:
         bankroll      = await current_bankroll(settings.DB_PATH)
-        momentum_pool = bankroll * settings.MOMENTUM_POOL_PCT  # 50% of bankroll = ₹2,500 at ₹5k
+        momentum_pool = bankroll * settings.MOMENTUM_POOL_PCT  # 50% of bankroll = Rs2,500 at Rs5k
         halted, reasons = await check_circuit_breakers(settings.DB_PATH)
 
         for s in current_momentum_signals:
@@ -1187,10 +1187,10 @@ async def auto_square_momentum():
             is_profitable = current_pnl > 0
 
             # Smart order selection [as per user-confirmed factors]:
-            # 1. In profit → limit order to protect gains
-            # 2. After 15:00 IST → always market order (time constraint)
-            # 3. Fast-moving stock (LTP far from entry) → market order
-            # 4. Low liquidity → limit order to avoid slippage
+            # 1. In profit -> limit order to protect gains
+            # 2. After 15:00 IST -> always market order (time constraint)
+            # 3. Fast-moving stock (LTP far from entry) -> market order
+            # 4. Low liquidity -> limit order to avoid slippage
             now_ist = datetime.now(IST)
 
             price_movement_pct = abs(ltp - pos['entry_price']) / pos['entry_price']
@@ -1203,10 +1203,10 @@ async def auto_square_momentum():
             # which satisfies both 0.05 and 0.10 tick-size stocks.
             if is_profitable and not is_fast_moving and now_ist.time() < time(15, 0):
                 order_type  = "LIMIT"
-                limit_price = snap_to_tick(ltp * 0.999, -1)  # 0.1% below LTP — protect gains
+                limit_price = snap_to_tick(ltp * 0.999, -1)  # 0.1% below LTP -- protect gains
             else:
                 order_type  = "LIMIT"
-                limit_price = snap_to_tick(ltp * 0.995, -1)  # 0.5% below LTP — aggressive fill for EOD exit
+                limit_price = snap_to_tick(ltp * 0.995, -1)  # 0.5% below LTP -- aggressive fill for EOD exit
 
             payload = {
 
@@ -1309,9 +1309,9 @@ async def _notify_momentum_heartbeat(
     rejected_count = len(rejected)
 
     msg = (
-        f"⏱️ **Momentum Scan @ {time_str}**\n"
+        f"⏱ **Momentum Scan @ {time_str}**\n"
         f"Scanned: `{tickers_scanned}` | Raw hits: `{raw_signals_count}` | Accepted: `{accepted_count}`\n"
-        f"Rejected: `{rejected_count}` | Pool: `₹{momentum_pool:,.2f}`\n"
+        f"Rejected: `{rejected_count}` | Pool: `Rs{momentum_pool:,.2f}`\n"
     )
     if accepted_count == 0:
         msg += "❌ No new signals - all gates filtered out.\n"
@@ -1323,10 +1323,10 @@ async def _notify_momentum_heartbeat(
             reason = r.get("reject_reason", "unknown")
             reason_counts[reason] = reason_counts.get(reason, 0) + 1
 
-        msg += "\n📊 **Gate Rejection Breakdown:**\n"
+        msg += "\n[STATS] **Gate Rejection Breakdown:**\n"
         for reason, count in sorted(reason_counts.items(), key=lambda x: x[1], reverse=True):
             display = reason.replace("_", " ").title()
-            msg += f"• {display}: `{count}`\n"
+            msg += f"* {display}: `{count}`\n"
 
         # Show up to 8 informative rejected tickers (skip trivial data-missing reasons)
         _skip = {
@@ -1352,7 +1352,7 @@ async def _notify_momentum_heartbeat(
                         detail = f" [close:{r.get('close', 0):.1f} prevhi:{r['prev_high']:.1f}]"
                 except (TypeError, ValueError, KeyError):
                     detail = ""
-                msg += f"• **{ticker}**: {reason}{detail}\n"
+                msg += f"* **{ticker}**: {reason}{detail}\n"
 
     try:
         async with _httpx.AsyncClient() as _client:
@@ -1488,7 +1488,7 @@ async def get_performance():
     open_pos = await get_open_positions(settings.DB_PATH)
 
     async with aiosqlite.connect(settings.DB_PATH) as db:
-        db.row_factory = aiosqlite.Row   # named column access — never use positional indices
+        db.row_factory = aiosqlite.Row   # named column access -- never use positional indices
         async with db.execute(
             "SELECT * FROM positions WHERE status NOT IN ('OPEN', 'CLOSED_T1')"
         ) as cursor:
@@ -1581,9 +1581,9 @@ async def notify_screener_results(
     import httpx as _httpx
     
     msg = f"🔍 **{strategy_type} Screener Run**\n"
-    msg += f"Regime: `{regime}` | Bankroll: `₹{bankroll:,.2f}`\n"
+    msg += f"Regime: `{regime}` | Bankroll: `Rs{bankroll:,.2f}`\n"
     if pool:
-        msg += f"Strategy Pool: `₹{pool:,.2f}`\n"
+        msg += f"Strategy Pool: `Rs{pool:,.2f}`\n"
     msg += "---"
     
     if accepted:
@@ -1592,7 +1592,7 @@ async def notify_screener_results(
             ticker = s.ticker if hasattr(s, 'ticker') else s.get('ticker')
             price = s.close if hasattr(s, 'close') else s.get('close')
             shares = s.shares if hasattr(s, 'shares') else s.get('shares')
-            msg += f"• **{ticker}** @ {price} (Qty: {shares})\n"
+            msg += f"* **{ticker}** @ {price} (Qty: {shares})\n"
     else:
         msg += "\n❌ No signals passed all filters."
 
@@ -1604,12 +1604,12 @@ async def notify_screener_results(
             reason = r.get('reject_reason', 'unknown')
             reason_counts[reason] = reason_counts.get(reason, 0) + 1
         
-        msg += "\n\n📊 **Rejection Summary:**\n"
+        msg += "\n\n[STATS] **Rejection Summary:**\n"
         # Sort by count descending
         for reason, count in sorted(reason_counts.items(), key=lambda x: x[1], reverse=True):
             # Clean up reason string for display
             display_reason = reason.replace("_", " ").title()
-            msg += f"• {display_reason}: {count}\n"
+            msg += f"* {display_reason}: {count}\n"
         
         if len(rejected) > 0:
             # Group specific rejections by ticker for meaningful examples
@@ -1623,7 +1623,7 @@ async def notify_screener_results(
             for r in interesting_rejections[:10]:
                 ticker = r.get('ticker', '???')
                 reason = r.get('reject_reason', 'unknown').replace("_", " ").title()
-                msg += f"• {ticker}: {reason}\n"
+                msg += f"* {ticker}: {reason}\n"
 
             
     # Send to Container A for Telegram delivery

@@ -36,7 +36,7 @@ where:
 
 **Full Kelly:** Uses 100% of the calculated fraction. Aggressive; high variance.
 
-**Fractional Kelly:** Use 25–50% of Kelly to reduce volatility while retaining edge.
+**Fractional Kelly:** Use 25-50% of Kelly to reduce volatility while retaining edge.
 
 ```python
 import numpy as np
@@ -61,7 +61,7 @@ quarter_kelly = fractional_kelly(p, b, 0.25)  # ~5.8%
 ```
 
 **Practical considerations:**
-- Kelly assumes i.i.d. outcomes — autocorrelated strategies violate this
+- Kelly assumes i.i.d. outcomes -- autocorrelated strategies violate this
 - Real-world trading costs and slippage erode Kelly-advantaged strategies
 - Use geometric mean optimization rather than arithmetic for multi-period growth
 
@@ -70,13 +70,13 @@ quarter_kelly = fractional_kelly(p, b, 0.25)  # ~5.8%
 Volatility-targeting scales positions to achieve a target level of portfolio volatility, typically expressed as annualized standard deviation of returns.
 
 ```
-Position Size = (Risk Capital × Target Vol%) / (Asset Volatility × √252)
+Position Size = (Risk Capital x Target Vol%) / (Asset Volatility x sqrt252)
 
 where:
   Risk Capital = total capital allocated to this strategy
   Target Vol% = annualized volatility target (e.g., 15%)
   Asset Volatility = realized or implied volatility of the asset
-  √252 = square root of trading days to annualize
+  sqrt252 = square root of trading days to annualize
 ```
 
 **Example:**
@@ -86,12 +86,12 @@ where:
 - Risk capital fraction: 10% ($100,000)
 
 ```
-Notional = ($100,000 × 15%) / 25% = $60,000
+Notional = ($100,000 x 15%) / 25% = $60,000
 ```
 
 **Key insights:**
-- High-volatility environments → smaller positions
-- Low-volatility environments → larger positions
+- High-volatility environments -> smaller positions
+- Low-volatility environments -> larger positions
 - This mechanically reduces exposure during market stress (volatility spikes)
 - Used by virtually all professional quantitative funds (Renaissance, Two Sigma, Bridgewater)
 
@@ -100,10 +100,10 @@ Notional = ($100,000 × 15%) / 25% = $60,000
 Risk-parity (or risk-equity) allocates capital such that each asset contributes equally to total portfolio risk. Unlike equal-weighting, it accounts for differing volatilities and correlations.
 
 ```
-Risk Contribution of Asset i = w_i × (Σ_j w_j × Cov(i,j)) / σ_portfolio
+Risk Contribution of Asset i = w_i x (Sum_j w_j x Cov(i,j)) / sigma_portfolio
 
 Set all risk contributions equal:
-w_i × ∂σ_portfolio/∂w_i = w_j × ∂σ_portfolio/∂w_j  for all i, j
+w_i x dsigma_portfolio/dw_i = w_j x dsigma_portfolio/dw_j  for all i, j
 ```
 
 **Simplified implementation:**
@@ -158,7 +158,7 @@ During market stress, correlations between assets tend to spike toward 1.0. This
 
 **Risk controls:**
 - Monitor rolling correlation matrices (30-day, 60-day)
-- Stress-test portfolio under correlation假设 (all correlations → 1.0)
+- Stress-test portfolio under correlation假设 (all correlations -> 1.0)
 - Use Copula models for tail dependence
 - Set maximum allowable portfolio correlation to safe-haven assets
 
@@ -239,7 +239,7 @@ def check_loss_limits(current_pnl, running_max, limit_type):
 
 ---
 
-## 3. Circuit Breakers (CB1–CB5)
+## 3. Circuit Breakers (CB1-CB5)
 
 Circuit breakers halt trading when predefined risk thresholds are breached. They are the last line of defense against runaway losses.
 
@@ -352,7 +352,7 @@ def cb5_bankroll_floor(current_equity, starting_equity, trading_enabled):
    CB_HALT_COOLDOWN_BARS = 5
    ```
 
-3. **Escalation:** If CB3 fires 3 times in 30 days → escalate to full strategy review:
+3. **Escalation:** If CB3 fires 3 times in 30 days -> escalate to full strategy review:
    ```python
    CB3_ESCALATION_THRESHOLD = 3  # fires per month
    ```
@@ -372,9 +372,9 @@ Developed by Chuck LeBeau. Based on highest close since entry minus a multiple o
 def chandelier_exit(highest_high_since_entry, atr, multiplier=3):
     """
     Chandelier Exit: Sell signal when price falls below
-    (Highest High - 3 × ATR) for long positions.
+    (Highest High - 3 x ATR) for long positions.
     
-    For short positions: Lowest Low + 3 × ATR
+    For short positions: Lowest Low + 3 x ATR
     """
     long_exit = highest_high_since_entry - (multiplier * atr)
     short_exit = get_current_low() + (multiplier * atr)  # for shorts
@@ -389,15 +389,15 @@ def update_chandelier_stop(position, entry_price, highest_close, atr, multiplier
 ```
 
 **Variations:**
-- `CLs` (Long Standard): Use highest close since entry, 3×ATR
+- `CLs` (Long Standard): Use highest close since entry, 3xATR
 - `CLp` (Long Parabolic): ATR increases over time
-- `CSs` (Short Standard): Use lowest close since entry, 3×ATR
+- `CSs` (Short Standard): Use lowest close since entry, 3xATR
 
 ### 4.2 Parabolic SAR (Stop and Reverse)
 Developed by J. Welles Wilder. Provides both stop-loss and reversal signals.
 
 ```
-PSAR(t) = PSAR(t-1) + AF × (EP(t-1) - PSAR(t-1))
+PSAR(t) = PSAR(t-1) + AF x (EP(t-1) - PSAR(t-1))
 
 where:
   AF = Acceleration Factor (starts at 0.02, max 0.20)
@@ -459,8 +459,8 @@ def hwm_trailing_stop(current_price, entry_price, peak_price, trail_pct=0.10):
     Stop triggers when price falls trail_pct below peak price.
     
     Example: Bought at $100, peak $120, trail 10%
-    → Stop at $120 × (1 - 0.10) = $108
-    → If price rises to $125, stop moves to $125 × 0.90 = $112.50
+    -> Stop at $120 x (1 - 0.10) = $108
+    -> If price rises to $125, stop moves to $125 x 0.90 = $112.50
     """
     peak = max(peak_price, current_price)  # Update peak if new high
     stop_level = peak * (1 - trail_pct)
@@ -498,7 +498,7 @@ def time_based_exit(entry_bar, current_bar, strategy_type):
 | Type | Description | Execution |
 |------|-------------|-----------|
 | **Hard Stop** | Absolute price level; must be filled at or better | Market order on trigger |
-| **Soft Stop** | Alert threshold; execution price not guaranteed | Limit order at soft_stop_price × multiplier |
+| **Soft Stop** | Alert threshold; execution price not guaranteed | Limit order at soft_stop_price x multiplier |
 
 ```python
 class StopLoss:
@@ -523,7 +523,7 @@ class StopLoss:
 ```python
 def atr_stop(entry_price, atr, stop_atr_multiples=2.0):
     """
-    Stop-loss at entry_price - (N × ATR).
+    Stop-loss at entry_price - (N x ATR).
     Adapts to volatility; wider stops in volatile assets.
     """
     return entry_price - (stop_atr_multiples * atr)
@@ -591,7 +591,7 @@ RoR = ( (q/p)^B ) / ( (q/p)^(A+B) )
 where:
   q = 1 - p
   B = bankroll units (starting capital / risk per trade)
-  A = target losses in units = B - (target_ruin_level × B)
+  A = target losses in units = B - (target_ruin_level x B)
 ```
 
 ```python
@@ -787,7 +787,7 @@ Execution risk is the risk that an order is not filled, fills at a worse price t
 
 ### 8.1 Slippage Modeling
 
-Slippage = Actual Fill Price − Expected Fill Price
+Slippage = Actual Fill Price - Expected Fill Price
 
 ```python
 def estimate_slippage(order_size, market_volatility, liquidity_score=1.0):
@@ -929,7 +929,7 @@ class PartialFillHandler:
 ### 9.1 Renaissance Technologies (Medallion Fund)
 
 - **Position sizing:** Volatility-targeting with short-term mean-reversion overlay
-- **Risk limits:** Strict drawdown controls; max 2× leverage on any position
+- **Risk limits:** Strict drawdown controls; max 2x leverage on any position
 - **Execution:** Proprietary dark pool access; co-location; extremely low latency
 - **Key insight:** Medallion's edge is primarily execution and microstructure, not just alpha
 - **Drawdown management:** No public disclosure, but estimated < 10% annual drawdown
@@ -940,7 +940,7 @@ class PartialFillHandler:
 - **GEMINI:** Proprietary risk management system with CB4 backtest gate
   - Live performance continuously compared to backtest
   - Strategy disabled if Sharpe ratio beta < 60% of backtest
-- **Daily risk report:** Flags any position > 2× its expected loss
+- **Daily risk report:** Flags any position > 2x its expected loss
 - **Economic regime monitoring:** Adjusts exposure based on growth/inflation signals
 
 ### 9.3 Two Sigma
@@ -967,12 +967,12 @@ class PartialFillHandler:
 
 ### 9.6 Common Patterns Across Top Funds
 
-1. **Volatility-targeting is universal** — almost all professional quant funds use some form of vol-targeting
-2. **Multi-layer risk controls** — circuit breakers at strategy, portfolio, and firm level
-3. **Real-time risk aggregation** — positions valued and risk-calculated continuously (not EOD)
-4. **Transaction cost modeling** — slippage and market impact integrated into signal generation
-5. **Stress testing** — regular testing against historical crisis scenarios (2008, March 2020, etc.)
-6. **Human oversight** — even "pure" quant funds have human risk managers who can intervene
+1. **Volatility-targeting is universal** -- almost all professional quant funds use some form of vol-targeting
+2. **Multi-layer risk controls** -- circuit breakers at strategy, portfolio, and firm level
+3. **Real-time risk aggregation** -- positions valued and risk-calculated continuously (not EOD)
+4. **Transaction cost modeling** -- slippage and market impact integrated into signal generation
+5. **Stress testing** -- regular testing against historical crisis scenarios (2008, March 2020, etc.)
+6. **Human oversight** -- even "pure" quant funds have human risk managers who can intervene
 
 ---
 
@@ -984,7 +984,7 @@ class PartialFillHandler:
 | Daily Loss CB | CB1 | -2% triggers halt |
 | Drawdown CB | CB3 | -10% triggers review |
 | Bankroll Floor | CB5 | 50% = mandatory wind-down |
-| Trailing Stop | Chandelier ATR multiplier | 3× ATR common |
+| Trailing Stop | Chandelier ATR multiplier | 3x ATR common |
 | Risk of Ruin | Target | < 1% for most strategies |
 | Sector Limit | Max weight per sector | 20-25% typical |
 | Single Name | Max weight per issuer | 5-8% typical |
@@ -994,11 +994,11 @@ class PartialFillHandler:
 
 ## References and Further Reading
 
-- Thorp, E.O. — "Kelly Money Management"
-- LeBeau, C. — " Chandelier Stops and Trailing Stops"
-- Wilder, J.W. — "New Concepts in Technical Trading Systems" (Parabolic SAR)
-- Markowitz, H. — "Portfolio Selection" (Modern Portfolio Theory)
-- Maillard, S. — "Risk Parity: About the Fragility of the Risk Parity Approach"
-- Almgren, R. & Chriss, N. — "Optimal Execution of Portfolio Transactions"
+- Thorp, E.O. -- "Kelly Money Management"
+- LeBeau, C. -- " Chandelier Stops and Trailing Stops"
+- Wilder, J.W. -- "New Concepts in Technical Trading Systems" (Parabolic SAR)
+- Markowitz, H. -- "Portfolio Selection" (Modern Portfolio Theory)
+- Maillard, S. -- "Risk Parity: About the Fragility of the Risk Parity Approach"
+- Almgren, R. & Chriss, N. -- "Optimal Execution of Portfolio Transactions"
 - Bloomberg GEMINI Risk System documentation
 - Barra ONE Risk Model handbook

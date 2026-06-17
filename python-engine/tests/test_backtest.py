@@ -1,5 +1,5 @@
 """
-Tests for backtest.py — regime-aware backtesting harness.
+Tests for backtest.py -- regime-aware backtesting harness.
 """
 import sys
 import os
@@ -42,7 +42,7 @@ def sweet_df():
 
 @pytest.fixture
 def empty_df():
-    """Fewer than 200 rows — should be handled gracefully."""
+    """Fewer than 200 rows -- should be handled gracefully."""
     n = 50
     return pd.DataFrame({
         "open":   np.linspace(500, 525, n),
@@ -58,7 +58,7 @@ def empty_df():
 # ---------------------------------------------------------------------------
 
 def test_backtest_runs_without_error(sweet_df):
-    """Smoke test — run_backtest completes without raising an exception."""
+    """Smoke test -- run_backtest completes without raising an exception."""
     result = run_backtest(
         ticker="TEST",
         df=sweet_df,

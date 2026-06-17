@@ -20,9 +20,9 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 from kite_client import RateLimiter, KiteClient
 
 
-# ─────────────────────────────────────────────────────────────────────
+# ---------------------------------------------------------------------
 # RateLimiter Tests
-# ─────────────────────────────────────────────────────────────────────
+# ---------------------------------------------------------------------
 
 class TestRateLimiter:
     """Token-bucket rate limiter used before every Kite API call."""
@@ -62,9 +62,9 @@ class TestRateLimiter:
         assert limiter.tokens == 1
 
 
-# ─────────────────────────────────────────────────────────────────────
+# ---------------------------------------------------------------------
 # KiteClient - Initialisation & Token
-# ─────────────────────────────────────────────────────────────────────
+# ---------------------------------------------------------------------
 
 class TestKiteClientInit:
 
@@ -91,9 +91,9 @@ class TestKiteClientInit:
         assert client.client.headers.get("X-Kite-Version") == "3"
 
 
-# ─────────────────────────────────────────────────────────────────────
+# ---------------------------------------------------------------------
 # KiteClient - refresh_instrument_cache
-# ─────────────────────────────────────────────────────────────────────
+# ---------------------------------------------------------------------
 
 class TestRefreshInstrumentCache:
 
@@ -107,7 +107,7 @@ class TestRefreshInstrumentCache:
 
     @pytest.mark.asyncio
     async def test_fetches_nse_only(self, patch_settings):
-        """Should call /instruments/NSE only — INDICES segment returns 403 on this plan."""
+        """Should call /instruments/NSE only -- INDICES segment returns 403 on this plan."""
         client = KiteClient(patch_settings.DB_PATH)
         client.access_token = "valid_token"
 
@@ -127,7 +127,7 @@ class TestRefreshInstrumentCache:
         assert "TCS" in client.instrument_cache
 
     @pytest.mark.asyncio
-    @pytest.mark.skip(reason="INDICES segment 403s on current Kite plan — NIFTY 50 cannot be resolved via instrument_cache. Gap documented in GEMINI.md.")
+    @pytest.mark.skip(reason="INDICES segment 403s on current Kite plan -- NIFTY 50 cannot be resolved via instrument_cache. Gap documented in GEMINI.md.")
     async def test_nifty_50_in_instrument_cache_q1(self, patch_settings):
         """Q1: NIFTY 50 must be found via INDICES segment, not just NSE."""
         client = KiteClient(patch_settings.DB_PATH)
@@ -147,9 +147,9 @@ class TestRefreshInstrumentCache:
         assert client.instrument_cache.get("NIFTY 50") is not None
 
 
-# ─────────────────────────────────────────────────────────────────────
+# ---------------------------------------------------------------------
 # KiteClient - get_historical (daily OHLCV) + ohlcv_cache
-# ─────────────────────────────────────────────────────────────────────
+# ---------------------------------------------------------------------
 
 class TestGetHistorical:
 
@@ -292,9 +292,9 @@ class TestGetHistorical:
         assert df.empty
 
 
-# ─────────────────────────────────────────────────────────────────────
+# ---------------------------------------------------------------------
 # KiteClient - get_intraday + intraday_cache (Q7)
-# ─────────────────────────────────────────────────────────────────────
+# ---------------------------------------------------------------------
 
 class TestGetIntraday:
 
@@ -368,9 +368,9 @@ class TestGetIntraday:
         assert not df.empty
 
 
-# ─────────────────────────────────────────────────────────────────────
+# ---------------------------------------------------------------------
 # Q7: ohlcv_cache and intraday_cache are separate tables
-# ─────────────────────────────────────────────────────────────────────
+# ---------------------------------------------------------------------
 
 class TestCacheSeparationQ7:
 
@@ -444,9 +444,9 @@ class TestCacheSeparationQ7:
             assert count == 1, "intraday_cache should have 1 row (PK dedup)"
 
 
-# ─────────────────────────────────────────────────────────────────────
+# ---------------------------------------------------------------------
 # KiteClient - clear_intraday_cache
-# ─────────────────────────────────────────────────────────────────────
+# ---------------------------------------------------------------------
 
 class TestClearIntradayCache:
 
@@ -482,9 +482,9 @@ class TestClearIntradayCache:
         assert count <= 1
 
 
-# ─────────────────────────────────────────────────────────────────────
+# ---------------------------------------------------------------------
 # KiteClient - writes to correct cache table
-# ─────────────────────────────────────────────────────────────────────
+# ---------------------------------------------------------------------
 
 class TestCacheWriteIsolation:
 

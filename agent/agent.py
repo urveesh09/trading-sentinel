@@ -115,44 +115,44 @@ def analyze_with_gemini(
     Your job is to find reasons to REJECT them.
     Only approve a trade if the evidence is overwhelmingly clean.
 
-    ═══════════════════════════════════════════
+    ===========================================
     TRADE CONTEXT
-    ═══════════════════════════════════════════
+    ===========================================
     Strategy Type : {signal.get('strategy_type', 'SWING')}
     Market Regime : {market_regime}
     Ticker        : {ticker}
-    Entry Price   : ₹{price}
-    Stop Loss     : ₹{stop_loss}
-    Target        : ₹{target}
-    Net EV        : ₹{signal.get('net_ev', 'N/A')}
+    Entry Price   : Rs{price}
+    Stop Loss     : Rs{stop_loss}
+    Target        : Rs{target}
+    Net EV        : Rs{signal.get('net_ev', 'N/A')}
     Score         : {signal.get('score', 'N/A')}/100
     Volume Ratio  : {signal.get('volume_ratio', 'N/A')}x
     RSI           : {signal.get('rsi_14', 'N/A')}
     RS Score      : {signal.get('rs_score', 'N/A')} (vs Nifty, 20-day)
 
-    ═══════════════════════════════════════════
+    ===========================================
     REGIME-SPECIFIC INSTRUCTIONS
-    ═══════════════════════════════════════════
+    ===========================================
 
     IF regime is "BEAR_RS_ONLY":
     Be EXTREMELY cynical. The broad market is falling.
     This stock is only being evaluated because its math shows
     outperformance vs the Nifty. Your primary job here is to
     determine WHY it is outperforming:
-    - Quiet institutional accumulation (VALID) → keep conviction high
-    - Unverified rumour, single contract win, retail social media hype → 
+    - Quiet institutional accumulation (VALID) -> keep conviction high
+    - Unverified rumour, single contract win, retail social media hype -> 
         REDUCE conviction_score below 50 immediately
-    - Short-covering rally in a falling stock → REDUCE below 40
+    - Short-covering rally in a falling stock -> REDUCE below 40
     - If you cannot determine a credible structural reason from the
         sentiment data: REDUCE below 55
 
     IF strategy is "MOMENTUM" (intraday):
     Evaluate whether the news/catalyst justifies a 3-hour sustained
     move, not just a 15-minute spike.
-    - Genuine earnings beat, sector tailwind → conviction can be high
-    - Single news headline with no follow-through evidence → max 65
-    - No news at all (pure technical breakout) → max 70
-    - Negative news despite price rising → REDUCE below 45
+    - Genuine earnings beat, sector tailwind -> conviction can be high
+    - Single news headline with no follow-through evidence -> max 65
+    - No news at all (pure technical breakout) -> max 70
+    - Negative news despite price rising -> REDUCE below 45
 
     IF regime is "CAUTION":
     Apply the same cynicism as BEAR_RS_ONLY but one level less severe.
@@ -162,9 +162,9 @@ def analyze_with_gemini(
     Standard evaluation. Do not manufacture cynicism.
     Follow the contradiction check rules below.
 
-    ═══════════════════════════════════════════
+    ===========================================
     UNIVERSAL EVALUATION RULES
-    ═══════════════════════════════════════════
+    ===========================================
 
     1. CONTRADICTION CHECK:
     If sentiment reveals critical legal, regulatory, fraud,
@@ -186,9 +186,9 @@ def analyze_with_gemini(
     50-59  : Marginal, one significant concern exists
     0-49   : High risk of false positive, do not execute
 
-    ═══════════════════════════════════════════
+    ===========================================
     MULTI-SOURCE SENTIMENT DATA
-    ═══════════════════════════════════════════
+    ===========================================
     {sentiment_text if sentiment_text else
     "NO SENTIMENT DATA AVAILABLE. Evaluate on technicals only. "
     "Apply caution: absence of news for an active signal is unusual. "
@@ -301,10 +301,10 @@ def system_health_check(event_type: str):
         res.raise_for_status()
         
         if event_type == "OPEN":
-            msg = "🟢 **MARKET OPEN**\nTrading Sentinel is ONLINE.\nQuant Engine: ✅ Healthy\nAgent: ✅ Active\nReady to hunt. 🦅"
+            msg = "✅ **MARKET OPEN**\nTrading Sentinel is ONLINE.\nQuant Engine: ✅ Healthy\nAgent: ✅ Active\nReady to hunt. 🦅"
         else:
             msg = "🛑 **MARKET CLOSED**\nTrading Sentinel is SLEEPING.\nQuant Engine: ✅ Survived the day\nSee you tomorrow. 🌙"
-            
+
     except Exception as e:
         # The Engine is dead or unreachable
         msg = f"🚨 **CRITICAL SYSTEM FAILURE** 🚨\nEvent: {event_type}\nError: Quant Engine Unreachable!\nDetails: `{e}`\n⚠️ Wake up and check Docker!"
@@ -377,14 +377,14 @@ def send_momentum_telegram_alert(
 
     if not analysis:
         text = (f"{header}\n"
-                f"Price: ₹{price} | VWAP: ₹{vwap}\n"
-                f"Target: ₹{target} | SL: ₹{sl}\n"
+                f"Price: Rs{price} | VWAP: Rs{vwap}\n"
+                f"Target: Rs{target} | SL: Rs{sl}\n"
                 f"⚠️ AI analysis failed. Manual review required.\n"
                 f"Auto-square at 15:15 IST.")
     else:
         text = (f"{header}\n\n"
-                f"Entry: ₹{price} | VWAP: ₹{vwap}\n"
-                f"Target: ₹{target} | SL: ₹{sl}\n"
+                f"Entry: Rs{price} | VWAP: Rs{vwap}\n"
+                f"Target: Rs{target} | SL: Rs{sl}\n"
                 f"Cost ratio: {ratio:.1%} of expected profit\n"
                 f"Conviction: {analysis.get('conviction_score')}/100\n\n"
                 f"Pitch: {analysis.get('pitch', 'N/A')}\n"

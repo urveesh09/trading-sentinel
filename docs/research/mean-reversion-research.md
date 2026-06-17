@@ -1,6 +1,6 @@
 # Mean Reversion Trading Strategies: Deep Research for NSE Swing Trading
 
-> **Scope:** Quantitative mean reversion strategies applicable to NSE (National Stock Exchange of India) swing trading — holding periods of 1–5 days. Covers Ornstein-Uhlenbeck theory, Bollinger/RSI methods, pairs trading, VWAP deviation, gap fill, Keltner/CCI, exit strategies, risk management, and real-world implementations.
+> **Scope:** Quantitative mean reversion strategies applicable to NSE (National Stock Exchange of India) swing trading -- holding periods of 1-5 days. Covers Ornstein-Uhlenbeck theory, Bollinger/RSI methods, pairs trading, VWAP deviation, gap fill, Keltner/CCI, exit strategies, risk management, and real-world implementations.
 
 ---
 
@@ -29,21 +29,21 @@ The OU process is the mathematical backbone of mean reversion modeling. It descr
 
 **SDE Form:**
 ```
-dr_t = θ(μ - r_t)dt + σdW_t
+dr_t = theta(mu - r_t)dt + sigmadW_t
 ```
 
 Where:
 - `r_t` = current price or log price
-- `θ` = mean reversion speed (rate at which deviations decay)
-- `μ` = long-term mean level
-- `σ` = volatility of the process
+- `theta` = mean reversion speed (rate at which deviations decay)
+- `mu` = long-term mean level
+- `sigma` = volatility of the process
 - `dW_t` = Wiener process (Brownian motion increment)
 
 **Discrete Form (for implementation):**
 ```
-r_{t+1} - r_t = θ(μ - r_t)Δt + σ√Δt · ε
+r_{t+1} - r_t = theta(mu - r_t)Deltat + sigmasqrtDeltat . epsilon
 ```
-Where `ε ~ N(0,1)`
+Where `epsilon ~ N(0,1)`
 
 ### 1.2 Half-Life of Mean Reversion
 
@@ -51,7 +51,7 @@ The **half-life** tells us how long it takes for a deviation from mean to decay 
 
 **Formula:**
 ```
-HL = ln(2) / θ = -ln(2) / ln(1 - θΔt)
+HL = ln(2) / theta = -ln(2) / ln(1 - thetaDeltat)
 ```
 
 **Simplified (Hurst Exponent approach):**
@@ -61,20 +61,20 @@ HL = T / (2H)
 Where `T` = observation period, `H` = Hurst exponent. `H < 0.5` indicates mean reversion.
 
 **Practical interpretation for NSE swing:**
-- HL < 3 days → fast reversion, aggressive entries
-- HL 3–7 days → moderate reversion, standard swing (our sweet spot)
-- HL > 7 days → slow reversion, avoid or use larger stop losses
+- HL < 3 days -> fast reversion, aggressive entries
+- HL 3-7 days -> moderate reversion, standard swing (our sweet spot)
+- HL > 7 days -> slow reversion, avoid or use larger stop losses
 
 ### 1.3 ADF Stationarity Test
 
 The Augmented Dickey-Fuller (ADF) test determines if a series is stationary (mean-reverting) or non-stationary (random walk).
 
 **Null hypothesis:** Series has a unit root (non-stationary)  
-**Reject H₀:** Series is stationary at the chosen significance level
+**Reject H0:** Series is stationary at the chosen significance level
 
 **ADF Test Statistic:**
 ```
-Δy_t = α + βt + γy_{t-1} + Σδ_iΔy_{t-i} + ε_t
+Deltay_t = alpha + betat + gammay_{t-1} + Sumdelta_iDeltay_{t-i} + epsilon_t
 ```
 Test against critical values. More negative = stronger stationarity.
 
@@ -107,9 +107,9 @@ def adf_test(series, name="Series"):
 3. Volume is contracting (smart money not accumulating/distributing)
 
 **Hurst Exponent (H):**
-- H < 0.5 → mean reversion regime
-- H = 0.5 → random walk (no edge)
-- H > 0.5 → momentum/trend regime
+- H < 0.5 -> mean reversion regime
+- H = 0.5 -> random walk (no edge)
+- H > 0.5 -> momentum/trend regime
 
 **NSE instruments with stronger mean reversion properties:**
 - Sector ETFs (NIFTYBEES, JUNIORBEES)
@@ -122,7 +122,7 @@ def adf_test(series, name="Series"):
 
 ### 2.1 Core Concept
 
-Bollinger Bands (±2 standard deviations from 20-period SMA) provide dynamic support/resistance levels. Mean reversion entries occur when price reaches the outer bands.
+Bollinger Bands (+/-2 standard deviations from 20-period SMA) provide dynamic support/resistance levels. Mean reversion entries occur when price reaches the outer bands.
 
 ### 2.2 Key Metrics
 
@@ -133,20 +133,20 @@ Bollinger Bands (±2 standard deviations from 20-period SMA) provide dynamic sup
 
 | %B Value | Interpretation |
 |---|---|
-| > 1.0 | Price above upper band — overbought, short signal |
+| > 1.0 | Price above upper band -- overbought, short signal |
 | 0.5 | Price at middle band (SMA) |
-| < 0.0 | Price below lower band — oversold, long signal |
+| < 0.0 | Price below lower band -- oversold, long signal |
 
 ### 2.3 Bandwidth as Regime Indicator
 
 **Bandwidth:**
 ```
-Bandwidth = (Upper Band - Lower Band) / Middle Band × 100
+Bandwidth = (Upper Band - Lower Band) / Middle Band x 100
 ```
 
-- **Bandwidth contraction (< 4%)** → "Bollinger Squeeze" → low volatility, impending breakout
-- **Bandwidth expansion (> 10%)** → high volatility, mean reversion signals more reliable
-- **Bandwidth stability** → range-bound market, mean reversion favored
+- **Bandwidth contraction (< 4%)** -> "Bollinger Squeeze" -> low volatility, impending breakout
+- **Bandwidth expansion (> 10%)** -> high volatility, mean reversion signals more reliable
+- **Bandwidth stability** -> range-bound market, mean reversion favored
 
 ### 2.4 Entry/Exit Rules
 
@@ -155,7 +155,7 @@ Bandwidth = (Upper Band - Lower Band) / Middle Band × 100
 2. %B < -0.1 (below lower band)
 3. RSI(14) < 30 (confirm oversold)
 4. Bandwidth > 6% (not in squeeze)
-5. Stop: Below lower band + 1.5× ATR
+5. Stop: Below lower band + 1.5x ATR
 6. Target: Middle band (SMA) or upper band
 
 **Mean Reversion Short Entry:**
@@ -163,7 +163,7 @@ Bandwidth = (Upper Band - Lower Band) / Middle Band × 100
 2. %B > 1.1
 3. RSI(14) > 70 (confirm overbought)
 4. Bandwidth > 6%
-5. Stop: Above upper band + 1.5× ATR
+5. Stop: Above upper band + 1.5x ATR
 6. Target: Middle band
 
 **NSE-specific tuning:**
@@ -220,8 +220,8 @@ Standard period = 14. For swing trading, 7 or 10 often works better on NSE.
 | RSI Value | Zone | Interpretation |
 |---|---|---|
 | < 30 | Oversold | Potential long mean reversion |
-| 30–50 | Bearish | No edge |
-| 50–70 | Bullish | No edge |
+| 30-50 | Bearish | No edge |
+| 50-70 | Bullish | No edge |
 | > 70 | Overbought | Potential short mean reversion |
 
 ### 3.3 Mean Reversion RSI Strategies
@@ -259,12 +259,12 @@ def rsi_bollinger_reversion(prices, rsi_period=10, bb_period=20,
 **Key observations for NSE stocks:**
 - Individual stocks can stay oversold/overbought for longer than Western markets
 - Use wider thresholds for Indian stocks: 35/65 instead of 30/70
-- Sector rotation plays a role — avoid RSI mean reversion in trending sectors
+- Sector rotation plays a role -- avoid RSI mean reversion in trending sectors
 - Earnings weeks = RSI less reliable due to momentum shifts
 
 ### 3.5 RSI Failures to Watch
 
-1. **Trending stocks:** Infosys, TCS during bull runs — RSI stays overbought for weeks
+1. **Trending stocks:** Infosys, TCS during bull runs -- RSI stays overbought for weeks
 2. **Post-results:** RSI extreme zones often valid for 3-5 days after results
 3. **Index vs stock divergence:** Nifty 50 RSI can signal while individual stocks diverge
 
@@ -301,8 +301,8 @@ Z-score = (Ratio - Mean(Ratio)) / Std(Ratio)
 ```
 
 **Entry:**
-- Z-score > +2.0 → Short A, Long B (expect ratio to fall)
-- Z-score < -2.0 → Long A, Short B (expect ratio to rise)
+- Z-score > +2.0 -> Short A, Long B (expect ratio to fall)
+- Z-score < -2.0 -> Long A, Short B (expect ratio to rise)
 
 **Exit:**
 - Z-score reverts to 0
@@ -341,11 +341,11 @@ Cointegration tests whether a linear combination of two series is stationary, ev
 
 **Step 1:** Run OLS regression
 ```
-Stock_A = α + β × Stock_B + ε_t
+Stock_A = alpha + beta x Stock_B + epsilon_t
 ```
 
-**Step 2:** Test residuals (ε_t) for stationarity using ADF test
-- If ADF rejects unit root → series are cointegrated
+**Step 2:** Test residuals (epsilon_t) for stationarity using ADF test
+- If ADF rejects unit root -> series are cointegrated
 
 **CADF Statistic:** The test statistic from testing residuals
 
@@ -391,14 +391,14 @@ The Kalman filter dynamically estimates the hedge ratio, adapting to changing re
 
 **State-space model:**
 ```
-Observation: y_t = H_t · θ_t + ε_t
-State: θ_t = F_t · θ_{t-1} + η_t
+Observation: y_t = H_t . theta_t + epsilon_t
+State: theta_t = F_t . theta_{t-1} + η_t
 ```
 
 For pairs:
 - y_t = price of stock A
 - H_t = [1, price of stock B]
-- θ_t = [α, β] (intercept, hedge ratio)
+- theta_t = [alpha, beta] (intercept, hedge ratio)
 - F_t = Identity (random walk for coefficients)
 
 ```python
@@ -460,11 +460,11 @@ def kalman_filter_pairs(stock_a, stock_b, delta=1e-4, Ve=1e-3):
 
 ### 5.1 VWAP Fundamentals
 
-VWAP (Volume Weighted Average Price) = cumulative typical price × volume / cumulative volume. Acts as fair value benchmark for the day.
+VWAP (Volume Weighted Average Price) = cumulative typical price x volume / cumulative volume. Acts as fair value benchmark for the day.
 
 **Formula:**
 ```
-VWAP = Σ(Price × Volume) / Σ(Volume)
+VWAP = Sum(Price x Volume) / Sum(Volume)
 ```
 
 ### 5.2 VWAP Deviation Bands
@@ -473,10 +473,10 @@ Standard deviation of VWAP deviations creates dynamic mean reversion bands.
 
 **Deviation from VWAP:**
 ```
-Deviation = (Price - VWAP) / VWAP × 100
+Deviation = (Price - VWAP) / VWAP x 100
 ```
 
-**VWAP Bands (typically ±1SD, ±2SD, ±3SD):**
+**VWAP Bands (typically +/-1SD, +/-2SD, +/-3SD):**
 ```python
 def vwap_deviation_bands(df, period=20, multipliers=[1, 2, 3]):
     df = df.copy()
@@ -496,9 +496,9 @@ def vwap_deviation_bands(df, period=20, multipliers=[1, 2, 3]):
 ```
 
 **NSE practical thresholds:**
-- ±1 SD (68% expected): Minor reversion, scalping only
-- ±2 SD (95% expected): Standard swing entry zone
-- ±3 SD (99.7% expected): High conviction, larger position
+- +/-1 SD (68% expected): Minor reversion, scalping only
+- +/-2 SD (95% expected): Standard swing entry zone
+- +/-3 SD (99.7% expected): High conviction, larger position
 
 ### 5.3 Mean Reversion Entry Triggers
 
@@ -518,11 +518,11 @@ def vwap_deviation_bands(df, period=20, multipliers=[1, 2, 3]):
 
 ### 5.4 VWAP Mean Reversion for Intraday NSE
 
-**9:15–9:30 AM:** Avoid entries — highest volatility, VWAP unreliable  
-**9:30–11:00 AM:** Best mean reversion window  
-**11:00–2:30 PM:** Quiet period, less edge  
-**2:30–3:15 PM:** Good for intraday mean reversion setups  
-**3:15–3:30 PM:** VWAP resets, avoid new swing entries
+**9:15-9:30 AM:** Avoid entries -- highest volatility, VWAP unreliable  
+**9:30-11:00 AM:** Best mean reversion window  
+**11:00-2:30 PM:** Quiet period, less edge  
+**2:30-3:15 PM:** Good for intraday mean reversion setups  
+**3:15-3:30 PM:** VWAP resets, avoid new swing entries
 
 ### 5.5 VWAP vs Bhavcopy Data
 
@@ -543,13 +543,13 @@ Gaps are common on NSE due to:
 - Bulk deal announcements
 
 **NSE gap frequency (approximate):**
-- Nifty 50 stocks: 40–50% of trading days show measurable gaps (>0.5%)
-- Mid-caps: 60–70%
+- Nifty 50 stocks: 40-50% of trading days show measurable gaps (>0.5%)
+- Mid-caps: 60-70%
 - Small-caps: 80%+
 
 **Average gap fill rate (NSE historical):**
 - Gaps < 1%: ~75% fill same day
-- Gaps 1–2%: ~60% fill within 3 days
+- Gaps 1-2%: ~60% fill within 3 days
 - Gaps > 2%: ~45% fill within 5 days
 - Gaps > 5%: ~30% fill, often requires catalyst
 
@@ -565,7 +565,7 @@ def detect_gap(open_price, prev_close, threshold=0.005):
 
 **Step 2: Gap Magnitude Classification**
 - **Small gap** (< 1%): Aggressive fade, small stop
-- **Medium gap** (1–2%): Standard fade, wider stop
+- **Medium gap** (1-2%): Standard fade, wider stop
 - **Large gap** (> 2%): Cautious fade, news-dependent
 - **Huge gap** (> 5%): Avoid fading without strong catalyst
 
@@ -594,7 +594,7 @@ def detect_gap(open_price, prev_close, threshold=0.005):
 | Gap Type | Likely Outcome | Action |
 |---|---|---|
 | Positive earnings surprise | Gap up holds/fills partially | Fade only if gap > 5% and analyst revision < actual |
-| Negative earnings surprise | Gap down continues | Don't fade — momentum against you |
+| Negative earnings surprise | Gap down continues | Don't fade -- momentum against you |
 | Index-only gap (no stock news) | High fill probability | Standard fade strategy |
 | Sector rotation gap | Mixed | Check peer stocks, volume profile |
 | Bulk deal/Block deal | Wait for 2nd day | Often re-tests gap level |
@@ -621,8 +621,8 @@ NSE_GAP_PARAMS = {
 Keltner Channel uses ATR to create volatility-based bands around an EMA.
 
 **Middle Line:** 20-period EMA  
-**Upper Band:** EMA + (multiplier × ATR)  
-**Lower Band:** EMA - (multiplier × ATR)  
+**Upper Band:** EMA + (multiplier x ATR)  
+**Lower Band:** EMA - (multiplier x ATR)  
 **Multipliers:** 2.0 for normal, 3.0 for volatility expansion
 
 **NSE parameters:**
@@ -645,21 +645,21 @@ def keltner_channels(high, low, close, ema_period=20, atr_period=10,
 
 ### 7.2 CCI (Commodity Channel Index)
 
-CCI measures deviation from average price. Unlike RSI, it can exceed ±100.
+CCI measures deviation from average price. Unlike RSI, it can exceed +/-100.
 
 **CCI Formula:**
 ```
-CCI = (Typical Price - SMA(Typical Price)) / (0.015 × Mean Deviation)
+CCI = (Typical Price - SMA(Typical Price)) / (0.015 x Mean Deviation)
 Typical Price = (High + Low + Close) / 3
 ```
 
 **CCI Zones:**
 | CCI Value | Interpretation |
 |---|---|
-| > +100 | Overbought — potential short |
+| > +100 | Overbought -- potential short |
 | 0 to +100 | Neutral/bullish |
 | -100 to 0 | Neutral/bearish |
-| < -100 | Oversold — potential long |
+| < -100 | Oversold -- potential long |
 
 ### 7.3 Combined Keltner-CCI Strategy
 
@@ -699,10 +699,10 @@ Z = (Price - SMA) / StdDev
 ```
 
 **Entry thresholds:**
-- Z > +2.0 → Short signal
-- Z < -2.0 → Long signal
-- Z crosses below +1.0 from above → Exit short
-- Z crosses above -1.0 from below → Exit long
+- Z > +2.0 -> Short signal
+- Z < -2.0 -> Long signal
+- Z crosses below +1.0 from above -> Exit short
+- Z crosses above -1.0 from below -> Exit long
 
 ---
 
@@ -714,8 +714,8 @@ Z = (Price - SMA) / StdDev
 |---|---|
 | Intraday (15:20) | NSE settlement, avoid overnight risk |
 | 1 day | Mean reversion expected within 1 day |
-| 2–3 days | If no progress toward mean, exit |
-| 5 days | Maximum swing hold — re-evaluate |
+| 2-3 days | If no progress toward mean, exit |
+| 5 days | Maximum swing hold -- re-evaluate |
 
 **Rule:** If no reversion toward mean within 2 days, exit regardless of P&L.
 
@@ -739,8 +739,8 @@ def bollinger_squeeze(close, period=20, std_dev=2):
 ### 8.3 Partial Profit Booking at Mean
 
 **Tiered exit strategy:**
-1. **50% profit:** Price reaches middle band (SMA/VWAP/EMA) → Exit half position
-2. **75% profit:** Price reaches 75% of target → Trail stop to entry
+1. **50% profit:** Price reaches middle band (SMA/VWAP/EMA) -> Exit half position
+2. **75% profit:** Price reaches 75% of target -> Trail stop to entry
 3. **Full target:** Upper/lower band or fixed risk:reward (2:1)
 
 ```python
@@ -767,9 +767,9 @@ def partial_exit_strategy(entry_price, current_price, mean_price,
 
 | Method | Formula | Best For |
 |---|---|---|
-| ATR Trail | Stop = Low - 2×ATR | Volatile stocks |
+| ATR Trail | Stop = Low - 2xATR | Volatile stocks |
 | SMA Trail | Stop below 20-SMA | Trend-following exits |
-| Chandelier Exit | Stop = Highest High - 3×ATR | Trend trades |
+| Chandelier Exit | Stop = Highest High - 3xATR | Trend trades |
 | VWAP Trail | Stop below VWAP | Intraday |
 
 ### 8.5 Mean Reversion Exit Priority
@@ -790,7 +790,7 @@ def partial_exit_strategy(entry_price, current_price, mean_price,
 Position = (Risk Amount) / (Entry Price - Stop Price)
 ```
 
-**Risk amount:** 1–2% of capital per trade (NSE swing: 1% preferred for overnight)
+**Risk amount:** 1-2% of capital per trade (NSE swing: 1% preferred for overnight)
 
 **Win-rate adjusted sizing:**
 ```python
@@ -847,7 +847,7 @@ def calculate_mae(trades, window_minutes=60):
     return percentile(adverse_moves, 95)  # 95th percentile MAE
 ```
 
-**Stop placement:** Place stop at 1.5× to 2× the 95th percentile MAE.
+**Stop placement:** Place stop at 1.5x to 2x the 95th percentile MAE.
 
 ### 9.3 Drawdown Management
 
@@ -864,7 +864,7 @@ def calculate_mae(trades, window_minutes=60):
 2. **Max 20% capital deployed** in mean reversion at any time
 3. **Max 2% risk per trade** (ideally 1%)
 4. **Correlation filter:** No >3 positions in same sector
-5. **Liquidity filter:** Only trade stocks with ADV > ₹5 crore
+5. **Liquidity filter:** Only trade stocks with ADV > Rs5 crore
 6. **No earnings positions:** Exit 2 days before earnings
 
 ### 9.5 Position Sizing Algorithm
@@ -893,18 +893,18 @@ def calculate_nse_position(capital, entry, stop, max_risk_pct=0.01,
 
 ## 10. Real-World Implementations
 
-### 10.1 Morgan Stanley Statistical Arbitrage (1990s–2000s)
+### 10.1 Morgan Stanley Statistical Arbitrage (1990s-2000s)
 
 **Strategy:** Automated pairs trading with mean reversion on residuals  
 **Approach:**
 - CADF cointegration for pair selection
 - Kalman filter for dynamic hedge ratio
-- Entry at 2σ deviation, exit at 0.5σ
-- Mean reversion half-life targeting 1–5 days
+- Entry at 2sigma deviation, exit at 0.5sigma
+- Mean reversion half-life targeting 1-5 days
 - Overnight positions held with delta hedging
 
 **Results:**
-- Consistently 10–15% annual returns with low correlation to market
+- Consistently 10-15% annual returns with low correlation to market
 - Max drawdown < 5% in normal years
 - Peak AUM: $4.6 billion in Stat Arb strategies
 
@@ -916,44 +916,44 @@ def calculate_nse_position(capital, entry, stop, max_risk_pct=0.01,
 **Approach:**
 - OLS + CADF for cointegration
 - Momentum filter: Only trade when short-term momentum agrees with mean reversion
-- Entry: 2σ deviation, 3-day hold max
-- Exit: 0σ or time-based
+- Entry: 2sigma deviation, 3-day hold max
+- Exit: 0sigma or time-based
 
 **Results:**
-- 8–12% annual returns in equity pairs
+- 8-12% annual returns in equity pairs
 - Strong in trending markets (momentum filter prevented adverse selection)
 
-**Key insight:** Hybrid approach — don't fight momentum, confirm with it
+**Key insight:** Hybrid approach -- don't fight momentum, confirm with it
 
 ### 10.3 Research Paper: "Statistical Arbitrage in the U.S. Equity Markets" (Hedge Fund Literature)
 
-**2003–2007 study:**
+**2003-2007 study:**
 - 2,500+ stock pairs analyzed
 - Mean reversion half-life < 10 days: Best performance
-- Win rate: 58–62%
+- Win rate: 58-62%
 - Average profit: 0.8% per trade
 - Maximum adverse excursion: 1.2% before mean reversion
 
 **Key formulas:**
 ```
-Expected Return = Win Rate × Avg Win - Loss Rate × Avg Loss
-Sharpe Ratio (annualized) = (252 × Mean Daily Return) / (Std Dev × √252)
+Expected Return = Win Rate x Avg Win - Loss Rate x Avg Loss
+Sharpe Ratio (annualized) = (252 x Mean Daily Return) / (Std Dev x sqrt252)
 ```
 
 ### 10.4 Academic: Ornstein-Uhlenbeck in Trading (Brennan, Dai, Zeng 1999)
 
 **Model:** OU process for spread dynamics in pairs  
-**Finding:** θ (mean reversion speed) is the most important parameter  
+**Finding:** theta (mean reversion speed) is the most important parameter  
 **Recommendation:**
-- Only trade pairs with θ > 0.1 (meaningful reversion within 5 days)
-- Half-life = ln(2)/θ < 7 days for swing trading suitability
+- Only trade pairs with theta > 0.1 (meaningful reversion within 5 days)
+- Half-life = ln(2)/theta < 7 days for swing trading suitability
 
 ### 10.5 Practical Implementation Framework
 
 **Step 1: Universe Screening**
 - NSE 100 + Nifty ETF pairs
 - Filter: Correlation > 0.70, CADF p < 0.05
-- Liquidity: ADV > ₹5 crore
+- Liquidity: ADV > Rs5 crore
 
 **Step 2: Entry Signal**
 - Z-score > 2.0 or Bollinger %B > 1.1 / < -0.1
@@ -962,8 +962,8 @@ Sharpe Ratio (annualized) = (252 × Mean Daily Return) / (Std Dev × √252)
 
 **Step 3: Position Management**
 - Entry: 50% target position
-- Scale in at 2.5σ if not immediately profitable
-- Stop: 3σ or ATR-based
+- Scale in at 2.5sigma if not immediately profitable
+- Stop: 3sigma or ATR-based
 
 **Step 4: Exit Execution**
 - 50% at mean
@@ -976,8 +976,8 @@ Sharpe Ratio (annualized) = (252 × Mean Daily Return) / (Std Dev × √252)
 
 ### 11.1 Market Structure
 
-- **Trading hours:** 9:15 AM – 3:30 PM IST
-- **Pre-open:** 9:00–9:15 AM (only Nifty/MidCap ETF orders)
+- **Trading hours:** 9:15 AM - 3:30 PM IST
+- **Pre-open:** 9:00-9:15 AM (only Nifty/MidCap ETF orders)
 - **Settlement:** T+1 (same day stock, next day funds)
 - **Circuit filters:** 5%/10%/20% price bands (lower circuit = avoid)
 
@@ -985,9 +985,9 @@ Sharpe Ratio (annualized) = (252 × Mean Daily Return) / (Std Dev × √252)
 
 | Segment | Min ADV for Entry | Preferred ADV |
 |---|---|---|
-| Nifty 50 | ₹50 crore | ₹200 crore+ |
-| Nifty Midcap 100 | ₹20 crore | ₹50 crore+ |
-| Nifty Smallcap 250 | ₹5 crore | ₹20 crore+ |
+| Nifty 50 | Rs50 crore | Rs200 crore+ |
+| Nifty Midcap 100 | Rs20 crore | Rs50 crore+ |
+| Nifty Smallcap 250 | Rs5 crore | Rs20 crore+ |
 
 **Avoid:** Stocks with bid-ask spread > 0.3% of price
 
@@ -1003,10 +1003,10 @@ NSE is heavily index-driven (Nifty 50 = 65% of NSE total turnover). Mean reversi
 
 | Sector | Mean Reversion Speed | Notes |
 |---|---|---|
-| Banking | Fast (2–3 days) | Sector rotation drives reversion |
-| IT | Medium (3–5 days) | USD-INR impacts, global correlation |
-| FMCG | Slow (5–7 days) | Defensive, sticky prices |
-| Metal | Fast (1–3 days) | Commodity-driven, volatile |
+| Banking | Fast (2-3 days) | Sector rotation drives reversion |
+| IT | Medium (3-5 days) | USD-INR impacts, global correlation |
+| FMCG | Slow (5-7 days) | Defensive, sticky prices |
+| Metal | Fast (1-3 days) | Commodity-driven, volatile |
 | PSU Bank | Very Fast | Government actions, rapid reversion |
 
 ### 11.5 Regulatory & Tax Considerations
@@ -1024,13 +1024,13 @@ NSE is heavily index-driven (Nifty 50 = 65% of NSE total turnover). Mean reversi
 
 | Strategy | Timeframe | Win Rate Target | Risk:Reward | Complexity | Best Market |
 |---|---|---|---|---|---|
-| Bollinger Mean Reversion | 1–5 days | 55–65% | 1.5:1 | Low | Range-bound |
-| RSI Mean Reversion | 1–3 days | 50–60% | 1:1 | Low | Oversold bounce |
-| Pairs Trading (Distance) | 2–7 days | 60–70% | 1.5:1 | Medium | Sector rotation |
-| Pairs Trading (Cointegration) | 3–10 days | 58–68% | 2:1 | High | All markets |
-| VWAP Deviation | Intraday–2 days | 55–65% | 1.5:1 | Medium | Liquid stocks |
-| Gap Fill | Same day–3 days | 60–70% | 2:1 | Medium | Gap fade |
-| Keltner/CCI | 2–5 days | 50–60% | 1.5:1 | Medium | Volatile |
+| Bollinger Mean Reversion | 1-5 days | 55-65% | 1.5:1 | Low | Range-bound |
+| RSI Mean Reversion | 1-3 days | 50-60% | 1:1 | Low | Oversold bounce |
+| Pairs Trading (Distance) | 2-7 days | 60-70% | 1.5:1 | Medium | Sector rotation |
+| Pairs Trading (Cointegration) | 3-10 days | 58-68% | 2:1 | High | All markets |
+| VWAP Deviation | Intraday-2 days | 55-65% | 1.5:1 | Medium | Liquid stocks |
+| Gap Fill | Same day-3 days | 60-70% | 2:1 | Medium | Gap fade |
+| Keltner/CCI | 2-5 days | 50-60% | 1.5:1 | Medium | Volatile |
 
 ### 12.2 Parameter Cheat Sheet
 
@@ -1038,29 +1038,29 @@ NSE is heavily index-driven (Nifty 50 = 65% of NSE total turnover). Mean reversi
 - Period: 20
 - Standard Deviation: 2.0
 - Entry: %B < -0.1 or > 1.1
-- Stop: 1.5× ATR beyond band
+- Stop: 1.5x ATR beyond band
 
 **RSI:**
-- Period: 10–14
+- Period: 10-14
 - Entry: < 35 (long), > 65 (short)
 - Confirmation divergence required
 
 **Pairs Trading:**
 - Lookback: 60 days
-- Entry Z-score: ±2.0
-- Exit Z-score: ±0.5
+- Entry Z-score: +/-2.0
+- Exit Z-score: +/-0.5
 - Min correlation: 0.70
 - Cointegration p-value: < 0.05
 
 **VWAP:**
-- Entry: ±2 SD bands
-- Stop: ±3 SD or VWAP extremes
+- Entry: +/-2 SD bands
+- Stop: +/-3 SD or VWAP extremes
 - Target: VWAP (mean)
 
 **Keltner Channel:**
 - EMA: 20
 - ATR: 10
-- Multiplier: 2.0–3.0
+- Multiplier: 2.0-3.0
 
 **Gap Fill:**
 - Entry threshold: 0.5% gap
@@ -1079,12 +1079,12 @@ NSE is heavily index-driven (Nifty 50 = 65% of NSE total turnover). Mean reversi
 
 **Half-life of mean reversion:**
 ```
-HL = ln(2) / θ
+HL = ln(2) / theta
 ```
 
 **Z-score:**
 ```
-Z = (X - μ) / σ
+Z = (X - mu) / sigma
 ```
 
 **RSI:**
@@ -1095,18 +1095,18 @@ RS = Avg Gain / Avg Loss
 
 **CCI:**
 ```
-CCI = (TP - SMA(TP)) / (0.015 × Mean Deviation)
+CCI = (TP - SMA(TP)) / (0.015 x Mean Deviation)
 ```
 
 **Kelly Criterion:**
 ```
-Kelly % = (W×R - (1-W)) / R
+Kelly % = (WxR - (1-W)) / R
 W = win rate, R = win/loss ratio
 ```
 
 **VWAP deviation:**
 ```
-Deviation = (Price - VWAP) / VWAP × 100
+Deviation = (Price - VWAP) / VWAP x 100
 ```
 
 ---

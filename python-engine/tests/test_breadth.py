@@ -18,7 +18,7 @@ import pytest
 from breadth import BreadthEngine, BreadthResult
 
 
-# ── Helpers ───────────────────────────────────────────────────────────
+# -- Helpers -----------------------------------------------------------
 
 
 def _above_closes() -> list:
@@ -26,7 +26,7 @@ def _above_closes() -> list:
     n = 50
     base = 100.0
     drift = 0.001
-    # First 49 days: tiny drift up (so SMA50 ≈ 100 + small offset)
+    # First 49 days: tiny drift up (so SMA50 ~= 100 + small offset)
     # Last day: +5% jump so close > SMA50 by 5%
     closes = [base]
     for i in range(48):
@@ -75,12 +75,12 @@ def kite_above_factory():
     return _factory
 
 
-# ── Tier 1 tests ──────────────────────────────────────────────────────
+# -- Tier 1 tests ------------------------------------------------------
 
 
 @pytest.mark.asyncio
 async def test_tier1_returns_60pct_above_when_60_of_100_above(universe_100, kite_above_factory):
-    """60 stocks above SMA50, 40 below → breadth_pct_above_sma50 == 0.60."""
+    """60 stocks above SMA50, 40 below -> breadth_pct_above_sma50 == 0.60."""
     engine = BreadthEngine(
         universe=universe_100,
         kite_historical_fn=kite_above_factory(),
@@ -104,9 +104,9 @@ async def test_tier1_populates_sma50_and_distance_cache(universe_100, kite_above
     result = await engine.compute_tier1()
     assert len(engine.sma50_map) == 100
     assert len(engine.distance_pct_cache) == 100
-    # Tokens 1000..1059 are 'above' → positive distance_pct
+    # Tokens 1000..1059 are 'above' -> positive distance_pct
     assert engine.distance_pct_cache[1000] > 0
-    # Tokens 1060..1099 are 'below' → negative distance_pct
+    # Tokens 1060..1099 are 'below' -> negative distance_pct
     assert engine.distance_pct_cache[1099] < 0
 
 
@@ -185,7 +185,7 @@ async def test_tier1_cache_ttl_expiry_triggers_refetch(universe_100, kite_above_
 
 @pytest.mark.asyncio
 async def test_tier1_empty_universe_returns_degraded(universe_100, kite_above_factory):
-    """Universe returning 0 tokens → degraded result, no fetches attempted."""
+    """Universe returning 0 tokens -> degraded result, no fetches attempted."""
     universe_100.get_nifty100_tokens.return_value = set()
     engine = BreadthEngine(
         universe=universe_100,
@@ -198,14 +198,14 @@ async def test_tier1_empty_universe_returns_degraded(universe_100, kite_above_fa
     assert result.n_resolved == 0
 
 
-# ── Helper / internal tests ──────────────────────────────────────────
+# -- Helper / internal tests ------------------------------------------
 
 
 def test_rank_from_distances_simple():
-    """Percentile rank: 5 stocks with distinct distances → ranks 0/0.25/0.5/0.75/1.0."""
+    """Percentile rank: 5 stocks with distinct distances -> ranks 0/0.25/0.5/0.75/1.0."""
     distances = {1: 1.0, 2: 2.0, 3: 3.0, 4: 4.0, 5: 5.0}
     rank = BreadthEngine._rank_from_distances(distances)
-    # n=5 → ranks 0/0.25/0.5/0.75/1.0
+    # n=5 -> ranks 0/0.25/0.5/0.75/1.0
     assert rank[1] == pytest.approx(0.0)
     assert rank[2] == pytest.approx(0.25)
     assert rank[3] == pytest.approx(0.5)
@@ -217,18 +217,18 @@ def test_rank_from_distances_handles_ties():
     """Two stocks at the same distance should share the average rank."""
     distances = {1: 1.0, 2: 1.0, 3: 2.0}
     rank = BreadthEngine._rank_from_distances(distances)
-    # Positions 0,1,2 → tied at 0,1 → avg rank = 0.5/2 = 0.25
-    # Position 2 → 2/2 = 1.0
+    # Positions 0,1,2 -> tied at 0,1 -> avg rank = 0.5/2 = 0.25
+    # Position 2 -> 2/2 = 1.0
     assert rank[1] == rank[2] == pytest.approx(0.25)
     assert rank[3] == pytest.approx(1.0)
 
 
 def test_rank_from_distances_empty():
-    """Empty distances dict → empty rank map."""
+    """Empty distances dict -> empty rank map."""
     assert BreadthEngine._rank_from_distances({}) == {}
 
 
-# ── Tier 2 tests ──────────────────────────────────────────────────────
+# -- Tier 2 tests ------------------------------------------------------
 
 
 @pytest.mark.asyncio
@@ -314,7 +314,7 @@ async def test_tier2_falls_back_to_cached_when_token_missing_in_scan(universe_10
     assert all(t in result.rank_map for t in range(1090, 1100))
 
 
-# ── OQ1 future-use field test ────────────────────────────────────────
+# -- OQ1 future-use field test ----------------------------------------
 
 
 @pytest.mark.asyncio

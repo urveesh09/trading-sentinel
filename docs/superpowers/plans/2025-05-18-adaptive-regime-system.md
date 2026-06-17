@@ -1,4 +1,4 @@
-# Trading Sentinel: Adaptive Regime System — Implementation Plan
+# Trading Sentinel: Adaptive Regime System -- Implementation Plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use `subagent-driven-development` (recommended) or `executing-plans` to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
@@ -15,16 +15,16 @@
 ```
 python-engine/
   NEW
-    regime.py                  — Regime detection engine (VIX + Nifty EMA20 + breadth -> score)
-    indicators_adaptive.py     — RSI percentile, volume z-score
-    chandelier_stop.py         — Chandelier trailing stop calculator
-    risk_engine.py             — Dynamic position sizing + partial exit manager
+    regime.py                  -- Regime detection engine (VIX + Nifty EMA20 + breadth -> score)
+    indicators_adaptive.py     -- RSI percentile, volume z-score
+    chandelier_stop.py         -- Chandelier trailing stop calculator
+    risk_engine.py             -- Dynamic position sizing + partial exit manager
 
   MODIFY
-    config.py                  — Add all regime configuration parameters
-    models.py                  — Add Regime enum, extend Signal model
-    engine.py                  — Integrate regime-aware filters and parameters
-    portfolio.py               — Use regime-aware position sizing, add partial exit logic
+    config.py                  -- Add all regime configuration parameters
+    models.py                  -- Add Regime enum, extend Signal model
+    engine.py                  -- Integrate regime-aware filters and parameters
+    portfolio.py               -- Use regime-aware position sizing, add partial exit logic
 ```
 
 ---
@@ -45,7 +45,7 @@ Add after existing fields (before the closing of the class):
 
 ```python
     # ============================================================
-    # REGIME ENGINE — Adaptive Market Condition Detection
+    # REGIME ENGINE -- Adaptive Market Condition Detection
     # ============================================================
 
     # VIX boundaries (defines regime thresholds)
@@ -62,9 +62,9 @@ Add after existing fields (before the closing of the class):
     VOL_ZSCORE_REGIME3: float = 2.5       # Regime 3: 2.5 std devs
 
     # Position sizing by regime (% of bankroll per trade)
-    RISK_PCT_REGIME1: float = 0.10        # 10% — normal market
-    RISK_PCT_REGIME2: float = 0.07        # 7%  — elevated uncertainty
-    RISK_PCT_REGIME3: float = 0.05        # 5%  — crisis
+    RISK_PCT_REGIME1: float = 0.10        # 10% -- normal market
+    RISK_PCT_REGIME2: float = 0.07        # 7%  -- elevated uncertainty
+    RISK_PCT_REGIME3: float = 0.05        # 5%  -- crisis
 
     # Stop loss by regime (ATR multipliers)
     STOP_ATR_REGIME1: float = 1.5        # 1.5x ATR
@@ -75,7 +75,7 @@ Add after existing fields (before the closing of the class):
     TARGET1_R: float = 1.5                # T1 = 1.5R (all regimes)
     TARGET2_R_REGIME1: float = 3.0        # T2 = 3.0R (Regime 1)
     TARGET2_R_REGIME2: float = 3.0        # T2 = 3.0R (Regime 2)
-    TARGET2_R_REGIME3: float = 1.0        # T2 = 1.0R (Regime 3 — no T2, exit at T1)
+    TARGET2_R_REGIME3: float = 1.0        # T2 = 1.0R (Regime 3 -- no T2, exit at T1)
 
     # Partial exit at T1 (fraction of shares to exit)
     PARTIAL_EXIT_T1_PCT: float = 0.50    # Exit 50% at T1
@@ -286,7 +286,7 @@ class TestRegimeEngine:
 - [ ] **Step 2: Run test to verify it fails**
 
 Run: `cd python-engine && python -m pytest tests/test_regime.py -v 2>&1 | head -30`
-Expected: ERROR — module `regime` not found (file does not exist yet)
+Expected: ERROR -- module `regime` not found (file does not exist yet)
 
 - [ ] **Step 3: Write the regime engine**
 
@@ -294,7 +294,7 @@ Create `python-engine/regime.py`:
 
 ```python
 """
-regime.py — Volatility-responsive market regime detection engine.
+regime.py -- Volatility-responsive market regime detection engine.
 
 Computes a continuous regime score (0-100) from:
   1. India VIX level (primary driver)
@@ -400,7 +400,7 @@ class RegimeEngine:
             else:
                 return Regime.REGIME_2_ELEVATED
         else:
-            # No prior regime — use raw boundaries
+            # No prior regime -- use raw boundaries
             if score >= 70:
                 return Regime.REGIME_1_NORMAL
             elif score >= 40:
@@ -628,7 +628,7 @@ class TestAdaptiveIndicators:
 - [ ] **Step 2: Run test to verify it fails**
 
 Run: `cd python-engine && python -m pytest tests/test_indicators_adaptive.py -v 2>&1 | head -20`
-Expected: ERROR — module `indicators_adaptive` not found
+Expected: ERROR -- module `indicators_adaptive` not found
 
 - [ ] **Step 3: Write the adaptive indicators module**
 
@@ -636,7 +636,7 @@ Create `python-engine/indicators_adaptive.py`:
 
 ```python
 """
-indicators_adaptive.py — Adaptive indicator calculations.
+indicators_adaptive.py -- Adaptive indicator calculations.
 
 Replaces fixed thresholds with stock-specific relative measures:
   1. RSI Percentile: current RSI vs its own 6-month rolling distribution
@@ -732,10 +732,10 @@ class AdaptiveIndicators:
         Returns 0.0 if there is insufficient volume history (less than 20 days).
 
         Interpretation:
-          z = 0.0  → volume is exactly at the 20-day average
-          z = 1.5  → volume is 1.5 standard deviations above average (unusual)
-          z = 2.5  → volume is 2.5 standard deviations above average (highly unusual)
-          z = -1.0 → volume is 1 std dev below average (below normal)
+          z = 0.0  -> volume is exactly at the 20-day average
+          z = 1.5  -> volume is 1.5 standard deviations above average (unusual)
+          z = 2.5  -> volume is 2.5 standard deviations above average (highly unusual)
+          z = -1.0 -> volume is 1 std dev below average (below normal)
 
         A positive z-score is required for a breakout signal.
         """
@@ -848,14 +848,14 @@ class TestChandelierStop:
         cs.update(close=120.0, high=122.0, low=118.0)
         # Highest close: 120. Stop: 120 - 15 = 105
         assert cs.get_stop() == 105.0
-        # Now stop is ABOVE entry — trade is profitable
+        # Now stop is ABOVE entry -- trade is profitable
         assert cs.is_profitable()
 
     def test_stop_not_triggered_by_pullback(self):
-        """Stop should NOT move down on a pullback — it only tracks highest closes."""
+        """Stop should NOT move down on a pullback -- it only tracks highest closes."""
         cs = ChandelierStop(entry_price=100.0, atr=5.0, atr_mult=3.0)
         cs.update(close=110.0, high=112.0, low=108.0)  # Highest close = 110, stop = 95
-        cs.update(close=105.0, high=106.0, low=100.0)  # Pullback — highest close still 110
+        cs.update(close=105.0, high=106.0, low=100.0)  # Pullback -- highest close still 110
         # Stop should still be 95 (based on highest close of 110)
         assert cs.get_stop() == 95.0
 
@@ -863,7 +863,7 @@ class TestChandelierStop:
         """Stop should trigger when price closes below the stop level."""
         cs = ChandelierStop(entry_price=100.0, atr=5.0, atr_mult=3.0)
         cs.update(close=110.0, high=112.0, low=108.0)  # Stop = 95
-        # Price drops to 93 — below stop of 95
+        # Price drops to 93 -- below stop of 95
         triggered, price = cs.check_stop_out(close=93.0)
         assert triggered is True
         assert price == 93.0
@@ -872,13 +872,13 @@ class TestChandelierStop:
         """Stop should NOT trigger if price stays above stop."""
         cs = ChandelierStop(entry_price=100.0, atr=5.0, atr_mult=3.0)
         cs.update(close=110.0, high=112.0, low=108.0)  # Stop = 95
-        # Price pulls back to 97 — still above stop
+        # Price pulls back to 97 -- still above stop
         triggered, price = cs.check_stop_out(close=97.0)
         assert triggered is False
         assert price == 97.0
 
     def test_atr_can_increase(self):
-        """ATR can change over time — stop should use current ATR each update."""
+        """ATR can change over time -- stop should use current ATR each update."""
         cs = ChandelierStop(entry_price=100.0, atr=5.0, atr_mult=3.0)
         cs.update(close=110.0, high=112.0, low=108.0)  # Stop = 110 - 15 = 95 (ATR=5)
         # ATR increases to 8 (market getting volatile)
@@ -897,7 +897,7 @@ class TestChandelierStop:
 - [ ] **Step 2: Run test to verify it fails**
 
 Run: `cd python-engine && python -m pytest tests/test_chandelier_stop.py -v 2>&1 | head -20`
-Expected: ERROR — module `chandelier_stop` not found
+Expected: ERROR -- module `chandelier_stop` not found
 
 - [ ] **Step 3: Write the Chandelier stop module**
 
@@ -905,7 +905,7 @@ Create `python-engine/chandelier_stop.py`:
 
 ```python
 """
-chandelier_stop.py — Chandelier trailing stop implementation.
+chandelier_stop.py -- Chandelier trailing stop implementation.
 
 The Chandelier Stop (developed by Charles LeBouef) is a trailing stop
 that trails price by a multiple of Average True Range (ATR).
@@ -914,7 +914,7 @@ Formula:
     stop = highest_close_since_entry - (atr_mult * ATR_14)
 
 Unlike a fixed stop, the Chandelier stop:
-  1. ONLY moves up (tracks highest close) — never down
+  1. ONLY moves up (tracks highest close) -- never down
   2. Gives winners room to run within their natural volatility
   3. Locks in profit when a trend reverses by the ATR distance
 
@@ -983,7 +983,7 @@ class ChandelierStop:
         if atr is not None:
             self._current_atr = atr
 
-        # Update highest close — Chandelier ONLY moves up
+        # Update highest close -- Chandelier ONLY moves up
         if close > self._highest_close:
             self._highest_close = close
             logger.debug(
@@ -1035,7 +1035,7 @@ class ChandelierStop:
             close: The current closing price.
 
         Returns:
-            (triggered: bool, price: float) — triggered is True if stopped out,
+            (triggered: bool, price: float) -- triggered is True if stopped out,
             price is the close at which stop was triggered.
         """
         stop_level = self.get_stop()
@@ -1174,7 +1174,7 @@ class TestRiskEngine:
         re.record_trade_outcome(win=True, in_recovery=True)
         # Still in recovery (need 2 wins)
         assert re.get_effective_risk_pct(recovery_active=True) == 0.07
-        # Win 2 — recovery ends
+        # Win 2 -- recovery ends
         re.record_trade_outcome(win=True, in_recovery=True)
         assert re.get_effective_risk_pct(recovery_active=False) == 0.10
 
@@ -1189,7 +1189,7 @@ class TestRiskEngine:
 - [ ] **Step 2: Run test to verify it fails**
 
 Run: `cd python-engine && python -m pytest tests/test_risk_engine.py -v 2>&1 | head -20`
-Expected: ERROR — module `risk_engine` not found
+Expected: ERROR -- module `risk_engine` not found
 
 - [ ] **Step 3: Write the risk engine module**
 
@@ -1197,7 +1197,7 @@ Create `python-engine/risk_engine.py`:
 
 ```python
 """
-risk_engine.py — Dynamic risk management.
+risk_engine.py -- Dynamic risk management.
 
 Provides:
   1. Dynamic position sizing based on regime and bankroll
@@ -1385,12 +1385,12 @@ class RiskEngine:
             if win:
                 self._consecutive_wins_in_recovery += 1
                 if self._consecutive_wins_in_recovery >= 2:
-                    # Recovery complete — reset
+                    # Recovery complete -- reset
                     logger.info("drawdown_recovery_complete")
                     self._recovery_trades_remaining = 0
                     self._consecutive_wins_in_recovery = 0
             else:
-                # Loss during recovery — reset win counter but keep recovery active
+                # Loss during recovery -- reset win counter but keep recovery active
                 self._consecutive_wins_in_recovery = 0
                 self._recovery_trades_remaining = max(
                     0, self._recovery_trades_remaining - 1
@@ -1419,7 +1419,7 @@ class RiskEngine:
 
     def partial_exit_triggered(self) -> bool:
         """Returns whether a partial exit has already been taken on the current position."""
-        return False  # Per-position state — managed externally by the position tracker
+        return False  # Per-position state -- managed externally by the position tracker
 ```
 
 **Note for engineer:** There is a deliberate typo in `calc_shares`: `max_capital_per_trac` should be `max_capital_per_trade`. Fix this when writing the implementation.
@@ -1468,7 +1468,7 @@ In the FILTERS section (line ~125), before the existing filters, add a new filte
         rsi_pct_threshold = settings.RSI_PERCENTILE_REGIME1  # 20
         if not (0 <= rsi14 <= 100):
             return False, {"reject_reason": "rsi_out_of_range", "rsi": rsi14}
-        # RSI percentile check: requires history — if unavailable, fall back to fixed band
+        # RSI percentile check: requires history -- if unavailable, fall back to fixed band
         rsi_pct = adaptive_ind.compute_rsi_percentile(rsi14, rsi_history)
         if rsi_history is not None and len(rsi_history) >= 20:
             if rsi_pct >= rsi_pct_threshold:
@@ -1503,13 +1503,13 @@ In the FILTERS section (line ~125), before the existing filters, add a new filte
         return False, {"reject_reason": "volume_zscore_low", "vol_zscore": vol_zscore, "threshold": vol_zscore_threshold}
 ```
 
-**Important context for engineer:** The `evaluate_signal` function currently takes `market_regime: str` (BULL/CAUTION/BEAR_RS_ONLY). This needs to be renamed. Add `nifty_50_current` and `nifty_ema20` parameters to the function. The `rsi_history` is a new parameter — create it from the DataFrame's RSI series. The `adaptive_ind` object should be instantiated at the top of the function.
+**Important context for engineer:** The `evaluate_signal` function currently takes `market_regime: str` (BULL/CAUTION/BEAR_RS_ONLY). This needs to be renamed. Add `nifty_50_current` and `nifty_ema20` parameters to the function. The `rsi_history` is a new parameter -- create it from the DataFrame's RSI series. The `adaptive_ind` object should be instantiated at the top of the function.
 
 For **Regime 3 only**, replace the RSI/volume filters with the RS vs Nifty filter:
 
 ```python
     # ----------------------------------------------------------------
-    # REGIME 3: RS vs Nifty filter (primary — replaces RSI + vol filters)
+    # REGIME 3: RS vs Nifty filter (primary -- replaces RSI + vol filters)
     # ----------------------------------------------------------------
     elif regime == Regime.REGIME_3_CRISIS:
         # Only buy stocks that are clearly outperforming the market
@@ -1553,7 +1553,7 @@ STOP_ATR_REGIME_MAP = {
 STOP_PCT_MAP = {
     Regime.REGIME_1_NORMAL: 0.05,    # 5% stop
     Regime.REGIME_2_ELEVATED: 0.05,  # 5% stop
-    Regime.REGIME_3_CRISIS: 0.08,    # 8% stop (wider — less precise in crisis)
+    Regime.REGIME_3_CRISIS: 0.08,    # 8% stop (wider -- less precise in crisis)
     Regime.UNKNOWN: 0.05,
 }
 ```
@@ -1649,7 +1649,7 @@ For breadth: compute from the scan universe. For each stock in the universe, che
 
 Change `evaluate_signal(..., market_regime=market_regime)` to `evaluate_signal(..., regime=regime)` in all call sites.
 
-- [ ] **Step 5: Verify integration — run the API**
+- [ ] **Step 5: Verify integration -- run the API**
 
 Run: `cd python-engine && python -c "from main import app; print('main imports OK')"`
 Expected: No import errors.
@@ -1672,10 +1672,10 @@ git commit -m "feat(portfolio): wire regime engine into portfolio state and sign
 
 **Before this task, resolve these 4 open questions from the design doc:**
 
-1. **Backtest data source** — Confirm Upstox historical data availability for 2019-2025, or decide on NSE/Bhavcopy CSV sourcing.
-2. **Breadth calculation scope** — Decide: Nifty 100 or Nifty 500 stocks for breadth computation. (Recommendation: start with Nifty 100 for performance.)
-3. **Chandelier stop GTT** — Confirm whether Upstox GTT supports trailing stops. If not, Chandelier stop will be managed in-engine (monitor each candle, trigger manual close when stop is hit). This is the recommended path — it's more reliable.
-4. **RSI percentile persistence** — Confirm whether RSI history needs to be persisted across engine restarts. (Recommendation: rebuild from OHLC data on restart. The `engine.py` has access to 200+ days of data — enough to compute RSI history.)
+1. **Backtest data source** -- Confirm Upstox historical data availability for 2019-2025, or decide on NSE/Bhavcopy CSV sourcing.
+2. **Breadth calculation scope** -- Decide: Nifty 100 or Nifty 500 stocks for breadth computation. (Recommendation: start with Nifty 100 for performance.)
+3. **Chandelier stop GTT** -- Confirm whether Upstox GTT supports trailing stops. If not, Chandelier stop will be managed in-engine (monitor each candle, trigger manual close when stop is hit). This is the recommended path -- it's more reliable.
+4. **RSI percentile persistence** -- Confirm whether RSI history needs to be persisted across engine restarts. (Recommendation: rebuild from OHLC data on restart. The `engine.py` has access to 200+ days of data -- enough to compute RSI history.)
 
 ---
 
@@ -1726,19 +1726,19 @@ git commit -m "test(backtest): add regime engine backtest mode and validate on C
 After writing the complete plan, I ran these checks:
 
 **1. Spec coverage:**
-- [x] Regime 1/2/3 detection (Section 2) → Task 3
-- [x] RSI percentile (Section 3.1) → Task 4 + Task 7
-- [x] Volume z-score (Section 3.2) → Task 4 + Task 7
-- [x] RS vs Nifty filter (Section 3.3) → Task 4 + Task 7
-- [x] Nifty EMA20 confirmation (Section 3.4) → Task 7
-- [x] Chandelier stop (Section 3.5) → Task 5
-- [x] Dynamic position sizing (Section 4.1) → Task 6
-- [x] Partial exit at T1 (Section 4.2) → Task 6
-- [x] Regime-specific targets (Section 4.3) → Task 7
-- [x] Drawdown governor (Section 4.4) → Task 6
-- [x] All config params (Section 5) → Task 1
-- [x] All models changes (Section 7.2) → Task 2
-- [x] Backtesting (Section 8) → Task 10
+- [x] Regime 1/2/3 detection (Section 2) -> Task 3
+- [x] RSI percentile (Section 3.1) -> Task 4 + Task 7
+- [x] Volume z-score (Section 3.2) -> Task 4 + Task 7
+- [x] RS vs Nifty filter (Section 3.3) -> Task 4 + Task 7
+- [x] Nifty EMA20 confirmation (Section 3.4) -> Task 7
+- [x] Chandelier stop (Section 3.5) -> Task 5
+- [x] Dynamic position sizing (Section 4.1) -> Task 6
+- [x] Partial exit at T1 (Section 4.2) -> Task 6
+- [x] Regime-specific targets (Section 4.3) -> Task 7
+- [x] Drawdown governor (Section 4.4) -> Task 6
+- [x] All config params (Section 5) -> Task 1
+- [x] All models changes (Section 7.2) -> Task 2
+- [x] Backtesting (Section 8) -> Task 10
 
 **2. Placeholder scan:**
 - [x] No "TBD", "TODO", "implement later"
