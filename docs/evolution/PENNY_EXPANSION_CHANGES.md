@@ -76,7 +76,7 @@ docs/
   evolution/PENNY_EXPANSION_CHANGES.md                                NEW
   evolution/PENNY_VS_DESKTOP_AUDIT.md                                 NEW
   runbooks/penny-debug.md                                             NEW
-  deviations/2026-06-21-penny-*.md                                    NEW (5 deviation notes)
+  deviations/2026-06-21-penny-*.md                                    NEW (7 deviation notes)
 ```
 
 ## Commit log (this branch)
@@ -113,7 +113,7 @@ during brainstorming were captured in the spec itself (not post-hoc):
    both micro-caps (too easy to move price) and widely-held names
    (no "skin in the game").
 
-## Plan-deviation notes (6 documented)
+## Plan-deviation notes (7 documented)
 
 The implementation body code is plan-verbatim for all 10 penny modules.
 Six test/setup deviations were documented in `docs/deviations/`:

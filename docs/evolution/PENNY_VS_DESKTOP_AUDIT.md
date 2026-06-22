@@ -124,7 +124,7 @@ Watch for:
 - No traceback on startup
 - `penny_universe_refresh` log line at 08:00 IST (first cron)
 - `penny_regime_computed` log line at 09:20 IST
-- `penny_scan_done` log lines every 30s starting 09:20
+- `penny_scan_complete` log lines every 30s starting 09:20
 
 ## If anything breaks
 

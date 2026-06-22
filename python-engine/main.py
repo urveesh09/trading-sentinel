@@ -411,7 +411,6 @@ IST = pytz.timezone("Asia/Kolkata")
 
 from contextlib import asynccontextmanager
 
-@asynccontextmanager
 def register_penny_scheduler_jobs(scheduler):
     """
     [PENNY-MAIN 2026-06-21] Register all 7 penny subsystem scheduler jobs

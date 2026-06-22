@@ -19,11 +19,11 @@ mode — no real orders. To enable live: set `PENNY_LIVE_TRADING=true` in
 
 ```bash
 # Look for these in logs every 30 seconds:
-grep "penny_scan_done" /var/log/trading-sentinel.log | tail -5
+grep "penny_scan_complete" /var/log/trading-sentinel.log | tail -5
 # Expected: {"scan_id": "penny-...", "accept": N, "reject": M, "error": 0}
 ```
 
-If you see no `penny_scan_done` log lines, the scheduler job `penny_scan_interval`
+If you see no `penny_scan_complete` log lines, the scheduler job `penny_scan_interval`
 isn't registered. Check `main.py` imports + look for `penny_scan_interval` in
 the apscheduler job list (set `SCHEDULER_DEBUG=1` to dump jobs at startup).
 

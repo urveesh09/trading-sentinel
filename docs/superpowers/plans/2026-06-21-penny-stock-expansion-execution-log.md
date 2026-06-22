@@ -23,7 +23,7 @@
 | 12 | PennyHourlyReport (heartbeat) | `57f44b0` | 8 | DONE |
 | 13 | main.py scheduler wiring | `ff4dea8` | 8 | DONE |
 | 14 | Documentation | (this commit) | 0 | DONE |
-| 15 | Final flag-off parity + summary | (next commit) | 0 | DONE |
+| 15 | Final flag-off parity + summary | `f84bd5d` | 0 | DONE |
 
 ## Test count progression
 
@@ -40,7 +40,7 @@
 - After Task 10: 550 passed (+7 connors-with-connors-overlap)
 - After Task 11: 550 passed (+0; 6 executor tests absorbed)
 - After Task 12: 571 passed (+8)
-- After Task 13: 578 passed (+7) + 1 pre-existing flaky Nifty test
+- After Task 13: 578 passed (+8) + 1 pre-existing flaky Nifty test
 
 The plan's running tally of 553 by end of Task 11 was off by ~25
 because the plan underestimated test counts for several tasks. The
