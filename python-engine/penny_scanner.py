@@ -226,7 +226,7 @@ class PennyScanner:
                     )
                     accept += 1
             except Exception as e:
-                logger.error("penny_ticker_eval_failed", ticker=sym, error=str(e))
+                logger.error("penny_ticker_eval_failed ticker=%s error=%s", sym, str(e))
                 error += 1
 
         return {"scan_id": scan_id, "accept": accept, "reject": reject, "error": error}
