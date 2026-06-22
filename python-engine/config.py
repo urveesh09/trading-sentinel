@@ -134,6 +134,67 @@ class Settings(BaseSettings):
     ZERODHA_GST_PCT:          float = 0.18
 
     # ============================================================
+    # PENNY STOCK SUBSYSTEM (2026-06-21, spec docs/superpowers/specs/2026-06-21-penny-stock-expansion-design.md)
+    # ============================================================
+    # All settings default OFF / safe. Live trade is opt-in via PENNY_LIVE_TRADING=true.
+
+    # Universe
+    PENNY_PRICE_MIN:               float = 1.0
+    PENNY_PRICE_MAX:               float = 55.0
+    PENNY_UNIVERSE_SIZE:           int   = 100
+    PENNY_MIN_20D_TV:              float = 500_000.0   # Rs 5 lakh, 20-day median traded value floor
+    PENNY_MAX_PROMOTER_HOLD:       float = 0.75        # see MIN_PROMOTER_HOLD below
+    PENNY_MIN_PROMOTER_HOLD:       float = 0.25        # strictly > 25% AND strictly < 75%
+    PENNY_MAX_PB_RATIO:            float = 2.0         # Price-to-Book <= 2.0 (loose asset floor)
+    PENNY_REFRESH_HOUR:            int   = 8
+
+    # Connors strategy
+    PENNY_CONNORS_RSI2_BUY:        float = 10.0
+    PENNY_CONNORS_RSI2_SELL:       float = 65.0
+    PENNY_CONNORS_T1_PCT:          float = 0.03
+    PENNY_CONNORS_T2_PCT:          float = 0.06
+    PENNY_CONNORS_STOP_PCT:        float = 0.03
+    PENNY_CONNORS_MAX_HOLD_DAYS:   int   = 3
+    PENNY_CONNORS_TRAIL_ATR_MULT:  float = 2.0         # 2x ATR_1min trail after T1
+
+    # Breakout strategy
+    PENNY_BREAKOUT_VOL_MULT:       float = 3.0
+    PENNY_BREAKOUT_TARGET_R:       float = 2.0
+    PENNY_BREAKOUT_TIME_START:     int   = 10*60 + 30  # 10:30 IST in minutes
+    PENNY_BREAKOUT_TIME_END:       int   = 14*60 + 30  # 14:30 IST in minutes
+    PENNY_BREAKOUT_TIME_EXIT:      int   = 15*60       # 15:00 IST
+    PENNY_MIS_SMART_EOD_TIME:      int   = 14*60 + 30  # 14:30 IST smart-EOD check
+    PENNY_MIS_SMART_EOD_WITHIN_R:  float = 0.5
+    PENNY_MIS_SMART_EOD_LOSS_MIN:  int   = 30
+
+    # Risk + bankroll
+    PENNY_LIVE_BANKROLL:           float = 2000.0
+    PENNY_PAPER_BANKROLL:          float = 500.0
+    PENNY_RISK_PCT_PR1:            float = 0.05
+    PENNY_RISK_PCT_PR2:            float = 0.025
+    PENNY_RISK_PCT_PR3:            float = 0.0
+    PENNY_DAILY_KILL_SWITCH_PCT:   float = 0.20
+    PENNY_PER_STOCK_CAP:           float = 500.0
+    PENNY_MAX_POSITIONS_TOTAL:     int   = 5
+    PENNY_MAX_POSITIONS_CNC:       int   = 2
+    PENNY_MAX_POSITIONS_MIS:       int   = 3
+    PENNY_CIRCUIT_SKIP_DISTANCE:   float = 0.005      # 0.5% of band
+    PENNY_CIRCUIT_FROM_HIGH_PCT:   float = 0.03       # 3% from day high
+
+    # Cadence + safety
+    PENNY_SCAN_INTERVAL_SEC:       int   = 30
+    PENNY_LIVE_TRADING:            bool  = False      # default OFF, paper-trade first
+    PENNY_DISABLE_TICKERS:         str   = ""         # comma-separated manual kill-switch
+    PENNY_LOG_CSV_PATH:            str   = "/data/penny_signals.csv"
+    PENNY_ENTRY_FILL_TIMEOUT_SEC:  float = 60.0      # max wait for LIMIT entry to fill before cancel
+    PENNY_SL_M_MAX_ATTEMPTS:       int   = 2         # SL-M placement retries before unwind
+
+    # Hourly report (spec §9.4)
+    PENNY_HOURLY_REPORT_START_HOUR: int  = 10        # first hourly report at HH:00 IST (10 = 10:00)
+    PENNY_HOURLY_REPORT_END_HOUR:   int  = 14        # last hourly report at HH:00 IST (14 = 14:00)
+    PENNY_HOURLY_REPORT_WEBHOOK:   str   = ""        # optional webhook URL for delivery (Telegram/Slack)
+
+    # ============================================================
     # REGIME ENGINE -- VIX-Free Volatility Detection
     # Replaces India VIX with ATR Compression + Realized Volatility
     # ============================================================
