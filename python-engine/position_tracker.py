@@ -49,6 +49,8 @@ async def update_daily_positions(db_path: str, kite_client, current_date_str: st
     open_pos = await get_open_positions(db_path)
     for pos in open_pos:
         ticker = pos['ticker']
+        # [PENNY-TRACKER 2026-06-21] Existing logic accepts source != "MOMENTUM"
+        # (i.e. SYSTEM-swing, PENNY-CNC, PENNY-MIS). No code change needed.
         if pos.get('source') == 'MOMENTUM':
             continue
         df = await kite_client.get_historical(ticker, current_date_str, current_date_str)

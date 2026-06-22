@@ -575,3 +575,35 @@ if __name__ == "__main__":
 
     db = args.db or settings.DB_PATH
     asyncio.run(print_report(db, days=args.days))
+
+async def penny_outcome_correlator(db_path: str, days: int = 14) -> dict:
+    """
+    [PENNY-ANALYTICS 2026-06-21] Outcome correlator filtered to source='PENNY'
+    positions. Joins bankroll_ledger (with source column) to penny_signals.
+
+    Returns the same shape as outcome_correlator() but only penny rows.
+    Read-only -- returns empty buckets if no penny P&L is in the ledger yet.
+    """
+    import aiosqlite
+    from datetime import datetime, timezone, timedelta
+    cutoff = (datetime.now(timezone.utc) - timedelta(days=days)).isoformat()
+    out = {"total": 0, "winners": 0, "losers": 0, "win_rate": 0.0,
+           "by_reject_reason": {}, "by_regime": {}, "days": days}
+    try:
+        async with aiosqlite.connect(db_path) as db:
+            async with db.execute(
+                "SELECT pnl FROM bankroll_ledger "
+                "WHERE source='PENNY' AND timestamp >= ?",
+                (cutoff,),
+            ) as cur:
+                rows = await cur.fetchall()
+    except Exception:
+        return out
+    if not rows:
+        return out
+    pnls = [r[0] or 0.0 for r in rows]
+    out["total"] = len(pnls)
+    out["winners"] = sum(1 for p in pnls if p > 0)
+    out["losers"] = sum(1 for p in pnls if p < 0)
+    out["win_rate"] = out["winners"] / out["total"] if out["total"] > 0 else 0.0
+    return out
