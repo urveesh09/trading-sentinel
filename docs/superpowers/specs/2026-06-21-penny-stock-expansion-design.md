@@ -360,11 +360,43 @@ When `PENNY_LIVE_TRADING=true`:
 | 09:20 | Compute penny regime (cached for day, refreshed at 13:00) |
 | 09:30 | Connors scan #1 (CNC entry signals) — once per day |
 | 09:30-15:00 | Breakout scan every 30 seconds (MIS entry signals) |
+| 10:00, 11:00, 12:00, 13:00, 14:00 | Hourly penny report (see §9.4) |
 | 13:00 | Re-compute penny regime (intraday vol check) |
 | 15:00 | Breakout MIS time-stop (force-exit any open MIS positions) |
 | 15:15 | All open MIS auto-squared by broker (Kite rule, not us) |
 | 15:30 | EOD post-market: update paper/live P&L, sync position ledger, send Telegram daily summary |
 | 16:00 | Analytics correlator runs on the day's signal log |
+
+### 9.4 Hourly Penny Report
+
+A concise per-hour status report fires at every `:00` IST from 10:00 through 14:00 (5 reports/day, skipping the 09:00 pre-market slot when no scans have run yet). Each report covers the trailing 60 minutes of penny subsystem activity and is delivered as a structured log line + optional webhook (Telegram/Slack) message.
+
+**Mandatory heartbeat rule:** the report fires every hour regardless of activity. If nothing happened, the body is the literal text `"No action in Penny this hour."` This proves the subsystem is alive — a missing hourly report is itself an alert.
+
+**Report contents (when there IS action):**
+
+- Regime snapshot (one line: PR1_CALM / PR2_ELEVATED / PR3_HOT)
+- Entries filled in the hour: ticker, leg (CNC/MIS), qty, fill price, regime, entry reason
+- Exits in the hour: ticker, leg, qty, exit price, exit reason (T1 / T2 / trail / time-stop / 14:30-EOD / SL-M-triggered / manual-kill)
+- Pending signals rejected: count + top 3 reject reasons
+- Kill-switch events (if any)
+- Circuit-block count (if any)
+- Open penny positions: count + total deployed capital + unrealised P&L snapshot
+- Bankroll snapshot: paper and live
+
+**Report contents (when there is NO action):**
+
+- One line: `No action in Penny this hour.`
+- Optionally followed by `(regime: PR1_CALM, open: 2/5, deployed: Rs 980/2000)`
+
+**Format:** short markdown block, ≤ 15 lines, no RSI/ATR noise. Telegram-friendly (under 1000 chars).
+
+**Delivery:**
+- Always logged at INFO level (`penny_hourly_report` event key)
+- Optionally POSTed to a webhook URL if `PENNY_HOURLY_REPORT_WEBHOOK` is set in `.env`
+- Webhook failure does NOT block the next hour's report
+
+**Open question for Uru:** should the 10:00 report fire (first hour of scanning, often quiet) or skip until 11:00? Per default we ship 10:00–14:00 (5 reports). User can disable 10:00 via `PENNY_HOURLY_REPORT_START_HOUR=11` if the empty report is annoying.
 
 ### 9.2 Per-scan flow (Breakout MIS, every 30s)
 
@@ -454,8 +486,10 @@ Each new module ships with tests:
 PENNY_PRICE_MIN:               float = 1.0
 PENNY_PRICE_MAX:               float = 55.0
 PENNY_UNIVERSE_SIZE:           int   = 100
-PENNY_MIN_20D_TV:              float = 500_000   # Rs 5 lakh
-PENNY_MAX_PROMOTER_HOLD:       float = 0.75
+PENNY_MIN_20D_TV:              float = 500_000   # Rs 5 lakh liquidity floor
+PENNY_MIN_PROMOTER_HOLD:       float = 0.25      # strictly > 25% promoter (skin in game floor)
+PENNY_MAX_PROMOTER_HOLD:       float = 0.75      # strictly < 75% promoter (avoid micro-cap concentration)
+PENNY_MAX_PB_RATIO:            float = 2.0       # Price-to-Book <= 2.0 (loose asset-backing floor)
 PENNY_REFRESH_HOUR:            int   = 8
 
 # Connors strategy
@@ -495,6 +529,9 @@ PENNY_CIRCUIT_FROM_HIGH_PCT:   float = 0.03   # 3%
 PENNY_SCAN_INTERVAL_SEC:       int   = 30
 PENNY_LIVE_TRADING:            bool  = False  # default OFF — paper-trade first
 PENNY_DISABLE_TICKERS:         str   = ""     # comma-separated manual kill-switch
+PENNY_HOURLY_REPORT_START_HOUR: int  = 10     # first hourly report hour IST (10 = 10:00)
+PENNY_HOURLY_REPORT_END_HOUR:   int  = 14     # last hourly report hour IST (14 = 14:00)
+PENNY_HOURLY_REPORT_WEBHOOK:   str   = ""     # optional webhook URL for delivery
 ```
 
 ### 12.2 `.env` defaults (operator opts in)
