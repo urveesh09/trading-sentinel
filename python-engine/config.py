@@ -128,6 +128,12 @@ class Settings(BaseSettings):
     ZERODHA_BROKERAGE_MAX:    float = 20.0    # Rs20 cap
     ZERODHA_STT_CNC:          float = 0.001   # 0.1% sell side
 
+    # --- Telegram (for penny hourly report delivery) ---
+    # 2026-06-23: penny hourly report now tries Telegram first, falls back
+    # to PENNY_HOURLY_REPORT_WEBHOOK. Both creds are read from env.
+    TELEGRAM_BOT_TOKEN:       str   = ""       # @BotFather token
+    TELEGRAM_CHAT_ID:         str   = ""       # numeric chat ID (user/group)
+
     # --- Penny subsystem brokerage/fees (mirrored from Nifty, scoped to penny) ---
     # 2026-06-22 deviation: penny code now does its own cost accounting per
     # the isolation rule (no import from engine.calc_zerodha_costs).

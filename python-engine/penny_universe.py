@@ -229,9 +229,23 @@ async def refresh_from_kite(kite, out_json_path, corp_json_path, top_n=100):
         from config import settings
         # 1. Instruments
         instruments = await kite.get_instruments_nse_eq()
-        # 2. Quotes (batch by token)
+        # 2. Quotes (batched -- Kite's /quote URL has a length limit, so
+        # passing ~2000 tokens at once raises "URL component 'query'
+        # too long". Batch by 500 tokens per call.)
         all_tokens = [i["instrument_token"] for i in instruments]
-        quotes = await kite.get_quote(all_tokens)
+        quotes: dict = {}
+        batch_size = 500
+        for start in range(0, len(all_tokens), batch_size):
+            batch = all_tokens[start:start + batch_size]
+            try:
+                chunk = await kite.get_quote(batch)
+                if isinstance(chunk, dict):
+                    quotes.update(chunk)
+            except Exception as e:
+                logger.warning(
+                    "penny_universe_quote_batch_failed start=%d size=%d error=%s",
+                    start, len(batch), str(e),
+                )
         # 3. Corporate actions (with fallback)
         try:
             corp = await kite.get_corporate_actions()

@@ -142,23 +142,72 @@ class PennyHourlyReport:
         )
         return "\n".join(lines)
 
-    async def send(self, body: str, webhook_url: str) -> None:
-        """Log + optional webhook POST. Webhook failure is logged, never raised."""
+    async def send(
+        self,
+        body: str,
+        webhook_url: str,
+        telegram_token: str = "",
+        telegram_chat_id: str = "",
+    ) -> None:
+        """Deliver the report via a 3-tier fallback chain.
+
+        Order (per Uru 2026-06-23):
+          1. Always log locally (penny_hourly_report body=...).
+          2. Try Telegram (if telegram_token + telegram_chat_id are both set).
+          3. Fall back to the urllib webhook (if webhook_url is set).
+          4. If both fail, the local log is the source of truth.
+
+        All transports are best-effort: failures are logged but never
+        raised. The local log line is the mandatory heartbeat (spec §9.4).
+        """
+        # Tier 1: local log (mandatory heartbeat)
         logger.info("penny_hourly_report body=%s", body)
-        if not webhook_url:
-            return
-        try:
-            payload = json.dumps({"text": body, "source": "penny_hourly_report"}).encode("utf-8")
-            req = urllib.request.Request(
-                webhook_url,
-                data=payload,
-                headers={"Content-Type": "application/json"},
-                method="POST",
+
+        # Tier 2: Telegram (preferred)
+        if telegram_token and telegram_chat_id:
+            try:
+                url = f"https://api.telegram.org/bot{telegram_token}/sendMessage"
+                payload = json.dumps({
+                    "chat_id": telegram_chat_id,
+                    "text": body,
+                    "parse_mode": "HTML",
+                    "disable_web_page_preview": True,
+                }).encode("utf-8")
+                req = urllib.request.Request(
+                    url, data=payload,
+                    headers={"Content-Type": "application/json"},
+                    method="POST",
+                )
+                urllib.request.urlopen(req, timeout=5)
+                logger.info("penny_hourly_telegram_sent chat_id=%s", telegram_chat_id)
+                return  # Telegram succeeded; skip webhook fallback
+            except (urllib.error.URLError, urllib.error.HTTPError, Exception) as e:
+                logger.warning(
+                    "penny_hourly_telegram_failed error=%s -- falling back to webhook",
+                    str(e),
+                )
+
+        # Tier 3: webhook (urllib fallback)
+        if webhook_url:
+            try:
+                payload = json.dumps({"text": body, "source": "penny_hourly_report"}).encode("utf-8")
+                req = urllib.request.Request(
+                    webhook_url,
+                    data=payload,
+                    headers={"Content-Type": "application/json"},
+                    method="POST",
+                )
+                urllib.request.urlopen(req, timeout=5)
+                logger.info("penny_hourly_webhook_sent webhook=%s", webhook_url)
+            except (urllib.error.URLError, urllib.error.HTTPError, Exception) as e:
+                logger.error(
+                    "penny_hourly_webhook_failed error=%s webhook=%s",
+                    str(e), webhook_url,
+                )
+        else:
+            logger.info(
+                "penny_hourly_no_transport body delivered via local log only"
             )
-            urllib.request.urlopen(req, timeout=5)
-        except (urllib.error.URLError, urllib.error.HTTPError, Exception) as e:
-            logger.error("penny_hourly_webhook_failed error=%s webhook=%s",
-                         str(e), webhook_url)
 
 
 async def run_hourly_report(db_path: str, regime: str, open_positions: list,
@@ -178,4 +227,9 @@ async def run_hourly_report(db_path: str, regime: str, open_positions: list,
         unrealised_pnl=unrealised_pnl,
         kill_switch_active=kill_switch_active, circuit_blocks=circuit_blocks,
     )
-    await rpt.send(body=body, webhook_url=settings.PENNY_HOURLY_REPORT_WEBHOOK)
+    await rpt.send(
+        body=body,
+        webhook_url=settings.PENNY_HOURLY_REPORT_WEBHOOK,
+        telegram_token=settings.TELEGRAM_BOT_TOKEN,
+        telegram_chat_id=settings.TELEGRAM_CHAT_ID,
+    )
