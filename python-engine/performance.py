@@ -117,3 +117,35 @@ async def check_circuit_breakers(db_path: str) -> tuple[bool, list[str]]:
             reasons.append("BACKTEST_GATE_FAILED")
     """
     return halted, reasons
+
+async def penny_pool_pnl(db_path: str, days: int = 14) -> dict:
+    """
+    [PENNY-PERF 2026-06-21] Sum realized P&L for source='PENNY' rows
+    in the bankroll_ledger for the last `days` days. Independent of
+    the Nifty pool -- pool split per spec §3.4.
+
+    Read-only: returns empty buckets until penny P&L writes are wired
+    in a follow-up task. The `source` column does not currently exist
+    in bankroll_ledger; this function is a placeholder that will start
+    returning real data once the penny executor writes there.
+    """
+    import aiosqlite
+    from datetime import datetime, timezone, timedelta
+    cutoff = (datetime.now(timezone.utc) - timedelta(days=days)).isoformat()
+    total_pnl = 0.0
+    trade_count = 0
+    try:
+        async with aiosqlite.connect(db_path) as db:
+            async with db.execute(
+                "SELECT pnl FROM bankroll_ledger "
+                "WHERE source='PENNY' AND timestamp >= ?",
+                (cutoff,),
+            ) as cur:
+                async for row in cur:
+                    total_pnl += row[0] or 0.0
+                    trade_count += 1
+    except Exception:
+        # No penny rows yet, or bankroll_ledger lacks 'source' column.
+        # Read-only is OK -- this function is best-effort.
+        pass
+    return {"total_pnl": total_pnl, "trade_count": trade_count, "days": days}

@@ -25,10 +25,224 @@ from backtest import run_backtest
 from models import PerformanceReport, OpenPosition
 from breadth import BreadthEngine
 from universe import Universe
+# [PENNY-MAIN 2026-06-21] Penny subsystem module imports.
+from penny_universe import PennyUniverse, refresh_from_kite
+from penny_regime import PennyRegimeEngine
+from penny_scanner import PennyScanner
 # app = FastAPI(title="Quant Engine Container B")
 logger = structlog.get_logger()
 kite = KiteClient(settings.DB_PATH)
 scheduler = AsyncIOScheduler(timezone="Asia/Kolkata")
+
+# [PENNY-MAIN 2026-06-21] Penny subsystem globals + scheduler wiring.
+# Mirrors the breadth pattern: lazy-init singletons, helper factories,
+# and 7 scheduler jobs at the bottom of lifespan().
+PENNY_UNIVERSE_JSON_PATH = "/data/penny_static.json"
+PENNY_CORP_DATA_JSON_PATH = "/data/penny_company_data.json"
+
+_penny_universe = None
+_penny_regime_engine = PennyRegimeEngine()
+_penny_scanner = None
+
+
+def _get_penny_universe():
+    """Lazy-load PennyUniverse from the static JSON. Returns None on failure."""
+    global _penny_universe
+    if _penny_universe is not None:
+        return _penny_universe
+    try:
+        _penny_universe = PennyUniverse(
+            json_path=PENNY_UNIVERSE_JSON_PATH,
+            instrument_cache=kite.instrument_cache,
+        )
+        logger.info("penny_universe_loaded", path=PENNY_UNIVERSE_JSON_PATH)
+    except Exception as e:
+        logger.error("penny_universe_load_failed", error=str(e))
+        _penny_universe = None
+    return _penny_universe
+
+
+def _get_penny_scanner():
+    """Lazy-build PennyScanner singleton. Honors PENNY_LIVE_TRADING."""
+    global _penny_scanner
+    if _penny_scanner is not None:
+        return _penny_scanner
+    paper_mode = not settings.PENNY_LIVE_TRADING
+    _penny_scanner = PennyScanner(
+        kite=kite,
+        universe_json_path=PENNY_UNIVERSE_JSON_PATH,
+        paper_mode=paper_mode,
+        regime=_penny_regime_engine.today_regime.value
+        if _penny_regime_engine.today_regime is not None
+        else "PR1_CALM",
+    )
+    logger.info("penny_scanner_initialized", paper_mode=paper_mode)
+    return _penny_scanner
+
+
+async def run_penny_scanner_once():
+    """30-second MIS leg (spec §9.1)."""
+    scanner = _get_penny_scanner()
+    if scanner is None:
+        return
+    try:
+        result = await scanner.scan_once(as_of=datetime.now(IST))
+        logger.info("penny_scan_complete", **result)
+    except Exception as e:
+        logger.error("penny_scan_failed", error=str(e))
+
+
+async def run_penny_connors_scan():
+    """Once-daily 09:30 CNC leg (spec §4)."""
+    from datetime import datetime, timezone
+    scanner = _get_penny_scanner()
+    if scanner is None:
+        return
+    try:
+        # Reload scanner with fresh universe + regime (per 2026-06-22 wiring fix)
+        global _penny_scanner
+        _penny_scanner = None
+        scanner = _get_penny_scanner()
+        universe = scanner._load_universe()
+        accept = reject = 0
+        for t in universe:
+            if scanner.risk_engine.is_disabled(t["symbol"]):
+                continue
+            decision = await scanner._evaluate_ticker_connors(
+                t["symbol"], as_of=datetime.now(timezone.utc)
+            )
+            if decision is None:
+                reject += 1
+                continue
+            if not decision.get("accept"):
+                reject += 1
+                continue
+            # Delegate to executor (per 2026-06-22 wiring fix)
+            from penny_models import PennyLeg
+            order_result = await scanner.executor.execute_entry(
+                ticker=t["symbol"],
+                leg=PennyLeg.CNC,
+                entry_price=decision.get("entry", 0.0),
+                stop_loss=decision.get("stop_loss", 0.0),
+                shares=decision.get("shares", 0),
+            )
+            logger.info(
+                "penny_cnc_entry_attempted ticker=%s entry=%.2f order_id=%s",
+                t["symbol"], decision.get("entry", 0.0),
+                order_result.get("entry_order_id"),
+            )
+            accept += 1
+        logger.info("penny_connors_scan_done accept=%d reject=%d", accept, reject)
+    except Exception as e:
+        logger.error("penny_connors_scan_failed", error=str(e))
+
+
+async def run_penny_universe_refresh():
+    """Daily 08:00 IST refresh (spec §9.1)."""
+    try:
+        await refresh_from_kite(
+            kite=kite,
+            out_json_path=PENNY_UNIVERSE_JSON_PATH,
+            corp_json_path=PENNY_CORP_DATA_JSON_PATH,
+        )
+        # Force the universe singleton to reload next call
+        global _penny_universe
+        _penny_universe = None
+    except Exception as e:
+        logger.error("penny_universe_refresh_failed", error=str(e))
+
+
+async def run_penny_regime_compute():
+    """Daily 09:20 IST regime compute (spec §6, §9.1)."""
+    try:
+        await _penny_regime_engine.compute_today(kite=kite)
+        logger.info("penny_regime_computed", regime=str(_penny_regime_engine.today_regime))
+    except Exception as e:
+        logger.error("penny_regime_compute_failed", error=str(e))
+
+
+async def run_penny_regime_refresh():
+    """Daily 13:00 IST intraday regime refresh (spec §6, §9.1)."""
+    try:
+        await _penny_regime_engine.compute_today(kite=kite)
+        logger.info("penny_regime_refreshed", regime=str(_penny_regime_engine.today_regime))
+    except Exception as e:
+        logger.error("penny_regime_refresh_failed", error=str(e))
+
+
+async def run_penny_eod_check():
+    """14:30 IST smart-EOD check on open MIS positions (spec §5.5)."""
+    try:
+        from penny_engine_breakout import smart_eod_check
+        from position_tracker import get_open_positions
+        from penny_models import PennyLeg
+        positions = await get_open_positions(settings.DB_PATH)
+        penny_mis = [p for p in positions if p.get("leg") == "MIS" and p.get("source") == "PENNY"]
+        if not penny_mis:
+            logger.info("penny_eod_check no_open_mis_positions")
+            return
+        scanner = _get_penny_scanner()
+        exit_count = hold_count = 0
+        for p in penny_mis:
+            current_price = p.get("current_price") or p.get("entry_price", 0.0)
+            decision = smart_eod_check(p, current_price, datetime.now(IST))
+            logger.info(
+                "penny_eod_decision",
+                ticker=p.get("ticker"),
+                action=decision.get("action", "HOLD"),
+                reason=decision.get("reason", ""),
+            )
+            # 2026-06-22 wiring fix: actually place exit order on action=EXIT
+            if decision.get("action") == "EXIT":
+                try:
+                    exit_result = await scanner.executor._market_unwind(
+                        ticker=p.get("ticker"),
+                        leg=PennyLeg.MIS,
+                        shares=p.get("shares", 0),
+                    )
+                    logger.info(
+                        "penny_eod_exit_placed ticker=%s shares=%d order_id=%s",
+                        p.get("ticker"), p.get("shares"), exit_result,
+                    )
+                    exit_count += 1
+                except Exception as e:
+                    logger.error(
+                        "penny_eod_exit_failed ticker=%s error=%s",
+                        p.get("ticker"), str(e),
+                    )
+            else:
+                hold_count += 1
+        logger.info("penny_eod_check_done exit=%d hold=%d", exit_count, hold_count)
+    except Exception as e:
+        logger.error("penny_eod_check_failed", error=str(e))
+
+
+async def run_penny_hourly_report():
+    """Top-of-hour status report (spec §9.4). 10:00 through 14:00 IST."""
+    try:
+        from penny_hourly_report import run_hourly_report
+        from position_tracker import get_open_positions
+        from penny_risk import PennyRiskEngine
+        positions = await get_open_positions(settings.DB_PATH)
+        penny_pos = [p for p in positions if p.get("source") == "PENNY"]
+        bankroll = settings.PENNY_PAPER_BANKROLL if not settings.PENNY_LIVE_TRADING else settings.PENNY_LIVE_BANKROLL
+        risk = PennyRiskEngine(bankroll=bankroll)
+        deployed = sum((p.get("entry_price", 0.0) * p.get("shares", 0)) for p in penny_pos)
+        unrealised = sum((p.get("current_price", 0.0) - p.get("entry_price", 0.0)) * p.get("shares", 0) for p in penny_pos)
+        await run_hourly_report(
+            db_path=settings.DB_PATH,
+            regime=_penny_regime_engine.today_regime.value
+            if _penny_regime_engine.today_regime is not None
+            else "PR1_CALM",
+            open_positions=penny_pos,
+            deployed_capital=deployed,
+            unrealised_pnl=unrealised,
+            kill_switch_active=risk.kill_switch_active(),
+            circuit_blocks=0,
+        )
+    except Exception as e:
+        logger.error("penny_hourly_report_failed", error=str(e))
+
 
 # Module-level breadth engine global -- set once when the feature flag is on,
 # reused across scan cycles. Mirrors the `risk_engine` pattern above.
@@ -252,7 +466,51 @@ IST = pytz.timezone("Asia/Kolkata")
 
 from contextlib import asynccontextmanager
 
-@asynccontextmanager
+def register_penny_scheduler_jobs(scheduler):
+    """
+    [PENNY-MAIN 2026-06-21] Register all 7 penny subsystem scheduler jobs
+    on the given scheduler instance. Extracted from the FastAPI
+    lifespan() so the test suite (which does not boot the lifespan)
+    can verify registration by calling this directly with
+    `main.scheduler`.
+    """
+    scheduler.add_job(
+        run_penny_universe_refresh, "cron",
+        hour=settings.PENNY_REFRESH_HOUR, minute=0,
+        id="penny_universe_refresh",
+    )
+    scheduler.add_job(
+        run_penny_regime_compute, "cron",
+        hour=9, minute=20,
+        id="penny_regime_compute",
+    )
+    scheduler.add_job(
+        run_penny_regime_refresh, "cron",
+        hour=13, minute=0,
+        id="penny_regime_refresh",
+    )
+    scheduler.add_job(
+        run_penny_scanner_once, "interval",
+        seconds=settings.PENNY_SCAN_INTERVAL_SEC,
+        id="penny_scan_interval",
+    )
+    scheduler.add_job(
+        run_penny_connors_scan, "cron",
+        hour=9, minute=30,
+        id="penny_connors_scan",
+    )
+    scheduler.add_job(
+        run_penny_eod_check, "cron",
+        hour=settings.PENNY_MIS_SMART_EOD_TIME // 60,
+        minute=settings.PENNY_MIS_SMART_EOD_TIME % 60,
+        id="penny_eod_check",
+    )
+    scheduler.add_job(
+        run_penny_hourly_report, "cron", minute=0,
+        id="penny_hourly_report",
+    )
+
+
 async def lifespan(app: FastAPI):
 
     db_dir = os.path.dirname(settings.DB_PATH)
@@ -285,6 +543,23 @@ async def lifespan(app: FastAPI):
             scheduler.add_job(run_momentum_screener, 'cron', hour=hour, minute=minute, id=f"momentum_scan_{hour}{minute}")
 
     scheduler.add_job(kite.clear_intraday_cache, 'cron', hour=0, minute=5, id="intraday_cache_cleanup")
+
+    # 2026-06-22: daily reset of penny risk state at 00:05 IST (05:30 UTC isn't right;
+    # 00:05 UTC = 05:35 IST, just after midnight IST).
+    def _penny_daily_reset():
+        from penny_risk import PennyRiskEngine
+        from config import settings
+        bankroll = settings.PENNY_PAPER_BANKROLL if _penny_scanner is None or _penny_scanner.paper_mode else settings.PENNY_LIVE_BANKROLL
+        new_risk = PennyRiskEngine(bankroll=bankroll)
+        if _penny_scanner is not None:
+            _penny_scanner.risk_engine = new_risk
+        logger.info("penny_daily_reset bankroll=%s", bankroll)
+    scheduler.add_job(_penny_daily_reset, 'cron', hour=0, minute=5, id="penny_daily_reset")
+    # [PENNY-MAIN 2026-06-21] 7 penny subsystem scheduler jobs.
+    # All gated by PENNY_* feature flags + settings; failures isolated.
+    # Extracted to a module-level function so the test suite can verify
+    # registration without booting the FastAPI lifespan.
+    register_penny_scheduler_jobs(scheduler)
     scheduler.start()
     yield
 
