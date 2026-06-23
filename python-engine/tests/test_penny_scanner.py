@@ -37,6 +37,14 @@ def tmp_paths(tmp_path, monkeypatch):
 
 @pytest.fixture
 def fake_kite():
+    """Fake Kite client. Per the 2026-06-22 deviation, the scanner now
+    fetches real 1-min intraday bars + 20-day daily volume via
+    kite.get_intraday and kite.get_historical. The fake returns
+    realistic-shape data so the evaluator gets to run.
+    """
+    import pandas as pd
+    from datetime import datetime, timedelta
+
     k = MagicMock()
     k.instrument_cache = {"AAA": 1001, "BBB": 1002, "CCC": 1003}
     k.get_quote = AsyncMock(return_value={
@@ -50,7 +58,39 @@ def fake_kite():
                "volume": 50_000, "depth": {"buy": [{"price": 22.0, "quantity": 200}],
                                             "sell": [{"price": 22.05, "quantity": 200}]}},
     })
-    k.get_historical = AsyncMock(return_value=None)
+
+    # Realistic 1-min intraday DataFrame (last bar at minute=as_of.minute
+    # is in-progress; the scanner drops it). For test reproducibility
+    # we use a 60-bar series ending at 14:29 IST.
+    def _fake_intraday(ticker, from_datetime, to_datetime, interval="minute"):
+        times = pd.date_range("2026-06-21 09:15", periods=60, freq="1min")
+        # small random walk
+        import math
+        base = 12.0 if ticker == "AAA" else (30.0 if ticker == "BBB" else 22.0)
+        prices = [base + 0.05 * math.sin(i / 5) for i in range(60)]
+        df = pd.DataFrame({
+            "open":   [p - 0.05 for p in prices],
+            "high":   [p + 0.10 for p in prices],
+            "low":    [p - 0.10 for p in prices],
+            "close":  prices,
+            "volume": [1000] * 60,
+        }, index=pd.DatetimeIndex(times, name="datetime"))
+        return df
+
+    k.get_intraday = AsyncMock(side_effect=_fake_intraday)
+
+    # Daily historical: 20 days of realistic volume data
+    def _fake_historical(ticker, from_date, to_date):
+        dates = pd.date_range(end="2026-06-21", periods=20, freq="D")
+        return pd.DataFrame({
+            "open":   [12.0] * 20,
+            "high":   [12.5] * 20,
+            "low":    [11.5] * 20,
+            "close":  [12.0] * 20,
+            "volume": [50_000] * 20,
+        }, index=pd.DatetimeIndex(dates, name="date"))
+
+    k.get_historical = AsyncMock(side_effect=_fake_historical)
     k.place_order = AsyncMock(return_value={"order_id": "PAPER-001"})
     return k
 
@@ -183,3 +223,48 @@ async def _run_scanner_with(tmp_path, kite, universe_path):
         paper_mode=True, regime="PR1_CALM",
     )
     await scanner.scan_once(as_of=datetime(2026, 6, 21, 11, 0))
+
+def test_breakout_uses_real_intraday_not_synthetic_bar(tmp_paths, fake_kite, fake_universe, monkeypatch):
+    """Per the 2026-06-22 deviation: the scanner must use real 1-min bars
+    from kite.get_intraday, NOT a synthetic bar built from the LTP.
+
+    This test patches evaluate_breakout_entry to capture the breakout_bar
+    dict that the scanner passes in, then asserts it has the real
+    open/high/low/close/volume keys (not a fabricated {high: ltp*1.01, ...}).
+    """
+    from unittest.mock import MagicMock
+    import penny_engine_breakout
+    from penny_scanner import PennyScanner
+
+    captured = {}
+    real_eval = penny_engine_breakout.evaluate_breakout_entry
+
+    def capturing_eval(ticker, **kwargs):
+        captured[ticker] = kwargs
+        return {"accept": False, "reject_reason": "captured-only"}
+
+    monkeypatch.setattr(penny_engine_breakout, "evaluate_breakout_entry", capturing_eval)
+
+    s = PennyScanner(
+        kite=fake_kite,
+        universe_json_path=fake_universe,
+        paper_mode=True,
+        regime="PR1_CALM",
+    )
+    # Drive one ticker through the breakout evaluator
+    from datetime import datetime
+    asyncio.run(s._evaluate_ticker_breakout("AAA", as_of=datetime(2026, 6, 21, 14, 30)))
+
+    assert "AAA" in captured, "evaluate_breakout_entry was not called for AAA"
+    bar = captured["AAA"]["breakout_bar"]
+    # Real bar has 5 fields: open, high, low, close, volume
+    assert "open" in bar, f"breakout_bar missing 'open' (synthetic-bar fallback?): {bar}"
+    assert "high" in bar and "low" in bar and "close" in bar, f"missing fields: {bar}"
+    assert "volume" in bar, f"breakout_bar missing 'volume' (synthetic-bar fallback?): {bar}"
+    # median_vol_20d must be a real number, not 10_000
+    mv = captured["AAA"]["median_vol_20d"]
+    assert mv > 0 and mv != 10_000, f"median_vol_20d is fabricated: {mv}"
+    # rsi_14 must be 0-100, not 50.0
+    rsi = captured["AAA"]["rsi_14"]
+    assert 0.0 <= rsi <= 100.0, f"rsi_14 out of range: {rsi}"
+    assert rsi != 50.0, f"rsi_14 is the hardcoded 50.0 fallback: {rsi}"

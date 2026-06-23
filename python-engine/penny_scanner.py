@@ -90,24 +90,109 @@ class PennyScanner:
     async def _evaluate_ticker_breakout(
         self, ticker: str, as_of: datetime
     ) -> Optional[dict]:
-        """Run the MIS Breakout evaluator on one ticker."""
-        from penny_engine_breakout import evaluate_breakout_entry
+        """Run the MIS Breakout evaluator on one ticker.
+
+        Real 1-min intraday bars (per Uru 2026-06-22 deviation):
+        - breakout_bar: latest complete 1-min candle (open/high/low/close/volume)
+          fetched via kite.get_intraday(interval="minute"). The in-progress
+          bar (whose timestamp minute == current minute) is dropped.
+        - median_vol_20d: median cumulative volume of last 20 daily bars
+          (from kite.get_historical for the same ticker).
+        - rsi_14: Wilder 14-period RSI computed locally from the 1-min closes.
+          Computed via penny_engine_breakout._rsi_14_wilder to keep the
+          isolation rule (no import from engine.py).
+        - day_high: from the live quote ohlc.high, fallback to ltp.
+        - cum_vol: live cumulative volume from the quote snapshot.
+        """
+        from penny_engine_breakout import (
+            evaluate_breakout_entry,
+            _rsi_14_wilder,
+        )
         token = self.kite.instrument_cache.get(ticker)
         if token is None:
             return None
+
+        # 1) Live quote for LTP, day high, and cumulative volume
         q = await self._get_quote_safe(token)
         if not q:
             return None
-        # Build synthetic breakout_bar from current quote
         ltp = q.get("last_price", 0)
-        breakout_bar = {"high": ltp * 1.01, "low": ltp * 0.99, "close": ltp}
-        # Cumulative volume today: Kite gives today's volume (cumulative since open)
         cum_vol = q.get("volume", 0) or 0
-        # Day high: use ohlc.high or fall back to ltp
         day_high = (q.get("ohlc") or {}).get("high") or ltp
+
+        # 2) Real 1-min bars (cached by kite.get_intraday)
+        try:
+            today = as_of.strftime("%Y-%m-%d")
+            start_dt = f"{today} 09:15:00"
+            end_dt = as_of.strftime("%Y-%m-%d %H:%M:%S")
+            intraday = await self.kite.get_intraday(
+                ticker=ticker,
+                from_datetime=start_dt,
+                to_datetime=end_dt,
+                interval="minute",
+            )
+        except Exception as e:
+            logger.error("penny_intraday_fetch_failed ticker=%s error=%s", ticker, str(e))
+            return None
+
+        if intraday is None or len(intraday) < 2:
+            # Not enough data; the day is too early or the feed is down
+            return None
+
+        # 3) Drop the in-progress bar (its timestamp minute == current minute)
+        # and use the last COMPLETE 1-min bar as the breakout bar.
+        # intraday index is a DatetimeIndex from kite_client.
+        try:
+            last_ts = intraday.index[-1]
+            if hasattr(last_ts, "minute") and last_ts.minute == as_of.minute                     and last_ts.hour == as_of.hour and last_ts.date() == as_of.date():
+                intraday = intraday.iloc[:-1]
+        except Exception:
+            pass  # if we cannot index, fall through with the full df
+
+        if len(intraday) < 1:
+            return None
+
+        last_bar = intraday.iloc[-1]
+        breakout_bar = {
+            "open":   float(last_bar.get("open", ltp)),
+            "high":   float(last_bar.get("high", ltp)),
+            "low":    float(last_bar.get("low",  ltp)),
+            "close":  float(last_bar.get("close", ltp)),
+            "volume": int(last_bar.get("volume", 0) or 0),
+        }
+
+        # 4) Real 20-day median cumulative volume
+        try:
+            from datetime import timedelta
+            from_date = (as_of - timedelta(days=30)).strftime("%Y-%m-%d")
+            to_date = today
+            daily = await self.kite.get_historical(
+                ticker=ticker, from_date=from_date, to_date=to_date
+            )
+            if daily is not None and len(daily) >= 5 and "volume" in daily.columns:
+                median_vol_20d = int(daily["volume"].tail(20).median() or 0)
+            else:
+                median_vol_20d = 0
+        except Exception as e:
+            logger.error("penny_daily_vol_fetch_failed ticker=%s error=%s", ticker, str(e))
+            median_vol_20d = 0
+
+        if median_vol_20d <= 0:
+            # No usable 20-day baseline. Reject rather than accept on a
+            # fabricated number (deviation: was hardcoded 10_000).
+            return {
+                "accept": False,
+                "reject_reason": "no 20-day median volume baseline",
+                "ticker": ticker,
+            }
+
+        # 5) Real RSI(14) from the 1-min closes
+        closes_1m = [float(c) for c in intraday["close"].tolist()]
+        rsi_14 = _rsi_14_wilder(closes_1m)
+
         return evaluate_breakout_entry(
-            ticker=ticker, cum_vol_today=cum_vol, median_vol_20d=10_000,
-            breakout_bar=breakout_bar, day_high=day_high, rsi_14=50.0,
+            ticker=ticker, cum_vol_today=cum_vol, median_vol_20d=median_vol_20d,
+            breakout_bar=breakout_bar, day_high=day_high, rsi_14=rsi_14,
             as_of=as_of, risk_engine=self.risk_engine,
         )
 

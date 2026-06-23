@@ -17,12 +17,40 @@ Public API:
 """
 import logging
 from datetime import datetime, time, timedelta
-from typing import Optional
+from typing import List, Optional
 
 logger = logging.getLogger(__name__)
 
 
 # ---- helpers ----------------------------------------------------------
+
+def _rsi_14_wilder(closes: List[float]) -> float:
+    """
+    Wilder-style 14-period RSI on a list of closes.
+    Local helper to keep penny_engine_breakout isolated from engine.py
+    (the isolation test forbids importing from engine).
+    Returns 50.0 if there are fewer than 15 closes (insufficient data).
+    """
+    if len(closes) < 15:
+        return 50.0
+    gains: List[float] = []
+    losses: List[float] = []
+    for i in range(1, len(closes)):
+        ch = closes[i] - closes[i - 1]
+        gains.append(max(ch, 0.0))
+        losses.append(max(-ch, 0.0))
+    # First average: simple mean of first 14 changes
+    avg_g = sum(gains[:14]) / 14.0
+    avg_l = sum(losses[:14]) / 14.0
+    # Wilder smoothing for the rest
+    for i in range(14, len(gains)):
+        avg_g = (avg_g * 13 + gains[i]) / 14.0
+        avg_l = (avg_l * 13 + losses[i]) / 14.0
+    if avg_l == 0:
+        return 100.0
+    rs = avg_g / avg_l
+    return 100.0 - (100.0 / (1.0 + rs))
+
 
 def _to_minutes_since_midnight(dt: datetime) -> int:
     return dt.hour * 60 + dt.minute
