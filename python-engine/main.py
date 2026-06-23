@@ -32,7 +32,25 @@ from penny_scanner import PennyScanner
 # app = FastAPI(title="Quant Engine Container B")
 logger = structlog.get_logger()
 kite = KiteClient(settings.DB_PATH)
-scheduler = AsyncIOScheduler(timezone="Asia/Kolkata")
+scheduler = AsyncIOScheduler(
+    timezone="Asia/Kolkata",
+    # 2026-06-22 fix: penny crons (hourly report, regime refresh, EOD,
+    # daily reset) were being permanently skipped because the default
+    # misfire_grace_time=1 was too tight. The Nifty momentum scan takes
+    # ~5 minutes to scan 500 tickers at :00/:15/:30/:45 IST. While it
+    # runs, the AsyncIOScheduler (single-threaded by default) blocks
+    # any other job scheduled for the same minute. By the time the
+    # Nifty scan finishes, the penny cron's 1-second grace window has
+    # long passed and apscheduler marks it as "missed" and skips it.
+    #
+    # Fix: extend the grace window to 10 minutes so penny crons still
+    # fire even if they were blocked. coalesce=False prevents multiple
+    # accumulated fires from being merged into one.
+    job_defaults={
+        "coalesce": False,
+        "misfire_grace_time": 600,
+    },
+)
 
 # [PENNY-MAIN 2026-06-21] Penny subsystem globals + scheduler wiring.
 # Mirrors the breadth pattern: lazy-init singletons, helper factories,
