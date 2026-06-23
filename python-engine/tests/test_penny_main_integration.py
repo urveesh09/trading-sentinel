@@ -119,10 +119,16 @@ def test_penny_hourly_report_is_scheduled():
 
 
 def test_paper_mode_default_blocks_live_orders():
-    """PENNY_LIVE_TRADING must default to False (paper mode)."""
+    """PENNY_LIVE_TRADING defaults reflect Uru 2026-06-22 testing-budget opt-in.
+
+    Live is True by default now (Rs 2,500 testing budget). When flipped
+    to False via .env, the scanner + executor must not call
+    kite.place_order() (verified separately in test_penny_scanner.py).
+    """
     from config import settings
-    assert settings.PENNY_LIVE_TRADING is False, (
-        "PENNY_LIVE_TRADING must default to False (paper mode)"
+    # Live is the new default per Uru 2026-06-22
+    assert settings.PENNY_LIVE_TRADING is True, (
+        "PENNY_LIVE_TRADING default is True (Uru 2026-06-22 testing budget)"
     )
     # Bankrolls must be reasonable (live >= paper)
     assert settings.PENNY_PAPER_BANKROLL > 0

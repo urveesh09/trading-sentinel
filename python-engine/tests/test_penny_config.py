@@ -56,8 +56,8 @@ def test_penny_risk_settings():
 def test_penny_cadence_and_safety_defaults():
     from config import settings
     assert settings.PENNY_SCAN_INTERVAL_SEC == 30
-    # Default OFF — paper-trade first; live opt-in via .env
-    assert settings.PENNY_LIVE_TRADING is False
+    # Default live=True (Uru 2026-06-22: testing budget opt-in)
+    assert settings.PENNY_LIVE_TRADING is True
     assert settings.PENNY_DISABLE_TICKERS == ""
     # Additions by Uru 2026-06-21
     assert settings.PENNY_MIN_PROMOTER_HOLD == 0.25

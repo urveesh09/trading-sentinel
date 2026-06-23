@@ -9,9 +9,12 @@
 
 The penny subsystem runs in PARALLEL to the existing Nifty 500 system. It
 has its own Rs 2,500 bankroll (Rs 500 paper + Rs 2,000 live opt-in), its own
-universe, its own regime, and its own signal log. By default it's in PAPER
-mode — no real orders. To enable live: set `PENNY_LIVE_TRADING=true` in
-`python-engine/.env`.
+universe, its own regime, and its own signal log.
+
+**As of 2026-06-22 the default is LIVE (testing budget opt-in by Uru).**
+The scanner places real orders on Kite using the live bankroll. To revert
+to paper mode, set `PENNY_LIVE_TRADING=false` in `python-engine/.env` and
+restart the service.
 
 ## Quick diagnostics
 
@@ -84,7 +87,7 @@ All knobs in `python-engine/config.py` (auto-mapped from `python-engine/.env`):
 
 | Flag | Default | Effect |
 |---|---|---|
-| `PENNY_LIVE_TRADING` | `False` | Set True to enable real orders |
+| `PENNY_LIVE_TRADING` | `True` (Uru 2026-06-22 opt-in) | Live mode ON for Rs 2,500 testing budget; set False to revert to paper |
 | `PENNY_LIVE_BANKROLL` | `2000.0` | Rs amount for live sizing |
 | `PENNY_PAPER_BANKROLL` | `500.0` | Rs amount for paper sizing |
 | `PENNY_DISABLE_TICKERS` | `""` | Comma-separated ticker kill-switch |
@@ -121,15 +124,16 @@ All knobs in `python-engine/config.py` (auto-mapped from `python-engine/.env`):
 
 - [x] Spec approved by Uru (2026-06-21)
 - [x] Plan approved by Uru
-- [ ] Phase 2: code + tests + paper-trade (no real orders) — **CURRENT**
+- [x] Phase 2: code + tests + paper-trade infrastructure
+- [x] Phase 2.5: live opt-in for Rs 2,500 testing budget (Uru 2026-06-22) — **CURRENT**
 - [ ] Phase 3: 2 weeks of paper trading, review signal log
 - [ ] Phase 4: backtest correlator run on paper data, surface suggestions
-- [ ] Phase 5: Uru reviews paper P&L, flips `PENNY_LIVE_TRADING=true`
+- [ ] Phase 5 (DEFERRED): scale up bankroll after 1 week of live micro-trade success
 - [ ] Phase 6: live trade, iterate based on real data
 
 ## Hard go/no-go gates (before Phase 5)
 
-- No crash in 2 weeks of paper-trade runs
+- 1 week of live micro-trade runs with no critical incidents
 - Signal count not down >50% vs Nifty momentum baseline
 - No `penny_ticker_eval_failed` exceptions in logs
 - No consecutive 0-signal days

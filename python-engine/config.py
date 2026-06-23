@@ -17,7 +17,7 @@ class Settings(BaseSettings):
     not return maximisation. All limits scale naturally as bankroll
     grows because they are expressed as percentages.
     """
-    model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8")
+    model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", extra="ignore")
     
     STRATEGY_VERSION: str = "1.0.0"
     DB_PATH: str = "/data/cache.db"
@@ -183,7 +183,7 @@ class Settings(BaseSettings):
 
     # Cadence + safety
     PENNY_SCAN_INTERVAL_SEC:       int   = 30
-    PENNY_LIVE_TRADING:            bool  = False      # default OFF, paper-trade first
+    PENNY_LIVE_TRADING:            bool  = True       # Uru 2026-06-22: live opt-in for testing budget (Rs 2,500)
     PENNY_DISABLE_TICKERS:         str   = ""         # comma-separated manual kill-switch
     PENNY_LOG_CSV_PATH:            str   = "/data/penny_signals.csv"
     PENNY_ENTRY_FILL_TIMEOUT_SEC:  float = 60.0      # max wait for LIMIT entry to fill before cancel
