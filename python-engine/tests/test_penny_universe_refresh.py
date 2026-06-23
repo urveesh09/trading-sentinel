@@ -5,6 +5,7 @@ ranking per spec §2.4 weights + refresh_from_kite() integration.
 For testing ranking we use hand-crafted ticker records (no Kite).
 For testing refresh_from_kite we inject a fake KiteClient.
 """
+import asyncio
 import json
 from datetime import datetime, timedelta
 from unittest.mock import MagicMock, AsyncMock
@@ -137,3 +138,44 @@ def test_refresh_handles_kite_failure_gracefully(tmp_path):
         top_n=10,
     ))
     assert result is None  # graceful failure
+
+def test_refresh_aborts_when_all_quote_batches_fail(tmp_path, monkeypatch):
+    """If every quote batch returns empty (Kite outage, network error),
+    refresh_from_kite() must return None and NOT overwrite the existing
+    penny_static.json. The previous universe file is preserved so the
+    scanner keeps using it until next refresh.
+    """
+    from unittest.mock import MagicMock, AsyncMock
+    import json
+    from penny_universe import refresh_from_kite
+
+    fake_kite = MagicMock()
+    fake_kite.get_instruments_nse_eq = AsyncMock(return_value=[
+        {"instrument_token": 1001, "tradingsymbol": "AAA", "segment": "NSE",
+         "instrument_type": "EQ"},
+        {"instrument_token": 1002, "tradingsymbol": "BBB", "segment": "NSE",
+         "instrument_type": "EQ"},
+    ])
+    # Every batch returns an empty dict -- simulates a total Kite outage
+    fake_kite.get_quote = AsyncMock(return_value={})
+    fake_kite.get_corporate_actions = AsyncMock(return_value=[])
+
+    out_path = str(tmp_path / "penny_static.json")
+    corp_path = str(tmp_path / "corp.json")
+    with open(corp_path, "w") as f:
+        json.dump({"records": []}, f)
+
+    result = asyncio.run(refresh_from_kite(
+        kite=fake_kite,
+        out_json_path=out_path,
+        corp_json_path=corp_path,
+        top_n=100,
+    ))
+
+    # refresh_from_kite returns None to signal "skip writing"
+    assert result is None
+    # The output file was NOT created (preserves the previous file or
+    # leaves the directory clean for the next attempt)
+    import os
+    assert not os.path.exists(out_path), \
+        "penny_static.json should NOT be written when all batches fail"

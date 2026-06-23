@@ -142,6 +142,23 @@ class PennyHourlyReport:
         )
         return "\n".join(lines)
 
+    @staticmethod
+    def _post_json(url: str, payload_bytes: bytes, timeout: float = 5.0):
+        """
+        Synchronous POST with JSON body. Returns the response object
+        (caller is responsible for closing it via context manager or
+        .close()) or raises urllib errors.
+
+        Wrapped in a static method so the async send() can run it via
+        asyncio.to_thread() without blocking the event loop.
+        """
+        req = urllib.request.Request(
+            url, data=payload_bytes,
+            headers={"Content-Type": "application/json"},
+            method="POST",
+        )
+        return urllib.request.urlopen(req, timeout=timeout)
+
     async def send(
         self,
         body: str,
@@ -154,16 +171,23 @@ class PennyHourlyReport:
         Order (per Uru 2026-06-23):
           1. Always log locally (penny_hourly_report body=...).
           2. Try Telegram (if telegram_token + telegram_chat_id are both set).
+             Validate Telegram's JSON response ({"ok": true} on success).
           3. Fall back to the urllib webhook (if webhook_url is set).
           4. If both fail, the local log is the source of truth.
 
         All transports are best-effort: failures are logged but never
         raised. The local log line is the mandatory heartbeat (spec §9.4).
+
+        Network calls are dispatched via asyncio.to_thread() so the
+        event loop is not blocked by synchronous HTTP.
+
+        URLs are NEVER logged (they may contain embedded credentials
+        for Slack/Discord webhooks or Telegram bot tokens).
         """
         # Tier 1: local log (mandatory heartbeat)
         logger.info("penny_hourly_report body=%s", body)
 
-        # Tier 2: Telegram (preferred)
+        # Tier 2: Telegram (preferred). Validate {ok: bool} in response.
         if telegram_token and telegram_chat_id:
             try:
                 url = f"https://api.telegram.org/bot{telegram_token}/sendMessage"
@@ -173,36 +197,55 @@ class PennyHourlyReport:
                     "parse_mode": "HTML",
                     "disable_web_page_preview": True,
                 }).encode("utf-8")
-                req = urllib.request.Request(
-                    url, data=payload,
-                    headers={"Content-Type": "application/json"},
-                    method="POST",
+                resp = await asyncio.to_thread(
+                    self._post_json, url, payload, 5.0,
                 )
-                urllib.request.urlopen(req, timeout=5)
-                logger.info("penny_hourly_telegram_sent chat_id=%s", telegram_chat_id)
-                return  # Telegram succeeded; skip webhook fallback
+                try:
+                    body_bytes = resp.read()
+                finally:
+                    resp.close()
+                tg_resp = json.loads(body_bytes.decode("utf-8", errors="replace"))
+                if tg_resp.get("ok") is True:
+                    logger.info(
+                        "penny_hourly_telegram_sent chat_id=%s",
+                        telegram_chat_id,
+                    )
+                    return  # Telegram succeeded; skip webhook fallback
+                # 200 with ok=false: treat as failure, fall back.
+                logger.warning(
+                    "penny_hourly_telegram_rejected description=%s -- falling back to webhook",
+                    tg_resp.get("description", "ok=false"),
+                )
             except (urllib.error.URLError, urllib.error.HTTPError, Exception) as e:
                 logger.warning(
                     "penny_hourly_telegram_failed error=%s -- falling back to webhook",
-                    str(e),
+                    type(e).__name__ + ": " + str(e)[:200],
                 )
 
-        # Tier 3: webhook (urllib fallback)
+        # Tier 3: webhook (urllib fallback). Accept any 2xx as success.
         if webhook_url:
             try:
                 payload = json.dumps({"text": body, "source": "penny_hourly_report"}).encode("utf-8")
-                req = urllib.request.Request(
-                    webhook_url,
-                    data=payload,
-                    headers={"Content-Type": "application/json"},
-                    method="POST",
+                resp = await asyncio.to_thread(
+                    self._post_json, webhook_url, payload, 5.0,
                 )
-                urllib.request.urlopen(req, timeout=5)
-                logger.info("penny_hourly_webhook_sent webhook=%s", webhook_url)
+                try:
+                    # Drain to allow connection reuse, then check status.
+                    resp.read()
+                finally:
+                    resp.close()
+                # 2xx is success, anything else is failure.
+                if 200 <= resp.status < 300:
+                    logger.info("penny_hourly_webhook_sent status=%d", resp.status)
+                else:
+                    logger.warning(
+                        "penny_hourly_webhook_non_2xx status=%d -- body delivered via local log only",
+                        resp.status,
+                    )
             except (urllib.error.URLError, urllib.error.HTTPError, Exception) as e:
                 logger.error(
-                    "penny_hourly_webhook_failed error=%s webhook=%s",
-                    str(e), webhook_url,
+                    "penny_hourly_webhook_failed error=%s",
+                    type(e).__name__ + ": " + str(e)[:200],
                 )
         else:
             logger.info(
