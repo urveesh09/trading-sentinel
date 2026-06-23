@@ -86,6 +86,31 @@ class PennyRiskEngine:
 
     # ---- circuit filter -------------------------------------------------
 
+    def record_close(
+        self,
+        entry_price: float,
+        exit_price: float,
+        shares: int,
+        is_intraday: bool,
+        when: datetime,
+    ) -> None:
+        """
+        Record a penny position close: net P&L (after costs) is added to
+        daily_pnl. The kill-switch warning fires if the day's loss exceeds
+        20% of the bankroll.
+
+        Per the 2026-06-22 deviation: this is the missing wiring that
+        was preventing the kill-switch from ever firing.
+        """
+        gross = (exit_price - entry_price) * shares
+        costs = calc_penny_costs(entry_price, exit_price, shares, is_intraday)
+        net = gross - costs
+        self.record_realized_pnl(net, when)
+        logger.info(
+            "penny_position_closed entry=%.2f exit=%.2f shares=%d gross=%.2f costs=%.2f net=%.2f",
+            entry_price, exit_price, shares, gross, costs, net,
+        )
+
     def circuit_blocked(self, last_price: float, day_high: float,
                         prev_close: float, band_pct: float) -> Tuple[bool, str]:
         """
@@ -146,3 +171,44 @@ class PennyRiskEngine:
         if sl_order_type != "SL-M":
             return False, "SL-M required for every penny entry (spec §7.2)"
         return True, ""
+
+
+# ---- 2026-06-22: cost accounting + record_close -----------------------------
+
+def calc_penny_costs(
+    entry_price: float,
+    exit_price: float,
+    shares: int,
+    is_intraday: bool,
+) -> float:
+    """
+    Round-trip Zerodha cost model for the penny subsystem.
+
+    Local implementation (does not import from engine.calc_zerodha_costs)
+    per the isolation rule. Mirrors the engine's logic but uses
+    PENNY_* settings instead of ZERODHA_*.
+
+    Returns total cost in rupees (brokerage + STT + exchange + stamp +
+    SEBI + GST).
+    """
+    from config import settings
+    buy_value = entry_price * shares
+    sell_value = exit_price * shares
+
+    exchange_txn = (buy_value + sell_value) * settings.PENNY_EXCHANGE_PCT
+    stamp_duty = buy_value * settings.PENNY_STAMP_DUTY_PCT
+    sebi = (buy_value + sell_value) * settings.PENNY_SEBI_PCT
+
+    brokerage_buy = min(buy_value * settings.PENNY_BROKERAGE_PCT, settings.PENNY_BROKERAGE_MAX)
+    brokerage_sell = min(sell_value * settings.PENNY_BROKERAGE_PCT, settings.PENNY_BROKERAGE_MAX)
+
+    stt_rate = settings.PENNY_STT_MIS if is_intraday else settings.PENNY_STT_CNC
+    stt = sell_value * stt_rate
+
+    gst = (brokerage_buy + brokerage_sell + exchange_txn) * settings.PENNY_GST_PCT
+
+    return round(
+        brokerage_buy + brokerage_sell + stt + exchange_txn +
+        stamp_duty + sebi + gst,
+        4,
+    )

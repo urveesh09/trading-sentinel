@@ -94,15 +94,45 @@ async def run_penny_scanner_once():
 
 async def run_penny_connors_scan():
     """Once-daily 09:30 CNC leg (spec §4)."""
+    from datetime import datetime, timezone
     scanner = _get_penny_scanner()
     if scanner is None:
         return
     try:
-        # CNC leg uses the same scanner but with leg=CNC evaluation path.
-        # For Task 13 we only guarantee the entry point is callable and
-        # registered with the scheduler; the CNC-specific evaluation
-        # surface is wired in Task 12 (penny_engine_connors).
-        logger.info("penny_connors_scan_dispatched")
+        # Reload scanner with fresh universe + regime (per 2026-06-22 wiring fix)
+        global _penny_scanner
+        _penny_scanner = None
+        scanner = _get_penny_scanner()
+        universe = scanner._load_universe()
+        accept = reject = 0
+        for t in universe:
+            if scanner.risk_engine.is_disabled(t["symbol"]):
+                continue
+            decision = await scanner._evaluate_ticker_connors(
+                t["symbol"], as_of=datetime.now(timezone.utc)
+            )
+            if decision is None:
+                reject += 1
+                continue
+            if not decision.get("accept"):
+                reject += 1
+                continue
+            # Delegate to executor (per 2026-06-22 wiring fix)
+            from penny_models import PennyLeg
+            order_result = await scanner.executor.execute_entry(
+                ticker=t["symbol"],
+                leg=PennyLeg.CNC,
+                entry_price=decision.get("entry", 0.0),
+                stop_loss=decision.get("stop_loss", 0.0),
+                shares=decision.get("shares", 0),
+            )
+            logger.info(
+                "penny_cnc_entry_attempted ticker=%s entry=%.2f order_id=%s",
+                t["symbol"], decision.get("entry", 0.0),
+                order_result.get("entry_order_id"),
+            )
+            accept += 1
+        logger.info("penny_connors_scan_done accept=%d reject=%d", accept, reject)
     except Exception as e:
         logger.error("penny_connors_scan_failed", error=str(e))
 
@@ -143,21 +173,46 @@ async def run_penny_regime_refresh():
 async def run_penny_eod_check():
     """14:30 IST smart-EOD check on open MIS positions (spec §5.5)."""
     try:
-        # penny_engine_breakout.smart_eod_check runs against open MIS
-        # positions; for Task 13 we log the dispatch + delegate to the
-        # scanner's penny pipeline. Full per-position iteration lives
-        # in the engine_breakout module.
         from penny_engine_breakout import smart_eod_check
         from position_tracker import get_open_positions
+        from penny_models import PennyLeg
         positions = await get_open_positions(settings.DB_PATH)
         penny_mis = [p for p in positions if p.get("leg") == "MIS" and p.get("source") == "PENNY"]
+        if not penny_mis:
+            logger.info("penny_eod_check no_open_mis_positions")
+            return
+        scanner = _get_penny_scanner()
+        exit_count = hold_count = 0
         for p in penny_mis:
-            decision = smart_eod_check(p, p.get("current_price", 0.0), datetime.now(IST))
+            current_price = p.get("current_price") or p.get("entry_price", 0.0)
+            decision = smart_eod_check(p, current_price, datetime.now(IST))
             logger.info(
                 "penny_eod_decision",
                 ticker=p.get("ticker"),
-                **decision,
+                action=decision.get("action", "HOLD"),
+                reason=decision.get("reason", ""),
             )
+            # 2026-06-22 wiring fix: actually place exit order on action=EXIT
+            if decision.get("action") == "EXIT":
+                try:
+                    exit_result = await scanner.executor._market_unwind(
+                        ticker=p.get("ticker"),
+                        leg=PennyLeg.MIS,
+                        shares=p.get("shares", 0),
+                    )
+                    logger.info(
+                        "penny_eod_exit_placed ticker=%s shares=%d order_id=%s",
+                        p.get("ticker"), p.get("shares"), exit_result,
+                    )
+                    exit_count += 1
+                except Exception as e:
+                    logger.error(
+                        "penny_eod_exit_failed ticker=%s error=%s",
+                        p.get("ticker"), str(e),
+                    )
+            else:
+                hold_count += 1
+        logger.info("penny_eod_check_done exit=%d hold=%d", exit_count, hold_count)
     except Exception as e:
         logger.error("penny_eod_check_failed", error=str(e))
 
@@ -488,6 +543,18 @@ async def lifespan(app: FastAPI):
             scheduler.add_job(run_momentum_screener, 'cron', hour=hour, minute=minute, id=f"momentum_scan_{hour}{minute}")
 
     scheduler.add_job(kite.clear_intraday_cache, 'cron', hour=0, minute=5, id="intraday_cache_cleanup")
+
+    # 2026-06-22: daily reset of penny risk state at 00:05 IST (05:30 UTC isn't right;
+    # 00:05 UTC = 05:35 IST, just after midnight IST).
+    def _penny_daily_reset():
+        from penny_risk import PennyRiskEngine
+        from config import settings
+        bankroll = settings.PENNY_PAPER_BANKROLL if _penny_scanner is None or _penny_scanner.paper_mode else settings.PENNY_LIVE_BANKROLL
+        new_risk = PennyRiskEngine(bankroll=bankroll)
+        if _penny_scanner is not None:
+            _penny_scanner.risk_engine = new_risk
+        logger.info("penny_daily_reset bankroll=%s", bankroll)
+    scheduler.add_job(_penny_daily_reset, 'cron', hour=0, minute=5, id="penny_daily_reset")
     # [PENNY-MAIN 2026-06-21] 7 penny subsystem scheduler jobs.
     # All gated by PENNY_* feature flags + settings; failures isolated.
     # Extracted to a module-level function so the test suite can verify

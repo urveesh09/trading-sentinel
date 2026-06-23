@@ -164,8 +164,18 @@ def smart_eod_check(pos: dict, current_price: float, now: datetime) -> dict:
             return {"action": "exit_now", "reason": "within_0_5R_of_target"}
         return {"action": "hold", "reason": "profit_far_from_target"}
 
-    # In loss
-    elapsed_in_loss = now - pos["entry_time"]
+    # In loss. entry_time may be a string (from DB) or naive/tz-aware datetime.
+    entry_time = pos["entry_time"]
+    if isinstance(entry_time, str):
+        from datetime import datetime as _dt
+        try:
+            entry_time = _dt.fromisoformat(entry_time.replace("Z", "+00:00"))
+        except Exception:
+            entry_time = now  # safe fallback: treat as just-entered
+    if entry_time.tzinfo is None and now.tzinfo is not None:
+        from datetime import timezone
+        entry_time = entry_time.replace(tzinfo=timezone.utc)
+    elapsed_in_loss = now - entry_time
     if elapsed_in_loss > timedelta(minutes=settings.PENNY_MIS_SMART_EOD_LOSS_MIN):
         return {"action": "exit_now", "reason": "loss_over_30_min"}
     return {"action": "hold", "reason": "fresh_loss"}

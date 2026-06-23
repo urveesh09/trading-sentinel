@@ -61,9 +61,14 @@ def atr_1min(bars: List[dict]) -> float:
     Average true range of 1-min bars post-T1 (spec section 4.5).
     True range per bar = high - low (1-min bars don't gap).
     """
-    if not bars:
+    if bars is None or (hasattr(bars, "empty") and bars.empty):
         return 0.0
-    trs = [(b["high"] - b["low"]) for b in bars if b.get("high") is not None and b.get("low") is not None]
+    if hasattr(bars, "columns"):
+        highs = bars["high"].tolist() if "high" in bars.columns else []
+        lows = bars["low"].tolist() if "low" in bars.columns else []
+        trs = [h - l for h, l in zip(highs, lows) if h is not None and l is not None]
+    else:
+        trs = [(b["high"] - b["low"]) for b in bars if b.get("high") is not None and b.get("low") is not None]
     if not trs:
         return 0.0
     return sum(trs) / len(trs)

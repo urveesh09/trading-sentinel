@@ -310,3 +310,196 @@ class KiteClient:
 
         logger.error("max_retries_exceeded_intraday", ticker=ticker)
         return pd.DataFrame()
+
+    # ---- 2026-06-22 deviation: 6 methods added that the penny code calls ----
+    # See docs/deviations/2026-06-22-kite-client-methods-deviation.md
+    # Standard Zerodha Kite Connect API endpoints.
+
+    async def get_quote(self, tokens) -> dict:
+        """
+        Fetch live quote for one or more instrument tokens.
+        Kite endpoint: GET /quote?i={token1}&i={token2}...
+        Returns: dict {token_int: {last_price, ohlc, volume, depth, ...}, ...}
+        """
+        if isinstance(tokens, (int, str)):
+            tokens = [tokens]
+        if not tokens:
+            return {}
+        tokens = [int(t) for t in tokens]
+
+        await self.limiter.acquire()
+        try:
+            resp = await self.client.get(
+                "/quote",
+                params=[("i", str(t)) for t in tokens],
+            )
+            resp.raise_for_status()
+            data = resp.json().get("data", {})
+            return {int(k): v for k, v in data.items()}
+        except httpx.HTTPStatusError as e:
+            logger.error("kite_quote_failed status=%d tokens=%d", e.response.status_code, len(tokens))
+            return {}
+        except httpx.RequestError as e:
+            logger.error("kite_quote_failed error=%s", str(e))
+            return {}
+
+    async def get_instruments_nse_eq(self) -> list:
+        """
+        Fetch the full NSE equity instruments list.
+        Kite endpoint: GET /instruments/NSE (returns CSV)
+        Also refreshes self.instrument_cache (symbol -> token).
+        """
+        await self.limiter.acquire()
+        try:
+            resp = await self.client.get("/instruments/NSE")
+            resp.raise_for_status()
+            lines = resp.text.strip().split("\n")
+            if len(lines) < 2:
+                return []
+            headers = lines[0].split(",")
+            out = []
+            async with self._cache_lock:
+                for line in lines[1:]:
+                    parts = line.split(",")
+                    if len(parts) < len(headers):
+                        continue
+                    rec = dict(zip(headers, parts))
+                    try:
+                        token = int(rec.get("instrument_token", "0"))
+                    except ValueError:
+                        continue
+                    sym = rec.get("tradingsymbol", "").strip().upper()
+                    if rec.get("segment") == "NSE" and rec.get("instrument_type") == "EQ":
+                        out.append({
+                            "instrument_token": token,
+                            "tradingsymbol": sym,
+                            "exchange": rec.get("exchange", "NSE"),
+                            "segment": rec.get("segment"),
+                            "instrument_type": rec.get("instrument_type"),
+                            "name": rec.get("name", ""),
+                            "tick_size": float(rec.get("tick_size", "0.05") or "0.05"),
+                            "lot_size": int(rec.get("lot_size", "1") or "1"),
+                            "series": rec.get("instrument_type", "EQ"),
+                        })
+                        if sym:
+                            self.instrument_cache[sym] = token
+            logger.info("instruments_nse_eq_loaded count=%d", len(out))
+            return out
+        except httpx.HTTPStatusError as e:
+            logger.error("kite_instruments_failed status=%d", e.response.status_code)
+            return []
+        except httpx.RequestError as e:
+            logger.error("kite_instruments_failed error=%s", str(e))
+            return []
+
+    async def get_corporate_actions(self) -> list:
+        """
+        Kite Connect does not expose corporate actions via a public endpoint.
+        Returns an empty list. Callers (penny_universe.refresh_from_kite) fall
+        back to reading from a local penny_company_data.json file per spec §2.4.
+        """
+        return []
+
+    async def place_order(
+        self,
+        variety: str = "regular",
+        exchange: str = "NSE",
+        tradingsymbol: str = "",
+        transaction_type: str = "BUY",
+        quantity: int = 0,
+        product: str = "MIS",
+        order_type: str = "MARKET",
+        price: float = None,
+        trigger_price: float = None,
+        validity: str = "DAY",
+        tag: str = None,
+    ) -> dict:
+        """
+        Place an order on Kite.
+        Kite endpoint: POST /orders/{variety}
+        Returns: {order_id, status, message}
+        """
+        if not tradingsymbol or quantity <= 0:
+            return {"order_id": None, "status": "ERROR",
+                    "message": "tradingsymbol and positive quantity are required"}
+        params = {
+            "exchange": exchange,
+            "tradingsymbol": tradingsymbol.upper(),
+            "transaction_type": transaction_type,
+            "quantity": int(quantity),
+            "product": product,
+            "order_type": order_type,
+            "validity": validity,
+        }
+        if price is not None:
+            params["price"] = float(price)
+        if trigger_price is not None:
+            params["trigger_price"] = float(trigger_price)
+        if tag:
+            params["tag"] = tag
+
+        await self.limiter.acquire()
+        try:
+            resp = await self.client.post(f"/orders/{variety}", data=params)
+            resp.raise_for_status()
+            data = resp.json().get("data", {})
+            return {
+                "order_id": data.get("order_id"),
+                "status": "PLACED",
+                "message": "order placed",
+            }
+        except httpx.HTTPStatusError as e:
+            body = e.response.text[:300] if e.response.text else ""
+            logger.error("kite_place_order_failed status=%d body=%s", e.response.status_code, body)
+            return {"order_id": None, "status": "ERROR",
+                    "message": f"HTTP {e.response.status_code}: {body}"}
+        except httpx.RequestError as e:
+            logger.error("kite_place_order_failed error=%s", str(e))
+            return {"order_id": None, "status": "ERROR", "message": str(e)}
+
+    async def cancel_order(self, order_id: str, variety: str = "regular") -> dict:
+        """
+        Cancel a pending order.
+        Kite endpoint: DELETE /orders/{variety}/{order_id}
+        Returns: {order_id, status}
+        """
+        if not order_id:
+            return {"order_id": None, "status": "ERROR", "message": "order_id required"}
+        await self.limiter.acquire()
+        try:
+            resp = await self.client.delete(f"/orders/{variety}/{order_id}")
+            resp.raise_for_status()
+            data = resp.json().get("data", {})
+            return {"order_id": data.get("order_id", order_id), "status": "CANCELLED"}
+        except httpx.HTTPStatusError as e:
+            body = e.response.text[:300] if e.response.text else ""
+            logger.error("kite_cancel_order_failed status=%d order_id=%s body=%s",
+                         e.response.status_code, order_id, body)
+            return {"order_id": order_id, "status": "ERROR",
+                    "message": f"HTTP {e.response.status_code}: {body}"}
+        except httpx.RequestError as e:
+            logger.error("kite_cancel_order_failed error=%s", str(e))
+            return {"order_id": order_id, "status": "ERROR", "message": str(e)}
+
+    async def order_history(self, order_id: str) -> list:
+        """
+        Fetch the order history (status updates over time).
+        Kite endpoint: GET /orders/{order_id}
+        Returns: list of dicts, each with status/timestamp/etc.
+                 Index 0 is the most recent.
+        """
+        if not order_id:
+            return []
+        await self.limiter.acquire()
+        try:
+            resp = await self.client.get(f"/orders/{order_id}")
+            resp.raise_for_status()
+            data = resp.json().get("data", [])
+            return data if isinstance(data, list) else [data]
+        except httpx.HTTPStatusError as e:
+            logger.error("kite_order_history_failed status=%d order_id=%s",
+                         e.response.status_code, order_id)
+            return []
+        except httpx.RequestError as e:
+            logger.error("kite_order_history_failed error=%s", str(e))
+            return []

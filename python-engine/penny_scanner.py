@@ -33,6 +33,7 @@ from uuid import uuid4
 
 from penny_universe import PennyUniverse
 from penny_models import PennyRegime, PennyLeg
+from penny_executor import PennyExecutor
 
 logger = logging.getLogger(__name__)
 
@@ -56,6 +57,14 @@ class PennyScanner:
         from penny_risk import PennyRiskEngine
         bankroll = settings.PENNY_PAPER_BANKROLL if paper_mode else settings.PENNY_LIVE_BANKROLL
         self.risk_engine = PennyRiskEngine(bankroll=bankroll)
+        # Executor handles the entry LIMIT -> fill poll -> SL-M -> unwind flow
+        # (spec §7.2). The scanner logs + delegates; the executor places orders.
+        self.executor = PennyExecutor(
+            kite=kite,
+            paper_mode=paper_mode,
+            fill_timeout_sec=settings.PENNY_ENTRY_FILL_TIMEOUT_SEC,
+            poll_interval_sec=2.0,
+        )
         if daily_pnl_override is not None:
             self.risk_engine.daily_pnl = daily_pnl_override
             self.risk_engine.daily_pnl_date = datetime.now(timezone.utc).date().isoformat()
@@ -214,9 +223,16 @@ class PennyScanner:
         except Exception as e:
             logger.error("penny_historical_failed ticker=%s error=%s", ticker, str(e))
             bars = None
-        if not bars or len(bars) < 250:
+        if bars is None:
             return None
-        closes = [b["close"] for b in bars if b.get("close")]
+        n = len(bars) if hasattr(bars, '__len__') else 0
+        if n < 250:
+            return None
+        if hasattr(bars, 'columns'):
+            # pandas DataFrame
+            closes = bars["close"].tolist() if "close" in bars.columns else []
+        else:
+            closes = [b["close"] for b in bars if b.get("close")]
         daily = {"closes": closes}
         return evaluate_connors_entry(
             ticker=ticker, daily=daily,
@@ -295,10 +311,9 @@ class PennyScanner:
                     )
                     reject += 1
                 else:
-                    # Scanner's job ends here: log accept + persist intent.
-                    # The penny_executor module handles actual order placement
-                    # (entry LIMIT, then broker-level SL-M, with mandatory
-                    # SL-M-or-unwind flow per spec §7.2). See Task 11.
+                    # Log accept + delegate to executor (per 2026-06-22 deviation).
+                    # The executor handles the full entry flow per spec §7.2:
+                    # entry LIMIT -> fill poll -> SL-M with retry -> market-unwind.
                     await log_penny_signal(
                         settings.DB_PATH, scan_id=scan_id, ticker=sym,
                         leg="MIS", accepted=True,
@@ -309,6 +324,52 @@ class PennyScanner:
                         breakout_level=decision.get("breakout_level"),
                         shares=decision.get("shares"),
                     )
+                    try:
+                        from penny_models import PennyLeg
+                        from position_tracker import init_positions_db
+                        await init_positions_db(settings.DB_PATH)
+                        order_result = await self.executor.execute_entry(
+                            ticker=sym,
+                            leg=PennyLeg.MIS,
+                            entry_price=decision.get("entry", 0.0),
+                            stop_loss=decision.get("stop_loss", 0.0),
+                            shares=decision.get("shares", 0),
+                        )
+                        logger.info(
+                            "penny_entry_attempted ticker=%s entry=%.2f sl=%.2f shares=%d paper=%s order_id=%s",
+                            sym, decision.get("entry", 0.0),
+                            decision.get("stop_loss", 0.0),
+                            decision.get("shares", 0),
+                            order_result.get("paper"),
+                            order_result.get("entry_order_id"),
+                        )
+                        if (not order_result.get("unwound")
+                                and order_result.get("entry_status") == "filled"):
+                            import aiosqlite
+                            from datetime import datetime, timezone
+                            async with aiosqlite.connect(settings.DB_PATH) as db:
+                                await db.execute(
+                                    """INSERT INTO positions (
+                                        ticker, exchange, entry_date, entry_price, shares,
+                                        stop_loss_initial, trailing_stop_current,
+                                        target_1, target_2, atr_14_at_entry,
+                                        highest_close_since_entry, status, source,
+                                        product_type, regime_at_entry
+                                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+                                    (sym, "NSE",
+                                     datetime.now(timezone.utc).isoformat(),
+                                     decision.get("entry", 0.0),
+                                     decision.get("shares", 0),
+                                     decision.get("stop_loss", 0.0),
+                                     decision.get("stop_loss", 0.0),
+                                     decision.get("target", 0.0),
+                                     decision.get("target", 0.0) * 1.05,
+                                     0.0, decision.get("entry", 0.0),
+                                     "OPEN", "PENNY", "MIS", self.regime)
+                                )
+                                await db.commit()
+                    except Exception as e:
+                        logger.error("penny_entry_wiring_failed ticker=%s error=%s", sym, str(e))
                     accept += 1
             except Exception as e:
                 logger.error("penny_ticker_eval_failed ticker=%s error=%s", sym, str(e))

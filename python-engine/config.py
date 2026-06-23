@@ -127,6 +127,18 @@ class Settings(BaseSettings):
     ZERODHA_BROKERAGE_PCT:    float = 0.0003  # 0.03%
     ZERODHA_BROKERAGE_MAX:    float = 20.0    # Rs20 cap
     ZERODHA_STT_CNC:          float = 0.001   # 0.1% sell side
+
+    # --- Penny subsystem brokerage/fees (mirrored from Nifty, scoped to penny) ---
+    # 2026-06-22 deviation: penny code now does its own cost accounting per
+    # the isolation rule (no import from engine.calc_zerodha_costs).
+    PENNY_STT_MIS:             float = 0.00025   # 0.025% sell side (intraday)
+    PENNY_STT_CNC:             float = 0.001     # 0.1% sell side (delivery)
+    PENNY_BROKERAGE_PCT:       float = 0.0003    # 0.03% per side
+    PENNY_BROKERAGE_MAX:       float = 20.0      # Rs 20 cap per order
+    PENNY_EXCHANGE_PCT:        float = 0.0000345  # 0.00345% NSE both sides
+    PENNY_STAMP_DUTY_PCT:      float = 0.00015   # 0.015% buy side
+    PENNY_SEBI_PCT:            float = 0.000001   # Rs 10/cr, both sides
+    PENNY_GST_PCT:             float = 0.18       # 18% on brokerage+exchange
     ZERODHA_STT_MIS:          float = 0.00025 # 0.025% sell side
     ZERODHA_EXCHANGE_PCT:     float = 0.0000345
     ZERODHA_STAMP_DUTY_PCT:   float = 0.00015

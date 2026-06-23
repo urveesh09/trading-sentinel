@@ -155,8 +155,13 @@ class PennyRegimeEngine:
                 from_date="2026-01-01",  # overridden by Kite to last 60d usually
                 to_date=datetime.now(timezone.utc).strftime("%Y-%m-%d"),
             )
-            if bars:
-                closes = [b["close"] for b in bars if b.get("close")]
+            if bars is not None and not (hasattr(bars, 'empty') and bars.empty):
+                if hasattr(bars, 'columns'):
+                    # pandas DataFrame
+                    closes = bars["close"].tolist() if "close" in bars.columns else []
+                else:
+                    # list of dicts (legacy)
+                    closes = [b["close"] for b in bars if b.get("close")]
                 self._vix_proxy = self.compute_vix_proxy(closes)
             else:
                 self._vix_proxy = None
