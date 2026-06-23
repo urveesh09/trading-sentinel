@@ -232,20 +232,48 @@ async def refresh_from_kite(kite, out_json_path, corp_json_path, top_n=100):
         # 2. Quotes (batched -- Kite's /quote URL has a length limit, so
         # passing ~2000 tokens at once raises "URL component 'query'
         # too long". Batch by 500 tokens per call.)
+        #
+        # If ALL batches return empty (e.g., Kite outage, network
+        # failure during peak hours), do NOT overwrite the existing
+        # penny_static.json with an empty universe. The scanner will
+        # keep using the previous file until next refresh.
         all_tokens = [i["instrument_token"] for i in instruments]
         quotes: dict = {}
+        failed_batches = 0
+        total_batches = 0
         batch_size = 500
         for start in range(0, len(all_tokens), batch_size):
+            total_batches += 1
             batch = all_tokens[start:start + batch_size]
             try:
                 chunk = await kite.get_quote(batch)
-                if isinstance(chunk, dict):
+                if isinstance(chunk, dict) and chunk:
                     quotes.update(chunk)
+                else:
+                    failed_batches += 1
+                    logger.warning(
+                        "penny_universe_quote_batch_empty start=%d size=%d",
+                        start, len(batch),
+                    )
             except Exception as e:
+                failed_batches += 1
                 logger.warning(
                     "penny_universe_quote_batch_failed start=%d size=%d error=%s",
                     start, len(batch), str(e),
                 )
+        if total_batches > 0 and failed_batches == total_batches:
+            # All batches failed -- do NOT overwrite the universe file
+            # with empty data. Caller will see this and skip writing.
+            logger.error(
+                "penny_universe_quote_all_batches_failed count=%d -- aborting refresh",
+                total_batches,
+            )
+            return None
+        if not quotes:
+            logger.warning(
+                "penny_universe_quote_empty total_batches=%d -- continuing with empty quote set",
+                total_batches,
+            )
         # 3. Corporate actions (with fallback)
         try:
             corp = await kite.get_corporate_actions()

@@ -15,6 +15,32 @@ from unittest.mock import MagicMock, AsyncMock, patch
 import pytest
 
 
+class _FakeResp:
+    """
+    Minimal urllib.response-like stub. Supports:
+      .status       (HTTP status)
+      .read()       (returns body bytes)
+      .close()      (no-op)
+      context manager (__enter__/__exit__)
+    Per-instance body, so different URLs can return different responses
+    (e.g. telegram returns {"ok": true}, webhook returns whatever).
+    """
+    def __init__(self, status=200, body=b'{}'):
+        self.status = status
+        self._body = body
+        self.closed = False
+    def read(self):
+        return self._body
+    def close(self):
+        self.closed = True
+    def __enter__(self):
+        return self
+    def __exit__(self, *a):
+        return False
+
+
+
+
 @pytest.fixture
 def tmp_paths(tmp_path, monkeypatch):
     from config import settings
@@ -164,17 +190,16 @@ def test_telegram_sent_when_token_and_chat_id_set(monkeypatch):
 
     captured_urls = []
     captured_payloads = []
-    class FakeResp:
-        def __init__(self): self.status = 200
-        def __enter__(self): return self
-        def __exit__(self, *a): return False
-
     def fake_urlopen(req, timeout=5):
         captured_urls.append(req.full_url)
         captured_payloads.append(req.data.decode())
-        return FakeResp()
+        # Telegram success: HTTP 200 + {"ok": true, ...}
+        return _FakeResp(status=200, body=b'{"ok": true, "result": {"message_id": 1}}')
 
     monkeypatch.setattr("penny_hourly_report.urllib.request.urlopen", fake_urlopen)
+    async def _fake_to_thread(fn, *a, **kw):
+        return fn(*a, **kw)
+    monkeypatch.setattr("penny_hourly_report.asyncio.to_thread", _fake_to_thread)
 
     rpt = PennyHourlyReport(db_path=":memory:")
     asyncio.run(rpt.send(
@@ -210,13 +235,12 @@ def test_telegram_failure_falls_back_to_webhook(monkeypatch):
             raise urllib.error.URLError("telegram down")
         else:
             calls["webhook"] += 1
-            class FakeResp:
-                def __init__(self): self.status = 200
-                def __enter__(self): return self
-                def __exit__(self, *a): return False
-            return FakeResp()
+            return _FakeResp(status=200, body=b'{"ok": true}')
 
     monkeypatch.setattr("penny_hourly_report.urllib.request.urlopen", fake_urlopen)
+    async def _fake_to_thread(fn, *a, **kw):
+        return fn(*a, **kw)
+    monkeypatch.setattr("penny_hourly_report.asyncio.to_thread", _fake_to_thread)
 
     rpt = PennyHourlyReport(db_path=":memory:")
     asyncio.run(rpt.send(
@@ -240,13 +264,12 @@ def test_no_telegram_config_uses_only_webhook(monkeypatch):
 
     def fake_urlopen(req, timeout=5):
         calls["any"] += 1
-        class FakeResp:
-            def __init__(self): self.status = 200
-            def __enter__(self): return self
-            def __exit__(self, *a): return False
-        return FakeResp()
+        return _FakeResp(status=200, body=b'{"ok": true}')
 
     monkeypatch.setattr("penny_hourly_report.urllib.request.urlopen", fake_urlopen)
+    async def _fake_to_thread(fn, *a, **kw):
+        return fn(*a, **kw)
+    monkeypatch.setattr("penny_hourly_report.asyncio.to_thread", _fake_to_thread)
 
     rpt = PennyHourlyReport(db_path=":memory:")
     asyncio.run(rpt.send(
@@ -258,3 +281,101 @@ def test_no_telegram_config_uses_only_webhook(monkeypatch):
 
     # Only the webhook (no Telegram attempt)
     assert calls["any"] == 1
+
+def test_telegram_200_with_ok_false_falls_back_to_webhook(monkeypatch):
+    """Telegram returns HTTP 200 but {"ok": false} -- treat as failure
+    and fall back to webhook. Catches bot-token / chat-id errors that
+    Telegram silently returns with ok=false."""
+    from penny_hourly_report import PennyHourlyReport
+    import asyncio
+
+    captured = []
+    def fake_urlopen(req, timeout=5):
+        captured.append(req.full_url)
+        if "api.telegram.org" in req.full_url:
+            # HTTP 200 with ok=false -- a bot token mistake, blocked user, etc.
+            return _FakeResp(status=200, body=b'{"ok": false, "description": "chat not found"}')
+        return _FakeResp(status=200, body=b'{"ok": true}')
+
+    async def _fake_to_thread(fn, *a, **kw):
+        return fn(*a, **kw)
+
+    monkeypatch.setattr("penny_hourly_report.urllib.request.urlopen", fake_urlopen)
+    monkeypatch.setattr("penny_hourly_report.asyncio.to_thread", _fake_to_thread)
+
+    rpt = PennyHourlyReport(db_path=":memory:")
+    asyncio.run(rpt.send(
+        body="t",
+        webhook_url="http://backup.example/hook",
+        telegram_token="BAD_TOKEN",
+        telegram_chat_id="BAD_CHAT",
+    ))
+
+    # Telegram was tried, then webhook as fallback
+    assert any("api.telegram.org" in u for u in captured)
+    assert any("backup.example" in u for u in captured), \
+        "Expected webhook fallback after Telegram returned ok=false"
+
+
+def test_webhook_non_2xx_status_logged_not_treated_as_success(monkeypatch):
+    """A webhook that returns HTTP 500 (or any non-2xx) is logged as
+    failed even though no exception was raised. The local log remains
+    the source of truth (spec §9.4 mandatory heartbeat)."""
+    from penny_hourly_report import PennyHourlyReport
+    import asyncio
+
+    def fake_urlopen(req, timeout=5):
+        return _FakeResp(status=500, body=b"internal server error")
+
+    async def _fake_to_thread(fn, *a, **kw):
+        return fn(*a, **kw)
+
+    monkeypatch.setattr("penny_hourly_report.urllib.request.urlopen", fake_urlopen)
+    monkeypatch.setattr("penny_hourly_report.asyncio.to_thread", _fake_to_thread)
+
+    rpt = PennyHourlyReport(db_path=":memory:")
+    # Should not raise -- 500 is logged, body is still in local log
+    asyncio.run(rpt.send(
+        body="t",
+        webhook_url="http://broken.example/hook",
+    ))
+
+
+def test_url_not_logged_on_send_or_failure(monkeypatch, caplog):
+    """Webhook URLs may embed credentials (Slack, Discord, Telegram bot
+    tokens). The send path must NOT log the URL. Verify that 'webhook='
+    or 'chat_id=' or the bot-token substring never appears in logs."""
+    from penny_hourly_report import PennyHourlyReport
+    import asyncio
+    import logging
+
+    secret_url = "https://hooks.slack.com/services/T00XXXXX/B00XXXXX/XXXXXXXXXXXXXXXXXXXXXXXX"
+    secret_token = "SECRET_BOT_TOKEN_DO_NOT_LOG"
+
+    def fake_urlopen(req, timeout=5):
+        return _FakeResp(status=200, body=b"{}")
+
+    async def _fake_to_thread(fn, *a, **kw):
+        return fn(*a, **kw)
+
+    monkeypatch.setattr("penny_hourly_report.urllib.request.urlopen", fake_urlopen)
+    monkeypatch.setattr("penny_hourly_report.asyncio.to_thread", _fake_to_thread)
+
+    with caplog.at_level(logging.INFO):
+        rpt = PennyHourlyReport(db_path=":memory:")
+        asyncio.run(rpt.send(
+            body="hello",
+            webhook_url=secret_url,
+            telegram_token=secret_token,
+            telegram_chat_id="12345",
+        ))
+        log_text = "\n".join(r.getMessage() for r in caplog.records)
+
+    # The URL must NOT appear in any log line
+    assert secret_url not in log_text, \
+        f"Webhook URL leaked to logs: {secret_url}"
+    # The bot token must NOT appear in any log line
+    assert secret_token not in log_text, \
+        f"Telegram bot token leaked to logs: {secret_token}"
+    # The body IS logged (mandatory heartbeat)
+    assert "hello" in log_text
