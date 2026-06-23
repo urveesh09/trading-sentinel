@@ -153,3 +153,108 @@ def test_webhook_failure_logged_not_raised(tmp_paths, monkeypatch):
     with patch("penny_hourly_report.urllib.request.urlopen", fake_urlopen):
         asyncio.run(rpt.send(body="No action in Penny this hour.",
                               webhook_url="http://test/webhook"))
+
+def test_telegram_sent_when_token_and_chat_id_set(monkeypatch):
+    """When TELEGRAM_BOT_TOKEN and TELEGRAM_CHAT_ID are set, the report
+    is POSTed to Telegram's sendMessage endpoint and the webhook is NOT
+    called (Telegram takes priority per Uru 2026-06-23)."""
+    from unittest.mock import MagicMock, patch
+    from penny_hourly_report import PennyHourlyReport
+    import asyncio
+
+    captured_urls = []
+    captured_payloads = []
+    class FakeResp:
+        def __init__(self): self.status = 200
+        def __enter__(self): return self
+        def __exit__(self, *a): return False
+
+    def fake_urlopen(req, timeout=5):
+        captured_urls.append(req.full_url)
+        captured_payloads.append(req.data.decode())
+        return FakeResp()
+
+    monkeypatch.setattr("penny_hourly_report.urllib.request.urlopen", fake_urlopen)
+
+    rpt = PennyHourlyReport(db_path=":memory:")
+    asyncio.run(rpt.send(
+        body="test report body",
+        webhook_url="http://should-not-be-called.example/hook",
+        telegram_token="FAKE_TOKEN",
+        telegram_chat_id="12345",
+    ))
+
+    # Telegram was called
+    assert len(captured_urls) == 1
+    assert "api.telegram.org" in captured_urls[0]
+    assert "FAKE_TOKEN" in captured_urls[0]
+    # Webhook was NOT called (Telegram returned first)
+    assert "should-not-be-called" not in captured_urls[0]
+    # Payload includes chat_id and body
+    assert "12345" in captured_payloads[0]
+    assert "test report body" in captured_payloads[0]
+
+
+def test_telegram_failure_falls_back_to_webhook(monkeypatch):
+    """If Telegram fails (URLError), the webhook is called as a fallback."""
+    from unittest.mock import MagicMock
+    import urllib.error
+    from penny_hourly_report import PennyHourlyReport
+    import asyncio
+
+    calls = {"telegram": 0, "webhook": 0}
+
+    def fake_urlopen(req, timeout=5):
+        if "api.telegram.org" in req.full_url:
+            calls["telegram"] += 1
+            raise urllib.error.URLError("telegram down")
+        else:
+            calls["webhook"] += 1
+            class FakeResp:
+                def __init__(self): self.status = 200
+                def __enter__(self): return self
+                def __exit__(self, *a): return False
+            return FakeResp()
+
+    monkeypatch.setattr("penny_hourly_report.urllib.request.urlopen", fake_urlopen)
+
+    rpt = PennyHourlyReport(db_path=":memory:")
+    asyncio.run(rpt.send(
+        body="test",
+        webhook_url="http://backup.example/hook",
+        telegram_token="FAKE",
+        telegram_chat_id="999",
+    ))
+
+    # Both transports were attempted: Telegram first, then webhook
+    assert calls["telegram"] == 1
+    assert calls["webhook"] == 1
+
+
+def test_no_telegram_config_uses_only_webhook(monkeypatch):
+    """Without Telegram creds, only the webhook is called."""
+    from penny_hourly_report import PennyHourlyReport
+    import asyncio
+
+    calls = {"any": 0}
+
+    def fake_urlopen(req, timeout=5):
+        calls["any"] += 1
+        class FakeResp:
+            def __init__(self): self.status = 200
+            def __enter__(self): return self
+            def __exit__(self, *a): return False
+        return FakeResp()
+
+    monkeypatch.setattr("penny_hourly_report.urllib.request.urlopen", fake_urlopen)
+
+    rpt = PennyHourlyReport(db_path=":memory:")
+    asyncio.run(rpt.send(
+        body="test",
+        webhook_url="http://backup.example/hook",
+        telegram_token="",  # not set
+        telegram_chat_id="",  # not set
+    ))
+
+    # Only the webhook (no Telegram attempt)
+    assert calls["any"] == 1
