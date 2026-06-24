@@ -36,15 +36,40 @@ def test_entry_rejects_outside_time_window():
 
 
 def test_entry_rejects_low_volume():
+    """cum_vol < PENNY_BREAKOUT_VOL_MULT * median_vol_20d -> reject.
+
+    [PENNY-AGGRESSIVE 2026-06-24] The threshold is now 1.8x (was 3.0x).
+    Test uses 1.5x (cum=15000, median=10000) so it's strictly below 1.8x
+    and still rejected. A separate test (test_entry_accepts_at_relaxed_volume)
+    confirms 2.0x now passes.
+    """
     from penny_engine_breakout import evaluate_breakout_entry
     result = evaluate_breakout_entry(
-        ticker="X", cum_vol_today=20000, median_vol_20d=10000,
+        ticker="X", cum_vol_today=15000, median_vol_20d=10000,
         breakout_bar={"high": 10.5, "low": 10.0, "close": 10.4},
         day_high=10.30, rsi_14=55.0, as_of=datetime(2026, 6, 21, 11, 0),
         risk_engine=MagicMock(),
     )
     assert result["accept"] is False
     assert "volume" in result["reject_reason"].lower()
+
+
+def test_entry_accepts_at_relaxed_volume():
+    """[PENNY-AGGRESSIVE 2026-06-24] At the new 1.8x threshold, a 2.0x volume
+    surge passes the volume filter (it would have been rejected at 3.0x).
+    All other gates (time window, breakout confirm, RSI) must also pass.
+    """
+    from penny_engine_breakout import evaluate_breakout_entry
+    mock_risk = MagicMock()
+    mock_risk.position_size.return_value = 50
+    result = evaluate_breakout_entry(
+        ticker="X", cum_vol_today=20000, median_vol_20d=10000,  # 2.0x
+        breakout_bar={"high": 10.45, "low": 10.30, "close": 10.40},
+        day_high=10.35, rsi_14=55.0, as_of=datetime(2026, 6, 21, 11, 0),
+        risk_engine=mock_risk,
+    )
+    assert result["accept"] is True
+    assert result["entry_order_type"] == "LIMIT"
 
 
 def test_entry_rejects_no_breakout():

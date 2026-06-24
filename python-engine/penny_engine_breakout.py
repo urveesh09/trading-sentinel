@@ -17,7 +17,7 @@ Public API:
 """
 import logging
 from datetime import datetime, time, timedelta
-from typing import List, Optional
+from typing import List, Optional, Union
 
 logger = logging.getLogger(__name__)
 
@@ -191,3 +191,40 @@ def mis_time_stop_active(now: datetime) -> bool:
     from config import settings
     mins = _to_minutes_since_midnight(now)
     return mins >= settings.PENNY_BREAKOUT_TIME_EXIT
+
+
+def time_stop_triggered(entry_time: Union[datetime, str], now: datetime) -> bool:
+    """
+    [PENNY-TIME-STOP 2026-06-24] Soft time-stop check: True iff the
+    position is at least PENNY_TIME_STOP_MIN old AND still NOT in profit.
+
+    Per intraday-trading research, breakout setups that don't move in
+    the direction of the trade within ~30 minutes (less-volatile
+    environments) tend to revert or chop sideways, eating the SL. A
+    disciplined cut at market when this fires prevents the "stuck trade"
+    pattern where a position hangs near entry for hours before finally
+    hitting SL.
+
+    The function only returns True; the caller decides what action to
+    take (usually: cancel the SL-M and exit at MARKET). Returns False
+    when PENNY_TIME_STOP_MIN == 0 (feature disabled).
+
+    Robust to tz-aware vs naive datetimes by coercing both to UTC before
+    subtraction. If entry_time can't be parsed (e.g. malformed string),
+    returns False so the caller falls back to normal SL behavior.
+    """
+    from config import settings
+    minutes = settings.PENNY_TIME_STOP_MIN
+    if minutes <= 0:
+        return False
+    # Naive datetime coercion -- mirror smart_eod_check pattern.
+    if isinstance(entry_time, str):
+        try:
+            entry_time = datetime.fromisoformat(entry_time.replace("Z", "+00:00"))
+        except Exception:
+            return False
+    if entry_time.tzinfo is None and now.tzinfo is not None:
+        from datetime import timezone
+        entry_time = entry_time.replace(tzinfo=timezone.utc)
+    elapsed = now - entry_time
+    return elapsed >= timedelta(minutes=minutes)

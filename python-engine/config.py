@@ -22,6 +22,11 @@ class Settings(BaseSettings):
     STRATEGY_VERSION: str = "1.0.0"
     DB_PATH: str = "/data/cache.db"
     UNIVERSE_PATH: str = "/data/nifty500.csv"
+    # [PENNY 2026-06-24] Penny universe JSON path (the static-rank JSON
+    # loaded by PennyUniverse at startup, refreshed daily by
+    # penny_universe.refresh_from_kite). Single source of truth so the
+    # pre-market digest module reads the same file the scanner reads.
+    PENNY_UNIVERSE_JSON_PATH: str = "/data/penny_static.json"
     # TOKEN_INJECTION_SECRET removed -- the /token endpoint no longer uses it.
     # The old commented-out endpoint that checked this secret has been removed.
     
@@ -145,7 +150,13 @@ class Settings(BaseSettings):
     PENNY_STAMP_DUTY_PCT:      float = 0.00015   # 0.015% buy side
     PENNY_SEBI_PCT:            float = 0.000001   # Rs 10/cr, both sides
     PENNY_GST_PCT:             float = 0.18       # 18% on brokerage+exchange
-    ZERODHA_STT_MIS:          float = 0.00025 # 0.025% sell side
+    # [PENNY-TEST 2026-06-24] When True, calc_penny_costs() returns 0.0 so
+    # P&L math is isolated from Rs 2,500 brokerage erosion. Use only in
+    # test/paper mode to measure system proactiveness (how many trades it
+    # fires, what the gross edge would be). Live trading MUST keep this False
+    # -- a zeroed-cost live run understates real P&L and breaks the ledger.
+    PENNY_BROKERAGE_BYPASS:    bool  = False
+    ZERODHA_STT_MIS:          float = 0.00025 # 0.025% sell side (intraday)
     ZERODHA_EXCHANGE_PCT:     float = 0.0000345
     ZERODHA_STAMP_DUTY_PCT:   float = 0.00015
     ZERODHA_SEBI_PCT:         float = 0.000001
@@ -176,11 +187,29 @@ class Settings(BaseSettings):
     PENNY_CONNORS_TRAIL_ATR_MULT:  float = 2.0         # 2x ATR_1min trail after T1
 
     # Breakout strategy
-    PENNY_BREAKOUT_VOL_MULT:       float = 3.0
+    # [PENNY-AGGRESSIVE 2026-06-24] Relaxed from 3.0 -> 1.8 to allow more
+    # entries. Web research (ORB / opening-range-breakout literature) shows
+    # the 5-min ORB sweet spot is 1.5-2.0x median volume for momentum setups.
+    # 3.0x was effectively blocking any setup that wasn't already in a
+    # confirmed trend -- too tight for a penny subsystem that needs to
+    # fire several trades per day to validate the edge.
+    PENNY_BREAKOUT_VOL_MULT:       float = 1.8
     PENNY_BREAKOUT_TARGET_R:       float = 2.0
     PENNY_BREAKOUT_TIME_START:     int   = 10*60 + 30  # 10:30 IST in minutes
     PENNY_BREAKOUT_TIME_END:       int   = 14*60 + 30  # 14:30 IST in minutes
     PENNY_BREAKOUT_TIME_EXIT:      int   = 15*60       # 15:00 IST
+    # [PENNY-TIME-STOP 2026-06-24] Soft time-stop: if entry fires but the
+    # position is NOT in profit within PENNY_TIME_STOP_MIN minutes, cut at
+    # market (modular exit path; spec §7.2 exit chain). Default 30 min --
+    # the consensus from intraday-trading literature for breakout trades
+    # in less-volatile setups. 0 disables.
+    PENNY_TIME_STOP_MIN:           int   = 30
+    # [PENNY-PREMARKET 2026-06-24] Pre-market universe Telegram digest
+    # sent at HH:MM IST every weekday. Defaults to 07:50 (10 min before
+    # penny_universe_refresh at PENNY_REFRESH_HOUR=8). 0 disables.
+    PENNY_PREMARKET_REPORT_HOUR:   int   = 7
+    PENNY_PREMARKET_REPORT_MIN:    int   = 50
+    PENNY_PREMARKET_TOP_N:         int   = 10          # how many tickers to list in the body
     PENNY_MIS_SMART_EOD_TIME:      int   = 14*60 + 30  # 14:30 IST smart-EOD check
     PENNY_MIS_SMART_EOD_WITHIN_R:  float = 0.5
     PENNY_MIS_SMART_EOD_LOSS_MIN:  int   = 30
