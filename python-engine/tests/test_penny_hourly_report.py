@@ -379,3 +379,229 @@ def test_url_not_logged_on_send_or_failure(monkeypatch, caplog):
         f"Telegram bot token leaked to logs: {secret_token}"
     # The body IS logged (mandatory heartbeat)
     assert "hello" in log_text
+
+
+# --- 2026-06-24 diagnostic-add tests ---------------------------------------
+#
+# The hourly report now appends a "Scanned: N | top rejects: ..." line to
+# the no-action case so the operator can see WHY no trade fired. These
+# tests pin the formatting, ordering, and backwards-compat behaviour.
+
+
+def test_diag_tail_empty_when_universe_unknown(tmp_paths):
+    """Backwards-compat: when universe_size=0 (default) and no rejection
+    rows, the report stays the legacy single-line 'No action ...' form.
+    Older callers / pre-2026-06-24 deployments see no behaviour change."""
+    from penny_hourly_report import PennyHourlyReport
+    rpt = PennyHourlyReport(db_path=str(tmp_paths / "test.db"))
+    body = asyncio.run(rpt.build_report(
+        now=datetime(2026, 6, 24, 11, 0),
+        regime="PR1_CALM",
+        open_positions=[],
+        deployed_capital=0.0,
+        unrealised_pnl=0.0,
+        kill_switch_active=False,
+        circuit_blocks=0,
+        # universe_size omitted (defaults to 0) -- simulates pre-change caller
+    ))
+    assert "No action in Penny this hour." in body
+    assert "Scanned:" not in body
+    assert body.count("\n") == 0  # single line
+
+
+def test_diag_tail_shows_scanned_count_only(tmp_paths):
+    """When universe_size is known but no rejection rows were logged
+    (e.g. scanner died before logging), show 'Scanned: N' so the
+    operator can see the universe was alive."""
+    from penny_hourly_report import PennyHourlyReport
+    rpt = PennyHourlyReport(db_path=str(tmp_paths / "test.db"))
+    body = asyncio.run(rpt.build_report(
+        now=datetime(2026, 6, 24, 11, 0),
+        regime="PR1_CALM",
+        open_positions=[],
+        deployed_capital=0.0,
+        unrealised_pnl=0.0,
+        kill_switch_active=False,
+        circuit_blocks=0,
+        universe_size=87,
+    ))
+    lines = body.split("\n")
+    assert len(lines) == 2
+    assert "No action in Penny this hour." in lines[0]
+    assert "Scanned: 87" in lines[1]
+    assert "(no rejection rows logged)" in lines[1]
+
+
+def test_diag_tail_shows_top_rejects(tmp_paths):
+    """When both universe_size and rejection rows are present, show the
+    top 3 reject reasons sorted by descending count. Most-common reason
+    appears first -- that's the bottleneck the operator should investigate."""
+    from penny_signal_log import init_penny_signal_db, log_penny_signal
+    from penny_hourly_report import PennyHourlyReport
+    from datetime import datetime as real_dt
+
+    db_path = str(tmp_paths / "test.db")
+    asyncio.run(init_penny_signal_db(db_path))
+
+    fixed_now = real_dt(2026, 6, 24, 11, 30, tzinfo=timezone.utc)
+
+    # Seed 4× "RSI(2)=14.3 not below threshold" and 2× "volume too low (dead stock)"
+    # and 1× "breakout not confirmed (close X <= Y)" -- top 3 will include all three.
+    reasons = [
+        ("RSI(2)=14.3 not below threshold", 4),
+        ("volume too low (dead stock)", 2),
+        ("breakout not confirmed (close 12.5 <= 11.0)", 1),
+    ]
+    with patch("penny_signal_log.datetime", wraps=real_dt) as mock_dt:
+        mock_dt.now.return_value = fixed_now
+        idx = 0
+        for reason_text, count in reasons:
+            for _ in range(count):
+                ticker = f"T{idx:03d}"
+                idx += 1
+                asyncio.run(log_penny_signal(
+                    db_path, scan_id="s1", ticker=ticker, leg="MIS",
+                    accepted=False, regime="PR1_CALM", close=10.0,
+                    reject_reason=reason_text,
+                ))
+
+    rpt = PennyHourlyReport(db_path=db_path)
+    body = asyncio.run(rpt.build_report(
+        now=fixed_now,
+        regime="PR1_CALM",
+        open_positions=[],
+        deployed_capital=0.0,
+        unrealised_pnl=0.0,
+        kill_switch_active=False,
+        circuit_blocks=0,
+        universe_size=87,
+    ))
+    lines = body.split("\n")
+    assert "No action in Penny this hour." in lines[0]
+    assert "Scanned: 87" in lines[1]
+    # Top-3 reasons appear, sorted by descending count
+    rsi_idx = lines[1].find("RSI(2)=14.3 not below threshold")
+    vol_idx = lines[1].find("volume too low (dead stock)")
+    bo_idx  = lines[1].find("breakout not confirmed")
+    assert rsi_idx != -1
+    assert vol_idx != -1
+    assert bo_idx != -1
+    # Descending count order: ×4 before ×2 before ×1
+    assert rsi_idx < vol_idx < bo_idx, \
+        "Top rejects must be sorted by descending count"
+    assert "×4" in lines[1]
+    assert "×2" in lines[1]
+    assert "×1" in lines[1]
+
+
+def test_diag_tail_truncates_long_reason_to_50_chars(tmp_paths):
+    """An over-long reject_reason string (e.g. one with embedded prices)
+    is clipped to 50 chars + ellipsis to keep the diagnostic line bounded."""
+    from penny_signal_log import init_penny_signal_db, log_penny_signal
+    from penny_hourly_report import PennyHourlyReport
+    from datetime import datetime as real_dt
+
+    db_path = str(tmp_paths / "test.db")
+    asyncio.run(init_penny_signal_db(db_path))
+
+    fixed_now = real_dt(2026, 6, 24, 11, 30, tzinfo=timezone.utc)
+    long_reason = "x" * 100  # 100 chars, must be clipped to 50 + ellipsis
+
+    with patch("penny_signal_log.datetime", wraps=real_dt) as mock_dt:
+        mock_dt.now.return_value = fixed_now
+        asyncio.run(log_penny_signal(
+            db_path, scan_id="s1", ticker="LONG", leg="MIS",
+            accepted=False, regime="PR1_CALM", close=10.0,
+            reject_reason=long_reason,
+        ))
+
+    rpt = PennyHourlyReport(db_path=db_path)
+    body = asyncio.run(rpt.build_report(
+        now=fixed_now,
+        regime="PR1_CALM",
+        open_positions=[],
+        deployed_capital=0.0,
+        unrealised_pnl=0.0,
+        kill_switch_active=False,
+        circuit_blocks=0,
+        universe_size=42,
+    ))
+    # Body must still be bounded (<1000 chars)
+    assert len(body) < 1000, \
+        f"Diagnostic line pushed body over 1000 chars: {len(body)}"
+    # Long reason was clipped (no "x" * 60 substring)
+    assert "x" * 60 not in body
+    # The ellipsis marker (single char) is present to indicate clipping
+    assert "…" in body
+
+
+def test_diag_tail_with_diagnostic_stays_under_15_lines(tmp_paths):
+    """Even with universe_size + max-rejection-rows, the no-action case
+    stays ≤15 lines (the spec §9.4 hard limit). The diagnostic is one line."""
+    from penny_signal_log import init_penny_signal_db, log_penny_signal
+    from penny_hourly_report import PennyHourlyReport
+    from datetime import datetime as real_dt
+
+    db_path = str(tmp_paths / "test.db")
+    asyncio.run(init_penny_signal_db(db_path))
+
+    fixed_now = real_dt(2026, 6, 24, 11, 30, tzinfo=timezone.utc)
+    with patch("penny_signal_log.datetime", wraps=real_dt) as mock_dt:
+        mock_dt.now.return_value = fixed_now
+        for i in range(10):
+            asyncio.run(log_penny_signal(
+                db_path, scan_id="s1", ticker=f"T{i:03d}", leg="MIS",
+                accepted=False, regime="PR1_CALM", close=10.0,
+                reject_reason=f"reason variant {i}",
+            ))
+
+    rpt = PennyHourlyReport(db_path=db_path)
+    body = asyncio.run(rpt.build_report(
+        now=fixed_now,
+        regime="PR1_CALM",
+        open_positions=[],
+        deployed_capital=0.0,
+        unrealised_pnl=0.0,
+        kill_switch_active=False,
+        circuit_blocks=0,
+        universe_size=87,
+    ))
+    assert body.count("\n") <= 14, \
+        f"Diagnostic pushed body over 15 lines: {body!r}"
+
+
+def test_build_diag_tail_unit():
+    """Direct unit test of the static helper -- covers the four
+    combinations of (universe_known, rejections_present) without going
+    through the DB. Pins the formatting contract."""
+    from penny_hourly_report import PennyHourlyReport
+
+    # Both unknown -> ""
+    assert PennyHourlyReport._build_diag_tail({}, 0) == ""
+
+    # Universe known, no rejections
+    out = PennyHourlyReport._build_diag_tail({}, 87)
+    assert out == "Scanned: 87 | (no rejection rows logged)"
+
+    # Universe unknown, rejections present
+    out = PennyHourlyReport._build_diag_tail({"foo": 5}, 0)
+    assert out == "top rejects: foo (×5)"
+
+    # Both present -- sorted descending by count
+    out = PennyHourlyReport._build_diag_tail(
+        {"low": 1, "mid": 3, "high": 7}, 42, top_n=3,
+    )
+    assert "Scanned: 42" in out
+    assert "high (×7)" in out
+    assert "mid (×3)" in out
+    assert "low (×1)" in out
+    # Order check: high appears before mid before low
+    assert out.find("high") < out.find("mid") < out.find("low")
+
+    # top_n=1 limits to the single biggest reason
+    out = PennyHourlyReport._build_diag_tail({"a": 1, "b": 10, "c": 5}, 10, top_n=1)
+    assert "b (×10)" in out
+    # Check that the LOW-count reasons are NOT listed (not just the
+    # letter 'a' which appears in "Scanned"/"rejects").
+    assert "(×1)" not in out
+    assert "(×5)" not in out
