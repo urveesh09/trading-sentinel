@@ -69,6 +69,12 @@ PENNY_CORP_DATA_JSON_PATH = "/data/penny_company_data.json"
 _penny_universe = None
 _penny_regime_engine = PennyRegimeEngine()
 _penny_scanner = None
+# 2026-06-24 diagnostic add: most recent penny scan's universe size (sum
+# of accept+reject+error). Read by run_penny_hourly_report so the
+# "No action" message can show "Scanned: N | top rejects: ...". Reset
+# on scanner singleton rebuild; 0 means "unknown" (older callers /
+# pre-2026-06-24 deployments will show no diagnostic line).
+_last_penny_scan_universe_size: int = 0
 
 
 # 2026-06-24 bankroll fix: single shared ledger_writer used by every penny
@@ -120,18 +126,27 @@ def _get_penny_scanner():
 
 async def run_penny_scanner_once():
     """30-second MIS leg (spec §9.1)."""
+    global _last_penny_scan_universe_size
     scanner = _get_penny_scanner()
     if scanner is None:
         return
     try:
         result = await scanner.scan_once(as_of=datetime.now(IST))
         logger.info("penny_scan_complete", **result)
+        # 2026-06-24 diagnostic: cache universe size for hourly report.
+        # universe_size == accept + reject + error (every observed ticker).
+        _last_penny_scan_universe_size = (
+            int(result.get("accept", 0))
+            + int(result.get("reject", 0))
+            + int(result.get("error", 0))
+        )
     except Exception as e:
         logger.error("penny_scan_failed", error=str(e))
 
 
 async def run_penny_connors_scan():
     """Once-daily 09:30 CNC leg (spec §4)."""
+    global _last_penny_scan_universe_size
     from datetime import datetime, timezone
     scanner = _get_penny_scanner()
     if scanner is None:
@@ -142,6 +157,9 @@ async def run_penny_connors_scan():
         _penny_scanner = None
         scanner = _get_penny_scanner()
         universe = scanner._load_universe()
+        # 2026-06-24 diagnostic: cache universe size so the next hourly
+        # report knows how many tickers were eligible.
+        _last_penny_scan_universe_size = len(universe)
         accept = reject = 0
         for t in universe:
             if scanner.risk_engine.is_disabled(t["symbol"]):
@@ -280,6 +298,7 @@ async def run_penny_hourly_report():
             unrealised_pnl=unrealised,
             kill_switch_active=risk.kill_switch_active(),
             circuit_blocks=0,
+            universe_size=_last_penny_scan_universe_size,
         )
     except Exception as e:
         logger.error("penny_hourly_report_failed", error=str(e))

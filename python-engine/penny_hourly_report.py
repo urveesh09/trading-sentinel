@@ -61,9 +61,16 @@ class PennyHourlyReport:
         unrealised_pnl: float,
         kill_switch_active: bool,
         circuit_blocks: int,
+        universe_size: int = 0,
     ) -> str:
         """
         Build the report body (markdown, <= 15 lines, < 1000 chars).
+
+        universe_size (2026-06-24 diagnostic add): how many tickers the
+        scanner saw this hour. Used in the no-action path to surface
+        "Scanned: N | top rejects: ..." so the operator can see WHY no
+        trade fired (was the universe empty? did strategies reject?).
+        Defaults to 0 (unknown) -- older callers stay backwards-compatible.
         """
         from penny_signal_log import init_penny_signal_db
         await init_penny_signal_db(self.db_path)
@@ -113,7 +120,14 @@ class PennyHourlyReport:
 
         if not has_activity:
             suffix = f" (regime: {regime}, open: {len(open_positions)}/5, deployed: Rs {deployed_capital:.0f})"
-            return f"No action in Penny this hour.{suffix}"
+            head = f"No action in Penny this hour.{suffix}"
+            # Diagnostic tail (2026-06-24): when the universe had N>0
+            # tickers but none triggered an entry, tell the operator
+            # WHY. Renders as a second line; keeps <1000 char limit.
+            diag = self._build_diag_tail(reject_reasons, universe_size)
+            if diag:
+                return head + "\n" + diag
+            return head
 
         lines = [f"Penny hourly report ({now.strftime('%H:%M IST')})", f"Regime: {regime}"]
 
@@ -141,6 +155,49 @@ class PennyHourlyReport:
             f"unrealised: Rs {unrealised_pnl:+.0f}"
         )
         return "\n".join(lines)
+
+    @staticmethod
+    def _build_diag_tail(
+        reject_reasons: dict,
+        universe_size: int,
+        top_n: int = 3,
+    ) -> str:
+        """
+        Build the diagnostic tail for the no-action case.
+
+        Returns "" when there's nothing useful to add (unknown universe
+        size and no logged rejections), so the caller can leave the
+        short "No action" message intact for older callers.
+
+        Examples:
+          universe_size=0, no rejections         -> ""
+          universe_size=87, no rejections        -> "Scanned: 87 | (no rejection rows logged)"
+          universe_size=87, rejections present   -> "Scanned: 87 | top rejects: foo (×42), bar (×18)"
+
+        Top-N defaults to 3 to keep the line short. Reasons are sorted
+        by descending count so the biggest filter bottleneck is first.
+        """
+        # Nothing to say if both inputs are empty/unknown.
+        if universe_size <= 0 and not reject_reasons:
+            return ""
+
+        parts = [f"Scanned: {universe_size}"] if universe_size > 0 else []
+
+        if reject_reasons:
+            top = sorted(reject_reasons.items(), key=lambda x: -x[1])[:top_n]
+            # Truncate any single reason string to 50 chars to keep the
+            # line bounded (the strategy engines sometimes embed prices
+            # like "RSI(2)=14.3 not below threshold" -- still short, but
+            # others like "volume too low (dead stock)" are fine).
+            top_str = ", ".join(
+                f"{r[:50]}{'…' if len(r) > 50 else ''} (×{c})"
+                for r, c in top
+            )
+            parts.append(f"top rejects: {top_str}")
+        elif universe_size > 0:
+            parts.append("(no rejection rows logged)")
+
+        return " | ".join(parts)
 
     @staticmethod
     def _post_json(url: str, payload_bytes: bytes, timeout: float = 5.0):
@@ -256,8 +313,17 @@ class PennyHourlyReport:
 async def run_hourly_report(db_path: str, regime: str, open_positions: list,
                              deployed_capital: float, unrealised_pnl: float,
                              kill_switch_active: bool, circuit_blocks: int,
+                             universe_size: int = 0,
                              now: Optional[datetime] = None) -> None:
-    """Top-level entry point for the scheduler job."""
+    """
+    Top-level entry point for the scheduler job.
+
+    universe_size (2026-06-24 diagnostic add): number of tickers the
+    scanner observed in the most recent scan. Plumbed through from
+    main.run_penny_hourly_report so the no-action case can show
+    "Scanned: N | top rejects: ...". Defaults to 0 (unknown) so
+    older callers / tests stay backwards-compatible.
+    """
     from config import settings
     if now is None:
         now = datetime.now(timezone.utc).astimezone()
@@ -269,6 +335,7 @@ async def run_hourly_report(db_path: str, regime: str, open_positions: list,
         open_positions=open_positions, deployed_capital=deployed_capital,
         unrealised_pnl=unrealised_pnl,
         kill_switch_active=kill_switch_active, circuit_blocks=circuit_blocks,
+        universe_size=universe_size,
     )
     await rpt.send(
         body=body,
