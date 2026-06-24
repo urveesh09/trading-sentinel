@@ -11,6 +11,7 @@ from performance import (
     record_trade_close,
     check_circuit_breakers,
     penny_pool_pnl,
+    pool_breakdown,
 )
 
 
@@ -317,3 +318,131 @@ class TestSourceColumn:
         assert await current_bankroll(seeded_db) == 5075.0
         await record_trade_close(seeded_db, "PENNY_TEST2", -25.0, source="PENNY")
         assert await current_bankroll(seeded_db) == 5050.0
+
+
+# ===============================================================
+# POOL BREAKDOWN (2026-06-24, B-tight)
+# Tests for /bankroll/breakdown: per-pool display, no risk math change.
+# ===============================================================
+
+
+class TestPoolBreakdown:
+    """[POOL-BREAKDOWN 2026-06-24] Per-pool bankroll display.
+
+    B-tight semantics: swing and penny balances are reported as
+    INDEPENDENT numbers. The combined number is informational only.
+    current_bankroll() and check_circuit_breakers() are unchanged --
+    these tests verify both behaviors in parallel.
+    """
+
+    @pytest.mark.asyncio
+    async def test_empty_ledger_returns_initial_swing_and_pool_penny(self, seeded_db):
+        """Fresh ledger with no trades: swing=INITIAL, penny=PENNY_LIVE_BANKROLL."""
+        out = await pool_breakdown(seeded_db)
+        # Conftest patches INITIAL_BANKROLL=5000; config defaults PENNY_LIVE_BANKROLL=2000.
+        assert out["swing"]["balance"] == 5000.0
+        assert out["swing"]["trades"] == 0
+        assert out["penny"]["allocated"] == 2000.0
+        assert out["penny"]["balance"] == 2000.0  # no P&L yet
+        assert out["penny"]["pnl"] == 0.0
+        assert out["penny"]["trades"] == 0
+        assert out["penny"]["mode"] == "live"  # default in config.py
+        assert out["combined"] == 7000.0
+
+    @pytest.mark.asyncio
+    async def test_penny_win_adds_to_penny_balance(self, seeded_db):
+        """Penny close with positive P&L bumps penny.balance only -- swing untouched."""
+        await record_trade_close(seeded_db, "PENNY_WIN", 150.0, source="PENNY")
+        out = await pool_breakdown(seeded_db)
+        assert out["swing"]["balance"] == 5000.0  # unchanged
+        assert out["penny"]["balance"] == 2150.0  # 2000 + 150
+        assert out["penny"]["pnl"] == 150.0
+        assert out["penny"]["trades"] == 1
+        assert out["combined"] == 7150.0
+
+    @pytest.mark.asyncio
+    async def test_penny_loss_subtracts_from_penny_balance(self, seeded_db):
+        """Penny close with negative P&L reduces penny.balance only."""
+        await record_trade_close(seeded_db, "PENNY_LOSS", -300.0, source="PENNY")
+        out = await pool_breakdown(seeded_db)
+        assert out["swing"]["balance"] == 5000.0  # unchanged
+        assert out["penny"]["balance"] == 1700.0  # 2000 - 300
+        assert out["penny"]["pnl"] == -300.0
+        assert out["penny"]["trades"] == 1
+
+    @pytest.mark.asyncio
+    async def test_swing_and_penny_tracked_independently(self, seeded_db):
+        """Both pools accumulate their own P&L -- no cross-contamination."""
+        # Swing: +500 win and -200 loss
+        await record_trade_close(seeded_db, "SWING_WIN", 500.0, source="SYSTEM")
+        await record_trade_close(seeded_db, "SWING_LOSS", -200.0, source="SYSTEM")
+        # Penny: +100 win and -50 loss
+        await record_trade_close(seeded_db, "PENNY_WIN", 100.0, source="PENNY")
+        await record_trade_close(seeded_db, "PENNY_LOSS", -50.0, source="PENNY")
+        out = await pool_breakdown(seeded_db)
+        assert out["swing"]["balance"] == 5300.0  # 5000 + 500 - 200
+        assert out["swing"]["trades"] == 2  # both non-zero
+        assert out["penny"]["balance"] == 2050.0  # 2000 + 100 - 50
+        assert out["penny"]["trades"] == 2
+        assert out["combined"] == 7350.0
+
+    @pytest.mark.asyncio
+    async def test_zero_pnl_rows_not_counted_as_trades(self, seeded_db):
+        """A SYSTEM row with pnl=0 (e.g., the INITIAL seed) must not bump trade count."""
+        # The seeded_db fixture has the INITIAL row (pnl=0). Trade count must still be 0.
+        out = await pool_breakdown(seeded_db)
+        assert out["swing"]["trades"] == 0
+        assert out["penny"]["trades"] == 0
+
+    @pytest.mark.asyncio
+    async def test_current_bankroll_unaffected_by_penny(self, seeded_db):
+        """[REGRESSION GUARD] current_bankroll() must STILL equal the ledger's
+        last row -- not the combined swing+penny. This is the B-tight guarantee:
+        the existing /bankroll endpoint and check_circuit_breakers() math
+        stay exactly as they were before the breakdown feature."""
+        await record_trade_close(seeded_db, "PENNY_WIN", 999.0, source="PENNY")
+        bankroll = await current_bankroll(seeded_db)
+        # 5000 (initial) + 999 (last penny row, since it was appended after seed)
+        # current_bankroll reads the LAST row, regardless of source.
+        assert bankroll == 5999.0
+        # But the breakdown still shows swing at 5000 (untouched) and penny at 2999.
+        out = await pool_breakdown(seeded_db)
+        assert out["swing"]["balance"] == 5000.0
+        assert out["penny"]["balance"] == 2999.0
+        # This is the B-tight invariant: combined is informational,
+        # swing CBs still measure swing alone.
+        assert out["combined"] == 7999.0
+
+    @pytest.mark.asyncio
+    async def test_paper_mode_uses_paper_bankroll(self, seeded_db, monkeypatch):
+        """When PENNY_LIVE_TRADING is False, penny.allocated falls back to
+        PENNY_PAPER_BANKROLL (Rs 500 default)."""
+        from config import settings
+        monkeypatch.setattr(settings, "PENNY_LIVE_TRADING", False)
+        out = await pool_breakdown(seeded_db)
+        assert out["penny"]["mode"] == "paper"
+        assert out["penny"]["allocated"] == 500.0
+        assert out["penny"]["balance"] == 500.0
+        assert out["combined"] == 5500.0  # 5000 swing + 500 paper penny
+
+    @pytest.mark.asyncio
+    async def test_paper_mode_penny_trades_still_tracked(self, seeded_db, monkeypatch):
+        """In paper mode, penny P&L still flows into penny.balance normally."""
+        from config import settings
+        monkeypatch.setattr(settings, "PENNY_LIVE_TRADING", False)
+        await record_trade_close(seeded_db, "PAPER_PENNY", 50.0, source="PENNY")
+        out = await pool_breakdown(seeded_db)
+        assert out["penny"]["allocated"] == 500.0
+        assert out["penny"]["balance"] == 550.0  # 500 paper + 50 pnl
+
+    @pytest.mark.asyncio
+    async def test_breakdown_response_shape(self, seeded_db):
+        """The endpoint contract: every documented key must be present."""
+        out = await pool_breakdown(seeded_db)
+        assert set(out.keys()) == {"swing", "penny", "combined", "as_of"}
+        assert set(out["swing"].keys()) == {"balance", "trades"}
+        assert set(out["penny"].keys()) == {
+            "balance", "allocated", "pnl", "trades", "mode",
+        }
+        # ISO-8601 timestamp string (UTC, with offset)
+        assert "T" in out["as_of"]

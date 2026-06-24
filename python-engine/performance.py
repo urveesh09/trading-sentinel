@@ -177,3 +177,99 @@ async def penny_pool_pnl(db_path: str, days: int = 14) -> dict:
         # Read-only is OK -- this function is best-effort.
         pass
     return {"total_pnl": total_pnl, "trade_count": trade_count, "days": days}
+
+
+async def pool_breakdown(db_path: str) -> dict:
+    """
+    [POOL-BREAKDOWN 2026-06-24] Per-pool bankroll display.
+
+    Returns the swing balance and penny balance as INDEPENDENT numbers.
+    No risk math is changed -- current_bankroll() and check_circuit_breakers()
+    are untouched. This is a display-only helper used by /bankroll/breakdown.
+
+    Math:
+      swing_balance = (swing-only ledger balance)
+                    = current_bankroll() MINUS any penny P&L that has
+                      accumulated. Because the ledger is append-only and
+                      ordered by id, and penny closes arrive after the
+                      INITIAL seed, the most-recent-row may not be pure
+                      swing. We compute swing as:
+                        SELECT SUM(pnl) FROM bankroll_ledger WHERE source='SYSTEM'
+                      + INITIAL_BANKROLL.
+                      This is robust regardless of which row is "last".
+
+      penny_balance = PENNY_LIVE_BANKROLL (or PENNY_PAPER_BANKROLL in paper)
+                      + SUM(pnl WHERE source='PENNY').
+                      The constant is the *allocated* pool capacity, not a
+                      ledger seed -- it represents the testing budget the
+                      operator opted into. No ledger row is inserted for it.
+
+      combined = swing_balance + penny_balance
+                 (informational only; never used in CB math)
+
+    Returns:
+      {
+        "swing":   {"balance": float, "trades": int},
+        "penny":   {"balance": float, "allocated": float, "pnl": float,
+                    "trades": int, "mode": "live"|"paper"},
+        "combined": float,    # informational only
+        "as_of":   "<UTC ISO8601>",
+      }
+    """
+    import aiosqlite
+    from datetime import datetime, timezone
+
+    # Swing balance: SUM of all SYSTEM-source P&L rows + the INITIAL seed.
+    swing_pnl = 0.0
+    swing_trades = 0
+    # Penny P&L: SUM of all PENNY-source rows. Allocated = the constant.
+    penny_pnl = 0.0
+    penny_trades = 0
+
+    try:
+        async with aiosqlite.connect(db_path) as db:
+            async with db.execute(
+                "SELECT pnl FROM bankroll_ledger WHERE source='SYSTEM'"
+            ) as cur:
+                async for row in cur:
+                    swing_pnl += row[0] or 0.0
+                    if (row[0] or 0.0) != 0.0:
+                        swing_trades += 1
+            async with db.execute(
+                "SELECT pnl FROM bankroll_ledger WHERE source='PENNY'"
+            ) as cur:
+                async for row in cur:
+                    penny_pnl += row[0] or 0.0
+                    if (row[0] or 0.0) != 0.0:
+                        penny_trades += 1
+    except Exception as e:
+        # No rows yet, or schema missing source column (pre-migration DB).
+        # Best-effort: return zeros. Callers should treat empty as "no data".
+        logger.warning("pool_breakdown_query_failed error=%s", str(e))
+
+    swing_balance = settings.INITIAL_BANKROLL + swing_pnl
+
+    # Penny mode + allocation: live unless PENNY_LIVE_TRADING is False.
+    penny_live = bool(getattr(settings, "PENNY_LIVE_TRADING", False))
+    penny_allocated = (
+        float(getattr(settings, "PENNY_LIVE_BANKROLL", 0.0))
+        if penny_live
+        else float(getattr(settings, "PENNY_PAPER_BANKROLL", 0.0))
+    )
+    penny_balance = penny_allocated + penny_pnl
+
+    return {
+        "swing": {
+            "balance": round(swing_balance, 2),
+            "trades":  swing_trades,
+        },
+        "penny": {
+            "balance":   round(penny_balance, 2),
+            "allocated": round(penny_allocated, 2),
+            "pnl":       round(penny_pnl, 2),
+            "trades":    penny_trades,
+            "mode":      "live" if penny_live else "paper",
+        },
+        "combined": round(swing_balance + penny_balance, 2),
+        "as_of":    datetime.now(timezone.utc).isoformat(),
+    }

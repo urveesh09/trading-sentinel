@@ -1857,6 +1857,17 @@ async def get_bankroll_route():
     val = await current_bankroll(settings.DB_PATH)
     return {"status": "ok", "bankroll": val}
 
+
+# 2026-06-24 (B-tight): per-pool breakdown endpoint. Returns swing and
+# penny balances independently. No risk math is touched -- current_bankroll()
+# and check_circuit_breakers() are unchanged. The combined number is
+# informational only. See docs/deviations/2026-06-24-penny-bankroll-pool-breakdown-deviation.md
+@app.get("/bankroll/breakdown")
+async def get_bankroll_breakdown():
+    from performance import pool_breakdown
+    return await pool_breakdown(settings.DB_PATH)
+
+
 @app.get("/circuit-breaker")
 async def get_circuit_breaker():
     halted, reasons = await check_circuit_breakers(settings.DB_PATH)
