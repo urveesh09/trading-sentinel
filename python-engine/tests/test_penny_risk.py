@@ -258,3 +258,130 @@ def test_sl_m_required_allows_limit_with_sl_m():
     )
     assert can is True
     assert reason == ""
+
+
+# ---- 2026-06-24 bankroll fix: ledger_writer integration ----------------
+
+@pytest.mark.asyncio
+async def test_record_close_invokes_ledger_writer_with_net_pnl(db_path):
+    """[BK-WIRE 2026-06-24] When a ledger_writer is provided, record_close
+    must invoke it with (ticker, net_pnl). The net is post-cost, so it can
+    be negative even on a gross win."""
+    from penny_risk import PennyRiskEngine
+    from datetime import datetime, timezone
+
+    captured = []
+
+    async def fake_writer(ticker: str, pnl: float) -> None:
+        captured.append((ticker, pnl))
+
+    eng = PennyRiskEngine(bankroll=2000.0, ledger_writer=fake_writer)
+    # Win: 100 shares, entry 10, exit 11, intraday -> gross 100, costs ~5.
+    eng.record_close(
+        entry_price=10.0, exit_price=11.0, shares=100,
+        is_intraday=True, when=datetime.now(timezone.utc), ticker="PENNY_A",
+    )
+    # record_close schedules the writer via loop.create_task. The scheduling
+    # itself is fast (no I/O). The actual write happens on the next loop tick.
+    # Yield a few times to let the task drain -- but the test asserts on
+    # captured args, which are appended before any await, so the task may
+    # already have appended them by the time we yield.
+    import asyncio
+    for _ in range(3):
+        await asyncio.sleep(0)
+    assert len(captured) == 1, f"expected 1 invocation, got {len(captured)}"
+    ticker_arg, pnl_arg = captured[0]
+    assert ticker_arg == "PENNY_A"
+    assert pnl_arg > 0  # net positive (gross 100 - costs ~5)
+
+
+@pytest.mark.asyncio
+async def test_record_close_invokes_writer_on_loss(db_path):
+    """Loss: net pnl must be negative -- the writer gets the loss."""
+    from penny_risk import PennyRiskEngine
+    from datetime import datetime, timezone
+    import asyncio
+
+    captured = []
+
+    async def fake_writer(ticker: str, pnl: float) -> None:
+        captured.append((ticker, pnl))
+
+    eng = PennyRiskEngine(bankroll=2000.0, ledger_writer=fake_writer)
+    # Loss: 100 shares, entry 10, exit 9.5 -> gross -50, costs ~5.
+    eng.record_close(
+        entry_price=10.0, exit_price=9.5, shares=100,
+        is_intraday=True, when=datetime.now(timezone.utc), ticker="PENNY_LOSS",
+    )
+    for _ in range(3):
+        await asyncio.sleep(0)
+    assert len(captured) == 1
+    assert captured[0][0] == "PENNY_LOSS"
+    assert captured[0][1] < 0
+
+
+@pytest.mark.asyncio
+async def test_record_close_without_ledger_writer_still_updates_daily_pnl(db_path):
+    """When NO ledger_writer is passed, the in-memory daily_pnl counter
+    must still update -- back-compat with existing callers. No write is
+    attempted, no exception is raised."""
+    from penny_risk import PennyRiskEngine
+    from datetime import datetime, timezone
+
+    eng = PennyRiskEngine(bankroll=2000.0)  # no ledger_writer
+    eng.record_close(
+        entry_price=10.0, exit_price=9.5, shares=100,
+        is_intraday=True, when=datetime.now(timezone.utc), ticker="PENNY_B",
+    )
+    # daily_pnl should have absorbed the net loss.
+    assert eng.daily_pnl < 0
+
+
+@pytest.mark.asyncio
+async def test_record_close_ledger_write_failure_does_not_propagate(db_path):
+    """If the writer raises, record_close must log and continue --
+    the daily_pnl counter is still authoritative for risk gating.
+    record_close itself is sync, so a failing async writer (scheduled via
+    create_task) cannot bubble up to it. We test by inspecting that
+    record_close does not raise AND that daily_pnl updated."""
+    from penny_risk import PennyRiskEngine
+    from datetime import datetime, timezone
+
+    async def broken_writer(ticker: str, pnl: float) -> None:
+        raise RuntimeError("simulated DB outage")
+
+    eng = PennyRiskEngine(bankroll=2000.0, ledger_writer=broken_writer)
+    # Must not raise -- the task is scheduled, not awaited inline.
+    eng.record_close(
+        entry_price=10.0, exit_price=10.5, shares=100,
+        is_intraday=True, when=datetime.now(timezone.utc), ticker="PENNY_C",
+    )
+    # In-memory counter still updated.
+    assert eng.daily_pnl > 0
+
+
+def test_penny_risk_does_not_import_performance():
+    """Isolation rule (spec §12 / test_penny_isolation): penny_risk.py MUST
+    NOT import from performance. The fix uses dependency injection, not an
+    import. We check the AST for actual import statements (not just the
+    words appearing in docstrings or comments)."""
+    import ast
+    import penny_risk
+
+    with open(penny_risk.__file__) as f:
+        tree = ast.parse(f.read())
+
+    for node in ast.walk(tree):
+        if isinstance(node, ast.Import):
+            for alias in node.names:
+                bad = alias.name.startswith("performance")
+                assert not bad, (
+                    f"penny_risk.py has 'import {alias.name}' at "
+                    f"line {node.lineno} -- isolation violated"
+                )
+        elif isinstance(node, ast.ImportFrom):
+            if node.module and node.module.startswith("performance"):
+                raise AssertionError(
+                    f"penny_risk.py has 'from {node.module} import ...' at "
+                    f"line {node.lineno} -- isolation violated"
+                )

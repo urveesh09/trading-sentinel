@@ -46,6 +46,7 @@ class PennyScanner:
         paper_mode: bool = True,
         regime: str = "PR1_CALM",
         daily_pnl_override: Optional[float] = None,
+        ledger_writer=None,
     ):
         self.kite = kite
         self.universe_json_path = universe_json_path
@@ -56,7 +57,13 @@ class PennyScanner:
         from config import settings
         from penny_risk import PennyRiskEngine
         bankroll = settings.PENNY_PAPER_BANKROLL if paper_mode else settings.PENNY_LIVE_BANKROLL
-        self.risk_engine = PennyRiskEngine(bankroll=bankroll)
+        # 2026-06-24 bankroll fix: pass ledger_writer through so the scanner's
+        # risk_engine writes penny P&L to bankroll_ledger with source='PENNY'.
+        # The writer is provided by main.py -- the scanner itself doesn't
+        # import from performance (isolation rule).
+        self.risk_engine = PennyRiskEngine(
+            bankroll=bankroll, ledger_writer=ledger_writer,
+        )
         # Executor handles the entry LIMIT -> fill poll -> SL-M -> unwind flow
         # (spec §7.2). The scanner logs + delegates; the executor places orders.
         self.executor = PennyExecutor(

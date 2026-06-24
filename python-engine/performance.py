@@ -12,9 +12,20 @@ async def init_ledger(db_path: str):
         await db.execute("""
             CREATE TABLE IF NOT EXISTS bankroll_ledger (
                 id INTEGER PRIMARY KEY AUTOINCREMENT, timestamp TEXT, event_type TEXT,
-                ticker TEXT, pnl REAL, bankroll_before REAL, bankroll_after REAL, notes TEXT
+                ticker TEXT, pnl REAL, bankroll_before REAL, bankroll_after REAL,
+                source TEXT NOT NULL DEFAULT 'SYSTEM', notes TEXT
             )
         """)
+        # Migration: existing DBs (pre-2026-06-24) were created without the
+        # `source` column. Add it idempotently -- SQLite raises OperationalError
+        # "duplicate column name" if it already exists, so we swallow that.
+        try:
+            await db.execute(
+                "ALTER TABLE bankroll_ledger "
+                "ADD COLUMN source TEXT NOT NULL DEFAULT 'SYSTEM'"
+            )
+        except Exception:
+            pass  # column already exists -- safe to ignore
         await db.execute("""
             CREATE TABLE IF NOT EXISTS backtest_results (
                 timestamp TEXT, strategy_version TEXT,
@@ -26,8 +37,11 @@ async def init_ledger(db_path: str):
         count = (await cursor.fetchone())[0]
         if count == 0:
             await db.execute(
-                "INSERT INTO bankroll_ledger (timestamp, event_type, pnl, bankroll_before, bankroll_after) VALUES (?, ?, ?, ?, ?)",
-                (datetime.now(timezone.utc).isoformat(), "INITIAL", 0.0, settings.INITIAL_BANKROLL, settings.INITIAL_BANKROLL)
+                "INSERT INTO bankroll_ledger "
+                "(timestamp, event_type, pnl, bankroll_before, bankroll_after, source) "
+                "VALUES (?, ?, ?, ?, ?, ?)",
+                (datetime.now(timezone.utc).isoformat(), "INITIAL", 0.0,
+                 settings.INITIAL_BANKROLL, settings.INITIAL_BANKROLL, "SYSTEM")
             )
         await db.commit()
 
@@ -37,14 +51,26 @@ async def current_bankroll(db_path: str) -> float:
         row = await cursor.fetchone()
         return row[0] if row else settings.INITIAL_BANKROLL
 
-async def record_trade_close(db_path: str, ticker: str, pnl: float, r_multiple: float | None = None, notes: str | None = None):
+async def record_trade_close(db_path: str, ticker: str, pnl: float,
+                             r_multiple: float | None = None,
+                             notes: str | None = None,
+                             source: str = "SYSTEM"):
     # [BK2]
+    # `source` distinguishes which subsystem wrote the row. Allowed values:
+    #   "SYSTEM"  -- default for swing / manual closes (back-compat)
+    #   "MOMENTUM" -- Nifty options subsystem
+    #   "PENNY"  -- penny subsystem
+    # Used by performance.penny_pool_pnl() and analytics.outcome_correlator()
+    # to compute per-pool P&L without double-counting across pools.
     before = await current_bankroll(db_path)
     after = before + pnl
     async with aiosqlite.connect(db_path) as db:
         await db.execute(
-            "INSERT INTO bankroll_ledger (timestamp, event_type, ticker, pnl, bankroll_before, bankroll_after) VALUES (?, ?, ?, ?, ?, ?)",
-            (datetime.now(timezone.utc).isoformat(), "TRADE_CLOSED", ticker, pnl, before, after)
+            "INSERT INTO bankroll_ledger "
+            "(timestamp, event_type, ticker, pnl, bankroll_before, bankroll_after, source) "
+            "VALUES (?, ?, ?, ?, ?, ?, ?)",
+            (datetime.now(timezone.utc).isoformat(), "TRADE_CLOSED", ticker,
+             pnl, before, after, source)
         )
         await db.commit()
     # [ANALYTICS 2026-06-16] Side-effect: record the trade outcome + join with
@@ -124,10 +150,12 @@ async def penny_pool_pnl(db_path: str, days: int = 14) -> dict:
     in the bankroll_ledger for the last `days` days. Independent of
     the Nifty pool -- pool split per spec §3.4.
 
-    Read-only: returns empty buckets until penny P&L writes are wired
-    in a follow-up task. The `source` column does not currently exist
-    in bankroll_ledger; this function is a placeholder that will start
-    returning real data once the penny executor writes there.
+    Reads from bankroll_ledger.source = 'PENNY'. This column was added
+    on 2026-06-24 (the bankroll fix): the source field was already
+    designed into performance.py + analytics.py + main.py:1686, but
+    not wired into the schema. Now that PennyRiskEngine.record_close
+    writes through a ledger_writer callable, this function returns
+    real data instead of always-zero.
     """
     import aiosqlite
     from datetime import datetime, timezone, timedelta

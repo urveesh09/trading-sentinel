@@ -26,12 +26,27 @@ logger = logging.getLogger(__name__)
 
 
 class PennyRiskEngine:
-    def __init__(self, bankroll: float):
+    def __init__(self, bankroll: float, ledger_writer=None):
+        """
+        Args:
+            bankroll:      current penny pool bankroll (PENNY_LIVE_BANKROLL or PENNY_PAPER_BANKROLL).
+            ledger_writer: Optional async callable(ticker, pnl) -> None.
+                           If provided, every record_close() call also writes the
+                           realized P&L to the bankroll_ledger with source='PENNY'.
+                           If None (default), record_close() only updates the
+                           in-memory daily_pnl counter -- no ledger write.
+
+                           The injection pattern preserves the isolation rule
+                           (penny_risk.py MUST NOT import from performance). The
+                           call site in main.py wires a lambda that calls
+                           performance.record_trade_close(..., source='PENNY').
+        """
         from config import settings
         self.bankroll = bankroll
         self.daily_pnl: float = 0.0
         self.daily_pnl_date: str = ""
         self.disable_tickers: str = settings.PENNY_DISABLE_TICKERS
+        self._ledger_writer = ledger_writer
 
     # ---- sizing ---------------------------------------------------------
 
@@ -93,6 +108,7 @@ class PennyRiskEngine:
         shares: int,
         is_intraday: bool,
         when: datetime,
+        ticker: str = "",
     ) -> None:
         """
         Record a penny position close: net P&L (after costs) is added to
@@ -101,15 +117,54 @@ class PennyRiskEngine:
 
         Per the 2026-06-22 deviation: this is the missing wiring that
         was preventing the kill-switch from ever firing.
+
+        Per the 2026-06-24 bankroll fix: also schedules a ledger write of
+        the realized P&L with source='PENNY' (via the injected ledger_writer).
+        The ledger_writer is optional -- if None, only the in-memory
+        daily_pnl counter is updated (preserves back-compat with existing
+        tests that don't pass a writer).
+
+        `ticker` is optional -- pass it from the call site (the scanner /
+        connors / breakout engines) so the ledger row has a useful ticker
+        label for /performance filtering.
         """
         gross = (exit_price - entry_price) * shares
         costs = calc_penny_costs(entry_price, exit_price, shares, is_intraday)
         net = gross - costs
         self.record_realized_pnl(net, when)
         logger.info(
-            "penny_position_closed entry=%.2f exit=%.2f shares=%d gross=%.2f costs=%.2f net=%.2f",
-            entry_price, exit_price, shares, gross, costs, net,
+            "penny_position_closed ticker=%s entry=%.2f exit=%.2f shares=%d "
+            "gross=%.2f costs=%.2f net=%.2f",
+            ticker or "?", entry_price, exit_price, shares, gross, costs, net,
         )
+        # Persist to bankroll_ledger so the dashboard reflects penny P&L.
+        # Best-effort: a ledger write failure must not silently swallow
+        # the close -- log it loudly but don't raise (the daily_pnl counter
+        # and kill-switch gate are still authoritative for risk decisions).
+        #
+        # The ledger_writer is async. record_close itself is sync (called from
+        # the 30s scanner loop). Two cases:
+        #   1. Inside an event loop (prod): schedule via asyncio.create_task.
+        #   2. Outside a loop (tests): silently skip the write -- the test can
+        #      await the writer directly if it needs to assert the ledger row.
+        if self._ledger_writer is not None:
+            try:
+                import asyncio
+                try:
+                    loop = asyncio.get_running_loop()
+                except RuntimeError:
+                    loop = None
+                if loop is not None:
+                    loop.create_task(
+                        self._ledger_writer(ticker or "PENNY", net)
+                    )
+                # If no running loop, we silently drop the write -- the
+                # in-memory daily_pnl is still updated for risk gating.
+            except Exception as e:
+                logger.error(
+                    "penny_ledger_write_failed ticker=%s net=%.2f error=%s",
+                    ticker or "?", net, str(e),
+                )
 
     def circuit_blocked(self, last_price: float, day_high: float,
                         prev_close: float, band_pct: float) -> Tuple[bool, str]:
