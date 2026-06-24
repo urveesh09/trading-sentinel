@@ -51,6 +51,52 @@ async def current_bankroll(db_path: str) -> float:
         row = await cursor.fetchone()
         return row[0] if row else settings.INITIAL_BANKROLL
 
+
+async def nifty_bankroll(db_path: str) -> float:
+    """
+    [NIFTY-BANKROLL 2026-06-24] Strict-separation Nifty-subsystem balance.
+
+    Returns the Nifty-subsystem bankroll = swing balance + momentum balance,
+    computed as INITIAL_BANKROLL plus the sum of every ledger row whose
+    source is 'SYSTEM' or 'MOMENTUM'. PENNY rows are EXCLUDED.
+
+    Why this exists: the legacy current_bankroll() reads the LAST row of
+    the ledger, which can be a PENNY row after the first penny close. That
+    meant a swing RiskEngine constructed with the result was sizing off a
+    penny-contaminated number. Strict separation per Uru 2026-06-24
+    ("keep them separate, separate module systems from the start").
+
+    Used by:
+      - swing RiskEngine construction in main.py (swing screener)
+      - swing RiskEngine.update_bankroll() sync after swing trade close
+      - momentum screener (swing sub-pool sizing)
+      - /signals, /momentum-signals, /performance endpoints (swing display)
+      - /bankroll endpoint (Nifty-subsystem balance)
+      - check_circuit_breakers() -- swing CBs now measured against the
+        Nifty-subsystem balance, NOT the last ledger row. This is a
+        stricter, more honest swing risk gate: a penny loss cannot
+        artificially trip or inflate the swing CB trigger.
+
+    Penny has its own balance path: pool_breakdown().penny.balance.
+
+    Returns: float, never None. Falls back to INITIAL_BANKROLL if no
+    SYSTEM/MOMENTUM rows exist.
+    """
+    import aiosqlite
+    total = 0.0
+    try:
+        async with aiosqlite.connect(db_path) as db:
+            async with db.execute(
+                "SELECT COALESCE(SUM(pnl), 0.0) FROM bankroll_ledger "
+                "WHERE source IN ('SYSTEM', 'MOMENTUM')"
+            ) as cur:
+                row = await cur.fetchone()
+                if row and row[0] is not None:
+                    total = float(row[0])
+    except Exception as e:
+        logger.warning("nifty_bankroll_query_failed error=%s", str(e))
+    return settings.INITIAL_BANKROLL + total
+
 async def record_trade_close(db_path: str, ticker: str, pnl: float,
                              r_multiple: float | None = None,
                              notes: str | None = None,
@@ -85,12 +131,21 @@ async def record_trade_close(db_path: str, ticker: str, pnl: float,
 async def check_circuit_breakers(db_path: str) -> tuple[bool, list[str]]:
     halted = False
     reasons = []
-    
-    bankroll = await current_bankroll(db_path)
-    
+
+    # 2026-06-24 strict separation: swing CBs are measured against the
+    # Nifty-subsystem balance (swing + momentum), not the last ledger row.
+    # A penny P&L close no longer affects swing CB thresholds -- the penny
+    # subsystem has its own kill-switch in PennyRiskEngine.
+    bankroll = await nifty_bankroll(db_path)
+
     # [CB3] & [BK5]
+    # Peak is the highest Nifty-subsystem bankroll_after seen. Filter out
+    # PENNY rows so a large penny allocation or penny win doesn't bump peak.
     async with aiosqlite.connect(db_path) as db:
-        cursor = await db.execute("SELECT MAX(bankroll_after) FROM bankroll_ledger")
+        cursor = await db.execute(
+            "SELECT MAX(bankroll_after) FROM bankroll_ledger "
+            "WHERE source IN ('SYSTEM', 'MOMENTUM')"
+        )
         peak = (await cursor.fetchone())[0]
         
     if bankroll < settings.INITIAL_BANKROLL * settings.CB_FLOOR_PCT:
@@ -106,11 +161,15 @@ async def check_circuit_breakers(db_path: str) -> tuple[bool, list[str]]:
     # Timestamps are stored as UTC ISO-8601 with timezone suffix (e.g. "2026-05-11T04:30:00+00:00").
     # SQLite's date() does NOT parse timezone suffixes and returns NULL for such strings,
     # so we shift the UTC timestamp by +5.5h inside SQL before extracting the date.
+    # 2026-06-24 strict separation: source IN ('SYSTEM', 'MOMENTUM') -- penny
+    # losses do not contribute to the swing daily-loss CB threshold. The penny
+    # subsystem has its own kill-switch in PennyRiskEngine.
     today = datetime.now(IST).date().isoformat()
     async with aiosqlite.connect(db_path) as db:
         cursor = await db.execute(
             """SELECT SUM(pnl) FROM bankroll_ledger
                WHERE event_type='TRADE_CLOSED'
+               AND source IN ('SYSTEM', 'MOMENTUM')
                AND date(datetime(
                    REPLACE(REPLACE(timestamp, '+00:00', ''), 'Z', ''),
                    '+5 hours', '+30 minutes'
@@ -123,8 +182,15 @@ async def check_circuit_breakers(db_path: str) -> tuple[bool, list[str]]:
             reasons.append("CB_DAILY_LOSS")
 
     # [CB2] Consecutive losses
+    # 2026-06-24 strict separation: streak counts Nifty-subsystem trades only.
+    # Penny losses do not contribute to the swing consecutive-losses counter.
     async with aiosqlite.connect(db_path) as db:
-        cursor = await db.execute("SELECT pnl FROM bankroll_ledger WHERE event_type='TRADE_CLOSED' ORDER BY id DESC LIMIT 10")
+        cursor = await db.execute(
+            "SELECT pnl FROM bankroll_ledger "
+            "WHERE event_type='TRADE_CLOSED' "
+            "AND source IN ('SYSTEM', 'MOMENTUM') "
+            "ORDER BY id DESC LIMIT 10"
+        )
         rows = await cursor.fetchall()
         streak = 0
         for r in rows:
