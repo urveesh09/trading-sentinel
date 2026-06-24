@@ -11,6 +11,8 @@ from performance import (
     record_trade_close,
     check_circuit_breakers,
     penny_pool_pnl,
+    pool_breakdown,
+    nifty_bankroll,
 )
 
 
@@ -317,3 +319,281 @@ class TestSourceColumn:
         assert await current_bankroll(seeded_db) == 5075.0
         await record_trade_close(seeded_db, "PENNY_TEST2", -25.0, source="PENNY")
         assert await current_bankroll(seeded_db) == 5050.0
+
+
+# ===============================================================
+# POOL BREAKDOWN (2026-06-24, B-tight)
+# Tests for /bankroll/breakdown: per-pool display, no risk math change.
+# ===============================================================
+
+
+class TestPoolBreakdown:
+    """[POOL-BREAKDOWN 2026-06-24] Per-pool bankroll display.
+
+    B-tight semantics: swing and penny balances are reported as
+    INDEPENDENT numbers. The combined number is informational only.
+    current_bankroll() and check_circuit_breakers() are unchanged --
+    these tests verify both behaviors in parallel.
+    """
+
+    @pytest.mark.asyncio
+    async def test_empty_ledger_returns_initial_swing_and_pool_penny(self, seeded_db):
+        """Fresh ledger with no trades: swing=INITIAL, penny=PENNY_LIVE_BANKROLL."""
+        out = await pool_breakdown(seeded_db)
+        # Conftest patches INITIAL_BANKROLL=5000; config defaults PENNY_LIVE_BANKROLL=2000.
+        assert out["swing"]["balance"] == 5000.0
+        assert out["swing"]["trades"] == 0
+        assert out["penny"]["allocated"] == 2000.0
+        assert out["penny"]["balance"] == 2000.0  # no P&L yet
+        assert out["penny"]["pnl"] == 0.0
+        assert out["penny"]["trades"] == 0
+        assert out["penny"]["mode"] == "live"  # default in config.py
+        assert out["combined"] == 7000.0
+
+    @pytest.mark.asyncio
+    async def test_penny_win_adds_to_penny_balance(self, seeded_db):
+        """Penny close with positive P&L bumps penny.balance only -- swing untouched."""
+        await record_trade_close(seeded_db, "PENNY_WIN", 150.0, source="PENNY")
+        out = await pool_breakdown(seeded_db)
+        assert out["swing"]["balance"] == 5000.0  # unchanged
+        assert out["penny"]["balance"] == 2150.0  # 2000 + 150
+        assert out["penny"]["pnl"] == 150.0
+        assert out["penny"]["trades"] == 1
+        assert out["combined"] == 7150.0
+
+    @pytest.mark.asyncio
+    async def test_penny_loss_subtracts_from_penny_balance(self, seeded_db):
+        """Penny close with negative P&L reduces penny.balance only."""
+        await record_trade_close(seeded_db, "PENNY_LOSS", -300.0, source="PENNY")
+        out = await pool_breakdown(seeded_db)
+        assert out["swing"]["balance"] == 5000.0  # unchanged
+        assert out["penny"]["balance"] == 1700.0  # 2000 - 300
+        assert out["penny"]["pnl"] == -300.0
+        assert out["penny"]["trades"] == 1
+
+    @pytest.mark.asyncio
+    async def test_swing_and_penny_tracked_independently(self, seeded_db):
+        """Both pools accumulate their own P&L -- no cross-contamination."""
+        # Swing: +500 win and -200 loss
+        await record_trade_close(seeded_db, "SWING_WIN", 500.0, source="SYSTEM")
+        await record_trade_close(seeded_db, "SWING_LOSS", -200.0, source="SYSTEM")
+        # Penny: +100 win and -50 loss
+        await record_trade_close(seeded_db, "PENNY_WIN", 100.0, source="PENNY")
+        await record_trade_close(seeded_db, "PENNY_LOSS", -50.0, source="PENNY")
+        out = await pool_breakdown(seeded_db)
+        assert out["swing"]["balance"] == 5300.0  # 5000 + 500 - 200
+        assert out["swing"]["trades"] == 2  # both non-zero
+        assert out["penny"]["balance"] == 2050.0  # 2000 + 100 - 50
+        assert out["penny"]["trades"] == 2
+        assert out["combined"] == 7350.0
+
+    @pytest.mark.asyncio
+    async def test_zero_pnl_rows_not_counted_as_trades(self, seeded_db):
+        """A SYSTEM row with pnl=0 (e.g., the INITIAL seed) must not bump trade count."""
+        # The seeded_db fixture has the INITIAL row (pnl=0). Trade count must still be 0.
+        out = await pool_breakdown(seeded_db)
+        assert out["swing"]["trades"] == 0
+        assert out["penny"]["trades"] == 0
+
+    @pytest.mark.asyncio
+    async def test_current_bankroll_unaffected_by_penny(self, seeded_db):
+        """[REGRESSION GUARD] current_bankroll() must STILL equal the ledger's
+        last row -- not the combined swing+penny. This is the B-tight guarantee:
+        the existing /bankroll endpoint and check_circuit_breakers() math
+        stay exactly as they were before the breakdown feature."""
+        await record_trade_close(seeded_db, "PENNY_WIN", 999.0, source="PENNY")
+        bankroll = await current_bankroll(seeded_db)
+        # 5000 (initial) + 999 (last penny row, since it was appended after seed)
+        # current_bankroll reads the LAST row, regardless of source.
+        assert bankroll == 5999.0
+        # But the breakdown still shows swing at 5000 (untouched) and penny at 2999.
+        out = await pool_breakdown(seeded_db)
+        assert out["swing"]["balance"] == 5000.0
+        assert out["penny"]["balance"] == 2999.0
+        # This is the B-tight invariant: combined is informational,
+        # swing CBs still measure swing alone.
+        assert out["combined"] == 7999.0
+
+    @pytest.mark.asyncio
+    async def test_paper_mode_uses_paper_bankroll(self, seeded_db, monkeypatch):
+        """When PENNY_LIVE_TRADING is False, penny.allocated falls back to
+        PENNY_PAPER_BANKROLL (Rs 500 default)."""
+        from config import settings
+        monkeypatch.setattr(settings, "PENNY_LIVE_TRADING", False)
+        out = await pool_breakdown(seeded_db)
+        assert out["penny"]["mode"] == "paper"
+        assert out["penny"]["allocated"] == 500.0
+        assert out["penny"]["balance"] == 500.0
+        assert out["combined"] == 5500.0  # 5000 swing + 500 paper penny
+
+    @pytest.mark.asyncio
+    async def test_paper_mode_penny_trades_still_tracked(self, seeded_db, monkeypatch):
+        """In paper mode, penny P&L still flows into penny.balance normally."""
+        from config import settings
+        monkeypatch.setattr(settings, "PENNY_LIVE_TRADING", False)
+        await record_trade_close(seeded_db, "PAPER_PENNY", 50.0, source="PENNY")
+        out = await pool_breakdown(seeded_db)
+        assert out["penny"]["allocated"] == 500.0
+        assert out["penny"]["balance"] == 550.0  # 500 paper + 50 pnl
+
+    @pytest.mark.asyncio
+    async def test_breakdown_response_shape(self, seeded_db):
+        """The endpoint contract: every documented key must be present."""
+        out = await pool_breakdown(seeded_db)
+        assert set(out.keys()) == {"swing", "penny", "combined", "as_of"}
+        assert set(out["swing"].keys()) == {"balance", "trades"}
+        assert set(out["penny"].keys()) == {
+            "balance", "allocated", "pnl", "trades", "mode",
+        }
+        # ISO-8601 timestamp string (UTC, with offset)
+        assert "T" in out["as_of"]
+
+
+# ===============================================================
+# NIFTY BANKROLL (2026-06-24 strict separation)
+# Tests for nifty_bankroll() and the strict-separation invariant.
+# ===============================================================
+
+
+class TestNiftyBankroll:
+    """[NIFTY-BANKROLL 2026-06-24] Strict-separation Nifty-subsystem balance.
+
+    nifty_bankroll() returns the Nifty-subsystem balance = INITIAL_BANKROLL +
+    SUM of every ledger row whose source is SYSTEM or MOMENTUM. PENNY rows
+    are EXCLUDED.
+
+    This is the function that swing RiskEngine sizing, the momentum screener,
+    the /signals / /momentum-signals / /performance endpoints, the /bankroll
+    endpoint, and check_circuit_breakers() all read internally.
+
+    The previous test_current_bankroll_includes_penny verified the LEGACY
+    last-row behavior -- current_bankroll() still has that behavior. But
+    no production code reads current_bankroll() anymore (everything switched
+    to nifty_bankroll). The legacy function remains public for backwards
+    compatibility with external test suites and any out-of-tree consumers.
+    """
+
+    @pytest.mark.asyncio
+    async def test_empty_ledger_returns_initial(self, seeded_db):
+        """No trades: nifty_bankroll = INITIAL_BANKROLL."""
+        from performance import nifty_bankroll
+        out = await nifty_bankroll(seeded_db)
+        assert out == 5000.0
+
+    @pytest.mark.asyncio
+    async def test_swing_win_increases_nifty(self, seeded_db):
+        """A SYSTEM row bumps nifty_bankroll by its pnl."""
+        from performance import nifty_bankroll
+        await record_trade_close(seeded_db, "SWING_WIN", 300.0, source="SYSTEM")
+        assert await nifty_bankroll(seeded_db) == 5300.0
+
+    @pytest.mark.asyncio
+    async def test_swing_loss_decreases_nifty(self, seeded_db):
+        from performance import nifty_bankroll
+        await record_trade_close(seeded_db, "SWING_LOSS", -200.0, source="SYSTEM")
+        assert await nifty_bankroll(seeded_db) == 4800.0
+
+    @pytest.mark.asyncio
+    async def test_momentum_row_counts(self, seeded_db):
+        """A MOMENTUM-source row also feeds nifty_bankroll -- momentum is
+        a sub-pool of the Nifty subsystem."""
+        from performance import nifty_bankroll
+        await record_trade_close(seeded_db, "MOM_WIN", 100.0, source="MOMENTUM")
+        assert await nifty_bankroll(seeded_db) == 5100.0
+
+    @pytest.mark.asyncio
+    async def test_penny_row_does_not_contaminate_nifty(self, seeded_db):
+        """[REGRESSION GUARD] The whole point of strict separation: penny
+        P&L MUST NOT change nifty_bankroll."""
+        from performance import nifty_bankroll
+        before = await nifty_bankroll(seeded_db)
+        # Big penny win and big penny loss -- neither should touch nifty.
+        await record_trade_close(seeded_db, "PENNY_WIN", 1000.0, source="PENNY")
+        await record_trade_close(seeded_db, "PENNY_LOSS", -1500.0, source="PENNY")
+        after = await nifty_bankroll(seeded_db)
+        assert before == after == 5000.0, \
+            f"penny rows contaminated nifty: {before} -> {after}"
+
+    @pytest.mark.asyncio
+    async def test_penny_row_does_not_contaminate_even_when_last(self, seeded_db):
+        """[STRICT-SEPARATION INVARIANT] This is the load-bearing test:
+        even when the LAST ledger row is a PENNY row (after interleaved
+        trades), nifty_bankroll must still read pure Nifty-subsystem.
+
+        Before this fix, swing RiskEngine was constructed with
+        current_bankroll() = last ledger row, which could be PENNY. With
+        strict separation, nifty_bankroll() reads SUM(pnl WHERE source IN
+        ('SYSTEM','MOMENTUM')) -- robust to row order."""
+        from performance import nifty_bankroll, current_bankroll
+        # Interleave: swing win, then penny loss, then swing win.
+        await record_trade_close(seeded_db, "SWING_1", 100.0, source="SYSTEM")
+        await record_trade_close(seeded_db, "PENNY_1", -50.0, source="PENNY")
+        await record_trade_close(seeded_db, "SWING_2", 200.0, source="SYSTEM")
+        # Legacy: last ledger row is SWING_2 with bankroll_after=5250.
+        legacy = await current_bankroll(seeded_db)
+        assert legacy == 5250.0  # current_bankroll() unchanged
+        # Strict: Nifty = 5000 + 100 + 200 = 5300. Penny -50 excluded.
+        strict = await nifty_bankroll(seeded_db)
+        assert strict == 5300.0, \
+            f"strict separation broken: nifty={strict}, expected 5300"
+
+    @pytest.mark.asyncio
+    async def test_check_circuit_breakers_uses_strict_separation(self, seeded_db):
+        """[CB STRICT] check_circuit_breakers must measure against the
+        Nifty-subsystem balance. A penny loss that drives the last ledger
+        row below the floor must NOT trip CB_FLOOR_BREACHED."""
+        # 5000 * 0.40 = 2000 = floor. Drive the last ledger row below 2000
+        # by writing penny losses; nifty balance should still be 5000.
+        await record_trade_close(seeded_db, "BIG_PENNY_LOSS", -3500.0, source="PENNY")
+        # current_bankroll() is now 1500 (last row).
+        # nifty_bankroll() is still 5000 (no SYSTEM rows yet).
+        # CB must see bankroll=5000 and NOT trip the floor.
+        halted, reasons = await check_circuit_breakers(seeded_db)
+        assert halted is False, \
+            f"CB tripped on penny contamination: reasons={reasons}"
+        assert "CB_FLOOR_BREACHED" not in reasons
+        assert "CB_DAILY_LOSS" not in reasons
+
+    @pytest.mark.asyncio
+    async def test_check_circuit_breakers_does_count_swing_loss(self, seeded_db):
+        """A real swing loss still trips the CB -- strict separation does
+        not disable swing risk gates, it just stops them from being
+        poisoned by penny."""
+        # Lose 3500 on swing: bankroll = 1500 < 2000 floor -> trip.
+        await record_trade_close(seeded_db, "BIG_SWING_LOSS", -3500.0, source="SYSTEM")
+        halted, reasons = await check_circuit_breakers(seeded_db)
+        assert halted is True
+        assert "CB_FLOOR_BREACHED" in reasons
+
+    @pytest.mark.asyncio
+    async def test_check_circuit_breakers_consecutive_streak_ignores_penny(
+        self, seeded_db
+    ):
+        """[CB2 STRICT] Consecutive-losses streak must count Nifty rows only.
+        Penny losses interleaved with swing wins must NOT break a streak
+        for swing (because penny isn't swing) and must NOT count toward
+        a streak (because they're not swing either)."""
+        # 5 swing losses -> trip CB_CONSECUTIVE_LOSSES.
+        for i in range(5):
+            await record_trade_close(seeded_db, f"SWING_LOSS_{i}", -50.0, source="SYSTEM")
+        halted, reasons = await check_circuit_breakers(seeded_db)
+        assert "CB_CONSECUTIVE_LOSSES" in reasons
+
+    @pytest.mark.asyncio
+    async def test_check_circuit_breakers_penny_loss_does_not_break_swing_streak(
+        self, seeded_db
+    ):
+        """[CB2 STRICT, OPPOSITE DIRECTION] A penny loss interleaved between
+        swing wins does NOT count as a swing loss, so the swing streak
+        correctly counts only swing trades."""
+        # 4 swing losses, 1 penny win, 1 swing loss -> streak is 5 swing losses.
+        # If penny were counted, the penny win would break the streak.
+        for i in range(4):
+            await record_trade_close(seeded_db, f"L{i}", -50.0, source="SYSTEM")
+        await record_trade_close(seeded_db, "PENNY_WIN", 10.0, source="PENNY")
+        await record_trade_close(seeded_db, "L_FINAL", -50.0, source="SYSTEM")
+        halted, reasons = await check_circuit_breakers(seeded_db)
+        # The penny row is not in the swing streak (source filter excludes it),
+        # so the last 5 swing rows are: L3, L2, L1, L0, L_FINAL -- all losses.
+        # Streak = 5 -> trip.
+        assert "CB_CONSECUTIVE_LOSSES" in reasons

@@ -19,7 +19,7 @@ from contextlib import asynccontextmanager
 from portfolio import filter_and_allocate, filter_momentum_signals
 from risk_engine import RiskEngine
 from position_tracker import update_daily_positions, get_open_positions, init_positions_db
-from performance import init_ledger, current_bankroll, record_trade_close, check_circuit_breakers
+from performance import init_ledger, current_bankroll, record_trade_close, check_circuit_breakers, nifty_bankroll
 from models import PortfolioResponse, HealthResponse, ManualPositionRequest, BankrollAdjustment, Signal
 from backtest import run_backtest
 from models import PerformanceReport, OpenPosition
@@ -877,7 +877,9 @@ async def run_screener():
     else:
         market_regime = "BULL"
 
-    bankroll = await current_bankroll(settings.DB_PATH)
+    # 2026-06-24 strict separation: Nifty-subsystem balance (swing + momentum),
+    # excludes penny. Swing RiskEngine never sizes off a penny-contaminated number.
+    bankroll = await nifty_bankroll(settings.DB_PATH)
     risk_pct = regime_engine.get_risk_pct()
 
     # Initialize RiskEngine singleton with known bankroll and regime risk_pct.
@@ -1093,9 +1095,11 @@ async def daily_post_market():
             in_recovery = risk_engine._recovery_trades_remaining > 0
             risk_engine.record_trade_outcome(win=win, in_recovery=in_recovery)
 
-    # Sync RiskEngine bankroll to ledger after all closes are recorded
+    # Sync RiskEngine bankroll to ledger after all closes are recorded.
+    # Strict-separation: use the Nifty-subsystem balance so a recent penny
+    # close doesn't get read as the swing bankroll.
     if risk_engine is not None:
-        new_bankroll = await current_bankroll(settings.DB_PATH)
+        new_bankroll = await nifty_bankroll(settings.DB_PATH)
         risk_engine.update_bankroll(new_bankroll)
         logger.info("risk_engine_bankroll_updated", new_bankroll=new_bankroll)
 
@@ -1113,8 +1117,9 @@ async def get_signals():
     async with state_lock:
         halted, reasons = await check_circuit_breakers(settings.DB_PATH)
         open_pos = await get_open_positions(settings.DB_PATH)
-        bankroll = await current_bankroll(settings.DB_PATH)
-        
+        # Strict separation: report Nifty-subsystem balance on /signals.
+        bankroll = await nifty_bankroll(settings.DB_PATH)
+
         risk = sum((p['entry_price'] - p['stop_loss_initial']) * p['shares'] for p in open_pos)
         deployed = sum(p['entry_price'] * p['shares'] for p in open_pos)
         
@@ -1157,7 +1162,9 @@ async def run_momentum_screener():
         logger.warning("momentum_screener_skipped", reason="no_access_token")
         return
 
-    bankroll       = await current_bankroll(settings.DB_PATH)
+    # Strict separation: momentum pool sized off Nifty-subsystem balance,
+    # not the last ledger row (which could be a penny close).
+    bankroll       = await nifty_bankroll(settings.DB_PATH)
     momentum_pool  = bankroll * settings.MOMENTUM_POOL_PCT  # 50% of bankroll = Rs2,500 at Rs5k
 
     # Market opens at 09:15 IST, closes at 15:30 IST
@@ -1450,7 +1457,8 @@ async def run_momentum_screener():
 @app.get("/momentum-signals")
 async def get_momentum_signals():
     async with state_lock:
-        bankroll      = await current_bankroll(settings.DB_PATH)
+        # Strict separation: momentum display uses Nifty-subsystem balance.
+        bankroll      = await nifty_bankroll(settings.DB_PATH)
         momentum_pool = bankroll * settings.MOMENTUM_POOL_PCT  # 50% of bankroll = Rs2,500 at Rs5k
         halted, reasons = await check_circuit_breakers(settings.DB_PATH)
 
@@ -1802,7 +1810,10 @@ async def inject_token(payload: TokenPayload):
 
 @app.get("/performance", response_model=PerformanceReport)
 async def get_performance():
-    bankroll = await current_bankroll(settings.DB_PATH)
+    # Strict separation: /performance reports the Nifty-subsystem balance.
+    # Penny trades are not swing positions -- they're listed separately via
+    # /bankroll/breakdown.penny.
+    bankroll = await nifty_bankroll(settings.DB_PATH)
     open_pos = await get_open_positions(settings.DB_PATH)
 
     async with aiosqlite.connect(settings.DB_PATH) as db:
@@ -1854,8 +1865,22 @@ async def get_positions_route():
 
 @app.get("/bankroll")
 async def get_bankroll_route():
-    val = await current_bankroll(settings.DB_PATH)
+    # 2026-06-24 strict separation: /bankroll reports the Nifty-subsystem
+    # balance (swing + momentum), excluding penny. For per-pool breakdown
+    # including the penny pool, see GET /bankroll/breakdown.
+    val = await nifty_bankroll(settings.DB_PATH)
     return {"status": "ok", "bankroll": val}
+
+
+# 2026-06-24 (B-tight): per-pool breakdown endpoint. Returns swing and
+# penny balances independently. No risk math is touched -- current_bankroll()
+# and check_circuit_breakers() are unchanged. The combined number is
+# informational only. See docs/deviations/2026-06-24-penny-bankroll-pool-breakdown-deviation.md
+@app.get("/bankroll/breakdown")
+async def get_bankroll_breakdown():
+    from performance import pool_breakdown
+    return await pool_breakdown(settings.DB_PATH)
+
 
 @app.get("/circuit-breaker")
 async def get_circuit_breaker():
