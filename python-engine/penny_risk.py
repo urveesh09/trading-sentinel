@@ -245,8 +245,17 @@ def calc_penny_costs(
 
     Returns total cost in rupees (brokerage + STT + exchange + stamp +
     SEBI + GST).
+
+    [PENNY-TEST 2026-06-24] Honors PENNY_BROKERAGE_BYPASS: when set, returns
+    0.0 so P&L math is gross (no cost erosion). This lets the operator
+    measure system proactiveness -- how many trades fire, what the gross
+    edge is -- on a Rs 2,500 bankroll where Rs 20/order + STT + GST
+    otherwise eat the bankroll after 10-15 round trips. The flag is
+    intended for test/paper-mode only; live trading should keep it False.
     """
     from config import settings
+    if settings.PENNY_BROKERAGE_BYPASS:
+        return 0.0
     buy_value = entry_price * shares
     sell_value = exit_price * shares
 

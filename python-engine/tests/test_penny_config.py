@@ -27,11 +27,18 @@ def test_penny_connors_settings():
 
 def test_penny_breakout_settings():
     from config import settings
-    assert settings.PENNY_BREAKOUT_VOL_MULT == 3.0
+    # [PENNY-AGGRESSIVE 2026-06-24] Relaxed from 3.0 -> 1.8 to allow more entries.
+    assert settings.PENNY_BREAKOUT_VOL_MULT == 1.8
     assert settings.PENNY_BREAKOUT_TARGET_R == 2.0
     assert settings.PENNY_BREAKOUT_TIME_START == 10 * 60 + 30   # 10:30
     assert settings.PENNY_BREAKOUT_TIME_END == 14 * 60 + 30     # 14:30
     assert settings.PENNY_BREAKOUT_TIME_EXIT == 15 * 60         # 15:00
+    # [PENNY-TIME-STOP 2026-06-24] new soft time-stop
+    assert settings.PENNY_TIME_STOP_MIN == 30
+    # [PENNY-PREMARKET 2026-06-24] pre-market digest defaults
+    assert settings.PENNY_PREMARKET_REPORT_HOUR == 7
+    assert settings.PENNY_PREMARKET_REPORT_MIN == 50
+    assert settings.PENNY_PREMARKET_TOP_N == 10
     assert settings.PENNY_MIS_SMART_EOD_TIME == 14 * 60 + 30    # 14:30
     assert settings.PENNY_MIS_SMART_EOD_WITHIN_R == 0.5
     assert settings.PENNY_MIS_SMART_EOD_LOSS_MIN == 30

@@ -539,6 +539,26 @@ def register_penny_scheduler_jobs(scheduler):
         hour=settings.PENNY_REFRESH_HOUR, minute=0,
         id="penny_universe_refresh",
     )
+    # [PENNY-PREMARKET 2026-06-24] Pre-market Telegram digest -- fires
+    # once per weekday at PENNY_PREMARKET_REPORT_HOUR:PENNY_PREMARKET_REPORT_MIN
+    # IST (default 07:50). Reads the universe JSON, lists size + top-N,
+    # delivers via Telegram -> webhook fallback. Gives the operator a
+    # "universe is N today" signal BEFORE market opens so silence at
+    # 10:30 / 11:30 / 12:30 isn't ambiguous (was the universe empty, or
+    # did the strategies reject?). Setting hour=0 disables the job.
+    if settings.PENNY_PREMARKET_REPORT_HOUR > 0:
+        async def _run_penny_premarket_report():
+            from penny_premarket_report import run_premarket_report
+            try:
+                await run_premarket_report()
+            except Exception as e:
+                logger.error("penny_premarket_report_failed", error=str(e))
+        scheduler.add_job(
+            _run_penny_premarket_report, "cron",
+            hour=settings.PENNY_PREMARKET_REPORT_HOUR,
+            minute=settings.PENNY_PREMARKET_REPORT_MIN,
+            id="penny_premarket_report",
+        )
     scheduler.add_job(
         run_penny_regime_compute, "cron",
         hour=9, minute=20,
