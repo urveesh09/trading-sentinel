@@ -71,6 +71,17 @@ _penny_regime_engine = PennyRegimeEngine()
 _penny_scanner = None
 
 
+# 2026-06-24 bankroll fix: single shared ledger_writer used by every penny
+# risk engine. Writes penny realized P&L to bankroll_ledger with source='PENNY'
+# so the dashboard reflects penny-side wins/losses instead of being stuck at
+# the swing initial bankroll.
+async def _penny_ledger_writer(ticker: str, pnl: float) -> None:
+    from performance import record_trade_close
+    await record_trade_close(
+        settings.DB_PATH, ticker, pnl, source="PENNY",
+    )
+
+
 def _get_penny_universe():
     """Lazy-load PennyUniverse from the static JSON. Returns None on failure."""
     global _penny_universe
@@ -101,6 +112,7 @@ def _get_penny_scanner():
         regime=_penny_regime_engine.today_regime.value
         if _penny_regime_engine.today_regime is not None
         else "PR1_CALM",
+        ledger_writer=_penny_ledger_writer,
     )
     logger.info("penny_scanner_initialized", paper_mode=paper_mode)
     return _penny_scanner
@@ -252,7 +264,10 @@ async def run_penny_hourly_report():
         positions = await get_open_positions(settings.DB_PATH)
         penny_pos = [p for p in positions if p.get("source") == "PENNY"]
         bankroll = settings.PENNY_PAPER_BANKROLL if not settings.PENNY_LIVE_TRADING else settings.PENNY_LIVE_BANKROLL
-        risk = PennyRiskEngine(bankroll=bankroll)
+        # 2026-06-24 bankroll fix: pass the module-level ledger_writer so
+        # penny P&L closes flow into the dashboard's bankroll_ledger with
+        # source='PENNY'.
+        risk = PennyRiskEngine(bankroll=bankroll, ledger_writer=_penny_ledger_writer)
         deployed = sum((p.get("entry_price", 0.0) * p.get("shares", 0)) for p in penny_pos)
         unrealised = sum((p.get("current_price", 0.0) - p.get("entry_price", 0.0)) * p.get("shares", 0) for p in penny_pos)
         await run_hourly_report(
@@ -576,7 +591,9 @@ async def lifespan(app: FastAPI):
         from penny_risk import PennyRiskEngine
         from config import settings
         bankroll = settings.PENNY_PAPER_BANKROLL if _penny_scanner is None or _penny_scanner.paper_mode else settings.PENNY_LIVE_BANKROLL
-        new_risk = PennyRiskEngine(bankroll=bankroll)
+        # 2026-06-24 bankroll fix: re-attach the shared ledger_writer after
+        # the daily reset (the new risk engine replaces the old singleton).
+        new_risk = PennyRiskEngine(bankroll=bankroll, ledger_writer=_penny_ledger_writer)
         if _penny_scanner is not None:
             _penny_scanner.risk_engine = new_risk
         logger.info("penny_daily_reset bankroll=%s", bankroll)

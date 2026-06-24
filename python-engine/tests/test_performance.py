@@ -10,6 +10,7 @@ from performance import (
     current_bankroll,
     record_trade_close,
     check_circuit_breakers,
+    penny_pool_pnl,
 )
 
 
@@ -175,3 +176,144 @@ class TestCircuitBreakers:
         halted, reasons = await check_circuit_breakers(seeded_db)
         assert halted is True
         assert len(reasons) >= 2  # at least CB_CONSECUTIVE_LOSSES + one more
+
+
+# ===============================================================
+# SOURCE COLUMN (2026-06-24 bankroll fix)
+# Tests for the per-subsystem source column on bankroll_ledger.
+# ===============================================================
+
+
+class TestSourceColumn:
+    """[BK-SOURCE 2026-06-24] The bankroll_ledger now carries a `source`
+    column to attribute rows to swing (SYSTEM), momentum (MOMENTUM), or
+    penny (PENNY) subsystems. Required so the dashboard's /bankroll and
+    /performance endpoints can show penny P&L that previously lived only
+    in PennyRiskEngine.daily_pnl.
+    """
+
+    @pytest.mark.asyncio
+    async def test_source_column_exists(self, seeded_db):
+        """Schema migration: source column must exist after init_ledger()."""
+        import aiosqlite
+        async with aiosqlite.connect(seeded_db) as db:
+            async with db.execute("PRAGMA table_info(bankroll_ledger)") as cur:
+                cols = await cur.fetchall()
+        col_names = {c[1] for c in cols}
+        assert "source" in col_names, f"source column missing; got: {col_names}"
+
+    @pytest.mark.asyncio
+    async def test_initial_seed_has_system_source(self, seeded_db):
+        """The seed INITIAL row should have source='SYSTEM' (back-compat)."""
+        import aiosqlite
+        async with aiosqlite.connect(seeded_db) as db:
+            async with db.execute(
+                "SELECT event_type, source FROM bankroll_ledger ORDER BY id LIMIT 1"
+            ) as cur:
+                row = await cur.fetchone()
+        assert row is not None, "no INITIAL row seeded"
+        assert row[0] == "INITIAL"
+        assert row[1] == "SYSTEM"
+
+    @pytest.mark.asyncio
+    async def test_record_trade_close_default_source(self, seeded_db):
+        """Without explicit source, record_trade_close writes 'SYSTEM'."""
+        await record_trade_close(seeded_db, "RELIANCE", 100.0)
+        import aiosqlite
+        async with aiosqlite.connect(seeded_db) as db:
+            async with db.execute(
+                "SELECT source FROM bankroll_ledger WHERE event_type='TRADE_CLOSED'"
+            ) as cur:
+                row = await cur.fetchone()
+        assert row is not None, "TRADE_CLOSED row missing"
+        assert row[0] == "SYSTEM"
+
+    @pytest.mark.asyncio
+    async def test_record_trade_close_writes_explicit_source(self, seeded_db):
+        """Pass source='PENNY' -- the row must persist with that source."""
+        await record_trade_close(seeded_db, "PENNYX", 50.0, source="PENNY")
+        import aiosqlite
+        async with aiosqlite.connect(seeded_db) as db:
+            async with db.execute(
+                "SELECT source FROM bankroll_ledger WHERE ticker='PENNYX'"
+            ) as cur:
+                row = await cur.fetchone()
+        assert row is not None, "PENNYX row missing"
+        assert row[0] == "PENNY"
+
+    @pytest.mark.asyncio
+    async def test_init_ledger_is_idempotent(self, seeded_db):
+        """Calling init_ledger twice must not raise (ALTER swallows duplicate-column)."""
+        # First call already happened via fixture; second call must be safe.
+        await init_ledger(seeded_db)
+        # Bankroll should still be the initial seed (no duplicate INITIAL row).
+        bankroll = await current_bankroll(seeded_db)
+        assert bankroll == 5000.0
+
+    @pytest.mark.asyncio
+    async def test_migration_on_pre_existing_db(self, tmp_path):
+        """Simulate a pre-2026-06-24 DB: create the table WITHOUT the source
+        column, then run init_ledger -- the ALTER migration must add it
+        without raising."""
+        import aiosqlite
+        db_path = str(tmp_path / "legacy.db")
+        async with aiosqlite.connect(db_path) as db:
+            await db.execute("""
+                CREATE TABLE bankroll_ledger (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    timestamp TEXT, event_type TEXT,
+                    ticker TEXT, pnl REAL,
+                    bankroll_before REAL, bankroll_after REAL,
+                    notes TEXT
+                )
+            """)
+            await db.execute(
+                "INSERT INTO bankroll_ledger "
+                "(timestamp, event_type, pnl, bankroll_before, bankroll_after) "
+                "VALUES (?, ?, ?, ?, ?)",
+                ("2026-06-23T00:00:00+00:00", "INITIAL", 0.0, 5000.0, 5000.0),
+            )
+            await db.commit()
+        # Now run init_ledger on this legacy DB -- should migrate, not crash.
+        await init_ledger(db_path)
+        # The new column should exist with default 'SYSTEM' on existing rows.
+        async with aiosqlite.connect(db_path) as db:
+            async with db.execute(
+                "SELECT source FROM bankroll_ledger WHERE event_type='INITIAL'"
+            ) as cur:
+                row = await cur.fetchone()
+        assert row is not None, "INITIAL row missing after migration"
+        assert row[0] == "SYSTEM"
+
+    @pytest.mark.asyncio
+    async def test_penny_pool_pnl_aggregates_penny_rows(self, seeded_db):
+        """penny_pool_pnl() sums only source='PENNY' rows in the window."""
+        # SYSTEM rows (swing side) -- must be excluded from penny totals.
+        await record_trade_close(seeded_db, "SWING_WIN", 1000.0, source="SYSTEM")
+        await record_trade_close(seeded_db, "SWING_LOSS", -200.0, source="SYSTEM")
+        # PENNY rows -- must be included.
+        await record_trade_close(seeded_db, "PENNY_A", 150.0, source="PENNY")
+        await record_trade_close(seeded_db, "PENNY_B", -50.0, source="PENNY")
+        out = await penny_pool_pnl(seeded_db, days=14)
+        assert out["total_pnl"] == 100.0    # 150 + (-50), swing excluded
+        assert out["trade_count"] == 2      # only 2 penny rows
+
+    @pytest.mark.asyncio
+    async def test_penny_pool_pnl_empty_when_no_penny_rows(self, seeded_db):
+        """No PENNY rows -> empty buckets (still safe to call)."""
+        await record_trade_close(seeded_db, "X", 100.0, source="SYSTEM")
+        out = await penny_pool_pnl(seeded_db, days=14)
+        assert out["total_pnl"] == 0.0
+        assert out["trade_count"] == 0
+
+    @pytest.mark.asyncio
+    async def test_current_bankroll_includes_penny(self, seeded_db):
+        """The /bankroll endpoint reads the last row -- penny trades must
+        move it just like swing trades do (this is the whole point of the fix)."""
+        # Seed: 5000 (from fixture).
+        assert await current_bankroll(seeded_db) == 5000.0
+        # A penny close must move bankroll.
+        await record_trade_close(seeded_db, "PENNY_TEST", 75.0, source="PENNY")
+        assert await current_bankroll(seeded_db) == 5075.0
+        await record_trade_close(seeded_db, "PENNY_TEST2", -25.0, source="PENNY")
+        assert await current_bankroll(seeded_db) == 5050.0
