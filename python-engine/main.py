@@ -2082,6 +2082,26 @@ async def get_bankroll_breakdown():
     return await pool_breakdown(settings.DB_PATH)
 
 
+# [TIER3-INTERACTIVE-COMMANDS 2026-06-25] Telegram command endpoint.
+# The node-gateway forwards /penny <subcommand> <args> messages to
+# python-engine via these endpoints, then echoes the reply back to
+# the user's Telegram chat. Read-only commands (stats, regime, help,
+# skips) use GET. Mutating commands (skip, unskip) use POST.
+@app.get("/penny/command/{cmd}")
+async def penny_command_get(cmd: str):
+    """GET handler for read-only commands. Returns plain text reply."""
+    from penny_commands import dispatch
+    return {"reply": dispatch(cmd, "", settings.DB_PATH)}
+
+
+@app.post("/penny/command/{cmd}")
+async def penny_command_post(cmd: str, payload: dict):
+    """POST handler for mutating commands. Body: {"args": "<ticker>"}."""
+    from penny_commands import dispatch
+    args = (payload or {}).get("args", "")
+    return {"reply": dispatch(cmd, args, settings.DB_PATH)}
+
+
 @app.get("/circuit-breaker")
 async def get_circuit_breaker():
     halted, reasons = await check_circuit_breakers(settings.DB_PATH)

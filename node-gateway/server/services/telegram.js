@@ -1,4 +1,5 @@
 const TelegramBot = require('node-telegram-bot-api');
+const axios = require('axios');
 const config = require('../config');
 const { logger } = require('../middleware/logger');
 // Note: Dependencies like `executor` and `db` will be invoked in the handler routing to avoid circular deps during init.
@@ -17,6 +18,56 @@ if (config.TELEGRAM_MODE === 'webhook') {
   // 🚨 FIX: Catch polling errors to prevent fatal crashes and allow auto-reconnection
   bot.on('polling_error', (error) => {
     logger.warn({ event_type: 'telegram_polling_error', message: error.message });
+  });
+
+  // [TIER3-INTERACTIVE-COMMANDS 2026-06-25] Text-message handler.
+  // Parses /penny <subcommand> [args] and forwards to the python-engine
+  // command endpoint, then echoes the reply back to the chat.
+  //
+  // Only messages that pass isValidChat() are processed (same auth
+  // model as the existing callback_query handler). Non-command
+  // messages are silently ignored.
+  bot.on('message', async (msg) => {
+    try {
+      if (!isValidChat(msg.chat.id)) return;
+      const text = (msg.text || '').trim();
+      if (!text.startsWith('/penny')) return;
+      // Strip the prefix, split into command + args.
+      const rest = text.slice('/penny'.length).trim();
+      const spaceIdx = rest.indexOf(' ');
+      const cmd = spaceIdx === -1 ? rest : rest.slice(0, spaceIdx);
+      const args = spaceIdx === -1 ? '' : rest.slice(spaceIdx + 1).trim();
+
+      // Decide GET vs POST: skip / unskip mutate state, everything
+      // else is read-only.
+      const mutateCommands = new Set(['skip', 'unskip']);
+      const url = `${config.PYTHON_ENGINE_URL}/penny/command/${encodeURIComponent(cmd || 'help')}`;
+      let reply;
+      try {
+        if (mutateCommands.has((cmd || '').toLowerCase())) {
+          const resp = await axios.post(url, { args }, { timeout: 10_000 });
+          reply = resp.data && resp.data.reply ? resp.data.reply : '(no reply from python-engine)';
+        } else {
+          const resp = await axios.get(url, { timeout: 10_000 });
+          reply = resp.data && resp.data.reply ? resp.data.reply : '(no reply from python-engine)';
+        }
+      } catch (err) {
+        logger.error({
+          event_type: 'penny_command_dispatch_failed',
+          cmd, args, err: err.message,
+        }, 'Failed to dispatch /penny command');
+        reply = `Error: python-engine unreachable (${err.message}). Try again in a minute.`;
+      }
+
+      // Reply to the user. Cap at 4000 chars (Telegram limit is 4096).
+      if (reply.length > 4000) reply = reply.slice(0, 3997) + '...';
+      await bot.sendMessage(msg.chat.id, reply);
+    } catch (e) {
+      logger.error({
+        event_type: 'penny_command_handler_error',
+        err: e.message,
+      }, 'Unexpected error in /penny command handler');
+    }
   });
 }
 

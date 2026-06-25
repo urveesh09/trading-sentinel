@@ -254,6 +254,11 @@ class Settings(BaseSettings):
     PENNY_SECTOR_TOP_LOSERS_PCT:           float = 0.10
     PENNY_SECTOR_ETF_CHANGE_THRESHOLD_PCT: float = -0.015
     PENNY_SECTORS_CSV_PATH:                str   = "python-engine/data/penny_sectors.csv"
+    # [TIER3-INTERACTIVE-COMMANDS 2026-06-25] Path to the runtime
+    # override JSON. Telegram /penny skip and /penny unskip write here;
+    # penny_risk.is_disabled() reads here on every call. Tests override
+    # this to a tmp path.
+    PENNY_DISABLE_OVERRIDES_PATH:          str   = "python-engine/data/penny_disable_overrides.json"
     # [PENNY-TIME-STOP 2026-06-24] Soft time-stop: if entry fires but the
     # position is NOT in profit within PENNY_TIME_STOP_MIN minutes, cut at
     # market (modular exit path; spec §7.2 exit chain). Default 30 min --

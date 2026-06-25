@@ -264,10 +264,36 @@ class PennyRiskEngine:
     # ---- manual disable -------------------------------------------------
 
     def is_disabled(self, symbol: str) -> bool:
-        if not self.disable_tickers:
-            return False
-        disabled = {s.strip().upper() for s in self.disable_tickers.split(",") if s.strip()}
-        return symbol.upper() in disabled
+        # [TIER3-INTERACTIVE-COMMANDS 2026-06-25] Three sources of "disabled":
+        #   1. Env-var static list (PENNY_DISABLE_TICKERS setting, applied
+        #      at PennyRiskEngine __init__ time -- rarely changes).
+        #   2. Runtime override file (penny_commands writes here when
+        #      the operator sends /penny skip TICKER via Telegram).
+        #      Read fresh on EVERY call so changes take effect within
+        #      the next 30-second scanner cycle.
+        #   3. We do NOT yet have an API to add to the static list at
+        #      runtime (would require re-reading settings).
+        sym = symbol.upper()
+        # Source 1: static list captured at init.
+        if self.disable_tickers:
+            disabled = {s.strip().upper() for s in self.disable_tickers.split(",") if s.strip()}
+            if sym in disabled:
+                return True
+        # Source 2: runtime override file. Path comes from settings so
+        # tests can override; defaults to python-engine/data/penny_disable_overrides.json.
+        # Lazy import to avoid circular dep at import time.
+        try:
+            from penny_commands import get_overridden_disabled_tickers
+            from config import settings as _settings
+            runtime_disabled = get_overridden_disabled_tickers(_settings.PENNY_DISABLE_OVERRIDES_PATH)
+            if sym in runtime_disabled:
+                return True
+        except Exception:
+            # Fail-open: if the override file is unreadable for any
+            # reason, treat as no overrides. Same defensive posture
+            # as the sector filter.
+            pass
+        return False
 
     # ---- order validation ----------------------------------------------
 
