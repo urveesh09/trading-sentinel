@@ -195,8 +195,13 @@ def _build_position_snap(
     row: dict,
     ltp: Optional[float],
     sectors: Dict[str, str],
+    warn_pct: float = 1.0,
 ) -> PositionSnap:
-    """Compute one PositionSnap from a raw DB row + live price + sector map."""
+    """Compute one PositionSnap from a raw DB row + live price + sector map.
+
+    [AUDIT-FIX-2.5 2026-06-25] `warn_pct` parameter added (default 1.0%)
+    so the threshold is configurable via PENNY_HEATMAP_WARN_PCT.
+    """
     ticker = (row.get("ticker") or "").strip().upper()
     entry = float(row.get("entry_price") or 0.0)
     sl = float(row.get("stop_loss") or 0.0)
@@ -214,11 +219,22 @@ def _build_position_snap(
     if ltp is not None and entry > 0:
         snap.pnl_pct = round((ltp - entry) / entry * 100, 2)
         snap.pnl_abs = round((ltp - entry) * shares, 2)
-        # WARN if position is within 1.0% of SL (operator-mandated
-        # threshold: only warn when REALLY close).
+        # [AUDIT-FIX-2.5] WARN if position is within `warn_pct` of SL
+        # (configurable via PENNY_HEATMAP_WARN_PCT). Previously hardcoded
+        # 1.0%; now operator-tuned.
+        #
+        # Note: we use strict `<` rather than `<=` to avoid a
+        # floating-point edge case where (ltp - sl)/entry*100 evaluates
+        # to something like 1.5000000000000003 (FP error), which is >
+        # the threshold 1.5 even though the "true" distance is exactly
+        # 1.5. Strict `<` means the threshold is the *exclusive*
+        # boundary -- a distance of exactly 1.5% does NOT warn, 1.4999%
+        # does. Operator-tuned values are coarse enough that this is
+        # fine. If sub-percent precision matters, use a slightly
+        # larger threshold (e.g. 2.0).
         if sl > 0:
             dist_to_sl_pct = (ltp - sl) / entry * 100
-            if 0 < dist_to_sl_pct <= 1.0:
+            if 0 < dist_to_sl_pct < warn_pct:
                 snap.warning = (
                     f"{ticker} approaching SL ({snap.pnl_pct:+.1f}% from entry, "
                     f"SL at {((sl-entry)/entry*100):+.1f}%)"
@@ -245,12 +261,22 @@ async def build_heatmap(
     kite,
     sectors_csv_path: str = DEFAULT_SECTORS_CSV,
     near_sl_warn_pct: float = 1.0,
+    warn_pct_is_fraction: bool = False,
 ) -> Tuple[str, Dict[str, SectorBucket], int, int]:
     """Build the heatmap Telegram body. Returns (body, buckets, total_open, priced_count).
 
     The body is a multi-line string ready for sendMessage. The buckets
     are returned for testing + downstream consumers (e.g. the dashboard).
     total_open = positions read; priced_count = how many got a live LTP.
+
+    Args:
+      near_sl_warn_pct: distance from stop_loss (as %) at which to
+        surface a WARN line.
+      warn_pct_is_fraction: if True, near_sl_warn_pct is treated as a
+        fraction (0.01 = 1%); if False (default), as percent (1.0 = 1%).
+        [AUDIT-FIX-2.5 2026-06-25] The caller now passes a fraction from
+        config.PENNY_HEATMAP_WARN_PCT, so warn_pct_is_fraction=True.
+        The default of False keeps back-compat with the original 1.0=1%.
     """
     raw_rows = _read_open_positions(db_path)
     if not raw_rows:
@@ -261,10 +287,15 @@ async def build_heatmap(
 
     sectors = _load_sectors(sectors_csv_path)
 
+    # [AUDIT-FIX-2.5] Normalize the warn threshold to percent (the
+    # _build_position_snap comparison is in percent). If the caller
+    # passed a fraction, multiply by 100.
+    warn_pct = near_sl_warn_pct if warn_pct_is_fraction is False else near_sl_warn_pct * 100
+
     snaps: List[PositionSnap] = []
     for row in raw_rows:
         ticker = (row.get("ticker") or "").strip().upper()
-        snap = _build_position_snap(row, live_prices.get(ticker), sectors)
+        snap = _build_position_snap(row, live_prices.get(ticker), sectors, warn_pct=warn_pct)
         snaps.append(snap)
 
     buckets = _bucket_by_sector(snaps)

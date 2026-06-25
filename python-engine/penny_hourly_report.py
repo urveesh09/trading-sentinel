@@ -63,6 +63,8 @@ class PennyHourlyReport:
         circuit_blocks: int,
         universe_size: int = 0,
         data_quality_audit: Optional[dict] = None,
+        universe_as_of: Optional[str] = None,
+        universe_age_days: Optional[int] = None,
     ) -> str:
         """
         Build the report body (markdown, <= 15 lines, < 1000 chars).
@@ -78,6 +80,12 @@ class PennyHourlyReport:
         universe is >50% degraded, this is surfaced in the diagnostic
         tail so the operator can immediately tell "we have a data
         problem" vs "the market just isn't giving us setups".
+
+        universe_as_of + universe_age_days (2026-06-25): when the
+        penny universe JSON is older than 1 day, this is surfaced in
+        the report body so the operator can spot the staleness BEFORE
+        it manifests as missed setups. The Pydantic surface wires
+        these from PennyUniverse.as_of / .age_days.
         """
         from penny_signal_log import init_penny_signal_db
         await init_penny_signal_db(self.db_path)
@@ -159,6 +167,21 @@ class PennyHourlyReport:
 
         if circuit_blocks:
             lines.append(f"Circuit blocks: {circuit_blocks}")
+
+        # [AUDIT-FIX-2.4] Surface universe staleness. When the penny
+        # universe JSON is older than 1 day (or in the future due to
+        # clock skew), warn so the operator notices BEFORE it manifests
+        # as missed setups. We don't block, just inform.
+        if universe_age_days is not None and universe_age_days > 1:
+            lines.append(
+                f"⚠ Universe stale (as_of={universe_as_of}, age={universe_age_days}d). "
+                f"Run run_penny_universe_refresh() to refresh."
+            )
+        elif universe_as_of is None and universe_size > 0:
+            # We have a universe but no as_of -- generation bug.
+            lines.append(
+                "⚠ Universe JSON missing as_of field (regenerate penny_static.json)."
+            )
 
         lines.append(
             f"Open: {len(open_positions)}/5, deployed: Rs {deployed_capital:.0f}, "

@@ -274,7 +274,7 @@ def test_format_health_includes_both_subsystems(tmp_path, monkeypatch):
 
 def test_format_health_under_telegram_limit():
     from penny_health import format_health
-    # Build a fake snapshot manually
+    # Build a fake snapshot manually (with the new security field)
     snap = {
         "overall_status": "OK",
         "penny": {"regime": "PR1_CALM", "last_scan_age": "5 min ago",
@@ -285,9 +285,88 @@ def test_format_health_under_telegram_limit():
         "halted": False,
         "halt_reasons": [],
         "bankroll": {"penny": 2500.0, "nifty": 5000.0},
+        "security": {"internal_api_secret_configured": True},
     }
     body = format_health(snap)
     assert len(body) < 1500
+
+
+def test_format_health_surfaces_unset_secret():
+    """[AUDIT-FIX-2.2] When INTERNAL_API_SECRET is empty, format_health
+    surfaces a SECURITY warning line in the Telegram view."""
+    from penny_health import format_health
+    snap = {
+        "overall_status": "DEGRADED",
+        "penny": {"regime": "PR1_CALM", "last_scan_age": "5 min ago",
+                  "last_regime_age": "today", "open_positions": 0,
+                  "is_stale": False},
+        "nifty": {"market_regime": "BULL", "last_swing_scan_age": "5 min ago",
+                  "open_positions": 0, "is_stale": False},
+        "halted": False,
+        "halt_reasons": [],
+        "bankroll": {"penny": None, "nifty": 5000.0},
+        "security": {"internal_api_secret_configured": False},
+    }
+    body = format_health(snap)
+    assert "SECURITY" in body
+    assert "INTERNAL_API_SECRET" in body
+
+
+def test_format_health_degraded_when_secret_unset():
+    """[AUDIT-FIX-2.2] Empty secret -> overall_status = DEGRADED (even
+    when nothing else is wrong)."""
+    from penny_health import build_health_snapshot_sync
+    from datetime import datetime, timezone
+    import asyncio
+    from unittest.mock import AsyncMock
+
+    db = "/tmp/_test_format_health_unset.db"
+    import os
+    if os.path.exists(db):
+        os.remove(db)
+    with sqlite3.connect(db) as con:
+        con.executescript("""
+            CREATE TABLE IF NOT EXISTS bankroll_ledger (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                timestamp TEXT, event_type TEXT, ticker TEXT,
+                pnl REAL, bankroll_before REAL, bankroll_after REAL,
+                source TEXT, notes TEXT
+            );
+            CREATE TABLE IF NOT EXISTS positions (
+                ticker TEXT, status TEXT, source TEXT,
+                entry_price REAL, stop_loss REAL, shares INTEGER
+            );
+        """)
+    fake = type("M", (), {
+        "_penny_regime_engine": None,
+        "market_regime": "BULL",
+        "last_run": datetime.now(timezone.utc),
+    })()
+    import sys
+    sys.modules["main"] = fake
+    async def _cb(_):
+        return (False, [])
+    monkeypatch_called = []
+    def _set_monkey():
+        return _cb
+    # Inline async callbacks (no real monkeypatch needed for this minimal test)
+    class _M:
+        async def cb(_): return (False, [])
+    m = _M()
+    import unittest.mock
+    with unittest.mock.patch("performance.check_circuit_breakers", m.cb):
+        async def _br(_): return 5000.0
+        with unittest.mock.patch("performance.nifty_bankroll", _br):
+            # Set INTERNAL_API_SECRET empty via monkeypatch
+            from config import settings
+            original = settings.INTERNAL_API_SECRET
+            settings.INTERNAL_API_SECRET = ""
+            try:
+                snap = build_health_snapshot_sync(db)
+            finally:
+                settings.INTERNAL_API_SECRET = original
+    assert snap["overall_status"] == "DEGRADED"
+    assert snap["security"]["internal_api_secret_configured"] is False
 
 
 def test_format_regime_all_includes_both_regimes(tmp_path, monkeypatch):

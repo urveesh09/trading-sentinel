@@ -209,8 +209,7 @@ def test_build_heatmap_warns_near_sl(tmp_path):
     body, buckets, total, priced = asyncio.run(build_heatmap(
         db_path=db, kite=kite, sectors_csv_path="/nonexistent",
     ))
-    assert "WARN" in body
-    assert "DANGER" in body
+    assert "WARN: DANGER" in body
     assert "approaching SL" in body
     # SAFE should NOT trigger WARN
     warn_lines = [l for l in body.split("\n") if l.startswith("WARN")]
@@ -233,6 +232,96 @@ def test_build_heatmap_no_warn_when_far_from_sl(tmp_path):
         db_path=db, kite=kite, sectors_csv_path="/nonexistent",
     ))
     assert "WARN" not in body
+
+
+# ---- [AUDIT-FIX-2.5] warn_pct configurability --------------------------
+
+def test_heatmap_warn_pct_configurable_wider_threshold(tmp_path):
+    """[AUDIT-FIX-2.5] A position at 1.49% above SL fires WARN when
+    warn_pct=2.0% but NOT when warn_pct=1.0%. Proves the threshold is
+    driven by the parameter, not the old hardcoded 1.0.
+
+    Note: the comparison uses strict `<` (not `<=`) to avoid a
+    floating-point edge case where distance == threshold fails.
+    Distance 1.49% is comfortably below 2.0% AND above 1.0%.
+    """
+    from penny_heatmap import build_heatmap
+    db = str(tmp_path / "test.db")
+    _seed_positions(db, [
+        # entry=10, sl=9.0. Current=9.149 -> +1.49% above SL (FP-safe)
+        ("ZZZ_TEST", 10.00, 9.00, 10, "OPEN"),
+    ])
+    kite = MagicMock()
+    kite.instrument_cache = {"ZZZ_TEST": 1001}
+    async def _quote(tokens):
+        return {1001: {"last_price": 9.149}}
+    kite.get_quote = AsyncMock(side_effect=_quote)
+
+    # Tight threshold (1%) -- 1.49% above SL should NOT warn (>1.0).
+    body_tight, *_ = asyncio.run(build_heatmap(
+        db_path=db, kite=kite, sectors_csv_path="/nonexistent",
+        near_sl_warn_pct=1.0, warn_pct_is_fraction=False,
+    ))
+    assert "WARN:" not in body_tight
+
+    # Wide threshold (2%) -- 1.49% above SL SHOULD warn (<2.0).
+    body_wide, *_ = asyncio.run(build_heatmap(
+        db_path=db, kite=kite, sectors_csv_path="/nonexistent",
+        near_sl_warn_pct=2.0, warn_pct_is_fraction=False,
+    ))
+    assert "WARN: ZZZ_TEST" in body_wide
+
+
+def test_heatmap_warn_pct_accepts_fraction_form(tmp_path):
+    """[AUDIT-FIX-2.5] When warn_pct_is_fraction=True, the threshold is
+    interpreted as a fraction (0.01 = 1%). This is the form the
+    settings.PENNY_HEATMAP_WARN_PCT uses (default 0.01)."""
+    from penny_heatmap import build_heatmap
+    db = str(tmp_path / "test.db")
+    _seed_positions(db, [
+        # entry=10, sl=9.0. Current=9.149 -> +1.49% above SL.
+        # 0.015 fraction = 1.5% threshold -> 1.49 < 1.5 -> WARN.
+        ("ZZZ_TEST", 10.00, 9.00, 10, "OPEN"),
+    ])
+    kite = MagicMock()
+    kite.instrument_cache = {"ZZZ_TEST": 1001}
+    async def _quote(tokens):
+        return {1001: {"last_price": 9.149}}
+    kite.get_quote = AsyncMock(side_effect=_quote)
+
+    body, *_ = asyncio.run(build_heatmap(
+        db_path=db, kite=kite, sectors_csv_path="/nonexistent",
+        near_sl_warn_pct=0.015, warn_pct_is_fraction=True,
+    ))
+    assert "WARN: ZZZ_TEST" in body
+
+
+def test_heatmap_exact_threshold_does_not_warn(tmp_path):
+    """[AUDIT-FIX-2.5] Strict `<` semantic: a position EXACTLY at the
+    warn_pct boundary does NOT warn (avoids FP edge cases).
+
+    This is the documented behaviour change from `<=` to `<`. It's
+    also why we use `0.015` fraction (1.5%) and a distance of 1.49%
+    in the test above -- they trigger the warn via `<`.
+    """
+    from penny_heatmap import build_heatmap
+    db = str(tmp_path / "test.db")
+    # distance = 1.5% exactly; threshold = 1.5%. With `<`, no warn.
+    # (10 -> 9; distance to sl = 0.15, divided by entry 10 = 1.5%)
+    _seed_positions(db, [
+        ("EXACT", 10.00, 9.00, 10, "OPEN"),
+    ])
+    kite = MagicMock()
+    kite.instrument_cache = {"EXACT": 1001}
+    async def _quote(tokens):
+        # current = 9.15 -> exactly 1.5% above sl
+        return {1001: {"last_price": 9.15}}
+    kite.get_quote = AsyncMock(side_effect=_quote)
+    body, *_ = asyncio.run(build_heatmap(
+        db_path=db, kite=kite, sectors_csv_path="/nonexistent",
+        near_sl_warn_pct=1.5, warn_pct_is_fraction=False,
+    ))
+    assert "WARN: EXACT" not in body
 
 
 def test_build_heatmap_excludes_closed_positions(tmp_path):

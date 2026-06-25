@@ -264,21 +264,17 @@ def cmd_status(db_path: str) -> str:
 def cmd_performance(db_path: str) -> str:
     """Telegram /performance command. Nifty subsystem only (strict-separation).
 
-    Calls the same logic as the /performance HTTP endpoint by invoking
-    it through FastAPI's TestClient (avoids duplicating the query).
-    Falls back to a graceful error if the endpoint isn't reachable.
+    [AUDIT-FIX-2.6 2026-06-25] Now calls the shared async helper
+    `compute_performance_report(db_path)` directly (which the HTTP
+    route also calls). Pre-fix this routed through fastapi.TestClient
+    to hit the /performance HTTP route, which was awkward and broke
+    in some test contexts where the FastAPI app wasn't importable.
     """
     try:
-        # Use the in-process function logic by importing the model
-        # helper directly. The HTTP /performance route is built in
-        # main.py; we reuse it via TestClient to avoid forking.
-        from fastapi.testclient import TestClient
-        import main as _main
-        client = TestClient(_main.app)
-        resp = client.get("/performance")
-        if resp.status_code == 200:
-            return format_performance(resp.json())
-        return f"Performance: HTTP {resp.status_code}"
+        import asyncio
+        from main import compute_performance_report
+        perf = asyncio.run(compute_performance_report(db_path))
+        return format_performance(perf.model_dump())
     except Exception as e:
         return f"Performance: error reading ({type(e).__name__})"
 

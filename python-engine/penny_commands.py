@@ -250,6 +250,8 @@ def cmd_heatmap(db_path: str) -> str:
                 db_path=settings.DB_PATH,
                 kite=_main.kite,
                 sectors_csv_path=settings.PENNY_SECTORS_CSV_PATH,
+                near_sl_warn_pct=settings.PENNY_HEATMAP_WARN_PCT,
+                warn_pct_is_fraction=True,  # [AUDIT-FIX-2.5]
             )
         )
         return body

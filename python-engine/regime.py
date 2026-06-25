@@ -218,15 +218,15 @@ class RegimeEngine:
           - realized_vol: 20-day annualized realized vol
           - banknifty_close + nb_ratio_history: breadth proxy inputs
         """
-        import warnings
-        warnings.warn(
-            "regime.py: compute_score with vix= parameter is DEPRECATED. "
-            "Use compute_score_full() with VIX-free signals. "
-            "India VIX unavailable via Kite Connect -- replaced by "
-            "ATR Compression + Realized Volatility.",
-            DeprecationWarning,
-            stacklevel=2,
-        )
+        # [AUDIT-FIX-2.1 2026-06-25] Same fix as _compute_bk_score: the
+        # DeprecationWarning is documented in this function's docstring
+        # (above) and no longer fires per call. Set REGIME_VIX_DEBUG=1
+        # to log each call at debug level if needed.
+        import os
+        if os.environ.get("REGIME_VIX_DEBUG"):
+            logger.debug(
+                "regime_compute_score_vix_used vix=%s", vix,
+            )
         if vix is not None:
             # OLD formula (VIX-based) -- kept for backward compat with existing tests
             effective_vix = vix
@@ -285,13 +285,23 @@ class RegimeEngine:
     def _compute_bk_score(
         self, vix: float, nifty_50: float, nifty_ema20: float, breadth: float
     ) -> float:
-        """Old VIX formula for backward-compat tests."""
-        import warnings
-        warnings.warn(
-            "regime.py: VIX mode is DEPRECATED.",
-            DeprecationWarning,
-            stacklevel=3,
-        )
+        """Old VIX formula for backward-compat tests.
+
+        [AUDIT-FIX-2.1 2026-06-25] The previous implementation emitted a
+        `DeprecationWarning` per call. With 30s scans × multiple
+        subsystems, this flooded production logs and pytest's
+        warning summary. The deprecation is still documented in this
+        docstring (and in `get_regime_for_scan`'s comment block); we
+        just don't spam the warning. If you need to verify the VIX path
+        is being hit, set the env var `REGIME_VIX_DEBUG=1` and a
+        single debug-level log line fires per call.
+        """
+        import os
+        if os.environ.get("REGIME_VIX_DEBUG"):
+            logger.debug(
+                "regime_vix_path_used vix=%s nifty=%s ema=%s breadth=%s",
+                vix, nifty_50, nifty_ema20, breadth,
+            )
         effective_vix = vix
         vix_factor = max(0.0, min(100.0, 100.0 - (effective_vix - 12.0) * 5.0))
         if nifty_50 < nifty_ema20:

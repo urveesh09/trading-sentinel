@@ -43,6 +43,7 @@ class PennyUniverse:
         self._tokens: set = set()
         self._token_to_symbol: Dict[int, str] = {}
         self._symbol_to_token: Dict[str, int] = {}
+        self._as_of: Optional[str] = None  # [AUDIT-FIX-2.4]
         self._load(json_path, cache)
 
     def _load(self, json_path: str, instrument_cache: Dict[str, int]) -> None:
@@ -56,6 +57,51 @@ class PennyUniverse:
 
         if "tickers" not in data or not isinstance(data["tickers"], list):
             raise UniverseError("penny JSON missing 'tickers' array")
+
+        # [AUDIT-FIX-2.4 2026-06-25] Capture as_of for staleness checks.
+        # Pre-fix the universe JSON's as_of was ignored, so a stale
+        # refresh (e.g. last refresh 3 days ago over a long weekend)
+        # silently fed the scanner old data. Now we log a WARNING if
+        # as_of is older than 1 day AND expose as_of via .as_of for
+        # callers (the scanner can surface staleness in hourly reports).
+        #
+        # We do NOT refuse to load -- the operator-mandated constraint
+        # is "don't block the system during market hours". Even a 7-day-
+        # old universe is better than no scanner at all. We just make
+        # the staleness LOUD so the operator fixes the refresh job.
+        self._as_of = data.get("as_of")
+        if self._as_of:
+            try:
+                from datetime import date, datetime as _dt
+                as_of_date = _dt.strptime(self._as_of, "%Y-%m-%d").date()
+                today = date.today()
+                age_days = (today - as_of_date).days
+                if age_days > 1:
+                    logger.warning(
+                        "penny_universe_stale as_of=%s age_days=%d "
+                        "FIX=run run_penny_universe_refresh() (scheduled 08:00 IST). "
+                        "Scanner continues with stale data; signals may "
+                        "miss fresh eligibility changes.",
+                        self._as_of, age_days,
+                    )
+                elif age_days < 0:
+                    # as_of in the future -- clock skew or manual edit.
+                    logger.warning(
+                        "penny_universe_as_of_in_future as_of=%s "
+                        "(clock skew or manual edit; treating as fresh)",
+                        self._as_of,
+                    )
+            except ValueError:
+                logger.warning(
+                    "penny_universe_as_of_unparseable as_of=%r "
+                    "(expected YYYY-MM-DD)",
+                    self._as_of,
+                )
+        else:
+            logger.warning(
+                "penny_universe_no_as_of "
+                "FIX=regenerate penny_static.json (regen writes as_of=YYYY-MM-DD)"
+            )
 
         self._all_tickers = data["tickers"]
         missing = []
@@ -82,6 +128,28 @@ class PennyUniverse:
     @property
     def tokens(self) -> set:
         return set(self._tokens)
+
+    @property
+    def as_of(self) -> Optional[str]:
+        """[AUDIT-FIX-2.4] Returns the as_of date from the universe JSON
+        (YYYY-MM-DD), or None if the JSON doesn't have one. Callers
+        (e.g. the hourly report) can surface this to surface staleness
+        without re-parsing the file."""
+        return self._as_of
+
+    @property
+    def age_days(self) -> Optional[int]:
+        """[AUDIT-FIX-2.4] Days since the universe JSON was refreshed.
+        None if as_of is missing or unparseable. Negative if as_of is
+        in the future (clock skew)."""
+        if not self._as_of:
+            return None
+        try:
+            from datetime import date, datetime as _dt
+            as_of_date = _dt.strptime(self._as_of, "%Y-%m-%d").date()
+            return (date.today() - as_of_date).days
+        except ValueError:
+            return None
 
     def token_to_symbol(self, token: int) -> Optional[str]:
         return self._token_to_symbol.get(token)

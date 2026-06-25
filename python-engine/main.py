@@ -25,6 +25,115 @@ from backtest import run_backtest
 from models import PerformanceReport, OpenPosition
 from breadth import BreadthEngine
 from universe import Universe
+# ---- [AUDIT-FIX-2.2] Internal-API-secret gate hardening -------------------
+
+# Module-level flag so we only log the empty-secret warning once at
+# startup (loud) + once per auth-failed call (medium). Avoids log spam.
+_internal_secret_warning_emitted = False
+
+
+def _check_internal_secret(request: Request, endpoint_name: str) -> None:
+    """
+    [AUDIT-FIX-2.2 2026-06-25] Centralised auth-gate for internal
+    endpoints (/positions/manual, /positions/close, /api/internal/*,
+    the CNC alert webhook target).
+
+    Behaviour:
+      - INTERNAL_API_SECRET env var is set + caller sends the right
+        value -> allow.
+      - INTERNAL_API_SECRET env var is set + caller sends wrong/missing
+        value -> 403 (same as before; this fix doesn't change it).
+      - INTERNAL_API_SECRET env var is EMPTY (not set in .env) -> 503.
+        This is louder than 403 and tells the operator the endpoint
+        is misconfigured, not that the caller is wrong. The system
+        STAYS UP (other endpoints work) but refuses to mutate until
+        the secret is configured.
+
+    Why this matters: pre-fix, an empty secret defaulted `if secret !=
+    ""` to True, allowing ANY caller (including an attacker on the
+    docker network) to invoke internal endpoints by sending
+    `X-Internal-Secret: ` (empty string). With the empty-secret
+    setting, the attacker could close positions, send manual positions,
+    etc.
+
+    Why not hard-fail at startup: per operator mandate (2026-06-25),
+    internal endpoints going down must NOT block the system during
+    market hours. We log + refuse requests + emit Telegram alert, but
+    the scanner loop keeps running.
+    """
+    global _internal_secret_warning_emitted
+    configured = settings.INTERNAL_API_SECRET
+    sent = request.headers.get("X-Internal-Secret", "")
+
+    if not configured:
+        # Misconfigured deployment: secret not set.
+        if not _internal_secret_warning_emitted:
+            # Loud one-time warning at first hit. After this, log at
+            # WARNING level per call (rare event, should be fixed).
+            logger.critical(
+                "internal_api_secret_not_configured "
+                "endpoint=%s FIX=set INTERNAL_API_SECRET env var to a non-empty value",
+                endpoint_name,
+            )
+            # Telegram alert (best-effort, fire-and-forget so the sync
+            # gate function can return immediately). create_task only
+            # works inside a running event loop, so guard.
+            try:
+                import asyncio
+                try:
+                    asyncio.get_running_loop()
+                    asyncio.create_task(_send_internal_secret_alert())
+                except RuntimeError:
+                    # No running loop (test context). The warning is
+                    # enough -- we already logged at CRITICAL above.
+                    pass
+            except Exception:
+                # Don't propagate -- notify failure must not block the gate.
+                pass
+            _internal_secret_warning_emitted = True
+        else:
+            logger.warning(
+                "internal_api_secret_not_configured endpoint=%s",
+                endpoint_name,
+            )
+        raise HTTPException(
+            status_code=503,
+            detail=(
+                "Internal API not configured: INTERNAL_API_SECRET env "
+                "var must be set to a non-empty value. Operator has "
+                "been alerted. System continues running -- other "
+                "endpoints and the scanner are unaffected."
+            ),
+        )
+
+    # Normal auth: secret configured, check the caller's value.
+    if sent != configured:
+        raise HTTPException(status_code=403, detail="Unauthorized")
+
+
+async def _send_internal_secret_alert() -> None:
+    """[AUDIT-FIX-2.2] Best-effort Telegram alert when the secret
+    is empty. Wrapped in its own function so the caller (sync gate)
+    can fire-and-forget via asyncio.create_task."""
+    try:
+        import httpx as _httpx
+        msg = (
+            "🚨 **SECURITY: INTERNAL_API_SECRET not configured** 🚨\n"
+            "Internal endpoints (/positions/manual, /positions/close) "
+            "are refusing requests with HTTP 503. Set "
+            "INTERNAL_API_SECRET in .env to a non-empty value."
+        )
+        async with _httpx.AsyncClient() as _client:
+            await _client.post(
+                f"{settings.CONTAINER_A_URL}/api/internal/notify",
+                json={"message": msg},
+                headers={"X-Internal-Secret": settings.INTERNAL_API_SECRET or ""},
+                timeout=5.0,
+            )
+    except Exception as e:
+        logger.warning("internal_secret_alert_failed error=%s", str(e))
+
+
 # [PENNY-MAIN 2026-06-21] Penny subsystem module imports.
 from penny_universe import PennyUniverse, refresh_from_kite
 
@@ -552,6 +661,10 @@ async def _run_penny_heatmap():
             db_path=settings.DB_PATH,
             kite=kite,
             sectors_csv_path=settings.PENNY_SECTORS_CSV_PATH,
+            # [AUDIT-FIX-2.5] Read the operator-tuned threshold from
+            # config. Default 0.01 (1%) matches pre-fix hardcoded value.
+            near_sl_warn_pct=settings.PENNY_HEATMAP_WARN_PCT,
+            warn_pct_is_fraction=True,  # config is a fraction, not percent
         )
         logger.info(
             "penny_heatmap_sent total_open=%d priced=%d",
@@ -588,6 +701,23 @@ async def run_penny_hourly_report():
         risk = PennyRiskEngine(bankroll=bankroll, ledger_writer=_penny_ledger_writer)
         deployed = sum((p.get("entry_price", 0.0) * p.get("shares", 0)) for p in penny_pos)
         unrealised = sum((p.get("current_price", 0.0) - p.get("entry_price", 0.0)) * p.get("shares", 0) for p in penny_pos)
+        # [AUDIT-FIX-2.4] Plumb universe as_of / age_days into the hourly
+        # report so stale data is visible to the operator. Read directly
+        # from the JSON (cheap -- one file read + 2 string fields).
+        try:
+            import json as _json
+            with open(PENNY_UNIVERSE_JSON_PATH) as _f:
+                _uni_meta = _json.load(_f)
+            _uni_as_of = _uni_meta.get("as_of")
+        except Exception:
+            _uni_as_of = None
+        _uni_age_days = None
+        if _uni_as_of:
+            try:
+                from datetime import date, datetime as _dt
+                _uni_age_days = (date.today() - _dt.strptime(_uni_as_of, "%Y-%m-%d").date()).days
+            except Exception:
+                pass
         await run_hourly_report(
             db_path=settings.DB_PATH,
             regime=_penny_regime_engine.today_regime.value
@@ -599,6 +729,8 @@ async def run_penny_hourly_report():
             kill_switch_active=risk.kill_switch_active(),
             circuit_blocks=0,
             universe_size=_last_penny_scan_universe_size,
+            universe_as_of=_uni_as_of,
+            universe_age_days=_uni_age_days,
         )
     except Exception as e:
         logger.error("penny_hourly_report_failed", error=str(e))
@@ -930,6 +1062,19 @@ def register_penny_scheduler_jobs(scheduler):
 
 
 async def lifespan(app: FastAPI):
+    # [AUDIT-FIX-2.2 2026-06-25] Loud startup warning if INTERNAL_API_SECRET
+    # is empty. The auth gate (in `_check_internal_secret`) also
+    # catches this at request time, but seeing it at startup is the
+    # most visible -- a misconfigured deployment should never get
+    # through init silently.
+    if not settings.INTERNAL_API_SECRET:
+        logger.critical(
+            "internal_api_secret_not_configured_at_startup "
+            "FIX=set INTERNAL_API_SECRET env var. Internal endpoints will "
+            "return HTTP 503 until configured. Scanner + read-only "
+            "endpoints continue normally (operator mandate: don't block "
+            "the system during market hours)."
+        )
 
     db_dir = os.path.dirname(settings.DB_PATH)
     if db_dir:
@@ -2083,10 +2228,10 @@ async def add_manual_position(request: Request, payload: ManualPositionRequest):
     [AUDIT-FIX-1.4 2026-06-25] Body is now validated by Pydantic
     (ManualPositionRequest). Missing required fields -> HTTP 422
     with field-level error messages. Previously: KeyError -> HTTP 500.
+
+    [AUDIT-FIX-2.2 2026-06-25] Uses the centralised auth gate.
     """
-    secret = request.headers.get("X-Internal-Secret", "")
-    if secret != settings.INTERNAL_API_SECRET:
-        raise HTTPException(status_code=403, detail="Unauthorized")
+    _check_internal_secret(request, "add_manual_position")
 
     # Derive stop / targets from entry_price if not supplied. Same
     # defaults as the pre-fix manual dict path (95% / 105% / 110%).
@@ -2113,16 +2258,16 @@ async def add_manual_position(request: Request, payload: ManualPositionRequest):
     return {"status": "ok"}
 
 @app.post("/positions/close")
-
+@app.post("/positions/close")
 async def close_position(request: Request):
     """
     Called by Container A after a square-off order is confirmed.
     Updates position status to CLOSED_MANUAL and records P&L.
+
+    [AUDIT-FIX-2.2 2026-06-25] Uses the centralised auth gate.
     """
+    _check_internal_secret(request, "close_position")
     data = await request.json()
-    secret = request.headers.get("X-Internal-Secret", "")
-    if secret != settings.INTERNAL_API_SECRET:
-        raise HTTPException(status_code=403, detail="Unauthorized")
 
     ticker     = data["ticker"]
     exit_price = float(data["exit_price"])
@@ -2188,13 +2333,32 @@ async def inject_token(payload: TokenPayload):
 
 @app.get("/performance", response_model=PerformanceReport)
 async def get_performance():
+    """[AUDIT-FIX-2.6] HTTP wrapper around the shared async helper."""
+    return await compute_performance_report(settings.DB_PATH)
+
+
+async def compute_performance_report(db_path: str) -> PerformanceReport:
+    """
+    [AUDIT-FIX-2.6 2026-06-25] Shared async helper for performance data.
+
+    Pre-fix: `cmd_performance` in operator_status.py called the /performance
+    HTTP route via fastapi.testclient.TestClient. That worked but was
+    awkward -- it spun up an in-process test client to call a route
+    that was 5 lines away in the same module, and required the FastAPI
+    app to be importable in the cmd path (which sometimes it isn't in
+    test contexts).
+
+    Now both the HTTP route (get_performance) and the Telegram cmd
+    handler (cmd_performance) call this shared async function. The
+    HTTP route is just a thin wrapper around it.
+    """
     # Strict separation: /performance reports the Nifty-subsystem balance.
     # Penny trades are not swing positions -- they're listed separately via
     # /bankroll/breakdown.penny.
-    bankroll = await nifty_bankroll(settings.DB_PATH)
-    open_pos = await get_open_positions(settings.DB_PATH)
+    bankroll = await nifty_bankroll(db_path)
+    open_pos = await get_open_positions(db_path)
 
-    async with aiosqlite.connect(settings.DB_PATH) as db:
+    async with aiosqlite.connect(db_path) as db:
         db.row_factory = aiosqlite.Row   # named column access -- never use positional indices
         async with db.execute(
             "SELECT * FROM positions WHERE status NOT IN ('OPEN', 'CLOSED_T1')"
@@ -2235,6 +2399,7 @@ async def get_performance():
         worst_trade_r=0.0,
         avg_hold_days=0.0
     )
+
 
 @app.get("/positions", response_model=list[OpenPosition])
 async def get_positions_route():

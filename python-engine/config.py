@@ -288,6 +288,13 @@ class Settings(BaseSettings):
     PENNY_MAX_POSITIONS_MIS:       int   = 3
     PENNY_CIRCUIT_SKIP_DISTANCE:   float = 0.005      # 0.5% of band
     PENNY_CIRCUIT_FROM_HIGH_PCT:   float = 0.03       # 3% from day high
+    # [AUDIT-FIX-2.5 2026-06-25] Penny heat-map "near SL" warn threshold.
+    # When a position's current P&L % is within this distance (above)
+    # of its stop_loss, the heatmap surfaces a WARN line. Previously
+    # hardcoded to 1.0% in penny_heatmap.build_heatmap (operator-mandated
+    # audit point). For a Rs 2,500 paper bankroll 1% may be too noisy;
+    # for a Rs 50k+ account 1% may be too lax. Operator tunes here.
+    PENNY_HEATMAP_WARN_PCT:        float = 0.01       # 1% from SL
 
     # Cadence + safety
     PENNY_SCAN_INTERVAL_SEC:       int   = 30

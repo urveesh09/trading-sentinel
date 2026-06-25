@@ -228,9 +228,23 @@ async def build_health_snapshot(db_path: str) -> Dict[str, Any]:
         or snap["nifty"]["is_stale"]
         or snap["halted"]
     )
+    # [AUDIT-FIX-2.2 2026-06-25] Surface INTERNAL_API_SECRET configuration
+    # in /health. Pre-fix the operator had to read container logs to
+    # know the secret was unset. Now /health reports it as a security
+    # field, and the overall_status flips to DEGRADED if unset (since
+    # internal endpoints refuse requests with 503).
+    from config import settings as _health_settings
+    secret_configured = bool(_health_settings.INTERNAL_API_SECRET)
+    snap["security"] = {
+        "internal_api_secret_configured": secret_configured,
+    }
+
     if snap["halted"]:
         snap["overall_status"] = "DEGRADED"
-    elif stale_something:
+    elif stale_something or not secret_configured:
+        # [AUDIT-FIX-2.2] Empty secret is now a DEGRADED trigger.
+        # Read-only endpoints and the scanner still work, but the
+        # operator should fix the configuration as soon as possible.
         snap["overall_status"] = "DEGRADED"
     else:
         snap["overall_status"] = "OK"
@@ -273,6 +287,15 @@ def format_health(snap: Dict[str, Any]) -> str:
     )
     if n["is_stale"]:
         lines.append("  ⚠ nifty last_scan is stale")
+
+    # [AUDIT-FIX-2.2] Surface security status in /health Telegram view.
+    sec = snap.get("security", {})
+    if not sec.get("internal_api_secret_configured", True):
+        lines.append(
+            "  🚨 SECURITY: INTERNAL_API_SECRET not configured -- "
+            "internal endpoints returning 503. Scanner + read-only "
+            "endpoints OK. Set INTERNAL_API_SECRET in .env."
+        )
 
     b = snap["bankroll"]
     if b["nifty"] is not None:
