@@ -136,7 +136,18 @@ class PennyScanner:
             return None
         ltp = q.get("last_price", 0)
         cum_vol = q.get("volume", 0) or 0
-        day_high = (q.get("ohlc") or {}).get("high") or ltp
+        ohlc = q.get("ohlc") or {}
+        day_high = ohlc.get("high") or ltp
+        day_low = ohlc.get("low") or ltp
+
+        # [PENNY-G8 2026-06-25] Infer the real NSE band from the live quote's
+        # day_high/day_low so circuit_blocked uses the right band rather than
+        # the hardcoded 5% assumption. We don't call circuit_blocked here
+        # (that's wired into a future P3 fix) but the helper is now
+        # available on PennyRiskEngine.
+        # prev_close is on the universe record loaded earlier in scan_once.
+        # We don't have it here in _evaluate_ticker_breakout; the call site
+        # for circuit_blocked is in the MIS-leg executor wiring (P3).
 
         # 2) Real 1-min bars (cached by kite.get_intraday)
         try:
@@ -296,12 +307,49 @@ class PennyScanner:
         else:
             closes = [b["close"] for b in bars if b.get("close")]
         daily = {"closes": closes}
-        return evaluate_connors_entry(
+        decision = evaluate_connors_entry(
             ticker=ticker, daily=daily,
             today_volume=today_volume, avg20_volume=avg20_volume,
             regime_size_pct=self._regime_to_size_pct(),
             risk_engine=self.risk_engine, as_of=as_of,
         )
+        if not decision or not decision.get("accept"):
+            return decision
+
+        # [PENNY-G2 2026-06-25] Compute real ATR(1min) from today's intraday
+        # bars and include it in the decision so downstream exit logic
+        # (evaluate_connors_exit) can use it for the post-T1 trailing stop.
+        # Previously this was always 0.0 because no caller fetched intraday
+        # for CNC entries -- the trail-stop effectively became a hard floor
+        # at breakeven+0.5% and the ATR component never moved it.
+        # NOTE: run_penny_connors_scan does NOT currently write a CNC
+        # position row to the positions table -- that's a separate fix
+        # (G5 / P3). When that lands, atr_1min_post_t1 will be read from
+        # the position. Until then this is computed but not consumed.
+        try:
+            from datetime import timedelta as _td
+            today = as_of.strftime("%Y-%m-%d")
+            start_dt = f"{today} 09:15:00"
+            end_dt = as_of.strftime("%Y-%m-%d %H:%M:%S")
+            intraday = await self.kite.get_intraday(
+                ticker=ticker,
+                from_datetime=start_dt,
+                to_datetime=end_dt,
+                interval="minute",
+            )
+            if intraday is not None and len(intraday) >= 1:
+                from penny_engine_connors import atr_1min as _atr_1min
+                atr = _atr_1min(intraday)
+                decision["atr_1min_post_t1"] = float(atr)
+            else:
+                decision["atr_1min_post_t1"] = 0.0
+        except Exception as e:
+            logger.warning(
+                "penny_atr_intraday_failed ticker=%s error=%s atr_1min_set_to_0",
+                ticker, str(e),
+            )
+            decision["atr_1min_post_t1"] = 0.0
+        return decision
 
     async def scan_once(self, as_of: datetime) -> dict:
         """

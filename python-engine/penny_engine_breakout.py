@@ -14,6 +14,28 @@ Public API:
                           risk_engine) -> dict
   smart_eod_check(pos, current_price, now) -> dict
   mis_time_stop_active(now) -> bool
+
+[PENNY-RSI-CONTRACT 2026-06-25, G3 audit note] The penny subsystem
+deliberately uses TWO RSI periods, one per engine:
+
+- MIS Breakout leg: RSI(14) (Wilder). Implemented locally as
+  _rsi_14_wilder() below. This is the standard 14-period RSI on the
+  1-min closes. Used as an overbought guard (>70 = reject).
+
+- CNC Connors leg: RSI(2) (Wilder). Implemented in
+  penny_engine_connors._rsi_2(). This is the Connors mean-reversion
+  RSI(2) on DAILY closes. Used as the oversold-bounce trigger (<10).
+
+These are NOT the same thing. They are correctly different signals:
+- RSI(14) on 1-min bars: short-term momentum / overbought, gates the
+  MIS breakout entry to avoid chasing into exhaustion.
+- RSI(2) on daily bars: mean-reversion, fires the CNC entry when the
+  stock is pulling back in an uptrend.
+
+A future consolidation would require picking one RSI per engine; for
+now this is documented and the two implementations live in their
+respective engine modules (no cross-import) so the isolation rule is
+preserved.
 """
 import logging
 from datetime import datetime, time, timedelta

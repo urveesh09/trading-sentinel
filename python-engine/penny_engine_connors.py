@@ -215,17 +215,39 @@ def evaluate_connors_exit(pos: dict, current_price: float, now: datetime) -> dic
 
 def _trading_days_elapsed(start: datetime, end: datetime) -> int:
     """
-    Count weekdays (Mon=0..Sun=4) strictly between start (exclusive) and
-    end (inclusive). A Friday 09:30 -> following Monday 09:30 = 1 trading
-    day. Friday 09:30 -> Wednesday 09:30 = 3 trading days (force-exit fires).
+    Count trading days (Mon-Fri minus NSE holidays) strictly between
+    start (exclusive) and end (inclusive). A Friday 09:30 -> following
+    Monday 09:30 = 1 trading day. Friday 09:30 -> Wednesday 09:30 = 3
+    trading days (force-exit fires).
+
+    [PENNY-G6 2026-06-25] Was a hardcoded weekday-only check (Mon-Fri)
+    which ignored NSE holidays. The original comment acknowledged this
+    limitation and said broker-level SL-M still protects downside. The
+    fix is to use market_calendar.is_trading_day_sync which reads the
+    local holiday cache (populated by the async holiday fetcher at
+    scheduler startup). If the cache is empty (no fetch has run yet),
+    falls back to weekday-only -- same behaviour as before, no
+    regression. When the cache IS populated, holiday-aware counting
+    fires correctly.
     """
     if end <= start:
         return 0
-    days = 0
-    d = start.date() + timedelta(days=1)
-    end_date = end.date()
-    while d <= end_date:
-        if d.weekday() < 5:  # Mon-Fri
-            days += 1
-        d += timedelta(days=1)
-    return days
+    from config import settings
+    db_path = settings.DB_PATH
+    try:
+        from market_calendar import trading_days_between_sync
+        return trading_days_between_sync(start.date(), end.date(), db_path)
+    except Exception as e:
+        logger.warning(
+            "penny_trading_days_calendar_unavailable error=%s falling_back_to_weekday",
+            str(e),
+        )
+        # Fallback to old hardcoded weekday check (preserves pre-fix behaviour).
+        days = 0
+        d = start.date() + timedelta(days=1)
+        end_date = end.date()
+        while d <= end_date:
+            if d.weekday() < 5:
+                days += 1
+            d += timedelta(days=1)
+        return days
