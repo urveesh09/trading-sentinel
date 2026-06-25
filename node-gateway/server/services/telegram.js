@@ -27,24 +27,49 @@ if (config.TELEGRAM_MODE === 'webhook') {
   // Only messages that pass isValidChat() are processed (same auth
   // model as the existing callback_query handler). Non-command
   // messages are silently ignored.
+  //
+  // Phase A+B+C (2026-06-25) extends this to also handle /nifty <cmd>
+  // -- read-only Nifty queries. Per operator mandate, /nifty commands
+  // NEVER mutate state; the gateway only ever sends GET to
+  // python-engine /nifty/command/{cmd} (no POST endpoint exists
+  // for /nifty by design).
   bot.on('message', async (msg) => {
     try {
       if (!isValidChat(msg.chat.id)) return;
       const text = (msg.text || '').trim();
-      if (!text.startsWith('/penny')) return;
-      // Strip the prefix, split into command + args.
-      const rest = text.slice('/penny'.length).trim();
-      const spaceIdx = rest.indexOf(' ');
-      const cmd = spaceIdx === -1 ? rest : rest.slice(0, spaceIdx);
-      const args = spaceIdx === -1 ? '' : rest.slice(spaceIdx + 1).trim();
+      if (!text.startsWith('/')) return;
 
-      // Decide GET vs POST: skip / unskip mutate state, everything
-      // else is read-only.
-      const mutateCommands = new Set(['skip', 'unskip']);
-      const url = `${config.PYTHON_ENGINE_URL}/penny/command/${encodeURIComponent(cmd || 'help')}`;
+      // Route by prefix. /penny -> POST or GET. /nifty -> GET only.
+      let prefix, cmd, args, url, mutateCommands, httpMethod;
+      if (text.startsWith('/penny')) {
+        prefix = '/penny';
+        const rest = text.slice('/penny'.length).trim();
+        const spaceIdx = rest.indexOf(' ');
+        cmd = spaceIdx === -1 ? rest : rest.slice(0, spaceIdx);
+        args = spaceIdx === -1 ? '' : rest.slice(spaceIdx + 1).trim();
+        mutateCommands = new Set(['skip', 'unskip']);
+        httpMethod = mutateCommands.has((cmd || '').toLowerCase()) ? 'POST' : 'GET';
+      } else if (text.startsWith('/nifty')) {
+        prefix = '/nifty';
+        const rest = text.slice('/nifty'.length).trim();
+        const spaceIdx = rest.indexOf(' ');
+        cmd = spaceIdx === -1 ? rest : rest.slice(0, spaceIdx);
+        args = spaceIdx === -1 ? '' : rest.slice(spaceIdx + 1).trim();
+        // Nifty commands are always GET (read-only).
+        httpMethod = 'GET';
+      } else {
+        // Not a command we handle; ignore silently.
+        return;
+      }
+
+      // Some commands (e.g. /nifty help) need an empty cmd. Default to
+      // 'help' so a bare /nifty returns the help text.
+      const cmdOrHelp = (cmd || 'help').trim();
+      url = `${config.PYTHON_ENGINE_URL}/${prefix}/command/${encodeURIComponent(cmdOrHelp)}`;
+
       let reply;
       try {
-        if (mutateCommands.has((cmd || '').toLowerCase())) {
+        if (httpMethod === 'POST') {
           const resp = await axios.post(url, { args }, { timeout: 10_000 });
           reply = resp.data && resp.data.reply ? resp.data.reply : '(no reply from python-engine)';
         } else {
@@ -53,9 +78,9 @@ if (config.TELEGRAM_MODE === 'webhook') {
         }
       } catch (err) {
         logger.error({
-          event_type: 'penny_command_dispatch_failed',
-          cmd, args, err: err.message,
-        }, 'Failed to dispatch /penny command');
+          event_type: 'command_dispatch_failed',
+          prefix, cmd, args, err: err.message,
+        }, 'Failed to dispatch command');
         reply = `Error: python-engine unreachable (${err.message}). Try again in a minute.`;
       }
 
@@ -64,9 +89,9 @@ if (config.TELEGRAM_MODE === 'webhook') {
       await bot.sendMessage(msg.chat.id, reply);
     } catch (e) {
       logger.error({
-        event_type: 'penny_command_handler_error',
+        event_type: 'command_handler_error',
         err: e.message,
-      }, 'Unexpected error in /penny command handler');
+      }, 'Unexpected error in command handler');
     }
   });
 }

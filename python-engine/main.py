@@ -2146,6 +2146,22 @@ async def penny_command_post(cmd: str, payload: dict):
     return {"reply": dispatch(cmd, args, settings.DB_PATH)}
 
 
+# [TIER3-NIFTY-COMMANDS 2026-06-25] Read-only Nifty commands.
+# Per operator mandate, these NEVER mutate state -- they're pure
+# queries against current_signals, current_momentum_signals, and
+# market_regime globals + DB-backed bankroll/circuit-breaker reads.
+# To act on Nifty signals use the inline callback buttons or the
+# HTTP API (POST /positions/close, etc.).
+@app.get("/nifty/command/{cmd}")
+async def nifty_command_get(cmd: str):
+    """GET handler for read-only Nifty commands."""
+    from nifty_commands import dispatch
+    return {"reply": dispatch(cmd, "", settings.DB_PATH)}
+
+
+# No POST handler: by design, /nifty commands don't mutate state.
+
+
 @app.get("/circuit-breaker")
 async def get_circuit_breaker():
     halted, reasons = await check_circuit_breakers(settings.DB_PATH)
