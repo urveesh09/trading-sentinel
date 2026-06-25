@@ -27,6 +27,32 @@ from breadth import BreadthEngine
 from universe import Universe
 # [PENNY-MAIN 2026-06-21] Penny subsystem module imports.
 from penny_universe import PennyUniverse, refresh_from_kite
+
+
+# [AUDIT-FIX-1.2 2026-06-25] Single source of truth for "is this position
+# intraday or delivery?" The previous code hardcoded is_intraday=True at
+# 2 call sites regardless of pos['product_type'], which understated CNC
+# costs (CNC STT = 0.1% sell side vs MIS 0.025%). Now callers derive
+# the flag from product_type; missing/empty defaults to True (legacy
+# behaviour preserved for older DB rows).
+#
+# Why not just default is_intraday=False? Because the legacy default
+# for the close_position endpoint was True, and a silent flip would
+# change every historical P&L number retroactively. We're a write-only
+# ledger (we never re-derive historical costs), so the default doesn't
+# matter for past data, but for new data we WANT to read product_type
+# correctly.
+def _is_intraday_from_product_type(product_type) -> bool:
+    """Return True for MIS/NRML/empty/None, False for CNC.
+
+    Empty/None: defaults to intraday=True (legacy default; matches the
+    pre-fix hardcoded is_intraday=True in close_position).
+    CNC: explicitly delivery, intraday=False.
+    Anything else (futures/options product codes): treat as intraday.
+    """
+    if not product_type:
+        return True
+    return str(product_type).strip().upper() != "CNC"
 from penny_regime import PennyRegimeEngine
 from penny_scanner import PennyScanner
 # app = FastAPI(title="Quant Engine Container B")
@@ -106,18 +132,37 @@ def _get_penny_universe():
 
 
 def _get_penny_scanner():
-    """Lazy-build PennyScanner singleton. Honors PENNY_LIVE_TRADING."""
+    """Lazy-build PennyScanner singleton. Honors PENNY_LIVE_TRADING.
+
+    [AUDIT-FIX-1.3 2026-06-25] Pass `regime` as a CALLABLE so the scanner
+    re-reads the regime engine on every property access. The previous
+    implementation froze the regime string at singleton-construction
+    time, which meant a mid-day transition (PR1->PR2->PR3) was invisible
+    to the 30s MIS scan loop until the singleton was rebuilt (which
+    only happened in the 09:30 CNC scan).
+    """
     global _penny_scanner
     if _penny_scanner is not None:
         return _penny_scanner
     paper_mode = not settings.PENNY_LIVE_TRADING
+
+    # Live regime getter: re-reads the module-level engine on every call.
+    # Returns the .value string (e.g. "PR2_ELEVATED"). If the engine
+    # hasn't computed today_regime yet, returns "PR1_CALM" as a safe
+    # fallback (sizing at 5% of bankroll, not 0%).
+    def _live_regime():
+        if _penny_regime_engine is None:
+            return "PR1_CALM"
+        tr = _penny_regime_engine.today_regime
+        if tr is None:
+            return "PR1_CALM"
+        return tr.value if hasattr(tr, "value") else str(tr)
+
     _penny_scanner = PennyScanner(
         kite=kite,
         universe_json_path=PENNY_UNIVERSE_JSON_PATH,
         paper_mode=paper_mode,
-        regime=_penny_regime_engine.today_regime.value
-        if _penny_regime_engine.today_regime is not None
-        else "PR1_CALM",
+        regime=_live_regime,  # callable, not a string
         ledger_writer=_penny_ledger_writer,
     )
     logger.info("penny_scanner_initialized", paper_mode=paper_mode)
@@ -232,10 +277,63 @@ async def run_penny_connors_scan():
                         decision.get("atr_1min_post_t1", 0.0),
                     )
                 except Exception as e:
+                    # [AUDIT-FIX-1.5 2026-06-25] DB write failure after the
+                    # entry actually filled (live mode) or was paper-recorded
+                    # leaves the position unmanaged by our exit logic
+                    # (time-stop / post-T1 trailing / 14:30 smart-EOD all
+                    # query the DB).
+                    #
+                    # What we DON'T do: auto-fire a market-exit here.
+                    # The executor already placed an SL-M at the broker in
+                    # step 3 of execute_entry -- that SL-M is the safety
+                    # net for the position. Firing a market order here
+                    # could double-sell if both orders fill.
+                    #
+                    # What we DO: log loudly + send a Telegram alert so the
+                    # operator knows the position is untracked by our
+                    # software. The SL-M at the broker still protects the
+                    # account; the operator can choose to manually close
+                    # via the broker if they want full software tracking.
+                    sl_id = order_result.get("sl_order_id") or "UNKNOWN"
+                    entry_id = order_result.get("entry_order_id") or "UNKNOWN"
+                    is_live = (entry_status == "filled")
                     logger.error(
-                        "penny_cnc_position_write_failed ticker=%s error=%s",
-                        t["symbol"], str(e),
+                        "penny_cnc_position_write_failed "
+                        "ticker=%s entry_id=%s sl_order_id=%s error=%s",
+                        t["symbol"], entry_id, sl_id, str(e),
                     )
+                    if is_live:
+                        # Live mode: position is held by the broker. SL-M
+                        # is the safety net (entry_id + sl_order_id logged
+                        # so the operator can correlate). Send a CRITICAL
+                        # alert so they know to intervene if desired.
+                        try:
+                            import httpx as _httpx
+                            msg = (
+                                f"🚨 **CNC POSITION UNTRACKED** 🚨\n"
+                                f"Ticker: {t['symbol']}\n"
+                                f"Entry: {decision.get('entry', 0):.2f} x "
+                                f"{decision.get('shares', 0)} shares\n"
+                                f"Entry order: {entry_id}\n"
+                                f"SL-M order: {sl_id} (broker-side safety)\n"
+                                f"DB write failed: {str(e)[:200]}\n"
+                                f"Action: position is protected by SL-M at "
+                                f"the broker. Manually close via broker if "
+                                f"you want software tracking."
+                            )
+                            async with _httpx.AsyncClient() as _client:
+                                await _client.post(
+                                    f"{settings.CONTAINER_A_URL}/api/internal/notify",
+                                    json={"message": msg},
+                                    headers={"X-Internal-Secret": settings.INTERNAL_API_SECRET},
+                                    timeout=5.0,
+                                )
+                        except Exception as notify_err:
+                            logger.error(
+                                "penny_cnc_untracked_alert_failed "
+                                "ticker=%s error=%s",
+                                t["symbol"], str(notify_err),
+                            )
             accept += 1
         logger.info("penny_connors_scan_done accept=%d reject=%d", accept, reject)
     except Exception as e:
@@ -1838,7 +1936,12 @@ async def auto_square_momentum():
             # estimated fill price. The square-off order was just placed; we do not
             # have broker fill confirmation, so LTP is the best estimate available.
             gross        = (ltp - pos['entry_price']) * pos['shares']
-            costs        = calc_zerodha_costs(pos['entry_price'], ltp, pos['shares'], is_intraday=True)
+            # [AUDIT-FIX-1.2] Derive is_intraday from product_type (was
+            # hardcoded True, understating CNC costs).
+            costs = calc_zerodha_costs(
+                pos['entry_price'], ltp, pos['shares'],
+                is_intraday=_is_intraday_from_product_type(pos.get('product_type')),
+            )
             realised_pnl = gross - costs
             risk_initial = (pos['entry_price'] - pos.get('stop_loss_initial', pos['entry_price'] * 0.95)) * pos['shares']
             r_multiple   = realised_pnl / risk_initial if risk_initial > 0 else 0
@@ -1972,32 +2075,24 @@ async def _notify_momentum_heartbeat(
 
 
 @app.post("/positions/manual")
-async def add_manual_position(request: Request):
+async def add_manual_position(request: Request, payload: ManualPositionRequest):
     """
     Called by Container A after a successful execution.
     Creates a new position in the database.
+
+    [AUDIT-FIX-1.4 2026-06-25] Body is now validated by Pydantic
+    (ManualPositionRequest). Missing required fields -> HTTP 422
+    with field-level error messages. Previously: KeyError -> HTTP 500.
     """
-    data = await request.json()
     secret = request.headers.get("X-Internal-Secret", "")
     if secret != settings.INTERNAL_API_SECRET:
         raise HTTPException(status_code=403, detail="Unauthorized")
 
-    ticker      = data["ticker"]
-    entry_price = float(data["entry_price"])
-    shares      = int(data["shares"])
-    # If source is explicitly sent (e.g. MOMENTUM), use it.
-    # Default to SYSTEM for swing.
-    source      = data.get("source", "SYSTEM")
-    # [MED-008] Persist product_type so auto_square_momentum() can read it correctly.
-    product_type = data.get("product_type", "CNC")
-    # [TRAILING-EXITS 2026-06-16] Persist regime_at_entry so position_tracker
-    # can pick the regime-aware Chandelier multiplier (3.5x for R1, 3.0x for
-    # R2, 2.5x for R3). NULL = legacy 3.0x trail (backward compat).
-    regime_at_entry = data.get("regime_at_entry", None)
-
-    stop_loss   = float(data.get("stop_loss", entry_price * 0.95))
-    target_1    = float(data.get("target_1", entry_price * 1.05))
-    target_2    = float(data.get("target_2", entry_price * 1.10))
+    # Derive stop / targets from entry_price if not supplied. Same
+    # defaults as the pre-fix manual dict path (95% / 105% / 110%).
+    stop_loss = payload.stop_loss if payload.stop_loss is not None else payload.entry_price * 0.95
+    target_1  = payload.target_1  if payload.target_1  is not None else payload.entry_price * 1.05
+    target_2  = payload.target_2  if payload.target_2  is not None else payload.entry_price * 1.10
 
     async with aiosqlite.connect(settings.DB_PATH) as db:
         await db.execute("""
@@ -2007,12 +2102,14 @@ async def add_manual_position(request: Request):
                 atr_14_at_entry, highest_close_since_entry, status, source, product_type,
                 regime_at_entry
             ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-        """, (ticker, data.get("exchange", "NSE"), datetime.now(timezone.utc).isoformat(),
-              entry_price, shares, stop_loss, stop_loss, target_1, target_2,
-              0.0, entry_price, "OPEN", source, product_type, regime_at_entry))
+        """, (payload.ticker, payload.exchange, datetime.now(timezone.utc).isoformat(),
+              payload.entry_price, payload.shares, stop_loss, stop_loss,
+              target_1, target_2, 0.0, payload.entry_price, "OPEN",
+              payload.source, payload.product_type, payload.regime_at_entry))
         await db.commit()
 
-    logger.info("position_added_manually", ticker=ticker, source=source, regime=regime_at_entry)
+    logger.info("position_added_manually", ticker=payload.ticker,
+                source=payload.source, regime=payload.regime_at_entry)
     return {"status": "ok"}
 
 @app.post("/positions/close")
@@ -2039,8 +2136,10 @@ async def close_position(request: Request):
                             detail=f"No open MOMENTUM position for {ticker}")
 
     gross = (exit_price - pos['entry_price']) * pos['shares']
+    # [AUDIT-FIX-1.2] Derive is_intraday from product_type (was hardcoded True).
     costs = calc_zerodha_costs(
-        pos['entry_price'], exit_price, pos['shares'], is_intraday=True
+        pos['entry_price'], exit_price, pos['shares'],
+        is_intraday=_is_intraday_from_product_type(pos.get('product_type')),
     )
     realised_pnl = gross - costs
     risk_initial = (pos['entry_price'] - pos['stop_loss_initial']) * pos['shares']

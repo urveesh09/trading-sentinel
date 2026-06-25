@@ -28,7 +28,7 @@ import json
 import logging
 import os
 from datetime import datetime, timezone
-from typing import Optional, List
+from typing import Callable, Optional, List
 from uuid import uuid4
 
 from penny_universe import PennyUniverse
@@ -44,14 +44,28 @@ class PennyScanner:
         kite,
         universe_json_path: str,
         paper_mode: bool = True,
-        regime: str = "PR1_CALM",
+        regime=None,  # str (legacy, frozen) or Callable[[], str]
         daily_pnl_override: Optional[float] = None,
         ledger_writer=None,
     ):
         self.kite = kite
         self.universe_json_path = universe_json_path
         self.paper_mode = paper_mode
-        self.regime = regime
+        # [AUDIT-FIX-1.3 2026-06-25] Regime used to be a frozen string
+        # captured at construction. That meant a mid-day regime
+        # transition (PR1->PR2->PR3) was invisible to the MIS scanner
+        # until the singleton was rebuilt. The CNC scan rebuilds the
+        # singleton (run_penny_connors_scan sets _penny_scanner=None),
+        # but the 30s MIS loop doesn't -- so PR3_HOT (block all entries)
+        # could miss a transition by hours.
+        #
+        # Now `regime` can be:
+        #   - a string (legacy behaviour: frozen)
+        #   - a callable returning the current regime (live behaviour:
+        #     re-reads the regime engine every access)
+        #   - None (default to PR1_CALM callable)
+        # The property getter below normalises all three.
+        self._regime_getter = self._normalise_regime_getter(regime)
         self.daily_pnl_override = daily_pnl_override
         # Risk engine owns sizing + kill-switch (lazy init to read bankroll)
         from config import settings
@@ -75,6 +89,73 @@ class PennyScanner:
         if daily_pnl_override is not None:
             self.risk_engine.daily_pnl = daily_pnl_override
             self.risk_engine.daily_pnl_date = datetime.now(timezone.utc).date().isoformat()
+
+    # ---- [AUDIT-FIX-1.3] regime property + helper -------------------
+
+    @staticmethod
+    def _normalise_regime_getter(regime):
+        """Convert the constructor's `regime` argument into a zero-arg
+        callable returning a PennyRegime string.
+
+        Behaviour:
+          - callable (incl. bound method) -> used as-is
+          - str                          -> wrapped: always returns that string
+                                         (legacy frozen behaviour, preserved
+                                         for any existing call sites that
+                                         pass a string)
+          - None                         -> wrapped: always returns "PR1_CALM"
+                                         (defensive default for tests that
+                                         don't construct with a regime)
+        """
+        if callable(regime):
+            return regime
+        if isinstance(regime, str):
+            frozen = regime
+            return lambda: frozen
+        # None or anything else
+        return lambda: "PR1_CALM"
+
+    @property
+    def regime(self) -> str:
+        """Live regime value.
+
+        Returns the current regime string. When the scanner was built
+        with a callable (the production wiring), this re-reads the
+        regime engine on every access -- so PR3_HOT transitions mid-day
+        are visible to the 30s MIS scan loop without rebuilding the
+        singleton.
+
+        When the scanner was built with a string, this returns the
+        frozen string (legacy behaviour, preserved for tests).
+        """
+        try:
+            v = self._regime_getter()
+        except Exception as e:
+            # [AUDIT-FIX-1.3] Fail-open: if the regime getter throws
+            # (e.g. the regime engine was never initialised in a test),
+            # return "UNKNOWN" -- which sizes at 0% per the risk engine's
+            # _risk_pct_for_regime table. Better to skip than to crash
+            # the scanner loop.
+            logger.warning("penny_regime_getter_failed error=%s", str(e))
+            return "UNKNOWN"
+        if not v:
+            return "UNKNOWN"
+        # Always return the .value string (handle PennyRegime enum too)
+        try:
+            from penny_models import PennyRegime
+            if isinstance(v, PennyRegime):
+                return v.value
+        except Exception:
+            pass
+        return str(v)
+
+    @regime.setter
+    def regime(self, value):
+        """Setter preserved for back-compat. Sets the regime to a
+        frozen string (legacy callers expecting .regime = "..." to
+        work). For live-tracking, prefer passing a callable to __init__.
+        """
+        self._regime_getter = self._normalise_regime_getter(value)
 
     def _load_universe(self) -> List[dict]:
         try:

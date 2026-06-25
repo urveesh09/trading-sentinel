@@ -520,22 +520,33 @@ class TestNiftyBankroll:
         even when the LAST ledger row is a PENNY row (after interleaved
         trades), nifty_bankroll must still read pure Nifty-subsystem.
 
-        Before this fix, swing RiskEngine was constructed with
+        Before AUDIT-FIX-1.1, swing RiskEngine was constructed with
         current_bankroll() = last ledger row, which could be PENNY. With
         strict separation, nifty_bankroll() reads SUM(pnl WHERE source IN
-        ('SYSTEM','MOMENTUM')) -- robust to row order."""
+        ('SYSTEM','MOMENTUM')) -- robust to row order.
+
+        After AUDIT-FIX-1.1, record_trade_close also uses per-source
+        bankroll_for_source(source) for the bankroll_before/after
+        columns. That means the LAST ledger row's bankroll_after now
+        reflects only the source of that row (SWING_2 = 5300), not a
+        mixed value (5250 pre-fix). current_bankroll() is therefore
+        also robust to row order now.
+        """
         from performance import nifty_bankroll, current_bankroll
         # Interleave: swing win, then penny loss, then swing win.
         await record_trade_close(seeded_db, "SWING_1", 100.0, source="SYSTEM")
         await record_trade_close(seeded_db, "PENNY_1", -50.0, source="PENNY")
         await record_trade_close(seeded_db, "SWING_2", 200.0, source="SYSTEM")
-        # Legacy: last ledger row is SWING_2 with bankroll_after=5250.
+        # Legacy: last ledger row is SWING_2. With AUDIT-FIX-1.1 the
+        # per-source bankroll_after is 5100 + 200 = 5300 (was 5250 pre-fix).
         legacy = await current_bankroll(seeded_db)
-        assert legacy == 5250.0  # current_bankroll() unchanged
+        assert legacy == 5300.0  # AUDIT-FIX-1.1: per-source bankroll_after
         # Strict: Nifty = 5000 + 100 + 200 = 5300. Penny -50 excluded.
         strict = await nifty_bankroll(seeded_db)
         assert strict == 5300.0, \
             f"strict separation broken: nifty={strict}, expected 5300"
+        # Both values agree (they wouldn't pre-fix when penny was last).
+        assert legacy == strict
 
     @pytest.mark.asyncio
     async def test_check_circuit_breakers_uses_strict_separation(self, seeded_db):
