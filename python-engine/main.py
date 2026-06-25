@@ -2162,6 +2162,23 @@ async def nifty_command_get(cmd: str):
 # No POST handler: by design, /nifty commands don't mutate state.
 
 
+# [TIER3-CROSS-SUBSYSTEM-COMMANDS 2026-06-25] Phase B.
+# Top-level /health and /regime (no /penny prefix). Same read-only
+# posture as /nifty. The dispatcher routes by command name.
+@app.get("/command/{cmd}")
+async def top_level_command_get(cmd: str):
+    """Top-level read-only commands: /health, /regime.
+
+    These are cross-subsystem views (penny + nifty side by side)
+    and don't fit under /penny or /nifty specifically. The gateway
+    routes /health and /regime (no prefix) here.
+    """
+    from penny_commands import dispatch as _penny_dispatch
+    # penny_commands.dispatch is the universal entry point -- it
+    # routes /health and /regime to the cross-subsystem handlers.
+    return {"reply": _penny_dispatch(cmd, "", settings.DB_PATH)}
+
+
 @app.get("/circuit-breaker")
 async def get_circuit_breaker():
     halted, reasons = await check_circuit_breakers(settings.DB_PATH)
@@ -2269,7 +2286,35 @@ async def test_momentum_screener():
     return {"status": "momentum_scan_triggered"}
 
 @app.get("/health")
-
-
 async def health_check():
-    return {"status": "ok"}
+    """Real /health (Phase B, 2026-06-25).
+
+    Replaces the no-op `{"status": "ok"}` placeholder with a structured
+    diagnostic of all subsystems. The operator can pull this via the
+    /health Telegram command (cmd_health) or hit it directly via HTTP.
+
+    Returns: {status: "OK" | "DEGRADED", subsystems: {...}, halted: bool, ...}
+    The HTTP shape mirrors the structure used by build_health_snapshot()
+    in penny_health.py.
+    """
+    try:
+        from penny_health import build_health_snapshot
+        snap = await build_health_snapshot(settings.DB_PATH)
+        # The HTTP status code reflects overall_status: 200 for OK,
+        # 200 for DEGRADED too (the system is responding, just with
+        # issues -- this lets load balancers distinguish "service down"
+        # from "service up but unhappy"). Clients should read the
+        # JSON body for actual state.
+        from fastapi.responses import JSONResponse
+        return JSONResponse(status_code=200, content=snap)
+    except Exception as e:
+        # Even the health check must not fail. Return a minimal payload
+        # indicating DOWN so the operator knows python-engine is sick.
+        from fastapi.responses import JSONResponse
+        return JSONResponse(
+            status_code=503,
+            content={
+                "overall_status": "DOWN",
+                "error": f"{type(e).__name__}: {str(e)[:200]}",
+            },
+        )

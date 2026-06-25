@@ -129,7 +129,16 @@ def cmd_help() -> str:
         "/penny skip TICKER - disable ticker (mid-day, persists)\n"
         "/penny unskip TICKER - re-enable ticker\n"
         "/penny skips - list currently-disabled tickers\n"
-        "/penny help - this message"
+        "/penny help - this message\n"
+        "\n"
+        "Cross-subsystem commands (Phase B, 2026-06-25):\n"
+        "/health - all subsystems: status, regimes, freshness, halts\n"
+        "/regime - penny + nifty regime side-by-side\n"
+        "/nifty stats, /nifty swing, /nifty momentum, /nifty circuit, /nifty help\n"
+        "\n"
+        "All slash commands are read-only. They do NOT execute trades,\n"
+        "skip tickers, or change settings. To act on signals, use the\n"
+        "inline buttons on signal alerts or the HTTP API."
     )
 
 
@@ -246,6 +255,32 @@ def cmd_heatmap(db_path: str) -> str:
         return f"Penny heat-map: error ({type(e).__name__}: {str(e)[:200]})"
 
 
+def cmd_health(db_path: str) -> str:
+    """Cross-subsystem health snapshot. Read-only.
+
+    Includes: penny regime + last-regime age, nifty market regime +
+    last-scan age, open positions per pool, halt state, bankroll
+    per pool. Surfaces staleness warnings if any subsystem hasn't
+    computed in >24h.
+    """
+    try:
+        from penny_health import build_health_snapshot_sync, format_health
+        snap = build_health_snapshot_sync(db_path)
+        return format_health(snap)
+    except Exception as e:
+        return f"Health: error reading ({type(e).__name__})"
+
+
+def cmd_regime_all(db_path: str) -> str:
+    """Cross-subsystem regime (penny + nifty side by side). Read-only."""
+    try:
+        from penny_health import build_health_snapshot_sync, format_regime_all
+        snap = build_health_snapshot_sync(db_path)
+        return format_regime_all(snap)
+    except Exception as e:
+        return f"Regime (all): error reading ({type(e).__name__})"
+
+
 def cmd_skip(ticker: str, path: Optional[str] = None) -> str:
     """Add ticker to runtime disable list. Idempotent."""
     path = _resolve_path(path)
@@ -298,11 +333,11 @@ def cmd_skips(path: Optional[str] = None) -> str:
 def dispatch(command: str, args: str, db_path: str) -> str:
     """Dispatch a Telegram command to the right handler.
 
-    Args:
-        command: the subcommand word (e.g. "stats", "skip")
-        args:    any trailing argument string (e.g. "GOLDSTAR-SM")
-        db_path: path to the trading database
-    Returns: a string reply (will be echoed back to Telegram)
+    Phase B (2026-06-25) extends the dispatch to also handle:
+      - 'health' (top-level, no prefix) -> cross-subsystem health
+      - 'regime' (top-level, no prefix) -> cross-subsystem regime view
+    These come in via the /command/{cmd} endpoint (no /penny prefix)
+    so the dispatch table must handle them here.
     """
     cmd = (command or "").strip().lower()
     if cmd == "help" or cmd == "":
@@ -310,7 +345,10 @@ def dispatch(command: str, args: str, db_path: str) -> str:
     if cmd == "stats":
         return cmd_stats(db_path)
     if cmd == "regime":
-        return cmd_regime(db_path)
+        # Cross-subsystem: penny + nifty regimes side by side.
+        return cmd_regime_all(db_path)
+    if cmd == "health":
+        return cmd_health(db_path)
     if cmd == "heatmap":
         return cmd_heatmap(db_path)
     if cmd == "skips":

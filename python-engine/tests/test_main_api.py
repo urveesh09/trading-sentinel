@@ -38,10 +38,20 @@ class TestHealthEndpoint:
 
     @pytest.mark.asyncio
     async def test_returns_ok(self, client):
+        """Phase B (2026-06-25): /health now returns a structured
+        diagnostic (overall_status, penny, nifty, halted, ...)."""
         resp = await client.get("/health")
         assert resp.status_code == 200
         body = resp.json()
-        assert body["status"] == "ok"
+        # The new health endpoint reports overall_status instead of
+        # status. With no real subsystems running in the test fixture
+        # the snapshot is likely DEGRADED but always has the structured
+        # shape.
+        assert "overall_status" in body
+        assert body["overall_status"] in ("OK", "DEGRADED", "DOWN")
+        assert "penny" in body
+        assert "nifty" in body
+        assert "halted" in body
 
     @pytest.mark.asyncio
     async def test_no_auth_required(self, client):

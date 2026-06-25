@@ -40,6 +40,8 @@ if (config.TELEGRAM_MODE === 'webhook') {
       if (!text.startsWith('/')) return;
 
       // Route by prefix. /penny -> POST or GET. /nifty -> GET only.
+      // Phase B (2026-06-25): /health and /regime (no prefix) go to
+      // the top-level /command/{cmd} endpoint on python-engine.
       let prefix, cmd, args, url, mutateCommands, httpMethod;
       if (text.startsWith('/penny')) {
         prefix = '/penny';
@@ -57,6 +59,18 @@ if (config.TELEGRAM_MODE === 'webhook') {
         args = spaceIdx === -1 ? '' : rest.slice(spaceIdx + 1).trim();
         // Nifty commands are always GET (read-only).
         httpMethod = 'GET';
+      } else if (text === '/health' || text.startsWith('/health ')) {
+        prefix = '';
+        const rest = text.slice('/health'.length).trim();
+        cmd = rest === '' ? 'health' : rest.split(' ')[0];
+        args = rest.split(' ').slice(1).join(' ');
+        httpMethod = 'GET';
+      } else if (text === '/regime' || text.startsWith('/regime ')) {
+        prefix = '';
+        const rest = text.slice('/regime'.length).trim();
+        cmd = rest === '' ? 'regime' : rest.split(' ')[0];
+        args = rest.split(' ').slice(1).join(' ');
+        httpMethod = 'GET';
       } else {
         // Not a command we handle; ignore silently.
         return;
@@ -65,7 +79,13 @@ if (config.TELEGRAM_MODE === 'webhook') {
       // Some commands (e.g. /nifty help) need an empty cmd. Default to
       // 'help' so a bare /nifty returns the help text.
       const cmdOrHelp = (cmd || 'help').trim();
-      url = `${config.PYTHON_ENGINE_URL}/${prefix}/command/${encodeURIComponent(cmdOrHelp)}`;
+      // For top-level commands, URL is /command/{cmd}. For prefixed
+      // commands, it's /{prefix}/command/{cmd}.
+      if (prefix === '') {
+        url = `${config.PYTHON_ENGINE_URL}/command/${encodeURIComponent(cmdOrHelp)}`;
+      } else {
+        url = `${config.PYTHON_ENGINE_URL}/${prefix}/command/${encodeURIComponent(cmdOrHelp)}`;
+      }
 
       let reply;
       try {
