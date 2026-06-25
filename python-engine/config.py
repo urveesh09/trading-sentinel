@@ -233,6 +233,21 @@ class Settings(BaseSettings):
     # Buffer pct applied as breakout margin (was hardcoded 0.3% in the
     # engine). Made a setting so adaptive mode can override it.
     PENNY_BREAKOUT_BUFFER_PCT:           float = 0.003
+    # [TIER2-SECTOR-FILTER 2026-06-25] Sector-relative strength gate.
+    # The filter is ALWAYS opt-in via the CSV; missing CSV == filter off.
+    #   USE_SECTOR_FILTER: master toggle (default True so the CSV path is
+    #     exercised; effective state is determined by CSV presence).
+    #   TOP_LOSERS_PCT: how deep into "losers" we look. With 10% threshold,
+    #     only sectors in the bottom decile intraday get blocked.
+    #   ETF_CHANGE_THRESHOLD_PCT: minimum negative move to consider
+    #     "weak" (default -1.5%). Sectors between -1.5% and severe are
+    #     allowed through (preserves proactiveness).
+    #   SECTORS_CSV_PATH: location of (symbol, sector) operator-curated
+    #     CSV. Empty or missing file -> filter is effectively OFF.
+    PENNY_USE_SECTOR_FILTER:               bool   = True
+    PENNY_SECTOR_TOP_LOSERS_PCT:           float = 0.10
+    PENNY_SECTOR_ETF_CHANGE_THRESHOLD_PCT: float = -0.015
+    PENNY_SECTORS_CSV_PATH:                str   = "python-engine/data/penny_sectors.csv"
     # [PENNY-TIME-STOP 2026-06-24] Soft time-stop: if entry fires but the
     # position is NOT in profit within PENNY_TIME_STOP_MIN minutes, cut at
     # market (modular exit path; spec §7.2 exit chain). Default 30 min --

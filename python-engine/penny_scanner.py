@@ -485,8 +485,20 @@ class PennyScanner:
                 continue
             surviving.append(t)
 
-        # Phase 1: parallel evaluation. asyncio.gather returns results in
-        # the same order as the input list, so we can zip them.
+        # [PENNY-T2C-SECTOR-FILTER 2026-06-25] Load sector CSV once per
+        # scan (not per ticker). Empty CSV or missing file = filter is
+        # effectively OFF (fail-open). The dedupe batch helper below
+        # groups tickers by ETF so we only hit Kite once per unique sector.
+        sector_map: dict = {}
+        if settings.PENNY_USE_SECTOR_FILTER:
+            try:
+                from penny_sector_filter import load_sector_map
+                sector_map = load_sector_map(settings.PENNY_SECTORS_CSV_PATH)
+            except Exception as e:
+                logger.warning("penny_sector_filter_load_failed error=%s (fail-open)", str(e))
+                sector_map = {}
+
+        # Phase 1a: parallel per-ticker evaluation (breakout engine).
         if surviving:
             results = await asyncio.gather(
                 *[self._evaluate_ticker_breakout(t["symbol"], as_of)
@@ -495,6 +507,36 @@ class PennyScanner:
             )
         else:
             results = []
+
+        # Phase 1b: sector check. Only runs on tickers that PASSED the
+        # breakout engine (we don't waste Kite calls on rejects). Uses
+        # the batch dedupe helper so the Kite rate limiter isn't hammered.
+        # The CSV-tickers dict has whatever mapping was loaded (possibly
+        # empty if CSV missing); the helper handles that case.
+        post_breakout = []  # list of (ticker_dict, decision)
+        for t, result in zip(surviving, results):
+            sym = t["symbol"]
+            if isinstance(result, Exception):
+                continue  # handled below
+            if result is None or not result.get("accept"):
+                continue  # not a candidate
+            post_breakout.append((t, result))
+
+        sector_decisions: dict = {}
+        if post_breakout and sector_map:
+            try:
+                from penny_sector_filter import filter_universe_by_sector
+                post_tickers = [td[0]["symbol"] for td in post_breakout]
+                sector_decisions = await filter_universe_by_sector(
+                    tickers=post_tickers,
+                    kite=self.kite,
+                    sector_map=sector_map,
+                    top_losers_pct=settings.PENNY_SECTOR_TOP_LOSERS_PCT,
+                    etf_change_threshold_pct=settings.PENNY_SECTOR_ETF_CHANGE_THRESHOLD_PCT,
+                )
+            except Exception as e:
+                logger.warning("penny_sector_filter_batch_failed error=%s (fail-open)", str(e))
+                sector_decisions = {}
 
         # Phase 2: serial result processing. Each surviving ticker has a
         # corresponding result (decision dict or Exception).
@@ -530,6 +572,30 @@ class PennyScanner:
                 )
                 reject += 1
                 continue
+
+            # [PENNY-T2C-SECTOR-FILTER 2026-06-25] Apply sector gate AFTER
+            # the breakout engine accepts, BEFORE we go to DB + executor.
+            # The gate is fail-open: UNKNOWN -> ALLOW. REJECT -> structured
+            # reject with a sector-specific reason in the diagnostic
+            # breakdown.
+            if decision.get("accept") and sym in sector_decisions:
+                sd = sector_decisions[sym]
+                if sd.is_blocked:
+                    logger.info(
+                        "penny_sector_filter_rejected ticker=%s sector=%s etf=%s change=%.2f%% reason=%s",
+                        sym, sd.sector, sd.etf_symbol,
+                        (sd.etf_change_pct or 0) * 100,
+                        sd.reason,
+                    )
+                    await log_penny_signal(
+                        settings.DB_PATH, scan_id=scan_id, ticker=sym,
+                        leg="MIS", accepted=False,
+                        reject_reason=f"sector_filter: {sd.reason}",
+                        regime=self.regime, close=0.0,
+                    )
+                    reject += 1
+                    continue
+
             if not decision.get("accept"):
                 await log_penny_signal(
                     settings.DB_PATH, scan_id=scan_id, ticker=sym,
