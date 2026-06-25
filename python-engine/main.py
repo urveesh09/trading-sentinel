@@ -187,6 +187,55 @@ async def run_penny_connors_scan():
                 t["symbol"], decision.get("entry", 0.0),
                 order_result.get("entry_order_id"),
             )
+            # [PENNY-G5 2026-06-25] Write CNC position row so the post-T1
+            # trailing stop (evaluate_connors_exit) can actually read
+            # atr_1min_post_t1. Pre-fix this INSERT was absent -- CNC
+            # entries had no row in positions table, so the exit logic
+            # was unreachable. The position is only written if the entry
+            # actually FILLED (paper + live modes).
+            entry_status = order_result.get("entry_status")
+            if entry_status in ("filled", "paper"):
+                try:
+                    from position_tracker import init_positions_db
+                    from datetime import datetime as _dt, timezone as _tz
+                    import aiosqlite
+                    await init_positions_db(settings.DB_PATH)
+                    async with aiosqlite.connect(settings.DB_PATH) as db:
+                        await db.execute(
+                            """INSERT INTO positions (
+                                ticker, exchange, entry_date, entry_price, shares,
+                                stop_loss_initial, trailing_stop_current,
+                                target_1, target_2, atr_14_at_entry,
+                                highest_close_since_entry, status, source,
+                                product_type, regime_at_entry,
+                                atr_1min_post_t1, t1_fired
+                            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+                            (t["symbol"], "NSE",
+                             _dt.now(_tz.utc).isoformat(),
+                             decision.get("entry", 0.0),
+                             decision.get("shares", 0),
+                             decision.get("stop_loss", 0.0),
+                             decision.get("stop_loss", 0.0),
+                             decision.get("target_1", 0.0),
+                             decision.get("target_2", 0.0),
+                             0.0,
+                             decision.get("entry", 0.0),
+                             "OPEN", "PENNY", "CNC",
+                             scanner.regime,
+                             decision.get("atr_1min_post_t1", 0.0),
+                             0)
+                        )
+                        await db.commit()
+                    logger.info(
+                        "penny_cnc_position_written ticker=%s shares=%d atr_1min=%.4f",
+                        t["symbol"], decision.get("shares", 0),
+                        decision.get("atr_1min_post_t1", 0.0),
+                    )
+                except Exception as e:
+                    logger.error(
+                        "penny_cnc_position_write_failed ticker=%s error=%s",
+                        t["symbol"], str(e),
+                    )
             accept += 1
         logger.info("penny_connors_scan_done accept=%d reject=%d", accept, reject)
     except Exception as e:
@@ -271,6 +320,72 @@ async def run_penny_eod_check():
         logger.info("penny_eod_check_done exit=%d hold=%d", exit_count, hold_count)
     except Exception as e:
         logger.error("penny_eod_check_failed", error=str(e))
+
+
+async def run_penny_force_close_mis():
+    """
+    [PENNY-G5 2026-06-25] Hard force-exit of ALL open MIS penny positions
+    at 15:00 IST (PENNY_BREAKOUT_TIME_EXIT). This is mandatory -- MIS
+    positions MUST NOT carry overnight because they use intraday product
+    type and would be auto-squared-off by the broker at 15:20 anyway,
+    but the broker auto-square-off can be at worse prices and we want a
+    deterministic exit we control.
+
+    Pre-2026-06-25 this was silently absent: mis_time_stop_active(now)
+    was defined in penny_engine_breakout.py but never called anywhere.
+    The 14:30 smart-EOD check (run_penny_eod_check) handles most cases,
+    but if a position was held past 14:30 (e.g. fresh_loss branch fired
+    hold), nothing else would force it out by 15:00. This is a real
+    safety bug.
+
+    This job is idempotent -- it just unwinds anything still open. If a
+    position was already closed via EOD or SL-M, it's not in the open
+    positions list and we skip it.
+    """
+    try:
+        from penny_engine_breakout import mis_time_stop_active
+        from position_tracker import get_open_positions
+        from penny_models import PennyLeg
+
+        now = datetime.now(IST)
+        if not mis_time_stop_active(now):
+            # Outside the 15:00 IST force-exit window -- nothing to do.
+            return
+
+        positions = await get_open_positions(settings.DB_PATH)
+        penny_mis = [
+            p for p in positions
+            if p.get("leg") == "MIS" and p.get("source") == "PENNY"
+        ]
+        if not penny_mis:
+            logger.info("penny_force_close_mis no_open_positions")
+            return
+
+        scanner = _get_penny_scanner()
+        close_count = 0
+        for p in penny_mis:
+            try:
+                exit_result = await scanner.executor._market_unwind(
+                    ticker=p.get("ticker"),
+                    leg=PennyLeg.MIS,
+                    shares=p.get("shares", 0),
+                )
+                logger.warning(
+                    "penny_force_close_mis_exit ticker=%s shares=%d order_id=%s reason=15:00_IST_time_stop",
+                    p.get("ticker"), p.get("shares"), exit_result,
+                )
+                close_count += 1
+            except Exception as e:
+                logger.error(
+                    "penny_force_close_mis_failed ticker=%s error=%s",
+                    p.get("ticker"), str(e),
+                )
+        logger.warning(
+            "penny_force_close_mis_done closed=%d (15:00 IST time-stop fired)",
+            close_count,
+        )
+    except Exception as e:
+        logger.error("penny_force_close_mis_crashed error=%s", str(e))
 
 
 async def run_penny_hourly_report():
@@ -584,6 +699,16 @@ def register_penny_scheduler_jobs(scheduler):
         hour=settings.PENNY_MIS_SMART_EOD_TIME // 60,
         minute=settings.PENNY_MIS_SMART_EOD_TIME % 60,
         id="penny_eod_check",
+    )
+    # [PENNY-G5 2026-06-25] 15:00 IST force-exit of all open MIS positions.
+    # Was silently missing before this commit -- mis_time_stop_active()
+    # was defined but never invoked. This scheduler entry fires once at
+    # 15:00 IST; the job itself is a no-op if the window has already passed.
+    scheduler.add_job(
+        run_penny_force_close_mis, "cron",
+        hour=settings.PENNY_BREAKOUT_TIME_EXIT // 60,
+        minute=settings.PENNY_BREAKOUT_TIME_EXIT % 60,
+        id="penny_force_close_mis",
     )
     scheduler.add_job(
         run_penny_hourly_report, "cron", minute=0,

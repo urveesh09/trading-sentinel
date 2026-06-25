@@ -419,9 +419,26 @@ class PennyScanner:
             return {"scan_id": scan_id, "accept": 0, "reject": len(universe), "error": 0}
 
         accept = reject = error = 0
+        # [PENNY-G9 2026-06-25] Parallelise the per-ticker evaluation with
+        # asyncio.gather. The previous sequential loop ran ~100 tickers
+        # back-to-back. Each ticker does 3 kite calls (quote, intraday,
+        # historical) gated by the kite_client RateLimiter (3 req/sec,
+        # burst 1). Parallelising lets the limiter queue N requests at
+        # once instead of N serial round-trips, giving an effective
+        # speedup of ~5-10x for 100-ticker universes.
+        #
+        # Sequential steps that stay serial:
+        # - manual disable check (sync, no I/O)
+        # - DB writes (log_penny_signal, positions INSERT) -- these have
+        #   their own aiosqlite connection and concurrent writes could race.
+        # - executor.execute_entry -- places real orders, MUST be serial.
+        #
+        # We therefore split the loop into two phases:
+        # Phase 1 (parallel): evaluate all non-disabled tickers via gather
+        # Phase 2 (serial): for each result, log signal + (if accept) execute
+        surviving = []
         for t in universe:
             sym = t["symbol"]
-            # Manual disable gate
             if self.risk_engine.is_disabled(sym):
                 await log_penny_signal(
                     settings.DB_PATH, scan_id=scan_id, ticker=sym,
@@ -431,100 +448,121 @@ class PennyScanner:
                 )
                 reject += 1
                 continue
+            surviving.append(t)
 
-            try:
-                decision = await self._evaluate_ticker_breakout(sym, as_of)
-                if decision is None:
-                    # 2026-06-25: this is not a system ERROR -- it is a
-                    # structured "skipped" outcome. The evaluator already
-                    # logged the specific reason (e.g. penny_intraday_fetch_failed,
-                    # penny_daily_vol_fetch_failed). Count it as a reject
-                    # so the diagnostic breakdown in the hourly report is
-                    # accurate. Also log the DB row so operators can see
-                    # the rejection without waiting for the hourly message.
-                    logger.info(
-                        "penny_eval_skipped ticker=%s reason=evaluator_returned_none",
-                        sym,
-                    )
-                    await log_penny_signal(
-                        settings.DB_PATH, scan_id=scan_id, ticker=sym,
-                        leg="MIS", accepted=False,
-                        reject_reason="evaluator returned None (see prior warn/error)",
-                        regime=self.regime, close=0.0,
-                    )
-                    reject += 1
-                    continue
-                if not decision.get("accept"):
-                    await log_penny_signal(
-                        settings.DB_PATH, scan_id=scan_id, ticker=sym,
-                        leg="MIS", accepted=False,
-                        reject_reason=decision.get("reject_reason", ""),
-                        regime=self.regime, close=0.0,
-                    )
-                    reject += 1
-                else:
-                    # Log accept + delegate to executor (per 2026-06-22 deviation).
-                    # The executor handles the full entry flow per spec §7.2:
-                    # entry LIMIT -> fill poll -> SL-M with retry -> market-unwind.
-                    await log_penny_signal(
-                        settings.DB_PATH, scan_id=scan_id, ticker=sym,
-                        leg="MIS", accepted=True,
-                        regime=self.regime, close=decision.get("entry", 0.0),
-                        stop_loss=decision.get("stop_loss"),
-                        target_1=decision.get("target"),
-                        rsi_14=decision.get("rsi_14"),
-                        breakout_level=decision.get("breakout_level"),
-                        shares=decision.get("shares"),
-                    )
-                    try:
-                        from penny_models import PennyLeg
-                        from position_tracker import init_positions_db
-                        await init_positions_db(settings.DB_PATH)
-                        order_result = await self.executor.execute_entry(
-                            ticker=sym,
-                            leg=PennyLeg.MIS,
-                            entry_price=decision.get("entry", 0.0),
-                            stop_loss=decision.get("stop_loss", 0.0),
-                            shares=decision.get("shares", 0),
-                        )
-                        logger.info(
-                            "penny_entry_attempted ticker=%s entry=%.2f sl=%.2f shares=%d paper=%s order_id=%s",
-                            sym, decision.get("entry", 0.0),
-                            decision.get("stop_loss", 0.0),
-                            decision.get("shares", 0),
-                            order_result.get("paper"),
-                            order_result.get("entry_order_id"),
-                        )
-                        if (not order_result.get("unwound")
-                                and order_result.get("entry_status") == "filled"):
-                            import aiosqlite
-                            from datetime import datetime, timezone
-                            async with aiosqlite.connect(settings.DB_PATH) as db:
-                                await db.execute(
-                                    """INSERT INTO positions (
-                                        ticker, exchange, entry_date, entry_price, shares,
-                                        stop_loss_initial, trailing_stop_current,
-                                        target_1, target_2, atr_14_at_entry,
-                                        highest_close_since_entry, status, source,
-                                        product_type, regime_at_entry
-                                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
-                                    (sym, "NSE",
-                                     datetime.now(timezone.utc).isoformat(),
-                                     decision.get("entry", 0.0),
-                                     decision.get("shares", 0),
-                                     decision.get("stop_loss", 0.0),
-                                     decision.get("stop_loss", 0.0),
-                                     decision.get("target", 0.0),
-                                     decision.get("target", 0.0) * 1.05,
-                                     0.0, decision.get("entry", 0.0),
-                                     "OPEN", "PENNY", "MIS", self.regime)
-                                )
-                                await db.commit()
-                    except Exception as e:
-                        logger.error("penny_entry_wiring_failed ticker=%s error=%s", sym, str(e))
-                    accept += 1
-            except Exception as e:
-                logger.error("penny_ticker_eval_failed ticker=%s error=%s", sym, str(e))
+        # Phase 1: parallel evaluation. asyncio.gather returns results in
+        # the same order as the input list, so we can zip them.
+        if surviving:
+            results = await asyncio.gather(
+                *[self._evaluate_ticker_breakout(t["symbol"], as_of)
+                  for t in surviving],
+                return_exceptions=True,
+            )
+        else:
+            results = []
+
+        # Phase 2: serial result processing. Each surviving ticker has a
+        # corresponding result (decision dict or Exception).
+        for t, result in zip(surviving, results):
+            sym = t["symbol"]
+            if isinstance(result, Exception):
+                # Should not normally happen -- the evaluator catches its own
+                # exceptions and returns None -- but be defensive.
+                logger.error(
+                    "penny_ticker_eval_exception ticker=%s error=%s",
+                    sym, str(result),
+                )
                 error += 1
+                continue
+            decision = result
+            if decision is None:
+                # 2026-06-25: this is not a system ERROR -- it is a
+                # structured "skipped" outcome. The evaluator already
+                # logged the specific reason (e.g. penny_intraday_fetch_failed,
+                # penny_daily_vol_fetch_failed). Count it as a reject
+                # so the diagnostic breakdown in the hourly report is
+                # accurate. Also log the DB row so operators can see
+                # the rejection without waiting for the hourly message.
+                logger.info(
+                    "penny_eval_skipped ticker=%s reason=evaluator_returned_none",
+                    sym,
+                )
+                await log_penny_signal(
+                    settings.DB_PATH, scan_id=scan_id, ticker=sym,
+                    leg="MIS", accepted=False,
+                    reject_reason="evaluator returned None (see prior warn/error)",
+                    regime=self.regime, close=0.0,
+                )
+                reject += 1
+                continue
+            if not decision.get("accept"):
+                await log_penny_signal(
+                    settings.DB_PATH, scan_id=scan_id, ticker=sym,
+                    leg="MIS", accepted=False,
+                    reject_reason=decision.get("reject_reason", ""),
+                    regime=self.regime, close=0.0,
+                )
+                reject += 1
+            else:
+                # Log accept + delegate to executor (per 2026-06-22 deviation).
+                # The executor handles the full entry flow per spec §7.2:
+                # entry LIMIT -> fill poll -> SL-M with retry -> market-unwind.
+                await log_penny_signal(
+                    settings.DB_PATH, scan_id=scan_id, ticker=sym,
+                    leg="MIS", accepted=True,
+                    regime=self.regime, close=decision.get("entry", 0.0),
+                    stop_loss=decision.get("stop_loss"),
+                    target_1=decision.get("target"),
+                    rsi_14=decision.get("rsi_14"),
+                    breakout_level=decision.get("breakout_level"),
+                    shares=decision.get("shares"),
+                )
+                try:
+                    from penny_models import PennyLeg
+                    from position_tracker import init_positions_db
+                    await init_positions_db(settings.DB_PATH)
+                    order_result = await self.executor.execute_entry(
+                        ticker=sym,
+                        leg=PennyLeg.MIS,
+                        entry_price=decision.get("entry", 0.0),
+                        stop_loss=decision.get("stop_loss", 0.0),
+                        shares=decision.get("shares", 0),
+                    )
+                    logger.info(
+                        "penny_entry_attempted ticker=%s entry=%.2f sl=%.2f shares=%d paper=%s order_id=%s",
+                        sym, decision.get("entry", 0.0),
+                        decision.get("stop_loss", 0.0),
+                        decision.get("shares", 0),
+                        order_result.get("paper"),
+                        order_result.get("entry_order_id"),
+                    )
+                    if (not order_result.get("unwound")
+                            and order_result.get("entry_status") == "filled"):
+                        import aiosqlite
+                        from datetime import datetime, timezone
+                        async with aiosqlite.connect(settings.DB_PATH) as db:
+                            await db.execute(
+                                """INSERT INTO positions (
+                                    ticker, exchange, entry_date, entry_price, shares,
+                                    stop_loss_initial, trailing_stop_current,
+                                    target_1, target_2, atr_14_at_entry,
+                                    highest_close_since_entry, status, source,
+                                    product_type, regime_at_entry
+                                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+                                (sym, "NSE",
+                                 datetime.now(timezone.utc).isoformat(),
+                                 decision.get("entry", 0.0),
+                                 decision.get("shares", 0),
+                                 decision.get("stop_loss", 0.0),
+                                 decision.get("stop_loss", 0.0),
+                                 decision.get("target", 0.0),
+                                 decision.get("target", 0.0) * 1.05,
+                                 0.0, decision.get("entry", 0.0),
+                                 "OPEN", "PENNY", "MIS", self.regime)
+                            )
+                            await db.commit()
+                except Exception as e:
+                    logger.error("penny_entry_wiring_failed ticker=%s error=%s", sym, str(e))
+                accept += 1
 
         return {"scan_id": scan_id, "accept": accept, "reject": reject, "error": error}

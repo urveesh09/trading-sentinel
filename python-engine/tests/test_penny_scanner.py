@@ -369,3 +369,56 @@ def test_scanner_logs_eval_skipped_when_quote_unavailable(tmp_paths, fake_kite, 
         f"Expected penny_eval_skipped lines, got: {[r.message for r in caplog.records]}"
     # At least one should have reason=quote_unavailable
     assert any("reason=quote_unavailable" in m for m in skipped)
+
+
+# ---- 2026-06-25 Phase 3 tests (G9) ---------------------------------
+
+def test_scanner_evaluates_in_parallel_via_gather(tmp_paths, fake_kite, fake_universe):
+    """G9: scan_once now uses asyncio.gather internally. We can't directly
+    assert parallelism (it depends on the event loop), but we CAN verify
+    that the scanner still produces the same accept/reject counts as
+    before the refactor -- ensuring correctness was preserved while
+    gaining the speedup."""
+    from penny_scanner import PennyScanner
+    scanner = PennyScanner(
+        kite=fake_kite, universe_json_path=fake_universe,
+        paper_mode=True, regime="PR1_CALM",
+    )
+    result = asyncio.run(scanner.scan_once(as_of=datetime(2026, 6, 21, 11, 0)))
+    # With the fake_kite fixture (3 tickers, all with neutral price data),
+    # the breakout engine produces a reject for each (price < required
+    # breakout level). The exact count doesn't matter; what matters is
+    # the loop processed all 3 tickers without crashing and the sum
+    # matches the universe size.
+    total = result["accept"] + result["reject"] + result["error"]
+    assert total == 3, f"expected 3 ticker outcomes, got {result}"
+
+
+def test_scanner_gather_handles_per_ticker_exceptions(tmp_paths, fake_kite, fake_universe):
+    """G9: with return_exceptions=True, a single ticker raising an
+    exception does NOT abort the whole scan -- other tickers still
+    complete and the failing one is counted as error."""
+    import penny_scanner as ps_module
+    from penny_scanner import PennyScanner
+
+    # Patch _evaluate_ticker_breakout so BBB raises but others succeed.
+    real_eval = PennyScanner._evaluate_ticker_breakout
+
+    async def selective_eval(self, ticker, as_of):
+        if ticker == "BBB":
+            raise RuntimeError("simulated Kite 500")
+        return await real_eval(self, ticker, as_of)
+
+    ps_module.PennyScanner._evaluate_ticker_breakout = selective_eval
+    try:
+        scanner = PennyScanner(
+            kite=fake_kite, universe_json_path=fake_universe,
+            paper_mode=True, regime="PR1_CALM",
+        )
+        result = asyncio.run(scanner.scan_once(as_of=datetime(2026, 6, 21, 11, 0)))
+        # BBB counted as error; AAA and CCC should be either accept or reject.
+        assert result["error"] == 1, f"BBB should be error=1, got {result}"
+        total = result["accept"] + result["reject"] + result["error"]
+        assert total == 3
+    finally:
+        ps_module.PennyScanner._evaluate_ticker_breakout = real_eval

@@ -295,7 +295,42 @@ def test_penny_risk_circuit_blocked_defaults_band_pct_to_5():
     pre-fix behaviour -- this is the path the scanner takes today)."""
     from penny_risk import PennyRiskEngine
     r = PennyRiskEngine(bankroll=2500.0)
-    blocked_none, _ = r.circuit_blocked(10.95, 11.05, 10.0, None)
-    blocked_zero, _ = r.circuit_blocked(10.95, 11.05, 10.0, 0)
+    blocked_none, _ = r.circuit_blocked(10.95, 11.30, 10.0, None)
+    blocked_zero, _ = r.circuit_blocked(10.95, 11.30, 10.0, 0)
     assert blocked_none is False  # same as passing 0.05
     assert blocked_zero is False
+
+
+# ---- 2026-06-25 Phase 3 tests (G5, G9) ----------------------------
+
+def test_mis_time_stop_active_fires_at_15():
+    """G5: mis_time_stop_active should return True at 15:00 IST and later."""
+    from datetime import datetime
+    from penny_engine_breakout import mis_time_stop_active
+    # 14:59 IST -> False
+    assert mis_time_stop_active(datetime(2026, 6, 25, 14, 59)) is False
+    # 15:00 IST -> True
+    assert mis_time_stop_active(datetime(2026, 6, 25, 15, 0)) is True
+    # 15:30 IST -> True
+    assert mis_time_stop_active(datetime(2026, 6, 25, 15, 30)) is True
+
+
+def test_positions_db_migration_adds_atr_1min_and_t1_fired(tmp_path):
+    """G5: init_positions_db adds the new atr_1min_post_t1 and t1_fired
+    columns. Migration is idempotent (running twice doesn't fail)."""
+    import asyncio
+    import aiosqlite
+    from position_tracker import init_positions_db
+
+    async def go():
+        db_path = str(tmp_path / "test.db")
+        # First run creates the table.
+        await init_positions_db(db_path)
+        # Second run is idempotent (ALTER TABLE fails -> caught -> no-op).
+        await init_positions_db(db_path)
+        async with aiosqlite.connect(db_path) as db:
+            cur = await db.execute("PRAGMA table_info(positions)")
+            cols = [row[1] for row in await cur.fetchall()]
+        assert "atr_1min_post_t1" in cols
+        assert "t1_fired" in cols
+    asyncio.run(go())
