@@ -125,6 +125,7 @@ def cmd_help() -> str:
         "Penny commands:\n"
         "/penny stats - bankroll, today's P&L, open positions, regime\n"
         "/penny regime - current regime + reasons\n"
+        "/penny heatmap - live position heat-map (sectors + P&L drift)\n"
         "/penny skip TICKER - disable ticker (mid-day, persists)\n"
         "/penny unskip TICKER - re-enable ticker\n"
         "/penny skips - list currently-disabled tickers\n"
@@ -216,6 +217,35 @@ def cmd_regime(db_path: str) -> str:
         return f"Penny regime: error reading ({type(e).__name__})"
 
 
+def cmd_heatmap(db_path: str) -> str:
+    """On-demand position heat-map (T3-D). Same body as the scheduled
+    15-minute job. Useful when the operator wants to see the current
+    state between scheduled fires (e.g. right after a manual entry).
+
+    Note: this path is synchronous-ish -- it returns the most recently
+    cached body if available. The 15-minute job still runs in the
+    background. For a guaranteed-fresh snapshot, use the
+    /penny/command/heatmap POST endpoint which forces a refresh.
+    """
+    try:
+        from penny_heatmap import build_heatmap
+        import asyncio
+        from config import settings
+        # The main module's kite singleton is used by the scheduled
+        # job. We import main to access it.
+        import main as _main
+        body, _buckets, total_open, priced_count = asyncio.run(
+            build_heatmap(
+                db_path=settings.DB_PATH,
+                kite=_main.kite,
+                sectors_csv_path=settings.PENNY_SECTORS_CSV_PATH,
+            )
+        )
+        return body
+    except Exception as e:
+        return f"Penny heat-map: error ({type(e).__name__}: {str(e)[:200]})"
+
+
 def cmd_skip(ticker: str, path: Optional[str] = None) -> str:
     """Add ticker to runtime disable list. Idempotent."""
     path = _resolve_path(path)
@@ -281,6 +311,8 @@ def dispatch(command: str, args: str, db_path: str) -> str:
         return cmd_stats(db_path)
     if cmd == "regime":
         return cmd_regime(db_path)
+    if cmd == "heatmap":
+        return cmd_heatmap(db_path)
     if cmd == "skips":
         return cmd_skips()
     if cmd == "skip":

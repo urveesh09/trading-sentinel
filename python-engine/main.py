@@ -415,6 +415,41 @@ async def _run_penny_daily_attribution():
         logger.error("penny_daily_attribution_crashed error=%s", str(e))
 
 
+async def _run_penny_heatmap():
+    """
+    [TIER3-POSITION-HEATMAP 2026-06-25] Mid-day position heat-map.
+    Scheduled every 15 minutes during market hours. Reads open penny
+    positions, fetches live prices in one batched Kite call, and
+    emits a sector-grouped heatmap via the same transport as the
+    hourly report.
+    """
+    try:
+        from penny_heatmap import build_heatmap
+        body, _buckets, total_open, priced_count = await build_heatmap(
+            db_path=settings.DB_PATH,
+            kite=kite,
+            sectors_csv_path=settings.PENNY_SECTORS_CSV_PATH,
+        )
+        logger.info(
+            "penny_heatmap_sent total_open=%d priced=%d",
+            total_open, priced_count,
+        )
+        # Only send if there are open positions (don't spam Telegram
+        # with empty messages every 15 min when nothing's open).
+        if total_open == 0:
+            return
+        from penny_hourly_report import PennyHourlyReport
+        sender = PennyHourlyReport(db_path=settings.DB_PATH)
+        await sender.send(
+            body=body,
+            webhook_url=settings.PENNY_HOURLY_REPORT_WEBHOOK,
+            telegram_token=settings.TELEGRAM_BOT_TOKEN,
+            telegram_chat_id=settings.TELEGRAM_CHAT_ID,
+        )
+    except Exception as e:
+        logger.error("penny_heatmap_crashed error=%s", str(e))
+
+
 async def run_penny_hourly_report():
     """Top-of-hour status report (spec §9.4). 10:00 through 14:00 IST."""
     try:
@@ -745,6 +780,15 @@ def register_penny_scheduler_jobs(scheduler):
         hour=settings.PENNY_DAILY_ATTRIBUTION_HOUR,
         minute=settings.PENNY_DAILY_ATTRIBUTION_MIN,
         id="penny_daily_attribution",
+    )
+    # [TIER3-POSITION-HEATMAP 2026-06-25] Mid-day position heat-map.
+    # Fires every 15 minutes from 10:00 to 14:45 IST (5 min before
+    # the smart-EOD at 14:30, so the operator sees the EOD-relevant
+    # state). Out-of-hours the job is a no-op (build_heatmap returns
+    # the "0 open positions" body when nothing is open).
+    scheduler.add_job(
+        _run_penny_heatmap, "interval", minutes=15,
+        id="penny_heatmap",
     )
     scheduler.add_job(
         run_penny_hourly_report, "cron", minute=0,
