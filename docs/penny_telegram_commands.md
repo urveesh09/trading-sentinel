@@ -104,7 +104,7 @@ WARN: ARENTERP approaching SL (-2.1% from entry, SL at -3%)
 - `4 open, 4 priced`: total positions vs how many got a live price (n/a = quote failed)
 - Per-sector line: tickers in that sector, per-ticker P&L %, average P&L % for the sector
 - `Unmapped`: tickers not in `penny_sectors.csv` (operator-curated)
-- `WARN: ... approaching SL`: position within 1.0% of its stop-loss
+- `WARN: ... approaching SL`: position within `PENNY_HEATMAP_WARN_PCT` of its stop-loss (default 1.0%, configurable in `config.py` for tighter/looser sensitivity)
 
 **When to use:**
 - When you see a position in the hourly report and want its live P&L
