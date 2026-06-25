@@ -232,10 +232,25 @@ class PennyScanner:
     async def _evaluate_ticker_connors(
         self, ticker: str, as_of: datetime
     ) -> Optional[dict]:
-        """Run the CNC Connors evaluator on one ticker."""
+        """Run the CNC Connors evaluator on one ticker.
+
+        [PENNY-CONNORS-VOL 2026-06-25] The volume sanity gate in
+        evaluate_connors_entry (line 124 of penny_engine_connors.py)
+        requires today_volume >= 0.5 * avg20_volume. Previously this
+        method hard-coded today_volume=50_000 / avg20_volume=100_000
+        which made the volume gate a constant pass-through -- any
+        ticker with valid SMA+RSI that hit the Connors trigger was
+        accepted regardless of actual volume. Now we compute real
+        today_volume from the latest daily bar and avg20_volume from
+        the 20-day median of daily volume, mirroring the breakout
+        path. If volume cannot be computed (missing column, etc.) we
+        return None to be safe -- a phantom signal is worse than no
+        signal at this bankroll.
+        """
         from penny_engine_connors import evaluate_connors_entry
         token = self.kite.instrument_cache.get(ticker)
         if token is None:
+            logger.warning("penny_eval_skipped ticker=%s reason=token_unresolved", ticker)
             return None
         # Need 250+ daily closes for the SMA + RSI trend filter
         try:
@@ -248,9 +263,32 @@ class PennyScanner:
             logger.error("penny_historical_failed ticker=%s error=%s", ticker, str(e))
             bars = None
         if bars is None:
+            logger.warning("penny_eval_skipped ticker=%s reason=historical_unavailable", ticker)
             return None
         n = len(bars) if hasattr(bars, '__len__') else 0
         if n < 250:
+            logger.warning("penny_eval_skipped ticker=%s reason=insufficient_history bars=%d", ticker, n)
+            return None
+        # Real volume extraction (P1a). If the column is missing or
+        # unusable, return None rather than fabricate numbers.
+        today_volume = 0
+        avg20_volume = 0
+        if hasattr(bars, 'columns') and 'volume' in bars.columns:
+            try:
+                vol_series = bars["volume"].tail(21)  # 21 to allow median of last 20
+                today_volume = int(vol_series.iloc[-1] or 0)
+                avg20_volume = int(vol_series.tail(20).median() or 0)
+            except Exception as e:
+                logger.warning(
+                    "penny_eval_skipped ticker=%s reason=volume_extract_failed error=%s",
+                    ticker, str(e),
+                )
+                return None
+        else:
+            logger.warning(
+                "penny_eval_skipped ticker=%s reason=no_volume_column",
+                ticker,
+            )
             return None
         if hasattr(bars, 'columns'):
             # pandas DataFrame
@@ -260,7 +298,7 @@ class PennyScanner:
         daily = {"closes": closes}
         return evaluate_connors_entry(
             ticker=ticker, daily=daily,
-            today_volume=50_000, avg20_volume=100_000,
+            today_volume=today_volume, avg20_volume=avg20_volume,
             regime_size_pct=self._regime_to_size_pct(),
             risk_engine=self.risk_engine, as_of=as_of,
         )

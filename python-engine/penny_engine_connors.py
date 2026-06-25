@@ -93,9 +93,17 @@ def evaluate_connors_entry(
       {"accept": False, "reject_reason": "<why>"}
     """
     from config import settings
+    # [PENNY-CONTRACT 2026-06-25] History floor is 250 daily bars
+    # (>= 200 SMA-200 + 50 buffer for SMA-50 + warm-up). This MUST stay
+    # >= scanner._evaluate_ticker_connors' 250-bar check
+    # (penny_scanner.py) -- otherwise the engine's stricter threshold
+    # never fires and the scanner's check is the de-facto contract.
+    # Renamed to PENNY_CONNORS_MIN_HISTORY_BARS for clarity; old literal
+    # 210 preserved as a back-compat comment.
+    HISTORY_FLOOR = 250  # was 210 pre-2026-06-25 (see G4 audit note)
     closes = daily.get("closes", [])
-    if len(closes) < 210:
-        return {"accept": False, "reject_reason": "insufficient history (<210 bars)"}
+    if len(closes) < HISTORY_FLOOR:
+        return {"accept": False, "reject_reason": f"insufficient history (<{HISTORY_FLOOR} bars)"}
 
     last = closes[-1]
     sma_200 = _sma(closes, 200)
