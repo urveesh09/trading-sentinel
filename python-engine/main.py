@@ -415,6 +415,31 @@ async def _run_penny_daily_attribution():
         logger.error("penny_daily_attribution_crashed error=%s", str(e))
 
 
+async def _run_penny_eod_digest():
+    """
+    [PHASE-C-EOD-DIGEST 2026-06-25] 16:00 IST end-of-day digest.
+
+    Fires after the 15:30 daily attribution (T3-A) and the 15:00
+    force-close (G5). Sends the operator a single Telegram message
+    summarising both pools' P&L, open positions held overnight, and
+    closing regimes. Body builder: operator_status.cmd_eod_digest.
+    """
+    try:
+        from operator_status import cmd_eod_digest
+        body = cmd_eod_digest(db_path=settings.DB_PATH)
+        logger.info("penny_eod_digest_sent")
+        from penny_hourly_report import PennyHourlyReport
+        sender = PennyHourlyReport(db_path=settings.DB_PATH)
+        await sender.send(
+            body=body,
+            webhook_url=settings.PENNY_HOURLY_REPORT_WEBHOOK,
+            telegram_token=settings.TELEGRAM_BOT_TOKEN,
+            telegram_chat_id=settings.TELEGRAM_CHAT_ID,
+        )
+    except Exception as e:
+        logger.error("penny_eod_digest_crashed error=%s", str(e))
+
+
 async def _run_penny_heatmap():
     """
     [TIER3-POSITION-HEATMAP 2026-06-25] Mid-day position heat-map.
@@ -789,6 +814,16 @@ def register_penny_scheduler_jobs(scheduler):
     scheduler.add_job(
         _run_penny_heatmap, "interval", minutes=15,
         id="penny_heatmap",
+    )
+    # [PHASE-C-EOD-DIGEST 2026-06-25] 16:00 IST end-of-day digest.
+    # Fires after the 15:30 daily attribution (T3-A) and the 15:00
+    # force-close (G5). At 16:00 all MIS positions are closed, CNC
+    # positions are held overnight, and the day's trades are in the
+    # bankroll_ledger. Body builder lives in operator_status.py.
+    scheduler.add_job(
+        _run_penny_eod_digest, "cron",
+        hour=16, minute=0,
+        id="penny_eod_digest",
     )
     scheduler.add_job(
         run_penny_hourly_report, "cron", minute=0,

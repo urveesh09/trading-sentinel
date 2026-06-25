@@ -71,6 +71,18 @@ if (config.TELEGRAM_MODE === 'webhook') {
         cmd = rest === '' ? 'regime' : rest.split(' ')[0];
         args = rest.split(' ').slice(1).join(' ');
         httpMethod = 'GET';
+      } else if (text === '/status' || text.startsWith('/status ')) {
+        prefix = '';
+        const rest = text.slice('/status'.length).trim();
+        cmd = rest === '' ? 'status' : rest.split(' ')[0];
+        args = rest.split(' ').slice(1).join(' ');
+        httpMethod = 'GET';
+      } else if (text === '/performance' || text.startsWith('/performance ')) {
+        prefix = '';
+        const rest = text.slice('/performance'.length).trim();
+        cmd = rest === '' ? 'performance' : rest.split(' ')[0];
+        args = rest.split(' ').slice(1).join(' ');
+        httpMethod = 'GET';
       } else {
         // Not a command we handle; ignore silently.
         return;

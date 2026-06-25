@@ -131,9 +131,11 @@ def cmd_help() -> str:
         "/penny skips - list currently-disabled tickers\n"
         "/penny help - this message\n"
         "\n"
-        "Cross-subsystem commands (Phase B, 2026-06-25):\n"
+        "Cross-subsystem commands (Phase B+C, 2026-06-25):\n"
         "/health - all subsystems: status, regimes, freshness, halts\n"
         "/regime - penny + nifty regime side-by-side\n"
+        "/status - one-screen all-systems view (bankroll, today's P&L)\n"
+        "/performance - Nifty performance summary\n"
         "/nifty stats, /nifty swing, /nifty momentum, /nifty circuit, /nifty help\n"
         "\n"
         "All slash commands are read-only. They do NOT execute trades,\n"
@@ -281,6 +283,24 @@ def cmd_regime_all(db_path: str) -> str:
         return f"Regime (all): error reading ({type(e).__name__})"
 
 
+def cmd_status(db_path: str) -> str:
+    """Cross-subsystem one-screen status (Phase C)."""
+    try:
+        from operator_status import cmd_status as _status_cmd
+        return _status_cmd(db_path)
+    except Exception as e:
+        return f"Status: error reading ({type(e).__name__})"
+
+
+def cmd_performance(db_path: str) -> str:
+    """Performance summary (Nifty subsystem only, strict-separation)."""
+    try:
+        from operator_status import cmd_performance as _perf_cmd
+        return _perf_cmd(db_path)
+    except Exception as e:
+        return f"Performance: error reading ({type(e).__name__})"
+
+
 def cmd_skip(ticker: str, path: Optional[str] = None) -> str:
     """Add ticker to runtime disable list. Idempotent."""
     path = _resolve_path(path)
@@ -338,6 +358,10 @@ def dispatch(command: str, args: str, db_path: str) -> str:
       - 'regime' (top-level, no prefix) -> cross-subsystem regime view
     These come in via the /command/{cmd} endpoint (no /penny prefix)
     so the dispatch table must handle them here.
+
+    Phase C (2026-06-25) adds:
+      - 'status' (top-level) -> /status one-screen view
+      - 'performance' (top-level) -> /performance (Nifty subsystem)
     """
     cmd = (command or "").strip().lower()
     if cmd == "help" or cmd == "":
@@ -349,6 +373,10 @@ def dispatch(command: str, args: str, db_path: str) -> str:
         return cmd_regime_all(db_path)
     if cmd == "health":
         return cmd_health(db_path)
+    if cmd == "status":
+        return cmd_status(db_path)
+    if cmd == "performance":
+        return cmd_performance(db_path)
     if cmd == "heatmap":
         return cmd_heatmap(db_path)
     if cmd == "skips":

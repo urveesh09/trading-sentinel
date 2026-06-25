@@ -1,11 +1,17 @@
 # Penny Telegram Commands — Operator Manual
 
-_Last updated: 2026-06-25_
+_Last updated: 2026-06-25 (Phase A + B + C of operator console)_
 
-This is your reference for every `/penny` command you can send to the
-Telegram bot. The bot reads your messages, forwards them to the
-python-engine, and replies with the result. Authentication is built
-in — only the configured `TELEGRAM_CHAT_ID` can use these commands.
+This is your reference for every slash command you can send to the
+Telegram bot — penny, nifty, and cross-subsystem. The bot reads your
+messages, forwards them to the python-engine, and replies with the
+result. Authentication is built in — only the configured
+`TELEGRAM_CHAT_ID` can use these commands.
+
+**All slash commands are read-only.** Per operator mandate (2026-06-25),
+they do NOT execute trades, skip tickers, or change settings. To act
+on signals, use the inline callback buttons on signal alerts or the
+HTTP API.
 
 ---
 
@@ -13,13 +19,23 @@ in — only the configured `TELEGRAM_CHAT_ID` can use these commands.
 
 | Command | Purpose | Response time |
 |---|---|---|
-| `/penny stats` | Live bankroll, today's P&L, open positions, regime | ~1s |
-| `/penny regime` | Current regime + the 3 reasons it was classified | ~1s |
+| `/penny stats` | Penny bankroll, today's P&L, open positions, regime | ~1s |
+| `/penny regime` | Penny regime + the 3 reasons it was classified | ~1s |
 | `/penny heatmap` | Live position heat-map (sectors + per-ticker P&L) | ~2s |
 | `/penny skip TICKER` | Disable ticker from next scan onward | ~2s |
 | `/penny unskip TICKER` | Re-enable ticker | ~2s |
 | `/penny skips` | List currently-disabled tickers | ~1s |
 | `/penny help` | Show this command list | <1s |
+| `/nifty stats` | Nifty bankroll, deployed, today's P&L | ~1s |
+| `/nifty swing` | Top 5 swing signals by score | ~1s |
+| `/nifty momentum` | Top 5 momentum signals by score | ~1s |
+| `/nifty regime` | Nifty market regime + age | ~1s |
+| `/nifty circuit` | Nifty circuit-breaker state (halted? why?) | ~1s |
+| `/nifty help` | Show nifty command list | <1s |
+| `/health` | All subsystems status (penny + nifty) | ~1s |
+| `/regime` | Penny + nifty regime side-by-side | ~1s |
+| `/status` | One-screen all-systems view (bankroll, today's P&L) | ~1s |
+| `/performance` | Nifty performance summary | ~1s |
 
 ---
 
@@ -211,9 +227,113 @@ procedure) — not that we should add it to the chat.
 
 | File | Purpose |
 |---|---|
-| `python-engine/penny_commands.py` | Command handlers + dispatch |
-| `python-engine/data/penny_disable_overrides.json` | Runtime skip list (created by `/skip`) |
+| `python-engine/penny_commands.py` | Command handlers + dispatch (penny + cross-subsystem) |
+| `python-engine/nifty_commands.py` | Read-only Nifty command handlers |
+| `python-engine/penny_health.py` | `/health` + `/regime` cross-subsystem view |
+| `python-engine/operator_status.py` | `/status` + `/performance` + EOD digest |
+| `python-engine/data/penny_disable_overrides.json` | Runtime penny skip list (created by `/penny skip`) |
 | `python-engine/data/penny_sectors.csv` | Operator-curated sector mapping (used by T2-C sector filter) |
-| `node-gateway/server/services/telegram.js` | `bot.on('message')` handler that forwards `/penny` to python-engine |
-| `python-engine/main.py` | `GET/POST /penny/command/{cmd}` endpoints |
-| `python-engine/penny_risk.py` | `is_disabled()` reads override file every call |
+| `node-gateway/server/services/telegram.js` | `bot.on('message')` handler with prefix routing for `/penny`, `/nifty`, `/health`, `/regime`, `/status`, `/performance` |
+| `python-engine/main.py` | `/penny/command/{cmd}`, `/nifty/command/{cmd}`, `/command/{cmd}` endpoints |
+| `python-engine/penny_risk.py` | `is_disabled()` reads penny override file every call |
+
+---
+
+## Cross-subsystem commands (Phase A + B + C, 2026-06-25)
+
+The following commands don't have a `/penny` or `/nifty` prefix. They
+return views across both subsystems. They're all read-only.
+
+### `/health` — system diagnostic
+
+**What you get:**
+```
+System health: OK
+Penny: regime=PR1_CALM, last_regime=today, open=2
+Nifty: regime=BULL, last_scan=5 min ago, open=1
+Bankroll (nifty pool): Rs 5000
+```
+
+Or when degraded:
+```
+System health: DEGRADED
+⚠ penny regime not refreshed recently
+Penny: regime=UNKNOWN, last_regime=never, open=0
+Nifty: regime=BULL, last_scan=just now, open=0
+```
+
+**Field meanings:**
+- `overall_status`: `OK` or `DEGRADED`. Anything that can't be read or is stale shows DEGRADED.
+- `Penny: regime=X, last_regime=Y`: penny's regime + how recently it was computed
+- `Nifty: regime=X, last_scan=Y`: nifty's market regime + how long since last scanner run
+- `⚠ ...`: warnings for stale data or halted subsystems
+
+**When to use:**
+- Anytime you want to know if everything is alive without SSHing in
+- After a holiday or weekend to confirm both subsystems woke up
+- When the hourly report looks weird — check if data is fresh
+
+**Note:** the full structured JSON is available at `GET /health` if
+you want every field (banks, halt_reasons, etc.).
+
+### `/regime` — penny + nifty regimes side by side
+
+**What you get:**
+```
+Regimes:
+  Penny: PR2_ELEVATED (last: today)
+  Nifty: BULL (last: 5 min ago)
+```
+
+If anything is stale or halted, a `⚠` line is added below.
+
+**When to use:**
+- Quick check without the full health output
+- When you want to see regime drift ("penny regime was last refreshed yesterday" = bad)
+
+### `/status` — one-screen all-systems view
+
+**What you get:**
+```
+System status (15:42 IST)
+Penny (PR2_ELEVATED): Rs 2600 (est) | today +Rs 100 | open=2
+Nifty (BULL): Rs 5000 | today +Rs 150 | open=1
+```
+
+If halted: a `⚠ HALTED: ...` line at the top.
+
+**Field meanings:**
+- `(REGIME)`: current regime in parentheses
+- `Rs NNNN (est)`: estimated penny balance (true balance is approximated; see `/penny attribution` for exact)
+- `Rs NNNN`: actual nifty bankroll from `nifty_bankroll()`
+- `today ±Rs N`: today's net P&L across both pools
+- `open=N`: count of open positions per pool
+
+**When to use:**
+- Quick daily check
+- The "all-in-one" view; if you only send one command per day, make it this one
+
+### `/performance` — Nifty performance summary
+
+**What you get:**
+```
+Performance (Nifty subsystem)
+Trades: 10 (W:6 L:4) | Win rate: 60.0%
+Avg R: +1.20
+Realised: +Rs 500 | Unrealised: +Rs 50
+Total: +Rs 550
+```
+
+Note: Nifty-only by strict-separation stance. For penny attribution,
+use `/penny attribution` (the 15:30 IST daily attribution message).
+
+**When to use:**
+- End of day / end of week review
+- Comparing live performance to your backtest baseline
+
+### What's NOT exposed (still)
+
+The operator console (`/health`, `/regime`, `/status`, `/performance`) is
+**read-only by mandate**. The same constraint applies to `/nifty` commands.
+Only the original `/penny skip TICKER` and `/penny unskip TICKER` mutate
+state, and they're penny-only.
