@@ -93,6 +93,22 @@ class PennyUniverse:
         """
         Apply spec §2.3 eligibility gates and return the surviving
         ticker records (unranked; ranking is in the refresh job).
+
+        Null-tolerant (2026-06-25 deviation): when promoter_holding_pct or
+        pb_ratio is missing from the universe record (Kite corp-data
+        endpoint empty + no fallback file), the ticker is NOT silently
+        dropped. Instead, it passes with a `data_quality` flag set so the
+        operator can see degraded universe quality in the pre-market
+        digest and the hourly report. Hard rejects (real promoter > 75%,
+        real PB > 2.0) still apply when data IS available.
+
+        Rationale: spec §2.3 promoter + PB gates are about avoiding
+        shell / promoter-heavy / distressed names. The intent is
+        preserved when data is present; when data is missing, downstream
+        gates (volume surge 3x median, RS breakout, RSI<70) still filter
+        to high-conviction setups, and the per-trade risk caps
+        (Rs 500/stock, 5 positions, 5%/trade) limit damage if a
+        low-quality name sneaks through.
         """
         from config import settings
         out = []
@@ -128,21 +144,70 @@ class PennyUniverse:
             # as a percentage (0-100). Settings store the threshold as a
             # fraction (0-1) for human readability ("0.75" is easier to read
             # than "75.0"). Convert settings to percent at compare time.
+            #
+            # Null tolerance (2026-06-25): missing promoter data is
+            # tagged `data_quality=DEGRADED_promoter_missing` rather than
+            # dropping the ticker. Hard rejects still apply when present.
             prom = t.get("promoter_holding_pct")
+            data_quality_flags = []
             if prom is None:
-                continue
-            if prom <= settings.PENNY_MIN_PROMOTER_HOLD * 100:
-                continue
-            if prom >= settings.PENNY_MAX_PROMOTER_HOLD * 100:
-                continue
+                data_quality_flags.append("promoter_missing")
+            else:
+                if prom <= settings.PENNY_MIN_PROMOTER_HOLD * 100:
+                    continue
+                if prom >= settings.PENNY_MAX_PROMOTER_HOLD * 100:
+                    continue
 
-            # P/B gate: <= 2.0
+            # P/B gate: <= 2.0 (null tolerance mirrors promoter above)
             pb = t.get("pb_ratio")
-            if pb is None or pb > settings.PENNY_MAX_PB_RATIO:
-                continue
+            if pb is None:
+                data_quality_flags.append("pb_missing")
+            else:
+                if pb > settings.PENNY_MAX_PB_RATIO:
+                    continue
 
+            # Tag the record with quality flags so downstream observers
+            # (pre-market digest, hourly report) can surface degradation.
+            if data_quality_flags:
+                t = dict(t)  # do not mutate the cached dict
+                t["data_quality"] = "DEGRADED:" + ",".join(data_quality_flags)
             out.append(t)
         return out
+
+    def quality_audit(self) -> dict:
+        """
+        Summarise data quality of the currently loaded universe.
+        Returns counts of tickers with null / missing fields that the
+        eligibility filter would have used pre-2026-06-25 deviation.
+
+        Used by the daily refresh job to log
+        `penny_universe_quality_audit` and by the hourly report to
+        surface degraded-universe warnings.
+        """
+        total = len(self._all_tickers)
+        null_promoter = 0
+        null_pb = 0
+        null_tv = 0
+        null_pc = 0
+        for t in self._all_tickers:
+            if t.get("promoter_holding_pct") is None:
+                null_promoter += 1
+            if t.get("pb_ratio") is None:
+                null_pb += 1
+            if not t.get("median_traded_value_20d"):
+                null_tv += 1
+            if t.get("prev_close") is None:
+                null_pc += 1
+        return {
+            "total": total,
+            "null_promoter": null_promoter,
+            "null_pb": null_pb,
+            "null_tv": null_tv,
+            "null_pc": null_pc,
+            "degraded_pct": round(
+                100.0 * max(null_promoter, null_pb) / max(total, 1), 1
+            ),
+        }
 
     # ---- ranking + refresh (spec §2.4) -----------------------------------
 
@@ -222,6 +287,9 @@ async def refresh_from_kite(kite, out_json_path, corp_json_path, top_n=100):
     5. Compute 20d momentum + 52w-low distance + realized vol per ticker
     6. Rank via composite score
     7. Write top_n to penny_static.json
+    8. Emit penny_universe_quality_audit (2026-06-25) so operators can
+       see degraded-universe conditions without waiting for the hourly
+       report to surface them.
 
     Failures must NOT crash the daily scheduler -- log + return None.
     """
@@ -275,6 +343,7 @@ async def refresh_from_kite(kite, out_json_path, corp_json_path, top_n=100):
                 total_batches,
             )
         # 3. Corporate actions (with fallback)
+        corp_source = "kite"  # tracked for audit logging
         try:
             corp = await kite.get_corporate_actions()
         except Exception:
@@ -284,8 +353,18 @@ async def refresh_from_kite(kite, out_json_path, corp_json_path, top_n=100):
                 with open(corp_json_path) as f:
                     corp_data = json.load(f)
                 corp = corp_data.get("records", [])
+                corp_source = "fallback_file"
             except Exception:
                 corp = []
+                corp_source = "missing"
+        if corp_source == "missing":
+            logger.warning(
+                "penny_corp_data_missing kite=empty fallback_file=%s -- "
+                "universe will have null promoter_holding_pct and pb_ratio "
+                "(eligibility filter is now null-tolerant, see deviation "
+                "2026-06-25-penny-eligibility-null-tolerance.md)",
+                corp_json_path,
+            )
         corp_by_sym = {c.get("symbol"): c for c in (corp or [])}
 
         # 4-5. Build candidate records (eligibility filters happen here)
@@ -336,6 +415,29 @@ async def refresh_from_kite(kite, out_json_path, corp_json_path, top_n=100):
         with open(out_json_path, "w") as f:
             json.dump(payload, f, indent=2)
         logger.info("penny_universe_refreshed count=%d", len(ranked))
+
+        # 8. Quality audit (2026-06-25): write a temporary PennyUniverse
+        # instance just to compute the audit (avoids re-reading the file
+        # after we just wrote it; uses the in-memory `ranked` list).
+        try:
+            audit_universe = PennyUniverse.__new__(PennyUniverse)
+            audit_universe._all_tickers = ranked
+            audit_universe._tokens = set()
+            audit_universe._token_to_symbol = {}
+            audit_universe._symbol_to_token = {}
+            audit = audit_universe.quality_audit()
+            audit["corp_source"] = corp_source
+            logger.info(
+                "penny_universe_quality_audit "
+                "total=%d null_promoter=%d null_pb=%d null_tv=%d "
+                "null_pc=%d degraded_pct=%.1f corp_source=%s",
+                audit["total"], audit["null_promoter"], audit["null_pb"],
+                audit["null_tv"], audit["null_pc"], audit["degraded_pct"],
+                corp_source,
+            )
+        except Exception as e:
+            logger.warning("penny_universe_quality_audit_failed error=%s", str(e))
+
         return ranked
     except Exception as e:
         logger.error("penny_universe_refresh_failed error=%s", str(e))

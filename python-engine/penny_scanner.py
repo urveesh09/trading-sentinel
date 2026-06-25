@@ -126,11 +126,13 @@ class PennyScanner:
         )
         token = self.kite.instrument_cache.get(ticker)
         if token is None:
+            logger.warning("penny_eval_skipped ticker=%s reason=token_unresolved", ticker)
             return None
 
         # 1) Live quote for LTP, day high, and cumulative volume
         q = await self._get_quote_safe(token)
         if not q:
+            logger.warning("penny_eval_skipped ticker=%s reason=quote_unavailable", ticker)
             return None
         ltp = q.get("last_price", 0)
         cum_vol = q.get("volume", 0) or 0
@@ -153,6 +155,10 @@ class PennyScanner:
 
         if intraday is None or len(intraday) < 2:
             # Not enough data; the day is too early or the feed is down
+            logger.warning(
+                "penny_eval_skipped ticker=%s reason=insufficient_intraday_bars "
+                "bars=%s", ticker, 0 if intraday is None else len(intraday),
+            )
             return None
 
         # 3) Drop the in-progress bar (its timestamp minute == current minute)
@@ -166,6 +172,10 @@ class PennyScanner:
             pass  # if we cannot index, fall through with the full df
 
         if len(intraday) < 1:
+            logger.warning(
+                "penny_eval_skipped ticker=%s reason=zero_complete_bars_after_drop",
+                ticker,
+            )
             return None
 
         last_bar = intraday.iloc[-1]
@@ -196,6 +206,13 @@ class PennyScanner:
         if median_vol_20d <= 0:
             # No usable 20-day baseline. Reject rather than accept on a
             # fabricated number (deviation: was hardcoded 10_000).
+            # NOTE: this is a STRUCTURED REJECT, not a silent skip, so
+            # we return a dict instead of None to surface the reason
+            # in the hourly diagnostic breakdown (2026-06-25).
+            logger.info(
+                "penny_eval_skipped ticker=%s reason=no_20d_median_volume",
+                ticker,
+            )
             return {
                 "accept": False,
                 "reject_reason": "no 20-day median volume baseline",
@@ -256,6 +273,16 @@ class PennyScanner:
         is the canonical CNC pass.
 
         Returns summary dict with counts (accept, reject, error).
+
+        Observability (2026-06-25):
+        - Logs `penny_scan_loop_summary` at start with universe size and
+          degraded-quality count so silent-empty-eligible scenarios
+          surface immediately.
+        - Logs `penny_eval_skipped` at every silent None-return path in
+          the per-ticker evaluator with the actual reason.
+        - Treats a None decision from _evaluate_ticker_breakout as a
+          `reject` with a structured reason (not a silent error count).
+          This matches the CNC path's counting convention.
         """
         from config import settings
         from penny_signal_log import init_penny_signal_db, log_penny_signal
@@ -265,8 +292,23 @@ class PennyScanner:
 
         universe = self._load_universe()
         if not universe:
-            logger.info("penny_scan_no_universe")
+            # 2026-06-25: surface this loudly so future silent-empty
+            # scenarios don't go unnoticed.
+            logger.warning(
+                "penny_scan_no_eligible_universe scan_id=%s "
+                "(check penny_universe_quality_audit + corp_data source)",
+                scan_id,
+            )
             return {"scan_id": scan_id, "accept": 0, "reject": 0, "error": 0}
+
+        # Surface universe size + degraded count at scan start
+        degraded_count = sum(
+            1 for t in universe if (t.get("data_quality") or "").startswith("DEGRADED")
+        )
+        logger.info(
+            "penny_scan_loop_summary scan_id=%s eligible=%d degraded=%d regime=%s",
+            scan_id, len(universe), degraded_count, self.regime,
+        )
 
         # Regime gate: PR3 blocks all new entries
         if self.regime == PennyRegime.PR3_HOT.value:
@@ -307,7 +349,24 @@ class PennyScanner:
             try:
                 decision = await self._evaluate_ticker_breakout(sym, as_of)
                 if decision is None:
-                    error += 1
+                    # 2026-06-25: this is not a system ERROR -- it is a
+                    # structured "skipped" outcome. The evaluator already
+                    # logged the specific reason (e.g. penny_intraday_fetch_failed,
+                    # penny_daily_vol_fetch_failed). Count it as a reject
+                    # so the diagnostic breakdown in the hourly report is
+                    # accurate. Also log the DB row so operators can see
+                    # the rejection without waiting for the hourly message.
+                    logger.info(
+                        "penny_eval_skipped ticker=%s reason=evaluator_returned_none",
+                        sym,
+                    )
+                    await log_penny_signal(
+                        settings.DB_PATH, scan_id=scan_id, ticker=sym,
+                        leg="MIS", accepted=False,
+                        reject_reason="evaluator returned None (see prior warn/error)",
+                        regime=self.regime, close=0.0,
+                    )
+                    reject += 1
                     continue
                 if not decision.get("accept"):
                     await log_penny_signal(

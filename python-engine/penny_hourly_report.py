@@ -62,6 +62,7 @@ class PennyHourlyReport:
         kill_switch_active: bool,
         circuit_blocks: int,
         universe_size: int = 0,
+        data_quality_audit: Optional[dict] = None,
     ) -> str:
         """
         Build the report body (markdown, <= 15 lines, < 1000 chars).
@@ -71,6 +72,12 @@ class PennyHourlyReport:
         "Scanned: N | top rejects: ..." so the operator can see WHY no
         trade fired (was the universe empty? did strategies reject?).
         Defaults to 0 (unknown) -- older callers stay backwards-compatible.
+
+        data_quality_audit (2026-06-25): optional dict from
+        PennyUniverse.quality_audit(). When universe_size is 0 OR the
+        universe is >50% degraded, this is surfaced in the diagnostic
+        tail so the operator can immediately tell "we have a data
+        problem" vs "the market just isn't giving us setups".
         """
         from penny_signal_log import init_penny_signal_db
         await init_penny_signal_db(self.db_path)
@@ -124,7 +131,10 @@ class PennyHourlyReport:
             # Diagnostic tail (2026-06-24): when the universe had N>0
             # tickers but none triggered an entry, tell the operator
             # WHY. Renders as a second line; keeps <1000 char limit.
-            diag = self._build_diag_tail(reject_reasons, universe_size)
+            diag = self._build_diag_tail(
+                reject_reasons, universe_size,
+                data_quality_audit=data_quality_audit,
+            )
             if diag:
                 return head + "\n" + diag
             return head
@@ -161,23 +171,51 @@ class PennyHourlyReport:
         reject_reasons: dict,
         universe_size: int,
         top_n: int = 3,
+        data_quality_audit: Optional[dict] = None,
     ) -> str:
         """
         Build the diagnostic tail for the no-action case.
 
-        Returns "" when there's nothing useful to add (unknown universe
-        size and no logged rejections), so the caller can leave the
-        short "No action" message intact for older callers.
+        Returns a sentinel "No scan activity this hour" when universe
+        size is 0 AND no rejections logged -- this is the explicit
+        signal that the scanner ran but found no eligible tickers
+        (previously the hourly report just said "No action" with no
+        clue why, which led to the 2026-06-25 silent-empty-universe
+        incident).
 
         Examples:
-          universe_size=0, no rejections         -> ""
-          universe_size=87, no rejections        -> "Scanned: 87 | (no rejection rows logged)"
-          universe_size=87, rejections present   -> "Scanned: 87 | top rejects: foo (×42), bar (×18)"
+          universe_size=0, no rejections, no audit    -> "⚠ No scan activity this hour (universe_size=0)"
+          universe_size=87, no rejections             -> "Scanned: 87 | (no rejection rows logged)"
+          universe_size=87, rejections present        -> "Scanned: 87 | top rejects: foo (×42), bar (×18)"
+          universe_size=100, degraded_pct=100         -> "Scanned: 100 | ⚠ degraded universe: 100% missing corp data (promoter+pb null)"
 
         Top-N defaults to 3 to keep the line short. Reasons are sorted
         by descending count so the biggest filter bottleneck is first.
+
+        data_quality_audit (2026-06-25): optional dict from
+        PennyUniverse.quality_audit() with null_promoter, null_pb,
+        degraded_pct, etc. Surfaced when degraded_pct > 50% so the
+        operator immediately sees the data-quality problem.
         """
-        # Nothing to say if both inputs are empty/unknown.
+        # CRITICAL (2026-06-25): distinguish "no scan activity" from
+        # "scanned but nothing passed". Previously these rendered the
+        # same message, hiding the silent-empty-universe failure.
+        if universe_size == 0 and not reject_reasons:
+            extra = ""
+            if data_quality_audit:
+                extra = (
+                    f" | data quality: {data_quality_audit.get('degraded_pct', 0):.0f}% "
+                    f"degraded (null_promoter={data_quality_audit.get('null_promoter', 0)}, "
+                    f"null_pb={data_quality_audit.get('null_pb', 0)}, "
+                    f"corp_source={data_quality_audit.get('corp_source', 'unknown')})"
+                )
+            return (
+                f"⚠ No scan activity this hour (universe_size=0)"
+                f"{extra}"
+            )
+
+        # Nothing to say if both inputs are empty/unknown (e.g. the
+        # very first hourly before any scan has run).
         if universe_size <= 0 and not reject_reasons:
             return ""
 
@@ -196,6 +234,18 @@ class PennyHourlyReport:
             parts.append(f"top rejects: {top_str}")
         elif universe_size > 0:
             parts.append("(no rejection rows logged)")
+
+        # Data-quality surfacing (2026-06-25): when most of the universe
+        # is degraded (missing promoter/PB), the operator should know
+        # immediately that the eligibility filter is running in degraded
+        # mode. Only emit when degraded_pct > 50 to avoid noise on
+        # partial-data days.
+        if data_quality_audit and data_quality_audit.get("degraded_pct", 0) > 50:
+            parts.append(
+                f"⚠ degraded universe: {data_quality_audit['degraded_pct']:.0f}% "
+                f"missing corp data (promoter={data_quality_audit.get('null_promoter', 0)}, "
+                f"pb={data_quality_audit.get('null_pb', 0)})"
+            )
 
         return " | ".join(parts)
 
@@ -314,6 +364,7 @@ async def run_hourly_report(db_path: str, regime: str, open_positions: list,
                              deployed_capital: float, unrealised_pnl: float,
                              kill_switch_active: bool, circuit_blocks: int,
                              universe_size: int = 0,
+                             data_quality_audit: Optional[dict] = None,
                              now: Optional[datetime] = None) -> None:
     """
     Top-level entry point for the scheduler job.
@@ -323,6 +374,10 @@ async def run_hourly_report(db_path: str, regime: str, open_positions: list,
     main.run_penny_hourly_report so the no-action case can show
     "Scanned: N | top rejects: ...". Defaults to 0 (unknown) so
     older callers / tests stay backwards-compatible.
+
+    data_quality_audit (2026-06-25): optional dict from
+    PennyUniverse.quality_audit(). Plumbed through to _build_diag_tail
+    so degraded-universe conditions surface in the operator's report.
     """
     from config import settings
     if now is None:
@@ -336,6 +391,7 @@ async def run_hourly_report(db_path: str, regime: str, open_positions: list,
         unrealised_pnl=unrealised_pnl,
         kill_switch_active=kill_switch_active, circuit_blocks=circuit_blocks,
         universe_size=universe_size,
+        data_quality_audit=data_quality_audit,
     )
     await rpt.send(
         body=body,
