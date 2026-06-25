@@ -188,8 +188,15 @@ def cmd_stats(db_path: str) -> str:
 
 
 def cmd_regime(db_path: str) -> str:
-    """Current regime + a brief rationale. The detailed 'reasons'
-    expansion is T3-C; for now we surface whatever the engine exposes."""
+    """Current regime + the 1-3 reasons that justify the classification.
+
+    [TIER3-REGIME-CONFIDENCE 2026-06-25] Until now /penny regime returned
+    just the regime label. That hid WHY the system was in PR1 vs PR2
+    vs PR3 -- a debugging nightmare. Now we return the vol_rank, vix_proxy,
+    breadth inputs, the threshold each crossed (or didn't), and the
+    raw Nifty-50-vs-EMA50 distance so the operator can spot drift
+    before it becomes a problem.
+    """
     try:
         import main as _main
         re = _main._penny_regime_engine
@@ -197,9 +204,14 @@ def cmd_regime(db_path: str) -> str:
             return "Penny regime: engine not initialised yet"
         if re.today_regime is None:
             return "Penny regime: not yet computed (today's classify runs at 09:20 IST)"
-        # If the engine has a _last_compute_artifacts or similar, surface it.
-        # For now, just print the regime value cleanly.
-        return f"Penny regime: {re.today_regime.value}"
+        # Compose: header + each reason on its own line.
+        lines = [f"Penny regime: {re.today_regime.value}"]
+        if re.as_of:
+            lines.append(f"  computed: {re.as_of}")
+        reasons = re.confidence_reasons()
+        for r in reasons:
+            lines.append(f"  - {r}")
+        return "\n".join(lines)
     except Exception as e:
         return f"Penny regime: error reading ({type(e).__name__})"
 

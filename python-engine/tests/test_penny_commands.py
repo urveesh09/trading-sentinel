@@ -250,3 +250,211 @@ def test_end_to_end_skip_then_scan_excludes(override_path, tmp_path):
     reply3 = dispatch("unskip", "GOLDSTAR-SM", str(tmp_path / "noop.db"))
     assert "✓" in reply3
     assert not r.is_disabled("GOLDSTAR-SM")
+
+
+# ---- 2026-06-25 Tier 3 tests (T3-C: regime confidence reasons) -------
+
+def test_confidence_reasons_empty_when_unchanged():
+    """Engine with no compute yet -> reasons still include the
+    '=> classified UNKNOWN' summary so the operator always gets
+    a structured reply, never a blank one."""
+    from penny_regime import PennyRegimeEngine
+    re = PennyRegimeEngine()
+    reasons = re.confidence_reasons()
+    assert isinstance(reasons, list)
+    # Should have at least the classification summary + breadth placeholder
+    assert any("UNKNOWN" in r for r in reasons)
+
+
+def test_confidence_reasons_for_pr1_calm():
+    """Low vol + low VIX proxy = PR1_CALM."""
+    from penny_regime import PennyRegimeEngine
+    re = PennyRegimeEngine()
+    re._vol_rank = 0.55    # < PR1 max 0.70
+    re._vix_proxy = 0.40   # < PR1 max 0.70
+    re._vix_distance = 0.02  # 2% above EMA
+    re._breadth = 0.5
+    re._today_regime = re.classify(re._vol_rank, re._vix_proxy)
+    reasons = re.confidence_reasons()
+    text = "\n".join(reasons)
+    assert "PR1_CALM" in text
+    assert "vol_rank=0.55" in text
+    assert "vix_proxy=0.40" in text
+    assert "below PR1 max" in text
+    assert "calm" in text.lower()
+
+
+def test_confidence_reasons_for_pr2_elevated():
+    """vol_rank crossed PR1 -> PR2_ELEVATED."""
+    from penny_regime import PennyRegimeEngine
+    re = PennyRegimeEngine()
+    re._vol_rank = 0.80    # > PR1 max 0.70, < PR2 max 0.90
+    re._vix_proxy = 0.45
+    re._vix_distance = -0.015
+    re._breadth = 0.5
+    re._today_regime = re.classify(re._vol_rank, re._vix_proxy)
+    reasons = re.confidence_reasons()
+    text = "\n".join(reasons)
+    assert "PR2_ELEVATED" in text
+    assert "between PR1 max 0.70 and PR2 max 0.90" in text
+
+
+def test_confidence_reasons_for_pr3_hot():
+    """vol_rank > PR2 max 0.90 = PR3_HOT."""
+    from penny_regime import PennyRegimeEngine
+    re = PennyRegimeEngine()
+    re._vol_rank = 0.95    # > PR2 max 0.90
+    re._vix_proxy = 0.50
+    re._vix_distance = -0.05
+    re._breadth = 0.5
+    re._today_regime = re.classify(re._vol_rank, re._vix_proxy)
+    reasons = re.confidence_reasons()
+    text = "\n".join(reasons)
+    assert "PR3_HOT" in text
+    assert "PR3 threshold" in text or "PR2 max" in text
+
+
+def test_confidence_reasons_vix_proxy_drives_pr3():
+    """vol_rank calm but VIX proxy > 0.90 = PR3 (either input can drive)."""
+    from penny_regime import PennyRegimeEngine
+    re = PennyRegimeEngine()
+    re._vol_rank = 0.30    # calm
+    re._vix_proxy = 0.95   # > PR2 max -- drives PR3
+    re._vix_distance = -0.12  # Nifty deeply below EMA
+    re._breadth = 0.5
+    re._today_regime = re.classify(re._vol_rank, re._vix_proxy)
+    reasons = re.confidence_reasons()
+    text = "\n".join(reasons)
+    assert "PR3_HOT" in text
+    assert "panic territory" in text.lower()
+    # Raw distance surfaced
+    assert "-12.0%" in text
+
+
+def test_confidence_reasons_vol_rank_drives_pr2_vix_calm():
+    """vix_proxy calm but vol_rank crosses PR1 -> PR2."""
+    from penny_regime import PennyRegimeEngine
+    re = PennyRegimeEngine()
+    re._vol_rank = 0.75    # > PR1 max 0.70
+    re._vix_proxy = 0.40   # calm
+    re._vix_distance = 0.03
+    re._breadth = 0.5
+    re._today_regime = re.classify(re._vol_rank, re._vix_proxy)
+    reasons = re.confidence_reasons()
+    text = "\n".join(reasons)
+    assert "PR2_ELEVATED" in text
+    # VIX reason should say calm
+    assert "calm" in text.lower() or "below PR1 max" in text
+
+
+def test_confidence_reasons_vol_rank_missing():
+    """vol_rank not yet fed -> 'unknown' reason, but still produce output."""
+    from penny_regime import PennyRegimeEngine
+    re = PennyRegimeEngine()
+    re._vol_rank = None
+    re._vix_proxy = 0.45
+    re._vix_distance = 0.0
+    re._breadth = 0.5
+    re._today_regime = re.classify(re._vol_rank, re._vix_proxy)
+    reasons = re.confidence_reasons()
+    text = "\n".join(reasons)
+    assert "vol_rank: unknown" in text
+
+
+def test_confidence_reasons_vix_proxy_missing():
+    """VIX proxy missing (Kite fetch failed) -> 'unknown' reason."""
+    from penny_regime import PennyRegimeEngine
+    re = PennyRegimeEngine()
+    re._vol_rank = 0.55
+    re._vix_proxy = None
+    re._vix_distance = None
+    re._breadth = 0.5
+    re._today_regime = re.classify(re._vol_rank, re._vix_proxy)
+    reasons = re.confidence_reasons()
+    text = "\n".join(reasons)
+    assert "vix_proxy: unknown" in text
+    assert "fetch failed" in text
+
+
+def test_confidence_reasons_includes_sizing_in_summary():
+    """Final summary line shows the sizing implication."""
+    from penny_regime import PennyRegimeEngine
+    re = PennyRegimeEngine()
+    re._vol_rank = 0.95
+    re._vix_proxy = 0.50
+    re._vix_distance = -0.05
+    re._breadth = 0.5
+    re._today_regime = re.classify(re._vol_rank, re._vix_proxy)
+    reasons = re.confidence_reasons()
+    text = "\n".join(reasons)
+    # PR3 sizing is 0% -- all entries blocked
+    assert "0.0% of bankroll per trade" in text or "sizing" in text
+
+
+# ---- 2026-06-25 Tier 3 tests (T3-C: cmd_regime surfaces reasons) ------
+
+def test_cmd_regime_surfaces_confidence_reasons(monkeypatch, override_path):
+    """/penny regime now returns the full reason block, not just the label."""
+    from penny_regime import PennyRegimeEngine
+    import penny_commands
+    # Build a fake engine with PR2_ELEVATED populated
+    fake_engine = PennyRegimeEngine()
+    fake_engine._vol_rank = 0.78
+    fake_engine._vix_proxy = 0.62
+    fake_engine._vix_distance = -0.025
+    fake_engine._breadth = 0.5
+    fake_engine._as_of = "2026-06-25"
+    fake_engine._today_regime = fake_engine.classify(
+        fake_engine._vol_rank, fake_engine._vix_proxy
+    )
+    # Monkey-patch the engine reference in main
+    import main as _main
+    monkeypatch.setattr(_main, "_penny_regime_engine", fake_engine)
+    reply = penny_commands.cmd_regime("ignored.db")
+    # Must contain the regime AND the reasons
+    assert "PR2_ELEVATED" in reply
+    assert "vol_rank=0.78" in reply
+    assert "vix_proxy=0.62" in reply
+    assert "between PR1 max" in reply
+    assert "computed: 2026-06-25" in reply
+    # Raw distance surfaced
+    assert "-2.5%" in reply or "-3%" in reply
+
+
+def test_cmd_regime_handles_uninitialized_engine(monkeypatch):
+    """Engine = None -> 'engine not initialised yet' message."""
+    import penny_commands
+    import main as _main
+    monkeypatch.setattr(_main, "_penny_regime_engine", None)
+    reply = penny_commands.cmd_regime("ignored.db")
+    assert "engine not initialised" in reply.lower()
+
+
+def test_cmd_regime_handles_uncomputed_regime(monkeypatch):
+    """Engine initialised but today_regime = None -> 'not yet computed' message."""
+    from penny_regime import PennyRegimeEngine
+    import penny_commands
+    import main as _main
+    fake = PennyRegimeEngine()
+    # leave today_regime as default UNKNOWN; set as_of=None explicitly
+    fake._today_regime = None  # type: ignore[assignment]
+    monkeypatch.setattr(_main, "_penny_regime_engine", fake)
+    reply = penny_commands.cmd_regime("ignored.db")
+    assert "not yet computed" in reply.lower()
+
+
+def test_cmd_regime_message_under_telegram_limit():
+    """Even with full reasons, message stays under Telegram's 4096 char limit."""
+    from penny_regime import PennyRegimeEngine
+    import penny_commands
+    import main as _main
+    fake = PennyRegimeEngine()
+    fake._vol_rank = 0.85
+    fake._vix_proxy = 0.45
+    fake._vix_distance = -0.034
+    fake._breadth = 0.5
+    fake._as_of = "2026-06-25"
+    fake._today_regime = fake.classify(fake._vol_rank, fake._vix_proxy)
+    penny_commands._main = _main  # ensure import works
+    reply = penny_commands.cmd_regime("ignored.db")
+    assert len(reply) < 4096
