@@ -503,3 +503,260 @@ def test_penny_time_of_day_zero_disables(monkeypatch):
         # Would block
         assert minutes_since_open > last_entry_min
     # else: gate is disabled by the 0 check; no assertion needed.
+
+
+# ---- 2026-06-25 Tier 2 tests (T2-B: VWAP + adaptive threshold) ----
+
+def test_breakout_vwap_helper_on_synthetic_bars():
+    """T2-B: VWAP helper computes correctly on a known series.
+    Bars: 4 bars, all with TP=100, vol=10. VWAP = sum(TP*vol)/sum(vol) = 100.
+    Bars: TP=100, vol=10 then TP=110, vol=10 -> VWAP = (1000+1100)/20 = 105."""
+    from penny_engine_breakout import _vwap_from_intraday
+    import pandas as pd
+    df = pd.DataFrame({
+        "high": [100.0, 100.0, 110.0, 110.0],
+        "low":  [100.0, 100.0, 110.0, 110.0],
+        "close":[100.0, 100.0, 110.0, 110.0],
+        "volume": [10, 10, 10, 10],
+    })
+    assert abs(_vwap_from_intraday(df) - 105.0) < 1e-6
+
+
+def test_breakout_vwap_helper_returns_none_when_insufficient():
+    """T2-B: VWAP helper returns None when there are <3 bars (not enough data)."""
+    from penny_engine_breakout import _vwap_from_intraday
+    import pandas as pd
+    df = pd.DataFrame({
+        "high": [100.0, 100.0],
+        "low":  [100.0, 100.0],
+        "close":[100.0, 100.0],
+        "volume": [10, 10],
+    })
+    assert _vwap_from_intraday(df) is None
+
+
+def test_breakout_vwap_helper_handles_zero_volume():
+    """T2-B: VWAP helper returns None when total volume is zero."""
+    from penny_engine_breakout import _vwap_from_intraday
+    import pandas as pd
+    df = pd.DataFrame({
+        "high": [100.0, 100.0, 100.0, 100.0],
+        "low":  [100.0, 100.0, 100.0, 100.0],
+        "close":[100.0, 100.0, 100.0, 100.0],
+        "volume": [0, 0, 0, 0],
+    })
+    assert _vwap_from_intraday(df) is None
+
+
+def test_breakout_atr_20_helper_on_known_series():
+    """T2-B: ATR(20) is the mean of (high - low) over the last 20 bars.
+    Build 25 bars with constant range=2 -> ATR(20) = 2.0."""
+    from penny_engine_breakout import _atr_20_from_intraday
+    import pandas as pd
+    highs = [101.0] * 25
+    lows = [99.0] * 25
+    df = pd.DataFrame({"high": highs, "low": lows})
+    atr = _atr_20_from_intraday(df)
+    assert abs(atr - 2.0) < 1e-6
+
+
+def test_breakout_adaptive_threshold_calm_ticker_tightens():
+    """T2-B: adaptive threshold < base when current ATR < median (calm)."""
+    from penny_engine_breakout import _adaptive_threshold_scale
+    import pandas as pd
+    # 60 bars. Last 20 bars have range=1 (calm), older 40 bars have range=2.
+    last_20 = [(100.5, 99.5)] * 20  # range 1
+    older_40 = [(101.0, 99.0)] * 40  # range 2
+    highs = [h for h, l in older_40] + [h for h, l in last_20]
+    lows = [l for h, l in older_40] + [l for h, l in last_20]
+    df = pd.DataFrame({"high": highs, "low": lows})
+    base = 0.003
+    scaled = _adaptive_threshold_scale(df, base)
+    # scale = 1/2 = 0.5; bounded [0.3, 2.0] so 0.5; result = 0.003 * 0.5 = 0.0015
+    assert scaled < base
+    assert abs(scaled - 0.0015) < 1e-6
+
+
+def test_breakout_adaptive_threshold_volatile_ticker_widens():
+    """T2-B: adaptive threshold > base when current ATR > median (volatile)."""
+    from penny_engine_breakout import _adaptive_threshold_scale
+    import pandas as pd
+    # Last 20 bars range=4 (volatile), older 40 bars range=2.
+    last_20 = [(102.0, 98.0)] * 20
+    older_40 = [(101.0, 99.0)] * 40
+    highs = [h for h, l in older_40] + [h for h, l in last_20]
+    lows = [l for h, l in older_40] + [l for h, l in last_20]
+    df = pd.DataFrame({"high": highs, "low": lows})
+    base = 0.003
+    scaled = _adaptive_threshold_scale(df, base)
+    # scale = 4/2 = 2.0; bounded at 2.0; result = 0.003 * 2.0 = 0.006
+    assert scaled > base
+    assert abs(scaled - 0.006) < 1e-6
+
+
+def test_breakout_adaptive_threshold_insufficient_data_returns_base():
+    """T2-B: if <60 bars, no scale can be computed -> return base_pct unchanged."""
+    from penny_engine_breakout import _adaptive_threshold_scale
+    import pandas as pd
+    df = pd.DataFrame({"high": [101.0] * 30, "low": [99.0] * 30})
+    base = 0.003
+    assert _adaptive_threshold_scale(df, base) == base
+
+
+def test_breakout_adaptive_threshold_bounded():
+    """T2-B: scale is clamped to [0.3, 2.0] so it cannot amplify the buffer
+    by more than 2x or crush it below 30%."""
+    from penny_engine_breakout import _adaptive_threshold_scale
+    import pandas as pd
+    # Last 20 range=100 (extreme), older range=1 -> scale would be 100,
+    # clamped to 2.0.
+    last_20 = [(150.0, 50.0)] * 20
+    older_40 = [(100.5, 99.5)] * 40
+    highs = [h for h, l in older_40] + [h for h, l in last_20]
+    lows = [l for h, l in older_40] + [l for h, l in last_20]
+    df = pd.DataFrame({"high": highs, "low": lows})
+    scaled = _adaptive_threshold_scale(df, 0.003)
+    # scale = 100/1 = 100; clamped to 2.0; result = 0.003 * 2.0 = 0.006
+    assert abs(scaled - 0.006) < 1e-6
+
+
+def test_breakout_engine_defaults_preserve_pre_fix_behaviour(monkeypatch):
+    """T2-B: with both new config flags default False, the engine's
+    breakout confirm uses day_high * (1 + 0.003) -- identical to pre-fix."""
+    from datetime import datetime
+    from penny_engine_breakout import evaluate_breakout_entry
+
+    class _RE:
+        bankroll = 2500.0
+        def position_size(self, e, s, r):
+            return 1
+
+    # Build intraday with a close just above day_high+0.3% (should fire).
+    import pandas as pd
+    highs = [12.0] * 60
+    lows = [11.5] * 60
+    closes = [12.0] * 59 + [12.10]  # last bar at +0.83% above day_high
+    df = pd.DataFrame({"high": highs, "low": lows, "close": closes,
+                       "volume": [1000] * 60})
+
+    decision = evaluate_breakout_entry(
+        ticker="X",
+        cum_vol_today=100_000, median_vol_20d=10_000,
+        breakout_bar={"open": 12.05, "high": 12.10, "low": 11.95,
+                      "close": 12.10, "volume": 1000},
+        day_high=12.05, rsi_14=50.0,
+        as_of=datetime(2026, 6, 25, 11, 0),
+        risk_engine=_RE(),
+        intraday=df,
+    )
+    # Pre-fix behaviour preserved: VWAP/adaptive disabled, day_high anchor
+    # with 0.3% buffer used. close=12.10 > 12.05*1.003=12.086 -> accept.
+    assert decision["accept"]
+    assert decision["anchor_kind"] == "day_high"
+    assert not decision["adaptive_buffer"]
+
+
+def test_breakout_engine_vwap_mode_anchor_kind(monkeypatch):
+    """T2-B: when USE_VWAP=True, the engine uses VWAP as the anchor and
+    marks anchor_kind='vwap' on the decision."""
+    from config import settings
+    monkeypatch.setattr(settings, "PENNY_BREAKOUT_USE_VWAP", True)
+    from datetime import datetime
+    from penny_engine_breakout import evaluate_breakout_entry
+
+    class _RE:
+        bankroll = 2500.0
+        def position_size(self, e, s, r):
+            return 1
+
+    import pandas as pd
+    # VWAP = mean(TP) when all TP equal; here TP=100 throughout -> VWAP=100.
+    df = pd.DataFrame({
+        "high": [100.0] * 60,
+        "low":  [100.0] * 60,
+        "close":[100.0] * 60,
+        "volume": [1000] * 60,
+    })
+    decision = evaluate_breakout_entry(
+        ticker="X",
+        cum_vol_today=100_000, median_vol_20d=10_000,
+        breakout_bar={"open": 100.0, "high": 100.0, "low": 99.5,
+                      "close": 100.5, "volume": 1000},
+        day_high=105.0, rsi_14=50.0,  # day_high way above VWAP; VWAP is anchor.
+        as_of=datetime(2026, 6, 25, 11, 0),
+        risk_engine=_RE(),
+        intraday=df,
+    )
+    # close=100.5 > VWAP 100 * 1.003 = 100.3 -> accept
+    assert decision["accept"]
+    assert decision["anchor_kind"] == "vwap"
+    assert abs(decision["anchor"] - 100.0) < 1e-6
+
+
+def test_breakout_engine_vwap_falls_back_to_day_high_when_data_unavailable(monkeypatch):
+    """T2-B: when USE_VWAP=True but intraday is None, fall back to day_high
+    rather than reject (preserves robustness)."""
+    from config import settings
+    monkeypatch.setattr(settings, "PENNY_BREAKOUT_USE_VWAP", True)
+    from datetime import datetime
+    from penny_engine_breakout import evaluate_breakout_entry
+
+    class _RE:
+        bankroll = 2500.0
+        def position_size(self, e, s, r):
+            return 1
+
+    decision = evaluate_breakout_entry(
+        ticker="X",
+        cum_vol_today=100_000, median_vol_20d=10_000,
+        breakout_bar={"open": 12.05, "high": 12.10, "low": 11.95,
+                      "close": 12.10, "volume": 1000},
+        day_high=12.05, rsi_14=50.0,
+        as_of=datetime(2026, 6, 25, 11, 0),
+        risk_engine=_RE(),
+        intraday=None,  # explicit None
+    )
+    assert decision["accept"]
+    assert decision["anchor_kind"] == "day_high"
+
+
+def test_breakout_engine_adaptive_mode_buffer_is_scaled(monkeypatch):
+    """T2-B: when ADAPTIVE=True and the ticker is calmer than typical,
+    effective_buffer < base_buffer (tighter threshold)."""
+    from config import settings
+    monkeypatch.setattr(settings, "PENNY_BREAKOUT_ADAPTIVE_THRESHOLD", True)
+    from datetime import datetime
+    from penny_engine_breakout import evaluate_breakout_entry
+
+    class _RE:
+        bankroll = 2500.0
+        def position_size(self, e, s, r):
+            return 1
+
+    # Calm ticker: last 20 bars range=1, older 40 bars range=2.
+    # scale=0.5, base_buffer=0.003, effective=0.0015
+    import pandas as pd
+    last_20 = [(100.5, 99.5)] * 20
+    older_40 = [(101.0, 99.0)] * 40
+    highs = [h for h, l in older_40] + [h for h, l in last_20]
+    lows = [l for h, l in older_40] + [l for h, l in last_20]
+    closes = [100.0] * 60
+    df = pd.DataFrame({"high": highs, "low": lows, "close": closes,
+                       "volume": [1000] * 60})
+
+    # day_high=12.05. With adaptive tighter buffer (0.15%):
+    # required = 12.05 * 1.0015 = 12.068
+    # Use close=12.07 -> just above tighter threshold -> accept
+    decision = evaluate_breakout_entry(
+        ticker="X",
+        cum_vol_today=100_000, median_vol_20d=10_000,
+        breakout_bar={"open": 12.05, "high": 12.07, "low": 12.00,
+                      "close": 12.07, "volume": 1000},
+        day_high=12.05, rsi_14=50.0,
+        as_of=datetime(2026, 6, 25, 11, 0),
+        risk_engine=_RE(),
+        intraday=df,
+    )
+    assert decision["accept"]
+    assert decision["adaptive_buffer"] is True
+    assert decision["buffer_pct"] < settings.PENNY_BREAKOUT_BUFFER_PCT

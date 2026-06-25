@@ -217,6 +217,22 @@ class Settings(BaseSettings):
     PENNY_BREAKOUT_TIME_START:     int   = 10*60 + 30  # 10:30 IST in minutes
     PENNY_BREAKOUT_TIME_END:       int   = 14*60 + 30  # 14:30 IST in minutes
     PENNY_BREAKOUT_TIME_EXIT:      int   = 15*60       # 15:00 IST
+    # [TIER2-BREAKOUT-REFINEMENT 2026-06-25] VWAP-anchored breakout and
+    # adaptive threshold. Both default to False to preserve current
+    # behaviour (close > day_high + 0.3%); enable via config after A/B
+    # validation.
+    #   USE_VWAP: replace day_high anchor with VWAP. The breakout is then
+    #             "close > VWAP + 0.3%" instead of "close > day_high + 0.3%".
+    #             Volume-confirmed breakout is statistically more robust.
+    #   ADAPTIVE_THRESHOLD: scale the 0.3% buffer by current_volatility /
+    #             typical_volatility (ATR(20) / median_ATR(20,60min)). Calm
+    #             ticker -> tighter threshold; volatile ticker -> wider.
+    #             Per de Prado, Advances in Financial ML ch. 16.
+    PENNY_BREAKOUT_USE_VWAP:            bool  = False
+    PENNY_BREAKOUT_ADAPTIVE_THRESHOLD:  bool  = False
+    # Buffer pct applied as breakout margin (was hardcoded 0.3% in the
+    # engine). Made a setting so adaptive mode can override it.
+    PENNY_BREAKOUT_BUFFER_PCT:           float = 0.003
     # [PENNY-TIME-STOP 2026-06-24] Soft time-stop: if entry fires but the
     # position is NOT in profit within PENNY_TIME_STOP_MIN minutes, cut at
     # market (modular exit path; spec §7.2 exit chain). Default 30 min --

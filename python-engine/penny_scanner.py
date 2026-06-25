@@ -238,6 +238,12 @@ class PennyScanner:
             ticker=ticker, cum_vol_today=cum_vol, median_vol_20d=median_vol_20d,
             breakout_bar=breakout_bar, day_high=day_high, rsi_14=rsi_14,
             as_of=as_of, risk_engine=self.risk_engine,
+            # [TIER2-BREAKOUT-REFINEMENT 2026-06-25] Pass intraday so the
+            # breakout engine can compute VWAP and adaptive threshold.
+            # The engine uses intraday only if PENNY_BREAKOUT_USE_VWAP
+            # or PENNY_BREAKOUT_ADAPTIVE_THRESHOLD is True; otherwise the
+            # param is ignored and behaviour is identical to pre-fix.
+            intraday=intraday,
         )
 
     async def _evaluate_ticker_connors(
