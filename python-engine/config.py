@@ -184,6 +184,25 @@ class Settings(BaseSettings):
     PENNY_CONNORS_T2_PCT:          float = 0.06
     PENNY_CONNORS_STOP_PCT:        float = 0.03
     PENNY_CONNORS_MAX_HOLD_DAYS:   int   = 3
+    # [TIER2-CONNORS-REFINEMENT 2026-06-25] Cumulative-RSI and absolute
+    # floor gates (Q1+A2 from the brainstorm). Defaults preserve pre-fix
+    # behaviour so we can A/B test by raising the cumulative-RSI days
+    # later without redeploying code.
+    #   RSI2_FLOOR: absolute minimum RSI(2) to enter. 1.0 disables
+    #               (current behaviour: any RSI(2) < threshold works).
+    #               Recommended value once validated: 5.0.
+    #   CUMULATIVE_RSI_DAYS: minimum consecutive daily bars with
+    #               RSI(2) < threshold before entry. 1 disables
+    #               (current behaviour: any single-day trigger).
+    #               Connors' original refinement uses 2; 1 means
+    #               "the current day is enough".
+    PENNY_CONNORS_RSI2_FLOOR:           float = 1.0
+    PENNY_CONNORS_CUMULATIVE_RSI_DAYS:  int   = 1
+    # Time-of-day gate: reject CNC signals after this many minutes past
+    # market open (09:15 IST). Default 195 min = 12:30 IST. The Connors
+    # mean-reversion signal fires best in the morning; signals after
+    # lunch often mean-revert against the operator.
+    PENNY_CONNORS_LAST_ENTRY_MIN:       int   = 195
     PENNY_CONNORS_TRAIL_ATR_MULT:  float = 2.0         # 2x ATR_1min trail after T1
 
     # Breakout strategy

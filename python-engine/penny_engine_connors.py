@@ -122,6 +122,49 @@ def evaluate_connors_entry(
     if rsi >= settings.PENNY_CONNORS_RSI2_BUY:
         return {"accept": False, "reject_reason": f"RSI(2)={rsi:.1f} not below threshold"}
 
+    # 2a. [TIER2-CONNORS-REFINEMENT 2026-06-25] Absolute RSI(2) floor.
+    # The original Connors spec implies the trigger is "RSI(2) under 10"
+    # but never specified a *minimum* below which the signal is rejected.
+    # In practice, an RSI(2) of 0 means the stock closed down 3 days in
+    # a row with very small moves -- a true dead-cat bounce candidate.
+    # Default PENNY_CONNORS_RSI2_FLOOR=1.0 disables this gate; raising
+    # to 5.0 (post-A/B validation) cuts the worst 10-15% of these
+    # false-mean-reversion triggers per the published literature.
+    rsi_floor = settings.PENNY_CONNORS_RSI2_FLOOR
+    if rsi_floor > 1.0 and rsi < rsi_floor:
+        return {"accept": False,
+                "reject_reason": f"RSI(2)={rsi:.1f} below floor {rsi_floor:.1f} (dead cat)"}
+
+    # 2b. [TIER2-CONNORS-REFINEMENT 2026-06-25] Cumulative RSI trigger.
+    # Count how many consecutive daily bars (including today) had
+    # RSI(2) below the buy threshold. Default 1 disables; raising to 2
+    # (per Connors' published refinement) cuts false-mean-reversion
+    # triggers significantly. The implementation is O(N) over closes;
+    # closes is the 250-day daily history, so this is cheap.
+    cum_days_required = settings.PENNY_CONNORS_CUMULATIVE_RSI_DAYS
+    if cum_days_required > 1:
+        cum_count = 0
+        # Walk back from latest, recomputing RSI(2) at each prefix.
+        # We use the same _rsi_2 helper; cost is negligible vs the
+        # network round-trip we already did for the daily bars.
+        for k in range(len(closes)):
+            prefix = closes[: len(closes) - k]
+            if len(prefix) < 3:
+                break
+            rsi_k = _rsi_2(prefix)
+            if rsi_k < settings.PENNY_CONNORS_RSI2_BUY:
+                cum_count += 1
+            else:
+                break  # streak broken
+        if cum_count < cum_days_required:
+            return {
+                "accept": False,
+                "reject_reason": (
+                    f"cumulative RSI(2) < threshold for only {cum_count} "
+                    f"day(s), need {cum_days_required}"
+                ),
+            }
+
     # 3. Confirmation: RSI(2) rising for 2 consecutive bars (spec section 4.2)
     rsi_prev1 = _rsi_2(closes[:-1])
     rsi_prev2 = _rsi_2(closes[:-2])

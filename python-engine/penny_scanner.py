@@ -316,6 +316,35 @@ class PennyScanner:
         if not decision or not decision.get("accept"):
             return decision
 
+        # [TIER2-TIME-OF-DAY 2026-06-25] Reject late-day CNC signals.
+        # Connors RSI(2) is a morning mean-reversion signal -- after lunch
+        # the signal is much less reliable because:
+        #   - morning gaps have already played out
+        #   - afternoon volume is thinner, so fills + SL-M protection are
+        #     both less robust
+        #   - the operator can no longer react to a midday trigger before
+        #     EOD
+        # PENNY_CONNORS_LAST_ENTRY_MIN=195 (12:30 IST) is the default;
+        # 0 disables. The check is intentionally simple: minutes since
+        # 09:15 IST. We could use market_calendar-aware sunrise but the
+        # signal is independent of holidays (just time-of-day).
+        from config import settings as _settings
+        last_entry_min = _settings.PENNY_CONNORS_LAST_ENTRY_MIN
+        if last_entry_min > 0:
+            market_open = as_of.replace(hour=9, minute=15, second=0, microsecond=0)
+            minutes_since_open = (as_of - market_open).total_seconds() / 60.0
+            if minutes_since_open > last_entry_min:
+                logger.info(
+                    "penny_eval_skipped ticker=%s reason=late_day minutes_since_open=%.0f limit=%d",
+                    ticker, minutes_since_open, last_entry_min,
+                )
+                decision["accept"] = False
+                decision["reject_reason"] = (
+                    f"late-day entry blocked (minutes_since_open={minutes_since_open:.0f}, "
+                    f"limit={last_entry_min})"
+                )
+                return decision
+
         # [PENNY-G2 2026-06-25] Compute real ATR(1min) from today's intraday
         # bars and include it in the decision so downstream exit logic
         # (evaluate_connors_exit) can use it for the post-T1 trailing stop.
