@@ -388,6 +388,33 @@ async def run_penny_force_close_mis():
         logger.error("penny_force_close_mis_crashed error=%s", str(e))
 
 
+async def _run_penny_daily_attribution():
+    """
+    [TIER3-DAILY-ATTRIBUTION 2026-06-25] 15:30 IST daily P&L summary.
+    Reads from bankroll_ledger WHERE source='PENNY' for today and
+    emits a compact Telegram message via the same transport as the
+    hourly report. See penny_daily_attribution.build_daily_attribution
+    for the message contract.
+    """
+    try:
+        from penny_daily_attribution import build_daily_attribution
+        body = build_daily_attribution(db_path=settings.DB_PATH)
+        # Local log (mandatory heartbeat -- matches hourly pattern).
+        logger.info("penny_daily_attribution body=%s", body)
+        # Telegram primary, webhook fallback -- reuse the transport
+        # the hourly report uses, which has all the credentials wired.
+        from penny_hourly_report import PennyHourlyReport
+        sender = PennyHourlyReport(db_path=settings.DB_PATH)
+        await sender.send(
+            body=body,
+            webhook_url=settings.PENNY_HOURLY_REPORT_WEBHOOK,
+            telegram_token=settings.TELEGRAM_BOT_TOKEN,
+            telegram_chat_id=settings.TELEGRAM_CHAT_ID,
+        )
+    except Exception as e:
+        logger.error("penny_daily_attribution_crashed error=%s", str(e))
+
+
 async def run_penny_hourly_report():
     """Top-of-hour status report (spec §9.4). 10:00 through 14:00 IST."""
     try:
@@ -709,6 +736,15 @@ def register_penny_scheduler_jobs(scheduler):
         hour=settings.PENNY_BREAKOUT_TIME_EXIT // 60,
         minute=settings.PENNY_BREAKOUT_TIME_EXIT % 60,
         id="penny_force_close_mis",
+    )
+    # [TIER3-DAILY-ATTRIBUTION 2026-06-25] 15:30 IST daily P&L attribution.
+    # Fires 30 min after the 15:00 force-close so all MIS positions
+    # have been closed and the bankroll_ledger has the day's trades.
+    scheduler.add_job(
+        _run_penny_daily_attribution, "cron",
+        hour=settings.PENNY_DAILY_ATTRIBUTION_HOUR,
+        minute=settings.PENNY_DAILY_ATTRIBUTION_MIN,
+        id="penny_daily_attribution",
     )
     scheduler.add_job(
         run_penny_hourly_report, "cron", minute=0,

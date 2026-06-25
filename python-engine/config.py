@@ -217,6 +217,12 @@ class Settings(BaseSettings):
     PENNY_BREAKOUT_TIME_START:     int   = 10*60 + 30  # 10:30 IST in minutes
     PENNY_BREAKOUT_TIME_END:       int   = 14*60 + 30  # 14:30 IST in minutes
     PENNY_BREAKOUT_TIME_EXIT:      int   = 15*60       # 15:00 IST
+    # [TIER3-DAILY-ATTRIBUTION 2026-06-25] 15:30 IST = 30 min after the
+    # 15:00 force-close fires. Gives time for the broker to confirm
+    # all MIS positions are closed and the ledger to be updated.
+    PENNY_DAILY_ATTRIBUTION_TIME: int = 15*60 + 30    # 15:30 IST
+    PENNY_DAILY_ATTRIBUTION_HOUR: int = 15
+    PENNY_DAILY_ATTRIBUTION_MIN:  int = 30
     # [TIER2-BREAKOUT-REFINEMENT 2026-06-25] VWAP-anchored breakout and
     # adaptive threshold. Both default to False to preserve current
     # behaviour (close > day_high + 0.3%); enable via config after A/B
