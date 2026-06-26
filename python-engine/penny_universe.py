@@ -343,6 +343,142 @@ class PennyUniverse:
         return [t for _, t in scored[:top_n]]
 
 
+async def compute_metrics_from_history(kite, symbols, lookback_days: int = 30) -> Dict[str, dict]:
+    """
+    [PENNY-CORP-FALLBACK 2026-06-26] Compute the four corp-data metrics the
+    universe needs (median_traded_value_20d, avg_return_20d, vol_20d,
+    dist_from_52w_low_pct) directly from Kite's daily history per ticker.
+
+    Why this exists
+    ---------------
+    `KiteClient.get_corporate_actions()` always returns [] -- Kite Connect
+    does not expose a corporate-actions / fundamental-data endpoint. The
+    refresh job's fallback path (`penny_company_data.json`) only works if a
+    human-curated file is on disk; in the container it does not exist.
+    Result: median_traded_value_20d has been 0 for every ticker, the
+    eligibility liquidity gate kills all 100, and the scanner produces
+    0 signals every day (see 2026-06-26 incident).
+
+    This helper fills those fields from daily history, which IS available
+    via kite.get_historical. One round-trip per ticker; Kite self-throttles
+    at 3 req/s and the call is SQLite-cached, so the 08:00 IST daily refresh
+    pays ~30s on day 1 and is essentially free from day 2 onwards.
+
+    Metrics
+    -------
+      median_traded_value_20d : median(close * volume) over the trailing
+        `lookback_days` calendar days of daily bars. In Rs (NOT crore).
+        Liquidity gate compares this against PENNY_MIN_20D_TV.
+      avg_return_20d          : mean of daily log returns over the same
+        window. Used by the ranker's momentum weight (40%).
+      vol_20d                 : stddev of daily log returns. Used by the
+        ranker's volatility weight (10%).
+      dist_from_52w_low_pct   : (last_close - 52w_low) / 52w_low, capped
+        at 0.95 so far-from-low names don't dominate the ranker. Used by
+        the ranker's low_distance weight (10%). Requires ~250 daily bars;
+        if the window doesn't reach back that far we approximate with the
+        full available history (capped lower bound).
+
+    Returns
+    -------
+    Dict[str, dict] keyed by tradingsymbol. Each value has the four
+    fields above plus a `bars_used` counter for observability. Symbols
+    whose get_historical call returns empty / raises / has < 10 bars are
+    omitted entirely -- the caller treats that as "no data" and falls
+    back to the (existing) null-tolerance path in the eligibility filter.
+
+    Failures
+    --------
+    Per-symbol errors are swallowed and logged at WARNING. A single bad
+    ticker never blocks the others. The whole function never raises;
+    callers can treat an empty dict the same as "no fallback data".
+    """
+    from datetime import timedelta
+
+    if not symbols:
+        return {}
+
+    to_date = datetime.utcnow().strftime("%Y-%m-%d")
+    # Fetch a bit more than lookback_days so we always have 20+ bars even
+    # with weekends / holidays in the window.
+    from_date = (datetime.utcnow() - timedelta(days=lookback_days + 10)).strftime("%Y-%m-%d")
+    # For the 52w-low we want a longer history window; do a second pass.
+    from_52w = (datetime.utcnow() - timedelta(days=370)).strftime("%Y-%m-%d")
+
+    out: Dict[str, dict] = {}
+    skipped: List[str] = []
+    for sym in symbols:
+        try:
+            df = await kite.get_historical(sym, from_date, to_date)
+        except Exception as e:
+            logger.warning(
+                "penny_metrics_history_fetch_failed symbol=%s error=%s",
+                sym, str(e),
+            )
+            skipped.append(sym)
+            continue
+        if df is None or df.empty or len(df) < 10:
+            skipped.append(sym)
+            continue
+        try:
+            # Sort by date ascending (Kite's cache may not guarantee order
+            # if rows were inserted out of band by an earlier bug).
+            df = df.sort_index()
+            close = df["close"].astype(float)
+            volume = df["volume"].astype(float)
+            traded_value = close * volume
+            tv_20d = float(traded_value.tail(20).median())
+            log_ret = (close / close.shift(1)).dropna().apply(
+                lambda x: float(x) if x > 0 else float("nan")
+            ).dropna()
+            if len(log_ret) >= 2:
+                avg_ret_20d = float(log_ret.tail(20).mean())
+                vol_20d = float(log_ret.tail(20).std(ddof=0))
+            else:
+                avg_ret_20d = 0.0
+                vol_20d = 0.0
+            # 52w-low distance: best-effort with the longer window.
+            try:
+                df_long = await kite.get_historical(sym, from_52w, to_date)
+                if df_long is not None and not df_long.empty and len(df_long) >= 10:
+                    low_52w = float(df_long["low"].astype(float).min())
+                    last_close = float(close.iloc[-1])
+                    if low_52w > 0:
+                        dist = (last_close - low_52w) / low_52w
+                        # Cap at 0.95 per the ranker convention.
+                        dist_52w = float(min(max(dist, 0.0), 0.95))
+                    else:
+                        dist_52w = 0.0
+                else:
+                    dist_52w = 0.0
+            except Exception:
+                dist_52w = 0.0
+            out[sym] = {
+                "median_traded_value_20d": tv_20d,
+                "avg_return_20d": avg_ret_20d,
+                "vol_20d": vol_20d,
+                "dist_from_52w_low_pct": dist_52w,
+                "bars_used": int(len(df)),
+            }
+        except Exception as e:
+            logger.warning(
+                "penny_metrics_compute_failed symbol=%s error=%s",
+                sym, str(e),
+            )
+            skipped.append(sym)
+            continue
+    if skipped:
+        logger.info(
+            "penny_metrics_history_skipped count=%d sample=%s",
+            len(skipped), skipped[:5],
+        )
+    logger.info(
+        "penny_metrics_history_computed count=%d skipped=%d lookback_days=%d",
+        len(out), len(skipped), lookback_days,
+    )
+    return out
+
+
 async def refresh_from_kite(kite, out_json_path, corp_json_path, top_n=100):
     """
     Daily universe-refresh job (spec §2.4 + §9.1).
@@ -434,6 +570,34 @@ async def refresh_from_kite(kite, out_json_path, corp_json_path, top_n=100):
                 corp_json_path,
             )
         corp_by_sym = {c.get("symbol"): c for c in (corp or [])}
+
+        # [PENNY-CORP-FALLBACK 2026-06-26] If the corp-data source is
+        # empty/missing, derive the four numeric metrics from Kite's daily
+        # history per symbol. This unblocks the eligibility liquidity gate
+        # (PENNY_MIN_20D_TV) which has been killing every ticker with tv=0.
+        # Pre-existing fields from `corp_by_sym` are NOT overwritten --
+        # history-derived values only fill where the corp record is missing
+        # the field. See docs/deviations/2026-06-26-penny-corp-from-history.md
+        symbols_for_metrics = [inst["tradingsymbol"] for inst in instruments]
+        try:
+            history_metrics = await compute_metrics_from_history(kite, symbols_for_metrics)
+        except Exception as e:
+            logger.warning(
+                "penny_metrics_history_failed error=%s -- continuing with corp-only data",
+                str(e),
+            )
+            history_metrics = {}
+        if history_metrics:
+            for sym, hm in history_metrics.items():
+                rec = corp_by_sym.setdefault(sym, {})
+                for k in ("median_traded_value_20d", "avg_return_20d",
+                          "vol_20d", "dist_from_52w_low_pct"):
+                    if rec.get(k) in (None, 0) and hm.get(k) is not None:
+                        rec[k] = hm[k]
+            logger.info(
+                "penny_metrics_history_applied symbols=%d (filled missing corp fields)",
+                len(history_metrics),
+            )
 
         # 4-5. Build candidate records (eligibility filters happen here)
         candidates = []
