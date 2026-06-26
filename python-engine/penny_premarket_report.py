@@ -93,9 +93,27 @@ def build_premarket_body(universe_path: str, top_n: int = 10) -> str:
         )
     n = len(tickers)
     top_n = min(top_n, n)
+    # [PENNY-STALE 2026-06-25] Surface universe freshness so the operator
+    # can spot ASM/GSM reclassifications between refresh and scan time.
+    # G7 audit note: ASM/GSM flags are NOT live-checked at scan time --
+    # the universe JSON is whatever refresh_from_kite wrote at 08:00 IST.
+    # If a ticker enters ASM/GSM between 08:00 and 09:30, the scanner will
+    # still try to evaluate it; the live quote's circuit band is the only
+    # runtime guard (see penny_risk.circuit_blocked). We surface the
+    # staleness here so the operator can run an ad-hoc refresh if needed.
+    from datetime import datetime as _dt
+    freshness = ""
+    try:
+        as_of_dt = _dt.strptime(as_of, "%Y-%m-%d")
+        age_hours = (_dt.now() - as_of_dt).total_seconds() / 3600
+        if age_hours > 4:
+            freshness = f" ⚠ stale {age_hours:.1f}h"
+    except (ValueError, TypeError):
+        pass
+
     lines = [
         f"Penny pre-market ({today})",
-        f"Universe: {n} tickers (as_of: {as_of})",
+        f"Universe: {n} tickers (as_of: {as_of}){freshness}",
         f"Top by composite score:",
     ]
     for i, t in enumerate(tickers[:top_n], start=1):

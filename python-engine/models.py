@@ -208,14 +208,30 @@ class LedgerRow(BaseModel):
     _round_2dp = field_validator("pnl", "bankroll_before", "bankroll_after", mode="after")(round_float_2dp)
 
 class ManualPositionRequest(BaseModel):
-    ticker: str
+    """[AUDIT-FIX-1.4 2026-06-25] Pydantic model for /positions/manual.
+
+    Before this fix, the endpoint read each field via `data["..."]` (manual
+    dict access). A missing required field raised KeyError, which FastAPI
+    turned into HTTP 500 instead of HTTP 422. Now Pydantic validates
+    the body up front and FastAPI returns 422 with field-level errors.
+
+    Fields:
+      Required: ticker, entry_price, shares
+      Optional: exchange (default NSE), source (default SYSTEM),
+                product_type (default CNC), regime_at_entry,
+                stop_loss / target_1 / target_2 (derived from
+                entry_price if omitted).
+    """
+    ticker: str = Field(min_length=1, max_length=32)
     exchange: str = "NSE"
-    entry_price: float
-    shares: int
-    stop_loss: Optional[float] = None
-    target_1: Optional[float] = None
-    target_2: Optional[float] = None
-    notes: Optional[str] = None
+    entry_price: float = Field(gt=0)
+    shares: int = Field(gt=0)
+    source: str = "SYSTEM"
+    product_type: str = "CNC"
+    regime_at_entry: Optional[str] = None
+    stop_loss: Optional[float] = Field(default=None, gt=0)
+    target_1: Optional[float] = Field(default=None, gt=0)
+    target_2: Optional[float] = Field(default=None, gt=0)
 
 class BankrollAdjustment(BaseModel):
     amount: float

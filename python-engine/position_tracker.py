@@ -34,6 +34,19 @@ async def init_positions_db(db_path: str):
             await db.execute("ALTER TABLE positions ADD COLUMN regime_at_entry TEXT")
         except Exception:
             pass  # Column already present -- safe to ignore
+        # [PENNY-G5 2026-06-25] Migration: add atr_1min_post_t1 and t1_fired
+        # for the CNC Connors post-T1 trailing stop (evaluate_connors_exit).
+        # Pre-fix these were never written; evaluate_connors_exit read 0.0 for
+        # atr_1min_post_t1 which made the trail-stop degenerate to a hard
+        # floor at breakeven+0.5%. Now CNC positions carry the data.
+        try:
+            await db.execute("ALTER TABLE positions ADD COLUMN atr_1min_post_t1 REAL")
+        except Exception:
+            pass
+        try:
+            await db.execute("ALTER TABLE positions ADD COLUMN t1_fired INTEGER DEFAULT 0")
+        except Exception:
+            pass
         await db.commit()
 
 async def get_open_positions(db_path: str) -> List[dict]:

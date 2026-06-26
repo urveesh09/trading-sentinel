@@ -25,8 +25,143 @@ from backtest import run_backtest
 from models import PerformanceReport, OpenPosition
 from breadth import BreadthEngine
 from universe import Universe
+# ---- [AUDIT-FIX-2.2] Internal-API-secret gate hardening -------------------
+
+# Module-level flag so we only log the empty-secret warning once at
+# startup (loud) + once per auth-failed call (medium). Avoids log spam.
+_internal_secret_warning_emitted = False
+
+
+def _check_internal_secret(request: Request, endpoint_name: str) -> None:
+    """
+    [AUDIT-FIX-2.2 2026-06-25] Centralised auth-gate for internal
+    endpoints (/positions/manual, /positions/close, /api/internal/*,
+    the CNC alert webhook target).
+
+    Behaviour:
+      - INTERNAL_API_SECRET env var is set + caller sends the right
+        value -> allow.
+      - INTERNAL_API_SECRET env var is set + caller sends wrong/missing
+        value -> 403 (same as before; this fix doesn't change it).
+      - INTERNAL_API_SECRET env var is EMPTY (not set in .env) -> 503.
+        This is louder than 403 and tells the operator the endpoint
+        is misconfigured, not that the caller is wrong. The system
+        STAYS UP (other endpoints work) but refuses to mutate until
+        the secret is configured.
+
+    Why this matters: pre-fix, an empty secret defaulted `if secret !=
+    ""` to True, allowing ANY caller (including an attacker on the
+    docker network) to invoke internal endpoints by sending
+    `X-Internal-Secret: ` (empty string). With the empty-secret
+    setting, the attacker could close positions, send manual positions,
+    etc.
+
+    Why not hard-fail at startup: per operator mandate (2026-06-25),
+    internal endpoints going down must NOT block the system during
+    market hours. We log + refuse requests + emit Telegram alert, but
+    the scanner loop keeps running.
+    """
+    global _internal_secret_warning_emitted
+    configured = settings.INTERNAL_API_SECRET
+    sent = request.headers.get("X-Internal-Secret", "")
+
+    if not configured:
+        # Misconfigured deployment: secret not set.
+        if not _internal_secret_warning_emitted:
+            # Loud one-time warning at first hit. After this, log at
+            # WARNING level per call (rare event, should be fixed).
+            logger.critical(
+                "internal_api_secret_not_configured "
+                "endpoint=%s FIX=set INTERNAL_API_SECRET env var to a non-empty value",
+                endpoint_name,
+            )
+            # Telegram alert (best-effort, fire-and-forget so the sync
+            # gate function can return immediately). create_task only
+            # works inside a running event loop, so guard.
+            try:
+                import asyncio
+                try:
+                    asyncio.get_running_loop()
+                    asyncio.create_task(_send_internal_secret_alert())
+                except RuntimeError:
+                    # No running loop (test context). The warning is
+                    # enough -- we already logged at CRITICAL above.
+                    pass
+            except Exception:
+                # Don't propagate -- notify failure must not block the gate.
+                pass
+            _internal_secret_warning_emitted = True
+        else:
+            logger.warning(
+                "internal_api_secret_not_configured endpoint=%s",
+                endpoint_name,
+            )
+        raise HTTPException(
+            status_code=503,
+            detail=(
+                "Internal API not configured: INTERNAL_API_SECRET env "
+                "var must be set to a non-empty value. Operator has "
+                "been alerted. System continues running -- other "
+                "endpoints and the scanner are unaffected."
+            ),
+        )
+
+    # Normal auth: secret configured, check the caller's value.
+    if sent != configured:
+        raise HTTPException(status_code=403, detail="Unauthorized")
+
+
+async def _send_internal_secret_alert() -> None:
+    """[AUDIT-FIX-2.2] Best-effort Telegram alert when the secret
+    is empty. Wrapped in its own function so the caller (sync gate)
+    can fire-and-forget via asyncio.create_task."""
+    try:
+        import httpx as _httpx
+        msg = (
+            "🚨 **SECURITY: INTERNAL_API_SECRET not configured** 🚨\n"
+            "Internal endpoints (/positions/manual, /positions/close) "
+            "are refusing requests with HTTP 503. Set "
+            "INTERNAL_API_SECRET in .env to a non-empty value."
+        )
+        async with _httpx.AsyncClient() as _client:
+            await _client.post(
+                f"{settings.CONTAINER_A_URL}/api/internal/notify",
+                json={"message": msg},
+                headers={"X-Internal-Secret": settings.INTERNAL_API_SECRET or ""},
+                timeout=5.0,
+            )
+    except Exception as e:
+        logger.warning("internal_secret_alert_failed error=%s", str(e))
+
+
 # [PENNY-MAIN 2026-06-21] Penny subsystem module imports.
 from penny_universe import PennyUniverse, refresh_from_kite
+
+
+# [AUDIT-FIX-1.2 2026-06-25] Single source of truth for "is this position
+# intraday or delivery?" The previous code hardcoded is_intraday=True at
+# 2 call sites regardless of pos['product_type'], which understated CNC
+# costs (CNC STT = 0.1% sell side vs MIS 0.025%). Now callers derive
+# the flag from product_type; missing/empty defaults to True (legacy
+# behaviour preserved for older DB rows).
+#
+# Why not just default is_intraday=False? Because the legacy default
+# for the close_position endpoint was True, and a silent flip would
+# change every historical P&L number retroactively. We're a write-only
+# ledger (we never re-derive historical costs), so the default doesn't
+# matter for past data, but for new data we WANT to read product_type
+# correctly.
+def _is_intraday_from_product_type(product_type) -> bool:
+    """Return True for MIS/NRML/empty/None, False for CNC.
+
+    Empty/None: defaults to intraday=True (legacy default; matches the
+    pre-fix hardcoded is_intraday=True in close_position).
+    CNC: explicitly delivery, intraday=False.
+    Anything else (futures/options product codes): treat as intraday.
+    """
+    if not product_type:
+        return True
+    return str(product_type).strip().upper() != "CNC"
 from penny_regime import PennyRegimeEngine
 from penny_scanner import PennyScanner
 # app = FastAPI(title="Quant Engine Container B")
@@ -106,18 +241,37 @@ def _get_penny_universe():
 
 
 def _get_penny_scanner():
-    """Lazy-build PennyScanner singleton. Honors PENNY_LIVE_TRADING."""
+    """Lazy-build PennyScanner singleton. Honors PENNY_LIVE_TRADING.
+
+    [AUDIT-FIX-1.3 2026-06-25] Pass `regime` as a CALLABLE so the scanner
+    re-reads the regime engine on every property access. The previous
+    implementation froze the regime string at singleton-construction
+    time, which meant a mid-day transition (PR1->PR2->PR3) was invisible
+    to the 30s MIS scan loop until the singleton was rebuilt (which
+    only happened in the 09:30 CNC scan).
+    """
     global _penny_scanner
     if _penny_scanner is not None:
         return _penny_scanner
     paper_mode = not settings.PENNY_LIVE_TRADING
+
+    # Live regime getter: re-reads the module-level engine on every call.
+    # Returns the .value string (e.g. "PR2_ELEVATED"). If the engine
+    # hasn't computed today_regime yet, returns "PR1_CALM" as a safe
+    # fallback (sizing at 5% of bankroll, not 0%).
+    def _live_regime():
+        if _penny_regime_engine is None:
+            return "PR1_CALM"
+        tr = _penny_regime_engine.today_regime
+        if tr is None:
+            return "PR1_CALM"
+        return tr.value if hasattr(tr, "value") else str(tr)
+
     _penny_scanner = PennyScanner(
         kite=kite,
         universe_json_path=PENNY_UNIVERSE_JSON_PATH,
         paper_mode=paper_mode,
-        regime=_penny_regime_engine.today_regime.value
-        if _penny_regime_engine.today_regime is not None
-        else "PR1_CALM",
+        regime=_live_regime,  # callable, not a string
         ledger_writer=_penny_ledger_writer,
     )
     logger.info("penny_scanner_initialized", paper_mode=paper_mode)
@@ -187,6 +341,108 @@ async def run_penny_connors_scan():
                 t["symbol"], decision.get("entry", 0.0),
                 order_result.get("entry_order_id"),
             )
+            # [PENNY-G5 2026-06-25] Write CNC position row so the post-T1
+            # trailing stop (evaluate_connors_exit) can actually read
+            # atr_1min_post_t1. Pre-fix this INSERT was absent -- CNC
+            # entries had no row in positions table, so the exit logic
+            # was unreachable. The position is only written if the entry
+            # actually FILLED (paper + live modes).
+            entry_status = order_result.get("entry_status")
+            if entry_status in ("filled", "paper"):
+                try:
+                    from position_tracker import init_positions_db
+                    from datetime import datetime as _dt, timezone as _tz
+                    import aiosqlite
+                    await init_positions_db(settings.DB_PATH)
+                    async with aiosqlite.connect(settings.DB_PATH) as db:
+                        await db.execute(
+                            """INSERT INTO positions (
+                                ticker, exchange, entry_date, entry_price, shares,
+                                stop_loss_initial, trailing_stop_current,
+                                target_1, target_2, atr_14_at_entry,
+                                highest_close_since_entry, status, source,
+                                product_type, regime_at_entry,
+                                atr_1min_post_t1, t1_fired
+                            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+                            (t["symbol"], "NSE",
+                             _dt.now(_tz.utc).isoformat(),
+                             decision.get("entry", 0.0),
+                             decision.get("shares", 0),
+                             decision.get("stop_loss", 0.0),
+                             decision.get("stop_loss", 0.0),
+                             decision.get("target_1", 0.0),
+                             decision.get("target_2", 0.0),
+                             0.0,
+                             decision.get("entry", 0.0),
+                             "OPEN", "PENNY", "CNC",
+                             scanner.regime,
+                             decision.get("atr_1min_post_t1", 0.0),
+                             0)
+                        )
+                        await db.commit()
+                    logger.info(
+                        "penny_cnc_position_written ticker=%s shares=%d atr_1min=%.4f",
+                        t["symbol"], decision.get("shares", 0),
+                        decision.get("atr_1min_post_t1", 0.0),
+                    )
+                except Exception as e:
+                    # [AUDIT-FIX-1.5 2026-06-25] DB write failure after the
+                    # entry actually filled (live mode) or was paper-recorded
+                    # leaves the position unmanaged by our exit logic
+                    # (time-stop / post-T1 trailing / 14:30 smart-EOD all
+                    # query the DB).
+                    #
+                    # What we DON'T do: auto-fire a market-exit here.
+                    # The executor already placed an SL-M at the broker in
+                    # step 3 of execute_entry -- that SL-M is the safety
+                    # net for the position. Firing a market order here
+                    # could double-sell if both orders fill.
+                    #
+                    # What we DO: log loudly + send a Telegram alert so the
+                    # operator knows the position is untracked by our
+                    # software. The SL-M at the broker still protects the
+                    # account; the operator can choose to manually close
+                    # via the broker if they want full software tracking.
+                    sl_id = order_result.get("sl_order_id") or "UNKNOWN"
+                    entry_id = order_result.get("entry_order_id") or "UNKNOWN"
+                    is_live = (entry_status == "filled")
+                    logger.error(
+                        "penny_cnc_position_write_failed "
+                        "ticker=%s entry_id=%s sl_order_id=%s error=%s",
+                        t["symbol"], entry_id, sl_id, str(e),
+                    )
+                    if is_live:
+                        # Live mode: position is held by the broker. SL-M
+                        # is the safety net (entry_id + sl_order_id logged
+                        # so the operator can correlate). Send a CRITICAL
+                        # alert so they know to intervene if desired.
+                        try:
+                            import httpx as _httpx
+                            msg = (
+                                f"🚨 **CNC POSITION UNTRACKED** 🚨\n"
+                                f"Ticker: {t['symbol']}\n"
+                                f"Entry: {decision.get('entry', 0):.2f} x "
+                                f"{decision.get('shares', 0)} shares\n"
+                                f"Entry order: {entry_id}\n"
+                                f"SL-M order: {sl_id} (broker-side safety)\n"
+                                f"DB write failed: {str(e)[:200]}\n"
+                                f"Action: position is protected by SL-M at "
+                                f"the broker. Manually close via broker if "
+                                f"you want software tracking."
+                            )
+                            async with _httpx.AsyncClient() as _client:
+                                await _client.post(
+                                    f"{settings.CONTAINER_A_URL}/api/internal/notify",
+                                    json={"message": msg},
+                                    headers={"X-Internal-Secret": settings.INTERNAL_API_SECRET},
+                                    timeout=5.0,
+                                )
+                        except Exception as notify_err:
+                            logger.error(
+                                "penny_cnc_untracked_alert_failed "
+                                "ticker=%s error=%s",
+                                t["symbol"], str(notify_err),
+                            )
             accept += 1
         logger.info("penny_connors_scan_done accept=%d reject=%d", accept, reject)
     except Exception as e:
@@ -273,6 +529,163 @@ async def run_penny_eod_check():
         logger.error("penny_eod_check_failed", error=str(e))
 
 
+async def run_penny_force_close_mis():
+    """
+    [PENNY-G5 2026-06-25] Hard force-exit of ALL open MIS penny positions
+    at 15:00 IST (PENNY_BREAKOUT_TIME_EXIT). This is mandatory -- MIS
+    positions MUST NOT carry overnight because they use intraday product
+    type and would be auto-squared-off by the broker at 15:20 anyway,
+    but the broker auto-square-off can be at worse prices and we want a
+    deterministic exit we control.
+
+    Pre-2026-06-25 this was silently absent: mis_time_stop_active(now)
+    was defined in penny_engine_breakout.py but never called anywhere.
+    The 14:30 smart-EOD check (run_penny_eod_check) handles most cases,
+    but if a position was held past 14:30 (e.g. fresh_loss branch fired
+    hold), nothing else would force it out by 15:00. This is a real
+    safety bug.
+
+    This job is idempotent -- it just unwinds anything still open. If a
+    position was already closed via EOD or SL-M, it's not in the open
+    positions list and we skip it.
+    """
+    try:
+        from penny_engine_breakout import mis_time_stop_active
+        from position_tracker import get_open_positions
+        from penny_models import PennyLeg
+
+        now = datetime.now(IST)
+        if not mis_time_stop_active(now):
+            # Outside the 15:00 IST force-exit window -- nothing to do.
+            return
+
+        positions = await get_open_positions(settings.DB_PATH)
+        penny_mis = [
+            p for p in positions
+            if p.get("leg") == "MIS" and p.get("source") == "PENNY"
+        ]
+        if not penny_mis:
+            logger.info("penny_force_close_mis no_open_positions")
+            return
+
+        scanner = _get_penny_scanner()
+        close_count = 0
+        for p in penny_mis:
+            try:
+                exit_result = await scanner.executor._market_unwind(
+                    ticker=p.get("ticker"),
+                    leg=PennyLeg.MIS,
+                    shares=p.get("shares", 0),
+                )
+                logger.warning(
+                    "penny_force_close_mis_exit ticker=%s shares=%d order_id=%s reason=15:00_IST_time_stop",
+                    p.get("ticker"), p.get("shares"), exit_result,
+                )
+                close_count += 1
+            except Exception as e:
+                logger.error(
+                    "penny_force_close_mis_failed ticker=%s error=%s",
+                    p.get("ticker"), str(e),
+                )
+        logger.warning(
+            "penny_force_close_mis_done closed=%d (15:00 IST time-stop fired)",
+            close_count,
+        )
+    except Exception as e:
+        logger.error("penny_force_close_mis_crashed error=%s", str(e))
+
+
+async def _run_penny_daily_attribution():
+    """
+    [TIER3-DAILY-ATTRIBUTION 2026-06-25] 15:30 IST daily P&L summary.
+    Reads from bankroll_ledger WHERE source='PENNY' for today and
+    emits a compact Telegram message via the same transport as the
+    hourly report. See penny_daily_attribution.build_daily_attribution
+    for the message contract.
+    """
+    try:
+        from penny_daily_attribution import build_daily_attribution
+        body = build_daily_attribution(db_path=settings.DB_PATH)
+        # Local log (mandatory heartbeat -- matches hourly pattern).
+        logger.info("penny_daily_attribution body=%s", body)
+        # Telegram primary, webhook fallback -- reuse the transport
+        # the hourly report uses, which has all the credentials wired.
+        from penny_hourly_report import PennyHourlyReport
+        sender = PennyHourlyReport(db_path=settings.DB_PATH)
+        await sender.send(
+            body=body,
+            webhook_url=settings.PENNY_HOURLY_REPORT_WEBHOOK,
+            telegram_token=settings.TELEGRAM_BOT_TOKEN,
+            telegram_chat_id=settings.TELEGRAM_CHAT_ID,
+        )
+    except Exception as e:
+        logger.error("penny_daily_attribution_crashed error=%s", str(e))
+
+
+async def _run_penny_eod_digest():
+    """
+    [PHASE-C-EOD-DIGEST 2026-06-25] 16:00 IST end-of-day digest.
+
+    Fires after the 15:30 daily attribution (T3-A) and the 15:00
+    force-close (G5). Sends the operator a single Telegram message
+    summarising both pools' P&L, open positions held overnight, and
+    closing regimes. Body builder: operator_status.cmd_eod_digest.
+    """
+    try:
+        from operator_status import cmd_eod_digest
+        body = cmd_eod_digest(db_path=settings.DB_PATH)
+        logger.info("penny_eod_digest_sent")
+        from penny_hourly_report import PennyHourlyReport
+        sender = PennyHourlyReport(db_path=settings.DB_PATH)
+        await sender.send(
+            body=body,
+            webhook_url=settings.PENNY_HOURLY_REPORT_WEBHOOK,
+            telegram_token=settings.TELEGRAM_BOT_TOKEN,
+            telegram_chat_id=settings.TELEGRAM_CHAT_ID,
+        )
+    except Exception as e:
+        logger.error("penny_eod_digest_crashed error=%s", str(e))
+
+
+async def _run_penny_heatmap():
+    """
+    [TIER3-POSITION-HEATMAP 2026-06-25] Mid-day position heat-map.
+    Scheduled every 15 minutes during market hours. Reads open penny
+    positions, fetches live prices in one batched Kite call, and
+    emits a sector-grouped heatmap via the same transport as the
+    hourly report.
+    """
+    try:
+        from penny_heatmap import build_heatmap
+        body, _buckets, total_open, priced_count = await build_heatmap(
+            db_path=settings.DB_PATH,
+            kite=kite,
+            sectors_csv_path=settings.PENNY_SECTORS_CSV_PATH,
+            # [AUDIT-FIX-2.5] Read the operator-tuned threshold from
+            # config. Default 0.01 (1%) matches pre-fix hardcoded value.
+            near_sl_warn_pct=settings.PENNY_HEATMAP_WARN_PCT,
+            warn_pct_is_fraction=True,  # config is a fraction, not percent
+        )
+        logger.info(
+            "penny_heatmap_sent total_open=%d priced=%d",
+            total_open, priced_count,
+        )
+        # Only send if there are open positions (don't spam Telegram
+        # with empty messages every 15 min when nothing's open).
+        if total_open == 0:
+            return
+        from penny_hourly_report import PennyHourlyReport
+        sender = PennyHourlyReport(db_path=settings.DB_PATH)
+        await sender.send(
+            body=body,
+            webhook_url=settings.PENNY_HOURLY_REPORT_WEBHOOK,
+            telegram_token=settings.TELEGRAM_BOT_TOKEN,
+            telegram_chat_id=settings.TELEGRAM_CHAT_ID,
+        )
+    except Exception as e:
+        logger.error("penny_heatmap_crashed error=%s", str(e))
+
+
 async def run_penny_hourly_report():
     """Top-of-hour status report (spec §9.4). 10:00 through 14:00 IST."""
     try:
@@ -288,6 +701,23 @@ async def run_penny_hourly_report():
         risk = PennyRiskEngine(bankroll=bankroll, ledger_writer=_penny_ledger_writer)
         deployed = sum((p.get("entry_price", 0.0) * p.get("shares", 0)) for p in penny_pos)
         unrealised = sum((p.get("current_price", 0.0) - p.get("entry_price", 0.0)) * p.get("shares", 0) for p in penny_pos)
+        # [AUDIT-FIX-2.4] Plumb universe as_of / age_days into the hourly
+        # report so stale data is visible to the operator. Read directly
+        # from the JSON (cheap -- one file read + 2 string fields).
+        try:
+            import json as _json
+            with open(PENNY_UNIVERSE_JSON_PATH) as _f:
+                _uni_meta = _json.load(_f)
+            _uni_as_of = _uni_meta.get("as_of")
+        except Exception:
+            _uni_as_of = None
+        _uni_age_days = None
+        if _uni_as_of:
+            try:
+                from datetime import date, datetime as _dt
+                _uni_age_days = (date.today() - _dt.strptime(_uni_as_of, "%Y-%m-%d").date()).days
+            except Exception:
+                pass
         await run_hourly_report(
             db_path=settings.DB_PATH,
             regime=_penny_regime_engine.today_regime.value
@@ -299,6 +729,8 @@ async def run_penny_hourly_report():
             kill_switch_active=risk.kill_switch_active(),
             circuit_blocks=0,
             universe_size=_last_penny_scan_universe_size,
+            universe_as_of=_uni_as_of,
+            universe_age_days=_uni_age_days,
         )
     except Exception as e:
         logger.error("penny_hourly_report_failed", error=str(e))
@@ -585,6 +1017,44 @@ def register_penny_scheduler_jobs(scheduler):
         minute=settings.PENNY_MIS_SMART_EOD_TIME % 60,
         id="penny_eod_check",
     )
+    # [PENNY-G5 2026-06-25] 15:00 IST force-exit of all open MIS positions.
+    # Was silently missing before this commit -- mis_time_stop_active()
+    # was defined but never invoked. This scheduler entry fires once at
+    # 15:00 IST; the job itself is a no-op if the window has already passed.
+    scheduler.add_job(
+        run_penny_force_close_mis, "cron",
+        hour=settings.PENNY_BREAKOUT_TIME_EXIT // 60,
+        minute=settings.PENNY_BREAKOUT_TIME_EXIT % 60,
+        id="penny_force_close_mis",
+    )
+    # [TIER3-DAILY-ATTRIBUTION 2026-06-25] 15:30 IST daily P&L attribution.
+    # Fires 30 min after the 15:00 force-close so all MIS positions
+    # have been closed and the bankroll_ledger has the day's trades.
+    scheduler.add_job(
+        _run_penny_daily_attribution, "cron",
+        hour=settings.PENNY_DAILY_ATTRIBUTION_HOUR,
+        minute=settings.PENNY_DAILY_ATTRIBUTION_MIN,
+        id="penny_daily_attribution",
+    )
+    # [TIER3-POSITION-HEATMAP 2026-06-25] Mid-day position heat-map.
+    # Fires every 15 minutes from 10:00 to 14:45 IST (5 min before
+    # the smart-EOD at 14:30, so the operator sees the EOD-relevant
+    # state). Out-of-hours the job is a no-op (build_heatmap returns
+    # the "0 open positions" body when nothing is open).
+    scheduler.add_job(
+        _run_penny_heatmap, "interval", minutes=15,
+        id="penny_heatmap",
+    )
+    # [PHASE-C-EOD-DIGEST 2026-06-25] 16:00 IST end-of-day digest.
+    # Fires after the 15:30 daily attribution (T3-A) and the 15:00
+    # force-close (G5). At 16:00 all MIS positions are closed, CNC
+    # positions are held overnight, and the day's trades are in the
+    # bankroll_ledger. Body builder lives in operator_status.py.
+    scheduler.add_job(
+        _run_penny_eod_digest, "cron",
+        hour=16, minute=0,
+        id="penny_eod_digest",
+    )
     scheduler.add_job(
         run_penny_hourly_report, "cron", minute=0,
         id="penny_hourly_report",
@@ -592,6 +1062,19 @@ def register_penny_scheduler_jobs(scheduler):
 
 
 async def lifespan(app: FastAPI):
+    # [AUDIT-FIX-2.2 2026-06-25] Loud startup warning if INTERNAL_API_SECRET
+    # is empty. The auth gate (in `_check_internal_secret`) also
+    # catches this at request time, but seeing it at startup is the
+    # most visible -- a misconfigured deployment should never get
+    # through init silently.
+    if not settings.INTERNAL_API_SECRET:
+        logger.critical(
+            "internal_api_secret_not_configured_at_startup "
+            "FIX=set INTERNAL_API_SECRET env var. Internal endpoints will "
+            "return HTTP 503 until configured. Scanner + read-only "
+            "endpoints continue normally (operator mandate: don't block "
+            "the system during market hours)."
+        )
 
     db_dir = os.path.dirname(settings.DB_PATH)
     if db_dir:
@@ -1598,7 +2081,12 @@ async def auto_square_momentum():
             # estimated fill price. The square-off order was just placed; we do not
             # have broker fill confirmation, so LTP is the best estimate available.
             gross        = (ltp - pos['entry_price']) * pos['shares']
-            costs        = calc_zerodha_costs(pos['entry_price'], ltp, pos['shares'], is_intraday=True)
+            # [AUDIT-FIX-1.2] Derive is_intraday from product_type (was
+            # hardcoded True, understating CNC costs).
+            costs = calc_zerodha_costs(
+                pos['entry_price'], ltp, pos['shares'],
+                is_intraday=_is_intraday_from_product_type(pos.get('product_type')),
+            )
             realised_pnl = gross - costs
             risk_initial = (pos['entry_price'] - pos.get('stop_loss_initial', pos['entry_price'] * 0.95)) * pos['shares']
             r_multiple   = realised_pnl / risk_initial if risk_initial > 0 else 0
@@ -1732,32 +2220,24 @@ async def _notify_momentum_heartbeat(
 
 
 @app.post("/positions/manual")
-async def add_manual_position(request: Request):
+async def add_manual_position(request: Request, payload: ManualPositionRequest):
     """
     Called by Container A after a successful execution.
     Creates a new position in the database.
+
+    [AUDIT-FIX-1.4 2026-06-25] Body is now validated by Pydantic
+    (ManualPositionRequest). Missing required fields -> HTTP 422
+    with field-level error messages. Previously: KeyError -> HTTP 500.
+
+    [AUDIT-FIX-2.2 2026-06-25] Uses the centralised auth gate.
     """
-    data = await request.json()
-    secret = request.headers.get("X-Internal-Secret", "")
-    if secret != settings.INTERNAL_API_SECRET:
-        raise HTTPException(status_code=403, detail="Unauthorized")
+    _check_internal_secret(request, "add_manual_position")
 
-    ticker      = data["ticker"]
-    entry_price = float(data["entry_price"])
-    shares      = int(data["shares"])
-    # If source is explicitly sent (e.g. MOMENTUM), use it.
-    # Default to SYSTEM for swing.
-    source      = data.get("source", "SYSTEM")
-    # [MED-008] Persist product_type so auto_square_momentum() can read it correctly.
-    product_type = data.get("product_type", "CNC")
-    # [TRAILING-EXITS 2026-06-16] Persist regime_at_entry so position_tracker
-    # can pick the regime-aware Chandelier multiplier (3.5x for R1, 3.0x for
-    # R2, 2.5x for R3). NULL = legacy 3.0x trail (backward compat).
-    regime_at_entry = data.get("regime_at_entry", None)
-
-    stop_loss   = float(data.get("stop_loss", entry_price * 0.95))
-    target_1    = float(data.get("target_1", entry_price * 1.05))
-    target_2    = float(data.get("target_2", entry_price * 1.10))
+    # Derive stop / targets from entry_price if not supplied. Same
+    # defaults as the pre-fix manual dict path (95% / 105% / 110%).
+    stop_loss = payload.stop_loss if payload.stop_loss is not None else payload.entry_price * 0.95
+    target_1  = payload.target_1  if payload.target_1  is not None else payload.entry_price * 1.05
+    target_2  = payload.target_2  if payload.target_2  is not None else payload.entry_price * 1.10
 
     async with aiosqlite.connect(settings.DB_PATH) as db:
         await db.execute("""
@@ -1767,25 +2247,27 @@ async def add_manual_position(request: Request):
                 atr_14_at_entry, highest_close_since_entry, status, source, product_type,
                 regime_at_entry
             ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-        """, (ticker, data.get("exchange", "NSE"), datetime.now(timezone.utc).isoformat(),
-              entry_price, shares, stop_loss, stop_loss, target_1, target_2,
-              0.0, entry_price, "OPEN", source, product_type, regime_at_entry))
+        """, (payload.ticker, payload.exchange, datetime.now(timezone.utc).isoformat(),
+              payload.entry_price, payload.shares, stop_loss, stop_loss,
+              target_1, target_2, 0.0, payload.entry_price, "OPEN",
+              payload.source, payload.product_type, payload.regime_at_entry))
         await db.commit()
 
-    logger.info("position_added_manually", ticker=ticker, source=source, regime=regime_at_entry)
+    logger.info("position_added_manually", ticker=payload.ticker,
+                source=payload.source, regime=payload.regime_at_entry)
     return {"status": "ok"}
 
 @app.post("/positions/close")
-
+@app.post("/positions/close")
 async def close_position(request: Request):
     """
     Called by Container A after a square-off order is confirmed.
     Updates position status to CLOSED_MANUAL and records P&L.
+
+    [AUDIT-FIX-2.2 2026-06-25] Uses the centralised auth gate.
     """
+    _check_internal_secret(request, "close_position")
     data = await request.json()
-    secret = request.headers.get("X-Internal-Secret", "")
-    if secret != settings.INTERNAL_API_SECRET:
-        raise HTTPException(status_code=403, detail="Unauthorized")
 
     ticker     = data["ticker"]
     exit_price = float(data["exit_price"])
@@ -1799,8 +2281,10 @@ async def close_position(request: Request):
                             detail=f"No open MOMENTUM position for {ticker}")
 
     gross = (exit_price - pos['entry_price']) * pos['shares']
+    # [AUDIT-FIX-1.2] Derive is_intraday from product_type (was hardcoded True).
     costs = calc_zerodha_costs(
-        pos['entry_price'], exit_price, pos['shares'], is_intraday=True
+        pos['entry_price'], exit_price, pos['shares'],
+        is_intraday=_is_intraday_from_product_type(pos.get('product_type')),
     )
     realised_pnl = gross - costs
     risk_initial = (pos['entry_price'] - pos['stop_loss_initial']) * pos['shares']
@@ -1849,13 +2333,32 @@ async def inject_token(payload: TokenPayload):
 
 @app.get("/performance", response_model=PerformanceReport)
 async def get_performance():
+    """[AUDIT-FIX-2.6] HTTP wrapper around the shared async helper."""
+    return await compute_performance_report(settings.DB_PATH)
+
+
+async def compute_performance_report(db_path: str) -> PerformanceReport:
+    """
+    [AUDIT-FIX-2.6 2026-06-25] Shared async helper for performance data.
+
+    Pre-fix: `cmd_performance` in operator_status.py called the /performance
+    HTTP route via fastapi.testclient.TestClient. That worked but was
+    awkward -- it spun up an in-process test client to call a route
+    that was 5 lines away in the same module, and required the FastAPI
+    app to be importable in the cmd path (which sometimes it isn't in
+    test contexts).
+
+    Now both the HTTP route (get_performance) and the Telegram cmd
+    handler (cmd_performance) call this shared async function. The
+    HTTP route is just a thin wrapper around it.
+    """
     # Strict separation: /performance reports the Nifty-subsystem balance.
     # Penny trades are not swing positions -- they're listed separately via
     # /bankroll/breakdown.penny.
-    bankroll = await nifty_bankroll(settings.DB_PATH)
-    open_pos = await get_open_positions(settings.DB_PATH)
+    bankroll = await nifty_bankroll(db_path)
+    open_pos = await get_open_positions(db_path)
 
-    async with aiosqlite.connect(settings.DB_PATH) as db:
+    async with aiosqlite.connect(db_path) as db:
         db.row_factory = aiosqlite.Row   # named column access -- never use positional indices
         async with db.execute(
             "SELECT * FROM positions WHERE status NOT IN ('OPEN', 'CLOSED_T1')"
@@ -1897,6 +2400,7 @@ async def get_performance():
         avg_hold_days=0.0
     )
 
+
 @app.get("/positions", response_model=list[OpenPosition])
 async def get_positions_route():
     open_pos = await get_open_positions(settings.DB_PATH)
@@ -1919,6 +2423,59 @@ async def get_bankroll_route():
 async def get_bankroll_breakdown():
     from performance import pool_breakdown
     return await pool_breakdown(settings.DB_PATH)
+
+
+# [TIER3-INTERACTIVE-COMMANDS 2026-06-25] Telegram command endpoint.
+# The node-gateway forwards /penny <subcommand> <args> messages to
+# python-engine via these endpoints, then echoes the reply back to
+# the user's Telegram chat. Read-only commands (stats, regime, help,
+# skips) use GET. Mutating commands (skip, unskip) use POST.
+@app.get("/penny/command/{cmd}")
+async def penny_command_get(cmd: str):
+    """GET handler for read-only commands. Returns plain text reply."""
+    from penny_commands import dispatch
+    return {"reply": dispatch(cmd, "", settings.DB_PATH)}
+
+
+@app.post("/penny/command/{cmd}")
+async def penny_command_post(cmd: str, payload: dict):
+    """POST handler for mutating commands. Body: {"args": "<ticker>"}."""
+    from penny_commands import dispatch
+    args = (payload or {}).get("args", "")
+    return {"reply": dispatch(cmd, args, settings.DB_PATH)}
+
+
+# [TIER3-NIFTY-COMMANDS 2026-06-25] Read-only Nifty commands.
+# Per operator mandate, these NEVER mutate state -- they're pure
+# queries against current_signals, current_momentum_signals, and
+# market_regime globals + DB-backed bankroll/circuit-breaker reads.
+# To act on Nifty signals use the inline callback buttons or the
+# HTTP API (POST /positions/close, etc.).
+@app.get("/nifty/command/{cmd}")
+async def nifty_command_get(cmd: str):
+    """GET handler for read-only Nifty commands."""
+    from nifty_commands import dispatch
+    return {"reply": dispatch(cmd, "", settings.DB_PATH)}
+
+
+# No POST handler: by design, /nifty commands don't mutate state.
+
+
+# [TIER3-CROSS-SUBSYSTEM-COMMANDS 2026-06-25] Phase B.
+# Top-level /health and /regime (no /penny prefix). Same read-only
+# posture as /nifty. The dispatcher routes by command name.
+@app.get("/command/{cmd}")
+async def top_level_command_get(cmd: str):
+    """Top-level read-only commands: /health, /regime.
+
+    These are cross-subsystem views (penny + nifty side by side)
+    and don't fit under /penny or /nifty specifically. The gateway
+    routes /health and /regime (no prefix) here.
+    """
+    from penny_commands import dispatch as _penny_dispatch
+    # penny_commands.dispatch is the universal entry point -- it
+    # routes /health and /regime to the cross-subsystem handlers.
+    return {"reply": _penny_dispatch(cmd, "", settings.DB_PATH)}
 
 
 @app.get("/circuit-breaker")
@@ -2028,7 +2585,35 @@ async def test_momentum_screener():
     return {"status": "momentum_scan_triggered"}
 
 @app.get("/health")
-
-
 async def health_check():
-    return {"status": "ok"}
+    """Real /health (Phase B, 2026-06-25).
+
+    Replaces the no-op `{"status": "ok"}` placeholder with a structured
+    diagnostic of all subsystems. The operator can pull this via the
+    /health Telegram command (cmd_health) or hit it directly via HTTP.
+
+    Returns: {status: "OK" | "DEGRADED", subsystems: {...}, halted: bool, ...}
+    The HTTP shape mirrors the structure used by build_health_snapshot()
+    in penny_health.py.
+    """
+    try:
+        from penny_health import build_health_snapshot
+        snap = await build_health_snapshot(settings.DB_PATH)
+        # The HTTP status code reflects overall_status: 200 for OK,
+        # 200 for DEGRADED too (the system is responding, just with
+        # issues -- this lets load balancers distinguish "service down"
+        # from "service up but unhappy"). Clients should read the
+        # JSON body for actual state.
+        from fastapi.responses import JSONResponse
+        return JSONResponse(status_code=200, content=snap)
+    except Exception as e:
+        # Even the health check must not fail. Return a minimal payload
+        # indicating DOWN so the operator knows python-engine is sick.
+        from fastapi.responses import JSONResponse
+        return JSONResponse(
+            status_code=503,
+            content={
+                "overall_status": "DOWN",
+                "error": f"{type(e).__name__}: {str(e)[:200]}",
+            },
+        )

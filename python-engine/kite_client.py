@@ -315,11 +315,24 @@ class KiteClient:
     # See docs/deviations/2026-06-22-kite-client-methods-deviation.md
     # Standard Zerodha Kite Connect API endpoints.
 
+    # [AUDIT-FIX-2.3] Module-level latch so we only emit the CRITICAL
+    # log once per process. Reset on a successful batch to surface
+    # new failure modes (e.g. auth was working, then expired).
+    _quote_batch_fail_emitted: bool = False
+
     async def get_quote(self, tokens) -> dict:
-        """
-        Fetch live quote for one or more instrument tokens.
+        """Fetch live quote for one or more instrument tokens.
         Kite endpoint: GET /quote?i={token1}&i={token2}...
         Returns: dict {token_int: {last_price, ohlc, volume, depth, ...}, ...}
+
+        [AUDIT-FIX-2.3 2026-06-25] Whole-batch failures are now loud.
+        When the Kite call returns ZERO quotes but the caller asked for
+        N>0 tokens, that's a "full batch failure" -- something's wrong
+        with the connection/auth/rate-limit. Pre-fix we only logged
+        at WARNING per call, which was lost in noise when scanning 100
+        tickers. Now the FIRST full-batch failure per process emits a
+        CRITICAL log so the operator sees it. Subsequent failures log
+        at WARNING (not CRITICAL) to avoid spam.
         """
         if isinstance(tokens, (int, str)):
             tokens = [tokens]
@@ -335,13 +348,55 @@ class KiteClient:
             )
             resp.raise_for_status()
             data = resp.json().get("data", {})
-            return {int(k): v for k, v in data.items()}
+            result = {int(k): v for k, v in data.items()}
+            # [AUDIT-FIX-2.3] Loud on full-batch failure. Per-token
+            # partial failures still log at WARNING (existing behaviour);
+            # a total empty return for a non-empty request is suspicious
+            # and worth a CRITICAL the first time it happens per process.
+            if not result and tokens:
+                self._log_quote_batch_failure(len(tokens))
+            elif result:
+                # Successful batch -- reset the latch so the next full
+                # failure is loud again.
+                self._note_quote_batch_success()
+            return result
         except httpx.HTTPStatusError as e:
             logger.error("kite_quote_failed status=%d tokens=%d", e.response.status_code, len(tokens))
+            self._log_quote_batch_failure(len(tokens))
             return {}
         except httpx.RequestError as e:
             logger.error("kite_quote_failed error=%s", str(e))
+            self._log_quote_batch_failure(len(tokens))
             return {}
+
+    def _log_quote_batch_failure(self, n_tokens: int):
+        """[AUDIT-FIX-2.3] Log a full-batch quote failure once at
+        CRITICAL level, then at WARNING. Resets to CRITICAL after a
+        successful batch (so a new failure mode -- e.g. token expiry --
+        is loud again)."""
+        if not KiteClient._quote_batch_fail_emitted:
+            logger.critical(
+                "kite_quote_batch_total_failure "
+                "tokens_requested=%d tokens_returned=0 "
+                "first_failure_in_process=True",
+                n_tokens,
+            )
+            KiteClient._quote_batch_fail_emitted = True
+        else:
+            logger.warning(
+                "kite_quote_batch_total_failure tokens_requested=%d",
+                n_tokens,
+            )
+
+    def _note_quote_batch_success(self):
+        """[AUDIT-FIX-2.3] Called on any non-empty successful batch.
+        Resets the latch so the next full-batch failure is loud again."""
+        if KiteClient._quote_batch_fail_emitted:
+            logger.info(
+                "kite_quote_batch_recovered "
+                "next_batch_failure_will_be_critical_again",
+            )
+            KiteClient._quote_batch_fail_emitted = False
 
     async def get_instruments_nse_eq(self) -> list:
         """

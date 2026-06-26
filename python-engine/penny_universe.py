@@ -43,6 +43,7 @@ class PennyUniverse:
         self._tokens: set = set()
         self._token_to_symbol: Dict[int, str] = {}
         self._symbol_to_token: Dict[str, int] = {}
+        self._as_of: Optional[str] = None  # [AUDIT-FIX-2.4]
         self._load(json_path, cache)
 
     def _load(self, json_path: str, instrument_cache: Dict[str, int]) -> None:
@@ -56,6 +57,51 @@ class PennyUniverse:
 
         if "tickers" not in data or not isinstance(data["tickers"], list):
             raise UniverseError("penny JSON missing 'tickers' array")
+
+        # [AUDIT-FIX-2.4 2026-06-25] Capture as_of for staleness checks.
+        # Pre-fix the universe JSON's as_of was ignored, so a stale
+        # refresh (e.g. last refresh 3 days ago over a long weekend)
+        # silently fed the scanner old data. Now we log a WARNING if
+        # as_of is older than 1 day AND expose as_of via .as_of for
+        # callers (the scanner can surface staleness in hourly reports).
+        #
+        # We do NOT refuse to load -- the operator-mandated constraint
+        # is "don't block the system during market hours". Even a 7-day-
+        # old universe is better than no scanner at all. We just make
+        # the staleness LOUD so the operator fixes the refresh job.
+        self._as_of = data.get("as_of")
+        if self._as_of:
+            try:
+                from datetime import date, datetime as _dt
+                as_of_date = _dt.strptime(self._as_of, "%Y-%m-%d").date()
+                today = date.today()
+                age_days = (today - as_of_date).days
+                if age_days > 1:
+                    logger.warning(
+                        "penny_universe_stale as_of=%s age_days=%d "
+                        "FIX=run run_penny_universe_refresh() (scheduled 08:00 IST). "
+                        "Scanner continues with stale data; signals may "
+                        "miss fresh eligibility changes.",
+                        self._as_of, age_days,
+                    )
+                elif age_days < 0:
+                    # as_of in the future -- clock skew or manual edit.
+                    logger.warning(
+                        "penny_universe_as_of_in_future as_of=%s "
+                        "(clock skew or manual edit; treating as fresh)",
+                        self._as_of,
+                    )
+            except ValueError:
+                logger.warning(
+                    "penny_universe_as_of_unparseable as_of=%r "
+                    "(expected YYYY-MM-DD)",
+                    self._as_of,
+                )
+        else:
+            logger.warning(
+                "penny_universe_no_as_of "
+                "FIX=regenerate penny_static.json (regen writes as_of=YYYY-MM-DD)"
+            )
 
         self._all_tickers = data["tickers"]
         missing = []
@@ -83,6 +129,28 @@ class PennyUniverse:
     def tokens(self) -> set:
         return set(self._tokens)
 
+    @property
+    def as_of(self) -> Optional[str]:
+        """[AUDIT-FIX-2.4] Returns the as_of date from the universe JSON
+        (YYYY-MM-DD), or None if the JSON doesn't have one. Callers
+        (e.g. the hourly report) can surface this to surface staleness
+        without re-parsing the file."""
+        return self._as_of
+
+    @property
+    def age_days(self) -> Optional[int]:
+        """[AUDIT-FIX-2.4] Days since the universe JSON was refreshed.
+        None if as_of is missing or unparseable. Negative if as_of is
+        in the future (clock skew)."""
+        if not self._as_of:
+            return None
+        try:
+            from datetime import date, datetime as _dt
+            as_of_date = _dt.strptime(self._as_of, "%Y-%m-%d").date()
+            return (date.today() - as_of_date).days
+        except ValueError:
+            return None
+
     def token_to_symbol(self, token: int) -> Optional[str]:
         return self._token_to_symbol.get(token)
 
@@ -93,6 +161,22 @@ class PennyUniverse:
         """
         Apply spec §2.3 eligibility gates and return the surviving
         ticker records (unranked; ranking is in the refresh job).
+
+        Null-tolerant (2026-06-25 deviation): when promoter_holding_pct or
+        pb_ratio is missing from the universe record (Kite corp-data
+        endpoint empty + no fallback file), the ticker is NOT silently
+        dropped. Instead, it passes with a `data_quality` flag set so the
+        operator can see degraded universe quality in the pre-market
+        digest and the hourly report. Hard rejects (real promoter > 75%,
+        real PB > 2.0) still apply when data IS available.
+
+        Rationale: spec §2.3 promoter + PB gates are about avoiding
+        shell / promoter-heavy / distressed names. The intent is
+        preserved when data is present; when data is missing, downstream
+        gates (volume surge 3x median, RS breakout, RSI<70) still filter
+        to high-conviction setups, and the per-trade risk caps
+        (Rs 500/stock, 5 positions, 5%/trade) limit damage if a
+        low-quality name sneaks through.
         """
         from config import settings
         out = []
@@ -128,21 +212,70 @@ class PennyUniverse:
             # as a percentage (0-100). Settings store the threshold as a
             # fraction (0-1) for human readability ("0.75" is easier to read
             # than "75.0"). Convert settings to percent at compare time.
+            #
+            # Null tolerance (2026-06-25): missing promoter data is
+            # tagged `data_quality=DEGRADED_promoter_missing` rather than
+            # dropping the ticker. Hard rejects still apply when present.
             prom = t.get("promoter_holding_pct")
+            data_quality_flags = []
             if prom is None:
-                continue
-            if prom <= settings.PENNY_MIN_PROMOTER_HOLD * 100:
-                continue
-            if prom >= settings.PENNY_MAX_PROMOTER_HOLD * 100:
-                continue
+                data_quality_flags.append("promoter_missing")
+            else:
+                if prom <= settings.PENNY_MIN_PROMOTER_HOLD * 100:
+                    continue
+                if prom >= settings.PENNY_MAX_PROMOTER_HOLD * 100:
+                    continue
 
-            # P/B gate: <= 2.0
+            # P/B gate: <= 2.0 (null tolerance mirrors promoter above)
             pb = t.get("pb_ratio")
-            if pb is None or pb > settings.PENNY_MAX_PB_RATIO:
-                continue
+            if pb is None:
+                data_quality_flags.append("pb_missing")
+            else:
+                if pb > settings.PENNY_MAX_PB_RATIO:
+                    continue
 
+            # Tag the record with quality flags so downstream observers
+            # (pre-market digest, hourly report) can surface degradation.
+            if data_quality_flags:
+                t = dict(t)  # do not mutate the cached dict
+                t["data_quality"] = "DEGRADED:" + ",".join(data_quality_flags)
             out.append(t)
         return out
+
+    def quality_audit(self) -> dict:
+        """
+        Summarise data quality of the currently loaded universe.
+        Returns counts of tickers with null / missing fields that the
+        eligibility filter would have used pre-2026-06-25 deviation.
+
+        Used by the daily refresh job to log
+        `penny_universe_quality_audit` and by the hourly report to
+        surface degraded-universe warnings.
+        """
+        total = len(self._all_tickers)
+        null_promoter = 0
+        null_pb = 0
+        null_tv = 0
+        null_pc = 0
+        for t in self._all_tickers:
+            if t.get("promoter_holding_pct") is None:
+                null_promoter += 1
+            if t.get("pb_ratio") is None:
+                null_pb += 1
+            if not t.get("median_traded_value_20d"):
+                null_tv += 1
+            if t.get("prev_close") is None:
+                null_pc += 1
+        return {
+            "total": total,
+            "null_promoter": null_promoter,
+            "null_pb": null_pb,
+            "null_tv": null_tv,
+            "null_pc": null_pc,
+            "degraded_pct": round(
+                100.0 * max(null_promoter, null_pb) / max(total, 1), 1
+            ),
+        }
 
     # ---- ranking + refresh (spec §2.4) -----------------------------------
 
@@ -222,6 +355,9 @@ async def refresh_from_kite(kite, out_json_path, corp_json_path, top_n=100):
     5. Compute 20d momentum + 52w-low distance + realized vol per ticker
     6. Rank via composite score
     7. Write top_n to penny_static.json
+    8. Emit penny_universe_quality_audit (2026-06-25) so operators can
+       see degraded-universe conditions without waiting for the hourly
+       report to surface them.
 
     Failures must NOT crash the daily scheduler -- log + return None.
     """
@@ -275,6 +411,7 @@ async def refresh_from_kite(kite, out_json_path, corp_json_path, top_n=100):
                 total_batches,
             )
         # 3. Corporate actions (with fallback)
+        corp_source = "kite"  # tracked for audit logging
         try:
             corp = await kite.get_corporate_actions()
         except Exception:
@@ -284,8 +421,18 @@ async def refresh_from_kite(kite, out_json_path, corp_json_path, top_n=100):
                 with open(corp_json_path) as f:
                     corp_data = json.load(f)
                 corp = corp_data.get("records", [])
+                corp_source = "fallback_file"
             except Exception:
                 corp = []
+                corp_source = "missing"
+        if corp_source == "missing":
+            logger.warning(
+                "penny_corp_data_missing kite=empty fallback_file=%s -- "
+                "universe will have null promoter_holding_pct and pb_ratio "
+                "(eligibility filter is now null-tolerant, see deviation "
+                "2026-06-25-penny-eligibility-null-tolerance.md)",
+                corp_json_path,
+            )
         corp_by_sym = {c.get("symbol"): c for c in (corp or [])}
 
         # 4-5. Build candidate records (eligibility filters happen here)
@@ -336,6 +483,29 @@ async def refresh_from_kite(kite, out_json_path, corp_json_path, top_n=100):
         with open(out_json_path, "w") as f:
             json.dump(payload, f, indent=2)
         logger.info("penny_universe_refreshed count=%d", len(ranked))
+
+        # 8. Quality audit (2026-06-25): write a temporary PennyUniverse
+        # instance just to compute the audit (avoids re-reading the file
+        # after we just wrote it; uses the in-memory `ranked` list).
+        try:
+            audit_universe = PennyUniverse.__new__(PennyUniverse)
+            audit_universe._all_tickers = ranked
+            audit_universe._tokens = set()
+            audit_universe._token_to_symbol = {}
+            audit_universe._symbol_to_token = {}
+            audit = audit_universe.quality_audit()
+            audit["corp_source"] = corp_source
+            logger.info(
+                "penny_universe_quality_audit "
+                "total=%d null_promoter=%d null_pb=%d null_tv=%d "
+                "null_pc=%d degraded_pct=%.1f corp_source=%s",
+                audit["total"], audit["null_promoter"], audit["null_pb"],
+                audit["null_tv"], audit["null_pc"], audit["degraded_pct"],
+                corp_source,
+            )
+        except Exception as e:
+            logger.warning("penny_universe_quality_audit_failed error=%s", str(e))
+
         return ranked
     except Exception as e:
         logger.error("penny_universe_refresh_failed error=%s", str(e))

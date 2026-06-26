@@ -93,9 +93,17 @@ def evaluate_connors_entry(
       {"accept": False, "reject_reason": "<why>"}
     """
     from config import settings
+    # [PENNY-CONTRACT 2026-06-25] History floor is 250 daily bars
+    # (>= 200 SMA-200 + 50 buffer for SMA-50 + warm-up). This MUST stay
+    # >= scanner._evaluate_ticker_connors' 250-bar check
+    # (penny_scanner.py) -- otherwise the engine's stricter threshold
+    # never fires and the scanner's check is the de-facto contract.
+    # Renamed to PENNY_CONNORS_MIN_HISTORY_BARS for clarity; old literal
+    # 210 preserved as a back-compat comment.
+    HISTORY_FLOOR = 250  # was 210 pre-2026-06-25 (see G4 audit note)
     closes = daily.get("closes", [])
-    if len(closes) < 210:
-        return {"accept": False, "reject_reason": "insufficient history (<210 bars)"}
+    if len(closes) < HISTORY_FLOOR:
+        return {"accept": False, "reject_reason": f"insufficient history (<{HISTORY_FLOOR} bars)"}
 
     last = closes[-1]
     sma_200 = _sma(closes, 200)
@@ -113,6 +121,49 @@ def evaluate_connors_entry(
     rsi = _rsi_2(closes)
     if rsi >= settings.PENNY_CONNORS_RSI2_BUY:
         return {"accept": False, "reject_reason": f"RSI(2)={rsi:.1f} not below threshold"}
+
+    # 2a. [TIER2-CONNORS-REFINEMENT 2026-06-25] Absolute RSI(2) floor.
+    # The original Connors spec implies the trigger is "RSI(2) under 10"
+    # but never specified a *minimum* below which the signal is rejected.
+    # In practice, an RSI(2) of 0 means the stock closed down 3 days in
+    # a row with very small moves -- a true dead-cat bounce candidate.
+    # Default PENNY_CONNORS_RSI2_FLOOR=1.0 disables this gate; raising
+    # to 5.0 (post-A/B validation) cuts the worst 10-15% of these
+    # false-mean-reversion triggers per the published literature.
+    rsi_floor = settings.PENNY_CONNORS_RSI2_FLOOR
+    if rsi_floor > 1.0 and rsi < rsi_floor:
+        return {"accept": False,
+                "reject_reason": f"RSI(2)={rsi:.1f} below floor {rsi_floor:.1f} (dead cat)"}
+
+    # 2b. [TIER2-CONNORS-REFINEMENT 2026-06-25] Cumulative RSI trigger.
+    # Count how many consecutive daily bars (including today) had
+    # RSI(2) below the buy threshold. Default 1 disables; raising to 2
+    # (per Connors' published refinement) cuts false-mean-reversion
+    # triggers significantly. The implementation is O(N) over closes;
+    # closes is the 250-day daily history, so this is cheap.
+    cum_days_required = settings.PENNY_CONNORS_CUMULATIVE_RSI_DAYS
+    if cum_days_required > 1:
+        cum_count = 0
+        # Walk back from latest, recomputing RSI(2) at each prefix.
+        # We use the same _rsi_2 helper; cost is negligible vs the
+        # network round-trip we already did for the daily bars.
+        for k in range(len(closes)):
+            prefix = closes[: len(closes) - k]
+            if len(prefix) < 3:
+                break
+            rsi_k = _rsi_2(prefix)
+            if rsi_k < settings.PENNY_CONNORS_RSI2_BUY:
+                cum_count += 1
+            else:
+                break  # streak broken
+        if cum_count < cum_days_required:
+            return {
+                "accept": False,
+                "reject_reason": (
+                    f"cumulative RSI(2) < threshold for only {cum_count} "
+                    f"day(s), need {cum_days_required}"
+                ),
+            }
 
     # 3. Confirmation: RSI(2) rising for 2 consecutive bars (spec section 4.2)
     rsi_prev1 = _rsi_2(closes[:-1])
@@ -207,17 +258,39 @@ def evaluate_connors_exit(pos: dict, current_price: float, now: datetime) -> dic
 
 def _trading_days_elapsed(start: datetime, end: datetime) -> int:
     """
-    Count weekdays (Mon=0..Sun=4) strictly between start (exclusive) and
-    end (inclusive). A Friday 09:30 -> following Monday 09:30 = 1 trading
-    day. Friday 09:30 -> Wednesday 09:30 = 3 trading days (force-exit fires).
+    Count trading days (Mon-Fri minus NSE holidays) strictly between
+    start (exclusive) and end (inclusive). A Friday 09:30 -> following
+    Monday 09:30 = 1 trading day. Friday 09:30 -> Wednesday 09:30 = 3
+    trading days (force-exit fires).
+
+    [PENNY-G6 2026-06-25] Was a hardcoded weekday-only check (Mon-Fri)
+    which ignored NSE holidays. The original comment acknowledged this
+    limitation and said broker-level SL-M still protects downside. The
+    fix is to use market_calendar.is_trading_day_sync which reads the
+    local holiday cache (populated by the async holiday fetcher at
+    scheduler startup). If the cache is empty (no fetch has run yet),
+    falls back to weekday-only -- same behaviour as before, no
+    regression. When the cache IS populated, holiday-aware counting
+    fires correctly.
     """
     if end <= start:
         return 0
-    days = 0
-    d = start.date() + timedelta(days=1)
-    end_date = end.date()
-    while d <= end_date:
-        if d.weekday() < 5:  # Mon-Fri
-            days += 1
-        d += timedelta(days=1)
-    return days
+    from config import settings
+    db_path = settings.DB_PATH
+    try:
+        from market_calendar import trading_days_between_sync
+        return trading_days_between_sync(start.date(), end.date(), db_path)
+    except Exception as e:
+        logger.warning(
+            "penny_trading_days_calendar_unavailable error=%s falling_back_to_weekday",
+            str(e),
+        )
+        # Fallback to old hardcoded weekday check (preserves pre-fix behaviour).
+        days = 0
+        d = start.date() + timedelta(days=1)
+        end_date = end.date()
+        while d <= end_date:
+            if d.weekday() < 5:
+                days += 1
+            d += timedelta(days=1)
+        return days

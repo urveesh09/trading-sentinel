@@ -18,7 +18,7 @@ State (daily_pnl, disable_tickers) lives on the singleton instance.
 """
 import logging
 from datetime import datetime, timezone
-from typing import List, Tuple
+from typing import List, Optional, Tuple
 
 from penny_models import PennyRegime, PennyLeg
 
@@ -167,14 +167,34 @@ class PennyRiskEngine:
                 )
 
     def circuit_blocked(self, last_price: float, day_high: float,
-                        prev_close: float, band_pct: float) -> Tuple[bool, str]:
+                        prev_close: float, band_pct: Optional[float]) -> Tuple[bool, str]:
         """
         Spec §7.4: skip if (within 0.5% of band) AND (>3% below day high).
         Distance threshold scales with band_pct per Uru 2026-06-21.
+
+        [PENNY-G8 2026-06-25] band_pct was previously hard-coded to 5%
+        by callers (and the scanner never passed any value, so the
+        default in the signature path was always used). NSE actually
+        applies different bands based on stock price and recent price
+        action (5%, 10%, 20%). The fix is for callers to compute
+        band_pct from the live quote (see infer_band_pct_from_quote
+        helper below) and pass it in. If band_pct is None or <= 0,
+        we fall back to 5% (preserving pre-fix behaviour).
         """
         from config import settings
         if prev_close <= 0 or last_price <= 0:
             return False, ""
+        # [PENNY-G8] Defensive default: if caller passed None or 0, use 5%.
+        # Previously the function assumed band_pct=0.05 implicitly via the
+        # scaled_skip multiplier -- callers (specifically the scanner loop)
+        # never passed band_pct, so circuit_blocked was unreachable. Now
+        # we make the default explicit and log if it's used.
+        if band_pct is None or band_pct <= 0:
+            logger.debug(
+                "penny_circuit_band_pct_unset defaulting_to_5pct last=%.2f prev_close=%.2f",
+                last_price, prev_close,
+            )
+            band_pct = 0.05
         upper_band = prev_close * (1.0 + band_pct)
         lower_band = prev_close * (1.0 - band_pct)
         distance_to_band = min(abs(last_price - upper_band), abs(last_price - lower_band)) / prev_close
@@ -192,6 +212,39 @@ class PennyRiskEngine:
                 f"and {dist_from_high * 100:.2f}% below day high"
             )
         return False, ""
+
+    @staticmethod
+    def infer_band_pct_from_quote(prev_close: float, day_high: float,
+                                  day_low: float) -> float:
+        """
+        [PENNY-G8 2026-06-25] Infer the NSE band % from the day's actual
+        high/low vs prev_close. NSE applies different bands based on
+        recent price action and ASM/GSM reclassifications:
+
+        - 5% band (default): standard penny stock
+        - 10% band: stocks in upper price tier OR after a single-day >20%
+          move (NSE widens bands for volatility)
+        - 20% band: stocks under ASM (Additional Surveillance Measure)
+          or with extreme recent volatility
+
+        We compute the *larger* of (high vs prev_close) and
+        (prev_close vs low) absolute moves, take the max, then snap to
+        the nearest NSE band: 5/10/20.
+
+        Returns one of: 0.05, 0.10, 0.20. Default is 0.05.
+        """
+        if prev_close <= 0 or day_high <= 0 or day_low <= 0:
+            return 0.05
+        upper_pct = abs(day_high - prev_close) / prev_close
+        lower_pct = abs(prev_close - day_low) / prev_close
+        max_move = max(upper_pct, lower_pct)
+        # Snap to nearest NSE band: thresholds at 7.5% (between 5 and 10)
+        # and 15% (between 10 and 20).
+        if max_move >= 0.15:
+            return 0.20
+        if max_move >= 0.075:
+            return 0.10
+        return 0.05
 
     # ---- position caps --------------------------------------------------
 
@@ -211,10 +264,36 @@ class PennyRiskEngine:
     # ---- manual disable -------------------------------------------------
 
     def is_disabled(self, symbol: str) -> bool:
-        if not self.disable_tickers:
-            return False
-        disabled = {s.strip().upper() for s in self.disable_tickers.split(",") if s.strip()}
-        return symbol.upper() in disabled
+        # [TIER3-INTERACTIVE-COMMANDS 2026-06-25] Three sources of "disabled":
+        #   1. Env-var static list (PENNY_DISABLE_TICKERS setting, applied
+        #      at PennyRiskEngine __init__ time -- rarely changes).
+        #   2. Runtime override file (penny_commands writes here when
+        #      the operator sends /penny skip TICKER via Telegram).
+        #      Read fresh on EVERY call so changes take effect within
+        #      the next 30-second scanner cycle.
+        #   3. We do NOT yet have an API to add to the static list at
+        #      runtime (would require re-reading settings).
+        sym = symbol.upper()
+        # Source 1: static list captured at init.
+        if self.disable_tickers:
+            disabled = {s.strip().upper() for s in self.disable_tickers.split(",") if s.strip()}
+            if sym in disabled:
+                return True
+        # Source 2: runtime override file. Path comes from settings so
+        # tests can override; defaults to python-engine/data/penny_disable_overrides.json.
+        # Lazy import to avoid circular dep at import time.
+        try:
+            from penny_commands import get_overridden_disabled_tickers
+            from config import settings as _settings
+            runtime_disabled = get_overridden_disabled_tickers(_settings.PENNY_DISABLE_OVERRIDES_PATH)
+            if sym in runtime_disabled:
+                return True
+        except Exception:
+            # Fail-open: if the override file is unreadable for any
+            # reason, treat as no overrides. Same defensive posture
+            # as the sector filter.
+            pass
+        return False
 
     # ---- order validation ----------------------------------------------
 

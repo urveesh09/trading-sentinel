@@ -14,6 +14,28 @@ Public API:
                           risk_engine) -> dict
   smart_eod_check(pos, current_price, now) -> dict
   mis_time_stop_active(now) -> bool
+
+[PENNY-RSI-CONTRACT 2026-06-25, G3 audit note] The penny subsystem
+deliberately uses TWO RSI periods, one per engine:
+
+- MIS Breakout leg: RSI(14) (Wilder). Implemented locally as
+  _rsi_14_wilder() below. This is the standard 14-period RSI on the
+  1-min closes. Used as an overbought guard (>70 = reject).
+
+- CNC Connors leg: RSI(2) (Wilder). Implemented in
+  penny_engine_connors._rsi_2(). This is the Connors mean-reversion
+  RSI(2) on DAILY closes. Used as the oversold-bounce trigger (<10).
+
+These are NOT the same thing. They are correctly different signals:
+- RSI(14) on 1-min bars: short-term momentum / overbought, gates the
+  MIS breakout entry to avoid chasing into exhaustion.
+- RSI(2) on daily bars: mean-reversion, fires the CNC entry when the
+  stock is pulling back in an uptrend.
+
+A future consolidation would require picking one RSI per engine; for
+now this is documented and the two implementations live in their
+respective engine modules (no cross-import) so the isolation rule is
+preserved.
 """
 import logging
 from datetime import datetime, time, timedelta
@@ -52,6 +74,131 @@ def _rsi_14_wilder(closes: List[float]) -> float:
     return 100.0 - (100.0 / (1.0 + rs))
 
 
+def _vwap_from_intraday(intraday) -> Optional[float]:
+    """
+    [TIER2-BREAKOUT-REFINEMENT 2026-06-25] Compute VWAP from intraday bars.
+    VWAP = cumsum(typical_price * volume) / cumsum(volume), where
+    typical_price = (H + L + C) / 3 per bar.
+
+    Accepts either a pandas DataFrame with high/low/close/volume columns
+    (same shape as kite.get_intraday output) or a list of dicts. Returns
+    None if the data is too sparse (<3 bars) or any required column is
+    missing.
+    """
+    if intraday is None:
+        return None
+    n = len(intraday) if hasattr(intraday, "__len__") else 0
+    if n < 3:
+        return None
+    try:
+        if hasattr(intraday, "columns"):
+            if not all(c in intraday.columns for c in ("high", "low", "close", "volume")):
+                return None
+            tp = (intraday["high"] + intraday["low"] + intraday["close"]) / 3.0
+            vol = intraday["volume"].fillna(0).astype(float)
+        else:
+            tps, vols = [], []
+            for b in intraday:
+                h = b.get("high"); l = b.get("low"); c = b.get("close"); v = b.get("volume")
+                if h is None or l is None or c is None:
+                    return None
+                tps.append((h + l + c) / 3.0)
+                vols.append(float(v or 0))
+            import pandas as _pd
+            tp = _pd.Series(tps)
+            vol = _pd.Series(vols)
+        cum_tp_vol = (tp * vol).sum()
+        cum_vol = vol.sum()
+        if cum_vol <= 0:
+            return None
+        return float(cum_tp_vol / cum_vol)
+    except Exception:
+        return None
+
+
+def _atr_20_from_intraday(intraday) -> Optional[float]:
+    """
+    [TIER2-BREAKOUT-REFINEMENT 2026-06-25] 20-period ATR from 1-min bars.
+    ATR_n = mean(true_range over last n bars). True range for 1-min bars
+    is just (high - low) (no gaps within a session).
+
+    Returns None if insufficient data (<20 bars) or missing columns.
+    """
+    if intraday is None:
+        return None
+    n = len(intraday) if hasattr(intraday, "__len__") else 0
+    if n < 20:
+        return None
+    try:
+        if hasattr(intraday, "columns"):
+            if not all(c in intraday.columns for c in ("high", "low")):
+                return None
+            tr = intraday["high"] - intraday["low"]
+        else:
+            trs = []
+            for b in intraday:
+                h = b.get("high"); l = b.get("low")
+                if h is None or l is None:
+                    return None
+                trs.append(h - l)
+            import pandas as _pd
+            tr = _pd.Series(trs)
+        return float(tr.tail(20).mean())
+    except Exception:
+        return None
+
+
+def _adaptive_threshold_scale(intraday, base_pct: float) -> float:
+    """
+    [TIER2-BREAKOUT-REFINEMENT 2026-06-25] Compute a volatility-adjusted
+    multiplier for the breakout buffer. The current ATR(20) is divided
+    by the median ATR(20) over the last 60 bars (a coarse "is this
+    ticker calmer or more volatile than usual?" signal).
+
+    - If scale > 1.0 (calmer than typical): tighten the buffer.
+      Rationale: low-volatility breakouts are less meaningful; require
+      more confirmation.
+    - If scale < 1.0 (more volatile than typical): loosen the buffer.
+      Rationale: high-vol breakouts already have wide swings; a tighter
+      threshold would fire too often.
+
+    The scale is bounded to [0.3, 2.0] so it cannot amplify the buffer
+    by more than 2x or crush it below 30%. Per de Prado, Advances in
+    Financial ML ch. 16 (volatility-targeted entries).
+
+    Returns base_pct unchanged if data is insufficient.
+    """
+    if intraday is None:
+        return base_pct
+    n = len(intraday) if hasattr(intraday, "__len__") else 0
+    if n < 60:
+        return base_pct
+    try:
+        if hasattr(intraday, "columns"):
+            if not all(c in intraday.columns for c in ("high", "low")):
+                return base_pct
+            tr = intraday["high"] - intraday["low"]
+        else:
+            trs = []
+            for b in intraday:
+                h = b.get("high"); l = b.get("low")
+                if h is None or l is None:
+                    return base_pct
+                trs.append(h - l)
+            import pandas as _pd
+            tr = _pd.Series(trs)
+        current_atr = float(tr.tail(20).mean())
+        median_atr = float(tr.tail(60).median())
+        if median_atr <= 0 or current_atr <= 0:
+            return base_pct
+        scale = current_atr / median_atr
+        # Bound to [0.3, 2.0]
+        scale = max(0.3, min(2.0, scale))
+        return base_pct * scale
+    except Exception:
+        return base_pct
+
+
 def _to_minutes_since_midnight(dt: datetime) -> int:
     return dt.hour * 60 + dt.minute
 
@@ -77,10 +224,26 @@ def evaluate_breakout_entry(
     rsi_14: float,
     as_of: datetime,
     risk_engine,
+    intraday=None,                 # [TIER2-BREAKOUT-REFINEMENT 2026-06-25]
 ) -> dict:
     """
     Spec section 5.2: volume + breakout + time + RSI gates. On accept, returns
     sizing + order params. Reject returns the reason.
+
+    [TIER2-BREAKOUT-REFINEMENT 2026-06-25] Two optional refinements, both
+    controlled by config and both default to OFF:
+
+    - VWAP-anchored breakout: when PENNY_BREAKOUT_USE_VWAP=True and intraday
+      bars are provided, replace the day_high anchor with VWAP. The breakout
+      becomes "close > VWAP + buffer" instead of "close > day_high + buffer".
+      Rationale: a breakout above VWAP is volume-confirmed; above day_high
+      alone is just "highest tick so far" which can be a single wick.
+
+    - Adaptive buffer: when PENNY_BREAKOUT_ADAPTIVE_THRESHOLD=True and intraday
+      has >= 60 bars, scale the buffer by current_ATR(20) / median_ATR(60).
+      Calm ticker -> tighter buffer; volatile -> wider. Per de Prado,
+      Advances in Financial ML ch. 16. Both default to False so pre-fix
+      behaviour is preserved.
     """
     from config import settings
     # 1. Time gate: 10:30 to 14:30 IST
@@ -93,9 +256,25 @@ def evaluate_breakout_entry(
         return {"accept": False,
                 "reject_reason": f"volume {cum_vol_today} < {settings.PENNY_BREAKOUT_VOL_MULT}x median ({median_vol_20d})"}
 
-    # 3. Breakout confirm: close > day_high + 0.3% on a 1-min bar
+    # 3. Breakout confirm: close > anchor + buffer on a 1-min bar.
+    # Anchor = day_high (default) or VWAP (when USE_VWAP=True and intraday available).
+    # Buffer = base (default 0.3%) or volatility-adjusted (when ADAPTIVE=True).
     bar_close = breakout_bar.get("close", 0)
-    required = day_high * 1.003
+    base_buffer = settings.PENNY_BREAKOUT_BUFFER_PCT
+    if settings.PENNY_BREAKOUT_ADAPTIVE_THRESHOLD and intraday is not None:
+        effective_buffer = _adaptive_threshold_scale(intraday, base_buffer)
+    else:
+        effective_buffer = base_buffer
+
+    if settings.PENNY_BREAKOUT_USE_VWAP and intraday is not None:
+        anchor = _vwap_from_intraday(intraday)
+        if anchor is None:
+            # VWAP unavailable -- fall back to day_high rather than reject.
+            anchor = day_high
+    else:
+        anchor = day_high
+
+    required = anchor * (1.0 + effective_buffer)
     if bar_close <= required:
         return {"accept": False,
                 "reject_reason": f"breakout not confirmed (close {bar_close:.2f} <= {required:.2f})"}
@@ -132,6 +311,15 @@ def evaluate_breakout_entry(
         "rsi_14": round(rsi_14, 2),
         "signal_time": as_of,
         "reason": "breakout signal fired",
+        # [TIER2-BREAKOUT-REFINEMENT] Expose the anchor + buffer used so
+        # downstream logging and the hourly diagnostic breakdown can show
+        # which mode was active. Backward-compat: callers that don't read
+        # these are unaffected.
+        "anchor": anchor,
+        "buffer_pct": effective_buffer,
+        "anchor_kind": "vwap" if (settings.PENNY_BREAKOUT_USE_VWAP and intraday is not None
+                                and _vwap_from_intraday(intraday) is not None) else "day_high",
+        "adaptive_buffer": settings.PENNY_BREAKOUT_ADAPTIVE_THRESHOLD and intraday is not None,
     }
 
 

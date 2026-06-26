@@ -1,4 +1,5 @@
 const TelegramBot = require('node-telegram-bot-api');
+const axios = require('axios');
 const config = require('../config');
 const { logger } = require('../middleware/logger');
 // Note: Dependencies like `executor` and `db` will be invoked in the handler routing to avoid circular deps during init.
@@ -17,6 +18,113 @@ if (config.TELEGRAM_MODE === 'webhook') {
   // 🚨 FIX: Catch polling errors to prevent fatal crashes and allow auto-reconnection
   bot.on('polling_error', (error) => {
     logger.warn({ event_type: 'telegram_polling_error', message: error.message });
+  });
+
+  // [TIER3-INTERACTIVE-COMMANDS 2026-06-25] Text-message handler.
+  // Parses /penny <subcommand> [args] and forwards to the python-engine
+  // command endpoint, then echoes the reply back to the chat.
+  //
+  // Only messages that pass isValidChat() are processed (same auth
+  // model as the existing callback_query handler). Non-command
+  // messages are silently ignored.
+  //
+  // Phase A+B+C (2026-06-25) extends this to also handle /nifty <cmd>
+  // -- read-only Nifty queries. Per operator mandate, /nifty commands
+  // NEVER mutate state; the gateway only ever sends GET to
+  // python-engine /nifty/command/{cmd} (no POST endpoint exists
+  // for /nifty by design).
+  bot.on('message', async (msg) => {
+    try {
+      if (!isValidChat(msg.chat.id)) return;
+      const text = (msg.text || '').trim();
+      if (!text.startsWith('/')) return;
+
+      // Route by prefix. /penny -> POST or GET. /nifty -> GET only.
+      // Phase B (2026-06-25): /health and /regime (no prefix) go to
+      // the top-level /command/{cmd} endpoint on python-engine.
+      let prefix, cmd, args, url, mutateCommands, httpMethod;
+      if (text.startsWith('/penny')) {
+        prefix = '/penny';
+        const rest = text.slice('/penny'.length).trim();
+        const spaceIdx = rest.indexOf(' ');
+        cmd = spaceIdx === -1 ? rest : rest.slice(0, spaceIdx);
+        args = spaceIdx === -1 ? '' : rest.slice(spaceIdx + 1).trim();
+        mutateCommands = new Set(['skip', 'unskip']);
+        httpMethod = mutateCommands.has((cmd || '').toLowerCase()) ? 'POST' : 'GET';
+      } else if (text.startsWith('/nifty')) {
+        prefix = '/nifty';
+        const rest = text.slice('/nifty'.length).trim();
+        const spaceIdx = rest.indexOf(' ');
+        cmd = spaceIdx === -1 ? rest : rest.slice(0, spaceIdx);
+        args = spaceIdx === -1 ? '' : rest.slice(spaceIdx + 1).trim();
+        // Nifty commands are always GET (read-only).
+        httpMethod = 'GET';
+      } else if (text === '/health' || text.startsWith('/health ')) {
+        prefix = '';
+        const rest = text.slice('/health'.length).trim();
+        cmd = rest === '' ? 'health' : rest.split(' ')[0];
+        args = rest.split(' ').slice(1).join(' ');
+        httpMethod = 'GET';
+      } else if (text === '/regime' || text.startsWith('/regime ')) {
+        prefix = '';
+        const rest = text.slice('/regime'.length).trim();
+        cmd = rest === '' ? 'regime' : rest.split(' ')[0];
+        args = rest.split(' ').slice(1).join(' ');
+        httpMethod = 'GET';
+      } else if (text === '/status' || text.startsWith('/status ')) {
+        prefix = '';
+        const rest = text.slice('/status'.length).trim();
+        cmd = rest === '' ? 'status' : rest.split(' ')[0];
+        args = rest.split(' ').slice(1).join(' ');
+        httpMethod = 'GET';
+      } else if (text === '/performance' || text.startsWith('/performance ')) {
+        prefix = '';
+        const rest = text.slice('/performance'.length).trim();
+        cmd = rest === '' ? 'performance' : rest.split(' ')[0];
+        args = rest.split(' ').slice(1).join(' ');
+        httpMethod = 'GET';
+      } else {
+        // Not a command we handle; ignore silently.
+        return;
+      }
+
+      // Some commands (e.g. /nifty help) need an empty cmd. Default to
+      // 'help' so a bare /nifty returns the help text.
+      const cmdOrHelp = (cmd || 'help').trim();
+      // For top-level commands, URL is /command/{cmd}. For prefixed
+      // commands, it's /{prefix}/command/{cmd}.
+      if (prefix === '') {
+        url = `${config.PYTHON_ENGINE_URL}/command/${encodeURIComponent(cmdOrHelp)}`;
+      } else {
+        url = `${config.PYTHON_ENGINE_URL}/${prefix}/command/${encodeURIComponent(cmdOrHelp)}`;
+      }
+
+      let reply;
+      try {
+        if (httpMethod === 'POST') {
+          const resp = await axios.post(url, { args }, { timeout: 10_000 });
+          reply = resp.data && resp.data.reply ? resp.data.reply : '(no reply from python-engine)';
+        } else {
+          const resp = await axios.get(url, { timeout: 10_000 });
+          reply = resp.data && resp.data.reply ? resp.data.reply : '(no reply from python-engine)';
+        }
+      } catch (err) {
+        logger.error({
+          event_type: 'command_dispatch_failed',
+          prefix, cmd, args, err: err.message,
+        }, 'Failed to dispatch command');
+        reply = `Error: python-engine unreachable (${err.message}). Try again in a minute.`;
+      }
+
+      // Reply to the user. Cap at 4000 chars (Telegram limit is 4096).
+      if (reply.length > 4000) reply = reply.slice(0, 3997) + '...';
+      await bot.sendMessage(msg.chat.id, reply);
+    } catch (e) {
+      logger.error({
+        event_type: 'command_handler_error',
+        err: e.message,
+      }, 'Unexpected error in command handler');
+    }
   });
 }
 

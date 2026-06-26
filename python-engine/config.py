@@ -184,6 +184,25 @@ class Settings(BaseSettings):
     PENNY_CONNORS_T2_PCT:          float = 0.06
     PENNY_CONNORS_STOP_PCT:        float = 0.03
     PENNY_CONNORS_MAX_HOLD_DAYS:   int   = 3
+    # [TIER2-CONNORS-REFINEMENT 2026-06-25] Cumulative-RSI and absolute
+    # floor gates (Q1+A2 from the brainstorm). Defaults preserve pre-fix
+    # behaviour so we can A/B test by raising the cumulative-RSI days
+    # later without redeploying code.
+    #   RSI2_FLOOR: absolute minimum RSI(2) to enter. 1.0 disables
+    #               (current behaviour: any RSI(2) < threshold works).
+    #               Recommended value once validated: 5.0.
+    #   CUMULATIVE_RSI_DAYS: minimum consecutive daily bars with
+    #               RSI(2) < threshold before entry. 1 disables
+    #               (current behaviour: any single-day trigger).
+    #               Connors' original refinement uses 2; 1 means
+    #               "the current day is enough".
+    PENNY_CONNORS_RSI2_FLOOR:           float = 1.0
+    PENNY_CONNORS_CUMULATIVE_RSI_DAYS:  int   = 1
+    # Time-of-day gate: reject CNC signals after this many minutes past
+    # market open (09:15 IST). Default 195 min = 12:30 IST. The Connors
+    # mean-reversion signal fires best in the morning; signals after
+    # lunch often mean-revert against the operator.
+    PENNY_CONNORS_LAST_ENTRY_MIN:       int   = 195
     PENNY_CONNORS_TRAIL_ATR_MULT:  float = 2.0         # 2x ATR_1min trail after T1
 
     # Breakout strategy
@@ -198,6 +217,48 @@ class Settings(BaseSettings):
     PENNY_BREAKOUT_TIME_START:     int   = 10*60 + 30  # 10:30 IST in minutes
     PENNY_BREAKOUT_TIME_END:       int   = 14*60 + 30  # 14:30 IST in minutes
     PENNY_BREAKOUT_TIME_EXIT:      int   = 15*60       # 15:00 IST
+    # [TIER3-DAILY-ATTRIBUTION 2026-06-25] 15:30 IST = 30 min after the
+    # 15:00 force-close fires. Gives time for the broker to confirm
+    # all MIS positions are closed and the ledger to be updated.
+    PENNY_DAILY_ATTRIBUTION_TIME: int = 15*60 + 30    # 15:30 IST
+    PENNY_DAILY_ATTRIBUTION_HOUR: int = 15
+    PENNY_DAILY_ATTRIBUTION_MIN:  int = 30
+    # [TIER2-BREAKOUT-REFINEMENT 2026-06-25] VWAP-anchored breakout and
+    # adaptive threshold. Both default to False to preserve current
+    # behaviour (close > day_high + 0.3%); enable via config after A/B
+    # validation.
+    #   USE_VWAP: replace day_high anchor with VWAP. The breakout is then
+    #             "close > VWAP + 0.3%" instead of "close > day_high + 0.3%".
+    #             Volume-confirmed breakout is statistically more robust.
+    #   ADAPTIVE_THRESHOLD: scale the 0.3% buffer by current_volatility /
+    #             typical_volatility (ATR(20) / median_ATR(20,60min)). Calm
+    #             ticker -> tighter threshold; volatile ticker -> wider.
+    #             Per de Prado, Advances in Financial ML ch. 16.
+    PENNY_BREAKOUT_USE_VWAP:            bool  = False
+    PENNY_BREAKOUT_ADAPTIVE_THRESHOLD:  bool  = False
+    # Buffer pct applied as breakout margin (was hardcoded 0.3% in the
+    # engine). Made a setting so adaptive mode can override it.
+    PENNY_BREAKOUT_BUFFER_PCT:           float = 0.003
+    # [TIER2-SECTOR-FILTER 2026-06-25] Sector-relative strength gate.
+    # The filter is ALWAYS opt-in via the CSV; missing CSV == filter off.
+    #   USE_SECTOR_FILTER: master toggle (default True so the CSV path is
+    #     exercised; effective state is determined by CSV presence).
+    #   TOP_LOSERS_PCT: how deep into "losers" we look. With 10% threshold,
+    #     only sectors in the bottom decile intraday get blocked.
+    #   ETF_CHANGE_THRESHOLD_PCT: minimum negative move to consider
+    #     "weak" (default -1.5%). Sectors between -1.5% and severe are
+    #     allowed through (preserves proactiveness).
+    #   SECTORS_CSV_PATH: location of (symbol, sector) operator-curated
+    #     CSV. Empty or missing file -> filter is effectively OFF.
+    PENNY_USE_SECTOR_FILTER:               bool   = True
+    PENNY_SECTOR_TOP_LOSERS_PCT:           float = 0.10
+    PENNY_SECTOR_ETF_CHANGE_THRESHOLD_PCT: float = -0.015
+    PENNY_SECTORS_CSV_PATH:                str   = "python-engine/data/penny_sectors.csv"
+    # [TIER3-INTERACTIVE-COMMANDS 2026-06-25] Path to the runtime
+    # override JSON. Telegram /penny skip and /penny unskip write here;
+    # penny_risk.is_disabled() reads here on every call. Tests override
+    # this to a tmp path.
+    PENNY_DISABLE_OVERRIDES_PATH:          str   = "python-engine/data/penny_disable_overrides.json"
     # [PENNY-TIME-STOP 2026-06-24] Soft time-stop: if entry fires but the
     # position is NOT in profit within PENNY_TIME_STOP_MIN minutes, cut at
     # market (modular exit path; spec §7.2 exit chain). Default 30 min --
@@ -227,6 +288,13 @@ class Settings(BaseSettings):
     PENNY_MAX_POSITIONS_MIS:       int   = 3
     PENNY_CIRCUIT_SKIP_DISTANCE:   float = 0.005      # 0.5% of band
     PENNY_CIRCUIT_FROM_HIGH_PCT:   float = 0.03       # 3% from day high
+    # [AUDIT-FIX-2.5 2026-06-25] Penny heat-map "near SL" warn threshold.
+    # When a position's current P&L % is within this distance (above)
+    # of its stop_loss, the heatmap surfaces a WARN line. Previously
+    # hardcoded to 1.0% in penny_heatmap.build_heatmap (operator-mandated
+    # audit point). For a Rs 2,500 paper bankroll 1% may be too noisy;
+    # for a Rs 50k+ account 1% may be too lax. Operator tunes here.
+    PENNY_HEATMAP_WARN_PCT:        float = 0.01       # 1% from SL
 
     # Cadence + safety
     PENNY_SCAN_INTERVAL_SEC:       int   = 30

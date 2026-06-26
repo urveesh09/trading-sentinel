@@ -390,8 +390,16 @@ def test_url_not_logged_on_send_or_failure(monkeypatch, caplog):
 
 def test_diag_tail_empty_when_universe_unknown(tmp_paths):
     """Backwards-compat: when universe_size=0 (default) and no rejection
-    rows, the report stays the legacy single-line 'No action ...' form.
-    Older callers / pre-2026-06-24 deployments see no behaviour change."""
+    rows, the report no longer silently says 'No action' -- it surfaces
+    a ⚠ 'No scan activity this hour' sentinel so the operator
+    immediately knows the scanner ran but found zero eligible tickers
+    (the 2026-06-25 silent-empty-universe bug class).
+
+    Note: this is a deliberate behaviour change. Operators relied on
+    'No action' alone previously, which hid the silent-empty case for
+    weeks. The new behaviour makes it impossible to confuse 'no signals'
+    with 'no universe'.
+    """
     from penny_hourly_report import PennyHourlyReport
     rpt = PennyHourlyReport(db_path=str(tmp_paths / "test.db"))
     body = asyncio.run(rpt.build_report(
@@ -405,8 +413,10 @@ def test_diag_tail_empty_when_universe_unknown(tmp_paths):
         # universe_size omitted (defaults to 0) -- simulates pre-change caller
     ))
     assert "No action in Penny this hour." in body
-    assert "Scanned:" not in body
-    assert body.count("\n") == 0  # single line
+    assert "No scan activity this hour" in body
+    assert "universe_size=0" in body
+    # Two lines: head + diagnostic tail
+    assert body.count("\n") == 1
 
 
 def test_diag_tail_shows_scanned_count_only(tmp_paths):
@@ -573,19 +583,27 @@ def test_diag_tail_with_diagnostic_stays_under_15_lines(tmp_paths):
 def test_build_diag_tail_unit():
     """Direct unit test of the static helper -- covers the four
     combinations of (universe_known, rejections_present) without going
-    through the DB. Pins the formatting contract."""
+    through the DB. Pins the formatting contract.
+
+    2026-06-25 contract change: when universe_size is 0 AND no
+    rejections, the helper now returns the "No scan activity this hour"
+    sentinel (not empty string). This is the bug-class surfacing fix.
+    """
     from penny_hourly_report import PennyHourlyReport
 
-    # Both unknown -> ""
-    assert PennyHourlyReport._build_diag_tail({}, 0) == ""
+    # 2026-06-25: universe_size=0 + no rejections -> sentinel, not empty
+    out = PennyHourlyReport._build_diag_tail({}, 0)
+    assert "No scan activity this hour" in out
+    assert "universe_size=0" in out
 
     # Universe known, no rejections
     out = PennyHourlyReport._build_diag_tail({}, 87)
     assert out == "Scanned: 87 | (no rejection rows logged)"
 
-    # Universe unknown, rejections present
+    # Universe unknown, rejections present (back-compat: legacy callers)
     out = PennyHourlyReport._build_diag_tail({"foo": 5}, 0)
-    assert out == "top rejects: foo (×5)"
+    # universe_size=0 with rejections present shows top rejects (legacy behavior)
+    assert "top rejects: foo (×5)" in out
 
     # Both present -- sorted descending by count
     out = PennyHourlyReport._build_diag_tail(
@@ -605,3 +623,95 @@ def test_build_diag_tail_unit():
     # letter 'a' which appears in "Scanned"/"rejects").
     assert "(×1)" not in out
     assert "(×5)" not in out
+
+
+# ---- 2026-06-25 data-quality tests ------------------------------------
+
+def test_diag_tail_zero_universe_shows_no_scan_activity():
+    """2026-06-25: universe_size=0 + no rejections -> sentinel message
+    so the operator immediately sees the scanner found no eligible
+    tickers (this is the bug class from the 2026-06-25 incident)."""
+    from penny_hourly_report import PennyHourlyReport
+    out = PennyHourlyReport._build_diag_tail({}, 0)
+    assert "No scan activity this hour" in out
+    assert "universe_size=0" in out
+
+
+def test_diag_tail_zero_universe_includes_quality_audit_when_provided():
+    """When universe_size=0 AND a quality audit is passed, the report
+    shows data-quality breakdown so the operator can see *why* the
+    universe is empty (degraded corp-data source)."""
+    from penny_hourly_report import PennyHourlyReport
+    audit = {
+        "total": 100,
+        "null_promoter": 100,
+        "null_pb": 100,
+        "null_tv": 0,
+        "null_pc": 0,
+        "degraded_pct": 100.0,
+        "corp_source": "missing",
+    }
+    out = PennyHourlyReport._build_diag_tail({}, 0, data_quality_audit=audit)
+    assert "No scan activity this hour" in out
+    assert "degraded" in out
+    assert "corp_source=missing" in out
+
+
+def test_diag_tail_includes_quality_warning_when_degraded(tmp_paths):
+    """When universe_size > 0 but degraded_pct > 50%, surface a warning
+    so the operator knows the eligibility filter is running in degraded
+    mode."""
+    from penny_hourly_report import PennyHourlyReport
+    audit = {
+        "total": 100,
+        "null_promoter": 80,
+        "null_pb": 80,
+        "null_tv": 0,
+        "null_pc": 0,
+        "degraded_pct": 80.0,
+        "corp_source": "missing",
+    }
+    out = PennyHourlyReport._build_diag_tail({}, 87, data_quality_audit=audit)
+    assert "Scanned: 87" in out
+    assert "degraded universe: 80%" in out
+
+
+def test_diag_tail_no_quality_warning_when_below_threshold():
+    """Degraded-pct < 50% does not surface a warning (avoid noise)."""
+    from penny_hourly_report import PennyHourlyReport
+    audit = {
+        "total": 100,
+        "null_promoter": 30,
+        "null_pb": 30,
+        "null_tv": 0,
+        "null_pc": 0,
+        "degraded_pct": 30.0,
+        "corp_source": "kite",
+    }
+    out = PennyHourlyReport._build_diag_tail({}, 87, data_quality_audit=audit)
+    assert "Scanned: 87" in out
+    assert "degraded universe" not in out
+
+
+def test_build_report_accepts_data_quality_audit(tmp_paths):
+    """build_report() plumbs data_quality_audit through to the diag tail."""
+    from penny_hourly_report import PennyHourlyReport
+    rpt = PennyHourlyReport(db_path=str(tmp_paths / "test.db"))
+    body = asyncio.run(rpt.build_report(
+        now=datetime(2026, 6, 25, 11, 0),
+        regime="UNKNOWN",
+        open_positions=[],
+        deployed_capital=0.0,
+        unrealised_pnl=0.0,
+        kill_switch_active=False,
+        circuit_blocks=0,
+        universe_size=0,
+        data_quality_audit={
+            "total": 100, "null_promoter": 100, "null_pb": 100,
+            "null_tv": 0, "null_pc": 0, "degraded_pct": 100.0,
+            "corp_source": "missing",
+        },
+    ))
+    assert "No action in Penny this hour" in body
+    assert "No scan activity this hour" in body
+    assert "corp_source=missing" in body

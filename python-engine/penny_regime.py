@@ -47,6 +47,12 @@ class PennyRegimeEngine:
         self._as_of: Optional[str] = None
         self._vol_rank: Optional[float] = None
         self._vix_proxy: Optional[float] = None
+        # [TIER3-REGIME-CONFIDENCE 2026-06-25] Persist the raw Nifty-50-vs-EMA50
+        # distance and breadth for the confidence-reason generator. These
+        # are the inputs the operator wants to see to UNDERSTAND the
+        # classification, not just the final regime label.
+        self._vix_distance: Optional[float] = None
+        self._breadth: Optional[float] = None
 
     # ---- public read API ------------------------------------------------
 
@@ -57,6 +63,101 @@ class PennyRegimeEngine:
     @property
     def as_of(self) -> Optional[str]:
         return self._as_of
+
+    @property
+    def vix_proxy(self) -> Optional[float]:
+        return self._vix_proxy
+
+    @property
+    def vix_distance(self) -> Optional[float]:
+        """Raw Nifty-50 close vs EMA50 distance (e.g. -0.03 = 3% below EMA).
+        Exposed for the regime-confidence reason generator."""
+        return self._vix_distance
+
+    @property
+    def vol_rank(self) -> Optional[float]:
+        """Worst-case (highest) per-stock realized vol rank across the
+        universe today. Exposed for the regime-confidence reason generator."""
+        return self._vol_rank
+
+    @property
+    def breadth(self) -> Optional[float]:
+        return self._breadth
+
+    def confidence_reasons(self) -> List[str]:
+        """
+        [TIER3-REGIME-CONFIDENCE 2026-06-25] Return the 1-3 human-readable
+        reasons that justify the current regime classification.
+
+        Each reason shows the input value + the threshold it crossed (or
+        didn't cross). Operator can read this in the Telegram /penny
+        regime reply and immediately understand WHY the system is in
+        PR1 vs PR2 vs PR3 today.
+
+        Returns: a list of strings, one per input source. Empty list
+        if regime hasn't been computed yet (UNKNOWN).
+        """
+        reasons: List[str] = []
+        regime = self._today_regime
+
+        # 1. Vol rank reason
+        if self._vol_rank is not None:
+            vr = self._vol_rank
+            label = (
+                f"vol_rank={vr:.2f}"
+            )
+            if vr >= _VOL_PR2_MAX:
+                reasons.append(
+                    f"{label} >= PR2 max {_VOL_PR2_MAX:.2f} (above PR3 threshold -- all entries blocked)"
+                )
+            elif vr >= _VOL_PR1_MAX:
+                reasons.append(
+                    f"{label} between PR1 max {_VOL_PR1_MAX:.2f} and PR2 max {_VOL_PR2_MAX:.2f}"
+                )
+            else:
+                reasons.append(
+                    f"{label} below PR1 max {_VOL_PR1_MAX:.2f} (calm)"
+                )
+        else:
+            reasons.append("vol_rank: unknown (no scan fed per-stock vol yet)")
+
+        # 2. VIX proxy reason (the headline indicator)
+        if self._vix_proxy is not None:
+            vp = self._vix_proxy
+            label = f"vix_proxy={vp:.2f}"
+            if vp >= _VIX_PR2_MAX:
+                reasons.append(
+                    f"{label} >= PR2 max {_VIX_PR2_MAX:.2f} (Nifty deeply below EMA -- panic territory)"
+                )
+            elif vp >= _VIX_PR1_MAX:
+                reasons.append(
+                    f"{label} between PR1 max {_VIX_PR1_MAX:.2f} and PR2 max {_VIX_PR2_MAX:.2f}"
+                )
+            else:
+                reasons.append(
+                    f"{label} below PR1 max {_VIX_PR1_MAX:.2f} (Nifty above EMA -- bullish/calm)"
+                )
+            # Add the raw distance for context (operator can spot drift)
+            if self._vix_distance is not None:
+                reasons.append(
+                    f"  raw: Nifty 50 is {self._vix_distance*100:+.1f}% vs 50-day EMA"
+                )
+        else:
+            reasons.append("vix_proxy: unknown (Nifty 50 fetch failed at 09:20)")
+
+        # 3. Breadth (currently placeholder; surface transparently)
+        reasons.append(
+            f"breadth={self._breadth if self._breadth is not None else 'n/a'} "
+            "(placeholder; weighted 20% in regime score)"
+        )
+
+        # 4. Final classification summary (1 line)
+        reasons.append(
+            f"=> classified {regime.value} "
+            f"(sizing: {self.size_pct(regime)*100:.1f}% of bankroll per trade)"
+        )
+
+        return reasons
 
     # ---- public compute API --------------------------------------------
 
@@ -163,6 +264,19 @@ class PennyRegimeEngine:
                     # list of dicts (legacy)
                     closes = [b["close"] for b in bars if b.get("close")]
                 self._vix_proxy = self.compute_vix_proxy(closes)
+                # [TIER3-REGIME-CONFIDENCE 2026-06-25] Persist the raw
+                # Nifty-50-vs-EMA50 distance too, so the confidence
+                # reason can show "Nifty is -3.2% vs EMA50" (the raw input
+                # the operator wants to see, not just the normalised 0-1).
+                if closes and len(closes) >= 50:
+                    ema_period = 50
+                    alpha = 2.0 / (ema_period + 1)
+                    sma = sum(closes[:ema_period]) / ema_period
+                    ema = sma
+                    for c in closes[ema_period:]:
+                        ema = alpha * c + (1 - alpha) * ema
+                    if ema > 0:
+                        self._vix_distance = (closes[-1] - ema) / ema
             else:
                 self._vix_proxy = None
 

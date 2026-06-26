@@ -28,7 +28,7 @@ import json
 import logging
 import os
 from datetime import datetime, timezone
-from typing import Optional, List
+from typing import Callable, Optional, List
 from uuid import uuid4
 
 from penny_universe import PennyUniverse
@@ -44,14 +44,28 @@ class PennyScanner:
         kite,
         universe_json_path: str,
         paper_mode: bool = True,
-        regime: str = "PR1_CALM",
+        regime=None,  # str (legacy, frozen) or Callable[[], str]
         daily_pnl_override: Optional[float] = None,
         ledger_writer=None,
     ):
         self.kite = kite
         self.universe_json_path = universe_json_path
         self.paper_mode = paper_mode
-        self.regime = regime
+        # [AUDIT-FIX-1.3 2026-06-25] Regime used to be a frozen string
+        # captured at construction. That meant a mid-day regime
+        # transition (PR1->PR2->PR3) was invisible to the MIS scanner
+        # until the singleton was rebuilt. The CNC scan rebuilds the
+        # singleton (run_penny_connors_scan sets _penny_scanner=None),
+        # but the 30s MIS loop doesn't -- so PR3_HOT (block all entries)
+        # could miss a transition by hours.
+        #
+        # Now `regime` can be:
+        #   - a string (legacy behaviour: frozen)
+        #   - a callable returning the current regime (live behaviour:
+        #     re-reads the regime engine every access)
+        #   - None (default to PR1_CALM callable)
+        # The property getter below normalises all three.
+        self._regime_getter = self._normalise_regime_getter(regime)
         self.daily_pnl_override = daily_pnl_override
         # Risk engine owns sizing + kill-switch (lazy init to read bankroll)
         from config import settings
@@ -75,6 +89,73 @@ class PennyScanner:
         if daily_pnl_override is not None:
             self.risk_engine.daily_pnl = daily_pnl_override
             self.risk_engine.daily_pnl_date = datetime.now(timezone.utc).date().isoformat()
+
+    # ---- [AUDIT-FIX-1.3] regime property + helper -------------------
+
+    @staticmethod
+    def _normalise_regime_getter(regime):
+        """Convert the constructor's `regime` argument into a zero-arg
+        callable returning a PennyRegime string.
+
+        Behaviour:
+          - callable (incl. bound method) -> used as-is
+          - str                          -> wrapped: always returns that string
+                                         (legacy frozen behaviour, preserved
+                                         for any existing call sites that
+                                         pass a string)
+          - None                         -> wrapped: always returns "PR1_CALM"
+                                         (defensive default for tests that
+                                         don't construct with a regime)
+        """
+        if callable(regime):
+            return regime
+        if isinstance(regime, str):
+            frozen = regime
+            return lambda: frozen
+        # None or anything else
+        return lambda: "PR1_CALM"
+
+    @property
+    def regime(self) -> str:
+        """Live regime value.
+
+        Returns the current regime string. When the scanner was built
+        with a callable (the production wiring), this re-reads the
+        regime engine on every access -- so PR3_HOT transitions mid-day
+        are visible to the 30s MIS scan loop without rebuilding the
+        singleton.
+
+        When the scanner was built with a string, this returns the
+        frozen string (legacy behaviour, preserved for tests).
+        """
+        try:
+            v = self._regime_getter()
+        except Exception as e:
+            # [AUDIT-FIX-1.3] Fail-open: if the regime getter throws
+            # (e.g. the regime engine was never initialised in a test),
+            # return "UNKNOWN" -- which sizes at 0% per the risk engine's
+            # _risk_pct_for_regime table. Better to skip than to crash
+            # the scanner loop.
+            logger.warning("penny_regime_getter_failed error=%s", str(e))
+            return "UNKNOWN"
+        if not v:
+            return "UNKNOWN"
+        # Always return the .value string (handle PennyRegime enum too)
+        try:
+            from penny_models import PennyRegime
+            if isinstance(v, PennyRegime):
+                return v.value
+        except Exception:
+            pass
+        return str(v)
+
+    @regime.setter
+    def regime(self, value):
+        """Setter preserved for back-compat. Sets the regime to a
+        frozen string (legacy callers expecting .regime = "..." to
+        work). For live-tracking, prefer passing a callable to __init__.
+        """
+        self._regime_getter = self._normalise_regime_getter(value)
 
     def _load_universe(self) -> List[dict]:
         try:
@@ -126,15 +207,28 @@ class PennyScanner:
         )
         token = self.kite.instrument_cache.get(ticker)
         if token is None:
+            logger.warning("penny_eval_skipped ticker=%s reason=token_unresolved", ticker)
             return None
 
         # 1) Live quote for LTP, day high, and cumulative volume
         q = await self._get_quote_safe(token)
         if not q:
+            logger.warning("penny_eval_skipped ticker=%s reason=quote_unavailable", ticker)
             return None
         ltp = q.get("last_price", 0)
         cum_vol = q.get("volume", 0) or 0
-        day_high = (q.get("ohlc") or {}).get("high") or ltp
+        ohlc = q.get("ohlc") or {}
+        day_high = ohlc.get("high") or ltp
+        day_low = ohlc.get("low") or ltp
+
+        # [PENNY-G8 2026-06-25] Infer the real NSE band from the live quote's
+        # day_high/day_low so circuit_blocked uses the right band rather than
+        # the hardcoded 5% assumption. We don't call circuit_blocked here
+        # (that's wired into a future P3 fix) but the helper is now
+        # available on PennyRiskEngine.
+        # prev_close is on the universe record loaded earlier in scan_once.
+        # We don't have it here in _evaluate_ticker_breakout; the call site
+        # for circuit_blocked is in the MIS-leg executor wiring (P3).
 
         # 2) Real 1-min bars (cached by kite.get_intraday)
         try:
@@ -153,6 +247,10 @@ class PennyScanner:
 
         if intraday is None or len(intraday) < 2:
             # Not enough data; the day is too early or the feed is down
+            logger.warning(
+                "penny_eval_skipped ticker=%s reason=insufficient_intraday_bars "
+                "bars=%s", ticker, 0 if intraday is None else len(intraday),
+            )
             return None
 
         # 3) Drop the in-progress bar (its timestamp minute == current minute)
@@ -166,6 +264,10 @@ class PennyScanner:
             pass  # if we cannot index, fall through with the full df
 
         if len(intraday) < 1:
+            logger.warning(
+                "penny_eval_skipped ticker=%s reason=zero_complete_bars_after_drop",
+                ticker,
+            )
             return None
 
         last_bar = intraday.iloc[-1]
@@ -196,6 +298,13 @@ class PennyScanner:
         if median_vol_20d <= 0:
             # No usable 20-day baseline. Reject rather than accept on a
             # fabricated number (deviation: was hardcoded 10_000).
+            # NOTE: this is a STRUCTURED REJECT, not a silent skip, so
+            # we return a dict instead of None to surface the reason
+            # in the hourly diagnostic breakdown (2026-06-25).
+            logger.info(
+                "penny_eval_skipped ticker=%s reason=no_20d_median_volume",
+                ticker,
+            )
             return {
                 "accept": False,
                 "reject_reason": "no 20-day median volume baseline",
@@ -210,15 +319,36 @@ class PennyScanner:
             ticker=ticker, cum_vol_today=cum_vol, median_vol_20d=median_vol_20d,
             breakout_bar=breakout_bar, day_high=day_high, rsi_14=rsi_14,
             as_of=as_of, risk_engine=self.risk_engine,
+            # [TIER2-BREAKOUT-REFINEMENT 2026-06-25] Pass intraday so the
+            # breakout engine can compute VWAP and adaptive threshold.
+            # The engine uses intraday only if PENNY_BREAKOUT_USE_VWAP
+            # or PENNY_BREAKOUT_ADAPTIVE_THRESHOLD is True; otherwise the
+            # param is ignored and behaviour is identical to pre-fix.
+            intraday=intraday,
         )
 
     async def _evaluate_ticker_connors(
         self, ticker: str, as_of: datetime
     ) -> Optional[dict]:
-        """Run the CNC Connors evaluator on one ticker."""
+        """Run the CNC Connors evaluator on one ticker.
+
+        [PENNY-CONNORS-VOL 2026-06-25] The volume sanity gate in
+        evaluate_connors_entry (line 124 of penny_engine_connors.py)
+        requires today_volume >= 0.5 * avg20_volume. Previously this
+        method hard-coded today_volume=50_000 / avg20_volume=100_000
+        which made the volume gate a constant pass-through -- any
+        ticker with valid SMA+RSI that hit the Connors trigger was
+        accepted regardless of actual volume. Now we compute real
+        today_volume from the latest daily bar and avg20_volume from
+        the 20-day median of daily volume, mirroring the breakout
+        path. If volume cannot be computed (missing column, etc.) we
+        return None to be safe -- a phantom signal is worse than no
+        signal at this bankroll.
+        """
         from penny_engine_connors import evaluate_connors_entry
         token = self.kite.instrument_cache.get(ticker)
         if token is None:
+            logger.warning("penny_eval_skipped ticker=%s reason=token_unresolved", ticker)
             return None
         # Need 250+ daily closes for the SMA + RSI trend filter
         try:
@@ -231,9 +361,32 @@ class PennyScanner:
             logger.error("penny_historical_failed ticker=%s error=%s", ticker, str(e))
             bars = None
         if bars is None:
+            logger.warning("penny_eval_skipped ticker=%s reason=historical_unavailable", ticker)
             return None
         n = len(bars) if hasattr(bars, '__len__') else 0
         if n < 250:
+            logger.warning("penny_eval_skipped ticker=%s reason=insufficient_history bars=%d", ticker, n)
+            return None
+        # Real volume extraction (P1a). If the column is missing or
+        # unusable, return None rather than fabricate numbers.
+        today_volume = 0
+        avg20_volume = 0
+        if hasattr(bars, 'columns') and 'volume' in bars.columns:
+            try:
+                vol_series = bars["volume"].tail(21)  # 21 to allow median of last 20
+                today_volume = int(vol_series.iloc[-1] or 0)
+                avg20_volume = int(vol_series.tail(20).median() or 0)
+            except Exception as e:
+                logger.warning(
+                    "penny_eval_skipped ticker=%s reason=volume_extract_failed error=%s",
+                    ticker, str(e),
+                )
+                return None
+        else:
+            logger.warning(
+                "penny_eval_skipped ticker=%s reason=no_volume_column",
+                ticker,
+            )
             return None
         if hasattr(bars, 'columns'):
             # pandas DataFrame
@@ -241,12 +394,78 @@ class PennyScanner:
         else:
             closes = [b["close"] for b in bars if b.get("close")]
         daily = {"closes": closes}
-        return evaluate_connors_entry(
+        decision = evaluate_connors_entry(
             ticker=ticker, daily=daily,
-            today_volume=50_000, avg20_volume=100_000,
+            today_volume=today_volume, avg20_volume=avg20_volume,
             regime_size_pct=self._regime_to_size_pct(),
             risk_engine=self.risk_engine, as_of=as_of,
         )
+        if not decision or not decision.get("accept"):
+            return decision
+
+        # [TIER2-TIME-OF-DAY 2026-06-25] Reject late-day CNC signals.
+        # Connors RSI(2) is a morning mean-reversion signal -- after lunch
+        # the signal is much less reliable because:
+        #   - morning gaps have already played out
+        #   - afternoon volume is thinner, so fills + SL-M protection are
+        #     both less robust
+        #   - the operator can no longer react to a midday trigger before
+        #     EOD
+        # PENNY_CONNORS_LAST_ENTRY_MIN=195 (12:30 IST) is the default;
+        # 0 disables. The check is intentionally simple: minutes since
+        # 09:15 IST. We could use market_calendar-aware sunrise but the
+        # signal is independent of holidays (just time-of-day).
+        from config import settings as _settings
+        last_entry_min = _settings.PENNY_CONNORS_LAST_ENTRY_MIN
+        if last_entry_min > 0:
+            market_open = as_of.replace(hour=9, minute=15, second=0, microsecond=0)
+            minutes_since_open = (as_of - market_open).total_seconds() / 60.0
+            if minutes_since_open > last_entry_min:
+                logger.info(
+                    "penny_eval_skipped ticker=%s reason=late_day minutes_since_open=%.0f limit=%d",
+                    ticker, minutes_since_open, last_entry_min,
+                )
+                decision["accept"] = False
+                decision["reject_reason"] = (
+                    f"late-day entry blocked (minutes_since_open={minutes_since_open:.0f}, "
+                    f"limit={last_entry_min})"
+                )
+                return decision
+
+        # [PENNY-G2 2026-06-25] Compute real ATR(1min) from today's intraday
+        # bars and include it in the decision so downstream exit logic
+        # (evaluate_connors_exit) can use it for the post-T1 trailing stop.
+        # Previously this was always 0.0 because no caller fetched intraday
+        # for CNC entries -- the trail-stop effectively became a hard floor
+        # at breakeven+0.5% and the ATR component never moved it.
+        # NOTE: run_penny_connors_scan does NOT currently write a CNC
+        # position row to the positions table -- that's a separate fix
+        # (G5 / P3). When that lands, atr_1min_post_t1 will be read from
+        # the position. Until then this is computed but not consumed.
+        try:
+            from datetime import timedelta as _td
+            today = as_of.strftime("%Y-%m-%d")
+            start_dt = f"{today} 09:15:00"
+            end_dt = as_of.strftime("%Y-%m-%d %H:%M:%S")
+            intraday = await self.kite.get_intraday(
+                ticker=ticker,
+                from_datetime=start_dt,
+                to_datetime=end_dt,
+                interval="minute",
+            )
+            if intraday is not None and len(intraday) >= 1:
+                from penny_engine_connors import atr_1min as _atr_1min
+                atr = _atr_1min(intraday)
+                decision["atr_1min_post_t1"] = float(atr)
+            else:
+                decision["atr_1min_post_t1"] = 0.0
+        except Exception as e:
+            logger.warning(
+                "penny_atr_intraday_failed ticker=%s error=%s atr_1min_set_to_0",
+                ticker, str(e),
+            )
+            decision["atr_1min_post_t1"] = 0.0
+        return decision
 
     async def scan_once(self, as_of: datetime) -> dict:
         """
@@ -256,6 +475,16 @@ class PennyScanner:
         is the canonical CNC pass.
 
         Returns summary dict with counts (accept, reject, error).
+
+        Observability (2026-06-25):
+        - Logs `penny_scan_loop_summary` at start with universe size and
+          degraded-quality count so silent-empty-eligible scenarios
+          surface immediately.
+        - Logs `penny_eval_skipped` at every silent None-return path in
+          the per-ticker evaluator with the actual reason.
+        - Treats a None decision from _evaluate_ticker_breakout as a
+          `reject` with a structured reason (not a silent error count).
+          This matches the CNC path's counting convention.
         """
         from config import settings
         from penny_signal_log import init_penny_signal_db, log_penny_signal
@@ -265,8 +494,23 @@ class PennyScanner:
 
         universe = self._load_universe()
         if not universe:
-            logger.info("penny_scan_no_universe")
+            # 2026-06-25: surface this loudly so future silent-empty
+            # scenarios don't go unnoticed.
+            logger.warning(
+                "penny_scan_no_eligible_universe scan_id=%s "
+                "(check penny_universe_quality_audit + corp_data source)",
+                scan_id,
+            )
             return {"scan_id": scan_id, "accept": 0, "reject": 0, "error": 0}
+
+        # Surface universe size + degraded count at scan start
+        degraded_count = sum(
+            1 for t in universe if (t.get("data_quality") or "").startswith("DEGRADED")
+        )
+        logger.info(
+            "penny_scan_loop_summary scan_id=%s eligible=%d degraded=%d regime=%s",
+            scan_id, len(universe), degraded_count, self.regime,
+        )
 
         # Regime gate: PR3 blocks all new entries
         if self.regime == PennyRegime.PR3_HOT.value:
@@ -291,9 +535,26 @@ class PennyScanner:
             return {"scan_id": scan_id, "accept": 0, "reject": len(universe), "error": 0}
 
         accept = reject = error = 0
+        # [PENNY-G9 2026-06-25] Parallelise the per-ticker evaluation with
+        # asyncio.gather. The previous sequential loop ran ~100 tickers
+        # back-to-back. Each ticker does 3 kite calls (quote, intraday,
+        # historical) gated by the kite_client RateLimiter (3 req/sec,
+        # burst 1). Parallelising lets the limiter queue N requests at
+        # once instead of N serial round-trips, giving an effective
+        # speedup of ~5-10x for 100-ticker universes.
+        #
+        # Sequential steps that stay serial:
+        # - manual disable check (sync, no I/O)
+        # - DB writes (log_penny_signal, positions INSERT) -- these have
+        #   their own aiosqlite connection and concurrent writes could race.
+        # - executor.execute_entry -- places real orders, MUST be serial.
+        #
+        # We therefore split the loop into two phases:
+        # Phase 1 (parallel): evaluate all non-disabled tickers via gather
+        # Phase 2 (serial): for each result, log signal + (if accept) execute
+        surviving = []
         for t in universe:
             sym = t["symbol"]
-            # Manual disable gate
             if self.risk_engine.is_disabled(sym):
                 await log_penny_signal(
                     settings.DB_PATH, scan_id=scan_id, ticker=sym,
@@ -303,83 +564,187 @@ class PennyScanner:
                 )
                 reject += 1
                 continue
+            surviving.append(t)
 
+        # [PENNY-T2C-SECTOR-FILTER 2026-06-25] Load sector CSV once per
+        # scan (not per ticker). Empty CSV or missing file = filter is
+        # effectively OFF (fail-open). The dedupe batch helper below
+        # groups tickers by ETF so we only hit Kite once per unique sector.
+        sector_map: dict = {}
+        if settings.PENNY_USE_SECTOR_FILTER:
             try:
-                decision = await self._evaluate_ticker_breakout(sym, as_of)
-                if decision is None:
-                    error += 1
-                    continue
-                if not decision.get("accept"):
+                from penny_sector_filter import load_sector_map
+                sector_map = load_sector_map(settings.PENNY_SECTORS_CSV_PATH)
+            except Exception as e:
+                logger.warning("penny_sector_filter_load_failed error=%s (fail-open)", str(e))
+                sector_map = {}
+
+        # Phase 1a: parallel per-ticker evaluation (breakout engine).
+        if surviving:
+            results = await asyncio.gather(
+                *[self._evaluate_ticker_breakout(t["symbol"], as_of)
+                  for t in surviving],
+                return_exceptions=True,
+            )
+        else:
+            results = []
+
+        # Phase 1b: sector check. Only runs on tickers that PASSED the
+        # breakout engine (we don't waste Kite calls on rejects). Uses
+        # the batch dedupe helper so the Kite rate limiter isn't hammered.
+        # The CSV-tickers dict has whatever mapping was loaded (possibly
+        # empty if CSV missing); the helper handles that case.
+        post_breakout = []  # list of (ticker_dict, decision)
+        for t, result in zip(surviving, results):
+            sym = t["symbol"]
+            if isinstance(result, Exception):
+                continue  # handled below
+            if result is None or not result.get("accept"):
+                continue  # not a candidate
+            post_breakout.append((t, result))
+
+        sector_decisions: dict = {}
+        if post_breakout and sector_map:
+            try:
+                from penny_sector_filter import filter_universe_by_sector
+                post_tickers = [td[0]["symbol"] for td in post_breakout]
+                sector_decisions = await filter_universe_by_sector(
+                    tickers=post_tickers,
+                    kite=self.kite,
+                    sector_map=sector_map,
+                    top_losers_pct=settings.PENNY_SECTOR_TOP_LOSERS_PCT,
+                    etf_change_threshold_pct=settings.PENNY_SECTOR_ETF_CHANGE_THRESHOLD_PCT,
+                )
+            except Exception as e:
+                logger.warning("penny_sector_filter_batch_failed error=%s (fail-open)", str(e))
+                sector_decisions = {}
+
+        # Phase 2: serial result processing. Each surviving ticker has a
+        # corresponding result (decision dict or Exception).
+        for t, result in zip(surviving, results):
+            sym = t["symbol"]
+            if isinstance(result, Exception):
+                # Should not normally happen -- the evaluator catches its own
+                # exceptions and returns None -- but be defensive.
+                logger.error(
+                    "penny_ticker_eval_exception ticker=%s error=%s",
+                    sym, str(result),
+                )
+                error += 1
+                continue
+            decision = result
+            if decision is None:
+                # 2026-06-25: this is not a system ERROR -- it is a
+                # structured "skipped" outcome. The evaluator already
+                # logged the specific reason (e.g. penny_intraday_fetch_failed,
+                # penny_daily_vol_fetch_failed). Count it as a reject
+                # so the diagnostic breakdown in the hourly report is
+                # accurate. Also log the DB row so operators can see
+                # the rejection without waiting for the hourly message.
+                logger.info(
+                    "penny_eval_skipped ticker=%s reason=evaluator_returned_none",
+                    sym,
+                )
+                await log_penny_signal(
+                    settings.DB_PATH, scan_id=scan_id, ticker=sym,
+                    leg="MIS", accepted=False,
+                    reject_reason="evaluator returned None (see prior warn/error)",
+                    regime=self.regime, close=0.0,
+                )
+                reject += 1
+                continue
+
+            # [PENNY-T2C-SECTOR-FILTER 2026-06-25] Apply sector gate AFTER
+            # the breakout engine accepts, BEFORE we go to DB + executor.
+            # The gate is fail-open: UNKNOWN -> ALLOW. REJECT -> structured
+            # reject with a sector-specific reason in the diagnostic
+            # breakdown.
+            if decision.get("accept") and sym in sector_decisions:
+                sd = sector_decisions[sym]
+                if sd.is_blocked:
+                    logger.info(
+                        "penny_sector_filter_rejected ticker=%s sector=%s etf=%s change=%.2f%% reason=%s",
+                        sym, sd.sector, sd.etf_symbol,
+                        (sd.etf_change_pct or 0) * 100,
+                        sd.reason,
+                    )
                     await log_penny_signal(
                         settings.DB_PATH, scan_id=scan_id, ticker=sym,
                         leg="MIS", accepted=False,
-                        reject_reason=decision.get("reject_reason", ""),
+                        reject_reason=f"sector_filter: {sd.reason}",
                         regime=self.regime, close=0.0,
                     )
                     reject += 1
-                else:
-                    # Log accept + delegate to executor (per 2026-06-22 deviation).
-                    # The executor handles the full entry flow per spec §7.2:
-                    # entry LIMIT -> fill poll -> SL-M with retry -> market-unwind.
-                    await log_penny_signal(
-                        settings.DB_PATH, scan_id=scan_id, ticker=sym,
-                        leg="MIS", accepted=True,
-                        regime=self.regime, close=decision.get("entry", 0.0),
-                        stop_loss=decision.get("stop_loss"),
-                        target_1=decision.get("target"),
-                        rsi_14=decision.get("rsi_14"),
-                        breakout_level=decision.get("breakout_level"),
-                        shares=decision.get("shares"),
+                    continue
+
+            if not decision.get("accept"):
+                await log_penny_signal(
+                    settings.DB_PATH, scan_id=scan_id, ticker=sym,
+                    leg="MIS", accepted=False,
+                    reject_reason=decision.get("reject_reason", ""),
+                    regime=self.regime, close=0.0,
+                )
+                reject += 1
+            else:
+                # Log accept + delegate to executor (per 2026-06-22 deviation).
+                # The executor handles the full entry flow per spec §7.2:
+                # entry LIMIT -> fill poll -> SL-M with retry -> market-unwind.
+                await log_penny_signal(
+                    settings.DB_PATH, scan_id=scan_id, ticker=sym,
+                    leg="MIS", accepted=True,
+                    regime=self.regime, close=decision.get("entry", 0.0),
+                    stop_loss=decision.get("stop_loss"),
+                    target_1=decision.get("target"),
+                    rsi_14=decision.get("rsi_14"),
+                    breakout_level=decision.get("breakout_level"),
+                    shares=decision.get("shares"),
+                )
+                try:
+                    from penny_models import PennyLeg
+                    from position_tracker import init_positions_db
+                    await init_positions_db(settings.DB_PATH)
+                    order_result = await self.executor.execute_entry(
+                        ticker=sym,
+                        leg=PennyLeg.MIS,
+                        entry_price=decision.get("entry", 0.0),
+                        stop_loss=decision.get("stop_loss", 0.0),
+                        shares=decision.get("shares", 0),
                     )
-                    try:
-                        from penny_models import PennyLeg
-                        from position_tracker import init_positions_db
-                        await init_positions_db(settings.DB_PATH)
-                        order_result = await self.executor.execute_entry(
-                            ticker=sym,
-                            leg=PennyLeg.MIS,
-                            entry_price=decision.get("entry", 0.0),
-                            stop_loss=decision.get("stop_loss", 0.0),
-                            shares=decision.get("shares", 0),
-                        )
-                        logger.info(
-                            "penny_entry_attempted ticker=%s entry=%.2f sl=%.2f shares=%d paper=%s order_id=%s",
-                            sym, decision.get("entry", 0.0),
-                            decision.get("stop_loss", 0.0),
-                            decision.get("shares", 0),
-                            order_result.get("paper"),
-                            order_result.get("entry_order_id"),
-                        )
-                        if (not order_result.get("unwound")
-                                and order_result.get("entry_status") == "filled"):
-                            import aiosqlite
-                            from datetime import datetime, timezone
-                            async with aiosqlite.connect(settings.DB_PATH) as db:
-                                await db.execute(
-                                    """INSERT INTO positions (
-                                        ticker, exchange, entry_date, entry_price, shares,
-                                        stop_loss_initial, trailing_stop_current,
-                                        target_1, target_2, atr_14_at_entry,
-                                        highest_close_since_entry, status, source,
-                                        product_type, regime_at_entry
-                                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
-                                    (sym, "NSE",
-                                     datetime.now(timezone.utc).isoformat(),
-                                     decision.get("entry", 0.0),
-                                     decision.get("shares", 0),
-                                     decision.get("stop_loss", 0.0),
-                                     decision.get("stop_loss", 0.0),
-                                     decision.get("target", 0.0),
-                                     decision.get("target", 0.0) * 1.05,
-                                     0.0, decision.get("entry", 0.0),
-                                     "OPEN", "PENNY", "MIS", self.regime)
-                                )
-                                await db.commit()
-                    except Exception as e:
-                        logger.error("penny_entry_wiring_failed ticker=%s error=%s", sym, str(e))
-                    accept += 1
-            except Exception as e:
-                logger.error("penny_ticker_eval_failed ticker=%s error=%s", sym, str(e))
-                error += 1
+                    logger.info(
+                        "penny_entry_attempted ticker=%s entry=%.2f sl=%.2f shares=%d paper=%s order_id=%s",
+                        sym, decision.get("entry", 0.0),
+                        decision.get("stop_loss", 0.0),
+                        decision.get("shares", 0),
+                        order_result.get("paper"),
+                        order_result.get("entry_order_id"),
+                    )
+                    if (not order_result.get("unwound")
+                            and order_result.get("entry_status") == "filled"):
+                        import aiosqlite
+                        from datetime import datetime, timezone
+                        async with aiosqlite.connect(settings.DB_PATH) as db:
+                            await db.execute(
+                                """INSERT INTO positions (
+                                    ticker, exchange, entry_date, entry_price, shares,
+                                    stop_loss_initial, trailing_stop_current,
+                                    target_1, target_2, atr_14_at_entry,
+                                    highest_close_since_entry, status, source,
+                                    product_type, regime_at_entry
+                                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+                                (sym, "NSE",
+                                 datetime.now(timezone.utc).isoformat(),
+                                 decision.get("entry", 0.0),
+                                 decision.get("shares", 0),
+                                 decision.get("stop_loss", 0.0),
+                                 decision.get("stop_loss", 0.0),
+                                 decision.get("target", 0.0),
+                                 decision.get("target", 0.0) * 1.05,
+                                 0.0, decision.get("entry", 0.0),
+                                 "OPEN", "PENNY", "MIS", self.regime)
+                            )
+                            await db.commit()
+                except Exception as e:
+                    logger.error("penny_entry_wiring_failed ticker=%s error=%s", sym, str(e))
+                accept += 1
 
         return {"scan_id": scan_id, "accept": accept, "reject": reject, "error": error}

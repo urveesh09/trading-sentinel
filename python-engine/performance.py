@@ -46,10 +46,70 @@ async def init_ledger(db_path: str):
         await db.commit()
 
 async def current_bankroll(db_path: str) -> float:
+    """
+    [AUDIT-FIX-1.1 2026-06-25] DEPRECATED for risk math.
+
+    Returns whatever `bankroll_after` was written to the LAST row of the
+    ledger. This was convenient for a single-pool system but is now
+    **incorrect when ledger rows of different sources interleave**:
+    after a penny close, the "last row" reflects `nifty_bankroll +
+    penny_pnl`, not `nifty_bankroll`. After a swing close, it reflects
+    `nifty + swing_pnl`. Different sequences give different answers
+    for the same actual bankroll state.
+
+    **DO NOT use in risk decisions.** Use `bankroll_for_source(db,
+    source)` instead. This function is kept only for back-compat in
+    non-risk call sites (legacy audit displays).
+
+    Migration: search-replace `current_bankroll()` with
+    `bankroll_for_source(db_path, source)` where the caller knows the
+    source. For endpoints that need the OVERALL bankroll, use the
+    proper sum: `INITIAL_BANKROLL + SUM(pnl)` (filter not applied).
+    """
     async with aiosqlite.connect(db_path) as db:
         cursor = await db.execute("SELECT bankroll_after FROM bankroll_ledger ORDER BY id DESC LIMIT 1")
         row = await cursor.fetchone()
         return row[0] if row else settings.INITIAL_BANKROLL
+
+
+async def bankroll_for_source(db_path: str, source: str) -> float:
+    """
+    [AUDIT-FIX-1.1 2026-06-25] Per-source running bankroll.
+
+    Returns: INITIAL_BANKROLL + sum(pnl WHERE source == {source}).
+
+    Use this everywhere you used to call `current_bankroll()` with a
+    known source. Unlike `current_bankroll()`, this is robust to row
+    ordering and never mixes sources.
+
+    Examples:
+        nifty_bal = await bankroll_for_source(db, "SYSTEM")   # swing
+        mom_bal   = await bankroll_for_source(db, "MOMENTUM")  # momentum
+        penny_bal = await bankroll_for_source(db, "PENNY")     # penny
+        overall   = INITIAL_BANKROLL + sum over all sources
+                    (computed by caller; not exposed here because
+                    callers should think in terms of per-pool)
+
+    Penny users: penny pool is allocated separately (PENNY_LIVE_BANKROLL
+    or PENNY_PAPER_BANKROLL), not from the INITIAL_BANKROLL pool. For
+    penny, prefer `penny_bankroll()` (returns allocated + realised
+    pnl for penny only).
+
+    Fails open: any DB error returns INITIAL_BANKROLL.
+    """
+    import aiosqlite
+    try:
+        async with aiosqlite.connect(db_path) as db:
+            async with db.execute(
+                "SELECT COALESCE(SUM(pnl), 0.0) FROM bankroll_ledger WHERE source = ?",
+                (source,),
+            ) as cur:
+                row = await cur.fetchone()
+                if row and row[0] is not None:
+                    return settings.INITIAL_BANKROLL + float(row[0])
+    except Exception as e:
+        logger.warning("bankroll_for_source_query_failed source=%s error=%s", source, str(e))
+    return settings.INITIAL_BANKROLL
 
 
 async def nifty_bankroll(db_path: str) -> float:
@@ -108,7 +168,7 @@ async def record_trade_close(db_path: str, ticker: str, pnl: float,
     #   "PENNY"  -- penny subsystem
     # Used by performance.penny_pool_pnl() and analytics.outcome_correlator()
     # to compute per-pool P&L without double-counting across pools.
-    before = await current_bankroll(db_path)
+    before = await bankroll_for_source(db_path, source)
     after = before + pnl
     async with aiosqlite.connect(db_path) as db:
         await db.execute(
