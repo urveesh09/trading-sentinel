@@ -142,6 +142,8 @@ class PennyHourlyReport:
             diag = self._build_diag_tail(
                 reject_reasons, universe_size,
                 data_quality_audit=data_quality_audit,
+                universe_as_of=universe_as_of,
+                universe_age_days=universe_age_days,
             )
             if diag:
                 return head + "\n" + diag
@@ -195,6 +197,8 @@ class PennyHourlyReport:
         universe_size: int,
         top_n: int = 3,
         data_quality_audit: Optional[dict] = None,
+        universe_as_of: Optional[str] = None,
+        universe_age_days: Optional[int] = None,
     ) -> str:
         """
         Build the diagnostic tail for the no-action case.
@@ -269,6 +273,20 @@ class PennyHourlyReport:
                 f"missing corp data (promoter={data_quality_audit.get('null_promoter', 0)}, "
                 f"pb={data_quality_audit.get('null_pb', 0)})"
             )
+
+        # [AUDIT-FIX-2.4-EXT 2026-06-26] Surface universe staleness in
+        # the no-action path too. The active path adds the stale
+        # warning only when entries/kill-switch fire; the no-action
+        # path is the more common case for penny, and "no signals +
+        # stale universe" is the question the operator needs answered
+        # first. Don't block, just inform.
+        if universe_age_days is not None and universe_age_days > 1:
+            parts.append(
+                f"⚠ Universe stale (as_of={universe_as_of}, age={universe_age_days}d). "
+                f"Run run_penny_universe_refresh()."
+            )
+        elif universe_as_of is None and universe_size > 0:
+            parts.append("⚠ Universe JSON missing as_of field.")
 
         return " | ".join(parts)
 
@@ -388,6 +406,8 @@ async def run_hourly_report(db_path: str, regime: str, open_positions: list,
                              kill_switch_active: bool, circuit_blocks: int,
                              universe_size: int = 0,
                              data_quality_audit: Optional[dict] = None,
+                             universe_as_of: Optional[str] = None,
+                             universe_age_days: Optional[int] = None,
                              now: Optional[datetime] = None) -> None:
     """
     Top-level entry point for the scheduler job.
@@ -401,6 +421,14 @@ async def run_hourly_report(db_path: str, regime: str, open_positions: list,
     data_quality_audit (2026-06-25): optional dict from
     PennyUniverse.quality_audit(). Plumbed through to _build_diag_tail
     so degraded-universe conditions surface in the operator's report.
+
+    universe_as_of + universe_age_days (2026-06-26 fix): plumbed from
+    main.run_penny_hourly_report so stale-universe conditions are
+    visible in the report body. Without these kwargs on the signature
+    the scheduler job has been throwing TypeError every hour since
+    commit efe91b5 (the kwargs were added to the caller but never to
+    the callee). Defaults to None so older callers / tests stay
+    backwards-compatible.
     """
     from config import settings
     if now is None:
@@ -415,6 +443,8 @@ async def run_hourly_report(db_path: str, regime: str, open_positions: list,
         kill_switch_active=kill_switch_active, circuit_blocks=circuit_blocks,
         universe_size=universe_size,
         data_quality_audit=data_quality_audit,
+        universe_as_of=universe_as_of,
+        universe_age_days=universe_age_days,
     )
     await rpt.send(
         body=body,
