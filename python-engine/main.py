@@ -210,6 +210,13 @@ _penny_scanner = None
 # on scanner singleton rebuild; 0 means "unknown" (older callers /
 # pre-2026-06-24 deployments will show no diagnostic line).
 _last_penny_scan_universe_size: int = 0
+# [AUDIT-FIX-CSV-SPAM 2026-06-26] Process-level one-shot gate for
+# the universe_csv_missing_fallback warning. The fallback works
+# (in-code NIFTY_500_TICKERS has 500 tickers), so emitting the
+# warning every 15 minutes adds nothing but noise. The first warn
+# tells the operator the CSV is missing; subsequent loads stay
+# silent.
+_universe_csv_warn_emitted: bool = False
 
 
 # 2026-06-24 bankroll fix: single shared ledger_writer used by every penny
@@ -1281,28 +1288,42 @@ except (FileNotFoundError, KeyError, json.JSONDecodeError):
         "Re-run the universe expansion setup or restore the file from git."
     )
 
-
 def _load_universe_with_fallback() -> pd.DataFrame:
-    """3-tier universe loader (Task 8, 2026-06-15).
+    """
+    3-tier universe loader (Task 8, 2026-06-15).
 
     1. Try CSV at UNIVERSE_PATH (operator-editable, supports custom universes)
     2. Try in-code NIFTY_500_TICKERS (hand-curated, always available)
     3. Crash loudly with a clear error (no silent fallback to old NIFTY_100)
 
     Returns a DataFrame with columns: tradingsymbol, exchange, sector.
+
+    [AUDIT-FIX-CSV-SPAM 2026-06-26] The CSV-missing warning fires
+    every time the screener runs (every momentum scan = every 15min).
+    When the file is permanently missing, the warning floods the log
+    with 19+ identical entries per day. The fallback still works, so
+    demote to a single-shot INFO after the first warn. The first warn
+    is sufficient to alert the operator that the CSV is missing; the
+    fallback path is documented.
     """
+    global _universe_csv_warn_emitted
     try:
         universe = pd.read_csv(settings.UNIVERSE_PATH)
         logger.info("universe_loaded_from_csv", path=settings.UNIVERSE_PATH, count=len(universe))
         return universe
     except FileNotFoundError:
-        logger.warning(
-            "universe_csv_missing_fallback",
-            path=settings.UNIVERSE_PATH,
-            fallback_count=len(NIFTY_500_TICKERS),
-        )
+        if not _universe_csv_warn_emitted:
+            logger.warning(
+                "universe_csv_missing_fallback",
+                path=settings.UNIVERSE_PATH,
+                fallback_count=len(NIFTY_500_TICKERS),
+                note="this warning fires once per process; subsequent loads use the in-code fallback silently",
+            )
+            _universe_csv_warn_emitted = True
     except Exception as e:
-        logger.warning("universe_csv_load_failed", error=str(e))
+        if not _universe_csv_warn_emitted:
+            logger.warning("universe_csv_load_failed", error=str(e))
+            _universe_csv_warn_emitted = True
 
     if NIFTY_500_TICKERS:
         logger.info("universe_loaded_from_code", count=len(NIFTY_500_TICKERS))
