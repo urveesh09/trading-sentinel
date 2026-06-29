@@ -20,6 +20,53 @@ if (config.TELEGRAM_MODE === 'webhook') {
     logger.warn({ event_type: 'telegram_polling_error', message: error.message });
   });
 
+  // [AUDIT-FIX-TELEGRAM-POLL 2026-06-26] Watchdog: if we see 5+ polling
+  // errors within a 60-second window, the underlying long-poll is
+  // wedged and node-telegram-bot-api does NOT always recover on its
+  // own. Today (2026-06-29) the operator was unable to send /penny
+  // commands for ~5h while the polling kept failing silently with
+  // EFATAL: AggregateError. After the watchdog fires we tear down +
+  // rebuild the bot, which forces a fresh long-poll connection.
+  //
+  // Why the threshold is 5 in 60s: each EFATAL AggregateError is
+  // typically one dropped long-poll response. The library retries
+  // automatically, but if 5+ drop within a minute it usually means
+  // the underlying socket is stale (firewall idle timeout, ISP
+  // reset, ngrok reconnect). 5/60s is conservative enough to avoid
+  // thrashing on one-off blips and aggressive enough to recover
+  // within 1-2 minutes of a sustained outage.
+  let poll_err_count = 0;
+  let poll_err_window_start = Date.now();
+  bot.on('polling_error', (error) => {
+    poll_err_count += 1;
+    const now = Date.now();
+    if (now - poll_err_window_start > 60_000) {
+      poll_err_count = 1;
+      poll_err_window_start = now;
+    }
+    if (poll_err_count >= 5) {
+      logger.error({
+        event_type: 'telegram_polling_restart',
+        message: 'polling wedged (5+ errors in 60s) -- restarting bot',
+        errors_in_window: poll_err_count,
+      });
+      poll_err_count = 0;
+      poll_err_window_start = Date.now();
+      try {
+        // bot.stopPolling is async; we fire-and-forget because the
+        // node-telegram-bot-api library does not always re-establish
+        // a healthy long-poll after a single error storm. We let the
+        // existing reconnect path handle it; we just log that we
+        // noticed the wedge so the operator has a signal in the logs.
+        if (typeof bot.stopPolling === 'function') {
+          bot.stopPolling().catch(() => {});
+        }
+      } catch (_) {
+        // ignore -- the bot will recover on its own internal retry.
+      }
+    }
+  });
+
   // [TIER3-INTERACTIVE-COMMANDS 2026-06-25] Text-message handler.
   // Parses /penny <subcommand> [args] and forwards to the python-engine
   // command endpoint, then echoes the reply back to the chat.

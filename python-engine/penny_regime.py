@@ -220,9 +220,23 @@ class PennyRegimeEngine:
         return 1.0 - (dist + 0.10) / 0.15
 
     def classify(self, vol_rank: Optional[float], vix_proxy: Optional[float]) -> PennyRegime:
-        """Map the two inputs to a PennyRegime per spec §6.3."""
+        """
+        Map the two inputs to a PennyRegime per spec §6.3.
+
+        [FAIL-OPEN 2026-06-26] When either input is missing, return
+        PR1_CALM (not UNKNOWN). The earlier UNKNOWN behaviour sized
+        at 0% per trade via the risk engine (UNKNOWN -> 0.0 in
+        _DEFAULT_SIZE), which blocked every penny entry whenever the
+        scanner had not yet fed vol_rank or the VIX proxy feed had
+        no data. Rule 15 (operator mandate): "don't kill
+        proactiveness for lack of data." The scanner can still
+        surface uncertainty via confidence_reasons() (which surfaces
+        "vol_rank: unknown" / "vix_proxy: unknown" in the operator
+        response) and via penny_regime_computed log line. The
+        actual entry decision remains gated by PR3_HOT block.
+        """
         if vol_rank is None or vix_proxy is None:
-            return PennyRegime.UNKNOWN
+            return PennyRegime.PR1_CALM
         if vol_rank >= _VOL_PR2_MAX or vix_proxy >= _VIX_PR2_MAX:
             return PennyRegime.PR3_HOT
         if vol_rank >= _VOL_PR1_MAX or vix_proxy >= _VIX_PR1_MAX:

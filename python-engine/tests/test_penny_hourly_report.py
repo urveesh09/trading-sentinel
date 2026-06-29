@@ -596,9 +596,17 @@ def test_build_diag_tail_unit():
     assert "No scan activity this hour" in out
     assert "universe_size=0" in out
 
-    # Universe known, no rejections
+    # Universe known, no rejections (without as_of: should warn the
+    # operator that the universe JSON is missing its as_of field --
+    # 2026-06-26 fix).
     out = PennyHourlyReport._build_diag_tail({}, 87)
-    assert out == "Scanned: 87 | (no rejection rows logged)"
+    assert "Scanned: 87" in out
+    assert "no rejection rows logged" in out
+    assert "missing as_of" in out
+
+    # Same call but with universe_as_of supplied: warning suppressed.
+    out = PennyHourlyReport._build_diag_tail({}, 87, universe_as_of="2026-06-29")
+    assert "missing as_of" not in out
 
     # Universe unknown, rejections present (back-compat: legacy callers)
     out = PennyHourlyReport._build_diag_tail({"foo": 5}, 0)
@@ -715,3 +723,63 @@ def test_build_report_accepts_data_quality_audit(tmp_paths):
     assert "No action in Penny this hour" in body
     assert "No scan activity this hour" in body
     assert "corp_source=missing" in body
+
+
+def test_run_hourly_report_accepts_universe_as_of_kwargs(tmp_paths):
+    """
+    Regression test (2026-06-26): main.run_penny_hourly_report passes
+    universe_as_of + universe_age_days into run_hourly_report. The
+    callee MUST accept these kwargs -- otherwise the scheduler job
+    raises TypeError every hour, the hourly report never fires, and
+    the operator loses visibility. Introduced by commit efe91b5 (Tier 3
+    operator console) which added the kwargs to the call site without
+    updating the callee signature.
+    """
+    from penny_hourly_report import run_hourly_report
+    from penny_universe import PennyUniverse  # ensure module imports
+    # Provide a now inside the report window (10:00-15:00 IST) so the
+    # function does not early-return on is_in_report_window check.
+    now = datetime(2026, 6, 29, 11, 0)
+    # Should NOT raise TypeError on the new kwargs.
+    asyncio.run(run_hourly_report(
+        db_path=str(tmp_paths / "test.db"),
+        regime="PR1_CALM",
+        open_positions=[],
+        deployed_capital=0.0,
+        unrealised_pnl=0.0,
+        kill_switch_active=False,
+        circuit_blocks=0,
+        universe_size=0,
+        data_quality_audit=None,
+        universe_as_of="2026-06-29",
+        universe_age_days=0,
+        now=now,
+    ))
+
+
+def test_build_report_plumbs_universe_as_of_to_diag(tmp_paths):
+    """
+    build_report() plumbs universe_as_of through to the diagnostic tail.
+    When the universe is >1 day stale, the operator should see the
+    "Universe stale" line so the silence becomes a question rather than
+    a mystery (rule 13: heartbeat-report-pattern).
+    """
+    from penny_hourly_report import PennyHourlyReport
+    rpt = PennyHourlyReport(db_path=str(tmp_paths / "test.db"))
+    body = asyncio.run(rpt.build_report(
+        now=datetime(2026, 6, 29, 11, 0),
+        regime="PR1_CALM",
+        open_positions=[],
+        deployed_capital=0.0,
+        unrealised_pnl=0.0,
+        kill_switch_active=False,
+        circuit_blocks=0,
+        universe_size=87,
+        data_quality_audit=None,
+        universe_as_of="2026-06-21",  # 8 days old
+        universe_age_days=8,
+    ))
+    # universe_size=87 + stale should surface the warning
+    assert "Scanned: 87" in body
+    # The "Universe stale" line must be present when age > 1
+    assert "Universe stale" in body
