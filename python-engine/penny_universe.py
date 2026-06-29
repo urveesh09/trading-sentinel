@@ -600,6 +600,18 @@ async def refresh_from_kite(kite, out_json_path, corp_json_path, top_n=100):
             )
 
         # 4-5. Build candidate records (eligibility filters happen here)
+        # [PENNY-SEGMENT-FILTER 2026-06-26] Reject NSE non-EQ segments
+        # (SME = "-SM"/"-ST" suffix, BE = "-BE", BZ = "-BZ", etc.). The
+        # Kite filter in kite_client.get_instruments_nse_eq() relies on
+        # `instrument_type=="EQ"` returning only the standard NSE EQ
+        # series, but in practice some SME/BE symbols surface with
+        # instrument_type=EQ in certain Kite responses -- leaving the
+        # universe full of un-tokenisable tickers and the scanner
+        # producing 0/0/0 forever. Defence in depth: also reject by
+        # tradingsymbol suffix here so the refresh cannot accidentally
+        # pick up non-standard segments regardless of Kite behaviour.
+        # Counter is logged so the operator can see the leak size.
+        sm_be_rejected = 0
         candidates = []
         for inst in instruments:
             sym = inst["tradingsymbol"]
@@ -607,27 +619,46 @@ async def refresh_from_kite(kite, out_json_path, corp_json_path, top_n=100):
             q = quotes.get(tok) if isinstance(quotes, dict) else None
             if not q:
                 continue
-            prev_close = q.get("ohlc", {}).get("close") or q.get("last_price")
-            if prev_close is None:
+            # Standard NSE EQ segments: EQ only. Anything else (SM, BE,
+            # BZ, IL, GS) is a non-standard series; reject.
+            series = (inst.get("series") or "EQ").upper()
+            if series != "EQ":
+                sm_be_rejected += 1
                 continue
-            corp_rec = corp_by_sym.get(sym, {})
-            tv_20d = corp_rec.get("median_traded_value_20d", 0) or 0
-            cand = {
-                "symbol": sym,
-                "series": inst.get("series", "EQ"),
-                "prev_close": prev_close,
-                "promoter_holding_pct": corp_rec.get("promoter_holding_pct"),
-                "pb_ratio": corp_rec.get("pb_ratio"),
-                "is_t2t": corp_rec.get("is_t2t", False),
-                "is_asm": corp_rec.get("is_asm", False),
-                "is_gsm": corp_rec.get("is_gsm", False),
-                "median_traded_value_20d": tv_20d,
-                # momentum metrics populated below
-                "avg_return_20d": corp_rec.get("avg_return_20d", 0) or 0,
-                "dist_from_52w_low_pct": corp_rec.get("dist_from_52w_low_pct", 0) or 0,
-                "vol_20d": corp_rec.get("vol_20d", 0) or 0,
-            }
-            candidates.append(cand)
+            # Belt-and-braces: some Kite responses report series=EQ for
+            # SME tickers too. Filter by tradingsymbol suffix as well.
+            for bad_suffix in ("-SM", "-ST", "-BE", "-BZ", "-IL", "-GS"):
+                if sym.endswith(bad_suffix):
+                    sm_be_rejected += 1
+                    break
+            else:
+                prev_close = q.get("ohlc", {}).get("close") or q.get("last_price")
+                if prev_close is None:
+                    continue
+                corp_rec = corp_by_sym.get(sym, {})
+                tv_20d = corp_rec.get("median_traded_value_20d", 0) or 0
+                cand = {
+                    "symbol": sym,
+                    "series": series,
+                    "prev_close": prev_close,
+                    "promoter_holding_pct": corp_rec.get("promoter_holding_pct"),
+                    "pb_ratio": corp_rec.get("pb_ratio"),
+                    "is_t2t": corp_rec.get("is_t2t", False),
+                    "is_asm": corp_rec.get("is_asm", False),
+                    "is_gsm": corp_rec.get("is_gsm", False),
+                    "median_traded_value_20d": tv_20d,
+                    # momentum metrics populated below
+                    "avg_return_20d": corp_rec.get("avg_return_20d", 0) or 0,
+                    "dist_from_52w_low_pct": corp_rec.get("dist_from_52w_low_pct", 0) or 0,
+                    "vol_20d": corp_rec.get("vol_20d", 0) or 0,
+                }
+                candidates.append(cand)
+        if sm_be_rejected:
+            logger.info(
+                "penny_universe_segment_filtered count=%d "
+                "(rejected NSE non-EQ series: SM/BE/ST/BZ/IL/GS)",
+                sm_be_rejected,
+            )
 
         # Apply price-band eligibility only here (the full eligibility
         # filter with promoter/PB re-runs at scan time via PennyUniverse.eligible_tickers).

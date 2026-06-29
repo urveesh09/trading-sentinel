@@ -451,8 +451,16 @@ async def run_penny_connors_scan():
 
 async def run_penny_universe_refresh():
     """Daily 08:00 IST refresh (spec §9.1)."""
+    # [AUDIT-FIX-REFRESH 2026-06-26] Loud start/end logging. The
+    # earlier implementation had zero log lines on the happy path
+    # (refresh_from_kite's own logs were swallowed if the function
+    # returned early via one of its None-return paths), so the
+    # operator had no way to tell whether the 08:00 cron even fired.
+    # Wrap the call with explicit start/end + success-count logging
+    # so a silent refresh is observable from the docker logs alone.
+    logger.info("penny_universe_refresh_start")
     try:
-        await refresh_from_kite(
+        ranked = await refresh_from_kite(
             kite=kite,
             out_json_path=PENNY_UNIVERSE_JSON_PATH,
             corp_json_path=PENNY_CORP_DATA_JSON_PATH,
@@ -460,6 +468,22 @@ async def run_penny_universe_refresh():
         # Force the universe singleton to reload next call
         global _penny_universe
         _penny_universe = None
+        if ranked is None:
+            # refresh_from_kite returned None -- it has already logged
+            # the specific cause (e.g. all quote batches failed). Log
+            # a single-line summary so the operator sees the silent
+            # skip from one grep.
+            logger.warning(
+                "penny_universe_refresh_skipped "
+                "(refresh_from_kite returned None -- see prior "
+                "penny_universe_quote_* events for cause)"
+            )
+        else:
+            logger.info(
+                "penny_universe_refresh_done count=%d as_of=%s",
+                len(ranked),
+                datetime.now(timezone.utc).strftime("%Y-%m-%d"),
+            )
     except Exception as e:
         logger.error("penny_universe_refresh_failed", error=str(e))
 
