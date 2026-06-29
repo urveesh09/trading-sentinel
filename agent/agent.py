@@ -226,8 +226,15 @@ def analyze_with_gemini(
 
     def _call_gemini():
         try:
+            # [AUDIT-FIX-GEMINI 2026-06-26] gemini-2.0-flash was retired by
+            # Google and now returns 404 NOT_FOUND ("This model
+            # models/gemini-2.0-flash is no longer available"). Every
+            # momentum intelligence call fails today; the Telegram send
+            # still goes out with the bare ticker (different outbound path)
+            # but the operator never sees the Gemini enrichment. Move to
+            # gemini-2.5-flash (matches the backup agent's model).
             resp = client.models.generate_content(
-                model='gemini-2.0-flash',
+                model='gemini-2.5-flash',
                 contents=prompt,
                 config=types.GenerateContentConfig(
                     response_mime_type="application/json",
