@@ -492,7 +492,13 @@ async def run_penny_regime_compute():
     """Daily 09:20 IST regime compute (spec §6, §9.1)."""
     try:
         await _penny_regime_engine.compute_today(kite=kite)
-        logger.info("penny_regime_computed", regime=str(_penny_regime_engine.today_regime))
+        # [AUDIT-FIX-REGIME-LOG 2026-06-26] Use .value (e.g. "PR1_CALM")
+        # rather than str() which produces the Enum repr "PennyRegime.PR1_CALM".
+        # str() output breaks operator grep + the daily attribution message
+        # builder downstream.
+        regime_val = _penny_regime_engine.today_regime
+        regime_str = regime_val.value if hasattr(regime_val, "value") else str(regime_val)
+        logger.info("penny_regime_computed", regime=regime_str)
     except Exception as e:
         logger.error("penny_regime_compute_failed", error=str(e))
 
@@ -501,7 +507,9 @@ async def run_penny_regime_refresh():
     """Daily 13:00 IST intraday regime refresh (spec §6, §9.1)."""
     try:
         await _penny_regime_engine.compute_today(kite=kite)
-        logger.info("penny_regime_refreshed", regime=str(_penny_regime_engine.today_regime))
+        regime_val = _penny_regime_engine.today_regime
+        regime_str = regime_val.value if hasattr(regime_val, "value") else str(regime_val)
+        logger.info("penny_regime_refreshed", regime=regime_str)
     except Exception as e:
         logger.error("penny_regime_refresh_failed", error=str(e))
 
