@@ -5,6 +5,7 @@ import pytz
 import os
 import json
 import asyncio
+import time
 import pandas as pd
 import structlog
 import aiosqlite
@@ -456,8 +457,27 @@ async def run_penny_connors_scan():
         logger.error("penny_connors_scan_failed", error=str(e))
 
 
+# [AUDIT-FIX-REFRESH-SKIP 2026-06-30] Guard against overlapping
+# runs. The 08:00 cron fires once, but if the previous run is
+# still in flight (e.g. a slow Kite, a network blip) the next cron
+# tick at 09:00, 10:00 etc. would otherwise queue another
+# concurrent refresh and double the Kite API cost. We use a
+# module-level in-progress flag (re-entrancy-safe) -- the new
+# run logs a clear "skipped, previous still in progress" line
+# and returns immediately. The lock is cleared in a `finally`
+# block so even an exception path releases it.
+_penny_universe_refresh_in_progress: bool = False
+
+
 async def run_penny_universe_refresh():
     """Daily 08:00 IST refresh (spec §9.1)."""
+    global _penny_universe_refresh_in_progress
+    if _penny_universe_refresh_in_progress:
+        logger.warning(
+            "penny_universe_refresh_skipped reason=previous_run_in_progress"
+        )
+        return
+    _penny_universe_refresh_in_progress = True
     # [AUDIT-FIX-REFRESH 2026-06-26] Loud start/end logging. The
     # earlier implementation had zero log lines on the happy path
     # (refresh_from_kite's own logs were swallowed if the function
@@ -465,6 +485,8 @@ async def run_penny_universe_refresh():
     # operator had no way to tell whether the 08:00 cron even fired.
     # Wrap the call with explicit start/end + success-count logging
     # so a silent refresh is observable from the docker logs alone.
+    import time as _time
+    t0 = _time.monotonic()
     logger.info("penny_universe_refresh_start")
     try:
         ranked = await refresh_from_kite(
@@ -475,6 +497,7 @@ async def run_penny_universe_refresh():
         # Force the universe singleton to reload next call
         global _penny_universe
         _penny_universe = None
+        elapsed = _time.monotonic() - t0
         if ranked is None:
             # refresh_from_kite returned None -- it has already logged
             # the specific cause (e.g. all quote batches failed). Log
@@ -483,16 +506,20 @@ async def run_penny_universe_refresh():
             logger.warning(
                 "penny_universe_refresh_skipped "
                 "(refresh_from_kite returned None -- see prior "
-                "penny_universe_quote_* events for cause)"
+                "penny_universe_quote_* events for cause) elapsed=%.1fs",
+                elapsed,
             )
         else:
             logger.info(
-                "penny_universe_refresh_done count=%d as_of=%s",
+                "penny_universe_refresh_done count=%d as_of=%s elapsed=%.1fs",
                 len(ranked),
                 datetime.now(timezone.utc).strftime("%Y-%m-%d"),
+                elapsed,
             )
     except Exception as e:
         logger.error("penny_universe_refresh_failed", error=str(e))
+    finally:
+        _penny_universe_refresh_in_progress = False
 
 
 async def run_penny_regime_compute():
@@ -1050,6 +1077,74 @@ def register_penny_scheduler_jobs(scheduler):
         hour=9, minute=30,
         id="penny_connors_scan",
     )
+    # [PENNY-EDGE 2026-07-01] Adaptive MR+MO signal scanner.
+    # TWO legs run side-by-side each morning:
+    #   - PAPER leg: bankroll = PENNY_EDGE_PAPER_BANKROLL (default Rs 100,000)
+    #   - LIVE leg:  bankroll = PENNY_EDGE_LIVE_BANKROLL (default Rs 1,000)
+    # Both share the same signal engine but each sizes positions
+    # against its own bankroll. They are tracked separately in the
+    # positions table (source='EDGE_PAPER' vs 'EDGE_LIVE') so they
+    # don't double up or see each other's idempotency rows.
+    # Fires at 09:30 IST daily, in parallel with the connors scan.
+    async def _run_penny_edge_scan_safe():
+        import httpx as _httpx
+        from penny_edge_orchestrator import (
+            run_penny_edge_scan,
+            format_telegram,
+        )
+        try:
+            summary = await run_penny_edge_scan(kite)
+            try:
+                msg = format_telegram(summary, header="Penny Edge scan")
+                async with _httpx.AsyncClient() as _client:
+                    await _client.post(
+                        f"{settings.CONTAINER_A_URL}/api/internal/notify",
+                        json={"message": msg},
+                        headers={"X-Internal-Secret": settings.INTERNAL_API_SECRET or ""},
+                        timeout=5.0,
+                    )
+            except Exception as notify_exc:
+                logger.warning("penny_edge_notify_failed err=%s", notify_exc)
+        except Exception as exc:
+            logger.error("penny_edge_scan_failed err=%s", exc, exc_info=True)
+
+    scheduler.add_job(
+        _run_penny_edge_scan_safe, "cron",
+        hour=9, minute=30,
+        id="penny_edge_scan",
+    )
+
+    # [PENNY-EDGE 2026-07-01] EOD exit job: force-close any EDGE-sourced
+    # positions (both PAPER and LIVE legs) older than 3 days.
+    async def _run_penny_edge_exit_safe():
+        import httpx as _httpx
+        from penny_edge_orchestrator import (
+            run_penny_edge_exit,
+            format_exit_telegram,
+        )
+        try:
+            summary = await run_penny_edge_exit(kite)
+            try:
+                msg = format_exit_telegram(summary)
+                if len(summary.get("closed_paper", [])) + len(summary.get("closed_live", [])) > 0:
+                    async with _httpx.AsyncClient() as _client:
+                        await _client.post(
+                            f"{settings.CONTAINER_A_URL}/api/internal/notify",
+                            json={"message": msg},
+                            headers={"X-Internal-Secret": settings.INTERNAL_API_SECRET or ""},
+                            timeout=5.0,
+                        )
+            except Exception as notify_exc:
+                logger.warning("penny_edge_exit_notify_failed err=%s", notify_exc)
+        except Exception as exc:
+            logger.error("penny_edge_exit_failed err=%s", exc, exc_info=True)
+
+    scheduler.add_job(
+        _run_penny_edge_exit_safe, "cron",
+        hour=15, minute=15,
+        id="penny_edge_exit",
+    )
+
     scheduler.add_job(
         run_penny_eod_check, "cron",
         hour=settings.PENNY_MIS_SMART_EOD_TIME // 60,
@@ -1720,15 +1815,45 @@ async def get_signals():
             regime_score=_last_regime_state.regime_score if _last_regime_state else 100.0,
         )
 
+# [MOMENTUM-SKIP-IF-RUNNING 2026-06-30] Re-entrancy guard. The
+# momentum scan fires every 15 min via cron; if the previous
+# run is still in flight (e.g. a slow Kite + 500-ticker universe)
+# the next tick queues another concurrent run, which doubles
+# the API cost and starves the next-after-that. Same pattern as
+# the penny_universe_refresh guard. The flag is module-level
+# (this function is the only writer; the next instance sees
+# True and short-circuits with a clear log line).
+_momentum_scan_in_progress: bool = False
+
+
 async def run_momentum_screener():
     """
     Hourly intraday momentum scanner.
     """
+    global current_momentum_signals, _momentum_scan_in_progress
+    if _momentum_scan_in_progress:
+        logger.warning(
+            "momentum_scan_skipped reason=previous_run_in_progress"
+        )
+        return
+    _momentum_scan_in_progress = True
+    import time as _time
+    _t0 = _time.monotonic()
+    try:
+        return await _run_momentum_screener_impl(_t0)
+    finally:
+        _momentum_scan_in_progress = False
+
+
+async def _run_momentum_screener_impl(t0):
+    """Implementation of run_momentum_screener, separated so the
+    skip-if-running guard lives in the wrapper. See comment
+    on the wrapper for the rationale."""
     global current_momentum_signals
 
     now_ist = datetime.now(IST)
     today = now_ist.date()
-    
+
     if not await is_trading_day(today, settings.DB_PATH):
         logger.info("momentum_scan_skip", reason="market_closed_today")
         return
@@ -1802,58 +1927,63 @@ async def run_momentum_screener():
         else settings.MOMENTUM_VOL_SURGE_PCT
     )
 
-    for _, row in universe.iterrows():
+    # [MOMENTUM-PARALLEL 2026-06-30] Parallel per-ticker evaluation.
+    # The earlier serial loop took 15+ min per scan for 500 tickers
+    # at ~3 Kite calls each (intraday + daily + prev_trading_day).
+    # With asyncio.gather, all 500 fetches queue at the Kite rate
+    # limiter (3 req/s) in parallel; wall-clock cost drops to
+    # 500 * 3 / 3 = 500s = 8 min cold cache, 30-60s hot cache.
+    # Result processing (filtering, logging, persist) stays
+    # serial AFTER gather returns, so the data structures
+    # downstream are unchanged.
+    yesterday_date = await prev_trading_day(today, settings.DB_PATH)
+    from_date_for_daily = (yesterday_date - pd.Timedelta(days=30)).strftime("%Y-%m-%d")
+    to_date_for_daily = today.strftime("%Y-%m-%d")
+    universe_rows = list(universe.iterrows())
+
+    async def _eval_one_momentum_ticker(row):
+        """One ticker's intraday + daily fetch + evaluate.
+
+        Returns a tuple: (ticker, sig_data_or_None, error_or_None)
+        - sig_data is the dict returned by evaluate_momentum_signal
+          (whether fired=True or False) so the caller can log +
+          persist both accept and reject.
+        - error is non-None when the per-ticker work raised; the
+          outer loop counts it as an error row and continues.
+        """
         ticker = row['tradingsymbol']
-
-        # SWING WINS: skip if swing position open for this ticker
-        if ticker in open_swing_tickers:
-            raw_rejected_momentum.append({"ticker": ticker, "reject_reason": "swing_position_exists"})
-            continue
-
         try:
-            # Get today's intraday candles
+            if ticker in open_swing_tickers:
+                return (ticker, {"fired": False, "ticker": ticker, "reject_reason": "swing_position_exists"}, None)
             df_intra = await kite.get_intraday(ticker, from_dt, to_dt)
             if df_intra.empty:
-                raw_rejected_momentum.append({"ticker": ticker, "reject_reason": "intraday_data_empty"})
-                continue
+                return (ticker, {"fired": False, "ticker": ticker, "reject_reason": "intraday_data_empty"}, None)
             if len(df_intra) < 4:
-                raw_rejected_momentum.append({"ticker": ticker, "reject_reason": "insufficient_intraday_candles", "count": len(df_intra)})
-                continue
-
-            # Get daily OHLCV: need >=14 trading days for MC5 ATR gate + prev_day_high.
-            # 30 calendar days guarantees 14+ trading days even across long holiday runs.
-            yesterday_date = await prev_trading_day(today, settings.DB_PATH)
-            from_date_for_daily = (yesterday_date - pd.Timedelta(days=30)).strftime("%Y-%m-%d")
+                return (ticker, {"fired": False, "ticker": ticker, "reject_reason": "insufficient_intraday_candles", "count": len(df_intra)}, None)
             df_daily = await kite.get_historical(
-                ticker, from_date_for_daily, today.strftime("%Y-%m-%d")
+                ticker, from_date_for_daily, to_date_for_daily
             )
             if df_daily.empty or len(df_daily) < 1:
-                raw_rejected_momentum.append({"ticker": ticker, "reject_reason": "daily_data_missing_for_prev_high"})
-                continue
-
-            # Filter out today's partial candle before using daily data.
-            # Today's daily high/low are incomplete mid-session and would skew ATR.
+                return (ticker, {"fired": False, "ticker": ticker, "reject_reason": "daily_data_missing_for_prev_high"}, None)
             df_prev = df_daily[df_daily.index.date < today]
             if df_prev.empty:
-                raw_rejected_momentum.append({"ticker": ticker, "reject_reason": "prev_day_data_not_found"})
-                continue
+                return (ticker, {"fired": False, "ticker": ticker, "reject_reason": "prev_day_data_not_found"}, None)
             prev_day_high = float(df_prev['high'].iloc[-1])
-
             fired, sig_data = evaluate_momentum_signal(
                 ticker=ticker,
                 df=df_intra,
                 prev_day_high=prev_day_high,
                 bankroll=bankroll,
                 momentum_pool=momentum_pool,
-                df_daily=df_prev,          # filtered: no partial today candle; >=14 rows for MC5 ATR
+                df_daily=df_prev,
                 vol_surge_threshold=vol_threshold,
                 market_regime=market_regime,
-                regime=today_regime,        # [MR-3REG] pass 3-regime state to dispatcher
+                regime=today_regime,
             )
-
+            sig_data["ticker"] = ticker
+            sig_data["fired"] = bool(fired)
             if fired:
                 sig_data.update({
-                    "ticker":           ticker,
                     "exchange":         row.get('exchange', 'NSE'),
                     "sector":           row.get('sector', 'UNKNOWN'),
                     "signal_time":      datetime.now(timezone.utc),
@@ -1861,17 +1991,46 @@ async def run_momentum_screener():
                     "ema_21": 0.0, "ema_50": 0.0, "ema_200": 0.0,
                     "atr_14": 0.0, "rsi_14": 0.0, "slope_5": 0.0,
                     "target_2": sig_data["target_1"],
-                    "regime":  today_regime.name,  # [MR-3REG] stamp for analytics/audit
+                    "regime":  today_regime.name,
                 })
-                raw_momentum.append(sig_data)
-            else:
-                sig_data["ticker"] = ticker
-                raw_rejected_momentum.append(sig_data)
+            return (ticker, sig_data, None)
+        except Exception as exc:
+            return (ticker, None, str(exc))
 
-        except Exception as e:
-            logger.error("momentum_scan_error", ticker=ticker, error=str(e))
-            raw_rejected_momentum.append({"ticker": ticker, "reject_reason": f"exception: {str(e)}"})
-            continue   # NEVER crash the full scan on one ticker failure
+    import time as _time
+    _t0 = _time.monotonic()
+    gathered = await asyncio.gather(
+        *[_eval_one_momentum_ticker(row) for _, row in universe_rows],
+        return_exceptions=True,
+    )
+    _elapsed = _time.monotonic() - _t0
+    logger.info(
+        "momentum_per_ticker_eval_done count=%d elapsed=%.1fs",
+        len(gathered), _elapsed,
+    )
+    for result in gathered:
+        if isinstance(result, Exception):
+            # Should not normally happen -- the per-ticker eval
+            # catches its own exceptions. Be defensive.
+            logger.error("momentum_gather_exception error=%s", str(result))
+            continue
+        ticker, sig_data, error = result
+        if error is not None:
+            logger.error("momentum_scan_error", ticker=ticker, error=error)
+            raw_rejected_momentum.append({
+                "ticker": ticker, "reject_reason": f"exception: {error}"
+            })
+            continue
+        if sig_data is None:
+            continue
+        if sig_data.get("fired"):
+            # Strip the helper field; downstream uses presence in
+            # raw_momentum as the "fired" signal.
+            sig_data.pop("fired", None)
+            raw_momentum.append(sig_data)
+        else:
+            sig_data.pop("fired", None)
+            raw_rejected_momentum.append(sig_data)
 
     # [MOMENTUM-R3-CAP 2026-06-16] Soft cap: total R3 positions (open + newly
     # accepted this scan) <= MOMENTUM_R3_MAX_POSITIONS. Replaces hard block.
@@ -1975,7 +2134,8 @@ async def run_momentum_screener():
 
     logger.info("momentum_scan_complete",
                 tickers_scanned=len(universe),
-                signals_found=len(accepted))
+                signals_found=len(accepted),
+                elapsed=time.monotonic() - t0)
 
     # [MOMENTUM-SIGNAL-LOG 2026-06-16] Append-only CSV of every scan's outcome
     # (accepted AND rejected) for offline backtest + post-hoc review.

@@ -304,6 +304,21 @@ class Settings(BaseSettings):
     PENNY_ENTRY_FILL_TIMEOUT_SEC:  float = 60.0      # max wait for LIMIT entry to fill before cancel
     PENNY_SL_M_MAX_ATTEMPTS:       int   = 2         # SL-M placement retries before unwind
 
+    # [PENNY-EDGE 2026-07-01] Adaptive engine subsystem overrides.
+    # The edge subsystem runs in parallel with the connors scanner.
+    # TWO bankrolls run side-by-side:
+    #   - PENNY_EDGE_PAPER_BANKROLL = 100_000 (paper, no real orders)
+    #   - PENNY_EDGE_LIVE_BANKROLL = 1_000 (live, real orders at Kite)
+    # The operator can disable either leg via PENNY_EDGE_DISABLE_PAPER /
+    # PENNY_EDGE_DISABLE_LIVE.
+    PENNY_EDGE_DISABLE_PAPER:        bool  = False
+    PENNY_EDGE_DISABLE_LIVE:         bool  = False
+    PENNY_EDGE_PAPER_BANKROLL:       float = 100000.0  # 100k paper
+    PENNY_EDGE_LIVE_BANKROLL:        float = 1000.0    # 1k live
+    PENNY_EDGE_MAX_POSITIONS:        int   = 3
+    PENNY_EDGE_MIN_STRENGTH:         float = 0.45
+    PENNY_EDGE_MAX_HOLD_DAYS:        int   = 3
+
     # Hourly report (spec §9.4)
     PENNY_HOURLY_REPORT_START_HOUR: int  = 10        # first hourly report at HH:00 IST (10 = 10:00)
     PENNY_HOURLY_REPORT_END_HOUR:   int  = 14        # last hourly report at HH:00 IST (14 = 14:00)

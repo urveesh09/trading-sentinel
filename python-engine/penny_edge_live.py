@@ -1,0 +1,203 @@
+"""
+[PENNY-EDGE-LIVE 2026-07-01] Live signal scanner that wires
+penny_edge_engine to the live ohlcv_cache and produces a
+list of candidate trades for the day.
+
+This is the integration layer. It:
+  1. Loads today's bars from cache.db
+  2. Computes signal features for every (date, ticker) pair
+  3. Filters to candidates with strength >= min_strength
+  4. Sorts by regime-adjusted strength
+  5. Outputs the top N for execution (paper or live)
+
+The actual ORDER PLACEMENT is NOT in this module. The orchestrator
+(a new penny_edge_orchestrator.py -- to be written) takes the
+candidates and decides whether to enter paper trades or live
+trades via the existing penny_executor.
+
+The HARD problem we don't solve here: live intraday risk
+management. The engine's signals are computed once per day on
+daily bars. Real penny trading happens on 1-minute bars during
+the 09:30-14:30 window. v4 will need an intraday variant that
+fires signals as they develop.
+
+For now, this module is designed for end-of-day signals and
+next-day open entries. This matches the empirical edge:
+"buy at close, hold 1 day, exit at next-day close" works.
+"""
+from __future__ import annotations
+
+import logging
+import os
+import sqlite3
+from dataclasses import asdict
+from datetime import datetime
+from typing import List, Optional
+
+import penny_edge_engine as pee
+
+logger = logging.getLogger(__name__)
+
+DEFAULT_BANKROLL = 2500.0
+DEFAULT_MAX_POSITIONS = 5
+DEFAULT_MIN_STRENGTH = 0.30
+
+
+def scan_today(
+    bankroll: float = DEFAULT_BANKROLL,
+    max_positions: int = DEFAULT_MAX_POSITIONS,
+    min_strength: float = DEFAULT_MIN_STRENGTH,
+    db_path: str = "/data/cache.db",
+    as_of_date: Optional[str] = None,
+    nifty_ticker: str = "NIFTYBEES",
+) -> dict:
+    """One-shot scanner. Pulls latest bars from the DB, computes
+    signals, returns the top-N candidate Positions for as_of_date.
+
+    Returns dict with:
+      - 'date': the as-of date used
+      - 'candidates': list of SignalCandidate (raw, before ranking)
+      - 'positions': list of Position (after ranking, ready to enter)
+      - 'regime': Regime object
+      - 'eligible_tickers': count
+      - 'rejected_signal_count': signals dropped due to min_strength
+    """
+    conn = sqlite3.connect(db_path)
+    if as_of_date is None:
+        # Use the most recent date in ohlcv_cache
+        cur = conn.cursor()
+        cur.execute("SELECT MAX(date) FROM ohlcv_cache")
+        row = cur.fetchone()
+        if not row or row[0] is None:
+            raise RuntimeError("ohlcv_cache has no data")
+        as_of_date = str(row[0])
+    # Load from earliest available to as_of_date (need 60+ days of history)
+    cur = conn.cursor()
+    cur.execute("SELECT MIN(date) FROM ohlcv_cache")
+    row = cur.fetchone()
+    from_date = str(row[0]) if row and row[0] else "2024-01-01"
+    bars = pee.load_daily_bars_from_db(conn, from_date, as_of_date)
+    cur.execute("""
+        SELECT date, close FROM ohlcv_cache
+        WHERE ticker = ? AND date <= ?
+        ORDER BY date
+    """, (nifty_ticker, as_of_date))
+    nifty_rows = [{"date": r[0], "close": r[1]} for r in cur.fetchall()]
+    conn.close()
+
+    # Compute regime from Nifty proxy
+    nifty_idx = len(nifty_rows) - 1
+    regime = pee.compute_regime(0.0, 0.5)
+    if nifty_idx >= 60:
+        # Use the penny_edge_backtest helper for consistency
+        from penny_edge_backtest import compute_nifty_regime
+        regime = compute_nifty_regime(nifty_rows, nifty_idx)
+
+    # Scan all tickers for as_of_date
+    candidates: List[pee.SignalCandidate] = []
+    rejected_count = 0
+    eligible_tickers = 0
+    for t, t_bars in bars.items():
+        # Find the bar at as_of_date
+        t_idx = None
+        for i, b in enumerate(t_bars):
+            if b["date"] == as_of_date:
+                t_idx = i
+                break
+        if t_idx is None:
+            continue
+        eligible_tickers += 1
+        try:
+            sigs = pee.scan_single_ticker(t_bars, t_idx)
+        except Exception as exc:
+            logger.warning("scan_failed ticker=%s err=%s", t, exc)
+            continue
+        for c in sigs:
+            # Override the date with as_of_date (in case per-ticker
+            # history doesn't include it explicitly)
+            candidates.append(pee.SignalCandidate(
+                ticker=c.ticker,
+                date=as_of_date,
+                signal_type=c.signal_type,
+                signal_subtype=c.signal_subtype,
+                strength=c.strength,
+                entry_price=t_bars[t_idx]["close"],
+                target=c.target,
+                stop_loss=c.stop_loss,
+                hold_days=c.hold_days,
+                risk_pct=c.risk_pct,
+                features=c.features,
+            ))
+
+    positions = pee.rank_and_pick(
+        candidates, regime, bankroll,
+        max_positions=max_positions,
+        min_strength=min_strength,
+    )
+    return {
+        "date":                as_of_date,
+        "candidates":          candidates,
+        "positions":           positions,
+        "regime":              regime,
+        "eligible_tickers":    eligible_tickers,
+        "rejected_below_threshold": sum(
+            1 for c in candidates
+            if pee.adjust_strength_for_regime(c, regime) < min_strength
+        ),
+        "n_candidates":        len(candidates),
+        "n_positions":         len(positions),
+    }
+
+
+def _rank_for_leg(
+    candidates: List[pee.SignalCandidate],
+    bankroll: float,
+    max_positions: int,
+    min_strength: float,
+) -> List[pee.Position]:
+    """Re-rank the same candidate list with a specific bankroll.
+
+    Used by the orchestrator's paper/live twin-leg runner: both
+    legs see the same signal universe, but each leg's position
+    sizing is computed against ITS OWN bankroll. This way a paper
+    leg with Rs 100k bankroll can show what a fuller-sized trade
+    would be, while a live leg with Rs 1k bankroll stays tiny.
+    """
+    # Neutral regime so this helper is regime-independent.
+    regime = pee.compute_regime(0.0, 0.5)
+    return pee.rank_and_pick(
+        candidates, regime, bankroll,
+        max_positions=max_positions,
+        min_strength=min_strength,
+    )
+
+
+def format_positions_report(scan_result: dict) -> str:
+    """Format a Telegram-friendly report of the scan results."""
+    out = []
+    out.append(f"*Penny Edge Engine* `{scan_result['date']}`")
+    regime = scan_result["regime"]
+    out.append(
+        f"Regime: trend={regime.trend_strength:+.2f} "
+        f"vol_pctl={regime.vol_percentile:.2f} "
+        f"preferred={regime.preferred_signal}"
+    )
+    out.append(
+        f"Universe: {scan_result['eligible_tickers']} tickers; "
+        f"{scan_result['n_candidates']} signals above threshold; "
+        f"{scan_result['n_positions']} positions selected"
+    )
+    if not scan_result["positions"]:
+        out.append("No positions. (Markets may be quiet or no signals qualified.)")
+        return "\n".join(out)
+    for i, p in enumerate(scan_result["positions"], 1):
+        out.append(
+            f"{i}. `{p.ticker}` [{p.signal_subtype}] "
+            f"strength={p.adjusted_strength:.2f} "
+            f"entry={p.entry_price:.2f} "
+            f"target={p.target:.2f} "
+            f"stop={p.stop_loss:.2f} "
+            f"hold={p.hold_days}d "
+            f"shares={p.shares}"
+        )
+    return "\n".join(out)

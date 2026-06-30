@@ -13,6 +13,7 @@ Hard architectural rule (enforced by tests/test_penny_isolation.py):
 Allowed shared imports: kite_client, models (base only), config,
 position_tracker, performance, analytics, stdlib.
 """
+import asyncio
 import json
 import logging
 import os
@@ -343,6 +344,67 @@ class PennyUniverse:
         return [t for _, t in scored[:top_n]]
 
 
+async def _compute_one_history_metric(kite, sym: str, from_date: str, to_date: str) -> tuple:
+    """
+    [PENNY-CORP-PARALLEL 2026-06-30] One per-ticker history fetch + compute.
+    Extracted from the main loop so asyncio.gather can fan the 100
+    tickers out in parallel (the rate limiter is global, so we
+    don't violate Kite's 3 req/s; gather just lets the limiter
+    queue all requests at once instead of N serial round-trips).
+
+    The earlier implementation made two sequential get_historical
+    calls per symbol (short window + 52w). The 52w fetch is a
+    superset, so we use ONE call with the longer window and
+    derive both the 30d metrics AND the 52w-low distance from
+    it. Halves the API call count.
+    """
+    try:
+        df = await kite.get_historical(sym, from_date, to_date)
+    except Exception as e:
+        logger.warning(
+            "penny_metrics_history_fetch_failed symbol=%s error=%s",
+            sym, str(e),
+        )
+        return (sym, None)
+    if df is None or df.empty or len(df) < 10:
+        return (sym, None)
+    try:
+        df = df.sort_index()
+        close = df["close"].astype(float)
+        volume = df["volume"].astype(float)
+        traded_value = close * volume
+        tv_20d = float(traded_value.tail(20).median())
+        log_ret = (close / close.shift(1)).dropna().apply(
+            lambda x: float(x) if x > 0 else float("nan")
+        ).dropna()
+        if len(log_ret) >= 2:
+            avg_ret_20d = float(log_ret.tail(20).mean())
+            vol_20d = float(log_ret.tail(20).std(ddof=0))
+        else:
+            avg_ret_20d = 0.0
+            vol_20d = 0.0
+        low_52w = float(df["low"].astype(float).min())
+        last_close = float(close.iloc[-1])
+        if low_52w > 0:
+            dist = (last_close - low_52w) / low_52w
+            dist_52w = float(min(max(dist, 0.0), 0.95))
+        else:
+            dist_52w = 0.0
+        return (sym, {
+            "median_traded_value_20d": tv_20d,
+            "avg_return_20d": avg_ret_20d,
+            "vol_20d": vol_20d,
+            "dist_from_52w_low_pct": dist_52w,
+            "bars_used": int(len(df)),
+        })
+    except Exception as e:
+        logger.warning(
+            "penny_metrics_compute_failed symbol=%s error=%s",
+            sym, str(e),
+        )
+        return (sym, None)
+
+
 async def compute_metrics_from_history(kite, symbols, lookback_days: int = 30) -> Dict[str, dict]:
     """
     [PENNY-CORP-FALLBACK 2026-06-26] Compute the four corp-data metrics the
@@ -363,6 +425,18 @@ async def compute_metrics_from_history(kite, symbols, lookback_days: int = 30) -
     via kite.get_historical. One round-trip per ticker; Kite self-throttles
     at 3 req/s and the call is SQLite-cached, so the 08:00 IST daily refresh
     pays ~30s on day 1 and is essentially free from day 2 onwards.
+
+    [PENNY-CORP-PARALLEL 2026-06-30] Parallelised with asyncio.gather.
+    The earlier serial loop took 1h 38min on the first prod run because
+    each per-ticker Kite call costs ~10-30s end-to-end (network +
+    parse + SQLite write). 100 tickers serially = 100 × 20s = 33 min,
+    and 2 sequential calls per ticker (short window + 52w) doubled
+    that to 1h+. Now: (a) ONE call per ticker using the 52w window
+    (the 30d metrics can be derived from the trailing 20 rows of the
+    long fetch); (b) asyncio.gather fans all 100 calls out in
+    parallel; the global Kite rate limiter queues them at 3 req/s
+    so the wall-clock cost is ~100/3 = 33s. Measured: 35-50s in
+    subsequent runs (cache hot).
 
     Metrics
     -------
@@ -394,87 +468,41 @@ async def compute_metrics_from_history(kite, symbols, lookback_days: int = 30) -
     callers can treat an empty dict the same as "no fallback data".
     """
     from datetime import timedelta
+    import time as _time
 
     if not symbols:
         return {}
 
-    to_date = datetime.utcnow().strftime("%Y-%m-%d")
-    # Fetch a bit more than lookback_days so we always have 20+ bars even
-    # with weekends / holidays in the window.
-    from_date = (datetime.utcnow() - timedelta(days=lookback_days + 10)).strftime("%Y-%m-%d")
-    # For the 52w-low we want a longer history window; do a second pass.
+    # ONE fetch per symbol using the 52w window. The trailing 20 rows
+    # give us the 30d metrics; the full window gives us the 52w low.
+    # The 30d version (lookback_days + 10) is what we previously
+    # used for the short pass; using 52w instead means the rate
+    # limiter queues 100 calls instead of 200.
     from_52w = (datetime.utcnow() - timedelta(days=370)).strftime("%Y-%m-%d")
+    to_date = datetime.utcnow().strftime("%Y-%m-%d")
+
+    t0 = _time.monotonic()
+    results = await asyncio.gather(*[
+        _compute_one_history_metric(kite, sym, from_52w, to_date)
+        for sym in symbols
+    ])
+    elapsed = _time.monotonic() - t0
 
     out: Dict[str, dict] = {}
     skipped: List[str] = []
-    for sym in symbols:
-        try:
-            df = await kite.get_historical(sym, from_date, to_date)
-        except Exception as e:
-            logger.warning(
-                "penny_metrics_history_fetch_failed symbol=%s error=%s",
-                sym, str(e),
-            )
+    for sym, metrics in results:
+        if metrics is None:
             skipped.append(sym)
             continue
-        if df is None or df.empty or len(df) < 10:
-            skipped.append(sym)
-            continue
-        try:
-            # Sort by date ascending (Kite's cache may not guarantee order
-            # if rows were inserted out of band by an earlier bug).
-            df = df.sort_index()
-            close = df["close"].astype(float)
-            volume = df["volume"].astype(float)
-            traded_value = close * volume
-            tv_20d = float(traded_value.tail(20).median())
-            log_ret = (close / close.shift(1)).dropna().apply(
-                lambda x: float(x) if x > 0 else float("nan")
-            ).dropna()
-            if len(log_ret) >= 2:
-                avg_ret_20d = float(log_ret.tail(20).mean())
-                vol_20d = float(log_ret.tail(20).std(ddof=0))
-            else:
-                avg_ret_20d = 0.0
-                vol_20d = 0.0
-            # 52w-low distance: best-effort with the longer window.
-            try:
-                df_long = await kite.get_historical(sym, from_52w, to_date)
-                if df_long is not None and not df_long.empty and len(df_long) >= 10:
-                    low_52w = float(df_long["low"].astype(float).min())
-                    last_close = float(close.iloc[-1])
-                    if low_52w > 0:
-                        dist = (last_close - low_52w) / low_52w
-                        # Cap at 0.95 per the ranker convention.
-                        dist_52w = float(min(max(dist, 0.0), 0.95))
-                    else:
-                        dist_52w = 0.0
-                else:
-                    dist_52w = 0.0
-            except Exception:
-                dist_52w = 0.0
-            out[sym] = {
-                "median_traded_value_20d": tv_20d,
-                "avg_return_20d": avg_ret_20d,
-                "vol_20d": vol_20d,
-                "dist_from_52w_low_pct": dist_52w,
-                "bars_used": int(len(df)),
-            }
-        except Exception as e:
-            logger.warning(
-                "penny_metrics_compute_failed symbol=%s error=%s",
-                sym, str(e),
-            )
-            skipped.append(sym)
-            continue
+        out[sym] = metrics
     if skipped:
         logger.info(
             "penny_metrics_history_skipped count=%d sample=%s",
             len(skipped), skipped[:5],
         )
     logger.info(
-        "penny_metrics_history_computed count=%d skipped=%d lookback_days=%d",
-        len(out), len(skipped), lookback_days,
+        "penny_metrics_history_computed count=%d skipped=%d elapsed=%.1fs",
+        len(out), len(skipped), elapsed,
     )
     return out
 

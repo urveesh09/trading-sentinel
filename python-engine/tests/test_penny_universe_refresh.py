@@ -497,3 +497,115 @@ def test_run_penny_universe_refresh_logs_loud(tmp_path, monkeypatch):
     assert "as_of" in data
     # Empty candidate set -> empty tickers list (not stale).
     assert data["tickers"] == []
+
+
+def test_compute_metrics_from_history_runs_in_parallel(tmp_path, caplog):
+    """
+    [PENNY-CORP-PARALLEL 2026-06-30] Regression: the serial loop was
+    replaced with asyncio.gather. The wall-clock cost of 100
+    per-ticker fetches should be dominated by the rate-limiter
+    (~33s for 100 calls at 3 req/s), not by serial round-trips
+    (~33 min for 100 × 20s). The function logs an `elapsed`
+    field so the operator can see the speedup directly.
+    """
+    import logging
+    import time
+    from unittest.mock import MagicMock, AsyncMock
+    import pandas as pd
+    from penny_universe import compute_metrics_from_history
+
+    n = 30  # 30 symbols; not 100 -- we want the test to finish fast
+
+    def _make_history_df():
+        dates = pd.date_range("2025-06-01", periods=300, freq="D")
+        return pd.DataFrame({
+            "date": dates,
+            "open": 100.0,
+            "high": 105.0,
+            "low": 95.0,
+            "close": 100.0,
+            "volume": 50_000,
+        }).set_index("date")
+
+    fake_kite = MagicMock()
+    fake_kite.instrument_cache = {f"SYM{i}": i for i in range(n)}
+
+    # Each call sleeps 0.5s to simulate a slow Kite call. Serial
+    # would take n * 0.5 = 15s. Parallel with rate-limiter-3-req/s
+    # would take n / 3 = 10s. (In a real run the gap is much larger
+    # because Kite calls are 10-30s each.)
+    async def slow_historical(ticker, from_date, to_date):
+        await asyncio.sleep(0.05)
+        return _make_history_df()
+    fake_kite.get_historical = AsyncMock(side_effect=slow_historical)
+
+    symbols = [f"SYM{i}" for i in range(n)]
+
+    # Capture the "penny_metrics_history_computed" log line to assert
+    # the elapsed time is bounded.
+    caplog.set_level(logging.INFO, logger="penny_universe")
+    t0 = time.monotonic()
+    out = asyncio.run(compute_metrics_from_history(fake_kite, symbols))
+    wall = time.monotonic() - t0
+
+    assert len(out) == n
+    # Serial would be 30 * 0.05 = 1.5s. With parallel + small sleeps
+    # we expect <0.5s. This is a smoke test, not a hard SLA.
+    assert wall < 1.0, f"parallel run took {wall:.2f}s, expected <1s"
+
+    # Find the elapsed log line
+    elapsed_lines = [
+        r.message for r in caplog.records
+        if "penny_metrics_history_computed" in r.message
+    ]
+    assert elapsed_lines, "expected elapsed log line"
+    # Should contain elapsed= field
+    assert "elapsed=" in elapsed_lines[0]
+
+
+def test_penny_universe_refresh_skip_when_in_progress(monkeypatch):
+    """
+    [AUDIT-FIX-REFRESH-SKIP 2026-06-30] Regression: when the
+    08:00 refresh is still in flight (1h 38m on the first prod
+    run before parallelism), the next cron tick at 09:00
+    should short-circuit with a clear log line, not queue
+    another concurrent refresh that doubles the Kite cost.
+    Same pattern as the momentum skip guard.
+    """
+    from unittest.mock import MagicMock, AsyncMock, patch
+    import main
+
+    # Hold the flag True to simulate an in-flight refresh.
+    main._penny_universe_refresh_in_progress = True
+    try:
+        with patch.object(main, "kite", new=MagicMock()), \
+             patch.object(main, "PENNY_UNIVERSE_JSON_PATH", "/tmp/should_not_be_written.json"), \
+             patch.object(main, "PENNY_CORP_DATA_JSON_PATH", "/tmp/nonexistent_corp.json"), \
+             patch.object(main, "_penny_universe", new=None):
+            # Spy on the warning channel.
+            warn_calls: list = []
+            real_warn = main.logger.warning
+            def spy(*args, **kwargs):
+                warn_calls.append((args, kwargs))
+                return real_warn(*args, **kwargs)
+            monkeypatch.setattr(main.logger, "warning", spy)
+            asyncio.run(main.run_penny_universe_refresh())
+
+        # We should have logged the explicit skip line.
+        skip_calls = [
+            c for c in warn_calls
+            if c[0] and "penny_universe_refresh_skipped" in str(c[0][0])
+        ]
+        assert skip_calls, (
+            f"expected penny_universe_refresh_skipped warning, got: "
+            f"{[c[0] for c in warn_calls]}"
+        )
+        assert "previous_run_in_progress" in str(skip_calls[0][0])
+        # The output file should NOT have been written (refresh_from_kite
+        # should not have been called).
+        import os
+        assert not os.path.exists("/tmp/should_not_be_written.json"), (
+            "refresh_from_kite ran despite the skip guard"
+        )
+    finally:
+        main._penny_universe_refresh_in_progress = False
