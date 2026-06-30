@@ -149,6 +149,29 @@ def scan_today(
     }
 
 
+def _rank_for_leg(
+    candidates: List[pee.SignalCandidate],
+    bankroll: float,
+    max_positions: int,
+    min_strength: float,
+) -> List[pee.Position]:
+    """Re-rank the same candidate list with a specific bankroll.
+
+    Used by the orchestrator's paper/live twin-leg runner: both
+    legs see the same signal universe, but each leg's position
+    sizing is computed against ITS OWN bankroll. This way a paper
+    leg with Rs 100k bankroll can show what a fuller-sized trade
+    would be, while a live leg with Rs 1k bankroll stays tiny.
+    """
+    # Neutral regime so this helper is regime-independent.
+    regime = pee.compute_regime(0.0, 0.5)
+    return pee.rank_and_pick(
+        candidates, regime, bankroll,
+        max_positions=max_positions,
+        min_strength=min_strength,
+    )
+
+
 def format_positions_report(scan_result: dict) -> str:
     """Format a Telegram-friendly report of the scan results."""
     out = []

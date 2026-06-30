@@ -1077,10 +1077,15 @@ def register_penny_scheduler_jobs(scheduler):
         hour=9, minute=30,
         id="penny_connors_scan",
     )
-    # [PENNY-EDGE 2026-07-01] Adaptive MR+MO signal scanner (3 trades/day
-    # cap, Rs 1,000 subsystem bankroll). Fires at 09:30 IST daily, in
-    # parallel with the connors scan. Reuses kite instance; idempotent
-    # (skips a ticker if already entered today).
+    # [PENNY-EDGE 2026-07-01] Adaptive MR+MO signal scanner.
+    # TWO legs run side-by-side each morning:
+    #   - PAPER leg: bankroll = PENNY_EDGE_PAPER_BANKROLL (default Rs 100,000)
+    #   - LIVE leg:  bankroll = PENNY_EDGE_LIVE_BANKROLL (default Rs 1,000)
+    # Both share the same signal engine but each sizes positions
+    # against its own bankroll. They are tracked separately in the
+    # positions table (source='EDGE_PAPER' vs 'EDGE_LIVE') so they
+    # don't double up or see each other's idempotency rows.
+    # Fires at 09:30 IST daily, in parallel with the connors scan.
     async def _run_penny_edge_scan_safe():
         import httpx as _httpx
         from penny_edge_orchestrator import (
@@ -1110,18 +1115,27 @@ def register_penny_scheduler_jobs(scheduler):
     )
 
     # [PENNY-EDGE 2026-07-01] EOD exit job: force-close any EDGE-sourced
-    # position older than 3 days. Kicking off at 15:15 IST so it runs
-    # in parallel with the auto-square for the legacy MIS positions.
+    # positions (both PAPER and LIVE legs) older than 3 days.
     async def _run_penny_edge_exit_safe():
-        from penny_edge_orchestrator import run_penny_edge_exit
+        import httpx as _httpx
+        from penny_edge_orchestrator import (
+            run_penny_edge_exit,
+            format_exit_telegram,
+        )
         try:
             summary = await run_penny_edge_exit(kite)
-            if summary.get("closed"):
-                logger.info(
-                    "penny_edge_exit_closed count=%d tickers=%s",
-                    len(summary["closed"]),
-                    [c["ticker"] for c in summary["closed"]],
-                )
+            try:
+                msg = format_exit_telegram(summary)
+                if len(summary.get("closed_paper", [])) + len(summary.get("closed_live", [])) > 0:
+                    async with _httpx.AsyncClient() as _client:
+                        await _client.post(
+                            f"{settings.CONTAINER_A_URL}/api/internal/notify",
+                            json={"message": msg},
+                            headers={"X-Internal-Secret": settings.INTERNAL_API_SECRET or ""},
+                            timeout=5.0,
+                        )
+            except Exception as notify_exc:
+                logger.warning("penny_edge_exit_notify_failed err=%s", notify_exc)
         except Exception as exc:
             logger.error("penny_edge_exit_failed err=%s", exc, exc_info=True)
 

@@ -305,17 +305,19 @@ class Settings(BaseSettings):
     PENNY_SL_M_MAX_ATTEMPTS:       int   = 2         # SL-M placement retries before unwind
 
     # [PENNY-EDGE 2026-07-01] Adaptive engine subsystem overrides.
-    # The edge subsystem runs in parallel with the connors scanner
-    # but is sized smaller (Rs 1,000 vs 2,500) and capped at 3 trades
-    # per day. Override PENNY_EDGE_PAPER=1 to force paper mode for
-    # the edge subsystem even when PENNY_LIVE_TRADING is True -- this
-    # is the recommended configuration for the FIRST 5 trading days
-    # of running this. After that the operator can flip the override off.
-    PENNY_EDGE_PAPER:              bool  = True       # default paper until operator says otherwise
-    PENNY_EDGE_BANKROLL:           float = 1000.0    # bankroll for edge subsystem
-    PENNY_EDGE_MAX_POSITIONS:      int   = 3          # max positions per day
-    PENNY_EDGE_MIN_STRENGTH:       float = 0.45      # regime-adjusted strength floor
-    PENNY_EDGE_MAX_HOLD_DAYS:      int   = 3          # force-close after this many days
+    # The edge subsystem runs in parallel with the connors scanner.
+    # TWO bankrolls run side-by-side:
+    #   - PENNY_EDGE_PAPER_BANKROLL = 100_000 (paper, no real orders)
+    #   - PENNY_EDGE_LIVE_BANKROLL = 1_000 (live, real orders at Kite)
+    # The operator can disable either leg via PENNY_EDGE_DISABLE_PAPER /
+    # PENNY_EDGE_DISABLE_LIVE.
+    PENNY_EDGE_DISABLE_PAPER:        bool  = False
+    PENNY_EDGE_DISABLE_LIVE:         bool  = False
+    PENNY_EDGE_PAPER_BANKROLL:       float = 100000.0  # 100k paper
+    PENNY_EDGE_LIVE_BANKROLL:        float = 1000.0    # 1k live
+    PENNY_EDGE_MAX_POSITIONS:        int   = 3
+    PENNY_EDGE_MIN_STRENGTH:         float = 0.45
+    PENNY_EDGE_MAX_HOLD_DAYS:        int   = 3
 
     # Hourly report (spec §9.4)
     PENNY_HOURLY_REPORT_START_HOUR: int  = 10        # first hourly report at HH:00 IST (10 = 10:00)
