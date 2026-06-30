@@ -1077,6 +1077,60 @@ def register_penny_scheduler_jobs(scheduler):
         hour=9, minute=30,
         id="penny_connors_scan",
     )
+    # [PENNY-EDGE 2026-07-01] Adaptive MR+MO signal scanner (3 trades/day
+    # cap, Rs 1,000 subsystem bankroll). Fires at 09:30 IST daily, in
+    # parallel with the connors scan. Reuses kite instance; idempotent
+    # (skips a ticker if already entered today).
+    async def _run_penny_edge_scan_safe():
+        import httpx as _httpx
+        from penny_edge_orchestrator import (
+            run_penny_edge_scan,
+            format_telegram,
+        )
+        try:
+            summary = await run_penny_edge_scan(kite)
+            try:
+                msg = format_telegram(summary, header="Penny Edge scan")
+                async with _httpx.AsyncClient() as _client:
+                    await _client.post(
+                        f"{settings.CONTAINER_A_URL}/api/internal/notify",
+                        json={"message": msg},
+                        headers={"X-Internal-Secret": settings.INTERNAL_API_SECRET or ""},
+                        timeout=5.0,
+                    )
+            except Exception as notify_exc:
+                logger.warning("penny_edge_notify_failed err=%s", notify_exc)
+        except Exception as exc:
+            logger.error("penny_edge_scan_failed err=%s", exc, exc_info=True)
+
+    scheduler.add_job(
+        _run_penny_edge_scan_safe, "cron",
+        hour=9, minute=30,
+        id="penny_edge_scan",
+    )
+
+    # [PENNY-EDGE 2026-07-01] EOD exit job: force-close any EDGE-sourced
+    # position older than 3 days. Kicking off at 15:15 IST so it runs
+    # in parallel with the auto-square for the legacy MIS positions.
+    async def _run_penny_edge_exit_safe():
+        from penny_edge_orchestrator import run_penny_edge_exit
+        try:
+            summary = await run_penny_edge_exit(kite)
+            if summary.get("closed"):
+                logger.info(
+                    "penny_edge_exit_closed count=%d tickers=%s",
+                    len(summary["closed"]),
+                    [c["ticker"] for c in summary["closed"]],
+                )
+        except Exception as exc:
+            logger.error("penny_edge_exit_failed err=%s", exc, exc_info=True)
+
+    scheduler.add_job(
+        _run_penny_edge_exit_safe, "cron",
+        hour=15, minute=15,
+        id="penny_edge_exit",
+    )
+
     scheduler.add_job(
         run_penny_eod_check, "cron",
         hour=settings.PENNY_MIS_SMART_EOD_TIME // 60,

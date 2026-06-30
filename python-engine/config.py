@@ -304,6 +304,19 @@ class Settings(BaseSettings):
     PENNY_ENTRY_FILL_TIMEOUT_SEC:  float = 60.0      # max wait for LIMIT entry to fill before cancel
     PENNY_SL_M_MAX_ATTEMPTS:       int   = 2         # SL-M placement retries before unwind
 
+    # [PENNY-EDGE 2026-07-01] Adaptive engine subsystem overrides.
+    # The edge subsystem runs in parallel with the connors scanner
+    # but is sized smaller (Rs 1,000 vs 2,500) and capped at 3 trades
+    # per day. Override PENNY_EDGE_PAPER=1 to force paper mode for
+    # the edge subsystem even when PENNY_LIVE_TRADING is True -- this
+    # is the recommended configuration for the FIRST 5 trading days
+    # of running this. After that the operator can flip the override off.
+    PENNY_EDGE_PAPER:              bool  = True       # default paper until operator says otherwise
+    PENNY_EDGE_BANKROLL:           float = 1000.0    # bankroll for edge subsystem
+    PENNY_EDGE_MAX_POSITIONS:      int   = 3          # max positions per day
+    PENNY_EDGE_MIN_STRENGTH:       float = 0.45      # regime-adjusted strength floor
+    PENNY_EDGE_MAX_HOLD_DAYS:      int   = 3          # force-close after this many days
+
     # Hourly report (spec §9.4)
     PENNY_HOURLY_REPORT_START_HOUR: int  = 10        # first hourly report at HH:00 IST (10 = 10:00)
     PENNY_HOURLY_REPORT_END_HOUR:   int  = 14        # last hourly report at HH:00 IST (14 = 14:00)
