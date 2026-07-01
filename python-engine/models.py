@@ -151,14 +151,24 @@ class OpenPosition(BaseModel):
     atr_14_at_entry: float
     highest_close_since_entry: float
     status: Literal["OPEN", "CLOSED_T1", "CLOSED_T2", "STOPPED_OUT", "CLOSED_TIME", "CLOSED_MANUAL"]
-    source: Literal["SYSTEM", "MANUAL", "MOMENTUM"]
+    # [PENNY-EDGE 2026-07-01] Added EDGE_PAPER and EDGE_LIVE so the
+    # new adaptive signal orchestrator's positions are valid in
+    # the OpenPosition response model. Without these the GET /positions
+    # endpoint raises a ResponseValidationError whenever any EDGE
+    # leg has an open position (the bug that broke EOD digest today).
+    source: Literal["SYSTEM", "MANUAL", "MOMENTUM", "EDGE_PAPER", "EDGE_LIVE"]
     exit_price: Optional[float] = None
     exit_date: Optional[datetime] = None
     realised_pnl: Optional[float] = None
     r_multiple: Optional[float] = None
     # [TRAILING-EXITS 2026-06-16] Regime at entry -- drives the regime-aware
     # Chandelier trail (3.5x R1, 3.0x R2, 2.5x R3). NULL = legacy 3.0x trail.
-    regime_at_entry: Optional[Literal["REGIME_1_NORMAL", "REGIME_2_ELEVATED", "REGIME_3_CRISIS"]] = None
+    # [PENNY-EDGE 2026-07-01] Widened to Optional[str] so the new orchestrator's
+    # MR/MO/BOTH codes plus any legacy CN/MIS source can write without
+    # raising validation errors. The trailing-exit logic only consults
+    # the three REGIME_* literals at the call site (legacy penny positions),
+    # so widening the type here is safe.
+    regime_at_entry: Optional[str] = None
 
     _round_2dp = field_validator(
         "entry_price", "stop_loss_initial", "trailing_stop_current", "target_1", 

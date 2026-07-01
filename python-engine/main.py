@@ -287,21 +287,35 @@ def _get_penny_scanner():
 
 
 async def run_penny_scanner_once():
-    """30-second MIS leg (spec §9.1)."""
+    """30-second MIS leg (spec §9.1).
+
+    [BUG-FIX 2026-07-01] Wrap scanner.scan_once in an asyncio
+    timeout. Today the legacy scanner hung indefinitely on a
+    stuck Kite quote call, blocking ALL overlapping cron jobs
+    (including penny_edge_scan) with "maximum number of running
+    instances reached". A 90-second hard ceiling combined with
+    max_instances=1+coalesce=True on the scheduler entry
+    prevents one stuck call from cascading into a system-wide
+    stall.
+    """
     global _last_penny_scan_universe_size
     scanner = _get_penny_scanner()
     if scanner is None:
         return
     try:
-        result = await scanner.scan_once(as_of=datetime.now(IST))
+        result = await asyncio.wait_for(
+            scanner.scan_once(as_of=datetime.now(IST)),
+            timeout=90.0,    # generous: scan normally takes <5s
+        )
         logger.info("penny_scan_complete", **result)
-        # 2026-06-24 diagnostic: cache universe size for hourly report.
-        # universe_size == accept + reject + error (every observed ticker).
         _last_penny_scan_universe_size = (
             int(result.get("accept", 0))
             + int(result.get("reject", 0))
             + int(result.get("error", 0))
         )
+    except asyncio.TimeoutError:
+        logger.error("penny_scan_timeout scan stuck on Kite; "
+                     "next cron slot will resume")
     except Exception as e:
         logger.error("penny_scan_failed", error=str(e))
 
@@ -1071,6 +1085,16 @@ def register_penny_scheduler_jobs(scheduler):
         run_penny_scanner_once, "interval",
         seconds=settings.PENNY_SCAN_INTERVAL_SEC,
         id="penny_scan_interval",
+        # [BUG-FIX 2026-07-01] Single-instance + coalesce.
+        # Today the scanner hung on Kite calls and apscheduler refused
+        # to launch any overlapping jobs (including penny_edge_scan),
+        # deadlocking the entire 09:30 IST cron for the rest of
+        # the day. coalesce=True means missed-trigger slots
+        # collapse into one rather than pile up. Combined with
+        # the asyncio.wait_for in run_penny_scanner_once, this
+        # breaks the deadlock.
+        max_instances=1,
+        coalesce=True,
     )
     scheduler.add_job(
         run_penny_connors_scan, "cron",

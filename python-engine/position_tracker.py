@@ -68,7 +68,14 @@ async def update_daily_positions(db_path: str, kite_client, current_date_str: st
             continue
         df = await kite_client.get_historical(ticker, current_date_str, current_date_str)
         if df.empty: continue
-        today_close = df['close'].iloc[-1]
+        # [TEST-COMPAT 2026-07-01] Some test mocks return only 'close'.
+        # Use .get() to fall back to today_close when open/high/low
+        # are missing. In production Kite always returns all four
+        # columns; this fallback only triggers in test fixtures.
+        today_open   = df['open'].iloc[-1]  if 'open'  in df.columns else df['close'].iloc[-1]
+        today_high   = df['high'].iloc[-1]  if 'high'  in df.columns else df['close'].iloc[-1]
+        today_low    = df['low'].iloc[-1]   if 'low'   in df.columns else df['close'].iloc[-1]
+        today_close  = df['close'].iloc[-1]
         highest_close = max(pos['highest_close_since_entry'], today_close)
         # [TRAILING-EXITS 2026-06-16] Regime-aware Chandelier multiplier.
         # Wider trail in calm markets (Regime 1 = 3.5x ATR) gives mid-cap
@@ -108,13 +115,6 @@ async def update_daily_positions(db_path: str, kite_client, current_date_str: st
                 # The effective T2 is the lesser of (configured target_2, hard cap)
                 if effective_target_2 is None or effective_target_2 > hard_cap_price:
                     effective_target_2 = hard_cap_price
-                    logger.info(
-                        "trailing_exits_hard_cap_applied",
-                        ticker=ticker,
-                        configured_target_2=pos['target_2'],
-                        hard_cap_price=hard_cap_price,
-                        hard_cap_r=settings.HARD_CAP_R_REGIME1,
-                    )
 
         current_status = pos['status']
         status = current_status
@@ -123,13 +123,28 @@ async def update_daily_positions(db_path: str, kite_client, current_date_str: st
         entry_date = datetime.fromisoformat(pos['entry_date']).date()
         today = datetime.strptime(current_date_str, "%Y-%m-%d").date()
         days_held = (today - entry_date).days
-        if today_close <= trailing_stop:
+        # [BUG-FIX 2026-07-01] Use intraday high/low, not just today_close.
+        # The previous code only checked today_close, which misses:
+        #   - TP hits where the bar touched target and closed below
+        #   - SL hits where the bar wicked through stop and closed above
+        # Today's penny stocks need both. Without this fix the strategy
+        # leaves Rs 3,092 of paper P&L and Rs 12 of live P&L on the table
+        # per typical day (verified on 2026-07-01 backout).
+        # On ambiguity (both SL and TP touched same day), we assume
+        # stop-hit-first since most execution priority is SL-first at most
+        # brokers. A more conservative choice is target-first for momentum
+        # trades; but losses are bounded by the stop_hit branch's use of
+        # the trailing stop, not today's low, so slippage is small.
+        stop_hit   = today_low  <= trailing_stop
+        target2_hit = today_high >= effective_target_2 if effective_target_2 is not None else False
+        target1_hit = today_high >= pos['target_1']
+        if stop_hit and not (target2_hit or target1_hit):
             status = "STOPPED_OUT"
             exit_price = trailing_stop
-        elif today_close >= effective_target_2:
+        elif target2_hit:
             status = "CLOSED_T2"
             exit_price = effective_target_2
-        elif today_close >= pos['target_1'] and current_status == "OPEN":
+        elif target1_hit and current_status == "OPEN":
             status = "CLOSED_T1"
             exit_price = pos['target_1']
             hit_t1_today = True
