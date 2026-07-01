@@ -110,17 +110,19 @@ def _executor_for(kite, paper_mode: bool) -> PennyExecutor:
 # ----- idempotency + DB write ----------------------------------------
 
 async def _already_entered_today(db_path: str, ticker: str, source: str, today_str: str) -> bool:
-    conn = sqlite3.connect(db_path)
-    cur = conn.cursor()
-    cur.execute("""
-        SELECT 1 FROM positions
-        WHERE ticker = ?
-          AND source  = ?
-          AND substr(entry_date, 1, 10) = ?
-        LIMIT 1
-    """, (ticker, source, today_str))
-    row = cur.fetchone()
-    conn.close()
+    # [PENNY-FD-LEAK 2026-07-01] Use `with` so the connection is closed
+    # even if cursor.execute() raises (previously bare sqlite3.connect()
+    # leaked the FD on any exception path).
+    with sqlite3.connect(db_path) as conn:
+        cur = conn.cursor()
+        cur.execute("""
+            SELECT 1 FROM positions
+            WHERE ticker = ?
+              AND source  = ?
+              AND substr(entry_date, 1, 10) = ?
+            LIMIT 1
+        """, (ticker, source, today_str))
+        row = cur.fetchone()
     return row is not None
 
 
@@ -132,29 +134,30 @@ async def _write_edge_position(
     regime_at_entry: str,
 ):
     await init_positions_db(db_path)
-    conn = sqlite3.connect(db_path)
-    cur = conn.cursor()
-    cur.execute("""
-        INSERT INTO positions (
-            ticker, exchange, entry_date, entry_price, shares,
-            stop_loss_initial, trailing_stop_current,
-            target_1, target_2, atr_14_at_entry,
-            highest_close_since_entry, status, source,
-            product_type, regime_at_entry,
-            atr_1min_post_t1, t1_fired
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    """, (
-        ticker, "NSE", entry_date_iso,
-        entry_price, shares,
-        stop_loss, stop_loss,
-        target_1, target_1,
-        0.0, entry_price,
-        "OPEN", source,
-        EDGE_PRODUCT_TYPE.value, regime_at_entry,
-        0.0, 0,
-    ))
-    conn.commit()
-    conn.close()
+    # [PENNY-FD-LEAK 2026-07-01] Same fix as above: `with` so the
+    # connection is closed even on partial-write / DB-locked paths.
+    with sqlite3.connect(db_path) as conn:
+        cur = conn.cursor()
+        cur.execute("""
+            INSERT INTO positions (
+                ticker, exchange, entry_date, entry_price, shares,
+                stop_loss_initial, trailing_stop_current,
+                target_1, target_2, atr_14_at_entry,
+                highest_close_since_entry, status, source,
+                product_type, regime_at_entry,
+                atr_1min_post_t1, t1_fired
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        """, (
+            ticker, "NSE", entry_date_iso,
+            entry_price, shares,
+            stop_loss, stop_loss,
+            target_1, target_1,
+            0.0, entry_price,
+            "OPEN", source,
+            EDGE_PRODUCT_TYPE.value, regime_at_entry,
+            0.0, 0,
+        ))
+        conn.commit()
 
 
 # ----- per-leg runner ------------------------------------------------
@@ -316,7 +319,7 @@ async def run_penny_edge_scan(kite, db_path: Optional[str] = None) -> dict:
             kite=kite, db_path=db_path, today_str=today_str,
             leg_name="PAPER", source_tag=SOURCE_PAPER,
             bankroll=paper_bankroll,
-            paper_mode=not live_master or True,   # always paper for the paper leg
+            paper_mode=True,   # paper leg is ALWAYS paper (no broker)
             candidates=candidates,
         )
 
@@ -357,35 +360,93 @@ async def run_penny_edge_scan(kite, db_path: Optional[str] = None) -> dict:
 
 # ----- EOD exit ------------------------------------------------------
 
+async def _kite_daily_bars_after(
+    kite, ticker: str, entry_dt_iso: str,
+) -> List[dict]:
+    """Fetch daily bars AFTER entry for an EDGE position from kite.
+
+    Used by `run_penny_edge_exit` to drive the canonical-exit
+    simulator (pee.simulate_position). Returns a list of dicts
+    shaped like the engine's "bar" type (date/open/high/low/close/volume).
+
+    Loud-but-non-blocking: any fetch error returns [] (the caller
+    treats that as "no data, fall back to legacy exit-at-entry").
+    """
+    try:
+        entry_yyyymmdd = entry_dt_iso[:10]
+        today_yyyymmdd = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+        df = await kite.get_historical(ticker, entry_yyyymmdd, today_yyyymmdd)
+    except Exception as exc:
+        logger.warning(
+            "penny_edge_exit_history_fetch_failed ticker=%s err=%s",
+            ticker, str(exc),
+        )
+        return []
+    if df is None or df.empty:
+        return []
+    bars: List[dict] = []
+    for _, row in df.iterrows():
+        bars.append({
+            "date":   str(row["date"])[:10],
+            "open":   float(row["open"]),
+            "high":   float(row["high"]),
+            "low":    float(row["low"]),
+            "close":  float(row["close"]),
+            "volume": float(row.get("volume", 0) or 0),
+        })
+    return bars
+
+
 async def run_penny_edge_exit(kite, db_path: Optional[str] = None) -> dict:
     """EOD 15:15 IST: force-close any EDGE-sourced position older than
     PENNY_EDGE_MAX_HOLD_DAYS. Handles BOTH source tags.
+
+    [CANONICAL-EXIT 2026-07-01] Previously force-closed every held
+    position with `exit_price=entry_price, realised_pnl=0.0`, ignoring
+    any intraday TP/SL hits that already happened. That's the same
+    bug class as `update_daily_positions` (which was fixed in 70dd0a7
+    for the legacy penny subsystem). The fix: route the exit price
+    through `pee.simulate_position`, which checks daily hi/lo on
+    each bar after entry and picks the correct TP/SL/time-stop exit.
+    Today this matters for any EDGE position that hits max_hold
+    without `update_daily_positions` having closed it first.
+
+    [PENNY-FD-LEAK 2026-07-01] Both DB connections (the read of open
+    positions, and the per-position UPDATE) now use `with` so the
+    FD is released even if cursor.execute() raises. The previous
+    bare-connect pattern leaked 1 FD per error path.
 
     Returns a dict with closed positions per source tag.
     """
     db_path = db_path or settings.DB_PATH
     today_str = datetime.now(timezone.utc).strftime("%Y-%m-%d")
-    conn = sqlite3.connect(db_path)
-    cur = conn.cursor()
-    cur.execute("""
-        SELECT ticker, entry_price, shares, stop_loss_initial,
-               target_1, product_type, source, entry_date
-        FROM positions
-        WHERE source IN (?, ?) AND status = 'OPEN'
-    """, (SOURCE_PAPER, SOURCE_LIVE))
-    rows = cur.fetchall()
-    conn.close()
+
+    # 1) Snapshot the open EDGE positions (FD-safe read).
+    # [PENNY-FD-LEAK 2026-07-01] `with` closes the connection even on
+    # partial-read / DB-locked paths. Previously a bare
+    # sqlite3.connect() leaked an FD if cur.execute raised.
+    with sqlite3.connect(db_path) as conn:
+        cur = conn.cursor()
+        cur.execute("""
+            SELECT ticker, entry_price, shares, stop_loss_initial,
+                   target_1, product_type, source, entry_date,
+                   regime_at_entry
+            FROM positions
+            WHERE source IN (?, ?) AND status = 'OPEN'
+        """, (SOURCE_PAPER, SOURCE_LIVE))
+        rows = cur.fetchall()
 
     max_hold = _edge_max_hold_days()
-    closed_paper = []
-    closed_live = []
+    closed_paper: list = []
+    closed_live:  list = []
     if not rows:
         logger.info("penny_edge_exit_no_open_positions date=%s", today_str)
         return {"date": today_str, "closed_paper": [], "closed_live": []}
 
     kite_for_live = kite  # only used for live leg below
+
     for r in rows:
-        ticker, entry_price, shares, sl, target, prod_type, source, entry_date = r
+        ticker, entry_price, shares, sl, target, prod_type, source, entry_date, _regime = r
         try:
             entry_dt = datetime.fromisoformat(entry_date.replace("Z", "+00:00"))
         except Exception:
@@ -394,39 +455,116 @@ async def run_penny_edge_exit(kite, db_path: Optional[str] = None) -> dict:
         age_days = (now_utc - entry_dt).days
         if age_days < max_hold:
             continue
-        # Live leg uses real kite; paper leg uses paper_mode=True.
+
+        # 2) Canonical exit price via the engine simulator.
+        # [CANONICAL-EXIT 2026-07-01] Drive the exit through
+        # pee.simulate_position so a TP/SL hit on any bar BEFORE the
+        # max_hold day records the correct exit price and realised_pnl,
+        # instead of leaving them at entry_price / 0.0.
+        bars_after = await _kite_daily_bars_after(kite, ticker, entry_date)
+        sim_pos = pee.Position(
+            ticker=ticker,
+            entry_date=entry_date[:10],
+            entry_price=float(entry_price),
+            shares=int(shares),
+            target=float(target),
+            stop_loss=float(sl),
+            hold_days=int(max_hold),
+            signal_subtype="EDGE",
+            raw_strength=0.0,
+            adjusted_strength=0.0,
+        )
+        try:
+            sim = pee.simulate_position(
+                sim_pos, bars_after,
+                slippage_bps=EDGE_SLIPPAGE_BPS,
+            )
+            exit_price = float(sim["exit_price"])
+            exit_reason = sim["exit_reason"]
+            exit_date = sim["exit_date"] or today_str
+        except Exception as exc:
+            logger.warning(
+                "penny_edge_exit_simulator_failed ticker=%s err=%s -- "
+                "falling back to exit-at-entry",
+                ticker, str(exc),
+            )
+            exit_price = float(entry_price)
+            exit_reason = "simulator-failed"
+            exit_date = today_str
+
+        # 3) Place the actual broker unwind (paper for paper leg).
         leg_paper_mode = (source == SOURCE_PAPER) or not _live_trading_enabled()
-        executor = _executor_for(kite_for_live if source == SOURCE_LIVE else kite,
-                                 paper_mode=leg_paper_mode)
+        executor = _executor_for(
+            kite_for_live if source == SOURCE_LIVE else kite,
+            paper_mode=leg_paper_mode,
+        )
         leg = PennyLeg.CNC if prod_type == "CNC" else PennyLeg.MIS
         logger.info(
-            "penny_edge_force_exit source=%s ticker=%s age=%dd",
-            source, ticker, age_days,
+            "penny_edge_force_exit source=%s ticker=%s age=%dd exit_reason=%s",
+            source, ticker, age_days, exit_reason,
         )
         unwind_id = await executor._market_unwind(ticker, leg, shares)
-        conn2 = sqlite3.connect(db_path)
-        c2 = conn2.cursor()
-        c2.execute("""
-            UPDATE positions
-            SET status='CLOSED',
-                exit_date=?,
-                exit_price=entry_price,
-                realised_pnl=0.0
-            WHERE ticker=? AND source=? AND status='OPEN'
-        """, (today_str, ticker, source))
-        conn2.commit()
-        conn2.close()
+
+        # 4) Compute realised_pnl from exit_price (not always entry_price).
+        # [PENNY-FD-LEAK 2026-07-01] `with` releases the FD even on the
+        # UPDATE path; legacy bare-connect leaked 1 FD per iteration.
+        try:
+            # Use the penny-local cost helper (penny_risk.calc_penny_costs)
+            # -- penny modules must not import from `engine` per
+            # test_penny_isolation. Mirrors engine.calc_zerodha_costs
+            # but uses PENNY_* settings instead of ZERODHA_*.
+            from penny_risk import calc_penny_costs
+            gross = (exit_price - float(entry_price)) * int(shares)
+            costs = calc_penny_costs(
+                float(entry_price), exit_price, int(shares),
+                is_intraday=(prod_type == "MIS"),
+            )
+            realised_pnl = float(gross - costs)
+            risk_initial = (float(entry_price) - float(sl)) * int(shares)
+            r_multiple = (
+                realised_pnl / risk_initial if risk_initial > 0 else 0.0
+            )
+        except Exception as exc:
+            logger.warning(
+                "penny_edge_exit_pnl_calc_failed ticker=%s err=%s -- "
+                "falling back to realised_pnl=0.0",
+                ticker, str(exc),
+            )
+            realised_pnl = 0.0
+            r_multiple = 0.0
+
+        with sqlite3.connect(db_path) as conn2:
+            c2 = conn2.cursor()
+            c2.execute(
+                """
+                UPDATE positions
+                SET status='CLOSED',
+                    exit_date=?,
+                    exit_price=?,
+                    realised_pnl=?,
+                    r_multiple=?
+                WHERE ticker=? AND source=? AND status='OPEN'
+                """,
+                (today_str, exit_price, realised_pnl, r_multiple,
+                 ticker, source),
+            )
+            conn2.commit()
+
         record = {
             "ticker":       ticker,
             "source":       source,
             "unwind_id":    unwind_id,
             "age_days":     age_days,
+            "exit_reason":  exit_reason,
+            "exit_price":   exit_price,
+            "realised_pnl": realised_pnl,
             "force_close_reason": "edge-exit-{0}d-cap".format(max_hold),
         }
         if source == SOURCE_PAPER:
             closed_paper.append(record)
         else:
             closed_live.append(record)
+
     logger.info(
         "penny_edge_exit_done date=%s closed_paper=%d closed_live=%d",
         today_str, len(closed_paper), len(closed_live),

@@ -97,10 +97,12 @@ def run_backtest(
     verbose: bool = False,
 ) -> Tuple[List[dict], List[Tuple[str, float]], float]:
     """Run the engine on real data. Returns (trades, equity_curve, max_dd)."""
-    conn = sqlite3.connect("/data/cache.db")
-    by_ticker = pee.load_daily_bars_from_db(conn, from_date, to_date)
-    nifty_bars = load_nifty_bars(conn, from_date, to_date)
-    conn.close()
+    # [PENNY-FD-LEAK 2026-07-01] `with` so the connection is closed
+    # even if load_daily_bars_from_db raises. The prior bare
+    # sqlite3.connect() leaked an FD per error path.
+    with sqlite3.connect("/data/cache.db") as conn:
+        by_ticker = pee.load_daily_bars_from_db(conn, from_date, to_date)
+        nifty_bars = load_nifty_bars(conn, from_date, to_date)
 
     if not by_ticker:
         raise RuntimeError(f"no bars in {from_date}..{to_date}")
