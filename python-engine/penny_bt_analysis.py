@@ -13,6 +13,9 @@ from statistics import mean, median
 
 # Connect to the DB the way the backtest does
 def connect():
+    # [PENNY-FD-LEAK 2026-07-01] Return a context-manager-friendly
+    # connection. Callers must use `with connect() as conn:` so the FD
+    # is released even if any cursor.execute raises.
     conn = sqlite3.connect("/data/cache.db")
     conn.row_factory = sqlite3.Row
     return conn

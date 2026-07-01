@@ -100,7 +100,7 @@ def test_format_telegram_includes_both_legs():
     assert "Rs 100,000" in out
     assert "Rs 1,000" in out
     assert "2416" in out    # paper shares
-    assert " 24" in out or "24 shares" in out or '"shares": 24' in out or "24 shares" in out
+    assert "shares=24" in out
     # Note: paper has 2416 shares, live has 24 shares. The string
     # " 24" appears in "24" (live) but also as a substring of "2416"
     # (paper). We check that paper's 2416 is present (>=5 digit) and

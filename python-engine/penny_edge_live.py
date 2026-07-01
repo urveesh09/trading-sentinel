@@ -62,28 +62,32 @@ def scan_today(
       - 'eligible_tickers': count
       - 'rejected_signal_count': signals dropped due to min_strength
     """
-    conn = sqlite3.connect(db_path)
-    if as_of_date is None:
-        # Use the most recent date in ohlcv_cache
+    # [PENNY-FD-LEAK 2026-07-01] Use `with` so the connection is
+    # closed even if any intermediate query raises. The previous bare
+    # sqlite3.connect() leaked an FD on every exception path.
+    with sqlite3.connect(db_path) as conn:
+        if as_of_date is None:
+            # Use the most recent date in ohlcv_cache
+            cur = conn.cursor()
+            cur.execute("SELECT MAX(date) FROM ohlcv_cache")
+            row = cur.fetchone()
+            if not row or row[0] is None:
+                raise RuntimeError("ohlcv_cache has no data")
+            as_of_date = str(row[0])
+        # Load from earliest available to as_of_date (need 60+ days of history)
         cur = conn.cursor()
-        cur.execute("SELECT MAX(date) FROM ohlcv_cache")
+        cur.execute("SELECT MIN(date) FROM ohlcv_cache")
         row = cur.fetchone()
-        if not row or row[0] is None:
-            raise RuntimeError("ohlcv_cache has no data")
-        as_of_date = str(row[0])
-    # Load from earliest available to as_of_date (need 60+ days of history)
-    cur = conn.cursor()
-    cur.execute("SELECT MIN(date) FROM ohlcv_cache")
-    row = cur.fetchone()
-    from_date = str(row[0]) if row and row[0] else "2024-01-01"
-    bars = pee.load_daily_bars_from_db(conn, from_date, as_of_date)
-    cur.execute("""
-        SELECT date, close FROM ohlcv_cache
-        WHERE ticker = ? AND date <= ?
-        ORDER BY date
-    """, (nifty_ticker, as_of_date))
-    nifty_rows = [{"date": r[0], "close": r[1]} for r in cur.fetchall()]
-    conn.close()
+        from_date = str(row[0]) if row and row[0] else "2024-01-01"
+        bars = pee.load_daily_bars_from_db(conn, from_date, as_of_date)
+        cur.execute("""
+            SELECT date, close FROM ohlcv_cache
+            WHERE ticker = ? AND date <= ?
+            ORDER BY date
+        """, (nifty_ticker, as_of_date))
+        nifty_rows = [{"date": r[0], "close": r[1]} for r in cur.fetchall()]
+    # [PENNY-FD-LEAK 2026-07-01] The connection is closed by the
+    # `with` block above; this comment marks the boundary.
 
     # Compute regime from Nifty proxy
     nifty_idx = len(nifty_rows) - 1

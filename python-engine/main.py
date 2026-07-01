@@ -287,21 +287,35 @@ def _get_penny_scanner():
 
 
 async def run_penny_scanner_once():
-    """30-second MIS leg (spec §9.1)."""
+    """30-second MIS leg (spec §9.1).
+
+    [BUG-FIX 2026-07-01] Wrap scanner.scan_once in an asyncio
+    timeout. Today the legacy scanner hung indefinitely on a
+    stuck Kite quote call, blocking ALL overlapping cron jobs
+    (including penny_edge_scan) with "maximum number of running
+    instances reached". A 90-second hard ceiling combined with
+    max_instances=1+coalesce=True on the scheduler entry
+    prevents one stuck call from cascading into a system-wide
+    stall.
+    """
     global _last_penny_scan_universe_size
     scanner = _get_penny_scanner()
     if scanner is None:
         return
     try:
-        result = await scanner.scan_once(as_of=datetime.now(IST))
+        result = await asyncio.wait_for(
+            scanner.scan_once(as_of=datetime.now(IST)),
+            timeout=90.0,    # generous: scan normally takes <5s
+        )
         logger.info("penny_scan_complete", **result)
-        # 2026-06-24 diagnostic: cache universe size for hourly report.
-        # universe_size == accept + reject + error (every observed ticker).
         _last_penny_scan_universe_size = (
             int(result.get("accept", 0))
             + int(result.get("reject", 0))
             + int(result.get("error", 0))
         )
+    except asyncio.TimeoutError:
+        logger.error("penny_scan_timeout scan stuck on Kite; "
+                     "next cron slot will resume")
     except Exception as e:
         logger.error("penny_scan_failed", error=str(e))
 
@@ -695,11 +709,24 @@ async def _run_penny_eod_digest():
     Fires after the 15:30 daily attribution (T3-A) and the 15:00
     force-close (G5). Sends the operator a single Telegram message
     summarising both pools' P&L, open positions held overnight, and
-    closing regimes. Body builder: operator_status.cmd_eod_digest.
+    closing regimes. Body builder: operator_status.cmd_eod_digest /
+    operator_status.build_eod_digest_snapshot_async.
+
+    [ASYNC-SYNC-SPLIT 2026-07-01] Previously called cmd_eod_digest,
+    which internally did asyncio.run(build_status_snapshot(...)) --
+    that raises RuntimeError from inside this already-running event
+    loop, so the digest was silently silent every 16:00 IST. Now we
+    await the async snapshot builder directly and feed it through
+    format_eod_digest. Loud-but-non-blocking: any exception is logged
+    and swallowed so the scheduler keeps running.
     """
     try:
-        from operator_status import cmd_eod_digest
-        body = cmd_eod_digest(db_path=settings.DB_PATH)
+        from operator_status import (
+            build_eod_digest_snapshot_async,
+            format_eod_digest,
+        )
+        snap = await build_eod_digest_snapshot_async(settings.DB_PATH)
+        body = format_eod_digest(snap)
         logger.info("penny_eod_digest_sent")
         from penny_hourly_report import PennyHourlyReport
         sender = PennyHourlyReport(db_path=settings.DB_PATH)
@@ -1071,6 +1098,16 @@ def register_penny_scheduler_jobs(scheduler):
         run_penny_scanner_once, "interval",
         seconds=settings.PENNY_SCAN_INTERVAL_SEC,
         id="penny_scan_interval",
+        # [BUG-FIX 2026-07-01] Single-instance + coalesce.
+        # Today the scanner hung on Kite calls and apscheduler refused
+        # to launch any overlapping jobs (including penny_edge_scan),
+        # deadlocking the entire 09:30 IST cron for the rest of
+        # the day. coalesce=True means missed-trigger slots
+        # collapse into one rather than pile up. Combined with
+        # the asyncio.wait_for in run_penny_scanner_once, this
+        # breaks the deadlock.
+        max_instances=1,
+        coalesce=True,
     )
     scheduler.add_job(
         run_penny_connors_scan, "cron",
@@ -1108,10 +1145,21 @@ def register_penny_scheduler_jobs(scheduler):
         except Exception as exc:
             logger.error("penny_edge_scan_failed err=%s", exc, exc_info=True)
 
+    # [PENNY-EDGE-CRON-GUARD 2026-07-01] Single-instance + coalesce.
+    # Rule 39 (trading-sentinel-ops): any cron sharing the scheduler
+    # with the legacy penny_scanner_once (which is also fixed with
+    # max_instances=1+coalesce=True today) MUST use the same
+    # discipline -- otherwise a hung tick of EITHER subsystem can
+    # deadlock the other. The default max_instances=1 is fine, but
+    # we make it explicit and add coalesce=True so missed triggers
+    # collapse instead of pile up. Same loud-but-non-blocking pattern
+    # as the live-trading-audit-fix-pattern skill.
     scheduler.add_job(
         _run_penny_edge_scan_safe, "cron",
         hour=9, minute=30,
         id="penny_edge_scan",
+        max_instances=1,
+        coalesce=True,
     )
 
     # [PENNY-EDGE 2026-07-01] EOD exit job: force-close any EDGE-sourced
@@ -1139,10 +1187,16 @@ def register_penny_scheduler_jobs(scheduler):
         except Exception as exc:
             logger.error("penny_edge_exit_failed err=%s", exc, exc_info=True)
 
+    # [PENNY-EDGE-CRON-GUARD 2026-07-01] max_instances=1 + coalesce=True.
+    # Same rationale as the penny_edge_scan cron guard above: the
+    # 15:15 IST EOD exit must not be allowed to deadlock the
+    # scheduler if the kite-stub interaction stalls.
     scheduler.add_job(
         _run_penny_edge_exit_safe, "cron",
         hour=15, minute=15,
         id="penny_edge_exit",
+        max_instances=1,
+        coalesce=True,
     )
 
     scheduler.add_job(

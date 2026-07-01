@@ -279,11 +279,41 @@ def cmd_performance(db_path: str) -> str:
         return f"Performance: error reading ({type(e).__name__})"
 
 
+# [ASYNC-SYNC-SPLIT 2026-07-01] cmd_eod_digest is reached from TWO
+# contexts: (1) the Telegram cmd handler (sync, in any test context or
+# CLI smoke), and (2) main._run_penny_eod_digest (async, in the running
+# APScheduler event loop). Calling asyncio.run() from inside a running
+# event loop raises RuntimeError("asyncio.run() cannot be called from a
+# running event loop"), so the cron path was silently failing every
+# 16:00 IST. The fix: split into the canonical async core + sync
+# wrapper. Both paths now use the same code path through
+# build_status_snapshot, with the only difference being whether the
+# sync caller wraps it in asyncio.run() or the async caller awaits
+# it directly. See skill/references/sentinel-bugs.md "Async/sync split
+# for FastAPI handlers + sync callers" for the worked recipe.
+
+
+async def build_eod_digest_snapshot_async(db_path: str) -> Dict[str, Any]:
+    """Async core for cmd_eod_digest. Returns the raw status snapshot."""
+    return await build_status_snapshot(db_path)
+
+
+def build_eod_digest_snapshot_sync(db_path: str) -> Dict[str, Any]:
+    """Sync wrapper for Telegram callers and CLI smoke tests."""
+    import asyncio
+    return asyncio.run(build_eod_digest_snapshot_async(db_path))
+
+
 def cmd_eod_digest(db_path: str) -> str:
-    """Telegram /eod command (and 16:00 IST scheduled job payload)."""
+    """Telegram /eod command (and 16:00 IST scheduled job payload).
+
+    For cron callers running inside an asyncio event loop, use
+    `await build_eod_digest_snapshot_async(db_path)` directly and pass
+    the result through `format_eod_digest()` instead -- calling this
+    sync wrapper from a running loop raises RuntimeError.
+    """
     try:
-        import asyncio
-        snap = asyncio.run(build_status_snapshot(db_path))
+        snap = build_eod_digest_snapshot_sync(db_path)
         return format_eod_digest(snap)
     except Exception as e:
         return f"EOD digest: error reading ({type(e).__name__})"
