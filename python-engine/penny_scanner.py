@@ -51,6 +51,13 @@ class PennyScanner:
         self.kite = kite
         self.universe_json_path = universe_json_path
         self.paper_mode = paper_mode
+        # [PENNY-STARTUP-GATE 2026-07-02] Default threshold for the
+        # startup-gate to consider the instrument_cache "populated".
+        # NSE_EQ has ~2,000 instruments; 100 is a safe lower-bound
+        # that catches the empty-cache race condition without
+        # blocking when only a handful of tickers are eligible.
+        # Tests can override per-instance.
+        self.instrument_cache_min_count = 100
         # [AUDIT-FIX-1.3 2026-06-25] Regime used to be a frozen string
         # captured at construction. That meant a mid-day regime
         # transition (PR1->PR2->PR3) was invisible to the MIS scanner
@@ -167,6 +174,61 @@ class PennyScanner:
         except Exception as e:
             logger.error("penny_universe_load_failed error=%s", str(e))
             return []
+
+    async def _wait_for_instrument_cache(
+        self, min_count: Optional[int] = None, timeout: float = 60.0,
+    ) -> bool:
+        """[PENNY-STARTUP-GATE 2026-07-02] Wait for the kite
+        instrument_cache to be populated before running the scanner.
+
+        Today's bug: refresh_instrument_cache() runs async on a parallel
+        task, while run_penny_scanner_once fires on a 30s interval
+        cron. On a fresh container restart, the first 12 minutes of
+        scans ran with an EMPTY instrument_cache, logging
+        `penny_universe_tokens_unresolved count=100` on every tick.
+        The scanner then proceeded with `reject=0` -- no candidate
+        could be tokenised, no signals generated, no orders placed.
+
+        Fix: scan_once() awaits this helper first. If the cache has
+        fewer than `min_count` entries (default 100, well below
+        NSE_EQ's ~2,000), wait up to `timeout` seconds for it to
+        fill. Once full, subsequent scans skip the wait (it's <1ms
+        when the cache is already populated).
+
+        Returns True if the cache is ready (either immediately or
+        after waiting), False if the timeout elapsed. A False return
+        causes scan_once to short-circuit to `accept=0 reject=0`
+        with a logged warning -- better than 12 minutes of false
+        silence.
+
+        `min_count` defaults to the instance-level attribute
+        `instrument_cache_min_count` (default 100) so tests can
+        override without rewiring production code.
+        """
+        if min_count is None:
+            min_count = getattr(self, "instrument_cache_min_count", 100)
+        # Fast path: cache already populated.
+        if len(self.kite.instrument_cache) >= min_count:
+            return True
+        # Slow path: wait up to `timeout` seconds for refresh.
+        deadline = asyncio.get_event_loop().time() + timeout
+        poll_interval = 1.0
+        attempts = 0
+        while asyncio.get_event_loop().time() < deadline:
+            attempts += 1
+            await asyncio.sleep(poll_interval)
+            if len(self.kite.instrument_cache) >= min_count:
+                logger.info(
+                    "penny_instrument_cache_ready attempts=%d size=%d",
+                    attempts, len(self.kite.instrument_cache),
+                )
+                return True
+        logger.warning(
+            "penny_instrument_cache_timeout attempts=%d size=%d "
+            "min_required=%d -- scan will skip this tick",
+            attempts, len(self.kite.instrument_cache), min_count,
+        )
+        return False
 
     async def _get_quote_safe(self, token: int) -> Optional[dict]:
         try:
@@ -493,15 +555,27 @@ class PennyScanner:
         await init_penny_signal_db(settings.DB_PATH)
 
         universe = self._load_universe()
+        # [PENNY-STARTUP-GATE 2026-07-02] If the universe is empty,
+        # check whether the instrument_cache is the reason (race on
+        # container startup). If yes, wait up to 60s for it to fill;
+        # if it never fills, log + return zeros rather than spam
+        # `penny_universe_tokens_unresolved count=100` for 12 minutes.
         if not universe:
-            # 2026-06-25: surface this loudly so future silent-empty
-            # scenarios don't go unnoticed.
-            logger.warning(
-                "penny_scan_no_eligible_universe scan_id=%s "
-                "(check penny_universe_quality_audit + corp_data source)",
-                scan_id,
-            )
-            return {"scan_id": scan_id, "accept": 0, "reject": 0, "error": 0}
+            cache_size = len(getattr(self.kite, "instrument_cache", {}) or {})
+            if cache_size < 100:
+                if not await self._wait_for_instrument_cache():
+                    return {"scan_id": scan_id, "accept": 0, "reject": 0, "error": 0}
+                # Cache filled -- reload universe once.
+                universe = self._load_universe()
+            if not universe:
+                # 2026-06-25: surface this loudly so future silent-empty
+                # scenarios don't go unnoticed.
+                logger.warning(
+                    "penny_scan_no_eligible_universe scan_id=%s "
+                    "(check penny_universe_quality_audit + corp_data source)",
+                    scan_id,
+                )
+                return {"scan_id": scan_id, "accept": 0, "reject": 0, "error": 0}
 
         # Surface universe size + degraded count at scan start
         degraded_count = sum(

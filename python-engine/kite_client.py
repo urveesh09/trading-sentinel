@@ -1,6 +1,7 @@
 import asyncio
 import os
 import time
+from typing import Optional
 import httpx
 import sqlite3
 import pandas as pd
@@ -51,10 +52,23 @@ class KiteClient:
         })
 
     async def _init_db(self):
+        # [PENNY-SQLITE-WAL 2026-07-02] Switch cache.db to WAL mode
+        # + busy_timeout=5s. Today's incident: penny_scanner_once
+        # held a write lock on cache.db while iterating the universe,
+        # and the heartbeat's `health_circuit_query_failed
+        # error=database is locked` fired repeatedly because the
+        # default sqlite3 busy_timeout is 0 (fail-fast). WAL mode
+        # allows concurrent readers + a single writer (vs. the old
+        # rollback-journal mode which serialises everyone). 5s
+        # busy_timeout gives the writer time to finish a typical
+        # commit before the reader gives up.
         async with aiosqlite.connect(self.db_path) as db:
+            await db.execute("PRAGMA journal_mode=WAL")
+            await db.execute("PRAGMA busy_timeout=5000")
+            await db.execute("PRAGMA synchronous=NORMAL")
             await db.execute("""
                 CREATE TABLE IF NOT EXISTS ohlcv_cache (
-                    ticker TEXT, date TEXT, open REAL, high REAL, low REAL, 
+                    ticker TEXT, date TEXT, open REAL, high REAL, low REAL,
                     close REAL, volume INTEGER, fetched_at TIMESTAMP,
                     PRIMARY KEY (ticker, date)
                 )
@@ -62,7 +76,13 @@ class KiteClient:
             await db.commit()
 
     async def _init_intraday_db(self):
+        # [PENNY-SQLITE-WAL 2026-07-02] Same WAL + busy_timeout
+        # enforcement as _init_db. The two tables share the same
+        # cache.db file so PRAGMA is idempotent here.
         async with aiosqlite.connect(self.db_path) as db:
+            await db.execute("PRAGMA journal_mode=WAL")
+            await db.execute("PRAGMA busy_timeout=5000")
+            await db.execute("PRAGMA synchronous=NORMAL")
             await db.execute("""
                 CREATE TABLE IF NOT EXISTS intraday_cache (
                     ticker   TEXT,
@@ -71,7 +91,7 @@ class KiteClient:
                     high     REAL,
                     low      REAL,
                     close    REAL,
-                    volume   INTEGER,
+                    volume   REAL,
                     fetched_at TIMESTAMP,
                     PRIMARY KEY (ticker, datetime)
                 )
@@ -333,6 +353,17 @@ class KiteClient:
         tickers. Now the FIRST full-batch failure per process emits a
         CRITICAL log so the operator sees it. Subsequent failures log
         at WARNING (not CRITICAL) to avoid spam.
+
+        [KITE-QUOTE-RETRY 2026-07-02] Wraps the underlying call with
+        exponential-backoff retry on 401/403/429/5xx. Today's incident:
+        2,649 kite_quote_failed status=403 events between 09:00-10:30
+        IST, every single one an immediate failure with no retry.
+        Most 403s from Kite during market open are transient (token
+        re-auth mid-session, momentary overload); a single retry with
+        0.5s backoff recovers the vast majority. After 3 attempts the
+        call is given up and logged at WARNING. Also emits a
+        kite_auth_degraded WARNING once when the per-minute failure
+        rate exceeds 30 (today hit ~600/min at the peak).
         """
         if isinstance(tokens, (int, str)):
             tokens = [tokens]
@@ -340,34 +371,83 @@ class KiteClient:
             return {}
         tokens = [int(t) for t in tokens]
 
-        await self.limiter.acquire()
-        try:
-            resp = await self.client.get(
-                "/quote",
-                params=[("i", str(t)) for t in tokens],
-            )
-            resp.raise_for_status()
-            data = resp.json().get("data", {})
-            result = {int(k): v for k, v in data.items()}
-            # [AUDIT-FIX-2.3] Loud on full-batch failure. Per-token
-            # partial failures still log at WARNING (existing behaviour);
-            # a total empty return for a non-empty request is suspicious
-            # and worth a CRITICAL the first time it happens per process.
-            if not result and tokens:
+        # Retry config (KITE-QUOTE-RETRY 2026-07-02): 3 attempts,
+        # 0.5s -> 1.0s -> 2.0s backoff. Total worst-case wait ~3.5s,
+        # which is fine because the penny scanner runs on a 30s cron.
+        max_attempts = 3
+        backoff = 0.5
+        last_exc: Optional[Exception] = None
+        for attempt in range(1, max_attempts + 1):
+            await self.limiter.acquire()
+            try:
+                resp = await self.client.get(
+                    "/quote",
+                    params=[("i", str(t)) for t in tokens],
+                )
+                resp.raise_for_status()
+                data = resp.json().get("data", {})
+                result = {int(k): v for k, v in data.items()}
+                if not result and tokens:
+                    # [KITE-QUOTE-RETRY] Empty body with 200 OK -- this
+                    # is the case today's 2,649 403s turned into. Treat
+                    # as transient and retry unless we're on the last
+                    # attempt. If still empty after retries, fall through
+                    # to the existing failure logger.
+                    if attempt < max_attempts:
+                        logger.warning(
+                            "kite_quote_empty_body_retrying attempt=%d/%d tokens=%d",
+                            attempt, max_attempts, len(tokens),
+                        )
+                        await asyncio.sleep(backoff)
+                        backoff *= 2
+                        continue
+                    self._log_quote_batch_failure(len(tokens))
+                    self._note_quote_rate_failure()
+                elif result:
+                    self._note_quote_batch_success()
+                return result
+            except httpx.HTTPStatusError as e:
+                last_exc = e
+                status = e.response.status_code
+                # Retry on 401 (token expired), 403 (rate-limit /
+                # momentary overload), 429 (explicit rate-limit), and
+                # any 5xx server error.
+                if status in (401, 403, 429) or status >= 500:
+                    if attempt < max_attempts:
+                        logger.warning(
+                            "kite_quote_http_retry status=%d attempt=%d/%d tokens=%d",
+                            status, attempt, max_attempts, len(tokens),
+                        )
+                        await asyncio.sleep(backoff)
+                        backoff *= 2
+                        continue
+                logger.error(
+                    "kite_quote_failed status=%d tokens=%d",
+                    status, len(tokens),
+                )
                 self._log_quote_batch_failure(len(tokens))
-            elif result:
-                # Successful batch -- reset the latch so the next full
-                # failure is loud again.
-                self._note_quote_batch_success()
-            return result
-        except httpx.HTTPStatusError as e:
-            logger.error("kite_quote_failed status=%d tokens=%d", e.response.status_code, len(tokens))
-            self._log_quote_batch_failure(len(tokens))
-            return {}
-        except httpx.RequestError as e:
-            logger.error("kite_quote_failed error=%s", str(e))
-            self._log_quote_batch_failure(len(tokens))
-            return {}
+                self._note_quote_rate_failure()
+                return {}
+            except httpx.RequestError as e:
+                last_exc = e
+                if attempt < max_attempts:
+                    logger.warning(
+                        "kite_quote_request_retry attempt=%d/%d tokens=%d err=%s",
+                        attempt, max_attempts, len(tokens), str(e),
+                    )
+                    await asyncio.sleep(backoff)
+                    backoff *= 2
+                    continue
+                logger.error(
+                    "kite_quote_failed error=%s", str(e),
+                )
+                self._log_quote_batch_failure(len(tokens))
+                self._note_quote_rate_failure()
+                return {}
+        # Should be unreachable given the loops above, but be defensive.
+        if last_exc is not None:
+            logger.error("kite_quote_failed_unreachable %s", str(last_exc))
+        return {}
 
     def _log_quote_batch_failure(self, n_tokens: int):
         """[AUDIT-FIX-2.3] Log a full-batch quote failure once at
@@ -397,6 +477,51 @@ class KiteClient:
                 "next_batch_failure_will_be_critical_again",
             )
             KiteClient._quote_batch_fail_emitted = False
+
+    # [KITE-QUOTE-RETRY 2026-07-02] Per-minute failure counter that
+    # emits a single kite_auth_degraded WARNING once per minute when
+    # the failure rate exceeds the threshold. Today (2026-07-02) the
+    # peak was ~600 failures/min between 09:00-10:30 IST; without
+    # this latch the operator's log buffer fills with thousands of
+    # "kite_quote_failed" ERROR lines and the actual signal (auth is
+    # degraded) is invisible.
+    #
+    # Class-level state so the latch is shared across instances
+    # (defensive -- the codebase only constructs one KiteClient, but
+    # a future test fixture might construct more).
+    _quote_fail_window_start: float = 0.0
+    _quote_fail_window_count: int = 0
+    _quote_fail_degraded_emitted: bool = False
+    KITE_QUOTE_FAIL_RATE_THRESHOLD_PER_MIN = 30
+
+    def _note_quote_rate_failure(self) -> None:
+        """[KITE-QUOTE-RETRY 2026-07-02] Track per-minute quote
+        failure rate and emit a single kite_auth_degraded WARNING
+        once per rolling minute when the rate exceeds
+        KITE_QUOTE_FAIL_RATE_THRESHOLD_PER_MIN (default 30). Resets
+        after 60s of no failures OR when _note_quote_batch_success
+        fires.
+        """
+        now = time.monotonic()
+        if (now - KiteClient._quote_fail_window_start) > 60.0:
+            KiteClient._quote_fail_window_start = now
+            KiteClient._quote_fail_window_count = 0
+            KiteClient._quote_fail_degraded_emitted = False
+        KiteClient._quote_fail_window_count += 1
+        if (
+            not KiteClient._quote_fail_degraded_emitted
+            and KiteClient._quote_fail_window_count
+            >= KiteClient.KITE_QUOTE_FAIL_RATE_THRESHOLD_PER_MIN
+        ):
+            logger.warning(
+                "kite_auth_degraded failures_in_last_min=%d "
+                "threshold=%d -- Kite auth appears to be returning "
+                "401/403/5xx; the scanner will retry but signals may "
+                "be delayed until auth recovers",
+                KiteClient._quote_fail_window_count,
+                KiteClient.KITE_QUOTE_FAIL_RATE_THRESHOLD_PER_MIN,
+            )
+            KiteClient._quote_fail_degraded_emitted = True
 
     async def get_instruments_nse_eq(self) -> list:
         """

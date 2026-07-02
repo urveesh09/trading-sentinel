@@ -40,8 +40,12 @@ DESIGN PRINCIPLES (operator-mandated 2026-06-25):
 5. Message under 1000 chars (Telegram safe).
 
 DATA SOURCES:
-  - positions table: ticker, entry_price, stop_loss, shares, source
-    (filtered to source='PENNY' AND status IN ('OPEN', 'CLOSED_T1'))
+  - positions table: ticker, entry_price, stop_loss_initial, shares,
+    source (filtered to source='PENNY' AND status IN ('OPEN', 'CLOSED_T1'))
+    [PENNY-HEATMAP-FIX 2026-07-02] Production table uses
+    `stop_loss_initial` (see position_tracker.py init_positions_db
+    CREATE TABLE). The previous SELECT of `stop_loss` failed with
+    "no such column" 12+ times today (rule-violation recipe below).
   - kite.get_quote(): live LTP per position (batched, single Kite call)
   - penny_sectors.csv: symbol -> sector mapping
 """
@@ -139,9 +143,15 @@ def _read_open_positions(db_path: str) -> List[dict]:
     try:
         with sqlite3.connect(db_path) as con:
             con.row_factory = sqlite3.Row
+            # [PENNY-HEATMAP-FIX 2026-07-02] Production schema is
+            # `stop_loss_initial` (position_tracker.py CREATE TABLE).
+            # The previous `stop_loss` reference raised
+            # "no such column: stop_loss" on every heatmap tick today
+            # (logged 12+ times). Aliased to `stop_loss` so the rest
+            # of this module keeps using row["stop_loss"].
             cur = con.execute(
-                "SELECT ticker, entry_price, stop_loss, shares, status, "
-                "       product_type, regime_at_entry "
+                "SELECT ticker, entry_price, stop_loss_initial AS stop_loss, "
+                "       shares, status, product_type, regime_at_entry "
                 "FROM positions "
                 "WHERE source = 'PENNY' "
                 "AND status IN ('OPEN', 'CLOSED_T1') "

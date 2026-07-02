@@ -23,12 +23,20 @@ from unittest.mock import AsyncMock, MagicMock
 # ---- helpers ---------------------------------------------------------
 
 def _seed_positions(path: str, rows):
-    """rows = [(ticker, entry_price, stop_loss, shares, status)]"""
+    """rows = [(ticker, entry_price, stop_loss, shares, status)]
+
+    [PENNY-HEATMAP-FIX 2026-07-02] Updated to use the REAL schema
+    (stop_loss_initial, the column position_tracker.init_positions_db
+    creates). Pre-fix the test fixture created a `stop_loss` column
+    that doesn't exist in production, which is exactly why the
+    heatmap query bug shipped undetected -- the test fixture agreed
+    with the buggy query, not with the real schema.
+    """
     with sqlite3.connect(path) as con:
         con.executescript("""
             CREATE TABLE IF NOT EXISTS positions (
                 ticker TEXT, status TEXT, source TEXT,
-                entry_price REAL, stop_loss REAL, shares INTEGER,
+                entry_price REAL, stop_loss_initial REAL, shares INTEGER,
                 product_type TEXT DEFAULT 'MIS',
                 regime_at_entry TEXT,
                 entry_date TEXT
