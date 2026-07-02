@@ -323,6 +323,12 @@ def test_scanner_logs_warning_when_no_eligible_universe(tmp_paths, fake_kite, tm
         kite=fake_kite, universe_json_path=str(p),
         paper_mode=True, regime="PR1_CALM",
     )
+    # [PENNY-STARTUP-GATE 2026-07-02] This test seeds only 2
+    # instrument_cache entries to make a small universe. The new
+    # startup-gate waits for >=100 by default; lower the threshold
+    # so the test exercises the empty-eligible-universe path, not
+    # the startup-gate timeout path.
+    scanner.instrument_cache_min_count = 1
     caplog.set_level(logging.WARNING, logger="penny_scanner")
     asyncio.run(scanner.scan_once(as_of=datetime(2026, 6, 21, 11, 0)))
     warn_lines = [r.message for r in caplog.records

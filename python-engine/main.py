@@ -1161,6 +1161,55 @@ def register_penny_scheduler_jobs(scheduler):
         max_instances=1,
         coalesce=True,
     )
+    logger.info(
+        "penny_edge_cron_registered id=penny_edge_scan "
+        "schedule=\"09:30 IST daily\" max_instances=1 coalesce=True"
+    )
+
+    # [PENNY-EDGE-STARTUP-CATCHUP 2026-07-02] If the container starts
+    # after the cron fire-time (today's incident: 14:53 IST startup,
+    # 09:30 IST cron already missed -> zero signals all day), fire
+    # the scan ONCE on startup. Same for the 15:15 exit if the
+    # container is alive past market close.
+    #
+    # Coalesce=True means the missed 09:30 trigger gets dropped when
+    # the scheduler next evaluates, so without this catchup the cron
+    # is silently never fired for that day. The catchup is one-shot
+    # per startup, fires immediately (no delay), and the normal cron
+    # still owns subsequent days.
+    try:
+        from datetime import datetime, time as _dt_time, timezone as _dt_tz
+        from zoneinfo import ZoneInfo
+        _now_ist = datetime.now(ZoneInfo("Asia/Kolkata"))
+        _today_0930 = _now_ist.replace(hour=9, minute=30, second=0, microsecond=0)
+        _today_1515 = _now_ist.replace(hour=15, minute=15, second=0, microsecond=0)
+        if _now_ist >= _today_0930 and _now_ist < _today_1515:
+            logger.warning(
+                "penny_edge_scan_startup_catchup_firing "
+                "reason=container_started_after_0930_IST "
+                "now_ist=%s",
+                _now_ist.strftime("%H:%M:%S"),
+            )
+            asyncio.create_task(_run_penny_edge_scan_safe())
+        elif _now_ist >= _today_1515:
+            logger.warning(
+                "penny_edge_scan_startup_skipped "
+                "reason=container_started_after_market_close "
+                "now_ist=%s -- exit catchup will fire instead",
+                _now_ist.strftime("%H:%M:%S"),
+            )
+        else:
+            logger.info(
+                "penny_edge_scan_startup_skipped reason=before_0930_IST "
+                "now_ist=%s -- normal cron will fire on schedule",
+                _now_ist.strftime("%H:%M:%S"),
+            )
+    except Exception as _catchup_exc:
+        # Loud-but-non-blocking: never fail startup over the catchup.
+        logger.warning(
+            "penny_edge_scan_startup_catchup_failed err=%s",
+            str(_catchup_exc),
+        )
 
     # [PENNY-EDGE 2026-07-01] EOD exit job: force-close any EDGE-sourced
     # positions (both PAPER and LIVE legs) older than 3 days.
@@ -1198,6 +1247,39 @@ def register_penny_scheduler_jobs(scheduler):
         max_instances=1,
         coalesce=True,
     )
+    logger.info(
+        "penny_edge_cron_registered id=penny_edge_exit "
+        "schedule=\"15:15 IST daily\" max_instances=1 coalesce=True"
+    )
+
+    # [PENNY-EDGE-STARTUP-CATCHUP 2026-07-02] Companion catchup for the
+    # 15:15 IST EOD exit. Fires only if the container was offline at
+    # 15:15 IST AND it's now after-market. The startup_scan catchup
+    # above already fires the scan if needed; this one only handles
+    # exit-time catchup (e.g. container restart right around 15:15).
+    try:
+        from datetime import datetime as _dt2, timezone as _dt2_tz
+        from zoneinfo import ZoneInfo
+        _now_ist2 = _dt2.now(ZoneInfo("Asia/Kolkata"))
+        _today_1515_b = _now_ist2.replace(hour=15, minute=15, second=0, microsecond=0)
+        if _now_ist2 >= _today_1515_b:
+            logger.warning(
+                "penny_edge_exit_startup_catchup_firing "
+                "reason=container_started_after_1515_IST now_ist=%s",
+                _now_ist2.strftime("%H:%M:%S"),
+            )
+            asyncio.create_task(_run_penny_edge_exit_safe())
+        else:
+            logger.info(
+                "penny_edge_exit_startup_skipped reason=before_1515_IST "
+                "now_ist=%s -- normal cron will fire on schedule",
+                _now_ist2.strftime("%H:%M:%S"),
+            )
+    except Exception as _exit_catchup_exc:
+        logger.warning(
+            "penny_edge_exit_startup_catchup_failed err=%s",
+            str(_exit_catchup_exc),
+        )
 
     scheduler.add_job(
         run_penny_eod_check, "cron",

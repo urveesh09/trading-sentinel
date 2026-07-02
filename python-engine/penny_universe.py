@@ -23,6 +23,83 @@ from typing import Dict, List, Optional
 logger = logging.getLogger(__name__)
 
 
+# [PENNY-SG-FILTER 2026-07-02] Belt-and-braces filter for non-equity
+# instruments that Kite's /instruments/NSE sometimes surfaces with
+# instrument_type=EQ. Today (2026-07-02) the penny_static.json contained
+# ~20 Sovereign Gold Bond (SGB) tickers (`-SG` suffix like 597CG27-SG,
+# 662RJ30-SG) and 4 ETFs (PHARMABEES, BSE500IETF, BFSI, ESG). These are
+# not equity tickers -- they're bonds and exchange-traded funds that
+# dilute the universe's liquidity scoring and confuse the scanner.
+#
+# Two layers of defence:
+#   1. `_is_non_equity_symbol()` is checked in the refresh path
+#      (refresh_from_kite) BEFORE a ticker enters the candidate list.
+#   2. `eligible_tickers()` filters them again at scan time so a stale
+#      penny_static.json from before this commit also gets cleaned.
+#
+# Patterns covered:
+#   -SG / -SGX / -GS          Sovereign Gold Bond suffixes
+#   BEES / ETF / GILT / ...   ETF name hints
+#   ^\d+[A-Z]{2}\d+...$       Generic `<digits><state><number>` bond
+#                             pattern (e.g. 597CG27-SG, 662RJ30-SG)
+import re as _re_sgfilter
+
+_NON_EQUITY_SUFFIXES = ("-SG", "-SGX", "-GS")
+_NON_EQUITY_EXACT = frozenset({
+    "PHARMABEES", "BSE500IETF", "BFSI", "ESG",
+    "GOLDBEES", "LIQUIDBEES", "CPSEETF", "NIFTYBEES",
+    "BANKBEES", "JUNIORBEES", "SHARIABEES", "ITBEES",
+    "SETFNIF50", "SETFNIFBK", "SETFNN50", "MASPTOP50",
+    "MON100", "MONIFTY500", "MAFANG", "HEALTHY",
+})
+_NON_EQUITY_NAME_HINTS = (
+    "BEES", "ETF", "GILT", "LIQUID", "CPSE", "SETF",
+    "SGB", "GOLDBOND",
+)
+# Generic bond-pattern: digits + 2 letters + 2 digits + optional
+# alpha-suffix. Matches SGB formats like:
+#   597CG27     (no suffix)
+#   100RJ31A    (single letter suffix)
+#   597CG27-SG  (-SG suffix; but -SG is caught by the suffix check above)
+_BOND_PATTERN = _re_sgfilter.compile(r"^\d+[A-Z]{2}\d+[A-Z]?$")
+
+
+def _is_non_equity_symbol(symbol: str) -> bool:
+    """True if the symbol is a Sovereign Gold Bond, ETF, or other
+    non-equity instrument that shouldn't be in a penny-stock universe.
+
+    Used at both refresh time (refresh_from_kite) and at scan time
+    (eligible_tickers) to keep the universe clean. See module-level
+    comment for the rationale (PENNY-SG-FILTER 2026-07-02).
+    """
+    if not symbol:
+        return True
+    sym = symbol.strip().upper()
+    if not sym:
+        return True
+    if sym in _NON_EQUITY_EXACT:
+        return True
+    for sfx in _NON_EQUITY_SUFFIXES:
+        if sym.endswith(sfx):
+            return True
+    # NAME_HINTS is checked AFTER the suffix check because a
+    # suffix match (e.g. "-SG") is a stronger signal than a name
+    # hint (e.g. "BEES" embedded in a name). Also, NAME_HINTS like
+    # "GILT" or "SGB" can collide with legitimate equity names, so
+    # we require a word-boundary match rather than a substring.
+    import re as _re_hints
+    for hint in _NON_EQUITY_NAME_HINTS:
+        # Match if the hint appears as a whole word OR is
+        # contiguous at the start/end of the symbol. Avoids
+        # false positives like "IT" matching "ITBEES" alone --
+        # "BEES" is the stronger hint here.
+        if _re_hints.search(rf"(^|_){_re_hints.escape(hint)}($|_)", sym):
+            return True
+    if _BOND_PATTERN.match(sym):
+        return True
+    return False
+
+
 class UniverseError(Exception):
     """Raised when the penny JSON is missing, malformed, or invalid."""
 
@@ -181,8 +258,16 @@ class PennyUniverse:
         """
         from config import settings
         out = []
+        # [PENNY-SG-FILTER 2026-07-02] Defence layer 2: drop SGB /
+        # ETF / bond tickers even if a stale penny_static.json from
+        # before this commit still contains them. The first guard is
+        # cheap (string operations) so we run it before the rest of
+        # the eligibility filter.
         for t in self._all_tickers:
             sym = t.get("symbol")
+            # [PENNY-SG-FILTER 2026-07-02] Defence layer 2.
+            if _is_non_equity_symbol(sym):
+                continue
             if sym not in self._symbol_to_token:
                 continue  # not resolvable; skip
 
@@ -640,6 +725,8 @@ async def refresh_from_kite(kite, out_json_path, corp_json_path, top_n=100):
         # pick up non-standard segments regardless of Kite behaviour.
         # Counter is logged so the operator can see the leak size.
         sm_be_rejected = 0
+        # [PENNY-SG-FILTER 2026-07-02] Defence layer 1 counter.
+        non_equity_rejected = 0
         candidates = []
         for inst in instruments:
             sym = inst["tradingsymbol"]
@@ -660,6 +747,15 @@ async def refresh_from_kite(kite, out_json_path, corp_json_path, top_n=100):
                     sm_be_rejected += 1
                     break
             else:
+                # [PENNY-SG-FILTER 2026-07-02] Defence layer 1: drop
+                # Sovereign Gold Bonds, ETFs and other non-equity
+                # instruments that Kite sometimes surfaces with
+                # instrument_type=EQ. Without this, today's universe
+                # contained ~20 SG bonds + 4 ETFs that polluted the
+                # top-100 ranker. See module-level comment.
+                if _is_non_equity_symbol(sym):
+                    non_equity_rejected += 1
+                    continue
                 prev_close = q.get("ohlc", {}).get("close") or q.get("last_price")
                 if prev_close is None:
                     continue
@@ -686,6 +782,12 @@ async def refresh_from_kite(kite, out_json_path, corp_json_path, top_n=100):
                 "penny_universe_segment_filtered count=%d "
                 "(rejected NSE non-EQ series: SM/BE/ST/BZ/IL/GS)",
                 sm_be_rejected,
+            )
+        if non_equity_rejected:
+            logger.info(
+                "penny_universe_non_equity_filtered count=%d "
+                "(rejected SG bonds, ETFs and other non-equity tickers)",
+                non_equity_rejected,
             )
 
         # Apply price-band eligibility only here (the full eligibility
