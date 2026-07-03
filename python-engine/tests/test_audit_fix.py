@@ -219,6 +219,16 @@ def test_cnc_db_write_failure_sends_telegram_alert(tmp_path, monkeypatch, caplog
 
     from main import run_penny_connors_scan
 
+    # [2026-07-03 PR-2] run_penny_connors_scan now has an is_trading_day
+    # gate at the top. Mock it to return True so we exercise the downstream
+    # code path (which the test intends to smoke-test). Without this
+    # mock, the broken-connect setup below would surface at the gate's
+    # `is_trading_day` -> `get_holiday_cache` -> `aiosqlite.connect`
+    # chain and raise RuntimeError before the test's code path runs.
+    monkeypatch.setattr(
+        "main.is_trading_day", AsyncMock(return_value=True),
+    )
+
     # Build a minimal scanner stub
     fake_scanner = MagicMock()
     fake_scanner._load_universe.return_value = []

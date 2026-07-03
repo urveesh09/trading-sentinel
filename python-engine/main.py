@@ -298,9 +298,17 @@ async def run_penny_scanner_once():
     prevents one stuck call from cascading into a system-wide
     stall.
 
-    [EXPECTED-FAIL P1 2026-07-03] Will be gated on weekends/NSE-holidays
-    in PR-2.
+    [CALENDAR-GATE 2026-07-03] P1 follow-up to PR-1. Skip on weekends +
+    NSE holidays. Each 30s tick on a Saturday/Sunday/Holiday would
+    otherwise log `penny_scan_complete accept=0 error=0 reject=0`
+    (~5,760 lines per weekend day) and burn Kite rate-limit quota
+    on empty quote bodies. Monday's first scan fires normally.
     """
+    # [CALENDAR-GATE 2026-07-03] weekend / NSE-holiday early-return.
+    today = datetime.now(IST).date()
+    if not await is_trading_day(today, settings.DB_PATH):
+        logger.info("penny_scanner_once_skip reason=non_trading_day")
+        return
     global _last_penny_scan_universe_size
     scanner = _get_penny_scanner()
     if scanner is None:
@@ -326,11 +334,25 @@ async def run_penny_scanner_once():
 async def run_penny_connors_scan():
     """Once-daily 09:30 CNC leg (spec §4).
 
-    [EXPECTED-FAIL P1 2026-07-03] Will be gated on weekends/NSE-holidays
-    in PR-2.
+    [CALENDAR-GATE 2026-07-03] P1 follow-up to PR-1. Skip on weekends +
+    NSE holidays. Connors time-stop counting uses trading_days_between_sync
+    so weekend handling is already correct in the exit logic; this gate
+    prevents a wasted 09:30 scan that would only produce rejects.
     """
+    # [2026-07-03 BUG-FIX] Move the `from datetime import datetime, timezone`
+    # import to BEFORE the calendar gate. Python's scoping rules mark
+    # `datetime` as local for the whole function the moment any
+    # `from datetime import datetime` statement appears -- and our gate
+    # uses `datetime.now(IST).date()` at line 343. With the import BELOW
+    # the gate, Python raised UnboundLocalError at runtime (and in
+    # tests/test_calendar_gates.py). Found by PR-2 functional tests.
+    from datetime import datetime, timezone  # noqa: I001  (must precede gate)
+    # [CALENDAR-GATE 2026-07-03] weekend / NSE-holiday early-return.
+    today = datetime.now(IST).date()
+    if not await is_trading_day(today, settings.DB_PATH):
+        logger.info("penny_connors_scan_skip reason=non_trading_day")
+        return
     global _last_penny_scan_universe_size
-    from datetime import datetime, timezone
     scanner = _get_penny_scanner()
     if scanner is None:
         return
@@ -493,10 +515,17 @@ _penny_universe_refresh_in_progress: bool = False
 async def run_penny_universe_refresh():
     """Daily 08:00 IST refresh (spec §9.1).
 
-    [EXPECTED-FAIL P1 2026-07-03] Will be gated on weekends/NSE-holidays
-    in PR-2 (see docs/deviations/2026-07-03-market-calendar-coverage-audit.md).
-    Test enforces this via tests/test_penny_cron_gating.py.
+    [CALENDAR-GATE 2026-07-03] P1 follow-up to PR-1. Skip on weekends +
+    NSE holidays. On a non-trading day the universe loader's network
+    calls (Kite + Yahoo) waste quota; the file gets overwritten Monday
+    morning so there's no data-staleness gap. Mirrors the run_screener
+    gate at main.py:1583-1588.
     """
+    # [CALENDAR-GATE 2026-07-03] weekend / NSE-holiday early-return.
+    today = datetime.now(IST).date()
+    if not await is_trading_day(today, settings.DB_PATH):
+        logger.info("penny_universe_refresh_skip reason=non_trading_day")
+        return
     global _penny_universe_refresh_in_progress
     if _penny_universe_refresh_in_progress:
         logger.warning(
@@ -551,9 +580,15 @@ async def run_penny_universe_refresh():
 async def run_penny_regime_compute():
     """Daily 09:20 IST regime compute (spec §6, §9.1).
 
-    [EXPECTED-FAIL P1 2026-07-03] Will be gated on weekends/NSE-holidays
-    in PR-2.
+    [CALENDAR-GATE 2026-07-03] P1 follow-up to PR-1. Skip on weekends +
+    NSE holidays. Regime gets computed fresh Monday morning from kite's
+    same-day index data so there's no data-staleness gap.
     """
+    # [CALENDAR-GATE 2026-07-03] weekend / NSE-holiday early-return.
+    today = datetime.now(IST).date()
+    if not await is_trading_day(today, settings.DB_PATH):
+        logger.info("penny_regime_compute_skip reason=non_trading_day")
+        return
     try:
         await _penny_regime_engine.compute_today(kite=kite)
         # [AUDIT-FIX-REGIME-LOG 2026-06-26] Use .value (e.g. "PR1_CALM")
@@ -570,9 +605,14 @@ async def run_penny_regime_compute():
 async def run_penny_regime_refresh():
     """Daily 13:00 IST intraday regime refresh (spec §6, §9.1).
 
-    [EXPECTED-FAIL P1 2026-07-03] Will be gated on weekends/NSE-holidays
-    in PR-2.
+    [CALENDAR-GATE 2026-07-03] P1 follow-up to PR-1. Skip on weekends +
+    NSE holidays. Monday's 09:20 compute overwrites any stale value.
     """
+    # [CALENDAR-GATE 2026-07-03] weekend / NSE-holiday early-return.
+    today = datetime.now(IST).date()
+    if not await is_trading_day(today, settings.DB_PATH):
+        logger.info("penny_regime_refresh_skip reason=non_trading_day")
+        return
     try:
         await _penny_regime_engine.compute_today(kite=kite)
         regime_val = _penny_regime_engine.today_regime
@@ -585,9 +625,15 @@ async def run_penny_regime_refresh():
 async def run_penny_eod_check():
     """14:30 IST smart-EOD check on open MIS positions (spec §5.5).
 
-    [EXPECTED-FAIL P1 2026-07-03] Will be gated on weekends/NSE-holidays
-    in PR-2.
+    [CALENDAR-GATE 2026-07-03] P1 follow-up to PR-1. Skip on weekends +
+    NSE holidays. With run_penny_force_close_mis also gated, no
+    penny-MIS positions should be left in flight across weekends.
     """
+    # [CALENDAR-GATE 2026-07-03] weekend / NSE-holiday early-return.
+    today = datetime.now(IST).date()
+    if not await is_trading_day(today, settings.DB_PATH):
+        logger.info("penny_eod_check_skip reason=non_trading_day")
+        return
     try:
         from penny_engine_breakout import smart_eod_check
         from position_tracker import get_open_positions
@@ -800,9 +846,15 @@ async def _run_penny_heatmap():
     emits a sector-grouped heatmap via the same transport as the
     hourly report.
 
-    [EXPECTED-FAIL P1 2026-07-03] Will be gated on weekends/NSE-holidays
-    in PR-2.
+    [CALENDAR-GATE 2026-07-03] P1 follow-up to PR-1. Skip on weekends +
+    NSE holidays. Heatmap from a stale portfolio is misleading on
+    non-trading days.
     """
+    # [CALENDAR-GATE 2026-07-03] weekend / NSE-holiday early-return.
+    today = datetime.now(IST).date()
+    if not await is_trading_day(today, settings.DB_PATH):
+        logger.info("penny_heatmap_skip reason=non_trading_day")
+        return
     try:
         from penny_heatmap import build_heatmap
         body, _buckets, total_open, priced_count = await build_heatmap(
@@ -837,9 +889,21 @@ async def _run_penny_heatmap():
 async def run_penny_hourly_report():
     """Top-of-hour status report (spec §9.4). 10:00 through 14:00 IST.
 
-    [EXPECTED-FAIL P1 2026-07-03] Will be gated on weekends/NSE-holidays
-    in PR-2.
+    [CALENDAR-GATE 2026-07-03] P1 follow-up to PR-1. Skip on weekends +
+    NSE holidays. The Telegram status message is meaningful only when
+    penny might have taken positions during the day.
     """
+    # [2026-07-03 BUG-FIX] Use module-level `datetime` (already imported at
+    # top of file as `from datetime import datetime`). The original code
+    # later did `from datetime import date, datetime as _dt` inside the
+    # try block; that re-bind shadows our module-level `datetime` and
+    # would crash the calendar gate with UnboundLocalError. Found by
+    # PR-2 functional tests.
+    # [CALENDAR-GATE 2026-07-03] weekend / NSE-holiday early-return.
+    today = datetime.now(IST).date()
+    if not await is_trading_day(today, settings.DB_PATH):
+        logger.info("penny_hourly_report_skip reason=non_trading_day")
+        return
     try:
         from penny_hourly_report import run_hourly_report
         from position_tracker import get_open_positions
@@ -1132,8 +1196,13 @@ def register_penny_scheduler_jobs(scheduler):
     # did the strategies reject?). Setting hour=0 disables the job.
     if settings.PENNY_PREMARKET_REPORT_HOUR > 0:
         async def _run_penny_premarket_report():
-            # [EXPECTED-FAIL P1 2026-07-03] Will be gated on
-            # weekends/NSE-holidays in PR-2.
+            # [CALENDAR-GATE 2026-07-03] P1 follow-up to PR-1. Skip on
+            # weekends + NSE holidays. A Saturday premarket digest
+            # would just re-publish Friday's data.
+            today = datetime.now(IST).date()
+            if not await is_trading_day(today, settings.DB_PATH):
+                logger.info("penny_premarket_report_skip reason=non_trading_day")
+                return
             from penny_premarket_report import run_premarket_report
             try:
                 await run_premarket_report()
@@ -1952,9 +2021,16 @@ async def run_screener():
 async def daily_post_market():
     """Daily 15:45 IST post-market reconciliation.
 
-    [EXPECTED-FAIL P1 2026-07-03] Will be gated on weekends/NSE-holidays
-    in PR-2. (This is a swing handler, not penny.)
+    [CALENDAR-GATE 2026-07-03] P1 follow-up to PR-1. Skip on weekends +
+    NSE holidays. Monday's 15:45 catches up any Saturday/Sunday drift
+    via the same open_positions snapshot diff. (This is a swing handler,
+    not penny.)
     """
+    # [CALENDAR-GATE 2026-07-03] weekend / NSE-holiday early-return.
+    today = datetime.now(IST).date()
+    if not await is_trading_day(today, settings.DB_PATH):
+        logger.info("daily_post_market_skip reason=non_trading_day")
+        return
     today_str = datetime.now(IST).strftime("%Y-%m-%d")
     global risk_engine
 

@@ -65,18 +65,12 @@ GATED_VIA_MARKER = {
 # this PR. The audit classified them as P1 (network waste + stale regime
 # overwriting) rather than P0 (financial risk + Telegram noise). They MUST
 # carry the [EXPECTED-FAIL P1] marker so the test can grep them out.
-EXPECTED_PENDING_P1 = {
-    "run_penny_universe_refresh",
-    "run_penny_regime_compute",
-    "run_penny_regime_refresh",
-    "run_penny_scanner_once",
-    "run_penny_connors_scan",
-    "run_penny_eod_check",
-    "run_penny_hourly_report",
-    "_run_penny_premarket_report",
-    "_run_penny_heatmap",
-    "daily_post_market",
-}
+#
+# 2026-07-03 PR-2: P1 allowlist is EMPTY. Every penny cron handler is
+# now gated. Re-introduce the allowlist only when a future PR needs to
+# defer a new handler; the rule is that EVERY new cron must gate or be
+# explicitly allowlisted with [EXPECTED-FAIL P*].
+EXPECTED_PENDING_P1: set[str] = set()
 
 # Handlers that place real orders. These can NEVER be in
 # EXPECTED_PENDING_P1 -- the [EXPECTED-FAIL P1] marker is rejected for

@@ -243,3 +243,174 @@ async def test_no_handler_ever_calls_place_order_on_weekend(monkeypatch):
             pass
 
     _check_no_call(place_order_mock, "place_order")
+
+
+# =====================================================================
+# PR-2 (2026-07-03): P1 follow-up — gate the 10 P1 handlers that
+# were carry-over [EXPECTED-FAIL P1] markers in PR-1. Each test
+# below proves the new gate actually short-circuits on a
+# non-trading day. The companion test_penny_cron_gating.py has
+# dropped EXPECTED_PENDING_P1 to {}, so these handlers are now
+# enforced as gated by the static-analysis guard.
+# =====================================================================
+
+
+# 1) run_penny_universe_refresh ------------------------------------------------
+
+@pytest.mark.asyncio
+async def test_run_penny_universe_refresh_skips_on_non_trading_day(monkeypatch):
+    """8:00 IST cron. With is_trading_day=False it must NOT call
+    refresh_from_kite and must NOT rebuild penny_static.json."""
+    with patch("main.is_trading_day", new_callable=AsyncMock, return_value=False), \
+         patch("main.refresh_from_kite", new_callable=AsyncMock) as mock_refresh:
+        from main import run_penny_universe_refresh
+        await run_penny_universe_refresh()
+    _check_no_call(mock_refresh, "refresh_from_kite")
+
+
+# 2) run_penny_regime_compute --------------------------------------------------
+
+@pytest.mark.asyncio
+async def test_run_penny_regime_compute_skips_on_non_trading_day(monkeypatch):
+    """9:20 IST cron. With is_trading_day=False it must NOT call
+    _penny_regime_engine.compute_today."""
+    with patch("main.is_trading_day", new_callable=AsyncMock, return_value=False):
+        from main import run_penny_regime_compute, _penny_regime_engine
+        _penny_regime_engine.compute_today = AsyncMock(return_value=None)  # type: ignore
+        await run_penny_regime_compute()
+    _check_no_call(_penny_regime_engine.compute_today, "_penny_regime_engine.compute_today")
+
+
+# 3) run_penny_regime_refresh --------------------------------------------------
+
+@pytest.mark.asyncio
+async def test_run_penny_regime_refresh_skips_on_non_trading_day(monkeypatch):
+    """13:00 IST cron. Same gate as regime_compute."""
+    with patch("main.is_trading_day", new_callable=AsyncMock, return_value=False):
+        from main import run_penny_regime_refresh, _penny_regime_engine
+        _penny_regime_engine.compute_today = AsyncMock(return_value=None)  # type: ignore
+        await run_penny_regime_refresh()
+    _check_no_call(_penny_regime_engine.compute_today, "_penny_regime_engine.compute_today")
+
+
+# 4) run_penny_scanner_once (30-second interval) -------------------------------
+
+@pytest.mark.asyncio
+async def test_run_penny_scanner_once_skips_on_non_trading_day(monkeypatch):
+    """30-second MIS cron. The big noise source -- 5,760 ticks per
+    weekend day. With is_trading_day=False it must NOT call
+    _get_penny_scanner or scanner.scan_once."""
+    mock_scanner_factory = MagicMock(return_value=None)
+    monkeypatch.setattr("main._get_penny_scanner", mock_scanner_factory)
+    with patch("main.is_trading_day", new_callable=AsyncMock, return_value=False):
+        from main import run_penny_scanner_once
+        await run_penny_scanner_once()
+    _check_no_call(mock_scanner_factory, "_get_penny_scanner")
+
+
+# 5) run_penny_connors_scan -----------------------------------------------------
+
+@pytest.mark.asyncio
+async def test_run_penny_connors_scan_skips_on_non_trading_day(monkeypatch):
+    """9:30 IST CNC cron. With is_trading_day=False it must NOT
+    build a scanner or call scan_once."""
+    mock_scanner_factory = MagicMock(return_value=None)
+    monkeypatch.setattr("main._get_penny_scanner", mock_scanner_factory)
+    with patch("main.is_trading_day", new_callable=AsyncMock, return_value=False):
+        from main import run_penny_connors_scan
+        await run_penny_connors_scan()
+    _check_no_call(mock_scanner_factory, "_get_penny_scanner")
+
+
+# 6) run_penny_eod_check -------------------------------------------------------
+
+@pytest.mark.asyncio
+async def test_run_penny_eod_check_skips_on_non_trading_day(monkeypatch):
+    """14:30 IST EOD check. With is_trading_day=False it must NOT
+    call get_open_positions or build a scanner or run smart_eod_check."""
+    mock_scanner_factory = MagicMock(return_value=None)
+    monkeypatch.setattr("main._get_penny_scanner", mock_scanner_factory)
+    pos_mock = AsyncMock(return_value=[])
+    with patch("main.is_trading_day", new_callable=AsyncMock, return_value=False), \
+         patch("main.get_open_positions", pos_mock):
+        from main import run_penny_eod_check
+        await run_penny_eod_check()
+    _check_no_call(pos_mock, "get_open_positions")
+    _check_no_call(mock_scanner_factory, "_get_penny_scanner")
+
+
+# 7) _run_penny_heatmap (every 15-min) -----------------------------------------
+
+@pytest.mark.asyncio
+async def test_run_penny_heatmap_skips_on_non_trading_day(monkeypatch):
+    """Mid-day heat-map. With is_trading_day=False it must NOT call
+    build_heatmap or PennyHourlyReport.send."""
+    with patch("main.is_trading_day", new_callable=AsyncMock, return_value=False), \
+         patch("penny_heatmap.build_heatmap", new_callable=AsyncMock) as mock_build, \
+         patch("penny_hourly_report.PennyHourlyReport.send", new_callable=AsyncMock) as mock_send:
+        from main import _run_penny_heatmap
+        await _run_penny_heatmap()
+    _check_no_call(mock_build, "build_heatmap")
+    _check_no_call(mock_send, "PennyHourlyReport.send")
+
+
+# 8) run_penny_hourly_report (10:00-14:00 hourly) -----------------------------
+
+@pytest.mark.asyncio
+async def test_run_penny_hourly_report_skips_on_non_trading_day(monkeypatch):
+    """Hourly status report. With is_trading_day=False it must NOT
+    call run_hourly_report or get_open_positions."""
+    pos_mock = AsyncMock(return_value=[])
+    with patch("main.is_trading_day", new_callable=AsyncMock, return_value=False), \
+         patch("penny_hourly_report.run_hourly_report", new_callable=AsyncMock) as mock_run, \
+         patch("main.get_open_positions", pos_mock):
+        from main import run_penny_hourly_report
+        await run_penny_hourly_report()
+    _check_no_call(mock_run, "run_hourly_report")
+    _check_no_call(pos_mock, "get_open_positions")
+
+
+# 9) _run_penny_premarket_report (closure) ------------------------------------
+
+@pytest.mark.asyncio
+async def test_penny_premarket_report_closure_skips_on_non_trading_day():
+    """Closure created inside register_penny_scheduler_jobs. Pull the
+    closure out and verify it gates on is_trading_day=False (does
+    NOT call run_premarket_report)."""
+    import main as main_module
+
+    # Build the closures via a fake scheduler
+    fake_jobs: dict[str, object] = {}
+
+    class _FakeScheduler:
+        def add_job(self, fn, *a, **kw):
+            id_ = kw.get("id", fn.__name__)
+            fake_jobs[id_] = (fn, a, kw)
+
+    main_module.register_penny_scheduler_jobs(_FakeScheduler())
+    premarket_closure = fake_jobs["penny_premarket_report"][0]
+
+    with patch("main.is_trading_day", new_callable=AsyncMock, return_value=False), \
+         patch("penny_premarket_report.run_premarket_report", new_callable=AsyncMock) as mock_run:
+        await premarket_closure()
+    _check_no_call(mock_run, "run_premarket_report")
+
+
+# 10) daily_post_market (15:45, swing handler) ---------------------------------
+
+@pytest.mark.asyncio
+async def test_daily_post_market_skips_on_non_trading_day(monkeypatch):
+    """15:45 IST post-market reconciliation (swing subsystem).
+    With is_trading_day=False it must NOT call get_open_positions
+    or update_daily_positions or record_trade_close."""
+    pos_mock = AsyncMock(return_value=[])
+    update_mock = AsyncMock(return_value=None)
+    close_cb_mock = MagicMock()
+    with patch("main.is_trading_day", new_callable=AsyncMock, return_value=False), \
+         patch("main.get_open_positions", pos_mock), \
+         patch("main.update_daily_positions", update_mock), \
+         patch("main.record_trade_close", close_cb_mock):
+        from main import daily_post_market
+        await daily_post_market()
+    _check_no_call(pos_mock, "get_open_positions")
+    _check_no_call(update_mock, "update_daily_positions")
