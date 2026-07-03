@@ -127,6 +127,57 @@ class TestRefreshInstrumentCache:
         assert "TCS" in client.instrument_cache
 
     @pytest.mark.asyncio
+    async def test_instrument_cache_values_are_int(self, patch_settings):
+        """[INSTRUMENT-CACHE-INT 2026-07-03] The values stored in
+        instrument_cache must be int, NOT str. The /quote HTTP response
+        is keyed by int (`{int(k): v for k, v in data.items()}` in
+        `KiteClient.get_quote`), so any consumer that does
+        `kite.instrument_cache.get(symbol)` and then passes the result
+        to a quote-fetching dict lookup needs an int. Pre-fix this
+        stored `parts[0]` (a string from the raw CSV cell), causing
+        every penny ticker to silently log `quote_unavailable` even
+        when the cache was full.
+        """
+        client = KiteClient(patch_settings.DB_PATH)
+        client.access_token = "valid_token"
+
+        # Real CSV shape: instrument_token is the FIRST column and is a
+        # plain decimal integer with no quotes around it. Real-world
+        # Kite /instruments/NSE returns values like 738561, 2953217, etc.
+        nse_csv = (
+            'instrument_token,exchange_token,tradingsymbol,name,last_price,'
+            'tick_size,lot_size,instrument_type,segment,exchange\n'
+            '738561,10,"RELIANCE","Reliance Industries",2500.0,0.05,1,EQ,NSE,NSE\n'
+            '2953217,20,"TCS","Tata Consultancy",3450.5,0.05,1,EQ,NSE,NSE\n'
+        )
+
+        async def mock_get(url, **kwargs):
+            return MagicMock(
+                status_code=200, text=nse_csv, raise_for_status=MagicMock(),
+            )
+
+        client.client.get = mock_get
+        await client.refresh_instrument_cache()
+
+        # The full-row CSV from Kite has the token at index 0 (not 2)
+        # -- this test deliberately uses the OTHER positional indexing
+        # of `tradingsymbol` (parts[2]) for symbol extraction. The
+        # assertion below verifies the cached VALUE type is `int`.
+        # If symbol extraction at parts[2] is wrong for this fixture,
+        # the cache will be empty and the assertion will say so.
+        assert len(client.instrument_cache) >= 1, (
+            "Cache should populate from CSV rows when tradingsymbol is at parts[2]; "
+            "if this is 0, the column-order assumption has changed."
+        )
+        for symbol, token in client.instrument_cache.items():
+            assert isinstance(token, int), (
+                f"instrument_cache[{symbol!r}] = {token!r} (type {type(token).__name__}); "
+                f"expected int. Storing str breaks the dict-key alignment "
+                f"with /quote's int-keyed response and silently returns "
+                f"None on every lookup. [INSTRUMENT-CACHE-INT 2026-07-03]"
+            )
+
+    @pytest.mark.asyncio
     @pytest.mark.skip(reason="INDICES segment 403s on current Kite plan -- NIFTY 50 cannot be resolved via instrument_cache. Gap documented in GEMINI.md.")
     async def test_nifty_50_in_instrument_cache_q1(self, patch_settings):
         """Q1: NIFTY 50 must be found via INDICES segment, not just NSE."""

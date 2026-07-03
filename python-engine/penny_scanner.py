@@ -230,12 +230,27 @@ class PennyScanner:
         )
         return False
 
-    async def _get_quote_safe(self, token: int) -> Optional[dict]:
+    async def _get_quote_safe(self, token) -> Optional[dict]:
+        # [INSTRUMENT-CACHE-INT 2026-07-03] Coerce to int -- the instrument
+        # cache may be populated from the CSV `refresh_instrument_cache`
+        # path (str values, pre-fix) or the JSON `get_instruments_nse_eq`
+        # path (int values, correct). Coercion here makes the consumer
+        # safe for both. The /quote response is keyed by int via
+        # `KiteClient.get_quote`'s `result = {int(k): v for k, v in ...}`,
+        # so the dict lookup needs an int key.
         try:
-            quotes = await self.kite.get_quote([token])
-            return quotes.get(token) if isinstance(quotes, dict) else None
+            token_int = int(token)
+        except (TypeError, ValueError):
+            logger.warning(
+                "penny_quote_token_coerce_failed token=%s type=%s",
+                token, type(token).__name__,
+            )
+            return None
+        try:
+            quotes = await self.kite.get_quote([token_int])
+            return quotes.get(token_int) if isinstance(quotes, dict) else None
         except Exception as e:
-            logger.error("penny_quote_fetch_failed token=%s error=%s", token, str(e))
+            logger.error("penny_quote_fetch_failed token=%s error=%s", token_int, str(e))
             return None
 
     def _regime_to_size_pct(self) -> float:

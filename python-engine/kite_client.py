@@ -133,7 +133,24 @@ class KiteClient:
                             parts = line.split(",")
                             if len(parts) > 2:
                                 symbol = parts[2].strip('"').upper()
-                                self.instrument_cache[symbol] = parts[0]
+                                # [INSTRUMENT-CACHE-INT 2026-07-03] Coerce
+                                # to int so downstream callsites can do
+                                # `kite.instrument_cache.get(symbol)`
+                                # and treat the result as a token int.
+                                # Pre-fix: stored the raw CSV cell
+                                # (a string) and penny_scanner's
+                                # `_get_quote_safe(token)` silently
+                                # missed the int-keyed /quote response
+                                # dict, logging `quote_unavailable` for
+                                # 100% of penny tickers even though the
+                                # cache was full.
+                                raw_token = parts[0].strip('"') if parts[0] else ""
+                                try:
+                                    self.instrument_cache[symbol] = int(raw_token)
+                                except ValueError:
+                                    # Malformed row (header line, blank
+                                    # row, partial parse). Skip silently.
+                                    continue
                 logger.info("instruments_refreshed", count=len(self.instrument_cache))
 
             except (httpx.RequestError, httpx.HTTPStatusError) as e:
