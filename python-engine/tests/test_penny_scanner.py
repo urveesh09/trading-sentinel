@@ -377,6 +377,91 @@ def test_scanner_logs_eval_skipped_when_quote_unavailable(tmp_paths, fake_kite, 
     assert any("reason=quote_unavailable" in m for m in skipped)
 
 
+def test_scanner_handles_string_valued_instrument_cache(tmp_paths, fake_kite, fake_universe, caplog):
+    """[INSTRUMENT-CACHE-INT 2026-07-03] Today's prod bug:
+    `kite.instrument_cache[symbol] = parts[0]` stored the raw CSV
+    cell (a str). `KiteClient.get_quote` returns a dict keyed by int
+    (`{int(k): v for k, v in data.items()}`). `_get_quote_safe`
+    looked up `quotes.get(token)` where `token` was a str -- silently
+    returning None for every ticker.
+
+    Pre-fix: 100% of penny tickers logged `quote_unavailable` even
+    though the cache was full and `get_quote` was returning real
+    data. Scanner's `accept` and `reject` counts never reflected
+    reality.
+
+    Post-fix `_get_quote_safe` coerces `token` to int before the
+    lookup, so this test (with a STR-valued cache mirroring the prod
+    bug) must still get quotes through and evaluate tickers
+    normally -- producing a non-zero total (accept + reject + error
+    = universe size).
+    """
+    import logging
+    from unittest.mock import AsyncMock
+    import pandas as pd
+
+    # Mirror the prod bug: cache values are str (e.g. "1001").
+    fake_kite.instrument_cache = {
+        "AAA": "1001", "BBB": "1002", "CCC": "1003",
+    }
+    # /quote response is keyed by int -- the int/str mismatch is the
+    # entire point of this test.
+    fake_kite.get_quote = AsyncMock(return_value={
+        1001: {"last_price": 12.0, "ohlc": {"high": 12.0, "low": 12.0, "close": 12.0},
+               "volume": 100_000, "depth": {"buy": [{"price": 12.0, "quantity": 1000}],
+                                            "sell": [{"price": 12.1, "quantity": 1000}]}},
+        1002: {"last_price": 30.0, "ohlc": {"high": 30.5, "low": 29.5, "close": 30.0},
+               "volume": 80_000, "depth": {"buy": [{"price": 30.0, "quantity": 500}],
+                                            "sell": [{"price": 30.05, "quantity": 500}]}},
+        1003: {"last_price": 22.0, "ohlc": {"high": 22.0, "low": 22.0, "close": 22.0},
+               "volume": 50_000, "depth": {"buy": [{"price": 22.0, "quantity": 200}],
+                                            "sell": [{"price": 22.05, "quantity": 200}]}},
+    })
+
+    from penny_scanner import PennyScanner
+    scanner = PennyScanner(
+        kite=fake_kite, universe_json_path=fake_universe,
+        paper_mode=True, regime="PR1_CALM",
+    )
+    caplog.set_level(logging.INFO, logger="penny_scanner")
+    result = asyncio.run(scanner.scan_once(as_of=datetime(2026, 6, 21, 11, 0)))
+
+    # Every universe ticker should have produced an outcome.
+    # Pre-fix this would be `total=0` because every `_get_quote_safe`
+    # returned None for the str->int lookup miss, and the scanner
+    # counted each as "the universe returned None -> reject=0
+    # error=0 total=0" via the early scan_no_eligible_universe
+    # short-circuit (only when universe was truly empty; here it
+    # wasn't, so each eval hit the `if not q: skip` branch silently).
+    total = result["accept"] + result["reject"] + result["error"]
+    assert total == 3, (
+        f"Expected total=3 outcomes (universe size), got {result}. "
+        f"If total=0 with full universe, `_get_quote_safe` is still "
+        f"missing the int-coercion and penny scans are silently "
+        f"empty. [INSTRUMENT-CACHE-INT 2026-07-03]"
+    )
+    # None of the reasons should be `quote_unavailable` for ALL
+    # tickers -- at most a couple if a specific intraday fixture is
+    # missing, but never 3/3 (would re-confirm the bug).
+    skipped_msgs = [r.message for r in caplog.records if "penny_eval_skipped" in r.message]
+    quote_unavail = [m for m in skipped_msgs if "reason=quote_unavailable" in m]
+    assert len(quote_unavail) < 3, (
+        f"`quote_unavailable` fired {len(quote_unavail)}/3 times with a "
+        f"populated cache and returning get_quote -- the str/int "
+        f"mismatch is still present. [INSTRUMENT-CACHE-INT 2026-07-03]"
+    )
+    # The scanner must have actually called get_quote with each token.
+    # Pre-fix the call would have been made (cache resolved) but the
+    # dict-lookup at the consumer would have failed. Post-fix the
+    # call still happens and the response is used.
+    assert fake_kite.get_quote.await_count >= 3, (
+        f"Expected at least 3 get_quote calls (one per ticker), got "
+        f"{fake_kite.get_quote.await_count}. If 0, the cache lookup "
+        f"`token is None` branch fired instead, meaning the cache is "
+        f"still str-keyed. [INSTRUMENT-CACHE-INT 2026-07-03]"
+    )
+
+
 # ---- 2026-06-25 Phase 3 tests (G9) ---------------------------------
 
 def test_scanner_evaluates_in_parallel_via_gather(tmp_paths, fake_kite, fake_universe):
