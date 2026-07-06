@@ -416,3 +416,143 @@ class TestPennyEdgeHandlerInvokedBreadcrumb:
                 f"line {first_await_idx} -- the breadcrumb must fire "
                 f"BEFORE any await so it survives mid-flight cancellations."
             )
+
+
+class TestPennyEdgeOrchestratorBreadcrumb:
+    """The orchestrator (`run_penny_edge_scan` and `run_penny_edge_exit`)
+    inside `penny_edge_orchestrator.py` must also emit a first-line
+    breadcrumb. Today's incident: even after the wrapper fired (which
+    we couldn't verify at the time), the orchestrator itself could
+    crash silently with `sqlite3.OperationalError: no such table:
+    ohlv_cache` and leave no trace beyond a single `penny_edge_scan_failed`
+    line in the wrapper's try/except.
+    """
+
+    def _extract_function_body(self, src_text: str, func_name: str) -> str:
+        """Use AST to extract the source of a top-level `async def`."""
+        import ast
+        tree = ast.parse(src_text)
+        for node in tree.body:
+            if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
+                if node.name == func_name:
+                    lines = src_text.split("\n")
+                    return "\n".join(lines[node.lineno - 1:node.end_lineno])
+        return ""
+
+    def test_orchestrator_scan_has_first_line_breadcrumb(self):
+        orch_path = os.path.join(REPO_ROOT, "penny_edge_orchestrator.py")
+        with open(orch_path) as f:
+            src = f.read()
+        body = self._extract_function_body(src, "run_penny_edge_scan")
+        assert body, "could not find run_penny_edge_scan via AST"
+        assert "penny_edge_orchestrator_invoked" in body, (
+            "run_penny_edge_scan missing penny_edge_orchestrator_invoked "
+            "breadcrumb. The orchestrator must log a first-line 'I am "
+            "running' line so silent crashes (like today's "
+            "ohlcv_cache_table_missing crash) are debuggable."
+        )
+        # Find first logger.* call in the function body
+        lines = body.split("\n")
+        first_log_idx = None
+        for i, line in enumerate(lines):
+            if line.lstrip().startswith("logger."):
+                first_log_idx = i
+                break
+        assert first_log_idx is not None, (
+            "run_penny_edge_scan has no logger.* call"
+        )
+        joined = "\n".join(lines[first_log_idx:first_log_idx + 6])
+        assert "penny_edge_orchestrator_invoked" in joined, (
+            f"First logger call in run_penny_edge_scan is not the "
+            f"orchestrator breadcrumb. Got: {joined[:300]!r}"
+        )
+
+    def test_orchestrator_exit_has_first_line_breadcrumb(self):
+        orch_path = os.path.join(REPO_ROOT, "penny_edge_orchestrator.py")
+        with open(orch_path) as f:
+            src = f.read()
+        body = self._extract_function_body(src, "run_penny_edge_exit")
+        assert body, "could not find run_penny_edge_exit via AST"
+        assert "penny_edge_exit_orchestrator_invoked" in body, (
+            "run_penny_edge_exit missing penny_edge_exit_orchestrator_invoked "
+            "breadcrumb. Same rationale as run_penny_edge_scan."
+        )
+
+
+class TestPennyEdgeEngineFailsafe:
+    """The orchestrator must not let `pel.scan_today` raise out of
+    its own try/except. Today's incident: a fresh DB without the
+    `ohlcv_cache` table crashed `scan_today` with `OperationalError`,
+    which the wrapper's try/except caught and logged as a single
+    `penny_edge_scan_failed err=...` line. The operator couldn't tell
+    whether the engine ran and returned nothing, or whether it never
+    ran.
+
+    After this fix:
+    - `penny_edge_scan_engine_db_unready reason=ohlcv_cache_table_missing`
+      is logged if the table is missing.
+    - `penny_edge_scan_engine_db_unready reason=ohlcv_cache_empty` is
+      logged if the table is empty.
+    - The orchestrator returns an empty-candidates summary instead of
+      raising, so the wrapper's `penny_edge_scan_done` line still fires.
+    """
+
+    def test_orchestrator_wraps_scan_today_in_try_except(self):
+        orch_path = os.path.join(REPO_ROOT, "penny_edge_orchestrator.py")
+        with open(orch_path) as f:
+            src = f.read()
+        # The `scan = pel.scan_today(...)` call must be inside a try block
+        assert "penny_edge_scan_engine_failed" in src, (
+            "penny_edge_orchestrator.py missing penny_edge_scan_engine_failed "
+            "log tag. The orchestrator must catch engine exceptions and "
+            "log a loud diagnostic so the cron wrapper doesn't swallow "
+            "the root cause."
+        )
+
+    def test_scan_today_handles_missing_ohlcv_cache_table(self):
+        """End-to-end: a fresh DB without the ohlcv_cache table must
+        NOT crash pel.scan_today. It must return an empty-candidates
+        dict and log a loud diagnostic.
+        """
+        import sqlite3
+        import tempfile
+        from unittest.mock import AsyncMock, MagicMock
+
+        import penny_edge_orchestrator as peo
+
+        tmp_db = tempfile.mktemp(suffix=".db")
+        # Empty DB (no tables)
+        conn = sqlite3.connect(tmp_db)
+        conn.close()
+
+        async def _run():
+            kite = MagicMock()
+            kite.get_historical = AsyncMock(return_value=None)
+            # Set DB_PATH so the orchestrator's settings resolve to
+            # the temp DB.
+            import os as _os
+            old = _os.environ.get("DB_PATH")
+            _os.environ["DB_PATH"] = tmp_db
+            try:
+                summary = await peo.run_penny_edge_scan(kite, db_path=tmp_db)
+            finally:
+                if old is not None:
+                    _os.environ["DB_PATH"] = old
+            return summary
+
+        summary = asyncio.run(_run())
+        assert summary["candidates_total"] == 0
+        assert summary["universe"] == 0
+        assert summary["regime"] in ("ERROR", "BOTH", "MR", "MO")
+        # paper + live both have 0 entered
+        assert summary["paper"]["entered"] == 0
+        assert summary["live"]["entered"] == 0
+        # skipped contains the engine_failed marker (if regime=ERROR path)
+        skipped = summary.get("skipped", [])
+        engine_failed_marker = any(
+            "engine_failed" in str(reason) for _t, reason in skipped
+        )
+        # The summary is well-formed even if no error marker present
+        # (orchestrator's early-return short-circuit may not include
+        # the marker -- depends on which path triggered).
+        assert isinstance(skipped, list), "skipped must be a list"

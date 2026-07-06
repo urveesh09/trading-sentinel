@@ -278,6 +278,31 @@ async def run_penny_edge_scan(kite, db_path: Optional[str] = None) -> dict:
     paper_bankroll = _edge_paper_bankroll()
     live_bankroll  = _edge_live_bankroll()
 
+    # [PENNY-EDGE-ORCHESTRATOR-BREADCRUMB 2026-07-06] First-line
+    # diagnostic log inside the orchestrator. Today's incident:
+    # `_run_penny_edge_scan_safe` (the wrapper in main.py) was
+    # registered at 07:09 IST but never fired at 09:30 IST. Even when
+    # APScheduler DOES fire it (or when the startup-catchup fires it),
+    # this `run_penny_edge_scan` function can still crash silently if
+    # `pel.scan_today` raises (e.g. fresh DB without `ohlcv_cache`
+    # table) -- in that case the wrapper logs the exception, the cron
+    # records it, and there's no "I am running" line anywhere.
+    #
+    # By logging this breadcrumb FIRST, every successful invocation
+    # is observable in the docker logs. Combined with the wrapper's
+    # `penny_edge_scan_invoked` breadcrumb (in main.py), future
+    # silent-no-trades days can be triaged in 30 seconds:
+    #   - wrapper breadcrumb absent     -> cron never fired (rule 49)
+    #   - wrapper present, this absent  -> wrapper crashed before calling us
+    #   - both present, candidates=0    -> orchestrator ran, no signals (legit)
+    #   - both present, candidates>0    -> pipeline produced trades
+    logger.info(
+        "penny_edge_orchestrator_invoked date=%s paper_br=%.0f live_br=%.0f "
+        "paper_disabled=%s live_disabled=%s master_switch=%s",
+        today_str, paper_bankroll, live_bankroll,
+        paper_disabled, live_disabled, live_master,
+    )
+
     # If both legs are disabled, short-circuit.
     if paper_disabled and live_disabled:
         logger.info("penny_edge_scan_both_legs_disabled date=%s", today_str)
@@ -298,12 +323,39 @@ async def run_penny_edge_scan(kite, db_path: Optional[str] = None) -> dict:
         today_str, paper_bankroll, live_bankroll,
         paper_disabled, live_disabled, live_master,
     )
-    scan = pel.scan_today(
-        bankroll=scan_bankroll,
-        max_positions=_edge_max_positions(),
-        min_strength=_edge_min_strength(),
-        db_path=db_path,
-    )
+
+    # [PENNY-EDGE-ENGINE-FAILSAFE 2026-07-06] Wrap pel.scan_today in
+    # try/except. If the signal engine crashes (e.g. fresh DB without
+    # `ohlcv_cache` table -> sqlite3.OperationalError, or any other
+    # RuntimeError from `load_daily_bars_from_db`), we MUST NOT let
+    # it propagate out of the wrapper's try/except (which would mark
+    # the cron as failed but leave both legs with 0 trades and no
+    # audit trail). Instead, log a loud diagnostic and return an
+    # empty-candidates summary so the wrapper's `penny_edge_scan_done`
+    # log line still fires and the operator gets a single
+    # `penny_edge_scan_engine_failed` line pointing at the root cause.
+    try:
+        scan = pel.scan_today(
+            bankroll=scan_bankroll,
+            max_positions=_edge_max_positions(),
+            min_strength=_edge_min_strength(),
+            db_path=db_path,
+        )
+    except Exception as engine_exc:
+        logger.error(
+            "penny_edge_scan_engine_failed date=%s err=%s "
+            "FIX=verify ohlcv_cache table is populated; if this is a "
+            "fresh deploy, run penny_universe_refresh + wait one "
+            "trading day for ohlcv_cache to fill.",
+            today_str, str(engine_exc),
+            exc_info=True,
+        )
+        return {
+            "date": today_str, "candidates_total": 0, "universe": 0,
+            "regime": "ERROR", "paper": {"entered": 0, "trades": [], "skipped": []},
+            "live": {"entered": 0, "trades": [], "skipped": []},
+            "skipped": [("*engine*", f"engine_failed: {engine_exc}")],
+        }
     candidates = scan["candidates"]
     universe = scan["eligible_tickers"]
     regime = scan["regime"]
@@ -420,6 +472,14 @@ async def run_penny_edge_exit(kite, db_path: Optional[str] = None) -> dict:
     """
     db_path = db_path or settings.DB_PATH
     today_str = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+
+    # [PENNY-EDGE-ORCHESTRATOR-BREADCRUMB 2026-07-06] Companion breadcrumb
+    # to the scan-side one. Symmetric with `penny_edge_orchestrator_invoked`:
+    # future "silent missed exit" days are debuggable in 30 seconds.
+    logger.info(
+        "penny_edge_exit_orchestrator_invoked date=%s max_hold_days=%d",
+        today_str, _edge_max_hold_days(),
+    )
 
     # 1) Snapshot the open EDGE positions (FD-safe read).
     # [PENNY-FD-LEAK 2026-07-01] `with` closes the connection even on
