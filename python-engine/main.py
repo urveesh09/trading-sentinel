@@ -312,6 +312,19 @@ async def run_penny_scanner_once():
     global _last_penny_scan_universe_size
     scanner = _get_penny_scanner()
     if scanner is None:
+        # [PENNY-SCAN-SUMMARY 2026-07-06] Surface why the scanner is
+        # None so silent "no work done" days stop being a black box.
+        # Before this fix: the production log showed 1,376 penny_scan_complete
+        # entries with accept=0 error=0 reject=0 over 12 hours and there was
+        # no way to distinguish "scanner returned nothing" from "scanner is
+        # not initialised yet" from "instrument cache is empty". The legacy
+        # 0/0/0 line is misleading; this breadcrumb tells the operator what
+        # actually happened.
+        logger.warning(
+            "penny_scan_summary scanner=None reason=scanner_not_initialised "
+            "FIX=check penny_scanner_initialized was logged; otherwise the "
+            "_penny_scanner singleton was never built (kite init failed?)"
+        )
         return
     try:
         result = await asyncio.wait_for(
@@ -319,6 +332,32 @@ async def run_penny_scanner_once():
             timeout=90.0,    # generous: scan normally takes <5s
         )
         logger.info("penny_scan_complete", **result)
+        # [PENNY-SCAN-SUMMARY 2026-07-06] Companion summary line that
+        # surfaces WHY the scan returned what it did. The legacy
+        # penny_scan_complete is a single-line accept/error/reject counter;
+        # on a 0/0/0 day the operator has no breadcrumb to explain it.
+        # The scanner.scan_once() helper already logs `penny_scan_loop_summary`
+        # internally (universe size + degraded count) -- this line adds the
+        # CALLER's view (which universe+regime it saw) so silent-empty days
+        # are debuggable in 30 seconds instead of needing a full re-deploy.
+        try:
+            universe = scanner._load_universe()
+            cache_size = len(getattr(scanner.kite, "instrument_cache", {}) or {})
+            logger.info(
+                "penny_scan_summary caller_view accept=%d reject=%d error=%d "
+                "universe_size=%d cache_size=%d regime=%s",
+                int(result.get("accept", 0)),
+                int(result.get("reject", 0)),
+                int(result.get("error", 0)),
+                len(universe),
+                cache_size,
+                scanner.regime,
+            )
+        except Exception as _summary_exc:
+            # Summary must never fail the scan itself -- log and continue.
+            logger.warning(
+                "penny_scan_summary_failed err=%s", str(_summary_exc),
+            )
         _last_penny_scan_universe_size = (
             int(result.get("accept", 0))
             + int(result.get("reject", 0))
@@ -327,8 +366,18 @@ async def run_penny_scanner_once():
     except asyncio.TimeoutError:
         logger.error("penny_scan_timeout scan stuck on Kite; "
                      "next cron slot will resume")
+        logger.warning(
+            "penny_scan_summary caller_view "
+            "accept=0 reject=0 error=0 reason=timeout_90s "
+            "FIX=penny_scan_timeout was logged -- the scan_once call hung "
+            "on a Kite API; next 30s tick will resume"
+        )
     except Exception as e:
         logger.error("penny_scan_failed", error=str(e))
+        logger.warning(
+            "penny_scan_summary caller_view "
+            "accept=0 reject=0 error=0 reason=exception err=%s", str(e),
+        )
 
 
 async def run_penny_connors_scan():
@@ -1259,6 +1308,19 @@ def register_penny_scheduler_jobs(scheduler):
             run_penny_edge_scan,
             format_telegram,
         )
+        # [PENNY-EDGE-BREADCRUMB 2026-07-06] First-line diagnostic log.
+        # Today's incident: penny_edge_scan was registered at 07:09 IST
+        # but NEVER FIRED at 09:30 IST. Without this breadcrumb there is
+        # no way to distinguish "scheduler skipped the trigger" from
+        # "handler ran and returned no candidates" from "handler raised
+        # silently". Rule 49 (trading-sentinel-ops): every wall-clock
+        # cron needs a startup-catchup + first-line breadcrumb so the
+        # absence of any penny_edge_scan log lines at 09:30 is debuggable
+        # in 30 seconds instead of needing a full re-deploy.
+        logger.info(
+            "penny_edge_scan_invoked now_ist=%s source=cron_or_catchup",
+            datetime.now(IST).strftime("%Y-%m-%d %H:%M:%S"),
+        )
         # [CALENDAR-GATE 2026-07-03] weekend / NSE-holiday early-return.
         # No orders are placed here (Telegram notify only), but the gate
         # keeps the cron pattern consistent with _run_penny_edge_exit_safe
@@ -1292,16 +1354,29 @@ def register_penny_scheduler_jobs(scheduler):
     # we make it explicit and add coalesce=True so missed triggers
     # collapse instead of pile up. Same loud-but-non-blocking pattern
     # as the live-trading-audit-fix-pattern skill.
+    #
+    # [PENNY-EDGE-MISFIRE-GUARD 2026-07-06] Job-level
+    # misfire_grace_time=600 (10 minutes). The scheduler's
+    # job_defaults sets it globally, but defending-in-depth at the
+    # job level protects against future scheduler-default regressions
+    # and documents the intent at the registration site. If the 09:30
+    # IST cron trigger fires while a 30s penny_scan_interval tick is
+    # mid-flight, APScheduler marks the trigger as pending; without
+    # this grace window APScheduler's default of 1s drops the trigger
+    # forever and the daily scan is silently missed. 600s gives the
+    # longest realistic scan timeout (90s) ample headroom.
     scheduler.add_job(
         _run_penny_edge_scan_safe, "cron",
         hour=9, minute=30,
         id="penny_edge_scan",
         max_instances=1,
         coalesce=True,
+        misfire_grace_time=600,
     )
     logger.info(
         "penny_edge_cron_registered id=penny_edge_scan "
-        "schedule=\"09:30 IST daily\" max_instances=1 coalesce=True"
+        "schedule=\"09:30 IST daily\" max_instances=1 coalesce=True "
+        "misfire_grace_time=600"
     )
 
     # [PENNY-EDGE-STARTUP-CATCHUP 2026-07-02] If the container starts
@@ -1357,6 +1432,15 @@ def register_penny_scheduler_jobs(scheduler):
             run_penny_edge_exit,
             format_exit_telegram,
         )
+        # [PENNY-EDGE-BREADCRUMB 2026-07-06] First-line diagnostic log.
+        # Same rationale as the breadcrumb in _run_penny_edge_scan_safe.
+        # The 15:15 IST EOD exit was also silently not firing today --
+        # without this log line, a missed 15:15 fire looks identical
+        # to "no EDGE positions held, no work to do" in the logs.
+        logger.info(
+            "penny_edge_exit_invoked now_ist=%s source=cron_or_catchup",
+            datetime.now(IST).strftime("%Y-%m-%d %H:%M:%S"),
+        )
         # [CALENDAR-GATE 2026-07-03] weekend / NSE-holiday early-return.
         # REAL FINANCIAL RISK: this closure calls run_penny_edge_exit which
         # places exit orders via kite. Firing on a non-trading day would
@@ -1388,16 +1472,24 @@ def register_penny_scheduler_jobs(scheduler):
     # Same rationale as the penny_edge_scan cron guard above: the
     # 15:15 IST EOD exit must not be allowed to deadlock the
     # scheduler if the kite-stub interaction stalls.
+    #
+    # [PENNY-EDGE-MISFIRE-GUARD 2026-07-06] misfire_grace_time=600.
+    # See the rationale on the penny_edge_scan registration above;
+    # 15:15 IST exit must also be protected from the same silent
+    # drop. REAL FINANCIAL RISK: a missed 15:15 exit leaves EDGE
+    # positions open overnight (the 3-day age rule doesn't fire).
     scheduler.add_job(
         _run_penny_edge_exit_safe, "cron",
         hour=15, minute=15,
         id="penny_edge_exit",
         max_instances=1,
         coalesce=True,
+        misfire_grace_time=600,
     )
     logger.info(
         "penny_edge_cron_registered id=penny_edge_exit "
-        "schedule=\"15:15 IST daily\" max_instances=1 coalesce=True"
+        "schedule=\"15:15 IST daily\" max_instances=1 coalesce=True "
+        "misfire_grace_time=600"
     )
 
     # [PENNY-EDGE-STARTUP-CATCHUP 2026-07-02] Companion catchup for the
