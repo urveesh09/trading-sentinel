@@ -66,13 +66,75 @@ def scan_today(
     # closed even if any intermediate query raises. The previous bare
     # sqlite3.connect() leaked an FD on every exception path.
     with sqlite3.connect(db_path) as conn:
+        # [PENNY-EDGE-ENGINE-GRACEFUL 2026-07-06] Verify ohlcv_cache
+        # table exists BEFORE running any queries. A fresh deploy (or
+        # a partial-restore from backup) can leave the DB without the
+        # ohlcv_cache table; the previous behaviour was to crash with
+        # `sqlite3.OperationalError: no such table: ohlcv_cache`, which
+        # surfaced as a silent "no candidates" day in production
+        # because the cron wrapper's try/except caught the exception
+        # but logged only a `penny_edge_scan_failed err=...` line.
+        # Now we emit a loud `penny_edge_scan_engine_db_unready` line
+        # AND return an empty-candidates dict so the orchestrator's
+        # own `penny_edge_scan_done` line still fires and the operator
+        # sees "engine returned 0 (DB unready)" instead of
+        # "engine crashed (DB unready)".
+        try:
+            cur = conn.cursor()
+            cur.execute(
+                "SELECT name FROM sqlite_master WHERE type='table' AND name='ohlcv_cache'"
+            )
+            if not cur.fetchone():
+                logger.error(
+                    "penny_edge_scan_engine_db_unready reason=ohlcv_cache_table_missing "
+                    "FIX=run penny_universe_refresh and wait one trading day "
+                    "for the OHLCV cache to populate, OR restore the DB from backup."
+                )
+                return {
+                    "date":                None,
+                    "candidates":          [],
+                    "positions":           [],
+                    "regime":              pee.compute_regime(0.0, 0.5),
+                    "eligible_tickers":    0,
+                    "rejected_below_threshold": 0,
+                    "n_candidates":        0,
+                    "n_positions":         0,
+                }
+        except sqlite3.OperationalError as schema_exc:
+            logger.error(
+                "penny_edge_scan_engine_db_unready reason=schema_query_failed err=%s "
+                "FIX=verify the DB at %s is readable and not corrupt.",
+                str(schema_exc), db_path,
+            )
+            raise
+
         if as_of_date is None:
             # Use the most recent date in ohlcv_cache
             cur = conn.cursor()
             cur.execute("SELECT MAX(date) FROM ohlcv_cache")
             row = cur.fetchone()
             if not row or row[0] is None:
-                raise RuntimeError("ohlcv_cache has no data")
+                # [PENNY-EDGE-ENGINE-GRACEFUL 2026-07-06] Same DB-unready
+                # treatment as the missing-table path. An empty
+                # ohlcv_cache (after schema check passed) means the
+                # universe refresh hasn't populated yet -- emit a
+                # loud diagnostic and return an empty-candidates dict
+                # instead of crashing.
+                logger.error(
+                    "penny_edge_scan_engine_db_unready reason=ohlcv_cache_empty "
+                    "FIX=run penny_universe_refresh and wait one trading day "
+                    "for the OHLCV cache to populate."
+                )
+                return {
+                    "date":                None,
+                    "candidates":          [],
+                    "positions":           [],
+                    "regime":              pee.compute_regime(0.0, 0.5),
+                    "eligible_tickers":    0,
+                    "rejected_below_threshold": 0,
+                    "n_candidates":        0,
+                    "n_positions":         0,
+                }
             as_of_date = str(row[0])
         # Load from earliest available to as_of_date (need 60+ days of history)
         cur = conn.cursor()
