@@ -176,6 +176,14 @@ class Settings(BaseSettings):
     PENNY_MIN_PROMOTER_HOLD:       float = 0.25        # strictly > 25% AND strictly < 75%
     PENNY_MAX_PB_RATIO:            float = 2.0         # Price-to-Book <= 2.0 (loose asset floor)
     PENNY_REFRESH_HOUR:            int   = 8
+    # [PENNY-HISTORY-SEMAPHORE 2026-07-07] Bounded concurrency over
+    # the per-ticker sqlite open in compute_metrics_from_history. The
+    # 2026-07-07 incident showed that fanning 9,769 concurrent sqlite
+    # opens hits the OS file-handle ceiling and the WAL pragma can't
+    # recover. 50 is well above Kite's 3 req/s HTTP rate limit (so we
+    # don't bottleneck on the API) but well below the OS-level ceiling
+    # on /data/cache.db. Tunable per deployment via env var.
+    PENNY_HISTORY_SQLITE_MAX_CONCURRENT: int = 50
 
     # Connors strategy
     PENNY_CONNORS_RSI2_BUY:        float = 10.0

@@ -517,11 +517,24 @@ async def compute_metrics_from_history(kite, symbols, lookback_days: int = 30) -
     parse + SQLite write). 100 tickers serially = 100 × 20s = 33 min,
     and 2 sequential calls per ticker (short window + 52w) doubled
     that to 1h+. Now: (a) ONE call per ticker using the 52w window
-    (the 30d metrics can be derived from the trailing 20 rows of the
-    long fetch); (b) asyncio.gather fans all 100 calls out in
+    (the 30d metrics can be derived from the trailing 20 rows of
+    the long fetch); (b) asyncio.gather fans all 100 calls out in
     parallel; the global Kite rate limiter queues them at 3 req/s
     so the wall-clock cost is ~100/3 = 33s. Measured: 35-50s in
     subsequent runs (cache hot).
+
+    [PENNY-HISTORY-SEMAPHORE 2026-07-07] Bound the concurrent sqlite
+    opens with an asyncio.Semaphore. The 2026-07-07 incident showed that
+    fanning 9,769 symbols out via `asyncio.gather` without bound causes
+    every call to `kite.get_historical` -> `aiosqlite.connect(db_path)`
+    to raise `OperationalError: unable to open database file` (rule 63
+    in trading-sentinel-ops). The Kite API rate limiter (3 req/s)
+    queues the HTTP calls fine, but the gather spawns 9,769 coroutines
+    that all try to open the same SQLite file simultaneously. SQLite
+    (even in WAL mode) returns EAGAIN/EACCES under that contention.
+    Capping concurrent sqlite opens at HISTORY_SQLITE_MAX_CONCURRENT
+    (=50 by default) eliminates the file-handle pressure while keeping
+    the gather's effective parallelism well above the Kite rate limit.
 
     Metrics
     -------
@@ -530,8 +543,8 @@ async def compute_metrics_from_history(kite, symbols, lookback_days: int = 30) -
         Liquidity gate compares this against PENNY_MIN_20D_TV.
       avg_return_20d          : mean of daily log returns over the same
         window. Used by the ranker's momentum weight (40%).
-      vol_20d                 : stddev of daily log returns. Used by the
-        ranker's volatility weight (10%).
+      vol_20d                 : stddev of daily log returns. Used by
+        the ranker's volatility weight (10%).
       dist_from_52w_low_pct   : (last_close - 52w_low) / 52w_low, capped
         at 0.95 so far-from-low names don't dominate the ranker. Used by
         the ranker's low_distance weight (10%). Requires ~250 daily bars;
@@ -566,11 +579,27 @@ async def compute_metrics_from_history(kite, symbols, lookback_days: int = 30) -
     from_52w = (datetime.utcnow() - timedelta(days=370)).strftime("%Y-%m-%d")
     to_date = datetime.utcnow().strftime("%Y-%m-%d")
 
+    # [PENNY-HISTORY-SEMAPHORE 2026-07-07] Bounded concurrency over
+    # the per-ticker sqlite open. The semaphore is acquired inside the
+    # gather so the parallelism is CAPPED at HISTORY_SQLITE_MAX_CONCURRENT
+    # (=50) regardless of len(symbols). 50 is well above Kite's 3 req/s
+    # HTTP rate limit (so we don't bottleneck on the API) but well below
+    # the OS-level file-handle ceiling on /data/cache.db. Tunable via
+    # settings.PENNY_HISTORY_SQLITE_MAX_CONCURRENT.
+    from config import settings as _settings
+    max_concurrent = int(getattr(
+        _settings, "PENNY_HISTORY_SQLITE_MAX_CONCURRENT", 50
+    ))
+    semaphore = asyncio.Semaphore(max_concurrent)
+
+    async def _bounded(metric_symbol: str):
+        async with semaphore:
+            return await _compute_one_history_metric(
+                kite, metric_symbol, from_52w, to_date
+            )
+
     t0 = _time.monotonic()
-    results = await asyncio.gather(*[
-        _compute_one_history_metric(kite, sym, from_52w, to_date)
-        for sym in symbols
-    ])
+    results = await asyncio.gather(*[_bounded(s) for s in symbols])
     elapsed = _time.monotonic() - t0
 
     out: Dict[str, dict] = {}
@@ -581,13 +610,21 @@ async def compute_metrics_from_history(kite, symbols, lookback_days: int = 30) -
             continue
         out[sym] = metrics
     if skipped:
-        logger.info(
+        logger.warning(
             "penny_metrics_history_skipped count=%d sample=%s",
             len(skipped), skipped[:5],
         )
-    logger.info(
-        "penny_metrics_history_computed count=%d skipped=%d elapsed=%.1fs",
-        len(out), len(skipped), elapsed,
+    # [PENNY-METRICS-COMPUTED 2026-07-07] This line is the only signal
+    # the operator has that history-derived metrics were applied. The
+    # 2026-07-07 incident proved this CAN go silent (all 9,769 calls
+    # failed); making it WARNING-level when 0 metrics succeeded and
+    # adding the `applied=count` k=v pair makes the rule-60 diagnostic
+    # tree answer "did history fallback work today?" in one grep.
+    level = logger.warning if len(out) == 0 else logger.info
+    level(
+        "penny_metrics_history_computed applied=%d skipped=%d "
+        "elapsed=%.1fs max_concurrent=%d total_symbols=%d",
+        len(out), len(skipped), elapsed, max_concurrent, len(symbols),
     )
     return out
 
@@ -666,6 +703,8 @@ async def refresh_from_kite(kite, out_json_path, corp_json_path, top_n=100):
         except Exception:
             corp = None
         if not corp:
+            # Primary fallback: the operator-curated file at the named
+            # volume path (set via PENNY_CORP_DATA_JSON_PATH).
             try:
                 with open(corp_json_path) as f:
                     corp_data = json.load(f)
@@ -674,12 +713,53 @@ async def refresh_from_kite(kite, out_json_path, corp_json_path, top_n=100):
             except Exception:
                 corp = []
                 corp_source = "missing"
-        if corp_source == "missing":
+            # [PENNY-CORP-FALLBACK-3 2026-07-07] If the named-volume
+            # file is missing or empty, ALSO check the in-repo seed file
+            # at python-engine/data/penny_company_data.json. This is the
+            # docker-logs-observability rule's "the repo's data/ is
+            # git-tracked seed data, the runtime reads from the named
+            # volume" pitfall: in a fresh deployment the volume is
+            # empty, but the repo has a curated (or empty) seed the
+            # operator wants used as a third tier. The seed is treated
+            # as a WORSE fallback than the named-volume file (which the
+            # operator actively curates), but still better than nothing.
+            if not corp:
+                # __file__ is /app/penny_universe.py in the container
+                # (Dockerfile WORKDIR=/app COPY . .), so the in-repo
+                # data dir is the SAME dir as penny_universe.py,
+                # not a parent. Resolve via os.path.dirname(__file__)
+                # and append 'data' -- NOT dirname-twice which would
+                # walk past python-engine/.
+                repo_data_dir = os.path.join(
+                    os.path.dirname(os.path.abspath(__file__)),
+                    "data",
+                )
+                repo_seed = os.path.join(repo_data_dir, "penny_company_data.json")
+                try:
+                    with open(repo_seed) as f:
+                        seed_data = json.load(f)
+                    seed_corp = seed_data.get("records", [])
+                    if seed_corp:
+                        corp = seed_corp
+                        corp_source = "fallback_repo_seed"
+                        logger.warning(
+                            "penny_corp_data_falling_back_to_repo_seed "
+                            "path=%s count=%d -- named-volume file is "
+                            "empty/missing, using repo seed. Deploy the "
+                            "named-volume file with curated data ASAP.",
+                            repo_seed, len(corp),
+                        )
+                except Exception:
+                    pass  # no seed either; corp stays []
+        if not corp:
             logger.warning(
                 "penny_corp_data_missing kite=empty fallback_file=%s -- "
                 "universe will have null promoter_holding_pct and pb_ratio "
                 "(eligibility filter is now null-tolerant, see deviation "
-                "2026-06-25-penny-eligibility-null-tolerance.md)",
+                "2026-06-25-penny-eligibility-null-tolerance.md). "
+                "FIX=run penny_universe_refresh once corp-data is curated; "
+                "until then, liquidity + momentum fields are derived from "
+                "Kite history (compute_metrics_from_history).",
                 corp_json_path,
             )
         corp_by_sym = {c.get("symbol"): c for c in (corp or [])}
@@ -820,7 +900,23 @@ async def refresh_from_kite(kite, out_json_path, corp_json_path, top_n=100):
             audit_universe._symbol_to_token = {}
             audit = audit_universe.quality_audit()
             audit["corp_source"] = corp_source
-            logger.info(
+            # [PENNY-QUALITY-AUDIT 2026-07-07] Promote the audit to
+            # WARNING whenever ANY of the four numeric fields is missing
+            # on EVERY ticker (the 2026-07-07 incident: 100/100 had
+            # null_tv because compute_metrics_from_history silently
+            # failed for every symbol; the universe file was written
+            # "successfully" with 100 all-zero tickers and the operator
+            # had no loud signal until the 30s scanner started logging
+            # `penny_scan_no_eligible_universe` minutes later). With
+            # this fix, the audit line itself surfaces a degraded
+            # universe as a WARNING the moment it's detected, so a
+            # single `grep penny_universe_quality_audit` answers
+            # "is today's universe quality OK?" in 5 seconds.
+            all_null_tv = audit["null_tv"] == audit["total"] and audit["total"] > 0
+            all_null_pc = audit["null_pc"] == audit["total"] and audit["total"] > 0
+            is_degraded = all_null_tv or all_null_pc or audit["total"] == 0
+            level = logger.warning if is_degraded else logger.info
+            level(
                 "penny_universe_quality_audit "
                 "total=%d null_promoter=%d null_pb=%d null_tv=%d "
                 "null_pc=%d degraded_pct=%.1f corp_source=%s",

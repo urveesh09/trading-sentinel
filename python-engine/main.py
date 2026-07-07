@@ -3,6 +3,7 @@ from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from datetime import datetime, timedelta, timezone
 import pytz
 import os
+import sys
 import json
 import asyncio
 import time
@@ -10,6 +11,15 @@ import pandas as pd
 import structlog
 import aiosqlite
 from pydantic import BaseModel
+# [STRUCTLOG-CONFIGURE 2026-07-07] Configure structlog at module import
+# time so EVERY logger in the engine gets a deterministic, timestamped
+# formatter (rule 64). The previous behaviour relied on structlog's
+# default config which delegated to stdlib logging; uvicorn's stdlib
+# config at startup interacted badly with that, dropping timestamps on
+# some `logger.warning(...)` calls. See logging_setup.py for the full
+# rationale. configure_structlog() is idempotent.
+from logging_setup import configure_structlog
+configure_structlog(level="INFO")
 from config import settings
 from kite_client import KiteClient
 from market_calendar import is_trading_day, prev_trading_day, is_market_open
@@ -1635,8 +1645,83 @@ async def lifespan(app: FastAPI):
     # Extracted to a module-level function so the test suite can verify
     # registration without booting the FastAPI lifespan.
     register_penny_scheduler_jobs(scheduler)
+
+    # [LIVENESS-HEARTBEAT 2026-07-07] Per-minute liveness tick. The
+    # 2026-07-07 incident showed the penny 30s scanner + scheduler
+    # froze for 6h32min during market hours without ANY visible signal
+    # to the operator. The breadcrumbs in penny_edge_scan / penny_edge_exit
+    # detect "did the handler run" but NOT "is the scheduler event loop
+    # blocked". A per-minute tick from a SEPARATE THREAD catches the
+    # freeze case: if the asyncio event loop is frozen, this thread
+    # (which uses stdlib time.sleep + stdlib logging) keeps ticking
+    # and the operator can grep
+    #     docker logs python-engine --since 10m | grep penny_liveness_tick
+    # and see fresh ticks => loop is responsive; missing ticks for
+    # 5+ minutes => freeze alert.
+    #
+    # We use stdlib logging (NOT structlog) for this heartbeat because
+    # structlog's `cache_logger_on_first_use=True` means the heartbeat
+    # might end up using a cached wrapper from before configure_structlog
+    # was called. Stdlib logging is always going through the same
+    # StreamHandler we attached at startup.
+    import logging as _stdlib_logging
+    _liveness_log = _stdlib_logging.getLogger("penny_liveness")
+
+    def _liveness_tick_loop():
+        """Stdlib-time heartbeat in a daemon thread. Decoupled from the
+        asyncio loop so a frozen event loop doesn't silence the tick."""
+        import os as _os
+        import resource as _resource
+        import time as _time
+        tick_count = 0
+        while not _LIVENESS_TICK_STOP.is_set():
+            try:
+                tick_count += 1
+                try:
+                    rss_kb = _resource.getrusage(_resource.RUSAGE_SELF).ru_maxrss
+                except Exception:
+                    rss_kb = -1
+                _liveness_log.info(
+                    "penny_liveness_tick count=%d rss_kb=%d threads=%d",
+                    tick_count,
+                    int(rss_kb),
+                    _os.cpu_count() or 1,
+                )
+            except Exception as exc:
+                # Heartbeat itself must NEVER crash. If stdlib logging
+                # is also broken, swallow and keep ticking.
+                try:
+                    sys.stderr.write(
+                        f"[penny_liveness_tick_failed err={exc}]\n"
+                    )
+                    sys.stderr.flush()
+                except Exception:
+                    pass
+            # Sleep 60s in 5s chunks so a container stop signal is
+            # picked up within 5s (not 60s).
+            for _ in range(12):
+                if _LIVENESS_TICK_STOP.is_set():
+                    return
+                _time.sleep(5)
+
+    import threading as _threading
+    _LIVENESS_TICK_STOP = _threading.Event()
+    _liveness_thread = _threading.Thread(
+        target=_liveness_tick_loop,
+        name="penny-liveness-heartbeat",
+        daemon=True,  # dies with the process; no shutdown coordination needed
+    )
+    _liveness_thread.start()
+
     scheduler.start()
     yield
+
+    # [LIVENESS-HEARTBEAT 2026-07-07] On shutdown, signal the heartbeat
+    # thread to exit so it doesn't log a final tick during interpreter
+    # teardown. Daemon=True means it dies anyway, but the Event
+    # makes the exit deterministic.
+    _LIVENESS_TICK_STOP.set()
+    _liveness_thread.join(timeout=10)
 
 app = FastAPI(title="Quant Engine Container B", lifespan=lifespan)
 # (Delete the old @app.on_event("startup") and async def startup(): lines completely)
