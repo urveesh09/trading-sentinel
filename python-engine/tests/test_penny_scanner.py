@@ -495,10 +495,10 @@ def test_scanner_gather_handles_per_ticker_exceptions(tmp_paths, fake_kite, fake
     # Patch _evaluate_ticker_breakout so BBB raises but others succeed.
     real_eval = PennyScanner._evaluate_ticker_breakout
 
-    async def selective_eval(self, ticker, as_of):
+    async def selective_eval(self, ticker, as_of, **kwargs):
         if ticker == "BBB":
             raise RuntimeError("simulated Kite 500")
-        return await real_eval(self, ticker, as_of)
+        return await real_eval(self, ticker, as_of, **kwargs)
 
     ps_module.PennyScanner._evaluate_ticker_breakout = selective_eval
     try:

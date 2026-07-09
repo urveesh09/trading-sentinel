@@ -40,9 +40,36 @@ _DEFAULT_SIZE = {
 
 
 class PennyRegimeEngine:
-    """Singleton-style state holder + classifier for the penny subsystem."""
+    """Singleton-style state holder + classifier for the penny subsystem.
+
+    [FIX-PHASE2-AUDIT 2026-07-09] Made into a real singleton via __new__.
+    Pre-fix each `PennyRegimeEngine()` constructor call returned a fresh
+    instance with `_vol_rank = None`, so `penny_scanner._regime_to_size_pct`
+    (which created a transient engine on every read) and the long-lived
+    `_penny_regime_engine` in main.py were seeing different state. Vol
+    ranks fed into the scanner's transient engine were silently dropped.
+    With __new__ below, every reference now resolves to the same instance.
+    """
+
+    # Module-level singleton storage so the engine is shared across all
+    # callers (scanner, main, tests). Resetting `__init__`-style requires
+    # explicit `reset_state()`; that prevents surprise clobbering mid-day.
+    _instance = None
+
+    def __new__(cls, *args, **kwargs):
+        if cls._instance is None:
+            cls._instance = super().__new__(cls)
+            # Only run __init__ the very first time; subsequent constructor
+            # calls are treated as access-only.
+            cls._instance._initialized = False
+        return cls._instance
 
     def __init__(self):
+        # Guard against re-initialisation when callers do "PennyRegimeEngine()"
+        # repeatedly expecting a fresh state. Tests that need fresh state
+        # should call PennyRegimeEngine.reset_state() first.
+        if getattr(self, "_initialized", False):
+            return
         self._today_regime: PennyRegime = PennyRegime.UNKNOWN
         self._as_of: Optional[str] = None
         self._vol_rank: Optional[float] = None
@@ -53,6 +80,12 @@ class PennyRegimeEngine:
         # classification, not just the final regime label.
         self._vix_distance: Optional[float] = None
         self._breadth: Optional[float] = None
+        self._initialized = True
+
+    @classmethod
+    def reset_state(cls) -> None:
+        """Drop the singleton. Test-only; production should never call this."""
+        cls._instance = None
 
     # ---- public read API ------------------------------------------------
 

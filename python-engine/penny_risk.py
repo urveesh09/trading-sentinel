@@ -64,16 +64,49 @@ class PennyRiskEngine:
         Spec §7.1 sizing.
           shares = floor(risk_per_trade / (entry - stop_loss))
           shares = min(shares, floor(per_stock_cap / entry))
+
+        [FIX-PHASE1-AUDIT 2026-07-09] All rupee math is converted to integer
+        paise (1 rupee = 100 paise) before the floor division. Plain float
+        `risk_budget // risk_per_share` under-counts by 1 share on
+        ~2% of price/budget pairs because the float result lands a tiny
+        epsilon below the true ratio (e.g. 22920 paise // 10 paise =
+        2292, but float gives 2292 - epsilon, flooring to 2291). Always
+        under-allocates (fails safe: smaller trade) but still leaves real
+        money on the table. Paise-integer division is exact.
+
+        Conversion rule:
+          rupees_to_paise = lambda x: int(round(x * 100))
+        Using ``round`` not ``int(x*100)`` so e.g. 0.1 + 0.2 = 0.3000…0004
+        rounds to 30 instead of 29. Mis-rounding inflates by 1 paise per
+        arithmetic chain which still floors cleanly downstream.
         """
         from config import settings
-        risk_per_share = entry - stop_loss
-        if risk_per_share <= 0 or self.bankroll <= 0:
+
+        risk_per_share_f = entry - stop_loss
+        if risk_per_share_f <= 0 or self.bankroll <= 0:
             return 0
-        risk_budget = self.bankroll * self._risk_pct_for_regime(regime)
-        if risk_budget <= 0:
+        risk_budget_f = self.bankroll * self._risk_pct_for_regime(regime)
+        if risk_budget_f <= 0:
             return 0
-        shares_from_risk = int(risk_budget // risk_per_share)
-        cap_shares = int(settings.PENNY_PER_STOCK_CAP // entry) if entry > 0 else 0
+
+        # Convert to integer paise to eliminate float-floor undercount.
+        # Risk_budget can come from bankroll * pct (e.g. 8842.106 * 0.05),
+        # bankroll is a real number with sub-paise noise from daily_pnl
+        # accumulation; round to nearest paise.
+        risk_per_share_paise = int(round(risk_per_share_f * 100))
+        risk_budget_paise = int(round(risk_budget_f * 100))
+        if risk_per_share_paise <= 0:
+            return 0
+
+        shares_from_risk = risk_budget_paise // risk_per_share_paise
+
+        # Cap: per-stock max, also in paise for the same reason.
+        if entry > 0:
+            cap_paise = int(round(settings.PENNY_PER_STOCK_CAP * 100))
+            entry_paise = int(round(entry * 100))
+            cap_shares = cap_paise // entry_paise if entry_paise > 0 else 0
+        else:
+            cap_shares = 0
         return max(0, min(shares_from_risk, cap_shares))
 
     # ---- kill-switch ----------------------------------------------------

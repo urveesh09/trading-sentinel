@@ -33,6 +33,7 @@ from uuid import uuid4
 
 from penny_universe import PennyUniverse
 from penny_models import PennyRegime, PennyLeg
+from penny_risk import PennyRiskEngine
 from penny_executor import PennyExecutor
 
 logger = logging.getLogger(__name__)
@@ -262,7 +263,9 @@ class PennyScanner:
         return PennyRegimeEngine().size_pct(r)
 
     async def _evaluate_ticker_breakout(
-        self, ticker: str, as_of: datetime
+        self, ticker: str, as_of: datetime,
+        prev_close: Optional[float] = None,
+        day_low: Optional[float] = None,  # passed through from quote; defaults to None for tests
     ) -> Optional[dict]:
         """Run the MIS Breakout evaluator on one ticker.
 
@@ -298,14 +301,39 @@ class PennyScanner:
         day_high = ohlc.get("high") or ltp
         day_low = ohlc.get("low") or ltp
 
-        # [PENNY-G8 2026-06-25] Infer the real NSE band from the live quote's
-        # day_high/day_low so circuit_blocked uses the right band rather than
-        # the hardcoded 5% assumption. We don't call circuit_blocked here
-        # (that's wired into a future P3 fix) but the helper is now
-        # available on PennyRiskEngine.
-        # prev_close is on the universe record loaded earlier in scan_once.
-        # We don't have it here in _evaluate_ticker_breakout; the call site
-        # for circuit_blocked is in the MIS-leg executor wiring (P3).
+        # [FIX-PHASE2-AUDIT 2026-07-09] Wire NSE circuit-band filter
+        # (PennyRiskEngine.circuit_blocked, spec §7.4) into the MIS-leg
+        # scanner. The function was implemented but never called from
+        # anywhere except tests. Now that prev_close comes through from
+        # the universe record at the call site, we can enforce the
+        # "stay away from stocks at the daily price band" rule and
+        # avoid the -5%/ATM-trap risk the spec §4.3 warns about.
+        if prev_close and prev_close > 0:
+            try:
+                band_pct = PennyRiskEngine.infer_band_pct_from_quote(
+                    prev_close=float(prev_close),
+                    day_high=float(day_high) if day_high else float(prev_close),
+                    day_low=float(day_low) if day_low else float(prev_close),
+                )
+                blocked, block_reason = self.risk_engine.circuit_blocked(
+                    last_price=float(ltp), day_high=float(day_high),
+                    prev_close=float(prev_close), band_pct=band_pct,
+                )
+                if blocked:
+                    logger.info(
+                        "penny_circuit_blocked ticker=%s band=%.2f%% ltp=%.2f day_high=%.2f "
+                        "prev_close=%.2f reason=%s",
+                        ticker, band_pct * 100, ltp, day_high, prev_close, block_reason,
+                    )
+                    return {
+                        "accept": False,
+                        "reject_reason": f"circuit_blocked: {block_reason}",
+                        "ticker": ticker,
+                    }
+            except Exception as e:
+                # Never let a circuit-check error crash the scan.
+                logger.warning("penny_circuit_check_failed ticker=%s error=%s",
+                               ticker, str(e))
 
         # 2) Real 1-min bars (cached by kite.get_intraday)
         try:
@@ -392,6 +420,23 @@ class PennyScanner:
         closes_1m = [float(c) for c in intraday["close"].tolist()]
         rsi_14 = _rsi_14_wilder(closes_1m)
 
+        # [FIX-PHASE2-AUDIT 2026-07-09] Feed per-ticker realized vol rank
+        # into the day's regime classifier (spec §6.2, 40% weight). Pre-fix
+        # update_vol_rank was never called, so _vol_rank stayed None and
+        # classify() always returned PR1_CALM via the fail-open branch.
+        # We compute once per ticker using the 1-min closes (which we
+        # already have). The engine picks the WORST (highest) rank across
+        # the universe to be conservative.
+        try:
+            from penny_regime import PennyRegimeEngine
+            PennyRegimeEngine().update_vol_rank(
+                PennyRegimeEngine().compute_vol_rank(closes_1m)
+            )
+        except Exception as e:
+            # Never let regime-feeding crash a scan tick.
+            logger.warning("penny_vol_rank_feed_failed ticker=%s error=%s",
+                           ticker, str(e))
+
         return evaluate_breakout_entry(
             ticker=ticker, cum_vol_today=cum_vol, median_vol_20d=median_vol_20d,
             breakout_bar=breakout_bar, day_high=day_high, rsi_14=rsi_14,
@@ -402,10 +447,23 @@ class PennyScanner:
             # or PENNY_BREAKOUT_ADAPTIVE_THRESHOLD is True; otherwise the
             # param is ignored and behaviour is identical to pre-fix.
             intraday=intraday,
+            # [FIX-PHASE1-AUDIT 2026-07-09] Pass the day's penny regime so
+            # the engine honours the spec §6.3 ladder:
+            #   PR1_CALM     -> full risk budget
+            #   PR2_ELEVATED -> half risk budget
+            #   PR3_HOT      -> no new entries (rejected pre-sizing)
+            # self.regime is a PennyRegime enum (or string-compatible) read
+            # via _normalise_regime_getter above; the engine coerces if needed.
+            regime=PennyRegime(self.regime),
         )
 
     async def _evaluate_ticker_connors(
-        self, ticker: str, as_of: datetime
+        self, ticker: str, as_of: datetime,
+        prev_close: Optional[float] = None,
+        day_low: Optional[float] = None,  # unused here but kept for symmetry with breakout
+        # Inherit new params with default None: callers from older test
+        # signatures still work.
+        **kwargs,
     ) -> Optional[dict]:
         """Run the CNC Connors evaluator on one ticker.
 
@@ -471,6 +529,57 @@ class PennyScanner:
         else:
             closes = [b["close"] for b in bars if b.get("close")]
         daily = {"closes": closes}
+
+        # [FIX-PHASE2-AUDIT 2026-07-09] Also feed vol_rank from the
+        # Connors path. The daily closes we already have are perfect
+        # input for compute_vol_rank (250 bars gives a robust 60d proxy).
+        # The scanner's per-scan-tick universe is small (~78 tickers),
+        # so this is one extra divide per ticker.
+        try:
+            from penny_regime import PennyRegimeEngine
+            PennyRegimeEngine().update_vol_rank(
+                PennyRegimeEngine().compute_vol_rank(closes)
+            )
+        except Exception as e:
+            logger.warning("penny_vol_rank_feed_failed ticker=%s error=%s",
+                           ticker, str(e))
+
+        # [FIX-PHASE2-AUDIT 2026-07-09] Circuit-block check for the
+        # Connors path. We fetch a quote (cache hit in production) and
+        # run the same PennyRiskEngine.circuit_blocked guard as the
+        # breakout engine so both legs respect the band filter.
+        if prev_close and prev_close > 0:
+            try:
+                q = await self._get_quote_safe(token)
+                if q:
+                    cnc_ltp = float(q.get("last_price") or 0)
+                    ohlc = q.get("ohlc") or {}
+                    cnc_day_high = float(ohlc.get("high") or cnc_ltp or prev_close)
+                    cnc_day_low = float(ohlc.get("low") or cnc_ltp or prev_close)
+                    band_pct_c = PennyRiskEngine.infer_band_pct_from_quote(
+                        prev_close=float(prev_close),
+                        day_high=cnc_day_high, day_low=cnc_day_low,
+                    )
+                    blocked, block_reason = self.risk_engine.circuit_blocked(
+                        last_price=cnc_ltp, day_high=cnc_day_high,
+                        prev_close=float(prev_close), band_pct=band_pct_c,
+                    )
+                    if blocked:
+                        logger.info(
+                            "penny_circuit_blocked_connors ticker=%s band=%.2f%% ltp=%.2f "
+                            "day_high=%.2f prev_close=%.2f reason=%s",
+                            ticker, band_pct_c * 100, cnc_ltp, cnc_day_high,
+                            prev_close, block_reason,
+                        )
+                        return {
+                            "accept": False,
+                            "reject_reason": f"circuit_blocked: {block_reason}",
+                            "ticker": ticker,
+                        }
+            except Exception as e:
+                logger.warning("penny_connors_circuit_check_failed ticker=%s error=%s",
+                               ticker, str(e))
+
         decision = evaluate_connors_entry(
             ticker=ticker, daily=daily,
             today_volume=today_volume, avg20_volume=avg20_volume,
@@ -669,14 +778,24 @@ class PennyScanner:
                 sector_map = {}
 
         # Phase 1a: parallel per-ticker evaluation (breakout engine).
+        # [FIX-PHASE2-AUDIT 2026-07-09] Pass prev_close from each
+        # universe record so circuit_blocked (spec §7.4) can be enforced
+        # inside the evaluator.
         if surviving:
             results = await asyncio.gather(
-                *[self._evaluate_ticker_breakout(t["symbol"], as_of)
+                *[self._evaluate_ticker_breakout(
+                      t["symbol"], as_of,
+                      prev_close=t.get("prev_close"),
+                  )
                   for t in surviving],
                 return_exceptions=True,
             )
         else:
             results = []
+
+        # Phase 1a (continued): drop records that the breakout engine
+        # rejected so we don't waste Kite calls on the Connors leg.
+        # Still need the *universe record* (t) for connors kwargs (prev_close, etc).
 
         # Phase 1b: sector check. Only runs on tickers that PASSED the
         # breakout engine (we don't waste Kite calls on rejects). Uses

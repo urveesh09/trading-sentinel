@@ -429,7 +429,8 @@ async def run_penny_connors_scan():
             if scanner.risk_engine.is_disabled(t["symbol"]):
                 continue
             decision = await scanner._evaluate_ticker_connors(
-                t["symbol"], as_of=datetime.now(timezone.utc)
+                t["symbol"], as_of=datetime.now(timezone.utc),
+                prev_close=t.get("prev_close"),
             )
             if decision is None:
                 reject += 1
