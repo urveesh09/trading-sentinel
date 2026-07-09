@@ -225,6 +225,8 @@ def evaluate_breakout_entry(
     as_of: datetime,
     risk_engine,
     intraday=None,                 # [TIER2-BREAKOUT-REFINEMENT 2026-06-25]
+    *,
+    regime=None,                   # [FIX-PHASE1-AUDIT 2026-07-09] PennyRegime | None
 ) -> dict:
     """
     Spec section 5.2: volume + breakout + time + RSI gates. On accept, returns
@@ -294,7 +296,23 @@ def evaluate_breakout_entry(
     # Target: +2R
     target = round(entry + settings.PENNY_BREAKOUT_TARGET_R * risk_per_share, 2)
 
-    shares = risk_engine.position_size(entry, stop_loss, _regime_from_pct(0.05))
+    # [FIX-PHASE1-AUDIT 2026-07-09] Honour the day's penny regime when sizing.
+    # Pre-fix hardcoded _regime_from_pct(0.05) which always resolved to
+    # PR1_CALM, so half-size (PR2) / no-new-entry (PR3) rules in spec §6.3
+    # never applied. Live scanner wires in PennyRegimeEngine.today_regime
+    # so the regime ladder actually takes effect.
+    from penny_models import PennyRegime
+    if regime is None:
+        # Default: pre-fix behaviour (full size, treat as PR1_CALM).
+        sizing_regime = PennyRegime.PR1_CALM
+    else:
+        sizing_regime = regime
+
+    # PR3_HOT blocks new entries entirely (spec §6.3)
+    if sizing_regime == PennyRegime.PR3_HOT:
+        return {"accept": False, "reject_reason": "regime PR3_HOT: no new entries"}
+
+    shares = risk_engine.position_size(entry, stop_loss, sizing_regime)
     if shares <= 0:
         return {"accept": False, "reject_reason": "position size = 0 (regime/cap blocked)"}
 

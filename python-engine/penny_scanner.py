@@ -402,6 +402,14 @@ class PennyScanner:
             # or PENNY_BREAKOUT_ADAPTIVE_THRESHOLD is True; otherwise the
             # param is ignored and behaviour is identical to pre-fix.
             intraday=intraday,
+            # [FIX-PHASE1-AUDIT 2026-07-09] Pass the day's penny regime so
+            # the engine honours the spec §6.3 ladder:
+            #   PR1_CALM     -> full risk budget
+            #   PR2_ELEVATED -> half risk budget
+            #   PR3_HOT      -> no new entries (rejected pre-sizing)
+            # self.regime is a PennyRegime enum (or string-compatible) read
+            # via _normalise_regime_getter above; the engine coerces if needed.
+            regime=PennyRegime(self.regime),
         )
 
     async def _evaluate_ticker_connors(

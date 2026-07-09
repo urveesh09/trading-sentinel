@@ -34,23 +34,38 @@ def _rsi_2(closes: List[float]) -> float:
     """
     2-period RSI (Wilder-style). Requires >= 3 closes.
     Returns 50.0 for insufficient data.
+
+    [FIX-PHASE1-AUDIT 2026-07-09] Implementation note: the 2-period average
+    uses only the last two gains/losses, so the full deltas history is not
+    needed. Pre-fix this function looped over every bar (O(N)) and the
+    scanner called it 3 times per evaluation (current, prev, prev-of-prev),
+    making it O(3N) per Connors gate evaluation. The micro-optimised version
+    below does the same math in O(1) w.r.t. length — only the last 2
+    deltas are examined.
+
+    Math equivalence is preserved bit-for-bit: given the same input, this
+    returns exactly the same float as the pre-fix implementation. The
+    closed-form below is just ``sum(gains[-2:]) / 2.0`` rewritten using
+    only the two most recent changes.
     """
-    if len(closes) < 3:
+    if closes is None or len(closes) < 3:
         return 50.0
-    gains, losses = [], []
-    for i in range(1, len(closes)):
-        ch = closes[i] - closes[i - 1]
-        if ch > 0:
-            gains.append(ch)
-            losses.append(0.0)
-        else:
-            gains.append(0.0)
-            losses.append(-ch)
-    if not gains:
-        return 50.0
-    avg_g = sum(gains[-2:]) / 2.0
-    avg_l = sum(losses[-2:]) / 2.0
+    # Last two deltas only: change[-2] = closes[-2] - closes[-3],
+    # change[-1] = closes[-1] - closes[-2].
+    ch1 = closes[-2] - closes[-3]
+    ch2 = closes[-1] - closes[-2]
+    # Per the pre-fix loop: gain = max(ch, 0), loss = max(-ch, 0).
+    g1 = ch1 if ch1 > 0 else 0.0
+    l1 = -ch1 if ch1 < 0 else 0.0
+    g2 = ch2 if ch2 > 0 else 0.0
+    l2 = -ch2 if ch2 < 0 else 0.0
+    avg_g = (g1 + g2) / 2.0
+    avg_l = (l1 + l2) / 2.0
     if avg_l == 0:
+        # Edge case: both deltas non-positive → all losses; pre-fix code
+        # returns 100 in this branch. If both deltas were exactly zero
+        # (flat closes) avg_l == 0; pre-fix returned 100 too, so the
+        # value-equivalence holds.
         return 100.0
     rs = avg_g / avg_l
     return 100.0 - (100.0 / (1.0 + rs))
