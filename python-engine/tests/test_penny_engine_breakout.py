@@ -39,13 +39,16 @@ def test_entry_rejects_low_volume():
     """cum_vol < PENNY_BREAKOUT_VOL_MULT * median_vol_20d -> reject.
 
     [PENNY-AGGRESSIVE 2026-06-24] The threshold is now 1.8x (was 3.0x).
-    Test uses 1.5x (cum=15000, median=10000) so it's strictly below 1.8x
-    and still rejected. A separate test (test_entry_accepts_at_relaxed_volume)
-    confirms 2.0x now passes.
+
+    [FIX-PHASE3-AUDIT 2026-07-09] The gate now time-adjusts the median by
+    session fraction elapsed (PENNY_BREAKOUT_RVOL_TIME_ADJUSTED default
+    True). At 11:00 IST, 105/375 min elapsed (28%), so the baseline for
+    median=10000 is 2800 and the 1.8x threshold is 5040. cum=4000 is
+    below normal pace and still rejected.
     """
     from penny_engine_breakout import evaluate_breakout_entry
     result = evaluate_breakout_entry(
-        ticker="X", cum_vol_today=15000, median_vol_20d=10000,
+        ticker="X", cum_vol_today=4000, median_vol_20d=10000,
         breakout_bar={"high": 10.5, "low": 10.0, "close": 10.4},
         day_high=10.30, rsi_14=55.0, as_of=datetime(2026, 6, 21, 11, 0),
         risk_engine=MagicMock(),
@@ -86,11 +89,14 @@ def test_entry_rejects_no_breakout():
 
 
 def test_entry_rejects_overbought():
+    """[FIX-PHASE3-AUDIT 2026-07-09] Overbought ceiling is now
+    PENNY_BREAKOUT_RSI_MAX (default 70, previously hardcoded). RSI 85
+    is above any sensible ceiling and must be rejected."""
     from penny_engine_breakout import evaluate_breakout_entry
     result = evaluate_breakout_entry(
         ticker="X", cum_vol_today=30000, median_vol_20d=10000,
         breakout_bar={"high": 10.5, "low": 10.0, "close": 10.45},
-        day_high=10.30, rsi_14=75.0, as_of=datetime(2026, 6, 21, 11, 0),
+        day_high=10.30, rsi_14=85.0, as_of=datetime(2026, 6, 21, 11, 0),
         risk_engine=MagicMock(),
     )
     assert result["accept"] is False

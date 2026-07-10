@@ -266,6 +266,7 @@ class PennyScanner:
         self, ticker: str, as_of: datetime,
         prev_close: Optional[float] = None,
         day_low: Optional[float] = None,  # passed through from quote; defaults to None for tests
+        quote_map: Optional[dict] = None,  # [FIX-PHASE3-AUDIT 2026-07-09] batched /quote prefetch
     ) -> Optional[dict]:
         """Run the MIS Breakout evaluator on one ticker.
 
@@ -290,8 +291,22 @@ class PennyScanner:
             logger.warning("penny_eval_skipped ticker=%s reason=token_unresolved", ticker)
             return None
 
-        # 1) Live quote for LTP, day high, and cumulative volume
-        q = await self._get_quote_safe(token)
+        # 1) Live quote for LTP, day high, and cumulative volume.
+        # [FIX-PHASE3-AUDIT 2026-07-09] Prefer the batched prefetch from
+        # scan_once (one /quote call for the whole universe, Kite allows
+        # up to 500 instruments per call) over a per-ticker call. The
+        # per-ticker path was 100 HTTP requests per 30s scan against a
+        # GLOBAL 3 req/s limiter shared with the momentum + swing
+        # screeners -- penny was starving them. Fallback to the single
+        # call keeps old tests and direct callers working.
+        q = None
+        if quote_map:
+            try:
+                q = quote_map.get(int(token))
+            except (TypeError, ValueError):
+                q = None
+        if q is None:
+            q = await self._get_quote_safe(token)
         if not q:
             logger.warning("penny_eval_skipped ticker=%s reason=quote_unavailable", ticker)
             return None
@@ -384,6 +399,35 @@ class PennyScanner:
             "volume": int(last_bar.get("volume", 0) or 0),
         }
 
+        # [FIX-PHASE3-AUDIT 2026-07-09] The breakout anchor must be the
+        # high of the bars STRICTLY BEFORE the breakout bar. Pre-fix we
+        # passed the live quote's ohlc.high (the running intraday high,
+        # which already includes the breakout bar itself), so
+        # `bar_close > day_high * 1.003` was unsatisfiable by definition:
+        # a bar's close can never exceed the running day high that
+        # includes its own high. Audit of 215,814 lifetime evaluations in
+        # /data/penny_signals.csv: zero accepts, and max observed
+        # close/anchor = 1.0002 vs the required 1.003. A close CAN exceed
+        # the max high of the *prior* bars -- that is what a breakout is.
+        if len(intraday) < 2:
+            logger.info(
+                "penny_eval_skipped ticker=%s reason=no_prior_bars_for_anchor",
+                ticker,
+            )
+            return {
+                "accept": False,
+                "reject_reason": "no prior bars to anchor breakout",
+                "ticker": ticker,
+            }
+        try:
+            prior_bars_high = float(intraday["high"].iloc[:-1].max())
+        except Exception as e:
+            logger.warning(
+                "penny_prior_high_failed ticker=%s error=%s (fallback=quote day_high)",
+                ticker, str(e),
+            )
+            prior_bars_high = day_high
+
         # 4) Real 20-day median cumulative volume
         try:
             from datetime import timedelta
@@ -439,7 +483,9 @@ class PennyScanner:
 
         return evaluate_breakout_entry(
             ticker=ticker, cum_vol_today=cum_vol, median_vol_20d=median_vol_20d,
-            breakout_bar=breakout_bar, day_high=day_high, rsi_14=rsi_14,
+            # [FIX-PHASE3-AUDIT 2026-07-09] prior_bars_high, NOT the live
+            # quote's running day high -- see the anchor comment above.
+            breakout_bar=breakout_bar, day_high=prior_bars_high, rsi_14=rsi_14,
             as_of=as_of, risk_engine=self.risk_engine,
             # [TIER2-BREAKOUT-REFINEMENT 2026-06-25] Pass intraday so the
             # breakout engine can compute VWAP and adaptive threshold.
@@ -777,6 +823,38 @@ class PennyScanner:
                 logger.warning("penny_sector_filter_load_failed error=%s (fail-open)", str(e))
                 sector_map = {}
 
+        # [FIX-PHASE3-AUDIT 2026-07-09] Batch-prefetch live quotes for the
+        # whole surviving universe in ONE /quote call (Kite allows up to
+        # 500 instruments per request). Pre-fix each ticker made its own
+        # single-token /quote call: ~100 HTTP requests per 30s scan
+        # against the GLOBAL 3 req/s rate limiter shared with the
+        # momentum and swing screeners. Penny alone needed ~100s per
+        # scan -- overrunning its own 30s cadence AND starving the other
+        # two strategies. Failure here falls back to the per-ticker path
+        # inside _evaluate_ticker_breakout (quote_map=None entries).
+        quote_map: dict = {}
+        if surviving:
+            batch_tokens = []
+            for t in surviving:
+                tok = self.kite.instrument_cache.get(t["symbol"])
+                if tok is None:
+                    continue
+                try:
+                    batch_tokens.append(int(tok))
+                except (TypeError, ValueError):
+                    continue
+            if batch_tokens:
+                try:
+                    quote_map = await self.kite.get_quote(batch_tokens)
+                    if not isinstance(quote_map, dict):
+                        quote_map = {}
+                except Exception as e:
+                    logger.warning(
+                        "penny_quote_batch_prefetch_failed error=%s "
+                        "(fallback=per-ticker quotes)", str(e),
+                    )
+                    quote_map = {}
+
         # Phase 1a: parallel per-ticker evaluation (breakout engine).
         # [FIX-PHASE2-AUDIT 2026-07-09] Pass prev_close from each
         # universe record so circuit_blocked (spec §7.4) can be enforced
@@ -786,6 +864,7 @@ class PennyScanner:
                 *[self._evaluate_ticker_breakout(
                       t["symbol"], as_of,
                       prev_close=t.get("prev_close"),
+                      quote_map=quote_map,
                   )
                   for t in surviving],
                 return_exceptions=True,

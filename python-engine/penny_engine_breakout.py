@@ -253,10 +253,29 @@ def evaluate_breakout_entry(
     if mins < settings.PENNY_BREAKOUT_TIME_START or mins >= settings.PENNY_BREAKOUT_TIME_END:
         return {"accept": False, "reject_reason": f"outside breakout time window ({mins} min)"}
 
-    # 2. Volume surge: today cumulative > 3x 20-day median
-    if median_vol_20d <= 0 or cum_vol_today < settings.PENNY_BREAKOUT_VOL_MULT * median_vol_20d:
+    # 2. Volume surge gate.
+    # [FIX-PHASE3-AUDIT 2026-07-09] cum_vol_today is a RUNNING cumulative
+    # figure; median_vol_20d is a FULL-DAY figure. Comparing them raw
+    # demands ~9x normal pace at the 10:30 window open (only ~20% of the
+    # session has elapsed). When PENNY_BREAKOUT_RVOL_TIME_ADJUSTED is on,
+    # scale the median by the elapsed fraction of the NSE session
+    # (09:15-15:30 = 375 min) so the gate reads "1.8x normal pace for
+    # this time of day" -- a true relative-volume check.
+    if median_vol_20d <= 0:
         return {"accept": False,
                 "reject_reason": f"volume {cum_vol_today} < {settings.PENNY_BREAKOUT_VOL_MULT}x median ({median_vol_20d})"}
+    vol_baseline = float(median_vol_20d)
+    if settings.PENNY_BREAKOUT_RVOL_TIME_ADJUSTED:
+        session_open_min = 9 * 60 + 15   # 09:15 IST
+        session_len_min = 375.0          # 09:15 -> 15:30
+        elapsed = min(max(mins - session_open_min, 1.0), session_len_min)
+        vol_baseline = median_vol_20d * (elapsed / session_len_min)
+    if cum_vol_today < settings.PENNY_BREAKOUT_VOL_MULT * vol_baseline:
+        return {"accept": False,
+                "reject_reason": (
+                    f"volume {cum_vol_today} < {settings.PENNY_BREAKOUT_VOL_MULT}x "
+                    f"median ({int(vol_baseline)})"
+                )}
 
     # 3. Breakout confirm: close > anchor + buffer on a 1-min bar.
     # Anchor = day_high (default) or VWAP (when USE_VWAP=True and intraday available).
@@ -268,11 +287,16 @@ def evaluate_breakout_entry(
     else:
         effective_buffer = base_buffer
 
+    # [FIX-PHASE3-AUDIT 2026-07-09] Track which anchor was actually used
+    # instead of recomputing VWAP a second time for the anchor_kind label.
+    anchor_kind = "day_high"
     if settings.PENNY_BREAKOUT_USE_VWAP and intraday is not None:
         anchor = _vwap_from_intraday(intraday)
         if anchor is None:
             # VWAP unavailable -- fall back to day_high rather than reject.
             anchor = day_high
+        else:
+            anchor_kind = "vwap"
     else:
         anchor = day_high
 
@@ -281,8 +305,11 @@ def evaluate_breakout_entry(
         return {"accept": False,
                 "reject_reason": f"breakout not confirmed (close {bar_close:.2f} <= {required:.2f})"}
 
-    # 4. RSI not overbought
-    if rsi_14 >= 70:
+    # 4. RSI not overbought.
+    # [FIX-PHASE3-AUDIT 2026-07-09] Ceiling moved from hardcoded 70 to
+    # PENNY_BREAKOUT_RSI_MAX (default 70 -- the backtest sweep showed
+    # loosening to 80 was net-negative on daily bars; see config.py).
+    if rsi_14 >= settings.PENNY_BREAKOUT_RSI_MAX:
         return {"accept": False, "reject_reason": f"RSI(14)={rsi_14:.1f} overbought"}
 
     # ---- signal fires ----
@@ -335,8 +362,7 @@ def evaluate_breakout_entry(
         # these are unaffected.
         "anchor": anchor,
         "buffer_pct": effective_buffer,
-        "anchor_kind": "vwap" if (settings.PENNY_BREAKOUT_USE_VWAP and intraday is not None
-                                and _vwap_from_intraday(intraday) is not None) else "day_high",
+        "anchor_kind": anchor_kind,
         "adaptive_buffer": settings.PENNY_BREAKOUT_ADAPTIVE_THRESHOLD and intraday is not None,
     }
 

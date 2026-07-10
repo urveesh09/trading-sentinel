@@ -244,6 +244,28 @@ class Settings(BaseSettings):
     #             Per de Prado, Advances in Financial ML ch. 16.
     PENNY_BREAKOUT_USE_VWAP:            bool  = False
     PENNY_BREAKOUT_ADAPTIVE_THRESHOLD:  bool  = False
+    # [FIX-PHASE3-AUDIT 2026-07-09] Time-of-day-adjusted relative volume.
+    # Pre-fix the volume gate compared *running cumulative* volume against
+    # the *full-day* 20-day median: at the 10:30 window open only ~20% of
+    # the session has elapsed, so demanding 1.8x the full-day median means
+    # demanding ~9x normal pace -- the gate produced 37,521 lifetime
+    # rejects and starved the breakout leg. When True, the median is
+    # scaled by the fraction of the session elapsed (09:15-15:30 =
+    # 375 min), turning the gate into a true RVOL check: "is today's
+    # volume running 1.8x its NORMAL PACE for this time of day?".
+    # Default True because the unscaled comparison is considered a bug,
+    # not a tuning choice. Set False to restore pre-fix behaviour.
+    PENNY_BREAKOUT_RVOL_TIME_ADJUSTED:  bool  = True
+    # [FIX-PHASE3-AUDIT 2026-07-09] RSI(14) overbought ceiling for the
+    # breakout entry (was hardcoded 70; now a setting). A genuine 1-min
+    # volume breakout often prints RSI(14) > 70, so 70 may reject real
+    # signals -- BUT the penny_backtest_v2 daily-bar sweep (2026-04-01 to
+    # 2026-07-08, config "phase3" vs "baseline") showed the extra trades
+    # admitted between RSI 70 and 80 LOST ~Rs 13,500 net. Daily-bar RSI
+    # is an imperfect proxy for 1-min RSI, so the default stays at the
+    # proven-shipped 70 until an intraday backtest justifies loosening.
+    # Operators can experiment via .env without a code change.
+    PENNY_BREAKOUT_RSI_MAX:             float = 70.0
     # Buffer pct applied as breakout margin (was hardcoded 0.3% in the
     # engine). Made a setting so adaptive mode can override it.
     PENNY_BREAKOUT_BUFFER_PCT:           float = 0.003

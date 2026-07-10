@@ -136,6 +136,19 @@ GATE_CONFIGS = {
         "target_r":            2.0,
         "risk_pct_per_trade":  0.05,
     },
+    "phase3": {
+        # [FIX-PHASE3-AUDIT 2026-07-09] Probe config: baseline gates but
+        # RSI ceiling loosened to 80. Ran 2026-04-01..2026-07-08 against
+        # cache.db: the extra trades admitted between RSI 70 and 80 LOST
+        # ~Rs 13,500 net (baseline +18,395 vs this +4,917), so the
+        # shipped PENNY_BREAKOUT_RSI_MAX default stays 70. Kept as a
+        # preset so the sweep is reproducible when more history accrues.
+        "volume_mult":         1.8,
+        "breakout_buffer_pct": 0.003,
+        "rsi_max":             80.0,
+        "target_r":            2.0,
+        "risk_pct_per_trade":  0.05,
+    },
 }
 
 # Default risk per share = 0.5 * ATR(14) approximation. Live

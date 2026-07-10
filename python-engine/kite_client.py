@@ -50,6 +50,12 @@ class KiteClient:
             "X-Kite-Version": "3",
             "Authorization": f"token {api_key}:{token}"
         })
+        # [FIX-PHASE3-AUDIT 2026-07-09] Masked breadcrumb: the armed vs
+        # disarmed transition was previously invisible in the logs.
+        logger.info(
+            "kite_token_set suffix=...%s",
+            token[-4:] if token and len(token) >= 4 else "?",
+        )
 
     async def _init_db(self):
         # [PENNY-SQLITE-WAL 2026-07-02] Switch cache.db to WAL mode
@@ -438,10 +444,23 @@ class KiteClient:
                         await asyncio.sleep(backoff)
                         backoff *= 2
                         continue
-                logger.error(
-                    "kite_quote_failed status=%d tokens=%d",
-                    status, len(tokens),
-                )
+                # [FIX-PHASE3-AUDIT 2026-07-09] Kite returns HTTP 400
+                # InputException "Invalid api_key or access_token" for a
+                # missing/expired token -- NOT 401/403. On 2026-07-09 this
+                # produced 26,311 unexplained status=400 lines. Surface
+                # the likely cause so the operator doesn't hunt elsewhere.
+                if status == 400:
+                    logger.error(
+                        "kite_quote_failed status=400 tokens=%d "
+                        "hint=likely_invalid_or_missing_access_token "
+                        "FIX=log in via Telegram /login (Zerodha token expires daily)",
+                        len(tokens),
+                    )
+                else:
+                    logger.error(
+                        "kite_quote_failed status=%d tokens=%d",
+                        status, len(tokens),
+                    )
                 self._log_quote_batch_failure(len(tokens))
                 self._note_quote_rate_failure()
                 return {}
@@ -530,11 +549,16 @@ class KiteClient:
             and KiteClient._quote_fail_window_count
             >= KiteClient.KITE_QUOTE_FAIL_RATE_THRESHOLD_PER_MIN
         ):
+            # [FIX-PHASE3-AUDIT 2026-07-09] Message previously said
+            # "401/403/5xx" -- but a missing/expired token surfaces as
+            # HTTP 400 InputException, which sent the operator hunting in
+            # the wrong direction on 2026-07-09.
             logger.warning(
                 "kite_auth_degraded failures_in_last_min=%d "
-                "threshold=%d -- Kite auth appears to be returning "
-                "401/403/5xx; the scanner will retry but signals may "
-                "be delayed until auth recovers",
+                "threshold=%d -- Kite quote calls are failing "
+                "(HTTP 400 usually means invalid/missing access_token: "
+                "log in via Telegram; 401/403/5xx are transient and retried); "
+                "signals may be delayed until auth recovers",
                 KiteClient._quote_fail_window_count,
                 KiteClient.KITE_QUOTE_FAIL_RATE_THRESHOLD_PER_MIN,
             )
