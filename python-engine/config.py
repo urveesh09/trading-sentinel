@@ -266,6 +266,12 @@ class Settings(BaseSettings):
     # proven-shipped 70 until an intraday backtest justifies loosening.
     # Operators can experiment via .env without a code change.
     PENNY_BREAKOUT_RSI_MAX:             float = 70.0
+    # [GAP-2 ZERO-ACCEPT ALARM 2026-07-10] Consecutive evaluation days
+    # with evaluations > 0 and accepts == 0 before the 15:45 IST
+    # watchdog fires a Telegram alert with the reject-reason histogram
+    # (F&O spec §9.2, backported to penny). BUG-1 ran for nine months
+    # undetected; at the default of 2 it is caught on day two.
+    PENNY_ZERO_ACCEPT_ALERT_DAYS:       int   = 2
     # Buffer pct applied as breakout margin (was hardcoded 0.3% in the
     # engine). Made a setting so adaptive mode can override it.
     PENNY_BREAKOUT_BUFFER_PCT:           float = 0.003

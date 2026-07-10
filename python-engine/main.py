@@ -1639,6 +1639,90 @@ def register_penny_scheduler_jobs(scheduler):
         id="penny_hourly_report",
     )
 
+    # [GAP-2 ZERO-ACCEPT ALARM 2026-07-10] 15:45 IST accept-rate
+    # watchdog, backported from the F&O spec §9.2. Fires after the
+    # 15:30 close so the day's rows are final. 215,814 evaluations and
+    # 0 accepts (BUG-1) produced no alert of any kind for nine months;
+    # this job would have caught it on day
+    # PENNY_ZERO_ACCEPT_ALERT_DAYS (default 2). Read-only over
+    # penny_signals -- needs no Kite token, so no no_access_token
+    # guard (it must fire ESPECIALLY on token-less days).
+    async def _run_penny_accept_watchdog_safe():
+        import httpx as _httpx
+        from penny_accept_watchdog import (
+            zero_accept_scan,
+            format_zero_accept_alert,
+        )
+        # [Rule 55] First-line breadcrumb.
+        logger.info(
+            "penny_accept_watchdog_invoked now_ist=%s",
+            datetime.now(IST).strftime("%Y-%m-%d %H:%M:%S"),
+        )
+        today = datetime.now(IST).date()
+        if not await is_trading_day(today, settings.DB_PATH):
+            logger.info("penny_accept_watchdog_skip reason=non_trading_day")
+            return
+        try:
+            payload = await zero_accept_scan(
+                settings.DB_PATH,
+                n_days=settings.PENNY_ZERO_ACCEPT_ALERT_DAYS,
+            )
+            if payload is None:
+                logger.info("penny_accept_watchdog_ok accepts_in_window=yes_or_insufficient_data")
+                return
+            # [Rule 72] Degradation is a WARNING, never an INFO.
+            logger.warning(
+                "penny_zero_accept_alarm days=%s evaluations=%d dead_gate=%s",
+                ",".join(payload["days"]), payload["evaluations"],
+                payload.get("dead_gate") or "none",
+            )
+            try:
+                msg = format_zero_accept_alert(payload)
+                async with _httpx.AsyncClient() as _client:
+                    await _client.post(
+                        f"{settings.CONTAINER_A_URL}/api/internal/notify",
+                        json={"message": msg},
+                        headers={"X-Internal-Secret": settings.INTERNAL_API_SECRET or ""},
+                        timeout=5.0,
+                    )
+            except Exception as notify_exc:
+                logger.warning("penny_accept_watchdog_notify_failed err=%s", notify_exc)
+        except Exception as exc:
+            logger.error("penny_accept_watchdog_failed err=%s", exc, exc_info=True)
+
+    scheduler.add_job(
+        _run_penny_accept_watchdog_safe, "cron",
+        hour=15, minute=45,
+        id="penny_accept_watchdog",
+        max_instances=1,
+        coalesce=True,
+        misfire_grace_time=600,
+    )
+    logger.info(
+        "penny_accept_watchdog_registered id=penny_accept_watchdog "
+        "schedule=\"15:45 IST daily\" n_days=%d",
+        settings.PENNY_ZERO_ACCEPT_ALERT_DAYS,
+    )
+
+    # [Rule 49] Startup catchup: a container started after 15:45 IST
+    # still audits the day (a restart evening is exactly when silent
+    # zero-accept days sneak past).
+    try:
+        from zoneinfo import ZoneInfo as _ZI_wd
+        _now_ist_wd = datetime.now(_ZI_wd("Asia/Kolkata"))
+        _today_1545 = _now_ist_wd.replace(hour=15, minute=45, second=0, microsecond=0)
+        if _now_ist_wd >= _today_1545:
+            logger.info(
+                "penny_accept_watchdog_startup_catchup_firing now_ist=%s",
+                _now_ist_wd.strftime("%H:%M:%S"),
+            )
+            asyncio.create_task(_run_penny_accept_watchdog_safe())
+    except Exception as _wd_catchup_exc:
+        logger.warning(
+            "penny_accept_watchdog_startup_catchup_failed err=%s",
+            str(_wd_catchup_exc),
+        )
+
 
 async def lifespan(app: FastAPI):
     # [AUDIT-FIX-2.2 2026-06-25] Loud startup warning if INTERNAL_API_SECRET
