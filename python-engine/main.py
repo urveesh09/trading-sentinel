@@ -319,6 +319,17 @@ async def run_penny_scanner_once():
     if not await is_trading_day(today, settings.DB_PATH):
         logger.info("penny_scanner_once_skip reason=non_trading_day")
         return
+    # [FIX-PHASE3-AUDIT 2026-07-09] No-token guard, mirroring the swing
+    # (run_screener) and momentum screeners. On 2026-07-09 the operator
+    # missed the daily Zerodha login: the swing/momentum screeners
+    # correctly logged `..._skipped reason=no_access_token`, but the
+    # penny scanner had no guard -- it fired 26,311 doomed /quote calls
+    # (HTTP 400 InputException), wrote 74,025 junk `evaluator returned
+    # None` rows to penny_signals.csv, and log-storm-rotated the day's
+    # breadcrumbs out of the 30 MB docker json-log buffer.
+    if not kite.access_token:
+        logger.warning("penny_scanner_once_skip reason=no_access_token")
+        return
     global _last_penny_scan_universe_size
     scanner = _get_penny_scanner()
     if scanner is None:
@@ -411,6 +422,11 @@ async def run_penny_connors_scan():
     if not await is_trading_day(today, settings.DB_PATH):
         logger.info("penny_connors_scan_skip reason=non_trading_day")
         return
+    # [FIX-PHASE3-AUDIT 2026-07-09] No-token guard -- same rationale as
+    # run_penny_scanner_once (2026-07-09 missed-login incident).
+    if not kite.access_token:
+        logger.warning("penny_connors_scan_skip reason=no_access_token")
+        return
     global _last_penny_scan_universe_size
     scanner = _get_penny_scanner()
     if scanner is None:
@@ -424,14 +440,51 @@ async def run_penny_connors_scan():
         # 2026-06-24 diagnostic: cache universe size so the next hourly
         # report knows how many tickers were eligible.
         _last_penny_scan_universe_size = len(universe)
+        # [FIX-PHASE3-AUDIT 2026-07-09] Persist every CNC evaluation to the
+        # penny signal log. Pre-fix log_penny_signal was called ONLY from
+        # penny_scanner.scan_once (the MIS path): all 215,814 lifetime rows
+        # in /data/penny_signals.csv were leg=MIS and the CNC leg was
+        # completely invisible to the CSV deep-audit (ops rule 75). One
+        # scan_id groups the whole 09:30 pass, mirroring scan_once.
+        from penny_signal_log import init_penny_signal_db, log_penny_signal
+        from uuid import uuid4 as _uuid4
+        cnc_scan_id = f"penny-cnc-{_uuid4().hex[:8]}"
+        await init_penny_signal_db(settings.DB_PATH)
+
+        async def _log_cnc(ticker, dec):
+            # Never let signal-log I/O break the trading loop.
+            try:
+                dec = dec or {}
+                await log_penny_signal(
+                    settings.DB_PATH, scan_id=cnc_scan_id, ticker=ticker,
+                    leg="CNC", accepted=bool(dec.get("accept")),
+                    reject_reason=(
+                        "" if dec.get("accept")
+                        else dec.get("reject_reason",
+                                     "evaluator returned None (see prior warn/error)")
+                    ),
+                    regime=str(scanner.regime),
+                    close=float(dec.get("entry", 0.0) or 0.0),
+                )
+            except Exception as log_err:
+                logger.warning("penny_cnc_signal_log_failed ticker=%s error=%s",
+                               ticker, str(log_err))
+
         accept = reject = 0
         for t in universe:
             if scanner.risk_engine.is_disabled(t["symbol"]):
                 continue
             decision = await scanner._evaluate_ticker_connors(
-                t["symbol"], as_of=datetime.now(timezone.utc),
+                # [FIX-PHASE3-AUDIT 2026-07-09] IST, not UTC. The evaluator's
+                # late-day gate does as_of.replace(hour=9, minute=15) and
+                # treats the result as IST market open; a UTC now() made
+                # minutes_since_open negative (~-5.5h), so the gate passed
+                # by accident rather than by design. The MIS path already
+                # passes datetime.now(IST) -- this aligns the CNC path.
+                t["symbol"], as_of=datetime.now(IST),
                 prev_close=t.get("prev_close"),
             )
+            await _log_cnc(t["symbol"], decision)
             if decision is None:
                 reject += 1
                 continue
@@ -1340,6 +1393,11 @@ def register_penny_scheduler_jobs(scheduler):
         if not await is_trading_day(today, settings.DB_PATH):
             logger.info("penny_edge_scan_skip reason=non_trading_day")
             return
+        # [FIX-PHASE3-AUDIT 2026-07-09] No-token guard -- same rationale
+        # as run_penny_scanner_once (2026-07-09 missed-login incident).
+        if not kite.access_token:
+            logger.warning("penny_edge_scan_skip reason=no_access_token")
+            return
         try:
             summary = await run_penny_edge_scan(kite)
             try:
@@ -1581,6 +1639,90 @@ def register_penny_scheduler_jobs(scheduler):
         id="penny_hourly_report",
     )
 
+    # [GAP-2 ZERO-ACCEPT ALARM 2026-07-10] 15:45 IST accept-rate
+    # watchdog, backported from the F&O spec §9.2. Fires after the
+    # 15:30 close so the day's rows are final. 215,814 evaluations and
+    # 0 accepts (BUG-1) produced no alert of any kind for nine months;
+    # this job would have caught it on day
+    # PENNY_ZERO_ACCEPT_ALERT_DAYS (default 2). Read-only over
+    # penny_signals -- needs no Kite token, so no no_access_token
+    # guard (it must fire ESPECIALLY on token-less days).
+    async def _run_penny_accept_watchdog_safe():
+        import httpx as _httpx
+        from penny_accept_watchdog import (
+            zero_accept_scan,
+            format_zero_accept_alert,
+        )
+        # [Rule 55] First-line breadcrumb.
+        logger.info(
+            "penny_accept_watchdog_invoked now_ist=%s",
+            datetime.now(IST).strftime("%Y-%m-%d %H:%M:%S"),
+        )
+        today = datetime.now(IST).date()
+        if not await is_trading_day(today, settings.DB_PATH):
+            logger.info("penny_accept_watchdog_skip reason=non_trading_day")
+            return
+        try:
+            payload = await zero_accept_scan(
+                settings.DB_PATH,
+                n_days=settings.PENNY_ZERO_ACCEPT_ALERT_DAYS,
+            )
+            if payload is None:
+                logger.info("penny_accept_watchdog_ok accepts_in_window=yes_or_insufficient_data")
+                return
+            # [Rule 72] Degradation is a WARNING, never an INFO.
+            logger.warning(
+                "penny_zero_accept_alarm days=%s evaluations=%d dead_gate=%s",
+                ",".join(payload["days"]), payload["evaluations"],
+                payload.get("dead_gate") or "none",
+            )
+            try:
+                msg = format_zero_accept_alert(payload)
+                async with _httpx.AsyncClient() as _client:
+                    await _client.post(
+                        f"{settings.CONTAINER_A_URL}/api/internal/notify",
+                        json={"message": msg},
+                        headers={"X-Internal-Secret": settings.INTERNAL_API_SECRET or ""},
+                        timeout=5.0,
+                    )
+            except Exception as notify_exc:
+                logger.warning("penny_accept_watchdog_notify_failed err=%s", notify_exc)
+        except Exception as exc:
+            logger.error("penny_accept_watchdog_failed err=%s", exc, exc_info=True)
+
+    scheduler.add_job(
+        _run_penny_accept_watchdog_safe, "cron",
+        hour=15, minute=45,
+        id="penny_accept_watchdog",
+        max_instances=1,
+        coalesce=True,
+        misfire_grace_time=600,
+    )
+    logger.info(
+        "penny_accept_watchdog_registered id=penny_accept_watchdog "
+        "schedule=\"15:45 IST daily\" n_days=%d",
+        settings.PENNY_ZERO_ACCEPT_ALERT_DAYS,
+    )
+
+    # [Rule 49] Startup catchup: a container started after 15:45 IST
+    # still audits the day (a restart evening is exactly when silent
+    # zero-accept days sneak past).
+    try:
+        from zoneinfo import ZoneInfo as _ZI_wd
+        _now_ist_wd = datetime.now(_ZI_wd("Asia/Kolkata"))
+        _today_1545 = _now_ist_wd.replace(hour=15, minute=45, second=0, microsecond=0)
+        if _now_ist_wd >= _today_1545:
+            logger.info(
+                "penny_accept_watchdog_startup_catchup_firing now_ist=%s",
+                _now_ist_wd.strftime("%H:%M:%S"),
+            )
+            asyncio.create_task(_run_penny_accept_watchdog_safe())
+    except Exception as _wd_catchup_exc:
+        logger.warning(
+            "penny_accept_watchdog_startup_catchup_failed err=%s",
+            str(_wd_catchup_exc),
+        )
+
 
 async def lifespan(app: FastAPI):
     # [AUDIT-FIX-2.2 2026-06-25] Loud startup warning if INTERNAL_API_SECRET
@@ -1713,6 +1855,17 @@ async def lifespan(app: FastAPI):
         daemon=True,  # dies with the process; no shutdown coordination needed
     )
     _liveness_thread.start()
+
+    # [FIX-PHASE3-AUDIT 2026-07-09] Re-arm from the persisted same-day
+    # token (if any) so a mid-day container restart doesn't silently
+    # disarm every strategy until the operator manually logs in again.
+    # restore_kite_token_if_fresh is defined near the /token endpoint;
+    # by lifespan-run time the module is fully imported.
+    try:
+        if restore_kite_token_if_fresh():
+            asyncio.create_task(post_login_initialization())
+    except Exception as e:
+        logger.warning("kite_token_restore_startup_failed error=%s", str(e))
 
     scheduler.start()
     yield
@@ -3032,9 +3185,87 @@ async def close_position(request: Request):
 class TokenPayload(BaseModel):
     access_token: str
 
+
+# [FIX-PHASE3-AUDIT 2026-07-09] Token persistence + observability.
+#
+# Pre-fix, POST /token set kite.access_token IN MEMORY ONLY and logged
+# nothing. Two production consequences on 2026-07-09:
+#   1. The single most important state transition in the system (armed
+#      vs disarmed) was invisible in the logs -- the audit had to infer
+#      it from 26,311 downstream HTTP 400s.
+#   2. Any container restart silently disarmed all strategies until the
+#      operator manually logged in again. The 19:59 IST host reboot
+#      wiped the day's token with no alert.
+#
+# The token is persisted to the /data named volume with an IST date
+# stamp. On startup we restore it ONLY if it was saved today (Zerodha
+# tokens expire daily around 06:00 IST, so a stale token is useless and
+# restoring it would just produce a 400 storm -- the exact failure mode
+# the no-token guards now prevent).
+
+def _kite_token_cache_path() -> str:
+    import os as _os
+    return _os.path.join(_os.path.dirname(settings.DB_PATH), "kite_token.json")
+
+
+def _persist_kite_token(token: str) -> None:
+    import json as _json
+    import os as _os
+    try:
+        path = _kite_token_cache_path()
+        payload = {
+            "access_token": token,
+            "saved_date_ist": datetime.now(IST).strftime("%Y-%m-%d"),
+        }
+        with open(path, "w") as fh:
+            _json.dump(payload, fh)
+        _os.chmod(path, 0o600)
+        logger.info("kite_token_persisted path=%s", path)
+    except Exception as e:
+        # Persistence is best-effort; the in-memory token still works.
+        logger.warning("kite_token_persist_failed error=%s", str(e))
+
+
+def restore_kite_token_if_fresh() -> bool:
+    """Reload a same-IST-day token from /data on startup. Returns True
+    when a token was restored. Called from the lifespan hook."""
+    import json as _json
+    import os as _os
+    path = _kite_token_cache_path()
+    try:
+        if not _os.path.exists(path):
+            return False
+        with open(path) as fh:
+            payload = _json.load(fh)
+        saved_date = payload.get("saved_date_ist")
+        token = payload.get("access_token")
+        today_ist = datetime.now(IST).strftime("%Y-%m-%d")
+        if not token or saved_date != today_ist:
+            logger.info(
+                "kite_token_restore_skipped saved_date=%s today=%s "
+                "(stale -- operator must log in again)",
+                saved_date, today_ist,
+            )
+            return False
+        kite.set_token(token)
+        logger.info("kite_token_restored saved_date=%s", saved_date)
+        return True
+    except Exception as e:
+        logger.warning("kite_token_restore_failed error=%s", str(e))
+        return False
+
+
 @app.post("/token")
 async def inject_token(payload: TokenPayload):
     kite.set_token(payload.access_token)
+    # [FIX-PHASE3-AUDIT 2026-07-09] Loud (masked) breadcrumb + persist so
+    # a restart no longer silently disarms the system.
+    logger.info(
+        "kite_token_injected suffix=...%s len=%d",
+        payload.access_token[-4:] if len(payload.access_token) >= 4 else "?",
+        len(payload.access_token),
+    )
+    _persist_kite_token(payload.access_token)
     # Fire-and-forget: return 200 immediately so node-gateway's 2-second
     # AbortController does not trigger retries that spawn concurrent screener runs.
     # post_login_initialization runs in the background (Q4 behaviour is preserved).

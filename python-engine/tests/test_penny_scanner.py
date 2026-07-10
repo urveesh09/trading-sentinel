@@ -450,15 +450,36 @@ def test_scanner_handles_string_valued_instrument_cache(tmp_paths, fake_kite, fa
         f"populated cache and returning get_quote -- the str/int "
         f"mismatch is still present. [INSTRUMENT-CACHE-INT 2026-07-03]"
     )
-    # The scanner must have actually called get_quote with each token.
+    # The scanner must have actually called get_quote covering each token.
     # Pre-fix the call would have been made (cache resolved) but the
     # dict-lookup at the consumer would have failed. Post-fix the
     # call still happens and the response is used.
-    assert fake_kite.get_quote.await_count >= 3, (
-        f"Expected at least 3 get_quote calls (one per ticker), got "
+    # [FIX-PHASE3-AUDIT 2026-07-09] scan_once now batch-prefetches all
+    # quotes in ONE get_quote call (Kite allows 500 instruments per
+    # request) instead of one call per ticker, so we assert on the union
+    # of tokens requested across all calls -- and that every requested
+    # token was coerced to int (the original str/int regression).
+    assert fake_kite.get_quote.await_count >= 1, (
+        f"Expected at least one get_quote call, got "
         f"{fake_kite.get_quote.await_count}. If 0, the cache lookup "
         f"`token is None` branch fired instead, meaning the cache is "
         f"still str-keyed. [INSTRUMENT-CACHE-INT 2026-07-03]"
+    )
+    requested_tokens = set()
+    for call in fake_kite.get_quote.await_args_list:
+        arg = call.args[0] if call.args else call.kwargs.get("tokens")
+        if isinstance(arg, (list, tuple, set)):
+            requested_tokens.update(arg)
+        else:
+            requested_tokens.add(arg)
+    assert {1001, 1002, 1003} <= {int(t) for t in requested_tokens}, (
+        f"Expected all three universe tokens requested via get_quote, got "
+        f"{requested_tokens}. The str-keyed cache regression may be back. "
+        f"[INSTRUMENT-CACHE-INT 2026-07-03]"
+    )
+    assert all(isinstance(t, int) for t in requested_tokens), (
+        f"get_quote must be called with int tokens (str tokens miss the "
+        f"int-keyed /quote response dict): {requested_tokens}"
     )
 
 
