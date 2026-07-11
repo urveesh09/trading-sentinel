@@ -197,29 +197,6 @@ def analyze_with_gemini(
     Respond in strict JSON matching the required schema.
     No markdown. No explanation outside the JSON fields.
     """
-    # prompt = f"""
-    # You are an elite quantitative trading architect evaluating a swing trade.
-    
-    # QUANT DATA:
-    # Ticker: {ticker}
-    # Current Price: {price}
-    # Target: {target}
-    # Stop Loss: {stop_loss}
-    
-    # MULTI-SOURCE SENTIMENT DATA:
-    # {sentiment_text if sentiment_text else "CRITICAL: No recent news available. Evaluate strictly on technicals with high caution."}
-    
-    # EVALUATION RULES:
-    # 1. CONTRADICTION CHECK: If the Quant Data suggests a long position, but the Sentiment Data contains critical legal, regulatory, or catastrophic news, you MUST lower the conviction_score significantly.
-    # 2. DO NOT override the quant edge unless a strong contradiction exists. Do not overreact to weak or routine news.
-    # 3. NO HALLUCINATION: Base your rationale ONLY on the text provided above. Do not invent news.
-    # 4. SCORING: 
-    #    - 80-100: Perfect alignment between technicals and sentiment.
-    #    - 60-79: Acceptable setup, standard market risks.
-    #    - 0-59: Conflicting data, high risk of false positive.
-       
-    # Provide your output in strict JSON format.
-    # """
     # [LOW-004] Enforce a 30-second timeout on the Gemini API call to prevent
     # blocking the entire synchronous pipeline if the API hangs.
     result_holder: Dict = {}
@@ -506,60 +483,6 @@ def run_pipeline():
         time.sleep(2)
         
     logger.info("Pipeline run complete.")
-"""
-def main():
-    logger.info("Container C (Intelligence Orchestrator) started.")
-    logger.info("System configured for Asia/Kolkata timezone.")
-    
-    for day in [schedule.every().monday, schedule.every().tuesday, 
-                schedule.every().wednesday, schedule.every().thursday, 
-                schedule.every().friday]:
-        day.at("09:15").do(system_health_check, event_type="OPEN")
-        day.at("15:30").do(system_health_check, event_type="CLOSE")
-        day.at("09:25").do(run_pipeline)
-        day.at("14:50").do(run_pipeline)
-
-    schedule.every().day.at("00:00").do(clear_memory)
-
-    while True:
-        schedule.run_pending()
-        time.sleep(30)
-
-def main():
-    logger.info("Container C (Intelligence Orchestrator) started.")
-    logger.info("System configured for Asia/Kolkata timezone.")
-    
-    # Bulletproof Weekday Scheduling
-    weekdays = [
-        schedule.every().monday, schedule.every().tuesday, 
-        schedule.every().wednesday, schedule.every().thursday, 
-        schedule.every().friday
-    ]
-    
-    for day in weekdays:
-        day.at("09:15").do(system_health_check, event_type="OPEN")
-    #for day in weekdays:
-        #day.at(":20").do(run_pipeline) # Runs 5 minutes past every hour        
-    #for day in weekdays:
-        #day.at("11:20").do(run_pipeline)
-
-    for day in weekdays:
-        day.at("09:25").do(run_pipeline)
-        
-    for day in weekdays:
-        day.at("14:50").do(run_pipeline)
-        
-    for day in weekdays:
-        day.at("15:30").do(system_health_check, event_type="CLOSE")
-
-    schedule.every().day.at("00:00").do(clear_memory)
-
-    while True:
-        schedule.run_pending()
-        time.sleep(30)
-if __name__ == "__main__":
-    main()
-"""
 def main():
     logger.info("Container C (Intelligence Orchestrator) started.")
     logger.info("System configured for Asia/Kolkata timezone.")

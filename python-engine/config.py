@@ -573,9 +573,6 @@ class Settings(BaseSettings):
     DRAWDOWN_RECOVERY_TRADES: int = 5    # Reduced sizing for next 5 trades post-crisis
     DRAWDOWN_RECOVERY_MULT: float = 0.7  # 30% size reduction during recovery
 
-    # Circuit breaker override
-    VIX_CB_THRESHOLD: float = 40.0       # If VIX > 40, force Regime 3 regardless of score
-
     # Kite endpoint -- direct (prod/VPS) or via OCI relay (home desktop).
     # Relay is a path-preserving forward proxy; auth + X-Kite-Version headers pass through.
     # Override with KITE_BASE_URL in .env (e.g. http://161.118.160.180:31527).
