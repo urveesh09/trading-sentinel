@@ -361,6 +361,117 @@ class Settings(BaseSettings):
     PENNY_HOURLY_REPORT_WEBHOOK:   str   = ""        # optional webhook URL for delivery (Telegram/Slack)
 
     # ============================================================
+    # F&O SUBSYSTEM (2026-07-10, spec docs/superpowers/specs/fno-module.md)
+    # ============================================================
+    # NIFTY-options intraday module. P1 = paper only; the live leg
+    # refuses to arm until fno_go_live_check() returns []. Every
+    # threshold below is spec §12 verbatim; all are guesses until the
+    # paper log says otherwise -- do not hand-tune without data.
+
+    # --- pools -------------------------------------------------------------
+    FNO_PAPER_BANKROLL:        float = 100000.0
+    FNO_LIVE_BANKROLL:         float = 0.0        # not armed (spec §0)
+    FNO_LIVE_TRADING:          bool  = False      # master switch
+    FNO_DISABLE_PAPER:         bool  = False
+    FNO_DISABLE_LIVE:          bool  = True
+
+    # --- universe ----------------------------------------------------------
+    FNO_UNDERLYING:            str   = "NIFTY"    # NIFTY only in P1
+    FNO_STRIKE_WINDOW:         int   = 5          # ATM +/- N strikes to snapshot
+    FNO_TARGET_DELTA:          float = 0.55       # ATM / 1-strike ITM, never OTM
+
+    # --- sizing / risk -----------------------------------------------------
+    FNO_MAX_RISK_PCT:          float = 0.02       # per trade, of pool
+    FNO_STOP_PREMIUM_PCT:      float = 0.25       # premium backstop (-25%)
+    FNO_MAX_OPEN_PREMIUM_PCT:  float = 0.15       # total committed premium
+    FNO_MAX_CONCURRENT:        int   = 2          # implied by the premium cap
+    FNO_MAX_TRADES_PER_DAY:    int   = 3
+    # FNO_MAX_LOSS_PER_TRADE caps the STOP-BASED risk (premium * qty *
+    # stop_pct), consistent with §3's risk_per_lot arithmetic.
+    # [SPEC-DEVIATION 2026-07-10] The spec draft enforced this same
+    # Rs 2,500 against structural max_loss(), which for a long option is
+    # the FULL premium paid (~Rs 7,500/lot at Rs 100) -- that gate is
+    # mathematically unsatisfiable for any affordable contract, i.e.
+    # exactly the BUG-1 dead-gate class §9.1 exists to catch (the
+    # witness test caught it at design time). Structural max loss gets
+    # its own, looser cap below: it bounds the frozen-engine catastrophe
+    # case, not the working risk.
+    FNO_MAX_LOSS_PER_TRADE:    float = 2500.0
+    FNO_MAX_STRUCTURAL_LOSS_PER_TRADE: float = 12000.0
+    FNO_MAX_LOTS:              int   = 2
+
+    # --- kill switches -----------------------------------------------------
+    # Weekly + monthly exist because options bleed slowly enough to walk
+    # under a daily limit every day for a month (spec §7.6).
+    FNO_DAILY_KILL_PCT:        float = 0.06
+    FNO_WEEKLY_KILL_PCT:       float = 0.12
+    FNO_MONTHLY_KILL_PCT:      float = 0.20
+    FNO_MAX_CONSECUTIVE_LOSSES: int  = 6
+
+    # --- microstructure ----------------------------------------------------
+    FNO_MIN_OI:                int   = 5000
+    FNO_MIN_VOL:               int   = 1000
+    FNO_MAX_SPREAD_PCT:        float = 0.015
+    FNO_MAX_QUOTE_AGE_SEC:     int   = 120
+    FNO_IV_SANITY_MIN:         float = 0.05
+    FNO_IV_SANITY_MAX:         float = 1.00
+    FNO_MAX_CHAIN_AGE_SEC:     int   = 60         # chain snapshot staleness kill (§7.6)
+
+    # --- session -----------------------------------------------------------
+    FNO_ENTRY_START_MIN:       int   = 9*60 + 45  # 09:45 IST
+    FNO_ENTRY_END_MIN:         int   = 14*60 + 45 # 14:45 IST
+    FNO_HARD_FLAT_MIN:         int   = 15*60 + 10 # 15:10 IST, unconditional
+    FNO_EXPIRY_DAY_ENTRIES:    bool  = False      # no entries on expiry day in P1
+    FNO_OR_MINUTES:            int   = 30         # opening range window
+
+    # --- strategy (FNO-MOM) --------------------------------------------------
+    FNO_OR_BUFFER_ATR:         float = 0.25
+    FNO_STOP_ATR_MULT:         float = 1.5
+    FNO_TARGET_R:              float = 1.5
+    FNO_TRAIL_ATR_MULT:        float = 1.0
+    FNO_TIME_STOP_MIN:         int   = 45
+    FNO_TIME_STOP_MIN_R:       float = 0.5
+    FNO_MIN_RVOL:              float = 1.2
+    FNO_EMA_FAST:              int   = 21
+    FNO_EMA_SLOW:              int   = 50
+    FNO_ATR_LEN:               int   = 14
+    FNO_RVOL_LOOKBACK_DAYS:    int   = 10         # per-slot RVOL baseline window
+
+    # --- execution ---------------------------------------------------------
+    FNO_FILL_TIMEOUT_SEC:      int   = 30
+    FNO_TICK_SIZE:             float = 0.05
+    FNO_SCAN_INTERVAL_SEC:     int   = 60
+
+    # --- cost model (fno_costs.py; VERIFY-4/VERIFY-5 resolved 2026-07-10) ---
+    # There is deliberately NO FNO_BROKERAGE_BYPASS (spec §10.2): cost is a
+    # first-order term for options and hiding it would make paper fills lie.
+    # STT on option SELL premium raised to 0.1% on 2024-10-01 (Finance Act
+    # 2024 no.2); exercised ITM options are taxed 0.125% of INTRINSIC since
+    # Sept 2019 -- moot in P1 because positions never reach expiry.
+    FNO_BROKERAGE_FLAT:        float = 20.0       # Rs 20 per executed order
+    FNO_STT_SELL_PCT:          float = 0.001      # 0.1% of sell-side premium
+    FNO_EXCHANGE_TXN_PCT:      float = 0.0003503  # NSE 0.03503% of premium, both sides
+    FNO_SEBI_PCT:              float = 0.000001   # Rs 10/crore, both sides
+    FNO_STAMP_DUTY_PCT:        float = 0.00003    # 0.003% buy side
+    FNO_IPFT_PCT:              float = 0.000005   # NSE IPFT Rs 0.50/lakh, both sides
+    FNO_GST_PCT:               float = 0.18       # on brokerage + txn + sebi
+
+    # --- observability -----------------------------------------------------
+    FNO_SIGNAL_LOG_PATH:       str   = "/data/fno_signals.csv"
+    FNO_ZERO_ACCEPT_ALERT_DAYS: int  = 2
+    FNO_INSTRUMENTS_JSON_PATH: str   = "/data/fno_nifty_instruments.json"
+
+    # --- go-live gate (§11; fixed NOW, before there is an equity curve) -----
+    FNO_GO_LIVE_MIN_TRADING_DAYS: int   = 40
+    FNO_GO_LIVE_MIN_TRADES:       int   = 60
+    FNO_GO_LIVE_MIN_PROFIT_FACTOR: float = 1.2
+    FNO_GO_LIVE_LIVENESS_DAYS:    int   = 30
+    # Operator attestation that the liveness heartbeat has logged 30
+    # consecutive clean days (no gap > 5 min). Checked by runbook grep
+    # (ops rule 62 recipe); flipped in .env only after the grep passes.
+    FNO_LIVENESS_30D_CLEAN:       bool  = False
+
+    # ============================================================
     # REGIME ENGINE -- VIX-Free Volatility Detection
     # Replaces India VIX with ATR Compression + Realized Volatility
     # ============================================================

@@ -239,11 +239,57 @@ const sendSignalAlert = async (signal) => {
   }
 };
 
+// [ALERT-RETRY 2026-07-11] sendAlert was one-shot: on 2026-07-10 two
+// transient EFATAL AggregateError network failures permanently dropped
+// the 11:09 SCHAEFFLER momentum summary AND the 15:45 penny zero-accept
+// watchdog alarm. Callers (python-engine /api/internal/notify posts) use
+// a 5s timeout, so retries must not block the response: the first
+// attempt is inline, the rest run detached with exponential backoff.
+// Trade-off: retried alerts can arrive out of order, and a send that
+// errored after Telegram actually accepted it can duplicate -- both are
+// acceptable for operator alerts; a dropped watchdog alarm is not.
+const ALERT_RETRY_DELAYS_MS = [5_000, 15_000, 45_000];
+
+const _retryAlertInBackground = async (message) => {
+  for (let i = 0; i < ALERT_RETRY_DELAYS_MS.length; i++) {
+    // unref: a pending retry must not hold the process open on shutdown
+    // (the express server keeps it alive during normal operation).
+    await new Promise((resolve) => {
+      const timer = setTimeout(resolve, ALERT_RETRY_DELAYS_MS[i]);
+      if (typeof timer.unref === 'function') timer.unref();
+    });
+    try {
+      await bot.sendMessage(config.TELEGRAM_CHAT_ID, message);
+      logger.info({ event_type: 'telegram_send_retry_ok', attempt: i + 2 }, 'Alert delivered on retry');
+      return;
+    } catch (err) {
+      if (i === ALERT_RETRY_DELAYS_MS.length - 1) {
+        logger.error(
+          { event_type: 'telegram_send_error', err, attempts: ALERT_RETRY_DELAYS_MS.length + 1 },
+          'Failed to send alert after all retries'
+        );
+      } else {
+        logger.warn(
+          { event_type: 'telegram_send_retry_failed', attempt: i + 2, message: err.message },
+          'Alert retry failed; will retry again'
+        );
+      }
+    }
+  }
+};
+
 const sendAlert = async (message) => {
   try {
     await bot.sendMessage(config.TELEGRAM_CHAT_ID, message);
+    return true;
   } catch (err) {
-    logger.error({ event_type: 'telegram_send_error', err }, 'Failed to send alert');
+    logger.warn(
+      { event_type: 'telegram_send_retry_scheduled', message: err.message },
+      'Failed to send alert; retrying in background'
+    );
+    // Fire-and-forget: never throws (loop catches internally).
+    _retryAlertInBackground(message);
+    return false;
   }
 };
 

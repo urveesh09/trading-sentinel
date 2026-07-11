@@ -287,6 +287,11 @@ class TestNoTokenGuards:
         monkeypatch.setattr(main_module.kite, "access_token", "")
         get_scanner = MagicMock(return_value=None)
         monkeypatch.setattr(main_module, "_get_penny_scanner", get_scanner)
+        # [MARKET-HOURS-GATE 2026-07-11] Force the market-hours gate open
+        # so this test exercises the TOKEN guard regardless of when the
+        # suite runs.
+        monkeypatch.setattr(main_module, "_within_penny_market_hours",
+                            lambda _now: True)
         with patch("main.is_trading_day", new_callable=AsyncMock,
                    return_value=True):
             await main_module.run_penny_scanner_once()
@@ -313,6 +318,10 @@ class TestNoTokenGuards:
         monkeypatch.setattr(main_module.kite, "access_token", "tok123")
         get_scanner = MagicMock(return_value=None)  # scanner=None: early exit after
         monkeypatch.setattr(main_module, "_get_penny_scanner", get_scanner)
+        # [MARKET-HOURS-GATE 2026-07-11] Force the gate open so the test
+        # is deterministic regardless of wall-clock time.
+        monkeypatch.setattr(main_module, "_within_penny_market_hours",
+                            lambda _now: True)
         with patch("main.is_trading_day", new_callable=AsyncMock,
                    return_value=True):
             await main_module.run_penny_scanner_once()

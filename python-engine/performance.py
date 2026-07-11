@@ -157,6 +157,37 @@ async def nifty_bankroll(db_path: str) -> float:
         logger.warning("nifty_bankroll_query_failed error=%s", str(e))
     return settings.INITIAL_BANKROLL + total
 
+async def fno_bankroll(db_path: str, source: str = "FNO_PAPER") -> float:
+    """
+    [FNO 2026-07-10] Per-leg F&O pool balance (spec §10.3).
+
+    Returns allocated pool (FNO_PAPER_BANKROLL / FNO_LIVE_BANKROLL) plus
+    the sum of ledger pnl rows tagged with that leg's source. Purely
+    additive next to the existing strict-separation queries: SYSTEM/
+    MOMENTUM ('nifty_bankroll') and PENNY filters can never see these
+    rows, so an F&O drawdown cannot trip a Nifty circuit breaker and
+    cannot touch the penny pool (operator mandate 2026-06-24).
+
+    Fails open to the allocated pool on DB errors.
+    """
+    allocated = (
+        settings.FNO_PAPER_BANKROLL if source == "FNO_PAPER"
+        else settings.FNO_LIVE_BANKROLL
+    )
+    try:
+        async with aiosqlite.connect(db_path) as db:
+            async with db.execute(
+                "SELECT COALESCE(SUM(pnl), 0.0) FROM bankroll_ledger WHERE source = ?",
+                (source,),
+            ) as cur:
+                row = await cur.fetchone()
+                if row and row[0] is not None:
+                    return allocated + float(row[0])
+    except Exception as e:
+        logger.warning("fno_bankroll_query_failed source=%s error=%s", source, str(e))
+    return allocated
+
+
 async def record_trade_close(db_path: str, ticker: str, pnl: float,
                              r_multiple: float | None = None,
                              notes: str | None = None,

@@ -484,7 +484,11 @@ def test_run_penny_universe_refresh_logs_loud(tmp_path, monkeypatch):
     with open(corp_path, "w") as f:
         json.dump({"records": []}, f)
 
-    with patch("main._penny_universe", new=None):
+    # [TEST-FIX 2026-07-11] Force the calendar gate open: without this
+    # the test only passes on NSE trading days (first failed on Saturday
+    # 2026-07-11 with penny_universe_refresh_skip reason=non_trading_day).
+    with patch("main._penny_universe", new=None), \
+         patch("main.is_trading_day", new=AsyncMock(return_value=True)):
         asyncio.run(main.run_penny_universe_refresh())
 
     # Re-read log via caplog? Simpler: verify the file was written
@@ -578,10 +582,15 @@ def test_penny_universe_refresh_skip_when_in_progress(monkeypatch):
     # Hold the flag True to simulate an in-flight refresh.
     main._penny_universe_refresh_in_progress = True
     try:
+        # [TEST-FIX 2026-07-11] Force the calendar gate open -- it fires
+        # BEFORE the in-progress guard, so on a non-trading day (e.g.
+        # Saturday 2026-07-11) the function never reached the skip
+        # warning this test asserts on.
         with patch.object(main, "kite", new=MagicMock()), \
              patch.object(main, "PENNY_UNIVERSE_JSON_PATH", "/tmp/should_not_be_written.json"), \
              patch.object(main, "PENNY_CORP_DATA_JSON_PATH", "/tmp/nonexistent_corp.json"), \
-             patch.object(main, "_penny_universe", new=None):
+             patch.object(main, "_penny_universe", new=None), \
+             patch("main.is_trading_day", new=AsyncMock(return_value=True)):
             # Spy on the warning channel.
             warn_calls: list = []
             real_warn = main.logger.warning

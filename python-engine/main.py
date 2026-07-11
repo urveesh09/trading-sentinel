@@ -296,6 +296,14 @@ def _get_penny_scanner():
     return _penny_scanner
 
 
+def _within_penny_market_hours(now_ist) -> bool:
+    """[MARKET-HOURS-GATE 2026-07-11] True iff now_ist falls in the NSE
+    session (09:15-15:30 IST inclusive). Module-level so tests can patch
+    it and stay independent of the wall clock."""
+    minutes = now_ist.hour * 60 + now_ist.minute
+    return 9 * 60 + 15 <= minutes <= 15 * 60 + 30
+
+
 async def run_penny_scanner_once():
     """30-second MIS leg (spec §9.1).
 
@@ -314,8 +322,20 @@ async def run_penny_scanner_once():
     (~5,760 lines per weekend day) and burn Kite rate-limit quota
     on empty quote bodies. Monday's first scan fires normally.
     """
+    # [MARKET-HOURS-GATE 2026-07-11] Skip outside 09:15-15:30 IST. The
+    # 30s tick previously ran off-hours all day: on 2026-07-10 that was
+    # ~14.8k pre-market "evaluator returned None" rows + ~17.5k
+    # "outside breakout time window" rejects in penny_signals.csv and
+    # the matching wasted Kite quote calls. Entries are windowed
+    # 10:30-14:30 inside the evaluator and exits live in the 15:00
+    # force-close cron, so nothing needs ticks outside market hours.
+    # Silent return (no log) -- mirrors the F&O tick gate; logging here
+    # would emit ~2 lines/min all evening, the very storm this removes.
+    now_ist = datetime.now(IST)
+    if not _within_penny_market_hours(now_ist):
+        return
     # [CALENDAR-GATE 2026-07-03] weekend / NSE-holiday early-return.
-    today = datetime.now(IST).date()
+    today = now_ist.date()
     if not await is_trading_day(today, settings.DB_PATH):
         logger.info("penny_scanner_once_skip reason=non_trading_day")
         return
@@ -1262,6 +1282,16 @@ _init_running = False
 signaled_momentum_today = set()
 last_momentum_date = None
 
+# [MOM-FUNNEL 2026-07-11] Cumulative accepted momentum signals for the
+# current trading day, deduped by ticker (first accept wins -- the alert
+# the operator saw). current_momentum_signals is only the LATEST scan's
+# snapshot, overwritten every 15 minutes; on 2026-07-10 the agent's
+# hourly poll of that snapshot saw 3 of 17 accepted signals and the
+# gateway's EXEC-button lookup failed for any signal older than one
+# scan ("Momentum signal not found in Engine state"). /momentum-signals
+# now serves THIS list. Reset with signaled_momentum_today on day roll.
+momentum_signals_today = []
+
 
 # @app.on_event("startup")
 # async def startup():
@@ -1286,6 +1316,212 @@ last_momentum_date = None
 IST = pytz.timezone("Asia/Kolkata")
 
 from contextlib import asynccontextmanager
+
+
+def _fno_regime_str() -> str:
+    """Read-only view of the swing regime for the F&O gate (spec §7.2).
+    Sizing is unaffected (always 1-2 lots); the regime gate is on/off."""
+    try:
+        if _last_regime_state is not None:
+            return _last_regime_state.regime.value
+    except Exception:
+        pass
+    return "UNKNOWN"
+
+
+def register_fno_scheduler_jobs(scheduler):
+    """
+    [FNO 2026-07-10] F&O subsystem scheduler jobs (spec §5/§9.3).
+    Module-level function (like register_penny_scheduler_jobs) so tests
+    can verify registration without booting the lifespan.
+
+    Jobs:
+      - fno_instruments_refresh: 08:00 IST daily (NFO dump -> keyed cache,
+        persisted to disk for cold-start rehydration) + startup catchup
+      - fno_tick: every FNO_SCAN_INTERVAL_SEC, self-gates to market hours
+      - fno_hourly_report: minute=0, 10:00-15:00 IST
+      - fno_accept_watchdog: 15:45 IST (zero-accept alarm, §9.2)
+    """
+    import httpx as _httpx
+
+    async def _run_fno_instruments_refresh():
+        # [Rule 55] First-line breadcrumb.
+        logger.info(
+            "fno_instruments_refresh_invoked now_ist=%s",
+            datetime.now(IST).strftime("%Y-%m-%d %H:%M:%S"),
+        )
+        # [CALENDAR-GATE 2026-07-03] weekend / NSE-holiday early-return.
+        # A Saturday NFO dump download is 60-90k rows of wasted fetch;
+        # Monday's 08:05 cron owns the fresh book.
+        today = datetime.now(IST).date()
+        if not await is_trading_day(today, settings.DB_PATH):
+            logger.info("fno_instruments_refresh_skip reason=non_trading_day")
+            return
+        if not kite.access_token:
+            logger.warning("fno_instruments_refresh_skip reason=no_access_token")
+            return
+        try:
+            from fno_instruments import get_fno_instruments
+            await get_fno_instruments().refresh(kite)
+        except Exception as exc:
+            logger.error("fno_instruments_refresh_failed err=%s", exc, exc_info=True)
+
+    scheduler.add_job(
+        _run_fno_instruments_refresh, "cron",
+        hour=settings.PENNY_REFRESH_HOUR, minute=5,
+        id="fno_instruments_refresh",
+        max_instances=1, coalesce=True, misfire_grace_time=600,
+    )
+
+    # Startup catchup: if the container starts after 08:05 IST on a day
+    # with no fresh disk snapshot, fire the refresh once (rule 49 shape).
+    try:
+        _now_ist = datetime.now(IST)
+        if _now_ist.hour * 60 + _now_ist.minute >= settings.PENNY_REFRESH_HOUR * 60 + 5:
+            from fno_instruments import get_fno_instruments as _gfi
+            if not _gfi().ready(_now_ist.date()):
+                logger.warning(
+                    "fno_instruments_startup_catchup_firing now_ist=%s",
+                    _now_ist.strftime("%H:%M:%S"),
+                )
+                asyncio.create_task(_run_fno_instruments_refresh())
+    except Exception as _exc:
+        logger.warning("fno_instruments_startup_catchup_failed err=%s", str(_exc))
+
+    async def _run_fno_tick_safe():
+        from fno_orchestrator import format_fno_telegram, run_fno_tick
+        # [Rule 55] First-line breadcrumb on EVERY invocation. The tick
+        # self-gates below; a missing breadcrumb means the scheduler
+        # never fired (rule 62 territory), not a quiet market.
+        now_ist = datetime.now(IST)
+        nm = now_ist.hour * 60 + now_ist.minute
+        # Gate to session hours (09:15 - 15:25; exits incl. the 15:10
+        # hard flat need ticks past the entry window).
+        if not (9 * 60 + 15 <= nm <= 15 * 60 + 25):
+            return
+        logger.info("fno_tick_invoked now_ist=%s", now_ist.strftime("%H:%M:%S"))
+        today = now_ist.date()
+        if not await is_trading_day(today, settings.DB_PATH):
+            logger.info("fno_tick_skip reason=non_trading_day")
+            return
+        if not kite.access_token:
+            logger.warning("fno_tick_skip reason=no_access_token")
+            return
+        try:
+            summary = await run_fno_tick(
+                kite,
+                regime=_fno_regime_str(),
+                is_trading_day=True,
+            )
+            if summary.get("entries") or summary.get("exits"):
+                try:
+                    msg = format_fno_telegram(summary)
+                    async with _httpx.AsyncClient() as _client:
+                        await _client.post(
+                            f"{settings.CONTAINER_A_URL}/api/internal/notify",
+                            json={"message": msg},
+                            headers={"X-Internal-Secret": settings.INTERNAL_API_SECRET or ""},
+                            timeout=5.0,
+                        )
+                except Exception as notify_exc:
+                    logger.warning("fno_tick_notify_failed err=%s", notify_exc)
+        except Exception as exc:
+            logger.error("fno_tick_failed err=%s", exc, exc_info=True)
+
+    scheduler.add_job(
+        _run_fno_tick_safe, "interval",
+        seconds=settings.FNO_SCAN_INTERVAL_SEC,
+        id="fno_tick",
+        max_instances=1, coalesce=True, misfire_grace_time=120,
+    )
+    logger.info(
+        "fno_cron_registered id=fno_tick interval=%ds max_instances=1 coalesce=True",
+        settings.FNO_SCAN_INTERVAL_SEC,
+    )
+
+    async def _run_fno_hourly_report_safe():
+        from fno_hourly_report import build_hourly_report, is_in_report_window
+        now_ist = datetime.now(IST)
+        if not is_in_report_window(now_ist):
+            return
+        logger.info("fno_hourly_report_invoked now_ist=%s", now_ist.strftime("%H:%M:%S"))
+        today = now_ist.date()
+        if not await is_trading_day(today, settings.DB_PATH):
+            logger.info("fno_hourly_report_skip reason=non_trading_day")
+            return
+        try:
+            msg = await build_hourly_report(
+                settings.DB_PATH, now_ist, regime=_fno_regime_str(),
+            )
+            async with _httpx.AsyncClient() as _client:
+                await _client.post(
+                    f"{settings.CONTAINER_A_URL}/api/internal/notify",
+                    json={"message": msg},
+                    headers={"X-Internal-Secret": settings.INTERNAL_API_SECRET or ""},
+                    timeout=5.0,
+                )
+        except Exception as exc:
+            logger.error("fno_hourly_report_failed err=%s", exc, exc_info=True)
+
+    scheduler.add_job(
+        _run_fno_hourly_report_safe, "cron", minute=0,
+        id="fno_hourly_report",
+        max_instances=1, coalesce=True, misfire_grace_time=600,
+    )
+
+    # 15:45 IST zero-accept watchdog (§9.2). Read-only over fno_signals --
+    # needs no Kite token, so no token guard: it must fire ESPECIALLY on
+    # token-less days.
+    async def _run_fno_accept_watchdog_safe():
+        from fno_accept_watchdog import format_zero_accept_alert, zero_accept_scan
+        logger.info(
+            "fno_accept_watchdog_invoked now_ist=%s",
+            datetime.now(IST).strftime("%Y-%m-%d %H:%M:%S"),
+        )
+        today = datetime.now(IST).date()
+        if not await is_trading_day(today, settings.DB_PATH):
+            logger.info("fno_accept_watchdog_skip reason=non_trading_day")
+            return
+        try:
+            payload = await zero_accept_scan(settings.DB_PATH)
+            if payload is None:
+                logger.info("fno_accept_watchdog_ok")
+                return
+            # [Rule 72] Degradation is a WARNING, never an INFO -- unless
+            # it's the documented self-regulation case.
+            if payload.get("self_regulating"):
+                logger.info(
+                    "fno_self_regulation_note days=%s evaluations=%d",
+                    ",".join(payload["days"]), payload["evaluations"],
+                )
+            else:
+                logger.warning(
+                    "fno_zero_accept_alarm days=%s evaluations=%d dead_gate=%s",
+                    ",".join(payload["days"]), payload["evaluations"],
+                    payload.get("dead_gate") or "none",
+                )
+            msg = format_zero_accept_alert(payload)
+            async with _httpx.AsyncClient() as _client:
+                await _client.post(
+                    f"{settings.CONTAINER_A_URL}/api/internal/notify",
+                    json={"message": msg},
+                    headers={"X-Internal-Secret": settings.INTERNAL_API_SECRET or ""},
+                    timeout=5.0,
+                )
+        except Exception as exc:
+            logger.error("fno_accept_watchdog_failed err=%s", exc, exc_info=True)
+
+    scheduler.add_job(
+        _run_fno_accept_watchdog_safe, "cron",
+        hour=15, minute=45,
+        id="fno_accept_watchdog",
+        max_instances=1, coalesce=True, misfire_grace_time=600,
+    )
+    logger.info(
+        "fno_cron_registered id=fno_instruments_refresh,fno_hourly_report,"
+        "fno_accept_watchdog"
+    )
+
 
 def register_penny_scheduler_jobs(scheduler):
     """
@@ -1788,6 +2024,21 @@ async def lifespan(app: FastAPI):
     # Extracted to a module-level function so the test suite can verify
     # registration without booting the FastAPI lifespan.
     register_penny_scheduler_jobs(scheduler)
+    # [FNO 2026-07-10] F&O subsystem jobs (instruments refresh, scan tick,
+    # hourly report, zero-accept watchdog). Paper-only in P1; the live leg
+    # refuses to arm until fno_go_live_check() returns [].
+    register_fno_scheduler_jobs(scheduler)
+
+    # [FNO 2026-07-10] fno tables exist before the first tick (rule 57
+    # preflight would catch it, but creating them at startup keeps the
+    # first day's log complete).
+    try:
+        from fno_positions import init_fno_positions_db
+        from fno_signal_log import init_fno_signal_db
+        await init_fno_positions_db(settings.DB_PATH)
+        await init_fno_signal_db(settings.DB_PATH)
+    except Exception as _fno_db_exc:
+        logger.warning("fno_db_init_failed err=%s", str(_fno_db_exc))
 
     # [LIVENESS-HEARTBEAT 2026-07-07] Per-minute liveness tick. The
     # 2026-07-07 incident showed the penny 30s scanner + scheduler
@@ -2724,10 +2975,11 @@ async def _run_momentum_screener_impl(t0):
             logger.error("momentum_log_failed", error=str(e))
 
     async with state_lock:
-        global signaled_momentum_today, last_momentum_date
+        global signaled_momentum_today, last_momentum_date, momentum_signals_today
         # Clear short-term memory at the start of a new trading day
         if today != last_momentum_date:
             signaled_momentum_today.clear()
+            momentum_signals_today = []
             last_momentum_date = today
 
         current_momentum_signals = accepted
@@ -2740,6 +2992,11 @@ async def _run_momentum_screener_impl(t0):
             if ticker not in signaled_momentum_today:
                 new_alerts.append(s)
                 signaled_momentum_today.add(ticker)
+
+        # [MOM-FUNNEL 2026-07-11] new_alerts is exactly the deduped-by-ticker
+        # delta, so extending here keeps momentum_signals_today cumulative
+        # for the day with first-accept-wins semantics.
+        momentum_signals_today.extend(new_alerts)
 
         # Only send Telegram notifications during market hours (BUG-001 fix: mirrors swing screener guard).
         # The Q4 ignition call still runs this function pre-market to populate the cache,
@@ -2824,7 +3081,20 @@ async def get_momentum_signals():
         momentum_pool = bankroll * settings.MOMENTUM_POOL_PCT  # 50% of bankroll = Rs2,500 at Rs5k
         halted, reasons = await check_circuit_breakers(settings.DB_PATH)
 
-        for s in current_momentum_signals:
+        # [MOM-FUNNEL 2026-07-11] Serve the cumulative day list, not the
+        # latest 15-min snapshot. The snapshot made this endpoint lossy for
+        # its two consumers: the agent's poll (saw 3 of 17 signals on
+        # 2026-07-10 -- no EXEC-button alert for the other 14) and the
+        # gateway's EXEC callback (couldn't execute any signal wiped by a
+        # newer scan). Both consumers dedupe/lock per ticker, so the wider
+        # list is safe. Day guard: before the first scan of a new day,
+        # momentum_signals_today still holds yesterday's list -- serve [].
+        signals_today = (
+            momentum_signals_today
+            if last_momentum_date == datetime.now(IST).date()
+            else []
+        )
+        for s in signals_today:
             s.stale_data = (
                 datetime.now(timezone.utc) - s.signal_time
             ).total_seconds() > 1800   # 30 min stale for intraday
@@ -2835,7 +3105,9 @@ async def get_momentum_signals():
             "momentum_pool":    round(momentum_pool, 2),
             "trading_halted":   halted,
             "halt_reasons":     reasons,
-            "signals":          current_momentum_signals
+            "signals":          signals_today,
+            # Latest scan's snapshot, kept for observability/debugging.
+            "latest_scan_signals": current_momentum_signals,
         }
 
 async def auto_square_momentum():

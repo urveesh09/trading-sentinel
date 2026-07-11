@@ -259,6 +259,14 @@ def test_confidence_reasons_empty_when_unchanged():
     '=> classified UNKNOWN' summary so the operator always gets
     a structured reply, never a blank one."""
     from penny_regime import PennyRegimeEngine
+    # [TEST-POLLUTION-FIX 2026-07-10] PennyRegimeEngine became a real
+    # singleton in the 2026-07-09 phase-2 audit fix, so "a fresh engine"
+    # here is actually whatever state earlier test FILES left on the
+    # shared instance (test_penny_audit_phase3_fixes and
+    # test_penny_backtest both classify a regime). This test asserts the
+    # no-compute-yet UNKNOWN state, so it must drop the singleton first
+    # -- exactly what the class docstring prescribes for tests.
+    PennyRegimeEngine.reset_state()
     re = PennyRegimeEngine()
     reasons = re.confidence_reasons()
     assert isinstance(reasons, list)

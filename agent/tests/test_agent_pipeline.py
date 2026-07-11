@@ -193,6 +193,88 @@ class TestRunMomentumPipeline:
             agent_mod.run_momentum_pipeline()
             mock_send.assert_not_called()
 
+    def test_one_bad_signal_does_not_stall_the_rest(self, agent_mod):
+        """[FIX 2026-07-11 STALL] On 2026-07-10 an exception while
+        processing COCHINSHIP killed the loop and HUDCO (same snapshot)
+        was never processed. Each signal must be isolated: the failing
+        ticker is retried next poll (not marked processed), the rest of
+        the batch still goes out."""
+        mock_resp = MagicMock()
+        mock_resp.json.return_value = {
+            "signals": [
+                {"ticker": "COCHINSHIP", "close": 100, "target_1": 110, "stop_loss": 90},
+                {"ticker": "HUDCO", "close": 200, "target_1": 220, "stop_loss": 180},
+            ],
+            "market_regime": "BULL",
+            "momentum_pool": 5000,
+        }
+        mock_resp.raise_for_status = MagicMock()
+
+        high_analysis = {"conviction_score": 70, "pitch": "OK", "rationale": "Vol", "risks": "Low"}
+
+        def sentiment_side_effect(ticker):
+            if ticker == "COCHINSHIP":
+                raise RuntimeError("scrape blew up")
+            return ""
+
+        with patch("requests.get", return_value=mock_resp), \
+             patch.object(agent_mod, "scrape_sentiment", side_effect=sentiment_side_effect), \
+             patch.object(agent_mod, "analyze_with_gemini", return_value=high_analysis), \
+             patch.object(agent_mod, "send_momentum_telegram_alert") as mock_send, \
+             patch("time.sleep"):
+            agent_mod.processed_signals_today.clear()
+            agent_mod.run_momentum_pipeline()
+            # HUDCO still processed despite COCHINSHIP failing
+            mock_send.assert_called_once()
+            assert mock_send.call_args[0][0]["ticker"] == "HUDCO"
+            assert "HUDCO_MOM" in agent_mod.processed_signals_today
+            # Failed ticker NOT marked processed -> retried next poll
+            assert "COCHINSHIP_MOM" not in agent_mod.processed_signals_today
+
+    def test_low_conviction_sends_veto_notice_not_buttons(self, agent_mod):
+        """[FIX 2026-07-11 SILENT-VETO] A Gemini conviction <50 must send
+        an informational veto notice (no buttons) instead of silence."""
+        mock_resp = MagicMock()
+        mock_resp.json.return_value = {
+            "signals": [{"ticker": "COCHINSHIP", "close": 100, "target_1": 110, "stop_loss": 90}],
+            "market_regime": "BULL",
+            "momentum_pool": 5000,
+        }
+        mock_resp.raise_for_status = MagicMock()
+
+        low_analysis = {"conviction_score": 30, "pitch": "Weak", "rationale": "No catalyst", "risks": "High"}
+
+        with patch("requests.get", return_value=mock_resp), \
+             patch.object(agent_mod, "scrape_sentiment", return_value=""), \
+             patch.object(agent_mod, "analyze_with_gemini", return_value=low_analysis), \
+             patch.object(agent_mod, "send_momentum_telegram_alert") as mock_buttons, \
+             patch.object(agent_mod, "send_conviction_veto_notice") as mock_veto, \
+             patch("time.sleep"):
+            agent_mod.processed_signals_today.clear()
+            agent_mod.run_momentum_pipeline()
+            mock_buttons.assert_not_called()
+            mock_veto.assert_called_once()
+            assert "COCHINSHIP_MOM" in agent_mod.processed_signals_today
+
+    def test_veto_notice_payload_has_no_buttons(self, agent_mod):
+        analysis = {"conviction_score": 30, "pitch": "Weak", "rationale": "No catalyst", "risks": "High"}
+        signal = {"ticker": "COCHINSHIP", "close": 100, "target_1": 110, "stop_loss": 90}
+        with patch("requests.post") as mock_post:
+            mock_post.return_value = MagicMock(raise_for_status=MagicMock())
+            agent_mod.send_conviction_veto_notice(signal, analysis)
+            mock_post.assert_called_once()
+            payload = mock_post.call_args[1]["json"]
+            assert "COCHINSHIP" in payload["text"]
+            assert "30" in payload["text"]
+            assert "reply_markup" not in payload
+
+    def test_veto_notice_failure_is_swallowed(self, agent_mod):
+        analysis = {"conviction_score": 30, "pitch": "W", "rationale": "N", "risks": "H"}
+        signal = {"ticker": "COCHINSHIP"}
+        with patch("requests.post", side_effect=Exception("network down")):
+            # Must not raise
+            agent_mod.send_conviction_veto_notice(signal, analysis)
+
     def test_processes_new_momentum_signal(self, agent_mod):
         mock_resp = MagicMock()
         mock_resp.json.return_value = {

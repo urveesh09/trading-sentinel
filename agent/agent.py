@@ -354,18 +354,52 @@ def run_momentum_pipeline():
             logger.info(f"Momentum signal {sig_id} already processed. Skipping.")
             continue
 
-        sentiment_text = scrape_sentiment(ticker)
-        analysis       = analyze_with_gemini(signal, sentiment_text, regime)
+        # [FIX 2026-07-11 STALL] Isolate each signal. On 2026-07-10 the
+        # loop died after COCHINSHIP and HUDCO (same snapshot) was never
+        # processed -- one raised exception killed every signal after it
+        # in the batch. On failure the signal is NOT marked processed, so
+        # the next poll retries it (bounded: polls run every 15 min).
+        try:
+            sentiment_text = scrape_sentiment(ticker)
+            analysis       = analyze_with_gemini(signal, sentiment_text, regime)
 
-        if analysis and analysis.get('conviction_score', 0) < 50:
-            logger.info(f"Momentum {ticker} skipped. Low conviction: "
-                        f"{analysis.get('conviction_score')}")
+            if analysis and analysis.get('conviction_score', 0) < 50:
+                logger.info(f"Momentum {ticker} skipped. Low conviction: "
+                            f"{analysis.get('conviction_score')}")
+                # [FIX 2026-07-11 SILENT-VETO] Tell the operator. Before
+                # this, a Gemini veto was invisible: the engine's summary
+                # said "accepted" but no button alert ever arrived.
+                send_conviction_veto_notice(signal, analysis)
+                processed_signals_today.add(sig_id)
+                continue
+
+            send_momentum_telegram_alert(signal, analysis, momentum_pool)
             processed_signals_today.add(sig_id)
-            continue
-
-        send_momentum_telegram_alert(signal, analysis, momentum_pool)
-        processed_signals_today.add(sig_id)
+        except Exception as e:
+            logger.error(
+                f"Momentum pipeline error for {ticker} (will retry next "
+                f"poll): {e}", exc_info=True
+            )
         time.sleep(2)
+
+def send_conviction_veto_notice(signal: Dict, analysis: Dict):
+    """Plain informational message (no buttons) when the Gemini gate
+    vetoes an engine-accepted momentum signal. Failures are logged and
+    swallowed -- the veto notice must never break the pipeline."""
+    url    = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage"
+    ticker = signal.get("ticker", "UNKNOWN")
+    score  = analysis.get('conviction_score', 'N/A')
+    text = (f"🧠 MOMENTUM VETO: {ticker}\n"
+            f"Engine accepted, Gemini conviction {score}/100 (<50) - "
+            f"no EXEC button sent.\n"
+            f"Rationale: {analysis.get('rationale', 'N/A')}")
+    payload = {"chat_id": TELEGRAM_CHAT_ID, "text": text}
+    try:
+        res = requests.post(url, json=payload, timeout=10)
+        res.raise_for_status()
+        logger.info(f"Conviction veto notice sent: {ticker}")
+    except Exception as e:
+        logger.error(f"Conviction veto notice failed: {ticker}: {e}")
 
 def send_momentum_telegram_alert(
     signal: Dict, analysis: Dict, momentum_pool: float
@@ -451,16 +485,24 @@ def run_pipeline():
             continue
             
         logger.info(f"Processing signal for {ticker}...")
-        sentiment_text = scrape_sentiment(ticker)
-        analysis = analyze_with_gemini(signal, sentiment_text,regime)
-        
-        if analysis and analysis.get('conviction_score', 0) < 50:
-            logger.info(f"Skipped {ticker}. Low conviction score: {analysis.get('conviction_score')}")
+        # [FIX 2026-07-11 STALL] Same per-signal isolation as the momentum
+        # pipeline: one bad ticker must not kill the rest of the batch.
+        try:
+            sentiment_text = scrape_sentiment(ticker)
+            analysis = analyze_with_gemini(signal, sentiment_text,regime)
+
+            if analysis and analysis.get('conviction_score', 0) < 50:
+                logger.info(f"Skipped {ticker}. Low conviction score: {analysis.get('conviction_score')}")
+                processed_signals_today.add(sig_id)
+                continue
+
+            send_telegram_alert(signal, analysis)
             processed_signals_today.add(sig_id)
-            continue
-            
-        send_telegram_alert(signal, analysis)
-        processed_signals_today.add(sig_id)
+        except Exception as e:
+            logger.error(
+                f"Swing pipeline error for {ticker} (will retry next run): {e}",
+                exc_info=True
+            )
         time.sleep(2)
         
     logger.info("Pipeline run complete.")
@@ -533,9 +575,19 @@ def main():
         getattr(schedule.every(), day).at("15:30").do(system_health_check, event_type="CLOSE")
 
     schedule.every().day.at("00:00").do(clear_memory)
-    momentum_hours = ["10:55", "11:55", "12:55", "13:55", "14:55"]
+    # [FIX 2026-07-11 POLL-CADENCE] The engine scans every 15 min
+    # (:00/:15/:30/:45, 10:15-14:45 IST) and /momentum-signals is now
+    # cumulative-for-the-day, but polling hourly still delays button
+    # alerts by up to an hour (on 2026-07-10 the hourly poll of the old
+    # per-scan snapshot saw only 3 of 17 signals). Poll ~10 min after
+    # each scan starts (scans take 5.6-9.1 min), plus 15:10/15:25
+    # stragglers for overrunning scans (the 15:09 trio case).
+    # processed_signals_today dedupes, so extra polls are idempotent.
+    momentum_poll_times = [
+        f"{h:02d}:{m:02d}" for h in range(10, 15) for m in (10, 25, 40, 55)
+    ] + ["15:10", "15:25"]
     for day in days:
-        for t in momentum_hours:
+        for t in momentum_poll_times:
             getattr(schedule.every(), day).at(t).do(run_momentum_pipeline)
     while True:
         schedule.run_pending()

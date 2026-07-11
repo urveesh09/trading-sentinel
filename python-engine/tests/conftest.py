@@ -49,6 +49,10 @@ def patch_settings(monkeypatch, tmp_path):
     monkeypatch.setattr(settings, "CONTAINER_A_URL", "http://localhost:9999")
     monkeypatch.setattr(settings, "INTERNAL_API_SECRET", "test_secret")
     monkeypatch.setattr(settings, "STRATEGY_VERSION", "1.0.0-test")
+    # [FNO 2026-07-10] Keep every F&O artefact inside tmp_path so no test
+    # can touch /data on a dev machine.
+    monkeypatch.setattr(settings, "FNO_SIGNAL_LOG_PATH", str(tmp_path / "fno_signals.csv"))
+    monkeypatch.setattr(settings, "FNO_INSTRUMENTS_JSON_PATH", str(tmp_path / "fno_instruments.json"))
     return settings
 
 

@@ -302,6 +302,9 @@ async def test_run_penny_scanner_once_skips_on_non_trading_day(monkeypatch):
     _get_penny_scanner or scanner.scan_once."""
     mock_scanner_factory = MagicMock(return_value=None)
     monkeypatch.setattr("main._get_penny_scanner", mock_scanner_factory)
+    # [MARKET-HOURS-GATE 2026-07-11] Force the market-hours gate open so
+    # this test exercises the CALENDAR gate regardless of when it runs.
+    monkeypatch.setattr("main._within_penny_market_hours", lambda _now: True)
     with patch("main.is_trading_day", new_callable=AsyncMock, return_value=False):
         from main import run_penny_scanner_once
         await run_penny_scanner_once()
