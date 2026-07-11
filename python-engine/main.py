@@ -130,8 +130,8 @@ async def _send_internal_secret_alert() -> None:
         import httpx as _httpx
         msg = (
             "🚨 **SECURITY: INTERNAL_API_SECRET not configured** 🚨\n"
-            "Internal endpoints (/positions/manual, /positions/close) "
-            "are refusing requests with HTTP 503. Set "
+            "Internal endpoints (/token, /positions/manual, "
+            "/positions/close) are refusing requests with HTTP 503. Set "
             "INTERNAL_API_SECRET in .env to a non-empty value."
         )
         async with _httpx.AsyncClient() as _client:
@@ -1974,6 +1974,10 @@ async def lifespan(app: FastAPI):
             "endpoints continue normally (operator mandate: don't block "
             "the system during market hours)."
         )
+        # [HIGH-001 2026-07-12] Also page the operator at boot, not just on
+        # the first blocked request (which could be hours later, mid-day).
+        # Fire-and-forget; a notify failure must not block startup.
+        asyncio.create_task(_send_internal_secret_alert())
 
     db_dir = os.path.dirname(settings.DB_PATH)
     if db_dir:
@@ -3528,7 +3532,13 @@ def restore_kite_token_if_fresh() -> bool:
 
 
 @app.post("/token")
-async def inject_token(payload: TokenPayload):
+async def inject_token(payload: TokenPayload, request: Request):
+    # [HIGH-002 2026-07-12] Same auth gate as the other internal mutating
+    # endpoints (/positions/manual, /positions/close). Without it, anyone
+    # on the docker network could inject an arbitrary Kite token and arm
+    # trading. node-gateway already sends X-Internal-Secret on its
+    # provisioning call (routes/auth.js), so the login flow is unchanged.
+    _check_internal_secret(request, "inject_token")
     kite.set_token(payload.access_token)
     # [FIX-PHASE3-AUDIT 2026-07-09] Loud (masked) breadcrumb + persist so
     # a restart no longer silently disarms the system.

@@ -190,7 +190,11 @@ class TestTokenEndpoint:
         """
         with patch.object(kite, "set_token") as mock_set, \
              patch("main.post_login_initialization", new_callable=AsyncMock) as mock_init:
-            resp = await client.post("/token", json={"access_token": "fake_token_123"})
+            resp = await client.post(
+                "/token",
+                json={"access_token": "fake_token_123"},
+                headers={"X-Internal-Secret": settings.INTERNAL_API_SECRET},
+            )
             assert resp.status_code == 200
             mock_set.assert_called_once_with("fake_token_123")
             mock_init.assert_called_once()   # called (scheduled); not assert_awaited_once() -- see docstring
@@ -198,8 +202,49 @@ class TestTokenEndpoint:
     @pytest.mark.asyncio
     async def test_missing_token_field(self, client):
         """POST /token without access_token should fail."""
-        resp = await client.post("/token", json={})
+        resp = await client.post(
+            "/token",
+            json={},
+            headers={"X-Internal-Secret": settings.INTERNAL_API_SECRET},
+        )
         assert resp.status_code in (400, 422, 500)
+
+    @pytest.mark.asyncio
+    async def test_token_rejected_without_secret(self, client):
+        """[HIGH-002] POST /token with no X-Internal-Secret header -> 403.
+
+        Pre-fix, any process on the docker network could inject an
+        arbitrary Kite token. The gate must reject before set_token runs.
+        """
+        with patch.object(kite, "set_token") as mock_set:
+            resp = await client.post("/token", json={"access_token": "evil_token"})
+            assert resp.status_code == 403
+            mock_set.assert_not_called()
+
+    @pytest.mark.asyncio
+    async def test_token_rejected_with_wrong_secret(self, client):
+        """[HIGH-002] POST /token with a wrong secret -> 403, token not set."""
+        with patch.object(kite, "set_token") as mock_set:
+            resp = await client.post(
+                "/token",
+                json={"access_token": "evil_token"},
+                headers={"X-Internal-Secret": "wrong-secret"},
+            )
+            assert resp.status_code == 403
+            mock_set.assert_not_called()
+
+    @pytest.mark.asyncio
+    async def test_token_503_when_secret_unconfigured(self, client, monkeypatch):
+        """[HIGH-001/AUDIT-FIX-2.2] Empty configured secret -> 503, not open door."""
+        monkeypatch.setattr(settings, "INTERNAL_API_SECRET", "")
+        with patch.object(kite, "set_token") as mock_set:
+            resp = await client.post(
+                "/token",
+                json={"access_token": "evil_token"},
+                headers={"X-Internal-Secret": ""},
+            )
+            assert resp.status_code == 503
+            mock_set.assert_not_called()
 
 
 # ===============================================================

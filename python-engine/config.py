@@ -1,3 +1,4 @@
+from pydantic import field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 from typing import ClassVar
 
@@ -121,6 +122,16 @@ class Settings(BaseSettings):
     MOMENTUM_FIRST_SCAN_MIN:  int   = 15
     CONTAINER_A_URL:          str   = "http://node-gateway:3000"
     INTERNAL_API_SECRET:      str   = ""      # must be set in .env
+
+    # [HIGH-001 2026-07-12] A whitespace-only secret must not count as
+    # "configured" -- strip it so the auth gate's empty check (503 +
+    # operator alert) catches it. Deliberately NOT a required field:
+    # per operator mandate 2026-06-25 a misconfigured secret must not
+    # block boot during market hours; the gate degrades to 503 instead.
+    @field_validator("INTERNAL_API_SECRET")
+    @classmethod
+    def _strip_internal_api_secret(cls, v: str) -> str:
+        return v.strip()
 
     # RS Module
     RS_PERIODS:               int   = 20
