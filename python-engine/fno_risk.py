@@ -271,10 +271,11 @@ async def fno_go_live_check(
         unmet.append(f"paper_stats_unreadable {exc}")
 
     # 4. no liveness-heartbeat gap > 5 min in the last 30 days.
-    # The heartbeat writes to docker logs, not the DB; this condition is
-    # checked by the operator runbook (grep recipe in ops rule 62) and
-    # attested via env flag once tooling lands. Until then it is unmet
-    # by construction -- which is the safe default.
+    # [ROADMAP-2.8 2026-07-12] Tooling landed: ops_liveness_daily
+    # persists per-day worst scheduler-tick gaps, and GET /ops/metrics
+    # reports `liveness.market_gap_clean` over the window -- check that
+    # instead of the old rule-62 log grep. The operator still attests
+    # via the env flag (deliberate: going live stays a human decision).
     if not bool(getattr(settings, "FNO_LIVENESS_30D_CLEAN", False)):
         unmet.append("liveness_30d_not_attested")
 

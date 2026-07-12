@@ -1988,7 +1988,13 @@ async def lifespan(app: FastAPI):
     # self-improvement loop. Idempotent.
     from analytics import init_analytics_db
     await init_analytics_db(settings.DB_PATH)
-    
+    # [ROADMAP-2.8 2026-07-12] ops_liveness_daily / ops_funnel_daily.
+    try:
+        from ops_metrics import init_ops_metrics_db
+        await init_ops_metrics_db(settings.DB_PATH)
+    except Exception as _ops_exc:
+        logger.warning("ops_metrics_init_failed err=%s", str(_ops_exc))
+
     asyncio.create_task(kite.refresh_instrument_cache())
     scheduler.add_job(kite.refresh_instrument_cache, 'cron', hour=8, minute=0)
     scheduler.add_job(run_screener, 'cron', hour=9, minute=20)
@@ -2027,6 +2033,22 @@ async def lifespan(app: FastAPI):
         _scheduler_tick_job, 'interval', seconds=60,
         id="scheduler_tick",
         max_instances=1, coalesce=True, misfire_grace_time=30,
+    )
+
+    # [ROADMAP-2.6 2026-07-12] OCI relay / Kite endpoint liveness probe.
+    # Function self-gates to 09:15-15:30 IST trading days.
+    scheduler.add_job(
+        _kite_endpoint_probe_tick, 'cron', minute='*/3',
+        id="kite_endpoint_probe",
+        max_instances=1, coalesce=True, misfire_grace_time=120,
+    )
+
+    # [ROADMAP-2.8 2026-07-12] Persist the day's gate funnels after close.
+    # Function self-gates on is_trading_day.
+    scheduler.add_job(
+        _ops_daily_snapshot, 'cron', hour=15, minute=50,
+        id="ops_daily_snapshot",
+        max_instances=1, coalesce=True, misfire_grace_time=3600,
     )
 
     # 2026-06-22: daily reset of penny risk state at 00:05 IST (05:30 UTC isn't right;
@@ -3580,6 +3602,12 @@ def _scheduler_tick_path() -> str:
     return _os.path.join(_os.path.dirname(settings.DB_PATH), "scheduler_tick.json")
 
 
+# [ROADMAP-2.8 2026-07-12] Previous-tick clock for the persistent
+# liveness time-series. None after boot: a restart must not fabricate a
+# gap (the gap it WOULD measure spans a different process's lifetime).
+_scheduler_tick_state = {"prev_monotonic": None}
+
+
 async def _scheduler_tick_job():
     import json as _json
     import os as _os
@@ -3595,6 +3623,35 @@ async def _scheduler_tick_job():
         _os.replace(tmp, path)
     except Exception as e:
         logger.warning("scheduler_tick_write_failed error=%s", str(e))
+    # [ROADMAP-2.8 2026-07-12] Fold this tick into ops_liveness_daily --
+    # the persistent record of scheduler gaps that outlives the docker
+    # log ring, and the attestation source for the F&O go-live liveness
+    # gate. Separate try: a DB hiccup must not stop the file heartbeat
+    # above, and vice versa.
+    try:
+        from ops_metrics import record_scheduler_tick
+        import time as _time
+        now_mono = _time.monotonic()
+        prev = _scheduler_tick_state["prev_monotonic"]
+        _scheduler_tick_state["prev_monotonic"] = now_mono
+        gap = (now_mono - prev) if prev is not None else None
+        await record_scheduler_tick(settings.DB_PATH, datetime.now(IST), gap)
+    except Exception as e:
+        logger.warning("scheduler_tick_record_failed error=%s", str(e))
+
+
+# [ROADMAP-2.8 2026-07-12] Daily funnel snapshot: one ops_funnel_daily
+# row per subsystem at 15:50 IST (after close, after the 15:45 accept-
+# watchdogs) so accept/reject history survives log rotation.
+async def _ops_daily_snapshot():
+    now_ist = datetime.now(IST)
+    if not await is_trading_day(now_ist.date(), settings.DB_PATH):
+        return
+    from ops_metrics import snapshot_funnels_for_day
+    written = await snapshot_funnels_for_day(
+        settings.DB_PATH, now_ist.strftime("%Y-%m-%d")
+    )
+    logger.info("ops_daily_snapshot_written counts=%s", written)
 
 
 # [ROADMAP-2.1 2026-07-12] Token reconciliation: scans (python) and
@@ -3679,6 +3736,104 @@ async def _token_reconciliation_tick():
         logger.warning("token_recon_notify_failed error=%s", str(e))
 
 
+# [ROADMAP-2.6 2026-07-12] Kite endpoint (OCI relay) liveness probe.
+# Every quote and order transits settings.KITE_BASE_URL -- on the home
+# desktop that is the OCI relay 161.118.160.180:31527, a single
+# unmonitored hop whose only check until now was the manual morning
+# smoke_relay.sh. A 3-min market-hours cron probes it from inside this
+# container (the real code path) and pages on 2 consecutive failures
+# (one blip = transient, don't page), deduped to 1/30min while down,
+# with a recovery notice when it comes back. Failover procedure:
+# docs/runbooks/relay-failover.md.
+_kite_probe_state = {
+    "consec_failures": 0,
+    "down_since_monotonic": None,   # set when the alert threshold is crossed
+    "last_alert_monotonic": None,
+}
+KITE_PROBE_FAILURES_TO_ALERT = 2
+KITE_PROBE_ALERT_MIN_INTERVAL_SEC = 1800.0
+
+
+def _kite_probe_evaluate(ok: bool, now_monotonic: float, state: dict) -> str | None:
+    """Pure state machine: fold one probe result into `state`, return the
+    operator alert text to send (down page / recovery notice) or None.
+    Kept side-effect-free so the alarm logic is fully testable."""
+    if ok:
+        state["consec_failures"] = 0
+        down_since = state["down_since_monotonic"]
+        if down_since is None:
+            return None  # steady-state healthy, or a blip we never paged for
+        state["down_since_monotonic"] = None
+        state["last_alert_monotonic"] = None
+        mins = (now_monotonic - down_since) / 60.0
+        return (
+            f"✅ KITE ENDPOINT RECOVERED: {settings.KITE_BASE_URL} is "
+            f"reachable again (was down ~{mins:.0f} min). Quotes and "
+            "orders are flowing normally."
+        )
+    state["consec_failures"] += 1
+    if state["consec_failures"] < KITE_PROBE_FAILURES_TO_ALERT:
+        return None
+    if state["down_since_monotonic"] is None:
+        state["down_since_monotonic"] = now_monotonic
+    last = state["last_alert_monotonic"]
+    if last is not None and (now_monotonic - last) < KITE_PROBE_ALERT_MIN_INTERVAL_SEC:
+        return None
+    state["last_alert_monotonic"] = now_monotonic
+    return (
+        f"📡 KITE ENDPOINT DOWN: {settings.KITE_BASE_URL} has failed "
+        f"{state['consec_failures']} consecutive probes. ALL quotes and "
+        "orders transit this endpoint -- scans and EXEC are blind until "
+        "it recovers. Triage: `bash python-engine/smoke_relay.sh`, then "
+        "docs/runbooks/relay-failover.md."
+    )
+
+
+async def _kite_endpoint_probe_tick():
+    """3-min market-hours cron: probe the configured Kite endpoint."""
+    now_ist = datetime.now(IST)
+    nm = now_ist.hour * 60 + now_ist.minute
+    if not (9 * 60 + 15 <= nm <= 15 * 60 + 30):
+        return
+    if not await is_trading_day(now_ist.date(), settings.DB_PATH):
+        return
+    import httpx as _httpx
+    ok = False
+    err = ""
+    try:
+        async with _httpx.AsyncClient() as client:
+            resp = await client.get(f"{settings.KITE_BASE_URL}/", timeout=8.0)
+        # Any response < 500 means the hop is up (relay root proxies to
+        # Kite's root, which returns 200 -- see smoke_relay.sh). A 5xx
+        # from the relay means the path to Kite is broken even though
+        # the relay process answered: that IS an outage for us.
+        ok = resp.status_code < 500
+        if not ok:
+            err = f"HTTP {resp.status_code}"
+    except Exception as e:
+        err = str(e)
+    if not ok:
+        logger.warning(
+            "kite_endpoint_probe_failed url=%s consec=%d error=%s",
+            settings.KITE_BASE_URL,
+            _kite_probe_state["consec_failures"] + 1, err,
+        )
+    import time as _time
+    msg = _kite_probe_evaluate(ok, _time.monotonic(), _kite_probe_state)
+    if msg is None:
+        return
+    try:
+        async with _httpx.AsyncClient() as client:
+            await client.post(
+                f"{settings.CONTAINER_A_URL}/api/internal/notify",
+                json={"message": msg},
+                headers={"X-Internal-Secret": settings.INTERNAL_API_SECRET or ""},
+                timeout=5.0,
+            )
+    except Exception as e:
+        logger.warning("kite_endpoint_probe_notify_failed error=%s", str(e))
+
+
 @app.post("/token")
 async def inject_token(payload: TokenPayload, request: Request):
     # [HIGH-002 2026-07-12] Same auth gate as the other internal mutating
@@ -3720,6 +3875,22 @@ async def get_current_token(request: Request):
         payload["access_token"][-4:] if len(payload["access_token"]) >= 4 else "?",
     )
     return {"armed": True, "access_token": payload["access_token"]}
+
+
+@app.get("/ops/metrics")
+async def get_ops_metrics(request: Request, days: int = 30):
+    """[ROADMAP-2.8 2026-07-12] The persisted ops time-series: per-day
+    scheduler liveness (worst tick gaps) + per-day per-subsystem gate
+    funnels. `liveness.market_gap_clean` over days=30 is the queryable
+    form of the F&O go-live liveness condition (fno_risk condition 4)
+    that used to require grepping rotated-away docker logs."""
+    _check_internal_secret(request, "ops_metrics")
+    from ops_metrics import funnel_window, liveness_report
+    days = max(1, min(days, 365))
+    return {
+        "liveness": await liveness_report(settings.DB_PATH, days=days),
+        "funnel": await funnel_window(settings.DB_PATH, days=days),
+    }
 
 
 @app.get("/performance", response_model=PerformanceReport)

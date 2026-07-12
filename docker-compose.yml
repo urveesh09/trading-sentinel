@@ -7,12 +7,22 @@
 # operator mandate 2026-06-25, one unhealthy container must never block
 # another from starting during market hours; startup order stays
 # best-effort and each service degrades independently.
+#
+# [ROADMAP-2.7 2026-07-12] mem_limit/cpus on every service. These are
+# host-protection caps, not tuning: observed steady-state usage is
+# nginx ~14M / node ~110M / python ~160M / agent ~100M on a 15G/12-cpu
+# host, so every cap is 5-20x headroom. The failure they prevent is one
+# runaway pandas scan OOMing the HOST and taking all containers down
+# together; with a cap, the kernel kills only the offender, and
+# restart: + autoheal (2.2) + token re-arm (2.1) bring it back armed.
 services:
   # The Shield: Nginx Reverse Proxy
   nginx:
     image: nginx:alpine
     container_name: quant_nginx
     restart: always
+    mem_limit: 128m
+    cpus: 1
     ports:
       - "80:80"
       - "443:443"
@@ -31,17 +41,24 @@ services:
       interval: 30s
       timeout: 5s
       retries: 3
+    # [ROADMAP-2.8 2026-07-12] 10m x 3 kept ~a day of forensics; the
+    # 2026-07-09 postmortem already hit deleted evidence. 20m x 10 with
+    # gzip on rotated files stretches retention ~7x for ~40M real disk
+    # per container (host disk is 86% full -- caps stay modest).
     logging:
       driver: "json-file"
       options:
-        max-size: "10m"
-        max-file: "3"
+        max-size: "20m"
+        max-file: "10"
+        compress: "true"
 
   # Container A: The Command Center (MERN Gateway)
   node-gateway:
     build: ./node-gateway
     container_name: node-gateway
     restart: unless-stopped
+    mem_limit: 768m
+    cpus: 2
     expose:
       - "3000"  # Hidden from the public internet, accessible only to Nginx and Container B
     volumes:
@@ -54,17 +71,26 @@ services:
       - sentinel-net
     labels:
       - autoheal=true  # image HEALTHCHECK: wget /api/health
+    # [ROADMAP-2.8 2026-07-12] 10m x 3 kept ~a day of forensics; the
+    # 2026-07-09 postmortem already hit deleted evidence. 20m x 10 with
+    # gzip on rotated files stretches retention ~7x for ~40M real disk
+    # per container (host disk is 86% full -- caps stay modest).
     logging:
       driver: "json-file"
       options:
-        max-size: "10m"
-        max-file: "3"
+        max-size: "20m"
+        max-file: "10"
+        compress: "true"
 
   # Container B: The Quant Engine (Python Math)
   python-engine:
     build: ./python-engine
     container_name: python-engine
     restart: unless-stopped
+    # Largest cap: pandas scans over the 500-ticker universe spike well
+    # above the ~160M steady state. 3g is still 1/5 of the host.
+    mem_limit: 3g
+    cpus: 6
     environment:
       - TZ=Asia/Kolkata
     env_file:
@@ -79,17 +105,24 @@ services:
       - sentinel-net
     labels:
       - autoheal=true  # image HEALTHCHECK: curl /health
+    # [ROADMAP-2.8 2026-07-12] 10m x 3 kept ~a day of forensics; the
+    # 2026-07-09 postmortem already hit deleted evidence. 20m x 10 with
+    # gzip on rotated files stretches retention ~7x for ~40M real disk
+    # per container (host disk is 86% full -- caps stay modest).
     logging:
       driver: "json-file"
       options:
-        max-size: "10m"
-        max-file: "3"
+        max-size: "20m"
+        max-file: "10"
+        compress: "true"
 
   # Container C: The Reasoning Engine (Placeholder for now)
   agent:
     build: ./agent
     container_name: agent
     restart: unless-stopped
+    mem_limit: 768m
+    cpus: 2
     environment:
       - GEMINI_API_KEY=${GEMINI_API_KEY}
       - TZ=Asia/Kolkata
@@ -104,11 +137,16 @@ services:
       - sentinel-net
     labels:
       - autoheal=true  # image HEALTHCHECK: /tmp/agent_heartbeat mtime
+    # [ROADMAP-2.8 2026-07-12] 10m x 3 kept ~a day of forensics; the
+    # 2026-07-09 postmortem already hit deleted evidence. 20m x 10 with
+    # gzip on rotated files stretches retention ~7x for ~40M real disk
+    # per container (host disk is 86% full -- caps stay modest).
     logging:
       driver: "json-file"
       options:
-        max-size: "10m"
-        max-file: "3"
+        max-size: "20m"
+        max-file: "10"
+        compress: "true"
 
   # [ROADMAP-2.2 2026-07-12] Restarts any container labelled
   # autoheal=true when its healthcheck turns unhealthy. Needs the docker
@@ -117,6 +155,8 @@ services:
     image: willfarrell/autoheal:1.2.0
     container_name: autoheal
     restart: always
+    mem_limit: 64m
+    cpus: 0.25
     environment:
       - AUTOHEAL_CONTAINER_LABEL=autoheal
       - AUTOHEAL_INTERVAL=30
@@ -124,11 +164,16 @@ services:
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
     network_mode: none
+    # [ROADMAP-2.8 2026-07-12] 10m x 3 kept ~a day of forensics; the
+    # 2026-07-09 postmortem already hit deleted evidence. 20m x 10 with
+    # gzip on rotated files stretches retention ~7x for ~40M real disk
+    # per container (host disk is 86% full -- caps stay modest).
     logging:
       driver: "json-file"
       options:
-        max-size: "10m"
-        max-file: "3"
+        max-size: "20m"
+        max-file: "10"
+        compress: "true"
 
 networks:
   sentinel-net:
