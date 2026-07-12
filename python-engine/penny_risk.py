@@ -263,6 +263,36 @@ class PennyRiskEngine:
         return False, ""
 
     @staticmethod
+    def band_pct_from_quote(quote: dict, prev_close: float,
+                            day_high: float, day_low: float) -> float:
+        """
+        [ROADMAP-3.9 2026-07-12] Prefer the REAL circuit band from the
+        Kite full quote (`lower_circuit_limit` / `upper_circuit_limit`
+        are the exchange's actual daily band edges) and only fall back
+        to range-based inference when they're absent/degenerate. The
+        inference guessed the band from today's realized range, so a
+        quiet day on a 20% ASM stock read as a 5% band and mis-scaled
+        the skip distance 4x too tight.
+
+        Sanity window 0.5%-35%: outside it the quote fields are junk
+        (0.0 on some indices/segments) and inference is more trustworthy.
+        Returns the exact fraction, not snapped to 5/10/20 -- the
+        circuit_blocked math scales linearly with band_pct.
+        """
+        try:
+            lower = float((quote or {}).get("lower_circuit_limit") or 0.0)
+            upper = float((quote or {}).get("upper_circuit_limit") or 0.0)
+        except (TypeError, ValueError):
+            lower, upper = 0.0, 0.0
+        if prev_close > 0 and 0 < lower < prev_close < upper:
+            band = max(upper / prev_close - 1.0, 1.0 - lower / prev_close)
+            if 0.005 <= band <= 0.35:
+                return band
+        return PennyRiskEngine.infer_band_pct_from_quote(
+            prev_close, day_high, day_low
+        )
+
+    @staticmethod
     def infer_band_pct_from_quote(prev_close: float, day_high: float,
                                   day_low: float) -> float:
         """

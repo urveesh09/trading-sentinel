@@ -39,6 +39,17 @@ from penny_executor import PennyExecutor
 logger = logging.getLogger(__name__)
 
 
+def _event_block_safe(ticker, on_date):
+    """[ROADMAP-3.10 2026-07-12] Wrapper so an event_calendar import or
+    runtime failure can never crash a scan tick -- fails to ALLOW."""
+    try:
+        from event_calendar import event_block
+        return event_block(ticker, on_date)
+    except Exception as e:
+        logger.warning("penny_event_check_failed ticker=%s error=%s", ticker, str(e))
+        return False, ""
+
+
 class PennyScanner:
     def __init__(
         self,
@@ -330,7 +341,10 @@ class PennyScanner:
         # avoid the -5%/ATM-trap risk the spec §4.3 warns about.
         if prev_close and prev_close > 0:
             try:
-                band_pct = PennyRiskEngine.infer_band_pct_from_quote(
+                # [ROADMAP-3.9 2026-07-12] Real band from the quote's
+                # circuit-limit fields; falls back to range inference.
+                band_pct = PennyRiskEngine.band_pct_from_quote(
+                    quote=q,
                     prev_close=float(prev_close),
                     day_high=float(day_high) if day_high else float(prev_close),
                     day_low=float(day_low) if day_low else float(prev_close),
@@ -354,6 +368,14 @@ class PennyScanner:
                 # Never let a circuit-check error crash the scan.
                 logger.warning("penny_circuit_check_failed ticker=%s error=%s",
                                ticker, str(e))
+
+        # [ROADMAP-3.10 2026-07-12] Earnings/event no-trade window
+        # (operator-curated CSV; missing CSV/ticker = allow). Results-day
+        # gaps jump stops -- don't enter INTO a known event.
+        ev_blocked, ev_reason = _event_block_safe(ticker, as_of.date())
+        if ev_blocked:
+            logger.info("penny_event_blocked ticker=%s reason=%s", ticker, ev_reason)
+            return {"accept": False, "reject_reason": ev_reason, "ticker": ticker}
 
         # 2) Real 1-min bars (cached by kite.get_intraday)
         try:
@@ -611,7 +633,9 @@ class PennyScanner:
                     ohlc = q.get("ohlc") or {}
                     cnc_day_high = float(ohlc.get("high") or cnc_ltp or prev_close)
                     cnc_day_low = float(ohlc.get("low") or cnc_ltp or prev_close)
-                    band_pct_c = PennyRiskEngine.infer_band_pct_from_quote(
+                    # [ROADMAP-3.9 2026-07-12] Real band when available.
+                    band_pct_c = PennyRiskEngine.band_pct_from_quote(
+                        quote=q,
                         prev_close=float(prev_close),
                         day_high=cnc_day_high, day_low=cnc_day_low,
                     )
@@ -634,6 +658,16 @@ class PennyScanner:
             except Exception as e:
                 logger.warning("penny_connors_circuit_check_failed ticker=%s error=%s",
                                ticker, str(e))
+
+        # [ROADMAP-3.10 2026-07-12] Same event window as the MIS leg --
+        # a CNC overnight hold through results is the worst version of
+        # the stop-jump risk.
+        ev_blocked, ev_reason = _event_block_safe(ticker, as_of.date())
+        if ev_blocked:
+            logger.info(
+                "penny_event_blocked_connors ticker=%s reason=%s", ticker, ev_reason
+            )
+            return {"accept": False, "reject_reason": ev_reason, "ticker": ticker}
 
         decision = evaluate_connors_entry(
             ticker=ticker, daily=daily,

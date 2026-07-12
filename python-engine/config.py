@@ -306,6 +306,21 @@ class Settings(BaseSettings):
     PENNY_SECTOR_TOP_LOSERS_PCT:           float = 0.10
     PENNY_SECTOR_ETF_CHANGE_THRESHOLD_PCT: float = -0.015
     PENNY_SECTORS_CSV_PATH:                str   = "python-engine/data/penny_sectors.csv"
+    # [ROADMAP-3.10 2026-07-12] Earnings/event no-trade windows. Same
+    # curatorial-CSV philosophy as the sector filter: the CSV is the
+    # operator's lever, missing CSV / missing ticker = ALLOW (never
+    # kill proactiveness for lack of data). Format per line:
+    #   ticker,event_date(YYYY-MM-DD),event_type
+    # e.g. "SUZLON,2026-07-25,RESULTS". Entries are blocked from
+    # EVENT_BLOCK_DAYS_BEFORE calendar days before the event through
+    # EVENT_BLOCK_DAYS_AFTER days after it (default: 2 before, 0 after
+    # -- results gaps hurt on the way IN; the day after, price has
+    # already repriced). On /data so the operator can update it without
+    # a rebuild.
+    PENNY_USE_EVENT_FILTER:                bool   = True
+    EVENT_CALENDAR_CSV_PATH:               str    = "/data/event_calendar.csv"
+    EVENT_BLOCK_DAYS_BEFORE:               int    = 2
+    EVENT_BLOCK_DAYS_AFTER:                int    = 0
     # [TIER3-INTERACTIVE-COMMANDS 2026-06-25] Path to the runtime
     # override JSON. Telegram /penny skip and /penny unskip write here;
     # penny_risk.is_disabled() reads here on every call. Tests override
@@ -470,6 +485,21 @@ class Settings(BaseSettings):
     FNO_FILL_TIMEOUT_SEC:      int   = 30
     FNO_TICK_SIZE:             float = 0.05
     FNO_SCAN_INTERVAL_SEC:     int   = 60
+
+    # --- backtest model params ([ROADMAP-3.11 2026-07-12]) ------------------
+    # fno_backtest.py replays evaluate_fno_mom on REAL futures bars but
+    # must MODEL the option leg (historical NIFTY option chains are not
+    # available through Kite): premiums are Black-76 at a constant IV
+    # with a symmetric spread. These three constants parameterise that
+    # model -- sweep FNO_BT_IV (e.g. 0.10/0.12/0.15) to see how
+    # conclusions move with the vol assumption.
+    FNO_BT_IV:                 float = 0.12       # flat IV for the synthetic chain
+    FNO_BT_SPREAD_PCT:         float = 0.006      # full bid-ask spread / mid
+    FNO_BT_STRIKE_STEP:        float = 50.0       # NIFTY strike ladder
+    # Weekly expiry weekday, Mon=0. NIFTY weeklies expire Tuesday since
+    # 2025 (VERIFY-3 in fno_instruments: the day has changed several
+    # times -- confirm before trusting a long historical run).
+    FNO_BT_EXPIRY_WEEKDAY:     int   = 1
 
     # --- cost model (fno_costs.py; VERIFY-4/VERIFY-5 resolved 2026-07-10) ---
     # There is deliberately NO FNO_BROKERAGE_BYPASS (spec §10.2): cost is a

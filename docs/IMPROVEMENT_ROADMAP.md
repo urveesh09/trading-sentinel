@@ -495,6 +495,14 @@ from today's high/low vs prev_close. A quiet day on a 20% ASM stock infers
 a 5% band, mis-scaling the skip distance. Read the actual band (Kite quote
 `lower_circuit_limit`/`upper_circuit_limit` gives the real thing directly).
 
+> **Status: DONE 2026-07-12.** New `PennyRiskEngine.band_pct_from_quote`
+> derives the band from the quote's real circuit-limit fields (both
+> scanner legs already fetch full `/quote` payloads, so this is free)
+> and returns the exact fraction, not snapped. Inference is demoted to
+> fallback for absent/degenerate fields (0.0 fields, inverted limits,
+> bands outside a 0.5–35% sanity window). Both scanner call sites
+> updated; `infer_band_pct_from_quote` kept intact as the fallback.
+
 ### 3.10 Holiday & event hygiene
 
 - `is_market_open` ignores holidays entirely (`market_calendar.py:14-22`) —
@@ -509,6 +517,28 @@ a 5% band, mis-scaling the skip distance. Read the actual band (Kite quote
   quarterly "results calendar" CSV consulted by the penny/edge gates would
   be a material improvement.
 
+> **Status: DONE 2026-07-12.** Three parts.
+> **(a) Static holiday fallback + loud alert (HIGH-010 closed):**
+> `NSE_HOLIDAYS_STATIC` in market_calendar.py — the 20 dates the prod
+> cache fetched from NSE itself on 2026-06-15 — is now the last-resort
+> calendar when the DB cache is empty AND nseindia.com fails; the old
+> path fell back to weekday-only **silently**. One Telegram page per
+> process announces the degraded mode. The static list is deliberately
+> NOT persisted, so the network fetch keeps retrying. Sync fallback
+> (`is_trading_day_sync`) uses the same list. MAINTENANCE: refresh the
+> list each January from NSE's published calendar.
+> **(b) `is_market_open` is holiday-aware** (was weekday+time only) via
+> the static list — sync, no DB dependency.
+> **(c) Event/earnings no-trade window:** new `event_calendar.py`,
+> operator-curated CSV at `/data/event_calendar.csv`
+> (`ticker,YYYY-MM-DD,type`), blocking entries from
+> `EVENT_BLOCK_DAYS_BEFORE` (2) days before through
+> `EVENT_BLOCK_DAYS_AFTER` (0) after. Sector-filter philosophy:
+> missing CSV / unknown ticker / any error ⇒ ALLOW. Wired into both
+> penny scanner legs (MIS + Connors) and the edge scanner
+> (`penny_edge_live.scan_today`). The CSV starts absent — populate it
+> each results season for the filter to bite.
+
 ### 3.11 No F&O backtest exists
 
 The newest, most complex strategy has zero historical validation — no
@@ -516,6 +546,33 @@ The newest, most complex strategy has zero historical validation — no
 `fno_costs` directly (the penny-edge pattern, which shares
 `scan_single_ticker`/`simulate_position` between live and backtest — the
 trustworthy way this repo already knows how to do it).
+
+> **Status: DONE 2026-07-12** (`fno_backtest.py`, 12 witness tests).
+> Reused verbatim: `evaluate_fno_mom` (bar-by-bar entry),
+> `evaluate_entry_gates` (full §7 ladder), `lots_for_pool` +
+> `validate_position`, `calc_fno_costs`, `options_math` Black-76, and
+> the orchestrator's exit-ladder ORDER (hard-flat → underlying stop →
+> trail → premium backstop → time stop), with the 3.3 gap discipline
+> (stop fills from the bar open on gap-through; stop-before-target
+> in-bar; trail checked against prior-bar levels only — closes can't
+> inform the lows that preceded them).
+> **The honesty banner matters:** Kite serves no historical option
+> chains, so the option leg is MODELLED — Black-76 at constant
+> `FNO_BT_IV` (0.12) with symmetric `FNO_BT_SPREAD_PCT` (0.6%),
+> synthetic weekly expiry (`FNO_BT_EXPIRY_WEEKDAY`, Tuesday). Theta and
+> delta/gamma are honest; IV *changes* are not — sweep FNO_BT_IV to
+> bound sensitivity. Microstructure gates (oi/volume/freshness) get
+> structurally-passing values; spread/intrinsic/envelope/iv-sanity run
+> on model quotes; capital, concurrency, trades/day, kill switches
+> (daily/weekly/monthly + consec-loss pause) replay for real.
+> **Running it:** needs a CSV of 5-min NIFTY futures bars
+> (`datetime,open,high,low,close,volume`) —
+> `python fno_backtest.py --csv bars.csv [--iv 0.12] [--pool 250000]`.
+> With an armed token, `kite.get_intraday_by_token(fut_token, from, to,
+> "5minute")` inside the engine container yields ~60 days (spanning
+> monthly contracts — stitch or accept the front-month's window). The
+> witness suite runs it end-to-end on synthetic frames, so the harness
+> is proven before any data lands.
 
 ---
 
