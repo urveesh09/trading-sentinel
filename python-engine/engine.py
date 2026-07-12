@@ -315,8 +315,17 @@ def evaluate_signal(
     if vol_ratio < 1.2:  # lowered from 1.5x to 1.2x
         return False, {"reject_reason": "volume_ratio_low", "vol_ratio": vol_ratio}
 
-    if not (45 <= rsi14 <= 72):
-        return False, {"reject_reason": "rsi_out_of_range", "rsi": rsi14}
+    # [ROADMAP-3.2 2026-07-12] Regime-conditional: in REGIME_3_CRISIS the
+    # RS-vs-Nifty filter REPLACES the RSI band (the R3 branch above says
+    # so explicitly) -- a genuine crisis relative-strength leader usually
+    # carries RSI > 72, so this formerly unconditional band silently
+    # rejected exactly the names R3 exists to buy. No R3 evaluation has
+    # ever been logged (no crisis since logging began 2026-06-23), so the
+    # contradiction was fixed statically before it could become a BUG-1
+    # sibling (nine months of structurally-impossible accepts).
+    if regime != Regime.REGIME_3_CRISIS:
+        if not (45 <= rsi14 <= 72):
+            return False, {"reject_reason": "rsi_out_of_range", "rsi": rsi14}
 
     if c < 50:
         return False, {"reject_reason": "price_too_low", "close": c}

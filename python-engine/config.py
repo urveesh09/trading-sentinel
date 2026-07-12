@@ -272,9 +272,14 @@ class Settings(BaseSettings):
     # volume breakout often prints RSI(14) > 70, so 70 may reject real
     # signals -- BUT the penny_backtest_v2 daily-bar sweep (2026-04-01 to
     # 2026-07-08, config "phase3" vs "baseline") showed the extra trades
-    # admitted between RSI 70 and 80 LOST ~Rs 13,500 net. Daily-bar RSI
-    # is an imperfect proxy for 1-min RSI, so the default stays at the
-    # proven-shipped 70 until an intraday backtest justifies loosening.
+    # admitted between RSI 70 and 80 LOST ~Rs 13,500 net.
+    # [ROADMAP-3.5 2026-07-12] That sweep ran on DAILY bars while this
+    # gate reads 1-min RSI -- a different distribution entirely -- so
+    # the Rs 13,500 figure is directional evidence, NOT validation.
+    # This value is formally UNVALIDATED for the live engine (see the
+    # derivation-invalid banner in penny_backtest_v2.py). 70 stays as
+    # the proven-shipped conservative default until a 1-min rebuild
+    # (60 days of Kite minute candles) justifies a change either way.
     # Operators can experiment via .env without a code change.
     PENNY_BREAKOUT_RSI_MAX:             float = 70.0
     # [GAP-2 ZERO-ACCEPT ALARM 2026-07-10] Consecutive evaluation days
@@ -380,7 +385,14 @@ class Settings(BaseSettings):
     # paper log says otherwise -- do not hand-tune without data.
 
     # --- pools -------------------------------------------------------------
-    FNO_PAPER_BANKROLL:        float = 100000.0
+    # [ROADMAP-3.1 2026-07-12] Raised 100k -> 250k (operator decision):
+    # at 100k the feasible premium band was <= ~Rs 106.67 while 0.55-delta
+    # NIFTY weeklies typically print 120-250, so the §3 "self-regulation"
+    # rejected essentially every candidate every day and the 60-trade
+    # go-live bar was unreachable. At 250k the pool-derived cap is
+    # ~Rs 266.67 -- it covers the typical band and STAYS the binding gate
+    # (see the per-trade caps below, scaled to preserve that).
+    FNO_PAPER_BANKROLL:        float = 250000.0
     FNO_LIVE_BANKROLL:         float = 0.0        # not armed (spec §0)
     FNO_LIVE_TRADING:          bool  = False      # master switch
     FNO_DISABLE_PAPER:         bool  = False
@@ -407,8 +419,14 @@ class Settings(BaseSettings):
     # witness test caught it at design time). Structural max loss gets
     # its own, looser cap below: it bounds the frozen-engine catastrophe
     # case, not the working risk.
-    FNO_MAX_LOSS_PER_TRADE:    float = 2500.0
-    FNO_MAX_STRUCTURAL_LOSS_PER_TRADE: float = 12000.0
+    # [ROADMAP-3.1 2026-07-12] Both rupee caps scaled x2.5 with the pool
+    # (they were 2.5% and 12% of the old 100k pool). Left at their old
+    # absolute values they would have re-created the deadlock the pool
+    # raise fixes: 2500 binds at premium <= 133.33, BELOW the typical
+    # weekly band. Scaled, the binding gate is back to the pool-derived
+    # min_viable_pool (~Rs 266.67) -- the spec §3 volatility filter.
+    FNO_MAX_LOSS_PER_TRADE:    float = 6250.0
+    FNO_MAX_STRUCTURAL_LOSS_PER_TRADE: float = 30000.0
     FNO_MAX_LOTS:              int   = 2
 
     # --- kill switches -----------------------------------------------------

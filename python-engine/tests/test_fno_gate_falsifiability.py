@@ -104,7 +104,9 @@ def test_quote_envelope_rejects_freak_ltp():
 
 
 def test_open_premium_cap_rejects():
-    ctx = dataclasses.replace(make_witness_context(), open_premium=14000.0)
+    # [ROADMAP-3.1 2026-07-12] cap is 0.15 x 250k pool = 37,500;
+    # 36,000 committed + this trade's 7,515 breaches it.
+    ctx = dataclasses.replace(make_witness_context(), open_premium=36000.0)
     ok, reason = evaluate_entry_gates(ctx)
     assert not ok and reason == "open_premium_cap"
 

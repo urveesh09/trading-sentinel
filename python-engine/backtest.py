@@ -60,10 +60,14 @@ def _simulate_trade(
         curr_open = df_slice["open"].iloc[day_i]
         curr_close = df_slice[exit_col].iloc[day_i]
 
-        # Stop-out: intraday or close breach
+        # Stop-out: intraday or close breach.
+        # [ROADMAP-3.3 2026-07-12] Gap-through fills at the OPEN, not the
+        # stop: a stop order can't execute at a price the market gapped
+        # past overnight. Filling at the stop flattered every historical
+        # win rate / avg R (systematic upward bias).
         if curr_open <= stop or curr_close <= stop:
             exit_reason = "stop_out"
-            exit_price = stop
+            exit_price = min(stop, curr_open)
             exit_date = day_idx
             break
 

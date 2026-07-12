@@ -117,11 +117,12 @@ def test_validate_no_override_parameter_exists():
 
 
 def test_validate_rejects_over_structural_cap():
-    # 2 lots @ 100 = Rs 15,000 structural > 12,000 default cap
-    ok, reason, ml = validate_position([_ce(25000, 2, 100.0)], LOT)
+    # [ROADMAP-3.1 2026-07-12] cap scaled with the 250k pool: 30,000.
+    # 5 lots @ 100 = Rs 37,500 structural > 30,000 default cap.
+    ok, reason, ml = validate_position([_ce(25000, 5, 100.0)], LOT)
     assert not ok
     assert reason == "max_loss_over_cap"
-    assert ml == pytest.approx(15000.0)
+    assert ml == pytest.approx(37500.0)
 
 
 def test_validate_accepts_normal_long():

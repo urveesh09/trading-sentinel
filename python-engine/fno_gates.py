@@ -73,9 +73,10 @@ class Gate:
 def make_witness_context() -> GateContext:
     """One context that passes EVERY gate under default settings.
 
-    Arithmetic check against §3: premium 100.2 x lot 75 x stop 25% =
-    Rs 1,879 risk = 1.879% of the Rs 1,00,000 pool -> min_viable_pool
-    Rs 93,938 < pool. Committed Rs 7,515 < the Rs 15,000 premium cap.
+    Arithmetic check against §3 ([ROADMAP-3.1 2026-07-12] pool 250k):
+    premium 100.2 x lot 75 x stop 25% = Rs 1,879 risk = 0.75% of the
+    Rs 2,50,000 pool -> min_viable_pool Rs 93,938 < pool. Committed
+    Rs 7,515 < the Rs 37,500 premium cap (0.15 x pool).
     """
     return GateContext(
         now_min=10 * 60,            # 10:00 IST, inside 09:45-14:45

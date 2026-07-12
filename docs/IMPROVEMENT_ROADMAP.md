@@ -325,6 +325,18 @@ premiums vs the cap (the reject histogram already distinguishes
 ~Rs 200–250k or rework the stop/risk arithmetic — deliberately, since the
 "premium cap = free volatility filter" property is worth preserving.
 
+> **Status: DONE 2026-07-12** (operator waived the verification week and
+> chose the pool raise directly). `FNO_PAPER_BANKROLL` 100k → 250k, and
+> both rupee caps scaled ×2.5 with it (`FNO_MAX_LOSS_PER_TRADE` 2,500 →
+> 6,250; `FNO_MAX_STRUCTURAL_LOSS_PER_TRADE` 12,000 → 30,000) — left at
+> their old absolute values they would have re-created the deadlock at
+> premium ≤ ₹133. Feasible premium band is now ≤ ~₹266.67 with the
+> pool-derived `min_viable_pool` as the binding gate, i.e. the §3
+> volatility-filter property is preserved and the typical 120–250
+> weekly band is admissible. Sizing consequence: at ~₹100 premium the
+> risk budget now admits 2 lots (capped by `FNO_MAX_LOTS=2`, was 1).
+> Paper-only throughout (`FNO_LIVE_BANKROLL=0`, live leg disarmed).
+
 ### 3.2 R3 (crisis) regime contradicts its own design
 
 The R3 branch says the RS filter *"replaces RSI + vol percentile filters"*
@@ -339,6 +351,17 @@ possibly this codebase's next "unsatisfiable gate."
 **Action:** make the RSI band regime-conditional; check the signal log for
 lifetime R3 accepts (if zero, this is BUG-1's sibling).
 
+> **Status: DONE 2026-07-12.** The 45–72 band in `evaluate_signal` now
+> skips `REGIME_3_CRISIS` (the RS-vs-Nifty filter replaces it, as the
+> R3 branch always claimed); R1/R2/UNKNOWN keep the band. Signal-log
+> check: the prod log (2026-06-23 → 2026-07-10, 87k evaluations) holds
+> **zero R3 evaluations** — the market never printed a crisis regime,
+> so the dead gate could not be confirmed empirically; it was fixed
+> statically before it could become BUG-1's sibling. Witness tests in
+> `tests/test_swing_r3_rsi_gate.py` (verified to fail against the
+> pre-fix code). The RS ≥ 5% single-day threshold itself was left
+> untouched — no R3 data exists to justify tuning it.
+
 ### 3.3 Backtest gap-through-stop fills flatter every result
 
 Both surviving backtests fill stop-outs **at the stop price** even when the
@@ -349,6 +372,16 @@ Systematic upward bias on win rate and average R in every historical sweep.
 
 **Action:** `exit_price = min(stop, curr_open)` (keep edge's SL-before-TP
 conservatism, which is already correct).
+
+> **Status: DONE 2026-07-12.** `min(stop, open)` applied in all THREE
+> fill sites: `backtest.py` `_simulate_trade`, `penny_edge_engine.py`
+> `simulate_position` (slippage still applied, SL-before-TP unchanged),
+> and — beyond the two the audit named — `penny_backtest_v2.py`'s
+> `sl_hit` branch, so a future rerun of the sweep fills honestly too.
+> Witness tests in `tests/test_backtest_gap_fills.py` (gap-through
+> fills at the open; ordinary intraday breach still fills at the stop).
+> Historical results produced before this date remain upward-biased —
+> re-run before citing any of their numbers.
 
 ### 3.4 Swing book has no overnight gap protection
 
@@ -367,6 +400,21 @@ and 1-min RSI. Yet `VOL_MULT=1.8`, `buffer=0.3%`, and `RSI_MAX=70` were all
 justified from that daily sweep. The parameters may still be fine — but the
 derivation is invalid. Rebuild the sweep on 1-min data (Kite gives 60 days
 of minute candles) or mark the params as unvalidated.
+
+> **Status: DONE 2026-07-12** (marked-unvalidated route; the 1-min
+> rebuild needs 60 days of Kite minute candles + a live token and is
+> its own project). Findings against source: the audit's premise was
+> only partly right — `PENNY_BREAKOUT_VOL_MULT=1.8` is justified from
+> ORB literature and `PENNY_BREAKOUT_BUFFER_PCT=0.003` is a legacy
+> hardcode-made-setting; **only `PENNY_BREAKOUT_RSI_MAX=70` actually
+> rests on the daily sweep** (the "RSI 70–80 lost ₹13.5k" bucket
+> comparison). Actions: a "PARAMETER DERIVATION IS INVALID" banner in
+> `penny_backtest_v2.py`'s docstring (daily-vs-1-min mismatch on
+> anchor, RSI resolution, volume basis — valid for activity/expectancy
+> direction, invalid for parameter inference), and the
+> `PENNY_BREAKOUT_RSI_MAX` config comment now flags the value as
+> formally unvalidated (70 stays as the proven-shipped conservative
+> default). No behaviour change to the live engine.
 
 ### 3.6 Penny regime is effectively single-signal
 

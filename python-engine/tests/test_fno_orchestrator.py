@@ -165,7 +165,10 @@ async def test_paper_entry_end_to_end(kite, db_path):
     e = summary["entries"][0]
     assert e["source"] == "FNO_PAPER"
     assert e["direction"] == "LONG"
-    assert e["lots"] == 1
+    # [ROADMAP-3.1 2026-07-12] 250k pool: risk budget min(2% pool,
+    # FNO_MAX_LOSS_PER_TRADE) = 5000 admits 4 lots at this premium ->
+    # capped by FNO_MAX_LOTS=2 (was 1 lot under the 100k pool).
+    assert e["lots"] == 2
     # IV solved from the synthetic chain must recover the vol we priced with
     assert e["iv"] == pytest.approx(VOL, abs=0.01)
     # paper never touches the broker
@@ -180,7 +183,7 @@ async def test_paper_entry_end_to_end(kite, db_path):
             rows = await cur.fetchall()
     assert len(rows) == 1
     status, opt_type, lots, entry_premium, premium_stop, ml, bar_ts, token = rows[0]
-    assert status == "OPEN" and opt_type == "CE" and lots == 1
+    assert status == "OPEN" and opt_type == "CE" and lots == 2
     assert bar_ts == "2026-07-10 09:55:00"
     # honest paper fill: at the ASK, so entry pays the spread
     quote = kite.quote_table[token]
@@ -188,7 +191,7 @@ async def test_paper_entry_end_to_end(kite, db_path):
     # premium backstop = 75% of fill (spec §8.4)
     assert premium_stop == pytest.approx(0.75 * entry_premium, abs=0.01)
     # structural max loss = full premium, and it passed the constitution
-    assert ml == pytest.approx(entry_premium * 75, abs=0.5)
+    assert ml == pytest.approx(entry_premium * 75 * lots, abs=0.5)
     assert ml <= settings.FNO_MAX_STRUCTURAL_LOSS_PER_TRADE
 
     # accepted row in the signal log
