@@ -159,6 +159,17 @@ Improvements, in order of value:
 
 ### 2.2 Health checks that actually act
 
+> **Status: DONE 2026-07-12** — verification: node/python image
+> HEALTHCHECKs were already active (`docker ps` shows `(healthy)`); the
+> real gaps were agent + nginx + "nothing acts". Shipped: agent
+> heartbeat file + Dockerfile HEALTHCHECK (900s threshold, touched
+> per-signal so long Gemini batches can't false-positive), nginx
+> `/nginx-health` self-probe (answered by nginx itself so a node outage
+> can't mislabel nginx), and a `willfarrell/autoheal` sidecar restarting
+> any `autoheal=true` container that turns unhealthy. Deliberately NO
+> `depends_on: condition: service_healthy` (operator mandate 2026-06-25:
+> nothing may block startup during market hours).
+
 - Dockerfiles define `HEALTHCHECK`s but `docker-compose.yml` has **no
   `healthcheck:` blocks and no `depends_on: condition: service_healthy`** —
   nothing restarts a wedged-but-alive process (the 2026-07-07 freeze ran
@@ -182,6 +193,20 @@ suites, and agent tests run only when a human remembers
 
 ### 2.4 Scheduler head-of-line blocking + liveness watchdog
 
+> **Status: watchdog DONE 2026-07-12; scan offload deferred.**
+> Shipped: a 60s `scheduler_tick` job runs ON the APScheduler loop and
+> writes `/data/scheduler_tick.json` (the daemon-thread liveness
+> heartbeat deliberately keeps ticking through a frozen loop, so it
+> cannot detect this); the agent container (ro `/data` mount, separate
+> process) checks it every 5 min and pages via direct Telegram when it
+> goes stale >10 min during market hours (cooldown 30 min). This is the
+> detector that would have caught 2026-07-07 in minutes. The
+> heavy-scan offload is deferred: moving async scans to another
+> thread/loop requires a second `KiteClient` (httpx client + rate
+> limiter are loop-bound), which would double the effective Kite request
+> rate unless the limiter is made cross-loop — too risky to bundle here;
+> needs its own session.
+
 One `AsyncIOScheduler` on one event loop runs penny + F&O + swing + momentum
 + reports + watchdogs (`main.py:181-207`). A slow Kite call stalls
 *everything* — this is why `misfire_grace_time=600` and per-job
@@ -195,6 +220,14 @@ One `AsyncIOScheduler` on one event loop runs penny + F&O + swing + momentum
   2026-07-07 freeze in minutes instead of hours.
 
 ### 2.5 Signal-delivery retry parity
+
+> **Status: DONE 2026-07-12** — `sendSignalAlert` now uses the same
+> detached 5s/15s/45s backoff, with one refinement: each retry rebuilds
+> the message so the buttons carry a FRESH callback timestamp (the
+> handler rejects presses >5 min after the embedded ts). A signal
+> delivered on retry stores no `telegram_msg_id` (caller already
+> returned) — acceptable, button handling uses the callback query's own
+> message_id.
 
 `sendAlert` gained 5s/15s/45s detached retries (2026-07-11 fix), but
 **`sendSignalAlert` — the EXEC-button path, the one that matters most — is
