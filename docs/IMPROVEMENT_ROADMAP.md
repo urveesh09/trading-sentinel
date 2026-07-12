@@ -241,10 +241,33 @@ Every quote and order transits `161.118.160.180:31527`
 morning `smoke_relay.sh`. Add an automated probe (every few minutes during
 market hours) + Telegram alarm, and write down the failover procedure.
 
+> **Status: DONE 2026-07-12.** `_kite_endpoint_probe_tick` (main.py):
+> 3-min market-hours cron probing `settings.KITE_BASE_URL/` from inside
+> the engine container (the real code path — also covers the direct-URL
+> config). Pages on 2 consecutive failures (single blip = transient),
+> deduped to 1/30 min while down, `✅ RECOVERED` notice once on heal.
+> A 5xx from the relay counts as DOWN (relay up but path to Kite broken
+> is still an outage for us). Pure state machine `_kite_probe_evaluate`
+> fully covered in `tests/test_kite_endpoint_probe.py`. Failover
+> procedure written to `docs/runbooks/relay-failover.md` (consolidates
+> the SETUP_MANUAL troubleshooting entries: iptables ACCEPT rule loss,
+> relay process death, reclaimed VM / changed IP + Kite re-whitelist).
+> No automatic failover exists by design — the home ISP cannot reach
+> api.kite.trade directly; that's why the relay exists.
+
 ### 2.7 Resource limits
 
 No `mem_limit`/`cpus` anywhere in compose. One runaway pandas scan can OOM
 the host and take down all four containers together.
+
+> **Status: DONE 2026-07-12.** `mem_limit`/`cpus` on all 5 services:
+> nginx 128m/1, node-gateway 768m/2, python-engine 3g/6, agent 768m/2,
+> autoheal 64m/0.25. Host-protection caps with 5–20× headroom over
+> observed steady state (nginx ~14M / node ~110M / python ~160M / agent
+> ~100M on the 15G/12-cpu host), not tuning. With a cap the kernel
+> OOM-kills only the offender; `restart:` + autoheal (2.2) + token
+> re-arm (2.1) bring it back armed. Validated with
+> `docker compose config`.
 
 ### 2.8 Log persistence & metrics
 
@@ -254,6 +277,27 @@ rotation caps on `/data`; `loki`/`promtail`; or at minimum persist the
 funnel/watchdog counters (`analytics.gate_funnel_report`, accept-watchdog
 daily rows) as time-series so the F&O `FNO_LIVENESS_30D_CLEAN` go-live gate
 stops being a manual log grep.
+
+> **Status: DONE 2026-07-12** (rotation caps + counters-as-time-series;
+> loki/promtail deliberately skipped — host disk is 86% full and a log
+> stack is out of proportion for a single-host system).
+> Rotation: 10m×3 → 20m×10 + gzip on rotated files (~7× retention for
+> ~40M real disk per container).
+> New `ops_metrics.py` with two tables in the main DB (which lives on
+> `/data`, already persistent): `ops_liveness_daily` — per-IST-day
+> scheduler-tick count + worst gap (total AND market-hours columns),
+> fed by the 2.4 `_scheduler_tick_job` (restart ⇒ gap=None, no
+> fabricated gaps); `ops_funnel_daily` — per-day per-subsystem
+> (momentum/penny/fno) evaluated/accepted/rejected + top-5 reject
+> histogram (penny reasons collapsed via the accept-watchdog
+> normaliser), snapshotted 15:50 IST on trading days, zero-eval days
+> written explicitly. `GET /ops/metrics?days=30` (X-Internal-Secret
+> gated) returns both; `liveness.market_gap_clean` is the queryable
+> form of `fno_go_live_check` condition 4 (`FNO_LIVENESS_30D_CLEAN`) —
+> the operator still attests via the env flag (going live stays a human
+> decision), but the evidence is now SQL instead of the rule-62 grep
+> over logs that had already rotated away. 32 new tests
+> (`test_ops_metrics.py`, `test_kite_endpoint_probe.py`).
 
 ---
 
