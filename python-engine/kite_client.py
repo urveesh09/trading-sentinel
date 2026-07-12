@@ -456,6 +456,9 @@ class KiteClient:
                         "FIX=log in via Telegram /login (Zerodha token expires daily)",
                         len(tokens),
                     )
+                    # [ROADMAP-2.1 2026-07-12] Page the operator too --
+                    # deduped to once/hour inside the helper.
+                    self._maybe_alert_invalid_token()
                 else:
                     logger.error(
                         "kite_quote_failed status=%d tokens=%d",
@@ -529,6 +532,52 @@ class KiteClient:
     _quote_fail_window_count: int = 0
     _quote_fail_degraded_emitted: bool = False
     KITE_QUOTE_FAIL_RATE_THRESHOLD_PER_MIN = 30
+
+    # [ROADMAP-2.1 2026-07-12] Operator alarm for the invalid/expired-token
+    # signature (HTTP 400 InputException). On 2026-07-09 this failure mode
+    # produced 26,311 log lines but zero Telegram messages -- the operator
+    # found out from the day report. `None` sentinel (not 0.0) because
+    # time.monotonic() can be < the dedupe window right after host boot.
+    _invalid_token_alert_last_monotonic: Optional[float] = None
+    INVALID_TOKEN_ALERT_MIN_INTERVAL_SEC = 3600.0
+
+    def _maybe_alert_invalid_token(self):
+        """Fire-and-forget Telegram alert (via node-gateway /api/internal/
+        notify) when quote calls start failing with the HTTP-400
+        invalid-token signature. Deduped to once per hour so a 400 storm
+        produces ONE page, not thousands. Never raises and never blocks
+        the caller's error path."""
+        now = time.monotonic()
+        last = KiteClient._invalid_token_alert_last_monotonic
+        if last is not None and (now - last) < KiteClient.INVALID_TOKEN_ALERT_MIN_INTERVAL_SEC:
+            return
+        KiteClient._invalid_token_alert_last_monotonic = now
+
+        async def _send():
+            try:
+                async with httpx.AsyncClient() as client:
+                    await client.post(
+                        f"{settings.CONTAINER_A_URL}/api/internal/notify",
+                        json={"message": (
+                            "🔑 KITE TOKEN INVALID/EXPIRED\n"
+                            "Quote calls are failing with HTTP 400 InputException "
+                            "(Zerodha's signature for a missing/expired access token).\n"
+                            "All scans are blind until you log in again via the "
+                            "/login link. Tokens expire daily ~06:00 IST."
+                        )},
+                        headers={"X-Internal-Secret": settings.INTERNAL_API_SECRET or ""},
+                        timeout=5.0,
+                    )
+            except Exception as e:
+                logger.warning("invalid_token_alert_failed error=%s", str(e))
+
+        try:
+            asyncio.get_running_loop()
+            asyncio.create_task(_send())
+        except RuntimeError:
+            # No running loop (sync/test context) -- the ERROR log above
+            # already carries the hint; skip the Telegram hop.
+            pass
 
     def _note_quote_rate_failure(self) -> None:
         """[KITE-QUOTE-RETRY 2026-07-02] Track per-minute quote

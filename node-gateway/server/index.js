@@ -341,4 +341,13 @@ process.on('uncaughtException', (err) => {
 server.listen(config.PORT, async () => {
   logger.info({ event_type: 'server_start', port: config.PORT, env: config.NODE_ENV }, 'Container A Gateway started');
   await runStartupRecovery();
+
+  // [ROADMAP-2.1 2026-07-12] Re-arm execution from python-engine's
+  // persisted same-day token so a mid-day restart no longer kills the
+  // EXEC buttons until manual re-login. No-op before the daily login.
+  const { restoreTokenFromEngine } = require('./services/token-restore');
+  const restored = await restoreTokenFromEngine();
+  if (restored) {
+    telegram.sendAlert('♻️ node-gateway restarted mid-day; Kite execution re-armed automatically (no re-login needed).');
+  }
 });

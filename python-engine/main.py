@@ -2010,6 +2010,15 @@ async def lifespan(app: FastAPI):
 
     scheduler.add_job(kite.clear_intraday_cache, 'cron', hour=0, minute=5, id="intraday_cache_cleanup")
 
+    # [ROADMAP-2.1 2026-07-12] Scans-vs-execution token reconciliation.
+    # Function self-gates to 09:15-15:30 IST trading days; defined near
+    # the /token endpoint with the other token-lifecycle code.
+    scheduler.add_job(
+        _token_reconciliation_tick, 'cron', minute='*/15',
+        id="token_reconciliation",
+        max_instances=1, coalesce=True, misfire_grace_time=300,
+    )
+
     # 2026-06-22: daily reset of penny risk state at 00:05 IST (05:30 UTC isn't right;
     # 00:05 UTC = 05:35 IST, just after midnight IST).
     def _penny_daily_reset():
@@ -3502,15 +3511,22 @@ def _persist_kite_token(token: str) -> None:
         logger.warning("kite_token_persist_failed error=%s", str(e))
 
 
-def restore_kite_token_if_fresh() -> bool:
-    """Reload a same-IST-day token from /data on startup. Returns True
-    when a token was restored. Called from the lifespan hook."""
+def _load_persisted_kite_token_if_fresh() -> dict | None:
+    """Read the persisted token payload from /data and return it ONLY if
+    it was saved today (IST). Returns None for missing/stale/corrupt.
+
+    [ROADMAP-2.1 2026-07-12] Extracted from restore_kite_token_if_fresh
+    so /token/current can serve node-gateway from the same freshness
+    rule. Deliberately file-based rather than kite.access_token: the
+    in-memory token carries no date stamp and could be yesterday's if
+    this container has been up overnight -- handing that to node would
+    re-arm execution with a dead token."""
     import json as _json
     import os as _os
     path = _kite_token_cache_path()
     try:
         if not _os.path.exists(path):
-            return False
+            return None
         with open(path) as fh:
             payload = _json.load(fh)
         saved_date = payload.get("saved_date_ist")
@@ -3522,13 +3538,104 @@ def restore_kite_token_if_fresh() -> bool:
                 "(stale -- operator must log in again)",
                 saved_date, today_ist,
             )
-            return False
-        kite.set_token(token)
-        logger.info("kite_token_restored saved_date=%s", saved_date)
-        return True
+            return None
+        return payload
     except Exception as e:
         logger.warning("kite_token_restore_failed error=%s", str(e))
+        return None
+
+
+def restore_kite_token_if_fresh() -> bool:
+    """Reload a same-IST-day token from /data on startup. Returns True
+    when a token was restored. Called from the lifespan hook."""
+    payload = _load_persisted_kite_token_if_fresh()
+    if payload is None:
         return False
+    kite.set_token(payload["access_token"])
+    logger.info("kite_token_restored saved_date=%s", payload.get("saved_date_ist"))
+    return True
+
+
+# [ROADMAP-2.1 2026-07-12] Token reconciliation: scans (python) and
+# execution (node) hold independent token stores that can disagree --
+# the exact split-brain of 2026-07-09, where scans ran all day while a
+# restarted node had silently disarmed the EXEC buttons. A 15-min cron
+# compares both sides during market hours and pages once (deduped to
+# 1/hour) on disagreement. `None` sentinel, not 0.0: time.monotonic()
+# can be below the window right after host boot.
+_token_recon_state = {"last_alert_monotonic": None}
+TOKEN_RECON_ALERT_MIN_INTERVAL_SEC = 3600.0
+
+
+def _token_recon_mismatch_message(
+    python_armed: bool, node_token_status: str | None
+) -> str | None:
+    """Pure decision: returns the operator alert text when the two token
+    stores disagree, else None. node_token_status is /api/health's
+    token_status field: 'active' | 'expired' | 'none' | None(unknown)."""
+    if node_token_status is None:
+        return None  # node unreachable -- healthcheck territory, not ours
+    node_armed = node_token_status == "active"
+    if python_armed == node_armed:
+        return None
+    if python_armed and not node_armed:
+        return (
+            "🔀 TOKEN SPLIT-BRAIN: scans (python-engine) are ARMED but "
+            f"execution (node-gateway) is DISARMED (token_status={node_token_status}). "
+            "EXEC buttons will fail until you re-login via the /login link "
+            "(a node restart usually caused this)."
+        )
+    return (
+        "🔀 TOKEN SPLIT-BRAIN: execution (node-gateway) is ARMED but "
+        "scans (python-engine) have NO token. Signals will not be "
+        "generated. Re-login via the /login link to re-arm both sides."
+    )
+
+
+async def _token_reconciliation_tick():
+    """15-min market-hours cron: compare python vs node token state."""
+    now_ist = datetime.now(IST)
+    nm = now_ist.hour * 60 + now_ist.minute
+    if not (9 * 60 + 15 <= nm <= 15 * 60 + 30):
+        return
+    if not await is_trading_day(now_ist.date(), settings.DB_PATH):
+        return
+    import httpx as _httpx
+    try:
+        async with _httpx.AsyncClient() as client:
+            resp = await client.get(
+                f"{settings.CONTAINER_A_URL}/api/health", timeout=5.0
+            )
+            resp.raise_for_status()
+            node_token_status = resp.json().get("token_status")
+    except Exception as e:
+        # Node being unreachable is the (future) healthcheck's problem
+        # (roadmap 2.2) -- log it, don't page from here.
+        logger.warning("token_recon_node_unreachable error=%s", str(e))
+        return
+    msg = _token_recon_mismatch_message(bool(kite.access_token), node_token_status)
+    if msg is None:
+        return
+    logger.warning(
+        "token_recon_mismatch python_armed=%s node_status=%s",
+        bool(kite.access_token), node_token_status,
+    )
+    import time as _time
+    now = _time.monotonic()
+    last = _token_recon_state["last_alert_monotonic"]
+    if last is not None and (now - last) < TOKEN_RECON_ALERT_MIN_INTERVAL_SEC:
+        return
+    _token_recon_state["last_alert_monotonic"] = now
+    try:
+        async with _httpx.AsyncClient() as client:
+            await client.post(
+                f"{settings.CONTAINER_A_URL}/api/internal/notify",
+                json={"message": msg},
+                headers={"X-Internal-Secret": settings.INTERNAL_API_SECRET or ""},
+                timeout=5.0,
+            )
+    except Exception as e:
+        logger.warning("token_recon_notify_failed error=%s", str(e))
 
 
 @app.post("/token")
@@ -3553,6 +3660,25 @@ async def inject_token(payload: TokenPayload, request: Request):
     # post_login_initialization runs in the background (Q4 behaviour is preserved).
     asyncio.create_task(post_login_initialization())
     return {"status": "ok"}
+
+
+@app.get("/token/current")
+async def get_current_token(request: Request):
+    """[ROADMAP-2.1 2026-07-12] Serve the same-IST-day token (if any) to
+    node-gateway so a mid-day node restart re-arms execution without a
+    manual re-login. Same auth gate as /token; the token only ever moves
+    over the internal docker network, exactly like the login-time
+    provisioning call in the opposite direction. Freshness rule is
+    identical to the startup restore: stale/missing file => not armed."""
+    _check_internal_secret(request, "get_current_token")
+    payload = _load_persisted_kite_token_if_fresh()
+    if payload is None:
+        return {"armed": False}
+    logger.info(
+        "kite_token_served suffix=...%s",
+        payload["access_token"][-4:] if len(payload["access_token"]) >= 4 else "?",
+    )
+    return {"armed": True, "access_token": payload["access_token"]}
 
 
 @app.get("/performance", response_model=PerformanceReport)
