@@ -1,7 +1,7 @@
 /**
  * Tests for utils/sanitise.js - sensitive data redaction.
  */
-const { sanitise } = require('../../utils/sanitise');
+const { sanitise, sanitiseUrl } = require('../../utils/sanitise');
 
 describe('sanitise()', () => {
   test('redacts token field', () => {
@@ -76,5 +76,34 @@ describe('sanitise()', () => {
     // Numeric values for sensitive keys should not be redacted
     const result = sanitise({ token: 12345 });
     expect(result.token).toBe(12345);
+  });
+});
+
+describe('sanitiseUrl()', () => {
+  test('redacts request_token in the Zerodha OAuth callback URL', () => {
+    // [MED-011] The exact shape logged by pino-http on every daily login.
+    const url = '/api/auth/callback?request_token=AbC123xyz&action=login&status=success';
+    expect(sanitiseUrl(url)).toBe(
+      '/api/auth/callback?request_token=[REDACTED]&action=login&status=success'
+    );
+  });
+
+  test('redacts any param whose name contains a sensitive keyword', () => {
+    expect(sanitiseUrl('/x?api_key=k&access_token=t&secret=s')).toBe(
+      '/x?api_key=[REDACTED]&access_token=[REDACTED]&secret=[REDACTED]'
+    );
+  });
+
+  test('preserves non-sensitive params and paths without a query string', () => {
+    expect(sanitiseUrl('/api/health?verbose=1&ticker=RELIANCE')).toBe(
+      '/api/health?verbose=1&ticker=RELIANCE'
+    );
+    expect(sanitiseUrl('/api/health')).toBe('/api/health');
+  });
+
+  test('handles valueless params and non-string input', () => {
+    expect(sanitiseUrl('/x?flag&token=abc')).toBe('/x?flag&token=[REDACTED]');
+    expect(sanitiseUrl(undefined)).toBeUndefined();
+    expect(sanitiseUrl(null)).toBeNull();
   });
 });

@@ -2,7 +2,7 @@ const pino = require('pino');
 const pinoHttp = require('pino-http');
 const crypto = require('crypto');
 const config = require('../config');
-const { sanitise } = require('../utils/sanitise');
+const { sanitise, sanitiseUrl } = require('../utils/sanitise');
 
 // Base logger instance
 const logger = pino({
@@ -26,7 +26,12 @@ const httpLogger = pinoHttp({
     req: (req) => ({
       id: req.id,
       method: req.method,
-      url: req.url,
+      // [MED-011 2026-07-12] The Zerodha OAuth callback carries
+      // request_token in the query string; redact sensitive params so
+      // the daily login doesn't write a credential into the logs.
+      // Headers are deliberately NOT logged at all -- keeping them out
+      // of this serializer is what protects X-Internal-Secret / cookies.
+      url: sanitiseUrl(req.url),
       ip: req.remoteAddress
     }),
     res: (res) => ({
