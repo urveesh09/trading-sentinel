@@ -20,6 +20,9 @@ Every item cites file:line in **this dev checkout** as of today.
 
 ### 0.1 Commit the uncommitted working tree
 
+> **Status: DONE 2026-07-12** — committed as `bc28e87` (F&O module),
+> `dc868e8` (wiring + funnel fixes), `af2a880` (this doc); pushed to origin.
+
 The **entire F&O module** (16 untracked `fno_*.py` files + specs + tests) and
 the momentum-funnel fixes (`agent/agent.py`, `node-gateway/server/services/telegram.js`,
 `python-engine/main.py`, plus 6 test files) sit uncommitted on
@@ -45,6 +48,10 @@ all of them; longer-term, inject at deploy time or use a secrets manager.
 
 ### 0.4 Delete/untrack leaked and dead artifacts
 
+> **Status: DONE 2026-07-12** — all artifacts below removed in `bf3af0f`
+> (plus the duplicate `VIX_CB_THRESHOLD` and agent.py's commented-out
+> old Gemini prompt).
+
 | Artifact | Problem |
 |---|---|
 | `a.txt` (245 KB), `gap.txt` (130 KB) | Committed nginx log dumps; leak the server's public IP and access patterns; bloat the repo |
@@ -62,6 +69,10 @@ Several were flagged in the April audit (`FUTURE_UPGRADES.md`) and are
 **confirmed still open** today.
 
 ### 1.1 Authenticate `/token` (HIGH-002 — worst open hole)
+
+> **Status: DONE 2026-07-12** — `inject_token` now runs
+> `_check_internal_secret`; node's provisioning call already sent the
+> header, so the login flow is unchanged. Tests added.
 
 `python-engine/main.py:3531` `inject_token()` has **no
 `_check_internal_secret` call**. Anyone who can reach `python-engine:8000`
@@ -82,6 +93,11 @@ transits plaintext. Certbot or GCP LB TLS termination.
 
 ### 1.4 Require `INTERNAL_API_SECRET` (HIGH-001)
 
+> **Status: DONE 2026-07-12 (mandate-compatible form)** — whitespace-strip
+> validator + boot-time Telegram alert instead of a hard-required field:
+> the operator mandate 2026-06-25 (in `_check_internal_secret`'s docstring)
+> forbids blocking boot during market hours.
+
 Defaults to `""` (`python-engine/config.py:123`). The empty-secret 503
 mitigation (AUDIT-FIX-2.2) helps, but a Pydantic required field + non-empty
 validator makes misconfiguration impossible instead of merely detected.
@@ -95,6 +111,14 @@ trades live by default. Recommended: default `False` in code, opt in via
 
 ### 1.6 Sanitize `X-Internal-Secret` in node request logs (MED-011)
 
+> **Status: DONE 2026-07-12** — verification showed the req serializer
+> never logs headers (that's what protects the secret; now documented
+> in-place), but it DID log `req.url` verbatim — including
+> `request_token=…` on every daily Zerodha callback. Added
+> `sanitiseUrl()` so sensitive query params are redacted. Residual
+> (out of scope here): nginx's own access log still records the raw
+> request line — covered when 1.2/1.3 touch nginx.conf.
+
 `node-gateway/server/middleware/logger.js` — headers aren't run through
 `sanitise()`; the shared secret can end up in pino logs.
 
@@ -103,6 +127,17 @@ trades live by default. Recommended: default `False` in code, opt in via
 ## Tier 2 — Reliability & operations
 
 ### 2.1 Kite token lifecycle: one source of truth
+
+> **Status: DONE 2026-07-12** — all three improvements shipped:
+> (1) 15-min market-hours reconciliation cron in python-engine pages on
+> scans-vs-execution token disagreement (deduped 1/hour);
+> (2) the HTTP-400 InputException signature now fires a deduped Telegram
+> alarm from `kite_client.get_quote`, not just a log line;
+> (3) node re-arms at boot via authenticated `GET /token/current`
+> (python serves its persisted same-IST-day token) — node still never
+> writes tokens to disk. Discovered in passing: node's logout calls
+> `POST /token/invalidate` on python, which **does not exist** (silent
+> 404) — filed under the stub-endpoint items (3.x/MED-006/007/010).
 
 Two independent token stores exist and can disagree:
 
