@@ -20,6 +20,8 @@ import logging
 from datetime import datetime, timezone
 from typing import List, Optional, Tuple
 
+import pytz
+
 from penny_models import PennyRegime, PennyLeg
 
 logger = logging.getLogger(__name__)
@@ -111,8 +113,23 @@ class PennyRiskEngine:
 
     # ---- kill-switch ----------------------------------------------------
 
+    @staticmethod
+    def _trading_day(when: Optional[datetime] = None) -> str:
+        """[ROADMAP-3.7 2026-07-12] The penny trading 'day' is an IST
+        calendar day. Keying off the raw UTC date made the daily-loss
+        window reset at 05:30 IST -- mid-morning-prep, not midnight --
+        so a losing day's kill-switch state leaked into the next
+        session's accounting. Naive datetimes are treated as UTC
+        (every existing caller passes utcnow()). The F&O kill-switch
+        (fno_risk.kill_switch_status) was already IST-correct; this
+        aligns penny with it."""
+        when = when or datetime.now(timezone.utc)
+        if when.tzinfo is None:
+            when = when.replace(tzinfo=timezone.utc)
+        return when.astimezone(pytz.timezone("Asia/Kolkata")).date().isoformat()
+
     def record_realized_pnl(self, pnl: float, when: datetime) -> None:
-        today = when.date().isoformat()
+        today = self._trading_day(when)
         if self.daily_pnl_date != today:
             self.daily_pnl = 0.0
             self.daily_pnl_date = today
@@ -125,8 +142,7 @@ class PennyRiskEngine:
 
     def kill_switch_active(self, as_of: datetime = None) -> bool:
         from config import settings
-        when = as_of or datetime.now(timezone.utc)
-        today = when.date().isoformat()
+        today = self._trading_day(as_of)
         if self.daily_pnl_date != today:
             return False   # new day, reset
         threshold = -1.0 * self.bankroll * settings.PENNY_DAILY_KILL_SWITCH_PCT

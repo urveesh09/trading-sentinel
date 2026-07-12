@@ -96,7 +96,10 @@ class PennyScanner:
         )
         if daily_pnl_override is not None:
             self.risk_engine.daily_pnl = daily_pnl_override
-            self.risk_engine.daily_pnl_date = datetime.now(timezone.utc).date().isoformat()
+            # [ROADMAP-3.7 2026-07-12] Same IST day-keying as the
+            # kill-switch itself, or the override lands on the wrong
+            # "day" between 00:00 and 05:30 IST.
+            self.risk_engine.daily_pnl_date = self.risk_engine._trading_day()
 
     # ---- [AUDIT-FIX-1.3] regime property + helper -------------------
 
@@ -111,9 +114,11 @@ class PennyScanner:
                                          (legacy frozen behaviour, preserved
                                          for any existing call sites that
                                          pass a string)
-          - None                         -> wrapped: always returns "PR1_CALM"
-                                         (defensive default for tests that
-                                         don't construct with a regime)
+          - None                         -> wrapped: always returns
+                                         "PR2_ELEVATED" ([ROADMAP-3.6]
+                                         defensive default: no regime
+                                         wired = reduced sizing, was
+                                         PR1_CALM full size)
         """
         if callable(regime):
             return regime
@@ -121,7 +126,7 @@ class PennyScanner:
             frozen = regime
             return lambda: frozen
         # None or anything else
-        return lambda: "PR1_CALM"
+        return lambda: "PR2_ELEVATED"
 
     @property
     def regime(self) -> str:
@@ -473,8 +478,12 @@ class PennyScanner:
         # the universe to be conservative.
         try:
             from penny_regime import PennyRegimeEngine
-            PennyRegimeEngine().update_vol_rank(
-                PennyRegimeEngine().compute_vol_rank(closes_1m)
+            # [ROADMAP-3.6 2026-07-12] bars_per_day=375 scales the 1-min
+            # stdev to a daily equivalent -- without it the 0.10 cap made
+            # vol_rank ~0 for every ticker (the input was dead weight).
+            _regime_engine = PennyRegimeEngine()
+            _regime_engine.update_vol_rank(
+                _regime_engine.compute_vol_rank(closes_1m, bars_per_day=375)
             )
         except Exception as e:
             # Never let regime-feeding crash a scan tick.

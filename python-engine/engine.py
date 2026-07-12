@@ -367,7 +367,13 @@ def evaluate_signal(
         logger.warning("negative_risk_per_share", ticker=ticker)
         return False, {"reject_reason": "negative_risk_per_share"}
 
-    raw_shares = risk_per_trade / risk_per_share
+    # [ROADMAP-3.4 2026-07-12] Size for GAP risk, not stop risk: the
+    # swing stop is evaluated once daily EOD, so an overnight gap-down
+    # fills far below it. Shares are computed as if the true risk per
+    # share were stop_distance x SWING_GAP_RISK_MULT (default 2.0).
+    # Stop level and R targets below still use the raw stop distance.
+    sizing_risk_per_share = risk_per_share * settings.SWING_GAP_RISK_MULT
+    raw_shares = risk_per_trade / sizing_risk_per_share
     shares = math.floor(raw_shares)
 
     if shares <= 0:

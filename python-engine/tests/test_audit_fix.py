@@ -54,8 +54,10 @@ def test_cost_calc_differs_for_cnc_vs_mis():
 
 # ---- 1.3: PennyScanner regime property ----------------------------------
 
-def test_scanner_regime_property_default_to_pr1_calm():
-    """[AUDIT-FIX-1.3] No regime arg -> PR1_CALM callable."""
+def test_scanner_regime_property_default_to_pr2_elevated():
+    """[AUDIT-FIX-1.3 / ROADMAP-3.6] No regime arg -> PR2_ELEVATED
+    callable (reduced sizing when no regime is wired; was PR1_CALM
+    full size)."""
     from penny_scanner import PennyScanner
     # Minimal stub: PennyScanner.__init__ takes kite + path; pass None
     # for kite and a dummy path. The regime getter is set BEFORE
@@ -64,9 +66,9 @@ def test_scanner_regime_property_default_to_pr1_calm():
         kite=None,
         universe_json_path="/nonexistent/path/penny_universe.json",
         paper_mode=True,
-        # regime=None (default) -> callable returning PR1_CALM
+        # regime=None (default) -> callable returning PR2_ELEVATED
     )
-    assert scanner.regime == "PR1_CALM"
+    assert scanner.regime == "PR2_ELEVATED"
 
 
 def test_scanner_regime_property_with_string():

@@ -274,15 +274,17 @@ def _get_penny_scanner():
     paper_mode = not settings.PENNY_LIVE_TRADING
 
     # Live regime getter: re-reads the module-level engine on every call.
-    # Returns the .value string (e.g. "PR2_ELEVATED"). If the engine
-    # hasn't computed today_regime yet, returns "PR1_CALM" as a safe
-    # fallback (sizing at 5% of bankroll, not 0%).
+    # Returns the .value string (e.g. "PR2_ELEVATED").
+    # [ROADMAP-3.6 2026-07-12] Fallback when the regime is not computed
+    # yet is PR2_ELEVATED (2.5% sizing), no longer PR1_CALM (full 5%):
+    # trading before the regime is known is elevated uncertainty, not
+    # calm. Still trades (rule 15) -- just at reduced size.
     def _live_regime():
         if _penny_regime_engine is None:
-            return "PR1_CALM"
+            return "PR2_ELEVATED"
         tr = _penny_regime_engine.today_regime
         if tr is None:
-            return "PR1_CALM"
+            return "PR2_ELEVATED"
         return tr.value if hasattr(tr, "value") else str(tr)
 
     _penny_scanner = PennyScanner(
@@ -1071,7 +1073,7 @@ async def run_penny_hourly_report():
             db_path=settings.DB_PATH,
             regime=_penny_regime_engine.today_regime.value
             if _penny_regime_engine.today_regime is not None
-            else "PR1_CALM",
+            else "PR2_ELEVATED",  # [ROADMAP-3.6] fail-open is PR2 now
             open_positions=penny_pos,
             deployed_capital=deployed,
             unrealised_pnl=unrealised,

@@ -391,6 +391,17 @@ realizes an unbounded loss relative to the stop distance. Consider a broker
 GTT order as a catastrophic backstop, or size swing positions explicitly for
 gap risk (e.g. assume 2× stop distance as true risk).
 
+> **Status: DONE 2026-07-12** (gap-aware sizing route). New
+> `SWING_GAP_RISK_MULT` (default 2.0): swing share counts are computed
+> as if the true risk per share were stop_distance × 2 — halving
+> position sizes; stop level and R targets unchanged. Set 1.0 in `.env`
+> to restore old sizing. The GTT-order backstop was deliberately NOT
+> built: it means placing real broker orders automatically — a new
+> execution surface with its own failure modes — and stays available
+> as a future opt-in if reduced sizing proves insufficient.
+> Downstream (`portfolio.filter_and_allocate`) only ever shrinks
+> shares further, so the multiplier cannot be bypassed.
+
 ### 3.5 `penny_backtest_v2` validated a different strategy than the one live
 
 The sweep runs on **daily bars** (prev-day-high anchor, daily RSI(14), daily
@@ -428,6 +439,23 @@ Related (a *documented* fail-open, but worth revisiting): missing inputs →
 `PR1_CALM` = full 5% sizing (`penny_regime.py:271-272`). A data outage
 trades full size. Consider failing to PR2 sizing instead.
 
+> **Status: DONE 2026-07-12.** Three fixes. (1) Scale:
+> `compute_vol_rank` takes `bars_per_day` (scanner passes 375) and
+> scales the per-bar stdev by √bars_per_day to a daily equivalent
+> before the 0.10 cap — the raw 1-min stdev was ~0.001–0.005 vs the
+> 0.10 cap, so vol_rank was ≈0 for every ticker and the 40%-weight
+> input never influenced the regime. (Note: the sibling bug of the
+> feed going to a throwaway instance was already fixed 2026-07-09 via
+> the `__new__` singleton.) (2) Fail-open floor: missing inputs now
+> classify to PR2_ELEVATED (2.5%), never PR1_CALM full 5%; all four
+> fallback sites updated (classify(), main.py `_live_regime`, the
+> hourly-report default, the scanner's no-regime constructor default).
+> (3) Fail-open no longer masks severity: the input that IS present is
+> still respected — vix_proxy ≥ 0.9 with vol_rank unfed classifies
+> PR3_HOT (pre-fix, PR3 was unreachable every morning until the first
+> scan fed vol_rank — the phase-2 audit finding, now closed at the
+> classify() level).
+
 ### 3.7 Penny kill-switch rolls at the wrong midnight
 
 `record_realized_pnl` / `kill_switch_active` key the "day" off
@@ -435,12 +463,30 @@ trades full size. Consider failing to PR2 sizing instead.
 daily-loss window resets at 05:30 IST — mid-morning-prep, not midnight. The
 F&O kill-switch is IST-correct (`fno_risk.py`); align penny with it.
 
+> **Status: DONE 2026-07-12.** New `PennyRiskEngine._trading_day()`
+> converts to IST before taking the date (naive datetimes treated as
+> UTC — every existing caller passes `utcnow()`); both kill-switch
+> methods and the scanner's `daily_pnl_override` stamp use it. Witness:
+> a switch tripped in-session now resets at IST midnight, not at 05:30
+> IST (old code kept it active from 00:00–05:30 IST of the NEXT day).
+> Real-world blast radius was small — the 00:05 IST `penny_daily_reset`
+> job rebuilds the risk engine anyway — but the window and the reset
+> job now agree on what "day" means.
+
 ### 3.8 `RiskEngine.calc_shares` floors to 1 share
 
 `return max(1, shares)` (`risk_engine.py:122`) — when the capital cap
 correctly computes 0 shares (expensive stock), it still buys 1, silently
 violating the per-trade cap. The penny engine returns 0 in this case
 (`penny_risk.py:110`); mirror that.
+
+> **Status: DONE 2026-07-12.** Returns 0 with a
+> `risk_engine_capital_capped_to_zero` log line, mirroring penny.
+> Verified blast radius: `calc_shares` currently has NO production
+> callers (swing sizing is inline in `engine.evaluate_signal`, which
+> already rejects on 0 shares) — the fix removes a latent trap for the
+> "share count recalculation if needed" use the RiskEngine singleton
+> comment reserves.
 
 ### 3.9 Circuit-band inference is guesswork
 

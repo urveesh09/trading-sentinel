@@ -119,32 +119,29 @@ def test_classify_pr3_hot_by_vix():
     assert eng.classify(vol_rank=0.3, vix_proxy=0.92) == PennyRegime.PR3_HOT
 
 
-def test_classify_unknown_when_inputs_missing():
+def test_classify_fails_open_to_pr2_when_inputs_missing():
     """
-    [FAIL-OPEN 2026-06-26] When either input is missing, classify()
-    returns PR1_CALM (not UNKNOWN) so the risk engine sizes at the
-    5% PR1 default instead of 0%. Confidence is still surfaced via
-    confidence_reasons() and the penny_regime_computed log line --
-    operators can see the gap, but the scanner is not gated shut.
-    Rule 15: "don't kill proactiveness for lack of data."
+    [FAIL-OPEN 2026-06-26 / ROADMAP-3.6 2026-07-12] When either input
+    is missing, classify() must NOT return UNKNOWN (0% sizing = scanner
+    gated shut, rule 15) -- but a data outage is elevated uncertainty,
+    not calm, so the fail-open target is PR2_ELEVATED (2.5% sizing),
+    no longer PR1_CALM (full 5%).
     """
     from penny_regime import PennyRegimeEngine, PennyRegime
     eng = PennyRegimeEngine()
-    assert eng.classify(vol_rank=None, vix_proxy=None) == PennyRegime.PR1_CALM
-    assert eng.classify(vol_rank=None, vix_proxy=0.5) == PennyRegime.PR1_CALM
-    assert eng.classify(vol_rank=0.5, vix_proxy=None) == PennyRegime.PR1_CALM
+    assert eng.classify(vol_rank=None, vix_proxy=None) == PennyRegime.PR2_ELEVATED
+    assert eng.classify(vol_rank=None, vix_proxy=0.5) == PennyRegime.PR2_ELEVATED
+    assert eng.classify(vol_rank=0.5, vix_proxy=None) == PennyRegime.PR2_ELEVATED
 
 
-def test_classify_missing_inputs_size_at_pr1_default():
+def test_classify_missing_inputs_size_at_reduced_pr2():
     """
-    [FAIL-OPEN 2026-06-26] Companion to the fail-open classify change.
-    With PR1_CALM as the missing-input default, size_pct returns
-    the 5% PR1 default -- so the penny risk engine does not block
-    all entries on a regime-less day.
+    [ROADMAP-3.6 2026-07-12] Companion: missing inputs size at the
+    reduced 2.5% -- still trading (rule 15), never full size blind.
     """
     from penny_regime import PennyRegimeEngine
     eng = PennyRegimeEngine()
-    assert eng.size_pct(eng.classify(vol_rank=None, vix_proxy=None)) == 0.05
+    assert eng.size_pct(eng.classify(vol_rank=None, vix_proxy=None)) == 0.025
 
 
 def test_size_for_pr1_uses_full_pct():

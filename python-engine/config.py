@@ -566,6 +566,18 @@ class Settings(BaseSettings):
     STOP_PCT_REGIME2: float = 0.05      # 5% stop
     STOP_PCT_REGIME3: float = 0.08      # 8% stop (wider in crisis)
 
+    # [ROADMAP-3.4 2026-07-12] Overnight gap-risk sizing multiplier.
+    # The swing chandelier stop is close-based and only evaluated EOD, so
+    # a gap-down realizes MORE than the stop distance -- historically an
+    # unbounded hole in the risk math (the stop distance was treated as
+    # the true worst case, which overnight it never was). Sizing now
+    # assumes the true risk per share is stop_distance x this multiplier
+    # (2.0 = "a gap can travel twice the stop distance before the EOD
+    # exit fires"), which halves share counts at the default. Stop level
+    # and R-multiple targets are unchanged -- only the share count is.
+    # Set to 1.0 in .env to restore pre-3.4 sizing.
+    SWING_GAP_RISK_MULT: float = 2.0
+
     # Target structure (R-multiples)
     TARGET1_R: float = 1.5                # T1 = 1.5R (all regimes)
     TARGET2_R_REGIME1: float = 4.5        # T2 = 4.5R (Regime 1, was 3.0 -- let winners run)

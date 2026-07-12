@@ -119,7 +119,21 @@ class RiskEngine:
         if capital_required > self.bankroll:
             shares = math.floor(self.bankroll / entry)
 
-        return max(1, shares)
+        # [ROADMAP-3.8 2026-07-12] Was `max(1, shares)`: when the capital
+        # caps above correctly floored an expensive stock to 0 shares,
+        # the old floor bought 1 anyway -- silently violating the very
+        # cap that produced the 0. Mirror penny_risk.calc_shares: 0 means
+        # "cannot afford within the caps", the caller must skip. (The
+        # inline sizing in engine.evaluate_signal already rejects on 0
+        # with zero_shares_calculated; this method must agree with it.)
+        if shares < 1:
+            logger.info(
+                "risk_engine_capital_capped_to_zero",
+                entry=entry,
+                bankroll=self.bankroll,
+            )
+            return 0
+        return shares
 
     def check_partial_exit(
         self,
