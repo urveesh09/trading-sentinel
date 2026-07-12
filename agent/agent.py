@@ -44,6 +44,98 @@ def clear_memory():
     logger.info("Cleared daily signal memory for the new trading day.")
 
 # -------------------------------------------------------------------------
+# LIVENESS: OWN HEARTBEAT (roadmap 2.2) + ENGINE FREEZE WATCHDOG (2.4)
+# -------------------------------------------------------------------------
+# [ROADMAP-2.2 2026-07-12] This container had no healthcheck at all: if
+# it died or hung, momentum EXEC alerts stopped with zero alarm. The
+# Dockerfile HEALTHCHECK compares this file's mtime against a 15-min
+# threshold; autoheal (docker-compose) restarts the container when it
+# turns unhealthy. Touched from the main loop (every 30s) AND at the top
+# of each per-signal iteration, so a long Gemini batch can't trip a
+# false unhealthy while real work is progressing.
+HEARTBEAT_FILE = "/tmp/agent_heartbeat"
+
+def touch_heartbeat():
+    """Must never raise -- liveness reporting can't break the pipeline."""
+    try:
+        with open(HEARTBEAT_FILE, "w") as fh:
+            fh.write(str(time.time()))
+    except Exception as e:
+        logger.error(f"Heartbeat touch failed: {e}")
+
+# [ROADMAP-2.4 2026-07-12] External loop-progress watchdog for the
+# engine. python-engine's APScheduler writes /data/scheduler_tick.json
+# every 60s FROM THE SCHEDULER LOOP ITSELF (its daemon-thread liveness
+# heartbeat deliberately keeps ticking through a frozen loop, so it
+# cannot detect this). We are a separate process in a separate
+# container: if that file goes stale during market hours, jobs have
+# stopped firing -- the 2026-07-07 pattern that ran 6h32m unnoticed.
+# Alert goes straight to the Telegram API (not via node's /notify) so
+# it works no matter what state the other containers are in.
+SCHEDULER_TICK_FILE = "/data/scheduler_tick.json"
+ENGINE_FREEZE_THRESHOLD_SEC = 600         # 10 min = ten missed 60s ticks
+ENGINE_FREEZE_ALERT_COOLDOWN_SEC = 1800   # re-page at most every 30 min
+_engine_freeze_last_alert_ts: Optional[float] = None
+
+def _is_market_hours(now=None) -> bool:
+    """Mon-Fri 09:15-15:30. Container TZ is Asia/Kolkata, so naive
+    datetime.now() is IST. No holiday check needed: the engine's tick
+    job runs 24/7, so on a holiday the file is fresh anyway."""
+    from datetime import datetime
+    now = now or datetime.now()
+    if now.weekday() >= 5:
+        return False
+    minutes = now.hour * 60 + now.minute
+    return 9 * 60 + 15 <= minutes <= 15 * 60 + 30
+
+def read_scheduler_tick_age(path=None) -> Optional[float]:
+    """Seconds since the engine's last scheduler tick, or None when the
+    file is missing/unreadable (engine down, pre-2.4 build, or /data
+    not mounted)."""
+    path = path or SCHEDULER_TICK_FILE
+    try:
+        with open(path) as fh:
+            payload = json.load(fh)
+        return max(0.0, time.time() - float(payload["ts_epoch"]))
+    except Exception:
+        return None
+
+def check_engine_liveness():
+    """Scheduled every 5 min; alerts (cooldown 30 min) when the engine's
+    scheduler tick is stale or missing during market hours."""
+    global _engine_freeze_last_alert_ts
+    if not _is_market_hours():
+        return
+    age = read_scheduler_tick_age()
+    if age is not None and age < ENGINE_FREEZE_THRESHOLD_SEC:
+        return
+
+    now = time.time()
+    if (_engine_freeze_last_alert_ts is not None
+            and now - _engine_freeze_last_alert_ts < ENGINE_FREEZE_ALERT_COOLDOWN_SEC):
+        return
+    _engine_freeze_last_alert_ts = now
+
+    if age is None:
+        msg = ("🧊 ENGINE WATCHDOG: cannot read the scheduler tick file "
+               f"({SCHEDULER_TICK_FILE}). python-engine may be DOWN, or /data "
+               "is not mounted. Check: docker ps && docker logs python-engine")
+    else:
+        msg = ("🧊 ENGINE LOOP FROZEN? python-engine's scheduler tick is "
+               f"{int(age // 60)} min old (threshold {ENGINE_FREEZE_THRESHOLD_SEC // 60} min). "
+               "Jobs have stopped firing -- the 2026-07-07 freeze pattern. "
+               "Check: docker logs python-engine --since 15m | grep penny_liveness_tick "
+               "(ticks present = loop frozen, restart the container; "
+               "ticks absent = process dead).")
+    logger.error(f"Engine liveness watchdog firing: age={age}")
+
+    url = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage"
+    try:
+        requests.post(url, json={"chat_id": TELEGRAM_CHAT_ID, "text": msg}, timeout=10)
+    except Exception as e:
+        logger.error(f"Failed to send engine watchdog alert: {e}")
+
+# -------------------------------------------------------------------------
 # SCHEMAS
 # -------------------------------------------------------------------------
 class SignalOutput(BaseModel):
@@ -336,6 +428,7 @@ def run_momentum_pipeline():
         # processed -- one raised exception killed every signal after it
         # in the batch. On failure the signal is NOT marked processed, so
         # the next poll retries it (bounded: polls run every 15 min).
+        touch_heartbeat()  # [ROADMAP-2.2] progressing, not hung
         try:
             sentiment_text = scrape_sentiment(ticker)
             analysis       = analyze_with_gemini(signal, sentiment_text, regime)
@@ -462,6 +555,7 @@ def run_pipeline():
             continue
             
         logger.info(f"Processing signal for {ticker}...")
+        touch_heartbeat()  # [ROADMAP-2.2] progressing, not hung
         # [FIX 2026-07-11 STALL] Same per-signal isolation as the momentum
         # pipeline: one bad ticker must not kill the rest of the batch.
         try:
@@ -512,8 +606,15 @@ def main():
     for day in days:
         for t in momentum_poll_times:
             getattr(schedule.every(), day).at(t).do(run_momentum_pipeline)
+
+    # [ROADMAP-2.4 2026-07-12] Engine loop-progress watchdog (self-gates
+    # to market hours; alerts when /data/scheduler_tick.json goes stale).
+    schedule.every(5).minutes.do(check_engine_liveness)
+
+    touch_heartbeat()  # [ROADMAP-2.2] healthy from the first HEALTHCHECK
     while True:
         schedule.run_pending()
+        touch_heartbeat()  # [ROADMAP-2.2] main loop alive
         time.sleep(30)
 
 if __name__ == "__main__":

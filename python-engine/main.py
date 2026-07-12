@@ -2019,6 +2019,16 @@ async def lifespan(app: FastAPI):
         max_instances=1, coalesce=True, misfire_grace_time=300,
     )
 
+    # [ROADMAP-2.4 2026-07-12] Loop-progress tick for the agent's
+    # external freeze watchdog. Runs 24/7 (NOT market-gated) so the
+    # watchdog can't false-positive outside scan windows: a stale file
+    # always means the scheduler stopped firing jobs.
+    scheduler.add_job(
+        _scheduler_tick_job, 'interval', seconds=60,
+        id="scheduler_tick",
+        max_instances=1, coalesce=True, misfire_grace_time=30,
+    )
+
     # 2026-06-22: daily reset of penny risk state at 00:05 IST (05:30 UTC isn't right;
     # 00:05 UTC = 05:35 IST, just after midnight IST).
     def _penny_daily_reset():
@@ -3554,6 +3564,37 @@ def restore_kite_token_if_fresh() -> bool:
     kite.set_token(payload["access_token"])
     logger.info("kite_token_restored saved_date=%s", payload.get("saved_date_ist"))
     return True
+
+
+# [ROADMAP-2.4 2026-07-12] Scheduler loop-progress tick. The existing
+# penny-liveness heartbeat is a daemon THREAD -- it keeps ticking even
+# when the asyncio loop / APScheduler is frozen (by design: it proves
+# the process is alive). This job is the complement: it runs ON the
+# scheduler as a normal job, so a fresh file timestamp proves jobs are
+# actually firing. The agent container reads this file from /data (ro
+# mount) and pages the operator when it goes stale during market hours
+# -- the external watchdog that would have caught the 2026-07-07
+# 6h32m freeze in minutes.
+def _scheduler_tick_path() -> str:
+    import os as _os
+    return _os.path.join(_os.path.dirname(settings.DB_PATH), "scheduler_tick.json")
+
+
+async def _scheduler_tick_job():
+    import json as _json
+    import os as _os
+    try:
+        path = _scheduler_tick_path()
+        tmp = path + ".tmp"
+        with open(tmp, "w") as fh:
+            _json.dump({
+                "ts_epoch": time.time(),
+                "ist": datetime.now(IST).isoformat(),
+            }, fh)
+        # Atomic replace so the agent's reader never sees a torn file.
+        _os.replace(tmp, path)
+    except Exception as e:
+        logger.warning("scheduler_tick_write_failed error=%s", str(e))
 
 
 # [ROADMAP-2.1 2026-07-12] Token reconciliation: scans (python) and

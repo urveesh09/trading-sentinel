@@ -1,3 +1,12 @@
+# [ROADMAP-2.2 2026-07-12] Health that ACTS: node/python images already
+# carry HEALTHCHECKs; agent + nginx now have them too, and the autoheal
+# sidecar restarts any labelled container that turns unhealthy (compose
+# alone never restarts wedged-but-alive processes -- the 2026-07-07
+# freeze ran 6h32m, the Telegram bot once wedged ~5h).
+# Deliberately NO `depends_on: condition: service_healthy`: per the
+# operator mandate 2026-06-25, one unhealthy container must never block
+# another from starting during market hours; startup order stays
+# best-effort and each service degrades independently.
 services:
   # The Shield: Nginx Reverse Proxy
   nginx:
@@ -13,6 +22,15 @@ services:
       - sentinel-net
     depends_on:
       - node-gateway
+    labels:
+      - autoheal=true
+    healthcheck:
+      # /nginx-health is answered by nginx itself (no upstream), so a
+      # node-gateway outage can't mark nginx unhealthy.
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1/nginx-health || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
     logging:
       driver: "json-file"
       options:
@@ -34,6 +52,8 @@ services:
       - ./node-gateway/.env
     networks:
       - sentinel-net
+    labels:
+      - autoheal=true  # image HEALTHCHECK: wget /api/health
     logging:
       driver: "json-file"
       options:
@@ -57,6 +77,8 @@ services:
       - node-gateway
     networks:
       - sentinel-net
+    labels:
+      - autoheal=true  # image HEALTHCHECK: curl /health
     logging:
       driver: "json-file"
       options:
@@ -73,8 +95,35 @@ services:
       - TZ=Asia/Kolkata
     env_file:
       - ./.env
+    volumes:
+      # [ROADMAP-2.4 2026-07-12] Read-only: the agent only reads
+      # scheduler_tick.json for the engine freeze watchdog. Its own
+      # heartbeat lives in /tmp (container-local, no volume perms).
+      - trading_data:/data:ro
     networks:
       - sentinel-net
+    labels:
+      - autoheal=true  # image HEALTHCHECK: /tmp/agent_heartbeat mtime
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # [ROADMAP-2.2 2026-07-12] Restarts any container labelled
+  # autoheal=true when its healthcheck turns unhealthy. Needs the docker
+  # socket; no network (it only talks to the local daemon).
+  autoheal:
+    image: willfarrell/autoheal:1.2.0
+    container_name: autoheal
+    restart: always
+    environment:
+      - AUTOHEAL_CONTAINER_LABEL=autoheal
+      - AUTOHEAL_INTERVAL=30
+      - AUTOHEAL_START_PERIOD=60
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    network_mode: none
     logging:
       driver: "json-file"
       options:
