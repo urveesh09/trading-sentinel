@@ -108,8 +108,13 @@ def build_premarket_body(universe_path: str, top_n: int = 10) -> str:
         age_hours = (_dt.now() - as_of_dt).total_seconds() / 3600
         if age_hours > 4:
             freshness = f" ⚠ stale {age_hours:.1f}h"
-    except (ValueError, TypeError):
-        pass
+    except (ValueError, TypeError) as e:
+        # [ROADMAP-4.3 2026-07-13] Swallowing this hid the STALENESS WARNING
+        # itself: an unparseable as_of means we cannot prove the universe is
+        # fresh, and the report then rendered as though it were.
+        logger.warning("premarket_freshness_parse_failed as_of=%r error=%s",
+                       as_of, str(e))
+        freshness = " ⚠ age unknown"
 
     lines = [
         f"Penny pre-market ({today})",

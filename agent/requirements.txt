@@ -6,3 +6,4 @@ pydantic==2.6.4
 lxml
 pytest==8.0.0
 pytest-cov==4.1.0
+structlog==24.1.0

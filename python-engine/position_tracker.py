@@ -1,3 +1,5 @@
+import sqlite3
+
 import aiosqlite
 from datetime import datetime
 import structlog
@@ -8,6 +10,39 @@ from chandelier_stop import ChandelierStop
 from config import settings
 
 logger = structlog.get_logger()
+
+
+async def _add_column_if_missing(db, column: str, ddl: str) -> None:
+    """[ROADMAP-4.3 2026-07-13] Idempotent ALTER TABLE.
+
+    Each of these migrations used to be `except Exception: pass`, on the
+    reasoning that re-adding an existing column is the only way it can
+    fail. That reasoning is wrong, and 2026-07-13 proved it: when the
+    disk filled, every SQLite call in the process raised
+    `sqlite3.OperationalError: disk I/O error` -- including these. A bare
+    `pass` would have swallowed that and let the engine continue with a
+    positions table MISSING atr_1min_post_t1 and t1_fired.
+
+    That is not a cosmetic loss. evaluate_connors_exit() reads
+    atr_1min_post_t1; when it is absent it reads 0.0, which degenerates
+    the CNC post-T1 trailing stop into a hard floor at breakeven+0.5%
+    (see the PENNY-G5 note below) -- i.e. real money exits at the wrong
+    price, silently, with no error anywhere.
+
+    So: swallow ONLY "duplicate column name", which is the one benign
+    outcome. Anything else is a broken database and must be loud.
+    """
+    try:
+        await db.execute(f"ALTER TABLE positions ADD COLUMN {column} {ddl}")
+    except sqlite3.OperationalError as e:
+        if "duplicate column name" in str(e).lower():
+            return  # already migrated -- the expected steady state
+        logger.error(
+            "positions_migration_failed", column=column, error=str(e),
+            hint="positions table may be missing columns the exit logic reads",
+        )
+        raise
+
 
 async def init_positions_db(db_path: str):
     async with aiosqlite.connect(db_path) as db:
@@ -21,32 +56,20 @@ async def init_positions_db(db_path: str):
                 regime_at_entry TEXT
             )
         """)
-        # [MED-008] Migration: add product_type column to pre-existing tables on the
-        # persistent volume. ALTER TABLE silently fails if the column already exists.
-        try:
-            await db.execute("ALTER TABLE positions ADD COLUMN product_type TEXT DEFAULT 'CNC'")
-        except Exception:
-            pass  # Column already present -- safe to ignore
-        # [TRAILING-EXITS 2026-06-16] Migration: add regime_at_entry column
-        # for the regime-aware Chandelier trailing stop. NULL = legacy
-        # 3.0x ATR behavior (backward compat for pre-existing positions).
-        try:
-            await db.execute("ALTER TABLE positions ADD COLUMN regime_at_entry TEXT")
-        except Exception:
-            pass  # Column already present -- safe to ignore
-        # [PENNY-G5 2026-06-25] Migration: add atr_1min_post_t1 and t1_fired
-        # for the CNC Connors post-T1 trailing stop (evaluate_connors_exit).
-        # Pre-fix these were never written; evaluate_connors_exit read 0.0 for
-        # atr_1min_post_t1 which made the trail-stop degenerate to a hard
-        # floor at breakeven+0.5%. Now CNC positions carry the data.
-        try:
-            await db.execute("ALTER TABLE positions ADD COLUMN atr_1min_post_t1 REAL")
-        except Exception:
-            pass
-        try:
-            await db.execute("ALTER TABLE positions ADD COLUMN t1_fired INTEGER DEFAULT 0")
-        except Exception:
-            pass
+        # [MED-008] Migration: add product_type column to pre-existing tables on
+        # the persistent volume.
+        await _add_column_if_missing(db, "product_type", "TEXT DEFAULT 'CNC'")
+        # [TRAILING-EXITS 2026-06-16] regime_at_entry for the regime-aware
+        # Chandelier trailing stop. NULL = legacy 3.0x ATR behavior (backward
+        # compat for pre-existing positions).
+        await _add_column_if_missing(db, "regime_at_entry", "TEXT")
+        # [PENNY-G5 2026-06-25] atr_1min_post_t1 and t1_fired for the CNC
+        # Connors post-T1 trailing stop (evaluate_connors_exit). Pre-fix these
+        # were never written; evaluate_connors_exit read 0.0 for
+        # atr_1min_post_t1 which made the trail-stop degenerate to a hard floor
+        # at breakeven+0.5%. Now CNC positions carry the data.
+        await _add_column_if_missing(db, "atr_1min_post_t1", "REAL")
+        await _add_column_if_missing(db, "t1_fired", "INTEGER DEFAULT 0")
         await db.commit()
 
 async def get_open_positions(db_path: str) -> List[dict]:

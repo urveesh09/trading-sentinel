@@ -578,30 +578,115 @@ trustworthy way this repo already knows how to do it).
 
 ## Tier 4 — Code health
 
-### 4.1 Split `main.py` (3,833 lines)
+### 4.1 Split `main.py` — STAGE 1 DONE 2026-07-13, stage 2 deliberately deferred
 
-Routes + scheduler wiring + auth + token persistence + breadth adapters +
-per-strategy orchestration in one file. It is the largest and least-tested
-file in the system. Natural seams: `routes_*.py` per subsystem, `scheduler_
-setup.py`, `token_lifecycle.py`.
+**Done** (commit `3df4954`, branch `refactor/code-health`): main.py 4,251 →
+3,842. Extracted `token_lifecycle.py` (263), `ops_watchdogs.py` (215),
+`engine_auth.py` (135). Token lifecycle went first because the 2026-07-13
+outage lived entirely in it. Everything is re-exported from `main`, so all
+~30 `from main import X` call sites and monkeypatches are unchanged.
 
-### 4.2 Unify the strategy-family triplication
+Guarded by a new characterization harness (commit `68ca402`,
+`tests/test_main_surface_characterization.py`): two goldens pin the 24 HTTP
+routes and **all 32 `add_job` call sites**. This is not optional ceremony —
+the route table and job list are built by *import-time side effects*, so a
+dropped decorator or `add_job` produces no import error, no test failure and
+no log line. It just goes quiet. The harness is falsified (deleting a job
+registration turns it red) and it caught two real breakages during the split.
 
-`signal_log.py`/`penny_signal_log.py`/`fno_signal_log.py`,
-`risk_engine.py`/`penny_risk.py`/`fno_risk.py`,
-`penny_accept_watchdog.py`/`fno_accept_watchdog.py`,
-`penny_hourly_report.py`/`fno_hourly_report.py` — each family reimplements
-the same schema-write / kill-switch / zero-accept / report pattern (and the
-kill-switch timezone bug in 3.7 exists precisely because they diverged).
-Extract shared bases; **keep** the deliberate bankroll isolation.
+**Stage 2 (`scheduler_setup.py`, routes_*.py) is NOT done, on purpose.**
+`register_penny_scheduler_jobs` and `register_fno_scheduler_jobs` contain
+**8 async closures**, and Python resolves globals at *call* time — a closure
+moved to a new module raises `NameError` only when the job fires, in
+production, where the `_safe` wrappers log-and-swallow it. No test invokes
+those closures, and the `add_job` census cannot see inside them. Moving them
+today is an unobservable risk.
 
-### 4.3 Fix silent exception swallows in hot paths
+Prerequisite for stage 2, in order:
+1. Tests that actually **invoke** each of the 8 closures (not just assert
+   they're registered).
+2. Break the shared-mutable-global coupling (`current_signals`,
+   `market_regime`, `risk_engine`, `_penny_regime_engine`, …) — probably an
+   `app_state.py`. Note the suite patches `main.kite` **by name**, so any new
+   module must resolve singletons lazily via `import main` (the idiom already
+   used by `penny_commands` / `penny_health` / `nifty_commands` /
+   `operator_status`), or those patches silently detach.
+
+### 4.2 Strategy-family "triplication" — PREMISE DISPROVED; solved differently 2026-07-13
+
+The original item asked for shared base classes, on the grounds that the
+families "reimplement the same pattern" and that "the kill-switch timezone
+bug in 3.7 exists precisely because they diverged". **Both claims are false.**
+Measured before touching anything:
+
+| family | shared fn names | avg structural similarity |
+|---|---|---|
+| `signal_log` ×3 | **0** | — |
+| `accept_watchdog` | 2 | 10–15% |
+| `hourly_report` | 1 | 0% |
+| `risk_engine` ×3 | 1 (`__init__`) | 26% — penny↔fno share **nothing** |
+
+They are independent implementations sharing a *naming convention*, not
+copies that drifted. A base class over ~10%-similar bodies would have more
+hooks than shared logic — a false abstraction in the code that sizes money.
+And 3.7 was not a divergence bug: penny keys the day via
+`PennyRiskEngine._trading_day()`, F&O derives IST dates in SQL. There was no
+shared copy to diverge from.
+
+The underlying *risk* is real though — independent families must obey the
+same cross-cutting rules and nothing enforced that. **Done instead** (commit
+`79da7d3`, `tests/test_strategy_family_conformance.py`): conformance, not
+inheritance. 9 tests over 3 invariants:
+
+1. **The trading day is an IST day, always.** AST check that no day-keyed
+   module uses a naive `datetime.now()`/`utcnow()`/`date.today()`. The 3.7
+   bug as a *rule* rather than a one-time fix. Falsified: re-injecting the
+   naive clock turns it red.
+2. **Every gating family has a zero-accept watchdog, and it is actually
+   scheduled.** The 9-month penny dead gate is what happens otherwise; a
+   watchdog that exists but is never registered is decoration.
+3. **The deprecated global `current_bankroll()` never returns to a
+   risk/sizing path** — it reads the last ledger row across *all* pools, so
+   it would size one strategy off another's money. This is the concrete way
+   the bankroll isolation actually gets broken.
+
+Scales to a 4th strategy family, which a base class would only have constrained.
+
+### 4.3 Fix silent exception swallows — DONE 2026-07-13 (commit `4f2e8ff`)
+
+Audited all ~20 sites, not just the listed ones. **Most are correct and were
+left alone** (the no-running-loop guards, the stderr fallback inside the
+liveness heartbeat, the idempotent-delete `FileNotFoundError`). The ones that
+mattered shared a sharper defect than "an error was ignored": ignoring it made
+a *broken* system render identically to a *healthy* one, in the exact number an
+operator reads before risking more capital. Against an unreadable database,
+pre-fix output was literally `Open positions: 0` and `Deployed: Rs 0 (0.0% util)`.
+
+Fixed: `position_tracker` migrations (now swallow ONLY "duplicate column name" —
+a disk-I/O error used to be swallowed too, which on 2026-07-13 would have left
+the positions table missing `atr_1min_post_t1` and silently collapsed the CNC
+post-T1 trailing stop to a hard floor); `penny_commands` / `nifty_commands`
+report `?`/`UNKNOWN` instead of `0`; `performance` returns `partial=True`
+instead of a silent Rs 0; log-only elsewhere. 5 witness tests, each falsified
+against the pre-fix tree.
+
+**Roadmap correction:** this item described `position_tracker.py:44,48` as
+"position bookkeeping — silent corruption of exit logic". They are *schema
+migrations*. The conclusion (silent corruption of exit logic) was right; the
+mechanism was not.
+
+Still open: the two backtest swallows (`penny_backtest.py:210`,
+`penny_edge_backtest.py:290`) — offline tools, no live money path.
+
+<details><summary>Original item</summary>
 
 `grep` finds ~15 `except ...: pass` sites; the dangerous ones:
 `main.py:1068,1327,2092` (scan/serving paths), `penny_scanner.py:156`,
 `position_tracker.py:44,48` (position bookkeeping — silent corruption of
 exit logic), `penny_commands.py:178,189` (DB write failures vanish).
 Replace with log-and-continue at minimum; alert where money is involved.
+
+</details>
 
 ### 4.4 `retry.js`: backoff + error discrimination (MED-004)
 
@@ -619,13 +704,20 @@ approved snapshot — displayed price/shares/stop can differ from what
 executes. Register the approved snapshot (Pipeline B's DB pattern) and make
 it the single path.
 
-### 4.6 Remaining `FUTURE_UPGRADES.md` odds and ends (confirmed open)
+### 4.6 Remaining `FUTURE_UPGRADES.md` odds and ends — 5 of 7 DONE 2026-07-13 (commit `9be0bad`)
 
-MED-002 dual Telegram alert sources (two messages per scan), MED-006
-`/circuit-breaker/reset` proxied but unimplemented, MED-007 `/rejected`
-always returns `[]`, MED-010 `/token/invalidate` 404s, LOW-003 minimal
-`/health` payload, LOW-006 agent lacks an independent holiday check,
-HIGH-008 `MomentumSignal.shares` missing `Field(ge=1)`.
+DONE: MED-002 (plain scan summaries now off by default —
+`SCREENER_PLAIN_SUMMARY_ENABLED`), MED-006 (`/circuit-breaker/reset`
+implemented as a `CB_RESET` ledger marker that re-baselines the drawdown peak
+and loss streak — the floor and daily-loss CBs are deliberately NOT resettable),
+MED-007 (`/rejected` serves `rejected_signals` instead of a hardcoded `[]`),
+MED-010 (`/token/invalidate` — was a silent 404 on every node logout, which
+stopped being harmless once roadmap 2.1 made the engine serve the token back
+via `/token/current`), LOW-003 (`/health` gains `kite_connected` +
+`scheduler_running`).
+
+STILL OPEN: LOW-006 (agent lacks an independent holiday check), HIGH-008
+(`MomentumSignal.shares` missing `Field(ge=1)`).
 
 ### 4.7 Agent (Container C) hygiene
 

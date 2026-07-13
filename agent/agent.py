@@ -3,8 +3,10 @@ import sys
 import time
 import json
 import logging
+import structlog
 import threading
 import urllib.parse
+from datetime import datetime
 from typing import List, Dict, Optional
 import requests
 from bs4 import BeautifulSoup
@@ -16,17 +18,113 @@ from pydantic import BaseModel
 # -------------------------------------------------------------------------
 # CONFIG & LOGGING
 # -------------------------------------------------------------------------
+# [ROADMAP-4.7 2026-07-13] structlog, matching python-engine's pipeline.
+#
+# The agent was the last container still on a bare logging.basicConfig, so its
+# lines rendered differently from every other service and could not carry
+# structured key/values. The pipeline below is a deliberate mirror of
+# python-engine/logging_setup.py -- same TimeStamper format, same
+# ConsoleRenderer, colours off (the docker json-file driver strips ANSI anyway).
+#
+# It is DUPLICATED rather than imported, and that is not laziness: the agent is
+# a separate docker build context and cannot see ../python-engine. Sharing it
+# would mean restructuring the build for a 20-line config. (Roadmap 4.2 is the
+# cautionary tale in the other direction -- do not invent shared structure that
+# does not fit.)
+#
+# The rendered shape is preserved on purpose: timestamp, level, message, in that
+# order. The 2026-07-13 forensics were done by eye against these logs, and a
+# format churn that broke `docker logs agent | grep` would cost more than it
+# gained. Existing logger.info(f"...") call sites keep working unchanged --
+# structlog takes the message as the event.
+#
+# stdlib logging is wired to the same formatter so `schedule`, `requests` and
+# `urllib3` do not punch through with a different shape.
+_timestamper = structlog.processors.TimeStamper(
+    fmt="%Y-%m-%d %H:%M:%S",
+    utc=False,  # local time = IST in this container (TZ=Asia/Kolkata)
+)
+
+structlog.configure(
+    processors=[
+        structlog.contextvars.merge_contextvars,
+        structlog.processors.add_log_level,
+        _timestamper,
+        structlog.processors.format_exc_info,
+        structlog.dev.ConsoleRenderer(colors=False, event_key="event"),
+    ],
+    wrapper_class=structlog.make_filtering_bound_logger(logging.INFO),
+    logger_factory=structlog.PrintLoggerFactory(file=sys.stdout),
+    cache_logger_on_first_use=True,
+)
+
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s - %(levelname)s - %(message)s",
-    handlers=[logging.StreamHandler(sys.stdout)]
+    handlers=[logging.StreamHandler(sys.stdout)],
 )
-logger = logging.getLogger(__name__)
+
+logger = structlog.get_logger("agent")
 
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
 TELEGRAM_CHAT_ID = os.getenv("TELEGRAM_CHAT_ID")
 QUANT_ENGINE_URL = os.getenv("QUANT_ENGINE_URL", "http://python-engine:8000/signals")
+
+# [HIGH-007 / ROADMAP-4.5 2026-07-13] Snapshot registration.
+#
+# This container is the ONLY thing that decides what numbers the operator
+# sees on an EXEC/EM button. Until now it sent the button and threw the
+# payload away -- so node-gateway, on the press, had to go and re-ask the
+# engine what the signal was, and executed whatever came back. That is not
+# the same object: /signals serves `current_signals`, which run_screener
+# replaces wholesale on every run, and the momentum list is in-memory and
+# dies with the engine process (as it did on 2026-07-13 at 09:44).
+#
+# So register the exact payload here, under the SAME id that goes into
+# callback_data, before the button is shown. What the operator approves is
+# then what executes.
+NODE_GATEWAY_URL = os.getenv("NODE_GATEWAY_URL", "http://node-gateway:3000")
+INTERNAL_API_SECRET = os.getenv("INTERNAL_API_SECRET", "")
+
+
+def register_approved_snapshot(sig_id: str, ticker: str, action: str, payload: dict) -> bool:
+    """Persist the payload we are about to display, keyed by its callback id.
+
+    Best-effort BY DESIGN, and the asymmetry is deliberate: if registration
+    fails we still send the alert, because node falls back to the old live
+    re-fetch and a slightly-stale trade beats no trade at all. But it logs
+    loudly, and node logs `approved_snapshot_missing` on the press, so the
+    fallback can never be mistaken for the happy path.
+    """
+    try:
+        resp = requests.post(
+            f"{NODE_GATEWAY_URL}/api/internal/register-signal",
+            json={
+                "signal_id": sig_id,
+                "ticker": ticker,
+                "action": action,
+                "payload": payload,
+            },
+            headers={"X-Internal-Secret": INTERNAL_API_SECRET},
+            timeout=5,
+        )
+        resp.raise_for_status()
+        body = resp.json()
+        if not body.get("registered"):
+            # Already present -- the snapshot is immutable and first-wins, so
+            # this is correct behaviour on a re-alert, not an error.
+            logger.info(f"Snapshot already registered for {sig_id} (first-wins)")
+        else:
+            logger.info(f"Registered approved snapshot for {sig_id}")
+        return True
+    except Exception as e:
+        logger.error(
+            f"Snapshot registration FAILED for {sig_id}: {e} -- "
+            f"alert will still be sent; node will fall back to a live re-fetch "
+            f"and the executed numbers may differ from those displayed."
+        )
+        return False
 
 if not all([GEMINI_API_KEY, TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID]):
     logger.critical("CRITICAL: Missing required environment variables. Exiting.")
@@ -37,10 +135,74 @@ client = genai.Client(api_key=GEMINI_API_KEY)
 # -------------------------------------------------------------------------
 # SHORT-TERM MEMORY (DEDUPLICATION)
 # -------------------------------------------------------------------------
+# [ROADMAP-4.7 2026-07-13] Dedup state is now DURABLE.
+#
+# It used to be a bare in-memory set, so any agent bounce forgot everything it
+# had already alerted and re-sent EXEC buttons for signals the operator had
+# already seen -- and, worse, may have already acted on. Duplicate buttons for
+# a live trade are not a cosmetic annoyance.
+#
+# Persisted to /tmp, not /data: the agent mounts /data READ-ONLY (it only reads
+# scheduler_tick.json for the freeze watchdog), and its heartbeat already lives
+# in /tmp for the same reason. /tmp survives a process crash and a `docker
+# restart` -- which is the bounce that actually happens -- and is lost only on
+# a full container recreate, where re-alerting is the lesser evil anyway.
+#
+# Day-stamped: a file from a previous day must never suppress today's alerts.
+DEDUP_FILE = "/tmp/agent_dedup.json"
+
 processed_signals_today = set()
+
+
+def _today_str() -> str:
+    # Container runs TZ=Asia/Kolkata, so this is already the IST trading day.
+    return datetime.now().strftime("%Y-%m-%d")
+
+
+def _load_dedup_state() -> None:
+    """Restore today's alerted ids on boot. Never raises: a corrupt or absent
+    file must degrade to 'remember nothing' (re-alert), never to a crash."""
+    try:
+        with open(DEDUP_FILE) as fh:
+            state = json.load(fh)
+        if state.get("date") != _today_str():
+            logger.info("Dedup file is from a previous day -- starting fresh.")
+            return
+        processed_signals_today.update(state.get("ids", []))
+        logger.info(
+            f"Restored {len(processed_signals_today)} already-alerted signal(s) "
+            f"from {DEDUP_FILE} -- a restart will not re-alert them."
+        )
+    except FileNotFoundError:
+        pass
+    except Exception as e:
+        logger.error(f"Could not read dedup state ({e}) -- starting fresh.")
+
+
+def _save_dedup_state() -> None:
+    """Atomic write: a torn file read on the next boot would silently drop the
+    dedup memory, which is the exact failure this whole mechanism exists to
+    prevent."""
+    try:
+        tmp = f"{DEDUP_FILE}.tmp"
+        with open(tmp, "w") as fh:
+            json.dump(
+                {"date": _today_str(), "ids": sorted(processed_signals_today)}, fh
+            )
+        os.replace(tmp, DEDUP_FILE)
+    except Exception as e:
+        logger.error(f"Could not persist dedup state: {e}")
+
+
+def mark_processed(sig_id: str) -> None:
+    """Record an alerted signal, durably."""
+    processed_signals_today.add(sig_id)
+    _save_dedup_state()
+
 
 def clear_memory():
     processed_signals_today.clear()
+    _save_dedup_state()
     logger.info("Cleared daily signal memory for the new trading day.")
 
 # -------------------------------------------------------------------------
@@ -150,7 +312,16 @@ class SignalOutput(BaseModel):
 def fetch_signals() -> List[Dict]:
     """Fetch raw quant signals from Container B."""
     try:
-        response = requests.get(QUANT_ENGINE_URL, timeout=10)
+        # [ROADMAP-4.7 2026-07-13] Send the internal secret. /signals is not
+        # gated on the engine side today, so this changes nothing yet -- which
+        # is exactly why it should go in NOW rather than being discovered as a
+        # 403 on the morning someone gates it. The sibling momentum poll below
+        # already sends it; this was the odd one out.
+        response = requests.get(
+            QUANT_ENGINE_URL,
+            headers={"X-Internal-Secret": INTERNAL_API_SECRET},
+            timeout=10,
+        )
         response.raise_for_status()
         data = response.json()
         
@@ -327,7 +498,32 @@ def analyze_with_gemini(
         return None
 
     response = result_holder['response']
-    return response.parsed.model_dump() if response.parsed else json.loads(response.text)
+    if response.parsed:
+        return response.parsed.model_dump()
+
+    # [ROADMAP-4.7 2026-07-13] Was a bare `json.loads(response.text)`.
+    #
+    # This is the ONE place in the system where a third party's free-text
+    # output is parsed with no guard. Gemini is a language model: it can
+    # return prose, a fenced ```json block, or a truncated object, and any of
+    # those raise here. The exception propagated out of the conviction gate
+    # and killed the whole poll -- so a single malformed Gemini reply could
+    # take out every EXEC alert in the batch. (That is the same failure shape
+    # as the 2026-07-10 HUDCO stall, fixed on the loop side; this is the hole
+    # it came through.)
+    #
+    # Return None instead: the callers already treat a None analysis as
+    # "AI failed, manual review required" and STILL send the alert with a
+    # SYSTEM FALLBACK banner. Losing the AI opinion must never lose the trade.
+    try:
+        return json.loads(response.text)
+    except (json.JSONDecodeError, TypeError, AttributeError) as e:
+        preview = (getattr(response, "text", "") or "")[:200]
+        logger.error(
+            f"Gemini returned unparseable output for {ticker}: {e} -- "
+            f"proceeding without analysis. First 200 chars: {preview!r}"
+        )
+        return None
 
 def send_telegram_alert(signal: Dict, analysis: Dict):
     url = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage"
@@ -348,6 +544,11 @@ def send_telegram_alert(signal: Dict, analysis: Dict):
     # Action EXEC matches the handler in node-gateway/server/index.js.
     safe_sig_id = str(sig_id)[:40]
     ts = int(time.time())
+
+    # [HIGH-007 2026-07-13] Register BEFORE the button exists. If the operator
+    # can press it, the snapshot behind it must already be on disk.
+    register_approved_snapshot(safe_sig_id, ticker, "EXEC", signal)
+
     keyboard = {
         "inline_keyboard": [
             [
@@ -440,11 +641,11 @@ def run_momentum_pipeline():
                 # this, a Gemini veto was invisible: the engine's summary
                 # said "accepted" but no button alert ever arrived.
                 send_conviction_veto_notice(signal, analysis)
-                processed_signals_today.add(sig_id)
+                mark_processed(sig_id)
                 continue
 
             send_momentum_telegram_alert(signal, analysis, momentum_pool)
-            processed_signals_today.add(sig_id)
+            mark_processed(sig_id)
         except Exception as e:
             logger.error(
                 f"Momentum pipeline error for {ticker} (will retry next "
@@ -505,6 +706,13 @@ def send_momentum_telegram_alert(
     # [CRIT-001/002] Unified callback format: ACTION:signal_id:unix_ts
     sig_id = f"{ticker}_MOM"[:40]
     ts = int(time.time())
+
+    # [HIGH-007 2026-07-13] Register BEFORE the button exists. The engine's
+    # momentum list lives only in memory -- a restart wipes it and the press
+    # then dies with "Momentum signal not found in Engine state". This row is
+    # on disk and survives that.
+    register_approved_snapshot(sig_id, ticker, "EM", signal)
+
     keyboard = {
         "inline_keyboard": [[
             {"text": "✅ EXECUTE INTRADAY",
@@ -564,11 +772,11 @@ def run_pipeline():
 
             if analysis and analysis.get('conviction_score', 0) < 50:
                 logger.info(f"Skipped {ticker}. Low conviction score: {analysis.get('conviction_score')}")
-                processed_signals_today.add(sig_id)
+                mark_processed(sig_id)
                 continue
 
             send_telegram_alert(signal, analysis)
-            processed_signals_today.add(sig_id)
+            mark_processed(sig_id)
         except Exception as e:
             logger.error(
                 f"Swing pipeline error for {ticker} (will retry next run): {e}",
@@ -580,6 +788,11 @@ def run_pipeline():
 def main():
     logger.info("Container C (Intelligence Orchestrator) started.")
     logger.info("System configured for Asia/Kolkata timezone.")
+
+    # [ROADMAP-4.7 2026-07-13] Restore today's already-alerted signals BEFORE
+    # the first poll, or the restart we are trying to survive re-alerts them
+    # in the very next cycle.
+    _load_dedup_state()
     
     # Brute-force distinct alarm generation
     days = ["monday", "tuesday", "wednesday", "thursday", "friday"]

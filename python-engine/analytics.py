@@ -112,8 +112,11 @@ async def record_trade_outcome(
     # Idempotent -- safe to call on every close
     try:
         await init_analytics_db(db_path)
-    except Exception:
-        pass
+    except Exception as e:
+        # [ROADMAP-4.3 2026-07-13] Was a bare `pass`, which is doubly bad:
+        # the write below then runs against a table that may not exist and
+        # fails anyway -- but two levels up, where the cause is gone.
+        logger.warning("analytics_init_failed error=%s", str(e))
     try:
         closed_at = datetime.now(timezone.utc).isoformat()
         cutoff = (datetime.now(timezone.utc) - timedelta(days=7)).isoformat()
@@ -607,3 +610,87 @@ async def penny_outcome_correlator(db_path: str, days: int = 14) -> dict:
     out["losers"] = sum(1 for p in pnls if p < 0)
     out["win_rate"] = out["winners"] / out["total"] if out["total"] > 0 else 0.0
     return out
+
+
+# ---------------------------------------------------------------------------
+# [ROADMAP-5.1 2026-07-13] Real edge statistics over trade_outcomes.
+# ---------------------------------------------------------------------------
+
+async def edge_statistics(
+    db_path: str, days: int = 90, strategy: Optional[str] = None
+) -> dict:
+    """Expectancy, profit factor, max drawdown and bootstrapped 95% CIs.
+
+    The maths lives in edge_stats.py as pure functions; this is only the DB
+    adapter. Two details in the query are load-bearing:
+
+      * ORDER BY closed_at -- max_drawdown walks the equity curve in close
+        order and deliberately refuses to sort for itself, because it cannot
+        know which timestamp the caller meant. Feeding it unordered rows would
+        produce a plausible, wrong drawdown.
+      * r_multiple is allowed to be NULL. Older rows predate the column, and
+        edge_stats drops them from the R statistics rather than counting them
+        as 0.0 R -- which would drag expectancy toward zero and make a real
+        edge look like noise. Rupee statistics still use every row.
+
+    Default window is 90 days, not the 7/14 used elsewhere: these statistics
+    need a sample, and a 14-day window on this system's trade frequency cannot
+    supply one. The report says so rather than quietly returning a number --
+    see `reliable` and `verdict`.
+    """
+    from edge_stats import Trade, edge_report
+
+    cutoff = (datetime.now(timezone.utc) - timedelta(days=days)).isoformat()
+    sql = (
+        "SELECT realised_pnl, r_multiple FROM trade_outcomes "
+        "WHERE closed_at >= ?"
+    )
+    params: list = [cutoff]
+    if strategy:
+        sql += " AND strategy_version = ?"
+        params.append(strategy)
+    sql += " ORDER BY closed_at ASC"
+
+    try:
+        async with aiosqlite.connect(db_path) as db:
+            cur = await db.execute(sql, params)
+            rows = await cur.fetchall()
+    except Exception as e:
+        logger.error("edge_statistics_failed error=%s", str(e))
+        return {"days": days, "n": 0, "verdict": "no_data", "error": str(e)}
+
+    trades = [Trade(pnl=r[0] or 0.0, r=r[1]) for r in rows]
+    report = edge_report(trades)
+    report["days"] = days
+    report["strategy"] = strategy
+
+    # [ROADMAP-5.2 2026-07-13] Assert the cost bypass is OFF, in the report.
+    #
+    # PENNY_BROKERAGE_BYPASS zeroes every penny cost. On a Rs 2,500 bankroll,
+    # Rs 20/order + STT + GST is not a rounding error -- it is most of the edge.
+    # An expectancy computed while that flag was on is not a slightly-optimistic
+    # number, it is a fictional one, and it is exactly the number an operator
+    # would use to decide to scale up.
+    #
+    # So the report carries the flag and REFUSES to certify an edge while it is
+    # set. Better to withhold a verdict than to hand back "edge_demonstrated"
+    # earned by not paying brokerage.
+    from config import settings as _settings
+
+    bypassed = bool(_settings.PENNY_BROKERAGE_BYPASS)
+    report["brokerage_bypass_active"] = bypassed
+    if bypassed:
+        report["costs_are_fictional"] = True
+        report["verdict"] = "invalid_costs_bypassed"
+        report["warning"] = (
+            "PENNY_BROKERAGE_BYPASS is ON: all penny costs are zeroed, so this "
+            "expectancy is gross, not net. On a Rs 2,500 bankroll the costs are "
+            "most of the edge. Turn the flag off and re-run before believing any "
+            "of these numbers."
+        )
+        logger.warning(
+            "edge_statistics_with_costs_bypassed n=%s -- report is gross P&L, "
+            "not net; verdict withheld", report.get("n"),
+        )
+
+    return report

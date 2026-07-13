@@ -36,113 +36,63 @@ from backtest import run_backtest
 from models import PerformanceReport, OpenPosition
 from breadth import BreadthEngine
 from universe import Universe
-# ---- [AUDIT-FIX-2.2] Internal-API-secret gate hardening -------------------
 
-# Module-level flag so we only log the empty-secret warning once at
-# startup (loud) + once per auth-failed call (medium). Avoids log spam.
-_internal_secret_warning_emitted = False
+# ---------------------------------------------------------------------------
+# [ROADMAP-4.1 2026-07-13] Extracted modules, re-exported here.
+#
+# The auth gate, the token lifecycle and the ops watchdogs now live in their
+# own files. They are re-exported into main's namespace ON PURPOSE, and the
+# re-export is load-bearing, not cosmetic:
+#
+#   * ~30 call sites and tests do `from main import _token_recon_mismatch_message`
+#     / `main._scheduler_tick_job()` / `from main import _kite_probe_evaluate`.
+#   * the scheduler registers these by REFERENCE, and the add_job census pins
+#     each job as (callable, trigger, id) -- the callable's __name__ must not
+#     change or a job looks dropped.
+#
+# So this is a move, not a rename. Same objects, same names, new home.
+# ---------------------------------------------------------------------------
+from engine_auth import (
+    _check_internal_secret,
+    _send_internal_secret_alert,
+)
+from token_lifecycle import (
+    TOKEN_RECON_ALERT_MIN_INTERVAL_SEC,
+    TokenPayload,
+    _kite_token_cache_path,
+    _load_persisted_kite_token_if_fresh,
+    _persist_kite_token,
+    _token_recon_mismatch_message,
+    _token_recon_state,
+    _token_reconciliation_tick,
+    restore_kite_token_if_fresh,
+)
+from ops_watchdogs import (
+    KITE_PROBE_ALERT_MIN_INTERVAL_SEC,
+    KITE_PROBE_FAILURES_TO_ALERT,
+    _kite_endpoint_probe_tick,
+    _kite_probe_evaluate,
+    _kite_probe_state,
+    _ops_daily_snapshot,
+    _scheduler_tick_job,
+    _scheduler_tick_path,
+    _scheduler_tick_state,
+    _trading_readiness_tick,
+)
+# [OUTAGE-2026-07-13] The single way to page the operator. Re-exported as
+# _notify_operator so route handlers reach it via _main.
+from operator_alert import notify_operator as _notify_operator
 
-
-def _check_internal_secret(request: Request, endpoint_name: str) -> None:
-    """
-    [AUDIT-FIX-2.2 2026-06-25] Centralised auth-gate for internal
-    endpoints (/positions/manual, /positions/close, /api/internal/*,
-    the CNC alert webhook target).
-
-    Behaviour:
-      - INTERNAL_API_SECRET env var is set + caller sends the right
-        value -> allow.
-      - INTERNAL_API_SECRET env var is set + caller sends wrong/missing
-        value -> 403 (same as before; this fix doesn't change it).
-      - INTERNAL_API_SECRET env var is EMPTY (not set in .env) -> 503.
-        This is louder than 403 and tells the operator the endpoint
-        is misconfigured, not that the caller is wrong. The system
-        STAYS UP (other endpoints work) but refuses to mutate until
-        the secret is configured.
-
-    Why this matters: pre-fix, an empty secret defaulted `if secret !=
-    ""` to True, allowing ANY caller (including an attacker on the
-    docker network) to invoke internal endpoints by sending
-    `X-Internal-Secret: ` (empty string). With the empty-secret
-    setting, the attacker could close positions, send manual positions,
-    etc.
-
-    Why not hard-fail at startup: per operator mandate (2026-06-25),
-    internal endpoints going down must NOT block the system during
-    market hours. We log + refuse requests + emit Telegram alert, but
-    the scanner loop keeps running.
-    """
-    global _internal_secret_warning_emitted
-    configured = settings.INTERNAL_API_SECRET
-    sent = request.headers.get("X-Internal-Secret", "")
-
-    if not configured:
-        # Misconfigured deployment: secret not set.
-        if not _internal_secret_warning_emitted:
-            # Loud one-time warning at first hit. After this, log at
-            # WARNING level per call (rare event, should be fixed).
-            logger.critical(
-                "internal_api_secret_not_configured "
-                "endpoint=%s FIX=set INTERNAL_API_SECRET env var to a non-empty value",
-                endpoint_name,
-            )
-            # Telegram alert (best-effort, fire-and-forget so the sync
-            # gate function can return immediately). create_task only
-            # works inside a running event loop, so guard.
-            try:
-                import asyncio
-                try:
-                    asyncio.get_running_loop()
-                    asyncio.create_task(_send_internal_secret_alert())
-                except RuntimeError:
-                    # No running loop (test context). The warning is
-                    # enough -- we already logged at CRITICAL above.
-                    pass
-            except Exception:
-                # Don't propagate -- notify failure must not block the gate.
-                pass
-            _internal_secret_warning_emitted = True
-        else:
-            logger.warning(
-                "internal_api_secret_not_configured endpoint=%s",
-                endpoint_name,
-            )
-        raise HTTPException(
-            status_code=503,
-            detail=(
-                "Internal API not configured: INTERNAL_API_SECRET env "
-                "var must be set to a non-empty value. Operator has "
-                "been alerted. System continues running -- other "
-                "endpoints and the scanner are unaffected."
-            ),
-        )
-
-    # Normal auth: secret configured, check the caller's value.
-    if sent != configured:
-        raise HTTPException(status_code=403, detail="Unauthorized")
-
-
-async def _send_internal_secret_alert() -> None:
-    """[AUDIT-FIX-2.2] Best-effort Telegram alert when the secret
-    is empty. Wrapped in its own function so the caller (sync gate)
-    can fire-and-forget via asyncio.create_task."""
-    try:
-        import httpx as _httpx
-        msg = (
-            "🚨 **SECURITY: INTERNAL_API_SECRET not configured** 🚨\n"
-            "Internal endpoints (/token, /positions/manual, "
-            "/positions/close) are refusing requests with HTTP 503. Set "
-            "INTERNAL_API_SECRET in .env to a non-empty value."
-        )
-        async with _httpx.AsyncClient() as _client:
-            await _client.post(
-                f"{settings.CONTAINER_A_URL}/api/internal/notify",
-                json={"message": msg},
-                headers={"X-Internal-Secret": settings.INTERNAL_API_SECRET or ""},
-                timeout=5.0,
-            )
-    except Exception as e:
-        logger.warning("internal_secret_alert_failed error=%s", str(e))
+# [ROADMAP-4.1 stage 2 2026-07-13] The two scheduler-registration functions
+# moved to scheduler_setup.py. Re-exported here because lifespan() calls them
+# by bare name, and tests import them from main.
+#
+# Import order matters and is safe: scheduler_setup imports main LAZILY (inside
+# the register functions), so this top-level import cannot cycle.
+from scheduler_setup import (
+    register_fno_scheduler_jobs,
+    register_penny_scheduler_jobs,
+)
 
 
 # [PENNY-MAIN 2026-06-21] Penny subsystem module imports.
@@ -1067,8 +1017,12 @@ async def run_penny_hourly_report():
             try:
                 from datetime import date, datetime as _dt
                 _uni_age_days = (date.today() - _dt.strptime(_uni_as_of, "%Y-%m-%d").date()).days
-            except Exception:
-                pass
+            except Exception as e:
+                # [ROADMAP-4.3] Cosmetic (the report just omits the age),
+                # but a parse failure here means the universe's as_of stamp
+                # is malformed -- worth one debug line, not silence.
+                logger.debug("penny_universe_age_parse_failed as_of=%s error=%s",
+                             _uni_as_of, str(e))
         await run_hourly_report(
             db_path=settings.DB_PATH,
             regime=_penny_regime_engine.today_regime.value
@@ -1326,640 +1280,12 @@ def _fno_regime_str() -> str:
     try:
         if _last_regime_state is not None:
             return _last_regime_state.regime.value
-    except Exception:
-        pass
+    except Exception as e:
+        # [ROADMAP-4.3 2026-07-13] "UNKNOWN" closes the F&O regime gate, so
+        # a silent exception here disables the whole F&O book and looks
+        # identical to a legitimately unclassified market. Log it.
+        logger.warning("fno_regime_read_failed error=%s", str(e))
     return "UNKNOWN"
-
-
-def register_fno_scheduler_jobs(scheduler):
-    """
-    [FNO 2026-07-10] F&O subsystem scheduler jobs (spec §5/§9.3).
-    Module-level function (like register_penny_scheduler_jobs) so tests
-    can verify registration without booting the lifespan.
-
-    Jobs:
-      - fno_instruments_refresh: 08:00 IST daily (NFO dump -> keyed cache,
-        persisted to disk for cold-start rehydration) + startup catchup
-      - fno_tick: every FNO_SCAN_INTERVAL_SEC, self-gates to market hours
-      - fno_hourly_report: minute=0, 10:00-15:00 IST
-      - fno_accept_watchdog: 15:45 IST (zero-accept alarm, §9.2)
-    """
-    import httpx as _httpx
-
-    async def _run_fno_instruments_refresh():
-        # [Rule 55] First-line breadcrumb.
-        logger.info(
-            "fno_instruments_refresh_invoked now_ist=%s",
-            datetime.now(IST).strftime("%Y-%m-%d %H:%M:%S"),
-        )
-        # [CALENDAR-GATE 2026-07-03] weekend / NSE-holiday early-return.
-        # A Saturday NFO dump download is 60-90k rows of wasted fetch;
-        # Monday's 08:05 cron owns the fresh book.
-        today = datetime.now(IST).date()
-        if not await is_trading_day(today, settings.DB_PATH):
-            logger.info("fno_instruments_refresh_skip reason=non_trading_day")
-            return
-        if not kite.access_token:
-            logger.warning("fno_instruments_refresh_skip reason=no_access_token")
-            return
-        try:
-            from fno_instruments import get_fno_instruments
-            await get_fno_instruments().refresh(kite)
-        except Exception as exc:
-            logger.error("fno_instruments_refresh_failed err=%s", exc, exc_info=True)
-
-    scheduler.add_job(
-        _run_fno_instruments_refresh, "cron",
-        hour=settings.PENNY_REFRESH_HOUR, minute=5,
-        id="fno_instruments_refresh",
-        max_instances=1, coalesce=True, misfire_grace_time=600,
-    )
-
-    # Startup catchup: if the container starts after 08:05 IST on a day
-    # with no fresh disk snapshot, fire the refresh once (rule 49 shape).
-    try:
-        _now_ist = datetime.now(IST)
-        if _now_ist.hour * 60 + _now_ist.minute >= settings.PENNY_REFRESH_HOUR * 60 + 5:
-            from fno_instruments import get_fno_instruments as _gfi
-            if not _gfi().ready(_now_ist.date()):
-                logger.warning(
-                    "fno_instruments_startup_catchup_firing now_ist=%s",
-                    _now_ist.strftime("%H:%M:%S"),
-                )
-                asyncio.create_task(_run_fno_instruments_refresh())
-    except Exception as _exc:
-        logger.warning("fno_instruments_startup_catchup_failed err=%s", str(_exc))
-
-    async def _run_fno_tick_safe():
-        from fno_orchestrator import format_fno_telegram, run_fno_tick
-        # [Rule 55] First-line breadcrumb on EVERY invocation. The tick
-        # self-gates below; a missing breadcrumb means the scheduler
-        # never fired (rule 62 territory), not a quiet market.
-        now_ist = datetime.now(IST)
-        nm = now_ist.hour * 60 + now_ist.minute
-        # Gate to session hours (09:15 - 15:25; exits incl. the 15:10
-        # hard flat need ticks past the entry window).
-        if not (9 * 60 + 15 <= nm <= 15 * 60 + 25):
-            return
-        logger.info("fno_tick_invoked now_ist=%s", now_ist.strftime("%H:%M:%S"))
-        today = now_ist.date()
-        if not await is_trading_day(today, settings.DB_PATH):
-            logger.info("fno_tick_skip reason=non_trading_day")
-            return
-        if not kite.access_token:
-            logger.warning("fno_tick_skip reason=no_access_token")
-            return
-        try:
-            summary = await run_fno_tick(
-                kite,
-                regime=_fno_regime_str(),
-                is_trading_day=True,
-            )
-            if summary.get("entries") or summary.get("exits"):
-                try:
-                    msg = format_fno_telegram(summary)
-                    async with _httpx.AsyncClient() as _client:
-                        await _client.post(
-                            f"{settings.CONTAINER_A_URL}/api/internal/notify",
-                            json={"message": msg},
-                            headers={"X-Internal-Secret": settings.INTERNAL_API_SECRET or ""},
-                            timeout=5.0,
-                        )
-                except Exception as notify_exc:
-                    logger.warning("fno_tick_notify_failed err=%s", notify_exc)
-        except Exception as exc:
-            logger.error("fno_tick_failed err=%s", exc, exc_info=True)
-
-    scheduler.add_job(
-        _run_fno_tick_safe, "interval",
-        seconds=settings.FNO_SCAN_INTERVAL_SEC,
-        id="fno_tick",
-        max_instances=1, coalesce=True, misfire_grace_time=120,
-    )
-    logger.info(
-        "fno_cron_registered id=fno_tick interval=%ds max_instances=1 coalesce=True",
-        settings.FNO_SCAN_INTERVAL_SEC,
-    )
-
-    async def _run_fno_hourly_report_safe():
-        from fno_hourly_report import build_hourly_report, is_in_report_window
-        now_ist = datetime.now(IST)
-        if not is_in_report_window(now_ist):
-            return
-        logger.info("fno_hourly_report_invoked now_ist=%s", now_ist.strftime("%H:%M:%S"))
-        today = now_ist.date()
-        if not await is_trading_day(today, settings.DB_PATH):
-            logger.info("fno_hourly_report_skip reason=non_trading_day")
-            return
-        try:
-            msg = await build_hourly_report(
-                settings.DB_PATH, now_ist, regime=_fno_regime_str(),
-            )
-            async with _httpx.AsyncClient() as _client:
-                await _client.post(
-                    f"{settings.CONTAINER_A_URL}/api/internal/notify",
-                    json={"message": msg},
-                    headers={"X-Internal-Secret": settings.INTERNAL_API_SECRET or ""},
-                    timeout=5.0,
-                )
-        except Exception as exc:
-            logger.error("fno_hourly_report_failed err=%s", exc, exc_info=True)
-
-    scheduler.add_job(
-        _run_fno_hourly_report_safe, "cron", minute=0,
-        id="fno_hourly_report",
-        max_instances=1, coalesce=True, misfire_grace_time=600,
-    )
-
-    # 15:45 IST zero-accept watchdog (§9.2). Read-only over fno_signals --
-    # needs no Kite token, so no token guard: it must fire ESPECIALLY on
-    # token-less days.
-    async def _run_fno_accept_watchdog_safe():
-        from fno_accept_watchdog import format_zero_accept_alert, zero_accept_scan
-        logger.info(
-            "fno_accept_watchdog_invoked now_ist=%s",
-            datetime.now(IST).strftime("%Y-%m-%d %H:%M:%S"),
-        )
-        today = datetime.now(IST).date()
-        if not await is_trading_day(today, settings.DB_PATH):
-            logger.info("fno_accept_watchdog_skip reason=non_trading_day")
-            return
-        try:
-            payload = await zero_accept_scan(settings.DB_PATH)
-            if payload is None:
-                logger.info("fno_accept_watchdog_ok")
-                return
-            # [Rule 72] Degradation is a WARNING, never an INFO -- unless
-            # it's the documented self-regulation case.
-            if payload.get("self_regulating"):
-                logger.info(
-                    "fno_self_regulation_note days=%s evaluations=%d",
-                    ",".join(payload["days"]), payload["evaluations"],
-                )
-            else:
-                logger.warning(
-                    "fno_zero_accept_alarm days=%s evaluations=%d dead_gate=%s",
-                    ",".join(payload["days"]), payload["evaluations"],
-                    payload.get("dead_gate") or "none",
-                )
-            msg = format_zero_accept_alert(payload)
-            async with _httpx.AsyncClient() as _client:
-                await _client.post(
-                    f"{settings.CONTAINER_A_URL}/api/internal/notify",
-                    json={"message": msg},
-                    headers={"X-Internal-Secret": settings.INTERNAL_API_SECRET or ""},
-                    timeout=5.0,
-                )
-        except Exception as exc:
-            logger.error("fno_accept_watchdog_failed err=%s", exc, exc_info=True)
-
-    scheduler.add_job(
-        _run_fno_accept_watchdog_safe, "cron",
-        hour=15, minute=45,
-        id="fno_accept_watchdog",
-        max_instances=1, coalesce=True, misfire_grace_time=600,
-    )
-    logger.info(
-        "fno_cron_registered id=fno_instruments_refresh,fno_hourly_report,"
-        "fno_accept_watchdog"
-    )
-
-
-def register_penny_scheduler_jobs(scheduler):
-    """
-    [PENNY-MAIN 2026-06-21] Register all 7 penny subsystem scheduler jobs
-    on the given scheduler instance. Extracted from the FastAPI
-    lifespan() so the test suite (which does not boot the lifespan)
-    can verify registration by calling this directly with
-    `main.scheduler`.
-    """
-    scheduler.add_job(
-        run_penny_universe_refresh, "cron",
-        hour=settings.PENNY_REFRESH_HOUR, minute=0,
-        id="penny_universe_refresh",
-    )
-    # [PENNY-PREMARKET 2026-06-24] Pre-market Telegram digest -- fires
-    # once per weekday at PENNY_PREMARKET_REPORT_HOUR:PENNY_PREMARKET_REPORT_MIN
-    # IST (default 07:50). Reads the universe JSON, lists size + top-N,
-    # delivers via Telegram -> webhook fallback. Gives the operator a
-    # "universe is N today" signal BEFORE market opens so silence at
-    # 10:30 / 11:30 / 12:30 isn't ambiguous (was the universe empty, or
-    # did the strategies reject?). Setting hour=0 disables the job.
-    if settings.PENNY_PREMARKET_REPORT_HOUR > 0:
-        async def _run_penny_premarket_report():
-            # [CALENDAR-GATE 2026-07-03] P1 follow-up to PR-1. Skip on
-            # weekends + NSE holidays. A Saturday premarket digest
-            # would just re-publish Friday's data.
-            today = datetime.now(IST).date()
-            if not await is_trading_day(today, settings.DB_PATH):
-                logger.info("penny_premarket_report_skip reason=non_trading_day")
-                return
-            from penny_premarket_report import run_premarket_report
-            try:
-                await run_premarket_report()
-            except Exception as e:
-                logger.error("penny_premarket_report_failed", error=str(e))
-        scheduler.add_job(
-            _run_penny_premarket_report, "cron",
-            hour=settings.PENNY_PREMARKET_REPORT_HOUR,
-            minute=settings.PENNY_PREMARKET_REPORT_MIN,
-            id="penny_premarket_report",
-        )
-    scheduler.add_job(
-        run_penny_regime_compute, "cron",
-        hour=9, minute=20,
-        id="penny_regime_compute",
-    )
-    scheduler.add_job(
-        run_penny_regime_refresh, "cron",
-        hour=13, minute=0,
-        id="penny_regime_refresh",
-    )
-    scheduler.add_job(
-        run_penny_scanner_once, "interval",
-        seconds=settings.PENNY_SCAN_INTERVAL_SEC,
-        id="penny_scan_interval",
-        # [BUG-FIX 2026-07-01] Single-instance + coalesce.
-        # Today the scanner hung on Kite calls and apscheduler refused
-        # to launch any overlapping jobs (including penny_edge_scan),
-        # deadlocking the entire 09:30 IST cron for the rest of
-        # the day. coalesce=True means missed-trigger slots
-        # collapse into one rather than pile up. Combined with
-        # the asyncio.wait_for in run_penny_scanner_once, this
-        # breaks the deadlock.
-        max_instances=1,
-        coalesce=True,
-    )
-    scheduler.add_job(
-        run_penny_connors_scan, "cron",
-        hour=9, minute=30,
-        id="penny_connors_scan",
-    )
-    # [PENNY-EDGE 2026-07-01] Adaptive MR+MO signal scanner.
-    # TWO legs run side-by-side each morning:
-    #   - PAPER leg: bankroll = PENNY_EDGE_PAPER_BANKROLL (default Rs 100,000)
-    #   - LIVE leg:  bankroll = PENNY_EDGE_LIVE_BANKROLL (default Rs 1,000)
-    # Both share the same signal engine but each sizes positions
-    # against its own bankroll. They are tracked separately in the
-    # positions table (source='EDGE_PAPER' vs 'EDGE_LIVE') so they
-    # don't double up or see each other's idempotency rows.
-    # Fires at 09:30 IST daily, in parallel with the connors scan.
-    async def _run_penny_edge_scan_safe():
-        import httpx as _httpx
-        from penny_edge_orchestrator import (
-            run_penny_edge_scan,
-            format_telegram,
-        )
-        # [PENNY-EDGE-BREADCRUMB 2026-07-06] First-line diagnostic log.
-        # Today's incident: penny_edge_scan was registered at 07:09 IST
-        # but NEVER FIRED at 09:30 IST. Without this breadcrumb there is
-        # no way to distinguish "scheduler skipped the trigger" from
-        # "handler ran and returned no candidates" from "handler raised
-        # silently". Rule 49 (trading-sentinel-ops): every wall-clock
-        # cron needs a startup-catchup + first-line breadcrumb so the
-        # absence of any penny_edge_scan log lines at 09:30 is debuggable
-        # in 30 seconds instead of needing a full re-deploy.
-        logger.info(
-            "penny_edge_scan_invoked now_ist=%s source=cron_or_catchup",
-            datetime.now(IST).strftime("%Y-%m-%d %H:%M:%S"),
-        )
-        # [CALENDAR-GATE 2026-07-03] weekend / NSE-holiday early-return.
-        # No orders are placed here (Telegram notify only), but the gate
-        # keeps the cron pattern consistent with _run_penny_edge_exit_safe
-        # so the guard test sees one rule for every edge closure.
-        today = datetime.now(IST).date()
-        if not await is_trading_day(today, settings.DB_PATH):
-            logger.info("penny_edge_scan_skip reason=non_trading_day")
-            return
-        # [FIX-PHASE3-AUDIT 2026-07-09] No-token guard -- same rationale
-        # as run_penny_scanner_once (2026-07-09 missed-login incident).
-        if not kite.access_token:
-            logger.warning("penny_edge_scan_skip reason=no_access_token")
-            return
-        try:
-            summary = await run_penny_edge_scan(kite)
-            try:
-                msg = format_telegram(summary, header="Penny Edge scan")
-                async with _httpx.AsyncClient() as _client:
-                    await _client.post(
-                        f"{settings.CONTAINER_A_URL}/api/internal/notify",
-                        json={"message": msg},
-                        headers={"X-Internal-Secret": settings.INTERNAL_API_SECRET or ""},
-                        timeout=5.0,
-                    )
-            except Exception as notify_exc:
-                logger.warning("penny_edge_notify_failed err=%s", notify_exc)
-        except Exception as exc:
-            logger.error("penny_edge_scan_failed err=%s", exc, exc_info=True)
-
-    # [PENNY-EDGE-CRON-GUARD 2026-07-01] Single-instance + coalesce.
-    # Rule 39 (trading-sentinel-ops): any cron sharing the scheduler
-    # with the legacy penny_scanner_once (which is also fixed with
-    # max_instances=1+coalesce=True today) MUST use the same
-    # discipline -- otherwise a hung tick of EITHER subsystem can
-    # deadlock the other. The default max_instances=1 is fine, but
-    # we make it explicit and add coalesce=True so missed triggers
-    # collapse instead of pile up. Same loud-but-non-blocking pattern
-    # as the live-trading-audit-fix-pattern skill.
-    #
-    # [PENNY-EDGE-MISFIRE-GUARD 2026-07-06] Job-level
-    # misfire_grace_time=600 (10 minutes). The scheduler's
-    # job_defaults sets it globally, but defending-in-depth at the
-    # job level protects against future scheduler-default regressions
-    # and documents the intent at the registration site. If the 09:30
-    # IST cron trigger fires while a 30s penny_scan_interval tick is
-    # mid-flight, APScheduler marks the trigger as pending; without
-    # this grace window APScheduler's default of 1s drops the trigger
-    # forever and the daily scan is silently missed. 600s gives the
-    # longest realistic scan timeout (90s) ample headroom.
-    scheduler.add_job(
-        _run_penny_edge_scan_safe, "cron",
-        hour=9, minute=30,
-        id="penny_edge_scan",
-        max_instances=1,
-        coalesce=True,
-        misfire_grace_time=600,
-    )
-    logger.info(
-        "penny_edge_cron_registered id=penny_edge_scan "
-        "schedule=\"09:30 IST daily\" max_instances=1 coalesce=True "
-        "misfire_grace_time=600"
-    )
-
-    # [PENNY-EDGE-STARTUP-CATCHUP 2026-07-02] If the container starts
-    # after the cron fire-time (today's incident: 14:53 IST startup,
-    # 09:30 IST cron already missed -> zero signals all day), fire
-    # the scan ONCE on startup. Same for the 15:15 exit if the
-    # container is alive past market close.
-    #
-    # Coalesce=True means the missed 09:30 trigger gets dropped when
-    # the scheduler next evaluates, so without this catchup the cron
-    # is silently never fired for that day. The catchup is one-shot
-    # per startup, fires immediately (no delay), and the normal cron
-    # still owns subsequent days.
-    try:
-        from datetime import datetime, time as _dt_time, timezone as _dt_tz
-        from zoneinfo import ZoneInfo
-        _now_ist = datetime.now(ZoneInfo("Asia/Kolkata"))
-        _today_0930 = _now_ist.replace(hour=9, minute=30, second=0, microsecond=0)
-        _today_1515 = _now_ist.replace(hour=15, minute=15, second=0, microsecond=0)
-        if _now_ist >= _today_0930 and _now_ist < _today_1515:
-            logger.warning(
-                "penny_edge_scan_startup_catchup_firing "
-                "reason=container_started_after_0930_IST "
-                "now_ist=%s",
-                _now_ist.strftime("%H:%M:%S"),
-            )
-            asyncio.create_task(_run_penny_edge_scan_safe())
-        elif _now_ist >= _today_1515:
-            logger.warning(
-                "penny_edge_scan_startup_skipped "
-                "reason=container_started_after_market_close "
-                "now_ist=%s -- exit catchup will fire instead",
-                _now_ist.strftime("%H:%M:%S"),
-            )
-        else:
-            logger.info(
-                "penny_edge_scan_startup_skipped reason=before_0930_IST "
-                "now_ist=%s -- normal cron will fire on schedule",
-                _now_ist.strftime("%H:%M:%S"),
-            )
-    except Exception as _catchup_exc:
-        # Loud-but-non-blocking: never fail startup over the catchup.
-        logger.warning(
-            "penny_edge_scan_startup_catchup_failed err=%s",
-            str(_catchup_exc),
-        )
-
-    # [PENNY-EDGE 2026-07-01] EOD exit job: force-close any EDGE-sourced
-    # positions (both PAPER and LIVE legs) older than 3 days.
-    async def _run_penny_edge_exit_safe():
-        import httpx as _httpx
-        from penny_edge_orchestrator import (
-            run_penny_edge_exit,
-            format_exit_telegram,
-        )
-        # [PENNY-EDGE-BREADCRUMB 2026-07-06] First-line diagnostic log.
-        # Same rationale as the breadcrumb in _run_penny_edge_scan_safe.
-        # The 15:15 IST EOD exit was also silently not firing today --
-        # without this log line, a missed 15:15 fire looks identical
-        # to "no EDGE positions held, no work to do" in the logs.
-        logger.info(
-            "penny_edge_exit_invoked now_ist=%s source=cron_or_catchup",
-            datetime.now(IST).strftime("%Y-%m-%d %H:%M:%S"),
-        )
-        # [CALENDAR-GATE 2026-07-03] weekend / NSE-holiday early-return.
-        # REAL FINANCIAL RISK: this closure calls run_penny_edge_exit which
-        # places exit orders via kite. Firing on a non-trading day would
-        # exit positions at stale weekend prices for any EDGE positions
-        # held across a weekend (rare but possible). Mirrors
-        # run_penny_force_close_mis and auto_square_momentum gates.
-        today = datetime.now(IST).date()
-        if not await is_trading_day(today, settings.DB_PATH):
-            logger.info("penny_edge_exit_skip reason=non_trading_day")
-            return
-        try:
-            summary = await run_penny_edge_exit(kite)
-            try:
-                msg = format_exit_telegram(summary)
-                if len(summary.get("closed_paper", [])) + len(summary.get("closed_live", [])) > 0:
-                    async with _httpx.AsyncClient() as _client:
-                        await _client.post(
-                            f"{settings.CONTAINER_A_URL}/api/internal/notify",
-                            json={"message": msg},
-                            headers={"X-Internal-Secret": settings.INTERNAL_API_SECRET or ""},
-                            timeout=5.0,
-                        )
-            except Exception as notify_exc:
-                logger.warning("penny_edge_exit_notify_failed err=%s", notify_exc)
-        except Exception as exc:
-            logger.error("penny_edge_exit_failed err=%s", exc, exc_info=True)
-
-    # [PENNY-EDGE-CRON-GUARD 2026-07-01] max_instances=1 + coalesce=True.
-    # Same rationale as the penny_edge_scan cron guard above: the
-    # 15:15 IST EOD exit must not be allowed to deadlock the
-    # scheduler if the kite-stub interaction stalls.
-    #
-    # [PENNY-EDGE-MISFIRE-GUARD 2026-07-06] misfire_grace_time=600.
-    # See the rationale on the penny_edge_scan registration above;
-    # 15:15 IST exit must also be protected from the same silent
-    # drop. REAL FINANCIAL RISK: a missed 15:15 exit leaves EDGE
-    # positions open overnight (the 3-day age rule doesn't fire).
-    scheduler.add_job(
-        _run_penny_edge_exit_safe, "cron",
-        hour=15, minute=15,
-        id="penny_edge_exit",
-        max_instances=1,
-        coalesce=True,
-        misfire_grace_time=600,
-    )
-    logger.info(
-        "penny_edge_cron_registered id=penny_edge_exit "
-        "schedule=\"15:15 IST daily\" max_instances=1 coalesce=True "
-        "misfire_grace_time=600"
-    )
-
-    # [PENNY-EDGE-STARTUP-CATCHUP 2026-07-02] Companion catchup for the
-    # 15:15 IST EOD exit. Fires only if the container was offline at
-    # 15:15 IST AND it's now after-market. The startup_scan catchup
-    # above already fires the scan if needed; this one only handles
-    # exit-time catchup (e.g. container restart right around 15:15).
-    try:
-        from datetime import datetime as _dt2, timezone as _dt2_tz
-        from zoneinfo import ZoneInfo
-        _now_ist2 = _dt2.now(ZoneInfo("Asia/Kolkata"))
-        _today_1515_b = _now_ist2.replace(hour=15, minute=15, second=0, microsecond=0)
-        if _now_ist2 >= _today_1515_b:
-            logger.warning(
-                "penny_edge_exit_startup_catchup_firing "
-                "reason=container_started_after_1515_IST now_ist=%s",
-                _now_ist2.strftime("%H:%M:%S"),
-            )
-            asyncio.create_task(_run_penny_edge_exit_safe())
-        else:
-            logger.info(
-                "penny_edge_exit_startup_skipped reason=before_1515_IST "
-                "now_ist=%s -- normal cron will fire on schedule",
-                _now_ist2.strftime("%H:%M:%S"),
-            )
-    except Exception as _exit_catchup_exc:
-        logger.warning(
-            "penny_edge_exit_startup_catchup_failed err=%s",
-            str(_exit_catchup_exc),
-        )
-
-    scheduler.add_job(
-        run_penny_eod_check, "cron",
-        hour=settings.PENNY_MIS_SMART_EOD_TIME // 60,
-        minute=settings.PENNY_MIS_SMART_EOD_TIME % 60,
-        id="penny_eod_check",
-    )
-    # [PENNY-G5 2026-06-25] 15:00 IST force-exit of all open MIS positions.
-    # Was silently missing before this commit -- mis_time_stop_active()
-    # was defined but never invoked. This scheduler entry fires once at
-    # 15:00 IST; the job itself is a no-op if the window has already passed.
-    scheduler.add_job(
-        run_penny_force_close_mis, "cron",
-        hour=settings.PENNY_BREAKOUT_TIME_EXIT // 60,
-        minute=settings.PENNY_BREAKOUT_TIME_EXIT % 60,
-        id="penny_force_close_mis",
-    )
-    # [TIER3-DAILY-ATTRIBUTION 2026-06-25] 15:30 IST daily P&L attribution.
-    # Fires 30 min after the 15:00 force-close so all MIS positions
-    # have been closed and the bankroll_ledger has the day's trades.
-    scheduler.add_job(
-        _run_penny_daily_attribution, "cron",
-        hour=settings.PENNY_DAILY_ATTRIBUTION_HOUR,
-        minute=settings.PENNY_DAILY_ATTRIBUTION_MIN,
-        id="penny_daily_attribution",
-    )
-    # [TIER3-POSITION-HEATMAP 2026-06-25] Mid-day position heat-map.
-    # Fires every 15 minutes from 10:00 to 14:45 IST (5 min before
-    # the smart-EOD at 14:30, so the operator sees the EOD-relevant
-    # state). Out-of-hours the job is a no-op (build_heatmap returns
-    # the "0 open positions" body when nothing is open).
-    scheduler.add_job(
-        _run_penny_heatmap, "interval", minutes=15,
-        id="penny_heatmap",
-    )
-    # [PHASE-C-EOD-DIGEST 2026-06-25] 16:00 IST end-of-day digest.
-    # Fires after the 15:30 daily attribution (T3-A) and the 15:00
-    # force-close (G5). At 16:00 all MIS positions are closed, CNC
-    # positions are held overnight, and the day's trades are in the
-    # bankroll_ledger. Body builder lives in operator_status.py.
-    scheduler.add_job(
-        _run_penny_eod_digest, "cron",
-        hour=16, minute=0,
-        id="penny_eod_digest",
-    )
-    scheduler.add_job(
-        run_penny_hourly_report, "cron", minute=0,
-        id="penny_hourly_report",
-    )
-
-    # [GAP-2 ZERO-ACCEPT ALARM 2026-07-10] 15:45 IST accept-rate
-    # watchdog, backported from the F&O spec §9.2. Fires after the
-    # 15:30 close so the day's rows are final. 215,814 evaluations and
-    # 0 accepts (BUG-1) produced no alert of any kind for nine months;
-    # this job would have caught it on day
-    # PENNY_ZERO_ACCEPT_ALERT_DAYS (default 2). Read-only over
-    # penny_signals -- needs no Kite token, so no no_access_token
-    # guard (it must fire ESPECIALLY on token-less days).
-    async def _run_penny_accept_watchdog_safe():
-        import httpx as _httpx
-        from penny_accept_watchdog import (
-            zero_accept_scan,
-            format_zero_accept_alert,
-        )
-        # [Rule 55] First-line breadcrumb.
-        logger.info(
-            "penny_accept_watchdog_invoked now_ist=%s",
-            datetime.now(IST).strftime("%Y-%m-%d %H:%M:%S"),
-        )
-        today = datetime.now(IST).date()
-        if not await is_trading_day(today, settings.DB_PATH):
-            logger.info("penny_accept_watchdog_skip reason=non_trading_day")
-            return
-        try:
-            payload = await zero_accept_scan(
-                settings.DB_PATH,
-                n_days=settings.PENNY_ZERO_ACCEPT_ALERT_DAYS,
-            )
-            if payload is None:
-                logger.info("penny_accept_watchdog_ok accepts_in_window=yes_or_insufficient_data")
-                return
-            # [Rule 72] Degradation is a WARNING, never an INFO.
-            logger.warning(
-                "penny_zero_accept_alarm days=%s evaluations=%d dead_gate=%s",
-                ",".join(payload["days"]), payload["evaluations"],
-                payload.get("dead_gate") or "none",
-            )
-            try:
-                msg = format_zero_accept_alert(payload)
-                async with _httpx.AsyncClient() as _client:
-                    await _client.post(
-                        f"{settings.CONTAINER_A_URL}/api/internal/notify",
-                        json={"message": msg},
-                        headers={"X-Internal-Secret": settings.INTERNAL_API_SECRET or ""},
-                        timeout=5.0,
-                    )
-            except Exception as notify_exc:
-                logger.warning("penny_accept_watchdog_notify_failed err=%s", notify_exc)
-        except Exception as exc:
-            logger.error("penny_accept_watchdog_failed err=%s", exc, exc_info=True)
-
-    scheduler.add_job(
-        _run_penny_accept_watchdog_safe, "cron",
-        hour=15, minute=45,
-        id="penny_accept_watchdog",
-        max_instances=1,
-        coalesce=True,
-        misfire_grace_time=600,
-    )
-    logger.info(
-        "penny_accept_watchdog_registered id=penny_accept_watchdog "
-        "schedule=\"15:45 IST daily\" n_days=%d",
-        settings.PENNY_ZERO_ACCEPT_ALERT_DAYS,
-    )
-
-    # [Rule 49] Startup catchup: a container started after 15:45 IST
-    # still audits the day (a restart evening is exactly when silent
-    # zero-accept days sneak past).
-    try:
-        from zoneinfo import ZoneInfo as _ZI_wd
-        _now_ist_wd = datetime.now(_ZI_wd("Asia/Kolkata"))
-        _today_1545 = _now_ist_wd.replace(hour=15, minute=45, second=0, microsecond=0)
-        if _now_ist_wd >= _today_1545:
-            logger.info(
-                "penny_accept_watchdog_startup_catchup_firing now_ist=%s",
-                _now_ist_wd.strftime("%H:%M:%S"),
-            )
-            asyncio.create_task(_run_penny_accept_watchdog_safe())
-    except Exception as _wd_catchup_exc:
-        logger.warning(
-            "penny_accept_watchdog_startup_catchup_failed err=%s",
-            str(_wd_catchup_exc),
-        )
 
 
 async def lifespan(app: FastAPI):
@@ -2051,6 +1377,22 @@ async def lifespan(app: FastAPI):
         _ops_daily_snapshot, 'cron', hour=15, minute=50,
         id="ops_daily_snapshot",
         max_instances=1, coalesce=True, misfire_grace_time=3600,
+    )
+
+    # [OUTAGE-2026-07-13 DEFECT 3+4] Trading-readiness watchdog. Asks, every 5
+    # minutes during market hours, the one question none of the other watchdogs
+    # asked on 2026-07-13: "the market is open -- CAN I TRADE?"
+    #
+    # The engine ran unarmed for six hours that day while the scheduler ticked,
+    # /health returned 200, every container reported healthy, and not one
+    # Telegram message was sent. Single-sided by design: unlike the token
+    # reconciliation cron it does not need node-gateway to be reachable, so a
+    # second fault cannot silence it. Function self-gates to 09:30-15:15 IST on
+    # trading days.
+    scheduler.add_job(
+        _trading_readiness_tick, 'cron', minute='*/5',
+        id="trading_readiness",
+        max_instances=1, coalesce=True, misfire_grace_time=120,
     )
 
     # 2026-06-22: daily reset of penny risk state at 00:05 IST (05:30 UTC isn't right;
@@ -2707,39 +2049,6 @@ async def daily_post_market():
                     recovery_trades=risk_engine._recovery_trades_remaining)
     _last_regime_was_crisis = False
 
-@app.get("/signals", response_model=PortfolioResponse)
-async def get_signals():
-    async with state_lock:
-        halted, reasons = await check_circuit_breakers(settings.DB_PATH)
-        open_pos = await get_open_positions(settings.DB_PATH)
-        # Strict separation: report Nifty-subsystem balance on /signals.
-        bankroll = await nifty_bankroll(settings.DB_PATH)
-
-        risk = sum((p['entry_price'] - p['stop_loss_initial']) * p['shares'] for p in open_pos)
-        deployed = sum(p['entry_price'] * p['shares'] for p in open_pos)
-        
-        # Mark stale
-        for s in current_signals:
-            s.stale_data = (datetime.now(timezone.utc) - s.signal_time).total_seconds() > 3600
-
-        return PortfolioResponse(
-            run_time=last_run or datetime.now(timezone.utc),
-            market_regime=market_regime,
-            bankroll=bankroll,
-            backtest_gate="PASS" if "BACKTEST_GATE_FAILED" not in reasons else "FAIL",
-            trading_halted=halted,
-            halt_reasons=reasons,
-            stale_data=bool(last_run and (datetime.now(timezone.utc) - last_run).total_seconds() > 3600),
-            total_capital_at_risk=risk,
-            total_capital_deployed=deployed,
-            bankroll_utilization_pct=deployed / bankroll if bankroll else 0,
-            open_positions_count=len(open_pos),
-            remaining_slots=settings.MAX_OPEN_POSITIONS - len(open_pos),
-            signals=current_signals,
-            regime=_last_regime_state.regime if _last_regime_state else Regime.UNKNOWN,
-            regime_score=_last_regime_state.regime_score if _last_regime_state else 100.0,
-        )
-
 # [MOMENTUM-SKIP-IF-RUNNING 2026-06-30] Re-entrancy guard. The
 # momentum scan fires every 15 min via cron; if the previous
 # run is still in flight (e.g. a slow Kite + 500-ticker universe)
@@ -3119,44 +2428,6 @@ async def _run_momentum_screener_impl(t0):
     except Exception as _e:
         logger.warning("momentum_signal_log_failed", error=str(_e))
 
-
-@app.get("/momentum-signals")
-async def get_momentum_signals():
-    async with state_lock:
-        # Strict separation: momentum display uses Nifty-subsystem balance.
-        bankroll      = await nifty_bankroll(settings.DB_PATH)
-        momentum_pool = bankroll * settings.MOMENTUM_POOL_PCT  # 50% of bankroll = Rs2,500 at Rs5k
-        halted, reasons = await check_circuit_breakers(settings.DB_PATH)
-
-        # [MOM-FUNNEL 2026-07-11] Serve the cumulative day list, not the
-        # latest 15-min snapshot. The snapshot made this endpoint lossy for
-        # its two consumers: the agent's poll (saw 3 of 17 signals on
-        # 2026-07-10 -- no EXEC-button alert for the other 14) and the
-        # gateway's EXEC callback (couldn't execute any signal wiped by a
-        # newer scan). Both consumers dedupe/lock per ticker, so the wider
-        # list is safe. Day guard: before the first scan of a new day,
-        # momentum_signals_today still holds yesterday's list -- serve [].
-        signals_today = (
-            momentum_signals_today
-            if last_momentum_date == datetime.now(IST).date()
-            else []
-        )
-        for s in signals_today:
-            s.stale_data = (
-                datetime.now(timezone.utc) - s.signal_time
-            ).total_seconds() > 1800   # 30 min stale for intraday
-
-        return {
-            "run_time":         last_run,
-            "market_regime":    market_regime,
-            "momentum_pool":    round(momentum_pool, 2),
-            "trading_halted":   halted,
-            "halt_reasons":     reasons,
-            "signals":          signals_today,
-            # Latest scan's snapshot, kept for observability/debugging.
-            "latest_scan_signals": current_momentum_signals,
-        }
-
 async def auto_square_momentum():
     """
     [AUTO-SQUARE] 15:15 IST: Square off all open MOMENTUM positions.
@@ -3402,505 +2673,6 @@ async def _notify_momentum_heartbeat(
         logger.error("momentum_heartbeat_failed", error=str(e))
 
 
-@app.post("/positions/manual")
-async def add_manual_position(request: Request, payload: ManualPositionRequest):
-    """
-    Called by Container A after a successful execution.
-    Creates a new position in the database.
-
-    [AUDIT-FIX-1.4 2026-06-25] Body is now validated by Pydantic
-    (ManualPositionRequest). Missing required fields -> HTTP 422
-    with field-level error messages. Previously: KeyError -> HTTP 500.
-
-    [AUDIT-FIX-2.2 2026-06-25] Uses the centralised auth gate.
-    """
-    _check_internal_secret(request, "add_manual_position")
-
-    # Derive stop / targets from entry_price if not supplied. Same
-    # defaults as the pre-fix manual dict path (95% / 105% / 110%).
-    stop_loss = payload.stop_loss if payload.stop_loss is not None else payload.entry_price * 0.95
-    target_1  = payload.target_1  if payload.target_1  is not None else payload.entry_price * 1.05
-    target_2  = payload.target_2  if payload.target_2  is not None else payload.entry_price * 1.10
-
-    async with aiosqlite.connect(settings.DB_PATH) as db:
-        await db.execute("""
-            INSERT INTO positions (
-                ticker, exchange, entry_date, entry_price, shares,
-                stop_loss_initial, trailing_stop_current, target_1, target_2,
-                atr_14_at_entry, highest_close_since_entry, status, source, product_type,
-                regime_at_entry
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-        """, (payload.ticker, payload.exchange, datetime.now(timezone.utc).isoformat(),
-              payload.entry_price, payload.shares, stop_loss, stop_loss,
-              target_1, target_2, 0.0, payload.entry_price, "OPEN",
-              payload.source, payload.product_type, payload.regime_at_entry))
-        await db.commit()
-
-    logger.info("position_added_manually", ticker=payload.ticker,
-                source=payload.source, regime=payload.regime_at_entry)
-    return {"status": "ok"}
-
-@app.post("/positions/close")
-@app.post("/positions/close")
-async def close_position(request: Request):
-    """
-    Called by Container A after a square-off order is confirmed.
-    Updates position status to CLOSED_MANUAL and records P&L.
-
-    [AUDIT-FIX-2.2 2026-06-25] Uses the centralised auth gate.
-    """
-    _check_internal_secret(request, "close_position")
-    data = await request.json()
-
-    ticker     = data["ticker"]
-    exit_price = float(data["exit_price"])
-    order_id   = data.get("order_id", "")
-
-    open_pos = await get_open_positions(settings.DB_PATH)
-    pos = next((p for p in open_pos if p['ticker'] == ticker
-                and p.get('source') == 'MOMENTUM'), None)
-    if not pos:
-        raise HTTPException(status_code=404,
-                            detail=f"No open MOMENTUM position for {ticker}")
-
-    gross = (exit_price - pos['entry_price']) * pos['shares']
-    # [AUDIT-FIX-1.2] Derive is_intraday from product_type (was hardcoded True).
-    costs = calc_zerodha_costs(
-        pos['entry_price'], exit_price, pos['shares'],
-        is_intraday=_is_intraday_from_product_type(pos.get('product_type')),
-    )
-    realised_pnl = gross - costs
-    risk_initial = (pos['entry_price'] - pos['stop_loss_initial']) * pos['shares']
-    r_multiple   = realised_pnl / risk_initial if risk_initial > 0 else 0
-
-    async with aiosqlite.connect(settings.DB_PATH) as db:
-        await db.execute("""
-            UPDATE positions
-            SET status='CLOSED_MANUAL', exit_price=?, exit_date=?,
-                realised_pnl=?, r_multiple=?
-            WHERE ticker=? AND source='MOMENTUM' AND status='OPEN'
-        """, (exit_price, datetime.now(timezone.utc).isoformat(),
-              realised_pnl, r_multiple, ticker))
-        await db.commit()
-
-    await record_trade_close(settings.DB_PATH, ticker, realised_pnl, r_multiple=r_multiple, notes="manual")
-    logger.info("momentum_position_closed", ticker=ticker,
-                exit_price=exit_price, pnl=realised_pnl, r=r_multiple)
-
-    return {"status": "closed", "ticker": ticker,
-            "realised_pnl": round(realised_pnl, 2),
-            "r_multiple":   round(r_multiple, 4)}
-
-# @app.post("/token")
-# async def inject_token(request: Request):
-#     data = await request.json()
-# #    if data.get("secret") != settings.TOKEN_INJECTION_SECRET:
-#  #       raise HTTPException(status_code=403, detail="Unauthorized")
-#     kite.set_token(data["access_token"])
-#     await post_login_initialization()
-#     return {"status": "ok"}
-
-
-class TokenPayload(BaseModel):
-    access_token: str
-
-
-# [FIX-PHASE3-AUDIT 2026-07-09] Token persistence + observability.
-#
-# Pre-fix, POST /token set kite.access_token IN MEMORY ONLY and logged
-# nothing. Two production consequences on 2026-07-09:
-#   1. The single most important state transition in the system (armed
-#      vs disarmed) was invisible in the logs -- the audit had to infer
-#      it from 26,311 downstream HTTP 400s.
-#   2. Any container restart silently disarmed all strategies until the
-#      operator manually logged in again. The 19:59 IST host reboot
-#      wiped the day's token with no alert.
-#
-# The token is persisted to the /data named volume with an IST date
-# stamp. On startup we restore it ONLY if it was saved today (Zerodha
-# tokens expire daily around 06:00 IST, so a stale token is useless and
-# restoring it would just produce a 400 storm -- the exact failure mode
-# the no-token guards now prevent).
-
-def _kite_token_cache_path() -> str:
-    import os as _os
-    return _os.path.join(_os.path.dirname(settings.DB_PATH), "kite_token.json")
-
-
-def _persist_kite_token(token: str) -> None:
-    import json as _json
-    import os as _os
-    try:
-        path = _kite_token_cache_path()
-        payload = {
-            "access_token": token,
-            "saved_date_ist": datetime.now(IST).strftime("%Y-%m-%d"),
-        }
-        with open(path, "w") as fh:
-            _json.dump(payload, fh)
-        _os.chmod(path, 0o600)
-        logger.info("kite_token_persisted path=%s", path)
-    except Exception as e:
-        # Persistence is best-effort; the in-memory token still works.
-        logger.warning("kite_token_persist_failed error=%s", str(e))
-
-
-def _load_persisted_kite_token_if_fresh() -> dict | None:
-    """Read the persisted token payload from /data and return it ONLY if
-    it was saved today (IST). Returns None for missing/stale/corrupt.
-
-    [ROADMAP-2.1 2026-07-12] Extracted from restore_kite_token_if_fresh
-    so /token/current can serve node-gateway from the same freshness
-    rule. Deliberately file-based rather than kite.access_token: the
-    in-memory token carries no date stamp and could be yesterday's if
-    this container has been up overnight -- handing that to node would
-    re-arm execution with a dead token."""
-    import json as _json
-    import os as _os
-    path = _kite_token_cache_path()
-    try:
-        if not _os.path.exists(path):
-            return None
-        with open(path) as fh:
-            payload = _json.load(fh)
-        saved_date = payload.get("saved_date_ist")
-        token = payload.get("access_token")
-        today_ist = datetime.now(IST).strftime("%Y-%m-%d")
-        if not token or saved_date != today_ist:
-            logger.info(
-                "kite_token_restore_skipped saved_date=%s today=%s "
-                "(stale -- operator must log in again)",
-                saved_date, today_ist,
-            )
-            return None
-        return payload
-    except Exception as e:
-        logger.warning("kite_token_restore_failed error=%s", str(e))
-        return None
-
-
-def restore_kite_token_if_fresh() -> bool:
-    """Reload a same-IST-day token from /data on startup. Returns True
-    when a token was restored. Called from the lifespan hook."""
-    payload = _load_persisted_kite_token_if_fresh()
-    if payload is None:
-        return False
-    kite.set_token(payload["access_token"])
-    logger.info("kite_token_restored saved_date=%s", payload.get("saved_date_ist"))
-    return True
-
-
-# [ROADMAP-2.4 2026-07-12] Scheduler loop-progress tick. The existing
-# penny-liveness heartbeat is a daemon THREAD -- it keeps ticking even
-# when the asyncio loop / APScheduler is frozen (by design: it proves
-# the process is alive). This job is the complement: it runs ON the
-# scheduler as a normal job, so a fresh file timestamp proves jobs are
-# actually firing. The agent container reads this file from /data (ro
-# mount) and pages the operator when it goes stale during market hours
-# -- the external watchdog that would have caught the 2026-07-07
-# 6h32m freeze in minutes.
-def _scheduler_tick_path() -> str:
-    import os as _os
-    return _os.path.join(_os.path.dirname(settings.DB_PATH), "scheduler_tick.json")
-
-
-# [ROADMAP-2.8 2026-07-12] Previous-tick clock for the persistent
-# liveness time-series. None after boot: a restart must not fabricate a
-# gap (the gap it WOULD measure spans a different process's lifetime).
-_scheduler_tick_state = {"prev_monotonic": None}
-
-
-async def _scheduler_tick_job():
-    import json as _json
-    import os as _os
-    try:
-        path = _scheduler_tick_path()
-        tmp = path + ".tmp"
-        with open(tmp, "w") as fh:
-            _json.dump({
-                "ts_epoch": time.time(),
-                "ist": datetime.now(IST).isoformat(),
-            }, fh)
-        # Atomic replace so the agent's reader never sees a torn file.
-        _os.replace(tmp, path)
-    except Exception as e:
-        logger.warning("scheduler_tick_write_failed error=%s", str(e))
-    # [ROADMAP-2.8 2026-07-12] Fold this tick into ops_liveness_daily --
-    # the persistent record of scheduler gaps that outlives the docker
-    # log ring, and the attestation source for the F&O go-live liveness
-    # gate. Separate try: a DB hiccup must not stop the file heartbeat
-    # above, and vice versa.
-    try:
-        from ops_metrics import record_scheduler_tick
-        import time as _time
-        now_mono = _time.monotonic()
-        prev = _scheduler_tick_state["prev_monotonic"]
-        _scheduler_tick_state["prev_monotonic"] = now_mono
-        gap = (now_mono - prev) if prev is not None else None
-        await record_scheduler_tick(settings.DB_PATH, datetime.now(IST), gap)
-    except Exception as e:
-        logger.warning("scheduler_tick_record_failed error=%s", str(e))
-
-
-# [ROADMAP-2.8 2026-07-12] Daily funnel snapshot: one ops_funnel_daily
-# row per subsystem at 15:50 IST (after close, after the 15:45 accept-
-# watchdogs) so accept/reject history survives log rotation.
-async def _ops_daily_snapshot():
-    now_ist = datetime.now(IST)
-    if not await is_trading_day(now_ist.date(), settings.DB_PATH):
-        return
-    from ops_metrics import snapshot_funnels_for_day
-    written = await snapshot_funnels_for_day(
-        settings.DB_PATH, now_ist.strftime("%Y-%m-%d")
-    )
-    logger.info("ops_daily_snapshot_written counts=%s", written)
-
-
-# [ROADMAP-2.1 2026-07-12] Token reconciliation: scans (python) and
-# execution (node) hold independent token stores that can disagree --
-# the exact split-brain of 2026-07-09, where scans ran all day while a
-# restarted node had silently disarmed the EXEC buttons. A 15-min cron
-# compares both sides during market hours and pages once (deduped to
-# 1/hour) on disagreement. `None` sentinel, not 0.0: time.monotonic()
-# can be below the window right after host boot.
-_token_recon_state = {"last_alert_monotonic": None}
-TOKEN_RECON_ALERT_MIN_INTERVAL_SEC = 3600.0
-
-
-def _token_recon_mismatch_message(
-    python_armed: bool, node_token_status: str | None
-) -> str | None:
-    """Pure decision: returns the operator alert text when the two token
-    stores disagree, else None. node_token_status is /api/health's
-    token_status field: 'active' | 'expired' | 'none' | None(unknown)."""
-    if node_token_status is None:
-        return None  # node unreachable -- healthcheck territory, not ours
-    node_armed = node_token_status == "active"
-    if python_armed == node_armed:
-        return None
-    if python_armed and not node_armed:
-        return (
-            "🔀 TOKEN SPLIT-BRAIN: scans (python-engine) are ARMED but "
-            f"execution (node-gateway) is DISARMED (token_status={node_token_status}). "
-            "EXEC buttons will fail until you re-login via the /login link "
-            "(a node restart usually caused this)."
-        )
-    return (
-        "🔀 TOKEN SPLIT-BRAIN: execution (node-gateway) is ARMED but "
-        "scans (python-engine) have NO token. Signals will not be "
-        "generated. Re-login via the /login link to re-arm both sides."
-    )
-
-
-async def _token_reconciliation_tick():
-    """15-min market-hours cron: compare python vs node token state."""
-    now_ist = datetime.now(IST)
-    nm = now_ist.hour * 60 + now_ist.minute
-    if not (9 * 60 + 15 <= nm <= 15 * 60 + 30):
-        return
-    if not await is_trading_day(now_ist.date(), settings.DB_PATH):
-        return
-    import httpx as _httpx
-    try:
-        async with _httpx.AsyncClient() as client:
-            resp = await client.get(
-                f"{settings.CONTAINER_A_URL}/api/health", timeout=5.0
-            )
-            resp.raise_for_status()
-            node_token_status = resp.json().get("token_status")
-    except Exception as e:
-        # Node being unreachable is the (future) healthcheck's problem
-        # (roadmap 2.2) -- log it, don't page from here.
-        logger.warning("token_recon_node_unreachable error=%s", str(e))
-        return
-    msg = _token_recon_mismatch_message(bool(kite.access_token), node_token_status)
-    if msg is None:
-        return
-    logger.warning(
-        "token_recon_mismatch python_armed=%s node_status=%s",
-        bool(kite.access_token), node_token_status,
-    )
-    import time as _time
-    now = _time.monotonic()
-    last = _token_recon_state["last_alert_monotonic"]
-    if last is not None and (now - last) < TOKEN_RECON_ALERT_MIN_INTERVAL_SEC:
-        return
-    _token_recon_state["last_alert_monotonic"] = now
-    try:
-        async with _httpx.AsyncClient() as client:
-            await client.post(
-                f"{settings.CONTAINER_A_URL}/api/internal/notify",
-                json={"message": msg},
-                headers={"X-Internal-Secret": settings.INTERNAL_API_SECRET or ""},
-                timeout=5.0,
-            )
-    except Exception as e:
-        logger.warning("token_recon_notify_failed error=%s", str(e))
-
-
-# [ROADMAP-2.6 2026-07-12] Kite endpoint (OCI relay) liveness probe.
-# Every quote and order transits settings.KITE_BASE_URL -- on the home
-# desktop that is the OCI relay 161.118.160.180:31527, a single
-# unmonitored hop whose only check until now was the manual morning
-# smoke_relay.sh. A 3-min market-hours cron probes it from inside this
-# container (the real code path) and pages on 2 consecutive failures
-# (one blip = transient, don't page), deduped to 1/30min while down,
-# with a recovery notice when it comes back. Failover procedure:
-# docs/runbooks/relay-failover.md.
-_kite_probe_state = {
-    "consec_failures": 0,
-    "down_since_monotonic": None,   # set when the alert threshold is crossed
-    "last_alert_monotonic": None,
-}
-KITE_PROBE_FAILURES_TO_ALERT = 2
-KITE_PROBE_ALERT_MIN_INTERVAL_SEC = 1800.0
-
-
-def _kite_probe_evaluate(ok: bool, now_monotonic: float, state: dict) -> str | None:
-    """Pure state machine: fold one probe result into `state`, return the
-    operator alert text to send (down page / recovery notice) or None.
-    Kept side-effect-free so the alarm logic is fully testable."""
-    if ok:
-        state["consec_failures"] = 0
-        down_since = state["down_since_monotonic"]
-        if down_since is None:
-            return None  # steady-state healthy, or a blip we never paged for
-        state["down_since_monotonic"] = None
-        state["last_alert_monotonic"] = None
-        mins = (now_monotonic - down_since) / 60.0
-        return (
-            f"✅ KITE ENDPOINT RECOVERED: {settings.KITE_BASE_URL} is "
-            f"reachable again (was down ~{mins:.0f} min). Quotes and "
-            "orders are flowing normally."
-        )
-    state["consec_failures"] += 1
-    if state["consec_failures"] < KITE_PROBE_FAILURES_TO_ALERT:
-        return None
-    if state["down_since_monotonic"] is None:
-        state["down_since_monotonic"] = now_monotonic
-    last = state["last_alert_monotonic"]
-    if last is not None and (now_monotonic - last) < KITE_PROBE_ALERT_MIN_INTERVAL_SEC:
-        return None
-    state["last_alert_monotonic"] = now_monotonic
-    return (
-        f"📡 KITE ENDPOINT DOWN: {settings.KITE_BASE_URL} has failed "
-        f"{state['consec_failures']} consecutive probes. ALL quotes and "
-        "orders transit this endpoint -- scans and EXEC are blind until "
-        "it recovers. Triage: `bash python-engine/smoke_relay.sh`, then "
-        "docs/runbooks/relay-failover.md."
-    )
-
-
-async def _kite_endpoint_probe_tick():
-    """3-min market-hours cron: probe the configured Kite endpoint."""
-    now_ist = datetime.now(IST)
-    nm = now_ist.hour * 60 + now_ist.minute
-    if not (9 * 60 + 15 <= nm <= 15 * 60 + 30):
-        return
-    if not await is_trading_day(now_ist.date(), settings.DB_PATH):
-        return
-    import httpx as _httpx
-    ok = False
-    err = ""
-    try:
-        async with _httpx.AsyncClient() as client:
-            resp = await client.get(f"{settings.KITE_BASE_URL}/", timeout=8.0)
-        # Any response < 500 means the hop is up (relay root proxies to
-        # Kite's root, which returns 200 -- see smoke_relay.sh). A 5xx
-        # from the relay means the path to Kite is broken even though
-        # the relay process answered: that IS an outage for us.
-        ok = resp.status_code < 500
-        if not ok:
-            err = f"HTTP {resp.status_code}"
-    except Exception as e:
-        err = str(e)
-    if not ok:
-        logger.warning(
-            "kite_endpoint_probe_failed url=%s consec=%d error=%s",
-            settings.KITE_BASE_URL,
-            _kite_probe_state["consec_failures"] + 1, err,
-        )
-    import time as _time
-    msg = _kite_probe_evaluate(ok, _time.monotonic(), _kite_probe_state)
-    if msg is None:
-        return
-    try:
-        async with _httpx.AsyncClient() as client:
-            await client.post(
-                f"{settings.CONTAINER_A_URL}/api/internal/notify",
-                json={"message": msg},
-                headers={"X-Internal-Secret": settings.INTERNAL_API_SECRET or ""},
-                timeout=5.0,
-            )
-    except Exception as e:
-        logger.warning("kite_endpoint_probe_notify_failed error=%s", str(e))
-
-
-@app.post("/token")
-async def inject_token(payload: TokenPayload, request: Request):
-    # [HIGH-002 2026-07-12] Same auth gate as the other internal mutating
-    # endpoints (/positions/manual, /positions/close). Without it, anyone
-    # on the docker network could inject an arbitrary Kite token and arm
-    # trading. node-gateway already sends X-Internal-Secret on its
-    # provisioning call (routes/auth.js), so the login flow is unchanged.
-    _check_internal_secret(request, "inject_token")
-    kite.set_token(payload.access_token)
-    # [FIX-PHASE3-AUDIT 2026-07-09] Loud (masked) breadcrumb + persist so
-    # a restart no longer silently disarms the system.
-    logger.info(
-        "kite_token_injected suffix=...%s len=%d",
-        payload.access_token[-4:] if len(payload.access_token) >= 4 else "?",
-        len(payload.access_token),
-    )
-    _persist_kite_token(payload.access_token)
-    # Fire-and-forget: return 200 immediately so node-gateway's 2-second
-    # AbortController does not trigger retries that spawn concurrent screener runs.
-    # post_login_initialization runs in the background (Q4 behaviour is preserved).
-    asyncio.create_task(post_login_initialization())
-    return {"status": "ok"}
-
-
-@app.get("/token/current")
-async def get_current_token(request: Request):
-    """[ROADMAP-2.1 2026-07-12] Serve the same-IST-day token (if any) to
-    node-gateway so a mid-day node restart re-arms execution without a
-    manual re-login. Same auth gate as /token; the token only ever moves
-    over the internal docker network, exactly like the login-time
-    provisioning call in the opposite direction. Freshness rule is
-    identical to the startup restore: stale/missing file => not armed."""
-    _check_internal_secret(request, "get_current_token")
-    payload = _load_persisted_kite_token_if_fresh()
-    if payload is None:
-        return {"armed": False}
-    logger.info(
-        "kite_token_served suffix=...%s",
-        payload["access_token"][-4:] if len(payload["access_token"]) >= 4 else "?",
-    )
-    return {"armed": True, "access_token": payload["access_token"]}
-
-
-@app.get("/ops/metrics")
-async def get_ops_metrics(request: Request, days: int = 30):
-    """[ROADMAP-2.8 2026-07-12] The persisted ops time-series: per-day
-    scheduler liveness (worst tick gaps) + per-day per-subsystem gate
-    funnels. `liveness.market_gap_clean` over days=30 is the queryable
-    form of the F&O go-live liveness condition (fno_risk condition 4)
-    that used to require grepping rotated-away docker logs."""
-    _check_internal_secret(request, "ops_metrics")
-    from ops_metrics import funnel_window, liveness_report
-    days = max(1, min(days, 365))
-    return {
-        "liveness": await liveness_report(settings.DB_PATH, days=days),
-        "funnel": await funnel_window(settings.DB_PATH, days=days),
-    }
-
-
-@app.get("/performance", response_model=PerformanceReport)
-async def get_performance():
-    """[AUDIT-FIX-2.6] HTTP wrapper around the shared async helper."""
-    return await compute_performance_report(settings.DB_PATH)
-
-
 async def compute_performance_report(db_path: str) -> PerformanceReport:
     """
     [AUDIT-FIX-2.6 2026-06-25] Shared async helper for performance data.
@@ -3963,113 +2735,6 @@ async def compute_performance_report(db_path: str) -> PerformanceReport:
         worst_trade_r=0.0,
         avg_hold_days=0.0
     )
-
-
-@app.get("/positions", response_model=list[OpenPosition])
-async def get_positions_route():
-    open_pos = await get_open_positions(settings.DB_PATH)
-    return open_pos
-
-@app.get("/bankroll")
-async def get_bankroll_route():
-    # 2026-06-24 strict separation: /bankroll reports the Nifty-subsystem
-    # balance (swing + momentum), excluding penny. For per-pool breakdown
-    # including the penny pool, see GET /bankroll/breakdown.
-    val = await nifty_bankroll(settings.DB_PATH)
-    return {"status": "ok", "bankroll": val}
-
-
-# 2026-06-24 (B-tight): per-pool breakdown endpoint. Returns swing and
-# penny balances independently. No risk math is touched -- current_bankroll()
-# and check_circuit_breakers() are unchanged. The combined number is
-# informational only. See docs/deviations/2026-06-24-penny-bankroll-pool-breakdown-deviation.md
-@app.get("/bankroll/breakdown")
-async def get_bankroll_breakdown():
-    from performance import pool_breakdown
-    return await pool_breakdown(settings.DB_PATH)
-
-
-# [TIER3-INTERACTIVE-COMMANDS 2026-06-25] Telegram command endpoint.
-# The node-gateway forwards /penny <subcommand> <args> messages to
-# python-engine via these endpoints, then echoes the reply back to
-# the user's Telegram chat. Read-only commands (stats, regime, help,
-# skips) use GET. Mutating commands (skip, unskip) use POST.
-@app.get("/penny/command/{cmd}")
-async def penny_command_get(cmd: str):
-    """GET handler for read-only commands. Returns plain text reply."""
-    from penny_commands import dispatch
-    return {"reply": dispatch(cmd, "", settings.DB_PATH)}
-
-
-@app.post("/penny/command/{cmd}")
-async def penny_command_post(cmd: str, payload: dict):
-    """POST handler for mutating commands. Body: {"args": "<ticker>"}."""
-    from penny_commands import dispatch
-    args = (payload or {}).get("args", "")
-    return {"reply": dispatch(cmd, args, settings.DB_PATH)}
-
-
-# [TIER3-NIFTY-COMMANDS 2026-06-25] Read-only Nifty commands.
-# Per operator mandate, these NEVER mutate state -- they're pure
-# queries against current_signals, current_momentum_signals, and
-# market_regime globals + DB-backed bankroll/circuit-breaker reads.
-# To act on Nifty signals use the inline callback buttons or the
-# HTTP API (POST /positions/close, etc.).
-@app.get("/nifty/command/{cmd}")
-async def nifty_command_get(cmd: str):
-    """GET handler for read-only Nifty commands."""
-    from nifty_commands import dispatch
-    return {"reply": dispatch(cmd, "", settings.DB_PATH)}
-
-
-# No POST handler: by design, /nifty commands don't mutate state.
-
-
-# [TIER3-CROSS-SUBSYSTEM-COMMANDS 2026-06-25] Phase B.
-# Top-level /health and /regime (no /penny prefix). Same read-only
-# posture as /nifty. The dispatcher routes by command name.
-@app.get("/command/{cmd}")
-async def top_level_command_get(cmd: str):
-    """Top-level read-only commands: /health, /regime.
-
-    These are cross-subsystem views (penny + nifty side by side)
-    and don't fit under /penny or /nifty specifically. The gateway
-    routes /health and /regime (no prefix) here.
-    """
-    from penny_commands import dispatch as _penny_dispatch
-    # penny_commands.dispatch is the universal entry point -- it
-    # routes /health and /regime to the cross-subsystem handlers.
-    return {"reply": _penny_dispatch(cmd, "", settings.DB_PATH)}
-
-
-@app.get("/circuit-breaker")
-async def get_circuit_breaker():
-    halted, reasons = await check_circuit_breakers(settings.DB_PATH)
-    return {"trading_halted": halted, "halt_reasons": reasons}
-
-@app.get("/rejected")
-async def get_rejected_signals():
-    return {"data": []}
-
-# [ANALYTICS 2026-06-16] Self-improvement endpoints.
-# GET /analytics/funnel?days=7     -> gate rejection counts (JSON)
-# GET /analytics/suggestions?days=14 -> actionable suggestions (JSON)
-# GET /analytics/outcomes?days=14  -> outcome correlator (JSON)
-# CLI: `python -m analytics --days 14`  for a human terminal report.
-@app.get("/analytics/funnel")
-async def get_funnel(days: int = 7):
-    from analytics import gate_funnel_report
-    return await gate_funnel_report(settings.DB_PATH, days=days)
-
-@app.get("/analytics/outcomes")
-async def get_outcomes(days: int = 14):
-    from analytics import outcome_correlator
-    return await outcome_correlator(settings.DB_PATH, days=days)
-
-@app.get("/analytics/suggestions")
-async def get_suggestions(days: int = 14):
-    from analytics import strategy_suggestions
-    return await strategy_suggestions(settings.DB_PATH, days=days)
 async def notify_screener_results(
     strategy_type: str,
     accepted: list,
@@ -4080,9 +2745,23 @@ async def notify_screener_results(
 ):
     """
     Sends a detailed summary of the screener run to Telegram via Container A.
+
+    [MED-002 / ROADMAP-4.6 2026-07-12] Default OFF: the agent (Container
+    C) sends the AI-enriched alert WITH working EXEC buttons for the
+    same scan, so the operator got two messages per cycle and only one
+    was actionable. The agent path is now guarded (2.2 healthcheck +
+    autoheal + veto notices), and the reject histograms this summary
+    carried are persisted daily by ops_metrics (2.8). Re-enable with
+    SCREENER_PLAIN_SUMMARY_ENABLED=true in .env if you miss it.
     """
+    if not settings.SCREENER_PLAIN_SUMMARY_ENABLED:
+        logger.info(
+            "screener_plain_summary_suppressed strategy=%s accepted=%d rejected=%d",
+            strategy_type, len(accepted), len(rejected),
+        )
+        return
     import httpx as _httpx
-    
+
     msg = f"🔍 **{strategy_type} Screener Run**\n"
     msg += f"Regime: `{regime}` | Bankroll: `Rs{bankroll:,.2f}`\n"
     if pool:
@@ -4142,42 +2821,23 @@ async def notify_screener_results(
     except Exception as e:
         logger.error("telegram_notification_failed", error=str(e))
 
-@app.post("/test-momentum")
-async def test_momentum_screener():
-    """Manual trigger for testing the momentum scanner."""
-    asyncio.create_task(run_momentum_screener())
-    return {"status": "momentum_scan_triggered"}
 
-@app.get("/health")
-async def health_check():
-    """Real /health (Phase B, 2026-06-25).
+# ---------------------------------------------------------------------------
+# [ROADMAP-4.1 stage 3 2026-07-13] The 24 HTTP handlers moved to routes_*.py.
+#
+# Imported HERE, at the bottom of the module, and not at the top: the route
+# modules do `import main as _main` themselves, so importing them before main's
+# globals exist would be legal (sys.modules already holds this module) but
+# needlessly fragile. By this point main is fully defined.
+#
+# include_router preserves paths, methods, endpoint names and response models
+# exactly -- the 24-route characterization golden is the proof, and it is
+# unchanged by this commit.
+# ---------------------------------------------------------------------------
+from routes_ops import router as _ops_router
+from routes_portfolio import router as _portfolio_router
+from routes_commands import router as _commands_router
 
-    Replaces the no-op `{"status": "ok"}` placeholder with a structured
-    diagnostic of all subsystems. The operator can pull this via the
-    /health Telegram command (cmd_health) or hit it directly via HTTP.
-
-    Returns: {status: "OK" | "DEGRADED", subsystems: {...}, halted: bool, ...}
-    The HTTP shape mirrors the structure used by build_health_snapshot()
-    in penny_health.py.
-    """
-    try:
-        from penny_health import build_health_snapshot
-        snap = await build_health_snapshot(settings.DB_PATH)
-        # The HTTP status code reflects overall_status: 200 for OK,
-        # 200 for DEGRADED too (the system is responding, just with
-        # issues -- this lets load balancers distinguish "service down"
-        # from "service up but unhappy"). Clients should read the
-        # JSON body for actual state.
-        from fastapi.responses import JSONResponse
-        return JSONResponse(status_code=200, content=snap)
-    except Exception as e:
-        # Even the health check must not fail. Return a minimal payload
-        # indicating DOWN so the operator knows python-engine is sick.
-        from fastapi.responses import JSONResponse
-        return JSONResponse(
-            status_code=503,
-            content={
-                "overall_status": "DOWN",
-                "error": f"{type(e).__name__}: {str(e)[:200]}",
-            },
-        )
+app.include_router(_ops_router)
+app.include_router(_portfolio_router)
+app.include_router(_commands_router)

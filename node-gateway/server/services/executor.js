@@ -43,7 +43,15 @@ async function syncToEngine(payload) {
     });
     
     clearTimeout(timeout);
-    if (!response.ok) throw new Error(`Engine returned ${response.status}`);
+    if (!response.ok) {
+      // [ROADMAP-4.4 2026-07-13] Tag the error with what the ENGINE actually
+      // returned, so withRetry can tell "engine is down, try again" (5xx)
+      // from "the engine rejected this payload" (4xx). Untagged, a malformed
+      // sync payload was retried 3 times over 35 seconds before giving up.
+      const err = new Error(`Engine returned ${response.status}`);
+      err.upstreamStatus = response.status;
+      throw err;
+    }
     return true;
   } catch (err) {
     clearTimeout(timeout);

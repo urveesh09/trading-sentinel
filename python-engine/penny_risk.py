@@ -410,10 +410,34 @@ def calc_penny_costs(
     edge is -- on a Rs 2,500 bankroll where Rs 20/order + STT + GST
     otherwise eat the bankroll after 10-15 round trips. The flag is
     intended for test/paper-mode only; live trading should keep it False.
+
+    [ROADMAP-5.2 2026-07-13] "Should keep it False" is not a control. The
+    bypass is now IGNORED when PENNY_LIVE_TRADING is on, and says so loudly.
+
+    Why this needed a hard interlock rather than a docstring: the flag lives on
+    the global settings singleton, and penny_backtest.run_backtest(
+    brokerage_bypass=True) SET IT AND NEVER RESTORED IT -- no try/finally. One
+    in-process backtest run and every live penny trade for the rest of the
+    process's life would have booked ZERO brokerage into the real ledger. The
+    bankroll would drift away from the broker's, silently, and the drift would
+    look like edge.
+
+    Fail-safe direction is deliberate: when the two flags contradict each other,
+    charge the REAL costs. Over-reporting costs makes a strategy look worse than
+    it is; under-reporting them makes a losing strategy look profitable and
+    corrupts the ledger it is measured against.
     """
     from config import settings
     if settings.PENNY_BROKERAGE_BYPASS:
-        return 0.0
+        if settings.PENNY_LIVE_TRADING:
+            logger.critical(
+                "penny_brokerage_bypass_ignored_on_live "
+                "reason=live_trading_is_on charging_real_costs=True "
+                "hint=PENNY_BROKERAGE_BYPASS is a paper/test flag; a live run "
+                "with it set would book zero costs into the real ledger"
+            )
+        else:
+            return 0.0
     buy_value = entry_price * shares
     sell_value = exit_price * shares
 

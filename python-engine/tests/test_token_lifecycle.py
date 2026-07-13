@@ -94,10 +94,34 @@ class TestTokenCurrentEndpoint:
 # ===============================================================
 
 class TestTokenReconDecision:
-    def test_agreement_is_silent(self):
+    def test_both_armed_is_silent(self):
+        """The healthy case, and the ONLY kind of agreement that is silent."""
         assert _token_recon_mismatch_message(True, "active") is None
-        assert _token_recon_mismatch_message(False, "none") is None
-        assert _token_recon_mismatch_message(False, "expired") is None
+
+    def test_both_unarmed_is_NOT_silent(self):
+        """[OUTAGE-2026-07-13 DEFECT 3] CONTRACT CHANGE, and this test used to
+        assert the bug.
+
+        It previously read:
+
+            assert _token_recon_mismatch_message(False, "none") is None
+            assert _token_recon_mismatch_message(False, "expired") is None
+
+        i.e. it pinned "both sides dead" as an acceptable, silent state -- under
+        a test named `test_agreement_is_silent`. On 2026-07-13 that is exactly
+        what happened: python unarmed, node "expired", False == False, no alert.
+        Every 15 minutes, for six hours of market time, while the engine scanned
+        nothing and the operator had no idea.
+
+        Both-unarmed is not agreement. It is the single loudest thing this cron
+        can observe: the system is not trading.
+        """
+        for node_status in ("none", "expired"):
+            msg = _token_recon_mismatch_message(False, node_status)
+            assert msg is not None, (
+                f"both sides unarmed (node={node_status!r}) produced no alert"
+            )
+            assert "NOT TRADING" in msg
 
     def test_scans_armed_execution_disarmed_alerts(self):
         """The 2026-07-09 split-brain: node restarted mid-day, EXEC

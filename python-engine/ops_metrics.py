@@ -128,11 +128,28 @@ async def record_scheduler_tick(
         logger.warning("ops_liveness_record_failed error=%s", str(e))
 
 
-async def liveness_report(db_path: str, days: int = 30) -> dict:
+async def liveness_report(
+    db_path: str, days: int = 30, now_ist: Optional[datetime] = None
+) -> dict:
     """Per-day liveness rows over the last `days` IST calendar days plus
     the summary the F&O go-live gate needs: is every market-hours gap
-    <= 5 min, and over how many covered days?"""
-    since = (datetime.now(IST) - timedelta(days=days)).strftime("%Y-%m-%d")
+    <= 5 min, and over how many covered days?
+
+    `now_ist` anchors the window and defaults to the wall clock. It is
+    injectable ONLY so tests can be deterministic: the first version of
+    this function read datetime.now(IST) directly, and the tests around
+    it pinned literal dates against that moving anchor. They passed on
+    the day they were written (2026-07-12) and started failing the very
+    next morning, when the same literal date fell one day outside the
+    window. Production always passes None; a test that must not rot
+    passes its own anchor.
+
+    The window is (since, today] -- strictly-greater on purpose, so a
+    `days`-day window yields at most exactly `days` rows, which is what
+    market_gap_clean's `len(rows) >= days` check is calibrated against.
+    """
+    anchor = now_ist or datetime.now(IST)
+    since = (anchor - timedelta(days=days)).strftime("%Y-%m-%d")
     try:
         async with aiosqlite.connect(db_path) as db:
             async with db.execute(

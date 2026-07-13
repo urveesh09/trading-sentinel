@@ -136,9 +136,39 @@ async def run_backtest(
     from config import settings
     from penny_universe import PennyUniverse
 
-    # Optional cost bypass for gross P&L measurement
+    # [ROADMAP-5.2 2026-07-13] Optional cost bypass for gross P&L measurement.
+    #
+    # This used to be a bare `settings.PENNY_BROKERAGE_BYPASS = True` with NO
+    # try/finally. settings is a process-wide singleton, so one in-process
+    # backtest permanently zeroed brokerage for the rest of the process --
+    # including LIVE penny trades, whose ledger would then quietly diverge from
+    # the broker's, in the flattering direction.
+    #
+    # Now scoped and always restored. penny_risk also refuses the bypass
+    # outright when PENNY_LIVE_TRADING is on, so this is belt AND braces: the
+    # leak is closed here, and made harmless there.
+    _bypass_original = settings.PENNY_BROKERAGE_BYPASS
     if brokerage_bypass:
         settings.PENNY_BROKERAGE_BYPASS = True
+    try:
+        return await _run_backtest_inner(
+            from_date=from_date, to_date=to_date, universe_path=universe_path,
+            bankroll=bankroll, kite=kite, output_path=output_path,
+        )
+    finally:
+        settings.PENNY_BROKERAGE_BYPASS = _bypass_original
+
+
+async def _run_backtest_inner(
+    *, from_date, to_date, universe_path, bankroll, kite, output_path,
+):
+    """The body of run_backtest, split out so the cost-bypass flag can be
+    restored in a finally block around ALL of it (including early returns and
+    exceptions) rather than leaking into the live process."""
+    from penny_scanner import PennyScanner
+    from penny_signal_log import init_penny_signal_db
+    from config import settings
+    from penny_universe import PennyUniverse
 
     # Initialize an in-memory signal DB
     db_path = ":memory:"

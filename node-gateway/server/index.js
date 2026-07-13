@@ -10,6 +10,31 @@ const { isMarketOpen } = require('./utils/market-hours');
 const server = http.createServer(app);
 
 // ─────────────────────────────────────────────────────────────────────────────
+// APPROVED SNAPSHOT LOOKUP  [HIGH-007 / ROADMAP-4.5 2026-07-13]
+// ─────────────────────────────────────────────────────────────────────────────
+// Returns the exact payload that was DISPLAYED to the operator for this
+// callback id, or null if the sender never registered one.
+//
+// The `action` is matched too, so an EXEC id can never resolve to an EM
+// snapshot (they carry different sizing and a different product type -- CNC
+// vs MIS -- and confusing them would place the wrong kind of order).
+//
+// Never throws: a corrupt row must degrade to the live-fetch fallback, not
+// kill the operator's button press.
+function getApprovedSnapshot(signalId, action) {
+  try {
+    const snap = signalsDb.prepare(
+      `SELECT payload_json FROM approved_snapshots WHERE signal_id = ? AND action = ?`
+    ).get(signalId, action);
+    if (!snap) return null;
+    return JSON.parse(snap.payload_json);
+  } catch (err) {
+    logger.error({ event_type: 'approved_snapshot_read_failed', signalId, action, err: err.message });
+    return null;
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
 // TELEGRAM CALLBACK QUERY HANDLER (INLINE KEYBOARD)
 // ─────────────────────────────────────────────────────────────────────────────
 telegram.bot.on('callback_query', async (query) => {
@@ -79,10 +104,19 @@ telegram.bot.on('callback_query', async (query) => {
       return;
     }
 
-    // 7. Execute Action (Swing) — handles both Container A (DB-backed) and Container C (live fetch)
+    // 7. Execute Action (Swing) — handles both Container A (DB-backed) and Container C
     if (action === 'EXEC') {
       let signalData;
       let fullSignalId = null;
+
+      // [HIGH-007 / ROADMAP-4.5 2026-07-13] Prefer the APPROVED SNAPSHOT.
+      // The agent registers the exact payload it displayed, under the same id
+      // it put in callback_data. Executing that row means the price, shares
+      // and stop that get sent to Zerodha are the ones the operator actually
+      // approved -- previously we re-fetched /signals, which serves
+      // `current_signals`, a list run_screener REPLACES wholesale on every
+      // run. See db/schema.sql.
+      const snapshot = getApprovedSnapshot(signal_id, 'EXEC');
 
       if (row) {
         // Container A path: signal pre-stored in DB with full UUID
@@ -90,8 +124,15 @@ telegram.bot.on('callback_query', async (query) => {
         fullSignalId = row.signal_id; // full UUID from DB row
         signalsDb.prepare(`UPDATE received_signals SET status = 'EXECUTING' WHERE signal_id = ?`).run(fullSignalId);
         await telegram.bot.answerCallbackQuery(query.id, { text: 'Executing Swing Trade...' });
+      } else if (snapshot) {
+        signalData = snapshot;
+        await telegram.bot.answerCallbackQuery(query.id, { text: 'Executing Swing Trade...' });
       } else {
-        // Container C path: signal not in DB, fetch live from Container B
+        // No snapshot: fall back to the old live re-fetch rather than refuse
+        // to trade. This is strictly worse (the numbers may have moved since
+        // the alert), so it is loud -- an unregistered signal means the agent
+        // failed to register, and we want to know.
+        logger.warn({ event_type: 'approved_snapshot_missing', signal_id, action });
         await telegram.bot.answerCallbackQuery(query.id, { text: 'Fetching Signal Data...' });
         try {
           const controller = new AbortController();
@@ -178,17 +219,30 @@ telegram.bot.on('callback_query', async (query) => {
       }
 
       try {
-        await telegram.bot.answerCallbackQuery(query.id, { text: 'Fetching Momentum Data...' });
+        // [HIGH-007 / ROADMAP-4.5 2026-07-13] Approved snapshot first.
+        // The engine's momentum list is IN-MEMORY, so a restart wipes it --
+        // exactly what happened on 2026-07-13 at 09:44. Pre-fix, a press
+        // after that restart died with "Momentum signal not found in Engine
+        // state" and the approved trade was simply lost. The snapshot is on
+        // disk, so it survives.
+        let signalData = getApprovedSnapshot(signal_id, 'EM');
 
-        const controller = new AbortController();
-        const timeout    = setTimeout(() => controller.abort(), config.PYTHON_ENGINE_TIMEOUT_MS);
-        const resp       = await fetch(`${config.PYTHON_ENGINE_URL}/momentum-signals`, {
-          headers: { 'X-Internal-Secret': config.INTERNAL_API_SECRET },
-          signal: controller.signal
-        });
-        clearTimeout(timeout);
-        const data       = await resp.json();
-        const signalData = data.signals?.find(s => s.ticker === cleanId);
+        if (!signalData) {
+          logger.warn({ event_type: 'approved_snapshot_missing', signal_id, action });
+          await telegram.bot.answerCallbackQuery(query.id, { text: 'Fetching Momentum Data...' });
+
+          const controller = new AbortController();
+          const timeout    = setTimeout(() => controller.abort(), config.PYTHON_ENGINE_TIMEOUT_MS);
+          const resp       = await fetch(`${config.PYTHON_ENGINE_URL}/momentum-signals`, {
+            headers: { 'X-Internal-Secret': config.INTERNAL_API_SECRET },
+            signal: controller.signal
+          });
+          clearTimeout(timeout);
+          const data       = await resp.json();
+          signalData       = data.signals?.find(s => s.ticker === cleanId);
+        } else {
+          await telegram.bot.answerCallbackQuery(query.id, { text: 'Executing Momentum Trade...' });
+        }
 
         if (!signalData) {
           signalsDb.prepare(`UPDATE received_signals SET status = 'PENDING' WHERE signal_id = ?`).run(momentumLockId);

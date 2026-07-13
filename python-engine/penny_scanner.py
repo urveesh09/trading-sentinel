@@ -169,8 +169,12 @@ class PennyScanner:
             from penny_models import PennyRegime
             if isinstance(v, PennyRegime):
                 return v.value
-        except Exception:
-            pass
+        except Exception as e:
+            # [ROADMAP-4.3 2026-07-13] Benign (str(v) below is a fine
+            # fallback), but never invisible -- if PennyRegime ever fails to
+            # import, every regime string in the system silently changes
+            # shape and the gates start comparing against a repr.
+            logger.debug("penny_regime_enum_coerce_failed error=%s", str(e))
         return str(v)
 
     @regime.setter
