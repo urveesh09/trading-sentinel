@@ -33,6 +33,36 @@ CREATE TABLE IF NOT EXISTS app_state (
   value TEXT NOT NULL
 );
 
+-- [HIGH-007 / ROADMAP-4.5 2026-07-13] The approved snapshot.
+--
+-- The EXEC/EM callback handlers used to RE-FETCH the signal from the engine
+-- at button-press time and execute whatever came back. So the price, share
+-- count and stop that were shown in the Telegram message -- the numbers the
+-- operator actually approved -- were not necessarily the numbers that got
+-- executed. Two ways that bites:
+--
+--   1. Swing: /signals serves `current_signals`, which run_screener REPLACES
+--      wholesale on every run. A re-run between alert and press changes the
+--      numbers under the operator's feet.
+--   2. Either book: if the re-fetch no longer contains the ticker, the press
+--      dies with "signal not found" and the approved trade is simply lost.
+--      The engine's momentum list is in-memory, so a restart wipes it -- as
+--      happened on 2026-07-13 at 09:44.
+--
+-- Fix: the sender (agent) registers the EXACT payload it is about to display,
+-- keyed by the SAME id it puts in callback_data. The handler then executes
+-- that row. What you approved is what executes.
+--
+-- Immutable by construction: writes are INSERT OR IGNORE, so a re-alert for
+-- the same id can never rewrite an already-approved snapshot.
+CREATE TABLE IF NOT EXISTS approved_snapshots (
+  signal_id    TEXT PRIMARY KEY,   -- exactly the callback_data id (TICKER / TICKER_MOM)
+  ticker       TEXT NOT NULL,
+  action       TEXT NOT NULL CHECK (action IN ('EXEC','EM')),
+  payload_json TEXT NOT NULL,
+  created_at   TEXT NOT NULL
+);
+
 -- Performance Indexes
 CREATE INDEX IF NOT EXISTS idx_signals_status ON received_signals(status);
 CREATE INDEX IF NOT EXISTS idx_orders_ticker ON executed_orders(ticker);

@@ -28,6 +28,61 @@ TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
 TELEGRAM_CHAT_ID = os.getenv("TELEGRAM_CHAT_ID")
 QUANT_ENGINE_URL = os.getenv("QUANT_ENGINE_URL", "http://python-engine:8000/signals")
 
+# [HIGH-007 / ROADMAP-4.5 2026-07-13] Snapshot registration.
+#
+# This container is the ONLY thing that decides what numbers the operator
+# sees on an EXEC/EM button. Until now it sent the button and threw the
+# payload away -- so node-gateway, on the press, had to go and re-ask the
+# engine what the signal was, and executed whatever came back. That is not
+# the same object: /signals serves `current_signals`, which run_screener
+# replaces wholesale on every run, and the momentum list is in-memory and
+# dies with the engine process (as it did on 2026-07-13 at 09:44).
+#
+# So register the exact payload here, under the SAME id that goes into
+# callback_data, before the button is shown. What the operator approves is
+# then what executes.
+NODE_GATEWAY_URL = os.getenv("NODE_GATEWAY_URL", "http://node-gateway:3000")
+INTERNAL_API_SECRET = os.getenv("INTERNAL_API_SECRET", "")
+
+
+def register_approved_snapshot(sig_id: str, ticker: str, action: str, payload: dict) -> bool:
+    """Persist the payload we are about to display, keyed by its callback id.
+
+    Best-effort BY DESIGN, and the asymmetry is deliberate: if registration
+    fails we still send the alert, because node falls back to the old live
+    re-fetch and a slightly-stale trade beats no trade at all. But it logs
+    loudly, and node logs `approved_snapshot_missing` on the press, so the
+    fallback can never be mistaken for the happy path.
+    """
+    try:
+        resp = requests.post(
+            f"{NODE_GATEWAY_URL}/api/internal/register-signal",
+            json={
+                "signal_id": sig_id,
+                "ticker": ticker,
+                "action": action,
+                "payload": payload,
+            },
+            headers={"X-Internal-Secret": INTERNAL_API_SECRET},
+            timeout=5,
+        )
+        resp.raise_for_status()
+        body = resp.json()
+        if not body.get("registered"):
+            # Already present -- the snapshot is immutable and first-wins, so
+            # this is correct behaviour on a re-alert, not an error.
+            logger.info(f"Snapshot already registered for {sig_id} (first-wins)")
+        else:
+            logger.info(f"Registered approved snapshot for {sig_id}")
+        return True
+    except Exception as e:
+        logger.error(
+            f"Snapshot registration FAILED for {sig_id}: {e} -- "
+            f"alert will still be sent; node will fall back to a live re-fetch "
+            f"and the executed numbers may differ from those displayed."
+        )
+        return False
+
 if not all([GEMINI_API_KEY, TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID]):
     logger.critical("CRITICAL: Missing required environment variables. Exiting.")
     sys.exit(1)
@@ -348,6 +403,11 @@ def send_telegram_alert(signal: Dict, analysis: Dict):
     # Action EXEC matches the handler in node-gateway/server/index.js.
     safe_sig_id = str(sig_id)[:40]
     ts = int(time.time())
+
+    # [HIGH-007 2026-07-13] Register BEFORE the button exists. If the operator
+    # can press it, the snapshot behind it must already be on disk.
+    register_approved_snapshot(safe_sig_id, ticker, "EXEC", signal)
+
     keyboard = {
         "inline_keyboard": [
             [
@@ -505,6 +565,13 @@ def send_momentum_telegram_alert(
     # [CRIT-001/002] Unified callback format: ACTION:signal_id:unix_ts
     sig_id = f"{ticker}_MOM"[:40]
     ts = int(time.time())
+
+    # [HIGH-007 2026-07-13] Register BEFORE the button exists. The engine's
+    # momentum list lives only in memory -- a restart wipes it and the press
+    # then dies with "Momentum signal not found in Engine state". This row is
+    # on disk and survives that.
+    register_approved_snapshot(sig_id, ticker, "EM", signal)
+
     keyboard = {
         "inline_keyboard": [[
             {"text": "✅ EXECUTE INTRADAY",
