@@ -116,6 +116,11 @@ class Settings(BaseSettings):
     # backtest on; the SQLite table is for future API-driven backtest queries.
     MOMENTUM_LOG_ENABLED:       bool  = True    # Master switch -- set False to disable entirely
     MOMENTUM_LOG_CSV_PATH:      str   = "/data/momentum_signals.csv"
+    # [MED-002 / ROADMAP-4.6 2026-07-12] Container B's plain-text scan
+    # summaries duplicated the agent's button alerts (two messages per
+    # cycle, only one actionable). OFF by default; the data lives on in
+    # ops_metrics + hourly reports. Flip via .env to restore.
+    SCREENER_PLAIN_SUMMARY_ENABLED: bool = False
     MOMENTUM_LOG_DB_TABLE:      str   = "momentum_signals"
 
     MOMENTUM_FIRST_SCAN_HOUR: int   = 10

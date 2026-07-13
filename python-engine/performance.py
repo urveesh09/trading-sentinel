@@ -219,6 +219,36 @@ async def record_trade_close(db_path: str, ticker: str, pnl: float,
         # Don't propagate -- analytics failure must not break ledger writes.
         pass
 
+async def record_cb_reset(db_path: str) -> None:
+    """[MED-006 / ROADMAP-4.6 2026-07-12] Operator circuit-breaker reset.
+
+    The CBs are DERIVED from the ledger, so there is no state to
+    "clear" -- and deleting ledger rows would destroy money history.
+    Instead a CB_RESET marker row re-baselines the derived quantities:
+    the drawdown PEAK and the consecutive-loss STREAK are computed only
+    from rows AFTER the latest marker. Deliberately NOT re-baselined:
+    CB_FLOOR (absolute capital protection vs INITIAL_BANKROLL) and
+    CB_DAILY_LOSS (auto-clears at the next IST day) -- an operator
+    reset must not be able to disable the floor."""
+    bankroll = await nifty_bankroll(db_path)
+    async with aiosqlite.connect(db_path) as db:
+        await db.execute(
+            "INSERT INTO bankroll_ledger "
+            "(timestamp, event_type, pnl, bankroll_before, bankroll_after, source, notes) "
+            "VALUES (?, 'CB_RESET', 0.0, ?, ?, 'SYSTEM', 'operator reset: peak+streak re-baselined')",
+            (datetime.now(timezone.utc).isoformat(), bankroll, bankroll),
+        )
+        await db.commit()
+    logger.warning("circuit_breaker_reset_recorded", bankroll=bankroll)
+
+
+async def _last_cb_reset_id(db) -> int:
+    cursor = await db.execute(
+        "SELECT COALESCE(MAX(id), 0) FROM bankroll_ledger WHERE event_type='CB_RESET'"
+    )
+    return int((await cursor.fetchone())[0])
+
+
 async def check_circuit_breakers(db_path: str) -> tuple[bool, list[str]]:
     halted = False
     reasons = []
@@ -232,10 +262,16 @@ async def check_circuit_breakers(db_path: str) -> tuple[bool, list[str]]:
     # [CB3] & [BK5]
     # Peak is the highest Nifty-subsystem bankroll_after seen. Filter out
     # PENNY rows so a large penny allocation or penny win doesn't bump peak.
+    # [MED-006 2026-07-12] ... since the last operator CB_RESET marker,
+    # so a reviewed-and-accepted drawdown stops re-halting forever.
     async with aiosqlite.connect(db_path) as db:
+        reset_id = await _last_cb_reset_id(db)
+        # >= so the marker row itself (bankroll_after = balance at reset
+        # time) seeds the new peak baseline immediately.
         cursor = await db.execute(
             "SELECT MAX(bankroll_after) FROM bankroll_ledger "
-            "WHERE source IN ('SYSTEM', 'MOMENTUM')"
+            "WHERE source IN ('SYSTEM', 'MOMENTUM') AND id >= ?",
+            (reset_id,),
         )
         peak = (await cursor.fetchone())[0]
         
@@ -275,12 +311,15 @@ async def check_circuit_breakers(db_path: str) -> tuple[bool, list[str]]:
     # [CB2] Consecutive losses
     # 2026-06-24 strict separation: streak counts Nifty-subsystem trades only.
     # Penny losses do not contribute to the swing consecutive-losses counter.
+    # [MED-006 2026-07-12] Streak is also bounded by the last CB_RESET.
     async with aiosqlite.connect(db_path) as db:
+        reset_id = await _last_cb_reset_id(db)
         cursor = await db.execute(
             "SELECT pnl FROM bankroll_ledger "
             "WHERE event_type='TRADE_CLOSED' "
-            "AND source IN ('SYSTEM', 'MOMENTUM') "
-            "ORDER BY id DESC LIMIT 10"
+            "AND source IN ('SYSTEM', 'MOMENTUM') AND id > ? "
+            "ORDER BY id DESC LIMIT 10",
+            (reset_id,),
         )
         rows = await cursor.fetchall()
         streak = 0

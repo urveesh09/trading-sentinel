@@ -3441,7 +3441,6 @@ async def add_manual_position(request: Request, payload: ManualPositionRequest):
     return {"status": "ok"}
 
 @app.post("/positions/close")
-@app.post("/positions/close")
 async def close_position(request: Request):
     """
     Called by Container A after a square-off order is confirmed.
@@ -3895,6 +3894,29 @@ async def get_ops_metrics(request: Request, days: int = 30):
     }
 
 
+@app.post("/token/invalidate")
+async def invalidate_token(request: Request):
+    """[MED-010 / ROADMAP-4.6 2026-07-12] Called by node-gateway's
+    /logout. Was a silent 404 since the logout handler was written --
+    harmless before 2.1, but now the engine both KEEPS scanning with the
+    token and SERVES it back to node via /token/current, so a logout
+    that doesn't reach here isn't a logout at all. Clears the in-memory
+    token AND the persisted same-day file (otherwise the next node boot
+    would just re-arm from it)."""
+    _check_internal_secret(request, "invalidate_token")
+    kite.set_token("")
+    import os as _os
+    path = _os.path.join(_os.path.dirname(settings.DB_PATH), "kite_token.json")
+    try:
+        _os.remove(path)
+    except FileNotFoundError:
+        pass
+    except OSError as e:
+        logger.warning("kite_token_file_remove_failed error=%s", str(e))
+    logger.info("kite_token_invalidated_by_operator")
+    return {"status": "invalidated"}
+
+
 @app.get("/performance", response_model=PerformanceReport)
 async def get_performance():
     """[AUDIT-FIX-2.6] HTTP wrapper around the shared async helper."""
@@ -4047,9 +4069,29 @@ async def get_circuit_breaker():
     halted, reasons = await check_circuit_breakers(settings.DB_PATH)
     return {"trading_halted": halted, "halt_reasons": reasons}
 
+
+@app.post("/circuit-breaker/reset")
+async def reset_circuit_breaker(request: Request):
+    """[MED-006 / ROADMAP-4.6 2026-07-12] node-gateway has proxied this
+    route since the April audit; it 404'd here. Re-baselines the
+    drawdown peak + consecutive-loss streak via a CB_RESET ledger marker
+    (see performance.record_cb_reset -- the floor and daily-loss CBs are
+    deliberately NOT resettable). Secret-gated: this weakens a safety
+    brake, it must never be callable anonymously."""
+    _check_internal_secret(request, "reset_circuit_breaker")
+    from performance import record_cb_reset
+    await record_cb_reset(settings.DB_PATH)
+    halted, reasons = await check_circuit_breakers(settings.DB_PATH)
+    return {"status": "reset_recorded", "trading_halted": halted,
+            "halt_reasons": reasons}
+
 @app.get("/rejected")
 async def get_rejected_signals():
-    return {"data": []}
+    # [MED-007 / ROADMAP-4.6 2026-07-12] Was a hardcoded `[]` -- the
+    # dashboard's rejected panel could never show anything. Serve the
+    # state-locked global the same way /signals serves current_signals.
+    async with state_lock:
+        return {"data": list(rejected_signals)}
 
 # [ANALYTICS 2026-06-16] Self-improvement endpoints.
 # GET /analytics/funnel?days=7     -> gate rejection counts (JSON)
@@ -4080,9 +4122,23 @@ async def notify_screener_results(
 ):
     """
     Sends a detailed summary of the screener run to Telegram via Container A.
+
+    [MED-002 / ROADMAP-4.6 2026-07-12] Default OFF: the agent (Container
+    C) sends the AI-enriched alert WITH working EXEC buttons for the
+    same scan, so the operator got two messages per cycle and only one
+    was actionable. The agent path is now guarded (2.2 healthcheck +
+    autoheal + veto notices), and the reject histograms this summary
+    carried are persisted daily by ops_metrics (2.8). Re-enable with
+    SCREENER_PLAIN_SUMMARY_ENABLED=true in .env if you miss it.
     """
+    if not settings.SCREENER_PLAIN_SUMMARY_ENABLED:
+        logger.info(
+            "screener_plain_summary_suppressed strategy=%s accepted=%d rejected=%d",
+            strategy_type, len(accepted), len(rejected),
+        )
+        return
     import httpx as _httpx
-    
+
     msg = f"🔍 **{strategy_type} Screener Run**\n"
     msg += f"Regime: `{regime}` | Bankroll: `Rs{bankroll:,.2f}`\n"
     if pool:
@@ -4163,6 +4219,11 @@ async def health_check():
     try:
         from penny_health import build_health_snapshot
         snap = await build_health_snapshot(settings.DB_PATH)
+        # [LOW-003 / ROADMAP-4.6 2026-07-12] The two liveness facts only
+        # main.py knows (penny_health is DB-pure): is execution armed,
+        # and is the job scheduler actually running.
+        snap["kite_connected"] = bool(kite.access_token)
+        snap["scheduler_running"] = bool(getattr(scheduler, "running", False))
         # The HTTP status code reflects overall_status: 200 for OK,
         # 200 for DEGRADED too (the system is responding, just with
         # issues -- this lets load balancers distinguish "service down"
