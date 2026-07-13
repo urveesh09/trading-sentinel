@@ -3,6 +3,7 @@ import sys
 import time
 import json
 import logging
+import structlog
 import threading
 import urllib.parse
 from datetime import datetime
@@ -17,12 +18,53 @@ from pydantic import BaseModel
 # -------------------------------------------------------------------------
 # CONFIG & LOGGING
 # -------------------------------------------------------------------------
+# [ROADMAP-4.7 2026-07-13] structlog, matching python-engine's pipeline.
+#
+# The agent was the last container still on a bare logging.basicConfig, so its
+# lines rendered differently from every other service and could not carry
+# structured key/values. The pipeline below is a deliberate mirror of
+# python-engine/logging_setup.py -- same TimeStamper format, same
+# ConsoleRenderer, colours off (the docker json-file driver strips ANSI anyway).
+#
+# It is DUPLICATED rather than imported, and that is not laziness: the agent is
+# a separate docker build context and cannot see ../python-engine. Sharing it
+# would mean restructuring the build for a 20-line config. (Roadmap 4.2 is the
+# cautionary tale in the other direction -- do not invent shared structure that
+# does not fit.)
+#
+# The rendered shape is preserved on purpose: timestamp, level, message, in that
+# order. The 2026-07-13 forensics were done by eye against these logs, and a
+# format churn that broke `docker logs agent | grep` would cost more than it
+# gained. Existing logger.info(f"...") call sites keep working unchanged --
+# structlog takes the message as the event.
+#
+# stdlib logging is wired to the same formatter so `schedule`, `requests` and
+# `urllib3` do not punch through with a different shape.
+_timestamper = structlog.processors.TimeStamper(
+    fmt="%Y-%m-%d %H:%M:%S",
+    utc=False,  # local time = IST in this container (TZ=Asia/Kolkata)
+)
+
+structlog.configure(
+    processors=[
+        structlog.contextvars.merge_contextvars,
+        structlog.processors.add_log_level,
+        _timestamper,
+        structlog.processors.format_exc_info,
+        structlog.dev.ConsoleRenderer(colors=False, event_key="event"),
+    ],
+    wrapper_class=structlog.make_filtering_bound_logger(logging.INFO),
+    logger_factory=structlog.PrintLoggerFactory(file=sys.stdout),
+    cache_logger_on_first_use=True,
+)
+
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s - %(levelname)s - %(message)s",
-    handlers=[logging.StreamHandler(sys.stdout)]
+    handlers=[logging.StreamHandler(sys.stdout)],
 )
-logger = logging.getLogger(__name__)
+
+logger = structlog.get_logger("agent")
 
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
