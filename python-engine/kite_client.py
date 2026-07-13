@@ -191,8 +191,14 @@ class KiteClient:
                             df['date'] = pd.to_datetime(df['date'])
                             df.set_index('date', inplace=True)
                             return df
-                    except (ValueError, TypeError):
-                        pass
+                    except (ValueError, TypeError) as e:
+                        # [ROADMAP-4.3 2026-07-13] Genuinely benign -- we fall
+                        # through to a live fetch, which is correct. But if the
+                        # cache timestamp format ever drifts, EVERY ticker
+                        # silently becomes a cache miss and the scan starts
+                        # hammering the Kite rate limiter for no visible reason.
+                        logger.debug("cache_timestamp_parse_failed",
+                                     ticker=ticker, error=str(e))
 
         # async with aiosqlite.connect(self.db_path) as db:
         #     cursor = await db.execute(

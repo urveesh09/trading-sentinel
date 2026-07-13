@@ -112,8 +112,11 @@ async def record_trade_outcome(
     # Idempotent -- safe to call on every close
     try:
         await init_analytics_db(db_path)
-    except Exception:
-        pass
+    except Exception as e:
+        # [ROADMAP-4.3 2026-07-13] Was a bare `pass`, which is doubly bad:
+        # the write below then runs against a table that may not exist and
+        # fails anyway -- but two levels up, where the cause is gone.
+        logger.warning("analytics_init_failed error=%s", str(e))
     try:
         closed_at = datetime.now(timezone.utc).isoformat()
         cutoff = (datetime.now(timezone.utc) - timedelta(days=7)).isoformat()

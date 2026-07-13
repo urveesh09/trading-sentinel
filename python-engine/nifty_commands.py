@@ -102,8 +102,12 @@ def cmd_nifty_stats(db_path: str) -> str:
         is_live = False  # could pull from settings; "NIFTY" label is enough
         bankroll = asyncio.run(nifty_bankroll(db_path))
         # Deployed = sum of entry_price * shares for Nifty-subsystem positions.
+        # [ROADMAP-4.3 2026-07-13] On failure this used to silently report
+        # "Deployed: Rs 0 (0.0% util)" -- indistinguishable from a genuinely
+        # empty book, and the exact number an operator would use to justify
+        # deploying more capital. Say "unknown" instead, and log.
         deployed = 0.0
-        unrealised = 0.0
+        deployed_known = True
         try:
             open_pos = asyncio.run(get_open_positions(db_path))
             for p in open_pos:
@@ -113,18 +117,21 @@ def cmd_nifty_stats(db_path: str) -> str:
                 ep = float(p.get("entry_price") or 0.0)
                 sh = int(p.get("shares") or 0)
                 deployed += ep * sh
-                # Unrealised: we don't have current_price in the
-                # open-position read here; show "n/a" rather than fake.
-                # The hourly report computes this; the operator can
-                # /nifty heatmap-style query would be a follow-up.
-        except Exception:
-            pass
-        util_pct = (deployed / bankroll * 100) if bankroll else 0
+        except Exception as e:
+            deployed_known = False
+            logger.error("nifty_cmd_stats_deployed_failed error=%s", str(e))
+
+        if deployed_known:
+            util_pct = (deployed / bankroll * 100) if bankroll else 0
+            deployed_line = f"Deployed: Rs {deployed:.0f} ({util_pct:.1f}% util)"
+        else:
+            deployed_line = "Deployed: UNKNOWN (position read failed -- see logs)"
+
         penny_pnl, nifty_pnl = _today_pnl_penny_and_nifty(db_path)
         return (
             f"Nifty stats\n"
             f"Bankroll: Rs {bankroll:.0f}\n"
-            f"Deployed: Rs {deployed:.0f} ({util_pct:.1f}% util)\n"
+            f"{deployed_line}\n"
             f"Today: {_format_pnl(nifty_pnl, bankroll)}\n"
             f"  (penny today: {_format_pnl(penny_pnl, bankroll if bankroll else 1)})\n"
             f"Mode: {'LIVE' if is_live else 'PAPER'}"

@@ -215,9 +215,14 @@ async def record_trade_close(db_path: str, ticker: str, pnl: float,
     try:
         from analytics import record_trade_outcome
         await record_trade_outcome(db_path, ticker, pnl, r_multiple=r_multiple, notes=notes)
-    except Exception:
+    except Exception as e:
         # Don't propagate -- analytics failure must not break ledger writes.
-        pass
+        # But DO log it: [ROADMAP-4.3 2026-07-13] a bare `pass` here meant
+        # analytics could stop recording outcomes indefinitely and the only
+        # symptom would be a suspiciously thin sample size weeks later, in
+        # the very table the strategy tuning reads.
+        logger.warning("analytics_record_outcome_failed",
+                       ticker=ticker, error=str(e))
 
 async def record_cb_reset(db_path: str) -> None:
     """[MED-006 / ROADMAP-4.6 2026-07-12] Operator circuit-breaker reset.
@@ -368,11 +373,18 @@ async def penny_pool_pnl(db_path: str, days: int = 14) -> dict:
                 async for row in cur:
                     total_pnl += row[0] or 0.0
                     trade_count += 1
-    except Exception:
+    except Exception as e:
         # No penny rows yet, or bankroll_ledger lacks 'source' column.
-        # Read-only is OK -- this function is best-effort.
-        pass
-    return {"total_pnl": total_pnl, "trade_count": trade_count, "days": days}
+        # Read-only is OK -- this function is best-effort and must not
+        # break a report. [ROADMAP-4.3 2026-07-13] But it now says so out
+        # loud, and flags the result as partial: silently returning
+        # total_pnl=0.0 made a broken query look exactly like a flat P&L
+        # day, in the number the operator uses to judge the strategy.
+        logger.warning("penny_pnl_summary_failed error=%s", str(e))
+        return {"total_pnl": 0.0, "trade_count": 0, "days": days,
+                "error": str(e), "partial": True}
+    return {"total_pnl": total_pnl, "trade_count": trade_count, "days": days,
+            "partial": False}
 
 
 async def pool_breakdown(db_path: str) -> dict:

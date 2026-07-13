@@ -167,7 +167,13 @@ def cmd_stats(db_path: str) -> str:
     except sqlite3.Error as e:
         logger.warning("penny_cmd_stats_ledger_query_failed error=%s", str(e))
 
-    open_count = 0
+    # [ROADMAP-4.3 2026-07-13] `open_count` used to fall back to 0 on any
+    # sqlite error, with no log. So a broken database and a genuinely flat
+    # book rendered IDENTICALLY to the operator: "open: 0". That is the
+    # worst possible failure mode for a position readout -- it invites you
+    # to open new risk while the engine is actually holding stock it can no
+    # longer see. Report "?" and log, so the two are never confused again.
+    open_count: int | None = None
     try:
         with sqlite3.connect(db_path) as con:
             cur = con.execute(
@@ -175,8 +181,9 @@ def cmd_stats(db_path: str) -> str:
                 "WHERE source='PENNY' AND status IN ('OPEN', 'CLOSED_T1')"
             )
             open_count = int(cur.fetchone()[0])
-    except sqlite3.Error:
-        pass
+    except sqlite3.Error as e:
+        logger.error("penny_cmd_stats_open_count_failed error=%s", str(e))
+    open_str = "?" if open_count is None else str(open_count)
 
     # Regime comes from the engine singleton in main; we lazy-import
     # to avoid creating a circular dependency at import time.
@@ -186,15 +193,17 @@ def cmd_stats(db_path: str) -> str:
         re = _main._penny_regime_engine
         if re is not None and re.today_regime is not None:
             regime_str = re.today_regime.value
-    except Exception:
-        pass
+    except Exception as e:
+        # UNKNOWN sizes at 0% in the risk table, so this silently disables
+        # penny entries. Never let that happen without a line in the log.
+        logger.warning("penny_cmd_stats_regime_lookup_failed error=%s", str(e))
 
     sign = "+" if pnl >= 0 else ""
     return (
         f"Penny stats [{mode}]\n"
         f"Bankroll: Rs {bankroll:.0f}\n"
         f"Today: {sign}Rs {pnl:.0f} across {trade_count} trades\n"
-        f"Open positions: {open_count}\n"
+        f"Open positions: {open_str}\n"
         f"Regime: {regime_str}"
     )
 

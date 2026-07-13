@@ -1067,8 +1067,12 @@ async def run_penny_hourly_report():
             try:
                 from datetime import date, datetime as _dt
                 _uni_age_days = (date.today() - _dt.strptime(_uni_as_of, "%Y-%m-%d").date()).days
-            except Exception:
-                pass
+            except Exception as e:
+                # [ROADMAP-4.3] Cosmetic (the report just omits the age),
+                # but a parse failure here means the universe's as_of stamp
+                # is malformed -- worth one debug line, not silence.
+                logger.debug("penny_universe_age_parse_failed as_of=%s error=%s",
+                             _uni_as_of, str(e))
         await run_hourly_report(
             db_path=settings.DB_PATH,
             regime=_penny_regime_engine.today_regime.value
@@ -1326,8 +1330,11 @@ def _fno_regime_str() -> str:
     try:
         if _last_regime_state is not None:
             return _last_regime_state.regime.value
-    except Exception:
-        pass
+    except Exception as e:
+        # [ROADMAP-4.3 2026-07-13] "UNKNOWN" closes the F&O regime gate, so
+        # a silent exception here disables the whole F&O book and looks
+        # identical to a legitimately unclassified market. Log it.
+        logger.warning("fno_regime_read_failed error=%s", str(e))
     return "UNKNOWN"
 
 
