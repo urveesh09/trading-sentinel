@@ -104,22 +104,66 @@ def _kite_token_cache_path() -> str:
 
 
 
-def _persist_kite_token(token: str) -> None:
+def _persist_kite_token(token: str) -> bool:
+    """Write the token atomically. Returns True on success.
+
+    [OUTAGE-2026-07-13 DEFECT 1 + 2] This function cost a full trading day.
+
+    It used to be `open(path, "w")` -- which TRUNCATES the file before writing
+    a byte. When the disk filled at 09:06, the truncate succeeded and the write
+    failed with ENOSPC, leaving a ZERO-BYTE kite_token.json where a valid token
+    file had been. The failure was then swallowed as "best-effort; the in-memory
+    token still works" -- true, right up until the host rebooted 38 minutes
+    later, at which point the in-memory token died with the process and the
+    restore path found the 0-byte file, raised JSONDecodeError, and brought the
+    engine up UNARMED. Every scan for the rest of the day logged
+    `no_access_token`. Nothing alerted.
+
+    Two fixes, because there were two defects:
+
+    1. ATOMIC: write to a temp file in the same directory, fsync it, then
+       os.replace() onto the target. os.replace is atomic within a filesystem,
+       so the destination is only ever the OLD valid token or the NEW valid one
+       -- never a truncated husk. If the temp write fails, the existing file is
+       untouched. (fsync before the rename matters: without it a crash can leave
+       the rename durable but the contents not.)
+
+    2. NOT BEST-EFFORT: the caller is told whether it worked. This file is the
+       ONLY crash-recovery artifact the engine has -- calling its loss
+       "best-effort" was the assumption that made a transient disk-full into a
+       lost day. The caller now pages the operator.
+    """
     import json as _json
     import os as _os
+
+    path = _kite_token_cache_path()
+    tmp = f"{path}.tmp"
+    payload = {
+        "access_token": token,
+        "saved_date_ist": datetime.now(IST).strftime("%Y-%m-%d"),
+    }
     try:
-        path = _kite_token_cache_path()
-        payload = {
-            "access_token": token,
-            "saved_date_ist": datetime.now(IST).strftime("%Y-%m-%d"),
-        }
-        with open(path, "w") as fh:
+        with open(tmp, "w") as fh:
             _json.dump(payload, fh)
-        _os.chmod(path, 0o600)
+            fh.flush()
+            _os.fsync(fh.fileno())
+        _os.chmod(tmp, 0o600)
+        _os.replace(tmp, path)  # atomic
         logger.info("kite_token_persisted path=%s", path)
+        return True
     except Exception as e:
-        # Persistence is best-effort; the in-memory token still works.
-        logger.warning("kite_token_persist_failed error=%s", str(e))
+        logger.error(
+            "kite_token_persist_failed error=%s path=%s "
+            "impact=THE ENGINE CANNOT RE-ARM AFTER A RESTART -- the in-memory "
+            "token works until the process dies, and then trading stops silently",
+            str(e), path,
+        )
+        # Never leave a half-written temp behind for a later reader to trip on.
+        try:
+            _os.unlink(tmp)
+        except OSError:
+            pass
+        return False
 
 
 
@@ -191,14 +235,43 @@ TOKEN_RECON_ALERT_MIN_INTERVAL_SEC = 3600.0
 def _token_recon_mismatch_message(
     python_armed: bool, node_token_status: str | None
 ) -> str | None:
-    """Pure decision: returns the operator alert text when the two token
-    stores disagree, else None. node_token_status is /api/health's
-    token_status field: 'active' | 'expired' | 'none' | None(unknown)."""
+    """Pure decision: returns the operator alert text when the token state is
+    wrong, else None. node_token_status is /api/health's token_status field:
+    'active' | 'expired' | 'none' | None(unknown).
+
+    [OUTAGE-2026-07-13 DEFECT 3] This function was written to catch SPLIT-BRAIN
+    -- one side armed, the other not -- after the 2026-07-09 incident. It
+    therefore returned None whenever the two sides AGREED... including when they
+    agreed by both being DEAD.
+
+    That is exactly what happened on 2026-07-13. python_armed=False,
+    node_token_status="expired" -> False == False -> "they agree" -> silence.
+    Every 15 minutes, for six hours of market time, while the engine scanned
+    nothing and the operator had no idea.
+
+    Both-unarmed during market hours is not agreement. It is the loudest thing
+    this cron will ever see: the system is not trading.
+    """
     if node_token_status is None:
         return None  # node unreachable -- healthcheck territory, not ours
     node_armed = node_token_status == "active"
+
+    if not python_armed and not node_armed:
+        return (
+            "🔴 SYSTEM UNARMED: NOT TRADING\n\n"
+            "Neither scans (python-engine) nor execution (node-gateway) hold a "
+            f"Kite token (node token_status={node_token_status}).\n\n"
+            "The engine is up and the scheduler is ticking, so everything LOOKS "
+            "healthy -- but every scan is a no-op and no signal can be generated "
+            "or executed. This is the 2026-07-13 outage.\n\n"
+            "Re-login via the /login link now. If the login does not stick, "
+            "check free disk space on /data -- a full disk prevents the token "
+            "from being saved."
+        )
+
     if python_armed == node_armed:
-        return None
+        return None  # both armed -- the healthy case
+
     if python_armed and not node_armed:
         return (
             "🔀 TOKEN SPLIT-BRAIN: scans (python-engine) are ARMED but "

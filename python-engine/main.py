@@ -77,7 +77,11 @@ from ops_watchdogs import (
     _scheduler_tick_job,
     _scheduler_tick_path,
     _scheduler_tick_state,
+    _trading_readiness_tick,
 )
+# [OUTAGE-2026-07-13] The single way to page the operator. Re-exported as
+# _notify_operator so route handlers reach it via _main.
+from operator_alert import notify_operator as _notify_operator
 
 # [ROADMAP-4.1 stage 2 2026-07-13] The two scheduler-registration functions
 # moved to scheduler_setup.py. Re-exported here because lifespan() calls them
@@ -1373,6 +1377,22 @@ async def lifespan(app: FastAPI):
         _ops_daily_snapshot, 'cron', hour=15, minute=50,
         id="ops_daily_snapshot",
         max_instances=1, coalesce=True, misfire_grace_time=3600,
+    )
+
+    # [OUTAGE-2026-07-13 DEFECT 3+4] Trading-readiness watchdog. Asks, every 5
+    # minutes during market hours, the one question none of the other watchdogs
+    # asked on 2026-07-13: "the market is open -- CAN I TRADE?"
+    #
+    # The engine ran unarmed for six hours that day while the scheduler ticked,
+    # /health returned 200, every container reported healthy, and not one
+    # Telegram message was sent. Single-sided by design: unlike the token
+    # reconciliation cron it does not need node-gateway to be reachable, so a
+    # second fault cannot silence it. Function self-gates to 09:30-15:15 IST on
+    # trading days.
+    scheduler.add_job(
+        _trading_readiness_tick, 'cron', minute='*/5',
+        id="trading_readiness",
+        max_instances=1, coalesce=True, misfire_grace_time=120,
     )
 
     # 2026-06-22: daily reset of penny risk state at 00:05 IST (05:30 UTC isn't right;

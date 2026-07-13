@@ -56,12 +56,34 @@ async def inject_token(payload: TokenPayload, request: Request):
         payload.access_token[-4:] if len(payload.access_token) >= 4 else "?",
         len(payload.access_token),
     )
-    _main._persist_kite_token(payload.access_token)
+    # [OUTAGE-2026-07-13 DEFECT 2] Persistence is NOT best-effort. This file is
+    # the engine's only crash-recovery artifact: if it is not on disk, the next
+    # restart comes up unarmed and trading stops silently. On 2026-07-13 the
+    # write failed (disk full), the failure was swallowed, the host rebooted 38
+    # minutes later, and the whole trading day was lost with no alert.
+    #
+    # Trading is still ARMED here -- the in-memory token is valid and refusing
+    # to trade over a failed cache write would be its own outage. But the
+    # operator is told, immediately and loudly, that the engine is now one
+    # restart away from going quiet.
+    persisted = _main._persist_kite_token(payload.access_token)
+    if not persisted:
+        asyncio.create_task(
+            _main._notify_operator(
+                "⚠️ TOKEN NOT PERSISTED\n\n"
+                "Trading is ARMED right now, but the token could NOT be written "
+                "to disk (check free space on /data).\n\n"
+                "If the engine restarts it will come up UNARMED and every scan "
+                "will silently do nothing -- exactly the 2026-07-13 outage. "
+                "Fix the disk, then re-login to re-arm."
+            )
+        )
+
     # Fire-and-forget: return 200 immediately so node-gateway's 2-second
     # AbortController does not trigger retries that spawn concurrent screener runs.
     # _main.post_login_initialization runs in the background (Q4 behaviour is preserved).
     asyncio.create_task(_main.post_login_initialization())
-    return {"status": "ok"}
+    return {"status": "ok", "token_persisted": persisted}
 
 
 
@@ -175,6 +197,34 @@ async def health_check():
         # and is the job _main.scheduler actually running.
         snap["kite_connected"] = bool(_main.kite.access_token)
         snap["scheduler_running"] = bool(getattr(_main.scheduler, "running", False))
+
+        # [OUTAGE-2026-07-13 DEFECT 4] `trading_ready` is the question nobody
+        # was asking. On 2026-07-13 all five containers reported "healthy" for
+        # six hours while the engine scanned nothing: /health returned 200,
+        # `docker ps` said healthy, autoheal saw nothing wrong -- and every scan
+        # was a no-op because there was no token.
+        #
+        # It is a SEPARATE field, not a new HTTP status code, and that is
+        # deliberate. The container HEALTHCHECK is `curl -f /health`, and docker
+        # healthchecks drive autoheal, which RESTARTS the container. Restarting
+        # cannot conjure a Kite token -- only an operator login can -- so
+        # failing the healthcheck here would produce an endless restart loop
+        # during exactly the outage it was meant to surface, and take the engine
+        # down harder than the original fault.
+        #
+        # The alerting is what was missing, not the restarting. So this field is
+        # what ops_watchdogs._trading_readiness_tick pages on, and what the
+        # dashboard shows. See that function.
+        reasons = []
+        if not snap["kite_connected"]:
+            reasons.append("no_kite_token")
+        if not snap["scheduler_running"]:
+            reasons.append("scheduler_not_running")
+        if snap.get("halted"):
+            reasons.append("circuit_breaker_halted")
+        snap["trading_ready"] = not reasons
+        snap["not_trading_reasons"] = reasons
+
         # The HTTP status code reflects overall_status: 200 for OK,
         # 200 for DEGRADED too (the system is responding, just with
         # issues -- this lets load balancers distinguish "service down"

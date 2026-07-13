@@ -28,6 +28,21 @@ import pytz
 import structlog
 
 from config import settings
+# [BUGFIX 2026-07-13] `is_trading_day` is used by _ops_daily_snapshot and
+# _kite_endpoint_probe_tick but was NOT imported when these functions were
+# extracted from main.py in the 4.1 stage-1 split. main.py had it at module
+# scope; this module did not.
+#
+# It is the exact failure I built the split's safety net against, and it got
+# through because that net (test_scheduler_closures_invoke) only INVOKED the 8
+# closures inside register_*_scheduler_jobs -- not the module-level jobs stage 1
+# had already moved. Import succeeded, the census saw the registration, the
+# suite went green, and _ops_daily_snapshot would have raised NameError at 15:50
+# every day, inside a try/except that logs and returns. The daily ops snapshot
+# would simply have stopped, silently.
+#
+# The net is now widened to invoke EVERY scheduled job, not just the closures.
+from market_calendar import is_trading_day
 
 logger = structlog.get_logger()
 IST = pytz.timezone("Asia/Kolkata")
@@ -213,3 +228,115 @@ async def _kite_endpoint_probe_tick():
             )
     except Exception as e:
         logger.warning("kite_endpoint_probe_notify_failed error=%s", str(e))
+
+
+# ---------------------------------------------------------------------------
+# [OUTAGE-2026-07-13 DEFECT 3+4] Trading-readiness watchdog.
+# ---------------------------------------------------------------------------
+# On 2026-07-13 the engine ran from 09:44 to close with no Kite token. It was
+# alive, the scheduler ticked every 60s, /health returned 200, all five
+# containers showed "healthy", and every single scan logged `no_access_token`.
+# Zero Telegram messages were sent all day.
+#
+# Three existing watchdogs all looked straight past it:
+#   * the scheduler-freeze watchdog watches for a STALLED loop -- the loop was
+#     fine, it was just doing nothing;
+#   * the relay probe watches Kite reachability -- Kite was reachable;
+#   * the token reconciliation cron only paged on DISAGREEMENT between python
+#     and node, and both sides were dead, which it read as agreement.
+#
+# The last of those is fixed in token_lifecycle. But it still depends on node
+# being REACHABLE (it returns early when node is down), so it can be silenced by
+# a second fault. This watchdog is the single-sided one: it asks the only
+# question that matters, of the engine alone.
+#
+#     "It is a trading day, the market is open. Can I trade? No? Say so."
+#
+# Deliberately NOT wired to the docker healthcheck: that drives autoheal, which
+# restarts the container, and no number of restarts produces a Kite token. See
+# routes_ops.health_check.
+
+_readiness_state = {"last_alert_monotonic": None, "was_ready": True}
+READINESS_ALERT_MIN_INTERVAL_SEC = 1800.0   # re-page at most every 30 min
+
+
+def _readiness_should_alert(
+    ready: bool, now_monotonic: float, state: dict
+) -> bool:
+    """Pure decision, so the dedupe logic is testable without a clock.
+
+    Alerts on the falling edge immediately, then at most every 30 minutes while
+    still down. `None` sentinel rather than 0.0: time.monotonic() can be below
+    the interval right after host boot, and 0.0 would suppress the very first
+    page of the day -- which, on 2026-07-13, was the only one that mattered.
+    """
+    if ready:
+        return False
+    last = state["last_alert_monotonic"]
+    if last is None:
+        return True
+    return (now_monotonic - last) >= READINESS_ALERT_MIN_INTERVAL_SEC
+
+
+async def _trading_readiness_tick():
+    """Market-hours cron: page if the engine cannot trade. Never raises."""
+    try:
+        import main as _main
+        from market_calendar import is_trading_day
+        from operator_alert import notify_operator
+
+        now_ist = datetime.now(IST)
+        nm = now_ist.hour * 60 + now_ist.minute
+        # 09:30 -- 15:15 IST. Starts after the open (the operator's login lands
+        # around 09:05-09:15 and post-login init takes ~20s, so paging at 09:16
+        # would just be noise), ends before the 15:30 close.
+        if not (9 * 60 + 30 <= nm <= 15 * 60 + 15):
+            return
+        if not await is_trading_day(now_ist.date(), settings.DB_PATH):
+            return
+
+        armed = bool(_main.kite.access_token)
+        scheduler_running = bool(getattr(_main.scheduler, "running", False))
+        ready = armed and scheduler_running
+
+        recovered = ready and not _readiness_state["was_ready"]
+        _readiness_state["was_ready"] = ready
+
+        if recovered:
+            _readiness_state["last_alert_monotonic"] = None
+            logger.info("trading_readiness_recovered")
+            await notify_operator(
+                "✅ TRADING RE-ARMED — the engine can trade again.",
+                event="trading_readiness_recovered",
+            )
+            return
+
+        now = time.monotonic()
+        if not _readiness_should_alert(ready, now, _readiness_state):
+            return
+        _readiness_state["last_alert_monotonic"] = now
+
+        reasons = []
+        if not armed:
+            reasons.append("no Kite token (the engine is not logged in)")
+        if not scheduler_running:
+            reasons.append("the job scheduler is not running")
+
+        logger.error(
+            "trading_readiness_failed armed=%s scheduler_running=%s",
+            armed, scheduler_running,
+        )
+        await notify_operator(
+            "🔴 NOT TRADING — the market is open and the engine cannot trade.\n\n"
+            "Cause: " + "; ".join(reasons) + ".\n\n"
+            "The engine is UP and looks healthy -- the scheduler is ticking and "
+            "every container reports healthy -- but every scan is a no-op. This "
+            "is the 2026-07-13 outage.\n\n"
+            "Re-login via the /login link. If the login does not stick, check "
+            "free disk space on /data: a full disk stops the token being saved, "
+            "and the next restart comes up unarmed again.",
+            event="trading_readiness_failed",
+        )
+    except Exception as e:
+        # A watchdog that crashes is a watchdog that is not watching.
+        logger.error("trading_readiness_tick_failed error=%s", str(e))

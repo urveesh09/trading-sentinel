@@ -80,6 +80,11 @@
     "trigger": "'cron'"
   },
   {
+    "func": "_trading_readiness_tick",
+    "id": "'trading_readiness'",
+    "trigger": "'cron'"
+  },
+  {
     "func": "auto_square_momentum",
     "id": "'momentum_auto_square'",
     "trigger": "'cron'"

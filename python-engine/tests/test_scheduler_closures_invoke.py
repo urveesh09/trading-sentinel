@@ -103,6 +103,82 @@ async def test_closure_resolves_its_globals_when_called(closure_name, monkeypatc
         pass
 
 
+# ===================================================================
+# The net, widened.
+# ===================================================================
+# The version of this file that shipped with 4.1 stage 2 invoked only the 8
+# closures. That gap let a REAL bug through: ops_watchdogs._ops_daily_snapshot
+# calls is_trading_day, which stage 1 had failed to import into the new module.
+# Import succeeded. The census saw the registration. The suite went green. And
+# the job would have raised NameError at 15:50 every day, inside a try/except
+# that logs and returns -- the daily ops snapshot would just have stopped.
+#
+# The lesson is that "the 8 closures" was never the right boundary. The right
+# boundary is EVERY function the scheduler will call. So: call them all.
+
+# Jobs that do real work even outside market hours and are not calendar-gated by
+# design (see test_penny_cron_gating.NO_GATE_NEEDED). Invoking them here would
+# hit Kite or rewrite state, and they were never moved between modules anyway.
+_NOT_INVOKED = {
+    "refresh_instrument_cache",
+    "clear_intraday_cache",
+    "_penny_daily_reset",
+    "_scheduler_tick_job",     # writes a heartbeat file; covered by its own test
+}
+
+
+@pytest.mark.asyncio
+async def test_every_scheduled_job_resolves_its_globals(monkeypatch):
+    """Call EVERY registered job, not just the closures.
+
+    Same contract as above: the assertion is only that the body can resolve its
+    names. With the calendar gate forced closed, each job takes its earliest
+    exit -- which is exactly the region where a botched move breaks.
+    """
+    import main
+
+    async def _closed(*a, **kw):
+        return False
+
+    # Patch on every module that resolves the gate, since the extracted modules
+    # import it directly rather than through main.
+    import ops_watchdogs
+    import scheduler_setup  # noqa: F401  (ensures it is importable)
+
+    monkeypatch.setattr(main, "is_trading_day", _closed)
+    monkeypatch.setattr(ops_watchdogs, "is_trading_day", _closed)
+
+    jobs = _registered_jobs()
+
+    # Plus the jobs main registers inline in lifespan(), which _registered_jobs
+    # cannot see -- reach them by name off their modules.
+    extra = {
+        "_ops_daily_snapshot": ops_watchdogs._ops_daily_snapshot,
+        "_kite_endpoint_probe_tick": ops_watchdogs._kite_endpoint_probe_tick,
+    }
+    jobs.update(extra)
+
+    failures = []
+    for name, fn in sorted(jobs.items()):
+        if name in _NOT_INVOKED:
+            continue
+        if not inspect.iscoroutinefunction(fn):
+            continue
+        try:
+            await fn()
+        except (NameError, AttributeError) as e:
+            failures.append(f"{name}: {e!r}")
+        except Exception:
+            pass  # body ran; its globals resolved
+
+    assert not failures, (
+        "scheduled job(s) could not resolve a global -- they would raise only "
+        "when the job FIRES, in production, inside a _safe wrapper that logs "
+        "and returns. The scan/report simply never happens:\n  "
+        + "\n  ".join(failures)
+    )
+
+
 @pytest.mark.asyncio
 async def test_calendar_gate_is_actually_honoured(monkeypatch):
     """Sanity-check the mechanism the test above leans on: with the calendar
