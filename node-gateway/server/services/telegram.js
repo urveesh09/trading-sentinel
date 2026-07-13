@@ -209,12 +209,16 @@ Vol Ratio ${signal.volume_ratio || 'N/A'}x     RSI: ${signal.rsi_14 || 'N/A'}
   return text;
 };
 
-const sendSignalAlert = async (signal) => {
+const _buildSignalMessage = (signal) => {
   const text = formatSignalMessage(signal);
-  
+
   // callback_data hard limit is 64 bytes.
   // Format: ACTION:shortId:unix_ts  (max ~26 bytes)
   // shortId = first 8 chars of UUID (lowercase hex) — distinct from ticker names (uppercase)
+  // [ROADMAP-2.5 2026-07-12] ts is taken at BUILD time and the callback
+  // handler rejects presses older than 5 min -- so each retry attempt
+  // rebuilds the message for a fresh timestamp instead of shipping
+  // buttons that have already burned part of their 5-min life.
   const ts = Math.floor(Date.now() / 1000);
   const shortId = signal.signal_id.substring(0, 8);
   const cbExecute = `EXEC:${shortId}:${ts}`;
@@ -229,21 +233,113 @@ const sendSignalAlert = async (signal) => {
       ]
     }
   };
+  return { text, options };
+};
 
+// [ROADMAP-2.5 2026-07-12] Retry parity with sendAlert: the EXEC-button
+// path was still one-shot, so a transient Telegram error silently dropped
+// a tradeable signal (the class of failure the 2026-07-11 sendAlert fix
+// closed for plain alerts). Same detached 5s/15s/45s backoff. A signal
+// delivered on retry has telegram_msg_id = NULL in received_signals
+// (the caller already returned) -- acceptable: button handling uses the
+// callback query's own message_id, not the stored one.
+const _retrySignalAlertInBackground = async (signal) => {
+  for (let i = 0; i < ALERT_RETRY_DELAYS_MS.length; i++) {
+    await new Promise((resolve) => {
+      const timer = setTimeout(resolve, ALERT_RETRY_DELAYS_MS[i]);
+      if (typeof timer.unref === 'function') timer.unref();
+    });
+    try {
+      const { text, options } = _buildSignalMessage(signal); // fresh button ts
+      const msg = await bot.sendMessage(config.TELEGRAM_CHAT_ID, text, options);
+      logger.info(
+        { event_type: 'telegram_signal_retry_ok', attempt: i + 2, ticker: signal.ticker, message_id: msg.message_id },
+        'Signal alert delivered on retry'
+      );
+      return;
+    } catch (err) {
+      if (i === ALERT_RETRY_DELAYS_MS.length - 1) {
+        logger.error(
+          { event_type: 'telegram_send_error', err, ticker: signal.ticker, attempts: ALERT_RETRY_DELAYS_MS.length + 1 },
+          'Failed to send signal alert after all retries'
+        );
+      } else {
+        logger.warn(
+          { event_type: 'telegram_signal_retry_failed', attempt: i + 2, ticker: signal.ticker, message: err.message },
+          'Signal alert retry failed; will retry again'
+        );
+      }
+    }
+  }
+};
+
+const sendSignalAlert = async (signal) => {
   try {
+    const { text, options } = _buildSignalMessage(signal);
     const msg = await bot.sendMessage(config.TELEGRAM_CHAT_ID, text, options);
     return msg.message_id;
   } catch (err) {
-    logger.error({ event_type: 'telegram_send_error', err }, 'Failed to send signal alert');
+    logger.warn(
+      { event_type: 'telegram_signal_retry_scheduled', ticker: signal.ticker, message: err.message },
+      'Failed to send signal alert; retrying in background'
+    );
+    // Fire-and-forget: never throws (loop catches internally).
+    _retrySignalAlertInBackground(signal);
     return null;
+  }
+};
+
+// [ALERT-RETRY 2026-07-11] sendAlert was one-shot: on 2026-07-10 two
+// transient EFATAL AggregateError network failures permanently dropped
+// the 11:09 SCHAEFFLER momentum summary AND the 15:45 penny zero-accept
+// watchdog alarm. Callers (python-engine /api/internal/notify posts) use
+// a 5s timeout, so retries must not block the response: the first
+// attempt is inline, the rest run detached with exponential backoff.
+// Trade-off: retried alerts can arrive out of order, and a send that
+// errored after Telegram actually accepted it can duplicate -- both are
+// acceptable for operator alerts; a dropped watchdog alarm is not.
+const ALERT_RETRY_DELAYS_MS = [5_000, 15_000, 45_000];
+
+const _retryAlertInBackground = async (message) => {
+  for (let i = 0; i < ALERT_RETRY_DELAYS_MS.length; i++) {
+    // unref: a pending retry must not hold the process open on shutdown
+    // (the express server keeps it alive during normal operation).
+    await new Promise((resolve) => {
+      const timer = setTimeout(resolve, ALERT_RETRY_DELAYS_MS[i]);
+      if (typeof timer.unref === 'function') timer.unref();
+    });
+    try {
+      await bot.sendMessage(config.TELEGRAM_CHAT_ID, message);
+      logger.info({ event_type: 'telegram_send_retry_ok', attempt: i + 2 }, 'Alert delivered on retry');
+      return;
+    } catch (err) {
+      if (i === ALERT_RETRY_DELAYS_MS.length - 1) {
+        logger.error(
+          { event_type: 'telegram_send_error', err, attempts: ALERT_RETRY_DELAYS_MS.length + 1 },
+          'Failed to send alert after all retries'
+        );
+      } else {
+        logger.warn(
+          { event_type: 'telegram_send_retry_failed', attempt: i + 2, message: err.message },
+          'Alert retry failed; will retry again'
+        );
+      }
+    }
   }
 };
 
 const sendAlert = async (message) => {
   try {
     await bot.sendMessage(config.TELEGRAM_CHAT_ID, message);
+    return true;
   } catch (err) {
-    logger.error({ event_type: 'telegram_send_error', err }, 'Failed to send alert');
+    logger.warn(
+      { event_type: 'telegram_send_retry_scheduled', message: err.message },
+      'Failed to send alert; retrying in background'
+    );
+    // Fire-and-forget: never throws (loop catches internally).
+    _retryAlertInBackground(message);
+    return false;
   }
 };
 

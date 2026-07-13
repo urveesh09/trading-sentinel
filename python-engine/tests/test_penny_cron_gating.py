@@ -88,6 +88,11 @@ NO_GATE_NEEDED = {
     "kite.refresh_instrument_cache",  # needed for token bootstrap; pure data layer
     "kite.clear_intraday_cache",      # DB cleanup, hour-agnostic
     "_penny_daily_reset",             # risk-engine singleton reset at 00:05 IST
+    # [ROADMAP-2.4 2026-07-12] Loop-progress tick for the agent's freeze
+    # watchdog. MUST run 24/7: gating it would make "stale file" ambiguous
+    # (frozen scheduler vs. calendar gate), defeating the whole probe.
+    # Zero financial risk: it only writes a timestamp to /data.
+    "_scheduler_tick_job",
 }
 
 

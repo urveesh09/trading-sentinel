@@ -20,6 +20,8 @@ import logging
 from datetime import datetime, timezone
 from typing import List, Optional, Tuple
 
+import pytz
+
 from penny_models import PennyRegime, PennyLeg
 
 logger = logging.getLogger(__name__)
@@ -111,8 +113,23 @@ class PennyRiskEngine:
 
     # ---- kill-switch ----------------------------------------------------
 
+    @staticmethod
+    def _trading_day(when: Optional[datetime] = None) -> str:
+        """[ROADMAP-3.7 2026-07-12] The penny trading 'day' is an IST
+        calendar day. Keying off the raw UTC date made the daily-loss
+        window reset at 05:30 IST -- mid-morning-prep, not midnight --
+        so a losing day's kill-switch state leaked into the next
+        session's accounting. Naive datetimes are treated as UTC
+        (every existing caller passes utcnow()). The F&O kill-switch
+        (fno_risk.kill_switch_status) was already IST-correct; this
+        aligns penny with it."""
+        when = when or datetime.now(timezone.utc)
+        if when.tzinfo is None:
+            when = when.replace(tzinfo=timezone.utc)
+        return when.astimezone(pytz.timezone("Asia/Kolkata")).date().isoformat()
+
     def record_realized_pnl(self, pnl: float, when: datetime) -> None:
-        today = when.date().isoformat()
+        today = self._trading_day(when)
         if self.daily_pnl_date != today:
             self.daily_pnl = 0.0
             self.daily_pnl_date = today
@@ -125,8 +142,7 @@ class PennyRiskEngine:
 
     def kill_switch_active(self, as_of: datetime = None) -> bool:
         from config import settings
-        when = as_of or datetime.now(timezone.utc)
-        today = when.date().isoformat()
+        today = self._trading_day(as_of)
         if self.daily_pnl_date != today:
             return False   # new day, reset
         threshold = -1.0 * self.bankroll * settings.PENNY_DAILY_KILL_SWITCH_PCT
@@ -245,6 +261,36 @@ class PennyRiskEngine:
                 f"and {dist_from_high * 100:.2f}% below day high"
             )
         return False, ""
+
+    @staticmethod
+    def band_pct_from_quote(quote: dict, prev_close: float,
+                            day_high: float, day_low: float) -> float:
+        """
+        [ROADMAP-3.9 2026-07-12] Prefer the REAL circuit band from the
+        Kite full quote (`lower_circuit_limit` / `upper_circuit_limit`
+        are the exchange's actual daily band edges) and only fall back
+        to range-based inference when they're absent/degenerate. The
+        inference guessed the band from today's realized range, so a
+        quiet day on a 20% ASM stock read as a 5% band and mis-scaled
+        the skip distance 4x too tight.
+
+        Sanity window 0.5%-35%: outside it the quote fields are junk
+        (0.0 on some indices/segments) and inference is more trustworthy.
+        Returns the exact fraction, not snapped to 5/10/20 -- the
+        circuit_blocked math scales linearly with band_pct.
+        """
+        try:
+            lower = float((quote or {}).get("lower_circuit_limit") or 0.0)
+            upper = float((quote or {}).get("upper_circuit_limit") or 0.0)
+        except (TypeError, ValueError):
+            lower, upper = 0.0, 0.0
+        if prev_close > 0 and 0 < lower < prev_close < upper:
+            band = max(upper / prev_close - 1.0, 1.0 - lower / prev_close)
+            if 0.005 <= band <= 0.35:
+                return band
+        return PennyRiskEngine.infer_band_pct_from_quote(
+            prev_close, day_high, day_low
+        )
 
     @staticmethod
     def infer_band_pct_from_quote(prev_close: float, day_high: float,

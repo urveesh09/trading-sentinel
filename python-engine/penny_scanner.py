@@ -39,6 +39,17 @@ from penny_executor import PennyExecutor
 logger = logging.getLogger(__name__)
 
 
+def _event_block_safe(ticker, on_date):
+    """[ROADMAP-3.10 2026-07-12] Wrapper so an event_calendar import or
+    runtime failure can never crash a scan tick -- fails to ALLOW."""
+    try:
+        from event_calendar import event_block
+        return event_block(ticker, on_date)
+    except Exception as e:
+        logger.warning("penny_event_check_failed ticker=%s error=%s", ticker, str(e))
+        return False, ""
+
+
 class PennyScanner:
     def __init__(
         self,
@@ -96,7 +107,10 @@ class PennyScanner:
         )
         if daily_pnl_override is not None:
             self.risk_engine.daily_pnl = daily_pnl_override
-            self.risk_engine.daily_pnl_date = datetime.now(timezone.utc).date().isoformat()
+            # [ROADMAP-3.7 2026-07-12] Same IST day-keying as the
+            # kill-switch itself, or the override lands on the wrong
+            # "day" between 00:00 and 05:30 IST.
+            self.risk_engine.daily_pnl_date = self.risk_engine._trading_day()
 
     # ---- [AUDIT-FIX-1.3] regime property + helper -------------------
 
@@ -111,9 +125,11 @@ class PennyScanner:
                                          (legacy frozen behaviour, preserved
                                          for any existing call sites that
                                          pass a string)
-          - None                         -> wrapped: always returns "PR1_CALM"
-                                         (defensive default for tests that
-                                         don't construct with a regime)
+          - None                         -> wrapped: always returns
+                                         "PR2_ELEVATED" ([ROADMAP-3.6]
+                                         defensive default: no regime
+                                         wired = reduced sizing, was
+                                         PR1_CALM full size)
         """
         if callable(regime):
             return regime
@@ -121,7 +137,7 @@ class PennyScanner:
             frozen = regime
             return lambda: frozen
         # None or anything else
-        return lambda: "PR1_CALM"
+        return lambda: "PR2_ELEVATED"
 
     @property
     def regime(self) -> str:
@@ -325,7 +341,10 @@ class PennyScanner:
         # avoid the -5%/ATM-trap risk the spec §4.3 warns about.
         if prev_close and prev_close > 0:
             try:
-                band_pct = PennyRiskEngine.infer_band_pct_from_quote(
+                # [ROADMAP-3.9 2026-07-12] Real band from the quote's
+                # circuit-limit fields; falls back to range inference.
+                band_pct = PennyRiskEngine.band_pct_from_quote(
+                    quote=q,
                     prev_close=float(prev_close),
                     day_high=float(day_high) if day_high else float(prev_close),
                     day_low=float(day_low) if day_low else float(prev_close),
@@ -349,6 +368,14 @@ class PennyScanner:
                 # Never let a circuit-check error crash the scan.
                 logger.warning("penny_circuit_check_failed ticker=%s error=%s",
                                ticker, str(e))
+
+        # [ROADMAP-3.10 2026-07-12] Earnings/event no-trade window
+        # (operator-curated CSV; missing CSV/ticker = allow). Results-day
+        # gaps jump stops -- don't enter INTO a known event.
+        ev_blocked, ev_reason = _event_block_safe(ticker, as_of.date())
+        if ev_blocked:
+            logger.info("penny_event_blocked ticker=%s reason=%s", ticker, ev_reason)
+            return {"accept": False, "reject_reason": ev_reason, "ticker": ticker}
 
         # 2) Real 1-min bars (cached by kite.get_intraday)
         try:
@@ -473,8 +500,12 @@ class PennyScanner:
         # the universe to be conservative.
         try:
             from penny_regime import PennyRegimeEngine
-            PennyRegimeEngine().update_vol_rank(
-                PennyRegimeEngine().compute_vol_rank(closes_1m)
+            # [ROADMAP-3.6 2026-07-12] bars_per_day=375 scales the 1-min
+            # stdev to a daily equivalent -- without it the 0.10 cap made
+            # vol_rank ~0 for every ticker (the input was dead weight).
+            _regime_engine = PennyRegimeEngine()
+            _regime_engine.update_vol_rank(
+                _regime_engine.compute_vol_rank(closes_1m, bars_per_day=375)
             )
         except Exception as e:
             # Never let regime-feeding crash a scan tick.
@@ -602,7 +633,9 @@ class PennyScanner:
                     ohlc = q.get("ohlc") or {}
                     cnc_day_high = float(ohlc.get("high") or cnc_ltp or prev_close)
                     cnc_day_low = float(ohlc.get("low") or cnc_ltp or prev_close)
-                    band_pct_c = PennyRiskEngine.infer_band_pct_from_quote(
+                    # [ROADMAP-3.9 2026-07-12] Real band when available.
+                    band_pct_c = PennyRiskEngine.band_pct_from_quote(
+                        quote=q,
                         prev_close=float(prev_close),
                         day_high=cnc_day_high, day_low=cnc_day_low,
                     )
@@ -625,6 +658,16 @@ class PennyScanner:
             except Exception as e:
                 logger.warning("penny_connors_circuit_check_failed ticker=%s error=%s",
                                ticker, str(e))
+
+        # [ROADMAP-3.10 2026-07-12] Same event window as the MIS leg --
+        # a CNC overnight hold through results is the worst version of
+        # the stop-jump risk.
+        ev_blocked, ev_reason = _event_block_safe(ticker, as_of.date())
+        if ev_blocked:
+            logger.info(
+                "penny_event_blocked_connors ticker=%s reason=%s", ticker, ev_reason
+            )
+            return {"accept": False, "reject_reason": ev_reason, "ticker": ticker}
 
         decision = evaluate_connors_entry(
             ticker=ticker, daily=daily,

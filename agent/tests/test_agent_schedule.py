@@ -135,12 +135,19 @@ class TestScheduleRegistration:
         assert len(clear_jobs) >= 1
 
 
-class TestMomentumSchedule:
-    """Q9: Momentum pipeline runs at :55, not :15."""
+EXPECTED_MOMENTUM_TIMES = {
+    f"{h:02d}:{m:02d}" for h in range(10, 15) for m in (10, 25, 40, 55)
+} | {"15:10", "15:25"}
 
-    def test_momentum_at_55_for_all_hours(self, load_agent_main):
-        """run_momentum_pipeline at 10:55, 11:55, 12:55, 13:55, 14:55."""
-        expected_times = {"10:55", "11:55", "12:55", "13:55", "14:55"}
+
+class TestMomentumSchedule:
+    """[FIX 2026-07-11 POLL-CADENCE] Momentum polls every 15 min, ~10 min
+    after each engine scan start (:10/:25/:40/:55, hours 10-14), plus
+    15:10/15:25 stragglers. Hourly :55 polling delayed button alerts by
+    up to an hour; on 2026-07-10 only 3 of 17 signals were ever polled."""
+
+    def test_momentum_poll_times(self, load_agent_main):
+        """run_momentum_pipeline at every expected 15-min slot."""
         momentum_jobs = [
             j for j in schedule.get_jobs()
             if "run_momentum_pipeline" in str(j.job_func)
@@ -148,23 +155,26 @@ class TestMomentumSchedule:
         actual_times = {
             j.at_time.strftime("%H:%M") for j in momentum_jobs if j.at_time
         }
-        assert expected_times.issubset(actual_times), (
-            f"Missing momentum times. Expected {expected_times}, got {actual_times}"
+        assert actual_times == EXPECTED_MOMENTUM_TIMES, (
+            f"Momentum times mismatch. Expected {sorted(EXPECTED_MOMENTUM_TIMES)}, "
+            f"got {sorted(actual_times)}"
         )
 
     def test_momentum_per_time_slot_has_5_weekday_jobs(self, load_agent_main):
-        """Each :55 time slot should have exactly 5 jobs (Mon-Fri)."""
-        for hour in ["10:55", "11:55", "12:55", "13:55", "14:55"]:
+        """Each poll slot should have exactly 5 jobs (Mon-Fri)."""
+        for hhmm in sorted(EXPECTED_MOMENTUM_TIMES):
             jobs = [
                 j for j in schedule.get_jobs()
                 if "run_momentum_pipeline" in str(j.job_func)
                 and j.at_time is not None
-                and j.at_time.strftime("%H:%M") == hour
+                and j.at_time.strftime("%H:%M") == hhmm
             ]
-            assert len(jobs) == 5, f"Expected 5 jobs for {hour}, got {len(jobs)}"
+            assert len(jobs) == 5, f"Expected 5 jobs for {hhmm}, got {len(jobs)}"
 
     def test_no_momentum_at_00_15_30_45(self, load_agent_main):
-        """Momentum must NOT be at :00, :15, :30, or :45."""
+        """Momentum polls must NOT collide with engine scan starts
+        (:00, :15, :30, :45) -- polling mid-scan would read the previous
+        scan's (pre-cumulative-fix: wiped) state."""
         bad_minutes = {"00", "15", "30", "45"}
         momentum_jobs = [
             j for j in schedule.get_jobs()
@@ -174,13 +184,16 @@ class TestMomentumSchedule:
         for j in momentum_jobs:
             minute = j.at_time.strftime("%M")
             assert minute not in bad_minutes, (
-                f"Momentum job found at minute :{minute} - should only be at :55"
+                f"Momentum job found at minute :{minute} - collides with scan start"
             )
 
     def test_total_momentum_jobs(self, load_agent_main):
-        """5 time slots x 5 weekdays = 25 momentum jobs total."""
+        """22 time slots x 5 weekdays = 110 momentum jobs total."""
         momentum_jobs = [
             j for j in schedule.get_jobs()
             if "run_momentum_pipeline" in str(j.job_func)
         ]
-        assert len(momentum_jobs) == 25, f"Expected 25 momentum jobs, got {len(momentum_jobs)}"
+        expected = len(EXPECTED_MOMENTUM_TIMES) * 5
+        assert len(momentum_jobs) == expected, (
+            f"Expected {expected} momentum jobs, got {len(momentum_jobs)}"
+        )

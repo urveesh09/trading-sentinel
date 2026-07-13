@@ -194,11 +194,26 @@ class PennyRegimeEngine:
 
     # ---- public compute API --------------------------------------------
 
-    def compute_vol_rank(self, closes: List[float]) -> float:
+    def compute_vol_rank(
+        self, closes: List[float], bars_per_day: Optional[int] = None,
+    ) -> float:
         """
-        Per-stock realized volatility proxy (5-min returns, 60d lookback).
+        Per-stock realized volatility proxy.
         Returns a normalized [0, 1] rank: 0 = quiet, 1 = most-volatile seen.
         Short / constant series return 0.5 (degenerate).
+
+        [ROADMAP-3.6 2026-07-12] The 0.10 soft cap is calibrated for
+        DAILY realized vol, but the scanner feeds ONE DAY of 1-min
+        closes. Per-bar 1-min stdev is ~0.001-0.005 -- compared raw
+        against the 0.10 cap it produced vol_rank ~= 0 for every ticker
+        every day, so the 40%-weight input never influenced the regime
+        (it rode on the VIX proxy alone). Pass `bars_per_day` (375 for
+        NSE 1-min bars) to scale the per-bar stdev by sqrt(bars_per_day)
+        to a daily equivalent before normalizing. Omitted = input is
+        already daily-ish (back-compat with direct callers/tests).
+        Intraday realized vol excludes overnight gaps, so this still
+        slightly UNDER-states true daily vol -- acceptable: the cap is a
+        soft ceiling and PR3 blocking has the VIX proxy as second input.
         """
         if not closes or len(closes) < 30:
             return 0.5
@@ -214,6 +229,8 @@ class PennyRegimeEngine:
         mean = sum(log_rets) / len(log_rets)
         var = sum((r - mean) ** 2 for r in log_rets) / len(log_rets)
         sd = math.sqrt(var)
+        if bars_per_day is not None and bars_per_day > 1:
+            sd *= math.sqrt(bars_per_day)
         # Normalize to [0,1] with a soft cap at sd=0.10 (10% daily vol).
         # Anything above that is treated as PR3 territory regardless.
         if sd >= 0.10:
@@ -256,20 +273,31 @@ class PennyRegimeEngine:
         """
         Map the two inputs to a PennyRegime per spec §6.3.
 
-        [FAIL-OPEN 2026-06-26] When either input is missing, return
-        PR1_CALM (not UNKNOWN). The earlier UNKNOWN behaviour sized
-        at 0% per trade via the risk engine (UNKNOWN -> 0.0 in
-        _DEFAULT_SIZE), which blocked every penny entry whenever the
-        scanner had not yet fed vol_rank or the VIX proxy feed had
-        no data. Rule 15 (operator mandate): "don't kill
-        proactiveness for lack of data." The scanner can still
-        surface uncertainty via confidence_reasons() (which surfaces
-        "vol_rank: unknown" / "vix_proxy: unknown" in the operator
-        response) and via penny_regime_computed log line. The
-        actual entry decision remains gated by PR3_HOT block.
+        [FAIL-OPEN 2026-06-26] When either input is missing, do NOT
+        return UNKNOWN. The earlier UNKNOWN behaviour sized at 0% per
+        trade via the risk engine (UNKNOWN -> 0.0 in _DEFAULT_SIZE),
+        which blocked every penny entry whenever the scanner had not
+        yet fed vol_rank or the VIX proxy feed had no data. Rule 15
+        (operator mandate): "don't kill proactiveness for lack of
+        data." The scanner can still surface uncertainty via
+        confidence_reasons() and the penny_regime_computed log line.
+
+        [ROADMAP-3.6 2026-07-12] Fail-open reworked, two rules:
+          1. A missing input FLOORS the regime at PR2_ELEVATED (2.5%
+             sizing) -- half-blind is elevated uncertainty by
+             definition, never PR1_CALM full 5% (the old fail-open
+             traded full size through data outages).
+          2. The input we DO have is still respected: vix_proxy=0.95
+             with vol_rank missing is a PR3 print, and the old blanket
+             fail-open made PR3_HOT unreachable every morning until
+             the first scan fed vol_rank (the phase-2 audit finding).
         """
         if vol_rank is None or vix_proxy is None:
-            return PennyRegime.PR1_CALM
+            vr = vol_rank if vol_rank is not None else 0.0
+            vp = vix_proxy if vix_proxy is not None else 0.0
+            if vr >= _VOL_PR2_MAX or vp >= _VIX_PR2_MAX:
+                return PennyRegime.PR3_HOT
+            return PennyRegime.PR2_ELEVATED
         if vol_rank >= _VOL_PR2_MAX or vix_proxy >= _VIX_PR2_MAX:
             return PennyRegime.PR3_HOT
         if vol_rank >= _VOL_PR1_MAX or vix_proxy >= _VIX_PR1_MAX:

@@ -134,7 +134,13 @@ describe('sendSignalAlert() callback buttons', () => {
     expect(keyboard[1][0].text).toContain('Reject');
   });
 
-  test('callback_data is base64-encoded JSON with correct action', async () => {
+  // [TEST-FIX 2026-07-11] These two tests still asserted the RETIRED
+  // base64-JSON callback encoding. Production moved to the compact
+  // `ACTION:shortId:unix_ts` format ([CRIT-001/002], stays under
+  // Telegram's 64-byte callback_data limit; shortId = first 8 chars of
+  // signal_id) -- the format node-gateway's callback handler and the
+  // agent container both use.
+  test('callback_data uses ACTION:shortId:ts format with correct action', async () => {
     mockSendMessage.mockResolvedValue({ message_id: 100 });
 
     const signal = makeSignal({ signal_id: 'test-id-123' });
@@ -143,17 +149,20 @@ describe('sendSignalAlert() callback buttons', () => {
 
     const keyboard = options.reply_markup.inline_keyboard;
 
-    // Decode EXEC button
-    const execData = JSON.parse(Buffer.from(keyboard[0][0].callback_data, 'base64').toString());
-    expect(execData.a).toBe('EXEC');
-    expect(execData.id).toBe('test-id-123');
-    expect(execData.t).toBeDefined();
-    expect(typeof execData.t).toBe('number');
+    // EXEC button
+    const [execAction, execId, execTs] = keyboard[0][0].callback_data.split(':');
+    expect(execAction).toBe('EXEC');
+    expect(execId).toBe('test-id-'); // first 8 chars of signal_id
+    expect(Number(execTs)).not.toBeNaN();
 
-    // Decode REJ button
-    const rejData = JSON.parse(Buffer.from(keyboard[1][0].callback_data, 'base64').toString());
-    expect(rejData.a).toBe('REJ');
-    expect(rejData.id).toBe('test-id-123');
+    // REJ button
+    const [rejAction, rejId] = keyboard[1][0].callback_data.split(':');
+    expect(rejAction).toBe('REJ');
+    expect(rejId).toBe('test-id-');
+
+    // Telegram hard limit
+    expect(Buffer.byteLength(keyboard[0][0].callback_data)).toBeLessThanOrEqual(64);
+    expect(Buffer.byteLength(keyboard[1][0].callback_data)).toBeLessThanOrEqual(64);
   });
 
   test('callback_data timestamp is close to current time', async () => {
@@ -164,10 +173,10 @@ describe('sendSignalAlert() callback buttons', () => {
     const [, , options] = mockSendMessage.mock.calls[0];
 
     const keyboard = options.reply_markup.inline_keyboard;
-    const execData = JSON.parse(Buffer.from(keyboard[0][0].callback_data, 'base64').toString());
+    const ts = Number(keyboard[0][0].callback_data.split(':')[2]);
 
     // Timestamp should be within 5 seconds of 'now'
-    expect(Math.abs(execData.t - now)).toBeLessThanOrEqual(5);
+    expect(Math.abs(ts - now)).toBeLessThanOrEqual(5);
   });
 
   test('returns message_id on success', async () => {
@@ -178,10 +187,89 @@ describe('sendSignalAlert() callback buttons', () => {
   });
 
   test('returns null on Telegram API failure', async () => {
+    jest.useFakeTimers();
     mockSendMessage.mockRejectedValue(new Error('Network error'));
 
     const result = await telegram.sendSignalAlert(makeSignal());
     expect(result).toBeNull();
+
+    // Drain the [ROADMAP-2.5] background retry chain so no timers leak.
+    await jest.advanceTimersByTimeAsync(70_000);
+    jest.useRealTimers();
+  });
+});
+
+// ─────────────────────────────────────────────────────────────────────
+// sendSignalAlert - background retry ([ROADMAP-2.5 2026-07-12]: the
+// EXEC-button path was one-shot while sendAlert already retried -- a
+// transient Telegram error silently dropped a tradeable signal)
+// ─────────────────────────────────────────────────────────────────────
+
+describe('sendSignalAlert() retry/backoff', () => {
+  afterEach(() => {
+    jest.useRealTimers();
+  });
+
+  test('returns null immediately on failure, then delivers on retry with buttons intact', async () => {
+    jest.useFakeTimers();
+    mockSendMessage
+      .mockRejectedValueOnce(new Error('EFATAL AggregateError'))
+      .mockResolvedValueOnce({ message_id: 99 });
+
+    const result = await telegram.sendSignalAlert(makeSignal());
+    expect(result).toBeNull();
+    expect(mockSendMessage).toHaveBeenCalledTimes(1);
+
+    await jest.advanceTimersByTimeAsync(5_000);
+    expect(mockSendMessage).toHaveBeenCalledTimes(2);
+
+    const [, text, options] = mockSendMessage.mock.calls[1];
+    expect(text).toContain('RELIANCE');
+    expect(options.reply_markup.inline_keyboard[0][0].callback_data).toMatch(/^EXEC:sig-uuid:\d+$/);
+    expect(options.reply_markup.inline_keyboard[1][0].callback_data).toMatch(/^REJ:sig-uuid:\d+$/);
+
+    // Delivered -> no further attempts.
+    await jest.advanceTimersByTimeAsync(70_000);
+    expect(mockSendMessage).toHaveBeenCalledTimes(2);
+  });
+
+  test('retry rebuilds callback_data with a fresh timestamp', async () => {
+    // The callback handler rejects presses > 5 min after the embedded ts;
+    // a retried message must not ship pre-aged buttons.
+    jest.useFakeTimers();
+    mockSendMessage
+      .mockRejectedValueOnce(new Error('boom'))
+      .mockResolvedValueOnce({ message_id: 1 });
+
+    await telegram.sendSignalAlert(makeSignal());
+    const firstTs = parseInt(
+      mockSendMessage.mock.calls[0][2].reply_markup.inline_keyboard[0][0].callback_data.split(':')[2], 10
+    );
+
+    await jest.advanceTimersByTimeAsync(5_000);
+    const retryTs = parseInt(
+      mockSendMessage.mock.calls[1][2].reply_markup.inline_keyboard[0][0].callback_data.split(':')[2], 10
+    );
+
+    expect(retryTs).toBeGreaterThanOrEqual(firstTs + 5);
+  });
+
+  test('gives up after all retries fail (4 total attempts)', async () => {
+    jest.useFakeTimers();
+    mockSendMessage.mockRejectedValue(new Error('EFATAL AggregateError'));
+
+    await telegram.sendSignalAlert(makeSignal());
+    expect(mockSendMessage).toHaveBeenCalledTimes(1);
+
+    await jest.advanceTimersByTimeAsync(5_000);
+    expect(mockSendMessage).toHaveBeenCalledTimes(2);
+    await jest.advanceTimersByTimeAsync(15_000);
+    expect(mockSendMessage).toHaveBeenCalledTimes(3);
+    await jest.advanceTimersByTimeAsync(45_000);
+    expect(mockSendMessage).toHaveBeenCalledTimes(4);
+
+    await jest.advanceTimersByTimeAsync(300_000);
+    expect(mockSendMessage).toHaveBeenCalledTimes(4);
   });
 });
 
@@ -203,9 +291,76 @@ describe('sendAlert()', () => {
   });
 
   test('does not throw on send failure', async () => {
+    jest.useFakeTimers();
     mockSendMessage.mockRejectedValue(new Error('fail'));
 
     // Should not throw
     await expect(telegram.sendAlert('test')).resolves.not.toThrow();
+
+    // Drain the background retry chain (5s + 15s + 45s) so no timers leak.
+    await jest.advanceTimersByTimeAsync(70_000);
+    jest.useRealTimers();
+  });
+});
+
+// ─────────────────────────────────────────────────────────────────────
+// sendAlert - background retry ([ALERT-RETRY 2026-07-11]: two one-shot
+// EFATAL failures on 2026-07-10 permanently dropped a momentum summary
+// and the penny zero-accept watchdog alarm)
+// ─────────────────────────────────────────────────────────────────────
+
+describe('sendAlert() retry/backoff', () => {
+  afterEach(() => {
+    jest.useRealTimers();
+  });
+
+  test('returns true and sends exactly once on first-try success', async () => {
+    mockSendMessage.mockResolvedValue({});
+
+    const result = await telegram.sendAlert('all good');
+    expect(result).toBe(true);
+    expect(mockSendMessage).toHaveBeenCalledTimes(1);
+  });
+
+  test('resolves immediately on failure (never blocks the caller) and retries in background', async () => {
+    jest.useFakeTimers();
+    mockSendMessage
+      .mockRejectedValueOnce(new Error('EFATAL AggregateError'))
+      .mockResolvedValueOnce({});
+
+    // Resolves without advancing timers: callers (python-engine posts
+    // with a 5s timeout) must never wait on the backoff.
+    const result = await telegram.sendAlert('watchdog alarm');
+    expect(result).toBe(false);
+    expect(mockSendMessage).toHaveBeenCalledTimes(1);
+
+    // First backoff (5s) -> retry delivers the SAME message.
+    await jest.advanceTimersByTimeAsync(5_000);
+    expect(mockSendMessage).toHaveBeenCalledTimes(2);
+    const [chatId, message] = mockSendMessage.mock.calls[1];
+    expect(message).toBe('watchdog alarm');
+
+    // Delivered -> no further attempts.
+    await jest.advanceTimersByTimeAsync(70_000);
+    expect(mockSendMessage).toHaveBeenCalledTimes(2);
+  });
+
+  test('gives up after all retries fail (4 total attempts)', async () => {
+    jest.useFakeTimers();
+    mockSendMessage.mockRejectedValue(new Error('EFATAL AggregateError'));
+
+    await telegram.sendAlert('doomed alert');
+    expect(mockSendMessage).toHaveBeenCalledTimes(1);
+
+    await jest.advanceTimersByTimeAsync(5_000);   // retry 1
+    expect(mockSendMessage).toHaveBeenCalledTimes(2);
+    await jest.advanceTimersByTimeAsync(15_000);  // retry 2
+    expect(mockSendMessage).toHaveBeenCalledTimes(3);
+    await jest.advanceTimersByTimeAsync(45_000);  // retry 3 (last)
+    expect(mockSendMessage).toHaveBeenCalledTimes(4);
+
+    // No fifth attempt, and nothing throws.
+    await jest.advanceTimersByTimeAsync(300_000);
+    expect(mockSendMessage).toHaveBeenCalledTimes(4);
   });
 });

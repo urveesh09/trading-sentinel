@@ -32,4 +32,28 @@ function sanitise(obj) {
   return sanitisedObj;
 }
 
-module.exports = { sanitise };
+/**
+ * [MED-011 2026-07-12] Redacts sensitive query-string values in a URL.
+ * The Zerodha OAuth callback arrives as
+ *   /api/auth/callback?request_token=XXX&status=success
+ * and pino-http logs req.url verbatim -- without this, a usable Kite
+ * credential lands in the log stream on every daily login.
+ */
+function sanitiseUrl(url) {
+  if (typeof url !== 'string') return url;
+  const qIdx = url.indexOf('?');
+  if (qIdx === -1) return url;
+
+  const path = url.slice(0, qIdx);
+  const query = url.slice(qIdx + 1).split('&').map((pair) => {
+    const eq = pair.indexOf('=');
+    if (eq === -1) return pair;
+    const name = pair.slice(0, eq);
+    const isSensitive = [...SENSITIVE_KEYS].some(k => name.toLowerCase().includes(k));
+    return isSensitive ? `${name}=[REDACTED]` : pair;
+  }).join('&');
+
+  return `${path}?${query}`;
+}
+
+module.exports = { sanitise, sanitiseUrl };

@@ -456,6 +456,9 @@ class KiteClient:
                         "FIX=log in via Telegram /login (Zerodha token expires daily)",
                         len(tokens),
                     )
+                    # [ROADMAP-2.1 2026-07-12] Page the operator too --
+                    # deduped to once/hour inside the helper.
+                    self._maybe_alert_invalid_token()
                 else:
                     logger.error(
                         "kite_quote_failed status=%d tokens=%d",
@@ -529,6 +532,52 @@ class KiteClient:
     _quote_fail_window_count: int = 0
     _quote_fail_degraded_emitted: bool = False
     KITE_QUOTE_FAIL_RATE_THRESHOLD_PER_MIN = 30
+
+    # [ROADMAP-2.1 2026-07-12] Operator alarm for the invalid/expired-token
+    # signature (HTTP 400 InputException). On 2026-07-09 this failure mode
+    # produced 26,311 log lines but zero Telegram messages -- the operator
+    # found out from the day report. `None` sentinel (not 0.0) because
+    # time.monotonic() can be < the dedupe window right after host boot.
+    _invalid_token_alert_last_monotonic: Optional[float] = None
+    INVALID_TOKEN_ALERT_MIN_INTERVAL_SEC = 3600.0
+
+    def _maybe_alert_invalid_token(self):
+        """Fire-and-forget Telegram alert (via node-gateway /api/internal/
+        notify) when quote calls start failing with the HTTP-400
+        invalid-token signature. Deduped to once per hour so a 400 storm
+        produces ONE page, not thousands. Never raises and never blocks
+        the caller's error path."""
+        now = time.monotonic()
+        last = KiteClient._invalid_token_alert_last_monotonic
+        if last is not None and (now - last) < KiteClient.INVALID_TOKEN_ALERT_MIN_INTERVAL_SEC:
+            return
+        KiteClient._invalid_token_alert_last_monotonic = now
+
+        async def _send():
+            try:
+                async with httpx.AsyncClient() as client:
+                    await client.post(
+                        f"{settings.CONTAINER_A_URL}/api/internal/notify",
+                        json={"message": (
+                            "🔑 KITE TOKEN INVALID/EXPIRED\n"
+                            "Quote calls are failing with HTTP 400 InputException "
+                            "(Zerodha's signature for a missing/expired access token).\n"
+                            "All scans are blind until you log in again via the "
+                            "/login link. Tokens expire daily ~06:00 IST."
+                        )},
+                        headers={"X-Internal-Secret": settings.INTERNAL_API_SECRET or ""},
+                        timeout=5.0,
+                    )
+            except Exception as e:
+                logger.warning("invalid_token_alert_failed error=%s", str(e))
+
+        try:
+            asyncio.get_running_loop()
+            asyncio.create_task(_send())
+        except RuntimeError:
+            # No running loop (sync/test context) -- the ERROR log above
+            # already carries the hint; skip the Telegram hop.
+            pass
 
     def _note_quote_rate_failure(self) -> None:
         """[KITE-QUOTE-RETRY 2026-07-02] Track per-minute quote
@@ -612,6 +661,88 @@ class KiteClient:
         except httpx.RequestError as e:
             logger.error("kite_instruments_failed error=%s", str(e))
             return []
+
+    async def get_instruments_dump(self, segment: str) -> str:
+        """
+        [FNO 2026-07-10] Fetch a raw instruments CSV dump for any exchange
+        segment (e.g. "NFO"). Returns "" on failure -- callers own the
+        parse. Deliberately does NOT touch self.instrument_cache: pouring
+        60-90k NFO rows into the flat NSE-equity symbol->token dict would
+        collide with equity symbols and inflate a cache that already takes
+        ~38 min to fill cold (spec §6.1, ops rule 61). fno_instruments
+        keeps its own keyed structure instead.
+        """
+        if not self.access_token:
+            logger.warning("kite_instruments_dump_skip segment=%s reason=no_access_token", segment)
+            return ""
+        await self.limiter.acquire()
+        try:
+            resp = await self.client.get(f"/instruments/{segment}")
+            resp.raise_for_status()
+            return resp.text
+        except httpx.HTTPStatusError as e:
+            # VERIFY-6: this plan 403s the INDICES segment; if NFO also
+            # 403s the whole F&O module is dead in the water -- be loud.
+            logger.error(
+                "kite_instruments_dump_failed segment=%s status=%d "
+                "FIX=if 403, the Kite plan may not include %s -- F&O module "
+                "cannot run without it",
+                segment, e.response.status_code, segment,
+            )
+            return ""
+        except httpx.RequestError as e:
+            logger.error("kite_instruments_dump_failed segment=%s error=%s", segment, str(e))
+            return ""
+
+    async def get_intraday_by_token(
+        self,
+        instrument_token: int,
+        from_datetime: str,
+        to_datetime: str,
+        interval: str = "5minute",
+    ) -> pd.DataFrame:
+        """
+        [FNO 2026-07-10] Intraday candles by raw instrument token (the
+        symbol->token cache only covers NSE equities, so NFO callers
+        resolve their own tokens). No sqlite caching: the F&O signal loop
+        re-reads the full session every tick and today's candles change
+        every 5 minutes, so a cache would only serve stale bars.
+        Returns an empty DataFrame on failure.
+        """
+        for attempt in range(5):
+            await self.limiter.acquire()
+            try:
+                resp = await self.client.get(
+                    f"/instruments/historical/{int(instrument_token)}/{interval}",
+                    params={"from": from_datetime, "to": to_datetime},
+                )
+                resp.raise_for_status()
+                data = resp.json().get("data", {}).get("candles", [])
+                if not data:
+                    return pd.DataFrame()
+                # Kite appends an OI column for derivatives candles, so the
+                # row width must be checked BEFORE constructing the frame.
+                cols = ['datetime', 'open', 'high', 'low', 'close', 'volume']
+                if len(data[0]) > 6:
+                    cols = cols + ['oi']
+                df = pd.DataFrame(data, columns=cols)
+                df['datetime'] = pd.to_datetime(df['datetime']).dt.tz_localize(None)
+                df.set_index('datetime', inplace=True)
+                return df
+            except httpx.HTTPStatusError as e:
+                if e.response.status_code in (429, 503, 504):
+                    await asyncio.sleep(2 ** attempt)
+                    continue
+                logger.error(
+                    "kite_intraday_by_token_failed token=%d status=%d",
+                    instrument_token, e.response.status_code,
+                )
+                return pd.DataFrame()
+            except httpx.RequestError:
+                await asyncio.sleep(2 ** attempt)
+                continue
+        logger.error("max_retries_exceeded_intraday_token token=%d", instrument_token)
+        return pd.DataFrame()
 
     async def get_corporate_actions(self) -> list:
         """

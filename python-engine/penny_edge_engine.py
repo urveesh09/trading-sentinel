@@ -470,8 +470,12 @@ def simulate_position(
     for i, b in enumerate(bars_after_entry):
         hold_days = i + 1
         # SL check
+        # [ROADMAP-3.3 2026-07-12] Gap-through fills at the OPEN: when the
+        # bar opens below the stop the order executes at the open, not at
+        # a price the market never traded on the way down. (SL-before-TP
+        # ordering unchanged -- that conservatism was already correct.)
         if b["low"] <= pos.stop_loss:
-            exit_price = pos.stop_loss * (1 - slippage_bps / 10000)
+            exit_price = min(pos.stop_loss, b["open"]) * (1 - slippage_bps / 10000)
             exit_reason = "sl"
             exit_date = b["date"]
             break

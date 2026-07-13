@@ -45,6 +45,25 @@ Two under-estimations, both conservative. If the backtest still
 shows positive expectancy, the live engine should do at least as
 well.
 
+!! PARAMETER DERIVATION IS INVALID [ROADMAP-3.5 2026-07-12] !!
+--------------------------------------------------------------
+The conservative-substitution argument above covers ACTIVITY and
+the SIGN of expectancy. It does NOT make this sweep valid for
+deriving live-engine parameter values: the daily-bar replay is a
+different strategy from the live 1-min MIS engine on three axes --
+anchor (prev-day high vs intraday prior-bars high), RSI resolution
+(daily RSI(14) vs 1-min RSI(14) -- the two are not comparable
+distributions; a 1-min breakout routinely prints >70 while the
+daily RSI sits anywhere), and volume basis (daily total vs
+time-of-day-adjusted cumulative RVOL). Any per-parameter P&L
+conclusion from this sweep (e.g. the RSI 70-vs-80 bucket
+comparison behind PENNY_BREAKOUT_RSI_MAX) is therefore
+DIRECTIONAL EVIDENCE ONLY, not validation. Treat parameters
+justified from here as unvalidated until a 1-min rebuild exists
+(Kite serves 60 days of minute candles; that rebuild is its own
+project). Fill model note: gap-through stops fill at the open as
+of ROADMAP-3.3.
+
 The other question it answers: "What if I relax the gates?" We
 run two parallel gate configurations:
 
@@ -447,8 +466,10 @@ def _simulate_round_trip(
             return decision
         nb = bars[next_idx]
         # SL check: did the day's low touch our stop?
+        # [ROADMAP-3.3 2026-07-12] Gap-through fills at the open (same
+        # fix as backtest.py / penny_edge_engine.py).
         if nb["low"] <= decision.stop_loss:
-            decision.exit_price = decision.stop_loss
+            decision.exit_price = min(decision.stop_loss, nb["open"])
             decision.exit_reason = "sl_hit"
             break
         # Target check: did the day's high touch our target?

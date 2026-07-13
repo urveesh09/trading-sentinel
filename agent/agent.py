@@ -44,6 +44,98 @@ def clear_memory():
     logger.info("Cleared daily signal memory for the new trading day.")
 
 # -------------------------------------------------------------------------
+# LIVENESS: OWN HEARTBEAT (roadmap 2.2) + ENGINE FREEZE WATCHDOG (2.4)
+# -------------------------------------------------------------------------
+# [ROADMAP-2.2 2026-07-12] This container had no healthcheck at all: if
+# it died or hung, momentum EXEC alerts stopped with zero alarm. The
+# Dockerfile HEALTHCHECK compares this file's mtime against a 15-min
+# threshold; autoheal (docker-compose) restarts the container when it
+# turns unhealthy. Touched from the main loop (every 30s) AND at the top
+# of each per-signal iteration, so a long Gemini batch can't trip a
+# false unhealthy while real work is progressing.
+HEARTBEAT_FILE = "/tmp/agent_heartbeat"
+
+def touch_heartbeat():
+    """Must never raise -- liveness reporting can't break the pipeline."""
+    try:
+        with open(HEARTBEAT_FILE, "w") as fh:
+            fh.write(str(time.time()))
+    except Exception as e:
+        logger.error(f"Heartbeat touch failed: {e}")
+
+# [ROADMAP-2.4 2026-07-12] External loop-progress watchdog for the
+# engine. python-engine's APScheduler writes /data/scheduler_tick.json
+# every 60s FROM THE SCHEDULER LOOP ITSELF (its daemon-thread liveness
+# heartbeat deliberately keeps ticking through a frozen loop, so it
+# cannot detect this). We are a separate process in a separate
+# container: if that file goes stale during market hours, jobs have
+# stopped firing -- the 2026-07-07 pattern that ran 6h32m unnoticed.
+# Alert goes straight to the Telegram API (not via node's /notify) so
+# it works no matter what state the other containers are in.
+SCHEDULER_TICK_FILE = "/data/scheduler_tick.json"
+ENGINE_FREEZE_THRESHOLD_SEC = 600         # 10 min = ten missed 60s ticks
+ENGINE_FREEZE_ALERT_COOLDOWN_SEC = 1800   # re-page at most every 30 min
+_engine_freeze_last_alert_ts: Optional[float] = None
+
+def _is_market_hours(now=None) -> bool:
+    """Mon-Fri 09:15-15:30. Container TZ is Asia/Kolkata, so naive
+    datetime.now() is IST. No holiday check needed: the engine's tick
+    job runs 24/7, so on a holiday the file is fresh anyway."""
+    from datetime import datetime
+    now = now or datetime.now()
+    if now.weekday() >= 5:
+        return False
+    minutes = now.hour * 60 + now.minute
+    return 9 * 60 + 15 <= minutes <= 15 * 60 + 30
+
+def read_scheduler_tick_age(path=None) -> Optional[float]:
+    """Seconds since the engine's last scheduler tick, or None when the
+    file is missing/unreadable (engine down, pre-2.4 build, or /data
+    not mounted)."""
+    path = path or SCHEDULER_TICK_FILE
+    try:
+        with open(path) as fh:
+            payload = json.load(fh)
+        return max(0.0, time.time() - float(payload["ts_epoch"]))
+    except Exception:
+        return None
+
+def check_engine_liveness():
+    """Scheduled every 5 min; alerts (cooldown 30 min) when the engine's
+    scheduler tick is stale or missing during market hours."""
+    global _engine_freeze_last_alert_ts
+    if not _is_market_hours():
+        return
+    age = read_scheduler_tick_age()
+    if age is not None and age < ENGINE_FREEZE_THRESHOLD_SEC:
+        return
+
+    now = time.time()
+    if (_engine_freeze_last_alert_ts is not None
+            and now - _engine_freeze_last_alert_ts < ENGINE_FREEZE_ALERT_COOLDOWN_SEC):
+        return
+    _engine_freeze_last_alert_ts = now
+
+    if age is None:
+        msg = ("🧊 ENGINE WATCHDOG: cannot read the scheduler tick file "
+               f"({SCHEDULER_TICK_FILE}). python-engine may be DOWN, or /data "
+               "is not mounted. Check: docker ps && docker logs python-engine")
+    else:
+        msg = ("🧊 ENGINE LOOP FROZEN? python-engine's scheduler tick is "
+               f"{int(age // 60)} min old (threshold {ENGINE_FREEZE_THRESHOLD_SEC // 60} min). "
+               "Jobs have stopped firing -- the 2026-07-07 freeze pattern. "
+               "Check: docker logs python-engine --since 15m | grep penny_liveness_tick "
+               "(ticks present = loop frozen, restart the container; "
+               "ticks absent = process dead).")
+    logger.error(f"Engine liveness watchdog firing: age={age}")
+
+    url = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage"
+    try:
+        requests.post(url, json={"chat_id": TELEGRAM_CHAT_ID, "text": msg}, timeout=10)
+    except Exception as e:
+        logger.error(f"Failed to send engine watchdog alert: {e}")
+
+# -------------------------------------------------------------------------
 # SCHEMAS
 # -------------------------------------------------------------------------
 class SignalOutput(BaseModel):
@@ -197,29 +289,6 @@ def analyze_with_gemini(
     Respond in strict JSON matching the required schema.
     No markdown. No explanation outside the JSON fields.
     """
-    # prompt = f"""
-    # You are an elite quantitative trading architect evaluating a swing trade.
-    
-    # QUANT DATA:
-    # Ticker: {ticker}
-    # Current Price: {price}
-    # Target: {target}
-    # Stop Loss: {stop_loss}
-    
-    # MULTI-SOURCE SENTIMENT DATA:
-    # {sentiment_text if sentiment_text else "CRITICAL: No recent news available. Evaluate strictly on technicals with high caution."}
-    
-    # EVALUATION RULES:
-    # 1. CONTRADICTION CHECK: If the Quant Data suggests a long position, but the Sentiment Data contains critical legal, regulatory, or catastrophic news, you MUST lower the conviction_score significantly.
-    # 2. DO NOT override the quant edge unless a strong contradiction exists. Do not overreact to weak or routine news.
-    # 3. NO HALLUCINATION: Base your rationale ONLY on the text provided above. Do not invent news.
-    # 4. SCORING: 
-    #    - 80-100: Perfect alignment between technicals and sentiment.
-    #    - 60-79: Acceptable setup, standard market risks.
-    #    - 0-59: Conflicting data, high risk of false positive.
-       
-    # Provide your output in strict JSON format.
-    # """
     # [LOW-004] Enforce a 30-second timeout on the Gemini API call to prevent
     # blocking the entire synchronous pipeline if the API hangs.
     result_holder: Dict = {}
@@ -354,18 +423,53 @@ def run_momentum_pipeline():
             logger.info(f"Momentum signal {sig_id} already processed. Skipping.")
             continue
 
-        sentiment_text = scrape_sentiment(ticker)
-        analysis       = analyze_with_gemini(signal, sentiment_text, regime)
+        # [FIX 2026-07-11 STALL] Isolate each signal. On 2026-07-10 the
+        # loop died after COCHINSHIP and HUDCO (same snapshot) was never
+        # processed -- one raised exception killed every signal after it
+        # in the batch. On failure the signal is NOT marked processed, so
+        # the next poll retries it (bounded: polls run every 15 min).
+        touch_heartbeat()  # [ROADMAP-2.2] progressing, not hung
+        try:
+            sentiment_text = scrape_sentiment(ticker)
+            analysis       = analyze_with_gemini(signal, sentiment_text, regime)
 
-        if analysis and analysis.get('conviction_score', 0) < 50:
-            logger.info(f"Momentum {ticker} skipped. Low conviction: "
-                        f"{analysis.get('conviction_score')}")
+            if analysis and analysis.get('conviction_score', 0) < 50:
+                logger.info(f"Momentum {ticker} skipped. Low conviction: "
+                            f"{analysis.get('conviction_score')}")
+                # [FIX 2026-07-11 SILENT-VETO] Tell the operator. Before
+                # this, a Gemini veto was invisible: the engine's summary
+                # said "accepted" but no button alert ever arrived.
+                send_conviction_veto_notice(signal, analysis)
+                processed_signals_today.add(sig_id)
+                continue
+
+            send_momentum_telegram_alert(signal, analysis, momentum_pool)
             processed_signals_today.add(sig_id)
-            continue
-
-        send_momentum_telegram_alert(signal, analysis, momentum_pool)
-        processed_signals_today.add(sig_id)
+        except Exception as e:
+            logger.error(
+                f"Momentum pipeline error for {ticker} (will retry next "
+                f"poll): {e}", exc_info=True
+            )
         time.sleep(2)
+
+def send_conviction_veto_notice(signal: Dict, analysis: Dict):
+    """Plain informational message (no buttons) when the Gemini gate
+    vetoes an engine-accepted momentum signal. Failures are logged and
+    swallowed -- the veto notice must never break the pipeline."""
+    url    = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage"
+    ticker = signal.get("ticker", "UNKNOWN")
+    score  = analysis.get('conviction_score', 'N/A')
+    text = (f"🧠 MOMENTUM VETO: {ticker}\n"
+            f"Engine accepted, Gemini conviction {score}/100 (<50) - "
+            f"no EXEC button sent.\n"
+            f"Rationale: {analysis.get('rationale', 'N/A')}")
+    payload = {"chat_id": TELEGRAM_CHAT_ID, "text": text}
+    try:
+        res = requests.post(url, json=payload, timeout=10)
+        res.raise_for_status()
+        logger.info(f"Conviction veto notice sent: {ticker}")
+    except Exception as e:
+        logger.error(f"Conviction veto notice failed: {ticker}: {e}")
 
 def send_momentum_telegram_alert(
     signal: Dict, analysis: Dict, momentum_pool: float
@@ -451,73 +555,28 @@ def run_pipeline():
             continue
             
         logger.info(f"Processing signal for {ticker}...")
-        sentiment_text = scrape_sentiment(ticker)
-        analysis = analyze_with_gemini(signal, sentiment_text,regime)
-        
-        if analysis and analysis.get('conviction_score', 0) < 50:
-            logger.info(f"Skipped {ticker}. Low conviction score: {analysis.get('conviction_score')}")
+        touch_heartbeat()  # [ROADMAP-2.2] progressing, not hung
+        # [FIX 2026-07-11 STALL] Same per-signal isolation as the momentum
+        # pipeline: one bad ticker must not kill the rest of the batch.
+        try:
+            sentiment_text = scrape_sentiment(ticker)
+            analysis = analyze_with_gemini(signal, sentiment_text,regime)
+
+            if analysis and analysis.get('conviction_score', 0) < 50:
+                logger.info(f"Skipped {ticker}. Low conviction score: {analysis.get('conviction_score')}")
+                processed_signals_today.add(sig_id)
+                continue
+
+            send_telegram_alert(signal, analysis)
             processed_signals_today.add(sig_id)
-            continue
-            
-        send_telegram_alert(signal, analysis)
-        processed_signals_today.add(sig_id)
+        except Exception as e:
+            logger.error(
+                f"Swing pipeline error for {ticker} (will retry next run): {e}",
+                exc_info=True
+            )
         time.sleep(2)
         
     logger.info("Pipeline run complete.")
-"""
-def main():
-    logger.info("Container C (Intelligence Orchestrator) started.")
-    logger.info("System configured for Asia/Kolkata timezone.")
-    
-    for day in [schedule.every().monday, schedule.every().tuesday, 
-                schedule.every().wednesday, schedule.every().thursday, 
-                schedule.every().friday]:
-        day.at("09:15").do(system_health_check, event_type="OPEN")
-        day.at("15:30").do(system_health_check, event_type="CLOSE")
-        day.at("09:25").do(run_pipeline)
-        day.at("14:50").do(run_pipeline)
-
-    schedule.every().day.at("00:00").do(clear_memory)
-
-    while True:
-        schedule.run_pending()
-        time.sleep(30)
-
-def main():
-    logger.info("Container C (Intelligence Orchestrator) started.")
-    logger.info("System configured for Asia/Kolkata timezone.")
-    
-    # Bulletproof Weekday Scheduling
-    weekdays = [
-        schedule.every().monday, schedule.every().tuesday, 
-        schedule.every().wednesday, schedule.every().thursday, 
-        schedule.every().friday
-    ]
-    
-    for day in weekdays:
-        day.at("09:15").do(system_health_check, event_type="OPEN")
-    #for day in weekdays:
-        #day.at(":20").do(run_pipeline) # Runs 5 minutes past every hour        
-    #for day in weekdays:
-        #day.at("11:20").do(run_pipeline)
-
-    for day in weekdays:
-        day.at("09:25").do(run_pipeline)
-        
-    for day in weekdays:
-        day.at("14:50").do(run_pipeline)
-        
-    for day in weekdays:
-        day.at("15:30").do(system_health_check, event_type="CLOSE")
-
-    schedule.every().day.at("00:00").do(clear_memory)
-
-    while True:
-        schedule.run_pending()
-        time.sleep(30)
-if __name__ == "__main__":
-    main()
-"""
 def main():
     logger.info("Container C (Intelligence Orchestrator) started.")
     logger.info("System configured for Asia/Kolkata timezone.")
@@ -533,12 +592,29 @@ def main():
         getattr(schedule.every(), day).at("15:30").do(system_health_check, event_type="CLOSE")
 
     schedule.every().day.at("00:00").do(clear_memory)
-    momentum_hours = ["10:55", "11:55", "12:55", "13:55", "14:55"]
+    # [FIX 2026-07-11 POLL-CADENCE] The engine scans every 15 min
+    # (:00/:15/:30/:45, 10:15-14:45 IST) and /momentum-signals is now
+    # cumulative-for-the-day, but polling hourly still delays button
+    # alerts by up to an hour (on 2026-07-10 the hourly poll of the old
+    # per-scan snapshot saw only 3 of 17 signals). Poll ~10 min after
+    # each scan starts (scans take 5.6-9.1 min), plus 15:10/15:25
+    # stragglers for overrunning scans (the 15:09 trio case).
+    # processed_signals_today dedupes, so extra polls are idempotent.
+    momentum_poll_times = [
+        f"{h:02d}:{m:02d}" for h in range(10, 15) for m in (10, 25, 40, 55)
+    ] + ["15:10", "15:25"]
     for day in days:
-        for t in momentum_hours:
+        for t in momentum_poll_times:
             getattr(schedule.every(), day).at(t).do(run_momentum_pipeline)
+
+    # [ROADMAP-2.4 2026-07-12] Engine loop-progress watchdog (self-gates
+    # to market hours; alerts when /data/scheduler_tick.json goes stale).
+    schedule.every(5).minutes.do(check_engine_liveness)
+
+    touch_heartbeat()  # [ROADMAP-2.2] healthy from the first HEALTHCHECK
     while True:
         schedule.run_pending()
+        touch_heartbeat()  # [ROADMAP-2.2] main loop alive
         time.sleep(30)
 
 if __name__ == "__main__":

@@ -315,8 +315,17 @@ def evaluate_signal(
     if vol_ratio < 1.2:  # lowered from 1.5x to 1.2x
         return False, {"reject_reason": "volume_ratio_low", "vol_ratio": vol_ratio}
 
-    if not (45 <= rsi14 <= 72):
-        return False, {"reject_reason": "rsi_out_of_range", "rsi": rsi14}
+    # [ROADMAP-3.2 2026-07-12] Regime-conditional: in REGIME_3_CRISIS the
+    # RS-vs-Nifty filter REPLACES the RSI band (the R3 branch above says
+    # so explicitly) -- a genuine crisis relative-strength leader usually
+    # carries RSI > 72, so this formerly unconditional band silently
+    # rejected exactly the names R3 exists to buy. No R3 evaluation has
+    # ever been logged (no crisis since logging began 2026-06-23), so the
+    # contradiction was fixed statically before it could become a BUG-1
+    # sibling (nine months of structurally-impossible accepts).
+    if regime != Regime.REGIME_3_CRISIS:
+        if not (45 <= rsi14 <= 72):
+            return False, {"reject_reason": "rsi_out_of_range", "rsi": rsi14}
 
     if c < 50:
         return False, {"reject_reason": "price_too_low", "close": c}
@@ -358,7 +367,13 @@ def evaluate_signal(
         logger.warning("negative_risk_per_share", ticker=ticker)
         return False, {"reject_reason": "negative_risk_per_share"}
 
-    raw_shares = risk_per_trade / risk_per_share
+    # [ROADMAP-3.4 2026-07-12] Size for GAP risk, not stop risk: the
+    # swing stop is evaluated once daily EOD, so an overnight gap-down
+    # fills far below it. Shares are computed as if the true risk per
+    # share were stop_distance x SWING_GAP_RISK_MULT (default 2.0).
+    # Stop level and R targets below still use the raw stop distance.
+    sizing_risk_per_share = risk_per_share * settings.SWING_GAP_RISK_MULT
+    raw_shares = risk_per_trade / sizing_risk_per_share
     shares = math.floor(raw_shares)
 
     if shares <= 0:

@@ -173,6 +173,21 @@ def scan_today(
         if t_idx is None:
             continue
         eligible_tickers += 1
+        # [ROADMAP-3.10 2026-07-12] Earnings/event no-trade window
+        # (operator-curated CSV; missing CSV/ticker = allow). Edge holds
+        # multi-day CNC positions -- entering just before results is the
+        # stop-jump scenario the window exists for.
+        try:
+            from datetime import date as _date
+
+            from event_calendar import event_block
+            ev_blocked, ev_reason = event_block(t, _date.fromisoformat(as_of_date))
+            if ev_blocked:
+                logger.info("edge_event_blocked ticker=%s reason=%s", t, ev_reason)
+                rejected_count += 1
+                continue
+        except Exception as exc:
+            logger.warning("edge_event_check_failed ticker=%s err=%s", t, exc)
         try:
             sigs = pee.scan_single_ticker(t_bars, t_idx)
         except Exception as exc:

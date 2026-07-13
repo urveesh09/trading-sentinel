@@ -84,17 +84,24 @@ class TestMomentumRegimeSettingsExist:
 class TestMomentumRegimeSettingsEnvOverride:
     """[MOMENTUM-REGIME 2026-06-16] Settings are env-overridable for fast tuning."""
 
+    # [TEST-POLLUTION-FIX 2026-07-10] These two tests previously did
+    # `importlib.reload(config)`, which rebinds config.settings to a NEW
+    # Settings instance mid-suite. Every module first-imported (or doing a
+    # run-time `from config import settings`) AFTER the reload got the new
+    # object while modules imported earlier kept the old one -- so
+    # monkeypatches landed on the wrong instance and 3 later tests
+    # (test_universe_expansion CSV fallback, both TestPoolBreakdown
+    # paper-mode tests) failed order-dependently in the full suite while
+    # passing in isolation. Constructing a fresh local Settings() proves
+    # the same property (env overridability) without nuking module
+    # identity for the rest of the run.
+
     def test_block_r3_env_override(self, monkeypatch):
         monkeypatch.setenv("MOMENTUM_BLOCK_R3_ENTRIES", "false")
-        # Re-import to pick up env change
-        import importlib
-        import config
-        importlib.reload(config)
-        assert config.settings.MOMENTUM_BLOCK_R3_ENTRIES is False
+        from config import Settings
+        assert Settings().MOMENTUM_BLOCK_R3_ENTRIES is False
 
     def test_risk_pct_r1_env_override(self, monkeypatch):
         monkeypatch.setenv("MOMENTUM_RISK_PCT_R1", "0.10")
-        import importlib
-        import config
-        importlib.reload(config)
-        assert config.settings.MOMENTUM_RISK_PCT_R1 == 0.10
+        from config import Settings
+        assert Settings().MOMENTUM_RISK_PCT_R1 == 0.10

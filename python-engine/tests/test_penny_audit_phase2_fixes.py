@@ -109,23 +109,20 @@ class TestRegimeClassifyWithFedVolRank:
             f"expected {expected}, got {actual}"
         )
 
-    def test_pre_fix_behaviour_is_stuck_at_PR1_CALM(self):
-        """Reproduce the auditor's finding: with vol_rank=None, classify()
-        ALWAYS returns PR1_CALM regardless of vix_proxy (fail-open). This
-        is the bug — the engine is stuck and PR3_HOT is unreachable.
-        Now that we feed vol_rank in this class, the next test confirms
-        the fix."""
+    def test_missing_vol_rank_no_longer_masks_pr3(self):
+        """[ROADMAP-3.6 2026-07-12] The phase-2 finding, finally closed
+        at the classify() level: vix_proxy=0.95 is a PR3 print, and it
+        must fire even while vol_rank is still unfed (every morning
+        before the first scan). The old fail-open returned a calm-ish
+        default here, making PR3_HOT unreachable on VIX alone."""
         PennyRegimeEngine.reset_state()
         e = PennyRegimeEngine()
         e._vix_proxy = 0.95  # max severity
         # Don't feed vol_rank.
         result = e.classify(e._vol_rank, e._vix_proxy)
-        # PRE-FIX behaviour (intentional fail-open): returns PR1_CALM even at vix=0.95.
-        # This test asserts the original buggy state for documentation.
-        assert result == PennyRegime.PR1_CALM, (
-            f"Audit finding: with vol_rank=None, classify returns PR1_CALM "
-            f"even at vix_proxy=0.95. This is the bug that PR3_HOT is "
-            f"unreachable. Got: {result}"
+        assert result == PennyRegime.PR3_HOT, (
+            f"vix_proxy=0.95 with vol_rank missing must classify PR3_HOT "
+            f"(respect the input we have). Got: {result}"
         )
 
     def test_post_fix_feeding_vol_rank_lets_PR3_fire(self):

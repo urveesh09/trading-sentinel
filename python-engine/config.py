@@ -1,3 +1,4 @@
+from pydantic import field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 from typing import ClassVar
 
@@ -121,6 +122,16 @@ class Settings(BaseSettings):
     MOMENTUM_FIRST_SCAN_MIN:  int   = 15
     CONTAINER_A_URL:          str   = "http://node-gateway:3000"
     INTERNAL_API_SECRET:      str   = ""      # must be set in .env
+
+    # [HIGH-001 2026-07-12] A whitespace-only secret must not count as
+    # "configured" -- strip it so the auth gate's empty check (503 +
+    # operator alert) catches it. Deliberately NOT a required field:
+    # per operator mandate 2026-06-25 a misconfigured secret must not
+    # block boot during market hours; the gate degrades to 503 instead.
+    @field_validator("INTERNAL_API_SECRET")
+    @classmethod
+    def _strip_internal_api_secret(cls, v: str) -> str:
+        return v.strip()
 
     # RS Module
     RS_PERIODS:               int   = 20
@@ -261,9 +272,14 @@ class Settings(BaseSettings):
     # volume breakout often prints RSI(14) > 70, so 70 may reject real
     # signals -- BUT the penny_backtest_v2 daily-bar sweep (2026-04-01 to
     # 2026-07-08, config "phase3" vs "baseline") showed the extra trades
-    # admitted between RSI 70 and 80 LOST ~Rs 13,500 net. Daily-bar RSI
-    # is an imperfect proxy for 1-min RSI, so the default stays at the
-    # proven-shipped 70 until an intraday backtest justifies loosening.
+    # admitted between RSI 70 and 80 LOST ~Rs 13,500 net.
+    # [ROADMAP-3.5 2026-07-12] That sweep ran on DAILY bars while this
+    # gate reads 1-min RSI -- a different distribution entirely -- so
+    # the Rs 13,500 figure is directional evidence, NOT validation.
+    # This value is formally UNVALIDATED for the live engine (see the
+    # derivation-invalid banner in penny_backtest_v2.py). 70 stays as
+    # the proven-shipped conservative default until a 1-min rebuild
+    # (60 days of Kite minute candles) justifies a change either way.
     # Operators can experiment via .env without a code change.
     PENNY_BREAKOUT_RSI_MAX:             float = 70.0
     # [GAP-2 ZERO-ACCEPT ALARM 2026-07-10] Consecutive evaluation days
@@ -290,6 +306,21 @@ class Settings(BaseSettings):
     PENNY_SECTOR_TOP_LOSERS_PCT:           float = 0.10
     PENNY_SECTOR_ETF_CHANGE_THRESHOLD_PCT: float = -0.015
     PENNY_SECTORS_CSV_PATH:                str   = "python-engine/data/penny_sectors.csv"
+    # [ROADMAP-3.10 2026-07-12] Earnings/event no-trade windows. Same
+    # curatorial-CSV philosophy as the sector filter: the CSV is the
+    # operator's lever, missing CSV / missing ticker = ALLOW (never
+    # kill proactiveness for lack of data). Format per line:
+    #   ticker,event_date(YYYY-MM-DD),event_type
+    # e.g. "SUZLON,2026-07-25,RESULTS". Entries are blocked from
+    # EVENT_BLOCK_DAYS_BEFORE calendar days before the event through
+    # EVENT_BLOCK_DAYS_AFTER days after it (default: 2 before, 0 after
+    # -- results gaps hurt on the way IN; the day after, price has
+    # already repriced). On /data so the operator can update it without
+    # a rebuild.
+    PENNY_USE_EVENT_FILTER:                bool   = True
+    EVENT_CALENDAR_CSV_PATH:               str    = "/data/event_calendar.csv"
+    EVENT_BLOCK_DAYS_BEFORE:               int    = 2
+    EVENT_BLOCK_DAYS_AFTER:                int    = 0
     # [TIER3-INTERACTIVE-COMMANDS 2026-06-25] Path to the runtime
     # override JSON. Telegram /penny skip and /penny unskip write here;
     # penny_risk.is_disabled() reads here on every call. Tests override
@@ -361,6 +392,145 @@ class Settings(BaseSettings):
     PENNY_HOURLY_REPORT_WEBHOOK:   str   = ""        # optional webhook URL for delivery (Telegram/Slack)
 
     # ============================================================
+    # F&O SUBSYSTEM (2026-07-10, spec docs/superpowers/specs/fno-module.md)
+    # ============================================================
+    # NIFTY-options intraday module. P1 = paper only; the live leg
+    # refuses to arm until fno_go_live_check() returns []. Every
+    # threshold below is spec §12 verbatim; all are guesses until the
+    # paper log says otherwise -- do not hand-tune without data.
+
+    # --- pools -------------------------------------------------------------
+    # [ROADMAP-3.1 2026-07-12] Raised 100k -> 250k (operator decision):
+    # at 100k the feasible premium band was <= ~Rs 106.67 while 0.55-delta
+    # NIFTY weeklies typically print 120-250, so the §3 "self-regulation"
+    # rejected essentially every candidate every day and the 60-trade
+    # go-live bar was unreachable. At 250k the pool-derived cap is
+    # ~Rs 266.67 -- it covers the typical band and STAYS the binding gate
+    # (see the per-trade caps below, scaled to preserve that).
+    FNO_PAPER_BANKROLL:        float = 250000.0
+    FNO_LIVE_BANKROLL:         float = 0.0        # not armed (spec §0)
+    FNO_LIVE_TRADING:          bool  = False      # master switch
+    FNO_DISABLE_PAPER:         bool  = False
+    FNO_DISABLE_LIVE:          bool  = True
+
+    # --- universe ----------------------------------------------------------
+    FNO_UNDERLYING:            str   = "NIFTY"    # NIFTY only in P1
+    FNO_STRIKE_WINDOW:         int   = 5          # ATM +/- N strikes to snapshot
+    FNO_TARGET_DELTA:          float = 0.55       # ATM / 1-strike ITM, never OTM
+
+    # --- sizing / risk -----------------------------------------------------
+    FNO_MAX_RISK_PCT:          float = 0.02       # per trade, of pool
+    FNO_STOP_PREMIUM_PCT:      float = 0.25       # premium backstop (-25%)
+    FNO_MAX_OPEN_PREMIUM_PCT:  float = 0.15       # total committed premium
+    FNO_MAX_CONCURRENT:        int   = 2          # implied by the premium cap
+    FNO_MAX_TRADES_PER_DAY:    int   = 3
+    # FNO_MAX_LOSS_PER_TRADE caps the STOP-BASED risk (premium * qty *
+    # stop_pct), consistent with §3's risk_per_lot arithmetic.
+    # [SPEC-DEVIATION 2026-07-10] The spec draft enforced this same
+    # Rs 2,500 against structural max_loss(), which for a long option is
+    # the FULL premium paid (~Rs 7,500/lot at Rs 100) -- that gate is
+    # mathematically unsatisfiable for any affordable contract, i.e.
+    # exactly the BUG-1 dead-gate class §9.1 exists to catch (the
+    # witness test caught it at design time). Structural max loss gets
+    # its own, looser cap below: it bounds the frozen-engine catastrophe
+    # case, not the working risk.
+    # [ROADMAP-3.1 2026-07-12] Both rupee caps scaled x2.5 with the pool
+    # (they were 2.5% and 12% of the old 100k pool). Left at their old
+    # absolute values they would have re-created the deadlock the pool
+    # raise fixes: 2500 binds at premium <= 133.33, BELOW the typical
+    # weekly band. Scaled, the binding gate is back to the pool-derived
+    # min_viable_pool (~Rs 266.67) -- the spec §3 volatility filter.
+    FNO_MAX_LOSS_PER_TRADE:    float = 6250.0
+    FNO_MAX_STRUCTURAL_LOSS_PER_TRADE: float = 30000.0
+    FNO_MAX_LOTS:              int   = 2
+
+    # --- kill switches -----------------------------------------------------
+    # Weekly + monthly exist because options bleed slowly enough to walk
+    # under a daily limit every day for a month (spec §7.6).
+    FNO_DAILY_KILL_PCT:        float = 0.06
+    FNO_WEEKLY_KILL_PCT:       float = 0.12
+    FNO_MONTHLY_KILL_PCT:      float = 0.20
+    FNO_MAX_CONSECUTIVE_LOSSES: int  = 6
+
+    # --- microstructure ----------------------------------------------------
+    FNO_MIN_OI:                int   = 5000
+    FNO_MIN_VOL:               int   = 1000
+    FNO_MAX_SPREAD_PCT:        float = 0.015
+    FNO_MAX_QUOTE_AGE_SEC:     int   = 120
+    FNO_IV_SANITY_MIN:         float = 0.05
+    FNO_IV_SANITY_MAX:         float = 1.00
+    FNO_MAX_CHAIN_AGE_SEC:     int   = 60         # chain snapshot staleness kill (§7.6)
+
+    # --- session -----------------------------------------------------------
+    FNO_ENTRY_START_MIN:       int   = 9*60 + 45  # 09:45 IST
+    FNO_ENTRY_END_MIN:         int   = 14*60 + 45 # 14:45 IST
+    FNO_HARD_FLAT_MIN:         int   = 15*60 + 10 # 15:10 IST, unconditional
+    FNO_EXPIRY_DAY_ENTRIES:    bool  = False      # no entries on expiry day in P1
+    FNO_OR_MINUTES:            int   = 30         # opening range window
+
+    # --- strategy (FNO-MOM) --------------------------------------------------
+    FNO_OR_BUFFER_ATR:         float = 0.25
+    FNO_STOP_ATR_MULT:         float = 1.5
+    FNO_TARGET_R:              float = 1.5
+    FNO_TRAIL_ATR_MULT:        float = 1.0
+    FNO_TIME_STOP_MIN:         int   = 45
+    FNO_TIME_STOP_MIN_R:       float = 0.5
+    FNO_MIN_RVOL:              float = 1.2
+    FNO_EMA_FAST:              int   = 21
+    FNO_EMA_SLOW:              int   = 50
+    FNO_ATR_LEN:               int   = 14
+    FNO_RVOL_LOOKBACK_DAYS:    int   = 10         # per-slot RVOL baseline window
+
+    # --- execution ---------------------------------------------------------
+    FNO_FILL_TIMEOUT_SEC:      int   = 30
+    FNO_TICK_SIZE:             float = 0.05
+    FNO_SCAN_INTERVAL_SEC:     int   = 60
+
+    # --- backtest model params ([ROADMAP-3.11 2026-07-12]) ------------------
+    # fno_backtest.py replays evaluate_fno_mom on REAL futures bars but
+    # must MODEL the option leg (historical NIFTY option chains are not
+    # available through Kite): premiums are Black-76 at a constant IV
+    # with a symmetric spread. These three constants parameterise that
+    # model -- sweep FNO_BT_IV (e.g. 0.10/0.12/0.15) to see how
+    # conclusions move with the vol assumption.
+    FNO_BT_IV:                 float = 0.12       # flat IV for the synthetic chain
+    FNO_BT_SPREAD_PCT:         float = 0.006      # full bid-ask spread / mid
+    FNO_BT_STRIKE_STEP:        float = 50.0       # NIFTY strike ladder
+    # Weekly expiry weekday, Mon=0. NIFTY weeklies expire Tuesday since
+    # 2025 (VERIFY-3 in fno_instruments: the day has changed several
+    # times -- confirm before trusting a long historical run).
+    FNO_BT_EXPIRY_WEEKDAY:     int   = 1
+
+    # --- cost model (fno_costs.py; VERIFY-4/VERIFY-5 resolved 2026-07-10) ---
+    # There is deliberately NO FNO_BROKERAGE_BYPASS (spec §10.2): cost is a
+    # first-order term for options and hiding it would make paper fills lie.
+    # STT on option SELL premium raised to 0.1% on 2024-10-01 (Finance Act
+    # 2024 no.2); exercised ITM options are taxed 0.125% of INTRINSIC since
+    # Sept 2019 -- moot in P1 because positions never reach expiry.
+    FNO_BROKERAGE_FLAT:        float = 20.0       # Rs 20 per executed order
+    FNO_STT_SELL_PCT:          float = 0.001      # 0.1% of sell-side premium
+    FNO_EXCHANGE_TXN_PCT:      float = 0.0003503  # NSE 0.03503% of premium, both sides
+    FNO_SEBI_PCT:              float = 0.000001   # Rs 10/crore, both sides
+    FNO_STAMP_DUTY_PCT:        float = 0.00003    # 0.003% buy side
+    FNO_IPFT_PCT:              float = 0.000005   # NSE IPFT Rs 0.50/lakh, both sides
+    FNO_GST_PCT:               float = 0.18       # on brokerage + txn + sebi
+
+    # --- observability -----------------------------------------------------
+    FNO_SIGNAL_LOG_PATH:       str   = "/data/fno_signals.csv"
+    FNO_ZERO_ACCEPT_ALERT_DAYS: int  = 2
+    FNO_INSTRUMENTS_JSON_PATH: str   = "/data/fno_nifty_instruments.json"
+
+    # --- go-live gate (§11; fixed NOW, before there is an equity curve) -----
+    FNO_GO_LIVE_MIN_TRADING_DAYS: int   = 40
+    FNO_GO_LIVE_MIN_TRADES:       int   = 60
+    FNO_GO_LIVE_MIN_PROFIT_FACTOR: float = 1.2
+    FNO_GO_LIVE_LIVENESS_DAYS:    int   = 30
+    # Operator attestation that the liveness heartbeat has logged 30
+    # consecutive clean days (no gap > 5 min). Checked by runbook grep
+    # (ops rule 62 recipe); flipped in .env only after the grep passes.
+    FNO_LIVENESS_30D_CLEAN:       bool  = False
+
+    # ============================================================
     # REGIME ENGINE -- VIX-Free Volatility Detection
     # Replaces India VIX with ATR Compression + Realized Volatility
     # ============================================================
@@ -426,6 +596,18 @@ class Settings(BaseSettings):
     STOP_PCT_REGIME2: float = 0.05      # 5% stop
     STOP_PCT_REGIME3: float = 0.08      # 8% stop (wider in crisis)
 
+    # [ROADMAP-3.4 2026-07-12] Overnight gap-risk sizing multiplier.
+    # The swing chandelier stop is close-based and only evaluated EOD, so
+    # a gap-down realizes MORE than the stop distance -- historically an
+    # unbounded hole in the risk math (the stop distance was treated as
+    # the true worst case, which overnight it never was). Sizing now
+    # assumes the true risk per share is stop_distance x this multiplier
+    # (2.0 = "a gap can travel twice the stop distance before the EOD
+    # exit fires"), which halves share counts at the default. Stop level
+    # and R-multiple targets are unchanged -- only the share count is.
+    # Set to 1.0 in .env to restore pre-3.4 sizing.
+    SWING_GAP_RISK_MULT: float = 2.0
+
     # Target structure (R-multiples)
     TARGET1_R: float = 1.5                # T1 = 1.5R (all regimes)
     TARGET2_R_REGIME1: float = 4.5        # T2 = 4.5R (Regime 1, was 3.0 -- let winners run)
@@ -461,9 +643,6 @@ class Settings(BaseSettings):
     # Drawdown governor (post-crisis recovery)
     DRAWDOWN_RECOVERY_TRADES: int = 5    # Reduced sizing for next 5 trades post-crisis
     DRAWDOWN_RECOVERY_MULT: float = 0.7  # 30% size reduction during recovery
-
-    # Circuit breaker override
-    VIX_CB_THRESHOLD: float = 40.0       # If VIX > 40, force Regime 3 regardless of score
 
     # Kite endpoint -- direct (prod/VPS) or via OCI relay (home desktop).
     # Relay is a path-preserving forward proxy; auth + X-Kite-Version headers pass through.

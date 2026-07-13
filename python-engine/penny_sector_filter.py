@@ -152,6 +152,13 @@ class SectorDecision:
 
 # ---- CSV loading ----------------------------------------------------
 
+# [LOG-THROTTLE 2026-07-11] The missing-CSV breadcrumb fired once per
+# 30s scan (~318 lines on 2026-07-10) because the file has never been
+# curated. The condition is static for the life of the process, so say
+# it once at INFO and drop to DEBUG afterwards.
+_missing_csv_logged = False
+
+
 def load_sector_map(csv_path: str) -> Dict[str, str]:
     """
     Load the (symbol, sector) CSV into a dict {symbol: sector}.
@@ -165,7 +172,13 @@ def load_sector_map(csv_path: str) -> Dict[str, str]:
     as malformed and returns {}.
     """
     if not csv_path or not os.path.exists(csv_path):
-        logger.info("penny_sector_csv_missing path=%s (sector filter disabled)", csv_path)
+        global _missing_csv_logged
+        if not _missing_csv_logged:
+            logger.info("penny_sector_csv_missing path=%s (sector filter disabled; "
+                        "logged once per process)", csv_path)
+            _missing_csv_logged = True
+        else:
+            logger.debug("penny_sector_csv_missing path=%s", csv_path)
         return {}
 
     try:
