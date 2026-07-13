@@ -5,6 +5,7 @@ import json
 import logging
 import threading
 import urllib.parse
+from datetime import datetime
 from typing import List, Dict, Optional
 import requests
 from bs4 import BeautifulSoup
@@ -92,10 +93,74 @@ client = genai.Client(api_key=GEMINI_API_KEY)
 # -------------------------------------------------------------------------
 # SHORT-TERM MEMORY (DEDUPLICATION)
 # -------------------------------------------------------------------------
+# [ROADMAP-4.7 2026-07-13] Dedup state is now DURABLE.
+#
+# It used to be a bare in-memory set, so any agent bounce forgot everything it
+# had already alerted and re-sent EXEC buttons for signals the operator had
+# already seen -- and, worse, may have already acted on. Duplicate buttons for
+# a live trade are not a cosmetic annoyance.
+#
+# Persisted to /tmp, not /data: the agent mounts /data READ-ONLY (it only reads
+# scheduler_tick.json for the freeze watchdog), and its heartbeat already lives
+# in /tmp for the same reason. /tmp survives a process crash and a `docker
+# restart` -- which is the bounce that actually happens -- and is lost only on
+# a full container recreate, where re-alerting is the lesser evil anyway.
+#
+# Day-stamped: a file from a previous day must never suppress today's alerts.
+DEDUP_FILE = "/tmp/agent_dedup.json"
+
 processed_signals_today = set()
+
+
+def _today_str() -> str:
+    # Container runs TZ=Asia/Kolkata, so this is already the IST trading day.
+    return datetime.now().strftime("%Y-%m-%d")
+
+
+def _load_dedup_state() -> None:
+    """Restore today's alerted ids on boot. Never raises: a corrupt or absent
+    file must degrade to 'remember nothing' (re-alert), never to a crash."""
+    try:
+        with open(DEDUP_FILE) as fh:
+            state = json.load(fh)
+        if state.get("date") != _today_str():
+            logger.info("Dedup file is from a previous day -- starting fresh.")
+            return
+        processed_signals_today.update(state.get("ids", []))
+        logger.info(
+            f"Restored {len(processed_signals_today)} already-alerted signal(s) "
+            f"from {DEDUP_FILE} -- a restart will not re-alert them."
+        )
+    except FileNotFoundError:
+        pass
+    except Exception as e:
+        logger.error(f"Could not read dedup state ({e}) -- starting fresh.")
+
+
+def _save_dedup_state() -> None:
+    """Atomic write: a torn file read on the next boot would silently drop the
+    dedup memory, which is the exact failure this whole mechanism exists to
+    prevent."""
+    try:
+        tmp = f"{DEDUP_FILE}.tmp"
+        with open(tmp, "w") as fh:
+            json.dump(
+                {"date": _today_str(), "ids": sorted(processed_signals_today)}, fh
+            )
+        os.replace(tmp, DEDUP_FILE)
+    except Exception as e:
+        logger.error(f"Could not persist dedup state: {e}")
+
+
+def mark_processed(sig_id: str) -> None:
+    """Record an alerted signal, durably."""
+    processed_signals_today.add(sig_id)
+    _save_dedup_state()
+
 
 def clear_memory():
     processed_signals_today.clear()
+    _save_dedup_state()
     logger.info("Cleared daily signal memory for the new trading day.")
 
 # -------------------------------------------------------------------------
@@ -205,7 +270,16 @@ class SignalOutput(BaseModel):
 def fetch_signals() -> List[Dict]:
     """Fetch raw quant signals from Container B."""
     try:
-        response = requests.get(QUANT_ENGINE_URL, timeout=10)
+        # [ROADMAP-4.7 2026-07-13] Send the internal secret. /signals is not
+        # gated on the engine side today, so this changes nothing yet -- which
+        # is exactly why it should go in NOW rather than being discovered as a
+        # 403 on the morning someone gates it. The sibling momentum poll below
+        # already sends it; this was the odd one out.
+        response = requests.get(
+            QUANT_ENGINE_URL,
+            headers={"X-Internal-Secret": INTERNAL_API_SECRET},
+            timeout=10,
+        )
         response.raise_for_status()
         data = response.json()
         
@@ -382,7 +456,32 @@ def analyze_with_gemini(
         return None
 
     response = result_holder['response']
-    return response.parsed.model_dump() if response.parsed else json.loads(response.text)
+    if response.parsed:
+        return response.parsed.model_dump()
+
+    # [ROADMAP-4.7 2026-07-13] Was a bare `json.loads(response.text)`.
+    #
+    # This is the ONE place in the system where a third party's free-text
+    # output is parsed with no guard. Gemini is a language model: it can
+    # return prose, a fenced ```json block, or a truncated object, and any of
+    # those raise here. The exception propagated out of the conviction gate
+    # and killed the whole poll -- so a single malformed Gemini reply could
+    # take out every EXEC alert in the batch. (That is the same failure shape
+    # as the 2026-07-10 HUDCO stall, fixed on the loop side; this is the hole
+    # it came through.)
+    #
+    # Return None instead: the callers already treat a None analysis as
+    # "AI failed, manual review required" and STILL send the alert with a
+    # SYSTEM FALLBACK banner. Losing the AI opinion must never lose the trade.
+    try:
+        return json.loads(response.text)
+    except (json.JSONDecodeError, TypeError, AttributeError) as e:
+        preview = (getattr(response, "text", "") or "")[:200]
+        logger.error(
+            f"Gemini returned unparseable output for {ticker}: {e} -- "
+            f"proceeding without analysis. First 200 chars: {preview!r}"
+        )
+        return None
 
 def send_telegram_alert(signal: Dict, analysis: Dict):
     url = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage"
@@ -500,11 +599,11 @@ def run_momentum_pipeline():
                 # this, a Gemini veto was invisible: the engine's summary
                 # said "accepted" but no button alert ever arrived.
                 send_conviction_veto_notice(signal, analysis)
-                processed_signals_today.add(sig_id)
+                mark_processed(sig_id)
                 continue
 
             send_momentum_telegram_alert(signal, analysis, momentum_pool)
-            processed_signals_today.add(sig_id)
+            mark_processed(sig_id)
         except Exception as e:
             logger.error(
                 f"Momentum pipeline error for {ticker} (will retry next "
@@ -631,11 +730,11 @@ def run_pipeline():
 
             if analysis and analysis.get('conviction_score', 0) < 50:
                 logger.info(f"Skipped {ticker}. Low conviction score: {analysis.get('conviction_score')}")
-                processed_signals_today.add(sig_id)
+                mark_processed(sig_id)
                 continue
 
             send_telegram_alert(signal, analysis)
-            processed_signals_today.add(sig_id)
+            mark_processed(sig_id)
         except Exception as e:
             logger.error(
                 f"Swing pipeline error for {ticker} (will retry next run): {e}",
@@ -647,6 +746,11 @@ def run_pipeline():
 def main():
     logger.info("Container C (Intelligence Orchestrator) started.")
     logger.info("System configured for Asia/Kolkata timezone.")
+
+    # [ROADMAP-4.7 2026-07-13] Restore today's already-alerted signals BEFORE
+    # the first poll, or the restart we are trying to survive re-alerts them
+    # in the very next cycle.
+    _load_dedup_state()
     
     # Brute-force distinct alarm generation
     days = ["monday", "tuesday", "wednesday", "thursday", "friday"]
