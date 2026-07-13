@@ -42,11 +42,23 @@ import pytest
 
 REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 MAIN_PY = os.path.join(REPO_ROOT, "main.py")
+# [ROADMAP-4.1 stage 2 2026-07-13] The scheduler registration functions -- and
+# the 8 closures whose bodies these tests assert on -- moved out of main.py into
+# scheduler_setup.py. These guards check for real things (the `invoked`
+# breadcrumb, misfire_grace_time, instance guards), so they follow the code
+# rather than being narrowed to a file that no longer contains it.
+SCHEDULER_SETUP_PY = os.path.join(REPO_ROOT, "scheduler_setup.py")
 
 
 def _read_main_py() -> str:
-    with open(MAIN_PY) as f:
-        return f.read()
+    """main.py plus the scheduler module: the sources that, between them, hold
+    every scheduled handler. Name kept for the existing call sites."""
+    out = []
+    for path in (MAIN_PY, SCHEDULER_SETUP_PY):
+        if os.path.exists(path):
+            with open(path) as f:
+                out.append(f.read())
+    return "\n".join(out)
 
 
 def _function_body(name: str) -> str:

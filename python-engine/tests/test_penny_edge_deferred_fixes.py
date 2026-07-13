@@ -391,9 +391,14 @@ def test_penny_edge_scan_and_exit_cron_have_instance_guards():
     APScheduler's default max_instances=1 + default
     misfire_grace_time=1s.
     """
-    src = open(
-        os.path.join(ENGINE_DIR, "main.py")
-    ).read()
+    # [ROADMAP-4.1 stage 2 2026-07-13] The penny_edge cron registrations moved
+    # from main.py to scheduler_setup.py. Read both, so this guard keeps
+    # asserting on the real add_job kwargs instead of quietly finding nothing.
+    src = "\n".join(
+        open(os.path.join(ENGINE_DIR, name)).read()
+        for name in ("main.py", "scheduler_setup.py")
+        if os.path.exists(os.path.join(ENGINE_DIR, name))
+    )
 
     # Find the penny_edge_scan cron block. We assert BOTH
     # max_instances=1 AND coalesce=True appear within that block,

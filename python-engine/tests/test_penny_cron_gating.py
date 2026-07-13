@@ -126,6 +126,25 @@ def _all_sources() -> str:
     return "\n".join(p.read_text() for p in ENGINE_SOURCES)
 
 
+# [ROADMAP-4.1 stage 2 2026-07-13] The two register_*_scheduler_jobs functions
+# moved to scheduler_setup.py, taking 19 of the 32 add_job call sites with them.
+#
+# Reading main.py alone would still PASS -- it would simply find 13 handlers
+# instead of 32 and gate-check those. That is the dangerous kind of green: the
+# guard would go on reporting success while silently no longer covering the
+# penny and F&O scan jobs at all. So the add_job census below reads main.py AND
+# scheduler_setup.py.
+SCHEDULER_SETUP_PY = REPO_ROOT / "scheduler_setup.py"
+
+
+def _scheduler_src() -> str:
+    """The sources that between them contain every scheduler.add_job() call."""
+    parts = [MAIN_PY.read_text()]
+    if SCHEDULER_SETUP_PY.exists():
+        parts.append(SCHEDULER_SETUP_PY.read_text())
+    return "\n".join(parts)
+
+
 def _collect_add_job_targets(src_text: str) -> list[tuple[int, str]]:
     """Return a list of (line_number, target_name) for every
     scheduler.add_job(target, ...) call. `target_name` is the AST
@@ -214,7 +233,7 @@ class TestSchedulerHandlersGated:
     it can NEVER be in pending."""
 
     def test_every_cron_handler_has_a_gate_or_is_allowlisted(self):
-        src = MAIN_PY.read_text()
+        src = _scheduler_src()
         targets = _collect_add_job_targets(src)
 
         # Resolve closure targets -- they appear as `<closure>`.
@@ -330,7 +349,7 @@ class TestFinancialRiskHandlersAlwaysGated:
     """
 
     def test_financial_risk_handlers_call_is_trading_day(self):
-        src = MAIN_PY.read_text()
+        src = _scheduler_src()
         for handler in FINANCIAL_RISK:
             body = _function_body(src, handler)
             # Closure fallback.
