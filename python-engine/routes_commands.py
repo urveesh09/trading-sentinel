@@ -120,3 +120,19 @@ async def get_outcomes(days: int = 14):
 async def get_suggestions(days: int = 14):
     from analytics import strategy_suggestions
     return await strategy_suggestions(settings.DB_PATH, days=days)
+
+
+# [ROADMAP-5.1 2026-07-13] The numbers that can actually say whether there is an
+# edge: expectancy (R and rupees), profit factor, max drawdown, each with a
+# bootstrapped 95% CI.
+#
+# 90-day default window, not the 7/14 used above: these statistics need a
+# sample, and a fortnight of this system's trade frequency cannot supply one.
+# The response carries `n`, `reliable` and a conservative `verdict` -- an edge
+# is only claimed when the CI on expectancy sits ENTIRELY above zero, so a
+# flattering point estimate on eight trades reads as "not_demonstrated" rather
+# than as a green light.
+@router.get("/analytics/edge")
+async def get_edge_statistics(days: int = 90, strategy: str | None = None):
+    from analytics import edge_statistics
+    return await edge_statistics(settings.DB_PATH, days=days, strategy=strategy)

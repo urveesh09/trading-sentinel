@@ -610,3 +610,57 @@ async def penny_outcome_correlator(db_path: str, days: int = 14) -> dict:
     out["losers"] = sum(1 for p in pnls if p < 0)
     out["win_rate"] = out["winners"] / out["total"] if out["total"] > 0 else 0.0
     return out
+
+
+# ---------------------------------------------------------------------------
+# [ROADMAP-5.1 2026-07-13] Real edge statistics over trade_outcomes.
+# ---------------------------------------------------------------------------
+
+async def edge_statistics(
+    db_path: str, days: int = 90, strategy: Optional[str] = None
+) -> dict:
+    """Expectancy, profit factor, max drawdown and bootstrapped 95% CIs.
+
+    The maths lives in edge_stats.py as pure functions; this is only the DB
+    adapter. Two details in the query are load-bearing:
+
+      * ORDER BY closed_at -- max_drawdown walks the equity curve in close
+        order and deliberately refuses to sort for itself, because it cannot
+        know which timestamp the caller meant. Feeding it unordered rows would
+        produce a plausible, wrong drawdown.
+      * r_multiple is allowed to be NULL. Older rows predate the column, and
+        edge_stats drops them from the R statistics rather than counting them
+        as 0.0 R -- which would drag expectancy toward zero and make a real
+        edge look like noise. Rupee statistics still use every row.
+
+    Default window is 90 days, not the 7/14 used elsewhere: these statistics
+    need a sample, and a 14-day window on this system's trade frequency cannot
+    supply one. The report says so rather than quietly returning a number --
+    see `reliable` and `verdict`.
+    """
+    from edge_stats import Trade, edge_report
+
+    cutoff = (datetime.now(timezone.utc) - timedelta(days=days)).isoformat()
+    sql = (
+        "SELECT realised_pnl, r_multiple FROM trade_outcomes "
+        "WHERE closed_at >= ?"
+    )
+    params: list = [cutoff]
+    if strategy:
+        sql += " AND strategy_version = ?"
+        params.append(strategy)
+    sql += " ORDER BY closed_at ASC"
+
+    try:
+        async with aiosqlite.connect(db_path) as db:
+            cur = await db.execute(sql, params)
+            rows = await cur.fetchall()
+    except Exception as e:
+        logger.error("edge_statistics_failed error=%s", str(e))
+        return {"days": days, "n": 0, "verdict": "no_data", "error": str(e)}
+
+    trades = [Trade(pnl=r[0] or 0.0, r=r[1]) for r in rows]
+    report = edge_report(trades)
+    report["days"] = days
+    report["strategy"] = strategy
+    return report

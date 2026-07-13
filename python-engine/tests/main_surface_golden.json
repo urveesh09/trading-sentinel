@@ -117,6 +117,14 @@
   ],
   "routes": [
     {
+      "endpoint": "get_edge_statistics",
+      "methods": [
+        "GET"
+      ],
+      "path": "/analytics/edge",
+      "response_model": null
+    },
+    {
       "endpoint": "get_funnel",
       "methods": [
         "GET"
