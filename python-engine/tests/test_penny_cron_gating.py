@@ -103,6 +103,28 @@ NO_GATE_NEEDED = {
 REPO_ROOT = Path(__file__).resolve().parent.parent
 MAIN_PY = REPO_ROOT / "main.py"
 
+# [ROADMAP-4.1 2026-07-13] This guard used to read main.py and nothing else,
+# on the assumption that every scheduled handler lives there. The 4.1 split
+# broke that assumption -- _token_reconciliation_tick and
+# _kite_endpoint_probe_tick moved to token_lifecycle.py / ops_watchdogs.py,
+# and the test immediately reported "could not locate function source", which
+# is the failure mode it names as "a test infrastructure bug".
+#
+# It is a genuinely valuable guard (every cron handler must gate on weekends
+# and NSE holidays, or be explicitly exempt), so it follows the code rather
+# than being narrowed: search the whole engine package. This also means the
+# guard keeps working as the rest of main.py is split up.
+ENGINE_SOURCES = [
+    p for p in sorted(REPO_ROOT.glob("*.py")) if p.name != "conftest.py"
+]
+
+
+def _all_sources() -> str:
+    """Every engine module, concatenated. Used for whole-package searches
+    (function bodies). Line numbers from this blob are meaningless -- only
+    main.py's own numbering is reported, and only as `~N` guidance."""
+    return "\n".join(p.read_text() for p in ENGINE_SOURCES)
+
 
 def _collect_add_job_targets(src_text: str) -> list[tuple[int, str]]:
     """Return a list of (line_number, target_name) for every
@@ -220,8 +242,12 @@ class TestSchedulerHandlersGated:
                 continue
 
             # 2. Look up the function body (top-level def OR closure body
-            #    via the resolved name).
-            body = _function_body(src, target)
+            #    via the resolved name). Search main.py first, then the rest
+            #    of the package -- handlers extracted by the 4.1 split
+            #    (token_lifecycle, ops_watchdogs) live outside main.py now.
+            body = _function_body(src, target) or _function_body(
+                _all_sources(), target
+            )
 
             # Closures inside register_penny_scheduler_jobs are NOT
             # top-level defs -- `_function_body` returns "" for them.

@@ -36,113 +36,48 @@ from backtest import run_backtest
 from models import PerformanceReport, OpenPosition
 from breadth import BreadthEngine
 from universe import Universe
-# ---- [AUDIT-FIX-2.2] Internal-API-secret gate hardening -------------------
 
-# Module-level flag so we only log the empty-secret warning once at
-# startup (loud) + once per auth-failed call (medium). Avoids log spam.
-_internal_secret_warning_emitted = False
-
-
-def _check_internal_secret(request: Request, endpoint_name: str) -> None:
-    """
-    [AUDIT-FIX-2.2 2026-06-25] Centralised auth-gate for internal
-    endpoints (/positions/manual, /positions/close, /api/internal/*,
-    the CNC alert webhook target).
-
-    Behaviour:
-      - INTERNAL_API_SECRET env var is set + caller sends the right
-        value -> allow.
-      - INTERNAL_API_SECRET env var is set + caller sends wrong/missing
-        value -> 403 (same as before; this fix doesn't change it).
-      - INTERNAL_API_SECRET env var is EMPTY (not set in .env) -> 503.
-        This is louder than 403 and tells the operator the endpoint
-        is misconfigured, not that the caller is wrong. The system
-        STAYS UP (other endpoints work) but refuses to mutate until
-        the secret is configured.
-
-    Why this matters: pre-fix, an empty secret defaulted `if secret !=
-    ""` to True, allowing ANY caller (including an attacker on the
-    docker network) to invoke internal endpoints by sending
-    `X-Internal-Secret: ` (empty string). With the empty-secret
-    setting, the attacker could close positions, send manual positions,
-    etc.
-
-    Why not hard-fail at startup: per operator mandate (2026-06-25),
-    internal endpoints going down must NOT block the system during
-    market hours. We log + refuse requests + emit Telegram alert, but
-    the scanner loop keeps running.
-    """
-    global _internal_secret_warning_emitted
-    configured = settings.INTERNAL_API_SECRET
-    sent = request.headers.get("X-Internal-Secret", "")
-
-    if not configured:
-        # Misconfigured deployment: secret not set.
-        if not _internal_secret_warning_emitted:
-            # Loud one-time warning at first hit. After this, log at
-            # WARNING level per call (rare event, should be fixed).
-            logger.critical(
-                "internal_api_secret_not_configured "
-                "endpoint=%s FIX=set INTERNAL_API_SECRET env var to a non-empty value",
-                endpoint_name,
-            )
-            # Telegram alert (best-effort, fire-and-forget so the sync
-            # gate function can return immediately). create_task only
-            # works inside a running event loop, so guard.
-            try:
-                import asyncio
-                try:
-                    asyncio.get_running_loop()
-                    asyncio.create_task(_send_internal_secret_alert())
-                except RuntimeError:
-                    # No running loop (test context). The warning is
-                    # enough -- we already logged at CRITICAL above.
-                    pass
-            except Exception:
-                # Don't propagate -- notify failure must not block the gate.
-                pass
-            _internal_secret_warning_emitted = True
-        else:
-            logger.warning(
-                "internal_api_secret_not_configured endpoint=%s",
-                endpoint_name,
-            )
-        raise HTTPException(
-            status_code=503,
-            detail=(
-                "Internal API not configured: INTERNAL_API_SECRET env "
-                "var must be set to a non-empty value. Operator has "
-                "been alerted. System continues running -- other "
-                "endpoints and the scanner are unaffected."
-            ),
-        )
-
-    # Normal auth: secret configured, check the caller's value.
-    if sent != configured:
-        raise HTTPException(status_code=403, detail="Unauthorized")
-
-
-async def _send_internal_secret_alert() -> None:
-    """[AUDIT-FIX-2.2] Best-effort Telegram alert when the secret
-    is empty. Wrapped in its own function so the caller (sync gate)
-    can fire-and-forget via asyncio.create_task."""
-    try:
-        import httpx as _httpx
-        msg = (
-            "🚨 **SECURITY: INTERNAL_API_SECRET not configured** 🚨\n"
-            "Internal endpoints (/token, /positions/manual, "
-            "/positions/close) are refusing requests with HTTP 503. Set "
-            "INTERNAL_API_SECRET in .env to a non-empty value."
-        )
-        async with _httpx.AsyncClient() as _client:
-            await _client.post(
-                f"{settings.CONTAINER_A_URL}/api/internal/notify",
-                json={"message": msg},
-                headers={"X-Internal-Secret": settings.INTERNAL_API_SECRET or ""},
-                timeout=5.0,
-            )
-    except Exception as e:
-        logger.warning("internal_secret_alert_failed error=%s", str(e))
+# ---------------------------------------------------------------------------
+# [ROADMAP-4.1 2026-07-13] Extracted modules, re-exported here.
+#
+# The auth gate, the token lifecycle and the ops watchdogs now live in their
+# own files. They are re-exported into main's namespace ON PURPOSE, and the
+# re-export is load-bearing, not cosmetic:
+#
+#   * ~30 call sites and tests do `from main import _token_recon_mismatch_message`
+#     / `main._scheduler_tick_job()` / `from main import _kite_probe_evaluate`.
+#   * the scheduler registers these by REFERENCE, and the add_job census pins
+#     each job as (callable, trigger, id) -- the callable's __name__ must not
+#     change or a job looks dropped.
+#
+# So this is a move, not a rename. Same objects, same names, new home.
+# ---------------------------------------------------------------------------
+from engine_auth import (
+    _check_internal_secret,
+    _send_internal_secret_alert,
+)
+from token_lifecycle import (
+    TOKEN_RECON_ALERT_MIN_INTERVAL_SEC,
+    TokenPayload,
+    _kite_token_cache_path,
+    _load_persisted_kite_token_if_fresh,
+    _persist_kite_token,
+    _token_recon_mismatch_message,
+    _token_recon_state,
+    _token_reconciliation_tick,
+    restore_kite_token_if_fresh,
+)
+from ops_watchdogs import (
+    KITE_PROBE_ALERT_MIN_INTERVAL_SEC,
+    KITE_PROBE_FAILURES_TO_ALERT,
+    _kite_endpoint_probe_tick,
+    _kite_probe_evaluate,
+    _kite_probe_state,
+    _ops_daily_snapshot,
+    _scheduler_tick_job,
+    _scheduler_tick_path,
+    _scheduler_tick_state,
+)
 
 
 # [PENNY-MAIN 2026-06-21] Penny subsystem module imports.
@@ -3496,350 +3431,6 @@ async def close_position(request: Request):
     return {"status": "closed", "ticker": ticker,
             "realised_pnl": round(realised_pnl, 2),
             "r_multiple":   round(r_multiple, 4)}
-
-# @app.post("/token")
-# async def inject_token(request: Request):
-#     data = await request.json()
-# #    if data.get("secret") != settings.TOKEN_INJECTION_SECRET:
-#  #       raise HTTPException(status_code=403, detail="Unauthorized")
-#     kite.set_token(data["access_token"])
-#     await post_login_initialization()
-#     return {"status": "ok"}
-
-
-class TokenPayload(BaseModel):
-    access_token: str
-
-
-# [FIX-PHASE3-AUDIT 2026-07-09] Token persistence + observability.
-#
-# Pre-fix, POST /token set kite.access_token IN MEMORY ONLY and logged
-# nothing. Two production consequences on 2026-07-09:
-#   1. The single most important state transition in the system (armed
-#      vs disarmed) was invisible in the logs -- the audit had to infer
-#      it from 26,311 downstream HTTP 400s.
-#   2. Any container restart silently disarmed all strategies until the
-#      operator manually logged in again. The 19:59 IST host reboot
-#      wiped the day's token with no alert.
-#
-# The token is persisted to the /data named volume with an IST date
-# stamp. On startup we restore it ONLY if it was saved today (Zerodha
-# tokens expire daily around 06:00 IST, so a stale token is useless and
-# restoring it would just produce a 400 storm -- the exact failure mode
-# the no-token guards now prevent).
-
-def _kite_token_cache_path() -> str:
-    import os as _os
-    return _os.path.join(_os.path.dirname(settings.DB_PATH), "kite_token.json")
-
-
-def _persist_kite_token(token: str) -> None:
-    import json as _json
-    import os as _os
-    try:
-        path = _kite_token_cache_path()
-        payload = {
-            "access_token": token,
-            "saved_date_ist": datetime.now(IST).strftime("%Y-%m-%d"),
-        }
-        with open(path, "w") as fh:
-            _json.dump(payload, fh)
-        _os.chmod(path, 0o600)
-        logger.info("kite_token_persisted path=%s", path)
-    except Exception as e:
-        # Persistence is best-effort; the in-memory token still works.
-        logger.warning("kite_token_persist_failed error=%s", str(e))
-
-
-def _load_persisted_kite_token_if_fresh() -> dict | None:
-    """Read the persisted token payload from /data and return it ONLY if
-    it was saved today (IST). Returns None for missing/stale/corrupt.
-
-    [ROADMAP-2.1 2026-07-12] Extracted from restore_kite_token_if_fresh
-    so /token/current can serve node-gateway from the same freshness
-    rule. Deliberately file-based rather than kite.access_token: the
-    in-memory token carries no date stamp and could be yesterday's if
-    this container has been up overnight -- handing that to node would
-    re-arm execution with a dead token."""
-    import json as _json
-    import os as _os
-    path = _kite_token_cache_path()
-    try:
-        if not _os.path.exists(path):
-            return None
-        with open(path) as fh:
-            payload = _json.load(fh)
-        saved_date = payload.get("saved_date_ist")
-        token = payload.get("access_token")
-        today_ist = datetime.now(IST).strftime("%Y-%m-%d")
-        if not token or saved_date != today_ist:
-            logger.info(
-                "kite_token_restore_skipped saved_date=%s today=%s "
-                "(stale -- operator must log in again)",
-                saved_date, today_ist,
-            )
-            return None
-        return payload
-    except Exception as e:
-        logger.warning("kite_token_restore_failed error=%s", str(e))
-        return None
-
-
-def restore_kite_token_if_fresh() -> bool:
-    """Reload a same-IST-day token from /data on startup. Returns True
-    when a token was restored. Called from the lifespan hook."""
-    payload = _load_persisted_kite_token_if_fresh()
-    if payload is None:
-        return False
-    kite.set_token(payload["access_token"])
-    logger.info("kite_token_restored saved_date=%s", payload.get("saved_date_ist"))
-    return True
-
-
-# [ROADMAP-2.4 2026-07-12] Scheduler loop-progress tick. The existing
-# penny-liveness heartbeat is a daemon THREAD -- it keeps ticking even
-# when the asyncio loop / APScheduler is frozen (by design: it proves
-# the process is alive). This job is the complement: it runs ON the
-# scheduler as a normal job, so a fresh file timestamp proves jobs are
-# actually firing. The agent container reads this file from /data (ro
-# mount) and pages the operator when it goes stale during market hours
-# -- the external watchdog that would have caught the 2026-07-07
-# 6h32m freeze in minutes.
-def _scheduler_tick_path() -> str:
-    import os as _os
-    return _os.path.join(_os.path.dirname(settings.DB_PATH), "scheduler_tick.json")
-
-
-# [ROADMAP-2.8 2026-07-12] Previous-tick clock for the persistent
-# liveness time-series. None after boot: a restart must not fabricate a
-# gap (the gap it WOULD measure spans a different process's lifetime).
-_scheduler_tick_state = {"prev_monotonic": None}
-
-
-async def _scheduler_tick_job():
-    import json as _json
-    import os as _os
-    try:
-        path = _scheduler_tick_path()
-        tmp = path + ".tmp"
-        with open(tmp, "w") as fh:
-            _json.dump({
-                "ts_epoch": time.time(),
-                "ist": datetime.now(IST).isoformat(),
-            }, fh)
-        # Atomic replace so the agent's reader never sees a torn file.
-        _os.replace(tmp, path)
-    except Exception as e:
-        logger.warning("scheduler_tick_write_failed error=%s", str(e))
-    # [ROADMAP-2.8 2026-07-12] Fold this tick into ops_liveness_daily --
-    # the persistent record of scheduler gaps that outlives the docker
-    # log ring, and the attestation source for the F&O go-live liveness
-    # gate. Separate try: a DB hiccup must not stop the file heartbeat
-    # above, and vice versa.
-    try:
-        from ops_metrics import record_scheduler_tick
-        import time as _time
-        now_mono = _time.monotonic()
-        prev = _scheduler_tick_state["prev_monotonic"]
-        _scheduler_tick_state["prev_monotonic"] = now_mono
-        gap = (now_mono - prev) if prev is not None else None
-        await record_scheduler_tick(settings.DB_PATH, datetime.now(IST), gap)
-    except Exception as e:
-        logger.warning("scheduler_tick_record_failed error=%s", str(e))
-
-
-# [ROADMAP-2.8 2026-07-12] Daily funnel snapshot: one ops_funnel_daily
-# row per subsystem at 15:50 IST (after close, after the 15:45 accept-
-# watchdogs) so accept/reject history survives log rotation.
-async def _ops_daily_snapshot():
-    now_ist = datetime.now(IST)
-    if not await is_trading_day(now_ist.date(), settings.DB_PATH):
-        return
-    from ops_metrics import snapshot_funnels_for_day
-    written = await snapshot_funnels_for_day(
-        settings.DB_PATH, now_ist.strftime("%Y-%m-%d")
-    )
-    logger.info("ops_daily_snapshot_written counts=%s", written)
-
-
-# [ROADMAP-2.1 2026-07-12] Token reconciliation: scans (python) and
-# execution (node) hold independent token stores that can disagree --
-# the exact split-brain of 2026-07-09, where scans ran all day while a
-# restarted node had silently disarmed the EXEC buttons. A 15-min cron
-# compares both sides during market hours and pages once (deduped to
-# 1/hour) on disagreement. `None` sentinel, not 0.0: time.monotonic()
-# can be below the window right after host boot.
-_token_recon_state = {"last_alert_monotonic": None}
-TOKEN_RECON_ALERT_MIN_INTERVAL_SEC = 3600.0
-
-
-def _token_recon_mismatch_message(
-    python_armed: bool, node_token_status: str | None
-) -> str | None:
-    """Pure decision: returns the operator alert text when the two token
-    stores disagree, else None. node_token_status is /api/health's
-    token_status field: 'active' | 'expired' | 'none' | None(unknown)."""
-    if node_token_status is None:
-        return None  # node unreachable -- healthcheck territory, not ours
-    node_armed = node_token_status == "active"
-    if python_armed == node_armed:
-        return None
-    if python_armed and not node_armed:
-        return (
-            "🔀 TOKEN SPLIT-BRAIN: scans (python-engine) are ARMED but "
-            f"execution (node-gateway) is DISARMED (token_status={node_token_status}). "
-            "EXEC buttons will fail until you re-login via the /login link "
-            "(a node restart usually caused this)."
-        )
-    return (
-        "🔀 TOKEN SPLIT-BRAIN: execution (node-gateway) is ARMED but "
-        "scans (python-engine) have NO token. Signals will not be "
-        "generated. Re-login via the /login link to re-arm both sides."
-    )
-
-
-async def _token_reconciliation_tick():
-    """15-min market-hours cron: compare python vs node token state."""
-    now_ist = datetime.now(IST)
-    nm = now_ist.hour * 60 + now_ist.minute
-    if not (9 * 60 + 15 <= nm <= 15 * 60 + 30):
-        return
-    if not await is_trading_day(now_ist.date(), settings.DB_PATH):
-        return
-    import httpx as _httpx
-    try:
-        async with _httpx.AsyncClient() as client:
-            resp = await client.get(
-                f"{settings.CONTAINER_A_URL}/api/health", timeout=5.0
-            )
-            resp.raise_for_status()
-            node_token_status = resp.json().get("token_status")
-    except Exception as e:
-        # Node being unreachable is the (future) healthcheck's problem
-        # (roadmap 2.2) -- log it, don't page from here.
-        logger.warning("token_recon_node_unreachable error=%s", str(e))
-        return
-    msg = _token_recon_mismatch_message(bool(kite.access_token), node_token_status)
-    if msg is None:
-        return
-    logger.warning(
-        "token_recon_mismatch python_armed=%s node_status=%s",
-        bool(kite.access_token), node_token_status,
-    )
-    import time as _time
-    now = _time.monotonic()
-    last = _token_recon_state["last_alert_monotonic"]
-    if last is not None and (now - last) < TOKEN_RECON_ALERT_MIN_INTERVAL_SEC:
-        return
-    _token_recon_state["last_alert_monotonic"] = now
-    try:
-        async with _httpx.AsyncClient() as client:
-            await client.post(
-                f"{settings.CONTAINER_A_URL}/api/internal/notify",
-                json={"message": msg},
-                headers={"X-Internal-Secret": settings.INTERNAL_API_SECRET or ""},
-                timeout=5.0,
-            )
-    except Exception as e:
-        logger.warning("token_recon_notify_failed error=%s", str(e))
-
-
-# [ROADMAP-2.6 2026-07-12] Kite endpoint (OCI relay) liveness probe.
-# Every quote and order transits settings.KITE_BASE_URL -- on the home
-# desktop that is the OCI relay 161.118.160.180:31527, a single
-# unmonitored hop whose only check until now was the manual morning
-# smoke_relay.sh. A 3-min market-hours cron probes it from inside this
-# container (the real code path) and pages on 2 consecutive failures
-# (one blip = transient, don't page), deduped to 1/30min while down,
-# with a recovery notice when it comes back. Failover procedure:
-# docs/runbooks/relay-failover.md.
-_kite_probe_state = {
-    "consec_failures": 0,
-    "down_since_monotonic": None,   # set when the alert threshold is crossed
-    "last_alert_monotonic": None,
-}
-KITE_PROBE_FAILURES_TO_ALERT = 2
-KITE_PROBE_ALERT_MIN_INTERVAL_SEC = 1800.0
-
-
-def _kite_probe_evaluate(ok: bool, now_monotonic: float, state: dict) -> str | None:
-    """Pure state machine: fold one probe result into `state`, return the
-    operator alert text to send (down page / recovery notice) or None.
-    Kept side-effect-free so the alarm logic is fully testable."""
-    if ok:
-        state["consec_failures"] = 0
-        down_since = state["down_since_monotonic"]
-        if down_since is None:
-            return None  # steady-state healthy, or a blip we never paged for
-        state["down_since_monotonic"] = None
-        state["last_alert_monotonic"] = None
-        mins = (now_monotonic - down_since) / 60.0
-        return (
-            f"✅ KITE ENDPOINT RECOVERED: {settings.KITE_BASE_URL} is "
-            f"reachable again (was down ~{mins:.0f} min). Quotes and "
-            "orders are flowing normally."
-        )
-    state["consec_failures"] += 1
-    if state["consec_failures"] < KITE_PROBE_FAILURES_TO_ALERT:
-        return None
-    if state["down_since_monotonic"] is None:
-        state["down_since_monotonic"] = now_monotonic
-    last = state["last_alert_monotonic"]
-    if last is not None and (now_monotonic - last) < KITE_PROBE_ALERT_MIN_INTERVAL_SEC:
-        return None
-    state["last_alert_monotonic"] = now_monotonic
-    return (
-        f"📡 KITE ENDPOINT DOWN: {settings.KITE_BASE_URL} has failed "
-        f"{state['consec_failures']} consecutive probes. ALL quotes and "
-        "orders transit this endpoint -- scans and EXEC are blind until "
-        "it recovers. Triage: `bash python-engine/smoke_relay.sh`, then "
-        "docs/runbooks/relay-failover.md."
-    )
-
-
-async def _kite_endpoint_probe_tick():
-    """3-min market-hours cron: probe the configured Kite endpoint."""
-    now_ist = datetime.now(IST)
-    nm = now_ist.hour * 60 + now_ist.minute
-    if not (9 * 60 + 15 <= nm <= 15 * 60 + 30):
-        return
-    if not await is_trading_day(now_ist.date(), settings.DB_PATH):
-        return
-    import httpx as _httpx
-    ok = False
-    err = ""
-    try:
-        async with _httpx.AsyncClient() as client:
-            resp = await client.get(f"{settings.KITE_BASE_URL}/", timeout=8.0)
-        # Any response < 500 means the hop is up (relay root proxies to
-        # Kite's root, which returns 200 -- see smoke_relay.sh). A 5xx
-        # from the relay means the path to Kite is broken even though
-        # the relay process answered: that IS an outage for us.
-        ok = resp.status_code < 500
-        if not ok:
-            err = f"HTTP {resp.status_code}"
-    except Exception as e:
-        err = str(e)
-    if not ok:
-        logger.warning(
-            "kite_endpoint_probe_failed url=%s consec=%d error=%s",
-            settings.KITE_BASE_URL,
-            _kite_probe_state["consec_failures"] + 1, err,
-        )
-    import time as _time
-    msg = _kite_probe_evaluate(ok, _time.monotonic(), _kite_probe_state)
-    if msg is None:
-        return
-    try:
-        async with _httpx.AsyncClient() as client:
-            await client.post(
-                f"{settings.CONTAINER_A_URL}/api/internal/notify",
-                json={"message": msg},
-                headers={"X-Internal-Secret": settings.INTERNAL_API_SECRET or ""},
-                timeout=5.0,
-            )
-    except Exception as e:
-        logger.warning("kite_endpoint_probe_notify_failed error=%s", str(e))
 
 
 @app.post("/token")
