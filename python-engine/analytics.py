@@ -663,4 +663,34 @@ async def edge_statistics(
     report = edge_report(trades)
     report["days"] = days
     report["strategy"] = strategy
+
+    # [ROADMAP-5.2 2026-07-13] Assert the cost bypass is OFF, in the report.
+    #
+    # PENNY_BROKERAGE_BYPASS zeroes every penny cost. On a Rs 2,500 bankroll,
+    # Rs 20/order + STT + GST is not a rounding error -- it is most of the edge.
+    # An expectancy computed while that flag was on is not a slightly-optimistic
+    # number, it is a fictional one, and it is exactly the number an operator
+    # would use to decide to scale up.
+    #
+    # So the report carries the flag and REFUSES to certify an edge while it is
+    # set. Better to withhold a verdict than to hand back "edge_demonstrated"
+    # earned by not paying brokerage.
+    from config import settings as _settings
+
+    bypassed = bool(_settings.PENNY_BROKERAGE_BYPASS)
+    report["brokerage_bypass_active"] = bypassed
+    if bypassed:
+        report["costs_are_fictional"] = True
+        report["verdict"] = "invalid_costs_bypassed"
+        report["warning"] = (
+            "PENNY_BROKERAGE_BYPASS is ON: all penny costs are zeroed, so this "
+            "expectancy is gross, not net. On a Rs 2,500 bankroll the costs are "
+            "most of the edge. Turn the flag off and re-run before believing any "
+            "of these numbers."
+        )
+        logger.warning(
+            "edge_statistics_with_costs_bypassed n=%s -- report is gross P&L, "
+            "not net; verdict withheld", report.get("n"),
+        )
+
     return report
