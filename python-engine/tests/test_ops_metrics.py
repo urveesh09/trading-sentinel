@@ -90,11 +90,24 @@ class TestGapOverlapsMarket:
 # ===============================================================
 
 class TestRecordSchedulerTick:
+    """[2026-07-13] Every test here seeds a tick on a LITERAL date, so the
+    report window must be anchored to a literal date too (`_ANCHOR`).
+
+    The original versions called liveness_report(days=5) with no anchor,
+    which silently used the wall clock. They passed on 2026-07-12 and
+    failed on 2026-07-13 -- the seeded 2026-07-08 tick simply aged out of
+    a window that kept sliding forward while the seed date stood still.
+    A test whose result depends on the day you run it is not a test."""
+
+    # One day after the seeded ticks, so a 5-day window comfortably
+    # contains 2026-07-08 no matter when the suite is run.
+    _ANCHOR = _ist(2026, 7, 9, 18, 0)
+
     @pytest.mark.asyncio
     async def test_first_tick_creates_row_without_gap(self, db_path):
         await init_ops_metrics_db(db_path)
         await record_scheduler_tick(db_path, _ist(2026, 7, 8, 11, 0), None)
-        report = await liveness_report(db_path, days=5)
+        report = await liveness_report(db_path, days=5, now_ist=self._ANCHOR)
         assert report["days_covered"] == 1
         row = report["rows"][0]
         assert row == {
@@ -107,7 +120,8 @@ class TestRecordSchedulerTick:
         await init_ops_metrics_db(db_path)
         await record_scheduler_tick(db_path, _ist(2026, 7, 8, 11, 0), None)
         await record_scheduler_tick(db_path, _ist(2026, 7, 8, 11, 2), 120.0)
-        row = (await liveness_report(db_path, days=5))["rows"][0]
+        row = (await liveness_report(
+            db_path, days=5, now_ist=self._ANCHOR))["rows"][0]
         assert row["ticks"] == 2
         assert row["max_gap_seconds"] == 120.0
         assert row["max_gap_market_seconds"] == 120.0
@@ -118,7 +132,8 @@ class TestRecordSchedulerTick:
         the go-live gate reads."""
         await init_ops_metrics_db(db_path)
         await record_scheduler_tick(db_path, _ist(2026, 7, 8, 3, 0), 3900.0)
-        row = (await liveness_report(db_path, days=5))["rows"][0]
+        row = (await liveness_report(
+            db_path, days=5, now_ist=self._ANCHOR))["rows"][0]
         assert row["max_gap_seconds"] == 3900.0
         assert row["max_gap_market_seconds"] == 0.0
 
@@ -127,7 +142,8 @@ class TestRecordSchedulerTick:
         await init_ops_metrics_db(db_path)
         await record_scheduler_tick(db_path, _ist(2026, 7, 8, 11, 0), 400.0)
         await record_scheduler_tick(db_path, _ist(2026, 7, 8, 11, 5), 60.0)
-        row = (await liveness_report(db_path, days=5))["rows"][0]
+        row = (await liveness_report(
+            db_path, days=5, now_ist=self._ANCHOR))["rows"][0]
         assert row["max_gap_seconds"] == 400.0
 
     @pytest.mark.asyncio
@@ -135,6 +151,28 @@ class TestRecordSchedulerTick:
         await record_scheduler_tick(
             str(tmp_path / "nope" / "cache.db"), _ist(2026, 7, 8, 11, 0), 60.0
         )  # must not raise
+
+    @pytest.mark.asyncio
+    async def test_window_is_exclusive_at_the_far_edge(self, db_path):
+        """Pins the (since, today] boundary that the rotting tests tripped
+        over. A `days`-day window must yield AT MOST `days` rows, because
+        market_gap_clean gates on `len(rows) >= days` -- if the far edge
+        were inclusive, a 30-day window could return 31 rows and the F&O
+        go-live attestation would pass a day early."""
+        await init_ops_metrics_db(db_path)
+        anchor = _ist(2026, 7, 13, 12, 0)
+        # Seed one tick per day for 2026-07-08 .. 2026-07-13 (6 days).
+        for day in range(8, 14):
+            await record_scheduler_tick(db_path, _ist(2026, 7, day, 11, 0), None)
+
+        report = await liveness_report(db_path, days=5, now_ist=anchor)
+        dates = [r["date_ist"] for r in report["rows"]]
+
+        # since = 2026-07-08; strictly-greater excludes it.
+        assert dates == ["2026-07-09", "2026-07-10", "2026-07-11",
+                         "2026-07-12", "2026-07-13"]
+        assert report["days_covered"] == 5
+        assert len(dates) <= 5
 
 
 # ===============================================================
