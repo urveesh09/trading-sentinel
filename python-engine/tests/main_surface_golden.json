@@ -1,0 +1,312 @@
+{
+  "jobs": [
+    {
+      "func": "_run_fno_accept_watchdog_safe",
+      "id": "fno_accept_watchdog",
+      "kwargs": [],
+      "trigger": "cron[hour='15', minute='45']"
+    },
+    {
+      "func": "_run_fno_hourly_report_safe",
+      "id": "fno_hourly_report",
+      "kwargs": [],
+      "trigger": "cron[minute='0']"
+    },
+    {
+      "func": "_run_fno_instruments_refresh",
+      "id": "fno_instruments_refresh",
+      "kwargs": [],
+      "trigger": "cron[hour='8', minute='5']"
+    },
+    {
+      "func": "_run_fno_tick_safe",
+      "id": "fno_tick",
+      "kwargs": [],
+      "trigger": "interval[0:01:00]"
+    },
+    {
+      "func": "_run_penny_accept_watchdog_safe",
+      "id": "penny_accept_watchdog",
+      "kwargs": [],
+      "trigger": "cron[hour='15', minute='45']"
+    },
+    {
+      "func": "_run_penny_daily_attribution",
+      "id": "penny_daily_attribution",
+      "kwargs": [],
+      "trigger": "cron[hour='15', minute='30']"
+    },
+    {
+      "func": "_run_penny_edge_exit_safe",
+      "id": "penny_edge_exit",
+      "kwargs": [],
+      "trigger": "cron[hour='15', minute='15']"
+    },
+    {
+      "func": "_run_penny_edge_scan_safe",
+      "id": "penny_edge_scan",
+      "kwargs": [],
+      "trigger": "cron[hour='9', minute='30']"
+    },
+    {
+      "func": "_run_penny_eod_digest",
+      "id": "penny_eod_digest",
+      "kwargs": [],
+      "trigger": "cron[hour='16', minute='0']"
+    },
+    {
+      "func": "_run_penny_heatmap",
+      "id": "penny_heatmap",
+      "kwargs": [],
+      "trigger": "interval[0:15:00]"
+    },
+    {
+      "func": "_run_penny_premarket_report",
+      "id": "penny_premarket_report",
+      "kwargs": [],
+      "trigger": "cron[hour='7', minute='50']"
+    },
+    {
+      "func": "run_penny_connors_scan",
+      "id": "penny_connors_scan",
+      "kwargs": [],
+      "trigger": "cron[hour='9', minute='30']"
+    },
+    {
+      "func": "run_penny_eod_check",
+      "id": "penny_eod_check",
+      "kwargs": [],
+      "trigger": "cron[hour='14', minute='30']"
+    },
+    {
+      "func": "run_penny_force_close_mis",
+      "id": "penny_force_close_mis",
+      "kwargs": [],
+      "trigger": "cron[hour='15', minute='0']"
+    },
+    {
+      "func": "run_penny_hourly_report",
+      "id": "penny_hourly_report",
+      "kwargs": [],
+      "trigger": "cron[minute='0']"
+    },
+    {
+      "func": "run_penny_regime_compute",
+      "id": "penny_regime_compute",
+      "kwargs": [],
+      "trigger": "cron[hour='9', minute='20']"
+    },
+    {
+      "func": "run_penny_regime_refresh",
+      "id": "penny_regime_refresh",
+      "kwargs": [],
+      "trigger": "cron[hour='13', minute='0']"
+    },
+    {
+      "func": "run_penny_scanner_once",
+      "id": "penny_scan_interval",
+      "kwargs": [],
+      "trigger": "interval[0:00:30]"
+    },
+    {
+      "func": "run_penny_universe_refresh",
+      "id": "penny_universe_refresh",
+      "kwargs": [],
+      "trigger": "cron[hour='8', minute='0']"
+    }
+  ],
+  "routes": [
+    {
+      "endpoint": "get_funnel",
+      "methods": [
+        "GET"
+      ],
+      "path": "/analytics/funnel",
+      "response_model": null
+    },
+    {
+      "endpoint": "get_outcomes",
+      "methods": [
+        "GET"
+      ],
+      "path": "/analytics/outcomes",
+      "response_model": null
+    },
+    {
+      "endpoint": "get_suggestions",
+      "methods": [
+        "GET"
+      ],
+      "path": "/analytics/suggestions",
+      "response_model": null
+    },
+    {
+      "endpoint": "get_bankroll_route",
+      "methods": [
+        "GET"
+      ],
+      "path": "/bankroll",
+      "response_model": null
+    },
+    {
+      "endpoint": "get_bankroll_breakdown",
+      "methods": [
+        "GET"
+      ],
+      "path": "/bankroll/breakdown",
+      "response_model": null
+    },
+    {
+      "endpoint": "get_circuit_breaker",
+      "methods": [
+        "GET"
+      ],
+      "path": "/circuit-breaker",
+      "response_model": null
+    },
+    {
+      "endpoint": "reset_circuit_breaker",
+      "methods": [
+        "POST"
+      ],
+      "path": "/circuit-breaker/reset",
+      "response_model": null
+    },
+    {
+      "endpoint": "top_level_command_get",
+      "methods": [
+        "GET"
+      ],
+      "path": "/command/{cmd}",
+      "response_model": null
+    },
+    {
+      "endpoint": "health_check",
+      "methods": [
+        "GET"
+      ],
+      "path": "/health",
+      "response_model": null
+    },
+    {
+      "endpoint": "get_momentum_signals",
+      "methods": [
+        "GET"
+      ],
+      "path": "/momentum-signals",
+      "response_model": null
+    },
+    {
+      "endpoint": "nifty_command_get",
+      "methods": [
+        "GET"
+      ],
+      "path": "/nifty/command/{cmd}",
+      "response_model": null
+    },
+    {
+      "endpoint": "get_ops_metrics",
+      "methods": [
+        "GET"
+      ],
+      "path": "/ops/metrics",
+      "response_model": null
+    },
+    {
+      "endpoint": "penny_command_get",
+      "methods": [
+        "GET"
+      ],
+      "path": "/penny/command/{cmd}",
+      "response_model": null
+    },
+    {
+      "endpoint": "penny_command_post",
+      "methods": [
+        "POST"
+      ],
+      "path": "/penny/command/{cmd}",
+      "response_model": null
+    },
+    {
+      "endpoint": "get_performance",
+      "methods": [
+        "GET"
+      ],
+      "path": "/performance",
+      "response_model": "PerformanceReport"
+    },
+    {
+      "endpoint": "get_positions_route",
+      "methods": [
+        "GET"
+      ],
+      "path": "/positions",
+      "response_model": "list"
+    },
+    {
+      "endpoint": "close_position",
+      "methods": [
+        "POST"
+      ],
+      "path": "/positions/close",
+      "response_model": null
+    },
+    {
+      "endpoint": "add_manual_position",
+      "methods": [
+        "POST"
+      ],
+      "path": "/positions/manual",
+      "response_model": null
+    },
+    {
+      "endpoint": "get_rejected_signals",
+      "methods": [
+        "GET"
+      ],
+      "path": "/rejected",
+      "response_model": null
+    },
+    {
+      "endpoint": "get_signals",
+      "methods": [
+        "GET"
+      ],
+      "path": "/signals",
+      "response_model": "PortfolioResponse"
+    },
+    {
+      "endpoint": "test_momentum_screener",
+      "methods": [
+        "POST"
+      ],
+      "path": "/test-momentum",
+      "response_model": null
+    },
+    {
+      "endpoint": "inject_token",
+      "methods": [
+        "POST"
+      ],
+      "path": "/token",
+      "response_model": null
+    },
+    {
+      "endpoint": "get_current_token",
+      "methods": [
+        "GET"
+      ],
+      "path": "/token/current",
+      "response_model": null
+    },
+    {
+      "endpoint": "invalidate_token",
+      "methods": [
+        "POST"
+      ],
+      "path": "/token/invalidate",
+      "response_model": null
+    }
+  ]
+}

@@ -1,0 +1,162 @@
+[
+  {
+    "func": "_kite_endpoint_probe_tick",
+    "id": "'kite_endpoint_probe'",
+    "trigger": "'cron'"
+  },
+  {
+    "func": "_ops_daily_snapshot",
+    "id": "'ops_daily_snapshot'",
+    "trigger": "'cron'"
+  },
+  {
+    "func": "_penny_daily_reset",
+    "id": "'penny_daily_reset'",
+    "trigger": "'cron'"
+  },
+  {
+    "func": "_run_fno_accept_watchdog_safe",
+    "id": "'fno_accept_watchdog'",
+    "trigger": "'cron'"
+  },
+  {
+    "func": "_run_fno_hourly_report_safe",
+    "id": "'fno_hourly_report'",
+    "trigger": "'cron'"
+  },
+  {
+    "func": "_run_fno_instruments_refresh",
+    "id": "'fno_instruments_refresh'",
+    "trigger": "'cron'"
+  },
+  {
+    "func": "_run_fno_tick_safe",
+    "id": "'fno_tick'",
+    "trigger": "'interval'"
+  },
+  {
+    "func": "_run_penny_accept_watchdog_safe",
+    "id": "'penny_accept_watchdog'",
+    "trigger": "'cron'"
+  },
+  {
+    "func": "_run_penny_daily_attribution",
+    "id": "'penny_daily_attribution'",
+    "trigger": "'cron'"
+  },
+  {
+    "func": "_run_penny_edge_exit_safe",
+    "id": "'penny_edge_exit'",
+    "trigger": "'cron'"
+  },
+  {
+    "func": "_run_penny_edge_scan_safe",
+    "id": "'penny_edge_scan'",
+    "trigger": "'cron'"
+  },
+  {
+    "func": "_run_penny_eod_digest",
+    "id": "'penny_eod_digest'",
+    "trigger": "'cron'"
+  },
+  {
+    "func": "_run_penny_heatmap",
+    "id": "'penny_heatmap'",
+    "trigger": "'interval'"
+  },
+  {
+    "func": "_run_penny_premarket_report",
+    "id": "'penny_premarket_report'",
+    "trigger": "'cron'"
+  },
+  {
+    "func": "_scheduler_tick_job",
+    "id": "'scheduler_tick'",
+    "trigger": "'interval'"
+  },
+  {
+    "func": "_token_reconciliation_tick",
+    "id": "'token_reconciliation'",
+    "trigger": "'cron'"
+  },
+  {
+    "func": "auto_square_momentum",
+    "id": "'momentum_auto_square'",
+    "trigger": "'cron'"
+  },
+  {
+    "func": "daily_post_market",
+    "id": null,
+    "trigger": "'cron'"
+  },
+  {
+    "func": "kite.clear_intraday_cache",
+    "id": "'intraday_cache_cleanup'",
+    "trigger": "'cron'"
+  },
+  {
+    "func": "kite.refresh_instrument_cache",
+    "id": null,
+    "trigger": "'cron'"
+  },
+  {
+    "func": "momentum_eod_warning",
+    "id": "'momentum_eod_warning'",
+    "trigger": "'cron'"
+  },
+  {
+    "func": "run_momentum_screener",
+    "id": "f'momentum_scan_{hour}{minute}'",
+    "trigger": "'cron'"
+  },
+  {
+    "func": "run_penny_connors_scan",
+    "id": "'penny_connors_scan'",
+    "trigger": "'cron'"
+  },
+  {
+    "func": "run_penny_eod_check",
+    "id": "'penny_eod_check'",
+    "trigger": "'cron'"
+  },
+  {
+    "func": "run_penny_force_close_mis",
+    "id": "'penny_force_close_mis'",
+    "trigger": "'cron'"
+  },
+  {
+    "func": "run_penny_hourly_report",
+    "id": "'penny_hourly_report'",
+    "trigger": "'cron'"
+  },
+  {
+    "func": "run_penny_regime_compute",
+    "id": "'penny_regime_compute'",
+    "trigger": "'cron'"
+  },
+  {
+    "func": "run_penny_regime_refresh",
+    "id": "'penny_regime_refresh'",
+    "trigger": "'cron'"
+  },
+  {
+    "func": "run_penny_scanner_once",
+    "id": "'penny_scan_interval'",
+    "trigger": "'interval'"
+  },
+  {
+    "func": "run_penny_universe_refresh",
+    "id": "'penny_universe_refresh'",
+    "trigger": "'cron'"
+  },
+  {
+    "func": "run_screener",
+    "id": null,
+    "trigger": "'cron'"
+  },
+  {
+    "func": "run_screener",
+    "id": null,
+    "trigger": "'cron'"
+  }
+]
