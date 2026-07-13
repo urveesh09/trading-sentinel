@@ -2029,39 +2029,6 @@ async def daily_post_market():
                     recovery_trades=risk_engine._recovery_trades_remaining)
     _last_regime_was_crisis = False
 
-@app.get("/signals", response_model=PortfolioResponse)
-async def get_signals():
-    async with state_lock:
-        halted, reasons = await check_circuit_breakers(settings.DB_PATH)
-        open_pos = await get_open_positions(settings.DB_PATH)
-        # Strict separation: report Nifty-subsystem balance on /signals.
-        bankroll = await nifty_bankroll(settings.DB_PATH)
-
-        risk = sum((p['entry_price'] - p['stop_loss_initial']) * p['shares'] for p in open_pos)
-        deployed = sum(p['entry_price'] * p['shares'] for p in open_pos)
-        
-        # Mark stale
-        for s in current_signals:
-            s.stale_data = (datetime.now(timezone.utc) - s.signal_time).total_seconds() > 3600
-
-        return PortfolioResponse(
-            run_time=last_run or datetime.now(timezone.utc),
-            market_regime=market_regime,
-            bankroll=bankroll,
-            backtest_gate="PASS" if "BACKTEST_GATE_FAILED" not in reasons else "FAIL",
-            trading_halted=halted,
-            halt_reasons=reasons,
-            stale_data=bool(last_run and (datetime.now(timezone.utc) - last_run).total_seconds() > 3600),
-            total_capital_at_risk=risk,
-            total_capital_deployed=deployed,
-            bankroll_utilization_pct=deployed / bankroll if bankroll else 0,
-            open_positions_count=len(open_pos),
-            remaining_slots=settings.MAX_OPEN_POSITIONS - len(open_pos),
-            signals=current_signals,
-            regime=_last_regime_state.regime if _last_regime_state else Regime.UNKNOWN,
-            regime_score=_last_regime_state.regime_score if _last_regime_state else 100.0,
-        )
-
 # [MOMENTUM-SKIP-IF-RUNNING 2026-06-30] Re-entrancy guard. The
 # momentum scan fires every 15 min via cron; if the previous
 # run is still in flight (e.g. a slow Kite + 500-ticker universe)
@@ -2441,44 +2408,6 @@ async def _run_momentum_screener_impl(t0):
     except Exception as _e:
         logger.warning("momentum_signal_log_failed", error=str(_e))
 
-
-@app.get("/momentum-signals")
-async def get_momentum_signals():
-    async with state_lock:
-        # Strict separation: momentum display uses Nifty-subsystem balance.
-        bankroll      = await nifty_bankroll(settings.DB_PATH)
-        momentum_pool = bankroll * settings.MOMENTUM_POOL_PCT  # 50% of bankroll = Rs2,500 at Rs5k
-        halted, reasons = await check_circuit_breakers(settings.DB_PATH)
-
-        # [MOM-FUNNEL 2026-07-11] Serve the cumulative day list, not the
-        # latest 15-min snapshot. The snapshot made this endpoint lossy for
-        # its two consumers: the agent's poll (saw 3 of 17 signals on
-        # 2026-07-10 -- no EXEC-button alert for the other 14) and the
-        # gateway's EXEC callback (couldn't execute any signal wiped by a
-        # newer scan). Both consumers dedupe/lock per ticker, so the wider
-        # list is safe. Day guard: before the first scan of a new day,
-        # momentum_signals_today still holds yesterday's list -- serve [].
-        signals_today = (
-            momentum_signals_today
-            if last_momentum_date == datetime.now(IST).date()
-            else []
-        )
-        for s in signals_today:
-            s.stale_data = (
-                datetime.now(timezone.utc) - s.signal_time
-            ).total_seconds() > 1800   # 30 min stale for intraday
-
-        return {
-            "run_time":         last_run,
-            "market_regime":    market_regime,
-            "momentum_pool":    round(momentum_pool, 2),
-            "trading_halted":   halted,
-            "halt_reasons":     reasons,
-            "signals":          signals_today,
-            # Latest scan's snapshot, kept for observability/debugging.
-            "latest_scan_signals": current_momentum_signals,
-        }
-
 async def auto_square_momentum():
     """
     [AUTO-SQUARE] 15:15 IST: Square off all open MOMENTUM positions.
@@ -2724,183 +2653,6 @@ async def _notify_momentum_heartbeat(
         logger.error("momentum_heartbeat_failed", error=str(e))
 
 
-@app.post("/positions/manual")
-async def add_manual_position(request: Request, payload: ManualPositionRequest):
-    """
-    Called by Container A after a successful execution.
-    Creates a new position in the database.
-
-    [AUDIT-FIX-1.4 2026-06-25] Body is now validated by Pydantic
-    (ManualPositionRequest). Missing required fields -> HTTP 422
-    with field-level error messages. Previously: KeyError -> HTTP 500.
-
-    [AUDIT-FIX-2.2 2026-06-25] Uses the centralised auth gate.
-    """
-    _check_internal_secret(request, "add_manual_position")
-
-    # Derive stop / targets from entry_price if not supplied. Same
-    # defaults as the pre-fix manual dict path (95% / 105% / 110%).
-    stop_loss = payload.stop_loss if payload.stop_loss is not None else payload.entry_price * 0.95
-    target_1  = payload.target_1  if payload.target_1  is not None else payload.entry_price * 1.05
-    target_2  = payload.target_2  if payload.target_2  is not None else payload.entry_price * 1.10
-
-    async with aiosqlite.connect(settings.DB_PATH) as db:
-        await db.execute("""
-            INSERT INTO positions (
-                ticker, exchange, entry_date, entry_price, shares,
-                stop_loss_initial, trailing_stop_current, target_1, target_2,
-                atr_14_at_entry, highest_close_since_entry, status, source, product_type,
-                regime_at_entry
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-        """, (payload.ticker, payload.exchange, datetime.now(timezone.utc).isoformat(),
-              payload.entry_price, payload.shares, stop_loss, stop_loss,
-              target_1, target_2, 0.0, payload.entry_price, "OPEN",
-              payload.source, payload.product_type, payload.regime_at_entry))
-        await db.commit()
-
-    logger.info("position_added_manually", ticker=payload.ticker,
-                source=payload.source, regime=payload.regime_at_entry)
-    return {"status": "ok"}
-
-@app.post("/positions/close")
-async def close_position(request: Request):
-    """
-    Called by Container A after a square-off order is confirmed.
-    Updates position status to CLOSED_MANUAL and records P&L.
-
-    [AUDIT-FIX-2.2 2026-06-25] Uses the centralised auth gate.
-    """
-    _check_internal_secret(request, "close_position")
-    data = await request.json()
-
-    ticker     = data["ticker"]
-    exit_price = float(data["exit_price"])
-    order_id   = data.get("order_id", "")
-
-    open_pos = await get_open_positions(settings.DB_PATH)
-    pos = next((p for p in open_pos if p['ticker'] == ticker
-                and p.get('source') == 'MOMENTUM'), None)
-    if not pos:
-        raise HTTPException(status_code=404,
-                            detail=f"No open MOMENTUM position for {ticker}")
-
-    gross = (exit_price - pos['entry_price']) * pos['shares']
-    # [AUDIT-FIX-1.2] Derive is_intraday from product_type (was hardcoded True).
-    costs = calc_zerodha_costs(
-        pos['entry_price'], exit_price, pos['shares'],
-        is_intraday=_is_intraday_from_product_type(pos.get('product_type')),
-    )
-    realised_pnl = gross - costs
-    risk_initial = (pos['entry_price'] - pos['stop_loss_initial']) * pos['shares']
-    r_multiple   = realised_pnl / risk_initial if risk_initial > 0 else 0
-
-    async with aiosqlite.connect(settings.DB_PATH) as db:
-        await db.execute("""
-            UPDATE positions
-            SET status='CLOSED_MANUAL', exit_price=?, exit_date=?,
-                realised_pnl=?, r_multiple=?
-            WHERE ticker=? AND source='MOMENTUM' AND status='OPEN'
-        """, (exit_price, datetime.now(timezone.utc).isoformat(),
-              realised_pnl, r_multiple, ticker))
-        await db.commit()
-
-    await record_trade_close(settings.DB_PATH, ticker, realised_pnl, r_multiple=r_multiple, notes="manual")
-    logger.info("momentum_position_closed", ticker=ticker,
-                exit_price=exit_price, pnl=realised_pnl, r=r_multiple)
-
-    return {"status": "closed", "ticker": ticker,
-            "realised_pnl": round(realised_pnl, 2),
-            "r_multiple":   round(r_multiple, 4)}
-
-
-@app.post("/token")
-async def inject_token(payload: TokenPayload, request: Request):
-    # [HIGH-002 2026-07-12] Same auth gate as the other internal mutating
-    # endpoints (/positions/manual, /positions/close). Without it, anyone
-    # on the docker network could inject an arbitrary Kite token and arm
-    # trading. node-gateway already sends X-Internal-Secret on its
-    # provisioning call (routes/auth.js), so the login flow is unchanged.
-    _check_internal_secret(request, "inject_token")
-    kite.set_token(payload.access_token)
-    # [FIX-PHASE3-AUDIT 2026-07-09] Loud (masked) breadcrumb + persist so
-    # a restart no longer silently disarms the system.
-    logger.info(
-        "kite_token_injected suffix=...%s len=%d",
-        payload.access_token[-4:] if len(payload.access_token) >= 4 else "?",
-        len(payload.access_token),
-    )
-    _persist_kite_token(payload.access_token)
-    # Fire-and-forget: return 200 immediately so node-gateway's 2-second
-    # AbortController does not trigger retries that spawn concurrent screener runs.
-    # post_login_initialization runs in the background (Q4 behaviour is preserved).
-    asyncio.create_task(post_login_initialization())
-    return {"status": "ok"}
-
-
-@app.get("/token/current")
-async def get_current_token(request: Request):
-    """[ROADMAP-2.1 2026-07-12] Serve the same-IST-day token (if any) to
-    node-gateway so a mid-day node restart re-arms execution without a
-    manual re-login. Same auth gate as /token; the token only ever moves
-    over the internal docker network, exactly like the login-time
-    provisioning call in the opposite direction. Freshness rule is
-    identical to the startup restore: stale/missing file => not armed."""
-    _check_internal_secret(request, "get_current_token")
-    payload = _load_persisted_kite_token_if_fresh()
-    if payload is None:
-        return {"armed": False}
-    logger.info(
-        "kite_token_served suffix=...%s",
-        payload["access_token"][-4:] if len(payload["access_token"]) >= 4 else "?",
-    )
-    return {"armed": True, "access_token": payload["access_token"]}
-
-
-@app.get("/ops/metrics")
-async def get_ops_metrics(request: Request, days: int = 30):
-    """[ROADMAP-2.8 2026-07-12] The persisted ops time-series: per-day
-    scheduler liveness (worst tick gaps) + per-day per-subsystem gate
-    funnels. `liveness.market_gap_clean` over days=30 is the queryable
-    form of the F&O go-live liveness condition (fno_risk condition 4)
-    that used to require grepping rotated-away docker logs."""
-    _check_internal_secret(request, "ops_metrics")
-    from ops_metrics import funnel_window, liveness_report
-    days = max(1, min(days, 365))
-    return {
-        "liveness": await liveness_report(settings.DB_PATH, days=days),
-        "funnel": await funnel_window(settings.DB_PATH, days=days),
-    }
-
-
-@app.post("/token/invalidate")
-async def invalidate_token(request: Request):
-    """[MED-010 / ROADMAP-4.6 2026-07-12] Called by node-gateway's
-    /logout. Was a silent 404 since the logout handler was written --
-    harmless before 2.1, but now the engine both KEEPS scanning with the
-    token and SERVES it back to node via /token/current, so a logout
-    that doesn't reach here isn't a logout at all. Clears the in-memory
-    token AND the persisted same-day file (otherwise the next node boot
-    would just re-arm from it)."""
-    _check_internal_secret(request, "invalidate_token")
-    kite.set_token("")
-    import os as _os
-    path = _os.path.join(_os.path.dirname(settings.DB_PATH), "kite_token.json")
-    try:
-        _os.remove(path)
-    except FileNotFoundError:
-        pass
-    except OSError as e:
-        logger.warning("kite_token_file_remove_failed error=%s", str(e))
-    logger.info("kite_token_invalidated_by_operator")
-    return {"status": "invalidated"}
-
-
-@app.get("/performance", response_model=PerformanceReport)
-async def get_performance():
-    """[AUDIT-FIX-2.6] HTTP wrapper around the shared async helper."""
-    return await compute_performance_report(settings.DB_PATH)
-
-
 async def compute_performance_report(db_path: str) -> PerformanceReport:
     """
     [AUDIT-FIX-2.6 2026-06-25] Shared async helper for performance data.
@@ -2963,133 +2715,6 @@ async def compute_performance_report(db_path: str) -> PerformanceReport:
         worst_trade_r=0.0,
         avg_hold_days=0.0
     )
-
-
-@app.get("/positions", response_model=list[OpenPosition])
-async def get_positions_route():
-    open_pos = await get_open_positions(settings.DB_PATH)
-    return open_pos
-
-@app.get("/bankroll")
-async def get_bankroll_route():
-    # 2026-06-24 strict separation: /bankroll reports the Nifty-subsystem
-    # balance (swing + momentum), excluding penny. For per-pool breakdown
-    # including the penny pool, see GET /bankroll/breakdown.
-    val = await nifty_bankroll(settings.DB_PATH)
-    return {"status": "ok", "bankroll": val}
-
-
-# 2026-06-24 (B-tight): per-pool breakdown endpoint. Returns swing and
-# penny balances independently. No risk math is touched -- current_bankroll()
-# and check_circuit_breakers() are unchanged. The combined number is
-# informational only. See docs/deviations/2026-06-24-penny-bankroll-pool-breakdown-deviation.md
-@app.get("/bankroll/breakdown")
-async def get_bankroll_breakdown():
-    from performance import pool_breakdown
-    return await pool_breakdown(settings.DB_PATH)
-
-
-# [TIER3-INTERACTIVE-COMMANDS 2026-06-25] Telegram command endpoint.
-# The node-gateway forwards /penny <subcommand> <args> messages to
-# python-engine via these endpoints, then echoes the reply back to
-# the user's Telegram chat. Read-only commands (stats, regime, help,
-# skips) use GET. Mutating commands (skip, unskip) use POST.
-@app.get("/penny/command/{cmd}")
-async def penny_command_get(cmd: str):
-    """GET handler for read-only commands. Returns plain text reply."""
-    from penny_commands import dispatch
-    return {"reply": dispatch(cmd, "", settings.DB_PATH)}
-
-
-@app.post("/penny/command/{cmd}")
-async def penny_command_post(cmd: str, payload: dict):
-    """POST handler for mutating commands. Body: {"args": "<ticker>"}."""
-    from penny_commands import dispatch
-    args = (payload or {}).get("args", "")
-    return {"reply": dispatch(cmd, args, settings.DB_PATH)}
-
-
-# [TIER3-NIFTY-COMMANDS 2026-06-25] Read-only Nifty commands.
-# Per operator mandate, these NEVER mutate state -- they're pure
-# queries against current_signals, current_momentum_signals, and
-# market_regime globals + DB-backed bankroll/circuit-breaker reads.
-# To act on Nifty signals use the inline callback buttons or the
-# HTTP API (POST /positions/close, etc.).
-@app.get("/nifty/command/{cmd}")
-async def nifty_command_get(cmd: str):
-    """GET handler for read-only Nifty commands."""
-    from nifty_commands import dispatch
-    return {"reply": dispatch(cmd, "", settings.DB_PATH)}
-
-
-# No POST handler: by design, /nifty commands don't mutate state.
-
-
-# [TIER3-CROSS-SUBSYSTEM-COMMANDS 2026-06-25] Phase B.
-# Top-level /health and /regime (no /penny prefix). Same read-only
-# posture as /nifty. The dispatcher routes by command name.
-@app.get("/command/{cmd}")
-async def top_level_command_get(cmd: str):
-    """Top-level read-only commands: /health, /regime.
-
-    These are cross-subsystem views (penny + nifty side by side)
-    and don't fit under /penny or /nifty specifically. The gateway
-    routes /health and /regime (no prefix) here.
-    """
-    from penny_commands import dispatch as _penny_dispatch
-    # penny_commands.dispatch is the universal entry point -- it
-    # routes /health and /regime to the cross-subsystem handlers.
-    return {"reply": _penny_dispatch(cmd, "", settings.DB_PATH)}
-
-
-@app.get("/circuit-breaker")
-async def get_circuit_breaker():
-    halted, reasons = await check_circuit_breakers(settings.DB_PATH)
-    return {"trading_halted": halted, "halt_reasons": reasons}
-
-
-@app.post("/circuit-breaker/reset")
-async def reset_circuit_breaker(request: Request):
-    """[MED-006 / ROADMAP-4.6 2026-07-12] node-gateway has proxied this
-    route since the April audit; it 404'd here. Re-baselines the
-    drawdown peak + consecutive-loss streak via a CB_RESET ledger marker
-    (see performance.record_cb_reset -- the floor and daily-loss CBs are
-    deliberately NOT resettable). Secret-gated: this weakens a safety
-    brake, it must never be callable anonymously."""
-    _check_internal_secret(request, "reset_circuit_breaker")
-    from performance import record_cb_reset
-    await record_cb_reset(settings.DB_PATH)
-    halted, reasons = await check_circuit_breakers(settings.DB_PATH)
-    return {"status": "reset_recorded", "trading_halted": halted,
-            "halt_reasons": reasons}
-
-@app.get("/rejected")
-async def get_rejected_signals():
-    # [MED-007 / ROADMAP-4.6 2026-07-12] Was a hardcoded `[]` -- the
-    # dashboard's rejected panel could never show anything. Serve the
-    # state-locked global the same way /signals serves current_signals.
-    async with state_lock:
-        return {"data": list(rejected_signals)}
-
-# [ANALYTICS 2026-06-16] Self-improvement endpoints.
-# GET /analytics/funnel?days=7     -> gate rejection counts (JSON)
-# GET /analytics/suggestions?days=14 -> actionable suggestions (JSON)
-# GET /analytics/outcomes?days=14  -> outcome correlator (JSON)
-# CLI: `python -m analytics --days 14`  for a human terminal report.
-@app.get("/analytics/funnel")
-async def get_funnel(days: int = 7):
-    from analytics import gate_funnel_report
-    return await gate_funnel_report(settings.DB_PATH, days=days)
-
-@app.get("/analytics/outcomes")
-async def get_outcomes(days: int = 14):
-    from analytics import outcome_correlator
-    return await outcome_correlator(settings.DB_PATH, days=days)
-
-@app.get("/analytics/suggestions")
-async def get_suggestions(days: int = 14):
-    from analytics import strategy_suggestions
-    return await strategy_suggestions(settings.DB_PATH, days=days)
 async def notify_screener_results(
     strategy_type: str,
     accepted: list,
@@ -3176,47 +2801,23 @@ async def notify_screener_results(
     except Exception as e:
         logger.error("telegram_notification_failed", error=str(e))
 
-@app.post("/test-momentum")
-async def test_momentum_screener():
-    """Manual trigger for testing the momentum scanner."""
-    asyncio.create_task(run_momentum_screener())
-    return {"status": "momentum_scan_triggered"}
 
-@app.get("/health")
-async def health_check():
-    """Real /health (Phase B, 2026-06-25).
+# ---------------------------------------------------------------------------
+# [ROADMAP-4.1 stage 3 2026-07-13] The 24 HTTP handlers moved to routes_*.py.
+#
+# Imported HERE, at the bottom of the module, and not at the top: the route
+# modules do `import main as _main` themselves, so importing them before main's
+# globals exist would be legal (sys.modules already holds this module) but
+# needlessly fragile. By this point main is fully defined.
+#
+# include_router preserves paths, methods, endpoint names and response models
+# exactly -- the 24-route characterization golden is the proof, and it is
+# unchanged by this commit.
+# ---------------------------------------------------------------------------
+from routes_ops import router as _ops_router
+from routes_portfolio import router as _portfolio_router
+from routes_commands import router as _commands_router
 
-    Replaces the no-op `{"status": "ok"}` placeholder with a structured
-    diagnostic of all subsystems. The operator can pull this via the
-    /health Telegram command (cmd_health) or hit it directly via HTTP.
-
-    Returns: {status: "OK" | "DEGRADED", subsystems: {...}, halted: bool, ...}
-    The HTTP shape mirrors the structure used by build_health_snapshot()
-    in penny_health.py.
-    """
-    try:
-        from penny_health import build_health_snapshot
-        snap = await build_health_snapshot(settings.DB_PATH)
-        # [LOW-003 / ROADMAP-4.6 2026-07-12] The two liveness facts only
-        # main.py knows (penny_health is DB-pure): is execution armed,
-        # and is the job scheduler actually running.
-        snap["kite_connected"] = bool(kite.access_token)
-        snap["scheduler_running"] = bool(getattr(scheduler, "running", False))
-        # The HTTP status code reflects overall_status: 200 for OK,
-        # 200 for DEGRADED too (the system is responding, just with
-        # issues -- this lets load balancers distinguish "service down"
-        # from "service up but unhappy"). Clients should read the
-        # JSON body for actual state.
-        from fastapi.responses import JSONResponse
-        return JSONResponse(status_code=200, content=snap)
-    except Exception as e:
-        # Even the health check must not fail. Return a minimal payload
-        # indicating DOWN so the operator knows python-engine is sick.
-        from fastapi.responses import JSONResponse
-        return JSONResponse(
-            status_code=503,
-            content={
-                "overall_status": "DOWN",
-                "error": f"{type(e).__name__}: {str(e)[:200]}",
-            },
-        )
+app.include_router(_ops_router)
+app.include_router(_portfolio_router)
+app.include_router(_commands_router)
