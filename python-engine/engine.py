@@ -950,8 +950,16 @@ def evaluate_momentum_signal(
     # Prevents entry when the day's typical range is already consumed and there is
     # insufficient "fuel" left for price to reach the R-target.
     # calc_atr() requires >= 14 rows; gate skipped if df_daily not provided.
+    #
+    # [TIER0-0.1 2026-07-14] atr_at_entry is also carried on the accepted signal:
+    # it is what the Chandelier trail sizes off once the position is open. Stays
+    # None when df_daily is short -- never 0.0, which collapses the trail onto the
+    # entry price.
+    atr_at_entry: Optional[float] = None
     if df_daily is not None and len(df_daily) >= 14:
         daily_atr_val: float = float(calc_atr(df_daily["high"], df_daily["low"], df_daily["close"]).iloc[-1])
+        if daily_atr_val > 0:
+            atr_at_entry = daily_atr_val
         intraday_consumed: float = float(intraday_high - intraday_low)
         remaining_fuel: float = max(0.0, daily_atr_val - intraday_consumed)
         r_distance_atr: float = float(current_close - stop_loss)
@@ -995,6 +1003,7 @@ def evaluate_momentum_signal(
         "target_1":            round(target, 2),
         "target_2":            round(target, 2),   # single target for momentum
         "trailing_stop":       round(stop_loss, 2),
+        "atr_at_entry":        round(atr_at_entry, 2) if atr_at_entry else None,
         "shares":              shares,
         "capital_deployed":    round(position_value, 2),
         "capital_at_risk":     round(shares * risk_per_share, 2),

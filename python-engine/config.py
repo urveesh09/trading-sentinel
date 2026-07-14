@@ -94,6 +94,26 @@ class Settings(BaseSettings):
     MOMENTUM_ALLOW_OVERNIGHT:   bool  = False   # False = 15:15 auto-square stays; True = hold to trailing-stop only
     MOMENTUM_R3_MAX_POSITIONS:  int   = 1       # Soft cap for R3 entries (replaces hard block)
 
+    # [TIER0-0.1 2026-07-14] Intraday exit management for MIS momentum.
+    #
+    # Until today there was NO exit logic at all: Zerodha GTT is CNC-only so MIS
+    # got no broker-side stop (executor.js `if (!isIntraday)`), and no scheduled
+    # job evaluated stop or target between the fill and the 15:15 auto-square. The
+    # stop_loss and target_1 that evaluate_momentum_signal computes -- which SIZE
+    # the position -- were enforced by nothing. Live proof: 7 of 7 momentum trades
+    # exited on the 15:15 clock; not one hit its target or its stop.
+    #
+    # The stop now rests at the broker as an SL-M. This monitor owns the rest:
+    # target, breakeven ratchet, ATR trail, and a time stop for dead trades.
+    MOMENTUM_INTRADAY_MONITOR_SEC: int   = 60    # How often to check open MIS positions
+    MOMENTUM_BREAKEVEN_R:          float = 1.0   # Ratchet stop to cost-adjusted breakeven at +1.0R
+    MOMENTUM_TRAIL_ATR_MULT:       float = 1.5   # Trail at 1.5x daily ATR once past breakeven
+    MOMENTUM_USE_TRAIL:            bool  = True  # Trail after breakeven (False = flat stop at BE)
+    # A momentum trade that has gone nowhere is a failed thesis, not a winner in
+    # waiting. Cut it and free the capital rather than riding it to 15:15.
+    MOMENTUM_TIME_STOP_MIN:        int   = 45    # Minutes since entry before the time stop can fire
+    MOMENTUM_TIME_STOP_MIN_R:      float = 0.5   # Time stop only fires if the trade is below +0.5R
+
     # [MOMENTUM-ENTRY-V2 2026-06-16] Optional additive entry filters.
     # All default OFF -- opt-in via .env. Each filter is independently gated by
     # its own MOMENTUM_USE_* flag. Skip first 15-min + last 30-min chop by default
@@ -352,7 +372,18 @@ class Settings(BaseSettings):
     PENNY_PAPER_BANKROLL:          float = 500.0
     PENNY_RISK_PCT_PR1:            float = 0.05
     PENNY_RISK_PCT_PR2:            float = 0.025
-    PENNY_RISK_PCT_PR3:            float = 0.0
+    # [TIER0-0.4 2026-07-14] PR3 THROTTLES, it no longer SHUTS DOWN.
+    #
+    # 0.0 turned a risk signal into a kill switch: in PR3 the sizer returns 0
+    # shares, so every candidate is rejected with "regime PR3_HOT (no new
+    # entries)" -- 93.4% of a typical day's rejects. Combined with the
+    # running-max vol_rank ratchet (see penny_regime.update_vol_rank), the book
+    # sat in PR3 permanently and took 0 trades in 349,297 lifetime evaluations.
+    #
+    # A 0-size regime is also UNFALSIFIABLE: it can never produce an accept, so
+    # no watchdog, backtest or A/B can ever tell you whether PR3 was right. A hot
+    # tape should be traded SMALL, not not-at-all.
+    PENNY_RISK_PCT_PR3:            float = 0.01
     PENNY_DAILY_KILL_SWITCH_PCT:   float = 0.20
     PENNY_PER_STOCK_CAP:           float = 500.0
     PENNY_MAX_POSITIONS_TOTAL:     int   = 5

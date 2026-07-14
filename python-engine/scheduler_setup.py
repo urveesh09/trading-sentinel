@@ -635,33 +635,55 @@ def register_penny_scheduler_jobs(scheduler):
         if not await _main.is_trading_day(today, settings.DB_PATH):
             logger.info("penny_accept_watchdog_skip reason=non_trading_day")
             return
-        try:
-            payload = await zero_accept_scan(
-                settings.DB_PATH,
-                n_days=settings.PENNY_ZERO_ACCEPT_ALERT_DAYS,
-            )
-            if payload is None:
-                logger.info("penny_accept_watchdog_ok accepts_in_window=yes_or_insufficient_data")
-                return
-            # [Rule 72] Degradation is a WARNING, never an INFO.
-            logger.warning(
-                "penny_zero_accept_alarm days=%s evaluations=%d dead_gate=%s",
-                ",".join(payload["days"]), payload["evaluations"],
-                payload.get("dead_gate") or "none",
-            )
+        # [TIER0-0.5 2026-07-14] Scan EACH LEG SEPARATELY.
+        #
+        # This used to call zero_accept_scan() with no `leg`, i.e. across the whole
+        # penny book at once. That is a masking hazard: one healthy leg's accepts
+        # satisfy the "any accept in the window?" check and the alarm goes quiet --
+        # while another leg sits at zero accepts indefinitely. Exactly the shape we
+        # are digging out of: the MIS breakout leg (0 accepts / 349,297 evals) and
+        # the CNC Connors leg (0 accepts / 240 evals) have BOTH never traded, and
+        # the EDGE leg -- the only one placing live orders -- wrote no rows at all.
+        #
+        # A per-leg scan means a dead leg cannot hide behind a live one.
+        for _leg in ("MIS", "CNC", "EDGE"):
             try:
-                msg = format_zero_accept_alert(payload)
-                async with _httpx.AsyncClient() as _client:
-                    await _client.post(
-                        f"{settings.CONTAINER_A_URL}/api/internal/notify",
-                        json={"message": msg},
-                        headers={"X-Internal-Secret": settings.INTERNAL_API_SECRET or ""},
-                        timeout=5.0,
+                payload = await zero_accept_scan(
+                    settings.DB_PATH,
+                    n_days=settings.PENNY_ZERO_ACCEPT_ALERT_DAYS,
+                    leg=_leg,
+                )
+                if payload is None:
+                    logger.info(
+                        "penny_accept_watchdog_ok leg=%s accepts_in_window=yes_or_insufficient_data",
+                        _leg,
                     )
-            except Exception as notify_exc:
-                logger.warning("penny_accept_watchdog_notify_failed err=%s", notify_exc)
-        except Exception as exc:
-            logger.error("penny_accept_watchdog_failed err=%s", exc, exc_info=True)
+                    continue
+                # [Rule 72] Degradation is a WARNING, never an INFO.
+                logger.warning(
+                    "penny_zero_accept_alarm leg=%s days=%s evaluations=%d "
+                    "dead_gate=%s suspect_gate=%s",
+                    _leg, ",".join(payload["days"]), payload["evaluations"],
+                    payload.get("dead_gate") or "none",
+                    payload.get("suspect_gate") or "none",
+                )
+                try:
+                    msg = format_zero_accept_alert(payload)
+                    async with _httpx.AsyncClient() as _client:
+                        await _client.post(
+                            f"{settings.CONTAINER_A_URL}/api/internal/notify",
+                            json={"message": msg},
+                            headers={"X-Internal-Secret": settings.INTERNAL_API_SECRET or ""},
+                            timeout=5.0,
+                        )
+                except Exception as notify_exc:
+                    logger.warning(
+                        "penny_accept_watchdog_notify_failed leg=%s err=%s", _leg, notify_exc,
+                    )
+            except Exception as exc:
+                logger.error(
+                    "penny_accept_watchdog_failed leg=%s err=%s", _leg, exc, exc_info=True,
+                )
 
     scheduler.add_job(
         _run_penny_accept_watchdog_safe, "cron",

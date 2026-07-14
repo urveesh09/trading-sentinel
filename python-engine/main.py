@@ -707,6 +707,30 @@ async def run_penny_regime_refresh():
         logger.error("penny_regime_refresh_failed", error=str(e))
 
 
+async def _penny_ltp(ticker: str, fallback: float) -> float:
+    """
+    [TIER0-0.7 2026-07-14] Live price for a penny position.
+
+    run_penny_eod_check used to read `p.get("current_price")` -- a column that
+    does not exist on the positions table -- and fall back to entry_price. So the
+    smart-EOD rule compared the entry price to itself, always concluded "in profit
+    and far from target", and always held.
+
+    On failure we return the entry price, which makes smart_eod_check hold. That
+    is the safe direction: the 15:00 force-close still flattens the position.
+    """
+    try:
+        quote = await kite.get_quote([f"NSE:{ticker}"])
+        data = (quote or {}).get(f"NSE:{ticker}") or {}
+        ltp = float(data.get("last_price") or 0)
+        if ltp > 0:
+            return ltp
+        logger.warning("penny_ltp_missing ticker=%s", ticker)
+    except Exception as e:
+        logger.warning("penny_ltp_failed ticker=%s error=%s", ticker, str(e))
+    return fallback
+
+
 async def run_penny_eod_check():
     """14:30 IST smart-EOD check on open MIS positions (spec §5.5).
 
@@ -720,27 +744,61 @@ async def run_penny_eod_check():
         logger.info("penny_eod_check_skip reason=non_trading_day")
         return
     try:
-        from penny_engine_breakout import smart_eod_check
+        from penny_engine_breakout import smart_eod_check, time_stop_triggered
         from position_tracker import get_open_positions
         from penny_models import PennyLeg
         positions = await get_open_positions(settings.DB_PATH)
-        penny_mis = [p for p in positions if p.get("leg") == "MIS" and p.get("source") == "PENNY"]
+
+        # [TIER0-0.6/0.7 2026-07-14] THREE stacked bugs made this whole job a
+        # no-op. It has never exited a single position:
+        #
+        #  1. It filtered on `p.get("leg") == "MIS"`. The positions table has NO
+        #     `leg` column (it is `product_type`), so this list was ALWAYS empty
+        #     and the loop below never ran once.
+        #  2. It compared `decision.get("action") == "EXIT"`, but smart_eod_check
+        #     returns "exit_now" / "hold" -- never "EXIT". So even with positions,
+        #     the exit branch was unreachable and everything would HOLD.
+        #  3. It read `p.get("current_price")`, another column that does not
+        #     exist, and fell back to entry_price -- so smart_eod_check compared
+        #     the entry price to itself, concluded "in profit, far from target",
+        #     and held. Every time.
+        #
+        # Three independent reasons the answer was always HOLD. This is the penny
+        # half of "we hold to the end of the day and never sell".
+        penny_mis = [
+            p for p in positions
+            if p.get("product_type") == "MIS" and p.get("source") == "PENNY"
+        ]
         if not penny_mis:
             logger.info("penny_eod_check no_open_mis_positions")
             return
         scanner = _get_penny_scanner()
         exit_count = hold_count = 0
         for p in penny_mis:
-            current_price = p.get("current_price") or p.get("entry_price", 0.0)
-            decision = smart_eod_check(p, current_price, datetime.now(IST))
+            # Real LTP. Without it the check is comparing entry to entry.
+            current_price = await _penny_ltp(p.get("ticker"), p.get("entry_price", 0.0))
+            now_ist = datetime.now(IST)
+
+            # [TIER0-0.6] PENNY_TIME_STOP_MIN was DEAD CONFIG: time_stop_triggered()
+            # had zero non-test callers, so the 30-minute time stop could not fire.
+            # A penny breakout that has not worked within 30 minutes is a failed
+            # breakout; hold it and you are just donating the spread.
+            if (
+                current_price < p.get("entry_price", 0.0)
+                and time_stop_triggered(p.get("entry_date"), now_ist)
+            ):
+                decision = {"action": "exit_now", "reason": "time_stop_30min_in_loss"}
+            else:
+                decision = smart_eod_check(p, current_price, now_ist)
+
             logger.info(
                 "penny_eod_decision",
                 ticker=p.get("ticker"),
-                action=decision.get("action", "HOLD"),
+                action=decision.get("action", "hold"),
                 reason=decision.get("reason", ""),
+                ltp=current_price,
             )
-            # 2026-06-22 wiring fix: actually place exit order on action=EXIT
-            if decision.get("action") == "EXIT":
+            if decision.get("action") == "exit_now":
                 try:
                     exit_result = await scanner.executor._market_unwind(
                         ticker=p.get("ticker"),
@@ -1335,6 +1393,18 @@ async def lifespan(app: FastAPI):
         scheduler.add_job(auto_square_momentum, 'cron', hour=15, minute=15, id="momentum_auto_square")
     else:
         logger.info("momentum_overnight_enabled", message="15:15 auto-square DISABLED per MOMENTUM_ALLOW_OVERNIGHT=True")
+
+    # [TIER0-0.1 2026-07-14] Manage open MIS momentum positions intraday.
+    # Without this the ONLY jobs touching a momentum position were the 15:10
+    # warning and the 15:15 square-off -- so the stop and target computed at entry
+    # were enforced by nothing, and all 7 momentum trades ever taken exited on the
+    # clock rather than on a target or a stop. max_instances=1: a slow Kite call
+    # must not stack monitors on top of each other and double-cancel an SL-M.
+    scheduler.add_job(
+        momentum_intraday_monitor, 'interval',
+        seconds=settings.MOMENTUM_INTRADAY_MONITOR_SEC,
+        id="momentum_intraday_monitor", max_instances=1,
+    )
     
     for hour in [10, 11, 12, 13, 14]:
         for minute in [0, 15, 30, 45]:
@@ -2010,7 +2080,15 @@ async def daily_post_market():
     open_tickers_before = {p["ticker"] for p in open_pos_before}
 
     # Update all daily positions (calls record_trade_close for each closed trade)
-    await update_daily_positions(settings.DB_PATH, kite, today_str, lambda t, p: record_trade_close(settings.DB_PATH, t, p))
+    # [TIER0-0.2 2026-07-14] Book each close to ITS OWN pool. This lambda used to
+    # drop the source, so record_trade_close fell back to source="SYSTEM" -- and
+    # since update_daily_positions walks every open position, the EDGE_PAPER leg
+    # (sized off a ₹100,000 imaginary bankroll) wrote its P&L straight into the
+    # real ₹5,000 book. The ledger read ₹8,842 when the account held ₹5,016.
+    await update_daily_positions(
+        settings.DB_PATH, kite, today_str,
+        lambda t, p, src: record_trade_close(settings.DB_PATH, t, p, source=src),
+    )
 
     # Snapshot open positions AFTER update -- anything gone was closed today
     open_pos_after = await get_open_positions(settings.DB_PATH)
@@ -2427,6 +2505,173 @@ async def _run_momentum_screener_impl(t0):
                 ])
     except Exception as _e:
         logger.warning("momentum_signal_log_failed", error=str(_e))
+
+async def _close_momentum_position(pos: dict, exit_price: float, reason: str, notes: str):
+    """Record a momentum close in the DB + ledger. Shared by the intraday
+    monitor and the SL-M reconciler so both write the same shape."""
+    ticker = pos['ticker']
+    gross = (exit_price - pos['entry_price']) * pos['shares']
+    costs = calc_zerodha_costs(
+        pos['entry_price'], exit_price, pos['shares'],
+        is_intraday=_is_intraday_from_product_type(pos.get('product_type')),
+    )
+    realised_pnl = gross - costs
+    risk_initial = (pos['entry_price'] - pos.get('stop_loss_initial', pos['entry_price'] * 0.95)) * pos['shares']
+    r_multiple = realised_pnl / risk_initial if risk_initial > 0 else 0
+
+    async with aiosqlite.connect(settings.DB_PATH) as db:
+        await db.execute("""
+            UPDATE positions
+            SET status=?, exit_price=?, exit_date=?, realised_pnl=?, r_multiple=?
+            WHERE ticker=? AND source='MOMENTUM' AND status='OPEN'
+        """, (reason, exit_price, datetime.now(timezone.utc).isoformat(),
+              realised_pnl, r_multiple, ticker))
+        await db.commit()
+
+    await record_trade_close(settings.DB_PATH, ticker, realised_pnl,
+                            r_multiple=r_multiple, notes=notes)
+    logger.info("momentum_position_closed", ticker=ticker, exit_price=exit_price,
+                reason=notes, pnl=round(realised_pnl, 2), r=round(r_multiple, 4))
+
+
+async def momentum_intraday_monitor():
+    """
+    [TIER0-0.1 2026-07-14] Manage open MIS momentum positions DURING the day.
+
+    Before this job existed, nothing evaluated a momentum position's stop or
+    target between the fill and the 15:15 auto-square -- so all 7 momentum trades
+    in the system's history exited on the clock, none on a target or a stop. See
+    momentum_exits.py for the full write-up.
+
+    Responsibilities, in order:
+      1. Reconcile a broker-side SL-M that has already filled. This is the one
+         that MUST NOT be skipped: if the SL-M fills and the DB still says OPEN,
+         auto_square_momentum would later sell shares we no longer own -- which
+         opens a SHORT.
+      2. Take the target (cancel the SL-M first -- Zerodha has no OCO for MIS, so
+         a resting stop plus our sell could both fill).
+      3. Ratchet the SL-M trigger to breakeven / trail.
+    """
+    from momentum_exits import (
+        evaluate_momentum_exit, ACTION_EXIT, ACTION_TRAIL,
+    )
+    from datetime import time as dt_time
+    import httpx as _httpx
+
+    now_ist = datetime.now(IST)
+    if not await is_trading_day(now_ist.date(), settings.DB_PATH):
+        return
+
+    # Only manage while the market is actually open. Outside those hours there is
+    # no LTP to act on, and after 15:15 auto_square_momentum owns the book.
+    if not (dt_time(9, 15) <= now_ist.time() <= dt_time(15, 15)):
+        return
+
+    open_pos = await get_open_positions(settings.DB_PATH)
+    momentum_pos = [
+        p for p in open_pos
+        if p.get('source') == 'MOMENTUM' and p.get('status') == 'OPEN'
+    ]
+    if not momentum_pos:
+        return
+
+    container_a_url = settings.CONTAINER_A_URL
+    now_utc = datetime.now(timezone.utc)
+
+    for pos in momentum_pos:
+        ticker = pos['ticker']
+        try:
+            # ---- 1. Did the broker-side stop already fill? ------------------
+            sl_order_id = pos.get('sl_order_id')
+            if sl_order_id:
+                history = await kite.order_history(order_id=str(sl_order_id))
+                latest = history[0] if history else None
+                if latest and latest.get("status") == "COMPLETE":
+                    fill = float(latest.get("average_price") or pos['stop_loss_initial'])
+                    await _close_momentum_position(
+                        pos, fill, "STOPPED_OUT", "sl_m_filled",
+                    )
+                    continue
+
+            # ---- 2/3. Evaluate the exit ladder ------------------------------
+            async with _httpx.AsyncClient() as _client:
+                ltp_resp = await _client.get(
+                    f"{container_a_url}/api/orders/ltp",
+                    headers={"X-Internal-Secret": settings.INTERNAL_API_SECRET},
+                    params={"ticker": ticker},
+                    timeout=5.0,
+                )
+            ltp = float(ltp_resp.json().get("ltp", 0) or 0)
+            if ltp <= 0:
+                logger.warning("momentum_monitor_no_ltp", ticker=ticker)
+                continue
+
+            decision = evaluate_momentum_exit(pos, ltp, now_utc)
+            action = decision["action"]
+
+            if action == ACTION_EXIT:
+                # Cancel the resting SL-M BEFORE selling. If we sold first and the
+                # SL-M were still live, a dip could trigger it and sell a second
+                # time -- leaving us short.
+                if sl_order_id:
+                    cancel = await kite.cancel_order(order_id=str(sl_order_id))
+                    if cancel.get("status") == "ERROR":
+                        logger.error(
+                            "momentum_sl_cancel_failed_skipping_exit",
+                            ticker=ticker, sl_order_id=sl_order_id,
+                            message=cancel.get("message"),
+                        )
+                        # Refuse to sell while an uncancelled stop rests. Better to
+                        # hold to the 15:15 square-off than to risk a short.
+                        continue
+
+                payload = {
+                    "ticker": ticker,
+                    "shares": pos['shares'],
+                    "order_type": "LIMIT",
+                    "limit_price": snap_to_tick(ltp * 0.999, -1),
+                    "product_type": pos.get('product_type', 'MIS'),
+                    "reason": f"MOMENTUM_EXIT_{decision['reason']}",
+                }
+                async with _httpx.AsyncClient() as _client:
+                    resp = await _client.post(
+                        f"{container_a_url}/api/orders/square-off",
+                        json=payload,
+                        headers={"X-Internal-Secret": settings.INTERNAL_API_SECRET},
+                        timeout=10.0,
+                    )
+                resp.raise_for_status()
+                await _close_momentum_position(
+                    pos, ltp, "CLOSED_T1", decision["reason"],
+                )
+
+            elif action == ACTION_TRAIL:
+                new_stop = decision["new_stop"]
+                if sl_order_id:
+                    # Modify in place rather than cancel+replace: a cancel/place
+                    # pair leaves the position momentarily unprotected.
+                    res = await kite.modify_order(
+                        order_id=str(sl_order_id),
+                        trigger_price=snap_to_tick(new_stop, -1),
+                    )
+                    if res.get("status") == "ERROR":
+                        logger.error("momentum_trail_modify_failed", ticker=ticker,
+                                     new_stop=new_stop, message=res.get("message"))
+                        continue
+
+                async with aiosqlite.connect(settings.DB_PATH) as db:
+                    await db.execute(
+                        "UPDATE positions SET trailing_stop_current=? "
+                        "WHERE ticker=? AND source='MOMENTUM' AND status='OPEN'",
+                        (new_stop, ticker),
+                    )
+                    await db.commit()
+                logger.info("momentum_trail_ratcheted", ticker=ticker,
+                            new_stop=new_stop, reason=decision["reason"], ltp=ltp)
+
+        except Exception as e:
+            logger.error("momentum_monitor_failed", ticker=ticker, error=str(e))
+
 
 async def auto_square_momentum():
     """

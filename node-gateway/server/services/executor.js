@@ -60,6 +60,88 @@ async function syncToEngine(payload) {
 }
 
 /**
+ * Broker-side protective stop for an MIS (intraday) position.
+ *
+ * Zerodha GTT supports CNC/NRML only, so an MIS position cannot be protected by
+ * a GTT — a resting SL-M is the only broker-side stop available intraday. Until
+ * 2026-07-14 the GTT block was guarded by `if (!isIntraday)` and nothing took its
+ * place, so every momentum position sat at the exchange with NO stop and NO target
+ * from fill until the 15:15 auto-square. Position sizing divides by (entry - stop),
+ * so the risk-per-trade figure was assuming a stop that did not exist.
+ *
+ * Two attempts, then the caller unwinds — the mandatory-SL-M discipline from
+ * penny_executor.py (spec §7.2): a live position we cannot protect is worse than
+ * no position.
+ *
+ * Returns the SL-M order id, or null if it could not be placed.
+ */
+async function placeStopLossMarket(signal) {
+  // SELL stop: snap the trigger DOWN so it never lands above the intended stop.
+  const trigger = snapToTick(signal.stop_loss, -1);
+
+  for (let attempt = 1; attempt <= 2; attempt++) {
+    try {
+      const res = await kite.placeOrder({
+        exchange: "NSE",
+        tradingsymbol: signal.ticker,
+        transaction_type: "SELL",
+        quantity: signal.shares,
+        product: "MIS",
+        order_type: "SL-M",
+        trigger_price: trigger,
+        validity: "DAY",
+        tag: "QUANT_SENTINEL_SL"
+      });
+
+      if (res && res.order_id) {
+        logger.info({
+          event_type: 'mis_sl_m_placed',
+          ticker: signal.ticker, order_id: res.order_id, trigger
+        });
+        return String(res.order_id);
+      }
+      logger.error({ event_type: 'mis_sl_m_no_order_id', ticker: signal.ticker, attempt, res });
+    } catch (err) {
+      logger.error({ event_type: 'mis_sl_m_failed', ticker: signal.ticker, attempt, err: err.message });
+    }
+  }
+  return null;
+}
+
+/**
+ * Flatten an MIS position at market. Used when the protective SL-M cannot be
+ * placed — we refuse to hold an unprotected intraday position.
+ */
+async function marketUnwind(signal) {
+  try {
+    const res = await kite.placeOrder({
+      exchange: "NSE",
+      tradingsymbol: signal.ticker,
+      transaction_type: "SELL",
+      quantity: signal.shares,
+      product: "MIS",
+      order_type: "MARKET",
+      validity: "DAY",
+      tag: "QUANT_SENTINEL_UNWIND"
+    });
+    logger.error({
+      event_type: 'mis_unprotected_unwound',
+      ticker: signal.ticker, unwind_order_id: res && res.order_id
+    });
+    return res && res.order_id ? String(res.order_id) : null;
+  } catch (err) {
+    // Both the stop and the unwind failed. This is the one case an operator
+    // must handle by hand, so say so loudly rather than logging quietly.
+    logger.error({ event_type: 'mis_unwind_failed', ticker: signal.ticker, err: err.message });
+    telegram.sendAlert(
+      `🚨 ${signal.ticker}: SL-M FAILED and market unwind FAILED. ` +
+      `You are holding ${signal.shares} shares with NO stop. FLATTEN MANUALLY NOW.`
+    );
+    return null;
+  }
+}
+
+/**
  * CORE EXECUTION ENGINE
  */
 async function executeSignal(signal, action, isIntraday = false) {
@@ -172,11 +254,31 @@ async function executeSignal(signal, action, isIntraday = false) {
     logger.warn({ event_type: 'fill_unconfirmed', orderId });
   }
 
-    // 5. GTT Order Execution (Only for CNC/Swing)
+    // 5. Protective exit orders.
+  //    CNC/swing  -> GTT (stop + T1 legs).
+  //    MIS/intraday -> SL-M, because Zerodha GTT does not support MIS.
+  //
+  //    Only the STOP rests at the broker for MIS. A resting target order would
+  //    need OCO to be safe, and Zerodha has no OCO for MIS — if both the stop and
+  //    the target filled we would be short. The target is taken by the engine-side
+  //    intraday monitor, which cancels this SL-M before it sells.
   let gttStopId = null;
   let gttTargetId = null;
-  
-  if (!isIntraday) {
+  let slOrderId = null;
+
+  if (isIntraday) {
+    slOrderId = await placeStopLossMarket(signal);
+
+    if (!slOrderId) {
+      await marketUnwind(signal);
+      signalsDb.prepare(
+        `UPDATE executed_orders SET status = 'CANCELLED', notes = ? WHERE order_id = ?`
+      ).run('sl_m_failed_position_unwound', orderId);
+      throw new OrderExecutionError(
+        `${signal.ticker}: could not place protective SL-M; position was unwound.`
+      );
+    }
+  } else {
     try {
       // Stop-loss Leg
       const stopRes = await kite.placeGTT({
@@ -229,12 +331,12 @@ async function executeSignal(signal, action, isIntraday = false) {
   }
 
 
-  // Update DB with Fill + GTTs
+  // Update DB with Fill + protective orders
   signalsDb.prepare(`
-    UPDATE executed_orders 
-    SET status = 'COMPLETE', entry_price = ?, filled_at = ?, gtt_stop_id = ?, gtt_target_id = ?, notes = ?
+    UPDATE executed_orders
+    SET status = 'COMPLETE', entry_price = ?, filled_at = ?, gtt_stop_id = ?, gtt_target_id = ?, sl_order_id = ?, notes = ?
     WHERE order_id = ?
-  `).run(fillPrice, new Date().toISOString(), gttStopId, gttTargetId, finalNotes, orderId);
+  `).run(fillPrice, new Date().toISOString(), gttStopId, gttTargetId, slOrderId, finalNotes, orderId);
 
     // 6. Sync to Container B
   const syncPayload = {
@@ -254,9 +356,15 @@ async function executeSignal(signal, action, isIntraday = false) {
     // multiplier (3.5x R1, 3.0x R2, 2.5x R3). Null when the screener didn't
     // tag it (backward compat — legacy 3.0x trail).
     regime_at_entry: signal.regime ?? null,
+    // Chandelier trail sizes off this. Forward null rather than 0 when the
+    // screener couldn't compute one — a 0 ATR collapses the trail onto entry.
+    atr_14_at_entry: signal.atr_at_entry ?? null,
     order_id: String(orderId),
     gtt_stop_id: gttStopId ? String(gttStopId) : null,
     gtt_target_id: gttTargetId ? String(gttTargetId) : null,
+    // The engine's intraday monitor cancels this SL-M before it takes a target
+    // or a trail exit, so it must know the id.
+    sl_order_id: slOrderId,
     notes: finalNotes
   };
 

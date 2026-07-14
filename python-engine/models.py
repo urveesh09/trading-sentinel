@@ -81,6 +81,10 @@ class MomentumSignal(BaseModel):
     stop_loss:         float
     target_1:          float
     trailing_stop:     float
+    # Daily ATR at entry -- what the Chandelier trail sizes off. None when the
+    # daily history was too short to compute one; never 0.0 (a 0 ATR collapses
+    # the trail onto the entry price).
+    atr_at_entry:      Optional[float] = None
     shares:            int = Field(ge=1)
     capital_deployed:  float
     capital_at_risk:   float
@@ -148,7 +152,10 @@ class OpenPosition(BaseModel):
     trailing_stop_current: float
     target_1: float
     target_2: float
-    atr_14_at_entry: float
+    # None when the entry could not compute an ATR. Deliberately nullable rather
+    # than 0.0: a 0 ATR collapses the Chandelier trail onto the entry price and
+    # force-closes the position there (see position_tracker.update_daily_positions).
+    atr_14_at_entry: Optional[float] = None
     highest_close_since_entry: float
     status: Literal["OPEN", "CLOSED_T1", "CLOSED_T2", "STOPPED_OUT", "CLOSED_TIME", "CLOSED_MANUAL"]
     # [PENNY-EDGE 2026-07-01] Added EDGE_PAPER and EDGE_LIVE so the
@@ -242,6 +249,13 @@ class ManualPositionRequest(BaseModel):
     stop_loss: Optional[float] = Field(default=None, gt=0)
     target_1: Optional[float] = Field(default=None, gt=0)
     target_2: Optional[float] = Field(default=None, gt=0)
+    # Broker-side SL-M protecting an MIS position (Zerodha GTT is CNC-only). The
+    # intraday monitor must cancel this before it takes a target or trail exit,
+    # otherwise the SL-M is still resting and would sell a second time.
+    sl_order_id: Optional[str] = None
+    # ATR at entry, used by the Chandelier trail. None = unknown; it must NOT be
+    # coerced to 0.0, which collapses the trail onto the entry price.
+    atr_14_at_entry: Optional[float] = Field(default=None, gt=0)
 
 class BankrollAdjustment(BaseModel):
     amount: float

@@ -135,9 +135,31 @@ class TestRegimeClassifyWithFedVolRank:
         assert e.classify(e._vol_rank, e._vix_proxy) == PennyRegime.PR3_HOT
 
 
-class TestVolRankWorstCaseWins:
-    """Bug #3: spec §6.2 says "highest per-stock realized vol rank across
-    the universe" is the aggregate (worst-case-wins for safety)."""
+class TestVolRankMedianAggregate:
+    """
+    [TIER0-0.4 2026-07-14] DELIBERATE DEVIATION FROM SPEC §6.2.
+
+    The spec says the aggregate is the "highest per-stock realized vol rank
+    across the universe" (worst-case-wins, for safety). This class used to pin
+    that behaviour. The spec is WRONG, and provably so:
+
+      * compute_vol_rank() is not a cross-sectional rank -- it is sd/0.10,
+        SATURATING at exactly 1.0 for any stock with >=10% daily vol.
+      * Penny stocks routinely clear 10% daily vol, so several names in a
+        100-name penny universe return exactly 1.0 EVERY day.
+      * max() over that cross-section is therefore ~1.0 every day, always.
+      * classify() calls PR3_HOT at >= 0.90, and PR3 took no entries at all.
+
+    So "worst-case-wins" was not a safety margin -- it was an unconditional
+    shutdown. The penny book took 0 trades in 349,297 lifetime evaluations, with
+    93.4% of a typical day's rejects reading "regime PR3_HOT (no new entries)".
+
+    The aggregate is now the MEDIAN: it describes the market rather than its
+    single worst member, and it can cool down as well as heat up. Safety is
+    preserved by PENNY_RISK_PCT_PR3 throttling size rather than zeroing it.
+
+    See docs/deviations/2026-07-14-penny-regime-median-aggregate.md.
+    """
 
     def setup_method(self):
         PennyRegimeEngine.reset_state()
@@ -147,20 +169,50 @@ class TestVolRankWorstCaseWins:
 
     def test_first_update_sets_baseline(self):
         e = PennyRegimeEngine()
-        e.update_vol_rank(0.3)
+        e.update_vol_rank(0.3, ticker="AAA")
         assert e.vol_rank == 0.3
 
-    def test_higher_value_replaces(self):
+    def test_aggregate_is_the_median_not_the_max(self):
         e = PennyRegimeEngine()
-        e.update_vol_rank(0.3)
-        e.update_vol_rank(0.7)
-        assert e.vol_rank == 0.7
+        e.update_vol_rank(0.3, ticker="AAA")
+        e.update_vol_rank(0.7, ticker="BBB")
+        assert e.vol_rank == 0.5, "aggregate must be the median, not the max"
 
-    def test_lower_value_does_not_replace(self):
+    def test_one_hot_stock_cannot_hijack_the_whole_book(self):
+        """The actual production failure, in one test."""
         e = PennyRegimeEngine()
-        e.update_vol_rank(0.7)
-        e.update_vol_rank(0.3)
-        assert e.vol_rank == 0.7, "must keep worst (highest) seen"
+        for i, t in enumerate(["AAA", "BBB", "CCC", "DDD"]):
+            e.update_vol_rank(0.2, ticker=t)
+        e.update_vol_rank(1.0, ticker="HOTSTOCK")  # saturated -- happens daily
+
+        assert e.vol_rank < _VOL_PR2_MAX, (
+            "a single saturated stock must not drag the universe into PR3"
+        )
+        assert e.today_regime != PennyRegime.PR3_HOT
+
+    def test_regime_can_cool_down_again(self):
+        """The ratchet: the old aggregate could only ever go UP."""
+        e = PennyRegimeEngine()
+        e.update_vol_rank(1.0, ticker="AAA")
+        e.update_vol_rank(1.0, ticker="BBB")
+        hot = e.vol_rank
+
+        # Same tickers re-scanned later in the day, now calm.
+        e.update_vol_rank(0.1, ticker="AAA")
+        e.update_vol_rank(0.1, ticker="BBB")
+
+        assert e.vol_rank < hot, "regime must be able to cool down, not just ratchet up"
+
+    def test_rescanning_a_ticker_overwrites_rather_than_appends(self):
+        """Unkeyed, every 30s scan tick would add another sample and the median
+        would drift with scan count instead of tracking the market."""
+        e = PennyRegimeEngine()
+        for _ in range(10):
+            e.update_vol_rank(0.9, ticker="AAA")
+        e.update_vol_rank(0.1, ticker="BBB")
+
+        # Two tickers -> median of {0.9, 0.1} == 0.5, not 0.9.
+        assert e.vol_rank == pytest.approx(0.5)
 
     def test_equal_value_no_change(self):
         e = PennyRegimeEngine()

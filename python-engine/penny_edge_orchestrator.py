@@ -152,10 +152,24 @@ async def _write_edge_position(
             entry_price, shares,
             stop_loss, stop_loss,
             target_1, target_1,
-            0.0, entry_price,
+            # [TIER0-0.3 2026-07-14] atr_14_at_entry is NULL, not 0.0.
+            #
+            # EDGE is managed by target + time-stop + a deliberately WIDE soft
+            # stop (see penny_edge_engine.compute_mr_signal: "stops are WIDE ...
+            # only as a sanity check, not for trade management"). It never wanted
+            # a Chandelier trail. But position_tracker trails every position, and
+            # a 0.0 ATR makes ChandelierStop return `highest_close - 3*0` ==
+            # highest_close, which is >= entry -- so the trail silently overwrote
+            # the soft stop with the ENTRY PRICE and force-closed each position
+            # there. Live proof: RPOWER/IRISDOREME/MIRZAINT/PCJEWELLER all exited
+            # at exactly their entry, real -4/-6% stops never consulted, every
+            # "loss" pure brokerage.
+            #
+            # NULL now means "no trail" and position_tracker keeps the entry stop.
+            None, entry_price,
             "OPEN", source,
             EDGE_PRODUCT_TYPE.value, regime_at_entry,
-            0.0, 0,
+            None, 0,
         ))
         conn.commit()
 
@@ -254,6 +268,49 @@ async def _run_one_leg(
 
 
 # ----- main runner ---------------------------------------------------
+
+async def _log_edge_signals(db_path: str, today_str: str, candidates, live_summary: dict) -> None:
+    """
+    [TIER0-0.5 2026-07-14] Write one penny_signals row per EDGE candidate, under
+    leg='EDGE', so the zero-accept watchdog and the hourly report can see this
+    book at all.
+
+    A candidate is ACCEPTED if the live leg actually entered it. Everything else
+    is a reject, with the reason the leg recorded (below min strength, already
+    entered today, position cap, sizing to zero shares...).
+
+    Failures here are swallowed deliberately: this is observability, and it must
+    never be able to break a scan that is placing real orders.
+    """
+    try:
+        from penny_signal_log import init_penny_signal_db, log_penny_signal
+
+        await init_penny_signal_db(db_path)
+
+        entered = {t["ticker"] if isinstance(t, dict) else t
+                   for t in live_summary.get("trades", [])}
+        skip_reasons = {t: r for t, r in live_summary.get("skipped", [])}
+        scan_id = f"EDGE-{today_str}"
+
+        for cand in candidates:
+            accepted = cand.ticker in entered
+            await log_penny_signal(
+                db_path=db_path,
+                scan_id=scan_id,
+                ticker=cand.ticker,
+                leg="EDGE",
+                accepted=accepted,
+                regime=cand.signal_subtype,
+                close=cand.entry_price,
+                reject_reason=None if accepted else skip_reasons.get(
+                    cand.ticker, "not_selected_by_live_leg",
+                ),
+                stop_loss=cand.stop_loss,
+                target_1=cand.target,
+            )
+    except Exception as exc:
+        logger.warning("penny_edge_signal_log_failed date=%s err=%s", today_str, exc)
+
 
 async def run_penny_edge_scan(kite, db_path: Optional[str] = None) -> dict:
     """Daily 09:30 IST scan. Runs both paper and live legs.
@@ -390,6 +447,16 @@ async def run_penny_edge_scan(kite, db_path: Optional[str] = None) -> dict:
         [("PAPER: " + t, r) for t, r in paper_summary.get("skipped", [])]
         + [("LIVE: " + t, r) for t, r in live_summary.get("skipped", [])]
     )
+
+    # [TIER0-0.5 2026-07-14] Make the EDGE book VISIBLE.
+    #
+    # EDGE never wrote a single row to penny_signals -- there was no EDGE leg in
+    # that table at all. So the only penny strategy actually placing live orders
+    # was invisible to the zero-accept watchdog AND to the hourly report (which
+    # queries penny_signals), and its closed trades landed in trade_outcomes
+    # tagged `no_matched_signal` because the outcome matcher had no signal row to
+    # join to. A strategy nothing can see is a strategy nothing can audit.
+    await _log_edge_signals(db_path, today_str, candidates, live_summary)
 
     summary = {
         "date": today_str,
