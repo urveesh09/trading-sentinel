@@ -110,6 +110,11 @@
     "trigger": "'cron'"
   },
   {
+    "func": "momentum_intraday_monitor",
+    "id": "'momentum_intraday_monitor'",
+    "trigger": "'interval'"
+  },
+  {
     "func": "run_momentum_screener",
     "id": "f'momentum_scan_{hour}{minute}'",
     "trigger": "'cron'"
