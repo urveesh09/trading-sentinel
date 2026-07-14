@@ -37,6 +37,10 @@ logger = logging.getLogger(__name__)
 # A single reject reason covering at least this share of a day's rejects,
 # on EVERY day in the window, marks a suspected dead gate (spec §9.2).
 DEAD_GATE_DOMINANCE = 0.90
+# [TIER0-0.5] Below the dead-gate bar but still lopsided enough to name in the
+# alert. Zero accepts + one reason taking most of the rejects is never "healthy",
+# and reporting `dead_gate=none` made it read that way.
+SUSPECT_GATE_DOMINANCE = 0.60
 
 # Reasons whose *prefix* groups many distinct messages into one gate.
 # reject_reason strings carry per-ticker numbers ("volume 1234 < ..."),
@@ -164,19 +168,43 @@ async def zero_accept_scan(
                 for k, v in top
             ]
 
-            # Dead gate: one reason >= DEAD_GATE_DOMINANCE share of the
-            # rejects on EVERY day in the window.
+            # Dead gate: one reason dominates the rejects ACROSS THE WINDOW, and
+            # is the top reason on every day in it.
+            #
+            # [TIER0-0.5 2026-07-14] This used to require the reason to clear
+            # DEAD_GATE_DOMINANCE on EVERY day independently. That AND-across-days
+            # rule is too brittle, and it failed on the real thing it was built to
+            # catch. On 2026-07-14 the watchdog fired with `dead_gate=none` while
+            # the penny book sat at 0 accepts in 349,297 lifetime evaluations:
+            #
+            #     2026-07-13   regime PR3_HOT = 68.6%   <- below the 90% bar
+            #     2026-07-14   regime PR3_HOT = 96.0%
+            #     window       regime PR3_HOT = 94.8%   <- obviously the dead gate
+            #
+            # One quieter day diluted the per-day test, so the alert went out
+            # reading like a slow market instead of "your gate is broken". Judge
+            # dominance over the WINDOW (which is the question being asked), and
+            # keep a per-day check only that the same reason leads every day --
+            # that is what actually rules out a one-day spike.
+            total_rejects = sum(overall.values())
             dead_gate = None
-            if top:
-                candidate = top[0][0]
-                dominant_everywhere = all(
+            suspect_gate = None
+            if top and total_rejects:
+                candidate, candidate_count = top[0]
+                window_share = candidate_count / total_rejects
+                leads_every_day = all(
                     by_day[d]
-                    and by_day[d].get(candidate, 0)
-                    >= DEAD_GATE_DOMINANCE * sum(by_day[d].values())
+                    and max(by_day[d], key=by_day[d].get) == candidate
                     for d in days
                 )
-                if dominant_everywhere:
-                    dead_gate = candidate
+                if leads_every_day:
+                    if window_share >= DEAD_GATE_DOMINANCE:
+                        dead_gate = candidate
+                    elif window_share >= SUSPECT_GATE_DOMINANCE:
+                        # Not conclusive, but 0 accepts with one reason taking
+                        # most of the rejects is worth naming rather than
+                        # reporting "dead_gate=none" and looking healthy.
+                        suspect_gate = candidate
 
             return {
                 "days": days,
@@ -184,6 +212,7 @@ async def zero_accept_scan(
                 "accepts": 0,
                 "top_reasons": top_reasons,
                 "dead_gate": dead_gate,
+                "suspect_gate": suspect_gate,
                 "per_day": per_day,
                 "leg": leg or "ALL",
             }
@@ -212,10 +241,21 @@ def format_zero_accept_alert(payload: dict) -> str:
     ]
     if payload.get("dead_gate"):
         lines.append(
-            f"One gate rejects ≥{int(DEAD_GATE_DOMINANCE * 100)}% of "
-            f"evaluations on EVERY day: `{payload['dead_gate']}`. "
+            f"One gate rejects ≥{int(DEAD_GATE_DOMINANCE * 100)}% of all "
+            f"rejects across the window and leads EVERY day: "
+            f"`{payload['dead_gate']}`. "
             "This is the BUG-1 signature (unsatisfiable gate), not a "
             "quiet market."
+        )
+    elif payload.get("suspect_gate"):
+        # [TIER0-0.5] Never report "no dominant gate" when one reason is taking
+        # most of the rejects and nothing is being accepted. The old code went
+        # quiet here, and that is how a 0-accept book read as a slow market.
+        lines.append(
+            f"No single gate clears the {int(DEAD_GATE_DOMINANCE * 100)}% "
+            f"dead-gate bar, but `{payload['suspect_gate']}` leads every day "
+            f"and takes most of the rejects. With 0 accepts, treat it as the "
+            "prime suspect."
         )
     lines.append("Top reject reasons:")
     for reason, count, pct in payload.get("top_reasons", []):

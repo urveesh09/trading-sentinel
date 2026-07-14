@@ -162,16 +162,24 @@ async def add_manual_position(request: Request, payload: ManualPositionRequest):
                 ticker, exchange, entry_date, entry_price, shares,
                 stop_loss_initial, trailing_stop_current, target_1, target_2,
                 atr_14_at_entry, highest_close_since_entry, status, source, product_type,
-                regime_at_entry
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                regime_at_entry, sl_order_id
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """, (payload.ticker, payload.exchange, datetime.now(timezone.utc).isoformat(),
               payload.entry_price, payload.shares, stop_loss, stop_loss,
-              target_1, target_2, 0.0, payload.entry_price, "OPEN",
-              payload.source, payload.product_type, payload.regime_at_entry))
+              target_1, target_2,
+              # NULL, never 0.0. A 0.0 ATR makes the Chandelier stop resolve to
+              # `highest_close - 3*0` == highest_close, which sits at or above
+              # entry and force-closes the position at its own entry price. That
+              # bug shipped twice already (atr_1min_post_t1, and the EDGE book).
+              payload.atr_14_at_entry,
+              payload.entry_price, "OPEN",
+              payload.source, payload.product_type, payload.regime_at_entry,
+              payload.sl_order_id))
         await db.commit()
 
     _main.logger.info("position_added_manually", ticker=payload.ticker,
-                source=payload.source, regime=payload.regime_at_entry)
+                source=payload.source, regime=payload.regime_at_entry,
+                sl_order_id=payload.sl_order_id, atr=payload.atr_14_at_entry)
     return {"status": "ok"}
 
 

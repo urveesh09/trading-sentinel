@@ -22,6 +22,7 @@ CREATE TABLE IF NOT EXISTS executed_orders (
   status          TEXT NOT NULL CHECK (status IN ('PLACED','COMPLETE','REJECTED','CANCELLED')),
   gtt_stop_id     TEXT,
   gtt_target_id   TEXT,
+  sl_order_id     TEXT,  -- broker-side SL-M protecting an MIS position (GTT is CNC-only)
   placed_at       TEXT NOT NULL,
   filled_at       TEXT,
   sync_to_b       INTEGER DEFAULT 0, -- 0=pending, 1=done, 2=failed

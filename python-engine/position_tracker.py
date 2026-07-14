@@ -70,6 +70,12 @@ async def init_positions_db(db_path: str):
         # at breakeven+0.5%. Now CNC positions carry the data.
         await _add_column_if_missing(db, "atr_1min_post_t1", "REAL")
         await _add_column_if_missing(db, "t1_fired", "INTEGER DEFAULT 0")
+        # [TIER0-0.1 2026-07-14] Broker-side SL-M protecting an MIS position.
+        # Zerodha GTT is CNC-only, so MIS positions had no broker-side stop at
+        # all; the intraday monitor must cancel this order before it takes a
+        # target or trail exit, or the SL-M would still be resting and sell a
+        # second time.
+        await _add_column_if_missing(db, "sl_order_id", "TEXT")
         await db.commit()
 
 async def get_open_positions(db_path: str) -> List[dict]:
@@ -82,6 +88,25 @@ async def get_open_positions(db_path: str) -> List[dict]:
 
 
 async def update_daily_positions(db_path: str, kite_client, current_date_str: str, record_pnl_cb):
+    """
+    [TIER0-0.2 2026-07-14] record_pnl_cb is now called as
+    `record_pnl_cb(ticker, pnl, source)`.
+
+    It used to be `record_pnl_cb(ticker, pnl)`, and main.py bound it to
+    `record_trade_close(db, t, p)` -- which defaults `source="SYSTEM"`. But this
+    function iterates EVERY open position, including EDGE_PAPER ones sized off a
+    ₹100,000 imaginary bankroll. So the paper leg's P&L was booked straight into
+    the real ₹5,000 SYSTEM pool:
+
+        EDGE_PAPER net  = +3,826.27      <- paper money
+        EDGE_LIVE  net  =    +39.16
+        MOMENTUM   net  =    -23.33
+                          ----------
+        ledger says       ₹8,842.11      real book is ₹5,015.83
+
+    76% of the reported account was fiction. Passing the position's own source
+    keeps each pool separate, which is what bankroll_for_source() already assumes.
+    """
     open_pos = await get_open_positions(db_path)
     for pos in open_pos:
         ticker = pos['ticker']
@@ -114,17 +139,35 @@ async def update_daily_positions(db_path: str, kite_client, current_date_str: st
         else:
             # Legacy / NULL regime -- use original single setting
             chandelier_mult = settings.CHANDELIER_ATR_MULT
-        # Chandelier stop: highest_close_since_entry - (atr_mult * ATR)
-        cs = ChandelierStop(
-            entry_price=pos['entry_price'],
-            atr=pos['atr_14_at_entry'],
-            atr_mult=chandelier_mult,
-        )
-        # Seed highest_close with yesterday's value so stop trails from there, not entry
-        cs._highest_close = highest_close
-        cs.update(close=today_close, high=today_close, low=today_close)
-        # Chandelier stop can only move up (one-way ratchet), never down
-        trailing_stop = max(pos['trailing_stop_current'], cs.get_stop())
+        # [TIER0-0.3 2026-07-14] A missing ATR must DISABLE the trail, not
+        # degenerate it. ChandelierStop returns `highest_close - mult*atr`, so
+        # atr=0 collapses it to `highest_close`, which is >= entry_price -- and
+        # position_tracker then force-closes the position at its own entry price
+        # the first time the day's low ticks a paise below entry. That is exactly
+        # what happened to the live EDGE book: RPOWER/IRISDOREME/MIRZAINT/
+        # PCJEWELLER all exited at entry, their real -4/-5% stops never consulted,
+        # every "loss" pure brokerage. Same shape as the atr_1min_post_t1 bug above.
+        # No ATR -> hold the stop we entered with.
+        atr_at_entry = pos.get('atr_14_at_entry')
+        if atr_at_entry and atr_at_entry > 0:
+            # Chandelier stop: highest_close_since_entry - (atr_mult * ATR)
+            cs = ChandelierStop(
+                entry_price=pos['entry_price'],
+                atr=atr_at_entry,
+                atr_mult=chandelier_mult,
+            )
+            # Seed highest_close with yesterday's value so stop trails from there, not entry
+            cs._highest_close = highest_close
+            cs.update(close=today_close, high=today_close, low=today_close)
+            # Chandelier stop can only move up (one-way ratchet), never down
+            trailing_stop = max(pos['trailing_stop_current'], cs.get_stop())
+        else:
+            trailing_stop = pos['trailing_stop_current']
+            logger.warning(
+                "trail_disabled_no_atr ticker=%s source=%s stop=%s -- position "
+                "keeps its entry stop; trail cannot be computed without an ATR",
+                pos.get('ticker'), pos.get('source'), trailing_stop,
+            )
 
         # [TRAILING-EXITS 2026-06-16] Apply HARD_CAP_R_REGIME1 ceiling.
         # The hard cap is min(target_2, entry + HARD_CAP_R * risk_per_share).
@@ -184,7 +227,7 @@ async def update_daily_positions(db_path: str, kite_client, current_date_str: st
                 gross = (exit_price - pos['entry_price']) * closed_shares
                 costs = calc_zerodha_costs(pos['entry_price'], exit_price, closed_shares, is_intraday=False)
                 realised_pnl = gross - costs
-                await record_pnl_cb(ticker, realised_pnl)
+                await record_pnl_cb(ticker, realised_pnl, pos.get('source') or 'SYSTEM')
                 if remaining_shares == 0:
                     # Full close (if you only had 1 share)
                     risk_initial = (pos['entry_price'] - pos['stop_loss_initial']) * pos['shares']
@@ -214,7 +257,7 @@ async def update_daily_positions(db_path: str, kite_client, current_date_str: st
                 realised_pnl = gross - costs
                 risk_initial = (pos['entry_price'] - pos['stop_loss_initial']) * pos['shares']
                 r_multiple = realised_pnl / risk_initial if risk_initial > 0 else 0
-                await record_pnl_cb(ticker, realised_pnl)
+                await record_pnl_cb(ticker, realised_pnl, pos.get('source') or 'SYSTEM')
                 async with aiosqlite.connect(db_path) as db:
                     await db.execute("""
                         UPDATE positions SET highest_close_since_entry=?, trailing_stop_current=?,

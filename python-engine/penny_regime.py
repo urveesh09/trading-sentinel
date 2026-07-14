@@ -17,8 +17,9 @@ scanner can read it without recomputing.
 """
 import asyncio
 import logging
+import statistics
 from datetime import datetime, timezone
-from typing import Optional, List
+from typing import Dict, Optional, List
 
 from penny_models import PennyRegime
 
@@ -72,6 +73,10 @@ class PennyRegimeEngine:
             return
         self._today_regime: PennyRegime = PennyRegime.UNKNOWN
         self._as_of: Optional[str] = None
+        # [TIER0-0.4 2026-07-14] Per-ticker ranks for today, keyed by ticker.
+        # _vol_rank is the MEDIAN of these -- see update_vol_rank() for why the
+        # old running-max made the whole penny book untradeable.
+        self._vol_ranks: Dict[str, float] = {}
         self._vol_rank: Optional[float] = None
         self._vix_proxy: Optional[float] = None
         # [TIER3-REGIME-CONFIDENCE 2026-06-25] Persist the raw Nifty-50-vs-EMA50
@@ -109,8 +114,12 @@ class PennyRegimeEngine:
 
     @property
     def vol_rank(self) -> Optional[float]:
-        """Worst-case (highest) per-stock realized vol rank across the
-        universe today. Exposed for the regime-confidence reason generator."""
+        """MEDIAN per-stock realized vol rank across the universe today -- i.e.
+        what the typical penny stock is doing, not what the single hottest one is.
+        Exposed for the regime-confidence reason generator.
+
+        [TIER0-0.4 2026-07-14] Was the running max, which pinned the book to
+        PR3_HOT permanently. See update_vol_rank()."""
         return self._vol_rank
 
     @property
@@ -322,6 +331,9 @@ class PennyRegimeEngine:
         try:
             # Per-stock vol rank: defaults to None until scanner feeds it.
             # Use breadth as the third input weight (placeholder 0.5).
+            # [TIER0-0.4] Clear yesterday's cross-section too, or today's median
+            # would be computed over a mix of two days' ranks.
+            self._vol_ranks = {}
             self._vol_rank = None  # will be set by scanner.update_vol_rank()
             self._breadth = breadth
 
@@ -369,18 +381,53 @@ class PennyRegimeEngine:
             self._today_regime = PennyRegime.UNKNOWN
             return self._today_regime
 
-    def update_vol_rank(self, ticker_vol_rank: float) -> None:
+    def update_vol_rank(self, ticker_vol_rank: float, ticker: Optional[str] = None) -> None:
         """
-        Scanner feeds in the per-stock realized-vol rank (computed from the
-        5-min bars it has for each ticker). The engine picks the WORST
-        (highest) rank across the universe as a conservative aggregate --
-        if any penny stock is in PR3 territory, block all new entries.
+        Scanner feeds in each stock's realized-vol rank. The engine aggregates
+        them into ONE number describing the market.
+
+        [TIER0-0.4 2026-07-14] That aggregate is now the MEDIAN across the
+        universe. It used to be the running MAX, and it never fell back down:
+
+            if self._vol_rank is None or ticker_vol_rank > self._vol_rank:
+                self._vol_rank = ticker_vol_rank      # monotonic ratchet
+
+        That made the penny book structurally untradeable, and the arithmetic is
+        deterministic, not unlucky:
+
+          * compute_vol_rank is NOT a cross-sectional rank -- it is sd/0.10,
+            SATURATING at exactly 1.0 for any stock with >=10% daily vol.
+          * Penny stocks routinely clear 10% daily vol, so several names in any
+            100-name penny universe return exactly 1.0 every single day.
+          * max(...) over the universe is therefore ~1.0 by lunchtime, always.
+          * classify() calls PR3_HOT at vol_rank >= 0.90, and
+            PENNY_RISK_PCT_PR3 = 0.0 means PR3 takes NO entries.
+
+        Result: 0 accepts in 349,297 lifetime evaluations, with 93.4% of a
+        typical day's rejects reading "regime PR3_HOT (no new entries)". One hot
+        stock silenced the entire book, permanently. The comment called this "a
+        conservative aggregate"; it was not conservative, it was unsatisfiable --
+        the same dead-gate shape as the day_high anchor bug.
+
+        The median describes the market rather than its single worst member, and
+        it is recomputed from the current cross-section on every scan, so the
+        regime can COOL DOWN as well as heat up. A genuinely hot tape still moves
+        the median and still throttles size (see PENNY_RISK_PCT_PR3, now a reduced
+        size rather than a shutdown).
         """
-        if self._vol_rank is None or ticker_vol_rank > self._vol_rank:
-            self._vol_rank = ticker_vol_rank
-            self._today_regime = self.classify(self._vol_rank, self._vix_proxy)
-            logger.info(
-                "penny_regime_updated vol_rank=%s regime=%s",
-                self._vol_rank,
-                self._today_regime.value,
-            )
+        key = ticker or f"_anon_{len(self._vol_ranks)}"
+        self._vol_ranks[key] = ticker_vol_rank
+
+        self._vol_rank = self._aggregate_vol_rank()
+        self._today_regime = self.classify(self._vol_rank, self._vix_proxy)
+        logger.info(
+            "penny_regime_updated ticker=%s rank=%s aggregate=%s n=%d regime=%s",
+            key, ticker_vol_rank, self._vol_rank, len(self._vol_ranks),
+            self._today_regime.value,
+        )
+
+    def _aggregate_vol_rank(self) -> Optional[float]:
+        """Median of the per-ticker vol ranks seen so far today."""
+        if not self._vol_ranks:
+            return None
+        return statistics.median(self._vol_ranks.values())

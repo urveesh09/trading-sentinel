@@ -28,6 +28,16 @@ appDb.pragma('journal_mode = WAL');
 const schema = fs.readFileSync(path.join(__dirname, 'schema.sql'), 'utf8');
 signalsDb.exec(schema);
 
+// CREATE TABLE IF NOT EXISTS does not add columns to a table that already
+// exists, so new columns need an explicit guarded ALTER.
+function addColumnIfMissing(db, table, column, definition) {
+  const cols = db.prepare(`PRAGMA table_info(${table})`).all();
+  if (!cols.some(c => c.name === column)) {
+    db.exec(`ALTER TABLE ${table} ADD COLUMN ${column} ${definition}`);
+  }
+}
+addColumnIfMissing(signalsDb, 'executed_orders', 'sl_order_id', 'TEXT');
+
 // We attach app_state logic to appDb
 appDb.exec(`
   CREATE TABLE IF NOT EXISTS app_state (

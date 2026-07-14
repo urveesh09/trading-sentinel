@@ -508,8 +508,14 @@ class PennyScanner:
             # stdev to a daily equivalent -- without it the 0.10 cap made
             # vol_rank ~0 for every ticker (the input was dead weight).
             _regime_engine = PennyRegimeEngine()
+            # [TIER0-0.4 2026-07-14] Key the rank by ticker. The engine now takes
+            # the MEDIAN across the universe rather than the running max, so each
+            # ticker must OVERWRITE its own previous reading -- unkeyed, every
+            # 30-second scan tick would append another entry and the median would
+            # drift with scan count instead of tracking the market.
             _regime_engine.update_vol_rank(
-                _regime_engine.compute_vol_rank(closes_1m, bars_per_day=375)
+                _regime_engine.compute_vol_rank(closes_1m, bars_per_day=375),
+                ticker=ticker,
             )
         except Exception as e:
             # Never let regime-feeding crash a scan tick.
@@ -618,8 +624,10 @@ class PennyScanner:
         # so this is one extra divide per ticker.
         try:
             from penny_regime import PennyRegimeEngine
+            # [TIER0-0.4] Keyed by ticker -- see the MIS path above.
             PennyRegimeEngine().update_vol_rank(
-                PennyRegimeEngine().compute_vol_rank(closes)
+                PennyRegimeEngine().compute_vol_rank(closes),
+                ticker=ticker,
             )
         except Exception as e:
             logger.warning("penny_vol_rank_feed_failed ticker=%s error=%s",

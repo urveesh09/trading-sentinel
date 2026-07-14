@@ -815,6 +815,55 @@ class KiteClient:
             logger.error("kite_place_order_failed error=%s", str(e))
             return {"order_id": None, "status": "ERROR", "message": str(e)}
 
+    async def modify_order(
+        self,
+        order_id: str,
+        variety: str = "regular",
+        quantity: int = None,
+        price: float = None,
+        trigger_price: float = None,
+        order_type: str = None,
+    ) -> dict:
+        """
+        Modify a pending order in place.
+        Kite endpoint: PUT /orders/{variety}/{order_id}
+        Returns: {order_id, status}
+
+        [TIER0-0.1 2026-07-14] Needed to ratchet the trigger on a resting SL-M as
+        the trail moves. Modifying beats cancel-then-replace: a cancel/place pair
+        leaves the position momentarily unprotected, and if the place leg fails we
+        are naked with no stop at all.
+        """
+        if not order_id:
+            return {"order_id": None, "status": "ERROR", "message": "order_id required"}
+        params = {}
+        if quantity is not None:
+            params["quantity"] = int(quantity)
+        if price is not None:
+            params["price"] = float(price)
+        if trigger_price is not None:
+            params["trigger_price"] = float(trigger_price)
+        if order_type is not None:
+            params["order_type"] = order_type
+        if not params:
+            return {"order_id": order_id, "status": "ERROR", "message": "nothing to modify"}
+
+        await self.limiter.acquire()
+        try:
+            resp = await self.client.put(f"/orders/{variety}/{order_id}", data=params)
+            resp.raise_for_status()
+            data = resp.json().get("data", {})
+            return {"order_id": data.get("order_id", order_id), "status": "MODIFIED"}
+        except httpx.HTTPStatusError as e:
+            body = e.response.text[:300] if e.response.text else ""
+            logger.error("kite_modify_order_failed status=%d order_id=%s body=%s",
+                         e.response.status_code, order_id, body)
+            return {"order_id": order_id, "status": "ERROR",
+                    "message": f"HTTP {e.response.status_code}: {body}"}
+        except httpx.RequestError as e:
+            logger.error("kite_modify_order_failed error=%s", str(e))
+            return {"order_id": order_id, "status": "ERROR", "message": str(e)}
+
     async def cancel_order(self, order_id: str, variety: str = "regular") -> dict:
         """
         Cancel a pending order.
