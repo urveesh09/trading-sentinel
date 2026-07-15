@@ -2253,6 +2253,15 @@ async def _run_momentum_screener_impl(t0):
     to_date_for_daily = today.strftime("%Y-%m-%d")
     universe_rows = list(universe.iterrows())
 
+    # [MOMENTUM-SEMAPHORE 2026-07-15] Cap concurrent per-ticker work so the
+    # 500-ticker gather cannot open ~1000 sqlite connections at once and exhaust
+    # the OS file-handle ceiling (the cause of the "unable to open database
+    # file" tail failures). Kite's own 3 req/s limiter remains the throughput
+    # bound, so this does not slow a healthy scan.
+    _mom_sem = asyncio.Semaphore(
+        int(getattr(settings, "MOMENTUM_SCAN_SQLITE_MAX_CONCURRENT", 50))
+    )
+
     async def _eval_one_momentum_ticker(row):
         """One ticker's intraday + daily fetch + evaluate.
 
@@ -2264,7 +2273,8 @@ async def _run_momentum_screener_impl(t0):
           outer loop counts it as an error row and continues.
         """
         ticker = row['tradingsymbol']
-        try:
+        async with _mom_sem:
+          try:
             if ticker in open_swing_tickers:
                 return (ticker, {"fired": False, "ticker": ticker, "reject_reason": "swing_position_exists"}, None)
             df_intra = await kite.get_intraday(ticker, from_dt, to_dt)
@@ -2306,7 +2316,7 @@ async def _run_momentum_screener_impl(t0):
                     "regime":  today_regime.name,
                 })
             return (ticker, sig_data, None)
-        except Exception as exc:
+          except Exception as exc:
             return (ticker, None, str(exc))
 
     import time as _time

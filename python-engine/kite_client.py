@@ -175,8 +175,27 @@ class KiteClient:
                 (ticker, from_date, to_date)
             )
             rows = await cursor.fetchall()
-            
-            if rows and len(rows) >= 60: 
+
+            # [DAILY-CACHE-COVERAGE 2026-07-15] The old `len(rows) >= 60` floor
+            # assumed a long (swing / EMA200) window. Momentum requests only
+            # ~30 days (~22 trading rows), so 22 < 60 made EVERY momentum daily
+            # fetch a cache MISS -> ~500 redundant Kite calls per 30-min scan.
+            # That monopolised the 3 req/s limiter and starved the penny scan
+            # (the penny_scan_timeout bursts on 2026-07-15). Gate on window
+            # COVERAGE instead: require ~80% of the trading days the requested
+            # window should contain. A long-window (swing) caller still refuses a
+            # momentum-truncated cache (its expected count is high, so a 22-row
+            # cache misses and it re-fetches), while momentum's short window hits
+            # after the first fetch of the day. Correctness AND load, together.
+            try:
+                _d0 = datetime.strptime(from_date, "%Y-%m-%d")
+                _d1 = datetime.strptime(to_date, "%Y-%m-%d")
+                _expected_td = max(1, int((_d1 - _d0).days * 5 / 7))  # ~trading days
+                _min_rows = max(2, int(_expected_td * 0.8))
+            except (ValueError, TypeError):
+                _min_rows = 60  # malformed dates -> fall back to the old floor
+
+            if rows and len(rows) >= _min_rows:
                 last_cached_date = rows[-1][0] # Index 0 is 'date'
                 
                 # [CRIT] FIX: Force a cache miss if the DB doesn't have today's live candle yet!

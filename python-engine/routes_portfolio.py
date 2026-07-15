@@ -257,6 +257,15 @@ async def get_bankroll_breakdown():
     return await pool_breakdown(settings.DB_PATH)
 
 
+# [DIVISION-BREAKDOWN 2026-07-15] Full per-division P&L attribution: swing,
+# intraday momentum, penny breakout, penny edge (paper/live), F&O (paper/live),
+# with capital rolled up per pool and totalled live-vs-paper. Informational only.
+@router.get("/bankroll/divisions")
+async def get_bankroll_divisions():
+    from performance import division_breakdown
+    return await division_breakdown(settings.DB_PATH)
+
+
 
 
 @router.get("/performance", response_model=PerformanceReport)

@@ -481,3 +481,159 @@ async def pool_breakdown(db_path: str) -> dict:
         "combined": round(swing_balance + penny_balance, 2),
         "as_of":    datetime.now(timezone.utc).isoformat(),
     }
+
+
+# ─────────────────────────────────────────────────────────────────────────
+# [DIVISION-BREAKDOWN 2026-07-15] Per-division P&L attribution.
+#
+# Every strategy already tags its ledger rows with a `source`, and every
+# strategy has an allocated pool constant in config. This surfaces both in one
+# view so the operator can see, per division: capital allocated, realised P&L,
+# balance, trades and return — and decide where to deploy more capital.
+#
+# Two levels:
+#   - DIVISIONS: one row per source tag (swing, momentum, penny breakout, penny
+#     edge paper/live, F&O paper/live). This is the P&L attribution the operator
+#     asked for — "what gave what profit".
+#   - POOLS: capital rollup. The ₹5,000 Nifty pool is split 50/50 (by
+#     MOMENTUM_POOL_PCT) into a swing pool and a momentum pool — ₹2,500 each,
+#     non-overlapping. Every division is its own pool. Live and paper are
+#     totalled SEPARATELY — paper money must never be summed with real capital.
+#
+# Report-only: no sizing or risk math is touched (operator decision 2026-07-15).
+# ─────────────────────────────────────────────────────────────────────────
+
+def _division_registry() -> list:
+    """The canonical division → (source, pool, allocation, mode) mapping.
+
+    Reads allocation constants live from `settings` so a config change is
+    reflected without editing this list. Each division is its own capital pool;
+    swing and momentum are the two halves of the ₹5,000 Nifty pool.
+    """
+    penny_live = bool(getattr(settings, "PENNY_LIVE_TRADING", False))
+    fno_live   = bool(getattr(settings, "FNO_LIVE_TRADING", False))
+    # The ₹5,000 Nifty pool is split between swing and momentum by
+    # MOMENTUM_POOL_PCT (0.50 default) — momentum gets its half, swing the rest.
+    # They are separate, non-overlapping allocations (₹2,500 each at defaults).
+    mom_pct = float(getattr(settings, "MOMENTUM_POOL_PCT", 0.5))
+    momentum_alloc = round(mom_pct * settings.INITIAL_BANKROLL, 2)
+    swing_alloc    = round((1.0 - mom_pct) * settings.INITIAL_BANKROLL, 2)
+    return [
+        # key, label, source tag, pool id, allocated (notional), mode
+        ("swing",            "Swing (CNC)",              "SYSTEM",     "swing",          swing_alloc,                                             "live"),
+        ("momentum",         "Intraday Momentum (MIS)",  "MOMENTUM",   "momentum",       momentum_alloc,                                          "live"),
+        ("penny_breakout",   "Penny Breakout",           "PENNY",      "penny_breakout", float(getattr(settings, "PENNY_LIVE_BANKROLL", 0.0)) if penny_live else float(getattr(settings, "PENNY_PAPER_BANKROLL", 0.0)), "live" if penny_live else "paper"),
+        ("penny_edge_paper", "Penny Edge (paper)",       "EDGE_PAPER", "edge_paper",     float(getattr(settings, "PENNY_EDGE_PAPER_BANKROLL", 0.0)), "paper"),
+        ("penny_edge_live",  "Penny Edge (live)",        "EDGE_LIVE",  "edge_live",      float(getattr(settings, "PENNY_EDGE_LIVE_BANKROLL", 0.0)),  "live"),
+        ("fno_paper",        "F&O Options (paper)",      "FNO_PAPER",  "fno_paper",      float(getattr(settings, "FNO_PAPER_BANKROLL", 0.0)),        "paper"),
+        ("fno_live",         "F&O Options (live)",       "FNO_LIVE",   "fno_live",       float(getattr(settings, "FNO_LIVE_BANKROLL", 0.0)),         "live"),
+    ]
+
+
+async def division_breakdown(db_path: str) -> dict:
+    """Per-division P&L attribution + per-pool capital rollup.
+
+    Returns realised P&L / balance / trades / return per division (by ledger
+    `source`), and live-vs-paper capital totals rolled up by pool (Nifty holds
+    swing+momentum so its capacity is counted once). Purely informational —
+    never used in risk or circuit-breaker math.
+    """
+    import aiosqlite
+    from datetime import datetime, timezone
+
+    # One pass over the ledger: realised P&L and closed-trade count per source.
+    pnl_by_source: dict = {}
+    trades_by_source: dict = {}
+    try:
+        async with aiosqlite.connect(db_path) as db:
+            async with db.execute(
+                "SELECT source, COALESCE(SUM(pnl), 0.0), "
+                "SUM(CASE WHEN event_type != 'INITIAL' THEN 1 ELSE 0 END) "
+                "FROM bankroll_ledger GROUP BY source"
+            ) as cur:
+                async for row in cur:
+                    pnl_by_source[row[0]] = float(row[1] or 0.0)
+                    trades_by_source[row[0]] = int(row[2] or 0)
+    except Exception as e:
+        logger.warning("division_breakdown_query_failed error=%s", str(e))
+
+    divisions = []
+    # pool_id -> {capacity, mode, pnl}: capacity taken once (the swing/Nifty seed
+    # for the shared Nifty pool; the division allocation otherwise).
+    pools: dict = {}
+    for key, label, source, pool_id, allocated, mode in _division_registry():
+        pnl = round(pnl_by_source.get(source, 0.0), 2)
+        trades = trades_by_source.get(source, 0)
+        return_pct = round(pnl / allocated, 4) if allocated else 0.0
+        divisions.append({
+            "key": key, "label": label, "source": source, "pool": pool_id,
+            "mode": mode, "allocated": round(allocated, 2), "realised_pnl": pnl,
+            "balance": round(allocated + pnl, 2), "trades": trades,
+            "return_pct": return_pct,
+        })
+        # Roll P&L into the pool; set the pool capacity ONCE (first division that
+        # names it), so the shared Nifty pool's ₹5,000 is not double-counted.
+        p = pools.setdefault(pool_id, {"capacity": None, "mode": mode, "realised_pnl": 0.0})
+        if p["capacity"] is None:
+            p["capacity"] = round(allocated, 2)
+        p["realised_pnl"] = round(p["realised_pnl"] + pnl, 2)
+
+    pool_rows = []
+    totals = {"live": {"capacity": 0.0, "realised_pnl": 0.0, "balance": 0.0},
+              "paper": {"capacity": 0.0, "realised_pnl": 0.0, "balance": 0.0}}
+    for pool_id, p in pools.items():
+        cap = p["capacity"] or 0.0
+        bal = round(cap + p["realised_pnl"], 2)
+        pool_rows.append({"pool": pool_id, "mode": p["mode"], "capacity": cap,
+                          "realised_pnl": p["realised_pnl"], "balance": bal})
+        bucket = totals["live"] if p["mode"] == "live" else totals["paper"]
+        bucket["capacity"] = round(bucket["capacity"] + cap, 2)
+        bucket["realised_pnl"] = round(bucket["realised_pnl"] + p["realised_pnl"], 2)
+        bucket["balance"] = round(bucket["balance"] + bal, 2)
+
+    return {
+        "divisions": divisions,
+        "pools": pool_rows,
+        "totals": totals,
+        "as_of": datetime.now(timezone.utc).isoformat(),
+    }
+
+
+def format_division_breakdown(data: dict) -> str:
+    """Render division_breakdown() as a Telegram message (plain text).
+
+    Groups divisions by live vs paper, shows allocated → balance, P&L and
+    return% per division, and a per-mode capital total (Nifty counted once).
+    """
+    def rupee(x: float) -> str:
+        sign = "-" if x < 0 else ""
+        return f"{sign}₹{abs(x):,.2f}"
+
+    divisions = data.get("divisions", [])
+    totals = data.get("totals", {})
+    lines = ["\U0001F4CA *Bankroll by Division*"]
+
+    for mode, header in (("live", "LIVE (real capital)"), ("paper", "PAPER (simulated)")):
+        rows = [d for d in divisions if d["mode"] == mode]
+        if not rows:
+            continue
+        lines.append("")
+        lines.append(f"*{header}*")
+        for d in rows:
+            pnl = d["realised_pnl"]
+            pct = d["return_pct"] * 100
+            tail = "not armed" if d["allocated"] == 0 and d["trades"] == 0 else \
+                   f"P&L {rupee(pnl)} ({pct:+.1f}%) · {d['trades']} trades"
+            lines.append(
+                f"• {d['label']}: {rupee(d['allocated'])} → {rupee(d['balance'])}  {tail}"
+            )
+        t = totals.get(mode)
+        if t:
+            lines.append(
+                f"  — {mode.capitalize()} total: {rupee(t['capacity'])} → "
+                f"{rupee(t['balance'])}  (P&L {rupee(t['realised_pnl'])})"
+            )
+
+    lines.append("")
+    lines.append("_Swing + momentum split the ₹5,000 Nifty pool 50/50 (₹2,500 each)._")
+    return "\n".join(lines)

@@ -53,6 +53,14 @@ class Settings(BaseSettings):
     MOMENTUM_POOL_PCT:        float = 0.50    
     MOMENTUM_POOL_FREEZE_PCT: float = 0.80    
     MOMENTUM_MIN_CANDLES:     int   = 4
+    # [MOMENTUM-SEMAPHORE 2026-07-15] Bounded concurrency over the per-ticker
+    # scan. The 500-ticker asyncio.gather opened ~1000 concurrent sqlite
+    # connections to cache.db (2 candle fetches each), exhausting the OS
+    # file-handle ceiling -- exactly the 2026-07-07 penny incident, which is why
+    # 500-scan tails logged "unable to open database file" (52 tickers on
+    # 2026-07-15). 50 mirrors PENNY_HISTORY_SQLITE_MAX_CONCURRENT: well above
+    # Kite's 3 req/s so the API stays the bottleneck, well below the fd ceiling.
+    MOMENTUM_SCAN_SQLITE_MAX_CONCURRENT: int = 50
     MOMENTUM_VOL_SURGE_PCT:   float = 1.5     # [Q13] Lowered from 2.0x - see Known Quirks
     MOMENTUM_R_TARGET:        float = 2.0
     MOMENTUM_MAX_COST_RATIO:  float = 0.25

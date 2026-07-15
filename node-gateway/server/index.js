@@ -266,12 +266,23 @@ telegram.bot.on('callback_query', async (query) => {
           message_id: query.message.message_id
         });
       } catch (err) {
-        // Release lock so user can retry
-        signalsDb.prepare(`UPDATE received_signals SET status = 'PENDING' WHERE signal_id = ?`).run(momentumLockId);
-        logger.error({ event_type: 'momentum_execution_failed', err: err.message });
-        // [FIX] callback was already answered with 'Fetching Momentum Data...' — second call silently fails.
-        // sendAlert ensures the user sees the failure and knows to retry.
-        await telegram.sendAlert(`❌ Momentum buy FAILED for ${cleanId}:\n${err.message}\n\nSignal reset to PENDING — retry the button.`);
+        // [FIX 2026-07-15] When the buy filled but both the protective stop and
+        // the unwind failed, shares are still held. Do NOT reset to PENDING — a
+        // retry would place a SECOND naked buy and stack the position. Leave the
+        // signal blocked (status enforces PENDING-only execution) and tell the
+        // operator to flatten manually rather than inviting a retry.
+        if (err && err.positionHeld) {
+          signalsDb.prepare(`UPDATE received_signals SET status = 'HELD_UNPROTECTED' WHERE signal_id = ?`).run(momentumLockId);
+          logger.error({ event_type: 'momentum_execution_failed', held: true, err: err.message });
+          await telegram.sendAlert(`❌ Momentum buy FAILED for ${cleanId}:\n${err.message}`);
+        } else {
+          // Release lock so user can retry — the position is flat.
+          signalsDb.prepare(`UPDATE received_signals SET status = 'PENDING' WHERE signal_id = ?`).run(momentumLockId);
+          logger.error({ event_type: 'momentum_execution_failed', err: err.message });
+          // [FIX] callback was already answered with 'Fetching Momentum Data...' — second call silently fails.
+          // sendAlert ensures the user sees the failure and knows to retry.
+          await telegram.sendAlert(`❌ Momentum buy FAILED for ${cleanId}:\n${err.message}\n\nSignal reset to PENDING — retry the button.`);
+        }
       }
       return;
     }

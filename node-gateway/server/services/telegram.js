@@ -130,6 +130,12 @@ if (config.TELEGRAM_MODE === 'webhook') {
         cmd = rest === '' ? 'performance' : rest.split(' ')[0];
         args = rest.split(' ').slice(1).join(' ');
         httpMethod = 'GET';
+      } else if (text === '/divisions' || text === '/bankroll') {
+        // [DIVISION-BREAKDOWN 2026-07-15] Per-division P&L attribution.
+        prefix = '';
+        cmd = text.slice(1);   // 'divisions' or 'bankroll'
+        args = '';
+        httpMethod = 'GET';
       } else {
         // Not a command we handle; ignore silently.
         return;

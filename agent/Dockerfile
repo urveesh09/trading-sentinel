@@ -25,7 +25,7 @@ USER appuser
 
 # [ROADMAP-2.2 2026-07-12] Liveness: agent.py touches /tmp/agent_heartbeat
 # from its main loop (30s) and inside per-signal iterations. 900s threshold
-# comfortably exceeds the longest legitimate gap (one signal's Gemini
+# comfortably exceeds the longest legitimate gap (one signal's MiniMax
 # analysis); a hang past it means EXEC alerts have stopped -> unhealthy ->
 # autoheal restarts us. start-period covers boot until the first touch.
 HEALTHCHECK --interval=60s --timeout=5s --start-period=120s --retries=3 \

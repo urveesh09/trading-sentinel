@@ -10,23 +10,30 @@ import sys
 
 
 @pytest.fixture(autouse=True)
-def mock_google_genai():
-    """Mock google.genai before agent import."""
-    mock_genai = MagicMock()
-    mock_types = MagicMock()
-    sys.modules["google"] = MagicMock()
-    sys.modules["google.genai"] = mock_genai
-    sys.modules["google.genai.types"] = mock_types
-    yield mock_genai
-    for m in ["google", "google.genai", "google.genai.types"]:
-        sys.modules.pop(m, None)
+def mock_openai():
+    """Mock the openai SDK before agent import so no real client is built."""
+    mock_sdk = MagicMock()
+    sys.modules["openai"] = mock_sdk
+    yield mock_sdk
+    sys.modules.pop("openai", None)
+
+
+def _fake_llm_response(content):
+    """Build a minimal OpenAI-shaped chat.completions response object."""
+    message = MagicMock()
+    message.content = content
+    choice = MagicMock()
+    choice.message = message
+    response = MagicMock()
+    response.choices = [choice]
+    return response
 
 
 @pytest.fixture
-def agent_mod(mock_google_genai):
+def agent_mod(mock_openai):
     """Import agent module with mocked dependencies."""
     with patch.dict(os.environ, {
-        "GEMINI_API_KEY": "fake",
+        "MINIMAX_API_KEY": "fake",
         "TELEGRAM_BOT_TOKEN": "fake",
         "TELEGRAM_CHAT_ID": "99999",
         "QUANT_ENGINE_URL": "http://localhost:8000/signals",
@@ -61,22 +68,19 @@ class TestFetchSignals:
             result = agent_mod.fetch_signals()
             assert result == [] or result is None
 
-class TestAnalyzeWithGemini:
+class TestAnalyzeWithMiniMax:
     def test_returns_parsed_output(self, agent_mod):
-        mock_parsed = MagicMock()
-        mock_parsed.model_dump.return_value = {
+        content = json.dumps({
             "conviction_score": 75,
             "pitch": "Good setup",
             "rationale": "Volume confirms",
             "risks": "Sector risk",
-        }
-        mock_response = MagicMock()
-        mock_response.parsed = mock_parsed
+        })
 
         agent_mod.client = MagicMock()
-        agent_mod.client.models.generate_content.return_value = mock_response
+        agent_mod.client.chat.completions.create.return_value = _fake_llm_response(content)
 
-        result = agent_mod.analyze_with_gemini(
+        result = agent_mod.analyze_with_minimax(
             {"ticker": "RELIANCE", "close": 1000, "target_1": 1075, "stop_loss": 950},
             "Some sentiment text",
             "BULL",
@@ -86,34 +90,47 @@ class TestAnalyzeWithGemini:
 
     def test_returns_none_on_failure(self, agent_mod):
         agent_mod.client = MagicMock()
-        agent_mod.client.models.generate_content.side_effect = Exception("API down")
+        agent_mod.client.chat.completions.create.side_effect = Exception("API down")
 
-        result = agent_mod.analyze_with_gemini(
+        result = agent_mod.analyze_with_minimax(
             {"ticker": "RELIANCE", "close": 1000, "target_1": 1075, "stop_loss": 950},
             "",
             "BULL",
         )
         assert result is None
 
-    def test_falls_back_to_json_parse_when_parsed_is_none(self, agent_mod):
-        mock_response = MagicMock()
-        mock_response.parsed = None
-        mock_response.text = json.dumps({
+    def test_parses_content_wrapped_in_markdown_fence(self, agent_mod):
+        # MiniMax is told to emit bare JSON but LLMs sometimes fence it anyway;
+        # the extractor must still recover the object.
+        content = "```json\n" + json.dumps({
             "conviction_score": 60,
-            "pitch": "Fallback",
+            "pitch": "Fenced",
             "rationale": "Test",
             "risks": "None",
-        })
+        }) + "\n```"
 
         agent_mod.client = MagicMock()
-        agent_mod.client.models.generate_content.return_value = mock_response
+        agent_mod.client.chat.completions.create.return_value = _fake_llm_response(content)
 
-        result = agent_mod.analyze_with_gemini(
+        result = agent_mod.analyze_with_minimax(
             {"ticker": "INFY", "close": 500, "target_1": 530, "stop_loss": 480},
             "",
             "BULL",
         )
         assert result["conviction_score"] == 60
+
+    def test_returns_none_on_unparseable_output(self, agent_mod):
+        agent_mod.client = MagicMock()
+        agent_mod.client.chat.completions.create.return_value = _fake_llm_response(
+            "I cannot help with that request."
+        )
+
+        result = agent_mod.analyze_with_minimax(
+            {"ticker": "INFY", "close": 500, "target_1": 530, "stop_loss": 480},
+            "",
+            "BULL",
+        )
+        assert result is None
 
 
 class TestDeduplication:
@@ -142,7 +159,7 @@ class TestRunPipeline:
 
         with patch("requests.get", return_value=mock_resp), \
              patch.object(agent_mod, "scrape_sentiment", return_value=""), \
-             patch.object(agent_mod, "analyze_with_gemini", return_value=low_analysis), \
+             patch.object(agent_mod, "analyze_with_minimax", return_value=low_analysis), \
              patch.object(agent_mod, "send_telegram_alert") as mock_send, \
              patch("time.sleep"):
             agent_mod.processed_signals_today.clear()
@@ -168,7 +185,7 @@ class TestRunPipeline:
 
         with patch("requests.get", return_value=mock_resp), \
              patch.object(agent_mod, "scrape_sentiment", return_value=""), \
-             patch.object(agent_mod, "analyze_with_gemini", return_value=high_analysis), \
+             patch.object(agent_mod, "analyze_with_minimax", return_value=high_analysis), \
              patch.object(agent_mod, "send_telegram_alert") as mock_send, \
              patch("time.sleep"):
             agent_mod.processed_signals_today.clear()
@@ -219,7 +236,7 @@ class TestRunMomentumPipeline:
 
         with patch("requests.get", return_value=mock_resp), \
              patch.object(agent_mod, "scrape_sentiment", side_effect=sentiment_side_effect), \
-             patch.object(agent_mod, "analyze_with_gemini", return_value=high_analysis), \
+             patch.object(agent_mod, "analyze_with_minimax", return_value=high_analysis), \
              patch.object(agent_mod, "send_momentum_telegram_alert") as mock_send, \
              patch("time.sleep"):
             agent_mod.processed_signals_today.clear()
@@ -246,7 +263,7 @@ class TestRunMomentumPipeline:
 
         with patch("requests.get", return_value=mock_resp), \
              patch.object(agent_mod, "scrape_sentiment", return_value=""), \
-             patch.object(agent_mod, "analyze_with_gemini", return_value=low_analysis), \
+             patch.object(agent_mod, "analyze_with_minimax", return_value=low_analysis), \
              patch.object(agent_mod, "send_momentum_telegram_alert") as mock_buttons, \
              patch.object(agent_mod, "send_conviction_veto_notice") as mock_veto, \
              patch("time.sleep"):
@@ -288,7 +305,7 @@ class TestRunMomentumPipeline:
 
         with patch("requests.get", return_value=mock_resp), \
              patch.object(agent_mod, "scrape_sentiment", return_value=""), \
-             patch.object(agent_mod, "analyze_with_gemini", return_value=high_analysis), \
+             patch.object(agent_mod, "analyze_with_minimax", return_value=high_analysis), \
              patch.object(agent_mod, "send_momentum_telegram_alert") as mock_send, \
              patch("time.sleep"):
             agent_mod.processed_signals_today.clear()

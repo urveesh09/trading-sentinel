@@ -252,4 +252,68 @@ describe('executeSignal()', () => {
     kite.placeOrder.mockRejectedValue(new Error('Kite unavailable'));
     await expect(executeSignal(makeSignal(), 'EXEC')).rejects.toThrow(OrderExecutionError);
   });
+
+  // ─── MIS protective stop (2026-07-15 fix) ───
+  // Route placeOrder by leg so we can fail the stop/unwind independently of the buy.
+  const routePlaceOrder = ({ buy = { order_id: 'BUY-1' }, stop, unwind } = {}) => {
+    kite.placeOrder.mockImplementation((params) => {
+      if (params.transaction_type === 'BUY') return Promise.resolve(buy);
+      if (params.order_type === 'SL') {
+        return stop instanceof Error ? Promise.reject(stop) : Promise.resolve(stop ?? { order_id: 'SL-1' });
+      }
+      // Anything else is the marketable-LIMIT unwind SELL.
+      return unwind instanceof Error ? Promise.reject(unwind) : Promise.resolve(unwind ?? { order_id: 'UNWIND-1' });
+    });
+  };
+
+  test('MIS buy places a protective SL (limit) order, never SL-M', async () => {
+    routePlaceOrder();
+    await executeSignal(makeSignal({ stop_loss: 950 }), 'EM', true);
+    const stopCall = kite.placeOrder.mock.calls.find(c => c[0].order_type === 'SL');
+    expect(stopCall).toBeDefined();
+    const p = stopCall[0];
+    expect(p.transaction_type).toBe('SELL');
+    expect(p.product).toBe('MIS');
+    expect(p.trigger_price).toBe(950);      // snapToTick(950, down)
+    expect(p.price).toBe(940.5);            // snapToTick(950 * 0.99, down) — marketable, <= trigger
+    expect(p.price).toBeLessThanOrEqual(p.trigger_price);
+    // No leg may be a bare market order (Zerodha rejects those over the API).
+    expect(kite.placeOrder.mock.calls.every(c => c[0].order_type !== 'SL-M' && c[0].order_type !== 'MARKET')).toBe(true);
+  });
+
+  test('when the stop is rejected, unwinds with a marketable LIMIT and a <=20-char tag', async () => {
+    routePlaceOrder({ stop: new Error('Market orders without market protection...') });
+    await expect(executeSignal(makeSignal(), 'EM', true))
+      .rejects.toThrow(/unwound.*Safe to retry/);
+    const unwindCall = kite.placeOrder.mock.calls.find(c => c[0].tag === 'QUANT_SENT_UNWIND');
+    expect(unwindCall).toBeDefined();
+    const p = unwindCall[0];
+    expect(p.order_type).toBe('LIMIT');
+    expect(p.transaction_type).toBe('SELL');
+    expect(p.tag.length).toBeLessThanOrEqual(20);
+  });
+
+  test('unwound position is retryable (positionHeld not set)', async () => {
+    routePlaceOrder({ stop: new Error('stop rejected'), unwind: { order_id: 'UNWIND-1' } });
+    await executeSignal(makeSignal(), 'EM', true).catch(err => {
+      expect(err.positionHeld).toBeFalsy();
+    });
+    expect.assertions(1);
+  });
+
+  test('stop AND unwind failing flags positionHeld and does NOT mark the fill CANCELLED', async () => {
+    routePlaceOrder({
+      stop: new Error('stop rejected'),
+      unwind: new Error('Invalid tags / no protection'),
+    });
+    let caught;
+    await executeSignal(makeSignal(), 'EM', true).catch(err => { caught = err; });
+    expect(caught).toBeDefined();
+    expect(caught.positionHeld).toBe(true);
+    expect(caught.message).toMatch(/FLATTEN THIS POSITION MANUALLY/);
+    // The fill must be recorded as OPEN_UNPROTECTED, never CANCELLED.
+    const updates = mockDbPrepare.mock.calls.map(c => c[0]).filter(Boolean);
+    expect(updates.some(sql => sql.includes("'OPEN_UNPROTECTED'"))).toBe(true);
+    expect(updates.some(sql => sql.includes("'CANCELLED'"))).toBe(false);
+  });
 });

@@ -29,17 +29,13 @@ def load_agent_main():
     """
     # Patch external deps that fire on import
     with patch.dict(os.environ, {
-        "GEMINI_API_KEY": "fake",
+        "MINIMAX_API_KEY": "fake",
         "TELEGRAM_BOT_TOKEN": "fake",
         "TELEGRAM_CHAT_ID": "99999",
         "QUANT_ENGINE_URL": "http://localhost:8000/signals",
     }):
-        # Patch google.genai to avoid import errors
-        mock_genai = MagicMock()
-        mock_types = MagicMock()
-        sys.modules["google"] = MagicMock()
-        sys.modules["google.genai"] = mock_genai
-        sys.modules["google.genai.types"] = mock_types
+        # Patch the openai SDK to avoid import errors / network clients
+        sys.modules["openai"] = MagicMock()
 
         # Remove cached agent module if any
         if "agent" in sys.modules:

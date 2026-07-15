@@ -63,21 +63,36 @@ async function syncToEngine(payload) {
  * Broker-side protective stop for an MIS (intraday) position.
  *
  * Zerodha GTT supports CNC/NRML only, so an MIS position cannot be protected by
- * a GTT — a resting SL-M is the only broker-side stop available intraday. Until
- * 2026-07-14 the GTT block was guarded by `if (!isIntraday)` and nothing took its
- * place, so every momentum position sat at the exchange with NO stop and NO target
- * from fill until the 15:15 auto-square. Position sizing divides by (entry - stop),
- * so the risk-per-trade figure was assuming a stop that did not exist.
+ * a GTT — a resting stop order at the exchange is the only broker-side stop
+ * available intraday. Until 2026-07-14 the GTT block was guarded by
+ * `if (!isIntraday)` and nothing took its place, so every momentum position sat
+ * at the exchange with NO stop and NO target from fill until the 15:15
+ * auto-square. Position sizing divides by (entry - stop), so the risk-per-trade
+ * figure was assuming a stop that did not exist.
  *
- * Two attempts, then the caller unwinds — the mandatory-SL-M discipline from
+ * [FIX 2026-07-15] The stop was an SL-M (stop-loss MARKET) order, which Zerodha
+ * rejects over the API with "Market orders without market protection are not
+ * allowed via API. Please set market protection or use a Limit order." — so the
+ * stop was ALWAYS rejected and every MIS buy was left unprotected. We now use an
+ * SL (stop-loss LIMIT) order, exactly the limit-order route the buy leg already
+ * uses. Once the trigger fires, the limit sits 1% BELOW the trigger, so it is
+ * marketable and fills immediately at the best bid (a SELL limit below market
+ * fills at market) while capping worst-case slippage at ~1%. For a SELL SL the
+ * limit must be <= trigger, which this also satisfies.
+ *
+ * Two attempts, then the caller unwinds — the mandatory-stop discipline from
  * penny_executor.py (spec §7.2): a live position we cannot protect is worse than
  * no position.
  *
- * Returns the SL-M order id, or null if it could not be placed.
+ * Returns the stop order id, or null if it could not be placed.
  */
-async function placeStopLossMarket(signal) {
+async function placeProtectiveStop(signal) {
   // SELL stop: snap the trigger DOWN so it never lands above the intended stop.
   const trigger = snapToTick(signal.stop_loss, -1);
+  // Limit 1% below the trigger: <= trigger (valid SELL SL) and marketable on
+  // trigger (fills at market bid), so it behaves like a stop-market but is
+  // API-legal without market protection.
+  const limit = snapToTick(signal.stop_loss * 0.99, -1);
 
   for (let attempt = 1; attempt <= 2; attempt++) {
     try {
@@ -87,8 +102,9 @@ async function placeStopLossMarket(signal) {
         transaction_type: "SELL",
         quantity: signal.shares,
         product: "MIS",
-        order_type: "SL-M",
+        order_type: "SL",
         trigger_price: trigger,
+        price: limit,
         validity: "DAY",
         tag: "QUANT_SENTINEL_SL"
       });
@@ -96,7 +112,7 @@ async function placeStopLossMarket(signal) {
       if (res && res.order_id) {
         logger.info({
           event_type: 'mis_sl_m_placed',
-          ticker: signal.ticker, order_id: res.order_id, trigger
+          ticker: signal.ticker, order_id: res.order_id, trigger, limit
         });
         return String(res.order_id);
       }
@@ -112,7 +128,16 @@ async function placeStopLossMarket(signal) {
  * Flatten an MIS position at market. Used when the protective SL-M cannot be
  * placed — we refuse to hold an unprotected intraday position.
  */
-async function marketUnwind(signal) {
+async function marketUnwind(signal, ltp) {
+  // [FIX 2026-07-15] Was an order_type:"MARKET" order tagged
+  // "QUANT_SENTINEL_UNWIND" (21 chars). Zerodha rejected it on BOTH counts:
+  // the tag exceeds the 20-char limit ("Invalid tags"), and a MARKET order over
+  // the API needs market protection ("Market orders without market protection
+  // are not allowed"). So the unwind ALWAYS failed and the just-bought position
+  // was left naked while the operator was told it had been unwound. We now sell
+  // via a marketable LIMIT (1% below LTP, snapped down) — the same route the buy
+  // leg uses — with a <=20-char tag.
+  const limit = snapToTick((ltp || signal.close) * 0.99, -1);
   try {
     const res = await kite.placeOrder({
       exchange: "NSE",
@@ -120,13 +145,14 @@ async function marketUnwind(signal) {
       transaction_type: "SELL",
       quantity: signal.shares,
       product: "MIS",
-      order_type: "MARKET",
+      order_type: "LIMIT",
+      price: limit,
       validity: "DAY",
-      tag: "QUANT_SENTINEL_UNWIND"
+      tag: "QUANT_SENT_UNWIND"
     });
     logger.error({
       event_type: 'mis_unprotected_unwound',
-      ticker: signal.ticker, unwind_order_id: res && res.order_id
+      ticker: signal.ticker, unwind_order_id: res && res.order_id, limit
     });
     return res && res.order_id ? String(res.order_id) : null;
   } catch (err) {
@@ -134,7 +160,7 @@ async function marketUnwind(signal) {
     // must handle by hand, so say so loudly rather than logging quietly.
     logger.error({ event_type: 'mis_unwind_failed', ticker: signal.ticker, err: err.message });
     telegram.sendAlert(
-      `🚨 ${signal.ticker}: SL-M FAILED and market unwind FAILED. ` +
+      `🚨 ${signal.ticker}: protective stop FAILED and unwind FAILED. ` +
       `You are holding ${signal.shares} shares with NO stop. FLATTEN MANUALLY NOW.`
     );
     return null;
@@ -267,16 +293,35 @@ async function executeSignal(signal, action, isIntraday = false) {
   let slOrderId = null;
 
   if (isIntraday) {
-    slOrderId = await placeStopLossMarket(signal);
+    slOrderId = await placeProtectiveStop(signal);
 
     if (!slOrderId) {
-      await marketUnwind(signal);
+      // Stop could not be placed. We refuse to hold an unprotected MIS position,
+      // so flatten it. The buy has already filled, so distinguish the two exits:
+      const unwindId = await marketUnwind(signal, ltp);
+
+      if (unwindId) {
+        // Flat again — the position is closed, so it is safe to retry the signal.
+        signalsDb.prepare(
+          `UPDATE executed_orders SET status = 'CANCELLED', notes = ? WHERE order_id = ?`
+        ).run('sl_failed_position_unwound', orderId);
+        throw new OrderExecutionError(
+          `${signal.ticker}: protective stop was rejected; position was unwound. Safe to retry.`
+        );
+      }
+
+      // Stop failed AND unwind failed: the shares are still held with no stop.
+      // Do NOT mark this CANCELLED (that hides a real fill from the books) and do
+      // NOT let the caller invite a retry (that would stack another naked buy).
       signalsDb.prepare(
-        `UPDATE executed_orders SET status = 'CANCELLED', notes = ? WHERE order_id = ?`
-      ).run('sl_m_failed_position_unwound', orderId);
-      throw new OrderExecutionError(
-        `${signal.ticker}: could not place protective SL-M; position was unwound.`
+        `UPDATE executed_orders SET status = 'OPEN_UNPROTECTED', notes = ? WHERE order_id = ?`
+      ).run('sl_and_unwind_failed_manual_flatten', orderId);
+      const held = new OrderExecutionError(
+        `${signal.ticker}: HOLDING ${signal.shares} shares with NO protective stop — ` +
+        `the unwind order also failed. FLATTEN THIS POSITION MANUALLY NOW. Do NOT retry the button.`
       );
+      held.positionHeld = true;
+      throw held;
     }
   } else {
     try {
@@ -381,4 +426,4 @@ async function executeSignal(signal, action, isIntraday = false) {
   return { orderId, fillPrice, gttStopId, gttTargetId };
 }
 
-module.exports = { executeSignal, syncToEngine };
+module.exports = { executeSignal, syncToEngine, snapToTick };
