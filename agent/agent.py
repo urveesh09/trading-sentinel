@@ -11,9 +11,8 @@ from typing import List, Dict, Optional
 import requests
 from bs4 import BeautifulSoup
 import schedule
-from google import genai
-from google.genai import types
-from pydantic import BaseModel
+from openai import OpenAI
+from pydantic import BaseModel, ValidationError
 
 # -------------------------------------------------------------------------
 # CONFIG & LOGGING
@@ -66,7 +65,17 @@ logging.basicConfig(
 
 logger = structlog.get_logger("agent")
 
-GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
+# [MINIMAX-MIGRATION 2026-07-15] The reasoning gate moved off Google Gemini
+# onto MiniMax, which exposes an OpenAI-compatible chat-completions endpoint.
+# We drive it with the stock `openai` SDK pointed at MiniMax's base_url, so the
+# rest of the pipeline (threaded 30s wall, JSON parse guard, fallback banner)
+# is unchanged -- only the transport and the model name differ.
+#
+# Base URL and model are env-overridable so the operator can retarget the
+# international vs mainland endpoint, or bump the model, without a code change.
+MINIMAX_API_KEY = os.getenv("MINIMAX_API_KEY")
+MINIMAX_BASE_URL = os.getenv("MINIMAX_BASE_URL", "https://api.minimax.io/v1")
+MINIMAX_MODEL = os.getenv("MINIMAX_MODEL", "MiniMax-M3")
 TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
 TELEGRAM_CHAT_ID = os.getenv("TELEGRAM_CHAT_ID")
 QUANT_ENGINE_URL = os.getenv("QUANT_ENGINE_URL", "http://python-engine:8000/signals")
@@ -126,11 +135,11 @@ def register_approved_snapshot(sig_id: str, ticker: str, action: str, payload: d
         )
         return False
 
-if not all([GEMINI_API_KEY, TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID]):
+if not all([MINIMAX_API_KEY, TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID]):
     logger.critical("CRITICAL: Missing required environment variables. Exiting.")
     sys.exit(1)
 
-client = genai.Client(api_key=GEMINI_API_KEY)
+client = OpenAI(api_key=MINIMAX_API_KEY, base_url=MINIMAX_BASE_URL)
 
 # -------------------------------------------------------------------------
 # SHORT-TERM MEMORY (DEDUPLICATION)
@@ -213,7 +222,7 @@ def clear_memory():
 # Dockerfile HEALTHCHECK compares this file's mtime against a 15-min
 # threshold; autoheal (docker-compose) restarts the container when it
 # turns unhealthy. Touched from the main loop (every 30s) AND at the top
-# of each per-signal iteration, so a long Gemini batch can't trip a
+# of each per-signal iteration, so a long MiniMax batch can't trip a
 # false unhealthy while real work is progressing.
 HEARTBEAT_FILE = "/tmp/agent_heartbeat"
 
@@ -362,7 +371,44 @@ def scrape_sentiment(ticker: str) -> str:
         return ""
     return f"YAHOO FINANCE FEED:\n{yahoo_news}\n\nBROADER MARKET FEED:\n{google_news}"
 
-def analyze_with_gemini(
+def _extract_json_object(text: Optional[str]) -> Optional[Dict]:
+    """Pull a single JSON object out of an LLM reply, tolerantly.
+
+    MiniMax is prompted to emit bare JSON, but LLMs still occasionally wrap it
+    in a ```json fence or add a stray sentence. We try a straight parse first,
+    then fall back to the substring between the first '{' and the last '}'.
+    Returns the parsed dict, or None if nothing valid can be recovered (the
+    caller turns that into a SYSTEM FALLBACK alert, never a crash).
+    """
+    if not text:
+        return None
+    candidate = text.strip()
+    # Strip a leading/trailing markdown code fence if present.
+    if candidate.startswith("```"):
+        candidate = candidate.split("```", 2)[1] if candidate.count("```") >= 2 else candidate
+        if candidate.lstrip().lower().startswith("json"):
+            candidate = candidate.lstrip()[4:]
+        candidate = candidate.strip()
+    for attempt in (candidate, text):
+        try:
+            parsed = json.loads(attempt)
+            if isinstance(parsed, dict):
+                return parsed
+        except (json.JSONDecodeError, TypeError):
+            pass
+    # Last resort: grab the outermost brace pair.
+    start = text.find("{")
+    end = text.rfind("}")
+    if start != -1 and end != -1 and end > start:
+        try:
+            parsed = json.loads(text[start:end + 1])
+            if isinstance(parsed, dict):
+                return parsed
+        except (json.JSONDecodeError, TypeError):
+            pass
+    return None
+
+def analyze_with_minimax(
     signal: Dict,
     sentiment_text: str,
     market_regime: str = "UNKNOWN"
@@ -457,70 +503,102 @@ def analyze_with_gemini(
     "Apply caution: absence of news for an active signal is unusual. "
     "Cap conviction at 70 unless regime is BULL."}
 
-    Respond in strict JSON matching the required schema.
-    No markdown. No explanation outside the JSON fields.
+    ===========================================
+    OUTPUT FORMAT
+    ===========================================
+    Respond with a SINGLE JSON object and nothing else. No markdown fences,
+    no prose before or after. It must have exactly these fields:
+    {{
+      "conviction_score": <integer 0-100>,
+      "pitch": "<one-line trade thesis>",
+      "rationale": "<why the score, grounded ONLY in the data above>",
+      "risks": "<the main downside / what would invalidate this>"
+    }}
     """
-    # [LOW-004] Enforce a 30-second timeout on the Gemini API call to prevent
-    # blocking the entire synchronous pipeline if the API hangs.
+    # [LOW-004] Enforce a 30-second timeout on the MiniMax API call to prevent
+    # blocking the entire synchronous pipeline if the API hangs. The daemon
+    # thread + join(timeout) is a hard wall: even if the SDK's own socket
+    # timeout misbehaves, the poll cannot be held hostage past 30s.
     result_holder: Dict = {}
 
-    def _call_gemini():
+    def _call_minimax():
         try:
-            # [AUDIT-FIX-GEMINI 2026-06-26] gemini-2.0-flash was retired by
-            # Google and now returns 404 NOT_FOUND ("This model
-            # models/gemini-2.0-flash is no longer available"). Every
-            # momentum intelligence call fails today; the Telegram send
-            # still goes out with the bare ticker (different outbound path)
-            # but the operator never sees the Gemini enrichment. Move to
-            # gemini-2.5-flash (matches the backup agent's model).
-            resp = client.models.generate_content(
-                model='gemini-2.5-flash',
-                contents=prompt,
-                config=types.GenerateContentConfig(
-                    response_mime_type="application/json",
-                    response_schema=SignalOutput,
-                    temperature=0.0
-                ),
+            # [MINIMAX-MIGRATION 2026-07-15] MiniMax speaks the OpenAI
+            # chat-completions dialect, so the analyst prompt is split into a
+            # short system role (identity + the exact JSON contract) and the
+            # user role (the trade dossier built above). MiniMax has no
+            # Gemini-style server-side schema enforcement, so the contract is
+            # carried in the prompt and validated on the way out (below).
+            resp = client.chat.completions.create(
+                model=MINIMAX_MODEL,
+                messages=[
+                    {
+                        "role": "system",
+                        "content": (
+                            "You are a cynical, risk-first quantitative trading "
+                            "analyst. Respond ONLY with a single JSON object with "
+                            "the fields conviction_score (integer 0-100), pitch "
+                            "(string), rationale (string) and risks (string). "
+                            "Emit no markdown, no code fences and no text outside "
+                            "the JSON object."
+                        ),
+                    },
+                    {"role": "user", "content": prompt},
+                ],
+                temperature=0.0,
+                # Belt-and-braces: the SDK's own request timeout backs up the
+                # thread wall. It is slightly under 30s so the SDK errors
+                # (giving us a clean log line) before the thread is abandoned.
+                timeout=28,
             )
             result_holder['response'] = resp
         except Exception as exc:
             result_holder['error'] = exc
 
-    gemini_thread = threading.Thread(target=_call_gemini, daemon=True)
-    gemini_thread.start()
-    gemini_thread.join(timeout=30)
+    minimax_thread = threading.Thread(target=_call_minimax, daemon=True)
+    minimax_thread.start()
+    minimax_thread.join(timeout=30)
 
-    if gemini_thread.is_alive():
-        logger.error(f"Gemini timeout (30s) for {ticker} - analysis skipped")
+    if minimax_thread.is_alive():
+        logger.error(f"MiniMax timeout (30s) for {ticker} - analysis skipped")
         return None
     if 'error' in result_holder:
-        logger.error(f"Gemini Analysis failed for {ticker}: {result_holder['error']}")
+        logger.error(f"MiniMax analysis failed for {ticker}: {result_holder['error']}")
         return None
 
+    # [ROADMAP-4.7 2026-07-13, carried through MiniMax migration] This is the
+    # ONE place in the system where a third party's free-text output is parsed.
+    # An LLM can return prose, a fenced ```json block, a truncated object or an
+    # object missing a field, and any of those must NOT raise out of the
+    # conviction gate -- a single malformed reply once killed every EXEC alert
+    # in the batch (the 2026-07-10 HUDCO stall shape).
+    #
+    # So: extract the JSON defensively, then validate against SignalOutput. On
+    # ANY failure return None -- the callers treat a None analysis as "AI
+    # failed, manual review required" and STILL send the alert with a SYSTEM
+    # FALLBACK banner. Losing the AI opinion must never lose the trade.
     response = result_holder['response']
-    if response.parsed:
-        return response.parsed.model_dump()
-
-    # [ROADMAP-4.7 2026-07-13] Was a bare `json.loads(response.text)`.
-    #
-    # This is the ONE place in the system where a third party's free-text
-    # output is parsed with no guard. Gemini is a language model: it can
-    # return prose, a fenced ```json block, or a truncated object, and any of
-    # those raise here. The exception propagated out of the conviction gate
-    # and killed the whole poll -- so a single malformed Gemini reply could
-    # take out every EXEC alert in the batch. (That is the same failure shape
-    # as the 2026-07-10 HUDCO stall, fixed on the loop side; this is the hole
-    # it came through.)
-    #
-    # Return None instead: the callers already treat a None analysis as
-    # "AI failed, manual review required" and STILL send the alert with a
-    # SYSTEM FALLBACK banner. Losing the AI opinion must never lose the trade.
     try:
-        return json.loads(response.text)
-    except (json.JSONDecodeError, TypeError, AttributeError) as e:
-        preview = (getattr(response, "text", "") or "")[:200]
+        content = response.choices[0].message.content
+    except (AttributeError, IndexError, TypeError) as e:
+        logger.error(f"MiniMax response had no content for {ticker}: {e}")
+        return None
+
+    data = _extract_json_object(content)
+    if data is None:
+        preview = (content or "")[:200]
         logger.error(
-            f"Gemini returned unparseable output for {ticker}: {e} -- "
+            f"MiniMax returned unparseable output for {ticker} -- proceeding "
+            f"without analysis. First 200 chars: {preview!r}"
+        )
+        return None
+
+    try:
+        return SignalOutput(**data).model_dump()
+    except (ValidationError, TypeError) as e:
+        preview = (content or "")[:200]
+        logger.error(
+            f"MiniMax output for {ticker} did not match schema: {e} -- "
             f"proceeding without analysis. First 200 chars: {preview!r}"
         )
         return None
@@ -632,7 +710,7 @@ def run_momentum_pipeline():
         touch_heartbeat()  # [ROADMAP-2.2] progressing, not hung
         try:
             sentiment_text = scrape_sentiment(ticker)
-            analysis       = analyze_with_gemini(signal, sentiment_text, regime)
+            analysis       = analyze_with_minimax(signal, sentiment_text, regime)
 
             if analysis and analysis.get('conviction_score', 0) < 50:
                 logger.info(f"Momentum {ticker} skipped. Low conviction: "
@@ -654,14 +732,14 @@ def run_momentum_pipeline():
         time.sleep(2)
 
 def send_conviction_veto_notice(signal: Dict, analysis: Dict):
-    """Plain informational message (no buttons) when the Gemini gate
+    """Plain informational message (no buttons) when the MiniMax gate
     vetoes an engine-accepted momentum signal. Failures are logged and
     swallowed -- the veto notice must never break the pipeline."""
     url    = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage"
     ticker = signal.get("ticker", "UNKNOWN")
     score  = analysis.get('conviction_score', 'N/A')
     text = (f"🧠 MOMENTUM VETO: {ticker}\n"
-            f"Engine accepted, Gemini conviction {score}/100 (<50) - "
+            f"Engine accepted, MiniMax conviction {score}/100 (<50) - "
             f"no EXEC button sent.\n"
             f"Rationale: {analysis.get('rationale', 'N/A')}")
     payload = {"chat_id": TELEGRAM_CHAT_ID, "text": text}
@@ -768,7 +846,7 @@ def run_pipeline():
         # pipeline: one bad ticker must not kill the rest of the batch.
         try:
             sentiment_text = scrape_sentiment(ticker)
-            analysis = analyze_with_gemini(signal, sentiment_text,regime)
+            analysis = analyze_with_minimax(signal, sentiment_text, regime)
 
             if analysis and analysis.get('conviction_score', 0) < 50:
                 logger.info(f"Skipped {ticker}. Low conviction score: {analysis.get('conviction_score')}")

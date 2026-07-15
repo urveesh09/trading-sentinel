@@ -124,7 +124,12 @@ services:
     mem_limit: 768m
     cpus: 2
     environment:
-      - GEMINI_API_KEY=${GEMINI_API_KEY}
+      # [MINIMAX-MIGRATION 2026-07-15] Reasoning gate now on MiniMax's
+      # OpenAI-compatible API. BASE_URL/MODEL have code defaults; set them in
+      # .env only to override (e.g. mainland endpoint or a different model).
+      - MINIMAX_API_KEY=${MINIMAX_API_KEY}
+      - MINIMAX_BASE_URL=${MINIMAX_BASE_URL:-https://api.minimax.io/v1}
+      - MINIMAX_MODEL=${MINIMAX_MODEL:-MiniMax-M3}
       - TZ=Asia/Kolkata
     env_file:
       - ./.env

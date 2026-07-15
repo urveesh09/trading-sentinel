@@ -272,6 +272,81 @@ class TestGetHistorical:
         assert not df.empty
 
     @pytest.mark.asyncio
+    async def test_short_window_hits_cache(self, patch_settings):
+        """[DAILY-CACHE-COVERAGE 2026-07-15] A momentum-style 30-day window
+        (~22 trading rows) must be a cache HIT. The old `len(rows) >= 60` floor
+        made it a permanent MISS -> ~500 redundant Kite calls per scan.
+        """
+        client = KiteClient(patch_settings.DB_PATH)
+        client.access_token = "tok"
+        client.instrument_cache = {"RELIANCE": "123"}
+
+        # Seed ~22 recent trading rows ending on to_date (as momentum's window has).
+        await client._init_db()
+        to_date = datetime(2025, 3, 6)
+        from_date = to_date - timedelta(days=30)
+        async with aiosqlite.connect(patch_settings.DB_PATH) as db:
+            d = from_date
+            while d <= to_date:
+                if d.weekday() < 5:  # weekdays only, ~22 rows
+                    fetched = datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S")
+                    await db.execute(
+                        "INSERT INTO ohlcv_cache (ticker, date, open, high, low, close, volume, fetched_at) VALUES (?,?,?,?,?,?,?,?)",
+                        ("RELIANCE", d.strftime("%Y-%m-%d"), 1000, 1010, 990, 1005, 500000, fetched)
+                    )
+                d += timedelta(days=1)
+            await db.commit()
+
+        api_called = False
+        async def mock_get(url, **kwargs):
+            nonlocal api_called
+            api_called = True
+            return MagicMock()
+        client.client.get = mock_get
+
+        df = await client.get_historical(
+            "RELIANCE", from_date.strftime("%Y-%m-%d"), to_date.strftime("%Y-%m-%d")
+        )
+        assert not api_called, "short-window momentum fetch should hit the cache, not the API"
+        assert not df.empty
+
+    @pytest.mark.asyncio
+    async def test_long_window_refuses_truncated_cache(self, patch_settings):
+        """A long (swing) window must NOT be served a momentum-truncated cache:
+        ~22 rows cannot satisfy a ~250-day request, so it re-fetches.
+        """
+        client = KiteClient(patch_settings.DB_PATH)
+        client.access_token = "tok"
+        client.instrument_cache = {"RELIANCE": "123"}
+
+        await client._init_db()
+        to_date = datetime(2025, 3, 6)
+        async with aiosqlite.connect(patch_settings.DB_PATH) as db:
+            for i in range(22):  # only 22 rows cached
+                d = (to_date - timedelta(days=i)).strftime("%Y-%m-%d")
+                fetched = datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S")
+                await db.execute(
+                    "INSERT INTO ohlcv_cache (ticker, date, open, high, low, close, volume, fetched_at) VALUES (?,?,?,?,?,?,?,?)",
+                    ("RELIANCE", d, 1000, 1010, 990, 1005, 500000, fetched)
+                )
+            await db.commit()
+
+        api_called = False
+        async def mock_get(url, **kwargs):
+            nonlocal api_called
+            api_called = True
+            raise ValueError("stop after confirming API was hit")
+        client.client.get = mock_get
+
+        # ~250-day window needs ~178 trading rows; a 22-row cache must miss.
+        from_date = (to_date - timedelta(days=250)).strftime("%Y-%m-%d")
+        try:
+            await client.get_historical("RELIANCE", from_date, to_date.strftime("%Y-%m-%d"))
+        except ValueError:
+            pass
+        assert api_called, "long-window swing fetch must re-fetch, not serve a truncated cache"
+
+    @pytest.mark.asyncio
     async def test_unknown_ticker_raises(self, patch_settings):
         """Should raise ValueError for a ticker not in instrument_cache."""
         client = KiteClient(patch_settings.DB_PATH)

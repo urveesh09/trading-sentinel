@@ -5,7 +5,7 @@ from unittest.mock import patch, MagicMock
 import os
 
 # Set env vars before any import of agent.py
-os.environ.setdefault("GEMINI_API_KEY", "fake-gemini-key-for-testing")
+os.environ.setdefault("MINIMAX_API_KEY", "fake-minimax-key-for-testing")
 os.environ.setdefault("TELEGRAM_BOT_TOKEN", "123456789:ABCdefGHIjklMNOpqrSTUvwxYZ")
 os.environ.setdefault("TELEGRAM_CHAT_ID", "99999999999")
 os.environ.setdefault("QUANT_ENGINE_URL", "http://localhost:8000/signals")
@@ -47,7 +47,7 @@ def sample_momentum_signal():
 
 
 @pytest.fixture
-def sample_gemini_output():
+def sample_llm_output():
     return {
         "conviction_score": 75,
         "pitch": "Strong breakout with volume confirmation.",

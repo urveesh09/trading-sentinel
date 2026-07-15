@@ -17,6 +17,13 @@ jest.mock('../../services/kite', () => ({
 
 jest.mock('../../services/executor', () => ({
   executeSignal: jest.fn(),
+  // Real tick-snap: the square-off route uses it to convert MARKET -> marketable LIMIT.
+  snapToTick: (price, dir = 1) => {
+    const t = 0.10;
+    const ticks = price / t;
+    const snapped = dir >= 0 ? Math.ceil(Math.round(ticks * 100) / 100) : Math.floor(Math.round(ticks * 100) / 100);
+    return Math.round(snapped * t * 100) / 100;
+  },
 }));
 
 jest.mock('../../services/telegram', () => ({
@@ -176,8 +183,9 @@ describe('GET /api/orders/ltp', () => {
 
 describe('POST /api/orders/square-off', () => {
 
-  test('places SELL order with valid payload and internal auth', async () => {
+  test('converts a MARKET square-off into a marketable LIMIT (Zerodha rejects raw MARKET)', async () => {
     kite.placeOrder.mockResolvedValue({ order_id: 'SQ-001' });
+    kite.getLTP.mockResolvedValue({ 'NSE:RELIANCE': { last_price: 1000 } });
 
     const res = await request(app)
       .post('/api/orders/square-off')
@@ -193,12 +201,14 @@ describe('POST /api/orders/square-off', () => {
     expect(res.body.success).toBe(true);
     expect(res.body.order_id).toBeDefined();
 
-    // Verify Kite was called with correct params
+    // Verify Kite was called with a marketable LIMIT, never a raw MARKET order.
     expect(kite.placeOrder).toHaveBeenCalledTimes(1);
     const orderParams = kite.placeOrder.mock.calls[0][0];
     expect(orderParams.transaction_type).toBe('SELL');
     expect(orderParams.quantity).toBe(5);
     expect(orderParams.tradingsymbol).toBe('RELIANCE');
+    expect(orderParams.order_type).toBe('LIMIT');
+    expect(orderParams.price).toBe(995);   // snapToTick(1000 * 0.995, down)
   });
 
   test('includes limit_price for LIMIT orders', async () => {

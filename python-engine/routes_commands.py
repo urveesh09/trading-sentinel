@@ -90,6 +90,14 @@ async def top_level_command_get(cmd: str):
     and don't fit under /penny or /nifty specifically. The gateway
     routes /health and /regime (no prefix) here.
     """
+    # [DIVISION-BREAKDOWN 2026-07-15] /divisions and /bankroll render the full
+    # per-division P&L attribution. Handled here (not via the sync penny
+    # dispatch) because division_breakdown is async.
+    if cmd.lower() in ("divisions", "bankroll"):
+        from performance import division_breakdown, format_division_breakdown
+        data = await division_breakdown(settings.DB_PATH)
+        return {"reply": format_division_breakdown(data)}
+
     from penny_commands import dispatch as _penny_dispatch
     # penny_commands.dispatch is the universal entry point -- it
     # routes /health and /regime to the cross-subsystem handlers.

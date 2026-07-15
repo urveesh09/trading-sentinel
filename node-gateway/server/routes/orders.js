@@ -3,6 +3,7 @@ const router = express.Router();
 const { z } = require('zod');
 const { signalsDb } = require('../db/index');
 const executor = require('../services/executor');
+const { snapToTick } = executor;
 const { requireSession, requireInternalSecret } = require('../middleware/auth');
 const kite = require('../services/kite');
 const { validate } = require('../middleware/validate');
@@ -50,20 +51,38 @@ router.get('/ltp', requireInternalSecret, async (req, res, next) => {
 router.post('/square-off', requireInternalSecret, validate(squareOffSchema, 'body'), async (req, res, next) => {
   try {
     const { ticker, shares, order_type, limit_price, product_type, reason } = req.body;
-    
+
+    // [FIX 2026-07-15] A raw MARKET SELL is rejected by Zerodha over the API
+    // ("Market orders without market protection are not allowed"). Callers today
+    // (engine auto-square / momentum exits) always send LIMIT, but the schema
+    // still permits MARKET — so convert any MARKET request into a marketable
+    // LIMIT (0.5% below LTP, snapped down) rather than forward an order the
+    // broker will reject. Keeps the square-off's must-fill intent while staying
+    // API-legal.
+    let effectiveType = order_type;
+    let effectivePrice = limit_price;
+    if (order_type === 'MARKET') {
+      const fullTicker = `NSE:${ticker}`;
+      const ltpData = await kite.getLTP([fullTicker]);
+      const ltp = ltpData && ltpData[fullTicker] && ltpData[fullTicker].last_price;
+      if (!ltp) return res.status(404).json({ error: 'ticker_not_found_for_market_conversion' });
+      effectiveType = 'LIMIT';
+      effectivePrice = snapToTick(ltp * 0.995, -1);
+    }
+
     const orderParams = {
       exchange: 'NSE',
       tradingsymbol: ticker,
       transaction_type: 'SELL',
       quantity: shares,
-      order_type: order_type,
+      order_type: effectiveType,
       product: product_type,
       tag: 'QUANT_SENTINEL'
     };
 
-    if (order_type === 'LIMIT') {
-      if (!limit_price) return res.status(400).json({ error: 'limit_price_required' });
-      orderParams.price = limit_price;
+    if (effectiveType === 'LIMIT') {
+      if (!effectivePrice) return res.status(400).json({ error: 'limit_price_required' });
+      orderParams.price = effectivePrice;
     }
 
     const orderId = await kite.placeOrder(orderParams);
