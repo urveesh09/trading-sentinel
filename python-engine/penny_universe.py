@@ -629,6 +629,53 @@ async def compute_metrics_from_history(kite, symbols, lookback_days: int = 30) -
     return out
 
 
+def _repo_seed_path() -> str:
+    """Path to the git-tracked corp-data seed (tier-3 fallback).
+
+    __file__ is /app/penny_universe.py in the container (Dockerfile WORKDIR=/app
+    COPY . .), so the in-repo data dir is the SAME dir as penny_universe.py, not
+    a parent. Resolve via os.path.dirname(__file__) + 'data' -- NOT dirname-twice
+    which would walk past python-engine/. Wrapped in a function so tests can
+    monkeypatch it to exercise the "all tiers empty -> missing" path in
+    isolation from whatever seed the repo happens to ship.
+    """
+    return os.path.join(
+        os.path.dirname(os.path.abspath(__file__)), "data", "penny_company_data.json"
+    )
+
+
+def _universe_audit_is_degraded(audit: dict, corp_source: Optional[str]) -> bool:
+    """Decide whether penny_universe_quality_audit should log at WARNING.
+
+    [PENNY-CORP-DEGRADE-WARN 2026-07-16] The 2026-07-07 fix escalated to
+    WARNING when tv or pc was null on EVERY ticker (compute_metrics_from_history
+    failing for all symbols) but left corporate fundamentals out of the
+    condition. Consequence: a universe with corp_source="missing" and 100/100
+    null promoter+pb logged at INFO and hid in plain sight -- and because the
+    promoter (>25% & <75%) and P/B (<=2.0) gates are null-tolerant, every penny
+    breakout was accepted with those two safety gates silently bypassed. A
+    broken corp-data pipeline (corp_source missing) or fundamentals that are
+    null on every ticker is exactly as degraded as null tv/pc and must be
+    equally loud, so a single `grep penny_universe_quality_audit` answers
+    "is today's universe quality OK?".
+    """
+    total = audit["total"]
+    if total == 0:
+        return True
+    all_null_tv = audit["null_tv"] == total
+    all_null_pc = audit["null_pc"] == total
+    all_null_fundamentals = (
+        audit["null_promoter"] == total and audit["null_pb"] == total
+    )
+    corp_missing = corp_source in ("missing", None)
+    return (
+        all_null_tv
+        or all_null_pc
+        or all_null_fundamentals
+        or corp_missing
+    )
+
+
 async def refresh_from_kite(kite, out_json_path, corp_json_path, top_n=100):
     """
     Daily universe-refresh job (spec §2.4 + §9.1).
@@ -724,17 +771,7 @@ async def refresh_from_kite(kite, out_json_path, corp_json_path, top_n=100):
             # as a WORSE fallback than the named-volume file (which the
             # operator actively curates), but still better than nothing.
             if not corp:
-                # __file__ is /app/penny_universe.py in the container
-                # (Dockerfile WORKDIR=/app COPY . .), so the in-repo
-                # data dir is the SAME dir as penny_universe.py,
-                # not a parent. Resolve via os.path.dirname(__file__)
-                # and append 'data' -- NOT dirname-twice which would
-                # walk past python-engine/.
-                repo_data_dir = os.path.join(
-                    os.path.dirname(os.path.abspath(__file__)),
-                    "data",
-                )
-                repo_seed = os.path.join(repo_data_dir, "penny_company_data.json")
+                repo_seed = _repo_seed_path()
                 try:
                     with open(repo_seed) as f:
                         seed_data = json.load(f)
@@ -912,9 +949,7 @@ async def refresh_from_kite(kite, out_json_path, corp_json_path, top_n=100):
             # universe as a WARNING the moment it's detected, so a
             # single `grep penny_universe_quality_audit` answers
             # "is today's universe quality OK?" in 5 seconds.
-            all_null_tv = audit["null_tv"] == audit["total"] and audit["total"] > 0
-            all_null_pc = audit["null_pc"] == audit["total"] and audit["total"] > 0
-            is_degraded = all_null_tv or all_null_pc or audit["total"] == 0
+            is_degraded = _universe_audit_is_degraded(audit, corp_source)
             level = logger.warning if is_degraded else logger.info
             level(
                 "penny_universe_quality_audit "
