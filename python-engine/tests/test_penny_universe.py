@@ -243,6 +243,12 @@ def test_refresh_quality_audit_logged_on_missing_corp(monkeypatch, tmp_path, cap
 
     out = tmp_path / "penny_static.json"
     corp = tmp_path / "penny_company_data.json"  # never created
+    # The repo now SHIPS a populated tier-3 seed (penny_company_data.json), so
+    # point the seed lookup at a nonexistent path to exercise the true
+    # "all tiers empty -> corp_source=missing" path in isolation.
+    import penny_universe as pu
+    monkeypatch.setattr(pu, "_repo_seed_path",
+                        lambda: str(tmp_path / "no_such_seed.json"))
 
     caplog.set_level(logging.INFO, logger="penny_universe")
     result = asyncio.run(refresh_from_kite(FakeKite(), str(out), str(corp), top_n=100))
@@ -253,6 +259,85 @@ def test_refresh_quality_audit_logged_on_missing_corp(monkeypatch, tmp_path, cap
     assert result is None or result == []
     # corp missing warning fires
     assert any("penny_corp_data_missing" in r.message for r in caplog.records)
+
+
+def test_refresh_uses_populated_repo_seed(monkeypatch, tmp_path, caplog):
+    """[PENNY-CORP-FETCHER 2026-07-16] When Kite corp is empty and the
+    named-volume file is absent, refresh_from_kite falls back to the git-tracked
+    repo seed (penny_company_data.json). Populating that seed flips corp_source
+    from 'missing' to 'fallback_repo_seed' -- the mechanism that restores the
+    promoter/PB gates in tomorrow's run."""
+    import asyncio
+    import json as _json
+    import logging
+    import penny_universe as pu
+    from penny_universe import refresh_from_kite
+
+    class FakeKite:
+        async def get_instruments_nse_eq(self):
+            return []
+        async def get_quote(self, tokens):
+            return {}
+        async def get_corporate_actions(self):
+            return None
+
+    seed = tmp_path / "seed.json"
+    seed.write_text(_json.dumps({"records": [
+        {"symbol": "AAA", "promoter_holding_pct": 40.0, "pb_ratio": 1.2},
+    ]}))
+    monkeypatch.setattr(pu, "_repo_seed_path", lambda: str(seed))
+
+    out = tmp_path / "penny_static.json"
+    corp = tmp_path / "penny_company_data.json"  # never created
+
+    caplog.set_level(logging.INFO, logger="penny_universe")
+    asyncio.run(refresh_from_kite(FakeKite(), str(out), str(corp), top_n=100))
+
+    assert any("penny_corp_data_falling_back_to_repo_seed" in r.message
+               for r in caplog.records)
+    assert not any("penny_corp_data_missing" in r.message for r in caplog.records)
+
+
+def test_audit_degraded_on_missing_corp_and_null_fundamentals():
+    """[PENNY-CORP-DEGRADE-WARN 2026-07-16] The quality audit must escalate to
+    WARNING when the corp-data pipeline is broken (corp_source missing) or when
+    promoter+pb are null on every ticker -- not only on null tv/pc. This is the
+    2026-07-16 blind spot: 100/100 null promoter+pb + corp_source=missing had
+    been logging at INFO, hiding a universe whose promoter/PB safety gates were
+    silently bypassed for every penny breakout."""
+    from penny_universe import _universe_audit_is_degraded
+
+    healthy = {"total": 100, "null_promoter": 0, "null_pb": 0,
+               "null_tv": 0, "null_pc": 0}
+    # Fully-populated universe with a real corp source is NOT degraded.
+    assert _universe_audit_is_degraded(healthy, "kite") is False
+    assert _universe_audit_is_degraded(healthy, "fallback_file") is False
+
+    # corp_source missing is degraded even if every other field is populated
+    # (the exact 2026-07-16 prod shape: null_tv/null_pc = 0 but no fundamentals).
+    assert _universe_audit_is_degraded(healthy, "missing") is True
+    assert _universe_audit_is_degraded(healthy, None) is True
+
+    # Fundamentals null on every ticker is degraded regardless of corp_source
+    # label (e.g. corp file loaded but none of its records matched the universe).
+    all_null_fund = {"total": 100, "null_promoter": 100, "null_pb": 100,
+                     "null_tv": 0, "null_pc": 0}
+    assert _universe_audit_is_degraded(all_null_fund, "fallback_file") is True
+
+    # Pre-existing escalations still hold: all-null tv, all-null pc, empty.
+    assert _universe_audit_is_degraded(
+        {"total": 100, "null_promoter": 0, "null_pb": 0,
+         "null_tv": 100, "null_pc": 0}, "kite") is True
+    assert _universe_audit_is_degraded(
+        {"total": 0, "null_promoter": 0, "null_pb": 0,
+         "null_tv": 0, "null_pc": 0}, "kite") is True
+
+    # A partially-null universe (some names have fundamentals) is NOT escalated
+    # to WARNING -- it's the expected null-tolerant steady state, not a broken
+    # pipeline.
+    partial = {"total": 100, "null_promoter": 40, "null_pb": 40,
+               "null_tv": 0, "null_pc": 0}
+    assert _universe_audit_is_degraded(partial, "fallback_file") is False
 
 
 def test_missing_json_raises(tmp_path):

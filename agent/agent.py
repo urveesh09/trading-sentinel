@@ -1,4 +1,5 @@
 import os
+import re
 import sys
 import time
 import json
@@ -382,7 +383,22 @@ def _extract_json_object(text: Optional[str]) -> Optional[Dict]:
     """
     if not text:
         return None
+    # [MINIMAX-REASONING 2026-07-16] MiniMax-M3 is a reasoning model: it emits
+    # its chain-of-thought inline in `content` as a <think>...</think> block
+    # BEFORE the JSON. On 2026-07-16 FIVESTAR came back starting with
+    # "<think>\nLet me analyze this trade..." and the parser (which only knew
+    # about ```json fences) failed -> fail-open SYSTEM FALLBACK, conviction
+    # veto bypassed. Strip closed think blocks first; if an UNCLOSED <think>
+    # remains (the reasoning ran past max_tokens and no JSON was ever emitted),
+    # drop from it to the end -- there is no JSON to recover, so extraction
+    # correctly returns None and the caller takes the fallback path.
+    text = re.sub(r"<think\b[^>]*>.*?</think>", "", text, flags=re.DOTALL | re.IGNORECASE)
+    open_think = re.search(r"<think\b[^>]*>", text, flags=re.IGNORECASE)
+    if open_think:
+        text = text[: open_think.start()]
     candidate = text.strip()
+    if not candidate:
+        return None
     # Strip a leading/trailing markdown code fence if present.
     if candidate.startswith("```"):
         candidate = candidate.split("```", 2)[1] if candidate.count("```") >= 2 else candidate
@@ -546,6 +562,12 @@ def analyze_with_minimax(
                     {"role": "user", "content": prompt},
                 ],
                 temperature=0.0,
+                # [MINIMAX-REASONING 2026-07-16] MiniMax-M3 spends output tokens
+                # on a <think> block before the JSON. Give it enough headroom
+                # that the JSON is never truncated mid-reasoning (the other half
+                # of the FIVESTAR unparseable-output fix, alongside the
+                # think-block stripping in _extract_json_object).
+                max_tokens=2048,
                 # Belt-and-braces: the SDK's own request timeout backs up the
                 # thread wall. It is slightly under 30s so the SDK errors
                 # (giving us a clean log line) before the thread is abandoned.

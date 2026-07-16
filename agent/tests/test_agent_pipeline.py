@@ -132,6 +132,49 @@ class TestAnalyzeWithMiniMax:
         )
         assert result is None
 
+    def test_parses_content_with_reasoning_think_block(self, agent_mod):
+        # [MINIMAX-REASONING 2026-07-16] MiniMax-M3 emits a <think>...</think>
+        # reasoning block inline in content before the JSON (the 2026-07-16
+        # FIVESTAR failure shape). The extractor must strip it and recover the
+        # object instead of failing open to a SYSTEM FALLBACK alert.
+        content = (
+            "<think>\nLet me analyze this trade carefully from a cynical, "
+            "risk-first perspective. Volume looks like {accumulation}.\n</think>\n"
+            + json.dumps({
+                "conviction_score": 72,
+                "pitch": "Momentum with volume",
+                "rationale": "Breakout on 3x volume",
+                "risks": "Regime unknown",
+            })
+        )
+
+        agent_mod.client = MagicMock()
+        agent_mod.client.chat.completions.create.return_value = _fake_llm_response(content)
+
+        result = agent_mod.analyze_with_minimax(
+            {"ticker": "FIVESTAR", "close": 500, "target_1": 530, "stop_loss": 480},
+            "",
+            "UNKNOWN",
+        )
+        assert result["conviction_score"] == 72
+        assert result["pitch"] == "Momentum with volume"
+
+    def test_returns_none_on_unclosed_think_block(self, agent_mod):
+        # Reasoning ran past max_tokens: content is an unclosed <think> with no
+        # JSON ever emitted. There is nothing to recover -> None -> the caller
+        # correctly takes the fail-open SYSTEM FALLBACK path.
+        agent_mod.client = MagicMock()
+        agent_mod.client.chat.completions.create.return_value = _fake_llm_response(
+            "<think>\nLet me analyze this trade carefully. The setup shows"
+        )
+
+        result = agent_mod.analyze_with_minimax(
+            {"ticker": "FIVESTAR", "close": 500, "target_1": 530, "stop_loss": 480},
+            "",
+            "UNKNOWN",
+        )
+        assert result is None
+
 
 class TestDeduplication:
     def test_processed_signals_cleared_by_clear_memory(self, agent_mod):
