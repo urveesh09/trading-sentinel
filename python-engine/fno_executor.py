@@ -32,6 +32,7 @@ from uuid import uuid4
 import structlog
 
 from config import settings
+from kite_client import latest_order_state
 
 logger = structlog.get_logger()
 
@@ -180,11 +181,15 @@ class FnoExecutor:
             try:
                 history = await self.kite.order_history(order_id=order_id)
                 if history:
-                    status = history[0].get("status")
+                    # [ORDER-HISTORY-2026-07-17] Kite history is
+                    # chronological; history[0] is the OLDEST event and
+                    # never shows COMPLETE. Same bug as penny_executor.
+                    latest = latest_order_state(history)
+                    status = latest.get("status")
                     if status == "COMPLETE":
                         return float(
-                            history[0].get("average_price")
-                            or history[0].get("price") or 0.0
+                            latest.get("average_price")
+                            or latest.get("price") or 0.0
                         ) or None
                     if status in ("REJECTED", "CANCELLED"):
                         logger.warning(

@@ -26,6 +26,9 @@ def fake_kite():
          "tradingsymbol": "AAA", "transaction_type": "BUY",
          "order_timestamp": "2026-06-21T09:30:00+05:30"},
     ])
+    # [ORDER-RECONCILE 2026-07-17] Post-timeout reconciliation reads the
+    # positions book. Default: flat (no position held).
+    k.get_broker_positions = AsyncMock(return_value={"net": [], "day": []})
     return k
 
 
@@ -77,7 +80,8 @@ def test_executor_market_unwinds_when_sl_m_rejected(fake_kite):
 
 
 def test_executor_cancels_unfilled_entry(fake_kite):
-    """If entry LIMIT doesn't fill within timeout, cancel + log timeout."""
+    """If entry LIMIT doesn't fill and the positions book confirms no stock,
+    cancel + log timeout (no SL placed, no spurious buy)."""
     fake_kite.order_history = AsyncMock(return_value=[
         {"order_id": "ENT-001", "status": "OPEN",
          "filled_quantity": 0, "tradingsymbol": "AAA",
@@ -95,6 +99,88 @@ def test_executor_cancels_unfilled_entry(fake_kite):
     assert result["entry_status"] == "timeout"
     assert result["sl_order_id"] is None
     fake_kite.cancel_order.assert_called_once_with("ENT-001")
+    # entry LIMIT only -- no SL-M, no unwind for an unfilled order.
+    assert fake_kite.place_order.call_count == 1
+
+
+def test_executor_proceeds_when_fill_lands_late_in_history(fake_kite):
+    """[ORDER-HISTORY-2026-07-17] Kite returns history chronologically, so
+    a filled order shows COMPLETE at the LAST row, not history[0]. The old
+    `history[0].get("status") == "COMPLETE"` never saw it -- every live
+    edge entry since 2026-07-15 "timed out". Here the COMPLETE row sits
+    after the initial OPEN row: the executor must treat it as filled and
+    place the SL-M, not cancel."""
+    fake_kite.order_history = AsyncMock(return_value=[
+        {"order_id": "ENT-001", "status": "OPEN", "filled_quantity": 0,
+         "order_timestamp": "2026-06-21T09:30:00+05:30"},
+        {"order_id": "ENT-001", "status": "COMPLETE",
+         "average_price": 10.05, "filled_quantity": 50,
+         "order_timestamp": "2026-06-21T09:30:03+05:30"},
+    ])
+    from penny_executor import PennyExecutor
+    from penny_models import PennyLeg
+    ex = PennyExecutor(kite=fake_kite, paper_mode=False,
+                       fill_timeout_sec=0.2, poll_interval_sec=0.05)
+    result = asyncio.run(ex.execute_entry(
+        ticker="AAA", leg=PennyLeg.MIS,
+        entry_price=10.05, stop_loss=9.75, shares=50,
+    ))
+    assert result["entry_status"] == "filled"
+    assert result["sl_order_id"] is not None
+    fake_kite.cancel_order.assert_not_called()
+    # entry LIMIT + SL-M.
+    assert fake_kite.place_order.call_count == 2
+
+
+def test_executor_reconciles_fill_after_poll_timeout(fake_kite):
+    """The dangerous case: the fill poll times out (history slow to update),
+    the code cancels, but the order ACTUALLY FILLED. Reconciliation via the
+    positions book must catch it and place the SL rather than walking away
+    from a naked long. This is the 2026-07-17 JINDWORLD near-miss."""
+    # Poll always sees OPEN (history lags); positions book shows the fill.
+    fake_kite.order_history = AsyncMock(return_value=[
+        {"order_id": "ENT-001", "status": "OPEN", "filled_quantity": 0,
+         "order_timestamp": "2026-06-21T09:30:00+05:30"},
+    ])
+    fake_kite.get_broker_positions = AsyncMock(return_value={
+        "net": [{"tradingsymbol": "AAA", "quantity": 50}], "day": [],
+    })
+    from penny_executor import PennyExecutor
+    from penny_models import PennyLeg
+    ex = PennyExecutor(kite=fake_kite, paper_mode=False,
+                       fill_timeout_sec=0.1, poll_interval_sec=0.05)
+    result = asyncio.run(ex.execute_entry(
+        ticker="AAA", leg=PennyLeg.MIS,
+        entry_price=10.05, stop_loss=9.75, shares=50,
+    ))
+    assert result["entry_status"] == "filled"
+    assert result["sl_order_id"] is not None
+    # LIMIT entry + SL-M -- the position is protected, not abandoned.
+    assert fake_kite.place_order.call_count == 2
+
+
+def test_executor_no_cancel_when_broker_already_killed_order(fake_kite):
+    """A REJECTED entry has nothing to cancel: pre-2026-07-17 the code
+    cancelled anyway and got a confusing 'order does not exist' back. Now
+    it exits early on the terminal state without a cancel call."""
+    fake_kite.order_history = AsyncMock(return_value=[
+        {"order_id": "ENT-001", "status": "OPEN",
+         "order_timestamp": "2026-06-21T09:30:00+05:30"},
+        {"order_id": "ENT-001", "status": "REJECTED",
+         "status_message": "insufficient margin",
+         "order_timestamp": "2026-06-21T09:30:01+05:30"},
+    ])
+    from penny_executor import PennyExecutor
+    from penny_models import PennyLeg
+    ex = PennyExecutor(kite=fake_kite, paper_mode=False,
+                       fill_timeout_sec=0.5, poll_interval_sec=0.05)
+    result = asyncio.run(ex.execute_entry(
+        ticker="AAA", leg=PennyLeg.MIS,
+        entry_price=10.05, stop_loss=9.75, shares=50,
+    ))
+    assert result["entry_status"] == "rejected"
+    assert result["sl_order_id"] is None
+    fake_kite.cancel_order.assert_not_called()
     assert fake_kite.place_order.call_count == 1
 
 

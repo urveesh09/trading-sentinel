@@ -13,16 +13,40 @@
       "trigger": "cron[minute='0']"
     },
     {
-      "func": "_run_fno_instruments_refresh",
-      "id": "fno_instruments_refresh",
-      "kwargs": [],
-      "trigger": "cron[hour='8', minute='5']"
-    },
-    {
       "func": "_run_fno_tick_safe",
       "id": "fno_tick",
       "kwargs": [],
       "trigger": "interval[0:01:00]"
+    },
+    {
+      "func": "_run_partner_analytics_tick_safe",
+      "id": "partner_analytics_tick",
+      "kwargs": [],
+      "trigger": "cron[minute='2-57/5']"
+    },
+    {
+      "func": "_run_partner_eod_wrap_safe",
+      "id": "partner_eod_wrap",
+      "kwargs": [],
+      "trigger": "cron[hour='15', minute='40']"
+    },
+    {
+      "func": "_run_partner_morning_brief_safe",
+      "id": "partner_morning_brief",
+      "kwargs": [],
+      "trigger": "cron[hour='9', minute='50']"
+    },
+    {
+      "func": "_run_partner_rv_refresh_safe",
+      "id": "partner_rv_refresh",
+      "kwargs": [],
+      "trigger": "cron[hour='9', minute='10']"
+    },
+    {
+      "func": "_run_partner_scan_tick_safe",
+      "id": "partner_scan_tick",
+      "kwargs": [],
+      "trigger": "cron[minute='*/2', second='40']"
     },
     {
       "func": "_run_penny_accept_watchdog_safe",
@@ -67,6 +91,18 @@
       "trigger": "cron[hour='7', minute='50']"
     },
     {
+      "func": "bootstrap_0800_job",
+      "id": "daily_bootstrap_0800",
+      "kwargs": [],
+      "trigger": "cron[hour='8', minute='0']"
+    },
+    {
+      "func": "bootstrap_safety_tick",
+      "id": "daily_bootstrap_tick",
+      "kwargs": [],
+      "trigger": "interval[0:10:00]"
+    },
+    {
       "func": "run_penny_connors_scan",
       "id": "penny_connors_scan",
       "kwargs": [],
@@ -107,12 +143,6 @@
       "id": "penny_scan_interval",
       "kwargs": [],
       "trigger": "interval[0:00:30]"
-    },
-    {
-      "func": "run_penny_universe_refresh",
-      "id": "penny_universe_refresh",
-      "kwargs": [],
-      "trigger": "cron[hour='8', minute='0']"
     }
   ],
   "routes": [
@@ -162,6 +192,14 @@
         "GET"
       ],
       "path": "/bankroll/breakdown",
+      "response_model": null
+    },
+    {
+      "endpoint": "get_bankroll_divisions",
+      "methods": [
+        "GET"
+      ],
+      "path": "/bankroll/divisions",
       "response_model": null
     },
     {

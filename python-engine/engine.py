@@ -976,9 +976,19 @@ def evaluate_momentum_signal(
 
     # Cost viability check -- use effective_r_target so bear-mode trades are assessed
     # against their actual 1.5R projected profit, not the default 2.0R.
+    # [EV-BASIS 2026-07-17] Both the cost gate and net_ev must be computed
+    # off the risk the SIZED position actually carries (shares x stop
+    # distance), not the intended budget (pool x risk_pct). Share flooring
+    # and the pool-cap resize can shrink the position far below budget --
+    # the 2026-07-17 COROMANDEL signal was sized to 1 share risking Rs 10.5
+    # but advertised net_ev=487 (= 243.76 budget x 2R), a ~23x
+    # overstatement. is_cost_viable also derives the per-share stop
+    # distance as risk_per_trade/shares, so passing the budget told it the
+    # stop was Rs 243/share and priced costs against a fantasy exit.
+    actual_risk = shares * risk_per_share
     viable, cost_ratio = is_cost_viable(
         entry_price=current_close, shares=shares,
-        risk_per_trade=momentum_risk, r_target=effective_r_target,  # [AUDIT-004]
+        risk_per_trade=actual_risk, r_target=effective_r_target,
         max_cost_ratio=settings.MOMENTUM_MAX_COST_RATIO, is_intraday=True
     )
     if not viable:
@@ -989,7 +999,7 @@ def evaluate_momentum_signal(
     total_cost = calc_zerodha_costs(
         current_close, estimated_exit, shares, is_intraday=True, for_gate=True
     )
-    net_ev = (momentum_risk * effective_r_target) - total_cost  # [AUDIT-004]
+    net_ev = (actual_risk * effective_r_target) - total_cost  # [EV-BASIS 2026-07-17]
 
     if net_ev <= 0:
         return False, {"reject_reason": "negative_net_ev_final", "net_ev": net_ev}

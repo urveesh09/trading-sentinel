@@ -215,8 +215,9 @@ CONNORS_FALSIFIERS = [
      "below 50 SMA"),
     ("rsi2_trigger",
      # A final up-bar sends RSI(2) to 100: not oversold, no trigger.
+     # [WATCHDOG-LABEL 2026-07-17] reason is now stable-text-first.
      lambda kw: _mutate_tail(kw, [10.5]),
-     "not below threshold"),
+     "not below buy threshold"),
     ("rsi_rising_confirmation",
      # Accelerating losses: RSI(2) sequence not strictly rising.
      lambda kw: _mutate_tail(kw, [10.02, 10.0, 9.0]),
@@ -271,7 +272,8 @@ class TestConnorsGates:
         kw["risk_engine"] = _make_risk_engine()
         r = evaluate_connors_entry(**kw)
         assert r["accept"] is False
-        assert "below floor" in r["reject_reason"]
+        # [WATCHDOG-LABEL 2026-07-17] stable-text-first reason format.
+        assert "below dead-cat floor" in r["reject_reason"]
         # Satisfiable: tail tuned so rsi = R(+0.04, -0.5) = 7.41,
         # inside the (5, 10) band and still rising.
         kw = connors_witness_kwargs()

@@ -419,12 +419,23 @@ class PennyRegimeEngine:
         self._vol_ranks[key] = ticker_vol_rank
 
         self._vol_rank = self._aggregate_vol_rank()
+        prev_regime = self._today_regime
         self._today_regime = self.classify(self._vol_rank, self._vix_proxy)
-        logger.info(
+        # [LOG-HYGIENE 2026-07-17] Per-ticker updates fire 81x per 30s scan
+        # (~35k lines/morning) and carry no decision on their own -- debug.
+        # A REGIME TRANSITION is the decision-bearing event; keep that at
+        # info so `grep penny_regime_changed` still tells the day's story.
+        logger.debug(
             "penny_regime_updated ticker=%s rank=%s aggregate=%s n=%d regime=%s",
             key, ticker_vol_rank, self._vol_rank, len(self._vol_ranks),
             self._today_regime.value,
         )
+        if prev_regime is not None and prev_regime != self._today_regime:
+            logger.info(
+                "penny_regime_changed from=%s to=%s aggregate=%s n=%d",
+                prev_regime.value, self._today_regime.value,
+                self._vol_rank, len(self._vol_ranks),
+            )
 
     def _aggregate_vol_rank(self) -> Optional[float]:
         """Median of the per-ticker vol ranks seen so far today."""

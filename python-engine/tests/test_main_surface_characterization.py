@@ -102,6 +102,7 @@ def surface():
     probe = AsyncIOScheduler(timezone=main.IST)
     main.register_penny_scheduler_jobs(probe)
     main.register_fno_scheduler_jobs(probe)
+    main.register_partner_scheduler_jobs(probe)
 
     return {"routes": _route_surface(main.app), "jobs": _job_surface(probe)}
 

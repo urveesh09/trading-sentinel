@@ -71,27 +71,15 @@ def register_fno_scheduler_jobs(scheduler):
         except Exception as exc:
             logger.error("fno_instruments_refresh_failed err=%s", exc, exc_info=True)
 
-    scheduler.add_job(
-        _run_fno_instruments_refresh, "cron",
-        hour=settings.PENNY_REFRESH_HOUR, minute=5,
-        id="fno_instruments_refresh",
-        max_instances=1, coalesce=True, misfire_grace_time=600,
-    )
-
-    # Startup catchup: if the container starts after 08:05 IST on a day
-    # with no fresh disk snapshot, fire the refresh once (rule 49 shape).
-    try:
-        _now_ist = datetime.now(IST)
-        if _now_ist.hour * 60 + _now_ist.minute >= settings.PENNY_REFRESH_HOUR * 60 + 5:
-            from fno_instruments import get_fno_instruments as _gfi
-            if not _gfi().ready(_now_ist.date()):
-                logger.warning(
-                    "fno_instruments_startup_catchup_firing now_ist=%s",
-                    _now_ist.strftime("%H:%M:%S"),
-                )
-                asyncio.create_task(_run_fno_instruments_refresh())
-    except Exception as _exc:
-        logger.warning("fno_instruments_startup_catchup_failed err=%s", str(_exc))
+    # [BOOTSTRAP-2026-07-17] The dedicated 08:05 cron + startup catchup are
+    # gone: on 2026-07-17 the cron fired while the engine held no fresh
+    # token (operator logged in at 08:05), failed once, never retried, and
+    # F&O skipped every tick until the power cut. The NFO snapshot is now a
+    # daily_bootstrap task -- token-gated at 08:00, re-run on login
+    # (post_login_initialization) and by the 10-min safety tick registered
+    # in register_penny_scheduler_jobs. _run_fno_instruments_refresh stays
+    # callable for operator/manual use.
+    _ = _run_fno_instruments_refresh  # kept: manual/ops entry point
 
     async def _run_fno_tick_safe():
         from fno_orchestrator import format_fno_telegram, run_fno_tick
@@ -268,10 +256,28 @@ def register_penny_scheduler_jobs(scheduler):
     can verify registration by calling this directly with
     `main.scheduler`.
     """
+    # [BOOTSTRAP-2026-07-17] The 08:00 slot no longer calls the universe
+    # refresh directly -- it goes through the daily_bootstrap registry,
+    # which (a) checks a token issued TODAY is armed before running,
+    # (b) sends ONE Telegram reminder and defers when it is not, and
+    # (c) re-runs automatically on login + via a 10-min safety tick.
+    # On 2026-07-17 the direct cron ran token-blind at 08:00, failed, and
+    # the whole day scanned yesterday's universe with the corp gates
+    # degraded. run_penny_universe_refresh itself is unchanged and remains
+    # the task runner underneath (and the manual/ops entry point).
+    from daily_bootstrap import bootstrap_0800_job, bootstrap_safety_tick
+
     scheduler.add_job(
-        run_penny_universe_refresh, "cron",
+        bootstrap_0800_job, "cron",
         hour=settings.PENNY_REFRESH_HOUR, minute=0,
-        id="penny_universe_refresh",
+        id="daily_bootstrap_0800",
+        max_instances=1, coalesce=True, misfire_grace_time=600,
+    )
+    scheduler.add_job(
+        bootstrap_safety_tick, "interval",
+        seconds=600,
+        id="daily_bootstrap_tick",
+        max_instances=1, coalesce=True,
     )
     # [PENNY-PREMARKET 2026-06-24] Pre-market Telegram digest -- fires
     # once per weekday at PENNY_PREMARKET_REPORT_HOUR:PENNY_PREMARKET_REPORT_MIN
@@ -717,3 +723,108 @@ def register_penny_scheduler_jobs(scheduler):
             "penny_accept_watchdog_startup_catchup_failed err=%s",
             str(_wd_catchup_exc),
         )
+
+
+def register_partner_scheduler_jobs(scheduler):
+    """
+    [PARTNER-TIPS 2026-07-18] Partner tips bot jobs (plan WS5). All five
+    jobs no-op instantly when PARTNER_BOT_ENABLED is false (the enabled
+    check is the FIRST line of every job in partner_orchestrator), so
+    registration is unconditional like the other subsystems.
+
+    Scheduling is deliberately OFF the quarter-hour grid: momentum and
+    penny scans burst the shared Kite limiter at :00/:15/:30/:45, and
+    partner calls must never queue ahead of the trading path there.
+      - partner_scan_tick:      minute */2 at second 40 (09:45-15:05 self-gate)
+      - partner_analytics_tick: minute 2-57/5 (09:20-15:30 self-gate)
+      - partner_morning_brief / partner_eod_wrap / partner_rv_refresh: crons.
+    """
+    import main as _main
+
+    logger = _main.logger
+
+    async def _run_partner_scan_tick_safe():
+        # [CALENDAR-GATE 2026-07-03] gate delegated: partner_orchestrator.
+        # _gates_open checks PARTNER_BOT_ENABLED, the session window,
+        # is_trading_day AND the access token before any work.
+        try:
+            from partner_orchestrator import partner_scan_tick
+            await partner_scan_tick()
+        except Exception as exc:
+            logger.error("partner_scan_tick_crashed err=%s", exc, exc_info=True)
+
+    async def _run_partner_analytics_tick_safe():
+        # [CALENDAR-GATE 2026-07-03] gate delegated: partner_orchestrator.
+        # _gates_open checks PARTNER_BOT_ENABLED, the session window,
+        # is_trading_day AND the access token before any work.
+        try:
+            from partner_orchestrator import partner_analytics_tick
+            await partner_analytics_tick()
+        except Exception as exc:
+            logger.error("partner_analytics_tick_crashed err=%s", exc, exc_info=True)
+
+    async def _run_partner_morning_brief_safe():
+        # [CALENDAR-GATE 2026-07-03] gate delegated: partner_orchestrator.
+        # _gates_open checks PARTNER_BOT_ENABLED, the session window,
+        # is_trading_day AND the access token before any work.
+        try:
+            from partner_orchestrator import partner_morning_brief
+            await partner_morning_brief()
+        except Exception as exc:
+            logger.error("partner_morning_brief_crashed err=%s", exc, exc_info=True)
+
+    async def _run_partner_eod_wrap_safe():
+        # [CALENDAR-GATE 2026-07-03] gate delegated: partner_orchestrator.
+        # _gates_open checks PARTNER_BOT_ENABLED, the session window,
+        # is_trading_day AND the access token before any work.
+        try:
+            from partner_orchestrator import partner_eod_wrap
+            await partner_eod_wrap()
+        except Exception as exc:
+            logger.error("partner_eod_wrap_crashed err=%s", exc, exc_info=True)
+
+    async def _run_partner_rv_refresh_safe():
+        # [CALENDAR-GATE 2026-07-03] gate delegated: partner_orchestrator.
+        # _gates_open checks PARTNER_BOT_ENABLED, the session window,
+        # is_trading_day AND the access token before any work.
+        try:
+            from partner_orchestrator import partner_rv_refresh
+            await partner_rv_refresh()
+        except Exception as exc:
+            logger.error("partner_rv_refresh_crashed err=%s", exc, exc_info=True)
+
+    scheduler.add_job(
+        _run_partner_scan_tick_safe, "cron",
+        minute="*/2", second=40,
+        id="partner_scan_tick",
+        max_instances=1, coalesce=True, misfire_grace_time=60,
+    )
+    scheduler.add_job(
+        _run_partner_analytics_tick_safe, "cron",
+        minute="2-57/5",
+        id="partner_analytics_tick",
+        max_instances=1, coalesce=True, misfire_grace_time=120,
+    )
+    scheduler.add_job(
+        _run_partner_morning_brief_safe, "cron",
+        hour=settings.PARTNER_MORNING_BRIEF_HOUR,
+        minute=settings.PARTNER_MORNING_BRIEF_MIN,
+        id="partner_morning_brief",
+        max_instances=1, coalesce=True, misfire_grace_time=600,
+    )
+    scheduler.add_job(
+        _run_partner_eod_wrap_safe, "cron",
+        hour=settings.PARTNER_EOD_HOUR, minute=settings.PARTNER_EOD_MIN,
+        id="partner_eod_wrap",
+        max_instances=1, coalesce=True, misfire_grace_time=600,
+    )
+    scheduler.add_job(
+        _run_partner_rv_refresh_safe, "cron",
+        hour=9, minute=10,
+        id="partner_rv_refresh",
+        max_instances=1, coalesce=True, misfire_grace_time=600,
+    )
+    logger.info(
+        "partner_cron_registered jobs=5 enabled=%s off_grid=true",
+        settings.PARTNER_BOT_ENABLED,
+    )

@@ -129,3 +129,60 @@ def test_option_lookup(monkeypatch):
     c = book.option(date(2026, 7, 14), 25000.0, OptionType.CE)
     assert c is not None and c.tradingsymbol == "NIFTY071425000CE"
     assert book.option(date(2026, 7, 14), 99999.0, OptionType.CE) is None
+
+
+# ===========================================================================
+# [PARTNER-TIPS 2026-07-18] segment / json_path / load_from_raw additions.
+# Everything above this line is the original NIFTY/NFO suite and must keep
+# passing UNMODIFIED -- the new parameters default to the old behavior.
+# ===========================================================================
+
+BFO_CSV = "\n".join([
+    CSV_HEADER,
+    "501,1,SENSEX0723820000CE,SENSEX,0,2026-07-23,82000,0.05,20,CE,BFO-OPT,BFO",
+    "502,1,SENSEX0723820000PE,SENSEX,0,2026-07-23,82000,0.05,20,PE,BFO-OPT,BFO",
+    "503,1,SENSEX0723821000CE,SENSEX,0,2026-07-23,82100,0.05,20,CE,BFO-OPT,BFO",
+    "504,1,SENSEX26JULFUT,SENSEX,0,2026-07-30,0,0.05,20,FUT,BFO-FUT,BFO",
+])
+
+
+class _BfoKite:
+    async def get_instruments_dump(self, segment):
+        assert segment == "BFO"   # the book must ask for ITS segment
+        return BFO_CSV
+
+
+@pytest.mark.asyncio
+async def test_segment_parameter_reaches_the_dump_fetch():
+    book = FnoInstruments("SENSEX", segment="BFO")
+    assert await book.refresh(_BfoKite())
+    assert book.lot_size == 20
+    assert book.strike_step == 100.0
+    fut = book.front_future(date(2026, 7, 20))
+    assert fut is not None and fut.token == 504
+
+
+def test_load_from_raw_without_a_kite():
+    book = FnoInstruments("SENSEX", segment="BFO")
+    assert book.load_from_raw(BFO_CSV)
+    assert len(book.by_symbol) == 4
+    assert not book.load_from_raw("")               # empty -> False, book kept
+    assert len(book.by_symbol) == 4
+
+
+def test_custom_json_path_round_trip(tmp_path):
+    path = str(tmp_path / "sensex.json")
+    book = FnoInstruments("SENSEX", segment="BFO", json_path=path)
+    assert book.load_from_raw(BFO_CSV)              # _persist -> custom path
+
+    fresh = FnoInstruments("SENSEX", segment="BFO", json_path=path)
+    assert fresh.load_from_disk()
+    assert fresh.lot_size == 20
+    assert len(fresh.by_symbol) == 4
+
+
+def test_default_json_path_is_the_legacy_setting():
+    from config import settings
+    book = FnoInstruments("NIFTY")
+    assert book._path() == settings.FNO_INSTRUMENTS_JSON_PATH
+    assert book.segment == "NFO"

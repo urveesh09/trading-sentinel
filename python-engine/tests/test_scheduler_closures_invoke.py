@@ -35,10 +35,26 @@ ALL_CLOSURES = [
     "_run_penny_edge_exit_safe",
     "_run_penny_accept_watchdog_safe",
     "_run_penny_premarket_report",
-    "_run_fno_instruments_refresh",
+    # [BOOTSTRAP-2026-07-17] _run_fno_instruments_refresh is no longer a
+    # scheduled closure -- the NFO snapshot is a daily_bootstrap task. The
+    # two bootstrap entries below are module-level functions rather than
+    # closures, but they are scheduled callables all the same and the
+    # NameError-at-fire-time failure mode applies to them identically
+    # (they resolve `main.is_trading_day` / `main.kite` lazily at call
+    # time).
+    "bootstrap_0800_job",
+    "bootstrap_safety_tick",
     "_run_fno_tick_safe",
     "_run_fno_hourly_report_safe",
     "_run_fno_accept_watchdog_safe",
+    # [PARTNER-TIPS 2026-07-18] the five partner-bot closures. Their first
+    # gate is PARTNER_BOT_ENABLED (default false), so invoking them here
+    # exercises the free-name region and exits without touching anything.
+    "_run_partner_scan_tick_safe",
+    "_run_partner_analytics_tick_safe",
+    "_run_partner_morning_brief_safe",
+    "_run_partner_eod_wrap_safe",
+    "_run_partner_rv_refresh_safe",
 ]
 
 
@@ -52,10 +68,11 @@ def _registered_jobs():
     probe = AsyncIOScheduler(timezone=main.IST)
     main.register_penny_scheduler_jobs(probe)
     main.register_fno_scheduler_jobs(probe)
+    main.register_partner_scheduler_jobs(probe)
     return {j.func.__name__: j.func for j in probe.get_jobs()}
 
 
-def test_all_eight_closures_are_registered():
+def test_all_scheduled_closures_are_registered():
     """If a closure stops being registered, the rest of this file would pass
     vacuously. Pin the roster first."""
     jobs = _registered_jobs()

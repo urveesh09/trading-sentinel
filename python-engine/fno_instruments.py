@@ -42,8 +42,20 @@ IST = pytz.timezone("Asia/Kolkata")
 class FnoInstruments:
     """In-memory NIFTY contract book, refreshed daily at 08:00 IST."""
 
-    def __init__(self, underlying: Optional[str] = None):
+    def __init__(
+        self,
+        underlying: Optional[str] = None,
+        segment: str = "NFO",
+        json_path: Optional[str] = None,
+    ):
+        # [PARTNER-TIPS 2026-07-18] segment + json_path parameterized so
+        # the analytics registry (fno_underlyings) can hold BANKNIFTY/NFO
+        # and SENSEX/BFO books. Defaults reproduce the original NIFTY
+        # behavior exactly; json_path=None resolves lazily to the legacy
+        # settings path so test-time settings patches still apply.
         self.underlying = (underlying or settings.FNO_UNDERLYING).upper()
+        self.segment = segment.upper()
+        self._json_path = json_path
         self.refreshed_on: Optional[date] = None   # IST date of last refresh
         self.by_key: Dict[Tuple[str, str, float, str], Contract] = {}
         self.by_symbol: Dict[str, Contract] = {}
@@ -56,17 +68,28 @@ class FnoInstruments:
     # refresh / persistence
     # ------------------------------------------------------------------
 
+    def _path(self) -> str:
+        return self._json_path or settings.FNO_INSTRUMENTS_JSON_PATH
+
     async def refresh(self, kite) -> bool:
-        """Fetch + parse the NFO dump. Returns True on success. On failure
-        the previous in-memory book (if any) is kept -- stale beats empty
-        intraday, and the staleness guard in ready() still gates entries."""
-        raw = await kite.get_instruments_dump("NFO")
+        """Fetch + parse the segment dump. Returns True on success. On
+        failure the previous in-memory book (if any) is kept -- stale beats
+        empty intraday, and the staleness guard in ready() still gates
+        entries."""
+        raw = await kite.get_instruments_dump(self.segment)
         if not raw:
             logger.error(
                 "fno_instruments_refresh_failed reason=empty_dump "
-                "FIX=check Kite auth + VERIFY-6 (plan must include NFO)"
+                "FIX=check Kite auth + VERIFY-6 (plan must include %s)",
+                self.segment,
             )
             return False
+        return self.load_from_raw(raw)
+
+    def load_from_raw(self, raw: str) -> bool:
+        """Parse + load + persist from an already-fetched dump CSV.
+        Split out of refresh() so fno_underlyings.refresh_all can feed
+        one NFO dump to both the NIFTY and BANKNIFTY books."""
         contracts = self._parse_csv(raw)
         if not contracts:
             logger.error(
@@ -149,7 +172,7 @@ class FnoInstruments:
     def _persist(self) -> None:
         """Best-effort disk snapshot for same-day rehydration."""
         try:
-            path = settings.FNO_INSTRUMENTS_JSON_PATH
+            path = self._path()
             os.makedirs(os.path.dirname(path), exist_ok=True)
             payload = {
                 "underlying": self.underlying,
@@ -176,7 +199,7 @@ class FnoInstruments:
         """Rehydrate if the snapshot is from TODAY (IST). A yesterday
         snapshot is refused: expiries/tokens may have rolled overnight."""
         try:
-            path = settings.FNO_INSTRUMENTS_JSON_PATH
+            path = self._path()
             if not os.path.exists(path):
                 return False
             with open(path) as f:

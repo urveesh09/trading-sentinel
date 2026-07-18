@@ -36,6 +36,7 @@ class KiteClient:
     def __init__(self, db_path: str):
         self.db_path = db_path
         self.access_token = ""
+        self.token_set_ist_date = None  # [BOOTSTRAP-2026-07-17] see set_token
         self.limiter = RateLimiter(rate=3.0, burst=1)
         self.instrument_cache = {}
         self._cache_lock = asyncio.Lock()
@@ -45,6 +46,16 @@ class KiteClient:
 
     def set_token(self, token: str):
         self.access_token = token
+        # [BOOTSTRAP-2026-07-17] IST date this token was armed. A non-empty
+        # access_token is NOT proof of freshness: on a day with no restart
+        # the client still holds yesterday's token, expired at the broker
+        # since ~06:00 IST. daily_bootstrap.token_is_fresh_today() compares
+        # this stamp against today; the startup-restore path also goes
+        # through set_token and only ever restores a same-day token.
+        import pytz as _pytz
+        self.token_set_ist_date = datetime.now(
+            _pytz.timezone("Asia/Kolkata")
+        ).date()
         api_key = os.getenv("ZERODHA_API_KEY", "")
         self.client.headers.update({
             "X-Kite-Version": "3",
@@ -204,7 +215,13 @@ class KiteClient:
                     try:
                         last_fetched = datetime.strptime(last_fetched_str, "%Y-%m-%d %H:%M:%S").replace(tzinfo=timezone.utc)
                         if (datetime.now(timezone.utc) - last_fetched).total_seconds() < 86400:
-                            logger.info("data_fetch", event_type="cache_hit", ticker=ticker)
+                            # [LOG-HYGIENE 2026-07-17] debug, not info: the
+                            # 30s penny loop emitted ~55k of these per
+                            # morning -- 53% of all engine log lines -- and
+                            # the volume pushed docker's json-log rotation
+                            # past what `docker logs` can read back.
+                            # Cache MISSES stay at info (they cost quota).
+                            logger.debug("data_fetch", event_type="cache_hit", ticker=ticker)
                             df = pd.DataFrame(rows, columns=['date', 'open', 'high', 'low', 'close', 'volume', 'fetched_at'])
                             df.drop(columns=['fetched_at'], inplace=True)
                             df['date'] = pd.to_datetime(df['date'])
@@ -314,8 +331,10 @@ class KiteClient:
                 # If stale, fall through to API so new candles are fetched.
                 expected_latest = to_dt_obj - timedelta(minutes=15)
                 if last_cached_dt >= expected_latest:
-                    logger.info("data_fetch", event_type="intraday_cache_hit",
-                                ticker=ticker, candles=len(rows))
+                    # [LOG-HYGIENE 2026-07-17] debug -- see the cache_hit
+                    # comment in get_historical.
+                    logger.debug("data_fetch", event_type="intraday_cache_hit",
+                                 ticker=ticker, candles=len(rows))
                     df = pd.DataFrame(
                         rows, columns=['datetime','open','high','low','close','volume']
                     )
@@ -911,8 +930,19 @@ class KiteClient:
         """
         Fetch the order history (status updates over time).
         Kite endpoint: GET /orders/{order_id}
-        Returns: list of dicts, each with status/timestamp/etc.
-                 Index 0 is the most recent.
+        Returns: list of dicts, each with status/timestamp/etc., in
+                 CHRONOLOGICAL order -- index 0 is the OLDEST event, the
+                 current state is the LAST entry.
+
+        [ORDER-HISTORY-2026-07-17] This docstring used to claim "Index 0 is
+        the most recent", and three call sites believed it. Zerodha returns
+        the history ascending, so history[0] is the initial PUT-ORDER-REQ /
+        OPEN event and a filled order NEVER shows COMPLETE at index 0. On
+        2026-07-17 the JINDWORLD edge-live entry polled history[0] for 74s,
+        declared timeout, and tried to cancel -- every live edge entry since
+        2026-07-15 died this way (the accept-watchdog's "entry_status=
+        timeout 100%" alarm). Use latest_order_state() to read the current
+        status; do not index the list directly.
         """
         if not order_id:
             return []
@@ -929,3 +959,43 @@ class KiteClient:
         except httpx.RequestError as e:
             logger.error("kite_order_history_failed error=%s", str(e))
             return []
+
+    async def get_broker_positions(self) -> dict:
+        """Broker-side positions. Kite endpoint: GET /portfolio/positions.
+        Returns {"net": [...], "day": [...]} ({} on failure).
+
+        [ORDER-HISTORY-2026-07-17] Added for post-timeout reconciliation:
+        when an entry order's final state cannot be determined (history
+        fetch failed, cancel returned "order does not exist"), the last
+        word on whether we actually hold stock is the positions book, not
+        our bookkeeping. See PennyExecutor.execute_entry."""
+        await self.limiter.acquire()
+        try:
+            resp = await self.client.get("/portfolio/positions")
+            resp.raise_for_status()
+            data = resp.json().get("data", {})
+            return data if isinstance(data, dict) else {}
+        except httpx.HTTPStatusError as e:
+            logger.error("kite_positions_failed status=%d", e.response.status_code)
+            return {}
+        except httpx.RequestError as e:
+            logger.error("kite_positions_failed error=%s", str(e))
+            return {}
+
+
+def latest_order_state(history: list) -> dict:
+    """Current state row of a GET /orders/{id} history response.
+
+    Kite returns rows in CHRONOLOGICAL order (oldest first). Sorting by
+    order_timestamp instead of blindly taking [-1] keeps this correct even
+    if a relay/proxy ever reorders rows; rows without a timestamp fall back
+    to list position. Returns {} for an empty history."""
+    if not history:
+        return {}
+    try:
+        return max(
+            enumerate(history),
+            key=lambda ih: (str(ih[1].get("order_timestamp") or ""), ih[0]),
+        )[1]
+    except (TypeError, AttributeError):
+        return history[-1]
