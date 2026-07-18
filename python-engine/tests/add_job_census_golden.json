@@ -25,14 +25,34 @@
     "trigger": "'cron'"
   },
   {
-    "func": "_run_fno_instruments_refresh",
-    "id": "'fno_instruments_refresh'",
-    "trigger": "'cron'"
-  },
-  {
     "func": "_run_fno_tick_safe",
     "id": "'fno_tick'",
     "trigger": "'interval'"
+  },
+  {
+    "func": "_run_partner_analytics_tick_safe",
+    "id": "'partner_analytics_tick'",
+    "trigger": "'cron'"
+  },
+  {
+    "func": "_run_partner_eod_wrap_safe",
+    "id": "'partner_eod_wrap'",
+    "trigger": "'cron'"
+  },
+  {
+    "func": "_run_partner_morning_brief_safe",
+    "id": "'partner_morning_brief'",
+    "trigger": "'cron'"
+  },
+  {
+    "func": "_run_partner_rv_refresh_safe",
+    "id": "'partner_rv_refresh'",
+    "trigger": "'cron'"
+  },
+  {
+    "func": "_run_partner_scan_tick_safe",
+    "id": "'partner_scan_tick'",
+    "trigger": "'cron'"
   },
   {
     "func": "_run_penny_accept_watchdog_safe",
@@ -88,6 +108,16 @@
     "func": "auto_square_momentum",
     "id": "'momentum_auto_square'",
     "trigger": "'cron'"
+  },
+  {
+    "func": "bootstrap_0800_job",
+    "id": "'daily_bootstrap_0800'",
+    "trigger": "'cron'"
+  },
+  {
+    "func": "bootstrap_safety_tick",
+    "id": "'daily_bootstrap_tick'",
+    "trigger": "'interval'"
   },
   {
     "func": "daily_post_market",
@@ -153,11 +183,6 @@
     "func": "run_penny_scanner_once",
     "id": "'penny_scan_interval'",
     "trigger": "'interval'"
-  },
-  {
-    "func": "run_penny_universe_refresh",
-    "id": "'penny_universe_refresh'",
-    "trigger": "'cron'"
   },
   {
     "func": "run_screener",

@@ -77,13 +77,18 @@ def test_run_penny_connors_scan_is_callable():
 
 
 def test_penny_universe_refresh_is_scheduled():
-    """The penny_universe_refresh cron job (08:00 IST) must be registered."""
+    """[BOOTSTRAP-2026-07-17] The 08:00 slot is now the token-aware
+    daily_bootstrap entry (which runs the universe refresh underneath),
+    plus a 10-min safety tick for post-login catch-up."""
     sched = _fresh_scheduler_with_penny_jobs()
     job_ids = [j.id for j in sched.get_jobs()]
-    assert "penny_universe_refresh" in job_ids, (
-        f"penny_universe_refresh missing; got jobs={job_ids}"
+    assert "daily_bootstrap_0800" in job_ids, (
+        f"daily_bootstrap_0800 missing; got jobs={job_ids}"
     )
-    job = next(j for j in sched.get_jobs() if j.id == "penny_universe_refresh")
+    assert "daily_bootstrap_tick" in job_ids, (
+        f"daily_bootstrap_tick missing; got jobs={job_ids}"
+    )
+    job = next(j for j in sched.get_jobs() if j.id == "daily_bootstrap_0800")
     # Cron trigger; hour 8 IST
     assert job.trigger is not None
 

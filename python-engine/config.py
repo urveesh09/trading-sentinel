@@ -574,6 +574,42 @@ class Settings(BaseSettings):
     # (ops rule 62 recipe); flipped in .env only after the grep passes.
     FNO_LIVENESS_30D_CLEAN:       bool  = False
 
+    # --- multi-underlying analytics ([PARTNER-TIPS 2026-07-18]) -------------
+    # Read-only chain analytics + ORB signal-gen for the partner tips bot.
+    # The TRADING path stays FNO_UNDERLYING=NIFTY only; these settings feed
+    # fno_underlyings/fno_signal_scan/fno_analytics and nothing else.
+    FNO_ANALYTICS_UNDERLYINGS: str   = "NIFTY,BANKNIFTY,SENSEX"
+    # Wide window for PCR / max pain / OI walls. The trading path keeps the
+    # narrow FNO_STRIKE_WINDOW; +/-15 x CE/PE = 62 tokens + future per
+    # underlying, still one batched /quote well inside Kite's ~500 cap.
+    FNO_ANALYTICS_STRIKE_WINDOW: int = 15
+    FNO_ANALYTICS_INTERVAL_SEC: int  = 300
+    FNO_OI_RETENTION_DAYS:      int  = 7          # disk at 86% -- purge is load-bearing
+
+    # ============================================================
+    # PARTNER TIPS BOT ([PARTNER-TIPS 2026-07-18])
+    # Outbound-only second Telegram bot (own token + chat) sending
+    # information/inferences to the operator's trading partner. NO
+    # execution surface, NO fallback into the operator chat (a
+    # misrouted partner message is worse than a dropped one).
+    # Disabled by default: with PARTNER_BOT_ENABLED=false every
+    # partner job returns immediately -- zero Kite calls, zero sends.
+    # ============================================================
+    PARTNER_BOT_ENABLED:        bool  = False
+    PARTNER_TELEGRAM_BOT_TOKEN: str   = ""
+    PARTNER_TELEGRAM_CHAT_ID:   str   = ""
+    PARTNER_MORNING_BRIEF_HOUR: int   = 9
+    PARTNER_MORNING_BRIEF_MIN:  int   = 50
+    PARTNER_EOD_HOUR:           int   = 15
+    PARTNER_EOD_MIN:            int   = 40
+    # IV/RV ratio bands for the premium rich/cheap read (option-buyer lens).
+    PARTNER_IV_RICH_RATIO:      float = 1.25
+    PARTNER_IV_CHEAP_RATIO:     float = 0.80
+    # Intraday event thresholds + per-(kind,underlying) message throttle.
+    PARTNER_PCR_ALERT_DELTA:    float = 0.15
+    PARTNER_IV_MOVE_ALERT_PCT:  float = 0.10      # relative ATM-IV intraday move
+    PARTNER_EVENT_MIN_GAP_MIN:  int   = 30
+
     # ============================================================
     # REGIME ENGINE -- VIX-Free Volatility Detection
     # Replaces India VIX with ATR Compression + Realized Volatility

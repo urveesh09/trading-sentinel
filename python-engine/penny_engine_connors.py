@@ -135,7 +135,15 @@ def evaluate_connors_entry(
     # 2. Trigger: RSI(2) < threshold (relaxed to 10 for penny, spec section 4.2)
     rsi = _rsi_2(closes)
     if rsi >= settings.PENNY_CONNORS_RSI2_BUY:
-        return {"accept": False, "reject_reason": f"RSI(2)={rsi:.1f} not below threshold"}
+        # [WATCHDOG-LABEL 2026-07-17] Stable text FIRST, number in a
+        # trailing parenthesis: the accept-watchdog histograms on the
+        # reason PREFIX, and the old "RSI(2)={value} ..." format collapsed
+        # to the bucket "RSI(2)=" -- which rendered in the Telegram alarm
+        # as an apparently-empty value (26.5% of CNC rejects on
+        # 2026-07-17 showed as `RSI(2)=`). It also merged this gate with
+        # the dead-cat floor gate below into one bucket.
+        return {"accept": False,
+                "reject_reason": f"RSI(2) not below buy threshold (rsi={rsi:.1f})"}
 
     # 2a. [TIER2-CONNORS-REFINEMENT 2026-06-25] Absolute RSI(2) floor.
     # The original Connors spec implies the trigger is "RSI(2) under 10"
@@ -148,7 +156,10 @@ def evaluate_connors_entry(
     rsi_floor = settings.PENNY_CONNORS_RSI2_FLOOR
     if rsi_floor > 1.0 and rsi < rsi_floor:
         return {"accept": False,
-                "reject_reason": f"RSI(2)={rsi:.1f} below floor {rsi_floor:.1f} (dead cat)"}
+                "reject_reason": (
+                    f"RSI(2) below dead-cat floor (rsi={rsi:.1f} "
+                    f"floor={rsi_floor:.1f})"
+                )}
 
     # 2b. [TIER2-CONNORS-REFINEMENT 2026-06-25] Cumulative RSI trigger.
     # Count how many consecutive daily bars (including today) had

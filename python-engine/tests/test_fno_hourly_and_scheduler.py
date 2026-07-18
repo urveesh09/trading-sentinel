@@ -80,6 +80,14 @@ def test_scheduler_jobs_registered():
 
     stub = _StubScheduler()
     main.register_fno_scheduler_jobs(stub)
-    for job_id in ("fno_instruments_refresh", "fno_tick",
-                   "fno_hourly_report", "fno_accept_watchdog"):
+    # [BOOTSTRAP-2026-07-17] fno_instruments_refresh is no longer a
+    # standalone cron -- the NFO snapshot is a daily_bootstrap task
+    # (registered under register_penny_scheduler_jobs as
+    # daily_bootstrap_0800 / daily_bootstrap_tick, re-run on login).
+    for job_id in ("fno_tick", "fno_hourly_report", "fno_accept_watchdog"):
         assert job_id in stub.jobs, f"missing scheduler job: {job_id}"
+    assert "fno_instruments_refresh" not in stub.jobs, (
+        "fno_instruments_refresh cron reintroduced -- it must stay a "
+        "daily_bootstrap task (token-gated, login-retried), not a "
+        "token-blind 08:05 cron"
+    )

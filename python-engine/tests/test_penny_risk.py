@@ -47,13 +47,20 @@ def test_position_size_pr2_uses_half_pct():
     assert pr2 < pr1
 
 
-def test_position_size_pr3_returns_zero():
+def test_position_size_pr3_trades_small_not_zero():
+    """PR3 sizes SMALL (1% risk), it does not shut off. A 0-size regime is
+    unfalsifiable -- it can never produce an accept, so nothing can ever
+    show whether the gate was right (see the PENNY_RISK_PCT_PR3 comment in
+    config.py). This test used to pin the old shutdown behaviour (== 0)
+    and had been failing since the config change."""
     from penny_risk import PennyRiskEngine
     from penny_models import PennyRegime
     eng = PennyRiskEngine(bankroll=2000.0)
-    assert eng.position_size(
-        entry=10.0, stop_loss=9.8, regime=PennyRegime.PR3_HOT
-    ) == 0
+    # entry=10, stop=5 -> risk_per_share=5; PR3: 2000 * 0.01 = 20 / 5 = 4
+    pr3 = eng.position_size(entry=10.0, stop_loss=5.0, regime=PennyRegime.PR3_HOT)
+    pr2 = eng.position_size(entry=10.0, stop_loss=5.0, regime=PennyRegime.PR2_ELEVATED)
+    assert pr3 == 4
+    assert 0 < pr3 < pr2
 
 
 def test_position_size_respects_per_stock_cap():

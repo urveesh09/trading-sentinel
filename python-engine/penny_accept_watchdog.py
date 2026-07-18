@@ -50,6 +50,14 @@ _REASON_PREFIXES = [
     "volume",
     "breakout not confirmed",
     "no prior bars to anchor breakout",
+    # [WATCHDOG-LABEL 2026-07-17] New stable-text-first labels (numbers
+    # moved to a trailing parenthesis so the bucket names read cleanly in
+    # the Telegram alarm, and the threshold vs dead-cat gates get separate
+    # buckets). The old "RSI(N)=" formats stay below so rows written
+    # before the change still histogram correctly in the 2-day window.
+    "RSI(2) not below buy threshold",
+    "RSI(2) below dead-cat floor",
+    "RSI(14) overbought",
     "RSI(14)=",
     "RSI(2)=",
     "RSI not rising",

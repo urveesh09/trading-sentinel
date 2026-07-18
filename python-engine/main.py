@@ -22,6 +22,7 @@ from logging_setup import configure_structlog
 configure_structlog(level="INFO")
 from config import settings
 from kite_client import KiteClient
+from kite_client import latest_order_state as _kc_latest_order_state
 from market_calendar import is_trading_day, prev_trading_day, is_market_open
 from engine import evaluate_signal, calc_ema, evaluate_momentum_signal, calc_zerodha_costs, calc_rsi_series, calc_atr
 from regime import RegimeEngine
@@ -91,6 +92,7 @@ from operator_alert import notify_operator as _notify_operator
 # the register functions), so this top-level import cannot cycle.
 from scheduler_setup import (
     register_fno_scheduler_jobs,
+    register_partner_scheduler_jobs,
     register_penny_scheduler_jobs,
 )
 
@@ -597,8 +599,12 @@ async def run_penny_connors_scan():
 _penny_universe_refresh_in_progress: bool = False
 
 
-async def run_penny_universe_refresh():
-    """Daily 08:00 IST refresh (spec §9.1).
+async def run_penny_universe_refresh() -> bool:
+    """Daily 08:00 IST refresh (spec §9.1). Returns True only when
+    refresh_from_kite actually produced a ranked universe -- the
+    daily_bootstrap registry ([BOOTSTRAP-2026-07-17]) uses the return to
+    decide whether the task is done for the day or must be retried after
+    the operator's login.
 
     [CALENDAR-GATE 2026-07-03] P1 follow-up to PR-1. Skip on weekends +
     NSE holidays. On a non-trading day the universe loader's network
@@ -610,13 +616,13 @@ async def run_penny_universe_refresh():
     today = datetime.now(IST).date()
     if not await is_trading_day(today, settings.DB_PATH):
         logger.info("penny_universe_refresh_skip reason=non_trading_day")
-        return
+        return True  # nothing to do IS the done state on a holiday
     global _penny_universe_refresh_in_progress
     if _penny_universe_refresh_in_progress:
         logger.warning(
             "penny_universe_refresh_skipped reason=previous_run_in_progress"
         )
-        return
+        return False
     _penny_universe_refresh_in_progress = True
     # [AUDIT-FIX-REFRESH 2026-06-26] Loud start/end logging. The
     # earlier implementation had zero log lines on the happy path
@@ -649,6 +655,7 @@ async def run_penny_universe_refresh():
                 "penny_universe_quote_* events for cause) elapsed=%.1fs",
                 elapsed,
             )
+            return False
         else:
             logger.info(
                 "penny_universe_refresh_done count=%d as_of=%s elapsed=%.1fs",
@@ -656,8 +663,10 @@ async def run_penny_universe_refresh():
                 datetime.now(timezone.utc).strftime("%Y-%m-%d"),
                 elapsed,
             )
+            return True
     except Exception as e:
         logger.error("penny_universe_refresh_failed", error=str(e))
+        return False
     finally:
         _penny_universe_refresh_in_progress = False
 
@@ -1487,6 +1496,10 @@ async def lifespan(app: FastAPI):
     # hourly report, zero-accept watchdog). Paper-only in P1; the live leg
     # refuses to arm until fno_go_live_check() returns [].
     register_fno_scheduler_jobs(scheduler)
+    # [PARTNER-TIPS 2026-07-18] Partner tips bot jobs. Registration is
+    # unconditional; every job's first line checks PARTNER_BOT_ENABLED
+    # and returns instantly when off (zero Kite calls, zero sends).
+    register_partner_scheduler_jobs(scheduler)
 
     # [FNO 2026-07-10] fno tables exist before the first tick (rule 57
     # preflight would catch it, but creating them at startup keeps the
@@ -1496,6 +1509,11 @@ async def lifespan(app: FastAPI):
         from fno_signal_log import init_fno_signal_db
         await init_fno_positions_db(settings.DB_PATH)
         await init_fno_signal_db(settings.DB_PATH)
+        # [PARTNER-TIPS 2026-07-18] OI store + partner dedup tables.
+        from fno_oi_store import init_oi_db
+        from partner_orchestrator import init_partner_db
+        await init_oi_db(settings.DB_PATH)
+        await init_partner_db(settings.DB_PATH)
     except Exception as _fno_db_exc:
         logger.warning("fno_db_init_failed err=%s", str(_fno_db_exc))
 
@@ -1658,6 +1676,15 @@ async def post_login_initialization():
             await kite.refresh_instrument_cache()
         except Exception as e:
             logger.warning("instrument_cache_refresh_skipped", error=str(e))
+        # [BOOTSTRAP-2026-07-17] "The moment there is a login, it runs once
+        # again": any daily bootstrap task the 08:00 cron had to defer (no
+        # fresh token) or that failed runs NOW. No-op when everything for
+        # today already succeeded, so repeat logins are free.
+        try:
+            import daily_bootstrap
+            await daily_bootstrap.run_pending("post_login")
+        except Exception as e:
+            logger.error("post_login_bootstrap_failed", error=str(e))
         df = await kite.get_historical(
             "RELIANCE", "2024-01-01",
             datetime.now(IST).strftime("%Y-%m-%d")
@@ -2052,6 +2079,29 @@ async def run_screener():
         else:
             logger.info("swing_scan_silent", reason="outside_market_hours_notification_suppressed",
                         signals_found=len(current_signals))
+            # [SWING-PREMARKET 2026-07-17] Full-report suppression outside
+            # market hours is right (pre-open data is yesterday's dailies),
+            # but on 2026-07-17 the 08:13 scan found 1 signal and the
+            # operator never heard about it -- the 09:20 rescan superseded
+            # it silently. A signal found is worth one line even when
+            # indicative; stay silent when nothing was found.
+            if current_signals:
+                try:
+                    from operator_alert import notify_operator
+                    names = ", ".join(
+                        s.get("ticker", "?") for s in current_signals[:5]
+                    )
+                    await notify_operator(
+                        f"🌅 *Pre-market swing scan* found "
+                        f"{len(current_signals)} candidate(s): {names}\n"
+                        "_Indicative only (pre-open data). The 09:20 "
+                        "in-market scan is authoritative and will alert "
+                        "normally._",
+                        event="swing_premarket_headsup",
+                    )
+                except Exception as _pm_exc:
+                    logger.warning("swing_premarket_headsup_failed error=%s",
+                                   str(_pm_exc))
 
     # Track crisis regime so daily_post_market can react accordingly
     global _last_regime_was_crisis
@@ -2594,8 +2644,13 @@ async def momentum_intraday_monitor():
             # ---- 1. Did the broker-side stop already fill? ------------------
             sl_order_id = pos.get('sl_order_id')
             if sl_order_id:
+                # [ORDER-HISTORY-2026-07-17] Kite history is chronological;
+                # history[0] is the oldest event. latest_order_state() reads
+                # the current one -- history[0] could never show COMPLETE,
+                # so a broker-filled SL-M was invisible to this monitor and
+                # the exit ladder would try to sell a second time.
                 history = await kite.order_history(order_id=str(sl_order_id))
-                latest = history[0] if history else None
+                latest = _kc_latest_order_state(history) if history else None
                 if latest and latest.get("status") == "COMPLETE":
                     fill = float(latest.get("average_price") or pos['stop_loss_initial'])
                     await _close_momentum_position(

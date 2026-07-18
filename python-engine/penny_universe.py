@@ -193,11 +193,21 @@ class PennyUniverse:
             else:
                 missing.append(sym)
         if missing:
-            logger.warning(
-                "penny_universe_tokens_unresolved count=%d sample=%s",
-                len(missing),
-                missing[:5],
-            )
+            # [LOG-HYGIENE 2026-07-17] Warn only when the missing SET
+            # changes, not on every 30s scan. A permanently unresolvable
+            # symbol (SHARDUL, delisted/renamed) produced ~700 identical
+            # warnings on 2026-07-17 -- noise that buries real warnings.
+            # The first occurrence still warns, so the operator sees it.
+            missing_key = tuple(sorted(missing))
+            if missing_key != getattr(self, "_last_unresolved_warned", None):
+                self._last_unresolved_warned = missing_key
+                logger.warning(
+                    "penny_universe_tokens_unresolved count=%d sample=%s "
+                    "(logged once per change; a symbol stuck here is "
+                    "delisted/renamed -- prune it from the universe)",
+                    len(missing),
+                    missing[:5],
+                )
 
     @property
     def size(self) -> int:

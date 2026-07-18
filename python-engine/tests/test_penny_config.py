@@ -50,7 +50,10 @@ def test_penny_risk_settings():
     assert settings.PENNY_PAPER_BANKROLL == 500.0
     assert settings.PENNY_RISK_PCT_PR1 == 0.05
     assert settings.PENNY_RISK_PCT_PR2 == 0.025
-    assert settings.PENNY_RISK_PCT_PR3 == 0.0
+    # [PR3-FALSIFIABLE] 0.01, not 0.0: PR3 trades small rather than
+    # shutting off -- a 0-size regime can never produce an accept, so no
+    # watchdog or backtest could ever validate it (config.py comment).
+    assert settings.PENNY_RISK_PCT_PR3 == 0.01
     assert settings.PENNY_DAILY_KILL_SWITCH_PCT == 0.20
     assert settings.PENNY_PER_STOCK_CAP == 500.0
     assert settings.PENNY_MAX_POSITIONS_TOTAL == 5

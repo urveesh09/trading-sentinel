@@ -104,6 +104,7 @@ def _parity_forward(
 
 async def take_chain_snapshot(
     kite, instruments: FnoInstruments, now_ist: Optional[datetime] = None,
+    strike_window: Optional[int] = None,
 ) -> Optional[ChainSnapshot]:
     """One batched /quote for the front future + ATM+/-N CE/PE ladder.
 
@@ -129,7 +130,11 @@ async def take_chain_snapshot(
         return None
     forward = float(fut_q["last_price"])
 
-    strikes = instruments.strikes_window(forward, settings.FNO_STRIKE_WINDOW)
+    # [PARTNER-TIPS 2026-07-18] strike_window param lets the analytics
+    # tick request a wide ladder (PCR/max-pain need +/-15) without
+    # touching the trading path's narrow default.
+    window = strike_window if strike_window is not None else settings.FNO_STRIKE_WINDOW
+    strikes = instruments.strikes_window(forward, window)
     contracts: List[Contract] = []
     for k in strikes:
         for ot in (OptionType.CE, OptionType.PE):

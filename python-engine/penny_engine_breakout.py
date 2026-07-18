@@ -310,7 +310,10 @@ def evaluate_breakout_entry(
     # PENNY_BREAKOUT_RSI_MAX (default 70 -- the backtest sweep showed
     # loosening to 80 was net-negative on daily bars; see config.py).
     if rsi_14 >= settings.PENNY_BREAKOUT_RSI_MAX:
-        return {"accept": False, "reject_reason": f"RSI(14)={rsi_14:.1f} overbought"}
+        # [WATCHDOG-LABEL 2026-07-17] Stable text first -- see the
+        # RSI(2) comment in penny_engine_connors.py.
+        return {"accept": False,
+                "reject_reason": f"RSI(14) overbought (rsi={rsi_14:.1f})"}
 
     # ---- signal fires ----
     # Entry: limit at LTP (bar_close) + 0.3%
