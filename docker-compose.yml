@@ -153,6 +153,25 @@ services:
         max-file: "10"
         compress: "true"
 
+  # Public link — replaces the manual `ngrok http --url=... 80`. Starts
+  # with the stack (restart: always), tunnels straight to nginx over the
+  # compose network. Inspector on host :4041 (:4040 is the dietician app's).
+  ngrok:
+    image: ngrok/ngrok:latest
+    container_name: quant_ngrok
+    restart: always
+    mem_limit: 64m
+    cpus: 0.25
+    environment:
+      NGROK_AUTHTOKEN: ${NGROK_AUTHTOKEN:?set NGROK_AUTHTOKEN in .env}
+    command: http nginx:80 --url=${NGROK_URL:-outfield-arena-hunk.ngrok-free.dev}
+    ports:
+      - "4041:4040"
+    networks:
+      - sentinel-net
+    depends_on:
+      - nginx
+
   # [ROADMAP-2.2 2026-07-12] Restarts any container labelled
   # autoheal=true when its healthcheck turns unhealthy. Needs the docker
   # socket; no network (it only talks to the local daemon).
