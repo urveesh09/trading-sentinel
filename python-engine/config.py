@@ -1,6 +1,20 @@
+from pathlib import Path
 from pydantic import field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 from typing import ClassVar
+
+# [2026-07-19] Resolve env files by ABSOLUTE path from this module's location,
+# not a CWD-relative ".env". Order is low->high precedence: the local
+# python-engine/.env first, then the repo-root .env overriding it.
+#   Container (config.py at /app/config.py): loads /app/.env (the operator
+#     creds baked into the image); the repo-root "/.env" does not exist and is
+#     silently skipped -> byte-identical to the old relative ".env".
+#   Local (config.py at <repo>/python-engine/config.py): overlays the repo-root
+#     .env (Zerodha/MiniMax/partner creds) that docker-compose injects as env
+#     vars in prod, so scripts/tests run outside Docker see the same config.
+# OS environment variables still outrank both files, so compose's env_file
+# injection (the production source of truth) is unaffected.
+_ENGINE_DIR = Path(__file__).resolve().parent
 
 class Settings(BaseSettings):
     """
@@ -18,7 +32,11 @@ class Settings(BaseSettings):
     not return maximisation. All limits scale naturally as bankroll
     grows because they are expressed as percentages.
     """
-    model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", extra="ignore")
+    model_config = SettingsConfigDict(
+        env_file=(str(_ENGINE_DIR / ".env"), str(_ENGINE_DIR.parent / ".env")),
+        env_file_encoding="utf-8",
+        extra="ignore",
+    )
     
     STRATEGY_VERSION: str = "1.0.0"
     DB_PATH: str = "/data/cache.db"
