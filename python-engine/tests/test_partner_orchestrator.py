@@ -538,6 +538,30 @@ async def test_wall_flow_fires_on_oi_build_and_not_on_repeat(analytics_wired):
 
 
 @pytest.mark.asyncio
+async def test_wall_flow_support_and_resistance_both_fire_same_tick(analytics_wired):
+    """Regression: support (PE) and resistance (CE) throttle independently.
+    With a shared throttle key the second one was silently dropped."""
+    import fno_oi_store
+    w = analytics_wired
+    await _init(w.db)
+    await fno_oi_store.init_oi_db(w.db)
+    w.analytics["snap"] = _mk_snap(BASE_CHAIN)
+    await po.partner_analytics_tick(NOW)
+    # both walls move >= threshold in the same later tick
+    grown = dict(BASE_CHAIN)
+    grown[(24900, "PE")] = (13000, 40.0)   # support PE +30%
+    grown[(25100, "CE")] = (13000, 110.0)  # resistance CE +30%
+    later = IST.localize(datetime(2026, 7, 20, 10, 33))
+    w.analytics["snap"] = _mk_snap(grown, now=later)
+    await po.partner_analytics_tick(later)
+    flows = [s for s in w.sent if s[0] == "wall_flow"]
+    assert len(flows) == 2
+    joined = " ".join(f[1] for f in flows)
+    assert "Support 24,900 PE" in joined
+    assert "Resistance 25,100 CE" in joined
+
+
+@pytest.mark.asyncio
 async def test_pin_note_once_on_expiry_afternoon(analytics_wired, monkeypatch):
     import fno_oi_store
     w = analytics_wired

@@ -136,11 +136,17 @@ async def _throttled(
 
 async def _send_event(
     db_path: str, kind: str, name: str, detail: str, now: datetime,
+    throttle_key: Optional[str] = None,
 ) -> None:
-    if await _throttled(db_path, kind, name or kind, now):
+    """Throttle key defaults to the underlying (one event of a kind per
+    underlying per gap). Pass throttle_key when a single kind can fire
+    more than once per tick per underlying (wall_flow: support AND
+    resistance) so the two don't collide on one shared row."""
+    key = throttle_key or name or kind
+    if await _throttled(db_path, kind, key, now):
         return
     ok = await send_partner(format_event(kind, name, detail), kind=kind)
-    await _record(db_path, kind, name or kind, ok, now=now)
+    await _record(db_path, kind, key, ok, now=now)
 
 
 # ---------------------------------------------------------------------------
@@ -472,6 +478,9 @@ async def partner_analytics_tick(now: Optional[datetime] = None) -> None:
                             f"{side} {strike:,.0f} {ot} OI {pct:+.0%} vs open — "
                             + (build_txt if pct > 0 else unwind_txt),
                             now,
+                            # support (PE) and resistance (CE) throttle
+                            # independently -- both can move in one tick.
+                            throttle_key=f"{spec.name}:{ot}",
                         )
                         _last_wall_flow_reported[flow_key] = pct
 
