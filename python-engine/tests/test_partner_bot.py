@@ -9,7 +9,7 @@ import asyncio
 import pytest
 
 import partner_bot
-from config import settings
+from config import Settings, settings
 
 
 class _Resp:
@@ -55,14 +55,24 @@ def enabled(monkeypatch):
     return _FakeClient
 
 
-def test_disabled_by_default():
-    # shipped default: the whole feature is a no-op
-    assert settings.PARTNER_BOT_ENABLED is False
+def test_disabled_by_default(monkeypatch):
+    # Shipped CODE default is off. Assert the DECLARED field default, not the
+    # loaded singleton -- the singleton reflects whatever the local/prod .env
+    # sets (dev .env enables it), so reading it here would test the machine,
+    # not the code.
+    assert Settings.model_fields["PARTNER_BOT_ENABLED"].default is False
+    # And with the flag off + no creds, the feature is a total no-op.
+    monkeypatch.setattr(settings, "PARTNER_BOT_ENABLED", False)
+    monkeypatch.setattr(settings, "PARTNER_TELEGRAM_BOT_TOKEN", "")
+    monkeypatch.setattr(settings, "PARTNER_TELEGRAM_CHAT_ID", "")
     assert partner_bot.partner_enabled() is False
 
 
 @pytest.mark.asyncio
 async def test_disabled_sends_zero_bytes(monkeypatch):
+    # Pin the disabled state explicitly rather than relying on ambient .env.
+    monkeypatch.setattr(settings, "PARTNER_BOT_ENABLED", False)
+
     class _MustNotConstruct:
         def __init__(self, *a, **kw):
             raise AssertionError("network client constructed while disabled")

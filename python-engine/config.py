@@ -1,6 +1,20 @@
+from pathlib import Path
 from pydantic import field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 from typing import ClassVar
+
+# [2026-07-19] Resolve env files by ABSOLUTE path from this module's location,
+# not a CWD-relative ".env". Order is low->high precedence: the local
+# python-engine/.env first, then the repo-root .env overriding it.
+#   Container (config.py at /app/config.py): loads /app/.env (the operator
+#     creds baked into the image); the repo-root "/.env" does not exist and is
+#     silently skipped -> byte-identical to the old relative ".env".
+#   Local (config.py at <repo>/python-engine/config.py): overlays the repo-root
+#     .env (Zerodha/MiniMax/partner creds) that docker-compose injects as env
+#     vars in prod, so scripts/tests run outside Docker see the same config.
+# OS environment variables still outrank both files, so compose's env_file
+# injection (the production source of truth) is unaffected.
+_ENGINE_DIR = Path(__file__).resolve().parent
 
 class Settings(BaseSettings):
     """
@@ -18,7 +32,11 @@ class Settings(BaseSettings):
     not return maximisation. All limits scale naturally as bankroll
     grows because they are expressed as percentages.
     """
-    model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", extra="ignore")
+    model_config = SettingsConfigDict(
+        env_file=(str(_ENGINE_DIR / ".env"), str(_ENGINE_DIR.parent / ".env")),
+        env_file_encoding="utf-8",
+        extra="ignore",
+    )
     
     STRATEGY_VERSION: str = "1.0.0"
     DB_PATH: str = "/data/cache.db"
@@ -609,6 +627,21 @@ class Settings(BaseSettings):
     PARTNER_PCR_ALERT_DELTA:    float = 0.15
     PARTNER_IV_MOVE_ALERT_PCT:  float = 0.10      # relative ATM-IV intraday move
     PARTNER_EVENT_MIN_GAP_MIN:  int   = 30
+    # [PARTNER-ENRICH 2026-07-19] Tier-1/2 enrichment knobs.
+    # Sizing line: fraction of capital a buyer should risk per trade.
+    PARTNER_SIZING_RISK_PCT:    float = 0.02
+    # Rolling track-record window + minimum sample before quoting one
+    # (a 2-signal "record" is noise dressed as evidence).
+    PARTNER_TRACK_LOOKBACK_DAYS: int  = 30
+    PARTNER_TRACK_MIN_N:        int   = 5
+    # Signal rows outlive OI snapshots (FNO_OI_RETENTION_DAYS): the track
+    # record needs weeks of history, OI forensics only needs days. A few
+    # signal rows/day is negligible disk.
+    PARTNER_SIGNAL_RETENTION_DAYS: int = 60
+    # OI wall build/unwind: report when the wall strike's OI moved this
+    # fraction vs the open baseline (and again on each further move of
+    # the same size).
+    PARTNER_WALL_DELTA_PCT:     float = 0.15
 
     # ============================================================
     # REGIME ENGINE -- VIX-Free Volatility Detection

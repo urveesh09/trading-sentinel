@@ -42,6 +42,7 @@ from fno_engine_mom import SESSION_OPEN_MIN
 from fno_models import FnoDirection
 from fno_signal_scan import scan_underlying
 from fno_underlyings import analytics_underlyings, get_instruments_for, load_underlying_names
+from macro_events import event_note_for
 from partner_bot import partner_enabled, send_partner
 from partner_content import (
     format_eod,
@@ -58,6 +59,10 @@ IST = pytz.timezone("Asia/Kolkata")
 _rv_cache: Dict[str, float] = {}
 _last_iv_reported: Dict[str, float] = {}
 _last_walls_reported: Dict[str, tuple] = {}
+# [PARTNER-ENRICH 2026-07-19] last-reported wall-OI delta per
+# (underlying, strike, opt_type); re-report only on a further move of
+# PARTNER_WALL_DELTA_PCT. Restart cost: one possibly-repeated event.
+_last_wall_flow_reported: Dict[tuple, float] = {}
 _last_regime_reported: Optional[str] = None
 _halt_reported_on: Optional[str] = None
 
@@ -131,11 +136,17 @@ async def _throttled(
 
 async def _send_event(
     db_path: str, kind: str, name: str, detail: str, now: datetime,
+    throttle_key: Optional[str] = None,
 ) -> None:
-    if await _throttled(db_path, kind, name or kind, now):
+    """Throttle key defaults to the underlying (one event of a kind per
+    underlying per gap). Pass throttle_key when a single kind can fire
+    more than once per tick per underlying (wall_flow: support AND
+    resistance) so the two don't collide on one shared row."""
+    key = throttle_key or name or kind
+    if await _throttled(db_path, kind, key, now):
         return
     ok = await send_partner(format_event(kind, name, detail), kind=kind)
-    await _record(db_path, kind, name or kind, ok, now=now)
+    await _record(db_path, kind, key, ok, now=now)
 
 
 # ---------------------------------------------------------------------------
@@ -165,6 +176,58 @@ def _expiry_note_for(name: str, now: datetime, iv: Optional[float]) -> str:
     )
 
 
+def _dte_for(name: str, now: datetime) -> Optional[int]:
+    expiry = get_instruments_for(name).nearest_option_expiry(now.date())
+    return (expiry - now.date()).days if expiry is not None else None
+
+
+# ---------------------------------------------------------------------------
+# rolling track record ([PARTNER-ENRICH 2026-07-19] T1c)
+# ---------------------------------------------------------------------------
+
+async def _track_record(
+    db_path: str, name: str, direction: str, now: datetime,
+) -> str:
+    """One-line rolling record for (underlying, direction) from signal
+    rows whose EOD pass stamped an outcome. '' below the minimum sample
+    — a 3-signal 'record' is noise dressed as evidence, and today's
+    not-yet-resolved signals are naturally excluded (no outcome yet)."""
+    since = (
+        now - timedelta(days=settings.PARTNER_TRACK_LOOKBACK_DAYS)
+    ).strftime("%Y-%m-%d 00:00:00")
+    async with aiosqlite.connect(db_path) as db:
+        cur = await db.execute(
+            "SELECT detail FROM partner_messages "
+            "WHERE kind='signal' AND dedup_key LIKE ? AND sent_at>=?",
+            (f"{name}:%", since),
+        )
+        rows = await cur.fetchall()
+    n = hits = 0
+    r_sum = 0.0
+    for (detail_json,) in rows:
+        if not detail_json:
+            continue
+        try:
+            d = json.loads(detail_json)
+        except json.JSONDecodeError:
+            continue
+        if d.get("direction") != direction or d.get("outcome_kind") is None:
+            continue
+        r = d.get("outcome_r")
+        if not isinstance(r, (int, float)):
+            continue
+        n += 1
+        r_sum += float(r)
+        if d.get("outcome_kind") == "target":
+            hits += 1
+    if n < settings.PARTNER_TRACK_MIN_N:
+        return ""
+    return (
+        f"Record ({name} {direction}, {settings.PARTNER_TRACK_LOOKBACK_DAYS}d): "
+        f"{hits}/{n} target-first, avg {r_sum / n:+.1f}R on the underlying"
+    )
+
+
 # ---------------------------------------------------------------------------
 # job: signal scan tick (ORB tips)
 # ---------------------------------------------------------------------------
@@ -191,10 +254,11 @@ async def partner_scan_tick(now: Optional[datetime] = None) -> None:
             option = None
             if scan.pick is not None and scan.snap is not None:
                 q, iv, d = scan.pick
+                is_call = sig.direction == FnoDirection.LONG
                 T = years_to_expiry(scan.snap.expiry, now)
                 theta_day = options_math.theta(
                     scan.snap.forward, q.contract.strike, T, iv,
-                    RISK_FREE_RATE, sig.direction == FnoDirection.LONG,
+                    RISK_FREE_RATE, is_call,
                 )
                 option = {
                     "tradingsymbol": q.contract.tradingsymbol,
@@ -206,10 +270,39 @@ async def partner_scan_tick(now: Optional[datetime] = None) -> None:
                     "spread_pct": q.spread_pct if q.spread_pct != float("inf") else None,
                     "oi": q.oi,
                 }
+                # [PARTNER-ENRICH 2026-07-19] T1a/T1d: premium-terms
+                # stop/target scenarios + lot-level sizing. Both degrade
+                # to absent lines rather than made-up numbers.
+                scen = fno_analytics.premium_scenarios(
+                    scan.snap.forward, q.contract.strike, T, iv, is_call,
+                    option["premium"], sig.stop_underlying, sig.target_underlying,
+                )
+                if scen is not None:
+                    option.update(
+                        prem_at_target=scen["at_target"],
+                        prem_at_stop=scen["at_stop"],
+                        rr_premium=scen["rr"],
+                    )
+                    lot = q.contract.lot_size
+                    risk_per_lot = (option["premium"] - scen["at_stop"]) * lot
+                    if lot > 0 and risk_per_lot > 0:
+                        budget = 100_000 * settings.PARTNER_SIZING_RISK_PCT
+                        option.update(
+                            lot_size=lot,
+                            risk_per_lot=risk_per_lot,
+                            lots_per_lakh=int(budget // risk_per_lot),
+                            sizing_risk_pct=settings.PARTNER_SIZING_RISK_PCT,
+                        )
 
             broken = sig.or_high + settings.FNO_OR_BUFFER_ATR * sig.atr \
                 if sig.direction == FnoDirection.LONG \
                 else sig.or_low - settings.FNO_OR_BUFFER_ATR * sig.atr
+            or_atr_ratio = (
+                (sig.or_high - sig.or_low) / sig.atr if sig.atr > 0 else None
+            )
+            track_line = await _track_record(
+                settings.DB_PATH, spec.name, sig.direction.value, now,
+            )
             msg = format_signal_tip(
                 name=spec.name,
                 direction=sig.direction.value,
@@ -225,19 +318,28 @@ async def partner_scan_tick(now: Optional[datetime] = None) -> None:
                 ),
                 option=option,
                 thin_reasons=scan.thin_reasons if scan.thin_chain else None,
+                or_atr_ratio=or_atr_ratio,
+                track_line=track_line,
             )
             ok = await send_partner(msg, kind="signal")
-            await _record(
-                settings.DB_PATH, "signal", key, ok,
-                detail={
-                    "direction": sig.direction.value,
-                    "bar_ts": sig.bar_ts,
-                    "close": sig.close,
-                    "stop": sig.stop_underlying,
-                    "target": sig.target_underlying,
-                },
-                now=now,
-            )
+            detail = {
+                "direction": sig.direction.value,
+                "bar_ts": sig.bar_ts,
+                "close": sig.close,
+                "stop": sig.stop_underlying,
+                "target": sig.target_underlying,
+            }
+            if option and scan.pick is not None and scan.snap is not None:
+                # Enough to find this strike's LTP series in fno_chain_oi
+                # at EOD (T2b) without re-resolving instruments.
+                detail.update(
+                    tradingsymbol=option["tradingsymbol"],
+                    strike=scan.pick[0].contract.strike,
+                    opt_type="CE" if sig.direction == FnoDirection.LONG else "PE",
+                    expiry=scan.snap.expiry.isoformat(),
+                    premium_paid=option["premium"],
+                )
+            await _record(settings.DB_PATH, "signal", key, ok, detail=detail, now=now)
         except Exception as exc:
             logger.error(
                 "partner_scan_tick_failed underlying=%s err=%s",
@@ -339,6 +441,71 @@ async def partner_analytics_tick(now: Optional[datetime] = None) -> None:
                         now,
                     )
                     _last_walls_reported[spec.name] = (support, resistance)
+
+            # --- wall build/unwind vs open baseline ---------------------
+            # [PARTNER-ENRICH 2026-07-19] T2a: a wall that ADDS OI while
+            # price approaches is being defended; one that unwinds is
+            # likely to break. Far more tradeable than "walls moved".
+            baseline = await fno_oi_store.open_baseline(
+                settings.DB_PATH, spec.name, day_iso,
+            )
+            if baseline:
+                deltas = fno_analytics.strike_oi_deltas(snap, baseline)
+                wall_reads = (
+                    (support, "PE", "Support",
+                     "put writers adding — dip-support being defended",
+                     "put writers bailing — support weakening"),
+                    (resistance, "CE", "Resistance",
+                     "call writers pressing — upside capped for now",
+                     "call writers covering — breakout risk above"),
+                )
+                for strike, ot, side, build_txt, unwind_txt in wall_reads:
+                    if strike is None:
+                        continue
+                    base_oi = baseline.get((strike, ot))
+                    delta = deltas.get((strike, ot))
+                    if not base_oi or delta is None:
+                        continue
+                    pct = delta / base_oi
+                    flow_key = (spec.name, strike, ot)
+                    last_pct = _last_wall_flow_reported.get(flow_key, 0.0)
+                    if (
+                        abs(pct) >= settings.PARTNER_WALL_DELTA_PCT
+                        and abs(pct - last_pct) >= settings.PARTNER_WALL_DELTA_PCT
+                    ):
+                        await _send_event(
+                            settings.DB_PATH, "wall_flow", spec.name,
+                            f"{side} {strike:,.0f} {ot} OI {pct:+.0%} vs open — "
+                            + (build_txt if pct > 0 else unwind_txt),
+                            now,
+                            # support (PE) and resistance (CE) throttle
+                            # independently -- both can move in one tick.
+                            throttle_key=f"{spec.name}:{ot}",
+                        )
+                        _last_wall_flow_reported[flow_key] = pct
+
+            # --- expiry-day pin note ------------------------------------
+            # [PARTNER-ENRICH 2026-07-19] T3a: once per expiry afternoon.
+            if (
+                book.is_expiry_day(now.date())
+                and (now.hour * 60 + now.minute) >= 13 * 60 + 30
+                and max_pain is not None and snap.forward > 0
+            ):
+                pin_key = f"{spec.name}:{day_iso}"
+                if not await _seen(settings.DB_PATH, "pin", pin_key):
+                    dist = snap.forward - max_pain
+                    ok = await send_partner(
+                        format_event(
+                            "pin", spec.name,
+                            f"expiry pin watch: fut {snap.forward:,.0f} vs "
+                            f"max pain {max_pain:,.0f} ({dist:+,.0f} pts) — "
+                            "price often gravitates toward max pain into the "
+                            "close; chasing moves away from it is fighting "
+                            "the writers",
+                        ),
+                        kind="pin",
+                    )
+                    await _record(settings.DB_PATH, "pin", pin_key, ok, now=now)
         except Exception as exc:
             logger.error(
                 "partner_analytics_tick_failed underlying=%s err=%s",
@@ -391,12 +558,22 @@ async def partner_analytics_tick(now: Optional[datetime] = None) -> None:
                     continue
                 vol_ratio = getattr(s, "volume_ratio", 0.0) or 0.0
                 close = getattr(s, "close", 0.0) or 0.0
+                # [PARTNER-ENRICH 2026-07-19] T3b: the screener's own
+                # levels make the cue actionable instead of a headline.
+                stop_loss = getattr(s, "stop_loss", 0.0) or 0.0
+                target_1 = getattr(s, "target_1", 0.0) or 0.0
+                levels = ""
+                if stop_loss > 0 and target_1 > 0:
+                    levels = (
+                        f" (screener stop {stop_loss:,.1f} / "
+                        f"target {target_1:,.1f} on the stock)"
+                    )
                 ok = await send_partner(
                     format_event(
                         "mom_cue", ticker.upper(),
                         f"our momentum screener fired at {close:,.1f} on "
-                        f"{vol_ratio:.1f}x volume — F&O-listed, stock options "
-                        "are a way to play it",
+                        f"{vol_ratio:.1f}x volume{levels} — F&O-listed, "
+                        "stock options are a way to play it",
                     ),
                     kind="mom_cue",
                 )
@@ -444,6 +621,10 @@ async def partner_morning_brief(now: Optional[datetime] = None) -> None:
                     long_level=sig.or_high + settings.FNO_OR_BUFFER_ATR * sig.atr,
                     short_level=sig.or_low - settings.FNO_OR_BUFFER_ATR * sig.atr,
                     fut=sig.close,
+                    or_atr_ratio=(
+                        (sig.or_high - sig.or_low) / sig.atr
+                        if sig.atr > 0 else None
+                    ),
                 )
             snap = await take_chain_snapshot(
                 _main.kite, book, now,
@@ -454,6 +635,7 @@ async def partner_morning_brief(now: Optional[datetime] = None) -> None:
                 max_pain = fno_analytics.compute_max_pain(snap)
                 iv = fno_analytics.atm_iv(snap, now)
                 support, resistance = fno_analytics.oi_walls(snap)
+                skew = fno_analytics.atm_iv_skew(snap, now)
                 await fno_oi_store.persist_snapshot(
                     settings.DB_PATH, spec.name, snap, pcr, max_pain, iv,
                 )
@@ -464,7 +646,10 @@ async def partner_morning_brief(now: Optional[datetime] = None) -> None:
                     iv_read=fno_analytics.iv_rv_read(iv, rv),
                     support=support, resistance=resistance,
                     expiry_note=_expiry_note_for(spec.name, now, iv),
+                    dte=_dte_for(spec.name, now),
                 )
+                if skew is not None:
+                    row.update(skew_ce=skew[0], skew_pe=skew[1])
             elif "fut" not in row:
                 row["error"] = scan.error or "no data"
         except Exception as exc:
@@ -477,6 +662,7 @@ async def partner_morning_brief(now: Optional[datetime] = None) -> None:
 
     msg = format_morning_brief(
         f"{day_iso} {now.strftime('%H:%M')} IST", regime, score, rows,
+        events_note=event_note_for(now.date()),
     )
     ok = await send_partner(msg, kind="brief")
     await _record(settings.DB_PATH, "brief", day_iso, ok, now=now)
@@ -486,33 +672,129 @@ async def partner_morning_brief(now: Optional[datetime] = None) -> None:
 # job: EOD wrap (+ retention purges)
 # ---------------------------------------------------------------------------
 
-def _signal_outcome(bars, detail: dict) -> str:
+def _signal_outcome(bars, detail: dict):
     """Walk today's 5-min bars after the signal bar: which of target/stop
     printed first? Purely informational -- our own exits (trail/time/flat)
-    are not modeled here; the partner saw stop+target in the tip."""
+    are not modeled here; the partner saw stop+target in the tip.
+
+    Returns (text, kind, r): kind in target|stop|neither|None (None =
+    outcome unavailable), r = underlying-R vs the tip's risk (target hit
+    counts the actual target distance, stop -1.0, neither = close-to-
+    close move in R). kind/r feed the persisted track record (T1c)."""
     try:
         import pandas as pd  # noqa: F401  (bars is a DataFrame)
         bar_ts = datetime.strptime(detail["bar_ts"], "%Y-%m-%d %H:%M:%S")
         after = bars[bars.index > bar_ts]
         long_view = detail["direction"] == "LONG"
+        entry = float(detail["close"])
         stop, target = float(detail["stop"]), float(detail["target"])
+        risk = abs(entry - stop)
+        r_target = (abs(target - entry) / risk) if risk > 0 else 1.5
         for _, b in after.iterrows():
             hi, lo = float(b["high"]), float(b["low"])
             if long_view:
                 if lo <= stop:
-                    return f"stop {stop:,.0f} hit first"
+                    return f"stop {stop:,.0f} hit first", "stop", -1.0
                 if hi >= target:
-                    return f"target {target:,.0f} hit"
+                    return f"target {target:,.0f} hit", "target", r_target
             else:
                 if hi >= stop:
-                    return f"stop {stop:,.0f} hit first"
+                    return f"stop {stop:,.0f} hit first", "stop", -1.0
                 if lo <= target:
-                    return f"target {target:,.0f} hit"
+                    return f"target {target:,.0f} hit", "target", r_target
         close = float(bars["close"].iloc[-1]) if len(bars) else 0.0
-        pts = (close - detail["close"]) * (1 if long_view else -1)
-        return f"neither printed; closed {close:,.0f} ({pts:+,.0f} pts)"
+        pts = (close - entry) * (1 if long_view else -1)
+        r = (pts / risk) if risk > 0 else 0.0
+        return (
+            f"neither printed; closed {close:,.0f} ({pts:+,.0f} pts)",
+            "neither", r,
+        )
     except Exception:
-        return "outcome unavailable"
+        return "outcome unavailable", None, None
+
+
+async def _stamp_outcome(
+    db_path: str, key: str, detail: dict, kind: str, r,
+) -> None:
+    """Write outcome fields back into the signal row's detail JSON so the
+    rolling track record (T1c) can read resolved signals later. UPDATE
+    keeps sent_at intact (it doubles as the retention timestamp)."""
+    detail = dict(detail)
+    detail["outcome_kind"] = kind
+    detail["outcome_r"] = round(float(r), 3) if r is not None else None
+    async with aiosqlite.connect(db_path) as db:
+        await db.execute(
+            "UPDATE partner_messages SET detail=? "
+            "WHERE kind='signal' AND dedup_key=?",
+            (json.dumps(detail), key),
+        )
+        await db.commit()
+
+
+async def _option_outcome_line(detail: dict, day_iso: str) -> str:
+    """[PARTNER-ENRICH 2026-07-19] T2b: what the SUGGESTED OPTION's
+    premium did after the tip, from the 5-min chain snapshots already in
+    fno_chain_oi. '' when the strike wasn't snapshotted (window moved)
+    or the tip carried no option."""
+    symbol = detail.get("tradingsymbol")
+    paid = detail.get("premium_paid")
+    strike = detail.get("strike")
+    opt_type = detail.get("opt_type")
+    expiry = detail.get("expiry")
+    if not (symbol and strike and opt_type and expiry) or not paid or paid <= 0:
+        return ""
+    series = await fno_oi_store.strike_ltp_series(
+        settings.DB_PATH, detail.get("underlying", ""), day_iso,
+        expiry, float(strike), opt_type,
+        from_ts=detail.get("bar_ts"),
+    )
+    if not series:
+        return ""
+    ltps = [ltp for _, ltp in series]
+    peak, last = max(ltps), ltps[-1]
+    return (
+        f"option {symbol}: paid ~{paid:,.1f}, "
+        f"peak {peak:,.1f} ({(peak - paid) / paid:+.0%}), "
+        f"last {last:,.1f} ({(last - paid) / paid:+.0%})"
+    )
+
+
+async def _track_record_overall(db_path: str, now: datetime) -> str:
+    """All-underlyings, all-directions rolling record for the EOD wrap."""
+    since = (
+        now - timedelta(days=settings.PARTNER_TRACK_LOOKBACK_DAYS)
+    ).strftime("%Y-%m-%d 00:00:00")
+    async with aiosqlite.connect(db_path) as db:
+        cur = await db.execute(
+            "SELECT detail FROM partner_messages "
+            "WHERE kind='signal' AND sent_at>=?",
+            (since,),
+        )
+        rows = await cur.fetchall()
+    n = hits = 0
+    r_sum = 0.0
+    for (detail_json,) in rows:
+        if not detail_json:
+            continue
+        try:
+            d = json.loads(detail_json)
+        except json.JSONDecodeError:
+            continue
+        if d.get("outcome_kind") is None:
+            continue
+        r = d.get("outcome_r")
+        if not isinstance(r, (int, float)):
+            continue
+        n += 1
+        r_sum += float(r)
+        if d.get("outcome_kind") == "target":
+            hits += 1
+    if n < settings.PARTNER_TRACK_MIN_N:
+        return ""
+    return (
+        f"📊 Rolling {settings.PARTNER_TRACK_LOOKBACK_DAYS}d ORB record: "
+        f"{hits}/{n} target-first, avg {r_sum / n:+.1f}R on the underlying"
+    )
 
 
 async def partner_eod_wrap(now: Optional[datetime] = None) -> None:
@@ -571,10 +853,17 @@ async def partner_eod_wrap(now: Optional[datetime] = None) -> None:
                     detail = json.loads(detail_json)
                 except json.JSONDecodeError:
                     continue
+                outcome_txt, outcome_kind, outcome_r = _signal_outcome(bars, detail)
+                if outcome_kind is not None:
+                    await _stamp_outcome(
+                        settings.DB_PATH, _key, detail, outcome_kind, outcome_r,
+                    )
+                detail["underlying"] = spec.name
                 sig_rows.append({
                     "time": detail.get("bar_ts", "")[11:16],
                     "direction": detail.get("direction", "?"),
-                    "outcome": _signal_outcome(bars, detail),
+                    "outcome": outcome_txt,
+                    "option_line": await _option_outcome_line(detail, day_iso),
                 })
             row["signals"] = sig_rows
 
@@ -594,12 +883,18 @@ async def partner_eod_wrap(now: Optional[datetime] = None) -> None:
             row["error"] = "internal error"
         rows.append(row)
 
-    msg = format_eod(day_iso, rows)
+    msg = format_eod(
+        day_iso, rows,
+        record_line=await _track_record_overall(settings.DB_PATH, now),
+    )
     ok = await send_partner(msg, kind="eod")
     await _record(settings.DB_PATH, "eod", day_iso, ok, now=now)
 
     # Retention: OI snapshots + old dedup rows. Disk at 86% -- this is
     # part of the job, not housekeeping that can silently stop running.
+    # [PARTNER-ENRICH 2026-07-19] signal rows live longer than the rest:
+    # the rolling track record (T1c) needs weeks, OI forensics needs days,
+    # and a few signal rows/day is negligible disk.
     try:
         await fno_oi_store.purge_older_than(
             settings.DB_PATH, settings.FNO_OI_RETENTION_DAYS,
@@ -607,9 +902,17 @@ async def partner_eod_wrap(now: Optional[datetime] = None) -> None:
         cutoff = (
             now - timedelta(days=settings.FNO_OI_RETENTION_DAYS)
         ).strftime("%Y-%m-%d 00:00:00")
+        signal_cutoff = (
+            now - timedelta(days=settings.PARTNER_SIGNAL_RETENTION_DAYS)
+        ).strftime("%Y-%m-%d 00:00:00")
         async with aiosqlite.connect(settings.DB_PATH) as db:
             await db.execute(
-                "DELETE FROM partner_messages WHERE sent_at<?", (cutoff,)
+                "DELETE FROM partner_messages WHERE sent_at<? AND kind!='signal'",
+                (cutoff,),
+            )
+            await db.execute(
+                "DELETE FROM partner_messages WHERE sent_at<? AND kind='signal'",
+                (signal_cutoff,),
             )
             await db.commit()
     except Exception as exc:

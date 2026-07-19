@@ -132,3 +132,131 @@ def test_eod_no_signals_line():
         "day_high": 25100.0, "signals": [],
     }])
     assert "no ORB signals today" in msg
+
+
+# ---------------------------------------------------------------------------
+# [PARTNER-ENRICH 2026-07-19] buyer verdict (T1b)
+# ---------------------------------------------------------------------------
+
+def test_verdict_crisis_is_red_regardless():
+    v = pc.buyer_verdict("CHEAP", "REGIME_3_CRISIS", 5)
+    assert v.startswith("🔴") and "no new entries" in v
+
+
+def test_verdict_rich_into_expiry_is_red():
+    v = pc.buyer_verdict("RICH", "REGIME_1_NORMAL", 1)
+    assert v.startswith("🔴") and "crush" in v
+
+
+def test_verdict_cheap_is_green_unless_expiry_today():
+    assert pc.buyer_verdict("CHEAP", "REGIME_1_NORMAL", 3).startswith("🟢")
+    assert pc.buyer_verdict("CHEAP", "REGIME_1_NORMAL", 0).startswith("🟡")
+
+
+def test_verdict_fair_is_amber_with_parts():
+    v = pc.buyer_verdict("FAIR", "REGIME_2_ELEVATED", 1)
+    assert v.startswith("🟡")
+    assert "fair premium" in v and "expiry tomorrow" in v
+
+
+def test_brief_carries_verdict_and_skew():
+    row = dict(FULL_ROW)
+    row.update(dte=3, skew_ce=0.109, skew_pe=0.121, or_atr_ratio=0.4)
+    msg = pc.format_morning_brief(
+        "2026-07-20 09:50 IST", "REGIME_1_NORMAL", 34.0, [row],
+        events_note="RBI MPC decision TODAY — IV is bid into the event",
+    )
+    assert "Buyer's day: 🟢 cheap premium" in msg
+    assert "Skew: CE 10.9% / PE 12.1% — puts bid" in msg
+    assert "OR 0.4×ATR (tight" in msg
+    assert "🗓 RBI MPC decision TODAY" in msg
+    assert len(msg) < 4096
+
+
+# ---------------------------------------------------------------------------
+# [PARTNER-ENRICH 2026-07-19] tip: premium RR + sizing + track (T1a/T1d/T1c)
+# ---------------------------------------------------------------------------
+
+RICH_OPTION = {
+    "tradingsymbol": "NIFTY25JUL25000CE", "premium": 112.0,
+    "iv": 0.12, "delta": 0.55, "theta_day": -9.0,
+    "spread_pct": 0.004, "oi": 150000,
+    "prem_at_target": 152.0, "prem_at_stop": 83.0, "rr_premium": 1.4,
+    "lot_size": 75, "risk_per_lot": 2175.0, "lots_per_lakh": 0,
+    "sizing_risk_pct": 0.02,
+}
+
+
+def test_tip_premium_scenarios_and_sizing_zero_lots():
+    msg = pc.format_signal_tip(
+        name="NIFTY", direction="LONG", bar_time="09:55",
+        close=25100.0, broken_level=25017.5, stop=25055.0, target=25167.5,
+        regime="REGIME_1_NORMAL", rvol=2.1, expiry_note="3d to expiry",
+        option=RICH_OPTION, or_atr_ratio=0.5,
+        track_line="Record (NIFTY LONG, 30d): 9/20 target-first, avg +0.2R on the underlying",
+    )
+    assert "at target ≈ 152 (+40) | at stop ≈ 83 (−29) → option RR ≈ 1.4 before theta" in msg
+    assert "1 lot (75 qty) ≈ ₹2,175 risk to stop" in msg
+    assert "⚠ even 1 lot risks > 2% of ₹1L" in msg
+    assert "OR 0.5×ATR (tight" in msg
+    assert "Record (NIFTY LONG, 30d): 9/20 target-first" in msg
+    assert pc.DISCLAIMER in msg
+    assert len(msg) < 4096
+
+
+def test_tip_sizing_with_lots():
+    option = dict(RICH_OPTION, risk_per_lot=950.0, lots_per_lakh=2)
+    msg = pc.format_signal_tip(
+        name="NIFTY", direction="SHORT", bar_time="10:15",
+        close=25000.0, broken_level=25080.0, stop=25055.0, target=24917.5,
+        regime="REGIME_1_NORMAL", rvol=1.8, expiry_note="",
+        option=option,
+    )
+    assert "~2 lots per ₹1L at 2% risk" in msg
+
+
+def test_tip_without_scenarios_has_no_scenario_lines():
+    option = {
+        "tradingsymbol": "NIFTY25JUL25000CE", "premium": 112.0,
+        "iv": 0.12, "delta": 0.55, "theta_day": -9.0,
+        "spread_pct": 0.004, "oi": 150000,
+    }
+    msg = pc.format_signal_tip(
+        name="NIFTY", direction="LONG", bar_time="09:55",
+        close=25100.0, broken_level=25017.5, stop=25055.0, target=25167.5,
+        regime="REGIME_1_NORMAL", rvol=2.1, expiry_note="",
+        option=option,
+    )
+    assert "at target ≈" not in msg
+    assert "risk to stop" not in msg
+    assert "Record (" not in msg
+
+
+# ---------------------------------------------------------------------------
+# [PARTNER-ENRICH 2026-07-19] EOD: option line + record line (T2b/T1c)
+# ---------------------------------------------------------------------------
+
+def test_eod_option_line_and_record():
+    rows = [{
+        "name": "NIFTY", "close": 25150.0, "day_low": 25010.0,
+        "day_high": 25180.0, "or_low": 24990.0, "or_high": 25010.0,
+        "signals": [{
+            "time": "09:55", "direction": "LONG",
+            "outcome": "target 25,168 hit",
+            "option_line": "option NIFTY25JUL25000CE: paid ~112.0, peak 156.0 (+39%), last 140.0 (+25%)",
+        }],
+        "pcr": 1.02, "max_pain": 25000.0,
+    }]
+    msg = pc.format_eod(
+        "2026-07-20", rows,
+        record_line="📊 Rolling 30d ORB record: 9/20 target-first, avg +0.2R on the underlying",
+    )
+    assert "signal 09:55 LONG -> target 25,168 hit" in msg
+    assert "option NIFTY25JUL25000CE: paid ~112.0, peak 156.0 (+39%)" in msg
+    assert "📊 Rolling 30d ORB record" in msg
+    assert pc.DISCLAIMER in msg
+
+
+def test_event_icons_for_new_kinds():
+    assert pc.format_event("wall_flow", "NIFTY", "x").startswith("🧱")
+    assert pc.format_event("pin", "NIFTY", "x").startswith("🧲")
