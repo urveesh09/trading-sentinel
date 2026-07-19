@@ -159,6 +159,85 @@ def strike_oi_deltas(
     return out
 
 
+def premium_scenarios(
+    forward: float,
+    strike: float,
+    T: float,
+    iv: Optional[float],
+    is_call: bool,
+    paid: float,
+    stop_underlying: float,
+    target_underlying: float,
+) -> Optional[Dict[str, float]]:
+    """[PARTNER-ENRICH 2026-07-19] Reprice the suggested option at the
+    tip's stop/target FUTURES levels (Black-76, same T and vol): the
+    partner's P&L happens in premium, not in underlying points, and the
+    underlying's 1.5R is routinely a much worse R in premium terms.
+
+    Same-T/same-vol is deliberate: it isolates the delta/gamma move,
+    while theta is quoted separately in the tip. Returns None whenever
+    any input can't support an honest number (missing IV, non-positive
+    premium, stop scenario not below entry premium)."""
+    if iv is None or iv <= 0 or T <= 0 or paid <= 0:
+        return None
+    if forward <= 0 or strike <= 0 or stop_underlying <= 0 or target_underlying <= 0:
+        return None
+    try:
+        at_target = options_math.black76_price(
+            target_underlying, strike, T, iv, RISK_FREE_RATE, is_call
+        )
+        at_stop = options_math.black76_price(
+            stop_underlying, strike, T, iv, RISK_FREE_RATE, is_call
+        )
+    except (ValueError, OverflowError):
+        return None
+    gain = at_target - paid
+    risk = paid - at_stop
+    if not (math.isfinite(at_target) and math.isfinite(at_stop)):
+        return None
+    if risk <= 0 or gain <= 0:
+        # A tip whose premium RR is not even positive must not print a
+        # made-up ratio; the caller drops the scenario block instead.
+        return None
+    return {
+        "at_target": at_target,
+        "at_stop": at_stop,
+        "rr": gain / risk,
+    }
+
+
+def atm_iv_skew(
+    snap: ChainSnapshot, now_ist: datetime,
+) -> Optional[Tuple[float, float]]:
+    """[PARTNER-ENRICH 2026-07-19] (ce_iv, pe_iv) at the ATM strike.
+    PE IV persistently above CE IV = downside fear being paid up for.
+    Same guards as atm_iv: both legs must be two-sided, and the read is
+    suppressed inside the expiry-day IV blackout window."""
+    T = years_to_expiry(snap.expiry, now_ist)
+    if snap.expiry == now_ist.date():
+        minutes_left = T * 365.0 * 24 * 60
+        if minutes_left <= EXPIRY_IV_BLACKOUT_MIN:
+            return None
+    if T <= 0 or snap.forward <= 0:
+        return None
+    strikes = sorted({k for (k, _) in snap.quotes})
+    if not strikes:
+        return None
+    atm = min(strikes, key=lambda k: abs(k - snap.forward))
+    ivs: Dict[str, float] = {}
+    for ot in ("CE", "PE"):
+        q = snap.quotes.get((atm, ot))
+        if q is None or not q.two_sided or q.mid <= 0:
+            return None
+        iv = options_math.implied_vol(
+            q.mid, snap.forward, atm, T, RISK_FREE_RATE, ot == "CE"
+        )
+        if iv is None:
+            return None
+        ivs[ot] = iv
+    return ivs["CE"], ivs["PE"]
+
+
 def expiry_note(expiry: Optional[date], today: date, iv: Optional[float]) -> str:
     """Human DTE note with a theta warning where a buyer needs one."""
     if expiry is None:

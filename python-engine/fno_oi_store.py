@@ -170,6 +170,29 @@ async def first_fut_row_today(
     }
 
 
+async def strike_ltp_series(
+    db_path: str, underlying: str, day_iso: str,
+    expiry: str, strike: float, opt_type: str,
+    from_ts: Optional[str] = None,
+) -> list:
+    """[PARTNER-ENRICH 2026-07-19] Today's (snap_ts, ltp) series for one
+    contract, optionally from a start timestamp (the signal bar). Zero
+    LTPs are dropped: a 0 print is a no-quote artifact, not a price.
+    Feeds the EOD 'what did the suggested option's premium actually do'
+    line (T2b)."""
+    lo = from_ts or f"{day_iso} 00:00:00"
+    hi = f"{day_iso} 23:59:59"
+    async with aiosqlite.connect(db_path) as db:
+        cur = await db.execute(
+            "SELECT snap_ts, ltp FROM fno_chain_oi "
+            "WHERE underlying=? AND expiry=? AND strike=? AND opt_type=? "
+            "AND snap_ts>=? AND snap_ts<=? AND ltp>0 ORDER BY snap_ts ASC",
+            (underlying, expiry, strike, opt_type, lo, hi),
+        )
+        rows = await cur.fetchall()
+    return [(r[0], float(r[1])) for r in rows]
+
+
 async def purge_older_than(db_path: str, days: int, now: Optional[datetime] = None) -> int:
     """Delete rows older than `days`. Returns rows removed (chain table)."""
     now = now or datetime.now()

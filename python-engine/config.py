@@ -609,6 +609,21 @@ class Settings(BaseSettings):
     PARTNER_PCR_ALERT_DELTA:    float = 0.15
     PARTNER_IV_MOVE_ALERT_PCT:  float = 0.10      # relative ATM-IV intraday move
     PARTNER_EVENT_MIN_GAP_MIN:  int   = 30
+    # [PARTNER-ENRICH 2026-07-19] Tier-1/2 enrichment knobs.
+    # Sizing line: fraction of capital a buyer should risk per trade.
+    PARTNER_SIZING_RISK_PCT:    float = 0.02
+    # Rolling track-record window + minimum sample before quoting one
+    # (a 2-signal "record" is noise dressed as evidence).
+    PARTNER_TRACK_LOOKBACK_DAYS: int  = 30
+    PARTNER_TRACK_MIN_N:        int   = 5
+    # Signal rows outlive OI snapshots (FNO_OI_RETENTION_DAYS): the track
+    # record needs weeks of history, OI forensics only needs days. A few
+    # signal rows/day is negligible disk.
+    PARTNER_SIGNAL_RETENTION_DAYS: int = 60
+    # OI wall build/unwind: report when the wall strike's OI moved this
+    # fraction vs the open baseline (and again on each further move of
+    # the same size).
+    PARTNER_WALL_DELTA_PCT:     float = 0.15
 
     # ============================================================
     # REGIME ENGINE -- VIX-Free Volatility Detection

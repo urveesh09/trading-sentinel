@@ -202,3 +202,77 @@ def test_expiry_note_edges():
     assert fa.expiry_note(date(2026, 7, 30), today, None) == "7d to expiry"
     assert fa.expiry_note(date(2026, 7, 22), today, None) == ""   # past
     assert fa.expiry_note(None, today, None) == ""
+
+
+# ---------------------------------------------------------------------------
+# [PARTNER-ENRICH 2026-07-19] premium scenarios (T1a)
+# ---------------------------------------------------------------------------
+
+def test_premium_scenarios_long_call_sane():
+    T = years_to_expiry(EXPIRY, NOW)
+    iv = 0.15
+    paid = options_math.black76_price(F, 25000.0, T, iv, RISK_FREE_RATE, True) + 2.0
+    out = fa.premium_scenarios(
+        F, 25000.0, T, iv, True, paid,
+        stop_underlying=F - 45.0, target_underlying=F + 67.5,
+    )
+    assert out is not None
+    # Repricing the same contract at target/stop must bracket the paid mid+edge.
+    assert out["at_target"] > paid > out["at_stop"]
+    assert out["rr"] > 0
+    # Call moved up 67.5 pts at ~0.5 delta: gain must be below the move itself.
+    assert out["at_target"] - paid < 67.5
+
+
+def test_premium_scenarios_none_on_missing_iv():
+    assert fa.premium_scenarios(F, 25000.0, 0.01, None, True, 100.0, F - 50, F + 75) is None
+
+
+def test_premium_scenarios_none_when_rr_not_positive():
+    # Target BELOW entry forward for a call -> negative gain -> None.
+    T = years_to_expiry(EXPIRY, NOW)
+    out = fa.premium_scenarios(
+        F, 25000.0, T, 0.15, True, 200.0,
+        stop_underlying=F - 45.0, target_underlying=F - 10.0,
+    )
+    assert out is None
+
+
+def test_premium_scenarios_none_on_degenerate_inputs():
+    assert fa.premium_scenarios(0.0, 25000.0, 0.01, 0.15, True, 100.0, 1, 2) is None
+    assert fa.premium_scenarios(F, 25000.0, 0.0, 0.15, True, 100.0, 1, 2) is None
+    assert fa.premium_scenarios(F, 25000.0, 0.01, 0.15, True, 0.0, 1, 2) is None
+
+
+# ---------------------------------------------------------------------------
+# [PARTNER-ENRICH 2026-07-19] ATM IV skew (T2c)
+# ---------------------------------------------------------------------------
+
+def test_atm_iv_skew_recovers_per_side_vols():
+    quotes = {
+        (25000.0, "CE"): _quote(25000.0, "CE", 1000, vol=0.10),
+        (25000.0, "PE"): _quote(25000.0, "PE", 1000, vol=0.14),
+    }
+    snap = ChainSnapshot(
+        taken_at=NOW, expiry=EXPIRY, forward=F, parity_forward=None,
+        lot_size=75, fut_quote=None, quotes=quotes,
+    )
+    out = fa.atm_iv_skew(snap, NOW)
+    assert out is not None
+    ce_iv, pe_iv = out
+    assert ce_iv == pytest.approx(0.10, abs=0.01)
+    assert pe_iv == pytest.approx(0.14, abs=0.01)
+
+
+def test_atm_iv_skew_none_when_one_leg_dead():
+    dead = _quote(25000.0, "PE", 1000)
+    dead.bid = 0.0  # one-sided book -> not two_sided
+    quotes = {
+        (25000.0, "CE"): _quote(25000.0, "CE", 1000),
+        (25000.0, "PE"): dead,
+    }
+    snap = ChainSnapshot(
+        taken_at=NOW, expiry=EXPIRY, forward=F, parity_forward=None,
+        lot_size=75, fut_quote=None, quotes=quotes,
+    )
+    assert fa.atm_iv_skew(snap, NOW) is None
