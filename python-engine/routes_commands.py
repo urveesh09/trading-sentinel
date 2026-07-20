@@ -105,6 +105,12 @@ async def top_level_command_get(cmd: str):
         data = await strategy_funnel(settings.DB_PATH)
         return {"reply": format_strategy_funnel(data)}
 
+    # [STRATEGY-PROMOTION 2026-07-20] /promotion -> paper->live readiness bar.
+    if cmd.lower() in ("promotion", "promote", "ladder"):
+        from analytics import promotion_report, format_promotion_report
+        data = await promotion_report(settings.DB_PATH)
+        return {"reply": format_promotion_report(data)}
+
     from penny_commands import dispatch as _penny_dispatch
     # penny_commands.dispatch is the universal entry point -- it
     # routes /health and /regime to the cross-subsystem handlers.
@@ -129,6 +135,15 @@ async def get_strategy_funnel(date: str = None):
     one day (default today, IST). date=YYYY-MM-DD to backfill."""
     from analytics import strategy_funnel
     return await strategy_funnel(settings.DB_PATH, day_iso=date)
+
+
+@router.get("/strategy/promotion")
+async def get_strategy_promotion():
+    """[STRATEGY-PROMOTION 2026-07-20] Paper->live promotion ladder: per
+    strategy, whether it has earned live capital (trades, net-cost expectancy,
+    drawdown budget)."""
+    from analytics import promotion_report
+    return await promotion_report(settings.DB_PATH)
 
 
 

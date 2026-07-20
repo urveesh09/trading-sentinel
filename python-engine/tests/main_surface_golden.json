@@ -331,6 +331,14 @@
       "response_model": null
     },
     {
+      "endpoint": "get_strategy_promotion",
+      "methods": [
+        "GET"
+      ],
+      "path": "/strategy/promotion",
+      "response_model": null
+    },
+    {
       "endpoint": "test_momentum_screener",
       "methods": [
         "POST"

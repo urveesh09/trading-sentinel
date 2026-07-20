@@ -403,6 +403,111 @@ def format_strategy_funnel(data: dict) -> str:
 
 
 # --------------------------------------------------------------------
+# 2c. Promotion ladder  [STRATEGY-PROMOTION 2026-07-20]
+# --------------------------------------------------------------------
+# The Phase-3 gate that decides when a PAPER strategy has earned live
+# capital -- encoded as a checked verdict, not a vibe. A strategy is
+# ready_for_live only when, on its own ledger, it has enough trades, a
+# POSITIVE net-cost expectancy, and a drawdown inside its budget. Live
+# strategies get a health read instead. Reuses the same per-source ledger
+# as /bankroll/divisions, so promotion can never disagree with the P&L.
+
+def _max_drawdown(pnls: list) -> float:
+    """Max peak-to-trough drawdown (rupees, >=0) of the cumulative curve."""
+    cum = peak = mdd = 0.0
+    for p in pnls:
+        cum += p
+        peak = max(peak, cum)
+        mdd = max(mdd, peak - cum)
+    return mdd
+
+
+def _promotion_bar() -> dict:
+    from config import settings
+    return {
+        "min_trades": int(getattr(settings, "PROMOTION_MIN_TRADES", 100)),
+        "provisional_trades": int(getattr(settings, "PROMOTION_PROVISIONAL_TRADES", 30)),
+        "max_dd_pct": float(getattr(settings, "PROMOTION_MAX_DD_PCT", 0.25)),
+    }
+
+
+async def promotion_report(db_path: str) -> dict:
+    """Per-strategy paper->live promotion check from the trade ledger."""
+    import aiosqlite
+    from performance import _division_registry
+
+    bar = _promotion_bar()
+    strategies = []
+    try:
+        async with aiosqlite.connect(db_path) as db:
+            for key, label, source, pool, allocated, mode in _division_registry():
+                async with db.execute(
+                    "SELECT pnl FROM bankroll_ledger "
+                    "WHERE source=? AND event_type='TRADE_CLOSED' ORDER BY timestamp",
+                    (source,),
+                ) as cur:
+                    pnls = [float(r[0] or 0.0) for r in await cur.fetchall()]
+                n = len(pnls)
+                total = round(sum(pnls), 2)
+                expectancy = round(total / n, 2) if n else 0.0
+                mdd = round(_max_drawdown(pnls), 2)
+                dd_budget = round(allocated * bar["max_dd_pct"], 2) if allocated else None
+
+                reasons = []
+                if n < bar["provisional_trades"]:
+                    reasons.append(f"insufficient_sample:{n}/{bar['provisional_trades']}")
+                if n and expectancy <= 0:
+                    reasons.append(f"negative_expectancy:{expectancy}")
+                if dd_budget is not None and mdd > dd_budget:
+                    reasons.append(f"drawdown_over_budget:{mdd}>{dd_budget}")
+
+                if mode == "live":
+                    verdict = "no_data" if not n else ("healthy" if expectancy > 0 else "underperforming")
+                elif reasons:
+                    verdict = "not_ready"
+                elif n < bar["min_trades"]:
+                    verdict = "provisional"          # bar met, sample still building
+                else:
+                    verdict = "ready_for_live"
+
+                strategies.append({
+                    "key": key, "label": label, "source": source, "mode": mode,
+                    "trades": n, "total_pnl": total, "expectancy": expectancy,
+                    "max_drawdown": mdd, "dd_budget": dd_budget,
+                    "verdict": verdict, "blocking_reasons": reasons,
+                })
+    except Exception as e:
+        logger.error("promotion_report_failed error=%s", str(e))
+        return {"error": str(e), "strategies": [], "bar": bar}
+    return {"strategies": strategies, "bar": bar}
+
+
+def format_promotion_report(data: dict) -> str:
+    if data.get("error"):
+        return f"Promotion ladder: error ({data['error']})"
+    bar = data.get("bar", {})
+    icon = {"ready_for_live": "✅", "provisional": "\U0001F7E1", "not_ready": "⛔",
+            "healthy": "\U0001F7E2", "underperforming": "\U0001F534", "no_data": "➖"}
+    lines = [
+        "\U0001F393 Promotion ladder "
+        f"(bar: ≥{bar.get('min_trades')} trades, +expectancy, DD≤{int(bar.get('max_dd_pct',0)*100)}%)"
+    ]
+    for s in data.get("strategies", []):
+        lines.append(
+            f"\n{icon.get(s['verdict'],'')} {s['label']} [{s['mode']}] — {s['verdict']}"
+        )
+        lines.append(
+            f"  {s['trades']} trades · expectancy {_rupees(s['expectancy'])}"
+            f" · P&L {_rupees(s['total_pnl'])} · maxDD ₹{s['max_drawdown']:,.0f}"
+        )
+        for r in s.get("blocking_reasons", []):
+            lines.append(f"    ✗ {r}")
+    ready = [s['label'] for s in data.get("strategies", []) if s['verdict'] == "ready_for_live"]
+    lines.append("\nReady for live: " + (", ".join(ready) if ready else "none yet"))
+    return "\n".join(lines)
+
+
+# --------------------------------------------------------------------
 # 3. Outcome correlator
 # --------------------------------------------------------------------
 
