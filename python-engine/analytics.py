@@ -248,6 +248,266 @@ async def gate_funnel_report(db_path: str, days: int = 7) -> dict:
 
 
 # --------------------------------------------------------------------
+# 2b. Unified per-strategy funnel  [STRATEGY-FUNNEL 2026-07-20]
+# --------------------------------------------------------------------
+# gate_funnel_report above is momentum-only. This composes ALL strategies
+# (penny / momentum / edge / fno) with per-strategy paper-vs-live P&L, so
+# passivity is impossible to hide -- the daily "are we actually trading,
+# and making money?" heartbeat (Phase 1.1 of the activation plan).
+
+# Which signal-eval table + filter backs each division's activity, keyed by
+# the ledger `source` tag from performance._division_registry(). SYSTEM
+# (swing) has no reject-reason eval log in cache.db -> P&L-only row.
+_FUNNEL_ACTIVITY = {
+    "MOMENTUM":   ("momentum_signals", "scanned_at",   ""),
+    "PENNY":      ("penny_signals",    "scanned_at",   "leg='MIS'"),
+    "EDGE_PAPER": ("penny_signals",    "scanned_at",   "leg IN ('CNC','EDGE')"),
+    "EDGE_LIVE":  ("penny_signals",    "scanned_at",   "leg IN ('CNC','EDGE')"),
+    "FNO_PAPER":  ("fno_signals",      "evaluated_at", ""),
+    "FNO_LIVE":   ("fno_signals",      "evaluated_at", ""),
+}
+
+
+async def _funnel_activity(db, table, ts_col, day_iso, extra_where):
+    """(evals, accepts, top-3 reject reasons) for one signal table on one day.
+    Best-effort: a missing table/column yields zeros, never an exception."""
+    where = f"substr({ts_col},1,10)=?"
+    if extra_where:
+        where += f" AND {extra_where}"
+    evals = accepts = 0
+    top = []
+    try:
+        async with db.execute(
+            f"SELECT SUM(CASE WHEN accepted=1 THEN 1 ELSE 0 END), COUNT(*) "
+            f"FROM {table} WHERE {where}", (day_iso,)
+        ) as cur:
+            row = await cur.fetchone()
+            if row:
+                accepts = int(row[0] or 0)
+                evals = int(row[1] or 0)
+        async with db.execute(
+            f"SELECT reject_reason, COUNT(*) AS n FROM {table} "
+            f"WHERE {where} AND accepted=0 AND reject_reason != '' "
+            f"GROUP BY reject_reason ORDER BY n DESC LIMIT 3", (day_iso,)
+        ) as cur:
+            top = [{"reason": r[0], "n": int(r[1])} for r in await cur.fetchall()]
+    except Exception as e:
+        logger.warning("funnel_activity_failed table=%s error=%s", table, str(e))
+    return evals, accepts, top
+
+
+async def strategy_funnel(db_path: str, day_iso: Optional[str] = None) -> dict:
+    """Per-strategy activity (evals/accepts/top-rejects) + today's P&L and
+    open-position count, live vs paper. One row per division. Reuses
+    performance._division_registry() for the source -> (label, mode) map and
+    bankroll_ledger for realised P&L, so it never drifts from /bankroll/divisions."""
+    import aiosqlite
+    from datetime import datetime, timezone, timedelta
+    if day_iso is None:
+        IST = timezone(timedelta(hours=5, minutes=30))
+        day_iso = datetime.now(IST).date().isoformat()
+    from performance import _division_registry
+
+    strategies = []
+    live_pnl = paper_pnl = 0.0
+    async with aiosqlite.connect(db_path) as db:
+        pnl_today, trades_today = {}, {}
+        try:
+            async with db.execute(
+                "SELECT source, COALESCE(SUM(pnl),0.0), "
+                "SUM(CASE WHEN event_type!='INITIAL' THEN 1 ELSE 0 END) "
+                "FROM bankroll_ledger WHERE substr(timestamp,1,10)=? GROUP BY source",
+                (day_iso,),
+            ) as cur:
+                for r in await cur.fetchall():
+                    pnl_today[r[0]] = float(r[1] or 0.0)
+                    trades_today[r[0]] = int(r[2] or 0)
+        except Exception as e:
+            logger.warning("funnel_pnl_failed error=%s", str(e))
+
+        open_by_source = {}
+        try:
+            async with db.execute(
+                "SELECT source, COUNT(*) FROM positions "
+                "WHERE status IN ('OPEN','CLOSED_T1') GROUP BY source"
+            ) as cur:
+                for r in await cur.fetchall():
+                    open_by_source[r[0]] = int(r[1])
+            async with db.execute(
+                "SELECT source, COUNT(*) FROM fno_positions "
+                "WHERE UPPER(status) IN ('OPEN','LIVE','ACTIVE') GROUP BY source"
+            ) as cur:
+                for r in await cur.fetchall():
+                    open_by_source[r[0]] = open_by_source.get(r[0], 0) + int(r[1])
+        except Exception as e:
+            logger.warning("funnel_open_failed error=%s", str(e))
+
+        for key, label, source, pool_id, allocated, mode in _division_registry():
+            act = _FUNNEL_ACTIVITY.get(source)
+            evals = accepts = 0
+            top = []
+            if act:
+                evals, accepts, top = await _funnel_activity(
+                    db, act[0], act[1], day_iso, act[2]
+                )
+            pnl = round(pnl_today.get(source, 0.0), 2)
+            strategies.append({
+                "key": key, "label": label, "source": source, "mode": mode,
+                "evals": evals, "accepts": accepts, "top_rejects": top,
+                "trades_today": trades_today.get(source, 0),
+                "pnl_today": pnl, "open_positions": open_by_source.get(source, 0),
+                "activity_tracked": act is not None,
+            })
+            if mode == "live":
+                live_pnl += pnl
+            else:
+                paper_pnl += pnl
+
+    return {
+        "day": day_iso,
+        "strategies": strategies,
+        "totals": {"live_pnl": round(live_pnl, 2), "paper_pnl": round(paper_pnl, 2)},
+    }
+
+
+def _rupees(v: float) -> str:
+    return f"{'+' if v >= 0 else '-'}₹{abs(v):,.2f}"
+
+
+def format_strategy_funnel(data: dict) -> str:
+    """Telegram/CLI text for strategy_funnel()."""
+    if data.get("error"):
+        return f"Strategy funnel: error ({data['error']})"
+    lines = [f"\U0001F4CA Strategy funnel — {data.get('day', '')}"]
+    for s in data.get("strategies", []):
+        tag = "\U0001F7E2 live" if s["mode"] == "live" else "\U0001F4DD paper"
+        lines.append(f"\n{s['label']} [{tag}]")
+        if s.get("activity_tracked"):
+            lines.append(
+                f"  scans {s['evals']} · accepts {s['accepts']} "
+                f"· open {s['open_positions']}"
+            )
+            for tr in s.get("top_rejects", [])[:3]:
+                lines.append(f"    ✗ {tr['n']}× {tr['reason']}")
+        else:
+            lines.append(f"  open {s['open_positions']} (no scan log)")
+        lines.append(
+            f"  trades {s['trades_today']} · P&L {_rupees(s['pnl_today'])}"
+        )
+    t = data.get("totals", {})
+    lines.append(
+        f"\nToday: live {_rupees(t.get('live_pnl', 0.0))} "
+        f"· paper {_rupees(t.get('paper_pnl', 0.0))}"
+    )
+    return "\n".join(lines)
+
+
+# --------------------------------------------------------------------
+# 2c. Promotion ladder  [STRATEGY-PROMOTION 2026-07-20]
+# --------------------------------------------------------------------
+# The Phase-3 gate that decides when a PAPER strategy has earned live
+# capital -- encoded as a checked verdict, not a vibe. A strategy is
+# ready_for_live only when, on its own ledger, it has enough trades, a
+# POSITIVE net-cost expectancy, and a drawdown inside its budget. Live
+# strategies get a health read instead. Reuses the same per-source ledger
+# as /bankroll/divisions, so promotion can never disagree with the P&L.
+
+def _max_drawdown(pnls: list) -> float:
+    """Max peak-to-trough drawdown (rupees, >=0) of the cumulative curve."""
+    cum = peak = mdd = 0.0
+    for p in pnls:
+        cum += p
+        peak = max(peak, cum)
+        mdd = max(mdd, peak - cum)
+    return mdd
+
+
+def _promotion_bar() -> dict:
+    from config import settings
+    return {
+        "min_trades": int(getattr(settings, "PROMOTION_MIN_TRADES", 100)),
+        "provisional_trades": int(getattr(settings, "PROMOTION_PROVISIONAL_TRADES", 30)),
+        "max_dd_pct": float(getattr(settings, "PROMOTION_MAX_DD_PCT", 0.25)),
+    }
+
+
+async def promotion_report(db_path: str) -> dict:
+    """Per-strategy paper->live promotion check from the trade ledger."""
+    import aiosqlite
+    from performance import _division_registry
+
+    bar = _promotion_bar()
+    strategies = []
+    try:
+        async with aiosqlite.connect(db_path) as db:
+            for key, label, source, pool, allocated, mode in _division_registry():
+                async with db.execute(
+                    "SELECT pnl FROM bankroll_ledger "
+                    "WHERE source=? AND event_type='TRADE_CLOSED' ORDER BY timestamp",
+                    (source,),
+                ) as cur:
+                    pnls = [float(r[0] or 0.0) for r in await cur.fetchall()]
+                n = len(pnls)
+                total = round(sum(pnls), 2)
+                expectancy = round(total / n, 2) if n else 0.0
+                mdd = round(_max_drawdown(pnls), 2)
+                dd_budget = round(allocated * bar["max_dd_pct"], 2) if allocated else None
+
+                reasons = []
+                if n < bar["provisional_trades"]:
+                    reasons.append(f"insufficient_sample:{n}/{bar['provisional_trades']}")
+                if n and expectancy <= 0:
+                    reasons.append(f"negative_expectancy:{expectancy}")
+                if dd_budget is not None and mdd > dd_budget:
+                    reasons.append(f"drawdown_over_budget:{mdd}>{dd_budget}")
+
+                if mode == "live":
+                    verdict = "no_data" if not n else ("healthy" if expectancy > 0 else "underperforming")
+                elif reasons:
+                    verdict = "not_ready"
+                elif n < bar["min_trades"]:
+                    verdict = "provisional"          # bar met, sample still building
+                else:
+                    verdict = "ready_for_live"
+
+                strategies.append({
+                    "key": key, "label": label, "source": source, "mode": mode,
+                    "trades": n, "total_pnl": total, "expectancy": expectancy,
+                    "max_drawdown": mdd, "dd_budget": dd_budget,
+                    "verdict": verdict, "blocking_reasons": reasons,
+                })
+    except Exception as e:
+        logger.error("promotion_report_failed error=%s", str(e))
+        return {"error": str(e), "strategies": [], "bar": bar}
+    return {"strategies": strategies, "bar": bar}
+
+
+def format_promotion_report(data: dict) -> str:
+    if data.get("error"):
+        return f"Promotion ladder: error ({data['error']})"
+    bar = data.get("bar", {})
+    icon = {"ready_for_live": "✅", "provisional": "\U0001F7E1", "not_ready": "⛔",
+            "healthy": "\U0001F7E2", "underperforming": "\U0001F534", "no_data": "➖"}
+    lines = [
+        "\U0001F393 Promotion ladder "
+        f"(bar: ≥{bar.get('min_trades')} trades, +expectancy, DD≤{int(bar.get('max_dd_pct',0)*100)}%)"
+    ]
+    for s in data.get("strategies", []):
+        lines.append(
+            f"\n{icon.get(s['verdict'],'')} {s['label']} [{s['mode']}] — {s['verdict']}"
+        )
+        lines.append(
+            f"  {s['trades']} trades · expectancy {_rupees(s['expectancy'])}"
+            f" · P&L {_rupees(s['total_pnl'])} · maxDD ₹{s['max_drawdown']:,.0f}"
+        )
+        for r in s.get("blocking_reasons", []):
+            lines.append(f"    ✗ {r}")
+    ready = [s['label'] for s in data.get("strategies", []) if s['verdict'] == "ready_for_live"]
+    lines.append("\nReady for live: " + (", ".join(ready) if ready else "none yet"))
+    return "\n".join(lines)
+
+
+# --------------------------------------------------------------------
 # 3. Outcome correlator
 # --------------------------------------------------------------------
 

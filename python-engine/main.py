@@ -2613,7 +2613,7 @@ async def momentum_intraday_monitor():
       3. Ratchet the SL-M trigger to breakeven / trail.
     """
     from momentum_exits import (
-        evaluate_momentum_exit, ACTION_EXIT, ACTION_TRAIL,
+        evaluate_momentum_exit, momentum_exit_status, ACTION_EXIT, ACTION_TRAIL,
     )
     from datetime import time as dt_time
     import httpx as _httpx
@@ -2707,7 +2707,8 @@ async def momentum_intraday_monitor():
                     )
                 resp.raise_for_status()
                 await _close_momentum_position(
-                    pos, ltp, "CLOSED_T1", decision["reason"],
+                    pos, ltp, momentum_exit_status(decision["reason"]),
+                    decision["reason"],
                 )
 
             elif action == ACTION_TRAIL:

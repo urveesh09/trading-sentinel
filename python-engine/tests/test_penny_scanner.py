@@ -377,6 +377,53 @@ def test_scanner_logs_eval_skipped_when_quote_unavailable(tmp_paths, fake_kite, 
     assert any("reason=quote_unavailable" in m for m in skipped)
 
 
+def test_data_failure_logs_specific_reject_reason_not_opaque_none(tmp_paths, fake_kite, fake_universe):
+    """2026-07-20: the data/fetch-failure paths in _evaluate_ticker_breakout
+    used to `return None`, which the scanner collapsed into the opaque
+    'evaluator returned None (see prior warn/error)' reject -- 140,209 of them
+    in prod, hiding the real cause (the #1 reason penny breakout is 0/533k).
+    They now return structured rejects, so the funnel shows the SPECIFIC
+    reason. Here an empty quote must surface as 'quote_unavailable', never as
+    'evaluator returned None'."""
+    from unittest.mock import AsyncMock
+    fake_kite.get_quote = AsyncMock(return_value={})  # empty quote -> quote_unavailable
+    from penny_scanner import PennyScanner
+    scanner = PennyScanner(
+        kite=fake_kite, universe_json_path=fake_universe,
+        paper_mode=True, regime="PR1_CALM",
+    )
+    asyncio.run(scanner.scan_once(as_of=datetime(2026, 6, 21, 11, 0)))
+    rows = _read_csv_rows(str(tmp_paths / "penny_signals.csv"))
+    assert rows, "expected reject rows to be logged"
+    reasons = [(r.get("reject_reason") or "") for r in rows]
+    assert all("evaluator returned None" not in r for r in reasons), \
+        f"opaque None reject leaked instead of a specific reason: {reasons}"
+    assert all(r == "quote_unavailable" for r in reasons), \
+        f"expected specific 'quote_unavailable' reject, got {reasons}"
+
+
+def test_connors_data_failure_returns_specific_reject_not_none(tmp_paths, fake_kite, fake_universe):
+    """2026-07-20: the connors (CNC/EDGE-leg) evaluator's data-failure paths
+    (token_unresolved, historical_unavailable, insufficient_history,
+    volume_extract_failed, no_volume_column) used to `return None`, which
+    main.py's _log_cnc collapsed into the opaque 'evaluator returned None' --
+    hiding why Penny Edge has been dormant. They now return structured rejects
+    so the edge funnel shows the real reason. The fake feed returns only 20
+    daily bars (<250 required) -> insufficient_history."""
+    from penny_scanner import PennyScanner
+    scanner = PennyScanner(
+        kite=fake_kite, universe_json_path=fake_universe,
+        paper_mode=True, regime="PR1_CALM",
+    )
+    result = asyncio.run(scanner._evaluate_ticker_connors(
+        "AAA", as_of=datetime(2026, 6, 21, 14, 30), prev_close=12.0,
+    ))
+    assert result is not None, "a data-failure must be a structured reject, not None"
+    assert result.get("accept") is False
+    assert result.get("reject_reason") == "insufficient_history", \
+        f"expected specific 'insufficient_history', got {result.get('reject_reason')!r}"
+
+
 def test_scanner_handles_string_valued_instrument_cache(tmp_paths, fake_kite, fake_universe, caplog):
     """[INSTRUMENT-CACHE-INT 2026-07-03] Today's prod bug:
     `kite.instrument_cache[symbol] = parts[0]` stored the raw CSV

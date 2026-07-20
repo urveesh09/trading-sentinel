@@ -455,6 +455,38 @@ async def run_fno_tick(
     except Exception as exc:
         logger.error("fno_exit_management_failed err=%s", str(exc), exc_info=True)
 
+    # ---- 1b) defined-risk paper book (Phase 2) -----------------------
+    # Rides this same tick: manage any open structure to current mids, then
+    # (if flat + in-window) open one -- a debit spread on a directional signal,
+    # an iron condor on a rich-IV range day (which the single-leg engine's
+    # no-signal early-return below would never reach). Fully self-contained and
+    # guarded: nothing here can disturb the single-leg engine above or below.
+    if not settings.FNO_DISABLE_PAPER:
+        try:
+            import fno_dr_book as _dr
+            await _dr.init_dr_db(db_path)
+            open_dr = await _dr.open_structures(db_path)
+            nm_dr = _now_min(now_ist)
+            in_dr_window = _dr._entry_lo_min() <= nm_dr <= _dr._entry_hi_min()
+            if open_dr or in_dr_window:
+                dr_snap = await take_chain_snapshot(kite, instruments, now_ist)
+                if open_dr:
+                    summary["exits"] += await _dr.manage_dr_structures(db_path, dr_snap, now_ist)
+                if in_dr_window and not await _dr.open_structures(db_path):
+                    try:
+                        dr_bars = await _fetch_futures_bars(kite, fut.token, now_ist)
+                        dr_sig = evaluate_fno_mom(dr_bars, regime, now_ist)
+                        opened = await _dr.maybe_open_dr_structure(
+                            db_path, dr_snap, dr_sig.direction is not None,
+                            dr_sig.direction, now_ist,
+                        )
+                        if opened:
+                            summary.setdefault("dr_opened", []).append(opened)
+                    except Exception as exc:
+                        logger.error("fno_dr_entry_failed err=%s", str(exc))
+        except Exception as exc:
+            logger.error("fno_dr_block_failed err=%s", str(exc), exc_info=True)
+
     # ---- 2) entries ----------------------------------------------------
     nm = _now_min(now_ist)
     if not (settings.FNO_ENTRY_START_MIN <= nm < settings.FNO_ENTRY_END_MIN):
