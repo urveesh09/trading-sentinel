@@ -309,7 +309,7 @@ class PennyScanner:
         token = self.kite.instrument_cache.get(ticker)
         if token is None:
             logger.warning("penny_eval_skipped ticker=%s reason=token_unresolved", ticker)
-            return None
+            return {"accept": False, "reject_reason": "token_unresolved", "ticker": ticker}
 
         # 1) Live quote for LTP, day high, and cumulative volume.
         # [FIX-PHASE3-AUDIT 2026-07-09] Prefer the batched prefetch from
@@ -329,7 +329,7 @@ class PennyScanner:
             q = await self._get_quote_safe(token)
         if not q:
             logger.warning("penny_eval_skipped ticker=%s reason=quote_unavailable", ticker)
-            return None
+            return {"accept": False, "reject_reason": "quote_unavailable", "ticker": ticker}
         ltp = q.get("last_price", 0)
         cum_vol = q.get("volume", 0) or 0
         ohlc = q.get("ohlc") or {}
@@ -394,7 +394,7 @@ class PennyScanner:
             )
         except Exception as e:
             logger.error("penny_intraday_fetch_failed ticker=%s error=%s", ticker, str(e))
-            return None
+            return {"accept": False, "reject_reason": "intraday_fetch_failed", "ticker": ticker}
 
         if intraday is None or len(intraday) < 2:
             # Not enough data; the day is too early or the feed is down
@@ -402,7 +402,7 @@ class PennyScanner:
                 "penny_eval_skipped ticker=%s reason=insufficient_intraday_bars "
                 "bars=%s", ticker, 0 if intraday is None else len(intraday),
             )
-            return None
+            return {"accept": False, "reject_reason": "insufficient_intraday_bars", "ticker": ticker}
 
         # 3) Drop the in-progress bar (its timestamp minute == current minute)
         # and use the last COMPLETE 1-min bar as the breakout bar.
@@ -419,7 +419,7 @@ class PennyScanner:
                 "penny_eval_skipped ticker=%s reason=zero_complete_bars_after_drop",
                 ticker,
             )
-            return None
+            return {"accept": False, "reject_reason": "zero_complete_bars_after_drop", "ticker": ticker}
 
         last_bar = intraday.iloc[-1]
         breakout_bar = {

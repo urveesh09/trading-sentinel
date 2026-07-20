@@ -377,6 +377,31 @@ def test_scanner_logs_eval_skipped_when_quote_unavailable(tmp_paths, fake_kite, 
     assert any("reason=quote_unavailable" in m for m in skipped)
 
 
+def test_data_failure_logs_specific_reject_reason_not_opaque_none(tmp_paths, fake_kite, fake_universe):
+    """2026-07-20: the data/fetch-failure paths in _evaluate_ticker_breakout
+    used to `return None`, which the scanner collapsed into the opaque
+    'evaluator returned None (see prior warn/error)' reject -- 140,209 of them
+    in prod, hiding the real cause (the #1 reason penny breakout is 0/533k).
+    They now return structured rejects, so the funnel shows the SPECIFIC
+    reason. Here an empty quote must surface as 'quote_unavailable', never as
+    'evaluator returned None'."""
+    from unittest.mock import AsyncMock
+    fake_kite.get_quote = AsyncMock(return_value={})  # empty quote -> quote_unavailable
+    from penny_scanner import PennyScanner
+    scanner = PennyScanner(
+        kite=fake_kite, universe_json_path=fake_universe,
+        paper_mode=True, regime="PR1_CALM",
+    )
+    asyncio.run(scanner.scan_once(as_of=datetime(2026, 6, 21, 11, 0)))
+    rows = _read_csv_rows(str(tmp_paths / "penny_signals.csv"))
+    assert rows, "expected reject rows to be logged"
+    reasons = [(r.get("reject_reason") or "") for r in rows]
+    assert all("evaluator returned None" not in r for r in reasons), \
+        f"opaque None reject leaked instead of a specific reason: {reasons}"
+    assert all(r == "quote_unavailable" for r in reasons), \
+        f"expected specific 'quote_unavailable' reject, got {reasons}"
+
+
 def test_scanner_handles_string_valued_instrument_cache(tmp_paths, fake_kite, fake_universe, caplog):
     """[INSTRUMENT-CACHE-INT 2026-07-03] Today's prod bug:
     `kite.instrument_cache[symbol] = parts[0]` stored the raw CSV
