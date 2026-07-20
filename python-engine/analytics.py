@@ -248,6 +248,161 @@ async def gate_funnel_report(db_path: str, days: int = 7) -> dict:
 
 
 # --------------------------------------------------------------------
+# 2b. Unified per-strategy funnel  [STRATEGY-FUNNEL 2026-07-20]
+# --------------------------------------------------------------------
+# gate_funnel_report above is momentum-only. This composes ALL strategies
+# (penny / momentum / edge / fno) with per-strategy paper-vs-live P&L, so
+# passivity is impossible to hide -- the daily "are we actually trading,
+# and making money?" heartbeat (Phase 1.1 of the activation plan).
+
+# Which signal-eval table + filter backs each division's activity, keyed by
+# the ledger `source` tag from performance._division_registry(). SYSTEM
+# (swing) has no reject-reason eval log in cache.db -> P&L-only row.
+_FUNNEL_ACTIVITY = {
+    "MOMENTUM":   ("momentum_signals", "scanned_at",   ""),
+    "PENNY":      ("penny_signals",    "scanned_at",   "leg='MIS'"),
+    "EDGE_PAPER": ("penny_signals",    "scanned_at",   "leg IN ('CNC','EDGE')"),
+    "EDGE_LIVE":  ("penny_signals",    "scanned_at",   "leg IN ('CNC','EDGE')"),
+    "FNO_PAPER":  ("fno_signals",      "evaluated_at", ""),
+    "FNO_LIVE":   ("fno_signals",      "evaluated_at", ""),
+}
+
+
+async def _funnel_activity(db, table, ts_col, day_iso, extra_where):
+    """(evals, accepts, top-3 reject reasons) for one signal table on one day.
+    Best-effort: a missing table/column yields zeros, never an exception."""
+    where = f"substr({ts_col},1,10)=?"
+    if extra_where:
+        where += f" AND {extra_where}"
+    evals = accepts = 0
+    top = []
+    try:
+        async with db.execute(
+            f"SELECT SUM(CASE WHEN accepted=1 THEN 1 ELSE 0 END), COUNT(*) "
+            f"FROM {table} WHERE {where}", (day_iso,)
+        ) as cur:
+            row = await cur.fetchone()
+            if row:
+                accepts = int(row[0] or 0)
+                evals = int(row[1] or 0)
+        async with db.execute(
+            f"SELECT reject_reason, COUNT(*) AS n FROM {table} "
+            f"WHERE {where} AND accepted=0 AND reject_reason != '' "
+            f"GROUP BY reject_reason ORDER BY n DESC LIMIT 3", (day_iso,)
+        ) as cur:
+            top = [{"reason": r[0], "n": int(r[1])} for r in await cur.fetchall()]
+    except Exception as e:
+        logger.warning("funnel_activity_failed table=%s error=%s", table, str(e))
+    return evals, accepts, top
+
+
+async def strategy_funnel(db_path: str, day_iso: Optional[str] = None) -> dict:
+    """Per-strategy activity (evals/accepts/top-rejects) + today's P&L and
+    open-position count, live vs paper. One row per division. Reuses
+    performance._division_registry() for the source -> (label, mode) map and
+    bankroll_ledger for realised P&L, so it never drifts from /bankroll/divisions."""
+    import aiosqlite
+    from datetime import datetime, timezone, timedelta
+    if day_iso is None:
+        IST = timezone(timedelta(hours=5, minutes=30))
+        day_iso = datetime.now(IST).date().isoformat()
+    from performance import _division_registry
+
+    strategies = []
+    live_pnl = paper_pnl = 0.0
+    async with aiosqlite.connect(db_path) as db:
+        pnl_today, trades_today = {}, {}
+        try:
+            async with db.execute(
+                "SELECT source, COALESCE(SUM(pnl),0.0), "
+                "SUM(CASE WHEN event_type!='INITIAL' THEN 1 ELSE 0 END) "
+                "FROM bankroll_ledger WHERE substr(timestamp,1,10)=? GROUP BY source",
+                (day_iso,),
+            ) as cur:
+                for r in await cur.fetchall():
+                    pnl_today[r[0]] = float(r[1] or 0.0)
+                    trades_today[r[0]] = int(r[2] or 0)
+        except Exception as e:
+            logger.warning("funnel_pnl_failed error=%s", str(e))
+
+        open_by_source = {}
+        try:
+            async with db.execute(
+                "SELECT source, COUNT(*) FROM positions "
+                "WHERE status IN ('OPEN','CLOSED_T1') GROUP BY source"
+            ) as cur:
+                for r in await cur.fetchall():
+                    open_by_source[r[0]] = int(r[1])
+            async with db.execute(
+                "SELECT source, COUNT(*) FROM fno_positions "
+                "WHERE UPPER(status) IN ('OPEN','LIVE','ACTIVE') GROUP BY source"
+            ) as cur:
+                for r in await cur.fetchall():
+                    open_by_source[r[0]] = open_by_source.get(r[0], 0) + int(r[1])
+        except Exception as e:
+            logger.warning("funnel_open_failed error=%s", str(e))
+
+        for key, label, source, pool_id, allocated, mode in _division_registry():
+            act = _FUNNEL_ACTIVITY.get(source)
+            evals = accepts = 0
+            top = []
+            if act:
+                evals, accepts, top = await _funnel_activity(
+                    db, act[0], act[1], day_iso, act[2]
+                )
+            pnl = round(pnl_today.get(source, 0.0), 2)
+            strategies.append({
+                "key": key, "label": label, "source": source, "mode": mode,
+                "evals": evals, "accepts": accepts, "top_rejects": top,
+                "trades_today": trades_today.get(source, 0),
+                "pnl_today": pnl, "open_positions": open_by_source.get(source, 0),
+                "activity_tracked": act is not None,
+            })
+            if mode == "live":
+                live_pnl += pnl
+            else:
+                paper_pnl += pnl
+
+    return {
+        "day": day_iso,
+        "strategies": strategies,
+        "totals": {"live_pnl": round(live_pnl, 2), "paper_pnl": round(paper_pnl, 2)},
+    }
+
+
+def _rupees(v: float) -> str:
+    return f"{'+' if v >= 0 else '-'}₹{abs(v):,.2f}"
+
+
+def format_strategy_funnel(data: dict) -> str:
+    """Telegram/CLI text for strategy_funnel()."""
+    if data.get("error"):
+        return f"Strategy funnel: error ({data['error']})"
+    lines = [f"\U0001F4CA Strategy funnel — {data.get('day', '')}"]
+    for s in data.get("strategies", []):
+        tag = "\U0001F7E2 live" if s["mode"] == "live" else "\U0001F4DD paper"
+        lines.append(f"\n{s['label']} [{tag}]")
+        if s.get("activity_tracked"):
+            lines.append(
+                f"  scans {s['evals']} · accepts {s['accepts']} "
+                f"· open {s['open_positions']}"
+            )
+            for tr in s.get("top_rejects", [])[:3]:
+                lines.append(f"    ✗ {tr['n']}× {tr['reason']}")
+        else:
+            lines.append(f"  open {s['open_positions']} (no scan log)")
+        lines.append(
+            f"  trades {s['trades_today']} · P&L {_rupees(s['pnl_today'])}"
+        )
+    t = data.get("totals", {})
+    lines.append(
+        f"\nToday: live {_rupees(t.get('live_pnl', 0.0))} "
+        f"· paper {_rupees(t.get('paper_pnl', 0.0))}"
+    )
+    return "\n".join(lines)
+
+
+# --------------------------------------------------------------------
 # 3. Outcome correlator
 # --------------------------------------------------------------------
 

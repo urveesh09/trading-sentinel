@@ -98,6 +98,13 @@ async def top_level_command_get(cmd: str):
         data = await division_breakdown(settings.DB_PATH)
         return {"reply": format_division_breakdown(data)}
 
+    # [STRATEGY-FUNNEL 2026-07-20] /funnel -> per-strategy activity + P&L
+    # heartbeat (evals, accepts, top reject reasons, live-vs-paper P&L).
+    if cmd.lower() in ("funnel", "strategies"):
+        from analytics import strategy_funnel, format_strategy_funnel
+        data = await strategy_funnel(settings.DB_PATH)
+        return {"reply": format_strategy_funnel(data)}
+
     from penny_commands import dispatch as _penny_dispatch
     # penny_commands.dispatch is the universal entry point -- it
     # routes /health and /regime to the cross-subsystem handlers.
@@ -114,6 +121,14 @@ async def top_level_command_get(cmd: str):
 async def get_funnel(days: int = 7):
     from analytics import gate_funnel_report
     return await gate_funnel_report(settings.DB_PATH, days=days)
+
+
+@router.get("/strategy/funnel")
+async def get_strategy_funnel(date: str = None):
+    """[STRATEGY-FUNNEL 2026-07-20] Unified per-strategy activity + P&L for
+    one day (default today, IST). date=YYYY-MM-DD to backfill."""
+    from analytics import strategy_funnel
+    return await strategy_funnel(settings.DB_PATH, day_iso=date)
 
 
 
