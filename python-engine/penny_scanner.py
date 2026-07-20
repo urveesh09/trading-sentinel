@@ -571,7 +571,7 @@ class PennyScanner:
         token = self.kite.instrument_cache.get(ticker)
         if token is None:
             logger.warning("penny_eval_skipped ticker=%s reason=token_unresolved", ticker)
-            return None
+            return {"accept": False, "reject_reason": "token_unresolved", "ticker": ticker}
         # Need 250+ daily closes for the SMA + RSI trend filter
         try:
             bars = await self.kite.get_historical(
@@ -584,11 +584,11 @@ class PennyScanner:
             bars = None
         if bars is None:
             logger.warning("penny_eval_skipped ticker=%s reason=historical_unavailable", ticker)
-            return None
+            return {"accept": False, "reject_reason": "historical_unavailable", "ticker": ticker}
         n = len(bars) if hasattr(bars, '__len__') else 0
         if n < 250:
             logger.warning("penny_eval_skipped ticker=%s reason=insufficient_history bars=%d", ticker, n)
-            return None
+            return {"accept": False, "reject_reason": "insufficient_history", "ticker": ticker}
         # Real volume extraction (P1a). If the column is missing or
         # unusable, return None rather than fabricate numbers.
         today_volume = 0
@@ -603,13 +603,13 @@ class PennyScanner:
                     "penny_eval_skipped ticker=%s reason=volume_extract_failed error=%s",
                     ticker, str(e),
                 )
-                return None
+                return {"accept": False, "reject_reason": "volume_extract_failed", "ticker": ticker}
         else:
             logger.warning(
                 "penny_eval_skipped ticker=%s reason=no_volume_column",
                 ticker,
             )
-            return None
+            return {"accept": False, "reject_reason": "no_volume_column", "ticker": ticker}
         if hasattr(bars, 'columns'):
             # pandas DataFrame
             closes = bars["close"].tolist() if "close" in bars.columns else []

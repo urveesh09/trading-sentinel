@@ -402,6 +402,28 @@ def test_data_failure_logs_specific_reject_reason_not_opaque_none(tmp_paths, fak
         f"expected specific 'quote_unavailable' reject, got {reasons}"
 
 
+def test_connors_data_failure_returns_specific_reject_not_none(tmp_paths, fake_kite, fake_universe):
+    """2026-07-20: the connors (CNC/EDGE-leg) evaluator's data-failure paths
+    (token_unresolved, historical_unavailable, insufficient_history,
+    volume_extract_failed, no_volume_column) used to `return None`, which
+    main.py's _log_cnc collapsed into the opaque 'evaluator returned None' --
+    hiding why Penny Edge has been dormant. They now return structured rejects
+    so the edge funnel shows the real reason. The fake feed returns only 20
+    daily bars (<250 required) -> insufficient_history."""
+    from penny_scanner import PennyScanner
+    scanner = PennyScanner(
+        kite=fake_kite, universe_json_path=fake_universe,
+        paper_mode=True, regime="PR1_CALM",
+    )
+    result = asyncio.run(scanner._evaluate_ticker_connors(
+        "AAA", as_of=datetime(2026, 6, 21, 14, 30), prev_close=12.0,
+    ))
+    assert result is not None, "a data-failure must be a structured reject, not None"
+    assert result.get("accept") is False
+    assert result.get("reject_reason") == "insufficient_history", \
+        f"expected specific 'insufficient_history', got {result.get('reject_reason')!r}"
+
+
 def test_scanner_handles_string_valued_instrument_cache(tmp_paths, fake_kite, fake_universe, caplog):
     """[INSTRUMENT-CACHE-INT 2026-07-03] Today's prod bug:
     `kite.instrument_cache[symbol] = parts[0]` stored the raw CSV
