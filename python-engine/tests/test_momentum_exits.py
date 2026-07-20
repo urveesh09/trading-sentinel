@@ -17,7 +17,7 @@ import pytest
 
 from momentum_exits import (
     ACTION_EXIT, ACTION_HOLD, ACTION_TRAIL,
-    cost_adjusted_breakeven, evaluate_momentum_exit,
+    cost_adjusted_breakeven, evaluate_momentum_exit, momentum_exit_status,
 )
 
 NOW = datetime(2026, 7, 14, 6, 0, 0, tzinfo=timezone.utc)  # 11:30 IST
@@ -139,3 +139,52 @@ def test_invalid_r_is_refused_loudly_not_traded_on():
     )
     assert d["action"] == ACTION_HOLD
     assert d["reason"] == "invalid_r"
+
+
+# ---------------------------------------------------------------------------
+# momentum_exit_status: the terminal status persisted on a full exit.
+#
+# Regression for the CLOSED_T1 phantom-open bug (2026-07-20): the monitor
+# hard-coded status="CLOSED_T1" on every full square-off. get_open_positions()
+# treats CLOSED_T1 as still-open (penny/swing runner), so fully-exited momentum
+# trades (THELEELA, LATENTVIEW) with t1_fired=0 lingered as open forever and
+# /performance reported phantom open positions.
+# ---------------------------------------------------------------------------
+
+# Mirror position_tracker.get_open_positions() -- statuses it counts as open.
+_OPEN_STATUSES = ("OPEN", "CLOSED_T1")
+
+
+def test_exit_status_target_hit_is_terminal():
+    assert momentum_exit_status("target_hit") == "CLOSED_T2"
+
+
+def test_exit_status_time_stop_is_terminal():
+    assert momentum_exit_status("time_stop_240min_at_-0.30R") == "CLOSED_TIME"
+
+
+def test_exit_status_unknown_reason_is_terminal_fallback():
+    assert momentum_exit_status("something_new") == "CLOSED_MANUAL"
+
+
+def test_every_action_exit_reason_maps_to_a_non_open_status():
+    """The core guard: no ACTION_EXIT reason may map to a status the
+    open-position query still counts. Otherwise the phantom-open bug returns."""
+    # target_hit branch
+    target = evaluate_momentum_exit(
+        _pos(), ltp=200.0, now=NOW,  # far above target -> target_hit
+    )
+    # time_stop branch: old position, small positive R, past the time limit
+    time_stop = evaluate_momentum_exit(
+        _pos(entry_date=(NOW - timedelta(hours=6)).isoformat()),
+        ltp=100.5, now=NOW,
+    )
+    exit_reasons = [
+        d["reason"] for d in (target, time_stop) if d["action"] == ACTION_EXIT
+    ]
+    assert exit_reasons, "expected at least one ACTION_EXIT witness"
+    for reason in exit_reasons:
+        status = momentum_exit_status(reason)
+        assert status not in _OPEN_STATUSES, (
+            f"reason {reason!r} -> {status!r} would be counted as open"
+        )

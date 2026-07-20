@@ -57,6 +57,29 @@ ACTION_EXIT = "exit"
 ACTION_TRAIL = "trail"
 
 
+def momentum_exit_status(reason: str) -> str:
+    """Map an ACTION_EXIT reason to the TERMINAL position status to persist.
+
+    Momentum is a single-leg MIS strategy: an ACTION_EXIT squares off the
+    whole position, so its status must be terminal. The old code hard-coded
+    "CLOSED_T1" here, but get_open_positions() deliberately treats CLOSED_T1
+    as still-open (the penny/swing runner keeps managing the remaining 50%
+    after T1). A momentum trade has no runner, so a "CLOSED_T1" label left
+    every fully-closed momentum position counted as open forever
+    (t1_fired=0 yet status=CLOSED_T1). Return a status the open-position
+    query excludes.
+
+    Reasons come from evaluate_momentum_exit(): "target_hit" and
+    "time_stop_<n>min_at_<r>R". Broker-side stop fills are closed separately
+    as STOPPED_OUT and never reach here.
+    """
+    if reason == "target_hit":
+        return "CLOSED_T2"
+    if reason.startswith("time_stop"):
+        return "CLOSED_TIME"
+    return "CLOSED_MANUAL"
+
+
 def cost_adjusted_breakeven(entry_price: float, shares: int) -> float:
     """
     The price at which this position is actually flat -- entry plus the round-trip
