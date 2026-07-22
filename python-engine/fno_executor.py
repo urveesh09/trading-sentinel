@@ -187,10 +187,26 @@ class FnoExecutor:
                     latest = latest_order_state(history)
                     status = latest.get("status")
                     if status == "COMPLETE":
-                        return float(
-                            latest.get("average_price")
-                            or latest.get("price") or 0.0
-                        ) or None
+                        avg = latest.get("average_price")
+                        price = latest.get("price")
+                        # [AUDIT-FIX-PHASE1 2026-07-11] Loud-but-non-blocking:
+                        # a COMPLETE row with NEITHER average_price NOR
+                        # price is a broker response anomaly. Returning
+                        # None silently treats it as "no fill" -> the
+                        # order is retried and could double-fill if the
+                        # original DID execute at Kite's end. Warn so
+                        # the operator sees the bad order row and can
+                        # reconcile.
+                        if avg is None and price is None:
+                            logger.warning(
+                                "fno_completed_order_no_price order_id=%s "
+                                "-- status=COMPLETE but neither "
+                                "average_price nor price present; treating "
+                                "as no-fill to avoid double-entry risk",
+                                order_id,
+                            )
+                            return None
+                        return float(avg or price or 0.0) or None
                     if status in ("REJECTED", "CANCELLED"):
                         logger.warning(
                             "fno_order_terminal order_id=%s status=%s", order_id, status,

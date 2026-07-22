@@ -150,6 +150,19 @@ async def _manage_open_positions(
                         entry_dt = IST.localize(entry_dt)
                     age_min = (now_ist - entry_dt).total_seconds() / 60.0
                 except (ValueError, TypeError):
+                    # [AUDIT-FIX-PHASE1 2026-07-11] Loud-but-non-blocking.
+                    # Silently fall-through to age=0 means the time
+                    # stop never fires for the malformed row -- a
+                    # position can live forever. Log loudly so the
+                    # operator sees the malformed entry_time and can
+                    # patch the row directly.
+                    logger.warning(
+                        "fno_time_stop_age_parse_failed id=%d entry_time=%r "
+                        "-- age_min defaulted to 0; time stop DEFEATED for "
+                        "this position (operator must patch entry_time "
+                        "to force the exit)",
+                        p.id, p.entry_time,
+                    )
                     age_min = 0.0
                 if age_min >= settings.FNO_TIME_STOP_MIN:
                     r_points = abs(p.entry_underlying - p.stop_underlying)
@@ -184,9 +197,32 @@ async def _manage_open_positions(
             continue
 
         if exit_px_basis <= 0:
+            # [AUDIT-FIX-PHASE1 2026-07-11] Loud-but-non-blocking: a hard
+            # flat with no quote would otherwise silently `continue` and
+            # leave the position open through the weekend (MIS auto-sq-off
+            # at 15:30 is the broker safety net, not a guarantee). On a
+            # non-trading-day next-tick the carry is real -> page the
+            # operator so they can flatten manually or patch the
+            # fno_positions row directly.
+            msg = (
+                f"⚠️ *F&O hard flat blocked by no quote*\n"
+                f"id={p.id} symbol={p.tradingsymbol} reason={exit_reason}\n"
+                f"The 15:10 hard flat could not price -- position may "
+                f"carry into the next session. Action required: manual "
+                f"flatten or UPDATE fno_positions SET status='CLOSED' for "
+                f"id={p.id} once broker quotes return."
+            )
+            try:
+                from operator_alert import notify_operator
+                await notify_operator(msg, event="fno_hard_flat_no_quote")
+            except Exception as notify_exc:
+                logger.error(
+                    "fno_operator_page_failed id=%d err=%s",
+                    p.id, notify_exc,
+                )
             logger.critical(
                 "fno_exit_no_quote id=%d symbol=%s reason=%s -- cannot price "
-                "the exit; will retry next tick",
+                "the exit; position will carry into next session (operator paged)",
                 p.id, p.tradingsymbol, exit_reason,
             )
             continue
