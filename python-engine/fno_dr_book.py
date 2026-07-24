@@ -130,14 +130,14 @@ def _nearest_strike(spot: float, step: float) -> float:
 def expected_move_pct_from_snapshot(snap: ChainSnapshot, step: float) -> Optional[float]:
     """ATM straddle / spot -- the market's own priced expected move to expiry.
     Snapshot-only (no history needed)."""
-    if not snap.spot or snap.spot <= 0:
+    if not snap.forward or snap.forward <= 0:
         return None
-    atm = _nearest_strike(snap.spot, step)
+    atm = _nearest_strike(snap.forward, step)
     ce = snap.quote(atm, OptionType.CE)
     pe = snap.quote(atm, OptionType.PE)
     if ce is None or pe is None or ce.mid <= 0 or pe.mid <= 0:
         return None
-    return (ce.mid + pe.mid) / snap.spot
+    return (ce.mid + pe.mid) / snap.forward
 
 
 def iv_rank_proxy(iv: Optional[float]) -> Optional[float]:
@@ -171,7 +171,7 @@ def plan_structure(
 ) -> Optional[PlannedStructure]:
     """Pure-ish: from the snapshot + the tick's directional signal, pick and
     build a defined-risk structure, or None (stand aside). No DB, no orders."""
-    if snap is None or not snap.spot or snap.spot <= 0:
+    if snap is None or not snap.forward or snap.forward <= 0:
         return None
     step = _strike_step()
     iv = atm_iv(snap, now_ist)
@@ -184,7 +184,7 @@ def plan_structure(
     if kind is None:
         return None
     prem = premium_lookup_from_snapshot(snap)
-    atm = _nearest_strike(snap.spot, step)
+    atm = _nearest_strike(snap.forward, step)
     lot = _lot_size()
 
     if kind == StructureKind.DEBIT_SPREAD:
@@ -202,7 +202,7 @@ def plan_structure(
             kind.value, structure.max_loss_rs, _max_loss_ceiling(),
         )
         return None
-    return PlannedStructure(structure=structure, entry_underlying=float(snap.spot))
+    return PlannedStructure(structure=structure, entry_underlying=float(snap.forward))
 
 
 # ---------------------------------------------------------------------------
@@ -361,7 +361,7 @@ async def manage_dr_structures(
             # if never priced) minus costs -- honest and bounded by max_loss.
             gross = mtm if mtm is not None else 0.0
             costs = float(row.get("entry_cost_rs") or 0.0)
-            spot = float(snap.spot) if snap is not None and snap.spot else None
+            spot = float(snap.forward) if snap is not None and snap.forward else None
             await close_structure(db_path, int(row["id"]), gross, costs, spot, reason, now_ist)
             try:
                 from performance import record_trade_close

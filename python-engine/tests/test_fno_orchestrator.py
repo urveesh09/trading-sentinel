@@ -240,7 +240,12 @@ async def test_instruments_not_ready_is_a_loud_noop(kite, db_path, book):
 # ---------------------------------------------------------------------------
 
 @pytest.mark.asyncio
-async def test_hard_flat_closes_at_bid_with_costs_and_ledger(kite, db_path, book):
+async def test_hard_flat_closes_at_bid_with_costs_and_ledger(kite, db_path, book, monkeypatch):
+    # This test isolates the single-leg engine's hard-flat + ledger mechanics.
+    # The defined-risk paper book rides the same tick and (correctly) books its
+    # own FNO_PAPER close, so silence it here to keep the single-leg assertions
+    # exact -- the DR book has its own coverage in test_fno_dr_book.py.
+    monkeypatch.setattr(settings, "FNO_DR_DISABLE_PAPER", True)
     from performance import init_ledger
     await init_ledger(db_path)
     await run_fno_tick(kite, db_path=db_path, regime="REGIME_1_NORMAL", now_ist=NOW)

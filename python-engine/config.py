@@ -474,6 +474,12 @@ class Settings(BaseSettings):
     FNO_LIVE_TRADING:          bool  = False      # master switch
     FNO_DISABLE_PAPER:         bool  = False
     FNO_DISABLE_LIVE:          bool  = True
+    # Independent kill-switch for the Phase-2 defined-risk paper book. It rides
+    # the same tick as the single-leg engine but is newer/experimental, so it
+    # gets its own lever: flip this True to silence ONLY the DR book (e.g. if it
+    # misbehaves) without also disabling the proven single-leg paper book, which
+    # FNO_DISABLE_PAPER would do. Default False = DR book active (current behaviour).
+    FNO_DR_DISABLE_PAPER:      bool  = False
 
     # --- universe ----------------------------------------------------------
     FNO_UNDERLYING:            str   = "NIFTY"    # NIFTY only in P1

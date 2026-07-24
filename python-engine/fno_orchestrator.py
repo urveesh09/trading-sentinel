@@ -497,7 +497,7 @@ async def run_fno_tick(
     # an iron condor on a rich-IV range day (which the single-leg engine's
     # no-signal early-return below would never reach). Fully self-contained and
     # guarded: nothing here can disturb the single-leg engine above or below.
-    if not settings.FNO_DISABLE_PAPER:
+    if not settings.FNO_DISABLE_PAPER and not settings.FNO_DR_DISABLE_PAPER:
         try:
             import fno_dr_book as _dr
             await _dr.init_dr_db(db_path)
@@ -507,7 +507,14 @@ async def run_fno_tick(
             if open_dr or in_dr_window:
                 dr_snap = await take_chain_snapshot(kite, instruments, now_ist)
                 if open_dr:
-                    summary["exits"] += await _dr.manage_dr_structures(db_path, dr_snap, now_ist)
+                    # manage_dr_structures returns a COUNT (int), while
+                    # summary["exits"] is a list of single-leg exit *records*
+                    # consumed key-by-key in format_fno_telegram. Keep the DR
+                    # tally in its own key (mirrors "dr_opened" below) so the
+                    # two shapes never collide -- the DR closes are detailed in
+                    # their own fno_dr_closed log lines.
+                    summary["dr_exits"] = summary.get("dr_exits", 0) + \
+                        await _dr.manage_dr_structures(db_path, dr_snap, now_ist)
                 if in_dr_window and not await _dr.open_structures(db_path):
                     try:
                         dr_bars = await _fetch_futures_bars(kite, fut.token, now_ist)
