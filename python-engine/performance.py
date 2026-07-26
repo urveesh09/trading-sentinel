@@ -522,6 +522,11 @@ def _division_registry() -> list:
         # key, label, source tag, pool id, allocated (notional), mode
         ("swing",            "Swing (CNC)",              "SYSTEM",     "swing",          swing_alloc,                                             "live"),
         ("momentum",         "Intraday Momentum (MIS)",  "MOMENTUM",   "momentum",       momentum_alloc,                                          "live"),
+        # [MOMENTUM-PAPER 2026-07-26] Paper twin. Live momentum entry is manual
+        # (Telegram EXEC), so the live row records operator behaviour, not
+        # strategy behaviour -- 8 trades in months. The paper book takes every
+        # accepted signal automatically, which is what the promotion ladder needs.
+        ("momentum_paper",   "Intraday Momentum (paper)","MOMENTUM_PAPER", "momentum_paper", float(getattr(settings, "MOMENTUM_PAPER_BANKROLL", 0.0)), "paper"),
         ("penny_breakout",   "Penny Breakout",           "PENNY",      "penny_breakout", float(getattr(settings, "PENNY_LIVE_BANKROLL", 0.0)) if penny_live else float(getattr(settings, "PENNY_PAPER_BANKROLL", 0.0)), "live" if penny_live else "paper"),
         ("penny_edge_paper", "Penny Edge (paper)",       "EDGE_PAPER", "edge_paper",     float(getattr(settings, "PENNY_EDGE_PAPER_BANKROLL", 0.0)), "paper"),
         ("penny_edge_live",  "Penny Edge (live)",        "EDGE_LIVE",  "edge_live",      float(getattr(settings, "PENNY_EDGE_LIVE_BANKROLL", 0.0)),  "live"),

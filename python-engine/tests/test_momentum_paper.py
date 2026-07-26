@@ -1,0 +1,260 @@
+"""
+[MOMENTUM-PAPER 2026-07-26] Tests for the momentum paper book.
+
+Live momentum entry is manual (Telegram EXEC), so the live ledger records what
+the operator did, not what the strategy proposed -- 8 trades in months. The paper
+book takes every accepted signal automatically so the strategy accumulates a
+record of its own decisions.
+
+Two properties matter more than the rest and are tested hardest:
+
+  1. Paper P&L must NEVER reach real accounting. This system has already shipped
+     that bug once: EDGE_PAPER profits were booked into the real SYSTEM pool and
+     76% of the reported account turned out to be fiction.
+  2. The module must not be able to place an order. Not "must not place one" --
+     must not be ABLE to. The 2026-07-21..24 incident was a book sending real
+     orders it was never meant to send.
+"""
+import asyncio
+import sqlite3
+
+import pytest
+
+from config import settings
+from momentum_paper import (
+    SOURCE,
+    momentum_paper_monitor,
+    momentum_paper_square_off,
+    open_momentum_paper_positions,
+    paper_position_size,
+)
+
+
+def _db(tmp_path):
+    """A positions + bankroll_ledger DB shaped like the real one."""
+    path = str(tmp_path / "cache.db")
+    con = sqlite3.connect(path)
+    con.execute("""
+        CREATE TABLE positions (
+            ticker TEXT, exchange TEXT, entry_date TEXT, entry_price REAL, shares INTEGER,
+            stop_loss_initial REAL, trailing_stop_current REAL, target_1 REAL, target_2 REAL,
+            atr_14_at_entry REAL, highest_close_since_entry REAL, status TEXT, source TEXT,
+            exit_price REAL, exit_date TEXT, realised_pnl REAL, r_multiple REAL,
+            product_type TEXT, regime_at_entry TEXT, t1_fired INTEGER DEFAULT 0
+        )""")
+    con.execute("""
+        CREATE TABLE bankroll_ledger (
+            id INTEGER PRIMARY KEY AUTOINCREMENT, timestamp TEXT, event_type TEXT,
+            ticker TEXT, pnl REAL, bankroll_before REAL, bankroll_after REAL,
+            notes TEXT, source TEXT
+        )""")
+    con.commit()
+    con.close()
+    return path
+
+
+def _sig(ticker="ACME", close=100.0, stop=99.0, target=103.0):
+    return {"ticker": ticker, "close": close, "stop_loss": stop,
+            "target_1": target, "target_2": target, "regime": "REGIME_1_NORMAL"}
+
+
+async def _ltp_of(price):
+    async def _fn(_ticker):
+        return price
+    return _fn
+
+
+# ---- sizing --------------------------------------------------------
+
+def test_size_uses_the_paper_pool_not_the_live_one():
+    """Rs 50,000 must buy a position the Rs 2,500 live pool never could."""
+    live = paper_position_size(close=500.0, stop_loss=497.5, pool=2500.0, risk_pct=0.10)
+    paper = paper_position_size(close=500.0, stop_loss=497.5, pool=50000.0, risk_pct=0.10)
+    assert paper > live
+    assert paper * 500.0 <= 50000.0          # never exceeds the pool
+
+
+def test_size_is_capped_by_the_pool():
+    """A tiny per-share risk must not size past the pool."""
+    shares = paper_position_size(close=100.0, stop_loss=99.99, pool=50000.0, risk_pct=0.10)
+    assert shares * 100.0 <= 50000.0
+    assert shares == 500
+
+
+def test_size_rejects_malformed_risk():
+    assert paper_position_size(100.0, 100.0, 50000.0, 0.10) == 0   # zero risk
+    assert paper_position_size(100.0, 101.0, 50000.0, 0.10) == 0   # stop above entry
+    assert paper_position_size(0.0, 0.0, 50000.0, 0.10) == 0
+
+
+# ---- opening -------------------------------------------------------
+
+def test_open_creates_a_paper_position(tmp_path):
+    db = _db(tmp_path)
+    opened = asyncio.run(open_momentum_paper_positions(db, [_sig()]))
+    assert opened == ["ACME"]
+
+    con = sqlite3.connect(db)
+    row = con.execute(
+        "SELECT source, status, product_type, shares, exit_date FROM positions"
+    ).fetchone()
+    assert row[0] == SOURCE and row[1] == "OPEN" and row[2] == "MIS"
+    assert row[3] > 0 and row[4] is None
+
+
+def test_open_does_not_duplicate_an_already_held_ticker(tmp_path):
+    """A signal repeating across scans must not stack the same position."""
+    db = _db(tmp_path)
+    asyncio.run(open_momentum_paper_positions(db, [_sig()]))
+    again = asyncio.run(open_momentum_paper_positions(db, [_sig()]))
+    assert again == []
+    con = sqlite3.connect(db)
+    assert con.execute("SELECT COUNT(*) FROM positions").fetchone()[0] == 1
+
+
+def test_open_reopens_after_the_position_is_closed(tmp_path):
+    """Yesterday's closed trade must not block today's signal."""
+    db = _db(tmp_path)
+    asyncio.run(open_momentum_paper_positions(db, [_sig()]))
+    con = sqlite3.connect(db)
+    con.execute("UPDATE positions SET exit_date='2026-07-25T10:00:00', status='CLOSED_TIME'")
+    con.commit()
+    con.close()
+    assert asyncio.run(open_momentum_paper_positions(db, [_sig()])) == ["ACME"]
+
+
+def test_open_is_a_noop_when_disabled(tmp_path, monkeypatch):
+    monkeypatch.setattr(settings, "MOMENTUM_PAPER_ENABLED", False)
+    db = _db(tmp_path)
+    assert asyncio.run(open_momentum_paper_positions(db, [_sig()])) == []
+
+
+# ---- exits ---------------------------------------------------------
+
+def test_monitor_takes_the_target_and_books_costs(tmp_path):
+    from datetime import datetime
+    db = _db(tmp_path)
+    asyncio.run(open_momentum_paper_positions(db, [_sig(close=100.0, stop=99.0, target=103.0)]))
+
+    async def run():
+        return await momentum_paper_monitor(db, await _ltp_of(103.5),
+                                            datetime(2026, 7, 27, 11, 0))
+    res = asyncio.run(run())
+    assert [t for t, _ in res["exited"]] == ["ACME"]
+
+    con = sqlite3.connect(db)
+    status, exit_price, pnl = con.execute(
+        "SELECT status, exit_price, realised_pnl FROM positions"
+    ).fetchone()
+    assert exit_price == pytest.approx(103.5)
+    assert status.startswith("CLOSED")
+    # Gross would be 3.5/share; costs must have been deducted, so P&L is lower.
+    shares = con.execute("SELECT shares FROM positions").fetchone()[0]
+    assert 0 < pnl < 3.5 * shares
+
+
+def test_square_off_flattens_everything(tmp_path):
+    from datetime import datetime
+    db = _db(tmp_path)
+    asyncio.run(open_momentum_paper_positions(db, [_sig("A"), _sig("B", 50.0, 49.5, 52.0)]))
+
+    async def run():
+        return await momentum_paper_square_off(db, await _ltp_of(101.0),
+                                               datetime(2026, 7, 27, 15, 15))
+    closed = asyncio.run(run())
+    assert len(closed) == 2
+    con = sqlite3.connect(db)
+    assert con.execute(
+        "SELECT COUNT(*) FROM positions WHERE exit_date IS NULL"
+    ).fetchone()[0] == 0
+
+
+def test_square_off_still_flattens_when_the_quote_is_missing(tmp_path):
+    """An intraday book may never carry overnight, quote or no quote."""
+    from datetime import datetime
+    db = _db(tmp_path)
+    asyncio.run(open_momentum_paper_positions(db, [_sig()]))
+
+    async def none_ltp(_t):
+        return None
+
+    asyncio.run(momentum_paper_square_off(db, none_ltp, datetime(2026, 7, 27, 15, 15)))
+    con = sqlite3.connect(db)
+    assert con.execute(
+        "SELECT COUNT(*) FROM positions WHERE exit_date IS NULL"
+    ).fetchone()[0] == 0
+
+
+# ---- the two properties that matter most ---------------------------
+
+def test_paper_pnl_never_reaches_real_accounting(tmp_path):
+    """The EDGE_PAPER bug, guarded.
+
+    nifty_bankroll and both circuit breakers filter source IN ('SYSTEM',
+    'MOMENTUM'). 'MOMENTUM_PAPER' is a different string, and SQL IN is exact
+    equality -- but that is exactly the kind of assumption that silently breaks
+    when someone later writes `source LIKE 'MOMENTUM%'`.
+    """
+    from datetime import datetime
+    from performance import nifty_bankroll
+
+    db = _db(tmp_path)
+    asyncio.run(open_momentum_paper_positions(db, [_sig()]))
+
+    async def run():
+        before = await nifty_bankroll(db)
+        await momentum_paper_monitor(db, await _ltp_of(103.5),
+                                     datetime(2026, 7, 27, 11, 0))
+        return before, await nifty_bankroll(db)
+
+    before, after = asyncio.run(run())
+    assert before == after, "paper P&L leaked into the real Nifty bankroll"
+
+    con = sqlite3.connect(db)
+    rows = con.execute("SELECT source, pnl FROM bankroll_ledger").fetchall()
+    assert rows and all(s == SOURCE for s, _ in rows)
+    assert con.execute(
+        "SELECT COUNT(*) FROM bankroll_ledger WHERE source IN ('SYSTEM','MOMENTUM')"
+    ).fetchone()[0] == 0
+
+
+def test_module_cannot_place_an_order():
+    """Structural guarantee, not a runtime flag.
+
+    momentum_paper must contain no order-placing capability at all. A flag that
+    must stay False is one bad branch away from a real order; an absent code path
+    is not.
+    """
+    import ast
+    import inspect
+
+    import momentum_paper
+
+    tree = ast.parse(inspect.getsource(momentum_paper))
+
+    # Every name actually called or attribute accessed -- comments and docstrings
+    # are not in the AST, so prose describing the guarantee cannot trip it.
+    called = set()
+    for node in ast.walk(tree):
+        if isinstance(node, ast.Attribute):
+            called.add(node.attr)
+        elif isinstance(node, ast.Name):
+            called.add(node.id)
+
+    forbidden = {"place_order", "modify_order", "cancel_order", "square_off",
+                 "auto_square_momentum", "post", "put", "delete"}
+    leaked = called & forbidden
+    assert not leaked, f"momentum_paper gained an order path: {sorted(leaked)}"
+
+    # And it must not import anything that can reach the broker.
+    imported = set()
+    for node in ast.walk(tree):
+        if isinstance(node, ast.Import):
+            imported.update(a.name.split(".")[0] for a in node.names)
+        elif isinstance(node, ast.ImportFrom) and node.module:
+            imported.add(node.module.split(".")[0])
+    for banned in ("httpx", "fno_executor", "kite", "requests"):
+        assert banned not in imported, (
+            f"momentum_paper imported {banned!r} -- it must stay unable to "
+            "reach the broker; LTP is injected as ltp_fn"
+        )

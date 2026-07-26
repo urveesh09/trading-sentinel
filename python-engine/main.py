@@ -1414,7 +1414,25 @@ async def lifespan(app: FastAPI):
         seconds=settings.MOMENTUM_INTRADAY_MONITOR_SEC,
         id="momentum_intraday_monitor", max_instances=1,
     )
-    
+
+    # [MOMENTUM-PAPER 2026-07-26] The paper book's own monitor + square-off.
+    # Deliberately NOT folded into the live jobs above: those are dense with
+    # broker calls (SL-M reconcile, order cancel, square-off POST) and threading
+    # a "paper" flag through them would put the paper book one bad branch away
+    # from placing a real order. momentum_paper has no order-placing code at all,
+    # so the separation is structural rather than conditional.
+    if settings.MOMENTUM_PAPER_ENABLED:
+        scheduler.add_job(
+            _run_momentum_paper_monitor, 'interval',
+            seconds=settings.MOMENTUM_INTRADAY_MONITOR_SEC,
+            id="momentum_paper_monitor", max_instances=1,
+        )
+        scheduler.add_job(
+            _run_momentum_paper_square_off, 'cron', hour=15, minute=15,
+            id="momentum_paper_square_off", max_instances=1,
+            coalesce=True, misfire_grace_time=600,
+        )
+
     for hour in [10, 11, 12, 13, 14]:
         for minute in [0, 15, 30, 45]:
             if hour == 10 and minute == 0:
@@ -2492,6 +2510,22 @@ async def _run_momentum_screener_impl(t0):
         # for the day with first-accept-wins semantics.
         momentum_signals_today.extend(new_alerts)
 
+        # [MOMENTUM-PAPER 2026-07-26] Take every accepted signal in the paper
+        # book, whether or not the operator presses EXEC on the alert. This is
+        # the only record of what the STRATEGY decided rather than what the
+        # human did. Uses new_alerts (deduped by ticker) so a signal repeating
+        # across scans does not open the same paper position twice.
+        #
+        # Wrapped: paper bookkeeping must never break the live scan that
+        # produced the signal. momentum_paper places no orders -- the module has
+        # no order-placing code path at all.
+        if new_alerts:
+            try:
+                from momentum_paper import open_momentum_paper_positions
+                await open_momentum_paper_positions(settings.DB_PATH, new_alerts)
+            except Exception as _e:
+                logger.warning("momentum_paper_hook_failed", error=str(_e))
+
         # Only send Telegram notifications during market hours (BUG-001 fix: mirrors swing screener guard).
         # The Q4 ignition call still runs this function pre-market to populate the cache,
         # but we must not spam Telegram at 08:30 IST with empty scan results.
@@ -2946,6 +2980,51 @@ async def auto_square_momentum():
             logger.error("auto_square_failed", ticker=ticker, error=str(e))
             # On failure: send Telegram alert for manual intervention
             await _notify_telegram_square_off_failure(ticker, pos)
+
+
+async def _paper_ltp(ticker: str):
+    """Read-only LTP for the paper book.
+
+    [MOMENTUM-PAPER 2026-07-26] GET only. This is the paper book's single
+    outbound call and it cannot mutate anything at the broker.
+    """
+    import httpx as _httpx
+    try:
+        async with _httpx.AsyncClient() as _client:
+            resp = await _client.get(
+                f"{settings.CONTAINER_A_URL}/api/orders/ltp",
+                headers={"X-Internal-Secret": settings.INTERNAL_API_SECRET},
+                params={"ticker": ticker}, timeout=5.0,
+            )
+        return float((resp.json() or {}).get("ltp") or 0.0) or None
+    except Exception as exc:
+        logger.warning("paper_ltp_failed", ticker=ticker, error=str(exc))
+        return None
+
+
+async def _run_momentum_paper_monitor():
+    """Interval job: manage open momentum paper positions during market hours."""
+    from datetime import time as _dt_time
+
+    from momentum_paper import momentum_paper_monitor
+
+    now_ist = datetime.now(IST)
+    if not await is_trading_day(now_ist.date(), settings.DB_PATH):
+        return
+    # Same window as the live monitor: after 15:15 the square-off owns the book.
+    if not (_dt_time(9, 15) <= now_ist.time() <= _dt_time(15, 15)):
+        return
+    await momentum_paper_monitor(settings.DB_PATH, _paper_ltp, now_ist)
+
+
+async def _run_momentum_paper_square_off():
+    """15:15 IST: flatten the momentum paper book (intraday strategy)."""
+    from momentum_paper import momentum_paper_square_off
+
+    now_ist = datetime.now(IST)
+    if not await is_trading_day(now_ist.date(), settings.DB_PATH):
+        return
+    await momentum_paper_square_off(settings.DB_PATH, _paper_ltp, now_ist)
 
 
 async def momentum_eod_warning():

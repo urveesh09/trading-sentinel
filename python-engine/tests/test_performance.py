@@ -417,24 +417,33 @@ class TestPoolBreakdown:
     @pytest.mark.asyncio
     async def test_paper_mode_uses_paper_bankroll(self, seeded_db, monkeypatch):
         """When PENNY_LIVE_TRADING is False, penny.allocated falls back to
-        PENNY_PAPER_BANKROLL (Rs 500 default)."""
+        PENNY_PAPER_BANKROLL.
+
+        [CAPITAL-REALLOC 2026-07-26] Asserted from settings rather than pinned to
+        a rupee figure -- the paper allocation is an operator decision (it moved
+        500 -> 100,000) while the behaviour under test, that paper mode reads the
+        paper pool and not the live one, is the invariant.
+        """
         from config import settings
         monkeypatch.setattr(settings, "PENNY_LIVE_TRADING", False)
+        paper = settings.PENNY_PAPER_BANKROLL
         out = await pool_breakdown(seeded_db)
         assert out["penny"]["mode"] == "paper"
-        assert out["penny"]["allocated"] == 500.0
-        assert out["penny"]["balance"] == 500.0
-        assert out["combined"] == 5500.0  # 5000 swing + 500 paper penny
+        assert out["penny"]["allocated"] == paper
+        assert out["penny"]["balance"] == paper
+        assert out["penny"]["allocated"] != settings.PENNY_LIVE_BANKROLL
+        assert out["combined"] == settings.INITIAL_BANKROLL + paper
 
     @pytest.mark.asyncio
     async def test_paper_mode_penny_trades_still_tracked(self, seeded_db, monkeypatch):
         """In paper mode, penny P&L still flows into penny.balance normally."""
         from config import settings
         monkeypatch.setattr(settings, "PENNY_LIVE_TRADING", False)
+        paper = settings.PENNY_PAPER_BANKROLL
         await record_trade_close(seeded_db, "PAPER_PENNY", 50.0, source="PENNY")
         out = await pool_breakdown(seeded_db)
-        assert out["penny"]["allocated"] == 500.0
-        assert out["penny"]["balance"] == 550.0  # 500 paper + 50 pnl
+        assert out["penny"]["allocated"] == paper
+        assert out["penny"]["balance"] == paper + 50.0   # paper pool + pnl
 
     @pytest.mark.asyncio
     async def test_breakdown_response_shape(self, seeded_db):

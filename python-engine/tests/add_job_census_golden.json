@@ -30,6 +30,16 @@
     "trigger": "'interval'"
   },
   {
+    "func": "_run_momentum_paper_monitor",
+    "id": "'momentum_paper_monitor'",
+    "trigger": "'interval'"
+  },
+  {
+    "func": "_run_momentum_paper_square_off",
+    "id": "'momentum_paper_square_off'",
+    "trigger": "'cron'"
+  },
+  {
     "func": "_run_partner_analytics_tick_safe",
     "id": "'partner_analytics_tick'",
     "trigger": "'cron'"
