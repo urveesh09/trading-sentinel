@@ -270,11 +270,19 @@ def evaluate_breakout_entry(
         session_len_min = 375.0          # 09:15 -> 15:30
         elapsed = min(max(mins - session_open_min, 1.0), session_len_min)
         vol_baseline = median_vol_20d * (elapsed / session_len_min)
-    if cum_vol_today < settings.PENNY_BREAKOUT_VOL_MULT * vol_baseline:
+    vol_threshold = settings.PENNY_BREAKOUT_VOL_MULT * vol_baseline
+    if cum_vol_today < vol_threshold:
+        # [LEGIBILITY 2026-07-26] Report the THRESHOLD, not the baseline. The old
+        # string read "volume 442374 < 1.8x median (257554)", which looks like a
+        # false statement (442374 > 257554) because the printed number was the
+        # pre-multiplier baseline. Auditing how close this gate runs -- it is the
+        # single biggest penny blocker at 49% of MIS rejects -- meant re-deriving
+        # 1.8 * baseline by hand for every row.
         return {"accept": False,
                 "reject_reason": (
-                    f"volume {cum_vol_today} < {settings.PENNY_BREAKOUT_VOL_MULT}x "
-                    f"median ({int(vol_baseline)})"
+                    f"volume {cum_vol_today} < {int(vol_threshold)} "
+                    f"({settings.PENNY_BREAKOUT_VOL_MULT}x pace-adjusted median "
+                    f"{int(vol_baseline)})"
                 )}
 
     # 3. Breakout confirm: close > anchor + buffer on a 1-min bar.
