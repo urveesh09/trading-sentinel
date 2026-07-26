@@ -321,3 +321,56 @@ def test_simulate_position_with_high_volume_5pct_drop():
     # high=10.7 >= target=10.6 -> TP hit
     assert result["exit_reason"] == "tp"
     assert result["pnl"] > 0
+
+
+# ---- [EDGE-FUNNEL 2026-07-26] zero-candidate legibility ------------
+# Prod logged `penny_edge_scan_engine_complete universe=549 candidates=0` on
+# both 2026-07-23 and 07-24 with no breakdown, so there was no way to tell a
+# quiet market from a broken feature pipeline -- and the EDGE leg wrote zero
+# rows to penny_signals.csv while a stale dead-gate alarm kept firing at it.
+# scan_single_ticker_with_reason gives the caller that one bit of context.
+
+def _flat_bars(n: int, close: float = 10.0) -> list:
+    """n days of featureless-but-valid penny bars (no drop, no surge)."""
+    return [
+        {"date": f"2025-01-{i + 1:02d}", "open": close, "high": close * 1.001,
+         "low": close * 0.999, "close": close, "volume": 100_000}
+        for i in range(n)
+    ]
+
+
+def test_scan_reason_insufficient_features_when_history_too_short():
+    """compute_features_for_day needs eval_idx >= 20."""
+    bars = _flat_bars(5)
+    sigs, reason = pee.scan_single_ticker_with_reason(bars, 4)
+    assert sigs == []
+    assert reason == "insufficient_features"
+
+
+def test_scan_reason_no_setup_when_features_fine_but_market_quiet():
+    """Features computed, neither MR nor MO fired -- a genuine no-setup day."""
+    bars = _flat_bars(30)
+    sigs, reason = pee.scan_single_ticker_with_reason(bars, 29)
+    assert sigs == []
+    assert reason == "no_mr_or_mo_setup"
+
+
+def test_scan_reason_is_none_when_a_signal_fires():
+    """A real MR setup: deep drop on heavy volume. Reason must be absent."""
+    bars = _flat_bars(30)
+    # intra_drop = (close - low) / close = (9.0 - 7.5) / 9.0 = 16.7% (>= 10%)
+    # vol_ratio  = 400k / 100k median = 4.0x (>= 1.0)
+    bars.append({
+        "date": "2025-02-01", "open": 10.0, "high": 10.1,
+        "low": 7.5, "close": 9.0, "volume": 400_000,
+    })
+    sigs, reason = pee.scan_single_ticker_with_reason(bars, len(bars) - 1)
+    assert sigs, "expected a signal on a deep high-volume drop"
+    assert reason is None
+
+
+def test_scan_single_ticker_delegates_unchanged():
+    """The original API keeps returning just the candidate list."""
+    bars = _flat_bars(30)
+    assert pee.scan_single_ticker(bars, 29) == []
+    assert pee.scan_single_ticker(bars, 29) == pee.scan_single_ticker_with_reason(bars, 29)[0]

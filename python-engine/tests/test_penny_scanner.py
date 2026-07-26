@@ -167,11 +167,20 @@ def test_scanner_blocks_when_pr3_regime(tmp_paths, fake_kite, fake_universe):
 
 
 def test_scanner_blocks_when_kill_switch_active(tmp_paths, fake_kite, fake_universe):
+    from config import settings
     from penny_scanner import PennyScanner
+
+    # [CAPITAL-REALLOC 2026-07-26] Derived from the configured threshold rather
+    # than pinned at -500. The kill switch fires at
+    # PENNY_DAILY_KILL_SWITCH_PCT of the penny bankroll, so a fixed rupee loss
+    # silently stopped triggering it when the paper pool moved 500 -> 100,000 --
+    # and the test would have gone on "passing" a scanner that no longer blocked.
+    kill_loss = -(settings.PENNY_DAILY_KILL_SWITCH_PCT
+                  * settings.PENNY_PAPER_BANKROLL) - 1.0
     scanner = PennyScanner(
         kite=fake_kite, universe_json_path=fake_universe,
         paper_mode=True, regime="PR1_CALM",
-        daily_pnl_override=-500.0,   # triggers kill-switch
+        daily_pnl_override=kill_loss,   # triggers kill-switch
     )
     asyncio.run(scanner.scan_once(as_of=datetime(2026, 6, 21, 11, 0)))
     rows = _read_csv_rows(str(tmp_paths / "penny_signals.csv"))

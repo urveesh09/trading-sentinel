@@ -1252,3 +1252,99 @@ class TestMR2RegimeRTarget:
             assert info.get("effective_r_target") == pytest.approx(1.5, abs=0.001), (
                 f"expected effective_r_target=1.5 in BEAR mode, got: {info}"
             )
+
+
+# ===============================================================
+# [STOP-FLOOR 2026-07-26] Momentum stop must sit outside the noise
+# ===============================================================
+# The momentum stop is the low of the breakout candle -- a ONE-MINUTE bar. On
+# the 10 real positions traded to date that produced stops of 0.07%, 0.09%,
+# 0.26%, 0.46%, 0.66%, 0.79%, 0.98%, 0.99%, 1.57% and 1.92% from entry. The
+# tightest sit inside the bid-ask spread, so the exit is near-random (2 wins in
+# 8 momentum trades).
+#
+# The compounding problem is sizing: shares = risk_budget / risk_per_share, so a
+# noise-width stop asks for an enormous position and is then truncated by the
+# pool cap -- the TIGHTER the stop, the LARGER the position. URBANCO sized to 33
+# shares (~88% of the account) off a Rs 0.09 stop and its +0.97% move was booked
+# as +14.35R, which is why no R-based statistic in this system can be trusted.
+#
+# The floor does not make momentum profitable. It makes its risk, its sizing and
+# its R-multiples mean what they claim, which is the precondition for judging it.
+
+class TestMomentumStopFloor:
+
+    @staticmethod
+    def _df(*, last_low: float, last_high: float):
+        """10 candles that clear the momentum gate ladder, with the final
+        candle's low/high parameterised so the floor can be made to bind or not.
+        Close is kept near the candle high to stay above the MC6 morphology
+        threshold (0.65), so the only thing under test is the stop."""
+        n, base = 10, 1000.0
+        d = {
+            "open":   [base + i * 2 for i in range(n)],
+            "high":   [base + i * 2 + 5 for i in range(n)],
+            "low":    [base + i * 2 - 3 for i in range(n)],
+            "close":  [base + i * 2 + 1 for i in range(n)],
+            "volume": [100_000] * n,
+        }
+        d["volume"][-1] = 300_000
+        d["close"][-2] = base                 # sets up the VWAP crossover
+        d["close"][-1] = base + 25
+        d["high"][-1] = last_high
+        d["low"][-1] = last_low
+        return pd.DataFrame(d)
+
+    def _fire(self, df):
+        fired, info = evaluate_momentum_signal(
+            "TEST", df, prev_day_high=900.0, bankroll=5000.0, momentum_pool=20000.0,
+        )
+        assert fired, f"fixture stopped firing, cannot test the stop: {info}"
+        return info
+
+    def test_floor_binds_when_candle_low_is_inside_the_noise(self):
+        """A 0.04%-wide breakout candle must be widened to the floor."""
+        from config import settings
+        raw_low = 1024.6                                   # 0.039% below close
+        info = self._fire(self._df(last_low=raw_low, last_high=1025.1))
+        assert info["stop_floored"] is True
+        assert info["stop_loss"] < raw_low                 # wider = lower, for a long
+        assert info["stop_pct"] == pytest.approx(settings.MOMENTUM_MIN_STOP_PCT, abs=1e-6)
+
+    def test_floor_does_not_touch_an_already_wide_stop(self):
+        """A candle low beyond the floor is left exactly as-is."""
+        info = self._fire(self._df(last_low=1010.0, last_high=1028.0))
+        assert info["stop_floored"] is False
+        assert info["stop_loss"] == pytest.approx(1010.0)   # the raw candle low
+
+    def test_accepted_signal_never_stops_inside_the_floor(self):
+        """The invariant that makes R-multiples interpretable.
+
+        Whatever the candle shape, an accepted momentum signal's stop is at least
+        MOMENTUM_MIN_STOP_PCT away, so risk_per_share can never collapse toward
+        zero and inflate R.
+        """
+        from config import settings
+        for raw_low, raw_high in ((1024.9, 1025.05), (1024.6, 1025.1),
+                                  (1020.0, 1026.0), (1010.0, 1028.0)):
+            df = self._df(last_low=raw_low, last_high=raw_high)
+            fired, info = evaluate_momentum_signal(
+                "TEST", df, prev_day_high=900.0, bankroll=5000.0,
+                momentum_pool=20000.0,
+            )
+            if not fired:
+                continue
+            assert info["stop_pct"] >= settings.MOMENTUM_MIN_STOP_PCT - 1e-9, (
+                f"stop inside the noise floor for low={raw_low}: {info['stop_pct']}"
+            )
+            assert info["stop_loss"] < info["close"]
+
+    def test_floor_shrinks_risk_based_share_count(self):
+        """Same entry, wider stop -> fewer shares. This is the sizing pathology
+        being corrected: previously the noisiest stops bought the most stock."""
+        tight = self._fire(self._df(last_low=1024.6, last_high=1025.1))
+        wide = self._fire(self._df(last_low=1010.0, last_high=1028.0))
+        # Both are floored/raw respectively; the tight one's risk_per_share is now
+        # the floor distance rather than 0.4, so it can no longer out-size the wide one.
+        assert tight["capital_at_risk"] <= wide["capital_at_risk"] * 1.5
+        assert tight["stop_pct"] < wide["stop_pct"]

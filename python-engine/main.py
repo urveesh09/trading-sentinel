@@ -1414,7 +1414,25 @@ async def lifespan(app: FastAPI):
         seconds=settings.MOMENTUM_INTRADAY_MONITOR_SEC,
         id="momentum_intraday_monitor", max_instances=1,
     )
-    
+
+    # [MOMENTUM-PAPER 2026-07-26] The paper book's own monitor + square-off.
+    # Deliberately NOT folded into the live jobs above: those are dense with
+    # broker calls (SL-M reconcile, order cancel, square-off POST) and threading
+    # a "paper" flag through them would put the paper book one bad branch away
+    # from placing a real order. momentum_paper has no order-placing code at all,
+    # so the separation is structural rather than conditional.
+    if settings.MOMENTUM_PAPER_ENABLED:
+        scheduler.add_job(
+            _run_momentum_paper_monitor, 'interval',
+            seconds=settings.MOMENTUM_INTRADAY_MONITOR_SEC,
+            id="momentum_paper_monitor", max_instances=1,
+        )
+        scheduler.add_job(
+            _run_momentum_paper_square_off, 'cron', hour=15, minute=15,
+            id="momentum_paper_square_off", max_instances=1,
+            coalesce=True, misfire_grace_time=600,
+        )
+
     for hour in [10, 11, 12, 13, 14]:
         for minute in [0, 15, 30, 45]:
             if hour == 10 and minute == 0:
@@ -2492,6 +2510,22 @@ async def _run_momentum_screener_impl(t0):
         # for the day with first-accept-wins semantics.
         momentum_signals_today.extend(new_alerts)
 
+        # [MOMENTUM-PAPER 2026-07-26] Take every accepted signal in the paper
+        # book, whether or not the operator presses EXEC on the alert. This is
+        # the only record of what the STRATEGY decided rather than what the
+        # human did. Uses new_alerts (deduped by ticker) so a signal repeating
+        # across scans does not open the same paper position twice.
+        #
+        # Wrapped: paper bookkeeping must never break the live scan that
+        # produced the signal. momentum_paper places no orders -- the module has
+        # no order-placing code path at all.
+        if new_alerts:
+            try:
+                from momentum_paper import open_momentum_paper_positions
+                await open_momentum_paper_positions(settings.DB_PATH, new_alerts)
+            except Exception as _e:
+                logger.warning("momentum_paper_hook_failed", error=str(_e))
+
         # Only send Telegram notifications during market hours (BUG-001 fix: mirrors swing screener guard).
         # The Q4 ignition call still runs this function pre-market to populate the cache,
         # but we must not spam Telegram at 08:30 IST with empty scan results.
@@ -2568,7 +2602,13 @@ async def _run_momentum_screener_impl(t0):
 
 async def _close_momentum_position(pos: dict, exit_price: float, reason: str, notes: str):
     """Record a momentum close in the DB + ledger. Shared by the intraday
-    monitor and the SL-M reconciler so both write the same shape."""
+    monitor and the SL-M reconciler so both write the same shape.
+
+    [LEDGER-INTEGRITY 2026-07-26] Returns True only if a position row actually
+    closed. The ledger write is gated on that, because a WHERE clause that
+    matches nothing used to still book P&L -- see auto_square_momentum for what
+    that cost in prod.
+    """
     ticker = pos['ticker']
     gross = (exit_price - pos['entry_price']) * pos['shares']
     costs = calc_zerodha_costs(
@@ -2580,18 +2620,33 @@ async def _close_momentum_position(pos: dict, exit_price: float, reason: str, no
     r_multiple = realised_pnl / risk_initial if risk_initial > 0 else 0
 
     async with aiosqlite.connect(settings.DB_PATH) as db:
-        await db.execute("""
+        cur = await db.execute("""
             UPDATE positions
             SET status=?, exit_price=?, exit_date=?, realised_pnl=?, r_multiple=?
-            WHERE ticker=? AND source='MOMENTUM' AND status='OPEN'
+            WHERE ticker=? AND source='MOMENTUM'
+              AND status IN ('OPEN', 'CLOSED_T1') AND exit_date IS NULL
         """, (reason, exit_price, datetime.now(timezone.utc).isoformat(),
               realised_pnl, r_multiple, ticker))
         await db.commit()
+        rows_closed = cur.rowcount
 
+    if rows_closed != 1:
+        logger.error(
+            "momentum_close_not_persisted", ticker=ticker,
+            rows_affected=rows_closed, reason=reason,
+            message="no open position row matched -- ledger NOT written",
+        )
+        return False
+
+    # [SOURCE-REQUIRED 2026-07-26] Attribute to the position's own division. This
+    # call omitted `source` and so booked every momentum close into the SWING pool
+    # via the old "SYSTEM" default -- see record_trade_close for the full history.
     await record_trade_close(settings.DB_PATH, ticker, realised_pnl,
-                            r_multiple=r_multiple, notes=notes)
+                            r_multiple=r_multiple, notes=notes,
+                            source=pos.get('source') or 'MOMENTUM')
     logger.info("momentum_position_closed", ticker=ticker, exit_price=exit_price,
                 reason=notes, pnl=round(realised_pnl, 2), r=round(r_multiple, 4))
+    return True
 
 
 async def momentum_intraday_monitor():
@@ -2764,6 +2819,32 @@ async def auto_square_momentum():
     open_pos = await get_open_positions(settings.DB_PATH)
     momentum_pos = [p for p in open_pos if p.get('source') == 'MOMENTUM']
 
+    # [PHANTOM-GUARD 2026-07-26] Never send an exit order for a position that
+    # already carries an exit_date. get_open_positions() now filters these out,
+    # so reaching here means a new writer regressed -- refuse the order and page
+    # the operator rather than selling stock the account may not hold.
+    #
+    # This is the guard that was missing on 2026-07-21..24: two fully-exited
+    # positions stayed classified as open and this job placed 8 real Zerodha
+    # MIS sell orders against them, one pair per session, with no order record
+    # written anywhere. Defence in depth, because the blast radius is real money.
+    already_exited = [p for p in momentum_pos if p.get('exit_date')]
+    if already_exited:
+        for p in already_exited:
+            logger.error(
+                "auto_square_refused_phantom", ticker=p['ticker'],
+                exit_date=p.get('exit_date'), status=p.get('status'),
+                message="position already has an exit_date -- refusing to place an exit order",
+            )
+        await _notify_operator(
+            "🛑 *Auto-square refused* — "
+            + ", ".join(f"`{p['ticker']}`" for p in already_exited)
+            + " already carry an exit_date but were returned as open. "
+            "No order was sent. The open-position query or a status writer has regressed.",
+            event="auto_square_refused_phantom",
+        )
+        momentum_pos = [p for p in momentum_pos if not p.get('exit_date')]
+
     if not momentum_pos:
         logger.info("auto_square_none", message="no_momentum_positions")
         return
@@ -2828,8 +2909,18 @@ async def auto_square_momentum():
                     timeout=10.0
                 )
             resp.raise_for_status()
+            # [ORDER-TRACE 2026-07-26] Log the broker order_id. The square-off
+            # route returns {success, order_id} but the id was previously
+            # discarded, so the 8 real orders this job placed on 2026-07-21..24
+            # left no trace on the system side at all -- there was nothing to
+            # reconcile a fill against. Keep it in the log at minimum.
+            try:
+                _order_id = (resp.json() or {}).get("order_id")
+            except Exception:
+                _order_id = None
             logger.info("auto_square_sent", ticker=ticker,
-                        order_type=order_type, pnl_estimate=current_pnl)
+                        order_type=order_type, pnl_estimate=current_pnl,
+                        order_id=_order_id, shares=pos['shares'])
 
             # [MED-009] Record position close in Container B's DB using LTP as the
             # estimated fill price. The square-off order was just placed; we do not
@@ -2845,17 +2936,51 @@ async def auto_square_momentum():
             risk_initial = (pos['entry_price'] - pos.get('stop_loss_initial', pos['entry_price'] * 0.95)) * pos['shares']
             r_multiple   = realised_pnl / risk_initial if risk_initial > 0 else 0
 
+            # [LEDGER-INTEGRITY 2026-07-26] The close must actually persist before
+            # its P&L is booked. This UPDATE used to match on status='OPEN' only,
+            # so a CLOSED_T1 momentum row matched ZERO rows -- silently. The
+            # position therefore stayed "open" while record_trade_close() below
+            # ran regardless, writing a fresh loss computed against the original
+            # entry price. Repeated daily that produced 8 fabricated TRADE_CLOSED
+            # rows (-Rs 178.31) and tripped CB_CONSECUTIVE_LOSSES on losses that
+            # never happened.
+            #
+            # Two changes: accept CLOSED_T1 as a closable state (a runner being
+            # squared at EOD is legitimate), and gate the ledger write on rowcount.
             async with aiosqlite.connect(settings.DB_PATH) as db:
-                await db.execute("""
+                cur = await db.execute("""
                     UPDATE positions
                     SET status='CLOSED_MANUAL', exit_price=?, exit_date=?,
                         realised_pnl=?, r_multiple=?
-                    WHERE ticker=? AND source='MOMENTUM' AND status='OPEN'
+                    WHERE ticker=? AND source='MOMENTUM'
+                      AND status IN ('OPEN', 'CLOSED_T1') AND exit_date IS NULL
                 """, (ltp, datetime.now(timezone.utc).isoformat(),
                       realised_pnl, r_multiple, ticker))
                 await db.commit()
+                rows_closed = cur.rowcount
 
-            await record_trade_close(settings.DB_PATH, ticker, realised_pnl, r_multiple=r_multiple, notes="auto_square")
+            if rows_closed != 1:
+                # Never book P&L for a close that did not land. One order has
+                # already gone to the broker, so this needs a human.
+                logger.error(
+                    "auto_square_close_not_persisted", ticker=ticker,
+                    rows_affected=rows_closed, order_id=_order_id,
+                    message="exit order placed but no position row closed -- ledger NOT written",
+                )
+                await _notify_operator(
+                    f"🚨 *Auto-square inconsistency* — `{ticker}`: exit order "
+                    f"(id `{_order_id}`) was placed but {rows_closed} position rows "
+                    "closed. No P&L was booked. Reconcile against the Zerodha "
+                    "orderbook before the next session.",
+                    event="auto_square_close_not_persisted",
+                )
+                continue
+
+            # [SOURCE-REQUIRED 2026-07-26] Was booking momentum square-offs into
+            # the swing pool via the old "SYSTEM" default.
+            await record_trade_close(settings.DB_PATH, ticker, realised_pnl,
+                                     r_multiple=r_multiple, notes="auto_square",
+                                     source=pos.get('source') or 'MOMENTUM')
             logger.info("auto_square_position_closed", ticker=ticker,
                         exit_price=ltp, pnl=round(realised_pnl, 2), r=round(r_multiple, 4))
 
@@ -2863,6 +2988,51 @@ async def auto_square_momentum():
             logger.error("auto_square_failed", ticker=ticker, error=str(e))
             # On failure: send Telegram alert for manual intervention
             await _notify_telegram_square_off_failure(ticker, pos)
+
+
+async def _paper_ltp(ticker: str):
+    """Read-only LTP for the paper book.
+
+    [MOMENTUM-PAPER 2026-07-26] GET only. This is the paper book's single
+    outbound call and it cannot mutate anything at the broker.
+    """
+    import httpx as _httpx
+    try:
+        async with _httpx.AsyncClient() as _client:
+            resp = await _client.get(
+                f"{settings.CONTAINER_A_URL}/api/orders/ltp",
+                headers={"X-Internal-Secret": settings.INTERNAL_API_SECRET},
+                params={"ticker": ticker}, timeout=5.0,
+            )
+        return float((resp.json() or {}).get("ltp") or 0.0) or None
+    except Exception as exc:
+        logger.warning("paper_ltp_failed", ticker=ticker, error=str(exc))
+        return None
+
+
+async def _run_momentum_paper_monitor():
+    """Interval job: manage open momentum paper positions during market hours."""
+    from datetime import time as _dt_time
+
+    from momentum_paper import momentum_paper_monitor
+
+    now_ist = datetime.now(IST)
+    if not await is_trading_day(now_ist.date(), settings.DB_PATH):
+        return
+    # Same window as the live monitor: after 15:15 the square-off owns the book.
+    if not (_dt_time(9, 15) <= now_ist.time() <= _dt_time(15, 15)):
+        return
+    await momentum_paper_monitor(settings.DB_PATH, _paper_ltp, now_ist)
+
+
+async def _run_momentum_paper_square_off():
+    """15:15 IST: flatten the momentum paper book (intraday strategy)."""
+    from momentum_paper import momentum_paper_square_off
+
+    now_ist = datetime.now(IST)
+    if not await is_trading_day(now_ist.date(), settings.DB_PATH):
+        return
+    await momentum_paper_square_off(settings.DB_PATH, _paper_ltp, now_ist)
 
 
 async def momentum_eod_warning():

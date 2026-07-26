@@ -83,15 +83,27 @@ def wilder_atr(df: pd.DataFrame, length: int) -> Optional[float]:
 
 
 def _rvol_time_adjusted(df: pd.DataFrame, bar_ts: pd.Timestamp) -> Optional[float]:
-    """Last-bar volume vs mean volume of the same HH:MM slot on prior days."""
+    """Last-bar volume vs mean volume of the same HH:MM slot on prior days.
+
+    [AUDIT-FIX-PHASE1 2026-07-11] Honour settings.FNO_RVOL_LOOKBACK_DAYS:
+    the original implementation used ALL bars with date < bar_ts.date(),
+    which silently grew with the multi-day frame length (21 calendar days
+    by default -- ~14 trading days -> ~14 samples per slot, but the
+    config knob was ignored). Operators expect lookback=10 to give 10,
+    not "however many the frame happens to contain".
+    """
     slot = (bar_ts.hour, bar_ts.minute)
-    same_slot = df[
-        (df.index.hour == slot[0]) & (df.index.minute == slot[1])
-        & (df.index.date < bar_ts.date())
-    ]["volume"]
-    if len(same_slot) < 3:
+    n_lookback = max(1, int(settings.FNO_RVOL_LOOKBACK_DAYS))
+    # Walk back over the same slot on prior trading days; stop at n_lookback.
+    samples: list = []
+    for d in pd.date_range(end=bar_ts.date() - pd.Timedelta(days=1), periods=n_lookback, freq="D"):
+        rows = df[(df.index.hour == slot[0]) & (df.index.minute == slot[1])
+                  & (df.index.date == d.date())]
+        if not rows.empty:
+            samples.append(float(rows["volume"].iloc[0]))
+    if len(samples) < 3:
         return None  # not enough history for an honest baseline
-    baseline = float(same_slot.mean())
+    baseline = float(pd.Series(samples).mean())
     if baseline <= 0:
         return None
     return float(df.loc[bar_ts, "volume"]) / baseline

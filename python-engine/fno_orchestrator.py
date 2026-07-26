@@ -150,6 +150,19 @@ async def _manage_open_positions(
                         entry_dt = IST.localize(entry_dt)
                     age_min = (now_ist - entry_dt).total_seconds() / 60.0
                 except (ValueError, TypeError):
+                    # [AUDIT-FIX-PHASE1 2026-07-11] Loud-but-non-blocking.
+                    # Silently fall-through to age=0 means the time
+                    # stop never fires for the malformed row -- a
+                    # position can live forever. Log loudly so the
+                    # operator sees the malformed entry_time and can
+                    # patch the row directly.
+                    logger.warning(
+                        "fno_time_stop_age_parse_failed id=%d entry_time=%r "
+                        "-- age_min defaulted to 0; time stop DEFEATED for "
+                        "this position (operator must patch entry_time "
+                        "to force the exit)",
+                        p.id, p.entry_time,
+                    )
                     age_min = 0.0
                 if age_min >= settings.FNO_TIME_STOP_MIN:
                     r_points = abs(p.entry_underlying - p.stop_underlying)
@@ -184,9 +197,32 @@ async def _manage_open_positions(
             continue
 
         if exit_px_basis <= 0:
+            # [AUDIT-FIX-PHASE1 2026-07-11] Loud-but-non-blocking: a hard
+            # flat with no quote would otherwise silently `continue` and
+            # leave the position open through the weekend (MIS auto-sq-off
+            # at 15:30 is the broker safety net, not a guarantee). On a
+            # non-trading-day next-tick the carry is real -> page the
+            # operator so they can flatten manually or patch the
+            # fno_positions row directly.
+            msg = (
+                f"⚠️ *F&O hard flat blocked by no quote*\n"
+                f"id={p.id} symbol={p.tradingsymbol} reason={exit_reason}\n"
+                f"The 15:10 hard flat could not price -- position may "
+                f"carry into the next session. Action required: manual "
+                f"flatten or UPDATE fno_positions SET status='CLOSED' for "
+                f"id={p.id} once broker quotes return."
+            )
+            try:
+                from operator_alert import notify_operator
+                await notify_operator(msg, event="fno_hard_flat_no_quote")
+            except Exception as notify_exc:
+                logger.error(
+                    "fno_operator_page_failed id=%d err=%s",
+                    p.id, notify_exc,
+                )
             logger.critical(
                 "fno_exit_no_quote id=%d symbol=%s reason=%s -- cannot price "
-                "the exit; will retry next tick",
+                "the exit; position will carry into next session (operator paged)",
                 p.id, p.tradingsymbol, exit_reason,
             )
             continue
@@ -316,6 +352,28 @@ async def _try_entry_for_leg(
     ok, reject = evaluate_entry_gates(ctx)
     if not ok:
         await _log(False, reject, **contract_fields)
+        return None
+
+    # [NO-PYRAMID 2026-07-26] Refuse a second position on a contract this leg is
+    # already holding. The existing caps are count-based (FNO_MAX_CONCURRENT) and
+    # premium-based (FNO_MAX_OPEN_PREMIUM_PCT), and already_entered_bar() only
+    # blocks a repeat within the SAME 5-min bar -- so nothing stopped the book
+    # from re-entering the identical strike on a later bar.
+    #
+    # 2026-07-24 is what that looks like: FNO_PAPER opened NIFTY26JUL23700PE at
+    # 10:05 (1 lot, -Rs 1,280), again at 10:35 (1 lot, -Rs 1,926), then again at
+    # 11:00 with 2 lots while the 10:35 leg was still open and already losing
+    # (-Rs 2,512). ~Rs 30k of premium concentrated on one strike, and the third
+    # entry was averaging into a loser the ORB signal had already been wrong
+    # about twice. Same-day re-entry on a DIFFERENT strike stays allowed.
+    held = [p for p in await fpos.open_positions(db_path, source)
+            if p.tradingsymbol == contract.tradingsymbol]
+    if held:
+        await _log(False, "already_holding_this_contract", **contract_fields)
+        logger.info(
+            "fno_entry_skip source=%s reason=already_holding_this_contract symbol=%s open_lots=%d",
+            source, contract.tradingsymbol, sum(p.lots for p in held),
+        )
         return None
 
     # Sizing (§3): decline rather than oversize.
@@ -461,7 +519,7 @@ async def run_fno_tick(
     # an iron condor on a rich-IV range day (which the single-leg engine's
     # no-signal early-return below would never reach). Fully self-contained and
     # guarded: nothing here can disturb the single-leg engine above or below.
-    if not settings.FNO_DISABLE_PAPER:
+    if not settings.FNO_DISABLE_PAPER and not settings.FNO_DR_DISABLE_PAPER:
         try:
             import fno_dr_book as _dr
             await _dr.init_dr_db(db_path)
@@ -471,7 +529,14 @@ async def run_fno_tick(
             if open_dr or in_dr_window:
                 dr_snap = await take_chain_snapshot(kite, instruments, now_ist)
                 if open_dr:
-                    summary["exits"] += await _dr.manage_dr_structures(db_path, dr_snap, now_ist)
+                    # manage_dr_structures returns a COUNT (int), while
+                    # summary["exits"] is a list of single-leg exit *records*
+                    # consumed key-by-key in format_fno_telegram. Keep the DR
+                    # tally in its own key (mirrors "dr_opened" below) so the
+                    # two shapes never collide -- the DR closes are detailed in
+                    # their own fno_dr_closed log lines.
+                    summary["dr_exits"] = summary.get("dr_exits", 0) + \
+                        await _dr.manage_dr_structures(db_path, dr_snap, now_ist)
                 if in_dr_window and not await _dr.open_structures(db_path):
                     try:
                         dr_bars = await _fetch_futures_bars(kite, fut.token, now_ist)

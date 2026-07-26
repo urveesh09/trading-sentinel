@@ -50,7 +50,13 @@ class Settings(BaseSettings):
     # The old commented-out endpoint that checked this secret has been removed.
     
         # Core Bankroll (Only used for INITIAL seeding)
-    INITIAL_BANKROLL: float = 5000.0
+    # [CAPITAL-REALLOC 2026-07-26] 5,000 -> 4,500. The Nifty seed funds swing +
+    # momentum, split by MOMENTUM_POOL_PCT. Uru moved Rs 500 of REAL capital out
+    # of swing and into the penny edge live book, which is the only division that
+    # has actually made money (+Rs 39 live over 6 trades, 67% win rate, vs swing's
+    # -Rs 169 over 12). Momentum is deliberately held whole at Rs 2,500 -- see
+    # MOMENTUM_POOL_PCT below for the arithmetic that keeps it there.
+    INITIAL_BANKROLL: float = 4500.0
     RISK_PCT: float = 0.10 # 10% Risk per Swing Trade (Hyper-Aggressive)
 
     # Portfolio Limits
@@ -68,7 +74,13 @@ class Settings(BaseSettings):
 
     # Momentum
     MAX_MOMENTUM_POSITIONS:   int   = 5
-    MOMENTUM_POOL_PCT:        float = 0.50    
+    # [CAPITAL-REALLOC 2026-07-26] 0.50 -> 5/9. The Rs 500 that left the Nifty
+    # seed had to come entirely out of swing, not be shared with momentum, so the
+    # split moves to keep momentum's rupee allocation unchanged:
+    #     momentum = 4500 * 5/9 = 2500  (was 5000 * 0.50 = 2500)
+    #     swing    = 4500 * 4/9 = 2000  (was 5000 * 0.50 = 2500)
+    # Written as a fraction rather than 0.5556 so the intent survives edits.
+    MOMENTUM_POOL_PCT:        float = 5.0 / 9.0
     MOMENTUM_POOL_FREEZE_PCT: float = 0.80    
     MOMENTUM_MIN_CANDLES:     int   = 4
     # [MOMENTUM-SEMAPHORE 2026-07-15] Bounded concurrency over the per-ticker
@@ -87,6 +99,45 @@ class Settings(BaseSettings):
     # R1 default (0.07) is MORE conservative than the legacy 0.10 -- a deliberate
     # tightening since we now have regime gating to back it up.
     MOMENTUM_RISK_PCT:        float = 0.10    # Legacy 10% -- pre-regime value
+    # [STOP-FLOOR 2026-07-26] Minimum stop distance as a fraction of entry.
+    #
+    # The momentum stop is the low of the breakout candle -- a ONE-MINUTE bar. On
+    # the 10 real positions traded to date that produced stops of 0.07%, 0.09%,
+    # 0.26%, 0.46%, 0.66%, 0.79%, 0.98%, 0.99%, 1.57% and 1.92% from entry. The
+    # tightest of those are inside the bid-ask spread plus ordinary one-minute
+    # noise, so the exit is close to a coin flip: 2 wins in 8 momentum trades.
+    #
+    # Worse, sizing is risk-based (shares = risk_budget / risk_per_share), so a
+    # noise-width stop asks for a huge position and is then truncated by the pool
+    # cap -- meaning the TIGHTER the stop, the LARGER the position. URBANCO sized
+    # to 33 shares (Rs 4,376, ~88% of the account) off a Rs 0.09 stop, and its
+    # +0.97% move was recorded as +14.35R. Every R-based statistic in the system
+    # inherits that distortion.
+    #
+    # 0.5% is set just outside round-trip intraday costs (~0.1-0.2% on these
+    # notionals) and typical one-minute noise on NSE mid-caps. This does not make
+    # the strategy profitable; it makes its risk, its sizing and its R-multiples
+    # mean what they claim to mean, which is the precondition for judging it.
+    MOMENTUM_MIN_STOP_PCT:    float = 0.005   # 0.5% floor on the momentum stop
+    # [MOMENTUM-PAPER 2026-07-26] Paper twin of the live momentum book.
+    #
+    # Live momentum entries are MANUAL: the screener sends a Telegram EXEC button
+    # and a human decides. So the ledger records what the operator did, never what
+    # the strategy proposed -- 8 recorded trades in months, which is why nothing
+    # can be concluded about it. The paper book takes EVERY accepted signal
+    # automatically, sized off its own pool, so the strategy accumulates a record
+    # of its own decisions independent of whether anyone was at the keyboard.
+    #
+    # This matters now specifically: MOMENTUM_MIN_STOP_PCT changes the stop, the
+    # sizing and the R distribution all at once, and there is no way to evaluate
+    # that on ~2 manual trades a month. Rs 50,000 sizes comfortably across
+    # Nifty500 names (the live Rs 2,500 pool buys 0-1 shares of most of them, so
+    # tick size and costs dominate any signal).
+    #
+    # Paper NEVER touches the broker -- see momentum_paper.py, which has no
+    # order-placing code path at all rather than a flag that must stay False.
+    MOMENTUM_PAPER_ENABLED:   bool  = True
+    MOMENTUM_PAPER_BANKROLL:  float = 50000.0
     MOMENTUM_ATR_FUEL_BUFFER:          float = 0.85   # [MC5] ATR exhaustion gate: target must fit within remaining_fuel * buffer
     MOMENTUM_VOL_SURGE_LUNCHTIME:      float = 1.75   # [MC3-T] Volume threshold during lunchtime dead zone (11:30-13:15 IST)
     MOMENTUM_LUNCHTIME_START_HOUR:     int   = 11     # [MC3-T] Lunchtime start hour (IST)
@@ -395,7 +446,12 @@ class Settings(BaseSettings):
 
     # Risk + bankroll
     PENNY_LIVE_BANKROLL:           float = 2000.0
-    PENNY_PAPER_BANKROLL:          float = 500.0
+    # [CAPITAL-REALLOC 2026-07-26] 500 -> 100,000. Rs 500 was too small to be
+    # informative: the penny breakout book has taken 0 trades in its lifetime, and
+    # at Rs 500 many candidates cannot be sized to a single share, so the paper
+    # book could not have told us whether the strategy works even if it did.
+    # Standardised to the Rs 1,00,000 paper allocation used across all books.
+    PENNY_PAPER_BANKROLL:          float = 100000.0
     PENNY_RISK_PCT_PR1:            float = 0.05
     PENNY_RISK_PCT_PR2:            float = 0.025
     # [TIER0-0.4 2026-07-14] PR3 THROTTLES, it no longer SHUTS DOWN.
@@ -443,7 +499,16 @@ class Settings(BaseSettings):
     PENNY_EDGE_DISABLE_PAPER:        bool  = False
     PENNY_EDGE_DISABLE_LIVE:         bool  = False
     PENNY_EDGE_PAPER_BANKROLL:       float = 100000.0  # 100k paper
-    PENNY_EDGE_LIVE_BANKROLL:        float = 1000.0    # 1k live
+    # [CAPITAL-REALLOC 2026-07-26] 1,000 -> 1,500 REAL rupees, funded by the
+    # matching Rs 500 cut to swing (see INITIAL_BANKROLL). This is the only
+    # division with a positive live record: +Rs 39.16 over 6 trades at a 67% win
+    # rate, against swing's -Rs 169 over 12 and momentum's -Rs 125 over 8.
+    #
+    # Six trades is NOT proof of edge -- the promotion ladder's own bar is 30
+    # provisional / 100 confirmed, and this book is nowhere near it. This is a
+    # deliberate operator decision to fund the most promising book slightly
+    # harder, not a system verdict that it has been validated.
+    PENNY_EDGE_LIVE_BANKROLL:        float = 1500.0    # 1.5k live
     PENNY_EDGE_MAX_POSITIONS:        int   = 3
     PENNY_EDGE_MIN_STRENGTH:         float = 0.45
     PENNY_EDGE_MAX_HOLD_DAYS:        int   = 3
@@ -469,11 +534,52 @@ class Settings(BaseSettings):
     # go-live bar was unreachable. At 250k the pool-derived cap is
     # ~Rs 266.67 -- it covers the typical band and STAYS the binding gate
     # (see the per-trade caps below, scaled to preserve that).
+    # [CAPITAL-REALLOC 2026-07-26] 250,000 -> 100,000, standardising on the
+    # Rs 1,00,000 paper allocation used by every other book. My call, per Uru.
+    #
+    # The old figure was not a pool, it was an alibi. At Rs 250,000 the promotion
+    # ladder's drawdown budget was Rs 62,500 -- more than 7x the entire REAL
+    # account (Rs 8,000 across all live books) -- so Rs 10,841 of paper losses,
+    # from the worst-performing book in the system (1 win in 8), still reported as
+    # "within budget". FNO_MAX_OPEN_PREMIUM_PCT=0.15 also licensed Rs 37,500 of
+    # premium per trade, which is how 2026-07-24 ended with ~Rs 30k concentrated
+    # on a single NIFTY strike.
+    #
+    # Rs 250,000 -- Uru's call, reaffirmed 2026-07-26 after the trade-off below
+    # was raised. Recorded here so the reasoning is not re-litigated each audit.
+    #
+    # Why the size is not arbitrary: sizing requires
+    #   min_viable_pool = premium * lot_size * FNO_STOP_PREMIUM_PCT / FNO_MAX_RISK_PCT
+    #                   = premium * lot_size * 12.5
+    # The real NIFTY premiums this book traded (Rs 151.85-165.10 on a 65 lot)
+    # demand Rs 123,375-134,150 for ONE lot, so anything at or below ~Rs 135,000
+    # rejects every trade `pool_below_min_viable` and silently switches the book
+    # off. 250,000 clears that comfortably.
+    #
+    # The known cost: the promotion ladder's drawdown budget is
+    # FNO_PAPER_BANKROLL * PROMOTION_MAX_DD_PCT = Rs 62,500, which is ~7.8x the
+    # entire REAL account (Rs 8,000). That is how Rs 10,841 of losses from the
+    # worst-performing book in the system (1 win in 8) still reported as "within
+    # budget" through July.
+    #
+    # What stops that mattering is no longer the pool number: promotion_report's
+    # structural-viability gate blocks F&O on the ground that one lot
+    # (cheapest ever entered: Rs 5,967) costs more than the whole real account
+    # (Rs 4,500 Nifty seed). That check reads REAL capital and is completely
+    # independent of this figure, so the book cannot be promoted at any pool size
+    # while the account is this small. Sizing realism here, promotion safety
+    # there.
     FNO_PAPER_BANKROLL:        float = 250000.0
     FNO_LIVE_BANKROLL:         float = 0.0        # not armed (spec §0)
     FNO_LIVE_TRADING:          bool  = False      # master switch
     FNO_DISABLE_PAPER:         bool  = False
     FNO_DISABLE_LIVE:          bool  = True
+    # Independent kill-switch for the Phase-2 defined-risk paper book. It rides
+    # the same tick as the single-leg engine but is newer/experimental, so it
+    # gets its own lever: flip this True to silence ONLY the DR book (e.g. if it
+    # misbehaves) without also disabling the proven single-leg paper book, which
+    # FNO_DISABLE_PAPER would do. Default False = DR book active (current behaviour).
+    FNO_DR_DISABLE_PAPER:      bool  = False
 
     # --- universe ----------------------------------------------------------
     FNO_UNDERLYING:            str   = "NIFTY"    # NIFTY only in P1

@@ -253,6 +253,42 @@ async def bootstrap_0800_job() -> None:
         )
 
 
+async def premarket_login_nudge() -> None:
+    """07:50 IST: remind the operator to log in BEFORE the 08:00 bootstrap.
+
+    [LOGIN-NUDGE 2026-07-26] Zerodha access tokens die ~06:00 IST and the host
+    boots around 06:35-06:50, so the engine starts every session token-blind and
+    cannot bootstrap until a human authenticates. The only existing signal is the
+    08:00 `daily_bootstrap_deferred` alert -- which fires when the window has
+    *already* been missed.
+
+    The margin is thinner than it looks: the penny-universe fetch takes ~55 min,
+    so an 08:17 login (2026-07-24) finished at 09:12, three minutes before the
+    09:15 open; a 07:05 login (2026-07-23) was comfortable. This nudge is the
+    difference between a 10-minute heads-up and an hour of degraded scanning.
+    Recommended twice in prior audits (2026-07-21, 2026-07-24) and never wired.
+
+    No-ops when the token is already fresh, so a punctual operator hears nothing.
+    """
+    import main as _main
+
+    now = datetime.now(IST)
+    if not await _main.is_trading_day(now.date(), settings.DB_PATH):
+        return
+    if token_is_fresh_today():
+        logger.info("premarket_login_nudge_skipped reason=token_already_fresh")
+        return
+
+    from operator_alert import notify_operator
+    await notify_operator(
+        "🔑 *Kite login needed* — no fresh token yet and the 08:00 bootstrap is "
+        "10 minutes out. The penny-universe refresh takes ~55 min, so logging in "
+        "now keeps the full universe ready before the 09:15 open. "
+        f"Pending: {', '.join(pending_tasks()) or 'none'}.",
+        event="premarket_login_nudge",
+    )
+
+
 async def bootstrap_safety_tick() -> None:
     """10-min safety net, 08:00-15:30 IST. No-op when nothing is pending or
     no fresh token; exists so a transient task failure after a successful

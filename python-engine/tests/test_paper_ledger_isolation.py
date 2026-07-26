@@ -117,3 +117,62 @@ async def test_update_daily_positions_passes_the_source_through():
         "update_daily_positions must pass the position's source to the ledger "
         "callback -- dropping it books paper trades into the live book"
     )
+
+
+# ---- [SOURCE-REQUIRED 2026-07-26] the same trap, three more callers ----
+# The 2026-07-14 fix above patched ONE caller and left record_trade_close's
+# `source="SYSTEM"` default in place. The trap stayed open: _close_momentum_position,
+# auto_square_momentum and POST /positions/close had never passed source either,
+# so every SYSTEM row in the live ledger turned out to belong to a MOMENTUM
+# position. Swing was credited with 12 losing trades it never took, and momentum's
+# real record was split across two divisions -- so the promotion ladder was judging
+# both books on the wrong rows.
+#
+# The default is now gone. These tests pin the property, not the call sites, so a
+# fourth caller cannot reintroduce it.
+
+def test_record_trade_close_has_no_default_source():
+    """Attribution must be explicit at every call site."""
+    import inspect
+
+    from performance import record_trade_close
+
+    sig = inspect.signature(record_trade_close)
+    src = sig.parameters["source"]
+    assert src.default is inspect.Parameter.empty, (
+        "record_trade_close regained a default source -- a caller that forgets to "
+        "attribute P&L will silently book it to whichever division that default names"
+    )
+    assert src.kind is inspect.Parameter.KEYWORD_ONLY, (
+        "source must be keyword-only so it cannot be supplied positionally by accident"
+    )
+
+
+def test_no_production_caller_omits_source():
+    """Every record_trade_close call in the engine names its division.
+
+    A signature check alone would not catch a caller passing source=None or
+    building kwargs dynamically, and this is the property that actually matters.
+    """
+    import ast
+    import pathlib
+
+    engine_dir = pathlib.Path(__file__).resolve().parent.parent
+    offenders = []
+    for py in engine_dir.glob("*.py"):
+        tree = ast.parse(py.read_text())
+        for node in ast.walk(tree):
+            if not isinstance(node, ast.Call):
+                continue
+            fn = node.func
+            name = getattr(fn, "attr", None) or getattr(fn, "id", None)
+            if name != "record_trade_close":
+                continue
+            kwargs = {k.arg for k in node.keywords if k.arg}
+            has_splat = any(k.arg is None for k in node.keywords)
+            if "source" not in kwargs and not has_splat:
+                offenders.append(f"{py.name}:{node.lineno}")
+    assert not offenders, (
+        "record_trade_close called without an explicit source at: "
+        + ", ".join(offenders)
+    )

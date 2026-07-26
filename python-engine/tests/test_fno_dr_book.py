@@ -33,9 +33,14 @@ class _Q:
 
 
 class FakeSnap:
-    """Duck-types the bits of ChainSnapshot that fno_dr_book touches."""
-    def __init__(self, spot, table):
-        self.spot = spot
+    """Duck-types the bits of ChainSnapshot that fno_dr_book touches.
+
+    NOTE: ChainSnapshot exposes the synthetic ``forward`` (futures LTP) as its
+    pricing basis -- there is no ``spot`` attribute. This fake must mirror that
+    exact name, otherwise the adapter can regress against a field the live
+    snapshot never had (which is precisely what slipped past before)."""
+    def __init__(self, forward, table):
+        self.forward = forward
         self._t = {(float(k[0]), k[1].value): v for k, v in table.items()}
     def quote(self, strike, opt):
         m = self._t.get((float(strike), opt.value))

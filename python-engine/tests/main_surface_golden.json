@@ -103,6 +103,12 @@
       "trigger": "interval[0:10:00]"
     },
     {
+      "func": "premarket_login_nudge",
+      "id": "premarket_login_nudge",
+      "kwargs": [],
+      "trigger": "cron[hour='7', minute='50']"
+    },
+    {
       "func": "run_penny_connors_scan",
       "id": "penny_connors_scan",
       "kwargs": [],

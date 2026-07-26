@@ -47,7 +47,11 @@ def test_penny_breakout_settings():
 def test_penny_risk_settings():
     from config import settings
     assert settings.PENNY_LIVE_BANKROLL == 2000.0
-    assert settings.PENNY_PAPER_BANKROLL == 500.0
+    # [CAPITAL-REALLOC 2026-07-26] 500 -> 100,000. Rs 500 was too small to be
+    # informative: at that size many penny candidates cannot be sized to a single
+    # share, so the paper book could not have shown whether the strategy works
+    # even if it did. Standardised on the Rs 1,00,000 paper allocation.
+    assert settings.PENNY_PAPER_BANKROLL == 100000.0
     assert settings.PENNY_RISK_PCT_PR1 == 0.05
     assert settings.PENNY_RISK_PCT_PR2 == 0.025
     # [PR3-FALSIFIABLE] 0.01, not 0.0: PR3 trades small rather than

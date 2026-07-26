@@ -420,6 +420,18 @@ async def run_penny_edge_scan(kite, db_path: Optional[str] = None) -> dict:
         "penny_edge_scan_engine_complete date=%s universe=%d candidates=%d regime=%s",
         today_str, universe, len(candidates), regime.preferred_signal,
     )
+    # [EDGE-FUNNEL 2026-07-26] A bare "candidates=0" (2026-07-23, 07-24) left the
+    # EDGE leg's silence unexplained: no rows in penny_signals.csv, no reject
+    # histogram, and a stale dead-gate alarm still firing about it. Print the
+    # funnel so one grep separates "no setups today" from "features are broken".
+    if not candidates:
+        reasons = scan.get("no_signal_reasons") or {}
+        logger.warning(
+            "penny_edge_zero_candidates date=%s universe=%d scan_errors=%d breakdown=%s",
+            today_str, universe, scan.get("scan_errors", 0),
+            ", ".join(f"{k}={v}" for k, v in
+                      sorted(reasons.items(), key=lambda kv: -kv[1])) or "none",
+        )
 
     # Run paper leg
     paper_summary = {"leg": "PAPER", "entered": 0, "trades": [], "skipped": []}

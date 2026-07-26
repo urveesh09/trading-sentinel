@@ -57,20 +57,31 @@ async def test_pnl_is_attributed_to_the_right_division(db):
 
 
 @pytest.mark.asyncio
-async def test_swing_and_momentum_split_the_nifty_pool_50_50(db):
-    # Swing and momentum are separate, non-overlapping halves of the ₹5,000
-    # Nifty pool — ₹2,500 each at default MOMENTUM_POOL_PCT.
+async def test_swing_and_momentum_split_the_nifty_pool(db):
+    # Swing and momentum are separate, non-overlapping slices of the Nifty pool,
+    # divided by MOMENTUM_POOL_PCT.
+    #
+    # [CAPITAL-REALLOC 2026-07-26] No longer 50/50. Rs 500 of REAL capital moved
+    # from swing to the penny edge live book (INITIAL_BANKROLL 5,000 -> 4,500) and
+    # the split moved to 5/9 so momentum kept its full Rs 2,500:
+    #     momentum = 4500 * 5/9 = 2500,  swing = 4500 * 4/9 = 2000.
+    # The property under test is unchanged -- the two slices are complementary and
+    # sum to the pool -- so it is asserted from settings rather than pinned.
     await record_trade_close(db, "SW", 200.0, source="SYSTEM")
     await record_trade_close(db, "MO", -50.0, source="MOMENTUM")
 
     data = await division_breakdown(db)
-    half = performance.settings.INITIAL_BANKROLL * performance.settings.MOMENTUM_POOL_PCT
+    mom_share = performance.settings.INITIAL_BANKROLL * performance.settings.MOMENTUM_POOL_PCT
     swing = _div(data, "swing")
     momentum = _div(data, "momentum")
-    assert swing["allocated"] == pytest.approx(performance.settings.INITIAL_BANKROLL - half)
-    assert momentum["allocated"] == pytest.approx(half)
+    # abs=0.01: _division_registry rounds allocations to paise, and 5/9 is a
+    # repeating fraction, so sub-paise equality is not a meaningful assertion.
+    assert swing["allocated"] == pytest.approx(
+        performance.settings.INITIAL_BANKROLL - mom_share, abs=0.01)
+    assert momentum["allocated"] == pytest.approx(mom_share, abs=0.01)
     # Together they sum to the full Nifty pool — no double counting.
-    assert swing["allocated"] + momentum["allocated"] == pytest.approx(performance.settings.INITIAL_BANKROLL)
+    assert swing["allocated"] + momentum["allocated"] == pytest.approx(
+        performance.settings.INITIAL_BANKROLL, abs=0.01)
     assert swing["realised_pnl"] == pytest.approx(200.0)
     assert momentum["realised_pnl"] == pytest.approx(-50.0)
 
