@@ -220,6 +220,67 @@ async def test_same_bar_never_enters_twice(kite, db_path):
 
 
 @pytest.mark.asyncio
+async def test_never_pyramids_the_same_contract_across_bars(db_path, book):
+    """[NO-PYRAMID 2026-07-26] A NEW bar must not re-enter a held contract.
+
+    already_entered_bar() only blocks a repeat inside the same 5-min bar, and
+    the other caps are count/premium-based, so nothing stopped the paper book
+    from stacking the identical strike on a later bar. On 2026-07-24 FNO_PAPER
+    opened NIFTY26JUL23700PE three times (10:05, 10:35, 11:00) -- the third
+    entry added 2 lots while the second was still open and already losing,
+    concentrating ~Rs 30k of premium on one strike and averaging into a
+    signal that had been wrong twice. Total: -Rs 5,718 on the day.
+    """
+    # Extend the fixture frame (which stops at the 09:55 breakout) with a
+    # pullback below the OR level and then a FRESH re-break. The engine's
+    # fresh-break rule rejects a bar that was already resident above the level,
+    # so a second entry needs exactly this shape -- and it is the shape prod saw
+    # on 2026-07-24, where three separate re-breaks resolved to one strike.
+    bars = _breakout_bars()
+    later = pd.DataFrame(
+        {"open":   [25100.0, 25000.0],
+         "high":   [25105.0, 25155.0],
+         "low":    [24995.0, 24998.0],
+         "close":  [25000.0, 25150.0],   # 10:00 back below OR, 10:05 re-breaks
+         "volume": [100.0,   300.0]},
+        index=pd.to_datetime(["2026-07-10 10:00", "2026-07-10 10:05"]),
+    )
+    bars = pd.concat([bars, later])
+
+    now_bar1 = IST.localize(datetime(2026, 7, 10, 10, 3))     # -> bar_ts 09:55
+    now_bar2 = IST.localize(datetime(2026, 7, 10, 10, 13))    # -> bar_ts 10:05
+    k = FakeKite(bars, _quote_table(book, now_bar1))
+
+    first = await run_fno_tick(k, db_path=db_path, regime="REGIME_1_NORMAL",
+                               now_ist=now_bar1)
+    assert len(first["entries"]) == 1, f"setup failed, no first entry: {first}"
+    held_symbol = first["entries"][0]["symbol"]
+
+    # Re-quote at the later timestamp, otherwise the quote-freshness gate
+    # rejects first and the pyramid guard is never reached.
+    k.quote_table = _quote_table(book, now_bar2)
+    second = await run_fno_tick(k, db_path=db_path, regime="REGIME_1_NORMAL",
+                                now_ist=now_bar2)
+    assert second["entries"] == [], (
+        f"pyramided into {held_symbol} on a new bar: {second}"
+    )
+
+    import aiosqlite
+    async with aiosqlite.connect(db_path) as db:
+        async with db.execute(
+            "SELECT COUNT(*) FROM fno_positions WHERE tradingsymbol=?",
+            (held_symbol,),
+        ) as cur:
+            assert (await cur.fetchone())[0] == 1
+        # and the refusal is legible in the signal log, not silent
+        async with db.execute(
+            "SELECT COUNT(*) FROM fno_signals "
+            "WHERE reject_reason='already_holding_this_contract'"
+        ) as cur:
+            assert (await cur.fetchone())[0] >= 1
+
+
+@pytest.mark.asyncio
 async def test_crisis_regime_blocks_entry(kite, db_path):
     summary = await run_fno_tick(kite, db_path=db_path, regime="REGIME_3_CRISIS",
                                  now_ist=NOW)

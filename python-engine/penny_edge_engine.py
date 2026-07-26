@@ -432,13 +432,26 @@ def _median(values: List[float]) -> float:
     return (s[n // 2 - 1] + s[n // 2]) / 2.0
 
 
-def scan_single_ticker(bars: List[dict], eval_idx: int) -> List[SignalCandidate]:
-    """Scan one ticker on one day and return 0+ signal candidates.
-    A single ticker can produce both an MR and an MO signal if
-    both conditions are met (rare; usually one dominates)."""
+def scan_single_ticker_with_reason(
+    bars: List[dict], eval_idx: int
+) -> Tuple[List[SignalCandidate], Optional[str]]:
+    """scan_single_ticker plus a coarse reason when it finds nothing.
+
+    [EDGE-FUNNEL 2026-07-26] compute_mr_signal/compute_mo_signal return None
+    with no explanation, so a zero-candidate scan was indistinguishable from a
+    broken one. On 2026-07-23 and 07-24 prod logged
+    `penny_edge_scan_engine_complete universe=549 candidates=0` on both days and
+    there was no way to tell from the logs whether the Connors setups genuinely
+    weren't there or the feature pipeline had failed -- the EDGE leg wrote zero
+    rows to penny_signals.csv while a stale dead-gate alarm kept firing about it.
+
+    Deliberately coarse: "did we even have features" vs "features fine, no setup"
+    is the distinction that separates a data incident from a quiet market, and it
+    needs no change to the evaluators.
+    """
     feats = compute_features_for_day(bars, eval_idx)
     if feats is None:
-        return []
+        return [], "insufficient_features"
     out = []
     mr = compute_mr_signal(feats)
     if mr is not None:
@@ -446,7 +459,16 @@ def scan_single_ticker(bars: List[dict], eval_idx: int) -> List[SignalCandidate]
     mo = compute_mo_signal(feats)
     if mo is not None:
         out.append(mo)
-    return out
+    if not out:
+        return [], "no_mr_or_mo_setup"
+    return out, None
+
+
+def scan_single_ticker(bars: List[dict], eval_idx: int) -> List[SignalCandidate]:
+    """Scan one ticker on one day and return 0+ signal candidates.
+    A single ticker can produce both an MR and an MO signal if
+    both conditions are met (rare; usually one dominates)."""
+    return scan_single_ticker_with_reason(bars, eval_idx)[0]
 
 
 # ---- Backtest helper (reused by penny_edge_backtest.py) -----------

@@ -119,6 +119,63 @@ class TestPositionDB:
         positions = await get_open_positions(pos_db)
         assert len(positions) == 0
 
+    # --- [PHANTOM-OPEN-INVARIANT 2026-07-26] -----------------------------
+    # A CLOSED_T1 row means "runner still riding" ONLY while exit_date is
+    # NULL. Two writers labelled a fully-exited position CLOSED_T1 anyway,
+    # and prod then re-squared those rows every day for four sessions --
+    # real Zerodha orders, fabricated ledger losses, 94% of the momentum
+    # pool pinned. exit_date is the invariant that distinguishes them.
+
+    @pytest.mark.asyncio
+    async def test_closed_t1_with_exit_date_is_not_open(self, pos_db):
+        """The prod phantom shape: CLOSED_T1 but already exited."""
+        await _insert_position(
+            pos_db, ticker="THELEELA", source="MOMENTUM",
+            status="CLOSED_T1", exit_date="2026-07-20T08:26:21+00:00",
+            exit_price=490.8, realised_pnl=-2.74,
+        )
+        assert await get_open_positions(pos_db) == []
+
+    @pytest.mark.asyncio
+    async def test_closed_t1_runner_without_exit_date_stays_open(self, pos_db):
+        """The legitimate partial-T1 runner must keep being managed."""
+        await _insert_position(
+            pos_db, ticker="RUNNER", source="SYSTEM",
+            status="CLOSED_T1", exit_date=None,
+        )
+        positions = await get_open_positions(pos_db)
+        assert [p["ticker"] for p in positions] == ["RUNNER"]
+
+    @pytest.mark.asyncio
+    async def test_open_status_with_exit_date_is_not_open(self, pos_db):
+        """exit_date wins over status in both directions -- no resurrection."""
+        await _insert_position(
+            pos_db, ticker="GHOST", status="OPEN",
+            exit_date="2026-07-20T08:26:21+00:00",
+        )
+        assert await get_open_positions(pos_db) == []
+
+    @pytest.mark.asyncio
+    async def test_phantom_does_not_consume_capital_pool(self, pos_db):
+        """Guard the actual damage: a phantom must not hold pool capital.
+
+        filter_momentum_signals sizes off `entry_price * shares` of whatever
+        get_open_positions returns. On 2026-07-24 the two phantoms reserved
+        Rs 2,269.45 of a Rs 2,390.93 pool (94.9%), so every candidate that
+        passed the strategy gates was rejected for lack of cash.
+        """
+        await _insert_position(
+            pos_db, ticker="THELEELA", source="MOMENTUM", status="CLOSED_T1",
+            entry_price=490.90, shares=4, exit_date="2026-07-20T08:26:21+00:00",
+        )
+        await _insert_position(
+            pos_db, ticker="LATENTVIEW", source="MOMENTUM", status="CLOSED_T1",
+            entry_price=305.85, shares=1, exit_date="2026-07-20T08:57:21+00:00",
+        )
+        open_pos = await get_open_positions(pos_db)
+        deployed = sum(p["entry_price"] * p["shares"] for p in open_pos)
+        assert deployed == 0.0
+
 
 # ===============================================================
 # Q8: MOMENTUM POSITIONS EXEMPT FROM TRAILING STOP

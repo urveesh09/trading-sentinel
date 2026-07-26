@@ -354,6 +354,28 @@ async def _try_entry_for_leg(
         await _log(False, reject, **contract_fields)
         return None
 
+    # [NO-PYRAMID 2026-07-26] Refuse a second position on a contract this leg is
+    # already holding. The existing caps are count-based (FNO_MAX_CONCURRENT) and
+    # premium-based (FNO_MAX_OPEN_PREMIUM_PCT), and already_entered_bar() only
+    # blocks a repeat within the SAME 5-min bar -- so nothing stopped the book
+    # from re-entering the identical strike on a later bar.
+    #
+    # 2026-07-24 is what that looks like: FNO_PAPER opened NIFTY26JUL23700PE at
+    # 10:05 (1 lot, -Rs 1,280), again at 10:35 (1 lot, -Rs 1,926), then again at
+    # 11:00 with 2 lots while the 10:35 leg was still open and already losing
+    # (-Rs 2,512). ~Rs 30k of premium concentrated on one strike, and the third
+    # entry was averaging into a loser the ORB signal had already been wrong
+    # about twice. Same-day re-entry on a DIFFERENT strike stays allowed.
+    held = [p for p in await fpos.open_positions(db_path, source)
+            if p.tradingsymbol == contract.tradingsymbol]
+    if held:
+        await _log(False, "already_holding_this_contract", **contract_fields)
+        logger.info(
+            "fno_entry_skip source=%s reason=already_holding_this_contract symbol=%s open_lots=%d",
+            source, contract.tradingsymbol, sum(p.lots for p in held),
+        )
+        return None
+
     # Sizing (§3): decline rather than oversize.
     lots = lots_for_pool(
         pool, ask, lot_size,

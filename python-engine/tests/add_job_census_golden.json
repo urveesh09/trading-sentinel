@@ -145,6 +145,11 @@
     "trigger": "'interval'"
   },
   {
+    "func": "premarket_login_nudge",
+    "id": "'premarket_login_nudge'",
+    "trigger": "'cron'"
+  },
+  {
     "func": "run_momentum_screener",
     "id": "f'momentum_scan_{hour}{minute}'",
     "trigger": "'cron'"

@@ -265,13 +265,26 @@ def register_penny_scheduler_jobs(scheduler):
     # the whole day scanned yesterday's universe with the corp gates
     # degraded. run_penny_universe_refresh itself is unchanged and remains
     # the task runner underneath (and the manual/ops entry point).
-    from daily_bootstrap import bootstrap_0800_job, bootstrap_safety_tick
+    from daily_bootstrap import (
+        bootstrap_0800_job, bootstrap_safety_tick, premarket_login_nudge,
+    )
 
     scheduler.add_job(
         bootstrap_0800_job, "cron",
         hour=settings.PENNY_REFRESH_HOUR, minute=0,
         id="daily_bootstrap_0800",
         max_instances=1, coalesce=True, misfire_grace_time=600,
+    )
+    # [LOGIN-NUDGE 2026-07-26] 10 minutes ahead of the bootstrap cron, so the
+    # operator is reminded BEFORE the window is missed rather than after. Silent
+    # when the token is already fresh. Deliberately not misfire-graced: a nudge
+    # delivered late is worse than no nudge (it would arrive after the 08:00
+    # deferral alert has already said the same thing, louder).
+    scheduler.add_job(
+        premarket_login_nudge, "cron",
+        hour=settings.PENNY_REFRESH_HOUR - 1, minute=50,
+        id="premarket_login_nudge",
+        max_instances=1, coalesce=True,
     )
     scheduler.add_job(
         bootstrap_safety_tick, "interval",

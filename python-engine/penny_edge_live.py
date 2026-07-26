@@ -32,7 +32,7 @@ import os
 import sqlite3
 from dataclasses import asdict
 from datetime import datetime
-from typing import List, Optional
+from typing import Dict, List, Optional
 
 import penny_edge_engine as pee
 
@@ -163,6 +163,9 @@ def scan_today(
     candidates: List[pee.SignalCandidate] = []
     rejected_count = 0
     eligible_tickers = 0
+    # [EDGE-FUNNEL 2026-07-26] reason -> ticker count for the zero-candidate case.
+    no_signal_reasons: Dict[str, int] = {}
+    scan_errors = 0
     for t, t_bars in bars.items():
         # Find the bar at as_of_date
         t_idx = None
@@ -189,9 +192,16 @@ def scan_today(
         except Exception as exc:
             logger.warning("edge_event_check_failed ticker=%s err=%s", t, exc)
         try:
-            sigs = pee.scan_single_ticker(t_bars, t_idx)
+            # [EDGE-FUNNEL 2026-07-26] Tally why a ticker produced nothing, so a
+            # candidates=0 day says whether the data or the market was the reason.
+            sigs, no_signal_reason = pee.scan_single_ticker_with_reason(t_bars, t_idx)
+            if no_signal_reason:
+                no_signal_reasons[no_signal_reason] = (
+                    no_signal_reasons.get(no_signal_reason, 0) + 1
+                )
         except Exception as exc:
             logger.warning("scan_failed ticker=%s err=%s", t, exc)
+            scan_errors += 1
             continue
         for c in sigs:
             # Override the date with as_of_date (in case per-ticker
@@ -221,6 +231,8 @@ def scan_today(
         "positions":           positions,
         "regime":              regime,
         "eligible_tickers":    eligible_tickers,
+        "no_signal_reasons":   no_signal_reasons,
+        "scan_errors":         scan_errors,
         "rejected_below_threshold": sum(
             1 for c in candidates
             if pee.adjust_strength_for_regime(c, regime) < min_strength

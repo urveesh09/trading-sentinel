@@ -529,7 +529,19 @@ async def partner_analytics_tick(now: Optional[datetime] = None) -> None:
     except Exception as exc:
         logger.warning("partner_regime_event_failed err=%s", str(exc))
 
-    # --- system halt notice (informational) ------------------------------
+    # --- risk-limit notice (informational) -------------------------------
+    # [HONEST-HALT 2026-07-26] This used to broadcast "Our system halted its own
+    # trading today", which was not true: check_circuit_breakers() is advisory
+    # only. main.py imports it and never calls it; every consumer is a reporting
+    # surface (this notice, /health, routes_ops, routes_portfolio,
+    # /nifty circuit). No entry path is gated by it, so nothing was halted.
+    #
+    # It went out to subscribers on 2026-07-23 and 07-24 on the strength of eight
+    # consecutive "losses" that were all phantom re-closes of two positions
+    # already exited on 07-20 -- the two real momentum closes before them were
+    # both profits. A caution flag is fair to send; a false claim about our own
+    # behaviour is not. Reword to what the signal actually means and keep the
+    # ledger honest upstream (see auto_square_momentum).
     try:
         async with _main.state_lock:
             halted, reasons = await _main.check_circuit_breakers(settings.DB_PATH)
@@ -537,9 +549,9 @@ async def partner_analytics_tick(now: Optional[datetime] = None) -> None:
             _halt_reported_on = day_iso
             await _send_event(
                 settings.DB_PATH, "halt", "",
-                "Our system halted its own trading today ("
+                "Our risk limits are flagging caution today ("
                 + "; ".join(reasons[:3])
-                + ") — treat signals with extra caution",
+                + ") — position sizes are unchanged, but treat signals with extra care",
                 now,
             )
     except Exception as exc:

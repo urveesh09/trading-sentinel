@@ -79,11 +79,44 @@ async def init_positions_db(db_path: str):
         await db.commit()
 
 async def get_open_positions(db_path: str) -> List[dict]:
+    """Positions the engine should still be managing.
+
+    CLOSED_T1 is included because the swing/penny runner keeps managing the
+    remaining 50% after a partial T1 exit -- that row is genuinely still open.
+
+    [PHANTOM-OPEN-INVARIANT 2026-07-26] But `status` alone is not a safe
+    open/closed test, because two paths write CLOSED_T1 on a position that is
+    entirely gone:
+
+      1. A momentum exit mislabelled CLOSED_T1. Fixed at the writer by
+         64ce0e5 (momentum_exit_status), but the two rows already in prod
+         (THELEELA, LATENTVIEW, both fully exited 2026-07-20) stayed
+         "open" forever, and a code fix could not reach them.
+      2. update_daily_positions' full-close-at-T1 branch (the 1-share edge
+         case, ~line 240): remaining_shares == 0 so nothing is left to ride,
+         yet it still persists status='CLOSED_T1'. Latent, same shape.
+
+    Cost of that in prod, 2026-07-21..24: the 15:15 auto-square re-squared
+    both phantoms every day -- placing REAL Zerodha sell orders for stock the
+    account did not hold -- booked a fresh fabricated loss each time
+    (-Rs 178.31 of pure fiction), tripped CB_CONSECUTIVE_LOSSES off those
+    fake losses, and pinned 94% of the momentum capital pool so 25 (07-23)
+    and 16 (07-24) candidates that passed every strategy gate were rejected
+    for lack of cash.
+
+    exit_date is the durable invariant: the partial-T1 runner branch updates
+    only status + shares and leaves exit_date NULL, while every full-close
+    path sets it. So "still open" == not-yet-exited, whatever the label says.
+    Verified against prod cache.db: this excludes exactly the two phantoms
+    and no legitimately-open row.
+    """
     await init_positions_db(db_path)
     async with aiosqlite.connect(db_path) as db:
         db.row_factory = aiosqlite.Row
-        # Include CLOSED_T1 so the engine keeps managing the remaining 50% of the position
-        async with db.execute("SELECT * FROM positions WHERE status IN ('OPEN', 'CLOSED_T1')") as cursor:
+        async with db.execute(
+            "SELECT * FROM positions "
+            "WHERE status IN ('OPEN', 'CLOSED_T1') AND exit_date IS NULL"
+        ) as cursor:
             return [dict(row) for row in await cursor.fetchall()]
 
 
