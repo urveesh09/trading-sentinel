@@ -891,9 +891,18 @@ def evaluate_momentum_signal(
             "morphology_threshold": settings.MOMENTUM_MORPHOLOGY_MIN_SCORE,
         }
 
-    # [MR1] Stop loss = low of breakout candle
+    # [MR1] Stop loss = low of breakout candle, floored so it sits outside noise.
+    #
+    # [STOP-FLOOR 2026-07-26] The raw breakout-candle low is a ONE-MINUTE low and
+    # was frequently inside the spread (0.07%, 0.09%, 0.26% on real trades), which
+    # made exits near-random AND -- because sizing divides the risk budget by
+    # risk_per_share -- made the tightest stops produce the biggest positions.
+    # Take whichever stop is WIDER (lower, for a long): the candle low or the floor.
+    # Mirrors the swing path, which has always done `max(atr_stop, pct_stop)`.
     breakout_candle_low = df['low'].iloc[-1]
-    stop_loss = breakout_candle_low
+    floor_stop = current_close * (1.0 - settings.MOMENTUM_MIN_STOP_PCT)
+    stop_loss = min(float(breakout_candle_low), float(floor_stop))
+    stop_floored = stop_loss < float(breakout_candle_low)
 
     risk_per_share = current_close - stop_loss
     if risk_per_share <= 0:
@@ -1010,6 +1019,12 @@ def evaluate_momentum_signal(
         "vwap":                round(current_vwap, 2),
         "prev_day_high":       round(prev_day_high, 2),
         "stop_loss":           round(stop_loss, 2),
+        # [STOP-FLOOR 2026-07-26] True when MOMENTUM_MIN_STOP_PCT widened the stop
+        # past the raw breakout-candle low. Carried so the floor's effect on fill
+        # rate and R distribution is measurable from the signal log rather than
+        # having to be inferred later.
+        "stop_floored":        stop_floored,
+        "stop_pct":            round(risk_per_share / current_close, 5),
         "target_1":            round(target, 2),
         "target_2":            round(target, 2),   # single target for momentum
         "trailing_stop":       round(stop_loss, 2),

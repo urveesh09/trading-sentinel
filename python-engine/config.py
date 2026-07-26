@@ -87,6 +87,26 @@ class Settings(BaseSettings):
     # R1 default (0.07) is MORE conservative than the legacy 0.10 -- a deliberate
     # tightening since we now have regime gating to back it up.
     MOMENTUM_RISK_PCT:        float = 0.10    # Legacy 10% -- pre-regime value
+    # [STOP-FLOOR 2026-07-26] Minimum stop distance as a fraction of entry.
+    #
+    # The momentum stop is the low of the breakout candle -- a ONE-MINUTE bar. On
+    # the 10 real positions traded to date that produced stops of 0.07%, 0.09%,
+    # 0.26%, 0.46%, 0.66%, 0.79%, 0.98%, 0.99%, 1.57% and 1.92% from entry. The
+    # tightest of those are inside the bid-ask spread plus ordinary one-minute
+    # noise, so the exit is close to a coin flip: 2 wins in 8 momentum trades.
+    #
+    # Worse, sizing is risk-based (shares = risk_budget / risk_per_share), so a
+    # noise-width stop asks for a huge position and is then truncated by the pool
+    # cap -- meaning the TIGHTER the stop, the LARGER the position. URBANCO sized
+    # to 33 shares (Rs 4,376, ~88% of the account) off a Rs 0.09 stop, and its
+    # +0.97% move was recorded as +14.35R. Every R-based statistic in the system
+    # inherits that distortion.
+    #
+    # 0.5% is set just outside round-trip intraday costs (~0.1-0.2% on these
+    # notionals) and typical one-minute noise on NSE mid-caps. This does not make
+    # the strategy profitable; it makes its risk, its sizing and its R-multiples
+    # mean what they claim to mean, which is the precondition for judging it.
+    MOMENTUM_MIN_STOP_PCT:    float = 0.005   # 0.5% floor on the momentum stop
     MOMENTUM_ATR_FUEL_BUFFER:          float = 0.85   # [MC5] ATR exhaustion gate: target must fit within remaining_fuel * buffer
     MOMENTUM_VOL_SURGE_LUNCHTIME:      float = 1.75   # [MC3-T] Volume threshold during lunchtime dead zone (11:30-13:15 IST)
     MOMENTUM_LUNCHTIME_START_HOUR:     int   = 11     # [MC3-T] Lunchtime start hour (IST)

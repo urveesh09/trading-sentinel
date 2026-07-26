@@ -431,12 +431,45 @@ def _promotion_bar() -> dict:
     }
 
 
+async def _min_viable_trade_cost(db, division_key: str) -> "float | None":
+    """Smallest amount of capital this division can possibly commit to one trade.
+
+    [STRUCTURAL-VIABILITY 2026-07-26] Returns None where there is no hard floor:
+    equity books can always buy a single share, so any allocation admits *some*
+    trade. Whether it is a good trade is an edge question, not a tradeability one.
+
+    Options are different -- contracts trade in lots, so the floor is
+    `premium x lot_size` for ONE lot and cannot be scaled down. Measured from this
+    book's own cheapest historical entry rather than a guessed constant, so the
+    figure stays true as premiums and lot sizes change. Returns None before the
+    book has traded: absence of data is not evidence of unaffordability.
+    """
+    if division_key not in ("fno_paper", "fno_live"):
+        return None
+    source = "FNO_PAPER" if division_key == "fno_paper" else "FNO_LIVE"
+    try:
+        async with db.execute(
+            "SELECT MIN(entry_premium * lot_size) FROM fno_positions WHERE source=?",
+            (source,),
+        ) as cur:
+            row = await cur.fetchone()
+    except Exception:
+        return None                      # table absent before the first F&O trade
+    if not row or row[0] is None or float(row[0]) <= 0:
+        return None
+    return float(row[0])
+
+
 async def promotion_report(db_path: str) -> dict:
     """Per-strategy paper->live promotion check from the trade ledger."""
     import aiosqlite
     from performance import _division_registry
 
     bar = _promotion_bar()
+    # [STRUCTURAL-VIABILITY 2026-07-26] The real, spendable account -- the ceiling
+    # on what any division could be allocated on promotion. Paper pools are
+    # notional and deliberately not used here.
+    real_capital = float(getattr(settings, "INITIAL_BANKROLL", 0.0) or 0.0)
     strategies = []
     try:
         async with aiosqlite.connect(db_path) as db:
@@ -461,6 +494,32 @@ async def promotion_report(db_path: str) -> dict:
                 if dd_budget is not None and mdd > dd_budget:
                     reasons.append(f"drawdown_over_budget:{mdd}>{dd_budget}")
 
+                # [STRUCTURAL-VIABILITY 2026-07-26] A paper book whose smallest
+                # possible trade costs more than the capital it would be given can
+                # never be promoted, however good its paper record looks -- and its
+                # paper record is not evidence about anything the account could have
+                # done. F&O is the live example: the cheapest single NIFTY lot ever
+                # traded was Rs 5,967 and the real Nifty account is Rs 4,884, so not
+                # one lot was ever affordable. Its Rs 250,000 notional allocation
+                # also inflated the drawdown budget to Rs 62,500 -- 12.8x the whole
+                # account -- so Rs 10,841 of losses still read as "within budget".
+                #
+                # Report that as its own blocking reason instead of letting the book
+                # sit at "insufficient_sample" forever, which reads as "keep waiting"
+                # when the truth is "this cannot be traded at this capital".
+                # Compared against REAL capital, not `allocated`. Comparing it to
+                # the book's own notional would defeat the point: FNO_PAPER's
+                # Rs 250,000 allocation is the fiction being tested, and a
+                # Rs 5,967 lot trivially "fits" inside it. The account itself is
+                # the hard ceiling on anything this book could ever be handed, so
+                # that is what a lot has to fit inside.
+                min_trade = await _min_viable_trade_cost(db, key)
+                if min_trade is not None and min_trade > real_capital:
+                    reasons.append(
+                        f"structurally_unaffordable:one_lot_{int(min_trade)}"
+                        f">whole_account_{int(real_capital)}"
+                    )
+
                 if mode == "live":
                     verdict = "no_data" if not n else ("healthy" if expectancy > 0 else "underperforming")
                 elif reasons:
@@ -474,6 +533,7 @@ async def promotion_report(db_path: str) -> dict:
                     "key": key, "label": label, "source": source, "mode": mode,
                     "trades": n, "total_pnl": total, "expectancy": expectancy,
                     "max_drawdown": mdd, "dd_budget": dd_budget,
+                    "min_viable_trade": round(min_trade, 2) if min_trade is not None else None,
                     "verdict": verdict, "blocking_reasons": reasons,
                 })
     except Exception as e:
@@ -500,6 +560,12 @@ def format_promotion_report(data: dict) -> str:
             f"  {s['trades']} trades · expectancy {_rupees(s['expectancy'])}"
             f" · P&L {_rupees(s['total_pnl'])} · maxDD ₹{s['max_drawdown']:,.0f}"
         )
+        # [STRUCTURAL-VIABILITY 2026-07-26] Show the one-lot floor next to the
+        # allocation whenever it binds, so an unaffordable book reads as
+        # unaffordable rather than as merely under-sampled.
+        mvt = s.get("min_viable_trade")
+        if mvt and s.get("dd_budget") is not None:
+            lines.append(f"  min viable trade ₹{mvt:,.0f} (1 lot)")
         for r in s.get("blocking_reasons", []):
             lines.append(f"    ✗ {r}")
     ready = [s['label'] for s in data.get("strategies", []) if s['verdict'] == "ready_for_live"]
