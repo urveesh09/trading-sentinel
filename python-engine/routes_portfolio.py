@@ -216,17 +216,36 @@ async def close_position(request: Request):
     risk_initial = (pos['entry_price'] - pos['stop_loss_initial']) * pos['shares']
     r_multiple   = realised_pnl / risk_initial if risk_initial > 0 else 0
 
+    # [LEDGER-INTEGRITY 2026-07-26] Accept CLOSED_T1 as closable and gate the
+    # ledger write on rowcount, matching auto_square_momentum. A WHERE clause that
+    # matches nothing must never book P&L -- that is exactly how four sessions of
+    # fabricated losses reached the live ledger in July.
     async with aiosqlite.connect(settings.DB_PATH) as db:
-        await db.execute("""
+        cur = await db.execute("""
             UPDATE positions
             SET status='CLOSED_MANUAL', exit_price=?, exit_date=?,
                 realised_pnl=?, r_multiple=?
-            WHERE ticker=? AND source='MOMENTUM' AND status='OPEN'
+            WHERE ticker=? AND source='MOMENTUM'
+              AND status IN ('OPEN', 'CLOSED_T1') AND exit_date IS NULL
         """, (exit_price, datetime.now(timezone.utc).isoformat(),
               realised_pnl, r_multiple, ticker))
         await db.commit()
+        rows_closed = cur.rowcount
 
-    await _main.record_trade_close(settings.DB_PATH, ticker, realised_pnl, r_multiple=r_multiple, notes="manual")
+    if rows_closed != 1:
+        _main.logger.error("close_position_not_persisted", ticker=ticker,
+                           rows_affected=rows_closed, order_id=order_id)
+        raise HTTPException(
+            status_code=409,
+            detail=f"{ticker}: {rows_closed} position rows closed -- no P&L booked. "
+                   "Reconcile against the broker before retrying.",
+        )
+
+    # [SOURCE-REQUIRED 2026-07-26] Was omitting `source`, so this endpoint booked
+    # momentum closes into the SWING pool via the old "SYSTEM" default.
+    await _main.record_trade_close(settings.DB_PATH, ticker, realised_pnl,
+                                   r_multiple=r_multiple, notes="manual",
+                                   source=pos.get('source') or 'MOMENTUM')
     _main.logger.info("momentum_position_closed", ticker=ticker,
                 exit_price=exit_price, pnl=realised_pnl, r=r_multiple)
 

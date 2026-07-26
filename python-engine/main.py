@@ -2638,8 +2638,12 @@ async def _close_momentum_position(pos: dict, exit_price: float, reason: str, no
         )
         return False
 
+    # [SOURCE-REQUIRED 2026-07-26] Attribute to the position's own division. This
+    # call omitted `source` and so booked every momentum close into the SWING pool
+    # via the old "SYSTEM" default -- see record_trade_close for the full history.
     await record_trade_close(settings.DB_PATH, ticker, realised_pnl,
-                            r_multiple=r_multiple, notes=notes)
+                            r_multiple=r_multiple, notes=notes,
+                            source=pos.get('source') or 'MOMENTUM')
     logger.info("momentum_position_closed", ticker=ticker, exit_price=exit_price,
                 reason=notes, pnl=round(realised_pnl, 2), r=round(r_multiple, 4))
     return True
@@ -2972,7 +2976,11 @@ async def auto_square_momentum():
                 )
                 continue
 
-            await record_trade_close(settings.DB_PATH, ticker, realised_pnl, r_multiple=r_multiple, notes="auto_square")
+            # [SOURCE-REQUIRED 2026-07-26] Was booking momentum square-offs into
+            # the swing pool via the old "SYSTEM" default.
+            await record_trade_close(settings.DB_PATH, ticker, realised_pnl,
+                                     r_multiple=r_multiple, notes="auto_square",
+                                     source=pos.get('source') or 'MOMENTUM')
             logger.info("auto_square_position_closed", ticker=ticker,
                         exit_price=ltp, pnl=round(realised_pnl, 2), r=round(r_multiple, 4))
 

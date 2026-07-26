@@ -346,7 +346,7 @@ class TestCircuitBreakerHaltsScreener:
 
         # Record 5 consecutive losses to trigger CB3
         for i in range(5):
-            await record_trade_close(patch_settings.DB_PATH, f"LOSS{i}", -100.0)
+            await record_trade_close(patch_settings.DB_PATH, f"LOSS{i}", -100.0, source="SYSTEM")
 
         from httpx import AsyncClient, ASGITransport
         transport = ASGITransport(app=app)

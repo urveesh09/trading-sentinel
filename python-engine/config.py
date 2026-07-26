@@ -545,29 +545,31 @@ class Settings(BaseSettings):
     # premium per trade, which is how 2026-07-24 ended with ~Rs 30k concentrated
     # on a single NIFTY strike.
     #
-    # Set to 150,000 rather than the 100,000 the other paper books use, because
-    # 100,000 would have silently switched the book OFF. Sizing requires
-    # min_viable_pool = premium * lot_size * FNO_STOP_PREMIUM_PCT / FNO_MAX_RISK_PCT
-    #                 = premium * lot_size * 0.25 / 0.02
-    #                 = premium * lot_size * 12.5
-    # The real NIFTY premiums this book actually traded were Rs 151.85-165.10 on a
-    # 65 lot, i.e. Rs 9,870-10,732 of notional, which demands a pool of
-    # Rs 123,375-134,150 for ONE lot. At Rs 100,000 every one of those trades
-    # would have been rejected `pool_below_min_viable` -- the same failure as the
-    # old Rs 500 penny paper pool, where the book could not have told us whether
-    # the strategy works even if it did.
+    # Rs 250,000 -- Uru's call, reaffirmed 2026-07-26 after the trade-off below
+    # was raised. Recorded here so the reasoning is not re-litigated each audit.
     #
-    # 150,000 leaves headroom to ~Rs 185 premiums. A single lot is then ~7% of the
-    # book and the promotion drawdown budget is Rs 37,500, against the old
-    # Rs 250,000 pool's Rs 62,500 -- which was more than 7x the entire REAL
-    # account (Rs 8,000), and is how Rs 10,841 of losses from the worst book in
-    # the system (1 win in 8) still reported as "within budget".
+    # Why the size is not arbitrary: sizing requires
+    #   min_viable_pool = premium * lot_size * FNO_STOP_PREMIUM_PCT / FNO_MAX_RISK_PCT
+    #                   = premium * lot_size * 12.5
+    # The real NIFTY premiums this book traded (Rs 151.85-165.10 on a 65 lot)
+    # demand Rs 123,375-134,150 for ONE lot, so anything at or below ~Rs 135,000
+    # rejects every trade `pool_below_min_viable` and silently switches the book
+    # off. 250,000 clears that comfortably.
     #
-    # The book stays PAPER regardless. F&O is unbuyable with real capital here --
-    # the cheapest lot ever entered cost Rs 5,967 against a Rs 4,884 Nifty account
-    # -- and promotion_report now blocks it explicitly on that ground. This makes
-    # the paper record meaningful; it does not make F&O tradeable at this size.
-    FNO_PAPER_BANKROLL:        float = 150000.0
+    # The known cost: the promotion ladder's drawdown budget is
+    # FNO_PAPER_BANKROLL * PROMOTION_MAX_DD_PCT = Rs 62,500, which is ~7.8x the
+    # entire REAL account (Rs 8,000). That is how Rs 10,841 of losses from the
+    # worst-performing book in the system (1 win in 8) still reported as "within
+    # budget" through July.
+    #
+    # What stops that mattering is no longer the pool number: promotion_report's
+    # structural-viability gate blocks F&O on the ground that one lot
+    # (cheapest ever entered: Rs 5,967) costs more than the whole real account
+    # (Rs 4,500 Nifty seed). That check reads REAL capital and is completely
+    # independent of this figure, so the book cannot be promoted at any pool size
+    # while the account is this small. Sizing realism here, promotion safety
+    # there.
+    FNO_PAPER_BANKROLL:        float = 250000.0
     FNO_LIVE_BANKROLL:         float = 0.0        # not armed (spec §0)
     FNO_LIVE_TRADING:          bool  = False      # master switch
     FNO_DISABLE_PAPER:         bool  = False

@@ -191,14 +191,32 @@ async def fno_bankroll(db_path: str, source: str = "FNO_PAPER") -> float:
 async def record_trade_close(db_path: str, ticker: str, pnl: float,
                              r_multiple: float | None = None,
                              notes: str | None = None,
-                             source: str = "SYSTEM"):
-    # [BK2]
-    # `source` distinguishes which subsystem wrote the row. Allowed values:
-    #   "SYSTEM"  -- default for swing / manual closes (back-compat)
-    #   "MOMENTUM" -- Nifty options subsystem
-    #   "PENNY"  -- penny subsystem
-    # Used by performance.penny_pool_pnl() and analytics.outcome_correlator()
-    # to compute per-pool P&L without double-counting across pools.
+                             *, source: str):
+    """Append a realised close to the bankroll ledger.
+
+    `source` names the division the P&L belongs to: SYSTEM (swing), MOMENTUM,
+    MOMENTUM_PAPER, PENNY, EDGE_LIVE, EDGE_PAPER, FNO_PAPER, FNO_LIVE. It drives
+    division_breakdown, promotion_report and every per-pool statistic.
+
+    [SOURCE-REQUIRED 2026-07-26] `source` is keyword-only with NO default. It used
+    to default to "SYSTEM", which is a footgun that has now misfired twice:
+
+      - 2026-07-14: daily_post_market bound a 2-arg callback that dropped the
+        source, so EDGE_PAPER profits sized off a Rs 100,000 imaginary bankroll
+        were booked into the real swing pool. 76% of the reported account was
+        fiction. Fixed at that one caller; the default was left in place.
+      - 2026-07-26: the trap was still open, and THREE momentum close paths
+        (_close_momentum_position, auto_square_momentum, POST /positions/close)
+        had never passed it either. Every SYSTEM row in the live ledger turned
+        out to belong to a MOMENTUM position -- swing showed 12 losing trades it
+        had never taken, and momentum's real record was split across two
+        divisions. The promotion ladder was judging both books on the wrong rows.
+
+    A default that is right for one caller and silently wrong for the rest is
+    worse than no default: the failure is invisible and lands in the accounting.
+    Making it required turns "forgot to attribute" into a TypeError at import
+    time rather than a wrong number in a report months later.
+    """
     before = await bankroll_for_source(db_path, source)
     after = before + pnl
     async with aiosqlite.connect(db_path) as db:
