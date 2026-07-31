@@ -112,6 +112,65 @@ async def bankroll_for_source(db_path: str, source: str) -> float:
     return settings.INITIAL_BANKROLL
 
 
+# [POOL-TRUTH 2026-07-31] Capital actually allocated to each division.
+#
+# The bug this closes: sizing and accounting were reading two different
+# numbers. `fno_bankroll()` sized F&O off FNO_PAPER_BANKROLL (Rs 250,000) +
+# realised P&L, while `record_trade_close` wrote bankroll_before/after using
+# `bankroll_for_source()` = INITIAL_BANKROLL (Rs 4,500, the SWING pool) +
+# realised P&L. So the F&O book sized every trade off a quarter-million while
+# its ledger balance marched to MINUS Rs 11,008 -- a number that is neither
+# the pool nor a real loss, and which no drawdown guard could interpret.
+#
+# EDGE_PAPER had the same split: sized off Rs 100,000, booked against
+# Rs 4,500, so one SIGMA trade on 2026-07-30 showed a -45% "drawdown" of a
+# bankroll it had never been sized against.
+#
+# One source of truth: a division's equity is ITS OWN allocation plus ITS OWN
+# realised P&L. Anything else lets a book gamble with capital the accounting
+# does not believe it has.
+DIVISION_ALLOCATION: dict = {
+    "SYSTEM":          "INITIAL_BANKROLL",
+    "MOMENTUM":        "INITIAL_BANKROLL",
+    "MOMENTUM_PAPER":  "MOMENTUM_PAPER_BANKROLL",
+    "PENNY":           "PENNY_LIVE_BANKROLL",
+    "PENNY_PAPER":     "PENNY_PAPER_BANKROLL",
+    "EDGE_LIVE":       "PENNY_EDGE_LIVE_BANKROLL",
+    "EDGE_PAPER":      "PENNY_EDGE_PAPER_BANKROLL",
+    "FNO_PAPER":       "FNO_PAPER_BANKROLL",
+    "FNO_LIVE":        "FNO_LIVE_BANKROLL",
+}
+
+
+def allocation_for_source(source: str) -> float:
+    """Capital allocated to `source`. Unknown sources fall back to the swing
+    pool, which is the historical behaviour."""
+    setting_name = DIVISION_ALLOCATION.get(source, "INITIAL_BANKROLL")
+    return float(getattr(settings, setting_name, settings.INITIAL_BANKROLL))
+
+
+async def division_equity(db_path: str, source: str) -> float:
+    """Canonical equity for one division: allocation + its own realised P&L.
+
+    This is the number that must be used BOTH for position sizing AND for the
+    ledger's bankroll_before/after. Fails open to the allocation."""
+    import aiosqlite
+    allocated = allocation_for_source(source)
+    try:
+        async with aiosqlite.connect(db_path) as db:
+            async with db.execute(
+                "SELECT COALESCE(SUM(pnl), 0.0) FROM bankroll_ledger WHERE source = ?",
+                (source,),
+            ) as cur:
+                row = await cur.fetchone()
+                if row and row[0] is not None:
+                    return allocated + float(row[0])
+    except Exception as e:
+        logger.warning("division_equity_query_failed source=%s error=%s",
+                       source, str(e))
+    return allocated
+
+
 async def nifty_bankroll(db_path: str) -> float:
     """
     [NIFTY-BANKROLL 2026-06-24] Strict-separation Nifty-subsystem balance.
@@ -217,7 +276,11 @@ async def record_trade_close(db_path: str, ticker: str, pnl: float,
     Making it required turns "forgot to attribute" into a TypeError at import
     time rather than a wrong number in a report months later.
     """
-    before = await bankroll_for_source(db_path, source)
+    # [POOL-TRUTH 2026-07-31] Book against the division's OWN allocation, not
+    # against the swing pool. See DIVISION_ALLOCATION above -- this is what
+    # made FNO_PAPER's ledger balance read -11,008 while it was sizing every
+    # trade off 250,000.
+    before = await division_equity(db_path, source)
     after = before + pnl
     async with aiosqlite.connect(db_path) as db:
         await db.execute(

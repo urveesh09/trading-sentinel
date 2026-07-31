@@ -237,15 +237,27 @@ async def update_daily_positions(db_path: str, kite_client, current_date_str: st
         stop_hit   = today_low  <= trailing_stop
         target2_hit = today_high >= effective_target_2 if effective_target_2 is not None else False
         target1_hit = today_high >= pos['target_1']
+        # [GAP-THROUGH 2026-07-31] Fill at a price the market actually traded.
+        # This branch used to book `exit_price = trailing_stop` unconditionally,
+        # i.e. it assumed a stop order always fills exactly at its trigger. When
+        # a stock gaps through the stop, that price never existed. 2026-07-30
+        # SIGMA: stop 50.30, the bar OPENED at 48.00 and the day's low was
+        # 47.20, yet both EDGE legs were booked out at exactly 50.304 -- a
+        # 6.4% better exit than the close, on a fill that could not have
+        # happened (Zerodha had in fact rejected the stop order outright).
+        # penny_edge_engine.simulate_position has clamped to the open since
+        # ROADMAP-3.3; position_tracker never got the same treatment.
+        # Symmetric on the target side: a gap-up above the target fills at the
+        # open, which is better than the limit, so max() there.
         if stop_hit and not (target2_hit or target1_hit):
             status = "STOPPED_OUT"
-            exit_price = trailing_stop
+            exit_price = min(trailing_stop, today_open)
         elif target2_hit:
             status = "CLOSED_T2"
-            exit_price = effective_target_2
+            exit_price = max(effective_target_2, today_open)
         elif target1_hit and current_status == "OPEN":
             status = "CLOSED_T1"
-            exit_price = pos['target_1']
+            exit_price = max(pos['target_1'], today_open)
             hit_t1_today = True
         elif days_held >= 15:
             status = "CLOSED_TIME"

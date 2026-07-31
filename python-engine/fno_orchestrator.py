@@ -56,11 +56,47 @@ def _now_min(now_ist: datetime) -> int:
 
 
 def _fno_pool_paper() -> float:
+    """Static allocation. Prefer `_fno_equity()` -- it adds realised P&L."""
     return float(settings.FNO_PAPER_BANKROLL)
 
 
 def _fno_pool_live() -> float:
+    """Static allocation. Prefer `_fno_equity()` -- it adds realised P&L."""
     return float(settings.FNO_LIVE_BANKROLL)
+
+
+# A book that has surrendered this share of its pool stops trading. The
+# directional F&O leg ran 2W/10L to -15,474 without anything noticing,
+# because sizing read a constant and the ledger was posting the damage
+# against an unrelated pool.
+FNO_MAX_DRAWDOWN_PCT = 0.25
+
+
+async def _fno_equity(db_path: str, source: str) -> float:
+    """[POOL-TRUTH 2026-07-31] Live F&O equity: allocation + realised P&L."""
+    from performance import division_equity
+    return await division_equity(db_path, source)
+
+
+def _fno_halted(equity: float, allocation: float, source: str) -> bool:
+    """True when a leg has drawn down past its limit or gone non-positive."""
+    if allocation <= 0:
+        return False
+    if equity <= 0:
+        logger.critical(
+            "fno_leg_halted source=%s equity=%.2f -- NON-POSITIVE equity",
+            source, equity,
+        )
+        return True
+    if equity < allocation * (1.0 - FNO_MAX_DRAWDOWN_PCT):
+        logger.critical(
+            "fno_leg_halted source=%s equity=%.2f allocation=%.2f "
+            "drawdown=%.1f%% limit=%.0f%%",
+            source, equity, allocation,
+            (1 - equity / allocation) * 100, FNO_MAX_DRAWDOWN_PCT * 100,
+        )
+        return True
+    return False
 
 
 async def _fetch_futures_bars(kite, fut_token: int, now_ist: datetime):
@@ -396,6 +432,50 @@ async def _try_entry_for_leg(
         await _log(False, reject_ml, **contract_fields, lots=lots, max_loss_rupees=ml)
         return None
 
+    # [NAKED-LEG-EXPECTANCY 2026-07-31] A long option is only a trade if its
+    # payoff at target beats its loss at stop AFTER the spread. Measured on the
+    # premium, this book's geometry was upside down and its record says so:
+    # 12 naked legs, 2 winners, -Rs 15,474 since 2026-07-16. The defined-risk
+    # spreads over the same period ran ~flat on a 1.7:1 structure.
+    #
+    # Two things invert it. First the premium backstop: risk is
+    # min(delta-implied loss at the underlying stop, FNO_STOP_PREMIUM_PCT of
+    # premium), so a -25% backstop can cap the loss BELOW the stop distance --
+    # which sounds protective but means the position is stopped by decay rather
+    # than by the thesis being wrong. Second the spread, paid twice, on an
+    # instrument whose whole edge is a fraction of one underlying point.
+    #
+    # 2026-07-30 is the worked example: risk ~Rs 3,503 against a reward of
+    # ~Rs 2,717 -- 0.78:1 before costs, i.e. negative expectancy at ANY win
+    # rate below 56%, on a book running 17%. This gate refuses that trade.
+    # It does not touch the defined-risk book, which trades earlier in the tick.
+    entry_u = float(snap.forward)
+    stop_pts = abs(entry_u - float(sig.stop_underlying))
+    target_pts = abs(float(sig.target_underlying) - entry_u)
+    abs_delta = abs(float(delta_val)) or 0.0
+    # Premium moves ~delta per underlying point over a short intraday hold.
+    reward_rs = abs_delta * target_pts * (lots * lot_size)
+    risk_prem_pts = min(abs_delta * stop_pts, ask * settings.FNO_STOP_PREMIUM_PCT)
+    risk_rs = risk_prem_pts * (lots * lot_size)
+    # Round-trip spread, paid on entry and exit.
+    spread_rs = (quote.spread_pct or 0.0) * ask * (lots * lot_size)
+    net_reward = reward_rs - spread_rs
+    net_risk = risk_rs + spread_rs
+    rr = (net_reward / net_risk) if net_risk > 0 else 0.0
+    if rr < settings.FNO_MIN_REWARD_RISK:
+        await _log(
+            False, "reward_risk_below_min", **contract_fields,
+            lots=lots, max_loss_rupees=ml,
+        )
+        logger.info(
+            "fno_entry_skip source=%s reason=reward_risk_below_min symbol=%s "
+            "rr=%.2f min=%.2f reward=%.0f risk=%.0f spread=%.0f "
+            "stop_pts=%.1f target_pts=%.1f delta=%.2f",
+            source, contract.tradingsymbol, rr, settings.FNO_MIN_REWARD_RISK,
+            net_reward, net_risk, spread_rs, stop_pts, target_pts, abs_delta,
+        )
+        return None
+
     qty = lots * lot_size
     result = await executor.execute_entry(contract.tradingsymbol, qty, ask)
     if result["status"] not in ("paper", "filled"):
@@ -601,12 +681,15 @@ async def run_fno_tick(
         return summary
 
     if not settings.FNO_DISABLE_PAPER:
-        if await fpos.already_entered_bar(db_path, FnoSource.FNO_PAPER.value, sig.bar_ts):
+        paper_equity = await _fno_equity(db_path, FnoSource.FNO_PAPER.value)
+        if _fno_halted(paper_equity, _fno_pool_paper(), FnoSource.FNO_PAPER.value):
+            logger.info("fno_entry_skip source=FNO_PAPER reason=drawdown_halt")
+        elif await fpos.already_entered_bar(db_path, FnoSource.FNO_PAPER.value, sig.bar_ts):
             logger.info("fno_entry_skip source=FNO_PAPER reason=bar_already_entered")
         else:
             try:
                 entry = await _try_entry_for_leg(
-                    kite, db_path, FnoSource.FNO_PAPER.value, _fno_pool_paper(),
+                    kite, db_path, FnoSource.FNO_PAPER.value, paper_equity,
                     paper_exec, sig, snap, regime, now_ist, scan_id, is_trading_day,
                 )
                 if entry:
@@ -620,14 +703,17 @@ async def run_fno_tick(
         # switch is on.
         from fno_risk import fno_go_live_check
         unmet = await fno_go_live_check(db_path)
+        live_equity = await _fno_equity(db_path, FnoSource.FNO_LIVE.value)
         if unmet:
             logger.warning("fno_live_leg_refused_to_arm unmet=%s", unmet)
+        elif _fno_halted(live_equity, _fno_pool_live(), FnoSource.FNO_LIVE.value):
+            logger.info("fno_entry_skip source=FNO_LIVE reason=drawdown_halt")
         elif await fpos.already_entered_bar(db_path, FnoSource.FNO_LIVE.value, sig.bar_ts):
             logger.info("fno_entry_skip source=FNO_LIVE reason=bar_already_entered")
         else:
             try:
                 entry = await _try_entry_for_leg(
-                    kite, db_path, FnoSource.FNO_LIVE.value, _fno_pool_live(),
+                    kite, db_path, FnoSource.FNO_LIVE.value, live_equity,
                     live_exec, sig, snap, regime, now_ist, scan_id, is_trading_day,
                 )
                 if entry:

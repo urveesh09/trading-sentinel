@@ -269,6 +269,10 @@ const _retrySignalAlertInBackground = async (signal) => {
           { event_type: 'telegram_send_error', err, ticker: signal.ticker, attempts: ALERT_RETRY_DELAYS_MS.length + 1 },
           'Failed to send signal alert after all retries'
         );
+        // A dropped EXEC alert is a trade the operator was never offered.
+        recordUndeliveredAlert(
+          `[SIGNAL ${signal.ticker}] ${JSON.stringify(signal).slice(0, 800)}`, err
+        );
       } else {
         logger.warn(
           { event_type: 'telegram_signal_retry_failed', attempt: i + 2, ticker: signal.ticker, message: err.message },
@@ -306,6 +310,52 @@ const sendSignalAlert = async (signal) => {
 // acceptable for operator alerts; a dropped watchdog alarm is not.
 const ALERT_RETRY_DELAYS_MS = [5_000, 15_000, 45_000];
 
+// [ALERT-DEADLETTER 2026-07-31] Retries are not enough on their own.
+// On 2026-07-28 a momentum EXEC alert exhausted all three retries at 14:19
+// IST and was simply gone -- the only trace was one ERROR line in a container
+// log that, thanks to gzip rotation, later became unreadable. The operator had
+// no way to know an alert had been addressed to them at all.
+//
+// Telegram is exactly the channel that is broken when this fires, so the
+// escalation cannot be another Telegram message. Append the undelivered text
+// to a JSONL dead-letter on the shared /data volume: it survives a container
+// restart, it is greppable, and /api/health reports the backlog so the
+// watchdog can see a silent alert path instead of inferring one.
+const fs = require('fs');
+const path = require('path');
+const DEAD_LETTER_PATH = process.env.ALERT_DEAD_LETTER_PATH
+  || path.join('/data', 'undelivered_alerts.jsonl');
+
+const recordUndeliveredAlert = (message, err) => {
+  const row = {
+    ts: new Date().toISOString(),
+    message: String(message).slice(0, 2000),
+    error: err && err.message ? err.message : String(err),
+  };
+  try {
+    fs.appendFileSync(DEAD_LETTER_PATH, JSON.stringify(row) + '\n');
+    logger.error(
+      { event_type: 'telegram_alert_dead_lettered', path: DEAD_LETTER_PATH },
+      'Alert undeliverable after all retries; written to the dead-letter file'
+    );
+  } catch (writeErr) {
+    // Last resort: the log line IS the record.
+    logger.error(
+      { event_type: 'telegram_dead_letter_write_failed', err: writeErr.message, undelivered: row },
+      'Alert undeliverable AND the dead-letter write failed'
+    );
+  }
+};
+
+const undeliveredAlertCount = () => {
+  try {
+    const raw = fs.readFileSync(DEAD_LETTER_PATH, 'utf8');
+    return raw.split('\n').filter(Boolean).length;
+  } catch (_) {
+    return 0;   // no file = nothing undelivered
+  }
+};
+
 const _retryAlertInBackground = async (message) => {
   for (let i = 0; i < ALERT_RETRY_DELAYS_MS.length; i++) {
     // unref: a pending retry must not hold the process open on shutdown
@@ -324,6 +374,7 @@ const _retryAlertInBackground = async (message) => {
           { event_type: 'telegram_send_error', err, attempts: ALERT_RETRY_DELAYS_MS.length + 1 },
           'Failed to send alert after all retries'
         );
+        recordUndeliveredAlert(message, err);
       } else {
         logger.warn(
           { event_type: 'telegram_send_retry_failed', attempt: i + 2, message: err.message },
@@ -353,6 +404,10 @@ module.exports = {
   bot,
   isValidChat,
   sendSignalAlert,
-  sendAlert
+  sendAlert,
+  // [ALERT-DEADLETTER 2026-07-31] Surfaced on /api/health so a silent alert
+  // path is observable rather than inferred.
+  undeliveredAlertCount,
+  DEAD_LETTER_PATH
 };
 

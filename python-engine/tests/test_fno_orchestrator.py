@@ -382,3 +382,97 @@ async def test_executor_paper_fills_at_ask_and_bid():
     assert exit_["status"] == "paper"
     assert exit_["fill_price"] == 99.1
     assert exit_["order_id"].startswith("PAPER-FNO-EXT-")
+
+
+# ---------------------------------------------------------------------------
+# [NAKED-LEG-EXPECTANCY 2026-07-31] Reward:risk gate on the single-leg book
+# ---------------------------------------------------------------------------
+# 12 naked legs since 2026-07-16: 2 winners, -Rs 15,474. The defined-risk
+# spreads over the same window ran ~flat on a 1.7:1 structure. The geometry is
+# what differs, so the gate encodes the geometry.
+
+def _rr(*, delta, stop_pts, target_pts, premium, spread_pct, qty,
+        stop_premium_pct):
+    """Mirror of the orchestrator's reward:risk arithmetic, so the numbers a
+    production reject is based on are pinned by a test."""
+    reward = delta * target_pts * qty
+    risk = min(delta * stop_pts, premium * stop_premium_pct) * qty
+    spread = spread_pct * premium * qty
+    return (reward - spread) / (risk + spread)
+
+
+def test_the_2026_07_30_naked_leg_would_now_be_refused():
+    """The real trade, with the levels production actually logged.
+
+    NIFTY2680424350CE, 2 lots, fill 101.30, delta 0.55,
+    entry_underlying 24375.2, stop_u 24333.2, target_u 24413.0.
+
+    Note the asymmetry, and where it comes from: the engine anchors stop and
+    target to the SIGNAL BAR's close (24365.1, r=31.9 -> 1.5R target), but the
+    position filled 10 points higher at 24375.2. Measured from the price we
+    actually paid, that 1.5:1 geometry had already become 37.8 points of
+    reward against 42 points of risk -- 0.9:1 before the option's own drag.
+    The gate therefore measures from the ENTRY underlying, not from the signal
+    close, which is the whole reason it catches this trade."""
+    from config import settings
+    entry_u, stop_u, target_u = 24375.2, 24333.2, 24413.0
+    rr = _rr(
+        delta=0.55,
+        stop_pts=abs(entry_u - stop_u),
+        target_pts=abs(target_u - entry_u),
+        premium=101.30, spread_pct=0.01, qty=130,
+        stop_premium_pct=settings.FNO_STOP_PREMIUM_PCT,
+    )
+    assert rr < 1.0, f"expected a losing geometry, got rr={rr:.2f}"
+    assert rr < settings.FNO_MIN_REWARD_RISK, (
+        f"the trade that lost Rs 3,570 still passes the gate (rr={rr:.2f})"
+    )
+
+
+def test_entry_slippage_against_a_fixed_target_degrades_the_ratio():
+    """Why the gate is anchored to the entry price.
+
+    Same signal geometry, but the fill lands progressively further above the
+    signal close. Stop and target are absolute levels, so every point of
+    adverse slippage widens the risk and narrows the reward at once."""
+    from config import settings
+    signal_close, r_points = 24365.1, 31.9
+    stop_u = signal_close - r_points
+    target_u = signal_close + 1.5 * r_points
+    ratios = []
+    for slip in (0.0, 5.0, 10.0):
+        entry_u = signal_close + slip
+        ratios.append(_rr(
+            delta=0.55,
+            stop_pts=abs(entry_u - stop_u),
+            target_pts=abs(target_u - entry_u),
+            premium=101.30, spread_pct=0.01, qty=130,
+            stop_premium_pct=settings.FNO_STOP_PREMIUM_PCT,
+        ))
+    assert ratios == sorted(ratios, reverse=True), ratios
+    assert ratios[0] > settings.FNO_MIN_REWARD_RISK   # clean fill is tradeable
+    assert ratios[-1] < settings.FNO_MIN_REWARD_RISK  # 10 pts of slip is not
+
+
+def test_a_wide_target_with_a_tight_spread_still_passes():
+    """The gate must not close the book entirely -- a genuinely favourable
+    geometry (wide target, liquid strike) has to remain tradeable."""
+    from config import settings
+    rr = _rr(
+        delta=0.55, stop_pts=30.0, target_pts=settings.FNO_TARGET_R * 30.0,
+        premium=60.0, spread_pct=0.002, qty=130,
+        stop_premium_pct=settings.FNO_STOP_PREMIUM_PCT,
+    )
+    assert rr >= settings.FNO_MIN_REWARD_RISK, (
+        f"gate is too tight -- no naked leg could ever fire (rr={rr:.2f})"
+    )
+
+
+def test_spread_cost_is_charged_on_both_sides():
+    """A wide bid-ask must degrade the ratio; it is paid entering and exiting."""
+    from config import settings
+    kw = dict(delta=0.55, stop_pts=30.0,
+              target_pts=settings.FNO_TARGET_R * 30.0,
+              premium=60.0, qty=130,
+              stop_premium_pct=settings.FNO_STOP_PREMIUM_PCT)
+    assert _rr(spread_pct=0.002, **kw) > _rr(spread_pct=0.02, **kw)

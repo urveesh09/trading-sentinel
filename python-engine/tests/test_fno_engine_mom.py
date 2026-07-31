@@ -14,6 +14,7 @@ import pandas as pd
 import pytest
 import pytz
 
+from config import settings
 from fno_engine_mom import evaluate_fno_mom, wilder_atr
 from fno_models import FnoDirection
 
@@ -84,7 +85,11 @@ def test_long_breakout_witness_accepts():
     # tightest stop wins: volatility stop (close - 1.5*ATR) beats OR_low
     assert sig.stop_underlying == pytest.approx(25100.0 - 1.5 * sig.atr)
     r = sig.close - sig.stop_underlying
-    assert sig.target_underlying == pytest.approx(sig.close + 1.5 * r)
+    # [NAKED-LEG-EXPECTANCY 2026-07-31] Target multiple is configurable
+    # (moved 1.5 -> 1.8); assert the relationship, not the literal.
+    assert sig.target_underlying == pytest.approx(
+        sig.close + settings.FNO_TARGET_R * r
+    )
 
 
 def test_short_breakout_witness_accepts():
@@ -94,7 +99,9 @@ def test_short_breakout_witness_accepts():
     assert sig.ema_fast < sig.ema_slow
     assert sig.stop_underlying == pytest.approx(24900.0 + 1.5 * sig.atr)
     r = sig.stop_underlying - sig.close
-    assert sig.target_underlying == pytest.approx(sig.close - 1.5 * r)
+    assert sig.target_underlying == pytest.approx(
+        sig.close - settings.FNO_TARGET_R * r
+    )
 
 
 # ---------------------------------------------------------------------------

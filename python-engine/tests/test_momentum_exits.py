@@ -76,16 +76,55 @@ def test_trail_only_ever_ratchets_up():
 
 
 def test_time_stop_cuts_a_trade_going_nowhere():
-    # 60 min in, still at +0.1R. Failed thesis -> cut, don't ride it to 15:15.
-    stale = _pos(entry_date=(NOW - timedelta(minutes=60)).isoformat())
+    # 95 min in, still at +0.1R -- below the +0.25R survival bar. Cut it.
+    stale = _pos(entry_date=(NOW - timedelta(minutes=95)).isoformat())
     d = evaluate_momentum_exit(stale, ltp=100.5, now=NOW)
     assert d["action"] == ACTION_EXIT
     assert d["reason"].startswith("time_stop_")
 
 
+def test_fast_time_stop_cuts_an_already_negative_trade():
+    """[TIME-STOP-V2 2026-07-31] Tier one: a trade that has gone NEGATIVE has
+    falsified its thesis and should not be held for the full slow window."""
+    losing = _pos(entry_date=(NOW - timedelta(minutes=30)).isoformat())
+    d = evaluate_momentum_exit(losing, ltp=98.5, now=NOW)   # -0.3R
+    assert d["action"] == ACTION_EXIT
+    assert d["reason"].startswith("time_stop_fast_")
+
+
+def test_a_working_trade_is_given_real_runway():
+    """[TIME-STOP-V2 2026-07-31] The change that matters most.
+
+    The old single 45-min / +0.5R rule fired on 8 of 8 live trades between
+    27-30 Jul, every one landing between -0.71R and +0.49R -- a 2R target on a
+    ~1% stop needs a ~2% move, and 45 minutes does not supply it, so the rule
+    guaranteed a ~0R exit minus costs. A trade that is positive at 60 minutes
+    must now be allowed to keep working."""
+    working = _pos(entry_date=(NOW - timedelta(minutes=60)).isoformat())
+    d = evaluate_momentum_exit(working, ltp=100.5, now=NOW)   # +0.1R
+    assert d["action"] != ACTION_EXIT
+
+
+def test_time_stop_window_shortens_in_elevated_regime():
+    """Chop gets less runway than a trend -- 90 min * 0.67 = ~60 min."""
+    stale = _pos(
+        entry_date=(NOW - timedelta(minutes=65)).isoformat(),
+        regime_at_entry="REGIME_2_ELEVATED",
+    )
+    d = evaluate_momentum_exit(stale, ltp=100.5, now=NOW)   # +0.1R
+    assert d["action"] == ACTION_EXIT
+    assert d["reason"].startswith("time_stop_")
+    # The same trade in a normal regime still has runway left.
+    calm = _pos(
+        entry_date=(NOW - timedelta(minutes=65)).isoformat(),
+        regime_at_entry="REGIME_1_NORMAL",
+    )
+    assert evaluate_momentum_exit(calm, ltp=100.5, now=NOW)["action"] != ACTION_EXIT
+
+
 def test_time_stop_never_cuts_a_runner():
-    # Same 60 min, but the trade is at +1R. A winner is never cut on the clock.
-    runner = _pos(entry_date=(NOW - timedelta(minutes=60)).isoformat())
+    # 95 min, but the trade is at +1R. A winner is never cut on the clock.
+    runner = _pos(entry_date=(NOW - timedelta(minutes=95)).isoformat())
     d = evaluate_momentum_exit(runner, ltp=105.0, now=NOW)
     assert d["action"] != ACTION_EXIT
 

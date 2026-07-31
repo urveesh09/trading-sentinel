@@ -4,6 +4,7 @@ const config = require('../config');
 const tokenStore = require('../services/token-store');
 const { isMarketOpen } = require('../utils/market-hours');
 const { signalsDb } = require('../db/index');
+const { undeliveredAlertCount } = require('../services/telegram');
 
 router.get('/', async (req, res) => {
   const uptime = Math.floor(process.uptime());
@@ -57,11 +58,24 @@ router.get('/', async (req, res) => {
     // Handle DB query failure gracefully
   }
 
+  // [ALERT-DEADLETTER 2026-07-31] Alerts that exhausted every retry. On
+  // 2026-07-28 a momentum EXEC alert died after 3 retries and the only trace
+  // was one log line. Telegram is the broken channel when this happens, so the
+  // backlog is surfaced here instead -- a non-zero count means the operator has
+  // been told something they never received.
+  let undeliveredAlerts = 0;
+  try {
+    undeliveredAlerts = undeliveredAlertCount();
+  } catch (err) {
+    // Never let a health probe fail on a bookkeeping read.
+  }
+
   // Determine overall status
   let overallStatus = 'ok';
   if (tokenInfo.status === 'expired' && marketOpen) {
     overallStatus = 'critical';
-  } else if (pythonEngineStatus === 'unreachable' || unsyncedOrders > 0) {
+  } else if (pythonEngineStatus === 'unreachable' || unsyncedOrders > 0
+             || undeliveredAlerts > 0) {
     overallStatus = 'degraded';
   }
 
@@ -80,6 +94,7 @@ router.get('/', async (req, res) => {
     last_order_ticker: lastOrderTicker,
     pending_signals: pendingSignals,
     unsynced_orders: unsyncedOrders,
+    undelivered_alerts: undeliveredAlerts,
     timestamp: new Date().toISOString()
   });
 });

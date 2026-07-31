@@ -248,7 +248,8 @@ async def _seed_signals(db_path):
         await db.execute(
             """CREATE TABLE fno_signals (
                 scan_id TEXT, bar_ts TEXT,
-                accepted INTEGER, reject_reason TEXT)"""
+                accepted INTEGER, reject_reason TEXT,
+                tradingsymbol TEXT)"""
         )
         # 2026-07-08 IST spans 2026-07-07T18:30Z .. 2026-07-08T18:30Z.
         await db.executemany(
@@ -270,11 +271,11 @@ async def _seed_signals(db_path):
             ],
         )
         await db.executemany(
-            "INSERT INTO fno_signals VALUES (?, ?, ?, ?)",
+            "INSERT INTO fno_signals VALUES (?, ?, ?, ?, ?)",
             [
-                ("f1", "2026-07-08T10:15:00", 0, "pool_below_min_viable"),
-                ("f1", "2026-07-08T10:30:00", 1, ""),
-                ("f2", "2026-07-09T10:15:00", 0, "pool_below_min_viable"),
+                ("f1", "2026-07-08T10:15:00", 0, "pool_below_min_viable", "NIFTY24000CE"),
+                ("f1", "2026-07-08T10:30:00", 1, "", "NIFTY24000CE"),
+                ("f2", "2026-07-09T10:15:00", 0, "pool_below_min_viable", "NIFTY24000CE"),
             ],
         )
         await db.commit()
@@ -394,3 +395,82 @@ async def test_ops_metrics_endpoint_requires_secret(db_path, monkeypatch):
         body = resp.json()
         assert "liveness" in body and "funnel" in body
         assert body["liveness"]["market_gap_clean"] is False  # empty window
+
+
+class TestFunnelCountsDistinctSignals:
+    """[FUNNEL-DISTINCT 2026-07-31] 2026-07-29 reported penny accepted=25.
+
+    It was ONE ticker (KCPSUGIND) re-accepted by the 30-second scan loop for
+    14 minutes. All 25 order attempts were rejected by the broker and none
+    became a position, yet the funnel showed the busiest penny day of the
+    month. `accepted` must count signals, not re-emissions.
+    """
+
+    @pytest.mark.asyncio
+    async def test_one_ticker_reaccepted_all_day_counts_once(self, db_path):
+        await init_ops_metrics_db(db_path)
+        async with aiosqlite.connect(db_path) as db:
+            await db.execute(
+                """CREATE TABLE penny_signals (
+                    scan_id TEXT, scanned_at TEXT, ticker TEXT,
+                    accepted INTEGER, reject_reason TEXT)"""
+            )
+            await db.executemany(
+                "INSERT INTO penny_signals VALUES (?, ?, ?, ?, ?)",
+                # The real shape: 25 accept rows, one ticker, 30s apart.
+                [(f"s{i}", f"2026-07-08T06:{i:02d}:00+00:00", "KCPSUGIND", 1, "")
+                 for i in range(25)]
+                + [("r1", "2026-07-08T06:00:00+00:00", "OTHER", 0, "volume 1 < 2")],
+            )
+            await db.commit()
+        await snapshot_funnels_for_day(db_path, "2026-07-08")
+        rows = {r["subsystem"]: r for r in await funnel_window(db_path, days=365)}
+        penny = rows["penny"]
+        assert penny["accepted"] == 1, "re-emissions inflated the accept count"
+        # evaluated stays a row count -- it measures scanner work.
+        assert penny["evaluated"] == 26
+        # rejected is also a row count, so the two do not sum to evaluated.
+        assert penny["rejected"] == 1
+
+    @pytest.mark.asyncio
+    async def test_distinct_tickers_still_count_separately(self, db_path):
+        await init_ops_metrics_db(db_path)
+        async with aiosqlite.connect(db_path) as db:
+            await db.execute(
+                """CREATE TABLE penny_signals (
+                    scan_id TEXT, scanned_at TEXT, ticker TEXT,
+                    accepted INTEGER, reject_reason TEXT)"""
+            )
+            await db.executemany(
+                "INSERT INTO penny_signals VALUES (?, ?, ?, ?, ?)",
+                [("s1", "2026-07-08T06:00:00+00:00", "AAA", 1, ""),
+                 ("s2", "2026-07-08T06:00:30+00:00", "AAA", 1, ""),
+                 ("s3", "2026-07-08T06:01:00+00:00", "BBB", 1, "")],
+            )
+            await db.commit()
+        await snapshot_funnels_for_day(db_path, "2026-07-08")
+        rows = {r["subsystem"]: r for r in await funnel_window(db_path, days=365)}
+        assert rows["penny"]["accepted"] == 2
+
+    @pytest.mark.asyncio
+    async def test_missing_identity_column_degrades_instead_of_vanishing(self, db_path):
+        """Schema drift must not delete the row -- "never ran" and "could not
+        count" have to stay distinguishable in the time-series."""
+        await init_ops_metrics_db(db_path)
+        async with aiosqlite.connect(db_path) as db:
+            await db.execute(
+                """CREATE TABLE fno_signals (
+                    scan_id TEXT, bar_ts TEXT,
+                    accepted INTEGER, reject_reason TEXT)"""
+            )
+            await db.executemany(
+                "INSERT INTO fno_signals VALUES (?, ?, ?, ?)",
+                [("f1", "2026-07-08T10:15:00", 1, ""),
+                 ("f1", "2026-07-08T10:30:00", 0, "pool_below_min_viable")],
+            )
+            await db.commit()
+        written = await snapshot_funnels_for_day(db_path, "2026-07-08")
+        assert "fno" in written
+        rows = {r["subsystem"]: r for r in await funnel_window(db_path, days=365)}
+        assert rows["fno"]["evaluated"] == 2
+        assert rows["fno"]["accepted"] == 1   # fell back to the row count

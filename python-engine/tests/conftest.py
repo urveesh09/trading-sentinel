@@ -43,7 +43,12 @@ def patch_settings(monkeypatch, tmp_path):
     monkeypatch.setattr(settings, "MAX_MOMENTUM_POSITIONS", 5)
     monkeypatch.setattr(settings, "MOMENTUM_VOL_SURGE_PCT", 2.0)
     monkeypatch.setattr(settings, "MOMENTUM_RISK_PCT", 0.10)
-    monkeypatch.setattr(settings, "MOMENTUM_R_TARGET", 2.0)
+    # [TARGET-REACH 2026-07-31] Track the shipped default (1.6), not the old
+    # 2.0. Pinning 2.0 here made the harness disagree with production: with the
+    # ATR-floored stop, a 2.0R target puts the target 0.7 daily ATRs away, and
+    # the MC5 fuel gate then rejects any entry once ~18% of the day's range is
+    # consumed. Tests that need a specific R target should set it themselves.
+    monkeypatch.setattr(settings, "MOMENTUM_R_TARGET", 1.6)
     monkeypatch.setattr(settings, "MOMENTUM_MAX_COST_RATIO", 0.25)
     monkeypatch.setattr(settings, "MOMENTUM_MIN_CANDLES", 4)
     monkeypatch.setattr(settings, "CONTAINER_A_URL", "http://localhost:9999")

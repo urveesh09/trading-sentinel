@@ -1503,6 +1503,10 @@ async def lifespan(app: FastAPI):
         new_risk = PennyRiskEngine(bankroll=bankroll, ledger_writer=_penny_ledger_writer)
         if _penny_scanner is not None:
             _penny_scanner.risk_engine = new_risk
+        # [RETRY-STORM 2026-07-31] Broker MIS-blocked / ban lists are published
+        # per session, so yesterday's per-ticker entry blocks must not persist.
+        from penny_executor import reset_entry_blocks
+        reset_entry_blocks()
         logger.info("penny_daily_reset bankroll=%s", bankroll)
     scheduler.add_job(_penny_daily_reset, 'cron', hour=0, minute=5, id="penny_daily_reset")
     # [PENNY-MAIN 2026-06-21] 7 penny subsystem scheduler jobs.

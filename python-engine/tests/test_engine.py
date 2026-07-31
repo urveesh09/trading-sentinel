@@ -7,6 +7,7 @@ import pytest
 import pandas as pd
 import numpy as np
 import math
+from config import settings
 from engine import (
     calc_ema,
     calc_atr,
@@ -609,15 +610,25 @@ class TestEvaluateMomentumSignal:
         )
         assert fired is False
 
-    def test_mr1_stop_loss_is_breakout_low(self, fake_momentum_candles):
-        """[MR1] Stop loss = low of last candle."""
+    def test_mr1_stop_loss_is_breakout_low_or_the_floor(self, fake_momentum_candles):
+        """[MR1] Stop loss = low of last candle, unless a floor widens it.
+
+        [STOP-NOISE 2026-07-31] The stop is now min(candle low, pct floor,
+        ATR floor) -- whichever is WIDEST for a long. A one-minute candle low
+        is frequently inside the noise (0.52-1.16% on the 27-30 Jul live
+        trades, none of which were ever hit), and because sizing divides the
+        risk budget by the stop distance, the tightest stops produced the
+        largest positions and the worst cost drag. So the invariant under test
+        is "never TIGHTER than the candle low", not "exactly the candle low"."""
+        from config import settings
         fired, result = evaluate_momentum_signal(
             "TEST", fake_momentum_candles,
             prev_day_high=900.0, bankroll=50000, momentum_pool=10000
         )
         if fired:
-            expected_sl = round(fake_momentum_candles["low"].iloc[-1], 2)
-            assert result["stop_loss"] == expected_sl
+            raw_low = round(fake_momentum_candles["low"].iloc[-1], 2)
+            assert result["stop_loss"] <= raw_low
+            assert result["stop_pct"] >= settings.MOMENTUM_MIN_STOP_PCT - 1e-9
 
     def test_mr3_product_type_mis_below_5000(self):
         """[MR3] Position value < 5000 -> MIS."""
@@ -1166,7 +1177,12 @@ class TestMC6MorphologyGate:
 
 
 class TestMR2RegimeRTarget:
-    """MR2: R target is reduced in BEAR_RS_ONLY regime."""
+    """MR2: R target is reduced in BEAR_RS_ONLY regime.
+
+    [TARGET-REACH 2026-07-31] These assert against the configured R targets
+    rather than literals, so the ladder can be retuned without rewriting the
+    tests that check WHICH setting each regime consults.
+    """
 
     def _make_passing_df(self) -> pd.DataFrame:
         """
@@ -1186,8 +1202,8 @@ class TestMR2RegimeRTarget:
             "volume": [avg_vol] * (n - 1) + [int(avg_vol * 2.5)],
         }, index=ts)
 
-    def test_bull_regime_uses_2R_target(self):
-        """BULL regime: target should be 2.0R above entry."""
+    def test_bull_regime_uses_default_r_target(self):
+        """BULL regime: target sits MOMENTUM_R_TARGET above entry."""
         df = self._make_passing_df()
         fired, info = evaluate_momentum_signal(
             "TEST", df, prev_day_high=90.0, bankroll=10000.0, momentum_pool=5000.0,
@@ -1195,13 +1211,18 @@ class TestMR2RegimeRTarget:
         )
         if fired and "target" in info and "entry_price" in info and "stop_loss" in info:
             r_dist = info["entry_price"] - info["stop_loss"]
-            expected_target = info["entry_price"] + 2.0 * r_dist
+            expected_target = (
+                info["entry_price"] + settings.MOMENTUM_R_TARGET * r_dist
+            )
             assert info["target"] == pytest.approx(expected_target, abs=0.01), (
                 f"BULL target wrong: {info}"
             )
 
-    def test_bear_regime_uses_15R_target(self):
-        """BEAR_RS_ONLY regime: target should be 1.5R above entry."""
+    def test_bear_regime_uses_bear_r_target(self):
+        """BEAR_RS_ONLY regime: target sits MOMENTUM_R_TARGET_BEAR above entry.
+
+        [TARGET-REACH 2026-07-31] The constant moved 1.5 -> 1.3 alongside the
+        ATR-floored stop; assert against the setting, not a literal."""
         df = self._make_passing_df()
         fired, info = evaluate_momentum_signal(
             "TEST", df, prev_day_high=90.0, bankroll=10000.0, momentum_pool=5000.0,
@@ -1209,7 +1230,7 @@ class TestMR2RegimeRTarget:
         )
         if fired and "target" in info and "entry_price" in info and "stop_loss" in info:
             r_dist = info["entry_price"] - info["stop_loss"]
-            expected_target = info["entry_price"] + 1.5 * r_dist
+            expected_target = info["entry_price"] + settings.MOMENTUM_R_TARGET_BEAR * r_dist
             assert info["target"] == pytest.approx(expected_target, abs=0.01), (
                 f"BEAR_RS_ONLY target wrong: {info}"
             )
@@ -1239,19 +1260,19 @@ class TestMR2RegimeRTarget:
             assert "effective_r_target" in info, (
                 f"effective_r_target missing from result: {info}"
             )
-            assert info["effective_r_target"] == 2.0
+            assert info["effective_r_target"] == settings.MOMENTUM_R_TARGET
 
-    def test_bear_effective_r_target_is_15(self):
-        """In BEAR_RS_ONLY, effective_r_target must be 1.5 in result dict."""
+    def test_bear_effective_r_target_matches_setting(self):
+        """In BEAR_RS_ONLY, effective_r_target must equal MOMENTUM_R_TARGET_BEAR."""
         df = self._make_passing_df()
         fired, info = evaluate_momentum_signal(
             "TEST", df, prev_day_high=90.0, bankroll=10000.0, momentum_pool=5000.0,
             market_regime="BEAR_RS_ONLY",
         )
         if fired:
-            assert info.get("effective_r_target") == pytest.approx(1.5, abs=0.001), (
-                f"expected effective_r_target=1.5 in BEAR mode, got: {info}"
-            )
+            assert info.get("effective_r_target") == pytest.approx(
+                settings.MOMENTUM_R_TARGET_BEAR, abs=0.001
+            ), f"expected BEAR effective_r_target, got: {info}"
 
 
 # ===============================================================

@@ -899,9 +899,32 @@ def evaluate_momentum_signal(
     # risk_per_share -- made the tightest stops produce the biggest positions.
     # Take whichever stop is WIDER (lower, for a long): the candle low or the floor.
     # Mirrors the swing path, which has always done `max(atr_stop, pct_stop)`.
+    #
+    # [STOP-NOISE 2026-07-31] The percentage floor alone was still inside the
+    # noise. Add an ATR-proportional floor: the stop must sit at least
+    # MOMENTUM_MIN_STOP_ATR_MULT daily ATRs below entry. Between 27-30 Jul the
+    # live book ran 0.52-1.16% stops and exited 8 of 8 trades on the clock
+    # between -0.71R and +0.49R -- the stop was never hit and the R-multiple
+    # measured nothing. The ATR floor also shrinks share count at constant
+    # rupee risk, which is the direct lever on cost drag (those 8 trades:
+    # gross -Rs 0.35, costs Rs 17.90).
     breakout_candle_low = df['low'].iloc[-1]
-    floor_stop = current_close * (1.0 - settings.MOMENTUM_MIN_STOP_PCT)
-    stop_loss = min(float(breakout_candle_low), float(floor_stop))
+    pct_floor_stop = current_close * (1.0 - settings.MOMENTUM_MIN_STOP_PCT)
+
+    daily_atr_val: Optional[float] = None
+    if df_daily is not None and len(df_daily) >= 14:
+        _atr = float(calc_atr(df_daily["high"], df_daily["low"], df_daily["close"]).iloc[-1])
+        if _atr > 0:
+            daily_atr_val = _atr
+
+    stop_candidates = [float(breakout_candle_low), float(pct_floor_stop)]
+    if daily_atr_val:
+        stop_candidates.append(
+            float(current_close - settings.MOMENTUM_MIN_STOP_ATR_MULT * daily_atr_val)
+        )
+    # Widest (lowest, for a long) wins -- same shape as the swing path's
+    # max(atr_stop, pct_stop).
+    stop_loss = min(stop_candidates)
     stop_floored = stop_loss < float(breakout_candle_low)
 
     risk_per_share = current_close - stop_loss
@@ -964,11 +987,12 @@ def evaluate_momentum_signal(
     # it is what the Chandelier trail sizes off once the position is open. Stays
     # None when df_daily is short -- never 0.0, which collapses the trail onto the
     # entry price.
+    # [STOP-NOISE 2026-07-31] daily_atr_val is computed once, above, where the
+    # stop floor needs it; reuse it here rather than recomputing.
     atr_at_entry: Optional[float] = None
-    if df_daily is not None and len(df_daily) >= 14:
-        daily_atr_val: float = float(calc_atr(df_daily["high"], df_daily["low"], df_daily["close"]).iloc[-1])
-        if daily_atr_val > 0:
-            atr_at_entry = daily_atr_val
+    if daily_atr_val:
+        atr_at_entry = daily_atr_val
+    if df_daily is not None and len(df_daily) >= 14 and daily_atr_val:
         intraday_consumed: float = float(intraday_high - intraday_low)
         remaining_fuel: float = max(0.0, daily_atr_val - intraday_consumed)
         r_distance_atr: float = float(current_close - stop_loss)
@@ -1003,6 +1027,27 @@ def evaluate_momentum_signal(
     if not viable:
         return False, {"reject_reason": "cost_not_viable", "cost_ratio": cost_ratio}
 
+    # [COST-PER-R 2026-07-31] is_cost_viable above measures cost against profit
+    # AT TARGET -- it assumes the 2R exit that 0 of 8 live trades (27-30 Jul)
+    # ever reached. Price the cost against 1R instead: that is the risk actually
+    # being underwritten, and it is the unit the realised exits cluster around.
+    # On those 8 trades cost ran 10-23% of 1R, which is why a book with a gross
+    # P&L of MINUS Rs 0.35 lost Rs 18.25 net. A trade that cannot pay its own
+    # round trip out of one unit of risk is not a trade.
+    round_trip_cost = calc_zerodha_costs(
+        current_close, current_close + risk_per_share, shares,
+        is_intraday=True, for_gate=False,
+    )
+    cost_per_r = round_trip_cost / actual_risk if actual_risk > 0 else 1.0
+    if cost_per_r > settings.MOMENTUM_MAX_COST_PER_R:
+        return False, {
+            "reject_reason": "cost_per_r_too_high",
+            "cost_per_r": round(cost_per_r, 4),
+            "max_cost_per_r": settings.MOMENTUM_MAX_COST_PER_R,
+            "round_trip_cost": round(round_trip_cost, 2),
+            "actual_risk": round(actual_risk, 2),
+        }
+
     # Accurate cost for net_ev -- must use effective_r_target to avoid inflated EV in bear mode
     estimated_exit = current_close + (effective_r_target * r_distance)  # [AUDIT-004]
     total_cost = calc_zerodha_costs(
@@ -1025,6 +1070,9 @@ def evaluate_momentum_signal(
         # having to be inferred later.
         "stop_floored":        stop_floored,
         "stop_pct":            round(risk_per_share / current_close, 5),
+        # [COST-PER-R 2026-07-31] Carried so the cost drag that consumed the
+        # entire 27-30 Jul result is visible per-signal, not reconstructed later.
+        "cost_per_r":          round(cost_per_r, 4),
         "target_1":            round(target, 2),
         "target_2":            round(target, 2),   # single target for momentum
         "trailing_stop":       round(stop_loss, 2),

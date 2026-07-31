@@ -69,9 +69,9 @@ def momentum_exit_status(reason: str) -> str:
     (t1_fired=0 yet status=CLOSED_T1). Return a status the open-position
     query excludes.
 
-    Reasons come from evaluate_momentum_exit(): "target_hit" and
-    "time_stop_<n>min_at_<r>R". Broker-side stop fills are closed separately
-    as STOPPED_OUT and never reach here.
+    Reasons come from evaluate_momentum_exit(): "target_hit",
+    "time_stop_<n>min_at_<r>R" and "time_stop_fast_<n>min_at_<r>R". Broker-side
+    stop fills are closed separately as STOPPED_OUT and never reach here.
     """
     if reason == "target_hit":
         return "CLOSED_T2"
@@ -99,6 +99,23 @@ def cost_adjusted_breakeven(entry_price: float, shares: int) -> float:
         entry_price, entry_price, shares, is_intraday=True, for_gate=False
     )
     return entry_price + (costs / shares)
+
+
+def _regime_time_mult(regime_at_entry: Optional[str]) -> float:
+    """Scale the slow time-stop window by the regime the trade was entered in.
+
+    [TIME-STOP-V2 2026-07-31] A trending market gives a momentum trade room to
+    develop; chop does not. Rather than one window for every condition, the
+    runway stretches in calm/normal conditions and shortens as volatility
+    rises -- which is also when holding a losing intraday position costs most.
+    Unknown/NULL regime falls back to the R1 multiplier (the historical
+    behaviour of a single fixed window)."""
+    name = str(regime_at_entry or "")
+    if "REGIME_3" in name or "CRISIS" in name:
+        return float(settings.MOMENTUM_TIME_STOP_R3_MULT)
+    if "REGIME_2" in name or "ELEVATED" in name:
+        return float(settings.MOMENTUM_TIME_STOP_R2_MULT)
+    return float(settings.MOMENTUM_TIME_STOP_R1_MULT)
 
 
 def _elapsed_minutes(entry_date: str, now: datetime) -> Optional[float]:
@@ -151,24 +168,41 @@ def evaluate_momentum_exit(pos: dict, ltp: float, now: datetime) -> dict:
     if target is not None and ltp >= target:
         return {"action": ACTION_EXIT, "reason": "target_hit", "new_stop": None}
 
-    # 2. Time stop -- a momentum trade that has gone nowhere is a failed thesis.
-    #    Only fires while the trade is still below the min-R bar; a runner is
-    #    never cut on the clock.
+    # 2. Time stop -- two-tier, regime-aware. A runner is never cut on the clock.
+    #
+    # [TIME-STOP-V2 2026-07-31] The old single 45-min / +0.5R rule fired on 8 of
+    # 8 live trades (27-30 Jul), every one landing between -0.71R and +0.49R.
+    # It cut failures too late and winners far too early. Tier one cuts a trade
+    # that has already gone negative; tier two gives a merely-flat trade real
+    # runway, scaled by regime, against a bar that is reachable.
     elapsed = _elapsed_minutes(pos.get("entry_date"), now)
-    if (
-        elapsed is not None
-        and elapsed >= settings.MOMENTUM_TIME_STOP_MIN
-        and r_now < settings.MOMENTUM_TIME_STOP_MIN_R
-    ):
-        return {
-            "action": ACTION_EXIT,
-            "reason": f"time_stop_{int(elapsed)}min_at_{r_now:.2f}R",
-            "new_stop": None,
-        }
+    if elapsed is not None:
+        if (
+            elapsed >= settings.MOMENTUM_TIME_STOP_FAST_MIN
+            and r_now < settings.MOMENTUM_TIME_STOP_FAST_R
+        ):
+            return {
+                "action": ACTION_EXIT,
+                "reason": f"time_stop_fast_{int(elapsed)}min_at_{r_now:.2f}R",
+                "new_stop": None,
+            }
+        slow_min = settings.MOMENTUM_TIME_STOP_MIN * _regime_time_mult(
+            pos.get("regime_at_entry")
+        )
+        if elapsed >= slow_min and r_now < settings.MOMENTUM_TIME_STOP_MIN_R:
+            return {
+                "action": ACTION_EXIT,
+                "reason": f"time_stop_{int(elapsed)}min_at_{r_now:.2f}R",
+                "new_stop": None,
+            }
 
     # 3. Breakeven ratchet + trail. Nothing moves until the trade has paid for
-    #    itself (+1R by default) -- ratcheting earlier just converts noise into
-    #    stop-outs at breakeven.
+    #    itself (MOMENTUM_BREAKEVEN_R, +0.6R by default) -- ratcheting earlier
+    #    just converts noise into stop-outs at breakeven.
+    #    [BREAKEVEN 2026-07-31] The bar was +1.0R and never engaged: the best of
+    #    the 27-30 Jul trades peaked at +0.49R, so every one gave back what it
+    #    had and paid costs on the exit. 0.6R sits above the noise band the ATR
+    #    stop floor now establishes, and it is actually reachable.
     if r_now < settings.MOMENTUM_BREAKEVEN_R:
         return {"action": ACTION_HOLD, "reason": f"below_breakeven_r_{r_now:.2f}R", "new_stop": None}
 

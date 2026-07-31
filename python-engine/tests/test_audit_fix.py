@@ -436,18 +436,30 @@ def test_record_trade_close_uses_per_source_before(tmp_path):
     assert rows[0][0] == "SYSTEM"
     assert abs(rows[0][1] - 5000.0) < 0.01
     assert abs(rows[0][2] - 5200.0) < 0.01
-    # Row 2: PENNY, before=5000 (NOT 5200), after=5100
-    # Pre-fix this row 2's bankroll_before would have been 5200 (current_bankroll).
+    # Row 2: PENNY, before = the PENNY pool (NOT 5200, and NOT the swing pool).
+    #
+    # Pre-fix this row's bankroll_before was 5200 (current_bankroll, i.e. swing
+    # P&L leaking in). [POOL-TRUTH 2026-07-31] It is now the penny pool's OWN
+    # allocation: a division's ledger balance must be the same equity its
+    # sizing reads, or a book can gamble with capital the accounting does not
+    # believe it has -- F&O sized off Rs 250,000 while its ledger walked to
+    # MINUS Rs 11,008 against the swing pool.
+    from performance import allocation_for_source, division_equity
+    penny_alloc = allocation_for_source("PENNY")
     assert rows[1][0] == "PENNY"
-    assert abs(rows[1][1] - 5000.0) < 0.01, \
-        f"PENNY bankroll_before should be 5000 (its own source), got {rows[1][1]}"
-    assert abs(rows[1][2] - 5100.0) < 0.01
+    assert abs(rows[1][1] - penny_alloc) < 0.01, \
+        f"PENNY bankroll_before should be its own pool, got {rows[1][1]}"
+    assert abs(rows[1][2] - (penny_alloc + 100.0)) < 0.01
+    # The swing row is unchanged -- penny cannot contaminate it.
+    assert abs(rows[0][1] - 5000.0) < 0.01
 
     # Verify bankroll_for_source gives the right per-source number
     sys_bal = asyncio.run(bankroll_for_source(db, "SYSTEM"))
     pen_bal = asyncio.run(bankroll_for_source(db, "PENNY"))
     assert abs(sys_bal - 5200.0) < 0.01
     assert abs(pen_bal - 5100.0) < 0.01
+    # ...and division_equity gives the pool-correct number the ledger used.
+    assert abs(asyncio.run(division_equity(db, "PENNY")) - (penny_alloc + 100.0)) < 0.01
 
 
 # ---- 1.5 deeper: assert the alert message format ----------------------
