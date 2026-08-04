@@ -55,6 +55,10 @@ logger = structlog.get_logger()
 ACTION_HOLD = "hold"
 ACTION_EXIT = "exit"
 ACTION_TRAIL = "trail"
+# [SCALE-OUT 2026-08-04] Sell part of the position and de-risk the rest.
+# Carries "scale_shares" (how many to sell) and "new_stop" (where the runner's
+# stop goes) in the same decision.
+ACTION_SCALE_OUT = "scale_out"
 
 
 def momentum_exit_status(reason: str) -> str:
@@ -136,12 +140,14 @@ def evaluate_momentum_exit(pos: dict, ltp: float, now: datetime) -> dict:
     Pure decision function -- no I/O, so it is directly testable and falsifiable.
 
     Returns:
-      {"action": "hold"|"exit"|"trail",
+      {"action": "hold"|"exit"|"scale_out"|"trail",
        "reason": str,
-       "new_stop": float|None}   # only set when action == "trail"
+       "new_stop": float|None,      # set on "trail" and "scale_out"
+       "scale_shares": int}         # "scale_out" only: how many to sell now
 
     Ordering matters: target first (a trade that reached its target should book,
-    even if it also qualifies for a trail), then the time stop, then the ratchet.
+    even if it also qualifies for a trail), then the partial, then the time
+    stop, then the ratchet.
     """
     entry = pos["entry_price"]
     initial_stop = pos["stop_loss_initial"]
@@ -168,7 +174,65 @@ def evaluate_momentum_exit(pos: dict, ltp: float, now: datetime) -> dict:
     if target is not None and ltp >= target:
         return {"action": ACTION_EXIT, "reason": "target_hit", "new_stop": None}
 
-    # 2. Time stop -- two-tier, regime-aware. A runner is never cut on the clock.
+    # 2. Scale out -- bank a real gain on part of the size, de-risk the rest.
+    #
+    # [SCALE-OUT 2026-08-04] Momentum was all-or-nothing: the trade reached the
+    # target in full or it did not, and in practice it almost never did. Across
+    # 27-31 Jul and 03 Aug, every closed momentum trade exited on the clock or
+    # on a ratcheted stop between -0.71R and +0.49R -- the target was reached
+    # once in thirteen. The strategy kept being RIGHT about direction and
+    # collecting nothing for it: on 2026-08-03 SUMICHEM was stopped at
+    # breakeven at 11:27 and printed its target at 12:00.
+    #
+    # Taking part of the position off at +1R and moving the remainder's stop to
+    # cost-adjusted breakeven converts that pattern into a booked gain plus a
+    # free runner. It is the standard institutional shape for a reason: it
+    # stops the outcome depending on whether one specific price prints before
+    # the clock runs out.
+    #
+    # This is NOT free -- it caps the good tail. A trade that would have run to
+    # +2R now collects roughly 1.5R. That trade is rare here; the +0.4R that
+    # decays back to breakeven is not.
+    #
+    # Ordered before the time stop deliberately: at 45 minutes and +1.2R the
+    # time stop cannot fire anyway (it requires r_now < MOMENTUM_TIME_STOP_MIN_R),
+    # but if the thresholds are ever retuned so the windows overlap, banking the
+    # partial should win over closing the lot on the clock.
+    if (
+        settings.MOMENTUM_USE_SCALE_OUT
+        and not pos.get("t1_fired")
+        and r_now >= settings.MOMENTUM_SCALE_OUT_R
+    ):
+        scale_shares = int(shares * settings.MOMENTUM_SCALE_OUT_FRAC)
+        if scale_shares >= 1 and scale_shares < shares:
+            # De-risk the runner in the same decision. Below this price the
+            # trade can no longer lose money net of the round trip.
+            runner_stop = cost_adjusted_breakeven(entry, shares)
+            if runner_stop >= ltp:
+                # The stop would trigger the moment we set it (thin position,
+                # costs larger than the move). Bank nothing; let the trade keep
+                # working under the existing stop.
+                return {
+                    "action": ACTION_HOLD,
+                    "reason": f"scale_out_stop_would_trigger_at_{r_now:.2f}R",
+                    "new_stop": None,
+                }
+            return {
+                "action": ACTION_SCALE_OUT,
+                "reason": f"scale_out_at_{r_now:.2f}R",
+                "scale_shares": scale_shares,
+                "new_stop": round(max(runner_stop, current_stop), 2),
+            }
+        # shares == 1 is the common case on this bankroll: a 2,428 momentum
+        # pool buys one share of a 1,600-rupee stock, and half of one share is
+        # nothing. Say so rather than silently skipping -- it is the clearest
+        # signal that position size, not exit logic, is the binding constraint.
+        logger.info(
+            "momentum_scale_out_skipped_size ticker=%s shares=%s r=%.2f",
+            pos.get("ticker"), shares, r_now,
+        )
+
+    # 3. Time stop -- two-tier, regime-aware. A runner is never cut on the clock.
     #
     # [TIME-STOP-V2 2026-07-31] The old single 45-min / +0.5R rule fired on 8 of
     # 8 live trades (27-30 Jul), every one landing between -0.71R and +0.49R.
@@ -196,7 +260,7 @@ def evaluate_momentum_exit(pos: dict, ltp: float, now: datetime) -> dict:
                 "new_stop": None,
             }
 
-    # 3. Breakeven ratchet + trail. Nothing moves until the trade has paid for
+    # 4. Breakeven ratchet + trail. Nothing moves until the trade has paid for
     #    itself (MOMENTUM_BREAKEVEN_R, +0.6R by default) -- ratcheting earlier
     #    just converts noise into stop-outs at breakeven.
     #    [BREAKEVEN 2026-07-31] The bar was +1.0R and never engaged: the best of

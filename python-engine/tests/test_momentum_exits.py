@@ -15,12 +15,21 @@ from datetime import datetime, timedelta, timezone
 
 import pytest
 
+from config import settings
 from momentum_exits import (
-    ACTION_EXIT, ACTION_HOLD, ACTION_TRAIL,
+    ACTION_EXIT, ACTION_HOLD, ACTION_SCALE_OUT, ACTION_TRAIL,
     cost_adjusted_breakeven, evaluate_momentum_exit, momentum_exit_status,
 )
 
 NOW = datetime(2026, 7, 14, 6, 0, 0, tzinfo=timezone.utc)  # 11:30 IST
+
+
+@pytest.fixture(autouse=True)
+def _scale_out_off_by_default(monkeypatch):
+    """[SCALE-OUT 2026-08-04] The partial fires at +1R, which is exactly where
+    the breakeven-ratchet tests probe. Default it OFF so those tests keep
+    exercising the ratchet; TestScaleOut turns it on explicitly."""
+    monkeypatch.setattr(settings, "MOMENTUM_USE_SCALE_OUT", False)
 
 
 def _pos(**over):
@@ -227,3 +236,118 @@ def test_every_action_exit_reason_maps_to_a_non_open_status():
         assert status not in _OPEN_STATUSES, (
             f"reason {reason!r} -> {status!r} would be counted as open"
         )
+
+
+# ---- [SCALE-OUT 2026-08-04] partial profit-taking -------------------------
+#
+# Momentum was all-or-nothing and almost never reached its target: 27 Jul -
+# 03 Aug produced thirteen closes, one at target and twelve on the clock or a
+# ratcheted stop, between -0.71R and +0.49R. SUMICHEM on 2026-08-03 is the
+# canonical case -- stopped at breakeven 11:27, printed its target at 12:00.
+
+class TestScaleOut:
+    def test_fires_at_the_configured_r_and_sells_the_configured_fraction(self, monkeypatch):
+        monkeypatch.setattr(settings, "MOMENTUM_USE_SCALE_OUT", True)
+        monkeypatch.setattr(settings, "MOMENTUM_SCALE_OUT_R", 1.0)
+        monkeypatch.setattr(settings, "MOMENTUM_SCALE_OUT_FRAC", 0.5)
+
+        # entry 100, stop 95 -> R = 5. ltp 105 is exactly +1R.
+        d = evaluate_momentum_exit(_pos(t1_fired=0), ltp=105.0, now=NOW)
+
+        assert d["action"] == ACTION_SCALE_OUT
+        assert d["scale_shares"] == 25          # half of 50
+        assert d["reason"].startswith("scale_out_at_1.00R")
+        # The runner is de-risked in the same decision: its stop moves to
+        # cost-adjusted breakeven, above entry, so the runner cannot lose.
+        assert d["new_stop"] > 100.0
+        assert d["new_stop"] < 105.0
+
+    def test_does_not_fire_below_the_threshold(self, monkeypatch):
+        monkeypatch.setattr(settings, "MOMENTUM_USE_SCALE_OUT", True)
+        monkeypatch.setattr(settings, "MOMENTUM_SCALE_OUT_R", 1.0)
+        d = evaluate_momentum_exit(_pos(t1_fired=0), ltp=104.0, now=NOW)  # +0.8R
+        assert d["action"] != ACTION_SCALE_OUT
+
+    def test_fires_only_once_per_position(self, monkeypatch):
+        """t1_fired is the latch. Without it the partial would re-fire every
+        60-second tick and grind the position to nothing."""
+        monkeypatch.setattr(settings, "MOMENTUM_USE_SCALE_OUT", True)
+        monkeypatch.setattr(settings, "MOMENTUM_SCALE_OUT_R", 1.0)
+        d = evaluate_momentum_exit(_pos(t1_fired=1), ltp=106.0, now=NOW)
+        assert d["action"] != ACTION_SCALE_OUT
+
+    def test_target_still_wins_over_the_partial(self, monkeypatch):
+        """A trade that reached its target books the whole thing."""
+        monkeypatch.setattr(settings, "MOMENTUM_USE_SCALE_OUT", True)
+        monkeypatch.setattr(settings, "MOMENTUM_SCALE_OUT_R", 1.0)
+        d = evaluate_momentum_exit(_pos(t1_fired=0), ltp=115.0, now=NOW)
+        assert d["action"] == ACTION_EXIT
+        assert d["reason"] == "target_hit"
+
+    def test_single_share_position_cannot_scale_and_falls_through(self, monkeypatch):
+        """The common case on a 2,428 pool: one share of a 1,600-rupee stock.
+        Half of one share is nothing, so the ladder must fall through to the
+        ordinary ratchet rather than emit a zero-share sell."""
+        monkeypatch.setattr(settings, "MOMENTUM_USE_SCALE_OUT", True)
+        monkeypatch.setattr(settings, "MOMENTUM_SCALE_OUT_R", 1.0)
+        d = evaluate_momentum_exit(_pos(shares=1, t1_fired=0), ltp=105.0, now=NOW)
+        assert d["action"] != ACTION_SCALE_OUT
+        assert "scale_shares" not in d
+
+    def test_never_sells_the_entire_position_as_a_partial(self, monkeypatch):
+        """FRAC=1.0 would make the 'partial' a full exit that leaves the row
+        open with zero shares. Guarded by scale_shares < shares."""
+        monkeypatch.setattr(settings, "MOMENTUM_USE_SCALE_OUT", True)
+        monkeypatch.setattr(settings, "MOMENTUM_SCALE_OUT_R", 1.0)
+        monkeypatch.setattr(settings, "MOMENTUM_SCALE_OUT_FRAC", 1.0)
+        d = evaluate_momentum_exit(_pos(t1_fired=0), ltp=105.0, now=NOW)
+        assert d["action"] != ACTION_SCALE_OUT
+
+    def test_disabled_flag_restores_the_old_all_or_nothing_ladder(self, monkeypatch):
+        monkeypatch.setattr(settings, "MOMENTUM_USE_SCALE_OUT", False)
+        d = evaluate_momentum_exit(_pos(t1_fired=0), ltp=105.0, now=NOW)
+        assert d["action"] != ACTION_SCALE_OUT
+
+    def test_runner_stop_never_ratchets_backwards(self, monkeypatch):
+        """If the trail has already pushed the stop above cost-adjusted
+        breakeven, the partial must not drag it back down."""
+        monkeypatch.setattr(settings, "MOMENTUM_USE_SCALE_OUT", True)
+        monkeypatch.setattr(settings, "MOMENTUM_SCALE_OUT_R", 1.0)
+        high_stop = 103.0
+        d = evaluate_momentum_exit(
+            _pos(t1_fired=0, trailing_stop_current=high_stop), ltp=105.0, now=NOW,
+        )
+        assert d["action"] == ACTION_SCALE_OUT
+        assert d["new_stop"] >= high_stop
+
+
+def test_momentum_entry_deadline_is_consistent_with_square_off():
+    """[MC0-DEADLINE 2026-08-04] MOMENTUM_ENTRY_END_MIN was 840 with a comment
+    claiming "= 14:45". 840 minutes past 09:15 is 23:15, so the late-entry gate
+    had never fired once: on 2026-08-03 TRITURBINE was accepted at 14:48 for a
+    book that squares off at 15:15, giving the trade ~20 minutes of life
+    against a 25-minute FAST time stop. It could only ever exit on the clock.
+
+    The binding constraint is the fast tier, not the slow one. A trade entered
+    at 14:30 will not see the 90-minute slow cut, but the 15:15 square-off
+    reaches the same outcome, so that is fine. What is NOT fine is an entry
+    with less life than the fast cut needs to even evaluate the thesis.
+
+    Require the last entry to leave at least 1.5x the fast window after the
+    alert/EXEC latency is paid."""
+    SQUARE_OFF_MIN = (15 - 9) * 60 + 15 - 15       # 15:15 IST -> 360
+    LATENCY_BUDGET_MIN = 15                         # 3-min poll + MiniMax + human
+    MIN_USEFUL_LIFE = settings.MOMENTUM_TIME_STOP_FAST_MIN * 1.5
+
+    life_after_entry = (
+        SQUARE_OFF_MIN - settings.MOMENTUM_ENTRY_END_MIN - LATENCY_BUDGET_MIN
+    )
+    assert life_after_entry >= MIN_USEFUL_LIFE, (
+        f"entry deadline {settings.MOMENTUM_ENTRY_END_MIN} min leaves only "
+        f"{life_after_entry} min of managed life; need {MIN_USEFUL_LIFE}"
+    )
+    # And it must still permit a usable trading window after the 10:00 open gate.
+    assert settings.MOMENTUM_ENTRY_END_MIN > settings.MOMENTUM_ENTRY_START_MIN + 120
+    # Guard the specific regression: the gate must actually be reachable within
+    # a trading day. 840 (23:15) meant it never was.
+    assert settings.MOMENTUM_ENTRY_END_MIN < SQUARE_OFF_MIN

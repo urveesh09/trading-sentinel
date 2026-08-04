@@ -237,6 +237,45 @@ class TestRunPipeline:
 
 
 class TestRunMomentumPipeline:
+    @pytest.fixture(autouse=True)
+    def _during_market_hours(self, agent_mod):
+        """[POLL-CADENCE 2026-08-04] run_momentum_pipeline now self-gates on
+        market hours, because its schedule became a bare 3-minute interval that
+        fires around the clock. These tests exercise the pipeline body, so put
+        the clock inside the session; test_gate_blocks_outside_market_hours
+        covers the gate itself."""
+        with patch.object(agent_mod, "_is_market_hours", return_value=True):
+            yield
+
+    def test_gate_blocks_outside_market_hours(self, agent_mod):
+        """Outside 09:15-15:30 Mon-Fri the poll must not even hit the engine."""
+        with patch.object(agent_mod, "_is_market_hours", return_value=False), \
+             patch("requests.get") as mock_get:
+            agent_mod.run_momentum_pipeline()
+            mock_get.assert_not_called()
+
+    def test_stale_signal_is_dropped_without_an_alert(self, agent_mod):
+        """The engine flags anything over 30 min old. A breakout that age has
+        already worked or failed, so the button would invite an entry at a
+        price the setup no longer describes."""
+        mock_resp = MagicMock()
+        mock_resp.json.return_value = {
+            "signals": [{
+                "ticker": "STALEB", "close": 100, "target_1": 110,
+                "stop_loss": 90, "stale_data": True,
+            }],
+            "market_regime": "BULL",
+            "momentum_pool": 5000,
+        }
+        mock_resp.raise_for_status = MagicMock()
+
+        with patch("requests.get", return_value=mock_resp), \
+             patch.object(agent_mod, "send_momentum_telegram_alert") as mock_send:
+            agent_mod.run_momentum_pipeline()
+            mock_send.assert_not_called()
+        # Marked processed, so the next poll (3 min later) does not re-evaluate it.
+        assert "STALEB_MOM" in agent_mod.processed_signals_today
+
     def test_skips_already_processed_momentum(self, agent_mod):
         mock_resp = MagicMock()
         mock_resp.json.return_value = {

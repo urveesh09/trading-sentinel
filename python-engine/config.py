@@ -278,10 +278,52 @@ class Settings(BaseSettings):
     MOMENTUM_RVOL_LOOKBACK:     int   = 20      # [MC7] Lookback bars (15-min each)
     MOMENTUM_USE_TIME_GATE:     bool  = True    # [MC0] Skip 9:15-9:30 + 15:00-15:30
     MOMENTUM_ENTRY_START_MIN:   int   = 45      # [MC0] Minutes from 9:15 IST when entries allowed (45 = 10:00)
-    MOMENTUM_ENTRY_END_MIN:     int   = 840     # [MC0] Minutes from 9:15 IST after which entries blocked (840 = 14:45)
+    # [MC0-DEADLINE 2026-08-04] Was 840, commented "= 14:45". It is not:
+    # 840 minutes past 09:15 is 23:15, so the late gate has never once fired
+    # and MC0 has only ever been a "too early" check. On 2026-08-03 that let
+    # TRITURBINE alert at 14:55 for a book that auto-squares at 15:15 -- a
+    # 15-minute window against a 45-minute time stop, i.e. an entry that could
+    # only ever exit on the clock.
+    #
+    # The deadline has to be derived from the square-off, not picked. The
+    # binding tier is the FAST time stop, not the slow one -- a 14:30 entry
+    # never sees the 90-min slow cut, but the 15:15 square-off reaches the same
+    # outcome, so that is acceptable. What is not acceptable is an entry with
+    # less life than the fast cut needs to evaluate the thesis at all:
+    #     square-off                     15:15
+    #   - 1.5x MOMENTUM_TIME_STOP_FAST_MIN  :38   room for the thesis to work
+    #   - alert + EXEC latency              :15   3-min poll, MiniMax, human
+    #   = last usable bar close           ~14:22  -> rounded down to 14:15
+    # test_momentum_entry_deadline_is_consistent_with_square_off pins this so
+    # the number cannot drift away from its justification again.
+    MOMENTUM_ENTRY_END_MIN:     int   = 300     # [MC0] 14:15 IST -- last bar close that can still get a full time-stop window
     MOMENTUM_USE_RSI_TRIM:      bool  = False   # [MC8] Partial trim 50% at RSI(7)>=70 on 15-min
     MOMENTUM_RSI_TRIM_LENGTH:   int   = 7       # [MC8] RSI length (7 is the orbsetups sweet spot)
     MOMENTUM_RSI_TRIM_THRESHOLD: float = 70.0   # [MC8] RSI >= this -> partial trim fires
+
+    # [SCALE-OUT 2026-08-04] Bank part of the position at +1R and move the
+    # runner's stop to cost-adjusted breakeven.
+    #
+    # The evidence for this is the shape of every closed momentum trade so far:
+    # 27 Jul - 03 Aug produced thirteen exits, one at the target and twelve on
+    # the clock or a ratcheted stop, spread between -0.71R and +0.49R. The
+    # direction call was frequently right and collected nothing, because the
+    # only two ways to book a gain were "price prints the target" and "price
+    # prints the trail". SUMICHEM on 2026-08-03 is the whole problem in one
+    # trade: stopped at breakeven 11:27, printed its target 12:00.
+    #
+    # A partial at +1R changes what the strategy is being asked to predict. It
+    # no longer needs the full move to happen before the clock runs out -- it
+    # needs the move to START. The cost is the upper tail: a 2R winner now
+    # collects ~1.5R.
+    #
+    # Honest limitation at this bankroll: a 2,428 momentum pool buys 1-4 shares,
+    # and 50% of 1 share is 0. This fires on maybe a third of current signals
+    # and logs momentum_scale_out_skipped_size on the rest. That is a position-
+    # sizing constraint, not an exit-logic one, and the log makes it countable.
+    MOMENTUM_USE_SCALE_OUT:     bool  = True
+    MOMENTUM_SCALE_OUT_R:       float = 1.0     # R-multiple at which the partial fires
+    MOMENTUM_SCALE_OUT_FRAC:    float = 0.5     # fraction of the position sold
 
     # [MOMENTUM-LOG 2026-06-16] Append-only signal log to /data/momentum_signals.csv
     # and SQLite table `momentum_signals`. Both are opt-in so the operator can
@@ -375,6 +417,36 @@ class Settings(BaseSettings):
     PENNY_HISTORY_SQLITE_MAX_CONCURRENT: int = 50
 
     # Connors strategy
+    # [CONNORS-EVIDENCE 2026-08-04] DO NOT loosen the RSI-rising confirmation
+    # gate in penny_engine_connors (`rsi > rsi_prev1 > rsi_prev2`).
+    #
+    # It looks like the obvious culprit for this book never trading: of the
+    # 3,231 candidates that clear the trend filters and the RSI(2)<10 trigger
+    # over 2.5 years and 2,532 tickers, that gate rejects 3,225 -- 99.8%. The
+    # two conditions are nearly mutually exclusive by construction, because
+    # two consecutive up days in RSI(2) from a sub-10 reading usually carries
+    # it back above 10.
+    #
+    # It was measured before being touched (tools/connors_backtest.py, real
+    # daily bars, entry at next-day open, real Zerodha costs):
+    #
+    #   config                signals   win%    meanR   PF      t
+    #   RSI<10 rising=Y             1    0.0  -0.2035  0.00   0.00
+    #   RSI<10 rising=N         1,202   46.4  -0.0365  0.93  -1.29
+    #   RSI<15 rising=Y             6   50.0  +0.3608  8.55   0.88
+    #   RSI<20 rising=Y             9   66.7  +0.3661 41.41   1.29
+    #   RSI<20 rising=N         1,359   46.7  -0.0283  0.91  -1.06
+    #   RSI<25 rising=Y            11   63.6  +0.3802 19.30   1.26
+    #
+    # Removing the gate buys ~1,300 trades that LOSE money (PF 0.87-0.97).
+    # Keeping it leaves a handful of trades with a good-looking mean R and a
+    # t-stat around 1.3 -- which is not significance, it is nine trades.
+    #
+    # So: the gate stays, and RSI2_BUY stays at 10 until there is enough
+    # history to justify moving it. Raising it to 20 is the most promising
+    # single change available (9x the signals at the same expectancy), but
+    # nine trades cannot authorise real capital. Re-run the backtest once
+    # DAILY_HISTORY_DAYS has actually accumulated depth.
     PENNY_CONNORS_RSI2_BUY:        float = 10.0
     PENNY_CONNORS_RSI2_SELL:       float = 65.0
     PENNY_CONNORS_T1_PCT:          float = 0.03
@@ -733,6 +805,12 @@ class Settings(BaseSettings):
     FNO_TRAIL_ATR_MULT:        float = 1.0
     FNO_TIME_STOP_MIN:         int   = 45
     FNO_TIME_STOP_MIN_R:       float = 0.5
+    # [TIME-STOP-PREMIUM 2026-08-04] The time stop measures UNDERLYING points
+    # but the book is paid in PREMIUM, and delta separates the two. With this
+    # True the clock only cuts a trade that is going nowhere on the underlying
+    # AND not in profit on premium. See fno_orchestrator for the record: 8
+    # time-stop exits, -Rs 7,010, two of them profitable when cut.
+    FNO_TIME_STOP_RESPECTS_PREMIUM: bool = True
     FNO_MIN_RVOL:              float = 1.2
     FNO_EMA_FAST:              int   = 21
     FNO_EMA_SLOW:              int   = 50
@@ -978,6 +1056,33 @@ class Settings(BaseSettings):
     UNIVERSE_TICKERS_FILE:             str   = "nifty500.json"  # Filename inside BREADTH_DATA_DIR; same format as nifty100.json
     UNIVERSE_MIN_ADV_CRORE:            float = 2.0      # Drop tickers with 20-day median ADV below this (₹ crore)
     UNIVERSE_LIQUIDITY_LOOKBACK_DAYS:  int   = 20       # Lookback window for the median ADV computation
+
+    # === Intraday history retention ([INTRADAY-RETENTION 2026-08-04]) ===
+    # How many days of 15-minute candles to keep in intraday_cache.
+    #
+    # This was effectively 1 (clear_intraday_cache deleted everything before
+    # yesterday), which is the reason momentum and F&O have never been
+    # backtested: they are intraday strategies and the system kept no intraday
+    # history to test them on. Daily bars go back 2.5 years in ohlcv_cache;
+    # intraday went back three days.
+    #
+    # 365 sessions at a measured 2.53 MB/day is ~633 MB. Disk sits at 86% with
+    # 17 GB free, and /data is already carrying ~800 MB of stale
+    # cache.db.bak-* files, so this is affordable today -- but it is the
+    # largest single consumer added here, so it is a knob rather than a
+    # constant. Lower it if disk pressure becomes real; every day removed is a
+    # day of evidence the strategies cannot be judged on.
+    INTRADAY_RETENTION_DAYS:           int   = 365
+
+    # Rolling daily-history lookback for strategies that need long SMAs
+    # (Connors needs 250 bars for SMA-200). Replaces a hard-coded
+    # "2025-01-01" anchor in penny_scanner, which pinned every ticker in
+    # ohlcv_cache to exactly 394 bars and left the Connors backtest with ~140
+    # evaluation days per name. 3 years covers the 250-bar floor several times
+    # over and lets the daily cache accumulate a corpus worth testing on.
+    # Cost is one-off: get_historical caches by window coverage, so widening
+    # re-fetches once per ticker and then hits cache.
+    DAILY_HISTORY_DAYS:                int   = 1095
 
 
 settings = Settings()

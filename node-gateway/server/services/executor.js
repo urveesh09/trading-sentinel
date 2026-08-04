@@ -9,6 +9,7 @@ const {
   MarketClosedError, OrderExecutionError 
 } = require('../utils/errors');
 const { logger } = require('../middleware/logger');
+const { resolveRiskDistance, anchorLevels, sizeToRisk } = require('./risk-geometry');
 
 /**
  * Snap a price to the nearest valid NSE tick (0.10 rupee).
@@ -86,13 +87,21 @@ async function syncToEngine(payload) {
  *
  * Returns the stop order id, or null if it could not be placed.
  */
-async function placeProtectiveStop(signal) {
+async function placeProtectiveStop(signal, stopPrice) {
+  // [FILL-ANCHOR 2026-08-04] `stopPrice` is the fill-anchored stop, NOT
+  // signal.stop_loss. Arming the signal's stop against a drifted fill is what
+  // turned SUMICHEM's 2.80 of risk into 0.90 on 2026-08-03. Callers must pass
+  // it explicitly; there is no fallback to the signal, because a silent
+  // fallback is exactly the bug.
+  if (!(stopPrice > 0)) {
+    throw new RangeError(`placeProtectiveStop: invalid stopPrice ${stopPrice} for ${signal.ticker}`);
+  }
   // SELL stop: snap the trigger DOWN so it never lands above the intended stop.
-  const trigger = snapToTick(signal.stop_loss, -1);
+  const trigger = snapToTick(stopPrice, -1);
   // Limit 1% below the trigger: <= trigger (valid SELL SL) and marketable on
   // trigger (fills at market bid), so it behaves like a stop-market but is
   // API-legal without market protection.
-  const limit = snapToTick(signal.stop_loss * 0.99, -1);
+  const limit = snapToTick(stopPrice * 0.99, -1);
 
   for (let attempt = 1; attempt <= 2; attempt++) {
     try {
@@ -198,6 +207,52 @@ async function executeSignal(signal, action, isIntraday = false) {
     throw new PriceDriftError(`LTP ${ltp} drifted ${Math.round(drift * 100)}% from signal ${signal.close}`);
   }
 
+  // [FILL-ANCHOR 2026-08-04] Re-derive the risk geometry against the price we
+  // can actually transact at, BEFORE committing size. The 2% drift gate above
+  // bounds how far the market has moved, but 2% is roughly 4x a momentum stop:
+  // inside that window the signal's stop can land anywhere from "already
+  // breached" to "twice as far as intended". See risk-geometry.js.
+  let geometry;
+  try {
+    geometry = resolveRiskDistance({
+      signalClose:    signal.close,
+      signalStop:     signal.stop_loss,
+      price:          ltp,
+      minStopPct:     config.MOMENTUM_MIN_STOP_PCT,
+      minStopAtrMult: config.MOMENTUM_MIN_STOP_ATR_MULT,
+      atr:            signal.atr_at_entry,
+    });
+  } catch (err) {
+    throw new ValidationError(`${signal.ticker}: unusable risk geometry — ${err.message}`);
+  }
+
+  // If a floor widened the risk, the engine's share count now carries more
+  // rupees than the approved budget. Cut size; never raise it.
+  const sizedShares = sizeToRisk({
+    originalShares: signal.shares,
+    capitalAtRisk:  signal.capital_at_risk,
+    risk:           geometry.risk,
+  });
+  if (sizedShares < 1) {
+    throw new ValidationError(
+      `${signal.ticker}: risk floor ${geometry.risk.toFixed(2)}/share exceeds the whole ` +
+      `${signal.capital_at_risk} budget — no position is affordable at this price.`
+    );
+  }
+
+  if (sizedShares !== signal.shares || geometry.source !== 'signal') {
+    logger.info({
+      event_type: 'fill_anchor_resized',
+      ticker: signal.ticker,
+      signal_close: signal.close, ltp,
+      intended_risk: Number(geometry.intendedRisk.toFixed(2)),
+      applied_risk:  Number(geometry.risk.toFixed(2)),
+      risk_source:   geometry.source,
+      shares_before: signal.shares, shares_after: sizedShares,
+    });
+  }
+  signal = { ...signal, shares: sizedShares };
+
   // 3. Limit Order Execution
   // [FIX] Zerodha API rejects MARKET orders without market_protection.
   // Buy LIMIT at LTP + 0.5%, snapped UP to the nearest 0.10-rupee tick.
@@ -280,6 +335,31 @@ async function executeSignal(signal, action, isIntraday = false) {
     logger.warn({ event_type: 'fill_unconfirmed', orderId });
   }
 
+  // [FILL-ANCHOR 2026-08-04] Centre the geometry on the ACTUAL fill. The risk
+  // distance was fixed pre-order (size is committed now, so it must not move);
+  // only the anchor point changes. Everything downstream -- the resting stop,
+  // the position row, momentum_exits' breakeven ratchet, the r_multiple in
+  // trade_outcomes -- reads these levels rather than the signal's.
+  const levels = anchorLevels({
+    price:         fillPrice,
+    risk:          geometry.risk,
+    signalClose:   signal.close,
+    signalStop:    signal.stop_loss,
+    signalTarget1: signal.target_1,
+    signalTarget2: signal.target_2,
+  });
+
+  logger.info({
+    event_type: 'fill_anchored_levels',
+    ticker: signal.ticker,
+    signal_close: signal.close, fill_price: fillPrice,
+    slippage_pct: Number((((fillPrice - signal.close) / signal.close) * 100).toFixed(3)),
+    signal_stop: signal.stop_loss, anchored_stop: levels.stop,
+    signal_t1:   signal.target_1,  anchored_t1:   levels.target1,
+    risk_per_share: Number(geometry.risk.toFixed(2)),
+    r_target: Number(levels.rTarget1.toFixed(2)),
+  });
+
     // 5. Protective exit orders.
   //    CNC/swing  -> GTT (stop + T1 legs).
   //    MIS/intraday -> SL-M, because Zerodha GTT does not support MIS.
@@ -293,7 +373,7 @@ async function executeSignal(signal, action, isIntraday = false) {
   let slOrderId = null;
 
   if (isIntraday) {
-    slOrderId = await placeProtectiveStop(signal);
+    slOrderId = await placeProtectiveStop(signal, levels.stop);
 
     if (!slOrderId) {
       // Stop could not be placed. We refuse to hold an unprotected MIS position,
@@ -330,7 +410,7 @@ async function executeSignal(signal, action, isIntraday = false) {
         trigger_type: "single",
         tradingsymbol: signal.ticker,
         exchange: "NSE",
-        trigger_values: [signal.stop_loss],
+        trigger_values: [levels.stop],
         last_price: ltp,
         orders: [{
           transaction_type: "SELL",
@@ -339,7 +419,7 @@ async function executeSignal(signal, action, isIntraday = false) {
           product: "CNC",
           // Stop-loss SELL limit must be AT OR ABOVE the trigger to guarantee execution.
           // snapToTick(..., 1) rounds UP to the nearest 0.10-rupee tick.
-          price: snapToTick(signal.stop_loss * 1.002, 1)
+          price: snapToTick(levels.stop * 1.002, 1)
         }]
       });
       gttStopId = stopRes.trigger_id;
@@ -350,7 +430,7 @@ async function executeSignal(signal, action, isIntraday = false) {
         trigger_type: "single",
         tradingsymbol: signal.ticker,
         exchange: "NSE",
-        trigger_values: [signal.target_1],
+        trigger_values: [levels.target1],
         last_price: ltp,
         orders: [{
           transaction_type: "SELL",
@@ -363,7 +443,7 @@ async function executeSignal(signal, action, isIntraday = false) {
           // leg (1.002× ABOVE trigger) but both approaches guarantee execution.
           // The inviolable rule "trigger * 1.002" applies to stop-loss legs only.
           // snapToTick(..., -1) rounds DOWN to nearest 0.10-rupee tick.
-          price: snapToTick(signal.target_1 * 0.998, -1)
+          price: snapToTick(levels.target1 * 0.998, -1)
       }]
       });
       gttTargetId = targetRes.trigger_id;
@@ -389,9 +469,9 @@ async function executeSignal(signal, action, isIntraday = false) {
     exchange: "NSE",
     entry_price: fillPrice,
     shares: signal.shares,
-    stop_loss: signal.stop_loss,
-    target_1: signal.target_1,
-    target_2: signal.target_2,
+    stop_loss: levels.stop,
+    target_1: levels.target1,
+    target_2: levels.target2,
     source: isIntraday ? "MOMENTUM" : "SYSTEM",
     // [MED-008] Pass product_type so Container B can store it in the positions table
     // and auto_square_momentum() can read the correct product type for square-off orders.
@@ -423,7 +503,18 @@ async function executeSignal(signal, action, isIntraday = false) {
     telegram.sendAlert(`🚨 Order placed (#${orderId}) but sync to quant engine failed entirely. Manual registration required at dashboard.`);
   }
 
-  return { orderId, fillPrice, gttStopId, gttTargetId };
+  // [FILL-ANCHOR 2026-08-04] Return what was actually armed, not what was
+  // signalled. index.js persists this into received_signals.payload_json, and a
+  // payload that still carries the signal's stop would make every post-hoc
+  // audit reconstruct the wrong R.
+  return {
+    orderId, fillPrice, gttStopId, gttTargetId,
+    shares:    signal.shares,
+    stop_loss: levels.stop,
+    target_1:  levels.target1,
+    target_2:  levels.target2,
+    risk_per_share: Number(geometry.risk.toFixed(2)),
+  };
 }
 
 module.exports = { executeSignal, syncToEngine, snapToTick };

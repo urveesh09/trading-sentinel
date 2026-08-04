@@ -40,7 +40,10 @@ import structlog
 
 from config import settings
 from engine import calc_zerodha_costs
-from momentum_exits import ACTION_EXIT, ACTION_TRAIL, evaluate_momentum_exit, momentum_exit_status
+from momentum_exits import (
+    ACTION_EXIT, ACTION_SCALE_OUT, ACTION_TRAIL,
+    evaluate_momentum_exit, momentum_exit_status,
+)
 
 logger = structlog.get_logger()
 
@@ -82,6 +85,33 @@ def _sig_get(sig, key, default=None):
     if isinstance(sig, dict):
         return sig.get(key, default)
     return getattr(sig, key, default)
+
+
+def _sqlite_safe(value):
+    """Coerce a value into something sqlite3 can bind.
+
+    [PAPER-REGIME 2026-08-04] This book had recorded ZERO trades since it was
+    built on 2026-07-26. Every single open raised
+
+        Error binding parameter 15: type 'Regime' is not supported
+
+    because `regime` on an accepted signal is a pydantic enum, not a string.
+    The live path never hit it -- there the regime arrives already serialised
+    through node-gateway's sync payload -- so only the paper book, the one
+    component whose entire purpose is generating strategy evidence, was
+    silently producing none. Five signals were lost to it on 2026-08-04 alone.
+
+    The failure was logged at error level and wrapped in a try/except so it
+    could not break the live scan, which is correct behaviour and also exactly
+    why it survived: a loud log nobody greps for is a silent failure.
+    """
+    if value is None or isinstance(value, (str, int, float, bytes)):
+        return value
+    # Enum -> its value (Regime.REGIME_1_NORMAL -> "REGIME_1_NORMAL")
+    inner = getattr(value, "value", None)
+    if isinstance(inner, (str, int, float)):
+        return inner
+    return str(value)
 
 
 async def open_momentum_paper_positions(db_path: str, accepted: list,
@@ -128,9 +158,11 @@ async def open_momentum_paper_positions(db_path: str, accepted: list,
                     "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
                     (ticker, "NSE", now_utc.isoformat(), close, shares,
                      stop, stop,
-                     _sig_get(sig, "target_1"), _sig_get(sig, "target_2"),
-                     _sig_get(sig, "atr_at_entry"), close, "OPEN", SOURCE,
-                     "MIS", _sig_get(sig, "regime"), 0),
+                     _sqlite_safe(_sig_get(sig, "target_1")),
+                     _sqlite_safe(_sig_get(sig, "target_2")),
+                     _sqlite_safe(_sig_get(sig, "atr_at_entry")),
+                     close, "OPEN", SOURCE,
+                     "MIS", _sqlite_safe(_sig_get(sig, "regime")), 0),
                 )
                 held.add(ticker)
                 opened.append(ticker)
@@ -166,9 +198,15 @@ async def _close_paper_position(db, db_path: str, pos: dict, exit_price: float,
     risk_initial = (entry - float(pos["stop_loss_initial"])) * shares
     r_multiple = realised / risk_initial if risk_initial > 0 else 0.0
 
+    # [SCALE-OUT 2026-08-04] ADD rather than assign. When a partial has already
+    # fired, the row is carrying the partial's P&L and this close only covers
+    # the runner; assigning would silently drop the banked half from the
+    # position row (the ledger would still be right, so the two would disagree).
+    # With no partial, realised_pnl is NULL and COALESCE makes this identical to
+    # the old assignment.
     cur = await db.execute(
         "UPDATE positions SET status=?, exit_price=?, exit_date=?, "
-        "       realised_pnl=?, r_multiple=? "
+        "       realised_pnl=COALESCE(realised_pnl, 0) + ?, r_multiple=? "
         "WHERE ticker=? AND source=? AND exit_date IS NULL",
         (status, exit_price, datetime.now(timezone.utc).isoformat(),
          realised, r_multiple, pos["ticker"], SOURCE),
@@ -196,9 +234,9 @@ async def momentum_paper_monitor(db_path: str, ltp_fn: LtpFn,
     parallel one that could quietly drift.
     """
     if not settings.MOMENTUM_PAPER_ENABLED:
-        return {"checked": 0, "exited": [], "trailed": []}
+        return {"checked": 0, "exited": [], "trailed": [], "scaled": []}
 
-    exited, trailed = [], []
+    exited, trailed, scaled = [], [], []
     try:
         async with aiosqlite.connect(db_path) as db:
             db.row_factory = aiosqlite.Row
@@ -222,6 +260,33 @@ async def momentum_paper_monitor(db_path: str, ltp_fn: LtpFn,
                     )
                     if pnl is not None:
                         exited.append((pos["ticker"], round(pnl, 2)))
+                elif action == ACTION_SCALE_OUT:
+                    # [SCALE-OUT 2026-08-04] The paper book has to take the
+                    # partial too. Its whole purpose is to record what the
+                    # STRATEGY decided rather than what the operator did, and a
+                    # paper book that exits all-or-nothing while the live book
+                    # scales out is measuring a strategy nobody is running.
+                    #
+                    # No broker leg to sequence here, so this is just the
+                    # bookkeeping half of the live path: shares down, stop up,
+                    # t1_fired set, P&L on the shares sold.
+                    sold = int(decision["scale_shares"])
+                    runner = int(pos["shares"]) - sold
+                    gross = (float(ltp) - pos["entry_price"]) * sold
+                    costs = calc_zerodha_costs(
+                        pos["entry_price"], float(ltp), sold, is_intraday=True,
+                    )
+                    pnl = gross - costs
+                    await db.execute(
+                        "UPDATE positions SET shares=?, trailing_stop_current=?, "
+                        "t1_fired=1, realised_pnl=COALESCE(realised_pnl, 0) + ? "
+                        "WHERE ticker=? AND source=? AND exit_date IS NULL AND t1_fired=0",
+                        (runner, float(decision["new_stop"]), pnl,
+                         pos["ticker"], SOURCE),
+                    )
+                    await db.commit()
+                    scaled.append((pos["ticker"], round(pnl, 2)))
+
                 elif action == ACTION_TRAIL and decision.get("new_stop"):
                     await db.execute(
                         "UPDATE positions SET trailing_stop_current=? "
@@ -233,7 +298,10 @@ async def momentum_paper_monitor(db_path: str, ltp_fn: LtpFn,
     except Exception as exc:
         logger.error("momentum_paper_monitor_failed err=%s", str(exc), exc_info=True)
 
-    return {"checked": len(exited) + len(trailed), "exited": exited, "trailed": trailed}
+    return {
+        "checked": len(exited) + len(trailed) + len(scaled),
+        "exited": exited, "trailed": trailed, "scaled": scaled,
+    }
 
 
 async def momentum_paper_square_off(db_path: str, ltp_fn: LtpFn,

@@ -119,20 +119,64 @@ class KiteClient:
 
 
     async def clear_intraday_cache(self):
-        """Purge yesterday's intraday candles at midnight using explicit IST."""
+        """Age out intraday candles past the retention window (midnight, IST).
+
+        [INTRADAY-RETENTION 2026-08-04] This used to delete EVERYTHING before
+        yesterday, and that single line is why no intraday strategy in this
+        system has ever been validated.
+
+        The deletion was never needed for correctness. get_intraday() already
+        bounds its read with `datetime >= from AND datetime <= to` and decides
+        freshness from the last candle against `expected_latest`, so stale rows
+        can neither be served nor confuse a scan. The purge was pure disk
+        management -- and it was throwing away the only record of what the
+        market did minute by minute.
+
+        The cost of that: momentum and F&O are intraday strategies whose every
+        parameter (stop floor, R target, time-stop window, entry gates) was
+        tuned on the handful of live trades the operator happened to take,
+        because there was no history to test against. `ohlcv_cache` keeps 2.5
+        years of DAILY bars for 4,668 tickers; intraday kept three days. So
+        the two strategies that trade every day are precisely the two that
+        cannot be backtested, and no amount of parameter work can produce
+        evidence that they will not lose money.
+
+        Retaining it is cheap: measured at 2.53 MB/day (94 B/row, ~29k rows
+        per session), so a full year is ~633 MB against 17 GB free. That is
+        less than the 800 MB of stale cache.db.bak-* files already sitting in
+        /data.
+        """
         await self._init_intraday_db()
         from datetime import timedelta
         import pytz
+        from config import settings
+
+        retention_days = int(getattr(settings, "INTRADAY_RETENTION_DAYS", 365))
         IST = pytz.timezone("Asia/Kolkata")
         now_ist = datetime.now(IST)
-        yesterday = (now_ist - timedelta(days=1)).strftime("%Y-%m-%d")
+        cutoff = (now_ist - timedelta(days=retention_days)).strftime("%Y-%m-%d")
+
         async with aiosqlite.connect(self.db_path) as db:
-            await db.execute(
+            cur = await db.execute(
                 "DELETE FROM intraday_cache WHERE datetime < ?",
-                (yesterday + " 23:59:59",)
+                (cutoff + " 00:00:00",)
             )
+            deleted = cur.rowcount
             await db.commit()
-        logger.info("intraday_cache_cleared", before=yesterday)
+            async with db.execute(
+                "SELECT COUNT(*), COUNT(DISTINCT substr(datetime,1,10)) "
+                "FROM intraday_cache"
+            ) as c2:
+                remaining, sessions = await c2.fetchone()
+
+        # Log the corpus size, not just the deletion. This is now a research
+        # dataset that grows toward a usable backtest, and "how much history do
+        # we have" is the number that decides when a strategy can be evaluated.
+        logger.info(
+            "intraday_cache_aged_out", cutoff=cutoff, deleted=deleted,
+            rows_retained=remaining, sessions_retained=sessions,
+            retention_days=retention_days,
+        )
 
 
     async def refresh_instrument_cache(self):

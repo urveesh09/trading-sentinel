@@ -575,26 +575,33 @@ class TestCacheSeparationQ7:
 # ---------------------------------------------------------------------
 
 class TestClearIntradayCache:
+    """[INTRADAY-RETENTION 2026-08-04] This job used to delete everything older
+    than yesterday, and that one line is why no intraday strategy in this
+    system could ever be backtested: momentum and F&O trade intraday, and the
+    only intraday history kept was three days. It now ages out on
+    INTRADAY_RETENTION_DAYS instead.
+
+    The tests below pin both halves: recent history must SURVIVE (the
+    regression that mattered), and genuinely ancient rows must still go (or
+    the disk guard is gone)."""
 
     @pytest.mark.asyncio
-    async def test_clears_old_candles(self, patch_settings):
-        """clear_intraday_cache purges yesterday's data."""
+    async def test_recent_history_is_retained_not_purged(self, patch_settings):
         client = KiteClient(patch_settings.DB_PATH)
         await client._init_intraday_db()
 
-        # Insert old candle (2 days ago) and a recent candle (today)
+        # Two days old: under any sane retention this is research data, and
+        # under the old behaviour it was deleted overnight.
         old_dt = (datetime.utcnow() - timedelta(days=2)).strftime("%Y-%m-%d 10:00:00")
         recent_dt = datetime.utcnow().strftime("%Y-%m-%d 10:00:00")
 
         async with aiosqlite.connect(patch_settings.DB_PATH) as db:
-            await db.execute(
-                "INSERT INTO intraday_cache (ticker, datetime, open, high, low, close, volume, fetched_at) VALUES (?,?,?,?,?,?,?,?)",
-                ("RELIANCE", old_dt, 100, 110, 90, 105, 50000, "now")
-            )
-            await db.execute(
-                "INSERT INTO intraday_cache (ticker, datetime, open, high, low, close, volume, fetched_at) VALUES (?,?,?,?,?,?,?,?)",
-                ("RELIANCE", recent_dt, 100, 110, 90, 105, 50000, "now")
-            )
+            for dt in (old_dt, recent_dt):
+                await db.execute(
+                    "INSERT INTO intraday_cache (ticker, datetime, open, high, "
+                    "low, close, volume, fetched_at) VALUES (?,?,?,?,?,?,?,?)",
+                    ("RELIANCE", dt, 100, 110, 90, 105, 50000, "now"),
+                )
             await db.commit()
 
         await client.clear_intraday_cache()
@@ -602,10 +609,34 @@ class TestClearIntradayCache:
         async with aiosqlite.connect(patch_settings.DB_PATH) as db:
             cursor = await db.execute("SELECT COUNT(*) FROM intraday_cache")
             count = (await cursor.fetchone())[0]
+        assert count == 2, "recent intraday history must survive the nightly job"
 
-        # Old candle should be deleted, recent stays
-        # (exact count depends on IST date boundary; at minimum old is purged)
-        assert count <= 1
+    @pytest.mark.asyncio
+    async def test_rows_past_the_retention_window_are_aged_out(self, patch_settings, monkeypatch):
+        """Retention still bounds disk. Without this the table grows forever."""
+        from config import settings as _s
+        monkeypatch.setattr(_s, "INTRADAY_RETENTION_DAYS", 30, raising=False)
+
+        client = KiteClient(patch_settings.DB_PATH)
+        await client._init_intraday_db()
+
+        ancient = (datetime.utcnow() - timedelta(days=400)).strftime("%Y-%m-%d 10:00:00")
+        fresh = datetime.utcnow().strftime("%Y-%m-%d 10:00:00")
+        async with aiosqlite.connect(patch_settings.DB_PATH) as db:
+            for dt in (ancient, fresh):
+                await db.execute(
+                    "INSERT INTO intraday_cache (ticker, datetime, open, high, "
+                    "low, close, volume, fetched_at) VALUES (?,?,?,?,?,?,?,?)",
+                    ("RELIANCE", dt, 100, 110, 90, 105, 50000, "now"),
+                )
+            await db.commit()
+
+        await client.clear_intraday_cache()
+
+        async with aiosqlite.connect(patch_settings.DB_PATH) as db:
+            cursor = await db.execute("SELECT datetime FROM intraday_cache")
+            rows = [r[0] for r in await cursor.fetchall()]
+        assert rows == [fresh], f"expected only the fresh row, got {rows}"
 
 
 # ---------------------------------------------------------------------

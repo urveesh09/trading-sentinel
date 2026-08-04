@@ -256,10 +256,24 @@ telegram.bot.on('callback_query', async (query) => {
 
         const result = await executor.executeSignal(signalData, 'EM', true);
 
-        // Persist full payload now that we have it, mark EXECUTED
+        // Persist full payload now that we have it, mark EXECUTED.
+        // [FILL-ANCHOR 2026-08-04] Overlay what was actually armed. The signal's
+        // stop/target were priced off a close that is minutes old by the time
+        // EXEC is pressed; storing them here is what made every reconstructed
+        // R-multiple wrong.
+        const executedPayload = {
+          ...signalData,
+          shares:         result.shares,
+          stop_loss:      result.stop_loss,
+          target_1:       result.target_1,
+          target_2:       result.target_2,
+          entry_price:    result.fillPrice,
+          risk_per_share: result.risk_per_share,
+          signal_close:   signalData.close,
+        };
         signalsDb.prepare(`
           UPDATE received_signals SET status = 'EXECUTED', payload_json = ? WHERE signal_id = ?
-        `).run(JSON.stringify(signalData), momentumLockId);
+        `).run(JSON.stringify(executedPayload), momentumLockId);
 
         await telegram.bot.editMessageText(query.message.text + `\n\n⚡ EXECUTED (MIS): ${result.orderId}`, {
           chat_id: query.message.chat.id,

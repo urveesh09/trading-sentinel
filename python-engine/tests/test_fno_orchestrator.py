@@ -8,7 +8,7 @@ This is the P1 "plumbing is proven honest" criterion (spec §1) in test
 form: paper fills reconcile against real bid/ask, gates are satisfiable,
 max_loss holds, the log tells the truth.
 """
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 
 import pandas as pd
 import pytest
@@ -476,3 +476,86 @@ def test_spread_cost_is_charged_on_both_sides():
               premium=60.0, qty=130,
               stop_premium_pct=settings.FNO_STOP_PREMIUM_PCT)
     assert _rr(spread_pct=0.002, **kw) > _rr(spread_pct=0.02, **kw)
+
+
+# ---------------------------------------------------------------------------
+# [TIME-STOP-PREMIUM 2026-08-04] the clock must not cut a profitable trade
+#
+# The time stop measures UNDERLYING points while the book is paid in PREMIUM,
+# and delta separates the two. It is the single biggest loser in this book's
+# history (8 exits, -Rs 7,010) and two of those eight were cut while in profit:
+# 2026-07-23 at +286 and 2026-08-03 at +530. Meanwhile trail_stop is the only
+# exit reason with positive expectancy (2 exits, +Rs 2,869, avg +0.62R) -- and
+# a trade can only reach the trail by living long enough to get there.
+#
+# Both tests hold the FUTURE flat, so underlying progress is exactly zero and
+# the time stop's own condition is unambiguously met. Only the premium differs.
+# ---------------------------------------------------------------------------
+
+@pytest.mark.asyncio
+async def test_time_stop_defers_when_the_premium_is_in_profit(
+    kite, db_path, book, monkeypatch,
+):
+    monkeypatch.setattr(settings, "FNO_DR_DISABLE_PAPER", True)
+    monkeypatch.setattr(settings, "FNO_TIME_STOP_RESPECTS_PREMIUM", True)
+    from performance import init_ledger
+    await init_ledger(db_path)
+    await run_fno_tick(kite, db_path=db_path, regime="REGIME_1_NORMAL", now_ist=NOW)
+
+    # Well past FNO_TIME_STOP_MIN, underlying unchanged, premium up.
+    later = NOW + timedelta(minutes=settings.FNO_TIME_STOP_MIN + 5)
+    kite.quote_table = _quote_table(book, later, opt_bid_shift=+8.0)
+    summary = await run_fno_tick(kite, db_path=db_path, regime="REGIME_1_NORMAL",
+                                 now_ist=later)
+
+    assert summary["exits"] == [], (
+        "a position up on premium was cut by the clock; this is the "
+        "2026-08-03 +Rs 530 exit reproducing"
+    )
+    import aiosqlite
+    async with aiosqlite.connect(db_path) as db:
+        async with db.execute(
+            "SELECT status FROM fno_positions WHERE source='FNO_PAPER'"
+        ) as cur:
+            assert (await cur.fetchone())[0] == "OPEN"
+
+
+@pytest.mark.asyncio
+async def test_time_stop_still_cuts_a_losing_position_on_schedule(
+    kite, db_path, book, monkeypatch,
+):
+    """The deferral must not disable the time stop. A trade going nowhere on
+    the underlying AND losing on premium is still cut -- that is the whole
+    purpose of the clock."""
+    monkeypatch.setattr(settings, "FNO_DR_DISABLE_PAPER", True)
+    monkeypatch.setattr(settings, "FNO_TIME_STOP_RESPECTS_PREMIUM", True)
+    from performance import init_ledger
+    await init_ledger(db_path)
+    await run_fno_tick(kite, db_path=db_path, regime="REGIME_1_NORMAL", now_ist=NOW)
+
+    later = NOW + timedelta(minutes=settings.FNO_TIME_STOP_MIN + 5)
+    kite.quote_table = _quote_table(book, later, opt_bid_shift=-4.0)
+    summary = await run_fno_tick(kite, db_path=db_path, regime="REGIME_1_NORMAL",
+                                 now_ist=later)
+
+    assert len(summary["exits"]) == 1
+    assert summary["exits"][0]["reason"] == "time_stop"
+
+
+@pytest.mark.asyncio
+async def test_premium_deferral_can_be_switched_off(kite, db_path, book, monkeypatch):
+    """Flag off restores the pre-2026-08-04 behaviour exactly, so the change
+    is reversible without a code edit if the paper record argues against it."""
+    monkeypatch.setattr(settings, "FNO_DR_DISABLE_PAPER", True)
+    monkeypatch.setattr(settings, "FNO_TIME_STOP_RESPECTS_PREMIUM", False)
+    from performance import init_ledger
+    await init_ledger(db_path)
+    await run_fno_tick(kite, db_path=db_path, regime="REGIME_1_NORMAL", now_ist=NOW)
+
+    later = NOW + timedelta(minutes=settings.FNO_TIME_STOP_MIN + 5)
+    kite.quote_table = _quote_table(book, later, opt_bid_shift=+8.0)
+    summary = await run_fno_tick(kite, db_path=db_path, regime="REGIME_1_NORMAL",
+                                 now_ist=later)
+
+    assert len(summary["exits"]) == 1
+    assert summary["exits"][0]["reason"] == "time_stop"

@@ -31,6 +31,10 @@ _COLUMNS = [
     "atr", "rvol", "ema_fast", "ema_slow", "tradingsymbol", "strike",
     "opt_type", "expiry", "premium", "iv", "delta", "spread_pct", "oi",
     "volume", "lots", "max_loss_rupees", "min_pool_required",
+    # [POOL-AUDIT 2026-08-04] The pool the gate was actually evaluated against.
+    # min_pool_required alone records the threshold but not what cleared it,
+    # which made the 2026-08-03 F&O rows unfalsifiable -- see fno_orchestrator.
+    "pool_at_eval",
 ]
 
 
@@ -43,6 +47,16 @@ async def init_fno_signal_db(db_path: str) -> None:
     try:
         async with aiosqlite.connect(db_path) as db:
             await db.execute(f"CREATE TABLE IF NOT EXISTS fno_signals ({cols_sql})")
+            # CREATE TABLE IF NOT EXISTS is a no-op on an existing table, so a
+            # column added to _COLUMNS after first deploy would never appear and
+            # every INSERT would fail with "no such column". Backfill missing
+            # columns explicitly -- the same discipline as position_tracker.
+            async with db.execute("PRAGMA table_info(fno_signals)") as cur:
+                existing = {r[1] for r in await cur.fetchall()}
+            for col in _COLUMNS:
+                if col not in existing:
+                    await db.execute(f"ALTER TABLE fno_signals ADD COLUMN {col} REAL")
+                    logger.info("fno_signal_db_column_added column=%s", col)
             await db.commit()
     except Exception as e:
         logger.error("fno_signal_db_init_failed db=%s error=%s", db_path, str(e))
@@ -78,6 +92,7 @@ async def log_fno_signal(
     lots: Optional[int] = None,
     max_loss_rupees: Optional[float] = None,
     min_pool_required: Optional[float] = None,
+    pool_at_eval: Optional[float] = None,
 ) -> None:
     """Best-effort append of one evaluation row to CSV + SQLite."""
     from config import settings
@@ -112,6 +127,7 @@ async def log_fno_signal(
         "lots": lots,
         "max_loss_rupees": max_loss_rupees,
         "min_pool_required": min_pool_required,
+        "pool_at_eval": pool_at_eval,
     }
 
     # 1. CSV append

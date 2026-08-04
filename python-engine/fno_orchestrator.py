@@ -209,6 +209,45 @@ async def _manage_open_positions(
                     if progress < settings.FNO_TIME_STOP_MIN_R * r_points:
                         timed_out = True
 
+                    # [TIME-STOP-PREMIUM 2026-08-04] Do not cut a position that
+                    # is making money.
+                    #
+                    # The clause above measures progress in UNDERLYING points
+                    # while the P&L is in PREMIUM, and on a near-ATM long the
+                    # two are separated by delta. Requiring 0.5R of underlying
+                    # movement on a 31-point R means ~16 index points, which on
+                    # a 0.49-delta contract is ~8 premium points -- a quarter of
+                    # a 30-rupee option. So a contract could be up 15% and still
+                    # read as "gone nowhere".
+                    #
+                    # That is not hypothetical. The time stop is the single
+                    # biggest loser in this book (8 exits, -7,010) and two of
+                    # those eight were CUT WHILE PROFITABLE: 2026-07-23 at
+                    # +286 and 2026-08-03 at +530. Meanwhile trail_stop is the
+                    # only exit reason with positive expectancy in the book's
+                    # entire history (2 exits, +2,869, avg +0.62R) -- and a
+                    # trade can only reach the trail by surviving long enough
+                    # to get there.
+                    #
+                    # So the clock now only cuts trades that are BOTH going
+                    # nowhere on the underlying AND not in profit on premium.
+                    # A losing position is still cut on schedule; the whole
+                    # point of the time stop is preserved.
+                    if timed_out and settings.FNO_TIME_STOP_RESPECTS_PREMIUM:
+                        premium_pnl_per_lot = (exit_px_basis - p.entry_premium)
+                        if p.direction == "SHORT":
+                            premium_pnl_per_lot = -premium_pnl_per_lot
+                        if exit_px_basis > 0 and premium_pnl_per_lot > 0:
+                            timed_out = False
+                            logger.info(
+                                "fno_time_stop_deferred_in_profit id=%d age=%.0f "
+                                "underlying_progress=%.1f needed=%.1f "
+                                "premium_pnl_per_unit=%.2f",
+                                p.id, age_min, progress,
+                                settings.FNO_TIME_STOP_MIN_R * r_points,
+                                premium_pnl_per_lot,
+                            )
+
             if stopped:
                 exit_reason = "underlying_stop"
             elif trailed:
@@ -383,6 +422,16 @@ async def _try_entry_for_leg(
         min_pool_required=min_viable_pool(
             ask, lot_size, settings.FNO_STOP_PREMIUM_PCT, settings.FNO_MAX_RISK_PCT,
         ),
+        # [POOL-AUDIT 2026-08-04] Log the pool the gate was actually evaluated
+        # against, not just the threshold it had to clear.
+        #
+        # Without this the row is unfalsifiable. The 2026-08-03 audit read
+        # min_pool_required=24,821 next to a bankroll_ledger showing FNO_PAPER
+        # at -10,329 and concluded the gate had been bypassed. It had not: the
+        # ledger column omitted the division's allocation, while sizing used
+        # the full 250,000 pool. The two numbers were describing different
+        # things and nothing in the signal row said which one the gate saw.
+        pool_at_eval=round(float(pool), 2),
     )
 
     ok, reject = evaluate_entry_gates(ctx)

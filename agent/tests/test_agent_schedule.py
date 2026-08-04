@@ -131,65 +131,60 @@ class TestScheduleRegistration:
         assert len(clear_jobs) >= 1
 
 
-EXPECTED_MOMENTUM_TIMES = {
-    f"{h:02d}:{m:02d}" for h in range(10, 15) for m in (10, 25, 40, 55)
-} | {"15:10", "15:25"}
-
-
 class TestMomentumSchedule:
-    """[FIX 2026-07-11 POLL-CADENCE] Momentum polls every 15 min, ~10 min
-    after each engine scan start (:10/:25/:40/:55, hours 10-14), plus
-    15:10/15:25 stragglers. Hourly :55 polling delayed button alerts by
-    up to an hour; on 2026-07-10 only 3 of 17 signals were ever polled."""
+    """[POLL-CADENCE 2026-08-04] Momentum now polls on a bare 3-minute
+    interval, gated to market hours inside run_momentum_pipeline().
 
-    def test_momentum_poll_times(self, load_agent_main):
-        """run_momentum_pipeline at every expected 15-min slot."""
+    It used to be a fixed :10/:25/:40/:55 weekday grid sized for scans that
+    took 5.6-9.1 min. Scans got faster and the grid became dead time: on
+    2026-08-03 all three accepted signals waited 7.1-7.6 minutes between
+    engine accept and Telegram alert, with a 15-minute worst case. Latency
+    moves the fill away from the price the signal was priced on, which is
+    how SUMICHEM's entry drifted -0.37% before the operator ever saw the
+    button."""
+
+    def test_momentum_polls_on_a_bare_interval_not_a_time_grid(self, load_agent_main):
+        """No momentum job may be pinned to a wall-clock slot."""
         momentum_jobs = [
             j for j in schedule.get_jobs()
             if "run_momentum_pipeline" in str(j.job_func)
         ]
-        actual_times = {
-            j.at_time.strftime("%H:%M") for j in momentum_jobs if j.at_time
-        }
-        assert actual_times == EXPECTED_MOMENTUM_TIMES, (
-            f"Momentum times mismatch. Expected {sorted(EXPECTED_MOMENTUM_TIMES)}, "
-            f"got {sorted(actual_times)}"
+        assert momentum_jobs, "no momentum poll job registered"
+        pinned = [j for j in momentum_jobs if j.at_time is not None]
+        assert not pinned, (
+            f"{len(pinned)} momentum jobs are still pinned to wall-clock slots; "
+            "the interval poll replaced the grid"
         )
 
-    def test_momentum_per_time_slot_has_5_weekday_jobs(self, load_agent_main):
-        """Each poll slot should have exactly 5 jobs (Mon-Fri)."""
-        for hhmm in sorted(EXPECTED_MOMENTUM_TIMES):
-            jobs = [
-                j for j in schedule.get_jobs()
-                if "run_momentum_pipeline" in str(j.job_func)
-                and j.at_time is not None
-                and j.at_time.strftime("%H:%M") == hhmm
-            ]
-            assert len(jobs) == 5, f"Expected 5 jobs for {hhmm}, got {len(jobs)}"
-
-    def test_no_momentum_at_00_15_30_45(self, load_agent_main):
-        """Momentum polls must NOT collide with engine scan starts
-        (:00, :15, :30, :45) -- polling mid-scan would read the previous
-        scan's (pre-cumulative-fix: wiped) state."""
-        bad_minutes = {"00", "15", "30", "45"}
-        momentum_jobs = [
-            j for j in schedule.get_jobs()
-            if "run_momentum_pipeline" in str(j.job_func)
-            and j.at_time is not None
-        ]
-        for j in momentum_jobs:
-            minute = j.at_time.strftime("%M")
-            assert minute not in bad_minutes, (
-                f"Momentum job found at minute :{minute} - collides with scan start"
-            )
-
-    def test_total_momentum_jobs(self, load_agent_main):
-        """22 time slots x 5 weekdays = 110 momentum jobs total."""
+    def test_exactly_one_momentum_job(self, load_agent_main):
+        """One interval job, not 110 weekday jobs."""
         momentum_jobs = [
             j for j in schedule.get_jobs()
             if "run_momentum_pipeline" in str(j.job_func)
         ]
-        expected = len(EXPECTED_MOMENTUM_TIMES) * 5
-        assert len(momentum_jobs) == expected, (
-            f"Expected {expected} momentum jobs, got {len(momentum_jobs)}"
+        assert len(momentum_jobs) == 1, (
+            f"expected a single interval job, got {len(momentum_jobs)}"
         )
+
+    def test_poll_interval_is_three_minutes(self, load_agent_main):
+        """Caps the agent's share of alert latency at 3 min."""
+        job = next(
+            j for j in schedule.get_jobs()
+            if "run_momentum_pipeline" in str(j.job_func)
+        )
+        assert job.interval == 3
+        assert job.unit == "minutes"
+
+    def test_pipeline_is_gated_to_market_hours(self, load_agent_main):
+        """A bare interval fires around the clock, so the gate lives in the
+        function. Without it the agent would poll ~470 times a night."""
+        import datetime as _dt
+        agent = load_agent_main
+        # Sunday 11:00 -- weekend
+        assert agent._is_market_hours(_dt.datetime(2026, 8, 2, 11, 0)) is False
+        # Monday 03:00 -- before the open
+        assert agent._is_market_hours(_dt.datetime(2026, 8, 3, 3, 0)) is False
+        # Monday 23:00 -- after the close
+        assert agent._is_market_hours(_dt.datetime(2026, 8, 3, 23, 0)) is False
+        # Monday 11:02 -- the minute SUMICHEM was accepted
+        assert agent._is_market_hours(_dt.datetime(2026, 8, 3, 11, 2)) is True
