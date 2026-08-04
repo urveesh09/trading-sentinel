@@ -286,6 +286,7 @@ class PennyExecutor:
                 order_type="LIMIT",
                 price=limit_price,
                 validity="DAY",
+                intent="entry", channel="penny",
             )
         except Exception as e:
             logger.error("penny_entry_rejected ticker=%s error=%s", ticker, str(e))
@@ -568,6 +569,8 @@ class PennyExecutor:
                     price=limit,
                     validity="DAY",
                     tag="QUANT_PENNY_SL",
+                    # A protective stop is an exit: never halt-gated.
+                    intent="exit", channel="penny",
                 )
                 if resp.get("status") in ("REJECTED", "ERROR"):
                     logger.error(
@@ -621,6 +624,8 @@ class PennyExecutor:
                 price=limit,
                 validity="DAY",
                 tag="QUANT_PENNY_UNWIND",
+                # Unwinding an unprotected position is an exit: never gated.
+                intent="exit", channel="penny",
             )
             if resp.get("status") in ("REJECTED", "ERROR"):
                 logger.error(

@@ -85,7 +85,10 @@ router.post('/square-off', requireInternalSecret, validate(squareOffSchema, 'bod
       orderParams.price = effectivePrice;
     }
 
-    const orderId = await kite.placeOrder(orderParams);
+    // Square-off is an EXIT: never halt-gated. Blocking it would leave the
+    // position open past its square-off with no protection, which is the
+    // opposite of what a kill switch is for.
+    const orderId = await kite.placeOrder(orderParams, { intent: 'exit', channel: 'momentum' });
     
     // Log the square-off event
     console.log(`[SQUARE-OFF] ${ticker} | Qty: ${shares} | Type: ${order_type} | Reason: ${reason || 'N/A'}`);

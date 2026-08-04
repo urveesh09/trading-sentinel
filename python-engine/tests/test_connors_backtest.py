@@ -192,3 +192,110 @@ def test_t_stat_is_reported_so_small_samples_cannot_masquerade_as_edge():
     s = stats(trades)
     assert "t_stat" in s and s["n"] == 3
     assert abs(s["t_stat"]) < 2.0, "3 trades must not clear a significance bar"
+
+
+# ── [SKILL 2026-08-05] The random control ────────────────────────────────
+
+from connors_backtest import (                                 # noqa: E402
+    last_entry_index, simulate_trade, skill_control,
+)
+
+
+def test_simulate_trade_refuses_a_bar_with_no_full_exit_window():
+    """The control MUST inherit the truncation bound.
+
+    If the random control were allowed the arbitrary last-cached-close exit
+    that the real book is denied, the comparison would measure a difference in
+    exit rules rather than a difference in selection -- and over a rising
+    sample that difference flatters the control, understating real skill.
+    """
+    max_hold = settings.PENNY_CONNORS_MAX_HOLD_DAYS
+    bars = _bars(_rising_series(300))
+    last = last_entry_index(bars, max_hold)
+
+    assert simulate_trade(bars, last - 1, max_hold) is not None
+    assert simulate_trade(bars, last, max_hold) is None
+    assert simulate_trade(bars, len(bars) - 1, max_hold) is None
+
+
+def _dated_bars(closes):
+    """Bars with DISTINCT dates. `_bars` stamps every row 2026-01-01, which is
+    fine for the single-series tests above but collides in the control's
+    per-day candidate index."""
+    from datetime import date, timedelta
+    d0 = date(2024, 1, 1)
+    out, prev = [], closes[0]
+    for k, c in enumerate(closes):
+        out.append(((d0 + timedelta(days=k)).isoformat(),
+                    prev, max(prev, c), min(prev, c), c, 1000.0))
+        prev = c
+    return out
+
+
+def _sawtooth(n=420, start=100.0, period=18, dip=0.05):
+    """Rising trend punctuated by two-day dips -- the shape Connors buys.
+
+    `_rising_series` is monotonic, so RSI(2) pins at 100 and NO signal ever
+    fires; the tests above that use it pass vacuously at zero trades. This one
+    actually produces entries, which is what the control needs.
+    """
+    out, price = [], start
+    for i in range(n):
+        if i % period in (period - 2, period - 1):
+            price *= (1 - dip)
+        else:
+            price *= 1.008
+        out.append(price)
+    return out
+
+
+def _multi_ticker_world(count=12, **kw):
+    return {f"T{i}": _dated_bars(_sawtooth(**kw)) for i in range(count)}
+
+
+def _all_trades(bars):
+    out = []
+    for tkr, b in bars.items():
+        trades, _r, _e = simulate({tkr: b}, rsi_buy=25.0, require_rising=False)
+        out.extend({"ticker": tkr, **t} for t in trades)
+    return out
+
+
+def test_the_sawtooth_fixture_actually_fires():
+    """Guard the guard: if this stops producing trades the control tests below
+    would silently become vacuous."""
+    bars = _multi_ticker_world()
+    assert len(_all_trades(bars)) >= 10
+
+
+def test_simulate_trade_matches_what_simulate_produces():
+    """The extracted single-trade simulator is the same code the book runs."""
+    bars = _dated_bars(_sawtooth())
+    trades, _r, _e = simulate({"T": bars}, rsi_buy=25.0, require_rising=False)
+    assert trades, "fixture should produce trades"
+
+    by_date = {b[0]: i for i, b in enumerate(bars)}
+    for t in trades[:5]:
+        direct = simulate_trade(bars, by_date[t["date"]],
+                                settings.PENNY_CONNORS_MAX_HOLD_DAYS)
+        assert direct is not None
+        assert direct["entry"] == pytest.approx(t["entry"])
+        assert direct["exit"] == pytest.approx(t["exit"])
+        assert direct["r_net"] == pytest.approx(t["r_net"])
+        assert direct["reason"] == t["reason"]
+
+
+def test_skill_control_runs_end_to_end_and_names_a_verdict():
+    bars = _multi_ticker_world()
+    report = skill_control(bars, _all_trades(bars), replications=25)
+    assert "SKILL TEST" in report
+    assert "VERDICT" in report
+
+
+def test_skill_control_on_a_world_with_no_selection_edge_is_not_confirmed():
+    """Every ticker is an identical series, so selection CANNOT carry
+    information. The control must absorb the shared drift and refuse to
+    confirm skill."""
+    bars = {f"T{i}": _dated_bars(_sawtooth()) for i in range(12)}
+    report = skill_control(bars, _all_trades(bars), replications=60)
+    assert "confirmed_skill" not in report

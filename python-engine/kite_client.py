@@ -9,6 +9,7 @@ import structlog
 from datetime import datetime, timedelta, timezone
 import aiosqlite
 from config import settings
+from halt_switch import TradingHalted, assert_not_halted
 
 logger = structlog.get_logger()
 
@@ -853,15 +854,53 @@ class KiteClient:
         trigger_price: float = None,
         validity: str = "DAY",
         tag: str = None,
+        *,
+        intent: str,
+        channel: Optional[str] = None,
     ) -> dict:
         """
         Place an order on Kite.
         Kite endpoint: POST /orders/{variety}
         Returns: {order_id, status, message}
+
+        `intent` is REQUIRED and keyword-only, and it is the halt boundary.
+
+        [HALT 2026-08-05] The kill switch blocks ENTRIES and never blocks
+        EXITS. Refusing an exit during a halt would strand a live position with
+        no protective stop -- strictly worse than whatever condition tripped the
+        halt in the first place. So `intent="entry"` is gated and
+        `intent="exit"` always proceeds.
+
+        There is deliberately no default. A default would let a future call site
+        inherit the wrong side of that boundary silently, and both directions of
+        that mistake are expensive: a forgotten exit gets blocked and goes
+        naked, a forgotten entry trades straight through a halt. Making it
+        required converts either mistake into an immediate TypeError.
         """
+        if intent not in ("entry", "exit"):
+            raise ValueError(f"intent must be 'entry' or 'exit', got {intent!r}")
+
         if not tradingsymbol or quantity <= 0:
             return {"order_id": None, "status": "ERROR",
                     "message": "tradingsymbol and positive quantity are required"}
+
+        if intent == "entry":
+            try:
+                assert_not_halted(channel)
+            except TradingHalted as exc:
+                logger.error(
+                    "kite_order_blocked_by_halt",
+                    tradingsymbol=tradingsymbol, channel=channel,
+                    scope=exc.attribution.get("scope"),
+                    by=exc.attribution.get("by"),
+                    reason=exc.attribution.get("reason"),
+                )
+                # Status is "ERROR", not a novel "HALTED": every caller already
+                # branches on ERROR / falsy order_id, and inventing a status
+                # string they do not know would read as SUCCESS. The `halted`
+                # flag is there for callers that want to tell the two apart.
+                return {"order_id": None, "status": "ERROR", "halted": True,
+                        "message": str(exc)}
         params = {
             "exchange": exchange,
             "tradingsymbol": tradingsymbol.upper(),

@@ -130,6 +130,20 @@ if (config.TELEGRAM_MODE === 'webhook') {
         cmd = rest === '' ? 'performance' : rest.split(' ')[0];
         args = rest.split(' ').slice(1).join(' ');
         httpMethod = 'GET';
+      } else if (text === '/halt' || text.startsWith('/halt ')
+                 || text === '/resume' || text.startsWith('/resume ')) {
+        // [HALT 2026-08-05] Kill switch. A bare /halt or /resume with no
+        // argument is READ-ONLY (GET, shows state); supplying an argument is
+        // the mutating form (POST). That asymmetry is deliberate: the natural
+        // fat-finger — typing /halt to see whether we are halted — must not
+        // itself halt trading, and /resume with no argument must not silently
+        // re-arm a system somebody stopped for a reason.
+        prefix = '';
+        const isHalt = text.startsWith('/halt');
+        const word = isHalt ? '/halt' : '/resume';
+        args = text.slice(word.length).trim();
+        cmd = word.slice(1);
+        httpMethod = args ? 'POST' : 'GET';
       } else if (text === '/divisions' || text === '/bankroll') {
         // [DIVISION-BREAKDOWN 2026-07-15] Per-division P&L attribution.
         prefix = '';

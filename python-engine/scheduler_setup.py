@@ -292,6 +292,45 @@ def register_penny_scheduler_jobs(scheduler):
         id="daily_bootstrap_tick",
         max_instances=1, coalesce=True,
     )
+
+    # [HALT 2026-08-05] Make the circuit breakers bite.
+    #
+    # check_circuit_breakers has returned a correct verdict since the system was
+    # built and NOTHING ever read it on an entry path -- the candour is already
+    # in the tree at partner_orchestrator.py:533. This job closes that loop: a
+    # breached breaker trips the filesystem sentinel, and every order path
+    # checks the sentinel before an entry.
+    #
+    # 120s, not 600s: the breakers exist to stop a bleeding day, and a
+    # ten-minute blind spot is long enough for the momentum book to open
+    # another position after the daily-loss limit is already gone. The check is
+    # three cheap indexed reads against cache.db.
+    async def _enforce_circuit_breakers_safe():
+        if not settings.HALT_AUTO_TRIP_ON_CIRCUIT_BREAKER:
+            return
+        try:
+            from performance import enforce_circuit_breakers
+            halted, reasons, newly = await enforce_circuit_breakers(settings.DB_PATH)
+            if newly:
+                # Page once, on the transition only.
+                from operator_alert import notify_operator
+                await notify_operator(
+                    "TRADING HALTED — circuit breaker\n\n"
+                    f"reasons: {', '.join(reasons)}\n\n"
+                    "New entries are blocked in every book. Exits (stops, "
+                    "unwinds, square-off) still work normally.\n\n"
+                    "Review, then clear with /resume global",
+                    event="circuit_breaker_halt",
+                )
+        except Exception as exc:
+            logger.error("circuit_breaker_enforce_failed err=%s", exc, exc_info=True)
+
+    scheduler.add_job(
+        _enforce_circuit_breakers_safe, "interval",
+        seconds=120,
+        id="circuit_breaker_enforce",
+        max_instances=1, coalesce=True, misfire_grace_time=60,
+    )
     # [PENNY-PREMARKET 2026-06-24] Pre-market Telegram digest -- fires
     # once per weekday at PENNY_PREMARKET_REPORT_HOUR:PENNY_PREMARKET_REPORT_MIN
     # IST (default 07:50). Reads the universe JSON, lists size + top-N,

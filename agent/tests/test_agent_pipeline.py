@@ -68,6 +68,19 @@ class TestFetchSignals:
             result = agent_mod.fetch_signals()
             assert result == [] or result is None
 
+def _review(payload=None, *, unavailable_reason=None):
+    """[ADVISORY 2026-08-05] Wrap a legacy analysis dict as a typed Review.
+
+    The pipelines now consume Review objects rather than dict|None, so a test
+    that patches analyze_with_minimax has to hand back the same shape the real
+    function does.
+    """
+    from advisory import from_payload, unavailable
+    if unavailable_reason is not None:
+        return unavailable(unavailable_reason)
+    return from_payload(payload or {})
+
+
 class TestAnalyzeWithMiniMax:
     def test_returns_parsed_output(self, agent_mod):
         content = json.dumps({
@@ -85,10 +98,14 @@ class TestAnalyzeWithMiniMax:
             "Some sentiment text",
             "BULL",
         )
-        assert result["conviction_score"] == 75
-        assert "pitch" in result
+        assert result.verdict.value == "approve"
+        assert result.conviction == 75
+        assert "pitch" in result.payload
 
-    def test_returns_none_on_failure(self, agent_mod):
+    def test_api_failure_is_review_unavailable_with_a_named_reason(self, agent_mod):
+        """[ADVISORY 2026-08-05] Not None. The caller has to be able to tell an
+        outage from an opinion -- collapsing both into None is what let a
+        timed-out review masquerade as an approval."""
         agent_mod.client = MagicMock()
         agent_mod.client.chat.completions.create.side_effect = Exception("API down")
 
@@ -97,7 +114,9 @@ class TestAnalyzeWithMiniMax:
             "",
             "BULL",
         )
-        assert result is None
+        assert result.verdict.value == "review_unavailable"
+        assert result.reason == "api_error"
+        assert result.available is False
 
     def test_parses_content_wrapped_in_markdown_fence(self, agent_mod):
         # MiniMax is told to emit bare JSON but LLMs sometimes fence it anyway;
@@ -117,9 +136,9 @@ class TestAnalyzeWithMiniMax:
             "",
             "BULL",
         )
-        assert result["conviction_score"] == 60
+        assert result.conviction == 60
 
-    def test_returns_none_on_unparseable_output(self, agent_mod):
+    def test_unparseable_output_is_review_unavailable(self, agent_mod):
         agent_mod.client = MagicMock()
         agent_mod.client.chat.completions.create.return_value = _fake_llm_response(
             "I cannot help with that request."
@@ -130,7 +149,8 @@ class TestAnalyzeWithMiniMax:
             "",
             "BULL",
         )
-        assert result is None
+        assert result.verdict.value == "review_unavailable"
+        assert result.reason == "unparseable_output"
 
     def test_parses_content_with_reasoning_think_block(self, agent_mod):
         # [MINIMAX-REASONING 2026-07-16] MiniMax-M3 emits a <think>...</think>
@@ -156,13 +176,14 @@ class TestAnalyzeWithMiniMax:
             "",
             "UNKNOWN",
         )
-        assert result["conviction_score"] == 72
-        assert result["pitch"] == "Momentum with volume"
+        assert result.conviction == 72
+        assert result.payload["pitch"] == "Momentum with volume"
 
-    def test_returns_none_on_unclosed_think_block(self, agent_mod):
+    def test_unclosed_think_block_is_review_unavailable(self, agent_mod):
         # Reasoning ran past max_tokens: content is an unclosed <think> with no
-        # JSON ever emitted. There is nothing to recover -> None -> the caller
-        # correctly takes the fail-open SYSTEM FALLBACK path.
+        # JSON ever emitted. Nothing to recover -> REVIEW_UNAVAILABLE -> the
+        # caller takes the fail-open SYSTEM FALLBACK path, but now the banner
+        # names the reason instead of saying "AI analysis failed".
         agent_mod.client = MagicMock()
         agent_mod.client.chat.completions.create.return_value = _fake_llm_response(
             "<think>\nLet me analyze this trade carefully. The setup shows"
@@ -173,7 +194,8 @@ class TestAnalyzeWithMiniMax:
             "",
             "UNKNOWN",
         )
-        assert result is None
+        assert result.verdict.value == "review_unavailable"
+        assert result.reason == "unparseable_output"
 
 
 class TestDeduplication:
@@ -202,7 +224,7 @@ class TestRunPipeline:
 
         with patch("requests.get", return_value=mock_resp), \
              patch.object(agent_mod, "scrape_sentiment", return_value=""), \
-             patch.object(agent_mod, "analyze_with_minimax", return_value=low_analysis), \
+             patch.object(agent_mod, "analyze_with_minimax", return_value=_review(low_analysis)), \
              patch.object(agent_mod, "send_telegram_alert") as mock_send, \
              patch("time.sleep"):
             agent_mod.processed_signals_today.clear()
@@ -228,7 +250,7 @@ class TestRunPipeline:
 
         with patch("requests.get", return_value=mock_resp), \
              patch.object(agent_mod, "scrape_sentiment", return_value=""), \
-             patch.object(agent_mod, "analyze_with_minimax", return_value=high_analysis), \
+             patch.object(agent_mod, "analyze_with_minimax", return_value=_review(high_analysis)), \
              patch.object(agent_mod, "send_telegram_alert") as mock_send, \
              patch("time.sleep"):
             agent_mod.processed_signals_today.clear()
@@ -318,7 +340,7 @@ class TestRunMomentumPipeline:
 
         with patch("requests.get", return_value=mock_resp), \
              patch.object(agent_mod, "scrape_sentiment", side_effect=sentiment_side_effect), \
-             patch.object(agent_mod, "analyze_with_minimax", return_value=high_analysis), \
+             patch.object(agent_mod, "analyze_with_minimax", return_value=_review(high_analysis)), \
              patch.object(agent_mod, "send_momentum_telegram_alert") as mock_send, \
              patch("time.sleep"):
             agent_mod.processed_signals_today.clear()
@@ -345,7 +367,7 @@ class TestRunMomentumPipeline:
 
         with patch("requests.get", return_value=mock_resp), \
              patch.object(agent_mod, "scrape_sentiment", return_value=""), \
-             patch.object(agent_mod, "analyze_with_minimax", return_value=low_analysis), \
+             patch.object(agent_mod, "analyze_with_minimax", return_value=_review(low_analysis)), \
              patch.object(agent_mod, "send_momentum_telegram_alert") as mock_buttons, \
              patch.object(agent_mod, "send_conviction_veto_notice") as mock_veto, \
              patch("time.sleep"):
@@ -360,7 +382,7 @@ class TestRunMomentumPipeline:
         signal = {"ticker": "COCHINSHIP", "close": 100, "target_1": 110, "stop_loss": 90}
         with patch("requests.post") as mock_post:
             mock_post.return_value = MagicMock(raise_for_status=MagicMock())
-            agent_mod.send_conviction_veto_notice(signal, analysis)
+            agent_mod.send_conviction_veto_notice(signal, _review(analysis))
             mock_post.assert_called_once()
             payload = mock_post.call_args[1]["json"]
             assert "COCHINSHIP" in payload["text"]
@@ -372,7 +394,7 @@ class TestRunMomentumPipeline:
         signal = {"ticker": "COCHINSHIP"}
         with patch("requests.post", side_effect=Exception("network down")):
             # Must not raise
-            agent_mod.send_conviction_veto_notice(signal, analysis)
+            agent_mod.send_conviction_veto_notice(signal, _review(analysis))
 
     def test_processes_new_momentum_signal(self, agent_mod):
         mock_resp = MagicMock()
@@ -387,7 +409,7 @@ class TestRunMomentumPipeline:
 
         with patch("requests.get", return_value=mock_resp), \
              patch.object(agent_mod, "scrape_sentiment", return_value=""), \
-             patch.object(agent_mod, "analyze_with_minimax", return_value=high_analysis), \
+             patch.object(agent_mod, "analyze_with_minimax", return_value=_review(high_analysis)), \
              patch.object(agent_mod, "send_momentum_telegram_alert") as mock_send, \
              patch("time.sleep"):
             agent_mod.processed_signals_today.clear()
@@ -408,7 +430,7 @@ class TestSendTelegramAlert:
 
         with patch("requests.post") as mock_post:
             mock_post.return_value = MagicMock(raise_for_status=MagicMock())
-            agent_mod.send_telegram_alert(signal, analysis)
+            agent_mod.send_telegram_alert(signal, _review(analysis))
             mock_post.assert_called_once()
             call_kwargs = mock_post.call_args
             payload = call_kwargs[1].get("json") or call_kwargs[0][1] if len(call_kwargs[0]) > 1 else call_kwargs[1]["json"]
@@ -424,7 +446,7 @@ class TestSendTelegramAlert:
 
         with patch("requests.post") as mock_post:
             mock_post.return_value = MagicMock(raise_for_status=MagicMock())
-            agent_mod.send_telegram_alert(signal, None)
+            agent_mod.send_telegram_alert(signal, _review(unavailable_reason='timeout_100s'))
             mock_post.assert_called_once()
             payload = mock_post.call_args[1]["json"]
             assert "FALLBACK" in payload["text"]

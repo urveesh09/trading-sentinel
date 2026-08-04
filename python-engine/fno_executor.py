@@ -69,7 +69,7 @@ class FnoExecutor:
                 "order_id": f"PAPER-FNO-ENT-{uuid4().hex[:8]}",
                 "fill_price": ask,
             }
-        resp = await self._place_limit(tradingsymbol, "BUY", qty, ask)
+        resp = await self._place_limit(tradingsymbol, "BUY", qty, ask, intent="entry")
         order_id = resp.get("order_id")
         if not order_id:
             return {"status": "rejected", "order_id": None, "fill_price": None}
@@ -106,7 +106,7 @@ class FnoExecutor:
 
         if hard_flat:
             price = max(tick_size, bid - HARD_FLAT_TICKS_THROUGH * tick_size)
-            resp = await self._place_limit(tradingsymbol, "SELL", qty, price)
+            resp = await self._place_limit(tradingsymbol, "SELL", qty, price, intent="exit")
             order_id = resp.get("order_id")
             fill = await self._wait_for_fill(order_id) if order_id else None
             if fill is None:
@@ -119,7 +119,7 @@ class FnoExecutor:
             return {"status": "filled", "order_id": order_id, "fill_price": fill}
 
         # Normal exit ladder: bid, then bid - 3 ticks.
-        resp = await self._place_limit(tradingsymbol, "SELL", qty, bid)
+        resp = await self._place_limit(tradingsymbol, "SELL", qty, bid, intent="exit")
         order_id = resp.get("order_id")
         if not order_id:
             return {"status": "rejected", "order_id": None, "fill_price": None}
@@ -128,7 +128,7 @@ class FnoExecutor:
             return {"status": "filled", "order_id": order_id, "fill_price": fill}
         await self._cancel_quietly(order_id)
         price2 = max(tick_size, bid - 3 * tick_size)
-        resp2 = await self._place_limit(tradingsymbol, "SELL", qty, price2)
+        resp2 = await self._place_limit(tradingsymbol, "SELL", qty, price2, intent="exit")
         order_id2 = resp2.get("order_id")
         fill2 = await self._wait_for_fill(order_id2) if order_id2 else None
         if fill2 is None:
@@ -147,7 +147,10 @@ class FnoExecutor:
 
     async def _place_limit(
         self, tradingsymbol: str, txn: str, qty: int, price: float,
+        *, intent: str,
     ) -> dict:
+        """`intent` is required: see KiteClient.place_order. Entries are
+        halt-gated, the exit ladder never is."""
         try:
             return await self.kite.place_order(
                 variety="regular",
@@ -160,6 +163,7 @@ class FnoExecutor:
                 price=round(price, 2),
                 validity="DAY",
                 tag=self.source_tag[:20],
+                intent=intent, channel="fno",
             )
         except Exception as e:
             logger.error(

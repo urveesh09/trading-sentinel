@@ -125,6 +125,7 @@ def test_place_order_posts_to_orders_regular(mock_kite_client):
     result = asyncio.run(client.place_order(
         tradingsymbol="AAA", transaction_type="BUY", quantity=50,
         product="MIS", order_type="LIMIT", price=12.5,
+        intent="entry",
     ))
     assert result["status"] == "PLACED"
     assert result["order_id"] == "ORD-001"
@@ -142,9 +143,9 @@ def test_place_order_posts_to_orders_regular(mock_kite_client):
 def test_place_order_validates_inputs(mock_kite_client):
     """Empty tradingsymbol or zero quantity -> ERROR without API call."""
     client, requests = mock_kite_client
-    result = asyncio.run(client.place_order(tradingsymbol="", quantity=50))
+    result = asyncio.run(client.place_order(tradingsymbol="", quantity=50, intent="entry"))
     assert result["status"] == "ERROR"
-    result = asyncio.run(client.place_order(tradingsymbol="AAA", quantity=0))
+    result = asyncio.run(client.place_order(tradingsymbol="AAA", quantity=0, intent="entry"))
     assert result["status"] == "ERROR"
     # No POST was made
     assert not any(r["method"] == "POST" for r in requests)
@@ -156,6 +157,7 @@ def test_place_order_with_sl_m_sends_trigger_price(mock_kite_client):
     asyncio.run(client.place_order(
         tradingsymbol="AAA", transaction_type="SELL", quantity=50,
         product="MIS", order_type="SL-M", trigger_price=11.5,
+        intent="exit",
     ))
     post = next(r for r in requests if r["method"] == "POST")
     assert "trigger_price=11.5" in post["content"]
@@ -191,3 +193,86 @@ def test_methods_go_through_rate_limiter():
         source = inspect.getsource(method)
         assert "self.limiter.acquire" in source, \
             f"{name} does not go through rate limiter"
+
+
+# ── [HALT 2026-08-05] Kill-switch enforcement at the broker boundary ──────
+#
+# The boundary property that matters: a halt blocks ENTRIES and never blocks
+# EXITS. Refusing an exit would strand a live position with no protective
+# stop -- strictly worse than whatever tripped the halt.
+
+@pytest.fixture
+def halt_dir(tmp_path, monkeypatch):
+    import halt_switch
+    monkeypatch.setattr(halt_switch, "HALT_DIR", str(tmp_path))
+    return tmp_path
+
+
+def test_halt_blocks_an_entry_before_any_http_call(mock_kite_client, halt_dir):
+    import halt_switch
+    client, requests = mock_kite_client
+    halt_switch.trip("daily loss limit", by="circuit_breaker")
+
+    result = asyncio.run(client.place_order(
+        tradingsymbol="AAA", transaction_type="BUY", quantity=50,
+        product="MIS", order_type="LIMIT", price=12.5, intent="entry",
+    ))
+
+    assert result["order_id"] is None
+    assert result["halted"] is True
+    assert "daily loss limit" in result["message"]
+    # The broker was never contacted.
+    assert not any(r["method"] == "POST" for r in requests)
+
+
+def test_halted_entry_reports_status_ERROR_not_a_novel_string(mock_kite_client, halt_dir):
+    """Callers branch on ("REJECTED", "ERROR"); an unknown status reads as success."""
+    import halt_switch
+    client, _ = mock_kite_client
+    halt_switch.trip("test")
+    result = asyncio.run(client.place_order(
+        tradingsymbol="AAA", quantity=50, intent="entry",
+    ))
+    assert result["status"] == "ERROR"
+
+
+def test_halt_does_NOT_block_an_exit(mock_kite_client, halt_dir):
+    """The whole point. A stop must still reach the broker during a halt."""
+    import halt_switch
+    client, requests = mock_kite_client
+    halt_switch.trip("everything is on fire")
+
+    result = asyncio.run(client.place_order(
+        tradingsymbol="AAA", transaction_type="SELL", quantity=50,
+        product="MIS", order_type="SL", trigger_price=11.0, price=10.9,
+        intent="exit",
+    ))
+
+    assert result["status"] == "PLACED"
+    assert any(r["method"] == "POST" for r in requests)
+
+
+def test_channel_halt_blocks_only_that_channel(mock_kite_client, halt_dir):
+    import halt_switch
+    client, _ = mock_kite_client
+    halt_switch.trip("penny is misbehaving", channel="penny")
+
+    blocked = asyncio.run(client.place_order(
+        tradingsymbol="AAA", quantity=50, intent="entry", channel="penny",
+    ))
+    allowed = asyncio.run(client.place_order(
+        tradingsymbol="AAA", quantity=50, intent="entry", channel="momentum",
+    ))
+
+    assert blocked.get("halted") is True
+    assert allowed["status"] == "PLACED"
+
+
+def test_intent_is_required_and_validated(mock_kite_client, halt_dir):
+    client, _ = mock_kite_client
+    with pytest.raises(TypeError):
+        asyncio.run(client.place_order(tradingsymbol="AAA", quantity=50))
+    with pytest.raises(ValueError):
+        asyncio.run(client.place_order(
+            tradingsymbol="AAA", quantity=50, intent="maybe",
+        ))

@@ -15,6 +15,13 @@ import schedule
 from openai import OpenAI
 from pydantic import BaseModel, ValidationError
 
+from advisory import (  # [ADVISORY 2026-08-05] typed verdicts
+    Review,
+    Verdict,
+    from_payload as review_from_payload,
+    unavailable as advisory_unavailable,
+)
+
 # -------------------------------------------------------------------------
 # CONFIG & LOGGING
 # -------------------------------------------------------------------------
@@ -83,6 +90,13 @@ MINIMAX_MODEL = os.getenv("MINIMAX_MODEL", "MiniMax-M3")
 MINIMAX_REQUEST_TIMEOUT_SEC = int(os.getenv("MINIMAX_REQUEST_TIMEOUT_SEC", "45"))
 MINIMAX_MAX_RETRIES = int(os.getenv("MINIMAX_MAX_RETRIES", "1"))
 MINIMAX_WALL_TIMEOUT_SEC = int(os.getenv("MINIMAX_WALL_TIMEOUT_SEC", "100"))
+# [ADVISORY 2026-08-05] What to do when the reviewer cannot render an opinion.
+# "proceed" (default) preserves today's behaviour exactly: the alert goes out
+# with an UNAVAILABLE banner and the operator decides. "block" refuses to send
+# an EXEC button for a signal nobody reviewed. That is a real risk-posture
+# choice -- proceed means trading unreviewed, block means a MiniMax outage
+# stops the momentum book -- so it is configuration, not a silent default.
+MINIMAX_UNAVAILABLE_POLICY = os.getenv("MINIMAX_UNAVAILABLE_POLICY", "proceed")
 TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
 TELEGRAM_CHAT_ID = os.getenv("TELEGRAM_CHAT_ID")
 QUANT_ENGINE_URL = os.getenv("QUANT_ENGINE_URL", "http://python-engine:8000/signals")
@@ -447,7 +461,15 @@ def analyze_with_minimax(
     signal: Dict,
     sentiment_text: str,
     market_regime: str = "UNKNOWN"
-) -> Optional[Dict]:
+) -> Review:
+    """[ADVISORY 2026-08-05] Returns a typed Review, never a bare None.
+
+    Every failure path below used to `return None`, which made "the model
+    vetoed this" and "the model never answered" indistinguishable to the
+    caller. They are now distinct verdicts carrying the specific reason, so
+    the operator's phone can say WHICH failure happened and a later audit can
+    tell an outage from an opinion. See advisory.py.
+    """
     ticker = signal.get("ticker", "UNKNOWN")
     price = signal.get("close", 0)     # FIX: Aligned with models.py
     target = signal.get("target_1", 0) # FIX: Aligned with models.py
@@ -623,10 +645,10 @@ def analyze_with_minimax(
             f"MiniMax timeout ({MINIMAX_WALL_TIMEOUT_SEC}s) for {ticker} - "
             f"analysis skipped, alert still sent without conviction"
         )
-        return None
+        return advisory_unavailable(f"timeout_{MINIMAX_WALL_TIMEOUT_SEC}s")
     if 'error' in result_holder:
         logger.error(f"MiniMax analysis failed for {ticker}: {result_holder['error']}")
-        return None
+        return advisory_unavailable("api_error")
 
     # [ROADMAP-4.7 2026-07-13, carried through MiniMax migration] This is the
     # ONE place in the system where a third party's free-text output is parsed.
@@ -644,7 +666,7 @@ def analyze_with_minimax(
         content = response.choices[0].message.content
     except (AttributeError, IndexError, TypeError) as e:
         logger.error(f"MiniMax response had no content for {ticker}: {e}")
-        return None
+        return advisory_unavailable("empty_response")
 
     data = _extract_json_object(content)
     if data is None:
@@ -653,19 +675,19 @@ def analyze_with_minimax(
             f"MiniMax returned unparseable output for {ticker} -- proceeding "
             f"without analysis. First 200 chars: {preview!r}"
         )
-        return None
+        return advisory_unavailable("unparseable_output")
 
     try:
-        return SignalOutput(**data).model_dump()
+        return review_from_payload(SignalOutput(**data).model_dump())
     except (ValidationError, TypeError) as e:
         preview = (content or "")[:200]
         logger.error(
             f"MiniMax output for {ticker} did not match schema: {e} -- "
             f"proceeding without analysis. First 200 chars: {preview!r}"
         )
-        return None
+        return advisory_unavailable("schema_mismatch")
 
-def send_telegram_alert(signal: Dict, analysis: Dict):
+def send_telegram_alert(signal: Dict, review: "Review"):
     url = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage"
     
     ticker = signal.get("ticker", "UNKNOWN")
@@ -674,8 +696,14 @@ def send_telegram_alert(signal: Dict, analysis: Dict):
     sl = signal.get("stop_loss")
     sig_id = ticker                 # FIX: Deduplication ID is now the ticker
     
-    if not analysis:
-        text = f"🚨 **SYSTEM FALLBACK: {ticker}** 🚨\nPrice: {price} | TGT: {target} | SL: {sl}\n⚠️ AI Sentiment analysis failed. Manual review required."
+    analysis = review.payload
+    if not review.available:
+        # [ADVISORY 2026-08-05] Name the specific failure. "AI analysis failed"
+        # covered a 100s timeout and a malformed JSON reply identically, and
+        # the operator could not tell which risk they were accepting.
+        text = (f"🚨 **SYSTEM FALLBACK: {ticker}** 🚨\n"
+                f"Price: {price} | TGT: {target} | SL: {sl}\n"
+                f"⚠️ {review.banner()}. Manual review required.")
     else:
         text = f"📊 **TRADE ALERT: {ticker}**\n\n**Metrics:** Price: {price} | TGT: {target} | SL: {sl}\n**Conviction Score:** {analysis.get('conviction_score', 'N/A')}/100\n\n**Pitch:**\n{analysis.get('pitch', 'N/A')}\n\n**Rationale:**\n{analysis.get('rationale', 'N/A')}\n\n**Risks:**\n{analysis.get('risks', 'N/A')}"
 
@@ -792,19 +820,19 @@ def run_momentum_pipeline():
         touch_heartbeat()  # [ROADMAP-2.2] progressing, not hung
         try:
             sentiment_text = scrape_sentiment(ticker)
-            analysis       = analyze_with_minimax(signal, sentiment_text, regime)
+            review         = analyze_with_minimax(signal, sentiment_text, regime)
 
-            if analysis and analysis.get('conviction_score', 0) < 50:
-                logger.info(f"Momentum {ticker} skipped. Low conviction: "
-                            f"{analysis.get('conviction_score')}")
+            if review.blocks(unavailable_policy=MINIMAX_UNAVAILABLE_POLICY):
+                logger.info(f"Momentum {ticker} blocked: {review.verdict.value} "
+                            f"conviction={review.conviction} reason={review.reason}")
                 # [FIX 2026-07-11 SILENT-VETO] Tell the operator. Before
                 # this, a Gemini veto was invisible: the engine's summary
                 # said "accepted" but no button alert ever arrived.
-                send_conviction_veto_notice(signal, analysis)
+                send_conviction_veto_notice(signal, review)
                 mark_processed(sig_id)
                 continue
 
-            send_momentum_telegram_alert(signal, analysis, momentum_pool)
+            send_momentum_telegram_alert(signal, review, momentum_pool)
             mark_processed(sig_id)
         except Exception as e:
             logger.error(
@@ -813,16 +841,15 @@ def run_momentum_pipeline():
             )
         time.sleep(2)
 
-def send_conviction_veto_notice(signal: Dict, analysis: Dict):
+def send_conviction_veto_notice(signal: Dict, review: "Review"):
     """Plain informational message (no buttons) when the MiniMax gate
-    vetoes an engine-accepted momentum signal. Failures are logged and
+    blocks an engine-accepted momentum signal. Failures are logged and
     swallowed -- the veto notice must never break the pipeline."""
     url    = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage"
     ticker = signal.get("ticker", "UNKNOWN")
-    score  = analysis.get('conviction_score', 'N/A')
-    text = (f"🧠 MOMENTUM VETO: {ticker}\n"
-            f"Engine accepted, MiniMax conviction {score}/100 (<50) - "
-            f"no EXEC button sent.\n"
+    analysis = review.payload
+    text = (f"🧠 MOMENTUM BLOCKED: {ticker}\n"
+            f"Engine accepted. {review.banner()} - no EXEC button sent.\n"
             f"Rationale: {analysis.get('rationale', 'N/A')}")
     payload = {"chat_id": TELEGRAM_CHAT_ID, "text": text}
     try:
@@ -833,7 +860,7 @@ def send_conviction_veto_notice(signal: Dict, analysis: Dict):
         logger.error(f"Conviction veto notice failed: {ticker}: {e}")
 
 def send_momentum_telegram_alert(
-    signal: Dict, analysis: Dict, momentum_pool: float
+    signal: Dict, review: "Review", momentum_pool: float
 ):
     """Distinct format from swing alerts - clearly labelled INTRADAY."""
     url    = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage"
@@ -868,12 +895,13 @@ def send_momentum_telegram_alert(
             # A malformed timestamp must never suppress the alert itself.
             age_line = ""
 
-    if not analysis:
+    analysis = review.payload
+    if not review.available:
         text = (f"{header}\n"
                 f"{age_line}"
                 f"Price: Rs{price} | VWAP: Rs{vwap}\n"
                 f"Target: Rs{target} | SL: Rs{sl}\n"
-                f"⚠️ AI analysis failed. Manual review required.\n"
+                f"⚠️ {review.banner()}. Manual review required.\n"
                 f"Auto-square at 15:15 IST.")
     else:
         text = (f"{header}\n\n"
@@ -881,7 +909,7 @@ def send_momentum_telegram_alert(
                 f"Entry: Rs{price} | VWAP: Rs{vwap}\n"
                 f"Target: Rs{target} | SL: Rs{sl}\n"
                 f"Cost ratio: {ratio:.1%} of expected profit\n"
-                f"Conviction: {analysis.get('conviction_score')}/100\n\n"
+                f"{review.banner()}\n\n"
                 f"Pitch: {analysis.get('pitch', 'N/A')}\n"
                 f"Risk: {analysis.get('risks', 'N/A')}\n\n"
                 f"⚠️ INTRADAY: Auto-square at 15:15 IST regardless of P&L.")
@@ -951,14 +979,15 @@ def run_pipeline():
         # pipeline: one bad ticker must not kill the rest of the batch.
         try:
             sentiment_text = scrape_sentiment(ticker)
-            analysis = analyze_with_minimax(signal, sentiment_text, regime)
+            review = analyze_with_minimax(signal, sentiment_text, regime)
 
-            if analysis and analysis.get('conviction_score', 0) < 50:
-                logger.info(f"Skipped {ticker}. Low conviction score: {analysis.get('conviction_score')}")
+            if review.blocks(unavailable_policy=MINIMAX_UNAVAILABLE_POLICY):
+                logger.info(f"Skipped {ticker}: {review.verdict.value} "
+                            f"conviction={review.conviction} reason={review.reason}")
                 mark_processed(sig_id)
                 continue
 
-            send_telegram_alert(signal, analysis)
+            send_telegram_alert(signal, review)
             mark_processed(sig_id)
         except Exception as e:
             logger.error(

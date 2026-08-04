@@ -111,10 +111,110 @@ async def top_level_command_get(cmd: str):
         data = await promotion_report(settings.DB_PATH)
         return {"reply": format_promotion_report(data)}
 
+    # [HALT 2026-08-05] Read-only view of the kill switch. Tripping and
+    # clearing are POST (see top_level_command_post) -- a GET that can stop
+    # trading is one link-preview away from an accident.
+    if cmd.lower() in ("halt", "resume", "haltstatus"):
+        import halt_switch
+        return {"reply": _halt_status_text(halt_switch)}
+
     from penny_commands import dispatch as _penny_dispatch
     # penny_commands.dispatch is the universal entry point -- it
     # routes /health and /regime to the cross-subsystem handlers.
     return {"reply": _penny_dispatch(cmd, "", settings.DB_PATH)}
+
+
+def _halt_status_text(halt_switch) -> str:
+    """Global + per-channel kill-switch state, with the commands to change it."""
+    lines = ["KILL SWITCH", "", f"  global   {halt_switch.describe(None)}"]
+    for channel in ("momentum", "penny", "fno"):
+        # channel_state ignores the global sentinel on purpose: during a global
+        # halt every channel would otherwise echo the global line, hiding what
+        # a global clear would leave behind.
+        own, attribution = halt_switch.channel_state(channel)
+        lines.append(f"  {channel:<8} {'HALTED' if own else 'armed'}")
+        if own and attribution:
+            lines.append(f"           {attribution.get('reason', '')}")
+    lines += [
+        "",
+        "Entries are blocked while halted. Exits (stops, unwinds,",
+        "square-off) are NEVER blocked.",
+        "",
+        "  /halt <reason>              trip globally",
+        "  /halt <channel> <reason>    trip one channel",
+        "  /resume global              clear the global halt",
+        "  /resume <channel>           clear one channel",
+        "",
+        "A bare /halt or /resume only shows this view -- both mutations",
+        "need an explicit argument.",
+    ]
+    return "\n".join(lines)
+
+
+@router.post("/command/{cmd}")
+async def top_level_command_post(cmd: str, request: Request):
+    """[HALT 2026-08-05] Mutating top-level commands: /halt and /resume.
+
+    POST, not GET, because these change whether the system can trade.
+    """
+    import halt_switch
+
+    try:
+        body = await request.json()
+    except Exception:
+        body = {}
+    args = str((body or {}).get("args", "") or "").strip()
+
+    name = cmd.lower()
+    if name not in ("halt", "resume"):
+        raise HTTPException(status_code=404, detail=f"unknown mutating command: {cmd}")
+
+    known_channels = ("momentum", "penny", "fno")
+    first, _, rest = args.partition(" ")
+    channel = first.lower() if first.lower() in known_channels else None
+    remainder = (rest if channel else args).strip()
+
+    if name == "resume":
+        # Strict, unlike /halt. `/resume momentom` (typo) must NOT fall through
+        # to clearing the GLOBAL halt -- that is the one mistake here that
+        # silently re-arms more than the operator asked for. Only the literal
+        # word "global" or a known channel may clear anything.
+        target = args.strip().lower()
+        if target not in ("global",) + known_channels:
+            return {"reply": (
+                f"Unknown resume target {args!r}.\n"
+                f"Use: /resume global | " + " | ".join(f"/resume {c}" for c in known_channels)
+            )}
+        channel = None if target == "global" else target
+
+    if name == "halt":
+        reason = remainder or "tripped from Telegram with no reason given"
+        try:
+            payload = halt_switch.trip(reason, by="operator", channel=channel)
+        except OSError as exc:
+            # A kill switch that cannot write is not a kill switch. Say so.
+            return {"reply": f"FAILED to trip halt: {exc}\nTrading is STILL LIVE."}
+        scope = payload.get("scope", "global")
+        return {"reply": (
+            f"HALTED ({scope}).\nreason: {payload.get('reason')}\n"
+            f"at: {payload.get('tripped_at')}\n\n"
+            "New entries are blocked. Exits still work.\n"
+            # Always name the target: bare /resume is the read-only status
+            # view, so "Clear with /resume" would be an instruction that does
+            # nothing and reads as a failure to the operator.
+            f"Clear with /resume {scope}."
+        )}
+
+    removed = halt_switch.clear(channel)
+    scope = channel or "global"
+    if not removed:
+        return {"reply": f"No {scope} halt was set. Nothing to clear."}
+    still, attribution = halt_switch.halt_state(channel)
+    tail = ""
+    if still:
+        tail = (f"\n\nNOTE: still halted -- {(attribution or {}).get('scope')} "
+                f"sentinel is present. Clear that too.")
+    return {"reply": f"Cleared the {scope} halt. Entries re-enabled.{tail}"}
 
 
 

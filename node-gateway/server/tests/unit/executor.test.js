@@ -126,14 +126,19 @@ describe('executeSignal()', () => {
   test('uses CNC product type for swing trades (isIntraday=false)', async () => {
     await executeSignal(makeSignal(), 'EXEC', false);
     expect(kite.placeOrder).toHaveBeenCalledWith(
-      expect.objectContaining({ product: 'CNC' })
+      expect.objectContaining({ product: 'CNC' }),
+      // [HALT 2026-08-05] The entry declares itself an entry, so the kill
+      // switch can gate it. Pinned here because a silent change to 'exit'
+      // would route the buy leg around the halt.
+      expect.objectContaining({ intent: 'entry' })
     );
   });
 
   test('uses MIS product type for intraday (isIntraday=true)', async () => {
     await executeSignal(makeSignal(), 'EXEC', true);
     expect(kite.placeOrder).toHaveBeenCalledWith(
-      expect.objectContaining({ product: 'MIS' })
+      expect.objectContaining({ product: 'MIS' }),
+      expect.objectContaining({ intent: 'entry' })
     );
   });
 

@@ -116,7 +116,7 @@ async function placeProtectiveStop(signal, stopPrice) {
         price: limit,
         validity: "DAY",
         tag: "QUANT_SENTINEL_SL"
-      });
+      }, { intent: "exit", channel: "momentum" });
 
       if (res && res.order_id) {
         logger.info({
@@ -158,7 +158,7 @@ async function marketUnwind(signal, ltp) {
       price: limit,
       validity: "DAY",
       tag: "QUANT_SENT_UNWIND"
-    });
+    }, { intent: "exit", channel: "momentum" });
     logger.error({
       event_type: 'mis_unprotected_unwound',
       ticker: signal.ticker, unwind_order_id: res && res.order_id, limit
@@ -272,7 +272,7 @@ async function executeSignal(signal, action, isIntraday = false) {
         price: limitPrice,
         validity: "DAY",
         tag: "QUANT_SENTINEL"
-      });
+      }, { intent: "entry", channel: "momentum" });
 
     }, 1, 2000); // 1 retry on OrderException
   } catch (err) {
@@ -421,7 +421,7 @@ async function executeSignal(signal, action, isIntraday = false) {
           // snapToTick(..., 1) rounds UP to the nearest 0.10-rupee tick.
           price: snapToTick(levels.stop * 1.002, 1)
         }]
-      });
+      }, { intent: "exit", channel: "momentum" });
       gttStopId = stopRes.trigger_id;
 
       // Target Leg (Half quantity for T1)
@@ -445,7 +445,7 @@ async function executeSignal(signal, action, isIntraday = false) {
           // snapToTick(..., -1) rounds DOWN to nearest 0.10-rupee tick.
           price: snapToTick(levels.target1 * 0.998, -1)
       }]
-      });
+      }, { intent: "exit", channel: "momentum" });
       gttTargetId = targetRes.trigger_id;
 
     } catch (err) {

@@ -426,6 +426,50 @@ async def check_circuit_breakers(db_path: str) -> tuple[bool, list[str]]:
     """
     return halted, reasons
 
+
+async def enforce_circuit_breakers(db_path: str) -> tuple[bool, list[str], bool]:
+    """[HALT 2026-08-05] Evaluate the breakers and MAKE THE HALT REAL.
+
+    `check_circuit_breakers` has computed a correct verdict since the system was
+    built and nothing ever acted on it -- partner_orchestrator.py:533 says so in
+    the tree. This is the missing half: a breached breaker now trips the
+    filesystem sentinel, which every order path checks before an entry.
+
+    The trip is deliberately NOT self-clearing. A breaker that fires and then
+    silently re-arms overnight is a breaker that never stopped anything; the
+    operator clears it with `/resume global` once they have looked, which is the
+    same posture as the existing CB_RESET ledger marker.
+
+    Exits are never affected -- see halt_switch and KiteClient.place_order.
+
+    Returns:
+        (halted, reasons, newly_tripped). `newly_tripped` is True only on the
+        transition, so the caller can page once instead of every scan.
+    """
+    import halt_switch
+
+    halted, reasons = await check_circuit_breakers(db_path)
+    if not halted:
+        return False, reasons, False
+
+    already, _ = halt_switch.halt_state(None)
+    if already:
+        return True, reasons, False
+
+    try:
+        halt_switch.trip(
+            f"circuit breaker: {', '.join(reasons) or 'unspecified'}",
+            by="circuit_breaker",
+        )
+    except OSError as exc:
+        # Could not write the sentinel. Trading is still live and the operator
+        # must know that the automatic protection did not engage.
+        logger.error("circuit_breaker_halt_write_failed", err=str(exc), reasons=reasons)
+        return True, reasons + ["HALT_WRITE_FAILED"], False
+
+    logger.error("circuit_breaker_halt_engaged", reasons=reasons)
+    return True, reasons, True
+
 async def penny_pool_pnl(db_path: str, days: int = 14) -> dict:
     """
     [PENNY-PERF 2026-06-21] Sum realized P&L for source='PENNY' rows

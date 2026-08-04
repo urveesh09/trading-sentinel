@@ -72,6 +72,20 @@ class Settings(BaseSettings):
     CB_MAX_DRAWDOWN_PCT: float = 0.50 # Allow 50% total drawdown
     CB_FLOOR_PCT: float = 0.40
 
+    # [HALT 2026-08-05] Whether a breached circuit breaker trips the filesystem
+    # kill switch (/data/HALT) and actually stops new entries.
+    #
+    # Default True, because the alternative is what we had: a correct `halted`
+    # boolean that no entry path ever read. The failure mode of True is that a
+    # buggy breaker stops trading until the operator clears it -- which pages
+    # immediately and costs missed trades, not money. The failure mode of False
+    # is the 2026-07-24 shape, where the system keeps sizing into a book it has
+    # already decided is broken.
+    #
+    # Set False only to diagnose a suspected false trip; the sentinel can still
+    # be tripped by hand from Telegram while it is off.
+    HALT_AUTO_TRIP_ON_CIRCUIT_BREAKER: bool = True
+
     # Momentum
     MAX_MOMENTUM_POSITIONS:   int   = 5
     # [CAPITAL-REALLOC 2026-07-26] 0.50 -> 5/9. The Rs 500 that left the Nifty
@@ -468,6 +482,46 @@ class Settings(BaseSettings):
     # DAILY_HISTORY_DAYS has actually accumulated depth.
     PENNY_CONNORS_RSI2_BUY:        float = 10.0
     PENNY_CONNORS_RSI2_SELL:       float = 65.0
+    # [EXIT-EVIDENCE 2026-08-05] These four are UNCHANGED, and the evidence
+    # below is why they are worth changing later but must not be changed now.
+    #
+    # The random-control skill test (skill_test.py) asks a question the P&L
+    # column cannot: on the days the screener fired, would a RANDOM eligible
+    # NSE name run through the same exits have done as well? Over 1,437 trades
+    # at RSI<25 rising=N:
+    #
+    #     observed mean R        -0.029
+    #     random control mean R  -0.092     <- random LOSES with these exits
+    #     excess over random     +0.063   (p = 0.005)
+    #
+    # So the screener carries real information and the EXIT rules eat it. The
+    # exit-quality decomposition (exit_quality.py) then named the two leaks:
+    #
+    #     t1     387 trades capped at exactly +1.000R, 512R left inside 5 bars
+    #     stop   559 stop-outs, price recovered 1.88R on average afterwards
+    #     median capture ratio 0.16 -- we keep a sixth of the move we get
+    #
+    # An exit sweep on the same entries (`--exits --skill`) found:
+    #
+    #     shipped (stop 3%, hold 3)     mean R -0.029  PF 0.87  skill t 2.62
+    #     stop 5%, hold 6               mean R +0.025  PF 1.48  skill t 5.17
+    #                                   train t 3.69, test t 2.98, no sign flip
+    #
+    # That is the strongest result this system has produced. It is still NOT a
+    # licence to edit these numbers, for two reasons:
+    #
+    #   1. The verdict is `train_only`. 48 configurations were searched, so the
+    #      bar is the Harvey-Liu-Zhu 3.5 rather than 2.0, and the test half
+    #      lands at 2.98 -- convincing at the conventional bar, short at the
+    #      corrected one.
+    #   2. It was measured at RSI<25 rising=N. We SHIP RSI<10 rising=Y, which
+    #      produces ONE trade over the whole history. Porting exit parameters
+    #      from a configuration we do not run is the same in-sample reasoning
+    #      this apparatus exists to catch.
+    #
+    # Re-run once history has depth:
+    #   docker exec -e PYTHONPATH=/app:/app/.venv/lib/python3.11/site-packages \
+    #     python-engine python /app/tools/connors_backtest.py --exits --skill
     PENNY_CONNORS_T1_PCT:          float = 0.03
     PENNY_CONNORS_T2_PCT:          float = 0.06
     PENNY_CONNORS_STOP_PCT:        float = 0.03

@@ -4,6 +4,7 @@ const config = require('../config');
 const tokenStore = require('./token-store');
 const { TokenExpiredError, OrderExecutionError } = require('../utils/errors');
 const { logger } = require('../middleware/logger');
+const haltSwitch = require('./halt-switch');
 
 const KITE_API_ROOT = process.env.KITE_BASE_URL || 'https://api.kite.trade';
 
@@ -63,6 +64,39 @@ async function withKite(apiCallName, fn) {
       throw new OrderExecutionError(err.message);
     }
     throw err; // Network or Order exceptions handled by retry logic in executor
+  }
+}
+
+/**
+ * [HALT 2026-08-05] Kill-switch gate, applied at the single broker chokepoint.
+ *
+ * Every live order in node-gateway funnels through placeOrder/placeGTT, so
+ * gating here is exhaustive by construction — a future call site cannot route
+ * around it without adding a new Kite method.
+ */
+function gateOrder(apiCallName, opts) {
+  const intent = opts && opts.intent;
+  if (intent !== 'entry' && intent !== 'exit') {
+    throw new OrderExecutionError(
+      `${apiCallName}: opts.intent must be 'entry' or 'exit' (got ${JSON.stringify(intent)})`
+    );
+  }
+  if (intent === 'exit') return; // exits are never halt-gated
+
+  try {
+    haltSwitch.assertNotHalted((opts && opts.channel) || null);
+  } catch (err) {
+    if (err.name === 'TradingHaltedError') {
+      logger.error({
+        event_type: 'kite_order_blocked_by_halt',
+        api: apiCallName,
+        scope: err.attribution.scope,
+        by: err.attribution.by,
+        reason: err.attribution.reason,
+      }, 'order blocked by halt sentinel');
+      throw new OrderExecutionError(err.message);
+    }
+    throw err;
   }
 }
 
@@ -169,15 +203,28 @@ module.exports = {
     throw lastErr;
   },
   
-  placeOrder: async (params) => {
+  /**
+   * @param {object} params Kite order params.
+   * @param {{intent: 'entry'|'exit', channel?: string}} opts REQUIRED.
+   *
+   * [HALT 2026-08-05] `opts.intent` is the kill-switch boundary and has no
+   * default. Entries are gated; exits (protective stops, unwinds) never are,
+   * because refusing an exit during a halt strands a live position with no
+   * stop. Omitting it throws rather than guessing — both directions of that
+   * guess are expensive, so neither is worth defaulting to.
+   */
+  placeOrder: async (params, opts) => {
+    gateOrder('placeOrder', opts);
     return await withKite('placeOrder', () => kite.placeOrder('regular', params));
   },
-  
+
   getOrderHistory: async (orderId) => {
     return await withKite('getOrderHistory', () => kite.getOrderHistory(orderId));
   },
-  
-  placeGTT: async (params) => {
+
+  /** @param {{intent: 'entry'|'exit', channel?: string}} opts REQUIRED. See placeOrder. */
+  placeGTT: async (params, opts) => {
+    gateOrder('placeGTT', opts);
     return await withKite('placeGTT', () => kite.placeGTT(params));
   }
 };
