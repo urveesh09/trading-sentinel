@@ -85,9 +85,15 @@ async def build_hourly_report(
             settings.FNO_PAPER_BANKROLL if source == "FNO_PAPER"
             else settings.FNO_LIVE_BANKROLL
         )
+        # [PAPER-MARKING 2026-08-04] Mark the leg and every rupee in it. This
+        # report's numbers are an order of magnitude larger than the live
+        # book's and used to render identically -- see performance.fmt_money.
+        from performance import fmt_money, is_paper_source
+        paper = is_paper_source(source)
         lines.append(
-            f"--- *{source}* pool=Rs {pool:,.0f} | open={len(open_pos)} "
-            f"closed_today={len(closed)} day_pnl=Rs {day_pnl:,.0f} ---"
+            f"--- *{source}*{' (PAPER MONEY)' if paper else ''} "
+            f"pool={fmt_money(pool, source)} | open={len(open_pos)} "
+            f"closed_today={len(closed)} day_pnl={fmt_money(day_pnl, source)} ---"
         )
         for p in open_pos:
             lines.append(
@@ -99,7 +105,8 @@ async def build_hourly_report(
             lines.append(
                 f"CLOSED `{c['tradingsymbol']}` {c['exit_reason']} "
                 f"{c['entry_premium']:.2f}->{c['exit_premium']:.2f} "
-                f"pnl=Rs {c['pnl']:,.0f} ({(c['r_multiple'] or 0):+.2f}R)"
+                f"pnl={fmt_money(c['pnl'] or 0.0, source)} "
+                f"({(c['r_multiple'] or 0):+.2f}R)"
             )
 
     stats = await _day_signal_stats(db_path, today_iso)

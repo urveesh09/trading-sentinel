@@ -584,6 +584,51 @@ async def pool_breakdown(db_path: str) -> dict:
 # Report-only: no sizing or risk math is touched (operator decision 2026-07-15).
 # ─────────────────────────────────────────────────────────────────────────
 
+def is_paper_source(source: str) -> bool:
+    """True when `source` is a paper book, i.e. its P&L is not real money.
+
+    [PAPER-MARKING 2026-08-04] Reads the division registry so there is exactly
+    one place that decides what "paper" means. A hard-coded set here would
+    silently mislabel the next book somebody adds, and mislabelling is the
+    whole failure mode this guards against.
+
+    Unknown sources are treated as LIVE. That is the safe default: showing real
+    money as real when it might be paper is a cosmetic error; showing paper as
+    real is how a fabricated number gets acted on.
+    """
+    src = (source or "").upper()
+    for _key, _label, reg_source, _pool, _alloc, mode in _division_registry():
+        if reg_source.upper() == src:
+            return mode == "paper"
+    return False
+
+
+def fmt_money(amount: float, source: str = None, *, is_paper: bool = None) -> str:
+    """Render a rupee amount, marked when it is paper.
+
+    [PAPER-MARKING 2026-08-04] Paper and live P&L used to render identically.
+    The F&O tick message said `pnl=Rs -730` for a book that has never held a
+    rupee of real capital, and the same day's genuine live loss was Rs 8.41 --
+    two numbers, 87x apart, formatted the same way, with only a bracketed
+    source tag mid-line to tell them apart. The 2026-08-04 audit misread the
+    F&O ledger for exactly this reason, and an operator skimming a phone
+    notification has far less time than an audit does.
+
+    Live:  -Rs 8.41
+    Paper: -Rs 730 (paper)
+
+    The suffix is words, not an emoji or a colour: it survives plain-text
+    logs, Telegram's markdown, and a copy-paste into a spreadsheet.
+
+    Pass either `source` (looked up in the registry) or an explicit
+    `is_paper`. Explicit wins, for callers that already know.
+    """
+    paper = is_paper if is_paper is not None else is_paper_source(source)
+    sign = "-" if amount < 0 else ""
+    body = f"{sign}Rs {abs(amount):,.2f}"
+    return f"{body} (paper)" if paper else body
+
+
 def _division_registry() -> list:
     """The canonical division → (source, pool, allocation, mode) mapping.
 

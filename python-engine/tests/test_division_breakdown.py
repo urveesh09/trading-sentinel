@@ -111,3 +111,80 @@ async def test_formatter_renders(db):
     assert "Bankroll by Division" in text
     assert "Intraday Momentum" in text
     assert "LIVE" in text and "PAPER" in text
+
+
+# ---- [PAPER-MARKING 2026-08-04] paper money must not read as real ----------
+#
+# The F&O tick message rendered `pnl=Rs -730` for a book that has never held a
+# rupee, on the same day the genuine live loss was Rs 8.41. Two numbers 87x
+# apart, formatted identically, separated only by a bracketed source tag
+# mid-line. The 2026-08-04 audit misread the F&O ledger for exactly this
+# reason; an operator glancing at a phone has less time than an audit.
+
+from performance import fmt_money, is_paper_source, _division_registry
+
+
+class TestPaperMarking:
+    def test_every_registry_source_is_classified(self):
+        """No division may be unclassifiable -- that is how a new book ships
+        unmarked."""
+        for _k, _l, source, _p, _a, mode in _division_registry():
+            assert is_paper_source(source) == (mode == "paper"), source
+
+    def test_paper_sources_are_marked(self):
+        assert is_paper_source("FNO_PAPER") is True
+        assert is_paper_source("MOMENTUM_PAPER") is True
+        assert is_paper_source("EDGE_PAPER") is True
+
+    def test_live_sources_are_not_marked(self):
+        assert is_paper_source("MOMENTUM") is False
+        assert is_paper_source("SYSTEM") is False
+        assert is_paper_source("EDGE_LIVE") is False
+
+    def test_momentum_paper_is_not_confused_with_momentum(self):
+        """Substring matching would classify the live book as paper (or worse,
+        the reverse). The lookup is exact."""
+        assert is_paper_source("MOMENTUM") is False
+        assert is_paper_source("MOMENTUM_PAPER") is True
+
+    def test_unknown_source_defaults_to_LIVE(self):
+        """Safe direction: mislabelling real money as paper is cosmetic;
+        mislabelling paper as real is how a fabricated number gets acted on.
+        An unknown source must never silently claim to be paper."""
+        assert is_paper_source("SOMETHING_NEW") is False
+        assert is_paper_source("") is False
+        assert is_paper_source(None) is False
+
+    def test_case_insensitive(self):
+        assert is_paper_source("fno_paper") is True
+
+    def test_formatting_marks_paper_and_leaves_live_alone(self):
+        assert fmt_money(-730.08, "FNO_PAPER") == "-Rs 730.08 (paper)"
+        assert fmt_money(-8.41, "MOMENTUM") == "-Rs 8.41"
+        assert fmt_money(1234.5, "MOMENTUM_PAPER") == "Rs 1,234.50 (paper)"
+
+    def test_the_two_numbers_from_2026_08_03_are_now_distinguishable(self):
+        """The concrete regression: same day, same report style, 87x apart."""
+        paper = fmt_money(-730.08, "FNO_PAPER")
+        live = fmt_money(-8.41, "MOMENTUM")
+        assert "(paper)" in paper
+        assert "(paper)" not in live
+
+    def test_explicit_is_paper_overrides_the_registry(self):
+        assert fmt_money(10.0, "MOMENTUM", is_paper=True).endswith("(paper)")
+        assert not fmt_money(10.0, "FNO_PAPER", is_paper=False).endswith("(paper)")
+
+
+def test_fno_telegram_marks_paper_exits():
+    from fno_orchestrator import format_fno_telegram
+    msg = format_fno_telegram({
+        "scan_id": "abc",
+        "entries": [{"source": "FNO_PAPER", "symbol": "NIFTY24650CE",
+                     "direction": "LONG", "lots": 2, "fill": 30.55,
+                     "delta": 0.49, "iv": 0.06}],
+        "exits": [{"source": "FNO_PAPER", "symbol": "NIFTY24650CE",
+                   "reason": "underlying_stop", "entry": 32.25, "exit": 27.05,
+                   "pnl": -730.08, "r": -0.70}],
+    })
+    assert "(paper)" in msg
+    assert "-Rs 730.08 (paper)" in msg

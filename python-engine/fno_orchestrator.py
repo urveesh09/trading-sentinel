@@ -795,16 +795,29 @@ async def _bar_already_logged(db_path: str, bar_ts: str) -> bool:
 # ---------------------------------------------------------------------------
 
 def format_fno_telegram(summary: dict) -> str:
+    """[PAPER-MARKING 2026-08-04] Every rupee figure here is tagged paper or
+    live via performance.fmt_money.
+
+    This book has never held real capital, yet its exits rendered exactly like
+    the live momentum book's: on 2026-08-03 it reported `pnl=Rs -730` beside a
+    genuine live loss of Rs 8.41 the same day. Two numbers 87x apart,
+    identically formatted, distinguished only by a bracketed source tag in the
+    middle of the line.
+    """
+    from performance import fmt_money, is_paper_source
+
     out = [f"*F&O tick* `{summary.get('scan_id', '?')}`"]
     for e in summary.get("entries", []):
+        tag = " (paper)" if is_paper_source(e["source"]) else ""
         out.append(
-            f"ENTRY [{e['source']}] `{e['symbol']}` {e['direction']} "
+            f"ENTRY [{e['source']}]{tag} `{e['symbol']}` {e['direction']} "
             f"lots={e['lots']} @ {e['fill']:.2f} delta={e['delta']} iv={e['iv']}"
         )
     for x in summary.get("exits", []):
         out.append(
             f"EXIT [{x['source']}] `{x['symbol']}` {x['reason']} "
-            f"{x['entry']:.2f} -> {x['exit']:.2f} pnl=Rs {x['pnl']:,.0f} ({x['r']:+.2f}R)"
+            f"{x['entry']:.2f} -> {x['exit']:.2f} "
+            f"pnl={fmt_money(x['pnl'], x['source'])} ({x['r']:+.2f}R)"
         )
     if len(out) == 1:
         out.append("No activity.")
