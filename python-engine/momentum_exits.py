@@ -245,11 +245,48 @@ def evaluate_momentum_exit(pos: dict, ltp: float, now: datetime) -> dict:
             elapsed >= settings.MOMENTUM_TIME_STOP_FAST_MIN
             and r_now < settings.MOMENTUM_TIME_STOP_FAST_R
         ):
-            return {
-                "action": ACTION_EXIT,
-                "reason": f"time_stop_fast_{int(elapsed)}min_at_{r_now:.2f}R",
-                "new_stop": None,
-            }
+            # [THESIS-EXIT 2026-08-04] Before cutting on the clock, ask whether
+            # the setup is actually broken -- or merely slow.
+            #
+            # "r_now < 0 after 25 minutes" cannot tell those apart, and the
+            # difference is most of the P&L. 2026-08-04 INDIACEM was -0.45R at
+            # 25 minutes and +1.10R at 65; the fast tier would have cut it at
+            # the low. 2026-08-03 SUMICHEM was scratched at 11:27 and printed
+            # its target at 12:00. In both cases the trade was not failing, it
+            # had not happened yet.
+            #
+            # The momentum thesis is not "price goes up soon". It is "price
+            # crossed VWAP on a volume surge and is HOLDING above it" -- the
+            # screener's own gates are named no_recent_vwap_crossover and
+            # crossed_but_failed_holding_vwap. So the exit tests the same
+            # proposition the entry did: still above the VWAP it broke out
+            # from, thesis intact, keep the trade; lost that level, thesis
+            # dead, cut it regardless of the clock.
+            #
+            # This is deliberately not a new tuned threshold. VWAP-at-entry is
+            # the level the signal was already measured against, so nothing was
+            # fitted to make INDIACEM survive. Downside stays bounded by the
+            # broker stop, the slow tier and the 15:15 square-off; only the
+            # reason for cutting changes.
+            vwap = pos.get("vwap_at_entry")
+            thesis_intact = (
+                settings.MOMENTUM_FAST_STOP_USES_THESIS
+                and vwap is not None
+                and vwap > 0
+                and ltp > vwap
+            )
+            if thesis_intact:
+                logger.info(
+                    "momentum_fast_stop_deferred_thesis_intact ticker=%s "
+                    "elapsed=%.0f r=%.2f ltp=%.2f vwap_at_entry=%.2f",
+                    pos.get("ticker"), elapsed, r_now, ltp, vwap,
+                )
+            else:
+                return {
+                    "action": ACTION_EXIT,
+                    "reason": f"time_stop_fast_{int(elapsed)}min_at_{r_now:.2f}R",
+                    "new_stop": None,
+                }
         slow_min = settings.MOMENTUM_TIME_STOP_MIN * _regime_time_mult(
             pos.get("regime_at_entry")
         )

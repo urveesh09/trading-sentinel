@@ -351,3 +351,97 @@ def test_momentum_entry_deadline_is_consistent_with_square_off():
     # Guard the specific regression: the gate must actually be reachable within
     # a trading day. 840 (23:15) meant it never was.
     assert settings.MOMENTUM_ENTRY_END_MIN < SQUARE_OFF_MIN
+
+
+# ---- [THESIS-EXIT 2026-08-04] cut on a broken setup, not on a timer --------
+#
+# The fast tier asked "is r_now < 0 after 25 minutes?", which cannot separate a
+# dead trade from a slow one -- and that distinction is most of the P&L:
+#
+#   2026-08-04 INDIACEM  -0.45R at 25 min  ->  +1.10R at 65 min
+#   2026-08-03 SUMICHEM  scratched 11:27   ->  printed its target at 12:00
+#
+# The momentum thesis is "crossed VWAP on a volume surge and is HOLDING above
+# it" (the screener's own gates are no_recent_vwap_crossover and
+# crossed_but_failed_holding_vwap). So the exit now tests the same proposition
+# the entry did. VWAP-at-entry is not a fitted number -- it is the level the
+# signal was already measured against.
+
+class TestThesisAwareFastStop:
+    def _late(self):
+        """Past the fast checkpoint."""
+        return NOW + timedelta(minutes=settings.MOMENTUM_TIME_STOP_FAST_MIN + 1)
+
+    def test_holds_a_negative_trade_that_is_still_above_its_vwap(self, monkeypatch):
+        """INDIACEM's shape: down at the checkpoint, setup intact."""
+        monkeypatch.setattr(settings, "MOMENTUM_FAST_STOP_USES_THESIS", True)
+        # entry 100, stop 95 (R=5), vwap 97. ltp 98 -> -0.4R but above VWAP.
+        d = evaluate_momentum_exit(
+            _pos(vwap_at_entry=97.0), ltp=98.0, now=self._late(),
+        )
+        assert d["action"] != ACTION_EXIT, (
+            "a trade holding above its breakout VWAP has not failed yet"
+        )
+
+    def test_cuts_a_negative_trade_that_has_LOST_its_vwap(self, monkeypatch):
+        """The thesis is dead: cut it, exactly as before."""
+        monkeypatch.setattr(settings, "MOMENTUM_FAST_STOP_USES_THESIS", True)
+        d = evaluate_momentum_exit(
+            _pos(vwap_at_entry=97.0), ltp=96.5, now=self._late(),
+        )
+        assert d["action"] == ACTION_EXIT
+        assert d["reason"].startswith("time_stop_fast_")
+
+    def test_falls_back_to_the_r_test_when_no_vwap_was_recorded(self, monkeypatch):
+        """Positions opened before the column existed must keep working."""
+        monkeypatch.setattr(settings, "MOMENTUM_FAST_STOP_USES_THESIS", True)
+        d = evaluate_momentum_exit(_pos(vwap_at_entry=None), ltp=98.0, now=self._late())
+        assert d["action"] == ACTION_EXIT
+        assert d["reason"].startswith("time_stop_fast_")
+
+    def test_a_zero_vwap_is_not_treated_as_thesis_intact(self, monkeypatch):
+        """0.0 would read as 'price is above VWAP' and defeat every fast stop.
+        Same class of bug as the 0.0-ATR trail collapse."""
+        monkeypatch.setattr(settings, "MOMENTUM_FAST_STOP_USES_THESIS", True)
+        d = evaluate_momentum_exit(_pos(vwap_at_entry=0.0), ltp=98.0, now=self._late())
+        assert d["action"] == ACTION_EXIT
+
+    def test_flag_off_restores_the_pure_clock_and_r_behaviour(self, monkeypatch):
+        monkeypatch.setattr(settings, "MOMENTUM_FAST_STOP_USES_THESIS", False)
+        d = evaluate_momentum_exit(_pos(vwap_at_entry=97.0), ltp=98.0, now=self._late())
+        assert d["action"] == ACTION_EXIT
+
+    def test_the_slow_tier_still_bounds_a_thesis_intact_loser(self, monkeypatch):
+        """Deferring the fast cut must not make a position immortal. A trade
+        that sits above VWAP forever is still cut by the slow tier."""
+        monkeypatch.setattr(settings, "MOMENTUM_FAST_STOP_USES_THESIS", True)
+        very_late = NOW + timedelta(
+            minutes=settings.MOMENTUM_TIME_STOP_MIN
+            * settings.MOMENTUM_TIME_STOP_R1_MULT + 5
+        )
+        d = evaluate_momentum_exit(
+            _pos(vwap_at_entry=97.0), ltp=98.0, now=very_late,
+        )
+        assert d["action"] == ACTION_EXIT
+        assert d["reason"].startswith("time_stop_")
+
+    def test_indiacem_2026_08_04_replayed(self, monkeypatch):
+        """The real trade, with the real numbers, at both checkpoints."""
+        monkeypatch.setattr(settings, "MOMENTUM_FAST_STOP_USES_THESIS", True)
+        monkeypatch.setattr(settings, "MOMENTUM_USE_SCALE_OUT", True)
+        # Fill 393.80; F1-anchored stop 391.80 (R=2.00); VWAP at signal 391.47.
+        pos = _pos(
+            entry_price=393.80, stop_loss_initial=391.80,
+            trailing_stop_current=391.80, target_1=397.80,
+            vwap_at_entry=391.47, shares=6, atr_14_at_entry=12.01,
+        )
+        # 13:05, 25 min in: price 392.90 = -0.45R, but still above 391.47.
+        at_25 = evaluate_momentum_exit(pos, ltp=392.90, now=self._late())
+        assert at_25["action"] != ACTION_EXIT, "this is the cut that cost Rs 13.68"
+
+        # 13:45, price 395.80 = +1.00R -> the partial can now fire.
+        at_65 = evaluate_momentum_exit(
+            pos, ltp=395.80, now=NOW + timedelta(minutes=65),
+        )
+        assert at_65["action"] == ACTION_SCALE_OUT
+        assert at_65["scale_shares"] == 3

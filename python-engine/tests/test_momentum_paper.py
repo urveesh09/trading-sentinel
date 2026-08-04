@@ -40,7 +40,8 @@ def _db(tmp_path):
             stop_loss_initial REAL, trailing_stop_current REAL, target_1 REAL, target_2 REAL,
             atr_14_at_entry REAL, highest_close_since_entry REAL, status TEXT, source TEXT,
             exit_price REAL, exit_date TEXT, realised_pnl REAL, r_multiple REAL,
-            product_type TEXT, regime_at_entry TEXT, t1_fired INTEGER DEFAULT 0
+            product_type TEXT, regime_at_entry TEXT, t1_fired INTEGER DEFAULT 0,
+            vwap_at_entry REAL
         )""")
     con.execute("""
         CREATE TABLE bankroll_ledger (
@@ -55,7 +56,8 @@ def _db(tmp_path):
 
 def _sig(ticker="ACME", close=100.0, stop=99.0, target=103.0):
     return {"ticker": ticker, "close": close, "stop_loss": stop,
-            "target_1": target, "target_2": target, "regime": "REGIME_1_NORMAL"}
+            "target_1": target, "target_2": target, "regime": "REGIME_1_NORMAL",
+            "vwap": close - 0.5}
 
 
 async def _ltp_of(price):

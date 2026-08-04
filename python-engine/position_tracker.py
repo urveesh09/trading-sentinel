@@ -76,6 +76,12 @@ async def init_positions_db(db_path: str):
         # target or trail exit, or the SL-M would still be resting and sell a
         # second time.
         await _add_column_if_missing(db, "sl_order_id", "TEXT")
+        # [THESIS-EXIT 2026-08-04] VWAP at entry -- the level the momentum
+        # thesis was built on. The exit ladder uses it to ask "is this setup
+        # still true?" instead of "has enough time passed?". NULL on positions
+        # opened before this column existed, and the exit logic falls back to
+        # the old clock-and-R test in that case.
+        await _add_column_if_missing(db, "vwap_at_entry", "REAL")
         await db.commit()
 
 async def get_open_positions(db_path: str) -> List[dict]:

@@ -484,6 +484,12 @@ async function executeSignal(signal, action, isIntraday = false) {
     // Chandelier trail sizes off this. Forward null rather than 0 when the
     // screener couldn't compute one — a 0 ATR collapses the trail onto entry.
     atr_14_at_entry: signal.atr_at_entry ?? null,
+    // [THESIS-EXIT 2026-08-04] The VWAP this breakout was measured against.
+    // The engine's exit ladder uses it to ask whether the SETUP is still true
+    // rather than whether a timer expired -- see momentum_exits. Forward null
+    // rather than 0 when absent; 0 would read as "price is above VWAP" and
+    // defeat every fast stop.
+    vwap_at_entry: signal.vwap ?? null,
     order_id: String(orderId),
     gtt_stop_id: gttStopId ? String(gttStopId) : null,
     gtt_target_id: gttTargetId ? String(gttTargetId) : null,

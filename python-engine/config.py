@@ -259,6 +259,25 @@ class Settings(BaseSettings):
     # A trade above the bar is still never cut on the clock -- the trail owns it.
     MOMENTUM_TIME_STOP_FAST_MIN:   int   = 25    # Cut a NEGATIVE trade after 25 min
     MOMENTUM_TIME_STOP_FAST_R:     float = 0.0   # "Negative" means below 0R
+    # [THESIS-EXIT 2026-08-04] At the 25-min checkpoint, decide with the SETUP
+    # rather than the clock: a trade still holding above the VWAP it broke out
+    # from has not failed, it just has not paid yet.
+    #
+    # "r_now < 0 after 25 minutes" cannot separate a dead trade from a slow
+    # one, and that distinction is most of the P&L. INDIACEM on 2026-08-04 was
+    # -0.45R at 25 minutes and +1.10R at 65 (the fast tier would have cut it at
+    # the low, for -Rs 8.21 instead of a scale-out at +Rs 5.47). SUMICHEM on
+    # 2026-08-03 was scratched at 11:27 and printed its target at 12:00.
+    #
+    # VWAP-at-entry is not a new tuned number -- it is the level the entry was
+    # already measured against (see the MC gates no_recent_vwap_crossover and
+    # crossed_but_failed_holding_vwap). Nothing here was fitted to rescue a
+    # specific trade. Risk stays bounded by the broker stop, the slow tier and
+    # the 15:15 square-off; only the REASON for cutting changes.
+    #
+    # False falls back to the pure r_now < FAST_R test, as do positions with no
+    # vwap_at_entry recorded.
+    MOMENTUM_FAST_STOP_USES_THESIS: bool = True
     MOMENTUM_TIME_STOP_MIN:        int   = 90    # Cut a going-nowhere trade after 90 min
     MOMENTUM_TIME_STOP_MIN_R:      float = 0.25  # Survives the 90-min cut above +0.25R
     # Regime scaling on the SLOW window: a strong trend deserves more runway,

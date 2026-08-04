@@ -154,15 +154,19 @@ async def open_momentum_paper_positions(db_path: str, accepted: list,
                     "(ticker, exchange, entry_date, entry_price, shares, "
                     " stop_loss_initial, trailing_stop_current, target_1, target_2, "
                     " atr_14_at_entry, highest_close_since_entry, status, source, "
-                    " product_type, regime_at_entry, t1_fired) "
-                    "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+                    " product_type, regime_at_entry, t1_fired, vwap_at_entry) "
+                    "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
                     (ticker, "NSE", now_utc.isoformat(), close, shares,
                      stop, stop,
                      _sqlite_safe(_sig_get(sig, "target_1")),
                      _sqlite_safe(_sig_get(sig, "target_2")),
                      _sqlite_safe(_sig_get(sig, "atr_at_entry")),
                      close, "OPEN", SOURCE,
-                     "MIS", _sqlite_safe(_sig_get(sig, "regime")), 0),
+                     "MIS", _sqlite_safe(_sig_get(sig, "regime")), 0,
+                     # [THESIS-EXIT 2026-08-04] The paper book must test the
+                     # same thesis the live book does, or it measures a
+                     # strategy nobody is running.
+                     _sqlite_safe(_sig_get(sig, "vwap"))),
                 )
                 held.add(ticker)
                 opened.append(ticker)
