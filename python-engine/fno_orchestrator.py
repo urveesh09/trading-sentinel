@@ -56,11 +56,47 @@ def _now_min(now_ist: datetime) -> int:
 
 
 def _fno_pool_paper() -> float:
+    """Static allocation. Prefer `_fno_equity()` -- it adds realised P&L."""
     return float(settings.FNO_PAPER_BANKROLL)
 
 
 def _fno_pool_live() -> float:
+    """Static allocation. Prefer `_fno_equity()` -- it adds realised P&L."""
     return float(settings.FNO_LIVE_BANKROLL)
+
+
+# A book that has surrendered this share of its pool stops trading. The
+# directional F&O leg ran 2W/10L to -15,474 without anything noticing,
+# because sizing read a constant and the ledger was posting the damage
+# against an unrelated pool.
+FNO_MAX_DRAWDOWN_PCT = 0.25
+
+
+async def _fno_equity(db_path: str, source: str) -> float:
+    """[POOL-TRUTH 2026-07-31] Live F&O equity: allocation + realised P&L."""
+    from performance import division_equity
+    return await division_equity(db_path, source)
+
+
+def _fno_halted(equity: float, allocation: float, source: str) -> bool:
+    """True when a leg has drawn down past its limit or gone non-positive."""
+    if allocation <= 0:
+        return False
+    if equity <= 0:
+        logger.critical(
+            "fno_leg_halted source=%s equity=%.2f -- NON-POSITIVE equity",
+            source, equity,
+        )
+        return True
+    if equity < allocation * (1.0 - FNO_MAX_DRAWDOWN_PCT):
+        logger.critical(
+            "fno_leg_halted source=%s equity=%.2f allocation=%.2f "
+            "drawdown=%.1f%% limit=%.0f%%",
+            source, equity, allocation,
+            (1 - equity / allocation) * 100, FNO_MAX_DRAWDOWN_PCT * 100,
+        )
+        return True
+    return False
 
 
 async def _fetch_futures_bars(kite, fut_token: int, now_ist: datetime):
@@ -172,6 +208,45 @@ async def _manage_open_positions(
                     )
                     if progress < settings.FNO_TIME_STOP_MIN_R * r_points:
                         timed_out = True
+
+                    # [TIME-STOP-PREMIUM 2026-08-04] Do not cut a position that
+                    # is making money.
+                    #
+                    # The clause above measures progress in UNDERLYING points
+                    # while the P&L is in PREMIUM, and on a near-ATM long the
+                    # two are separated by delta. Requiring 0.5R of underlying
+                    # movement on a 31-point R means ~16 index points, which on
+                    # a 0.49-delta contract is ~8 premium points -- a quarter of
+                    # a 30-rupee option. So a contract could be up 15% and still
+                    # read as "gone nowhere".
+                    #
+                    # That is not hypothetical. The time stop is the single
+                    # biggest loser in this book (8 exits, -7,010) and two of
+                    # those eight were CUT WHILE PROFITABLE: 2026-07-23 at
+                    # +286 and 2026-08-03 at +530. Meanwhile trail_stop is the
+                    # only exit reason with positive expectancy in the book's
+                    # entire history (2 exits, +2,869, avg +0.62R) -- and a
+                    # trade can only reach the trail by surviving long enough
+                    # to get there.
+                    #
+                    # So the clock now only cuts trades that are BOTH going
+                    # nowhere on the underlying AND not in profit on premium.
+                    # A losing position is still cut on schedule; the whole
+                    # point of the time stop is preserved.
+                    if timed_out and settings.FNO_TIME_STOP_RESPECTS_PREMIUM:
+                        premium_pnl_per_lot = (exit_px_basis - p.entry_premium)
+                        if p.direction == "SHORT":
+                            premium_pnl_per_lot = -premium_pnl_per_lot
+                        if exit_px_basis > 0 and premium_pnl_per_lot > 0:
+                            timed_out = False
+                            logger.info(
+                                "fno_time_stop_deferred_in_profit id=%d age=%.0f "
+                                "underlying_progress=%.1f needed=%.1f "
+                                "premium_pnl_per_unit=%.2f",
+                                p.id, age_min, progress,
+                                settings.FNO_TIME_STOP_MIN_R * r_points,
+                                premium_pnl_per_lot,
+                            )
 
             if stopped:
                 exit_reason = "underlying_stop"
@@ -347,6 +422,16 @@ async def _try_entry_for_leg(
         min_pool_required=min_viable_pool(
             ask, lot_size, settings.FNO_STOP_PREMIUM_PCT, settings.FNO_MAX_RISK_PCT,
         ),
+        # [POOL-AUDIT 2026-08-04] Log the pool the gate was actually evaluated
+        # against, not just the threshold it had to clear.
+        #
+        # Without this the row is unfalsifiable. The 2026-08-03 audit read
+        # min_pool_required=24,821 next to a bankroll_ledger showing FNO_PAPER
+        # at -10,329 and concluded the gate had been bypassed. It had not: the
+        # ledger column omitted the division's allocation, while sizing used
+        # the full 250,000 pool. The two numbers were describing different
+        # things and nothing in the signal row said which one the gate saw.
+        pool_at_eval=round(float(pool), 2),
     )
 
     ok, reject = evaluate_entry_gates(ctx)
@@ -394,6 +479,50 @@ async def _try_entry_for_leg(
     ok_ml, reject_ml, ml = validate_position(legs, lot_size)
     if not ok_ml:
         await _log(False, reject_ml, **contract_fields, lots=lots, max_loss_rupees=ml)
+        return None
+
+    # [NAKED-LEG-EXPECTANCY 2026-07-31] A long option is only a trade if its
+    # payoff at target beats its loss at stop AFTER the spread. Measured on the
+    # premium, this book's geometry was upside down and its record says so:
+    # 12 naked legs, 2 winners, -Rs 15,474 since 2026-07-16. The defined-risk
+    # spreads over the same period ran ~flat on a 1.7:1 structure.
+    #
+    # Two things invert it. First the premium backstop: risk is
+    # min(delta-implied loss at the underlying stop, FNO_STOP_PREMIUM_PCT of
+    # premium), so a -25% backstop can cap the loss BELOW the stop distance --
+    # which sounds protective but means the position is stopped by decay rather
+    # than by the thesis being wrong. Second the spread, paid twice, on an
+    # instrument whose whole edge is a fraction of one underlying point.
+    #
+    # 2026-07-30 is the worked example: risk ~Rs 3,503 against a reward of
+    # ~Rs 2,717 -- 0.78:1 before costs, i.e. negative expectancy at ANY win
+    # rate below 56%, on a book running 17%. This gate refuses that trade.
+    # It does not touch the defined-risk book, which trades earlier in the tick.
+    entry_u = float(snap.forward)
+    stop_pts = abs(entry_u - float(sig.stop_underlying))
+    target_pts = abs(float(sig.target_underlying) - entry_u)
+    abs_delta = abs(float(delta_val)) or 0.0
+    # Premium moves ~delta per underlying point over a short intraday hold.
+    reward_rs = abs_delta * target_pts * (lots * lot_size)
+    risk_prem_pts = min(abs_delta * stop_pts, ask * settings.FNO_STOP_PREMIUM_PCT)
+    risk_rs = risk_prem_pts * (lots * lot_size)
+    # Round-trip spread, paid on entry and exit.
+    spread_rs = (quote.spread_pct or 0.0) * ask * (lots * lot_size)
+    net_reward = reward_rs - spread_rs
+    net_risk = risk_rs + spread_rs
+    rr = (net_reward / net_risk) if net_risk > 0 else 0.0
+    if rr < settings.FNO_MIN_REWARD_RISK:
+        await _log(
+            False, "reward_risk_below_min", **contract_fields,
+            lots=lots, max_loss_rupees=ml,
+        )
+        logger.info(
+            "fno_entry_skip source=%s reason=reward_risk_below_min symbol=%s "
+            "rr=%.2f min=%.2f reward=%.0f risk=%.0f spread=%.0f "
+            "stop_pts=%.1f target_pts=%.1f delta=%.2f",
+            source, contract.tradingsymbol, rr, settings.FNO_MIN_REWARD_RISK,
+            net_reward, net_risk, spread_rs, stop_pts, target_pts, abs_delta,
+        )
         return None
 
     qty = lots * lot_size
@@ -601,12 +730,15 @@ async def run_fno_tick(
         return summary
 
     if not settings.FNO_DISABLE_PAPER:
-        if await fpos.already_entered_bar(db_path, FnoSource.FNO_PAPER.value, sig.bar_ts):
+        paper_equity = await _fno_equity(db_path, FnoSource.FNO_PAPER.value)
+        if _fno_halted(paper_equity, _fno_pool_paper(), FnoSource.FNO_PAPER.value):
+            logger.info("fno_entry_skip source=FNO_PAPER reason=drawdown_halt")
+        elif await fpos.already_entered_bar(db_path, FnoSource.FNO_PAPER.value, sig.bar_ts):
             logger.info("fno_entry_skip source=FNO_PAPER reason=bar_already_entered")
         else:
             try:
                 entry = await _try_entry_for_leg(
-                    kite, db_path, FnoSource.FNO_PAPER.value, _fno_pool_paper(),
+                    kite, db_path, FnoSource.FNO_PAPER.value, paper_equity,
                     paper_exec, sig, snap, regime, now_ist, scan_id, is_trading_day,
                 )
                 if entry:
@@ -620,14 +752,17 @@ async def run_fno_tick(
         # switch is on.
         from fno_risk import fno_go_live_check
         unmet = await fno_go_live_check(db_path)
+        live_equity = await _fno_equity(db_path, FnoSource.FNO_LIVE.value)
         if unmet:
             logger.warning("fno_live_leg_refused_to_arm unmet=%s", unmet)
+        elif _fno_halted(live_equity, _fno_pool_live(), FnoSource.FNO_LIVE.value):
+            logger.info("fno_entry_skip source=FNO_LIVE reason=drawdown_halt")
         elif await fpos.already_entered_bar(db_path, FnoSource.FNO_LIVE.value, sig.bar_ts):
             logger.info("fno_entry_skip source=FNO_LIVE reason=bar_already_entered")
         else:
             try:
                 entry = await _try_entry_for_leg(
-                    kite, db_path, FnoSource.FNO_LIVE.value, _fno_pool_live(),
+                    kite, db_path, FnoSource.FNO_LIVE.value, live_equity,
                     live_exec, sig, snap, regime, now_ist, scan_id, is_trading_day,
                 )
                 if entry:
@@ -660,16 +795,29 @@ async def _bar_already_logged(db_path: str, bar_ts: str) -> bool:
 # ---------------------------------------------------------------------------
 
 def format_fno_telegram(summary: dict) -> str:
+    """[PAPER-MARKING 2026-08-04] Every rupee figure here is tagged paper or
+    live via performance.fmt_money.
+
+    This book has never held real capital, yet its exits rendered exactly like
+    the live momentum book's: on 2026-08-03 it reported `pnl=Rs -730` beside a
+    genuine live loss of Rs 8.41 the same day. Two numbers 87x apart,
+    identically formatted, distinguished only by a bracketed source tag in the
+    middle of the line.
+    """
+    from performance import fmt_money, is_paper_source
+
     out = [f"*F&O tick* `{summary.get('scan_id', '?')}`"]
     for e in summary.get("entries", []):
+        tag = " (paper)" if is_paper_source(e["source"]) else ""
         out.append(
-            f"ENTRY [{e['source']}] `{e['symbol']}` {e['direction']} "
+            f"ENTRY [{e['source']}]{tag} `{e['symbol']}` {e['direction']} "
             f"lots={e['lots']} @ {e['fill']:.2f} delta={e['delta']} iv={e['iv']}"
         )
     for x in summary.get("exits", []):
         out.append(
             f"EXIT [{x['source']}] `{x['symbol']}` {x['reason']} "
-            f"{x['entry']:.2f} -> {x['exit']:.2f} pnl=Rs {x['pnl']:,.0f} ({x['r']:+.2f}R)"
+            f"{x['entry']:.2f} -> {x['exit']:.2f} "
+            f"pnl={fmt_money(x['pnl'], x['source'])} ({x['r']:+.2f}R)"
         )
     if len(out) == 1:
         out.append("No activity.")

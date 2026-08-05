@@ -315,16 +315,27 @@ class TestSourceColumn:
         assert out["trade_count"] == 0
 
     @pytest.mark.asyncio
-    async def test_current_bankroll_includes_penny(self, seeded_db):
-        """The /bankroll endpoint reads the last row -- penny trades must
-        move it just like swing trades do (this is the whole point of the fix)."""
-        # Seed: 5000 (from fixture).
+    async def test_penny_close_books_against_the_penny_pool(self, seeded_db):
+        """[POOL-TRUTH 2026-07-31] A division's ledger balance is ITS OWN
+        allocation plus ITS OWN P&L.
+
+        This used to assert 5075 -- the swing pool (5000) plus a penny profit
+        -- because record_trade_close computed bankroll_before/after from
+        INITIAL_BANKROLL regardless of source. That split sizing from
+        accounting: F&O sized every trade off its Rs 250,000 pool while its
+        ledger balance walked to MINUS Rs 11,008 against the swing pool, and
+        no drawdown guard could read either number. pool_breakdown() in this
+        same file has always reported penny as PENNY_LIVE_BANKROLL + penny
+        P&L; the ledger now agrees with it."""
         assert await current_bankroll(seeded_db) == 5000.0
-        # A penny close must move bankroll.
+        # PENNY_LIVE_BANKROLL is 2000, so a +75 penny close lands at 2075.
         await record_trade_close(seeded_db, "PENNY_TEST", 75.0, source="PENNY")
-        assert await current_bankroll(seeded_db) == 5075.0
+        assert await current_bankroll(seeded_db) == 2075.0
         await record_trade_close(seeded_db, "PENNY_TEST2", -25.0, source="PENNY")
-        assert await current_bankroll(seeded_db) == 5050.0
+        assert await current_bankroll(seeded_db) == 2050.0
+        # The swing pool is untouched by penny activity.
+        from performance import nifty_bankroll
+        assert await nifty_bankroll(seeded_db) == 5000.0
 
 
 # ===============================================================
@@ -403,15 +414,21 @@ class TestPoolBreakdown:
 
     @pytest.mark.asyncio
     async def test_current_bankroll_unaffected_by_penny(self, seeded_db):
-        """[REGRESSION GUARD] current_bankroll() must STILL equal the ledger's
-        last row -- not the combined swing+penny. This is the B-tight guarantee:
+        """[REGRESSION GUARD] current_bankroll() still equals the ledger's last
+        row -- not the combined swing+penny. This is the B-tight guarantee:
         the existing /bankroll endpoint and check_circuit_breakers() math
-        stay exactly as they were before the breakdown feature."""
+        stay exactly as they were before the breakdown feature.
+
+        [POOL-TRUTH 2026-07-31] The last row is now the PENNY pool's own
+        balance (2000 + 999), not the swing pool plus a penny profit. The
+        invariant under test is unchanged -- current_bankroll reads the last
+        row whatever its source -- but that row is now division-correct and
+        matches pool_breakdown()['penny'] below."""
         await record_trade_close(seeded_db, "PENNY_WIN", 999.0, source="PENNY")
         bankroll = await current_bankroll(seeded_db)
-        # 5000 (initial) + 999 (last penny row, since it was appended after seed)
-        # current_bankroll reads the LAST row, regardless of source.
-        assert bankroll == 5999.0
+        # PENNY_LIVE_BANKROLL (2000) + 999, i.e. the same number the
+        # breakdown reports for penny -- ledger and breakdown now agree.
+        assert bankroll == 2999.0
         # But the breakdown still shows swing at 5000 (untouched) and penny at 2999.
         out = await pool_breakdown(seeded_db)
         assert out["swing"]["balance"] == 5000.0
@@ -623,3 +640,52 @@ class TestNiftyBankroll:
         # so the last 5 swing rows are: L3, L2, L1, L0, L_FINAL -- all losses.
         # Streak = 5 -> trip.
         assert "CB_CONSECUTIVE_LOSSES" in reasons
+
+
+# ===============================================================
+# POOL TRUTH (2026-07-31)
+# Sizing and accounting must read the same equity.
+# ===============================================================
+
+
+class TestPoolTruth:
+    """[POOL-TRUTH 2026-07-31] The 2026-07-30 SIGMA / F&O accounting split.
+
+    F&O sized every trade off FNO_PAPER_BANKROLL (Rs 250,000) while
+    record_trade_close booked the P&L against INITIAL_BANKROLL, so the
+    ledger reported a balance of MINUS Rs 11,008 for a book that had
+    lost Rs 15,474 of a Rs 250,000 pool. EDGE_PAPER had the same split
+    (sized off 100,000, booked against 4,500), which is why one trade
+    showed a -45% drawdown of a bankroll it was never sized against.
+    """
+
+    @pytest.mark.asyncio
+    async def test_fno_ledger_balance_tracks_its_own_pool(self, seeded_db):
+        from performance import division_equity
+        await record_trade_close(seeded_db, "NIFTYCE", -3570.34, source="FNO_PAPER")
+        equity = await division_equity(seeded_db, "FNO_PAPER")
+        # 250,000 allocation less the loss -- never a negative number.
+        assert equity == pytest.approx(250000.0 - 3570.34)
+        assert equity > 0
+        # And the ledger row agrees with it.
+        assert await current_bankroll(seeded_db) == pytest.approx(250000.0 - 3570.34)
+
+    @pytest.mark.asyncio
+    async def test_edge_paper_ledger_balance_tracks_its_own_pool(self, seeded_db):
+        from performance import division_equity
+        await record_trade_close(seeded_db, "SIGMA", -2093.84, source="EDGE_PAPER")
+        equity = await division_equity(seeded_db, "EDGE_PAPER")
+        assert equity == pytest.approx(100000.0 - 2093.84)
+        # A 2k loss on a 100k book is 2%, not the 45% the old split implied.
+        assert (1 - equity / 100000.0) < 0.03
+
+    @pytest.mark.asyncio
+    async def test_divisions_never_contaminate_each_other(self, seeded_db):
+        from performance import division_equity, nifty_bankroll
+        await record_trade_close(seeded_db, "A", -5000.0, source="FNO_PAPER")
+        await record_trade_close(seeded_db, "B", -500.0, source="EDGE_PAPER")
+        await record_trade_close(seeded_db, "C", 100.0, source="MOMENTUM")
+        assert await division_equity(seeded_db, "FNO_PAPER") == pytest.approx(245000.0)
+        assert await division_equity(seeded_db, "EDGE_PAPER") == pytest.approx(99500.0)
+        # Swing/momentum share the Nifty pool; F&O and EDGE cannot touch it.
+        assert await nifty_bankroll(seeded_db) == pytest.approx(5100.0)

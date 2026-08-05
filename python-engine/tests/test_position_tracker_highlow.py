@@ -131,3 +131,55 @@ async def test_position_tracker_handles_close_only_dataframe(tmp_path):
     await update_daily_positions(db_path, kite, "2025-10-10", record_cb)
     status, shares = await _get_status_shares(db_path)
     assert status == "OPEN"
+
+
+async def _get_exit(db_path):
+    async with aiosqlite.connect(db_path) as db:
+        db.row_factory = aiosqlite.Row
+        cur = await db.execute(
+            "SELECT status, exit_price, realised_pnl FROM positions")
+        row = await cur.fetchone()
+        return row["status"], row["exit_price"], row["realised_pnl"]
+
+
+@pytest.mark.asyncio
+async def test_gap_through_stop_fills_at_the_open_not_at_the_stop(tmp_path):
+    """[GAP-THROUGH 2026-07-31] The 2026-07-30 SIGMA exit.
+
+    The stock gapped below its stop and never traded at the stop price again.
+    Booking the exit AT the stop invents a fill the market never offered and
+    flatters the P&L -- SIGMA was booked out at 50.304 on a day that opened
+    48.00 and closed 47.30. The fill must be clamped to the open."""
+    db_path = str(tmp_path / "gap.db")
+    await _seed_one_position(
+        db_path, entry_price=52.40, shares=100,
+        target_1=55.02, target_2=60.0,
+        stop_loss=50.304, trailing_stop=50.304, highest_close=52.40,
+    )
+    # Opens 4.6% below the stop; low 47.20; closes 47.30 -- exactly SIGMA.
+    kite = _mock_kite_with_ohlc(open_=48.00, high=52.58, low=47.20, close=47.30)
+    record_cb = AsyncMock()
+    await update_daily_positions(db_path, kite, "2026-07-30", record_cb)
+    status, exit_price, _pnl = await _get_exit(db_path)
+    assert status == "STOPPED_OUT"
+    # Must NOT be the untouched 50.304.
+    assert exit_price == pytest.approx(48.00)
+
+
+@pytest.mark.asyncio
+async def test_normal_stop_touch_still_fills_at_the_stop(tmp_path):
+    """The clamp must not penalise an ordinary intraday stop touch: when the
+    bar opens ABOVE the stop and only wicks down to it, the stop is where the
+    order fills."""
+    db_path = str(tmp_path / "touch.db")
+    await _seed_one_position(
+        db_path, entry_price=100.0, shares=10,
+        target_1=110.0, target_2=120.0,
+        stop_loss=95.0, trailing_stop=96.0, highest_close=100.0,
+    )
+    kite = _mock_kite_with_ohlc(open_=99.0, high=100.0, low=95.5, close=98.0)
+    record_cb = AsyncMock()
+    await update_daily_positions(db_path, kite, "2025-10-10", record_cb)
+    status, exit_price, _pnl = await _get_exit(db_path)
+    assert status == "STOPPED_OUT"
+    assert exit_price == pytest.approx(96.0)

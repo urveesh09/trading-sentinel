@@ -9,6 +9,7 @@ import structlog
 from datetime import datetime, timedelta, timezone
 import aiosqlite
 from config import settings
+from halt_switch import TradingHalted, assert_not_halted
 
 logger = structlog.get_logger()
 
@@ -119,20 +120,64 @@ class KiteClient:
 
 
     async def clear_intraday_cache(self):
-        """Purge yesterday's intraday candles at midnight using explicit IST."""
+        """Age out intraday candles past the retention window (midnight, IST).
+
+        [INTRADAY-RETENTION 2026-08-04] This used to delete EVERYTHING before
+        yesterday, and that single line is why no intraday strategy in this
+        system has ever been validated.
+
+        The deletion was never needed for correctness. get_intraday() already
+        bounds its read with `datetime >= from AND datetime <= to` and decides
+        freshness from the last candle against `expected_latest`, so stale rows
+        can neither be served nor confuse a scan. The purge was pure disk
+        management -- and it was throwing away the only record of what the
+        market did minute by minute.
+
+        The cost of that: momentum and F&O are intraday strategies whose every
+        parameter (stop floor, R target, time-stop window, entry gates) was
+        tuned on the handful of live trades the operator happened to take,
+        because there was no history to test against. `ohlcv_cache` keeps 2.5
+        years of DAILY bars for 4,668 tickers; intraday kept three days. So
+        the two strategies that trade every day are precisely the two that
+        cannot be backtested, and no amount of parameter work can produce
+        evidence that they will not lose money.
+
+        Retaining it is cheap: measured at 2.53 MB/day (94 B/row, ~29k rows
+        per session), so a full year is ~633 MB against 17 GB free. That is
+        less than the 800 MB of stale cache.db.bak-* files already sitting in
+        /data.
+        """
         await self._init_intraday_db()
         from datetime import timedelta
         import pytz
+        from config import settings
+
+        retention_days = int(getattr(settings, "INTRADAY_RETENTION_DAYS", 365))
         IST = pytz.timezone("Asia/Kolkata")
         now_ist = datetime.now(IST)
-        yesterday = (now_ist - timedelta(days=1)).strftime("%Y-%m-%d")
+        cutoff = (now_ist - timedelta(days=retention_days)).strftime("%Y-%m-%d")
+
         async with aiosqlite.connect(self.db_path) as db:
-            await db.execute(
+            cur = await db.execute(
                 "DELETE FROM intraday_cache WHERE datetime < ?",
-                (yesterday + " 23:59:59",)
+                (cutoff + " 00:00:00",)
             )
+            deleted = cur.rowcount
             await db.commit()
-        logger.info("intraday_cache_cleared", before=yesterday)
+            async with db.execute(
+                "SELECT COUNT(*), COUNT(DISTINCT substr(datetime,1,10)) "
+                "FROM intraday_cache"
+            ) as c2:
+                remaining, sessions = await c2.fetchone()
+
+        # Log the corpus size, not just the deletion. This is now a research
+        # dataset that grows toward a usable backtest, and "how much history do
+        # we have" is the number that decides when a strategy can be evaluated.
+        logger.info(
+            "intraday_cache_aged_out", cutoff=cutoff, deleted=deleted,
+            rows_retained=remaining, sessions_retained=sessions,
+            retention_days=retention_days,
+        )
 
 
     async def refresh_instrument_cache(self):
@@ -809,15 +854,53 @@ class KiteClient:
         trigger_price: float = None,
         validity: str = "DAY",
         tag: str = None,
+        *,
+        intent: str,
+        channel: Optional[str] = None,
     ) -> dict:
         """
         Place an order on Kite.
         Kite endpoint: POST /orders/{variety}
         Returns: {order_id, status, message}
+
+        `intent` is REQUIRED and keyword-only, and it is the halt boundary.
+
+        [HALT 2026-08-05] The kill switch blocks ENTRIES and never blocks
+        EXITS. Refusing an exit during a halt would strand a live position with
+        no protective stop -- strictly worse than whatever condition tripped the
+        halt in the first place. So `intent="entry"` is gated and
+        `intent="exit"` always proceeds.
+
+        There is deliberately no default. A default would let a future call site
+        inherit the wrong side of that boundary silently, and both directions of
+        that mistake are expensive: a forgotten exit gets blocked and goes
+        naked, a forgotten entry trades straight through a halt. Making it
+        required converts either mistake into an immediate TypeError.
         """
+        if intent not in ("entry", "exit"):
+            raise ValueError(f"intent must be 'entry' or 'exit', got {intent!r}")
+
         if not tradingsymbol or quantity <= 0:
             return {"order_id": None, "status": "ERROR",
                     "message": "tradingsymbol and positive quantity are required"}
+
+        if intent == "entry":
+            try:
+                assert_not_halted(channel)
+            except TradingHalted as exc:
+                logger.error(
+                    "kite_order_blocked_by_halt",
+                    tradingsymbol=tradingsymbol, channel=channel,
+                    scope=exc.attribution.get("scope"),
+                    by=exc.attribution.get("by"),
+                    reason=exc.attribution.get("reason"),
+                )
+                # Status is "ERROR", not a novel "HALTED": every caller already
+                # branches on ERROR / falsy order_id, and inventing a status
+                # string they do not know would read as SUCCESS. The `halted`
+                # flag is there for callers that want to tell the two apart.
+                return {"order_id": None, "status": "ERROR", "halted": True,
+                        "message": str(exc)}
         params = {
             "exchange": exchange,
             "tradingsymbol": tradingsymbol.upper(),

@@ -1503,6 +1503,10 @@ async def lifespan(app: FastAPI):
         new_risk = PennyRiskEngine(bankroll=bankroll, ledger_writer=_penny_ledger_writer)
         if _penny_scanner is not None:
             _penny_scanner.risk_engine = new_risk
+        # [RETRY-STORM 2026-07-31] Broker MIS-blocked / ban lists are published
+        # per session, so yesterday's per-ticker entry blocks must not persist.
+        from penny_executor import reset_entry_blocks
+        reset_entry_blocks()
         logger.info("penny_daily_reset bankroll=%s", bankroll)
     scheduler.add_job(_penny_daily_reset, 'cron', hour=0, minute=5, id="penny_daily_reset")
     # [PENNY-MAIN 2026-06-21] 7 penny subsystem scheduler jobs.
@@ -2620,9 +2624,13 @@ async def _close_momentum_position(pos: dict, exit_price: float, reason: str, no
     r_multiple = realised_pnl / risk_initial if risk_initial > 0 else 0
 
     async with aiosqlite.connect(settings.DB_PATH) as db:
+        # [SCALE-OUT 2026-08-04] ADD rather than assign -- after a partial the
+        # row already carries the banked half and this close covers only the
+        # runner. COALESCE keeps the no-partial case byte-identical.
         cur = await db.execute("""
             UPDATE positions
-            SET status=?, exit_price=?, exit_date=?, realised_pnl=?, r_multiple=?
+            SET status=?, exit_price=?, exit_date=?,
+                realised_pnl=COALESCE(realised_pnl, 0) + ?, r_multiple=?
             WHERE ticker=? AND source='MOMENTUM'
               AND status IN ('OPEN', 'CLOSED_T1') AND exit_date IS NULL
         """, (reason, exit_price, datetime.now(timezone.utc).isoformat(),
@@ -2649,6 +2657,64 @@ async def _close_momentum_position(pos: dict, exit_price: float, reason: str, no
     return True
 
 
+async def _record_momentum_scale_out(
+    pos: dict, exit_price: float, sold_shares: int,
+    runner_shares: int, new_stop: float, reason: str,
+) -> bool:
+    """[SCALE-OUT 2026-08-04] Book a PARTIAL momentum exit.
+
+    Deliberately not _close_momentum_position: this must not close the row.
+    The position stays OPEN with fewer shares, a raised stop, and t1_fired=1
+    so the partial can only ever fire once.
+
+    P&L is booked on the shares actually sold, with costs computed for that
+    quantity -- not prorated from a full-size figure, because Zerodha's
+    brokerage is a flat-plus-percentage mix and the prorated number would be
+    wrong in the direction that flatters us.
+
+    The r_multiple is deliberately NOT written here. The position is still
+    live, so its final R is unknown; writing a partial R would put a number in
+    trade_outcomes that no later close could correct. The ledger carries the
+    rupees, and the runner's own close carries the R.
+    """
+    ticker = pos['ticker']
+    gross = (exit_price - pos['entry_price']) * sold_shares
+    costs = calc_zerodha_costs(
+        pos['entry_price'], exit_price, sold_shares,
+        is_intraday=_is_intraday_from_product_type(pos.get('product_type')),
+    )
+    realised_pnl = gross - costs
+
+    async with aiosqlite.connect(settings.DB_PATH) as db:
+        cur = await db.execute("""
+            UPDATE positions
+            SET shares=?, trailing_stop_current=?, t1_fired=1,
+                realised_pnl=COALESCE(realised_pnl, 0) + ?
+            WHERE ticker=? AND source='MOMENTUM'
+              AND status='OPEN' AND exit_date IS NULL AND t1_fired=0
+        """, (runner_shares, new_stop, realised_pnl, ticker))
+        await db.commit()
+        rows = cur.rowcount
+
+    if rows != 1:
+        # Same discipline as _close_momentum_position: a WHERE that matched
+        # nothing must not book money. t1_fired=0 in the predicate also makes
+        # this idempotent -- a retry after a partial failure cannot double-book.
+        logger.error(
+            "momentum_scale_out_not_persisted", ticker=ticker,
+            rows_affected=rows,
+            message="no matching open position -- ledger NOT written",
+        )
+        return False
+
+    await record_trade_close(
+        settings.DB_PATH, ticker, realised_pnl,
+        r_multiple=None, notes=f"momentum_scale_out {reason}",
+        source=pos.get('source') or 'MOMENTUM',
+    )
+    return True
+
+
 async def momentum_intraday_monitor():
     """
     [TIER0-0.1 2026-07-14] Manage open MIS momentum positions DURING the day.
@@ -2668,7 +2734,8 @@ async def momentum_intraday_monitor():
       3. Ratchet the SL-M trigger to breakeven / trail.
     """
     from momentum_exits import (
-        evaluate_momentum_exit, momentum_exit_status, ACTION_EXIT, ACTION_TRAIL,
+        evaluate_momentum_exit, momentum_exit_status,
+        ACTION_EXIT, ACTION_TRAIL, ACTION_SCALE_OUT,
     )
     from datetime import time as dt_time
     import httpx as _httpx
@@ -2764,6 +2831,90 @@ async def momentum_intraday_monitor():
                 await _close_momentum_position(
                     pos, ltp, momentum_exit_status(decision["reason"]),
                     decision["reason"],
+                )
+
+            elif action == ACTION_SCALE_OUT:
+                # [SCALE-OUT 2026-08-04] Order of operations is a safety
+                # property, not a preference.
+                #
+                # The resting SL covers the FULL position. If we sold the
+                # partial first and the stop then triggered, it would sell the
+                # full quantity again and leave us SHORT -- the exact failure
+                # the target path avoids by cancelling before it sells.
+                #
+                # So: shrink the stop to the runner's quantity FIRST, then sell.
+                # Between the two calls the position is briefly over-protected
+                # (full size held, partial size stopped), which risks giving
+                # back some of the partial's gain. That is a bounded, monetary
+                # cost. The other ordering risks an unintended short position,
+                # which is not.
+                scale_shares = int(decision["scale_shares"])
+                runner_shares = int(pos["shares"]) - scale_shares
+                new_stop = decision["new_stop"]
+
+                if sl_order_id:
+                    res = await kite.modify_order(
+                        order_id=str(sl_order_id),
+                        quantity=runner_shares,
+                        trigger_price=snap_to_tick(new_stop, -1),
+                    )
+                    if res.get("status") == "ERROR":
+                        # Could not resize the stop, so we must not sell. Hold
+                        # the full position under its existing (full-size,
+                        # correct) stop and try again next tick.
+                        logger.error(
+                            "momentum_scale_out_sl_resize_failed_holding",
+                            ticker=ticker, sl_order_id=sl_order_id,
+                            runner_shares=runner_shares,
+                            message=res.get("message"),
+                        )
+                        continue
+
+                payload = {
+                    "ticker": ticker,
+                    "shares": scale_shares,
+                    "order_type": "LIMIT",
+                    "limit_price": snap_to_tick(ltp * 0.999, -1),
+                    "product_type": pos.get('product_type', 'MIS'),
+                    "reason": f"MOMENTUM_SCALE_OUT_{decision['reason']}",
+                }
+                try:
+                    async with _httpx.AsyncClient() as _client:
+                        resp = await _client.post(
+                            f"{container_a_url}/api/orders/square-off",
+                            json=payload,
+                            headers={"X-Internal-Secret": settings.INTERNAL_API_SECRET},
+                            timeout=10.0,
+                        )
+                    resp.raise_for_status()
+                except Exception as sell_err:
+                    # The stop is now sized for the runner but we still hold
+                    # the full position: the excess shares are unprotected.
+                    # Restore the stop to full size rather than leaving that
+                    # gap open, and page the operator either way.
+                    logger.error(
+                        "momentum_scale_out_sell_failed_restoring_stop",
+                        ticker=ticker, scale_shares=scale_shares,
+                        error=str(sell_err),
+                    )
+                    if sl_order_id:
+                        await kite.modify_order(
+                            order_id=str(sl_order_id),
+                            quantity=int(pos["shares"]),
+                            trigger_price=snap_to_tick(new_stop, -1),
+                        )
+                    continue
+
+                # Book the partial: shares down, stop up, t1_fired set so the
+                # partial can never fire twice on the same position.
+                await _record_momentum_scale_out(
+                    pos, ltp, scale_shares, runner_shares, new_stop,
+                    decision["reason"],
+                )
+                logger.info(
+                    "momentum_scaled_out", ticker=ticker, ltp=ltp,
+                    sold=scale_shares, runner=runner_shares,
+                    new_stop=new_stop, reason=decision["reason"],
                 )
 
             elif action == ACTION_TRAIL:

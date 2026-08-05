@@ -126,14 +126,19 @@ describe('executeSignal()', () => {
   test('uses CNC product type for swing trades (isIntraday=false)', async () => {
     await executeSignal(makeSignal(), 'EXEC', false);
     expect(kite.placeOrder).toHaveBeenCalledWith(
-      expect.objectContaining({ product: 'CNC' })
+      expect.objectContaining({ product: 'CNC' }),
+      // [HALT 2026-08-05] The entry declares itself an entry, so the kill
+      // switch can gate it. Pinned here because a silent change to 'exit'
+      // would route the buy leg around the halt.
+      expect.objectContaining({ intent: 'entry' })
     );
   });
 
   test('uses MIS product type for intraday (isIntraday=true)', async () => {
     await executeSignal(makeSignal(), 'EXEC', true);
     expect(kite.placeOrder).toHaveBeenCalledWith(
-      expect.objectContaining({ product: 'MIS' })
+      expect.objectContaining({ product: 'MIS' }),
+      expect.objectContaining({ intent: 'entry' })
     );
   });
 
@@ -149,24 +154,43 @@ describe('executeSignal()', () => {
     expect(kite.placeGTT).not.toHaveBeenCalled();
   });
 
-  test('GTT stop price is above trigger (trigger * 1.002, rounded UP to ₹0.10 tick)', async () => {
+  // [FILL-ANCHOR 2026-08-04] The GTT legs are now placed at the FILL-anchored
+  // stop and target, not the signal's. The happy path fills at 1005 against a
+  // signal close of 1000, so the whole geometry slides up by 5:
+  //   risk    = 1000 - 950 = 50        (no floor binds: 1.2% of 1005 is 12.06)
+  //   stop    = 1005 - 50   = 955
+  //   rTarget = (1075 - 1000) / 50 = 1.5R  ->  t1 = 1005 + 1.5*50 = 1080
+  // Anchoring the target to a stale close while the stop moved would have
+  // quietly changed this trade's reward:risk from 1.5 to 1.4.
+  const ANCHORED_STOP = 955;
+  const ANCHORED_T1 = 1080;
+
+  test('GTT stop trigger follows the fill, and its price sits above the trigger', async () => {
     const signal = makeSignal({ stop_loss: 950 });
     await executeSignal(signal, 'EXEC', false);
     const stopCall = kite.placeGTT.mock.calls[0][0];
+
+    expect(stopCall.trigger_values).toEqual([ANCHORED_STOP]);
     const stopPrice = stopCall.orders[0].price;
-    // 950 * 1.002 = 951.9 → snapToTick UP to nearest 0.10 = 951.9 (already a multiple of 0.10)
-    expect(stopPrice).toBe(Math.ceil(Math.round(950 * 1.002 * 10 * 100) / 100) / 10);
-    expect(stopPrice).toBeGreaterThan(950);
+    // 955 * 1.002 = 956.91 → snapToTick UP to nearest 0.10 = 957.0
+    expect(stopPrice).toBe(Math.ceil(Math.round(ANCHORED_STOP * 1.002 * 10 * 100) / 100) / 10);
+    expect(stopPrice).toBeGreaterThan(ANCHORED_STOP);
+    // The risk distance the engine sized against is preserved exactly.
+    expect(1005 - stopCall.trigger_values[0]).toBe(1000 - 950);
   });
 
-  test('GTT target price is below trigger (trigger * 0.998, rounded DOWN to ₹0.10 tick)', async () => {
+  test('GTT target trigger follows the fill, and its price sits below the trigger', async () => {
     const signal = makeSignal({ target_1: 1075 });
     await executeSignal(signal, 'EXEC', false);
     const targetCall = kite.placeGTT.mock.calls[1][0];
+
+    expect(targetCall.trigger_values).toEqual([ANCHORED_T1]);
     const targetPrice = targetCall.orders[0].price;
-    // 1075 * 0.998 = 1072.85 → snapToTick DOWN to nearest 0.10 = 1072.8
-    expect(targetPrice).toBe(Math.floor(Math.round(1075 * 0.998 * 10 * 100) / 100) / 10);
-    expect(targetPrice).toBeLessThan(1075);
+    // 1080 * 0.998 = 1077.84 → snapToTick DOWN to nearest 0.10 = 1077.8
+    expect(targetPrice).toBe(Math.floor(Math.round(ANCHORED_T1 * 0.998 * 10 * 100) / 100) / 10);
+    expect(targetPrice).toBeLessThan(ANCHORED_T1);
+    // Reward:risk survives the drift.
+    expect((ANCHORED_T1 - 1005) / (1005 - ANCHORED_STOP)).toBeCloseTo(1.5, 6);
   });
 
   // ─── Fill verification ───
@@ -274,11 +298,66 @@ describe('executeSignal()', () => {
     const p = stopCall[0];
     expect(p.transaction_type).toBe('SELL');
     expect(p.product).toBe('MIS');
-    expect(p.trigger_price).toBe(950);      // snapToTick(950, down)
-    expect(p.price).toBe(940.5);            // snapToTick(950 * 0.99, down) — marketable, <= trigger
+    // [FILL-ANCHOR 2026-08-04] Armed at the fill-anchored stop (1005 - 50 = 955),
+    // not the signal's 950. Arming 950 against a 1005 fill would have handed the
+    // trade 55 of risk on a 50 budget; against a 995 fill it would have handed it
+    // 45 and tripped the breakeven ratchet a fifth of an R early.
+    expect(p.trigger_price).toBe(955);      // snapToTick(955, down)
+    expect(p.price).toBe(945.4);            // snapToTick(955 * 0.99, down) — marketable, <= trigger
     expect(p.price).toBeLessThanOrEqual(p.trigger_price);
     // No leg may be a bare market order (Zerodha rejects those over the API).
     expect(kite.placeOrder.mock.calls.every(c => c[0].order_type !== 'SL-M' && c[0].order_type !== 'MARKET')).toBe(true);
+  });
+
+  // ─── [FILL-ANCHOR 2026-08-04] Stop follows the fill, both directions ───
+  test('a FAVOURABLE fill moves the MIS stop DOWN so risk stays at the sized distance', async () => {
+    // This is the SUMICHEM shape: signalled at 1000, filled 12 minutes later at
+    // 995. The old code armed 950 against a 995 fill = 45 of risk on a 50
+    // budget, so the +1R breakeven ratchet fired 10% early and scratched the
+    // trade before it could work.
+    routePlaceOrder();
+    kite.getLTP.mockResolvedValue({ 'NSE:RELIANCE': { last_price: 995 } });
+    kite.getOrderHistory.mockResolvedValue([{ status: 'COMPLETE', average_price: 995 }]);
+
+    await executeSignal(makeSignal({ stop_loss: 950 }), 'EM', true);
+
+    const stopCall = kite.placeOrder.mock.calls.find(c => c[0].order_type === 'SL');
+    expect(stopCall[0].trigger_price).toBe(945);        // 995 - 50, not 950
+    expect(995 - stopCall[0].trigger_price).toBe(50);   // the sized risk, intact
+  });
+
+  test('an ATR floor wider than the signal risk cuts share count to stay in budget', async () => {
+    // atr 100 x 0.35 = 35 of risk per share. The 250 budget affords 7 shares,
+    // but the engine only sized 5 — so size must stay at 5, never grow.
+    routePlaceOrder();
+    await executeSignal(makeSignal({ atr_at_entry: 100 }), 'EM', true);
+    const buyCall = kite.placeOrder.mock.calls.find(c => c[0].transaction_type === 'BUY');
+    expect(buyCall[0].quantity).toBe(5);
+
+    // atr 200 x 0.35 = 70/share; 250 / 70 = 3 shares. Size must shrink.
+    jest.clearAllMocks();
+    setupHappyPath();
+    routePlaceOrder();
+    await executeSignal(makeSignal({ atr_at_entry: 200 }), 'EM', true);
+    const buyCall2 = kite.placeOrder.mock.calls.find(c => c[0].transaction_type === 'BUY');
+    expect(buyCall2[0].quantity).toBe(3);
+  });
+
+  test('refuses the trade when one share of floored risk breaches the whole budget', async () => {
+    routePlaceOrder();
+    // atr 1000 x 0.35 = 350/share against a 250 budget -> not affordable.
+    await expect(
+      executeSignal(makeSignal({ atr_at_entry: 1000 }), 'EM', true)
+    ).rejects.toThrow(ValidationError);
+    expect(kite.placeOrder).not.toHaveBeenCalled();
+  });
+
+  test('rejects a malformed signal whose stop is not below its close', async () => {
+    routePlaceOrder();
+    await expect(
+      executeSignal(makeSignal({ stop_loss: 1000 }), 'EM', true)
+    ).rejects.toThrow(ValidationError);
+    expect(kite.placeOrder).not.toHaveBeenCalled();
   });
 
   test('when the stop is rejected, unwinds with a marketable LIMIT and a <=20-char tag', async () => {

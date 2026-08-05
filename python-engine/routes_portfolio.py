@@ -162,8 +162,8 @@ async def add_manual_position(request: Request, payload: ManualPositionRequest):
                 ticker, exchange, entry_date, entry_price, shares,
                 stop_loss_initial, trailing_stop_current, target_1, target_2,
                 atr_14_at_entry, highest_close_since_entry, status, source, product_type,
-                regime_at_entry, sl_order_id
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                regime_at_entry, sl_order_id, vwap_at_entry
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """, (payload.ticker, payload.exchange, datetime.now(timezone.utc).isoformat(),
               payload.entry_price, payload.shares, stop_loss, stop_loss,
               target_1, target_2,
@@ -174,7 +174,7 @@ async def add_manual_position(request: Request, payload: ManualPositionRequest):
               payload.atr_14_at_entry,
               payload.entry_price, "OPEN",
               payload.source, payload.product_type, payload.regime_at_entry,
-              payload.sl_order_id))
+              payload.sl_order_id, payload.vwap_at_entry))
         await db.commit()
 
     _main.logger.info("position_added_manually", ticker=payload.ticker,

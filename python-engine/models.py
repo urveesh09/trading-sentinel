@@ -256,6 +256,11 @@ class ManualPositionRequest(BaseModel):
     # ATR at entry, used by the Chandelier trail. None = unknown; it must NOT be
     # coerced to 0.0, which collapses the trail onto the entry price.
     atr_14_at_entry: Optional[float] = Field(default=None, gt=0)
+    # [THESIS-EXIT 2026-08-04] VWAP the signal broke out from. The exit ladder
+    # tests the trade against this instead of cutting on the clock -- a trade
+    # still holding above it has not failed, it just has not paid yet. None on
+    # callers that do not send it; the exit logic falls back to the R test.
+    vwap_at_entry: Optional[float] = Field(default=None, gt=0)
 
 class BankrollAdjustment(BaseModel):
     amount: float

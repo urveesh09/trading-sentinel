@@ -70,11 +70,51 @@ def _edge_min_strength() -> float:
 
 
 def _edge_paper_bankroll() -> float:
+    """Static allocation. Prefer `_edge_equity()` -- it adds realised P&L."""
     return float(getattr(settings, "PENNY_EDGE_PAPER_BANKROLL", 100000.0))
 
 
 def _edge_live_bankroll() -> float:
+    """Static allocation. Prefer `_edge_equity()` -- it adds realised P&L."""
     return float(getattr(settings, "PENNY_EDGE_LIVE_BANKROLL", 1000.0))
+
+
+async def _edge_equity(db_path: str, source: str) -> float:
+    """[POOL-TRUTH 2026-07-31] Live equity for an EDGE leg: allocation plus
+    that leg's own realised P&L.
+
+    Sizing used to read the STATIC allocation, so a book could keep sizing
+    100k trades after losing money and the ledger would post the losses
+    against a different pool entirely. Sizing off the same equity the P&L is
+    booked against is what makes a drawdown actually shrink the next trade."""
+    from performance import division_equity
+    return await division_equity(db_path, source)
+
+
+# Stop trading a division once it has given back this fraction of its
+# allocation. A book that has lost a third of its capital has falsified its
+# own premise; continuing to size off the remainder is how -11,008 happens.
+EDGE_MAX_DRAWDOWN_PCT = 0.33
+
+
+def _edge_halted(equity: float, allocation: float, leg_name: str) -> bool:
+    """True when a leg has drawn down past its limit (or gone non-positive)."""
+    if equity <= 0:
+        logger.critical(
+            "penny_edge_leg_halted leg=%s equity=%.2f -- NON-POSITIVE equity, "
+            "refusing to size any further trades",
+            leg_name, equity,
+        )
+        return True
+    if allocation > 0 and equity < allocation * (1.0 - EDGE_MAX_DRAWDOWN_PCT):
+        logger.critical(
+            "penny_edge_leg_halted leg=%s equity=%.2f allocation=%.2f "
+            "drawdown=%.1f%% limit=%.0f%% -- halting this leg",
+            leg_name, equity, allocation,
+            (1 - equity / allocation) * 100, EDGE_MAX_DRAWDOWN_PCT * 100,
+        )
+        return True
+    return False
 
 
 def _edge_paper_disabled() -> bool:
@@ -223,12 +263,25 @@ async def _run_one_leg(
         entry_status = order_result.get("entry_status")
         if entry_status in ("filled", "paper"):
             entry_iso = datetime.now(timezone.utc).isoformat()
+            # [FILL-TRUTH 2026-07-31] Book the price we actually paid. The
+            # old code recorded pos.entry_price -- the signal's (possibly
+            # stale) daily close -- so on 2026-07-30 SIGMA went into the
+            # book at 52.40 while the market was at 48.86, and every
+            # downstream R-multiple and P&L figure inherited that fiction.
+            fill_price = order_result.get("fill_price") or pos.entry_price
+            if abs(fill_price - pos.entry_price) > 0.005:
+                logger.info(
+                    "penny_edge_%s_fill_differs ticker=%s signal=%.2f fill=%.2f "
+                    "slip=%.2f%%",
+                    leg_name.lower(), pos.ticker, pos.entry_price, fill_price,
+                    (fill_price - pos.entry_price) / pos.entry_price * 100,
+                )
             await _write_edge_position(
                 db_path=db_path,
                 source=source_tag,
                 ticker=pos.ticker,
                 entry_date_iso=entry_iso,
-                entry_price=pos.entry_price,
+                entry_price=fill_price,
                 shares=pos.shares,
                 stop_loss=pos.stop_loss,
                 target_1=pos.target,
@@ -238,7 +291,8 @@ async def _run_one_leg(
                 "ticker":       pos.ticker,
                 "subtype":      pos.signal_subtype,
                 "strength":     round(pos.adjusted_strength, 2),
-                "entry":        round(pos.entry_price, 2),
+                "entry":        round(fill_price, 2),
+                "signal_price": round(pos.entry_price, 2),
                 "target":       round(pos.target, 2),
                 "stop":         round(pos.stop_loss, 2),
                 "hold_days":    pos.hold_days,
@@ -248,10 +302,20 @@ async def _run_one_leg(
             })
             logger.info(
                 "penny_edge_%s_entry_submitted ticker=%s subtype=%s strength=%.2f "
-                "entry=%.2f target=%.2f stop=%.2f hold=%dd shares=%d status=%s",
+                "signal=%.2f fill=%.2f target=%.2f stop=%.2f hold=%dd shares=%d status=%s",
                 leg_name.lower(), pos.ticker, pos.signal_subtype, pos.adjusted_strength,
-                pos.entry_price, pos.target, pos.stop_loss,
+                pos.entry_price, fill_price, pos.target, pos.stop_loss,
                 pos.hold_days, pos.shares, entry_status,
+            )
+        elif entry_status == "unprotected":
+            # Stop rejected AND unwind unconfirmed. We may be holding stock.
+            # Do NOT write a tidy position row over a live mess -- the
+            # operator has been paged and must reconcile by hand.
+            skipped.append((pos.ticker, "UNPROTECTED-manual-reconcile"))
+            logger.critical(
+                "penny_edge_%s_entry_unprotected ticker=%s shares=%d order_result=%s "
+                "-- NOT recording a position; reconcile in the Kite app",
+                leg_name.lower(), pos.ticker, pos.shares, order_result,
             )
         else:
             skipped.append((pos.ticker, f"entry_status={entry_status}"))
@@ -332,8 +396,17 @@ async def run_penny_edge_scan(kite, db_path: Optional[str] = None) -> dict:
     paper_disabled = _edge_paper_disabled()
     live_disabled  = _edge_live_disabled()
     live_master    = _live_trading_enabled()
-    paper_bankroll = _edge_paper_bankroll()
-    live_bankroll  = _edge_live_bankroll()
+
+    # [POOL-TRUTH 2026-07-31] Size off live equity (allocation + realised
+    # P&L), not off the static allocation, and halt a leg that has drawn
+    # down past its limit. Previously both legs sized off a constant, so a
+    # losing book kept betting the same notional for ever.
+    paper_bankroll = await _edge_equity(db_path, SOURCE_PAPER)
+    live_bankroll  = await _edge_equity(db_path, SOURCE_LIVE)
+    if _edge_halted(paper_bankroll, _edge_paper_bankroll(), "PAPER"):
+        paper_disabled = True
+    if _edge_halted(live_bankroll, _edge_live_bankroll(), "LIVE"):
+        live_disabled = True
 
     # [PENNY-EDGE-ORCHESTRATOR-BREADCRUMB 2026-07-06] First-line
     # diagnostic log inside the orchestrator. Today's incident:

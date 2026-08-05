@@ -15,6 +15,13 @@ import schedule
 from openai import OpenAI
 from pydantic import BaseModel, ValidationError
 
+from advisory import (  # [ADVISORY 2026-08-05] typed verdicts
+    Review,
+    Verdict,
+    from_payload as review_from_payload,
+    unavailable as advisory_unavailable,
+)
+
 # -------------------------------------------------------------------------
 # CONFIG & LOGGING
 # -------------------------------------------------------------------------
@@ -69,7 +76,7 @@ logger = structlog.get_logger("agent")
 # [MINIMAX-MIGRATION 2026-07-15] The reasoning gate moved off Google Gemini
 # onto MiniMax, which exposes an OpenAI-compatible chat-completions endpoint.
 # We drive it with the stock `openai` SDK pointed at MiniMax's base_url, so the
-# rest of the pipeline (threaded 30s wall, JSON parse guard, fallback banner)
+# rest of the pipeline (threaded hard wall, JSON parse guard, fallback banner)
 # is unchanged -- only the transport and the model name differ.
 #
 # Base URL and model are env-overridable so the operator can retarget the
@@ -77,6 +84,19 @@ logger = structlog.get_logger("agent")
 MINIMAX_API_KEY = os.getenv("MINIMAX_API_KEY")
 MINIMAX_BASE_URL = os.getenv("MINIMAX_BASE_URL", "https://api.minimax.io/v1")
 MINIMAX_MODEL = os.getenv("MINIMAX_MODEL", "MiniMax-M3")
+# [MINIMAX-TIMEOUT 2026-08-04] See analyze_with_minimax for why these moved off
+# a flat 30s. Budget: one attempt + one retry must fit inside the wall, and the
+# wall must stay well inside the 3-minute momentum poll.
+MINIMAX_REQUEST_TIMEOUT_SEC = int(os.getenv("MINIMAX_REQUEST_TIMEOUT_SEC", "45"))
+MINIMAX_MAX_RETRIES = int(os.getenv("MINIMAX_MAX_RETRIES", "1"))
+MINIMAX_WALL_TIMEOUT_SEC = int(os.getenv("MINIMAX_WALL_TIMEOUT_SEC", "100"))
+# [ADVISORY 2026-08-05] What to do when the reviewer cannot render an opinion.
+# "proceed" (default) preserves today's behaviour exactly: the alert goes out
+# with an UNAVAILABLE banner and the operator decides. "block" refuses to send
+# an EXEC button for a signal nobody reviewed. That is a real risk-posture
+# choice -- proceed means trading unreviewed, block means a MiniMax outage
+# stops the momentum book -- so it is configuration, not a silent default.
+MINIMAX_UNAVAILABLE_POLICY = os.getenv("MINIMAX_UNAVAILABLE_POLICY", "proceed")
 TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
 TELEGRAM_CHAT_ID = os.getenv("TELEGRAM_CHAT_ID")
 QUANT_ENGINE_URL = os.getenv("QUANT_ENGINE_URL", "http://python-engine:8000/signals")
@@ -140,7 +160,15 @@ if not all([MINIMAX_API_KEY, TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID]):
     logger.critical("CRITICAL: Missing required environment variables. Exiting.")
     sys.exit(1)
 
-client = OpenAI(api_key=MINIMAX_API_KEY, base_url=MINIMAX_BASE_URL)
+# [MINIMAX-TIMEOUT 2026-08-04] max_retries=1 (SDK default is 2). The retries
+# happen INSIDE the per-request budget, so the default made the budget
+# unsatisfiable, and an abandoned daemon thread kept spending API calls after
+# the wall had already given up on it.
+client = OpenAI(
+    api_key=MINIMAX_API_KEY,
+    base_url=MINIMAX_BASE_URL,
+    max_retries=MINIMAX_MAX_RETRIES,
+)
 
 # -------------------------------------------------------------------------
 # SHORT-TERM MEMORY (DEDUPLICATION)
@@ -246,6 +274,11 @@ def touch_heartbeat():
 # it works no matter what state the other containers are in.
 SCHEDULER_TICK_FILE = "/data/scheduler_tick.json"
 ENGINE_FREEZE_THRESHOLD_SEC = 600         # 10 min = ten missed 60s ticks
+
+# [POLL-CADENCE 2026-08-04] How often to poll the engine for momentum signals
+# during market hours. See the scheduling block in main() for why this replaced
+# a fixed :10/:25/:40/:55 grid.
+MOMENTUM_POLL_INTERVAL_MIN = int(os.getenv("MOMENTUM_POLL_INTERVAL_MIN", "3"))
 ENGINE_FREEZE_ALERT_COOLDOWN_SEC = 1800   # re-page at most every 30 min
 _engine_freeze_last_alert_ts: Optional[float] = None
 
@@ -428,7 +461,15 @@ def analyze_with_minimax(
     signal: Dict,
     sentiment_text: str,
     market_regime: str = "UNKNOWN"
-) -> Optional[Dict]:
+) -> Review:
+    """[ADVISORY 2026-08-05] Returns a typed Review, never a bare None.
+
+    Every failure path below used to `return None`, which made "the model
+    vetoed this" and "the model never answered" indistinguishable to the
+    caller. They are now distinct verdicts carrying the specific reason, so
+    the operator's phone can say WHICH failure happened and a later audit can
+    tell an outage from an opinion. See advisory.py.
+    """
     ticker = signal.get("ticker", "UNKNOWN")
     price = signal.get("close", 0)     # FIX: Aligned with models.py
     target = signal.get("target_1", 0) # FIX: Aligned with models.py
@@ -531,10 +572,28 @@ def analyze_with_minimax(
       "risks": "<the main downside / what would invalidate this>"
     }}
     """
-    # [LOW-004] Enforce a 30-second timeout on the MiniMax API call to prevent
+    # [LOW-004] Enforce a hard timeout on the MiniMax API call to prevent
     # blocking the entire synchronous pipeline if the API hangs. The daemon
     # thread + join(timeout) is a hard wall: even if the SDK's own socket
-    # timeout misbehaves, the poll cannot be held hostage past 30s.
+    # timeout misbehaves, the poll cannot be held hostage.
+    #
+    # [MINIMAX-TIMEOUT 2026-08-04] The wall was 30s and it was cutting off
+    # calls that were about to succeed. On 2026-08-03 two of three momentum
+    # signals timed out, and both then completed: BHARTIHEXA started at
+    # 12:25:02, the SDK's own 28s timeout fired at 12:25:32, the wall
+    # abandoned the thread at 12:25:34 -- and the orphaned thread got its
+    # 200 OK at 12:26:18. The answer arrived 44 seconds after we stopped
+    # listening, and was discarded.
+    #
+    # Two things were wrong. The SDK was retrying INSIDE the 28s budget, so a
+    # single slow call plus one retry could never fit; and the wall was set as
+    # if 30s were a generous allowance for a reasoning model that spends
+    # output tokens on a <think> block before answering.
+    #
+    # Now: one retry maximum (bounding what an abandoned thread can still
+    # spend), a per-request timeout that fits a slow-but-healthy call, and a
+    # wall wide enough for the retry. The whole budget stays well inside the
+    # 3-minute poll cadence, so a hung call still cannot stall the pipeline.
     result_holder: Dict = {}
 
     def _call_minimax():
@@ -569,9 +628,9 @@ def analyze_with_minimax(
                 # think-block stripping in _extract_json_object).
                 max_tokens=2048,
                 # Belt-and-braces: the SDK's own request timeout backs up the
-                # thread wall. It is slightly under 30s so the SDK errors
-                # (giving us a clean log line) before the thread is abandoned.
-                timeout=28,
+                # thread wall. Kept under the wall so the SDK errors (giving us
+                # a clean log line) before the thread is abandoned.
+                timeout=MINIMAX_REQUEST_TIMEOUT_SEC,
             )
             result_holder['response'] = resp
         except Exception as exc:
@@ -579,14 +638,17 @@ def analyze_with_minimax(
 
     minimax_thread = threading.Thread(target=_call_minimax, daemon=True)
     minimax_thread.start()
-    minimax_thread.join(timeout=30)
+    minimax_thread.join(timeout=MINIMAX_WALL_TIMEOUT_SEC)
 
     if minimax_thread.is_alive():
-        logger.error(f"MiniMax timeout (30s) for {ticker} - analysis skipped")
-        return None
+        logger.error(
+            f"MiniMax timeout ({MINIMAX_WALL_TIMEOUT_SEC}s) for {ticker} - "
+            f"analysis skipped, alert still sent without conviction"
+        )
+        return advisory_unavailable(f"timeout_{MINIMAX_WALL_TIMEOUT_SEC}s")
     if 'error' in result_holder:
         logger.error(f"MiniMax analysis failed for {ticker}: {result_holder['error']}")
-        return None
+        return advisory_unavailable("api_error")
 
     # [ROADMAP-4.7 2026-07-13, carried through MiniMax migration] This is the
     # ONE place in the system where a third party's free-text output is parsed.
@@ -604,7 +666,7 @@ def analyze_with_minimax(
         content = response.choices[0].message.content
     except (AttributeError, IndexError, TypeError) as e:
         logger.error(f"MiniMax response had no content for {ticker}: {e}")
-        return None
+        return advisory_unavailable("empty_response")
 
     data = _extract_json_object(content)
     if data is None:
@@ -613,19 +675,19 @@ def analyze_with_minimax(
             f"MiniMax returned unparseable output for {ticker} -- proceeding "
             f"without analysis. First 200 chars: {preview!r}"
         )
-        return None
+        return advisory_unavailable("unparseable_output")
 
     try:
-        return SignalOutput(**data).model_dump()
+        return review_from_payload(SignalOutput(**data).model_dump())
     except (ValidationError, TypeError) as e:
         preview = (content or "")[:200]
         logger.error(
             f"MiniMax output for {ticker} did not match schema: {e} -- "
             f"proceeding without analysis. First 200 chars: {preview!r}"
         )
-        return None
+        return advisory_unavailable("schema_mismatch")
 
-def send_telegram_alert(signal: Dict, analysis: Dict):
+def send_telegram_alert(signal: Dict, review: "Review"):
     url = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage"
     
     ticker = signal.get("ticker", "UNKNOWN")
@@ -634,8 +696,14 @@ def send_telegram_alert(signal: Dict, analysis: Dict):
     sl = signal.get("stop_loss")
     sig_id = ticker                 # FIX: Deduplication ID is now the ticker
     
-    if not analysis:
-        text = f"🚨 **SYSTEM FALLBACK: {ticker}** 🚨\nPrice: {price} | TGT: {target} | SL: {sl}\n⚠️ AI Sentiment analysis failed. Manual review required."
+    analysis = review.payload
+    if not review.available:
+        # [ADVISORY 2026-08-05] Name the specific failure. "AI analysis failed"
+        # covered a 100s timeout and a malformed JSON reply identically, and
+        # the operator could not tell which risk they were accepting.
+        text = (f"🚨 **SYSTEM FALLBACK: {ticker}** 🚨\n"
+                f"Price: {price} | TGT: {target} | SL: {sl}\n"
+                f"⚠️ {review.banner()}. Manual review required.")
     else:
         text = f"📊 **TRADE ALERT: {ticker}**\n\n**Metrics:** Price: {price} | TGT: {target} | SL: {sl}\n**Conviction Score:** {analysis.get('conviction_score', 'N/A')}/100\n\n**Pitch:**\n{analysis.get('pitch', 'N/A')}\n\n**Rationale:**\n{analysis.get('rationale', 'N/A')}\n\n**Risks:**\n{analysis.get('risks', 'N/A')}"
 
@@ -699,6 +767,12 @@ MOMENTUM_ENGINE_URL = os.getenv(
 
 def run_momentum_pipeline():
     """Poll Container B momentum signals and process them."""
+    # [POLL-CADENCE 2026-08-04] The 3-minute schedule is a bare interval, so it
+    # fires around the clock. Gate here rather than building a weekday grid --
+    # same pattern as check_engine_liveness. Silent on purpose: at 3-minute
+    # spacing an out-of-hours log line would be ~470 lines of noise a day.
+    if not _is_market_hours():
+        return
     logger.info("Starting momentum signal pipeline...")
     try:
         resp = requests.get(MOMENTUM_ENGINE_URL, timeout=10)
@@ -724,6 +798,20 @@ def run_momentum_pipeline():
             logger.info(f"Momentum signal {sig_id} already processed. Skipping.")
             continue
 
+        # [POLL-CADENCE 2026-08-04] /momentum-signals is cumulative for the
+        # day, so a restart mid-session re-presents every signal since 09:15.
+        # The engine already marks anything over 30 minutes old `stale_data`
+        # and, until now, nothing read it. A momentum breakout has either
+        # worked or failed within 30 minutes -- alerting one at that age
+        # invites an entry at a price the setup no longer describes.
+        if signal.get("stale_data"):
+            logger.info(
+                f"Momentum {ticker} dropped: signal is stale "
+                f"(>30 min old), the setup no longer describes the price."
+            )
+            mark_processed(sig_id)
+            continue
+
         # [FIX 2026-07-11 STALL] Isolate each signal. On 2026-07-10 the
         # loop died after COCHINSHIP and HUDCO (same snapshot) was never
         # processed -- one raised exception killed every signal after it
@@ -732,19 +820,19 @@ def run_momentum_pipeline():
         touch_heartbeat()  # [ROADMAP-2.2] progressing, not hung
         try:
             sentiment_text = scrape_sentiment(ticker)
-            analysis       = analyze_with_minimax(signal, sentiment_text, regime)
+            review         = analyze_with_minimax(signal, sentiment_text, regime)
 
-            if analysis and analysis.get('conviction_score', 0) < 50:
-                logger.info(f"Momentum {ticker} skipped. Low conviction: "
-                            f"{analysis.get('conviction_score')}")
+            if review.blocks(unavailable_policy=MINIMAX_UNAVAILABLE_POLICY):
+                logger.info(f"Momentum {ticker} blocked: {review.verdict.value} "
+                            f"conviction={review.conviction} reason={review.reason}")
                 # [FIX 2026-07-11 SILENT-VETO] Tell the operator. Before
                 # this, a Gemini veto was invisible: the engine's summary
                 # said "accepted" but no button alert ever arrived.
-                send_conviction_veto_notice(signal, analysis)
+                send_conviction_veto_notice(signal, review)
                 mark_processed(sig_id)
                 continue
 
-            send_momentum_telegram_alert(signal, analysis, momentum_pool)
+            send_momentum_telegram_alert(signal, review, momentum_pool)
             mark_processed(sig_id)
         except Exception as e:
             logger.error(
@@ -753,16 +841,15 @@ def run_momentum_pipeline():
             )
         time.sleep(2)
 
-def send_conviction_veto_notice(signal: Dict, analysis: Dict):
+def send_conviction_veto_notice(signal: Dict, review: "Review"):
     """Plain informational message (no buttons) when the MiniMax gate
-    vetoes an engine-accepted momentum signal. Failures are logged and
+    blocks an engine-accepted momentum signal. Failures are logged and
     swallowed -- the veto notice must never break the pipeline."""
     url    = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage"
     ticker = signal.get("ticker", "UNKNOWN")
-    score  = analysis.get('conviction_score', 'N/A')
-    text = (f"🧠 MOMENTUM VETO: {ticker}\n"
-            f"Engine accepted, MiniMax conviction {score}/100 (<50) - "
-            f"no EXEC button sent.\n"
+    analysis = review.payload
+    text = (f"🧠 MOMENTUM BLOCKED: {ticker}\n"
+            f"Engine accepted. {review.banner()} - no EXEC button sent.\n"
             f"Rationale: {analysis.get('rationale', 'N/A')}")
     payload = {"chat_id": TELEGRAM_CHAT_ID, "text": text}
     try:
@@ -773,7 +860,7 @@ def send_conviction_veto_notice(signal: Dict, analysis: Dict):
         logger.error(f"Conviction veto notice failed: {ticker}: {e}")
 
 def send_momentum_telegram_alert(
-    signal: Dict, analysis: Dict, momentum_pool: float
+    signal: Dict, review: "Review", momentum_pool: float
 ):
     """Distinct format from swing alerts - clearly labelled INTRADAY."""
     url    = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage"
@@ -787,18 +874,42 @@ def send_momentum_telegram_alert(
 
     header = f"⚡ INTRADAY MOMENTUM: {ticker} ({ptype})"
 
-    if not analysis:
+    # [POLL-CADENCE 2026-08-04] Show how old the signal already is. The prices
+    # below were computed off a 15-min bar close; every minute between that
+    # close and the EXEC press moves the fill away from them. The executor
+    # re-anchors the stop to the actual fill so the risk stays correct, but the
+    # operator still needs to see that a 9-minute-old breakout is a different
+    # proposition from a 1-minute-old one.
+    age_line = ""
+    sig_ts = signal.get("signal_time")
+    if sig_ts:
+        try:
+            from datetime import datetime as _dt, timezone as _tz
+            parsed = _dt.fromisoformat(str(sig_ts).replace("Z", "+00:00"))
+            if parsed.tzinfo is None:
+                parsed = parsed.replace(tzinfo=_tz.utc)
+            age_min = (_dt.now(_tz.utc) - parsed).total_seconds() / 60.0
+            flag = " ⏳" if age_min >= 10 else ""
+            age_line = f"Signal age: {age_min:.0f} min{flag}\n"
+        except Exception:
+            # A malformed timestamp must never suppress the alert itself.
+            age_line = ""
+
+    analysis = review.payload
+    if not review.available:
         text = (f"{header}\n"
+                f"{age_line}"
                 f"Price: Rs{price} | VWAP: Rs{vwap}\n"
                 f"Target: Rs{target} | SL: Rs{sl}\n"
-                f"⚠️ AI analysis failed. Manual review required.\n"
+                f"⚠️ {review.banner()}. Manual review required.\n"
                 f"Auto-square at 15:15 IST.")
     else:
         text = (f"{header}\n\n"
+                f"{age_line}"
                 f"Entry: Rs{price} | VWAP: Rs{vwap}\n"
                 f"Target: Rs{target} | SL: Rs{sl}\n"
                 f"Cost ratio: {ratio:.1%} of expected profit\n"
-                f"Conviction: {analysis.get('conviction_score')}/100\n\n"
+                f"{review.banner()}\n\n"
                 f"Pitch: {analysis.get('pitch', 'N/A')}\n"
                 f"Risk: {analysis.get('risks', 'N/A')}\n\n"
                 f"⚠️ INTRADAY: Auto-square at 15:15 IST regardless of P&L.")
@@ -868,14 +979,15 @@ def run_pipeline():
         # pipeline: one bad ticker must not kill the rest of the batch.
         try:
             sentiment_text = scrape_sentiment(ticker)
-            analysis = analyze_with_minimax(signal, sentiment_text, regime)
+            review = analyze_with_minimax(signal, sentiment_text, regime)
 
-            if analysis and analysis.get('conviction_score', 0) < 50:
-                logger.info(f"Skipped {ticker}. Low conviction score: {analysis.get('conviction_score')}")
+            if review.blocks(unavailable_policy=MINIMAX_UNAVAILABLE_POLICY):
+                logger.info(f"Skipped {ticker}: {review.verdict.value} "
+                            f"conviction={review.conviction} reason={review.reason}")
                 mark_processed(sig_id)
                 continue
 
-            send_telegram_alert(signal, analysis)
+            send_telegram_alert(signal, review)
             mark_processed(sig_id)
         except Exception as e:
             logger.error(
@@ -905,20 +1017,25 @@ def main():
         getattr(schedule.every(), day).at("15:30").do(system_health_check, event_type="CLOSE")
 
     schedule.every().day.at("00:00").do(clear_memory)
-    # [FIX 2026-07-11 POLL-CADENCE] The engine scans every 15 min
-    # (:00/:15/:30/:45, 10:15-14:45 IST) and /momentum-signals is now
-    # cumulative-for-the-day, but polling hourly still delays button
-    # alerts by up to an hour (on 2026-07-10 the hourly poll of the old
-    # per-scan snapshot saw only 3 of 17 signals). Poll ~10 min after
-    # each scan starts (scans take 5.6-9.1 min), plus 15:10/15:25
-    # stragglers for overrunning scans (the 15:09 trio case).
-    # processed_signals_today dedupes, so extra polls are idempotent.
-    momentum_poll_times = [
-        f"{h:02d}:{m:02d}" for h in range(10, 15) for m in (10, 25, 40, 55)
-    ] + ["15:10", "15:25"]
-    for day in days:
-        for t in momentum_poll_times:
-            getattr(schedule.every(), day).at(t).do(run_momentum_pipeline)
+    # [POLL-CADENCE 2026-08-04] Was a fixed :10/:25/:40/:55 grid, chosen in
+    # July when scans took 5.6-9.1 min. Scans finished faster than that on
+    # 2026-08-03 and the grid became pure dead time: SUMICHEM was accepted at
+    # 11:02:58 and alerted at 11:10:07, BHARTIHEXA 12:17:58 -> 12:25:34,
+    # TRITURBINE 14:48:03 -> 14:55:39. That is 7.1-7.6 minutes of latency the
+    # operator pays before even seeing the button, and up to 15 in the worst
+    # case, stacked on top of a scanner that already runs on 15-min bars.
+    #
+    # Latency is not cosmetic here. It moves the fill away from the price the
+    # signal was built on, and until the FILL-ANCHOR fix landed that silently
+    # rewrote the trade's risk. It still costs real edge: SUMICHEM's entry
+    # drifted -0.37% in those minutes, which on a 0.5% stop is most of the
+    # move the signal was trying to catch.
+    #
+    # A 3-minute market-hours poll caps the agent's contribution at 3 min. The
+    # endpoint is a cheap cumulative read, processed_signals_today dedupes, and
+    # MiniMax only runs for signals that are actually new -- so the extra polls
+    # cost one HTTP GET each and nothing else.
+    schedule.every(MOMENTUM_POLL_INTERVAL_MIN).minutes.do(run_momentum_pipeline)
 
     # [ROADMAP-2.4 2026-07-12] Engine loop-progress watchdog (self-gates
     # to market hours; alerts when /data/scheduler_tick.json goes stale).

@@ -33,16 +33,19 @@ class TestResolveMomentumRegimeParams:
     """
 
     def test_regime_1_returns_r1_params_no_block(self):
-        """[MOMENTUM-AGGRESSIVE 2026-06-16] R1 = 2.0R target, 10% risk, no block."""
+        """[MOMENTUM-AGGRESSIVE 2026-06-16] R1 = 10% risk, no block.
+        [TARGET-REACH 2026-07-31] R target moved 2.0 -> 1.6 to stay reachable
+        under the ATR-floored stop."""
         r_target, risk_pct, block = resolve_momentum_regime_params(Regime.REGIME_1_NORMAL)
-        assert r_target == 2.0
+        assert r_target == 1.6
         assert risk_pct == 0.10
         assert block is False
 
     def test_regime_2_returns_r2_params_no_block(self):
-        """[MOMENTUM-AGGRESSIVE 2026-06-16] R2 = 1.5R target, 7% risk, no block."""
+        """[MOMENTUM-AGGRESSIVE 2026-06-16] R2 = 7% risk, no block.
+        [TARGET-REACH 2026-07-31] R target moved 1.5 -> 1.3."""
         r_target, risk_pct, block = resolve_momentum_regime_params(Regime.REGIME_2_ELEVATED)
-        assert r_target == 1.5
+        assert r_target == 1.3
         assert risk_pct == 0.07
         assert block is False
 
@@ -175,10 +178,12 @@ class TestEvaluateMomentumSignalRegimeDispatch:
 
     def test_no_regime_uses_legacy_string_dispatch(self, good_momentum_candles):
         """Backward compat: regime=None uses the legacy 'market_regime' string
-        via the existing BULL/BEAR_RS_ONLY logic. R target = MOMENTUM_R_TARGET
-        (2.0R for BULL default)."""
+        via the existing BULL/BEAR_RS_ONLY logic. R target = MOMENTUM_R_TARGET,
+        whatever it is configured to -- the point of this test is WHICH setting
+        is consulted, not its value."""
+        from config import settings
         from engine import evaluate_momentum_signal
-        # regime=None, market_regime="BULL" (default) -> 2.0R legacy
+        # regime=None, market_regime="BULL" (default) -> legacy MOMENTUM_R_TARGET
         fired, result = evaluate_momentum_signal(
             "TEST", good_momentum_candles,
             prev_day_high=100.0, bankroll=5000, momentum_pool=1000,
@@ -186,4 +191,4 @@ class TestEvaluateMomentumSignalRegimeDispatch:
             market_regime="BULL",
         )
         if fired:
-            assert result["effective_r_target"] == 2.0
+            assert result["effective_r_target"] == settings.MOMENTUM_R_TARGET

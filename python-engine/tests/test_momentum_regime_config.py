@@ -48,15 +48,39 @@ class TestMomentumRegimeSettingsExist:
         assert hasattr(settings, "MOMENTUM_RISK_PCT_R3")
         assert settings.MOMENTUM_RISK_PCT_R3 == 0.0
 
-    def test_r_target_r1_default_2_0(self):
-        """R1 = 2.0R target (same as legacy MOMENTUM_R_TARGET)."""
-        assert hasattr(settings, "MOMENTUM_R_TARGET_R1")
-        assert settings.MOMENTUM_R_TARGET_R1 == 2.0
+    def test_r_target_r1_default(self):
+        """R1 = 1.6R target (same as legacy MOMENTUM_R_TARGET).
 
-    def test_r_target_r2_default_1_5(self):
-        """R2 = 1.5R target (same as legacy MOMENTUM_R_TARGET_BEAR)."""
+        [TARGET-REACH 2026-07-31] Was 2.0R. The target is denominated in R, so
+        the ATR-floored stop pushed it to 1.1 daily ATRs from entry -- further
+        than the MC5 fuel gate can ever allow, and further than any of the
+        27-30 Jul trades travelled (peak +0.49R across 8 trades)."""
+        assert hasattr(settings, "MOMENTUM_R_TARGET_R1")
+        assert settings.MOMENTUM_R_TARGET_R1 == 1.6
+        assert settings.MOMENTUM_R_TARGET_R1 == settings.MOMENTUM_R_TARGET
+
+    def test_r_target_r2_default(self):
+        """R2 = 1.3R target (same as legacy MOMENTUM_R_TARGET_BEAR)."""
         assert hasattr(settings, "MOMENTUM_R_TARGET_R2")
-        assert settings.MOMENTUM_R_TARGET_R2 == 1.5
+        assert settings.MOMENTUM_R_TARGET_R2 == 1.3
+        assert settings.MOMENTUM_R_TARGET_R2 == settings.MOMENTUM_R_TARGET_BEAR
+
+    def test_target_is_reachable_within_the_mc5_fuel_gate(self):
+        """[TARGET-REACH 2026-07-31] The invariant that ties the stop floor,
+        the R target and the MC5 fuel gate together.
+
+        MC5 permits entry only while
+            consumed/ATR <= 1 - (stop_atr_mult * r_target) / fuel_buffer
+        If that bound is <= 0 the gate can never pass and momentum silently
+        stops trading altogether -- which is what a 0.55x stop floor with a
+        2.0R target would have done."""
+        bound = 1 - (
+            settings.MOMENTUM_MIN_STOP_ATR_MULT * settings.MOMENTUM_R_TARGET_R1
+        ) / settings.MOMENTUM_ATR_FUEL_BUFFER
+        assert bound > 0.25, (
+            f"stop floor x R target leaves only {bound:.3f} of the daily ATR "
+            f"for entry -- momentum would rarely or never fire"
+        )
 
     def test_risk_pct_decreases_with_regime(self):
         """R1 > R2 > R3 -- monotonic decrease as conditions deteriorate."""

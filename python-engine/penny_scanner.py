@@ -572,11 +572,30 @@ class PennyScanner:
         if token is None:
             logger.warning("penny_eval_skipped ticker=%s reason=token_unresolved", ticker)
             return {"accept": False, "reject_reason": "token_unresolved", "ticker": ticker}
-        # Need 250+ daily closes for the SMA + RSI trend filter
+        # Need 250+ daily closes for the SMA + RSI trend filter.
+        #
+        # [DAILY-DEPTH 2026-08-04] from_date was the hard-coded literal
+        # "2025-01-01". It satisfied the 250-bar floor, but it also silently
+        # capped how much daily history this system can ever hold: every penny
+        # ticker in ohlcv_cache has exactly 394 bars because that is the
+        # distance from that literal to today. When the Connors book was
+        # finally backtested, only ~140 evaluation days per ticker existed,
+        # and the whole 2.5-year study produced a single signal at the default
+        # gates -- not because the strategy is that rare, but because there was
+        # not enough history to find out.
+        #
+        # A fixed anchor is wrong in both directions: it starves research now,
+        # and it silently widens the fetch window every day forever. A rolling
+        # lookback is bounded and gives the cache a real corpus to accumulate.
+        # settings is imported per-scope in this module (see line ~90), not at
+        # module level, so it must be imported here too.
+        from config import settings as _cfg
+        from datetime import timedelta as _td
+        _from = (as_of - _td(days=_cfg.DAILY_HISTORY_DAYS)).strftime("%Y-%m-%d")
         try:
             bars = await self.kite.get_historical(
                 ticker=ticker,
-                from_date="2025-01-01",
+                from_date=_from,
                 to_date=as_of.strftime("%Y-%m-%d"),
             )
         except Exception as e:

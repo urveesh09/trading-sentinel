@@ -117,14 +117,15 @@ describe('Kite Service', () => {
 
   test('placeOrder calls kite.placeOrder with regular variety', async () => {
     mockKite.placeOrder.mockResolvedValue({ order_id: 'ORD-1' });
-    const result = await kiteService.placeOrder({ tradingsymbol: 'RELIANCE', product: 'CNC' });
+    const result = await kiteService.placeOrder(
+      { tradingsymbol: 'RELIANCE', product: 'CNC' }, { intent: 'entry' });
     expect(result.order_id).toBe('ORD-1');
     expect(mockKite.placeOrder).toHaveBeenCalledWith('regular', expect.any(Object));
   });
 
   test('placeGTT calls kite.placeGTT', async () => {
     mockKite.placeGTT.mockResolvedValue({ trigger_id: 'GTT-1' });
-    const result = await kiteService.placeGTT({ trigger_type: 'single' });
+    const result = await kiteService.placeGTT({ trigger_type: 'single' }, { intent: 'exit' });
     expect(result.trigger_id).toBe('GTT-1');
   });
 
@@ -155,7 +156,8 @@ describe('Kite Service', () => {
   // ─── setAccessToken is called on SDK methods (not getLTP which bypasses SDK) ───
   test('setAccessToken is called before placeOrder', async () => {
     mockKite.placeOrder.mockResolvedValue({ order_id: 'ORD-1' });
-    await kiteService.placeOrder({ tradingsymbol: 'RELIANCE', product: 'CNC' });
+    await kiteService.placeOrder(
+      { tradingsymbol: 'RELIANCE', product: 'CNC' }, { intent: 'entry' });
     expect(mockKite.setAccessToken).toHaveBeenCalledWith('fake_token');
   });
 

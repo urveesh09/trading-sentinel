@@ -72,6 +72,20 @@ class Settings(BaseSettings):
     CB_MAX_DRAWDOWN_PCT: float = 0.50 # Allow 50% total drawdown
     CB_FLOOR_PCT: float = 0.40
 
+    # [HALT 2026-08-05] Whether a breached circuit breaker trips the filesystem
+    # kill switch (/data/HALT) and actually stops new entries.
+    #
+    # Default True, because the alternative is what we had: a correct `halted`
+    # boolean that no entry path ever read. The failure mode of True is that a
+    # buggy breaker stops trading until the operator clears it -- which pages
+    # immediately and costs missed trades, not money. The failure mode of False
+    # is the 2026-07-24 shape, where the system keeps sizing into a book it has
+    # already decided is broken.
+    #
+    # Set False only to diagnose a suspected false trip; the sentinel can still
+    # be tripped by hand from Telegram while it is off.
+    HALT_AUTO_TRIP_ON_CIRCUIT_BREAKER: bool = True
+
     # Momentum
     MAX_MOMENTUM_POSITIONS:   int   = 5
     # [CAPITAL-REALLOC 2026-07-26] 0.50 -> 5/9. The Rs 500 that left the Nifty
@@ -92,7 +106,7 @@ class Settings(BaseSettings):
     # Kite's 3 req/s so the API stays the bottleneck, well below the fd ceiling.
     MOMENTUM_SCAN_SQLITE_MAX_CONCURRENT: int = 50
     MOMENTUM_VOL_SURGE_PCT:   float = 1.5     # [Q13] Lowered from 2.0x - see Known Quirks
-    MOMENTUM_R_TARGET:        float = 2.0
+    MOMENTUM_R_TARGET:        float = 1.6   # [TARGET-REACH 2026-07-31] legacy default, moved with R1
     MOMENTUM_MAX_COST_RATIO:  float = 0.25
     # [MOMENTUM-REGIME 2026-06-16] Legacy 10% risk per trade.
     # Kept for backward compat -- new code should use MOMENTUM_RISK_PCT_R{1,2,3}.
@@ -118,7 +132,46 @@ class Settings(BaseSettings):
     # notionals) and typical one-minute noise on NSE mid-caps. This does not make
     # the strategy profitable; it makes its risk, its sizing and its R-multiples
     # mean what they claim to mean, which is the precondition for judging it.
-    MOMENTUM_MIN_STOP_PCT:    float = 0.005   # 0.5% floor on the momentum stop
+    # [STOP-NOISE 2026-07-31] Raised 0.005 -> 0.012. Round-trip cost as a
+    # fraction of 1R is a function of STOP WIDTH ALONE -- it is independent of
+    # price and (above small sizes) of share count, because both turnover and
+    # risk scale with the position:
+    #     0.5% stop -> 0.12-0.24 R of cost      1.2% stop -> 0.06-0.12 R
+    # A 0.5% floor therefore hands ~a fifth of every unit of risk to the broker
+    # before the trade has an opinion, which is exactly how 27-30 Jul produced a
+    # gross P&L of MINUS Rs 0.35 alongside Rs 17.90 of costs. It also sat inside
+    # the noise: 8 of 8 trades ran 0.52-1.16% stops and not one was ever hit.
+    MOMENTUM_MIN_STOP_PCT:    float = 0.012   # 1.2% floor on the momentum stop
+    # [STOP-NOISE 2026-07-31] The 0.5% percentage floor is still inside intraday
+    # noise for most mid-caps. Four days of live trades (27-30 Jul) ran stops of
+    # 0.52-1.16%, and all 8 exited on the clock between -0.71R and +0.49R: the
+    # stop was never hit, the target was never reached, and the R-multiple
+    # measured nothing. Because sizing divides the risk budget by the stop
+    # distance, a too-tight stop ALSO maximises share count and therefore
+    # turnover -- those 8 trades produced a gross P&L of MINUS Rs 0.35 against
+    # Rs 17.90 of costs. Costs were 10-23% of 1R.
+    #
+    # An ATR-proportional floor fixes both ends at once: the stop sits outside
+    # the day's noise, and at constant rupee risk the wider stop cuts share
+    # count, turnover and therefore cost drag (a 0.6% -> 1.8% stop on the same
+    # risk budget is ~3x fewer shares and ~3x less cost).
+    # The multiplier is NOT free: it has to coexist with the MC5 fuel gate,
+    # which requires target_distance <= 0.85 * (daily ATR - range already
+    # consumed). Since target_distance = stop_mult * R_target * ATR, the gate
+    # permits entry only while
+    #     consumed/ATR  <=  1 - (stop_mult * R_target) / 0.85
+    # At 0.55x with a 2.0R target that bound is NEGATIVE (-0.29): the gate
+    # could never pass and momentum would have stopped trading entirely and
+    # silently. At 0.35x with a 1.6R target it is +0.34, i.e. entries are
+    # allowed until about a third of the day's range is used up -- outside the
+    # noise, still reachable, and it correctly refuses late entries into an
+    # already-exhausted day. See MOMENTUM_R_TARGET_R1 below, which moved with it.
+    MOMENTUM_MIN_STOP_ATR_MULT: float = 0.35  # stop >= 0.35x daily ATR below entry
+    # Reject a signal whose round-trip cost exceeds this fraction of 1R. The
+    # existing MOMENTUM_MAX_COST_RATIO measures cost against profit AT TARGET,
+    # which assumes a 2R exit that 0 of 8 live trades achieved. Measuring
+    # against 1R prices the risk actually being underwritten.
+    MOMENTUM_MAX_COST_PER_R:  float = 0.12
     # [MOMENTUM-PAPER 2026-07-26] Paper twin of the live momentum book.
     #
     # Live momentum entries are MANUAL: the screener sends a Telegram EXEC button
@@ -145,7 +198,7 @@ class Settings(BaseSettings):
     MOMENTUM_LUNCHTIME_END_HOUR:       int   = 13     # [MC3-T] Lunchtime end hour (IST)
     MOMENTUM_LUNCHTIME_END_MIN:        int   = 15     # [MC3-T] Lunchtime end minute (IST)
     MOMENTUM_MORPHOLOGY_MIN_SCORE:     float = 0.65   # [MC6] Minimum close_position_score to reject shooting-star candles
-    MOMENTUM_R_TARGET_BEAR:            float = 1.5    # [MR2] R target in BEAR_RS_ONLY regime (reduced from 2.0R)
+    MOMENTUM_R_TARGET_BEAR:            float = 1.3    # [MR2] R target in BEAR_RS_ONLY regime (moved with R1/R2 2026-07-31)
 
     # [MOMENTUM-REGIME 2026-06-16] Regime-aware momentum settings.
     # Replaces the single 'market_regime' string dispatch (BULL/BEAR_RS_ONLY)
@@ -161,8 +214,17 @@ class Settings(BaseSettings):
     MOMENTUM_RISK_PCT_R1:       float = 0.10    # 10% of momentum pool in R1 (calm, aggressive)
     MOMENTUM_RISK_PCT_R2:       float = 0.07    # 7% in R2 (elevated) -- smaller position
     MOMENTUM_RISK_PCT_R3:       float = 0.00    # 0% in R3 default (defense-in-depth: raise in .env to enable)
-    MOMENTUM_R_TARGET_R1:       float = 2.0     # 2.0R target in R1 (let winners run)
-    MOMENTUM_R_TARGET_R2:       float = 1.5     # 1.5R target in R2 (faster take-profit)
+    # [TARGET-REACH 2026-07-31] Lowered 2.0/1.5 -> 1.6/1.3 to match the wider
+    # ATR-floored stop. The target is denominated in R, so widening the stop
+    # pushes the target further away in rupees; at the old 2.0R the target sat
+    # 1.1 daily ATRs from entry, which is a move the stock has to make AFTER we
+    # are already in. The 27-30 Jul book reached a peak of +0.49R across 8
+    # trades -- the target was not the binding constraint, reachability was.
+    # 1.6R * 0.35 ATR = 0.56 ATR is inside a normal day's remaining range, and
+    # the trail (breakeven at +0.6R, then 1.5x ATR behind price) is what
+    # captures the trades that run further than the target in a strong market.
+    MOMENTUM_R_TARGET_R1:       float = 1.6     # 1.6R target in R1 (trail carries the runners)
+    MOMENTUM_R_TARGET_R2:       float = 1.3     # 1.3R target in R2 (faster take-profit)
 
     # [MOMENTUM-EOD 2026-06-16] Auto-square-off at 15:15 IST is on by default
     # (MIS = intraday product; broker auto-squares anyway). Flip to True in .env
@@ -183,13 +245,60 @@ class Settings(BaseSettings):
     # The stop now rests at the broker as an SL-M. This monitor owns the rest:
     # target, breakeven ratchet, ATR trail, and a time stop for dead trades.
     MOMENTUM_INTRADAY_MONITOR_SEC: int   = 60    # How often to check open MIS positions
-    MOMENTUM_BREAKEVEN_R:          float = 1.0   # Ratchet stop to cost-adjusted breakeven at +1.0R
+    # [BREAKEVEN 2026-07-31] Lowered 1.0 -> 0.6. The ratchet is what converts a
+    # trade that WORKED but did not reach target into a small win instead of a
+    # round trip to zero. At +1.0R it essentially never engaged: the best of the
+    # 27-30 Jul trades peaked at +0.49R at its exit, so every one of them gave
+    # back whatever it had and paid costs on the way out. 0.6R is above the
+    # noise band the ATR stop floor now establishes, and it is reachable.
+    MOMENTUM_BREAKEVEN_R:          float = 0.6   # Ratchet stop to cost-adjusted breakeven at +0.6R
     MOMENTUM_TRAIL_ATR_MULT:       float = 1.5   # Trail at 1.5x daily ATR once past breakeven
     MOMENTUM_USE_TRAIL:            bool  = True  # Trail after breakeven (False = flat stop at BE)
-    # A momentum trade that has gone nowhere is a failed thesis, not a winner in
-    # waiting. Cut it and free the capital rather than riding it to 15:15.
-    MOMENTUM_TIME_STOP_MIN:        int   = 45    # Minutes since entry before the time stop can fire
-    MOMENTUM_TIME_STOP_MIN_R:      float = 0.5   # Time stop only fires if the trade is below +0.5R
+
+    # [TIME-STOP-V2 2026-07-31] Two-tier, regime-aware.
+    #
+    # The single 45-minute / +0.5R rule fired on 8 of 8 live trades between
+    # 27-30 Jul. It was simultaneously too SLOW for failures (a trade already
+    # negative at 25 minutes was held another 20) and far too FAST for
+    # winners: a 2R target on a ~1% stop needs a ~2% move, which 45 minutes
+    # does not supply, so the rule guaranteed a ~0R exit minus costs. The
+    # +0.5R bar sat exactly above where every trade actually got to.
+    #
+    # Two tiers now:
+    #   FAST -- a trade that is NEGATIVE after MOMENTUM_TIME_STOP_FAST_MIN has
+    #           already falsified its thesis; cut it and stop paying for it.
+    #   SLOW -- a trade that is merely going nowhere gets much longer to work,
+    #           and the bar it must clear to survive is lowered to a level that
+    #           is actually reachable in the window.
+    # A trade above the bar is still never cut on the clock -- the trail owns it.
+    MOMENTUM_TIME_STOP_FAST_MIN:   int   = 25    # Cut a NEGATIVE trade after 25 min
+    MOMENTUM_TIME_STOP_FAST_R:     float = 0.0   # "Negative" means below 0R
+    # [THESIS-EXIT 2026-08-04] At the 25-min checkpoint, decide with the SETUP
+    # rather than the clock: a trade still holding above the VWAP it broke out
+    # from has not failed, it just has not paid yet.
+    #
+    # "r_now < 0 after 25 minutes" cannot separate a dead trade from a slow
+    # one, and that distinction is most of the P&L. INDIACEM on 2026-08-04 was
+    # -0.45R at 25 minutes and +1.10R at 65 (the fast tier would have cut it at
+    # the low, for -Rs 8.21 instead of a scale-out at +Rs 5.47). SUMICHEM on
+    # 2026-08-03 was scratched at 11:27 and printed its target at 12:00.
+    #
+    # VWAP-at-entry is not a new tuned number -- it is the level the entry was
+    # already measured against (see the MC gates no_recent_vwap_crossover and
+    # crossed_but_failed_holding_vwap). Nothing here was fitted to rescue a
+    # specific trade. Risk stays bounded by the broker stop, the slow tier and
+    # the 15:15 square-off; only the REASON for cutting changes.
+    #
+    # False falls back to the pure r_now < FAST_R test, as do positions with no
+    # vwap_at_entry recorded.
+    MOMENTUM_FAST_STOP_USES_THESIS: bool = True
+    MOMENTUM_TIME_STOP_MIN:        int   = 90    # Cut a going-nowhere trade after 90 min
+    MOMENTUM_TIME_STOP_MIN_R:      float = 0.25  # Survives the 90-min cut above +0.25R
+    # Regime scaling on the SLOW window: a strong trend deserves more runway,
+    # chop deserves less. Multiplies MOMENTUM_TIME_STOP_MIN.
+    MOMENTUM_TIME_STOP_R1_MULT:    float = 1.0   # Normal/trending -- full 90 min
+    MOMENTUM_TIME_STOP_R2_MULT:    float = 0.67  # Elevated vol -- ~60 min
+    MOMENTUM_TIME_STOP_R3_MULT:    float = 0.5   # Crisis -- ~45 min, get out
 
     # [MOMENTUM-ENTRY-V2 2026-06-16] Optional additive entry filters.
     # All default OFF -- opt-in via .env. Each filter is independently gated by
@@ -202,10 +311,52 @@ class Settings(BaseSettings):
     MOMENTUM_RVOL_LOOKBACK:     int   = 20      # [MC7] Lookback bars (15-min each)
     MOMENTUM_USE_TIME_GATE:     bool  = True    # [MC0] Skip 9:15-9:30 + 15:00-15:30
     MOMENTUM_ENTRY_START_MIN:   int   = 45      # [MC0] Minutes from 9:15 IST when entries allowed (45 = 10:00)
-    MOMENTUM_ENTRY_END_MIN:     int   = 840     # [MC0] Minutes from 9:15 IST after which entries blocked (840 = 14:45)
+    # [MC0-DEADLINE 2026-08-04] Was 840, commented "= 14:45". It is not:
+    # 840 minutes past 09:15 is 23:15, so the late gate has never once fired
+    # and MC0 has only ever been a "too early" check. On 2026-08-03 that let
+    # TRITURBINE alert at 14:55 for a book that auto-squares at 15:15 -- a
+    # 15-minute window against a 45-minute time stop, i.e. an entry that could
+    # only ever exit on the clock.
+    #
+    # The deadline has to be derived from the square-off, not picked. The
+    # binding tier is the FAST time stop, not the slow one -- a 14:30 entry
+    # never sees the 90-min slow cut, but the 15:15 square-off reaches the same
+    # outcome, so that is acceptable. What is not acceptable is an entry with
+    # less life than the fast cut needs to evaluate the thesis at all:
+    #     square-off                     15:15
+    #   - 1.5x MOMENTUM_TIME_STOP_FAST_MIN  :38   room for the thesis to work
+    #   - alert + EXEC latency              :15   3-min poll, MiniMax, human
+    #   = last usable bar close           ~14:22  -> rounded down to 14:15
+    # test_momentum_entry_deadline_is_consistent_with_square_off pins this so
+    # the number cannot drift away from its justification again.
+    MOMENTUM_ENTRY_END_MIN:     int   = 300     # [MC0] 14:15 IST -- last bar close that can still get a full time-stop window
     MOMENTUM_USE_RSI_TRIM:      bool  = False   # [MC8] Partial trim 50% at RSI(7)>=70 on 15-min
     MOMENTUM_RSI_TRIM_LENGTH:   int   = 7       # [MC8] RSI length (7 is the orbsetups sweet spot)
     MOMENTUM_RSI_TRIM_THRESHOLD: float = 70.0   # [MC8] RSI >= this -> partial trim fires
+
+    # [SCALE-OUT 2026-08-04] Bank part of the position at +1R and move the
+    # runner's stop to cost-adjusted breakeven.
+    #
+    # The evidence for this is the shape of every closed momentum trade so far:
+    # 27 Jul - 03 Aug produced thirteen exits, one at the target and twelve on
+    # the clock or a ratcheted stop, spread between -0.71R and +0.49R. The
+    # direction call was frequently right and collected nothing, because the
+    # only two ways to book a gain were "price prints the target" and "price
+    # prints the trail". SUMICHEM on 2026-08-03 is the whole problem in one
+    # trade: stopped at breakeven 11:27, printed its target 12:00.
+    #
+    # A partial at +1R changes what the strategy is being asked to predict. It
+    # no longer needs the full move to happen before the clock runs out -- it
+    # needs the move to START. The cost is the upper tail: a 2R winner now
+    # collects ~1.5R.
+    #
+    # Honest limitation at this bankroll: a 2,428 momentum pool buys 1-4 shares,
+    # and 50% of 1 share is 0. This fires on maybe a third of current signals
+    # and logs momentum_scale_out_skipped_size on the rest. That is a position-
+    # sizing constraint, not an exit-logic one, and the log makes it countable.
+    MOMENTUM_USE_SCALE_OUT:     bool  = True
+    MOMENTUM_SCALE_OUT_R:       float = 1.0     # R-multiple at which the partial fires
+    MOMENTUM_SCALE_OUT_FRAC:    float = 0.5     # fraction of the position sold
 
     # [MOMENTUM-LOG 2026-06-16] Append-only signal log to /data/momentum_signals.csv
     # and SQLite table `momentum_signals`. Both are opt-in so the operator can
@@ -299,8 +450,78 @@ class Settings(BaseSettings):
     PENNY_HISTORY_SQLITE_MAX_CONCURRENT: int = 50
 
     # Connors strategy
+    # [CONNORS-EVIDENCE 2026-08-04] DO NOT loosen the RSI-rising confirmation
+    # gate in penny_engine_connors (`rsi > rsi_prev1 > rsi_prev2`).
+    #
+    # It looks like the obvious culprit for this book never trading: of the
+    # 3,231 candidates that clear the trend filters and the RSI(2)<10 trigger
+    # over 2.5 years and 2,532 tickers, that gate rejects 3,225 -- 99.8%. The
+    # two conditions are nearly mutually exclusive by construction, because
+    # two consecutive up days in RSI(2) from a sub-10 reading usually carries
+    # it back above 10.
+    #
+    # It was measured before being touched (tools/connors_backtest.py, real
+    # daily bars, entry at next-day open, real Zerodha costs):
+    #
+    #   config                signals   win%    meanR   PF      t
+    #   RSI<10 rising=Y             1    0.0  -0.2035  0.00   0.00
+    #   RSI<10 rising=N         1,202   46.4  -0.0365  0.93  -1.29
+    #   RSI<15 rising=Y             6   50.0  +0.3608  8.55   0.88
+    #   RSI<20 rising=Y             9   66.7  +0.3661 41.41   1.29
+    #   RSI<20 rising=N         1,359   46.7  -0.0283  0.91  -1.06
+    #   RSI<25 rising=Y            11   63.6  +0.3802 19.30   1.26
+    #
+    # Removing the gate buys ~1,300 trades that LOSE money (PF 0.87-0.97).
+    # Keeping it leaves a handful of trades with a good-looking mean R and a
+    # t-stat around 1.3 -- which is not significance, it is nine trades.
+    #
+    # So: the gate stays, and RSI2_BUY stays at 10 until there is enough
+    # history to justify moving it. Raising it to 20 is the most promising
+    # single change available (9x the signals at the same expectancy), but
+    # nine trades cannot authorise real capital. Re-run the backtest once
+    # DAILY_HISTORY_DAYS has actually accumulated depth.
     PENNY_CONNORS_RSI2_BUY:        float = 10.0
     PENNY_CONNORS_RSI2_SELL:       float = 65.0
+    # [EXIT-EVIDENCE 2026-08-05] These four are UNCHANGED, and the evidence
+    # below is why they are worth changing later but must not be changed now.
+    #
+    # The random-control skill test (skill_test.py) asks a question the P&L
+    # column cannot: on the days the screener fired, would a RANDOM eligible
+    # NSE name run through the same exits have done as well? Over 1,437 trades
+    # at RSI<25 rising=N:
+    #
+    #     observed mean R        -0.029
+    #     random control mean R  -0.092     <- random LOSES with these exits
+    #     excess over random     +0.063   (p = 0.005)
+    #
+    # So the screener carries real information and the EXIT rules eat it. The
+    # exit-quality decomposition (exit_quality.py) then named the two leaks:
+    #
+    #     t1     387 trades capped at exactly +1.000R, 512R left inside 5 bars
+    #     stop   559 stop-outs, price recovered 1.88R on average afterwards
+    #     median capture ratio 0.16 -- we keep a sixth of the move we get
+    #
+    # An exit sweep on the same entries (`--exits --skill`) found:
+    #
+    #     shipped (stop 3%, hold 3)     mean R -0.029  PF 0.87  skill t 2.62
+    #     stop 5%, hold 6               mean R +0.025  PF 1.48  skill t 5.17
+    #                                   train t 3.69, test t 2.98, no sign flip
+    #
+    # That is the strongest result this system has produced. It is still NOT a
+    # licence to edit these numbers, for two reasons:
+    #
+    #   1. The verdict is `train_only`. 48 configurations were searched, so the
+    #      bar is the Harvey-Liu-Zhu 3.5 rather than 2.0, and the test half
+    #      lands at 2.98 -- convincing at the conventional bar, short at the
+    #      corrected one.
+    #   2. It was measured at RSI<25 rising=N. We SHIP RSI<10 rising=Y, which
+    #      produces ONE trade over the whole history. Porting exit parameters
+    #      from a configuration we do not run is the same in-sample reasoning
+    #      this apparatus exists to catch.
+    #
+    # Re-run once history has depth:
+    #   docker exec -e PYTHONPATH=/app:/app/.venv/lib/python3.11/site-packages \
+    #     python-engine python /app/tools/connors_backtest.py --exits --skill
     PENNY_CONNORS_T1_PCT:          float = 0.03
     PENNY_CONNORS_T2_PCT:          float = 0.06
     PENNY_CONNORS_STOP_PCT:        float = 0.03
@@ -639,10 +860,30 @@ class Settings(BaseSettings):
     # --- strategy (FNO-MOM) --------------------------------------------------
     FNO_OR_BUFFER_ATR:         float = 0.25
     FNO_STOP_ATR_MULT:         float = 1.5
-    FNO_TARGET_R:              float = 1.5
+    # [NAKED-LEG-EXPECTANCY 2026-07-31] Raised 1.5 -> 1.8. The R target is set
+    # in UNDERLYING points, but the position is a long option: the premium
+    # backstop (FNO_STOP_PREMIUM_PCT) truncates the downside independently, and
+    # the bid-ask is paid twice, so a 1.5R geometry in the underlying arrived as
+    # ~0.78:1 in rupees on 2026-07-30. Widening the target restores the margin
+    # the spread and the backstop take out. Record that motivated it: 12 naked
+    # legs since 2026-07-16, 2 winners, -Rs 15,474.
+    FNO_TARGET_R:              float = 1.8
+    # Minimum reward:risk, measured on the PREMIUM after round-trip spread, that
+    # a naked long option must clear. Below this the trade needs a win rate the
+    # book has never shown (it runs ~17%). The defined-risk spreads are not
+    # subject to this gate -- they carry their own max_profit/max_loss geometry
+    # (~1.7:1) and have run roughly flat over the same period, which is why the
+    # gate is deliberately placed on the single-leg path only.
+    FNO_MIN_REWARD_RISK:       float = 1.30
     FNO_TRAIL_ATR_MULT:        float = 1.0
     FNO_TIME_STOP_MIN:         int   = 45
     FNO_TIME_STOP_MIN_R:       float = 0.5
+    # [TIME-STOP-PREMIUM 2026-08-04] The time stop measures UNDERLYING points
+    # but the book is paid in PREMIUM, and delta separates the two. With this
+    # True the clock only cuts a trade that is going nowhere on the underlying
+    # AND not in profit on premium. See fno_orchestrator for the record: 8
+    # time-stop exits, -Rs 7,010, two of them profitable when cut.
+    FNO_TIME_STOP_RESPECTS_PREMIUM: bool = True
     FNO_MIN_RVOL:              float = 1.2
     FNO_EMA_FAST:              int   = 21
     FNO_EMA_SLOW:              int   = 50
@@ -888,6 +1129,33 @@ class Settings(BaseSettings):
     UNIVERSE_TICKERS_FILE:             str   = "nifty500.json"  # Filename inside BREADTH_DATA_DIR; same format as nifty100.json
     UNIVERSE_MIN_ADV_CRORE:            float = 2.0      # Drop tickers with 20-day median ADV below this (₹ crore)
     UNIVERSE_LIQUIDITY_LOOKBACK_DAYS:  int   = 20       # Lookback window for the median ADV computation
+
+    # === Intraday history retention ([INTRADAY-RETENTION 2026-08-04]) ===
+    # How many days of 15-minute candles to keep in intraday_cache.
+    #
+    # This was effectively 1 (clear_intraday_cache deleted everything before
+    # yesterday), which is the reason momentum and F&O have never been
+    # backtested: they are intraday strategies and the system kept no intraday
+    # history to test them on. Daily bars go back 2.5 years in ohlcv_cache;
+    # intraday went back three days.
+    #
+    # 365 sessions at a measured 2.53 MB/day is ~633 MB. Disk sits at 86% with
+    # 17 GB free, and /data is already carrying ~800 MB of stale
+    # cache.db.bak-* files, so this is affordable today -- but it is the
+    # largest single consumer added here, so it is a knob rather than a
+    # constant. Lower it if disk pressure becomes real; every day removed is a
+    # day of evidence the strategies cannot be judged on.
+    INTRADAY_RETENTION_DAYS:           int   = 365
+
+    # Rolling daily-history lookback for strategies that need long SMAs
+    # (Connors needs 250 bars for SMA-200). Replaces a hard-coded
+    # "2025-01-01" anchor in penny_scanner, which pinned every ticker in
+    # ohlcv_cache to exactly 394 bars and left the Connors backtest with ~140
+    # evaluation days per name. 3 years covers the 250-bar floor several times
+    # over and lets the daily cache accumulate a corpus worth testing on.
+    # Cost is one-off: get_historical caches by window coverage, so widening
+    # re-fetches once per ticker and then hits cache.
+    DAILY_HISTORY_DAYS:                int   = 1095
 
 
 settings = Settings()

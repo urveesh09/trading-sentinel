@@ -40,7 +40,8 @@ def _db(tmp_path):
             stop_loss_initial REAL, trailing_stop_current REAL, target_1 REAL, target_2 REAL,
             atr_14_at_entry REAL, highest_close_since_entry REAL, status TEXT, source TEXT,
             exit_price REAL, exit_date TEXT, realised_pnl REAL, r_multiple REAL,
-            product_type TEXT, regime_at_entry TEXT, t1_fired INTEGER DEFAULT 0
+            product_type TEXT, regime_at_entry TEXT, t1_fired INTEGER DEFAULT 0,
+            vwap_at_entry REAL
         )""")
     con.execute("""
         CREATE TABLE bankroll_ledger (
@@ -55,7 +56,8 @@ def _db(tmp_path):
 
 def _sig(ticker="ACME", close=100.0, stop=99.0, target=103.0):
     return {"ticker": ticker, "close": close, "stop_loss": stop,
-            "target_1": target, "target_2": target, "regime": "REGIME_1_NORMAL"}
+            "target_1": target, "target_2": target, "regime": "REGIME_1_NORMAL",
+            "vwap": close - 0.5}
 
 
 async def _ltp_of(price):
@@ -258,3 +260,78 @@ def test_module_cannot_place_an_order():
             f"momentum_paper imported {banned!r} -- it must stay unable to "
             "reach the broker; LTP is injected as ltp_fn"
         )
+
+
+# ---- [PAPER-REGIME 2026-08-04] the enum-binding regression ----------------
+#
+# This book recorded ZERO trades between being built (2026-07-26) and
+# 2026-08-04. Every open raised
+#     Error binding parameter 15: type 'Regime' is not supported
+# because production hands `regime` through as a pydantic Regime enum while
+# every test above passes the STRING "REGIME_1_NORMAL". The suite was green
+# and the feature was dead: 1,707 passing tests and not one of them exercised
+# the type the real caller actually sends.
+#
+# So these tests use the real enum, and one of them asserts the invariant
+# rather than the single field that happened to break.
+
+@pytest.mark.asyncio
+async def test_opens_a_position_when_regime_is_a_real_enum(tmp_path):
+    tmp_db = _db(tmp_path)
+    """The production caller passes Regime, not str."""
+    from models import Regime
+    sig = _sig()
+    sig["regime"] = Regime.REGIME_1_NORMAL
+
+    opened = await open_momentum_paper_positions(tmp_db, [sig])
+    assert opened == ["ACME"], "enum regime must not silently abort the open"
+
+    con = sqlite3.connect(tmp_db)
+    row = con.execute(
+        "SELECT source, regime_at_entry, shares FROM positions WHERE ticker='ACME'"
+    ).fetchone()
+    con.close()
+    assert row is not None, "no position row was written"
+    assert row[0] == "MOMENTUM_PAPER"
+    assert row[1] == "REGIME_1_NORMAL", "enum must be stored as its string value"
+    assert row[2] > 0
+
+
+@pytest.mark.asyncio
+async def test_every_bound_signal_field_survives_a_non_primitive_type(tmp_path):
+    """The general invariant, not just the field that broke.
+
+    Any value coming off an accepted signal can be a pydantic type; none of
+    them may be handed to sqlite3 raw. Binding is all-or-nothing per row, so a
+    single unsupported type loses the whole trade -- which is exactly how a
+    regime enum erased nine days of paper evidence."""
+    from models import Regime
+
+    class _Weird:
+        def __str__(self):
+            return "108.5"
+
+    tmp_db = _db(tmp_path)
+    sig = _sig(ticker="WEIRD")
+    sig["regime"] = Regime.REGIME_2_ELEVATED
+    sig["atr_at_entry"] = _Weird()          # not a primitive, not an Enum
+
+    opened = await open_momentum_paper_positions(tmp_db, [sig])
+    assert opened == ["WEIRD"]
+
+    con = sqlite3.connect(tmp_db)
+    row = con.execute(
+        "SELECT regime_at_entry, atr_14_at_entry FROM positions WHERE ticker='WEIRD'"
+    ).fetchone()
+    con.close()
+    assert row[0] == "REGIME_2_ELEVATED"
+    assert str(row[1]) == "108.5"
+
+
+def test_sqlite_safe_passes_primitives_through_untouched():
+    """It must not stringify numbers -- that would turn every price into TEXT."""
+    from momentum_paper import _sqlite_safe
+    assert _sqlite_safe(None) is None
+    assert _sqlite_safe(3.5) == 3.5 and isinstance(_sqlite_safe(3.5), float)
+    assert _sqlite_safe(7) == 7 and isinstance(_sqlite_safe(7), int)
+    assert _sqlite_safe("REGIME_1_NORMAL") == "REGIME_1_NORMAL"

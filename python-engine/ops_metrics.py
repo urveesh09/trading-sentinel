@@ -199,23 +199,51 @@ def _ist_day_utc_bounds(date_ist: str) -> tuple[str, str]:
 
 
 async def _funnel_counts(
-    db, table: str, where_day: str, params: tuple
+    db, table: str, where_day: str, params: tuple,
+    ticker_col: str = "ticker",
 ) -> Optional[tuple]:
     """(evaluated, accepted, rejected, {reason: n} top rejects) for one
-    subsystem-day, or None when the table doesn't exist yet."""
+    subsystem-day, or None when the table doesn't exist yet.
+
+    [FUNNEL-DISTINCT 2026-07-31] `accepted` counts DISTINCT TICKERS, not rows.
+    Every scanner re-evaluates its whole universe on a fixed interval and logs
+    a row each time, so a single standing signal accumulates one accept row per
+    scan. 2026-07-29 reported "penny accepted=25"; it was one ticker
+    (KCPSUGIND) re-accepted by the 30-second loop for 14 minutes, whose 25
+    order attempts were all rejected by the broker and which never became a
+    position. Counting rows made a dead strategy look like its busiest day of
+    the month. `evaluated` stays a row count -- it is a measure of scanner
+    work, and its size (54 tickers x ~700 scans/day) is meaningful as such."""
     async with db.execute(
         "SELECT name FROM sqlite_master WHERE type='table' AND name=?",
         (table,),
     ) as cur:
         if await cur.fetchone() is None:
             return None
+    # Degrade, never disappear: if the identity column is absent (schema drift,
+    # a partially-migrated DB), fall back to counting accept ROWS and say so.
+    # Dropping the subsystem's row entirely would make "the scanner never ran"
+    # and "we could not count it" look identical in the time-series, which is
+    # the exact ambiguity ops_funnel_daily exists to remove.
+    async with db.execute(f"PRAGMA table_info({table})") as cur:
+        cols = {row[1] for row in await cur.fetchall()}
+    if ticker_col not in cols:
+        logger.warning(
+            "funnel_distinct_column_missing table=%s column=%s "
+            "-- falling back to accept-row count",
+            table, ticker_col,
+        )
+        distinct_expr = "COALESCE(SUM(CASE WHEN accepted = 1 THEN 1 ELSE 0 END), 0)"
+    else:
+        distinct_expr = f"COUNT(DISTINCT CASE WHEN accepted = 1 THEN {ticker_col} END)"
     async with db.execute(
         f"""SELECT COUNT(*),
+                   {distinct_expr},
                    COALESCE(SUM(CASE WHEN accepted = 1 THEN 1 ELSE 0 END), 0)
             FROM {table} WHERE {where_day}""",
         params,
     ) as cur:
-        total, accepted = await cur.fetchone()
+        total, accepted, accepted_rows = await cur.fetchone()
     async with db.execute(
         f"""SELECT reject_reason, COUNT(*) AS n FROM {table}
             WHERE {where_day} AND accepted = 0
@@ -224,7 +252,7 @@ async def _funnel_counts(
         params,
     ) as cur:
         reason_rows = await cur.fetchall()
-    return int(total), int(accepted), reason_rows
+    return int(total), int(accepted), int(accepted_rows), reason_rows
 
 
 def _top_rejects(reason_rows, normalise=None) -> str:
@@ -248,26 +276,32 @@ async def snapshot_funnels_for_day(db_path: str, date_ist: str) -> dict:
 
     utc_start, utc_end = _ist_day_utc_bounds(date_ist)
     subsystems = [
-        # (name, table, day-predicate, params, reason-normaliser)
+        # (name, table, day-predicate, params, reason-normaliser, ticker-col)
+        # [FUNNEL-DISTINCT 2026-07-31] The last field names the column that
+        # identifies a distinct signal, so `accepted` counts signals rather
+        # than re-emissions of the same one by the scan loop.
         ("momentum", "momentum_signals",
-         "scanned_at >= ? AND scanned_at < ?", (utc_start, utc_end), None),
+         "scanned_at >= ? AND scanned_at < ?", (utc_start, utc_end), None,
+         "ticker"),
         ("penny", "penny_signals",
          "scanned_at >= ? AND scanned_at < ?", (utc_start, utc_end),
-         _penny_norm),
+         _penny_norm, "ticker"),
         # fno logs bar_ts as the IST bar timestamp; its own watchdog
-        # buckets days the same way.
+        # buckets days the same way. Its "ticker" is the option contract.
         ("fno", "fno_signals",
-         "substr(bar_ts, 1, 10) = ?", (date_ist,), None),
+         "substr(bar_ts, 1, 10) = ?", (date_ist,), None, "tradingsymbol"),
     ]
     written: dict[str, int] = {}
     as_of = datetime.now(timezone.utc).isoformat()
-    for name, table, where_day, params, normalise in subsystems:
+    for name, table, where_day, params, normalise, ticker_col in subsystems:
         try:
             async with aiosqlite.connect(db_path) as db:
-                counts = await _funnel_counts(db, table, where_day, params)
+                counts = await _funnel_counts(
+                    db, table, where_day, params, ticker_col=ticker_col,
+                )
                 if counts is None:
                     continue  # subsystem not initialised yet
-                total, accepted, reason_rows = counts
+                total, accepted, accepted_rows, reason_rows = counts
                 await db.execute(
                     """INSERT INTO ops_funnel_daily
                            (date_ist, subsystem, evaluated, accepted,
@@ -280,7 +314,10 @@ async def snapshot_funnels_for_day(db_path: str, date_ist: str) -> dict:
                            top_rejects = excluded.top_rejects,
                            as_of = excluded.as_of""",
                     (
-                        date_ist, name, total, accepted, total - accepted,
+                        # rejected is a ROW count (it pairs with `evaluated`);
+                        # accepted is a DISTINCT-SIGNAL count. They deliberately
+                        # do not sum to `evaluated` -- see _funnel_counts.
+                        date_ist, name, total, accepted, total - accepted_rows,
                         _top_rejects(reason_rows, normalise), as_of,
                     ),
                 )

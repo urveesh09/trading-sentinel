@@ -23,6 +23,14 @@ const configSchema = z.object({
   PYTHON_ENGINE_URL: z.string().url().default('http://python-engine:8000'),
   PYTHON_ENGINE_TIMEOUT_MS: z.coerce.number().int().positive().default(5000),
   
+  // [FILL-ANCHOR 2026-08-04] Stop floors, mirrored from the engine's
+  // MOMENTUM_MIN_STOP_PCT / MOMENTUM_MIN_STOP_ATR_MULT. The gateway re-applies
+  // them against the transaction price because a floor computed on a stale
+  // close is not a floor on the fill. Keep these in step with config.py --
+  // divergence shows up as a stop that the engine's exit logic disagrees with.
+  MOMENTUM_MIN_STOP_PCT: z.coerce.number().positive().default(0.012),
+  MOMENTUM_MIN_STOP_ATR_MULT: z.coerce.number().nonnegative().default(0.35),
+
   LOG_LEVEL: z.enum(['trace', 'debug', 'info', 'warn', 'error', 'fatal']).default('info'),
   RATE_LIMIT_WINDOW_MS: z.coerce.number().int().positive().default(60000),
   RATE_LIMIT_MAX: z.coerce.number().int().positive().default(100)

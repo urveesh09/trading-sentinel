@@ -8,7 +8,7 @@ This is the P1 "plumbing is proven honest" criterion (spec §1) in test
 form: paper fills reconcile against real bid/ask, gates are satisfiable,
 max_loss holds, the log tells the truth.
 """
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 
 import pandas as pd
 import pytest
@@ -382,3 +382,180 @@ async def test_executor_paper_fills_at_ask_and_bid():
     assert exit_["status"] == "paper"
     assert exit_["fill_price"] == 99.1
     assert exit_["order_id"].startswith("PAPER-FNO-EXT-")
+
+
+# ---------------------------------------------------------------------------
+# [NAKED-LEG-EXPECTANCY 2026-07-31] Reward:risk gate on the single-leg book
+# ---------------------------------------------------------------------------
+# 12 naked legs since 2026-07-16: 2 winners, -Rs 15,474. The defined-risk
+# spreads over the same window ran ~flat on a 1.7:1 structure. The geometry is
+# what differs, so the gate encodes the geometry.
+
+def _rr(*, delta, stop_pts, target_pts, premium, spread_pct, qty,
+        stop_premium_pct):
+    """Mirror of the orchestrator's reward:risk arithmetic, so the numbers a
+    production reject is based on are pinned by a test."""
+    reward = delta * target_pts * qty
+    risk = min(delta * stop_pts, premium * stop_premium_pct) * qty
+    spread = spread_pct * premium * qty
+    return (reward - spread) / (risk + spread)
+
+
+def test_the_2026_07_30_naked_leg_would_now_be_refused():
+    """The real trade, with the levels production actually logged.
+
+    NIFTY2680424350CE, 2 lots, fill 101.30, delta 0.55,
+    entry_underlying 24375.2, stop_u 24333.2, target_u 24413.0.
+
+    Note the asymmetry, and where it comes from: the engine anchors stop and
+    target to the SIGNAL BAR's close (24365.1, r=31.9 -> 1.5R target), but the
+    position filled 10 points higher at 24375.2. Measured from the price we
+    actually paid, that 1.5:1 geometry had already become 37.8 points of
+    reward against 42 points of risk -- 0.9:1 before the option's own drag.
+    The gate therefore measures from the ENTRY underlying, not from the signal
+    close, which is the whole reason it catches this trade."""
+    from config import settings
+    entry_u, stop_u, target_u = 24375.2, 24333.2, 24413.0
+    rr = _rr(
+        delta=0.55,
+        stop_pts=abs(entry_u - stop_u),
+        target_pts=abs(target_u - entry_u),
+        premium=101.30, spread_pct=0.01, qty=130,
+        stop_premium_pct=settings.FNO_STOP_PREMIUM_PCT,
+    )
+    assert rr < 1.0, f"expected a losing geometry, got rr={rr:.2f}"
+    assert rr < settings.FNO_MIN_REWARD_RISK, (
+        f"the trade that lost Rs 3,570 still passes the gate (rr={rr:.2f})"
+    )
+
+
+def test_entry_slippage_against_a_fixed_target_degrades_the_ratio():
+    """Why the gate is anchored to the entry price.
+
+    Same signal geometry, but the fill lands progressively further above the
+    signal close. Stop and target are absolute levels, so every point of
+    adverse slippage widens the risk and narrows the reward at once."""
+    from config import settings
+    signal_close, r_points = 24365.1, 31.9
+    stop_u = signal_close - r_points
+    target_u = signal_close + 1.5 * r_points
+    ratios = []
+    for slip in (0.0, 5.0, 10.0):
+        entry_u = signal_close + slip
+        ratios.append(_rr(
+            delta=0.55,
+            stop_pts=abs(entry_u - stop_u),
+            target_pts=abs(target_u - entry_u),
+            premium=101.30, spread_pct=0.01, qty=130,
+            stop_premium_pct=settings.FNO_STOP_PREMIUM_PCT,
+        ))
+    assert ratios == sorted(ratios, reverse=True), ratios
+    assert ratios[0] > settings.FNO_MIN_REWARD_RISK   # clean fill is tradeable
+    assert ratios[-1] < settings.FNO_MIN_REWARD_RISK  # 10 pts of slip is not
+
+
+def test_a_wide_target_with_a_tight_spread_still_passes():
+    """The gate must not close the book entirely -- a genuinely favourable
+    geometry (wide target, liquid strike) has to remain tradeable."""
+    from config import settings
+    rr = _rr(
+        delta=0.55, stop_pts=30.0, target_pts=settings.FNO_TARGET_R * 30.0,
+        premium=60.0, spread_pct=0.002, qty=130,
+        stop_premium_pct=settings.FNO_STOP_PREMIUM_PCT,
+    )
+    assert rr >= settings.FNO_MIN_REWARD_RISK, (
+        f"gate is too tight -- no naked leg could ever fire (rr={rr:.2f})"
+    )
+
+
+def test_spread_cost_is_charged_on_both_sides():
+    """A wide bid-ask must degrade the ratio; it is paid entering and exiting."""
+    from config import settings
+    kw = dict(delta=0.55, stop_pts=30.0,
+              target_pts=settings.FNO_TARGET_R * 30.0,
+              premium=60.0, qty=130,
+              stop_premium_pct=settings.FNO_STOP_PREMIUM_PCT)
+    assert _rr(spread_pct=0.002, **kw) > _rr(spread_pct=0.02, **kw)
+
+
+# ---------------------------------------------------------------------------
+# [TIME-STOP-PREMIUM 2026-08-04] the clock must not cut a profitable trade
+#
+# The time stop measures UNDERLYING points while the book is paid in PREMIUM,
+# and delta separates the two. It is the single biggest loser in this book's
+# history (8 exits, -Rs 7,010) and two of those eight were cut while in profit:
+# 2026-07-23 at +286 and 2026-08-03 at +530. Meanwhile trail_stop is the only
+# exit reason with positive expectancy (2 exits, +Rs 2,869, avg +0.62R) -- and
+# a trade can only reach the trail by living long enough to get there.
+#
+# Both tests hold the FUTURE flat, so underlying progress is exactly zero and
+# the time stop's own condition is unambiguously met. Only the premium differs.
+# ---------------------------------------------------------------------------
+
+@pytest.mark.asyncio
+async def test_time_stop_defers_when_the_premium_is_in_profit(
+    kite, db_path, book, monkeypatch,
+):
+    monkeypatch.setattr(settings, "FNO_DR_DISABLE_PAPER", True)
+    monkeypatch.setattr(settings, "FNO_TIME_STOP_RESPECTS_PREMIUM", True)
+    from performance import init_ledger
+    await init_ledger(db_path)
+    await run_fno_tick(kite, db_path=db_path, regime="REGIME_1_NORMAL", now_ist=NOW)
+
+    # Well past FNO_TIME_STOP_MIN, underlying unchanged, premium up.
+    later = NOW + timedelta(minutes=settings.FNO_TIME_STOP_MIN + 5)
+    kite.quote_table = _quote_table(book, later, opt_bid_shift=+8.0)
+    summary = await run_fno_tick(kite, db_path=db_path, regime="REGIME_1_NORMAL",
+                                 now_ist=later)
+
+    assert summary["exits"] == [], (
+        "a position up on premium was cut by the clock; this is the "
+        "2026-08-03 +Rs 530 exit reproducing"
+    )
+    import aiosqlite
+    async with aiosqlite.connect(db_path) as db:
+        async with db.execute(
+            "SELECT status FROM fno_positions WHERE source='FNO_PAPER'"
+        ) as cur:
+            assert (await cur.fetchone())[0] == "OPEN"
+
+
+@pytest.mark.asyncio
+async def test_time_stop_still_cuts_a_losing_position_on_schedule(
+    kite, db_path, book, monkeypatch,
+):
+    """The deferral must not disable the time stop. A trade going nowhere on
+    the underlying AND losing on premium is still cut -- that is the whole
+    purpose of the clock."""
+    monkeypatch.setattr(settings, "FNO_DR_DISABLE_PAPER", True)
+    monkeypatch.setattr(settings, "FNO_TIME_STOP_RESPECTS_PREMIUM", True)
+    from performance import init_ledger
+    await init_ledger(db_path)
+    await run_fno_tick(kite, db_path=db_path, regime="REGIME_1_NORMAL", now_ist=NOW)
+
+    later = NOW + timedelta(minutes=settings.FNO_TIME_STOP_MIN + 5)
+    kite.quote_table = _quote_table(book, later, opt_bid_shift=-4.0)
+    summary = await run_fno_tick(kite, db_path=db_path, regime="REGIME_1_NORMAL",
+                                 now_ist=later)
+
+    assert len(summary["exits"]) == 1
+    assert summary["exits"][0]["reason"] == "time_stop"
+
+
+@pytest.mark.asyncio
+async def test_premium_deferral_can_be_switched_off(kite, db_path, book, monkeypatch):
+    """Flag off restores the pre-2026-08-04 behaviour exactly, so the change
+    is reversible without a code edit if the paper record argues against it."""
+    monkeypatch.setattr(settings, "FNO_DR_DISABLE_PAPER", True)
+    monkeypatch.setattr(settings, "FNO_TIME_STOP_RESPECTS_PREMIUM", False)
+    from performance import init_ledger
+    await init_ledger(db_path)
+    await run_fno_tick(kite, db_path=db_path, regime="REGIME_1_NORMAL", now_ist=NOW)
+
+    later = NOW + timedelta(minutes=settings.FNO_TIME_STOP_MIN + 5)
+    kite.quote_table = _quote_table(book, later, opt_bid_shift=+8.0)
+    summary = await run_fno_tick(kite, db_path=db_path, regime="REGIME_1_NORMAL",
+                                 now_ist=later)
+
+    assert len(summary["exits"]) == 1
+    assert summary["exits"][0]["reason"] == "time_stop"

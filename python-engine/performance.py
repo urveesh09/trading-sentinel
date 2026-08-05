@@ -112,6 +112,65 @@ async def bankroll_for_source(db_path: str, source: str) -> float:
     return settings.INITIAL_BANKROLL
 
 
+# [POOL-TRUTH 2026-07-31] Capital actually allocated to each division.
+#
+# The bug this closes: sizing and accounting were reading two different
+# numbers. `fno_bankroll()` sized F&O off FNO_PAPER_BANKROLL (Rs 250,000) +
+# realised P&L, while `record_trade_close` wrote bankroll_before/after using
+# `bankroll_for_source()` = INITIAL_BANKROLL (Rs 4,500, the SWING pool) +
+# realised P&L. So the F&O book sized every trade off a quarter-million while
+# its ledger balance marched to MINUS Rs 11,008 -- a number that is neither
+# the pool nor a real loss, and which no drawdown guard could interpret.
+#
+# EDGE_PAPER had the same split: sized off Rs 100,000, booked against
+# Rs 4,500, so one SIGMA trade on 2026-07-30 showed a -45% "drawdown" of a
+# bankroll it had never been sized against.
+#
+# One source of truth: a division's equity is ITS OWN allocation plus ITS OWN
+# realised P&L. Anything else lets a book gamble with capital the accounting
+# does not believe it has.
+DIVISION_ALLOCATION: dict = {
+    "SYSTEM":          "INITIAL_BANKROLL",
+    "MOMENTUM":        "INITIAL_BANKROLL",
+    "MOMENTUM_PAPER":  "MOMENTUM_PAPER_BANKROLL",
+    "PENNY":           "PENNY_LIVE_BANKROLL",
+    "PENNY_PAPER":     "PENNY_PAPER_BANKROLL",
+    "EDGE_LIVE":       "PENNY_EDGE_LIVE_BANKROLL",
+    "EDGE_PAPER":      "PENNY_EDGE_PAPER_BANKROLL",
+    "FNO_PAPER":       "FNO_PAPER_BANKROLL",
+    "FNO_LIVE":        "FNO_LIVE_BANKROLL",
+}
+
+
+def allocation_for_source(source: str) -> float:
+    """Capital allocated to `source`. Unknown sources fall back to the swing
+    pool, which is the historical behaviour."""
+    setting_name = DIVISION_ALLOCATION.get(source, "INITIAL_BANKROLL")
+    return float(getattr(settings, setting_name, settings.INITIAL_BANKROLL))
+
+
+async def division_equity(db_path: str, source: str) -> float:
+    """Canonical equity for one division: allocation + its own realised P&L.
+
+    This is the number that must be used BOTH for position sizing AND for the
+    ledger's bankroll_before/after. Fails open to the allocation."""
+    import aiosqlite
+    allocated = allocation_for_source(source)
+    try:
+        async with aiosqlite.connect(db_path) as db:
+            async with db.execute(
+                "SELECT COALESCE(SUM(pnl), 0.0) FROM bankroll_ledger WHERE source = ?",
+                (source,),
+            ) as cur:
+                row = await cur.fetchone()
+                if row and row[0] is not None:
+                    return allocated + float(row[0])
+    except Exception as e:
+        logger.warning("division_equity_query_failed source=%s error=%s",
+                       source, str(e))
+    return allocated
+
+
 async def nifty_bankroll(db_path: str) -> float:
     """
     [NIFTY-BANKROLL 2026-06-24] Strict-separation Nifty-subsystem balance.
@@ -217,7 +276,11 @@ async def record_trade_close(db_path: str, ticker: str, pnl: float,
     Making it required turns "forgot to attribute" into a TypeError at import
     time rather than a wrong number in a report months later.
     """
-    before = await bankroll_for_source(db_path, source)
+    # [POOL-TRUTH 2026-07-31] Book against the division's OWN allocation, not
+    # against the swing pool. See DIVISION_ALLOCATION above -- this is what
+    # made FNO_PAPER's ledger balance read -11,008 while it was sizing every
+    # trade off 250,000.
+    before = await division_equity(db_path, source)
     after = before + pnl
     async with aiosqlite.connect(db_path) as db:
         await db.execute(
@@ -362,6 +425,50 @@ async def check_circuit_breakers(db_path: str) -> tuple[bool, list[str]]:
             reasons.append("BACKTEST_GATE_FAILED")
     """
     return halted, reasons
+
+
+async def enforce_circuit_breakers(db_path: str) -> tuple[bool, list[str], bool]:
+    """[HALT 2026-08-05] Evaluate the breakers and MAKE THE HALT REAL.
+
+    `check_circuit_breakers` has computed a correct verdict since the system was
+    built and nothing ever acted on it -- partner_orchestrator.py:533 says so in
+    the tree. This is the missing half: a breached breaker now trips the
+    filesystem sentinel, which every order path checks before an entry.
+
+    The trip is deliberately NOT self-clearing. A breaker that fires and then
+    silently re-arms overnight is a breaker that never stopped anything; the
+    operator clears it with `/resume global` once they have looked, which is the
+    same posture as the existing CB_RESET ledger marker.
+
+    Exits are never affected -- see halt_switch and KiteClient.place_order.
+
+    Returns:
+        (halted, reasons, newly_tripped). `newly_tripped` is True only on the
+        transition, so the caller can page once instead of every scan.
+    """
+    import halt_switch
+
+    halted, reasons = await check_circuit_breakers(db_path)
+    if not halted:
+        return False, reasons, False
+
+    already, _ = halt_switch.halt_state(None)
+    if already:
+        return True, reasons, False
+
+    try:
+        halt_switch.trip(
+            f"circuit breaker: {', '.join(reasons) or 'unspecified'}",
+            by="circuit_breaker",
+        )
+    except OSError as exc:
+        # Could not write the sentinel. Trading is still live and the operator
+        # must know that the automatic protection did not engage.
+        logger.error("circuit_breaker_halt_write_failed", err=str(exc), reasons=reasons)
+        return True, reasons + ["HALT_WRITE_FAILED"], False
+
+    logger.error("circuit_breaker_halt_engaged", reasons=reasons)
+    return True, reasons, True
 
 async def penny_pool_pnl(db_path: str, days: int = 14) -> dict:
     """
@@ -520,6 +627,51 @@ async def pool_breakdown(db_path: str) -> dict:
 #
 # Report-only: no sizing or risk math is touched (operator decision 2026-07-15).
 # ─────────────────────────────────────────────────────────────────────────
+
+def is_paper_source(source: str) -> bool:
+    """True when `source` is a paper book, i.e. its P&L is not real money.
+
+    [PAPER-MARKING 2026-08-04] Reads the division registry so there is exactly
+    one place that decides what "paper" means. A hard-coded set here would
+    silently mislabel the next book somebody adds, and mislabelling is the
+    whole failure mode this guards against.
+
+    Unknown sources are treated as LIVE. That is the safe default: showing real
+    money as real when it might be paper is a cosmetic error; showing paper as
+    real is how a fabricated number gets acted on.
+    """
+    src = (source or "").upper()
+    for _key, _label, reg_source, _pool, _alloc, mode in _division_registry():
+        if reg_source.upper() == src:
+            return mode == "paper"
+    return False
+
+
+def fmt_money(amount: float, source: str = None, *, is_paper: bool = None) -> str:
+    """Render a rupee amount, marked when it is paper.
+
+    [PAPER-MARKING 2026-08-04] Paper and live P&L used to render identically.
+    The F&O tick message said `pnl=Rs -730` for a book that has never held a
+    rupee of real capital, and the same day's genuine live loss was Rs 8.41 --
+    two numbers, 87x apart, formatted the same way, with only a bracketed
+    source tag mid-line to tell them apart. The 2026-08-04 audit misread the
+    F&O ledger for exactly this reason, and an operator skimming a phone
+    notification has far less time than an audit does.
+
+    Live:  -Rs 8.41
+    Paper: -Rs 730 (paper)
+
+    The suffix is words, not an emoji or a colour: it survives plain-text
+    logs, Telegram's markdown, and a copy-paste into a spreadsheet.
+
+    Pass either `source` (looked up in the registry) or an explicit
+    `is_paper`. Explicit wins, for callers that already know.
+    """
+    paper = is_paper if is_paper is not None else is_paper_source(source)
+    sign = "-" if amount < 0 else ""
+    body = f"{sign}Rs {abs(amount):,.2f}"
+    return f"{body} (paper)" if paper else body
+
 
 def _division_registry() -> list:
     """The canonical division → (source, pool, allocation, mode) mapping.

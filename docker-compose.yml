@@ -42,15 +42,23 @@ services:
       timeout: 5s
       retries: 3
     # [ROADMAP-2.8 2026-07-12] 10m x 3 kept ~a day of forensics; the
-    # 2026-07-09 postmortem already hit deleted evidence. 20m x 10 with
-    # gzip on rotated files stretches retention ~7x for ~40M real disk
-    # per container (host disk is 86% full -- caps stay modest).
+    # 2026-07-09 postmortem already hit deleted evidence. 20m x 10
+    # stretches retention for ~40M real disk per container (host disk is
+    # 86% full -- caps stay modest).
+    #
+    # [LOG-READABILITY 2026-07-31] compress:"true" REMOVED. Gzipped rotated
+    # files made `docker logs` silently truncate: the engine returned 254k
+    # lines with no flags but only 13k with --tail 5000000, and --tail 20
+    # could reach lines neither of the others could. node-gateway was
+    # readable only ~5000 lines back. The whole of Tue 2026-07-28 was
+    # unrecoverable from the logs and had to be reconstructed from the
+    # database. Compression that costs us the ability to read the logs is
+    # not retention, it is data loss with extra steps.
     logging:
       driver: "json-file"
       options:
         max-size: "20m"
         max-file: "10"
-        compress: "true"
 
   # Container A: The Command Center (MERN Gateway)
   node-gateway:
@@ -72,15 +80,23 @@ services:
     labels:
       - autoheal=true  # image HEALTHCHECK: wget /api/health
     # [ROADMAP-2.8 2026-07-12] 10m x 3 kept ~a day of forensics; the
-    # 2026-07-09 postmortem already hit deleted evidence. 20m x 10 with
-    # gzip on rotated files stretches retention ~7x for ~40M real disk
-    # per container (host disk is 86% full -- caps stay modest).
+    # 2026-07-09 postmortem already hit deleted evidence. 20m x 10
+    # stretches retention for ~40M real disk per container (host disk is
+    # 86% full -- caps stay modest).
+    #
+    # [LOG-READABILITY 2026-07-31] compress:"true" REMOVED. Gzipped rotated
+    # files made `docker logs` silently truncate: the engine returned 254k
+    # lines with no flags but only 13k with --tail 5000000, and --tail 20
+    # could reach lines neither of the others could. node-gateway was
+    # readable only ~5000 lines back. The whole of Tue 2026-07-28 was
+    # unrecoverable from the logs and had to be reconstructed from the
+    # database. Compression that costs us the ability to read the logs is
+    # not retention, it is data loss with extra steps.
     logging:
       driver: "json-file"
       options:
         max-size: "20m"
         max-file: "10"
-        compress: "true"
 
   # Container B: The Quant Engine (Python Math)
   python-engine:
@@ -106,15 +122,23 @@ services:
     labels:
       - autoheal=true  # image HEALTHCHECK: curl /health
     # [ROADMAP-2.8 2026-07-12] 10m x 3 kept ~a day of forensics; the
-    # 2026-07-09 postmortem already hit deleted evidence. 20m x 10 with
-    # gzip on rotated files stretches retention ~7x for ~40M real disk
-    # per container (host disk is 86% full -- caps stay modest).
+    # 2026-07-09 postmortem already hit deleted evidence. 20m x 10
+    # stretches retention for ~40M real disk per container (host disk is
+    # 86% full -- caps stay modest).
+    #
+    # [LOG-READABILITY 2026-07-31] compress:"true" REMOVED. Gzipped rotated
+    # files made `docker logs` silently truncate: the engine returned 254k
+    # lines with no flags but only 13k with --tail 5000000, and --tail 20
+    # could reach lines neither of the others could. node-gateway was
+    # readable only ~5000 lines back. The whole of Tue 2026-07-28 was
+    # unrecoverable from the logs and had to be reconstructed from the
+    # database. Compression that costs us the ability to read the logs is
+    # not retention, it is data loss with extra steps.
     logging:
       driver: "json-file"
       options:
         max-size: "20m"
         max-file: "10"
-        compress: "true"
 
   # Container C: The Reasoning Engine (Placeholder for now)
   agent:
@@ -143,15 +167,23 @@ services:
     labels:
       - autoheal=true  # image HEALTHCHECK: /tmp/agent_heartbeat mtime
     # [ROADMAP-2.8 2026-07-12] 10m x 3 kept ~a day of forensics; the
-    # 2026-07-09 postmortem already hit deleted evidence. 20m x 10 with
-    # gzip on rotated files stretches retention ~7x for ~40M real disk
-    # per container (host disk is 86% full -- caps stay modest).
+    # 2026-07-09 postmortem already hit deleted evidence. 20m x 10
+    # stretches retention for ~40M real disk per container (host disk is
+    # 86% full -- caps stay modest).
+    #
+    # [LOG-READABILITY 2026-07-31] compress:"true" REMOVED. Gzipped rotated
+    # files made `docker logs` silently truncate: the engine returned 254k
+    # lines with no flags but only 13k with --tail 5000000, and --tail 20
+    # could reach lines neither of the others could. node-gateway was
+    # readable only ~5000 lines back. The whole of Tue 2026-07-28 was
+    # unrecoverable from the logs and had to be reconstructed from the
+    # database. Compression that costs us the ability to read the logs is
+    # not retention, it is data loss with extra steps.
     logging:
       driver: "json-file"
       options:
         max-size: "20m"
         max-file: "10"
-        compress: "true"
 
   # Public link — replaces the manual `ngrok http --url=... 80`. Starts
   # with the stack (restart: always), tunnels straight to nginx over the
@@ -189,15 +221,23 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock
     network_mode: none
     # [ROADMAP-2.8 2026-07-12] 10m x 3 kept ~a day of forensics; the
-    # 2026-07-09 postmortem already hit deleted evidence. 20m x 10 with
-    # gzip on rotated files stretches retention ~7x for ~40M real disk
-    # per container (host disk is 86% full -- caps stay modest).
+    # 2026-07-09 postmortem already hit deleted evidence. 20m x 10
+    # stretches retention for ~40M real disk per container (host disk is
+    # 86% full -- caps stay modest).
+    #
+    # [LOG-READABILITY 2026-07-31] compress:"true" REMOVED. Gzipped rotated
+    # files made `docker logs` silently truncate: the engine returned 254k
+    # lines with no flags but only 13k with --tail 5000000, and --tail 20
+    # could reach lines neither of the others could. node-gateway was
+    # readable only ~5000 lines back. The whole of Tue 2026-07-28 was
+    # unrecoverable from the logs and had to be reconstructed from the
+    # database. Compression that costs us the ability to read the logs is
+    # not retention, it is data loss with extra steps.
     logging:
       driver: "json-file"
       options:
         max-size: "20m"
         max-file: "10"
-        compress: "true"
 
 networks:
   sentinel-net:
