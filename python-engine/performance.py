@@ -427,7 +427,17 @@ async def check_circuit_breakers(db_path: str) -> tuple[bool, list[str]]:
     return halted, reasons
 
 
-async def enforce_circuit_breakers(db_path: str) -> tuple[bool, list[str], bool]:
+def cb_halt_channels() -> list[str]:
+    """The channels an auto-trip stops. Empty list means global.
+
+    Parsed here rather than in config so a stray comma or trailing space in the
+    environment cannot stop the engine from importing.
+    """
+    raw = getattr(settings, "CB_HALT_CHANNELS", "momentum") or ""
+    return [c.strip() for c in str(raw).split(",") if c.strip()]
+
+
+async def enforce_circuit_breakers(db_path: str) -> tuple[bool, list[str], list[str]]:
     """[HALT 2026-08-05] Evaluate the breakers and MAKE THE HALT REAL.
 
     `check_circuit_breakers` has computed a correct verdict since the system was
@@ -435,40 +445,62 @@ async def enforce_circuit_breakers(db_path: str) -> tuple[bool, list[str], bool]
     the tree. This is the missing half: a breached breaker now trips the
     filesystem sentinel, which every order path checks before an entry.
 
+    SCOPE [HALT-SCOPE 2026-08-05]. The trip covers `settings.CB_HALT_CHANNELS`
+    (default: momentum), not everything. Every threshold above is measured
+    against `source IN ('SYSTEM','MOMENTUM')` -- penny, edge and F&O are
+    excluded by the 2026-06-24 strict separation and have their own kill
+    switches -- so halting them here would be acting on evidence drawn from a
+    book that is not theirs. Since the trip does not self-clear, that mistake
+    costs a full day of three books. An empty CB_HALT_CHANNELS restores the
+    global behaviour.
+
     The trip is deliberately NOT self-clearing. A breaker that fires and then
     silently re-arms overnight is a breaker that never stopped anything; the
-    operator clears it with `/resume global` once they have looked, which is the
-    same posture as the existing CB_RESET ledger marker.
+    operator clears it with `/resume <channel>` once they have looked, which is
+    the same posture as the existing CB_RESET ledger marker.
 
     Exits are never affected -- see halt_switch and KiteClient.place_order.
 
     Returns:
-        (halted, reasons, newly_tripped). `newly_tripped` is True only on the
-        transition, so the caller can page once instead of every scan.
+        (halted, reasons, newly_tripped). `newly_tripped` is the list of scopes
+        that moved into a halted state on THIS call -- empty when nothing
+        changed -- so the caller pages once per transition rather than every
+        two minutes. Scopes are channel names, or "global" when unscoped.
     """
     import halt_switch
 
     halted, reasons = await check_circuit_breakers(db_path)
     if not halted:
-        return False, reasons, False
+        return False, reasons, []
 
-    already, _ = halt_switch.halt_state(None)
-    if already:
-        return True, reasons, False
+    channels = cb_halt_channels() or [None]   # [None] == the global sentinel
+    reason = f"circuit breaker: {', '.join(reasons) or 'unspecified'}"
+    newly: list[str] = []
 
-    try:
-        halt_switch.trip(
-            f"circuit breaker: {', '.join(reasons) or 'unspecified'}",
-            by="circuit_breaker",
-        )
-    except OSError as exc:
-        # Could not write the sentinel. Trading is still live and the operator
-        # must know that the automatic protection did not engage.
-        logger.error("circuit_breaker_halt_write_failed", err=str(exc), reasons=reasons)
-        return True, reasons + ["HALT_WRITE_FAILED"], False
+    for channel in channels:
+        scope = channel or "global"
+        # halt_state(channel) is True when the GLOBAL sentinel is set too, which
+        # is what we want: an operator-wide halt already covers this channel and
+        # re-tripping would only add noise.
+        already, _ = halt_switch.halt_state(channel)
+        if already:
+            continue
+        try:
+            halt_switch.trip(reason, by="circuit_breaker", channel=channel)
+        except OSError as exc:
+            # Could not write the sentinel. Trading is still live and the
+            # operator must know the automatic protection did not engage.
+            logger.error(
+                "circuit_breaker_halt_write_failed",
+                err=str(exc), reasons=reasons, scope=scope,
+            )
+            reasons = reasons + [f"HALT_WRITE_FAILED:{scope}"]
+            continue
+        newly.append(scope)
 
-    logger.error("circuit_breaker_halt_engaged", reasons=reasons)
-    return True, reasons, True
+    if newly:
+        logger.error("circuit_breaker_halt_engaged", reasons=reasons, scopes=newly)
+    return True, reasons, newly
 
 async def penny_pool_pnl(db_path: str, days: int = 14) -> dict:
     """

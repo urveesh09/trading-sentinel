@@ -1,6 +1,12 @@
 {
   "jobs": [
     {
+      "func": "_enforce_circuit_breakers_safe",
+      "id": "circuit_breaker_enforce",
+      "kwargs": [],
+      "trigger": "interval[0:02:00]"
+    },
+    {
       "func": "_run_fno_accept_watchdog_safe",
       "id": "fno_accept_watchdog",
       "kwargs": [],
@@ -228,6 +234,14 @@
       "endpoint": "top_level_command_get",
       "methods": [
         "GET"
+      ],
+      "path": "/command/{cmd}",
+      "response_model": null
+    },
+    {
+      "endpoint": "top_level_command_post",
+      "methods": [
+        "POST"
       ],
       "path": "/command/{cmd}",
       "response_model": null

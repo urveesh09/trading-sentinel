@@ -86,6 +86,31 @@ class Settings(BaseSettings):
     # be tripped by hand from Telegram while it is off.
     HALT_AUTO_TRIP_ON_CIRCUIT_BREAKER: bool = True
 
+    # [HALT-SCOPE 2026-08-05] Which channels an auto-trip stops.
+    #
+    # The breakers above are measured against `source IN ('SYSTEM','MOMENTUM')`
+    # only -- penny, edge and F&O P&L are deliberately excluded from every
+    # threshold (performance.py, the 2026-06-24 strict separation; penny has its
+    # own kill switch in PennyRiskEngine). A GLOBAL trip on that evidence would
+    # silence three books on the strength of none of them, and the trip does not
+    # self-clear, so a five-loss momentum streak at 09:30 would kill the whole
+    # day everywhere.
+    #
+    # So the trip is scoped to the channels the breakers actually measure.
+    # 'momentum' is the only live order channel among SYSTEM/MOMENTUM -- swing
+    # has no distinct order path today (the only channels at any place_order
+    # call site are momentum, penny, fno). If swing ever gets one, add it here
+    # or the breakers will not cover it.
+    #
+    # Comma-separated, not a JSON list: pydantic-settings JSON-parses complex
+    # types straight from the environment, so `CB_HALT_CHANNELS=momentum` would
+    # raise at import and the engine would not start at all. A kill switch's
+    # configuration must not be able to do that.
+    #
+    # An EMPTY string means trip globally. That is the escape hatch, not the
+    # default; a manual `/halt <reason>` is still global.
+    CB_HALT_CHANNELS: str = "momentum"
+
     # Momentum
     MAX_MOMENTUM_POSITIONS:   int   = 5
     # [CAPITAL-REALLOC 2026-07-26] 0.50 -> 5/9. The Rs 500 that left the Nifty

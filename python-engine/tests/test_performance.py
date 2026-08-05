@@ -689,3 +689,151 @@ class TestPoolTruth:
         assert await division_equity(seeded_db, "EDGE_PAPER") == pytest.approx(99500.0)
         # Swing/momentum share the Nifty pool; F&O and EDGE cannot touch it.
         assert await nifty_bankroll(seeded_db) == pytest.approx(5100.0)
+
+
+# ===============================================================
+# [HALT-SCOPE 2026-08-05] CIRCUIT BREAKER -> KILL SWITCH
+# ===============================================================
+# `check_circuit_breakers` returns a verdict; `enforce_circuit_breakers` is the
+# half that makes it bite. What is tested here is mostly the SCOPE: every
+# threshold is measured against swing + momentum P&L only, so tripping penny,
+# edge and F&O on that evidence would stop three books on the strength of none
+# of them -- and the trip does not self-clear, so the mistake costs a whole day.
+
+
+import halt_switch
+from performance import cb_halt_channels, enforce_circuit_breakers
+
+
+@pytest.fixture
+def halt_dir(tmp_path, monkeypatch):
+    """Point the sentinel at a temp dir instead of /data."""
+    monkeypatch.setattr(halt_switch, "HALT_DIR", str(tmp_path))
+    return tmp_path
+
+
+async def _five_losses(db_path):
+    """Enough to breach CB_CONSECUTIVE_LOSSES, the breaker most likely to fire."""
+    for i in range(5):
+        await record_trade_close(db_path, f"LOSS{i}", -50.0, source="SYSTEM")
+
+
+class TestCircuitBreakerScope:
+
+    def test_the_default_scope_is_momentum_only(self):
+        """Not global. A momentum streak must not silence penny/edge/F&O."""
+        assert cb_halt_channels() == ["momentum"]
+
+    @pytest.mark.parametrize("raw,expected", [
+        ("momentum", ["momentum"]),
+        ("momentum,penny", ["momentum", "penny"]),
+        (" momentum , penny ", ["momentum", "penny"]),
+        ("momentum,,", ["momentum"]),
+        ("", []),
+        (None, []),
+    ])
+    def test_the_channel_list_parses_forgivingly(self, raw, expected, monkeypatch):
+        """A stray comma in an env var must not be able to break the engine."""
+        import performance
+        monkeypatch.setattr(performance.settings, "CB_HALT_CHANNELS", raw,
+                            raising=False)
+        assert cb_halt_channels() == expected
+
+    @pytest.mark.asyncio
+    async def test_no_breach_trips_nothing(self, seeded_db, halt_dir):
+        halted, _reasons, newly = await enforce_circuit_breakers(seeded_db)
+        assert halted is False
+        assert newly == []
+        assert halt_switch.halt_state("momentum")[0] is False
+
+    @pytest.mark.asyncio
+    async def test_a_breach_trips_the_momentum_sentinel(self, seeded_db, halt_dir):
+        await _five_losses(seeded_db)
+        halted, reasons, newly = await enforce_circuit_breakers(seeded_db)
+        assert halted is True
+        assert newly == ["momentum"]
+        assert "CB_CONSECUTIVE_LOSSES" in reasons
+        tripped, attribution = halt_switch.channel_state("momentum")
+        assert tripped is True
+        assert attribution["by"] == "circuit_breaker"
+        assert "CB_CONSECUTIVE_LOSSES" in attribution["reason"]
+
+    @pytest.mark.asyncio
+    async def test_a_breach_leaves_the_other_books_trading(self, seeded_db, halt_dir):
+        """The point of the whole change: penny, edge and F&O contribute to none
+        of these thresholds, so they must not be stopped by them."""
+        await _five_losses(seeded_db)
+        await enforce_circuit_breakers(seeded_db)
+        assert halt_switch.halt_state(None)[0] is False
+        for channel in ("penny", "fno"):
+            assert halt_switch.halt_state(channel)[0] is False
+
+    @pytest.mark.asyncio
+    async def test_the_trip_pages_once_not_every_two_minutes(self, seeded_db, halt_dir):
+        """The scheduler runs this on a 120s interval. `newly` is the transition."""
+        await _five_losses(seeded_db)
+        _h, _r, first = await enforce_circuit_breakers(seeded_db)
+        _h, _r, second = await enforce_circuit_breakers(seeded_db)
+        assert first == ["momentum"]
+        assert second == []
+
+    @pytest.mark.asyncio
+    async def test_the_trip_does_not_self_clear(self, seeded_db, halt_dir):
+        """A breaker that re-arms overnight never stopped anything. Only the
+        operator clears it."""
+        await _five_losses(seeded_db)
+        await enforce_circuit_breakers(seeded_db)
+        await record_trade_close(seeded_db, "WIN", 5000.0, source="SYSTEM")
+        halted, _reasons, _newly = await enforce_circuit_breakers(seeded_db)
+        assert halted is False                      # the breaker itself recovered
+        assert halt_switch.channel_state("momentum")[0] is True   # the halt did not
+
+    @pytest.mark.asyncio
+    async def test_an_operator_global_halt_is_not_overwritten(self, seeded_db, halt_dir):
+        """The global sentinel already covers momentum; re-tripping would only
+        bury the operator's own reason under a machine-written one."""
+        halt_switch.trip("operator: reviewing the book", by="operator")
+        await _five_losses(seeded_db)
+        _h, _r, newly = await enforce_circuit_breakers(seeded_db)
+        assert newly == []
+        assert halt_switch.channel_state("momentum")[0] is False
+        assert halt_switch.halt_state("momentum")[1]["by"] == "operator"
+
+    @pytest.mark.asyncio
+    async def test_an_empty_channel_list_restores_the_global_trip(
+            self, seeded_db, halt_dir, monkeypatch):
+        """The documented escape hatch."""
+        import performance
+        monkeypatch.setattr(performance.settings, "CB_HALT_CHANNELS", "",
+                            raising=False)
+        await _five_losses(seeded_db)
+        _h, _r, newly = await enforce_circuit_breakers(seeded_db)
+        assert newly == ["global"]
+        assert halt_switch.halt_state(None)[0] is True
+        assert halt_switch.halt_state("penny")[0] is True   # global covers all
+
+    @pytest.mark.asyncio
+    async def test_multiple_channels_each_get_their_own_sentinel(
+            self, seeded_db, halt_dir, monkeypatch):
+        import performance
+        monkeypatch.setattr(performance.settings, "CB_HALT_CHANNELS",
+                            "momentum,penny", raising=False)
+        await _five_losses(seeded_db)
+        _h, _r, newly = await enforce_circuit_breakers(seeded_db)
+        assert newly == ["momentum", "penny"]
+        assert halt_switch.channel_state("momentum")[0] is True
+        assert halt_switch.channel_state("penny")[0] is True
+
+    @pytest.mark.asyncio
+    async def test_a_sentinel_that_cannot_be_written_is_reported_not_swallowed(
+            self, seeded_db, halt_dir, monkeypatch):
+        """Trading is still live. Silence here would be the worst outcome of
+        all: the operator would believe the breaker had engaged."""
+        def _boom(*_a, **_kw):
+            raise OSError("read-only file system")
+        monkeypatch.setattr(halt_switch, "trip", _boom)
+        await _five_losses(seeded_db)
+        halted, reasons, newly = await enforce_circuit_breakers(seeded_db)
+        assert halted is True
+        assert newly == []
+        assert "HALT_WRITE_FAILED:momentum" in reasons
