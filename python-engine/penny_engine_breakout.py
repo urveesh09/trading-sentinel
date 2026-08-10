@@ -38,6 +38,7 @@ respective engine modules (no cross-import) so the isolation rule is
 preserved.
 """
 import logging
+import math
 from datetime import datetime, time, timedelta
 from typing import List, Optional, Union
 
@@ -227,6 +228,8 @@ def evaluate_breakout_entry(
     intraday=None,                 # [TIER2-BREAKOUT-REFINEMENT 2026-06-25]
     *,
     regime=None,                   # [FIX-PHASE1-AUDIT 2026-07-09] PennyRegime | None
+    time_start_min: int | None = None,
+    volume_multiplier: float | None = None,
 ) -> dict:
     """
     Spec section 5.2: volume + breakout + time + RSI gates. On accept, returns
@@ -248,9 +251,28 @@ def evaluate_breakout_entry(
       behaviour is preserved.
     """
     from config import settings
+    if time_start_min is not None:
+        if isinstance(time_start_min, bool) or not isinstance(time_start_min, int):
+            raise ValueError("time_start_min must be an integer minute")
+        if not 9 * 60 + 15 <= time_start_min < settings.PENNY_BREAKOUT_TIME_END:
+            raise ValueError("time_start_min must be within the trading session")
+    if volume_multiplier is not None:
+        if isinstance(volume_multiplier, bool) or not isinstance(volume_multiplier, (int, float)):
+            raise ValueError("volume_multiplier must be a positive finite number")
+        volume_multiplier = float(volume_multiplier)
+        if not math.isfinite(volume_multiplier) or not 0 < volume_multiplier <= 5:
+            raise ValueError("volume_multiplier must be > 0 and <= 5")
+    effective_start = (
+        settings.PENNY_BREAKOUT_TIME_START
+        if time_start_min is None else time_start_min
+    )
+    effective_volume_multiplier = (
+        settings.PENNY_BREAKOUT_VOL_MULT
+        if volume_multiplier is None else volume_multiplier
+    )
     # 1. Time gate: 10:30 to 14:30 IST
     mins = _to_minutes_since_midnight(as_of)
-    if mins < settings.PENNY_BREAKOUT_TIME_START or mins >= settings.PENNY_BREAKOUT_TIME_END:
+    if mins < effective_start or mins >= settings.PENNY_BREAKOUT_TIME_END:
         return {"accept": False, "reject_reason": f"outside breakout time window ({mins} min)"}
 
     # 2. Volume surge gate.
@@ -263,14 +285,14 @@ def evaluate_breakout_entry(
     # this time of day" -- a true relative-volume check.
     if median_vol_20d <= 0:
         return {"accept": False,
-                "reject_reason": f"volume {cum_vol_today} < {settings.PENNY_BREAKOUT_VOL_MULT}x median ({median_vol_20d})"}
+                "reject_reason": f"volume {cum_vol_today} < {effective_volume_multiplier}x median ({median_vol_20d})"}
     vol_baseline = float(median_vol_20d)
     if settings.PENNY_BREAKOUT_RVOL_TIME_ADJUSTED:
         session_open_min = 9 * 60 + 15   # 09:15 IST
         session_len_min = 375.0          # 09:15 -> 15:30
         elapsed = min(max(mins - session_open_min, 1.0), session_len_min)
         vol_baseline = median_vol_20d * (elapsed / session_len_min)
-    vol_threshold = settings.PENNY_BREAKOUT_VOL_MULT * vol_baseline
+    vol_threshold = effective_volume_multiplier * vol_baseline
     if cum_vol_today < vol_threshold:
         # [LEGIBILITY 2026-07-26] Report the THRESHOLD, not the baseline. The old
         # string read "volume 442374 < 1.8x median (257554)", which looks like a
@@ -281,7 +303,7 @@ def evaluate_breakout_entry(
         return {"accept": False,
                 "reject_reason": (
                     f"volume {cum_vol_today} < {int(vol_threshold)} "
-                    f"({settings.PENNY_BREAKOUT_VOL_MULT}x pace-adjusted median "
+                    f"({effective_volume_multiplier}x pace-adjusted median "
                     f"{int(vol_baseline)})"
                 )}
 

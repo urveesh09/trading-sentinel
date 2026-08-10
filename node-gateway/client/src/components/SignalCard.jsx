@@ -53,7 +53,7 @@ export default function SignalCard({ signal, isMarketOpen, cbHalted, onActionCom
       </div>
 
       {errorMsg && <div className="text-red-400 text-xs mb-3">{errorMsg}</div>}
-      {ageMinutes > 5 && <div className="text-yellow-500 text-xs mb-3">Signal expired (> 5m).</div>}
+      {ageMinutes > 5 && <div className="text-yellow-500 text-xs mb-3">Signal expired (&gt; 5m).</div>}
 
       <div className="flex space-x-2">
         <button

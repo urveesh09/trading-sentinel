@@ -35,8 +35,22 @@ from penny_universe import PennyUniverse
 from penny_models import PennyRegime, PennyLeg
 from penny_risk import PennyRiskEngine
 from penny_executor import PennyExecutor
+from penny_shadow import evaluate_penny_shadows, persist_penny_shadow_results
+from penny_execution_journal import (
+    append_execution_event, attempt_event_payload, attempt_event_types,
+    attempt_identity,
+)
 
 logger = logging.getLogger(__name__)
+
+
+def _scan_summary(scan_id, *, accept=0, reject=0, error=0, order_attempt=0,
+                  fill=0, protected=0, position=0, failure=0):
+    return {
+        "scan_id": scan_id, "accept": accept, "reject": reject, "error": error,
+        "evaluator_accept": accept, "order_attempt": order_attempt, "fill": fill,
+        "protected": protected, "position": position, "failure": failure,
+    }
 
 
 def _event_block_safe(ticker, on_date):
@@ -59,10 +73,14 @@ class PennyScanner:
         regime=None,  # str (legacy, frozen) or Callable[[], str]
         daily_pnl_override: Optional[float] = None,
         ledger_writer=None,
+        source_tag: Optional[str] = None,
     ):
         self.kite = kite
         self.universe_json_path = universe_json_path
         self.paper_mode = paper_mode
+        self.source_tag = source_tag or ("PENNY_PAPER" if paper_mode else "PENNY")
+        if self.source_tag not in ("PENNY", "PENNY_PAPER"):
+            raise ValueError("classic Penny source_tag must be PENNY or PENNY_PAPER")
         # [PENNY-STARTUP-GATE 2026-07-02] Default threshold for the
         # startup-gate to consider the instrument_cache "populated".
         # NSE_EQ has ~2,000 instruments; 100 is a safe lower-bound
@@ -104,6 +122,7 @@ class PennyScanner:
             paper_mode=paper_mode,
             fill_timeout_sec=settings.PENNY_ENTRY_FILL_TIMEOUT_SEC,
             poll_interval_sec=2.0,
+            event_sink=self._execution_event_sink,
         )
         if daily_pnl_override is not None:
             self.risk_engine.daily_pnl = daily_pnl_override
@@ -111,6 +130,21 @@ class PennyScanner:
             # kill-switch itself, or the override lands on the wrong
             # "day" between 00:00 and 05:30 IST.
             self.risk_engine.daily_pnl_date = self.risk_engine._trading_day()
+
+    async def _execution_event_sink(self, event_type: str, payload: dict, context: dict) -> None:
+        from config import settings
+        await append_execution_event(
+            settings.DB_PATH, event_type=event_type, payload=payload, **context,
+        )
+
+    async def _record_execution_event(self, event_type: str, payload: dict, context: dict) -> bool:
+        """Scanner-side journal writes are loud but never order-critical."""
+        try:
+            return await self._execution_event_sink(event_type, payload, context)
+        except Exception as exc:
+            logger.error("penny_execution_journal_failed event=%s error=%s",
+                         event_type, str(exc))
+            return False
 
     # ---- [AUDIT-FIX-1.3] regime property + helper -------------------
 
@@ -287,6 +321,7 @@ class PennyScanner:
         prev_close: Optional[float] = None,
         day_low: Optional[float] = None,  # passed through from quote; defaults to None for tests
         quote_map: Optional[dict] = None,  # [FIX-PHASE3-AUDIT 2026-07-09] batched /quote prefetch
+        shadow_collector: Optional[list] = None,
     ) -> Optional[dict]:
         """Run the MIS Breakout evaluator on one ticker.
 
@@ -522,7 +557,7 @@ class PennyScanner:
             logger.warning("penny_vol_rank_feed_failed ticker=%s error=%s",
                            ticker, str(e))
 
-        return evaluate_breakout_entry(
+        decision = evaluate_breakout_entry(
             ticker=ticker, cum_vol_today=cum_vol, median_vol_20d=median_vol_20d,
             # [FIX-PHASE3-AUDIT 2026-07-09] prior_bars_high, NOT the live
             # quote's running day high -- see the anchor comment above.
@@ -543,6 +578,37 @@ class PennyScanner:
             # via _normalise_regime_getter above; the engine coerces if needed.
             regime=PennyRegime(self.regime),
         )
+        if isinstance(decision, dict):
+            # Identity uses the last fully closed, evaluator-visible 1m bar,
+            # not the 30-second scheduler timestamp.
+            _visible_bar = intraday.index[-1]
+            decision["_evaluation_bar_ts"] = (
+                _visible_bar.isoformat()
+                if hasattr(_visible_bar, "isoformat")
+                else str(_visible_bar)
+            )
+        if shadow_collector is not None:
+            try:
+                shadow_collector.extend(evaluate_penny_shadows(
+                    ticker=ticker,
+                    cum_vol_today=cum_vol,
+                    median_vol_20d=median_vol_20d,
+                    breakout_bar=breakout_bar,
+                    day_high=prior_bars_high,
+                    rsi_14=rsi_14,
+                    as_of=as_of,
+                    risk_engine=self.risk_engine,
+                    intraday=intraday,
+                    regime=PennyRegime(self.regime),
+                    trading_date=as_of.date(),
+                    bar_ts=intraday.index[-1],
+                ))
+            except Exception as exc:
+                logger.warning(
+                    "penny_shadow_evaluation_failed ticker=%s error=%s",
+                    ticker, str(exc),
+                )
+        return decision
 
     async def _evaluate_ticker_connors(
         self, ticker: str, as_of: datetime,
@@ -808,7 +874,7 @@ class PennyScanner:
             cache_size = len(getattr(self.kite, "instrument_cache", {}) or {})
             if cache_size < 100:
                 if not await self._wait_for_instrument_cache():
-                    return {"scan_id": scan_id, "accept": 0, "reject": 0, "error": 0}
+                    return _scan_summary(scan_id)
                 # Cache filled -- reload universe once.
                 universe = self._load_universe()
             if not universe:
@@ -819,7 +885,7 @@ class PennyScanner:
                     "(check penny_universe_quality_audit + corp_data source)",
                     scan_id,
                 )
-                return {"scan_id": scan_id, "accept": 0, "reject": 0, "error": 0}
+                return _scan_summary(scan_id)
 
         # Surface universe size + degraded count at scan start
         degraded_count = sum(
@@ -839,7 +905,7 @@ class PennyScanner:
                     reject_reason="regime PR3_HOT (no new entries)",
                     regime=self.regime, close=0.0,
                 )
-            return {"scan_id": scan_id, "accept": 0, "reject": len(universe), "error": 0}
+            return _scan_summary(scan_id, reject=len(universe))
 
         # Kill-switch gate
         if self.risk_engine.kill_switch_active():
@@ -850,9 +916,11 @@ class PennyScanner:
                     reject_reason="kill_switch active (daily loss limit)",
                     regime=self.regime, close=0.0,
                 )
-            return {"scan_id": scan_id, "accept": 0, "reject": len(universe), "error": 0}
+            return _scan_summary(scan_id, reject=len(universe))
 
         accept = reject = error = 0
+        order_attempt = fill = protected = position = failure = 0
+        shadow_rows = []
         # [PENNY-G9 2026-06-25] Parallelise the per-ticker evaluation with
         # asyncio.gather. The previous sequential loop ran ~100 tickers
         # back-to-back. Each ticker does 3 kite calls (quote, intraday,
@@ -939,6 +1007,11 @@ class PennyScanner:
                       t["symbol"], as_of,
                       prev_close=t.get("prev_close"),
                       quote_map=quote_map,
+                      shadow_collector=(
+                          shadow_rows
+                          if getattr(settings, "PENNY_SHADOW_ENABLED", True)
+                          else None
+                      ),
                   )
                   for t in surviving],
                 return_exceptions=True,
@@ -1060,16 +1133,110 @@ class PennyScanner:
                     breakout_level=decision.get("breakout_level"),
                     shares=decision.get("shares"),
                 )
+                evaluation_bar_ts = str(decision.get("_evaluation_bar_ts") or as_of.isoformat())
+                candidate_identity = "|".join((
+                    as_of.date().isoformat(), evaluation_bar_ts, sym, "MIS", "PEN_BASE",
+                    str(decision.get("entry")), str(decision.get("stop_loss")),
+                ))
+                attempt_id, candidate_key = attempt_identity(
+                    candidate_identity, sym, "MIS", self.source_tag,
+                )
+                event_context = {
+                    "attempt_id": attempt_id, "scan_id": scan_id,
+                    "candidate_key": candidate_key, "ticker": sym, "leg": "MIS",
+                    "source": self.source_tag,
+                    "mode": "paper" if self.paper_mode else "live",
+                }
+                await self._record_execution_event("CANDIDATE_ACCEPTED", {
+                    "signal_entry": decision.get("entry"),
+                    "stop_loss": decision.get("stop_loss"),
+                    "target": decision.get("target"), "quantity": decision.get("shares"),
+                }, event_context)
+                try:
+                    lifecycle = await attempt_event_types(settings.DB_PATH, attempt_id)
+                except Exception as exc:
+                    # Cannot prove this deterministic attempt has not already
+                    # reached the broker. Fail closed rather than double-buy.
+                    logger.critical(
+                        "penny_execution_reconciliation_UNRESOLVED ticker=%s "
+                        "attempt_id=%s reason=journal_unreadable error=%s -- refusing re-entry",
+                        sym, attempt_id, str(exc),
+                    )
+                    failure += 1
+                    accept += 1
+                    continue
+                if "EXECUTION_RESULT" in lifecycle:
+                    try:
+                        result_evidence = await attempt_event_payload(
+                            settings.DB_PATH, attempt_id, "EXECUTION_RESULT",
+                        )
+                    except Exception as exc:
+                        logger.critical(
+                            "penny_execution_reconciliation_UNRESOLVED ticker=%s "
+                            "attempt_id=%s reason=result_payload_unreadable error=%s "
+                            "-- refusing re-entry", sym, attempt_id, str(exc),
+                        )
+                        failure += 1
+                        accept += 1
+                        continue
+                    protected_result = bool(
+                        result_evidence
+                        and result_evidence.get("entry_status") in ("filled", "paper")
+                        and result_evidence.get("sl_order_id")
+                        and not result_evidence.get("unwound")
+                    )
+                    if protected_result and "POSITION_CREATED" not in lifecycle:
+                        logger.critical(
+                            "penny_execution_reconciliation_UNRESOLVED ticker=%s "
+                            "attempt_id=%s reason=protected_fill_missing_local_position "
+                            "-- refusing duplicate entry; reconcile broker and local DB",
+                            sym, attempt_id,
+                        )
+                        await self._record_execution_event(
+                            "UNRESOLVED_RECONCILIATION",
+                            {"observed_events": list(lifecycle),
+                             "action": "REFUSED_DUPLICATE_ENTRY",
+                             "reason": "PROTECTED_FILL_MISSING_POSITION"},
+                            event_context,
+                        )
+                        failure += 1
+                        accept += 1
+                        continue
+                    logger.info("penny_execution_attempt_deduped ticker=%s attempt_id=%s",
+                                sym, attempt_id)
+                    accept += 1
+                    continue
+                broker_progress = tuple(event for event in lifecycle if event not in {
+                    "CANDIDATE_ACCEPTED", "UNRESOLVED_RECONCILIATION",
+                })
+                if broker_progress:
+                    logger.critical(
+                        "penny_execution_reconciliation_UNRESOLVED ticker=%s "
+                        "attempt_id=%s lifecycle=%s -- broker progress exists without "
+                        "EXECUTION_RESULT; refusing duplicate entry and requiring reconciliation",
+                        sym, attempt_id, ",".join(broker_progress),
+                    )
+                    await self._record_execution_event(
+                        "UNRESOLVED_RECONCILIATION",
+                        {"observed_events": sorted(broker_progress),
+                         "action": "REFUSED_DUPLICATE_ENTRY"},
+                        event_context,
+                    )
+                    failure += 1
+                    accept += 1
+                    continue
                 try:
                     from penny_models import PennyLeg
                     from position_tracker import init_positions_db
                     await init_positions_db(settings.DB_PATH)
+                    order_attempt += 1
                     order_result = await self.executor.execute_entry(
                         ticker=sym,
                         leg=PennyLeg.MIS,
                         entry_price=decision.get("entry", 0.0),
                         stop_loss=decision.get("stop_loss", 0.0),
                         shares=decision.get("shares", 0),
+                        attempt_context=event_context,
                     )
                     logger.info(
                         "penny_entry_attempted ticker=%s entry=%.2f sl=%.2f shares=%d paper=%s order_id=%s",
@@ -1079,33 +1246,82 @@ class PennyScanner:
                         order_result.get("paper"),
                         order_result.get("entry_order_id"),
                     )
-                    if (not order_result.get("unwound")
-                            and order_result.get("entry_status") == "filled"):
+                    status = order_result.get("entry_status")
+                    fill_price = order_result.get("fill_price")
+                    if status in ("filled", "paper") and fill_price:
+                        fill += 1
+                    is_protected_fill = (
+                        not order_result.get("unwound")
+                        and status in ("filled", "paper")
+                        and bool(order_result.get("sl_order_id"))
+                        and isinstance(fill_price, (int, float)) and fill_price > 0
+                    )
+                    await self._record_execution_event("EXECUTION_RESULT", {
+                        "entry_status": status, "paper": bool(order_result.get("paper")),
+                        "entry_order_id": order_result.get("entry_order_id"),
+                        "sl_order_id": order_result.get("sl_order_id"),
+                        "unwind_order_id": order_result.get("unwind_order_id"),
+                        "unwound": bool(order_result.get("unwound")),
+                        "fill_price": fill_price,
+                        "reject_reason": order_result.get("reject_reason"),
+                    }, event_context)
+                    if is_protected_fill:
+                        protected += 1
                         import aiosqlite
                         from datetime import datetime, timezone
                         async with aiosqlite.connect(settings.DB_PATH) as db:
-                            await db.execute(
+                            cursor = await db.execute(
                                 """INSERT INTO positions (
                                     ticker, exchange, entry_date, entry_price, shares,
                                     stop_loss_initial, trailing_stop_current,
                                     target_1, target_2, atr_14_at_entry,
                                     highest_close_since_entry, status, source,
-                                    product_type, regime_at_entry
-                                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+                                    product_type, regime_at_entry, sl_order_id,
+                                    penny_attempt_id
+                                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
                                 (sym, "NSE",
                                  datetime.now(timezone.utc).isoformat(),
-                                 decision.get("entry", 0.0),
+                                 fill_price,
                                  decision.get("shares", 0),
                                  decision.get("stop_loss", 0.0),
                                  decision.get("stop_loss", 0.0),
                                  decision.get("target", 0.0),
                                  decision.get("target", 0.0) * 1.05,
-                                 0.0, decision.get("entry", 0.0),
-                                 "OPEN", "PENNY", "MIS", self.regime)
+                                 0.0, fill_price,
+                                 "OPEN", self.source_tag, "MIS", self.regime,
+                                 order_result.get("sl_order_id"), attempt_id)
                             )
                             await db.commit()
+                            row_id = cursor.lastrowid
+                        position += 1
+                        await self._record_execution_event("POSITION_CREATED", {
+                            "position_rowid": row_id, "entry_price": fill_price,
+                            "sl_order_id": order_result.get("sl_order_id"),
+                        }, event_context)
+                    else:
+                        failure += 1
                 except Exception as e:
                     logger.error("penny_entry_wiring_failed ticker=%s error=%s", sym, str(e))
+                    failure += 1
+                    if 'event_context' in locals():
+                        await self._record_execution_event("POSITION_PERSIST_FAILED", {
+                            "error_type": type(e).__name__, "message": str(e)[:300],
+                        }, event_context)
                 accept += 1
 
-        return {"scan_id": scan_id, "accept": accept, "reject": reject, "error": error}
+        # Persist only after every baseline log and order attempt has completed,
+        # so SQLite contention in the research side-channel cannot delay entry.
+        if getattr(settings, "PENNY_SHADOW_ENABLED", True):
+            try:
+                await persist_penny_shadow_results(settings.DB_PATH, shadow_rows)
+            except Exception as exc:
+                logger.warning(
+                    "penny_shadow_persistence_failed evaluations=%d error=%s",
+                    len(shadow_rows), str(exc),
+                )
+
+        return _scan_summary(
+            scan_id, accept=accept, reject=reject, error=error,
+            order_attempt=order_attempt, fill=fill, protected=protected,
+            position=position, failure=failure,
+        )

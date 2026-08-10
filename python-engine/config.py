@@ -86,6 +86,31 @@ class Settings(BaseSettings):
     # be tripped by hand from Telegram while it is off.
     HALT_AUTO_TRIP_ON_CIRCUIT_BREAKER: bool = True
 
+    # [HALT-SCOPE 2026-08-05] Which channels an auto-trip stops.
+    #
+    # The breakers above are measured against `source IN ('SYSTEM','MOMENTUM')`
+    # only -- penny, edge and F&O P&L are deliberately excluded from every
+    # threshold (performance.py, the 2026-06-24 strict separation; penny has its
+    # own kill switch in PennyRiskEngine). A GLOBAL trip on that evidence would
+    # silence three books on the strength of none of them, and the trip does not
+    # self-clear, so a five-loss momentum streak at 09:30 would kill the whole
+    # day everywhere.
+    #
+    # So the trip is scoped to the channels the breakers actually measure.
+    # 'momentum' is the only live order channel among SYSTEM/MOMENTUM -- swing
+    # has no distinct order path today (the only channels at any place_order
+    # call site are momentum, penny, fno). If swing ever gets one, add it here
+    # or the breakers will not cover it.
+    #
+    # Comma-separated, not a JSON list: pydantic-settings JSON-parses complex
+    # types straight from the environment, so `CB_HALT_CHANNELS=momentum` would
+    # raise at import and the engine would not start at all. A kill switch's
+    # configuration must not be able to do that.
+    #
+    # An EMPTY string means trip globally. That is the escape hatch, not the
+    # default; a manual `/halt <reason>` is still global.
+    CB_HALT_CHANNELS: str = "momentum"
+
     # Momentum
     MAX_MOMENTUM_POSITIONS:   int   = 5
     # [CAPITAL-REALLOC 2026-07-26] 0.50 -> 5/9. The Rs 500 that left the Nifty
@@ -191,6 +216,10 @@ class Settings(BaseSettings):
     # order-placing code path at all rather than a flag that must stay False.
     MOMENTUM_PAPER_ENABLED:   bool  = True
     MOMENTUM_PAPER_BANKROLL:  float = 50000.0
+    # Broker-free research side-channel. It evaluates declared variants using
+    # frames already fetched by the live scanner and never reaches sizing or
+    # order execution, so evidence collection is safe to enable by default.
+    MOMENTUM_SHADOW_ENABLED:  bool  = True
     MOMENTUM_ATR_FUEL_BUFFER:          float = 0.85   # [MC5] ATR exhaustion gate: target must fit within remaining_fuel * buffer
     MOMENTUM_VOL_SURGE_LUNCHTIME:      float = 1.75   # [MC3-T] Volume threshold during lunchtime dead zone (11:30-13:15 IST)
     MOMENTUM_LUNCHTIME_START_HOUR:     int   = 11     # [MC3-T] Lunchtime start hour (IST)
@@ -410,9 +439,10 @@ class Settings(BaseSettings):
     PENNY_STT_CNC:             float = 0.001     # 0.1% sell side (delivery)
     PENNY_BROKERAGE_PCT:       float = 0.0003    # 0.03% per side
     PENNY_BROKERAGE_MAX:       float = 20.0      # Rs 20 cap per order
-    PENNY_EXCHANGE_PCT:        float = 0.0000345  # 0.00345% NSE both sides
-    PENNY_STAMP_DUTY_PCT:      float = 0.00015   # 0.015% buy side
+    PENNY_EXCHANGE_PCT:        float = 0.0000307  # NSE cash 0.00307%, both sides
+    PENNY_STAMP_DUTY_PCT:      float = 0.00003   # intraday 0.003%, buy side
     PENNY_SEBI_PCT:            float = 0.000001   # Rs 10/cr, both sides
+    PENNY_IPFT_PCT:            float = 0.000000001 # NSE Rs 0.01/crore, both sides
     PENNY_GST_PCT:             float = 0.18       # 18% on brokerage+exchange
     # [PENNY-TEST 2026-06-24] When True, calc_penny_costs() returns 0.0 so
     # P&L math is isolated from Rs 2,500 brokerage erosion. Use only in
@@ -421,9 +451,10 @@ class Settings(BaseSettings):
     # -- a zeroed-cost live run understates real P&L and breaks the ledger.
     PENNY_BROKERAGE_BYPASS:    bool  = False
     ZERODHA_STT_MIS:          float = 0.00025 # 0.025% sell side (intraday)
-    ZERODHA_EXCHANGE_PCT:     float = 0.0000345
-    ZERODHA_STAMP_DUTY_PCT:   float = 0.00015
+    ZERODHA_EXCHANGE_PCT:     float = 0.0000307
+    ZERODHA_STAMP_DUTY_PCT:   float = 0.00003
     ZERODHA_SEBI_PCT:         float = 0.000001
+    ZERODHA_IPFT_PCT:         float = 0.000000001 # NSE Rs 0.01/crore, both sides
     ZERODHA_GST_PCT:          float = 0.18
 
     # ============================================================
@@ -558,6 +589,8 @@ class Settings(BaseSettings):
     PENNY_BREAKOUT_TARGET_R:       float = 2.0
     PENNY_BREAKOUT_TIME_START:     int   = 10*60 + 30  # 10:30 IST in minutes
     PENNY_BREAKOUT_TIME_END:       int   = 14*60 + 30  # 14:30 IST in minutes
+    # Broker-free evidence side-channel; never reaches PennyExecutor.
+    PENNY_SHADOW_ENABLED:          bool  = True
     PENNY_BREAKOUT_TIME_EXIT:      int   = 15*60       # 15:00 IST
     # [TIER3-DAILY-ATTRIBUTION 2026-06-25] 15:30 IST = 30 min after the
     # 15:00 force-close fires. Gives time for the broker to confirm
@@ -704,7 +737,10 @@ class Settings(BaseSettings):
 
     # Cadence + safety
     PENNY_SCAN_INTERVAL_SEC:       int   = 30
-    PENNY_LIVE_TRADING:            bool  = True       # Uru 2026-06-22: live opt-in for testing budget (Rs 2,500)
+    # Fail-safe code default: a missing/partial environment must never place
+    # real Penny orders. Production explicitly opts in with
+    # PENNY_LIVE_TRADING=true after its capital and broker checks are ready.
+    PENNY_LIVE_TRADING:            bool  = False
     PENNY_DISABLE_TICKERS:         str   = ""         # comma-separated manual kill-switch
     PENNY_LOG_CSV_PATH:            str   = "/data/penny_signals.csv"
     PENNY_ENTRY_FILL_TIMEOUT_SEC:  float = 60.0      # max wait for LIMIT entry to fill before cancel
@@ -795,6 +831,9 @@ class Settings(BaseSettings):
     FNO_LIVE_TRADING:          bool  = False      # master switch
     FNO_DISABLE_PAPER:         bool  = False
     FNO_DISABLE_LIVE:          bool  = True
+    # Broker-free opening-range research sidecar. Disabling it removes all
+    # local CPU/SQLite work without changing any F&O strategy or arming flag.
+    FNO_SHADOW_ENABLED:        bool  = True
     # Independent kill-switch for the Phase-2 defined-risk paper book. It rides
     # the same tick as the single-leg engine but is newer/experimental, so it
     # gets its own lever: flip this True to silence ONLY the DR book (e.g. if it
@@ -913,15 +952,15 @@ class Settings(BaseSettings):
     # --- cost model (fno_costs.py; VERIFY-4/VERIFY-5 resolved 2026-07-10) ---
     # There is deliberately NO FNO_BROKERAGE_BYPASS (spec §10.2): cost is a
     # first-order term for options and hiding it would make paper fills lie.
-    # STT on option SELL premium raised to 0.1% on 2024-10-01 (Finance Act
-    # 2024 no.2); exercised ITM options are taxed 0.125% of INTRINSIC since
-    # Sept 2019 -- moot in P1 because positions never reach expiry.
+    # Current schedule: option SELL-premium STT is 0.15% from 2026-04-01;
+    # NSE transaction charge is 0.03553% from 2026-03-01. Exercised ITM
+    # options also use 0.15% of intrinsic, moot here because P1 exits intraday.
     FNO_BROKERAGE_FLAT:        float = 20.0       # Rs 20 per executed order
-    FNO_STT_SELL_PCT:          float = 0.001      # 0.1% of sell-side premium
-    FNO_EXCHANGE_TXN_PCT:      float = 0.0003503  # NSE 0.03503% of premium, both sides
+    FNO_STT_SELL_PCT:          float = 0.0015     # 0.15% sell premium
+    FNO_EXCHANGE_TXN_PCT:      float = 0.0003553  # NSE 0.03553%, both sides
     FNO_SEBI_PCT:              float = 0.000001   # Rs 10/crore, both sides
     FNO_STAMP_DUTY_PCT:        float = 0.00003    # 0.003% buy side
-    FNO_IPFT_PCT:              float = 0.000005   # NSE IPFT Rs 0.50/lakh, both sides
+    FNO_IPFT_PCT:              float = 0.000000001 # NSE IPFT Rs 0.01/crore, both sides
     FNO_GST_PCT:               float = 0.18       # on brokerage + txn + sebi
 
     # --- observability -----------------------------------------------------

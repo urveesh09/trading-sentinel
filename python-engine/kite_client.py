@@ -1,5 +1,6 @@
 import asyncio
 import os
+import re
 import time
 from typing import Optional
 import httpx
@@ -12,6 +13,25 @@ from config import settings
 from halt_switch import TradingHalted, assert_not_halted
 
 logger = structlog.get_logger()
+
+_LEGACY_INTRADAY_INTERVAL = "legacy_unknown"
+
+
+def _interval_minutes(interval: str) -> int:
+    """Return the candle width used to decide whether a cache is current.
+
+    Kite names its one-minute interval ``minute`` and the wider intraday
+    intervals ``3minute``, ``5minute`` ... ``60minute``.  Rejecting unknown
+    values here is safer than silently applying the old 15-minute freshness
+    rule to a new interval.
+    """
+    value = str(interval or "").strip().lower()
+    if value == "minute":
+        return 1
+    match = re.fullmatch(r"([1-9][0-9]*)minute", value)
+    if match:
+        return int(match.group(1))
+    raise ValueError(f"unsupported intraday interval: {interval!r}")
 
 class RateLimiter:
     def __init__(self, rate: float, burst: int):
@@ -101,20 +121,85 @@ class KiteClient:
             await db.execute("PRAGMA journal_mode=WAL")
             await db.execute("PRAGMA busy_timeout=5000")
             await db.execute("PRAGMA synchronous=NORMAL")
-            await db.execute("""
-                CREATE TABLE IF NOT EXISTS intraday_cache (
-                    ticker   TEXT,
-                    datetime TEXT,
-                    open     REAL,
-                    high     REAL,
-                    low      REAL,
-                    close    REAL,
-                    volume   REAL,
-                    fetched_at TIMESTAMP,
-                    PRIMARY KEY (ticker, datetime)
-                )
-            """)
-            await db.commit()
+            # `interval` was absent from the original schema even though this
+            # client stores both one-minute Penny bars and 15-minute Momentum
+            # bars.  The old (ticker, datetime) key allowed one resolution to
+            # overwrite and later masquerade as the other.
+            #
+            # Migrate transactionally and conservatively.  A legacy ticker-day
+            # containing any non-quarter-hour timestamp can only have come from
+            # a one-minute fetch, so that whole coherent fetch is recoverable as
+            # `minute`.  Quarter-hour-only groups are ambiguous and are retained
+            # as `legacy_unknown`; they are deliberately never served for a
+            # known interval, forcing one clean broker refetch rather than using
+            # potentially mislabelled market data.  Re-running this initializer
+            # sees the new column and is a no-op.
+            cursor = await db.execute("PRAGMA table_info(intraday_cache)")
+            columns = [row[1] for row in await cursor.fetchall()]
+            if columns and "interval" in columns:
+                return
+
+            # Only the first initialization/migration needs a writer lock. The
+            # Penny scanner calls this method concurrently for many tickers; a
+            # BEGIN IMMEDIATE on the already-current hot path would serialize
+            # every cache read for no benefit.
+            await db.execute("BEGIN IMMEDIATE")
+            try:
+                # Another connection may have completed the migration while we
+                # waited for the lock, so re-check under the transaction.
+                cursor = await db.execute("PRAGMA table_info(intraday_cache)")
+                columns = [row[1] for row in await cursor.fetchall()]
+                if not columns:
+                    await self._create_intraday_cache_table(db)
+                elif "interval" not in columns:
+                    await db.execute(
+                        "ALTER TABLE intraday_cache "
+                        "RENAME TO intraday_cache_pre_interval"
+                    )
+                    await self._create_intraday_cache_table(db)
+                    await db.execute(
+                        """
+                        INSERT OR REPLACE INTO intraday_cache
+                            (ticker, interval, datetime, open, high, low, close,
+                             volume, fetched_at)
+                        SELECT old.ticker,
+                               CASE WHEN EXISTS (
+                                   SELECT 1
+                                   FROM intraday_cache_pre_interval AS probe
+                                   WHERE probe.ticker = old.ticker
+                                     AND substr(probe.datetime, 1, 10) =
+                                         substr(old.datetime, 1, 10)
+                                     AND CAST(substr(probe.datetime, 15, 2) AS INTEGER)
+                                         NOT IN (0, 15, 30, 45)
+                               ) THEN 'minute' ELSE ? END,
+                               old.datetime, old.open, old.high, old.low,
+                               old.close, old.volume, old.fetched_at
+                        FROM intraday_cache_pre_interval AS old
+                        """,
+                        (_LEGACY_INTRADAY_INTERVAL,),
+                    )
+                    await db.execute("DROP TABLE intraday_cache_pre_interval")
+                await db.commit()
+            except Exception:
+                await db.rollback()
+                raise
+
+    @staticmethod
+    async def _create_intraday_cache_table(db) -> None:
+        await db.execute("""
+            CREATE TABLE IF NOT EXISTS intraday_cache (
+                ticker   TEXT NOT NULL,
+                interval TEXT NOT NULL DEFAULT 'legacy_unknown',
+                datetime TEXT NOT NULL,
+                open     REAL,
+                high     REAL,
+                low      REAL,
+                close    REAL,
+                volume   REAL,
+                fetched_at TIMESTAMP,
+                PRIMARY KEY (ticker, interval, datetime)
+            )
+        """)
 
 
 
@@ -353,9 +438,10 @@ class KiteClient:
         
         from_datetime / to_datetime format: "YYYY-MM-DD HH:MM:SS"
         """
+        interval = str(interval or "").strip().lower()
+        interval_mins = _interval_minutes(interval)
         await self._init_intraday_db()
         ticker = ticker.upper()
-        trade_date = from_datetime[:10]   # YYYY-MM-DD portion
 
 
         # Check cache: only use if all rows are from today
@@ -363,9 +449,10 @@ class KiteClient:
             cursor = await db.execute(
                 """SELECT datetime, open, high, low, close, volume
                    FROM intraday_cache
-                   WHERE ticker=? AND datetime >= ? AND datetime <= ?
+                   WHERE ticker=? AND interval=?
+                     AND datetime >= ? AND datetime <= ?
                    ORDER BY datetime""",
-                (ticker, from_datetime, to_datetime)
+                (ticker, interval, from_datetime, to_datetime)
             )
             rows = await cursor.fetchall()
             if rows and len(rows) >= 4:   # minimum 4 candles for VWAP
@@ -374,7 +461,7 @@ class KiteClient:
                 # Cache is fresh only if the last stored candle covers up to the
                 # expected latest complete candle (one interval before scan time).
                 # If stale, fall through to API so new candles are fetched.
-                expected_latest = to_dt_obj - timedelta(minutes=15)
+                expected_latest = to_dt_obj - timedelta(minutes=interval_mins)
                 if last_cached_dt >= expected_latest:
                     # [LOG-HYGIENE 2026-07-17] debug -- see the cache_hit
                     # comment in get_historical.
@@ -418,10 +505,11 @@ class KiteClient:
                     for _, row in df.iterrows():
                         await db.execute(
                             """INSERT OR REPLACE INTO intraday_cache
-                               (ticker, datetime, open, high, low, close,
+                               (ticker, interval, datetime, open, high, low, close,
                                 volume, fetched_at)
-                               VALUES (?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)""",
+                               VALUES (?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)""",
                             (ticker,
+                             interval,
                              row['datetime'].strftime("%Y-%m-%d %H:%M:%S"),
                              row['open'], row['high'], row['low'],
                              row['close'], row['volume'])

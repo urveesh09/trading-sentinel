@@ -228,13 +228,16 @@ def test_market_calendar_sync_helpers_holiday_aware():
     import os
     import sqlite3
     import tempfile
+    from contextlib import closing
     from datetime import date
     from market_calendar import is_trading_day_sync, trading_days_between_sync
     with tempfile.NamedTemporaryFile(suffix=".db", delete=False) as f:
         db_path = f.name
     try:
         # Populate the holidays table with a known weekday (Friday).
-        with sqlite3.connect(db_path) as con:
+        # sqlite3's context manager does not close the connection; closing()
+        # keeps this portability assertion meaningful on Windows too.
+        with closing(sqlite3.connect(db_path)) as con:
             con.execute("CREATE TABLE IF NOT EXISTS holidays (holiday_date TEXT PRIMARY KEY, fetched_at TIMESTAMP)")
             con.execute("INSERT INTO holidays VALUES (?, CURRENT_TIMESTAMP)", ("2025-08-15",))
             con.commit()

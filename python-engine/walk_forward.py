@@ -93,6 +93,10 @@ def generate_folds(
     step = step_days or test_days
     if step < 1:
         raise ValueError("step_days must be >= 1")
+    if step < test_days:
+        raise ValueError(
+            "step_days must be >= test_days so out-of-sample windows do not overlap"
+        )
 
     start, end = _d(from_date), _d(to_date)
     if end <= start:
@@ -181,10 +185,11 @@ def walk_forward(
     scored_folds = [r for r in results if r.out_of_sample_score is not None]
     n = len(scored_folds)
 
-    if n == 0:
+    if n < 3:
         return {
             "n_folds": len(folds),
-            "n_scored_folds": 0,
+            "n_scored_folds": n,
+            "minimum_scored_folds": 3,
             "verdict": "insufficient_data",
             "folds": [_fold_dict(r) for r in results],
         }

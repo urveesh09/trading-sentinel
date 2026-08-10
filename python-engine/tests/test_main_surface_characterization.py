@@ -33,6 +33,7 @@ be copied to any repo that needs to survive a big mechanical refactor.)
 import json
 import os
 import pathlib
+from unittest.mock import MagicMock, patch
 
 import pytest
 
@@ -100,23 +101,41 @@ def surface():
     from apscheduler.schedulers.asyncio import AsyncIOScheduler
 
     probe = AsyncIOScheduler(timezone=main.IST)
-    main.register_penny_scheduler_jobs(probe)
-    main.register_fno_scheduler_jobs(probe)
-    main.register_partner_scheduler_jobs(probe)
+    def _close_startup_catchup(coro):
+        # This fixture characterizes registrations only. Startup catchups are
+        # real runtime work; explicitly close their coroutine objects so the
+        # module-scoped test loop does not leak them at teardown.
+        coro.close()
+        return MagicMock(done=lambda: True)
+
+    fake_loop = MagicMock()
+    fake_loop.create_task.side_effect = _close_startup_catchup
+    with patch(
+        "scheduler_setup.asyncio.create_task", side_effect=_close_startup_catchup,
+    ), patch(
+        "scheduler_setup.asyncio.get_running_loop", return_value=fake_loop,
+    ):
+        main.register_penny_scheduler_jobs(probe)
+        main.register_fno_scheduler_jobs(probe)
+        main.register_partner_scheduler_jobs(probe)
 
     return {"routes": _route_surface(main.app), "jobs": _job_surface(probe)}
 
 
 def test_surface_matches_golden(surface):
     if _updating():
-        GOLDEN.write_text(json.dumps(surface, indent=2, sort_keys=True) + "\n")
+        GOLDEN.write_text(
+            json.dumps(surface, indent=2, sort_keys=True) + "\n", encoding="utf-8"
+        )
         pytest.skip("golden regenerated -- review the diff before committing")
 
     if not GOLDEN.exists():
-        GOLDEN.write_text(json.dumps(surface, indent=2, sort_keys=True) + "\n")
+        GOLDEN.write_text(
+            json.dumps(surface, indent=2, sort_keys=True) + "\n", encoding="utf-8"
+        )
         pytest.skip("golden seeded on first run -- commit it, then this test binds")
 
-    expected = json.loads(GOLDEN.read_text())
+    expected = json.loads(GOLDEN.read_text(encoding="utf-8"))
 
     # Compare the two halves separately so a failure names the subsystem.
     assert surface["routes"] == expected["routes"], (
@@ -179,7 +198,7 @@ def _add_job_census() -> list[dict]:
 
     out = []
     for py in sorted(ENGINE_DIR.glob("*.py")):
-        tree = ast.parse(py.read_text())
+        tree = ast.parse(py.read_text(encoding="utf-8"))
         for node in ast.walk(tree):
             if not (
                 isinstance(node, ast.Call)
@@ -207,14 +226,18 @@ def test_add_job_census_matches_golden():
     census = _add_job_census()
 
     if _updating():
-        STATIC_GOLDEN.write_text(json.dumps(census, indent=2, sort_keys=True) + "\n")
+        STATIC_GOLDEN.write_text(
+            json.dumps(census, indent=2, sort_keys=True) + "\n", encoding="utf-8"
+        )
         pytest.skip("census regenerated -- review the diff before committing")
 
     if not STATIC_GOLDEN.exists():
-        STATIC_GOLDEN.write_text(json.dumps(census, indent=2, sort_keys=True) + "\n")
+        STATIC_GOLDEN.write_text(
+            json.dumps(census, indent=2, sort_keys=True) + "\n", encoding="utf-8"
+        )
         pytest.skip("census seeded on first run -- commit it, then this test binds")
 
-    expected = json.loads(STATIC_GOLDEN.read_text())
+    expected = json.loads(STATIC_GOLDEN.read_text(encoding="utf-8"))
 
     missing = [j for j in expected if j not in census]
     added = [j for j in census if j not in expected]

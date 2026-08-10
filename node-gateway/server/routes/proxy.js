@@ -5,9 +5,10 @@ const { requireSession } = require('../middleware/auth');
 const { logger } = require('../middleware/logger');
 
 // Generic Proxy function
-const proxyToEngine = async (req, res, path, method = 'GET') => {
+const proxyToEngine = async (req, res, path, method = 'GET', options = {}) => {
   const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), config.PYTHON_ENGINE_TIMEOUT_MS);
+  const timeoutMs = options.timeoutMs || config.PYTHON_ENGINE_TIMEOUT_MS;
+  const timeout = setTimeout(() => controller.abort(), timeoutMs);
 
   try {
     const fetchOptions = {
@@ -46,9 +47,39 @@ router.get('/signals', (req, res) => proxyToEngine(req, res, '/signals'));
 router.get('/rejected', (req, res) => proxyToEngine(req, res, '/rejected'));
 router.get('/positions', (req, res) => proxyToEngine(req, res, '/positions'));
 router.get('/performance', (req, res) => proxyToEngine(req, res, '/performance'));
+router.get('/performance/divisions', (req, res) => proxyToEngine(req, res, '/performance/divisions'));
 router.get('/health-b', (req, res) => proxyToEngine(req, res, '/health'));
 router.get('/bankroll', (req, res) => proxyToEngine(req, res, '/bankroll'));
 router.get('/circuit-breaker', (req, res) => proxyToEngine(req, res, '/circuit-breaker'));
 router.post('/circuit-breaker/reset', (req, res) => proxyToEngine(req, res, '/circuit-breaker/reset', 'POST'));
+router.get('/experiments/momentum', (req, res) => proxyToEngine(req, res, '/experiments/momentum'));
+router.get('/experiments/penny', (req, res) => proxyToEngine(req, res, '/experiments/penny'));
+router.get('/experiments/fno-opening-range', (req, res) =>
+  proxyToEngine(req, res, '/experiments/fno-opening-range'));
+router.get('/research/promotion-readiness', (req, res) =>
+  proxyToEngine(req, res, '/research/promotion-readiness'));
+
+// Backtest Lab submits background work, so requests never hold an HTTP socket
+// for the duration of a replay. The longer budget protects SQLite contention
+// and larger persisted result reads without weakening timeouts globally.
+const backtestTimeoutMs = Math.max(config.PYTHON_ENGINE_TIMEOUT_MS, 30000);
+const withQuery = (path, query) => {
+  const params = new URLSearchParams();
+  Object.entries(query || {}).forEach(([key, value]) => {
+    if (value !== undefined && value !== null && value !== '') params.set(key, String(value));
+  });
+  const suffix = params.toString();
+  return suffix ? `${path}?${suffix}` : path;
+};
+
+router.get('/backtests/strategies', (req, res) =>
+  proxyToEngine(req, res, '/backtests/strategies', 'GET', { timeoutMs: backtestTimeoutMs }));
+router.post('/backtests/runs', (req, res) =>
+  proxyToEngine(req, res, '/backtests/runs', 'POST', { timeoutMs: backtestTimeoutMs }));
+router.get('/backtests/runs', (req, res) =>
+  proxyToEngine(req, res, withQuery('/backtests/runs', req.query), 'GET', { timeoutMs: backtestTimeoutMs }));
+router.get('/backtests/runs/:runId', (req, res) =>
+  proxyToEngine(req, res, `/backtests/runs/${encodeURIComponent(req.params.runId)}`, 'GET',
+    { timeoutMs: backtestTimeoutMs }));
 
 module.exports = router;

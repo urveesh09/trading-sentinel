@@ -306,20 +306,40 @@ def register_penny_scheduler_jobs(scheduler):
     # another position after the daily-loss limit is already gone. The check is
     # three cheap indexed reads against cache.db.
     async def _enforce_circuit_breakers_safe():
+        # [CALENDAR-GATE 2026-07-03] Documented exception: NO is_trading_day
+        # gate, deliberately. This handler places no orders and fetches no
+        # market data -- it reads the ledger and may set a kill switch. Gating
+        # it would mean a Friday-evening breach (a late fill reconciled after
+        # 15:30, or a close recorded by hand over the weekend) does not engage
+        # until Monday's first tick, which is the one moment the protection has
+        # to already be in place. Cost off-hours is three indexed reads on a
+        # 120s timer against a ledger that is not changing.
         if not settings.HALT_AUTO_TRIP_ON_CIRCUIT_BREAKER:
             return
         try:
             from performance import enforce_circuit_breakers
             halted, reasons, newly = await enforce_circuit_breakers(settings.DB_PATH)
             if newly:
-                # Page once, on the transition only.
+                # Page once, per scope, on the transition only.
+                # [HALT-SCOPE 2026-08-05] Name the scope. The old text said
+                # "blocked in every book", which is now wrong and was the kind
+                # of wrong that makes an operator stop looking for other trades.
+                scopes = ", ".join(newly)
+                blocked = (
+                    "New entries are blocked in EVERY book."
+                    if newly == ["global"] else
+                    f"New entries are blocked in: {scopes}. "
+                    "Other books are unaffected -- the breakers only measure "
+                    "swing + momentum P&L."
+                )
+                resume = " ".join(f"/resume {s}" for s in newly)
                 from operator_alert import notify_operator
                 await notify_operator(
-                    "TRADING HALTED — circuit breaker\n\n"
+                    f"TRADING HALTED ({scopes}) — circuit breaker\n\n"
                     f"reasons: {', '.join(reasons)}\n\n"
-                    "New entries are blocked in every book. Exits (stops, "
-                    "unwinds, square-off) still work normally.\n\n"
-                    "Review, then clear with /resume global",
+                    f"{blocked} Exits (stops, unwinds, square-off) still work "
+                    "normally.\n\n"
+                    f"Review, then clear with: {resume}",
                     event="circuit_breaker_halt",
                 )
         except Exception as exc:
@@ -608,7 +628,11 @@ def register_penny_scheduler_jobs(scheduler):
                 "reason=container_started_after_1515_IST now_ist=%s",
                 _now_ist2.strftime("%H:%M:%S"),
             )
-            asyncio.create_task(_run_penny_edge_exit_safe())
+            # Resolve the loop before constructing the coroutine.  If scheduler
+            # registration is invoked from a synchronous diagnostic/test path,
+            # get_running_loop() fails cleanly without leaking an un-awaited
+            # coroutine object.
+            asyncio.get_running_loop().create_task(_run_penny_edge_exit_safe())
         else:
             logger.info(
                 "penny_edge_exit_startup_skipped reason=before_1515_IST "
@@ -769,7 +793,9 @@ def register_penny_scheduler_jobs(scheduler):
                 "penny_accept_watchdog_startup_catchup_firing now_ist=%s",
                 _now_ist_wd.strftime("%H:%M:%S"),
             )
-            asyncio.create_task(_run_penny_accept_watchdog_safe())
+            # As above, do not construct a coroutine until a running loop has
+            # been established.
+            asyncio.get_running_loop().create_task(_run_penny_accept_watchdog_safe())
     except Exception as _wd_catchup_exc:
         logger.warning(
             "penny_accept_watchdog_startup_catchup_failed err=%s",

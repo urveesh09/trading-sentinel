@@ -13,15 +13,14 @@ would make the paper leg lie (spec §10.2).
 Rate provenance (VERIFY-4 / VERIFY-5, resolved 2026-07-10 against
 Zerodha's published charge list):
   - Brokerage: flat Rs 20 per executed order for F&O.
-  - STT: 0.1% of premium on the SELL side (raised from 0.0625% on
-    2024-10-01, Finance (No.2) Act 2024).
-  - NSE exchange txn: 0.03503% of premium, both sides.
+  - STT: 0.15% of premium on the SELL side from 2026-04-01.
+  - NSE exchange txn: 0.03553% of premium, both sides.
   - SEBI: Rs 10/crore (0.0001%) of premium, both sides.
   - Stamp duty: 0.003% of premium, BUY side only.
-  - NSE IPFT: Rs 0.50/lakh (0.0005%) of premium, both sides.
-  - GST: 18% on (brokerage + exchange txn + SEBI).
-  - STT on EXERCISED ITM options is 0.125% of intrinsic (post-Sept-2019
-    rule) -- moot here because P1 is intraday-only and the §7.1 rule
+  - NSE IPFT: Rs 0.01/crore of premium, both sides.
+  - GST: 18% on (brokerage + exchange txn + SEBI + IPFT).
+  - STT on EXERCISED ITM options is 0.15% of intrinsic
+    -- moot here because P1 is intraday-only and the §7.1 rule
     says never let a long option expire ITM.
 
 All rates live in config so a schedule change is an .env edit, not a
@@ -29,11 +28,13 @@ code change.
 """
 from __future__ import annotations
 
-from config import settings
+from cost_schedules import options_cost_snapshot
 
 
-def calc_fno_costs(entry_premium: float, exit_premium: float, qty: int) -> float:
-    """Total round-trip transaction cost in rupees for a long option.
+def calc_fno_costs_from_snapshot(
+    entry_premium: float, exit_premium: float, qty: int, snapshot: dict,
+) -> float:
+    """Total round-trip cost from an immutable options schedule snapshot.
 
     qty is the total unit count (lots * lot_size). entry is the BUY,
     exit is the SELL. Returns 0.0 for degenerate inputs rather than
@@ -46,15 +47,23 @@ def calc_fno_costs(entry_premium: float, exit_premium: float, qty: int) -> float
     sell_value = exit_premium * qty
     turnover = buy_value + sell_value
 
-    brokerage = settings.FNO_BROKERAGE_FLAT * 2.0
-    stt = settings.FNO_STT_SELL_PCT * sell_value
-    exchange_txn = settings.FNO_EXCHANGE_TXN_PCT * turnover
-    sebi = settings.FNO_SEBI_PCT * turnover
-    stamp = settings.FNO_STAMP_DUTY_PCT * buy_value
-    ipft = settings.FNO_IPFT_PCT * turnover
-    gst = settings.FNO_GST_PCT * (brokerage + exchange_txn + sebi)
+    rates = snapshot["rates"]
+    brokerage = float(rates["brokerage_flat_per_order"]) * 2.0
+    stt = float(rates["stt_sell_pct"]) * sell_value
+    exchange_txn = float(rates["exchange_pct"]) * turnover
+    sebi = float(rates["sebi_pct"]) * turnover
+    stamp = float(rates["stamp_duty_buy_pct"]) * buy_value
+    ipft = float(rates.get("ipft_pct", 0.0)) * turnover
+    gst = float(rates["gst_pct"]) * (brokerage + exchange_txn + sebi + ipft)
 
     return brokerage + stt + exchange_txn + sebi + stamp + ipft + gst
+
+
+def calc_fno_costs(entry_premium: float, exit_premium: float, qty: int) -> float:
+    """Operational cost using the current versioned settings snapshot."""
+    return calc_fno_costs_from_snapshot(
+        entry_premium, exit_premium, qty, options_cost_snapshot(),
+    )
 
 
 def breakeven_move_pct(premium: float, qty: int) -> float:

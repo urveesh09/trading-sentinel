@@ -56,7 +56,7 @@ def _read_main_py() -> str:
     out = []
     for path in (MAIN_PY, SCHEDULER_SETUP_PY):
         if os.path.exists(path):
-            with open(path) as f:
+            with open(path, encoding="utf-8") as f:
                 out.append(f.read())
     return "\n".join(out)
 
@@ -360,7 +360,21 @@ class TestPennyEdgeSchedulerRegistration:
                 timezone="Asia/Kolkata",
                 job_defaults={"misfire_grace_time": 600},
             )
-            register_penny_scheduler_jobs(sched)
+            # Registration intentionally schedules a one-shot startup catchup
+            # when this test happens to run after the production cutoff. This
+            # characterization only inspects cron metadata, so explicitly
+            # close (rather than execute or leak) those coroutine objects.
+            def _close_startup_catchup(coro):
+                coro.close()
+                return MagicMock(done=lambda: True)
+
+            fake_loop = MagicMock()
+            fake_loop.create_task.side_effect = _close_startup_catchup
+            with patch(
+                "scheduler_setup.asyncio.get_running_loop",
+                return_value=fake_loop,
+            ):
+                register_penny_scheduler_jobs(sched)
             # Don't start() the scheduler -- we only want to inspect
             # the registered jobs, not run them. This avoids the
             # asyncio event-loop race that apscheduler's shutdown()

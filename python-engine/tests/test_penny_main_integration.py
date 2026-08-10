@@ -124,21 +124,37 @@ def test_penny_hourly_report_is_scheduled():
 
 
 def test_paper_mode_default_blocks_live_orders():
-    """PENNY_LIVE_TRADING defaults reflect Uru 2026-06-22 testing-budget opt-in.
-
-    Live is True by default now (Rs 2,500 testing budget). When flipped
-    to False via .env, the scanner + executor must not call
-    kite.place_order() (verified separately in test_penny_scanner.py).
-    """
-    from config import settings
-    # Live is the new default per Uru 2026-06-22
-    assert settings.PENNY_LIVE_TRADING is True, (
-        "PENNY_LIVE_TRADING default is True (Uru 2026-06-22 testing budget)"
-    )
-    # Bankrolls must be reasonable (live >= paper)
+    """A missing environment override must leave Penny in paper mode."""
+    from config import Settings, settings
+    defaults = Settings(_env_file=None)
+    assert defaults.PENNY_LIVE_TRADING is False
     assert settings.PENNY_PAPER_BANKROLL > 0
     assert settings.PENNY_LIVE_BANKROLL > 0
     # Per-stock cap matches docs
     assert settings.PENNY_PER_STOCK_CAP == 500.0
     # Daily kill-switch at 20%
     assert settings.PENNY_DAILY_KILL_SWITCH_PCT == 0.20
+
+
+def test_scanner_mode_requires_explicit_live_opt_in(monkeypatch):
+    """The master switch is inverted exactly once at scanner construction."""
+    from types import SimpleNamespace
+    from config import settings
+
+    main = _import_main()
+    built = []
+
+    def fake_scanner(**kwargs):
+        built.append(kwargs)
+        return SimpleNamespace(**kwargs)
+
+    monkeypatch.setattr(main, "PennyScanner", fake_scanner)
+    monkeypatch.setattr(settings, "PENNY_LIVE_TRADING", False)
+    main._penny_scanner = None
+    assert main._get_penny_scanner().paper_mode is True
+
+    monkeypatch.setattr(settings, "PENNY_LIVE_TRADING", True)
+    main._penny_scanner = None
+    assert main._get_penny_scanner().paper_mode is False
+    assert [item["paper_mode"] for item in built] == [True, False]
+    main._penny_scanner = None

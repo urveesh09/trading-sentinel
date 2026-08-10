@@ -133,7 +133,7 @@ def _live_trading_enabled() -> bool:
     # Master switch: PENNY_LIVE_TRADING must be True for live orders
     # to go through. If False, both legs run paper even if
     # PENNY_EDGE_DISABLE_LIVE is False.
-    return bool(getattr(settings, "PENNY_LIVE_TRADING", True))
+    return bool(getattr(settings, "PENNY_LIVE_TRADING", False))
 
 
 EDGE_SLIPPAGE_BPS = 5.0

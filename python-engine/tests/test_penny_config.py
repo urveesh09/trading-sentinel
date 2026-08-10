@@ -68,10 +68,9 @@ def test_penny_risk_settings():
 
 
 def test_penny_cadence_and_safety_defaults():
-    from config import settings
+    from config import Settings, settings
     assert settings.PENNY_SCAN_INTERVAL_SEC == 30
-    # Default live=True (Uru 2026-06-22: testing budget opt-in)
-    assert settings.PENNY_LIVE_TRADING is True
+    assert Settings.model_fields["PENNY_LIVE_TRADING"].default is False
     assert settings.PENNY_DISABLE_TICKERS == ""
     # Additions by Uru 2026-06-21
     assert settings.PENNY_MIN_PROMOTER_HOLD == 0.25
@@ -83,3 +82,13 @@ def test_penny_cadence_and_safety_defaults():
     assert settings.PENNY_HOURLY_REPORT_START_HOUR == 10
     assert settings.PENNY_HOURLY_REPORT_END_HOUR == 14
     assert settings.PENNY_HOURLY_REPORT_WEBHOOK == ""
+
+
+def test_penny_live_trading_requires_explicit_opt_in(monkeypatch):
+    """The model default is safe, while an explicit environment opt-in works."""
+    from config import Settings
+
+    assert Settings.model_fields["PENNY_LIVE_TRADING"].default is False
+    monkeypatch.setenv("PENNY_LIVE_TRADING", "true")
+    opted_in = Settings(_env_file=None)
+    assert opted_in.PENNY_LIVE_TRADING is True

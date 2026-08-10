@@ -1,6 +1,12 @@
 {
   "jobs": [
     {
+      "func": "_enforce_circuit_breakers_safe",
+      "id": "circuit_breaker_enforce",
+      "kwargs": [],
+      "trigger": "interval[0:02:00]"
+    },
+    {
       "func": "_run_fno_accept_watchdog_safe",
       "id": "fno_accept_watchdog",
       "kwargs": [],
@@ -185,6 +191,38 @@
       "response_model": null
     },
     {
+      "endpoint": "runs",
+      "methods": [
+        "GET"
+      ],
+      "path": "/backtests/runs",
+      "response_model": null
+    },
+    {
+      "endpoint": "create_run",
+      "methods": [
+        "POST"
+      ],
+      "path": "/backtests/runs",
+      "response_model": null
+    },
+    {
+      "endpoint": "run_detail",
+      "methods": [
+        "GET"
+      ],
+      "path": "/backtests/runs/{run_id}",
+      "response_model": null
+    },
+    {
+      "endpoint": "strategies",
+      "methods": [
+        "GET"
+      ],
+      "path": "/backtests/strategies",
+      "response_model": null
+    },
+    {
       "endpoint": "get_bankroll_route",
       "methods": [
         "GET"
@@ -230,6 +268,38 @@
         "GET"
       ],
       "path": "/command/{cmd}",
+      "response_model": null
+    },
+    {
+      "endpoint": "top_level_command_post",
+      "methods": [
+        "POST"
+      ],
+      "path": "/command/{cmd}",
+      "response_model": null
+    },
+    {
+      "endpoint": "get_fno_opening_range_experiment",
+      "methods": [
+        "GET"
+      ],
+      "path": "/experiments/fno-opening-range",
+      "response_model": null
+    },
+    {
+      "endpoint": "get_momentum_experiment",
+      "methods": [
+        "GET"
+      ],
+      "path": "/experiments/momentum",
+      "response_model": null
+    },
+    {
+      "endpoint": "get_penny_experiment",
+      "methods": [
+        "GET"
+      ],
+      "path": "/experiments/penny",
       "response_model": null
     },
     {
@@ -289,6 +359,14 @@
       "response_model": "PerformanceReport"
     },
     {
+      "endpoint": "get_division_performance",
+      "methods": [
+        "GET"
+      ],
+      "path": "/performance/divisions",
+      "response_model": null
+    },
+    {
       "endpoint": "get_positions_route",
       "methods": [
         "GET"
@@ -318,6 +396,14 @@
         "GET"
       ],
       "path": "/rejected",
+      "response_model": null
+    },
+    {
+      "endpoint": "promotion_readiness_report",
+      "methods": [
+        "GET"
+      ],
+      "path": "/research/promotion-readiness",
       "response_model": null
     },
     {

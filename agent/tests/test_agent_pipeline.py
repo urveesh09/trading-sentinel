@@ -431,9 +431,12 @@ class TestSendTelegramAlert:
         with patch("requests.post") as mock_post:
             mock_post.return_value = MagicMock(raise_for_status=MagicMock())
             agent_mod.send_telegram_alert(signal, _review(analysis))
-            mock_post.assert_called_once()
-            call_kwargs = mock_post.call_args
-            payload = call_kwargs[1].get("json") or call_kwargs[0][1] if len(call_kwargs[0]) > 1 else call_kwargs[1]["json"]
+            assert mock_post.call_count == 2
+            register_call, telegram_call = mock_post.call_args_list
+            assert register_call.args[0].endswith("/api/internal/register-signal")
+            assert register_call.kwargs["json"]["ticker"] == "RELIANCE"
+            assert "/sendMessage" in telegram_call.args[0]
+            payload = telegram_call.kwargs["json"]
             assert "RELIANCE" in payload["text"]
             # Verify inline keyboard exists
             markup = json.loads(payload["reply_markup"])
@@ -447,6 +450,10 @@ class TestSendTelegramAlert:
         with patch("requests.post") as mock_post:
             mock_post.return_value = MagicMock(raise_for_status=MagicMock())
             agent_mod.send_telegram_alert(signal, _review(unavailable_reason='timeout_100s'))
-            mock_post.assert_called_once()
-            payload = mock_post.call_args[1]["json"]
+            assert mock_post.call_count == 2
+            register_call, telegram_call = mock_post.call_args_list
+            assert register_call.args[0].endswith("/api/internal/register-signal")
+            assert register_call.kwargs["json"]["ticker"] == "TCS"
+            assert "/sendMessage" in telegram_call.args[0]
+            payload = telegram_call.kwargs["json"]
             assert "FALLBACK" in payload["text"]

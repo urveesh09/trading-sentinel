@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
 import Positions from './pages/Positions';
+import BacktestLab from './pages/BacktestLab';
+import ResearchCenter from './pages/ResearchCenter';
 import { useHealth } from './hooks/useHealth';
 
 export default function App() {
@@ -24,9 +26,21 @@ export default function App() {
   }
 
   // Basic View Router
-  return currentView === 'DASHBOARD' ? (
-    <Dashboard healthData={health} navigateToPositions={() => setCurrentView('POSITIONS')} />
-  ) : (
-    <Positions navigateToDashboard={() => setCurrentView('DASHBOARD')} />
+  if (currentView === 'BACKTESTS') {
+    return <BacktestLab navigateToDashboard={() => setCurrentView('DASHBOARD')} />;
+  }
+  if (currentView === 'RESEARCH') {
+    return <ResearchCenter navigateToDashboard={() => setCurrentView('DASHBOARD')} navigateToBacktests={() => setCurrentView('BACKTESTS')} />;
+  }
+  if (currentView === 'POSITIONS') {
+    return <Positions navigateToDashboard={() => setCurrentView('DASHBOARD')} />;
+  }
+  return (
+    <Dashboard
+      healthData={health}
+      navigateToPositions={() => setCurrentView('POSITIONS')}
+      navigateToBacktests={() => setCurrentView('BACKTESTS')}
+      navigateToResearch={() => setCurrentView('RESEARCH')}
+    />
   );
 }

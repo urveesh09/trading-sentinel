@@ -529,7 +529,10 @@ def run_backtest(
     cfg["__name__"] = config_name  # type: ignore[assignment]
 
     conn = _connect(db_path)
-    by_ticker = _load_daily_bars(conn, from_date, to_date)
+    # Load pre-window history as indicator warm-up. Trading decisions remain
+    # strictly filtered to from_date..to_date below. The old range-only load
+    # silently made every ticker unavailable for the first 20 requested days.
+    by_ticker = _load_daily_bars(conn, "0001-01-01", to_date)
     conn.close()
     if not by_ticker:
         raise RuntimeError(

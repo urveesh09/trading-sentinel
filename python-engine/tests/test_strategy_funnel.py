@@ -75,9 +75,12 @@ def test_strategy_funnel_composes_activity_and_pnl(tmp_path):
 
     # Penny breakout: 3 scans, 0 accepts -- dead, and its reject reasons are
     # now SPECIFIC (post the evaluator-None fix), not opaque.
-    pb = by_key["penny_breakout"]
+    pb = by_key["penny_breakout_paper"]
     assert pb["evals"] == 3 and pb["accepts"] == 0
     assert any(r["reason"] == "quote_unavailable" for r in pb["top_rejects"])
+    # The same shared scanner stream must not also make the inactive live
+    # division appear active.
+    assert by_key["penny_breakout_live"]["activity_tracked"] is False
 
     # Swing has no scan log -> P&L-only row, still counted.
     swing = by_key["swing"]

@@ -126,11 +126,15 @@ class FakeKite:
         self.bars = bars
         self.quote_table = quote_table
         self.orders_placed = []
+        self.bar_calls = 0
+        self.quote_calls = 0
 
     async def get_intraday_by_token(self, token, frm, to, interval="5minute"):
+        self.bar_calls += 1
         return self.bars
 
     async def get_quote(self, tokens):
+        self.quote_calls += 1
         if isinstance(tokens, (int, str)):
             tokens = [tokens]
         return {int(t): self.quote_table[int(t)] for t in tokens
@@ -205,6 +209,37 @@ async def test_paper_entry_end_to_end(kite, db_path):
     # Telegram formatter includes the entry
     msg = format_fno_telegram(summary)
     assert "ENTRY [FNO_PAPER]" in msg
+
+
+@pytest.mark.asyncio
+async def test_shadow_toggle_adds_no_market_or_order_calls(book, tmp_path, monkeypatch):
+    import fno_orchestrator
+
+    monkeypatch.setattr(settings, "FNO_DR_DISABLE_PAPER", True)
+    enabled_kite = FakeKite(_breakout_bars(), _quote_table(book, NOW))
+    disabled_kite = FakeKite(_breakout_bars(), _quote_table(book, NOW))
+
+    monkeypatch.setattr(settings, "FNO_SHADOW_ENABLED", True)
+    enabled = await run_fno_tick(
+        enabled_kite, db_path=str(tmp_path / "enabled.db"),
+        regime="REGIME_1_NORMAL", now_ist=NOW,
+    )
+    pending = list(fno_orchestrator._SHADOW_TASKS)
+    monkeypatch.setattr(settings, "FNO_SHADOW_ENABLED", False)
+    disabled = await run_fno_tick(
+        disabled_kite, db_path=str(tmp_path / "disabled.db"),
+        regime="REGIME_1_NORMAL", now_ist=NOW,
+    )
+    for task in pending:
+        task.result(timeout=5)
+
+    assert (enabled_kite.bar_calls, enabled_kite.quote_calls) == (
+        disabled_kite.bar_calls, disabled_kite.quote_calls,
+    )
+    assert enabled_kite.orders_placed == disabled_kite.orders_placed == []
+    assert [(row["direction"], row["lots"]) for row in enabled["entries"]] == [
+        (row["direction"], row["lots"]) for row in disabled["entries"]
+    ]
 
 
 @pytest.mark.asyncio

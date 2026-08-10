@@ -36,7 +36,7 @@ def _collect_fno_modules():
 
 
 def _imports_of(path):
-    with open(path) as f:
+    with open(path, encoding="utf-8") as f:
         tree = ast.parse(f.read(), filename=path)
     tops = []
     for node in ast.walk(tree):

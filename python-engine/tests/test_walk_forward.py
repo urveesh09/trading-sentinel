@@ -57,6 +57,14 @@ def test_no_folds_when_the_window_is_too_short():
     assert generate_folds("2026-01-01", "2026-01-20", train_days=30, test_days=10) == []
 
 
+def test_overlapping_oos_windows_are_rejected():
+    with pytest.raises(ValueError, match="do not overlap"):
+        generate_folds(
+            "2026-01-01", "2026-06-30", train_days=30,
+            test_days=10, step_days=5,
+        )
+
+
 # ===================================================================
 # THE POINT: does it catch overfitting?
 # ===================================================================
@@ -181,6 +189,18 @@ def test_all_configs_silent_in_a_fold_yields_no_score_not_a_fake_one():
     report = walk_forward(["a"], folds, lambda c, s, e: None)
     assert report["n_scored_folds"] == 0
     assert report["verdict"] == "insufficient_data"
+
+
+def test_fewer_than_three_scored_folds_exposes_no_aggregate():
+    folds = generate_folds(
+        "2026-01-01", "2026-02-10", train_days=30, test_days=10
+    )
+    report = walk_forward(["a"], folds, lambda c, s, e: 5.0)
+    assert report["n_scored_folds"] == 1
+    assert report["verdict"] == "insufficient_data"
+    assert report["minimum_scored_folds"] == 3
+    assert "mean_out_of_sample_score" not in report
+    assert "overfit_gap" not in report
 
 
 def test_selection_uses_train_only_never_test():

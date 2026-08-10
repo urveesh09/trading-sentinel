@@ -1,7 +1,7 @@
 """
 [FNO-COSTS-TESTS 2026-07-10] Cost model (spec §10.2). The spec's own
 estimate is ~Rs 55 on a Rs 7,500 round trip (~0.7%); with the post-Oct-
-2024 STT (0.1% sell side) the honest figure is ~Rs 61. Bounds below are
+2026 STT (0.15% sell side) the honest figure is ~Rs 65. Bounds below are
 deliberately loose enough to survive small schedule changes but tight
 enough to catch a decimal slip.
 """
@@ -13,10 +13,10 @@ from fno_costs import breakeven_move_pct, calc_fno_costs
 
 def test_round_trip_one_lot_rs100():
     # 1 lot (75 units) at Rs 100 in, Rs 100 out. Hand arithmetic:
-    # brokerage 40 + stt 7.5 + txn 5.25 + sebi 0.015 + stamp 0.225
-    # + ipft 0.075 + gst 8.15 = ~61.2
+    # brokerage 40 + stt 11.25 + txn 5.3295 + sebi 0.015 + stamp 0.225
+    # + ipft 0.000015 + gst 8.162 = ~64.98
     cost = calc_fno_costs(100.0, 100.0, 75)
-    assert cost == pytest.approx(61.22, abs=1.0)
+    assert cost == pytest.approx(64.9815, abs=0.001)
 
 
 def test_flat_fee_dominates_small_premium():

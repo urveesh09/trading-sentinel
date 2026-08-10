@@ -37,6 +37,17 @@ from backtest import run_backtest
 from models import PerformanceReport, OpenPosition
 from breadth import BreadthEngine
 from universe import Universe
+from momentum_shadow import (
+    VARIANTS as MOMENTUM_SHADOW_VARIANTS,
+    evaluate_momentum_shadows,
+    momentum_shadow_execution_config,
+    momentum_shadow_comparison,
+    persist_momentum_shadow_results,
+)
+from penny_shadow import (
+    VARIANTS as PENNY_SHADOW_VARIANTS,
+    penny_shadow_comparison,
+)
 
 # ---------------------------------------------------------------------------
 # [ROADMAP-4.1 2026-07-13] Extracted modules, re-exported here.
@@ -173,6 +184,7 @@ _penny_scanner = None
 # on scanner singleton rebuild; 0 means "unknown" (older callers /
 # pre-2026-06-24 deployments will show no diagnostic line).
 _last_penny_scan_universe_size: int = 0
+_last_penny_scan_at = None  # aware UTC datetime after successful scan_once only
 # [AUDIT-FIX-CSV-SPAM 2026-06-26] Process-level one-shot gate for
 # the universe_csv_missing_fallback warning. The fallback works
 # (in-code NIFTY_500_TICKERS has 500 tickers), so emitting the
@@ -182,15 +194,29 @@ _last_penny_scan_universe_size: int = 0
 _universe_csv_warn_emitted: bool = False
 
 
-# 2026-06-24 bankroll fix: single shared ledger_writer used by every penny
-# risk engine. Writes penny realized P&L to bankroll_ledger with source='PENNY'
-# so the dashboard reflects penny-side wins/losses instead of being stuck at
-# the swing initial bankroll.
-async def _penny_ledger_writer(ticker: str, pnl: float) -> None:
-    from performance import record_trade_close
-    await record_trade_close(
-        settings.DB_PATH, ticker, pnl, source="PENNY",
-    )
+def _classic_penny_source(paper_mode=None) -> str:
+    """Static source contract for the classic Penny scanner.
+
+    Historical ``PENNY`` rows are intentionally left ambiguous. New paper
+    activity is ``PENNY_PAPER``; only an explicitly live scanner writes
+    ``PENNY``.
+    """
+    if paper_mode is None:
+        if _penny_scanner is not None and hasattr(_penny_scanner, "source_tag"):
+            return _penny_scanner.source_tag
+        paper_mode = not settings.PENNY_LIVE_TRADING
+    return "PENNY_PAPER" if paper_mode else "PENNY"
+
+
+def _make_penny_ledger_writer(source: str):
+    if source not in ("PENNY", "PENNY_PAPER"):
+        raise ValueError(f"invalid classic penny source: {source}")
+
+    async def _writer(ticker: str, pnl: float) -> None:
+        from performance import record_trade_close
+        await record_trade_close(settings.DB_PATH, ticker, pnl, source=source)
+
+    return _writer
 
 
 def _get_penny_universe():
@@ -224,6 +250,7 @@ def _get_penny_scanner():
     if _penny_scanner is not None:
         return _penny_scanner
     paper_mode = not settings.PENNY_LIVE_TRADING
+    source_tag = _classic_penny_source(paper_mode)
 
     # Live regime getter: re-reads the module-level engine on every call.
     # Returns the .value string (e.g. "PR2_ELEVATED").
@@ -244,9 +271,10 @@ def _get_penny_scanner():
         universe_json_path=PENNY_UNIVERSE_JSON_PATH,
         paper_mode=paper_mode,
         regime=_live_regime,  # callable, not a string
-        ledger_writer=_penny_ledger_writer,
+        ledger_writer=_make_penny_ledger_writer(source_tag),
+        source_tag=source_tag,
     )
-    logger.info("penny_scanner_initialized", paper_mode=paper_mode)
+    logger.info("penny_scanner_initialized", paper_mode=paper_mode, source=source_tag)
     return _penny_scanner
 
 
@@ -304,7 +332,7 @@ async def run_penny_scanner_once():
     if not kite.access_token:
         logger.warning("penny_scanner_once_skip reason=no_access_token")
         return
-    global _last_penny_scan_universe_size
+    global _last_penny_scan_universe_size, _last_penny_scan_at
     scanner = _get_penny_scanner()
     if scanner is None:
         # [PENNY-SCAN-SUMMARY 2026-07-06] Surface why the scanner is
@@ -358,6 +386,7 @@ async def run_penny_scanner_once():
             + int(result.get("reject", 0))
             + int(result.get("error", 0))
         )
+        _last_penny_scan_at = datetime.now(timezone.utc)
     except asyncio.TimeoutError:
         logger.error("penny_scan_timeout scan stuck on Kite; "
                      "next cron slot will resume")
@@ -512,7 +541,7 @@ async def run_penny_connors_scan():
                              decision.get("target_2", 0.0),
                              0.0,
                              decision.get("entry", 0.0),
-                             "OPEN", "PENNY", "CNC",
+                             "OPEN", scanner.source_tag, "CNC",
                              scanner.regime,
                              decision.get("atr_1min_post_t1", 0.0),
                              0)
@@ -776,7 +805,7 @@ async def run_penny_eod_check():
         # half of "we hold to the end of the day and never sell".
         penny_mis = [
             p for p in positions
-            if p.get("product_type") == "MIS" and p.get("source") == "PENNY"
+            if p.get("product_type") == "MIS" and p.get("source") == _classic_penny_source()
         ]
         if not penny_mis:
             logger.info("penny_eod_check no_open_mis_positions")
@@ -874,7 +903,7 @@ async def run_penny_force_close_mis():
         positions = await get_open_positions(settings.DB_PATH)
         penny_mis = [
             p for p in positions
-            if p.get("leg") == "MIS" and p.get("source") == "PENNY"
+            if p.get("product_type") == "MIS" and p.get("source") == _classic_penny_source()
         ]
         if not penny_mis:
             logger.info("penny_force_close_mis no_open_positions")
@@ -926,7 +955,9 @@ async def _run_penny_daily_attribution():
         return
     try:
         from penny_daily_attribution import build_daily_attribution
-        body = build_daily_attribution(db_path=settings.DB_PATH)
+        body = build_daily_attribution(
+            db_path=settings.DB_PATH, source=_classic_penny_source()
+        )
         # Local log (mandatory heartbeat -- matches hourly pattern).
         logger.info("penny_daily_attribution body=%s", body)
         # Telegram primary, webhook fallback -- reuse the transport
@@ -1017,6 +1048,7 @@ async def _run_penny_heatmap():
             # config. Default 0.01 (1%) matches pre-fix hardcoded value.
             near_sl_warn_pct=settings.PENNY_HEATMAP_WARN_PCT,
             warn_pct_is_fraction=True,  # config is a fraction, not percent
+            source=_classic_penny_source(),
         )
         logger.info(
             "penny_heatmap_sent total_open=%d priced=%d",
@@ -1061,12 +1093,16 @@ async def run_penny_hourly_report():
         from position_tracker import get_open_positions
         from penny_risk import PennyRiskEngine
         positions = await get_open_positions(settings.DB_PATH)
-        penny_pos = [p for p in positions if p.get("source") == "PENNY"]
+        penny_source = _classic_penny_source()
+        penny_pos = [p for p in positions if p.get("source") == penny_source]
         bankroll = settings.PENNY_PAPER_BANKROLL if not settings.PENNY_LIVE_TRADING else settings.PENNY_LIVE_BANKROLL
         # 2026-06-24 bankroll fix: pass the module-level ledger_writer so
         # penny P&L closes flow into the dashboard's bankroll_ledger with
         # source='PENNY'.
-        risk = PennyRiskEngine(bankroll=bankroll, ledger_writer=_penny_ledger_writer)
+        risk = PennyRiskEngine(
+            bankroll=bankroll,
+            ledger_writer=_make_penny_ledger_writer(penny_source),
+        )
         deployed = sum((p.get("entry_price", 0.0) * p.get("shares", 0)) for p in penny_pos)
         unrealised = sum((p.get("current_price", 0.0) - p.get("entry_price", 0.0)) * p.get("shares", 0) for p in penny_pos)
         # [AUDIT-FIX-2.4] Plumb universe as_of / age_days into the hourly
@@ -1500,7 +1536,14 @@ async def lifespan(app: FastAPI):
         bankroll = settings.PENNY_PAPER_BANKROLL if _penny_scanner is None or _penny_scanner.paper_mode else settings.PENNY_LIVE_BANKROLL
         # 2026-06-24 bankroll fix: re-attach the shared ledger_writer after
         # the daily reset (the new risk engine replaces the old singleton).
-        new_risk = PennyRiskEngine(bankroll=bankroll, ledger_writer=_penny_ledger_writer)
+        source_tag = _classic_penny_source(
+            _penny_scanner.paper_mode if _penny_scanner is not None
+            else not settings.PENNY_LIVE_TRADING
+        )
+        new_risk = PennyRiskEngine(
+            bankroll=bankroll,
+            ledger_writer=_make_penny_ledger_writer(source_tag),
+        )
         if _penny_scanner is not None:
             _penny_scanner.risk_engine = new_risk
         # [RETRY-STORM 2026-07-31] Broker MIS-blocked / ban lists are published
@@ -2293,6 +2336,7 @@ async def _run_momentum_screener_impl(t0):
 
     raw_momentum = []
     raw_rejected_momentum = []
+    shadow_evaluations = []
 
     # [MC3-T] Time-aware volume threshold: elevated during lunchtime dead zone
     lunchtime_start = now_ist.replace(
@@ -2337,7 +2381,7 @@ async def _run_momentum_screener_impl(t0):
     async def _eval_one_momentum_ticker(row):
         """One ticker's intraday + daily fetch + evaluate.
 
-        Returns a tuple: (ticker, sig_data_or_None, error_or_None)
+        Returns a tuple: (ticker, sig_data_or_None, error_or_None, shadow_rows)
         - sig_data is the dict returned by evaluate_momentum_signal
           (whether fired=True or False) so the caller can log +
           persist both accept and reject.
@@ -2348,20 +2392,20 @@ async def _run_momentum_screener_impl(t0):
         async with _mom_sem:
           try:
             if ticker in open_swing_tickers:
-                return (ticker, {"fired": False, "ticker": ticker, "reject_reason": "swing_position_exists"}, None)
+                return (ticker, {"fired": False, "ticker": ticker, "reject_reason": "swing_position_exists"}, None, [])
             df_intra = await kite.get_intraday(ticker, from_dt, to_dt)
             if df_intra.empty:
-                return (ticker, {"fired": False, "ticker": ticker, "reject_reason": "intraday_data_empty"}, None)
+                return (ticker, {"fired": False, "ticker": ticker, "reject_reason": "intraday_data_empty"}, None, [])
             if len(df_intra) < 4:
-                return (ticker, {"fired": False, "ticker": ticker, "reject_reason": "insufficient_intraday_candles", "count": len(df_intra)}, None)
+                return (ticker, {"fired": False, "ticker": ticker, "reject_reason": "insufficient_intraday_candles", "count": len(df_intra)}, None, [])
             df_daily = await kite.get_historical(
                 ticker, from_date_for_daily, to_date_for_daily
             )
             if df_daily.empty or len(df_daily) < 1:
-                return (ticker, {"fired": False, "ticker": ticker, "reject_reason": "daily_data_missing_for_prev_high"}, None)
+                return (ticker, {"fired": False, "ticker": ticker, "reject_reason": "daily_data_missing_for_prev_high"}, None, [])
             df_prev = df_daily[df_daily.index.date < today]
             if df_prev.empty:
-                return (ticker, {"fired": False, "ticker": ticker, "reject_reason": "prev_day_data_not_found"}, None)
+                return (ticker, {"fired": False, "ticker": ticker, "reject_reason": "prev_day_data_not_found"}, None, [])
             prev_day_high = float(df_prev['high'].iloc[-1])
             fired, sig_data = evaluate_momentum_signal(
                 ticker=ticker,
@@ -2387,9 +2431,31 @@ async def _run_momentum_screener_impl(t0):
                     "target_2": sig_data["target_1"],
                     "regime":  today_regime.name,
                 })
-            return (ticker, sig_data, None)
+            shadow_rows = []
+            if getattr(settings, "MOMENTUM_SHADOW_ENABLED", True):
+                try:
+                    shadow_rows = evaluate_momentum_shadows(
+                        ticker=ticker,
+                        df=df_intra,
+                        prev_day_high=prev_day_high,
+                        bankroll=bankroll,
+                        momentum_pool=momentum_pool,
+                        df_daily=df_prev,
+                        vol_surge_threshold=vol_threshold,
+                        market_regime=market_regime,
+                        regime=today_regime,
+                        trading_date=today,
+                        bar_ts=df_intra.index[-1],
+                    )
+                except Exception as shadow_exc:
+                    logger.warning(
+                        "momentum_shadow_evaluation_failed",
+                        ticker=ticker,
+                        error=str(shadow_exc),
+                    )
+            return (ticker, sig_data, None, shadow_rows)
           except Exception as exc:
-            return (ticker, None, str(exc))
+            return (ticker, None, str(exc), [])
 
     import time as _time
     _t0 = _time.monotonic()
@@ -2408,7 +2474,8 @@ async def _run_momentum_screener_impl(t0):
             # catches its own exceptions. Be defensive.
             logger.error("momentum_gather_exception error=%s", str(result))
             continue
-        ticker, sig_data, error = result
+        ticker, sig_data, error, ticker_shadow_rows = result
+        shadow_evaluations.extend(ticker_shadow_rows)
         if error is not None:
             logger.error("momentum_scan_error", ticker=ticker, error=error)
             raw_rejected_momentum.append({
@@ -2425,6 +2492,21 @@ async def _run_momentum_screener_impl(t0):
         else:
             sig_data.pop("fired", None)
             raw_rejected_momentum.append(sig_data)
+
+    # One write transaction per scan, after all concurrent workers have
+    # completed. Shadow storage is deliberately outside the decision funnel:
+    # any failure leaves raw_momentum and its rejects byte-for-byte unchanged.
+    if getattr(settings, "MOMENTUM_SHADOW_ENABLED", True):
+        try:
+            await persist_momentum_shadow_results(
+                settings.DB_PATH, shadow_evaluations
+            )
+        except Exception as shadow_exc:
+            logger.warning(
+                "momentum_shadow_persistence_failed",
+                error=str(shadow_exc),
+                evaluations=len(shadow_evaluations),
+            )
 
     # [MOMENTUM-R3-CAP 2026-06-16] Soft cap: total R3 positions (open + newly
     # accepted this scan) <= MOMENTUM_R3_MAX_POSITIONS. Replaces hard block.
@@ -3469,7 +3551,15 @@ async def notify_screener_results(
 from routes_ops import router as _ops_router
 from routes_portfolio import router as _portfolio_router
 from routes_commands import router as _commands_router
+from routes_backtest import router as _backtest_router
+from routes_fno_experiments import router as _fno_experiments_router
+from routes_penny_experiments import router as _penny_experiments_router
+from routes_promotion_readiness import router as _promotion_readiness_router
 
 app.include_router(_ops_router)
 app.include_router(_portfolio_router)
 app.include_router(_commands_router)
+app.include_router(_backtest_router)
+app.include_router(_fno_experiments_router)
+app.include_router(_penny_experiments_router)
+app.include_router(_promotion_readiness_router)

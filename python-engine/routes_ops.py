@@ -38,6 +38,48 @@ from token_lifecycle import TokenPayload
 router = APIRouter()
 
 
+@router.get("/experiments/momentum")
+async def get_momentum_experiment(request: Request):
+    """Expose broker-free Momentum shadow evidence to authenticated operators."""
+    _main._check_internal_secret(request, "get_momentum_experiment")
+    enabled = bool(getattr(settings, "MOMENTUM_SHADOW_ENABLED", True))
+    registry = {
+        name: {
+            "crossover_lookback": variant.crossover_lookback,
+            "max_vwap_distance_atr": variant.max_vwap_distance_atr,
+        }
+        for name, variant in _main.MOMENTUM_SHADOW_VARIANTS.items()
+    }
+    response = {
+        "enabled": enabled,
+        "status": "disabled" if not enabled else "empty",
+        "config": {
+            "enabled": enabled,
+            "virtual_execution": _main.momentum_shadow_execution_config(),
+        },
+        "registry": registry,
+        "comparison": {"variants": []},
+    }
+    if not enabled:
+        return response
+    try:
+        comparison = await _main.momentum_shadow_comparison(settings.DB_PATH)
+    except Exception as exc:
+        _main.logger.warning(
+            "momentum_shadow_comparison_failed", error=str(exc)
+        )
+        response["status"] = "unavailable"
+        response["warning"] = "momentum shadow evidence is temporarily unavailable"
+        return response
+    response["comparison"] = comparison
+    if any(
+        row.get("evaluations", 0) or row.get("paper_entries", 0)
+        for row in comparison.get("variants", [])
+    ):
+        response["status"] = "ready"
+    return response
+
+
 
 
 @router.post("/token")
@@ -191,7 +233,9 @@ async def health_check():
     """
     try:
         from penny_health import build_health_snapshot
-        snap = await build_health_snapshot(settings.DB_PATH)
+        snap = await build_health_snapshot(
+            settings.DB_PATH, penny_source=_main._classic_penny_source()
+        )
         # [LOW-003 / ROADMAP-4.6 2026-07-12] The two liveness facts only
         # main.py knows (penny_health is DB-pure): is execution armed,
         # and is the job _main.scheduler actually running.

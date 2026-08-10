@@ -291,3 +291,11 @@ async def get_bankroll_divisions():
 async def get_performance():
     """[AUDIT-FIX-2.6] HTTP wrapper around the shared async helper."""
     return await _main.compute_performance_report(settings.DB_PATH)
+
+
+@router.get("/performance/divisions")
+async def get_division_performance():
+    """Source-isolated ledger analytics with position reconciliation."""
+    from performance_analytics import division_performance
+
+    return await division_performance(settings.DB_PATH)

@@ -444,6 +444,7 @@ def calc_penny_costs(
     exchange_txn = (buy_value + sell_value) * settings.PENNY_EXCHANGE_PCT
     stamp_duty = buy_value * settings.PENNY_STAMP_DUTY_PCT
     sebi = (buy_value + sell_value) * settings.PENNY_SEBI_PCT
+    ipft = (buy_value + sell_value) * settings.PENNY_IPFT_PCT
 
     brokerage_buy = min(buy_value * settings.PENNY_BROKERAGE_PCT, settings.PENNY_BROKERAGE_MAX)
     brokerage_sell = min(sell_value * settings.PENNY_BROKERAGE_PCT, settings.PENNY_BROKERAGE_MAX)
@@ -451,10 +452,10 @@ def calc_penny_costs(
     stt_rate = settings.PENNY_STT_MIS if is_intraday else settings.PENNY_STT_CNC
     stt = sell_value * stt_rate
 
-    gst = (brokerage_buy + brokerage_sell + exchange_txn) * settings.PENNY_GST_PCT
+    gst = (brokerage_buy + brokerage_sell + exchange_txn + sebi + ipft) * settings.PENNY_GST_PCT
 
     return round(
         brokerage_buy + brokerage_sell + stt + exchange_txn +
-        stamp_duty + sebi + gst,
+        stamp_duty + sebi + ipft + gst,
         4,
     )

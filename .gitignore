@@ -11,6 +11,7 @@ node-gateway/server/session_store/
 
 # Dependencies & Cache
 node_modules/
+node-gateway/client/dist/
 __pycache__/
 *.pyc
 .DS_Store

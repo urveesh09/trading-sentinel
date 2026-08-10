@@ -1,5 +1,10 @@
 [
   {
+    "func": "_enforce_circuit_breakers_safe",
+    "id": "'circuit_breaker_enforce'",
+    "trigger": "'interval'"
+  },
+  {
     "func": "_kite_endpoint_probe_tick",
     "id": "'kite_endpoint_probe'",
     "trigger": "'cron'"
