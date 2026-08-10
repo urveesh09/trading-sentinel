@@ -628,7 +628,11 @@ def register_penny_scheduler_jobs(scheduler):
                 "reason=container_started_after_1515_IST now_ist=%s",
                 _now_ist2.strftime("%H:%M:%S"),
             )
-            asyncio.create_task(_run_penny_edge_exit_safe())
+            # Resolve the loop before constructing the coroutine.  If scheduler
+            # registration is invoked from a synchronous diagnostic/test path,
+            # get_running_loop() fails cleanly without leaking an un-awaited
+            # coroutine object.
+            asyncio.get_running_loop().create_task(_run_penny_edge_exit_safe())
         else:
             logger.info(
                 "penny_edge_exit_startup_skipped reason=before_1515_IST "
@@ -789,7 +793,9 @@ def register_penny_scheduler_jobs(scheduler):
                 "penny_accept_watchdog_startup_catchup_firing now_ist=%s",
                 _now_ist_wd.strftime("%H:%M:%S"),
             )
-            asyncio.create_task(_run_penny_accept_watchdog_safe())
+            # As above, do not construct a coroutine until a running loop has
+            # been established.
+            asyncio.get_running_loop().create_task(_run_penny_accept_watchdog_safe())
     except Exception as _wd_catchup_exc:
         logger.warning(
             "penny_accept_watchdog_startup_catchup_failed err=%s",

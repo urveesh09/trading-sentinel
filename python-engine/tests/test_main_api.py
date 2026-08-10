@@ -60,6 +60,93 @@ class TestHealthEndpoint:
         assert resp.status_code == 200
 
 
+class TestMomentumExperimentEndpoint:
+
+    @pytest.mark.asyncio
+    async def test_requires_internal_auth(self, client):
+        response = await client.get("/experiments/momentum")
+        assert response.status_code == 403
+
+    @pytest.mark.asyncio
+    async def test_returns_registry_and_comparison(self, client, monkeypatch):
+        import main
+
+        monkeypatch.setattr(settings, "MOMENTUM_SHADOW_ENABLED", True)
+        comparison = {
+            "variants": [{
+                "variant": "MOM_BASE", "evaluations": 2, "accepts": 1,
+                "distinct_candidates": 1, "accept_rate": 0.5,
+                "top_rejects": [{"reason": "no_cross", "count": 1}],
+            }]
+        }
+        query = AsyncMock(return_value=comparison)
+        monkeypatch.setattr(main, "momentum_shadow_comparison", query)
+        response = await client.get(
+            "/experiments/momentum",
+            headers={"X-Internal-Secret": settings.INTERNAL_API_SECRET},
+        )
+        assert response.status_code == 200
+        body = response.json()
+        assert body["enabled"] is True
+        assert body["status"] == "ready"
+        assert body["config"]["enabled"] is True
+        execution = body["config"]["virtual_execution"]
+        assert {key: execution[key] for key in (
+            "entry_slippage_bps", "exit_slippage_bps", "time_exit_hour",
+            "time_exit_minute", "same_bar_priority", "cost_model",
+            "position_lifecycle",
+        )} == {
+            "entry_slippage_bps": 5.0,
+            "exit_slippage_bps": 5.0,
+            "time_exit_hour": 15,
+            "time_exit_minute": 15,
+            "same_bar_priority": "stop_before_target",
+            "cost_model": "zerodha_equity_intraday",
+            "position_lifecycle": "full_quantity_exit_at_target_1_no_runner_or_trailing",
+        }
+        assert execution["brokerage_pct"] == 0.0003
+        assert execution["stt_sell_pct"] == 0.00025
+        assert set(body["registry"]) >= {"MOM_BASE", "MOM_RECENCY_5"}
+        assert body["registry"]["MOM_RECENCY_5"] == {
+            "crossover_lookback": 5,
+            "max_vwap_distance_atr": 0.5,
+        }
+        assert body["comparison"] == comparison
+        query.assert_awaited_once_with(settings.DB_PATH)
+
+    @pytest.mark.asyncio
+    async def test_disabled_state_does_not_query_database(self, client, monkeypatch):
+        import main
+
+        monkeypatch.setattr(settings, "MOMENTUM_SHADOW_ENABLED", False)
+        query = AsyncMock()
+        monkeypatch.setattr(main, "momentum_shadow_comparison", query)
+        response = await client.get(
+            "/experiments/momentum",
+            headers={"X-Internal-Secret": settings.INTERNAL_API_SECRET},
+        )
+        assert response.status_code == 200
+        assert response.json()["status"] == "disabled"
+        assert response.json()["comparison"] == {"variants": []}
+        query.assert_not_awaited()
+
+    @pytest.mark.asyncio
+    async def test_enabled_empty_state(self, client, monkeypatch):
+        import main
+
+        monkeypatch.setattr(settings, "MOMENTUM_SHADOW_ENABLED", True)
+        monkeypatch.setattr(
+            main, "momentum_shadow_comparison",
+            AsyncMock(return_value={"variants": []}),
+        )
+        response = await client.get(
+            "/experiments/momentum",
+            headers={"X-Internal-Secret": settings.INTERNAL_API_SECRET},
+        )
+        assert response.status_code == 200
+        assert response.json()["status"] == "empty"
+
+
 # ===============================================================
 # GET /signals
 # ===============================================================

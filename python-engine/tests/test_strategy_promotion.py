@@ -1,9 +1,7 @@
 """
-[STRATEGY-PROMOTION 2026-07-20] Tests for analytics.promotion_report -- the
-Phase-3 paper->live gate. A paper strategy is ready_for_live only with enough
-trades, positive net-cost expectancy, and drawdown inside budget; live
-strategies get a health read. The verdict must be a checked function of the
-ledger, never a vibe.
+[STRATEGY-PROMOTION 2026-07-20] Tests for the deprecated ledger-only research
+ladder. It can identify a legacy candidate for stronger review, but never
+authorizes live trading.
 """
 import asyncio
 import sqlite3
@@ -47,7 +45,7 @@ def test_promotion_verdicts(tmp_path):
 
     ep = by["penny_edge_paper"]
     assert ep["trades"] == 100 and ep["expectancy"] == pytest.approx(10.0)
-    assert ep["verdict"] == "ready_for_live"
+    assert ep["verdict"] == "legacy_candidate_for_research_review"
     assert ep["blocking_reasons"] == []
 
     fp = by["fno_paper"]
@@ -63,6 +61,9 @@ def test_provisional_when_bar_met_but_sample_small(tmp_path):
     db = str(tmp_path / "cache.db")
     _seed(db, [("EDGE_PAPER", 8.0, 1) for _ in range(50)])   # 30 <= 50 < 100, positive
     data = asyncio.run(promotion_report(db))
+    assert data["research_only"] is True and data["can_place_orders"] is False
+    assert data["deprecated"] is True
+    assert "/research/promotion-readiness" in data["warning"]
     ep = {s["key"]: s for s in data["strategies"]}["penny_edge_paper"]
     assert ep["verdict"] == "provisional"
     assert ep["blocking_reasons"] == []
@@ -81,8 +82,9 @@ def test_format_renders(tmp_path):
     db = str(tmp_path / "cache.db")
     _seed(db, [("EDGE_PAPER", 10.0, 1) for _ in range(100)])
     text = format_promotion_report(asyncio.run(promotion_report(db)))
-    assert "Promotion ladder" in text
-    assert "Ready for live:" in text
+    assert "Deprecated ledger-only research ladder" in text
+    assert "Legacy candidates for research review:" in text
+    assert "does not authorize live trading" in text
     assert "Penny Edge (paper)" in text
 
 
@@ -136,7 +138,7 @@ def test_affordable_lot_does_not_block(tmp_path):
     fp = {s["key"]: s
           for s in asyncio.run(promotion_report(db))["strategies"]}["fno_paper"]
     assert not any("structurally_unaffordable" in r for r in fp["blocking_reasons"])
-    assert fp["verdict"] == "ready_for_live"
+    assert fp["verdict"] == "legacy_candidate_for_research_review"
 
 
 def test_equity_books_have_no_lot_floor(tmp_path):
@@ -146,7 +148,7 @@ def test_equity_books_have_no_lot_floor(tmp_path):
     ep = {s["key"]: s
           for s in asyncio.run(promotion_report(db))["strategies"]}["penny_edge_paper"]
     assert ep["min_viable_trade"] is None
-    assert ep["verdict"] == "ready_for_live"
+    assert ep["verdict"] == "legacy_candidate_for_research_review"
 
 
 def test_missing_fno_history_is_not_treated_as_unaffordable(tmp_path):

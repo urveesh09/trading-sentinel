@@ -104,6 +104,38 @@ def test_build_health_snapshot_returns_full_structure(tmp_path, monkeypatch):
         assert k in snap["nifty"], f"missing nifty.{k}"
 
 
+@pytest.mark.asyncio
+async def test_penny_health_uses_source_specific_live_and_paper_allocations(tmp_path, monkeypatch):
+    from config import settings
+    from penny_health import build_health_snapshot
+
+    db = str(tmp_path / "allocations.db")
+    with sqlite3.connect(db) as con:
+        con.executescript("""
+            CREATE TABLE bankroll_ledger (
+                timestamp TEXT, event_type TEXT, ticker TEXT, pnl REAL,
+                bankroll_before REAL, bankroll_after REAL, source TEXT, notes TEXT
+            );
+            CREATE TABLE positions (
+                ticker TEXT, status TEXT, source TEXT, entry_price REAL,
+                stop_loss REAL, shares INTEGER
+            );
+        """)
+        con.execute("INSERT INTO bankroll_ledger(source,pnl) VALUES ('PENNY', 125)")
+        con.execute("INSERT INTO bankroll_ledger(source,pnl) VALUES ('PENNY_PAPER', -50)")
+    monkeypatch.setattr(settings, "PENNY_LIVE_BANKROLL", 10000.0)
+    monkeypatch.setattr(settings, "PENNY_PAPER_BANKROLL", 50000.0)
+    monkeypatch.setattr("performance.check_circuit_breakers", AsyncMock(return_value=(False, [])))
+    monkeypatch.setattr("performance.nifty_bankroll", AsyncMock(return_value=5000.0))
+
+    live = await build_health_snapshot(db, penny_source="PENNY")
+    paper = await build_health_snapshot(db, penny_source="PENNY_PAPER")
+    assert live["bankroll"]["penny"] == pytest.approx(10125.0)
+    assert paper["bankroll"]["penny"] == pytest.approx(49950.0)
+    assert live["penny"]["source"] == "PENNY"
+    assert paper["penny"]["source"] == "PENNY_PAPER"
+
+
 def test_health_snapshot_is_stale_when_last_run_is_old(tmp_path, monkeypatch):
     from penny_health import build_health_snapshot_sync
     db = str(tmp_path / "test.db")
@@ -312,18 +344,12 @@ def test_format_health_surfaces_unset_secret():
     assert "INTERNAL_API_SECRET" in body
 
 
-def test_format_health_degraded_when_secret_unset():
+def test_format_health_degraded_when_secret_unset(tmp_path, monkeypatch):
     """[AUDIT-FIX-2.2] Empty secret -> overall_status = DEGRADED (even
     when nothing else is wrong)."""
     from penny_health import build_health_snapshot_sync
     from datetime import datetime, timezone
-    import asyncio
-    from unittest.mock import AsyncMock
-
-    db = "/tmp/_test_format_health_unset.db"
-    import os
-    if os.path.exists(db):
-        os.remove(db)
+    db = str(tmp_path / "health-secret-unset.db")
     with sqlite3.connect(db) as con:
         con.executescript("""
             CREATE TABLE IF NOT EXISTS bankroll_ledger (
@@ -343,13 +369,8 @@ def test_format_health_degraded_when_secret_unset():
         "last_run": datetime.now(timezone.utc),
     })()
     import sys
-    sys.modules["main"] = fake
-    async def _cb(_):
-        return (False, [])
-    monkeypatch_called = []
-    def _set_monkey():
-        return _cb
-    # Inline async callbacks (no real monkeypatch needed for this minimal test)
+    monkeypatch.setitem(sys.modules, "main", fake)
+    # Inline async callbacks keep the test independent of a real ledger.
     class _M:
         async def cb(_): return (False, [])
     m = _M()

@@ -97,7 +97,8 @@ class DailyMetrics:
 
 # ---- queries ---------------------------------------------------------
 
-def _read_today_penny_trades(db_path: str, today_iso: str) -> List[TradeRow]:
+def _read_today_penny_trades(db_path: str, today_iso: str,
+                             source: str = "PENNY") -> List[TradeRow]:
     """Read today's CLOSED penny trades from bankroll_ledger.
 
     Filter: source='PENNY' AND DATE(timestamp) = today_iso.
@@ -110,11 +111,11 @@ def _read_today_penny_trades(db_path: str, today_iso: str) -> List[TradeRow]:
             con.row_factory = sqlite3.Row
             cur = con.execute(
                 "SELECT ticker, pnl, timestamp, notes FROM bankroll_ledger "
-                "WHERE source = 'PENNY' "
+                "WHERE source = ? "
                 "AND event_type = 'TRADE_CLOSED' "
                 "AND DATE(timestamp) = ? "
                 "ORDER BY timestamp ASC",
-                (today_iso,),
+                (source, today_iso),
             )
             for r in cur.fetchall():
                 # r_multiple is encoded in notes like "r=2.4" by upstream
@@ -138,7 +139,7 @@ def _read_today_penny_trades(db_path: str, today_iso: str) -> List[TradeRow]:
     return rows
 
 
-def _read_open_penny_positions(db_path: str) -> int:
+def _read_open_penny_positions(db_path: str, source: str = "PENNY") -> int:
     """Count open CNC positions (MIS is forced-closed at 15:00 IST).
 
     At 15:30 IST any OPEN position must be a CNC hold-over.
@@ -147,7 +148,8 @@ def _read_open_penny_positions(db_path: str) -> int:
         with sqlite3.connect(db_path) as con:
             cur = con.execute(
                 "SELECT COUNT(*) FROM positions "
-                "WHERE source = 'PENNY' AND status IN ('OPEN', 'CLOSED_T1')"
+                "WHERE source = ? AND status IN ('OPEN', 'CLOSED_T1')",
+                (source,),
             )
             return int(cur.fetchone()[0])
     except sqlite3.Error as e:
@@ -157,7 +159,8 @@ def _read_open_penny_positions(db_path: str) -> int:
 
 # ---- compute + format ------------------------------------------------
 
-def compute_daily_metrics(db_path: str, now: Optional[datetime] = None) -> DailyMetrics:
+def compute_daily_metrics(db_path: str, now: Optional[datetime] = None,
+                          source: str = "PENNY") -> DailyMetrics:
     """
     Compute the structured daily metrics for the penny pool.
 
@@ -172,8 +175,8 @@ def compute_daily_metrics(db_path: str, now: Optional[datetime] = None) -> Daily
         now = datetime.now(timezone.utc)
     today_iso = now.date().isoformat()
 
-    trades = _read_today_penny_trades(db_path, today_iso)
-    open_count = _read_open_penny_positions(db_path)
+    trades = _read_today_penny_trades(db_path, today_iso, source=source)
+    open_count = _read_open_penny_positions(db_path, source=source)
 
     metrics = DailyMetrics(
         date_iso=today_iso,
@@ -195,7 +198,8 @@ def compute_daily_metrics(db_path: str, now: Optional[datetime] = None) -> Daily
     return metrics
 
 
-def build_daily_attribution(db_path: str, now: Optional[datetime] = None) -> str:
+def build_daily_attribution(db_path: str, now: Optional[datetime] = None,
+                            source: str = "PENNY") -> str:
     """
     Build the human-readable daily attribution message for Telegram.
 
@@ -215,7 +219,7 @@ def build_daily_attribution(db_path: str, now: Optional[datetime] = None) -> str
     NET. We display it as net with no breakdown -- the gross figure
     is recoverable from individual trade notes if needed.
     """
-    m = compute_daily_metrics(db_path, now=now)
+    m = compute_daily_metrics(db_path, now=now, source=source)
     if not m.has_data:
         return f"Penny daily attribution ({m.date_iso}) -- 0 trades today, 0 open CNC positions."
 

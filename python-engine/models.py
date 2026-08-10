@@ -163,7 +163,10 @@ class OpenPosition(BaseModel):
     # the OpenPosition response model. Without these the GET /positions
     # endpoint raises a ResponseValidationError whenever any EDGE
     # leg has an open position (the bug that broke EOD digest today).
-    source: Literal["SYSTEM", "MANUAL", "MOMENTUM", "EDGE_PAPER", "EDGE_LIVE"]
+    source: Literal[
+        "SYSTEM", "MANUAL", "MOMENTUM", "MOMENTUM_PAPER",
+        "PENNY", "PENNY_PAPER", "EDGE_PAPER", "EDGE_LIVE",
+    ]
     exit_price: Optional[float] = None
     exit_date: Optional[datetime] = None
     realised_pnl: Optional[float] = None

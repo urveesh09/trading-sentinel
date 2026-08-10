@@ -133,7 +133,7 @@ def _load_sectors(csv_path: str) -> Dict[str, str]:
 
 # ---- DB read ----------------------------------------------------------
 
-def _read_open_positions(db_path: str) -> List[dict]:
+def _read_open_positions(db_path: str, source: str = "PENNY") -> List[dict]:
     """Read open penny positions from the positions table.
 
     Returns raw dicts (not PositionSnap yet) -- caller builds the
@@ -153,9 +153,10 @@ def _read_open_positions(db_path: str) -> List[dict]:
                 "SELECT ticker, entry_price, stop_loss_initial AS stop_loss, "
                 "       shares, status, product_type, regime_at_entry "
                 "FROM positions "
-                "WHERE source = 'PENNY' "
+                "WHERE source = ? "
                 "AND status IN ('OPEN', 'CLOSED_T1') "
-                "ORDER BY entry_date ASC"
+                "ORDER BY entry_date ASC",
+                (source,),
             )
             for r in cur.fetchall():
                 rows.append(dict(r))
@@ -272,6 +273,7 @@ async def build_heatmap(
     sectors_csv_path: str = DEFAULT_SECTORS_CSV,
     near_sl_warn_pct: float = 1.0,
     warn_pct_is_fraction: bool = False,
+    source: str = "PENNY",
 ) -> Tuple[str, Dict[str, SectorBucket], int, int]:
     """Build the heatmap Telegram body. Returns (body, buckets, total_open, priced_count).
 
@@ -288,7 +290,7 @@ async def build_heatmap(
         config.PENNY_HEATMAP_WARN_PCT, so warn_pct_is_fraction=True.
         The default of False keeps back-compat with the original 1.0=1%.
     """
-    raw_rows = _read_open_positions(db_path)
+    raw_rows = _read_open_positions(db_path, source=source)
     if not raw_rows:
         return ("Penny heat-map: 0 open positions.", {}, 0, 0)
 

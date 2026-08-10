@@ -27,8 +27,8 @@ def test_calc_penny_costs_rounds_correctly():
     # brokerage_buy = min(5000*0.0003, 20) = 1.5
     # brokerage_sell = min(5250*0.0003, 20) = 1.575
     # stt = 5250 * 0.00025 = 1.3125
-    # exchange_txn = (5000+5250) * 0.0000345 = 0.35362...
-    # stamp_duty = 5000 * 0.00015 = 0.75
+    # exchange_txn = (5000+5250) * 0.0000307 = 0.314675
+    # stamp_duty = 5000 * 0.00003 = 0.15
     # sebi = (5000+5250) * 0.000001 = 0.01025
     # gst = (1.5+1.575+0.35362) * 0.18 = 0.617...
     # total = ~6.12

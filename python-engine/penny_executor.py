@@ -161,11 +161,23 @@ class PennyExecutor:
         paper_mode: bool = True,
         fill_timeout_sec: float = 60.0,
         poll_interval_sec: float = 2.0,
+        event_sink=None,
     ):
         self.kite = kite
         self.paper_mode = paper_mode
         self.fill_timeout_sec = fill_timeout_sec
         self.poll_interval_sec = poll_interval_sec
+        self.event_sink = event_sink
+
+    async def _emit(self, event_type: str, payload: dict, context: dict | None) -> None:
+        """Best-effort observability: journal failure can never alter orders."""
+        if self.event_sink is None or context is None:
+            return
+        try:
+            await self.event_sink(event_type, payload, context)
+        except Exception as exc:
+            logger.error("penny_execution_journal_failed event=%s error=%s",
+                         event_type, str(exc))
 
     async def execute_entry(
         self,
@@ -174,6 +186,7 @@ class PennyExecutor:
         entry_price: float,
         stop_loss: float,
         shares: int,
+        attempt_context: dict | None = None,
     ) -> dict:
         """
         Spec §7.2 order flow:
@@ -204,6 +217,7 @@ class PennyExecutor:
                 "penny_entry_ticker_blocked_skip ticker=%s reason=%s",
                 ticker, blocked,
             )
+            await self._emit("VALIDATION_REJECTED", {"status": result["entry_status"], "reason": blocked[:200]}, attempt_context)
             return result
 
         # ---- step 0b: price reality check -----------------------------
@@ -228,6 +242,7 @@ class PennyExecutor:
                     ticker, entry_price, ltp, drift * 100,
                     MAX_ENTRY_DRIFT_PCT * 100,
                 )
+                await self._emit("VALIDATION_REJECTED", {"status": result["entry_status"], "reason": result["reject_reason"]}, attempt_context)
                 return result
 
             # A long whose stop already sits at or above the market is not a
@@ -243,6 +258,7 @@ class PennyExecutor:
                     "-- entry would be born past its stop, refusing",
                     ticker, stop_loss, ltp,
                 )
+                await self._emit("VALIDATION_REJECTED", {"status": result["entry_status"], "reason": result["reject_reason"]}, attempt_context)
                 return result
         else:
             # No quote is not a licence to trade blind on a stale price.
@@ -253,6 +269,7 @@ class PennyExecutor:
                 "%.2f against the market, refusing entry",
                 ticker, entry_price,
             )
+            await self._emit("VALIDATION_REJECTED", {"status": result["entry_status"], "reason": result["reject_reason"]}, attempt_context)
             return result
 
         # ---- paper mode: emit IDs, no kite calls ---------------------
@@ -265,6 +282,8 @@ class PennyExecutor:
             result["sl_order_id"] = f"PAPER-SL-{uuid4().hex[:8]}"
             result["entry_status"] = "paper"
             result["fill_price"] = ltp
+            await self._emit("ENTRY_FILLED", {"status": "paper", "entry_order_id": result["entry_order_id"], "fill_price": ltp, "quantity": shares}, attempt_context)
+            await self._emit("SL_PLACED", {"sl_order_id": result["sl_order_id"], "stop_loss": stop_loss, "paper": True}, attempt_context)
             logger.info(
                 "penny_paper_entry ticker=%s leg=%s signal=%s fill=%s sl=%s shares=%d",
                 ticker, leg.value, entry_price, ltp, stop_loss, shares,
@@ -293,6 +312,7 @@ class PennyExecutor:
             note_entry_failure(ticker, str(e))
             result["entry_status"] = "rejected"
             result["reject_reason"] = str(e)
+            await self._emit("ENTRY_REJECTED", {"status": "rejected", "reason": str(e)[:200]}, attempt_context)
             return result
 
         entry_id = entry_resp.get("order_id")
@@ -308,7 +328,9 @@ class PennyExecutor:
             result["reject_reason"] = msg
             logger.error("penny_entry_broker_rejected ticker=%s message=%s",
                          ticker, msg[:200])
+            await self._emit("ENTRY_REJECTED", {"status": "rejected", "reason": msg[:200]}, attempt_context)
             return result
+        await self._emit("ENTRY_SUBMITTED", {"entry_order_id": entry_id, "limit_price": limit_price, "quantity": shares}, attempt_context)
 
         # ---- step 2: poll for fill ------------------------------------
         fill_state = await self._wait_for_fill(entry_id)
@@ -320,6 +342,7 @@ class PennyExecutor:
             result["entry_status"] = "rejected"
             logger.warning("penny_entry_dead ticker=%s order_id=%s status=%s",
                            ticker, entry_id, fill_state)
+            await self._emit("ENTRY_REJECTED", {"status": str(fill_state), "entry_order_id": entry_id}, attempt_context)
             return result
 
         if fill_state != "COMPLETE":
@@ -345,6 +368,7 @@ class PennyExecutor:
                     "penny_entry_timeout ticker=%s order_id=%s reconciled=%s",
                     ticker, entry_id, final,
                 )
+                await self._emit("ENTRY_TIMEOUT", {"entry_order_id": entry_id, "reconciled": str(final)}, attempt_context)
                 return result
             logger.warning(
                 "penny_entry_filled_after_timeout ticker=%s order_id=%s "
@@ -354,6 +378,7 @@ class PennyExecutor:
 
         result["entry_status"] = "filled"
         result["fill_price"] = await self._fill_price(entry_id) or ltp
+        await self._emit("ENTRY_FILLED", {"status": "filled", "entry_order_id": entry_id, "fill_price": result["fill_price"], "quantity": shares}, attempt_context)
         note_entry_success(ticker)
 
         # ---- step 3: place the protective stop (retry, then unwind) ---
@@ -362,6 +387,7 @@ class PennyExecutor:
             result["sl_order_id"] = sl_id
             logger.info("penny_sl_m_placed ticker=%s order_id=%s trigger=%s",
                         ticker, sl_id, stop_loss)
+            await self._emit("SL_PLACED", {"sl_order_id": sl_id, "stop_loss": stop_loss, "paper": False}, attempt_context)
             return result
 
         # ---- step 4: stop failed -> unwind, and PROVE it ---------------
@@ -374,8 +400,11 @@ class PennyExecutor:
         # orchestrator does not record a tidy position over a live mess.
         logger.error("penny_sl_m_failed_unwinding ticker=%s entry_id=%s sl=%s shares=%d",
                      ticker, entry_id, stop_loss, shares)
+        await self._emit("SL_FAILED", {"entry_order_id": entry_id, "stop_loss": stop_loss}, attempt_context)
         unwind_id = await self._market_unwind(ticker, leg, shares, ltp)
         result["unwind_order_id"] = unwind_id
+        if unwind_id:
+            await self._emit("UNWIND_SUBMITTED", {"unwind_order_id": unwind_id, "quantity": shares}, attempt_context)
 
         unwind_state = ""
         if unwind_id:
@@ -388,6 +417,7 @@ class PennyExecutor:
                 "-- stop could not be placed; position flattened and CONFIRMED",
                 ticker, shares, unwind_id,
             )
+            await self._emit("UNWIND_CONFIRMED", {"unwind_order_id": unwind_id, "quantity": shares}, attempt_context)
             return result
 
         # Stop failed and the unwind is unconfirmed or failed outright. This
@@ -405,6 +435,7 @@ class PennyExecutor:
             "FLATTEN MANUALLY IN THE KITE APP NOW.",
             ticker, shares, entry_id, unwind_id, unwind_state or "none", shares,
         )
+        await self._emit("UNPROTECTED", {"entry_order_id": entry_id, "unwind_order_id": unwind_id, "unwind_state": unwind_state or "none", "quantity": shares}, attempt_context)
         await self._page_operator(
             f"{ticker}: protective stop FAILED and unwind did not confirm. "
             f"You may be holding {shares} shares with NO stop. "

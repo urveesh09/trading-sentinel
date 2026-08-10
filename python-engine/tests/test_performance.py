@@ -353,6 +353,12 @@ class TestPoolBreakdown:
     these tests verify both behaviors in parallel.
     """
 
+    @pytest.fixture(autouse=True)
+    def _legacy_endpoint_live_mode(self, monkeypatch):
+        """Pin this unchanged legacy endpoint's historical live-mode contract."""
+        from config import settings
+        monkeypatch.setattr(settings, "PENNY_LIVE_TRADING", True)
+
     @pytest.mark.asyncio
     async def test_empty_ledger_returns_initial_swing_and_pool_penny(self, seeded_db):
         """Fresh ledger with no trades: swing=INITIAL, penny=PENNY_LIVE_BANKROLL."""
@@ -463,7 +469,9 @@ class TestPoolBreakdown:
         from config import settings
         monkeypatch.setattr(settings, "PENNY_LIVE_TRADING", False)
         paper = settings.PENNY_PAPER_BANKROLL
-        await record_trade_close(seeded_db, "PAPER_PENNY", 50.0, source="PENNY")
+        await record_trade_close(
+            seeded_db, "PAPER_PENNY", 50.0, source="PENNY_PAPER"
+        )
         out = await pool_breakdown(seeded_db)
         assert out["penny"]["allocated"] == paper
         assert out["penny"]["balance"] == paper + 50.0   # paper pool + pnl

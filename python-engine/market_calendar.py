@@ -162,14 +162,22 @@ def _load_holidays_sync(db_path: str) -> list:
     Does NOT hit the network -- only the local SQLite cache populated by
     the async is_trading_day() above.
     """
+    con = None
     try:
-        with sqlite3.connect(db_path) as con:
-            con.execute("CREATE TABLE IF NOT EXISTS holidays (holiday_date TEXT PRIMARY KEY, fetched_at TIMESTAMP)")
-            cur = con.execute("SELECT holiday_date FROM holidays")
-            return [date.fromisoformat(r[0]) for r in cur.fetchall()]
+        # sqlite3.Connection.__exit__ commits or rolls back, but it does not
+        # close the handle. This helper sits on hot synchronous exit paths, so
+        # relying on ``with sqlite3.connect(...)`` leaked one handle per call
+        # (and kept temporary DBs locked on Windows).
+        con = sqlite3.connect(db_path)
+        con.execute("CREATE TABLE IF NOT EXISTS holidays (holiday_date TEXT PRIMARY KEY, fetched_at TIMESTAMP)")
+        cur = con.execute("SELECT holiday_date FROM holidays")
+        return [date.fromisoformat(r[0]) for r in cur.fetchall()]
     except sqlite3.Error as e:
         logger.error("calendar_sync_load_failed", error=str(e))
         return []
+    finally:
+        if con is not None:
+            con.close()
 
 
 def is_trading_day_sync(target_date: date, db_path: str) -> bool:

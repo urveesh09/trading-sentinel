@@ -543,14 +543,16 @@ def calc_zerodha_costs(
     buy_value  = entry_price * shares
     sell_value = exit_price  * shares
 
-    # Exchange transaction charges (NSE): 0.00345% both sides
+    # Current NSE cash transaction charge: 0.00307% both sides, verified
+    # 2026-08-10. No unverified effective date is asserted here.
     exchange_txn = (buy_value + sell_value) * settings.ZERODHA_EXCHANGE_PCT
 
-    # Stamp duty: 0.015% on buy side only
+    # Intraday stamp duty: 0.003% on buy side only.
     stamp_duty = buy_value * settings.ZERODHA_STAMP_DUTY_PCT
 
     # SEBI turnover fee: Rs10 per crore = 0.0001% both sides
     sebi = (buy_value + sell_value) * settings.ZERODHA_SEBI_PCT
+    ipft = (buy_value + sell_value) * settings.ZERODHA_IPFT_PCT
 
     # -- TEMPORARY: Brokerage + STT + GST zeroed for gate calculations --
     # At Rs5,000 bankroll the Rs20 flat brokerage + STT + GST kill most
@@ -572,12 +574,12 @@ def calc_zerodha_costs(
         stt_rate = settings.ZERODHA_STT_MIS if is_intraday else settings.ZERODHA_STT_CNC
         stt = sell_value * stt_rate
 
-        # GST: 18% on (brokerage + exchange charges)
-        gst = (brokerage_buy + brokerage_sell + exchange_txn) * settings.ZERODHA_GST_PCT
+        # GST applies to brokerage, transaction, SEBI, and NSE IPFT charges.
+        gst = (brokerage_buy + brokerage_sell + exchange_txn + sebi + ipft) * settings.ZERODHA_GST_PCT
 
 
     total = (brokerage_buy + brokerage_sell + stt +
-             exchange_txn + stamp_duty + sebi + gst)
+             exchange_txn + stamp_duty + sebi + ipft + gst)
 
     return round(total, 4)
 
@@ -708,6 +710,36 @@ def resolve_momentum_regime_params(
         )
 
 
+def _momentum_variant_evidence(
+    df: pd.DataFrame,
+    df_daily: "pd.DataFrame | None",
+    crossover_lookback: int,
+    max_vwap_distance_atr: "float | None",
+) -> dict:
+    evidence = {
+        "crossover_lookback": crossover_lookback,
+        "max_vwap_distance_atr": max_vwap_distance_atr,
+        "vwap_distance": None,
+        "vwap_distance_atr": None,
+    }
+    try:
+        close = float(df["close"].iloc[-1])
+        current_vwap = float(calc_vwap(df).iloc[-1])
+        distance = close - current_vwap
+        evidence["vwap_distance"] = round(distance, 4)
+        if df_daily is not None and len(df_daily) >= 14:
+            atr = float(calc_atr(
+                df_daily["high"], df_daily["low"], df_daily["close"]
+            ).iloc[-1])
+            if atr > 0:
+                evidence["vwap_distance_atr"] = round(distance / atr, 6)
+    except (KeyError, IndexError, TypeError, ValueError):
+        # Diagnostics must never turn the evaluator's normal reject result into
+        # an exception for a short or malformed frame.
+        pass
+    return evidence
+
+
 def evaluate_momentum_signal(
     ticker: str,
     df: pd.DataFrame,
@@ -719,6 +751,56 @@ def evaluate_momentum_signal(
     vol_surge_threshold: float = 1.5,
     market_regime: str = "BULL",
     regime: "Regime | None" = None,
+    *,
+    crossover_lookback: int = 3,
+    max_vwap_distance_atr: "float | None" = None,
+) -> tuple[bool, dict]:
+    """Evaluate the shipped Momentum rules or a declared paper variant.
+
+    The two variant controls are keyword-only so existing positional callers
+    retain byte-for-byte call compatibility. Defaults reproduce the shipped
+    evaluator: a three-candle crossover window and no VWAP-distance gate.
+    """
+    if isinstance(crossover_lookback, bool) or not isinstance(crossover_lookback, int):
+        raise ValueError("crossover_lookback must be an integer from 1 to 20")
+    if not 1 <= crossover_lookback <= 20:
+        raise ValueError("crossover_lookback must be between 1 and 20")
+    if max_vwap_distance_atr is not None:
+        if isinstance(max_vwap_distance_atr, bool) or not isinstance(
+            max_vwap_distance_atr, (int, float)
+        ):
+            raise ValueError("max_vwap_distance_atr must be a positive number")
+        if not math.isfinite(float(max_vwap_distance_atr)) or not 0 < float(max_vwap_distance_atr) <= 10:
+            raise ValueError("max_vwap_distance_atr must be > 0 and <= 10")
+        max_vwap_distance_atr = float(max_vwap_distance_atr)
+
+    fired, decision = _evaluate_momentum_signal_impl(
+        ticker, df, prev_day_high, bankroll, momentum_pool, min_candles,
+        df_daily, vol_surge_threshold, market_regime, regime,
+        crossover_lookback=crossover_lookback,
+        max_vwap_distance_atr=max_vwap_distance_atr,
+    )
+    decision = dict(decision)
+    decision.update(_momentum_variant_evidence(
+        df, df_daily, crossover_lookback, max_vwap_distance_atr,
+    ))
+    return fired, decision
+
+
+def _evaluate_momentum_signal_impl(
+    ticker: str,
+    df: pd.DataFrame,
+    prev_day_high: float,
+    bankroll: float,
+    momentum_pool: float,
+    min_candles: int = 4,
+    df_daily: "pd.DataFrame | None" = None,
+    vol_surge_threshold: float = 1.5,
+    market_regime: str = "BULL",
+    regime: "Regime | None" = None,
+    *,
+    crossover_lookback: int,
+    max_vwap_distance_atr: "float | None",
 ) -> tuple[bool, dict]:
     """
     [MOM2] Intraday momentum signal evaluation.
@@ -727,7 +809,7 @@ def evaluate_momentum_signal(
 
     Entry conditions (ALL must be true):
       [MC1] Minimum candles: len(df) >= min_candles
-      [MC2] Price crossed ABOVE VWAP in the LAST 3 candles + holding check
+      [MC2] Price crossed ABOVE VWAP in the declared lookback + holding check
       [MC3] Last candle volume >= vol_surge_threshold (time-aware, set by caller)
             [MC3-T] Caller raises threshold to 1.75x during 11:30-13:15 IST
       [MC4] Current close in top 20% of today's intraday session range
@@ -783,7 +865,7 @@ def evaluate_momentum_signal(
         # [MC2] VWAP crossover: was below, now above (Lookback 3 candles to avoid "sniper blindness")
     # This checks if the crossover happened in any of the last 3 candles.
     crossed = False
-    for i in range(1, 4): # Check index -1, -2, -3
+    for i in range(1, crossover_lookback + 1):
         if len(df) < i + 1:
             break
         c_close = df['close'].iloc[-i]
@@ -916,6 +998,26 @@ def evaluate_momentum_signal(
         _atr = float(calc_atr(df_daily["high"], df_daily["low"], df_daily["close"]).iloc[-1])
         if _atr > 0:
             daily_atr_val = _atr
+
+    # Paper-variant anti-chase gate. Disabled by default, so the live evaluator
+    # is unchanged. A configured cap requires usable daily ATR evidence; failing
+    # open here would silently remove the candidate's declared safety guard.
+    if max_vwap_distance_atr is not None:
+        if not daily_atr_val:
+            return False, {
+                "reject_reason": "vwap_distance_atr_unavailable",
+                "current_close": round(float(current_close), 2),
+                "current_vwap": round(float(current_vwap), 2),
+            }
+        vwap_distance = float(current_close - current_vwap)
+        distance_atr = vwap_distance / daily_atr_val
+        if distance_atr > max_vwap_distance_atr:
+            return False, {
+                "reject_reason": "max_vwap_distance_atr_exceeded",
+                "vwap_distance": round(vwap_distance, 4),
+                "vwap_distance_atr": round(distance_atr, 6),
+                "max_vwap_distance_atr": max_vwap_distance_atr,
+            }
 
     stop_candidates = [float(breakout_candle_low), float(pct_floor_stop)]
     if daily_atr_val:
@@ -1149,6 +1251,3 @@ def evaluate_mc8_rsi_trim(
     except Exception as e:
         out["reason"] = f"MC8_calc_error:{e}"
         return out
-
-
-

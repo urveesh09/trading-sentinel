@@ -55,12 +55,13 @@ STALE_THRESHOLD_HOURS = 24.0
 
 # ---- data accessors --------------------------------------------------
 
-def _penny_open_count(db_path: str) -> int:
+def _penny_open_count(db_path: str, source: str = "PENNY") -> int:
     try:
         with sqlite3.connect(db_path) as con:
             cur = con.execute(
                 "SELECT COUNT(*) FROM positions "
-                "WHERE source='PENNY' AND status IN ('OPEN', 'CLOSED_T1')"
+                "WHERE source=? AND status IN ('OPEN', 'CLOSED_T1')",
+                (source,),
             )
             return int(cur.fetchone()[0])
     except Exception:
@@ -109,7 +110,7 @@ def _age_str(ts: Optional[datetime], now: datetime) -> str:
 
 # ---- main health snapshot -------------------------------------------
 
-async def build_health_snapshot(db_path: str) -> Dict[str, Any]:
+async def build_health_snapshot(db_path: str, penny_source: str = "PENNY") -> Dict[str, Any]:
     """Build the full health snapshot. Pure data, no formatting.
 
     ASYNC: this function uses async DB and engine reads. The HTTP
@@ -182,9 +183,15 @@ async def build_health_snapshot(db_path: str) -> Dict[str, Any]:
             snap["penny"]["last_regime_age"] = (
                 "today" if as_of == now.date().isoformat() else f"set to {as_of}"
             )
-        # Penny scanner last_scan timestamp (if the module exposes it)
-        # Not currently exposed by the penny scanner; mark as None
-        # for now (we can backfill in a follow-up if needed).
+        last_penny_scan = getattr(_main, "_last_penny_scan_at", None)
+        if last_penny_scan is not None:
+            snap["penny"]["last_scan_at"] = (
+                last_penny_scan.isoformat()
+                if hasattr(last_penny_scan, "isoformat")
+                else str(last_penny_scan)
+            )
+        snap["penny"]["last_scan_age"] = _age_str(last_penny_scan, now)
+        snap["penny"]["is_stale"] = _is_stale(last_penny_scan, now)
     except Exception as e:
         logger.warning("health_penny_section_failed error=%s", str(e))
 
@@ -203,7 +210,8 @@ async def build_health_snapshot(db_path: str) -> Dict[str, Any]:
         logger.warning("health_nifty_section_failed error=%s", str(e))
 
     # Open position counts
-    snap["penny"]["open_positions"] = _penny_open_count(db_path)
+    snap["penny"]["source"] = penny_source
+    snap["penny"]["open_positions"] = _penny_open_count(db_path, source=penny_source)
     snap["nifty"]["open_positions"] = _nifty_open_count(db_path)
 
     # Halt / circuit-breaker state
@@ -221,6 +229,14 @@ async def build_health_snapshot(db_path: str) -> Dict[str, Any]:
         snap["bankroll"]["nifty"] = float(await nifty_bankroll(db_path))
     except Exception as e:
         logger.warning("health_nifty_bankroll_failed error=%s", str(e))
+
+    try:
+        from performance import division_equity
+        snap["bankroll"]["penny"] = float(
+            await division_equity(db_path, penny_source)
+        )
+    except Exception as e:
+        logger.warning("health_penny_bankroll_failed error=%s", str(e))
 
     # Overall status
     stale_something = (
@@ -252,14 +268,23 @@ async def build_health_snapshot(db_path: str) -> Dict[str, Any]:
     return snap
 
 
-def build_health_snapshot_sync(db_path: str) -> Dict[str, Any]:
+def build_health_snapshot_sync(
+    db_path: str, penny_source: Optional[str] = None
+) -> Dict[str, Any]:
     """Synchronous wrapper for tests + Telegram command handlers.
 
     Use this from sync contexts (tests, sync callers). FastAPI/async
     callers should use the async build_health_snapshot directly.
     """
     import asyncio
-    return asyncio.run(build_health_snapshot(db_path))
+    if penny_source is None:
+        try:
+            import main as _main
+            penny_source = _main._classic_penny_source()
+        except Exception:
+            from config import settings
+            penny_source = "PENNY" if settings.PENNY_LIVE_TRADING else "PENNY_PAPER"
+    return asyncio.run(build_health_snapshot(db_path, penny_source=penny_source))
 
 
 # ---- formatted outputs (Telegram-friendly) ---------------------------
@@ -274,11 +299,12 @@ def format_health(snap: Dict[str, Any]) -> str:
 
     p = snap["penny"]
     lines.append(
-        f"Penny: regime={p['regime']}, last_regime={p['last_regime_age']}, "
+        f"Penny: regime={p['regime']}, last_scan={p['last_scan_age']}, "
+        f"last_regime={p['last_regime_age']}, "
         f"open={p['open_positions']}"
     )
     if p["is_stale"]:
-        lines.append("  ⚠ penny regime not refreshed recently")
+        lines.append("  ⚠ penny last_scan is stale")
 
     n = snap["nifty"]
     lines.append(
@@ -327,7 +353,7 @@ def format_regime_all(snap: Dict[str, Any]) -> str:
 def cmd_health(db_path: str) -> str:
     """Telegram /health command. Returns a formatted health snapshot."""
     try:
-        snap = build_health_snapshot(db_path)
+        snap = build_health_snapshot_sync(db_path)
         return format_health(snap)
     except Exception as e:
         return f"Health: error reading ({type(e).__name__})"

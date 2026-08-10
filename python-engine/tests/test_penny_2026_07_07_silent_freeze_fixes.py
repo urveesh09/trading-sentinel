@@ -239,11 +239,11 @@ def test_repo_seed_path_resolves_inside_python_engine_dir():
     )
     repo_seed = os.path.join(repo_data_dir, "penny_company_data.json")
 
-    # The path MUST be inside python-engine/, not the repo root
-    assert "/python-engine/data/" in repo_seed, (
-        f"repo_seed path is wrong: {repo_seed} -- should be inside "
-        f"python-engine/data/"
-    )
+    # The path must be the data directory beside the imported module. Docker
+    # intentionally installs that same directory as /app, so asserting a
+    # literal checkout-folder name is not portable.
+    assert os.path.dirname(repo_seed) == repo_data_dir
+    assert os.path.dirname(repo_data_dir) == os.path.dirname(os.path.abspath(pu.__file__))
     # The seed file should exist locally (even if empty)
     assert os.path.exists(repo_seed), (
         f"repo_seed file missing: {repo_seed}"

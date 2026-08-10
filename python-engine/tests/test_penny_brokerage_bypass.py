@@ -11,10 +11,8 @@ return the full cost model unchanged from prior behavior.
 [ROADMAP-5.2 2026-07-13] CONTRACT CHANGE. The bypass is now IGNORED whenever
 PENNY_LIVE_TRADING is on -- it is a paper/test flag, and a live run with it set
 would book ZERO brokerage into the real ledger. That matters here because
-PENNY_LIVE_TRADING DEFAULTS TO TRUE (config.py:373, the Rs 2,500 live testing
-budget), so these tests were only passing because no interlock existed: on the
-live-configured system the bypass was fully active. They now pin the flag
-combination explicitly, which is what they should have done all along.
+PENNY_LIVE_TRADING defaults to FALSE; production must explicitly opt in.
+These tests pin the flag combination explicitly.
 """
 import os
 import sys

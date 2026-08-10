@@ -24,6 +24,8 @@ every engine call is wrapped with a distinct log tag.
 """
 from __future__ import annotations
 
+import asyncio
+from concurrent.futures import Future, ThreadPoolExecutor
 from datetime import datetime, timedelta
 from typing import List, Optional
 from uuid import uuid4
@@ -32,6 +34,7 @@ import pytz
 import structlog
 
 import fno_positions as fpos
+import fno_shadow
 from config import settings
 from fno_chain import ChainSnapshot, select_strike_by_delta, take_chain_snapshot
 from fno_costs import calc_fno_costs
@@ -49,6 +52,8 @@ logger = structlog.get_logger()
 IST = pytz.timezone("Asia/Kolkata")
 
 RVOL_FETCH_CALENDAR_DAYS = 21   # ~14 sessions of 5-min bars for EMA/RVOL
+_SHADOW_EXECUTOR = ThreadPoolExecutor(max_workers=1, thread_name_prefix="fno-shadow")
+_SHADOW_TASKS: set[Future] = set()
 
 
 def _now_min(now_ist: datetime) -> int:
@@ -105,6 +110,49 @@ async def _fetch_futures_bars(kite, fut_token: int, now_ist: datetime):
     )
     to = now_ist.strftime("%Y-%m-%d %H:%M:%S")
     return await kite.get_intraday_by_token(fut_token, frm, to, interval="5minute")
+
+
+async def _record_shadow_observation(
+    db_path: str, bars, regime: str, now_ist: datetime,
+    snapshot: Optional[ChainSnapshot] = None,
+) -> int:
+    """Best-effort research sidecar; failure can never change the live path."""
+    try:
+        rows = fno_shadow.evaluate_fno_shadows(
+            bars, regime, now_ist, underlying=settings.FNO_UNDERLYING,
+        )
+        if snapshot is not None:
+            fno_shadow.attach_resolved_cost_estimates(rows, snapshot, now_ist)
+        return await fno_shadow.persist_fno_shadow_results(db_path, rows)
+    except Exception as exc:
+        logger.warning("fno_shadow_observation_failed err=%s", str(exc), exc_info=True)
+        return 0
+
+
+def _schedule_shadow_observation(
+    db_path: str, bars, regime: str, now_ist: datetime,
+    snapshot: Optional[ChainSnapshot] = None,
+) -> Optional[Future]:
+    """Supervise a best-effort write without blocking any trading path."""
+    if not bool(getattr(settings, "FNO_SHADOW_ENABLED", True)):
+        return None
+
+    def _worker() -> int:
+        try:
+            rows = fno_shadow.evaluate_fno_shadows(
+                bars, regime, now_ist, underlying=settings.FNO_UNDERLYING,
+            )
+            if snapshot is not None:
+                fno_shadow.attach_resolved_cost_estimates(rows, snapshot, now_ist)
+            return fno_shadow.persist_fno_shadow_results_sync(db_path, rows)
+        except Exception as exc:
+            logger.warning("fno_shadow_observation_failed err=%s", str(exc), exc_info=True)
+            return 0
+
+    task = _SHADOW_EXECUTOR.submit(_worker)
+    _SHADOW_TASKS.add(task)
+    task.add_done_callback(_SHADOW_TASKS.discard)
+    return task
 
 
 # ---------------------------------------------------------------------------
@@ -703,6 +751,7 @@ async def run_fno_tick(
     # already recorded an entry for the bar, or the engine says no signal,
     # log at most one no-signal row per bar.
     if sig.direction is None:
+        _schedule_shadow_observation(db_path, bars, regime, now_ist)
         # Only log the no-signal outcome once per bar (the tick fires
         # every 60s; a 5-min bar would otherwise produce 5 duplicates).
         if not await _bar_already_logged(db_path, sig.bar_ts):
@@ -720,6 +769,7 @@ async def run_fno_tick(
     # Signal fired: snapshot the chain once, then run both legs off it.
     snap = await take_chain_snapshot(kite, instruments, now_ist)
     if snap is None:
+        _schedule_shadow_observation(db_path, bars, regime, now_ist)
         await log_fno_signal(
             db_path, scan_id=scan_id, leg="ENGINE", accepted=False,
             reject_reason="chain_unavailable", bar_ts=sig.bar_ts,
@@ -770,6 +820,10 @@ async def run_fno_tick(
             except Exception as exc:
                 logger.error("fno_live_entry_failed err=%s", str(exc), exc_info=True)
 
+    # Only after both trading legs have completed, and never awaited: a
+    # slow/locked research DB cannot delay quote selection, sizing, an entry,
+    # or the tick return. Reuse the baseline's already-resolved chain.
+    _schedule_shadow_observation(db_path, bars, regime, now_ist, snap)
     return summary
 
 

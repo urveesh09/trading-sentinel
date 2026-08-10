@@ -476,8 +476,8 @@ class TestGetIntraday:
                 await db.execute(
                 # dt = f"2025-06-10 {9+i//4:02d}:{15 + (i%4)*15:02d}:00"
                 # await db.execute(
-                    "INSERT INTO intraday_cache (ticker, datetime, open, high, low, close, volume, fetched_at) VALUES (?,?,?,?,?,?,?,?)",
-                    ("TCS", dt, 3000+i, 3010+i, 2990+i, 3005+i, 100000, datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S"))
+                    "INSERT INTO intraday_cache (ticker, interval, datetime, open, high, low, close, volume, fetched_at) VALUES (?,?,?,?,?,?,?,?,?)",
+                    ("TCS", "15minute", dt, 3000+i, 3010+i, 2990+i, 3005+i, 100000, datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S"))
                 )
             await db.commit()
 
@@ -535,7 +535,7 @@ class TestCacheSeparationQ7:
 
     @pytest.mark.asyncio
     async def test_different_primary_keys(self, patch_settings):
-        """ohlcv_cache PK = (ticker, date), intraday_cache PK = (ticker, datetime)."""
+        """Intraday identity includes interval, so resolutions can coexist."""
         client = KiteClient(patch_settings.DB_PATH)
         await client._init_db()
         await client._init_intraday_db()
@@ -555,19 +555,161 @@ class TestCacheSeparationQ7:
             count = (await cursor.fetchone())[0]
             assert count == 1, "ohlcv_cache should have 1 row (PK dedup)"
 
-            # intraday_cache: duplicate (ticker, datetime) should REPLACE
+            # Same interval + timestamp replaces, while another interval at the
+            # same timestamp is an independent candle.
             await db.execute(
-                "INSERT OR REPLACE INTO intraday_cache (ticker, datetime, open, high, low, close, volume, fetched_at) VALUES (?,?,?,?,?,?,?,?)",
-                ("HDFC", "2025-01-01 09:15:00", 100, 110, 90, 105, 1000, "now")
+                "INSERT OR REPLACE INTO intraday_cache (ticker, interval, datetime, open, high, low, close, volume, fetched_at) VALUES (?,?,?,?,?,?,?,?,?)",
+                ("HDFC", "minute", "2025-01-01 09:15:00", 100, 110, 90, 105, 1000, "now")
             )
             await db.execute(
-                "INSERT OR REPLACE INTO intraday_cache (ticker, datetime, open, high, low, close, volume, fetched_at) VALUES (?,?,?,?,?,?,?,?)",
-                ("HDFC", "2025-01-01 09:15:00", 101, 111, 91, 106, 1001, "now2")
+                "INSERT OR REPLACE INTO intraday_cache (ticker, interval, datetime, open, high, low, close, volume, fetched_at) VALUES (?,?,?,?,?,?,?,?,?)",
+                ("HDFC", "minute", "2025-01-01 09:15:00", 101, 111, 91, 106, 1001, "now2")
+            )
+            await db.execute(
+                "INSERT INTO intraday_cache (ticker, interval, datetime, open, high, low, close, volume, fetched_at) VALUES (?,?,?,?,?,?,?,?,?)",
+                ("HDFC", "15minute", "2025-01-01 09:15:00", 99, 109, 89, 104, 5000, "now3")
             )
             await db.commit()
             cursor = await db.execute("SELECT COUNT(*) FROM intraday_cache WHERE ticker='HDFC'")
             count = (await cursor.fetchone())[0]
-            assert count == 1, "intraday_cache should have 1 row (PK dedup)"
+            assert count == 2, "one row per (ticker, interval, datetime) expected"
+
+
+class TestIntradayIntervalSafety:
+    @pytest.mark.asyncio
+    async def test_migrates_legacy_rows_conservatively_and_idempotently(
+        self, patch_settings
+    ):
+        """Known minute groups are recovered; ambiguous bars are quarantined."""
+        async with aiosqlite.connect(patch_settings.DB_PATH) as db:
+            await db.execute("""
+                CREATE TABLE intraday_cache (
+                    ticker TEXT, datetime TEXT, open REAL, high REAL, low REAL,
+                    close REAL, volume REAL, fetched_at TIMESTAMP,
+                    PRIMARY KEY (ticker, datetime)
+                )
+            """)
+            rows = [
+                # A non-quarter timestamp proves this whole ticker-day is minute.
+                ("AAA", "2025-06-10 09:15:00", 1),
+                ("AAA", "2025-06-10 09:16:00", 2),
+                # Quarter-hour-only history cannot be labelled honestly.
+                ("BBB", "2025-06-10 09:15:00", 3),
+                ("BBB", "2025-06-10 09:30:00", 4),
+            ]
+            for ticker, dt, close in rows:
+                await db.execute(
+                    "INSERT INTO intraday_cache VALUES (?,?,?,?,?,?,?,?)",
+                    (ticker, dt, close, close, close, close, 100, "now"),
+                )
+            await db.commit()
+
+        client = KiteClient(patch_settings.DB_PATH)
+        await client._init_intraday_db()
+        await client._init_intraday_db()  # idempotence
+
+        async with aiosqlite.connect(patch_settings.DB_PATH) as db:
+            info = await (await db.execute(
+                "PRAGMA table_info(intraday_cache)"
+            )).fetchall()
+            migrated = await (await db.execute(
+                "SELECT ticker, interval, datetime, close "
+                "FROM intraday_cache ORDER BY ticker, datetime"
+            )).fetchall()
+
+        assert [row[1] for row in info] == [
+            "ticker", "interval", "datetime", "open", "high", "low",
+            "close", "volume", "fetched_at",
+        ]
+        assert [row[5] for row in info if row[5]] == [1, 2, 3]
+        assert len(migrated) == 4
+        assert {row[1] for row in migrated if row[0] == "AAA"} == {"minute"}
+        assert {row[1] for row in migrated if row[0] == "BBB"} == {
+            "legacy_unknown"
+        }
+
+    @pytest.mark.asyncio
+    async def test_cache_reads_are_isolated_by_interval(self, patch_settings):
+        client = KiteClient(patch_settings.DB_PATH)
+        client.instrument_cache = {"AAA": 1}
+        client.limiter = RateLimiter(rate=100.0, burst=10)
+        await client._init_intraday_db()
+        async with aiosqlite.connect(patch_settings.DB_PATH) as db:
+            for dt in ("09:30", "09:45", "10:00", "10:15"):
+                await db.execute(
+                    "INSERT INTO intraday_cache "
+                    "(ticker, interval, datetime, open, high, low, close, volume) "
+                    "VALUES (?,?,?,?,?,?,?,?)",
+                    ("AAA", "15minute", f"2025-06-10 {dt}:00", 10, 11, 9, 10, 1),
+                )
+            await db.commit()
+
+        requested_urls = []
+
+        async def mock_get(url, **kwargs):
+            requested_urls.append(url)
+            resp = MagicMock(status_code=200, raise_for_status=MagicMock())
+            resp.json.return_value = {"data": {"candles": [
+                [f"2025-06-10T10:{minute:02d}:00+0530", 20, 21, 19, 20, 2]
+                for minute in (26, 27, 28, 29)
+            ]}}
+            return resp
+
+        client.client.get = mock_get
+        result = await client.get_intraday(
+            "AAA", "2025-06-10 09:15:00", "2025-06-10 10:30:00",
+            interval="minute",
+        )
+
+        assert requested_urls == ["/instruments/historical/1/minute"]
+        assert list(result.index.minute) == [26, 27, 28, 29]
+        async with aiosqlite.connect(patch_settings.DB_PATH) as db:
+            intervals = await (await db.execute(
+                "SELECT interval, COUNT(*) FROM intraday_cache GROUP BY interval"
+            )).fetchall()
+        assert dict(intervals) == {"15minute": 4, "minute": 4}
+
+    @pytest.mark.asyncio
+    async def test_freshness_uses_requested_interval_width(self, patch_settings):
+        client = KiteClient(patch_settings.DB_PATH)
+        client.instrument_cache = {"AAA": 1}
+        client.limiter = RateLimiter(rate=100.0, burst=10)
+        await client._init_intraday_db()
+        async with aiosqlite.connect(patch_settings.DB_PATH) as db:
+            for interval, times in {
+                "15minute": ("09:30", "09:45", "10:00", "10:15"),
+                "minute": ("10:25", "10:26", "10:27", "10:28"),
+            }.items():
+                for dt in times:
+                    await db.execute(
+                        "INSERT INTO intraday_cache "
+                        "(ticker, interval, datetime, open, high, low, close, volume) "
+                        "VALUES (?,?,?,?,?,?,?,?)",
+                        ("AAA", interval, f"2025-06-10 {dt}:00", 10, 11, 9, 10, 1),
+                    )
+            await db.commit()
+
+        calls = []
+
+        async def mock_get(url, **kwargs):
+            calls.append(url)
+            resp = MagicMock(status_code=200, raise_for_status=MagicMock())
+            resp.json.return_value = {"data": {"candles": []}}
+            return resp
+
+        client.client.get = mock_get
+        fifteen = await client.get_intraday(
+            "AAA", "2025-06-10 09:15:00", "2025-06-10 10:30:00",
+            interval="15minute",
+        )
+        minute = await client.get_intraday(
+            "AAA", "2025-06-10 09:15:00", "2025-06-10 10:30:00",
+            interval="minute",
+        )
+
+        assert len(fifteen) == 4
+        assert minute.empty
+        assert calls == ["/instruments/historical/1/minute"]
 
 
 # ---------------------------------------------------------------------

@@ -587,9 +587,12 @@ async def pool_breakdown(db_path: str) -> dict:
     # Swing balance: SUM of all SYSTEM-source P&L rows + the INITIAL seed.
     swing_pnl = 0.0
     swing_trades = 0
-    # Penny P&L: SUM of all PENNY-source rows. Allocated = the constant.
+    # Penny P&L: select the source matching the explicit execution mode.
+    # Historical PENNY rows are never silently reclassified as paper.
     penny_pnl = 0.0
     penny_trades = 0
+    penny_live = bool(getattr(settings, "PENNY_LIVE_TRADING", False))
+    penny_source = "PENNY" if penny_live else "PENNY_PAPER"
 
     try:
         async with aiosqlite.connect(db_path) as db:
@@ -601,7 +604,7 @@ async def pool_breakdown(db_path: str) -> dict:
                     if (row[0] or 0.0) != 0.0:
                         swing_trades += 1
             async with db.execute(
-                "SELECT pnl FROM bankroll_ledger WHERE source='PENNY'"
+                "SELECT pnl FROM bankroll_ledger WHERE source=?", (penny_source,)
             ) as cur:
                 async for row in cur:
                     penny_pnl += row[0] or 0.0
@@ -615,7 +618,6 @@ async def pool_breakdown(db_path: str) -> dict:
     swing_balance = settings.INITIAL_BANKROLL + swing_pnl
 
     # Penny mode + allocation: live unless PENNY_LIVE_TRADING is False.
-    penny_live = bool(getattr(settings, "PENNY_LIVE_TRADING", False))
     penny_allocated = (
         float(getattr(settings, "PENNY_LIVE_BANKROLL", 0.0))
         if penny_live
@@ -729,7 +731,8 @@ def _division_registry() -> list:
         # strategy behaviour -- 8 trades in months. The paper book takes every
         # accepted signal automatically, which is what the promotion ladder needs.
         ("momentum_paper",   "Intraday Momentum (paper)","MOMENTUM_PAPER", "momentum_paper", float(getattr(settings, "MOMENTUM_PAPER_BANKROLL", 0.0)), "paper"),
-        ("penny_breakout",   "Penny Breakout",           "PENNY",      "penny_breakout", float(getattr(settings, "PENNY_LIVE_BANKROLL", 0.0)) if penny_live else float(getattr(settings, "PENNY_PAPER_BANKROLL", 0.0)), "live" if penny_live else "paper"),
+        ("penny_breakout_live", "Penny Breakout (live)",  "PENNY", "penny_breakout_live", float(getattr(settings, "PENNY_LIVE_BANKROLL", 0.0)), "live"),
+        ("penny_breakout_paper", "Penny Breakout (paper)", "PENNY_PAPER", "penny_breakout_paper", float(getattr(settings, "PENNY_PAPER_BANKROLL", 0.0)), "paper"),
         ("penny_edge_paper", "Penny Edge (paper)",       "EDGE_PAPER", "edge_paper",     float(getattr(settings, "PENNY_EDGE_PAPER_BANKROLL", 0.0)), "paper"),
         ("penny_edge_live",  "Penny Edge (live)",        "EDGE_LIVE",  "edge_live",      float(getattr(settings, "PENNY_EDGE_LIVE_BANKROLL", 0.0)),  "live"),
         ("fno_paper",        "F&O Options (paper)",      "FNO_PAPER",  "fno_paper",      float(getattr(settings, "FNO_PAPER_BANKROLL", 0.0)),        "paper"),

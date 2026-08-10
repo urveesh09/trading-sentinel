@@ -261,6 +261,7 @@ async def gate_funnel_report(db_path: str, days: int = 7) -> dict:
 _FUNNEL_ACTIVITY = {
     "MOMENTUM":   ("momentum_signals", "scanned_at",   ""),
     "PENNY":      ("penny_signals",    "scanned_at",   "leg='MIS'"),
+    "PENNY_PAPER":("penny_signals",    "scanned_at",   "leg='MIS'"),
     "EDGE_PAPER": ("penny_signals",    "scanned_at",   "leg IN ('CNC','EDGE')"),
     "EDGE_LIVE":  ("penny_signals",    "scanned_at",   "leg IN ('CNC','EDGE')"),
     "FNO_PAPER":  ("fno_signals",      "evaluated_at", ""),
@@ -342,8 +343,17 @@ async def strategy_funnel(db_path: str, day_iso: Optional[str] = None) -> dict:
         except Exception as e:
             logger.warning("funnel_open_failed error=%s", str(e))
 
+        active_classic_penny_source = (
+            "PENNY" if settings.PENNY_LIVE_TRADING else "PENNY_PAPER"
+        )
         for key, label, source, pool_id, allocated, mode in _division_registry():
             act = _FUNNEL_ACTIVITY.get(source)
+            # Classic Penny writes one shared evaluation stream. Attribute it
+            # only to the scanner's current execution mode; showing it on both
+            # static registry rows would double-count the same work and make
+            # an inactive live book look active while paper mode is armed.
+            if source in {"PENNY", "PENNY_PAPER"} and source != active_classic_penny_source:
+                act = None
             evals = accepts = 0
             top = []
             if act:
@@ -405,12 +415,10 @@ def format_strategy_funnel(data: dict) -> str:
 # --------------------------------------------------------------------
 # 2c. Promotion ladder  [STRATEGY-PROMOTION 2026-07-20]
 # --------------------------------------------------------------------
-# The Phase-3 gate that decides when a PAPER strategy has earned live
-# capital -- encoded as a checked verdict, not a vibe. A strategy is
-# ready_for_live only when, on its own ledger, it has enough trades, a
-# POSITIVE net-cost expectancy, and a drawdown inside its budget. Live
-# strategies get a health read instead. Reuses the same per-source ledger
-# as /bankroll/divisions, so promotion can never disagree with the P&L.
+# Deprecated ledger-only research ladder. It may identify a paper strategy for
+# further review, but never authorizes live capital: it lacks distinct-candidate,
+# OOS, profit-factor, provenance, repeat-inflation and reconciliation gates.
+# `/research/promotion-readiness` is the stronger contract.
 
 def _max_drawdown(pnls: list) -> float:
     """Max peak-to-trough drawdown (rupees, >=0) of the cumulative curve."""
@@ -527,7 +535,7 @@ async def promotion_report(db_path: str) -> dict:
                 elif n < bar["min_trades"]:
                     verdict = "provisional"          # bar met, sample still building
                 else:
-                    verdict = "ready_for_live"
+                    verdict = "legacy_candidate_for_research_review"
 
                 strategies.append({
                     "key": key, "label": label, "source": source, "mode": mode,
@@ -538,20 +546,32 @@ async def promotion_report(db_path: str) -> dict:
                 })
     except Exception as e:
         logger.error("promotion_report_failed error=%s", str(e))
-        return {"error": str(e), "strategies": [], "bar": bar}
-    return {"strategies": strategies, "bar": bar}
+        return {
+            "error": str(e), "strategies": [], "bar": bar,
+            "research_only": True, "can_place_orders": False, "deprecated": True,
+            "warning": "Deprecated ledger-only ladder; use /research/promotion-readiness. It never authorizes live trading.",
+        }
+    return {
+        "strategies": strategies, "bar": bar,
+        "research_only": True, "can_place_orders": False, "deprecated": True,
+        "warning": "Deprecated ledger-only ladder; use /research/promotion-readiness. It never authorizes live trading.",
+    }
 
 
 def format_promotion_report(data: dict) -> str:
     if data.get("error"):
-        return f"Promotion ladder: error ({data['error']})"
+        return (
+            "Deprecated ledger-only research ladder: error "
+            f"({data['error']}). Use /research/promotion-readiness; no authorization is granted."
+        )
     bar = data.get("bar", {})
-    icon = {"ready_for_live": "✅", "provisional": "\U0001F7E1", "not_ready": "⛔",
+    icon = {"legacy_candidate_for_research_review": "✅", "provisional": "\U0001F7E1", "not_ready": "⛔",
             "healthy": "\U0001F7E2", "underperforming": "\U0001F534", "no_data": "➖"}
     lines = [
-        "\U0001F393 Promotion ladder "
+        "\U0001F393 Deprecated ledger-only research ladder "
         f"(bar: ≥{bar.get('min_trades')} trades, +expectancy, DD≤{int(bar.get('max_dd_pct',0)*100)}%)"
     ]
+    lines.append("Research only; use /research/promotion-readiness. This does not authorize live trading.")
     for s in data.get("strategies", []):
         lines.append(
             f"\n{icon.get(s['verdict'],'')} {s['label']} [{s['mode']}] — {s['verdict']}"
@@ -568,8 +588,8 @@ def format_promotion_report(data: dict) -> str:
             lines.append(f"  min viable trade ₹{mvt:,.0f} (1 lot)")
         for r in s.get("blocking_reasons", []):
             lines.append(f"    ✗ {r}")
-    ready = [s['label'] for s in data.get("strategies", []) if s['verdict'] == "ready_for_live"]
-    lines.append("\nReady for live: " + (", ".join(ready) if ready else "none yet"))
+    ready = [s['label'] for s in data.get("strategies", []) if s['verdict'] == "legacy_candidate_for_research_review"]
+    lines.append("\nLegacy candidates for research review: " + (", ".join(ready) if ready else "none yet"))
     return "\n".join(lines)
 
 

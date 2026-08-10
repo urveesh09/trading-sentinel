@@ -76,6 +76,13 @@ async def init_positions_db(db_path: str):
         # target or trail exit, or the SL-M would still be resting and sell a
         # second time.
         await _add_column_if_missing(db, "sl_order_id", "TEXT")
+        # Stable classic-Penny execution identity. NULL preserves every legacy
+        # and non-Penny row; non-NULL attempts can create at most one position.
+        await _add_column_if_missing(db, "penny_attempt_id", "TEXT")
+        await db.execute("""
+            CREATE UNIQUE INDEX IF NOT EXISTS idx_positions_penny_attempt
+            ON positions(penny_attempt_id) WHERE penny_attempt_id IS NOT NULL
+        """)
         # [THESIS-EXIT 2026-08-04] VWAP at entry -- the level the momentum
         # thesis was built on. The exit ladder uses it to ask "is this setup
         # still true?" instead of "has enough time passed?". NULL on positions
@@ -325,4 +332,3 @@ async def update_daily_positions(db_path: str, kite_client, current_date_str: st
                     WHERE ticker=? AND entry_date=?
                 """, (highest_close, trailing_stop, ticker, pos['entry_date']))
                 await db.commit()
-
