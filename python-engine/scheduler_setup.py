@@ -25,6 +25,37 @@ from datetime import datetime
 from config import settings
 
 
+def _log_fno_watchdog_payload(logger, payload):
+    """Emit the zero-accept diagnosis as queryable structured evidence.
+
+    The Telegram text already carried the histogram, but the operational log
+    only retained days/evaluations/dead_gate.  That made a later audit unable
+    to distinguish a functioning capital guard from a uniformly dead gate
+    once the notification itself was unavailable.
+    """
+    histogram = dict(payload.get("histogram") or {})
+    reject_total = sum(histogram.values())
+    top_reason, top_count = (
+        max(histogram.items(), key=lambda item: item[1])
+        if histogram else ("none", 0)
+    )
+    fields = {
+        "days": list(payload.get("days") or []),
+        "evaluations": int(payload.get("evaluations") or 0),
+        "histogram": histogram,
+        "self_regulating": bool(payload.get("self_regulating")),
+        "dead_gate": payload.get("dead_gate") or "none",
+        "top_reject_reason": top_reason,
+        "top_reject_count": top_count,
+        "top_reject_share": round(top_count / reject_total, 4)
+        if reject_total else 0.0,
+    }
+    if fields["self_regulating"]:
+        logger.info("fno_self_regulation_note", **fields)
+    else:
+        logger.warning("fno_zero_accept_alarm", **fields)
+
+
 
 def register_fno_scheduler_jobs(scheduler):
     # [ROADMAP-4.1 stage 2] See register_penny_scheduler_jobs for why `kite`,
@@ -181,18 +212,9 @@ def register_fno_scheduler_jobs(scheduler):
                 logger.info("fno_accept_watchdog_ok")
                 return
             # [Rule 72] Degradation is a WARNING, never an INFO -- unless
-            # it's the documented self-regulation case.
-            if payload.get("self_regulating"):
-                logger.info(
-                    "fno_self_regulation_note days=%s evaluations=%d",
-                    ",".join(payload["days"]), payload["evaluations"],
-                )
-            else:
-                logger.warning(
-                    "fno_zero_accept_alarm days=%s evaluations=%d dead_gate=%s",
-                    ",".join(payload["days"]), payload["evaluations"],
-                    payload.get("dead_gate") or "none",
-                )
+            # it's the documented self-regulation case.  Preserve the full
+            # diagnosis as structured fields, not only in the Telegram text.
+            _log_fno_watchdog_payload(logger, payload)
             msg = format_zero_accept_alert(payload)
             async with _httpx.AsyncClient() as _client:
                 await _client.post(

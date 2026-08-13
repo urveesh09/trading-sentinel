@@ -41,7 +41,7 @@ def _db(tmp_path):
             atr_14_at_entry REAL, highest_close_since_entry REAL, status TEXT, source TEXT,
             exit_price REAL, exit_date TEXT, realised_pnl REAL, r_multiple REAL,
             product_type TEXT, regime_at_entry TEXT, t1_fired INTEGER DEFAULT 0,
-            vwap_at_entry REAL
+            vwap_at_entry REAL, initial_capital_at_risk REAL
         )""")
     con.execute("""
         CREATE TABLE bankroll_ledger (
@@ -87,6 +87,37 @@ def test_size_rejects_malformed_risk():
     assert paper_position_size(100.0, 100.0, 50000.0, 0.10) == 0   # zero risk
     assert paper_position_size(100.0, 101.0, 50000.0, 0.10) == 0   # stop above entry
     assert paper_position_size(0.0, 0.0, 50000.0, 0.10) == 0
+
+
+def test_paper_sizing_uses_the_live_regime_risk_schedule(tmp_path, monkeypatch):
+    """R2 must not be paper-sized at the legacy/R1 10% risk fraction."""
+    monkeypatch.setattr(settings, "MOMENTUM_PAPER_BANKROLL", 50_000.0)
+    monkeypatch.setattr(settings, "MOMENTUM_RISK_PCT_R1", 0.10)
+    monkeypatch.setattr(settings, "MOMENTUM_RISK_PCT_R2", 0.07)
+    monkeypatch.setattr(settings, "MOMENTUM_RISK_PCT_R3", 0.00)
+
+    db = _db(tmp_path)
+    r1 = _sig("R1", close=100.0, stop=90.0, target=130.0)
+    r2 = _sig("R2", close=100.0, stop=90.0, target=130.0)
+    r3 = _sig("R3", close=100.0, stop=90.0, target=130.0)
+    r2["regime"] = "REGIME_2_ELEVATED"
+    r3["regime"] = "REGIME_3_CRISIS"
+
+    opened = asyncio.run(open_momentum_paper_positions(db, [r1, r2, r3]))
+    assert opened == ["R1", "R2"]
+    con = sqlite3.connect(db)
+    shares = dict(con.execute("SELECT ticker, shares FROM positions"))
+    assert shares == {"R1": 500, "R2": 350}
+
+
+def test_missing_regime_preserves_legacy_paper_risk(tmp_path, monkeypatch):
+    monkeypatch.setattr(settings, "MOMENTUM_RISK_PCT", 0.08)
+    db = _db(tmp_path)
+    sig = _sig(close=100.0, stop=90.0, target=130.0)
+    sig.pop("regime")
+    asyncio.run(open_momentum_paper_positions(db, [sig]))
+    con = sqlite3.connect(db)
+    assert con.execute("SELECT shares FROM positions").fetchone()[0] == 400
 
 
 # ---- opening -------------------------------------------------------
@@ -185,6 +216,52 @@ def test_square_off_still_flattens_when_the_quote_is_missing(tmp_path):
     assert con.execute(
         "SELECT COUNT(*) FROM positions WHERE exit_date IS NULL"
     ).fetchone()[0] == 0
+
+
+def test_scale_out_books_equity_but_only_final_close_records_one_outcome(
+    tmp_path, monkeypatch,
+):
+    from datetime import datetime
+
+    monkeypatch.setattr(settings, "MOMENTUM_USE_SCALE_OUT", True)
+    monkeypatch.setattr(settings, "MOMENTUM_SCALE_OUT_R", 1.0)
+    monkeypatch.setattr(settings, "MOMENTUM_SCALE_OUT_FRAC", 0.5)
+    db = _db(tmp_path)
+    sig = _sig(close=100.0, stop=90.0, target=130.0)
+    asyncio.run(open_momentum_paper_positions(db, [sig]))
+
+    asyncio.run(momentum_paper_monitor(
+        db, asyncio.run(_ltp_of(110.0)), datetime(2026, 7, 27, 11, 0),
+    ))
+    con = sqlite3.connect(db)
+    assert con.execute(
+        "SELECT event_type FROM bankroll_ledger"
+    ).fetchall() == [("TRADE_PARTIAL",)]
+    assert con.execute(
+        "SELECT COUNT(*) FROM sqlite_master WHERE name='trade_outcomes'"
+    ).fetchone()[0] == 0
+
+    asyncio.run(momentum_paper_square_off(
+        db, asyncio.run(_ltp_of(105.0)), datetime(2026, 7, 27, 15, 15),
+    ))
+    events = con.execute(
+        "SELECT event_type FROM bankroll_ledger ORDER BY id"
+    ).fetchall()
+    assert events == [("TRADE_PARTIAL",), ("TRADE_CLOSED",)]
+    position_pnl, position_r, initial_risk = con.execute(
+        "SELECT realised_pnl, r_multiple, initial_capital_at_risk FROM positions"
+    ).fetchone()
+    ledger_pnl = con.execute(
+        "SELECT SUM(pnl) FROM bankroll_ledger WHERE source=?", (SOURCE,)
+    ).fetchone()[0]
+    outcome_pnl, outcome_r = con.execute(
+        "SELECT realised_pnl, r_multiple FROM trade_outcomes"
+    ).fetchone()
+    assert ledger_pnl == pytest.approx(position_pnl)
+    assert position_r == pytest.approx(position_pnl / initial_risk)
+    assert outcome_pnl == pytest.approx(position_pnl)
+    assert outcome_r == pytest.approx(position_r)
+    assert con.execute("SELECT COUNT(*) FROM trade_outcomes").fetchone()[0] == 1
 
 
 # ---- the two properties that matter most ---------------------------

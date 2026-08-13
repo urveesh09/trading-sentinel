@@ -53,7 +53,7 @@ def _format_pnl(pnl: Optional[float], bankroll: float) -> str:
 
 
 def _today_pnl_penny_and_nifty(db_path: str) -> tuple:
-    """Sum today's TRADE_CLOSED rows from bankroll_ledger, partitioned
+    """Sum today's realised trade rows from bankroll_ledger, partitioned
     by source. Returns (penny_pnl, nifty_pnl)."""
     today = datetime.now(timezone.utc).date().isoformat()
     penny_pnl = 0.0
@@ -62,7 +62,8 @@ def _today_pnl_penny_and_nifty(db_path: str) -> tuple:
         with sqlite3.connect(db_path) as con:
             cur = con.execute(
                 "SELECT source, COALESCE(SUM(pnl), 0.0) FROM bankroll_ledger "
-                "WHERE event_type='TRADE_CLOSED' AND DATE(timestamp)=? "
+                "WHERE event_type IN ('TRADE_PARTIAL','TRADE_CLOSED') "
+                "AND DATE(timestamp)=? "
                 "GROUP BY source",
                 (today,),
             )

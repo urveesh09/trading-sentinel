@@ -162,8 +162,9 @@ async def add_manual_position(request: Request, payload: ManualPositionRequest):
                 ticker, exchange, entry_date, entry_price, shares,
                 stop_loss_initial, trailing_stop_current, target_1, target_2,
                 atr_14_at_entry, highest_close_since_entry, status, source, product_type,
-                regime_at_entry, sl_order_id, vwap_at_entry
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                regime_at_entry, sl_order_id, vwap_at_entry,
+                initial_capital_at_risk
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """, (payload.ticker, payload.exchange, datetime.now(timezone.utc).isoformat(),
               payload.entry_price, payload.shares, stop_loss, stop_loss,
               target_1, target_2,
@@ -174,7 +175,8 @@ async def add_manual_position(request: Request, payload: ManualPositionRequest):
               payload.atr_14_at_entry,
               payload.entry_price, "OPEN",
               payload.source, payload.product_type, payload.regime_at_entry,
-              payload.sl_order_id, payload.vwap_at_entry))
+              payload.sl_order_id, payload.vwap_at_entry,
+              (payload.entry_price - stop_loss) * payload.shares))
         await db.commit()
 
     _main.logger.info("position_added_manually", ticker=payload.ticker,
@@ -213,8 +215,9 @@ async def close_position(request: Request):
         is_intraday=_main._is_intraday_from_product_type(pos.get('product_type')),
     )
     realised_pnl = gross - costs
-    risk_initial = (pos['entry_price'] - pos['stop_loss_initial']) * pos['shares']
-    r_multiple   = realised_pnl / risk_initial if risk_initial > 0 else 0
+    total_pnl, r_multiple = _main._aggregate_momentum_close(
+        pos, realised_pnl
+    )
 
     # [LEDGER-INTEGRITY 2026-07-26] Accept CLOSED_T1 as closable and gate the
     # ledger write on rowcount, matching auto_square_momentum. A WHERE clause that
@@ -228,7 +231,7 @@ async def close_position(request: Request):
             WHERE ticker=? AND source='MOMENTUM'
               AND status IN ('OPEN', 'CLOSED_T1') AND exit_date IS NULL
         """, (exit_price, datetime.now(timezone.utc).isoformat(),
-              realised_pnl, r_multiple, ticker))
+              total_pnl, r_multiple, ticker))
         await db.commit()
         rows_closed = cur.rowcount
 
@@ -245,12 +248,14 @@ async def close_position(request: Request):
     # momentum closes into the SWING pool via the old "SYSTEM" default.
     await _main.record_trade_close(settings.DB_PATH, ticker, realised_pnl,
                                    r_multiple=r_multiple, notes="manual",
+                                   outcome_pnl=total_pnl,
+                                   outcome_r_multiple=r_multiple,
                                    source=pos.get('source') or 'MOMENTUM')
     _main.logger.info("momentum_position_closed", ticker=ticker,
                 exit_price=exit_price, pnl=realised_pnl, r=r_multiple)
 
     return {"status": "closed", "ticker": ticker,
-            "realised_pnl": round(realised_pnl, 2),
+            "realised_pnl": round(total_pnl, 2),
             "r_multiple":   round(r_multiple, 4)}
 
 

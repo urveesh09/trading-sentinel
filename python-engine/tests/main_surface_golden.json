@@ -22,7 +22,7 @@
       "func": "_run_fno_tick_safe",
       "id": "fno_tick",
       "kwargs": [],
-      "trigger": "interval[0:01:00]"
+      "trigger": "interval[0:01:30]"
     },
     {
       "func": "_run_partner_analytics_tick_safe",
@@ -154,7 +154,7 @@
       "func": "run_penny_scanner_once",
       "id": "penny_scan_interval",
       "kwargs": [],
-      "trigger": "interval[0:00:30]"
+      "trigger": "interval[0:01:00]"
     }
   ],
   "routes": [

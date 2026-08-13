@@ -67,22 +67,53 @@ def _scheduler_tick_path() -> str:
 
 
 # [ROADMAP-2.8 2026-07-12] Previous-tick clock for the persistent
-# liveness time-series. None after boot: a restart must not fabricate a
-# gap (the gap it WOULD measure spans a different process's lifetime).
+# liveness time-series. None after boot; startup recovers the prior process's
+# wall-clock heartbeat explicitly, while ordinary in-process ticks use this
+# monotonic clock so NTP/wall-time adjustments cannot fabricate a gap.
 _scheduler_tick_state = {"prev_monotonic": None}
 
 
 
 
-async def _scheduler_tick_job():
+async def _scheduler_tick_job(*, recover_previous: bool = False):
+    """Write the loop heartbeat and fold its gap into persistent metrics.
+
+    ``recover_previous`` is used once, immediately after ``scheduler.start()``.
+    The heartbeat file survives container/process restarts, so its wall-clock
+    timestamp is the only evidence of a gap that crossed a process boundary.
+    Normal interval ticks continue to use ``monotonic()``; wall time is used
+    only for startup recovery because a monotonic clock cannot be compared
+    across processes.
+
+    Returns a small attestation dict for the startup log.  APScheduler ignores
+    the return value on normal interval invocations.
+    """
     import json as _json
     import os as _os
+    previous_wall_gap = None
+    recovered_previous = False
+    now_epoch = time.time()
+    path = _scheduler_tick_path()
+    if recover_previous:
+        try:
+            with open(path) as fh:
+                prior = _json.load(fh)
+            prior_epoch = float(prior["ts_epoch"])
+            if prior_epoch > 0:
+                # A backwards wall-clock adjustment must not fabricate a
+                # negative liveness gap.
+                previous_wall_gap = max(0.0, now_epoch - prior_epoch)
+                recovered_previous = True
+        except (FileNotFoundError, KeyError, TypeError, ValueError, OSError,
+                _json.JSONDecodeError):
+            # First-ever boot, an old-format file, or a torn external write:
+            # start a fresh baseline.  The heartbeat write below still runs.
+            pass
     try:
-        path = _scheduler_tick_path()
         tmp = path + ".tmp"
         with open(tmp, "w") as fh:
             _json.dump({
-                "ts_epoch": time.time(),
+                "ts_epoch": now_epoch,
                 "ist": datetime.now(IST).isoformat(),
             }, fh)
         # Atomic replace so the agent's reader never sees a torn file.
@@ -100,10 +131,16 @@ async def _scheduler_tick_job():
         now_mono = _time.monotonic()
         prev = _scheduler_tick_state["prev_monotonic"]
         _scheduler_tick_state["prev_monotonic"] = now_mono
-        gap = (now_mono - prev) if prev is not None else None
+        gap = previous_wall_gap if recovered_previous else (
+            (now_mono - prev) if prev is not None else None
+        )
         await record_scheduler_tick(settings.DB_PATH, datetime.now(IST), gap)
     except Exception as e:
         logger.warning("scheduler_tick_record_failed error=%s", str(e))
+    return {
+        "recovered_previous": recovered_previous,
+        "prior_gap_seconds": previous_wall_gap,
+    }
 
 
 

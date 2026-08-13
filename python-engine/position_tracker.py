@@ -53,7 +53,8 @@ async def init_positions_db(db_path: str):
                 atr_14_at_entry REAL, highest_close_since_entry REAL, status TEXT, source TEXT,
                 exit_price REAL, exit_date TEXT, realised_pnl REAL, r_multiple REAL,
                 product_type TEXT DEFAULT 'CNC',
-                regime_at_entry TEXT
+                regime_at_entry TEXT,
+                initial_capital_at_risk REAL
             )
         """)
         # [MED-008] Migration: add product_type column to pre-existing tables on
@@ -89,6 +90,10 @@ async def init_positions_db(db_path: str):
         # opened before this column existed, and the exit logic falls back to
         # the old clock-and-R test in that case.
         await _add_column_if_missing(db, "vwap_at_entry", "REAL")
+        # Full-position risk at the actual fill.  ``shares`` is mutable after a
+        # momentum scale-out, so it cannot remain the denominator for the
+        # trade's final aggregate R multiple.
+        await _add_column_if_missing(db, "initial_capital_at_risk", "REAL")
         await db.commit()
 
 async def get_open_positions(db_path: str) -> List[dict]:

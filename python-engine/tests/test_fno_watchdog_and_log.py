@@ -10,6 +10,7 @@ import pytest
 
 from fno_accept_watchdog import format_zero_accept_alert, zero_accept_scan
 from fno_signal_log import init_fno_signal_db, log_fno_signal
+from scheduler_setup import _log_fno_watchdog_payload
 
 
 async def _seed(db_path, day: str, reason: str, n: int, accepted: bool = False):
@@ -77,6 +78,59 @@ async def test_insufficient_history_is_silent(db_path):
 @pytest.mark.asyncio
 async def test_missing_table_is_silent(db_path):
     assert await zero_accept_scan(db_path, n_days=2) is None
+
+
+class _RecordingLogger:
+    def __init__(self):
+        self.calls = []
+
+    def info(self, event, **fields):
+        self.calls.append(("info", event, fields))
+
+    def warning(self, event, **fields):
+        self.calls.append(("warning", event, fields))
+
+
+def test_self_regulation_log_preserves_histogram_and_classification():
+    logger = _RecordingLogger()
+    _log_fno_watchdog_payload(logger, {
+        "days": ["2026-08-12", "2026-08-13"],
+        "evaluations": 48,
+        # Deliberately put the smaller bucket first: operational diagnostics
+        # must select the dominant gate by count, not mapping insertion order.
+        "histogram": {"max_spread": 12, "pool_below_min_viable": 36},
+        "self_regulating": True,
+        "dead_gate": "",
+    })
+
+    level, event, fields = logger.calls[0]
+    assert (level, event) == ("info", "fno_self_regulation_note")
+    assert fields["histogram"] == {
+        "max_spread": 12, "pool_below_min_viable": 36,
+    }
+    assert fields["self_regulating"] is True
+    assert fields["dead_gate"] == "none"
+    assert fields["top_reject_reason"] == "pool_below_min_viable"
+    assert fields["top_reject_count"] == 36
+    assert fields["top_reject_share"] == 0.75
+
+
+def test_dead_gate_log_is_warning_with_queryable_reject_evidence():
+    logger = _RecordingLogger()
+    _log_fno_watchdog_payload(logger, {
+        "days": ["2026-08-12", "2026-08-13"],
+        "evaluations": 20,
+        "histogram": {"rvol_below_min": 20},
+        "self_regulating": False,
+        "dead_gate": "rvol_below_min",
+    })
+
+    level, event, fields = logger.calls[0]
+    assert (level, event) == ("warning", "fno_zero_accept_alarm")
+    assert fields["histogram"] == {"rvol_below_min": 20}
+    assert fields["self_regulating"] is False
+    assert fields["dead_gate"] == "rvol_below_min"
+    assert fields["top_reject_share"] == 1.0
 
 
 # ---------------------------------------------------------------------------

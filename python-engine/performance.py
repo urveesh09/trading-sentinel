@@ -250,7 +250,9 @@ async def fno_bankroll(db_path: str, source: str = "FNO_PAPER") -> float:
 async def record_trade_close(db_path: str, ticker: str, pnl: float,
                              r_multiple: float | None = None,
                              notes: str | None = None,
-                             *, source: str):
+                             *, source: str,
+                             outcome_pnl: float | None = None,
+                             outcome_r_multiple: float | None = None):
     """Append a realised close to the bankroll ledger.
 
     `source` names the division the P&L belongs to: SYSTEM (swing), MOMENTUM,
@@ -295,7 +297,17 @@ async def record_trade_close(db_path: str, ticker: str, pnl: float,
     # the signal-log row that birthed it. Best-effort; never raises.
     try:
         from analytics import record_trade_outcome
-        await record_trade_outcome(db_path, ticker, pnl, r_multiple=r_multiple, notes=notes)
+        await record_trade_outcome(
+            db_path,
+            ticker,
+            pnl if outcome_pnl is None else outcome_pnl,
+            r_multiple=(
+                r_multiple
+                if outcome_r_multiple is None
+                else outcome_r_multiple
+            ),
+            notes=notes,
+        )
     except Exception as e:
         # Don't propagate -- analytics failure must not break ledger writes.
         # But DO log it: [ROADMAP-4.3 2026-07-13] a bare `pass` here meant
@@ -304,6 +316,44 @@ async def record_trade_close(db_path: str, ticker: str, pnl: float,
         # the very table the strategy tuning reads.
         logger.warning("analytics_record_outcome_failed",
                        ticker=ticker, error=str(e))
+
+
+async def record_partial_realisation(
+    db_path: str,
+    ticker: str,
+    pnl: float,
+    *,
+    source: str,
+    notes: str | None = None,
+) -> None:
+    """Book realised partial P&L without fabricating a closed trade outcome.
+
+    A scale-out changes division equity immediately, but the position remains
+    open.  Sending it through :func:`record_trade_close` used to create a row in
+    ``trade_outcomes`` for the partial and another for the runner, inflating
+    trade count and corrupting expectancy.  ``TRADE_PARTIAL`` is deliberately
+    ledger-only; the final close records the one aggregate outcome.
+    """
+    before = await division_equity(db_path, source)
+    after = before + pnl
+    async with aiosqlite.connect(db_path) as db:
+        await db.execute(
+            "INSERT INTO bankroll_ledger "
+            "(timestamp, event_type, ticker, pnl, bankroll_before, "
+            " bankroll_after, source, notes) "
+            "VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+            (
+                datetime.now(timezone.utc).isoformat(),
+                "TRADE_PARTIAL",
+                ticker,
+                pnl,
+                before,
+                after,
+                source,
+                notes,
+            ),
+        )
+        await db.commit()
 
 async def record_cb_reset(db_path: str) -> None:
     """[MED-006 / ROADMAP-4.6 2026-07-12] Operator circuit-breaker reset.
@@ -758,7 +808,7 @@ async def division_breakdown(db_path: str) -> dict:
         async with aiosqlite.connect(db_path) as db:
             async with db.execute(
                 "SELECT source, COALESCE(SUM(pnl), 0.0), "
-                "SUM(CASE WHEN event_type != 'INITIAL' THEN 1 ELSE 0 END) "
+                "SUM(CASE WHEN event_type = 'TRADE_CLOSED' THEN 1 ELSE 0 END) "
                 "FROM bankroll_ledger GROUP BY source"
             ) as cur:
                 async for row in cur:

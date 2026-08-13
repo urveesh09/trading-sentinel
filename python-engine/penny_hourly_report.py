@@ -342,7 +342,6 @@ class PennyHourlyReport:
                 payload = json.dumps({
                     "chat_id": telegram_chat_id,
                     "text": body,
-                    "parse_mode": "HTML",
                     "disable_web_page_preview": True,
                 }).encode("utf-8")
                 resp = await asyncio.to_thread(

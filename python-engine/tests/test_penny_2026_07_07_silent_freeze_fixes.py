@@ -308,6 +308,16 @@ def test_logging_setup_root_level_is_set():
     )
 
 
+def test_http_client_request_logs_are_suppressed_to_protect_url_secrets():
+    """httpx request URLs can contain Telegram bot tokens in their path."""
+    from logging_setup import configure_structlog
+
+    configure_structlog(level="INFO")
+
+    assert logging.getLogger("httpx").getEffectiveLevel() == logging.WARNING
+    assert logging.getLogger("httpcore").getEffectiveLevel() == logging.WARNING
+
+
 def test_logging_setup_idempotent():
     """
     configure_structlog must be safe to call multiple times. Tests,
