@@ -736,7 +736,10 @@ class Settings(BaseSettings):
     PENNY_HEATMAP_WARN_PCT:        float = 0.01       # 1% from SL
 
     # Cadence + safety
-    PENNY_SCAN_INTERVAL_SEC:       int   = 30
+    # Production scans routinely exceed 30s; scheduling faster only creates
+    # max_instances skips and warning noise.  A 60s cadence preserves the
+    # strategy's minute-level responsiveness without guaranteed overlap.
+    PENNY_SCAN_INTERVAL_SEC:       int   = 60
     # Fail-safe code default: a missing/partial environment must never place
     # real Penny orders. Production explicitly opts in with
     # PENNY_LIVE_TRADING=true after its capital and broker checks are ready.
@@ -932,7 +935,9 @@ class Settings(BaseSettings):
     # --- execution ---------------------------------------------------------
     FNO_FILL_TIMEOUT_SEC:      int   = 30
     FNO_TICK_SIZE:             float = 0.05
-    FNO_SCAN_INTERVAL_SEC:     int   = 60
+    # Full-chain evaluation can exceed one minute.  Leave headroom so the next
+    # tick is useful work rather than an APScheduler max_instances warning.
+    FNO_SCAN_INTERVAL_SEC:     int   = 90
 
     # --- backtest model params ([ROADMAP-3.11 2026-07-12]) ------------------
     # fno_backtest.py replays evaluate_fno_mom on REAL futures bars but

@@ -31,7 +31,14 @@ from contextlib import asynccontextmanager
 from portfolio import filter_and_allocate, filter_momentum_signals
 from risk_engine import RiskEngine
 from position_tracker import update_daily_positions, get_open_positions, init_positions_db
-from performance import init_ledger, current_bankroll, record_trade_close, check_circuit_breakers, nifty_bankroll
+from performance import (
+    check_circuit_breakers,
+    current_bankroll,
+    init_ledger,
+    nifty_bankroll,
+    record_partial_realisation,
+    record_trade_close,
+)
 from models import PortfolioResponse, HealthResponse, ManualPositionRequest, BankrollAdjustment, Signal
 from backtest import run_backtest
 from models import PerformanceReport, OpenPosition
@@ -1661,6 +1668,24 @@ async def lifespan(app: FastAPI):
         logger.warning("kite_token_restore_startup_failed error=%s", str(e))
 
     scheduler.start()
+    # [STARTUP-ATTESTATION 2026-08-13] Write proof immediately after
+    # APScheduler starts.  A bounded `docker logs --tail` audit once mistook
+    # lines displaced by cache noise for a 6.5-hour scheduler outage.  Waiting
+    # for the normal 60-second interval leaves the same ambiguity at boot.
+    #
+    # This deliberately does NOT force-run any trading job: cron/interval
+    # semantics remain untouched.  It writes the existing loop-progress
+    # heartbeat, recovers any cross-process gap from its prior timestamp, and
+    # records the registered-job count while the process is known to be alive.
+    startup_tick = await _scheduler_tick_job(recover_previous=True)
+    logger.info(
+        "scheduler_startup_attested running=%s jobs=%d "
+        "recovered_previous=%s prior_gap_seconds=%s",
+        scheduler.running,
+        len(scheduler.get_jobs()),
+        startup_tick["recovered_previous"],
+        startup_tick["prior_gap_seconds"],
+    )
     yield
 
     # [LIVENESS-HEARTBEAT 2026-07-07] On shutdown, signal the heartbeat
@@ -2686,6 +2711,24 @@ async def _run_momentum_screener_impl(t0):
     except Exception as _e:
         logger.warning("momentum_signal_log_failed", error=str(_e))
 
+def _momentum_initial_risk(pos: dict) -> float:
+    """Immutable full-position R denominator, with a legacy-row fallback."""
+    stored = float(pos.get("initial_capital_at_risk") or 0.0)
+    if stored > 0:
+        return stored
+    per_share = float(pos["entry_price"]) - float(
+        pos.get("stop_loss_initial", float(pos["entry_price"]) * 0.95)
+    )
+    return max(0.0, per_share * int(pos.get("shares") or 0))
+
+
+def _aggregate_momentum_close(pos: dict, final_leg_pnl: float) -> tuple[float, float]:
+    """Return whole-trade P&L/R after an optional earlier scale-out."""
+    total_pnl = float(pos.get("realised_pnl") or 0.0) + final_leg_pnl
+    initial_risk = _momentum_initial_risk(pos)
+    return total_pnl, total_pnl / initial_risk if initial_risk > 0 else 0.0
+
+
 async def _close_momentum_position(pos: dict, exit_price: float, reason: str, notes: str):
     """Record a momentum close in the DB + ledger. Shared by the intraday
     monitor and the SL-M reconciler so both write the same shape.
@@ -2702,8 +2745,7 @@ async def _close_momentum_position(pos: dict, exit_price: float, reason: str, no
         is_intraday=_is_intraday_from_product_type(pos.get('product_type')),
     )
     realised_pnl = gross - costs
-    risk_initial = (pos['entry_price'] - pos.get('stop_loss_initial', pos['entry_price'] * 0.95)) * pos['shares']
-    r_multiple = realised_pnl / risk_initial if risk_initial > 0 else 0
+    total_pnl, r_multiple = _aggregate_momentum_close(pos, realised_pnl)
 
     async with aiosqlite.connect(settings.DB_PATH) as db:
         # [SCALE-OUT 2026-08-04] ADD rather than assign -- after a partial the
@@ -2712,11 +2754,11 @@ async def _close_momentum_position(pos: dict, exit_price: float, reason: str, no
         cur = await db.execute("""
             UPDATE positions
             SET status=?, exit_price=?, exit_date=?,
-                realised_pnl=COALESCE(realised_pnl, 0) + ?, r_multiple=?
+                realised_pnl=?, r_multiple=?
             WHERE ticker=? AND source='MOMENTUM'
               AND status IN ('OPEN', 'CLOSED_T1') AND exit_date IS NULL
         """, (reason, exit_price, datetime.now(timezone.utc).isoformat(),
-              realised_pnl, r_multiple, ticker))
+              total_pnl, r_multiple, ticker))
         await db.commit()
         rows_closed = cur.rowcount
 
@@ -2733,9 +2775,11 @@ async def _close_momentum_position(pos: dict, exit_price: float, reason: str, no
     # via the old "SYSTEM" default -- see record_trade_close for the full history.
     await record_trade_close(settings.DB_PATH, ticker, realised_pnl,
                             r_multiple=r_multiple, notes=notes,
+                            outcome_pnl=total_pnl,
+                            outcome_r_multiple=r_multiple,
                             source=pos.get('source') or 'MOMENTUM')
     logger.info("momentum_position_closed", ticker=ticker, exit_price=exit_price,
-                reason=notes, pnl=round(realised_pnl, 2), r=round(r_multiple, 4))
+                reason=notes, pnl=round(total_pnl, 2), r=round(r_multiple, 4))
     return True
 
 
@@ -2755,9 +2799,9 @@ async def _record_momentum_scale_out(
     wrong in the direction that flatters us.
 
     The r_multiple is deliberately NOT written here. The position is still
-    live, so its final R is unknown; writing a partial R would put a number in
-    trade_outcomes that no later close could correct. The ledger carries the
-    rupees, and the runner's own close carries the R.
+    live, so its final R is unknown. The partial ledger event changes cash
+    equity without creating a closed outcome; the runner's close later records
+    one aggregate P&L/R outcome against the immutable full-position risk.
     """
     ticker = pos['ticker']
     gross = (exit_price - pos['entry_price']) * sold_shares
@@ -2789,9 +2833,9 @@ async def _record_momentum_scale_out(
         )
         return False
 
-    await record_trade_close(
+    await record_partial_realisation(
         settings.DB_PATH, ticker, realised_pnl,
-        r_multiple=None, notes=f"momentum_scale_out {reason}",
+        notes=f"momentum_scale_out {reason}",
         source=pos.get('source') or 'MOMENTUM',
     )
     return True
@@ -3166,8 +3210,9 @@ async def auto_square_momentum():
                 is_intraday=_is_intraday_from_product_type(pos.get('product_type')),
             )
             realised_pnl = gross - costs
-            risk_initial = (pos['entry_price'] - pos.get('stop_loss_initial', pos['entry_price'] * 0.95)) * pos['shares']
-            r_multiple   = realised_pnl / risk_initial if risk_initial > 0 else 0
+            total_pnl, r_multiple = _aggregate_momentum_close(
+                pos, realised_pnl
+            )
 
             # [LEDGER-INTEGRITY 2026-07-26] The close must actually persist before
             # its P&L is booked. This UPDATE used to match on status='OPEN' only,
@@ -3188,7 +3233,7 @@ async def auto_square_momentum():
                     WHERE ticker=? AND source='MOMENTUM'
                       AND status IN ('OPEN', 'CLOSED_T1') AND exit_date IS NULL
                 """, (ltp, datetime.now(timezone.utc).isoformat(),
-                      realised_pnl, r_multiple, ticker))
+                      total_pnl, r_multiple, ticker))
                 await db.commit()
                 rows_closed = cur.rowcount
 
@@ -3213,9 +3258,11 @@ async def auto_square_momentum():
             # the swing pool via the old "SYSTEM" default.
             await record_trade_close(settings.DB_PATH, ticker, realised_pnl,
                                      r_multiple=r_multiple, notes="auto_square",
+                                     outcome_pnl=total_pnl,
+                                     outcome_r_multiple=r_multiple,
                                      source=pos.get('source') or 'MOMENTUM')
             logger.info("auto_square_position_closed", ticker=ticker,
-                        exit_price=ltp, pnl=round(realised_pnl, 2), r=round(r_multiple, 4))
+                        exit_price=ltp, pnl=round(total_pnl, 2), r=round(r_multiple, 4))
 
         except Exception as e:
             logger.error("auto_square_failed", ticker=ticker, error=str(e))

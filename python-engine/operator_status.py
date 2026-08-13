@@ -35,7 +35,7 @@ logger = logging.getLogger(__name__)
 # ---- DB accessors ----------------------------------------------------
 
 def _today_pnl_by_source(db_path: str) -> Dict[str, float]:
-    """Sum today's TRADE_CLOSED rows grouped by source.
+    """Sum today's realised trade rows grouped by source.
     Returns {source: total_pnl} with at least one entry per known source."""
     today = datetime.now(timezone.utc).date().isoformat()
     out: Dict[str, float] = {"PENNY": 0.0, "SYSTEM": 0.0, "MOMENTUM": 0.0}
@@ -43,7 +43,8 @@ def _today_pnl_by_source(db_path: str) -> Dict[str, float]:
         with sqlite3.connect(db_path) as con:
             cur = con.execute(
                 "SELECT source, COALESCE(SUM(pnl), 0.0) FROM bankroll_ledger "
-                "WHERE event_type='TRADE_CLOSED' AND DATE(timestamp)=? "
+                "WHERE event_type IN ('TRADE_PARTIAL','TRADE_CLOSED') "
+                "AND DATE(timestamp)=? "
                 "GROUP BY source",
                 (today,),
             )

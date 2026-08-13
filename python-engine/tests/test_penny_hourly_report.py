@@ -220,6 +220,46 @@ def test_telegram_sent_when_token_and_chat_id_set(monkeypatch):
     assert "test report body" in captured_payloads[0]
 
 
+def test_telegram_diagnostic_text_is_sent_without_html_parse_mode(monkeypatch):
+    """Dynamic reject reasons contain comparison operators such as ``<=``.
+
+    Telegram treats an unescaped ``<`` as malformed markup when HTML mode is
+    enabled and returns HTTP 400.  Hourly diagnostics are plain text, so the
+    transport must not request markup parsing.
+    """
+    from penny_hourly_report import PennyHourlyReport
+    import asyncio
+
+    captured_payloads = []
+
+    def fake_urlopen(req, timeout=5):
+        captured_payloads.append(json.loads(req.data.decode("utf-8")))
+        return _FakeResp(
+            status=200,
+            body=b'{"ok": true, "result": {"message_id": 1}}',
+        )
+
+    async def _fake_to_thread(fn, *a, **kw):
+        return fn(*a, **kw)
+
+    monkeypatch.setattr("penny_hourly_report.urllib.request.urlopen", fake_urlopen)
+    monkeypatch.setattr("penny_hourly_report.asyncio.to_thread", _fake_to_thread)
+
+    body = "top rejects: close 27.47 <= 27.55 & volume > threshold"
+    asyncio.run(PennyHourlyReport(":memory:").send(
+        body=body,
+        webhook_url="",
+        telegram_token="FAKE_TOKEN",
+        telegram_chat_id="12345",
+    ))
+
+    assert captured_payloads == [{
+        "chat_id": "12345",
+        "text": body,
+        "disable_web_page_preview": True,
+    }]
+
+
 def test_telegram_failure_falls_back_to_webhook(monkeypatch):
     """If Telegram fails (URLError), the webhook is called as a fallback."""
     from unittest.mock import MagicMock

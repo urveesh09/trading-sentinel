@@ -103,4 +103,10 @@ def configure_structlog(level: str = "INFO") -> None:
         # WARNING so uvicorn's INFO access logs keep their format.
         root_logger.addHandler(handler)
         root_logger.setLevel(getattr(logging, level.upper(), logging.INFO))
+        # httpx logs complete request URLs at INFO.  Telegram credentials are
+        # embedded in Bot API paths (`/bot<TOKEN>/sendMessage`), so allowing
+        # the library's request line into production logs leaks a live secret.
+        # Application-level failures remain logged by each caller.
+        logging.getLogger("httpx").setLevel(logging.WARNING)
+        logging.getLogger("httpcore").setLevel(logging.WARNING)
         _CONFIGURED = True

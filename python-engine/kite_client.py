@@ -473,12 +473,16 @@ class KiteClient:
                     df['datetime'] = pd.to_datetime(df['datetime'])
                     df.set_index('datetime', inplace=True)
                     return df
-                logger.info("data_fetch", event_type="intraday_cache_stale",
-                            ticker=ticker, last_candle=str(last_cached_dt),
-                            expected=str(expected_latest))
+                # Expected during a live session: the next caller refreshes the
+                # cache as soon as a candle closes.  INFO produced tens of
+                # thousands of lines per day and pushed operational evidence
+                # out of bounded `docker logs --tail` audits.
+                logger.debug("data_fetch", event_type="intraday_cache_stale",
+                             ticker=ticker, last_candle=str(last_cached_dt),
+                             expected=str(expected_latest))
 
         # Cache miss -> API
-        logger.info("data_fetch", event_type="intraday_cache_miss", ticker=ticker)
+        logger.debug("data_fetch", event_type="intraday_cache_miss", ticker=ticker)
         instrument_token = self.instrument_cache.get(ticker)
         if not instrument_token:
             raise ValueError(f"Unknown ticker: {ticker}")

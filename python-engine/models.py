@@ -171,6 +171,9 @@ class OpenPosition(BaseModel):
     exit_date: Optional[datetime] = None
     realised_pnl: Optional[float] = None
     r_multiple: Optional[float] = None
+    # Immutable full-position risk at the actual fill. ``shares`` is reduced
+    # after a scale-out, so final aggregate R must not use the runner quantity.
+    initial_capital_at_risk: Optional[float] = None
     # [TRAILING-EXITS 2026-06-16] Regime at entry -- drives the regime-aware
     # Chandelier trail (3.5x R1, 3.0x R2, 2.5x R3). NULL = legacy 3.0x trail.
     # [PENNY-EDGE 2026-07-01] Widened to Optional[str] so the new orchestrator's
@@ -183,7 +186,8 @@ class OpenPosition(BaseModel):
     _round_2dp = field_validator(
         "entry_price", "stop_loss_initial", "trailing_stop_current", "target_1", 
         "target_2", "atr_14_at_entry", "highest_close_since_entry", 
-        "exit_price", "realised_pnl", "r_multiple", mode="after"
+        "exit_price", "realised_pnl", "r_multiple",
+        "initial_capital_at_risk", mode="after"
     )(round_float_2dp)
 
 class PerformanceReport(BaseModel):
@@ -218,7 +222,10 @@ class PerformanceReport(BaseModel):
 class LedgerRow(BaseModel):
     id: int
     timestamp: datetime
-    event_type: Literal["INITIAL", "TRADE_CLOSED", "MANUAL_DEPOSIT", "MANUAL_WITHDRAWAL", "MANUAL_ADJUSTMENT"]
+    event_type: Literal[
+        "INITIAL", "TRADE_PARTIAL", "TRADE_CLOSED", "MANUAL_DEPOSIT",
+        "MANUAL_WITHDRAWAL", "MANUAL_ADJUSTMENT",
+    ]
     ticker: Optional[str]
     pnl: float
     bankroll_before: float

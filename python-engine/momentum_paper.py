@@ -39,7 +39,8 @@ import aiosqlite
 import structlog
 
 from config import settings
-from engine import calc_zerodha_costs
+from engine import calc_zerodha_costs, resolve_momentum_regime_params
+from models import Regime
 from momentum_exits import (
     ACTION_EXIT, ACTION_SCALE_OUT, ACTION_TRAIL,
     evaluate_momentum_exit, momentum_exit_status,
@@ -114,6 +115,26 @@ def _sqlite_safe(value):
     return str(value)
 
 
+def _paper_risk_pct(sig) -> float:
+    """Resolve the same regime risk fraction used by the live evaluator.
+
+    Old/manual signal shapes may not carry a regime.  Preserve their historical
+    paper sizing through ``MOMENTUM_RISK_PCT`` rather than guessing a regime.
+    """
+    raw = _sig_get(sig, "regime")
+    if raw is None:
+        return float(settings.MOMENTUM_RISK_PCT)
+    try:
+        regime = raw if isinstance(raw, Regime) else Regime(str(raw))
+    except (TypeError, ValueError):
+        logger.warning(
+            "momentum_paper_unknown_regime regime=%r fallback=legacy", raw
+        )
+        return float(settings.MOMENTUM_RISK_PCT)
+    _target, risk_pct, should_block = resolve_momentum_regime_params(regime)
+    return 0.0 if should_block else float(risk_pct)
+
+
 async def open_momentum_paper_positions(db_path: str, accepted: list,
                                         now_utc: Optional[datetime] = None) -> list:
     """Open a paper position for each accepted signal not already held today.
@@ -126,7 +147,6 @@ async def open_momentum_paper_positions(db_path: str, accepted: list,
 
     now_utc = now_utc or datetime.now(timezone.utc)
     pool = float(settings.MOMENTUM_PAPER_BANKROLL)
-    risk_pct = float(settings.MOMENTUM_RISK_PCT)
     opened = []
 
     try:
@@ -143,7 +163,9 @@ async def open_momentum_paper_positions(db_path: str, accepted: list,
                 stop = float(_sig_get(sig, "stop_loss", 0) or 0)
                 if not ticker or ticker in held:
                     continue
-                shares = paper_position_size(close, stop, pool, risk_pct)
+                shares = paper_position_size(
+                    close, stop, pool, _paper_risk_pct(sig)
+                )
                 if shares < 1:
                     logger.info("momentum_paper_skip ticker=%s reason=zero_shares "
                                 "close=%s stop=%s", ticker, close, stop)
@@ -154,8 +176,9 @@ async def open_momentum_paper_positions(db_path: str, accepted: list,
                     "(ticker, exchange, entry_date, entry_price, shares, "
                     " stop_loss_initial, trailing_stop_current, target_1, target_2, "
                     " atr_14_at_entry, highest_close_since_entry, status, source, "
-                    " product_type, regime_at_entry, t1_fired, vwap_at_entry) "
-                    "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+                    " product_type, regime_at_entry, t1_fired, vwap_at_entry, "
+                    " initial_capital_at_risk) "
+                    "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
                     (ticker, "NSE", now_utc.isoformat(), close, shares,
                      stop, stop,
                      _sqlite_safe(_sig_get(sig, "target_1")),
@@ -166,7 +189,8 @@ async def open_momentum_paper_positions(db_path: str, accepted: list,
                      # [THESIS-EXIT 2026-08-04] The paper book must test the
                      # same thesis the live book does, or it measures a
                      # strategy nobody is running.
-                     _sqlite_safe(_sig_get(sig, "vwap"))),
+                     _sqlite_safe(_sig_get(sig, "vwap")),
+                     (close - stop) * shares),
                 )
                 held.add(ticker)
                 opened.append(ticker)
@@ -199,21 +223,26 @@ async def _close_paper_position(db, db_path: str, pos: dict, exit_price: float,
     gross = (exit_price - entry) * shares
     costs = calc_zerodha_costs(entry, exit_price, shares, is_intraday=True)
     realised = gross - costs
-    risk_initial = (entry - float(pos["stop_loss_initial"])) * shares
-    r_multiple = realised / risk_initial if risk_initial > 0 else 0.0
+    previous_realised = float(pos.get("realised_pnl") or 0.0)
+    total_realised = previous_realised + realised
+    risk_initial = float(pos.get("initial_capital_at_risk") or 0.0)
+    if risk_initial <= 0:
+        # Legacy rows predate the immutable denominator. They could not have
+        # scaled out before that feature existed, so current shares are safe.
+        risk_initial = (
+            entry - float(pos["stop_loss_initial"])
+        ) * shares
+    r_multiple = total_realised / risk_initial if risk_initial > 0 else 0.0
 
-    # [SCALE-OUT 2026-08-04] ADD rather than assign. When a partial has already
-    # fired, the row is carrying the partial's P&L and this close only covers
-    # the runner; assigning would silently drop the banked half from the
-    # position row (the ledger would still be right, so the two would disagree).
-    # With no partial, realised_pnl is NULL and COALESCE makes this identical to
-    # the old assignment.
+    # The row and the single closed outcome carry whole-trade P&L/R. The ledger
+    # remains leg-based (TRADE_PARTIAL plus the runner's TRADE_CLOSED), so its
+    # sum equals this aggregate without double-booking cash equity.
     cur = await db.execute(
         "UPDATE positions SET status=?, exit_price=?, exit_date=?, "
-        "       realised_pnl=COALESCE(realised_pnl, 0) + ?, r_multiple=? "
+        "       realised_pnl=?, r_multiple=? "
         "WHERE ticker=? AND source=? AND exit_date IS NULL",
         (status, exit_price, datetime.now(timezone.utc).isoformat(),
-         realised, r_multiple, pos["ticker"], SOURCE),
+         total_realised, r_multiple, pos["ticker"], SOURCE),
     )
     await db.commit()
     if cur.rowcount != 1:
@@ -223,10 +252,12 @@ async def _close_paper_position(db, db_path: str, pos: dict, exit_price: float,
 
     await record_trade_close(db_path, pos["ticker"], realised,
                             r_multiple=r_multiple, notes=f"paper:{reason}",
+                            outcome_pnl=total_realised,
+                            outcome_r_multiple=r_multiple,
                             source=SOURCE)
     logger.info("momentum_paper_closed ticker=%s exit=%.2f pnl=%.2f r=%.2f reason=%s",
-                pos["ticker"], exit_price, realised, r_multiple, reason)
-    return realised
+                pos["ticker"], exit_price, total_realised, r_multiple, reason)
+    return total_realised
 
 
 async def momentum_paper_monitor(db_path: str, ltp_fn: LtpFn,
@@ -289,6 +320,14 @@ async def momentum_paper_monitor(db_path: str, ltp_fn: LtpFn,
                          pos["ticker"], SOURCE),
                     )
                     await db.commit()
+                    from performance import record_partial_realisation
+                    await record_partial_realisation(
+                        db_path,
+                        pos["ticker"],
+                        pnl,
+                        source=SOURCE,
+                        notes=f"momentum_scale_out {decision['reason']}",
+                    )
                     scaled.append((pos["ticker"], round(pnl, 2)))
 
                 elif action == ACTION_TRAIL and decision.get("new_stop"):

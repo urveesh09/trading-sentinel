@@ -69,7 +69,11 @@ def test_penny_risk_settings():
 
 def test_penny_cadence_and_safety_defaults():
     from config import Settings, settings
-    assert settings.PENNY_SCAN_INTERVAL_SEC == 30
+    # A production scan routinely runs longer than 30 seconds.  The one-minute
+    # default prevents guaranteed overlap/max-instance warnings while retaining
+    # minute-level signal detection.
+    assert settings.PENNY_SCAN_INTERVAL_SEC == 60
+    assert settings.FNO_SCAN_INTERVAL_SEC == 90
     assert Settings.model_fields["PENNY_LIVE_TRADING"].default is False
     assert settings.PENNY_DISABLE_TICKERS == ""
     # Additions by Uru 2026-06-21
