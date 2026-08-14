@@ -91,7 +91,10 @@ app.use(session({
   rolling: true 
 }));
 // 6. API Routes
-app.use('/api/auth', security.limiters.auth, require('./routes/auth'));
+// Rate-limit login initiation inside the auth router.  The OAuth callback must
+// remain reachable even when repeated login clicks exhaust that quota; sharing
+// one limiter caused a valid Zerodha callback to be rejected with HTTP 429.
+app.use('/api/auth', require('./routes/auth'));
 app.use('/api/signals', security.limiters.signals, require('./routes/signals'));
 app.use('/api/orders', security.limiters.orders, require('./routes/orders'));
 app.use('/api/token', security.limiters.token, require('./routes/token'));

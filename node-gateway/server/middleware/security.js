@@ -54,7 +54,11 @@ const createLimiter = (maxReq, windowMs = config.RATE_LIMIT_WINDOW_MS) => rateLi
 });
 
 const limiters = {
-  auth: createLimiter(10, 15 * 60 * 1000), // 10 req / 15 min
+  // OAuth initiation and callback must never share a counter. A burst of
+  // repeated login clicks previously consumed the quota and rejected the
+  // subsequent valid Zerodha callback before token exchange.
+  authLogin: createLimiter(10, 15 * 60 * 1000),
+  authCallback: createLimiter(10, 15 * 60 * 1000),
   signals: createLimiter(60, 60 * 1000),   // 60 req / 1 min
   orders: createLimiter(20, 60 * 1000),    // 20 req / 1 min
   token: createLimiter(10, 60 * 60 * 1000),// 10 req / 1 hour
