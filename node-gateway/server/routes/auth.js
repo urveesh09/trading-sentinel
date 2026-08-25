@@ -5,16 +5,17 @@ const tokenStore = require('../services/token-store');
 const config = require('../config');
 const { logger } = require('../middleware/logger');
 const { requireSession } = require('../middleware/auth');
+const { limiters } = require('../middleware/security');
 const { withRetry } = require('../utils/retry');
 
 // Generate Zerodha login URL
-router.get('/login', (req, res) => {
+router.get('/login', limiters.authLogin, (req, res) => {
   logger.info({ event_type: 'auth_initiated' }, 'Zerodha OAuth initiated');
   res.redirect(kite.getLoginURL());
 });
 
 // OAuth Callback from Zerodha
-router.get('/callback', async (req, res, next) => {
+router.get('/callback', limiters.authCallback, async (req, res, next) => {
   try {
     const { request_token, status } = req.query;
 
