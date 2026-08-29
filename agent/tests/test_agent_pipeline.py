@@ -4,6 +4,7 @@ Tests for agent.py pipeline functions - fetch, analyze, alert.
 
 import json
 import pytest
+import requests
 from unittest.mock import patch, MagicMock
 import os
 import sys
@@ -352,9 +353,8 @@ class TestRunMomentumPipeline:
             # Failed ticker NOT marked processed -> retried next poll
             assert "COCHINSHIP_MOM" not in agent_mod.processed_signals_today
 
-    def test_low_conviction_sends_veto_notice_not_buttons(self, agent_mod):
-        """[FIX 2026-07-11 SILENT-VETO] A Gemini conviction <50 must send
-        an informational veto notice (no buttons) instead of silence."""
+    def test_low_conviction_is_advisory_by_default(self, agent_mod):
+        """The deterministic, risk-sized setup remains a human decision."""
         mock_resp = MagicMock()
         mock_resp.json.return_value = {
             "signals": [{"ticker": "COCHINSHIP", "close": 100, "target_1": 110, "stop_loss": 90}],
@@ -370,6 +370,36 @@ class TestRunMomentumPipeline:
              patch.object(agent_mod, "analyze_with_minimax", return_value=_review(low_analysis)), \
              patch.object(agent_mod, "send_momentum_telegram_alert") as mock_buttons, \
              patch.object(agent_mod, "send_conviction_veto_notice") as mock_veto, \
+             patch.object(agent_mod, "MOMENTUM_MINIMAX_REJECT_POLICY", "advisory"), \
+             patch("time.sleep"):
+            agent_mod.processed_signals_today.clear()
+            agent_mod.run_momentum_pipeline()
+            mock_buttons.assert_called_once()
+            mock_veto.assert_not_called()
+            assert "COCHINSHIP_MOM" in agent_mod.processed_signals_today
+
+    def test_low_conviction_can_be_configured_as_hard_veto(self, agent_mod):
+        mock_resp = MagicMock()
+        mock_resp.json.return_value = {
+            "signals": [{
+                "ticker": "COCHINSHIP", "close": 100,
+                "target_1": 110, "stop_loss": 90,
+            }],
+            "market_regime": "BULL",
+            "momentum_pool": 5000,
+        }
+        mock_resp.raise_for_status = MagicMock()
+        low_analysis = {
+            "conviction_score": 30, "pitch": "Weak",
+            "rationale": "No catalyst", "risks": "High",
+        }
+
+        with patch("requests.get", return_value=mock_resp), \
+             patch.object(agent_mod, "scrape_sentiment", return_value=""), \
+             patch.object(agent_mod, "analyze_with_minimax", return_value=_review(low_analysis)), \
+             patch.object(agent_mod, "send_momentum_telegram_alert") as mock_buttons, \
+             patch.object(agent_mod, "send_conviction_veto_notice") as mock_veto, \
+             patch.object(agent_mod, "MOMENTUM_MINIMAX_REJECT_POLICY", "block"), \
              patch("time.sleep"):
             agent_mod.processed_signals_today.clear()
             agent_mod.run_momentum_pipeline()
@@ -417,6 +447,58 @@ class TestRunMomentumPipeline:
             mock_send.assert_called_once()
             assert "TCS_MOM" in agent_mod.processed_signals_today
 
+    def test_telegram_http_400_is_retried_and_not_deduplicated(self, agent_mod):
+        """A rejected Telegram payload must remain eligible for the next poll.
+
+        This is the Aug-25 PWL failure mode: the engine approved the setup,
+        Telegram returned 400, but the swallowed exception let the caller mark
+        it processed forever.
+        """
+        engine_resp = MagicMock()
+        engine_resp.json.return_value = {
+            "signals": [{
+                "ticker": "PWL", "close": 100, "target_1": 106,
+                "stop_loss": 97, "vwap": 99, "cost_ratio": 0.1,
+            }],
+            "market_regime": "BULL",
+            "momentum_pool": 5000,
+        }
+        engine_resp.raise_for_status = MagicMock()
+        analysis = {
+            "conviction_score": 70, "pitch": "Breakout",
+            "rationale": "Volume", "risks": "Whipsaw",
+        }
+
+        register_resp = MagicMock()
+        register_resp.raise_for_status = MagicMock()
+        register_resp.json.return_value = {"registered": True}
+        telegram_resp = MagicMock()
+        telegram_resp.raise_for_status.side_effect = requests.HTTPError(
+            "400 Client Error for url: "
+            "https://api.telegram.org/botfake/sendMessage"
+        )
+
+        def post_by_url(url, **kwargs):
+            if url.endswith("/api/internal/register-signal"):
+                return register_resp
+            return telegram_resp
+
+        with patch("requests.get", return_value=engine_resp), \
+             patch("requests.post", side_effect=post_by_url) as mock_post, \
+             patch.object(agent_mod, "scrape_sentiment", return_value=""), \
+             patch.object(agent_mod, "analyze_with_minimax", return_value=_review(analysis)), \
+             patch("time.sleep"):
+            agent_mod.processed_signals_today.clear()
+            agent_mod.run_momentum_pipeline()
+            agent_mod.run_momentum_pipeline()
+
+        telegram_calls = [
+            call for call in mock_post.call_args_list
+            if "/sendMessage" in call.args[0]
+        ]
+        assert len(telegram_calls) == 2
+        assert "PWL_MOM" not in agent_mod.processed_signals_today
+
 
 class TestSendTelegramAlert:
     def test_sends_swing_alert_with_buttons(self, agent_mod):
@@ -457,3 +539,83 @@ class TestSendTelegramAlert:
             assert "/sendMessage" in telegram_call.args[0]
             payload = telegram_call.kwargs["json"]
             assert "FALLBACK" in payload["text"]
+
+    @pytest.mark.parametrize(
+        "dynamic_text",
+        [
+            "Price <= VWAP; wait for confirmation",
+            "under_score catalyst",
+            "Risk [unmatched bracket and * marker",
+        ],
+    )
+    def test_momentum_dynamic_text_is_sent_as_plain_text(
+        self, agent_mod, dynamic_text
+    ):
+        """Free-text analysis cannot opt the message into Telegram parsing."""
+        analysis = {
+            "conviction_score": 75,
+            "pitch": dynamic_text,
+            "rationale": "Valid",
+            "risks": dynamic_text,
+        }
+        signal = {
+            "ticker": "PWL", "close": 100, "target_1": 106,
+            "stop_loss": 97, "vwap": 99, "cost_ratio": 0.1,
+        }
+        with patch.object(agent_mod, "register_approved_snapshot"), \
+             patch("requests.post") as mock_post:
+            mock_post.return_value = MagicMock(raise_for_status=MagicMock())
+            agent_mod.send_momentum_telegram_alert(
+                signal, _review(analysis), 5000
+            )
+
+        payload = mock_post.call_args.kwargs["json"]
+        assert "parse_mode" not in payload
+        assert dynamic_text in payload["text"]
+
+    def test_momentum_failure_redacts_bot_token(self, agent_mod, capsys):
+        secret = "123456:VERY_SECRET_BOT_TOKEN"
+        signal = {
+            "ticker": "PWL", "close": 100, "target_1": 106,
+            "stop_loss": 97, "vwap": 99, "cost_ratio": 0.1,
+        }
+        analysis = {
+            "conviction_score": 75, "pitch": "Valid",
+            "rationale": "Valid", "risks": "Contained",
+        }
+        leaked_url = f"https://api.telegram.org/bot{secret}/sendMessage"
+        response = MagicMock()
+        response.raise_for_status.side_effect = requests.HTTPError(
+            f"400 Client Error for url: {leaked_url}"
+        )
+
+        with patch.object(agent_mod, "TELEGRAM_BOT_TOKEN", secret), \
+             patch.object(agent_mod, "register_approved_snapshot"), \
+             patch("requests.post", return_value=response), \
+             pytest.raises(RuntimeError) as caught:
+            agent_mod.send_momentum_telegram_alert(
+                signal, _review(analysis), 5000
+            )
+
+        rendered = str(caught.value) + capsys.readouterr().out
+        assert secret not in rendered
+        assert "/bot<redacted>/sendMessage" in str(caught.value)
+
+    def test_low_conviction_button_carries_explicit_advisory(self, agent_mod):
+        signal = {
+            "ticker": "GRAVITA", "close": 1823.7, "target_1": 1864.2,
+            "stop_loss": 1798.38, "vwap": 1817.9, "cost_ratio": 0.0042,
+        }
+        review = _review({
+            "conviction_score": 38, "pitch": "Mixed",
+            "rationale": "Engine setup is valid", "risks": "Weak catalyst",
+        })
+        with patch.object(agent_mod, "register_approved_snapshot"), \
+             patch("requests.post") as mock_post:
+            mock_post.return_value = MagicMock(raise_for_status=MagicMock())
+            agent_mod.send_momentum_telegram_alert(signal, review, 5000)
+
+        payload = mock_post.call_args.kwargs["json"]
+        assert "AI conviction is low" in payload["text"]
+        assert "manual review" in payload["text"]
+        assert "reply_markup" in payload
