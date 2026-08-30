@@ -226,6 +226,12 @@ def evaluate_momentum_shadows(
             "crossover_lookback", "max_vwap_distance_atr",
         )
         features = {name: decision.get(name) for name in feature_names}
+        # MC3 rejects before the accepted-signal payload is assembled and the
+        # evaluator calls its measured value ``vol_ratio`` on that path.  Keep
+        # the persisted shadow schema stable as ``volume_ratio`` while retaining
+        # the evidence that explains how close the candidate was to the gate.
+        if features["volume_ratio"] is None:
+            features["volume_ratio"] = decision.get("vol_ratio")
         results.append({
             "trading_date": day_text,
             "ticker": ticker,

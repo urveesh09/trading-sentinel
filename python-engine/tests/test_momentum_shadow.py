@@ -1,5 +1,6 @@
 from dataclasses import FrozenInstanceError
 import ast
+import json
 from pathlib import Path
 
 import aiosqlite
@@ -122,6 +123,41 @@ def test_registry_is_immutable_and_shadow_evaluation_has_no_side_effect(tmp_path
     assert not untouched.exists()
     assert rows[0]["config"]["name"] == "MOM_BASE"
     assert rows[1]["config"]["name"] == "MOM_RECENCY_5"
+
+
+@pytest.mark.asyncio
+async def test_mc3_rejection_persists_measured_volume_ratio(tmp_path):
+    intra = pd.DataFrame({
+        "open":   [99.0, 99.0, 99.0, 99.0, 99.0, 100.0],
+        "high":   [100.0, 100.0, 100.0, 100.0, 100.0, 102.0],
+        "low":    [98.0, 98.0, 98.0, 98.0, 98.0, 99.0],
+        "close":  [99.0, 99.0, 99.0, 99.0, 99.0, 101.0],
+        "volume": [100.0, 100.0, 100.0, 100.0, 100.0, 125.0],
+    })
+    daily = pd.DataFrame({
+        "high": [150.0] * 20,
+        "low": [50.0] * 20,
+        "close": [100.0] * 20,
+        "volume": [10000.0] * 20,
+    })
+    rows = evaluate_momentum_shadows(
+        "TEST", intra, 100.0, 100000.0, 100000.0,
+        df_daily=daily,
+        vol_surge_threshold=1.5,
+        variants=["MOM_BASE"],
+        trading_date="2026-08-10",
+        bar_ts="2026-08-10T11:00:00",
+    )
+    assert rows[0]["reject_reason"] == "MC3_volume_surge_insufficient"
+    assert rows[0]["features"]["volume_ratio"] == pytest.approx(1.25)
+
+    db_path = str(tmp_path / "shadow.db")
+    assert await persist_momentum_shadow_results(db_path, rows) == 1
+    async with aiosqlite.connect(db_path) as db:
+        payload = (await (await db.execute(
+            "SELECT features_json FROM momentum_shadow_evaluations"
+        )).fetchone())[0]
+    assert json.loads(payload)["volume_ratio"] == pytest.approx(1.25)
 
 
 def _record(variant, bar_ts, accepted, reason=None, ticker="AAA"):

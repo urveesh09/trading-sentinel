@@ -97,6 +97,22 @@ MINIMAX_WALL_TIMEOUT_SEC = int(os.getenv("MINIMAX_WALL_TIMEOUT_SEC", "100"))
 # choice -- proceed means trading unreviewed, block means a MiniMax outage
 # stops the momentum book -- so it is configuration, not a silent default.
 MINIMAX_UNAVAILABLE_POLICY = os.getenv("MINIMAX_UNAVAILABLE_POLICY", "proceed")
+# The deterministic engine already owns entry geometry, stop placement and
+# position sizing.  MiniMax is a useful second opinion, but making its
+# nondeterministic score a mandatory gate hid otherwise valid, bounded-risk
+# signals from the operator (for example GRAVITA on 2026-08-28).  The default
+# is therefore advisory: show the warning and preserve the human decision.
+# Operators who deliberately want the old hard veto can set this to "block".
+MOMENTUM_MINIMAX_REJECT_POLICY = os.getenv(
+    "MOMENTUM_MINIMAX_REJECT_POLICY", "advisory"
+).strip().lower()
+if MOMENTUM_MINIMAX_REJECT_POLICY not in {"advisory", "block"}:
+    logger.warning(
+        "Invalid MOMENTUM_MINIMAX_REJECT_POLICY="
+        f"{MOMENTUM_MINIMAX_REJECT_POLICY!r}; "
+        "falling back to the safer 'block' policy."
+    )
+    MOMENTUM_MINIMAX_REJECT_POLICY = "block"
 TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
 TELEGRAM_CHAT_ID = os.getenv("TELEGRAM_CHAT_ID")
 QUANT_ENGINE_URL = os.getenv("QUANT_ENGINE_URL", "http://python-engine:8000/signals")
@@ -822,7 +838,17 @@ def run_momentum_pipeline():
             sentiment_text = scrape_sentiment(ticker)
             review         = analyze_with_minimax(signal, sentiment_text, regime)
 
-            if review.blocks(unavailable_policy=MINIMAX_UNAVAILABLE_POLICY):
+            hard_reject = (
+                review.verdict is Verdict.REJECT
+                and MOMENTUM_MINIMAX_REJECT_POLICY == "block"
+            )
+            unavailable_block = (
+                review.verdict is Verdict.REVIEW_UNAVAILABLE
+                and review.blocks(
+                    unavailable_policy=MINIMAX_UNAVAILABLE_POLICY
+                )
+            )
+            if hard_reject or unavailable_block:
                 logger.info(f"Momentum {ticker} blocked: {review.verdict.value} "
                             f"conviction={review.conviction} reason={review.reason}")
                 # [FIX 2026-07-11 SILENT-VETO] Tell the operator. Before
@@ -831,6 +857,13 @@ def run_momentum_pipeline():
                 send_conviction_veto_notice(signal, review)
                 mark_processed(sig_id)
                 continue
+
+            if review.verdict is Verdict.REJECT:
+                logger.info(
+                    f"Momentum {ticker} AI rejection shown as advisory: "
+                    f"conviction={review.conviction}; deterministic risk "
+                    "controls and operator approval remain authoritative."
+                )
 
             send_momentum_telegram_alert(signal, review, momentum_pool)
             mark_processed(sig_id)
@@ -862,7 +895,15 @@ def send_conviction_veto_notice(signal: Dict, review: "Review"):
 def send_momentum_telegram_alert(
     signal: Dict, review: "Review", momentum_pool: float
 ):
-    """Distinct format from swing alerts - clearly labelled INTRADAY."""
+    """Send a distinct, plain-text INTRADAY alert.
+
+    The MiniMax pitch/risk fields are untrusted free text.  Telegram's
+    Markdown parser rejects otherwise-valid messages containing characters
+    such as ``<``, ``_`` and unmatched brackets.  This path therefore uses
+    Telegram's default plain-text mode.  Delivery errors deliberately escape
+    to ``run_momentum_pipeline`` so it does not persist the dedup id and the
+    next poll retries the alert.
+    """
     url    = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage"
     ticker = signal.get("ticker", "UNKNOWN")
     price  = signal.get("close")
@@ -896,6 +937,12 @@ def send_momentum_telegram_alert(
             age_line = ""
 
     analysis = review.payload
+    advisory_line = ""
+    if review.verdict is Verdict.REJECT:
+        advisory_line = (
+            "WARNING: AI conviction is low. This is an advisory; "
+            "execute only after manual review.\n"
+        )
     if not review.available:
         text = (f"{header}\n"
                 f"{age_line}"
@@ -906,6 +953,7 @@ def send_momentum_telegram_alert(
     else:
         text = (f"{header}\n\n"
                 f"{age_line}"
+                f"{advisory_line}"
                 f"Entry: Rs{price} | VWAP: Rs{vwap}\n"
                 f"Target: Rs{target} | SL: Rs{sl}\n"
                 f"Cost ratio: {ratio:.1%} of expected profit\n"
@@ -935,7 +983,6 @@ def send_momentum_telegram_alert(
     payload = {
         "chat_id":      TELEGRAM_CHAT_ID,
         "text":         text,
-        "parse_mode":   "Markdown",
         "reply_markup": json.dumps(keyboard)
     }
     try:
@@ -943,7 +990,19 @@ def send_momentum_telegram_alert(
         res.raise_for_status()
         logger.info(f"Momentum Telegram sent: {ticker}")
     except Exception as e:
-        logger.error(f"Momentum Telegram failed: {ticker}: {e}")
+        # requests' HTTPError includes the request URL, and Telegram embeds
+        # the live bot token in that URL.  Raise only a redacted exception:
+        # the caller logs it (with traceback) and leaves the signal unmarked
+        # so it is retried on the next poll.
+        safe_error = str(e)
+        if TELEGRAM_BOT_TOKEN:
+            safe_error = safe_error.replace(str(TELEGRAM_BOT_TOKEN), "<redacted>")
+        safe_error = re.sub(
+            r"(?i)(/bot)[^/\s?]+", r"\1<redacted>", safe_error
+        )
+        raise RuntimeError(
+            f"Momentum Telegram delivery failed for {ticker}: {safe_error}"
+        ) from None
 
 def run_pipeline():
     # Fetch regime from Container B health/signals endpoint

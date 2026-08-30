@@ -19,8 +19,8 @@ single trade this system executed got its button precisely because MiniMax
 timed out; it lost Rs 8.41. Three signals the model actively vetoed never
 reached the operator at all.
 
-THE FIX, AND WHAT IT DELIBERATELY DOES NOT CHANGE
--------------------------------------------------
+THE FIX AND CALLER-OWNED POLICY
+-------------------------------
 Borrowed from HKUDS/Vibe-Trading's `src/live/advisory` (MIT), which separates
 an OBSERVATIONAL risk opinion from the deterministic gate that actually decides.
 Their verdict set is approve / approve_with_concerns / reject /
@@ -28,11 +28,14 @@ review_unavailable, aggregated worst-case, and the fourth value is ranked MORE
 severe than "approve with concerns" so a broken reviewer is loud rather than
 invisible.
 
-We adopt the vocabulary and the ranking. We do NOT adopt their policy of never
-blocking, because that would change who decides trades, and that is the
-operator's call to make rather than a refactor's side effect. So:
+We adopt the vocabulary and the ranking, while leaving the action policy to
+each caller:
 
-  * REJECT still blocks the EXEC button, exactly as today.
+  * Momentum treats REJECT as a visible advisory by default because its
+    deterministic engine already owns sizing, stops and entry geometry, and
+    execution still requires an operator button press. Set
+    `MOMENTUM_MINIMAX_REJECT_POLICY=block` to restore a hard veto.
+  * The swing pipeline retains its existing hard veto for REJECT.
   * REVIEW_UNAVAILABLE still lets the alert through by default, exactly as
     today -- but it now carries WHY, that reason reaches the operator's phone,
     and it is a distinct verdict rather than an absence.
