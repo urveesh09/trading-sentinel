@@ -119,6 +119,30 @@ async def build_status_snapshot(db_path: str) -> Dict[str, Any]:
     except Exception as e:
         logger.warning("status_circuit_query_failed error=%s", str(e))
 
+    # Circuit-breaker computation is not the enforcement state.  A broker
+    # authorization failure or operator action writes the filesystem sentinel
+    # directly, so surface that separately and merge it into the headline.
+    try:
+        from halt_switch import halt_state
+        entry_halted, attribution = halt_state(None)
+        if entry_halted:
+            halted = True
+            reason = str((attribution or {}).get("reason") or "global entry halt")
+            if reason not in halt_reasons:
+                halt_reasons.append(reason)
+    except Exception as e:
+        logger.warning("status_entry_halt_query_failed error=%s", str(e))
+
+    try:
+        from order_execution_readiness import snapshot as order_readiness
+        execution = order_readiness()
+    except Exception as e:
+        logger.warning("status_order_execution_readiness_failed error=%s", str(e))
+        execution = {
+            "status": "UNVERIFIED", "reason": "readiness state unavailable",
+            "updated_at": None,
+        }
+
     # Penny bankroll is approximated as the *initial* penny pool (2500)
     # plus PENNY P&L today. This is a rough estimate; the daily
     # attribution job has the full picture.
@@ -143,6 +167,7 @@ async def build_status_snapshot(db_path: str) -> Dict[str, Any]:
         },
         "halted": halted,
         "halt_reasons": halt_reasons,
+        "order_execution": execution,
         "by_source_today": today_by_source,
     }
 
@@ -159,6 +184,11 @@ def format_status(snap: Dict[str, Any]) -> str:
         reasons = "; ".join(snap["halt_reasons"][:3])
         more = f" (+{len(snap['halt_reasons'])-3} more)" if len(snap["halt_reasons"]) > 3 else ""
         lines.append(f"⚠ HALTED: {reasons}{more}")
+
+    execution = snap.get("order_execution", {})
+    execution_status = execution.get("status", "UNVERIFIED")
+    marker = "✓" if execution_status == "AUTHORIZED" else "⚠"
+    lines.append(f"{marker} Broker orders: {execution_status}")
 
     p = snap["penny"]
     p_sign = "+" if p["pnl_today"] >= 0 else ""

@@ -155,6 +155,7 @@ describe('kite.js enforcement', () => {
       getToken: jest.fn().mockReturnValue('fake_token'),
       markExpired: jest.fn(),
     }));
+    jest.doMock('../../services/telegram', () => ({ sendAlert: jest.fn() }));
 
     ({ _mockInstance: mockKite } = require('kiteconnect'));
     kiteService = require('../../services/kite');
@@ -220,5 +221,25 @@ describe('kite.js enforcement', () => {
       { tradingsymbol: 'AAA' }, { intent: 'entry', channel: 'momentum' }
     );
     expect(res).toEqual({ order_id: 'ORD-1' });
+  });
+
+  test('static-IP PermissionException atomically trips global halt but exits remain callable', async () => {
+    setup(tmpDir);
+    const denied = new Error('IP address is not allowed to place orders; configure static IP');
+    denied.name = 'PermissionException';
+    mockKite.placeOrder.mockRejectedValueOnce(denied);
+
+    await expect(kiteService.placeOrder(
+      { tradingsymbol: 'AAA' }, { intent: 'entry', channel: 'momentum' }
+    )).rejects.toMatchObject({ authorizationDenied: true, retryable: false });
+
+    const payload = JSON.parse(fs.readFileSync(path.join(tmpDir, 'HALT'), 'utf8'));
+    expect(payload.by).toBe('kite_order_authorization');
+    expect(payload.reason).toMatch(/static IP/i);
+
+    mockKite.placeOrder.mockResolvedValueOnce({ order_id: 'EXIT-1' });
+    await expect(kiteService.placeOrder(
+      { tradingsymbol: 'AAA' }, { intent: 'exit', channel: 'momentum' }
+    )).resolves.toEqual({ order_id: 'EXIT-1' });
   });
 });

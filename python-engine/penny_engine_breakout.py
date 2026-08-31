@@ -416,9 +416,11 @@ def smart_eod_check(pos: dict, current_price: float, now: datetime) -> dict:
        "reason": "<which branch>"}
     """
     from config import settings
-    entry = pos["entry_price"]
-    stop = pos["stop_loss"]
-    target = pos["target"]
+    entry = float(pos["entry_price"])
+    # Runtime positions come from the canonical positions table.  Retain the
+    # legacy signal-dict names for direct evaluator/test callers.
+    stop = float(pos.get("stop_loss_initial", pos.get("stop_loss")))
+    target = float(pos.get("target_1", pos.get("target")))
     R = entry - stop  # risk per share
 
     in_profit = current_price >= entry
@@ -430,7 +432,7 @@ def smart_eod_check(pos: dict, current_price: float, now: datetime) -> dict:
         return {"action": "hold", "reason": "profit_far_from_target"}
 
     # In loss. entry_time may be a string (from DB) or naive/tz-aware datetime.
-    entry_time = pos["entry_time"]
+    entry_time = pos.get("entry_date", pos.get("entry_time"))
     if isinstance(entry_time, str):
         from datetime import datetime as _dt
         try:

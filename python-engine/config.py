@@ -40,6 +40,9 @@ class Settings(BaseSettings):
     
     STRATEGY_VERSION: str = "1.0.0"
     DB_PATH: str = "/data/cache.db"
+    # Separate proof of broker ORDER permission from token/quote readiness.
+    # Empty means a state file beside DB_PATH.  BLOCKED persists across restart.
+    ORDER_EXECUTION_STATE_PATH: str = ""
     UNIVERSE_PATH: str = "/data/nifty500.csv"
     # [PENNY 2026-06-24] Penny universe JSON path (the static-rank JSON
     # loaded by PennyUniverse at startup, refreshed daily by

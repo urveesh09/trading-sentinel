@@ -5,9 +5,9 @@
  * `trading_data` volume at /data, so one `touch /data/HALT` stops every order
  * path in the system regardless of which container owns it.
  *
- * This half is READ-ONLY BY DESIGN. Trips and clears happen in python-engine.
- * node-gateway keeps its long-standing "writes nothing to /data" posture (see
- * services/token-store.js) — it only needs to obey the switch, not operate it.
+ * Node may trip the global sentinel when its own broker boundary discovers an
+ * execution-authorization failure (for example a non-allow-listed static IP).
+ * It never clears the sentinel.
  *
  * FAIL-CLOSED, PRECISELY
  * ----------------------
@@ -136,6 +136,35 @@ function assertNotHalted(channel = null) {
   if (halted) throw new TradingHaltedError(attribution);
 }
 
+/** Atomically trip the global halt. First writer wins; never overwrite cause. */
+function tripGlobal({ by, reason }) {
+  const p = sentinelPath(null);
+  const payload = JSON.stringify({
+    scope: 'global',
+    by: by || 'node_gateway',
+    reason: reason || 'broker safety boundary tripped',
+    tripped_at: new Date().toISOString(),
+  });
+  try {
+    fs.mkdirSync(HALT_DIR, { recursive: true });
+    const fd = fs.openSync(p, 'wx');
+    try {
+      fs.writeFileSync(fd, payload, 'utf8');
+      fs.fsyncSync(fd);
+    } finally {
+      fs.closeSync(fd);
+    }
+    logger.error({ event_type: 'global_halt_tripped', path: p, by, reason });
+    return true;
+  } catch (err) {
+    if (err && err.code === 'EEXIST') return false;
+    logger.error({ event_type: 'global_halt_trip_failed', path: p, reason: err.message });
+    // An unreadable/unwritable safety path already causes haltState to fail
+    // closed on subsequent entries; propagate so the caller cannot hide it.
+    throw err;
+  }
+}
+
 /** One-line human summary for /status and Telegram. */
 function describe(channel = null) {
   const { halted, attribution } = haltState(channel);
@@ -150,6 +179,7 @@ module.exports = {
   assertNotHalted,
   haltState,
   describe,
+  tripGlobal,
   sentinelPath,
   HALT_DIR,
 };

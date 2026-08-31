@@ -9,6 +9,9 @@ jest.mock('../../services/kite', () => ({
   getLTP: jest.fn(),
   placeOrder: jest.fn(),
   getOrderHistory: jest.fn(),
+  getOrders: jest.fn(),
+  getPositions: jest.fn(),
+  cancelOrder: jest.fn(),
   placeGTT: jest.fn(),
 }));
 
@@ -75,8 +78,11 @@ function setupHappyPath() {
   });
   kite.placeOrder.mockResolvedValue({ order_id: 'ORD-001' });
   kite.getOrderHistory.mockResolvedValue([
-    { status: 'COMPLETE', average_price: 1005 },
+    { status: 'COMPLETE', average_price: 1005, filled_quantity: 5 },
   ]);
+  kite.getOrders.mockResolvedValue([]);
+  kite.getPositions.mockResolvedValue({ net: [], day: [] });
+  kite.cancelOrder.mockResolvedValue({ order_id: 'ORD-001' });
   kite.placeGTT.mockResolvedValueOnce({ trigger_id: 'GTT-STOP-1' })
     .mockResolvedValueOnce({ trigger_id: 'GTT-TGT-1' });
   mockDbRun.mockReturnValue({});
@@ -165,16 +171,15 @@ describe('executeSignal()', () => {
   const ANCHORED_STOP = 955;
   const ANCHORED_T1 = 1080;
 
-  test('GTT stop trigger follows the fill, and its price sits above the trigger', async () => {
+  test('GTT stop trigger follows the fill, and its price is executable below the trigger', async () => {
     const signal = makeSignal({ stop_loss: 950 });
     await executeSignal(signal, 'EXEC', false);
     const stopCall = kite.placeGTT.mock.calls[0][0];
 
     expect(stopCall.trigger_values).toEqual([ANCHORED_STOP]);
     const stopPrice = stopCall.orders[0].price;
-    // 955 * 1.002 = 956.91 → snapToTick UP to nearest 0.10 = 957.0
-    expect(stopPrice).toBe(Math.ceil(Math.round(ANCHORED_STOP * 1.002 * 10 * 100) / 100) / 10);
-    expect(stopPrice).toBeGreaterThan(ANCHORED_STOP);
+    expect(stopPrice).toBe(Math.floor(Math.round(ANCHORED_STOP * 0.998 * 10 * 100) / 100) / 10);
+    expect(stopPrice).toBeLessThan(ANCHORED_STOP);
     // The risk distance the engine sized against is preserved exactly.
     expect(1005 - stopCall.trigger_values[0]).toBe(1000 - 950);
   });
@@ -204,6 +209,44 @@ describe('executeSignal()', () => {
       { status: 'REJECTED', status_message: 'Insufficient funds' },
     ]);
     await expect(executeSignal(makeSignal(), 'EXEC')).rejects.toThrow(OrderExecutionError);
+  });
+
+  test('OPEN timeout is cancelled and never treated as filled or protected', async () => {
+    kite.getOrderHistory
+      .mockResolvedValueOnce([{ status: 'OPEN', filled_quantity: 0 }])
+      .mockResolvedValue([{ status: 'CANCELLED', filled_quantity: 0 }]);
+    const { reconcilePlacedOrder } = require('../../services/executor');
+    const result = await reconcilePlacedOrder('ORD-001', 5, { attempts: 1, delayMs: 0, ticker: 'RELIANCE', product: 'CNC' });
+    expect(kite.cancelOrder).toHaveBeenCalledWith('ORD-001');
+    expect(result.state).toBe('CANCELLED');
+    expect(result.filledQuantity).toBe(0);
+  });
+
+  test('late COMPLETE after cancellation is recognized as a real fill', async () => {
+    kite.getOrderHistory
+      .mockResolvedValueOnce([{ status: 'OPEN', filled_quantity: 0 }])
+      .mockResolvedValueOnce([{ status: 'COMPLETE', filled_quantity: 5, average_price: 1006 }]);
+    const { reconcilePlacedOrder } = require('../../services/executor');
+    const result = await reconcilePlacedOrder('ORD-001', 5, { attempts: 1, delayMs: 0 });
+    expect(result).toEqual(expect.objectContaining({ state: 'COMPLETE', filledQuantity: 5, fillPrice: 1006 }));
+  });
+
+  test('cancel failure with an OPEN order remains UNKNOWN and fail-closed', async () => {
+    kite.getOrderHistory.mockResolvedValue([{ status: 'OPEN', filled_quantity: 0 }]);
+    kite.cancelOrder.mockRejectedValue(new Error('cancel timeout'));
+    const { reconcilePlacedOrder } = require('../../services/executor');
+    const result = await reconcilePlacedOrder('ORD-001', 5, { attempts: 1, delayMs: 0 });
+    expect(result.state).toBe('UNKNOWN');
+    expect(result.cancelError).toMatch(/cancel timeout/);
+  });
+
+  test('cancelled partial fill returns only the actually filled quantity', async () => {
+    kite.getOrderHistory
+      .mockResolvedValueOnce([{ status: 'OPEN', filled_quantity: 2, average_price: 1004 }])
+      .mockResolvedValueOnce([{ status: 'CANCELLED', filled_quantity: 2, average_price: 1004 }]);
+    const { reconcilePlacedOrder } = require('../../services/executor');
+    const result = await reconcilePlacedOrder('ORD-001', 5, { attempts: 1, delayMs: 0 });
+    expect(result).toEqual(expect.objectContaining({ state: 'PARTIAL', filledQuantity: 2, fillPrice: 1004 }));
   });
 
   // ─── Sync to Container B ───
@@ -272,9 +315,34 @@ describe('executeSignal()', () => {
   });
 
   // ─── Order placement failure ───
-  test('throws OrderExecutionError when order placement fails after retries', async () => {
+  test('ambiguous order placement is not retried and fails UNKNOWN when tag lookup finds nothing', async () => {
     kite.placeOrder.mockRejectedValue(new Error('Kite unavailable'));
-    await expect(executeSignal(makeSignal(), 'EXEC')).rejects.toThrow(OrderExecutionError);
+    let caught;
+    await executeSignal(makeSignal(), 'EXEC').catch(err => { caught = err; });
+    expect(caught).toBeInstanceOf(OrderExecutionError);
+    expect(caught.outcomeUnknown).toBe(true);
+    expect(kite.placeOrder).toHaveBeenCalledTimes(1);
+    expect(kite.getOrders).toHaveBeenCalledTimes(1);
+  });
+
+  test('definitive placement rejection fails immediately without reconciliation or retry', async () => {
+    kite.placeOrder.mockRejectedValue(new OrderExecutionError('Insufficient funds'));
+    await expect(executeSignal(makeSignal(), 'EXEC')).rejects.toThrow(/Insufficient funds/);
+    expect(kite.placeOrder).toHaveBeenCalledTimes(1);
+    expect(kite.getOrders).not.toHaveBeenCalled();
+  });
+
+  test('ambiguous placement recovers the uniquely tagged broker order without resubmitting', async () => {
+    kite.placeOrder.mockRejectedValueOnce(new Error('response timeout'));
+    const { entryTag } = require('../../services/executor');
+    kite.getOrders.mockResolvedValue([{
+      order_id: 'RECOVERED-1', tag: entryTag(makeSignal().signal_id),
+      tradingsymbol: 'RELIANCE', transaction_type: 'BUY', quantity: 5,
+    }]);
+    kite.getOrderHistory.mockResolvedValue([{ status: 'COMPLETE', average_price: 1005, filled_quantity: 5 }]);
+    const result = await executeSignal(makeSignal(), 'EXEC');
+    expect(result.orderId).toBe('RECOVERED-1');
+    expect(kite.placeOrder).toHaveBeenCalledTimes(1);
   });
 
   // ─── MIS protective stop (2026-07-15 fix) ───

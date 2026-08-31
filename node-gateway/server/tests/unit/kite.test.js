@@ -11,6 +11,9 @@ jest.mock('kiteconnect', () => {
     placeOrder: jest.fn(),
     getOrderHistory: jest.fn(),
     placeGTT: jest.fn(),
+    getOrders: jest.fn(),
+    getPositions: jest.fn(),
+    cancelOrder: jest.fn(),
   };
   return { KiteConnect: jest.fn(() => mockKite), _mockInstance: mockKite };
 });
@@ -133,6 +136,17 @@ describe('Kite Service', () => {
     mockKite.getOrderHistory.mockResolvedValue([{ status: 'COMPLETE' }]);
     const result = await kiteService.getOrderHistory('ORD-1');
     expect(result).toEqual([{ status: 'COMPLETE' }]);
+  });
+
+  test('exposes broker reconciliation methods through the authenticated wrapper', async () => {
+    mockKite.getOrders.mockResolvedValue([{ order_id: 'ORD-1' }]);
+    mockKite.getPositions.mockResolvedValue({ net: [] });
+    mockKite.cancelOrder.mockResolvedValue({ order_id: 'ORD-1' });
+
+    await expect(kiteService.getOrders()).resolves.toEqual([{ order_id: 'ORD-1' }]);
+    await expect(kiteService.getPositions()).resolves.toEqual({ net: [] });
+    await expect(kiteService.cancelOrder('ORD-1')).resolves.toEqual({ order_id: 'ORD-1' });
+    expect(mockKite.cancelOrder).toHaveBeenCalledWith('regular', 'ORD-1');
   });
 
   test('getLoginURL returns URL string', () => {
