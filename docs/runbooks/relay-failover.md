@@ -58,12 +58,25 @@ the stack to a network that can reach Kite directly).
    public IP unchanged, security list still allows 31527. If the
    public IP changed: update `KITE_BASE_URL` in both `.env` files
    AND whitelist the new IP in the Kite developer console
-   (Kite error "IP not whitelisted" is the symptom of forgetting the
-   second half).
+   (Kite errors such as "IP address is not allowed to place orders" are
+   the symptom of forgetting the second half). Quote/token health does
+   not prove order authorization.
+
+   Sentinel records broker-order readiness separately as `UNVERIFIED`,
+   `AUTHORIZED`, or `BLOCKED`. A real accepted order is the only positive
+   evidence. A static-IP/permission rejection writes the shared global
+   `HALT`, blocks every new live entry, and pages the operator; exits remain
+   enabled so existing positions can still be reduced.
 
 5. **Relay up, Kite itself down** (probe sees 5xx; Kite status page /
    broker outage) → nothing to fix on our side; positions may need
    manual management via the Kite app, which does not use the relay.
+
+After correcting the relay/IP registration, reconcile all `UNKNOWN`/open orders
+and broker positions and verify the registered egress IP before manually
+clearing the global halt. If an existing position needs an exit, its accepted
+exit provides direct authorization evidence. Never clear the halt merely
+because quotes recovered.
 
 ## While the relay is down
 

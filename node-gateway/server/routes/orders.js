@@ -8,6 +8,26 @@ const { requireSession, requireInternalSecret } = require('../middleware/auth');
 const kite = require('../services/kite');
 const { validate } = require('../middleware/validate');
 const { ReplayAttackError } = require('../utils/errors');
+const crypto = require('crypto');
+
+// Serialize same-key requests inside this process and retain the known broker
+// id. Broker lookup provides restart recovery; this registry closes the small
+// eventual-consistency window immediately after a successful submission.
+const squareOffLocks = new Map();
+const squareOffKnownOrders = new Map();
+
+async function acquireSquareOffLock(key) {
+  const previous = squareOffLocks.get(key) || Promise.resolve();
+  let releaseGate;
+  const gate = new Promise(resolve => { releaseGate = resolve; });
+  const tail = previous.then(() => gate);
+  squareOffLocks.set(key, tail);
+  await previous;
+  return () => {
+    releaseGate();
+    if (squareOffLocks.get(key) === tail) squareOffLocks.delete(key);
+  };
+}
 
 const executeSchema = z.object({
   signal_id: z.string().uuid()
@@ -19,6 +39,7 @@ const squareOffSchema = z.object({
   order_type: z.enum(['MARKET', 'LIMIT']),
   limit_price: z.number().optional(),
   product_type: z.enum(['MIS', 'CNC']),
+  idempotency_key: z.string().min(8).max(128),
   reason: z.string().optional()
 });
 
@@ -49,8 +70,21 @@ router.get('/ltp', requireInternalSecret, async (req, res, next) => {
 // POST /api/orders/square-off
 // Called by Container B at 15:15 IST for momentum auto-square
 router.post('/square-off', requireInternalSecret, validate(squareOffSchema, 'body'), async (req, res, next) => {
+  let releaseLock = null;
   try {
-    const { ticker, shares, order_type, limit_price, product_type, reason } = req.body;
+    const { ticker, shares, order_type, limit_price, product_type, idempotency_key, reason } = req.body;
+    releaseLock = await acquireSquareOffLock(idempotency_key);
+    const requestFingerprint = JSON.stringify({
+      ticker, shares, product_type, order_type, limit_price: limit_price || null,
+    });
+    const knownOrder = squareOffKnownOrders.get(idempotency_key);
+    if (knownOrder && knownOrder.fingerprint !== requestFingerprint) {
+      return res.status(409).json({
+        success: false, state: 'REJECTED', terminal: true, complete: false,
+        order_id: knownOrder.orderId,
+        message: 'This square-off idempotency key was already used with different order parameters.',
+      });
+    }
 
     // [FIX 2026-07-15] A raw MARKET SELL is rejected by Zerodha over the API
     // ("Market orders without market protection are not allowed"). Callers today
@@ -61,7 +95,7 @@ router.post('/square-off', requireInternalSecret, validate(squareOffSchema, 'bod
     // API-legal.
     let effectiveType = order_type;
     let effectivePrice = limit_price;
-    if (order_type === 'MARKET') {
+    if (!knownOrder && order_type === 'MARKET') {
       const fullTicker = `NSE:${ticker}`;
       const ltpData = await kite.getLTP([fullTicker]);
       const ltp = ltpData && ltpData[fullTicker] && ltpData[fullTicker].last_price;
@@ -70,6 +104,7 @@ router.post('/square-off', requireInternalSecret, validate(squareOffSchema, 'bod
       effectivePrice = snapToTick(ltp * 0.995, -1);
     }
 
+    const squareOffTag = `QX_${crypto.createHash('sha256').update(idempotency_key).digest('hex').slice(0, 16)}`;
     const orderParams = {
       exchange: 'NSE',
       tradingsymbol: ticker,
@@ -77,7 +112,7 @@ router.post('/square-off', requireInternalSecret, validate(squareOffSchema, 'bod
       quantity: shares,
       order_type: effectiveType,
       product: product_type,
-      tag: 'QUANT_SENTINEL'
+      tag: squareOffTag
     };
 
     if (effectiveType === 'LIMIT') {
@@ -88,14 +123,107 @@ router.post('/square-off', requireInternalSecret, validate(squareOffSchema, 'bod
     // Square-off is an EXIT: never halt-gated. Blocking it would leave the
     // position open past its square-off with no protection, which is the
     // opposite of what a kill switch is for.
-    const orderId = await kite.placeOrder(orderParams, { intent: 'exit', channel: 'momentum' });
+    let orderResponse = knownOrder ? { order_id: knownOrder.orderId } : null;
+    try {
+      // Cross-service idempotency: Python may time out after this process (and
+      // Kite) accepted the prior request. Look up the stable tag BEFORE every
+      // submission so the retry reconciles that order rather than selling twice.
+      if (!orderResponse) {
+        const existingOrders = await kite.getOrders();
+        const existing = (existingOrders || []).filter(order =>
+          order.tag === squareOffTag && order.transaction_type === 'SELL' &&
+          order.tradingsymbol === ticker && Number(order.quantity) === Number(shares)
+        );
+        if (existing.length > 1) {
+          return res.status(503).json({
+            success: false, state: 'UNKNOWN', terminal: false, complete: false,
+            order_id: null,
+            message: 'Multiple broker orders match this square-off idempotency key; manual reconciliation is required.',
+          });
+        }
+        if (existing.length === 1) orderResponse = { order_id: existing[0].order_id };
+      }
+    } catch (err) {
+      return res.status(503).json({
+        success: false, state: 'UNKNOWN', terminal: false, complete: false,
+        order_id: null,
+        message: 'Unable to check square-off idempotency at the broker; no order was submitted.',
+      });
+    }
+
+    try {
+      // A non-idempotent SELL is submitted once. If the response is lost, find
+      // that exact tagged order; never blindly resubmit it.
+      if (!orderResponse) {
+        orderResponse = await kite.placeOrder(orderParams, { intent: 'exit', channel: 'momentum' });
+      }
+    } catch (err) {
+      if (err.retryable === false || ['OrderExecutionError', 'TokenExpiredError', 'ValidationError'].includes(err.name)) {
+        throw err;
+      }
+      let recovered = null;
+      try {
+        const orders = await kite.getOrders();
+        const matches = (orders || []).filter(order =>
+          order.tag === squareOffTag && order.transaction_type === 'SELL' &&
+          order.tradingsymbol === ticker && Number(order.quantity) === Number(shares)
+        );
+        if (matches.length === 1) recovered = matches[0];
+      } catch (_) {
+        // The original error is more useful; response below remains fail-closed.
+      }
+      if (!recovered?.order_id) {
+        return res.status(503).json({
+          success: false, state: 'UNKNOWN', terminal: false, complete: false,
+          order_id: null,
+          message: 'Square-off submission outcome is unknown; broker reconciliation is required before retrying.',
+        });
+      }
+      orderResponse = { order_id: recovered.order_id };
+    }
+
+    const orderId = String(orderResponse?.order_id || orderResponse || '');
+    if (!orderId) {
+      return res.status(503).json({
+        success: false, state: 'UNKNOWN', terminal: false, complete: false, order_id: null,
+      });
+    }
+    squareOffKnownOrders.set(idempotency_key, { orderId, fingerprint: requestFingerprint });
+
+    let fill;
+    try {
+      // A square-off cannot return while its remaining quantity is still OPEN:
+      // the next scheduler tick might otherwise submit another SELL. Poll,
+      // cancel any remainder, then return only terminal/UNKNOWN truth.
+      fill = await executor.reconcilePlacedOrder(orderId, shares, {
+        ticker, product: product_type,
+      });
+    } catch (err) {
+      fill = {
+        state: 'UNKNOWN', terminal: false, filledQuantity: 0, fillPrice: null,
+        reason: err.message,
+      };
+    }
     
     // Log the square-off event
     console.log(`[SQUARE-OFF] ${ticker} | Qty: ${shares} | Type: ${order_type} | Reason: ${reason || 'N/A'}`);
 
-    res.json({ success: true, order_id: orderId });
+    res.status(fill.state === 'COMPLETE' ? 200 : 202).json({
+      success: fill.state === 'COMPLETE',
+      state: fill.state,
+      terminal: fill.terminal,
+      complete: fill.state === 'COMPLETE',
+      order_id: orderId,
+      requested_quantity: shares,
+      filled_quantity: fill.filledQuantity,
+      remaining_quantity: Math.max(0, shares - fill.filledQuantity),
+      average_price: fill.fillPrice,
+      rejection_reason: fill.reason || null,
+    });
   } catch (err) {
     next(err);
+  } finally {
+    if (releaseLock) releaseLock();
   }
 });
 
@@ -137,8 +265,11 @@ router.post('/execute', requireSession, validate(executeSchema, 'body'), async (
       
       res.json({ success: true, order_id: result.orderId, fill_price: result.fillPrice });
     } catch (execErr) {
-      // Revert lock on execution failure so it can be retried
-      signalsDb.prepare(`UPDATE received_signals SET status = 'PENDING' WHERE signal_id = ?`).run(signal_id);
+      // UNKNOWN/possibly-held outcomes must retain the EXECUTING lock. Resetting
+      // them to PENDING would let a second click stack another BUY.
+      if (!execErr.positionHeld && !execErr.outcomeUnknown) {
+        signalsDb.prepare(`UPDATE received_signals SET status = 'PENDING' WHERE signal_id = ?`).run(signal_id);
+      }
       throw execErr;
     }
 

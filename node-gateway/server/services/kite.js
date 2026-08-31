@@ -63,6 +63,42 @@ async function withKite(apiCallName, fn) {
       logger.error({ event_type: 'kite_input_error', reason: err.message }, 'Kite Input Exception');
       throw new OrderExecutionError(err.message);
     }
+    const message = String(err && err.message || '');
+    const isOrderApi = apiCallName === 'placeOrder' || apiCallName === 'placeGTT';
+    const staticIpDenied = isOrderApi && (err.name === 'PermissionException' ||
+      (/\b(?:401|403)\b/.test(message) && /(?:static\s*ip|ip.+not allowed|allow.?list)/i.test(message)) ||
+      /(?:static\s*ip|ip.+not allowed to place orders)/i.test(message));
+    if (staticIpDenied) {
+      let firstTrip = false;
+      try {
+        firstTrip = haltSwitch.tripGlobal({
+          by: 'kite_order_authorization',
+          reason: `Kite rejected ${apiCallName}: ${message || err.name}`,
+        });
+      } catch (_) {
+        // tripGlobal logs and fails closed; preserve the broker error below.
+      }
+      logger.error({
+        event_type: 'kite_order_authorization_denied', api: apiCallName,
+        reason: message, global_halt_new: firstTrip,
+      }, 'Kite order authorization rejected; global entry halt is active');
+      if (firstTrip) {
+        // Lazy import avoids coupling broker initialization to Telegram startup.
+        try {
+          await require('./telegram').sendAlert(
+            `🚨 LIVE ORDER AUTHORIZATION FAILED (${apiCallName}). Global entries are halted. ` +
+            `Verify Zerodha static-IP authorization before re-arming.\n${message}`
+          );
+        } catch (alertErr) {
+          logger.error({ event_type: 'kite_authorization_alert_failed', reason: alertErr.message });
+          // The durable HALT file remains the primary safety notification.
+        }
+      }
+      const denied = new OrderExecutionError(`Kite order authorization denied: ${message || err.name}`);
+      denied.retryable = false;
+      denied.authorizationDenied = true;
+      throw denied;
+    }
     throw err; // Network or Order exceptions handled by retry logic in executor
   }
 }
@@ -220,6 +256,21 @@ module.exports = {
 
   getOrderHistory: async (orderId) => {
     return await withKite('getOrderHistory', () => kite.getOrderHistory(orderId));
+  },
+
+  // Reconciliation primitives. These are deliberately exposed through the
+  // same authenticated/rate-limited wrapper as placement: callers use them
+  // after an ambiguous response or before deciding that an order is terminal.
+  getOrders: async () => {
+    return await withKite('getOrders', () => kite.getOrders());
+  },
+
+  getPositions: async () => {
+    return await withKite('getPositions', () => kite.getPositions());
+  },
+
+  cancelOrder: async (orderId) => {
+    return await withKite('cancelOrder', () => kite.cancelOrder('regular', orderId));
   },
 
   /** @param {{intent: 'entry'|'exit', channel?: string}} opts REQUIRED. See placeOrder. */

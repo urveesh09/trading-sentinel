@@ -10,6 +10,115 @@ const {
 } = require('../utils/errors');
 const { logger } = require('../middleware/logger');
 const { resolveRiskDistance, anchorLevels, sizeToRisk } = require('./risk-geometry');
+const crypto = require('crypto');
+
+const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+
+function entryTag(signalId) {
+  // Kite tags are capped at 20 characters. A stable per-signal tag lets us
+  // find an order that the broker accepted when the placement response was
+  // lost, without ever submitting a second BUY.
+  const digest = crypto.createHash('sha256').update(String(signalId)).digest('hex').slice(0, 16);
+  return `QS_${digest}`;
+}
+
+function latestOrder(history) {
+  return Array.isArray(history) && history.length ? history[history.length - 1] : null;
+}
+
+function orderFillState(order, requestedQuantity) {
+  if (!order) return { state: 'UNKNOWN', terminal: false, filledQuantity: 0, fillPrice: null };
+  const status = String(order.status || '').toUpperCase();
+  const filledQuantity = Math.max(0, Number(order.filled_quantity || 0));
+  const fillPrice = Number(order.average_price || order.price) || null;
+  if (status === 'COMPLETE') {
+    return { state: 'COMPLETE', terminal: true, filledQuantity: filledQuantity || requestedQuantity, fillPrice };
+  }
+  if (status === 'REJECTED') {
+    return { state: 'REJECTED', terminal: true, filledQuantity, fillPrice, reason: order.status_message || status };
+  }
+  if (status === 'CANCELLED') {
+    return {
+      state: filledQuantity > 0 ? 'PARTIAL' : 'CANCELLED', terminal: true,
+      filledQuantity, fillPrice, reason: order.status_message || status,
+    };
+  }
+  return { state: filledQuantity > 0 ? 'PARTIAL_OPEN' : (status || 'UNKNOWN'), terminal: false, filledQuantity, fillPrice };
+}
+
+async function reconcilePlacedOrder(orderId, requestedQuantity, options = {}) {
+  const attempts = options.attempts ?? 8;
+  const delayMs = options.delayMs ?? 1500;
+  let last = null;
+  let historyError = null;
+
+  for (let i = 0; i < attempts; i++) {
+    if (delayMs > 0) await sleep(delayMs);
+    try {
+      last = orderFillState(latestOrder(await kite.getOrderHistory(orderId)), requestedQuantity);
+      historyError = null;
+      if (last.terminal) return last;
+    } catch (err) {
+      historyError = err;
+      logger.warn({ event_type: 'fill_check_failed', order_id: orderId, err: err.message });
+    }
+  }
+
+  // An OPEN/PARTIAL order must first be cancelled. Until the cancellation is
+  // visible in broker history, its remaining quantity can still fill.
+  let cancelError = null;
+  try {
+    await kite.cancelOrder(orderId);
+  } catch (err) {
+    cancelError = err;
+    logger.error({ event_type: 'entry_cancel_failed', order_id: orderId, err: err.message });
+  }
+
+  try {
+    last = orderFillState(latestOrder(await kite.getOrderHistory(orderId)), requestedQuantity);
+    historyError = null;
+    if (last.terminal) return last; // includes a late COMPLETE or cancelled partial fill
+  } catch (err) {
+    historyError = err;
+  }
+
+  // Positions are secondary evidence only: an existing holding cannot prove
+  // this particular order filled. Capture it for the operator, but fail closed.
+  let brokerPosition = null;
+  try {
+    const positions = await kite.getPositions();
+    const rows = [...(positions?.net || []), ...(positions?.day || [])];
+    brokerPosition = rows.find(p => String(p.tradingsymbol) === String(options.ticker) &&
+      (!options.product || String(p.product) === String(options.product))) || null;
+  } catch (err) {
+    logger.warn({ event_type: 'position_reconciliation_failed', order_id: orderId, err: err.message });
+  }
+
+  return {
+    state: 'UNKNOWN', terminal: false,
+    filledQuantity: last?.filledQuantity || 0,
+    fillPrice: last?.fillPrice || null,
+    cancelError: cancelError?.message || null,
+    historyError: historyError?.message || null,
+    brokerPositionQuantity: brokerPosition ? Number(brokerPosition.quantity || 0) : null,
+  };
+}
+
+async function recoverAmbiguousPlacement(params, tag) {
+  try {
+    const orders = await kite.getOrders();
+    const matches = (orders || []).filter(order =>
+      order.tag === tag &&
+      order.tradingsymbol === params.tradingsymbol &&
+      order.transaction_type === params.transaction_type &&
+      Number(order.quantity) === Number(params.quantity)
+    );
+    if (matches.length === 1 && matches[0].order_id) return { order_id: matches[0].order_id, recovered: true };
+  } catch (err) {
+    logger.error({ event_type: 'ambiguous_placement_reconcile_failed', tag, err: err.message });
+  }
+  return null;
+}
 
 /**
  * Snap a price to the nearest valid NSE tick (0.10 rupee).
@@ -260,27 +369,46 @@ async function executeSignal(signal, action, isIntraday = false) {
   // 2% drift window already enforced above.
   const limitPrice = snapToTick(ltp * 1.005, 1);
   let orderResponse;
+  const idempotencyTag = entryTag(signal.signal_id);
+  const entryParams = {
+    exchange: "NSE",
+    tradingsymbol: signal.ticker,
+    transaction_type: "BUY",
+    quantity: signal.shares,
+    product: isIntraday ? "MIS" : "CNC",
+    order_type: "LIMIT",
+    price: limitPrice,
+    validity: "DAY",
+    tag: idempotencyTag
+  };
   try {
-    orderResponse = await withRetry(async () => {
-      return await kite.placeOrder({
-        exchange: "NSE",
-        tradingsymbol: signal.ticker,
-        transaction_type: "BUY",
-        quantity: signal.shares,
-        product: isIntraday ? "MIS" : "CNC",
-        order_type: "LIMIT",
-        price: limitPrice,
-        validity: "DAY",
-        tag: "QUANT_SENTINEL"
-      }, { intent: "entry", channel: "momentum" });
-
-    }, 1, 2000); // 1 retry on OrderException
+    // Never retry a non-idempotent submission. A network failure may happen
+    // after broker acceptance; retrying would create a duplicate position.
+    orderResponse = await kite.placeOrder(entryParams, { intent: "entry", channel: "momentum" });
   } catch (err) {
-    throw new OrderExecutionError(`Order Placement Failed: ${err.message}`);
+    if (err.retryable === false || ['OrderExecutionError', 'TokenExpiredError', 'ValidationError'].includes(err.name)) {
+      throw new OrderExecutionError(`Order Placement Failed: ${err.message}`);
+    }
+    orderResponse = await recoverAmbiguousPlacement(entryParams, idempotencyTag);
+    if (!orderResponse) {
+      const unknown = new OrderExecutionError(
+        `Order placement outcome UNKNOWN for ${signal.ticker}; no resubmission was made. Reconcile broker orders manually.`
+      );
+      unknown.positionHeld = true;
+      unknown.outcomeUnknown = true;
+      throw unknown;
+    }
   }
 
-
-  const orderId = orderResponse.order_id;
+  const orderId = orderResponse?.order_id;
+  if (!orderId) {
+    const unknown = new OrderExecutionError(
+      `Broker returned no order id for ${signal.ticker}; placement outcome is UNKNOWN and was not retried.`
+    );
+    unknown.positionHeld = true;
+    unknown.outcomeUnknown = true;
+    throw unknown;
+  }
   
   // Layer 2 Idempotency: Insert into DB immediately
   try {
@@ -297,43 +425,41 @@ async function executeSignal(signal, action, isIntraday = false) {
     throw new OrderExecutionError('Order tracking failed: ' + err.message);
   }
 
-  // 4. Fill Verification (8 attempts x 1500ms = 12s)
-  let isFilled = false;
-  // [MED-003] Use LTP (fetched during drift check, ~60s more recent than signal.close)
-  // as the fill estimate when order confirmation times out.
-  let fillPrice = ltp;
-  let rejectionReason = null;
-
-  for (let i = 0; i < 8; i++) {
-    await new Promise(r => setTimeout(r, 1500));
-    try {
-      const history = await kite.getOrderHistory(orderId);
-      const latest = history[history.length - 1]; // Current state
-      
-      if (latest.status === 'COMPLETE') {
-        isFilled = true;
-        fillPrice = latest.average_price || latest.price;
-        break;
-      }
-      if (latest.status === 'REJECTED' || latest.status === 'CANCELLED') {
-        rejectionReason = latest.status_message || latest.status;
-        break;
-      }
-    } catch (err) {
-      logger.warn({ event_type: 'fill_check_failed', err: err.message });
-    }
-  }
-
-  if (rejectionReason) {
+  // 4. Fill Verification. An unconfirmed OPEN order is cancelled and then
+  // reconciled; it is never assigned an estimated fill or given exit orders.
+  const fill = await reconcilePlacedOrder(orderId, signal.shares, {
+    ticker: signal.ticker, product: isIntraday ? 'MIS' : 'CNC',
+  });
+  if (fill.state === 'REJECTED') {
     signalsDb.prepare(`UPDATE executed_orders SET status = 'REJECTED', notes = ? WHERE order_id = ?`)
-      .run(rejectionReason, orderId);
-    throw new OrderExecutionError(`Order rejected by broker: ${rejectionReason}`);
+      .run(fill.reason, orderId);
+    throw new OrderExecutionError(`Order rejected by broker: ${fill.reason}`);
   }
-
-  const finalNotes = isFilled ? "Executed via Telegram" : "fill_unconfirmed - using signal close as estimate";
-  if (!isFilled) {
-    logger.warn({ event_type: 'fill_unconfirmed', orderId });
+  if (fill.state === 'CANCELLED') {
+    signalsDb.prepare(`UPDATE executed_orders SET status = 'CANCELLED', notes = ? WHERE order_id = ?`)
+      .run('entry_cancelled_unfilled', orderId);
+    throw new OrderExecutionError(`Order ${orderId} was cancelled without a fill.`);
   }
+  if (fill.state === 'UNKNOWN' || fill.state === 'PARTIAL_OPEN') {
+    signalsDb.prepare(`UPDATE executed_orders SET status = 'PLACED', notes = ? WHERE order_id = ?`)
+      .run(`entry_outcome_unknown:${JSON.stringify(fill)}`, orderId);
+    const unknown = new OrderExecutionError(
+      `Order ${orderId} outcome is UNKNOWN after cancellation/reconciliation; no exits were armed. Reconcile manually before retrying.`
+    );
+    unknown.positionHeld = true;
+    unknown.outcomeUnknown = true;
+    throw unknown;
+  }
+  const isPartialFill = fill.state === 'PARTIAL';
+  const fillPrice = fill.fillPrice;
+  if (!(fillPrice > 0) || !(fill.filledQuantity > 0)) {
+    const unknown = new OrderExecutionError(`Order ${orderId} reported a fill without valid quantity/price; no exits were armed.`);
+    unknown.positionHeld = true;
+    unknown.outcomeUnknown = true;
+    throw unknown;
+  }
+  signal = { ...signal, shares: fill.filledQuantity };
+  const finalNotes = isPartialFill ? `partial_fill:${fill.filledQuantity}` : "Executed via Telegram";
 
   // [FILL-ANCHOR 2026-08-04] Centre the geometry on the ACTUAL fill. The risk
   // distance was fixed pre-order (size is committed now, so it must not move);
@@ -417,9 +543,8 @@ async function executeSignal(signal, action, isIntraday = false) {
           quantity: signal.shares,
           order_type: "LIMIT",
           product: "CNC",
-          // Stop-loss SELL limit must be AT OR ABOVE the trigger to guarantee execution.
-          // snapToTick(..., 1) rounds UP to the nearest 0.10-rupee tick.
-          price: snapToTick(levels.stop * 1.002, 1)
+          // A stop SELL must become marketable when triggered: limit <= trigger.
+          price: snapToTick(levels.stop * 0.998, -1)
         }]
       }, { intent: "exit", channel: "momentum" });
       gttStopId = stopRes.trigger_id;
@@ -459,9 +584,9 @@ async function executeSignal(signal, action, isIntraday = false) {
   // Update DB with Fill + protective orders
   signalsDb.prepare(`
     UPDATE executed_orders
-    SET status = 'COMPLETE', entry_price = ?, filled_at = ?, gtt_stop_id = ?, gtt_target_id = ?, sl_order_id = ?, notes = ?
+    SET status = 'COMPLETE', entry_price = ?, shares = ?, filled_at = ?, gtt_stop_id = ?, gtt_target_id = ?, sl_order_id = ?, notes = ?
     WHERE order_id = ?
-  `).run(fillPrice, new Date().toISOString(), gttStopId, gttTargetId, slOrderId, finalNotes, orderId);
+  `).run(fillPrice, signal.shares, new Date().toISOString(), gttStopId, gttTargetId, slOrderId, finalNotes, orderId);
 
     // 6. Sync to Container B
   const syncPayload = {
@@ -523,4 +648,7 @@ async function executeSignal(signal, action, isIntraday = false) {
   };
 }
 
-module.exports = { executeSignal, syncToEngine, snapToTick };
+module.exports = {
+  executeSignal, syncToEngine, snapToTick,
+  entryTag, orderFillState, reconcilePlacedOrder, recoverAmbiguousPlacement,
+};

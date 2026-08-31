@@ -334,7 +334,12 @@ async def _trading_readiness_tick():
 
         armed = bool(_main.kite.access_token)
         scheduler_running = bool(getattr(_main.scheduler, "running", False))
-        ready = armed and scheduler_running
+        from order_execution_readiness import BLOCKED, snapshot as order_readiness
+        from halt_switch import halt_state
+        execution = order_readiness()
+        execution_blocked = execution["status"] == BLOCKED
+        entry_halted, halt_attribution = halt_state(None)
+        ready = armed and scheduler_running and not execution_blocked and not entry_halted
 
         recovered = ready and not _readiness_state["was_ready"]
         _readiness_state["was_ready"] = ready
@@ -343,7 +348,9 @@ async def _trading_readiness_tick():
             _readiness_state["last_alert_monotonic"] = None
             logger.info("trading_readiness_recovered")
             await notify_operator(
-                "✅ TRADING RE-ARMED — the engine can trade again.",
+                "✅ ENGINE RE-ARMED — token, scheduler, and entry halt are clear. "
+                f"Broker order authorization: {execution['status']}. "
+                "UNVERIFIED means no accepted order has yet proved this route.",
                 event="trading_readiness_recovered",
             )
             return
@@ -358,10 +365,21 @@ async def _trading_readiness_tick():
             reasons.append("no Kite token (the engine is not logged in)")
         if not scheduler_running:
             reasons.append("the job scheduler is not running")
+        if execution_blocked:
+            reasons.append(
+                "Kite order authorization is BLOCKED: "
+                + str(execution.get("reason") or "permission/static-IP rejection")
+            )
+        if entry_halted:
+            reasons.append(
+                "global entry halt is active: "
+                + str((halt_attribution or {}).get("reason") or "no reason recorded")
+            )
 
         logger.error(
-            "trading_readiness_failed armed=%s scheduler_running=%s",
-            armed, scheduler_running,
+            "trading_readiness_failed armed=%s scheduler_running=%s "
+            "execution_status=%s entry_halted=%s",
+            armed, scheduler_running, execution["status"], entry_halted,
         )
         await notify_operator(
             "🔴 NOT TRADING — the market is open and the engine cannot trade.\n\n"
@@ -369,9 +387,10 @@ async def _trading_readiness_tick():
             "The engine is UP and looks healthy -- the scheduler is ticking and "
             "every container reports healthy -- but every scan is a no-op. This "
             "is the 2026-07-13 outage.\n\n"
-            "Re-login via the /login link. If the login does not stick, check "
-            "free disk space on /data: a full disk stops the token being saved, "
-            "and the next restart comes up unarmed again.",
+            "If the token is missing, re-login via /login and check /data disk "
+            "space. If order authorization is blocked, verify KITE_BASE_URL and "
+            "the relay's current public IP in the Kite developer console; do not "
+            "clear the halt until the route is corrected.",
             event="trading_readiness_failed",
         )
     except Exception as e:

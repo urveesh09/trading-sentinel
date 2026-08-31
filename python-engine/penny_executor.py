@@ -35,6 +35,7 @@ Allowed shared imports: kite_client, penny_models, penny_risk, config,
 position_tracker, stdlib.
 """
 import asyncio
+import hashlib
 import logging
 import math
 from typing import Optional
@@ -355,8 +356,19 @@ class PennyExecutor:
             # cancel first (so a still-open order can't fill AFTER we
             # decide it didn't), then read back the order's final state and
             # believe THAT, falling back to the broker positions book.
+            cancel_confirmed = False
             try:
-                await self.kite.cancel_order(entry_id)
+                cancel_response = await self.kite.cancel_order(entry_id)
+                cancel_confirmed = str(
+                    (cancel_response or {}).get("status") or ""
+                ).upper() == "CANCELLED"
+                if not cancel_confirmed:
+                    logger.error(
+                        "penny_cancel_unconfirmed order_id=%s response_status=%s "
+                        "message=%s",
+                        entry_id, (cancel_response or {}).get("status"),
+                        (cancel_response or {}).get("message", ""),
+                    )
             except Exception as e:
                 logger.error("penny_cancel_failed order_id=%s error=%s",
                              entry_id, str(e))
@@ -364,6 +376,22 @@ class PennyExecutor:
             final = await self._reconcile_after_timeout(ticker, entry_id, shares)
             if final != "FILLED":
                 result["entry_status"] = "timeout"
+                if final == "UNVERIFIED" or not cancel_confirmed:
+                    result["reject_reason"] = (
+                        "entry timeout with unverified cancellation/order state"
+                    )
+                    await self._emit(
+                        "UNRESOLVED_RECONCILIATION",
+                        {"entry_order_id": entry_id,
+                         "cancel_confirmed": cancel_confirmed,
+                         "reconciled": str(final)},
+                        attempt_context,
+                    )
+                    await self._page_operator(
+                        f"{ticker}: entry {entry_id} timed out and cancellation/order "
+                        "state is not definitive. It may still fill without a stop. "
+                        "Reconcile in Kite immediately."
+                    )
                 logger.warning(
                     "penny_entry_timeout ticker=%s order_id=%s reconciled=%s",
                     ticker, entry_id, final,
@@ -558,17 +586,16 @@ class PennyExecutor:
                 ticker, order_id, shares,
             )
             return "UNVERIFIED"
-        if not final:
-            # No position, but the order's state never became readable and
-            # the cancel may have failed -- a resting open order could still
-            # fill later with no SL behind it. Loud enough to act on.
-            logger.warning(
-                "penny_reconcile_order_state_unknown ticker=%s order_id=%s "
-                "-- no position held, but confirm in the Kite app that the "
-                "order is not still open",
-                ticker, order_id,
-            )
-        return "DEAD"
+        # An empty positions snapshot is not proof that an OPEN/pending or
+        # unreadable order cannot fill later.  Only terminal broker history
+        # above is definitive enough to release admission capacity.
+        logger.warning(
+            "penny_reconcile_order_state_unverified ticker=%s order_id=%s "
+            "status=%s -- no position is visible, but the order is not "
+            "terminal; preserve reservation and reconcile in Kite",
+            ticker, order_id, final or "unreadable",
+        )
+        return "UNVERIFIED"
 
     async def _place_sl_m_with_retry(
         self, ticker: str, leg: PennyLeg, stop_loss: float, shares: int,
@@ -635,6 +662,15 @@ class PennyExecutor:
         unwind was rejected 1 second after the stop was rejected, and the
         caller still reported success. A marketable SELL LIMIT 1% below the
         live bid fills immediately in practice and is API-legal."""
+        # PAPER/LIVE FIREWALL: this helper is used by classic Penny, EDGE and
+        # the failed-protective-stop path.  A paper executor must not even ask
+        # Kite for a quote, let alone submit an order.  The stable ID also makes
+        # repeated scheduler/restart calls harmless to paper simulations.
+        if self.paper_mode:
+            identity = f"{ticker.upper()}|{leg.value}|{int(shares)}|{ltp or 0:.4f}"
+            digest = hashlib.sha256(identity.encode("utf-8")).hexdigest()[:12]
+            return f"PAPER-EXIT-{digest}"
+
         ref = ltp or await self._live_ltp(ticker)
         if not ref:
             logger.error(
@@ -670,3 +706,112 @@ class PennyExecutor:
             logger.error("penny_unwind_failed ticker=%s shares=%d error=%s",
                          ticker, shares, str(e))
             return None
+
+    async def execute_exit(
+        self,
+        ticker: str,
+        leg: PennyLeg,
+        shares: int,
+        *,
+        reference_price: Optional[float] = None,
+        existing_order_id: Optional[str] = None,
+    ) -> dict:
+        """Exit ``shares`` and return broker-confirmed quantity truth.
+
+        Submission is deliberately not success.  Live exits are polled until
+        COMPLETE/REJECTED/CANCELLED or timeout; a partial fill settles only the
+        reported filled quantity.  Paper exits are deterministic local fills
+        and never touch the broker client.
+        """
+        quantity = max(0, int(shares or 0))
+        result = {
+            "status": "UNKNOWN",
+            "order_id": existing_order_id,
+            "requested_qty": quantity,
+            "confirmed_qty": 0,
+            "fill_price": None,
+            "paper": self.paper_mode,
+            "message": "",
+        }
+        if quantity <= 0:
+            result.update(status="REJECTED", message="quantity must be positive")
+            return result
+
+        if self.paper_mode:
+            ref = float(reference_price or 0)
+            if ref <= 0:
+                result.update(message="paper exit requires a positive reference price")
+                return result
+            # Deterministic adverse fill at the same protected-limit boundary
+            # used by live unwinds.  Costs are applied by the settlement layer.
+            fill = snap_to_tick(ref * (1.0 - UNWIND_LIMIT_SLIP_PCT), -1)
+            identity = f"{ticker.upper()}|{leg.value}|{quantity}|{fill:.4f}"
+            digest = hashlib.sha256(identity.encode("utf-8")).hexdigest()[:12]
+            result.update(
+                status="COMPLETE",
+                order_id=f"PAPER-EXIT-{digest}",
+                confirmed_qty=quantity,
+                fill_price=fill,
+            )
+            return result
+
+        order_id = existing_order_id
+        if not order_id:
+            order_id = await self._market_unwind(
+                ticker, leg, quantity, ltp=reference_price,
+            )
+            result["order_id"] = order_id
+            if not order_id:
+                result.update(status="REJECTED", message="broker rejected exit submission")
+                await self._page_operator(
+                    f"{ticker}: scheduled exit was rejected before an order id was "
+                    f"created; {quantity} shares remain open. Resolve manually."
+                )
+                return result
+
+        elapsed = 0.0
+        last_state: dict = {}
+        while elapsed < self.fill_timeout_sec:
+            try:
+                last_state = latest_order_state(
+                    await self.kite.order_history(order_id=order_id)
+                )
+            except Exception as exc:
+                logger.error("penny_exit_history_failed order_id=%s error=%s",
+                             order_id, str(exc))
+            status = str(last_state.get("status") or "").upper()
+            if status == "COMPLETE" or status in _TERMINAL_DEAD:
+                break
+            await asyncio.sleep(self.poll_interval_sec)
+            elapsed += self.poll_interval_sec
+
+        status = str(last_state.get("status") or "").upper()
+        filled = int(last_state.get("filled_quantity") or 0)
+        if status == "COMPLETE" and filled <= 0:
+            # Kite fixtures and some relay responses omit filled_quantity on a
+            # COMPLETE state. COMPLETE itself confirms the requested amount.
+            filled = quantity
+        filled = min(quantity, max(0, filled))
+        avg = float(last_state.get("average_price") or 0)
+        result["confirmed_qty"] = filled
+        result["fill_price"] = avg if avg > 0 else None
+
+        if status == "COMPLETE" and filled == quantity:
+            result["status"] = "COMPLETE"
+        elif filled > 0:
+            result["status"] = "PARTIAL"
+            result["message"] = f"only {filled}/{quantity} shares confirmed"
+        elif status in _TERMINAL_DEAD:
+            result["status"] = "REJECTED"
+            result["message"] = status
+        else:
+            result["status"] = "UNKNOWN"
+            result["message"] = status or "order state unreadable"
+
+        if result["status"] != "COMPLETE":
+            await self._page_operator(
+                f"{ticker}: scheduled exit is {result['status']} "
+                f"({filled}/{quantity} confirmed), order {order_id}. "
+                "The unconfirmed residual remains open; reconcile manually."
+            )
+        return result

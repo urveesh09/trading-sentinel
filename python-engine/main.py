@@ -5,6 +5,7 @@ import pytz
 import os
 import sys
 import json
+import hashlib
 import asyncio
 import time
 import pandas as pd
@@ -501,6 +502,51 @@ async def run_penny_connors_scan():
             if not decision.get("accept"):
                 reject += 1
                 continue
+            from penny_execution_journal import attempt_identity
+            from penny_position_reservations import (
+                persist_reserved_penny_position,
+                reserve_penny_position,
+                set_penny_reservation_state,
+            )
+            from position_tracker import init_positions_db
+            candidate_identity = "|".join((
+                datetime.now(IST).date().isoformat(), cnc_scan_id,
+                t["symbol"], "CNC", "PEN_CONNORS",
+                str(decision.get("entry")), str(decision.get("stop_loss")),
+            ))
+            attempt_id, candidate_key = attempt_identity(
+                candidate_identity, t["symbol"], "CNC", scanner.source_tag,
+            )
+            event_context = {
+                "attempt_id": attempt_id, "scan_id": cnc_scan_id,
+                "candidate_key": candidate_key, "ticker": t["symbol"],
+                "leg": "CNC", "source": scanner.source_tag,
+                "mode": "paper" if scanner.executor.paper_mode else "live",
+            }
+            await init_positions_db(settings.DB_PATH)
+            reservation = await reserve_penny_position(
+                settings.DB_PATH, attempt_id=attempt_id,
+                source=scanner.source_tag, ticker=t["symbol"],
+                product_type="CNC",
+                max_total=settings.PENNY_MAX_POSITIONS_TOTAL,
+                max_leg=settings.PENNY_MAX_POSITIONS_CNC,
+            )
+            if not reservation.granted:
+                logger.info(
+                    "penny_cnc_reservation_rejected ticker=%s attempt_id=%s "
+                    "reason=%s total=%d cnc=%d",
+                    t["symbol"], attempt_id, reservation.reason,
+                    reservation.total_occupied, reservation.leg_occupied,
+                )
+                reject += 1
+                continue
+            await scanner._record_execution_event(
+                "CANDIDATE_ACCEPTED",
+                {"signal_entry": decision.get("entry"),
+                 "stop_loss": decision.get("stop_loss"),
+                 "quantity": decision.get("shares")},
+                event_context,
+            )
             # Delegate to executor (per 2026-06-22 wiring fix)
             from penny_models import PennyLeg
             order_result = await scanner.executor.execute_entry(
@@ -509,6 +555,7 @@ async def run_penny_connors_scan():
                 entry_price=decision.get("entry", 0.0),
                 stop_loss=decision.get("stop_loss", 0.0),
                 shares=decision.get("shares", 0),
+                attempt_context=event_context,
             )
             logger.info(
                 "penny_cnc_entry_attempted ticker=%s entry=%.2f order_id=%s",
@@ -524,36 +571,35 @@ async def run_penny_connors_scan():
             entry_status = order_result.get("entry_status")
             if entry_status in ("filled", "paper"):
                 try:
-                    from position_tracker import init_positions_db
                     from datetime import datetime as _dt, timezone as _tz
-                    import aiosqlite
-                    await init_positions_db(settings.DB_PATH)
-                    async with aiosqlite.connect(settings.DB_PATH) as db:
-                        await db.execute(
-                            """INSERT INTO positions (
-                                ticker, exchange, entry_date, entry_price, shares,
-                                stop_loss_initial, trailing_stop_current,
-                                target_1, target_2, atr_14_at_entry,
-                                highest_close_since_entry, status, source,
-                                product_type, regime_at_entry,
-                                atr_1min_post_t1, t1_fired
-                            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
-                            (t["symbol"], "NSE",
-                             _dt.now(_tz.utc).isoformat(),
-                             decision.get("entry", 0.0),
-                             decision.get("shares", 0),
-                             decision.get("stop_loss", 0.0),
-                             decision.get("stop_loss", 0.0),
-                             decision.get("target_1", 0.0),
-                             decision.get("target_2", 0.0),
-                             0.0,
-                             decision.get("entry", 0.0),
-                             "OPEN", scanner.source_tag, "CNC",
-                             scanner.regime,
-                             decision.get("atr_1min_post_t1", 0.0),
-                             0)
-                        )
-                        await db.commit()
+                    fill_price = float(
+                        order_result.get("fill_price") or decision.get("entry", 0.0)
+                    )
+                    row_id = await persist_reserved_penny_position(
+                        settings.DB_PATH, attempt_id=attempt_id, values={
+                            "ticker": t["symbol"], "exchange": "NSE",
+                            "entry_date": _dt.now(_tz.utc).isoformat(),
+                            "entry_price": fill_price,
+                            "shares": decision.get("shares", 0),
+                            "stop_loss_initial": decision.get("stop_loss", 0.0),
+                            "trailing_stop_current": decision.get("stop_loss", 0.0),
+                            "target_1": decision.get("target_1", 0.0),
+                            "target_2": decision.get("target_2", 0.0),
+                            "atr_14_at_entry": decision.get("atr_14", 0.0),
+                            "highest_close_since_entry": fill_price,
+                            "status": "OPEN", "source": scanner.source_tag,
+                            "product_type": "CNC", "regime_at_entry": scanner.regime,
+                            "atr_1min_post_t1": decision.get("atr_1min_post_t1", 0.0),
+                            "t1_fired": 0,
+                            "sl_order_id": order_result.get("sl_order_id"),
+                        },
+                    )
+                    await scanner._record_execution_event(
+                        "POSITION_CREATED",
+                        {"position_rowid": row_id, "entry_price": fill_price,
+                         "sl_order_id": order_result.get("sl_order_id")},
+                        event_context,
+                    )
                     logger.info(
                         "penny_cnc_position_written ticker=%s shares=%d atr_1min=%.4f",
                         t["symbol"], decision.get("shares", 0),
@@ -617,6 +663,31 @@ async def run_penny_connors_scan():
                                 "ticker=%s error=%s",
                                 t["symbol"], str(notify_err),
                             )
+                    await set_penny_reservation_state(
+                        settings.DB_PATH, attempt_id=attempt_id,
+                        state="UNRESOLVED", note=f"position_persist_failed:{str(e)[:200]}",
+                    )
+            elif order_result.get("unwound"):
+                # Release only after the executor confirmed the emergency
+                # unwind; no broker exposure remains.
+                await set_penny_reservation_state(
+                    settings.DB_PATH, attempt_id=attempt_id,
+                    state="RELEASED", note="confirmed_unwind",
+                )
+            elif entry_status in {
+                "ticker_blocked", "drift_rejected", "stop_already_breached", "no_quote",
+            }:
+                await set_penny_reservation_state(
+                    settings.DB_PATH, attempt_id=attempt_id,
+                    state="RELEASED", note=f"local_validation:{entry_status}",
+                )
+            else:
+                # Rejected/timeout/transport states are not proof that the
+                # broker did nothing. Quarantine the slot until reconciliation.
+                await set_penny_reservation_state(
+                    settings.DB_PATH, attempt_id=attempt_id,
+                    state="UNRESOLVED", note=f"entry_state:{entry_status or 'unknown'}",
+                )
             accept += 1
         logger.info("penny_connors_scan_done accept=%d reject=%d", accept, reject)
     except Exception as e:
@@ -765,8 +836,13 @@ async def _penny_ltp(ticker: str, fallback: float) -> float:
     is the safe direction: the 15:00 force-close still flattens the position.
     """
     try:
-        quote = await kite.get_quote([f"NSE:{ticker}"])
-        data = (quote or {}).get(f"NSE:{ticker}") or {}
+        symbol = str(ticker or "").split(":")[-1].upper()
+        token = (getattr(kite, "instrument_cache", {}) or {}).get(symbol)
+        if not token:
+            logger.warning("penny_ltp_no_instrument_token ticker=%s", symbol)
+            return fallback
+        quote = await kite.get_quote([int(token)])
+        data = (quote or {}).get(int(token)) or (quote or {}).get(str(token)) or {}
         ltp = float(data.get("last_price") or 0)
         if ltp > 0:
             return ltp
@@ -774,6 +850,265 @@ async def _penny_ltp(ticker: str, fallback: float) -> float:
     except Exception as e:
         logger.warning("penny_ltp_failed ticker=%s error=%s", ticker, str(e))
     return fallback
+
+
+async def _penny_exit_event_context(position: dict, reason: str) -> tuple[str, dict]:
+    """Stable exit identity plus the entry's immutable journal identity."""
+    from penny_execution_journal import attempt_identity, attempt_identity_fields
+
+    source = position.get("source") or _classic_penny_source()
+    mode = "paper" if source == "PENNY_PAPER" else "live"
+    entry_attempt = position.get("penny_attempt_id")
+    original = (
+        await attempt_identity_fields(settings.DB_PATH, entry_attempt)
+        if entry_attempt else None
+    )
+    if original is None:
+        entry_attempt, candidate = attempt_identity(
+            position.get("entry_date") or "legacy",
+            position.get("ticker") or "UNKNOWN",
+            position.get("product_type") or "MIS",
+            source,
+        )
+        original = {
+            "scan_id": "legacy-position",
+            "candidate_key": candidate,
+            "ticker": position.get("ticker") or "UNKNOWN",
+            "leg": position.get("product_type") or "MIS",
+            "source": source,
+            "mode": mode,
+        }
+    # Quantity is part of the identity: after a confirmed partial, the
+    # residual receives a new idempotent exit attempt on the next pass.
+    # Reason is intentionally NOT part of the identity. A 14:30 smart-EOD
+    # submission may still be OPEN/UNKNOWN at 15:00; the force-close job must
+    # reconcile that same order, never submit a second SELL for the same shares.
+    exit_attempt = f"{entry_attempt}-exit-{int(position.get('shares') or 0)}"
+    return exit_attempt, original
+
+
+async def _append_penny_exit_event(
+    attempt_id: str, context: dict, event_type: str, payload: dict,
+) -> None:
+    from penny_execution_journal import append_execution_event
+    await append_execution_event(
+        settings.DB_PATH,
+        attempt_id=attempt_id,
+        scan_id=context["scan_id"],
+        candidate_key=context["candidate_key"],
+        ticker=context["ticker"],
+        leg=context["leg"],
+        source=context["source"],
+        mode=context["mode"],
+        event_type=event_type,
+        payload=payload,
+    )
+
+
+async def _settle_confirmed_penny_exit(
+    position: dict, *, confirmed_qty: int, fill_price: float, reason: str,
+    clear_sl_order: bool = False,
+) -> dict:
+    """Atomically settle only a confirmed fill and its cost-bearing ledger row.
+
+    The shares predicate is the restart-idempotency fence: after one process
+    settles a fill, a replay with the old snapshot changes zero rows and writes
+    no second ledger event.
+    """
+    from penny_risk import calc_penny_costs
+    from performance import division_equity
+
+    requested = int(position.get("shares") or 0)
+    quantity = min(requested, max(0, int(confirmed_qty or 0)))
+    if quantity <= 0 or fill_price <= 0:
+        return {"settled": 0, "remaining": requested, "pnl": 0.0}
+    source = position.get("source") or _classic_penny_source()
+    entry = float(position.get("entry_price") or 0)
+    costs = calc_penny_costs(entry, fill_price, quantity, is_intraday=True)
+    pnl = (fill_price - entry) * quantity - costs
+    remaining = requested - quantity
+    before = await division_equity(settings.DB_PATH, source)
+    now_utc = datetime.now(timezone.utc).isoformat()
+    where = (
+        "ticker=? AND source=? AND entry_date=? AND shares=? "
+        "AND exit_date IS NULL AND status IN ('OPEN','CLOSED_T1')"
+    )
+    params = (
+        position.get("ticker"), source, position.get("entry_date"), requested,
+    )
+    async with aiosqlite.connect(settings.DB_PATH) as db:
+        await db.execute("BEGIN IMMEDIATE")
+        if remaining:
+            cur = await db.execute(
+                "UPDATE positions SET shares=?, status='OPEN', "
+                "realised_pnl=COALESCE(realised_pnl,0)+?, "
+                "sl_order_id=CASE WHEN ? THEN NULL ELSE sl_order_id END WHERE " + where,
+                (remaining, pnl, 1 if clear_sl_order else 0, *params),
+            )
+            event_type = "TRADE_PARTIAL"
+        else:
+            total_pnl = float(position.get("realised_pnl") or 0) + pnl
+            risk = float(position.get("initial_capital_at_risk") or 0)
+            if risk <= 0:
+                risk = max(0.0, entry - float(position.get("stop_loss_initial") or entry)) * requested
+            r_multiple = total_pnl / risk if risk > 0 else 0.0
+            cur = await db.execute(
+                "UPDATE positions SET shares=0, status='CLOSED_TIME', "
+                "exit_price=?, exit_date=?, realised_pnl=?, r_multiple=? "
+                "WHERE " + where,
+                (fill_price, now_utc, total_pnl, r_multiple, *params),
+            )
+            event_type = "TRADE_CLOSED"
+        if cur.rowcount != 1:
+            await db.rollback()
+            return {"settled": 0, "remaining": requested, "pnl": 0.0}
+        await db.execute(
+            "INSERT INTO bankroll_ledger "
+            "(timestamp,event_type,ticker,pnl,bankroll_before,bankroll_after,notes,source) "
+            "VALUES (?,?,?,?,?,?,?,?)",
+            (now_utc, event_type, position.get("ticker"), pnl, before,
+             before + pnl, f"confirmed_exit:{reason}", source),
+        )
+        await db.commit()
+    return {"settled": quantity, "remaining": remaining, "pnl": pnl}
+
+
+async def _execute_scheduled_penny_exit(
+    position: dict, *, reason: str, reference_price: float,
+) -> dict:
+    """Submit/reconcile one scheduled exit and persist confirmed quantity only."""
+    from penny_execution_journal import attempt_event_payload
+    from penny_models import PennyLeg
+
+    scanner = _get_penny_scanner()
+    executor = scanner.executor
+    attempt_id, context = await _penny_exit_event_context(position, reason)
+    quantity = int(position.get("shares") or 0)
+    leg = PennyLeg.MIS
+
+    # Cancel a real protective order before a discretionary live exit. Paper
+    # IDs are local evidence and must never reach the broker.
+    sl_order_id = position.get("sl_order_id")
+    if not executor.paper_mode and sl_order_id and not str(sl_order_id).startswith("PAPER-"):
+        stop_truth = await _cancel_order_truth(executor.kite, sl_order_id, quantity)
+        if stop_truth["filled_quantity"] > 0 and stop_truth["confirmed_fill"]:
+            filled = stop_truth["filled_quantity"]
+            result = {
+                "status": "COMPLETE" if filled >= quantity else "PARTIAL",
+                "order_id": sl_order_id, "requested_qty": quantity,
+                "confirmed_qty": filled,
+                "fill_price": stop_truth["average_price"],
+                "paper": False, "message": "protective stop filled",
+            }
+        elif stop_truth["filled_quantity"] > 0:
+            await executor._page_operator(
+                f"{position.get('ticker')}: protective stop {sl_order_id} "
+                "partially filled but has no average fill price. No second SELL "
+                "was sent; reconcile manually."
+            )
+            return {
+                "status": "UNKNOWN", "order_id": sl_order_id,
+                "requested_qty": quantity, "confirmed_qty": 0,
+                "fill_price": None, "paper": False,
+                "message": "protective stop fill price unknown",
+            }
+        elif not stop_truth["safe_to_sell"]:
+            await _append_penny_exit_event(
+                attempt_id, context, "EXIT_UNKNOWN",
+                {"order_id": None, "requested_qty": quantity,
+                 "confirmed_qty": 0},
+            )
+            await executor._page_operator(
+                f"{position.get('ticker')}: protective stop {sl_order_id} could "
+                f"not be confirmed cancelled ({stop_truth['status']}). "
+                "No discretionary exit was sent; "
+                "reconcile the stop and position in Kite immediately."
+            )
+            return {
+                "status": "UNKNOWN", "order_id": None,
+                "requested_qty": quantity, "confirmed_qty": 0,
+                "fill_price": None, "paper": False,
+                "message": "protective stop cancellation unconfirmed",
+            }
+
+    existing = await attempt_event_payload(settings.DB_PATH, attempt_id, "EXIT_SUBMITTED")
+    order_id = (existing or {}).get("order_id")
+    if executor.paper_mode:
+        result = await executor.execute_exit(
+            position.get("ticker"), leg, quantity,
+            reference_price=reference_price,
+        )
+        await _append_penny_exit_event(
+            attempt_id, context, "EXIT_SIMULATED",
+            {"order_id": result.get("order_id"), "quantity": quantity,
+             "fill_price": result.get("fill_price")},
+        )
+    elif not (sl_order_id and 'result' in locals() and result.get("message") == "protective stop filled"):
+        if not order_id:
+            order_id = await executor._market_unwind(
+                position.get("ticker"), leg, quantity, ltp=reference_price,
+            )
+            if order_id:
+                await _append_penny_exit_event(
+                    attempt_id, context, "EXIT_SUBMITTED",
+                    {"order_id": order_id, "quantity": quantity},
+                )
+            else:
+                result = {
+                    "status": "REJECTED", "order_id": None,
+                    "requested_qty": quantity, "confirmed_qty": 0,
+                    "fill_price": None, "paper": False,
+                    "message": "broker rejected exit submission",
+                }
+                await executor._page_operator(
+                    f"{position.get('ticker')}: scheduled exit submission failed; "
+                    f"{quantity} shares remain open. Resolve manually."
+                )
+        if order_id:
+            result = await executor.execute_exit(
+                position.get("ticker"), leg, quantity,
+                reference_price=reference_price, existing_order_id=order_id,
+            )
+
+    status = result.get("status") or "UNKNOWN"
+    event = {
+        "COMPLETE": "EXIT_CONFIRMED", "PARTIAL": "EXIT_PARTIAL",
+        "REJECTED": "EXIT_REJECTED", "UNKNOWN": "EXIT_UNKNOWN",
+    }.get(status, "EXIT_UNKNOWN")
+    await _append_penny_exit_event(
+        attempt_id, context, event,
+        {"order_id": result.get("order_id"), "requested_qty": quantity,
+         "confirmed_qty": int(result.get("confirmed_qty") or 0)},
+    )
+
+    fill_price = float(result.get("fill_price") or 0)
+    if int(result.get("confirmed_qty") or 0) > 0 and fill_price > 0:
+        settlement = await _settle_confirmed_penny_exit(
+            position,
+            confirmed_qty=int(result["confirmed_qty"]),
+            fill_price=fill_price,
+            reason=reason,
+            # Any live discretionary exit reached this point only after the
+            # old protective stop was confirmed cancelled; a partial residual
+            # must not advertise that dead stop as protection. Protective-stop
+            # partials likewise consume and clear their cumulative fill.
+            clear_sl_order=(not executor.paper_mode and bool(sl_order_id)),
+        )
+        if settlement["settled"]:
+            await _append_penny_exit_event(
+                attempt_id, context, "POSITION_EXIT_SETTLED",
+                {"settled_qty": settlement["settled"],
+                 "remaining_qty": settlement["remaining"],
+                 "fill_price": fill_price, "pnl": settlement["pnl"]},
+            )
+        result["settlement"] = settlement
+    elif int(result.get("confirmed_qty") or 0) > 0:
+        result["status"] = "UNKNOWN"
+        await executor._page_operator(
+            f"{position.get('ticker')}: broker confirmed quantity but returned no "
+            "average fill price. Position remains unsettled; reconcile manually."
+        )
+    return result
 
 
 async def run_penny_eod_check():
@@ -817,7 +1152,6 @@ async def run_penny_eod_check():
         if not penny_mis:
             logger.info("penny_eod_check no_open_mis_positions")
             return
-        scanner = _get_penny_scanner()
         exit_count = hold_count = 0
         for p in penny_mis:
             # Real LTP. Without it the check is comparing entry to entry.
@@ -845,16 +1179,22 @@ async def run_penny_eod_check():
             )
             if decision.get("action") == "exit_now":
                 try:
-                    exit_result = await scanner.executor._market_unwind(
-                        ticker=p.get("ticker"),
-                        leg=PennyLeg.MIS,
-                        shares=p.get("shares", 0),
+                    exit_result = await _execute_scheduled_penny_exit(
+                        p, reason="smart_eod",
+                        reference_price=current_price,
                     )
+                    settled = int((exit_result.get("settlement") or {}).get("settled") or 0)
+                    if settled:
+                        exit_count += 1
+                    else:
+                        hold_count += 1
                     logger.info(
-                        "penny_eod_exit_placed ticker=%s shares=%d order_id=%s",
-                        p.get("ticker"), p.get("shares"), exit_result,
+                        "penny_eod_exit_result ticker=%s requested=%d confirmed=%d "
+                        "settled=%d status=%s order_id=%s",
+                        p.get("ticker"), p.get("shares"),
+                        int(exit_result.get("confirmed_qty") or 0), settled,
+                        exit_result.get("status"), exit_result.get("order_id"),
                     )
-                    exit_count += 1
                 except Exception as e:
                     logger.error(
                         "penny_eod_exit_failed ticker=%s error=%s",
@@ -916,27 +1256,34 @@ async def run_penny_force_close_mis():
             logger.info("penny_force_close_mis no_open_positions")
             return
 
-        scanner = _get_penny_scanner()
         close_count = 0
         for p in penny_mis:
             try:
-                exit_result = await scanner.executor._market_unwind(
-                    ticker=p.get("ticker"),
-                    leg=PennyLeg.MIS,
-                    shares=p.get("shares", 0),
+                current_price = await _penny_ltp(
+                    p.get("ticker"), p.get("entry_price", 0.0),
                 )
+                exit_result = await _execute_scheduled_penny_exit(
+                    p, reason="mis_time_stop",
+                    reference_price=current_price,
+                )
+                settled = int((exit_result.get("settlement") or {}).get("settled") or 0)
                 logger.warning(
-                    "penny_force_close_mis_exit ticker=%s shares=%d order_id=%s reason=15:00_IST_time_stop",
-                    p.get("ticker"), p.get("shares"), exit_result,
+                    "penny_force_close_mis_exit ticker=%s requested=%d confirmed=%d "
+                    "settled=%d status=%s order_id=%s reason=15:00_IST_time_stop",
+                    p.get("ticker"), p.get("shares"),
+                    int(exit_result.get("confirmed_qty") or 0), settled,
+                    exit_result.get("status"), exit_result.get("order_id"),
                 )
-                close_count += 1
+                if settled:
+                    close_count += 1
             except Exception as e:
                 logger.error(
                     "penny_force_close_mis_failed ticker=%s error=%s",
                     p.get("ticker"), str(e),
                 )
         logger.warning(
-            "penny_force_close_mis_done closed=%d (15:00 IST time-stop fired)",
+            "penny_force_close_mis_done confirmed_settlements=%d "
+            "(15:00 IST time-stop fired)",
             close_count,
         )
     except Exception as e:
@@ -2841,6 +3188,180 @@ async def _record_momentum_scale_out(
     return True
 
 
+def _square_off_fill_evidence(response, requested_qty: int) -> dict:
+    """Parse Container A's confirmation contract; HTTP success is not a fill."""
+    try:
+        body = response.json() or {}
+    except Exception:
+        body = {}
+    requested = max(0, int(requested_qty or 0))
+    filled = min(requested, max(0, int(body.get("filled_quantity") or 0)))
+    price = float(body.get("average_price") or 0)
+    state = str(body.get("state") or "UNKNOWN").upper()
+    terminal = bool(body.get("terminal"))
+    return {
+        "state": state,
+        "order_id": body.get("order_id"),
+        "filled_quantity": filled,
+        "remaining_quantity": requested - filled,
+        "average_price": price if price > 0 else None,
+        "confirmed": filled > 0 and price > 0,
+        "complete": (
+            filled == requested and price > 0
+            and (state == "COMPLETE" or (state == "PARTIAL" and terminal))
+        ),
+        "terminal": terminal,
+    }
+
+
+async def _cancel_order_truth(client, order_id: str, requested_qty: int) -> dict:
+    """Cancel then read broker history; terminal partial fills are not zero."""
+    cancel = {}
+    latest = {}
+    error = None
+    try:
+        cancel = await client.cancel_order(order_id=str(order_id))
+    except Exception as exc:
+        error = str(exc)
+    try:
+        history = await client.order_history(order_id=str(order_id))
+        latest = _kc_latest_order_state(history) if history else {}
+    except Exception as exc:
+        error = error or str(exc)
+    status = str(latest.get("status") or cancel.get("status") or "UNKNOWN").upper()
+    requested = max(0, int(requested_qty or 0))
+    filled = int(latest.get("filled_quantity") or 0)
+    if status == "COMPLETE" and filled <= 0:
+        filled = requested
+    filled = min(requested, max(0, filled))
+    price = float(latest.get("average_price") or 0)
+    return {
+        "status": status, "filled_quantity": filled,
+        "average_price": price if price > 0 else None,
+        "confirmed_fill": filled > 0 and price > 0,
+        "safe_to_sell": filled == 0 and status in {"CANCELLED", "REJECTED"},
+        "error": error or cancel.get("message"),
+    }
+
+
+def _momentum_square_off_key(pos: dict) -> str:
+    """One stable broker mutation key for the current local residual."""
+    identity = "|".join((
+        str(pos.get("source") or "MOMENTUM"),
+        str(pos.get("ticker") or "").upper(),
+        str(pos.get("entry_date") or "legacy"),
+        str(int(pos.get("shares") or 0)),
+        str(pos.get("product_type") or "MIS").upper(),
+    ))
+    return "MXSQ-" + hashlib.sha256(identity.encode("utf-8")).hexdigest()[:24]
+
+
+async def _record_confirmed_momentum_partial(
+    pos: dict, *, sold_shares: int, fill_price: float,
+    new_stop: float | None, reason: str, mark_t1: bool = False,
+) -> bool:
+    """Settle a broker-confirmed partial while preserving its residual."""
+    original_shares = int(pos.get("shares") or 0)
+    sold = min(original_shares, max(0, int(sold_shares or 0)))
+    remaining = original_shares - sold
+    if sold <= 0 or remaining <= 0 or fill_price <= 0:
+        return False
+    costs = calc_zerodha_costs(
+        pos["entry_price"], fill_price, sold,
+        is_intraday=_is_intraday_from_product_type(pos.get("product_type")),
+    )
+    pnl = (fill_price - pos["entry_price"]) * sold - costs
+    stop = float(new_stop if new_stop is not None else pos.get("trailing_stop_current") or pos.get("stop_loss_initial") or 0)
+    async with aiosqlite.connect(settings.DB_PATH) as db:
+        cur = await db.execute("""
+            UPDATE positions SET shares=?, trailing_stop_current=?,
+                t1_fired=CASE WHEN ? THEN 1 ELSE t1_fired END,
+                realised_pnl=COALESCE(realised_pnl,0)+?
+            WHERE ticker=? AND source='MOMENTUM' AND shares=?
+              AND status IN ('OPEN','CLOSED_T1') AND exit_date IS NULL
+        """, (remaining, stop, 1 if mark_t1 else 0, pnl,
+              pos["ticker"], original_shares))
+        await db.commit()
+        changed = cur.rowcount
+    if changed != 1:
+        logger.error("momentum_partial_not_persisted", ticker=pos["ticker"],
+                     sold=sold, expected_shares=original_shares)
+        return False
+    await record_partial_realisation(
+        settings.DB_PATH, pos["ticker"], pnl,
+        notes=f"confirmed_square_off_partial:{reason}",
+        source=pos.get("source") or "MOMENTUM",
+    )
+    return True
+
+
+async def _page_unconfirmed_square_off(ticker: str, evidence: dict, context: str) -> None:
+    await _notify_operator(
+        f"🚨 `{ticker}` {context} is {evidence.get('state','UNKNOWN')}; "
+        f"broker-confirmed {evidence.get('filled_quantity',0)} shares, "
+        f"residual {evidence.get('remaining_quantity','?')}, order "
+        f"`{evidence.get('order_id')}`. Residual remains open in accounting; "
+        "reconcile in Zerodha before retrying.",
+        event="momentum_square_off_unconfirmed",
+    )
+
+
+async def _post_square_off_with_reconcile(url: str, payload: dict):
+    """Retry one ambiguous HTTP outcome with the same broker idempotency key."""
+    import httpx
+    last_error = None
+    for attempt in range(2):
+        try:
+            async with httpx.AsyncClient() as client:
+                response = await client.post(
+                    url, json=payload,
+                    headers={"X-Internal-Secret": settings.INTERNAL_API_SECRET},
+                    timeout=30.0,
+                )
+            response.raise_for_status()
+            return response
+        except Exception as exc:
+            last_error = exc
+            # The identical key makes the second request reconciliation, not a
+            # second broker mutation. Retry once for timeout/5xx/202 transport.
+            if attempt == 0:
+                continue
+    await _notify_operator(
+        f"🚨 `{payload.get('ticker')}` square-off HTTP outcome is UNKNOWN after "
+        f"idempotent reconciliation (`{payload.get('idempotency_key')}`). "
+        f"No local settlement was recorded. Check Zerodha now. Error: "
+        f"{str(last_error)[:180]}",
+        event="momentum_square_off_transport_unknown",
+    )
+    return None
+
+
+async def _rearm_momentum_residual_stop(pos: dict, quantity: int) -> str | None:
+    """Protect a confirmed ACTION_EXIT residual after its old SL was cancelled."""
+    if quantity <= 0:
+        return None
+    trigger = snap_to_tick(
+        float(pos.get("trailing_stop_current") or pos.get("stop_loss_initial") or 0), -1,
+    )
+    if trigger <= 0:
+        return None
+    limit = snap_to_tick(trigger * 0.99, -1)
+    try:
+        response = await kite.place_order(
+            variety="regular", exchange="NSE", tradingsymbol=pos["ticker"],
+            transaction_type="SELL", quantity=int(quantity),
+            product=pos.get("product_type") or "MIS", order_type="SL",
+            trigger_price=trigger, price=limit, validity="DAY",
+            tag="QM_RESIDUAL_SL", intent="exit", channel="momentum",
+        )
+        order_id = (response or {}).get("order_id")
+        return str(order_id) if order_id else None
+    except Exception as exc:
+        logger.error("momentum_residual_sl_failed", ticker=pos.get("ticker"),
+                     quantity=quantity, error=str(exc))
+        return None
+
+
 async def momentum_intraday_monitor():
     """
     [TIER0-0.1 2026-07-14] Manage open MIS momentum positions DURING the day.
@@ -2927,15 +3448,38 @@ async def momentum_intraday_monitor():
                 # SL-M were still live, a dip could trigger it and sell a second
                 # time -- leaving us short.
                 if sl_order_id:
-                    cancel = await kite.cancel_order(order_id=str(sl_order_id))
-                    if cancel.get("status") == "ERROR":
-                        logger.error(
-                            "momentum_sl_cancel_failed_skipping_exit",
-                            ticker=ticker, sl_order_id=sl_order_id,
-                            message=cancel.get("message"),
+                    stop_truth = await _cancel_order_truth(
+                        kite, str(sl_order_id), int(pos["shares"]),
+                    )
+                    if stop_truth["confirmed_fill"]:
+                        if stop_truth["filled_quantity"] >= int(pos["shares"]):
+                            await _close_momentum_position(
+                                pos, stop_truth["average_price"],
+                                "STOPPED_OUT", "sl_m_filled_during_cancel",
+                            )
+                        else:
+                            await _record_confirmed_momentum_partial(
+                                pos, sold_shares=stop_truth["filled_quantity"],
+                                fill_price=stop_truth["average_price"],
+                                new_stop=None, reason="sl_m_partial_during_cancel",
+                            )
+                            await _page_unconfirmed_square_off(
+                                ticker, {
+                                    "state": stop_truth["status"],
+                                    "filled_quantity": stop_truth["filled_quantity"],
+                                    "remaining_quantity": int(pos["shares"]) - stop_truth["filled_quantity"],
+                                    "order_id": sl_order_id,
+                                }, "protective-stop cancel",
+                            )
+                        continue
+                    if stop_truth["filled_quantity"] > 0 or not stop_truth["safe_to_sell"]:
+                        await _notify_operator(
+                            f"🚨 `{ticker}` exit refused: protective stop "
+                            f"`{sl_order_id}` is {stop_truth['status']} and its "
+                            "fill/cancel state is not safely reconciled. No second "
+                            "SELL was sent.",
+                            event="momentum_sl_cancel_unresolved",
                         )
-                        # Refuse to sell while an uncancelled stop rests. Better to
-                        # hold to the 15:15 square-off than to risk a short.
                         continue
 
                 payload = {
@@ -2945,19 +3489,46 @@ async def momentum_intraday_monitor():
                     "limit_price": snap_to_tick(ltp * 0.999, -1),
                     "product_type": pos.get('product_type', 'MIS'),
                     "reason": f"MOMENTUM_EXIT_{decision['reason']}",
+                    "idempotency_key": _momentum_square_off_key(pos),
                 }
-                async with _httpx.AsyncClient() as _client:
-                    resp = await _client.post(
-                        f"{container_a_url}/api/orders/square-off",
-                        json=payload,
-                        headers={"X-Internal-Secret": settings.INTERNAL_API_SECRET},
-                        timeout=10.0,
-                    )
-                resp.raise_for_status()
-                await _close_momentum_position(
-                    pos, ltp, momentum_exit_status(decision["reason"]),
-                    decision["reason"],
+                resp = await _post_square_off_with_reconcile(
+                    f"{container_a_url}/api/orders/square-off", payload,
                 )
+                if resp is None:
+                    continue
+                evidence = _square_off_fill_evidence(resp, int(pos["shares"]))
+                if evidence["complete"]:
+                    await _close_momentum_position(
+                        pos, evidence["average_price"],
+                        momentum_exit_status(decision["reason"]),
+                        decision["reason"],
+                    )
+                elif evidence["confirmed"]:
+                    persisted = await _record_confirmed_momentum_partial(
+                        pos, sold_shares=evidence["filled_quantity"],
+                        fill_price=evidence["average_price"], new_stop=None,
+                        reason=decision["reason"],
+                    )
+                    residual = evidence["remaining_quantity"]
+                    new_sl_id = await _rearm_momentum_residual_stop(pos, residual)
+                    if new_sl_id and persisted:
+                        async with aiosqlite.connect(settings.DB_PATH) as db:
+                            await db.execute(
+                                "UPDATE positions SET sl_order_id=? WHERE ticker=? "
+                                "AND source='MOMENTUM' AND exit_date IS NULL",
+                                (new_sl_id, ticker),
+                            )
+                            await db.commit()
+                    if not new_sl_id:
+                        await _notify_operator(
+                            f"🚨 `{ticker}` partial exit left {residual} shares "
+                            "UNPROTECTED because the residual SL could not be armed. "
+                            "Place protection or flatten manually now.",
+                            event="momentum_residual_unprotected",
+                        )
+                    await _page_unconfirmed_square_off(ticker, evidence, "exit")
+                else:
+                    await _page_unconfirmed_square_off(ticker, evidence, "exit")
 
             elif action == ACTION_SCALE_OUT:
                 # [SCALE-OUT 2026-08-04] Order of operations is a safety
@@ -3003,43 +3574,44 @@ async def momentum_intraday_monitor():
                     "limit_price": snap_to_tick(ltp * 0.999, -1),
                     "product_type": pos.get('product_type', 'MIS'),
                     "reason": f"MOMENTUM_SCALE_OUT_{decision['reason']}",
+                    "idempotency_key": _momentum_square_off_key(pos),
                 }
-                try:
-                    async with _httpx.AsyncClient() as _client:
-                        resp = await _client.post(
-                            f"{container_a_url}/api/orders/square-off",
-                            json=payload,
-                            headers={"X-Internal-Secret": settings.INTERNAL_API_SECRET},
-                            timeout=10.0,
-                        )
-                    resp.raise_for_status()
-                except Exception as sell_err:
-                    # The stop is now sized for the runner but we still hold
-                    # the full position: the excess shares are unprotected.
-                    # Restore the stop to full size rather than leaving that
-                    # gap open, and page the operator either way.
-                    logger.error(
-                        "momentum_scale_out_sell_failed_restoring_stop",
-                        ticker=ticker, scale_shares=scale_shares,
-                        error=str(sell_err),
-                    )
-                    if sl_order_id:
-                        await kite.modify_order(
-                            order_id=str(sl_order_id),
-                            quantity=int(pos["shares"]),
-                            trigger_price=snap_to_tick(new_stop, -1),
-                        )
+                resp = await _post_square_off_with_reconcile(
+                    f"{container_a_url}/api/orders/square-off", payload,
+                )
+                if resp is None:
+                    # Submission may have filled. Do not blindly resize the
+                    # stop again; the operator page owns reconciliation.
                     continue
 
-                # Book the partial: shares down, stop up, t1_fired set so the
-                # partial can never fire twice on the same position.
-                await _record_momentum_scale_out(
-                    pos, ltp, scale_shares, runner_shares, new_stop,
-                    decision["reason"],
+                evidence = _square_off_fill_evidence(resp, scale_shares)
+                if not evidence["confirmed"]:
+                    # Stop was pre-shrunk, but no sale is confirmed. Restore
+                    # full coverage before leaving the position unchanged.
+                    if sl_order_id and evidence["state"] in {"REJECTED", "CANCELLED"}:
+                        await kite.modify_order(
+                            order_id=str(sl_order_id), quantity=int(pos["shares"]),
+                            trigger_price=snap_to_tick(new_stop, -1),
+                        )
+                    await _page_unconfirmed_square_off(ticker, evidence, "scale-out")
+                    continue
+                actual_runner = int(pos["shares"]) - evidence["filled_quantity"]
+                if sl_order_id and actual_runner != runner_shares:
+                    await kite.modify_order(
+                        order_id=str(sl_order_id), quantity=actual_runner,
+                        trigger_price=snap_to_tick(new_stop, -1),
+                    )
+                await _record_confirmed_momentum_partial(
+                    pos, sold_shares=evidence["filled_quantity"],
+                    fill_price=evidence["average_price"], new_stop=new_stop,
+                    reason=decision["reason"], mark_t1=True,
                 )
+                if not evidence["complete"]:
+                    await _page_unconfirmed_square_off(ticker, evidence, "scale-out")
                 logger.info(
-                    "momentum_scaled_out", ticker=ticker, ltp=ltp,
-                    sold=scale_shares, runner=runner_shares,
+                    "momentum_scaled_out", ticker=ticker,
+                    fill_price=evidence["average_price"],
+                    sold=evidence["filled_quantity"], runner=actual_runner,
                     new_stop=new_stop, reason=decision["reason"],
                 )
 
@@ -3132,6 +3704,42 @@ async def auto_square_momentum():
     for pos in momentum_pos:
         ticker = pos['ticker']
         try:
+            # Never stack the EOD SELL beside a resting full-size SL. Confirm
+            # cancellation (or consume an already-COMPLETE stop) first.
+            sl_order_id = pos.get("sl_order_id")
+            if sl_order_id:
+                stop_truth = await _cancel_order_truth(
+                    kite, str(sl_order_id), int(pos["shares"]),
+                )
+                if stop_truth["confirmed_fill"]:
+                    if stop_truth["filled_quantity"] >= int(pos["shares"]):
+                        await _close_momentum_position(
+                            pos, stop_truth["average_price"],
+                            "STOPPED_OUT", "sl_m_filled_at_eod",
+                        )
+                    else:
+                        await _record_confirmed_momentum_partial(
+                            pos, sold_shares=stop_truth["filled_quantity"],
+                            fill_price=stop_truth["average_price"], new_stop=None,
+                            reason="sl_m_partial_at_eod",
+                        )
+                        await _page_unconfirmed_square_off(
+                            ticker, {
+                                "state": stop_truth["status"],
+                                "filled_quantity": stop_truth["filled_quantity"],
+                                "remaining_quantity": int(pos["shares"]) - stop_truth["filled_quantity"],
+                                "order_id": sl_order_id,
+                            }, "auto-square protective-stop cancel",
+                        )
+                    continue
+                if stop_truth["filled_quantity"] > 0 or not stop_truth["safe_to_sell"]:
+                    await _notify_operator(
+                        f"🚨 `{ticker}` auto-square refused: protective stop "
+                        f"`{sl_order_id}` is {stop_truth['status']}, not safely reconciled. "
+                        "No second SELL was submitted; reconcile manually.",
+                        event="auto_square_sl_unresolved",
+                    )
+                    continue
             # Fetch current LTP to decide order type
             async with _httpx.AsyncClient() as _client:
                 ltp_resp = await _client.get(
@@ -3175,38 +3783,43 @@ async def auto_square_momentum():
                 "order_type":   order_type,
                 "limit_price":  limit_price,
                 "product_type": pos.get('product_type', 'MIS'),
-                "reason":       "AUTO_SQUARE_EOD"
+                "reason":       "AUTO_SQUARE_EOD",
+                "idempotency_key": _momentum_square_off_key(pos),
             }
 
-            async with _httpx.AsyncClient() as _client:
-                resp = await _client.post(
-                    f"{container_a_url}/api/orders/square-off",
-                    json=payload,
-                    headers={"X-Internal-Secret": settings.INTERNAL_API_SECRET},
-                    timeout=10.0
-                )
-            resp.raise_for_status()
-            # [ORDER-TRACE 2026-07-26] Log the broker order_id. The square-off
-            # route returns {success, order_id} but the id was previously
-            # discarded, so the 8 real orders this job placed on 2026-07-21..24
-            # left no trace on the system side at all -- there was nothing to
-            # reconcile a fill against. Keep it in the log at minimum.
-            try:
-                _order_id = (resp.json() or {}).get("order_id")
-            except Exception:
-                _order_id = None
+            resp = await _post_square_off_with_reconcile(
+                f"{container_a_url}/api/orders/square-off", payload,
+            )
+            if resp is None:
+                continue
+            evidence = _square_off_fill_evidence(resp, int(pos["shares"]))
+            _order_id = evidence["order_id"]
             logger.info("auto_square_sent", ticker=ticker,
                         order_type=order_type, pnl_estimate=current_pnl,
-                        order_id=_order_id, shares=pos['shares'])
+                        order_id=_order_id, shares=pos['shares'],
+                        state=evidence["state"],
+                        filled=evidence["filled_quantity"])
 
-            # [MED-009] Record position close in Container B's DB using LTP as the
-            # estimated fill price. The square-off order was just placed; we do not
-            # have broker fill confirmation, so LTP is the best estimate available.
-            gross        = (ltp - pos['entry_price']) * pos['shares']
+            if not evidence["complete"]:
+                if evidence["confirmed"]:
+                    await _record_confirmed_momentum_partial(
+                        pos, sold_shares=evidence["filled_quantity"],
+                        fill_price=evidence["average_price"], new_stop=None,
+                        reason="auto_square",
+                    )
+                await _page_unconfirmed_square_off(
+                    ticker, evidence, "auto-square",
+                )
+                continue
+
+            confirmed_fill = evidence["average_price"]
+
+            # Settle strictly from broker evidence, never from the pre-order LTP.
+            gross = (confirmed_fill - pos['entry_price']) * pos['shares']
             # [AUDIT-FIX-1.2] Derive is_intraday from product_type (was
             # hardcoded True, understating CNC costs).
             costs = calc_zerodha_costs(
-                pos['entry_price'], ltp, pos['shares'],
+                pos['entry_price'], confirmed_fill, pos['shares'],
                 is_intraday=_is_intraday_from_product_type(pos.get('product_type')),
             )
             realised_pnl = gross - costs
@@ -3232,7 +3845,7 @@ async def auto_square_momentum():
                         realised_pnl=?, r_multiple=?
                     WHERE ticker=? AND source='MOMENTUM'
                       AND status IN ('OPEN', 'CLOSED_T1') AND exit_date IS NULL
-                """, (ltp, datetime.now(timezone.utc).isoformat(),
+                """, (confirmed_fill, datetime.now(timezone.utc).isoformat(),
                       total_pnl, r_multiple, ticker))
                 await db.commit()
                 rows_closed = cur.rowcount
@@ -3262,7 +3875,7 @@ async def auto_square_momentum():
                                      outcome_r_multiple=r_multiple,
                                      source=pos.get('source') or 'MOMENTUM')
             logger.info("auto_square_position_closed", ticker=ticker,
-                        exit_price=ltp, pnl=round(total_pnl, 2), r=round(r_multiple, 4))
+                        exit_price=confirmed_fill, pnl=round(total_pnl, 2), r=round(r_multiple, 4))
 
         except Exception as e:
             logger.error("auto_square_failed", ticker=ticker, error=str(e))

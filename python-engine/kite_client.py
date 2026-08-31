@@ -10,7 +10,12 @@ import structlog
 from datetime import datetime, timedelta, timezone
 import aiosqlite
 from config import settings
-from halt_switch import TradingHalted, assert_not_halted
+from halt_switch import TradingHalted, assert_not_halted, trip as trip_halt
+from order_execution_readiness import (
+    is_permission_or_static_ip_rejection,
+    mark_authorized as mark_order_execution_authorized,
+    mark_blocked as mark_order_execution_blocked,
+)
 
 logger = structlog.get_logger()
 
@@ -1014,6 +1019,10 @@ class KiteClient:
             resp = await self.client.post(f"/orders/{variety}", data=params)
             resp.raise_for_status()
             data = resp.json().get("data", {})
+            # An accepted POST is the only honest proof available that this
+            # token + route + static IP may place orders.
+            if data.get("order_id"):
+                mark_order_execution_authorized()
             return {
                 "order_id": data.get("order_id"),
                 "status": "PLACED",
@@ -1022,7 +1031,42 @@ class KiteClient:
         except httpx.HTTPStatusError as e:
             body = e.response.text[:300] if e.response.text else ""
             logger.error("kite_place_order_failed status=%d body=%s", e.response.status_code, body)
+            if is_permission_or_static_ip_rejection(e.response.status_code, body):
+                reason = (
+                    f"Kite order authorization rejected via {settings.KITE_BASE_URL}: "
+                    f"HTTP {e.response.status_code}; verify the app's registered static IP "
+                    "and the configured relay egress"
+                )
+                first_transition = mark_order_execution_blocked(
+                    reason, http_status=e.response.status_code,
+                )
+                # Account/route permission affects every live strategy, so this
+                # is intentionally global.  Exits remain exempt at the broker
+                # boundary and will continue to be attempted and reconciled.
+                try:
+                    trip_halt(reason, by="kite_order_authorization")
+                except OSError as halt_exc:
+                    logger.critical(
+                        "kite_order_authorization_halt_failed", error=str(halt_exc),
+                    )
+                if first_transition:
+                    try:
+                        from operator_alert import notify_operator
+                        await notify_operator(
+                            "🔴 LIVE ORDER AUTHORIZATION BLOCKED\n\n"
+                            f"{reason}. New live entries are halted. Existing exits will "
+                            "still be attempted, but manage open positions in Kite until "
+                            "a real order is accepted and the halt is manually cleared.",
+                            event="kite_order_authorization_blocked",
+                        )
+                    except Exception as alert_exc:
+                        logger.error(
+                            "kite_order_authorization_alert_failed", error=str(alert_exc),
+                        )
             return {"order_id": None, "status": "ERROR",
+                    "execution_blocked": is_permission_or_static_ip_rejection(
+                        e.response.status_code, body
+                    ),
                     "message": f"HTTP {e.response.status_code}: {body}"}
         except httpx.RequestError as e:
             logger.error("kite_place_order_failed error=%s", str(e))

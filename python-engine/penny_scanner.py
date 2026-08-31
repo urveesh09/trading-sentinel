@@ -40,6 +40,10 @@ from penny_execution_journal import (
     append_execution_event, attempt_event_payload, attempt_event_types,
     attempt_identity,
 )
+from penny_position_reservations import (
+    persist_reserved_penny_position, reserve_penny_position,
+    set_penny_reservation_state,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -1229,6 +1233,28 @@ class PennyScanner:
                     from penny_models import PennyLeg
                     from position_tracker import init_positions_db
                     await init_positions_db(settings.DB_PATH)
+                    reservation = await reserve_penny_position(
+                        settings.DB_PATH, attempt_id=attempt_id,
+                        source=self.source_tag, ticker=sym, product_type="MIS",
+                        max_total=settings.PENNY_MAX_POSITIONS_TOTAL,
+                        max_leg=settings.PENNY_MAX_POSITIONS_MIS,
+                    )
+                    if not reservation.granted:
+                        logger.info(
+                            "penny_entry_reservation_rejected ticker=%s attempt_id=%s "
+                            "reason=%s total=%d mis=%d",
+                            sym, attempt_id, reservation.reason,
+                            reservation.total_occupied, reservation.leg_occupied,
+                        )
+                        await self._record_execution_event("VALIDATION_REJECTED", {
+                            "status": "capacity_rejected",
+                            "reason": reservation.reason,
+                            "total_occupied": reservation.total_occupied,
+                            "leg_occupied": reservation.leg_occupied,
+                        }, event_context)
+                        failure += 1
+                        accept += 1
+                        continue
                     order_attempt += 1
                     order_result = await self.executor.execute_entry(
                         ticker=sym,
@@ -1267,32 +1293,24 @@ class PennyScanner:
                     }, event_context)
                     if is_protected_fill:
                         protected += 1
-                        import aiosqlite
                         from datetime import datetime, timezone
-                        async with aiosqlite.connect(settings.DB_PATH) as db:
-                            cursor = await db.execute(
-                                """INSERT INTO positions (
-                                    ticker, exchange, entry_date, entry_price, shares,
-                                    stop_loss_initial, trailing_stop_current,
-                                    target_1, target_2, atr_14_at_entry,
-                                    highest_close_since_entry, status, source,
-                                    product_type, regime_at_entry, sl_order_id,
-                                    penny_attempt_id
-                                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
-                                (sym, "NSE",
-                                 datetime.now(timezone.utc).isoformat(),
-                                 fill_price,
-                                 decision.get("shares", 0),
-                                 decision.get("stop_loss", 0.0),
-                                 decision.get("stop_loss", 0.0),
-                                 decision.get("target", 0.0),
-                                 decision.get("target", 0.0) * 1.05,
-                                 0.0, fill_price,
-                                 "OPEN", self.source_tag, "MIS", self.regime,
-                                 order_result.get("sl_order_id"), attempt_id)
-                            )
-                            await db.commit()
-                            row_id = cursor.lastrowid
+                        row_id = await persist_reserved_penny_position(
+                            settings.DB_PATH, attempt_id=attempt_id, values={
+                                "ticker": sym, "exchange": "NSE",
+                                "entry_date": datetime.now(timezone.utc).isoformat(),
+                                "entry_price": fill_price,
+                                "shares": decision.get("shares", 0),
+                                "stop_loss_initial": decision.get("stop_loss", 0.0),
+                                "trailing_stop_current": decision.get("stop_loss", 0.0),
+                                "target_1": decision.get("target", 0.0),
+                                "target_2": decision.get("target", 0.0) * 1.05,
+                                "atr_14_at_entry": 0.0,
+                                "highest_close_since_entry": fill_price,
+                                "status": "OPEN", "source": self.source_tag,
+                                "product_type": "MIS", "regime_at_entry": self.regime,
+                                "sl_order_id": order_result.get("sl_order_id"),
+                            },
+                        )
                         position += 1
                         await self._record_execution_event("POSITION_CREATED", {
                             "position_rowid": row_id, "entry_price": fill_price,
@@ -1300,9 +1318,36 @@ class PennyScanner:
                         }, event_context)
                     else:
                         failure += 1
+                        if status in {
+                            "ticker_blocked", "drift_rejected",
+                            "stop_already_breached", "no_quote",
+                        } or bool(order_result.get("unwound")):
+                            await set_penny_reservation_state(
+                                settings.DB_PATH, attempt_id=attempt_id,
+                                state="RELEASED", note=f"definitive_no_position:{status}",
+                            )
+                        else:
+                            # Rejections/timeouts can be transport-ambiguous.
+                            # Preserve occupancy until broker reconciliation.
+                            await set_penny_reservation_state(
+                                settings.DB_PATH, attempt_id=attempt_id,
+                                state="UNRESOLVED", note=f"broker_outcome:{status}",
+                            )
                 except Exception as e:
                     logger.error("penny_entry_wiring_failed ticker=%s error=%s", sym, str(e))
                     failure += 1
+                    if 'attempt_id' in locals():
+                        try:
+                            await set_penny_reservation_state(
+                                settings.DB_PATH, attempt_id=attempt_id,
+                                state="UNRESOLVED", note=f"exception:{type(e).__name__}",
+                            )
+                        except Exception as reservation_error:
+                            logger.critical(
+                                "penny_reservation_quarantine_failed ticker=%s "
+                                "attempt_id=%s error=%s",
+                                sym, attempt_id, str(reservation_error),
+                            )
                     if 'event_context' in locals():
                         await self._record_execution_event("POSITION_PERSIST_FAILED", {
                             "error_type": type(e).__name__, "message": str(e)[:300],

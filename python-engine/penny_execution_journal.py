@@ -25,6 +25,13 @@ EVENT_SEQUENCE = {
     "EXECUTION_RESULT": 80,
     "POSITION_CREATED": 90,
     "POSITION_PERSIST_FAILED": 91,
+    "EXIT_SUBMITTED": 100,
+    "EXIT_SIMULATED": 101,
+    "EXIT_PARTIAL": 110,
+    "EXIT_CONFIRMED": 111,
+    "EXIT_REJECTED": 112,
+    "EXIT_UNKNOWN": 113,
+    "POSITION_EXIT_SETTLED": 120,
 }
 _SOURCES = {"PENNY", "PENNY_PAPER"}
 _MODES = {"live", "paper"}
@@ -197,3 +204,15 @@ async def attempt_event_payload(
             WHERE attempt_id=? AND event_type=?
         """, (attempt_id, event_type))).fetchone()
     return json.loads(row[0]) if row else None
+
+
+async def attempt_identity_fields(db_path: str, attempt_id: str) -> dict | None:
+    """Return immutable identity fields needed by a restart-safe exit event."""
+    await init_penny_execution_journal(db_path)
+    async with aiosqlite.connect(db_path) as db:
+        db.row_factory = aiosqlite.Row
+        row = await (await db.execute("""
+            SELECT scan_id,candidate_key,ticker,leg,source,mode
+            FROM penny_execution_events WHERE attempt_id=? ORDER BY id LIMIT 1
+        """, (attempt_id,))).fetchone()
+    return dict(row) if row else None
