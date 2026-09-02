@@ -1437,8 +1437,15 @@ async def run_penny_hourly_report():
     # try block; that re-bind shadows our module-level `datetime` and
     # would crash the calendar gate with UnboundLocalError. Found by
     # PR-2 functional tests.
+    # [MARKET-HOURS-GATE 2026-09-02] The scheduler is also hour-bounded, but
+    # keep this explicit IST gate so manual calls, stale scheduler instances,
+    # and UTC-configured containers cannot emit the heartbeat after hours.
+    from penny_hourly_report import is_in_report_window
+    now_ist = datetime.now(IST)
+    if not is_in_report_window(now_ist):
+        return
     # [CALENDAR-GATE 2026-07-03] weekend / NSE-holiday early-return.
-    today = datetime.now(IST).date()
+    today = now_ist.date()
     if not await is_trading_day(today, settings.DB_PATH):
         logger.info("penny_hourly_report_skip reason=non_trading_day")
         return
@@ -1493,6 +1500,7 @@ async def run_penny_hourly_report():
             universe_size=_last_penny_scan_universe_size,
             universe_as_of=_uni_as_of,
             universe_age_days=_uni_age_days,
+            now=now_ist,
         )
     except Exception as e:
         logger.error("penny_hourly_report_failed", error=str(e))

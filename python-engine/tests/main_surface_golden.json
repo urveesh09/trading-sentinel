@@ -142,7 +142,7 @@
       "func": "run_penny_hourly_report",
       "id": "penny_hourly_report",
       "kwargs": [],
-      "trigger": "cron[minute='0']"
+      "trigger": "cron[hour='10-14', minute='0']"
     },
     {
       "func": "run_penny_regime_compute",

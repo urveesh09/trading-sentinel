@@ -712,7 +712,12 @@ def register_penny_scheduler_jobs(scheduler):
         id="penny_eod_digest",
     )
     scheduler.add_job(
-        run_penny_hourly_report, "cron", minute=0,
+        run_penny_hourly_report, "cron",
+        hour=(
+            f"{settings.PENNY_HOURLY_REPORT_START_HOUR}-"
+            f"{settings.PENNY_HOURLY_REPORT_END_HOUR}"
+        ),
+        minute=0,
         id="penny_hourly_report",
     )
 

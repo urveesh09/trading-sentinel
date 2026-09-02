@@ -151,6 +151,21 @@ def test_report_within_window_check(monkeypatch):
     assert is_in_report_window(datetime(2026, 6, 21, 10, 0)) is True
     assert is_in_report_window(datetime(2026, 6, 21, 14, 0)) is True
 
+
+def test_report_window_converts_aware_utc_timestamp_to_ist(monkeypatch):
+    from config import settings
+    from penny_hourly_report import is_in_report_window
+    monkeypatch.setattr(settings, "PENNY_HOURLY_REPORT_START_HOUR", 10)
+    monkeypatch.setattr(settings, "PENNY_HOURLY_REPORT_END_HOUR", 14)
+    # 04:30 UTC is 10:00 IST and must be included.
+    assert is_in_report_window(
+        datetime(2026, 6, 22, 4, 30, tzinfo=timezone.utc)
+    ) is True
+    # 10:00 UTC is 15:30 IST and must not produce the hourly heartbeat.
+    assert is_in_report_window(
+        datetime(2026, 6, 22, 10, 0, tzinfo=timezone.utc)
+    ) is False
+
 def test_webhook_post_called_when_configured(tmp_paths, monkeypatch):
     """If PENNY_HOURLY_REPORT_WEBHOOK is set, POST the body."""
     from config import settings
