@@ -827,7 +827,8 @@ def register_penny_scheduler_jobs(scheduler):
 
 def register_partner_scheduler_jobs(scheduler):
     """
-    [PARTNER-TIPS 2026-07-18] Partner tips bot jobs (plan WS5). All five
+    [PARTNER-TIPS 2026-07-18] Partner tips bot jobs. The original five plus
+    the hedge review job all fail closed when disabled or missing safe inputs.
     jobs no-op instantly when PARTNER_BOT_ENABLED is false (the enabled
     check is the FIRST line of every job in partner_orchestrator), so
     registration is unconditional like the other subsystems.
@@ -893,6 +894,15 @@ def register_partner_scheduler_jobs(scheduler):
         except Exception as exc:
             logger.error("partner_rv_refresh_crashed err=%s", exc, exc_info=True)
 
+    async def _run_partner_hedge_tick_safe():
+        # [CALENDAR-GATE 2026-07-03] delegated to partner_hedge_tick, which
+        # checks the trading day before any broker or advisory work.
+        try:
+            from hedge_advisory import partner_hedge_tick
+            await partner_hedge_tick()
+        except Exception as exc:
+            logger.error("partner_hedge_tick_crashed err=%s", exc, exc_info=True)
+
     scheduler.add_job(
         _run_partner_scan_tick_safe, "cron",
         minute="*/2", second=40,
@@ -924,7 +934,14 @@ def register_partner_scheduler_jobs(scheduler):
         id="partner_rv_refresh",
         max_instances=1, coalesce=True, misfire_grace_time=600,
     )
+    scheduler.add_job(
+        _run_partner_hedge_tick_safe, "cron",
+        minute="7-52/15", second=10,
+        id="partner_hedge_tick",
+        max_instances=1, coalesce=True, misfire_grace_time=120,
+    )
     logger.info(
-        "partner_cron_registered jobs=5 enabled=%s off_grid=true",
+        "partner_cron_registered jobs=6 enabled=%s hedge_enabled=%s off_grid=true",
         settings.PARTNER_BOT_ENABLED,
+        settings.PARTNER_HEDGE_ENABLED,
     )

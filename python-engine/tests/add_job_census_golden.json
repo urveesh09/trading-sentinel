@@ -55,6 +55,11 @@
     "trigger": "'cron'"
   },
   {
+    "func": "_run_partner_hedge_tick_safe",
+    "id": "'partner_hedge_tick'",
+    "trigger": "'cron'"
+  },
+  {
     "func": "_run_partner_morning_brief_safe",
     "id": "'partner_morning_brief'",
     "trigger": "'cron'"

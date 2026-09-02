@@ -47,7 +47,7 @@ ALL_CLOSURES = [
     "_run_fno_tick_safe",
     "_run_fno_hourly_report_safe",
     "_run_fno_accept_watchdog_safe",
-    # [PARTNER-TIPS 2026-07-18] the five partner-bot closures. Their first
+    # [PARTNER-TIPS] partner-bot closures. Their first
     # gate is PARTNER_BOT_ENABLED (default false), so invoking them here
     # exercises the free-name region and exits without touching anything.
     "_run_partner_scan_tick_safe",
@@ -55,6 +55,7 @@ ALL_CLOSURES = [
     "_run_partner_morning_brief_safe",
     "_run_partner_eod_wrap_safe",
     "_run_partner_rv_refresh_safe",
+    "_run_partner_hedge_tick_safe",
 ]
 
 

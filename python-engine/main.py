@@ -1931,8 +1931,10 @@ async def lifespan(app: FastAPI):
         # [PARTNER-TIPS 2026-07-18] OI store + partner dedup tables.
         from fno_oi_store import init_oi_db
         from partner_orchestrator import init_partner_db
+        from hedge_advisory import init_hedge_advisory_db
         await init_oi_db(settings.DB_PATH)
         await init_partner_db(settings.DB_PATH)
+        await init_hedge_advisory_db(settings.DB_PATH)
     except Exception as _fno_db_exc:
         logger.warning("fno_db_init_failed err=%s", str(_fno_db_exc))
 
@@ -4215,6 +4217,7 @@ from routes_backtest import router as _backtest_router
 from routes_fno_experiments import router as _fno_experiments_router
 from routes_penny_experiments import router as _penny_experiments_router
 from routes_promotion_readiness import router as _promotion_readiness_router
+from routes_hedge import router as _hedge_router
 
 app.include_router(_ops_router)
 app.include_router(_portfolio_router)
@@ -4223,3 +4226,4 @@ app.include_router(_backtest_router)
 app.include_router(_fno_experiments_router)
 app.include_router(_penny_experiments_router)
 app.include_router(_promotion_readiness_router)
+app.include_router(_hedge_router)

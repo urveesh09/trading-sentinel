@@ -142,6 +142,12 @@ async def _send_event(
     underlying per gap). Pass throttle_key when a single kind can fire
     more than once per tick per underlying (wall_flow: support AND
     resistance) so the two don't collide on one shared row."""
+    if (
+        settings.PARTNER_HEDGE_ENABLED
+        and settings.PARTNER_HEDGE_SUPPRESS_ANALYTICS
+        and kind in {"pcr_shift", "iv_move", "oi_walls", "wall_flow", "pin"}
+    ):
+        return
     key = throttle_key or name or kind
     if await _throttled(db_path, kind, key, now):
         return
@@ -235,6 +241,8 @@ async def _track_record(
 async def partner_scan_tick(now: Optional[datetime] = None) -> None:
     now = now or datetime.now(IST)
     if not await _gates_open(now, 9 * 60 + 45, 15 * 60 + 5):
+        return
+    if settings.PARTNER_HEDGE_ENABLED and settings.PARTNER_HEDGE_SUPPRESS_DIRECTIONAL:
         return
     import main as _main
     logger.info("partner_scan_tick_invoked now_ist=%s", now.strftime("%H:%M:%S"))
@@ -487,6 +495,8 @@ async def partner_analytics_tick(now: Optional[datetime] = None) -> None:
             # --- expiry-day pin note ------------------------------------
             # [PARTNER-ENRICH 2026-07-19] T3a: once per expiry afternoon.
             if (
+                not (settings.PARTNER_HEDGE_ENABLED and settings.PARTNER_HEDGE_SUPPRESS_ANALYTICS)
+                and
                 book.is_expiry_day(now.date())
                 and (now.hour * 60 + now.minute) >= 13 * 60 + 30
                 and max_pain is not None and snap.forward > 0
@@ -559,6 +569,8 @@ async def partner_analytics_tick(now: Optional[datetime] = None) -> None:
 
     # --- momentum stock-option cues --------------------------------------
     try:
+        if settings.PARTNER_HEDGE_ENABLED and settings.PARTNER_HEDGE_SUPPRESS_DIRECTIONAL:
+            return
         fno_names = load_underlying_names()
         if fno_names:
             for s in list(getattr(_main, "momentum_signals_today", [])):
@@ -601,6 +613,8 @@ async def partner_analytics_tick(now: Optional[datetime] = None) -> None:
 async def partner_morning_brief(now: Optional[datetime] = None) -> None:
     now = now or datetime.now(IST)
     if not await _gates_open(now, 0, 24 * 60):
+        return
+    if settings.PARTNER_HEDGE_ENABLED and settings.PARTNER_HEDGE_SUPPRESS_LEGACY_BRIEF:
         return
     import main as _main
     day_iso = now.date().isoformat()
@@ -895,12 +909,16 @@ async def partner_eod_wrap(now: Optional[datetime] = None) -> None:
             row["error"] = "internal error"
         rows.append(row)
 
-    msg = format_eod(
-        day_iso, rows,
-        record_line=await _track_record_overall(settings.DB_PATH, now),
-    )
-    ok = await send_partner(msg, kind="eod")
-    await _record(settings.DB_PATH, "eod", day_iso, ok, now=now)
+    if not (
+        settings.PARTNER_HEDGE_ENABLED
+        and settings.PARTNER_HEDGE_SUPPRESS_LEGACY_EOD
+    ):
+        msg = format_eod(
+            day_iso, rows,
+            record_line=await _track_record_overall(settings.DB_PATH, now),
+        )
+        ok = await send_partner(msg, kind="eod")
+        await _record(settings.DB_PATH, "eod", day_iso, ok, now=now)
 
     # Retention: OI snapshots + old dedup rows. Disk at 86% -- this is
     # part of the job, not housekeeping that can silently stop running.
