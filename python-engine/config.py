@@ -1037,6 +1037,33 @@ class Settings(BaseSettings):
     # the same size).
     PARTNER_WALL_DELTA_PCT:     float = 0.15
 
+    # Hedge-first partner advisory. This is deliberately independent from
+    # PARTNER_BOT_ENABLED. It is enabled for Phase 1, while reconciled holdings
+    # and fresh quote gates still fail closed before any message can be sent.
+    PARTNER_HEDGE_ENABLED:              bool  = True
+    PARTNER_HEDGE_PROTECTIVE_PUT:       bool  = True
+    # Automatic collars stay off in Phase 1: a short call is only safe when
+    # the exact deliverable holding and option contract are reconciled.
+    PARTNER_HEDGE_COLLAR:               bool  = False
+    PARTNER_HEDGE_FUTURES:              bool  = True
+    PARTNER_HEDGE_TARGET_RATIO:         float = 0.50
+    PARTNER_HEDGE_PUT_DELTA:            float = 0.20
+    PARTNER_HEDGE_CALL_DELTA:           float = 0.20
+    PARTNER_HEDGE_MAX_SPREAD_PCT:       float = 0.15
+    PARTNER_HEDGE_MAX_QUOTE_AGE_SEC:    int   = 120
+    PARTNER_HEDGE_MIN_OI:               int   = 1
+    PARTNER_HEDGE_MIN_VOLUME:           int   = 1
+    PARTNER_HEDGE_MIN_DTE:              int   = 21
+    PARTNER_HEDGE_MAX_DTE:              int   = 60
+    PARTNER_HEDGE_POSITION_MAX_AGE_MIN: int   = 5
+    PARTNER_HEDGE_VIX_MAX_AGE_MIN:      int   = 15
+    # When the hedge pipeline is deliberately enabled, retire the legacy
+    # directional/noisy surfaces instead of mixing two different mandates.
+    PARTNER_HEDGE_SUPPRESS_DIRECTIONAL: bool  = True
+    PARTNER_HEDGE_SUPPRESS_ANALYTICS:   bool  = True
+    PARTNER_HEDGE_SUPPRESS_LEGACY_BRIEF: bool = True
+    PARTNER_HEDGE_SUPPRESS_LEGACY_EOD:   bool = True
+
     # ============================================================
     # REGIME ENGINE -- VIX-Free Volatility Detection
     # Replaces India VIX with ATR Compression + Realized Volatility

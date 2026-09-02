@@ -360,6 +360,21 @@ async def test_run_penny_heatmap_skips_on_non_trading_day(monkeypatch):
 # 8) run_penny_hourly_report (10:00-14:00 hourly) -----------------------------
 
 @pytest.mark.asyncio
+async def test_run_penny_hourly_report_skips_outside_ist_window(monkeypatch):
+    """No heartbeat or data access is allowed outside 10:00-14:00 IST."""
+    pos_mock = AsyncMock(return_value=[])
+    with patch("penny_hourly_report.is_in_report_window", return_value=False), \
+         patch("main.is_trading_day", new_callable=AsyncMock) as trading_day, \
+         patch("penny_hourly_report.run_hourly_report", new_callable=AsyncMock) as mock_run, \
+         patch("main.get_open_positions", pos_mock):
+        from main import run_penny_hourly_report
+        await run_penny_hourly_report()
+    _check_no_call(trading_day, "is_trading_day")
+    _check_no_call(mock_run, "run_hourly_report")
+    _check_no_call(pos_mock, "get_open_positions")
+
+
+@pytest.mark.asyncio
 async def test_run_penny_hourly_report_skips_on_non_trading_day(monkeypatch):
     """Hourly status report. With is_trading_day=False it must NOT
     call run_hourly_report or get_open_positions."""

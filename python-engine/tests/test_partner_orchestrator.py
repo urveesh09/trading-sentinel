@@ -54,6 +54,9 @@ def wired(tmp_path, monkeypatch):
     db = str(tmp_path / "partner.db")
     monkeypatch.setattr(settings, "DB_PATH", db)
     monkeypatch.setattr(settings, "PARTNER_BOT_ENABLED", True)
+    # This module verifies the retained legacy partner surfaces explicitly.
+    # Hedge-first mode is the runtime default and suppresses these messages.
+    monkeypatch.setattr(settings, "PARTNER_HEDGE_ENABLED", False)
     monkeypatch.setattr(settings, "PARTNER_TELEGRAM_BOT_TOKEN", "t")
     monkeypatch.setattr(settings, "PARTNER_TELEGRAM_CHAT_ID", "c")
 

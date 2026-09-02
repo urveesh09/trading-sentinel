@@ -29,6 +29,7 @@ from datetime import datetime, timezone, timedelta
 from typing import Optional
 
 logger = logging.getLogger(__name__)
+IST = timezone(timedelta(hours=5, minutes=30))
 
 
 def is_in_report_window(now: datetime) -> bool:
@@ -41,10 +42,14 @@ def is_in_report_window(now: datetime) -> bool:
     :00 IST from 10:00 through 14:00" — 14:00 is in, 14:01 is out.
     """
     from config import settings
-    if now.minute != 0:
+    # Aware timestamps may originate from a UTC-configured container. Always
+    # evaluate the configured report hours in IST. Naive timestamps are kept
+    # as IST wall-clock values for backwards-compatible callers and tests.
+    now_ist = now.astimezone(IST) if now.tzinfo is not None else now
+    if now_ist.minute != 0:
         return False
     return (settings.PENNY_HOURLY_REPORT_START_HOUR
-            <= now.hour
+            <= now_ist.hour
             <= settings.PENNY_HOURLY_REPORT_END_HOUR)
 
 
@@ -431,7 +436,7 @@ async def run_hourly_report(db_path: str, regime: str, open_positions: list,
     """
     from config import settings
     if now is None:
-        now = datetime.now(timezone.utc).astimezone()
+        now = datetime.now(timezone.utc).astimezone(IST)
     if not is_in_report_window(now):
         return
     rpt = PennyHourlyReport(db_path=db_path)

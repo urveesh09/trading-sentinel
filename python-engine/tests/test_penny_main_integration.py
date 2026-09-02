@@ -114,13 +114,16 @@ def test_penny_scanner_polling_is_scheduled():
 
 
 def test_penny_hourly_report_is_scheduled():
-    """The penny_hourly_report cron job (top of every hour) must be registered."""
+    """The hourly report must be registered only for its IST report hours."""
     main = _import_main()
     sched = _fresh_scheduler_with_penny_jobs()
-    job_ids = [j.id for j in sched.get_jobs()]
-    assert "penny_hourly_report" in job_ids, (
-        f"penny_hourly_report missing; got jobs={job_ids}"
+    jobs = {j.id: j for j in sched.get_jobs()}
+    assert "penny_hourly_report" in jobs, (
+        f"penny_hourly_report missing; got jobs={list(jobs)}"
     )
+    trigger = str(jobs["penny_hourly_report"].trigger)
+    assert "hour='10-14'" in trigger
+    assert "minute='0'" in trigger
 
 
 def test_paper_mode_default_blocks_live_orders():

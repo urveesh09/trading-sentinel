@@ -37,6 +37,12 @@
       "trigger": "cron[hour='15', minute='40']"
     },
     {
+      "func": "_run_partner_hedge_tick_safe",
+      "id": "partner_hedge_tick",
+      "kwargs": [],
+      "trigger": "cron[minute='7-52/15', second='10']"
+    },
+    {
       "func": "_run_partner_morning_brief_safe",
       "id": "partner_morning_brief",
       "kwargs": [],
@@ -136,7 +142,7 @@
       "func": "run_penny_hourly_report",
       "id": "penny_hourly_report",
       "kwargs": [],
-      "trigger": "cron[minute='0']"
+      "trigger": "cron[hour='10-14', minute='0']"
     },
     {
       "func": "run_penny_regime_compute",
@@ -332,6 +338,54 @@
         "GET"
       ],
       "path": "/ops/metrics",
+      "response_model": null
+    },
+    {
+      "endpoint": "get_partner_hedge_positions",
+      "methods": [
+        "GET"
+      ],
+      "path": "/partner/hedge/positions",
+      "response_model": null
+    },
+    {
+      "endpoint": "add_partner_hedge_position",
+      "methods": [
+        "POST"
+      ],
+      "path": "/partner/hedge/positions",
+      "response_model": null
+    },
+    {
+      "endpoint": "close_partner_hedge_position",
+      "methods": [
+        "POST"
+      ],
+      "path": "/partner/hedge/positions/{position_id}/close",
+      "response_model": null
+    },
+    {
+      "endpoint": "reconcile_partner_hedge_position",
+      "methods": [
+        "POST"
+      ],
+      "path": "/partner/hedge/positions/{position_id}/reconcile",
+      "response_model": null
+    },
+    {
+      "endpoint": "get_partner_hedge_status",
+      "methods": [
+        "GET"
+      ],
+      "path": "/partner/hedge/status",
+      "response_model": null
+    },
+    {
+      "endpoint": "add_partner_vix_observation",
+      "methods": [
+        "POST"
+      ],
+      "path": "/partner/hedge/vix",
       "response_model": null
     },
     {

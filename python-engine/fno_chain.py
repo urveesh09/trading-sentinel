@@ -105,6 +105,7 @@ def _parity_forward(
 async def take_chain_snapshot(
     kite, instruments: FnoInstruments, now_ist: Optional[datetime] = None,
     strike_window: Optional[int] = None,
+    option_expiry: Optional[date] = None,
 ) -> Optional[ChainSnapshot]:
     """One batched /quote for the front future + ATM+/-N CE/PE ladder.
 
@@ -114,7 +115,15 @@ async def take_chain_snapshot(
     today = now_ist.date()
 
     fut = instruments.front_future(today)
-    expiry = instruments.nearest_option_expiry(today)
+    expiry = option_expiry or instruments.nearest_option_expiry(today)
+    if option_expiry is not None and (
+        option_expiry < today or option_expiry not in instruments.option_expiries
+    ):
+        logger.warning(
+            "fno_chain_unavailable reason=invalid_requested_expiry expiry=%s",
+            option_expiry,
+        )
+        return None
     if fut is None or expiry is None:
         logger.warning(
             "fno_chain_unavailable reason=%s",
