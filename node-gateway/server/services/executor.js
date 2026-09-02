@@ -22,6 +22,16 @@ function entryTag(signalId) {
   return `QS_${digest}`;
 }
 
+function exitTag(signalId, kind) {
+  const digest = crypto.createHash('sha256').update(String(signalId)).digest('hex').slice(0, 15);
+  return `${kind}_${digest}`; // 18 chars, within Kite's 20-character cap
+}
+
+function isDefinitivePlacementError(err) {
+  return err?.retryable === false ||
+    ['OrderExecutionError', 'TokenExpiredError', 'ValidationError'].includes(err?.name);
+}
+
 function latestOrder(history) {
   return Array.isArray(history) && history.length ? history[history.length - 1] : null;
 }
@@ -53,7 +63,7 @@ async function reconcilePlacedOrder(orderId, requestedQuantity, options = {}) {
   let historyError = null;
 
   for (let i = 0; i < attempts; i++) {
-    if (delayMs > 0) await sleep(delayMs);
+    if (i > 0 && delayMs > 0) await sleep(delayMs);
     try {
       last = orderFillState(latestOrder(await kite.getOrderHistory(orderId)), requestedQuantity);
       historyError = null;
@@ -116,6 +126,41 @@ async function recoverAmbiguousPlacement(params, tag) {
     if (matches.length === 1 && matches[0].order_id) return { order_id: matches[0].order_id, recovered: true };
   } catch (err) {
     logger.error({ event_type: 'ambiguous_placement_reconcile_failed', tag, err: err.message });
+  }
+  return null;
+}
+
+function sameNumberArray(left, right) {
+  return Array.isArray(left) && Array.isArray(right) && left.length === right.length &&
+    left.every((value, index) => Number(value) === Number(right[index]));
+}
+
+function gttMatches(gtt, params) {
+  const condition = gtt?.condition || gtt || {};
+  const orders = Array.isArray(gtt?.orders) ? gtt.orders : [];
+  return String(condition.tradingsymbol || gtt?.tradingsymbol) === String(params.tradingsymbol) &&
+    String(condition.exchange || gtt?.exchange) === String(params.exchange) &&
+    sameNumberArray(condition.trigger_values || gtt?.trigger_values, params.trigger_values) &&
+    orders.length === params.orders.length &&
+    orders.every((order, index) => {
+      const expected = params.orders[index];
+      return String(order.transaction_type) === String(expected.transaction_type) &&
+        String(order.product) === String(expected.product) &&
+        String(order.order_type) === String(expected.order_type) &&
+        Number(order.quantity) === Number(expected.quantity) &&
+        Number(order.price) === Number(expected.price);
+    });
+}
+
+async function recoverAmbiguousGTT(params) {
+  try {
+    const matches = (await kite.getGTTs() || []).filter(gtt => gttMatches(gtt, params));
+    if (matches.length === 1) {
+      const triggerId = matches[0].id ?? matches[0].trigger_id;
+      if (triggerId != null) return { trigger_id: String(triggerId), recovered: true };
+    }
+  } catch (err) {
+    logger.error({ event_type: 'ambiguous_gtt_reconcile_failed', ticker: params.tradingsymbol, err: err.message });
   }
   return null;
 }
@@ -190,11 +235,14 @@ async function syncToEngine(payload) {
  * fills at market) while capping worst-case slippage at ~1%. For a SELL SL the
  * limit must be <= trigger, which this also satisfies.
  *
- * Two attempts, then the caller unwinds — the mandatory-stop discipline from
+ * One ambiguity-safe submission, then the caller decides whether an unwind is
+ * safe — the mandatory-stop discipline from
  * penny_executor.py (spec §7.2): a live position we cannot protect is worse than
  * no position.
  *
- * Returns the stop order id, or null if it could not be placed.
+ * Returns structured broker truth. UNKNOWN is deliberately distinct from a
+ * definitive rejection: an accepted-but-unobserved stop must not be followed
+ * by a blind second stop or an unwind that could leave a future short.
  */
 async function placeProtectiveStop(signal, stopPrice) {
   // [FILL-ANCHOR 2026-08-04] `stopPrice` is the fill-anchored stop, NOT
@@ -212,34 +260,47 @@ async function placeProtectiveStop(signal, stopPrice) {
   // API-legal without market protection.
   const limit = snapToTick(stopPrice * 0.99, -1);
 
-  for (let attempt = 1; attempt <= 2; attempt++) {
-    try {
-      const res = await kite.placeOrder({
-        exchange: "NSE",
-        tradingsymbol: signal.ticker,
-        transaction_type: "SELL",
-        quantity: signal.shares,
-        product: "MIS",
-        order_type: "SL",
-        trigger_price: trigger,
-        price: limit,
-        validity: "DAY",
-        tag: "QUANT_SENTINEL_SL"
-      }, { intent: "exit", channel: "momentum" });
+  const tag = exitTag(signal.signal_id, 'SL');
+  const params = {
+    exchange: "NSE", tradingsymbol: signal.ticker, transaction_type: "SELL",
+    quantity: signal.shares, product: "MIS", order_type: "SL",
+    trigger_price: trigger, price: limit, validity: "DAY", tag
+  };
+  let res;
+  try {
+    res = await kite.placeOrder(params, { intent: "exit", channel: "momentum" });
+  } catch (err) {
+    logger.error({ event_type: 'mis_stop_submission_failed', ticker: signal.ticker, err: err.message });
+    if (isDefinitivePlacementError(err)) return { state: 'FAILED', reason: err.message };
+    res = await recoverAmbiguousPlacement(params, tag);
+    if (!res) return { state: 'UNKNOWN', reason: err.message };
+  }
 
-      if (res && res.order_id) {
-        logger.info({
-          event_type: 'mis_sl_m_placed',
-          ticker: signal.ticker, order_id: res.order_id, trigger, limit
-        });
-        return String(res.order_id);
+  const orderId = res?.order_id;
+  if (!orderId) {
+    res = await recoverAmbiguousPlacement(params, tag);
+    if (!res?.order_id) return { state: 'UNKNOWN', reason: 'broker returned no stop order id' };
+  }
+  const resolvedId = String(res.order_id);
+  let lastReason = 'no broker history';
+  for (let attempt = 0; attempt < 4; attempt++) {
+    if (attempt > 0) await sleep(250);
+    try {
+      const state = orderFillState(latestOrder(await kite.getOrderHistory(resolvedId)), signal.shares);
+      if (state.state === 'REJECTED' || state.state === 'CANCELLED') {
+        return { state: 'FAILED', orderId: resolvedId, reason: state.reason || state.state };
       }
-      logger.error({ event_type: 'mis_sl_m_no_order_id', ticker: signal.ticker, attempt, res });
+      if (state.state === 'COMPLETE') return { state: 'EXITED', orderId: resolvedId };
+      if (['TRIGGER PENDING', 'OPEN'].includes(state.state)) {
+        logger.info({ event_type: 'mis_stop_armed', ticker: signal.ticker, order_id: resolvedId, trigger, limit });
+        return { state: 'ARMED', orderId: resolvedId };
+      }
+      lastReason = `unexpected stop status ${state.state}`;
     } catch (err) {
-      logger.error({ event_type: 'mis_sl_m_failed', ticker: signal.ticker, attempt, err: err.message });
+      lastReason = `stop reconciliation failed: ${err.message}`;
     }
   }
-  return null;
+  return { state: 'UNKNOWN', orderId: resolvedId, reason: lastReason };
 }
 
 /**
@@ -256,33 +317,36 @@ async function marketUnwind(signal, ltp) {
   // via a marketable LIMIT (1% below LTP, snapped down) — the same route the buy
   // leg uses — with a <=20-char tag.
   const limit = snapToTick((ltp || signal.close) * 0.99, -1);
+  const tag = exitTag(signal.signal_id, 'UW');
+  const params = {
+    exchange: "NSE", tradingsymbol: signal.ticker, transaction_type: "SELL",
+    quantity: signal.shares, product: "MIS", order_type: "LIMIT", price: limit,
+    validity: "DAY", tag
+  };
+  let res;
   try {
-    const res = await kite.placeOrder({
-      exchange: "NSE",
-      tradingsymbol: signal.ticker,
-      transaction_type: "SELL",
-      quantity: signal.shares,
-      product: "MIS",
-      order_type: "LIMIT",
-      price: limit,
-      validity: "DAY",
-      tag: "QUANT_SENT_UNWIND"
-    }, { intent: "exit", channel: "momentum" });
-    logger.error({
-      event_type: 'mis_unprotected_unwound',
-      ticker: signal.ticker, unwind_order_id: res && res.order_id, limit
-    });
-    return res && res.order_id ? String(res.order_id) : null;
+    res = await kite.placeOrder(params, { intent: "exit", channel: "momentum" });
   } catch (err) {
-    // Both the stop and the unwind failed. This is the one case an operator
-    // must handle by hand, so say so loudly rather than logging quietly.
-    logger.error({ event_type: 'mis_unwind_failed', ticker: signal.ticker, err: err.message });
-    telegram.sendAlert(
-      `🚨 ${signal.ticker}: protective stop FAILED and unwind FAILED. ` +
-      `You are holding ${signal.shares} shares with NO stop. FLATTEN MANUALLY NOW.`
-    );
-    return null;
+    logger.error({ event_type: 'mis_unwind_submission_failed', ticker: signal.ticker, err: err.message });
+    if (isDefinitivePlacementError(err)) return { state: 'FAILED', reason: err.message };
+    res = await recoverAmbiguousPlacement(params, tag);
+    if (!res) return { state: 'UNKNOWN', reason: err.message };
   }
+  if (!res?.order_id) {
+    res = await recoverAmbiguousPlacement(params, tag);
+    if (!res?.order_id) return { state: 'UNKNOWN', reason: 'broker returned no unwind order id' };
+  }
+  const orderId = String(res.order_id);
+  const fill = await reconcilePlacedOrder(orderId, signal.shares, {
+    attempts: 3, delayMs: 500, ticker: signal.ticker, product: 'MIS'
+  });
+  if (fill.state === 'COMPLETE' && fill.filledQuantity >= signal.shares) {
+    logger.error({ event_type: 'mis_unprotected_flat_confirmed', ticker: signal.ticker, unwind_order_id: orderId });
+    return { state: 'FLAT', orderId, fill };
+  }
+  if (fill.state === 'PARTIAL') return { state: 'PARTIAL', orderId, fill };
+  if (fill.state === 'UNKNOWN' || fill.state === 'PARTIAL_OPEN') return { state: 'UNKNOWN', orderId, fill };
+  return { state: 'FAILED', orderId, fill, reason: fill.reason || fill.state };
 }
 
 /**
@@ -295,6 +359,11 @@ async function executeSignal(signal, action, isIntraday = false) {
   if (!require('./token-store').isValid()) throw new TokenExpiredError();
   if (!isMarketOpen()) throw new MarketClosedError();
   if (signal.capital_at_risk > 1500) throw new ValidationError('Capital at risk exceeds absolute maximum limit.');
+  if (!signal.signal_id) throw new ValidationError('signal_id is required before broker execution');
+  const trackedSignal = signalsDb.prepare(`SELECT signal_id FROM received_signals WHERE signal_id = ?`).get(signal.signal_id);
+  if (!trackedSignal) {
+    throw new ValidationError(`Signal ${signal.signal_id} is not durably registered; broker order blocked.`);
+  }
   
   // 2. Price Drift Check
 
@@ -413,8 +482,8 @@ async function executeSignal(signal, action, isIntraday = false) {
   // Layer 2 Idempotency: Insert into DB immediately
   try {
     signalsDb.prepare(`
-      INSERT INTO executed_orders (signal_id, ticker, order_id, order_type, shares, status, placed_at, sync_to_b)
-      VALUES (?, ?, ?, 'LIMIT', ?, 'PLACED', ?, 0)
+      INSERT INTO executed_orders (signal_id, ticker, order_id, order_type, shares, status, placed_at, sync_to_b, execution_state)
+      VALUES (?, ?, ?, 'LIMIT', ?, 'PLACED', ?, 0, 'SUBMITTED')
     `).run(signal.signal_id, signal.ticker, orderId, signal.shares, new Date().toISOString());
   } catch (err) {
     // The INSERT can fail for two distinct reasons:
@@ -422,7 +491,10 @@ async function executeSignal(signal, action, isIntraday = false) {
     //   b) order_id UNIQUE violation (genuine replay attack, order already tracked)
     // Both are safety stops: the order is placed but we cannot track it safely.
     logger.error({ event_type: 'layer_2_idempotency_catch', orderId, err: err.message });
-    throw new OrderExecutionError('Order tracking failed: ' + err.message);
+    const tracking = new OrderExecutionError('Order tracking failed after broker submission: ' + err.message);
+    tracking.positionHeld = true;
+    tracking.outcomeUnknown = true;
+    throw tracking;
   }
 
   // 4. Fill Verification. An unconfirmed OPEN order is cancelled and then
@@ -431,17 +503,17 @@ async function executeSignal(signal, action, isIntraday = false) {
     ticker: signal.ticker, product: isIntraday ? 'MIS' : 'CNC',
   });
   if (fill.state === 'REJECTED') {
-    signalsDb.prepare(`UPDATE executed_orders SET status = 'REJECTED', notes = ? WHERE order_id = ?`)
+    signalsDb.prepare(`UPDATE executed_orders SET status = 'REJECTED', execution_state = 'REJECTED', notes = ? WHERE order_id = ?`)
       .run(fill.reason, orderId);
     throw new OrderExecutionError(`Order rejected by broker: ${fill.reason}`);
   }
   if (fill.state === 'CANCELLED') {
-    signalsDb.prepare(`UPDATE executed_orders SET status = 'CANCELLED', notes = ? WHERE order_id = ?`)
+    signalsDb.prepare(`UPDATE executed_orders SET status = 'CANCELLED', execution_state = 'CANCELLED_UNFILLED', notes = ? WHERE order_id = ?`)
       .run('entry_cancelled_unfilled', orderId);
     throw new OrderExecutionError(`Order ${orderId} was cancelled without a fill.`);
   }
   if (fill.state === 'UNKNOWN' || fill.state === 'PARTIAL_OPEN') {
-    signalsDb.prepare(`UPDATE executed_orders SET status = 'PLACED', notes = ? WHERE order_id = ?`)
+    signalsDb.prepare(`UPDATE executed_orders SET status = 'PLACED', execution_state = 'OUTCOME_UNKNOWN', notes = ? WHERE order_id = ?`)
       .run(`entry_outcome_unknown:${JSON.stringify(fill)}`, orderId);
     const unknown = new OrderExecutionError(
       `Order ${orderId} outcome is UNKNOWN after cancellation/reconciliation; no exits were armed. Reconcile manually before retrying.`
@@ -497,96 +569,139 @@ async function executeSignal(signal, action, isIntraday = false) {
   let gttStopId = null;
   let gttTargetId = null;
   let slOrderId = null;
+  let protectionFailure = null;
 
   if (isIntraday) {
-    slOrderId = await placeProtectiveStop(signal, levels.stop);
+    const stop = await placeProtectiveStop(signal, levels.stop);
+    slOrderId = stop.orderId || null;
 
-    if (!slOrderId) {
+    if (stop.state === 'EXITED') {
+      signalsDb.prepare(
+        `UPDATE executed_orders SET status = 'CANCELLED', execution_state = 'FLAT_STOP_EXECUTED', entry_price = ?, shares = ?, filled_at = ?, sl_order_id = ?, notes = ? WHERE order_id = ?`
+      ).run(fillPrice, signal.shares, new Date().toISOString(), slOrderId, 'protective_stop_filled_immediately', orderId);
+      throw new OrderExecutionError(`${signal.ticker}: protective stop filled immediately; broker position is flat.`);
+    }
+
+    if (stop.state === 'UNKNOWN') {
+      signalsDb.prepare(
+        `UPDATE executed_orders SET status = 'COMPLETE', execution_state = 'OUTCOME_UNKNOWN', entry_price = ?, shares = ?, filled_at = ?, sl_order_id = ?, notes = ? WHERE order_id = ?`
+      ).run(fillPrice, signal.shares, new Date().toISOString(), slOrderId, `protective_stop_unknown:${stop.reason || ''}`, orderId);
+      const unknown = new OrderExecutionError(
+        `${signal.ticker}: protective-stop outcome is UNKNOWN. No unwind was submitted because an unseen live stop could later oversell. Reconcile manually now.`
+      );
+      unknown.positionHeld = true;
+      unknown.outcomeUnknown = true;
+      throw unknown;
+    }
+
+    if (stop.state !== 'ARMED') {
       // Stop could not be placed. We refuse to hold an unprotected MIS position,
       // so flatten it. The buy has already filled, so distinguish the two exits:
-      const unwindId = await marketUnwind(signal, ltp);
+      const unwind = await marketUnwind(signal, ltp);
 
-      if (unwindId) {
-        // Flat again — the position is closed, so it is safe to retry the signal.
+      if (unwind.state === 'FLAT') {
+        // Flat is asserted only after terminal broker history confirms the full
+        // unwind quantity, never from a placement acknowledgement.
         signalsDb.prepare(
-          `UPDATE executed_orders SET status = 'CANCELLED', notes = ? WHERE order_id = ?`
-        ).run('sl_failed_position_unwound', orderId);
+          `UPDATE executed_orders SET status = 'CANCELLED', execution_state = 'FLAT_CONFIRMED', notes = ? WHERE order_id = ?`
+        ).run(`sl_failed_flatten_confirmed:${unwind.orderId}`, orderId);
         throw new OrderExecutionError(
-          `${signal.ticker}: protective stop was rejected; position was unwound. Safe to retry.`
+          `${signal.ticker}: protective stop was rejected; full unwind was broker-confirmed. Position is flat.`
         );
       }
 
-      // Stop failed AND unwind failed: the shares are still held with no stop.
+      // Stop failed and the unwind was not fully confirmed: the shares may
+      // still be held with no stop. Never advertise this as flat/retryable.
+      const unknownOutcome = unwind.state === 'UNKNOWN';
       // Do NOT mark this CANCELLED (that hides a real fill from the books) and do
       // NOT let the caller invite a retry (that would stack another naked buy).
       signalsDb.prepare(
-        `UPDATE executed_orders SET status = 'OPEN_UNPROTECTED', notes = ? WHERE order_id = ?`
-      ).run('sl_and_unwind_failed_manual_flatten', orderId);
+        `UPDATE executed_orders SET status = 'COMPLETE', execution_state = ?, entry_price = ?, shares = ?, filled_at = ?, notes = ? WHERE order_id = ?`
+      ).run(unknownOutcome ? 'OUTCOME_UNKNOWN' : 'HELD_UNPROTECTED', fillPrice, signal.shares, new Date().toISOString(),
+        `sl_failed_unwind_${unwind.state.toLowerCase()}:${unwind.orderId || ''}`, orderId);
+      try {
+        await telegram.sendAlert(`🚨 ${signal.ticker}: protective stop failed and unwind is ${unwind.state}. Reconcile and flatten manually now.`);
+      } catch (alertErr) {
+        logger.error({ event_type: 'unprotected_alert_failed', ticker: signal.ticker, err: alertErr.message });
+      }
       const held = new OrderExecutionError(
         `${signal.ticker}: HOLDING ${signal.shares} shares with NO protective stop — ` +
-        `the unwind order also failed. FLATTEN THIS POSITION MANUALLY NOW. Do NOT retry the button.`
+        `the unwind was not fully confirmed. FLATTEN THIS POSITION MANUALLY NOW. Do NOT retry the button.`
       );
       held.positionHeld = true;
+      held.outcomeUnknown = unknownOutcome;
       throw held;
     }
   } else {
-    try {
-      // Stop-loss Leg
-      const stopRes = await kite.placeGTT({
-        trigger_type: "single",
+    // A single two-leg GTT is broker-side OCO: once either full-quantity SELL
+    // fires, Kite cancels the sibling. Two independent single GTTs can both
+    // execute and turn a long position into an accidental short.
+    const gttParams = {
+        trigger_type: "two-leg",
         tradingsymbol: signal.ticker,
         exchange: "NSE",
-        trigger_values: [levels.stop],
+        trigger_values: [levels.stop, levels.target1],
         last_price: ltp,
-        orders: [{
+        orders: [
+          {
           transaction_type: "SELL",
           quantity: signal.shares,
           order_type: "LIMIT",
           product: "CNC",
-          // A stop SELL must become marketable when triggered: limit <= trigger.
           price: snapToTick(levels.stop * 0.998, -1)
-        }]
-      }, { intent: "exit", channel: "momentum" });
-      gttStopId = stopRes.trigger_id;
-
-      // Target Leg (Half quantity for T1)
-      const t1Shares = Math.floor(signal.shares / 2) || 1;
-      const targetRes = await kite.placeGTT({
-        trigger_type: "single",
-        tradingsymbol: signal.ticker,
-        exchange: "NSE",
-        trigger_values: [levels.target1],
-        last_price: ltp,
-        orders: [{
+          },
+          {
           transaction_type: "SELL",
-          quantity: t1Shares,
+          quantity: signal.shares,
           order_type: "LIMIT",
           product: "CNC",
-          // [MED-012] Target GTT uses 0.998× (BELOW trigger) — intentional.
-          // For a SELL order: setting limit slightly below trigger ensures immediate
-          // fill when the target price is touched. This is the opposite of the stop-loss
-          // leg (1.002× ABOVE trigger) but both approaches guarantee execution.
-          // The inviolable rule "trigger * 1.002" applies to stop-loss legs only.
-          // snapToTick(..., -1) rounds DOWN to nearest 0.10-rupee tick.
           price: snapToTick(levels.target1 * 0.998, -1)
-      }]
-      }, { intent: "exit", channel: "momentum" });
-      gttTargetId = targetRes.trigger_id;
-
+          }
+        ]
+      };
+    try {
+      let gttRes;
+      try {
+        gttRes = await kite.placeGTT(gttParams, { intent: "exit", channel: "momentum" });
+      } catch (err) {
+        if (isDefinitivePlacementError(err)) throw err;
+        gttRes = await recoverAmbiguousGTT(gttParams);
+        if (!gttRes) {
+          protectionFailure = { state: 'OUTCOME_UNKNOWN', reason: err.message };
+        }
+      }
+      if (!protectionFailure && !gttRes?.trigger_id) {
+        gttRes = await recoverAmbiguousGTT(gttParams);
+        if (!gttRes?.trigger_id) protectionFailure = { state: 'OUTCOME_UNKNOWN', reason: 'broker returned no GTT id' };
+      }
+      if (!protectionFailure) {
+        gttStopId = String(gttRes.trigger_id);
+        gttTargetId = gttStopId;
+      }
     } catch (err) {
       logger.error({ event_type: 'gtt_placement_error', err: err.message });
-      // Note: We don't throw here. Market order is already placed. We must sync the open position.
-      telegram.sendAlert(`⚠️ GTT placement failed for ${signal.ticker} (Order ${orderId}). Please place manual exit orders.`);
+      protectionFailure = { state: 'HELD_UNPROTECTED', reason: err.message };
+    }
+    if (protectionFailure) {
+      try {
+        await telegram.sendAlert(`🚨 CNC protection ${protectionFailure.state} for ${signal.ticker} (Order ${orderId}). Position remains locked; reconcile/place a manual exit.`);
+      } catch (alertErr) {
+        logger.error({ event_type: 'gtt_alert_failed', ticker: signal.ticker, err: alertErr.message });
+      }
     }
   }
 
 
   // Update DB with Fill + protective orders
+  const persistedNotes = protectionFailure
+    ? `${finalNotes};protection:${protectionFailure.state}:${protectionFailure.reason}`
+    : finalNotes;
   signalsDb.prepare(`
     UPDATE executed_orders
-    SET status = 'COMPLETE', entry_price = ?, shares = ?, filled_at = ?, gtt_stop_id = ?, gtt_target_id = ?, sl_order_id = ?, notes = ?
+    SET status = 'COMPLETE', execution_state = ?, entry_price = ?, shares = ?, filled_at = ?, gtt_stop_id = ?, gtt_target_id = ?, sl_order_id = ?, notes = ?
     WHERE order_id = ?
-  `).run(fillPrice, signal.shares, new Date().toISOString(), gttStopId, gttTargetId, slOrderId, finalNotes, orderId);
+  `).run(protectionFailure?.state || 'FILLED_PROTECTED', fillPrice, signal.shares, new Date().toISOString(), gttStopId, gttTargetId, slOrderId,
+    persistedNotes, orderId);
 
     // 6. Sync to Container B
   const syncPayload = {
@@ -621,7 +736,7 @@ async function executeSignal(signal, action, isIntraday = false) {
     // The engine's intraday monitor cancels this SL-M before it takes a target
     // or a trail exit, so it must know the id.
     sl_order_id: slOrderId,
-    notes: finalNotes
+    notes: persistedNotes
   };
 
 
@@ -632,6 +747,15 @@ async function executeSignal(signal, action, isIntraday = false) {
     logger.error({ event_type: 'sync_back_failed', err: err.message, orderId });
     signalsDb.prepare(`UPDATE executed_orders SET sync_to_b = 2 WHERE order_id = ?`).run(orderId);
     telegram.sendAlert(`🚨 Order placed (#${orderId}) but sync to quant engine failed entirely. Manual registration required at dashboard.`);
+  }
+
+  if (protectionFailure) {
+    const held = new OrderExecutionError(
+      `${signal.ticker}: CNC position is not confirmed protected (${protectionFailure.state}). Do NOT retry; reconcile exits manually.`
+    );
+    held.positionHeld = true;
+    held.outcomeUnknown = protectionFailure.state === 'OUTCOME_UNKNOWN';
+    throw held;
   }
 
   // [FILL-ANCHOR 2026-08-04] Return what was actually armed, not what was
@@ -650,5 +774,6 @@ async function executeSignal(signal, action, isIntraday = false) {
 
 module.exports = {
   executeSignal, syncToEngine, snapToTick,
-  entryTag, orderFillState, reconcilePlacedOrder, recoverAmbiguousPlacement,
+  entryTag, exitTag, orderFillState, reconcilePlacedOrder, recoverAmbiguousPlacement,
+  gttMatches, recoverAmbiguousGTT, placeProtectiveStop, marketUnwind,
 };

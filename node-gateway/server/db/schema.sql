@@ -8,7 +8,10 @@ CREATE TABLE IF NOT EXISTS received_signals (
   received_at     TEXT NOT NULL,
   payload_json    TEXT NOT NULL,
   telegram_msg_id INTEGER,
-  status          TEXT NOT NULL CHECK (status IN ('PENDING','EXECUTING','EXECUTED','REJECTED','EXPIRED'))
+  status          TEXT NOT NULL CHECK (status IN ('PENDING','EXECUTING','EXECUTED','REJECTED','EXPIRED')),
+  -- Fine-grained safety state. Kept separate from the legacy workflow status
+  -- so existing SQLite CHECK constraints remain migration-compatible.
+  execution_state TEXT NOT NULL DEFAULT 'IDLE'
 );
 
 CREATE TABLE IF NOT EXISTS executed_orders (
@@ -26,7 +29,8 @@ CREATE TABLE IF NOT EXISTS executed_orders (
   placed_at       TEXT NOT NULL,
   filled_at       TEXT,
   sync_to_b       INTEGER DEFAULT 0, -- 0=pending, 1=done, 2=failed
-  notes           TEXT
+  notes           TEXT,
+  execution_state TEXT NOT NULL DEFAULT 'SUBMITTED'
 );
 
 CREATE TABLE IF NOT EXISTS app_state (

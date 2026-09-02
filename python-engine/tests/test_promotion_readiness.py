@@ -37,6 +37,7 @@ def _run(family="MOMENTUM", **changes):
     variant = "MOM_BASE" if family == "MOMENTUM" else "PEN_BASE"
     row = {
         "run_id": "run-new", "strategy_id": strategy_id, "status": "SUCCEEDED",
+        "strategy_version": "test-v1", "dataset_fingerprint": "sha256:test",
         "created_at": "2026-08-10T10:00:00+00:00",
         "completed_at": "2026-08-10T10:01:00+00:00",
         "config": {"variants": [variant]}, "dataset": {"status": "valid"},
@@ -120,6 +121,31 @@ def test_latest_completed_backtest_is_selected_and_timestamped():
     result = _assess(runs=[new, old])
     assert result["sources"]["backtest_run_id"] == "new"
     assert result["source_timestamps"]["backtest_completed_at"] == new["completed_at"]
+
+
+def test_quality_metrics_are_never_mixed_across_shadow_and_replay():
+    shadow = _shadow(net_expectancy=None, expectancy=None, profit_factor=None)
+    replay = _run(result={
+        "oos": {"status": "scored", "scored_folds": 3},
+        "variants": [{
+            "variant": "MOM_BASE", "closed_trades": 100,
+            "net_expectancy": 99.0, "profit_factor": 9.0,
+            "max_drawdown": 1.0,
+        }],
+    })
+    result = _assess(shadow=shadow, runs=[replay])
+    assert result["evidence"]["quality_source"] == "shadow"
+    assert result["evidence"]["net_expectancy_after_costs"] is None
+    assert result["evidence"]["profit_factor"] is None
+    assert result["state"] == COLLECTING
+
+
+def test_missing_reproducibility_identity_blocks_candidate():
+    run = _run(strategy_version=None, dataset_fingerprint=None)
+    result = _assess(runs=[run])
+    gates = {row["gate"] for row in result["blockers"]}
+    assert {"dataset_fingerprint", "strategy_version"} <= gates
+    assert result["state"] == COLLECTING
 
 
 def test_fno_target_scenario_is_not_misrepresented_as_realised_profitability():

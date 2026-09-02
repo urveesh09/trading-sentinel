@@ -118,62 +118,64 @@ telegram.bot.on('callback_query', async (query) => {
       // run. See db/schema.sql.
       const snapshot = getApprovedSnapshot(signal_id, 'EXEC');
 
+      // Agent-originated Swing ids are ticker-based rather than UUID prefixes.
+      // Registration now creates the same durable received_signals lock, so
+      // resolve it here before choosing the snapshot path.
+      if (!row && snapshot) {
+        row = signalsDb.prepare(
+          `SELECT signal_id, status, payload_json FROM received_signals WHERE signal_id = ?`
+        ).get(signal_id);
+        if (!row) {
+          await telegram.sendAlert(`❌ ${signal_id}: approved snapshot has no durable execution record. No broker order placed.`);
+          return;
+        }
+        if (row.status !== 'PENDING') {
+          await telegram.bot.answerCallbackQuery(query.id, { text: `Already ${row.status}. No action taken.`, show_alert: true });
+          return;
+        }
+      }
+
       if (row) {
         // Container A path: signal pre-stored in DB with full UUID
         signalData   = JSON.parse(row.payload_json);
         fullSignalId = row.signal_id; // full UUID from DB row
-        signalsDb.prepare(`UPDATE received_signals SET status = 'EXECUTING' WHERE signal_id = ?`).run(fullSignalId);
+        signalsDb.prepare(`UPDATE received_signals SET status = 'EXECUTING', execution_state = 'SUBMITTING' WHERE signal_id = ?`).run(fullSignalId);
         await telegram.bot.answerCallbackQuery(query.id, { text: 'Executing Swing Trade...' });
       } else if (snapshot) {
         signalData = snapshot;
         await telegram.bot.answerCallbackQuery(query.id, { text: 'Executing Swing Trade...' });
       } else {
-        // No snapshot: fall back to the old live re-fetch rather than refuse
-        // to trade. This is strictly worse (the numbers may have moved since
-        // the alert), so it is loud -- an unregistered signal means the agent
-        // failed to register, and we want to know.
-        logger.warn({ event_type: 'approved_snapshot_missing', signal_id, action });
-        await telegram.bot.answerCallbackQuery(query.id, { text: 'Fetching Signal Data...' });
-        try {
-          const controller = new AbortController();
-          const timeout = setTimeout(() => controller.abort(), config.PYTHON_ENGINE_TIMEOUT_MS);
-          const resp = await fetch(`${config.PYTHON_ENGINE_URL}/signals`, {
-            headers: { 'X-Internal-Secret': config.INTERNAL_API_SECRET },
-            signal: controller.signal
-          });
-          clearTimeout(timeout);
-          const data = await resp.json();
-          signalData = data.signals?.find(s => s.ticker === signal_id.toUpperCase());
-          if (!signalData) {
-            // [FIX] callback already answered above; second answerCallbackQuery silently fails.
-            // Use sendAlert so the user actually sees this.
-            await telegram.sendAlert(`❌ Signal for ${signal_id.toUpperCase()} not found in Engine — it may have expired. No order placed.`);
-            return;
-          }
-        } catch (err) {
-          // [FIX] same — callback already answered, use sendAlert instead.
-          await telegram.sendAlert(`❌ Failed to fetch signal for ${signal_id.toUpperCase()}: ${err.message}`);
-          return;
-        }
+        // Never execute a live re-fetch that has no durable execution record.
+        // A broker fill followed by a tracking INSERT failure is worse than a
+        // missed signal, and the operator did not approve newly fetched values.
+        logger.error({ event_type: 'approved_snapshot_missing_execution_blocked', signal_id, action });
+        await telegram.bot.answerCallbackQuery(query.id, { text: 'Signal registration missing. Execution blocked.', show_alert: true });
+        await telegram.sendAlert(`❌ ${signal_id}: approved snapshot/registration missing. No broker order placed.`);
+        return;
       }
 
       try {
         const result = await executor.executeSignal(signalData, 'EXEC', false);
         if (fullSignalId) {
-          signalsDb.prepare(`UPDATE received_signals SET status = 'EXECUTED' WHERE signal_id = ?`).run(fullSignalId);
+          signalsDb.prepare(`UPDATE received_signals SET status = 'EXECUTED', execution_state = 'FILLED' WHERE signal_id = ?`).run(fullSignalId);
         }
         await telegram.bot.editMessageText(query.message.text + `\n\n✅ EXECUTED: ${result.orderId}`, {
           chat_id: query.message.chat.id,
           message_id: query.message.message_id
         });
       } catch (err) {
-        if (fullSignalId) {
-          signalsDb.prepare(`UPDATE received_signals SET status = 'PENDING' WHERE signal_id = ?`).run(fullSignalId);
+        if (fullSignalId && (err.positionHeld || err.outcomeUnknown)) {
+          signalsDb.prepare(`UPDATE received_signals SET status = 'EXECUTING', execution_state = 'OUTCOME_UNKNOWN' WHERE signal_id = ?`).run(fullSignalId);
+        } else if (fullSignalId) {
+          signalsDb.prepare(`UPDATE received_signals SET status = 'PENDING', execution_state = 'IDLE' WHERE signal_id = ?`).run(fullSignalId);
         }
         logger.error({ event_type: 'execution_failed', err: err.message });
         // [FIX] callback was already answered with 'Executing...' — second call silently fails.
         // sendAlert ensures the user sees the failure.
-        await telegram.sendAlert(`❌ Swing execution FAILED for ${signalData?.ticker || signal_id}:\n${err.message}\n\nSignal reset to PENDING.`);
+        const retryText = (err.positionHeld || err.outcomeUnknown)
+          ? 'Outcome locked for broker reconciliation. Do NOT retry.'
+          : 'Signal reset to PENDING.';
+        await telegram.sendAlert(`❌ Swing execution FAILED for ${signalData?.ticker || signal_id}:\n${err.message}\n\n${retryText}`);
       }
       return;
     }
@@ -194,8 +196,8 @@ telegram.bot.on('callback_query', async (query) => {
 
         if (!existing) {
           signalsDb.prepare(`
-            INSERT INTO received_signals (signal_id, ticker, signal_time, received_at, payload_json, status)
-            VALUES (?, ?, ?, ?, '{}', 'EXECUTING')
+            INSERT INTO received_signals (signal_id, ticker, signal_time, received_at, payload_json, status, execution_state)
+            VALUES (?, ?, ?, ?, '{}', 'EXECUTING', 'SUBMITTING')
           `).run(momentumLockId, cleanId, new Date().toISOString(), new Date().toISOString());
           return { locked: false };
         }
@@ -203,7 +205,7 @@ telegram.bot.on('callback_query', async (query) => {
         if (existing.status === 'PENDING') {
           // [FIX] A previous attempt failed and was reset to PENDING.
           // Allow the user to retry by flipping back to EXECUTING.
-          signalsDb.prepare(`UPDATE received_signals SET status = 'EXECUTING' WHERE signal_id = ?`)
+          signalsDb.prepare(`UPDATE received_signals SET status = 'EXECUTING', execution_state = 'SUBMITTING' WHERE signal_id = ?`)
             .run(momentumLockId);
           return { locked: false };
         }
@@ -272,7 +274,7 @@ telegram.bot.on('callback_query', async (query) => {
           signal_close:   signalData.close,
         };
         signalsDb.prepare(`
-          UPDATE received_signals SET status = 'EXECUTED', payload_json = ? WHERE signal_id = ?
+          UPDATE received_signals SET status = 'EXECUTED', execution_state = 'FILLED', payload_json = ? WHERE signal_id = ?
         `).run(JSON.stringify(executedPayload), momentumLockId);
 
         await telegram.bot.editMessageText(query.message.text + `\n\n⚡ EXECUTED (MIS): ${result.orderId}`, {
@@ -286,12 +288,12 @@ telegram.bot.on('callback_query', async (query) => {
         // signal blocked (status enforces PENDING-only execution) and tell the
         // operator to flatten manually rather than inviting a retry.
         if (err && err.positionHeld) {
-          signalsDb.prepare(`UPDATE received_signals SET status = 'HELD_UNPROTECTED' WHERE signal_id = ?`).run(momentumLockId);
+          signalsDb.prepare(`UPDATE received_signals SET status = 'EXECUTING', execution_state = 'HELD_UNPROTECTED' WHERE signal_id = ?`).run(momentumLockId);
           logger.error({ event_type: 'momentum_execution_failed', held: true, err: err.message });
           await telegram.sendAlert(`❌ Momentum buy FAILED for ${cleanId}:\n${err.message}`);
         } else {
           // Release lock so user can retry — the position is flat.
-          signalsDb.prepare(`UPDATE received_signals SET status = 'PENDING' WHERE signal_id = ?`).run(momentumLockId);
+          signalsDb.prepare(`UPDATE received_signals SET status = 'PENDING', execution_state = 'IDLE' WHERE signal_id = ?`).run(momentumLockId);
           logger.error({ event_type: 'momentum_execution_failed', err: err.message });
           // [FIX] callback was already answered with 'Fetching Momentum Data...' — second call silently fails.
           // sendAlert ensures the user sees the failure and knows to retry.
@@ -312,20 +314,22 @@ telegram.bot.on('callback_query', async (query) => {
 async function runStartupRecovery() {
   logger.info({ event_type: 'startup_recovery' }, 'Checking for unsynced completed orders...');
 
-  // [HIGH-005] Reset signals stuck in EXECUTING state (process crash mid-execution)
+  // A crash can happen after Kite accepted the order but before we persisted
+  // its id. Never make an EXECUTING record retryable merely because Node
+  // restarted; that is exactly when broker reconciliation is required.
   const stuckResult = signalsDb.prepare(
-    `UPDATE received_signals SET status = 'PENDING' WHERE status = 'EXECUTING'`
+    `UPDATE received_signals SET execution_state = 'OUTCOME_UNKNOWN' WHERE status = 'EXECUTING' AND execution_state != 'HELD_UNPROTECTED'`
   ).run();
   if (stuckResult.changes > 0) {
     logger.warn({ event_type: 'stuck_signal_recovery', count: stuckResult.changes },
-      `Reset ${stuckResult.changes} stuck EXECUTING signal(s) to PENDING`);
+      `Locked ${stuckResult.changes} interrupted EXECUTING signal(s) for broker reconciliation`);
   }
   
   const unsynced = signalsDb.prepare(`
     SELECT e.*, r.payload_json 
     FROM executed_orders e
     JOIN received_signals r ON e.signal_id = r.signal_id
-    WHERE e.sync_to_b = 0 AND e.status = 'COMPLETE'
+    WHERE e.sync_to_b IN (0, 2) AND e.status = 'COMPLETE'
   `).all();
 
   for (const order of unsynced) {
@@ -350,7 +354,7 @@ async function runStartupRecovery() {
       logger.info({ event_type: 'recovery_sync_success', orderId: order.order_id });
     } catch (err) {
       logger.error({ event_type: 'recovery_sync_failed', orderId: order.order_id, err: err.message });
-      // Leaves sync_to_b = 0 to retry again next time.
+      // Preserve pending/failed state so the next restart retries it again.
     }
   }
 }
@@ -430,3 +434,5 @@ server.listen(config.PORT, async () => {
     telegram.sendAlert('♻️ node-gateway restarted mid-day; Kite execution re-armed automatically (no re-login needed).');
   }
 });
+
+module.exports = { runStartupRecovery };

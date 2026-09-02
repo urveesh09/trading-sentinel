@@ -916,7 +916,7 @@ async def _settle_confirmed_penny_exit(
     no second ledger event.
     """
     from penny_risk import calc_penny_costs
-    from performance import division_equity
+    from performance import allocation_for_source
 
     requested = int(position.get("shares") or 0)
     quantity = min(requested, max(0, int(confirmed_qty or 0)))
@@ -927,7 +927,6 @@ async def _settle_confirmed_penny_exit(
     costs = calc_penny_costs(entry, fill_price, quantity, is_intraday=True)
     pnl = (fill_price - entry) * quantity - costs
     remaining = requested - quantity
-    before = await division_equity(settings.DB_PATH, source)
     now_utc = datetime.now(timezone.utc).isoformat()
     where = (
         "ticker=? AND source=? AND entry_date=? AND shares=? "
@@ -938,6 +937,11 @@ async def _settle_confirmed_penny_exit(
     )
     async with aiosqlite.connect(settings.DB_PATH) as db:
         await db.execute("BEGIN IMMEDIATE")
+        ledger_total = await (await db.execute(
+            "SELECT COALESCE(SUM(pnl),0.0) FROM bankroll_ledger WHERE source=?",
+            (source,),
+        )).fetchone()
+        before = allocation_for_source(source) + float(ledger_total[0] or 0.0)
         if remaining:
             cur = await db.execute(
                 "UPDATE positions SET shares=?, status='OPEN', "
@@ -949,9 +953,13 @@ async def _settle_confirmed_penny_exit(
         else:
             total_pnl = float(position.get("realised_pnl") or 0) + pnl
             risk = float(position.get("initial_capital_at_risk") or 0)
-            if risk <= 0:
+            previous_realised = float(position.get("realised_pnl") or 0)
+            if risk <= 0 and previous_realised == 0:
                 risk = max(0.0, entry - float(position.get("stop_loss_initial") or entry)) * requested
-            r_multiple = total_pnl / risk if risk > 0 else 0.0
+            # A legacy row that already realised a partial has lost its original
+            # quantity denominator.  NULL is honest; computing R from only the
+            # residual quantity exaggerates both wins and losses.
+            r_multiple = total_pnl / risk if risk > 0 else None
             cur = await db.execute(
                 "UPDATE positions SET shares=0, status='CLOSED_TIME', "
                 "exit_price=?, exit_date=?, realised_pnl=?, r_multiple=? "
@@ -1045,15 +1053,73 @@ async def _execute_scheduled_penny_exit(
         )
     elif not (sl_order_id and 'result' in locals() and result.get("message") == "protective stop filled"):
         if not order_id:
-            order_id = await executor._market_unwind(
-                position.get("ticker"), leg, quantity, ltp=reference_price,
+            result = None
+            # Persist a stable broker tag before crossing the network. On a
+            # crash or lost response the next pass searches today's broker
+            # order book by this identity and never blindly sends a second SELL.
+            intent = await attempt_event_payload(
+                settings.DB_PATH, attempt_id, "EXIT_INTENT"
             )
+            intent_date = (intent or {}).get("intent_date")
+            today_ist = datetime.now(IST).date().isoformat()
+            unwind_tag = (intent or {}).get("tag") or (
+                "PENX" + hashlib.sha256(attempt_id.encode("utf-8")).hexdigest()[:16]
+            )
+            await _append_penny_exit_event(
+                attempt_id, context, "EXIT_INTENT",
+                {"tag": unwind_tag, "quantity": quantity,
+                 "intent_date": intent_date or today_ist},
+            )
+            recovered = await executor.resolve_unwind_tag(
+                unwind_tag, position.get("ticker"), leg, quantity,
+            )
+            unwind_tag = recovered.get("tag") or unwind_tag
+            if recovered["status"] == "FOUND":
+                order_id = recovered["order_id"]
+            elif recovered["status"] == "NOT_FOUND":
+                if intent and intent_date != today_ist:
+                    order_id = None
+                    result = {
+                        "status": "UNKNOWN", "order_id": None,
+                        "requested_qty": quantity, "confirmed_qty": 0,
+                        "fill_price": None, "paper": False,
+                        "message": "prior-session exit intent requires manual reconciliation",
+                    }
+                else:
+                    try:
+                        order_id = await executor._market_unwind(
+                            position.get("ticker"), leg, quantity,
+                            ltp=reference_price, tag=unwind_tag,
+                            raise_on_ambiguous=True,
+                        )
+                    except Exception:
+                        order_id = None
+                        result = {
+                            "status": "UNKNOWN", "order_id": None,
+                            "requested_qty": quantity, "confirmed_qty": 0,
+                            "fill_price": None, "paper": False,
+                            "message": "exit submission outcome is ambiguous",
+                        }
+            else:
+                result = {
+                    "status": "UNKNOWN", "order_id": None,
+                    "requested_qty": quantity, "confirmed_qty": 0,
+                    "fill_price": None, "paper": False,
+                    "message": "broker order book unavailable for recovery",
+                }
+            if not order_id and result and result.get("status") == "UNKNOWN":
+                await executor._page_operator(
+                    f"{position.get('ticker')}: scheduled exit submission is "
+                    "ambiguous or cannot be reconciled from the broker order "
+                    f"book; {quantity} shares remain locally open. Do not retry "
+                    "manually until Kite is reconciled."
+                )
             if order_id:
                 await _append_penny_exit_event(
                     attempt_id, context, "EXIT_SUBMITTED",
                     {"order_id": order_id, "quantity": quantity},
                 )
-            else:
+            elif result is None or result.get("status") != "UNKNOWN":
                 result = {
                     "status": "REJECTED", "order_id": None,
                     "requested_qty": quantity, "confirmed_qty": 0,

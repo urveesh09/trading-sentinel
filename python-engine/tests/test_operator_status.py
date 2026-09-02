@@ -97,6 +97,7 @@ def test_build_status_snapshot_full_structure(tmp_path, monkeypatch):
     assert "halted" in snap
     assert "halt_reasons" in snap
     assert "by_source_today" in snap
+    assert "penny_reservations" in snap
     # Penny subkeys
     for k in ("regime", "balance_estimate", "pnl_today", "open_positions"):
         assert k in snap["penny"]
@@ -195,6 +196,29 @@ def test_format_status_under_telegram_limit():
     assert "Nifty" in body
     assert "+Rs 100" in body
     assert "+Rs 150" in body
+
+
+def test_status_surfaces_unresolved_penny_reservations(tmp_path, monkeypatch):
+    from operator_status import build_status_snapshot, format_status
+    db = str(tmp_path / "test.db")
+    _seed_ledger(db, [])
+    with sqlite3.connect(db) as con:
+        con.execute(
+            "CREATE TABLE penny_position_reservations "
+            "(state TEXT,created_at TEXT)"
+        )
+        con.execute(
+            "INSERT INTO penny_position_reservations VALUES "
+            "('UNRESOLVED','2026-08-31T05:00:00+00:00')"
+        )
+    async def _cb(_): return (False, [])
+    async def _br(_): return 5000.0
+    monkeypatch.setattr("performance.check_circuit_breakers", _cb)
+    monkeypatch.setattr("performance.nifty_bankroll", _br)
+    import asyncio
+    snap = asyncio.run(build_status_snapshot(db))
+    assert snap["penny_reservations"]["unresolved"] == 1
+    assert "capacity remains fail-closed" in format_status(snap)
 
 
 def test_format_status_shows_halt():

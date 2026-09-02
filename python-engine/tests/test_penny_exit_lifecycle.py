@@ -296,6 +296,149 @@ async def test_partial_protective_stop_fill_is_consumed_once(monkeypatch):
 
 
 @pytest.mark.asyncio
+async def test_lost_exit_response_recovers_stable_tag_without_second_sell(monkeypatch):
+    import main
+
+    position = await _seed_position(settings.DB_PATH)
+    async with aiosqlite.connect(settings.DB_PATH) as db:
+        await db.execute("UPDATE positions SET source='PENNY' WHERE ticker='ABC'")
+        await db.commit()
+        db.row_factory = aiosqlite.Row
+        position = dict(await (await db.execute(
+            "SELECT * FROM positions WHERE ticker='ABC'"
+        )).fetchone())
+
+    accepted = {}
+
+    async def place_then_lose_response(**kwargs):
+        accepted.update(kwargs)
+        raise TimeoutError("response lost after broker acceptance")
+
+    async def order_book():
+        if not accepted:
+            return []
+        return [{
+            "order_id": "EXIT-1", "tag": accepted["tag"],
+            "tradingsymbol": "ABC", "transaction_type": "SELL",
+            "product": "MIS", "quantity": 10, "status": "COMPLETE",
+        }]
+
+    kite = SimpleNamespace(
+        orders_snapshot=AsyncMock(side_effect=order_book),
+        place_order=AsyncMock(side_effect=place_then_lose_response),
+        order_history=AsyncMock(return_value=[{
+            "status": "COMPLETE", "filled_quantity": 10,
+            "average_price": 99.0,
+        }]),
+    )
+    executor = PennyExecutor(
+        kite, paper_mode=False, fill_timeout_sec=0.01, poll_interval_sec=0.001,
+    )
+    executor._page_operator = AsyncMock()
+    monkeypatch.setattr(
+        main, "_penny_scanner", SimpleNamespace(executor=executor, source_tag="PENNY"),
+    )
+
+    first = await main._execute_scheduled_penny_exit(
+        position, reason="mis_time_stop", reference_price=100.0,
+    )
+    assert first["status"] == "UNKNOWN"
+    async with aiosqlite.connect(settings.DB_PATH) as db:
+        db.row_factory = aiosqlite.Row
+        still_open = dict(await (await db.execute(
+            "SELECT * FROM positions WHERE ticker='ABC'"
+        )).fetchone())
+    assert still_open["exit_date"] is None
+
+    recovered = await main._execute_scheduled_penny_exit(
+        still_open, reason="mis_time_stop", reference_price=100.0,
+    )
+    assert recovered["status"] == "COMPLETE"
+    assert recovered["settlement"]["settled"] == 10
+    assert kite.place_order.await_count == 1
+    assert len(accepted["tag"]) <= 20
+
+
+@pytest.mark.asyncio
+async def test_unreadable_order_book_blocks_new_live_exit(monkeypatch):
+    import main
+
+    position = await _seed_position(settings.DB_PATH)
+    position["source"] = "PENNY"
+    async with aiosqlite.connect(settings.DB_PATH) as db:
+        await db.execute("UPDATE positions SET source='PENNY' WHERE ticker='ABC'")
+        await db.commit()
+    kite = SimpleNamespace(
+        orders_snapshot=AsyncMock(return_value=None),
+        place_order=AsyncMock(side_effect=AssertionError("SELL must not be sent")),
+    )
+    executor = PennyExecutor(kite, paper_mode=False)
+    executor._page_operator = AsyncMock()
+    monkeypatch.setattr(
+        main, "_penny_scanner", SimpleNamespace(executor=executor, source_tag="PENNY"),
+    )
+
+    result = await main._execute_scheduled_penny_exit(
+        position, reason="mis_time_stop", reference_price=100.0,
+    )
+    assert result["status"] == "UNKNOWN"
+    kite.place_order.assert_not_awaited()
+    executor._page_operator.assert_awaited_once()
+
+
+@pytest.mark.asyncio
+async def test_definitive_exit_rejection_returns_rejected_not_crash(monkeypatch):
+    import main
+
+    position = await _seed_position(settings.DB_PATH)
+    position["source"] = "PENNY"
+    async with aiosqlite.connect(settings.DB_PATH) as db:
+        await db.execute("UPDATE positions SET source='PENNY' WHERE ticker='ABC'")
+        await db.commit()
+    kite = SimpleNamespace(
+        orders_snapshot=AsyncMock(return_value=[]),
+        place_order=AsyncMock(return_value={"status": "REJECTED", "message": "blocked"}),
+    )
+    executor = PennyExecutor(kite, paper_mode=False)
+    executor._page_operator = AsyncMock()
+    monkeypatch.setattr(
+        main, "_penny_scanner", SimpleNamespace(executor=executor, source_tag="PENNY"),
+    )
+
+    result = await main._execute_scheduled_penny_exit(
+        position, reason="mis_time_stop", reference_price=100.0,
+    )
+
+    assert result["status"] == "REJECTED"
+    executor._page_operator.assert_awaited_once()
+
+
+@pytest.mark.asyncio
+async def test_terminal_zero_fill_advances_to_deterministic_retry_tag():
+    snapshots = [
+        [{
+            "order_id": "DEAD-1", "tag": "PENX0000000000000000",
+            "tradingsymbol": "ABC", "transaction_type": "SELL",
+            "product": "MIS", "quantity": 10, "status": "CANCELLED",
+            "filled_quantity": 0,
+        }],
+        [],
+    ]
+    executor = PennyExecutor(
+        SimpleNamespace(orders_snapshot=AsyncMock(side_effect=snapshots)),
+        paper_mode=False,
+    )
+
+    recovered = await executor.resolve_unwind_tag(
+        "PENX0000000000000000", "ABC", PennyLeg.MIS, 10,
+    )
+
+    assert recovered["status"] == "NOT_FOUND"
+    assert recovered["tag"].startswith("PNRT")
+    assert len(recovered["tag"]) == 20
+
+
+@pytest.mark.asyncio
 async def test_residual_stop_tag_fits_kite_limit(monkeypatch):
     import main
 

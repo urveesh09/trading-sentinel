@@ -39,6 +39,7 @@ class PartnerPositionPayload(BaseModel):
     tradingsymbol: str = Field(min_length=1, max_length=120)
     signed_quantity: int
     lot_size: int = Field(gt=0)
+    quantity_basis: Optional[str] = None
     entry_price: float = Field(gt=0)
     opened_at: datetime
     source: str = Field(min_length=1, max_length=80)
@@ -51,10 +52,14 @@ class PartnerPositionPayload(BaseModel):
     price_as_of: Optional[datetime] = None
     broker_order_id: Optional[str] = Field(default=None, max_length=120)
     notes: Optional[str] = Field(default=None, max_length=1000)
+    deliverable_quantity: Optional[int] = Field(default=None, ge=0)
+    deliverable_as_of: Optional[datetime] = None
+    deliverable_source: Optional[str] = Field(default=None, max_length=80)
 
 
 class ReconcilePayload(BaseModel):
     observed_quantity: int
+    quantity_basis: Optional[str] = None
     reconciled_at: datetime
     source: str = Field(min_length=1, max_length=80)
     current_price: Optional[float] = None
@@ -62,6 +67,9 @@ class ReconcilePayload(BaseModel):
     price_as_of: Optional[datetime] = None
     greeks: Optional[GreeksPayload] = None
     notes: Optional[str] = Field(default=None, max_length=1000)
+    deliverable_quantity: Optional[int] = Field(default=None, ge=0)
+    deliverable_as_of: Optional[datetime] = None
+    deliverable_source: Optional[str] = Field(default=None, max_length=80)
 
 
 class ClosePayload(BaseModel):
@@ -84,12 +92,19 @@ def _position_json(position: PartnerPosition) -> dict:
 async def add_partner_hedge_position(request: Request, payload: PartnerPositionPayload):
     _main._check_internal_secret(request, "add_partner_hedge_position")
     try:
+        instrument_type = payload.instrument_type.strip().upper()
+        quantity_basis = (
+            payload.quantity_basis.strip().upper() if payload.quantity_basis else None
+        )
+        if instrument_type in {"FUT", "CE", "PE"} and quantity_basis != "UNITS":
+            raise ValueError("F&O intake requires explicit quantity_basis=UNITS")
         position = PartnerPosition(
             underlying=payload.underlying,
-            instrument_type=payload.instrument_type,
+            instrument_type=instrument_type,
             tradingsymbol=payload.tradingsymbol,
             signed_quantity=payload.signed_quantity,
             lot_size=payload.lot_size,
+            quantity_basis=quantity_basis or "UNITS",
             entry_price=payload.entry_price,
             opened_at=payload.opened_at,
             source=payload.source,
@@ -102,6 +117,9 @@ async def add_partner_hedge_position(request: Request, payload: PartnerPositionP
             price_as_of=payload.price_as_of,
             broker_order_id=payload.broker_order_id,
             notes=payload.notes,
+            deliverable_quantity=payload.deliverable_quantity,
+            deliverable_as_of=payload.deliverable_as_of,
+            deliverable_source=payload.deliverable_source,
             verification_status="PENDING_CONFIRMATION",
         )
         stored = await create_partner_position(settings.DB_PATH, position)
@@ -121,6 +139,7 @@ async def reconcile_partner_hedge_position(
         position = await reconcile_partner_position(
             settings.DB_PATH, position_id,
             observed_quantity=payload.observed_quantity,
+            quantity_basis=payload.quantity_basis,
             reconciled_at=payload.reconciled_at,
             source=payload.source,
             current_price=payload.current_price,
@@ -128,6 +147,9 @@ async def reconcile_partner_hedge_position(
             price_as_of=payload.price_as_of,
             greeks=payload.greeks.value() if payload.greeks else None,
             notes=payload.notes,
+            deliverable_quantity=payload.deliverable_quantity,
+            deliverable_as_of=payload.deliverable_as_of,
+            deliverable_source=payload.deliverable_source,
         )
     except ValueError as exc:
         raise HTTPException(status_code=422, detail=str(exc)) from exc
@@ -175,6 +197,8 @@ async def get_partner_hedge_status(request: Request):
     vix = await load_vix_observations(settings.DB_PATH, 1)
     return {
         "enabled": settings.PARTNER_HEDGE_ENABLED,
+        "phase2_enabled": settings.PARTNER_HEDGE_PHASE2_ENABLED,
+        "phase3_enabled": settings.PARTNER_HEDGE_PHASE3_ENABLED,
         "open_positions": len(all_open),
         "reconciled_open_positions": len(reconciled),
         "latest_vix": jsonable_encoder(vix[-1]) if vix else None,

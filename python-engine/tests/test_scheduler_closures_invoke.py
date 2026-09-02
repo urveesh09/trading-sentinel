@@ -56,6 +56,7 @@ ALL_CLOSURES = [
     "_run_partner_eod_wrap_safe",
     "_run_partner_rv_refresh_safe",
     "_run_partner_hedge_tick_safe",
+    "_run_partner_hedge_phase2_tick_safe",
 ]
 
 

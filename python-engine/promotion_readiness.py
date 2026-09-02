@@ -163,12 +163,17 @@ def assess_promotion_readiness(
     replay = _result_variant(run, variant)
     blockers: list[dict] = []
 
-    distinct = _integer(_first(shadow.get("distinct_candidates"), replay.get("distinct_candidates"), replay.get("entries")))
-    raw_accepts = _integer(_first(shadow.get("raw_accepts"), shadow.get("accepts"), shadow.get("accepted_evaluations")))
-    closed = _integer(_first(shadow.get("closed_trades"), replay.get("closed_trades")))
-    expectancy = _finite(_first(shadow.get("net_expectancy"), shadow.get("expectancy"), replay.get("net_expectancy"), replay.get("expectancy")))
-    profit_factor = _finite(_first(shadow.get("profit_factor"), replay.get("profit_factor")))
-    drawdown = _finite(_first(shadow.get("max_drawdown"), replay.get("max_drawdown")))
+    # Never construct a seemingly complete verdict field-by-field from unrelated
+    # cohorts. Shadow is the primary realised-quality cohort when present;
+    # otherwise all quality metrics come from the same replay variant row.
+    quality = shadow if shadow else replay
+    quality_source = "shadow" if shadow else ("backtest" if replay else None)
+    distinct = _integer(_first(quality.get("distinct_candidates"), quality.get("entries")))
+    raw_accepts = _integer(_first(quality.get("raw_accepts"), quality.get("accepts"), quality.get("accepted_evaluations")))
+    closed = _integer(quality.get("closed_trades"))
+    expectancy = _finite(_first(quality.get("net_expectancy"), quality.get("expectancy")))
+    profit_factor = _finite(quality.get("profit_factor"))
+    drawdown = _finite(quality.get("max_drawdown"))
     repeat_inflation = (
         max(raw_accepts - distinct, 0) / raw_accepts
         if raw_accepts is not None and distinct is not None and raw_accepts > 0 else None
@@ -216,6 +221,8 @@ def assess_promotion_readiness(
 
     provenance_status = None
     dataset = run.get("dataset") if isinstance(run.get("dataset"), Mapping) else {}
+    dataset_fingerprint = run.get("dataset_fingerprint") or dataset.get("fingerprint")
+    strategy_version = run.get("strategy_version")
     if run:
         if run.get("status") == "UNAVAILABLE":
             provenance_status = "INVALID"
@@ -245,6 +252,16 @@ def assess_promotion_readiness(
             blockers.append(_block("data_provenance", COLLECTING, provenance_status, "VALID", "no completed provenance-bearing replay is available"))
         elif provenance_status not in {"VALID", "COMPLETE"}:
             blockers.append(_block("data_provenance", INELIGIBLE, provenance_status, "VALID", "replay data provenance or coverage is unhealthy"))
+        if run and not dataset_fingerprint:
+            blockers.append(_block(
+                "dataset_fingerprint", COLLECTING, None, "non-empty",
+                "replay dataset fingerprint is missing; evidence cannot be reproduced",
+            ))
+        if run and not strategy_version:
+            blockers.append(_block(
+                "strategy_version", COLLECTING, None, "non-empty",
+                "replay code/strategy version is missing; cohorts cannot be compared safely",
+            ))
 
     recon_status = _reconciliation_status(reconciliation, variant)
     if thresholds.require_reconciliation:
@@ -279,6 +296,9 @@ def assess_promotion_readiness(
             "repeat_inflation": round(repeat_inflation, 6) if repeat_inflation is not None else None,
             "oos_scored_folds": scored_folds, "provenance_status": provenance_status,
             "reconciliation_status": recon_status,
+            "quality_source": quality_source,
+            "dataset_fingerprint": dataset_fingerprint,
+            "strategy_version": strategy_version,
         },
         "blockers": blockers, "source_timestamps": timestamps,
         "sources": {

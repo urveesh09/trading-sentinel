@@ -13,6 +13,8 @@ jest.mock('kiteconnect', () => {
     placeGTT: jest.fn(),
     getOrders: jest.fn(),
     getPositions: jest.fn(),
+    getGTTs: jest.fn(),
+    deleteGTT: jest.fn(),
     cancelOrder: jest.fn(),
   };
   return { KiteConnect: jest.fn(() => mockKite), _mockInstance: mockKite };
@@ -142,10 +144,14 @@ describe('Kite Service', () => {
     mockKite.getOrders.mockResolvedValue([{ order_id: 'ORD-1' }]);
     mockKite.getPositions.mockResolvedValue({ net: [] });
     mockKite.cancelOrder.mockResolvedValue({ order_id: 'ORD-1' });
+    mockKite.getGTTs.mockResolvedValue([{ id: 42 }]);
+    mockKite.deleteGTT.mockResolvedValue({ trigger_id: 42 });
 
     await expect(kiteService.getOrders()).resolves.toEqual([{ order_id: 'ORD-1' }]);
     await expect(kiteService.getPositions()).resolves.toEqual({ net: [] });
     await expect(kiteService.cancelOrder('ORD-1')).resolves.toEqual({ order_id: 'ORD-1' });
+    await expect(kiteService.getGTTs()).resolves.toEqual([{ id: 42 }]);
+    await expect(kiteService.deleteGTT(42)).resolves.toEqual({ trigger_id: 42 });
     expect(mockKite.cancelOrder).toHaveBeenCalledWith('regular', 'ORD-1');
   });
 

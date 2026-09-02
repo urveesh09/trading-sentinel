@@ -37,6 +37,8 @@ function addColumnIfMissing(db, table, column, definition) {
   }
 }
 addColumnIfMissing(signalsDb, 'executed_orders', 'sl_order_id', 'TEXT');
+addColumnIfMissing(signalsDb, 'executed_orders', 'execution_state', "TEXT NOT NULL DEFAULT 'SUBMITTED'");
+addColumnIfMissing(signalsDb, 'received_signals', 'execution_state', "TEXT NOT NULL DEFAULT 'IDLE'");
 
 // We attach app_state logic to appDb
 appDb.exec(`

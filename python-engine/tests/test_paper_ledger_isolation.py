@@ -110,10 +110,10 @@ async def test_update_daily_positions_passes_the_source_through():
     in the ledger.
     """
     import inspect
-    from position_tracker import update_daily_positions
+    from position_tracker import _deliver_pnl_outbox
 
-    src = inspect.getsource(update_daily_positions)
-    assert "record_pnl_cb(ticker, realised_pnl, " in src, (
+    src = inspect.getsource(_deliver_pnl_outbox)
+    assert "record_pnl_cb(ticker, float(pnl), source)" in src, (
         "update_daily_positions must pass the position's source to the ledger "
         "callback -- dropping it books paper trades into the live book"
     )

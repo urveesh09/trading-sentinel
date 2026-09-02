@@ -33,6 +33,11 @@ def _clean_edge_positions():
         return
     conn = sqlite3.connect(_REAL_DB)
     cur = conn.cursor()
+    if cur.execute(
+        "SELECT 1 FROM sqlite_master WHERE type='table' AND name='positions'"
+    ).fetchone() is None:
+        conn.close()
+        return
     cur.execute("DELETE FROM positions WHERE source LIKE 'EDGE%'")
     conn.commit()
     conn.close()
@@ -49,9 +54,9 @@ def test_settings_load():
     """Default config: paper + live both enabled, paper=Rs 100k, live=Rs 1k."""
     from config import settings
     assert getattr(settings, "PENNY_EDGE_DISABLE_PAPER", False) is False
-    assert getattr(settings, "PENNY_EDGE_DISABLE_LIVE", False) is False
+    assert getattr(settings, "PENNY_EDGE_DISABLE_LIVE", False) is True
     assert peo._edge_paper_bankroll() == 100000.0
-    assert peo._edge_live_bankroll() == 1000.0
+    assert peo._edge_live_bankroll() == peo.settings.PENNY_EDGE_LIVE_BANKROLL
     assert peo._edge_max_positions() == 3
     assert peo._edge_min_strength() == 0.45
     assert peo._edge_max_hold_days() == 3

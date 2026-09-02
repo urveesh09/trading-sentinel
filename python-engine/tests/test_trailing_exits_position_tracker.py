@@ -214,7 +214,7 @@ async def _insert_position(db_path, **kwargs):
         "atr_14_at_entry": 16.67,
         "highest_close_since_entry": 500.0,
         "status": "OPEN",
-        "source": "SYSTEM",
+        "source": "PENNY_PAPER",
         "exit_price": None,
         "exit_date": None,
         "realised_pnl": None,

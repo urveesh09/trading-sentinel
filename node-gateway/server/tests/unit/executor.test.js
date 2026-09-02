@@ -10,6 +10,8 @@ jest.mock('../../services/kite', () => ({
   placeOrder: jest.fn(),
   getOrderHistory: jest.fn(),
   getOrders: jest.fn(),
+  getGTTs: jest.fn(),
+  deleteGTT: jest.fn(),
   getPositions: jest.fn(),
   cancelOrder: jest.fn(),
   placeGTT: jest.fn(),
@@ -76,16 +78,22 @@ function setupHappyPath() {
   kite.getLTP.mockResolvedValue({
     'NSE:RELIANCE': { last_price: 1005 },
   });
-  kite.placeOrder.mockResolvedValue({ order_id: 'ORD-001' });
-  kite.getOrderHistory.mockResolvedValue([
-    { status: 'COMPLETE', average_price: 1005, filled_quantity: 5 },
-  ]);
+  kite.placeOrder.mockImplementation((params) => Promise.resolve({
+    order_id: params.order_type === 'SL' ? 'SL-1' :
+      (params.transaction_type === 'SELL' ? 'UNWIND-1' : 'ORD-001')
+  }));
+  kite.getOrderHistory.mockImplementation((orderId) => Promise.resolve(
+    String(orderId).startsWith('SL-')
+      ? [{ status: 'TRIGGER PENDING', filled_quantity: 0 }]
+      : [{ status: 'COMPLETE', average_price: 1005, filled_quantity: 5 }]
+  ));
   kite.getOrders.mockResolvedValue([]);
   kite.getPositions.mockResolvedValue({ net: [], day: [] });
   kite.cancelOrder.mockResolvedValue({ order_id: 'ORD-001' });
-  kite.placeGTT.mockResolvedValueOnce({ trigger_id: 'GTT-STOP-1' })
-    .mockResolvedValueOnce({ trigger_id: 'GTT-TGT-1' });
+  kite.getGTTs.mockResolvedValue([]);
+  kite.placeGTT.mockResolvedValue({ trigger_id: 'GTT-OCO-1' });
   mockDbRun.mockReturnValue({});
+  mockDbGet.mockReturnValue({ signal_id: 'test-uuid-1234' });
   global.fetch.mockResolvedValue({ ok: true });
 }
 
@@ -110,6 +118,13 @@ describe('executeSignal()', () => {
     await expect(
       executeSignal(makeSignal({ capital_at_risk: 1501 }), 'EXEC')
     ).rejects.toThrow(ValidationError);
+  });
+
+  test('blocks broker placement when signal has no durable received_signals record', async () => {
+    mockDbGet.mockReturnValue(null);
+    await expect(executeSignal(makeSignal(), 'EXEC')).rejects.toThrow(/not durably registered/);
+    expect(kite.getLTP).not.toHaveBeenCalled();
+    expect(kite.placeOrder).not.toHaveBeenCalled();
   });
 
   // ─── Price drift ───
@@ -151,8 +166,9 @@ describe('executeSignal()', () => {
   // ─── GTT placement ───
   test('places GTT orders for CNC trades', async () => {
     await executeSignal(makeSignal(), 'EXEC', false);
-    // Should place 2 GTTs: stop-loss and target
-    expect(kite.placeGTT).toHaveBeenCalledTimes(2);
+    expect(kite.placeGTT).toHaveBeenCalledTimes(1);
+    expect(kite.placeGTT.mock.calls[0][0].trigger_type).toBe('two-leg');
+    expect(kite.placeGTT.mock.calls[0][0].orders.every(o => o.quantity === 5)).toBe(true);
   });
 
   test('does NOT place GTT orders for intraday trades', async () => {
@@ -176,7 +192,7 @@ describe('executeSignal()', () => {
     await executeSignal(signal, 'EXEC', false);
     const stopCall = kite.placeGTT.mock.calls[0][0];
 
-    expect(stopCall.trigger_values).toEqual([ANCHORED_STOP]);
+    expect(stopCall.trigger_values).toEqual([ANCHORED_STOP, ANCHORED_T1]);
     const stopPrice = stopCall.orders[0].price;
     expect(stopPrice).toBe(Math.floor(Math.round(ANCHORED_STOP * 0.998 * 10 * 100) / 100) / 10);
     expect(stopPrice).toBeLessThan(ANCHORED_STOP);
@@ -187,15 +203,53 @@ describe('executeSignal()', () => {
   test('GTT target trigger follows the fill, and its price sits below the trigger', async () => {
     const signal = makeSignal({ target_1: 1075 });
     await executeSignal(signal, 'EXEC', false);
-    const targetCall = kite.placeGTT.mock.calls[1][0];
+    const targetCall = kite.placeGTT.mock.calls[0][0];
 
-    expect(targetCall.trigger_values).toEqual([ANCHORED_T1]);
-    const targetPrice = targetCall.orders[0].price;
+    expect(targetCall.trigger_values).toEqual([ANCHORED_STOP, ANCHORED_T1]);
+    const targetPrice = targetCall.orders[1].price;
     // 1080 * 0.998 = 1077.84 → snapToTick DOWN to nearest 0.10 = 1077.8
     expect(targetPrice).toBe(Math.floor(Math.round(ANCHORED_T1 * 0.998 * 10 * 100) / 100) / 10);
     expect(targetPrice).toBeLessThan(ANCHORED_T1);
     // Reward:risk survives the drift.
     expect((ANCHORED_T1 - 1005) / (1005 - ANCHORED_STOP)).toBeCloseTo(1.5, 6);
+  });
+
+  test('CNC uses one full-quantity OCO trigger id for both exit legs', async () => {
+    await executeSignal(makeSignal(), 'EXEC', false);
+    const params = kite.placeGTT.mock.calls[0][0];
+    expect(params.trigger_type).toBe('two-leg');
+    expect(params.orders).toHaveLength(2);
+    expect(params.orders.map(o => o.quantity)).toEqual([5, 5]);
+    const syncBody = JSON.parse(global.fetch.mock.calls[0][1].body);
+    expect(syncBody.gtt_stop_id).toBe('GTT-OCO-1');
+    expect(syncBody.gtt_target_id).toBe('GTT-OCO-1');
+  });
+
+  test('ambiguous GTT response recovers the exact OCO and never resubmits', async () => {
+    kite.placeGTT.mockRejectedValueOnce(new Error('response timeout'));
+    kite.getGTTs.mockImplementation(() => {
+      const params = kite.placeGTT.mock.calls[0][0];
+      return Promise.resolve([{
+        id: 'GTT-RECOVERED', condition: {
+          tradingsymbol: params.tradingsymbol, exchange: params.exchange,
+          trigger_values: params.trigger_values,
+        }, orders: params.orders,
+      }]);
+    });
+    const result = await executeSignal(makeSignal(), 'EXEC', false);
+    expect(result.gttStopId).toBe('GTT-RECOVERED');
+    expect(kite.placeGTT).toHaveBeenCalledTimes(1);
+  });
+
+  test('unreconciled GTT ambiguity remains locked and is not represented as protected', async () => {
+    kite.placeGTT.mockRejectedValueOnce(new Error('response timeout'));
+    kite.getGTTs.mockResolvedValue([]);
+    let caught;
+    await executeSignal(makeSignal(), 'EXEC', false).catch(err => { caught = err; });
+    expect(caught.positionHeld).toBe(true);
+    expect(caught.outcomeUnknown).toBe(true);
+    expect(kite.placeGTT).toHaveBeenCalledTimes(1);
+    expect(mockDbRun.mock.calls.some(args => args[0] === 'OUTCOME_UNKNOWN')).toBe(true);
   });
 
   // ─── Fill verification ───
@@ -356,6 +410,15 @@ describe('executeSignal()', () => {
       // Anything else is the marketable-LIMIT unwind SELL.
       return unwind instanceof Error ? Promise.reject(unwind) : Promise.resolve(unwind ?? { order_id: 'UNWIND-1' });
     });
+    kite.getOrderHistory.mockImplementation((orderId) => {
+      if (String(orderId).startsWith('SL-')) {
+        return Promise.resolve([{ status: 'TRIGGER PENDING', filled_quantity: 0 }]);
+      }
+      if (String(orderId).startsWith('UNWIND-')) {
+        return Promise.resolve([{ status: 'COMPLETE', average_price: 994, filled_quantity: 5 }]);
+      }
+      return Promise.resolve([{ status: 'COMPLETE', average_price: 1005, filled_quantity: 5 }]);
+    });
   };
 
   test('MIS buy places a protective SL (limit) order, never SL-M', async () => {
@@ -385,7 +448,11 @@ describe('executeSignal()', () => {
     // trade before it could work.
     routePlaceOrder();
     kite.getLTP.mockResolvedValue({ 'NSE:RELIANCE': { last_price: 995 } });
-    kite.getOrderHistory.mockResolvedValue([{ status: 'COMPLETE', average_price: 995 }]);
+    kite.getOrderHistory.mockImplementation(orderId => Promise.resolve(
+      String(orderId).startsWith('SL-')
+        ? [{ status: 'TRIGGER PENDING', filled_quantity: 0 }]
+        : [{ status: 'COMPLETE', average_price: 995, filled_quantity: 5 }]
+    ));
 
     await executeSignal(makeSignal({ stop_loss: 950 }), 'EM', true);
 
@@ -429,10 +496,10 @@ describe('executeSignal()', () => {
   });
 
   test('when the stop is rejected, unwinds with a marketable LIMIT and a <=20-char tag', async () => {
-    routePlaceOrder({ stop: new Error('Market orders without market protection...') });
+    routePlaceOrder({ stop: Object.assign(new Error('Market orders without market protection...'), { retryable: false }) });
     await expect(executeSignal(makeSignal(), 'EM', true))
-      .rejects.toThrow(/unwound.*Safe to retry/);
-    const unwindCall = kite.placeOrder.mock.calls.find(c => c[0].tag === 'QUANT_SENT_UNWIND');
+      .rejects.toThrow(/broker-confirmed.*flat/i);
+    const unwindCall = kite.placeOrder.mock.calls.find(c => String(c[0].tag).startsWith('UW_'));
     expect(unwindCall).toBeDefined();
     const p = unwindCall[0];
     expect(p.order_type).toBe('LIMIT');
@@ -440,8 +507,34 @@ describe('executeSignal()', () => {
     expect(p.tag.length).toBeLessThanOrEqual(20);
   });
 
-  test('unwound position is retryable (positionHeld not set)', async () => {
-    routePlaceOrder({ stop: new Error('stop rejected'), unwind: { order_id: 'UNWIND-1' } });
+  test('ambiguous stop submission is never retried and does not launch a conflicting unwind', async () => {
+    routePlaceOrder({ stop: new Error('stop response timeout') });
+    kite.getOrders.mockResolvedValue([]);
+    let caught;
+    await executeSignal(makeSignal(), 'EM', true).catch(err => { caught = err; });
+    const sellCalls = kite.placeOrder.mock.calls.filter(c => c[0].transaction_type === 'SELL');
+    expect(sellCalls).toHaveLength(1);
+    expect(sellCalls[0][0].order_type).toBe('SL');
+    expect(caught.positionHeld).toBe(true);
+    expect(caught.outcomeUnknown).toBe(true);
+  });
+
+  test('unwind placement acknowledgement is not flat until terminal full-fill truth', async () => {
+    routePlaceOrder({ stop: Object.assign(new Error('stop rejected'), { retryable: false }) });
+    kite.getOrderHistory.mockImplementation(orderId => {
+      if (String(orderId) === 'BUY-1') return Promise.resolve([{ status: 'COMPLETE', average_price: 1005, filled_quantity: 5 }]);
+      if (String(orderId) === 'UNWIND-1') return Promise.resolve([{ status: 'CANCELLED', filled_quantity: 0 }]);
+      return Promise.resolve([{ status: 'REJECTED', status_message: 'stop rejected' }]);
+    });
+    let caught;
+    await executeSignal(makeSignal(), 'EM', true).catch(err => { caught = err; });
+    expect(caught.positionHeld).toBe(true);
+    expect(caught.message).toMatch(/not fully confirmed/i);
+    expect(mockDbRun.mock.calls.some(args => args[0] === 'HELD_UNPROTECTED')).toBe(true);
+  });
+
+  test('broker-confirmed full unwind is flat (positionHeld not set)', async () => {
+    routePlaceOrder({ stop: Object.assign(new Error('stop rejected'), { retryable: false }), unwind: { order_id: 'UNWIND-1' } });
     await executeSignal(makeSignal(), 'EM', true).catch(err => {
       expect(err.positionHeld).toBeFalsy();
     });
@@ -450,17 +543,18 @@ describe('executeSignal()', () => {
 
   test('stop AND unwind failing flags positionHeld and does NOT mark the fill CANCELLED', async () => {
     routePlaceOrder({
-      stop: new Error('stop rejected'),
-      unwind: new Error('Invalid tags / no protection'),
+      stop: Object.assign(new Error('stop rejected'), { retryable: false }),
+      unwind: Object.assign(new Error('Invalid tags / no protection'), { retryable: false }),
     });
     let caught;
     await executeSignal(makeSignal(), 'EM', true).catch(err => { caught = err; });
     expect(caught).toBeDefined();
     expect(caught.positionHeld).toBe(true);
-    expect(caught.message).toMatch(/FLATTEN THIS POSITION MANUALLY/);
-    // The fill must be recorded as OPEN_UNPROTECTED, never CANCELLED.
+    expect(caught.message).toMatch(/FLATTEN THIS POSITION MANUALLY/i);
+    // The fill must be durably recorded as held/unprotected using a schema-valid state.
     const updates = mockDbPrepare.mock.calls.map(c => c[0]).filter(Boolean);
-    expect(updates.some(sql => sql.includes("'OPEN_UNPROTECTED'"))).toBe(true);
+    expect(updates.some(sql => sql.includes('execution_state = ?'))).toBe(true);
+    expect(mockDbRun.mock.calls.some(args => args[0] === 'HELD_UNPROTECTED')).toBe(true);
     expect(updates.some(sql => sql.includes("'CANCELLED'"))).toBe(false);
   });
 });

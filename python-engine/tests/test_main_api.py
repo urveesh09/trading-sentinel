@@ -52,6 +52,13 @@ class TestHealthEndpoint:
         assert "penny" in body
         assert "nifty" in body
         assert "halted" in body
+        assert "entry_halted" in body
+        assert "order_execution" in body
+        assert body["order_execution"]["status"] in {
+            "UNVERIFIED", "AUTHORIZED", "BLOCKED",
+        }
+        if body["order_execution"]["status"] != "AUTHORIZED":
+            assert body["trading_ready"] is False
 
     @pytest.mark.asyncio
     async def test_no_auth_required(self, client):
@@ -443,6 +450,55 @@ class TestClosePositionEndpoint:
         )
         assert resp.status_code == 404
 
+    @pytest.mark.asyncio
+    async def test_rejects_caller_price_without_confirmed_broker_fill(
+        self, client, monkeypatch,
+    ):
+        headers = {"X-Internal-Secret": settings.INTERNAL_API_SECRET}
+        added = await client.post("/positions/manual", json={
+            "ticker": "TCS", "entry_price": 3500.0, "shares": 2,
+            "source": "MOMENTUM", "product_type": "MIS",
+            "order_id": "ENTRY-TCS-1",
+        }, headers=headers)
+        assert added.status_code == 200
+        import routes_portfolio
+        monkeypatch.setattr(routes_portfolio._main.kite, "order_history", AsyncMock(return_value=[{
+            "status": "OPEN", "filled_quantity": 0,
+            "average_price": 0, "tradingsymbol": "TCS",
+            "transaction_type": "SELL",
+        }]))
+        response = await client.post("/positions/close", json={
+            "ticker": "TCS", "exit_price": 9999.0, "order_id": "EXIT-TCS-1",
+        }, headers=headers)
+        assert response.status_code == 409
+
+    @pytest.mark.asyncio
+    async def test_close_uses_confirmed_broker_average_not_caller_price(
+        self, client, monkeypatch,
+    ):
+        headers = {"X-Internal-Secret": settings.INTERNAL_API_SECRET}
+        await client.post("/positions/manual", json={
+            "ticker": "INFY", "entry_price": 100.0, "shares": 2,
+            "source": "MOMENTUM", "product_type": "MIS",
+            "order_id": "ENTRY-INFY-1",
+        }, headers=headers)
+        import routes_portfolio
+        monkeypatch.setattr(routes_portfolio._main.kite, "order_history", AsyncMock(return_value=[{
+            "status": "COMPLETE", "filled_quantity": 2,
+            "average_price": 105.0, "tradingsymbol": "INFY",
+            "transaction_type": "SELL",
+        }]))
+        response = await client.post("/positions/close", json={
+            "ticker": "INFY", "exit_price": 9999.0, "order_id": "EXIT-INFY-1",
+        }, headers=headers)
+        assert response.status_code == 200
+        import aiosqlite
+        async with aiosqlite.connect(settings.DB_PATH) as db:
+            stored = (await (await db.execute(
+                "SELECT exit_price FROM positions WHERE ticker='INFY'"
+            )).fetchone())[0]
+        assert stored == pytest.approx(105.0)
+
 
 # ===============================================================
 # GET /momentum-signals
@@ -509,6 +565,26 @@ class TestPostLoginInitQ4:
 
 
 class TestInternalEndpointBehaviour:
+
+    @pytest.mark.asyncio
+    async def test_manual_position_retry_by_broker_order_is_idempotent(self, client):
+        payload = {
+            "ticker": "RELIANCE", "entry_price": 2500.0, "shares": 2,
+            "source": "SYSTEM", "product_type": "CNC",
+            "order_id": "BROKER-ENTRY-1",
+        }
+        headers = {"X-Internal-Secret": settings.INTERNAL_API_SECRET}
+        first = await client.post("/positions/manual", json=payload, headers=headers)
+        retry = await client.post("/positions/manual", json=payload, headers=headers)
+        assert first.status_code == 200 and first.json()["status"] == "ok"
+        assert retry.status_code == 200 and retry.json()["status"] == "exists"
+        import aiosqlite
+        async with aiosqlite.connect(settings.DB_PATH) as db:
+            count = (await (await db.execute(
+                "SELECT COUNT(*) FROM positions WHERE broker_entry_order_id=?",
+                ("BROKER-ENTRY-1",),
+            )).fetchone())[0]
+        assert count == 1
 
     @pytest.mark.asyncio
     async def test_manual_position_missing_ticker_raises(self, client):

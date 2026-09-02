@@ -157,14 +157,36 @@ async def add_manual_position(request: Request, payload: ManualPositionRequest):
     target_2  = payload.target_2  if payload.target_2  is not None else payload.entry_price * 1.10
 
     async with aiosqlite.connect(settings.DB_PATH) as db:
-        await db.execute("""
+        await db.execute("BEGIN IMMEDIATE")
+        if payload.broker_entry_order_id:
+            existing = await (await db.execute("""
+                SELECT ticker,source,entry_price,shares,rowid FROM positions
+                WHERE broker_entry_order_id=?
+            """, (payload.broker_entry_order_id,))).fetchone()
+            if existing is not None:
+                expected = (
+                    payload.ticker, payload.source,
+                    float(payload.entry_price), int(payload.shares),
+                )
+                observed = (
+                    existing[0], existing[1], float(existing[2]), int(existing[3]),
+                )
+                if observed != expected:
+                    await db.rollback()
+                    raise HTTPException(
+                        status_code=409,
+                        detail="broker order id already belongs to another position",
+                    )
+                await db.commit()
+                return {"status": "exists"}
+        cur = await db.execute("""
             INSERT INTO positions (
                 ticker, exchange, entry_date, entry_price, shares,
                 stop_loss_initial, trailing_stop_current, target_1, target_2,
                 atr_14_at_entry, highest_close_since_entry, status, source, product_type,
                 regime_at_entry, sl_order_id, vwap_at_entry,
-                initial_capital_at_risk
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                initial_capital_at_risk, broker_entry_order_id
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """, (payload.ticker, payload.exchange, datetime.now(timezone.utc).isoformat(),
               payload.entry_price, payload.shares, stop_loss, stop_loss,
               target_1, target_2,
@@ -175,8 +197,9 @@ async def add_manual_position(request: Request, payload: ManualPositionRequest):
               payload.atr_14_at_entry,
               payload.entry_price, "OPEN",
               payload.source, payload.product_type, payload.regime_at_entry,
-              payload.sl_order_id, payload.vwap_at_entry,
-              (payload.entry_price - stop_loss) * payload.shares))
+               payload.sl_order_id, payload.vwap_at_entry,
+               (payload.entry_price - stop_loss) * payload.shares,
+               payload.broker_entry_order_id))
         await db.commit()
 
     _main.logger.info("position_added_manually", ticker=payload.ticker,
@@ -198,7 +221,6 @@ async def close_position(request: Request):
     data = await request.json()
 
     ticker     = data["ticker"]
-    exit_price = float(data["exit_price"])
     order_id   = data.get("order_id", "")
 
     open_pos = await _main.get_open_positions(settings.DB_PATH)
@@ -207,6 +229,38 @@ async def close_position(request: Request):
     if not pos:
         raise HTTPException(status_code=404,
                             detail=f"No open MOMENTUM position for {ticker}")
+
+    if not order_id:
+        raise HTTPException(
+            status_code=422,
+            detail="broker order_id is required; caller-supplied price is not fill evidence",
+        )
+    history = await _main.kite.order_history(order_id=str(order_id))
+    broker = _main._kc_latest_order_state(history)
+    broker_status = str(broker.get("status") or "").upper()
+    filled_qty = int(broker.get("filled_quantity") or 0)
+    exit_price = float(broker.get("average_price") or 0)
+    broker_ticker = str(broker.get("tradingsymbol") or "").upper()
+    broker_side = str(broker.get("transaction_type") or "").upper()
+    requested = int(pos["shares"])
+    if (
+        broker_status != "COMPLETE" or filled_qty != requested
+        or exit_price <= 0 or broker_ticker != ticker.upper()
+        or broker_side != "SELL"
+    ):
+        _main.logger.error(
+            "close_position_broker_unconfirmed", ticker=ticker,
+            order_id=order_id, broker_status=broker_status,
+            filled_quantity=filled_qty, expected_quantity=requested,
+        )
+        raise HTTPException(
+            status_code=409,
+            detail=(
+                f"{ticker}: broker order is not a confirmed full SELL "
+                f"({broker_status or 'UNKNOWN'} {filled_qty}/{requested}); "
+                "position and P&L remain open for reconciliation"
+            ),
+        )
 
     gross = (exit_price - pos['entry_price']) * pos['shares']
     # [AUDIT-FIX-1.2] Derive is_intraday from product_type (was hardcoded True).
@@ -223,34 +277,52 @@ async def close_position(request: Request):
     # ledger write on rowcount, matching auto_square_momentum. A WHERE clause that
     # matches nothing must never book P&L -- that is exactly how four sessions of
     # fabricated losses reached the live ledger in July.
+    from performance import allocation_for_source, init_ledger
+    await init_ledger(settings.DB_PATH)
     async with aiosqlite.connect(settings.DB_PATH) as db:
+        await db.execute("BEGIN IMMEDIATE")
         cur = await db.execute("""
             UPDATE positions
             SET status='CLOSED_MANUAL', exit_price=?, exit_date=?,
                 realised_pnl=?, r_multiple=?
             WHERE ticker=? AND source='MOMENTUM'
+              AND entry_date=? AND shares=?
               AND status IN ('OPEN', 'CLOSED_T1') AND exit_date IS NULL
         """, (exit_price, datetime.now(timezone.utc).isoformat(),
-              total_pnl, r_multiple, ticker))
-        await db.commit()
+              total_pnl, r_multiple, ticker, pos["entry_date"], requested))
         rows_closed = cur.rowcount
-
-    if rows_closed != 1:
-        _main.logger.error("close_position_not_persisted", ticker=ticker,
-                           rows_affected=rows_closed, order_id=order_id)
-        raise HTTPException(
-            status_code=409,
-            detail=f"{ticker}: {rows_closed} position rows closed -- no P&L booked. "
-                   "Reconcile against the broker before retrying.",
+        if rows_closed != 1:
+            await db.rollback()
+            _main.logger.error("close_position_not_persisted", ticker=ticker,
+                               rows_affected=rows_closed, order_id=order_id)
+            raise HTTPException(
+                status_code=409,
+                detail=f"{ticker}: {rows_closed} position rows closed -- no P&L booked. "
+                       "Reconcile against the broker before retrying.",
+            )
+        source = pos.get('source') or 'MOMENTUM'
+        ledger_total = await (await db.execute(
+            "SELECT COALESCE(SUM(pnl),0) FROM bankroll_ledger WHERE source=?",
+            (source,),
+        )).fetchone()
+        before = allocation_for_source(source) + float(ledger_total[0] or 0)
+        await db.execute(
+            """INSERT INTO bankroll_ledger
+               (timestamp,event_type,ticker,pnl,bankroll_before,bankroll_after,notes,source)
+               VALUES (?,?,?,?,?,?,?,?)""",
+            (datetime.now(timezone.utc).isoformat(), "TRADE_CLOSED", ticker,
+             realised_pnl, before, before + realised_pnl, "manual", source),
         )
+        await db.commit()
 
-    # [SOURCE-REQUIRED 2026-07-26] Was omitting `source`, so this endpoint booked
-    # momentum closes into the SWING pool via the old "SYSTEM" default.
-    await _main.record_trade_close(settings.DB_PATH, ticker, realised_pnl,
-                                   r_multiple=r_multiple, notes="manual",
-                                   outcome_pnl=total_pnl,
-                                   outcome_r_multiple=r_multiple,
-                                   source=pos.get('source') or 'MOMENTUM')
+    try:
+        from analytics import record_trade_outcome
+        await record_trade_outcome(
+            settings.DB_PATH, ticker, total_pnl,
+            r_multiple=r_multiple, notes="manual",
+        )
+    except Exception as exc:
+        _main.logger.error("manual_close_analytics_failed", ticker=ticker, error=str(exc))
     _main.logger.info("momentum_position_closed", ticker=ticker,
                 exit_price=exit_price, pnl=realised_pnl, r=r_multiple)
 

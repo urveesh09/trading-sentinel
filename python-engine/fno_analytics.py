@@ -80,14 +80,13 @@ def atm_iv(snap: ChainSnapshot, now_ist: datetime) -> Optional[float]:
     for ot in ("CE", "PE"):
         q = snap.quotes.get((atm, ot))
         if q is None or not q.two_sided or q.mid <= 0:
-            continue
+            return None
         iv = options_math.implied_vol(
             q.mid, snap.forward, atm, T, RISK_FREE_RATE, ot == "CE"
         )
-        if iv is not None:
-            ivs.append(iv)
-    if not ivs:
-        return None
+        if iv is None:
+            return None
+        ivs.append(iv)
     return sum(ivs) / len(ivs)
 
 

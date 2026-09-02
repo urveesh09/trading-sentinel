@@ -83,6 +83,15 @@ def test_size_is_capped_by_the_pool():
     assert shares == 500
 
 
+def test_size_is_capped_by_remaining_deployable_capital():
+    shares = paper_position_size(
+        close=100.0, stop_loss=99.0, pool=50_000.0, risk_pct=0.10,
+        available_capital=1_250.0,
+    )
+    assert shares == 12
+    assert shares * 100.0 <= 1_250.0
+
+
 def test_size_rejects_malformed_risk():
     assert paper_position_size(100.0, 100.0, 50000.0, 0.10) == 0   # zero risk
     assert paper_position_size(100.0, 101.0, 50000.0, 0.10) == 0   # stop above entry
@@ -97,9 +106,9 @@ def test_paper_sizing_uses_the_live_regime_risk_schedule(tmp_path, monkeypatch):
     monkeypatch.setattr(settings, "MOMENTUM_RISK_PCT_R3", 0.00)
 
     db = _db(tmp_path)
-    r1 = _sig("R1", close=100.0, stop=90.0, target=130.0)
-    r2 = _sig("R2", close=100.0, stop=90.0, target=130.0)
-    r3 = _sig("R3", close=100.0, stop=90.0, target=130.0)
+    r1 = _sig("R1", close=100.0, stop=80.0, target=130.0)
+    r2 = _sig("R2", close=100.0, stop=80.0, target=130.0)
+    r3 = _sig("R3", close=100.0, stop=80.0, target=130.0)
     r2["regime"] = "REGIME_2_ELEVATED"
     r3["regime"] = "REGIME_3_CRISIS"
 
@@ -107,7 +116,7 @@ def test_paper_sizing_uses_the_live_regime_risk_schedule(tmp_path, monkeypatch):
     assert opened == ["R1", "R2"]
     con = sqlite3.connect(db)
     shares = dict(con.execute("SELECT ticker, shares FROM positions"))
-    assert shares == {"R1": 500, "R2": 350}
+    assert shares == {"R1": 250, "R2": 175}
 
 
 def test_missing_regime_preserves_legacy_paper_risk(tmp_path, monkeypatch):
@@ -133,6 +142,26 @@ def test_open_creates_a_paper_position(tmp_path):
     ).fetchone()
     assert row[0] == SOURCE and row[1] == "OPEN" and row[2] == "MIS"
     assert row[3] > 0 and row[4] is None
+
+
+def test_open_batch_never_overcommits_shared_paper_pool(tmp_path, monkeypatch):
+    monkeypatch.setattr(settings, "MOMENTUM_PAPER_BANKROLL", 1_000.0)
+    monkeypatch.setattr(settings, "MOMENTUM_RISK_PCT_R1", 0.10)
+    db = _db(tmp_path)
+
+    opened = asyncio.run(open_momentum_paper_positions(
+        db,
+        [_sig("A", close=600.0, stop=590.0),
+         _sig("B", close=600.0, stop=590.0)],
+    ))
+
+    assert opened == ["A"]
+    con = sqlite3.connect(db)
+    deployed = con.execute(
+        "SELECT COALESCE(SUM(entry_price * shares),0) FROM positions "
+        "WHERE source=? AND exit_date IS NULL", (SOURCE,),
+    ).fetchone()[0]
+    assert deployed <= 1_000.0
 
 
 def test_open_does_not_duplicate_an_already_held_ticker(tmp_path):
@@ -189,7 +218,10 @@ def test_monitor_takes_the_target_and_books_costs(tmp_path):
 def test_square_off_flattens_everything(tmp_path):
     from datetime import datetime
     db = _db(tmp_path)
-    asyncio.run(open_momentum_paper_positions(db, [_sig("A"), _sig("B", 50.0, 49.5, 52.0)]))
+    asyncio.run(open_momentum_paper_positions(
+        db, [_sig("A", 100.0, 50.0, 130.0),
+             _sig("B", 50.0, 25.0, 65.0)],
+    ))
 
     async def run():
         return await momentum_paper_square_off(db, await _ltp_of(101.0),
