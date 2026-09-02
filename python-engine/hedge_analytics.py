@@ -5,11 +5,11 @@ position is useful to an advisory workflow only after a partner/broker
 reconciliation has confirmed it; signals and messages are not treated as
 executed positions.
 
-Quantity convention (important): ``signed_quantity`` is the *only* direction
-field.  Positive is long and negative is short.  For F&O it is a number of
-contracts, and ``lot_size`` converts contracts to underlying units.  For
-equity it is a number of shares and ``lot_size`` is always one.  There is no
-second BUY/SELL field that could disagree with the signed quantity.
+Quantity convention (important): ``signed_quantity`` is the broker-native
+number of exchange units for every instrument. Positive is long and negative
+is short. One NIFTY lot of 65 is therefore ``+65`` rather than ``+1``. For F&O
+the value must be divisible by ``lot_size``. There is no second BUY/SELL field
+that could disagree with the signed quantity.
 """
 from __future__ import annotations
 
@@ -27,12 +27,15 @@ PositionStatus = Literal["OPEN", "CLOSED"]
 VerificationStatus = Literal[
     "PENDING_CONFIRMATION", "RECONCILED", "DISPUTED", "STALE"
 ]
+QuantityBasis = Literal["UNITS", "LEGACY_AMBIGUOUS"]
 
 _INSTRUMENT_TYPES = frozenset(("EQUITY", "FUT", "CE", "PE"))
 _POSITION_STATUSES = frozenset(("OPEN", "CLOSED"))
 _VERIFICATION_STATUSES = frozenset(
     ("PENDING_CONFIRMATION", "RECONCILED", "DISPUTED", "STALE")
 )
+_QUANTITY_BASES = frozenset(("UNITS", "LEGACY_AMBIGUOUS"))
+IST = timezone(timedelta(hours=5, minutes=30))
 
 
 def _finite(value: float, name: str) -> float:
@@ -162,6 +165,16 @@ class PartnerPosition:
     verification_status: VerificationStatus = "PENDING_CONFIRMATION"
     broker_order_id: Optional[str] = None
     notes: Optional[str] = None
+    # Broker-native signed exchange units for every instrument.  For example,
+    # one 65-unit NIFTY lot is stored as +/-65, never +/-1.  Rows predating
+    # this convention are quarantined until explicitly reconciled as UNITS.
+    quantity_basis: QuantityBasis = "UNITS"
+    # Only cash-equity holdings may assert deliverability.  This is deliberately
+    # separate from signed_quantity: pledged/unsettled shares must not be used
+    # to describe an option call as covered.
+    deliverable_quantity: Optional[int] = None
+    deliverable_as_of: Optional[datetime] = None
+    deliverable_source: Optional[str] = None
 
     def __post_init__(self) -> None:
         object.__setattr__(self, "underlying", _normalise_underlying(self.underlying))
@@ -177,6 +190,17 @@ class PartnerPosition:
             raise ValueError("lot_size must be a positive integer")
         if instrument_type == "EQUITY" and self.lot_size != 1:
             raise ValueError("equity lot_size must be one")
+        quantity_basis = str(self.quantity_basis).upper()
+        if quantity_basis not in _QUANTITY_BASES:
+            raise ValueError("quantity_basis must be UNITS or LEGACY_AMBIGUOUS")
+        object.__setattr__(self, "quantity_basis", quantity_basis)
+        if (
+            instrument_type in ("FUT", "CE", "PE")
+            and quantity_basis == "UNITS"
+            and self.signed_quantity != 0
+            and self.signed_quantity % self.lot_size != 0
+        ):
+            raise ValueError("F&O signed_quantity in UNITS must be divisible by lot_size")
         object.__setattr__(self, "entry_price", _positive(self.entry_price, "entry_price"))
         object.__setattr__(self, "beta", _positive(self.beta, "beta"))
         _aware(self.opened_at, "opened_at")
@@ -216,11 +240,40 @@ class PartnerPosition:
             raise ValueError("expiry must be a date")
         if self.position_id is not None and self.position_id <= 0:
             raise ValueError("position_id must be positive")
+        deliverable_fields = (
+            self.deliverable_quantity, self.deliverable_as_of,
+            self.deliverable_source,
+        )
+        if any(value is not None for value in deliverable_fields):
+            if instrument_type != "EQUITY":
+                raise ValueError("deliverable quantity is only valid for EQUITY holdings")
+            if (
+                not isinstance(self.deliverable_quantity, int)
+                or isinstance(self.deliverable_quantity, bool)
+                or self.deliverable_quantity < 0
+            ):
+                raise ValueError("deliverable_quantity must be a non-negative integer")
+            if self.deliverable_quantity > max(self.signed_quantity, 0):
+                raise ValueError("deliverable_quantity cannot exceed the long equity quantity")
+            if self.deliverable_as_of is None:
+                raise ValueError("deliverable_as_of is required with deliverable_quantity")
+            _aware(self.deliverable_as_of, "deliverable_as_of")
+            if not str(self.deliverable_source or "").strip():
+                raise ValueError("deliverable_source is required with deliverable_quantity")
 
     @property
     def units(self) -> int:
-        """Signed underlying units after applying the exchange lot size."""
-        return self.signed_quantity * self.lot_size
+        """Broker-native signed exchange units (never multiplied again)."""
+        return self.signed_quantity
+
+    @property
+    def signed_lots(self) -> Optional[int]:
+        """Signed whole lots for F&O, or ``None`` for equity/ambiguous rows."""
+        if self.instrument_type == "EQUITY" or self.quantity_basis != "UNITS":
+            return None
+        if self.signed_quantity % self.lot_size:
+            return None
+        return self.signed_quantity // self.lot_size
 
     @property
     def per_unit_greeks(self) -> Greeks:
@@ -350,12 +403,21 @@ def position_is_actionable(
     max_quote_age: timedelta = timedelta(minutes=5),
 ) -> bool:
     """A narrow guard for later advisory builders, never an order gate."""
-    if position.status != "OPEN" or position.verification_status != "RECONCILED":
+    if (
+        position.status != "OPEN"
+        or position.verification_status != "RECONCILED"
+        or position.quantity_basis != "UNITS"
+    ):
         return False
     if position.current_price is None:
         return False
     if position.instrument_type in ("CE", "PE") and position.expiry is not None:
-        today = (now or datetime.now(timezone.utc)).date()
+        anchor = now or datetime.now(timezone.utc)
+        try:
+            _aware(anchor, "now")
+        except ValueError:
+            return False
+        today = anchor.astimezone(IST).date()
         if position.expiry < today:
             return False
     return assess_quote_freshness(position.price_as_of, now=now, max_age=max_quote_age).fresh
@@ -374,6 +436,8 @@ def aggregate_portfolio(positions: Iterable[PartnerPosition]) -> PortfolioExposu
         return PortfolioExposure(0, (), Greeks(), 0.0, 0.0, 0.0, 0.0, None, False, "closed position supplied")
     if any(p.verification_status != "RECONCILED" for p in positions):
         return PortfolioExposure(0, (), Greeks(), 0.0, 0.0, 0.0, 0.0, None, False, "unreconciled position supplied")
+    if any(p.quantity_basis != "UNITS" for p in positions):
+        return PortfolioExposure(0, (), Greeks(), 0.0, 0.0, 0.0, 0.0, None, False, "ambiguous quantity basis")
     if any(p.current_price is None for p in positions):
         return PortfolioExposure(0, (), Greeks(), 0.0, 0.0, 0.0, 0.0, None, False, "missing current price")
 
@@ -415,6 +479,268 @@ def net_greeks(positions: Iterable[PartnerPosition]) -> Optional[Greeks]:
     """Return confirmed net Greeks, or ``None`` instead of a false zero."""
     exposure = aggregate_portfolio(positions)
     return exposure.net_greeks if exposure.valid else None
+
+
+def iv_percentile(
+    current_iv: float,
+    history: Sequence[float],
+    *,
+    min_observations: int = 20,
+) -> Optional[float]:
+    """Empirical mid-rank of ``current_iv`` in clean daily IV history.
+
+    The result is in ``[0, 1]``. Invalid samples are ignored, but a percentile
+    is never manufactured from fewer than ``min_observations`` valid days.
+    Ties use half weight so a flat history produces 0.5 rather than a false
+    100th-percentile signal.
+    """
+    if not isinstance(min_observations, int) or isinstance(min_observations, bool) or min_observations <= 0:
+        raise ValueError("min_observations must be a positive integer")
+    try:
+        current = _positive(current_iv, "current_iv")
+    except (TypeError, ValueError):
+        return None
+    clean: list[float] = []
+    for value in history:
+        try:
+            clean.append(_positive(value, "historical_iv"))
+        except (TypeError, ValueError):
+            continue
+    if len(clean) < min_observations:
+        return None
+    ties = [math.isclose(value, current, rel_tol=1e-12, abs_tol=1e-12) for value in clean]
+    less = sum(value < current and not tied for value, tied in zip(clean, ties))
+    equal = sum(ties)
+    return (less + 0.5 * equal) / len(clean)
+
+
+async def load_chain_iv_history(
+    db_path: str,
+    underlying: str,
+    *,
+    lookback_days: int = 252,
+    now: Optional[datetime] = None,
+) -> list[tuple[date, float]]:
+    """Load one latest, positive ATM-IV observation per trading date.
+
+    Intraday rows are deliberately collapsed by date so a volatile day with
+    more snapshots cannot overweight the percentile distribution.
+    """
+    if not isinstance(lookback_days, int) or isinstance(lookback_days, bool) or lookback_days <= 0:
+        raise ValueError("lookback_days must be a positive integer")
+    name = _normalise_underlying(underlying)
+    anchor = now or datetime.now(timezone.utc)
+    _aware(anchor, "now")
+    cutoff = (anchor.astimezone(IST).date() - timedelta(days=lookback_days)).isoformat()
+    async with aiosqlite.connect(db_path) as db:
+        try:
+            cur = await db.execute(
+                "SELECT snap_ts, atm_iv FROM fno_fut_snap "
+                "WHERE underlying=? AND substr(snap_ts,1,10)>=? AND atm_iv IS NOT NULL "
+                "ORDER BY snap_ts ASC",
+                (name, cutoff),
+            )
+            rows = await cur.fetchall()
+        except aiosqlite.OperationalError:
+            # A fresh deployment may not have produced its first chain row.
+            # Missing history is a no-signal outcome, not startup failure.
+            return []
+    latest: dict[date, float] = {}
+    for stamp, raw_iv in rows:
+        try:
+            day = date.fromisoformat(str(stamp)[:10])
+            value = _positive(raw_iv, "stored atm_iv")
+        except (TypeError, ValueError):
+            continue
+        latest[day] = value
+    return sorted(latest.items())
+
+
+def iv_term_structure(
+    expiry_ivs: Iterable[tuple[date, float]],
+    *,
+    today: Optional[date] = None,
+) -> Optional[tuple[tuple[date, float], ...]]:
+    """Return a clean, near-to-far ATM-IV curve, or ``None``.
+
+    This deliberately accepts *observed* ``(expiry, atm_iv)`` pairs rather
+    than fetching a chain.  A caller must obtain a complete two-sided ATM
+    observation for each expiry (normally by calling :func:`fno_analytics.atm_iv`
+    on a snapshot for that expiry).  Missing, duplicate, expired, or invalid
+    points invalidate the full read: a partial curve can falsely describe an
+    inversion as a calendar opportunity.
+
+    IV is a decimal (``0.18`` means 18%), and the tuple is sorted by expiry.
+    At least two tenors are required to call the result a term structure.
+    """
+    anchor = today or datetime.now(IST).date()
+    if not isinstance(anchor, date) or isinstance(anchor, datetime):
+        raise ValueError("today must be a date")
+    points: dict[date, float] = {}
+    try:
+        iterator = iter(expiry_ivs)
+    except TypeError:
+        return None
+    for item in iterator:
+        try:
+            expiry, raw_iv = item
+        except (TypeError, ValueError):
+            return None
+        if not isinstance(expiry, date) or isinstance(expiry, datetime) or expiry < anchor:
+            return None
+        try:
+            iv = _positive(raw_iv, "atm_iv")
+        except (TypeError, ValueError):
+            return None
+        # A duplicated expiry signals competing snapshots.  Selecting one
+        # based on input order would make a message depend on an accident of
+        # collection order, so reject it rather than silently overwriting it.
+        if expiry in points:
+            return None
+        points[expiry] = iv
+    if len(points) < 2:
+        return None
+    return tuple(sorted(points.items(), key=lambda point: point[0]))
+
+
+def gamma_exposure_at_expiry(
+    positions: Iterable[PartnerPosition],
+    hours_to_expiry: float,
+    *,
+    now: Optional[datetime] = None,
+) -> Optional[float]:
+    """Return net option gamma exposure in rupees per 1% underlying move.
+
+    The result is ``sum(signed_units * gamma * spot**2 * 0.01)``.  Greeks in
+    :class:`PartnerPosition` are per underlying unit, so ``signed_quantity``
+    is applied exactly once.  It is **not** a forecast of gamma at expiry:
+    doing that would require a volatility surface and an intraday clock that
+    the advisory database does not hold.  ``hours_to_expiry`` therefore gates
+    this reading to a declared same-day expiry review window (0, 24].
+
+    Every supplied position must be reconciled, quote-fresh, in canonical
+    units, and an option expiring today.  The function returns ``None`` for
+    any gap rather than omitting a leg and understating a short-gamma book.
+    """
+    try:
+        window = _finite(hours_to_expiry, "hours_to_expiry")
+    except (TypeError, ValueError):
+        return None
+    if not 0.0 < window <= 24.0:
+        return None
+    anchor = now or datetime.now(timezone.utc)
+    try:
+        _aware(anchor, "now")
+    except ValueError:
+        return None
+    rows = tuple(positions)
+    if not rows:
+        return None
+    today = anchor.astimezone(IST).date()
+    total = 0.0
+    option_count = 0
+    for position in rows:
+        if not isinstance(position, PartnerPosition):
+            return None
+        if not position_is_actionable(position, now=anchor):
+            return None
+        if position.instrument_type not in ("CE", "PE"):
+            # Futures/equities are zero-gamma legs, but still must be
+            # actionable above so a supplied portfolio is never partial.
+            continue
+        if position.expiry != today or position.underlying_price is None:
+            return None
+        gamma = position.per_unit_greeks.gamma
+        contribution = position.units * gamma * position.underlying_price ** 2 * 0.01
+        if not math.isfinite(contribution):
+            return None
+        total += contribution
+        option_count += 1
+    return total if option_count else None
+
+
+def classify_event_window(
+    earnings: Optional[date],
+    macro_event: Optional[str],
+    dte: Optional[int],
+    *,
+    today: Optional[date] = None,
+) -> str:
+    """Classify a *currently verified* catalyst window for hedge review.
+
+    ``macro_event`` is expected to be supplied only by a time-aware calendar
+    adapter such as ``macro_events.event_note_for`` when it confirms an event
+    is in its actionable hour.  This helper deliberately does not infer an
+    event time from arbitrary text.  Invalid/expired option timing produces
+    ``"UNKNOWN"`` so downstream builders can fail closed.
+    """
+    anchor = today or datetime.now(IST).date()
+    if not isinstance(anchor, date) or isinstance(anchor, datetime):
+        raise ValueError("today must be a date")
+    if dte is not None and (
+        not isinstance(dte, int) or isinstance(dte, bool) or dte < 0
+    ):
+        return "UNKNOWN"
+    if earnings is not None:
+        if not isinstance(earnings, date) or isinstance(earnings, datetime):
+            return "UNKNOWN"
+        if earnings < anchor:
+            return "UNKNOWN"
+        if earnings == anchor:
+            return "EARNINGS_TODAY"
+        if earnings == anchor + timedelta(days=1):
+            return "EARNINGS_TOMORROW"
+    if macro_event is not None:
+        if not isinstance(macro_event, str):
+            return "UNKNOWN"
+        if macro_event.strip():
+            return "MACRO_HOUR"
+    return "CALM"
+
+
+def recommend_hedge_ratio(
+    regime: str,
+    vix_read: str,
+    event_window: str,
+) -> Optional[float]:
+    """Return a conservative *target* hedge ratio, never a trade command.
+
+    Inputs must be authoritative classifications from the same observation
+    time.  Unknown/contradictory values return ``None``.  This is a target for
+    the long delta exposure, not an incremental order size; callers must
+    subtract reconciled existing protection before they consider any advisory.
+    """
+    if not all(isinstance(value, str) for value in (regime, vix_read, event_window)):
+        return None
+    # Each source sets a floor.  Taking the maximum is intentionally simple
+    # and reviewable; more precise optimisation would require a trusted risk
+    # budget, correlation matrix, and client mandate that this system lacks.
+    regime_floor = {
+        "CRISIS": 1.00,
+        "BEAR": 0.75,
+        "RANGE": 0.50,
+        "BULL": 0.25,
+    }
+    vix_floor = {
+        "PANIC": 1.00,
+        "ELEVATED": 0.75,
+        "NORMAL": 0.50,
+        "LOW": 0.25,
+    }
+    event_floor = {
+        "EARNINGS_TODAY": 0.75,
+        "EARNINGS_TOMORROW": 0.50,
+        "MACRO_HOUR": 0.75,
+        "CALM": 0.25,
+    }
+    try:
+        return max(
+            regime_floor[regime.strip().upper()],
+            vix_floor[vix_read.strip().upper()],
+            event_floor[event_window.strip().upper()],
+        )
+    except KeyError:
+        return None
 
 
 def size_futures_hedge(
@@ -563,6 +889,7 @@ CREATE TABLE IF NOT EXISTS partner_positions (
     strike REAL,
     signed_quantity INTEGER NOT NULL DEFAULT 0,
     lot_size INTEGER NOT NULL DEFAULT 1,
+    quantity_basis TEXT NOT NULL DEFAULT 'UNITS',
     entry_price REAL NOT NULL DEFAULT 0,
     current_price REAL,
     underlying_price REAL,
@@ -574,7 +901,10 @@ CREATE TABLE IF NOT EXISTS partner_positions (
     closed_at TEXT,
     status TEXT NOT NULL DEFAULT 'OPEN',
     broker_order_id TEXT,
-    notes TEXT
+    notes TEXT,
+    deliverable_quantity INTEGER,
+    deliverable_as_of TEXT,
+    deliverable_source TEXT
 );
 CREATE TABLE IF NOT EXISTS partner_position_reconciliations (
     reconciliation_id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -603,6 +933,9 @@ _MIGRATION_COLUMNS = {
     "strike": "REAL",
     "signed_quantity": "INTEGER NOT NULL DEFAULT 0",
     "lot_size": "INTEGER NOT NULL DEFAULT 1",
+    # Existing F&O rows predate the units convention and are quarantined until
+    # a new broker reconciliation explicitly confirms UNITS.
+    "quantity_basis": "TEXT NOT NULL DEFAULT 'LEGACY_AMBIGUOUS'",
     "entry_price": "REAL NOT NULL DEFAULT 0",
     "current_price": "REAL",
     "underlying_price": "REAL",
@@ -613,20 +946,29 @@ _MIGRATION_COLUMNS = {
     "status": "TEXT NOT NULL DEFAULT 'OPEN'",
     "broker_order_id": "TEXT",
     "notes": "TEXT",
+    "deliverable_quantity": "INTEGER",
+    "deliverable_as_of": "TEXT",
+    "deliverable_source": "TEXT",
 }
 
 
 async def init_hedge_db(db_path: str) -> None:
     """Create the schema and add non-destructive columns to an older table."""
-    async with aiosqlite.connect(db_path) as db:
-        await db.execute("PRAGMA journal_mode=WAL")
+    async with aiosqlite.connect(db_path, timeout=30) as db:
         await db.execute("PRAGMA busy_timeout=5000")
+        await db.execute("PRAGMA journal_mode=WAL")
         await db.executescript(_SCHEMA)
         cur = await db.execute("PRAGMA table_info(partner_positions)")
         columns = {row[1] for row in await cur.fetchall()}
         for name, ddl in _MIGRATION_COLUMNS.items():
             if name not in columns:
                 await db.execute(f"ALTER TABLE partner_positions ADD COLUMN {name} {ddl}")
+        # Cash-equity quantities have always been exchange shares, so they are
+        # not affected by the historical F&O contracts-vs-units ambiguity.
+        await db.execute(
+            "UPDATE partner_positions SET quantity_basis='UNITS' "
+            "WHERE instrument_type='EQUITY' AND quantity_basis='LEGACY_AMBIGUOUS'"
+        )
         # A NULL broker order id is allowed repeatedly. A real order id is an
         # idempotency key, so re-importing a broker snapshot cannot duplicate it.
         await db.execute(
@@ -677,6 +1019,7 @@ def _row_to_position(row: aiosqlite.Row) -> Optional[PartnerPosition]:
             strike=float(row["strike"]) if row["strike"] is not None else None,
             signed_quantity=int(row["signed_quantity"]),
             lot_size=int(row["lot_size"]),
+            quantity_basis=row["quantity_basis"],
             entry_price=float(row["entry_price"]),
             current_price=float(row["current_price"]) if row["current_price"] is not None else None,
             underlying_price=float(row["underlying_price"]) if row["underlying_price"] is not None else None,
@@ -689,6 +1032,10 @@ def _row_to_position(row: aiosqlite.Row) -> Optional[PartnerPosition]:
             status=row["status"],
             broker_order_id=row["broker_order_id"],
             notes=row["notes"],
+            deliverable_quantity=(int(row["deliverable_quantity"])
+                                  if row["deliverable_quantity"] is not None else None),
+            deliverable_as_of=_parse_timestamp(row["deliverable_as_of"]),
+            deliverable_source=row["deliverable_source"],
         )
     except (KeyError, TypeError, ValueError):
         # Legacy/partially migrated rows cannot be silently represented as a
@@ -698,9 +1045,9 @@ def _row_to_position(row: aiosqlite.Row) -> Optional[PartnerPosition]:
 
 _POSITION_COLUMNS = (
     "source, verification_status, underlying, instrument_type, tradingsymbol, "
-    "expiry, strike, signed_quantity, lot_size, entry_price, current_price, underlying_price, beta, "
+    "expiry, strike, signed_quantity, lot_size, quantity_basis, entry_price, current_price, underlying_price, beta, "
     "current_greeks_json, price_as_of, opened_at, updated_at, closed_at, status, "
-    "broker_order_id, notes"
+    "broker_order_id, notes, deliverable_quantity, deliverable_as_of, deliverable_source"
 )
 
 
@@ -715,6 +1062,7 @@ def _position_values(position: PartnerPosition) -> tuple:
         position.strike,
         position.signed_quantity,
         position.lot_size,
+        position.quantity_basis,
         position.entry_price,
         position.current_price,
         position.underlying_price,
@@ -727,6 +1075,9 @@ def _position_values(position: PartnerPosition) -> tuple:
         position.status,
         position.broker_order_id,
         position.notes,
+        position.deliverable_quantity,
+        _timestamp(position.deliverable_as_of) if position.deliverable_as_of else None,
+        position.deliverable_source,
     )
 
 
@@ -818,6 +1169,7 @@ async def reconcile_partner_position(
     position_id: int,
     *,
     observed_quantity: int,
+    quantity_basis: Optional[str] = None,
     reconciled_at: datetime,
     source: str,
     current_price: Optional[float] = None,
@@ -825,6 +1177,9 @@ async def reconcile_partner_position(
     price_as_of: Optional[datetime] = None,
     greeks: Optional[Greeks] = None,
     notes: Optional[str] = None,
+    deliverable_quantity: Optional[int] = None,
+    deliverable_as_of: Optional[datetime] = None,
+    deliverable_source: Optional[str] = None,
 ) -> Optional[PartnerPosition]:
     """Record an observed broker/partner state and mark the row reconciled.
 
@@ -850,6 +1205,31 @@ async def reconcile_partner_position(
         return None
     if position.status == "CLOSED":
         return position
+    resolved_basis = str(quantity_basis or position.quantity_basis).upper()
+    if position.instrument_type in ("FUT", "CE", "PE"):
+        # An explicit units assertion is required to keep an F&O row open. A
+        # zero observation may always close/quarantine a legacy row safely.
+        if observed_quantity != 0 and resolved_basis != "UNITS":
+            raise ValueError("F&O reconciliation requires quantity_basis=UNITS")
+        if observed_quantity and observed_quantity % position.lot_size:
+            raise ValueError("F&O observed_quantity in UNITS must be divisible by lot_size")
+    if any(value is not None for value in (
+        deliverable_quantity, deliverable_as_of, deliverable_source,
+    )):
+        if position.instrument_type != "EQUITY":
+            raise ValueError("deliverable quantity is only valid for EQUITY holdings")
+        if (
+            not isinstance(deliverable_quantity, int)
+            or isinstance(deliverable_quantity, bool)
+            or deliverable_quantity < 0
+            or deliverable_quantity > max(observed_quantity, 0)
+        ):
+            raise ValueError("deliverable_quantity must be within the long equity quantity")
+        if deliverable_as_of is None:
+            raise ValueError("deliverable_as_of is required with deliverable_quantity")
+        _aware(deliverable_as_of, "deliverable_as_of")
+        if not str(deliverable_source or "").strip():
+            raise ValueError("deliverable_source is required with deliverable_quantity")
     if position.instrument_type in ("CE", "PE") and observed_quantity != 0:
         if greeks is None:
             raise ValueError("reconciling an open option requires current Greeks")
@@ -859,15 +1239,42 @@ async def reconcile_partner_position(
     status = "CLOSED" if observed_quantity == 0 else "OPEN"
     verification = "RECONCILED"
     closed_at = reconciled_at if status == "CLOSED" else None
+    if status == "CLOSED":
+        effective_deliverable_quantity = None
+        effective_deliverable_as_of = None
+        effective_deliverable_source = None
+    else:
+        effective_deliverable_quantity = (
+            deliverable_quantity if deliverable_quantity is not None
+            else position.deliverable_quantity
+        )
+        effective_deliverable_as_of = (
+            deliverable_as_of if deliverable_as_of is not None
+            else position.deliverable_as_of
+        )
+        effective_deliverable_source = (
+            deliverable_source if deliverable_source is not None
+            else position.deliverable_source
+        )
+        if (
+            effective_deliverable_quantity is not None
+            and effective_deliverable_quantity > max(observed_quantity, 0)
+        ):
+            raise ValueError(
+                "existing deliverable_quantity exceeds observed equity quantity; "
+                "provide a refreshed deliverable holding"
+            )
     await init_hedge_db(db_path)
     async with aiosqlite.connect(db_path) as db:
         await db.execute("BEGIN IMMEDIATE")
         updated = await db.execute(
-            "UPDATE partner_positions SET signed_quantity=?, current_price=?, underlying_price=?, current_greeks_json=?, "
-            "price_as_of=?, updated_at=?, closed_at=?, status=?, verification_status=?, notes=? "
+            "UPDATE partner_positions SET signed_quantity=?, quantity_basis=?, current_price=?, underlying_price=?, current_greeks_json=?, "
+            "price_as_of=?, updated_at=?, closed_at=?, status=?, verification_status=?, notes=?, "
+            "deliverable_quantity=?, deliverable_as_of=?, deliverable_source=? "
             "WHERE position_id=? AND status='OPEN'",
             (
                 observed_quantity,
+                resolved_basis,
                 current_price if current_price is not None else position.current_price,
                 underlying_price if underlying_price is not None else position.underlying_price,
                 _greeks_json(greeks) if greeks is not None else _greeks_json(position.greeks),
@@ -877,6 +1284,10 @@ async def reconcile_partner_position(
                 status,
                 verification,
                 notes if notes is not None else position.notes,
+                effective_deliverable_quantity,
+                (_timestamp(effective_deliverable_as_of)
+                 if effective_deliverable_as_of else None),
+                effective_deliverable_source,
                 position_id,
             ),
         )

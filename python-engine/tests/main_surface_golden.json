@@ -37,6 +37,18 @@
       "trigger": "cron[hour='15', minute='40']"
     },
     {
+      "func": "_run_partner_hedge_phase2_tick_safe",
+      "id": "partner_hedge_phase2_tick",
+      "kwargs": [],
+      "trigger": "cron[hour='9-15', minute='3,33', second='20']"
+    },
+    {
+      "func": "_run_partner_hedge_phase3_tick_safe",
+      "id": "partner_hedge_phase3_tick",
+      "kwargs": [],
+      "trigger": "cron[hour='9-15', minute='11,41', second='50']"
+    },
+    {
       "func": "_run_partner_hedge_tick_safe",
       "id": "partner_hedge_tick",
       "kwargs": [],

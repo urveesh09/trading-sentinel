@@ -240,7 +240,7 @@ router.post('/execute', requireSession, validate(executeSchema, 'body'), async (
       if (!row) throw new Error('Signal not found');
       if (row.status !== 'PENDING') throw new ReplayAttackError(`Signal is already ${row.status}`);
 
-      signalsDb.prepare(`UPDATE received_signals SET status = 'EXECUTING' WHERE signal_id = ?`).run(signal_id);
+      signalsDb.prepare(`UPDATE received_signals SET status = 'EXECUTING', execution_state = 'SUBMITTING' WHERE signal_id = ?`).run(signal_id);
       return row;
     });
 
@@ -257,7 +257,7 @@ router.post('/execute', requireSession, validate(executeSchema, 'body'), async (
     // Call Executor
     try {
       const result = await executor.executeSignal(signalData, 'EXEC');
-      signalsDb.prepare(`UPDATE received_signals SET status = 'EXECUTED' WHERE signal_id = ?`).run(signal_id);
+      signalsDb.prepare(`UPDATE received_signals SET status = 'EXECUTED', execution_state = 'FILLED' WHERE signal_id = ?`).run(signal_id);
       
       // Notify via Telegram of web execution
       const telegram = require('../services/telegram');
@@ -268,7 +268,9 @@ router.post('/execute', requireSession, validate(executeSchema, 'body'), async (
       // UNKNOWN/possibly-held outcomes must retain the EXECUTING lock. Resetting
       // them to PENDING would let a second click stack another BUY.
       if (!execErr.positionHeld && !execErr.outcomeUnknown) {
-        signalsDb.prepare(`UPDATE received_signals SET status = 'PENDING' WHERE signal_id = ?`).run(signal_id);
+        signalsDb.prepare(`UPDATE received_signals SET status = 'PENDING', execution_state = 'IDLE' WHERE signal_id = ?`).run(signal_id);
+      } else {
+        signalsDb.prepare(`UPDATE received_signals SET status = 'EXECUTING', execution_state = 'OUTCOME_UNKNOWN' WHERE signal_id = ?`).run(signal_id);
       }
       throw execErr;
     }

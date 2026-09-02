@@ -1179,6 +1179,26 @@ class KiteClient:
             logger.error("kite_order_history_failed error=%s", str(e))
             return []
 
+    async def orders_snapshot(self) -> list | None:
+        """Return today's broker order book, or ``None`` when unreadable.
+
+        An empty successful response is materially different from a transport
+        failure for idempotency recovery: only the former proves that a stable
+        tagged order was not accepted and may be submitted.
+        """
+        await self.limiter.acquire()
+        try:
+            resp = await self.client.get("/orders")
+            resp.raise_for_status()
+            data = resp.json().get("data", [])
+            return data if isinstance(data, list) else []
+        except httpx.HTTPStatusError as e:
+            logger.error("kite_orders_snapshot_failed status=%d", e.response.status_code)
+            return None
+        except httpx.RequestError as e:
+            logger.error("kite_orders_snapshot_failed error=%s", str(e))
+            return None
+
     async def get_broker_positions(self) -> dict:
         """Broker-side positions. Kite endpoint: GET /portfolio/positions.
         Returns {"net": [...], "day": [...]} ({} on failure).

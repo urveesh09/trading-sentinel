@@ -59,7 +59,8 @@ LtpFn = Callable[[str], Awaitable[Optional[float]]]
 
 
 def paper_position_size(close: float, stop_loss: float, pool: float,
-                        risk_pct: float) -> int:
+                        risk_pct: float,
+                        available_capital: Optional[float] = None) -> int:
     """Shares for the paper book, using the live sizing rule at paper scale.
 
     Mirrors engine.evaluate_momentum_signal: risk a fixed fraction of the pool,
@@ -74,8 +75,15 @@ def paper_position_size(close: float, stop_loss: float, pool: float,
     if risk_per_share <= 0:
         return 0
     shares = math.floor((pool * risk_pct) / risk_per_share)
-    if shares * close > pool:                      # never exceed the pool
-        shares = math.floor(pool / close)
+    # Risk remains a fraction of the strategy pool, while deployable notional
+    # is capped by capital that is not already tied up in another open paper
+    # position.  Without this fence every accepted signal was independently
+    # allowed to spend the entire pool.
+    capital_cap = pool if available_capital is None else min(
+        pool, max(0.0, float(available_capital))
+    )
+    if shares * close > capital_cap:
+        shares = math.floor(capital_cap / close)
     return max(0, shares)
 
 
@@ -151,11 +159,21 @@ async def open_momentum_paper_positions(db_path: str, accepted: list,
 
     try:
         async with aiosqlite.connect(db_path) as db:
+            # Serialize capital allocation within this SQLite book.  The
+            # scheduler normally calls this once, but BEGIN IMMEDIATE also
+            # prevents overlapping scans from both observing the same cash.
+            await db.execute("BEGIN IMMEDIATE")
             async with db.execute(
-                "SELECT ticker FROM positions WHERE source=? AND exit_date IS NULL",
+                "SELECT ticker,entry_price,shares FROM positions "
+                "WHERE source=? AND exit_date IS NULL",
                 (SOURCE,),
             ) as cur:
-                held = {r[0] for r in await cur.fetchall()}
+                open_rows = await cur.fetchall()
+                held = {r[0] for r in open_rows}
+                deployed = sum(
+                    max(0.0, float(r[1] or 0)) * max(0, int(r[2] or 0))
+                    for r in open_rows
+                )
 
             for sig in accepted:
                 ticker = _sig_get(sig, "ticker")
@@ -164,7 +182,8 @@ async def open_momentum_paper_positions(db_path: str, accepted: list,
                 if not ticker or ticker in held:
                     continue
                 shares = paper_position_size(
-                    close, stop, pool, _paper_risk_pct(sig)
+                    close, stop, pool, _paper_risk_pct(sig),
+                    available_capital=pool - deployed,
                 )
                 if shares < 1:
                     logger.info("momentum_paper_skip ticker=%s reason=zero_shares "
@@ -193,6 +212,7 @@ async def open_momentum_paper_positions(db_path: str, accepted: list,
                      (close - stop) * shares),
                 )
                 held.add(ticker)
+                deployed += shares * close
                 opened.append(ticker)
                 logger.info(
                     "momentum_paper_opened ticker=%s shares=%d entry=%.2f stop=%.2f "
@@ -202,7 +222,9 @@ async def open_momentum_paper_positions(db_path: str, accepted: list,
             await db.commit()
     except Exception as exc:
         logger.error("momentum_paper_open_failed err=%s", str(exc), exc_info=True)
-        return opened
+        # The single transaction rolls every INSERT back. Never report tickers
+        # from the in-memory list as opened when none were committed.
+        return []
 
     return opened
 

@@ -36,7 +36,7 @@ async def _insert_position(db_path, **kwargs):
         "atr_14_at_entry": 16.67,
         "highest_close_since_entry": 500.0,
         "status": "OPEN",
-        "source": "SYSTEM",
+        "source": "PENNY_PAPER",
         "exit_price": None,
         "exit_date": None,
         "realised_pnl": None,
@@ -201,20 +201,18 @@ class TestMomentumExemptQ8:
         assert positions[0]["trailing_stop_current"] == 475.0
 
     @pytest.mark.asyncio
-    async def test_system_position_gets_updated(self, pos_db):
-        """SYSTEM positions DO get trailing stop updates."""
+    async def test_system_position_is_skipped_without_broker_truth(self, pos_db):
+        """SYSTEM is broker-backed and must not be OHLC-settled."""
         await _insert_position(pos_db, source="SYSTEM", trailing_stop_current=475.0)
         kite = _mock_kite(520.0)  # new high
         record_cb = AsyncMock()
 
         await update_daily_positions(pos_db, kite, "2025-10-10", record_cb)
 
-        # Kite should be called
-        kite.get_historical.assert_called_once()
-        # Trailing stop should be updated
+        kite.get_historical.assert_not_called()
         positions = await get_open_positions(pos_db)
         assert len(positions) == 1
-        assert positions[0]["trailing_stop_current"] >= 475.0
+        assert positions[0]["trailing_stop_current"] == 475.0
 
 
 # ===============================================================

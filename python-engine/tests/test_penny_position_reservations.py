@@ -137,13 +137,15 @@ async def test_position_insert_and_fulfillment_are_atomic_and_idempotent(tmp_pat
         str(db), attempt_id="filled-1", values=values,
     ) == row_id
     async with aiosqlite.connect(db) as connection:
-        positions = (await (await connection.execute(
-            "SELECT COUNT(*) FROM positions WHERE penny_attempt_id='filled-1'"
-        )).fetchone())[0]
+        positions, initial_risk = await (await connection.execute(
+            "SELECT COUNT(*),initial_capital_at_risk FROM positions "
+            "WHERE penny_attempt_id='filled-1'"
+        )).fetchone()
         state = (await (await connection.execute("""
             SELECT state FROM penny_position_reservations WHERE attempt_id='filled-1'
         """)).fetchone())[0]
     assert positions == 1
+    assert initial_risk == pytest.approx(15.0)
     assert state == "FULFILLED"
 
 

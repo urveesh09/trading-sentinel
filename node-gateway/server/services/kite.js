@@ -269,6 +269,14 @@ module.exports = {
     return await withKite('getPositions', () => kite.getPositions());
   },
 
+  getGTTs: async () => {
+    return await withKite('getGTTs', () => kite.getGTTs());
+  },
+
+  deleteGTT: async (triggerId) => {
+    return await withKite('deleteGTT', () => kite.deleteGTT(triggerId));
+  },
+
   cancelOrder: async (orderId) => {
     return await withKite('cancelOrder', () => kite.cancelOrder('regular', orderId));
   },

@@ -26,7 +26,7 @@ suite's patch-by-name discipline depends on.
 from __future__ import annotations
 
 import json
-from datetime import datetime, timedelta
+from datetime import date, datetime, timedelta
 from typing import Dict, List, Optional
 
 import aiosqlite
@@ -57,6 +57,7 @@ IST = pytz.timezone("Asia/Kolkata")
 # In-memory per-day state (reset implicitly by date checks / restarts;
 # everything that must survive a restart lives in partner_messages).
 _rv_cache: Dict[str, float] = {}
+_rv_as_of: Dict[str, date] = {}
 _last_iv_reported: Dict[str, float] = {}
 _last_walls_reported: Dict[str, tuple] = {}
 # [PARTNER-ENRICH 2026-07-19] last-reported wall-OI delta per
@@ -980,6 +981,7 @@ async def partner_rv_refresh(now: Optional[datetime] = None) -> None:
             rv = fno_analytics.realized_vol_20d(bars["close"])
             if rv is not None:
                 _rv_cache[spec.name] = rv
+                _rv_as_of[spec.name] = now.date()
                 logger.info(
                     "partner_rv_refreshed underlying=%s rv=%.3f", spec.name, rv,
                 )

@@ -150,6 +150,7 @@ beforeEach(() => {
 describe('EXEC (swing) executes the approved snapshot', () => {
   test('executes the APPROVED numbers even when the engine now serves different ones', async () => {
     snapshots.set('RELIANCE', { action: 'EXEC', payload_json: JSON.stringify(APPROVED) });
+    received.set('RELIANCE', { status: 'PENDING', payload_json: JSON.stringify({ ...APPROVED, signal_id: 'RELIANCE' }) });
     // The engine has moved on -- a later run_screener replaced current_signals.
     global.fetch.mockResolvedValue({ json: async () => ({ signals: [DRIFTED] }) });
 
@@ -167,15 +168,14 @@ describe('EXEC (swing) executes the approved snapshot', () => {
     expect(global.fetch).not.toHaveBeenCalled();
   });
 
-  test('falls back to a live re-fetch when no snapshot was registered', async () => {
-    // Registration failed upstream. We must still trade rather than refuse --
-    // a slightly-stale trade beats no trade -- but via the old path.
+  test('blocks execution when no durable snapshot/registration exists', async () => {
     global.fetch.mockResolvedValue({ json: async () => ({ signals: [DRIFTED] }) });
 
     await press('EXEC', 'RELIANCE');
 
-    expect(global.fetch).toHaveBeenCalled();
-    expect(executor.executeSignal.mock.calls[0][0].close).toBe(2850);
+    expect(global.fetch).not.toHaveBeenCalled();
+    expect(executor.executeSignal).not.toHaveBeenCalled();
+    expect(telegram.sendAlert).toHaveBeenCalledWith(expect.stringContaining('No broker order placed'));
   });
 });
 

@@ -23,9 +23,9 @@ each leg's position sizing. Both legs are:
 Operational rules (operator-set in .env):
   - Both legs disabled by setting PENNY_EDGE_DISABLE_PAPER=1 or
     PENNY_EDGE_DISABLE_LIVE=1. Both default to enabled.
-  - Both legs can run even when PENNY_LIVE_TRADING is False -- in
-    that case the live leg is forced to paper. This means the
-    system always has at LEAST a paper leg running.
+  - The paper leg always runs independently. The EDGE_LIVE leg is
+    fail-closed while live trading is off, and remains entry-blocked
+    until reservation-backed broker/DB recovery is implemented.
   - The orchestrator uses the same kite instance for both legs.
 
 The holds/exits are tracked separately (source='EDGE_PAPER'
@@ -35,6 +35,7 @@ legs after PENNY_EDGE_MAX_HOLD_DAYS.
 from __future__ import annotations
 
 import asyncio
+import hashlib
 import logging
 import sqlite3
 from dataclasses import dataclass
@@ -44,6 +45,7 @@ from typing import List, Optional
 import penny_edge_engine as pee
 import penny_edge_live as pel
 from config import settings
+from kite_client import latest_order_state
 from penny_executor import PennyExecutor
 from penny_models import PennyLeg
 from position_tracker import init_positions_db
@@ -172,6 +174,7 @@ async def _write_edge_position(
     entry_price: float, shares: int,
     stop_loss: float, target_1: float,
     regime_at_entry: str,
+    sl_order_id: Optional[str] = None,
 ):
     await init_positions_db(db_path)
     # [PENNY-FD-LEAK 2026-07-01] Same fix as above: `with` so the
@@ -185,8 +188,9 @@ async def _write_edge_position(
                 target_1, target_2, atr_14_at_entry,
                 highest_close_since_entry, status, source,
                 product_type, regime_at_entry,
-                atr_1min_post_t1, t1_fired
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                atr_1min_post_t1, t1_fired, sl_order_id,
+                initial_capital_at_risk
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """, (
             ticker, "NSE", entry_date_iso,
             entry_price, shares,
@@ -209,7 +213,8 @@ async def _write_edge_position(
             None, entry_price,
             "OPEN", source,
             EDGE_PRODUCT_TYPE.value, regime_at_entry,
-            None, 0,
+            None, 0, sl_order_id,
+            max(0.0, float(entry_price) - float(stop_loss)) * int(shares),
         ))
         conn.commit()
 
@@ -224,6 +229,19 @@ async def _run_one_leg(
     paper_mode: bool,      # whether to actually place broker orders
     candidates,            # List[SignalCandidate] from pel.scan_today(...)
 ) -> dict:
+    if source_tag == SOURCE_LIVE and not paper_mode:
+        # Live EDGE still lacks the reservation/broker-recovery transaction used
+        # by classic Penny. Keep it fail-closed until that lifecycle is wired;
+        # a config toggle must not reopen the fill->DB crash window.
+        logger.critical(
+            "penny_edge_live_entry_blocked reason=reservation_lifecycle_not_ready"
+        )
+        return {
+            "leg": leg_name, "source": source_tag, "bankroll": bankroll,
+            "paper_mode": False, "n_candidates": len(candidates),
+            "entered": 0, "trades": [],
+            "skipped": [("ALL", "reservation-lifecycle-not-ready")],
+        }
     """Submit entries for ONE leg (paper or live) of the engine.
 
     Both legs share the same candidate set; bankroll scales the
@@ -286,6 +304,7 @@ async def _run_one_leg(
                 stop_loss=pos.stop_loss,
                 target_1=pos.target,
                 regime_at_entry="",
+                sl_order_id=order_result.get("sl_order_id"),
             )
             submitted.append({
                 "ticker":       pos.ticker,
@@ -517,16 +536,20 @@ async def run_penny_edge_scan(kite, db_path: Optional[str] = None) -> dict:
             candidates=candidates,
         )
 
-    # Run live leg (forced paper if master switch is off)
+    # Never label simulated fills as EDGE_LIVE: that contaminates live
+    # profitability and promotion evidence. The independent PAPER leg already
+    # provides shadow coverage while live execution is disarmed.
     live_summary = {"leg": "LIVE", "entered": 0, "trades": [], "skipped": []}
-    if not live_disabled:
+    if not live_disabled and live_master:
         live_summary = await _run_one_leg(
             kite=kite, db_path=db_path, today_str=today_str,
             leg_name="LIVE", source_tag=SOURCE_LIVE,
             bankroll=live_bankroll,
-            paper_mode=not live_master,   # FALSE if master is ON -> real broker orders
+            paper_mode=False,
             candidates=candidates,
         )
+    elif not live_disabled:
+        live_summary["skipped"].append(("ALL", "live-master-disabled"))
 
     combined_skipped = (
         [("PAPER: " + t, r) for t, r in paper_summary.get("skipped", [])]
@@ -601,6 +624,128 @@ async def _kite_daily_bars_after(
     return bars
 
 
+async def _settle_confirmed_edge_fill(
+    db_path: str, position: dict, *, confirmed_qty: int, fill_price: float,
+    exit_reason: str, exit_date: str,
+) -> dict:
+    """Persist one broker/paper-confirmed fill behind a quantity fence."""
+    from penny_risk import calc_penny_costs
+    from performance import allocation_for_source, init_ledger
+
+    requested = int(position["shares"])
+    quantity = min(requested, max(0, int(confirmed_qty or 0)))
+    fill_price = float(fill_price or 0)
+    if quantity <= 0 or fill_price <= 0:
+        return {"settled": 0, "remaining": requested, "pnl": 0.0}
+    remaining = requested - quantity
+    entry = float(position["entry_price"])
+    product_type = str(position["product_type"] or "CNC").upper()
+    costs = calc_penny_costs(
+        entry, fill_price, quantity, is_intraday=(product_type == "MIS"),
+    )
+    pnl = (fill_price - entry) * quantity - costs
+    prior_pnl = float(position.get("realised_pnl") or 0)
+    total_pnl = prior_pnl + pnl
+    risk_initial = float(position.get("initial_capital_at_risk") or 0)
+    if risk_initial <= 0 and prior_pnl == 0:
+        risk_initial = max(0.0, entry - float(position["stop_loss_initial"])) * requested
+    r_multiple = total_pnl / risk_initial if risk_initial > 0 else None
+
+    await init_ledger(db_path)
+    with sqlite3.connect(db_path) as conn:
+        conn.execute("BEGIN IMMEDIATE")
+        ledger_total = float(conn.execute(
+            "SELECT COALESCE(SUM(pnl),0) FROM bankroll_ledger WHERE source=?",
+            (position["source"],),
+        ).fetchone()[0])
+        bankroll_before = allocation_for_source(position["source"]) + ledger_total
+        if remaining:
+            cur = conn.execute(
+                """
+                UPDATE positions
+                SET shares=?, status='OPEN', realised_pnl=COALESCE(realised_pnl,0)+?,
+                    sl_order_id=NULL
+                WHERE ticker=? AND source=? AND entry_date=? AND shares=?
+                  AND status='OPEN' AND exit_date IS NULL
+                """,
+                (remaining, pnl, position["ticker"], position["source"],
+                 position["entry_date"], requested),
+            )
+        else:
+            cur = conn.execute(
+                """
+                UPDATE positions
+                SET shares=0, status='CLOSED', exit_date=?, exit_price=?,
+                    realised_pnl=?, r_multiple=?
+                WHERE ticker=? AND source=? AND entry_date=? AND shares=?
+                  AND status='OPEN' AND exit_date IS NULL
+                """,
+                (exit_date, fill_price, total_pnl, r_multiple,
+                 position["ticker"], position["source"],
+                 position["entry_date"], requested),
+            )
+        if cur.rowcount != 1:
+            conn.rollback()
+            return {"settled": 0, "remaining": requested, "pnl": 0.0}
+        conn.execute(
+            """INSERT INTO bankroll_ledger
+               (timestamp,event_type,ticker,pnl,bankroll_before,bankroll_after,notes,source)
+               VALUES (?,?,?,?,?,?,?,?)""",
+            (datetime.now(timezone.utc).isoformat(),
+             "TRADE_PARTIAL" if remaining else "TRADE_CLOSED",
+             position["ticker"], pnl, bankroll_before, bankroll_before + pnl,
+             f"edge_confirmed_exit:{exit_reason}", position["source"]),
+        )
+        conn.commit()
+    return {
+        "settled": quantity, "remaining": remaining, "pnl": pnl,
+        "total_pnl": total_pnl, "r_multiple": r_multiple,
+        "exit_reason": exit_reason,
+    }
+
+
+async def _cancel_edge_protective_stop(kite, order_id: str, requested: int) -> dict:
+    """Return terminal cancellation/fill truth; ambiguity is never safe to sell."""
+    try:
+        await kite.cancel_order(order_id)
+    except Exception as exc:
+        logger.error("penny_edge_stop_cancel_failed order_id=%s err=%s", order_id, exc)
+    try:
+        latest = latest_order_state(await kite.order_history(order_id=order_id))
+    except Exception as exc:
+        logger.error("penny_edge_stop_history_failed order_id=%s err=%s", order_id, exc)
+        latest = {}
+    status = str(latest.get("status") or "").upper()
+    filled = min(int(requested), max(0, int(latest.get("filled_quantity") or 0)))
+    average_price = float(latest.get("average_price") or 0)
+    return {
+        "status": status or "UNKNOWN", "filled_quantity": filled,
+        "average_price": average_price if average_price > 0 else None,
+        "confirmed_fill": filled > 0 and average_price > 0,
+        "safe_to_sell": filled == 0 and status in {"CANCELLED", "REJECTED"},
+    }
+
+
+async def _edge_long_position_truth(kite, ticker: str, product: str, shares: int) -> str:
+    """Broker holdings preflight: only VERIFIED authorizes a fresh SELL."""
+    snapshot_fn = getattr(kite, "get_broker_positions", None)
+    if snapshot_fn is None:
+        return "UNKNOWN"
+    try:
+        book = await snapshot_fn()
+    except Exception:
+        return "UNKNOWN"
+    if not isinstance(book, dict) or "net" not in book:
+        return "UNKNOWN"
+    quantity = sum(
+        int(row.get("quantity") or 0)
+        for row in (book.get("net") or [])
+        if str(row.get("tradingsymbol") or "").upper() == ticker.upper()
+        and str(row.get("product") or "").upper() == product.upper()
+    )
+    return "VERIFIED" if quantity >= int(shares) else "MISMATCH"
+
+
 async def run_penny_edge_exit(kite, db_path: Optional[str] = None) -> dict:
     """EOD 15:15 IST: force-close any EDGE-sourced position older than
     PENNY_EDGE_MAX_HOLD_DAYS. Handles BOTH source tags.
@@ -642,7 +787,8 @@ async def run_penny_edge_exit(kite, db_path: Optional[str] = None) -> dict:
         cur.execute("""
             SELECT ticker, entry_price, shares, stop_loss_initial,
                    target_1, product_type, source, entry_date,
-                   regime_at_entry
+                   regime_at_entry, realised_pnl, initial_capital_at_risk,
+                   sl_order_id
             FROM positions
             WHERE source IN (?, ?) AND status = 'OPEN'
         """, (SOURCE_PAPER, SOURCE_LIVE))
@@ -651,6 +797,8 @@ async def run_penny_edge_exit(kite, db_path: Optional[str] = None) -> dict:
     max_hold = _edge_max_hold_days()
     closed_paper: list = []
     closed_live:  list = []
+    partial_live: list = []
+    unconfirmed_live: list = []
     if not rows:
         logger.info("penny_edge_exit_no_open_positions date=%s", today_str)
         return {"date": today_str, "closed_paper": [], "closed_live": []}
@@ -658,7 +806,8 @@ async def run_penny_edge_exit(kite, db_path: Optional[str] = None) -> dict:
     kite_for_live = kite  # only used for live leg below
 
     for r in rows:
-        ticker, entry_price, shares, sl, target, prod_type, source, entry_date, _regime = r
+        (ticker, entry_price, shares, sl, target, prod_type, source,
+         entry_date, _regime, prior_pnl, initial_risk, sl_order_id) = r
         try:
             entry_dt = datetime.fromisoformat(entry_date.replace("Z", "+00:00"))
         except Exception:
@@ -704,8 +853,38 @@ async def run_penny_edge_exit(kite, db_path: Optional[str] = None) -> dict:
             exit_reason = "simulator-failed"
             exit_date = today_str
 
-        # 3) Place the actual broker unwind (paper for paper leg).
-        leg_paper_mode = (source == SOURCE_PAPER) or not _live_trading_enabled()
+        # Persisted stop identity is the durable execution-mode evidence.  The
+        # historical "live twin" was deliberately simulated while the master
+        # switch was off, but still used source=EDGE_LIVE.  A PAPER-* stop keeps
+        # that row local; a real stop remains a live exit even if entries are
+        # disabled later. Legacy EDGE_LIVE rows with no stop and live disabled
+        # are unknowable, so fail closed rather than risk a paper-origin SELL.
+        paper_stop = str(sl_order_id or "").startswith("PAPER-")
+        if source == SOURCE_LIVE and not sl_order_id and not _live_trading_enabled():
+            record = {
+                "ticker": ticker, "source": source, "unwind_id": None,
+                "status": "UNKNOWN", "confirmed_qty": 0,
+                "remaining_qty": int(shares),
+                "message": "legacy EDGE_LIVE execution mode is unknown",
+            }
+            unconfirmed_live.append(record)
+            logger.critical(
+                "penny_edge_exit_mode_unknown ticker=%s shares=%s -- no broker "
+                "order sent; reconcile legacy position manually",
+                ticker, shares,
+            )
+            try:
+                from operator_alert import notify_operator
+                await notify_operator(
+                    f"{ticker}: legacy EDGE_LIVE position has no durable paper/live "
+                    f"order identity. No SELL was sent; reconcile {shares} shares "
+                    "in Kite immediately.",
+                    event="penny_edge_exit_mode_unknown",
+                )
+            except Exception:
+                logger.exception("penny_edge_exit_mode_page_failed ticker=%s", ticker)
+            continue
+        leg_paper_mode = source == SOURCE_PAPER or paper_stop
         executor = _executor_for(
             kite_for_live if source == SOURCE_LIVE else kite,
             paper_mode=leg_paper_mode,
@@ -715,76 +894,160 @@ async def run_penny_edge_exit(kite, db_path: Optional[str] = None) -> dict:
             "penny_edge_force_exit source=%s ticker=%s age=%dd exit_reason=%s",
             source, ticker, age_days, exit_reason,
         )
-        unwind_id = await executor._market_unwind(ticker, leg, shares)
+        if leg_paper_mode:
+            # Preserve the research engine's canonical deterministic fill.
+            unwind_id = await executor._market_unwind(ticker, leg, shares)
+            execution = {
+                "status": "COMPLETE", "order_id": unwind_id,
+                "confirmed_qty": int(shares), "fill_price": float(exit_price),
+            }
+        else:
+            stop_truth = None
+            if sl_order_id and not str(sl_order_id).startswith("PAPER-"):
+                stop_truth = await _cancel_edge_protective_stop(
+                    executor.kite, str(sl_order_id), int(shares),
+                )
+            if stop_truth and stop_truth["filled_quantity"] > 0:
+                execution = {
+                    "status": (
+                        "COMPLETE" if stop_truth["filled_quantity"] >= int(shares)
+                        else "PARTIAL"
+                    ),
+                    "order_id": sl_order_id,
+                    "confirmed_qty": stop_truth["filled_quantity"],
+                    "fill_price": stop_truth["average_price"],
+                    "message": "protective stop filled",
+                }
+            elif stop_truth and not stop_truth["safe_to_sell"]:
+                execution = {
+                    "status": "UNKNOWN", "order_id": sl_order_id,
+                    "confirmed_qty": 0, "fill_price": None,
+                    "message": "protective stop cancellation unconfirmed",
+                }
+            else:
+                unwind_identity = (
+                    f"{source}|{ticker}|{entry_date}|{int(shares)}|{leg.value}"
+                )
+                unwind_tag = (
+                    "PEDG" + hashlib.sha256(
+                        unwind_identity.encode("utf-8")
+                    ).hexdigest()[:16]
+                )
+                recovered = await executor.resolve_unwind_tag(
+                    unwind_tag, ticker, leg, int(shares),
+                )
+                unwind_tag = recovered.get("tag") or unwind_tag
+                if recovered["status"] == "FOUND":
+                    unwind_id = recovered["order_id"]
+                elif recovered["status"] == "NOT_FOUND":
+                    holding_truth = await _edge_long_position_truth(
+                        executor.kite, ticker, leg.value, int(shares),
+                    )
+                    if holding_truth != "VERIFIED":
+                        unwind_id = None
+                        recovered = {"status": "UNKNOWN", "order_id": None}
+                    else:
+                        try:
+                            unwind_id = await executor._market_unwind(
+                                ticker, leg, shares, ltp=exit_price,
+                                tag=unwind_tag, raise_on_ambiguous=True,
+                            )
+                        except Exception:
+                            unwind_id = None
+                else:
+                    unwind_id = None
+                if unwind_id:
+                    execution = await executor.execute_exit(
+                        ticker, leg, shares, reference_price=exit_price,
+                        existing_order_id=unwind_id,
+                    )
+                else:
+                    execution = {
+                        "status": "UNKNOWN", "order_id": None,
+                        "confirmed_qty": 0, "fill_price": None,
+                        "message": (
+                            "broker order recovery unknown"
+                            if recovered["status"] == "UNKNOWN"
+                            else "exit submission unconfirmed"
+                        ),
+                    }
 
-        # 4) Compute realised_pnl from exit_price (not always entry_price).
-        # [PENNY-FD-LEAK 2026-07-01] `with` releases the FD even on the
-        # UPDATE path; legacy bare-connect leaked 1 FD per iteration.
-        try:
-            # Use the penny-local cost helper (penny_risk.calc_penny_costs)
-            # -- penny modules must not import from `engine` per
-            # test_penny_isolation. Mirrors engine.calc_zerodha_costs
-            # but uses PENNY_* settings instead of ZERODHA_*.
-            from penny_risk import calc_penny_costs
-            gross = (exit_price - float(entry_price)) * int(shares)
-            costs = calc_penny_costs(
-                float(entry_price), exit_price, int(shares),
-                is_intraday=(prod_type == "MIS"),
+        confirmed_qty = int(execution.get("confirmed_qty") or 0)
+        confirmed_price = float(execution.get("fill_price") or 0)
+        if confirmed_qty <= 0 or confirmed_price <= 0:
+            record = {
+                "ticker": ticker, "source": source,
+                "unwind_id": execution.get("order_id"),
+                "status": execution.get("status") or "UNKNOWN",
+                "confirmed_qty": confirmed_qty, "remaining_qty": int(shares),
+                "message": execution.get("message", ""),
+            }
+            if source == SOURCE_LIVE:
+                unconfirmed_live.append(record)
+                try:
+                    await executor._page_operator(
+                        f"{ticker}: EDGE live exit is {record['status']}; "
+                        f"0/{shares} shares confirmed. Position remains open."
+                    )
+                except Exception:
+                    logger.exception("penny_edge_exit_page_failed ticker=%s", ticker)
+            logger.error(
+                "penny_edge_exit_unconfirmed source=%s ticker=%s status=%s order_id=%s",
+                source, ticker, record["status"], record["unwind_id"],
             )
-            realised_pnl = float(gross - costs)
-            risk_initial = (float(entry_price) - float(sl)) * int(shares)
-            r_multiple = (
-                realised_pnl / risk_initial if risk_initial > 0 else 0.0
-            )
-        except Exception as exc:
+            continue
+
+        position = {
+            "ticker": ticker, "source": source, "entry_date": entry_date,
+            "entry_price": entry_price, "shares": shares,
+            "stop_loss_initial": sl, "product_type": prod_type,
+            "realised_pnl": prior_pnl,
+            "initial_capital_at_risk": initial_risk,
+        }
+        settlement = await _settle_confirmed_edge_fill(
+            db_path, position, confirmed_qty=confirmed_qty,
+            fill_price=confirmed_price, exit_reason=exit_reason,
+            exit_date=today_str,
+        )
+        if not settlement["settled"]:
             logger.warning(
-                "penny_edge_exit_pnl_calc_failed ticker=%s err=%s -- "
-                "falling back to realised_pnl=0.0",
-                ticker, str(exc),
+                "penny_edge_exit_stale_settlement source=%s ticker=%s shares=%s",
+                source, ticker, shares,
             )
-            realised_pnl = 0.0
-            r_multiple = 0.0
-
-        with sqlite3.connect(db_path) as conn2:
-            c2 = conn2.cursor()
-            c2.execute(
-                """
-                UPDATE positions
-                SET status='CLOSED',
-                    exit_date=?,
-                    exit_price=?,
-                    realised_pnl=?,
-                    r_multiple=?
-                WHERE ticker=? AND source=? AND status='OPEN'
-                """,
-                (today_str, exit_price, realised_pnl, r_multiple,
-                 ticker, source),
-            )
-            conn2.commit()
+            continue
 
         record = {
             "ticker":       ticker,
             "source":       source,
-            "unwind_id":    unwind_id,
+            "unwind_id":    execution.get("order_id"),
             "age_days":     age_days,
             "exit_reason":  exit_reason,
-            "exit_price":   exit_price,
-            "realised_pnl": realised_pnl,
+            "status":       execution.get("status"),
+            "confirmed_qty": settlement["settled"],
+            "remaining_qty": settlement["remaining"],
+            "exit_price":   confirmed_price,
+            "realised_pnl": settlement["pnl"],
             "force_close_reason": "edge-exit-{0}d-cap".format(max_hold),
         }
-        if source == SOURCE_PAPER:
+        if settlement["remaining"] and source == SOURCE_LIVE:
+            partial_live.append(record)
+        elif source == SOURCE_PAPER:
             closed_paper.append(record)
         else:
             closed_live.append(record)
 
     logger.info(
-        "penny_edge_exit_done date=%s closed_paper=%d closed_live=%d",
+        "penny_edge_exit_done date=%s closed_paper=%d closed_live=%d "
+        "partial_live=%d unconfirmed_live=%d",
         today_str, len(closed_paper), len(closed_live),
+        len(partial_live), len(unconfirmed_live),
     )
     return {
         "date": today_str,
         "closed_paper": closed_paper,
         "closed_live": closed_live,
+        "partial_live": partial_live,
+        "unconfirmed_live": unconfirmed_live,
     }
 
 

@@ -271,6 +271,13 @@ class ManualPositionRequest(BaseModel):
     # still holding above it has not failed, it just has not paid yet. None on
     # callers that do not send it; the exit logic falls back to the R test.
     vwap_at_entry: Optional[float] = Field(default=None, gt=0)
+    # Durable cross-runtime idempotency identity. Node sends this as `order_id`;
+    # retries after a committed-but-lost HTTP response must reconcile the same
+    # position rather than insert a duplicate.
+    broker_entry_order_id: Optional[str] = Field(
+        default=None, alias="order_id", min_length=1, max_length=64,
+    )
+    model_config = ConfigDict(populate_by_name=True)
 
 class BankrollAdjustment(BaseModel):
     amount: float

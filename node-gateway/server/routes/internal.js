@@ -50,11 +50,24 @@ router.post('/notify', requireInternalSecret, validate(notifySchema, 'body'), as
 router.post('/register-signal', requireInternalSecret, validate(registerSignalSchema, 'body'), async (req, res, next) => {
   try {
     const { signal_id, ticker, action, payload } = req.body;
-    const info = signalsDb.prepare(`
-      INSERT OR IGNORE INTO approved_snapshots
-        (signal_id, ticker, action, payload_json, created_at)
-      VALUES (?, ?, ?, ?, ?)
-    `).run(signal_id, ticker, action, JSON.stringify(payload), new Date().toISOString());
+    const now = new Date().toISOString();
+    const trackedPayload = { ...payload, signal_id };
+    const tx = signalsDb.transaction(() => {
+      const info = signalsDb.prepare(`
+        INSERT OR IGNORE INTO approved_snapshots
+          (signal_id, ticker, action, payload_json, created_at)
+        VALUES (?, ?, ?, ?, ?)
+      `).run(signal_id, ticker, action, JSON.stringify(trackedPayload), now);
+      if (action === 'EXEC') {
+        signalsDb.prepare(`
+          INSERT OR IGNORE INTO received_signals
+            (signal_id, ticker, signal_time, received_at, payload_json, status, execution_state)
+          VALUES (?, ?, ?, ?, ?, 'PENDING', 'IDLE')
+        `).run(signal_id, ticker, payload.signal_time || now, now, JSON.stringify(trackedPayload));
+      }
+      return info;
+    });
+    const info = tx();
 
     const registered = info.changes > 0;
     logger.info({

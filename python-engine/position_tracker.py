@@ -1,6 +1,7 @@
 import sqlite3
 
 import aiosqlite
+import math
 from datetime import datetime
 import structlog
 from typing import List
@@ -10,6 +11,43 @@ from chandelier_stop import ChandelierStop
 from config import settings
 
 logger = structlog.get_logger()
+
+
+async def _init_pnl_outbox(db_path: str) -> None:
+    async with aiosqlite.connect(db_path) as db:
+        await db.execute("""
+            CREATE TABLE IF NOT EXISTS position_pnl_outbox (
+                event_key TEXT PRIMARY KEY, ticker TEXT NOT NULL,
+                pnl REAL NOT NULL, source TEXT NOT NULL,
+                delivered INTEGER NOT NULL DEFAULT 0,
+                created_at TEXT NOT NULL
+            )
+        """)
+        await db.commit()
+
+
+async def _deliver_pnl_outbox(db_path: str, record_pnl_cb) -> None:
+    async with aiosqlite.connect(db_path) as db:
+        rows = await (await db.execute(
+            "SELECT event_key,ticker,pnl,source FROM position_pnl_outbox "
+            "WHERE delivered=0 ORDER BY created_at,event_key"
+        )).fetchall()
+    for event_key, ticker, pnl, source in rows:
+        try:
+            await record_pnl_cb(ticker, float(pnl), source)
+        except Exception as exc:
+            logger.error(
+                "daily_position_pnl_delivery_failed event_key=%s error=%s",
+                event_key, str(exc),
+            )
+            continue
+        async with aiosqlite.connect(db_path) as db:
+            await db.execute(
+                "UPDATE position_pnl_outbox SET delivered=1 "
+                "WHERE event_key=? AND delivered=0",
+                (event_key,),
+            )
+            await db.commit()
 
 
 async def _add_column_if_missing(db, column: str, ddl: str) -> None:
@@ -54,7 +92,8 @@ async def init_positions_db(db_path: str):
                 exit_price REAL, exit_date TEXT, realised_pnl REAL, r_multiple REAL,
                 product_type TEXT DEFAULT 'CNC',
                 regime_at_entry TEXT,
-                initial_capital_at_risk REAL
+                initial_capital_at_risk REAL,
+                broker_entry_order_id TEXT
             )
         """)
         # [MED-008] Migration: add product_type column to pre-existing tables on
@@ -94,6 +133,12 @@ async def init_positions_db(db_path: str):
         # momentum scale-out, so it cannot remain the denominator for the
         # trade's final aggregate R multiple.
         await _add_column_if_missing(db, "initial_capital_at_risk", "REAL")
+        await _add_column_if_missing(db, "broker_entry_order_id", "TEXT")
+        await db.execute("""
+            CREATE UNIQUE INDEX IF NOT EXISTS idx_positions_broker_entry_order
+            ON positions(broker_entry_order_id)
+            WHERE broker_entry_order_id IS NOT NULL
+        """)
         await db.commit()
 
 async def get_open_positions(db_path: str) -> List[dict]:
@@ -158,12 +203,20 @@ async def update_daily_positions(db_path: str, kite_client, current_date_str: st
     76% of the reported account was fiction. Passing the position's own source
     keeps each pool separate, which is what bankroll_for_source() already assumes.
     """
+    await _init_pnl_outbox(db_path)
+    await _deliver_pnl_outbox(db_path, record_pnl_cb)
     open_pos = await get_open_positions(db_path)
     for pos in open_pos:
         ticker = pos['ticker']
-        # [PENNY-TRACKER 2026-06-21] Existing logic accepts source != "MOMENTUM"
-        # (i.e. SYSTEM-swing, PENNY-CNC, PENNY-MIS). No code change needed.
-        if pos.get('source') == 'MOMENTUM':
+        # This function is an OHLC simulator, not an execution reconciler.  It
+        # must never manufacture an exit for a source backed by real broker
+        # positions. Only explicitly paper-labelled sources are eligible.
+        source = pos.get('source') or 'SYSTEM'
+        if source not in {'PENNY_PAPER', 'EDGE_PAPER'}:
+            logger.info(
+                "daily_position_ohlc_skip_live ticker=%s source=%s",
+                ticker, source,
+            )
             continue
         df = await kite_client.get_historical(ticker, current_date_str, current_date_str)
         if df.empty: continue
@@ -171,11 +224,20 @@ async def update_daily_positions(db_path: str, kite_client, current_date_str: st
         # Use .get() to fall back to today_close when open/high/low
         # are missing. In production Kite always returns all four
         # columns; this fallback only triggers in test fixtures.
-        today_open   = df['open'].iloc[-1]  if 'open'  in df.columns else df['close'].iloc[-1]
-        today_high   = df['high'].iloc[-1]  if 'high'  in df.columns else df['close'].iloc[-1]
-        today_low    = df['low'].iloc[-1]   if 'low'   in df.columns else df['close'].iloc[-1]
-        today_close  = df['close'].iloc[-1]
-        highest_close = max(pos['highest_close_since_entry'], today_close)
+        try:
+            today_open = float(df['open'].iloc[-1] if 'open' in df.columns else df['close'].iloc[-1])
+            today_high = float(df['high'].iloc[-1] if 'high' in df.columns else df['close'].iloc[-1])
+            today_low = float(df['low'].iloc[-1] if 'low' in df.columns else df['close'].iloc[-1])
+            today_close = float(df['close'].iloc[-1])
+            if not all(math.isfinite(v) for v in (today_open, today_high, today_low, today_close)):
+                raise ValueError("non-finite OHLC")
+        except (TypeError, ValueError, OverflowError) as exc:
+            logger.error(
+                "daily_position_invalid_ohlc ticker=%s source=%s error=%s",
+                ticker, source, str(exc),
+            )
+            continue
+        highest_close = float(max(float(pos['highest_close_since_entry']), today_close))
         # [TRAILING-EXITS 2026-06-16] Regime-aware Chandelier multiplier.
         # Wider trail in calm markets (Regime 1 = 3.5x ATR) gives mid-cap
         # trends room to breathe. Tighter in crisis (Regime 3 = 2.5x ATR)
@@ -282,7 +344,6 @@ async def update_daily_positions(db_path: str, kite_client, current_date_str: st
             exit_price = today_close
         if status != current_status:
             if hit_t1_today:
-                import math
                 closed_shares = math.floor(pos['shares'] * 0.5)
                 if closed_shares == 0: 
                     closed_shares = 1 # If only 1 share, sell it all
@@ -290,50 +351,91 @@ async def update_daily_positions(db_path: str, kite_client, current_date_str: st
                 gross = (exit_price - pos['entry_price']) * closed_shares
                 costs = calc_zerodha_costs(pos['entry_price'], exit_price, closed_shares, is_intraday=False)
                 realised_pnl = gross - costs
-                await record_pnl_cb(ticker, realised_pnl, pos.get('source') or 'SYSTEM')
                 if remaining_shares == 0:
                     # Full close (if you only had 1 share)
                     risk_initial = (pos['entry_price'] - pos['stop_loss_initial']) * pos['shares']
                     r_multiple = realised_pnl / risk_initial if risk_initial > 0 else 0
                     async with aiosqlite.connect(db_path) as db:
-                        await db.execute("""
+                        cur = await db.execute("""
                             UPDATE positions SET highest_close_since_entry=?, trailing_stop_current=?,
                             status=?, exit_price=?, exit_date=?, realised_pnl=?, r_multiple=?
-                            WHERE ticker=? AND entry_date=?
+                            WHERE ticker=? AND entry_date=? AND source=? AND shares=?
+                              AND exit_date IS NULL
                         """, (highest_close, trailing_stop, "CLOSED_T1", exit_price, current_date_str, 
-                            realised_pnl, r_multiple, ticker, pos['entry_date']))
+                            realised_pnl, r_multiple, ticker, pos['entry_date'], source,
+                            pos['shares']))
+                        if cur.rowcount == 1:
+                            await db.execute(
+                                "INSERT OR IGNORE INTO position_pnl_outbox "
+                                "(event_key,ticker,pnl,source,created_at) VALUES (?,?,?,?,?)",
+                                (f"{source}|{ticker}|{pos['entry_date']}|{pos['shares']}|T1FULL",
+                                 ticker, realised_pnl, source, datetime.utcnow().isoformat()),
+                            )
                         await db.commit()
                 else:
                     # Partial close (Let the remaining 50% ride)
                     trailing_stop = max(trailing_stop, pos['entry_price']) # Move to breakeven
                     async with aiosqlite.connect(db_path) as db:
-                        await db.execute("""
+                        cur = await db.execute("""
                             UPDATE positions SET highest_close_since_entry=?, trailing_stop_current=?,
-                            status=?, shares=?
-                            WHERE ticker=? AND entry_date=?
-                        """, (highest_close, trailing_stop, "CLOSED_T1", remaining_shares, ticker, pos['entry_date']))
+                            status=?, shares=?, realised_pnl=COALESCE(realised_pnl, 0)+?
+                            WHERE ticker=? AND entry_date=? AND source=? AND shares=?
+                              AND exit_date IS NULL
+                        """, (highest_close, trailing_stop, "CLOSED_T1", remaining_shares,
+                              realised_pnl, ticker, pos['entry_date'], source, pos['shares']))
+                        if cur.rowcount == 1:
+                            await db.execute(
+                                "INSERT OR IGNORE INTO position_pnl_outbox "
+                                "(event_key,ticker,pnl,source,created_at) VALUES (?,?,?,?,?)",
+                                (f"{source}|{ticker}|{pos['entry_date']}|{pos['shares']}|T1PART",
+                                 ticker, realised_pnl, source, datetime.utcnow().isoformat()),
+                            )
                         await db.commit()
+                if cur.rowcount != 1:
+                    logger.warning(
+                        "daily_position_settlement_stale ticker=%s source=%s expected_shares=%s",
+                        ticker, source, pos['shares'],
+                    )
             else:
                 # Normal Full Close (Stop Loss, Target 2, or Time Expiry)
                 gross = (exit_price - pos['entry_price']) * pos['shares']
                 costs = calc_zerodha_costs(pos['entry_price'], exit_price, pos['shares'], is_intraday=False)
                 realised_pnl = gross - costs
-                risk_initial = (pos['entry_price'] - pos['stop_loss_initial']) * pos['shares']
-                r_multiple = realised_pnl / risk_initial if risk_initial > 0 else 0
-                await record_pnl_cb(ticker, realised_pnl, pos.get('source') or 'SYSTEM')
+                total_realised_pnl = float(pos.get('realised_pnl') or 0) + realised_pnl
+                risk_initial = float(pos.get('initial_capital_at_risk') or 0)
+                if risk_initial <= 0:
+                    risk_initial = (pos['entry_price'] - pos['stop_loss_initial']) * pos['shares']
+                r_multiple = total_realised_pnl / risk_initial if risk_initial > 0 else 0
                 async with aiosqlite.connect(db_path) as db:
-                    await db.execute("""
+                    cur = await db.execute("""
                         UPDATE positions SET highest_close_since_entry=?, trailing_stop_current=?,
                         status=?, exit_price=?, exit_date=?, realised_pnl=?, r_multiple=?
-                        WHERE ticker=? AND entry_date=?
+                        WHERE ticker=? AND entry_date=? AND source=? AND shares=?
+                          AND exit_date IS NULL
                     """, (highest_close, trailing_stop, status, exit_price, current_date_str, 
-                        realised_pnl, r_multiple, ticker, pos['entry_date']))
+                        total_realised_pnl, r_multiple, ticker, pos['entry_date'], source,
+                        pos['shares']))
+                    if cur.rowcount == 1:
+                        await db.execute(
+                            "INSERT OR IGNORE INTO position_pnl_outbox "
+                            "(event_key,ticker,pnl,source,created_at) VALUES (?,?,?,?,?)",
+                            (f"{source}|{ticker}|{pos['entry_date']}|{pos['shares']}|{status}",
+                             ticker, realised_pnl, source, datetime.utcnow().isoformat()),
+                        )
                     await db.commit()
+                if cur.rowcount != 1:
+                    logger.warning(
+                        "daily_position_settlement_stale ticker=%s source=%s expected_shares=%s",
+                        ticker, source, pos['shares'],
+                    )
         else:
             # Just update the trailing stop and highest close for the day
             async with aiosqlite.connect(db_path) as db:
                 await db.execute("""
                     UPDATE positions SET highest_close_since_entry=?, trailing_stop_current=?
-                    WHERE ticker=? AND entry_date=?
-                """, (highest_close, trailing_stop, ticker, pos['entry_date']))
+                    WHERE ticker=? AND entry_date=? AND source=? AND shares=?
+                      AND exit_date IS NULL
+                """, (highest_close, trailing_stop, ticker, pos['entry_date'], source,
+                      pos['shares']))
                 await db.commit()
+    await _deliver_pnl_outbox(db_path, record_pnl_cb)

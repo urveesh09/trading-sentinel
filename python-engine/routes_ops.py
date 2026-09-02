@@ -266,6 +266,30 @@ async def health_check():
             reasons.append("scheduler_not_running")
         if snap.get("halted"):
             reasons.append("circuit_breaker_halted")
+        try:
+            from halt_switch import halt_state
+            entry_halted, halt_attribution = halt_state(None)
+        except Exception:
+            entry_halted, halt_attribution = True, {"reason": "halt_state_unreadable"}
+        snap["entry_halted"] = bool(entry_halted)
+        snap["entry_halt_attribution"] = halt_attribution
+        if entry_halted:
+            reasons.append("entry_halt_active")
+
+        try:
+            from order_execution_readiness import snapshot as execution_snapshot
+            execution = execution_snapshot()
+        except Exception as exc:
+            execution = {
+                "status": "UNVERIFIED",
+                "reason": f"readiness_unavailable:{type(exc).__name__}",
+                "updated_at": None,
+            }
+        snap["order_execution"] = execution
+        if execution.get("status") != "AUTHORIZED":
+            reasons.append(
+                "order_execution_" + str(execution.get("status") or "UNVERIFIED").lower()
+            )
         snap["trading_ready"] = not reasons
         snap["not_trading_reasons"] = reasons
 

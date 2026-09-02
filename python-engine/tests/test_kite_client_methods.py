@@ -57,6 +57,8 @@ def mock_kite_client():
         if request.url.path.startswith("/orders/regular/") and request.method == "DELETE":
             order_id = request.url.path.split("/")[-1]
             return httpx.Response(200, json={"data": {"order_id": order_id}})
+        if request.url.path == "/orders" and request.method == "GET":
+            return httpx.Response(200, json={"data": []})
         if request.url.path.startswith("/orders/") and request.method == "GET":
             return httpx.Response(200, json={"data": [
                 {"order_id": "ORD-001", "status": "COMPLETE", "filled_quantity": 50,
@@ -183,12 +185,18 @@ def test_order_history_returns_list(mock_kite_client):
     assert result[0]["status"] == "COMPLETE"
 
 
+def test_orders_snapshot_distinguishes_successful_empty_book(mock_kite_client):
+    client, requests = mock_kite_client
+    assert asyncio.run(client.orders_snapshot()) == []
+    assert any(r["url"].endswith("/orders") for r in requests)
+
+
 def test_methods_go_through_rate_limiter():
     """All new methods must call self.limiter.acquire() (not bypass the limit)."""
     import inspect
     from kite_client import KiteClient
     for name in ["get_quote", "get_instruments_nse_eq", "place_order",
-                 "cancel_order", "order_history"]:
+                 "cancel_order", "order_history", "orders_snapshot"]:
         method = getattr(KiteClient, name)
         source = inspect.getsource(method)
         assert "self.limiter.acquire" in source, \

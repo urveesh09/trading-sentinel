@@ -73,6 +73,27 @@ def _open_count_by_source(db_path: str) -> Dict[str, int]:
     return out
 
 
+def _penny_reservation_health(db_path: str) -> Dict[str, Any]:
+    """Surface fail-closed slots that require evidence-based reconciliation."""
+    out: Dict[str, Any] = {"reserved": 0, "unresolved": 0, "oldest_unresolved_at": None}
+    try:
+        with sqlite3.connect(db_path) as con:
+            rows = con.execute(
+                "SELECT state,COUNT(*),MIN(created_at) FROM penny_position_reservations "
+                "WHERE state IN ('RESERVED','UNRESOLVED') GROUP BY state"
+            ).fetchall()
+        for state, count, oldest in rows:
+            key = str(state).lower()
+            out[key] = int(count)
+            if state == "UNRESOLVED":
+                out["oldest_unresolved_at"] = oldest
+    except sqlite3.Error as e:
+        # Older databases may not have the table until the first reservation.
+        if "no such table" not in str(e).lower():
+            logger.warning("status_reservation_query_failed error=%s", str(e))
+    return out
+
+
 # ---- /status builder -------------------------------------------------
 
 async def build_status_snapshot(db_path: str) -> Dict[str, Any]:
@@ -143,6 +164,8 @@ async def build_status_snapshot(db_path: str) -> Dict[str, Any]:
             "updated_at": None,
         }
 
+    reservations = _penny_reservation_health(db_path)
+
     # Penny bankroll is approximated as the *initial* penny pool (2500)
     # plus PENNY P&L today. This is a rough estimate; the daily
     # attribution job has the full picture.
@@ -168,6 +191,7 @@ async def build_status_snapshot(db_path: str) -> Dict[str, Any]:
         "halted": halted,
         "halt_reasons": halt_reasons,
         "order_execution": execution,
+        "penny_reservations": reservations,
         "by_source_today": today_by_source,
     }
 
@@ -189,6 +213,13 @@ def format_status(snap: Dict[str, Any]) -> str:
     execution_status = execution.get("status", "UNVERIFIED")
     marker = "✓" if execution_status == "AUTHORIZED" else "⚠"
     lines.append(f"{marker} Broker orders: {execution_status}")
+
+    reservations = snap.get("penny_reservations", {})
+    if int(reservations.get("unresolved") or 0) > 0:
+        lines.append(
+            f"⚠ Penny reconciliation: {reservations['unresolved']} unresolved "
+            "slot(s); capacity remains fail-closed"
+        )
 
     p = snap["penny"]
     p_sign = "+" if p["pnl_today"] >= 0 else ""

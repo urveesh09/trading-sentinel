@@ -758,19 +758,17 @@ class Settings(BaseSettings):
     #   - PENNY_EDGE_PAPER_BANKROLL = 100_000 (paper, no real orders)
     #   - PENNY_EDGE_LIVE_BANKROLL = 1_000 (live, real orders at Kite)
     # The operator can disable either leg via PENNY_EDGE_DISABLE_PAPER /
-    # PENNY_EDGE_DISABLE_LIVE.
+    # PENNY_EDGE_DISABLE_LIVE. Live is fail-closed by default because the
+    # current after-cost cohort is negative and below the promotion sample.
     PENNY_EDGE_DISABLE_PAPER:        bool  = False
-    PENNY_EDGE_DISABLE_LIVE:         bool  = False
+    # Fail closed while EDGE_LIVE has no positive after-cost evidence.  Paper
+    # evaluation remains enabled; live must be an explicit environment opt-in
+    # after the promotion gates pass rather than an accidental code default.
+    PENNY_EDGE_DISABLE_LIVE:         bool  = True
     PENNY_EDGE_PAPER_BANKROLL:       float = 100000.0  # 100k paper
-    # [CAPITAL-REALLOC 2026-07-26] 1,000 -> 1,500 REAL rupees, funded by the
-    # matching Rs 500 cut to swing (see INITIAL_BANKROLL). This is the only
-    # division with a positive live record: +Rs 39.16 over 6 trades at a 67% win
-    # rate, against swing's -Rs 169 over 12 and momentum's -Rs 125 over 8.
-    #
-    # Six trades is NOT proof of edge -- the promotion ladder's own bar is 30
-    # provisional / 100 confirmed, and this book is nowhere near it. This is a
-    # deliberate operator decision to fund the most promising book slightly
-    # harder, not a system verdict that it has been validated.
+    # Allocation is retained for paper-comparable reporting and any future
+    # explicitly approved promotion; it is not permission to trade while the
+    # live-disable switch remains true.
     PENNY_EDGE_LIVE_BANKROLL:        float = 1500.0    # 1.5k live
     PENNY_EDGE_MAX_POSITIONS:        int   = 3
     PENNY_EDGE_MIN_STRENGTH:         float = 0.45
@@ -1056,6 +1054,7 @@ class Settings(BaseSettings):
     PARTNER_HEDGE_MIN_DTE:              int   = 21
     PARTNER_HEDGE_MAX_DTE:              int   = 60
     PARTNER_HEDGE_POSITION_MAX_AGE_MIN: int   = 5
+    PARTNER_HEDGE_DELIVERABLE_MAX_AGE_MIN: int = 5
     PARTNER_HEDGE_VIX_MAX_AGE_MIN:      int   = 15
     # When the hedge pipeline is deliberately enabled, retire the legacy
     # directional/noisy surfaces instead of mixing two different mandates.
@@ -1063,6 +1062,55 @@ class Settings(BaseSettings):
     PARTNER_HEDGE_SUPPRESS_ANALYTICS:   bool  = True
     PARTNER_HEDGE_SUPPRESS_LEGACY_BRIEF: bool = True
     PARTNER_HEDGE_SUPPRESS_LEGACY_EOD:   bool = True
+
+    # Phase 2 adds premium-selling and delta-rebalance reviews. Keep the
+    # independent master switch off until live-chain hand verification; the
+    # Phase 1 protective-put/futures pipeline above remains active.
+    PARTNER_HEDGE_PHASE2_ENABLED:         bool  = False
+    PARTNER_HEDGE_COVERED_CALL:           bool  = True
+    PARTNER_HEDGE_BULL_PUT_SPREAD:        bool  = True
+    PARTNER_HEDGE_BEAR_CALL_SPREAD:       bool  = True
+    PARTNER_HEDGE_IRON_CONDOR:            bool  = True
+    PARTNER_HEDGE_DELTA_REBALANCE:        bool  = True
+    PARTNER_HEDGE_COVERED_CALL_DELTA:     float = 0.30
+    PARTNER_HEDGE_SPREAD_SHORT_DELTA:     float = 0.30
+    PARTNER_HEDGE_CONDOR_SHORT_DELTA:     float = 0.16
+    PARTNER_HEDGE_SPREAD_WIDTH:           float = 200.0
+    PARTNER_HEDGE_CONDOR_WING_WIDTH:      float = 200.0
+    PARTNER_HEDGE_MIN_CREDIT_POINTS:      float = 10.0
+    PARTNER_HEDGE_COVERED_CALL_IV_RANK:   float = 0.45
+    PARTNER_HEDGE_SPREAD_IV_RANK:         float = 0.40
+    PARTNER_HEDGE_CONDOR_IV_RANK:         float = 0.50
+    PARTNER_HEDGE_IV_HISTORY_DAYS:        int   = 252
+    PARTNER_HEDGE_IV_MIN_OBSERVATIONS:    int   = 20
+    PARTNER_HEDGE_PHASE2_MIN_DTE:         int   = 7
+    PARTNER_HEDGE_PHASE2_MAX_DTE:         int   = 45
+    PARTNER_HEDGE_DELTA_THRESHOLD_LOTS:   float = 0.15
+    PARTNER_HEDGE_PHASE2_PREMIUM_GAP_MIN: int   = 240
+    PARTNER_HEDGE_PHASE2_DELTA_GAP_MIN:   int   = 30
+    PARTNER_HEDGE_PHASE2_PREMIUM_DAILY_CAP: int = 4
+    PARTNER_HEDGE_PHASE2_DELTA_DAILY_CAP: int   = 8
+
+    # Phase 3: Greeks/term/event advisory. Master gate remains off until
+    # paper validation; individually risky/unavailable-data kinds also fail closed.
+    PARTNER_HEDGE_PHASE3_ENABLED:          bool  = False
+    PARTNER_HEDGE_GAMMA_ALERT:             bool  = True
+    PARTNER_HEDGE_LONG_STRADDLE:           bool  = True
+    PARTNER_HEDGE_LONG_STRANGLE:           bool  = True
+    PARTNER_HEDGE_CALENDAR_SPREAD:         bool  = True
+    PARTNER_HEDGE_IRON_BUTTERFLY:          bool  = True
+    PARTNER_HEDGE_RATIO_SPREAD:            bool  = False
+    PARTNER_HEDGE_EARNINGS_EVENT:          bool  = False
+    PARTNER_HEDGE_PORTFOLIO_OVERLAY:       bool  = False
+    PARTNER_HEDGE_PHASE3_LOW_IV_RANK:      float = 0.30
+    PARTNER_HEDGE_BUTTERFLY_IV_RANK:       float = 0.55
+    PARTNER_HEDGE_BUTTERFLY_MAX_DTE:       int   = 3
+    PARTNER_HEDGE_CALENDAR_MIN_IV_GAP:     float = 0.035
+    PARTNER_HEDGE_PHASE3_WING_WIDTH:       float = 200.0
+    PARTNER_HEDGE_PHASE3_LONG_DELTA:       float = 0.25
+    PARTNER_HEDGE_PHASE3_GAMMA_THRESHOLD:  float = 1000.0
+    PARTNER_HEDGE_PHASE3_GAP_MIN:          int   = 240
+    PARTNER_HEDGE_PHASE3_DAILY_CAP:        int   = 4
 
     # ============================================================
     # REGIME ENGINE -- VIX-Free Volatility Detection

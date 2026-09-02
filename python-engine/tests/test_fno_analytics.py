@@ -120,6 +120,11 @@ def test_atm_iv_none_on_one_sided_book():
     assert fa.atm_iv(snap, NOW) is None
 
 
+def test_atm_iv_requires_both_atm_option_types():
+    snap = _snap({(25000.0, "CE"): 5000})
+    assert fa.atm_iv(snap, NOW) is None
+
+
 # ---------------------------------------------------------------------------
 # realized vol + IV/RV read
 # ---------------------------------------------------------------------------

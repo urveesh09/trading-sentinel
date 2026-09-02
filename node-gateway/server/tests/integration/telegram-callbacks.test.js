@@ -92,9 +92,10 @@ jest.mock('../../middleware/logger', () => ({
 // Now require index.js at module scope - this registers the bot.on('callback_query') handler
 // We capture it from the mock synchronously
 let callbackHandler;
+let runStartupRecovery;
 
 try {
-  require('../../index');
+  ({ runStartupRecovery } = require('../../index'));
 } catch (e) {
   // Swallow - we only need the bot.on registration side effect
 }
@@ -144,6 +145,19 @@ describe('Telegram Callback Handler', () => {
 
   // If handler wasn't captured, skip all tests gracefully
   const runTest = callbackHandler ? test : test.skip;
+
+  runTest('startup recovery locks interrupted Swing execution instead of making it retryable', async () => {
+    mockRun.mockReturnValue({ changes: 1 });
+    mockAll.mockReturnValue([]);
+
+    await runStartupRecovery();
+
+    const recoverySql = mockPrepare.mock.calls
+      .map(c => c[0])
+      .find(sql => typeof sql === 'string' && sql.includes("status = 'EXECUTING'") && sql.includes('execution_state'));
+    expect(recoverySql).toContain("execution_state = 'OUTCOME_UNKNOWN'");
+    expect(recoverySql).not.toContain("status = 'PENDING'");
+  });
 
   // ─── 1. APPROVE happy path (EXEC) ───
   runTest('EXEC - happy path: PENDING → EXECUTING → EXECUTED', async () => {
@@ -266,6 +280,20 @@ describe('Telegram Callback Handler', () => {
     const revertCalls = mockPrepare.mock.calls
       .filter(c => typeof c[0] === 'string' && c[0].includes("status = 'PENDING'"));
     expect(revertCalls.length).toBeGreaterThanOrEqual(1);
+  });
+
+  runTest('EXEC ambiguous/held outcome remains locked and is never reset to PENDING', async () => {
+    const uncertain = new Error('broker outcome unknown');
+    uncertain.positionHeld = true;
+    uncertain.outcomeUnknown = true;
+    executor.executeSignal.mockRejectedValue(uncertain);
+    await callbackHandler(makeCallbackQuery('EXEC', 'a1b2c3d4'));
+
+    const sqlCalls = mockPrepare.mock.calls.map(c => c[0]).filter(s => typeof s === 'string');
+    expect(sqlCalls.some(sql => sql.includes("execution_state = 'OUTCOME_UNKNOWN'"))).toBe(true);
+    const pendingAfterFailure = sqlCalls.filter(sql => sql.includes("status = 'PENDING'"));
+    expect(pendingAfterFailure).toHaveLength(0);
+    expect(telegram.sendAlert).toHaveBeenCalledWith(expect.stringContaining('Do NOT retry'));
   });
 
   // ─── 10. Momentum (EM) action ───

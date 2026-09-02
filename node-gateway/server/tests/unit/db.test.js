@@ -92,7 +92,7 @@ describe('Database - Schema', () => {
     const cols = info.map(c => c.name);
     expect(cols).toEqual(expect.arrayContaining([
       'signal_id', 'ticker', 'signal_time', 'received_at',
-      'payload_json', 'telegram_msg_id', 'status'
+      'payload_json', 'telegram_msg_id', 'status', 'execution_state'
     ]));
   });
 
@@ -102,7 +102,7 @@ describe('Database - Schema', () => {
     expect(cols).toEqual(expect.arrayContaining([
       'id', 'signal_id', 'ticker', 'order_id', 'order_type',
       'entry_price', 'shares', 'status', 'gtt_stop_id', 'gtt_target_id',
-      'placed_at', 'filled_at', 'sync_to_b', 'notes'
+      'placed_at', 'filled_at', 'sync_to_b', 'notes', 'execution_state'
     ]));
   });
 
@@ -165,5 +165,20 @@ describe('Database - Table Independence', () => {
          VALUES (?, ?, ?, ?, ?, ?, ?)`
       ).run('sig1', 'INFY', 'ORD001', 'MARKET', 5, 'PLACED', '2026-01-07T10:02:00Z');
     }).toThrow();
+  });
+
+  test('durably stores held/unknown safety states without violating legacy status checks', () => {
+    db.prepare(
+      `INSERT INTO received_signals (signal_id,ticker,signal_time,received_at,payload_json,status,execution_state)
+       VALUES ('held-sig','INFY','2026-01-07','2026-01-07','{}','EXECUTING','HELD_UNPROTECTED')`
+    ).run();
+    db.prepare(
+      `INSERT INTO executed_orders (signal_id,ticker,order_id,order_type,shares,status,placed_at,execution_state)
+       VALUES ('held-sig','INFY','HELD-1','LIMIT',5,'COMPLETE','2026-01-07','HELD_UNPROTECTED')`
+    ).run();
+    expect(db.prepare(`SELECT status,execution_state FROM received_signals WHERE signal_id='held-sig'`).get())
+      .toEqual({ status: 'EXECUTING', execution_state: 'HELD_UNPROTECTED' });
+    expect(db.prepare(`SELECT status,execution_state FROM executed_orders WHERE order_id='HELD-1'`).get())
+      .toEqual({ status: 'COMPLETE', execution_state: 'HELD_UNPROTECTED' });
   });
 });

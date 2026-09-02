@@ -653,6 +653,8 @@ class PennyExecutor:
     async def _market_unwind(
         self, ticker: str, leg: PennyLeg, shares: int,
         ltp: Optional[float] = None,
+        *, tag: str = "QUANT_PENNY_UNWIND",
+        raise_on_ambiguous: bool = False,
     ) -> Optional[str]:
         """Emergency exit. Best-effort -- logs but does not raise.
 
@@ -690,7 +692,7 @@ class PennyExecutor:
                 order_type="LIMIT",
                 price=limit,
                 validity="DAY",
-                tag="QUANT_PENNY_UNWIND",
+                tag=tag,
                 # Unwinding an unprotected position is an exit: never gated.
                 intent="exit", channel="penny",
             )
@@ -705,7 +707,73 @@ class PennyExecutor:
         except Exception as e:
             logger.error("penny_unwind_failed ticker=%s shares=%d error=%s",
                          ticker, shares, str(e))
+            if raise_on_ambiguous:
+                raise
             return None
+
+    async def recover_unwind_by_tag(
+        self, tag: str, ticker: str, leg: PennyLeg, shares: int,
+    ) -> dict:
+        """Resolve a pre-journal/crash window from the broker's order book.
+
+        ``NOT_FOUND`` is returned only after an authoritative order-book read;
+        ``UNKNOWN`` must never authorize a replacement SELL.
+        """
+        snapshot_fn = getattr(self.kite, "orders_snapshot", None)
+        if snapshot_fn is None:
+            return {"status": "UNKNOWN", "order_id": None}
+        rows = await snapshot_fn()
+        if rows is None:
+            return {"status": "UNKNOWN", "order_id": None}
+        expected_ticker = str(ticker).strip().upper()
+        expected_product = str(leg.value).upper()
+        matches = [
+            row for row in rows
+            if str(row.get("tag") or "") == tag
+            and str(row.get("tradingsymbol") or "").upper() == expected_ticker
+            and str(row.get("transaction_type") or "").upper() == "SELL"
+            and str(row.get("product") or "").upper() == expected_product
+            and int(row.get("quantity") or 0) == int(shares)
+        ]
+        if len(matches) == 1 and matches[0].get("order_id"):
+            match = matches[0]
+            broker_status = str(match.get("status") or "").upper()
+            filled = max(0, int(match.get("filled_quantity") or 0))
+            if broker_status in _TERMINAL_DEAD and filled == 0:
+                retry_identity = f"{tag}|{match['order_id']}"
+                retry_tag = "PNRT" + hashlib.sha256(
+                    retry_identity.encode("utf-8")
+                ).hexdigest()[:16]
+                return {
+                    "status": "RETRYABLE", "order_id": str(match["order_id"]),
+                    "retry_tag": retry_tag, "broker_status": broker_status,
+                }
+            return {
+                "status": "FOUND", "order_id": str(match["order_id"]),
+                "broker_status": broker_status, "filled_quantity": filled,
+            }
+        if len(matches) > 1:
+            logger.critical(
+                "penny_unwind_duplicate_tag tag=%s ticker=%s matches=%d",
+                tag, ticker, len(matches),
+            )
+            return {"status": "UNKNOWN", "order_id": None}
+        return {"status": "NOT_FOUND", "order_id": None}
+
+    async def resolve_unwind_tag(
+        self, tag: str, ticker: str, leg: PennyLeg, shares: int,
+        *, max_generations: int = 8,
+    ) -> dict:
+        """Follow deterministic retry tags past terminal zero-fill orders."""
+        current = tag
+        for _ in range(max_generations):
+            recovered = await self.recover_unwind_by_tag(
+                current, ticker, leg, shares,
+            )
+            if recovered.get("status") != "RETRYABLE":
+                return {**recovered, "tag": current}
+            current = str(recovered["retry_tag"])
+        return {"status": "UNKNOWN", "order_id": None, "tag": current}
 
     async def execute_exit(
         self,

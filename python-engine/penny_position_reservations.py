@@ -242,8 +242,8 @@ async def persist_reserved_penny_position(
                     stop_loss_initial,trailing_stop_current,target_1,target_2,
                     atr_14_at_entry,highest_close_since_entry,status,source,
                     product_type,regime_at_entry,sl_order_id,penny_attempt_id,
-                    atr_1min_post_t1,t1_fired
-                ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+                    atr_1min_post_t1,t1_fired,initial_capital_at_risk
+                ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
             """, (
                 ticker, values["exchange"], values["entry_date"], values["entry_price"],
                 values["shares"], values["stop_loss_initial"],
@@ -252,6 +252,11 @@ async def persist_reserved_penny_position(
                 values["status"], source, product_type, values["regime_at_entry"],
                 values["sl_order_id"], attempt_id, values.get("atr_1min_post_t1"),
                 values.get("t1_fired", 0),
+                max(
+                    0.0,
+                    (float(values["entry_price"]) - float(values["stop_loss_initial"]))
+                    * int(values["shares"]),
+                ),
             ))
             await db.execute("""
                 UPDATE penny_position_reservations
