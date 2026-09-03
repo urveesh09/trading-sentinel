@@ -212,6 +212,29 @@ async def test_paper_entry_end_to_end(kite, db_path):
 
 
 @pytest.mark.asyncio
+async def test_defined_risk_and_directional_books_share_tick_market_data(
+    kite, db_path, monkeypatch,
+):
+    """One tick must not download the same 21-day bar set twice.
+
+    The DR router and directional ORB engine intentionally decide from one
+    closed-bar view and one chain snapshot.  This also keeps the 90-second job
+    inside cadence when other scanners are consuming the shared Kite budget.
+    """
+    monkeypatch.setattr(settings, "FNO_DR_DISABLE_PAPER", False)
+
+    summary = await run_fno_tick(
+        kite, db_path=db_path, regime="REGIME_1_NORMAL", now_ist=NOW,
+    )
+
+    assert summary["entries"]  # prove the directional consumer also ran
+    assert kite.bar_calls == 1
+    # One future mark + the chain's anchor and batched ladder.  A second chain
+    # fetch for the directional book would add two more calls.
+    assert kite.quote_calls == 3
+
+
+@pytest.mark.asyncio
 async def test_shadow_toggle_adds_no_market_or_order_calls(book, tmp_path, monkeypatch):
     import fno_orchestrator
 

@@ -136,12 +136,18 @@ def scan_today(
                     "n_positions":         0,
                 }
             as_of_date = str(row[0])
-        # Load from earliest available to as_of_date (need 60+ days of history)
-        cur = conn.cursor()
-        cur.execute("SELECT MIN(date) FROM ohlcv_cache")
-        row = cur.fetchone()
-        from_date = str(row[0]) if row and row[0] else "2024-01-01"
-        bars = pee.load_daily_bars_from_db(conn, from_date, as_of_date)
+        # The live pass scores *only* ``as_of_date``.  Its longest feature
+        # lookback is 20 sessions; keep 60 to also compute the Nifty regime.
+        # Loading the whole cache here used to make a multi-hundred-MiB Python
+        # allocation at 09:30 for no signal-quality benefit.
+        bars = pee.load_recent_daily_bars_from_db(
+            conn, as_of_date, bars_per_ticker=60,
+        )
+        logger.info(
+            "penny_edge_scan_data_window date=%s tickers=%d bars=%d "
+            "bars_per_ticker=%d",
+            as_of_date, len(bars), sum(len(rows) for rows in bars.values()), 60,
+        )
         cur.execute("""
             SELECT date, close FROM ohlcv_cache
             WHERE ticker = ? AND date <= ?

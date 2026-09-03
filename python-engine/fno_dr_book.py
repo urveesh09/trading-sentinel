@@ -172,16 +172,35 @@ def plan_structure(
     """Pure-ish: from the snapshot + the tick's directional signal, pick and
     build a defined-risk structure, or None (stand aside). No DB, no orders."""
     if snap is None or not snap.forward or snap.forward <= 0:
+        logger.info("fno_dr_stand_aside reason=invalid_snapshot")
         return None
     step = _strike_step()
     iv = atm_iv(snap, now_ist)
     em = expected_move_pct_from_snapshot(snap, step)
+    iv_rank = iv_rank_proxy(iv)
     kind = select_structure(
         has_directional_signal=has_directional_signal,
-        iv_rank=iv_rank_proxy(iv),
+        iv_rank=iv_rank,
         expected_move_pct=em,
     )
     if kind is None:
+        params = RouterParams()
+        if has_directional_signal:
+            reason = "expected_move_below_debit_min"
+        elif iv_rank is None or em is None:
+            reason = "missing_iv_or_expected_move"
+        elif iv_rank < params.min_iv_rank_condor:
+            reason = "iv_rank_below_condor_min"
+        else:
+            reason = "expected_move_above_condor_max"
+        logger.info(
+            "fno_dr_stand_aside reason=%s directional=%s iv=%s iv_rank=%s "
+            "expected_move_pct=%s",
+            reason, has_directional_signal,
+            round(iv, 6) if iv is not None else None,
+            round(iv_rank, 4) if iv_rank is not None else None,
+            round(em, 6) if em is not None else None,
+        )
         return None
     prem = premium_lookup_from_snapshot(snap)
     atm = _nearest_strike(snap.forward, step)
@@ -195,6 +214,10 @@ def plan_structure(
         structure = build_iron_condor(atm, step, _condor_offset(), _condor_wing(), prem, lot)
 
     if structure is None or not structure.is_defined_risk:
+        logger.info(
+            "fno_dr_stand_aside reason=unpriceable_or_invalid_structure kind=%s",
+            kind.value,
+        )
         return None
     if structure.max_loss_rs > _max_loss_ceiling():
         logger.info(

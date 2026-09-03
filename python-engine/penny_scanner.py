@@ -865,6 +865,19 @@ class PennyScanner:
         from config import settings
         from penny_signal_log import init_penny_signal_db, log_penny_signal
         scan_id = f"penny-{uuid4().hex[:8]}"
+        # The MIS evaluator cannot accept outside its configured entry window.
+        # Production 2026-09-03 still evaluated and persisted all 70 symbols on
+        # every 09:15-10:29 and 14:30-15:30 tick, creating thousands of
+        # guaranteed ``outside breakout time window`` rows. Position management
+        # is owned by the paper-stop/EOD jobs, so an entry scan has no useful
+        # work in this interval.
+        minute = as_of.hour * 60 + as_of.minute
+        if not (
+            settings.PENNY_BREAKOUT_TIME_START
+            <= minute
+            < settings.PENNY_BREAKOUT_TIME_END
+        ):
+            return _scan_summary(scan_id)
         # Ensure DB exists
         await init_penny_signal_db(settings.DB_PATH)
 

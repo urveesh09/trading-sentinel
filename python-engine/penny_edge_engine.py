@@ -576,3 +576,52 @@ def load_daily_bars_from_db(
             "volume":   float(r[6]),
         })
     return out
+
+
+def load_recent_daily_bars_from_db(
+    conn: sqlite3.Connection,
+    to_date: str,
+    bars_per_ticker: int = 60,
+) -> Dict[str, List[dict]]:
+    """Load only the trailing bars needed by the live EDGE signal pass.
+
+    The live scanner evaluates one date and its longest feature lookback is
+    20 sessions.  It used to materialise every cached daily candle for every
+    ticker (years of history) into Python dictionaries at 09:30.  That is a
+    large, short-lived allocation whose allocator high-water mark looked like
+    an all-day RSS leak.  Keep a generous 60-session window for the Nifty
+    regime calculation while bounding the per-ticker working set.
+
+    This helper is intentionally separate from ``load_daily_bars_from_db``:
+    backtests need their requested full date range, whereas the live scan does
+    not.
+    """
+    if bars_per_ticker < 21:
+        raise ValueError("bars_per_ticker must cover the 20-session feature lookback")
+    cur = conn.cursor()
+    cur.execute(
+        """
+        SELECT ticker, date, open, high, low, close, volume
+        FROM (
+            SELECT ticker, date, open, high, low, close, volume,
+                   ROW_NUMBER() OVER (
+                       PARTITION BY ticker ORDER BY date DESC
+                   ) AS ticker_row_number
+            FROM ohlcv_cache
+            WHERE date <= ?
+        )
+        WHERE ticker_row_number <= ?
+        ORDER BY ticker, date ASC
+        """,
+        (to_date, bars_per_ticker),
+    )
+    out: Dict[str, List[dict]] = defaultdict(list)
+    # Iterate the cursor: do not hold a second full result list alongside the
+    # grouped Python representation.
+    for r in cur:
+        out[r[0]].append({
+            "ticker": r[0], "date": r[1],
+            "open": float(r[2]), "high": float(r[3]), "low": float(r[4]),
+            "close": float(r[5]), "volume": float(r[6]),
+        })
+    return out

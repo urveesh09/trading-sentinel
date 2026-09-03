@@ -296,6 +296,41 @@ def test_scale_out_books_equity_but_only_final_close_records_one_outcome(
     assert con.execute("SELECT COUNT(*) FROM trade_outcomes").fetchone()[0] == 1
 
 
+def test_stale_scale_out_snapshot_does_not_fabricate_partial_pnl(
+    tmp_path, monkeypatch,
+):
+    """Only the process that flips t1_fired may book the partial leg."""
+    from datetime import datetime
+
+    monkeypatch.setattr(settings, "MOMENTUM_USE_SCALE_OUT", True)
+    monkeypatch.setattr(settings, "MOMENTUM_SCALE_OUT_R", 1.0)
+    monkeypatch.setattr(settings, "MOMENTUM_SCALE_OUT_FRAC", 0.5)
+    db = _db(tmp_path)
+    asyncio.run(open_momentum_paper_positions(
+        db, [_sig(close=100.0, stop=90.0, target=130.0)],
+    ))
+
+    async def racing_ltp(_ticker):
+        # monitor() has already read t1_fired=0. Simulate another worker
+        # winning the guarded transition before this worker persists it.
+        with sqlite3.connect(db) as con:
+            con.execute(
+                "UPDATE positions SET t1_fired=1 WHERE ticker='ACME'"
+            )
+        return 110.0
+
+    result = asyncio.run(momentum_paper_monitor(
+        db, racing_ltp, datetime(2026, 7, 27, 11, 0),
+    ))
+
+    assert result["scaled"] == []
+    con = sqlite3.connect(db)
+    assert con.execute("SELECT COUNT(*) FROM bankroll_ledger").fetchone()[0] == 0
+    assert con.execute(
+        "SELECT shares,realised_pnl FROM positions"
+    ).fetchone() == (500, None)
+
+
 # ---- the two properties that matter most ---------------------------
 
 def test_paper_pnl_never_reaches_real_accounting(tmp_path):

@@ -670,6 +670,16 @@ async def run_fno_tick(
         kite, paper_mode=not live_master, source_tag=FnoSource.FNO_LIVE.value,
     )
 
+    # A tick can feed both the defined-risk book and the directional ORB book.
+    # Keep their market-data inputs tick-local so the second consumer reuses
+    # exactly the same closed bars/snapshot.  Besides avoiding a redundant
+    # 21-calendar-day historical fetch, this prevents the two books from making
+    # decisions from slightly different bars when a five-minute candle closes
+    # between their requests.
+    bars = None
+    sig = None
+    snap = None
+
     # ---- futures price for exit management ---------------------------
     fut_quote = await kite.get_quote([fut.token])
     fut_price = None
@@ -704,7 +714,7 @@ async def run_fno_tick(
             nm_dr = _now_min(now_ist)
             in_dr_window = _dr._entry_lo_min() <= nm_dr <= _dr._entry_hi_min()
             if open_dr or in_dr_window:
-                dr_snap = await take_chain_snapshot(kite, instruments, now_ist)
+                snap = await take_chain_snapshot(kite, instruments, now_ist)
                 if open_dr:
                     # manage_dr_structures returns a COUNT (int), while
                     # summary["exits"] is a list of single-leg exit *records*
@@ -713,14 +723,14 @@ async def run_fno_tick(
                     # two shapes never collide -- the DR closes are detailed in
                     # their own fno_dr_closed log lines.
                     summary["dr_exits"] = summary.get("dr_exits", 0) + \
-                        await _dr.manage_dr_structures(db_path, dr_snap, now_ist)
+                        await _dr.manage_dr_structures(db_path, snap, now_ist)
                 if in_dr_window and not await _dr.open_structures(db_path):
                     try:
-                        dr_bars = await _fetch_futures_bars(kite, fut.token, now_ist)
-                        dr_sig = evaluate_fno_mom(dr_bars, regime, now_ist)
+                        bars = await _fetch_futures_bars(kite, fut.token, now_ist)
+                        sig = evaluate_fno_mom(bars, regime, now_ist)
                         opened = await _dr.maybe_open_dr_structure(
-                            db_path, dr_snap, dr_sig.direction is not None,
-                            dr_sig.direction, now_ist,
+                            db_path, snap, sig.direction is not None,
+                            sig.direction, now_ist,
                         )
                         if opened:
                             summary.setdefault("dr_opened", []).append(opened)
@@ -735,14 +745,16 @@ async def run_fno_tick(
         summary["note"] = "outside_entry_window"
         return summary
 
-    try:
-        bars = await _fetch_futures_bars(kite, fut.token, now_ist)
-    except Exception as exc:
-        logger.error("fno_futures_bars_failed err=%s", str(exc))
-        summary["note"] = "futures_bars_failed"
-        return summary
+    if bars is None:
+        try:
+            bars = await _fetch_futures_bars(kite, fut.token, now_ist)
+        except Exception as exc:
+            logger.error("fno_futures_bars_failed err=%s", str(exc))
+            summary["note"] = "futures_bars_failed"
+            return summary
 
-    sig = evaluate_fno_mom(bars, regime, now_ist)
+    if sig is None:
+        sig = evaluate_fno_mom(bars, regime, now_ist)
     if not sig.bar_ts:
         summary["note"] = f"engine:{sig.reject_reason}"
         return summary
@@ -767,7 +779,8 @@ async def run_fno_tick(
         return summary
 
     # Signal fired: snapshot the chain once, then run both legs off it.
-    snap = await take_chain_snapshot(kite, instruments, now_ist)
+    if snap is None:
+        snap = await take_chain_snapshot(kite, instruments, now_ist)
     if snap is None:
         _schedule_shadow_observation(db_path, bars, regime, now_ist)
         await log_fno_signal(
