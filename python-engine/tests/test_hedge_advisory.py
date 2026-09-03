@@ -353,6 +353,38 @@ async def test_phase2_context_rejects_prior_day_directional_regime(monkeypatch):
 
 
 @pytest.mark.asyncio
+async def test_phase2_context_promotes_range_only_from_current_neutral_flow(monkeypatch):
+    import fno_oi_store
+    import main
+    import partner_orchestrator as legacy
+
+    snapshot = _phase2_snapshot()
+    monkeypatch.setattr(main, "_fno_regime_str", lambda: "REGIME_1_NORMAL")
+    monkeypatch.setattr(main, "market_regime", "CAUTION")
+    monkeypatch.setattr(main, "last_run", NOW.astimezone(timezone.utc))
+    monkeypatch.setattr(ha.fno_analytics, "atm_iv_skew", lambda *args: (.04, .04))
+
+    async def history(*args, **kwargs):
+        return [(NOW.date() - timedelta(days=i + 1), .03 + i / 1000) for i in range(20)]
+
+    async def opening(*args, **kwargs):
+        return {"fut_ltp": 24_990, "fut_oi": snapshot.fut_quote.oi}
+
+    monkeypatch.setattr(ha, "load_chain_iv_history", history)
+    monkeypatch.setattr(fno_oi_store, "first_fut_row_today", opening)
+    monkeypatch.setattr(legacy, "_rv_cache", {"NIFTY": .03})
+    monkeypatch.setattr(legacy, "_rv_as_of", {"NIFTY": NOW.date()})
+    context = await ha._phase2_market_context("unused.db", snapshot, NOW)
+    assert context.mode == "RANGE"
+
+    async def trending(*args, **kwargs):
+        return {"fut_ltp": 24_000, "fut_oi": snapshot.fut_quote.oi + 1}
+
+    monkeypatch.setattr(fno_oi_store, "first_fut_row_today", trending)
+    assert (await ha._phase2_market_context("unused.db", snapshot, NOW)).mode == "UNKNOWN"
+
+
+@pytest.mark.asyncio
 async def test_enabling_hedge_phase_suppresses_legacy_directional_scan(monkeypatch):
     import partner_orchestrator as legacy
 

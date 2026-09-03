@@ -10,6 +10,7 @@ from hedge_analytics import (
     load_reconciled_open_partner_positions, position_is_actionable,
     iv_percentile, load_chain_iv_history, reconcile_partner_position,
     recommend_hedge_ratio, size_futures_hedge, vix_regime_reading,
+    classify_range_regime, load_aligned_ohlcv_closes, portfolio_market_stress,
 )
 
 
@@ -302,3 +303,93 @@ def test_event_window_and_hedge_ratio_are_explicit_and_fail_closed():
     assert recommend_hedge_ratio("BULL", "NORMAL", "CALM") == .5
     assert recommend_hedge_ratio("BULL", "LOW", "CALM") == .25
     assert recommend_hedge_ratio("UNKNOWN", "NORMAL", "CALM") is None
+
+
+def test_range_classifier_requires_fresh_neutral_flow_and_walls_that_fit_expected_move():
+    reading = classify_range_regime(
+        spot=25_000, support=24_500, resistance=25_500, expected_move=300,
+        futures_buildup="NEUTRAL", observed_at=NOW, now=NOW,
+    )
+    assert reading.regime == "RANGE"
+    assert reading.data_fresh
+    assert "both OI walls" in reading.reason
+
+    assert classify_range_regime(
+        spot=25_000, support=24_500, resistance=25_500, expected_move=300,
+        futures_buildup="LONG_BUILDUP", observed_at=NOW, now=NOW,
+    ).regime == "NOT_RANGE"
+    assert classify_range_regime(
+        spot=25_000, support=24_500, resistance=25_500, expected_move=600,
+        futures_buildup="NEUTRAL", observed_at=NOW, now=NOW,
+    ).regime == "NOT_RANGE"
+    stale = classify_range_regime(
+        spot=25_000, support=24_500, resistance=25_500, expected_move=300,
+        futures_buildup="NEUTRAL", observed_at=NOW - timedelta(minutes=6), now=NOW,
+    )
+    assert stale.regime == "UNAVAILABLE"
+    assert not stale.data_fresh
+
+
+def _market_close_matrix(rows=51):
+    # Two comparable but non-constant daily return histories.  The final day
+    # is below the 50-day SMA for both names, yielding narrow breadth.
+    alpha = [100.0]
+    beta = [200.0]
+    for index in range(1, rows):
+        multiplier = 1.01 if index % 2 else .99
+        alpha.append(alpha[-1] * multiplier)
+        beta.append(beta[-1] * multiplier)
+    alpha[-1] *= .90
+    beta[-1] *= .90
+    return {"ALPHA": alpha, "BETA": beta}
+
+
+def test_portfolio_market_stress_uses_aligned_returns_and_never_invents_drawdown():
+    reading = portfolio_market_stress(
+        _market_close_matrix(), portfolio_values=[100, 110, 104],
+    )
+    assert reading.correlation_breadth_valid
+    assert reading.average_pairwise_correlation == pytest.approx(1.0)
+    assert reading.breadth_pct_above_sma == 0.0
+    assert reading.drawdown_pct == pytest.approx(6 / 110)
+    assert reading.drawdown_valid
+    assert reading.should_review_overlay
+
+    no_valuation = portfolio_market_stress(_market_close_matrix())
+    assert no_valuation.correlation_breadth_valid
+    assert not no_valuation.drawdown_valid
+    assert no_valuation.drawdown_pct is None
+    assert "valuation history unavailable" in no_valuation.reason
+
+    incomplete = portfolio_market_stress({"ALPHA": [100] * 51, "BETA": [200] * 51})
+    assert not incomplete.correlation_breadth_valid
+    assert not incomplete.should_review_overlay
+
+
+@pytest.mark.asyncio
+async def test_aligned_ohlcv_loader_rejects_stale_or_misaligned_daily_cache(db_path):
+    import aiosqlite
+    async with aiosqlite.connect(db_path) as db:
+        await db.execute(
+            "CREATE TABLE ohlcv_cache (ticker TEXT, date TEXT, close REAL)"
+        )
+        rows = []
+        for ticker, base in (("ALPHA", 100.0), ("BETA", 200.0)):
+            for day in range(1, 4):
+                rows.append((ticker, f"2026-09-0{day}", base + day))
+        await db.executemany("INSERT INTO ohlcv_cache VALUES (?,?,?)", rows)
+        await db.commit()
+    closes = await load_aligned_ohlcv_closes(
+        db_path, ["alpha", "beta"], as_of=date(2026, 9, 3), lookback_rows=3,
+    )
+    assert closes == {"ALPHA": (101.0, 102.0, 103.0), "BETA": (201.0, 202.0, 203.0)}
+    assert await load_aligned_ohlcv_closes(
+        db_path, ["alpha", "beta"], as_of=date(2026, 9, 4), lookback_rows=3,
+    ) is None
+
+    async with aiosqlite.connect(db_path) as db:
+        await db.execute("DELETE FROM ohlcv_cache WHERE ticker='BETA' AND date='2026-09-02'")
+        await db.commit()
+    assert await load_aligned_ohlcv_closes(
+        db_path, ["alpha", "beta"], as_of=date(2026, 9, 3), lookback_rows=2,
+    ) is None

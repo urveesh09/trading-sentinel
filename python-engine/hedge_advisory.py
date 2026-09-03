@@ -29,7 +29,9 @@ from hedge_analytics import (
     iv_percentile, load_chain_iv_history,
     load_reconciled_open_partner_positions, position_is_actionable,
     size_futures_hedge, vix_regime_reading, gamma_exposure_at_expiry,
-    classify_event_window, iv_term_structure,
+    classify_event_window, classify_range_regime, iv_term_structure,
+    load_aligned_ohlcv_closes, portfolio_market_stress,
+    PortfolioMarketStressReading,
 )
 from hedge_formatters import (
     format_bear_call_spread, format_bull_put_spread,
@@ -94,6 +96,7 @@ class Phase3MarketContext:
     correlation: Optional[float] = None
     gamma_exposure: Optional[float] = None
     back_atm_iv: Optional[float] = None
+    portfolio_stress: Optional[PortfolioMarketStressReading] = None
 
 _ADVISORY_SCHEMA = """
 CREATE TABLE IF NOT EXISTS partner_vix_history (
@@ -654,8 +657,13 @@ def build_phase3_hedge_reviews(
             target_delta=settings.PARTNER_HEDGE_PHASE3_LONG_DELTA, **common)
         if plan is not None:
             result.append(("earnings_event_hedge", plan, context))
-    if (settings.PARTNER_HEDGE_PORTFOLIO_OVERLAY and context.correlation is not None
-            and context.correlation >= .80):
+    if (
+        settings.PARTNER_HEDGE_PORTFOLIO_OVERLAY
+        and context.portfolio_stress is not None
+        and context.portfolio_stress.correlation_breadth_valid
+        and context.portfolio_stress.should_review_overlay
+        and context.correlation is not None
+    ):
         exposure = aggregate_portfolio(positions)
         if exposure.valid and exposure.long_delta_notional > 0:
             plan = futures_hedge_size(snapshot, exposure.long_delta_notional,
@@ -729,8 +737,8 @@ async def _phase2_market_context(
     elif directional == "BEAR_RS_ONLY":
         mode = "BEAR_TREND"
     else:
-        # CAUTION is not evidence of a range. Condors therefore remain
-        # suppressed until an exact range classifier is wired.
+        # A quiet/caution label is not evidence of a range. A separate,
+        # current price-and-OI-wall classifier may promote this below.
         mode = "UNKNOWN"
 
     strikes = sorted({strike for strike, _ in snapshot.quotes})
@@ -768,6 +776,44 @@ async def _phase2_market_context(
         snapshot.forward * atm_iv * math.sqrt(t)
         if atm_iv is not None and t > 0 else None
     )
+    minute = now.astimezone(IST).hour * 60 + now.astimezone(IST).minute
+    if mode == "UNKNOWN" and regime_current and minute >= 9 * 60 + 45 and underlying:
+        import fno_oi_store
+
+        opening = await fno_oi_store.first_fut_row_today(
+            db_path, underlying, now.astimezone(IST).date().isoformat(),
+        )
+        opening_ltp = opening.get("fut_ltp") if opening else None
+        opening_oi = opening.get("fut_oi") if opening else None
+        current_oi = snapshot.fut_quote.oi if snapshot.fut_quote else None
+        if (
+            isinstance(opening_ltp, (int, float)) and opening_ltp > 0
+            and abs(snapshot.forward / opening_ltp - 1.0)
+            <= settings.PARTNER_HEDGE_RANGE_MAX_MOVE_PCT
+        ):
+            buildup = "NEUTRAL"
+        elif (
+            isinstance(opening_ltp, (int, float)) and opening_ltp > 0
+            and isinstance(opening_oi, (int, float))
+            and isinstance(current_oi, (int, float))
+        ):
+            buildup = fno_analytics.classify_buildup(
+                snapshot.forward - opening_ltp, current_oi - opening_oi,
+            )
+        else:
+            buildup = None
+        range_read = classify_range_regime(
+            spot=snapshot.forward,
+            support=support,
+            resistance=resistance,
+            expected_move=expected_move,
+            futures_buildup=buildup,
+            observed_at=snapshot.taken_at,
+            now=now,
+            max_age=timedelta(seconds=settings.PARTNER_HEDGE_MAX_QUOTE_AGE_SEC),
+        )
+        if range_read.regime == "RANGE":
+            mode = "RANGE"
     return Phase2MarketContext(
         mode=mode, atm_iv=atm_iv, realized_vol=rv, iv_rank=rank,
         support=support, resistance=resistance, expected_move=expected_move,
@@ -807,6 +853,12 @@ def _format_phase2_review(kind: str, plan: object, context: Phase2MarketContext)
 
 def _format_phase3_review(kind: str, value: object, context: Phase3MarketContext, now: datetime) -> str:
     detail = _phase2_context_text(context.phase2) + f"; event={context.event_window}"
+    if context.portfolio_stress is not None:
+        stress = context.portfolio_stress
+        if stress.breadth_pct_above_sma is not None:
+            detail += f"; breadth={stress.breadth_pct_above_sma:.0%}"
+        if stress.drawdown_pct is not None:
+            detail += f"; drawdown={stress.drawdown_pct:.1%}"
     if kind in {"long_straddle", "long_strangle"}:
         return format_long_vol_review(value, context=detail)
     if kind == "iron_butterfly":
@@ -917,7 +969,7 @@ async def partner_hedge_tick(now: Optional[datetime] = None) -> None:
 
 
 async def partner_hedge_phase2_tick(now: Optional[datetime] = None) -> None:
-    """Phase 2 review cadence; off by default and confined to NSE hours."""
+    """Phase 2 review cadence; enabled and confined to NSE market hours."""
     now = _aware(now or datetime.now(IST), "now").astimezone(IST)
     if (
         not settings.PARTNER_HEDGE_ENABLED
@@ -991,7 +1043,7 @@ async def partner_hedge_phase2_tick(now: Optional[datetime] = None) -> None:
 
 
 async def partner_hedge_phase3_tick(now: Optional[datetime] = None) -> None:
-    """Phase-3 Greeks/term/event review; default-off and market-hours only."""
+    """Phase-3 Greeks/term/event review; enabled and market-hours only."""
     now = _aware(now or datetime.now(IST), "now").astimezone(IST)
     if (not settings.PARTNER_HEDGE_ENABLED or not settings.PARTNER_HEDGE_PHASE3_ENABLED
             or not partner_enabled() or not (9*60+20 <= now.hour*60+now.minute <= 15*60+20)):
@@ -1005,6 +1057,32 @@ async def partner_hedge_phase3_tick(now: Optional[datetime] = None) -> None:
         return
     await init_hedge_advisory_db(settings.DB_PATH)
     positions = await load_reconciled_open_partner_positions(settings.DB_PATH)
+    equity_tickers = sorted({
+        position.tradingsymbol.strip().upper()
+        for position in positions
+        if position.instrument_type == "EQUITY" and position.tradingsymbol.strip()
+    })
+    stress = None
+    if len(equity_tickers) >= 2:
+        close_matrix = await load_aligned_ohlcv_closes(
+            settings.DB_PATH, equity_tickers, as_of=now.date(),
+            lookback_rows=settings.PARTNER_HEDGE_OVERLAY_LOOKBACK_ROWS,
+        )
+        if close_matrix is not None:
+            stress = portfolio_market_stress(
+                close_matrix,
+                min_return_observations=(
+                    settings.PARTNER_HEDGE_OVERLAY_LOOKBACK_ROWS - 1
+                ),
+                sma_lookback=(
+                    settings.PARTNER_HEDGE_OVERLAY_LOOKBACK_ROWS - 1
+                ),
+                correlation_threshold=(
+                    settings.PARTNER_HEDGE_OVERLAY_CORRELATION_MIN
+                ),
+                breadth_threshold=settings.PARTNER_HEDGE_OVERLAY_BREADTH_MAX,
+                drawdown_threshold=settings.PARTNER_HEDGE_OVERLAY_DRAWDOWN_MIN,
+            )
     grouped: dict[str, list[PartnerPosition]] = defaultdict(list)
     for position in positions:
         grouped[position.underlying].append(position)
@@ -1042,7 +1120,9 @@ async def partner_hedge_phase3_tick(now: Optional[datetime] = None) -> None:
             context = Phase3MarketContext(
                 phase2=p2, event_window=classify_event_window(earnings, macro_note or None,
                     (front.expiry-now.date()).days, today=now.date()),
+                correlation=(stress.average_pairwise_correlation if stress else None),
                 gamma_exposure=gamma, back_atm_iv=back_iv,
+                portfolio_stress=stress,
             )
             for kind, value, review_context in build_phase3_hedge_reviews(
                     group, front, context, now=now, back_snapshot=back):
@@ -1051,7 +1131,15 @@ async def partner_hedge_phase3_tick(now: Optional[datetime] = None) -> None:
                 contracts = [leg.tradingsymbol for leg in getattr(value, "legs", ())]
                 await _send_claimed_review(settings.DB_PATH, kind, key, text,
                     detail={"underlying": underlying, "contracts": contracts,
-                            "event_window": context.event_window}, now=now,
+                            "event_window": context.event_window,
+                            "portfolio_breadth": (
+                                context.portfolio_stress.breadth_pct_above_sma
+                                if context.portfolio_stress else None
+                            ),
+                            "portfolio_drawdown": (
+                                context.portfolio_stress.drawdown_pct
+                                if context.portfolio_stress else None
+                            )}, now=now,
                     underlying=underlying,
                     min_gap=timedelta(minutes=settings.PARTNER_HEDGE_PHASE3_GAP_MIN),
                     daily_cap=settings.PARTNER_HEDGE_PHASE3_DAILY_CAP)

@@ -19,6 +19,7 @@ from hedge_analytics import (
     load_partner_positions, load_reconciled_open_partner_positions,
     reconcile_partner_position,
 )
+from hedge_readiness import assess_hedge_readiness, record_gate_evidence
 
 router = APIRouter()
 
@@ -82,6 +83,19 @@ class VixPayload(BaseModel):
     spot: float = Field(gt=0)
     observed_at: datetime
     source: str = Field(min_length=1, max_length=80)
+
+
+class HedgeGateEvidencePayload(BaseModel):
+    """Operator evidence only; it cannot mutate a feature switch."""
+
+    evidence_type: str = Field(min_length=1, max_length=80)
+    phase: str = Field(min_length=1, max_length=20)
+    observed_on: date
+    source: str = Field(min_length=1, max_length=120)
+    kind: str = Field(default="", max_length=80)
+    evidence_ref: str = Field(default="", max_length=160)
+    note: Optional[str] = Field(default=None, max_length=1000)
+    observed_at: Optional[datetime] = None
 
 
 def _position_json(position: PartnerPosition) -> dict:
@@ -195,6 +209,7 @@ async def get_partner_hedge_status(request: Request):
     all_open = await load_partner_positions(settings.DB_PATH)
     reconciled = await load_reconciled_open_partner_positions(settings.DB_PATH)
     vix = await load_vix_observations(settings.DB_PATH, 1)
+    readiness = await assess_hedge_readiness(settings.DB_PATH)
     return {
         "enabled": settings.PARTNER_HEDGE_ENABLED,
         "phase2_enabled": settings.PARTNER_HEDGE_PHASE2_ENABLED,
@@ -202,8 +217,43 @@ async def get_partner_hedge_status(request: Request):
         "open_positions": len(all_open),
         "reconciled_open_positions": len(reconciled),
         "latest_vix": jsonable_encoder(vix[-1]) if vix else None,
+        "readiness": readiness,
         "automatic_execution": False,
     }
+
+
+@router.get("/partner/hedge/readiness")
+async def get_partner_hedge_readiness(request: Request):
+    """Return fail-closed Phase 2/3 go-live evidence; never authorizes orders."""
+    _main._check_internal_secret(request, "get_partner_hedge_readiness")
+    return await assess_hedge_readiness(settings.DB_PATH)
+
+
+@router.post("/partner/hedge/readiness/evidence")
+async def add_partner_hedge_gate_evidence(
+    request: Request, payload: HedgeGateEvidencePayload,
+):
+    """Record a dated operator attestation for the go-live checklist.
+
+    This endpoint intentionally has no companion endpoint that enables a
+    phase.  Configuration changes remain a reviewed deployment operation.
+    """
+    _main._check_internal_secret(request, "add_partner_hedge_gate_evidence")
+    try:
+        evidence = await record_gate_evidence(
+            settings.DB_PATH,
+            evidence_type=payload.evidence_type,
+            phase=payload.phase,
+            kind=payload.kind,
+            evidence_ref=payload.evidence_ref,
+            observed_on=payload.observed_on,
+            observed_at=payload.observed_at,
+            source=payload.source,
+            note=payload.note,
+        )
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+    return {"recorded": evidence, "configuration_changed": False}
 
 
 __all__ = ["router"]
