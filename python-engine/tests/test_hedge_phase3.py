@@ -1,4 +1,5 @@
 from datetime import date, datetime, timedelta
+from types import SimpleNamespace
 
 import pytz
 import pytest
@@ -11,7 +12,7 @@ from hedge_advisory import (
     Phase2MarketContext, Phase3MarketContext, build_phase3_hedge_reviews,
     partner_hedge_phase3_tick,
 )
-from hedge_analytics import PartnerPosition
+from hedge_analytics import PartnerPosition, PortfolioMarketStressReading
 from hedge_formatters import (
     DISCLAIMER, format_calendar_diary_spread, format_iron_butterfly,
     format_long_vol_review, format_ratio_spread, format_gamma_exposure_alert,
@@ -89,9 +90,10 @@ def test_phase3_review_builder_requires_verified_event_and_respects_master_kinds
     assert not {"long_straddle", "long_strangle"} & {kind for kind, _, _ in quiet}
 
 
-def test_ratio_runtime_gate_defaults_off():
+def test_phase3_defaults_on_but_ratio_runtime_gate_stays_off():
     assert settings.PARTNER_HEDGE_RATIO_SPREAD is False
-    assert settings.PARTNER_HEDGE_PHASE3_ENABLED is False
+    assert settings.PARTNER_HEDGE_PHASE3_ENABLED is True
+    assert settings.PARTNER_HEDGE_PORTFOLIO_OVERLAY is True
     assert ratio_spread(_snapshot(), NOW) is None
 
 
@@ -142,3 +144,100 @@ async def test_phase3_tick_stops_before_calendar_and_broker_when_disabled_or_clo
     monkeypatch.setattr(settings, "PARTNER_HEDGE_PHASE3_ENABLED", True)
     monkeypatch.setattr(ha, "partner_enabled", lambda: True)
     await partner_hedge_phase3_tick(IST.localize(datetime(2026, 9, 2, 16, 0)))
+
+
+def test_portfolio_overlay_requires_complete_correlation_and_breadth_trigger(monkeypatch):
+    snap = _snapshot()
+    p2 = Phase2MarketContext("UNKNOWN", .14, .16, .20, None, None, 300.0, snap.taken_at)
+    position = PartnerPosition(**{
+        **_position().__dict__, "signed_quantity": 130,
+    })
+    monkeypatch.setattr(settings, "PARTNER_HEDGE_PORTFOLIO_OVERLAY", True)
+    triggered = PortfolioMarketStressReading(
+        .90, .10, None, True, False, True, 2, 50,
+        "portfolio valuation history unavailable; drawdown trigger disabled",
+    )
+    kinds = {kind for kind, _, _ in build_phase3_hedge_reviews(
+        [position], snap,
+        Phase3MarketContext(
+            p2, correlation=.90, portfolio_stress=triggered,
+        ),
+        now=NOW,
+    )}
+    assert "portfolio_corruption_overlay" in kinds
+
+    incomplete = PortfolioMarketStressReading(
+        None, None, None, False, False, False, 1, 0, "insufficient data",
+    )
+    kinds = {kind for kind, _, _ in build_phase3_hedge_reviews(
+        [position], snap,
+        Phase3MarketContext(p2, portfolio_stress=incomplete), now=NOW,
+    )}
+    assert "portfolio_corruption_overlay" not in kinds
+
+
+@pytest.mark.asyncio
+async def test_phase3_tick_builds_portfolio_stress_inside_phase3_job(monkeypatch):
+    """Guard the job boundary: Phase 3 must not depend on Phase 1 locals."""
+    import event_calendar
+    import macro_events
+    import main
+
+    second = PartnerPosition(**{
+        **_position().__dict__, "tradingsymbol": "BANKBEES",
+    })
+    stress = PortfolioMarketStressReading(
+        .90, .10, None, True, False, True, 2, 50,
+        "portfolio valuation history unavailable; drawdown trigger disabled",
+    )
+
+    async def yes(*args, **kwargs):
+        return True
+
+    async def no_op(*args, **kwargs):
+        return None
+
+    async def positions(*args, **kwargs):
+        return [_position(), second]
+
+    async def closes(*args, **kwargs):
+        return {"NIFTYBEES": tuple(range(1, 52)), "BANKBEES": tuple(range(2, 53))}
+
+    async def snapshot(*args, **kwargs):
+        return _snapshot()
+
+    async def phase2(*args, **kwargs):
+        snap = _snapshot()
+        return Phase2MarketContext("UNKNOWN", .14, .16, .20, None, None, 300.0, snap.taken_at)
+
+    captured = []
+
+    def reviews(_positions, _snapshot_value, context, **kwargs):
+        captured.append(context)
+        return []
+
+    monkeypatch.setattr(settings, "PARTNER_HEDGE_ENABLED", True)
+    monkeypatch.setattr(settings, "PARTNER_HEDGE_PHASE3_ENABLED", True)
+    monkeypatch.setattr(ha, "partner_enabled", lambda: True)
+    monkeypatch.setattr(main, "is_trading_day", yes)
+    monkeypatch.setattr(main.kite, "access_token", "test-token")
+    monkeypatch.setattr(ha, "init_hedge_advisory_db", no_op)
+    monkeypatch.setattr(ha, "load_reconciled_open_partner_positions", positions)
+    monkeypatch.setattr(ha, "load_aligned_ohlcv_closes", closes)
+    monkeypatch.setattr(ha, "portfolio_market_stress", lambda *args, **kwargs: stress)
+    monkeypatch.setattr(
+        ha, "get_instruments_for",
+        lambda underlying: SimpleNamespace(
+            ready=lambda today: True, option_expiries=[date(2026, 9, 24)],
+        ),
+    )
+    monkeypatch.setattr(ha, "take_chain_snapshot", snapshot)
+    monkeypatch.setattr(ha, "_phase2_market_context", phase2)
+    monkeypatch.setattr(ha, "build_phase3_hedge_reviews", reviews)
+    monkeypatch.setattr(event_calendar, "load_event_map", lambda path: {})
+    monkeypatch.setattr(macro_events, "event_note_for", lambda day: None)
+
+    await partner_hedge_phase3_tick(NOW)
+
+    assert captured and captured[0].portfolio_stress is stress
+    assert captured[0].correlation == .90

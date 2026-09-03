@@ -77,19 +77,24 @@ Important settings:
 - `PARTNER_HEDGE_DELIVERABLE_MAX_AGE_MIN=5`
 - `PARTNER_HEDGE_VIX_MAX_AGE_MIN=15`
 - `PARTNER_HEDGE_COLLAR=false`
-- `PARTNER_HEDGE_PHASE2_ENABLED=false`
+- `PARTNER_HEDGE_PHASE2_ENABLED=true`
 - `PARTNER_HEDGE_PHASE2_MIN_DTE=7`
 - `PARTNER_HEDGE_PHASE2_MAX_DTE=45`
 - `PARTNER_HEDGE_COVERED_CALL_DELTA=0.30`
 - `PARTNER_HEDGE_SPREAD_SHORT_DELTA=0.30`
 - `PARTNER_HEDGE_CONDOR_SHORT_DELTA=0.16`
+- `PARTNER_HEDGE_RANGE_MAX_MOVE_PCT=0.003`
 - `PARTNER_HEDGE_MIN_CREDIT_POINTS=10`
 - `PARTNER_HEDGE_DELTA_THRESHOLD_LOTS=0.15`
-- `PARTNER_HEDGE_PHASE3_ENABLED=false`
+- `PARTNER_HEDGE_PHASE3_ENABLED=true`
 - `PARTNER_HEDGE_RATIO_SPREAD=false`
 - `PARTNER_HEDGE_EARNINGS_EVENT=false`
-- `PARTNER_HEDGE_PORTFOLIO_OVERLAY=false`
+- `PARTNER_HEDGE_PORTFOLIO_OVERLAY=true`
+- `PARTNER_HEDGE_OVERLAY_LOOKBACK_ROWS=51`
 - `PARTNER_HEDGE_PHASE3_GAMMA_THRESHOLD=1000`
+- `PARTNER_HEDGE_OVERLAY_CORRELATION_MIN=0.75`
+- `PARTNER_HEDGE_OVERLAY_BREADTH_MAX=0.25`
+- `PARTNER_HEDGE_OVERLAY_DRAWDOWN_MIN=0.06`
 - `PARTNER_HEDGE_BUTTERFLY_MAX_DTE=3`
 - `PARTNER_HEDGE_CALENDAR_MIN_IV_GAP=0.035`
 
@@ -107,6 +112,10 @@ All endpoints require `X-Internal-Secret`.
 - `GET /partner/hedge/positions` — inspect the ledger.
 - `POST /partner/hedge/vix` — record a sourced VIX observation.
 - `GET /partner/hedge/status` — readiness and reconciliation counts.
+- `GET /partner/hedge/readiness` — explicit Phase 2/3 staging, live-chain,
+  sample-review and earnings-calendar blockers.
+- `POST /partner/hedge/readiness/evidence` — record a dated operator
+  attestation; this endpoint cannot change a feature switch.
 
 Creating a row never makes it advisory-eligible. The separate reconciliation
 call is mandatory. F&O intake/reconciliation must explicitly declare
@@ -125,7 +134,7 @@ does not consume the dedup key and can be retried.
 
 `partner_hedge_phase2_tick` runs at minutes 03 and 33, second 20, then
 self-gates to 09:30–15:25 IST and trading days. It is zero-cost while the Phase
-2 switch is off. Premium kinds have a four-hour per-kind throttle and cap of
+2 switch is disabled. Premium kinds have a four-hour per-kind throttle and cap of
 four successful messages per day; delta rebalancing has a 30-minute throttle
 and cap of eight. Send claims are atomic, so overlapping scheduler runs cannot
 double-send; a failed delivery releases its claim for retry.
@@ -133,10 +142,32 @@ double-send; a failed delivery releases its claim for retry.
 `partner_hedge_phase3_tick` runs off-grid at minutes 11 and 41, second 50 and
 self-gates to 09:20–15:20 IST on trading days. It reads only reconciled
 positions, broker instrument expiries, complete ATM term points, the curated
-event CSV, and the maintained macro-event calendar. Its master switch ships
-off pending paper validation. Phase 3 has a four-hour per-kind/underlying
-throttle and four-message daily cap.
+event CSV, and the maintained macro-event calendar. Its master switch is
+enabled; individual missing-data and unsafe strategies remain independently
+disabled. Phase 3 has a four-hour per-kind/underlying throttle and four-message
+daily cap.
 
-Before enabling the master switch, load and reconcile a test portfolio, inspect
+Range-sensitive credit structures require more than a quiet regime label.
+After 09:45, the future must remain within 0.3% of the first trustworthy
+session snapshot, futures flow must be classified neutral, and fresh put/call
+OI walls must contain the full option-implied move on both sides.
+
+The portfolio overlay consumes a strict 51-session rectangular close matrix
+from `ohlcv_cache`. At least two holdings are required; missing dates,
+different session calendars, stale final dates, constant returns, or invalid
+prices suppress the overlay. The correlation/breadth trigger is correlation
+at least 0.75 with fewer than 25% of holdings above their 50-session average.
+Drawdown remains unavailable unless a reconciled marked-to-market portfolio
+value history is explicitly supplied; it is never reconstructed from entry
+prices.
+
+Readiness is evidence-backed. Phase 2 requires five recorded staging days and
+a live-chain verification. Phase 3 requires seven staging days, a live-chain
+verification, and five reviewed Telegram samples for every runtime-emitted
+Phase 3 kind. Each sample review carries a unique `evidence_ref`, preventing a
+retried submission from inflating the count. Recording evidence never enables
+a phase and never authorizes execution.
+
+Before production promotion, load and reconcile a test portfolio, inspect
 `GET /partner/hedge/status`, and manually compare one generated NIFTY plan with
 the live broker chain. Production promotion remains GitHub-only.

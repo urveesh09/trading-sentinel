@@ -23,6 +23,10 @@ def _headers():
 @pytest.mark.asyncio
 async def test_hedge_routes_require_internal_auth(hedge_client):
     assert (await hedge_client.get("/partner/hedge/status")).status_code == 403
+    assert (await hedge_client.get("/partner/hedge/readiness")).status_code == 403
+    assert (await hedge_client.post(
+        "/partner/hedge/readiness/evidence", json={},
+    )).status_code in {403, 422}
     assert (await hedge_client.get(
         "/partner/hedge/positions", headers={"X-Internal-Secret": "wrong"},
     )).status_code == 403
@@ -49,8 +53,10 @@ async def test_position_intake_requires_reconciliation_before_status_counts_it(
     )).json()
     assert status["open_positions"] == 1
     assert status["reconciled_open_positions"] == 0
-    assert status["phase2_enabled"] is False
-    assert status["phase3_enabled"] is False
+    assert status["phase2_enabled"] is True
+    assert status["phase3_enabled"] is True
+    assert status["readiness"]["automatic_execution"] is False
+    assert status["readiness"]["can_place_orders"] is False
     assert status["automatic_execution"] is False
 
     reconciled = await hedge_client.post(
@@ -147,3 +153,18 @@ async def test_naive_vix_timestamp_returns_422(hedge_client):
     )
     assert response.status_code == 422
     assert "timezone-aware" in response.json()["detail"]
+
+
+@pytest.mark.asyncio
+async def test_readiness_evidence_cannot_enable_configuration(hedge_client):
+    response = await hedge_client.post(
+        "/partner/hedge/readiness/evidence", headers=_headers(), json={
+            "evidence_type": "phase2_staging_day", "phase": "phase2",
+            "observed_on": "2099-01-01", "source": "invalid-future-proof",
+        },
+    )
+    assert response.status_code == 422
+    report = await hedge_client.get("/partner/hedge/readiness", headers=_headers())
+    assert report.status_code == 200
+    assert report.json()["automatic_execution"] is False
+    assert report.json()["can_place_orders"] is False

@@ -385,6 +385,22 @@
       "response_model": null
     },
     {
+      "endpoint": "get_partner_hedge_readiness",
+      "methods": [
+        "GET"
+      ],
+      "path": "/partner/hedge/readiness",
+      "response_model": null
+    },
+    {
+      "endpoint": "add_partner_hedge_gate_evidence",
+      "methods": [
+        "POST"
+      ],
+      "path": "/partner/hedge/readiness/evidence",
+      "response_model": null
+    },
+    {
       "endpoint": "get_partner_hedge_status",
       "methods": [
         "GET"

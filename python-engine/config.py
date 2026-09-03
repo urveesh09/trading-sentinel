@@ -1063,10 +1063,9 @@ class Settings(BaseSettings):
     PARTNER_HEDGE_SUPPRESS_LEGACY_BRIEF: bool = True
     PARTNER_HEDGE_SUPPRESS_LEGACY_EOD:   bool = True
 
-    # Phase 2 adds premium-selling and delta-rebalance reviews. Keep the
-    # independent master switch off until live-chain hand verification; the
-    # Phase 1 protective-put/futures pipeline above remains active.
-    PARTNER_HEDGE_PHASE2_ENABLED:         bool  = False
+    # Phase 2 premium-selling and delta-rebalance reviews are live, with each
+    # builder still failing closed on stale, incomplete, or unreconciled data.
+    PARTNER_HEDGE_PHASE2_ENABLED:         bool  = True
     PARTNER_HEDGE_COVERED_CALL:           bool  = True
     PARTNER_HEDGE_BULL_PUT_SPREAD:        bool  = True
     PARTNER_HEDGE_BEAR_CALL_SPREAD:       bool  = True
@@ -1081,6 +1080,7 @@ class Settings(BaseSettings):
     PARTNER_HEDGE_COVERED_CALL_IV_RANK:   float = 0.45
     PARTNER_HEDGE_SPREAD_IV_RANK:         float = 0.40
     PARTNER_HEDGE_CONDOR_IV_RANK:         float = 0.50
+    PARTNER_HEDGE_RANGE_MAX_MOVE_PCT:      float = 0.003
     PARTNER_HEDGE_IV_HISTORY_DAYS:        int   = 252
     PARTNER_HEDGE_IV_MIN_OBSERVATIONS:    int   = 20
     PARTNER_HEDGE_PHASE2_MIN_DTE:         int   = 7
@@ -1091,9 +1091,9 @@ class Settings(BaseSettings):
     PARTNER_HEDGE_PHASE2_PREMIUM_DAILY_CAP: int = 4
     PARTNER_HEDGE_PHASE2_DELTA_DAILY_CAP: int   = 8
 
-    # Phase 3: Greeks/term/event advisory. Master gate remains off until
-    # paper validation; individually risky/unavailable-data kinds also fail closed.
-    PARTNER_HEDGE_PHASE3_ENABLED:          bool  = False
+    # Phase 3 Greeks/term/event advisory is live. Individually unsafe or
+    # unavailable-data kinds remain independently disabled below.
+    PARTNER_HEDGE_PHASE3_ENABLED:          bool  = True
     PARTNER_HEDGE_GAMMA_ALERT:             bool  = True
     PARTNER_HEDGE_LONG_STRADDLE:           bool  = True
     PARTNER_HEDGE_LONG_STRANGLE:           bool  = True
@@ -1101,7 +1101,11 @@ class Settings(BaseSettings):
     PARTNER_HEDGE_IRON_BUTTERFLY:          bool  = True
     PARTNER_HEDGE_RATIO_SPREAD:            bool  = False
     PARTNER_HEDGE_EARNINGS_EVENT:          bool  = False
-    PARTNER_HEDGE_PORTFOLIO_OVERLAY:       bool  = False
+    PARTNER_HEDGE_PORTFOLIO_OVERLAY:       bool  = True
+    PARTNER_HEDGE_OVERLAY_LOOKBACK_ROWS:   int   = 51
+    PARTNER_HEDGE_OVERLAY_CORRELATION_MIN: float = 0.75
+    PARTNER_HEDGE_OVERLAY_BREADTH_MAX:     float = 0.25
+    PARTNER_HEDGE_OVERLAY_DRAWDOWN_MIN:    float = 0.06
     PARTNER_HEDGE_PHASE3_LOW_IV_RANK:      float = 0.30
     PARTNER_HEDGE_BUTTERFLY_IV_RANK:       float = 0.55
     PARTNER_HEDGE_BUTTERFLY_MAX_DTE:       int   = 3

@@ -17,7 +17,7 @@ import json
 import math
 from dataclasses import dataclass, field
 from datetime import date, datetime, timedelta, timezone
-from typing import Iterable, Literal, Optional, Sequence
+from typing import Iterable, Literal, Mapping, Optional, Sequence
 
 import aiosqlite
 
@@ -371,6 +371,45 @@ class FuturesHedgeSizing:
     advisory_only: bool = True
 
 
+@dataclass(frozen=True)
+class RangeRegimeReading:
+    """A deliberately narrow, observed range classification.
+
+    This is not a prediction that price will remain inside the walls.  It only
+    states that a fresh chain currently has non-directional futures flow and
+    OI walls wide enough to contain the option-implied move.  Strategy-specific
+    IV/risk filters must remain separate from this market-state classifier.
+    """
+
+    regime: Literal["RANGE", "NOT_RANGE", "UNAVAILABLE"]
+    support: Optional[float]
+    resistance: Optional[float]
+    expected_move: Optional[float]
+    data_fresh: bool
+    reason: str
+
+
+@dataclass(frozen=True)
+class PortfolioMarketStressReading:
+    """Observed concentration signals for a human portfolio-overlay review.
+
+    ``drawdown_pct`` is only populated from a caller-supplied, complete
+    marked-to-market portfolio-value history.  The repository does not retain
+    such a history today, so this field intentionally remains unavailable in
+    live use until a reconciled valuation feed is introduced.
+    """
+
+    average_pairwise_correlation: Optional[float]
+    breadth_pct_above_sma: Optional[float]
+    drawdown_pct: Optional[float]
+    correlation_breadth_valid: bool
+    drawdown_valid: bool
+    should_review_overlay: bool
+    asset_count: int
+    return_observations: int
+    reason: Optional[str] = None
+
+
 def assess_quote_freshness(
     observed_at: Optional[datetime],
     *,
@@ -479,6 +518,287 @@ def net_greeks(positions: Iterable[PartnerPosition]) -> Optional[Greeks]:
     """Return confirmed net Greeks, or ``None`` instead of a false zero."""
     exposure = aggregate_portfolio(positions)
     return exposure.net_greeks if exposure.valid else None
+
+
+def classify_range_regime(
+    *,
+    spot: Optional[float],
+    support: Optional[float],
+    resistance: Optional[float],
+    expected_move: Optional[float],
+    futures_buildup: Optional[str],
+    observed_at: Optional[datetime],
+    now: Optional[datetime] = None,
+    max_age: timedelta = timedelta(minutes=5),
+) -> RangeRegimeReading:
+    """Classify a *current observed* range from complete chain inputs.
+
+    The caller supplies OI-wall support/resistance from one chain snapshot,
+    the option-implied move for that same expiry, and the futures price/OI
+    ``classify_buildup`` label from the same observation interval.  Missing
+    timestamps, one-sided walls, unknown flow, or walls narrower than twice
+    the expected move produce a no-signal result.  The two-times rule matches
+    the existing iron-condor geometry guard; it is not a new trading rule.
+    """
+    freshness = assess_quote_freshness(observed_at, now=now, max_age=max_age)
+    if not freshness.fresh:
+        return RangeRegimeReading(
+            "UNAVAILABLE", None, None, None, False,
+            f"range inputs unavailable: {freshness.reason}",
+        )
+    try:
+        current_spot = _positive(spot, "spot")
+        lower_wall = _positive(support, "support")
+        upper_wall = _positive(resistance, "resistance")
+        move = _positive(expected_move, "expected_move")
+    except (TypeError, ValueError):
+        return RangeRegimeReading(
+            "UNAVAILABLE", None, None, None, True,
+            "range inputs require positive spot, both OI walls, and expected move",
+        )
+    if not isinstance(futures_buildup, str):
+        return RangeRegimeReading(
+            "UNAVAILABLE", lower_wall, upper_wall, move, True,
+            "range inputs require an explicit futures buildup classification",
+        )
+    buildup = futures_buildup.strip().upper()
+    if buildup not in {"LONG_BUILDUP", "SHORT_BUILDUP", "SHORT_COVERING", "LONG_UNWINDING", "NEUTRAL"}:
+        return RangeRegimeReading(
+            "UNAVAILABLE", lower_wall, upper_wall, move, True,
+            "range inputs contain an unknown futures buildup classification",
+        )
+    if not lower_wall < current_spot < upper_wall:
+        return RangeRegimeReading(
+            "NOT_RANGE", lower_wall, upper_wall, move, True,
+            "spot is outside the observed OI walls",
+        )
+    if buildup != "NEUTRAL":
+        return RangeRegimeReading(
+            "NOT_RANGE", lower_wall, upper_wall, move, True,
+            f"directional futures flow: {buildup}",
+        )
+    if lower_wall > current_spot - move or upper_wall < current_spot + move:
+        return RangeRegimeReading(
+            "NOT_RANGE", lower_wall, upper_wall, move, True,
+            "observed OI walls do not contain the full expected move on both sides",
+        )
+    return RangeRegimeReading(
+        "RANGE", lower_wall, upper_wall, move, True,
+        "fresh neutral futures flow and both OI walls contain the expected move",
+    )
+
+
+def _clean_aligned_closes(
+    closes_by_ticker: Mapping[str, Sequence[float]],
+    *,
+    min_return_observations: int,
+    sma_lookback: int,
+) -> Optional[dict[str, tuple[float, ...]]]:
+    """Validate a rectangular daily-close matrix without repairing gaps."""
+    if (
+        not isinstance(min_return_observations, int)
+        or isinstance(min_return_observations, bool)
+        or min_return_observations < 2
+    ):
+        raise ValueError("min_return_observations must be an integer of at least two")
+    if (
+        not isinstance(sma_lookback, int)
+        or isinstance(sma_lookback, bool)
+        or sma_lookback < 2
+    ):
+        raise ValueError("sma_lookback must be an integer of at least two")
+    if not isinstance(closes_by_ticker, Mapping) or len(closes_by_ticker) < 2:
+        return None
+    minimum_rows = max(min_return_observations + 1, sma_lookback)
+    clean: dict[str, tuple[float, ...]] = {}
+    for raw_ticker, raw_closes in closes_by_ticker.items():
+        if not isinstance(raw_ticker, str) or not raw_ticker.strip() or raw_ticker.strip().upper() in clean:
+            return None
+        try:
+            values = tuple(_positive(value, "daily close") for value in raw_closes)
+        except (TypeError, ValueError):
+            return None
+        if len(values) < minimum_rows:
+            return None
+        clean[raw_ticker.strip().upper()] = values
+    lengths = {len(values) for values in clean.values()}
+    if len(lengths) != 1:
+        return None
+    return clean
+
+
+def _pearson(left: Sequence[float], right: Sequence[float]) -> Optional[float]:
+    if len(left) != len(right) or len(left) < 2:
+        return None
+    left_mean = sum(left) / len(left)
+    right_mean = sum(right) / len(right)
+    left_ss = sum((value - left_mean) ** 2 for value in left)
+    right_ss = sum((value - right_mean) ** 2 for value in right)
+    if left_ss <= 0 or right_ss <= 0:
+        return None
+    covariance = sum((a - left_mean) * (b - right_mean) for a, b in zip(left, right))
+    value = covariance / math.sqrt(left_ss * right_ss)
+    # Roundoff must never turn an otherwise valid coefficient outside [-1, 1].
+    return max(-1.0, min(1.0, value)) if math.isfinite(value) else None
+
+
+def portfolio_market_stress(
+    closes_by_ticker: Mapping[str, Sequence[float]],
+    *,
+    portfolio_values: Optional[Sequence[float]] = None,
+    min_return_observations: int = 20,
+    sma_lookback: int = 50,
+    correlation_threshold: float = 0.75,
+    breadth_threshold: float = 0.25,
+    drawdown_threshold: float = 0.06,
+) -> PortfolioMarketStressReading:
+    """Compute correlation/breadth and, only when supplied, portfolio drawdown.
+
+    ``closes_by_ticker`` must be an aligned, gap-free daily-close matrix.  Use
+    :func:`load_aligned_ohlcv_closes` for repository cache data rather than
+    independently fetched series.  ``portfolio_values`` is intentionally
+    optional: it must be a complete reconciled marked-to-market history, not
+    a synthetic curve reconstructed from today's positions and their entries.
+    """
+    try:
+        corr_limit = _finite(correlation_threshold, "correlation_threshold")
+        breadth_limit = _finite(breadth_threshold, "breadth_threshold")
+        dd_limit = _finite(drawdown_threshold, "drawdown_threshold")
+    except (TypeError, ValueError):
+        raise ValueError("overlay thresholds must be finite")
+    if not -1.0 <= corr_limit <= 1.0 or not 0.0 <= breadth_limit <= 1.0 or not 0.0 <= dd_limit <= 1.0:
+        raise ValueError("overlay thresholds are outside their valid ranges")
+    clean = _clean_aligned_closes(
+        closes_by_ticker,
+        min_return_observations=min_return_observations,
+        sma_lookback=sma_lookback,
+    )
+    if clean is None:
+        return PortfolioMarketStressReading(
+            None, None, None, False, False, False, 0, 0,
+            "requires at least two aligned, gap-free daily-close histories",
+        )
+    returns = {
+        ticker: tuple(
+            closes[index] / closes[index - 1] - 1.0
+            for index in range(1, len(closes))
+        )[-min_return_observations:]
+        for ticker, closes in clean.items()
+    }
+    correlations: list[float] = []
+    return_rows = list(returns.values())
+    for left_index, left in enumerate(return_rows):
+        for right in return_rows[left_index + 1:]:
+            coefficient = _pearson(left, right)
+            if coefficient is None:
+                return PortfolioMarketStressReading(
+                    None, None, None, False, False, False,
+                    len(clean), min_return_observations,
+                    "constant or invalid return history; correlation is unavailable",
+                )
+            correlations.append(coefficient)
+    average_correlation = sum(correlations) / len(correlations)
+    above_sma = sum(
+        closes[-1] > sum(closes[-sma_lookback:]) / sma_lookback
+        for closes in clean.values()
+    )
+    breadth = above_sma / len(clean)
+
+    drawdown: Optional[float] = None
+    drawdown_valid = False
+    if portfolio_values is not None:
+        try:
+            values = tuple(_positive(value, "portfolio value") for value in portfolio_values)
+        except (TypeError, ValueError):
+            return PortfolioMarketStressReading(
+                average_correlation, breadth, None, True, False,
+                average_correlation >= corr_limit and breadth < breadth_limit,
+                len(clean), min_return_observations,
+                "portfolio valuation history is invalid; drawdown trigger disabled",
+            )
+        if len(values) >= 2:
+            peak = max(values)
+            drawdown = max(0.0, (peak - values[-1]) / peak)
+            drawdown_valid = True
+
+    correlation_breadth_trigger = average_correlation >= corr_limit and breadth < breadth_limit
+    drawdown_trigger = drawdown_valid and drawdown is not None and drawdown >= dd_limit
+    reason = None
+    if not drawdown_valid:
+        reason = "portfolio valuation history unavailable; drawdown trigger disabled"
+    return PortfolioMarketStressReading(
+        average_correlation, breadth, drawdown, True, drawdown_valid,
+        correlation_breadth_trigger or drawdown_trigger,
+        len(clean), min_return_observations, reason,
+    )
+
+
+async def load_aligned_ohlcv_closes(
+    db_path: str,
+    tickers: Sequence[str],
+    *,
+    as_of: date,
+    lookback_rows: int = 51,
+) -> Optional[dict[str, tuple[float, ...]]]:
+    """Load a strict rectangular close matrix from the local daily cache.
+
+    ``as_of`` is required.  Every requested ticker must have a positive close
+    on that exact session and the identical preceding set of sessions; this
+    prevents an inner join from silently comparing different market days.
+    The function does not substitute a previous close for a missing one.
+    """
+    if not isinstance(as_of, date) or isinstance(as_of, datetime):
+        raise ValueError("as_of must be a date")
+    if not isinstance(lookback_rows, int) or isinstance(lookback_rows, bool) or lookback_rows < 2:
+        raise ValueError("lookback_rows must be an integer of at least two")
+    try:
+        names = tuple(_normalise_underlying(ticker) for ticker in tickers)
+    except (TypeError, ValueError):
+        return None
+    if len(names) < 2 or len(set(names)) != len(names):
+        return None
+    try:
+        async with aiosqlite.connect(db_path) as db:
+            cur = await db.execute("PRAGMA table_info(ohlcv_cache)")
+            columns = {row[1] for row in await cur.fetchall()}
+            if not {"ticker", "date", "close"}.issubset(columns):
+                return None
+            result: dict[str, tuple[date, ...] | tuple[float, ...]] = {}
+            for ticker in names:
+                cur = await db.execute(
+                    "SELECT date, close FROM ohlcv_cache WHERE ticker=? AND date<=? "
+                    "ORDER BY date DESC LIMIT ?",
+                    (ticker, as_of.isoformat(), lookback_rows),
+                )
+                rows = await cur.fetchall()
+                if len(rows) != lookback_rows:
+                    return None
+                parsed_dates: list[date] = []
+                parsed_closes: list[float] = []
+                for raw_day, raw_close in rows:
+                    try:
+                        parsed_dates.append(date.fromisoformat(str(raw_day)[:10]))
+                        parsed_closes.append(_positive(raw_close, "cached close"))
+                    except (TypeError, ValueError):
+                        return None
+                if parsed_dates[0] != as_of or len(set(parsed_dates)) != len(parsed_dates):
+                    return None
+                result[f"{ticker}:dates"] = tuple(reversed(parsed_dates))
+                result[ticker] = tuple(reversed(parsed_closes))
+    except aiosqlite.OperationalError:
+        return None
+    reference_dates = result.get(f"{names[0]}:dates")
+    if not isinstance(reference_dates, tuple):
+        return None
+    closes: dict[str, tuple[float, ...]] = {}
+    for ticker in names:
+        if result.get(f"{ticker}:dates") != reference_dates:
+            return None
+        values = result.get(ticker)
+        if not isinstance(values, tuple):
+            return None
+        closes[ticker] = values
+    return closes
 
 
 def iv_percentile(
