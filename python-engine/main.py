@@ -357,6 +357,12 @@ async def run_penny_scanner_once():
             "_penny_scanner singleton was never built (kite init failed?)"
         )
         return
+    # A live penny entry has a broker-held protective stop.  Its paper twin
+    # only has a PAPER-* evidence id, so without an explicit price check a
+    # stop breach could rebound before the 14:30/15:00 exit jobs and leave a
+    # fictitious winning paper outcome.  Run the paper-only stop check on the
+    # existing market-hours cadence before looking for another entry.
+    await run_penny_paper_stop_monitor()
     try:
         result = await asyncio.wait_for(
             scanner.scan_once(as_of=datetime.now(IST)),
@@ -1175,6 +1181,66 @@ async def _execute_scheduled_penny_exit(
             "average fill price. Position remains unsettled; reconcile manually."
         )
     return result
+
+
+async def run_penny_paper_stop_monitor() -> dict:
+    """Settle breached protective stops for classic penny paper positions.
+
+    Live ``PENNY`` rows are intentionally excluded: their stops are managed and
+    filled by the broker, and local LTP polling is not execution truth.  The
+    classic paper book has no broker order, however, so this monitor is needed
+    to make its lifecycle comparable to the live strategy.  Settlement routes
+    through the existing idempotent scheduled-exit path and therefore cannot
+    double-book a close if it overlaps an EOD job.
+    """
+    scanner = _get_penny_scanner()
+    executor = getattr(scanner, "executor", None) if scanner is not None else None
+    if executor is None or not bool(getattr(executor, "paper_mode", False)):
+        return {"checked": 0, "stopped": []}
+
+    from position_tracker import get_open_positions
+
+    stopped: list[str] = []
+    checked = 0
+    try:
+        positions = await get_open_positions(settings.DB_PATH)
+        paper_mis = [
+            p for p in positions
+            if p.get("source") == "PENNY_PAPER"
+            and str(p.get("product_type") or "").upper() == "MIS"
+        ]
+        for position in paper_mis:
+            checked += 1
+            entry = float(position.get("entry_price") or 0.0)
+            stop = float(
+                position.get("trailing_stop_current")
+                or position.get("stop_loss_initial")
+                or 0.0
+            )
+            if stop <= 0:
+                logger.error(
+                    "penny_paper_stop_monitor_invalid_stop ticker=%s stop=%s",
+                    position.get("ticker"), stop,
+                )
+                continue
+            ltp = await _penny_ltp(position.get("ticker"), entry)
+            if ltp > stop:
+                continue
+            result = await _execute_scheduled_penny_exit(
+                position, reason="protective_stop_paper", reference_price=ltp,
+            )
+            settled = int((result.get("settlement") or {}).get("settled") or 0)
+            if settled:
+                stopped.append(str(position.get("ticker")))
+                logger.info(
+                    "penny_paper_stop_closed ticker=%s ltp=%.2f stop=%.2f "
+                    "settled=%d",
+                    position.get("ticker"), ltp, stop, settled,
+                )
+    except Exception as exc:
+        # Paper bookkeeping must never prevent the live/paper signal scan.
+        logger.error("penny_paper_stop_monitor_failed error=%s", str(exc))
+    return {"checked": checked, "stopped": stopped}
 
 
 async def run_penny_eod_check():
@@ -2036,22 +2102,24 @@ async def lifespan(app: FastAPI):
     def _liveness_tick_loop():
         """Stdlib-time heartbeat in a daemon thread. Decoupled from the
         asyncio loop so a frozen event loop doesn't silence the tick."""
-        import os as _os
-        import resource as _resource
+        import threading as _threading
         import time as _time
+        from memory_metrics import current_rss_kb, peak_rss_kb
         tick_count = 0
         while not _LIVENESS_TICK_STOP.is_set():
             try:
                 tick_count += 1
-                try:
-                    rss_kb = _resource.getrusage(_resource.RUSAGE_SELF).ru_maxrss
-                except Exception:
-                    rss_kb = -1
+                # `rss_kb` is deliberately the *current* resident set.  Keep
+                # the non-decreasing ru_maxrss separately so a temporary
+                # scanner peak is not misdiagnosed as a live memory leak.
+                rss_kb = current_rss_kb()
+                max_rss_kb = peak_rss_kb()
                 _liveness_log.info(
-                    "penny_liveness_tick count=%d rss_kb=%d threads=%d",
+                    "penny_liveness_tick count=%d rss_kb=%d max_rss_kb=%d threads=%d",
                     tick_count,
                     int(rss_kb),
-                    _os.cpu_count() or 1,
+                    int(max_rss_kb),
+                    _threading.active_count(),
                 )
             except Exception as exc:
                 # Heartbeat itself must NEVER crash. If stdlib logging

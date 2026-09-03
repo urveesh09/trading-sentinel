@@ -21,6 +21,7 @@ the 32-entry census can still prove nothing was dropped.
 """
 import asyncio
 from datetime import datetime
+from time import monotonic
 
 from config import settings
 
@@ -131,6 +132,9 @@ def register_fno_scheduler_jobs(scheduler):
         if not _main.kite.access_token:
             logger.warning("fno_tick_skip reason=no_access_token")
             return
+        started = monotonic()
+        summary = None
+        outcome = "ok"
         try:
             summary = await run_fno_tick(
                 _main.kite,
@@ -150,7 +154,23 @@ def register_fno_scheduler_jobs(scheduler):
                 except Exception as notify_exc:
                     logger.warning("fno_tick_notify_failed err=%s", notify_exc)
         except Exception as exc:
+            outcome = "failed"
             logger.error("fno_tick_failed err=%s", exc, exc_info=True)
+        finally:
+            elapsed = monotonic() - started
+            fields = {
+                "outcome": outcome,
+                "elapsed_sec": round(elapsed, 3),
+                "cadence_sec": settings.FNO_SCAN_INTERVAL_SEC,
+                "note": (summary or {}).get("note") or "none",
+                "entries": len((summary or {}).get("entries") or []),
+                "exits": len((summary or {}).get("exits") or []),
+                "dr_opened": len((summary or {}).get("dr_opened") or []),
+                "dr_exits": int((summary or {}).get("dr_exits") or 0),
+            }
+            logger.info("fno_tick_complete", **fields)
+            if elapsed >= settings.FNO_SCAN_INTERVAL_SEC:
+                logger.warning("fno_tick_overrun", **fields)
 
     scheduler.add_job(
         _run_fno_tick_safe, "interval",

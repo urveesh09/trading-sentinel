@@ -931,6 +931,12 @@ async def partner_hedge_tick(now: Optional[datetime] = None) -> None:
     grouped: dict[str, list[PartnerPosition]] = defaultdict(list)
     for position in positions:
         grouped[position.underlying].append(position)
+    logger.info(
+        "partner_hedge_tick_state",
+        now_ist=now.strftime("%H:%M:%S"),
+        reconciled_positions=len(positions),
+        underlyings=len(grouped),
+    )
 
     for underlying, group in grouped.items():
         try:
@@ -991,6 +997,12 @@ async def partner_hedge_phase2_tick(now: Optional[datetime] = None) -> None:
     grouped: dict[str, list[PartnerPosition]] = defaultdict(list)
     for position in positions:
         grouped[position.underlying].append(position)
+    logger.info(
+        "partner_hedge_phase2_state",
+        now_ist=now.strftime("%H:%M:%S"),
+        reconciled_positions=len(positions),
+        underlyings=len(grouped),
+    )
 
     for underlying, group in grouped.items():
         try:
@@ -1057,6 +1069,11 @@ async def partner_hedge_phase3_tick(now: Optional[datetime] = None) -> None:
         return
     await init_hedge_advisory_db(settings.DB_PATH)
     positions = await load_reconciled_open_partner_positions(settings.DB_PATH)
+    logger.info(
+        "partner_hedge_phase3_state",
+        now_ist=now.strftime("%H:%M:%S"),
+        reconciled_positions=len(positions),
+    )
     equity_tickers = sorted({
         position.tradingsymbol.strip().upper()
         for position in positions

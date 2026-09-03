@@ -124,6 +124,27 @@ def _read_csv_rows(path):
 
 # ---- tests ------------------------------------------------------------
 
+@pytest.mark.parametrize("hour,minute", [(9, 15), (10, 29), (14, 30), (15, 30)])
+def test_scanner_skips_guaranteed_rejects_outside_entry_window(
+    tmp_paths, fake_kite, fake_universe, hour, minute,
+):
+    """Out-of-window ticks must not fetch quotes or create signal-log noise."""
+    from penny_scanner import PennyScanner
+
+    scanner = PennyScanner(
+        kite=fake_kite, universe_json_path=fake_universe,
+        paper_mode=True, regime="PR1_CALM",
+    )
+    result = asyncio.run(scanner.scan_once(
+        as_of=datetime(2026, 6, 21, hour, minute),
+    ))
+
+    assert result["accept"] == result["reject"] == result["error"] == 0
+    fake_kite.get_quote.assert_not_awaited()
+    fake_kite.get_intraday.assert_not_awaited()
+    assert _read_csv_rows(str(tmp_paths / "penny_signals.csv")) == []
+
+
 def test_scanner_initializes_signal_db(tmp_paths, fake_kite, fake_universe):
     """First run creates the penny_signals table."""
     asyncio.run(_run_scanner_with(tmp_paths, fake_kite, fake_universe))

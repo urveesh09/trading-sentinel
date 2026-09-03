@@ -205,6 +205,72 @@ async def test_scheduled_paper_exit_journals_once_and_settles_locally(monkeypatc
 
 
 @pytest.mark.asyncio
+async def test_penny_paper_stop_monitor_closes_a_breached_stop(monkeypatch):
+    """Paper stops need active monitoring because no broker holds them."""
+    import main
+
+    await _seed_position(settings.DB_PATH)
+    kite = SimpleNamespace(
+        place_order=AsyncMock(side_effect=AssertionError("broker called")),
+        get_quote=AsyncMock(side_effect=AssertionError("executor quote called")),
+    )
+    executor = PennyExecutor(kite, paper_mode=True)
+    monkeypatch.setattr(
+        main, "_penny_scanner",
+        SimpleNamespace(executor=executor, source_tag="PENNY_PAPER"),
+    )
+    monkeypatch.setattr(main, "_penny_ltp", AsyncMock(return_value=94.0))
+
+    result = await main.run_penny_paper_stop_monitor()
+
+    assert result == {"checked": 1, "stopped": ["ABC"]}
+    kite.place_order.assert_not_awaited()
+    kite.get_quote.assert_not_awaited()
+    async with aiosqlite.connect(settings.DB_PATH) as db:
+        position = await (await db.execute(
+            "SELECT status,shares,exit_price,exit_date FROM positions "
+            "WHERE ticker='ABC'"
+        )).fetchone()
+        ledger = await (await db.execute(
+            "SELECT COUNT(*),notes FROM bankroll_ledger "
+            "WHERE source='PENNY_PAPER'"
+        )).fetchone()
+    assert position[0] == "CLOSED_TIME"
+    assert position[1] == 0
+    assert position[2] < 94.0  # deterministic paper exit slippage is retained
+    assert position[3]
+    assert ledger == (1, "confirmed_exit:protective_stop_paper")
+
+
+@pytest.mark.asyncio
+async def test_penny_paper_stop_monitor_never_manages_live_rows(monkeypatch):
+    """Broker-held live stops remain the broker's execution truth."""
+    import main
+
+    await _seed_position(settings.DB_PATH)
+    async with aiosqlite.connect(settings.DB_PATH) as db:
+        await db.execute("UPDATE positions SET source='PENNY' WHERE ticker='ABC'")
+        await db.commit()
+    executor = SimpleNamespace(paper_mode=True)
+    monkeypatch.setattr(
+        main, "_penny_scanner",
+        SimpleNamespace(executor=executor, source_tag="PENNY_PAPER"),
+    )
+    ltp = AsyncMock(return_value=90.0)
+    monkeypatch.setattr(main, "_penny_ltp", ltp)
+
+    result = await main.run_penny_paper_stop_monitor()
+
+    assert result == {"checked": 0, "stopped": []}
+    ltp.assert_not_awaited()
+    async with aiosqlite.connect(settings.DB_PATH) as db:
+        row = await (await db.execute(
+            "SELECT status,exit_date FROM positions WHERE ticker='ABC'"
+        )).fetchone()
+    assert row == ("OPEN", None)
+
+
+@pytest.mark.asyncio
 async def test_unconfirmed_protective_stop_blocks_second_live_sell(monkeypatch):
     import main
 

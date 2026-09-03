@@ -334,13 +334,23 @@ async def momentum_paper_monitor(db_path: str, ltp_fn: LtpFn,
                         pos["entry_price"], float(ltp), sold, is_intraday=True,
                     )
                     pnl = gross - costs
-                    await db.execute(
+                    cur = await db.execute(
                         "UPDATE positions SET shares=?, trailing_stop_current=?, "
                         "t1_fired=1, realised_pnl=COALESCE(realised_pnl, 0) + ? "
                         "WHERE ticker=? AND source=? AND exit_date IS NULL AND t1_fired=0",
                         (runner, float(decision["new_stop"]), pnl,
                          pos["ticker"], SOURCE),
                     )
+                    if cur.rowcount != 1:
+                        # Another monitor/close won the race after our snapshot.
+                        # Never write a partial ledger event unless this call
+                        # actually consumed the t1_fired=0 state transition.
+                        await db.rollback()
+                        logger.warning(
+                            "momentum_paper_scale_not_persisted ticker=%s rows=%d",
+                            pos["ticker"], cur.rowcount,
+                        )
+                        continue
                     await db.commit()
                     from performance import record_partial_realisation
                     await record_partial_realisation(

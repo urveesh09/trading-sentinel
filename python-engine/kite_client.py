@@ -21,6 +21,14 @@ logger = structlog.get_logger()
 
 _LEGACY_INTRADAY_INTERVAL = "legacy_unknown"
 
+# Cache reads and writes share /data/cache.db with the scanners, scheduler,
+# and partner advisory jobs.  The default sqlite timeout (5s) is too short for
+# the brief writer bursts produced by a full momentum scan; the 2026-09-03
+# Production audit recorded two otherwise recoverable ``database is locked``
+# failures.  Keep the wait bounded (rather than retrying indefinitely), and
+# apply it to every connection opened by this client.
+SQLITE_OPERATION_TIMEOUT_SEC = 30.0
+
 
 def _interval_minutes(interval: str) -> int:
     """Return the candle width used to decide whether a cache is current.
@@ -70,6 +78,12 @@ class KiteClient:
         # Relay is a path-preserving forward proxy. Auth + X-Kite-Version headers pass through unchanged.
         self.client = httpx.AsyncClient(base_url=settings.KITE_BASE_URL, timeout=15.0)
 
+    def _cache_db(self):
+        """Return a cache connection with a contention-safe bounded wait."""
+        return aiosqlite.connect(
+            self.db_path, timeout=SQLITE_OPERATION_TIMEOUT_SEC,
+        )
+
     def set_token(self, token: str):
         self.access_token = token
         # [BOOTSTRAP-2026-07-17] IST date this token was armed. A non-empty
@@ -96,18 +110,20 @@ class KiteClient:
 
     async def _init_db(self):
         # [PENNY-SQLITE-WAL 2026-07-02] Switch cache.db to WAL mode
-        # + busy_timeout=5s. Today's incident: penny_scanner_once
+        # + a bounded busy timeout. Today's incident: penny_scanner_once
         # held a write lock on cache.db while iterating the universe,
         # and the heartbeat's `health_circuit_query_failed
         # error=database is locked` fired repeatedly because the
         # default sqlite3 busy_timeout is 0 (fail-fast). WAL mode
         # allows concurrent readers + a single writer (vs. the old
-        # rollback-journal mode which serialises everyone). 5s
-        # busy_timeout gives the writer time to finish a typical
-        # commit before the reader gives up.
-        async with aiosqlite.connect(self.db_path) as db:
+        # rollback-journal mode which serialises everyone). A bounded
+        # 30s busy_timeout gives a bursty scanner writer time to finish
+        # before the caller gives up.
+        async with self._cache_db() as db:
             await db.execute("PRAGMA journal_mode=WAL")
-            await db.execute("PRAGMA busy_timeout=5000")
+            await db.execute(
+                f"PRAGMA busy_timeout={int(SQLITE_OPERATION_TIMEOUT_SEC * 1000)}"
+            )
             await db.execute("PRAGMA synchronous=NORMAL")
             await db.execute("""
                 CREATE TABLE IF NOT EXISTS ohlcv_cache (
@@ -122,9 +138,11 @@ class KiteClient:
         # [PENNY-SQLITE-WAL 2026-07-02] Same WAL + busy_timeout
         # enforcement as _init_db. The two tables share the same
         # cache.db file so PRAGMA is idempotent here.
-        async with aiosqlite.connect(self.db_path) as db:
+        async with self._cache_db() as db:
             await db.execute("PRAGMA journal_mode=WAL")
-            await db.execute("PRAGMA busy_timeout=5000")
+            await db.execute(
+                f"PRAGMA busy_timeout={int(SQLITE_OPERATION_TIMEOUT_SEC * 1000)}"
+            )
             await db.execute("PRAGMA synchronous=NORMAL")
             # `interval` was absent from the original schema even though this
             # client stores both one-minute Penny bars and 15-minute Momentum
@@ -247,7 +265,7 @@ class KiteClient:
         now_ist = datetime.now(IST)
         cutoff = (now_ist - timedelta(days=retention_days)).strftime("%Y-%m-%d")
 
-        async with aiosqlite.connect(self.db_path) as db:
+        async with self._cache_db() as db:
             cur = await db.execute(
                 "DELETE FROM intraday_cache WHERE datetime < ?",
                 (cutoff + " 00:00:00",)
@@ -315,7 +333,7 @@ class KiteClient:
         
         # Check Cache
 # Check Cache
-        async with aiosqlite.connect(self.db_path) as db:
+        async with self._cache_db() as db:
             cursor = await db.execute(
                 "SELECT date, open, high, low, close, volume, fetched_at FROM ohlcv_cache WHERE ticker=? AND date >= ? AND date <= ? ORDER BY date",
                 (ticker, from_date, to_date)
@@ -406,7 +424,7 @@ class KiteClient:
                 df['date'] = pd.to_datetime(df['date']).dt.tz_localize(None)
                 
                 # Write to Cache
-                async with aiosqlite.connect(self.db_path) as db:
+                async with self._cache_db() as db:
                     for _, row in df.iterrows():
                         await db.execute(
                             "INSERT OR REPLACE INTO ohlcv_cache (ticker, date, open, high, low, close, volume, fetched_at) VALUES (?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)",
@@ -450,7 +468,7 @@ class KiteClient:
 
 
         # Check cache: only use if all rows are from today
-        async with aiosqlite.connect(self.db_path) as db:
+        async with self._cache_db() as db:
             cursor = await db.execute(
                 """SELECT datetime, open, high, low, close, volume
                    FROM intraday_cache
@@ -510,7 +528,7 @@ class KiteClient:
                 df['datetime'] = pd.to_datetime(df['datetime']).dt.tz_localize(None)
 
                 # Write to intraday cache
-                async with aiosqlite.connect(self.db_path) as db:
+                async with self._cache_db() as db:
                     for _, row in df.iterrows():
                         await db.execute(
                             """INSERT OR REPLACE INTO intraday_cache

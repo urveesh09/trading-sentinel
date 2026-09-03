@@ -78,9 +78,21 @@ CREATE TABLE IF NOT EXISTS partner_messages (
 );
 """
 
+# Partner dedup/analytics tables share cache.db with the trading path.  A
+# short default SQLite wait turns a harmless scan overlap into a dropped
+# notification; keep writes bounded but allow the normal writer burst to
+# drain.  ``timeout`` is connection-local, so every call site opts in.
+SQLITE_OPERATION_TIMEOUT_SEC = 30.0
+
+
+def _partner_db(db_path: str):
+    return aiosqlite.connect(db_path, timeout=SQLITE_OPERATION_TIMEOUT_SEC)
+
 
 async def init_partner_db(db_path: str) -> None:
-    async with aiosqlite.connect(db_path) as db:
+    async with _partner_db(db_path) as db:
+        await db.execute("PRAGMA journal_mode=WAL")
+        await db.execute("PRAGMA busy_timeout=30000")
         await db.executescript(_SCHEMA)
         await db.commit()
 
@@ -90,7 +102,7 @@ async def init_partner_db(db_path: str) -> None:
 # ---------------------------------------------------------------------------
 
 async def _seen(db_path: str, kind: str, key: str) -> bool:
-    async with aiosqlite.connect(db_path) as db:
+    async with _partner_db(db_path) as db:
         cur = await db.execute(
             "SELECT 1 FROM partner_messages WHERE kind=? AND dedup_key=?",
             (kind, key),
@@ -103,7 +115,7 @@ async def _record(
     detail: Optional[dict] = None, now: Optional[datetime] = None,
 ) -> None:
     ts = (now or datetime.now(IST)).strftime("%Y-%m-%d %H:%M:%S")
-    async with aiosqlite.connect(db_path) as db:
+    async with _partner_db(db_path) as db:
         await db.execute(
             "INSERT OR REPLACE INTO partner_messages "
             "(sent_at, kind, dedup_key, delivered, detail) VALUES (?,?,?,?,?)",
@@ -119,7 +131,7 @@ async def _throttled(
     """True when a (kind, key) message went out inside the gap window.
     Event kinds re-use the same dedup_key (the underlying), so the row's
     sent_at IS the last-send time."""
-    async with aiosqlite.connect(db_path) as db:
+    async with _partner_db(db_path) as db:
         cur = await db.execute(
             "SELECT sent_at FROM partner_messages WHERE kind=? AND dedup_key=?",
             (kind, key),
@@ -137,23 +149,33 @@ async def _throttled(
 
 async def _send_event(
     db_path: str, kind: str, name: str, detail: str, now: datetime,
-    throttle_key: Optional[str] = None,
-) -> None:
+    throttle_key: Optional[str] = None, metrics: Optional[dict] = None,
+) -> str:
     """Throttle key defaults to the underlying (one event of a kind per
     underlying per gap). Pass throttle_key when a single kind can fire
     more than once per tick per underlying (wall_flow: support AND
     resistance) so the two don't collide on one shared row."""
+    if metrics is not None:
+        metrics["events_considered"] = metrics.get("events_considered", 0) + 1
     if (
         settings.PARTNER_HEDGE_ENABLED
         and settings.PARTNER_HEDGE_SUPPRESS_ANALYTICS
         and kind in {"pcr_shift", "iv_move", "oi_walls", "wall_flow", "pin"}
     ):
-        return
+        if metrics is not None:
+            metrics["suppressed"] = metrics.get("suppressed", 0) + 1
+        return "suppressed"
     key = throttle_key or name or kind
     if await _throttled(db_path, kind, key, now):
-        return
+        if metrics is not None:
+            metrics["throttled"] = metrics.get("throttled", 0) + 1
+        return "throttled"
     ok = await send_partner(format_event(kind, name, detail), kind=kind)
     await _record(db_path, kind, key, ok, now=now)
+    if metrics is not None:
+        bucket = "sent" if ok else "send_failed"
+        metrics[bucket] = metrics.get(bucket, 0) + 1
+    return "sent" if ok else "send_failed"
 
 
 # ---------------------------------------------------------------------------
@@ -202,7 +224,7 @@ async def _track_record(
     since = (
         now - timedelta(days=settings.PARTNER_TRACK_LOOKBACK_DAYS)
     ).strftime("%Y-%m-%d 00:00:00")
-    async with aiosqlite.connect(db_path) as db:
+    async with _partner_db(db_path) as db:
         cur = await db.execute(
             "SELECT detail FROM partner_messages "
             "WHERE kind='signal' AND dedup_key LIKE ? AND sent_at>=?",
@@ -369,8 +391,18 @@ async def partner_analytics_tick(now: Optional[datetime] = None) -> None:
     logger.info("partner_analytics_tick_invoked now_ist=%s", now.strftime("%H:%M:%S"))
     day_iso = now.date().isoformat()
     oi_events_open = (now.hour * 60 + now.minute) >= 10 * 60  # OI delayed early
+    metrics = {
+        "underlyings_seen": 0, "snapshots_persisted": 0,
+        "snapshot_errors": 0, "events_considered": 0, "suppressed": 0,
+        "throttled": 0, "sent": 0, "send_failed": 0,
+        "analytics_suppression_enabled": bool(
+            settings.PARTNER_HEDGE_ENABLED
+            and settings.PARTNER_HEDGE_SUPPRESS_ANALYTICS
+        ),
+    }
 
     for spec in analytics_underlyings():
+        metrics["underlyings_seen"] += 1
         try:
             book = get_instruments_for(spec.name)
             if not book.ready(now.date()):
@@ -387,6 +419,7 @@ async def partner_analytics_tick(now: Optional[datetime] = None) -> None:
             await fno_oi_store.persist_snapshot(
                 settings.DB_PATH, spec.name, snap, pcr, max_pain, iv,
             )
+            metrics["snapshots_persisted"] += 1
 
             # --- IV spike/crush vs last reported ------------------------
             if iv is not None:
@@ -402,6 +435,7 @@ async def partner_analytics_tick(now: Optional[datetime] = None) -> None:
                            if iv > last_iv else
                            "premium crush; longs bleed even when right"),
                         now,
+                        metrics=metrics,
                     )
                     _last_iv_reported[spec.name] = iv
 
@@ -434,6 +468,7 @@ async def partner_analytics_tick(now: Optional[datetime] = None) -> None:
                     settings.DB_PATH, "pcr_shift", spec.name,
                     f"PCR {open_row['pcr']:.2f} -> {pcr:.2f} since open — {bias}{buildup}",
                     now,
+                    metrics=metrics,
                 )
 
             # --- OI wall migration --------------------------------------
@@ -448,6 +483,7 @@ async def partner_analytics_tick(now: Optional[datetime] = None) -> None:
                         f"OI walls moved: support {prev_walls[0]:,.0f} -> {support:,.0f}"
                         f" | resistance {prev_walls[1]:,.0f} -> {resistance:,.0f}",
                         now,
+                        metrics=metrics,
                     )
                     _last_walls_reported[spec.name] = (support, resistance)
 
@@ -490,6 +526,7 @@ async def partner_analytics_tick(now: Optional[datetime] = None) -> None:
                             # support (PE) and resistance (CE) throttle
                             # independently -- both can move in one tick.
                             throttle_key=f"{spec.name}:{ot}",
+                            metrics=metrics,
                         )
                         _last_wall_flow_reported[flow_key] = pct
 
@@ -518,6 +555,7 @@ async def partner_analytics_tick(now: Optional[datetime] = None) -> None:
                     )
                     await _record(settings.DB_PATH, "pin", pin_key, ok, now=now)
         except Exception as exc:
+            metrics["snapshot_errors"] += 1
             logger.error(
                 "partner_analytics_tick_failed underlying=%s err=%s",
                 spec.name, str(exc), exc_info=True,
@@ -535,6 +573,7 @@ async def partner_analytics_tick(now: Optional[datetime] = None) -> None:
                 + (" — our system stops taking new entries in CRISIS"
                    if regime == "REGIME_3_CRISIS" else ""),
                 now,
+                metrics=metrics,
             )
             _last_regime_reported = regime
     except Exception as exc:
@@ -564,6 +603,7 @@ async def partner_analytics_tick(now: Optional[datetime] = None) -> None:
                 + "; ".join(reasons[:3])
                 + ") — position sizes are unchanged, but treat signals with extra care",
                 now,
+                metrics=metrics,
             )
     except Exception as exc:
         logger.warning("partner_halt_event_failed err=%s", str(exc))
@@ -571,6 +611,7 @@ async def partner_analytics_tick(now: Optional[datetime] = None) -> None:
     # --- momentum stock-option cues --------------------------------------
     try:
         if settings.PARTNER_HEDGE_ENABLED and settings.PARTNER_HEDGE_SUPPRESS_DIRECTIONAL:
+            logger.info("partner_analytics_tick_summary", **metrics)
             return
         fno_names = load_underlying_names()
         if fno_names:
@@ -605,6 +646,40 @@ async def partner_analytics_tick(now: Optional[datetime] = None) -> None:
                 await _record(settings.DB_PATH, "mom_cue", key, ok, now=now)
     except Exception as exc:
         logger.warning("partner_mom_cue_failed err=%s", str(exc))
+    logger.info("partner_analytics_tick_summary", **metrics)
+
+
+async def _log_non_momentum_open_positions(db_path: str, now: datetime) -> None:
+    """Report open non-momentum rows without changing broker or ledger state.
+
+    EDGE/PENNY rows intentionally have a separate lifecycle from the
+    momentum square-off.  Surfacing them at EOD makes an old paper row (such
+    as AKI in the 2026-09-03 audit) visible without silently closing a
+    position or manufacturing P&L.
+    """
+    try:
+        async with _partner_db(db_path) as db:
+            cur = await db.execute(
+                "SELECT ticker, source, product_type, entry_date, shares "
+                "FROM positions WHERE status='OPEN' "
+                "AND COALESCE(source, '') <> 'MOMENTUM' "
+                "ORDER BY entry_date"
+            )
+            rows = await cur.fetchall()
+        if rows:
+            logger.warning(
+                "non_momentum_positions_open_at_eod",
+                observed_at=now.strftime("%Y-%m-%d %H:%M:%S IST"),
+                count=len(rows),
+                positions=[
+                    {"ticker": row[0], "source": row[1],
+                     "product_type": row[2], "entry_date": row[3],
+                     "shares": row[4]}
+                    for row in rows
+                ],
+            )
+    except Exception as exc:
+        logger.warning("non_momentum_positions_audit_failed", err=str(exc))
 
 
 # ---------------------------------------------------------------------------
@@ -749,7 +824,7 @@ async def _stamp_outcome(
     detail = dict(detail)
     detail["outcome_kind"] = kind
     detail["outcome_r"] = round(float(r), 3) if r is not None else None
-    async with aiosqlite.connect(db_path) as db:
+    async with _partner_db(db_path) as db:
         await db.execute(
             "UPDATE partner_messages SET detail=? "
             "WHERE kind='signal' AND dedup_key=?",
@@ -791,7 +866,7 @@ async def _track_record_overall(db_path: str, now: datetime) -> str:
     since = (
         now - timedelta(days=settings.PARTNER_TRACK_LOOKBACK_DAYS)
     ).strftime("%Y-%m-%d 00:00:00")
-    async with aiosqlite.connect(db_path) as db:
+    async with _partner_db(db_path) as db:
         cur = await db.execute(
             "SELECT detail FROM partner_messages "
             "WHERE kind='signal' AND sent_at>=?",
@@ -833,6 +908,7 @@ async def partner_eod_wrap(now: Optional[datetime] = None) -> None:
     if await _seen(settings.DB_PATH, "eod", day_iso):
         return
     logger.info("partner_eod_wrap_invoked now_ist=%s", now.strftime("%H:%M:%S"))
+    await _log_non_momentum_open_positions(settings.DB_PATH, now)
 
     rows: List[Dict] = []
     for spec in analytics_underlyings():
@@ -866,7 +942,7 @@ async def partner_eod_wrap(now: Optional[datetime] = None) -> None:
             )
 
             sig_rows: List[Dict] = []
-            async with aiosqlite.connect(settings.DB_PATH) as db:
+            async with _partner_db(settings.DB_PATH) as db:
                 cur = await db.execute(
                     "SELECT dedup_key, detail FROM partner_messages "
                     "WHERE kind='signal' AND dedup_key LIKE ? ORDER BY dedup_key",
@@ -936,7 +1012,7 @@ async def partner_eod_wrap(now: Optional[datetime] = None) -> None:
         signal_cutoff = (
             now - timedelta(days=settings.PARTNER_SIGNAL_RETENTION_DAYS)
         ).strftime("%Y-%m-%d 00:00:00")
-        async with aiosqlite.connect(settings.DB_PATH) as db:
+        async with _partner_db(settings.DB_PATH) as db:
             await db.execute(
                 "DELETE FROM partner_messages WHERE sent_at<? AND kind!='signal'",
                 (cutoff,),

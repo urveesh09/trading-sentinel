@@ -483,6 +483,11 @@ async def run_penny_edge_scan(kite, db_path: Optional[str] = None) -> dict:
     # empty-candidates summary so the wrapper's `penny_edge_scan_done`
     # log line still fires and the operator gets a single
     # `penny_edge_scan_engine_failed` line pointing at the root cause.
+    # Capture *current* RSS around the allocation-heavy signal pass.  The
+    # heartbeat also logs it once a minute, but this precise bracket lets an
+    # operator distinguish a temporary scan allocation from retained memory.
+    from memory_metrics import current_rss_kb
+    scan_rss_before_kb = current_rss_kb()
     try:
         scan = pel.scan_today(
             bankroll=scan_bankroll,
@@ -505,6 +510,17 @@ async def run_penny_edge_scan(kite, db_path: Optional[str] = None) -> dict:
             "live": {"entered": 0, "trades": [], "skipped": []},
             "skipped": [("*engine*", f"engine_failed: {engine_exc}")],
         }
+    finally:
+        scan_rss_after_kb = current_rss_kb()
+        delta_kb = (
+            scan_rss_after_kb - scan_rss_before_kb
+            if scan_rss_before_kb >= 0 and scan_rss_after_kb >= 0 else -1
+        )
+        logger.info(
+            "penny_edge_scan_memory current_rss_before_kb=%d "
+            "current_rss_after_kb=%d delta_kb=%d",
+            scan_rss_before_kb, scan_rss_after_kb, delta_kb,
+        )
     candidates = scan["candidates"]
     universe = scan["eligible_tickers"]
     regime = scan["regime"]
