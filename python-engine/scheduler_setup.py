@@ -141,16 +141,18 @@ def register_fno_scheduler_jobs(scheduler):
                 regime=_main._fno_regime_str(),
                 is_trading_day=True,
             )
-            if summary.get("entries") or summary.get("exits"):
+            if (summary.get("entries") or summary.get("exits")
+                    or summary.get("dr_opened") or summary.get("dr_exits")):
                 try:
                     msg = format_fno_telegram(summary)
                     async with _httpx.AsyncClient() as _client:
-                        await _client.post(
+                        _response = await _client.post(
                             f"{settings.CONTAINER_A_URL}/api/internal/notify",
                             json={"message": msg},
                             headers={"X-Internal-Secret": settings.INTERNAL_API_SECRET or ""},
                             timeout=5.0,
                         )
+                        _response.raise_for_status()
                 except Exception as notify_exc:
                     logger.warning("fno_tick_notify_failed err=%s", notify_exc)
         except Exception as exc:
@@ -167,6 +169,7 @@ def register_fno_scheduler_jobs(scheduler):
                 "exits": len((summary or {}).get("exits") or []),
                 "dr_opened": len((summary or {}).get("dr_opened") or []),
                 "dr_exits": int((summary or {}).get("dr_exits") or 0),
+                "stage_durations_sec": (summary or {}).get("stage_durations_sec") or {},
             }
             logger.info("fno_tick_complete", **fields)
             if elapsed >= settings.FNO_SCAN_INTERVAL_SEC:
@@ -928,6 +931,34 @@ def register_partner_scheduler_jobs(scheduler):
         except Exception as exc:
             logger.error("partner_hedge_tick_crashed err=%s", exc, exc_info=True)
 
+    async def _run_partner_hedge_delivery_recovery_safe():
+        try:
+            from hedge_advisory import recover_pending_hedge_deliveries
+            await recover_pending_hedge_deliveries()
+        except Exception as exc:
+            logger.error("partner_hedge_delivery_recovery_crashed err=%s", exc, exc_info=True)
+
+    async def _run_partner_input_refresh_safe():
+        try:
+            from partner_input_refresh import refresh_partner_input_once
+            await refresh_partner_input_once()
+        except Exception as exc:
+            logger.error("partner_input_refresh_crashed err=%s", exc, exc_info=True)
+
+    async def _run_partner_hedge_morning_summary_safe():
+        try:
+            from hedge_advisory import partner_hedge_daily_summary
+            await partner_hedge_daily_summary("MORNING")
+        except Exception as exc:
+            logger.error("partner_hedge_morning_summary_crashed err=%s", exc, exc_info=True)
+
+    async def _run_partner_hedge_eod_summary_safe():
+        try:
+            from hedge_advisory import partner_hedge_daily_summary
+            await partner_hedge_daily_summary("EOD")
+        except Exception as exc:
+            logger.error("partner_hedge_eod_summary_crashed err=%s", exc, exc_info=True)
+
     async def _run_partner_hedge_phase2_tick_safe():
         # [CALENDAR-GATE 2026-07-03] delegated to the Phase 2 tick before
         # any broker access or advisory work.
@@ -980,10 +1011,35 @@ def register_partner_scheduler_jobs(scheduler):
         max_instances=1, coalesce=True, misfire_grace_time=600,
     )
     scheduler.add_job(
+        _run_partner_input_refresh_safe, "cron",
+        minute="*/2", second=5,
+        id="partner_input_refresh",
+        max_instances=1, coalesce=True, misfire_grace_time=60,
+    )
+    scheduler.add_job(
         _run_partner_hedge_tick_safe, "cron",
         minute="7-52/15", second=10,
         id="partner_hedge_tick",
         max_instances=1, coalesce=True, misfire_grace_time=120,
+    )
+    scheduler.add_job(
+        _run_partner_hedge_delivery_recovery_safe, "cron",
+        minute="*/2", second=35,
+        id="partner_hedge_delivery_recovery",
+        max_instances=1, coalesce=True, misfire_grace_time=60,
+    )
+    scheduler.add_job(
+        _run_partner_hedge_morning_summary_safe, "cron",
+        hour=settings.PARTNER_MORNING_BRIEF_HOUR,
+        minute=settings.PARTNER_MORNING_BRIEF_MIN,
+        id="partner_hedge_morning_summary",
+        max_instances=1, coalesce=True, misfire_grace_time=600,
+    )
+    scheduler.add_job(
+        _run_partner_hedge_eod_summary_safe, "cron",
+        hour=settings.PARTNER_EOD_HOUR, minute=settings.PARTNER_EOD_MIN,
+        id="partner_hedge_eod_summary",
+        max_instances=1, coalesce=True, misfire_grace_time=600,
     )
     scheduler.add_job(
         _run_partner_hedge_phase2_tick_safe, "cron",
@@ -998,7 +1054,7 @@ def register_partner_scheduler_jobs(scheduler):
         max_instances=1, coalesce=True, misfire_grace_time=120,
     )
     logger.info(
-        "partner_cron_registered jobs=8 enabled=%s hedge_enabled=%s "
+        "partner_cron_registered jobs=12 enabled=%s hedge_enabled=%s "
         "hedge_phase2_enabled=%s hedge_phase3_enabled=%s off_grid=true",
         settings.PARTNER_BOT_ENABLED,
         settings.PARTNER_HEDGE_ENABLED,

@@ -55,6 +55,21 @@
     "trigger": "'cron'"
   },
   {
+    "func": "_run_partner_hedge_delivery_recovery_safe",
+    "id": "'partner_hedge_delivery_recovery'",
+    "trigger": "'cron'"
+  },
+  {
+    "func": "_run_partner_hedge_eod_summary_safe",
+    "id": "'partner_hedge_eod_summary'",
+    "trigger": "'cron'"
+  },
+  {
+    "func": "_run_partner_hedge_morning_summary_safe",
+    "id": "'partner_hedge_morning_summary'",
+    "trigger": "'cron'"
+  },
+  {
     "func": "_run_partner_hedge_phase2_tick_safe",
     "id": "'partner_hedge_phase2_tick'",
     "trigger": "'cron'"
@@ -67,6 +82,11 @@
   {
     "func": "_run_partner_hedge_tick_safe",
     "id": "'partner_hedge_tick'",
+    "trigger": "'cron'"
+  },
+  {
+    "func": "_run_partner_input_refresh_safe",
+    "id": "'partner_input_refresh'",
     "trigger": "'cron'"
   },
   {

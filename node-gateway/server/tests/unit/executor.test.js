@@ -7,6 +7,8 @@
 // ── Mock modules BEFORE require ──
 jest.mock('../../services/kite', () => ({
   getLTP: jest.fn(),
+  getMargins: jest.fn(),
+  getOrderMargins: jest.fn(),
   placeOrder: jest.fn(),
   getOrderHistory: jest.fn(),
   getOrders: jest.fn(),
@@ -47,7 +49,7 @@ global.fetch = jest.fn();
 const kite = require('../../services/kite');
 const tokenStore = require('../../services/token-store');
 const { isMarketOpen } = require('../../utils/market-hours');
-const { executeSignal } = require('../../services/executor');
+const { executeSignal, usableEntryMargin, requiredOrderMargin } = require('../../services/executor');
 const {
   TokenExpiredError,
   MarketClosedError,
@@ -78,6 +80,8 @@ function setupHappyPath() {
   kite.getLTP.mockResolvedValue({
     'NSE:RELIANCE': { last_price: 1005 },
   });
+  kite.getMargins.mockResolvedValue({ equity: { available: { cash: 100000 } } });
+  kite.getOrderMargins.mockResolvedValue([{ initial: { total: 100000 } }]);
   kite.placeOrder.mockImplementation((params) => Promise.resolve({
     order_id: params.order_type === 'SL' ? 'SL-1' :
       (params.transaction_type === 'SELL' ? 'UNWIND-1' : 'ORD-001')
@@ -263,6 +267,49 @@ describe('executeSignal()', () => {
       { status: 'REJECTED', status_message: 'Insufficient funds' },
     ]);
     await expect(executeSignal(makeSignal(), 'EXEC')).rejects.toThrow(OrderExecutionError);
+  });
+
+  test('records INSUFFICIENT_MARGIN and does not submit a new entry', async () => {
+    kite.getMargins.mockResolvedValue({ equity: { available: { cash: 1 } } });
+    let caught;
+    await executeSignal(makeSignal(), 'EXEC').catch(err => { caught = err; });
+    expect(caught.code).toBe('INSUFFICIENT_MARGIN');
+    expect(caught.type).toBe('insufficient_margin');
+    expect(kite.placeOrder).not.toHaveBeenCalled();
+  });
+
+  test('fails closed when margin evidence is unavailable', async () => {
+    kite.getMargins.mockRejectedValue(new Error('funds endpoint timeout'));
+    await expect(executeSignal(makeSignal(), 'EXEC')).rejects.toThrow(/MARGIN_EVIDENCE_UNAVAILABLE/);
+    expect(kite.placeOrder).not.toHaveBeenCalled();
+  });
+
+  test('uses live balance ahead of cash and rejects malformed balance fields', () => {
+    expect(usableEntryMargin({ equity: { available: {
+      cash: 245431.60, live_balance: 99725.05,
+    } } })).toBe(99725.05);
+    expect(usableEntryMargin({ equity: { available: {
+      cash: 0, live_balance: 5000,
+    } } })).toBe(5000);
+    expect(usableEntryMargin({ equity: { available: {
+      cash: null, live_balance: 5000,
+    } } })).toBe(5000);
+    expect(usableEntryMargin({ equity: { available: { cash: '', live_balance: false } } })).toBeNull();
+    expect(usableEntryMargin({ equity: { available: { cash: 100000, live_balance: -1000 } } })).toBeNull();
+    expect(usableEntryMargin({ equity: { available: { cash: 100000, live_balance: null } } })).toBeNull();
+    expect(usableEntryMargin({ equity: { available: { cash: 100000, live_balance: '1000' } } })).toBeNull();
+    expect(usableEntryMargin({ equity: { available: { cash: 100000 } } })).toBe(100000);
+    expect(requiredOrderMargin([{ initial: { total: 900 } }])).toBe(900);
+  });
+
+  test('uses broker product-specific order margin when available', async () => {
+    kite.getMargins.mockResolvedValue({ equity: { available: { live_balance: 1000 } } });
+    kite.getOrderMargins.mockResolvedValue([{ initial: { total: 900 } }]);
+    await executeSignal(makeSignal(), 'EXEC', true);
+    expect(kite.getOrderMargins).toHaveBeenCalledWith([expect.objectContaining({
+      product: 'MIS', quantity: 5,
+    })]);
+    expect(kite.placeOrder).toHaveBeenCalled();
   });
 
   test('OPEN timeout is cancelled and never treated as filled or protected', async () => {

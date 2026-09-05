@@ -21,6 +21,7 @@ import json as _json
 import os as _os
 import time
 import time as _time
+import uuid as _uuid
 from datetime import datetime
 
 import httpx as _httpx
@@ -70,7 +71,8 @@ def _scheduler_tick_path() -> str:
 # liveness time-series. None after boot; startup recovers the prior process's
 # wall-clock heartbeat explicitly, while ordinary in-process ticks use this
 # monotonic clock so NTP/wall-time adjustments cannot fabricate a gap.
-_scheduler_tick_state = {"prev_monotonic": None}
+_scheduler_tick_state = {"prev_monotonic": None, "count": 0,
+                         "boot_id": _uuid.uuid4().hex}
 
 
 
@@ -94,6 +96,9 @@ async def _scheduler_tick_job(*, recover_previous: bool = False):
     recovered_previous = False
     now_epoch = time.time()
     path = _scheduler_tick_path()
+    tick_count = int(_scheduler_tick_state.get("count", 0)) + 1
+    _scheduler_tick_state["count"] = tick_count
+    boot_id = _scheduler_tick_state.setdefault("boot_id", _uuid.uuid4().hex)
     if recover_previous:
         try:
             with open(path) as fh:
@@ -115,6 +120,9 @@ async def _scheduler_tick_job(*, recover_previous: bool = False):
             _json.dump({
                 "ts_epoch": now_epoch,
                 "ist": datetime.now(IST).isoformat(),
+                "boot_id": boot_id,
+                "pid": _os.getpid(),
+                "scheduler_tick_count": tick_count,
             }, fh)
         # Atomic replace so the agent's reader never sees a torn file.
         _os.replace(tmp, path)
@@ -137,6 +145,9 @@ async def _scheduler_tick_job(*, recover_previous: bool = False):
         await record_scheduler_tick(settings.DB_PATH, datetime.now(IST), gap)
     except Exception as e:
         logger.warning("scheduler_tick_record_failed error=%s", str(e))
+    # This is deliberately distinct from penny_liveness_tick: it is emitted
+    # by the APScheduler loop, whereas the latter is a process-thread pulse.
+    logger.info("scheduler_progress_tick count=%s boot_id=%s", tick_count, boot_id)
     return {
         "recovered_previous": recovered_previous,
         "prior_gap_seconds": previous_wall_gap,

@@ -344,7 +344,34 @@ def test_scan_reason_insufficient_features_when_history_too_short():
     bars = _flat_bars(5)
     sigs, reason = pee.scan_single_ticker_with_reason(bars, 4)
     assert sigs == []
-    assert reason == "insufficient_features"
+    assert reason == "insufficient_history"
+
+
+@pytest.mark.parametrize(("close", "expected"), [(4.99, "price_out_of_range"), (55.01, "price_out_of_range")])
+def test_scan_reason_distinguishes_price_policy_from_missing_history(close, expected):
+    bars = _flat_bars(30, close=close)
+    sigs, reason = pee.scan_single_ticker_with_reason(bars, 29)
+    assert sigs == []
+    assert reason == expected
+
+
+def test_scan_reason_distinguishes_invalid_volume_and_stale_data():
+    bars = _flat_bars(30)
+    for bar in bars[:20]:
+        bar["volume"] = 0
+    assert pee.scan_single_ticker_with_reason(bars, 29)[1] == "invalid_volume"
+    bars = _flat_bars(30)
+    bars[29]["stale"] = True
+    assert pee.scan_single_ticker_with_reason(bars, 29)[1] == "stale_data"
+
+
+def test_scan_reason_distinguishes_missing_and_invalid_dates():
+    bars = _flat_bars(30)
+    bars[-1].pop("date")
+    assert pee.scan_single_ticker_with_reason(bars, 29)[1] == "invalid_data"
+    bars = _flat_bars(30)
+    bars[-1]["date"] = "not-a-date"
+    assert pee.scan_single_ticker_with_reason(bars, 29)[1] == "invalid_data"
 
 
 def test_scan_reason_no_setup_when_features_fine_but_market_quiet():

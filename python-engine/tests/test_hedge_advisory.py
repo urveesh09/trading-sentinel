@@ -11,10 +11,12 @@ from fno_models import Contract, ContractQuote
 from hedge_advisory import (
     Phase2MarketContext, _claim, _complete_claim, _record, _release_claim,
     build_hedge_reviews, build_phase2_hedge_reviews,
-    load_vix_observations, partner_hedge_phase2_tick, partner_hedge_tick,
+    load_hedge_service_state, load_vix_observations, partner_hedge_phase2_tick, partner_hedge_tick,
     record_vix_observation,
 )
-from hedge_analytics import PartnerPosition
+from partner_bot import PartnerSendResult
+from hedge_analytics import PartnerPosition, create_partner_position
+from partner_input_refresh import apply_partner_input_snapshot
 
 IST = pytz.timezone("Asia/Kolkata")
 NOW = IST.localize(datetime(2026, 9, 2, 11, 0))
@@ -179,6 +181,186 @@ async def test_expired_claim_can_only_be_finalized_by_its_new_owner(db_path):
         db_path, "iron_condor", "NIFTY:a", new, detail={},
         now=NOW + timedelta(hours=2),
     )
+
+
+@pytest.mark.asyncio
+async def test_hedge_delivery_persists_telegram_acknowledgement(db_path, monkeypatch):
+    async def acknowledged(*args, **kwargs):
+        return PartnerSendResult(True, message_id=1234, state="acknowledged")
+
+    monkeypatch.setattr(ha, "send_partner_result", acknowledged)
+    assert await ha._send_claimed_review(
+        db_path, "protective_put_alert", "NIFTY:ack", "safe advisory",
+        detail={"underlying": "NIFTY"}, now=NOW,
+    )
+    state = await load_hedge_service_state(db_path)
+    assert state["last_acknowledged_delivery"]["value"]["message_id"] == 1234
+
+
+@pytest.mark.asyncio
+async def test_acknowledged_delivery_is_not_resent_when_status_refresh_fails(db_path, monkeypatch):
+    calls = 0
+    real_set_state = ha._set_service_state
+
+    async def acknowledged(*args, **kwargs):
+        nonlocal calls
+        calls += 1
+        return PartnerSendResult(True, message_id=987, state="acknowledged")
+
+    async def state_failure_after_ack(*args, **kwargs):
+        if args[1] == "last_attempted_send":
+            raise RuntimeError("simulated ancillary status failure")
+        return await real_set_state(*args, **kwargs)
+
+    monkeypatch.setattr(ha, "send_partner_result", acknowledged)
+    monkeypatch.setattr(ha, "_set_service_state", state_failure_after_ack)
+    assert await ha._send_claimed_review(
+        db_path, "protective_put_alert", "NIFTY:ack-state", "safe advisory",
+        detail={"underlying": "NIFTY"}, now=NOW,
+    )
+    assert not await ha._send_claimed_review(
+        db_path, "protective_put_alert", "NIFTY:ack-state", "safe advisory",
+        detail={"underlying": "NIFTY"}, now=NOW,
+    )
+    assert calls == 1
+
+
+def test_partial_reconciliation_is_not_ready_for_whole_portfolio():
+    confirmed = _position()
+    pending = PartnerPosition(**{
+        **confirmed.__dict__, "position_id": 999,
+        "verification_status": "PENDING_CONFIRMATION",
+    })
+    assert ha._portfolio_input_reason([confirmed, pending], [confirmed], NOW) == (
+        "PARTIAL_RECONCILIATION"
+    )
+
+
+@pytest.mark.asyncio
+async def test_permanently_rejected_hedge_delivery_is_not_retried(db_path, monkeypatch):
+    monkeypatch.setattr(settings, "PARTNER_HEDGE_DELIVERY_MAX_ATTEMPTS", 2)
+    calls = 0
+
+    async def rejected(*args, **kwargs):
+        nonlocal calls
+        calls += 1
+        return PartnerSendResult(False, state="rejected", error="telegram_http_400")
+
+    monkeypatch.setattr(ha, "send_partner_result", rejected)
+    for _ in range(2):
+        assert not await ha._send_claimed_review(
+            db_path, "protective_put_alert", "NIFTY:fail", "safe advisory",
+            detail={"underlying": "NIFTY"}, now=NOW,
+        )
+    assert not await ha._send_claimed_review(
+        db_path, "protective_put_alert", "NIFTY:fail", "safe advisory",
+        detail={"underlying": "NIFTY"}, now=NOW,
+    )
+    assert calls == 1
+
+
+@pytest.mark.asyncio
+async def test_timeout_and_rate_limit_are_not_immediately_reclaimed(db_path, monkeypatch):
+    calls = 0
+
+    async def timeout(*args, **kwargs):
+        nonlocal calls
+        calls += 1
+        return PartnerSendResult(False, state="ambiguous_timeout", error="telegram_timeout")
+
+    monkeypatch.setattr(ha, "send_partner_result", timeout)
+    assert not await ha._send_claimed_review(
+        db_path, "protective_put_alert", "NIFTY:timeout", "safe advisory",
+        detail={"underlying": "NIFTY"}, now=NOW,
+    )
+    assert not await ha._send_claimed_review(
+        db_path, "protective_put_alert", "NIFTY:timeout", "safe advisory",
+        detail={"underlying": "NIFTY"}, now=NOW + timedelta(minutes=5),
+    )
+    assert calls == 1
+
+    async def limited(*args, **kwargs):
+        nonlocal calls
+        calls += 1
+        return PartnerSendResult(False, state="rate_limited", error="telegram_429_retry_after_3600")
+
+    monkeypatch.setattr(ha, "send_partner_result", limited)
+    assert not await ha._send_claimed_review(
+        db_path, "protective_put_alert", "NIFTY:limited", "safe advisory",
+        detail={"underlying": "NIFTY"}, now=NOW,
+    )
+    assert not await ha._send_claimed_review(
+        db_path, "protective_put_alert", "NIFTY:limited", "safe advisory",
+        detail={"underlying": "NIFTY"}, now=NOW + timedelta(minutes=5),
+    )
+    assert calls == 2
+
+
+@pytest.mark.asyncio
+async def test_expired_proposal_is_retired_without_transport(db_path, monkeypatch):
+    async def must_not_send(*args, **kwargs):
+        raise AssertionError("expired proposal must never be transmitted")
+
+    monkeypatch.setattr(ha, "send_partner_result", must_not_send)
+    assert not await ha._send_claimed_review(
+        db_path, "protective_put_alert", "NIFTY:expired", "safe advisory",
+        detail={"valid_until": (NOW - timedelta(seconds=1)).isoformat()}, now=NOW,
+    )
+
+
+def test_proposal_identity_ignores_refresh_timestamp_but_tracks_quantity(monkeypatch):
+    monkeypatch.setattr(settings, "PARTNER_HEDGE_PROTECTIVE_PUT", True)
+    monkeypatch.setattr(settings, "PARTNER_HEDGE_FUTURES", False)
+    review = build_hedge_reviews([_position()], _snapshot(), now=NOW)[0]
+    kind, plan, _ = review
+    refreshed = PartnerPosition(**{**_position().__dict__, "updated_at": NOW + timedelta(minutes=2)})
+    resized = PartnerPosition(**{**_position().__dict__, "signed_quantity": 40_100})
+    assert ha._proposal_identity(kind, [_position()], plan) == ha._proposal_identity(kind, [refreshed], plan)
+    assert ha._proposal_identity(kind, [_position()], plan) != ha._proposal_identity(kind, [resized], plan)
+
+
+@pytest.mark.asyncio
+async def test_complete_snapshot_reaches_real_phase1_builder_formatter_and_sender(db_path, monkeypatch):
+    """Regression for the string-valued LegSpec.opt_type orchestration path."""
+    import main
+
+    stored = await create_partner_position(db_path, _position())
+    await apply_partner_input_snapshot(db_path, {
+        "source": "broker_import", "account_id": "paper-1", "snapshot_id": "phase1-1",
+        "sequence": 1, "observed_at": NOW.isoformat(), "complete": True,
+        "positions": [{"position_id": stored.position_id, "observed_quantity": 40_000,
+                       "current_price": 100, "underlying_price": 100,
+                       "price_as_of": NOW.isoformat()}],
+    }, received_at=NOW)
+    sent = []
+
+    async def trading_day(*args, **kwargs):
+        return True
+
+    async def chain(*args, **kwargs):
+        return _snapshot()
+
+    async def acknowledged(text, *, kind):
+        sent.append((kind, text))
+        return PartnerSendResult(True, message_id=len(sent), state="acknowledged")
+
+    monkeypatch.setattr(settings, "DB_PATH", db_path)
+    monkeypatch.setattr(settings, "PARTNER_HEDGE_ENABLED", True)
+    monkeypatch.setattr(settings, "PARTNER_HEDGE_PROTECTIVE_PUT", True)
+    monkeypatch.setattr(settings, "PARTNER_HEDGE_FUTURES", True)
+    monkeypatch.setattr(settings, "PARTNER_HEDGE_COLLAR", False)
+    monkeypatch.setattr(ha, "partner_enabled", lambda: True)
+    monkeypatch.setattr(main, "is_trading_day", trading_day)
+    monkeypatch.setattr(main.kite, "access_token", "synthetic-token")
+    monkeypatch.setattr(ha, "get_instruments_for", lambda _: type("Book", (), {
+        "ready": lambda self, _: True, "option_expiries": [EXPIRY],
+    })())
+    monkeypatch.setattr(ha, "take_chain_snapshot", chain)
+    monkeypatch.setattr(ha, "send_partner_result", acknowledged)
+
+    await partner_hedge_tick(NOW)
+
+    assert {kind for kind, _ in sent} == {"protective_put_alert", "futures_hedge_size"}
 
 
 @pytest.mark.asyncio

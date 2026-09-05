@@ -27,6 +27,20 @@ class OrderExecutionError extends AppError {
   }
 }
 
+class InsufficientMarginError extends AppError {
+  constructor(required, available) {
+    super(
+      `INSUFFICIENT_MARGIN: required ${Number(required).toFixed(2)}, available ${Number(available).toFixed(2)}`,
+      'insufficient_margin', 409,
+      'Insufficient usable broker margin for this new entry. No order was submitted.'
+    );
+    this.required = Number(required);
+    this.available = Number(available);
+    this.code = 'INSUFFICIENT_MARGIN';
+    this.retryable = false;
+  }
+}
+
 class SyncBackError extends AppError {
   constructor(message = 'Sync to Engine failed') {
     super(message, 'sync_error', 502, 'Position sync delayed. Manual check advised.');
@@ -68,6 +82,7 @@ module.exports = {
   TokenExpiredError,
   ValidationError,
   OrderExecutionError,
+  InsufficientMarginError,
   SyncBackError,
   StaleSignalError,
   PriceDriftError,

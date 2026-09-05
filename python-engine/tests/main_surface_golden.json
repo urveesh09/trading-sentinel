@@ -37,6 +37,24 @@
       "trigger": "cron[hour='15', minute='40']"
     },
     {
+      "func": "_run_partner_hedge_delivery_recovery_safe",
+      "id": "partner_hedge_delivery_recovery",
+      "kwargs": [],
+      "trigger": "cron[minute='*/2', second='35']"
+    },
+    {
+      "func": "_run_partner_hedge_eod_summary_safe",
+      "id": "partner_hedge_eod_summary",
+      "kwargs": [],
+      "trigger": "cron[hour='15', minute='40']"
+    },
+    {
+      "func": "_run_partner_hedge_morning_summary_safe",
+      "id": "partner_hedge_morning_summary",
+      "kwargs": [],
+      "trigger": "cron[hour='9', minute='50']"
+    },
+    {
       "func": "_run_partner_hedge_phase2_tick_safe",
       "id": "partner_hedge_phase2_tick",
       "kwargs": [],
@@ -53,6 +71,12 @@
       "id": "partner_hedge_tick",
       "kwargs": [],
       "trigger": "cron[minute='7-52/15', second='10']"
+    },
+    {
+      "func": "_run_partner_input_refresh_safe",
+      "id": "partner_input_refresh",
+      "kwargs": [],
+      "trigger": "cron[minute='*/2', second='5']"
     },
     {
       "func": "_run_partner_morning_brief_safe",

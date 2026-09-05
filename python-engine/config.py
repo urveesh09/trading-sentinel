@@ -1056,6 +1056,20 @@ class Settings(BaseSettings):
     PARTNER_HEDGE_POSITION_MAX_AGE_MIN: int   = 5
     PARTNER_HEDGE_DELIVERABLE_MAX_AGE_MIN: int = 5
     PARTNER_HEDGE_VIX_MAX_AGE_MIN:      int   = 15
+    # An approved source-neutral adapter returns complete, timestamped partner
+    # snapshots. Empty by default: no account/source is guessed in Dev or Prod.
+    PARTNER_HEDGE_INPUT_REFRESH_ENABLED: bool = False
+    PARTNER_HEDGE_INPUT_ADAPTER_URL:     str   = ""
+    PARTNER_HEDGE_INPUT_REFRESH_TIMEOUT_SEC: float = 5.0
+    PARTNER_HEDGE_INPUT_ADAPTER_TOKEN:   str   = ""
+    PARTNER_HEDGE_INPUT_EXPECTED_SOURCE: str   = ""
+    PARTNER_HEDGE_INPUT_EXPECTED_ACCOUNT_ID: str = ""
+    PARTNER_HEDGE_INPUT_MAX_AGE_MIN:     int   = 10
+    PARTNER_HEDGE_INPUT_MAX_FUTURE_SKEW_SEC: int = 60
+    # Bounded transport attempts prevent a persistent Telegram rejection from
+    # becoming an unbounded delivery loop. A new materially different review
+    # receives a different dedup key and is evaluated independently.
+    PARTNER_HEDGE_DELIVERY_MAX_ATTEMPTS: int  = 3
     # When the hedge pipeline is deliberately enabled, retire the legacy
     # directional/noisy surfaces instead of mixing two different mandates.
     PARTNER_HEDGE_SUPPRESS_DIRECTIONAL: bool  = True
@@ -1063,9 +1077,10 @@ class Settings(BaseSettings):
     PARTNER_HEDGE_SUPPRESS_LEGACY_BRIEF: bool = True
     PARTNER_HEDGE_SUPPRESS_LEGACY_EOD:   bool = True
 
-    # Phase 2 premium-selling and delta-rebalance reviews are live, with each
-    # builder still failing closed on stale, incomplete, or unreconciled data.
-    PARTNER_HEDGE_PHASE2_ENABLED:         bool  = True
+    # Advanced partner-facing phases require current readiness evidence. They
+    # start disabled; Phase 1 protection and status messages remain available.
+    PARTNER_HEDGE_PHASE2_ENABLED:         bool  = False
+    PARTNER_HEDGE_PHASE2_SHADOW_ENABLED:  bool  = True
     PARTNER_HEDGE_COVERED_CALL:           bool  = True
     PARTNER_HEDGE_BULL_PUT_SPREAD:        bool  = True
     PARTNER_HEDGE_BEAR_CALL_SPREAD:       bool  = True
@@ -1091,9 +1106,9 @@ class Settings(BaseSettings):
     PARTNER_HEDGE_PHASE2_PREMIUM_DAILY_CAP: int = 4
     PARTNER_HEDGE_PHASE2_DELTA_DAILY_CAP: int   = 8
 
-    # Phase 3 Greeks/term/event advisory is live. Individually unsafe or
-    # unavailable-data kinds remain independently disabled below.
-    PARTNER_HEDGE_PHASE3_ENABLED:          bool  = True
+    # Phase 3 also remains staged until its independent evidence gate passes.
+    PARTNER_HEDGE_PHASE3_ENABLED:          bool  = False
+    PARTNER_HEDGE_PHASE3_SHADOW_ENABLED:   bool  = True
     PARTNER_HEDGE_GAMMA_ALERT:             bool  = True
     PARTNER_HEDGE_LONG_STRADDLE:           bool  = True
     PARTNER_HEDGE_LONG_STRANGLE:           bool  = True

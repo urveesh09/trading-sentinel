@@ -764,10 +764,33 @@ def format_no_recommendation(
 
 format_data_unavailable = format_no_recommendation
 
+
+def format_hedge_daily_summary(
+    period: str, *, open_positions: int, reconciled_positions: int,
+    input_state: str, as_of: Optional[datetime] = None,
+) -> str:
+    """A concise hedge-only digest; it never fabricates portfolio sizing."""
+    period = str(period).strip().upper()
+    if period not in {"MORNING", "EOD"}:
+        raise ValueError("period must be MORNING or EOD")
+    if open_positions < 0 or reconciled_positions < 0 or reconciled_positions > open_positions:
+        raise ValueError("invalid position counts")
+    state = _reason(str(input_state).replace("_", " ").lower())
+    title = "🌅 Hedge morning summary" if period == "MORNING" else "🌇 Hedge end-of-day summary"
+    return _finish([
+        title,
+        f"Live as of: {_as_of(as_of)}",
+        f"Portfolio inputs: {reconciled_positions}/{open_positions} open positions reconciled.",
+        f"Current assessment state: {state}.",
+        "This is advisory-only. No personalized quantity is shown unless current reconciled exposure and quotes support a review.",
+        DISCLAIMER,
+    ])
+
 __all__ = [
     "MAX_TELEGRAM_CHARS", "DISCLAIMER", "format_protective_put_alert",
     "format_collar_recommendation", "format_futures_hedge_size",
     "format_vix_hedge_alert", "format_no_recommendation",
+    "format_hedge_daily_summary",
     "format_data_unavailable", "format_covered_call_recommendation",
     "format_bull_put_spread", "format_bear_call_spread", "format_iron_condor",
     "format_delta_hedge_rebalance",

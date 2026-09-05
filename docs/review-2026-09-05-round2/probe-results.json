@@ -1,0 +1,48 @@
+{
+  "phase1_valid_input_tick": {
+    "builder_reviews": 2,
+    "sender_calls": 0,
+    "errors": [
+      [
+        "partner_hedge_tick_failed underlying=%s err=%s",
+        "NIFTY",
+        "'str' object has no attribute 'value'"
+      ]
+    ]
+  },
+  "invalid_second_row": {
+    "error": "unknown position_id 999999",
+    "quantity_after": 20000
+  },
+  "stale_complete_empty": {
+    "outcome": {
+      "source": "broker_import",
+      "observed_at": "2026-09-01T11:00:00+05:30",
+      "complete": true,
+      "reconciled": 0,
+      "closed": 1,
+      "vix_recorded": false
+    },
+    "open_rows": 0
+  },
+  "invalid_vix_after_close": {
+    "error": "spot must be positive and finite",
+    "open_rows": 0
+  },
+  "partial_snapshot_readiness": "READY_FOR_EVALUATION",
+  "unchanged_refresh_versions_input": {
+    "quantity_unchanged": true,
+    "updated_at_before": "2026-09-02T11:00:00+05:30",
+    "updated_at_after": "2026-09-02T11:02:00+05:30"
+  },
+  "timeout_same_key_immediate_retry": {
+    "posts": 2
+  },
+  "rate_limit_same_key_immediate_retry": {
+    "posts": 2
+  },
+  "expired_proposal_send": {
+    "posts": 1
+  },
+  "incomplete_greeks": "Greeks(delta=0.4, gamma=0.0, theta=0.0, vega=0.0)"
+}

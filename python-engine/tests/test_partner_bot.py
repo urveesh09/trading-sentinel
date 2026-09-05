@@ -49,7 +49,6 @@ def enabled(monkeypatch):
     monkeypatch.setattr(settings, "PARTNER_TELEGRAM_BOT_TOKEN", "test-token")
     monkeypatch.setattr(settings, "PARTNER_TELEGRAM_CHAT_ID", "12345678")
     monkeypatch.setattr(partner_bot.httpx, "AsyncClient", _FakeClient)
-    monkeypatch.setattr(partner_bot, "RETRY_DELAYS_SEC", (0, 0, 0))
     _FakeClient.script = []
     _FakeClient.posts = []
     return _FakeClient
@@ -102,35 +101,29 @@ async def test_happy_path_sends_to_partner_chat(enabled):
 
 
 @pytest.mark.asyncio
-async def test_retry_ladder_recovers(enabled):
+async def test_failure_is_returned_after_one_post_for_claim_level_recovery(enabled):
     enabled.script = [RuntimeError("net down"), _Resp(500, {"ok": False}), _Resp()]
-    assert await partner_bot.send_partner("x") is True
-    assert len(enabled.posts) == 3
+    result = await partner_bot.send_partner_result("x")
+    assert result.state == "network_error"
+    assert len(enabled.posts) == 1
 
 
 @pytest.mark.asyncio
-async def test_429_retry_after_honored(enabled, monkeypatch):
-    sleeps = []
-    real_sleep = asyncio.sleep
-
-    async def _spy(sec):
-        sleeps.append(sec)
-        await real_sleep(0)
-
-    monkeypatch.setattr(partner_bot.asyncio, "sleep", _spy)
+async def test_429_retry_after_is_returned_without_an_early_second_post(enabled):
     enabled.script = [
         _Resp(429, {"ok": False, "parameters": {"retry_after": 7}}),
-        _Resp(),
     ]
-    assert await partner_bot.send_partner("x") is True
-    assert 7 in sleeps
+    result = await partner_bot.send_partner_result("x")
+    assert result.state == "rate_limited"
+    assert result.error == "telegram_429_retry_after_7"
+    assert len(enabled.posts) == 1
 
 
 @pytest.mark.asyncio
 async def test_all_attempts_fail_returns_false_without_raising(enabled):
     enabled.script = [RuntimeError("boom")] * 4
     assert await partner_bot.send_partner("x") is False
-    assert len(enabled.posts) == 4    # initial + 3-rung ladder
+    assert len(enabled.posts) == 1
 
 
 @pytest.mark.asyncio

@@ -55,6 +55,43 @@ def test_gap_inside_one_boot_epoch_is_a_liveness_finding(tmp_path):
     assert "601s" in finding["message"]
 
 
+def test_premarket_process_gap_is_retained_as_evidence_not_a_p0_freeze(tmp_path):
+    log = _log(tmp_path, """
+2026-08-31 07:00:00 [INFO] penny_liveness_tick count=1 rss_kb=1 threads=1
+2026-08-31 07:10:01 [INFO] penny_liveness_tick count=2 rss_kb=1 threads=1
+""")
+    report = audit_runtime(python_log=log, target_date=DAY)
+    assert not any(item["code"] == "LIVENESS_GAP" for item in report["findings"])
+    assert report["boot_epochs"][0]["outside_market_gaps"] == [{
+        "seconds": 601,
+        "from": "2026-08-31T07:00:00+05:30",
+        "to": "2026-08-31T07:10:01+05:30",
+    }]
+
+
+def test_scheduler_progress_is_a_distinct_market_hours_liveness_signal(tmp_path):
+    log = _log(tmp_path, """
+2026-08-31 10:00:00 [INFO] scheduler_progress_tick count=1 boot_id=one
+2026-08-31 10:10:01 [INFO] scheduler_progress_tick count=2 boot_id=one
+""")
+    report = audit_runtime(python_log=log, target_date=DAY)
+    assert report["scheduler_progress"]["status"] == "OBSERVED"
+    finding = next(item for item in report["findings"]
+                   if item["code"] == "SCHEDULER_PROGRESS_GAP")
+    assert finding["severity"] == "P0"
+
+
+def test_scheduler_boot_id_starts_a_new_epoch_not_a_freeze(tmp_path):
+    log = _log(tmp_path, """
+2026-08-31 10:00:00 [INFO] scheduler_progress_tick count=58 boot_id=old
+2026-08-31 10:10:01 [INFO] scheduler_progress_tick count=1 boot_id=new
+""")
+    report = audit_runtime(python_log=log, target_date=DAY)
+    assert len(report["scheduler_progress"]["epochs"]) == 2
+    assert any(item["code"] == "SCHEDULER_COVERAGE_GAP_ACROSS_BOOT"
+                   for item in report["findings"])
+
+
 def test_token_state_uses_last_transition_not_boot_event_count(tmp_path):
     log = _log(tmp_path, """
 2026-08-31 07:02:06 [info     ] kite_token_restore_skipped saved_date=2026-08-28 today=2026-08-31

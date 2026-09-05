@@ -1,0 +1,15 @@
+{
+  "partial_reconciliation": "READY_FOR_EVALUATION",
+  "liquidity_blocked_review_count": 0,
+  "market_hour_restart": {
+    "restart_gap": 3600,
+    "findings": []
+  },
+  "missing_bar_date": "KeyError: 'date'",
+  "remote_ack_then_state_failure_send_count": 2,
+  "timeout_then_rejection": {
+    "posts": 4,
+    "final_state": "rejected",
+    "final_error": "telegram_http_403"
+  }
+}

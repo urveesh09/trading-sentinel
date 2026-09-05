@@ -6,13 +6,80 @@ const telegram = require('./telegram');
 const { isMarketOpen } = require('../utils/market-hours');
 const { 
   TokenExpiredError, ValidationError, PriceDriftError, 
-  MarketClosedError, OrderExecutionError 
+  MarketClosedError, OrderExecutionError, InsufficientMarginError
 } = require('../utils/errors');
 const { logger } = require('../middleware/logger');
 const { resolveRiskDistance, anchorLevels, sizeToRisk } = require('./risk-geometry');
 const crypto = require('crypto');
 
 const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+
+function finiteNonNegative(value) {
+  // Number(null), Number(false), and Number('') all produce zero. None are
+  // broker balance evidence, so only actual finite numeric values count.
+  if (typeof value !== 'number' || !Number.isFinite(value) || value < 0) return null;
+  return value;
+}
+
+function usableEntryMargin(margins) {
+  // `live_balance` is the current usable balance, while `cash` is a separate
+  // funds component. Prefer the former when supplied; never add collateral.
+  const equity = margins?.equity;
+  if (!equity || equity.enabled === false) return null;
+  const available = equity.available || {};
+  // A present live balance is authoritative even if it is invalid: falling
+  // back to a raw cash component could authorize an entry while the current
+  // usable balance is negative.  Only legacy responses that omit the field
+  // altogether may use the documented cash fallback.
+  if (Object.prototype.hasOwnProperty.call(available, 'live_balance')) {
+    return finiteNonNegative(available.live_balance);
+  }
+  return finiteNonNegative(available.cash);
+}
+
+function requiredOrderMargin(orderMargins) {
+  const row = Array.isArray(orderMargins) ? orderMargins[0] : orderMargins;
+  const value = row?.initial?.total ?? row?.total;
+  return finiteNonNegative(value);
+}
+
+async function preflightEntryMargin(notional, context) {
+  let margins;
+  try {
+    margins = await kite.getMargins();
+  } catch (err) {
+    throw new OrderExecutionError(`MARGIN_EVIDENCE_UNAVAILABLE: ${err.message}`);
+  }
+  const available = usableEntryMargin(margins);
+  if (available === null) {
+    throw new OrderExecutionError('MARGIN_EVIDENCE_UNAVAILABLE: broker returned no usable cash balance');
+  }
+  let required = notional;
+  let requirementBasis = 'conservative_notional_policy';
+  if (typeof kite.getOrderMargins === 'function') {
+    try {
+      const calculated = await kite.getOrderMargins([{
+        exchange: 'NSE', tradingsymbol: context.ticker, transaction_type: 'BUY',
+        variety: 'regular', product: context.product, order_type: 'LIMIT',
+        quantity: context.quantity, price: context.price,
+      }]);
+      const brokerRequired = requiredOrderMargin(calculated);
+      if (brokerRequired !== null) {
+        required = brokerRequired;
+        requirementBasis = 'broker_order_margin';
+      }
+    } catch (err) {
+      throw new OrderExecutionError(`MARGIN_EVIDENCE_UNAVAILABLE: order margin calculation failed: ${err.message}`);
+    }
+  }
+  logger.info({
+    event_type: 'entry_margin_preflight', ticker: context.ticker,
+    required_margin: required, available_margin: available,
+    product: context.product, requirement_basis: requirementBasis,
+  });
+  if (available < required) throw new InsufficientMarginError(required, available);
+  return { required, available, requirementBasis, observedAt: new Date().toISOString() };
+}
 
 function entryTag(signalId) {
   // Kite tags are capped at 20 characters. A stable per-signal tag lets us
@@ -437,6 +504,13 @@ async function executeSignal(signal, action, isIntraday = false) {
   // 0.10 satisfies both NSE tick sizes (0.05 and 0.10); stays inside the
   // 2% drift window already enforced above.
   const limitPrice = snapToTick(ltp * 1.005, 1);
+  const product = isIntraday ? "MIS" : "CNC";
+  // This evidence is deliberately immediately before a new entry. It is not a
+  // promise that the broker will still accept the order, so later rejection
+  // handling remains in place and no exit path consults this function.
+  await preflightEntryMargin(limitPrice * signal.shares, {
+    ticker: signal.ticker, product, quantity: signal.shares, price: limitPrice,
+  });
   let orderResponse;
   const idempotencyTag = entryTag(signal.signal_id);
   const entryParams = {
@@ -444,7 +518,7 @@ async function executeSignal(signal, action, isIntraday = false) {
     tradingsymbol: signal.ticker,
     transaction_type: "BUY",
     quantity: signal.shares,
-    product: isIntraday ? "MIS" : "CNC",
+    product,
     order_type: "LIMIT",
     price: limitPrice,
     validity: "DAY",
@@ -774,6 +848,7 @@ async function executeSignal(signal, action, isIntraday = false) {
 
 module.exports = {
   executeSignal, syncToEngine, snapToTick,
+  finiteNonNegative, usableEntryMargin, requiredOrderMargin, preflightEntryMargin,
   entryTag, exitTag, orderFillState, reconcilePlacedOrder, recoverAmbiguousPlacement,
   gttMatches, recoverAmbiguousGTT, placeProtectiveStop, marketUnwind,
 };

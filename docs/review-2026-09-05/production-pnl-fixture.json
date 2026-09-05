@@ -1,0 +1,74 @@
+{
+  "date_ist": "2026-09-04",
+  "evidence_type": "archived Production read-only query results; rounded-to-paise P&L",
+  "source_hashes": {
+    "db_audit.json": "74e3de23a979608d3abb5be45866e5770d6e9db32e3dc478b0463369d83b8521",
+    "db_audit2.json": "83122feb58cdfc1da840dc8caafa35879f4cdf45975e650726415610fd57b9ac"
+  },
+  "ledger_rows": [
+    {
+      "ledger_id": 146,
+      "timestamp": "2026-09-04T05:48:32.570659+00:00",
+      "ticker": "RPOWER",
+      "pnl": "36.81",
+      "source": "MOMENTUM_PAPER"
+    },
+    {
+      "ledger_id": 147,
+      "timestamp": "2026-09-04T06:49:32.612964+00:00",
+      "ticker": "HSCL",
+      "pnl": "-78.62",
+      "source": "MOMENTUM_PAPER"
+    },
+    {
+      "ledger_id": 148,
+      "timestamp": "2026-09-04T08:01:06.726787+00:00",
+      "ticker": "NIFTY2690824050CE",
+      "pnl": "-423.08",
+      "source": "FNO_PAPER"
+    },
+    {
+      "ledger_id": 149,
+      "timestamp": "2026-09-04T08:34:32.570282+00:00",
+      "ticker": "SAREGAMA",
+      "pnl": "-218.0",
+      "source": "MOMENTUM_PAPER"
+    },
+    {
+      "ledger_id": 150,
+      "timestamp": "2026-09-04T09:00:00.225278+00:00",
+      "ticker": "LANCORHOL",
+      "pnl": "11.5",
+      "source": "PENNY_PAPER"
+    },
+    {
+      "ledger_id": 151,
+      "timestamp": "2026-09-04T09:00:00.747043+00:00",
+      "ticker": "KSR",
+      "pnl": "1.6",
+      "source": "PENNY_PAPER"
+    },
+    {
+      "ledger_id": 152,
+      "timestamp": "2026-09-04T09:41:03.552312+00:00",
+      "ticker": "DR_DEBIT_SPREAD",
+      "pnl": "-182.21",
+      "source": "FNO_PAPER"
+    },
+    {
+      "ledger_id": 153,
+      "timestamp": "2026-09-04T10:15:00.594352+00:00",
+      "ticker": "AKI",
+      "pnl": "3317.82",
+      "source": "EDGE_PAPER"
+    }
+  ],
+  "expected": {
+    "ledger_pnl": "2465.82",
+    "outcome_pnl": "2452.72",
+    "coverage_difference": "13.10",
+    "edge_carryover_close": "3317.82",
+    "excluding_edge_carryover": "-852.00"
+  },
+  "limitations": "Subset fixture; not full database backup or complete timezone/entry attribution replay. Carryover classification comes from the original Production audit."
+}

@@ -20,6 +20,7 @@ bot that node-gateway owns. Design rules (plan WS4):
 from __future__ import annotations
 
 import asyncio
+from dataclasses import dataclass
 from typing import Optional
 
 import httpx
@@ -29,10 +30,22 @@ from config import settings
 
 logger = structlog.get_logger()
 
-# Mirror node-gateway sendAlert's detached backoff (telegram.js
-# ALERT_RETRY_DELAYS_MS) -- proven ladder, same total worst-case ~65s.
-RETRY_DELAYS_SEC = (5, 15, 45)
 TELEGRAM_MAX_LEN = 4096
+
+
+@dataclass(frozen=True)
+class PartnerSendResult:
+    """Outcome of one bounded partner transport attempt.
+
+    ``message_id`` is Telegram's acknowledgement when it is available.  A
+    timeout is deliberately reported as ambiguous rather than pretending it
+    was not delivered; callers must not promise exactly-once delivery.
+    """
+
+    delivered: bool
+    message_id: Optional[int] = None
+    state: str = "failed"
+    error: Optional[str] = None
 
 
 def partner_enabled() -> bool:
@@ -49,7 +62,7 @@ def _masked_chat() -> str:
 
 
 async def _post_once(client: httpx.AsyncClient, text: str) -> tuple:
-    """One sendMessage attempt. Returns (ok, retry_after_sec_or_None)."""
+    """One sendMessage attempt. Returns (result, retry_after_sec_or_None)."""
     resp = await client.post(
         f"https://api.telegram.org/bot{settings.PARTNER_TELEGRAM_BOT_TOKEN}/sendMessage",
         json={
@@ -67,23 +80,33 @@ async def _post_once(client: httpx.AsyncClient, text: str) -> tuple:
             ) or None
         except Exception:
             pass
-        return False, retry_after
+        return PartnerSendResult(False, state="rate_limited", error="telegram_429"), retry_after
     try:
         body = resp.json()
     except Exception:
         body = {}
-    return bool(resp.status_code == 200 and body.get("ok")), None
+    if resp.status_code == 200 and body.get("ok"):
+        result = body.get("result") or {}
+        message_id = result.get("message_id")
+        return PartnerSendResult(
+            True,
+            message_id=int(message_id) if isinstance(message_id, int) else None,
+            state="acknowledged",
+        ), None
+    return PartnerSendResult(
+        False, state="rejected", error=f"telegram_http_{resp.status_code}",
+    ), None
 
 
-async def send_partner(text: str, *, kind: str = "partner_msg") -> bool:
-    """Deliver one partner message, best-effort. Never raises.
+async def send_partner_result(text: str, *, kind: str = "partner_msg") -> PartnerSendResult:
+    """Deliver one partner message with a bounded, auditable outcome.
 
-    Tier 1: mandatory local log BEFORE any network attempt -- the log
-    line is the source of truth when Telegram is down (penny report §9.4
-    discipline). Tier 2: direct send with the retry ladder. Tier 3:
-    loud ERROR, return False. No other transport, by design."""
+    Tier 1: mandatory local log BEFORE any network attempt. Tier 2: one
+    direct POST. Hedge delivery claims own the bounded retry policy, so a
+    configured claim attempt is also exactly one network send. This preserves
+    timeout ambiguity instead of overwriting it with later HTTP failures."""
     if not partner_enabled():
-        return False
+        return PartnerSendResult(False, state="disabled", error="partner_transport_disabled")
     if len(text) > TELEGRAM_MAX_LEN:
         # Truncate loudly rather than 400: a clipped brief beats no brief.
         logger.warning(
@@ -93,31 +116,32 @@ async def send_partner(text: str, *, kind: str = "partner_msg") -> bool:
 
     logger.info("partner_msg kind=%s body=%s", kind, text)
 
-    last_err: Optional[str] = None
     async with httpx.AsyncClient() as client:
-        for attempt, delay in enumerate((0,) + RETRY_DELAYS_SEC):
-            if delay:
-                await asyncio.sleep(delay)
-            try:
-                ok, retry_after = await _post_once(client, text)
-                if ok:
-                    if attempt:
-                        logger.info(
-                            "partner_msg_sent_after_retry kind=%s attempt=%d",
-                            kind, attempt + 1,
-                        )
-                    return True
-                last_err = "telegram_not_ok"
-                if retry_after:
-                    # Telegram told us exactly how long to wait; honor it
-                    # in place of (not in addition to) the next rung.
-                    await asyncio.sleep(min(retry_after, 60))
-            except Exception as exc:
-                last_err = str(exc)
+        try:
+            result, retry_after = await _post_once(client, text)
+            if retry_after:
+                return PartnerSendResult(
+                    False, state="rate_limited", error=f"telegram_429_retry_after_{retry_after}",
+                )
+            return result
+        except Exception as exc:
+            # A timeout can follow remote acceptance. Do not make another POST
+            # from this transport call; the advisory ledger records it as an
+            # ambiguity requiring conservative recovery.
+            state = "ambiguous_timeout" if isinstance(exc, httpx.TimeoutException) else "network_error"
+            result = PartnerSendResult(False, state=state, error=type(exc).__name__)
 
     logger.error(
         "partner_send_failed kind=%s chat=%s err=%s -- message preserved "
-        "in the partner_msg log line above",
-        kind, _masked_chat(), last_err,
+        "in the partner_msg log line above", kind, _masked_chat(), result.error,
     )
-    return False
+    return result
+
+
+async def send_partner(text: str, *, kind: str = "partner_msg") -> bool:
+    """Compatibility wrapper for legacy partner jobs.
+
+    Hedge delivery uses :func:`send_partner_result` so it can persist the
+    acknowledgement.  Existing non-hedge callers retain their boolean API.
+    """
+    return (await send_partner_result(text, kind=kind)).delivered

@@ -12,7 +12,8 @@ from pydantic import BaseModel, Field
 import main as _main
 from config import settings
 from hedge_advisory import (
-    init_hedge_advisory_db, load_vix_observations, record_vix_observation,
+    init_hedge_advisory_db, load_hedge_service_state, load_vix_observations,
+    record_vix_observation,
 )
 from hedge_analytics import (
     Greeks, PartnerPosition, close_partner_position, create_partner_position,
@@ -210,14 +211,18 @@ async def get_partner_hedge_status(request: Request):
     reconciled = await load_reconciled_open_partner_positions(settings.DB_PATH)
     vix = await load_vix_observations(settings.DB_PATH, 1)
     readiness = await assess_hedge_readiness(settings.DB_PATH)
+    service_state = await load_hedge_service_state(settings.DB_PATH)
     return {
         "enabled": settings.PARTNER_HEDGE_ENABLED,
         "phase2_enabled": settings.PARTNER_HEDGE_PHASE2_ENABLED,
         "phase3_enabled": settings.PARTNER_HEDGE_PHASE3_ENABLED,
+        "phase2_shadow_enabled": settings.PARTNER_HEDGE_PHASE2_SHADOW_ENABLED,
+        "phase3_shadow_enabled": settings.PARTNER_HEDGE_PHASE3_SHADOW_ENABLED,
         "open_positions": len(all_open),
         "reconciled_open_positions": len(reconciled),
         "latest_vix": jsonable_encoder(vix[-1]) if vix else None,
         "readiness": readiness,
+        "service_state": service_state,
         "automatic_execution": False,
     }
 
