@@ -928,6 +928,20 @@ def register_partner_scheduler_jobs(scheduler):
         except Exception as exc:
             logger.error("partner_hedge_tick_crashed err=%s", exc, exc_info=True)
 
+    async def _run_partner_hedge_morning_summary_safe():
+        try:
+            from hedge_advisory import partner_hedge_daily_summary
+            await partner_hedge_daily_summary("MORNING")
+        except Exception as exc:
+            logger.error("partner_hedge_morning_summary_crashed err=%s", exc, exc_info=True)
+
+    async def _run_partner_hedge_eod_summary_safe():
+        try:
+            from hedge_advisory import partner_hedge_daily_summary
+            await partner_hedge_daily_summary("EOD")
+        except Exception as exc:
+            logger.error("partner_hedge_eod_summary_crashed err=%s", exc, exc_info=True)
+
     async def _run_partner_hedge_phase2_tick_safe():
         # [CALENDAR-GATE 2026-07-03] delegated to the Phase 2 tick before
         # any broker access or advisory work.
@@ -986,6 +1000,19 @@ def register_partner_scheduler_jobs(scheduler):
         max_instances=1, coalesce=True, misfire_grace_time=120,
     )
     scheduler.add_job(
+        _run_partner_hedge_morning_summary_safe, "cron",
+        hour=settings.PARTNER_MORNING_BRIEF_HOUR,
+        minute=settings.PARTNER_MORNING_BRIEF_MIN,
+        id="partner_hedge_morning_summary",
+        max_instances=1, coalesce=True, misfire_grace_time=600,
+    )
+    scheduler.add_job(
+        _run_partner_hedge_eod_summary_safe, "cron",
+        hour=settings.PARTNER_EOD_HOUR, minute=settings.PARTNER_EOD_MIN,
+        id="partner_hedge_eod_summary",
+        max_instances=1, coalesce=True, misfire_grace_time=600,
+    )
+    scheduler.add_job(
         _run_partner_hedge_phase2_tick_safe, "cron",
         hour="9-15", minute="3,33", second=20,
         id="partner_hedge_phase2_tick",
@@ -998,7 +1025,7 @@ def register_partner_scheduler_jobs(scheduler):
         max_instances=1, coalesce=True, misfire_grace_time=120,
     )
     logger.info(
-        "partner_cron_registered jobs=8 enabled=%s hedge_enabled=%s "
+        "partner_cron_registered jobs=10 enabled=%s hedge_enabled=%s "
         "hedge_phase2_enabled=%s hedge_phase3_enabled=%s off_grid=true",
         settings.PARTNER_BOT_ENABLED,
         settings.PARTNER_HEDGE_ENABLED,

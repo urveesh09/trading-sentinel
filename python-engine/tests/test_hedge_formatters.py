@@ -11,7 +11,7 @@ from hedge_formatters import (
     DISCLAIMER, MAX_TELEGRAM_CHARS, format_collar_recommendation,
     format_bear_call_spread, format_bull_put_spread,
     format_covered_call_recommendation, format_delta_hedge_rebalance,
-    format_futures_hedge_size, format_no_recommendation,
+    format_futures_hedge_size, format_hedge_daily_summary, format_no_recommendation,
     format_iron_condor, format_protective_put_alert, format_vix_hedge_alert,
 )
 from hedge_strategies import (
@@ -96,6 +96,16 @@ def test_no_recommendation_sanitizes_untrusted_reason_and_preserves_disclaimer()
     assert not FORBIDDEN.search(text)
     assert len(text) <= MAX_TELEGRAM_CHARS
     assert text.endswith(DISCLAIMER)
+
+
+def test_hedge_daily_summary_is_explicitly_non_personalized_without_inputs():
+    text = format_hedge_daily_summary(
+        "MORNING", open_positions=0, reconciled_positions=0,
+        input_state="NO_PORTFOLIO_INPUT", as_of=NOW,
+    )
+    assert "0/0 open positions reconciled" in text
+    assert "No personalized quantity" in text
+    assert DISCLAIMER in text
 
 
 def test_formatter_rejects_missing_live_contract_identity():

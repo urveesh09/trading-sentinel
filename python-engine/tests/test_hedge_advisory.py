@@ -11,9 +11,10 @@ from fno_models import Contract, ContractQuote
 from hedge_advisory import (
     Phase2MarketContext, _claim, _complete_claim, _record, _release_claim,
     build_hedge_reviews, build_phase2_hedge_reviews,
-    load_vix_observations, partner_hedge_phase2_tick, partner_hedge_tick,
+    load_hedge_service_state, load_vix_observations, partner_hedge_phase2_tick, partner_hedge_tick,
     record_vix_observation,
 )
+from partner_bot import PartnerSendResult
 from hedge_analytics import PartnerPosition
 
 IST = pytz.timezone("Asia/Kolkata")
@@ -179,6 +180,43 @@ async def test_expired_claim_can_only_be_finalized_by_its_new_owner(db_path):
         db_path, "iron_condor", "NIFTY:a", new, detail={},
         now=NOW + timedelta(hours=2),
     )
+
+
+@pytest.mark.asyncio
+async def test_hedge_delivery_persists_telegram_acknowledgement(db_path, monkeypatch):
+    async def acknowledged(*args, **kwargs):
+        return PartnerSendResult(True, message_id=1234, state="acknowledged")
+
+    monkeypatch.setattr(ha, "send_partner_result", acknowledged)
+    assert await ha._send_claimed_review(
+        db_path, "protective_put_alert", "NIFTY:ack", "safe advisory",
+        detail={"underlying": "NIFTY"}, now=NOW,
+    )
+    state = await load_hedge_service_state(db_path)
+    assert state["last_acknowledged_delivery"]["value"]["message_id"] == 1234
+
+
+@pytest.mark.asyncio
+async def test_failed_hedge_delivery_is_recoverable_but_bounded(db_path, monkeypatch):
+    monkeypatch.setattr(settings, "PARTNER_HEDGE_DELIVERY_MAX_ATTEMPTS", 2)
+    calls = 0
+
+    async def rejected(*args, **kwargs):
+        nonlocal calls
+        calls += 1
+        return PartnerSendResult(False, state="rejected", error="telegram_http_400")
+
+    monkeypatch.setattr(ha, "send_partner_result", rejected)
+    for _ in range(2):
+        assert not await ha._send_claimed_review(
+            db_path, "protective_put_alert", "NIFTY:fail", "safe advisory",
+            detail={"underlying": "NIFTY"}, now=NOW,
+        )
+    assert not await ha._send_claimed_review(
+        db_path, "protective_put_alert", "NIFTY:fail", "safe advisory",
+        detail={"underlying": "NIFTY"}, now=NOW,
+    )
+    assert calls == 2
 
 
 @pytest.mark.asyncio

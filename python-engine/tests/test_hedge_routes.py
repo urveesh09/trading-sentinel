@@ -53,8 +53,10 @@ async def test_position_intake_requires_reconciliation_before_status_counts_it(
     )).json()
     assert status["open_positions"] == 1
     assert status["reconciled_open_positions"] == 0
-    assert status["phase2_enabled"] is True
-    assert status["phase3_enabled"] is True
+    assert status["phase2_enabled"] is False
+    assert status["phase3_enabled"] is False
+    assert status["phase2_shadow_enabled"] is True
+    assert status["phase3_shadow_enabled"] is True
     assert status["readiness"]["automatic_execution"] is False
     assert status["readiness"]["can_place_orders"] is False
     assert status["automatic_execution"] is False
