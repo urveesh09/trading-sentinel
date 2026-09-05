@@ -90,9 +90,9 @@ def test_phase3_review_builder_requires_verified_event_and_respects_master_kinds
     assert not {"long_straddle", "long_strangle"} & {kind for kind, _, _ in quiet}
 
 
-def test_phase3_defaults_on_but_ratio_runtime_gate_stays_off():
+def test_phase3_defaults_and_ratio_runtime_gate_stay_off_until_go_live():
     assert settings.PARTNER_HEDGE_RATIO_SPREAD is False
-    assert settings.PARTNER_HEDGE_PHASE3_ENABLED is True
+    assert settings.PARTNER_HEDGE_PHASE3_ENABLED is False
     assert settings.PARTNER_HEDGE_PORTFOLIO_OVERLAY is True
     assert ratio_spread(_snapshot(), NOW) is None
 
@@ -138,6 +138,7 @@ async def test_phase3_tick_stops_before_calendar_and_broker_when_disabled_or_clo
 
     monkeypatch.setattr(main, "is_trading_day", must_not_check_calendar)
     monkeypatch.setattr(settings, "PARTNER_HEDGE_PHASE3_ENABLED", False)
+    monkeypatch.setattr(settings, "PARTNER_HEDGE_PHASE3_SHADOW_ENABLED", False)
     await partner_hedge_phase3_tick(NOW)
 
     monkeypatch.setattr(settings, "PARTNER_HEDGE_ENABLED", True)
@@ -222,6 +223,7 @@ async def test_phase3_tick_builds_portfolio_stress_inside_phase3_job(monkeypatch
     monkeypatch.setattr(main, "is_trading_day", yes)
     monkeypatch.setattr(main.kite, "access_token", "test-token")
     monkeypatch.setattr(ha, "init_hedge_advisory_db", no_op)
+    monkeypatch.setattr(ha, "_set_service_state", no_op)
     monkeypatch.setattr(ha, "load_reconciled_open_partner_positions", positions)
     monkeypatch.setattr(ha, "load_aligned_ohlcv_closes", closes)
     monkeypatch.setattr(ha, "portfolio_market_stress", lambda *args, **kwargs: stress)

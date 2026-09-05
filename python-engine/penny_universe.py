@@ -460,9 +460,13 @@ async def _compute_one_history_metric(kite, sym: str, from_date: str, to_date: s
             "penny_metrics_history_fetch_failed symbol=%s error=%s",
             sym, str(e),
         )
-        return (sym, None)
-    if df is None or df.empty or len(df) < 10:
-        return (sym, None)
+        message = str(e).lower()
+        reason = "unresolved_symbol" if any(token in message for token in ("unknown", "not found", "invalid symbol")) else "fetch_failure"
+        return (sym, None, reason)
+    if df is None or df.empty:
+        return (sym, None, "empty_response")
+    if len(df) < 10:
+        return (sym, None, "short_history")
     try:
         df = df.sort_index()
         close = df["close"].astype(float)
@@ -491,16 +495,18 @@ async def _compute_one_history_metric(kite, sym: str, from_date: str, to_date: s
             "vol_20d": vol_20d,
             "dist_from_52w_low_pct": dist_52w,
             "bars_used": int(len(df)),
-        })
+        }, None)
     except Exception as e:
         logger.warning(
             "penny_metrics_compute_failed symbol=%s error=%s",
             sym, str(e),
         )
-        return (sym, None)
+        return (sym, None, "computation_failure")
 
 
-async def compute_metrics_from_history(kite, symbols, lookback_days: int = 30) -> Dict[str, dict]:
+async def compute_metrics_from_history(
+    kite, symbols, lookback_days: int = 30, *, return_diagnostics: bool = False,
+) -> Dict[str, dict] | tuple[Dict[str, dict], Dict[str, int]]:
     """
     [PENNY-CORP-FALLBACK 2026-06-26] Compute the four corp-data metrics the
     universe needs (median_traded_value_20d, avg_return_20d, vol_20d,
@@ -579,7 +585,7 @@ async def compute_metrics_from_history(kite, symbols, lookback_days: int = 30) -
     import time as _time
 
     if not symbols:
-        return {}
+        return ({}, {}) if return_diagnostics else {}
 
     # ONE fetch per symbol using the 52w window. The trailing 20 rows
     # give us the 30d metrics; the full window gives us the 52w low.
@@ -614,15 +620,17 @@ async def compute_metrics_from_history(kite, symbols, lookback_days: int = 30) -
 
     out: Dict[str, dict] = {}
     skipped: List[str] = []
-    for sym, metrics in results:
+    skip_reasons: Dict[str, int] = {}
+    for sym, metrics, reason in results:
         if metrics is None:
             skipped.append(sym)
+            skip_reasons[reason or "unknown"] = skip_reasons.get(reason or "unknown", 0) + 1
             continue
         out[sym] = metrics
     if skipped:
         logger.warning(
-            "penny_metrics_history_skipped count=%d sample=%s",
-            len(skipped), skipped[:5],
+            "penny_metrics_history_skipped count=%d sample=%s reasons=%s",
+            len(skipped), skipped[:5], dict(sorted(skip_reasons.items())),
         )
     # [PENNY-METRICS-COMPUTED 2026-07-07] This line is the only signal
     # the operator has that history-derived metrics were applied. The
@@ -636,7 +644,7 @@ async def compute_metrics_from_history(kite, symbols, lookback_days: int = 30) -
         "elapsed=%.1fs max_concurrent=%d total_symbols=%d",
         len(out), len(skipped), elapsed, max_concurrent, len(symbols),
     )
-    return out
+    return (out, dict(sorted(skip_reasons.items()))) if return_diagnostics else out
 
 
 def _repo_seed_path() -> str:

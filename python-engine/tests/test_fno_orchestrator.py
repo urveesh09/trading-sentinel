@@ -617,3 +617,12 @@ async def test_premium_deferral_can_be_switched_off(kite, db_path, book, monkeyp
 
     assert len(summary["exits"]) == 1
     assert summary["exits"][0]["reason"] == "time_stop"
+
+
+def test_fno_formatter_keeps_defined_risk_only_activity_visible():
+    message = format_fno_telegram({
+        "scan_id": "dr-only", "entries": [], "exits": [],
+        "dr_opened": [42], "dr_exits": 1,
+    })
+    assert "DR OPEN [FNO_DR_PAPER] structure_id=42" in message
+    assert "DR CLOSE [FNO_DR_PAPER] count=1" in message

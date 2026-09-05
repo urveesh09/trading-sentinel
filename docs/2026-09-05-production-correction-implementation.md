@@ -3,7 +3,8 @@
 ## Scope completed in Dev
 
 This implementation addresses the P0 hedge-delivery and advanced-phase rollout
-gaps in the supplied 5 September correction plan. It was made only in the Dev
+gaps in the supplied 5 September correction plan, followed by the independent
+P1/P2 operational-correctness work below. It was made only in the Dev
 working copy on branch `codex/production-correction-hedge-p0`; Production source,
 configuration, databases and partner messaging were not changed.
 
@@ -62,7 +63,47 @@ messages available while advanced strategies accumulate real evidence.
 default and to document service state, acknowledgements, summaries, retry
 semantics and readiness-gated shadow delivery.
 
-## Intentionally not implemented
+### New-entry capital preflight
+
+`node-gateway/server/services/kite.js` now exposes a broker-margin read, and
+`node-gateway/server/services/executor.js` requires fresh usable cash evidence
+immediately before a new BUY entry. Unknown margin data fails closed with an
+explicit `MARGIN_EVIDENCE_UNAVAILABLE` execution error; insufficient cash
+returns the non-retryable `INSUFFICIENT_MARGIN` (HTTP 409) outcome defined in
+`node-gateway/server/utils/errors.js`. Collateral is deliberately excluded from
+the cash calculation. Existing exit and protective-order paths do not consult
+this preflight, so a capital restriction cannot trap an open position.
+
+### P1 coverage and notification corrections
+
+`python-engine/penny_edge_engine.py` now distinguishes `insufficient_history`,
+`price_out_of_range`, `invalid_volume`, `invalid_data`, and `stale_data` before
+reporting `no_setup`. The ₹5–₹55 policy and strategy logic are unchanged.
+
+`python-engine/penny_universe.py` can return opt-in history diagnostics without
+changing its default return type. Skip totals now balance by `unresolved_symbol`,
+`empty_response`, `short_history`, `fetch_failure`, or `computation_failure`.
+This identifies the reason actually observed; it does not assert that every raw
+instrument should be eligible.
+
+`python-engine/fno_orchestrator.py` includes defined-risk paper opens and
+closes in the immediate F&O message formatter. `python-engine/scheduler_setup.py`
+now sends DR-only activity and requires a successful HTTP acknowledgement from
+the operator notification gateway; failures remain visible in the scheduler
+log rather than being silently accepted.
+
+### P2 liveness semantics
+
+`python-engine/ops_watchdogs.py` writes a per-process scheduler boot id, tick
+count and process id to the atomic scheduler heartbeat and logs a distinct
+`scheduler_progress_tick`. `python-engine/tools/runtime_audit.py` now reports
+process heartbeat and scheduler-loop progress separately, segments scheduler
+progress by boot id, and retains raw pre-market/overnight gaps under
+`outside_market_gaps`. Only intervals that overlap a weekday 09:15–15:30 IST
+market session produce a P0 liveness finding. The persistent `MAX` gap metric
+was not changed.
+
+## Remaining deployment inputs and non-code work
 
 The plan correctly requires the partner's actual broker/account mapping before
 an automated portfolio-source adapter can be built. That information was not
@@ -70,21 +111,23 @@ provided, so no broker feed was guessed and Sentinel paper/operator positions
 are not treated as partner holdings. The existing authenticated manual intake
 and reconciliation contract remains the supported source-neutral path.
 
-The P1/P2 execution-capital, scheduler-performance, universe/bootstrap, EDGE,
-financial-reporting and operator FNO-notification packages are deliberately
-separate follow-on scopes. They do not block this P0 advisory delivery path.
+The production-specific September 4 P&L reconciliation fixture, post-promotion
+skip-rate measurements, and a scheduler contention profile require retained
+Production evidence and a promoted observation window. They were not fabricated
+from Dev data. Ledger remains authoritative; no ledger or outcome rows were
+rewritten, and no strategy parameters were tuned. A live partner canary still
+requires explicit destination/content review and send authorization.
 
 ## Validation performed
 
-- `python -m compileall` completed successfully for each changed Python module.
+- `python -m compileall` completed successfully for every changed Python module.
+- `node --check` completed successfully for the changed gateway services.
 - `git diff --check` completed successfully.
-- Added regression coverage for acknowledged hedge delivery, bounded failed
-  delivery, default advanced-phase status, and non-personalized daily summaries.
+- The Windows project environment (`python-engine/winvenv`) ran 111 focused
+  hedge, readiness, scheduler, runtime-audit, Penny and F&O regression tests:
+  all passed (one unrelated Starlette deprecation warning).
+- `npm test -- --runInBand tests/unit/executor.test.js` ran 44 gateway executor
+  tests: all passed, including the insufficient/unavailable-margin cases.
 
-The repository's checked-in `python-engine/.venv` is a Linux virtual environment
-and cannot run on this Windows host. The host Python also lacks the project test
-dependencies; installing the pinned requirements cannot complete because the
-pinned pandas build is not compatible with the available host interpreter.
-Therefore the full pytest suite must be run in the project Linux/CI environment
-before merge. No live Telegram canary was sent; the plan requires explicit
-destination/content review and send authorization for that deployment step.
+No live Telegram canary was sent; the plan requires explicit destination/content
+review and send authorization for that deployment step.

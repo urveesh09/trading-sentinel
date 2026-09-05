@@ -7,6 +7,7 @@
 // ── Mock modules BEFORE require ──
 jest.mock('../../services/kite', () => ({
   getLTP: jest.fn(),
+  getMargins: jest.fn(),
   placeOrder: jest.fn(),
   getOrderHistory: jest.fn(),
   getOrders: jest.fn(),
@@ -78,6 +79,7 @@ function setupHappyPath() {
   kite.getLTP.mockResolvedValue({
     'NSE:RELIANCE': { last_price: 1005 },
   });
+  kite.getMargins.mockResolvedValue({ equity: { available: { cash: 100000 } } });
   kite.placeOrder.mockImplementation((params) => Promise.resolve({
     order_id: params.order_type === 'SL' ? 'SL-1' :
       (params.transaction_type === 'SELL' ? 'UNWIND-1' : 'ORD-001')
@@ -263,6 +265,21 @@ describe('executeSignal()', () => {
       { status: 'REJECTED', status_message: 'Insufficient funds' },
     ]);
     await expect(executeSignal(makeSignal(), 'EXEC')).rejects.toThrow(OrderExecutionError);
+  });
+
+  test('records INSUFFICIENT_MARGIN and does not submit a new entry', async () => {
+    kite.getMargins.mockResolvedValue({ equity: { available: { cash: 1 } } });
+    let caught;
+    await executeSignal(makeSignal(), 'EXEC').catch(err => { caught = err; });
+    expect(caught.code).toBe('INSUFFICIENT_MARGIN');
+    expect(caught.type).toBe('insufficient_margin');
+    expect(kite.placeOrder).not.toHaveBeenCalled();
+  });
+
+  test('fails closed when margin evidence is unavailable', async () => {
+    kite.getMargins.mockRejectedValue(new Error('funds endpoint timeout'));
+    await expect(executeSignal(makeSignal(), 'EXEC')).rejects.toThrow(/MARGIN_EVIDENCE_UNAVAILABLE/);
+    expect(kite.placeOrder).not.toHaveBeenCalled();
   });
 
   test('OPEN timeout is cancelled and never treated as filled or protected', async () => {

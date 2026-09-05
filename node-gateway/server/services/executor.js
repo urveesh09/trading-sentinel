@@ -6,13 +6,47 @@ const telegram = require('./telegram');
 const { isMarketOpen } = require('../utils/market-hours');
 const { 
   TokenExpiredError, ValidationError, PriceDriftError, 
-  MarketClosedError, OrderExecutionError 
+  MarketClosedError, OrderExecutionError, InsufficientMarginError
 } = require('../utils/errors');
 const { logger } = require('../middleware/logger');
 const { resolveRiskDistance, anchorLevels, sizeToRisk } = require('./risk-geometry');
 const crypto = require('crypto');
 
 const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+
+function usableEntryMargin(margins) {
+  // Kite's equity margin response has varied between SDK versions. Use only
+  // documented cash/live-balance fields and fail closed on an unknown shape;
+  // collateral is intentionally excluded because it is not universally usable
+  // for a CNC/MIS order.
+  const available = margins?.equity?.available || margins?.available || {};
+  const candidates = [available.cash, available.live_balance];
+  for (const value of candidates) {
+    const parsed = Number(value);
+    if (Number.isFinite(parsed) && parsed >= 0) return parsed;
+  }
+  return null;
+}
+
+async function preflightEntryMargin(required, context) {
+  let margins;
+  try {
+    margins = await kite.getMargins();
+  } catch (err) {
+    throw new OrderExecutionError(`MARGIN_EVIDENCE_UNAVAILABLE: ${err.message}`);
+  }
+  const available = usableEntryMargin(margins);
+  if (available === null) {
+    throw new OrderExecutionError('MARGIN_EVIDENCE_UNAVAILABLE: broker returned no usable cash balance');
+  }
+  logger.info({
+    event_type: 'entry_margin_preflight', ticker: context.ticker,
+    required_margin: required, available_margin: available,
+    product: context.product,
+  });
+  if (available < required) throw new InsufficientMarginError(required, available);
+  return { required, available, observedAt: new Date().toISOString() };
+}
 
 function entryTag(signalId) {
   // Kite tags are capped at 20 characters. A stable per-signal tag lets us
@@ -437,6 +471,13 @@ async function executeSignal(signal, action, isIntraday = false) {
   // 0.10 satisfies both NSE tick sizes (0.05 and 0.10); stays inside the
   // 2% drift window already enforced above.
   const limitPrice = snapToTick(ltp * 1.005, 1);
+  const product = isIntraday ? "MIS" : "CNC";
+  // This evidence is deliberately immediately before a new entry. It is not a
+  // promise that the broker will still accept the order, so later rejection
+  // handling remains in place and no exit path consults this function.
+  await preflightEntryMargin(limitPrice * signal.shares, {
+    ticker: signal.ticker, product,
+  });
   let orderResponse;
   const idempotencyTag = entryTag(signal.signal_id);
   const entryParams = {
@@ -444,7 +485,7 @@ async function executeSignal(signal, action, isIntraday = false) {
     tradingsymbol: signal.ticker,
     transaction_type: "BUY",
     quantity: signal.shares,
-    product: isIntraday ? "MIS" : "CNC",
+    product,
     order_type: "LIMIT",
     price: limitPrice,
     validity: "DAY",
@@ -774,6 +815,7 @@ async function executeSignal(signal, action, isIntraday = false) {
 
 module.exports = {
   executeSignal, syncToEngine, snapToTick,
+  usableEntryMargin, preflightEntryMargin,
   entryTag, exitTag, orderFillState, reconcilePlacedOrder, recoverAmbiguousPlacement,
   gttMatches, recoverAmbiguousGTT, placeProtectiveStop, marketUnwind,
 };

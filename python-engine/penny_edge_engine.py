@@ -381,45 +381,83 @@ def compute_features_for_day(
 
     Features match what compute_mr_signal and compute_mo_signal expect.
     """
-    if eval_idx < 20:
-        return None
+    return compute_features_for_day_with_reason(bars, eval_idx)[0]
+
+
+def compute_features_for_day_with_reason(
+    bars: List[dict], eval_idx: int,
+) -> Tuple[Optional[dict], Optional[str]]:
+    """Return features plus the exact non-signal eligibility reason.
+
+    The previous ``None`` result collapsed price-band policy, short/new-listing
+    history, invalid OHLCV and zero-volume data into ``insufficient_features``.
+    Keeping the public feature API intact avoids changing strategy logic while
+    making scanner coverage and remediation truthful.
+    """
+    if eval_idx < 20 or eval_idx >= len(bars):
+        return None, "insufficient_history"
     today = bars[eval_idx]
-    if today["close"] < 5 or today["close"] > 55:
-        return None
-    if eval_idx < 1:
-        return None
     prev = bars[eval_idx - 1]
+    if bool(today.get("stale")):
+        return None, "stale_data"
+    required = ("close", "low", "high", "open", "volume", "date")
+    try:
+        values = [float(today[name]) for name in required if name != "date"]
+        prior_close = float(prev["close"])
+    except (KeyError, TypeError, ValueError):
+        return None, "invalid_data"
+    close, low, high, _open, volume = values
+    if (not all(math.isfinite(value) for value in values)
+            or not math.isfinite(prior_close) or prior_close <= 0
+            or close <= 0 or low <= 0 or high < low):
+        return None, "invalid_data"
+    if close < 5 or close > 55:
+        return None, "price_out_of_range"
 
-    closes = [b["close"] for b in bars]
-    volumes = [b["volume"] for b in bars]
-    median_vol_20d = _median(volumes[max(0, eval_idx - 20):eval_idx])
-    if median_vol_20d <= 0:
-        return None
+    try:
+        volumes = [float(b["volume"]) for b in bars[eval_idx - 20:eval_idx]]
+    except (KeyError, TypeError, ValueError):
+        return None, "invalid_volume"
+    if not all(math.isfinite(volume) and volume >= 0 for volume in volumes):
+        return None, "invalid_volume"
+    median_vol_20d = _median(volumes)
+    if median_vol_20d <= 0 or volume < 0:
+        return None, "invalid_volume"
 
-    intra_drop = (today["close"] - today["low"]) / today["close"]
-    day_return = (today["close"] - prev["close"]) / prev["close"]
-    vol_ratio = today["volume"] / median_vol_20d
+    intra_drop = (close - low) / close
+    day_return = (close - prior_close) / prior_close
+    vol_ratio = volume / median_vol_20d
 
     # 14-day low
     if eval_idx >= 14:
-        prior_lows = [b["low"] for b in bars[eval_idx - 14:eval_idx]]
+        try:
+            prior_lows = [float(b["low"]) for b in bars[eval_idx - 14:eval_idx]]
+        except (KeyError, TypeError, ValueError):
+            return None, "invalid_data"
+        if not all(math.isfinite(value) and value > 0 for value in prior_lows):
+            return None, "invalid_data"
         min_low_14d = min(prior_lows)
     else:
-        min_low_14d = prev["low"]  # best available
-    new_14d_low = (today["low"] - min_low_14d) / min_low_14d
+        try:
+            min_low_14d = float(prev["low"])
+        except (KeyError, TypeError, ValueError):
+            return None, "invalid_data"
+        if not math.isfinite(min_low_14d) or min_low_14d <= 0:
+            return None, "invalid_data"
+    new_14d_low = (low - min_low_14d) / min_low_14d
 
     return {
         "ticker":       today.get("ticker", "?"),
         "date":         today["date"],
-        "close":        today["close"],
-        "low":          today["low"],
-        "high":         today["high"],
-        "open":         today["open"],
+        "close":        close,
+        "low":          low,
+        "high":         high,
+        "open":         _open,
         "intra_drop":   intra_drop,
         "day_return":   day_return,
         "vol_ratio":    vol_ratio,
         "new_14d_low":  new_14d_low,
-    }
+    }, None
 
 
 def _median(values: List[float]) -> float:
@@ -449,9 +487,9 @@ def scan_single_ticker_with_reason(
     is the distinction that separates a data incident from a quiet market, and it
     needs no change to the evaluators.
     """
-    feats = compute_features_for_day(bars, eval_idx)
+    feats, reason = compute_features_for_day_with_reason(bars, eval_idx)
     if feats is None:
-        return [], "insufficient_features"
+        return [], reason
     out = []
     mr = compute_mr_signal(feats)
     if mr is not None:

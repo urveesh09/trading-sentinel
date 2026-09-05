@@ -238,6 +238,13 @@ module.exports = {
     }, 'getLTP failed after 3 attempts');
     throw lastErr;
   },
+
+  // Fresh broker funds evidence for new-entry preflight. This endpoint is
+  // never consulted by exits, which must remain available under all capital
+  // conditions.
+  getMargins: async () => {
+    return await withKite('getMargins', () => kite.getMargins());
+  },
   
   /**
    * @param {object} params Kite order params.

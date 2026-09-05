@@ -886,6 +886,14 @@ def format_fno_telegram(summary: dict) -> str:
             f"{x['entry']:.2f} -> {x['exit']:.2f} "
             f"pnl={fmt_money(x['pnl'], x['source'])} ({x['r']:+.2f}R)"
         )
+    # Defined-risk (DR) structures live in a separate, paper-only ledger.
+    # They must still make an immediate notification eligible even when no
+    # single-leg entry/exit occurred in the same tick.
+    for structure_id in summary.get("dr_opened", []):
+        out.append(f"DR OPEN [FNO_DR_PAPER] structure_id={structure_id}")
+    dr_exits = int(summary.get("dr_exits") or 0)
+    if dr_exits:
+        out.append(f"DR CLOSE [FNO_DR_PAPER] count={dr_exits}; detailed lifecycle records are in fno_dr structures")
     if len(out) == 1:
         out.append("No activity.")
     return "\n".join(out)

@@ -10,7 +10,7 @@ from __future__ import annotations
 import argparse
 from collections import Counter
 from dataclasses import asdict, dataclass
-from datetime import datetime
+from datetime import datetime, time, timedelta
 import hashlib
 import ipaddress
 import json
@@ -180,6 +180,29 @@ def _scheduler_skips(records: Sequence[LogRecord]) -> Counter:
     return counts
 
 
+def _gap_overlaps_market_hours(start: datetime, end: datetime) -> bool:
+    """Return whether an IST interval intersects a weekday 09:15-15:30 session.
+
+    A long gap is retained as raw evidence, but only a gap that actually
+    overlaps a cash-market session is an operational freeze finding. This
+    keeps overnight and pre-market intervals visible without mislabelling them
+    as trading-hour availability failures.
+    """
+    if end <= start:
+        return False
+    start_ist = start.astimezone(IST)
+    end_ist = end.astimezone(IST)
+    current_day = start_ist.date()
+    while current_day <= end_ist.date():
+        if current_day.weekday() < 5:
+            session_start = datetime.combine(current_day, time(9, 15), tzinfo=IST)
+            session_end = datetime.combine(current_day, time(15, 30), tzinfo=IST)
+            if start_ist < session_end and end_ist > session_start:
+                return True
+        current_day += timedelta(days=1)
+    return False
+
+
 def _liveness(records: Sequence[LogRecord], threshold_seconds: int) -> tuple[list[dict], list[Finding]]:
     epochs: list[dict] = []
     findings: list[Finding] = []
@@ -203,6 +226,7 @@ def _liveness(records: Sequence[LogRecord], threshold_seconds: int) -> tuple[lis
                 "epoch": epoch, "first": record.timestamp.isoformat(),
                 "last": record.timestamp.isoformat(), "ticks": 0,
                 "restart_gap_seconds": None,
+                "outside_market_gaps": [],
             })
             if last_tick is not None:
                 epochs[-1]["restart_gap_seconds"] = int(
@@ -211,15 +235,84 @@ def _liveness(records: Sequence[LogRecord], threshold_seconds: int) -> tuple[lis
         else:
             gap = (record.timestamp - last_tick[0].timestamp).total_seconds() if last_tick else 0
             if gap > threshold_seconds:
-                findings.append(Finding(
-                    "P0", "LIVENESS_GAP",
-                    f"scheduler liveness gap of {int(gap)}s occurred inside boot epoch {epoch}",
-                    (_evidence(last_tick[0]), _evidence(record)),
-                ))
+                if _gap_overlaps_market_hours(last_tick[0].timestamp, record.timestamp):
+                    findings.append(Finding(
+                        "P0", "LIVENESS_GAP",
+                        f"process liveness gap of {int(gap)}s overlapped market hours inside boot epoch {epoch}",
+                        (_evidence(last_tick[0]), _evidence(record)),
+                    ))
+                else:
+                    epochs[-1]["outside_market_gaps"].append({
+                        "seconds": int(gap),
+                        "from": last_tick[0].timestamp.isoformat(),
+                        "to": record.timestamp.isoformat(),
+                    })
         epochs[-1]["last"] = record.timestamp.isoformat()
         epochs[-1]["ticks"] += 1
         last_tick = (record, count, epoch)
     return epochs, findings
+
+
+def _scheduler_progress(records: Sequence[LogRecord], threshold_seconds: int) -> tuple[dict, list[Finding]]:
+    """Audit scheduler-loop progress independently from the process heartbeat."""
+    ticks: list[tuple[LogRecord, int, str | None]] = []
+    for record in records:
+        match = re.search(r"scheduler_progress_tick\s+count=(\d+)", record.message)
+        if match and record.timestamp is not None:
+            boot_match = re.search(r"\bboot_id=([^\s]+)", record.message)
+            ticks.append((record, int(match.group(1)),
+                          boot_match.group(1) if boot_match else None))
+    if not ticks:
+        return {
+            "status": "UNKNOWN", "ticks": 0, "last": None,
+            "epochs": [], "outside_market_gaps": [],
+        }, []
+
+    findings: list[Finding] = []
+    outside_market_gaps: list[dict] = []
+    epochs: list[dict] = []
+    last_record: LogRecord | None = None
+    last_count: int | None = None
+    last_boot_id: str | None = None
+    for record, count, boot_id in ticks:
+        # A boot id is authoritative when present. Older logs have no boot id,
+        # so retain the monotonic counter reset as the conservative fallback.
+        new_epoch = (
+            last_record is None
+            or (boot_id is not None and last_boot_id is not None and boot_id != last_boot_id)
+            or (boot_id is None and last_boot_id is None and count <= last_count)
+        )
+        if new_epoch:
+            epochs.append({
+                "boot_id": boot_id, "first": record.timestamp.isoformat(),
+                "last": record.timestamp.isoformat(), "ticks": 0,
+                "restart_gap_seconds": int((record.timestamp - last_record.timestamp).total_seconds())
+                if last_record is not None else None,
+            })
+        else:
+            gap = (record.timestamp - last_record.timestamp).total_seconds()
+            if gap > threshold_seconds:
+                if _gap_overlaps_market_hours(last_record.timestamp, record.timestamp):
+                    findings.append(Finding(
+                        "P0", "SCHEDULER_PROGRESS_GAP",
+                        f"scheduler progress gap of {int(gap)}s overlapped market hours",
+                        (_evidence(last_record), _evidence(record)),
+                    ))
+                else:
+                    outside_market_gaps.append({
+                        "seconds": int(gap),
+                        "from": last_record.timestamp.isoformat(),
+                        "to": record.timestamp.isoformat(),
+                    })
+        epochs[-1]["last"] = record.timestamp.isoformat()
+        epochs[-1]["ticks"] += 1
+        last_record, last_count, last_boot_id = record, count, boot_id
+    return {
+        "status": "OBSERVED", "ticks": len(ticks),
+        "last": asdict(_evidence(last_record)),
+        "epochs": epochs,
+        "outside_market_gaps": outside_market_gaps,
+    }, findings
 
 
 def _token_state(records: Sequence[LogRecord]) -> dict:
@@ -369,6 +462,10 @@ def audit_runtime(
 
     level_counts = Counter(record.level for record in records if record.level)
     epochs, findings = _liveness(records, liveness_gap_seconds)
+    scheduler_progress, scheduler_progress_findings = _scheduler_progress(
+        records, liveness_gap_seconds
+    )
+    findings.extend(scheduler_progress_findings)
     token = _token_state(records)
     order_authorization, order_findings = _order_authorization(records)
     findings.extend(order_findings)
@@ -384,6 +481,7 @@ def audit_runtime(
         "records_by_log": per_log,
         "levels": dict(sorted(level_counts.items())),
         "boot_epochs": epochs,
+        "scheduler_progress": scheduler_progress,
         "token": token,
         "order_authorization": order_authorization,
         "scheduler_skips": dict(sorted(scheduler_skips.items())),
@@ -402,6 +500,7 @@ def render_text(report: dict) -> str:
         "Levels: " + ", ".join(f"{key}={value}" for key, value in report["levels"].items()),
         f"Token final state: {report['token']['status']}",
         f"Order authorization: {report['order_authorization']['status']}",
+        f"Scheduler progress: {report['scheduler_progress']['status']}",
         "Scheduler skips: " + (
             ", ".join(f"{key}={value}" for key, value in report["scheduler_skips"].items())
             or "none observed"

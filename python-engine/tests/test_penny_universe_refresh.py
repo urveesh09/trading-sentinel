@@ -277,6 +277,29 @@ def test_compute_metrics_from_history_handles_fetch_exception():
     assert "OK" in out
 
 
+def test_history_metrics_diagnostics_balance_exact_skip_reasons():
+    """Coverage diagnostics distinguish bad history from a quiet universe."""
+    from unittest.mock import MagicMock, AsyncMock
+    import pandas as pd
+    from penny_universe import compute_metrics_from_history
+
+    fake_kite = MagicMock()
+
+    async def fake_historical(ticker, from_date, to_date):
+        if ticker == "EMPTY":
+            return pd.DataFrame()
+        if ticker == "SHORT":
+            return _make_history_df(n=5, seed=3)
+        raise RuntimeError("unknown symbol")
+
+    fake_kite.get_historical = AsyncMock(side_effect=fake_historical)
+    metrics, reasons = asyncio.run(compute_metrics_from_history(
+        fake_kite, ["EMPTY", "SHORT", "MISSING"], return_diagnostics=True,
+    ))
+    assert metrics == {}
+    assert reasons == {"empty_response": 1, "short_history": 1, "unresolved_symbol": 1}
+
+
 def test_compute_metrics_from_history_empty_symbols_list():
     """Helper is a no-op for empty input (no fetches, returns {})."""
     from unittest.mock import MagicMock

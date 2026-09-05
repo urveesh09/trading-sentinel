@@ -141,16 +141,18 @@ def register_fno_scheduler_jobs(scheduler):
                 regime=_main._fno_regime_str(),
                 is_trading_day=True,
             )
-            if summary.get("entries") or summary.get("exits"):
+            if (summary.get("entries") or summary.get("exits")
+                    or summary.get("dr_opened") or summary.get("dr_exits")):
                 try:
                     msg = format_fno_telegram(summary)
                     async with _httpx.AsyncClient() as _client:
-                        await _client.post(
+                        _response = await _client.post(
                             f"{settings.CONTAINER_A_URL}/api/internal/notify",
                             json={"message": msg},
                             headers={"X-Internal-Secret": settings.INTERNAL_API_SECRET or ""},
                             timeout=5.0,
                         )
+                        _response.raise_for_status()
                 except Exception as notify_exc:
                     logger.warning("fno_tick_notify_failed err=%s", notify_exc)
         except Exception as exc:
