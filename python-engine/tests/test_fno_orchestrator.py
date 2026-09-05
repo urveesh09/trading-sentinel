@@ -8,6 +8,7 @@ This is the P1 "plumbing is proven honest" criterion (spec §1) in test
 form: paper fills reconcile against real bid/ask, gates are satisfiable,
 max_loss holds, the log tells the truth.
 """
+import asyncio
 from datetime import date, datetime, timedelta
 
 import pandas as pd
@@ -626,3 +627,12 @@ def test_fno_formatter_keeps_defined_risk_only_activity_visible():
     })
     assert "DR OPEN [FNO_DR_PAPER] structure_id=42" in message
     assert "DR CLOSE [FNO_DR_PAPER] count=1" in message
+
+
+def test_fno_tick_exposes_major_stage_durations(db_path, kite):
+    summary = asyncio.run(run_fno_tick(
+        kite, db_path=db_path, regime="REGIME_1_NORMAL", now_ist=NOW,
+    ))
+    durations = summary["stage_durations_sec"]
+    assert {"futures_quote", "exit_management", "defined_risk"} <= set(durations)
+    assert all(value >= 0 for value in durations.values())

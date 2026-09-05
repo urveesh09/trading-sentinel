@@ -27,6 +27,7 @@ from __future__ import annotations
 import asyncio
 from concurrent.futures import Future, ThreadPoolExecutor
 from datetime import datetime, timedelta
+from time import monotonic
 from typing import List, Optional
 from uuid import uuid4
 
@@ -637,7 +638,10 @@ async def run_fno_tick(
     db_path = db_path or settings.DB_PATH
     now_ist = now_ist or datetime.now(IST)
     scan_id = f"FNO-{now_ist.strftime('%Y%m%d-%H%M%S')}-{uuid4().hex[:6]}"
-    summary: dict = {"scan_id": scan_id, "entries": [], "exits": [], "note": ""}
+    summary: dict = {
+        "scan_id": scan_id, "entries": [], "exits": [], "note": "",
+        "stage_durations_sec": {},
+    }
 
     # Rule 56: first-line orchestrator breadcrumb.
     logger.info(
@@ -681,13 +685,18 @@ async def run_fno_tick(
     snap = None
 
     # ---- futures price for exit management ---------------------------
+    stage_started = monotonic()
     fut_quote = await kite.get_quote([fut.token])
+    summary["stage_durations_sec"]["futures_quote"] = round(
+        monotonic() - stage_started, 3
+    )
     fut_price = None
     fq = fut_quote.get(fut.token)
     if fq and fq.get("last_price"):
         fut_price = float(fq["last_price"])
 
     # ---- 1) exits first ----------------------------------------------
+    stage_started = monotonic()
     try:
         if not settings.FNO_DISABLE_PAPER:
             summary["exits"] += await _manage_open_positions(
@@ -699,6 +708,10 @@ async def run_fno_tick(
             )
     except Exception as exc:
         logger.error("fno_exit_management_failed err=%s", str(exc), exc_info=True)
+    finally:
+        summary["stage_durations_sec"]["exit_management"] = round(
+            monotonic() - stage_started, 3
+        )
 
     # ---- 1b) defined-risk paper book (Phase 2) -----------------------
     # Rides this same tick: manage any open structure to current mids, then
@@ -706,6 +719,7 @@ async def run_fno_tick(
     # an iron condor on a rich-IV range day (which the single-leg engine's
     # no-signal early-return below would never reach). Fully self-contained and
     # guarded: nothing here can disturb the single-leg engine above or below.
+    stage_started = monotonic()
     if not settings.FNO_DISABLE_PAPER and not settings.FNO_DR_DISABLE_PAPER:
         try:
             import fno_dr_book as _dr
@@ -738,6 +752,9 @@ async def run_fno_tick(
                         logger.error("fno_dr_entry_failed err=%s", str(exc))
         except Exception as exc:
             logger.error("fno_dr_block_failed err=%s", str(exc), exc_info=True)
+    summary["stage_durations_sec"]["defined_risk"] = round(
+        monotonic() - stage_started, 3
+    )
 
     # ---- 2) entries ----------------------------------------------------
     nm = _now_min(now_ist)
@@ -746,15 +763,24 @@ async def run_fno_tick(
         return summary
 
     if bars is None:
+        stage_started = monotonic()
         try:
             bars = await _fetch_futures_bars(kite, fut.token, now_ist)
         except Exception as exc:
             logger.error("fno_futures_bars_failed err=%s", str(exc))
             summary["note"] = "futures_bars_failed"
             return summary
+        finally:
+            summary["stage_durations_sec"]["futures_history"] = round(
+                monotonic() - stage_started, 3
+            )
 
     if sig is None:
+        stage_started = monotonic()
         sig = evaluate_fno_mom(bars, regime, now_ist)
+        summary["stage_durations_sec"]["entry_evaluation"] = round(
+            monotonic() - stage_started, 3
+        )
     if not sig.bar_ts:
         summary["note"] = f"engine:{sig.reject_reason}"
         return summary
@@ -792,6 +818,7 @@ async def run_fno_tick(
         summary["note"] = "chain_unavailable"
         return summary
 
+    stage_started = monotonic()
     if not settings.FNO_DISABLE_PAPER:
         paper_equity = await _fno_equity(db_path, FnoSource.FNO_PAPER.value)
         if _fno_halted(paper_equity, _fno_pool_paper(), FnoSource.FNO_PAPER.value):
@@ -832,6 +859,9 @@ async def run_fno_tick(
                     summary["entries"].append(entry)
             except Exception as exc:
                 logger.error("fno_live_entry_failed err=%s", str(exc), exc_info=True)
+    summary["stage_durations_sec"]["entry_management"] = round(
+        monotonic() - stage_started, 3
+    )
 
     # Only after both trading legs have completed, and never awaited: a
     # slow/locked research DB cannot delay quote selection, sizing, an entry,

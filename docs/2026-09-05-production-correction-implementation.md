@@ -90,7 +90,10 @@ instrument should be eligible.
 closes in the immediate F&O message formatter. `python-engine/scheduler_setup.py`
 now sends DR-only activity and requires a successful HTTP acknowledgement from
 the operator notification gateway; failures remain visible in the scheduler
-log rather than being silently accepted.
+log rather than being silently accepted. The F&O tick summary now also emits
+major stage durations (futures quote/history, exit management, defined-risk
+book and entry evaluation/management), so a cadence change can be evaluated
+against measured work rather than inferred from an APScheduler skip.
 
 ### P2 liveness semantics
 
@@ -123,7 +126,7 @@ requires explicit destination/content review and send authorization.
 - `python -m compileall` completed successfully for every changed Python module.
 - `node --check` completed successfully for the changed gateway services.
 - `git diff --check` completed successfully.
-- The Windows project environment (`python-engine/winvenv`) ran 111 focused
+- The Windows project environment (`python-engine/winvenv`) ran 113 focused
   hedge, readiness, scheduler, runtime-audit, Penny and F&O regression tests:
   all passed (one unrelated Starlette deprecation warning).
 - `npm test -- --runInBand tests/unit/executor.test.js` ran 44 gateway executor
