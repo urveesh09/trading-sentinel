@@ -229,9 +229,15 @@ def _liveness(records: Sequence[LogRecord], threshold_seconds: int) -> tuple[lis
                 "outside_market_gaps": [],
             })
             if last_tick is not None:
-                epochs[-1]["restart_gap_seconds"] = int(
-                    (record.timestamp - last_tick[0].timestamp).total_seconds()
-                )
+                restart_gap = (record.timestamp - last_tick[0].timestamp).total_seconds()
+                epochs[-1]["restart_gap_seconds"] = int(restart_gap)
+                if (restart_gap > threshold_seconds
+                        and _gap_overlaps_market_hours(last_tick[0].timestamp, record.timestamp)):
+                    findings.append(Finding(
+                        "P1", "PROCESS_COVERAGE_GAP_ACROSS_BOOT",
+                        f"process coverage gap of {int(restart_gap)}s crossed a boot boundary during market hours",
+                        (_evidence(last_tick[0]), _evidence(record)),
+                    ))
         else:
             gap = (record.timestamp - last_tick[0].timestamp).total_seconds() if last_tick else 0
             if gap > threshold_seconds:
@@ -283,12 +289,21 @@ def _scheduler_progress(records: Sequence[LogRecord], threshold_seconds: int) ->
             or (boot_id is None and last_boot_id is None and count <= last_count)
         )
         if new_epoch:
+            restart_gap = ((record.timestamp - last_record.timestamp).total_seconds()
+                           if last_record is not None else None)
             epochs.append({
                 "boot_id": boot_id, "first": record.timestamp.isoformat(),
                 "last": record.timestamp.isoformat(), "ticks": 0,
-                "restart_gap_seconds": int((record.timestamp - last_record.timestamp).total_seconds())
-                if last_record is not None else None,
+                "restart_gap_seconds": int(restart_gap)
+                if restart_gap is not None else None,
             })
+            if (restart_gap is not None and restart_gap > threshold_seconds
+                    and _gap_overlaps_market_hours(last_record.timestamp, record.timestamp)):
+                findings.append(Finding(
+                    "P1", "SCHEDULER_COVERAGE_GAP_ACROSS_BOOT",
+                    f"scheduler coverage gap of {int(restart_gap)}s crossed a boot boundary during market hours",
+                    (_evidence(last_record), _evidence(record)),
+                ))
         else:
             gap = (record.timestamp - last_record.timestamp).total_seconds()
             if gap > threshold_seconds:

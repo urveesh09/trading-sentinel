@@ -14,21 +14,30 @@ const crypto = require('crypto');
 
 const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
-function usableEntryMargin(margins) {
-  // Kite's equity margin response has varied between SDK versions. Use only
-  // documented cash/live-balance fields and fail closed on an unknown shape;
-  // collateral is intentionally excluded because it is not universally usable
-  // for a CNC/MIS order.
-  const available = margins?.equity?.available || margins?.available || {};
-  const candidates = [available.cash, available.live_balance];
-  for (const value of candidates) {
-    const parsed = Number(value);
-    if (Number.isFinite(parsed) && parsed >= 0) return parsed;
-  }
-  return null;
+function finiteNonNegative(value) {
+  // Number(null), Number(false), and Number('') all produce zero. None are
+  // broker balance evidence, so only actual finite numeric values count.
+  if (typeof value !== 'number' || !Number.isFinite(value) || value < 0) return null;
+  return value;
 }
 
-async function preflightEntryMargin(required, context) {
+function usableEntryMargin(margins) {
+  // `live_balance` is the current usable balance, while `cash` is a separate
+  // funds component. Prefer the former when supplied; never add collateral.
+  const equity = margins?.equity;
+  if (!equity || equity.enabled === false) return null;
+  const available = equity.available || {};
+  return finiteNonNegative(available.live_balance)
+    ?? finiteNonNegative(available.cash);
+}
+
+function requiredOrderMargin(orderMargins) {
+  const row = Array.isArray(orderMargins) ? orderMargins[0] : orderMargins;
+  const value = row?.initial?.total ?? row?.total;
+  return finiteNonNegative(value);
+}
+
+async function preflightEntryMargin(notional, context) {
   let margins;
   try {
     margins = await kite.getMargins();
@@ -39,13 +48,31 @@ async function preflightEntryMargin(required, context) {
   if (available === null) {
     throw new OrderExecutionError('MARGIN_EVIDENCE_UNAVAILABLE: broker returned no usable cash balance');
   }
+  let required = notional;
+  let requirementBasis = 'conservative_notional_policy';
+  if (typeof kite.getOrderMargins === 'function') {
+    try {
+      const calculated = await kite.getOrderMargins([{
+        exchange: 'NSE', tradingsymbol: context.ticker, transaction_type: 'BUY',
+        variety: 'regular', product: context.product, order_type: 'LIMIT',
+        quantity: context.quantity, price: context.price,
+      }]);
+      const brokerRequired = requiredOrderMargin(calculated);
+      if (brokerRequired !== null) {
+        required = brokerRequired;
+        requirementBasis = 'broker_order_margin';
+      }
+    } catch (err) {
+      throw new OrderExecutionError(`MARGIN_EVIDENCE_UNAVAILABLE: order margin calculation failed: ${err.message}`);
+    }
+  }
   logger.info({
     event_type: 'entry_margin_preflight', ticker: context.ticker,
     required_margin: required, available_margin: available,
-    product: context.product,
+    product: context.product, requirement_basis: requirementBasis,
   });
   if (available < required) throw new InsufficientMarginError(required, available);
-  return { required, available, observedAt: new Date().toISOString() };
+  return { required, available, requirementBasis, observedAt: new Date().toISOString() };
 }
 
 function entryTag(signalId) {
@@ -476,7 +503,7 @@ async function executeSignal(signal, action, isIntraday = false) {
   // promise that the broker will still accept the order, so later rejection
   // handling remains in place and no exit path consults this function.
   await preflightEntryMargin(limitPrice * signal.shares, {
-    ticker: signal.ticker, product,
+    ticker: signal.ticker, product, quantity: signal.shares, price: limitPrice,
   });
   let orderResponse;
   const idempotencyTag = entryTag(signal.signal_id);
@@ -815,7 +842,7 @@ async function executeSignal(signal, action, isIntraday = false) {
 
 module.exports = {
   executeSignal, syncToEngine, snapToTick,
-  usableEntryMargin, preflightEntryMargin,
+  finiteNonNegative, usableEntryMargin, requiredOrderMargin, preflightEntryMargin,
   entryTag, exitTag, orderFillState, reconcilePlacedOrder, recoverAmbiguousPlacement,
   gttMatches, recoverAmbiguousGTT, placeProtectiveStop, marketUnwind,
 };

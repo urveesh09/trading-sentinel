@@ -88,7 +88,7 @@ def test_scheduler_boot_id_starts_a_new_epoch_not_a_freeze(tmp_path):
 """)
     report = audit_runtime(python_log=log, target_date=DAY)
     assert len(report["scheduler_progress"]["epochs"]) == 2
-    assert not any(item["code"] == "SCHEDULER_PROGRESS_GAP"
+    assert any(item["code"] == "SCHEDULER_COVERAGE_GAP_ACROSS_BOOT"
                    for item in report["findings"])
 
 

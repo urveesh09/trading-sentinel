@@ -400,6 +400,13 @@ def compute_features_for_day_with_reason(
     prev = bars[eval_idx - 1]
     if bool(today.get("stale")):
         return None, "stale_data"
+    date_value = today.get("date")
+    if not isinstance(date_value, str) or not date_value.strip():
+        return None, "invalid_data"
+    try:
+        datetime.fromisoformat(date_value.replace("Z", "+00:00"))
+    except ValueError:
+        return None, "invalid_data"
     required = ("close", "low", "high", "open", "volume", "date")
     try:
         values = [float(today[name]) for name in required if name != "date"]
@@ -448,7 +455,7 @@ def compute_features_for_day_with_reason(
 
     return {
         "ticker":       today.get("ticker", "?"),
-        "date":         today["date"],
+        "date":         date_value,
         "close":        close,
         "low":          low,
         "high":         high,

@@ -7,6 +7,7 @@ unsupported expiries and incomplete volatility data all fail closed.
 from __future__ import annotations
 
 import asyncio
+import hashlib
 import json
 import math
 import uuid
@@ -120,6 +121,17 @@ CREATE TABLE IF NOT EXISTS partner_hedge_service_state (
     value_json TEXT NOT NULL,
     updated_at TEXT NOT NULL
 );
+CREATE TABLE IF NOT EXISTS partner_hedge_shadow_evaluations (
+    evaluation_id TEXT PRIMARY KEY,
+    phase TEXT NOT NULL,
+    kind TEXT NOT NULL,
+    dedup_key TEXT NOT NULL,
+    rendered_text TEXT NOT NULL,
+    detail_json TEXT NOT NULL,
+    evaluated_at TEXT NOT NULL
+);
+CREATE INDEX IF NOT EXISTS idx_partner_hedge_shadow_phase_time
+    ON partner_hedge_shadow_evaluations(phase, evaluated_at DESC);
 """
 _ADVISORY_INIT_LOCKS: weakref.WeakKeyDictionary = weakref.WeakKeyDictionary()
 
@@ -210,6 +222,30 @@ async def _set_service_state(
         await db.commit()
 
 
+async def _record_shadow_evaluation(
+    db_path: str, *, phase: str, kind: str, dedup_key: str, text: str,
+    detail: dict, now: datetime,
+) -> str:
+    """Append immutable, reviewable shadow evidence without sending it."""
+    evaluated_at = _aware(now, "now").astimezone(IST).isoformat()
+    payload = json.dumps({
+        "phase": phase, "kind": kind, "dedup_key": dedup_key,
+        "text": text, "detail": detail,
+    }, sort_keys=True, default=str)
+    evaluation_id = hashlib.sha256(payload.encode("utf-8")).hexdigest()[:24]
+    await init_hedge_advisory_db(db_path)
+    async with aiosqlite.connect(db_path) as db:
+        await db.execute(
+            "INSERT OR IGNORE INTO partner_hedge_shadow_evaluations "
+            "(evaluation_id, phase, kind, dedup_key, rendered_text, detail_json, evaluated_at) "
+            "VALUES (?,?,?,?,?,?,?)",
+            (evaluation_id, phase, kind, dedup_key, text,
+             json.dumps(detail, sort_keys=True, default=str), evaluated_at),
+        )
+        await db.commit()
+    return evaluation_id
+
+
 async def load_hedge_service_state(db_path: str) -> dict:
     """Return the latest persisted advisory-service state for authenticated UI."""
     await init_hedge_advisory_db(db_path)
@@ -269,6 +305,15 @@ async def _claim(
                 previous_detail = json.loads(existing[2] or "{}")
             except (TypeError, json.JSONDecodeError):
                 previous_detail = {}
+            # A remote acknowledgement that could not be committed as a
+            # delivered row is an explicit recovery case, never an ordinary
+            # transport retry. Re-sending could duplicate a message that the
+            # partner has already received.
+            if previous_detail.get("acknowledged") or (
+                previous_detail.get("state") == "acknowledgement_recovery_required"
+            ):
+                await db.rollback()
+                return None
             if int(previous_detail.get("attempts", 0) or 0) >= settings.PARTNER_HEDGE_DELIVERY_MAX_ATTEMPTS:
                 await db.rollback()
                 return None
@@ -385,6 +430,22 @@ async def _fail_claim(
         return cur.rowcount == 1
 
 
+async def _mark_acknowledgement_recovery_required(
+    db_path: str, kind: str, key: str, token: str, *, detail: dict, now: datetime,
+) -> bool:
+    """Keep a known remote acknowledgement non-retryable after a DB failure."""
+    async with aiosqlite.connect(db_path) as db:
+        cur = await db.execute(
+            "UPDATE partner_hedge_messages SET sent_at=?, delivered=0, detail=?, "
+            "claim_token=NULL WHERE kind=? AND dedup_key=? AND delivered=0 "
+            "AND claim_token=?",
+            (now.isoformat(), json.dumps(detail, sort_keys=True, default=str),
+             kind, key, token),
+        )
+        await db.commit()
+        return cur.rowcount == 1
+
+
 async def _send_claimed_review(
     db_path: str, kind: str, key: str, text: str, *,
     detail: dict, now: datetime, underlying: Optional[str] = None,
@@ -397,6 +458,9 @@ async def _send_claimed_review(
     if token is None:
         return False
     try:
+        # Persist the send intent in the authoritative claim before transport.
+        # Service-state rows are useful UI summaries, but cannot determine
+        # whether a remotely acknowledged message is safe to retry.
         await _set_service_state(
             db_path, "last_candidate",
             {"kind": kind, "dedup_key": key, "underlying": underlying}, now=now,
@@ -407,15 +471,42 @@ async def _send_claimed_review(
             "acknowledged": result.delivered, "message_id": result.message_id,
             "error": result.error,
         }
-        await _set_service_state(db_path, "last_attempted_send", attempt, now=now)
         if result.delivered:
-            completed = await _complete_claim(
-                db_path, kind, key, token,
-                detail={**detail, "delivery": attempt, "state": "acknowledged"}, now=now,
-            )
+            delivery_at = datetime.now(IST)
+            acknowledged_detail = {
+                **detail, "delivery": attempt, "state": "acknowledged",
+                "acknowledged": True,
+            }
+            try:
+                completed = await _complete_claim(
+                    db_path, kind, key, token, detail=acknowledged_detail,
+                    now=delivery_at,
+                )
+            except Exception:
+                await _mark_acknowledgement_recovery_required(
+                    db_path, kind, key, token,
+                    detail={
+                        **acknowledged_detail,
+                        "state": "acknowledgement_recovery_required",
+                    }, now=delivery_at,
+                )
+                raise
             if completed:
-                await _set_service_state(db_path, "last_acknowledged_delivery", attempt, now=now)
-            return completed
+                try:
+                    await _set_service_state(
+                        db_path, "last_attempted_send", attempt, now=delivery_at,
+                    )
+                    await _set_service_state(
+                        db_path, "last_acknowledged_delivery", attempt, now=delivery_at,
+                    )
+                except Exception as state_error:
+                    logger.error(
+                        "partner_hedge_delivery_state_refresh_failed kind=%s key=%s err=%s",
+                        kind, key, str(state_error),
+                    )
+                return True
+            return False
+        await _set_service_state(db_path, "last_attempted_send", attempt, now=now)
         await _fail_claim(
             db_path, kind, key, token,
             detail={**detail, "delivery": attempt, "state": "failed"}, now=now,
@@ -1031,6 +1122,8 @@ def _portfolio_input_reason(
     reconciled = tuple(reconciled)
     if not all_open:
         return "NO_PORTFOLIO_INPUT"
+    if len(reconciled) != len(all_open):
+        return "PARTIAL_RECONCILIATION"
     if not reconciled:
         return "UNRECONCILED_PORTFOLIO_INPUT"
     max_age = timedelta(minutes=settings.PARTNER_HEDGE_POSITION_MAX_AGE_MIN)
@@ -1168,15 +1261,39 @@ async def partner_hedge_tick(now: Optional[datetime] = None) -> None:
                 continue
             reviews = build_hedge_reviews(group, snapshot, now=now)
             if not reviews:
-                await _record_no_advice(settings.DB_PATH, "NO_HEDGE_NEEDED", now=now,
+                # The builders are currently list-based, so do not turn an
+                # empty result into reassurance when an actionable group was
+                # merely unable to form a contract. The only safe statement is
+                # that proposal construction was unavailable.
+                await _record_no_advice(settings.DB_PATH, "INPUT_UNAVAILABLE", now=now,
                                         underlying=underlying)
             for kind, plan, context in reviews:
-                key = f"{underlying}:{snapshot.expiry.isoformat()}:{now.date().isoformat()}"
+                material = {
+                    "kind": kind,
+                    "positions": [
+                        (p.position_id, p.tradingsymbol, p.signed_quantity,
+                         p.updated_at.isoformat() if p.updated_at else None)
+                        for p in group
+                    ],
+                    "legs": [
+                        (leg.tradingsymbol, leg.quantity, leg.strike,
+                         leg.opt_type.value)
+                        for leg in plan.legs
+                    ],
+                }
+                version = hashlib.sha256(
+                    json.dumps(material, sort_keys=True, default=str).encode("utf-8")
+                ).hexdigest()[:16]
+                key = f"{underlying}:{snapshot.expiry.isoformat()}:{kind}:{version}"
                 text = _format_review(kind, plan, context)
                 await _send_claimed_review(
                     settings.DB_PATH, kind, key, text,
                     detail={"underlying": underlying, "expiry": snapshot.expiry,
-                            "contracts": [leg.tradingsymbol for leg in plan.legs]},
+                            "contracts": [leg.tradingsymbol for leg in plan.legs],
+                            "proposal_version": version,
+                            "valid_until": (
+                                now + timedelta(seconds=settings.PARTNER_HEDGE_MAX_QUOTE_AGE_SEC)
+                            ).isoformat()},
                     now=now,
                 )
         except Exception as exc:
@@ -1269,10 +1386,16 @@ async def partner_hedge_phase2_tick(now: Optional[datetime] = None) -> None:
                         now=now, underlying=underlying, min_gap=gap, daily_cap=cap,
                     )
                 else:
+                    evaluation_id = await _record_shadow_evaluation(
+                        settings.DB_PATH, phase="phase2", kind=kind,
+                        dedup_key=key, text=text,
+                        detail={**detail, "reason": "READINESS_BLOCKED"}, now=now,
+                    )
                     await _set_service_state(
                         settings.DB_PATH, "last_shadow_candidate",
                         {"phase": "phase2", "kind": kind, "dedup_key": key,
-                         "detail": detail, "reason": "READINESS_BLOCKED"}, now=now,
+                         "evaluation_id": evaluation_id, "detail": detail,
+                         "reason": "READINESS_BLOCKED"}, now=now,
                     )
         except Exception as exc:
             logger.error(
@@ -1402,10 +1525,16 @@ async def partner_hedge_phase3_tick(now: Optional[datetime] = None) -> None:
                         daily_cap=settings.PARTNER_HEDGE_PHASE3_DAILY_CAP,
                     )
                 else:
+                    evaluation_id = await _record_shadow_evaluation(
+                        settings.DB_PATH, phase="phase3", kind=kind,
+                        dedup_key=key, text=text,
+                        detail={**detail, "reason": "READINESS_BLOCKED"}, now=now,
+                    )
                     await _set_service_state(
                         settings.DB_PATH, "last_shadow_candidate",
                         {"phase": "phase3", "kind": kind, "dedup_key": key,
-                         "detail": detail, "reason": "READINESS_BLOCKED"}, now=now,
+                         "evaluation_id": evaluation_id, "detail": detail,
+                         "reason": "READINESS_BLOCKED"}, now=now,
                     )
         except Exception as exc:
             logger.error("partner_hedge_phase3_tick_failed underlying=%s err=%s",

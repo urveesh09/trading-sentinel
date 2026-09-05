@@ -365,6 +365,15 @@ def test_scan_reason_distinguishes_invalid_volume_and_stale_data():
     assert pee.scan_single_ticker_with_reason(bars, 29)[1] == "stale_data"
 
 
+def test_scan_reason_distinguishes_missing_and_invalid_dates():
+    bars = _flat_bars(30)
+    bars[-1].pop("date")
+    assert pee.scan_single_ticker_with_reason(bars, 29)[1] == "invalid_data"
+    bars = _flat_bars(30)
+    bars[-1]["date"] = "not-a-date"
+    assert pee.scan_single_ticker_with_reason(bars, 29)[1] == "invalid_data"
+
+
 def test_scan_reason_no_setup_when_features_fine_but_market_quiet():
     """Features computed, neither MR nor MO fired -- a genuine no-setup day."""
     bars = _flat_bars(30)

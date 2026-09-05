@@ -245,6 +245,12 @@ module.exports = {
   getMargins: async () => {
     return await withKite('getMargins', () => kite.getMargins());
   },
+
+  // Product-specific order-margin evidence. New entries use this when the
+  // broker SDK supports it; exits never depend on margin preflight.
+  getOrderMargins: async (orders) => {
+    return await withKite('getOrderMargins', () => kite.orderMargins(orders));
+  },
   
   /**
    * @param {object} params Kite order params.

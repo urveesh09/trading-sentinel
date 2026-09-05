@@ -197,6 +197,45 @@ async def test_hedge_delivery_persists_telegram_acknowledgement(db_path, monkeyp
 
 
 @pytest.mark.asyncio
+async def test_acknowledged_delivery_is_not_resent_when_status_refresh_fails(db_path, monkeypatch):
+    calls = 0
+    real_set_state = ha._set_service_state
+
+    async def acknowledged(*args, **kwargs):
+        nonlocal calls
+        calls += 1
+        return PartnerSendResult(True, message_id=987, state="acknowledged")
+
+    async def state_failure_after_ack(*args, **kwargs):
+        if args[1] == "last_attempted_send":
+            raise RuntimeError("simulated ancillary status failure")
+        return await real_set_state(*args, **kwargs)
+
+    monkeypatch.setattr(ha, "send_partner_result", acknowledged)
+    monkeypatch.setattr(ha, "_set_service_state", state_failure_after_ack)
+    assert await ha._send_claimed_review(
+        db_path, "protective_put_alert", "NIFTY:ack-state", "safe advisory",
+        detail={"underlying": "NIFTY"}, now=NOW,
+    )
+    assert not await ha._send_claimed_review(
+        db_path, "protective_put_alert", "NIFTY:ack-state", "safe advisory",
+        detail={"underlying": "NIFTY"}, now=NOW,
+    )
+    assert calls == 1
+
+
+def test_partial_reconciliation_is_not_ready_for_whole_portfolio():
+    confirmed = _position()
+    pending = PartnerPosition(**{
+        **confirmed.__dict__, "position_id": 999,
+        "verification_status": "PENDING_CONFIRMATION",
+    })
+    assert ha._portfolio_input_reason([confirmed, pending], [confirmed], NOW) == (
+        "PARTIAL_RECONCILIATION"
+    )
+
+
+@pytest.mark.asyncio
 async def test_failed_hedge_delivery_is_recoverable_but_bounded(db_path, monkeypatch):
     monkeypatch.setattr(settings, "PARTNER_HEDGE_DELIVERY_MAX_ATTEMPTS", 2)
     calls = 0
