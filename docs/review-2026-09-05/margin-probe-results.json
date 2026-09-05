@@ -1,0 +1,38 @@
+[
+  {
+    "case": "cash_exceeds_live_balance",
+    "input": {
+      "equity": {
+        "available": {
+          "cash": 245431.6,
+          "live_balance": 99725.05
+        }
+      }
+    },
+    "selected": 245431.6
+  },
+  {
+    "case": "zero_cash_positive_live",
+    "input": {
+      "equity": {
+        "available": {
+          "cash": 0,
+          "live_balance": 5000
+        }
+      }
+    },
+    "selected": 0
+  },
+  {
+    "case": "null_cash_positive_live",
+    "input": {
+      "equity": {
+        "available": {
+          "cash": null,
+          "live_balance": 5000
+        }
+      }
+    },
+    "selected": 0
+  }
+]

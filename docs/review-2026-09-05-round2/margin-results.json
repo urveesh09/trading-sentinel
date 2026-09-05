@@ -1,0 +1,27 @@
+[
+  {
+    "live_balance": -1000,
+    "cash": 100000,
+    "selected": 100000
+  },
+  {
+    "live_balance": null,
+    "cash": 100000,
+    "selected": 100000
+  },
+  {
+    "live_balance": "invalid",
+    "cash": 100000,
+    "selected": 100000
+  },
+  {
+    "live_balance": 0,
+    "cash": 100000,
+    "selected": 0
+  },
+  {
+    "live_balance": 5000,
+    "cash": 100000,
+    "selected": 5000
+  }
+]
