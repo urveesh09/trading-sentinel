@@ -10,6 +10,7 @@ import asyncio
 import hashlib
 import json
 import math
+import re
 import uuid
 import weakref
 from collections import defaultdict
@@ -29,6 +30,7 @@ from hedge_analytics import (
     PartnerPosition, aggregate_portfolio, assess_quote_freshness, init_hedge_db,
     iv_percentile, load_chain_iv_history,
     load_partner_positions, load_reconciled_open_partner_positions, position_is_actionable,
+    load_latest_partner_snapshot,
     size_futures_hedge, vix_regime_reading, gamma_exposure_at_expiry,
     classify_event_window, classify_range_regime, iv_term_structure,
     load_aligned_ohlcv_closes, portfolio_market_stress,
@@ -230,7 +232,7 @@ async def _record_shadow_evaluation(
     evaluated_at = _aware(now, "now").astimezone(IST).isoformat()
     payload = json.dumps({
         "phase": phase, "kind": kind, "dedup_key": dedup_key,
-        "text": text, "detail": detail,
+        "text": text, "detail": detail, "evaluated_at": evaluated_at,
     }, sort_keys=True, default=str)
     evaluation_id = hashlib.sha256(payload.encode("utf-8")).hexdigest()[:24]
     await init_hedge_advisory_db(db_path)
@@ -275,6 +277,7 @@ async def _claim(
     min_gap: Optional[timedelta] = None,
     daily_cap: Optional[int] = None,
     lease: timedelta = timedelta(hours=1),
+    detail: Optional[dict] = None,
 ) -> Optional[str]:
     """Atomically reserve one send and enforce delivered-message limits."""
     now = _aware(now, "now").astimezone(IST)
@@ -314,7 +317,56 @@ async def _claim(
             ):
                 await db.rollback()
                 return None
+            delivery_state = (previous_detail.get("delivery") or {}).get("state")
+            if delivery_state == "ambiguous_timeout" or previous_detail.get("state") in {
+                "manual_recovery_required", "expired", "permanently_rejected",
+            }:
+                await db.rollback()
+                return None
+            valid_until = previous_detail.get("valid_until")
+            if valid_until:
+                try:
+                    if datetime.fromisoformat(valid_until).astimezone(IST) <= now:
+                        previous_detail["state"] = "expired"
+                        previous_detail["expired_at"] = now.isoformat()
+                        await db.execute(
+                            "UPDATE partner_hedge_messages SET detail=?, claim_token=NULL "
+                            "WHERE kind=? AND dedup_key=?",
+                            (json.dumps(previous_detail, sort_keys=True, default=str), kind, key),
+                        )
+                        await db.commit()
+                        return None
+                except (TypeError, ValueError):
+                    await db.rollback()
+                    return None
+            next_attempt_at = previous_detail.get("next_attempt_at")
+            if next_attempt_at:
+                try:
+                    if datetime.fromisoformat(next_attempt_at).astimezone(IST) > now:
+                        await db.rollback()
+                        return None
+                except (TypeError, ValueError):
+                    await db.rollback()
+                    return None
             if int(previous_detail.get("attempts", 0) or 0) >= settings.PARTNER_HEDGE_DELIVERY_MAX_ATTEMPTS:
+                await db.rollback()
+                return None
+
+        candidate_detail = {**(previous_detail if existing is not None else {}), **(detail or {})}
+        valid_until = candidate_detail.get("valid_until")
+        if valid_until:
+            try:
+                if datetime.fromisoformat(valid_until).astimezone(IST) <= now:
+                    candidate_detail.update({"state": "expired", "expired_at": now.isoformat()})
+                    await db.execute(
+                        "INSERT OR REPLACE INTO partner_hedge_messages "
+                        "(kind, dedup_key, sent_at, delivered, detail, claim_token) VALUES (?,?,?,?,?,NULL)",
+                        (kind, key, now.isoformat(), 0,
+                         json.dumps(candidate_detail, sort_keys=True, default=str)),
+                    )
+                    await db.commit()
+                    return None
+            except (TypeError, ValueError):
                 await db.rollback()
                 return None
 
@@ -346,12 +398,15 @@ async def _claim(
                 attempts += int(json.loads(existing[2] or "{}").get("attempts", 0) or 0)
             except (TypeError, ValueError, json.JSONDecodeError):
                 pass
+        history = list(candidate_detail.get("attempt_history") or [])
+        candidate_detail.update({"state": "claimed", "attempts": attempts,
+                                 "next_attempt_at": None, "attempt_history": history})
         await db.execute(
             "INSERT OR REPLACE INTO partner_hedge_messages "
             "(kind, dedup_key, sent_at, delivered, detail, claim_token) "
             "VALUES (?,?,?,?,?,?)",
             (kind, key, now.isoformat(), 0,
-             json.dumps({"state": "claimed", "attempts": attempts}, sort_keys=True), token),
+             json.dumps(candidate_detail, sort_keys=True, default=str), token),
         )
         await db.commit()
         return token
@@ -415,10 +470,30 @@ async def _fail_claim(
         )
         row = await cur.fetchone()
         try:
-            attempts = int(json.loads(row[0] or "{}").get("attempts", 1) or 1) if row else 1
+            prior_detail = json.loads(row[0] or "{}") if row else {}
+            attempts = int(prior_detail.get("attempts", 1) or 1)
         except (TypeError, ValueError, json.JSONDecodeError):
+            prior_detail = {}
             attempts = 1
-        failed_detail = {**detail, "attempts": attempts}
+        delivery = detail.get("delivery") or {}
+        delivery_state = delivery.get("state")
+        history = list(prior_detail.get("attempt_history") or [])
+        history.append({"at": now.isoformat(), "state": delivery_state or "failed",
+                        "error": delivery.get("error")})
+        failed_detail = {**prior_detail, **detail, "attempts": attempts,
+                         "attempt_history": history}
+        if delivery_state == "ambiguous_timeout":
+            failed_detail.update({"state": "manual_recovery_required", "next_attempt_at": None})
+        elif delivery_state == "rate_limited":
+            match = re.search(r"retry_after_(\d+)", str(delivery.get("error") or ""))
+            delay = int(match.group(1)) if match else 60
+            failed_detail.update({"state": "retry_scheduled",
+                                  "next_attempt_at": (now + timedelta(seconds=max(delay, 1))).isoformat()})
+        elif delivery_state in {"rejected", "invalid_recipient"}:
+            failed_detail.update({"state": "permanently_rejected", "next_attempt_at": None})
+        else:
+            failed_detail.update({"state": "retry_scheduled",
+                                  "next_attempt_at": (now + timedelta(minutes=1)).isoformat()})
         cur = await db.execute(
             "UPDATE partner_hedge_messages SET sent_at=?, delivered=0, detail=?, "
             "claim_token=NULL WHERE kind=? AND dedup_key=? AND delivered=0 "
@@ -451,9 +526,12 @@ async def _send_claimed_review(
     detail: dict, now: datetime, underlying: Optional[str] = None,
     min_gap: Optional[timedelta] = None, daily_cap: Optional[int] = None,
 ) -> bool:
+    # Persist enough proposal context for a bounded recovery worker; it still
+    # must re-check expiry and lease state before any network call.
+    claim_detail = {**detail, "rendered_text": text}
     token = await _claim(
         db_path, kind, key, now=now, underlying=underlying,
-        min_gap=min_gap, daily_cap=daily_cap,
+        min_gap=min_gap, daily_cap=daily_cap, detail=claim_detail,
     )
     if token is None:
         return False
@@ -474,7 +552,7 @@ async def _send_claimed_review(
         if result.delivered:
             delivery_at = datetime.now(IST)
             acknowledged_detail = {
-                **detail, "delivery": attempt, "state": "acknowledged",
+                **claim_detail, "delivery": attempt, "state": "acknowledged",
                 "acknowledged": True,
             }
             try:
@@ -509,17 +587,49 @@ async def _send_claimed_review(
         await _set_service_state(db_path, "last_attempted_send", attempt, now=now)
         await _fail_claim(
             db_path, kind, key, token,
-            detail={**detail, "delivery": attempt, "state": "failed"}, now=now,
+            detail={**claim_detail, "delivery": attempt, "state": "failed"}, now=now,
         )
         return False
     except Exception:
         await _fail_claim(
             db_path, kind, key, token,
-            detail={**detail, "state": "failed", "delivery": {
+            detail={**claim_detail, "state": "failed", "delivery": {
                 "kind": kind, "dedup_key": key, "state": "internal_error",
             }}, now=now,
         )
         raise
+
+
+async def recover_pending_hedge_deliveries(now: Optional[datetime] = None) -> int:
+    """Retry due, unambiguous deliveries through the same claim ledger.
+
+    The worker never invents a message from a failed record.  Ambiguous and
+    expired proposals remain visible for operator action, while a known
+    rate-limit or ordinary transient failure can be recovered independently of
+    the next daily digest.
+    """
+    now = _aware(now or datetime.now(IST), "now").astimezone(IST)
+    await init_hedge_advisory_db(settings.DB_PATH)
+    async with aiosqlite.connect(settings.DB_PATH) as db:
+        cur = await db.execute(
+            "SELECT kind, dedup_key, detail FROM partner_hedge_messages "
+            "WHERE delivered=0 ORDER BY sent_at ASC"
+        )
+        rows = await cur.fetchall()
+    recovered = 0
+    for kind, key, raw_detail in rows:
+        try:
+            detail = json.loads(raw_detail or "{}")
+        except (TypeError, json.JSONDecodeError):
+            continue
+        if detail.get("state") != "retry_scheduled" or not detail.get("rendered_text"):
+            continue
+        if await _send_claimed_review(
+            settings.DB_PATH, kind, key, str(detail["rendered_text"]), detail=detail,
+            now=now, underlying=detail.get("underlying"),
+        ):
+            recovered += 1
+    return recovered
 
 
 def _settings_kwargs() -> dict:
@@ -1132,6 +1242,53 @@ def _portfolio_input_reason(
     return "READY_FOR_EVALUATION"
 
 
+async def _whole_portfolio_input_reason(
+    db_path: str, all_open: Iterable[PartnerPosition],
+    reconciled: Iterable[PartnerPosition], now: datetime,
+) -> str:
+    """Gate all account-wide advice on one fresh, complete accepted version."""
+    snapshot = await load_latest_partner_snapshot(db_path)
+    if snapshot is None:
+        return "NO_ACCEPTED_PORTFOLIO_SNAPSHOT"
+    if not snapshot["complete"]:
+        return "PARTIAL_PORTFOLIO_SNAPSHOT"
+    observed_at = snapshot["observed_at"]
+    if observed_at is None or now - observed_at > timedelta(minutes=settings.PARTNER_HEDGE_INPUT_MAX_AGE_MIN):
+        return "STALE_PORTFOLIO_SNAPSHOT"
+    if observed_at > now + timedelta(seconds=settings.PARTNER_HEDGE_INPUT_MAX_FUTURE_SKEW_SEC):
+        return "FUTURE_PORTFOLIO_SNAPSHOT"
+    all_open = tuple(all_open)
+    if any(position.source != snapshot["source"] for position in all_open):
+        return "PORTFOLIO_SOURCE_SCOPE_MISMATCH"
+    # A complete accepted empty account is not an unconfigured account.
+    if not all_open:
+        return "VERIFIED_EMPTY_PORTFOLIO"
+    return _portfolio_input_reason(all_open, reconciled, now)
+
+
+def _proposal_identity(
+    kind: str, positions: Iterable[PartnerPosition], plan: object,
+) -> str:
+    """Stable identity for economic proposal changes, never refresh metadata."""
+    material = {
+        "kind": kind,
+        "positions": sorted(
+            (p.position_id, p.tradingsymbol, p.signed_quantity, p.current_price,
+             p.underlying_price, p.beta,
+             (p.greeks.delta, p.greeks.gamma, p.greeks.theta, p.greeks.vega)
+             if p.greeks else None)
+            for p in positions
+        ),
+        "legs": sorted(
+            (leg.tradingsymbol, leg.quantity, leg.strike, str(leg.opt_type))
+            for leg in plan.legs
+        ),
+    }
+    return hashlib.sha256(
+        json.dumps(material, sort_keys=True, default=str).encode("utf-8")
+    ).hexdigest()[:16]
+
+
 async def _record_no_advice(
     db_path: str, reason: str, *, now: datetime, underlying: str = "PORTFOLIO",
     notify: bool = False,
@@ -1170,7 +1327,7 @@ async def partner_hedge_daily_summary(
     await init_hedge_advisory_db(settings.DB_PATH)
     all_open = await load_partner_positions(settings.DB_PATH)
     reconciled = await load_reconciled_open_partner_positions(settings.DB_PATH)
-    input_state = _portfolio_input_reason(all_open, reconciled, now)
+    input_state = await _whole_portfolio_input_reason(settings.DB_PATH, all_open, reconciled, now)
     await _send_claimed_review(
         settings.DB_PATH, f"hedge_{period.lower()}_summary", now.date().isoformat(),
         format_hedge_daily_summary(
@@ -1201,14 +1358,12 @@ async def partner_hedge_tick(now: Optional[datetime] = None) -> None:
     await _send_vix_review(settings.DB_PATH, now)
     all_open = await load_partner_positions(settings.DB_PATH)
     positions = await load_reconciled_open_partner_positions(settings.DB_PATH)
-    input_reason = _portfolio_input_reason(all_open, positions, now)
-    last_input = max(
-        (p.updated_at or p.opened_at for p in all_open), default=None,
+    input_reason = await _whole_portfolio_input_reason(
+        settings.DB_PATH, all_open, positions, now,
     )
     await _set_service_state(
-        settings.DB_PATH, "last_input_refresh",
-        {"at": last_input.isoformat() if last_input else None,
-         "open_positions": len(all_open), "reconciled_positions": len(positions),
+        settings.DB_PATH, "last_portfolio_evaluation",
+        {"open_positions": len(all_open), "reconciled_positions": len(positions),
          "state": input_reason}, now=now,
     )
     await _set_service_state(
@@ -1268,22 +1423,7 @@ async def partner_hedge_tick(now: Optional[datetime] = None) -> None:
                 await _record_no_advice(settings.DB_PATH, "INPUT_UNAVAILABLE", now=now,
                                         underlying=underlying)
             for kind, plan, context in reviews:
-                material = {
-                    "kind": kind,
-                    "positions": [
-                        (p.position_id, p.tradingsymbol, p.signed_quantity,
-                         p.updated_at.isoformat() if p.updated_at else None)
-                        for p in group
-                    ],
-                    "legs": [
-                        (leg.tradingsymbol, leg.quantity, leg.strike,
-                         leg.opt_type.value)
-                        for leg in plan.legs
-                    ],
-                }
-                version = hashlib.sha256(
-                    json.dumps(material, sort_keys=True, default=str).encode("utf-8")
-                ).hexdigest()[:16]
+                version = _proposal_identity(kind, group, plan)
                 key = f"{underlying}:{snapshot.expiry.isoformat()}:{kind}:{version}"
                 text = _format_review(kind, plan, context)
                 await _send_claimed_review(
@@ -1291,8 +1431,10 @@ async def partner_hedge_tick(now: Optional[datetime] = None) -> None:
                     detail={"underlying": underlying, "expiry": snapshot.expiry,
                             "contracts": [leg.tradingsymbol for leg in plan.legs],
                             "proposal_version": version,
-                            "valid_until": (
-                                now + timedelta(seconds=settings.PARTNER_HEDGE_MAX_QUOTE_AGE_SEC)
+                            "valid_until": min(
+                                snapshot.taken_at + timedelta(seconds=settings.PARTNER_HEDGE_MAX_QUOTE_AGE_SEC),
+                                *(p.price_as_of + timedelta(minutes=settings.PARTNER_HEDGE_POSITION_MAX_AGE_MIN)
+                                  for p in group if p.price_as_of),
                             ).isoformat()},
                     now=now,
                 )
@@ -1332,7 +1474,14 @@ async def partner_hedge_phase2_tick(now: Optional[datetime] = None) -> None:
          "validated": readiness["state"] == "READY", "sending": sending,
          "blockers": readiness["blockers"]}, now=now,
     )
+    all_open = await load_partner_positions(settings.DB_PATH)
     positions = await load_reconciled_open_partner_positions(settings.DB_PATH)
+    portfolio_state = await _whole_portfolio_input_reason(settings.DB_PATH, all_open, positions, now)
+    if portfolio_state != "READY_FOR_EVALUATION":
+        await _set_service_state(
+            settings.DB_PATH, "phase2_portfolio_gate", {"state": portfolio_state}, now=now,
+        )
+        return
     grouped: dict[str, list[PartnerPosition]] = defaultdict(list)
     for position in positions:
         grouped[position.underlying].append(position)
@@ -1429,7 +1578,14 @@ async def partner_hedge_phase3_tick(now: Optional[datetime] = None) -> None:
          "validated": readiness["state"] == "READY", "sending": sending,
          "blockers": readiness["blockers"]}, now=now,
     )
+    all_open = await load_partner_positions(settings.DB_PATH)
     positions = await load_reconciled_open_partner_positions(settings.DB_PATH)
+    portfolio_state = await _whole_portfolio_input_reason(settings.DB_PATH, all_open, positions, now)
+    if portfolio_state != "READY_FOR_EVALUATION":
+        await _set_service_state(
+            settings.DB_PATH, "phase3_portfolio_gate", {"state": portfolio_state}, now=now,
+        )
+        return
     logger.info(
         "partner_hedge_phase3_state",
         now_ist=now.strftime("%H:%M:%S"),

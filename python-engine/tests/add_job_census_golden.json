@@ -55,6 +55,11 @@
     "trigger": "'cron'"
   },
   {
+    "func": "_run_partner_hedge_delivery_recovery_safe",
+    "id": "'partner_hedge_delivery_recovery'",
+    "trigger": "'cron'"
+  },
+  {
     "func": "_run_partner_hedge_eod_summary_safe",
     "id": "'partner_hedge_eod_summary'",
     "trigger": "'cron'"

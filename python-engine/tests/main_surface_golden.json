@@ -37,6 +37,12 @@
       "trigger": "cron[hour='15', minute='40']"
     },
     {
+      "func": "_run_partner_hedge_delivery_recovery_safe",
+      "id": "partner_hedge_delivery_recovery",
+      "kwargs": [],
+      "trigger": "cron[minute='*/2', second='35']"
+    },
+    {
       "func": "_run_partner_hedge_eod_summary_safe",
       "id": "partner_hedge_eod_summary",
       "kwargs": [],

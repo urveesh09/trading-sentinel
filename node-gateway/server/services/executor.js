@@ -27,8 +27,14 @@ function usableEntryMargin(margins) {
   const equity = margins?.equity;
   if (!equity || equity.enabled === false) return null;
   const available = equity.available || {};
-  return finiteNonNegative(available.live_balance)
-    ?? finiteNonNegative(available.cash);
+  // A present live balance is authoritative even if it is invalid: falling
+  // back to a raw cash component could authorize an entry while the current
+  // usable balance is negative.  Only legacy responses that omit the field
+  // altogether may use the documented cash fallback.
+  if (Object.prototype.hasOwnProperty.call(available, 'live_balance')) {
+    return finiteNonNegative(available.live_balance);
+  }
+  return finiteNonNegative(available.cash);
 }
 
 function requiredOrderMargin(orderMargins) {

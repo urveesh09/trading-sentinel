@@ -74,3 +74,60 @@ No live Telegram canary, broker order, Production migration, or claim that a
 partner received a current personalized hedge review was made. Those require
 the mapped source, fresh reconciled data, review of destination/content, and
 explicit send authorization.
+
+## Round-two remediation — 5 September 2026
+
+This follow-up implements the P1 correction packages from
+`2026-09-05-hedge-remediation-round2-audit-and-roadmap.md` in Dev only.
+
+- `python-engine/hedge_advisory.py`
+  - Phase 1 now canonicalizes `LegSpec.opt_type` as its actual string model;
+    a valid protective-put or futures proposal no longer crashes before the
+    sender because of an enum `.value` access.
+  - Proposal identity is a pure, sorted economic representation of positions
+    and selected legs. Reconciliation timestamps are excluded, while quantity,
+    price/Greek exposure and contract changes supersede a proposal.
+  - Every whole-portfolio phase uses the latest accepted complete snapshot
+    envelope. Missing, partial, stale and future envelopes block evaluation;
+    a verified empty account is reported distinctly.
+  - Delivery claims retain rendered text, proposal expiry and attempt history.
+    Timeout ambiguity requires manual recovery, 429 responses honour their
+    retry-after time, permanent rejection is terminal, and an expired proposal
+    is retired before transport. A two-minute recovery job uses the same ledger
+    for due unambiguous retries.
+
+- `python-engine/hedge_analytics.py` and `partner_input_refresh.py`
+  - Snapshot envelopes now require source, account id, snapshot id, monotonic
+    sequence, observed time and completeness. The last accepted watermark is
+    persisted per source/account, with payload hashes for idempotent replay.
+  - All reconciliation events, inferred closures and snapshot-watermark update
+    are one SQLite transaction. Invalid later rows or write failures roll back
+    the entire snapshot; readers cannot observe a mixed portfolio version.
+  - Old/future/stale/replayed envelopes are rejected before promotion. Partial
+    envelopes never infer closures. Greeks must be complete when provided;
+    unknown gamma/theta/vega are not converted to zero.
+  - Adapter authentication now uses a dedicated adapter bearer token rather
+    than Sentinel's shared internal-service secret. Optional configured source
+    and account bindings reject mismatched input before any write.
+
+- `node-gateway/server/services/executor.js`
+  - A present negative, null or malformed `live_balance` now fails closed;
+    `cash` is a legacy fallback only when the live-balance field is absent.
+
+- `python-engine/scheduler_setup.py` and scheduler golden contracts
+  - Added `partner_hedge_delivery_recovery` at every two minutes, offset from
+    input refresh and evaluation jobs. The scheduler surface and closure census
+    explicitly cover the new job.
+
+### Round-two verification
+
+- 155 focused Python tests passed, covering hedge advisory/transport, snapshot
+  transaction/order rules, Phase 3 gate, scheduler contracts, runtime audit
+  and adjacent F&O/Penny scheduler surfaces.
+- 46 gateway executor tests passed, including invalid live-balance fallback.
+- Scheduler golden contracts were regenerated deliberately and then validated.
+
+The external rollout prerequisites remain unchanged: an approved adapter and
+account mapping, scoped credential provisioning, source coverage for new and
+reopened identities, a genuine VIX producer, and explicit live-message
+authorization. Production remains unmodified.

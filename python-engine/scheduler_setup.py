@@ -931,6 +931,13 @@ def register_partner_scheduler_jobs(scheduler):
         except Exception as exc:
             logger.error("partner_hedge_tick_crashed err=%s", exc, exc_info=True)
 
+    async def _run_partner_hedge_delivery_recovery_safe():
+        try:
+            from hedge_advisory import recover_pending_hedge_deliveries
+            await recover_pending_hedge_deliveries()
+        except Exception as exc:
+            logger.error("partner_hedge_delivery_recovery_crashed err=%s", exc, exc_info=True)
+
     async def _run_partner_input_refresh_safe():
         try:
             from partner_input_refresh import refresh_partner_input_once
@@ -1016,6 +1023,12 @@ def register_partner_scheduler_jobs(scheduler):
         max_instances=1, coalesce=True, misfire_grace_time=120,
     )
     scheduler.add_job(
+        _run_partner_hedge_delivery_recovery_safe, "cron",
+        minute="*/2", second=35,
+        id="partner_hedge_delivery_recovery",
+        max_instances=1, coalesce=True, misfire_grace_time=60,
+    )
+    scheduler.add_job(
         _run_partner_hedge_morning_summary_safe, "cron",
         hour=settings.PARTNER_MORNING_BRIEF_HOUR,
         minute=settings.PARTNER_MORNING_BRIEF_MIN,
@@ -1041,7 +1054,7 @@ def register_partner_scheduler_jobs(scheduler):
         max_instances=1, coalesce=True, misfire_grace_time=120,
     )
     logger.info(
-        "partner_cron_registered jobs=11 enabled=%s hedge_enabled=%s "
+        "partner_cron_registered jobs=12 enabled=%s hedge_enabled=%s "
         "hedge_phase2_enabled=%s hedge_phase3_enabled=%s off_grid=true",
         settings.PARTNER_BOT_ENABLED,
         settings.PARTNER_HEDGE_ENABLED,

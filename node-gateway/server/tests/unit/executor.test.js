@@ -295,6 +295,10 @@ describe('executeSignal()', () => {
       cash: null, live_balance: 5000,
     } } })).toBe(5000);
     expect(usableEntryMargin({ equity: { available: { cash: '', live_balance: false } } })).toBeNull();
+    expect(usableEntryMargin({ equity: { available: { cash: 100000, live_balance: -1000 } } })).toBeNull();
+    expect(usableEntryMargin({ equity: { available: { cash: 100000, live_balance: null } } })).toBeNull();
+    expect(usableEntryMargin({ equity: { available: { cash: 100000, live_balance: '1000' } } })).toBeNull();
+    expect(usableEntryMargin({ equity: { available: { cash: 100000 } } })).toBe(100000);
     expect(requiredOrderMargin([{ initial: { total: 900 } }])).toBe(900);
   });
 

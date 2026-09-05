@@ -201,6 +201,9 @@ async def test_phase3_tick_builds_portfolio_stress_inside_phase3_job(monkeypatch
     async def positions(*args, **kwargs):
         return [_position(), second]
 
+    async def ready_portfolio(*args, **kwargs):
+        return "READY_FOR_EVALUATION"
+
     async def closes(*args, **kwargs):
         return {"NIFTYBEES": tuple(range(1, 52)), "BANKBEES": tuple(range(2, 53))}
 
@@ -225,6 +228,7 @@ async def test_phase3_tick_builds_portfolio_stress_inside_phase3_job(monkeypatch
     monkeypatch.setattr(ha, "init_hedge_advisory_db", no_op)
     monkeypatch.setattr(ha, "_set_service_state", no_op)
     monkeypatch.setattr(ha, "load_reconciled_open_partner_positions", positions)
+    monkeypatch.setattr(ha, "_whole_portfolio_input_reason", ready_portfolio)
     monkeypatch.setattr(ha, "load_aligned_ohlcv_closes", closes)
     monkeypatch.setattr(ha, "portfolio_market_stress", lambda *args, **kwargs: stress)
     monkeypatch.setattr(

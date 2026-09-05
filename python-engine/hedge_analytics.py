@@ -1242,6 +1242,32 @@ CREATE INDEX IF NOT EXISTS ix_partner_positions_reconciled_open
     WHERE status = 'OPEN' AND verification_status = 'RECONCILED';
 CREATE INDEX IF NOT EXISTS ix_partner_position_reconciliations_position
     ON partner_position_reconciliations (position_id, reconciled_at DESC);
+CREATE TABLE IF NOT EXISTS partner_input_snapshots (
+    source TEXT NOT NULL,
+    account_id TEXT NOT NULL,
+    snapshot_id TEXT NOT NULL,
+    sequence INTEGER NOT NULL,
+    observed_at TEXT NOT NULL,
+    received_at TEXT NOT NULL,
+    complete INTEGER NOT NULL,
+    payload_hash TEXT NOT NULL,
+    accepted_at TEXT NOT NULL,
+    PRIMARY KEY (source, account_id)
+);
+CREATE TABLE IF NOT EXISTS partner_input_snapshot_events (
+    event_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    source TEXT NOT NULL,
+    account_id TEXT NOT NULL,
+    snapshot_id TEXT NOT NULL,
+    sequence INTEGER NOT NULL,
+    observed_at TEXT NOT NULL,
+    received_at TEXT NOT NULL,
+    complete INTEGER NOT NULL,
+    payload_hash TEXT NOT NULL,
+    outcome TEXT NOT NULL,
+    recorded_at TEXT NOT NULL,
+    UNIQUE (source, account_id, snapshot_id, payload_hash, outcome)
+);
 """
 
 _MIGRATION_COLUMNS = {
@@ -1484,9 +1510,18 @@ async def load_reconciled_open_partner_positions(db_path: str) -> list[PartnerPo
     return [position for row in rows if (position := _row_to_position(row)) is not None]
 
 
-async def reconcile_partner_position(
-    db_path: str,
-    position_id: int,
+async def _position_in_transaction(
+    db: aiosqlite.Connection, position_id: int,
+) -> Optional[PartnerPosition]:
+    db.row_factory = aiosqlite.Row
+    cur = await db.execute("SELECT * FROM partner_positions WHERE position_id=?", (position_id,))
+    row = await cur.fetchone()
+    return _row_to_position(row) if row is not None else None
+
+
+async def _reconcile_position_in_transaction(
+    db: aiosqlite.Connection,
+    position: PartnerPosition,
     *,
     observed_quantity: int,
     quantity_basis: Optional[str] = None,
@@ -1500,12 +1535,13 @@ async def reconcile_partner_position(
     deliverable_quantity: Optional[int] = None,
     deliverable_as_of: Optional[datetime] = None,
     deliverable_source: Optional[str] = None,
+    reject_closed_reopen: bool = False,
 ) -> Optional[PartnerPosition]:
-    """Record an observed broker/partner state and mark the row reconciled.
+    """Validate and write one reconciliation using an already-open transaction.
 
-    A zero observed quantity closes the position.  Options cannot become
-    reconciled without current Greeks; this prevents their risk disappearing
-    from a portfolio aggregate.
+    The public single-position helper and snapshot importer deliberately share
+    this implementation.  That prevents a bulk snapshot from acquiring a new
+    connection for every row and exposing a partially accepted portfolio.
     """
     if not isinstance(observed_quantity, int) or isinstance(observed_quantity, bool):
         raise ValueError("observed_quantity must be an integer")
@@ -1520,15 +1556,12 @@ async def reconcile_partner_position(
         _aware(price_as_of, "price_as_of")
     if underlying_price is not None:
         _positive(underlying_price, "underlying_price")
-    position = await get_partner_position(db_path, position_id)
-    if position is None:
-        return None
     if position.status == "CLOSED":
+        if observed_quantity and reject_closed_reopen:
+            raise ValueError("closed position_id cannot be reopened by a snapshot")
         return position
     resolved_basis = str(quantity_basis or position.quantity_basis).upper()
     if position.instrument_type in ("FUT", "CE", "PE"):
-        # An explicit units assertion is required to keep an F&O row open. A
-        # zero observation may always close/quarantine a legacy row safely.
         if observed_quantity != 0 and resolved_basis != "UNITS":
             raise ValueError("F&O reconciliation requires quantity_basis=UNITS")
         if observed_quantity and observed_quantity % position.lot_size:
@@ -1557,72 +1590,93 @@ async def reconcile_partner_position(
             raise ValueError("reconciling an open option requires underlying_price")
 
     status = "CLOSED" if observed_quantity == 0 else "OPEN"
-    verification = "RECONCILED"
     closed_at = reconciled_at if status == "CLOSED" else None
     if status == "CLOSED":
         effective_deliverable_quantity = None
         effective_deliverable_as_of = None
         effective_deliverable_source = None
     else:
-        effective_deliverable_quantity = (
-            deliverable_quantity if deliverable_quantity is not None
-            else position.deliverable_quantity
-        )
-        effective_deliverable_as_of = (
-            deliverable_as_of if deliverable_as_of is not None
-            else position.deliverable_as_of
-        )
-        effective_deliverable_source = (
-            deliverable_source if deliverable_source is not None
-            else position.deliverable_source
-        )
-        if (
-            effective_deliverable_quantity is not None
-            and effective_deliverable_quantity > max(observed_quantity, 0)
-        ):
+        effective_deliverable_quantity = (deliverable_quantity if deliverable_quantity is not None
+                                          else position.deliverable_quantity)
+        effective_deliverable_as_of = (deliverable_as_of if deliverable_as_of is not None
+                                       else position.deliverable_as_of)
+        effective_deliverable_source = (deliverable_source if deliverable_source is not None
+                                        else position.deliverable_source)
+        if (effective_deliverable_quantity is not None
+                and effective_deliverable_quantity > max(observed_quantity, 0)):
             raise ValueError(
                 "existing deliverable_quantity exceeds observed equity quantity; "
                 "provide a refreshed deliverable holding"
             )
+    updated = await db.execute(
+        "UPDATE partner_positions SET signed_quantity=?, quantity_basis=?, current_price=?, underlying_price=?, current_greeks_json=?, "
+        "price_as_of=?, updated_at=?, closed_at=?, status=?, verification_status=?, notes=?, "
+        "deliverable_quantity=?, deliverable_as_of=?, deliverable_source=? "
+        "WHERE position_id=? AND status='OPEN'",
+        (observed_quantity, resolved_basis,
+         current_price if current_price is not None else position.current_price,
+         underlying_price if underlying_price is not None else position.underlying_price,
+         _greeks_json(greeks) if greeks is not None else _greeks_json(position.greeks),
+         _timestamp(price_as_of) if price_as_of else (_timestamp(position.price_as_of) if position.price_as_of else None),
+         _timestamp(reconciled_at), _timestamp(closed_at) if closed_at else None,
+         status, "RECONCILED", notes if notes is not None else position.notes,
+         effective_deliverable_quantity,
+         _timestamp(effective_deliverable_as_of) if effective_deliverable_as_of else None,
+         effective_deliverable_source, position.position_id),
+    )
+    if updated.rowcount != 1:
+        raise RuntimeError("position changed while reconciliation transaction was active")
+    await db.execute(
+        "INSERT INTO partner_position_reconciliations "
+        "(position_id, reconciled_at, observed_quantity, observed_price, observed_greeks_json, source, notes) "
+        "VALUES (?,?,?,?,?,?,?)",
+        (position.position_id, _timestamp(reconciled_at), observed_quantity, current_price,
+         _greeks_json(greeks), source, notes),
+    )
+    return await _position_in_transaction(db, int(position.position_id))
+
+
+async def reconcile_partner_position(
+    db_path: str,
+    position_id: int,
+    *,
+    observed_quantity: int,
+    quantity_basis: Optional[str] = None,
+    reconciled_at: datetime,
+    source: str,
+    current_price: Optional[float] = None,
+    underlying_price: Optional[float] = None,
+    price_as_of: Optional[datetime] = None,
+    greeks: Optional[Greeks] = None,
+    notes: Optional[str] = None,
+    deliverable_quantity: Optional[int] = None,
+    deliverable_as_of: Optional[datetime] = None,
+    deliverable_source: Optional[str] = None,
+) -> Optional[PartnerPosition]:
+    """Record an observed broker/partner state and mark the row reconciled.
+
+    A zero observed quantity closes the position.  Options cannot become
+    reconciled without current Greeks; this prevents their risk disappearing
+    from a portfolio aggregate.
+    """
     await init_hedge_db(db_path)
     async with aiosqlite.connect(db_path) as db:
         await db.execute("BEGIN IMMEDIATE")
-        updated = await db.execute(
-            "UPDATE partner_positions SET signed_quantity=?, quantity_basis=?, current_price=?, underlying_price=?, current_greeks_json=?, "
-            "price_as_of=?, updated_at=?, closed_at=?, status=?, verification_status=?, notes=?, "
-            "deliverable_quantity=?, deliverable_as_of=?, deliverable_source=? "
-            "WHERE position_id=? AND status='OPEN'",
-            (
-                observed_quantity,
-                resolved_basis,
-                current_price if current_price is not None else position.current_price,
-                underlying_price if underlying_price is not None else position.underlying_price,
-                _greeks_json(greeks) if greeks is not None else _greeks_json(position.greeks),
-                _timestamp(price_as_of) if price_as_of else (_timestamp(position.price_as_of) if position.price_as_of else None),
-                _timestamp(reconciled_at),
-                _timestamp(closed_at) if closed_at else None,
-                status,
-                verification,
-                notes if notes is not None else position.notes,
-                effective_deliverable_quantity,
-                (_timestamp(effective_deliverable_as_of)
-                 if effective_deliverable_as_of else None),
-                effective_deliverable_source,
-                position_id,
-            ),
-        )
-        if updated.rowcount != 1:
+        position = await _position_in_transaction(db, position_id)
+        if position is None:
             await db.rollback()
-            return await get_partner_position(db_path, position_id)
-        await db.execute(
-            "INSERT INTO partner_position_reconciliations "
-            "(position_id, reconciled_at, observed_quantity, observed_price, observed_greeks_json, source, notes) "
-            "VALUES (?,?,?,?,?,?,?)",
-            (position_id, _timestamp(reconciled_at), observed_quantity, current_price,
-             _greeks_json(greeks), source, notes),
+            return None
+        result = await _reconcile_position_in_transaction(
+            db, position, observed_quantity=observed_quantity,
+            quantity_basis=quantity_basis, reconciled_at=reconciled_at, source=source,
+            current_price=current_price, underlying_price=underlying_price,
+            price_as_of=price_as_of, greeks=greeks, notes=notes,
+            deliverable_quantity=deliverable_quantity,
+            deliverable_as_of=deliverable_as_of,
+            deliverable_source=deliverable_source,
         )
         await db.commit()
-    return await get_partner_position(db_path, position_id)
+        return result
 
 
 async def close_partner_position(
@@ -1633,3 +1687,145 @@ async def close_partner_position(
         db_path, position_id, observed_quantity=0, reconciled_at=closed_at,
         source=source, notes=notes,
     )
+
+
+async def apply_partner_snapshot_transaction(
+    db_path: str,
+    *,
+    source: str,
+    account_id: str,
+    snapshot_id: str,
+    sequence: int,
+    observed_at: datetime,
+    received_at: datetime,
+    complete: bool,
+    payload_hash: str,
+    rows: Sequence[Mapping[str, object]],
+) -> dict:
+    """Accept one ordered portfolio version without exposing partial rows.
+
+    Snapshot ordering and the reconciliation events share the same SQLite
+    transaction.  On any schema, ownership, position, or write failure the
+    transaction rolls back, so analytics readers observe either the prior
+    accepted portfolio or the complete replacement.
+    """
+    source = str(source).strip()
+    account_id = str(account_id).strip()
+    snapshot_id = str(snapshot_id).strip()
+    if not source or not account_id or not snapshot_id:
+        raise ValueError("source, account_id and snapshot_id are required")
+    if not isinstance(sequence, int) or isinstance(sequence, bool) or sequence < 0:
+        raise ValueError("sequence must be a non-negative integer")
+    _aware(observed_at, "observed_at")
+    _aware(received_at, "received_at")
+    if not isinstance(complete, bool) or not str(payload_hash).strip():
+        raise ValueError("complete and payload_hash are required")
+    await init_hedge_db(db_path)
+    async with aiosqlite.connect(db_path, timeout=30) as db:
+        try:
+            await db.execute("BEGIN IMMEDIATE")
+            cur = await db.execute(
+                "SELECT snapshot_id, sequence, observed_at, payload_hash "
+                "FROM partner_input_snapshots WHERE source=? AND account_id=?",
+                (source, account_id),
+            )
+            watermark = await cur.fetchone()
+            if watermark is not None:
+                prior_id, prior_sequence, prior_observed, prior_hash = watermark
+                if snapshot_id == prior_id and payload_hash == prior_hash:
+                    await db.rollback()
+                    return {"accepted": False, "idempotent": True, "reconciled": 0, "closed": 0}
+                if snapshot_id == prior_id or sequence <= int(prior_sequence):
+                    raise ValueError("snapshot replay or out-of-order sequence")
+                if observed_at <= _parse_timestamp(prior_observed):
+                    raise ValueError("snapshot observation is older than accepted watermark")
+
+            # Resolve ownership and identities before any writes.  The same
+            # transaction keeps these rows stable through promotion.
+            positions: dict[int, PartnerPosition] = {}
+            for row in rows:
+                position_id = row["position_id"]
+                if not isinstance(position_id, int) or isinstance(position_id, bool):
+                    raise ValueError("position_id must be an integer")
+                if position_id in positions:
+                    raise ValueError("snapshot contains duplicate position_id")
+                position = await _position_in_transaction(db, position_id)
+                if position is None:
+                    raise ValueError(f"unknown position_id {position_id}")
+                if position.source != source:
+                    raise ValueError("snapshot source does not own position_id")
+                positions[position_id] = position
+
+            reconciled = 0
+            for row in rows:
+                position_id = int(row["position_id"])
+                await _reconcile_position_in_transaction(
+                    db, positions[position_id],
+                    observed_quantity=row["observed_quantity"],
+                    quantity_basis=row.get("quantity_basis"),
+                    reconciled_at=observed_at, source=source,
+                    current_price=row.get("current_price"),
+                    underlying_price=row.get("underlying_price"),
+                    price_as_of=row.get("price_as_of"), greeks=row.get("greeks"),
+                    notes=row.get("notes"),
+                    deliverable_quantity=row.get("deliverable_quantity"),
+                    deliverable_as_of=row.get("deliverable_as_of"),
+                    deliverable_source=row.get("deliverable_source"),
+                    reject_closed_reopen=True,
+                )
+                reconciled += 1
+            closed = 0
+            if complete:
+                db.row_factory = aiosqlite.Row
+                cur = await db.execute(
+                    "SELECT * FROM partner_positions WHERE status='OPEN' AND source=?",
+                    (source,),
+                )
+                open_rows = await cur.fetchall()
+                for raw in open_rows:
+                    position = _row_to_position(raw)
+                    if position is None or position.position_id in positions:
+                        continue
+                    await _reconcile_position_in_transaction(
+                        db, position, observed_quantity=0, reconciled_at=observed_at,
+                        source=source, notes="closed_by_complete_adapter_snapshot",
+                    )
+                    closed += 1
+            stamp = _timestamp(received_at)
+            await db.execute(
+                "INSERT OR REPLACE INTO partner_input_snapshots "
+                "(source, account_id, snapshot_id, sequence, observed_at, received_at, complete, payload_hash, accepted_at) "
+                "VALUES (?,?,?,?,?,?,?,?,?)",
+                (source, account_id, snapshot_id, sequence, _timestamp(observed_at), stamp,
+                 int(complete), str(payload_hash), stamp),
+            )
+            await db.execute(
+                "INSERT OR IGNORE INTO partner_input_snapshot_events "
+                "(source, account_id, snapshot_id, sequence, observed_at, received_at, complete, payload_hash, outcome, recorded_at) "
+                "VALUES (?,?,?,?,?,?,?,?,?,?)",
+                (source, account_id, snapshot_id, sequence, _timestamp(observed_at), stamp,
+                 int(complete), str(payload_hash), "ACCEPTED", stamp),
+            )
+            await db.commit()
+            return {"accepted": True, "idempotent": False, "reconciled": reconciled, "closed": closed}
+        except Exception:
+            await db.rollback()
+            raise
+
+
+async def load_latest_partner_snapshot(db_path: str) -> Optional[dict]:
+    """Load the latest accepted portfolio envelope for whole-account gating."""
+    await init_hedge_db(db_path)
+    async with aiosqlite.connect(db_path) as db:
+        cur = await db.execute(
+            "SELECT source, account_id, snapshot_id, sequence, observed_at, received_at, complete "
+            "FROM partner_input_snapshots ORDER BY accepted_at DESC LIMIT 1"
+        )
+        row = await cur.fetchone()
+    if row is None:
+        return None
+    return {
+        "source": row[0], "account_id": row[1], "snapshot_id": row[2],
+        "sequence": int(row[3]), "observed_at": _parse_timestamp(row[4]),
+        "received_at": _parse_timestamp(row[5]), "complete": bool(row[6]),
+    }
