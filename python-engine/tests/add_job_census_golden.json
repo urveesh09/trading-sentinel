@@ -80,6 +80,11 @@
     "trigger": "'cron'"
   },
   {
+    "func": "_run_partner_input_refresh_safe",
+    "id": "'partner_input_refresh'",
+    "trigger": "'cron'"
+  },
+  {
     "func": "_run_partner_morning_brief_safe",
     "id": "'partner_morning_brief'",
     "trigger": "'cron'"

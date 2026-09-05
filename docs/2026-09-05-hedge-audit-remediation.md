@@ -51,8 +51,9 @@ destinations.
 
 ## Validation
 
-- 71 focused Python tests passed: hedge advisory/transport, runtime audit,
-  EDGE diagnostics and scheduler surface contracts.
+- 147 focused Python tests passed: hedge advisory/transport, the source-neutral
+  input-refresh contract, runtime audit, EDGE diagnostics, scheduler closure
+  invocation and scheduler surface contracts.
 - 46 gateway executor tests passed, including funds divergence, malformed
   balance fields and product-specific broker-margin cases.
 - Python compilation, Node syntax checks and whitespace validation passed.
@@ -60,9 +61,14 @@ destinations.
 ## Deliberately not represented as complete
 
 The review’s R1 delivery milestone still requires an approved partner input
-adapter/account mapping and a genuine sourced India-VIX producer. The existing
-authenticated intake/reconciliation APIs remain source-neutral, but this change
-does not invent an external account feed or mark a stale manual row fresh.
+adapter/account mapping and a genuine sourced India-VIX producer. A
+source-neutral `partner_input_refresh.py` contract is now scheduled every two
+minutes: an approved adapter may supply a complete timestamped snapshot of
+known position ids plus an independently timestamped VIX observation. Complete
+snapshots reconcile changed quantities and close only absent rows owned by that
+source; partial snapshots never infer a close. The default adapter URL is empty
+and surfaces `INPUT_ADAPTER_UNCONFIGURED`, so this code does not invent an
+external account feed or mark a stale manual row fresh.
 
 No live Telegram canary, broker order, Production migration, or claim that a
 partner received a current personalized hedge review was made. Those require

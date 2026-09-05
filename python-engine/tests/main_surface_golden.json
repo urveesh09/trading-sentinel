@@ -67,6 +67,12 @@
       "trigger": "cron[minute='7-52/15', second='10']"
     },
     {
+      "func": "_run_partner_input_refresh_safe",
+      "id": "partner_input_refresh",
+      "kwargs": [],
+      "trigger": "cron[minute='*/2', second='5']"
+    },
+    {
       "func": "_run_partner_morning_brief_safe",
       "id": "partner_morning_brief",
       "kwargs": [],

@@ -1056,6 +1056,10 @@ class Settings(BaseSettings):
     PARTNER_HEDGE_POSITION_MAX_AGE_MIN: int   = 5
     PARTNER_HEDGE_DELIVERABLE_MAX_AGE_MIN: int = 5
     PARTNER_HEDGE_VIX_MAX_AGE_MIN:      int   = 15
+    # An approved source-neutral adapter returns complete, timestamped partner
+    # snapshots. Empty by default: no account/source is guessed in Dev or Prod.
+    PARTNER_HEDGE_INPUT_ADAPTER_URL:     str   = ""
+    PARTNER_HEDGE_INPUT_REFRESH_TIMEOUT_SEC: float = 5.0
     # Bounded transport attempts prevent a persistent Telegram rejection from
     # becoming an unbounded delivery loop. A new materially different review
     # receives a different dedup key and is evaluated independently.
