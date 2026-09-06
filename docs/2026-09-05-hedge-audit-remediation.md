@@ -388,6 +388,24 @@ does not modify Production.
   The UI explicitly calls these fixture simulations and does not mix them into
   broker-reconciled cash or present them as live profit.
 
+### Integrated SHADOW corrections — clock and run isolation
+
+- A workflow tick now treats its supplied timestamp as an evaluation `as_of`
+  clock and only observes completed fixture bars at or before that boundary.
+  Future bars cannot fill or close a position, release cash or influence
+  allocation early. `run_shadow_replay` advances the same workflow through a
+  strictly increasing replay clock instead of consuming a full future fixture.
+- Named SHADOW runs now bind a logical account, run ID and immutable scenario
+  manifest (capital, fee and slippage assumptions). Opportunity identities are
+  scoped to that run, so identical setups from two accounts/scenarios persist
+  independently; changing parameters requires a new run ID rather than
+  silently mixing economic assumptions.
+- Historical proposal bars are now chronological, completed, finite and valid
+  OHLCV before they can create a setup. Post-run free cash is recomputed after
+  commits. Pending no-bar setups remain non-terminal rather than being called
+  expired before their entry deadline; selected watchlists complete with their
+  synthetic position lifecycle.
+
 ### P3 — partial, conservative shadow execution
 
 - Added a long-only offline fill simulator for the shadow proposals. It sizes

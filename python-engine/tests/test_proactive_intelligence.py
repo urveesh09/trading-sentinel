@@ -43,9 +43,9 @@ def test_three_shadow_sleeves_use_completed_bars_and_allocator_preserves_cash():
         bars.append({"timestamp": (now - timedelta(minutes=(20-index)*15)).isoformat(),
                      "open": close-.2, "high": close+.3, "low": close-.4,
                      "close": close, "volume": 100})
-    bars[-3]["close"] = 102.0
-    bars[-2]["close"] = 102.1
-    bars[-1].update({"close": 104.0, "high": 104.2, "low": 103.4, "volume": 300})
+    bars[-3].update({"open": 102.1, "high": 102.4, "low": 101.8, "close": 102.0})
+    bars[-2].update({"open": 102.0, "high": 102.4, "low": 101.8, "close": 102.1})
+    bars[-1].update({"open": 103.8, "close": 104.0, "high": 104.2, "low": 103.4, "volume": 300})
     proposals = build_shadow_proposals("NSE:DEMO", bars, now=now + timedelta(minutes=1))
     assert proposals
     selected, reasons = allocate_shadow_proposals(proposals, capital=8_000, reserved=7_900)
@@ -103,7 +103,7 @@ async def test_open_shadow_position_reserves_cash_and_closes_on_a_later_bar(db_p
     assert instruments == set() and identities == {"durable"}
     assert free_after_close < 1_000, "loss and both-side costs must reduce synthetic cash"
     portfolio = (await proactive_activity_report(db_path))["shadow_positions"]
-    assert portfolio == [pytest.approx({"account_id": "demo", "open_positions": 0, "closed_positions": 1,
+    assert portfolio == [pytest.approx({"account_id": "demo", "run_id": "legacy", "open_positions": 0, "closed_positions": 1,
                                         "reserved_capital": 0.0, "gross_pnl": updates[0][1].gross_pnl,
                                         "fees": updates[0][1].fees, "net_pnl": updates[0][1].net_pnl})]
 
@@ -115,6 +115,53 @@ def test_shadow_simulator_rejects_duplicate_or_malformed_future_timestamps():
                               now + timedelta(minutes=15), now + timedelta(hours=1))
     duplicate = [{"timestamp": (now + timedelta(minutes=5)).isoformat(), "open": 100, "high": 101, "low": 99, "close": 100}] * 2
     assert simulate_shadow_trade(proposal, duplicate, cash=1_000).reason == "INVALID_OR_UNORDERED_FUTURE_BARS"
+
+
+@pytest.mark.asyncio
+async def test_workflow_clock_cannot_close_an_open_position_from_a_future_bar(db_path):
+    from proactive_intelligence import _persist_new_shadow_position, _shadow_account_state
+
+    base = datetime.now(timezone.utc)
+    proposal = ShadowProposal("clocked", "trend_pullback_v1", "NSE:CLOCK", 100, 95, 110,
+                              base + timedelta(minutes=15), 1, 100, "test", base, base,
+                              base + timedelta(minutes=15), base + timedelta(hours=1))
+    entry = {"timestamp": (base + timedelta(minutes=1)).isoformat(), "open": 100, "high": 101, "low": 99, "close": 100}
+    stop = {"timestamp": (base + timedelta(minutes=10)).isoformat(), "open": 94, "high": 96, "low": 93, "close": 94}
+    opened = simulate_shadow_trade(proposal, [entry], cash=1_000)
+    assert await _persist_new_shadow_position(db_path, proposal=proposal, account_id="clock", result=opened)
+
+    early = await run_shadow_workflow(db_path, account_id="clock", universe={}, now=base + timedelta(minutes=5), scenario_capital=1_000, future_bars={"NSE:CLOCK": [entry, stop]})
+    early_cash, open_instruments, _ = await _shadow_account_state(db_path, account_id="clock", scenario_capital=1_000)
+    assert early["managed_positions"] == 0 and open_instruments == {"NSE:CLOCK"}
+    assert early["free_cash"] == pytest.approx(early_cash)
+
+    later = await run_shadow_workflow(db_path, account_id="clock", universe={}, now=base + timedelta(minutes=10), scenario_capital=1_000, future_bars={"NSE:CLOCK": [entry, stop]})
+    late_cash, open_instruments, _ = await _shadow_account_state(db_path, account_id="clock", scenario_capital=1_000)
+    assert later["managed_positions"] == 1 and open_instruments == set()
+    assert later["free_cash"] == pytest.approx(late_cash)
+    assert early_cash < late_cash < 1_000
+
+
+@pytest.mark.asyncio
+async def test_shadow_runs_isolate_identical_setups_by_account_and_manifest(db_path):
+    import aiosqlite
+
+    base = datetime.now(timezone.utc)
+    bars = [{"timestamp": (base - timedelta(minutes=(20-index)*15)).isoformat(), "open": 100+index*.15-.2, "high": 100+index*.15+.3, "low": 100+index*.15-.4, "close": 100+index*.15, "volume": 100} for index in range(21)]
+    bars[-3].update({"open": 102.1, "high": 102.4, "low": 101.8, "close": 102})
+    bars[-2].update({"open": 102.0, "high": 102.4, "low": 101.8, "close": 102.1})
+    bars[-1].update({"open": 103.8, "close": 104, "high": 104.2, "low": 103.4, "volume": 300})
+    entry = {"timestamp": (base + timedelta(minutes=5)).isoformat(), "open": 104, "high": 105, "low": 103, "close": 104}
+    kwargs = {"universe": {"NSE:IDENTITY": bars}, "now": base + timedelta(minutes=5),
+              "future_bars": {"NSE:IDENTITY": [entry]}, "scenario_capital": 1_000, "run_id": "scenario-a"}
+    await run_shadow_workflow(db_path, account_id="account-A", **kwargs)
+    await run_shadow_workflow(db_path, account_id="account-B", **kwargs)
+    await run_shadow_workflow(db_path, account_id="account-A", **kwargs)
+    async with aiosqlite.connect(db_path) as db:
+        count = await (await db.execute("SELECT COUNT(*) FROM proactive_shadow_positions")).fetchone()
+    assert count[0] == 2
+    with pytest.raises(ValueError, match="manifest conflicts"):
+        await run_shadow_workflow(db_path, account_id="account-A", **{**kwargs, "scenario_capital": 1_200})
 
 
 @pytest.mark.asyncio
@@ -142,8 +189,9 @@ async def test_funding_is_not_profit_and_dropped_workflow_is_visible(db_path):
 async def test_shadow_workflow_records_real_scan_setup_selection_and_outcome(db_path):
     now = datetime.now(timezone.utc)
     bars = [{"timestamp": (now - timedelta(minutes=(20-index)*15)).isoformat(), "open": 100+index*.15-.2, "high": 100+index*.15+.3, "low": 100+index*.15-.4, "close": 100+index*.15, "volume": 100} for index in range(21)]
-    bars[-3]["close"], bars[-2]["close"] = 102, 102.1
-    bars[-1].update({"close": 104, "high": 104.2, "low": 103.4, "volume": 300})
+    bars[-3].update({"open": 102.1, "high": 102.4, "low": 101.8, "close": 102})
+    bars[-2].update({"open": 102.0, "high": 102.4, "low": 101.8, "close": 102.1})
+    bars[-1].update({"open": 103.8, "close": 104, "high": 104.2, "low": 103.4, "volume": 300})
     result = await run_shadow_workflow(db_path, account_id="demo", universe={"NSE:DEMO": bars}, now=now + timedelta(minutes=1), future_bars={"NSE:DEMO": [{"timestamp": (now + timedelta(minutes=5)).isoformat(), "open": 104, "high": 105, "low": 103, "close": 104}]})
     assert result["mode"] == "SHADOW" and result["proposals"] >= 1
     report = await proactive_activity_report(db_path)
@@ -155,8 +203,9 @@ async def test_shadow_workflow_records_real_scan_setup_selection_and_outcome(db_
 async def test_identical_shadow_workflow_rerun_does_not_create_a_second_scan(db_path):
     now = datetime.now(timezone.utc)
     bars = [{"timestamp": (now - timedelta(minutes=(20-index)*15)).isoformat(), "open": 100+index*.15-.2, "high": 100+index*.15+.3, "low": 100+index*.15-.4, "close": 100+index*.15, "volume": 100} for index in range(21)]
-    bars[-3]["close"], bars[-2]["close"] = 102, 102.1
-    bars[-1].update({"close": 104, "high": 104.2, "low": 103.4, "volume": 300})
+    bars[-3].update({"open": 102.1, "high": 102.4, "low": 101.8, "close": 102})
+    bars[-2].update({"open": 102.0, "high": 102.4, "low": 101.8, "close": 102.1})
+    bars[-1].update({"open": 103.8, "close": 104, "high": 104.2, "low": 103.4, "volume": 300})
     kwargs = {"account_id": "demo", "universe": {"NSE:DEMO": bars}, "future_bars": {"NSE:DEMO": []}}
     await run_shadow_workflow(db_path, now=now + timedelta(minutes=1), **kwargs)
     before = (await proactive_activity_report(db_path))["modes"]["SHADOW"]["scan_evaluations"]

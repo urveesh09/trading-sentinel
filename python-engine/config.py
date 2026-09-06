@@ -46,6 +46,7 @@ class Settings(BaseSettings):
     PROACTIVE_SHADOW_ENABLED: bool = False
     PROACTIVE_SHADOW_FIXTURE_PATH: str = ""
     PROACTIVE_SHADOW_ACCOUNT_ID: str = "dev-shadow"
+    PROACTIVE_SHADOW_RUN_ID: str = "dev-shadow-v1"
     PROACTIVE_SHADOW_SCENARIO_CAPITAL: float = 8000.0
     # Separate proof of broker ORDER permission from token/quote readiness.
     # Empty means a state file beside DB_PATH.  BLOCKED persists across restart.

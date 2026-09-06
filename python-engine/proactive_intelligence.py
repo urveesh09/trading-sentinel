@@ -9,7 +9,7 @@ from __future__ import annotations
 import json
 import hashlib
 import math
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Literal, Optional
@@ -25,10 +25,10 @@ _STAGES = frozenset({
 })
 _WATCH_TRANSITIONS = {
     "WATCHING": {"ARMED", "INVALIDATED", "EXPIRED"},
-    "ARMED": {"TRIGGERED", "INVALIDATED", "EXPIRED"},
+    "ARMED": {"TRIGGERED", "SELECTED", "INVALIDATED", "EXPIRED"},
     "TRIGGERED": {"SELECTED", "DEFERRED", "REJECTED", "EXPIRED"},
     "DEFERRED": {"TRIGGERED", "INVALIDATED", "EXPIRED"},
-    "SELECTED": {"COMPLETED", "INVALIDATED"},
+    "SELECTED": {"COMPLETED", "INVALIDATED", "EXPIRED"},
 }
 
 
@@ -103,22 +103,29 @@ def build_shadow_proposals(instrument: str, bars: list[dict], *, now: datetime) 
     observed completed trigger; every reference excludes it where required.
     """
     now = _stamp(now)
-    if len(bars) < 21:
+    if not isinstance(bars, list) or len(bars) < 21:
         return []
     try:
+        stamps = [_stamp(datetime.fromisoformat(str(bar["timestamp"]))) for bar in bars]
+        opens = [float(bar["open"]) for bar in bars]
         closes = [float(bar["close"]) for bar in bars]
         highs = [float(bar["high"]) for bar in bars]
         lows = [float(bar["low"]) for bar in bars]
         volumes = [float(bar["volume"]) for bar in bars]
-        trigger_at = _stamp(datetime.fromisoformat(str(bars[-1]["timestamp"])))
+        trigger_at = stamps[-1]
     except (KeyError, TypeError, ValueError):
         return []
-    if trigger_at > now or min(closes + highs + lows) <= 0:
+    if (any(right <= left for left, right in zip(stamps, stamps[1:])) or any(stamp > now for stamp in stamps)
+            or not all(math.isfinite(value) and value > 0 for value in opens + closes + highs + lows)
+            or not all(math.isfinite(value) and value >= 0 for value in volumes)
+            or any(low > min(open_, close) or high < max(open_, close) for open_, high, low, close in zip(opens, highs, lows, closes))):
         return []
     last, prior = closes[-1], closes[-2]
     fast, slow = sum(closes[-5:]) / 5, sum(closes[-20:]) / 20
     proposals: list[ShadowProposal] = []
     expiry = trigger_at + timedelta(minutes=30)
+    if expiry <= now:
+        return []
     # Trend: uptrend, pullback toward fast MA, then confirmed completed-bar reclaim.
     if fast > slow and closes[-3] <= fast * 1.01 and last > prior:
         stop = min(lows[-3:])
@@ -264,6 +271,27 @@ def _normalise_shadow_bars(bars: object) -> Optional[list[tuple[datetime, float,
     return normalised
 
 
+def _bars_visible_as_of(bars: object, *, as_of: datetime) -> object:
+    """Treat every fixture timestamp as a completed-bar timestamp.
+
+    Rows completed after ``as_of`` are deliberately withheld.  Invalid visible
+    rows are retained so the normal simulator/input validator reports them;
+    invalid future rows cannot contaminate an earlier clock step.
+    """
+    if not isinstance(bars, list):
+        return bars
+    visible = []
+    for bar in bars:
+        try:
+            stamp = _stamp(datetime.fromisoformat(str(bar["timestamp"])))
+        except (KeyError, TypeError, ValueError):
+            visible.append(bar)
+            continue
+        if stamp <= as_of:
+            visible.append(bar)
+    return visible
+
+
 def simulate_open_shadow_position(
     position: ShadowPosition, future_bars: list[dict], *, fee_rate: float = .001,
     slippage_bps: float = 5,
@@ -332,6 +360,10 @@ CREATE TABLE IF NOT EXISTS proactive_shadow_positions (
 );
 CREATE INDEX IF NOT EXISTS idx_shadow_positions_account_status
  ON proactive_shadow_positions(account_id, status);
+CREATE TABLE IF NOT EXISTS proactive_shadow_runs (
+ run_key TEXT PRIMARY KEY, account_id TEXT NOT NULL, run_id TEXT NOT NULL,
+ manifest_json TEXT NOT NULL, created_at TEXT NOT NULL
+);
 """
 
 
@@ -346,6 +378,54 @@ async def init_proactive_intelligence(db_path: str) -> None:
     async with aiosqlite.connect(db_path) as db:
         await db.executescript(_SCHEMA)
         await db.commit()
+
+
+def _shadow_run_storage_key(account_id: str, run_id: str) -> str:
+    """Keep legacy/default Dev records readable while isolating named scenarios."""
+    if not account_id or not run_id:
+        raise ValueError("shadow account and run identity are required")
+    if run_id == "default-v1":
+        return account_id
+    digest = hashlib.sha256(f"{account_id}\x00{run_id}".encode()).hexdigest()[:24]
+    return f"shadow-run:{digest}"
+
+
+async def _ensure_shadow_run(
+    db_path: str, *, account_id: str, run_id: str, scenario_capital: float,
+    fee_rate: float, slippage_bps: float,
+) -> str:
+    """Bind one named research run to immutable economic assumptions."""
+    if not all(isinstance(value, str) and value for value in (account_id, run_id)):
+        raise ValueError("shadow account and run identity are required")
+    manifest = {
+        "version": "shadow-run-v1", "scenario_capital": float(scenario_capital),
+        "fee_rate": float(fee_rate), "slippage_bps": float(slippage_bps),
+        "policy_manifest": "three-sleeves-v1",
+    }
+    if (not math.isfinite(float(scenario_capital)) or float(scenario_capital) <= 0
+            or not math.isfinite(float(fee_rate)) or float(fee_rate) < 0
+            or not math.isfinite(float(slippage_bps)) or float(slippage_bps) < 0):
+        raise ValueError("shadow run assumptions must be finite")
+    key = _shadow_run_storage_key(account_id, run_id)
+    payload = json.dumps(manifest, sort_keys=True, separators=(",", ":"))
+    await init_proactive_intelligence(db_path)
+    async with aiosqlite.connect(db_path) as db:
+        await db.execute("BEGIN IMMEDIATE")
+        row = await (await db.execute(
+            "SELECT manifest_json FROM proactive_shadow_runs WHERE run_key=?", (key,),
+        )).fetchone()
+        if row is not None:
+            if row[0] != payload:
+                await db.rollback()
+                raise ValueError("shadow run manifest conflicts with existing evidence; create a new run_id")
+            await db.commit()
+            return key
+        await db.execute(
+            "INSERT INTO proactive_shadow_runs VALUES (?,?,?,?,?)",
+            (key, account_id, run_id, payload, datetime.now(timezone.utc).isoformat()),
+        )
+        await db.commit()
+    return key
 
 
 async def record_opportunity_event(
@@ -407,7 +487,10 @@ async def transition_watchlist(
             await db.execute("INSERT INTO proactive_watchlist VALUES (?,?,?,?,?)", (opportunity_id, state, reason, now.isoformat(), _stamp(valid_until).isoformat()))
             await db.commit(); return True
         previous, expiry = row
-        if now >= _stamp(datetime.fromisoformat(expiry)) and state != "EXPIRED":
+        # Entry validity expires pending setups, not an already selected/fill
+        # lifecycle. A selected synthetic position can complete after entry
+        # expiry while its independent holding deadline is still active.
+        if now >= _stamp(datetime.fromisoformat(expiry)) and state != "EXPIRED" and previous != "SELECTED":
             await db.rollback(); return False
         if state not in _WATCH_TRANSITIONS.get(previous, set()):
             await db.rollback(); return False
@@ -594,6 +677,7 @@ async def _advance_open_shadow_positions(
 async def run_shadow_workflow(
     db_path: str, *, account_id: str, universe: dict[str, list[dict]], now: datetime,
     scenario_capital: float = 8_000, future_bars: Optional[dict[str, list[dict]]] = None,
+    run_id: str = "default-v1", fee_rate: float = .001, slippage_bps: float = 5,
 ) -> dict:
     """Run the bounded fixture-backed SHADOW path; never calls a broker.
 
@@ -601,17 +685,36 @@ async def run_shadow_workflow(
     contracts. Callers provide completed bars and optional later bars so data
     provenance remains explicit and deterministic.
     """
+    # ``now`` is the evaluation clock, not merely an event-label timestamp.
+    # Fixture timestamps mean completed bars; nothing later is observable.
     now = _stamp(now); future_bars = future_bars or {}
+    storage_account_id = await _ensure_shadow_run(
+        db_path, account_id=account_id, run_id=run_id, scenario_capital=scenario_capital,
+        fee_rate=fee_rate, slippage_bps=slippage_bps,
+    )
+    visible_future_bars = {
+        instrument: _bars_visible_as_of(bars, as_of=now)
+        for instrument, bars in future_bars.items()
+    }
     # Existing exposure is advanced first. A malformed update cannot erase a
     # position, and any realised result is then reflected in free scenario cash.
     managed = await _advance_open_shadow_positions(
-        db_path, account_id=account_id, future_bars=future_bars,
+        db_path, account_id=storage_account_id, future_bars=visible_future_bars,
     )
     for position, result in managed:
         if result.status == "CLOSED":
+            try:
+                await transition_watchlist(
+                    db_path, opportunity_id=position.opportunity_id, state="COMPLETED",
+                    reason=result.reason, now=result.last_bar_at or now,
+                )
+            except ValueError:
+                # A pre-lifecycle synthetic record can be reconciled without
+                # inventing a missing watchlist row.
+                pass
             await record_opportunity_event(
                 db_path, opportunity_id=position.opportunity_id, policy_id=position.policy_id,
-                policy_version="v1", account_id=account_id, mode="SHADOW", instrument=position.instrument,
+                policy_version="v1", account_id=storage_account_id, mode="SHADOW", instrument=position.instrument,
                 stage="CLOSED", reason_code=result.reason,
                 idempotency_key=f"{position.opportunity_id}:closed",
                 observed_at=result.last_bar_at or now,
@@ -620,20 +723,27 @@ async def run_shadow_workflow(
             )
     proposals: list[ShadowProposal] = []
     for instrument, bars in sorted(universe.items()):
+        visible_bars = _bars_visible_as_of(bars, as_of=now)
         # A rerun over identical completed data is one scan, not fresh evidence.
         # The full supplied-bar digest also changes when the source corrects a
         # historical bar even if its final timestamp stays the same.
-        source_digest = hashlib.sha256(json.dumps(bars, sort_keys=True, default=str).encode()).hexdigest()[:20]
-        scan_id = hashlib.sha256(f"{account_id}:{instrument}:{source_digest}".encode()).hexdigest()[:20]
-        built = build_shadow_proposals(instrument, bars, now=now)
+        source_digest = hashlib.sha256(json.dumps(visible_bars, sort_keys=True, default=str).encode()).hexdigest()[:20]
+        scan_id = hashlib.sha256(f"{storage_account_id}:{instrument}:{source_digest}".encode()).hexdigest()[:20]
+        built = build_shadow_proposals(instrument, visible_bars, now=now)
         policies = {proposal.policy_id for proposal in built} or {"shadow_registry_v1"}
         for policy_id in policies:
             await record_scan_run(db_path, scan_id=f"{scan_id}:{policy_id}", policy_id=policy_id,
-                                  account_id=account_id, mode="SHADOW", status="SUCCESS", observed_at=now,
+                                  account_id=storage_account_id, mode="SHADOW", status="SUCCESS", observed_at=now,
                                   reason="COMPLETED_BARS" if built else "NO_COMPLETED_SETUP")
         for proposal in built:
+            proposal = replace(
+                proposal,
+                opportunity_id=hashlib.sha256(
+                    f"{storage_account_id}:{proposal.opportunity_id}".encode()
+                ).hexdigest()[:24],
+            )
             await record_opportunity_event(db_path, opportunity_id=proposal.opportunity_id,
-                policy_id=proposal.policy_id, policy_version="v1", account_id=account_id,
+                policy_id=proposal.policy_id, policy_version="v1", account_id=storage_account_id,
                 mode="SHADOW", instrument=proposal.instrument, stage="SETUP", reason_code=proposal.reason,
                 idempotency_key=f"{proposal.opportunity_id}:setup", observed_at=proposal.signal_at or now,
                 valid_until=proposal.entry_deadline, detail={"data_cutoff": (proposal.data_cutoff or now).isoformat()})
@@ -647,7 +757,7 @@ async def run_shadow_workflow(
                 pass  # An idempotent/restarted scan retains the original lifecycle.
             proposals.append(proposal)
     free_cash, open_instruments, recorded_opportunities = await _shadow_account_state(
-        db_path, account_id=account_id, scenario_capital=scenario_capital,
+        db_path, account_id=storage_account_id, scenario_capital=scenario_capital,
     )
     candidates: list[ShadowProposal] = []
     reasons: dict[str, str] = {}
@@ -658,7 +768,9 @@ async def run_shadow_workflow(
             reasons[proposal.opportunity_id] = "OPEN_SHADOW_INSTRUMENT_EXPOSURE"
         else:
             candidates.append(proposal)
-    allocations, allocation_reasons = size_shadow_allocations(candidates, capital=free_cash)
+    allocations, allocation_reasons = size_shadow_allocations(
+        candidates, capital=free_cash, fee_rate=fee_rate, slippage_bps=slippage_bps,
+    )
     reasons.update(allocation_reasons)
     allocated = {item.opportunity_id: item for item in allocations}
     outcomes = []
@@ -668,26 +780,78 @@ async def run_shadow_workflow(
             if reasons[proposal.opportunity_id] in {"RECORDED_SHADOW_OUTCOME", "OPEN_SHADOW_INSTRUMENT_EXPOSURE"}:
                 continue
             await record_opportunity_event(db_path, opportunity_id=proposal.opportunity_id, policy_id=proposal.policy_id,
-                policy_version="v1", account_id=account_id, mode="SHADOW", instrument=proposal.instrument,
+                policy_version="v1", account_id=storage_account_id, mode="SHADOW", instrument=proposal.instrument,
                 stage="DEFERRED", reason_code=reasons[proposal.opportunity_id], idempotency_key=f"{proposal.opportunity_id}:deferred",
                 observed_at=now)
             continue
+        if now >= _stamp(proposal.entry_deadline or proposal.valid_until):
+            await transition_watchlist(
+                db_path, opportunity_id=proposal.opportunity_id, state="EXPIRED",
+                reason="ENTRY_DEADLINE", now=now,
+            )
+            await record_opportunity_event(db_path, opportunity_id=proposal.opportunity_id, policy_id=proposal.policy_id,
+                policy_version="v1", account_id=storage_account_id, mode="SHADOW", instrument=proposal.instrument,
+                stage="EXPIRED", reason_code="ENTRY_DEADLINE", idempotency_key=f"{proposal.opportunity_id}:expired",
+                observed_at=now)
+            reasons[proposal.opportunity_id] = "ENTRY_DEADLINE"
+            continue
+        await transition_watchlist(
+            db_path, opportunity_id=proposal.opportunity_id, state="SELECTED",
+            reason="SHARED_CASH_RESERVED", now=now,
+        )
         await record_opportunity_event(db_path, opportunity_id=proposal.opportunity_id, policy_id=proposal.policy_id,
-            policy_version="v1", account_id=account_id, mode="SHADOW", instrument=proposal.instrument,
+            policy_version="v1", account_id=storage_account_id, mode="SHADOW", instrument=proposal.instrument,
             stage="SELECTED", reason_code="SHARED_CASH_RESERVED", idempotency_key=f"{proposal.opportunity_id}:selected", observed_at=now)
-        result = simulate_shadow_trade(proposal, future_bars.get(proposal.instrument, []), cash=free_cash, allocation=allocation)
-        stage = "CLOSED" if result.status == "CLOSED" else "FILLED" if result.status == "OPEN" else "EXPIRED"
+        result = simulate_shadow_trade(proposal, visible_future_bars.get(proposal.instrument, []), cash=free_cash, fee_rate=fee_rate, slippage_bps=slippage_bps, allocation=allocation)
+        if result.status == "CLOSED":
+            stage = "CLOSED"
+        elif result.status == "OPEN":
+            stage = "FILLED"
+        elif result.reason == "NO_EXECUTABLE_BAR_AFTER_SIGNAL" and now < _stamp(proposal.entry_deadline or proposal.valid_until):
+            stage = "UNAVAILABLE"
+        elif result.reason in {"GAP_INVALIDATES_ENTRY_GEOMETRY", "INVALID_PROPOSAL_GEOMETRY_OR_TIMING", "INVALID_OR_UNORDERED_FUTURE_BARS"}:
+            stage = "REJECTED"
+        else:
+            stage = "EXPIRED"
         if result.status in {"OPEN", "CLOSED"}:
             await _persist_new_shadow_position(
-                db_path, proposal=proposal, account_id=account_id, result=result,
+                db_path, proposal=proposal, account_id=storage_account_id, result=result,
+                fee_rate=fee_rate,
+            )
+            await transition_watchlist(
+                db_path, opportunity_id=proposal.opportunity_id, state="COMPLETED",
+                reason=result.reason, now=result.last_bar_at or now,
+            )
+        elif stage == "EXPIRED":
+            await transition_watchlist(
+                db_path, opportunity_id=proposal.opportunity_id, state="EXPIRED",
+                reason=result.reason, now=now,
             )
         await record_opportunity_event(db_path, opportunity_id=proposal.opportunity_id, policy_id=proposal.policy_id,
-            policy_version="v1", account_id=account_id, mode="SHADOW", instrument=proposal.instrument,
+            policy_version="v1", account_id=storage_account_id, mode="SHADOW", instrument=proposal.instrument,
             stage=stage, reason_code=result.reason, idempotency_key=f"{proposal.opportunity_id}:{stage.lower()}", observed_at=now,
             detail={"quantity": result.quantity, "gross_pnl": result.gross_pnl, "fees": result.fees, "net_pnl": result.net_pnl})
         outcomes.append({"opportunity_id": proposal.opportunity_id, "status": result.status, "net_pnl": result.net_pnl, "reason": result.reason})
-    return {"mode": "SHADOW", "proposals": len(proposals), "allocations": len(allocations), "outcomes": outcomes, "reasons": reasons,
-            "free_cash": round(free_cash, 4), "managed_positions": len(managed)}
+    post_free_cash, _post_open_instruments, _post_identities = await _shadow_account_state(
+        db_path, account_id=storage_account_id, scenario_capital=scenario_capital,
+    )
+    return {"mode": "SHADOW", "account_id": account_id, "run_id": run_id, "as_of": now.isoformat(), "proposals": len(proposals), "allocations": len(allocations), "outcomes": outcomes, "reasons": reasons,
+            "free_cash": round(post_free_cash, 4), "managed_positions": len(managed)}
+
+
+async def run_shadow_replay(
+    db_path: str, *, account_id: str, universe: dict[str, list[dict]],
+    clock_steps: list[datetime], scenario_capital: float = 8_000,
+    future_bars: Optional[dict[str, list[dict]]] = None, run_id: str = "default-v1",
+) -> list[dict]:
+    """Run the same incremental SHADOW workflow at explicit replay clocks."""
+    steps = [_stamp(step) for step in clock_steps]
+    if any(right <= left for left, right in zip(steps, steps[1:])):
+        raise ValueError("replay clock steps must be strictly increasing")
+    return [await run_shadow_workflow(
+        db_path, account_id=account_id, universe=universe, now=step,
+        scenario_capital=scenario_capital, future_bars=future_bars, run_id=run_id,
+    ) for step in steps]
 
 
 async def _record_shadow_configuration_state(
@@ -752,9 +916,10 @@ async def run_configured_shadow_workflow(*, now: Optional[datetime] = None) -> d
             raise ValueError("fixture must declare mode=SHADOW")
         universe = _validate_shadow_bar_collections(payload.get("universe"), field="universe", allow_empty=False)
         future_bars = _validate_shadow_bar_collections(payload.get("future_bars", {}), field="future_bars", allow_empty=True)
+        run_id = str(payload.get("run_id", settings.PROACTIVE_SHADOW_RUN_ID)).strip()
         capital = float(settings.PROACTIVE_SHADOW_SCENARIO_CAPITAL)
-        if not math.isfinite(capital) or capital <= 0:
-            raise ValueError("scenario capital must be positive and finite")
+        if not run_id or not math.isfinite(capital) or capital <= 0:
+            raise ValueError("shadow run identity and scenario capital are required")
     except (OSError, TypeError, ValueError, json.JSONDecodeError) as exc:
         await _record_shadow_configuration_state(
             settings.DB_PATH, account_id=account_id, observed_at=observed_at,
@@ -763,7 +928,7 @@ async def run_configured_shadow_workflow(*, now: Optional[datetime] = None) -> d
         return {"mode": "SHADOW", "state": "FIXTURE_SOURCE_INVALID"}
     result = await run_shadow_workflow(
         settings.DB_PATH, account_id=account_id, universe=universe,
-        future_bars=future_bars, scenario_capital=capital, now=observed_at,
+        future_bars=future_bars, scenario_capital=capital, run_id=run_id, now=observed_at,
     )
     return {**result, "state": "COMPLETED"}
 
@@ -796,15 +961,16 @@ async def proactive_activity_report(db_path: str, *, days: int = 7) -> dict:
         )
         flows = await cur.fetchall()
         cur = await db.execute(
-            "SELECT account_id,"
+            "SELECT COALESCE(r.account_id,p.account_id),COALESCE(r.run_id,'legacy'),"
             "SUM(CASE WHEN status='OPEN' THEN 1 ELSE 0 END),"
             "SUM(CASE WHEN status='CLOSED' THEN 1 ELSE 0 END),"
             "COALESCE(SUM(CASE WHEN status='OPEN' THEN entry_price*quantity+entry_fees ELSE 0 END),0),"
             "COALESCE(SUM(CASE WHEN status='CLOSED' THEN gross_pnl ELSE 0 END),0),"
             "COALESCE(SUM(CASE WHEN status='CLOSED' THEN exit_fees+entry_fees ELSE 0 END),0),"
             "COALESCE(SUM(CASE WHEN status='CLOSED' THEN net_pnl ELSE 0 END),0) "
-            "FROM proactive_shadow_positions "
-            "WHERE status='OPEN' OR date(closed_at) >= date('now', ?) GROUP BY account_id",
+            "FROM proactive_shadow_positions p LEFT JOIN proactive_shadow_runs r ON r.run_key=p.account_id "
+            "WHERE p.status='OPEN' OR date(p.closed_at) >= date('now', ?) "
+            "GROUP BY COALESCE(r.account_id,p.account_id),COALESCE(r.run_id,'legacy')",
             (f'-{days - 1} days',),
         )
         position_rows = await cur.fetchall()
@@ -819,9 +985,9 @@ async def proactive_activity_report(db_path: str, *, days: int = 7) -> dict:
     for mode, flow_type, amount in flows:
         funding[mode][flow_type] = float(amount)
     shadow_positions = [{
-        "account_id": row[0], "open_positions": int(row[1]), "closed_positions": int(row[2]),
-        "reserved_capital": round(float(row[3]), 4), "gross_pnl": round(float(row[4]), 4),
-        "fees": round(float(row[5]), 4), "net_pnl": round(float(row[6]), 4),
+        "account_id": row[0], "run_id": row[1], "open_positions": int(row[2]), "closed_positions": int(row[3]),
+        "reserved_capital": round(float(row[4]), 4), "gross_pnl": round(float(row[5]), 4),
+        "fees": round(float(row[6]), 4), "net_pnl": round(float(row[7]), 4),
     } for row in position_rows]
     return {"as_of": datetime.now(timezone.utc).isoformat(), "days": days, "modes": by_mode, "funding_flows": funding,
             "shadow_positions": shadow_positions,

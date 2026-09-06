@@ -127,8 +127,8 @@ function ActivityFunnel({ activity, isLoading, isError }) {
         <h3 className="text-sm font-semibold text-cyan-100">Synthetic SHADOW positions and outcomes</h3>
         <p className="mt-1 text-[11px] text-gray-500">Fixture simulation only. Gross, fees and net are not broker-reconciled profit.</p>
         {shadowPositions.length ? <div className="mt-3 grid gap-3 md:grid-cols-3">{shadowPositions.map((row) => (
-          <div key={row.account_id} className="rounded border border-gray-800 bg-gray-950/70 p-3 text-sm">
-            <div className="font-semibold text-violet-200">{row.account_id}</div>
+          <div key={`${row.account_id}:${row.run_id || 'legacy'}`} className="rounded border border-gray-800 bg-gray-950/70 p-3 text-sm">
+            <div className="font-semibold text-violet-200">{row.account_id}</div><div className="text-[10px] text-gray-500">Run: {row.run_id || 'legacy'}</div>
             <div className="mt-2 grid grid-cols-2 gap-2 text-xs text-gray-300">
               <span>Open: <b>{row.open_positions}</b></span><span>Closed: <b>{row.closed_positions}</b></span>
               <span>Reserved: <b>{formatMoney(row.reserved_capital, 'paper')}</b></span><span>Gross: <b className={pnlColour(row.gross_pnl)}>{formatMoney(row.gross_pnl, 'paper', { signed: true })}</b></span>
