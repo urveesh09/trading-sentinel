@@ -979,6 +979,15 @@ def register_partner_scheduler_jobs(scheduler):
         except Exception as exc:
             logger.error("partner_hedge_phase3_tick_crashed err=%s", exc, exc_info=True)
 
+    async def _run_proactive_shadow_workflow_safe():
+        # This consumer is explicitly fixture-backed and disabled by default.
+        # It never has a broker, delivery, or live-price dependency.
+        try:
+            from proactive_intelligence import run_configured_shadow_workflow
+            await run_configured_shadow_workflow()
+        except Exception as exc:
+            logger.error("proactive_shadow_workflow_crashed err=%s", exc, exc_info=True)
+
     scheduler.add_job(
         _run_partner_scan_tick_safe, "cron",
         minute="*/2", second=40,
@@ -1053,11 +1062,18 @@ def register_partner_scheduler_jobs(scheduler):
         id="partner_hedge_phase3_tick",
         max_instances=1, coalesce=True, misfire_grace_time=120,
     )
+    scheduler.add_job(
+        _run_proactive_shadow_workflow_safe, "cron",
+        minute="*/5", second=55,
+        id="proactive_shadow_workflow",
+        max_instances=1, coalesce=True, misfire_grace_time=60,
+    )
     logger.info(
-        "partner_cron_registered jobs=12 enabled=%s hedge_enabled=%s "
-        "hedge_phase2_enabled=%s hedge_phase3_enabled=%s off_grid=true",
+        "partner_cron_registered jobs=13 enabled=%s hedge_enabled=%s "
+        "hedge_phase2_enabled=%s hedge_phase3_enabled=%s shadow_enabled=%s off_grid=true",
         settings.PARTNER_BOT_ENABLED,
         settings.PARTNER_HEDGE_ENABLED,
         settings.PARTNER_HEDGE_PHASE2_ENABLED,
         settings.PARTNER_HEDGE_PHASE3_ENABLED,
+        settings.PROACTIVE_SHADOW_ENABLED,
     )

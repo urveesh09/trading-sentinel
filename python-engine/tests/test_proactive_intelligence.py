@@ -7,7 +7,7 @@ from proactive_intelligence import (
     size_shadow_allocations,
     record_opportunity_event,
     record_cash_flow, proactive_inactivity_diagnostics, record_scan_run,
-    run_shadow_workflow,
+    run_configured_shadow_workflow, run_shadow_workflow,
     simulate_shadow_trade,
     transition_watchlist,
 )
@@ -109,3 +109,40 @@ async def test_shadow_workflow_records_real_scan_setup_selection_and_outcome(db_
     report = await proactive_activity_report(db_path)
     assert report["modes"]["SHADOW"]["scan_evaluations"] >= 1
     assert report["modes"]["SHADOW"]["stages"]["SETUP"] >= 1
+
+
+@pytest.mark.asyncio
+async def test_identical_shadow_workflow_rerun_does_not_create_a_second_scan(db_path):
+    now = datetime.now(timezone.utc)
+    bars = [{"timestamp": (now - timedelta(minutes=(20-index)*15)).isoformat(), "open": 100+index*.15-.2, "high": 100+index*.15+.3, "low": 100+index*.15-.4, "close": 100+index*.15, "volume": 100} for index in range(21)]
+    bars[-3]["close"], bars[-2]["close"] = 102, 102.1
+    bars[-1].update({"close": 104, "high": 104.2, "low": 103.4, "volume": 300})
+    kwargs = {"account_id": "demo", "universe": {"NSE:DEMO": bars}, "future_bars": {"NSE:DEMO": []}}
+    await run_shadow_workflow(db_path, now=now + timedelta(minutes=1), **kwargs)
+    before = (await proactive_activity_report(db_path))["modes"]["SHADOW"]["scan_evaluations"]
+    await run_shadow_workflow(db_path, now=now + timedelta(minutes=2), **kwargs)
+    after = (await proactive_activity_report(db_path))["modes"]["SHADOW"]["scan_evaluations"]
+    assert before == after
+
+
+@pytest.mark.asyncio
+async def test_configured_shadow_runner_is_opt_in_and_records_unavailable_fixture_source(tmp_path, monkeypatch):
+    from config import settings
+
+    now = datetime.now(timezone.utc)
+    monkeypatch.setattr(settings, "PROACTIVE_SHADOW_ENABLED", False)
+    assert (await run_configured_shadow_workflow(now=now))["state"] == "DISABLED"
+
+    monkeypatch.setattr(settings, "PROACTIVE_SHADOW_ENABLED", True)
+    monkeypatch.setattr(settings, "PROACTIVE_SHADOW_FIXTURE_PATH", "")
+    monkeypatch.setattr(settings, "PROACTIVE_SHADOW_ACCOUNT_ID", "dev-fixture")
+    assert (await run_configured_shadow_workflow(now=now))["state"] == "FIXTURE_SOURCE_UNCONFIGURED"
+    report = await proactive_activity_report(settings.DB_PATH)
+    assert report["modes"]["SHADOW"]["scan_evaluations"] == 0
+    diagnostics = await proactive_inactivity_diagnostics(settings.DB_PATH, now=now)
+    assert any(row["code"] == "SCANNER_SOURCE_UNAVAILABLE" and row["reason"] == "FIXTURE_SOURCE_UNCONFIGURED" for row in diagnostics)
+
+    fixture = tmp_path / "shadow_fixture.json"
+    fixture.write_text('{"mode":"LIVE","universe":{}}', encoding="utf-8")
+    monkeypatch.setattr(settings, "PROACTIVE_SHADOW_FIXTURE_PATH", str(fixture))
+    assert (await run_configured_shadow_workflow(now=now + timedelta(minutes=1)))["state"] == "FIXTURE_SOURCE_INVALID"

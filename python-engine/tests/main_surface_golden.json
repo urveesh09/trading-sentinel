@@ -139,6 +139,12 @@
       "trigger": "cron[hour='7', minute='50']"
     },
     {
+      "func": "_run_proactive_shadow_workflow_safe",
+      "id": "proactive_shadow_workflow",
+      "kwargs": [],
+      "trigger": "cron[minute='*/5', second='55']"
+    },
+    {
       "func": "bootstrap_0800_job",
       "id": "daily_bootstrap_0800",
       "kwargs": [],
@@ -222,6 +228,22 @@
         "GET"
       ],
       "path": "/analytics/outcomes",
+      "response_model": null
+    },
+    {
+      "endpoint": "get_proactive_activity",
+      "methods": [
+        "GET"
+      ],
+      "path": "/analytics/proactive-activity",
+      "response_model": null
+    },
+    {
+      "endpoint": "get_proactive_diagnostics",
+      "methods": [
+        "GET"
+      ],
+      "path": "/analytics/proactive-diagnostics",
       "response_model": null
     },
     {
@@ -374,6 +396,22 @@
         "GET"
       ],
       "path": "/ops/metrics",
+      "response_model": null
+    },
+    {
+      "endpoint": "get_partner_hedge_delivery_backlog",
+      "methods": [
+        "GET"
+      ],
+      "path": "/partner/hedge/delivery-backlog",
+      "response_model": null
+    },
+    {
+      "endpoint": "resolve_partner_hedge_delivery_backlog",
+      "methods": [
+        "POST"
+      ],
+      "path": "/partner/hedge/delivery-backlog/{kind}/{dedup_key}/resolve",
       "response_model": null
     },
     {

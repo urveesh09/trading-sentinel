@@ -11,6 +11,7 @@ import hashlib
 import math
 from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
+from pathlib import Path
 from typing import Literal, Optional
 
 import aiosqlite
@@ -379,7 +380,10 @@ async def proactive_inactivity_diagnostics(db_path: str, *, now: datetime, max_s
     await init_proactive_intelligence(db_path)
     async with aiosqlite.connect(db_path) as db:
         rows = await (await db.execute(
-            "SELECT mode, MAX(observed_at) FROM proactive_scan_runs GROUP BY mode"
+            "SELECT s.mode, s.observed_at, s.status, s.reason "
+            "FROM proactive_scan_runs s JOIN ("
+            "SELECT mode, MAX(observed_at) AS observed_at FROM proactive_scan_runs GROUP BY mode"
+            ") latest ON latest.mode=s.mode AND latest.observed_at=s.observed_at"
         )).fetchall()
         dropped = await (await db.execute(
             "SELECT r.mode, r.opportunity_id, MAX(r.event_at) FROM proactive_events r "
@@ -391,8 +395,10 @@ async def proactive_inactivity_diagnostics(db_path: str, *, now: datetime, max_s
     findings = []
     if not rows:
         findings.append({"mode": None, "code": "SCANNER_NEVER_CONFIGURED_OR_RAN", "last_event_at": None})
-    for mode, last_at in rows:
+    for mode, last_at, status, reason in rows:
         last = _stamp(datetime.fromisoformat(last_at)) if last_at else None
+        if status != "SUCCESS":
+            findings.append({"mode": mode, "code": "SCANNER_SOURCE_UNAVAILABLE", "last_event_at": last_at, "reason": reason})
         if last is None or now - last > max_scan_gap * 2:
             findings.append({"mode": mode, "code": "MISSED_SCAN_INTERVALS", "last_event_at": last_at})
     for mode, opportunity_id, event_at in dropped:
@@ -413,7 +419,11 @@ async def run_shadow_workflow(
     now = _stamp(now); future_bars = future_bars or {}
     proposals: list[ShadowProposal] = []
     for instrument, bars in sorted(universe.items()):
-        scan_id = hashlib.sha256(f"{account_id}:{instrument}:{now.isoformat()}".encode()).hexdigest()[:20]
+        # A rerun over identical completed data is one scan, not fresh evidence.
+        # The full supplied-bar digest also changes when the source corrects a
+        # historical bar even if its final timestamp stays the same.
+        source_digest = hashlib.sha256(json.dumps(bars, sort_keys=True, default=str).encode()).hexdigest()[:20]
+        scan_id = hashlib.sha256(f"{account_id}:{instrument}:{source_digest}".encode()).hexdigest()[:20]
         built = build_shadow_proposals(instrument, bars, now=now)
         policies = {proposal.policy_id for proposal in built} or {"shadow_registry_v1"}
         for policy_id in policies:
@@ -459,6 +469,84 @@ async def run_shadow_workflow(
     return {"mode": "SHADOW", "proposals": len(proposals), "allocations": len(allocations), "outcomes": outcomes, "reasons": reasons}
 
 
+async def _record_shadow_configuration_state(
+    db_path: str, *, account_id: str, observed_at: datetime, reason: str,
+) -> None:
+    """Persist an enabled-but-unusable fixture source as liveness evidence."""
+    identity = hashlib.sha256(f"{account_id}:{reason}:{observed_at.isoformat()}".encode()).hexdigest()[:20]
+    await record_scan_run(
+        db_path, scan_id=f"shadow-config:{identity}", policy_id="shadow_registry_v1",
+        account_id=account_id, mode="SHADOW", status="UNAVAILABLE",
+        observed_at=observed_at, reason=reason,
+    )
+
+
+def _validate_shadow_bar_collections(collection: object, *, field: str, allow_empty: bool) -> dict[str, list[dict]]:
+    """Reject malformed fixture data before it can be misreported as a scan."""
+    if not isinstance(collection, dict) or (not allow_empty and not collection):
+        raise ValueError(f"fixture {field} must be a non-empty object")
+    for instrument, bars in collection.items():
+        if not isinstance(instrument, str) or not instrument or not isinstance(bars, list):
+            raise ValueError(f"fixture {field} has invalid instrument or bar collection")
+        for bar in bars:
+            if not isinstance(bar, dict):
+                raise ValueError(f"fixture {field} contains a non-object bar")
+            try:
+                _stamp(datetime.fromisoformat(str(bar["timestamp"])))
+                open_, high, low, close, volume = (float(bar[key]) for key in ("open", "high", "low", "close", "volume"))
+            except (KeyError, TypeError, ValueError) as exc:
+                raise ValueError(f"fixture {field} bar is incomplete") from exc
+            if (not all(math.isfinite(value) and value > 0 for value in (open_, high, low, close, volume))
+                    or low > min(open_, close) or high < max(open_, close)):
+                raise ValueError(f"fixture {field} bar violates OHLCV bounds")
+    return collection
+
+
+async def run_configured_shadow_workflow(*, now: Optional[datetime] = None) -> dict:
+    """Run an explicitly enabled local SHADOW fixture, never a live feed.
+
+    The configuration is intentionally stricter than a generic JSON loader:
+    the fixture must declare ``mode: SHADOW`` and contain only the bar payload
+    consumed by :func:`run_shadow_workflow`.  Missing or malformed input is
+    recorded as unavailable rather than presented as a quiet, successful scan.
+    """
+    from config import settings
+
+    observed_at = _stamp(now or datetime.now(timezone.utc))
+    account_id = str(settings.PROACTIVE_SHADOW_ACCOUNT_ID).strip()
+    if not settings.PROACTIVE_SHADOW_ENABLED:
+        return {"mode": "SHADOW", "state": "DISABLED"}
+    if not account_id:
+        raise ValueError("PROACTIVE_SHADOW_ACCOUNT_ID is required when enabled")
+    fixture_path = str(settings.PROACTIVE_SHADOW_FIXTURE_PATH).strip()
+    if not fixture_path:
+        await _record_shadow_configuration_state(
+            settings.DB_PATH, account_id=account_id, observed_at=observed_at,
+            reason="FIXTURE_SOURCE_UNCONFIGURED",
+        )
+        return {"mode": "SHADOW", "state": "FIXTURE_SOURCE_UNCONFIGURED"}
+    try:
+        payload = json.loads(Path(fixture_path).read_text(encoding="utf-8"))
+        if not isinstance(payload, dict) or payload.get("mode") != "SHADOW":
+            raise ValueError("fixture must declare mode=SHADOW")
+        universe = _validate_shadow_bar_collections(payload.get("universe"), field="universe", allow_empty=False)
+        future_bars = _validate_shadow_bar_collections(payload.get("future_bars", {}), field="future_bars", allow_empty=True)
+        capital = float(settings.PROACTIVE_SHADOW_SCENARIO_CAPITAL)
+        if not math.isfinite(capital) or capital <= 0:
+            raise ValueError("scenario capital must be positive and finite")
+    except (OSError, TypeError, ValueError, json.JSONDecodeError) as exc:
+        await _record_shadow_configuration_state(
+            settings.DB_PATH, account_id=account_id, observed_at=observed_at,
+            reason=f"FIXTURE_SOURCE_INVALID:{type(exc).__name__}",
+        )
+        return {"mode": "SHADOW", "state": "FIXTURE_SOURCE_INVALID"}
+    result = await run_shadow_workflow(
+        settings.DB_PATH, account_id=account_id, universe=universe,
+        future_bars=future_bars, scenario_capital=capital, now=observed_at,
+    )
+    return {**result, "state": "COMPLETED"}
+
+
 async def proactive_activity_report(db_path: str, *, days: int = 7) -> dict:
     """Mode-separated counts; absent evidence is explicit rather than zero-health."""
     if not 1 <= days <= 366:
@@ -477,7 +565,7 @@ async def proactive_activity_report(db_path: str, *, days: int = 7) -> dict:
         )
         unique_rows = await cur.fetchall()
         cur = await db.execute(
-            "SELECT mode, COUNT(*) FROM proactive_scan_runs WHERE date(observed_at) >= date('now', ?) GROUP BY mode",
+            "SELECT mode, COUNT(*) FROM proactive_scan_runs WHERE status='SUCCESS' AND date(observed_at) >= date('now', ?) GROUP BY mode",
             (f'-{days - 1} days',),
         )
         scan_rows = await cur.fetchall()

@@ -350,6 +350,21 @@ does not modify Production.
   registration, durable open-position management, account outcome reconciliation
   and browser demonstration remain the next integration steps.
 
+### Continuous SHADOW workflow — scheduled fixture consumer
+
+- Added the `proactive_shadow_workflow` five-minute scheduler registration and
+  a bounded configuration consumer. It remains disabled by default and can
+  run only a local JSON fixture explicitly marked `mode: SHADOW`; it never
+  reads broker data, sends a partner message, or submits an order.
+- Enabled-but-missing/malformed fixture input is stored as an `UNAVAILABLE`
+  source state and surfaced by proactive diagnostics. It is not counted as a
+  completed scan. Identical completed-bar inputs use a stable digest-based
+  scan identity, so a restart or repeated scheduler tick cannot fabricate
+  additional scan evidence.
+- Updated scheduler and route census goldens deliberately. The route portion
+  records the prior intentional proactive analytics and hedge-delivery
+  visibility endpoints; the job portion records the new shadow-only consumer.
+
 ### P3 — partial, conservative shadow execution
 
 - Added a long-only offline fill simulator for the shadow proposals. It sizes
