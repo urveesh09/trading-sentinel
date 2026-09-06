@@ -305,3 +305,14 @@ does not modify Production.
   round-trip fees, records no-fill states, and treats an OHLC bar hitting both
   stop and target as stop-first ambiguity. It is research evidence only and
   cannot submit an order.
+
+### P5 — partial, optional AI startup boundary
+
+- `agent/agent.py` now treats a missing `MINIMAX_API_KEY` as `AI_DISABLED`,
+  initializes no model client, and returns a typed unavailable review. Telegram
+  configuration remains required for the alerting service itself; deterministic
+  alert/watchdog operation no longer depends on an AI provider.
+- Agent pipeline collection could not run in the Python-engine virtual
+  environment because that environment lacks the agent dependency `requests`.
+  This is a Dev environment limitation, not a reason to reintroduce the AI
+  startup dependency; validate it in the agent image/environment next.
