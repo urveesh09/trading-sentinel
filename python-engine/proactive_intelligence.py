@@ -400,6 +400,65 @@ async def proactive_inactivity_diagnostics(db_path: str, *, now: datetime, max_s
     return findings
 
 
+async def run_shadow_workflow(
+    db_path: str, *, account_id: str, universe: dict[str, list[dict]], now: datetime,
+    scenario_capital: float = 8_000, future_bars: Optional[dict[str, list[dict]]] = None,
+) -> dict:
+    """Run the bounded fixture-backed SHADOW path; never calls a broker.
+
+    This is the application consumer for the proposal/allocator/simulator
+    contracts. Callers provide completed bars and optional later bars so data
+    provenance remains explicit and deterministic.
+    """
+    now = _stamp(now); future_bars = future_bars or {}
+    proposals: list[ShadowProposal] = []
+    for instrument, bars in sorted(universe.items()):
+        scan_id = hashlib.sha256(f"{account_id}:{instrument}:{now.isoformat()}".encode()).hexdigest()[:20]
+        built = build_shadow_proposals(instrument, bars, now=now)
+        policies = {proposal.policy_id for proposal in built} or {"shadow_registry_v1"}
+        for policy_id in policies:
+            await record_scan_run(db_path, scan_id=f"{scan_id}:{policy_id}", policy_id=policy_id,
+                                  account_id=account_id, mode="SHADOW", status="SUCCESS", observed_at=now,
+                                  reason="COMPLETED_BARS" if built else "NO_COMPLETED_SETUP")
+        for proposal in built:
+            await record_opportunity_event(db_path, opportunity_id=proposal.opportunity_id,
+                policy_id=proposal.policy_id, policy_version="v1", account_id=account_id,
+                mode="SHADOW", instrument=proposal.instrument, stage="SETUP", reason_code=proposal.reason,
+                idempotency_key=f"{proposal.opportunity_id}:setup", observed_at=proposal.signal_at or now,
+                valid_until=proposal.entry_deadline, detail={"data_cutoff": (proposal.data_cutoff or now).isoformat()})
+            try:
+                await transition_watchlist(db_path, opportunity_id=proposal.opportunity_id, state="WATCHING",
+                                           reason=proposal.reason, now=proposal.signal_at or now,
+                                           valid_until=proposal.entry_deadline or proposal.valid_until)
+                await transition_watchlist(db_path, opportunity_id=proposal.opportunity_id, state="ARMED",
+                                           reason="COMPLETED_BAR", now=proposal.signal_at or now)
+            except ValueError:
+                pass  # An idempotent/restarted scan retains the original lifecycle.
+            proposals.append(proposal)
+    allocations, reasons = size_shadow_allocations(proposals, capital=scenario_capital)
+    allocated = {item.opportunity_id: item for item in allocations}
+    outcomes = []
+    for proposal in proposals:
+        allocation = allocated.get(proposal.opportunity_id)
+        if allocation is None:
+            await record_opportunity_event(db_path, opportunity_id=proposal.opportunity_id, policy_id=proposal.policy_id,
+                policy_version="v1", account_id=account_id, mode="SHADOW", instrument=proposal.instrument,
+                stage="DEFERRED", reason_code=reasons[proposal.opportunity_id], idempotency_key=f"{proposal.opportunity_id}:deferred",
+                observed_at=now)
+            continue
+        await record_opportunity_event(db_path, opportunity_id=proposal.opportunity_id, policy_id=proposal.policy_id,
+            policy_version="v1", account_id=account_id, mode="SHADOW", instrument=proposal.instrument,
+            stage="SELECTED", reason_code="SHARED_CASH_RESERVED", idempotency_key=f"{proposal.opportunity_id}:selected", observed_at=now)
+        result = simulate_shadow_trade(proposal, future_bars.get(proposal.instrument, []), cash=scenario_capital, allocation=allocation)
+        stage = "CLOSED" if result.status == "CLOSED" else "FILLED" if result.status == "OPEN" else "EXPIRED"
+        await record_opportunity_event(db_path, opportunity_id=proposal.opportunity_id, policy_id=proposal.policy_id,
+            policy_version="v1", account_id=account_id, mode="SHADOW", instrument=proposal.instrument,
+            stage=stage, reason_code=result.reason, idempotency_key=f"{proposal.opportunity_id}:{stage.lower()}", observed_at=now,
+            detail={"quantity": result.quantity, "gross_pnl": result.gross_pnl, "fees": result.fees, "net_pnl": result.net_pnl})
+        outcomes.append({"opportunity_id": proposal.opportunity_id, "status": result.status, "net_pnl": result.net_pnl, "reason": result.reason})
+    return {"mode": "SHADOW", "proposals": len(proposals), "allocations": len(allocations), "outcomes": outcomes, "reasons": reasons}
+
+
 async def proactive_activity_report(db_path: str, *, days: int = 7) -> dict:
     """Mode-separated counts; absent evidence is explicit rather than zero-health."""
     if not 1 <= days <= 366:

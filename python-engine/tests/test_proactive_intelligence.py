@@ -7,6 +7,7 @@ from proactive_intelligence import (
     size_shadow_allocations,
     record_opportunity_event,
     record_cash_flow, proactive_inactivity_diagnostics, record_scan_run,
+    run_shadow_workflow,
     simulate_shadow_trade,
     transition_watchlist,
 )
@@ -95,3 +96,16 @@ async def test_funding_is_not_profit_and_dropped_workflow_is_visible(db_path):
     assert report["funding_flows"]["LIVE"]["DEPOSIT"] == 8_000
     assert "profit" in report["note"].lower()
     assert {row["code"] for row in await proactive_inactivity_diagnostics(db_path, now=now + timedelta(minutes=61))} >= {"MISSED_SCAN_INTERVALS", "DROPPED_RISK_APPROVED_WORKFLOW"}
+
+
+@pytest.mark.asyncio
+async def test_shadow_workflow_records_real_scan_setup_selection_and_outcome(db_path):
+    now = datetime.now(timezone.utc)
+    bars = [{"timestamp": (now - timedelta(minutes=(20-index)*15)).isoformat(), "open": 100+index*.15-.2, "high": 100+index*.15+.3, "low": 100+index*.15-.4, "close": 100+index*.15, "volume": 100} for index in range(21)]
+    bars[-3]["close"], bars[-2]["close"] = 102, 102.1
+    bars[-1].update({"close": 104, "high": 104.2, "low": 103.4, "volume": 300})
+    result = await run_shadow_workflow(db_path, account_id="demo", universe={"NSE:DEMO": bars}, now=now + timedelta(minutes=1), future_bars={"NSE:DEMO": [{"timestamp": (now + timedelta(minutes=5)).isoformat(), "open": 104, "high": 105, "low": 103, "close": 104}]})
+    assert result["mode"] == "SHADOW" and result["proposals"] >= 1
+    report = await proactive_activity_report(db_path)
+    assert report["modes"]["SHADOW"]["scan_evaluations"] >= 1
+    assert report["modes"]["SHADOW"]["stages"]["SETUP"] >= 1

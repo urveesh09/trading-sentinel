@@ -339,6 +339,17 @@ does not modify Production.
   after a complete-snapshot close, allowing a true reopen without reusing a
   closed record's identity.
 
+### Continuous SHADOW workflow — initial integrated consumer
+
+- Added `run_shadow_workflow`, an offline application consumer connecting
+  completed-bar scan evidence, proposal generation, persisted watchlists,
+  shared allocation, conservative simulation and outcome events. It accepts
+  only caller-supplied fixture/read-only bars and has no broker or partner
+  send path. Restart-safe event keys preserve existing lifecycle evidence.
+- A focused integration test exercises the real ledger/report path. Scheduler
+  registration, durable open-position management, account outcome reconciliation
+  and browser demonstration remain the next integration steps.
+
 ### P3 — partial, conservative shadow execution
 
 - Added a long-only offline fill simulator for the shadow proposals. It sizes
