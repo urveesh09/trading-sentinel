@@ -314,6 +314,14 @@ does not modify Production.
   new or extend its expiry. This is a SHADOW research lifecycle and has no
   broker execution consumer yet.
 
+### Product-foundation correction C2 — shared shadow reservation
+
+- Added `ShadowAllocation`: selected research proposals now have one fixed
+  quantity, executable-price assumption, fees, initial risk and reserved cash.
+  The simulator can consume this exact reservation and rejects a gap that would
+  make it infeasible, rather than independently reusing account cash for every
+  selected candidate.
+
 ### P3 — partial, conservative shadow execution
 
 - Added a long-only offline fill simulator for the shadow proposals. It sizes

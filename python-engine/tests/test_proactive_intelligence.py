@@ -4,6 +4,7 @@ import pytest
 
 from proactive_intelligence import (
     ShadowProposal, allocate_shadow_proposals, build_shadow_proposals, proactive_activity_report,
+    size_shadow_allocations,
     record_opportunity_event,
     record_cash_flow, proactive_inactivity_diagnostics,
     simulate_shadow_trade,
@@ -62,6 +63,16 @@ def test_shadow_simulator_is_costed_and_conservative_on_ambiguous_bar():
     assert result.reason == "AMBIGUOUS_BAR_STOP_FIRST"
     assert result.net_pnl < 0
     assert simulate_shadow_trade(proposal, [{"timestamp": (now + timedelta(minutes=5)).isoformat(), "open": 100, "high": 101, "low": 99, "close": 100}], cash=10).reason == "INSUFFICIENT_CASH_AFTER_FEES"
+
+
+def test_shared_allocation_reserves_cash_once_and_rejects_gap_overspend():
+    now = datetime.now(timezone.utc)
+    first = ShadowProposal("one", "trend_pullback_v1", "NSE:ONE", 100, 95, 110, now + timedelta(minutes=10), 2, 100, "x", now, now, now + timedelta(minutes=10), now + timedelta(hours=1))
+    second = ShadowProposal("two", "range_reversion_v1", "NSE:TWO", 100, 95, 110, now + timedelta(minutes=10), 1, 100, "x", now, now, now + timedelta(minutes=10), now + timedelta(hours=1))
+    allocations, reasons = size_shadow_allocations([first, second], capital=1_000)
+    assert len(allocations) == 1 and reasons["two"] == "INSUFFICIENT_SHADOW_CASH_AFTER_COST_RESERVE"
+    gap = [{"timestamp": (now + timedelta(minutes=1)).isoformat(), "open": 200, "high": 201, "low": 199, "close": 200}]
+    assert simulate_shadow_trade(first, gap, cash=1_000, allocation=allocations[0]).reason == "ALLOCATION_NO_LONGER_FEASIBLE"
 
 
 @pytest.mark.asyncio

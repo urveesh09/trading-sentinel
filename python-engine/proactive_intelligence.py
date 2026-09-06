@@ -62,6 +62,16 @@ class ShadowSimulation:
     reason: str
 
 
+@dataclass(frozen=True)
+class ShadowAllocation:
+    opportunity_id: str
+    quantity: int
+    executable_price: float
+    fee_reserve: float
+    reserved_capital: float
+    initial_risk: float
+
+
 def _proposal_id(policy_id: str, instrument: str, bar_time: datetime) -> str:
     return hashlib.sha256(f"{policy_id}:{instrument}:{_stamp(bar_time).isoformat()}".encode()).hexdigest()[:20]
 
@@ -130,9 +140,35 @@ def allocate_shadow_proposals(proposals: list[ShadowProposal], *, capital: float
     return selected, reasons
 
 
+def size_shadow_allocations(
+    proposals: list[ShadowProposal], *, capital: float, reserved: float = 0.0,
+    fee_rate: float = .001, slippage_bps: float = 5,
+) -> tuple[list[ShadowAllocation], dict[str, str]]:
+    """Create the one cash reservation that both selection and simulation use."""
+    if capital < 0 or reserved < 0 or fee_rate < 0 or slippage_bps < 0:
+        raise ValueError("invalid allocation assumptions")
+    free = max(0.0, float(capital) - float(reserved))
+    allocations: list[ShadowAllocation] = []
+    reasons: dict[str, str] = {}
+    instruments: set[str] = set()
+    for proposal in sorted(proposals, key=lambda item: (item.score, item.policy_id), reverse=True):
+        if proposal.instrument in instruments:
+            reasons[proposal.opportunity_id] = "DUPLICATE_INSTRUMENT_EXPOSURE"; continue
+        price = proposal.entry * (1 + slippage_bps / 10_000)
+        quantity = math.floor(free / (price * (1 + fee_rate)))
+        if quantity < 1:
+            reasons[proposal.opportunity_id] = "INSUFFICIENT_SHADOW_CASH_AFTER_COST_RESERVE"; continue
+        fees = price * quantity * fee_rate
+        reserve = price * quantity + fees
+        allocations.append(ShadowAllocation(proposal.opportunity_id, quantity, round(price, 4), round(fees, 4), round(reserve, 4), round((price-proposal.stop)*quantity, 4)))
+        free -= reserve; instruments.add(proposal.instrument); reasons[proposal.opportunity_id] = "SELECTED"
+    return allocations, reasons
+
+
 def simulate_shadow_trade(
     proposal: ShadowProposal, future_bars: list[dict], *, cash: float,
     fee_rate: float = .001, slippage_bps: float = 5, max_quantity: Optional[int] = None,
+    allocation: Optional[ShadowAllocation] = None,
 ) -> ShadowSimulation:
     """Conservative long-only completed-bar simulator for research evidence.
 
@@ -162,9 +198,11 @@ def simulate_shadow_trade(
             if stamp <= cutoff or stamp > entry_deadline:
                 continue
             entry = open_ * (1 + slip)
-            quantity = min(max_quantity if max_quantity is not None else math.inf, math.floor(cash / (entry * (1 + fee_rate))))
+            quantity = (allocation.quantity if allocation is not None else min(max_quantity if max_quantity is not None else math.inf, math.floor(cash / (entry * (1 + fee_rate)))))
             if quantity < 1:
                 return ShadowSimulation("NO_FILL", 0, None, None, None, None, None, "INSUFFICIENT_CASH_AFTER_FEES")
+            if allocation is not None and (allocation.opportunity_id != proposal.opportunity_id or entry * quantity * (1 + fee_rate) > allocation.reserved_capital + .01):
+                return ShadowSimulation("NO_FILL", 0, None, None, None, None, None, "ALLOCATION_NO_LONGER_FEASIBLE")
             if entry <= proposal.stop or entry >= proposal.target:
                 return ShadowSimulation("NO_FILL", 0, None, None, None, None, None, "GAP_INVALIDATES_ENTRY_GEOMETRY")
         if stamp > holding_deadline:
