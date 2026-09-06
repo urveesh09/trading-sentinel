@@ -297,3 +297,11 @@ does not modify Production.
   and future-bar rejection. Scheduler/watchlist persistence, realistic fill
   simulation, outcome learning, AI, partner fixture lifecycle and end-to-end
   demonstration remain in progress.
+
+### P3 — partial, conservative shadow execution
+
+- Added a long-only offline fill simulator for the shadow proposals. It sizes
+  only from available scenario cash, applies disclosed spread/slippage and
+  round-trip fees, records no-fill states, and treats an OHLC bar hitting both
+  stop and target as stop-first ambiguity. It is research evidence only and
+  cannot submit an order.

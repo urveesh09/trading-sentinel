@@ -39,6 +39,18 @@ class ShadowProposal:
     reason: str
 
 
+@dataclass(frozen=True)
+class ShadowSimulation:
+    status: str
+    quantity: int
+    entry_price: Optional[float]
+    exit_price: Optional[float]
+    gross_pnl: Optional[float]
+    fees: Optional[float]
+    net_pnl: Optional[float]
+    reason: str
+
+
 def _proposal_id(policy_id: str, instrument: str, bar_time: datetime) -> str:
     return hashlib.sha256(f"{policy_id}:{instrument}:{_stamp(bar_time).isoformat()}".encode()).hexdigest()[:20]
 
@@ -104,6 +116,47 @@ def allocate_shadow_proposals(proposals: list[ShadowProposal], *, capital: float
             selected.append(proposal); seen.add(proposal.instrument); free -= proposal.required_capital
             reasons[proposal.opportunity_id] = "SELECTED"
     return selected, reasons
+
+
+def simulate_shadow_trade(
+    proposal: ShadowProposal, future_bars: list[dict], *, cash: float,
+    fee_rate: float = .001, slippage_bps: float = 5, max_quantity: Optional[int] = None,
+) -> ShadowSimulation:
+    """Conservative long-only completed-bar simulator for research evidence.
+
+    Entry is at the first subsequent bar open plus slippage. If stop and target
+    occur in one bar, stop wins: OHLC cannot establish the intrabar order.
+    """
+    if cash <= 0 or fee_rate < 0 or slippage_bps < 0:
+        raise ValueError("invalid simulation assumptions")
+    slip = slippage_bps / 10_000
+    quantity = min(max_quantity or math.inf, math.floor(cash / (proposal.entry * (1 + fee_rate))))
+    if quantity < 1:
+        return ShadowSimulation("NO_FILL", 0, None, None, None, None, None, "INSUFFICIENT_CASH_AFTER_FEES")
+    for bar in future_bars:
+        try:
+            stamp = _stamp(datetime.fromisoformat(str(bar["timestamp"])))
+            if stamp > proposal.valid_until:
+                break
+            entry = float(bar["open"]) * (1 + slip)
+            high, low = float(bar["high"]), float(bar["low"])
+        except (KeyError, TypeError, ValueError):
+            continue
+        if entry <= 0:
+            continue
+        exit_price = None; reason = "TIME_EXIT"
+        if low <= proposal.stop and high >= proposal.target:
+            exit_price = proposal.stop * (1 - slip); reason = "AMBIGUOUS_BAR_STOP_FIRST"
+        elif low <= proposal.stop:
+            exit_price = proposal.stop * (1 - slip); reason = "STOP"
+        elif high >= proposal.target:
+            exit_price = proposal.target * (1 - slip); reason = "TARGET"
+        else:
+            exit_price = float(bar["close"]) * (1 - slip)
+        gross = (exit_price - entry) * quantity
+        fees = (entry + exit_price) * quantity * fee_rate
+        return ShadowSimulation("CLOSED", quantity, round(entry, 4), round(exit_price, 4), round(gross, 4), round(fees, 4), round(gross-fees, 4), reason)
+    return ShadowSimulation("NO_FILL", 0, None, None, None, None, None, "NO_EXECUTABLE_BAR_AFTER_SIGNAL")
 
 _SCHEMA = """
 CREATE TABLE IF NOT EXISTS proactive_opportunities (
