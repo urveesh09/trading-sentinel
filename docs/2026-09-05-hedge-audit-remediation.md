@@ -425,6 +425,15 @@ does not modify Production.
   universe. Existing synthetic positions are excluded, so their independent
   management lifecycle continues after entry expiry.
 
+### SHADOW scheduler enablement
+
+- Enabled the `PROACTIVE_SHADOW_ENABLED` scheduler gate by default for
+  promotion. The consumer still requires an explicit local fixture declaring
+  `mode: SHADOW`; without one it records `FIXTURE_SOURCE_UNCONFIGURED` and
+  cannot access live market data, brokers, partner delivery, orders or funding.
+  Pre-existing live hedge, delivery and advanced-phase feature gates remain
+  unchanged.
+
 ### P3 — partial, conservative shadow execution
 
 - Added a long-only offline fill simulator for the shadow proposals. It sizes

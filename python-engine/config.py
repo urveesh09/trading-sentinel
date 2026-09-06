@@ -43,7 +43,9 @@ class Settings(BaseSettings):
     # Offline proactive research is opt-in.  The scheduled consumer accepts
     # only an explicitly marked local SHADOW fixture and has no broker,
     # transport, or partner-delivery dependency.
-    PROACTIVE_SHADOW_ENABLED: bool = False
+    # Enabled scheduler consumer; it remains inert until an explicitly marked
+    # local SHADOW fixture is configured, and has no broker/delivery path.
+    PROACTIVE_SHADOW_ENABLED: bool = True
     PROACTIVE_SHADOW_FIXTURE_PATH: str = ""
     PROACTIVE_SHADOW_ACCOUNT_ID: str = "dev-shadow"
     PROACTIVE_SHADOW_RUN_ID: str = "dev-shadow-v1"
