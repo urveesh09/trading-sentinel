@@ -284,6 +284,14 @@ does not modify Production.
   diagnostics consumers, cash-flow ingestion and the P2–P7 strategy, fixture,
   simulation, learning and AI milestones remain in progress.
 
+### P1 — partial, funding and workflow diagnostics
+
+- Added idempotent deposits, withdrawals and expenses to the proactive ledger.
+  Funding flows remain separate from trade evidence and are never described as
+  profit. Added a diagnostic API for missed scan intervals and risk-approved
+  opportunities with no submission/fill result; it observes and reports only,
+  never forces a trade or loosens a filter.
+
 ### P2/P3 — partial, shadow proposal core
 
 - Added deterministic completed-bar proposal builders for `trend_pullback_v1`,

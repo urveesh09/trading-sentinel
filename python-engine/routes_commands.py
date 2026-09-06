@@ -260,6 +260,13 @@ async def get_proactive_activity(days: int = 7):
     return await proactive_activity_report(settings.DB_PATH, days=days)
 
 
+@router.get("/analytics/proactive-diagnostics")
+async def get_proactive_diagnostics():
+    from datetime import datetime, timezone
+    from proactive_intelligence import proactive_inactivity_diagnostics
+    return {"findings": await proactive_inactivity_diagnostics(settings.DB_PATH, now=datetime.now(timezone.utc))}
+
+
 
 @router.get("/analytics/suggestions")
 async def get_suggestions(days: int = 14):

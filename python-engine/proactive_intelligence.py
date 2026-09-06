@@ -270,6 +270,46 @@ async def transition_watchlist(
         await db.commit(); return True
 
 
+async def record_cash_flow(
+    db_path: str, *, flow_id: str, mode: Mode, flow_type: str, amount: float,
+    occurred_at: datetime, note: str,
+) -> bool:
+    """Record funding separately from trading evidence, idempotently."""
+    if mode not in _MODES or flow_type not in {"DEPOSIT", "WITHDRAWAL", "EXPENSE"}:
+        raise ValueError("unsupported cash-flow mode or type")
+    if not flow_id or not note or not math.isfinite(float(amount)) or float(amount) <= 0:
+        raise ValueError("cash flow requires positive amount, identity and note")
+    occurred = _stamp(occurred_at)
+    await init_proactive_intelligence(db_path)
+    signed = float(amount) if flow_type == "DEPOSIT" else -float(amount)
+    async with aiosqlite.connect(db_path) as db:
+        cur = await db.execute(
+            "INSERT OR IGNORE INTO proactive_cash_flows (flow_id,mode,flow_type,amount,occurred_at,note) VALUES (?,?,?,?,?,?)",
+            (flow_id, mode, flow_type, signed, occurred.isoformat(), note),
+        )
+        await db.commit()
+        return bool(cur.rowcount)
+
+
+async def proactive_inactivity_diagnostics(db_path: str, *, now: datetime, max_scan_gap: timedelta = timedelta(minutes=30)) -> list[dict]:
+    """Return evidence gaps; diagnostics never alter a strategy threshold."""
+    now = _stamp(now)
+    await init_proactive_intelligence(db_path)
+    async with aiosqlite.connect(db_path) as db:
+        rows = await (await db.execute(
+            "SELECT mode, MAX(event_at), SUM(CASE WHEN stage='RISK_APPROVED' THEN 1 ELSE 0 END), "
+            "SUM(CASE WHEN stage IN ('SUBMITTED','FILLED') THEN 1 ELSE 0 END) FROM proactive_events GROUP BY mode"
+        )).fetchall()
+    findings = []
+    for mode, last_at, approved, fills in rows:
+        last = _stamp(datetime.fromisoformat(last_at)) if last_at else None
+        if last is None or now - last > max_scan_gap * 2:
+            findings.append({"mode": mode, "code": "MISSED_SCAN_INTERVALS", "last_event_at": last_at})
+        if int(approved or 0) and not int(fills or 0):
+            findings.append({"mode": mode, "code": "DROPPED_RISK_APPROVED_WORKFLOW", "last_event_at": last_at})
+    return findings
+
+
 async def proactive_activity_report(db_path: str, *, days: int = 7) -> dict:
     """Mode-separated counts; absent evidence is explicit rather than zero-health."""
     if not 1 <= days <= 366:

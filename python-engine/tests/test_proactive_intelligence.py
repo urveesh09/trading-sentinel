@@ -5,6 +5,7 @@ import pytest
 from proactive_intelligence import (
     ShadowProposal, allocate_shadow_proposals, build_shadow_proposals, proactive_activity_report,
     record_opportunity_event,
+    record_cash_flow, proactive_inactivity_diagnostics,
     simulate_shadow_trade,
     transition_watchlist,
 )
@@ -68,3 +69,15 @@ async def test_watchlist_lifecycle_cannot_be_reset_by_repeated_scan(db_path):
     assert await transition_watchlist(db_path, opportunity_id="watch-1", state="WATCHING", reason="NEW", now=now, valid_until=now + timedelta(minutes=10))
     assert await transition_watchlist(db_path, opportunity_id="watch-1", state="ARMED", reason="READY", now=now + timedelta(minutes=1))
     assert not await transition_watchlist(db_path, opportunity_id="watch-1", state="WATCHING", reason="REPEATED_SCAN", now=now + timedelta(minutes=2))
+
+
+@pytest.mark.asyncio
+async def test_funding_is_not_profit_and_dropped_workflow_is_visible(db_path):
+    now = datetime.now(timezone.utc)
+    assert await record_cash_flow(db_path, flow_id="deposit-1", mode="LIVE", flow_type="DEPOSIT", amount=8_000, occurred_at=now, note="owner funding")
+    assert not await record_cash_flow(db_path, flow_id="deposit-1", mode="LIVE", flow_type="DEPOSIT", amount=8_000, occurred_at=now, note="owner funding")
+    await record_opportunity_event(db_path, opportunity_id="dropped", policy_id="trend_pullback_v1", policy_version="1", account_id="dev", mode="SHADOW", instrument="NSE:DEMO", stage="RISK_APPROVED", reason_code="OK", idempotency_key="dropped-1", observed_at=now)
+    report = await proactive_activity_report(db_path)
+    assert report["funding_flows"]["LIVE"]["DEPOSIT"] == 8_000
+    assert "profit" in report["note"].lower()
+    assert {row["code"] for row in await proactive_inactivity_diagnostics(db_path, now=now + timedelta(minutes=61))} >= {"MISSED_SCAN_INTERVALS", "DROPPED_RISK_APPROVED_WORKFLOW"}
