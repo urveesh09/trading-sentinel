@@ -44,6 +44,10 @@ class ShadowProposal:
     score: float
     required_capital: float
     reason: str
+    signal_at: Optional[datetime] = None
+    data_cutoff: Optional[datetime] = None
+    entry_deadline: Optional[datetime] = None
+    holding_deadline: Optional[datetime] = None
 
 
 @dataclass(frozen=True)
@@ -89,14 +93,15 @@ def build_shadow_proposals(instrument: str, bars: list[dict], *, now: datetime) 
     if fast > slow and closes[-3] <= fast * 1.01 and last > prior:
         stop = min(lows[-3:])
         if 0 < stop < last:
-            proposals.append(ShadowProposal(_proposal_id("trend_pullback_v1", instrument, trigger_at), "trend_pullback_v1", instrument, last, stop, last + 2 * (last-stop), expiry, fast/slow, last, "TREND_PULLBACK_RECLAIM"))
+            proposals.append(ShadowProposal(_proposal_id("trend_pullback_v1", instrument, trigger_at), "trend_pullback_v1", instrument, last, stop, last + 2 * (last-stop), expiry, fast/slow, last, "TREND_PULLBACK_RECLAIM", trigger_at, trigger_at, expiry, expiry + timedelta(hours=4)))
     # Range: low directional drift, downside stretch, then stabilization/reclaim.
     window = closes[-15:-1]
     mean = sum(window) / len(window)
     if max(window)-min(window) <= mean * .06 and closes[-2] < mean * .985 and last > closes[-2]:
         stop = min(lows[-2:])
         if 0 < stop < last:
-            proposals.append(ShadowProposal(_proposal_id("range_reversion_v1", instrument, trigger_at), "range_reversion_v1", instrument, last, stop, mean, expiry, (mean-last)/mean, last, "RANGE_STABILIZATION_RECLAIM"))
+            if mean > last:
+                proposals.append(ShadowProposal(_proposal_id("range_reversion_v1", instrument, trigger_at), "range_reversion_v1", instrument, last, stop, mean, expiry, (mean-last)/mean, last, "RANGE_STABILIZATION_RECLAIM", trigger_at, trigger_at, expiry, expiry + timedelta(hours=4)))
     # Breakout: previous range contracts vs older range; trigger breaks prior range on volume.
     recent_width = max(highs[-6:-1]) - min(lows[-6:-1])
     old_width = max(highs[-16:-6]) - min(lows[-16:-6])
@@ -104,7 +109,7 @@ def build_shadow_proposals(instrument: str, bars: list[dict], *, now: datetime) 
     if old_width > 0 and recent_width < old_width * .7 and last > prior_high and volumes[-1] > sum(volumes[-11:-1])/10:
         stop = min(lows[-6:-1])
         if 0 < stop < last:
-            proposals.append(ShadowProposal(_proposal_id("contraction_breakout_v1", instrument, trigger_at), "contraction_breakout_v1", instrument, last, stop, last + 2 * (last-stop), expiry, volumes[-1]/(sum(volumes[-11:-1])/10), last, "CONTRACTION_BREAKOUT"))
+            proposals.append(ShadowProposal(_proposal_id("contraction_breakout_v1", instrument, trigger_at), "contraction_breakout_v1", instrument, last, stop, last + 2 * (last-stop), expiry, volumes[-1]/(sum(volumes[-11:-1])/10), last, "CONTRACTION_BREAKOUT", trigger_at, trigger_at, expiry, expiry + timedelta(hours=4)))
     return proposals
 
 
@@ -137,33 +142,47 @@ def simulate_shadow_trade(
     if cash <= 0 or fee_rate < 0 or slippage_bps < 0:
         raise ValueError("invalid simulation assumptions")
     slip = slippage_bps / 10_000
-    quantity = min(max_quantity or math.inf, math.floor(cash / (proposal.entry * (1 + fee_rate))))
-    if quantity < 1:
-        return ShadowSimulation("NO_FILL", 0, None, None, None, None, None, "INSUFFICIENT_CASH_AFTER_FEES")
+    if max_quantity is not None and (not isinstance(max_quantity, int) or max_quantity < 0):
+        raise ValueError("max_quantity must be a non-negative integer")
+    cutoff = _stamp(proposal.data_cutoff or proposal.signal_at or proposal.valid_until)
+    entry_deadline = _stamp(proposal.entry_deadline or proposal.valid_until)
+    holding_deadline = _stamp(proposal.holding_deadline or proposal.valid_until)
+    if not (proposal.stop > 0 and proposal.entry > proposal.stop and proposal.target > proposal.entry and entry_deadline >= cutoff and holding_deadline >= entry_deadline):
+        return ShadowSimulation("INVALID", 0, None, None, None, None, None, "INVALID_PROPOSAL_GEOMETRY_OR_TIMING")
+    quantity = 0; entry = None
     for bar in future_bars:
         try:
             stamp = _stamp(datetime.fromisoformat(str(bar["timestamp"])))
-            if stamp > proposal.valid_until:
-                break
-            entry = float(bar["open"]) * (1 + slip)
-            high, low = float(bar["high"]), float(bar["low"])
+            open_, high, low, close = (float(bar[key]) for key in ("open", "high", "low", "close"))
         except (KeyError, TypeError, ValueError):
             continue
-        if entry <= 0:
+        if not all(math.isfinite(value) and value > 0 for value in (open_, high, low, close)) or low > min(open_, close) or high < max(open_, close):
             continue
-        exit_price = None; reason = "TIME_EXIT"
-        if low <= proposal.stop and high >= proposal.target:
-            exit_price = proposal.stop * (1 - slip); reason = "AMBIGUOUS_BAR_STOP_FIRST"
+        if entry is None:
+            if stamp <= cutoff or stamp > entry_deadline:
+                continue
+            entry = open_ * (1 + slip)
+            quantity = min(max_quantity if max_quantity is not None else math.inf, math.floor(cash / (entry * (1 + fee_rate))))
+            if quantity < 1:
+                return ShadowSimulation("NO_FILL", 0, None, None, None, None, None, "INSUFFICIENT_CASH_AFTER_FEES")
+            if entry <= proposal.stop or entry >= proposal.target:
+                return ShadowSimulation("NO_FILL", 0, None, None, None, None, None, "GAP_INVALIDATES_ENTRY_GEOMETRY")
+        if stamp > holding_deadline:
+            exit_price = open_ * (1-slip); reason = "HOLDING_DEADLINE"
+        elif low <= proposal.stop and high >= proposal.target:
+            exit_price = min(open_, proposal.stop) * (1 - slip); reason = "AMBIGUOUS_BAR_STOP_FIRST"
         elif low <= proposal.stop:
-            exit_price = proposal.stop * (1 - slip); reason = "STOP"
+            exit_price = min(open_, proposal.stop) * (1 - slip); reason = "STOP"
         elif high >= proposal.target:
             exit_price = proposal.target * (1 - slip); reason = "TARGET"
         else:
-            exit_price = float(bar["close"]) * (1 - slip)
+            continue
         gross = (exit_price - entry) * quantity
         fees = (entry + exit_price) * quantity * fee_rate
         return ShadowSimulation("CLOSED", quantity, round(entry, 4), round(exit_price, 4), round(gross, 4), round(fees, 4), round(gross-fees, 4), reason)
-    return ShadowSimulation("NO_FILL", 0, None, None, None, None, None, "NO_EXECUTABLE_BAR_AFTER_SIGNAL")
+    if entry is None:
+        return ShadowSimulation("NO_FILL", 0, None, None, None, None, None, "NO_EXECUTABLE_BAR_AFTER_SIGNAL")
+    return ShadowSimulation("OPEN", quantity, round(entry, 4), None, None, None, None, "DATA_END_OPEN_POSITION")
 
 _SCHEMA = """
 CREATE TABLE IF NOT EXISTS proactive_opportunities (

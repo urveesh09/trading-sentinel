@@ -54,13 +54,14 @@ def test_three_shadow_sleeves_use_completed_bars_and_allocator_preserves_cash():
 def test_shadow_simulator_is_costed_and_conservative_on_ambiguous_bar():
     now = datetime.now(timezone.utc)
     proposal = ShadowProposal("opp", "trend_pullback_v1", "NSE:DEMO", 100, 95, 110,
-                              now + timedelta(minutes=15), 1, 100, "test")
+                              now + timedelta(minutes=15), 1, 100, "test", now, now,
+                              now + timedelta(minutes=15), now + timedelta(hours=1))
     result = simulate_shadow_trade(proposal, [{"timestamp": (now + timedelta(minutes=5)).isoformat(),
                                                 "open": 100, "high": 111, "low": 94, "close": 107}], cash=1_000)
     assert result.status == "CLOSED"
     assert result.reason == "AMBIGUOUS_BAR_STOP_FIRST"
     assert result.net_pnl < 0
-    assert simulate_shadow_trade(proposal, [], cash=10).reason == "INSUFFICIENT_CASH_AFTER_FEES"
+    assert simulate_shadow_trade(proposal, [{"timestamp": (now + timedelta(minutes=5)).isoformat(), "open": 100, "high": 101, "low": 99, "close": 100}], cash=10).reason == "INSUFFICIENT_CASH_AFTER_FEES"
 
 
 @pytest.mark.asyncio
