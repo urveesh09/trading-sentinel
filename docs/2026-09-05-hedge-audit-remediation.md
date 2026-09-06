@@ -417,6 +417,14 @@ does not modify Production.
   reverting a zero- or custom-cost scenario to default fee/slippage settings.
   Execution origin is recorded as `SHADOW` or `REPLAY` in the step ledger.
 
+### Integrated SHADOW corrections — pending lifecycle sweep
+
+- Added a persisted pending-watchlist sweep before each claimed evaluation
+  step. Unfilled `WATCHING`/`ARMED`/`SELECTED` setups expire at their original
+  entry deadline even when their instrument is absent from the current
+  universe. Existing synthetic positions are excluded, so their independent
+  management lifecycle continues after entry expiry.
+
 ### P3 — partial, conservative shadow execution
 
 - Added a long-only offline fill simulator for the shadow proposals. It sizes

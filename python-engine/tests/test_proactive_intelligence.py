@@ -143,6 +143,26 @@ async def test_workflow_clock_cannot_close_an_open_position_from_a_future_bar(db
 
 
 @pytest.mark.asyncio
+async def test_workflow_expires_pending_watchlist_when_instrument_disappears(db_path):
+    import aiosqlite
+
+    now = datetime.now(timezone.utc)
+    await record_opportunity_event(
+        db_path, opportunity_id="pending-expiry", policy_id="trend_pullback_v1", policy_version="v1",
+        account_id="pending", mode="SHADOW", instrument="NSE:MISSING", stage="SETUP",
+        reason_code="COMPLETED_BAR", idempotency_key="pending-expiry:setup", observed_at=now,
+        valid_until=now + timedelta(minutes=5),
+    )
+    assert await transition_watchlist(db_path, opportunity_id="pending-expiry", state="WATCHING", reason="SETUP", now=now, valid_until=now + timedelta(minutes=5))
+    assert await transition_watchlist(db_path, opportunity_id="pending-expiry", state="ARMED", reason="READY", now=now + timedelta(minutes=1))
+    result = await run_shadow_workflow(db_path, account_id="pending", universe={}, now=now + timedelta(minutes=6), scenario_capital=1_000)
+    async with aiosqlite.connect(db_path) as db:
+        state = await (await db.execute("SELECT state FROM proactive_watchlist WHERE opportunity_id='pending-expiry'")).fetchone()
+        expiry_events = await (await db.execute("SELECT COUNT(*) FROM proactive_events WHERE idempotency_key='pending-expiry:expired'")).fetchone()
+    assert result["expired_pending"] == 1 and state[0] == "EXPIRED" and expiry_events[0] == 1
+
+
+@pytest.mark.asyncio
 async def test_shadow_runs_isolate_identical_setups_by_account_and_manifest(db_path):
     import aiosqlite
 

@@ -764,6 +764,29 @@ async def _advance_open_shadow_positions(
     return updates
 
 
+async def _expire_pending_shadow_watchlists(db_path: str, *, now: datetime) -> list[tuple[str, str, str, str, str]]:
+    """Expire unfilled pending entries independently of current universe output."""
+    await init_proactive_intelligence(db_path)
+    async with aiosqlite.connect(db_path) as db:
+        await db.execute("BEGIN IMMEDIATE")
+        rows = await (await db.execute(
+            "SELECT w.opportunity_id,o.policy_id,o.policy_version,o.account_id,o.instrument "
+            "FROM proactive_watchlist w JOIN proactive_opportunities o ON o.opportunity_id=w.opportunity_id "
+            "LEFT JOIN proactive_shadow_positions p ON p.opportunity_id=w.opportunity_id "
+            "WHERE w.state IN ('WATCHING','ARMED','SELECTED') AND w.valid_until<=? "
+            "AND p.opportunity_id IS NULL",
+            (now.isoformat(),),
+        )).fetchall()
+        for opportunity_id, *_rest in rows:
+            await db.execute(
+                "UPDATE proactive_watchlist SET state='EXPIRED',reason='ENTRY_DEADLINE',updated_at=? "
+                "WHERE opportunity_id=? AND state IN ('WATCHING','ARMED','SELECTED')",
+                (now.isoformat(), opportunity_id),
+            )
+        await db.commit()
+    return [tuple(row) for row in rows]
+
+
 async def run_shadow_workflow(
     db_path: str, *, account_id: str, universe: dict[str, list[dict]], now: datetime,
     scenario_capital: float = 8_000, future_bars: Optional[dict[str, list[dict]]] = None,
@@ -804,6 +827,15 @@ async def run_shadow_workflow(
     )
     if prior_result is not None:
         return prior_result
+    expired_pending = await _expire_pending_shadow_watchlists(db_path, now=now)
+    for opportunity_id, policy_id, policy_version, stored_account_id, instrument in expired_pending:
+        await record_opportunity_event(
+            db_path, opportunity_id=opportunity_id, policy_id=policy_id,
+            policy_version=policy_version, account_id=stored_account_id,
+            mode="SHADOW", instrument=instrument, stage="EXPIRED",
+            reason_code="ENTRY_DEADLINE", idempotency_key=f"{opportunity_id}:expired",
+            observed_at=now,
+        )
     # Existing exposure is advanced first. A malformed update cannot erase a
     # position, and any realised result is then reflected in free scenario cash.
     managed = await _advance_open_shadow_positions(
@@ -944,7 +976,7 @@ async def run_shadow_workflow(
         db_path, account_id=storage_account_id, scenario_capital=scenario_capital,
     )
     result = {"mode": "SHADOW", "origin": origin, "account_id": account_id, "run_id": run_id, "as_of": now.isoformat(), "proposals": len(proposals), "allocations": len(allocations), "outcomes": outcomes, "reasons": reasons,
-              "free_cash": round(post_free_cash, 4), "managed_positions": len(managed)}
+              "free_cash": round(post_free_cash, 4), "managed_positions": len(managed), "expired_pending": len(expired_pending)}
     await _complete_shadow_step(
         db_path, run_key=storage_account_id, as_of=now,
         input_digest=step_input_digest, result=result,
