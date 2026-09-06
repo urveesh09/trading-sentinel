@@ -210,3 +210,61 @@ Round-four verification: 189 selected Python tests passed (one pre-existing
 Starlette deprecation warning), compilation and diff checks passed. Gateway
 executor verification remains the existing 46 passing tests; no gateway code
 changed in this increment.
+
+## Round-five delivery authorization corrections — 6 September 2026
+
+- `python-engine/hedge_advisory.py`
+  - Added durable, decision-scoped delivery guards keyed by account, advisory
+    kind, economic decision and exposure lifecycle. Claim ownership, transport
+    start, acknowledgement, failure and abandoned-claim recovery now update the
+    guard in the same transaction as the generation ledger. A second generation
+    cannot begin transport while an equivalent generation is owned, in flight,
+    delivered or awaiting manual resolution.
+  - Added a destination-scoped partner transport backoff. A Telegram 429 now
+    carries forward its retry deadline to later generations and unrelated
+    partner decisions, while leaving the separate operator route unaffected.
+  - Added final Phase-1 dispatch authorization between claim and durable
+    transport intent. It verifies policy/version, real proposal expiry,
+    account and accepted snapshot identity, portfolio revision, complete input,
+    valid rows and claim ownership. A final SQLite write transaction makes that
+    comparison the authorization boundary; no lock is held during transport.
+    Phase-2/3 proposals now carry the same account/snapshot/revision and
+    generation identity, and their final authorization also rechecks the live
+    readiness gate immediately before transport.
+  - Malformed JSON, non-object ledger rows and unresolved pre-generation
+    deliveries no longer crash cross-generation lookup or vanish from the
+    decision record. They enter a read-only, underlying-scoped quarantine.
+  - Added an authenticated, append-only manual-resolution path for an
+    unowned ambiguous delivery. It requires operator identity, reason and
+    evidence; only a confirmed non-delivery can release the decision for a
+    fresh evaluation. Confirmed delivery and retirement remain terminal and
+    never fabricate a Telegram acknowledgement.
+
+- `python-engine/routes_hedge.py`
+  - Added authenticated read-only delivery backlog and evidence-bearing manual
+    resolution endpoints. They do not enable delivery or place orders.
+
+- `python-engine/tests/test_hedge_advisory.py`
+  - Added regressions for concurrent equivalent generations, an ambiguous
+    generation whose failure write is unavailable, destination-wide rate-limit
+    carry-forward (including delivery after the delay), a Phase-1 proposal
+    denied before it reaches transport, scoped corruption quarantine, and
+    append-only manual resolution.
+
+### Round-five verification
+
+- 41 direct hedge-advisory tests passed.
+- 186 selected hedge, partner-input, partner transport and scheduler Python
+  tests passed (one pre-existing Starlette deprecation warning).
+- `git diff --check` passed.
+- Gateway code was not changed. A full local gateway invocation was blocked by
+  the workspace's missing `better-sqlite3` native binary for Node ABI 137;
+  Jest reported 295 passing tests before 12 binding-dependent database tests
+  failed. Rebuild/install the native dependency in the approved Node runtime
+  before treating gateway verification as current.
+
+The remaining round-five full historical migration and real exposure lifecycle,
+fixture adapter, activity/outcome instrumentation, research basket, entry/exit
+experiments and optional-AI work remain separate, unimplemented packages. This
+increment makes no profit claim, does not send a live message or order, and
+does not modify Production.

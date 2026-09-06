@@ -58,7 +58,7 @@ logger = structlog.get_logger()
 IST = pytz.timezone("Asia/Kolkata")
 _TERMINAL_DELIVERY_STATES = frozenset({
     "acknowledgement_recovery_required", "manual_recovery_required", "expired",
-    "permanently_rejected", "retired",
+    "permanently_rejected", "retired", "confirmed_delivered",
 })
 _SNAPSHOT_UNSET = object()
 Phase2MarketMode = Literal[
@@ -122,6 +122,42 @@ CREATE TABLE IF NOT EXISTS partner_hedge_messages (
     detail TEXT,
     claim_token TEXT,
     PRIMARY KEY (kind, dedup_key)
+);
+CREATE TABLE IF NOT EXISTS partner_hedge_decision_guards (
+    account_id TEXT NOT NULL,
+    kind TEXT NOT NULL,
+    decision_id TEXT NOT NULL,
+    exposure_lifecycle_id TEXT NOT NULL,
+    state TEXT NOT NULL,
+    owner_generation_id TEXT,
+    owner_token TEXT,
+    backoff_until TEXT,
+    updated_at TEXT NOT NULL,
+    PRIMARY KEY (account_id, kind, decision_id, exposure_lifecycle_id)
+);
+CREATE TABLE IF NOT EXISTS partner_hedge_transport_backoff (
+    destination TEXT PRIMARY KEY,
+    retry_after_until TEXT NOT NULL,
+    updated_at TEXT NOT NULL
+);
+CREATE TABLE IF NOT EXISTS partner_hedge_ledger_quarantine (
+    kind TEXT NOT NULL,
+    dedup_key TEXT NOT NULL,
+    reason TEXT NOT NULL,
+    raw_detail TEXT,
+    first_seen_at TEXT NOT NULL,
+    last_seen_at TEXT NOT NULL,
+    PRIMARY KEY (kind, dedup_key)
+);
+CREATE TABLE IF NOT EXISTS partner_hedge_delivery_resolutions (
+    resolution_id TEXT PRIMARY KEY,
+    kind TEXT NOT NULL,
+    dedup_key TEXT NOT NULL,
+    action TEXT NOT NULL,
+    resolved_by TEXT NOT NULL,
+    reason TEXT NOT NULL,
+    evidence_ref TEXT NOT NULL,
+    resolved_at TEXT NOT NULL
 );
 CREATE TABLE IF NOT EXISTS partner_hedge_service_state (
     state_key TEXT PRIMARY KEY,
@@ -272,6 +308,44 @@ async def load_hedge_service_state(db_path: str) -> dict:
     return result
 
 
+def _decision_identity(detail: dict) -> Optional[tuple[str, str, str, str]]:
+    """Return normalized guard identity for generation-aware proposals."""
+    decision_id = detail.get("decision_id")
+    account_id = detail.get("account_id")
+    if not isinstance(decision_id, str) or not decision_id or not isinstance(account_id, str) or not account_id:
+        return None
+    lifecycle = str(detail.get("exposure_lifecycle_id") or "default")
+    generation = str(detail.get("generation_id") or "")
+    return account_id, decision_id, lifecycle, generation
+
+
+def _parse_ist(value: object) -> Optional[datetime]:
+    try:
+        return datetime.fromisoformat(str(value)).astimezone(IST)
+    except (TypeError, ValueError):
+        return None
+
+
+def _ledger_underlying(key: object, detail: object) -> str:
+    if isinstance(detail, dict) and isinstance(detail.get("underlying"), str):
+        return detail["underlying"].strip().upper()
+    return str(key).split(":", 1)[0].strip().upper()
+
+
+async def _quarantine_ledger_row(
+    db: aiosqlite.Connection, kind: str, key: str, raw_detail: object,
+    *, reason: str, now: datetime,
+) -> None:
+    """Persist malformed/legacy delivery uncertainty for operator review."""
+    await db.execute(
+        "INSERT INTO partner_hedge_ledger_quarantine "
+        "(kind, dedup_key, reason, raw_detail, first_seen_at, last_seen_at) "
+        "VALUES (?,?,?,?,?,?) ON CONFLICT(kind, dedup_key) DO UPDATE SET "
+        "reason=excluded.reason, raw_detail=excluded.raw_detail, last_seen_at=excluded.last_seen_at",
+        (kind, key, reason, str(raw_detail), now.isoformat(), now.isoformat()),
+    )
+
+
 async def _claim(
     db_path: str,
     kind: str,
@@ -324,12 +398,31 @@ async def _claim(
                     "WHERE kind=? AND dedup_key=? AND delivered=0",
                     (json.dumps(abandoned, sort_keys=True, default=str), kind, key),
                 )
+                identity = _decision_identity(abandoned)
+                if identity is not None:
+                    account_id, decision_id, lifecycle_id, _generation_id = identity
+                    await db.execute(
+                        "UPDATE partner_hedge_decision_guards SET state='manual_recovery_required', "
+                        "owner_token=NULL, updated_at=? WHERE account_id=? AND kind=? "
+                        "AND decision_id=? AND exposure_lifecycle_id=? AND owner_token=?",
+                        (now.isoformat(), account_id, kind, decision_id, lifecycle_id, existing[3]),
+                    )
                 await db.commit()
                 return None
             try:
                 previous_detail = json.loads(existing[2] or "{}")
             except (TypeError, json.JSONDecodeError):
-                previous_detail = {}
+                await _quarantine_ledger_row(
+                    db, kind, key, existing[2], reason="MALFORMED_DETAIL_JSON", now=now,
+                )
+                await db.commit()
+                return None
+            if not isinstance(previous_detail, dict):
+                await _quarantine_ledger_row(
+                    db, kind, key, existing[2], reason="NON_OBJECT_DETAIL", now=now,
+                )
+                await db.commit()
+                return None
             # A remote acknowledgement that could not be committed as a
             # delivered row is an explicit recovery case, never an ordinary
             # transport retry. Re-sending could duplicate a message that the
@@ -373,21 +466,93 @@ async def _claim(
                 return None
 
         candidate_detail = {**(previous_detail if existing is not None else {}), **(detail or {})}
+        # Telegram backoff applies to the destination, not merely to the
+        # generation that happened to receive the 429.
+        cur = await db.execute(
+            "SELECT retry_after_until FROM partner_hedge_transport_backoff WHERE destination='partner'"
+        )
+        transport_backoff = await cur.fetchone()
+        if transport_backoff is not None:
+            until = _parse_ist(transport_backoff[0])
+            if until is None or until > now:
+                await db.rollback()
+                return None
+
+        guard_identity = _decision_identity(candidate_detail)
+        if guard_identity is not None:
+            account_id, decision_id, lifecycle_id, _generation_id = guard_identity
+            cur = await db.execute(
+                "SELECT state, owner_token, backoff_until FROM partner_hedge_decision_guards "
+                "WHERE account_id=? AND kind=? AND decision_id=? AND exposure_lifecycle_id=?",
+                (account_id, kind, decision_id, lifecycle_id),
+            )
+            guard = await cur.fetchone()
+            if guard is not None:
+                guard_state, guard_owner, guard_backoff = guard
+                if guard_state in {
+                    "delivered", "confirmed_delivered", "retired",
+                    "manual_recovery_required", "acknowledgement_recovery_required",
+                }:
+                    await db.rollback()
+                    return None
+                until = _parse_ist(guard_backoff) if guard_backoff else None
+                if until is None and guard_backoff:
+                    await db.rollback()
+                    return None
+                if until is not None and until > now:
+                    await db.rollback()
+                    return None
+                if guard_owner:
+                    await db.rollback()
+                    return None
         decision_id = candidate_detail.get("decision_id")
         if decision_id:
             cur = await db.execute(
-                "SELECT delivered, detail FROM partner_hedge_messages WHERE kind=? AND dedup_key<>?",
-                (kind, key),
-            )
-            for delivered, raw_detail in await cur.fetchall():
+            "SELECT dedup_key, delivered, detail FROM partner_hedge_messages WHERE kind=? AND dedup_key<>?",
+            (kind, key),
+        )
+            candidate_underlying = _ledger_underlying(key, candidate_detail)
+            for prior_key, delivered, raw_detail in await cur.fetchall():
                 try:
                     prior = json.loads(raw_detail or "{}")
                 except (TypeError, json.JSONDecodeError):
+                    if _ledger_underlying(prior_key, {}) == candidate_underlying:
+                        await _quarantine_ledger_row(
+                            db, kind, prior_key, raw_detail,
+                            reason="MALFORMED_CROSS_GENERATION_DETAIL", now=now,
+                        )
+                        await db.commit()
+                        return None
                     continue
+                if not isinstance(prior, dict):
+                    if _ledger_underlying(prior_key, {}) == candidate_underlying:
+                        await _quarantine_ledger_row(
+                            db, kind, prior_key, raw_detail,
+                            reason="NON_OBJECT_CROSS_GENERATION_DETAIL", now=now,
+                        )
+                        await db.commit()
+                        return None
+                    continue
+                # Records predating decision identities cannot be safely
+                # matched to a fresh decision. Hold only their underlying
+                # scope and expose it in quarantine rather than either
+                # crashing every kind or silently allowing a duplicate.
+                if (
+                    not prior.get("decision_id")
+                    and (bool(delivered) or prior.get("state") in _TERMINAL_DELIVERY_STATES)
+                    and _ledger_underlying(prior_key, prior) == candidate_underlying
+                ):
+                    await _quarantine_ledger_row(
+                        db, kind, prior_key, raw_detail,
+                        reason="LEGACY_IDENTITY_REQUIRES_RESOLUTION", now=now,
+                    )
+                    await db.commit()
+                    return None
                 if prior.get("decision_id") != decision_id:
                     continue
                 if bool(delivered) or prior.get("state") in {
                     "manual_recovery_required", "acknowledgement_recovery_required",
+                    "confirmed_delivered",
                 }:
                     await db.rollback()
                     return None
@@ -446,6 +611,18 @@ async def _claim(
             (kind, key, now.isoformat(), 0,
              json.dumps(candidate_detail, sort_keys=True, default=str), token),
         )
+        if guard_identity is not None:
+            account_id, decision_id, lifecycle_id, generation_id = guard_identity
+            await db.execute(
+                "INSERT INTO partner_hedge_decision_guards "
+                "(account_id, kind, decision_id, exposure_lifecycle_id, state, owner_generation_id, owner_token, backoff_until, updated_at) "
+                "VALUES (?,?,?,?,?,?,?,?,?) "
+                "ON CONFLICT(account_id, kind, decision_id, exposure_lifecycle_id) DO UPDATE SET "
+                "state=excluded.state, owner_generation_id=excluded.owner_generation_id, "
+                "owner_token=excluded.owner_token, updated_at=excluded.updated_at",
+                (account_id, kind, decision_id, lifecycle_id, "claimed", generation_id,
+                 token, None, now.isoformat()),
+            )
         await db.commit()
         return token
 
@@ -477,6 +654,17 @@ async def _complete_claim(
             (now.isoformat(), json.dumps(detail, sort_keys=True, default=str),
              kind, key, token),
         )
+        if cur.rowcount == 1:
+            identity = _decision_identity(detail)
+            if identity is not None:
+                account_id, decision_id, lifecycle_id, _generation_id = identity
+                await db.execute(
+                    "UPDATE partner_hedge_decision_guards SET state=?, owner_token=NULL, "
+                    "backoff_until=?, updated_at=? WHERE account_id=? AND kind=? "
+                    "AND decision_id=? AND exposure_lifecycle_id=? AND owner_token=?",
+                    ("delivered", None, now.isoformat(),
+                     account_id, kind, decision_id, lifecycle_id, token),
+                )
         await db.commit()
         return cur.rowcount == 1
 
@@ -503,6 +691,16 @@ async def _mark_transport_started(
             "AND delivered=0 AND claim_token=?",
             (json.dumps(detail, sort_keys=True, default=str), kind, key, token),
         )
+        if cur.rowcount == 1:
+            identity = _decision_identity(detail)
+            if identity is not None:
+                account_id, decision_id, lifecycle_id, generation_id = identity
+                await db.execute(
+                    "UPDATE partner_hedge_decision_guards SET state='transport_started', "
+                    "owner_generation_id=?, updated_at=? WHERE account_id=? AND kind=? "
+                    "AND decision_id=? AND exposure_lifecycle_id=? AND owner_token=?",
+                    (generation_id, now.isoformat(), account_id, kind, decision_id, lifecycle_id, token),
+                )
         await db.commit()
         return cur.rowcount == 1
 
@@ -566,6 +764,27 @@ async def _fail_claim(
             (now.isoformat(), json.dumps(failed_detail, sort_keys=True, default=str),
              kind, key, token),
         )
+        if cur.rowcount == 1:
+            identity = _decision_identity(failed_detail)
+            if identity is not None:
+                account_id, decision_id, lifecycle_id, _generation_id = identity
+                await db.execute(
+                    "UPDATE partner_hedge_decision_guards SET state=?, owner_token=NULL, "
+                    "backoff_until=?, updated_at=? WHERE account_id=? AND kind=? "
+                    "AND decision_id=? AND exposure_lifecycle_id=? AND owner_token=?",
+                    (failed_detail["state"], failed_detail.get("next_attempt_at"), now.isoformat(),
+                     account_id, kind, decision_id, lifecycle_id, token),
+                )
+            if delivery_state == "rate_limited":
+                await db.execute(
+                    "INSERT INTO partner_hedge_transport_backoff "
+                    "(destination, retry_after_until, updated_at) VALUES ('partner',?,?) "
+                    "ON CONFLICT(destination) DO UPDATE SET retry_after_until="
+                    "CASE WHEN excluded.retry_after_until > retry_after_until "
+                    "THEN excluded.retry_after_until ELSE retry_after_until END, "
+                    "updated_at=excluded.updated_at",
+                    (failed_detail["next_attempt_at"], now.isoformat()),
+                )
         await db.commit()
         return cur.rowcount == 1
 
@@ -582,8 +801,218 @@ async def _mark_acknowledgement_recovery_required(
             (now.isoformat(), json.dumps(detail, sort_keys=True, default=str),
              kind, key, token),
         )
+        if cur.rowcount == 1:
+            identity = _decision_identity(detail)
+            if identity is not None:
+                account_id, decision_id, lifecycle_id, _generation_id = identity
+                await db.execute(
+                    "UPDATE partner_hedge_decision_guards "
+                    "SET state='acknowledgement_recovery_required', owner_token=NULL, "
+                    "updated_at=? WHERE account_id=? AND kind=? AND decision_id=? "
+                    "AND exposure_lifecycle_id=? AND owner_token=?",
+                    (now.isoformat(), account_id, kind, decision_id, lifecycle_id, token),
+                )
         await db.commit()
         return cur.rowcount == 1
+
+
+async def load_hedge_delivery_backlog(db_path: str) -> dict[str, list[dict]]:
+    """Read-only manual-recovery and migration-hold queues for operators."""
+    await init_hedge_advisory_db(db_path)
+    async with aiosqlite.connect(db_path) as db:
+        cur = await db.execute(
+            "SELECT kind, dedup_key, sent_at, detail FROM partner_hedge_messages "
+            "WHERE delivered=0 ORDER BY sent_at ASC"
+        )
+        unresolved = []
+        for kind, key, sent_at, raw_detail in await cur.fetchall():
+            try:
+                detail = json.loads(raw_detail or "{}")
+            except (TypeError, json.JSONDecodeError):
+                detail = {"state": "corrupt_ledger_detail"}
+            if not isinstance(detail, dict):
+                detail = {"state": "corrupt_ledger_detail"}
+            if detail.get("state") in {
+                "manual_recovery_required", "acknowledgement_recovery_required",
+            }:
+                unresolved.append({"kind": kind, "dedup_key": key, "sent_at": sent_at,
+                                   "state": detail["state"], "detail": detail})
+        cur = await db.execute(
+            "SELECT kind, dedup_key, reason, raw_detail, first_seen_at, last_seen_at "
+            "FROM partner_hedge_ledger_quarantine ORDER BY first_seen_at ASC"
+        )
+        quarantined = [
+            {"kind": row[0], "dedup_key": row[1], "reason": row[2],
+             "raw_detail": row[3], "first_seen_at": row[4], "last_seen_at": row[5]}
+            for row in await cur.fetchall()
+        ]
+    return {"manual_recovery": unresolved, "quarantine": quarantined}
+
+
+async def resolve_hedge_delivery_backlog(
+    db_path: str, *, kind: str, dedup_key: str, action: str, resolved_by: str,
+    reason: str, evidence_ref: str, now: Optional[datetime] = None,
+) -> dict:
+    """Record one authenticated, evidence-bearing manual delivery decision.
+
+    This is intentionally an append-only operator action.  ``not_delivered``
+    releases only a proven-unsent decision for fresh evaluation; the other
+    outcomes retain a terminal guard and never fabricate Telegram delivery.
+    """
+    allowed = {"confirmed_delivered", "confirmed_not_delivered", "retired"}
+    if action not in allowed:
+        raise ValueError("unsupported delivery resolution action")
+    if not all(isinstance(value, str) and value.strip() for value in (kind, dedup_key, resolved_by, reason, evidence_ref)):
+        raise ValueError("resolution requires operator, reason and evidence")
+    now = _aware(now or datetime.now(IST), "now").astimezone(IST)
+    await init_hedge_advisory_db(db_path)
+    async with aiosqlite.connect(db_path) as db:
+        await db.execute("BEGIN IMMEDIATE")
+        cur = await db.execute(
+            "SELECT detail, delivered, claim_token FROM partner_hedge_messages "
+            "WHERE kind=? AND dedup_key=?", (kind, dedup_key),
+        )
+        row = await cur.fetchone()
+        if row is None:
+            await db.rollback()
+            raise ValueError("delivery record not found")
+        if bool(row[1]) or row[2]:
+            await db.rollback()
+            raise ValueError("only an unowned unresolved delivery can be resolved")
+        try:
+            detail = json.loads(row[0] or "{}")
+        except (TypeError, json.JSONDecodeError) as exc:
+            await db.rollback()
+            raise ValueError("corrupt delivery record requires migration resolution") from exc
+        if not isinstance(detail, dict) or detail.get("state") not in {
+            "manual_recovery_required", "acknowledgement_recovery_required",
+        }:
+            await db.rollback()
+            raise ValueError("delivery is not awaiting manual resolution")
+        detail.update({
+            "state": "resolved_not_delivered" if action == "confirmed_not_delivered" else action,
+            "resolution": {"action": action, "resolved_by": resolved_by,
+                           "reason": reason, "evidence_ref": evidence_ref,
+                           "resolved_at": now.isoformat()},
+        })
+        update = await db.execute(
+            "UPDATE partner_hedge_messages SET detail=? WHERE kind=? AND dedup_key=? "
+            "AND delivered=0 AND claim_token IS NULL",
+            (json.dumps(detail, sort_keys=True, default=str), kind, dedup_key),
+        )
+        if update.rowcount != 1:
+            await db.rollback()
+            raise ValueError("delivery changed while resolving")
+        identity = _decision_identity(detail)
+        if identity is not None:
+            account_id, decision_id, lifecycle_id, _generation_id = identity
+            guard_state = "resolved_not_delivered" if action == "confirmed_not_delivered" else action
+            await db.execute(
+                "UPDATE partner_hedge_decision_guards SET state=?, owner_token=NULL, "
+                "backoff_until=NULL, updated_at=? WHERE account_id=? AND kind=? "
+                "AND decision_id=? AND exposure_lifecycle_id=?",
+                (guard_state, now.isoformat(), account_id, kind, decision_id, lifecycle_id),
+            )
+        resolution_id = uuid.uuid4().hex
+        await db.execute(
+            "INSERT INTO partner_hedge_delivery_resolutions "
+            "(resolution_id, kind, dedup_key, action, resolved_by, reason, evidence_ref, resolved_at) "
+            "VALUES (?,?,?,?,?,?,?,?)",
+            (resolution_id, kind, dedup_key, action, resolved_by, reason, evidence_ref, now.isoformat()),
+        )
+        await db.commit()
+    return {"resolution_id": resolution_id, "action": action, "resolved_at": now.isoformat()}
+
+
+async def _authorize_dispatch(
+    db_path: str, kind: str, key: str, token: str, detail: dict, *, now: datetime,
+) -> bool:
+    """Re-authorize a live Phase-1 proposal immediately before transport.
+
+    Claiming serializes transport; it does not prove that the portfolio used
+    to create a proposal still exists.  This check deliberately runs after
+    claiming and before recording transport intent, and locks the final
+    revision/snapshot comparison with ownership of that exact claim.
+    """
+    phase = detail.get("phase")
+    if phase is None:
+        # Status messages carry no execution instruction.
+        return True
+    policy_by_phase = {"phase1": "phase1-v2", "phase2": "phase2-v1", "phase3": "phase3-v1"}
+    if phase not in policy_by_phase or detail.get("policy_version") != policy_by_phase[phase]:
+        return False
+    if phase == "phase2":
+        if not settings.PARTNER_HEDGE_PHASE2_ENABLED:
+            return False
+        from hedge_readiness import assess_phase_readiness
+        if (await assess_phase_readiness(db_path, "phase2", now=now))["state"] != "READY":
+            return False
+    elif phase == "phase3":
+        if not settings.PARTNER_HEDGE_PHASE3_ENABLED:
+            return False
+        from hedge_readiness import assess_phase_readiness
+        if (await assess_phase_readiness(db_path, "phase3", now=now))["state"] != "READY":
+            return False
+    valid_until = _parse_ist(detail.get("valid_until"))
+    if valid_until is None or valid_until <= now:
+        return False
+    identity = _decision_identity(detail)
+    if identity is None or not isinstance(detail.get("snapshot_id"), str):
+        return False
+
+    evaluation = await load_partner_evaluation_input(db_path)
+    input_reason = await _whole_portfolio_input_reason(
+        db_path, evaluation.all_open, evaluation.reconciled_open, now,
+        snapshot=evaluation.snapshot, invalid_open_rows=evaluation.invalid_open_rows,
+    )
+    if input_reason != "READY_FOR_EVALUATION":
+        return False
+    snapshot = evaluation.snapshot
+    if snapshot is None or (
+        snapshot["account_id"] != detail.get("account_id")
+        or snapshot["snapshot_id"] != detail.get("snapshot_id")
+        or evaluation.portfolio_revision != detail.get("portfolio_revision")
+    ):
+        return False
+
+    # The read-consistent evaluation above establishes completeness and row
+    # validity.  Holding a write lock here makes the subsequent watermark and
+    # claim-owner checks atomic with respect to every mutation that advances
+    # the portfolio revision.
+    async with aiosqlite.connect(db_path, timeout=30) as db:
+        await db.execute("BEGIN IMMEDIATE")
+        cur = await db.execute(
+            "SELECT revision FROM partner_hedge_portfolio_revision "
+            "WHERE revision_key='partner_hedge'"
+        )
+        revision_row = await cur.fetchone()
+        cur = await db.execute(
+            "SELECT s.account_id, s.snapshot_id FROM partner_input_snapshots s "
+            "JOIN partner_hedge_account_binding b ON b.binding_key='partner_hedge' "
+            "AND s.source=b.source AND s.account_id=b.account_id "
+            "ORDER BY s.accepted_at DESC LIMIT 1"
+        )
+        current_snapshot = await cur.fetchone()
+        cur = await db.execute(
+            "SELECT claim_token FROM partner_hedge_messages "
+            "WHERE kind=? AND dedup_key=? AND delivered=0",
+            (kind, key),
+        )
+        claim_row = await cur.fetchone()
+        authorized = bool(
+            revision_row is not None
+            and int(revision_row[0]) == evaluation.portfolio_revision
+            and current_snapshot is not None
+            and current_snapshot[0] == detail.get("account_id")
+            and current_snapshot[1] == detail.get("snapshot_id")
+            and claim_row is not None
+            and claim_row[0] == token
+        )
+        if authorized:
+            await db.commit()
+        else:
+            await db.rollback()
+        return authorized
 
 
 async def _send_claimed_review(
@@ -610,6 +1039,16 @@ async def _send_claimed_review(
             db_path, "last_candidate",
             {"kind": kind, "dedup_key": key, "underlying": underlying}, now=now,
         )
+        if not await _authorize_dispatch(
+            db_path, kind, key, token, claim_detail, now=now,
+        ):
+            await _fail_claim(
+                db_path, kind, key, token,
+                detail={**claim_detail, "state": "dispatch_not_authorized", "delivery": {
+                    "kind": kind, "dedup_key": key, "state": "dispatch_not_authorized",
+                }}, now=now,
+            )
+            return False
         if not await _mark_transport_started(db_path, kind, key, token, now=now):
             return False
         post_dispatch = True
@@ -773,7 +1212,18 @@ async def _sweep_abandoned_delivery_claims(db_path: str, now: datetime) -> int:
                     "WHERE kind=? AND dedup_key=? AND delivered=0 AND claim_token=? AND sent_at=?",
                     (json.dumps(detail, sort_keys=True, default=str), kind, key, token, sent_at),
                 )
-                moved += int(update.rowcount == 1)
+                if update.rowcount == 1:
+                    identity = _decision_identity(detail)
+                    if identity is not None:
+                        account_id, decision_id, lifecycle_id, _generation_id = identity
+                        await db.execute(
+                            "UPDATE partner_hedge_decision_guards "
+                            "SET state='manual_recovery_required', owner_token=NULL, updated_at=? "
+                            "WHERE account_id=? AND kind=? AND decision_id=? "
+                            "AND exposure_lifecycle_id=? AND owner_token=?",
+                            (now.isoformat(), account_id, kind, decision_id, lifecycle_id, token),
+                        )
+                    moved += 1
             except Exception as exc:
                 logger.error("partner_hedge_abandoned_claim_sweep_failed kind=%s key=%s err=%s",
                              kind, key, str(exc))
@@ -1499,6 +1949,21 @@ def _proposal_identity(
     ).hexdigest()[:16]
 
 
+def _advanced_proposal_identity(
+    phase: str, kind: str, positions: Iterable[PartnerPosition], contracts: Iterable[str], *,
+    account_id: str,
+) -> str:
+    """Stable advanced-policy identity without treating marks as a decision."""
+    material = {
+        "phase": phase, "kind": kind, "account_id": account_id,
+        "positions": sorted((p.position_id, p.tradingsymbol, p.signed_quantity) for p in positions),
+        "contracts": sorted(str(contract) for contract in contracts),
+    }
+    return hashlib.sha256(
+        json.dumps(material, sort_keys=True, default=str).encode("utf-8")
+    ).hexdigest()[:16]
+
+
 async def _record_no_advice(
     db_path: str, reason: str, *, now: datetime, underlying: str = "PORTFOLIO",
     notify: bool = False,
@@ -1752,14 +2217,27 @@ async def partner_hedge_phase2_tick(now: Optional[datetime] = None) -> None:
                     cap = settings.PARTNER_HEDGE_PHASE2_PREMIUM_DAILY_CAP
                 key = _phase2_dedup_key(kind, underlying, plan, now)
                 text = _format_phase2_review(kind, plan, review_context)
+                contracts = [leg.tradingsymbol for leg in plan.legs]
+                valid_until = snapshot.taken_at + timedelta(
+                    seconds=settings.PARTNER_HEDGE_MAX_QUOTE_AGE_SEC
+                )
+                decision_id = _advanced_proposal_identity(
+                    "phase2", kind, group, contracts,
+                    account_id=evaluation_input.snapshot["account_id"],
+                )
+                generation_id = hashlib.sha256(
+                    f"{decision_id}:{evaluation_input.snapshot['snapshot_id']}:"
+                    f"{evaluation_input.portfolio_revision}:{valid_until.isoformat()}".encode("utf-8")
+                ).hexdigest()[:16]
                 detail = {
-                    "underlying": underlying, "expiry": snapshot.expiry,
-                    "contracts": [leg.tradingsymbol for leg in plan.legs],
+                    "underlying": underlying, "expiry": snapshot.expiry, "contracts": contracts,
                     "mode": context.mode, "iv_rank": context.iv_rank,
                     "phase": "phase2", "policy_version": "phase2-v1",
-                    "valid_until": (snapshot.taken_at + timedelta(
-                        seconds=settings.PARTNER_HEDGE_MAX_QUOTE_AGE_SEC
-                    )).isoformat(),
+                    "account_id": evaluation_input.snapshot["account_id"],
+                    "snapshot_id": evaluation_input.snapshot["snapshot_id"],
+                    "portfolio_revision": evaluation_input.portfolio_revision,
+                    "decision_id": decision_id, "generation_id": generation_id,
+                    "valid_until": valid_until.isoformat(),
                 }
                 if sending:
                     await _send_claimed_review(
@@ -1898,11 +2376,24 @@ async def partner_hedge_phase3_tick(now: Optional[datetime] = None) -> None:
                 key = f"{underlying}:{now.date().isoformat()}:{kind}:{front.expiry.isoformat()}"
                 text = _format_phase3_review(kind, value, review_context, now)
                 contracts = [leg.tradingsymbol for leg in getattr(value, "legs", ())]
+                valid_until = front.taken_at + timedelta(
+                    seconds=settings.PARTNER_HEDGE_MAX_QUOTE_AGE_SEC
+                )
+                decision_id = _advanced_proposal_identity(
+                    "phase3", kind, group, contracts,
+                    account_id=evaluation_input.snapshot["account_id"],
+                )
+                generation_id = hashlib.sha256(
+                    f"{decision_id}:{evaluation_input.snapshot['snapshot_id']}:"
+                    f"{evaluation_input.portfolio_revision}:{valid_until.isoformat()}".encode("utf-8")
+                ).hexdigest()[:16]
                 detail = {"underlying": underlying, "contracts": contracts,
                           "phase": "phase3", "policy_version": "phase3-v1",
-                          "valid_until": (front.taken_at + timedelta(
-                              seconds=settings.PARTNER_HEDGE_MAX_QUOTE_AGE_SEC
-                          )).isoformat(),
+                          "account_id": evaluation_input.snapshot["account_id"],
+                          "snapshot_id": evaluation_input.snapshot["snapshot_id"],
+                          "portfolio_revision": evaluation_input.portfolio_revision,
+                          "decision_id": decision_id, "generation_id": generation_id,
+                          "valid_until": valid_until.isoformat(),
                           "event_window": context.event_window,
                           "portfolio_breadth": (
                               context.portfolio_stress.breadth_pct_above_sma
@@ -1939,6 +2430,7 @@ async def partner_hedge_phase3_tick(now: Optional[datetime] = None) -> None:
 __all__ = [
     "init_hedge_advisory_db", "record_vix_observation",
     "load_vix_observations", "load_hedge_service_state",
+    "load_hedge_delivery_backlog", "resolve_hedge_delivery_backlog",
     "Phase2MarketContext", "build_hedge_reviews",
     "build_phase2_hedge_reviews", "partner_hedge_tick",
     "partner_hedge_phase2_tick", "Phase3MarketContext",

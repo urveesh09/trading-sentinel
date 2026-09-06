@@ -13,7 +13,8 @@ import main as _main
 from config import settings
 from hedge_advisory import (
     init_hedge_advisory_db, load_hedge_service_state, load_vix_observations,
-    record_vix_observation,
+    load_hedge_delivery_backlog, record_vix_observation,
+    resolve_hedge_delivery_backlog,
 )
 from hedge_analytics import (
     Greeks, PartnerPosition, close_partner_position, create_partner_position,
@@ -97,6 +98,13 @@ class HedgeGateEvidencePayload(BaseModel):
     evidence_ref: str = Field(default="", max_length=160)
     note: Optional[str] = Field(default=None, max_length=1000)
     observed_at: Optional[datetime] = None
+
+
+class HedgeDeliveryResolutionPayload(BaseModel):
+    action: str = Field(min_length=1, max_length=40)
+    resolved_by: str = Field(min_length=1, max_length=120)
+    reason: str = Field(min_length=1, max_length=1000)
+    evidence_ref: str = Field(min_length=1, max_length=300)
 
 
 def _position_json(position: PartnerPosition) -> dict:
@@ -225,6 +233,28 @@ async def get_partner_hedge_status(request: Request):
         "service_state": service_state,
         "automatic_execution": False,
     }
+
+
+@router.get("/partner/hedge/delivery-backlog")
+async def get_partner_hedge_delivery_backlog(request: Request):
+    """Read manual delivery/migration holds; it does not release anything."""
+    _main._check_internal_secret(request, "get_partner_hedge_delivery_backlog")
+    return await load_hedge_delivery_backlog(settings.DB_PATH)
+
+
+@router.post("/partner/hedge/delivery-backlog/{kind}/{dedup_key}/resolve")
+async def resolve_partner_hedge_delivery_backlog(
+    kind: str, dedup_key: str, request: Request, payload: HedgeDeliveryResolutionPayload,
+):
+    _main._check_internal_secret(request, "resolve_partner_hedge_delivery_backlog")
+    try:
+        return await resolve_hedge_delivery_backlog(
+            settings.DB_PATH, kind=kind, dedup_key=dedup_key,
+            action=payload.action, resolved_by=payload.resolved_by,
+            reason=payload.reason, evidence_ref=payload.evidence_ref,
+        )
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
 
 
 @router.get("/partner/hedge/readiness")

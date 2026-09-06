@@ -179,6 +179,155 @@ async def test_expired_claim_requires_manual_recovery_not_a_blind_reclaim(db_pat
     )
 
 
+def _generation_detail(*, generation: str, decision: str = "same-decision") -> dict:
+    return {
+        "account_id": "paper-1", "decision_id": decision,
+        "exposure_lifecycle_id": "open-book-1", "generation_id": generation,
+    }
+
+
+@pytest.mark.asyncio
+async def test_equivalent_generations_have_one_atomic_delivery_owner(db_path):
+    first, second = await asyncio.gather(
+        _claim(db_path, "protective_put_alert", "NIFTY:one", now=NOW,
+               detail=_generation_detail(generation="generation-one")),
+        _claim(db_path, "protective_put_alert", "NIFTY:two", now=NOW,
+               detail=_generation_detail(generation="generation-two")),
+    )
+    assert int(first is not None) + int(second is not None) == 1
+
+
+@pytest.mark.asyncio
+async def test_unpersisted_ambiguous_generation_blocks_equivalent_generation(db_path, monkeypatch):
+    calls = 0
+
+    async def timeout(*args, **kwargs):
+        nonlocal calls
+        calls += 1
+        return PartnerSendResult(False, state="ambiguous_timeout", error="telegram_timeout")
+
+    async def failed_write(*args, **kwargs):
+        raise RuntimeError("authoritative ledger unavailable")
+
+    monkeypatch.setattr(ha, "send_partner_result", timeout)
+    monkeypatch.setattr(ha, "_fail_claim", failed_write)
+    assert not await ha._send_claimed_review(
+        db_path, "protective_put_alert", "NIFTY:ambiguous-one", "advice",
+        detail=_generation_detail(generation="generation-one"), now=NOW,
+    )
+    assert not await ha._send_claimed_review(
+        db_path, "protective_put_alert", "NIFTY:ambiguous-two", "advice",
+        detail=_generation_detail(generation="generation-two"), now=NOW + timedelta(minutes=2),
+    )
+    assert calls == 1
+
+
+@pytest.mark.asyncio
+async def test_rate_limit_blocks_another_decision_at_same_destination(db_path, monkeypatch):
+    calls = 0
+
+    async def limited(*args, **kwargs):
+        nonlocal calls
+        calls += 1
+        return PartnerSendResult(False, state="rate_limited", error="telegram_429_retry_after_3600")
+
+    monkeypatch.setattr(ha, "send_partner_result", limited)
+    assert not await ha._send_claimed_review(
+        db_path, "protective_put_alert", "NIFTY:rate-one", "advice",
+        detail=_generation_detail(generation="generation-one", decision="decision-one"), now=NOW,
+    )
+    assert not await ha._send_claimed_review(
+        db_path, "futures_hedge_size", "NIFTY:rate-two", "advice",
+        detail=_generation_detail(generation="generation-two", decision="decision-two"),
+        now=NOW + timedelta(minutes=1),
+    )
+    assert calls == 1
+
+    async def acknowledged(*args, **kwargs):
+        nonlocal calls
+        calls += 1
+        return PartnerSendResult(True, message_id=1, state="acknowledged")
+
+    monkeypatch.setattr(ha, "send_partner_result", acknowledged)
+    assert await ha._send_claimed_review(
+        db_path, "futures_hedge_size", "NIFTY:rate-three", "advice",
+        detail=_generation_detail(generation="generation-three", decision="decision-three"),
+        now=NOW + timedelta(hours=1, seconds=1),
+    )
+    assert calls == 2
+
+
+@pytest.mark.asyncio
+async def test_phase1_dispatch_requires_current_complete_portfolio_authorization(db_path, monkeypatch):
+    async def must_not_send(*args, **kwargs):
+        raise AssertionError("unauthorized Phase-1 advice must not reach transport")
+
+    monkeypatch.setattr(ha, "send_partner_result", must_not_send)
+    assert not await ha._send_claimed_review(
+        db_path, "protective_put_alert", "NIFTY:unauthorized", "advice",
+        detail={
+            **_generation_detail(generation="generation-one"), "phase": "phase1",
+            "policy_version": "phase1-v2", "snapshot_id": "missing-snapshot",
+            "portfolio_revision": 0, "valid_until": (NOW + timedelta(minutes=2)).isoformat(),
+        }, now=NOW,
+    )
+
+
+@pytest.mark.asyncio
+async def test_corrupt_legacy_row_is_quarantined_by_underlying_scope(db_path):
+    import aiosqlite
+
+    await ha.init_hedge_advisory_db(db_path)
+    async with aiosqlite.connect(db_path) as db:
+        await db.execute(
+            "INSERT INTO partner_hedge_messages "
+            "(kind, dedup_key, sent_at, delivered, detail, claim_token) VALUES (?,?,?,?,?,NULL)",
+            ("protective_put_alert", "NIFTY:legacy", NOW.isoformat(), 1, "[]"),
+        )
+        await db.commit()
+    assert await _claim(
+        db_path, "protective_put_alert", "NIFTY:fresh", now=NOW,
+        detail=_generation_detail(generation="generation-one", decision="new-decision"),
+    ) is None
+    # A corrupt NIFTY record must not crash or globally block unrelated scope.
+    assert await _claim(
+        db_path, "protective_put_alert", "BANKNIFTY:fresh", now=NOW,
+        detail=_generation_detail(generation="generation-two", decision="other-decision"),
+    )
+    backlog = await ha.load_hedge_delivery_backlog(db_path)
+    assert backlog["quarantine"][0]["reason"] == "NON_OBJECT_CROSS_GENERATION_DETAIL"
+
+
+@pytest.mark.asyncio
+async def test_manual_delivery_resolution_is_append_only_and_can_release_proven_unsent(db_path, monkeypatch):
+    async def timeout(*args, **kwargs):
+        return PartnerSendResult(False, state="ambiguous_timeout", error="telegram_timeout")
+
+    detail = _generation_detail(generation="generation-one")
+    monkeypatch.setattr(ha, "send_partner_result", timeout)
+    assert not await ha._send_claimed_review(
+        db_path, "protective_put_alert", "NIFTY:resolve", "advice", detail=detail, now=NOW,
+    )
+    backlog = await ha.load_hedge_delivery_backlog(db_path)
+    assert [row["dedup_key"] for row in backlog["manual_recovery"]] == ["NIFTY:resolve"]
+    resolution = await ha.resolve_hedge_delivery_backlog(
+        db_path, kind="protective_put_alert", dedup_key="NIFTY:resolve",
+        action="confirmed_not_delivered", resolved_by="operator-1",
+        reason="partner confirmed no delivery", evidence_ref="case-42", now=NOW + timedelta(minutes=1),
+    )
+    assert resolution["action"] == "confirmed_not_delivered"
+    assert await _claim(
+        db_path, "protective_put_alert", "NIFTY:replacement", now=NOW + timedelta(minutes=2),
+        detail=_generation_detail(generation="generation-two"),
+    )
+    with pytest.raises(ValueError, match="not awaiting manual resolution"):
+        await ha.resolve_hedge_delivery_backlog(
+            db_path, kind="protective_put_alert", dedup_key="NIFTY:resolve",
+            action="retired", resolved_by="operator-1", reason="duplicate", evidence_ref="case-42",
+            now=NOW + timedelta(minutes=3),
+        )
+
+
 @pytest.mark.asyncio
 async def test_hedge_delivery_persists_telegram_acknowledgement(db_path, monkeypatch):
     async def acknowledged(*args, **kwargs):
@@ -434,7 +583,7 @@ async def test_recovery_retires_phase1_advice_when_current_portfolio_is_not_elig
                 "valid_until": (NOW + timedelta(minutes=5)).isoformat()}, now=NOW,
     )
     assert await ha.recover_pending_hedge_deliveries(NOW + timedelta(minutes=1)) == 0
-    assert calls == 1
+    assert calls == 0
 
 
 def test_proposal_identity_ignores_refresh_timestamp_but_tracks_quantity(monkeypatch):
