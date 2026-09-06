@@ -331,6 +331,14 @@ does not modify Production.
   it. A never-configured/never-run scanner is reported as unknown, not healthy
   inactivity.
 
+### Product-foundation correction C6 — fixture validation and reopen identity
+
+- Fixture rows are fully validated before the first position write, so a
+  malformed later row cannot leave an earlier new position committed. External
+  identities are namespaced by source/account and get a new lifecycle identity
+  after a complete-snapshot close, allowing a true reopen without reusing a
+  closed record's identity.
+
 ### P3 — partial, conservative shadow execution
 
 - Added a long-only offline fill simulator for the shadow proposals. It sizes
