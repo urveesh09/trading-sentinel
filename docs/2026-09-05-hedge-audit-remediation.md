@@ -131,3 +131,44 @@ The external rollout prerequisites remain unchanged: an approved adapter and
 account mapping, scoped credential provisioning, source coverage for new and
 reopened identities, a genuine VIX producer, and explicit live-message
 authorization. Production remains unmodified.
+
+## Round-three safety hardening — 6 September 2026
+
+Implemented from the follow-up audit while retaining its two pre-existing Dev
+fixes:
+
+- `python-engine/hedge_analytics.py` and `partner_input_refresh.py`
+  - The service is now explicitly **single-account**. An enabled importer
+    requires configured approved source and account values, persists the first
+    accepted binding, and rejects any later source/account switch before a
+    portfolio mutation or inferred close.
+  - Advisory code reads the accepted envelope, open rows and reconciled rows
+    in one SQLite read transaction (`PartnerEvaluationInput`), preventing an
+    evaluation made from mixed committed versions.
+  - Fresh envelopes cannot make stale/future position marks or VIX readings
+    appear current.
+
+- `python-engine/hedge_advisory.py` and `partner_bot.py`
+  - All post-dispatch transport exceptions are treated as ambiguous, not as
+    safe network retries. Send intent is durable before the sole POST; an
+    abandoned in-flight claim requires manual recovery after its lease.
+  - An acknowledgement persistence fault remains ambiguous even if its
+    fallback marker also fails; it cannot fall through into a normal retry.
+  - Scheduled recovery honours the hedge kill switch and revalidates Phase-1
+    account/snapshot policy, calendar/session and current complete portfolio.
+    It retires superseded/ineligible proposals and never replays Phase-2/3
+    rendered advice; those require fresh generation.
+  - Proposal identity now represents executable side, contract, expiry, lots
+    and account scope, not routine prices or Greeks. Observation changes remain
+    audit evidence rather than a new partner instruction.
+
+### Round-three verification
+
+- 185 Python tests passed across the audit-selected and adjacent hedge/F&O
+  suites (79 primary safety tests plus 106 supporting tests).
+- 46 gateway executor tests passed.
+- Compilation and diff checks passed.
+
+This remains Dev-only and deliberately does not claim production readiness.
+The real adapter lifecycle for new/reopened/corporate-action positions and the
+separately authorized live delivery canary remain external release gates.

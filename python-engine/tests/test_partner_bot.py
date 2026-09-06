@@ -104,7 +104,7 @@ async def test_happy_path_sends_to_partner_chat(enabled):
 async def test_failure_is_returned_after_one_post_for_claim_level_recovery(enabled):
     enabled.script = [RuntimeError("net down"), _Resp(500, {"ok": False}), _Resp()]
     result = await partner_bot.send_partner_result("x")
-    assert result.state == "network_error"
+    assert result.state == "ambiguous_transport"
     assert len(enabled.posts) == 1
 
 

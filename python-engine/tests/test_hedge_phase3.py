@@ -201,6 +201,12 @@ async def test_phase3_tick_builds_portfolio_stress_inside_phase3_job(monkeypatch
     async def positions(*args, **kwargs):
         return [_position(), second]
 
+    async def evaluation_input(*args, **kwargs):
+        return SimpleNamespace(
+            all_open=(_position(), second), reconciled_open=(_position(), second),
+            snapshot={"source": "synthetic", "account_id": "paper", "snapshot_id": "s-1"},
+        )
+
     async def ready_portfolio(*args, **kwargs):
         return "READY_FOR_EVALUATION"
 
@@ -227,7 +233,7 @@ async def test_phase3_tick_builds_portfolio_stress_inside_phase3_job(monkeypatch
     monkeypatch.setattr(main.kite, "access_token", "test-token")
     monkeypatch.setattr(ha, "init_hedge_advisory_db", no_op)
     monkeypatch.setattr(ha, "_set_service_state", no_op)
-    monkeypatch.setattr(ha, "load_reconciled_open_partner_positions", positions)
+    monkeypatch.setattr(ha, "load_partner_evaluation_input", evaluation_input)
     monkeypatch.setattr(ha, "_whole_portfolio_input_reason", ready_portfolio)
     monkeypatch.setattr(ha, "load_aligned_ohlcv_closes", closes)
     monkeypatch.setattr(ha, "portfolio_market_stress", lambda *args, **kwargs: stress)

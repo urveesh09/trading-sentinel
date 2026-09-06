@@ -69,9 +69,11 @@ def _normalise_snapshot(snapshot: dict[str, Any], *, received_at: datetime) -> t
         raise ValueError("snapshot source, account_id and snapshot_id are required")
     expected_source = str(settings.PARTNER_HEDGE_INPUT_EXPECTED_SOURCE or "").strip()
     expected_account = str(settings.PARTNER_HEDGE_INPUT_EXPECTED_ACCOUNT_ID or "").strip()
-    if expected_source and source != expected_source:
+    if not expected_source or not expected_account:
+        raise ValueError("approved adapter source and account_id must be configured")
+    if source != expected_source:
         raise ValueError("snapshot source is not the configured approved source")
-    if expected_account and account_id != expected_account:
+    if account_id != expected_account:
         raise ValueError("snapshot account_id is not the configured approved account")
     sequence = snapshot.get("sequence")
     if not isinstance(sequence, int) or isinstance(sequence, bool) or sequence < 0:
@@ -107,6 +109,11 @@ def _normalise_snapshot(snapshot: dict[str, Any], *, received_at: datetime) -> t
                 raise ValueError("price_as_of is required with current_price")
         parsed_price_as_of = (_timestamp(price_as_of, "price_as_of")
                                if price_as_of is not None else None)
+        if parsed_price_as_of is not None:
+            if parsed_price_as_of > received_at + timedelta(seconds=settings.PARTNER_HEDGE_INPUT_MAX_FUTURE_SKEW_SEC):
+                raise ValueError("price_as_of exceeds permitted future skew")
+            if received_at - parsed_price_as_of > timedelta(minutes=settings.PARTNER_HEDGE_POSITION_MAX_AGE_MIN):
+                raise ValueError("price_as_of is stale")
         deliverable_quantity = row.get("deliverable_quantity")
         if deliverable_quantity is not None and (
             not isinstance(deliverable_quantity, int) or isinstance(deliverable_quantity, bool)
@@ -132,6 +139,10 @@ def _normalise_snapshot(snapshot: dict[str, Any], *, received_at: datetime) -> t
                "source": str(vix_raw.get("source") or source).strip()}
         if not vix["source"]:
             raise ValueError("vix.source is required")
+        if vix["observed_at"] > received_at + timedelta(seconds=settings.PARTNER_HEDGE_INPUT_MAX_FUTURE_SKEW_SEC):
+            raise ValueError("vix.observed_at exceeds permitted future skew")
+        if received_at - vix["observed_at"] > timedelta(minutes=settings.PARTNER_HEDGE_VIX_MAX_AGE_MIN):
+            raise ValueError("vix.observed_at is stale")
     envelope = {"source": source, "account_id": account_id,
                 "snapshot_id": snapshot_id, "sequence": sequence,
                 "observed_at": observed_at, "complete": complete}
@@ -152,6 +163,8 @@ async def apply_partner_input_snapshot(
                                              default=str).encode("utf-8")).hexdigest()
     result = await apply_partner_snapshot_transaction(
         db_path, **envelope, received_at=received_at, payload_hash=payload_hash, rows=rows,
+        approved_source=settings.PARTNER_HEDGE_INPUT_EXPECTED_SOURCE,
+        approved_account_id=settings.PARTNER_HEDGE_INPUT_EXPECTED_ACCOUNT_ID,
     )
     outcome = {
         "source": envelope["source"], "account_id": envelope["account_id"],

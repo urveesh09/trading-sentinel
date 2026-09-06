@@ -1254,6 +1254,12 @@ CREATE TABLE IF NOT EXISTS partner_input_snapshots (
     accepted_at TEXT NOT NULL,
     PRIMARY KEY (source, account_id)
 );
+CREATE TABLE IF NOT EXISTS partner_hedge_account_binding (
+    binding_key TEXT PRIMARY KEY CHECK (binding_key = 'partner_hedge'),
+    source TEXT NOT NULL,
+    account_id TEXT NOT NULL,
+    bound_at TEXT NOT NULL
+);
 CREATE TABLE IF NOT EXISTS partner_input_snapshot_events (
     event_id INTEGER PRIMARY KEY AUTOINCREMENT,
     source TEXT NOT NULL,
@@ -1701,6 +1707,8 @@ async def apply_partner_snapshot_transaction(
     complete: bool,
     payload_hash: str,
     rows: Sequence[Mapping[str, object]],
+    approved_source: str,
+    approved_account_id: str,
 ) -> dict:
     """Accept one ordered portfolio version without exposing partial rows.
 
@@ -1712,8 +1720,14 @@ async def apply_partner_snapshot_transaction(
     source = str(source).strip()
     account_id = str(account_id).strip()
     snapshot_id = str(snapshot_id).strip()
+    approved_source = str(approved_source).strip()
+    approved_account_id = str(approved_account_id).strip()
     if not source or not account_id or not snapshot_id:
         raise ValueError("source, account_id and snapshot_id are required")
+    if not approved_source or not approved_account_id:
+        raise ValueError("approved source and account binding are required")
+    if (source, account_id) != (approved_source, approved_account_id):
+        raise ValueError("snapshot does not match approved account binding")
     if not isinstance(sequence, int) or isinstance(sequence, bool) or sequence < 0:
         raise ValueError("sequence must be a non-negative integer")
     _aware(observed_at, "observed_at")
@@ -1724,6 +1738,19 @@ async def apply_partner_snapshot_transaction(
     async with aiosqlite.connect(db_path, timeout=30) as db:
         try:
             await db.execute("BEGIN IMMEDIATE")
+            cur = await db.execute(
+                "SELECT source, account_id FROM partner_hedge_account_binding "
+                "WHERE binding_key='partner_hedge'"
+            )
+            binding = await cur.fetchone()
+            if binding is None:
+                await db.execute(
+                    "INSERT INTO partner_hedge_account_binding "
+                    "(binding_key, source, account_id, bound_at) VALUES ('partner_hedge',?,?,?)",
+                    (approved_source, approved_account_id, _timestamp(received_at)),
+                )
+            elif tuple(binding) != (approved_source, approved_account_id):
+                raise ValueError("immutable partner hedge account binding mismatch")
             cur = await db.execute(
                 "SELECT snapshot_id, sequence, observed_at, payload_hash "
                 "FROM partner_input_snapshots WHERE source=? AND account_id=?",
@@ -1818,8 +1845,10 @@ async def load_latest_partner_snapshot(db_path: str) -> Optional[dict]:
     await init_hedge_db(db_path)
     async with aiosqlite.connect(db_path) as db:
         cur = await db.execute(
-            "SELECT source, account_id, snapshot_id, sequence, observed_at, received_at, complete "
-            "FROM partner_input_snapshots ORDER BY accepted_at DESC LIMIT 1"
+            "SELECT s.source, s.account_id, s.snapshot_id, s.sequence, s.observed_at, s.received_at, s.complete "
+            "FROM partner_input_snapshots s JOIN partner_hedge_account_binding b "
+            "ON b.binding_key='partner_hedge' AND s.source=b.source AND s.account_id=b.account_id "
+            "ORDER BY s.accepted_at DESC LIMIT 1"
         )
         row = await cur.fetchone()
     if row is None:
@@ -1829,3 +1858,49 @@ async def load_latest_partner_snapshot(db_path: str) -> Optional[dict]:
         "sequence": int(row[3]), "observed_at": _parse_timestamp(row[4]),
         "received_at": _parse_timestamp(row[5]), "complete": bool(row[6]),
     }
+
+
+@dataclass(frozen=True)
+class PartnerEvaluationInput:
+    """One read-consistent account snapshot for advisory evaluation."""
+
+    snapshot: Optional[dict]
+    all_open: tuple[PartnerPosition, ...]
+    reconciled_open: tuple[PartnerPosition, ...]
+
+
+async def load_partner_evaluation_input(db_path: str) -> PartnerEvaluationInput:
+    """Read snapshot watermark and portfolio rows from one SQLite snapshot.
+
+    Advisory code must not separately query the watermark, all rows and the
+    reconciled subset: a concurrent refresh between those reads could create a
+    portfolio that never existed as an accepted version.
+    """
+    await init_hedge_db(db_path)
+    async with aiosqlite.connect(db_path, timeout=30) as db:
+        db.row_factory = aiosqlite.Row
+        await db.execute("BEGIN")
+        cur = await db.execute(
+            "SELECT s.source, s.account_id, s.snapshot_id, s.sequence, s.observed_at, s.received_at, s.complete "
+            "FROM partner_input_snapshots s JOIN partner_hedge_account_binding b "
+            "ON b.binding_key='partner_hedge' AND s.source=b.source AND s.account_id=b.account_id "
+            "ORDER BY s.accepted_at DESC LIMIT 1"
+        )
+        snapshot_row = await cur.fetchone()
+        snapshot = None if snapshot_row is None else {
+            "source": snapshot_row["source"], "account_id": snapshot_row["account_id"],
+            "snapshot_id": snapshot_row["snapshot_id"], "sequence": int(snapshot_row["sequence"]),
+            "observed_at": _parse_timestamp(snapshot_row["observed_at"]),
+            "received_at": _parse_timestamp(snapshot_row["received_at"]),
+            "complete": bool(snapshot_row["complete"]),
+        }
+        cur = await db.execute("SELECT * FROM partner_positions WHERE status='OPEN' ORDER BY position_id")
+        all_open = tuple(
+            position for row in await cur.fetchall()
+            if (position := _row_to_position(row)) is not None
+        )
+        reconciled_open = tuple(
+            position for position in all_open if position.verification_status == "RECONCILED"
+        )
+        await db.commit()
+    return PartnerEvaluationInput(snapshot, all_open, reconciled_open)

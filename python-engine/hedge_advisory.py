@@ -30,7 +30,7 @@ from hedge_analytics import (
     PartnerPosition, aggregate_portfolio, assess_quote_freshness, init_hedge_db,
     iv_percentile, load_chain_iv_history,
     load_partner_positions, load_reconciled_open_partner_positions, position_is_actionable,
-    load_latest_partner_snapshot,
+    load_latest_partner_snapshot, load_partner_evaluation_input,
     size_futures_hedge, vix_regime_reading, gamma_exposure_at_expiry,
     classify_event_window, classify_range_regime, iv_term_structure,
     load_aligned_ohlcv_closes, portfolio_market_stress,
@@ -301,8 +301,25 @@ async def _claim(
             # is recoverable immediately, up to the configured bounded retry
             # count; this preserves failed state rather than silently deleting
             # it as the old implementation did.
-            if existing[3] and now - claimed_at < lease:
-                await db.rollback()
+            if existing[3]:
+                if now - claimed_at < lease:
+                    await db.rollback()
+                    return None
+                # A process may have died immediately before or after the
+                # network dispatch. Without a remote idempotency key, an
+                # expired in-flight claim is ambiguous, never a normal retry.
+                try:
+                    abandoned = json.loads(existing[2] or "{}")
+                except (TypeError, json.JSONDecodeError):
+                    abandoned = {}
+                abandoned.update({"state": "manual_recovery_required",
+                                  "abandoned_claim_at": now.isoformat()})
+                await db.execute(
+                    "UPDATE partner_hedge_messages SET detail=?, claim_token=NULL "
+                    "WHERE kind=? AND dedup_key=? AND delivered=0",
+                    (json.dumps(abandoned, sort_keys=True, default=str), kind, key),
+                )
+                await db.commit()
                 return None
             try:
                 previous_detail = json.loads(existing[2] or "{}")
@@ -318,7 +335,7 @@ async def _claim(
                 await db.rollback()
                 return None
             delivery_state = (previous_detail.get("delivery") or {}).get("state")
-            if delivery_state == "ambiguous_timeout" or previous_detail.get("state") in {
+            if delivery_state in {"ambiguous_timeout", "ambiguous_transport"} or previous_detail.get("state") in {
                 "manual_recovery_required", "expired", "permanently_rejected",
             }:
                 await db.rollback()
@@ -442,6 +459,32 @@ async def _complete_claim(
         return cur.rowcount == 1
 
 
+async def _mark_transport_started(
+    db_path: str, kind: str, key: str, token: str, *, now: datetime,
+) -> bool:
+    """Durably record dispatch intent before the one permitted POST."""
+    async with aiosqlite.connect(db_path) as db:
+        cur = await db.execute(
+            "SELECT detail FROM partner_hedge_messages WHERE kind=? AND dedup_key=? "
+            "AND delivered=0 AND claim_token=?", (kind, key, token),
+        )
+        row = await cur.fetchone()
+        if row is None:
+            return False
+        try:
+            detail = json.loads(row[0] or "{}")
+        except (TypeError, json.JSONDecodeError):
+            detail = {}
+        detail.update({"state": "transport_started", "transport_started_at": now.isoformat()})
+        cur = await db.execute(
+            "UPDATE partner_hedge_messages SET detail=? WHERE kind=? AND dedup_key=? "
+            "AND delivered=0 AND claim_token=?",
+            (json.dumps(detail, sort_keys=True, default=str), kind, key, token),
+        )
+        await db.commit()
+        return cur.rowcount == 1
+
+
 async def _release_claim(
     db_path: str, kind: str, key: str, token: Optional[str] = None,
 ) -> None:
@@ -482,7 +525,7 @@ async def _fail_claim(
                         "error": delivery.get("error")})
         failed_detail = {**prior_detail, **detail, "attempts": attempts,
                          "attempt_history": history}
-        if delivery_state == "ambiguous_timeout":
+        if delivery_state in {"ambiguous_timeout", "ambiguous_transport"}:
             failed_detail.update({"state": "manual_recovery_required", "next_attempt_at": None})
         elif delivery_state == "rate_limited":
             match = re.search(r"retry_after_(\d+)", str(delivery.get("error") or ""))
@@ -543,6 +586,8 @@ async def _send_claimed_review(
             db_path, "last_candidate",
             {"kind": kind, "dedup_key": key, "underlying": underlying}, now=now,
         )
+        if not await _mark_transport_started(db_path, kind, key, token, now=now):
+            return False
         result = await send_partner_result(text, kind=kind)
         attempt = {
             "kind": kind, "dedup_key": key, "state": result.state,
@@ -560,15 +605,25 @@ async def _send_claimed_review(
                     db_path, kind, key, token, detail=acknowledged_detail,
                     now=delivery_at,
                 )
-            except Exception:
-                await _mark_acknowledgement_recovery_required(
-                    db_path, kind, key, token,
-                    detail={
-                        **acknowledged_detail,
-                        "state": "acknowledgement_recovery_required",
-                    }, now=delivery_at,
-                )
-                raise
+            except Exception as persistence_error:
+                # If both durable acknowledgement paths are unavailable, do
+                # not let the generic exception handler reclassify a known
+                # remote acceptance as retryable. The live in-flight claim
+                # will expire into manual recovery rather than blind replay.
+                try:
+                    await _mark_acknowledgement_recovery_required(
+                        db_path, kind, key, token,
+                        detail={
+                            **acknowledged_detail,
+                            "state": "acknowledgement_recovery_required",
+                        }, now=delivery_at,
+                    )
+                except Exception as marker_error:
+                    logger.critical(
+                        "partner_hedge_acknowledgement_persistence_lost kind=%s key=%s err=%s marker_err=%s",
+                        kind, key, str(persistence_error), str(marker_error),
+                    )
+                return False
             if completed:
                 try:
                     await _set_service_state(
@@ -584,11 +639,15 @@ async def _send_claimed_review(
                     )
                 return True
             return False
-        await _set_service_state(db_path, "last_attempted_send", attempt, now=now)
         await _fail_claim(
             db_path, kind, key, token,
             detail={**claim_detail, "delivery": attempt, "state": "failed"}, now=now,
         )
+        try:
+            await _set_service_state(db_path, "last_attempted_send", attempt, now=now)
+        except Exception as state_error:
+            logger.error("partner_hedge_failure_state_refresh_failed kind=%s key=%s err=%s",
+                         kind, key, str(state_error))
         return False
     except Exception:
         await _fail_claim(
@@ -609,6 +668,8 @@ async def recover_pending_hedge_deliveries(now: Optional[datetime] = None) -> in
     the next daily digest.
     """
     now = _aware(now or datetime.now(IST), "now").astimezone(IST)
+    if not settings.PARTNER_HEDGE_ENABLED or not partner_enabled():
+        return 0
     await init_hedge_advisory_db(settings.DB_PATH)
     async with aiosqlite.connect(settings.DB_PATH) as db:
         cur = await db.execute(
@@ -624,12 +685,65 @@ async def recover_pending_hedge_deliveries(now: Optional[datetime] = None) -> in
             continue
         if detail.get("state") != "retry_scheduled" or not detail.get("rendered_text"):
             continue
+        retirement_reason = await _recovery_retirement_reason(detail, now)
+        if retirement_reason is not None:
+            await _retire_pending_delivery(settings.DB_PATH, kind, key, detail,
+                                           reason=retirement_reason, now=now)
+            continue
         if await _send_claimed_review(
             settings.DB_PATH, kind, key, str(detail["rendered_text"]), detail=detail,
             now=now, underlying=detail.get("underlying"),
         ):
             recovered += 1
     return recovered
+
+
+async def _retire_pending_delivery(
+    db_path: str, kind: str, key: str, detail: dict, *, reason: str, now: datetime,
+) -> None:
+    """Make an ineligible queued proposal visible but permanently unsendable."""
+    retired = {**detail, "state": "retired", "retired_at": now.isoformat(),
+               "retirement_reason": reason, "next_attempt_at": None}
+    async with aiosqlite.connect(db_path) as db:
+        await db.execute(
+            "UPDATE partner_hedge_messages SET detail=?, claim_token=NULL "
+            "WHERE kind=? AND dedup_key=? AND delivered=0",
+            (json.dumps(retired, sort_keys=True, default=str), kind, key),
+        )
+        await db.commit()
+
+
+async def _recovery_retirement_reason(detail: dict, now: datetime) -> Optional[str]:
+    """Apply current policy to a queued proposal before a recovery POST."""
+    phase = detail.get("phase")
+    if phase in {"phase2", "phase3"}:
+        # Rebuilding advanced-strategy context is the only safe recovery. The
+        # old rendered text cannot establish present readiness or economics.
+        return "ADVANCED_PHASE_REQUIRES_REGENERATION"
+    if phase != "phase1":
+        # Status summaries have no tradable instruction and retain their own
+        # lifecycle semantics; legacy rows are not replayed as hedge advice.
+        return "MISSING_ACTIONABLE_PROPOSAL_POLICY"
+    if detail.get("policy_version") != "phase1-v2":
+        return "UNKNOWN_PROPOSAL_POLICY"
+    import main as _main
+    minute = now.hour * 60 + now.minute
+    if not (9 * 60 + 25 <= minute <= 15 * 60 + 15):
+        return "OUTSIDE_TRADING_SESSION"
+    if not await _main.is_trading_day(now.date(), settings.DB_PATH):
+        return "NON_TRADING_DAY"
+    evaluation_input = await load_partner_evaluation_input(settings.DB_PATH)
+    state = await _whole_portfolio_input_reason(
+        settings.DB_PATH, evaluation_input.all_open, evaluation_input.reconciled_open,
+        now, snapshot=evaluation_input.snapshot,
+    )
+    if state != "READY_FOR_EVALUATION":
+        return f"PORTFOLIO_{state}"
+    snapshot = evaluation_input.snapshot
+    if (snapshot is None or snapshot["account_id"] != detail.get("account_id")
+            or snapshot["snapshot_id"] != detail.get("snapshot_id")):
+        return "SUPERSEDED_BY_NEWER_PORTFOLIO_SNAPSHOT"
+    return None
 
 
 def _settings_kwargs() -> dict:
@@ -1244,10 +1358,10 @@ def _portfolio_input_reason(
 
 async def _whole_portfolio_input_reason(
     db_path: str, all_open: Iterable[PartnerPosition],
-    reconciled: Iterable[PartnerPosition], now: datetime,
+    reconciled: Iterable[PartnerPosition], now: datetime, *, snapshot: Optional[dict] = None,
 ) -> str:
     """Gate all account-wide advice on one fresh, complete accepted version."""
-    snapshot = await load_latest_partner_snapshot(db_path)
+    snapshot = snapshot if snapshot is not None else await load_latest_partner_snapshot(db_path)
     if snapshot is None:
         return "NO_ACCEPTED_PORTFOLIO_SNAPSHOT"
     if not snapshot["complete"]:
@@ -1267,20 +1381,20 @@ async def _whole_portfolio_input_reason(
 
 
 def _proposal_identity(
-    kind: str, positions: Iterable[PartnerPosition], plan: object,
+    kind: str, positions: Iterable[PartnerPosition], plan: object, *, account_id: str = "",
 ) -> str:
-    """Stable identity for economic proposal changes, never refresh metadata."""
+    """Stable identity for an executable decision, not market observations."""
     material = {
-        "kind": kind,
-        "positions": sorted(
-            (p.position_id, p.tradingsymbol, p.signed_quantity, p.current_price,
-             p.underlying_price, p.beta,
-             (p.greeks.delta, p.greeks.gamma, p.greeks.theta, p.greeks.vega)
-             if p.greeks else None)
-            for p in positions
-        ),
+        "kind": kind, "account_id": account_id, "underlying": plan.underlying,
+        "strategy": plan.strategy,
+        # Preserve the exposure scope for audit, but use the action selected
+        # from it (legs/lots) as the notification decision. Routine marks and
+        # Greek movement stay in the evidence ledger rather than flooding the
+        # partner with an unchanged executable instruction.
+        "exposure_scope": sorted((p.position_id, p.tradingsymbol) for p in positions),
         "legs": sorted(
-            (leg.tradingsymbol, leg.quantity, leg.strike, str(leg.opt_type))
+            (leg.side, leg.tradingsymbol, leg.quantity, leg.lot_size,
+             leg.strike, leg.expiry.isoformat(), str(leg.opt_type))
             for leg in plan.legs
         ),
     }
@@ -1325,9 +1439,11 @@ async def partner_hedge_daily_summary(
     if not await _main.is_trading_day(now.date(), settings.DB_PATH):
         return
     await init_hedge_advisory_db(settings.DB_PATH)
-    all_open = await load_partner_positions(settings.DB_PATH)
-    reconciled = await load_reconciled_open_partner_positions(settings.DB_PATH)
-    input_state = await _whole_portfolio_input_reason(settings.DB_PATH, all_open, reconciled, now)
+    evaluation_input = await load_partner_evaluation_input(settings.DB_PATH)
+    all_open, reconciled = evaluation_input.all_open, evaluation_input.reconciled_open
+    input_state = await _whole_portfolio_input_reason(
+        settings.DB_PATH, all_open, reconciled, now, snapshot=evaluation_input.snapshot,
+    )
     await _send_claimed_review(
         settings.DB_PATH, f"hedge_{period.lower()}_summary", now.date().isoformat(),
         format_hedge_daily_summary(
@@ -1356,10 +1472,10 @@ async def partner_hedge_tick(now: Optional[datetime] = None) -> None:
 
     await init_hedge_advisory_db(settings.DB_PATH)
     await _send_vix_review(settings.DB_PATH, now)
-    all_open = await load_partner_positions(settings.DB_PATH)
-    positions = await load_reconciled_open_partner_positions(settings.DB_PATH)
+    evaluation_input = await load_partner_evaluation_input(settings.DB_PATH)
+    all_open, positions = evaluation_input.all_open, evaluation_input.reconciled_open
     input_reason = await _whole_portfolio_input_reason(
-        settings.DB_PATH, all_open, positions, now,
+        settings.DB_PATH, all_open, positions, now, snapshot=evaluation_input.snapshot,
     )
     await _set_service_state(
         settings.DB_PATH, "last_portfolio_evaluation",
@@ -1423,13 +1539,18 @@ async def partner_hedge_tick(now: Optional[datetime] = None) -> None:
                 await _record_no_advice(settings.DB_PATH, "INPUT_UNAVAILABLE", now=now,
                                         underlying=underlying)
             for kind, plan, context in reviews:
-                version = _proposal_identity(kind, group, plan)
+                version = _proposal_identity(
+                    kind, group, plan, account_id=evaluation_input.snapshot["account_id"],
+                )
                 key = f"{underlying}:{snapshot.expiry.isoformat()}:{kind}:{version}"
                 text = _format_review(kind, plan, context)
                 await _send_claimed_review(
                     settings.DB_PATH, kind, key, text,
                     detail={"underlying": underlying, "expiry": snapshot.expiry,
                             "contracts": [leg.tradingsymbol for leg in plan.legs],
+                            "phase": "phase1", "account_id": evaluation_input.snapshot["account_id"],
+                            "snapshot_id": evaluation_input.snapshot["snapshot_id"],
+                            "policy_version": "phase1-v2",
                             "proposal_version": version,
                             "valid_until": min(
                                 snapshot.taken_at + timedelta(seconds=settings.PARTNER_HEDGE_MAX_QUOTE_AGE_SEC),
@@ -1474,9 +1595,11 @@ async def partner_hedge_phase2_tick(now: Optional[datetime] = None) -> None:
          "validated": readiness["state"] == "READY", "sending": sending,
          "blockers": readiness["blockers"]}, now=now,
     )
-    all_open = await load_partner_positions(settings.DB_PATH)
-    positions = await load_reconciled_open_partner_positions(settings.DB_PATH)
-    portfolio_state = await _whole_portfolio_input_reason(settings.DB_PATH, all_open, positions, now)
+    evaluation_input = await load_partner_evaluation_input(settings.DB_PATH)
+    all_open, positions = evaluation_input.all_open, evaluation_input.reconciled_open
+    portfolio_state = await _whole_portfolio_input_reason(
+        settings.DB_PATH, all_open, positions, now, snapshot=evaluation_input.snapshot,
+    )
     if portfolio_state != "READY_FOR_EVALUATION":
         await _set_service_state(
             settings.DB_PATH, "phase2_portfolio_gate", {"state": portfolio_state}, now=now,
@@ -1528,6 +1651,10 @@ async def partner_hedge_phase2_tick(now: Optional[datetime] = None) -> None:
                     "underlying": underlying, "expiry": snapshot.expiry,
                     "contracts": [leg.tradingsymbol for leg in plan.legs],
                     "mode": context.mode, "iv_rank": context.iv_rank,
+                    "phase": "phase2", "policy_version": "phase2-v1",
+                    "valid_until": (snapshot.taken_at + timedelta(
+                        seconds=settings.PARTNER_HEDGE_MAX_QUOTE_AGE_SEC
+                    )).isoformat(),
                 }
                 if sending:
                     await _send_claimed_review(
@@ -1578,9 +1705,11 @@ async def partner_hedge_phase3_tick(now: Optional[datetime] = None) -> None:
          "validated": readiness["state"] == "READY", "sending": sending,
          "blockers": readiness["blockers"]}, now=now,
     )
-    all_open = await load_partner_positions(settings.DB_PATH)
-    positions = await load_reconciled_open_partner_positions(settings.DB_PATH)
-    portfolio_state = await _whole_portfolio_input_reason(settings.DB_PATH, all_open, positions, now)
+    evaluation_input = await load_partner_evaluation_input(settings.DB_PATH)
+    all_open, positions = evaluation_input.all_open, evaluation_input.reconciled_open
+    portfolio_state = await _whole_portfolio_input_reason(
+        settings.DB_PATH, all_open, positions, now, snapshot=evaluation_input.snapshot,
+    )
     if portfolio_state != "READY_FOR_EVALUATION":
         await _set_service_state(
             settings.DB_PATH, "phase3_portfolio_gate", {"state": portfolio_state}, now=now,
@@ -1664,6 +1793,10 @@ async def partner_hedge_phase3_tick(now: Optional[datetime] = None) -> None:
                 text = _format_phase3_review(kind, value, review_context, now)
                 contracts = [leg.tradingsymbol for leg in getattr(value, "legs", ())]
                 detail = {"underlying": underlying, "contracts": contracts,
+                          "phase": "phase3", "policy_version": "phase3-v1",
+                          "valid_until": (front.taken_at + timedelta(
+                              seconds=settings.PARTNER_HEDGE_MAX_QUOTE_AGE_SEC
+                          )).isoformat(),
                           "event_window": context.event_window,
                           "portfolio_breadth": (
                               context.portfolio_stress.breadth_pct_above_sma

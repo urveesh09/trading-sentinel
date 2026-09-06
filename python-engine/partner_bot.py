@@ -128,7 +128,10 @@ async def send_partner_result(text: str, *, kind: str = "partner_msg") -> Partne
             # A timeout can follow remote acceptance. Do not make another POST
             # from this transport call; the advisory ledger records it as an
             # ambiguity requiring conservative recovery.
-            state = "ambiguous_timeout" if isinstance(exc, httpx.TimeoutException) else "network_error"
+            # A transport failure may arrive after Telegram accepted the POST.
+            # The API supplies no client idempotency key, so no httpx transport
+            # exception is evidence that a retry is safe.
+            state = "ambiguous_timeout" if isinstance(exc, httpx.TimeoutException) else "ambiguous_transport"
             result = PartnerSendResult(False, state=state, error=type(exc).__name__)
 
     logger.error(

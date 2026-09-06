@@ -168,18 +168,14 @@ async def test_failed_message_claim_can_be_released_and_retried(db_path):
 
 
 @pytest.mark.asyncio
-async def test_expired_claim_can_only_be_finalized_by_its_new_owner(db_path):
+async def test_expired_claim_requires_manual_recovery_not_a_blind_reclaim(db_path):
     old = await _claim(db_path, "iron_condor", "NIFTY:a", now=NOW)
     new = await _claim(
         db_path, "iron_condor", "NIFTY:a", now=NOW + timedelta(hours=2),
     )
-    assert old and new and old != new
+    assert old and new is None
     assert not await _complete_claim(
         db_path, "iron_condor", "NIFTY:a", old, detail={}, now=NOW,
-    )
-    assert await _complete_claim(
-        db_path, "iron_condor", "NIFTY:a", new, detail={},
-        now=NOW + timedelta(hours=2),
     )
 
 
@@ -223,6 +219,67 @@ async def test_acknowledged_delivery_is_not_resent_when_status_refresh_fails(db_
         detail={"underlying": "NIFTY"}, now=NOW,
     )
     assert calls == 1
+
+
+@pytest.mark.asyncio
+async def test_lost_acknowledgement_persistence_becomes_manual_not_retryable(db_path, monkeypatch):
+    calls = 0
+
+    async def acknowledged(*args, **kwargs):
+        nonlocal calls
+        calls += 1
+        return PartnerSendResult(True, message_id=654, state="acknowledged")
+
+    async def broken(*args, **kwargs):
+        raise RuntimeError("sqlite unavailable")
+
+    monkeypatch.setattr(ha, "send_partner_result", acknowledged)
+    monkeypatch.setattr(ha, "_complete_claim", broken)
+    monkeypatch.setattr(ha, "_mark_acknowledgement_recovery_required", broken)
+    assert not await ha._send_claimed_review(
+        db_path, "protective_put_alert", "NIFTY:ack-lost", "advice", detail={}, now=NOW,
+    )
+    assert not await ha._send_claimed_review(
+        db_path, "protective_put_alert", "NIFTY:ack-lost", "advice", detail={},
+        now=NOW + timedelta(hours=2),
+    )
+    assert calls == 1
+
+
+@pytest.mark.asyncio
+async def test_timeout_stays_manual_when_status_write_fails(db_path, monkeypatch):
+    calls = 0
+    original = ha._set_service_state
+
+    async def timeout(*args, **kwargs):
+        nonlocal calls
+        calls += 1
+        return PartnerSendResult(False, state="ambiguous_timeout", error="telegram_timeout")
+
+    async def broken_status(*args, **kwargs):
+        if args[1] == "last_attempted_send":
+            raise RuntimeError("status unavailable")
+        return await original(*args, **kwargs)
+
+    monkeypatch.setattr(ha, "send_partner_result", timeout)
+    monkeypatch.setattr(ha, "_set_service_state", broken_status)
+    for at in (NOW, NOW + timedelta(minutes=5)):
+        assert not await ha._send_claimed_review(
+            db_path, "protective_put_alert", "timeout-status", "advice",
+            detail={}, now=at,
+        )
+    assert calls == 1
+
+
+@pytest.mark.asyncio
+async def test_recovery_respects_hedge_kill_switch(monkeypatch):
+    monkeypatch.setattr(settings, "PARTNER_HEDGE_ENABLED", False)
+
+    async def forbidden(*args, **kwargs):
+        raise AssertionError("disabled recovery must not access delivery ledger")
+
+    monkeypatch.setattr(ha, "init_hedge_advisory_db", forbidden)
+    assert await ha.recover_pending_hedge_deliveries(NOW) == 0
 
 
 def test_partial_reconciliation_is_not_ready_for_whole_portfolio():
@@ -308,6 +365,34 @@ async def test_expired_proposal_is_retired_without_transport(db_path, monkeypatc
     )
 
 
+@pytest.mark.asyncio
+async def test_recovery_retires_phase1_advice_when_current_portfolio_is_not_eligible(db_path, monkeypatch):
+    import main
+    calls = 0
+
+    async def limited(*args, **kwargs):
+        nonlocal calls
+        calls += 1
+        return PartnerSendResult(False, state="rate_limited", error="telegram_429_retry_after_1")
+
+    async def trading_day(*args, **kwargs):
+        return True
+
+    monkeypatch.setattr(settings, "DB_PATH", db_path)
+    monkeypatch.setattr(settings, "PARTNER_HEDGE_ENABLED", True)
+    monkeypatch.setattr(ha, "partner_enabled", lambda: True)
+    monkeypatch.setattr(main, "is_trading_day", trading_day)
+    monkeypatch.setattr(ha, "send_partner_result", limited)
+    assert not await ha._send_claimed_review(
+        db_path, "protective_put_alert", "NIFTY:queued", "advice",
+        detail={"phase": "phase1", "policy_version": "phase1-v2",
+                "account_id": "paper-1", "snapshot_id": "s-1",
+                "valid_until": (NOW + timedelta(minutes=5)).isoformat()}, now=NOW,
+    )
+    assert await ha.recover_pending_hedge_deliveries(NOW + timedelta(minutes=1)) == 0
+    assert calls == 1
+
+
 def test_proposal_identity_ignores_refresh_timestamp_but_tracks_quantity(monkeypatch):
     monkeypatch.setattr(settings, "PARTNER_HEDGE_PROTECTIVE_PUT", True)
     monkeypatch.setattr(settings, "PARTNER_HEDGE_FUTURES", False)
@@ -316,7 +401,7 @@ def test_proposal_identity_ignores_refresh_timestamp_but_tracks_quantity(monkeyp
     refreshed = PartnerPosition(**{**_position().__dict__, "updated_at": NOW + timedelta(minutes=2)})
     resized = PartnerPosition(**{**_position().__dict__, "signed_quantity": 40_100})
     assert ha._proposal_identity(kind, [_position()], plan) == ha._proposal_identity(kind, [refreshed], plan)
-    assert ha._proposal_identity(kind, [_position()], plan) != ha._proposal_identity(kind, [resized], plan)
+    assert ha._proposal_identity(kind, [_position()], plan) == ha._proposal_identity(kind, [resized], plan)
 
 
 @pytest.mark.asyncio
@@ -324,6 +409,8 @@ async def test_complete_snapshot_reaches_real_phase1_builder_formatter_and_sende
     """Regression for the string-valued LegSpec.opt_type orchestration path."""
     import main
 
+    monkeypatch.setattr(settings, "PARTNER_HEDGE_INPUT_EXPECTED_SOURCE", "broker_import")
+    monkeypatch.setattr(settings, "PARTNER_HEDGE_INPUT_EXPECTED_ACCOUNT_ID", "paper-1")
     stored = await create_partner_position(db_path, _position())
     await apply_partner_input_snapshot(db_path, {
         "source": "broker_import", "account_id": "paper-1", "snapshot_id": "phase1-1",
