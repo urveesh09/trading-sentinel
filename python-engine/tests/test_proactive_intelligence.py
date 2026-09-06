@@ -102,6 +102,10 @@ async def test_open_shadow_position_reserves_cash_and_closes_on_a_later_bar(db_p
     free_after_close, instruments, identities = await _shadow_account_state(db_path, account_id="demo", scenario_capital=1_000)
     assert instruments == set() and identities == {"durable"}
     assert free_after_close < 1_000, "loss and both-side costs must reduce synthetic cash"
+    portfolio = (await proactive_activity_report(db_path))["shadow_positions"]
+    assert portfolio == [pytest.approx({"account_id": "demo", "open_positions": 0, "closed_positions": 1,
+                                        "reserved_capital": 0.0, "gross_pnl": updates[0][1].gross_pnl,
+                                        "fees": updates[0][1].fees, "net_pnl": updates[0][1].net_pnl})]
 
 
 def test_shadow_simulator_rejects_duplicate_or_malformed_future_timestamps():

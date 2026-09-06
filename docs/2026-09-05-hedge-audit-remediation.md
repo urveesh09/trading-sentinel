@@ -381,6 +381,13 @@ does not modify Production.
   Focused regression coverage proves restart-safe reservation, later stop
   management and no duplicate simulated position creation.
 
+### Proactive activity dashboard — synthetic outcomes
+
+- Extended the activity response and Dashboard with account-scoped open/closed
+  synthetic position counts, reserved capital, gross P&L, fees and net P&L.
+  The UI explicitly calls these fixture simulations and does not mix them into
+  broker-reconciled cash or present them as live profit.
+
 ### P3 — partial, conservative shadow execution
 
 - Added a long-only offline fill simulator for the shadow proposals. It sizes

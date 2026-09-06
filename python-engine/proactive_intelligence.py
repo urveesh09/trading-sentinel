@@ -795,6 +795,19 @@ async def proactive_activity_report(db_path: str, *, days: int = 7) -> dict:
             "GROUP BY mode, flow_type"
         )
         flows = await cur.fetchall()
+        cur = await db.execute(
+            "SELECT account_id,"
+            "SUM(CASE WHEN status='OPEN' THEN 1 ELSE 0 END),"
+            "SUM(CASE WHEN status='CLOSED' THEN 1 ELSE 0 END),"
+            "COALESCE(SUM(CASE WHEN status='OPEN' THEN entry_price*quantity+entry_fees ELSE 0 END),0),"
+            "COALESCE(SUM(CASE WHEN status='CLOSED' THEN gross_pnl ELSE 0 END),0),"
+            "COALESCE(SUM(CASE WHEN status='CLOSED' THEN exit_fees+entry_fees ELSE 0 END),0),"
+            "COALESCE(SUM(CASE WHEN status='CLOSED' THEN net_pnl ELSE 0 END),0) "
+            "FROM proactive_shadow_positions "
+            "WHERE status='OPEN' OR date(closed_at) >= date('now', ?) GROUP BY account_id",
+            (f'-{days - 1} days',),
+        )
+        position_rows = await cur.fetchall()
     by_mode: dict[str, dict] = {mode: {"scan_evaluations": 0, "unique_opportunities": 0, "stages": {}} for mode in sorted(_MODES)}
     for mode, stage, count, _unique_count in rows:
         by_mode[mode]["stages"][stage] = int(count)
@@ -805,5 +818,11 @@ async def proactive_activity_report(db_path: str, *, days: int = 7) -> dict:
     funding = {mode: {} for mode in _MODES}
     for mode, flow_type, amount in flows:
         funding[mode][flow_type] = float(amount)
+    shadow_positions = [{
+        "account_id": row[0], "open_positions": int(row[1]), "closed_positions": int(row[2]),
+        "reserved_capital": round(float(row[3]), 4), "gross_pnl": round(float(row[4]), 4),
+        "fees": round(float(row[5]), 4), "net_pnl": round(float(row[6]), 4),
+    } for row in position_rows]
     return {"as_of": datetime.now(timezone.utc).isoformat(), "days": days, "modes": by_mode, "funding_flows": funding,
+            "shadow_positions": shadow_positions,
             "note": "Events are operational evidence; only reconciled live ledgers establish live profit."}
