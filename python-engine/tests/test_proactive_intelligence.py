@@ -6,7 +6,7 @@ from proactive_intelligence import (
     ShadowProposal, allocate_shadow_proposals, build_shadow_proposals, proactive_activity_report,
     size_shadow_allocations,
     record_opportunity_event,
-    record_cash_flow, proactive_inactivity_diagnostics,
+    record_cash_flow, proactive_inactivity_diagnostics, record_scan_run,
     simulate_shadow_trade,
     transition_watchlist,
 )
@@ -25,9 +25,10 @@ async def test_activity_events_are_idempotent_and_mode_separated(db_path):
         db_path, **{**common, "stage": "DEFERRED", "reason_code": "CAPITAL_RESERVED",
                      "idempotency_key": "deferred-1"},
     )
+    assert await record_scan_run(db_path, scan_id="scan-1", policy_id="trend_pullback_v1", account_id="dev", mode="SHADOW", status="SUCCESS", observed_at=now)
     report = await proactive_activity_report(db_path)
     shadow = report["modes"]["SHADOW"]
-    assert shadow["scan_evaluations"] == 2
+    assert shadow["scan_evaluations"] == 1
     assert shadow["unique_opportunities"] == 1
     assert shadow["stages"]["SETUP"] == 1
     assert report["modes"]["LIVE"]["scan_evaluations"] == 0
@@ -89,6 +90,7 @@ async def test_funding_is_not_profit_and_dropped_workflow_is_visible(db_path):
     assert await record_cash_flow(db_path, flow_id="deposit-1", mode="LIVE", flow_type="DEPOSIT", amount=8_000, occurred_at=now, note="owner funding")
     assert not await record_cash_flow(db_path, flow_id="deposit-1", mode="LIVE", flow_type="DEPOSIT", amount=8_000, occurred_at=now, note="owner funding")
     await record_opportunity_event(db_path, opportunity_id="dropped", policy_id="trend_pullback_v1", policy_version="1", account_id="dev", mode="SHADOW", instrument="NSE:DEMO", stage="RISK_APPROVED", reason_code="OK", idempotency_key="dropped-1", observed_at=now)
+    await record_scan_run(db_path, scan_id="scan-dropped", policy_id="trend_pullback_v1", account_id="dev", mode="SHADOW", status="SUCCESS", observed_at=now)
     report = await proactive_activity_report(db_path)
     assert report["funding_flows"]["LIVE"]["DEPOSIT"] == 8_000
     assert "profit" in report["note"].lower()

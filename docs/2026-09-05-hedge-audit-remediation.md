@@ -322,6 +322,15 @@ does not modify Production.
   make it infeasible, rather than independently reusing account cash for every
   selected candidate.
 
+### Product-foundation correction C4 — truthful scan and workflow evidence
+
+- Added a separate idempotent scan-run ledger. Dashboard scan counts now come
+  from actual scanner runs, while lifecycle events count distinct opportunities
+  across the whole reporting window. Diagnostics identify a dropped
+  risk-approved opportunity by its own identity; an unrelated fill cannot hide
+  it. A never-configured/never-run scanner is reported as unknown, not healthy
+  inactivity.
+
 ### P3 — partial, conservative shadow execution
 
 - Added a long-only offline fill simulator for the shadow proposals. It sizes

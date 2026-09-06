@@ -240,6 +240,11 @@ CREATE TABLE IF NOT EXISTS proactive_cash_flows (
  flow_id TEXT PRIMARY KEY, mode TEXT NOT NULL, flow_type TEXT NOT NULL,
  amount REAL NOT NULL, occurred_at TEXT NOT NULL, note TEXT NOT NULL
 );
+CREATE TABLE IF NOT EXISTS proactive_scan_runs (
+ scan_id TEXT PRIMARY KEY, policy_id TEXT NOT NULL, account_id TEXT NOT NULL,
+ mode TEXT NOT NULL, status TEXT NOT NULL, observed_at TEXT NOT NULL,
+ reason TEXT NOT NULL
+);
 CREATE TABLE IF NOT EXISTS proactive_watchlist (
  opportunity_id TEXT PRIMARY KEY, state TEXT NOT NULL, reason TEXT NOT NULL,
  updated_at TEXT NOT NULL, valid_until TEXT NOT NULL
@@ -348,22 +353,50 @@ async def record_cash_flow(
         return bool(cur.rowcount)
 
 
+async def record_scan_run(
+    db_path: str, *, scan_id: str, policy_id: str, account_id: str, mode: Mode,
+    status: str, observed_at: datetime, reason: str = "COMPLETED",
+) -> bool:
+    """Record scanner liveness separately from candidate lifecycle events."""
+    if mode not in _MODES or status not in {"SUCCESS", "FAILED", "UNAVAILABLE"}:
+        raise ValueError("unsupported scan mode or status")
+    if not all(isinstance(value, str) and value for value in (scan_id, policy_id, account_id, reason)):
+        raise ValueError("scan identity fields are required")
+    at = _stamp(observed_at)
+    await init_proactive_intelligence(db_path)
+    async with aiosqlite.connect(db_path) as db:
+        cur = await db.execute(
+            "INSERT OR IGNORE INTO proactive_scan_runs VALUES (?,?,?,?,?,?,?)",
+            (scan_id, policy_id, account_id, mode, status, at.isoformat(), reason),
+        )
+        await db.commit()
+        return bool(cur.rowcount)
+
+
 async def proactive_inactivity_diagnostics(db_path: str, *, now: datetime, max_scan_gap: timedelta = timedelta(minutes=30)) -> list[dict]:
     """Return evidence gaps; diagnostics never alter a strategy threshold."""
     now = _stamp(now)
     await init_proactive_intelligence(db_path)
     async with aiosqlite.connect(db_path) as db:
         rows = await (await db.execute(
-            "SELECT mode, MAX(event_at), SUM(CASE WHEN stage='RISK_APPROVED' THEN 1 ELSE 0 END), "
-            "SUM(CASE WHEN stage IN ('SUBMITTED','FILLED') THEN 1 ELSE 0 END) FROM proactive_events GROUP BY mode"
+            "SELECT mode, MAX(observed_at) FROM proactive_scan_runs GROUP BY mode"
+        )).fetchall()
+        dropped = await (await db.execute(
+            "SELECT r.mode, r.opportunity_id, MAX(r.event_at) FROM proactive_events r "
+            "WHERE r.stage='RISK_APPROVED' AND NOT EXISTS (SELECT 1 FROM proactive_events t "
+            "WHERE t.opportunity_id=r.opportunity_id AND t.event_at>=r.event_at "
+            "AND t.stage IN ('SUBMITTED','FILLED','CLOSED','REJECTED','DEFERRED','EXPIRED')) "
+            "GROUP BY r.mode, r.opportunity_id"
         )).fetchall()
     findings = []
-    for mode, last_at, approved, fills in rows:
+    if not rows:
+        findings.append({"mode": None, "code": "SCANNER_NEVER_CONFIGURED_OR_RAN", "last_event_at": None})
+    for mode, last_at in rows:
         last = _stamp(datetime.fromisoformat(last_at)) if last_at else None
         if last is None or now - last > max_scan_gap * 2:
             findings.append({"mode": mode, "code": "MISSED_SCAN_INTERVALS", "last_event_at": last_at})
-        if int(approved or 0) and not int(fills or 0):
-            findings.append({"mode": mode, "code": "DROPPED_RISK_APPROVED_WORKFLOW", "last_event_at": last_at})
+    for mode, opportunity_id, event_at in dropped:
+        findings.append({"mode": mode, "code": "DROPPED_RISK_APPROVED_WORKFLOW", "opportunity_id": opportunity_id, "last_event_at": event_at})
     return findings
 
 
@@ -380,15 +413,27 @@ async def proactive_activity_report(db_path: str, *, days: int = 7) -> dict:
         )
         rows = await cur.fetchall()
         cur = await db.execute(
+            "SELECT mode, COUNT(DISTINCT opportunity_id) FROM proactive_events WHERE session_date >= date('now', ?) GROUP BY mode",
+            (f'-{days - 1} days',),
+        )
+        unique_rows = await cur.fetchall()
+        cur = await db.execute(
+            "SELECT mode, COUNT(*) FROM proactive_scan_runs WHERE date(observed_at) >= date('now', ?) GROUP BY mode",
+            (f'-{days - 1} days',),
+        )
+        scan_rows = await cur.fetchall()
+        cur = await db.execute(
             "SELECT mode, flow_type, COALESCE(SUM(amount),0) FROM proactive_cash_flows "
             "GROUP BY mode, flow_type"
         )
         flows = await cur.fetchall()
     by_mode: dict[str, dict] = {mode: {"scan_evaluations": 0, "unique_opportunities": 0, "stages": {}} for mode in sorted(_MODES)}
-    for mode, stage, count, unique_count in rows:
+    for mode, stage, count, _unique_count in rows:
         by_mode[mode]["stages"][stage] = int(count)
-        by_mode[mode]["scan_evaluations"] += int(count)
-        by_mode[mode]["unique_opportunities"] = max(by_mode[mode]["unique_opportunities"], int(unique_count))
+    for mode, unique_count in unique_rows:
+        by_mode[mode]["unique_opportunities"] = int(unique_count)
+    for mode, scan_count in scan_rows:
+        by_mode[mode]["scan_evaluations"] = int(scan_count)
     funding = {mode: {} for mode in _MODES}
     for mode, flow_type, amount in flows:
         funding[mode][flow_type] = float(amount)
