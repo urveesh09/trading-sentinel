@@ -201,17 +201,47 @@ async def test_shadow_workflow_records_real_scan_setup_selection_and_outcome(db_
 
 @pytest.mark.asyncio
 async def test_identical_shadow_workflow_rerun_does_not_create_a_second_scan(db_path):
+    import aiosqlite
     now = datetime.now(timezone.utc)
     bars = [{"timestamp": (now - timedelta(minutes=(20-index)*15)).isoformat(), "open": 100+index*.15-.2, "high": 100+index*.15+.3, "low": 100+index*.15-.4, "close": 100+index*.15, "volume": 100} for index in range(21)]
     bars[-3].update({"open": 102.1, "high": 102.4, "low": 101.8, "close": 102})
     bars[-2].update({"open": 102.0, "high": 102.4, "low": 101.8, "close": 102.1})
     bars[-1].update({"open": 103.8, "close": 104, "high": 104.2, "low": 103.4, "volume": 300})
     kwargs = {"account_id": "demo", "universe": {"NSE:DEMO": bars}, "future_bars": {"NSE:DEMO": []}}
-    await run_shadow_workflow(db_path, now=now + timedelta(minutes=1), **kwargs)
+    first = await run_shadow_workflow(db_path, now=now + timedelta(minutes=1), **kwargs)
     before = (await proactive_activity_report(db_path))["modes"]["SHADOW"]["scan_evaluations"]
-    await run_shadow_workflow(db_path, now=now + timedelta(minutes=2), **kwargs)
+    async with aiosqlite.connect(db_path) as db:
+        before_events = await (await db.execute("SELECT COUNT(*) FROM proactive_events")).fetchone()
+        before_positions = await (await db.execute("SELECT COUNT(*) FROM proactive_shadow_positions")).fetchone()
+    retry = await run_shadow_workflow(db_path, now=now + timedelta(minutes=1), **kwargs)
+    async with aiosqlite.connect(db_path) as db:
+        event_count = await (await db.execute("SELECT COUNT(*) FROM proactive_events")).fetchone()
+        position_count = await (await db.execute("SELECT COUNT(*) FROM proactive_shadow_positions")).fetchone()
     after = (await proactive_activity_report(db_path))["modes"]["SHADOW"]["scan_evaluations"]
-    assert before == after
+    assert retry == first and before == after
+    assert event_count == before_events and position_count == before_positions
+
+
+@pytest.mark.asyncio
+async def test_resumed_shadow_position_uses_persisted_zero_cost_manifest(db_path):
+    import aiosqlite
+
+    base = datetime.now(timezone.utc)
+    bars = [{"timestamp": (base - timedelta(minutes=(20-index)*15)).isoformat(), "open": 100+index*.15-.2, "high": 100+index*.15+.3, "low": 100+index*.15-.4, "close": 100+index*.15, "volume": 100} for index in range(21)]
+    bars[-3].update({"open": 102.1, "high": 102.4, "low": 101.8, "close": 102})
+    bars[-2].update({"open": 102.0, "high": 102.4, "low": 101.8, "close": 102.1})
+    bars[-1].update({"open": 103.8, "close": 104, "high": 104.2, "low": 103.4, "volume": 300})
+    entry = {"timestamp": (base + timedelta(minutes=5)).isoformat(), "open": 104, "high": 105, "low": 103, "close": 104}
+    stop = {"timestamp": (base + timedelta(minutes=10)).isoformat(), "open": 94, "high": 96, "low": 93, "close": 94}
+    common = {"account_id": "cost-account", "run_id": "zero-cost", "universe": {"NSE:COST": bars},
+              "scenario_capital": 1_000, "fee_rate": 0, "slippage_bps": 0,
+              "future_bars": {"NSE:COST": [entry, stop]}}
+    await run_shadow_workflow(db_path, now=base + timedelta(minutes=5), **common)
+    await run_shadow_workflow(db_path, now=base + timedelta(minutes=10), **common)
+    async with aiosqlite.connect(db_path) as db:
+        row = await (await db.execute("SELECT status,entry_fees,exit_fees,net_pnl,gross_pnl FROM proactive_shadow_positions")).fetchone()
+    assert row[0] == "CLOSED" and row[1] == row[2] == 0
+    assert row[3] == pytest.approx(row[4])
 
 
 @pytest.mark.asyncio

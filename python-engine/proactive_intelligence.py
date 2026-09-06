@@ -362,7 +362,15 @@ CREATE INDEX IF NOT EXISTS idx_shadow_positions_account_status
  ON proactive_shadow_positions(account_id, status);
 CREATE TABLE IF NOT EXISTS proactive_shadow_runs (
  run_key TEXT PRIMARY KEY, account_id TEXT NOT NULL, run_id TEXT NOT NULL,
- manifest_json TEXT NOT NULL, created_at TEXT NOT NULL
+ manifest_json TEXT NOT NULL, created_at TEXT NOT NULL,
+ last_as_of TEXT, last_sequence INTEGER NOT NULL DEFAULT 0
+);
+CREATE TABLE IF NOT EXISTS proactive_shadow_run_steps (
+ run_key TEXT NOT NULL, as_of TEXT NOT NULL, input_digest TEXT NOT NULL,
+ origin TEXT NOT NULL, status TEXT NOT NULL, result_json TEXT,
+ claimed_at TEXT NOT NULL, completed_at TEXT,
+ PRIMARY KEY (run_key, as_of),
+ FOREIGN KEY(run_key) REFERENCES proactive_shadow_runs(run_key)
 );
 """
 
@@ -377,6 +385,11 @@ def _stamp(value: Optional[datetime] = None) -> datetime:
 async def init_proactive_intelligence(db_path: str) -> None:
     async with aiosqlite.connect(db_path) as db:
         await db.executescript(_SCHEMA)
+        columns = {row[1] for row in await (await db.execute("PRAGMA table_info(proactive_shadow_runs)")).fetchall()}
+        if "last_as_of" not in columns:
+            await db.execute("ALTER TABLE proactive_shadow_runs ADD COLUMN last_as_of TEXT")
+        if "last_sequence" not in columns:
+            await db.execute("ALTER TABLE proactive_shadow_runs ADD COLUMN last_sequence INTEGER NOT NULL DEFAULT 0")
         await db.commit()
 
 
@@ -421,11 +434,84 @@ async def _ensure_shadow_run(
             await db.commit()
             return key
         await db.execute(
-            "INSERT INTO proactive_shadow_runs VALUES (?,?,?,?,?)",
+            "INSERT INTO proactive_shadow_runs (run_key,account_id,run_id,manifest_json,created_at) VALUES (?,?,?,?,?)",
             (key, account_id, run_id, payload, datetime.now(timezone.utc).isoformat()),
         )
         await db.commit()
     return key
+
+
+async def _shadow_run_manifest(db_path: str, *, run_key: str) -> dict:
+    await init_proactive_intelligence(db_path)
+    async with aiosqlite.connect(db_path) as db:
+        row = await (await db.execute(
+            "SELECT manifest_json FROM proactive_shadow_runs WHERE run_key=?", (run_key,),
+        )).fetchone()
+    if row is None:
+        raise ValueError("unknown shadow run")
+    try:
+        manifest = json.loads(row[0])
+    except (TypeError, ValueError, json.JSONDecodeError) as exc:
+        raise ValueError("stored shadow run manifest is invalid") from exc
+    if not isinstance(manifest, dict):
+        raise ValueError("stored shadow run manifest is invalid")
+    return manifest
+
+
+async def _claim_shadow_step(
+    db_path: str, *, run_key: str, as_of: datetime, input_digest: str, origin: str,
+) -> Optional[dict]:
+    """Claim one immutable evaluation step, or return an exact completed retry."""
+    if origin not in {"SHADOW", "REPLAY"}:
+        raise ValueError("unsupported shadow execution origin")
+    await init_proactive_intelligence(db_path)
+    async with aiosqlite.connect(db_path) as db:
+        await db.execute("BEGIN IMMEDIATE")
+        run = await (await db.execute(
+            "SELECT last_as_of FROM proactive_shadow_runs WHERE run_key=?", (run_key,),
+        )).fetchone()
+        if run is None:
+            await db.rollback(); raise ValueError("unknown shadow run")
+        last_as_of = _stamp(datetime.fromisoformat(run[0])) if run[0] else None
+        if last_as_of is not None and as_of < last_as_of:
+            await db.rollback(); raise ValueError("shadow run clock cannot move backwards")
+        row = await (await db.execute(
+            "SELECT input_digest,status,result_json FROM proactive_shadow_run_steps WHERE run_key=? AND as_of=?",
+            (run_key, as_of.isoformat()),
+        )).fetchone()
+        if row is not None:
+            if row[0] != input_digest:
+                await db.rollback(); raise ValueError("shadow run step input conflicts with established clock")
+            if row[1] == "COMPLETED" and row[2]:
+                await db.rollback(); return json.loads(row[2])
+            await db.rollback(); raise RuntimeError("shadow run step is already in progress")
+        await db.execute(
+            "INSERT INTO proactive_shadow_run_steps (run_key,as_of,input_digest,origin,status,claimed_at) VALUES (?,?,?,?,?,?)",
+            (run_key, as_of.isoformat(), input_digest, origin, "RUNNING", datetime.now(timezone.utc).isoformat()),
+        )
+        await db.commit()
+    return None
+
+
+async def _complete_shadow_step(db_path: str, *, run_key: str, as_of: datetime, input_digest: str, result: dict) -> None:
+    """Commit the immutable retry result and monotonically advance run clock."""
+    payload = json.dumps(result, sort_keys=True, separators=(",", ":"), default=str)
+    await init_proactive_intelligence(db_path)
+    async with aiosqlite.connect(db_path) as db:
+        await db.execute("BEGIN IMMEDIATE")
+        cur = await db.execute(
+            "UPDATE proactive_shadow_run_steps SET status='COMPLETED',result_json=?,completed_at=? "
+            "WHERE run_key=? AND as_of=? AND input_digest=? AND status='RUNNING'",
+            (payload, datetime.now(timezone.utc).isoformat(), run_key, as_of.isoformat(), input_digest),
+        )
+        if cur.rowcount != 1:
+            await db.rollback(); raise RuntimeError("shadow run step ownership was lost")
+        await db.execute(
+            "UPDATE proactive_shadow_runs SET last_as_of=?,last_sequence=last_sequence+1 "
+            "WHERE run_key=? AND (last_as_of IS NULL OR last_as_of<=?)",
+            (as_of.isoformat(), run_key, as_of.isoformat()),
+        )
+        await db.commit()
 
 
 async def record_opportunity_event(
@@ -645,11 +731,15 @@ async def _persist_new_shadow_position(
 
 async def _advance_open_shadow_positions(
     db_path: str, *, account_id: str, future_bars: dict[str, list[dict]],
+    fee_rate: float = .001, slippage_bps: float = 5,
 ) -> list[tuple[ShadowPosition, ShadowSimulation]]:
     """Advance persisted synthetic positions before admitting any new exposure."""
     updates: list[tuple[ShadowPosition, ShadowSimulation]] = []
     for position in await _shadow_positions(db_path, account_id=account_id, status="OPEN"):
-        result = simulate_open_shadow_position(position, future_bars.get(position.instrument, []))
+        result = simulate_open_shadow_position(
+            position, future_bars.get(position.instrument, []),
+            fee_rate=fee_rate, slippage_bps=slippage_bps,
+        )
         if result.status == "INVALID":
             continue  # Preserve the existing position; malformed later data cannot close it.
         if result.status == "OPEN" and result.last_bar_at == position.last_bar_at:
@@ -678,6 +768,7 @@ async def run_shadow_workflow(
     db_path: str, *, account_id: str, universe: dict[str, list[dict]], now: datetime,
     scenario_capital: float = 8_000, future_bars: Optional[dict[str, list[dict]]] = None,
     run_id: str = "default-v1", fee_rate: float = .001, slippage_bps: float = 5,
+    origin: str = "SHADOW",
 ) -> dict:
     """Run the bounded fixture-backed SHADOW path; never calls a broker.
 
@@ -692,14 +783,32 @@ async def run_shadow_workflow(
         db_path, account_id=account_id, run_id=run_id, scenario_capital=scenario_capital,
         fee_rate=fee_rate, slippage_bps=slippage_bps,
     )
+    manifest = await _shadow_run_manifest(db_path, run_key=storage_account_id)
+    persisted_fee_rate = float(manifest["fee_rate"])
+    persisted_slippage_bps = float(manifest["slippage_bps"])
     visible_future_bars = {
         instrument: _bars_visible_as_of(bars, as_of=now)
         for instrument, bars in future_bars.items()
     }
+    visible_universe = {
+        instrument: _bars_visible_as_of(bars, as_of=now)
+        for instrument, bars in universe.items()
+    }
+    step_input_digest = hashlib.sha256(json.dumps(
+        {"universe": visible_universe, "future_bars": visible_future_bars},
+        sort_keys=True, default=str, separators=(",", ":"),
+    ).encode()).hexdigest()
+    prior_result = await _claim_shadow_step(
+        db_path, run_key=storage_account_id, as_of=now,
+        input_digest=step_input_digest, origin=origin,
+    )
+    if prior_result is not None:
+        return prior_result
     # Existing exposure is advanced first. A malformed update cannot erase a
     # position, and any realised result is then reflected in free scenario cash.
     managed = await _advance_open_shadow_positions(
         db_path, account_id=storage_account_id, future_bars=visible_future_bars,
+        fee_rate=persisted_fee_rate, slippage_bps=persisted_slippage_bps,
     )
     for position, result in managed:
         if result.status == "CLOSED":
@@ -722,8 +831,7 @@ async def run_shadow_workflow(
                         "fees": result.fees, "net_pnl": result.net_pnl},
             )
     proposals: list[ShadowProposal] = []
-    for instrument, bars in sorted(universe.items()):
-        visible_bars = _bars_visible_as_of(bars, as_of=now)
+    for instrument, visible_bars in sorted(visible_universe.items()):
         # A rerun over identical completed data is one scan, not fresh evidence.
         # The full supplied-bar digest also changes when the source corrects a
         # historical bar even if its final timestamp stays the same.
@@ -769,7 +877,7 @@ async def run_shadow_workflow(
         else:
             candidates.append(proposal)
     allocations, allocation_reasons = size_shadow_allocations(
-        candidates, capital=free_cash, fee_rate=fee_rate, slippage_bps=slippage_bps,
+        candidates, capital=free_cash, fee_rate=persisted_fee_rate, slippage_bps=persisted_slippage_bps,
     )
     reasons.update(allocation_reasons)
     allocated = {item.opportunity_id: item for item in allocations}
@@ -802,7 +910,7 @@ async def run_shadow_workflow(
         await record_opportunity_event(db_path, opportunity_id=proposal.opportunity_id, policy_id=proposal.policy_id,
             policy_version="v1", account_id=storage_account_id, mode="SHADOW", instrument=proposal.instrument,
             stage="SELECTED", reason_code="SHARED_CASH_RESERVED", idempotency_key=f"{proposal.opportunity_id}:selected", observed_at=now)
-        result = simulate_shadow_trade(proposal, visible_future_bars.get(proposal.instrument, []), cash=free_cash, fee_rate=fee_rate, slippage_bps=slippage_bps, allocation=allocation)
+        result = simulate_shadow_trade(proposal, visible_future_bars.get(proposal.instrument, []), cash=free_cash, fee_rate=persisted_fee_rate, slippage_bps=persisted_slippage_bps, allocation=allocation)
         if result.status == "CLOSED":
             stage = "CLOSED"
         elif result.status == "OPEN":
@@ -816,7 +924,7 @@ async def run_shadow_workflow(
         if result.status in {"OPEN", "CLOSED"}:
             await _persist_new_shadow_position(
                 db_path, proposal=proposal, account_id=storage_account_id, result=result,
-                fee_rate=fee_rate,
+                fee_rate=persisted_fee_rate,
             )
             await transition_watchlist(
                 db_path, opportunity_id=proposal.opportunity_id, state="COMPLETED",
@@ -835,8 +943,13 @@ async def run_shadow_workflow(
     post_free_cash, _post_open_instruments, _post_identities = await _shadow_account_state(
         db_path, account_id=storage_account_id, scenario_capital=scenario_capital,
     )
-    return {"mode": "SHADOW", "account_id": account_id, "run_id": run_id, "as_of": now.isoformat(), "proposals": len(proposals), "allocations": len(allocations), "outcomes": outcomes, "reasons": reasons,
-            "free_cash": round(post_free_cash, 4), "managed_positions": len(managed)}
+    result = {"mode": "SHADOW", "origin": origin, "account_id": account_id, "run_id": run_id, "as_of": now.isoformat(), "proposals": len(proposals), "allocations": len(allocations), "outcomes": outcomes, "reasons": reasons,
+              "free_cash": round(post_free_cash, 4), "managed_positions": len(managed)}
+    await _complete_shadow_step(
+        db_path, run_key=storage_account_id, as_of=now,
+        input_digest=step_input_digest, result=result,
+    )
+    return result
 
 
 async def run_shadow_replay(
@@ -850,7 +963,7 @@ async def run_shadow_replay(
         raise ValueError("replay clock steps must be strictly increasing")
     return [await run_shadow_workflow(
         db_path, account_id=account_id, universe=universe, now=step,
-        scenario_capital=scenario_capital, future_bars=future_bars, run_id=run_id,
+        scenario_capital=scenario_capital, future_bars=future_bars, run_id=run_id, origin="REPLAY",
     ) for step in steps]
 
 

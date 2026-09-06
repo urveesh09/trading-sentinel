@@ -406,6 +406,17 @@ does not modify Production.
   expired before their entry deadline; selected watchlists complete with their
   synthetic position lifecycle.
 
+### Integrated SHADOW corrections — durable run steps and cost continuity
+
+- Added a durable per-run, per-`as_of` step claim/result record. An exact retry
+  returns its prior committed response without additional positions, events or
+  cash effects; conflicting data at the same clock is rejected, and an earlier
+  clock cannot mutate a later-established run.
+- Stored run cost assumptions are now authoritative for both initial fills and
+  resumed open-position management. This prevents a restart from silently
+  reverting a zero- or custom-cost scenario to default fee/slippage settings.
+  Execution origin is recorded as `SHADOW` or `REPLAY` in the step ledger.
+
 ### P3 — partial, conservative shadow execution
 
 - Added a long-only offline fill simulator for the shadow proposals. It sizes
