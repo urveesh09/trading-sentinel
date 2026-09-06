@@ -316,3 +316,15 @@ does not modify Production.
   environment because that environment lacks the agent dependency `requests`.
   This is a Dev environment limitation, not a reason to reintroduce the AI
   startup dependency; validate it in the agent image/environment next.
+
+### P6 — partial, fixture lifecycle adapter
+
+- Added `partner_fixture_adapter.py`, a Dev-only source-neutral fixture path
+  using stable external position identities and the real partner-position plus
+  accepted-snapshot interfaces. A complete fixture can create/reconcile a
+  position; a later complete account view closes its absent exposure through
+  the existing atomic snapshot transaction. It has no broker credentials or
+  delivery path.
+- Focused lifecycle tests cover accepted creation and complete-snapshot close.
+  Corporate-action/reopen fixtures, hedge-card UI and the full end-to-end
+  mocked-delivery demonstration remain in progress.
