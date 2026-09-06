@@ -7,6 +7,7 @@ import CircuitBreaker from '../components/CircuitBreaker';
 import { useSignals } from '../hooks/useSignals';
 import { usePositions } from '../hooks/usePositions';
 import { useDivisionPerformance } from '../hooks/useDivisionPerformance';
+import { useProactiveActivity } from '../hooks/useProactiveActivity';
 import { isActivePosition } from '../utils/positions';
 import {
   INSUFFICIENT_DATA,
@@ -104,10 +105,48 @@ function ModeSection({ group }) {
   );
 }
 
+function ActivityFunnel({ activity, isLoading, isError }) {
+  if (isLoading) return <div className="rounded border border-gray-800 bg-gray-900 p-4 text-sm text-gray-500">Loading proactive activity…</div>;
+  if (isError || !activity) return <div className="rounded border border-amber-800 bg-amber-950/30 p-4 text-sm text-amber-200">Proactive activity is unavailable; unknown data is not treated as healthy inactivity.</div>;
+  const shadowPositions = Array.isArray(activity.shadow_positions) ? activity.shadow_positions : [];
+  return (
+    <section className="rounded-xl border border-cyan-900/70 bg-cyan-950/10 p-4">
+      <h2 className="text-xl font-bold text-white">Why we traded — or did not</h2>
+      <p className="mt-1 text-xs text-gray-500">Unique opportunities vs repeated evaluations. Shadow/replay evidence is never live P&amp;L.</p>
+      <div className="mt-4 grid gap-3 md:grid-cols-4">
+        {Object.entries(activity.modes || {}).map(([mode, row]) => (
+          <div key={mode} className="rounded border border-gray-800 bg-gray-950/70 p-3">
+            <div className="text-xs font-bold text-cyan-200">{mode}</div>
+            <div className="mt-2 text-sm">Opportunities: <b>{row.unique_opportunities}</b></div>
+            <div className="text-sm">Evaluations: <b>{row.scan_evaluations}</b></div>
+            <div className="mt-2 text-[11px] text-gray-500">{Object.entries(row.stages || {}).map(([stage, count]) => `${stage}: ${count}`).join(' · ') || 'No evidence recorded'}</div>
+          </div>
+        ))}
+      </div>
+      <div className="mt-4 border-t border-cyan-900/60 pt-3">
+        <h3 className="text-sm font-semibold text-cyan-100">Synthetic SHADOW positions and outcomes</h3>
+        <p className="mt-1 text-[11px] text-gray-500">Fixture simulation only. Gross, fees and net are not broker-reconciled profit.</p>
+        {shadowPositions.length ? <div className="mt-3 grid gap-3 md:grid-cols-3">{shadowPositions.map((row) => (
+          <div key={`${row.account_id}:${row.run_id || 'legacy'}`} className="rounded border border-gray-800 bg-gray-950/70 p-3 text-sm">
+            <div className="font-semibold text-violet-200">{row.account_id}</div><div className="text-[10px] text-gray-500">Run: {row.run_id || 'legacy'}</div>
+            <div className="mt-2 grid grid-cols-2 gap-2 text-xs text-gray-300">
+              <span>Open: <b>{row.open_positions}</b></span><span>Closed: <b>{row.closed_positions}</b></span>
+              <span>Reserved: <b>{formatMoney(row.reserved_capital, 'paper')}</b></span><span>Gross: <b className={pnlColour(row.gross_pnl)}>{formatMoney(row.gross_pnl, 'paper', { signed: true })}</b></span>
+              <span>Fees: <b>{formatMoney(row.fees, 'paper')}</b></span><span>Net: <b className={pnlColour(row.net_pnl)}>{formatMoney(row.net_pnl, 'paper', { signed: true })}</b></span>
+            </div>
+          </div>
+        ))}</div> : <div className="mt-2 text-xs text-gray-500">No persisted synthetic fills or closed outcomes in this reporting window.</div>}
+      </div>
+      <p className="mt-3 text-xs text-gray-500">{activity.note}</p>
+    </section>
+  );
+}
+
 export default function Dashboard({ healthData, navigateToPositions, navigateToBacktests, navigateToResearch }) {
   const { signals, mutate: refreshSignals } = useSignals();
   const { positions } = usePositions();
   const { divisionPerformance, isLoading, isError } = useDivisionPerformance();
+  const proactive = useProactiveActivity();
   const viewModel = buildDivisionViewModel(divisionPerformance);
   const cbHalted = healthData?.circuit_breaker_halted || false;
   const cbReasons = healthData?.circuit_breaker_reasons || [];
@@ -140,6 +179,8 @@ export default function Dashboard({ healthData, navigateToPositions, navigateToB
             : isError ? <div className="rounded border border-red-900 bg-red-950/30 p-6 text-red-300">Division performance is currently unavailable. Live and paper totals are intentionally not estimated.</div>
               : <div className="space-y-5">{viewModel.groups.map((group) => <ModeSection key={group.mode} group={group} />)}</div>}
         </section>
+
+        <ActivityFunnel {...proactive} />
 
         <section className="grid grid-cols-1 gap-6 xl:grid-cols-3">
           <div className="space-y-4 xl:col-span-1">

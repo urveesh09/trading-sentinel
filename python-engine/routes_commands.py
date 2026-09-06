@@ -253,6 +253,20 @@ async def get_outcomes(days: int = 14):
     return await outcome_correlator(settings.DB_PATH, days=days)
 
 
+@router.get("/analytics/proactive-activity")
+async def get_proactive_activity(days: int = 7):
+    """Mode-separated proactive evidence; never a trading control surface."""
+    from proactive_intelligence import proactive_activity_report
+    return await proactive_activity_report(settings.DB_PATH, days=days)
+
+
+@router.get("/analytics/proactive-diagnostics")
+async def get_proactive_diagnostics():
+    from datetime import datetime, timezone
+    from proactive_intelligence import proactive_inactivity_diagnostics
+    return {"findings": await proactive_inactivity_diagnostics(settings.DB_PATH, now=datetime.now(timezone.utc))}
+
+
 
 @router.get("/analytics/suggestions")
 async def get_suggestions(days: int = 14):

@@ -172,19 +172,25 @@ def register_approved_snapshot(sig_id: str, ticker: str, action: str, payload: d
         )
         return False
 
-if not all([MINIMAX_API_KEY, TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID]):
-    logger.critical("CRITICAL: Missing required environment variables. Exiting.")
+if not all([TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID]):
+    logger.critical("CRITICAL: Missing Telegram environment variables. Exiting.")
     sys.exit(1)
 
 # [MINIMAX-TIMEOUT 2026-08-04] max_retries=1 (SDK default is 2). The retries
 # happen INSIDE the per-request budget, so the default made the budget
 # unsatisfiable, and an abandoned daemon thread kept spending API calls after
 # the wall had already given up on it.
-client = OpenAI(
-    api_key=MINIMAX_API_KEY,
-    base_url=MINIMAX_BASE_URL,
-    max_retries=MINIMAX_MAX_RETRIES,
-)
+client = None
+AI_STATUS = "AI_DISABLED"
+if MINIMAX_API_KEY:
+    client = OpenAI(
+        api_key=MINIMAX_API_KEY,
+        base_url=MINIMAX_BASE_URL,
+        max_retries=MINIMAX_MAX_RETRIES,
+    )
+    AI_STATUS = "AI_AVAILABLE"
+else:
+    logger.warning("AI_DISABLED: no MINIMAX_API_KEY; deterministic alerts remain active")
 
 # -------------------------------------------------------------------------
 # SHORT-TERM MEMORY (DEDUPLICATION)
@@ -486,6 +492,8 @@ def analyze_with_minimax(
     the operator's phone can say WHICH failure happened and a later audit can
     tell an outage from an opinion. See advisory.py.
     """
+    if client is None:
+        return advisory_unavailable("AI_DISABLED")
     ticker = signal.get("ticker", "UNKNOWN")
     price = signal.get("close", 0)     # FIX: Aligned with models.py
     target = signal.get("target_1", 0) # FIX: Aligned with models.py

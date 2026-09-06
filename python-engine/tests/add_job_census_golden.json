@@ -140,6 +140,11 @@
     "trigger": "'cron'"
   },
   {
+    "func": "_run_proactive_shadow_workflow_safe",
+    "id": "'proactive_shadow_workflow'",
+    "trigger": "'cron'"
+  },
+  {
     "func": "_scheduler_tick_job",
     "id": "'scheduler_tick'",
     "trigger": "'interval'"

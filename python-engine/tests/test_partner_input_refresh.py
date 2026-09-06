@@ -3,13 +3,22 @@ from datetime import datetime
 import pytest
 import pytz
 
-from hedge_analytics import PartnerPosition, create_partner_position, load_partner_positions
+from hedge_analytics import (
+    PartnerPosition, create_partner_position, load_partner_positions,
+    load_partner_evaluation_input, reconcile_partner_position,
+)
 from partner_input_refresh import apply_partner_input_snapshot, refresh_partner_input_once
 from config import settings
 
 
 IST = pytz.timezone("Asia/Kolkata")
 NOW = IST.localize(datetime(2026, 9, 5, 10, 0))
+
+
+@pytest.fixture(autouse=True)
+def approved_binding(monkeypatch):
+    monkeypatch.setattr(settings, "PARTNER_HEDGE_INPUT_EXPECTED_SOURCE", "synthetic_adapter")
+    monkeypatch.setattr(settings, "PARTNER_HEDGE_INPUT_EXPECTED_ACCOUNT_ID", "paper-1")
 
 
 def snapshot(*, source="synthetic_adapter", account_id="paper-1", snapshot_id="s-1", sequence=1,
@@ -52,6 +61,8 @@ async def test_unconfigured_adapter_is_explicit_and_performs_no_network(db_path,
 
 @pytest.mark.asyncio
 async def test_snapshot_cannot_reconcile_a_position_owned_by_another_source(db_path):
+    # The approved endpoint is bound to owner_b; the existing row is owner_a.
+    settings.PARTNER_HEDGE_INPUT_EXPECTED_SOURCE = "owner_b"
     stored = await create_partner_position(db_path, PartnerPosition(
         underlying="NIFTY", instrument_type="EQUITY", tradingsymbol="NIFTYBEES",
         signed_quantity=100, lot_size=1, entry_price=100, opened_at=NOW,
@@ -117,3 +128,44 @@ async def test_invalid_vix_rejects_before_a_complete_snapshot_can_close_rows(db_
             positions=[], vix={"spot": -1, "observed_at": NOW.isoformat()},
         ), received_at=NOW)
     assert (await load_partner_positions(db_path))[0].position_id == stored.position_id
+
+
+@pytest.mark.asyncio
+async def test_immutable_account_binding_prevents_same_source_cross_account_closure(db_path, monkeypatch):
+    first = await create_partner_position(db_path, PartnerPosition(
+        underlying="NIFTY", instrument_type="EQUITY", tradingsymbol="NIFTYBEES",
+        signed_quantity=100, lot_size=1, entry_price=100, opened_at=NOW,
+        source="synthetic_adapter", current_price=100, price_as_of=NOW,
+    ))
+    await apply_partner_input_snapshot(db_path, snapshot(positions=[{
+        "position_id": first.position_id, "observed_quantity": 100,
+        "current_price": 100, "price_as_of": NOW.isoformat(),
+    }]), received_at=NOW)
+    monkeypatch.setattr(settings, "PARTNER_HEDGE_INPUT_EXPECTED_ACCOUNT_ID", "paper-2")
+    with pytest.raises(ValueError, match="immutable|approved account"):
+        await apply_partner_input_snapshot(db_path, snapshot(account_id="paper-2", snapshot_id="b-1",
+            sequence=2, observed_at=NOW.replace(minute=1), positions=[]),
+            received_at=NOW.replace(minute=1))
+    assert (await load_partner_positions(db_path))[0].signed_quantity == 100
+
+
+@pytest.mark.asyncio
+async def test_manual_reconcile_advances_revision_and_invalidates_snapshot_advice(db_path):
+    stored = await create_partner_position(db_path, PartnerPosition(
+        underlying="NIFTY", instrument_type="EQUITY", tradingsymbol="NIFTYBEES",
+        signed_quantity=100, lot_size=1, entry_price=100, opened_at=NOW,
+        source="synthetic_adapter", current_price=100, price_as_of=NOW,
+    ))
+    await apply_partner_input_snapshot(db_path, snapshot(positions=[{
+        "position_id": stored.position_id, "observed_quantity": 100,
+        "current_price": 100, "price_as_of": NOW.isoformat(),
+    }]), received_at=NOW)
+    before = await load_partner_evaluation_input(db_path)
+    await reconcile_partner_position(
+        db_path, stored.position_id, observed_quantity=90, quantity_basis="UNITS",
+        reconciled_at=NOW.replace(minute=1), source="synthetic_adapter",
+        current_price=100, price_as_of=NOW.replace(minute=1),
+    )
+    after = await load_partner_evaluation_input(db_path)
+    assert after.portfolio_revision > before.portfolio_revision
+    assert after.snapshot["snapshot_id"] == before.snapshot["snapshot_id"]
