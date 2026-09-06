@@ -22,6 +22,13 @@ _STAGES = frozenset({
     "SELECTED", "SUBMITTED", "FILLED", "MANAGED", "CLOSED", "DEFERRED",
     "REJECTED", "EXPIRED", "UNAVAILABLE",
 })
+_WATCH_TRANSITIONS = {
+    "WATCHING": {"ARMED", "INVALIDATED", "EXPIRED"},
+    "ARMED": {"TRIGGERED", "INVALIDATED", "EXPIRED"},
+    "TRIGGERED": {"SELECTED", "DEFERRED", "REJECTED", "EXPIRED"},
+    "DEFERRED": {"TRIGGERED", "INVALIDATED", "EXPIRED"},
+    "SELECTED": {"COMPLETED", "INVALIDATED"},
+}
 
 
 @dataclass(frozen=True)
@@ -176,6 +183,10 @@ CREATE TABLE IF NOT EXISTS proactive_cash_flows (
  flow_id TEXT PRIMARY KEY, mode TEXT NOT NULL, flow_type TEXT NOT NULL,
  amount REAL NOT NULL, occurred_at TEXT NOT NULL, note TEXT NOT NULL
 );
+CREATE TABLE IF NOT EXISTS proactive_watchlist (
+ opportunity_id TEXT PRIMARY KEY, state TEXT NOT NULL, reason TEXT NOT NULL,
+ updated_at TEXT NOT NULL, valid_until TEXT NOT NULL
+);
 """
 
 
@@ -233,6 +244,30 @@ async def record_opportunity_event(
             )
         await db.commit()
         return bool(cur.rowcount)
+
+
+async def transition_watchlist(
+    db_path: str, *, opportunity_id: str, state: str, reason: str, now: datetime,
+    valid_until: Optional[datetime] = None,
+) -> bool:
+    """Persist an allowed watchlist transition; repeated scans cannot reset it."""
+    now = _stamp(now)
+    await init_proactive_intelligence(db_path)
+    async with aiosqlite.connect(db_path) as db:
+        await db.execute("BEGIN IMMEDIATE")
+        row = await (await db.execute("SELECT state, valid_until FROM proactive_watchlist WHERE opportunity_id=?", (opportunity_id,))).fetchone()
+        if row is None:
+            if state != "WATCHING" or valid_until is None or _stamp(valid_until) <= now:
+                await db.rollback(); raise ValueError("new watchlist item requires future WATCHING expiry")
+            await db.execute("INSERT INTO proactive_watchlist VALUES (?,?,?,?,?)", (opportunity_id, state, reason, now.isoformat(), _stamp(valid_until).isoformat()))
+            await db.commit(); return True
+        previous, expiry = row
+        if now >= _stamp(datetime.fromisoformat(expiry)) and state != "EXPIRED":
+            await db.rollback(); return False
+        if state not in _WATCH_TRANSITIONS.get(previous, set()):
+            await db.rollback(); return False
+        await db.execute("UPDATE proactive_watchlist SET state=?, reason=?, updated_at=? WHERE opportunity_id=?", (state, reason, now.isoformat(), opportunity_id))
+        await db.commit(); return True
 
 
 async def proactive_activity_report(db_path: str, *, days: int = 7) -> dict:

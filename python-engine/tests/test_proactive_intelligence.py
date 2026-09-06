@@ -6,6 +6,7 @@ from proactive_intelligence import (
     ShadowProposal, allocate_shadow_proposals, build_shadow_proposals, proactive_activity_report,
     record_opportunity_event,
     simulate_shadow_trade,
+    transition_watchlist,
 )
 
 
@@ -59,3 +60,11 @@ def test_shadow_simulator_is_costed_and_conservative_on_ambiguous_bar():
     assert result.reason == "AMBIGUOUS_BAR_STOP_FIRST"
     assert result.net_pnl < 0
     assert simulate_shadow_trade(proposal, [], cash=10).reason == "INSUFFICIENT_CASH_AFTER_FEES"
+
+
+@pytest.mark.asyncio
+async def test_watchlist_lifecycle_cannot_be_reset_by_repeated_scan(db_path):
+    now = datetime.now(timezone.utc)
+    assert await transition_watchlist(db_path, opportunity_id="watch-1", state="WATCHING", reason="NEW", now=now, valid_until=now + timedelta(minutes=10))
+    assert await transition_watchlist(db_path, opportunity_id="watch-1", state="ARMED", reason="READY", now=now + timedelta(minutes=1))
+    assert not await transition_watchlist(db_path, opportunity_id="watch-1", state="WATCHING", reason="REPEATED_SCAN", now=now + timedelta(minutes=2))

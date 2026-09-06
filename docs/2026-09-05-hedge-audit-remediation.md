@@ -298,6 +298,14 @@ does not modify Production.
   simulation, outcome learning, AI, partner fixture lifecycle and end-to-end
   demonstration remain in progress.
 
+### P2 — partial, persisted watchlist lifecycle
+
+- Added a transactionally persisted watchlist state machine with explicit
+  `WATCHING → ARMED → TRIGGERED → SELECTED/DEFERRED/REJECTED` transitions and
+  invalidation/expiry exits. A repeated scan cannot reset an existing setup to
+  new or extend its expiry. This is a SHADOW research lifecycle and has no
+  broker execution consumer yet.
+
 ### P3 — partial, conservative shadow execution
 
 - Added a long-only offline fill simulator for the shadow proposals. It sizes
