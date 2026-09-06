@@ -61,6 +61,8 @@ class ShadowSimulation:
     fees: Optional[float]
     net_pnl: Optional[float]
     reason: str
+    entry_at: Optional[datetime] = None
+    last_bar_at: Optional[datetime] = None
 
 
 @dataclass(frozen=True)
@@ -71,6 +73,23 @@ class ShadowAllocation:
     fee_reserve: float
     reserved_capital: float
     initial_risk: float
+
+
+@dataclass(frozen=True)
+class ShadowPosition:
+    """Durable, synthetic-only position state; it is never a broker position."""
+    opportunity_id: str
+    account_id: str
+    policy_id: str
+    instrument: str
+    quantity: int
+    entry_price: float
+    entry_fees: float
+    stop_price: float
+    target_price: float
+    opened_at: datetime
+    holding_deadline: datetime
+    last_bar_at: datetime
 
 
 def _proposal_id(policy_id: str, instrument: str, bar_time: datetime) -> str:
@@ -186,19 +205,16 @@ def simulate_shadow_trade(
     holding_deadline = _stamp(proposal.holding_deadline or proposal.valid_until)
     if not (proposal.stop > 0 and proposal.entry > proposal.stop and proposal.target > proposal.entry and entry_deadline >= cutoff and holding_deadline >= entry_deadline):
         return ShadowSimulation("INVALID", 0, None, None, None, None, None, "INVALID_PROPOSAL_GEOMETRY_OR_TIMING")
-    quantity = 0; entry = None
-    for bar in future_bars:
-        try:
-            stamp = _stamp(datetime.fromisoformat(str(bar["timestamp"])))
-            open_, high, low, close = (float(bar[key]) for key in ("open", "high", "low", "close"))
-        except (KeyError, TypeError, ValueError):
-            continue
-        if not all(math.isfinite(value) and value > 0 for value in (open_, high, low, close)) or low > min(open_, close) or high < max(open_, close):
-            continue
+    normalised = _normalise_shadow_bars(future_bars)
+    if normalised is None:
+        return ShadowSimulation("INVALID", 0, None, None, None, None, None, "INVALID_OR_UNORDERED_FUTURE_BARS")
+    quantity = 0; entry = None; entry_at = None; last_bar_at = None
+    for stamp, open_, high, low, _close in normalised:
         if entry is None:
             if stamp <= cutoff or stamp > entry_deadline:
                 continue
             entry = open_ * (1 + slip)
+            entry_at = stamp
             quantity = (allocation.quantity if allocation is not None else min(max_quantity if max_quantity is not None else math.inf, math.floor(cash / (entry * (1 + fee_rate)))))
             if quantity < 1:
                 return ShadowSimulation("NO_FILL", 0, None, None, None, None, None, "INSUFFICIENT_CASH_AFTER_FEES")
@@ -206,6 +222,7 @@ def simulate_shadow_trade(
                 return ShadowSimulation("NO_FILL", 0, None, None, None, None, None, "ALLOCATION_NO_LONGER_FEASIBLE")
             if entry <= proposal.stop or entry >= proposal.target:
                 return ShadowSimulation("NO_FILL", 0, None, None, None, None, None, "GAP_INVALIDATES_ENTRY_GEOMETRY")
+        last_bar_at = stamp
         if stamp > holding_deadline:
             exit_price = open_ * (1-slip); reason = "HOLDING_DEADLINE"
         elif low <= proposal.stop and high >= proposal.target:
@@ -218,10 +235,65 @@ def simulate_shadow_trade(
             continue
         gross = (exit_price - entry) * quantity
         fees = (entry + exit_price) * quantity * fee_rate
-        return ShadowSimulation("CLOSED", quantity, round(entry, 4), round(exit_price, 4), round(gross, 4), round(fees, 4), round(gross-fees, 4), reason)
+        return ShadowSimulation("CLOSED", quantity, round(entry, 4), round(exit_price, 4), round(gross, 4), round(fees, 4), round(gross-fees, 4), reason, entry_at, stamp)
     if entry is None:
         return ShadowSimulation("NO_FILL", 0, None, None, None, None, None, "NO_EXECUTABLE_BAR_AFTER_SIGNAL")
-    return ShadowSimulation("OPEN", quantity, round(entry, 4), None, None, None, None, "DATA_END_OPEN_POSITION")
+    return ShadowSimulation("OPEN", quantity, round(entry, 4), None, None, None, None, "DATA_END_OPEN_POSITION", entry_at, last_bar_at)
+
+
+def _normalise_shadow_bars(bars: object) -> Optional[list[tuple[datetime, float, float, float, float]]]:
+    """Validate a complete OHLC series and give the simulator one time order."""
+    if not isinstance(bars, list):
+        return None
+    normalised = []
+    try:
+        for bar in bars:
+            if not isinstance(bar, dict):
+                return None
+            stamp = _stamp(datetime.fromisoformat(str(bar["timestamp"])))
+            open_, high, low, close = (float(bar[key]) for key in ("open", "high", "low", "close"))
+            if (not all(math.isfinite(value) and value > 0 for value in (open_, high, low, close))
+                    or low > min(open_, close) or high < max(open_, close)):
+                return None
+            normalised.append((stamp, open_, high, low, close))
+    except (KeyError, TypeError, ValueError):
+        return None
+    normalised.sort(key=lambda item: item[0])
+    if any(right[0] <= left[0] for left, right in zip(normalised, normalised[1:])):
+        return None
+    return normalised
+
+
+def simulate_open_shadow_position(
+    position: ShadowPosition, future_bars: list[dict], *, fee_rate: float = .001,
+    slippage_bps: float = 5,
+) -> ShadowSimulation:
+    """Advance one existing synthetic position using only bars not seen before."""
+    if fee_rate < 0 or slippage_bps < 0:
+        raise ValueError("invalid simulation assumptions")
+    normalised = _normalise_shadow_bars(future_bars)
+    if normalised is None:
+        return ShadowSimulation("INVALID", position.quantity, position.entry_price, None, None, None, None, "INVALID_OR_UNORDERED_FUTURE_BARS", position.opened_at, position.last_bar_at)
+    slip = slippage_bps / 10_000
+    last_bar_at = position.last_bar_at
+    for stamp, open_, high, low, _close in normalised:
+        if stamp <= position.last_bar_at:
+            continue
+        last_bar_at = stamp
+        if stamp > position.holding_deadline:
+            exit_price = open_ * (1 - slip); reason = "HOLDING_DEADLINE"
+        elif low <= position.stop_price and high >= position.target_price:
+            exit_price = min(open_, position.stop_price) * (1 - slip); reason = "AMBIGUOUS_BAR_STOP_FIRST"
+        elif low <= position.stop_price:
+            exit_price = min(open_, position.stop_price) * (1 - slip); reason = "STOP"
+        elif high >= position.target_price:
+            exit_price = position.target_price * (1 - slip); reason = "TARGET"
+        else:
+            continue
+        gross = (exit_price - position.entry_price) * position.quantity
+        fees = position.entry_fees + exit_price * position.quantity * fee_rate
+        return ShadowSimulation("CLOSED", position.quantity, position.entry_price, round(exit_price, 4), round(gross, 4), round(fees, 4), round(gross-fees, 4), reason, position.opened_at, stamp)
+    return ShadowSimulation("OPEN", position.quantity, position.entry_price, None, None, None, None, "DATA_END_OPEN_POSITION", position.opened_at, last_bar_at)
 
 _SCHEMA = """
 CREATE TABLE IF NOT EXISTS proactive_opportunities (
@@ -250,6 +322,16 @@ CREATE TABLE IF NOT EXISTS proactive_watchlist (
  opportunity_id TEXT PRIMARY KEY, state TEXT NOT NULL, reason TEXT NOT NULL,
  updated_at TEXT NOT NULL, valid_until TEXT NOT NULL
 );
+CREATE TABLE IF NOT EXISTS proactive_shadow_positions (
+ opportunity_id TEXT PRIMARY KEY, account_id TEXT NOT NULL, policy_id TEXT NOT NULL,
+ instrument TEXT NOT NULL, status TEXT NOT NULL, quantity INTEGER NOT NULL,
+ entry_price REAL NOT NULL, entry_fees REAL NOT NULL, stop_price REAL NOT NULL,
+ target_price REAL NOT NULL, opened_at TEXT NOT NULL, holding_deadline TEXT NOT NULL,
+ last_bar_at TEXT NOT NULL, exit_price REAL, exit_fees REAL, gross_pnl REAL,
+ net_pnl REAL, closed_at TEXT, close_reason TEXT
+);
+CREATE INDEX IF NOT EXISTS idx_shadow_positions_account_status
+ ON proactive_shadow_positions(account_id, status);
 """
 
 
@@ -406,6 +488,109 @@ async def proactive_inactivity_diagnostics(db_path: str, *, now: datetime, max_s
     return findings
 
 
+async def _shadow_positions(db_path: str, *, account_id: str, status: Optional[str] = None) -> list[ShadowPosition]:
+    await init_proactive_intelligence(db_path)
+    query = (
+        "SELECT opportunity_id,account_id,policy_id,instrument,quantity,entry_price,entry_fees,"
+        "stop_price,target_price,opened_at,holding_deadline,last_bar_at "
+        "FROM proactive_shadow_positions WHERE account_id=?"
+    )
+    params: tuple = (account_id,)
+    if status:
+        query += " AND status=?"; params += (status,)
+    async with aiosqlite.connect(db_path) as db:
+        rows = await (await db.execute(query, params)).fetchall()
+    return [ShadowPosition(
+        opportunity_id=row[0], account_id=row[1], policy_id=row[2], instrument=row[3],
+        quantity=int(row[4]), entry_price=float(row[5]), entry_fees=float(row[6]),
+        stop_price=float(row[7]), target_price=float(row[8]),
+        opened_at=_stamp(datetime.fromisoformat(row[9])),
+        holding_deadline=_stamp(datetime.fromisoformat(row[10])),
+        last_bar_at=_stamp(datetime.fromisoformat(row[11])),
+    ) for row in rows]
+
+
+async def _shadow_account_state(db_path: str, *, account_id: str, scenario_capital: float) -> tuple[float, set[str], set[str]]:
+    """Return free synthetic cash plus open instrument/opportunity identities."""
+    if not math.isfinite(scenario_capital) or scenario_capital <= 0:
+        raise ValueError("scenario capital must be positive and finite")
+    await init_proactive_intelligence(db_path)
+    async with aiosqlite.connect(db_path) as db:
+        open_rows = await (await db.execute(
+            "SELECT opportunity_id,instrument,entry_price,entry_fees,quantity FROM proactive_shadow_positions "
+            "WHERE account_id=? AND status='OPEN'", (account_id,),
+        )).fetchall()
+        closed_rows = await (await db.execute(
+            "SELECT opportunity_id FROM proactive_shadow_positions WHERE account_id=? AND status='CLOSED'", (account_id,),
+        )).fetchall()
+        realised_row = await (await db.execute(
+            "SELECT COALESCE(SUM(net_pnl),0) FROM proactive_shadow_positions "
+            "WHERE account_id=? AND status='CLOSED'", (account_id,),
+        )).fetchone()
+    reserved = sum(float(row[2]) * int(row[4]) + float(row[3]) for row in open_rows)
+    free_cash = max(0.0, float(scenario_capital) + float(realised_row[0]) - reserved)
+    return free_cash, {row[1] for row in open_rows}, {row[0] for row in open_rows} | {row[0] for row in closed_rows}
+
+
+async def _persist_new_shadow_position(
+    db_path: str, *, proposal: ShadowProposal, account_id: str, result: ShadowSimulation,
+    fee_rate: float = .001,
+) -> bool:
+    """Create an immutable synthetic fill/outcome exactly once per opportunity."""
+    if result.status not in {"OPEN", "CLOSED"} or not result.entry_price or not result.entry_at:
+        raise ValueError("only filled shadow simulations can create positions")
+    entry_fees = round(result.entry_price * result.quantity * fee_rate, 4)
+    exit_fees = round((result.fees or 0.0) - entry_fees, 4) if result.status == "CLOSED" else None
+    await init_proactive_intelligence(db_path)
+    async with aiosqlite.connect(db_path) as db:
+        cur = await db.execute(
+            "INSERT OR IGNORE INTO proactive_shadow_positions ("
+            "opportunity_id,account_id,policy_id,instrument,status,quantity,entry_price,entry_fees,"
+            "stop_price,target_price,opened_at,holding_deadline,last_bar_at,exit_price,exit_fees,gross_pnl,net_pnl,closed_at,close_reason"
+            ") VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+            (proposal.opportunity_id, account_id, proposal.policy_id, proposal.instrument, result.status,
+             result.quantity, result.entry_price, entry_fees, proposal.stop, proposal.target,
+             result.entry_at.isoformat(), _stamp(proposal.holding_deadline or proposal.valid_until).isoformat(),
+             _stamp(result.last_bar_at or result.entry_at).isoformat(), result.exit_price, exit_fees,
+             result.gross_pnl, result.net_pnl,
+             _stamp(result.last_bar_at).isoformat() if result.status == "CLOSED" and result.last_bar_at else None,
+             result.reason if result.status == "CLOSED" else None),
+        )
+        await db.commit()
+        return bool(cur.rowcount)
+
+
+async def _advance_open_shadow_positions(
+    db_path: str, *, account_id: str, future_bars: dict[str, list[dict]],
+) -> list[tuple[ShadowPosition, ShadowSimulation]]:
+    """Advance persisted synthetic positions before admitting any new exposure."""
+    updates: list[tuple[ShadowPosition, ShadowSimulation]] = []
+    for position in await _shadow_positions(db_path, account_id=account_id, status="OPEN"):
+        result = simulate_open_shadow_position(position, future_bars.get(position.instrument, []))
+        if result.status == "INVALID":
+            continue  # Preserve the existing position; malformed later data cannot close it.
+        if result.status == "OPEN" and result.last_bar_at == position.last_bar_at:
+            continue
+        async with aiosqlite.connect(db_path) as db:
+            if result.status == "CLOSED":
+                exit_fees = round((result.fees or 0.0) - position.entry_fees, 4)
+                await db.execute(
+                    "UPDATE proactive_shadow_positions SET status='CLOSED',last_bar_at=?,exit_price=?,"
+                    "exit_fees=?,gross_pnl=?,net_pnl=?,closed_at=?,close_reason=? "
+                    "WHERE opportunity_id=? AND status='OPEN'",
+                    (_stamp(result.last_bar_at).isoformat(), result.exit_price, exit_fees, result.gross_pnl,
+                     result.net_pnl, _stamp(result.last_bar_at).isoformat(), result.reason, position.opportunity_id),
+                )
+            else:
+                await db.execute(
+                    "UPDATE proactive_shadow_positions SET last_bar_at=? WHERE opportunity_id=? AND status='OPEN'",
+                    (_stamp(result.last_bar_at).isoformat(), position.opportunity_id),
+                )
+            await db.commit()
+        updates.append((position, result))
+    return updates
+
+
 async def run_shadow_workflow(
     db_path: str, *, account_id: str, universe: dict[str, list[dict]], now: datetime,
     scenario_capital: float = 8_000, future_bars: Optional[dict[str, list[dict]]] = None,
@@ -417,6 +602,22 @@ async def run_shadow_workflow(
     provenance remains explicit and deterministic.
     """
     now = _stamp(now); future_bars = future_bars or {}
+    # Existing exposure is advanced first. A malformed update cannot erase a
+    # position, and any realised result is then reflected in free scenario cash.
+    managed = await _advance_open_shadow_positions(
+        db_path, account_id=account_id, future_bars=future_bars,
+    )
+    for position, result in managed:
+        if result.status == "CLOSED":
+            await record_opportunity_event(
+                db_path, opportunity_id=position.opportunity_id, policy_id=position.policy_id,
+                policy_version="v1", account_id=account_id, mode="SHADOW", instrument=position.instrument,
+                stage="CLOSED", reason_code=result.reason,
+                idempotency_key=f"{position.opportunity_id}:closed",
+                observed_at=result.last_bar_at or now,
+                detail={"quantity": result.quantity, "gross_pnl": result.gross_pnl,
+                        "fees": result.fees, "net_pnl": result.net_pnl},
+            )
     proposals: list[ShadowProposal] = []
     for instrument, bars in sorted(universe.items()):
         # A rerun over identical completed data is one scan, not fresh evidence.
@@ -445,12 +646,27 @@ async def run_shadow_workflow(
             except ValueError:
                 pass  # An idempotent/restarted scan retains the original lifecycle.
             proposals.append(proposal)
-    allocations, reasons = size_shadow_allocations(proposals, capital=scenario_capital)
+    free_cash, open_instruments, recorded_opportunities = await _shadow_account_state(
+        db_path, account_id=account_id, scenario_capital=scenario_capital,
+    )
+    candidates: list[ShadowProposal] = []
+    reasons: dict[str, str] = {}
+    for proposal in proposals:
+        if proposal.opportunity_id in recorded_opportunities:
+            reasons[proposal.opportunity_id] = "RECORDED_SHADOW_OUTCOME"
+        elif proposal.instrument in open_instruments:
+            reasons[proposal.opportunity_id] = "OPEN_SHADOW_INSTRUMENT_EXPOSURE"
+        else:
+            candidates.append(proposal)
+    allocations, allocation_reasons = size_shadow_allocations(candidates, capital=free_cash)
+    reasons.update(allocation_reasons)
     allocated = {item.opportunity_id: item for item in allocations}
     outcomes = []
     for proposal in proposals:
         allocation = allocated.get(proposal.opportunity_id)
         if allocation is None:
+            if reasons[proposal.opportunity_id] in {"RECORDED_SHADOW_OUTCOME", "OPEN_SHADOW_INSTRUMENT_EXPOSURE"}:
+                continue
             await record_opportunity_event(db_path, opportunity_id=proposal.opportunity_id, policy_id=proposal.policy_id,
                 policy_version="v1", account_id=account_id, mode="SHADOW", instrument=proposal.instrument,
                 stage="DEFERRED", reason_code=reasons[proposal.opportunity_id], idempotency_key=f"{proposal.opportunity_id}:deferred",
@@ -459,14 +675,19 @@ async def run_shadow_workflow(
         await record_opportunity_event(db_path, opportunity_id=proposal.opportunity_id, policy_id=proposal.policy_id,
             policy_version="v1", account_id=account_id, mode="SHADOW", instrument=proposal.instrument,
             stage="SELECTED", reason_code="SHARED_CASH_RESERVED", idempotency_key=f"{proposal.opportunity_id}:selected", observed_at=now)
-        result = simulate_shadow_trade(proposal, future_bars.get(proposal.instrument, []), cash=scenario_capital, allocation=allocation)
+        result = simulate_shadow_trade(proposal, future_bars.get(proposal.instrument, []), cash=free_cash, allocation=allocation)
         stage = "CLOSED" if result.status == "CLOSED" else "FILLED" if result.status == "OPEN" else "EXPIRED"
+        if result.status in {"OPEN", "CLOSED"}:
+            await _persist_new_shadow_position(
+                db_path, proposal=proposal, account_id=account_id, result=result,
+            )
         await record_opportunity_event(db_path, opportunity_id=proposal.opportunity_id, policy_id=proposal.policy_id,
             policy_version="v1", account_id=account_id, mode="SHADOW", instrument=proposal.instrument,
             stage=stage, reason_code=result.reason, idempotency_key=f"{proposal.opportunity_id}:{stage.lower()}", observed_at=now,
             detail={"quantity": result.quantity, "gross_pnl": result.gross_pnl, "fees": result.fees, "net_pnl": result.net_pnl})
         outcomes.append({"opportunity_id": proposal.opportunity_id, "status": result.status, "net_pnl": result.net_pnl, "reason": result.reason})
-    return {"mode": "SHADOW", "proposals": len(proposals), "allocations": len(allocations), "outcomes": outcomes, "reasons": reasons}
+    return {"mode": "SHADOW", "proposals": len(proposals), "allocations": len(allocations), "outcomes": outcomes, "reasons": reasons,
+            "free_cash": round(free_cash, 4), "managed_positions": len(managed)}
 
 
 async def _record_shadow_configuration_state(

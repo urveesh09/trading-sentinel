@@ -78,6 +78,42 @@ def test_shared_allocation_reserves_cash_once_and_rejects_gap_overspend():
 
 
 @pytest.mark.asyncio
+async def test_open_shadow_position_reserves_cash_and_closes_on_a_later_bar(db_path):
+    from proactive_intelligence import _advance_open_shadow_positions, _persist_new_shadow_position, _shadow_account_state
+
+    now = datetime.now(timezone.utc)
+    proposal = ShadowProposal("durable", "trend_pullback_v1", "NSE:DURABLE", 100, 95, 110,
+                              now + timedelta(minutes=15), 1, 100, "test", now, now,
+                              now + timedelta(minutes=15), now + timedelta(hours=1))
+    entry_bar = {"timestamp": (now + timedelta(minutes=5)).isoformat(), "open": 100, "high": 101, "low": 99, "close": 100}
+    opened = simulate_shadow_trade(proposal, [entry_bar], cash=1_000)
+    assert opened.status == "OPEN" and opened.entry_at is not None and opened.last_bar_at is not None
+    assert await _persist_new_shadow_position(db_path, proposal=proposal, account_id="demo", result=opened)
+    assert not await _persist_new_shadow_position(db_path, proposal=proposal, account_id="demo", result=opened)
+    free_after_entry, instruments, identities = await _shadow_account_state(db_path, account_id="demo", scenario_capital=1_000)
+    assert 0 < free_after_entry < 1_000
+    assert instruments == {"NSE:DURABLE"} and identities == {"durable"}
+
+    # The first bar is replayed with a later stop bar. It must be ignored, then
+    # the later bar conservatively closes the durable position at the stop/gap.
+    stop_bar = {"timestamp": (now + timedelta(minutes=10)).isoformat(), "open": 94, "high": 96, "low": 93, "close": 94}
+    updates = await _advance_open_shadow_positions(db_path, account_id="demo", future_bars={"NSE:DURABLE": [entry_bar, stop_bar]})
+    assert len(updates) == 1 and updates[0][1].status == "CLOSED"
+    free_after_close, instruments, identities = await _shadow_account_state(db_path, account_id="demo", scenario_capital=1_000)
+    assert instruments == set() and identities == {"durable"}
+    assert free_after_close < 1_000, "loss and both-side costs must reduce synthetic cash"
+
+
+def test_shadow_simulator_rejects_duplicate_or_malformed_future_timestamps():
+    now = datetime.now(timezone.utc)
+    proposal = ShadowProposal("ordered", "trend_pullback_v1", "NSE:ORDERED", 100, 95, 110,
+                              now + timedelta(minutes=15), 1, 100, "test", now, now,
+                              now + timedelta(minutes=15), now + timedelta(hours=1))
+    duplicate = [{"timestamp": (now + timedelta(minutes=5)).isoformat(), "open": 100, "high": 101, "low": 99, "close": 100}] * 2
+    assert simulate_shadow_trade(proposal, duplicate, cash=1_000).reason == "INVALID_OR_UNORDERED_FUTURE_BARS"
+
+
+@pytest.mark.asyncio
 async def test_watchlist_lifecycle_cannot_be_reset_by_repeated_scan(db_path):
     now = datetime.now(timezone.utc)
     assert await transition_watchlist(db_path, opportunity_id="watch-1", state="WATCHING", reason="NEW", now=now, valid_until=now + timedelta(minutes=10))

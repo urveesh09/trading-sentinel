@@ -365,6 +365,22 @@ does not modify Production.
   records the prior intentional proactive analytics and hedge-delivery
   visibility endpoints; the job portion records the new shadow-only consumer.
 
+### Continuous SHADOW workflow — durable synthetic positions
+
+- Added a separate `proactive_shadow_positions` ledger for synthetic fills and
+  closed outcomes. Open SHADOW positions reserve their exact entry notional and
+  entry fee from the next scan's scenario cash; realised synthetic P&L is only
+  released after a recorded close. This ledger is not a broker-position table
+  and cannot be used by a live order path.
+- The scheduled workflow advances persisted open simulations before considering
+  new setups. It consumes only new completed fixture bars, preserves an open
+  position when a later fixture is malformed, and closes stop/target/deadline
+  outcomes with the same conservative assumptions as initial simulation.
+- Future-bar input now has a single chronological order and rejects duplicate
+  timestamps/OHLC-invalid data instead of silently using ambiguous history.
+  Focused regression coverage proves restart-safe reservation, later stop
+  management and no duplicate simulated position creation.
+
 ### P3 — partial, conservative shadow execution
 
 - Added a long-only offline fill simulator for the shadow proposals. It sizes
