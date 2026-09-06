@@ -172,3 +172,41 @@ fixes:
 This remains Dev-only and deliberately does not claim production readiness.
 The real adapter lifecycle for new/reopened/corporate-action positions and the
 separately authorized live delivery canary remain external release gates.
+
+## Round-four ledger and revision corrections — 6 September 2026
+
+- `python-engine/hedge_advisory.py`
+  - Post-dispatch failures cannot be downgraded to `internal_error`: if the
+    authoritative failure write fails after a timeout/disconnect, the durable
+    transport-started claim remains ambiguous and is never auto-replayed.
+  - `retired` is terminal. Retirement uses an optimistic compare-and-set on
+    the exact retry record and refuses to clear a live claim token owned by
+    another worker.
+  - Explicit absence from `PartnerEvaluationInput` is preserved; the
+    whole-portfolio gate no longer starts a second read and mixes versions.
+  - Phase-1 delivery now separates an economic `decision_id` from an expiring
+    `generation_id`. Delivered or ambiguous decisions suppress equivalent
+    generations; an expired, unsent generation can be replaced only by a
+    fresh evaluation generation.
+
+- `python-engine/hedge_analytics.py`
+  - Added a monotonic `partner_hedge_portfolio_revision`, advanced inside the
+    same write transaction for new positions, manual reconciliations/closes,
+    and accepted snapshots.
+  - Consistent evaluation input includes the revision and invalid-open-row
+    count. Invalid stored open rows fail readiness instead of disappearing
+    into an apparently complete portfolio.
+
+- `python-engine/tests`
+  - Added orchestration regressions for timeout plus failed authoritative
+    ledger write, terminal retirement, explicit absent snapshots, and manual
+    mutation revision invalidation.
+
+The real adapter lifecycle and operator workflow for manual ambiguity remain
+deployment gates. These changes strengthen unattended safety; they do not
+claim that partner delivery or income performance is proven in Production.
+
+Round-four verification: 189 selected Python tests passed (one pre-existing
+Starlette deprecation warning), compilation and diff checks passed. Gateway
+executor verification remains the existing 46 passing tests; no gateway code
+changed in this increment.

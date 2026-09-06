@@ -1260,6 +1260,12 @@ CREATE TABLE IF NOT EXISTS partner_hedge_account_binding (
     account_id TEXT NOT NULL,
     bound_at TEXT NOT NULL
 );
+CREATE TABLE IF NOT EXISTS partner_hedge_portfolio_revision (
+    revision_key TEXT PRIMARY KEY CHECK (revision_key = 'partner_hedge'),
+    revision INTEGER NOT NULL,
+    advanced_at TEXT NOT NULL,
+    reason TEXT NOT NULL
+);
 CREATE TABLE IF NOT EXISTS partner_input_snapshot_events (
     event_id INTEGER PRIMARY KEY AUTOINCREMENT,
     source TEXT NOT NULL,
@@ -1310,6 +1316,11 @@ async def init_hedge_db(db_path: str) -> None:
         await db.execute("PRAGMA busy_timeout=5000")
         await db.execute("PRAGMA journal_mode=WAL")
         await db.executescript(_SCHEMA)
+        await db.execute(
+            "INSERT OR IGNORE INTO partner_hedge_portfolio_revision "
+            "(revision_key, revision, advanced_at, reason) VALUES ('partner_hedge',0,?, 'schema_init')",
+            (datetime.now(IST).isoformat(),),
+        )
         cur = await db.execute("PRAGMA table_info(partner_positions)")
         columns = {row[1] for row in await cur.fetchall()}
         for name, ddl in _MIGRATION_COLUMNS.items():
@@ -1332,6 +1343,21 @@ async def init_hedge_db(db_path: str) -> None:
 
 def _timestamp(value: datetime) -> str:
     return _aware(value, "timestamp").isoformat()
+
+
+async def _advance_portfolio_revision(
+    db: aiosqlite.Connection, *, at: datetime, reason: str,
+) -> int:
+    """Advance the account-wide advice invalidation revision in this write txn."""
+    await db.execute(
+        "UPDATE partner_hedge_portfolio_revision SET revision=revision+1, advanced_at=?, reason=? "
+        "WHERE revision_key='partner_hedge'", (_timestamp(at), str(reason)),
+    )
+    cur = await db.execute(
+        "SELECT revision FROM partner_hedge_portfolio_revision WHERE revision_key='partner_hedge'"
+    )
+    row = await cur.fetchone()
+    return int(row[0])
 
 
 def _parse_timestamp(value: Optional[str]) -> Optional[datetime]:
@@ -1472,6 +1498,7 @@ async def create_partner_position(db_path: str, position: PartnerPosition) -> Pa
             _position_values(position),
         )
         position_id = int(cur.lastrowid)
+        await _advance_portfolio_revision(db, at=position.opened_at, reason="position_created")
         await db.commit()
     return PartnerPosition(**{**position.__dict__, "position_id": position_id})
 
@@ -1681,6 +1708,7 @@ async def reconcile_partner_position(
             deliverable_as_of=deliverable_as_of,
             deliverable_source=deliverable_source,
         )
+        await _advance_portfolio_revision(db, at=reconciled_at, reason="position_reconciled")
         await db.commit()
         return result
 
@@ -1833,6 +1861,7 @@ async def apply_partner_snapshot_transaction(
                 (source, account_id, snapshot_id, sequence, _timestamp(observed_at), stamp,
                  int(complete), str(payload_hash), "ACCEPTED", stamp),
             )
+            await _advance_portfolio_revision(db, at=received_at, reason="snapshot_accepted")
             await db.commit()
             return {"accepted": True, "idempotent": False, "reconciled": reconciled, "closed": closed}
         except Exception:
@@ -1867,6 +1896,8 @@ class PartnerEvaluationInput:
     snapshot: Optional[dict]
     all_open: tuple[PartnerPosition, ...]
     reconciled_open: tuple[PartnerPosition, ...]
+    portfolio_revision: int
+    invalid_open_rows: int
 
 
 async def load_partner_evaluation_input(db_path: str) -> PartnerEvaluationInput:
@@ -1894,13 +1925,19 @@ async def load_partner_evaluation_input(db_path: str) -> PartnerEvaluationInput:
             "received_at": _parse_timestamp(snapshot_row["received_at"]),
             "complete": bool(snapshot_row["complete"]),
         }
-        cur = await db.execute("SELECT * FROM partner_positions WHERE status='OPEN' ORDER BY position_id")
-        all_open = tuple(
-            position for row in await cur.fetchall()
-            if (position := _row_to_position(row)) is not None
+        cur = await db.execute(
+            "SELECT revision FROM partner_hedge_portfolio_revision WHERE revision_key='partner_hedge'"
         )
+        revision_row = await cur.fetchone()
+        portfolio_revision = int(revision_row["revision"]) if revision_row else 0
+        cur = await db.execute("SELECT * FROM partner_positions WHERE status='OPEN' ORDER BY position_id")
+        raw_open = await cur.fetchall()
+        parsed_open = [_row_to_position(row) for row in raw_open]
+        invalid_open_rows = sum(position is None for position in parsed_open)
+        all_open = tuple(position for position in parsed_open if position is not None)
         reconciled_open = tuple(
             position for position in all_open if position.verification_status == "RECONCILED"
         )
         await db.commit()
-    return PartnerEvaluationInput(snapshot, all_open, reconciled_open)
+    return PartnerEvaluationInput(snapshot, all_open, reconciled_open,
+                                  portfolio_revision, invalid_open_rows)

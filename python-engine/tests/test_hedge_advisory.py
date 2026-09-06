@@ -272,6 +272,50 @@ async def test_timeout_stays_manual_when_status_write_fails(db_path, monkeypatch
 
 
 @pytest.mark.asyncio
+async def test_timeout_stays_ambiguous_when_authoritative_failure_write_fails(db_path, monkeypatch):
+    calls = 0
+
+    async def timeout(*args, **kwargs):
+        nonlocal calls
+        calls += 1
+        return PartnerSendResult(False, state="ambiguous_timeout", error="telegram_timeout")
+
+    async def failed_write(*args, **kwargs):
+        raise RuntimeError("ledger unavailable")
+
+    monkeypatch.setattr(ha, "send_partner_result", timeout)
+    monkeypatch.setattr(ha, "_fail_claim", failed_write)
+    assert not await ha._send_claimed_review(
+        db_path, "protective_put_alert", "timeout-write", "advice", detail={}, now=NOW,
+    )
+    assert not await ha._send_claimed_review(
+        db_path, "protective_put_alert", "timeout-write", "advice", detail={},
+        now=NOW + timedelta(minutes=2),
+    )
+    assert calls == 1
+
+
+@pytest.mark.asyncio
+async def test_retired_delivery_generation_cannot_be_claimed(db_path):
+    await ha._record(
+        db_path, "protective_put_alert", "NIFTY:retired", False,
+        detail={"state": "retired"}, now=NOW,
+    )
+    assert await ha._claim(db_path, "protective_put_alert", "NIFTY:retired", now=NOW) is None
+
+
+@pytest.mark.asyncio
+async def test_explicitly_absent_consistent_snapshot_never_falls_back_to_new_read(db_path, monkeypatch):
+    async def unexpected_new_snapshot(*args, **kwargs):
+        return {"complete": True, "source": "x", "observed_at": NOW}
+
+    monkeypatch.setattr(ha, "load_latest_partner_snapshot", unexpected_new_snapshot)
+    assert await ha._whole_portfolio_input_reason(
+        db_path, [], [], NOW, snapshot=None,
+    ) == "NO_ACCEPTED_PORTFOLIO_SNAPSHOT"
+
+
+@pytest.mark.asyncio
 async def test_recovery_respects_hedge_kill_switch(monkeypatch):
     monkeypatch.setattr(settings, "PARTNER_HEDGE_ENABLED", False)
 

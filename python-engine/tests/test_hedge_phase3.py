@@ -205,6 +205,7 @@ async def test_phase3_tick_builds_portfolio_stress_inside_phase3_job(monkeypatch
         return SimpleNamespace(
             all_open=(_position(), second), reconciled_open=(_position(), second),
             snapshot={"source": "synthetic", "account_id": "paper", "snapshot_id": "s-1"},
+            portfolio_revision=1, invalid_open_rows=0,
         )
 
     async def ready_portfolio(*args, **kwargs):
