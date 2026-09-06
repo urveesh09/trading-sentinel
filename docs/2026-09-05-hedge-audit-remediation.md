@@ -268,3 +268,18 @@ fixture adapter, activity/outcome instrumentation, research basket, entry/exit
 experiments and optional-AI work remain separate, unimplemented packages. This
 increment makes no profit claim, does not send a live message or order, and
 does not modify Production.
+
+## Proactive product build progress — 6 September 2026
+
+### P1 — partial, implemented foundation
+
+- Added `python-engine/proactive_intelligence.py`: a mode-separated,
+  append-only opportunity/stage-event ledger with idempotency keys and a
+  funding-flow store. It explicitly distinguishes scan evaluations from unique
+  opportunities and does not create orders or contribute simulated evidence to
+  live profit.
+- Added `/analytics/proactive-activity` and a Dashboard activity funnel. The
+  view labels unavailable data rather than presenting it as healthy inactivity.
+- Added focused persistence/report tests. This is the shared P1 foundation;
+  diagnostics consumers, cash-flow ingestion and the P2–P7 strategy, fixture,
+  simulation, learning and AI milestones remain in progress.
