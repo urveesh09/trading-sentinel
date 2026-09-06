@@ -7,7 +7,10 @@ of the live cash books.
 from __future__ import annotations
 
 import json
-from datetime import datetime, timezone
+import hashlib
+import math
+from dataclasses import dataclass
+from datetime import datetime, timedelta, timezone
 from typing import Literal, Optional
 
 import aiosqlite
@@ -19,6 +22,88 @@ _STAGES = frozenset({
     "SELECTED", "SUBMITTED", "FILLED", "MANAGED", "CLOSED", "DEFERRED",
     "REJECTED", "EXPIRED", "UNAVAILABLE",
 })
+
+
+@dataclass(frozen=True)
+class ShadowProposal:
+    """Completed-bar-only research proposal; never an order instruction."""
+    opportunity_id: str
+    policy_id: str
+    instrument: str
+    entry: float
+    stop: float
+    target: float
+    valid_until: datetime
+    score: float
+    required_capital: float
+    reason: str
+
+
+def _proposal_id(policy_id: str, instrument: str, bar_time: datetime) -> str:
+    return hashlib.sha256(f"{policy_id}:{instrument}:{_stamp(bar_time).isoformat()}".encode()).hexdigest()[:20]
+
+
+def build_shadow_proposals(instrument: str, bars: list[dict], *, now: datetime) -> list[ShadowProposal]:
+    """Three reproducible completed-bar hypotheses with no look-ahead.
+
+    Bars contain timestamp/open/high/low/close/volume. The last bar is the
+    observed completed trigger; every reference excludes it where required.
+    """
+    now = _stamp(now)
+    if len(bars) < 21:
+        return []
+    try:
+        closes = [float(bar["close"]) for bar in bars]
+        highs = [float(bar["high"]) for bar in bars]
+        lows = [float(bar["low"]) for bar in bars]
+        volumes = [float(bar["volume"]) for bar in bars]
+        trigger_at = _stamp(datetime.fromisoformat(str(bars[-1]["timestamp"])))
+    except (KeyError, TypeError, ValueError):
+        return []
+    if trigger_at > now or min(closes + highs + lows) <= 0:
+        return []
+    last, prior = closes[-1], closes[-2]
+    fast, slow = sum(closes[-5:]) / 5, sum(closes[-20:]) / 20
+    proposals: list[ShadowProposal] = []
+    expiry = trigger_at + timedelta(minutes=30)
+    # Trend: uptrend, pullback toward fast MA, then confirmed completed-bar reclaim.
+    if fast > slow and closes[-3] <= fast * 1.01 and last > prior:
+        stop = min(lows[-3:])
+        if 0 < stop < last:
+            proposals.append(ShadowProposal(_proposal_id("trend_pullback_v1", instrument, trigger_at), "trend_pullback_v1", instrument, last, stop, last + 2 * (last-stop), expiry, fast/slow, last, "TREND_PULLBACK_RECLAIM"))
+    # Range: low directional drift, downside stretch, then stabilization/reclaim.
+    window = closes[-15:-1]
+    mean = sum(window) / len(window)
+    if max(window)-min(window) <= mean * .06 and closes[-2] < mean * .985 and last > closes[-2]:
+        stop = min(lows[-2:])
+        if 0 < stop < last:
+            proposals.append(ShadowProposal(_proposal_id("range_reversion_v1", instrument, trigger_at), "range_reversion_v1", instrument, last, stop, mean, expiry, (mean-last)/mean, last, "RANGE_STABILIZATION_RECLAIM"))
+    # Breakout: previous range contracts vs older range; trigger breaks prior range on volume.
+    recent_width = max(highs[-6:-1]) - min(lows[-6:-1])
+    old_width = max(highs[-16:-6]) - min(lows[-16:-6])
+    prior_high = max(highs[-6:-1])
+    if old_width > 0 and recent_width < old_width * .7 and last > prior_high and volumes[-1] > sum(volumes[-11:-1])/10:
+        stop = min(lows[-6:-1])
+        if 0 < stop < last:
+            proposals.append(ShadowProposal(_proposal_id("contraction_breakout_v1", instrument, trigger_at), "contraction_breakout_v1", instrument, last, stop, last + 2 * (last-stop), expiry, volumes[-1]/(sum(volumes[-11:-1])/10), last, "CONTRACTION_BREAKOUT"))
+    return proposals
+
+
+def allocate_shadow_proposals(proposals: list[ShadowProposal], *, capital: float, reserved: float = 0.0) -> tuple[list[ShadowProposal], dict[str, str]]:
+    """Choose feasible, non-duplicated proposals; cash is a valid outcome."""
+    free = max(0.0, float(capital) - float(reserved))
+    selected: list[ShadowProposal] = []
+    reasons: dict[str, str] = {}
+    seen = set()
+    for proposal in sorted(proposals, key=lambda item: item.score, reverse=True):
+        if proposal.instrument in seen:
+            reasons[proposal.opportunity_id] = "DUPLICATE_INSTRUMENT_EXPOSURE"
+        elif proposal.required_capital > free:
+            reasons[proposal.opportunity_id] = "INSUFFICIENT_SHADOW_CASH_AFTER_COST_RESERVE"
+        else:
+            selected.append(proposal); seen.add(proposal.instrument); free -= proposal.required_capital
+            reasons[proposal.opportunity_id] = "SELECTED"
+    return selected, reasons
 
 _SCHEMA = """
 CREATE TABLE IF NOT EXISTS proactive_opportunities (

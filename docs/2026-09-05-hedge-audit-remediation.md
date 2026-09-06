@@ -283,3 +283,17 @@ does not modify Production.
 - Added focused persistence/report tests. This is the shared P1 foundation;
   diagnostics consumers, cash-flow ingestion and the P2–P7 strategy, fixture,
   simulation, learning and AI milestones remain in progress.
+
+### P2/P3 — partial, shadow proposal core
+
+- Added deterministic completed-bar proposal builders for `trend_pullback_v1`,
+  `range_reversion_v1`, and `contraction_breakout_v1`. They produce research
+  proposals only; no builder has a broker or partner-delivery dependency.
+- Added a shared small-capital selector that ranks proposals, prevents duplicate
+  instrument exposure, respects reserved cash, and records a specific deferral
+  reason instead of forcing a trade. The ₹8,000 scenario therefore chooses
+  feasible evidence rather than splitting capital into uneconomic pools.
+- Focused fixtures cover a completed-bar proposal, insufficient free capital
+  and future-bar rejection. Scheduler/watchlist persistence, realistic fill
+  simulation, outcome learning, AI, partner fixture lifecycle and end-to-end
+  demonstration remain in progress.
