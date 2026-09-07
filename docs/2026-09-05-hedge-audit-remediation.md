@@ -530,3 +530,14 @@ does not modify Production.
 - The workflow runs this repair after its durable step claim. Regression
   coverage proves a persisted fill is repaired once and subsequent passes are
   no-ops.
+
+### P1 extension — scoped synthetic cash and valuation disclosure
+
+- The proactive activity API and Dashboard now show each synthetic account/run's
+  scenario capital, free cash after open reservations and realised outcomes,
+  alongside gross, fees and net. The calculation is tied to the immutable run
+  manifest; legacy records explicitly show capital as unavailable.
+- Open synthetic positions do not yet have a persisted current mark, so the UI
+  labels unrealised P&L as unavailable rather than displaying entry notional as
+  a fabricated valuation. All values remain clearly labelled fixture/SHADOW
+  research, never broker-reconciled profit.

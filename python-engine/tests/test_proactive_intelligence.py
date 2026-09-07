@@ -124,9 +124,13 @@ async def test_open_shadow_position_reserves_cash_and_closes_on_a_later_bar(db_p
     assert instruments == set() and identities == {"durable"}
     assert free_after_close < 1_000, "loss and both-side costs must reduce synthetic cash"
     portfolio = (await proactive_activity_report(db_path))["shadow_positions"]
-    assert portfolio == [pytest.approx({"account_id": "demo", "run_id": "legacy", "open_positions": 0, "closed_positions": 1,
-                                        "reserved_capital": 0.0, "gross_pnl": updates[0][1].gross_pnl,
-                                        "fees": updates[0][1].fees, "net_pnl": updates[0][1].net_pnl})]
+    assert len(portfolio) == 1
+    assert portfolio[0] == pytest.approx({"account_id": "demo", "run_id": "legacy", "open_positions": 0, "closed_positions": 1,
+                                          "reserved_capital": 0.0, "gross_pnl": updates[0][1].gross_pnl,
+                                          "fees": updates[0][1].fees, "net_pnl": updates[0][1].net_pnl,
+                                          "scenario_capital": None, "free_cash": None,
+                                          "marked_unrealized_pnl": None,
+                                          "unrealized_state": "UNAVAILABLE_NO_CURRENT_MARK"})
 
 
 @pytest.mark.asyncio

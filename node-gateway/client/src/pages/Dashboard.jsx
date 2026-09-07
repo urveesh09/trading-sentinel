@@ -131,8 +131,10 @@ function ActivityFunnel({ activity, isLoading, isError }) {
             <div className="font-semibold text-violet-200">{row.account_id}</div><div className="text-[10px] text-gray-500">Run: {row.run_id || 'legacy'}</div>
             <div className="mt-2 grid grid-cols-2 gap-2 text-xs text-gray-300">
               <span>Open: <b>{row.open_positions}</b></span><span>Closed: <b>{row.closed_positions}</b></span>
+              <span>Scenario cash: <b>{row.scenario_capital == null ? 'Unavailable' : formatMoney(row.scenario_capital, 'paper')}</b></span><span>Free cash: <b>{row.free_cash == null ? 'Unavailable' : formatMoney(row.free_cash, 'paper')}</b></span>
               <span>Reserved: <b>{formatMoney(row.reserved_capital, 'paper')}</b></span><span>Gross: <b className={pnlColour(row.gross_pnl)}>{formatMoney(row.gross_pnl, 'paper', { signed: true })}</b></span>
               <span>Fees: <b>{formatMoney(row.fees, 'paper')}</b></span><span>Net: <b className={pnlColour(row.net_pnl)}>{formatMoney(row.net_pnl, 'paper', { signed: true })}</b></span>
+              <span className="col-span-2 text-[10px] text-amber-200">Unrealized: {row.unrealized_state === 'UNAVAILABLE_NO_CURRENT_MARK' ? 'Unavailable — no current fixture mark' : formatMoney(row.marked_unrealized_pnl, 'paper', { signed: true })}</span>
             </div>
           </div>
         ))}</div> : <div className="mt-2 text-xs text-gray-500">No persisted synthetic fills or closed outcomes in this reporting window.</div>}

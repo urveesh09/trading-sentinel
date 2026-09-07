@@ -1170,7 +1170,7 @@ async def proactive_activity_report(db_path: str, *, days: int = 7) -> dict:
         )
         flows = await cur.fetchall()
         cur = await db.execute(
-            "SELECT COALESCE(r.account_id,p.account_id),COALESCE(r.run_id,'legacy'),"
+            "SELECT p.account_id,COALESCE(r.run_id,'legacy'),r.manifest_json,"
             "SUM(CASE WHEN status='OPEN' THEN 1 ELSE 0 END),"
             "SUM(CASE WHEN status='CLOSED' THEN 1 ELSE 0 END),"
             "COALESCE(SUM(CASE WHEN status='OPEN' THEN entry_price*quantity+entry_fees ELSE 0 END),0),"
@@ -1178,9 +1178,7 @@ async def proactive_activity_report(db_path: str, *, days: int = 7) -> dict:
             "COALESCE(SUM(CASE WHEN status='CLOSED' THEN exit_fees+entry_fees ELSE 0 END),0),"
             "COALESCE(SUM(CASE WHEN status='CLOSED' THEN net_pnl ELSE 0 END),0) "
             "FROM proactive_shadow_positions p LEFT JOIN proactive_shadow_runs r ON r.run_key=p.account_id "
-            "WHERE p.status='OPEN' OR date(p.closed_at) >= date('now', ?) "
-            "GROUP BY COALESCE(r.account_id,p.account_id),COALESCE(r.run_id,'legacy')",
-            (f'-{days - 1} days',),
+            "GROUP BY p.account_id,COALESCE(r.run_id,'legacy'),r.manifest_json",
         )
         position_rows = await cur.fetchall()
     by_mode: dict[str, dict] = {mode: {"scan_evaluations": 0, "unique_opportunities": 0, "stages": {}} for mode in sorted(_MODES)}
@@ -1193,11 +1191,24 @@ async def proactive_activity_report(db_path: str, *, days: int = 7) -> dict:
     funding = {mode: {} for mode in _MODES}
     for mode, flow_type, amount in flows:
         funding[mode][flow_type] = float(amount)
-    shadow_positions = [{
-        "account_id": row[0], "run_id": row[1], "open_positions": int(row[2]), "closed_positions": int(row[3]),
-        "reserved_capital": round(float(row[4]), 4), "gross_pnl": round(float(row[5]), 4),
-        "fees": round(float(row[6]), 4), "net_pnl": round(float(row[7]), 4),
-    } for row in position_rows]
+    shadow_positions = []
+    for row in position_rows:
+        try:
+            manifest = json.loads(row[2]) if row[2] else {}
+            scenario_capital = float(manifest["scenario_capital"]) if manifest else None
+        except (KeyError, TypeError, ValueError, json.JSONDecodeError):
+            scenario_capital = None
+        reserved, realised = float(row[5]), float(row[8])
+        shadow_positions.append({
+            "account_id": row[0], "run_id": row[1], "open_positions": int(row[3]), "closed_positions": int(row[4]),
+            "reserved_capital": round(reserved, 4), "gross_pnl": round(float(row[6]), 4),
+            "fees": round(float(row[7]), 4), "net_pnl": round(realised, 4),
+            "scenario_capital": scenario_capital,
+            "free_cash": (round(max(0.0, scenario_capital + realised - reserved), 4)
+                          if scenario_capital is not None else None),
+            "marked_unrealized_pnl": None,
+            "unrealized_state": "UNAVAILABLE_NO_CURRENT_MARK",
+        })
     return {"as_of": datetime.now(timezone.utc).isoformat(), "days": days, "modes": by_mode, "funding_flows": funding,
             "shadow_positions": shadow_positions,
             "note": "Events are operational evidence; only reconciled live ledgers establish live profit."}
