@@ -129,6 +129,20 @@ async def test_open_shadow_position_reserves_cash_and_closes_on_a_later_bar(db_p
                                         "fees": updates[0][1].fees, "net_pnl": updates[0][1].net_pnl})]
 
 
+@pytest.mark.asyncio
+async def test_shadow_evidence_repair_does_not_change_a_persisted_fill(db_path):
+    from proactive_intelligence import _persist_new_shadow_position, repair_shadow_evidence
+    now = datetime.now(timezone.utc)
+    proposal = ShadowProposal("repair", "trend_pullback_v1", "NSE:REPAIR", 100, 95, 110,
+                              now + timedelta(minutes=15), 1, 100, "test", now, now,
+                              now + timedelta(minutes=15), now + timedelta(hours=1))
+    result = simulate_shadow_trade(proposal, [{"timestamp": (now + timedelta(minutes=1)).isoformat(),
+                                                "open": 100, "high": 101, "low": 99, "close": 100}], cash=1_000)
+    assert await _persist_new_shadow_position(db_path, proposal=proposal, account_id="repair", result=result)
+    assert await repair_shadow_evidence(db_path, account_id="repair") == 1
+    assert await repair_shadow_evidence(db_path, account_id="repair") == 0
+
+
 def test_shadow_simulator_rejects_duplicate_or_malformed_future_timestamps():
     now = datetime.now(timezone.utc)
     proposal = ShadowProposal("ordered", "trend_pullback_v1", "NSE:ORDERED", 100, 95, 110,

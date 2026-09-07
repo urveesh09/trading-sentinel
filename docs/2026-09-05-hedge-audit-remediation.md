@@ -520,3 +520,13 @@ does not modify Production.
 - Regression coverage verifies an insufficient malformed fixture produces
   `UNAVAILABLE/INSUFFICIENT_HISTORY` and no proposal. This remains offline
   research evidence and does not affect any order or broker path.
+
+### N5 correction — repairable SHADOW lifecycle evidence
+
+- Added an idempotent repair pass that derives missing `FILLED`/`CLOSED`
+  lifecycle events from the authoritative synthetic-position ledger after an
+  interrupted write. It never creates a second position, alters cash, changes
+  a price or replays a fill; it only restores absent immutable evidence.
+- The workflow runs this repair after its durable step claim. Regression
+  coverage proves a persisted fill is repaired once and subsequent passes are
+  no-ops.

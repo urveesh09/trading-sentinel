@@ -805,6 +805,43 @@ async def _expire_pending_shadow_watchlists(db_path: str, *, now: datetime) -> l
     return [tuple(row) for row in rows]
 
 
+async def repair_shadow_evidence(db_path: str, *, account_id: str) -> int:
+    """Rebuild missing immutable lifecycle events from the economic ledger.
+
+    Positions are authoritative for synthetic cash.  This idempotent repair
+    makes an interruption after a position write observable without inventing
+    a second fill or changing any economics.
+    """
+    await init_proactive_intelligence(db_path)
+    async with aiosqlite.connect(db_path) as db:
+        rows = await (await db.execute(
+            "SELECT opportunity_id,policy_id,instrument,status,quantity,entry_price,entry_fees,"
+            "opened_at,closed_at,close_reason,gross_pnl,net_pnl,exit_fees "
+            "FROM proactive_shadow_positions WHERE account_id=?", (account_id,)
+        )).fetchall()
+    repaired = 0
+    for row in rows:
+        (opportunity_id, policy_id, instrument, status, quantity, entry_price, entry_fees,
+         opened_at, closed_at, close_reason, gross_pnl, net_pnl, exit_fees) = row
+        if await record_opportunity_event(
+            db_path, opportunity_id=opportunity_id, policy_id=policy_id, policy_version="v1",
+            account_id=account_id, mode="SHADOW", instrument=instrument, stage="FILLED",
+            reason_code="RECOVERED_POSITION_LEDGER", idempotency_key=f"{opportunity_id}:filled",
+            observed_at=_stamp(datetime.fromisoformat(opened_at)),
+            detail={"quantity": quantity, "entry_price": entry_price, "fees": entry_fees},
+        ):
+            repaired += 1
+        if status == "CLOSED" and closed_at and await record_opportunity_event(
+            db_path, opportunity_id=opportunity_id, policy_id=policy_id, policy_version="v1",
+            account_id=account_id, mode="SHADOW", instrument=instrument, stage="CLOSED",
+            reason_code=close_reason or "RECOVERED_POSITION_LEDGER",
+            idempotency_key=f"{opportunity_id}:closed", observed_at=_stamp(datetime.fromisoformat(closed_at)),
+            detail={"quantity": quantity, "gross_pnl": gross_pnl, "fees": (entry_fees or 0) + (exit_fees or 0), "net_pnl": net_pnl},
+        ):
+            repaired += 1
+    return repaired
+
+
 async def run_shadow_workflow(
     db_path: str, *, account_id: str, universe: dict[str, list[dict]], now: datetime,
     scenario_capital: float = 8_000, future_bars: Optional[dict[str, list[dict]]] = None,
@@ -845,6 +882,7 @@ async def run_shadow_workflow(
     )
     if prior_result is not None:
         return prior_result
+    repaired_evidence = await repair_shadow_evidence(db_path, account_id=storage_account_id)
     expired_pending = await _expire_pending_shadow_watchlists(db_path, now=now)
     for opportunity_id, policy_id, policy_version, stored_account_id, instrument in expired_pending:
         await record_opportunity_event(
@@ -1001,7 +1039,8 @@ async def run_shadow_workflow(
         db_path, account_id=storage_account_id, scenario_capital=scenario_capital,
     )
     result = {"mode": "SHADOW", "origin": origin, "account_id": account_id, "run_id": run_id, "as_of": now.isoformat(), "proposals": len(proposals), "allocations": len(allocations), "outcomes": outcomes, "reasons": reasons,
-              "free_cash": round(post_free_cash, 4), "managed_positions": len(managed), "expired_pending": len(expired_pending)}
+              "free_cash": round(post_free_cash, 4), "managed_positions": len(managed), "expired_pending": len(expired_pending),
+              "repaired_evidence": repaired_evidence}
     await _complete_shadow_step(
         db_path, run_key=storage_account_id, as_of=now,
         input_digest=step_input_digest, result=result,
