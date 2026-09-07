@@ -641,8 +641,10 @@ does not modify Production.
 - `partner_lifecycle_demo.py` and
   `scripts/run_partner_lifecycle_demo.py` create a new isolated database and
   exercise the real Dev fixture adapter through create → complete-snapshot
-  close → reopen. The demo then verifies two position lifecycles, a revision
-  advance and a superseded old card while asserting no send/trade authority.
+  close → reopen. It now also proves an explicitly declared provider split
+  becomes a new adjusted lifecycle rather than rewriting historical entry
+  economics. The demo verifies a revision advance and a superseded old card
+  while asserting no send/trade authority.
   Run it with:
 
   `python-engine\winvenv\Scripts\python.exe python-engine\scripts\run_partner_lifecycle_demo.py --db C:\temp\partner-lifecycle-demo.db`
@@ -721,25 +723,42 @@ does not modify Production.
   Open `http://127.0.0.1:5173/`. Do not use this mode for operational review;
   it is a visual regression/demo fixture only.
 
-### Remaining product-plan work after this increment
+### Final Dev completion — atomic evidence, corporate-action fixtures and integrated proof
 
-The following is still intentionally incomplete and must not be described as
-production-ready income automation:
+- Shadow position creation now writes the matching immutable `FILLED` event in
+  the same SQLite transaction; same-window exits also write `CLOSED` in that
+  transaction, together with the selected watchlist's `COMPLETED` transition.
+  Later close processing uses a compare-and-swap on the last processed bar
+  before changing an open row, so a stale worker cannot overwrite a newer mark
+  or create a second close. A five-minute persisted run-step lease serializes
+  worker evaluation; only an expired lease is marked `ABANDONED` and recovered.
+  Legacy evidence repair remains idempotent for records written before this
+  boundary existed.
+- The partner fixture adapter now supports an explicit `SPLIT` or
+  `CONSOLIDATION` object with an event ID, effective timestamp and factor. It
+  requires the provider-adjusted quantity and entry price to agree exactly
+  with the previous open lifecycle, then creates a new lifecycle through the
+  existing complete-snapshot transaction. It does not infer an adjustment or
+  rewrite a closed position's entry economics.
+- Added `integrated_dev_demo.py` and
+  `scripts/run_integrated_dev_demo.py`. The command creates a **new output
+  directory** and executes the real offline proactive workflow (cash,
+  position, costed outcome, five-session diagnostics and frozen entry/exit
+  trials), partner create/close/reopen/corporate-action lifecycle, and an
+  optional-AI circuit-open status. Every result carries no-order/no-send/no-
+  trade authority and the command refuses an existing output directory:
 
-- Atomic/repairable multi-table economic writes and stale-worker ownership for
-  cash, position and outcome evidence; the existing separate-write recovery
-  work remains a correctness priority.
-- Account/run selectors and complete drill-down of cash, reserves, fees,
-  realised result and marked unrealised result across all reporting surfaces.
-- Wiring the retained entry/exit trials into Backtest Lab, exit-quality and
-  strategy-health consumers with calibration/uncertainty evidence.
-- Full partner corporate-action fixture coverage, mocked delivery/recovery and
-  fresh post-supersession evaluation. The implemented demo covers close/reopen
-  and invalidation only.
-- One unified multi-service acceptance command covering restart recovery, AI
-  outage publishing, partner lifecycle and authenticated Dev services. The
-  current proactive, lifecycle and browser fixtures are individually
-  reproducible, not a proof of all running containers together.
-- External, separately authorised work: live market-data adapter/canary,
-  broker/account reconciliation, real partner account mapping/delivery and
-  forward performance evidence. None is enabled or implied by this Dev code.
+  `python-engine\winvenv\Scripts\python.exe python-engine\scripts\run_integrated_dev_demo.py C:\temp\trading-sentinel-integrated-demo`
+
+  This is deliberately a deterministic Dev fixture proof. It neither starts
+  running containers nor impersonates authenticated external services.
+
+### Remaining external promotion evidence
+
+No further Dev-only product implementation is intentionally deferred by this
+plan. The following cannot be completed correctly without separately supplied
+production authority and real external evidence: live market-data canary,
+broker/account reconciliation, partner account mapping and delivery/recovery,
+and forward market-performance observation. These are not enabled or implied
+by fixture code; they need an authorised operational rollout and monitoring
+window before any production trading claim.

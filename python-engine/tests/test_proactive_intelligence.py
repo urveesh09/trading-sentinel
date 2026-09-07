@@ -195,8 +195,77 @@ async def test_shadow_evidence_repair_does_not_change_a_persisted_fill(db_path):
     result = simulate_shadow_trade(proposal, [{"timestamp": (now + timedelta(minutes=1)).isoformat(),
                                                 "open": 100, "high": 101, "low": 99, "close": 100}], cash=1_000)
     assert await _persist_new_shadow_position(db_path, proposal=proposal, account_id="repair", result=result)
-    assert await repair_shadow_evidence(db_path, account_id="repair") == 1
+    # New positions and their FILLED evidence are one transaction. Repair is
+    # retained only for evidence created by older releases.
     assert await repair_shadow_evidence(db_path, account_id="repair") == 0
+    assert await repair_shadow_evidence(db_path, account_id="repair") == 0
+
+
+@pytest.mark.asyncio
+async def test_shadow_position_lifecycle_and_events_commit_together(db_path):
+    import aiosqlite
+    from proactive_intelligence import _advance_open_shadow_positions, _persist_new_shadow_position
+
+    now = datetime.now(timezone.utc)
+    proposal = ShadowProposal("atomic", "trend_pullback_v1", "NSE:ATOMIC", 100, 95, 110,
+                              now + timedelta(minutes=15), 1, 100, "test", now, now,
+                              now + timedelta(minutes=15), now + timedelta(hours=1))
+    entry = {"timestamp": (now + timedelta(minutes=1)).isoformat(), "open": 100, "high": 101, "low": 99, "close": 100}
+    opened = simulate_shadow_trade(proposal, [entry], cash=1_000)
+    assert await _persist_new_shadow_position(db_path, proposal=proposal, account_id="atomic", result=opened)
+    async with aiosqlite.connect(db_path) as db:
+        [filled] = await (await db.execute("SELECT stage FROM proactive_events WHERE opportunity_id='atomic'")).fetchall()
+    assert filled[0] == "FILLED"
+
+    stop = {"timestamp": (now + timedelta(minutes=2)).isoformat(), "open": 94, "high": 96, "low": 93, "close": 94}
+    assert len(await _advance_open_shadow_positions(
+        db_path, account_id="atomic", future_bars={"NSE:ATOMIC": [entry, stop]},
+    )) == 1
+    async with aiosqlite.connect(db_path) as db:
+        events = await (await db.execute(
+            "SELECT stage FROM proactive_events WHERE opportunity_id='atomic' ORDER BY event_id"
+        )).fetchall()
+        status = await (await db.execute(
+            "SELECT status FROM proactive_shadow_positions WHERE opportunity_id='atomic'"
+        )).fetchone()
+        watchlist = await (await db.execute(
+            "SELECT state FROM proactive_watchlist WHERE opportunity_id='atomic'"
+        )).fetchone()
+    assert [row[0] for row in events] == ["FILLED", "CLOSED"]
+    assert status[0] == "CLOSED"
+    assert watchlist is None, "legacy direct persistence does not fabricate a watchlist"
+
+
+@pytest.mark.asyncio
+async def test_shadow_step_lease_serializes_workers_and_recovers_only_after_expiry(db_path):
+    import aiosqlite
+    from proactive_intelligence import _claim_shadow_step, _ensure_shadow_run
+
+    now = datetime.now(timezone.utc)
+    run_key = await _ensure_shadow_run(
+        db_path, account_id="lease", run_id="lease-v1", scenario_capital=1_000,
+        fee_rate=.001, slippage_bps=5,
+    )
+    assert await _claim_shadow_step(db_path, run_key=run_key, as_of=now, input_digest="one", origin="SHADOW") is None
+    with pytest.raises(RuntimeError, match="active evaluation"):
+        await _claim_shadow_step(
+            db_path, run_key=run_key, as_of=now + timedelta(minutes=1), input_digest="two", origin="SHADOW",
+        )
+    async with aiosqlite.connect(db_path) as db:
+        await db.execute(
+            "UPDATE proactive_shadow_run_steps SET claimed_at=? WHERE run_key=? AND as_of=?",
+            ((now - timedelta(minutes=6)).isoformat(), run_key, now.isoformat()),
+        )
+        await db.commit()
+    assert await _claim_shadow_step(
+        db_path, run_key=run_key, as_of=now + timedelta(minutes=1), input_digest="two", origin="SHADOW",
+    ) is None
+    async with aiosqlite.connect(db_path) as db:
+        prior = await (await db.execute(
+            "SELECT status FROM proactive_shadow_run_steps WHERE run_key=? AND as_of=?",
+            (run_key, now.isoformat()),
+        )).fetchone()
+    assert prior[0] == "ABANDONED"
 
 
 @pytest.mark.asyncio

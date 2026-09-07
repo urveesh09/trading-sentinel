@@ -65,14 +65,28 @@ async def run_partner_lifecycle_demo(db_path: str) -> dict:
             str(target), fixture("reopen-3", 3, base + timedelta(minutes=2), [position]),
             received_at=base + timedelta(minutes=2),
         )
+        adjusted_position = {
+            **position, "quantity": 200, "entry_price": 125, "current_price": 127.5,
+            "corporate_action": {
+                "event_id": "demo-nifty-2-for-1", "type": "SPLIT", "factor": 2,
+                "effective_at": (base + timedelta(minutes=3)).isoformat(),
+            },
+        }
+        corporate_action = await apply_fixture_account(
+            str(target), fixture("split-4", 4, base + timedelta(minutes=3), [adjusted_position]),
+            received_at=base + timedelta(minutes=3),
+        )
 
     after = await load_partner_evaluation_input(str(target))
     positions = await load_partner_positions(str(target), include_closed=True)
     cards = await load_partner_hedge_cards(str(target))
-    if not created["accepted"] or not closed["accepted"] or not reopened["accepted"]:
+    if not created["accepted"] or not closed["accepted"] or not reopened["accepted"] or not corporate_action["accepted"]:
         raise RuntimeError("fixture lifecycle was not accepted")
-    if len(positions) != 2 or sum(row.status == "OPEN" for row in positions) != 1:
+    if len(positions) != 3 or sum(row.status == "OPEN" for row in positions) != 1:
         raise RuntimeError("fixture reopen did not create exactly one new open lifecycle")
+    current = next(row for row in positions if row.status == "OPEN")
+    if (current.signed_quantity, current.entry_price) != (200, 125):
+        raise RuntimeError("corporate action did not retain provider-adjusted lifecycle economics")
     if before.portfolio_revision >= after.portfolio_revision:
         raise RuntimeError("fixture lifecycle did not advance portfolio revision")
     if len(cards["cards"]) != 1 or not cards["cards"][0]["is_superseded"]:
@@ -82,7 +96,8 @@ async def run_partner_lifecycle_demo(db_path: str) -> dict:
     return {
         "mode": "SHADOW", "fixture_only": True, "can_send": False,
         "can_trade": False, "authorization_effect": "NONE", "account_id": account_id,
-        "snapshots": {"created": created, "closed": closed, "reopened": reopened},
+        "snapshots": {"created": created, "closed": closed, "reopened": reopened,
+                      "corporate_action": corporate_action},
         "lifecycle": {
             "position_count": len(positions), "open_positions": sum(row.status == "OPEN" for row in positions),
             "closed_positions": sum(row.status == "CLOSED" for row in positions),
@@ -91,6 +106,7 @@ async def run_partner_lifecycle_demo(db_path: str) -> dict:
         "cards": cards,
         "assertions": {
             "complete_snapshot_close": True, "reopen_new_lifecycle": True,
+            "corporate_action_new_lifecycle": True,
             "old_advice_superseded": True, "no_delivery_or_trade_authority": True,
         },
     }

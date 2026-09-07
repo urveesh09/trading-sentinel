@@ -75,6 +75,33 @@ def _fixture_position_metadata(raw: dict[str, Any], *, observed_at: datetime) ->
     return metadata
 
 
+def _fixture_corporate_action(raw: dict[str, Any], *, observed_at: datetime) -> dict[str, Any] | None:
+    """Validate an explicit fixture corporate action without rewriting history.
+
+    A split/consolidation is represented as a new synthetic position lifecycle;
+    historical entries remain intact for audit.  The provider must state the
+    adjusted quantity and entry price in the row itself, so this adapter never
+    guesses an economic adjustment from a symbol change.
+    """
+    action = raw.get("corporate_action")
+    if action is None:
+        return None
+    if not isinstance(action, dict):
+        raise ValueError("invalid fixture corporate_action")
+    event_id = str(action.get("event_id") or "").strip()
+    kind = str(action.get("type") or "").upper()
+    try:
+        factor = float(action["factor"])
+        effective_at = _source_timestamp(action.get("effective_at"), "corporate_action.effective_at")
+    except (KeyError, TypeError, ValueError) as exc:
+        raise ValueError("invalid fixture corporate_action") from exc
+    if not event_id or kind not in {"SPLIT", "CONSOLIDATION"} or not math.isfinite(factor) or factor <= 0:
+        raise ValueError("invalid fixture corporate_action")
+    if effective_at > observed_at:
+        raise ValueError("corporate_action cannot be effective after fixture observation")
+    return {"event_id": event_id, "type": kind, "factor": factor, "effective_at": effective_at}
+
+
 async def apply_fixture_account(db_path: str, fixture: dict[str, Any], *, received_at: datetime) -> dict:
     source, account_id = str(fixture["source"]), str(fixture["account_id"])
     observed_at = _source_timestamp(fixture.get("observed_at"), "observed_at")
@@ -101,14 +128,30 @@ async def apply_fixture_account(db_path: str, fixture: dict[str, Any], *, receiv
                 raise ValueError
         except (KeyError, TypeError, ValueError) as exc:
             raise ValueError("invalid fixture position") from exc
-        prepared.append((external_id, raw, quantity, lot_size, values, _fixture_position_metadata(raw, observed_at=observed_at)))
+        prepared.append((
+            external_id, raw, quantity, lot_size, values,
+            _fixture_position_metadata(raw, observed_at=observed_at),
+            _fixture_corporate_action(raw, observed_at=observed_at),
+        ))
     existing = list(await load_partner_positions(db_path, include_closed=True))
     snapshot_rows = []
     new_positions: dict[str, PartnerPosition] = {}
-    for external_id, raw, quantity, lot_size, values, metadata in prepared:
-        prefix = f"fixture:{source}:{account_id}:{external_id}:"
+    for external_id, raw, quantity, lot_size, values, metadata, corporate_action in prepared:
+        root_prefix = f"fixture:{source}:{account_id}:{external_id}:"
+        identity_key = external_id if corporate_action is None else f"{external_id}:ca:{corporate_action['event_id']}"
+        prefix = f"fixture:{source}:{account_id}:{identity_key}:"
         lifecycles = [p for p in existing if (p.broker_order_id or "").startswith(prefix)]
         position = next((p for p in lifecycles if p.status == "OPEN"), None)
+        if corporate_action is not None and position is None:
+            prior_open = next((p for p in existing if (p.broker_order_id or "").startswith(root_prefix)
+                               and p.status == "OPEN" and not (p.broker_order_id or "").startswith(prefix)), None)
+            if prior_open is None:
+                raise ValueError("corporate_action requires an existing open fixture position")
+            expected_quantity = prior_open.signed_quantity * corporate_action["factor"]
+            expected_entry = prior_open.entry_price / corporate_action["factor"]
+            if (not math.isclose(quantity, expected_quantity, rel_tol=0.0, abs_tol=1e-8)
+                    or not math.isclose(values[0], expected_entry, rel_tol=0.0, abs_tol=1e-8)):
+                raise ValueError("corporate_action row must declare provider-adjusted quantity and entry_price")
         if position is None:
             lifecycle = len(lifecycles) + 1
             try:

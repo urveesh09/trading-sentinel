@@ -521,6 +521,8 @@ CREATE INDEX IF NOT EXISTS idx_shadow_research_trials_run
  ON proactive_shadow_research_trials(research_run_id, entry_profile_id, exit_profile_id);
 """
 
+_SHADOW_STEP_LEASE = timedelta(minutes=5)
+
 
 def _stamp(value: Optional[datetime] = None) -> datetime:
     value = value or datetime.now(timezone.utc)
@@ -627,8 +629,28 @@ async def _claim_shadow_step(
         last_as_of = _stamp(datetime.fromisoformat(run[0])) if run[0] else None
         if last_as_of is not None and as_of < last_as_of:
             await db.rollback(); raise ValueError("shadow run clock cannot move backwards")
+        active = await (await db.execute(
+            "SELECT as_of,claimed_at FROM proactive_shadow_run_steps WHERE run_key=? AND status='RUNNING'",
+            (run_key,),
+        )).fetchone()
+        if active is not None and active[0] != as_of.isoformat():
+            try:
+                active_claimed_at = _stamp(datetime.fromisoformat(active[1]))
+            except (TypeError, ValueError):
+                active_claimed_at = datetime.now(timezone.utc)
+            if datetime.now(timezone.utc) - active_claimed_at <= _SHADOW_STEP_LEASE:
+                await db.rollback()
+                raise RuntimeError("shadow run already has an active evaluation step")
+            # The prior worker exceeded its lease. All economic writes are
+            # idempotent/CAS-protected, so a later run may safely recover after
+            # retaining the abandoned step as audit evidence.
+            await db.execute(
+                "UPDATE proactive_shadow_run_steps SET status='ABANDONED',completed_at=? "
+                "WHERE run_key=? AND as_of=? AND status='RUNNING'",
+                (datetime.now(timezone.utc).isoformat(), run_key, active[0]),
+            )
         row = await (await db.execute(
-            "SELECT input_digest,status,result_json FROM proactive_shadow_run_steps WHERE run_key=? AND as_of=?",
+            "SELECT input_digest,status,result_json,claimed_at FROM proactive_shadow_run_steps WHERE run_key=? AND as_of=?",
             (run_key, as_of.isoformat()),
         )).fetchone()
         if row is not None:
@@ -636,7 +658,22 @@ async def _claim_shadow_step(
                 await db.rollback(); raise ValueError("shadow run step input conflicts with established clock")
             if row[1] == "COMPLETED" and row[2]:
                 await db.rollback(); return json.loads(row[2])
-            await db.rollback(); raise RuntimeError("shadow run step is already in progress")
+            if row[1] == "RUNNING":
+                try:
+                    claimed_at = _stamp(datetime.fromisoformat(row[3]))
+                except (TypeError, ValueError):
+                    claimed_at = datetime.now(timezone.utc)
+                if datetime.now(timezone.utc) - claimed_at <= _SHADOW_STEP_LEASE:
+                    await db.rollback(); raise RuntimeError("shadow run step is already in progress")
+            if row[1] not in {"RUNNING", "ABANDONED"}:
+                await db.rollback(); raise RuntimeError("shadow run step cannot be recovered")
+            await db.execute(
+                "UPDATE proactive_shadow_run_steps SET status='RUNNING',claimed_at=?,completed_at=NULL "
+                "WHERE run_key=? AND as_of=? AND input_digest=?",
+                (datetime.now(timezone.utc).isoformat(), run_key, as_of.isoformat(), input_digest),
+            )
+            await db.commit()
+            return None
         await db.execute(
             "INSERT INTO proactive_shadow_run_steps (run_key,as_of,input_digest,origin,status,claimed_at) VALUES (?,?,?,?,?,?)",
             (run_key, as_of.isoformat(), input_digest, origin, "RUNNING", datetime.now(timezone.utc).isoformat()),
@@ -685,28 +722,54 @@ async def record_opportunity_event(
     await init_proactive_intelligence(db_path)
     async with aiosqlite.connect(db_path) as db:
         await db.execute("BEGIN IMMEDIATE")
-        await db.execute(
-            "INSERT OR IGNORE INTO proactive_opportunities "
-            "(opportunity_id,policy_id,policy_version,account_id,mode,instrument,observed_at,valid_until,current_state,current_reason,detail_json) "
-            "VALUES (?,?,?,?,?,?,?,?,?,?,?)",
-            (opportunity_id, policy_id, policy_version, account_id, mode, instrument,
-             observed.isoformat(), expiry.isoformat() if expiry else None, stage, reason_code,
-             json.dumps(payload, sort_keys=True)),
+        inserted = await _record_opportunity_event_in_transaction(
+            db, opportunity_id=opportunity_id, policy_id=policy_id,
+            policy_version=policy_version, account_id=account_id, mode=mode,
+            instrument=instrument, stage=stage, reason_code=reason_code,
+            idempotency_key=idempotency_key, observed=observed, expiry=expiry,
+            decision_id=decision_id, detail=payload,
         )
-        cur = await db.execute(
-            "INSERT OR IGNORE INTO proactive_events "
-            "(opportunity_id,decision_id,mode,stage,reason_code,event_at,session_date,idempotency_key,detail_json) "
-            "VALUES (?,?,?,?,?,?,?,?,?)",
-            (opportunity_id, decision_id, mode, stage, reason_code, observed.isoformat(),
-             observed.date().isoformat(), idempotency_key, json.dumps(payload, sort_keys=True)),
-        )
-        if cur.rowcount:
-            await db.execute(
-                "UPDATE proactive_opportunities SET current_state=?, current_reason=?, detail_json=? WHERE opportunity_id=?",
-                (stage, reason_code, json.dumps(payload, sort_keys=True), opportunity_id),
-            )
         await db.commit()
-        return bool(cur.rowcount)
+        return inserted
+
+
+async def _record_opportunity_event_in_transaction(
+    db: aiosqlite.Connection, *, opportunity_id: str, policy_id: str,
+    policy_version: str, account_id: str, mode: Mode, instrument: str,
+    stage: str, reason_code: str, idempotency_key: str, observed: datetime,
+    expiry: Optional[datetime] = None, decision_id: Optional[str] = None,
+    detail: Optional[dict] = None,
+) -> bool:
+    """Write one lifecycle event using the caller's already-open transaction.
+
+    Shadow position state and the immutable lifecycle log must never be
+    committed independently.  This deliberately small helper is also used by
+    the public event writer, keeping the idempotency and current-state rules in
+    exactly one place.
+    """
+    payload = detail or {}
+    payload_json = json.dumps(payload, sort_keys=True)
+    await db.execute(
+        "INSERT OR IGNORE INTO proactive_opportunities "
+        "(opportunity_id,policy_id,policy_version,account_id,mode,instrument,observed_at,valid_until,current_state,current_reason,detail_json) "
+        "VALUES (?,?,?,?,?,?,?,?,?,?,?)",
+        (opportunity_id, policy_id, policy_version, account_id, mode, instrument,
+         observed.isoformat(), expiry.isoformat() if expiry else None, stage,
+         reason_code, payload_json),
+    )
+    cur = await db.execute(
+        "INSERT OR IGNORE INTO proactive_events "
+        "(opportunity_id,decision_id,mode,stage,reason_code,event_at,session_date,idempotency_key,detail_json) "
+        "VALUES (?,?,?,?,?,?,?,?,?)",
+        (opportunity_id, decision_id, mode, stage, reason_code, observed.isoformat(),
+         observed.date().isoformat(), idempotency_key, payload_json),
+    )
+    if cur.rowcount:
+        await db.execute(
+            "UPDATE proactive_opportunities SET current_state=?, current_reason=?, detail_json=? WHERE opportunity_id=?",
+            (stage, reason_code, payload_json, opportunity_id),
+        )
+    return bool(cur.rowcount)
 
 
 async def transition_watchlist(
@@ -1015,13 +1078,19 @@ async def _persist_new_shadow_position(
     db_path: str, *, proposal: ShadowProposal, account_id: str, result: ShadowSimulation,
     fee_rate: float = .001, marked_price: Optional[float] = None, marked_at: Optional[datetime] = None,
 ) -> bool:
-    """Create an immutable synthetic fill/outcome exactly once per opportunity."""
+    """Atomically create a synthetic position and its immutable evidence.
+
+    A crash cannot leave synthetic cash/exposure visible without the matching
+    ``FILLED`` (and, for same-window exits, ``CLOSED``) event.  The unique
+    position key and event idempotency keys make retries harmless.
+    """
     if result.status not in {"OPEN", "CLOSED"} or not result.entry_price or not result.entry_at:
         raise ValueError("only filled shadow simulations can create positions")
     entry_fees = round(result.entry_price * result.quantity * fee_rate, 4)
     exit_fees = round((result.fees or 0.0) - entry_fees, 4) if result.status == "CLOSED" else None
     await init_proactive_intelligence(db_path)
     async with aiosqlite.connect(db_path) as db:
+        await db.execute("BEGIN IMMEDIATE")
         cur = await db.execute(
             "INSERT OR IGNORE INTO proactive_shadow_positions ("
             "opportunity_id,account_id,policy_id,instrument,status,quantity,entry_price,entry_fees,"
@@ -1037,6 +1106,30 @@ async def _persist_new_shadow_position(
              result.exit_price if result.status == "CLOSED" else marked_price,
              (_stamp(marked_at).isoformat() if marked_at else None)),
         )
+        if cur.rowcount:
+            fill_detail = {"quantity": result.quantity, "entry_price": result.entry_price,
+                           "fees": entry_fees}
+            await _record_opportunity_event_in_transaction(
+                db, opportunity_id=proposal.opportunity_id, policy_id=proposal.policy_id,
+                policy_version="v1", account_id=account_id, mode="SHADOW",
+                instrument=proposal.instrument, stage="FILLED",
+                reason_code="SIMULATED_FILL", idempotency_key=f"{proposal.opportunity_id}:filled",
+                observed=_stamp(result.entry_at), detail=fill_detail,
+            )
+            if result.status == "CLOSED":
+                await _record_opportunity_event_in_transaction(
+                    db, opportunity_id=proposal.opportunity_id, policy_id=proposal.policy_id,
+                    policy_version="v1", account_id=account_id, mode="SHADOW",
+                    instrument=proposal.instrument, stage="CLOSED",
+                    reason_code=result.reason, idempotency_key=f"{proposal.opportunity_id}:closed",
+                    observed=_stamp(result.last_bar_at or result.entry_at),
+                    detail={"quantity": result.quantity, "gross_pnl": result.gross_pnl,
+                            "fees": result.fees, "net_pnl": result.net_pnl},
+                )
+            await _complete_shadow_watchlist_in_transaction(
+                db, opportunity_id=proposal.opportunity_id,
+                reason=result.reason, observed_at=_stamp(result.last_bar_at or result.entry_at),
+            )
         await db.commit()
         return bool(cur.rowcount)
 
@@ -1057,29 +1150,67 @@ async def _advance_open_shadow_positions(
             continue  # Preserve the existing position; malformed later data cannot close it.
         if result.status == "OPEN" and result.last_bar_at == position.last_bar_at:
             continue
+        changed = False
         async with aiosqlite.connect(db_path) as db:
+            await db.execute("BEGIN IMMEDIATE")
             if result.status == "CLOSED":
                 exit_fees = round((result.fees or 0.0) - position.entry_fees, 4)
-                await db.execute(
+                cur = await db.execute(
                     "UPDATE proactive_shadow_positions SET status='CLOSED',last_bar_at=?,exit_price=?,"
                     "exit_fees=?,gross_pnl=?,net_pnl=?,closed_at=?,close_reason=?,marked_price=?,marked_at=? "
-                    "WHERE opportunity_id=? AND status='OPEN'",
+                    "WHERE opportunity_id=? AND status='OPEN' AND last_bar_at=?",
                     (_stamp(result.last_bar_at).isoformat(), result.exit_price, exit_fees, result.gross_pnl,
                      result.net_pnl, _stamp(result.last_bar_at).isoformat(), result.reason,
-                     result.exit_price, _stamp(result.last_bar_at).isoformat(), position.opportunity_id),
+                     result.exit_price, _stamp(result.last_bar_at).isoformat(), position.opportunity_id,
+                     position.last_bar_at.isoformat()),
                 )
+                changed = bool(cur.rowcount)
+                if changed:
+                    await _record_opportunity_event_in_transaction(
+                        db, opportunity_id=position.opportunity_id, policy_id=position.policy_id,
+                        policy_version="v1", account_id=account_id, mode="SHADOW",
+                        instrument=position.instrument, stage="CLOSED", reason_code=result.reason,
+                        idempotency_key=f"{position.opportunity_id}:closed",
+                        observed=_stamp(result.last_bar_at),
+                        detail={"quantity": result.quantity, "gross_pnl": result.gross_pnl,
+                                "fees": result.fees, "net_pnl": result.net_pnl},
+                    )
+                    await _complete_shadow_watchlist_in_transaction(
+                        db, opportunity_id=position.opportunity_id, reason=result.reason,
+                        observed_at=_stamp(result.last_bar_at),
+                    )
             else:
                 mark = next((close for stamp, _open, _high, _low, close in normalised
                              if stamp == result.last_bar_at), None)
-                await db.execute(
+                cur = await db.execute(
                     "UPDATE proactive_shadow_positions SET last_bar_at=?,marked_price=?,marked_at=? "
-                    "WHERE opportunity_id=? AND status='OPEN'",
+                    "WHERE opportunity_id=? AND status='OPEN' AND last_bar_at=?",
                     (_stamp(result.last_bar_at).isoformat(), mark, _stamp(result.last_bar_at).isoformat(),
-                     position.opportunity_id),
+                     position.opportunity_id, position.last_bar_at.isoformat()),
                 )
+                changed = bool(cur.rowcount)
             await db.commit()
-        updates.append((position, result))
+        if changed:
+            updates.append((position, result))
     return updates
+
+
+async def _complete_shadow_watchlist_in_transaction(
+    db: aiosqlite.Connection, *, opportunity_id: str, reason: str,
+    observed_at: datetime,
+) -> None:
+    """Make a selected synthetic lifecycle complete with its fill/close.
+
+    Legacy evidence can lack a watchlist row, so absence deliberately remains
+    non-fatal.  For a current workflow a position is only admitted after
+    selection; changing it here avoids a committed fill with a stale ARMED or
+    SELECTED explanation after a crash.
+    """
+    await db.execute(
+        "UPDATE proactive_watchlist SET state='COMPLETED',reason=?,updated_at=? "
+        "WHERE opportunity_id=? AND state IN ('WATCHING','ARMED','SELECTED')",
+        (reason, observed_at.isoformat(), opportunity_id),
+    )
 
 
 async def _expire_pending_shadow_watchlists(db_path: str, *, now: datetime) -> list[tuple[str, str, str, str, str]]:

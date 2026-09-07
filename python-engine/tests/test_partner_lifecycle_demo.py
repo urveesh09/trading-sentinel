@@ -9,7 +9,8 @@ async def test_partner_lifecycle_demo_proves_close_reopen_and_supersession(tmp_p
 
     assert result["fixture_only"] is True
     assert result["can_send"] is result["can_trade"] is False
-    assert result["lifecycle"]["position_count"] == 2
+    assert result["lifecycle"]["position_count"] == 3
     assert result["lifecycle"]["open_positions"] == 1
     assert result["assertions"]["old_advice_superseded"] is True
+    assert result["assertions"]["corporate_action_new_lifecycle"] is True
     assert result["cards"]["cards"][0]["portfolio_state"] == "SUPERSEDED"
