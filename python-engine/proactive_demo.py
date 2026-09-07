@@ -12,8 +12,11 @@ from pathlib import Path
 from proactive_intelligence import (
     build_shadow_proposals,
     proactive_activity_report,
+    proactive_session_diagnostics,
     proactive_shadow_comparison,
     proactive_shadow_research_report,
+    record_opportunity_event,
+    record_scan_run,
     run_shadow_research_comparison,
     run_shadow_workflow,
 )
@@ -98,6 +101,28 @@ async def run_proactive_shadow_demo(db_path: str) -> dict:
     outcomes = await proactive_shadow_comparison(db_path, days=30)
     trials = await proactive_shadow_research_report(db_path, research_run_id="demo-entry-exit-v1")
 
+    # A separate five-eligible-session fixture records liveness and one fill
+    # without inventing activity for the two most recent healthy sessions.
+    # It exercises the same persisted scan/event evidence consumed by the
+    # Dashboard diagnostic, rather than a one-off explanatory mock.
+    diagnostic_account, diagnostic_policy = "demo-sparse-activity", "trend_pullback_v1"
+    session_days = (1, 2, 3, 4, 7)
+    for index, day in enumerate(session_days, start=1):
+        session_at = base.replace(day=day, hour=10)
+        await record_scan_run(
+            db_path, scan_id=f"demo-five-session-{index}", policy_id=diagnostic_policy,
+            account_id=diagnostic_account, mode="SHADOW", status="SUCCESS", observed_at=session_at,
+        )
+    await record_opportunity_event(
+        db_path, opportunity_id="demo-five-session-fill", policy_id=diagnostic_policy,
+        policy_version="v1", account_id=diagnostic_account, mode="SHADOW",
+        instrument="SYNTH:SPARSE", stage="FILLED", reason_code="NEXT_EXECUTABLE_OPEN",
+        idempotency_key="demo-five-session-fill", observed_at=base.replace(day=3, hour=10),
+    )
+    session_diagnostics = await proactive_session_diagnostics(
+        db_path, now=base.replace(day=7, hour=15), session_count=5,
+    )
+
     if pending["allocations"] < 1 or expiry_sweep["expired_pending"] != 1:
         raise RuntimeError("demo did not prove persistent pending expiry")
     if selected["allocations"] != 1 or managed["managed_positions"] != 1:
@@ -110,13 +135,20 @@ async def run_proactive_shadow_demo(db_path: str) -> dict:
         raise RuntimeError("demo admitted more than the single intended synthetic fill")
     if not outcomes["comparisons"] or len(trials["comparisons"]) != 6:
         raise RuntimeError("demo did not persist its outcome and matched-trial evidence")
+    diagnostic_scope = next(
+        row for row in session_diagnostics["reports"]
+        if row["scope"]["account_id"] == diagnostic_account
+    )
+    diagnostic_codes = {row["code"] for row in diagnostic_scope["findings"]}
+    if diagnostic_codes != {"TWO_ELIGIBLE_SESSIONS_NO_VIABLE_CANDIDATES", "FIVE_ELIGIBLE_SESSIONS_SPARSE_FILLS"}:
+        raise RuntimeError("demo did not produce the expected five-session diagnostic evidence")
     return {
         "mode": "SHADOW", "research_only": True, "can_place_orders": False,
         "authorization_effect": "NONE", "account_id": account_id, "run_id": run_id,
         "workflow": {"pending": pending, "expiry_sweep": expiry_sweep, "selected": selected, "managed": managed},
         "research_run": research, "activity": activity, "outcome_comparison": outcomes,
-        "matched_trial_comparison": trials,
+        "matched_trial_comparison": trials, "five_session_diagnostics": session_diagnostics,
         "assertions": {"pending_expired": True, "one_affordable_allocation": True,
                        "completed_bar_exit": True, "nonnegative_synthetic_cash": True,
-                       "matched_trials_retained": True},
+                       "matched_trials_retained": True, "five_session_inactivity_explained": True},
     }

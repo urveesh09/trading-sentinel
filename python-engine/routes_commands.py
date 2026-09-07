@@ -281,6 +281,19 @@ async def get_proactive_diagnostics():
     return {"findings": await proactive_inactivity_diagnostics(settings.DB_PATH, now=datetime.now(timezone.utc))}
 
 
+@router.get("/analytics/proactive-session-diagnostics")
+async def get_proactive_session_diagnostics(sessions: int = 5):
+    """Calendar-aware two/five-session evidence; never an execution route."""
+    from datetime import datetime, timezone
+    from proactive_intelligence import proactive_session_diagnostics
+    try:
+        return await proactive_session_diagnostics(
+            settings.DB_PATH, now=datetime.now(timezone.utc), session_count=sessions,
+        )
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+
+
 
 @router.get("/analytics/suggestions")
 async def get_suggestions(days: int = 14):

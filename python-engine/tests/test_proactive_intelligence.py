@@ -7,12 +7,61 @@ from proactive_intelligence import (
     proactive_shadow_comparison, proactive_shadow_research_report, run_shadow_research_comparison,
     size_shadow_allocations,
     record_opportunity_event,
-    record_cash_flow, proactive_inactivity_diagnostics, record_scan_run,
+    record_cash_flow, proactive_inactivity_diagnostics, proactive_session_diagnostics, record_scan_run,
     run_configured_shadow_workflow, run_shadow_workflow,
     simulate_shadow_trade,
     transition_watchlist,
     shadow_history_state,
 )
+
+
+@pytest.mark.asyncio
+async def test_five_eligible_session_diagnostics_are_calendar_aware_and_scope_isolated(db_path):
+    # 2026-09-01 through 2026-09-07 contains five NSE sessions (weekend
+    # excluded). The last two successful sessions deliberately have no viable
+    # candidate, while the whole window has one fill.
+    base = datetime(2026, 9, 1, 10, tzinfo=timezone.utc)
+    policy, account = "trend_pullback_v1", "diagnostic-account"
+    for index, day in enumerate((1, 2, 3, 4, 7), start=1):
+        at = base.replace(day=day)
+        assert await record_scan_run(
+            db_path, scan_id=f"five-session-{index}", policy_id=policy,
+            account_id=account, mode="SHADOW", status="SUCCESS", observed_at=at,
+        )
+    assert await record_opportunity_event(
+        db_path, opportunity_id="five-session-filled", policy_id=policy, policy_version="v1",
+        account_id=account, mode="SHADOW", instrument="SYNTH:FILL", stage="FILLED",
+        reason_code="NEXT_EXECUTABLE_OPEN", idempotency_key="five-session-filled",
+        observed_at=base.replace(day=3),
+    )
+    # An unavailable second account must not contaminate the healthy scope.
+    assert await record_scan_run(
+        db_path, scan_id="other-account", policy_id=policy, account_id="other-account",
+        mode="SHADOW", status="UNAVAILABLE", reason="FIXTURE_SOURCE_INVALID", observed_at=base.replace(day=7),
+    )
+
+    report = await proactive_session_diagnostics(
+        db_path, now=base.replace(day=7, hour=15), session_count=5,
+    )
+    scoped = next(row for row in report["reports"] if row["scope"]["account_id"] == account)
+    assert scoped["eligible_sessions"] == ["2026-09-01", "2026-09-02", "2026-09-03", "2026-09-04", "2026-09-07"]
+    assert scoped["scan_health"]["successful_sessions"] == 5
+    assert scoped["activity"]["fills"] == 1
+    codes = {row["code"] for row in scoped["findings"]}
+    assert codes == {"TWO_ELIGIBLE_SESSIONS_NO_VIABLE_CANDIDATES", "FIVE_ELIGIBLE_SESSIONS_SPARSE_FILLS"}
+    other = next(row for row in report["reports"] if row["scope"]["account_id"] == "other-account")
+    assert other["scan_health"]["unavailable_sessions"] == 1
+    assert "ELIGIBLE_SESSION_SCAN_HEALTH_INCOMPLETE" in {row["code"] for row in other["findings"]}
+
+
+@pytest.mark.asyncio
+async def test_session_diagnostics_make_never_configured_explicit(db_path):
+    report = await proactive_session_diagnostics(
+        db_path, now=datetime(2026, 9, 7, 15, tzinfo=timezone.utc), session_count=5,
+    )
+    assert report["reports"] == []
+    assert report["findings"] == [{"code": "SCANNER_NEVER_CONFIGURED_OR_RAN"}]
+    assert report["can_place_orders"] is False
 
 
 @pytest.mark.asyncio
@@ -263,11 +312,19 @@ async def test_isolated_proactive_demo_rejects_historical_backfill_and_proves_fu
     assert result["assertions"] == {
         "pending_expired": True, "one_affordable_allocation": True, "completed_bar_exit": True,
         "nonnegative_synthetic_cash": True, "matched_trials_retained": True,
+        "five_session_inactivity_explained": True,
     }
     assert result["workflow"]["expiry_sweep"]["expired_pending"] == 1
     assert "MISSED_ENTRY_WINDOW_NO_HISTORICAL_BACKFILL" in result["workflow"]["managed"]["reasons"].values()
     [position] = result["activity"]["shadow_positions"]
     assert position["closed_positions"] == 1 and position["free_cash"] > position["scenario_capital"]
+    diagnostic_scope = next(
+        row for row in result["five_session_diagnostics"]["reports"]
+        if row["scope"]["account_id"] == "demo-sparse-activity"
+    )
+    assert {row["code"] for row in diagnostic_scope["findings"]} == {
+        "TWO_ELIGIBLE_SESSIONS_NO_VIABLE_CANDIDATES", "FIVE_ELIGIBLE_SESSIONS_SPARSE_FILLS",
+    }
 
 
 def test_shadow_simulator_rejects_duplicate_or_malformed_future_timestamps():

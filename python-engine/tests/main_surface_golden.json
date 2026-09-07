@@ -223,6 +223,14 @@
       "response_model": null
     },
     {
+      "endpoint": "get_optional_ai_status",
+      "methods": [
+        "GET"
+      ],
+      "path": "/analytics/optional-ai-status",
+      "response_model": null
+    },
+    {
       "endpoint": "get_outcomes",
       "methods": [
         "GET"
@@ -239,11 +247,35 @@
       "response_model": null
     },
     {
+      "endpoint": "get_proactive_comparison",
+      "methods": [
+        "GET"
+      ],
+      "path": "/analytics/proactive-comparison",
+      "response_model": null
+    },
+    {
       "endpoint": "get_proactive_diagnostics",
       "methods": [
         "GET"
       ],
       "path": "/analytics/proactive-diagnostics",
+      "response_model": null
+    },
+    {
+      "endpoint": "get_proactive_research_comparison",
+      "methods": [
+        "GET"
+      ],
+      "path": "/analytics/proactive-research-comparison",
+      "response_model": null
+    },
+    {
+      "endpoint": "get_proactive_session_diagnostics",
+      "methods": [
+        "GET"
+      ],
+      "path": "/analytics/proactive-session-diagnostics",
       "response_model": null
     },
     {
@@ -396,6 +428,22 @@
         "GET"
       ],
       "path": "/ops/metrics",
+      "response_model": null
+    },
+    {
+      "endpoint": "post_optional_ai_status",
+      "methods": [
+        "POST"
+      ],
+      "path": "/ops/optional-ai-status",
+      "response_model": null
+    },
+    {
+      "endpoint": "get_partner_hedge_cards",
+      "methods": [
+        "GET"
+      ],
+      "path": "/partner/hedge/cards",
       "response_model": null
     },
     {

@@ -10,6 +10,8 @@ import { useDivisionPerformance } from '../hooks/useDivisionPerformance';
 import { useProactiveActivity } from '../hooks/useProactiveActivity';
 import { usePartnerHedgeCards } from '../hooks/usePartnerHedgeCards';
 import { useOptionalAiStatus } from '../hooks/useOptionalAiStatus';
+import { useProactiveSessionDiagnostics } from '../hooks/useProactiveSessionDiagnostics';
+import { evidenceModeEnabled } from '../evidenceMode';
 import { isActivePosition } from '../utils/positions';
 import {
   INSUFFICIENT_DATA,
@@ -203,6 +205,32 @@ function OptionalAiEvidence({ optionalAi, isLoading, isError }) {
   );
 }
 
+function SessionDiagnostics({ sessionDiagnostics, isLoading, isError }) {
+  if (isLoading) return <div className="rounded border border-gray-800 bg-gray-900 p-4 text-sm text-gray-500">Loading calendar-aware session diagnostics…</div>;
+  if (isError || !sessionDiagnostics) return <div className="rounded border border-amber-800 bg-amber-950/30 p-4 text-sm text-amber-200">Five-session diagnostic evidence is unavailable; no inactivity conclusion is inferred.</div>;
+  const reports = Array.isArray(sessionDiagnostics.reports) ? sessionDiagnostics.reports : [];
+  const rootFindings = Array.isArray(sessionDiagnostics.findings) ? sessionDiagnostics.findings : [];
+  return (
+    <section className="rounded-xl border border-indigo-900/70 bg-indigo-950/10 p-4" aria-labelledby="session-diagnostics-heading">
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div><h2 id="session-diagnostics-heading" className="text-xl font-bold text-white">Five-session activity explanation</h2><p className="mt-1 text-xs text-gray-500">Calendar-aware operational evidence by policy, account and mode. It explains inactivity; it never loosens a gate.</p></div>
+        <span className="rounded border border-indigo-500/50 bg-indigo-950 px-2 py-1 text-[10px] font-bold tracking-widest text-indigo-200">OBSERVATION ONLY</span>
+      </div>
+      {reports.length ? <div className="mt-4 space-y-3">{reports.map((report) => {
+        const scope = report.scope || {};
+        const health = report.scan_health || {};
+        const activity = report.activity || {};
+        const findings = Array.isArray(report.findings) ? report.findings : [];
+        return <article key={`${scope.policy_id}:${scope.account_id}:${scope.mode}`} className="rounded border border-gray-800 bg-gray-950/70 p-3">
+          <div className="flex flex-wrap items-start justify-between gap-2"><div><h3 className="font-semibold text-indigo-100">{scope.policy_id || 'Unknown policy'} · {scope.account_id || 'Unknown account'}</h3><p className="mt-0.5 text-[11px] text-gray-500">{scope.mode || 'Unknown mode'} · sessions: {(report.eligible_sessions || []).join(', ') || 'Unavailable'}</p></div><span className="rounded bg-slate-800 px-2 py-1 text-[10px] font-bold text-slate-300">SCANS {health.successful_sessions ?? 0}/{health.expected_sessions ?? '—'}</span></div>
+          <div className="mt-3 grid grid-cols-2 gap-3 text-xs sm:grid-cols-4"><div><div className="text-gray-500">Missing scans</div><div className="mt-1 font-semibold text-gray-200">{health.missing_sessions ?? '—'}</div></div><div><div className="text-gray-500">Unavailable scans</div><div className="mt-1 font-semibold text-gray-200">{health.unavailable_sessions ?? '—'}</div></div><div><div className="text-gray-500">Viable events</div><div className="mt-1 font-semibold text-gray-200">{activity.viable_events ?? '—'}</div></div><div><div className="text-gray-500">Fills</div><div className="mt-1 font-semibold text-gray-200">{activity.fills ?? '—'}</div></div></div>
+          {findings.length ? <ul className="mt-3 space-y-1 border-t border-gray-800 pt-3 text-xs text-amber-200">{findings.map((finding, index) => <li key={`${finding.code}:${index}`}>{finding.code}</li>)}</ul> : <p className="mt-3 border-t border-gray-800 pt-3 text-xs text-emerald-300">No two/five-session activity concern is evidenced for this scope.</p>}
+        </article>;
+      })}</div> : <div className="mt-4 rounded border border-gray-800 bg-gray-950/70 p-4 text-sm text-gray-500">{rootFindings.map((finding) => finding.code).join(' · ') || 'No scanner scope has reported evidence yet.'}</div>}
+    </section>
+  );
+}
+
 export default function Dashboard({ healthData, navigateToPositions, navigateToBacktests, navigateToResearch }) {
   const { signals, mutate: refreshSignals } = useSignals();
   const { positions } = usePositions();
@@ -210,6 +238,7 @@ export default function Dashboard({ healthData, navigateToPositions, navigateToB
   const proactive = useProactiveActivity();
   const partnerHedgeCards = usePartnerHedgeCards();
   const optionalAi = useOptionalAiStatus();
+  const sessionDiagnostics = useProactiveSessionDiagnostics();
   const viewModel = buildDivisionViewModel(divisionPerformance);
   const cbHalted = healthData?.circuit_breaker_halted || false;
   const cbReasons = healthData?.circuit_breaker_reasons || [];
@@ -220,6 +249,7 @@ export default function Dashboard({ healthData, navigateToPositions, navigateToB
     <div className="min-h-screen bg-gray-950 text-gray-200">
       <StatusBar cbHalted={cbHalted} />
       <main className="mx-auto max-w-[1600px] space-y-6 p-4 sm:p-6">
+        {evidenceModeEnabled && <div className="rounded border border-amber-500/80 bg-amber-950/70 p-3 text-sm font-semibold text-amber-100">DEV EVIDENCE FIXTURE — synthetic browser-rendering scenario. It does not contact authenticated services and cannot represent live balances, orders, partner delivery or profit.</div>}
         {cbHalted && <CircuitBreaker haltReasons={cbReasons} onResetSuccess={() => window.location.reload()} />}
 
         <header className="flex flex-wrap items-center justify-between gap-4">
@@ -249,6 +279,8 @@ export default function Dashboard({ healthData, navigateToPositions, navigateToB
           <PartnerHedgeCards {...partnerHedgeCards} />
           <OptionalAiEvidence {...optionalAi} />
         </div>
+
+        <SessionDiagnostics {...sessionDiagnostics} />
 
         <section className="grid grid-cols-1 gap-6 xl:grid-cols-3">
           <div className="space-y-4 xl:col-span-1">

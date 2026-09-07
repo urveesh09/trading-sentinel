@@ -682,3 +682,64 @@ does not modify Production.
   environment before promotion:
 
   `cd agent && .venv/bin/python -m pytest tests/test_async_reviews.py tests/test_agent_pipeline.py -q`
+
+### P7 extension — five-session diagnostics and verified browser rendering
+
+- Added `proactive_session_diagnostics()` and the authenticated
+  `/analytics/proactive-session-diagnostics?sessions=5` route. It uses the
+  shared local NSE calendar (cached/static fallback, never a network refresh)
+  to enumerate eligible sessions. Each report is scoped by policy, account and
+  mode so one account's later scan cannot make another scope appear healthy.
+  It separates missing/unavailable scan evidence from viable opportunities,
+  deferrals and unique fill-or-close outcomes.
+- The report emits `TWO_ELIGIBLE_SESSIONS_NO_VIABLE_CANDIDATES` only when the
+  two most recent eligible sessions both scanned successfully with no viable
+  opportunity, and `FIVE_ELIGIBLE_SESSIONS_SPARSE_FILLS` only after all five
+  sessions scanned successfully with one or fewer unique filled/closed
+  opportunities. Neither diagnosis changes any strategy gate or has order
+  authority. The Dashboard renders these scoped explanations directly.
+- The deterministic proactive SHADOW demo now seeds the same persisted
+  scan/event interfaces across five eligible sessions and asserts both
+  diagnostics. This is evidence of sparse activity, not an instruction to
+  force an order or relax a risk/cost constraint.
+- Browser rendering was verified against the actual Dashboard component using
+  its Dev-only evidence mode. It visibly rendered the synthetic activity/cash
+  card, a superseded partner card with no-send/no-trade labels, an
+  `OUTAGE_CIRCUIT_OPEN` AI panel with no authority, and both session findings.
+  The mode is guarded by both Vite's `DEV` flag and
+  `VITE_EVIDENCE_DEMO=true`, contains a prominent synthetic-data banner, and
+  disables the fixture hooks' HTTP requests. It cannot be enabled in a normal
+  production build and is not evidence of live balances, authenticated API
+  connectivity, broker execution or partner delivery. To reproduce locally:
+
+  ```powershell
+  $env:VITE_EVIDENCE_DEMO = 'true'
+  Set-Location node-gateway\client
+  npm run dev -- --host 127.0.0.1
+  ```
+
+  Open `http://127.0.0.1:5173/`. Do not use this mode for operational review;
+  it is a visual regression/demo fixture only.
+
+### Remaining product-plan work after this increment
+
+The following is still intentionally incomplete and must not be described as
+production-ready income automation:
+
+- Atomic/repairable multi-table economic writes and stale-worker ownership for
+  cash, position and outcome evidence; the existing separate-write recovery
+  work remains a correctness priority.
+- Account/run selectors and complete drill-down of cash, reserves, fees,
+  realised result and marked unrealised result across all reporting surfaces.
+- Wiring the retained entry/exit trials into Backtest Lab, exit-quality and
+  strategy-health consumers with calibration/uncertainty evidence.
+- Full partner corporate-action fixture coverage, mocked delivery/recovery and
+  fresh post-supersession evaluation. The implemented demo covers close/reopen
+  and invalidation only.
+- One unified multi-service acceptance command covering restart recovery, AI
+  outage publishing, partner lifecycle and authenticated Dev services. The
+  current proactive, lifecycle and browser fixtures are individually
+  reproducible, not a proof of all running containers together.
+- External, separately authorised work: live market-data adapter/canary,
+  broker/account reconciliation, real partner account mapping/delivery and
+  forward performance evidence. None is enabled or implied by this Dev code.

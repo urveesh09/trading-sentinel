@@ -809,6 +809,162 @@ async def proactive_inactivity_diagnostics(db_path: str, *, now: datetime, max_s
     return findings
 
 
+def _recent_eligible_session_dates(db_path: str, *, now: datetime, count: int) -> list[str]:
+    """Return recent NSE sessions without using a network calendar refresh.
+
+    Diagnostics must remain available during a market-data outage.  The shared
+    synchronous calendar reader uses its local cache and the maintained static
+    holiday fallback; it does not fabricate a weekday-only success state.
+    """
+    if not 1 <= count <= 20:
+        raise ValueError("session count must be within 1..20")
+    from market_calendar import is_trading_day_sync
+
+    cursor = _stamp(now).date()
+    sessions: list[str] = []
+    while len(sessions) < count:
+        if is_trading_day_sync(cursor, db_path):
+            sessions.append(cursor.isoformat())
+        cursor -= timedelta(days=1)
+    return list(reversed(sessions))
+
+
+async def proactive_session_diagnostics(
+    db_path: str, *, now: datetime, session_count: int = 5,
+) -> dict:
+    """Explain two/five-session activity per policy/account/mode scope.
+
+    This is read-only evidence.  It distinguishes data/scan health from a
+    genuine lack of viable candidates, capital/risk deferrals and sparse fills;
+    it cannot relax a gate or manufacture an order.
+    """
+    now = _stamp(now)
+    sessions = _recent_eligible_session_dates(db_path, now=now, count=session_count)
+    recent_two = sessions[-2:]
+    await init_proactive_intelligence(db_path)
+    async with aiosqlite.connect(db_path) as db:
+        scopes = await (await db.execute(
+            "SELECT DISTINCT policy_id,account_id,mode FROM proactive_scan_runs "
+            "ORDER BY policy_id,account_id,mode"
+        )).fetchall()
+        reports = []
+        for policy_id, account_id, mode in scopes:
+            scan_rows = await (await db.execute(
+                "SELECT substr(observed_at,1,10),status,reason,observed_at FROM proactive_scan_runs "
+                "WHERE policy_id=? AND account_id=? AND mode=? "
+                "AND substr(observed_at,1,10) IN ({}) "
+                "ORDER BY observed_at".format(",".join("?" for _ in sessions)),
+                (policy_id, account_id, mode, *sessions),
+            )).fetchall()
+            # Last attempt per calendar session is the liveness truth for the
+            # scope; a later unavailable attempt must not be hidden by an
+            # earlier success from the same session.
+            scan_by_session = {
+                row[0]: {"status": row[1], "reason": row[2], "observed_at": row[3]}
+                for row in scan_rows
+            }
+            event_rows = await (await db.execute(
+                "SELECT e.stage,e.reason_code,COUNT(DISTINCT e.opportunity_id) "
+                "FROM proactive_events e JOIN proactive_opportunities o "
+                "ON o.opportunity_id=e.opportunity_id "
+                "WHERE o.policy_id=? AND o.account_id=? AND o.mode=? "
+                "AND e.session_date IN ({}) GROUP BY e.stage,e.reason_code".format(
+                    ",".join("?" for _ in sessions)
+                ),
+                (policy_id, account_id, mode, *sessions),
+            )).fetchall()
+            stage_counts: dict[str, int] = {}
+            reason_counts: dict[str, int] = {}
+            for stage, reason, count in event_rows:
+                stage_counts[stage] = stage_counts.get(stage, 0) + int(count)
+                reason_counts[reason] = reason_counts.get(reason, 0) + int(count)
+            session_health = [scan_by_session.get(day) for day in sessions]
+            successful_sessions = sum(row is not None and row["status"] == "SUCCESS" for row in session_health)
+            unavailable_sessions = sum(row is not None and row["status"] != "SUCCESS" for row in session_health)
+            missing_sessions = sum(row is None for row in session_health)
+            healthy_recent_two = all(
+                scan_by_session.get(day, {}).get("status") == "SUCCESS" for day in recent_two
+            )
+            fills = stage_counts.get("FILLED", 0) + stage_counts.get("CLOSED", 0)
+            # A CLOSED event follows FILLED for the same opportunity, so count
+            # unique fill-or-close opportunities instead of adding stage totals.
+            fill_row = await (await db.execute(
+                "SELECT COUNT(DISTINCT e.opportunity_id) FROM proactive_events e "
+                "JOIN proactive_opportunities o ON o.opportunity_id=e.opportunity_id "
+                "WHERE o.policy_id=? AND o.account_id=? AND o.mode=? "
+                "AND e.session_date IN ({}) AND e.stage IN ('FILLED','CLOSED')".format(
+                    ",".join("?" for _ in sessions)
+                ),
+                (policy_id, account_id, mode, *sessions),
+            )).fetchone()
+            fills = int(fill_row[0])
+            viable = sum(stage_counts.get(stage, 0) for stage in ("COST_VIABLE", "RISK_APPROVED", "SELECTED", "FILLED", "CLOSED"))
+            recent_viable_row = await (await db.execute(
+                "SELECT COUNT(DISTINCT e.opportunity_id) FROM proactive_events e "
+                "JOIN proactive_opportunities o ON o.opportunity_id=e.opportunity_id "
+                "WHERE o.policy_id=? AND o.account_id=? AND o.mode=? "
+                "AND e.session_date IN ({}) AND e.stage IN "
+                "('COST_VIABLE','RISK_APPROVED','SELECTED','FILLED','CLOSED')".format(
+                    ",".join("?" for _ in recent_two)
+                ),
+                (policy_id, account_id, mode, *recent_two),
+            )).fetchone()
+            recent_viable = int(recent_viable_row[0])
+            findings = []
+            if missing_sessions or unavailable_sessions:
+                findings.append({
+                    "code": "ELIGIBLE_SESSION_SCAN_HEALTH_INCOMPLETE",
+                    "missing_sessions": missing_sessions,
+                    "unavailable_sessions": unavailable_sessions,
+                })
+            if healthy_recent_two and recent_viable == 0:
+                findings.append({
+                    "code": "TWO_ELIGIBLE_SESSIONS_NO_VIABLE_CANDIDATES",
+                    "sessions": recent_two,
+                })
+            if successful_sessions == session_count and fills <= 1:
+                findings.append({
+                    "code": "FIVE_ELIGIBLE_SESSIONS_SPARSE_FILLS" if session_count == 5 else "ELIGIBLE_SESSIONS_SPARSE_FILLS",
+                    "fills": fills, "sessions": sessions,
+                })
+            deferred = stage_counts.get("DEFERRED", 0)
+            if deferred:
+                findings.append({
+                    "code": "VIABLE_WORKFLOWS_DEFERRED",
+                    "deferred": deferred,
+                    "reasons": {key: value for key, value in reason_counts.items() if key in {
+                        "INSUFFICIENT_SHADOW_CASH_AFTER_COST_RESERVE", "OPEN_SHADOW_INSTRUMENT_EXPOSURE",
+                        "MISSED_ENTRY_WINDOW_NO_HISTORICAL_BACKFILL",
+                    }},
+                })
+            reports.append({
+                "scope": {"policy_id": policy_id, "account_id": account_id, "mode": mode},
+                "eligible_sessions": sessions,
+                "scan_health": {
+                    "expected_sessions": session_count, "successful_sessions": successful_sessions,
+                    "unavailable_sessions": unavailable_sessions, "missing_sessions": missing_sessions,
+                    "by_session": [{"session_date": day, **(scan_by_session.get(day) or {"status": "MISSING"})} for day in sessions],
+                },
+                "activity": {
+                    "stages": stage_counts, "reasons": reason_counts, "fills": fills,
+                    "viable_events": viable,
+                },
+                "findings": findings,
+            })
+    if not reports:
+        return {
+            "mode": "OBSERVATION_ONLY", "session_count": session_count,
+            "eligible_sessions": sessions, "reports": [],
+            "findings": [{"code": "SCANNER_NEVER_CONFIGURED_OR_RAN"}],
+            "can_place_orders": False, "authorization_effect": "NONE",
+        }
+    return {
+        "mode": "OBSERVATION_ONLY", "session_count": session_count,
+        "eligible_sessions": sessions, "reports": reports, "findings": [],
+        "can_place_orders": False, "authorization_effect": "NONE",
+    }
+
+
 async def _shadow_positions(db_path: str, *, account_id: str, status: Optional[str] = None) -> list[ShadowPosition]:
     await init_proactive_intelligence(db_path)
     query = (

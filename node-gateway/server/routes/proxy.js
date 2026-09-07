@@ -75,6 +75,8 @@ router.get('/analytics/proactive-research-comparison', (req, res) =>
   proxyToEngine(req, res, withQuery('/analytics/proactive-research-comparison', req.query)));
 router.get('/analytics/optional-ai-status', (req, res) =>
   proxyToEngine(req, res, '/analytics/optional-ai-status'));
+router.get('/analytics/proactive-session-diagnostics', (req, res) =>
+  proxyToEngine(req, res, withQuery('/analytics/proactive-session-diagnostics', req.query)));
 router.get('/partner/hedge/cards', (req, res) =>
   proxyToEngine(req, res, withQuery('/partner/hedge/cards', req.query)));
 

@@ -97,6 +97,7 @@ test('proactive comparison proxy requires a session', async () => {
 
 test.each([
   ['optional AI status', '/analytics/optional-ai-status'],
+  ['five-session proactive diagnostics', '/analytics/proactive-session-diagnostics?sessions=5'],
   ['partner hedge cards', '/partner/hedge/cards?limit=12'],
 ])('proxies authenticated %s evidence without granting authority', async (_label, route) => {
   const payload = { can_place_orders: false, execution_authority: 'NONE' };
