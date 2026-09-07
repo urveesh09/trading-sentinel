@@ -1,4 +1,5 @@
 from datetime import datetime, timedelta, timezone
+from pathlib import Path
 
 import json
 
@@ -633,7 +634,7 @@ async def test_configured_shadow_runner_is_opt_in_and_records_unavailable_fixtur
     monkeypatch.setattr(settings, "PROACTIVE_SHADOW_FIXTURE_PATH", "")
     monkeypatch.setattr(settings, "PROACTIVE_SHADOW_ACCOUNT_ID", "dev-fixture")
     assert (await run_configured_shadow_workflow(now=now))["state"] == "FIXTURE_SOURCE_UNCONFIGURED"
-    report = await proactive_activity_report(settings.DB_PATH)
+    report = await proactive_activity_report(settings.DB_PATH, now=now)
     assert report["modes"]["SHADOW"]["scan_evaluations"] == 0
     diagnostics = await proactive_inactivity_diagnostics(settings.DB_PATH, now=now)
     assert any(row["code"] == "SCANNER_SOURCE_UNAVAILABLE" and row["reason"] == "FIXTURE_SOURCE_UNCONFIGURED" for row in diagnostics)
@@ -642,3 +643,30 @@ async def test_configured_shadow_runner_is_opt_in_and_records_unavailable_fixtur
     fixture.write_text('{"mode":"LIVE","universe":{}}', encoding="utf-8")
     monkeypatch.setattr(settings, "PROACTIVE_SHADOW_FIXTURE_PATH", str(fixture))
     assert (await run_configured_shadow_workflow(now=now + timedelta(minutes=1)))["state"] == "FIXTURE_SOURCE_INVALID"
+
+
+@pytest.mark.asyncio
+async def test_configured_shadow_runner_can_use_explicit_recorded_completed_bar_source(tmp_path, monkeypatch):
+    from config import settings
+
+    fixture = Path(__file__).parent / "fixtures" / "proactive_completed_bars_recorded_v1.json"
+    now = datetime(2026, 9, 7, 10, tzinfo=timezone.utc)
+    monkeypatch.setattr(settings, "DB_PATH", str(tmp_path / "provider.db"))
+    monkeypatch.setattr(settings, "PROACTIVE_SHADOW_ENABLED", True)
+    monkeypatch.setattr(settings, "PROACTIVE_SHADOW_DATA_SOURCE", "RECORDED_COMPLETED_BARS_V1")
+    monkeypatch.setattr(settings, "PROACTIVE_SHADOW_COMPLETED_BAR_FIXTURE_PATH", str(fixture))
+    monkeypatch.setattr(settings, "PROACTIVE_SHADOW_MAX_DATA_AGE_SECONDS", 900)
+    monkeypatch.setattr(settings, "PROACTIVE_SHADOW_ACCOUNT_ID", "recorded-source")
+    monkeypatch.setattr(settings, "PROACTIVE_SHADOW_RUN_ID", "recorded-source-v1")
+    monkeypatch.setattr(settings, "PROACTIVE_SHADOW_SCENARIO_CAPITAL", 1_000)
+
+    result = await run_configured_shadow_workflow(now=now)
+    assert result["state"] == "COMPLETED"
+    assert result["market_data"]["source_kind"] == "RECORDED_COMPLETED_BARS_V1"
+    report = await proactive_activity_report(settings.DB_PATH, now=now)
+    [latest] = report["market_data"]["latest"]
+    assert latest["state"] == "AVAILABLE"
+    assert latest["provider"] == "recorded-demo-provider"
+    assert latest["instrument_count"] == 1
+    stale = await proactive_activity_report(settings.DB_PATH, now=now + timedelta(minutes=16))
+    assert stale["market_data"]["latest"][0]["state"] == "STALE"

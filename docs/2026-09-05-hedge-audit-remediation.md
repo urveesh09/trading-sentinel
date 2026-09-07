@@ -799,3 +799,44 @@ window before any production trading claim.
   from reaching a provider after the circuit opens. It remains an annotation;
   provider budget persistence across a process restart is still an operational
   integration task, not authority to enable AI or trading.
+
+### Completed-bar market-data SHADOW path (2026-09-07)
+
+- Added `python-engine/proactive_market_data.py`, a deliberately read-only
+  provider contract for captured completed OHLCV responses. It validates
+  timezone-aware capture/close timestamps, stable provider instrument IDs,
+  OHLCV bounds, ordering, duplicate bars, freshness and an explicit adjustment
+  version. A bar that closes after the captured response is rejected, rather
+  than being available to an earlier decision. The proposal builder receives
+  only bars closed at the evaluation clock; this path has no broker, order or
+  partner-delivery dependency.
+- `run_configured_shadow_workflow` retains the existing
+  `LEGACY_FIXTURE_V1` default and `PROACTIVE_SHADOW_FIXTURE_PATH` behaviour.
+  The new source is opt-in only: set
+  `PROACTIVE_SHADOW_DATA_SOURCE=RECORDED_COMPLETED_BARS_V1`, set
+  `PROACTIVE_SHADOW_COMPLETED_BAR_FIXTURE_PATH` to a captured response in the
+  documented fixture shape, and choose a bounded
+  `PROACTIVE_SHADOW_MAX_DATA_AGE_SECONDS` (default 1800). Missing, stale,
+  malformed or unsupported source configuration is persisted as unavailable
+  scanner/market-data evidence, never reported as a successful scan.
+- `proactive_market_data_observations` stores compact provider provenance
+  (provider, timeframe, adjustment version, stable instrument mapping count,
+  exchange/received timestamps, freshness and immutable dataset hash). The
+  `proactive-activity` response and Dashboard now expose the newest state per
+  account/run separately from strategy and scheduler counts. An observation
+  becomes `STALE` at its persisted freshness deadline even if the scheduler
+  has not written a newer failure row. Raw responses are not exposed in the
+  dashboard.
+- A configured scheduled label now derives an implementation-hash suffix for
+  its immutable evidence generation. This means a code upgrade starts a new,
+  visibly related run rather than retrying a manifest conflict forever. Direct
+  `run_shadow_workflow` callers remain strict: reusing their exact ID with a
+  different manifest still fails and requires an intentional new run ID.
+- Added the recorded fixture and coverage in
+  `python-engine/tests/test_proactive_market_data.py`, and extended
+  `test_proactive_intelligence.py` for configured source-to-dashboard
+  evidence. Focused Dev validation passed: 40 Python tests across proactive,
+  integrated-demo, optional-AI and partner-lifecycle modules; 23 dashboard
+  unit tests and a production dashboard build also passed. This is provider
+  contract/offline evidence, not a live data canary, broker reconciliation or
+  profitability claim.

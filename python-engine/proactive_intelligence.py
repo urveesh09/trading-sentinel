@@ -534,6 +534,15 @@ CREATE TABLE IF NOT EXISTS proactive_scan_runs (
  mode TEXT NOT NULL, status TEXT NOT NULL, observed_at TEXT NOT NULL,
  reason TEXT NOT NULL
 );
+CREATE TABLE IF NOT EXISTS proactive_market_data_observations (
+ observation_id TEXT PRIMARY KEY, account_id TEXT NOT NULL, run_id TEXT NOT NULL,
+ mode TEXT NOT NULL, state TEXT NOT NULL, provider TEXT, timeframe TEXT,
+ adjustment_version TEXT, instrument_count INTEGER NOT NULL, bar_count INTEGER NOT NULL,
+ latest_exchange_at TEXT, received_at TEXT, freshness_seconds REAL,
+ fresh_until TEXT, dataset_sha256 TEXT, reason TEXT NOT NULL, observed_at TEXT NOT NULL
+);
+CREATE INDEX IF NOT EXISTS idx_proactive_market_data_scope
+ ON proactive_market_data_observations(account_id, run_id, observed_at DESC);
 CREATE TABLE IF NOT EXISTS proactive_watchlist (
  opportunity_id TEXT PRIMARY KEY, state TEXT NOT NULL, reason TEXT NOT NULL,
  updated_at TEXT NOT NULL, valid_until TEXT NOT NULL
@@ -598,6 +607,11 @@ async def init_proactive_intelligence(db_path: str) -> None:
             await db.execute("ALTER TABLE proactive_shadow_positions ADD COLUMN marked_price REAL")
         if "marked_at" not in position_columns:
             await db.execute("ALTER TABLE proactive_shadow_positions ADD COLUMN marked_at TEXT")
+        market_data_columns = {row[1] for row in await (await db.execute(
+            "PRAGMA table_info(proactive_market_data_observations)"
+        )).fetchall()}
+        if "fresh_until" not in market_data_columns:
+            await db.execute("ALTER TABLE proactive_market_data_observations ADD COLUMN fresh_until TEXT")
         await db.commit()
 
 
@@ -616,13 +630,35 @@ def _shadow_implementation_identity() -> str:
     return hashlib.sha256(Path(__file__).read_bytes()).hexdigest()
 
 
+def _configured_shadow_run_id(run_label: str) -> str:
+    """Give scheduled configuration an explicit, code-versioned lineage.
+
+    A configured scheduler should not keep retrying an incompatible immutable
+    run after an application upgrade.  The operator-visible label is retained
+    as a prefix, while the implementation suffix starts a new evidence
+    generation. Direct callers of :func:`run_shadow_workflow` keep their exact
+    run ID and therefore still receive a conflict on incompatible reuse.
+    """
+    label = str(run_label).strip()
+    if not label:
+        raise ValueError("configured shadow run label is required")
+    return f"{label}:impl-{_shadow_implementation_identity()[:12]}"
+
+
 async def _ensure_shadow_run(
     db_path: str, *, account_id: str, run_id: str, scenario_capital: float,
-    fee_rate: float, slippage_bps: float,
+    fee_rate: float, slippage_bps: float, market_data_contract: Optional[dict] = None,
 ) -> str:
     """Bind one named research run to immutable economic assumptions."""
     if not all(isinstance(value, str) and value for value in (account_id, run_id)):
         raise ValueError("shadow account and run identity are required")
+    market_data_contract = market_data_contract or {"source_kind": "LEGACY_FIXTURE_V1"}
+    if not isinstance(market_data_contract, dict):
+        raise ValueError("market-data contract must be an object")
+    try:
+        json.dumps(market_data_contract, sort_keys=True, separators=(",", ":"))
+    except (TypeError, ValueError) as exc:
+        raise ValueError("market-data contract must be serializable") from exc
     manifest = {
         "version": "shadow-run-v2", "schema_version": _SHADOW_SCHEMA_VERSION,
         "implementation_sha256": _shadow_implementation_identity(),
@@ -638,6 +674,7 @@ async def _ensure_shadow_run(
             "max_position_cash_fraction": _DEFAULT_MAX_POSITION_CASH_FRACTION,
             "gap_risk_multiple": _DEFAULT_GAP_RISK_MULTIPLE,
         },
+        "market_data_contract": market_data_contract,
     }
     if (not math.isfinite(float(scenario_capital)) or float(scenario_capital) <= 0
             or not math.isfinite(float(fee_rate)) or float(fee_rate) < 0
@@ -905,6 +942,55 @@ async def record_scan_run(
         cur = await db.execute(
             "INSERT OR IGNORE INTO proactive_scan_runs VALUES (?,?,?,?,?,?,?)",
             (scan_id, policy_id, account_id, mode, status, at.isoformat(), reason),
+        )
+        await db.commit()
+        return bool(cur.rowcount)
+
+
+async def record_market_data_observation(
+    db_path: str, *, account_id: str, run_id: str, observed_at: datetime,
+    state: str, reason: str, provenance: Optional[dict] = None,
+) -> bool:
+    """Persist provider freshness separately from scheduler/strategy success.
+
+    Only compact provenance is retained here. Raw responses stay in their
+    controlled fixture/provider store and are represented by a content hash.
+    """
+    if state not in {"AVAILABLE", "UNAVAILABLE"}:
+        raise ValueError("market-data state must be AVAILABLE or UNAVAILABLE")
+    if not all(isinstance(value, str) and value for value in (account_id, run_id, reason)):
+        raise ValueError("market-data identity fields are required")
+    at = _stamp(observed_at)
+    provenance = provenance or {}
+    if not isinstance(provenance, dict):
+        raise ValueError("market-data provenance must be an object")
+    provider = str(provenance.get("provider", "")).strip() or None
+    timeframe = str(provenance.get("timeframe", "")).strip() or None
+    adjustment_version = str(provenance.get("adjustment_version", "")).strip() or None
+    source_hash = str(provenance.get("dataset_sha256", "")).strip() or None
+    try:
+        instrument_count = int(provenance.get("instrument_count", 0))
+        bar_count = int(provenance.get("bar_count", 0))
+        freshness = provenance.get("freshness_seconds")
+        freshness_seconds = float(freshness) if freshness is not None else None
+    except (TypeError, ValueError) as exc:
+        raise ValueError("market-data counts and freshness are invalid") from exc
+    if instrument_count < 0 or bar_count < 0 or (freshness_seconds is not None and (
+            not math.isfinite(freshness_seconds) or freshness_seconds < 0)):
+        raise ValueError("market-data counts and freshness are invalid")
+    identity = hashlib.sha256(json.dumps({
+        "account_id": account_id, "run_id": run_id, "state": state, "reason": reason,
+        "observed_at": at.isoformat(), "dataset_sha256": source_hash,
+    }, sort_keys=True, separators=(",", ":")).encode()).hexdigest()
+    await init_proactive_intelligence(db_path)
+    async with aiosqlite.connect(db_path) as db:
+        cur = await db.execute(
+            "INSERT OR IGNORE INTO proactive_market_data_observations "
+            "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+            (identity, account_id, run_id, "SHADOW", state, provider, timeframe,
+             adjustment_version, instrument_count, bar_count,
+             provenance.get("latest_exchange_at"), provenance.get("received_at"),
+             freshness_seconds, provenance.get("fresh_until"), source_hash, reason, at.isoformat()),
         )
         await db.commit()
         return bool(cur.rowcount)
@@ -1365,7 +1451,7 @@ async def run_shadow_workflow(
     db_path: str, *, account_id: str, universe: dict[str, list[dict]], now: datetime,
     scenario_capital: float = 8_000, future_bars: Optional[dict[str, list[dict]]] = None,
     run_id: str = "default-v1", fee_rate: float = .001, slippage_bps: float = 5,
-    origin: str = "SHADOW",
+    origin: str = "SHADOW", market_data_contract: Optional[dict] = None,
 ) -> dict:
     """Run the bounded fixture-backed SHADOW path; never calls a broker.
 
@@ -1378,7 +1464,7 @@ async def run_shadow_workflow(
     now = _stamp(now); future_bars = future_bars or {}
     storage_account_id = await _ensure_shadow_run(
         db_path, account_id=account_id, run_id=run_id, scenario_capital=scenario_capital,
-        fee_rate=fee_rate, slippage_bps=slippage_bps,
+        fee_rate=fee_rate, slippage_bps=slippage_bps, market_data_contract=market_data_contract,
     )
     manifest = await _shadow_run_manifest(db_path, run_key=storage_account_id)
     persisted_fee_rate = float(manifest["fee_rate"])
@@ -1636,6 +1722,70 @@ async def run_configured_shadow_workflow(*, now: Optional[datetime] = None) -> d
         return {"mode": "SHADOW", "state": "DISABLED"}
     if not account_id:
         raise ValueError("PROACTIVE_SHADOW_ACCOUNT_ID is required when enabled")
+    source = str(settings.PROACTIVE_SHADOW_DATA_SOURCE).strip().upper()
+    if source == "RECORDED_COMPLETED_BARS_V1":
+        from proactive_market_data import CompletedBarDataError, load_recorded_completed_bar_snapshot
+
+        run_label = str(settings.PROACTIVE_SHADOW_RUN_ID).strip()
+        run_id = _configured_shadow_run_id(run_label) if run_label else ""
+        fixture_path = str(settings.PROACTIVE_SHADOW_COMPLETED_BAR_FIXTURE_PATH).strip()
+        try:
+            max_age_seconds = int(settings.PROACTIVE_SHADOW_MAX_DATA_AGE_SECONDS)
+            capital = float(settings.PROACTIVE_SHADOW_SCENARIO_CAPITAL)
+            if not fixture_path:
+                raise ValueError("completed-bar fixture source is unconfigured")
+            if not run_id or not math.isfinite(capital) or capital <= 0:
+                raise ValueError("shadow run identity and scenario capital are required")
+            if not 1 <= max_age_seconds <= 86_400:
+                raise ValueError("completed-bar maximum age must be between one second and one day")
+            snapshot = load_recorded_completed_bar_snapshot(
+                fixture_path, as_of=observed_at, max_age=timedelta(seconds=max_age_seconds),
+            )
+        except CompletedBarDataError as exc:
+            reason = "MARKET_DATA_STALE" if "stale" in str(exc).lower() else "MARKET_DATA_SOURCE_INVALID"
+            await record_market_data_observation(
+                settings.DB_PATH, account_id=account_id, run_id=run_id or "unconfigured",
+                observed_at=observed_at, state="UNAVAILABLE", reason=reason,
+            )
+            await _record_shadow_configuration_state(
+                settings.DB_PATH, account_id=account_id, observed_at=observed_at, reason=reason,
+            )
+            return {"mode": "SHADOW", "state": reason}
+        except (TypeError, ValueError, OverflowError):
+            reason = "MARKET_DATA_SOURCE_UNCONFIGURED" if not fixture_path else "MARKET_DATA_CONFIGURATION_INVALID"
+            await record_market_data_observation(
+                settings.DB_PATH, account_id=account_id, run_id=run_id or "unconfigured",
+                observed_at=observed_at, state="UNAVAILABLE", reason=reason,
+            )
+            await _record_shadow_configuration_state(
+                settings.DB_PATH, account_id=account_id, observed_at=observed_at, reason=reason,
+            )
+            return {"mode": "SHADOW", "state": reason}
+        await record_market_data_observation(
+            settings.DB_PATH, account_id=account_id, run_id=run_id, observed_at=observed_at,
+            state="AVAILABLE", reason="COMPLETED_BARS_AVAILABLE", provenance=snapshot.provenance,
+        )
+        contract = {
+            key: snapshot.provenance[key]
+            for key in ("source_kind", "provider", "timeframe", "adjustment_version", "instrument_mapping")
+        }
+        result = await run_shadow_workflow(
+            settings.DB_PATH, account_id=account_id, universe=snapshot.decision_bars,
+            future_bars=snapshot.outcome_bars, scenario_capital=capital, run_id=run_id,
+            now=observed_at, market_data_contract=contract,
+        )
+        return {**result, "state": "COMPLETED", "market_data": snapshot.provenance}
+    if source != "LEGACY_FIXTURE_V1":
+        reason = "MARKET_DATA_SOURCE_UNSUPPORTED"
+        await record_market_data_observation(
+            settings.DB_PATH, account_id=account_id,
+            run_id=str(settings.PROACTIVE_SHADOW_RUN_ID).strip() or "unconfigured",
+            observed_at=observed_at, state="UNAVAILABLE", reason=reason,
+        )
+        await _record_shadow_configuration_state(
+            settings.DB_PATH, account_id=account_id, observed_at=observed_at, reason=reason,
+        )
+        return {"mode": "SHADOW", "state": reason}
     fixture_path = str(settings.PROACTIVE_SHADOW_FIXTURE_PATH).strip()
     if not fixture_path:
         await _record_shadow_configuration_state(
@@ -1649,7 +1799,8 @@ async def run_configured_shadow_workflow(*, now: Optional[datetime] = None) -> d
             raise ValueError("fixture must declare mode=SHADOW")
         universe = _validate_shadow_bar_collections(payload.get("universe"), field="universe", allow_empty=False)
         future_bars = _validate_shadow_bar_collections(payload.get("future_bars", {}), field="future_bars", allow_empty=True)
-        run_id = str(payload.get("run_id", settings.PROACTIVE_SHADOW_RUN_ID)).strip()
+        run_label = str(payload.get("run_id", settings.PROACTIVE_SHADOW_RUN_ID)).strip()
+        run_id = _configured_shadow_run_id(run_label)
         capital = float(settings.PROACTIVE_SHADOW_SCENARIO_CAPITAL)
         if not run_id or not math.isfinite(capital) or capital <= 0:
             raise ValueError("shadow run identity and scenario capital are required")
@@ -1666,7 +1817,9 @@ async def run_configured_shadow_workflow(*, now: Optional[datetime] = None) -> d
     return {**result, "state": "COMPLETED"}
 
 
-async def proactive_activity_report(db_path: str, *, days: int = 7) -> dict:
+async def proactive_activity_report(
+    db_path: str, *, days: int = 7, now: Optional[datetime] = None,
+) -> dict:
     """Mode-separated counts; absent evidence is explicit rather than zero-health."""
     if not 1 <= days <= 366:
         raise ValueError("days must be within 1..366")
@@ -1710,6 +1863,14 @@ async def proactive_activity_report(db_path: str, *, days: int = 7) -> dict:
             "GROUP BY p.account_id,COALESCE(r.run_id,'legacy'),r.manifest_json",
         )
         position_rows = await cur.fetchall()
+        cur = await db.execute(
+            "SELECT account_id,run_id,state,provider,timeframe,adjustment_version,"
+            "instrument_count,bar_count,latest_exchange_at,received_at,freshness_seconds,"
+            "fresh_until,dataset_sha256,reason,observed_at "
+            "FROM proactive_market_data_observations "
+            "ORDER BY observed_at DESC, observation_id DESC"
+        )
+        market_data_rows = await cur.fetchall()
     by_mode: dict[str, dict] = {mode: {"scan_evaluations": 0, "unique_opportunities": 0, "stages": {}} for mode in sorted(_MODES)}
     for mode, stage, count, _unique_count in rows:
         by_mode[mode]["stages"][stage] = int(count)
@@ -1742,8 +1903,35 @@ async def proactive_activity_report(db_path: str, *, days: int = 7) -> dict:
             "marked_unrealized_gross_pnl": round(float(row[10]), 4) if int(row[9]) else None,
             "marked_unrealized_net_pnl": round(float(row[11]), 4) if int(row[9]) else None,
         })
-    return {"as_of": datetime.now(timezone.utc).isoformat(), "days": days, "modes": by_mode, "funding_flows": funding,
-            "shadow_positions": shadow_positions,
+    latest_market_data = []
+    report_now = _stamp(now)
+    seen_market_scopes: set[tuple[str, str]] = set()
+    for row in market_data_rows:
+        scope = (str(row[0]), str(row[1]))
+        if scope in seen_market_scopes:
+            continue
+        seen_market_scopes.add(scope)
+        state, reason = row[2], row[13]
+        received_at = row[9]
+        freshness_seconds = row[10]
+        try:
+            received_stamp = _stamp(datetime.fromisoformat(received_at)) if received_at else None
+            current_age = max(0.0, (report_now - received_stamp).total_seconds()) if received_stamp else None
+            fresh_until = _stamp(datetime.fromisoformat(row[11])) if row[11] else None
+        except (TypeError, ValueError):
+            current_age, fresh_until = None, None
+        if state == "AVAILABLE" and fresh_until is not None and report_now > fresh_until:
+            state, reason = "STALE", "MARKET_DATA_STALE_AFTER_OBSERVATION"
+        latest_market_data.append({
+            "account_id": scope[0], "run_id": scope[1], "state": state,
+            "provider": row[3], "timeframe": row[4], "adjustment_version": row[5],
+            "instrument_count": int(row[6]), "bar_count": int(row[7]),
+            "latest_exchange_at": row[8], "received_at": row[9],
+            "freshness_seconds": current_age if current_age is not None else freshness_seconds,
+            "dataset_sha256": row[12], "reason": reason, "observed_at": row[14],
+        })
+    return {"as_of": report_now.isoformat(), "days": days, "modes": by_mode, "funding_flows": funding,
+            "shadow_positions": shadow_positions, "market_data": {"latest": latest_market_data},
             "note": "Events are operational evidence; only reconciled live ledgers establish live profit."}
 
 

@@ -114,6 +114,7 @@ function ActivityFunnel({ activity, isLoading, isError }) {
   if (isLoading) return <div className="rounded border border-gray-800 bg-gray-900 p-4 text-sm text-gray-500">Loading proactive activity…</div>;
   if (isError || !activity) return <div className="rounded border border-amber-800 bg-amber-950/30 p-4 text-sm text-amber-200">Proactive activity is unavailable; unknown data is not treated as healthy inactivity.</div>;
   const shadowPositions = Array.isArray(activity.shadow_positions) ? activity.shadow_positions : [];
+  const marketData = Array.isArray(activity.market_data?.latest) ? activity.market_data.latest : [];
   return (
     <section className="rounded-xl border border-cyan-900/70 bg-cyan-950/10 p-4">
       <h2 className="text-xl font-bold text-white">Why we traded — or did not</h2>
@@ -127,6 +128,18 @@ function ActivityFunnel({ activity, isLoading, isError }) {
             <div className="mt-2 text-[11px] text-gray-500">{Object.entries(row.stages || {}).map(([stage, count]) => `${stage}: ${count}`).join(' · ') || 'No evidence recorded'}</div>
           </div>
         ))}
+      </div>
+      <div className="mt-4 border-t border-cyan-900/60 pt-3">
+        <h3 className="text-sm font-semibold text-cyan-100">Completed-bar market-data evidence</h3>
+        <p className="mt-1 text-[11px] text-gray-500">Provider freshness is separate from scheduler activity. This read-only SHADOW source cannot place orders.</p>
+        {marketData.length ? <div className="mt-3 grid gap-3 md:grid-cols-3">{marketData.map((row) => (
+          <div key={`${row.account_id}:${row.run_id}`} className="rounded border border-gray-800 bg-gray-950/70 p-3 text-xs">
+            <div className="flex items-start justify-between gap-2"><div className="font-semibold text-cyan-200">{row.account_id}</div><span className={`rounded px-1.5 py-0.5 text-[10px] font-bold ${row.state === 'AVAILABLE' ? 'bg-emerald-950 text-emerald-200' : 'bg-amber-950 text-amber-200'}`}>{row.state}</span></div>
+            <div className="mt-1 text-[10px] text-gray-500">Run: {row.run_id} · {row.provider || 'Provider unavailable'}</div>
+            <div className="mt-2 grid grid-cols-2 gap-2 text-gray-300"><span>Bars: <b>{row.bar_count}</b></span><span>Instruments: <b>{row.instrument_count}</b></span><span>Frame: <b>{row.timeframe || '—'}</b></span><span>Age: <b>{row.freshness_seconds == null ? '—' : `${Math.round(row.freshness_seconds)}s`}</b></span></div>
+            <p className="mt-2 break-words text-[10px] text-gray-500">{row.reason} · adjustment {row.adjustment_version || 'unavailable'}</p>
+          </div>
+        ))}</div> : <div className="mt-2 text-xs text-gray-500">No completed-bar provider observation has been recorded for this dashboard scope.</div>}
       </div>
       <div className="mt-4 border-t border-cyan-900/60 pt-3">
         <h3 className="text-sm font-semibold text-cyan-100">Synthetic SHADOW positions and outcomes</h3>

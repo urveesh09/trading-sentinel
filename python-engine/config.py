@@ -47,6 +47,12 @@ class Settings(BaseSettings):
     # local SHADOW fixture is configured, and has no broker/delivery path.
     PROACTIVE_SHADOW_ENABLED: bool = True
     PROACTIVE_SHADOW_FIXTURE_PATH: str = ""
+    # ``LEGACY_FIXTURE_V1`` preserves the existing demonstration workflow.
+    # ``RECORDED_COMPLETED_BARS_V1`` is an explicit, read-only provider
+    # contract; it still has no order, delivery or broker-consumer path.
+    PROACTIVE_SHADOW_DATA_SOURCE: str = "LEGACY_FIXTURE_V1"
+    PROACTIVE_SHADOW_COMPLETED_BAR_FIXTURE_PATH: str = ""
+    PROACTIVE_SHADOW_MAX_DATA_AGE_SECONDS: int = 1800
     PROACTIVE_SHADOW_ACCOUNT_ID: str = "dev-shadow"
     PROACTIVE_SHADOW_RUN_ID: str = "dev-shadow-v1"
     PROACTIVE_SHADOW_SCENARIO_CAPITAL: float = 8000.0
