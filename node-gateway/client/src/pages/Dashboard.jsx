@@ -9,6 +9,7 @@ import { usePositions } from '../hooks/usePositions';
 import { useDivisionPerformance } from '../hooks/useDivisionPerformance';
 import { useProactiveActivity } from '../hooks/useProactiveActivity';
 import { usePartnerHedgeCards } from '../hooks/usePartnerHedgeCards';
+import { usePartnerDeliveryBacklog } from '../hooks/usePartnerDeliveryBacklog';
 import { useOptionalAiStatus } from '../hooks/useOptionalAiStatus';
 import { useProactiveSessionDiagnostics } from '../hooks/useProactiveSessionDiagnostics';
 import { evidenceModeEnabled } from '../evidenceMode';
@@ -182,6 +183,19 @@ function PartnerHedgeCards({ cards, isLoading, isError }) {
   );
 }
 
+function PartnerDeliveryBacklog({ backlog, isLoading, isError }) {
+  if (isLoading) return <div className="rounded border border-gray-800 bg-gray-900 p-4 text-sm text-gray-500">Loading partner delivery recovery evidence…</div>;
+  if (isError || !backlog) return <div className="rounded border border-amber-800 bg-amber-950/30 p-4 text-sm text-amber-200">Partner delivery recovery evidence is unavailable. No delivery conclusion is inferred.</div>;
+  const manual = Array.isArray(backlog.manual_recovery) ? backlog.manual_recovery : [];
+  const quarantine = Array.isArray(backlog.quarantine) ? backlog.quarantine : [];
+  return (
+    <section className="rounded-xl border border-amber-900/70 bg-amber-950/10 p-4" aria-labelledby="partner-delivery-heading">
+      <div className="flex flex-wrap items-start justify-between gap-3"><div><h2 id="partner-delivery-heading" className="text-xl font-bold text-white">Partner delivery recovery</h2><p className="mt-1 text-xs text-gray-500">Read-only operator evidence. Ambiguous deliveries require recorded manual resolution; this dashboard cannot resend or release them.</p></div><span className="rounded border border-amber-600/60 bg-amber-950 px-2 py-1 text-[10px] font-bold tracking-widest text-amber-200">NO RESEND ACTION</span></div>
+      <div className="mt-3 grid gap-3 sm:grid-cols-2"><div className="rounded border border-gray-800 bg-gray-950/70 p-3"><div className="text-xs font-semibold text-amber-100">Manual recovery required: {manual.length}</div>{manual.length ? <ul className="mt-2 space-y-1 text-[11px] text-gray-400">{manual.slice(0, 4).map((item) => <li key={`${item.kind}:${item.dedup_key}`}>{item.kind} · {item.dedup_key} · {item.state}</li>)}</ul> : <p className="mt-2 text-xs text-emerald-300">No unresolved delivery evidence.</p>}</div><div className="rounded border border-gray-800 bg-gray-950/70 p-3"><div className="text-xs font-semibold text-amber-100">Quarantined legacy records: {quarantine.length}</div>{quarantine.length ? <ul className="mt-2 space-y-1 text-[11px] text-gray-400">{quarantine.slice(0, 4).map((item) => <li key={`${item.kind}:${item.dedup_key}`}>{item.kind} · {item.reason}</li>)}</ul> : <p className="mt-2 text-xs text-emerald-300">No quarantined records.</p>}</div></div>
+    </section>
+  );
+}
+
 function OptionalAiEvidence({ optionalAi, isLoading, isError }) {
   if (isLoading) return <div className="rounded border border-gray-800 bg-gray-900 p-4 text-sm text-gray-500">Loading optional-AI health evidence…</div>;
   if (isError || !optionalAi) return <div className="rounded border border-amber-800 bg-amber-950/30 p-4 text-sm text-amber-200">Optional-AI health is unavailable. Deterministic trading paths do not depend on this display.</div>;
@@ -237,6 +251,7 @@ export default function Dashboard({ healthData, navigateToPositions, navigateToB
   const { divisionPerformance, isLoading, isError } = useDivisionPerformance();
   const proactive = useProactiveActivity();
   const partnerHedgeCards = usePartnerHedgeCards();
+  const partnerDeliveryBacklog = usePartnerDeliveryBacklog();
   const optionalAi = useOptionalAiStatus();
   const sessionDiagnostics = useProactiveSessionDiagnostics();
   const viewModel = buildDivisionViewModel(divisionPerformance);
@@ -277,6 +292,7 @@ export default function Dashboard({ healthData, navigateToPositions, navigateToB
 
         <div className="grid gap-6 2xl:grid-cols-2">
           <PartnerHedgeCards {...partnerHedgeCards} />
+          <PartnerDeliveryBacklog {...partnerDeliveryBacklog} />
           <OptionalAiEvidence {...optionalAi} />
         </div>
 

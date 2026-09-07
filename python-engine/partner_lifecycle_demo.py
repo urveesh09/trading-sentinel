@@ -78,6 +78,20 @@ async def run_partner_lifecycle_demo(db_path: str) -> dict:
         )
 
     after = await load_partner_evaluation_input(str(target))
+    # A portfolio mutation must not merely invalidate old advice: a fresh
+    # deterministic review is independently recorded against the new complete
+    # snapshot/revision.  It remains SHADOW evidence, not a delivery request.
+    await _record_shadow_evaluation(
+        str(target), phase="phase2", kind="covered_call_recommendation",
+        dedup_key="demo-lifecycle-advice-after-split",
+        text="Synthetic hedge review after provider split: NIFTY coverage.",
+        detail={
+            "account_id": account_id, "underlying": "NIFTY",
+            "contracts": ["NIFTY-DEMO-CE"], "snapshot_id": "split-4",
+            "portfolio_revision": after.portfolio_revision,
+            "reason": "SHADOW_DEMO_FRESH_EVALUATION",
+        }, now=base + timedelta(minutes=4),
+    )
     positions = await load_partner_positions(str(target), include_closed=True)
     cards = await load_partner_hedge_cards(str(target))
     if not created["accepted"] or not closed["accepted"] or not reopened["accepted"] or not corporate_action["accepted"]:
@@ -89,9 +103,12 @@ async def run_partner_lifecycle_demo(db_path: str) -> dict:
         raise RuntimeError("corporate action did not retain provider-adjusted lifecycle economics")
     if before.portfolio_revision >= after.portfolio_revision:
         raise RuntimeError("fixture lifecycle did not advance portfolio revision")
-    if len(cards["cards"]) != 1 or not cards["cards"][0]["is_superseded"]:
+    if len(cards["cards"]) != 2 or not any(card["is_superseded"] for card in cards["cards"]):
         raise RuntimeError("older hedge review evidence was not marked superseded")
-    if cards["cards"][0]["can_send"] or cards["cards"][0]["can_trade"]:
+    fresh = next((card for card in cards["cards"] if not card["is_superseded"]), None)
+    if fresh is None or fresh["portfolio_state"] != "CURRENT":
+        raise RuntimeError("portfolio mutation did not receive a fresh current review")
+    if any(card["can_send"] or card["can_trade"] for card in cards["cards"]):
         raise RuntimeError("demonstration accidentally granted authority")
     return {
         "mode": "SHADOW", "fixture_only": True, "can_send": False,
@@ -107,6 +124,7 @@ async def run_partner_lifecycle_demo(db_path: str) -> dict:
         "assertions": {
             "complete_snapshot_close": True, "reopen_new_lifecycle": True,
             "corporate_action_new_lifecycle": True,
-            "old_advice_superseded": True, "no_delivery_or_trade_authority": True,
+            "old_advice_superseded": True, "fresh_post_mutation_review": True,
+            "no_delivery_or_trade_authority": True,
         },
     }

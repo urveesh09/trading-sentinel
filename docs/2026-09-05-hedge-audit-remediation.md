@@ -762,3 +762,19 @@ broker/account reconciliation, partner account mapping and delivery/recovery,
 and forward market-performance observation. These are not enabled or implied
 by fixture code; they need an authorised operational rollout and monitoring
 window before any production trading claim.
+
+### Final operator-visible lifecycle completion
+
+- The deterministic partner lifecycle now continues past invalidation: after
+  create → close → reopen → provider-declared split, it writes a **new**
+  current SHADOW hedge review against the accepted `split-4` snapshot and its
+  portfolio revision. The older review remains visibly `SUPERSEDED`. Neither
+  card can send or trade.
+- The authenticated Dev Dashboard now displays the existing partner delivery
+  recovery ledger at `/api/proxy/partner/hedge/delivery-backlog`. It shows only
+  manual-recovery and quarantined-record counts/identities. There is no resend,
+  release or resolution action in the UI; a recovery decision remains the
+  separate evidence-bearing operator workflow.
+- Focused validation for this final UI/lifecycle addition: 44 Python tests
+  (partner lifecycle, integrated evidence and hedge advisory) and 14 gateway
+  proxy-contract tests passed; the dashboard production build passed.

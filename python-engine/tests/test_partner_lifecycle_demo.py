@@ -13,4 +13,5 @@ async def test_partner_lifecycle_demo_proves_close_reopen_and_supersession(tmp_p
     assert result["lifecycle"]["open_positions"] == 1
     assert result["assertions"]["old_advice_superseded"] is True
     assert result["assertions"]["corporate_action_new_lifecycle"] is True
-    assert result["cards"]["cards"][0]["portfolio_state"] == "SUPERSEDED"
+    assert result["assertions"]["fresh_post_mutation_review"] is True
+    assert {card["portfolio_state"] for card in result["cards"]["cards"]} == {"SUPERSEDED", "CURRENT"}
