@@ -2131,11 +2131,17 @@ async def run_shadow_research_comparison(
                     )
                     inserted += max(int(cur.rowcount or 0), 0)
         await db.commit()
+    from proactive_portfolio_research import persist_portfolio_and_fold_research
+    portfolio_research = await persist_portfolio_and_fold_research(
+        db_path, research_run_id=research_run_id, proposals=proposals,
+        future_bars=future_bars, capital=float(cash_per_trial),
+    )
     return {
         "mode": "SHADOW", "research_only": True, "can_place_orders": False,
         "authorization_effect": "NONE", "research_run_id": research_run_id,
         "opportunities": len(proposals), "profile_trials": len(proposals) * len(_SHADOW_ENTRY_PROFILES) * len(_SHADOW_EXIT_PROFILES),
         "inserted_trials": inserted,
+        "portfolio_research": portfolio_research,
     }
 
 
@@ -2180,8 +2186,11 @@ async def proactive_shadow_research_report(db_path: str, *, research_run_id: Opt
             "minimum_closed_outcomes": SHADOW_COMPARISON_MIN_CLOSED_OUTCOMES,
             "outcome_reasons": [{"reason": reason, "trials": count} for reason, count in sorted(reasons.items())],
         })
+    from proactive_portfolio_research import portfolio_research_report
+    portfolio_research = await portfolio_research_report(db_path, research_run_id)
     return {
         "mode": "SHADOW", "research_only": True, "can_place_orders": False, "authorization_effect": "NONE",
         "comparisons": comparisons,
+        "portfolio_research": portfolio_research,
         "note": "Every matched entry/exit trial is retained, including no-fill, open and invalid outcomes; no profile is promoted automatically.",
     }

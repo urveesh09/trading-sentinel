@@ -113,6 +113,12 @@ function MatchedEntryExitTrials({ comparison, error }) {
   );
 }
 
+function PortfolioAndFoldEvidence({ comparison, error }) {
+  if (error) return null;
+  const rows = Array.isArray(comparison?.portfolio_research) ? comparison.portfolio_research : [];
+  return <section className="rounded-xl border border-teal-900/70 bg-teal-950/10 p-4 sm:p-5"><div className="flex flex-wrap items-start justify-between gap-3"><div><h2 className="text-xl font-bold text-white">Common-cash basket and chronological folds</h2><p className="mt-1 text-sm text-gray-400">Risk-budget and fixed-equal baselines use the same synthetic cash clock. Fold selection is research only.</p></div><span className="rounded border border-red-600 bg-red-950 px-3 py-2 text-xs font-black text-red-100">NO AUTO-PROMOTION</span></div>{rows.length ? <div className="mt-4 space-y-3">{rows.map((row) => { const risk=row.risk_budget || {}; const fixed=row.fixed_equal || {}; const folds=row.chronological_folds || {}; return <article key={row.research_run_id} className="rounded border border-gray-800 bg-gray-900/80 p-3"><div className="font-mono text-sm text-teal-200">{row.research_run_id}</div><div className="mt-3 grid grid-cols-2 gap-3 text-xs sm:grid-cols-4"><Metric label="Risk-budget net" value={formatPaperMoney(risk.realized_net_pnl)} /><Metric label="Fixed-equal net" value={formatPaperMoney(fixed.realized_net_pnl)} /><Metric label="Risk drawdown" value={formatPaperMoney(risk.max_drawdown)} /><Metric label="OOS verdict" value={String(folds.verdict || folds.reason || 'Insufficient evidence').replaceAll('_', ' ')} /></div><p className="mt-3 text-[11px] text-amber-200">Folds scored: {formatCount(folds.n_scored_folds)} / {formatCount(folds.n_folds)} · No live selection, capital change, or order authority follows from this evidence.</p></article>; })}</div> : <div className="mt-4 text-sm text-gray-500">No frozen common-cash or chronological-fold result exists yet.</div>}</section>;
+}
+
 function StatusBadge({ experiment }) {
   const style = experiment.status === 'ready'
     ? 'border-emerald-600 bg-emerald-950 text-emerald-200'
@@ -285,6 +291,7 @@ export default function ResearchCenter({ navigateToDashboard, navigateToBacktest
         <ReadinessSection model={readinessModel} />
         <ShadowOutcomeComparison comparison={proactiveComparison} error={proactiveComparisonError} />
         <MatchedEntryExitTrials comparison={proactiveResearchComparison} error={proactiveResearchComparisonError} />
+        <PortfolioAndFoldEvidence comparison={proactiveResearchComparison} error={proactiveResearchComparisonError} />
         {isLoading && experiments.every((item) => !item.variants.length) ? <div className="rounded border border-gray-800 bg-gray-900 p-8 text-center text-gray-500">Loading experiment evidence...</div>
           : experiments.map((experiment) => <ExperimentSection key={experiment.id} experiment={experiment} />)}
       </main>

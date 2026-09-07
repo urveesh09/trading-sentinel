@@ -859,3 +859,21 @@ window before any production trading claim.
   authority. This supplies Dev fixture/accounting evidence only; a real broker
   statement adapter and a mapping to local order/fill IDs remain required for
   operational reconciliation.
+
+### W3/W4 common-cash and chronological research (2026-09-07)
+
+- Added `python-engine/proactive_portfolio_research.py`, wired into the
+  existing immutable matched-trial runner. `RISK_BUDGET_V1` reuses the bounded
+  gap-risk allocator; `FIXED_EQUAL_V1` is a deliberately simpler equal-cash
+  control. Both process one event-time cash book and keep capital locked until
+  the simulated close, preventing same-clock capital reuse.
+- Each frozen research run now stores the two basket outcomes and a
+  chronological policy-selection result. Training scores are calculated only
+  on prior calendar dates and the selected policy is evaluated on its later
+  test window through the existing walk-forward contract. Missing dates/folds
+  produce an explicit insufficient result, not a zero score or edge claim.
+- The existing authenticated Research Center consumes this archive through the
+  established research-comparison response. It displays risk-budget versus
+  fixed-equal net/drawdown evidence and the fold verdict, with a visible no-
+  auto-promotion boundary. No live strategy, sizing, capital or order path is
+  changed.
