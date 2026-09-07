@@ -492,3 +492,21 @@ does not modify Production.
 - Equity deliverability evidence is also preserved when supplied by a fixture.
   A regression imports and reconciles a complete NIFTY put fixture; no broker,
   order or messaging path is involved.
+
+### P5 extension — bounded optional-AI annotations
+
+- Added a one-worker, bounded optional-AI queue in the agent service. Requests
+  are keyed by immutable decision fields plus an event-evidence digest, have a
+  per-review expiry, short-lived result cache, daily request ceiling and a
+  provider-failure circuit breaker. Late results are discarded, never reused.
+- Momentum may opt into this asynchronous annotation path only when both its
+  reject policy and unavailable-review policy are explicitly advisory. The
+  deterministic alert then carries `AI_REVIEW_PENDING` rather than treating a
+  pending model call as approval. A configured hard veto retains its existing
+  synchronous policy; this change does not silently weaken it.
+- The queue is disabled by default and has not been enabled in Production.
+  Dependency-free worker tests cover cache, queue saturation, circuit open and
+  late-result discard. The checked-in Linux agent virtualenv cannot execute
+  from this Windows host mount, while the Python-engine environment lacks its
+  `requests` dependency; full agent-suite validation remains for its supported
+  container/CI runtime.

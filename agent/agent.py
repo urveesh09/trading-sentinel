@@ -3,11 +3,12 @@ import re
 import sys
 import time
 import json
+import hashlib
 import logging
 import structlog
 import threading
 import urllib.parse
-from datetime import datetime
+from datetime import datetime, timedelta, timezone
 from typing import List, Dict, Optional
 import requests
 from bs4 import BeautifulSoup
@@ -21,6 +22,7 @@ from advisory import (  # [ADVISORY 2026-08-05] typed verdicts
     from_payload as review_from_payload,
     unavailable as advisory_unavailable,
 )
+from async_reviews import AsyncReviewQueue
 
 # -------------------------------------------------------------------------
 # CONFIG & LOGGING
@@ -90,6 +92,15 @@ MINIMAX_MODEL = os.getenv("MINIMAX_MODEL", "MiniMax-M3")
 MINIMAX_REQUEST_TIMEOUT_SEC = int(os.getenv("MINIMAX_REQUEST_TIMEOUT_SEC", "45"))
 MINIMAX_MAX_RETRIES = int(os.getenv("MINIMAX_MAX_RETRIES", "1"))
 MINIMAX_WALL_TIMEOUT_SEC = int(os.getenv("MINIMAX_WALL_TIMEOUT_SEC", "100"))
+# Optional asynchronous annotations are deliberately opt-in.  They are useful
+# for non-blocking second opinions, but must never silently replace an
+# operator's configured synchronous hard-veto policy.
+MINIMAX_ASYNC_REVIEW_ENABLED = os.getenv("MINIMAX_ASYNC_REVIEW_ENABLED", "false").strip().lower() in {
+    "1", "true", "yes", "on",
+}
+MINIMAX_ASYNC_REVIEW_MAX_PENDING = int(os.getenv("MINIMAX_ASYNC_REVIEW_MAX_PENDING", "16"))
+MINIMAX_ASYNC_REVIEW_DAILY_BUDGET = int(os.getenv("MINIMAX_ASYNC_REVIEW_DAILY_BUDGET", "40"))
+MINIMAX_ASYNC_REVIEW_DEADLINE_SEC = int(os.getenv("MINIMAX_ASYNC_REVIEW_DEADLINE_SEC", "90"))
 # [ADVISORY 2026-08-05] What to do when the reviewer cannot render an opinion.
 # "proceed" (default) preserves today's behaviour exactly: the alert goes out
 # with an UNAVAILABLE banner and the operator decides. "block" refuses to send
@@ -182,6 +193,7 @@ if not all([TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID]):
 # the wall had already given up on it.
 client = None
 AI_STATUS = "AI_DISABLED"
+_optional_ai_queue: Optional[AsyncReviewQueue] = None
 if MINIMAX_API_KEY:
     client = OpenAI(
         api_key=MINIMAX_API_KEY,
@@ -711,6 +723,67 @@ def analyze_with_minimax(
         )
         return advisory_unavailable("schema_mismatch")
 
+
+def _optional_review_key(signal: Dict, sentiment_text: str, market_regime: str) -> str:
+    """Bind a cache entry to immutable decision fields and its event evidence."""
+    decision = {
+        "ticker": signal.get("ticker"), "signal_time": signal.get("signal_time"),
+        "strategy_type": signal.get("strategy_type"), "close": signal.get("close"),
+        "target_1": signal.get("target_1"), "stop_loss": signal.get("stop_loss"),
+        "market_regime": market_regime,
+    }
+    event_digest = hashlib.sha256(str(sentiment_text).encode("utf-8")).hexdigest()
+    payload = json.dumps({"decision": decision, "event_digest": event_digest},
+                         sort_keys=True, default=str, separators=(",", ":"))
+    return hashlib.sha256(payload.encode("utf-8")).hexdigest()
+
+
+def _get_optional_ai_queue() -> Optional[AsyncReviewQueue]:
+    """Return the non-blocking worker only when it cannot weaken a hard gate."""
+    global _optional_ai_queue
+    if not MINIMAX_ASYNC_REVIEW_ENABLED:
+        return None
+    if MINIMAX_UNAVAILABLE_POLICY != "proceed" or MOMENTUM_MINIMAX_REJECT_POLICY == "block":
+        logger.warning(
+            "optional_ai_queue_disabled_by_blocking_policy unavailable_policy=%s momentum_reject_policy=%s",
+            MINIMAX_UNAVAILABLE_POLICY, MOMENTUM_MINIMAX_REJECT_POLICY,
+        )
+        return None
+    if _optional_ai_queue is None:
+        _optional_ai_queue = AsyncReviewQueue(
+            analyze_with_minimax,
+            max_pending=MINIMAX_ASYNC_REVIEW_MAX_PENDING,
+            max_requests_per_day=MINIMAX_ASYNC_REVIEW_DAILY_BUDGET,
+        )
+    return _optional_ai_queue
+
+
+def queue_optional_ai_review(signal: Dict, sentiment_text: str, market_regime: str) -> Optional[Review]:
+    """Queue a momentum-only annotation, returning immediately to the alert path.
+
+    ``None`` means the caller must retain its existing synchronous policy.
+    A pending or dropped review is represented explicitly in the operator
+    alert; it is never mistaken for approval and cannot mutate signal numbers.
+    """
+    if client is None:
+        return advisory_unavailable("AI_DISABLED")
+    queue = _get_optional_ai_queue()
+    if queue is None:
+        return None
+    submission = queue.submit(
+        _optional_review_key(signal, sentiment_text, market_regime), signal,
+        sentiment_text, market_regime,
+        expires_at=datetime.now(timezone.utc) + timedelta(seconds=MINIMAX_ASYNC_REVIEW_DEADLINE_SEC),
+    )
+    if submission.review is not None:
+        return submission.review
+    reasons = {
+        "QUEUED": "AI_REVIEW_PENDING", "PENDING": "AI_REVIEW_PENDING",
+        "QUEUE_FULL": "AI_REVIEW_QUEUE_FULL", "BUDGET_EXHAUSTED": "AI_REVIEW_BUDGET_EXHAUSTED",
+        "CIRCUIT_OPEN": "AI_REVIEW_CIRCUIT_OPEN", "EXPIRED": "AI_REVIEW_EXPIRED",
+    }
+    return advisory_unavailable(reasons.get(submission.state, "AI_REVIEW_UNAVAILABLE"))
+
 def send_telegram_alert(signal: Dict, review: "Review"):
     url = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage"
     
@@ -844,7 +917,11 @@ def run_momentum_pipeline():
         touch_heartbeat()  # [ROADMAP-2.2] progressing, not hung
         try:
             sentiment_text = scrape_sentiment(ticker)
-            review         = analyze_with_minimax(signal, sentiment_text, regime)
+            review = queue_optional_ai_review(signal, sentiment_text, regime)
+            if review is None:
+                # Preserve the existing synchronous hard-veto behaviour when
+                # the operator explicitly configured a blocking AI policy.
+                review = analyze_with_minimax(signal, sentiment_text, regime)
 
             hard_reject = (
                 review.verdict is Verdict.REJECT
