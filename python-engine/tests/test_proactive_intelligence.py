@@ -254,6 +254,22 @@ async def test_frozen_shadow_research_trials_retain_matched_entry_exit_nonfills(
     assert bounded_time["evidence_state"] == "INSUFFICIENT_CLOSED_OUTCOMES"
 
 
+@pytest.mark.asyncio
+async def test_isolated_proactive_demo_rejects_historical_backfill_and_proves_full_shadow_path(tmp_path):
+    from proactive_demo import run_proactive_shadow_demo
+
+    result = await run_proactive_shadow_demo(str(tmp_path / "proactive_demo.db"))
+    assert result["mode"] == "SHADOW" and result["can_place_orders"] is False
+    assert result["assertions"] == {
+        "pending_expired": True, "one_affordable_allocation": True, "completed_bar_exit": True,
+        "nonnegative_synthetic_cash": True, "matched_trials_retained": True,
+    }
+    assert result["workflow"]["expiry_sweep"]["expired_pending"] == 1
+    assert "MISSED_ENTRY_WINDOW_NO_HISTORICAL_BACKFILL" in result["workflow"]["managed"]["reasons"].values()
+    [position] = result["activity"]["shadow_positions"]
+    assert position["closed_positions"] == 1 and position["free_cash"] > position["scenario_capital"]
+
+
 def test_shadow_simulator_rejects_duplicate_or_malformed_future_timestamps():
     now = datetime.now(timezone.utc)
     proposal = ShadowProposal("ordered", "trend_pullback_v1", "NSE:ORDERED", 100, 95, 110,

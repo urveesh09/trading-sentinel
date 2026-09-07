@@ -406,6 +406,26 @@ def _bars_visible_as_of(bars: object, *, as_of: datetime) -> object:
     return visible
 
 
+def _shadow_entry_window_already_observed(
+    proposal: ShadowProposal, bars: object, *, now: datetime,
+) -> bool:
+    """Whether an unselected setup would require a historical fill.
+
+    At a later evaluation clock, cash released by a subsequently closed
+    position must not finance a different policy at an earlier observed open.
+    A bar at exactly ``now`` remains executable because it is the completed
+    event the current tick is evaluating; only a strictly earlier executable
+    bar makes the candidate a missed opportunity.
+    """
+    normalised = _normalise_shadow_bars(bars)
+    if normalised is None:
+        return False  # Let the simulator record invalid source evidence.
+    cutoff = _stamp(proposal.data_cutoff or proposal.signal_at or proposal.valid_until)
+    deadline = _stamp(proposal.entry_deadline or proposal.valid_until)
+    now = _stamp(now)
+    return any(cutoff < stamp < now and stamp <= deadline for stamp, *_ in normalised)
+
+
 def simulate_open_shadow_position(
     position: ShadowPosition, future_bars: list[dict], *, fee_rate: float = .001,
     slippage_bps: float = 5,
@@ -1093,6 +1113,10 @@ async def run_shadow_workflow(
             reasons[proposal.opportunity_id] = "RECORDED_SHADOW_OUTCOME"
         elif proposal.instrument in open_instruments:
             reasons[proposal.opportunity_id] = "OPEN_SHADOW_INSTRUMENT_EXPOSURE"
+        elif _shadow_entry_window_already_observed(
+            proposal, visible_future_bars.get(proposal.instrument, []), now=now,
+        ):
+            reasons[proposal.opportunity_id] = "MISSED_ENTRY_WINDOW_NO_HISTORICAL_BACKFILL"
         else:
             candidates.append(proposal)
     allocations, allocation_reasons = size_shadow_allocations(

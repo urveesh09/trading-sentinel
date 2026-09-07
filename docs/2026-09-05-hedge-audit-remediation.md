@@ -591,3 +591,26 @@ does not modify Production.
   execution; volatility-trail and thesis-invalidation challengers remain
   explicitly unimplemented rather than being represented by a misleading
   substitute.
+
+### P7 foundation — reproducible isolated SHADOW demonstration
+
+- Added an offline Dev command that creates a **new** SQLite evidence database
+  and runs the actual SHADOW workflow through a deterministic multi-session
+  fixture. Run it from the Dev checkout with:
+
+  `python-engine\\winvenv\\Scripts\\python.exe python-engine\\scripts\\run_proactive_shadow_demo.py --db C:\\temp\\proactive-shadow-demo.db`
+
+  It proves pending-entry expiry across an empty later universe, shared-cash
+  selection versus an unaffordable independent candidate, completed-bar target
+  management, costed dashboard/API reporting and immutable matched trial
+  persistence. The output is JSON with explicit SHADOW/no-order contract flags
+  and assertions. It uses only `SYNTH:*` symbols and rejects an existing DB
+  path rather than overwriting evidence.
+- While exercising the demo, a historical-entry issue was found and fixed:
+  cash released by a later close could previously admit a different policy at
+  an earlier already-observed bar. Such candidates now record
+  `MISSED_ENTRY_WINDOW_NO_HISTORICAL_BACKFILL` and remain non-executable. A
+  regression runs the full demo and verifies exactly one synthetic closed fill.
+- This is a P7 foundation, not a claim that the required AI-outage, partner
+  lifecycle or browser-evidence portions of the broader demonstration are
+  complete. It has no Production, broker, delivery or scheduler activation.
