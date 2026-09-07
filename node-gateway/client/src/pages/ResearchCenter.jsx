@@ -125,6 +125,12 @@ function ExecutionCostEvidence({ comparison, error }) {
   return <section className="rounded-xl border border-orange-900/70 bg-orange-950/10 p-4 sm:p-5"><div><h2 className="text-xl font-bold text-white">Entry and execution-cost sensitivity</h2><p className="mt-1 text-sm text-gray-400">Same SHADOW opportunities under versioned normal and stressed costs. Non-fills and gap invalidations remain visible.</p></div>{runs.length ? <div className="mt-4 overflow-x-auto"><table className="w-full text-left text-xs"><thead className="border-b border-gray-800 text-gray-500"><tr><th className="p-2">Run</th><th className="p-2">Entry</th><th className="p-2">Scenario</th><th className="p-2">Costs</th><th className="p-2">Closed / no-fill</th><th className="p-2">Net expectancy</th></tr></thead><tbody>{runs.flatMap((run) => (run.comparisons || []).map((row) => <tr key={`${run.research_run_id}:${row.scenario}:${row.entry_profile_id}`} className="border-b border-gray-800/80"><td className="p-2 font-mono">{run.research_run_id}</td><td className="p-2 font-mono text-orange-200">{row.entry_profile_id}</td><td className="p-2">{row.scenario}</td><td className="p-2">{row.cost_model_version} · {row.slippage_bps} bps</td><td className="p-2">{formatCount(row.closed_outcomes)} / {formatCount(row.no_fill)}</td><td className="p-2">{formatPaperMoney(row.net_expectancy)}</td></tr>))}</tbody></table></div> : <div className="mt-4 text-sm text-gray-500">No frozen execution-cost study exists yet.</div>}<p className="mt-3 text-[11px] text-amber-200">Research-only estimate; this does not alter broker fees, order routing, limits, or execution authority.</p></section>;
 }
 
+function ExitPolicyEvidence({ comparison, error }) {
+  if (error) return null;
+  const runs=Array.isArray(comparison?.exit_policy_comparison) ? comparison.exit_policy_comparison : [];
+  return <section className="rounded-xl border border-rose-900/70 bg-rose-950/10 p-4 sm:p-5"><h2 className="text-xl font-bold text-white">Matched exit-policy comparison</h2><p className="mt-1 text-sm text-gray-400">Baseline stop/target/time versus a conservative partial-target trailing-stop challenger with the same costs.</p>{runs.length ? <div className="mt-4 grid gap-3 md:grid-cols-2">{runs.flatMap(run => (run.comparisons || []).map(row => <article key={`${run.research_run_id}:${row.exit_profile_id}`} className="rounded border border-gray-800 bg-gray-900/80 p-3 text-xs"><div className="font-mono text-rose-200">{row.exit_profile_id}</div><div className="mt-2 grid grid-cols-2 gap-2 text-gray-300"><span>Closed: <b>{formatCount(row.closed_outcomes)}</b></span><span>No fill: <b>{formatCount(row.no_fills)}</b></span><span>Net: <b>{formatPaperMoney(row.net_pnl)}</b></span><span>Expectancy: <b>{formatPaperMoney(row.net_expectancy)}</b></span></div><p className="mt-3 text-[10px] text-amber-200">Gap-through stops and same-bar target/stop ambiguity are processed conservatively. Research only.</p></article>))}</div> : <div className="mt-4 text-sm text-gray-500">No frozen matched exit-policy study exists yet.</div>}</section>;
+}
+
 function StatusBadge({ experiment }) {
   const style = experiment.status === 'ready'
     ? 'border-emerald-600 bg-emerald-950 text-emerald-200'
@@ -299,6 +305,7 @@ export default function ResearchCenter({ navigateToDashboard, navigateToBacktest
         <MatchedEntryExitTrials comparison={proactiveResearchComparison} error={proactiveResearchComparisonError} />
         <PortfolioAndFoldEvidence comparison={proactiveResearchComparison} error={proactiveResearchComparisonError} />
         <ExecutionCostEvidence comparison={proactiveResearchComparison} error={proactiveResearchComparisonError} />
+        <ExitPolicyEvidence comparison={proactiveResearchComparison} error={proactiveResearchComparisonError} />
         {isLoading && experiments.every((item) => !item.variants.length) ? <div className="rounded border border-gray-800 bg-gray-900 p-8 text-center text-gray-500">Loading experiment evidence...</div>
           : experiments.map((experiment) => <ExperimentSection key={experiment.id} experiment={experiment} />)}
       </main>

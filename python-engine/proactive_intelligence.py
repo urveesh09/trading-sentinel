@@ -2141,6 +2141,11 @@ async def run_shadow_research_comparison(
         db_path, research_run_id=research_run_id, proposals=proposals,
         future_bars=future_bars, cash=float(cash_per_trial),
     )
+    from proactive_exit_research import persist_exit_policy_comparison
+    exit_policy_comparison = await persist_exit_policy_comparison(
+        db_path, research_run_id=research_run_id, proposals=proposals,
+        future_bars=future_bars, cash=float(cash_per_trial), fee_rate=float(fee_rate), slippage_bps=float(slippage_bps),
+    )
     return {
         "mode": "SHADOW", "research_only": True, "can_place_orders": False,
         "authorization_effect": "NONE", "research_run_id": research_run_id,
@@ -2148,6 +2153,7 @@ async def run_shadow_research_comparison(
         "inserted_trials": inserted,
         "portfolio_research": portfolio_research,
         "execution_sensitivity": execution_sensitivity,
+        "exit_policy_comparison": exit_policy_comparison,
     }
 
 
@@ -2196,10 +2202,13 @@ async def proactive_shadow_research_report(db_path: str, *, research_run_id: Opt
     portfolio_research = await portfolio_research_report(db_path, research_run_id)
     from proactive_execution_research import execution_sensitivity_report
     execution_sensitivity = await execution_sensitivity_report(db_path, research_run_id)
+    from proactive_exit_research import exit_policy_report
+    exit_policy_comparison = await exit_policy_report(db_path, research_run_id)
     return {
         "mode": "SHADOW", "research_only": True, "can_place_orders": False, "authorization_effect": "NONE",
         "comparisons": comparisons,
         "portfolio_research": portfolio_research,
         "execution_sensitivity": execution_sensitivity,
+        "exit_policy_comparison": exit_policy_comparison,
         "note": "Every matched entry/exit trial is retained, including no-fill, open and invalid outcomes; no profile is promoted automatically.",
     }

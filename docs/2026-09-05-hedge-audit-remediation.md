@@ -894,3 +894,17 @@ window before any production trading claim.
   route or alter an order. Live segment/date-specific broker charges still need
   a reconciled statement adapter before any economic estimate is treated as
   actual P&L.
+
+### W6 conservative exit-policy research (2026-09-07)
+
+- Added `python-engine/proactive_exit_research.py`, persisted with each frozen
+  SHADOW research run. It compares the existing stop/target/time exit with a
+  partial-target trailing-stop challenger against the same entry, costs and
+  future bars.
+- The challenger exits half at the declared target and trails the remainder by
+  initial risk. A gap-through stop uses the worse executable open/stop price;
+  a candle that can hit stop and target is resolved stop-first; a raised trail
+  starts only on the following bar. Every paid leg includes its fee estimate.
+- Research Center displays matched close/no-fill counts, net results and
+  expectancy. This is an experimental SHADOW comparison, not a live exit-rule
+  change or permission to modify any protective order.
