@@ -464,3 +464,31 @@ does not modify Production.
 - Focused lifecycle tests cover accepted creation and complete-snapshot close.
   Corporate-action/reopen fixtures, hedge-card UI and the full end-to-end
   mocked-delivery demonstration remain in progress.
+
+### P6 correction — atomic fixture portfolio promotion
+
+- Fixture-discovered positions are now inserted only within the same SQLite
+  transaction that validates, reconciles and accepts their complete account
+  snapshot. A rejected sequence, watermark, ownership or later-row validation
+  error rolls back both the new identities and the snapshot evidence; no
+  partial fixture portfolio is visible to analytics.
+- The generic input normalizer supports an internal `position_key` reference
+  only when it is paired exactly with a staged `PartnerPosition`. Ordinary
+  adapters retain their existing integer position-ID contract. A fixture retry
+  hashes its immutable source payload rather than local generated IDs, so an
+  exact retry remains idempotent after the first import resolves those IDs.
+- Fixture marks and new-position timestamps retain the source observation
+  time, rather than relabelling delayed source data with local receipt time.
+  Regression tests cover rejected ordered envelopes without residual rows and
+  exact source-fixture retry idempotency.
+
+### P6 extension — complete offline option fixture support
+
+- The Dev fixture adapter now carries option expiry, strike and explicit
+  delta/gamma/theta/vega through both staged creation and reconciliation. It
+  applies the same F&O lot-unit and non-fictional-Greek validation as the real
+  partner input boundary, rather than treating option exposure as equity or
+  silently assigning zero Greeks.
+- Equity deliverability evidence is also preserved when supplied by a fixture.
+  A regression imports and reconciles a complete NIFTY put fixture; no broker,
+  order or messaging path is involved.
