@@ -45,11 +45,13 @@ class AsyncReviewQueue:
         cache_ttl_seconds: float = 300,
         failure_limit: int = 3,
         cooldown_seconds: float = 300,
+        state_ttl_seconds: float = 900,
+        max_retained_states: int | None = None,
         now: Callable[[], datetime] | None = None,
     ) -> None:
         if min(max_pending, max_requests_per_day, failure_limit) < 1:
             raise ValueError("queue limits must be positive")
-        if cache_ttl_seconds <= 0 or cooldown_seconds <= 0:
+        if cache_ttl_seconds <= 0 or cooldown_seconds <= 0 or state_ttl_seconds <= 0:
             raise ValueError("queue durations must be positive")
         self._reviewer = reviewer
         self._queue: Queue[_Task] = Queue(maxsize=max_pending)
@@ -58,11 +60,16 @@ class AsyncReviewQueue:
         self._cache_ttl_seconds = cache_ttl_seconds
         self._failure_limit = failure_limit
         self._cooldown_seconds = cooldown_seconds
+        self._state_ttl_seconds = state_ttl_seconds
+        self._max_retained_states = max_retained_states or max_pending * 8
+        if self._max_retained_states < max_pending:
+            raise ValueError("max_retained_states must cover pending work")
         self._now = now or (lambda: datetime.now(timezone.utc))
         self._lock = RLock()
         self._pending: set[str] = set()
         self._cache: dict[str, tuple[Review, datetime]] = {}
         self._states: dict[str, ReviewSubmission] = {}
+        self._state_recorded_at: dict[str, datetime] = {}
         self._requests_by_day: dict[str, int] = {}
         self._consecutive_failures = 0
         self._circuit_open_until: Optional[datetime] = None
@@ -133,11 +140,23 @@ class AsyncReviewQueue:
 
     def _remember(self, submission: ReviewSubmission) -> ReviewSubmission:
         self._states[submission.key] = submission
+        self._state_recorded_at[submission.key] = self._now()
         return submission
 
     def _cleanup_locked(self, now: datetime) -> None:
         self._cache = {key: value for key, value in self._cache.items() if value[1] > now}
         self._requests_by_day = {now.date().isoformat(): self._requests_by_day.get(now.date().isoformat(), 0)}
+        for key, recorded_at in list(self._state_recorded_at.items()):
+            if key not in self._pending and now - recorded_at > timedelta(seconds=self._state_ttl_seconds):
+                self._states.pop(key, None)
+                self._state_recorded_at.pop(key, None)
+        if len(self._states) > self._max_retained_states:
+            removable = sorted(
+                (stamp, key) for key, stamp in self._state_recorded_at.items() if key not in self._pending
+            )[:len(self._states) - self._max_retained_states]
+            for _stamp, key in removable:
+                self._states.pop(key, None)
+                self._state_recorded_at.pop(key, None)
         if self._circuit_open_until is not None and now >= self._circuit_open_until:
             self._circuit_open_until = None
             self._consecutive_failures = 0
@@ -155,6 +174,12 @@ class AsyncReviewQueue:
                         self._pending.discard(task.key)
                         self._remember(ReviewSubmission(task.key, "EXPIRED", reason="deadline_elapsed"))
                     continue
+                with self._lock:
+                    self._cleanup_locked(now)
+                    if self._circuit_open_until is not None and now < self._circuit_open_until:
+                        self._pending.discard(task.key)
+                        self._remember(ReviewSubmission(task.key, "CIRCUIT_OPEN", reason="provider_failures"))
+                        continue
                 try:
                     review = self._reviewer(task.signal, task.sentiment, task.regime)
                 except Exception:

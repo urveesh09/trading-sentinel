@@ -778,3 +778,24 @@ window before any production trading claim.
 - Focused validation for this final UI/lifecycle addition: 44 Python tests
   (partner lifecycle, integrated evidence and hedge advisory) and 14 gateway
   proxy-contract tests passed; the dashboard production build passed.
+
+### Market-intelligence foundation follow-up (2026-09-07)
+
+- Pending SHADOW watchlist expiry is now scoped to the resolved account/run
+  storage identity and `SHADOW` mode. `WATCHING`, `ARMED`, `TRIGGERED`,
+  `DEFERRED` and `SELECTED` rows are expired only when unfilled, with their
+  `EXPIRED` event written in the same transaction. This prevents one replay
+  clock from changing another account/run's research evidence.
+- The active SHADOW sizing path is now `risk-budget-v1`: it ranks known sleeve
+  metrics as bounded ranking features—not calibrated probabilities—and caps
+  position and aggregate gap-adjusted stop risk alongside cash and fee
+  reserves. The former `allocate_shadow_proposals` helper remains the explicit
+  cash-first baseline for comparison; no live sizing is changed.
+- Run and frozen-trial manifests now record the evidence schema, source hash
+  of the executing implementation, UTC completed-bar convention, calendar and
+  allocator/risk parameters. A changed implementation conflicts with an
+  existing run ID instead of silently pooling incomparable results.
+- Optional AI now bounds retained terminal state and prevents queued reviews
+  from reaching a provider after the circuit opens. It remains an annotation;
+  provider budget persistence across a process restart is still an operational
+  integration task, not authority to enable AI or trading.

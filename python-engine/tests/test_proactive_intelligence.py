@@ -1,5 +1,7 @@
 from datetime import datetime, timedelta, timezone
 
+import json
+
 import pytest
 
 from proactive_intelligence import (
@@ -143,9 +145,26 @@ def test_shared_allocation_reserves_cash_once_and_rejects_gap_overspend():
     first = ShadowProposal("one", "trend_pullback_v1", "NSE:ONE", 100, 95, 110, now + timedelta(minutes=10), 2, 100, "x", now, now, now + timedelta(minutes=10), now + timedelta(hours=1))
     second = ShadowProposal("two", "range_reversion_v1", "NSE:TWO", 100, 95, 110, now + timedelta(minutes=10), 1, 100, "x", now, now, now + timedelta(minutes=10), now + timedelta(hours=1))
     allocations, reasons = size_shadow_allocations([first, second], capital=1_000)
-    assert len(allocations) == 1 and reasons["two"] == "INSUFFICIENT_SHADOW_CASH_AFTER_COST_RESERVE"
+    assert len(allocations) == 2 and all(reasons[item.opportunity_id] == "SELECTED" for item in allocations)
+    assert sum(item.reserved_capital for item in allocations) <= 1_000
+    assert sum(item.initial_risk for item in allocations) <= 1_000 * .05
     gap = [{"timestamp": (now + timedelta(minutes=1)).isoformat(), "open": 200, "high": 201, "low": 199, "close": 200}]
     assert simulate_shadow_trade(first, gap, cash=1_000, allocation=allocations[0]).reason == "ALLOCATION_NO_LONGER_FEASIBLE"
+
+
+def test_risk_sized_shadow_allocator_bounds_stop_risk_and_does_not_rank_raw_scales_as_probabilities():
+    now = datetime.now(timezone.utc)
+    tight = ShadowProposal("tight", "trend_pullback_v1", "SYNTH:TIGHT", 100, 98, 106,
+                           now + timedelta(minutes=10), 1.005, 100, "x", now, now,
+                           now + timedelta(minutes=10), now + timedelta(hours=1))
+    wide = ShadowProposal("wide", "contraction_breakout_v1", "SYNTH:WIDE", 100, 80, 140,
+                          now + timedelta(minutes=10), 4.0, 100, "x", now, now,
+                          now + timedelta(minutes=10), now + timedelta(hours=1))
+    allocations, reasons = size_shadow_allocations([wide, tight], capital=10_000)
+    quantities = {item.opportunity_id: item.quantity for item in allocations}
+    assert quantities["wide"] < quantities["tight"], "a wider stop may not increase position size"
+    assert sum(item.initial_risk for item in allocations) <= 500
+    assert all(reason == "SELECTED" for reason in reasons.values())
 
 
 @pytest.mark.asyncio
@@ -451,6 +470,49 @@ async def test_workflow_expires_pending_watchlist_when_instrument_disappears(db_
 
 
 @pytest.mark.asyncio
+async def test_pending_expiry_is_run_scoped_and_records_state_and_event_together(db_path):
+    """A later replay clock must not mutate another account/run's watchlist."""
+    import aiosqlite
+    from proactive_intelligence import _expire_pending_shadow_watchlists
+
+    now = datetime.now(timezone.utc)
+    for account, suffix in (("run-a", "a"), ("run-b", "b")):
+        for state in ("WATCHING", "ARMED", "TRIGGERED", "DEFERRED", "SELECTED"):
+            opportunity_id = f"expiry-{suffix}-{state.lower()}"
+            assert await record_opportunity_event(
+                db_path, opportunity_id=opportunity_id, policy_id="trend_pullback_v1", policy_version="v1",
+                account_id=account, mode="SHADOW", instrument=f"SYNTH:{suffix}", stage="SETUP",
+                reason_code="COMPLETED_BAR", idempotency_key=f"{opportunity_id}:setup", observed_at=now,
+                valid_until=now + timedelta(minutes=1),
+            )
+            assert await transition_watchlist(
+                db_path, opportunity_id=opportunity_id, state="WATCHING", reason="SETUP", now=now,
+                valid_until=now + timedelta(minutes=1),
+            )
+            async with aiosqlite.connect(db_path) as db:
+                await db.execute("UPDATE proactive_watchlist SET state=? WHERE opportunity_id=?", (state, opportunity_id))
+                await db.commit()
+
+    assert await _expire_pending_shadow_watchlists(db_path, account_id="run-a", now=now + timedelta(minutes=2)) == 5
+    async with aiosqlite.connect(db_path) as db:
+        a_states = await (await db.execute(
+            "SELECT DISTINCT state FROM proactive_watchlist WHERE opportunity_id LIKE 'expiry-a-%'"
+        )).fetchall()
+        b_states = await (await db.execute(
+            "SELECT DISTINCT state FROM proactive_watchlist WHERE opportunity_id LIKE 'expiry-b-%'"
+        )).fetchall()
+        a_events = await (await db.execute(
+            "SELECT COUNT(*) FROM proactive_events WHERE opportunity_id LIKE 'expiry-a-%' AND stage='EXPIRED'"
+        )).fetchone()
+        b_events = await (await db.execute(
+            "SELECT COUNT(*) FROM proactive_events WHERE opportunity_id LIKE 'expiry-b-%' AND stage='EXPIRED'"
+        )).fetchone()
+    assert a_states == [("EXPIRED",)] and a_events[0] == 5
+    assert {row[0] for row in b_states} == {"WATCHING", "ARMED", "TRIGGERED", "DEFERRED", "SELECTED"}
+    assert b_events[0] == 0
+
+
+@pytest.mark.asyncio
 async def test_shadow_runs_isolate_identical_setups_by_account_and_manifest(db_path):
     import aiosqlite
 
@@ -467,7 +529,14 @@ async def test_shadow_runs_isolate_identical_setups_by_account_and_manifest(db_p
     await run_shadow_workflow(db_path, account_id="account-A", **kwargs)
     async with aiosqlite.connect(db_path) as db:
         count = await (await db.execute("SELECT COUNT(*) FROM proactive_shadow_positions")).fetchone()
+        manifest_row = await (await db.execute(
+            "SELECT manifest_json FROM proactive_shadow_runs WHERE account_id='account-A'"
+        )).fetchone()
     assert count[0] == 2
+    manifest = json.loads(manifest_row[0])
+    assert manifest["schema_version"] == "shadow-evidence-v2"
+    assert len(manifest["implementation_sha256"]) == 64
+    assert manifest["policy_manifest"]["allocator"] == "risk-budget-v1"
     with pytest.raises(ValueError, match="manifest conflicts"):
         await run_shadow_workflow(db_path, account_id="account-A", **{**kwargs, "scenario_capital": 1_200})
 

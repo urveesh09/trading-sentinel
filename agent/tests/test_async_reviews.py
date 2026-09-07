@@ -73,3 +73,43 @@ def test_late_review_is_discarded_not_cached_or_reused():
         assert _wait_for(queue, "late", {"EXPIRED"}).reason == "review_completed_late"
     finally:
         queue.shutdown()
+
+
+def test_open_circuit_cancels_already_queued_reviews_before_provider_dispatch():
+    release = Event()
+    calls = 0
+
+    def reviewer(*_args):
+        nonlocal calls
+        calls += 1
+        if calls == 1:
+            release.wait(timeout=1)
+        return unavailable("provider_down")
+
+    queue = AsyncReviewQueue(reviewer, max_pending=2, failure_limit=1, cooldown_seconds=60)
+    try:
+        expiry = datetime.now(timezone.utc) + timedelta(minutes=1)
+        assert queue.submit("first", {}, "", "UNKNOWN", expires_at=expiry).state == "QUEUED"
+        assert queue.submit("second", {}, "", "UNKNOWN", expires_at=expiry).state == "QUEUED"
+        release.set()
+        assert _wait_for(queue, "first", {"UNAVAILABLE"}).reason == "provider_down"
+        assert _wait_for(queue, "second", {"CIRCUIT_OPEN"}).reason == "provider_failures"
+        assert calls == 1
+    finally:
+        queue.shutdown()
+
+
+def test_terminal_state_retention_is_bounded_and_expires():
+    clock = [datetime(2026, 9, 7, tzinfo=timezone.utc)]
+    queue = AsyncReviewQueue(
+        lambda *_args: unavailable("provider_down"), max_pending=2,
+        state_ttl_seconds=1, max_retained_states=2, now=lambda: clock[0],
+    )
+    try:
+        expired = queue.submit("expired", {}, "", "UNKNOWN", expires_at=clock[0])
+        assert expired.state == "EXPIRED" and queue.status("expired") is not None
+        clock[0] += timedelta(seconds=2)
+        queue.snapshot()
+        assert queue.status("expired") is None
+    finally:
+        queue.shutdown()

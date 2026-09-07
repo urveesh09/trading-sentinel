@@ -19,6 +19,12 @@ import aiosqlite
 Mode = Literal["LIVE", "PAPER", "SHADOW", "REPLAY"]
 _MODES = frozenset({"LIVE", "PAPER", "SHADOW", "REPLAY"})
 SHADOW_COMPARISON_MIN_CLOSED_OUTCOMES = 20
+SHADOW_ALLOCATOR_VERSION = "risk-budget-v1"
+_DEFAULT_MAX_TOTAL_RISK_FRACTION = .05
+_DEFAULT_MAX_POSITION_RISK_FRACTION = .025
+_DEFAULT_MAX_POSITION_CASH_FRACTION = .60
+_DEFAULT_GAP_RISK_MULTIPLE = 1.25
+_SHADOW_SCHEMA_VERSION = "shadow-evidence-v2"
 _SHADOW_ENTRY_PROFILES = frozenset({
     "NEXT_EXECUTABLE_OPEN_V1", "BOUNDED_PULLBACK_LIMIT_V1", "COMPLETED_BAR_CONFIRMATION_V1",
 })
@@ -195,26 +201,74 @@ def allocate_shadow_proposals(proposals: list[ShadowProposal], *, capital: float
 def size_shadow_allocations(
     proposals: list[ShadowProposal], *, capital: float, reserved: float = 0.0,
     fee_rate: float = .001, slippage_bps: float = 5,
+    max_total_risk_fraction: float = _DEFAULT_MAX_TOTAL_RISK_FRACTION,
+    max_position_risk_fraction: float = _DEFAULT_MAX_POSITION_RISK_FRACTION,
+    max_position_cash_fraction: float = _DEFAULT_MAX_POSITION_CASH_FRACTION,
+    gap_risk_multiple: float = _DEFAULT_GAP_RISK_MULTIPLE,
 ) -> tuple[list[ShadowAllocation], dict[str, str]]:
-    """Create the one cash reservation that both selection and simulation use."""
-    if capital < 0 or reserved < 0 or fee_rate < 0 or slippage_bps < 0:
+    """Risk-size comparable SHADOW proposals against one shared cash book.
+
+    This is an experimental, versioned allocator, not a calibrated return
+    model.  Raw sleeve scores are normalized only into bounded *ranking
+    features*; they are explicitly not probabilities or edge estimates.
+    """
+    limits = (max_total_risk_fraction, max_position_risk_fraction,
+              max_position_cash_fraction, gap_risk_multiple)
+    if (capital < 0 or reserved < 0 or fee_rate < 0 or slippage_bps < 0
+            or not all(math.isfinite(float(value)) and value > 0 for value in limits)
+            or max_position_risk_fraction > max_total_risk_fraction
+            or max_position_cash_fraction > 1):
         raise ValueError("invalid allocation assumptions")
     free = max(0.0, float(capital) - float(reserved))
     allocations: list[ShadowAllocation] = []
     reasons: dict[str, str] = {}
     instruments: set[str] = set()
-    for proposal in sorted(proposals, key=lambda item: (item.score, item.policy_id), reverse=True):
+    used_risk = 0.0
+    for proposal in sorted(proposals, key=lambda item: (_comparable_shadow_score(item), item.policy_id), reverse=True):
         if proposal.instrument in instruments:
             reasons[proposal.opportunity_id] = "DUPLICATE_INSTRUMENT_EXPOSURE"; continue
         price = proposal.entry * (1 + slippage_bps / 10_000)
-        quantity = math.floor(free / (price * (1 + fee_rate)))
+        risk_per_unit = (price - proposal.stop) * gap_risk_multiple
+        if not math.isfinite(risk_per_unit) or risk_per_unit <= 0:
+            reasons[proposal.opportunity_id] = "INVALID_STOP_RISK_GEOMETRY"; continue
+        cash_cap = free if not allocations else min(free, float(capital) * max_position_cash_fraction)
+        cash_quantity = math.floor(cash_cap / (price * (1 + fee_rate)))
+        remaining_total_risk = max(0.0, float(capital) * max_total_risk_fraction - used_risk)
+        risk_cap = min(float(capital) * max_position_risk_fraction, remaining_total_risk)
+        risk_quantity = math.floor(risk_cap / risk_per_unit)
+        # At small scenario capital, an otherwise affordable one-share/lot
+        # experiment can be valid even when integer sizing exceeds the normal
+        # per-position slice. It remains bounded by the *total* risk limit.
+        if (not allocations and cash_quantity >= 1 and risk_quantity < 1
+                and risk_per_unit <= float(capital) * max_total_risk_fraction):
+            risk_quantity = 1
+        quantity = min(cash_quantity, risk_quantity)
         if quantity < 1:
-            reasons[proposal.opportunity_id] = "INSUFFICIENT_SHADOW_CASH_AFTER_COST_RESERVE"; continue
+            reasons[proposal.opportunity_id] = (
+                "INSUFFICIENT_SHADOW_RISK_BUDGET" if cash_quantity >= 1
+                else "INSUFFICIENT_SHADOW_CASH_AFTER_COST_RESERVE"
+            ); continue
         fees = price * quantity * fee_rate
         reserve = price * quantity + fees
-        allocations.append(ShadowAllocation(proposal.opportunity_id, quantity, round(price, 4), round(fees, 4), round(reserve, 4), round((price-proposal.stop)*quantity, 4)))
-        free -= reserve; instruments.add(proposal.instrument); reasons[proposal.opportunity_id] = "SELECTED"
+        worst_case_risk = risk_per_unit * quantity
+        allocations.append(ShadowAllocation(proposal.opportunity_id, quantity, round(price, 4), round(fees, 4), round(reserve, 4), round(worst_case_risk, 4)))
+        free -= reserve; used_risk += worst_case_risk
+        instruments.add(proposal.instrument); reasons[proposal.opportunity_id] = "SELECTED"
     return allocations, reasons
+
+
+def _comparable_shadow_score(proposal: ShadowProposal) -> float:
+    """Map known sleeve metrics to bounded ranking features, never a probability."""
+    score = float(proposal.score)
+    if not math.isfinite(score):
+        return 0.0
+    if proposal.policy_id == "trend_pullback_v1":
+        return max(0.0, min(1.0, (score - 1.0) / .02))
+    if proposal.policy_id == "range_reversion_v1":
+        return max(0.0, min(1.0, score / .03))
+    if proposal.policy_id == "contraction_breakout_v1":
+        return max(0.0, min(1.0, (score - 1.0) / 1.0))
+    return 0.0
 
 
 def simulate_shadow_trade(
@@ -557,6 +611,11 @@ def _shadow_run_storage_key(account_id: str, run_id: str) -> str:
     return f"shadow-run:{digest}"
 
 
+def _shadow_implementation_identity() -> str:
+    """Freeze the executing research implementation with each manifest."""
+    return hashlib.sha256(Path(__file__).read_bytes()).hexdigest()
+
+
 async def _ensure_shadow_run(
     db_path: str, *, account_id: str, run_id: str, scenario_capital: float,
     fee_rate: float, slippage_bps: float,
@@ -565,9 +624,20 @@ async def _ensure_shadow_run(
     if not all(isinstance(value, str) and value for value in (account_id, run_id)):
         raise ValueError("shadow account and run identity are required")
     manifest = {
-        "version": "shadow-run-v1", "scenario_capital": float(scenario_capital),
+        "version": "shadow-run-v2", "schema_version": _SHADOW_SCHEMA_VERSION,
+        "implementation_sha256": _shadow_implementation_identity(),
+        "timestamp_convention": "completed_bar_timestamp_utc",
+        "calendar": "nse_trading_day_sync",
+        "scenario_capital": float(scenario_capital),
         "fee_rate": float(fee_rate), "slippage_bps": float(slippage_bps),
-        "policy_manifest": "three-sleeves-v1",
+        "policy_manifest": {
+            "strategies": sorted({"trend_pullback_v1", "range_reversion_v1", "contraction_breakout_v1"}),
+            "allocator": SHADOW_ALLOCATOR_VERSION,
+            "max_total_risk_fraction": _DEFAULT_MAX_TOTAL_RISK_FRACTION,
+            "max_position_risk_fraction": _DEFAULT_MAX_POSITION_RISK_FRACTION,
+            "max_position_cash_fraction": _DEFAULT_MAX_POSITION_CASH_FRACTION,
+            "gap_risk_multiple": _DEFAULT_GAP_RISK_MULTIPLE,
+        },
     }
     if (not math.isfinite(float(scenario_capital)) or float(scenario_capital) <= 0
             or not math.isfinite(float(fee_rate)) or float(fee_rate) < 0
@@ -1213,27 +1283,45 @@ async def _complete_shadow_watchlist_in_transaction(
     )
 
 
-async def _expire_pending_shadow_watchlists(db_path: str, *, now: datetime) -> list[tuple[str, str, str, str, str]]:
-    """Expire unfilled pending entries independently of current universe output."""
+async def _expire_pending_shadow_watchlists(
+    db_path: str, *, account_id: str, now: datetime,
+) -> int:
+    """Atomically expire only this run's unfilled pending entries.
+
+    ``account_id`` is the resolved storage/run identity, not an owner-facing
+    label.  Scoping it here prevents one scenario's replay clock from expiring
+    a different account or named run sharing the same database.
+    """
     await init_proactive_intelligence(db_path)
     async with aiosqlite.connect(db_path) as db:
         await db.execute("BEGIN IMMEDIATE")
         rows = await (await db.execute(
             "SELECT w.opportunity_id,o.policy_id,o.policy_version,o.account_id,o.instrument "
             "FROM proactive_watchlist w JOIN proactive_opportunities o ON o.opportunity_id=w.opportunity_id "
-            "LEFT JOIN proactive_shadow_positions p ON p.opportunity_id=w.opportunity_id "
-            "WHERE w.state IN ('WATCHING','ARMED','SELECTED') AND w.valid_until<=? "
-            "AND p.opportunity_id IS NULL",
-            (now.isoformat(),),
+            "LEFT JOIN proactive_shadow_positions p ON p.opportunity_id=w.opportunity_id AND p.account_id=o.account_id "
+            "WHERE o.account_id=? AND o.mode='SHADOW' "
+            "AND w.state IN ('WATCHING','ARMED','TRIGGERED','DEFERRED','SELECTED') "
+            "AND w.valid_until<=? AND p.opportunity_id IS NULL",
+            (account_id, now.isoformat()),
         )).fetchall()
-        for opportunity_id, *_rest in rows:
-            await db.execute(
+        expired = 0
+        for opportunity_id, policy_id, policy_version, stored_account_id, instrument in rows:
+            cur = await db.execute(
                 "UPDATE proactive_watchlist SET state='EXPIRED',reason='ENTRY_DEADLINE',updated_at=? "
-                "WHERE opportunity_id=? AND state IN ('WATCHING','ARMED','SELECTED')",
+                "WHERE opportunity_id=? AND state IN ('WATCHING','ARMED','TRIGGERED','DEFERRED','SELECTED')",
                 (now.isoformat(), opportunity_id),
             )
+            if cur.rowcount:
+                await _record_opportunity_event_in_transaction(
+                    db, opportunity_id=opportunity_id, policy_id=policy_id,
+                    policy_version=policy_version, account_id=stored_account_id,
+                    mode="SHADOW", instrument=instrument, stage="EXPIRED",
+                    reason_code="ENTRY_DEADLINE", idempotency_key=f"{opportunity_id}:expired",
+                    observed=now,
+                )
+                expired += 1
         await db.commit()
-    return [tuple(row) for row in rows]
+    return expired
 
 
 async def repair_shadow_evidence(db_path: str, *, account_id: str) -> int:
@@ -1314,15 +1402,9 @@ async def run_shadow_workflow(
     if prior_result is not None:
         return prior_result
     repaired_evidence = await repair_shadow_evidence(db_path, account_id=storage_account_id)
-    expired_pending = await _expire_pending_shadow_watchlists(db_path, now=now)
-    for opportunity_id, policy_id, policy_version, stored_account_id, instrument in expired_pending:
-        await record_opportunity_event(
-            db_path, opportunity_id=opportunity_id, policy_id=policy_id,
-            policy_version=policy_version, account_id=stored_account_id,
-            mode="SHADOW", instrument=instrument, stage="EXPIRED",
-            reason_code="ENTRY_DEADLINE", idempotency_key=f"{opportunity_id}:expired",
-            observed_at=now,
-        )
+    expired_pending = await _expire_pending_shadow_watchlists(
+        db_path, account_id=storage_account_id, now=now,
+    )
     # Existing exposure is advanced first. A malformed update cannot erase a
     # position, and any realised result is then reflected in free scenario cash.
     managed = await _advance_open_shadow_positions(
@@ -1481,7 +1563,7 @@ async def run_shadow_workflow(
         db_path, account_id=storage_account_id, scenario_capital=scenario_capital,
     )
     result = {"mode": "SHADOW", "origin": origin, "account_id": account_id, "run_id": run_id, "as_of": now.isoformat(), "proposals": len(proposals), "allocations": len(allocations), "outcomes": outcomes, "reasons": reasons,
-              "free_cash": round(post_free_cash, 4), "managed_positions": len(managed), "expired_pending": len(expired_pending),
+              "free_cash": round(post_free_cash, 4), "managed_positions": len(managed), "expired_pending": expired_pending,
               "repaired_evidence": repaired_evidence}
     await _complete_shadow_step(
         db_path, run_key=storage_account_id, as_of=now,
@@ -1812,7 +1894,10 @@ async def run_shadow_research_comparison(
     if len({proposal.opportunity_id for proposal in proposals}) != len(proposals):
         raise ValueError("research proposals require unique opportunity identities")
     manifest = {
-        "version": "shadow-research-v1", "cash_per_trial": float(cash_per_trial),
+        "version": "shadow-research-v2", "schema_version": _SHADOW_SCHEMA_VERSION,
+        "implementation_sha256": _shadow_implementation_identity(),
+        "timestamp_convention": "completed_bar_timestamp_utc",
+        "calendar": "nse_trading_day_sync", "cash_per_trial": float(cash_per_trial),
         "fee_rate": float(fee_rate), "slippage_bps": float(slippage_bps),
         "entry_profiles": sorted(_SHADOW_ENTRY_PROFILES), "exit_profiles": sorted(_SHADOW_EXIT_PROFILES),
         "proposals": [_research_proposal_manifest(proposal) for proposal in proposals],
