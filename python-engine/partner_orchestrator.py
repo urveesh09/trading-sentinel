@@ -379,6 +379,78 @@ async def partner_scan_tick(now: Optional[datetime] = None) -> None:
 
 
 # ---------------------------------------------------------------------------
+# job: scoped manual-advisory preview tick (NIFTY/SENSEX only)
+# ---------------------------------------------------------------------------
+
+async def partner_manual_advisory_tick(now: Optional[datetime] = None) -> None:
+    """Persist independently evaluated NIFTY/SENSEX advisory previews.
+
+    The pipeline is intentionally distinct from both the legacy signal sender
+    and the portfolio-required hedge service.  It never sends, places an
+    order, invents holdings, or uses Sentinel cash to size a partner idea.
+    """
+    if not (
+        settings.PARTNER_MANUAL_ADVISORY_ENABLED
+        or settings.PARTNER_MANUAL_ADVISORY_SHADOW_ENABLED
+    ):
+        return
+    now = now or datetime.now(IST)
+    if not await _gates_open(now, 9 * 60 + 45, 15 * 60 + 5):
+        return
+    import main as _main
+    from fno_underlyings import SPECS
+    from partner_manual_advisory import (
+        INDEX_EXCHANGES, StrategyEvidence, build_directional_debit_spread,
+        load_partner_profile, persist_candidate, select_preferred_market_candidates,
+    )
+
+    profile = await load_partner_profile(settings.DB_PATH)
+    metrics = {"considered": 0, "validated_shadow": 0, "rejected": 0, "unavailable": 0}
+    regime = _main._fno_regime_str()
+    # The legacy signal-enabled flag was a temporary BFO rollout control.  It
+    # is not an excuse to silently omit SENSEX here: each index is evaluated
+    # independently and an unavailable BSE path is visible in this metric.
+    specs = [spec for spec in analytics_underlyings() if spec.name in INDEX_EXCHANGES]
+    seen = {spec.name for spec in specs}
+    specs.extend(SPECS[name] for name in INDEX_EXCHANGES if name not in seen)
+    candidates = []
+    for spec in specs:
+        try:
+            scan = await scan_underlying(_main.kite, spec, regime, now)
+            if scan.error or scan.sig is None or scan.sig.direction is None or scan.snap is None:
+                metrics["unavailable"] += 1
+                continue
+            candidate = build_directional_debit_spread(
+                scan.snap, get_instruments_for(spec.name), scan.sig.direction, now,
+                evidence=StrategyEvidence.RESEARCH_ONLY,
+                quote_ttl_seconds=settings.PARTNER_MANUAL_ADVISORY_QUOTE_TTL_SEC,
+            )
+            if candidate is None:
+                metrics["rejected"] += 1
+                continue
+            candidates.append(candidate)
+        except Exception as exc:
+            metrics["unavailable"] += 1
+            logger.error("partner_manual_advisory_tick_failed underlying=%s err=%s", spec.name, str(exc), exc_info=True)
+    preferred, overlapping = select_preferred_market_candidates(candidates)
+    metrics["overlap_suppressed"] = len(overlapping)
+    for candidate in preferred:
+        metrics["considered"] += 1
+        stored = await persist_candidate(
+            settings.DB_PATH, candidate, profile, now=now,
+            validation_options={
+                "max_quote_age_seconds": settings.PARTNER_MANUAL_ADVISORY_MAX_QUOTE_AGE_SEC,
+                "max_spread_pct": settings.PARTNER_MANUAL_ADVISORY_MAX_SPREAD_PCT,
+                "min_oi": settings.PARTNER_MANUAL_ADVISORY_MIN_OI,
+                "min_volume": settings.PARTNER_MANUAL_ADVISORY_MIN_VOLUME,
+                "min_depth_units": settings.PARTNER_MANUAL_ADVISORY_MIN_DEPTH_UNITS,
+            },
+        )
+        metrics["validated_shadow" if stored["status"] == "VALIDATED_SHADOW" else "rejected"] += 1
+    logger.info("partner_manual_advisory_tick_summary", **metrics, can_send=False, can_place_orders=False)
+
+
+# ---------------------------------------------------------------------------
 # job: analytics tick (wide chain -> OI store -> events)
 # ---------------------------------------------------------------------------
 

@@ -1096,6 +1096,18 @@ class Settings(BaseSettings):
     PARTNER_HEDGE_SUPPRESS_LEGACY_BRIEF: bool = True
     PARTNER_HEDGE_SUPPRESS_LEGACY_EOD:   bool = True
 
+    # Scoped manual-trader advisory for NIFTY 50 (NSE) and SENSEX (BSE).
+    # It is shadow-first: this pipeline persists complete preview cards but
+    # has no order consumer and does not itself call Telegram delivery.
+    PARTNER_MANUAL_ADVISORY_ENABLED: bool = False
+    PARTNER_MANUAL_ADVISORY_SHADOW_ENABLED: bool = False
+    PARTNER_MANUAL_ADVISORY_MAX_QUOTE_AGE_SEC: int = 30
+    PARTNER_MANUAL_ADVISORY_MAX_SPREAD_PCT: float = 0.15
+    PARTNER_MANUAL_ADVISORY_MIN_OI: int = 1
+    PARTNER_MANUAL_ADVISORY_MIN_VOLUME: int = 1
+    PARTNER_MANUAL_ADVISORY_MIN_DEPTH_UNITS: int = 1
+    PARTNER_MANUAL_ADVISORY_QUOTE_TTL_SEC: int = 30
+
     # Advanced partner-facing phases require current readiness evidence. They
     # start disabled; Phase 1 protection and status messages remain available.
     PARTNER_HEDGE_PHASE2_ENABLED:         bool  = False

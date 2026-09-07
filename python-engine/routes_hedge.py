@@ -22,6 +22,10 @@ from hedge_analytics import (
     reconcile_partner_position,
 )
 from hedge_readiness import assess_hedge_readiness, record_gate_evidence
+from partner_manual_advisory import (
+    ManualDecision, PartnerAdvisoryProfile, load_advisory_cards,
+    load_partner_profile, record_manual_feedback, save_partner_profile,
+)
 
 router = APIRouter()
 
@@ -105,6 +109,41 @@ class HedgeDeliveryResolutionPayload(BaseModel):
     resolved_by: str = Field(min_length=1, max_length=120)
     reason: str = Field(min_length=1, max_length=1000)
     evidence_ref: str = Field(min_length=1, max_length=300)
+
+
+class PartnerAdvisoryProfilePayload(BaseModel):
+    version: int = Field(ge=1)
+    enabled_scopes: list[str] = Field(default=["MARKET_SETUP"])
+    instruments: list[str] = Field(default=["NIFTY", "SENSEX"])
+    holding_period: Optional[str] = Field(default=None, max_length=80)
+    timezone: str = Field(default="Asia/Kolkata", max_length=80)
+    delivery_start_minute: int = Field(default=560, ge=0, le=1439)
+    delivery_end_minute: int = Field(default=915, ge=0, le=1439)
+    permitted_structures: list[str] = Field(default=["DIRECTIONAL_DEBIT_SPREAD"])
+    preference: str = Field(default="ACTIONABLE", max_length=40)
+    capital_limit_rs: Optional[float] = Field(default=None, gt=0)
+    risk_limit_rs: Optional[float] = Field(default=None, gt=0)
+    confirmed_holdings_revision: Optional[int] = Field(default=None, ge=0)
+
+    def value(self, profile_id: str) -> PartnerAdvisoryProfile:
+        return PartnerAdvisoryProfile(
+            profile_id=profile_id, version=self.version,
+            enabled_scopes=tuple(item.strip().upper() for item in self.enabled_scopes),
+            instruments=tuple(item.strip().upper() for item in self.instruments),
+            holding_period=self.holding_period, timezone=self.timezone,
+            delivery_start_minute=self.delivery_start_minute,
+            delivery_end_minute=self.delivery_end_minute,
+            permitted_structures=tuple(item.strip().upper() for item in self.permitted_structures),
+            preference=self.preference.strip().upper(), capital_limit_rs=self.capital_limit_rs,
+            risk_limit_rs=self.risk_limit_rs,
+            confirmed_holdings_revision=self.confirmed_holdings_revision,
+        )
+
+
+class PartnerAdvisoryFeedbackPayload(BaseModel):
+    decision: str = Field(min_length=1, max_length=30)
+    reported_at: datetime
+    note: Optional[str] = Field(default=None, max_length=1000)
 
 
 def _position_json(position: PartnerPosition) -> dict:
@@ -233,6 +272,45 @@ async def get_partner_hedge_status(request: Request):
         "service_state": service_state,
         "automatic_execution": False,
     }
+
+
+@router.get("/partner/advisory/profile")
+async def get_partner_advisory_profile(request: Request, profile_id: str = "default"):
+    _main._check_internal_secret(request, "get_partner_advisory_profile")
+    return jsonable_encoder(await load_partner_profile(settings.DB_PATH, profile_id))
+
+
+@router.put("/partner/advisory/profile")
+async def put_partner_advisory_profile(
+    request: Request, payload: PartnerAdvisoryProfilePayload, profile_id: str = "default",
+):
+    _main._check_internal_secret(request, "put_partner_advisory_profile")
+    try:
+        profile = await save_partner_profile(settings.DB_PATH, payload.value(profile_id))
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+    return {"profile": jsonable_encoder(profile), "delivery_authority": False, "automatic_execution": False}
+
+
+@router.get("/partner/advisory/cards")
+async def get_partner_advisory_cards(request: Request, limit: int = 20):
+    _main._check_internal_secret(request, "get_partner_advisory_cards")
+    return await load_advisory_cards(settings.DB_PATH, limit=limit)
+
+
+@router.post("/partner/advisory/cards/{advisory_id}/feedback")
+async def post_partner_advisory_feedback(
+    advisory_id: str, request: Request, payload: PartnerAdvisoryFeedbackPayload,
+):
+    _main._check_internal_secret(request, "post_partner_advisory_feedback")
+    try:
+        decision = ManualDecision(payload.decision.strip().upper())
+        await record_manual_feedback(
+            settings.DB_PATH, advisory_id, decision, reported_at=payload.reported_at, note=payload.note,
+        )
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+    return {"recorded": True, "inferred_fill": False, "automatic_execution": False}
 
 
 @router.get("/partner/hedge/delivery-backlog")

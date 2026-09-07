@@ -882,6 +882,13 @@ def register_partner_scheduler_jobs(scheduler):
         except Exception as exc:
             logger.error("partner_scan_tick_crashed err=%s", exc, exc_info=True)
 
+    async def _run_partner_manual_advisory_tick_safe():
+        try:
+            from partner_orchestrator import partner_manual_advisory_tick
+            await partner_manual_advisory_tick()
+        except Exception as exc:
+            logger.error("partner_manual_advisory_tick_crashed err=%s", exc, exc_info=True)
+
     async def _run_partner_analytics_tick_safe():
         # [CALENDAR-GATE 2026-07-03] gate delegated: partner_orchestrator.
         # _gates_open checks PARTNER_BOT_ENABLED, the session window,
@@ -995,6 +1002,12 @@ def register_partner_scheduler_jobs(scheduler):
         max_instances=1, coalesce=True, misfire_grace_time=60,
     )
     scheduler.add_job(
+        _run_partner_manual_advisory_tick_safe, "cron",
+        minute="*/2", second=50,
+        id="partner_manual_advisory_tick",
+        max_instances=1, coalesce=True, misfire_grace_time=60,
+    )
+    scheduler.add_job(
         _run_partner_analytics_tick_safe, "cron",
         minute="2-57/5",
         id="partner_analytics_tick",
@@ -1069,7 +1082,7 @@ def register_partner_scheduler_jobs(scheduler):
         max_instances=1, coalesce=True, misfire_grace_time=60,
     )
     logger.info(
-        "partner_cron_registered jobs=13 enabled=%s hedge_enabled=%s "
+        "partner_cron_registered jobs=14 enabled=%s hedge_enabled=%s "
         "hedge_phase2_enabled=%s hedge_phase3_enabled=%s shadow_enabled=%s off_grid=true",
         settings.PARTNER_BOT_ENABLED,
         settings.PARTNER_HEDGE_ENABLED,

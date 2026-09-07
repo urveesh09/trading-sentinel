@@ -83,6 +83,13 @@ class ContractQuote:
     oi: int = 0
     volume: int = 0
     last_trade_time: Optional[datetime] = None
+    # A price alone is not executable liquidity.  Keep the best-level sizes
+    # from the same quote batch so advisory validation can reject a structure
+    # whose displayed price cannot cover even one contract.  Defaults retain
+    # compatibility for historical/research fixtures that did not expose
+    # depth; actionable advisory code treats a missing size as unavailable.
+    bid_quantity: int = 0
+    ask_quantity: int = 0
 
     @property
     def mid(self) -> float:

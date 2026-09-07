@@ -72,6 +72,8 @@ def _parse_quote_entry(contract: Contract, q: dict) -> ContractQuote:
     sells = depth.get("sell") or []
     bid = float(buys[0]["price"]) if buys and buys[0].get("price") else 0.0
     ask = float(sells[0]["price"]) if sells and sells[0].get("price") else 0.0
+    bid_quantity = int(buys[0].get("quantity") or 0) if buys else 0
+    ask_quantity = int(sells[0].get("quantity") or 0) if sells else 0
     ltt = None
     raw_ltt = q.get("last_trade_time")
     if raw_ltt:
@@ -87,6 +89,8 @@ def _parse_quote_entry(contract: Contract, q: dict) -> ContractQuote:
         oi=int(q.get("oi") or 0),
         volume=int(q.get("volume") or 0),
         last_trade_time=ltt,
+        bid_quantity=bid_quantity,
+        ask_quantity=ask_quantity,
     )
 
 
