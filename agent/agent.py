@@ -143,6 +143,10 @@ QUANT_ENGINE_URL = os.getenv("QUANT_ENGINE_URL", "http://python-engine:8000/sign
 # then what executes.
 NODE_GATEWAY_URL = os.getenv("NODE_GATEWAY_URL", "http://node-gateway:3000")
 INTERNAL_API_SECRET = os.getenv("INTERNAL_API_SECRET", "")
+OPTIONAL_AI_STATUS_URL = os.getenv(
+    "OPTIONAL_AI_STATUS_URL",
+    QUANT_ENGINE_URL.rsplit("/signals", 1)[0] + "/ops/optional-ai-status",
+)
 
 
 def register_approved_snapshot(sig_id: str, ticker: str, action: str, payload: dict) -> bool:
@@ -758,6 +762,56 @@ def _get_optional_ai_queue() -> Optional[AsyncReviewQueue]:
     return _optional_ai_queue
 
 
+def optional_ai_status() -> Dict:
+    """Expose optional-AI health without making it a trading control plane."""
+    policy_allows_annotation = (
+        MINIMAX_UNAVAILABLE_POLICY == "proceed"
+        and MOMENTUM_MINIMAX_REJECT_POLICY != "block"
+    )
+    queue_snapshot = _optional_ai_queue.snapshot() if _optional_ai_queue is not None else {
+        "pending": 0, "cached": 0, "daily_requests": 0,
+        "daily_budget": MINIMAX_ASYNC_REVIEW_DAILY_BUDGET,
+        "max_pending": MINIMAX_ASYNC_REVIEW_MAX_PENDING,
+        "circuit_state": "CLOSED",
+    }
+    if client is None:
+        state, reason = "DISABLED_NO_CREDENTIAL", "AI_DISABLED"
+    elif not MINIMAX_ASYNC_REVIEW_ENABLED:
+        state, reason = "DISABLED_BY_CONFIGURATION", "async_annotation_disabled"
+    elif not policy_allows_annotation:
+        state, reason = "DISABLED_BY_POLICY", "configured_hard_veto"
+    elif queue_snapshot["circuit_state"] == "OPEN":
+        state, reason = "OUTAGE_CIRCUIT_OPEN", "provider_failures"
+    else:
+        state, reason = "READY", "optional_annotation_ready"
+    return {
+        "state": state, "reported_at": datetime.now(timezone.utc).isoformat(),
+        "async_requested": MINIMAX_ASYNC_REVIEW_ENABLED,
+        "policy_allows_annotation": policy_allows_annotation,
+        "reason": reason, "queue": queue_snapshot,
+    }
+
+
+def publish_optional_ai_status() -> None:
+    """Report health asynchronously; a status outage must not delay trading."""
+    if not INTERNAL_API_SECRET:
+        return
+    payload = optional_ai_status()
+
+    def _post() -> None:
+        try:
+            response = requests.post(
+                OPTIONAL_AI_STATUS_URL, json=payload,
+                headers={"X-Internal-Secret": INTERNAL_API_SECRET}, timeout=2,
+            )
+            if response.status_code >= 300:
+                logger.warning("optional_ai_status_publish_failed status=%s", response.status_code)
+        except requests.RequestException as exc:
+            logger.warning("optional_ai_status_publish_failed error=%s", type(exc).__name__)
+
+    threading.Thread(target=_post, name="optional-ai-status", daemon=True).start()
+
+
 def queue_optional_ai_review(signal: Dict, sentiment_text: str, market_regime: str) -> Optional[Review]:
     """Queue a momentum-only annotation, returning immediately to the alert path.
 
@@ -1181,10 +1235,15 @@ def main():
     # cost one HTTP GET each and nothing else.
     schedule.every(MOMENTUM_POLL_INTERVAL_MIN).minutes.do(run_momentum_pipeline)
 
+    # Status is separate from the decision path: publishing it never waits for
+    # the engine and a failed report leaves deterministic alerts untouched.
+    schedule.every(1).minutes.do(publish_optional_ai_status)
+
     # [ROADMAP-2.4 2026-07-12] Engine loop-progress watchdog (self-gates
     # to market hours; alerts when /data/scheduler_tick.json goes stale).
     schedule.every(5).minutes.do(check_engine_liveness)
 
+    publish_optional_ai_status()
     touch_heartbeat()  # [ROADMAP-2.2] healthy from the first HEALTHCHECK
     while True:
         schedule.run_pending()

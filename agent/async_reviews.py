@@ -109,6 +109,24 @@ class AsyncReviewQueue:
             self._cleanup_locked(self._now())
             return self._states.get(key)
 
+    def snapshot(self) -> dict[str, int | str]:
+        """Return bounded health counters, never review content or prompts."""
+        with self._lock:
+            now = self._now()
+            self._cleanup_locked(now)
+            day = now.date().isoformat()
+            circuit_open = (
+                self._circuit_open_until is not None and now < self._circuit_open_until
+            )
+            return {
+                "pending": len(self._pending),
+                "cached": len(self._cache),
+                "daily_requests": self._requests_by_day.get(day, 0),
+                "daily_budget": self._max_requests_per_day,
+                "max_pending": self._max_pending,
+                "circuit_state": "OPEN" if circuit_open else "CLOSED",
+            }
+
     def shutdown(self, timeout: float = 1.0) -> None:
         self._stop.set()
         self._worker.join(timeout=timeout)

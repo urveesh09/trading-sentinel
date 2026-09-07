@@ -94,3 +94,21 @@ test('proactive comparison proxy requires a session', async () => {
   expect(response.status).toBe(401);
   expect(global.fetch).not.toHaveBeenCalled();
 });
+
+test.each([
+  ['optional AI status', '/analytics/optional-ai-status'],
+  ['partner hedge cards', '/partner/hedge/cards?limit=12'],
+])('proxies authenticated %s evidence without granting authority', async (_label, route) => {
+  const payload = { can_place_orders: false, execution_authority: 'NONE' };
+  global.fetch.mockResolvedValue({ status: 200, json: async () => payload });
+  const response = await request(makeApp()).get(`/api/proxy${route}`);
+  expect(response.status).toBe(200);
+  expect(response.body).toEqual(payload);
+  expect(global.fetch).toHaveBeenCalledWith(
+    `http://python-engine:8000${route}`,
+    expect.objectContaining({
+      method: 'GET',
+      headers: expect.objectContaining({ 'X-Internal-Secret': 'internal-test-secret' }),
+    }),
+  );
+});

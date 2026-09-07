@@ -627,3 +627,58 @@ does not modify Production.
   not create advice, change a readiness gate, call a transport or mutate a
   partner position. Fixture lifecycle cards and browser UI integration remain
   the next P6 work.
+
+### P6 completion — visible cards and fixture lifecycle demonstration
+
+- The Dev Dashboard now renders authenticated partner hedge review cards from
+  `/api/proxy/partner/hedge/cards?limit=12`. They show only persisted SHADOW
+  evidence, including contracts, review time, recorded/current portfolio
+  revisions, and an explicit `SEND: NO · TRADE: NO` boundary. There is no card
+  action and no UI route that can call a delivery or broker endpoint.
+- A card is now marked `SUPERSEDED` whenever its recorded portfolio revision
+  differs from the current account-wide revision. This prevents an older
+  review from looking current after a complete snapshot changes exposure.
+- `partner_lifecycle_demo.py` and
+  `scripts/run_partner_lifecycle_demo.py` create a new isolated database and
+  exercise the real Dev fixture adapter through create → complete-snapshot
+  close → reopen. The demo then verifies two position lifecycles, a revision
+  advance and a superseded old card while asserting no send/trade authority.
+  Run it with:
+
+  `python-engine\winvenv\Scripts\python.exe python-engine\scripts\run_partner_lifecycle_demo.py --db C:\temp\partner-lifecycle-demo.db`
+
+  The command refuses an existing database rather than overwriting evidence.
+  It is fixture-only and has no broker, partner transport, scheduler or
+  Production configuration dependency.
+
+### Optional-AI operational evidence — outage-safe UI
+
+- `agent/async_reviews.py` now exposes bounded queue counters only (pending,
+  cache, daily budget and circuit state); it never exposes prompts, model
+  output or credentials. `agent.py` derives an explicit optional-AI state and
+  asynchronously publishes it once per minute and at startup to the internal
+  engine endpoint. A failed status publish is deliberately non-blocking.
+- `optional_ai_status.py` stores the authenticated worker report separately
+  from decisions. It makes no report, corrupt report and stale report explicit
+  and hard-codes `execution_authority: NONE` and `can_place_orders: false`.
+  The Dashboard displays that evidence through
+  `/api/proxy/analytics/optional-ai-status`, with `OUTAGE_CIRCUIT_OPEN` visibly
+  distinct from a healthy ready annotation service.
+- Optional AI remains an annotation. The status path cannot approve, reject,
+  size, send, deliver or place a trade; deterministic signal/risk/delivery
+  behaviour continues when the provider is absent or circuit-open.
+
+### Validation for the P6/UI/AI evidence completion
+
+- `python-engine\winvenv\Scripts\python.exe -m pytest
+  python-engine\tests\test_optional_ai_status.py
+  python-engine\tests\test_partner_lifecycle_demo.py
+  python-engine\tests\test_partner_fixture_adapter.py
+  python-engine\tests\test_hedge_advisory.py -q` passed 51 tests.
+- The authenticated gateway proxy contract passed 12 focused tests and the
+  dashboard production build passed. The local agent virtual environment is a
+  Linux layout and cannot run on this Windows checkout; both edited agent
+  modules passed `py_compile` here. Run the agent suite in its Linux/Docker
+  environment before promotion:
+
+  `cd agent && .venv/bin/python -m pytest tests/test_async_reviews.py tests/test_agent_pipeline.py -q`

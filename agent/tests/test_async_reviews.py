@@ -51,6 +51,8 @@ def test_queue_is_bounded_and_circuit_breaker_is_explicit():
         release.set()
         assert _wait_for(queue, "one", {"UNAVAILABLE"}).reason == "provider_down"
         assert queue.submit("three", {}, "", "UNKNOWN", expires_at=expiry).state == "CIRCUIT_OPEN"
+        assert queue.snapshot()["circuit_state"] == "OPEN"
+        assert queue.snapshot()["pending"] == 0
     finally:
         queue.shutdown()
 

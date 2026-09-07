@@ -83,6 +83,23 @@ def _review(payload=None, *, unavailable_reason=None):
 
 
 class TestOptionalAsyncReview:
+    def test_optional_ai_status_marks_a_circuit_outage_without_trade_authority(self, agent_mod):
+        worker = MagicMock()
+        worker.snapshot.return_value = {
+            "pending": 0, "cached": 0, "daily_requests": 3, "daily_budget": 40,
+            "max_pending": 16, "circuit_state": "OPEN",
+        }
+        agent_mod.client = MagicMock()
+        agent_mod.MINIMAX_ASYNC_REVIEW_ENABLED = True
+        agent_mod.MINIMAX_UNAVAILABLE_POLICY = "proceed"
+        agent_mod.MOMENTUM_MINIMAX_REJECT_POLICY = "advisory"
+        agent_mod._optional_ai_queue = worker
+
+        status = agent_mod.optional_ai_status()
+
+        assert status["state"] == "OUTAGE_CIRCUIT_OPEN"
+        assert status["queue"]["circuit_state"] == "OPEN"
+
     def test_pending_annotation_does_not_block_the_deterministic_alert_path(self, agent_mod):
         from async_reviews import ReviewSubmission
 

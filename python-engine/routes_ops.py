@@ -27,15 +27,28 @@ the module object, and only ever touch its attributes at request time -- by
 which point main is fully initialised.
 """
 from fastapi import APIRouter, HTTPException, Request
+from pydantic import BaseModel, Field
 
 import main as _main
 
 import asyncio
 
 from config import settings
+from optional_ai_status import load_optional_ai_status, record_optional_ai_status
 from token_lifecycle import TokenPayload
 
 router = APIRouter()
+
+
+class OptionalAiStatusPayload(BaseModel):
+    """Bounded, non-authoritative worker health envelope from Container C."""
+
+    state: str = Field(min_length=1, max_length=80)
+    reported_at: str = Field(min_length=1, max_length=80)
+    async_requested: bool = False
+    policy_allows_annotation: bool = False
+    reason: str = Field(default="", max_length=160)
+    queue: dict = Field(default_factory=dict)
 
 
 @router.get("/experiments/momentum")
@@ -78,6 +91,23 @@ async def get_momentum_experiment(request: Request):
     ):
         response["status"] = "ready"
     return response
+
+
+@router.post("/ops/optional-ai-status")
+async def post_optional_ai_status(request: Request, payload: OptionalAiStatusPayload):
+    """Accept operational evidence only; it cannot affect a trade decision."""
+    _main._check_internal_secret(request, "post_optional_ai_status")
+    try:
+        return await record_optional_ai_status(settings.DB_PATH, payload.model_dump())
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+
+
+@router.get("/analytics/optional-ai-status")
+async def get_optional_ai_status(request: Request):
+    """Return the last agent report while making an outage or stale report visible."""
+    _main._check_internal_secret(request, "get_optional_ai_status")
+    return await load_optional_ai_status(settings.DB_PATH)
 
 
 

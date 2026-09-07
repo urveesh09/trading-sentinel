@@ -864,6 +864,11 @@ async def load_partner_hedge_cards(db_path: str, *, limit: int = 20) -> dict:
             "SELECT evaluation_id,phase,kind,dedup_key,rendered_text,detail_json,evaluated_at "
             "FROM partner_hedge_shadow_evaluations ORDER BY evaluated_at DESC,evaluation_id DESC LIMIT ?", (limit,),
         )).fetchall()
+        revision_row = await (await db.execute(
+            "SELECT revision FROM partner_hedge_portfolio_revision "
+            "WHERE revision_key='partner_hedge'"
+        )).fetchone()
+    current_revision = int(revision_row[0]) if revision_row is not None else None
     cards = []
     for evaluation_id, phase, kind, dedup_key, text, raw_detail, evaluated_at in rows:
         try:
@@ -872,12 +877,23 @@ async def load_partner_hedge_cards(db_path: str, *, limit: int = 20) -> dict:
             detail = {"state": "CORRUPT_EVALUATION_DETAIL"}
         if not isinstance(detail, dict):
             detail = {"state": "CORRUPT_EVALUATION_DETAIL"}
+        recorded_revision = detail.get("portfolio_revision")
+        revision_is_known = isinstance(recorded_revision, int) and not isinstance(recorded_revision, bool)
+        is_superseded = bool(
+            revision_is_known and current_revision is not None and recorded_revision != current_revision
+        )
         cards.append({
             "evaluation_id": evaluation_id, "phase": phase, "kind": kind,
             "dedup_key": dedup_key, "rendered_text": text, "evaluated_at": evaluated_at,
             "account_id": detail.get("account_id"), "underlying": detail.get("underlying"),
             "contracts": detail.get("contracts") if isinstance(detail.get("contracts"), list) else [],
-            "valid_until": detail.get("valid_until"), "portfolio_revision": detail.get("portfolio_revision"),
+            "valid_until": detail.get("valid_until"), "portfolio_revision": recorded_revision,
+            "current_portfolio_revision": current_revision,
+            "portfolio_state": (
+                "SUPERSEDED" if is_superseded else "CURRENT" if revision_is_known and current_revision is not None
+                else "REVISION_UNAVAILABLE"
+            ),
+            "is_superseded": is_superseded,
             "decision_id": detail.get("decision_id"), "generation_id": detail.get("generation_id"),
             "reason": detail.get("reason"), "delivery_state": "NOT_SENT_SHADOW_EVIDENCE",
             "can_send": False, "can_trade": False,

@@ -8,6 +8,8 @@ import { useSignals } from '../hooks/useSignals';
 import { usePositions } from '../hooks/usePositions';
 import { useDivisionPerformance } from '../hooks/useDivisionPerformance';
 import { useProactiveActivity } from '../hooks/useProactiveActivity';
+import { usePartnerHedgeCards } from '../hooks/usePartnerHedgeCards';
+import { useOptionalAiStatus } from '../hooks/useOptionalAiStatus';
 import { isActivePosition } from '../utils/positions';
 import {
   INSUFFICIENT_DATA,
@@ -144,11 +146,70 @@ function ActivityFunnel({ activity, isLoading, isError }) {
   );
 }
 
+function PartnerHedgeCards({ cards, isLoading, isError }) {
+  if (isLoading) return <div className="rounded border border-gray-800 bg-gray-900 p-4 text-sm text-gray-500">Loading partner hedge review evidence…</div>;
+  if (isError || !cards) return <div className="rounded border border-amber-800 bg-amber-950/30 p-4 text-sm text-amber-200">Partner hedge review evidence is unavailable. Unavailable data is never shown as a current recommendation.</div>;
+  const rows = Array.isArray(cards.cards) ? cards.cards : [];
+  return (
+    <section className="rounded-xl border border-fuchsia-900/70 bg-fuchsia-950/10 p-4" aria-labelledby="partner-hedge-heading">
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <h2 id="partner-hedge-heading" className="text-xl font-bold text-white">Partner hedge review cards</h2>
+          <p className="mt-1 text-xs text-gray-500">Persisted review evidence only. No card can send a message, place an order, or confirm a partner holding.</p>
+        </div>
+        <span className="rounded border border-fuchsia-500/50 bg-fuchsia-950 px-2 py-1 text-[10px] font-bold tracking-widest text-fuchsia-200">{cards.mode || 'SHADOW'} · NO DELIVERY</span>
+      </div>
+      {rows.length ? <div className="mt-4 grid gap-3 lg:grid-cols-2">{rows.map((card) => (
+        <article key={card.evaluation_id} className={`rounded border bg-gray-950/70 p-3 ${card.is_superseded ? 'border-amber-700/80' : 'border-gray-800'}`}>
+          <div className="flex flex-wrap items-start justify-between gap-2">
+            <div><h3 className="font-semibold text-fuchsia-100">{card.underlying || 'Unknown underlying'} · {card.kind || 'review'}</h3><p className="mt-0.5 text-[11px] text-gray-500">{card.phase || 'phase unavailable'} · {card.evaluated_at || 'time unavailable'}</p></div>
+            <span className={`rounded px-2 py-1 text-[10px] font-bold ${card.is_superseded ? 'bg-amber-950 text-amber-200' : 'bg-slate-800 text-slate-300'}`}>{card.portfolio_state || 'REVISION UNAVAILABLE'}</span>
+          </div>
+          <p className="mt-3 whitespace-pre-wrap text-sm text-gray-300">{card.rendered_text || card.reason || 'No rendered review text.'}</p>
+          <dl className="mt-3 grid grid-cols-2 gap-2 border-t border-gray-800 pt-3 text-xs">
+            <div><dt className="text-gray-500">Contracts</dt><dd className="mt-0.5 text-gray-200">{card.contracts?.length ? card.contracts.join(', ') : 'Unavailable'}</dd></div>
+            <div><dt className="text-gray-500">Valid until</dt><dd className="mt-0.5 text-gray-200">{card.valid_until || 'Unavailable'}</dd></div>
+            <div><dt className="text-gray-500">Recorded revision</dt><dd className="mt-0.5 text-gray-200">{card.portfolio_revision ?? 'Unavailable'}</dd></div>
+            <div><dt className="text-gray-500">Current revision</dt><dd className="mt-0.5 text-gray-200">{card.current_portfolio_revision ?? 'Unavailable'}</dd></div>
+          </dl>
+          <p className="mt-3 text-[10px] font-semibold tracking-wide text-gray-500">{card.delivery_state || 'NOT SENT'} · SEND: NO · TRADE: NO</p>
+        </article>
+      ))}</div> : <div className="mt-4 rounded border border-gray-800 bg-gray-950/70 p-4 text-sm text-gray-500">No persisted partner hedge review evidence yet.</div>}
+      <p className="mt-3 text-xs text-gray-500">{cards.note}</p>
+    </section>
+  );
+}
+
+function OptionalAiEvidence({ optionalAi, isLoading, isError }) {
+  if (isLoading) return <div className="rounded border border-gray-800 bg-gray-900 p-4 text-sm text-gray-500">Loading optional-AI health evidence…</div>;
+  if (isError || !optionalAi) return <div className="rounded border border-amber-800 bg-amber-950/30 p-4 text-sm text-amber-200">Optional-AI health is unavailable. Deterministic trading paths do not depend on this display.</div>;
+  const unavailable = ['NOT_REPORTED', 'STALE', 'OUTAGE_CIRCUIT_OPEN', 'UNAVAILABLE', 'CORRUPT_REPORT'].includes(optionalAi.state);
+  const queue = optionalAi.detail?.queue || {};
+  return (
+    <section className={`rounded-xl border p-4 ${unavailable ? 'border-amber-800 bg-amber-950/20' : 'border-blue-900/70 bg-blue-950/10'}`} aria-labelledby="optional-ai-heading">
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div><h2 id="optional-ai-heading" className="text-xl font-bold text-white">Optional AI annotation</h2><p className="mt-1 text-xs text-gray-500">A status/outage evidence surface, not a trade permission or risk override.</p></div>
+        <span className={`rounded px-2 py-1 text-[10px] font-bold tracking-widest ${unavailable ? 'bg-amber-950 text-amber-200' : 'bg-blue-950 text-blue-200'}`}>{optionalAi.state}</span>
+      </div>
+      <div className="mt-3 grid grid-cols-2 gap-3 text-xs sm:grid-cols-4">
+        <div><div className="text-gray-500">Pending</div><div className="mt-1 font-semibold text-gray-200">{queue.pending ?? 'Unavailable'}</div></div>
+        <div><div className="text-gray-500">Circuit</div><div className="mt-1 font-semibold text-gray-200">{queue.circuit_state ?? 'Unavailable'}</div></div>
+        <div><div className="text-gray-500">Daily budget</div><div className="mt-1 font-semibold text-gray-200">{queue.daily_requests ?? '—'} / {queue.daily_budget ?? '—'}</div></div>
+        <div><div className="text-gray-500">Reported at</div><div className="mt-1 break-all font-semibold text-gray-200">{optionalAi.reported_at || 'Never'}</div></div>
+      </div>
+      <p className="mt-3 text-xs text-gray-400">{optionalAi.note}</p>
+      <p className="mt-2 text-[10px] font-semibold tracking-wide text-gray-500">EXECUTION AUTHORITY: NONE · CAN PLACE ORDERS: NO</p>
+    </section>
+  );
+}
+
 export default function Dashboard({ healthData, navigateToPositions, navigateToBacktests, navigateToResearch }) {
   const { signals, mutate: refreshSignals } = useSignals();
   const { positions } = usePositions();
   const { divisionPerformance, isLoading, isError } = useDivisionPerformance();
   const proactive = useProactiveActivity();
+  const partnerHedgeCards = usePartnerHedgeCards();
+  const optionalAi = useOptionalAiStatus();
   const viewModel = buildDivisionViewModel(divisionPerformance);
   const cbHalted = healthData?.circuit_breaker_halted || false;
   const cbReasons = healthData?.circuit_breaker_reasons || [];
@@ -183,6 +244,11 @@ export default function Dashboard({ healthData, navigateToPositions, navigateToB
         </section>
 
         <ActivityFunnel {...proactive} />
+
+        <div className="grid gap-6 2xl:grid-cols-2">
+          <PartnerHedgeCards {...partnerHedgeCards} />
+          <OptionalAiEvidence {...optionalAi} />
+        </div>
 
         <section className="grid grid-cols-1 gap-6 xl:grid-cols-3">
           <div className="space-y-4 xl:col-span-1">
