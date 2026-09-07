@@ -125,12 +125,14 @@ async def test_open_shadow_position_reserves_cash_and_closes_on_a_later_bar(db_p
     assert free_after_close < 1_000, "loss and both-side costs must reduce synthetic cash"
     portfolio = (await proactive_activity_report(db_path))["shadow_positions"]
     assert len(portfolio) == 1
-    assert portfolio[0] == pytest.approx({"account_id": "demo", "run_id": "legacy", "open_positions": 0, "closed_positions": 1,
-                                          "reserved_capital": 0.0, "gross_pnl": updates[0][1].gross_pnl,
-                                          "fees": updates[0][1].fees, "net_pnl": updates[0][1].net_pnl,
-                                          "scenario_capital": None, "free_cash": None,
-                                          "marked_unrealized_pnl": None,
-                                          "unrealized_state": "UNAVAILABLE_NO_CURRENT_MARK"})
+    row = portfolio[0]
+    assert (row["account_id"], row["run_id"], row["open_positions"], row["closed_positions"]) == ("demo", "legacy", 0, 1)
+    assert row["reserved_capital"] == 0
+    assert row["gross_pnl"] == pytest.approx(updates[0][1].gross_pnl)
+    assert row["fees"] == pytest.approx(updates[0][1].fees)
+    assert row["net_pnl"] == pytest.approx(updates[0][1].net_pnl)
+    assert row["scenario_capital"] is row["free_cash"] is row["marked_unrealized_pnl"] is None
+    assert row["unrealized_state"] == "UNAVAILABLE_NO_CURRENT_MARK"
 
 
 @pytest.mark.asyncio
@@ -145,6 +147,23 @@ async def test_shadow_evidence_repair_does_not_change_a_persisted_fill(db_path):
     assert await _persist_new_shadow_position(db_path, proposal=proposal, account_id="repair", result=result)
     assert await repair_shadow_evidence(db_path, account_id="repair") == 1
     assert await repair_shadow_evidence(db_path, account_id="repair") == 0
+
+
+@pytest.mark.asyncio
+async def test_shadow_activity_reports_completed_bar_mark_without_changing_cash(db_path):
+    from proactive_intelligence import _persist_new_shadow_position
+    now = datetime.now(timezone.utc)
+    proposal = ShadowProposal("marked", "trend_pullback_v1", "NSE:MARK", 100, 95, 110,
+                              now + timedelta(minutes=15), 1, 100, "test", now, now,
+                              now + timedelta(minutes=15), now + timedelta(hours=1))
+    result = simulate_shadow_trade(proposal, [{"timestamp": (now + timedelta(minutes=1)).isoformat(),
+                                                "open": 100, "high": 103, "low": 99, "close": 102}], cash=1_000)
+    assert await _persist_new_shadow_position(db_path, proposal=proposal, account_id="mark", result=result,
+                                              marked_price=102, marked_at=result.last_bar_at)
+    [row] = (await proactive_activity_report(db_path))["shadow_positions"]
+    assert row["unrealized_state"] == "MARKED_COMPLETED_BAR"
+    assert row["marked_unrealized_gross_pnl"] > 0
+    assert row["free_cash"] is None, "legacy records cannot fabricate scenario capital"
 
 
 def test_shadow_simulator_rejects_duplicate_or_malformed_future_timestamps():

@@ -541,3 +541,15 @@ does not modify Production.
   labels unrealised P&L as unavailable rather than displaying entry notional as
   a fabricated valuation. All values remain clearly labelled fixture/SHADOW
   research, never broker-reconciled profit.
+
+### P1 correction — completed-bar synthetic marks
+
+- Added restart-safe `marked_price` and `marked_at` fields to synthetic
+  positions, including a non-destructive schema migration. New and managed
+  open positions receive a mark only from the close of an observed completed
+  fixture bar. Closed positions retain their exit mark but report no
+  unrealised P&L.
+- The activity response exposes marked gross and net-after-entry-fee
+  unrealised values, with `MARKED`, `PARTIALLY_MARKED` or `UNAVAILABLE` state.
+  Free cash intentionally excludes unrealised profit/loss until a simulated
+  exit is recorded.

@@ -90,6 +90,8 @@ class ShadowPosition:
     opened_at: datetime
     holding_deadline: datetime
     last_bar_at: datetime
+    marked_price: Optional[float] = None
+    marked_at: Optional[datetime] = None
 
 
 def _proposal_id(policy_id: str, instrument: str, bar_time: datetime) -> str:
@@ -374,7 +376,7 @@ CREATE TABLE IF NOT EXISTS proactive_shadow_positions (
  entry_price REAL NOT NULL, entry_fees REAL NOT NULL, stop_price REAL NOT NULL,
  target_price REAL NOT NULL, opened_at TEXT NOT NULL, holding_deadline TEXT NOT NULL,
  last_bar_at TEXT NOT NULL, exit_price REAL, exit_fees REAL, gross_pnl REAL,
- net_pnl REAL, closed_at TEXT, close_reason TEXT
+ net_pnl REAL, closed_at TEXT, close_reason TEXT, marked_price REAL, marked_at TEXT
 );
 CREATE INDEX IF NOT EXISTS idx_shadow_positions_account_status
  ON proactive_shadow_positions(account_id, status);
@@ -408,6 +410,11 @@ async def init_proactive_intelligence(db_path: str) -> None:
             await db.execute("ALTER TABLE proactive_shadow_runs ADD COLUMN last_as_of TEXT")
         if "last_sequence" not in columns:
             await db.execute("ALTER TABLE proactive_shadow_runs ADD COLUMN last_sequence INTEGER NOT NULL DEFAULT 0")
+        position_columns = {row[1] for row in await (await db.execute("PRAGMA table_info(proactive_shadow_positions)")).fetchall()}
+        if "marked_price" not in position_columns:
+            await db.execute("ALTER TABLE proactive_shadow_positions ADD COLUMN marked_price REAL")
+        if "marked_at" not in position_columns:
+            await db.execute("ALTER TABLE proactive_shadow_positions ADD COLUMN marked_at TEXT")
         await db.commit()
 
 
@@ -679,7 +686,7 @@ async def _shadow_positions(db_path: str, *, account_id: str, status: Optional[s
     await init_proactive_intelligence(db_path)
     query = (
         "SELECT opportunity_id,account_id,policy_id,instrument,quantity,entry_price,entry_fees,"
-        "stop_price,target_price,opened_at,holding_deadline,last_bar_at "
+        "stop_price,target_price,opened_at,holding_deadline,last_bar_at,marked_price,marked_at "
         "FROM proactive_shadow_positions WHERE account_id=?"
     )
     params: tuple = (account_id,)
@@ -694,6 +701,8 @@ async def _shadow_positions(db_path: str, *, account_id: str, status: Optional[s
         opened_at=_stamp(datetime.fromisoformat(row[9])),
         holding_deadline=_stamp(datetime.fromisoformat(row[10])),
         last_bar_at=_stamp(datetime.fromisoformat(row[11])),
+        marked_price=float(row[12]) if row[12] is not None else None,
+        marked_at=_stamp(datetime.fromisoformat(row[13])) if row[13] else None,
     ) for row in rows]
 
 
@@ -721,7 +730,7 @@ async def _shadow_account_state(db_path: str, *, account_id: str, scenario_capit
 
 async def _persist_new_shadow_position(
     db_path: str, *, proposal: ShadowProposal, account_id: str, result: ShadowSimulation,
-    fee_rate: float = .001,
+    fee_rate: float = .001, marked_price: Optional[float] = None, marked_at: Optional[datetime] = None,
 ) -> bool:
     """Create an immutable synthetic fill/outcome exactly once per opportunity."""
     if result.status not in {"OPEN", "CLOSED"} or not result.entry_price or not result.entry_at:
@@ -734,14 +743,16 @@ async def _persist_new_shadow_position(
             "INSERT OR IGNORE INTO proactive_shadow_positions ("
             "opportunity_id,account_id,policy_id,instrument,status,quantity,entry_price,entry_fees,"
             "stop_price,target_price,opened_at,holding_deadline,last_bar_at,exit_price,exit_fees,gross_pnl,net_pnl,closed_at,close_reason"
-            ") VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+            ",marked_price,marked_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
             (proposal.opportunity_id, account_id, proposal.policy_id, proposal.instrument, result.status,
              result.quantity, result.entry_price, entry_fees, proposal.stop, proposal.target,
              result.entry_at.isoformat(), _stamp(proposal.holding_deadline or proposal.valid_until).isoformat(),
              _stamp(result.last_bar_at or result.entry_at).isoformat(), result.exit_price, exit_fees,
              result.gross_pnl, result.net_pnl,
              _stamp(result.last_bar_at).isoformat() if result.status == "CLOSED" and result.last_bar_at else None,
-             result.reason if result.status == "CLOSED" else None),
+             result.reason if result.status == "CLOSED" else None,
+             result.exit_price if result.status == "CLOSED" else marked_price,
+             (_stamp(marked_at).isoformat() if marked_at else None)),
         )
         await db.commit()
         return bool(cur.rowcount)
@@ -754,11 +765,12 @@ async def _advance_open_shadow_positions(
     """Advance persisted synthetic positions before admitting any new exposure."""
     updates: list[tuple[ShadowPosition, ShadowSimulation]] = []
     for position in await _shadow_positions(db_path, account_id=account_id, status="OPEN"):
+        normalised = _normalise_shadow_bars(future_bars.get(position.instrument, []))
         result = simulate_open_shadow_position(
             position, future_bars.get(position.instrument, []),
             fee_rate=fee_rate, slippage_bps=slippage_bps,
         )
-        if result.status == "INVALID":
+        if result.status == "INVALID" or normalised is None:
             continue  # Preserve the existing position; malformed later data cannot close it.
         if result.status == "OPEN" and result.last_bar_at == position.last_bar_at:
             continue
@@ -767,15 +779,20 @@ async def _advance_open_shadow_positions(
                 exit_fees = round((result.fees or 0.0) - position.entry_fees, 4)
                 await db.execute(
                     "UPDATE proactive_shadow_positions SET status='CLOSED',last_bar_at=?,exit_price=?,"
-                    "exit_fees=?,gross_pnl=?,net_pnl=?,closed_at=?,close_reason=? "
+                    "exit_fees=?,gross_pnl=?,net_pnl=?,closed_at=?,close_reason=?,marked_price=?,marked_at=? "
                     "WHERE opportunity_id=? AND status='OPEN'",
                     (_stamp(result.last_bar_at).isoformat(), result.exit_price, exit_fees, result.gross_pnl,
-                     result.net_pnl, _stamp(result.last_bar_at).isoformat(), result.reason, position.opportunity_id),
+                     result.net_pnl, _stamp(result.last_bar_at).isoformat(), result.reason,
+                     result.exit_price, _stamp(result.last_bar_at).isoformat(), position.opportunity_id),
                 )
             else:
+                mark = next((close for stamp, _open, _high, _low, close in normalised
+                             if stamp == result.last_bar_at), None)
                 await db.execute(
-                    "UPDATE proactive_shadow_positions SET last_bar_at=? WHERE opportunity_id=? AND status='OPEN'",
-                    (_stamp(result.last_bar_at).isoformat(), position.opportunity_id),
+                    "UPDATE proactive_shadow_positions SET last_bar_at=?,marked_price=?,marked_at=? "
+                    "WHERE opportunity_id=? AND status='OPEN'",
+                    (_stamp(result.last_bar_at).isoformat(), mark, _stamp(result.last_bar_at).isoformat(),
+                     position.opportunity_id),
                 )
             await db.commit()
         updates.append((position, result))
@@ -1017,9 +1034,16 @@ async def run_shadow_workflow(
         else:
             stage = "EXPIRED"
         if result.status in {"OPEN", "CLOSED"}:
+            initial_mark = None
+            if result.status == "OPEN":
+                normalised_bars = _normalise_shadow_bars(visible_future_bars.get(proposal.instrument, []))
+                if normalised_bars is not None:
+                    initial_mark = next((close for stamp, _open, _high, _low, close in normalised_bars
+                                         if stamp == result.last_bar_at), None)
             await _persist_new_shadow_position(
                 db_path, proposal=proposal, account_id=storage_account_id, result=result,
-                fee_rate=persisted_fee_rate,
+                fee_rate=persisted_fee_rate, marked_price=initial_mark,
+                marked_at=result.last_bar_at if initial_mark is not None else None,
             )
             await transition_watchlist(
                 db_path, opportunity_id=proposal.opportunity_id, state="COMPLETED",
@@ -1176,7 +1200,12 @@ async def proactive_activity_report(db_path: str, *, days: int = 7) -> dict:
             "COALESCE(SUM(CASE WHEN status='OPEN' THEN entry_price*quantity+entry_fees ELSE 0 END),0),"
             "COALESCE(SUM(CASE WHEN status='CLOSED' THEN gross_pnl ELSE 0 END),0),"
             "COALESCE(SUM(CASE WHEN status='CLOSED' THEN exit_fees+entry_fees ELSE 0 END),0),"
-            "COALESCE(SUM(CASE WHEN status='CLOSED' THEN net_pnl ELSE 0 END),0) "
+            "COALESCE(SUM(CASE WHEN status='CLOSED' THEN net_pnl ELSE 0 END),0),"
+            "SUM(CASE WHEN status='OPEN' AND marked_price IS NOT NULL THEN 1 ELSE 0 END),"
+            "COALESCE(SUM(CASE WHEN status='OPEN' AND marked_price IS NOT NULL "
+            "THEN (marked_price-entry_price)*quantity ELSE 0 END),0),"
+            "COALESCE(SUM(CASE WHEN status='OPEN' AND marked_price IS NOT NULL "
+            "THEN (marked_price-entry_price)*quantity-entry_fees ELSE 0 END),0) "
             "FROM proactive_shadow_positions p LEFT JOIN proactive_shadow_runs r ON r.run_key=p.account_id "
             "GROUP BY p.account_id,COALESCE(r.run_id,'legacy'),r.manifest_json",
         )
@@ -1206,8 +1235,12 @@ async def proactive_activity_report(db_path: str, *, days: int = 7) -> dict:
             "scenario_capital": scenario_capital,
             "free_cash": (round(max(0.0, scenario_capital + realised - reserved), 4)
                           if scenario_capital is not None else None),
-            "marked_unrealized_pnl": None,
-            "unrealized_state": "UNAVAILABLE_NO_CURRENT_MARK",
+            "marked_unrealized_pnl": round(float(row[11]), 4) if int(row[9]) else None,
+            "unrealized_state": ("MARKED_COMPLETED_BAR" if int(row[3]) and int(row[9]) == int(row[3])
+                                 else "PARTIALLY_MARKED_COMPLETED_BAR" if int(row[9])
+                                 else "UNAVAILABLE_NO_CURRENT_MARK"),
+            "marked_unrealized_gross_pnl": round(float(row[10]), 4) if int(row[9]) else None,
+            "marked_unrealized_net_pnl": round(float(row[11]), 4) if int(row[9]) else None,
         })
     return {"as_of": datetime.now(timezone.utc).isoformat(), "days": days, "modes": by_mode, "funding_flows": funding,
             "shadow_positions": shadow_positions,
