@@ -11,7 +11,7 @@ import hashlib
 import json
 import math
 from datetime import datetime, timedelta
-from typing import Any
+from typing import Any, Mapping
 
 import httpx
 import pytz
@@ -20,7 +20,7 @@ import structlog
 from config import settings
 from hedge_advisory import _set_service_state, record_vix_observation
 from hedge_analytics import (
-    Greeks, apply_partner_snapshot_transaction,
+    Greeks, PartnerPosition, apply_partner_snapshot_transaction,
 )
 
 logger = structlog.get_logger()
@@ -90,17 +90,22 @@ def _normalise_snapshot(snapshot: dict[str, Any], *, received_at: datetime) -> t
     if not isinstance(raw_rows, list):
         raise ValueError("positions must be a list")
     rows: list[dict] = []
-    seen: set[int] = set()
+    seen: set[tuple[str, int | str]] = set()
     for row in raw_rows:
         if not isinstance(row, dict):
             raise ValueError("position rows must be objects")
         position_id, quantity = row.get("position_id"), row.get("observed_quantity")
-        if (not isinstance(position_id, int) or isinstance(position_id, bool)
-                or not isinstance(quantity, int) or isinstance(quantity, bool)):
-            raise ValueError("position_id and observed_quantity must be integers")
-        if position_id in seen:
-            raise ValueError("snapshot contains duplicate position_id")
-        seen.add(position_id)
+        position_key = row.get("position_key")
+        has_position_id = isinstance(position_id, int) and not isinstance(position_id, bool)
+        has_position_key = isinstance(position_key, str) and bool(position_key.strip())
+        if has_position_id == has_position_key:
+            raise ValueError("each position row requires exactly one position_id or position_key")
+        if not isinstance(quantity, int) or isinstance(quantity, bool):
+            raise ValueError("observed_quantity must be an integer")
+        identity = ("id", position_id) if has_position_id else ("key", position_key.strip())
+        if identity in seen:
+            raise ValueError("snapshot contains duplicate position identity")
+        seen.add(identity)
         current_price = row.get("current_price")
         price_as_of = row.get("price_as_of")
         if current_price is not None:
@@ -119,8 +124,8 @@ def _normalise_snapshot(snapshot: dict[str, Any], *, received_at: datetime) -> t
             not isinstance(deliverable_quantity, int) or isinstance(deliverable_quantity, bool)
         ):
             raise ValueError("deliverable_quantity must be an integer")
-        rows.append({
-            "position_id": position_id, "observed_quantity": quantity,
+        normalised = {
+            "observed_quantity": quantity,
             "quantity_basis": row.get("quantity_basis"),
             "current_price": current_price, "underlying_price": row.get("underlying_price"),
             "price_as_of": parsed_price_as_of, "greeks": _greeks(row.get("greeks")),
@@ -128,7 +133,12 @@ def _normalise_snapshot(snapshot: dict[str, Any], *, received_at: datetime) -> t
             "deliverable_as_of": (_timestamp(row.get("deliverable_as_of"), "deliverable_as_of")
                                   if row.get("deliverable_as_of") is not None else None),
             "deliverable_source": row.get("deliverable_source"),
-        })
+        }
+        if has_position_id:
+            normalised["position_id"] = position_id
+        else:
+            normalised["position_key"] = position_key.strip()
+        rows.append(normalised)
     vix_raw = snapshot.get("vix")
     vix: dict | None = None
     if vix_raw is not None:
@@ -150,7 +160,12 @@ def _normalise_snapshot(snapshot: dict[str, Any], *, received_at: datetime) -> t
 
 
 async def apply_partner_input_snapshot(
-    db_path: str, snapshot: dict[str, Any], *, received_at: datetime | None = None,
+    db_path: str,
+    snapshot: dict[str, Any],
+    *,
+    received_at: datetime | None = None,
+    new_positions: Mapping[str, PartnerPosition] | None = None,
+    source_payload_hash: str | None = None,
 ) -> dict:
     """Apply one complete adapter snapshot with explicit source ownership.
 
@@ -159,12 +174,20 @@ async def apply_partner_input_snapshot(
     """
     received_at = _timestamp((received_at or datetime.now(IST)).isoformat(), "received_at")
     envelope, rows, vix = _normalise_snapshot(snapshot, received_at=received_at)
-    payload_hash = hashlib.sha256(json.dumps(snapshot, sort_keys=True, separators=(",", ":"),
-                                             default=str).encode("utf-8")).hexdigest()
+    computed_payload_hash = hashlib.sha256(
+        json.dumps(snapshot, sort_keys=True, separators=(",", ":"), default=str).encode("utf-8")
+    ).hexdigest()
+    # A fixture adapter normalises source identities into local position IDs.
+    # Its idempotency key must remain the immutable source envelope, not that
+    # changing local representation. Production adapters use the computed hash.
+    payload_hash = str(source_payload_hash or computed_payload_hash).strip()
+    if len(payload_hash) != 64 or any(char not in "0123456789abcdef" for char in payload_hash.lower()):
+        raise ValueError("source_payload_hash must be a SHA-256 hex digest")
     result = await apply_partner_snapshot_transaction(
         db_path, **envelope, received_at=received_at, payload_hash=payload_hash, rows=rows,
         approved_source=settings.PARTNER_HEDGE_INPUT_EXPECTED_SOURCE,
         approved_account_id=settings.PARTNER_HEDGE_INPUT_EXPECTED_ACCOUNT_ID,
+        new_positions=new_positions,
     )
     outcome = {
         "source": envelope["source"], "account_id": envelope["account_id"],

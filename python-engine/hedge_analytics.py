@@ -1459,48 +1459,64 @@ def _position_values(position: PartnerPosition) -> tuple:
     )
 
 
+async def _create_partner_position_in_transaction(
+    db: aiosqlite.Connection, position: PartnerPosition,
+) -> tuple[PartnerPosition, bool]:
+    """Create one position using the caller's transaction.
+
+    This deliberately does *not* advance the portfolio revision.  A complete
+    snapshot advances the revision once, only after all of its positions and
+    reconciliation evidence have been accepted.  The boolean says whether an
+    INSERT occurred, so the public one-position API preserves its old revision
+    semantics.
+    """
+    db.row_factory = aiosqlite.Row
+    if position.broker_order_id:
+        cur = await db.execute(
+            "SELECT * FROM partner_positions WHERE broker_order_id=?",
+            (position.broker_order_id,),
+        )
+        row = await cur.fetchone()
+        existing = _row_to_position(row) if row is not None else None
+    else:
+        existing = None
+    if existing is not None:
+        identity = (
+            existing.underlying, existing.instrument_type,
+            existing.tradingsymbol, existing.signed_quantity,
+            existing.lot_size, existing.entry_price,
+        )
+        requested = (
+            position.underlying, position.instrument_type,
+            position.tradingsymbol, position.signed_quantity,
+            position.lot_size, position.entry_price,
+        )
+        if identity != requested:
+            raise ValueError("broker_order_id already belongs to a different partner position")
+        return existing, False
+    marks = ", ".join("?" for _ in _position_values(position))
+    cur = await db.execute(
+        f"INSERT INTO partner_positions ({_POSITION_COLUMNS}) VALUES ({marks})",
+        _position_values(position),
+    )
+    position_id = int(cur.lastrowid)
+    return PartnerPosition(**{**position.__dict__, "position_id": position_id}), True
+
+
 async def create_partner_position(db_path: str, position: PartnerPosition) -> PartnerPosition:
     """Persist a position; broker order IDs provide restart-safe idempotency."""
     await init_hedge_db(db_path)
     async with aiosqlite.connect(db_path) as db:
-        db.row_factory = aiosqlite.Row
-        await db.execute("BEGIN IMMEDIATE")
-        if position.broker_order_id:
-            cur = await db.execute(
-                "SELECT * FROM partner_positions WHERE broker_order_id=?",
-                (position.broker_order_id,),
-            )
-            row = await cur.fetchone()
-            existing = _row_to_position(row) if row is not None else None
-        else:
-            existing = None
-        if existing is not None:
-            identity = (
-                existing.underlying, existing.instrument_type,
-                existing.tradingsymbol, existing.signed_quantity,
-                existing.lot_size, existing.entry_price,
-            )
-            requested = (
-                position.underlying, position.instrument_type,
-                position.tradingsymbol, position.signed_quantity,
-                position.lot_size, position.entry_price,
-            )
-            if identity != requested:
-                await db.rollback()
-                raise ValueError(
-                    "broker_order_id already belongs to a different partner position"
-                )
+        try:
+            await db.execute("BEGIN IMMEDIATE")
+            persisted, created = await _create_partner_position_in_transaction(db, position)
+            if created:
+                await _advance_portfolio_revision(db, at=position.opened_at, reason="position_created")
             await db.commit()
-            return existing
-        marks = ", ".join("?" for _ in _position_values(position))
-        cur = await db.execute(
-            f"INSERT INTO partner_positions ({_POSITION_COLUMNS}) VALUES ({marks})",
-            _position_values(position),
-        )
-        position_id = int(cur.lastrowid)
-        await _advance_portfolio_revision(db, at=position.opened_at, reason="position_created")
-        await db.commit()
-    return PartnerPosition(**{**position.__dict__, "position_id": position_id})
+            return persisted
+        except Exception:
+            await db.rollback()
+            raise
 
 
 # More discoverable alias for call sites that import broker snapshots.
@@ -1737,6 +1753,7 @@ async def apply_partner_snapshot_transaction(
     rows: Sequence[Mapping[str, object]],
     approved_source: str,
     approved_account_id: str,
+    new_positions: Mapping[str, PartnerPosition] | None = None,
 ) -> dict:
     """Accept one ordered portfolio version without exposing partial rows.
 
@@ -1795,11 +1812,41 @@ async def apply_partner_snapshot_transaction(
                 if observed_at <= _parse_timestamp(prior_observed):
                     raise ValueError("snapshot observation is older than accepted watermark")
 
-            # Resolve ownership and identities before any writes.  The same
-            # transaction keeps these rows stable through promotion.
+            # Fixture adapters may introduce positions together with their
+            # first complete reconciliation.  Validate the row references and
+            # create those identities inside this exact transaction: a stale
+            # envelope or a bad later row must not leave a new position behind.
+            referenced_new_keys: set[str] = set()
+            for row in rows:
+                position_id = row.get("position_id")
+                position_key = row.get("position_key")
+                has_id = isinstance(position_id, int) and not isinstance(position_id, bool)
+                has_key = isinstance(position_key, str) and bool(position_key.strip())
+                if has_id == has_key:
+                    raise ValueError("snapshot row requires exactly one position_id or position_key")
+                if has_key:
+                    referenced_new_keys.add(position_key.strip())
+            supplied_new_positions = dict(new_positions or {})
+            if set(supplied_new_positions) != referenced_new_keys:
+                raise ValueError("snapshot new position keys do not match row references")
+            created_by_key: dict[str, PartnerPosition] = {}
+            for key, candidate in supplied_new_positions.items():
+                if not isinstance(key, str) or not key.strip() or not isinstance(candidate, PartnerPosition):
+                    raise ValueError("new_positions must map non-empty keys to PartnerPosition values")
+                if candidate.source != source:
+                    raise ValueError("snapshot source does not own new position")
+                persisted, _created = await _create_partner_position_in_transaction(db, candidate)
+                if persisted.source != source:
+                    raise ValueError("snapshot source does not own new position")
+                created_by_key[key.strip()] = persisted
+
+            # Resolve ownership and identities before reconciliation writes.
+            # The same transaction keeps these rows stable through promotion.
             positions: dict[int, PartnerPosition] = {}
             for row in rows:
-                position_id = row["position_id"]
+                position_id = row.get("position_id")
+                if position_id is None:
+                    position_id = created_by_key[str(row["position_key"]).strip()].position_id
                 if not isinstance(position_id, int) or isinstance(position_id, bool):
                     raise ValueError("position_id must be an integer")
                 if position_id in positions:
@@ -1813,7 +1860,10 @@ async def apply_partner_snapshot_transaction(
 
             reconciled = 0
             for row in rows:
-                position_id = int(row["position_id"])
+                position_id = row.get("position_id")
+                if position_id is None:
+                    position_id = created_by_key[str(row["position_key"]).strip()].position_id
+                assert isinstance(position_id, int)  # validated above
                 await _reconcile_position_in_transaction(
                     db, positions[position_id],
                     observed_quantity=row["observed_quantity"],
