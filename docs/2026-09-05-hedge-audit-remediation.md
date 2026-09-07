@@ -877,3 +877,20 @@ window before any production trading claim.
   fixed-equal net/drawdown evidence and the fold verdict, with a visible no-
   auto-promotion boundary. No live strategy, sizing, capital or order path is
   changed.
+
+### W5 entry and execution-economics research (2026-09-07)
+
+- Added `python-engine/proactive_execution_research.py` and wired it into the
+  immutable SHADOW research-run lifecycle. Each existing entry profile is
+  replayed on the identical opportunities under a declared normal and stressed
+  versioned cash-equity cost scenario. The execution assumptions are evidence,
+  not broker configuration.
+- No-fill, invalid and gap-invalidated outcomes stay in each scenario's reason
+  counts. The simulator retains its conservative stop-first ambiguity handling
+  and rejects a gap that destroys stop/target geometry; a touched limit is not
+  promoted to a live-fill claim.
+- Research Center now shows entry profile, cost-model version, slippage, closed
+  outcomes, no-fills and net expectancy for both scenarios. It cannot submit,
+  route or alter an order. Live segment/date-specific broker charges still need
+  a reconciled statement adapter before any economic estimate is treated as
+  actual P&L.
