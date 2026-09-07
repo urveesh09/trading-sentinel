@@ -284,8 +284,8 @@ async def get_proactive_research_comparison(research_run_id: str | None = None):
 @router.get("/analytics/proactive-diagnostics")
 async def get_proactive_diagnostics():
     from datetime import datetime, timezone
-    from proactive_intelligence import proactive_inactivity_diagnostics
-    return {"findings": await proactive_inactivity_diagnostics(settings.DB_PATH, now=datetime.now(timezone.utc))}
+    from proactive_diagnostics import proactive_owner_diagnostics
+    return await proactive_owner_diagnostics(settings.DB_PATH, now=datetime.now(timezone.utc))
 
 
 @router.get("/analytics/proactive-session-diagnostics")

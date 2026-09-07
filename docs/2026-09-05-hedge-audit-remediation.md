@@ -908,3 +908,16 @@ window before any production trading claim.
 - Research Center displays matched close/no-fill counts, net results and
   expectancy. This is an experimental SHADOW comparison, not a live exit-rule
   change or permission to modify any protective order.
+
+### W7/W8 diagnostics and partner-source boundary (2026-09-07)
+
+- Added `proactive_owner_diagnostics`, now backing the existing proactive
+  diagnostics route. It reports stale/unavailable market data, missed
+  scheduled scans and capital/risk deferrals as separate observation-only
+  findings; none can loosen a risk gate or create an order.
+- Added `partner_source_adapter.py`, a transport-neutral source-envelope
+  contract for partner snapshots. It requires advisory mode, source kind,
+  source identity, a non-future observation timestamp and a matching dataset
+  hash before invoking the established complete-snapshot lifecycle writer.
+  Actual provider authentication/transport remains an external authorised
+  adapter; this code does not contact a partner or send any message.

@@ -1,6 +1,18 @@
 from datetime import datetime, timedelta
 
 import pytest
+
+
+@pytest.mark.asyncio
+async def test_source_envelope_rejects_tampered_provenance_before_lifecycle_write(db_path):
+    from datetime import datetime, timezone
+    from partner_source_adapter import apply_partner_source_snapshot
+    with pytest.raises(ValueError, match="dataset hash mismatch"):
+        await apply_partner_source_snapshot(
+            db_path, {"mode":"ADVISORY","source_kind":"API","source":"partner-a","account_id":"a",
+                      "observed_at":"2026-09-07T10:00:00+00:00","positions":[],"dataset_sha256":"bad"},
+            received_at=datetime(2026,9,7,10,1,tzinfo=timezone.utc),
+        )
 import pytz
 
 from config import settings
