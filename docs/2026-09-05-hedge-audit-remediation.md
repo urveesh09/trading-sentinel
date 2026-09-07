@@ -510,3 +510,13 @@ does not modify Production.
   from this Windows host mount, while the Python-engine environment lacks its
   `requests` dependency; full agent-suite validation remains for its supported
   container/CI runtime.
+
+### N5 correction — truthful SHADOW scanner health
+
+- Completed-bar history is now classified as `READY`, `INSUFFICIENT_HISTORY`,
+  `INVALID_HISTORY` or `STALE_HISTORY` before proposal construction. Only
+  ready input can record a successful scan; unavailable data records an
+  explicit unavailable scan instead of a flattering `NO_COMPLETED_SETUP`.
+- Regression coverage verifies an insufficient malformed fixture produces
+  `UNAVAILABLE/INSUFFICIENT_HISTORY` and no proposal. This remains offline
+  research evidence and does not affect any order or broker path.

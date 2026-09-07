@@ -10,6 +10,7 @@ from proactive_intelligence import (
     run_configured_shadow_workflow, run_shadow_workflow,
     simulate_shadow_trade,
     transition_watchlist,
+    shadow_history_state,
 )
 
 
@@ -52,6 +53,26 @@ def test_three_shadow_sleeves_use_completed_bars_and_allocator_preserves_cash():
     assert selected == []
     assert set(reasons.values()) == {"INSUFFICIENT_SHADOW_CASH_AFTER_COST_RESERVE"}
     assert build_shadow_proposals("NSE:DEMO", bars, now=now - timedelta(days=1)) == []
+
+
+@pytest.mark.asyncio
+async def test_invalid_or_insufficient_shadow_history_is_unavailable_not_a_success(db_path):
+    import aiosqlite
+
+    now = datetime.now(timezone.utc)
+    malformed = [{"timestamp": now.isoformat(), "open": 100, "high": 99,
+                  "low": 98, "close": 100, "volume": 10}]
+    assert shadow_history_state(malformed, now=now) == "INSUFFICIENT_HISTORY"
+    result = await run_shadow_workflow(
+        db_path, account_id="history", now=now, scenario_capital=1_000,
+        universe={"NSE:BAD": malformed}, future_bars={},
+    )
+    assert result["proposals"] == 0
+    async with aiosqlite.connect(db_path) as db:
+        row = await (await db.execute(
+            "SELECT status,reason FROM proactive_scan_runs WHERE account_id='history'"
+        )).fetchone()
+    assert tuple(row) == ("UNAVAILABLE", "INSUFFICIENT_HISTORY")
 
 
 def test_shadow_simulator_is_costed_and_conservative_on_ambiguous_bar():

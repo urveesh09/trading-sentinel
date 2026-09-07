@@ -96,6 +96,31 @@ def _proposal_id(policy_id: str, instrument: str, bar_time: datetime) -> str:
     return hashlib.sha256(f"{policy_id}:{instrument}:{_stamp(bar_time).isoformat()}".encode()).hexdigest()[:20]
 
 
+def shadow_history_state(bars: object, *, now: datetime) -> str:
+    """Classify input before a scanner can call missing/bad data a success."""
+    now = _stamp(now)
+    if not isinstance(bars, list):
+        return "INVALID_HISTORY"
+    if len(bars) < 21:
+        return "INSUFFICIENT_HISTORY"
+    try:
+        stamps = [_stamp(datetime.fromisoformat(str(bar["timestamp"]))) for bar in bars]
+        opens = [float(bar["open"]) for bar in bars]
+        closes = [float(bar["close"]) for bar in bars]
+        highs = [float(bar["high"]) for bar in bars]
+        lows = [float(bar["low"]) for bar in bars]
+        volumes = [float(bar["volume"]) for bar in bars]
+    except (KeyError, TypeError, ValueError):
+        return "INVALID_HISTORY"
+    if (any(right <= left for left, right in zip(stamps, stamps[1:])) or any(stamp > now for stamp in stamps)
+            or not all(math.isfinite(value) and value > 0 for value in opens + closes + highs + lows)
+            or not all(math.isfinite(value) and value >= 0 for value in volumes)
+            or any(low > min(open_, close) or high < max(open_, close)
+                   for open_, high, low, close in zip(opens, highs, lows, closes))):
+        return "INVALID_HISTORY"
+    return "STALE_HISTORY" if stamps[-1] + timedelta(minutes=30) <= now else "READY"
+
+
 def build_shadow_proposals(instrument: str, bars: list[dict], *, now: datetime) -> list[ShadowProposal]:
     """Three reproducible completed-bar hypotheses with no look-ahead.
 
@@ -103,7 +128,7 @@ def build_shadow_proposals(instrument: str, bars: list[dict], *, now: datetime) 
     observed completed trigger; every reference excludes it where required.
     """
     now = _stamp(now)
-    if not isinstance(bars, list) or len(bars) < 21:
+    if shadow_history_state(bars, now=now) != "READY":
         return []
     try:
         stamps = [_stamp(datetime.fromisoformat(str(bar["timestamp"]))) for bar in bars]
@@ -115,17 +140,10 @@ def build_shadow_proposals(instrument: str, bars: list[dict], *, now: datetime) 
         trigger_at = stamps[-1]
     except (KeyError, TypeError, ValueError):
         return []
-    if (any(right <= left for left, right in zip(stamps, stamps[1:])) or any(stamp > now for stamp in stamps)
-            or not all(math.isfinite(value) and value > 0 for value in opens + closes + highs + lows)
-            or not all(math.isfinite(value) and value >= 0 for value in volumes)
-            or any(low > min(open_, close) or high < max(open_, close) for open_, high, low, close in zip(opens, highs, lows, closes))):
-        return []
     last, prior = closes[-1], closes[-2]
     fast, slow = sum(closes[-5:]) / 5, sum(closes[-20:]) / 20
     proposals: list[ShadowProposal] = []
     expiry = trigger_at + timedelta(minutes=30)
-    if expiry <= now:
-        return []
     # Trend: uptrend, pullback toward fast MA, then confirmed completed-bar reclaim.
     if fast > slow and closes[-3] <= fast * 1.01 and last > prior:
         stop = min(lows[-3:])
@@ -869,12 +887,19 @@ async def run_shadow_workflow(
         # historical bar even if its final timestamp stays the same.
         source_digest = hashlib.sha256(json.dumps(visible_bars, sort_keys=True, default=str).encode()).hexdigest()[:20]
         scan_id = hashlib.sha256(f"{storage_account_id}:{instrument}:{source_digest}".encode()).hexdigest()[:20]
+        history_state = shadow_history_state(visible_bars, now=now)
         built = build_shadow_proposals(instrument, visible_bars, now=now)
         policies = {proposal.policy_id for proposal in built} or {"shadow_registry_v1"}
         for policy_id in policies:
             await record_scan_run(db_path, scan_id=f"{scan_id}:{policy_id}", policy_id=policy_id,
-                                  account_id=storage_account_id, mode="SHADOW", status="SUCCESS", observed_at=now,
-                                  reason="COMPLETED_BARS" if built else "NO_COMPLETED_SETUP")
+                                  account_id=storage_account_id, mode="SHADOW",
+                                  status="SUCCESS" if history_state == "READY" else "UNAVAILABLE",
+                                  observed_at=now,
+                                  reason="COMPLETED_BARS" if built else (
+                                      "NO_COMPLETED_SETUP" if history_state == "READY" else history_state
+                                  ))
+        if history_state != "READY":
+            continue
         for proposal in built:
             proposal = replace(
                 proposal,
