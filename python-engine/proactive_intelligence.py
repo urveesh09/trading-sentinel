@@ -18,6 +18,7 @@ import aiosqlite
 
 Mode = Literal["LIVE", "PAPER", "SHADOW", "REPLAY"]
 _MODES = frozenset({"LIVE", "PAPER", "SHADOW", "REPLAY"})
+SHADOW_COMPARISON_MIN_CLOSED_OUTCOMES = 20
 _STAGES = frozenset({
     "UNIVERSE", "DATA_READY", "SETUP", "COST_VIABLE", "RISK_APPROVED",
     "SELECTED", "SUBMITTED", "FILLED", "MANAGED", "CLOSED", "DEFERRED",
@@ -1245,3 +1246,116 @@ async def proactive_activity_report(db_path: str, *, days: int = 7) -> dict:
     return {"as_of": datetime.now(timezone.utc).isoformat(), "days": days, "modes": by_mode, "funding_flows": funding,
             "shadow_positions": shadow_positions,
             "note": "Events are operational evidence; only reconciled live ledgers establish live profit."}
+
+
+async def proactive_shadow_comparison(db_path: str, *, days: int = 90) -> dict:
+    """Summarise completed synthetic outcomes without turning them into an edge claim.
+
+    The grouping intentionally includes both the immutable scenario run and the
+    policy.  Combining outcomes collected with different capital, costs, or
+    slippage assumptions would make a flattering but invalid comparison.  A
+    policy is only marked as *collecting evidence* once it has a conservative
+    number of complete, costed exits; this report never promotes or authorises
+    a strategy.
+    """
+    if not 1 <= days <= 366:
+        raise ValueError("days must be within 1..366")
+    await init_proactive_intelligence(db_path)
+    async with aiosqlite.connect(db_path) as db:
+        rows = await (await db.execute(
+            "SELECT COALESCE(r.account_id,p.account_id),COALESCE(r.run_id,'legacy'),"
+            "p.account_id,p.policy_id,p.opportunity_id,p.entry_price,p.stop_price,p.quantity,"
+            "p.gross_pnl,p.entry_fees,p.exit_fees,p.net_pnl,p.close_reason,p.closed_at "
+            "FROM proactive_shadow_positions p "
+            "LEFT JOIN proactive_shadow_runs r ON r.run_key=p.account_id "
+            "WHERE p.status='CLOSED' AND p.closed_at IS NOT NULL "
+            "AND datetime(p.closed_at) >= datetime('now', ?) "
+            "ORDER BY COALESCE(r.account_id,p.account_id),COALESCE(r.run_id,'legacy'),"
+            "p.policy_id,p.closed_at,p.opportunity_id",
+            (f'-{days - 1} days',),
+        )).fetchall()
+
+    grouped: dict[tuple[str, str, str, str], list[tuple]] = {}
+    for row in rows:
+        # A completed outcome needs the full costed close and a valid initial
+        # risk denominator.  Retain malformed records in the count below, but
+        # never coerce them to zero and distort expectancy.
+        grouped.setdefault((str(row[0]), str(row[1]), str(row[2]), str(row[3])), []).append(row)
+
+    comparisons = []
+    for (account_id, run_id, storage_account_id, policy_id), positions in grouped.items():
+        valid = []
+        invalid_outcomes = 0
+        exit_reasons: dict[str, int] = {}
+        for row in positions:
+            try:
+                gross, entry_fees, exit_fees, net = (float(row[index]) for index in (8, 9, 10, 11))
+                risk = (float(row[5]) - float(row[6])) * int(row[7])
+                if (not all(math.isfinite(value) for value in (gross, entry_fees, exit_fees, net))
+                        or not math.isfinite(risk) or risk <= 0):
+                    raise ValueError("non-finite costed outcome or non-positive initial risk")
+            except (TypeError, ValueError):
+                invalid_outcomes += 1
+                continue
+            reason = str(row[12] or "UNSPECIFIED")
+            exit_reasons[reason] = exit_reasons.get(reason, 0) + 1
+            valid.append((gross, entry_fees + exit_fees, net, net / risk))
+
+        closed_outcomes = len(valid)
+        net_values = [value[2] for value in valid]
+        wins = sum(value > 0 for value in net_values)
+        losses = sum(value < 0 for value in net_values)
+        breakevens = sum(value == 0 for value in net_values)
+        gross_wins = sum(value for value in net_values if value > 0)
+        gross_losses = abs(sum(value for value in net_values if value < 0))
+        equity = peak = max_drawdown = 0.0
+        for value in net_values:
+            equity += value
+            peak = max(peak, equity)
+            max_drawdown = max(max_drawdown, peak - equity)
+        enough_evidence = closed_outcomes >= SHADOW_COMPARISON_MIN_CLOSED_OUTCOMES
+        comparisons.append({
+            "account_id": account_id,
+            "run_id": run_id,
+            "storage_account_id": storage_account_id,
+            "policy_id": policy_id,
+            "closed_records": len(positions),
+            "closed_outcomes": closed_outcomes,
+            "invalid_closed_records": invalid_outcomes,
+            "gross_pnl": round(sum(value[0] for value in valid), 4) if valid else None,
+            "costs": round(sum(value[1] for value in valid), 4) if valid else None,
+            "net_pnl": round(sum(net_values), 4) if valid else None,
+            "net_expectancy": round(sum(net_values) / closed_outcomes, 4) if valid else None,
+            "net_r_expectancy": round(sum(value[3] for value in valid) / closed_outcomes, 6) if valid else None,
+            "wins": wins if valid else None,
+            "losses": losses if valid else None,
+            "breakevens": breakevens if valid else None,
+            "win_rate": round(wins / closed_outcomes, 6) if valid else None,
+            "profit_factor": round(gross_wins / gross_losses, 6) if gross_losses else None,
+            "profit_factor_state": ("AVAILABLE" if gross_losses else "UNDEFINED_NO_LOSSES" if valid
+                                    else "UNAVAILABLE_NO_CLOSED_OUTCOMES"),
+            "max_drawdown": round(max_drawdown, 4) if valid else None,
+            "exit_reasons": [
+                {"reason": reason, "closed_outcomes": count}
+                for reason, count in sorted(exit_reasons.items(), key=lambda item: (-item[1], item[0]))
+            ],
+            "evidence_state": "COLLECTING_EVIDENCE" if enough_evidence else "INSUFFICIENT_CLOSED_OUTCOMES",
+            "minimum_closed_outcomes": SHADOW_COMPARISON_MIN_CLOSED_OUTCOMES,
+            "exit_policy_comparison_state": "UNAVAILABLE_NOT_EXPERIMENT_TAGGED",
+            "warnings": [
+                "Synthetic fixture outcomes are not broker fills, live P&L, or a trading recommendation.",
+                "Policies are comparable only within the same immutable shadow run.",
+                "Exit-policy A/B evidence is unavailable because these historical outcomes were not tagged to distinct exit-policy variants.",
+            ] + (["Invalid closed records were excluded rather than silently counted as zero outcomes."] if invalid_outcomes else []),
+        })
+    return {
+        "as_of": datetime.now(timezone.utc).isoformat(),
+        "days": days,
+        "mode": "SHADOW",
+        "research_only": True,
+        "can_place_orders": False,
+        "authorization_effect": "NONE",
+        "minimum_closed_outcomes": SHADOW_COMPARISON_MIN_CLOSED_OUTCOMES,
+        "comparisons": comparisons,
+        "note": "Closed synthetic outcomes support research review only; they cannot enable, size, place, or alter live trades.",
+    }

@@ -553,3 +553,21 @@ does not modify Production.
   unrealised values, with `MARKED`, `PARTIALLY_MARKED` or `UNAVAILABLE` state.
   Free cash intentionally excludes unrealised profit/loss until a simulated
   exit is recorded.
+
+### P4 extension — costed SHADOW outcome comparison
+
+- Added a read-only research comparison over closed synthetic positions. It
+  groups policies only within their immutable account/run assumptions and
+  reports gross P&L, declared costs, net P&L, expectancy, risk-normalised
+  expectancy, win/loss composition, profit-factor availability, chronological
+  closed-trade drawdown and observed exit reasons. Malformed completed rows are
+  counted and excluded rather than silently converted to zero-return trades.
+- A conservative 20-completed-outcome threshold leaves every smaller sample in
+  `INSUFFICIENT_CLOSED_OUTCOMES`; even a larger sample remains
+  `COLLECTING_EVIDENCE`, not a profit or promotion claim. Historical outcomes
+  have no distinct exit-policy tag, so the response explicitly reports that an
+  exit-policy A/B comparison is unavailable rather than inventing one.
+- Exposed the comparison at `/analytics/proactive-comparison` and in the Dev
+  Research Center. The contract is hard-labelled `SHADOW`, research-only and
+  incapable of placing orders; it does not change broker, hedge, delivery,
+  sizing or live-strategy behaviour.

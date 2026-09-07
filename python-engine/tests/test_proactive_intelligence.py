@@ -3,7 +3,8 @@ from datetime import datetime, timedelta, timezone
 import pytest
 
 from proactive_intelligence import (
-    ShadowProposal, allocate_shadow_proposals, build_shadow_proposals, proactive_activity_report,
+    ShadowProposal, ShadowSimulation, allocate_shadow_proposals, build_shadow_proposals, proactive_activity_report,
+    proactive_shadow_comparison,
     size_shadow_allocations,
     record_opportunity_event,
     record_cash_flow, proactive_inactivity_diagnostics, record_scan_run,
@@ -164,6 +165,46 @@ async def test_shadow_activity_reports_completed_bar_mark_without_changing_cash(
     assert row["unrealized_state"] == "MARKED_COMPLETED_BAR"
     assert row["marked_unrealized_gross_pnl"] > 0
     assert row["free_cash"] is None, "legacy records cannot fabricate scenario capital"
+
+
+@pytest.mark.asyncio
+async def test_shadow_comparison_uses_only_costed_closed_outcomes_and_never_claims_authority(db_path):
+    from proactive_intelligence import _persist_new_shadow_position
+
+    now = datetime.now(timezone.utc)
+    first = ShadowProposal("comparison-one", "trend_pullback_v1", "NSE:ONE", 100, 95, 110,
+                           now + timedelta(minutes=15), 1, 100, "test", now, now,
+                           now + timedelta(minutes=15), now + timedelta(hours=1))
+    second = ShadowProposal("comparison-two", "trend_pullback_v1", "NSE:TWO", 100, 95, 110,
+                            now + timedelta(minutes=15), 1, 100, "test", now, now,
+                            now + timedelta(minutes=15), now + timedelta(hours=1))
+    first_close = ShadowSimulation("CLOSED", 1, 100, 110, 10, .2, 9.8, "TARGET", now,
+                                   now + timedelta(minutes=5))
+    second_close = ShadowSimulation("CLOSED", 1, 100, 75, -25, .2, -25.2, "STOP", now,
+                                    now + timedelta(minutes=10))
+    assert await _persist_new_shadow_position(db_path, proposal=first, account_id="comparison", result=first_close)
+    assert await _persist_new_shadow_position(db_path, proposal=second, account_id="comparison", result=second_close)
+
+    report = await proactive_shadow_comparison(db_path)
+    assert report["mode"] == "SHADOW"
+    assert report["research_only"] is True
+    assert report["can_place_orders"] is False
+    assert report["authorization_effect"] == "NONE"
+    [row] = report["comparisons"]
+    assert row["policy_id"] == "trend_pullback_v1"
+    assert row["closed_records"] == row["closed_outcomes"] == 2
+    assert row["gross_pnl"] == pytest.approx(-15)
+    assert row["costs"] == pytest.approx(.4)
+    assert row["net_pnl"] == pytest.approx(-15.4)
+    assert row["net_expectancy"] == pytest.approx(-7.7)
+    assert row["max_drawdown"] == pytest.approx(25.2)
+    assert row["profit_factor"] == pytest.approx(9.8 / 25.2)
+    assert row["evidence_state"] == "INSUFFICIENT_CLOSED_OUTCOMES"
+    assert row["exit_policy_comparison_state"] == "UNAVAILABLE_NOT_EXPERIMENT_TAGGED"
+    assert row["exit_reasons"] == [
+        {"reason": "STOP", "closed_outcomes": 1},
+        {"reason": "TARGET", "closed_outcomes": 1},
+    ]
 
 
 def test_shadow_simulator_rejects_duplicate_or_malformed_future_timestamps():

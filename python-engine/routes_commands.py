@@ -260,6 +260,13 @@ async def get_proactive_activity(days: int = 7):
     return await proactive_activity_report(settings.DB_PATH, days=days)
 
 
+@router.get("/analytics/proactive-comparison")
+async def get_proactive_comparison(days: int = 90):
+    """Costed shadow-outcome research; never an execution control surface."""
+    from proactive_intelligence import proactive_shadow_comparison
+    return await proactive_shadow_comparison(settings.DB_PATH, days=days)
+
+
 @router.get("/analytics/proactive-diagnostics")
 async def get_proactive_diagnostics():
     from datetime import datetime, timezone

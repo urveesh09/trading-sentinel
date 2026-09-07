@@ -42,6 +42,15 @@ const proxyToEngine = async (req, res, path, method = 'GET', options = {}) => {
 
 router.use(requireSession);
 
+const withQuery = (path, query) => {
+  const params = new URLSearchParams();
+  Object.entries(query || {}).forEach(([key, value]) => {
+    if (value !== undefined && value !== null && value !== '') params.set(key, String(value));
+  });
+  const suffix = params.toString();
+  return suffix ? `${path}?${suffix}` : path;
+};
+
 // Map of endpoints to proxy
 router.get('/signals', (req, res) => proxyToEngine(req, res, '/signals'));
 router.get('/rejected', (req, res) => proxyToEngine(req, res, '/rejected'));
@@ -58,19 +67,15 @@ router.get('/experiments/fno-opening-range', (req, res) =>
   proxyToEngine(req, res, '/experiments/fno-opening-range'));
 router.get('/research/promotion-readiness', (req, res) =>
   proxyToEngine(req, res, '/research/promotion-readiness'));
+router.get('/analytics/proactive-activity', (req, res) =>
+  proxyToEngine(req, res, withQuery('/analytics/proactive-activity', req.query)));
+router.get('/analytics/proactive-comparison', (req, res) =>
+  proxyToEngine(req, res, withQuery('/analytics/proactive-comparison', req.query)));
 
 // Backtest Lab submits background work, so requests never hold an HTTP socket
 // for the duration of a replay. The longer budget protects SQLite contention
 // and larger persisted result reads without weakening timeouts globally.
 const backtestTimeoutMs = Math.max(config.PYTHON_ENGINE_TIMEOUT_MS, 30000);
-const withQuery = (path, query) => {
-  const params = new URLSearchParams();
-  Object.entries(query || {}).forEach(([key, value]) => {
-    if (value !== undefined && value !== null && value !== '') params.set(key, String(value));
-  });
-  const suffix = params.toString();
-  return suffix ? `${path}?${suffix}` : path;
-};
 
 router.get('/backtests/strategies', (req, res) =>
   proxyToEngine(req, res, '/backtests/strategies', 'GET', { timeoutMs: backtestTimeoutMs }));

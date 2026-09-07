@@ -69,3 +69,27 @@ test('forwards authenticated promotion readiness with the internal secret', asyn
     }),
   );
 });
+
+test.each([
+  ['proactive activity', '/analytics/proactive-activity?days=7'],
+  ['proactive comparison', '/analytics/proactive-comparison?days=90'],
+])('proxies authenticated %s evidence with its bounded query', async (_label, route) => {
+  const payload = { mode: 'SHADOW', research_only: true, can_place_orders: false };
+  global.fetch.mockResolvedValue({ status: 200, json: async () => payload });
+  const response = await request(makeApp()).get(`/api/proxy${route}`);
+  expect(response.status).toBe(200);
+  expect(response.body).toEqual(payload);
+  expect(global.fetch).toHaveBeenCalledWith(
+    `http://python-engine:8000${route}`,
+    expect.objectContaining({
+      method: 'GET',
+      headers: expect.objectContaining({ 'X-Internal-Secret': 'internal-test-secret' }),
+    }),
+  );
+});
+
+test('proactive comparison proxy requires a session', async () => {
+  const response = await request(makeApp(false)).get('/api/proxy/analytics/proactive-comparison?days=90');
+  expect(response.status).toBe(401);
+  expect(global.fetch).not.toHaveBeenCalled();
+});

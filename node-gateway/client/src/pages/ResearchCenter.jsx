@@ -64,6 +64,40 @@ function ReadinessSection({ model }) {
   );
 }
 
+function ShadowOutcomeComparison({ comparison, error }) {
+  if (error) return <section className="rounded-xl border border-amber-800 bg-amber-950/20 p-4 text-sm text-amber-200">Shadow outcome comparison is temporarily unavailable. Missing evidence is not treated as a positive result.</section>;
+  const rows = Array.isArray(comparison?.comparisons) ? comparison.comparisons : [];
+  const contractUnsafe = comparison && (comparison.mode !== 'SHADOW' || comparison.research_only !== true || comparison.can_place_orders === true || comparison.authorization_effect !== 'NONE');
+  return (
+    <section className="rounded-xl border border-cyan-900/70 bg-cyan-950/10 p-4 sm:p-5">
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div><h2 className="text-xl font-bold text-white">Costed SHADOW outcome comparison</h2><p className="mt-1 text-sm text-gray-400">Closed fixture-simulation outcomes, grouped only within an immutable scenario run and entry policy.</p></div>
+        <span className="rounded border border-red-600 bg-red-950 px-3 py-2 text-xs font-black text-red-100">RESEARCH ONLY — NO ORDERS</span>
+      </div>
+      <p className="mt-3 rounded border border-cyan-900 bg-gray-950/60 p-3 text-xs text-cyan-100">This is not live P&amp;L, an allocation recommendation, or a strategy promotion decision. It shows costs and failures so the next experiment can be chosen from evidence.</p>
+      {contractUnsafe && <p className="mt-3 rounded border-2 border-red-500 bg-red-950 p-3 text-sm font-bold text-red-100">Contract integrity warning: the backend did not return a valid research-only contract. Treat all comparison data as non-authorizing.</p>}
+      {rows.length ? <div className="mt-4 space-y-3">{rows.map((row) => {
+        const enough = row.evidence_state === 'COLLECTING_EVIDENCE';
+        const reasons = Array.isArray(row.exit_reasons) ? row.exit_reasons : [];
+        return <article key={`${row.storage_account_id}:${row.policy_id}`} className="rounded-lg border border-gray-800 bg-gray-900/80 p-4">
+          <div className="flex flex-wrap items-start justify-between gap-2"><div><h3 className="font-mono font-bold text-white">{row.policy_id || 'Unlabelled policy'}</h3><p className="mt-1 text-[11px] text-gray-500">Account: {row.account_id || 'Unavailable'} · Run: {row.run_id || 'legacy'}</p></div><span className={`rounded-full border px-2.5 py-1 text-[10px] font-bold ${enough ? 'border-blue-700 bg-blue-950 text-blue-200' : 'border-amber-700 bg-amber-950 text-amber-200'}`}>{String(row.evidence_state || 'UNKNOWN').replaceAll('_', ' ')}</span></div>
+          <dl className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
+            <Metric label="Costed closed outcomes" value={`${formatCount(row.closed_outcomes)} / ${formatCount(row.minimum_closed_outcomes)}`} />
+            <Metric label="Net P&amp;L" value={formatPaperMoney(row.net_pnl)} />
+            <Metric label="Net expectancy" value={formatPaperMoney(row.net_expectancy)} />
+            <Metric label="Net R expectancy" value={Number.isFinite(Number(row.net_r_expectancy)) ? Number(row.net_r_expectancy).toFixed(3) : INSUFFICIENT_DATA} />
+            <Metric label="Profit factor" value={row.profit_factor == null ? (row.profit_factor_state === 'UNDEFINED_NO_LOSSES' ? 'Undefined — no losses' : INSUFFICIENT_DATA) : Number(row.profit_factor).toFixed(2)} />
+            <Metric label="Closed-trade drawdown" value={formatPaperMoney(row.max_drawdown)} />
+          </dl>
+          <div className="mt-4 border-t border-gray-800 pt-3"><h4 className="text-[10px] font-bold uppercase tracking-wide text-gray-500">Observed exits</h4>{reasons.length ? <div className="mt-2 flex flex-wrap gap-2">{reasons.map((item) => <span key={item.reason} className="rounded bg-gray-950 px-2 py-1 text-xs text-gray-300">{String(item.reason).replaceAll('_', ' ')} <strong className="text-cyan-200">{formatCount(item.closed_outcomes)}</strong></span>)}</div> : <p className="mt-2 text-xs text-gray-500">No valid closed outcomes in this window.</p>}</div>
+          <p className="mt-3 text-[11px] text-amber-200">Exit-policy comparison: {row.exit_policy_comparison_state === 'UNAVAILABLE_NOT_EXPERIMENT_TAGGED' ? 'unavailable — historical outcomes were not tagged to distinct exit variants.' : row.exit_policy_comparison_state || 'Unavailable'}</p>
+          {Array.isArray(row.warnings) && row.warnings.map((warning) => <p key={warning} className="mt-1 text-[11px] text-gray-500">{warning}</p>)}
+        </article>;
+      })}</div> : <div className="mt-4 rounded border border-gray-800 bg-gray-900 p-5 text-sm text-gray-500">No costed synthetic exits have been recorded in the last {comparison?.days || 90} days. There is no outcome comparison to infer.</div>}
+    </section>
+  );
+}
+
 function StatusBadge({ experiment }) {
   const style = experiment.status === 'ready'
     ? 'border-emerald-600 bg-emerald-950 text-emerald-200'
@@ -218,7 +252,7 @@ function ExperimentSection({ experiment }) {
 }
 
 export default function ResearchCenter({ navigateToDashboard, navigateToBacktests }) {
-  const { payloads, errors, readiness, readinessError, isLoading } = useResearchExperiments();
+  const { payloads, errors, readiness, readinessError, proactiveComparison, proactiveComparisonError, isLoading } = useResearchExperiments();
   const experiments = buildResearchCenterModel(payloads, errors);
   const readinessModel = normalizePromotionReadiness(readiness, readinessError);
   return (
@@ -234,6 +268,7 @@ export default function ResearchCenter({ navigateToDashboard, navigateToBacktest
           Raw candidates include repeated accepted evaluations. Distinct candidates are the sample-size view. Virtual outcomes are bar-derived simulations with declared costs—not broker fills or live-equivalent returns.
         </div>
         <ReadinessSection model={readinessModel} />
+        <ShadowOutcomeComparison comparison={proactiveComparison} error={proactiveComparisonError} />
         {isLoading && experiments.every((item) => !item.variants.length) ? <div className="rounded border border-gray-800 bg-gray-900 p-8 text-center text-gray-500">Loading experiment evidence...</div>
           : experiments.map((experiment) => <ExperimentSection key={experiment.id} experiment={experiment} />)}
       </main>
