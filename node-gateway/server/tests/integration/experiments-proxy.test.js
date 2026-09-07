@@ -73,6 +73,7 @@ test('forwards authenticated promotion readiness with the internal secret', asyn
 test.each([
   ['proactive activity', '/analytics/proactive-activity?days=7'],
   ['proactive comparison', '/analytics/proactive-comparison?days=90'],
+  ['proactive research comparison', '/analytics/proactive-research-comparison'],
 ])('proxies authenticated %s evidence with its bounded query', async (_label, route) => {
   const payload = { mode: 'SHADOW', research_only: true, can_place_orders: false };
   global.fetch.mockResolvedValue({ status: 200, json: async () => payload });

@@ -571,3 +571,23 @@ does not modify Production.
   Research Center. The contract is hard-labelled `SHADOW`, research-only and
   incapable of placing orders; it does not change broker, hedge, delivery,
   sizing or live-strategy behaviour.
+
+### P4 extension — frozen matched entry/exit trials
+
+- Added an immutable SHADOW research-run ledger for matched entry/exit trials.
+  Each frozen run records the exact proposal geometry, price bars, scenario
+  cash and cost assumptions; reusing a run ID with changed input is rejected.
+  Exact reruns are idempotent. This is intentionally separate from the
+  scheduled shadow-position ledger and cannot open a synthetic or broker
+  position.
+- The initial experiment registry evaluates every supplied opportunity under
+  next-executable-open, bounded-pullback-limit and completed-bar-confirmation
+  entries, crossed with stop/target/time and a bounded 60-minute time exit.
+  It retains closed, open, no-fill and invalid outcomes so delay and missed
+  opportunities cannot be hidden by reporting only winners.
+- `/analytics/proactive-research-comparison`, its authenticated gateway proxy
+  and the Dev Research Center render all profile rows with insufficient-sample
+  states. No profile is selected, promoted or allowed to modify incumbent
+  execution; volatility-trail and thesis-invalidation challengers remain
+  explicitly unimplemented rather than being represented by a misleading
+  substitute.

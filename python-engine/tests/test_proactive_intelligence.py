@@ -4,7 +4,7 @@ import pytest
 
 from proactive_intelligence import (
     ShadowProposal, ShadowSimulation, allocate_shadow_proposals, build_shadow_proposals, proactive_activity_report,
-    proactive_shadow_comparison,
+    proactive_shadow_comparison, proactive_shadow_research_report, run_shadow_research_comparison,
     size_shadow_allocations,
     record_opportunity_event,
     record_cash_flow, proactive_inactivity_diagnostics, record_scan_run,
@@ -205,6 +205,53 @@ async def test_shadow_comparison_uses_only_costed_closed_outcomes_and_never_clai
         {"reason": "STOP", "closed_outcomes": 1},
         {"reason": "TARGET", "closed_outcomes": 1},
     ]
+
+
+@pytest.mark.asyncio
+async def test_frozen_shadow_research_trials_retain_matched_entry_exit_nonfills(db_path):
+    base = datetime.now(timezone.utc)
+    common = dict(entry=100, stop=95, target=110, valid_until=base + timedelta(minutes=30),
+                  score=1, required_capital=100, reason="test", signal_at=base, data_cutoff=base,
+                  entry_deadline=base + timedelta(minutes=30), holding_deadline=base + timedelta(hours=4))
+    proposals = [
+        ShadowProposal("trial-fill", "trend_pullback_v1", "SYNTH:FILL", **common),
+        ShadowProposal("trial-no-pullback", "trend_pullback_v1", "SYNTH:NO_PULLBACK", **common),
+    ]
+    future_bars = {
+        "SYNTH:FILL": [
+            {"timestamp": (base + timedelta(minutes=5)).isoformat(), "open": 105, "high": 106, "low": 104, "close": 105},
+            {"timestamp": (base + timedelta(minutes=10)).isoformat(), "open": 100, "high": 101, "low": 99, "close": 100},
+            {"timestamp": (base + timedelta(minutes=61)).isoformat(), "open": 100, "high": 101, "low": 99, "close": 100},
+        ],
+        "SYNTH:NO_PULLBACK": [
+            {"timestamp": (base + timedelta(minutes=5)).isoformat(), "open": 105, "high": 106, "low": 104, "close": 105},
+            {"timestamp": (base + timedelta(minutes=10)).isoformat(), "open": 106, "high": 107, "low": 105, "close": 106},
+        ],
+    }
+    first = await run_shadow_research_comparison(
+        db_path, research_run_id="fixture-entry-exit-v1", proposals=proposals,
+        future_bars=future_bars, cash_per_trial=1_000, fee_rate=0, slippage_bps=0,
+    )
+    assert first["mode"] == "SHADOW" and first["can_place_orders"] is False
+    assert first["opportunities"] == 2 and first["profile_trials"] == first["inserted_trials"] == 12
+    retry = await run_shadow_research_comparison(
+        db_path, research_run_id="fixture-entry-exit-v1", proposals=proposals,
+        future_bars=future_bars, cash_per_trial=1_000, fee_rate=0, slippage_bps=0,
+    )
+    assert retry["inserted_trials"] == 0
+    with pytest.raises(ValueError, match="manifest conflicts"):
+        await run_shadow_research_comparison(
+            db_path, research_run_id="fixture-entry-exit-v1", proposals=proposals,
+            future_bars=future_bars, cash_per_trial=1_001, fee_rate=0, slippage_bps=0,
+        )
+    report = await proactive_shadow_research_report(db_path, research_run_id="fixture-entry-exit-v1")
+    assert report["research_only"] is True and report["authorization_effect"] == "NONE"
+    assert len(report["comparisons"]) == 6
+    pullback = next(row for row in report["comparisons"] if row["entry_profile_id"] == "BOUNDED_PULLBACK_LIMIT_V1" and row["exit_profile_id"] == "STOP_TARGET_TIME_V1")
+    assert pullback["trials"] == 2 and pullback["no_fills"] == 1 and pullback["open_trials"] == 1
+    bounded_time = next(row for row in report["comparisons"] if row["entry_profile_id"] == "NEXT_EXECUTABLE_OPEN_V1" and row["exit_profile_id"] == "BOUNDED_TIME_EXIT_60M_V1")
+    assert bounded_time["closed_outcomes"] == 1
+    assert bounded_time["evidence_state"] == "INSUFFICIENT_CLOSED_OUTCOMES"
 
 
 def test_shadow_simulator_rejects_duplicate_or_malformed_future_timestamps():

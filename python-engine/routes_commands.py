@@ -267,6 +267,13 @@ async def get_proactive_comparison(days: int = 90):
     return await proactive_shadow_comparison(settings.DB_PATH, days=days)
 
 
+@router.get("/analytics/proactive-research-comparison")
+async def get_proactive_research_comparison(research_run_id: str | None = None):
+    """Frozen matched SHADOW trials; no route here can change execution."""
+    from proactive_intelligence import proactive_shadow_research_report
+    return await proactive_shadow_research_report(settings.DB_PATH, research_run_id=research_run_id)
+
+
 @router.get("/analytics/proactive-diagnostics")
 async def get_proactive_diagnostics():
     from datetime import datetime, timezone

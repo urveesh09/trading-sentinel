@@ -98,6 +98,21 @@ function ShadowOutcomeComparison({ comparison, error }) {
   );
 }
 
+function MatchedEntryExitTrials({ comparison, error }) {
+  if (error) return <section className="rounded-xl border border-amber-800 bg-amber-950/20 p-4 text-sm text-amber-200">Matched entry/exit trial archive is unavailable. No challenger result is inferred.</section>;
+  const rows = Array.isArray(comparison?.comparisons) ? comparison.comparisons : [];
+  const contractUnsafe = comparison && (comparison.mode !== 'SHADOW' || comparison.research_only !== true || comparison.can_place_orders === true || comparison.authorization_effect !== 'NONE');
+  return (
+    <section className="rounded-xl border border-violet-900/70 bg-violet-950/10 p-4 sm:p-5">
+      <div className="flex flex-wrap items-start justify-between gap-3"><div><h2 className="text-xl font-bold text-white">Matched entry / exit trials</h2><p className="mt-1 text-sm text-gray-400">Frozen research runs evaluate each entry and exit profile against the same opportunity bars. Non-fills stay in the archive.</p></div><span className="rounded border border-red-600 bg-red-950 px-3 py-2 text-xs font-black text-red-100">NO AUTO-SELECTION</span></div>
+      <p className="mt-3 rounded border border-violet-900 bg-gray-950/60 p-3 text-xs text-violet-100">A positive point estimate is not an edge claim. The incumbent strategy, sizing and live execution remain unchanged by these results.</p>
+      {contractUnsafe && <p className="mt-3 rounded border-2 border-red-500 bg-red-950 p-3 text-sm font-bold text-red-100">Contract integrity warning: this response is not valid research-only evidence. It cannot authorize any change.</p>}
+      {rows.length ? <div className="mt-4 overflow-x-auto"><table className="w-full text-left text-xs"><thead className="border-b border-gray-800 text-[10px] uppercase tracking-wide text-gray-500"><tr><th className="p-2">Frozen run</th><th className="p-2">Entry profile</th><th className="p-2">Exit profile</th><th className="p-2">Trials</th><th className="p-2">Closed / no-fill / open</th><th className="p-2">Net expectancy</th><th className="p-2">Profit factor</th><th className="p-2">Evidence</th></tr></thead><tbody>{rows.map((row) => <tr key={`${row.research_run_id}:${row.entry_profile_id}:${row.exit_profile_id}`} className="border-b border-gray-800/80 align-top"><td className="p-2 font-mono text-gray-300">{row.research_run_id}</td><td className="p-2 font-mono text-violet-200">{row.entry_profile_id}</td><td className="p-2 font-mono text-violet-200">{row.exit_profile_id}</td><td className="p-2">{formatCount(row.trials)}</td><td className="p-2">{formatCount(row.closed_outcomes)} / {formatCount(row.no_fills)} / {formatCount(row.open_trials)}</td><td className="p-2">{formatPaperMoney(row.net_expectancy)}</td><td className="p-2">{row.profit_factor == null ? INSUFFICIENT_DATA : Number(row.profit_factor).toFixed(2)}</td><td className="p-2 text-amber-200">{String(row.evidence_state || 'UNKNOWN').replaceAll('_', ' ')}</td></tr>)}</tbody></table></div> : <div className="mt-4 rounded border border-gray-800 bg-gray-900 p-5 text-sm text-gray-500">No frozen matched trial run has been recorded. This is insufficient evidence, not a failed or winning policy.</div>}
+      {rows.some((row) => Number(row.invalid_trials || 0) > 0) && <p className="mt-3 text-xs text-amber-200">One or more trials had invalid input and remain counted as invalid rather than being silently omitted.</p>}
+    </section>
+  );
+}
+
 function StatusBadge({ experiment }) {
   const style = experiment.status === 'ready'
     ? 'border-emerald-600 bg-emerald-950 text-emerald-200'
@@ -252,7 +267,7 @@ function ExperimentSection({ experiment }) {
 }
 
 export default function ResearchCenter({ navigateToDashboard, navigateToBacktests }) {
-  const { payloads, errors, readiness, readinessError, proactiveComparison, proactiveComparisonError, isLoading } = useResearchExperiments();
+  const { payloads, errors, readiness, readinessError, proactiveComparison, proactiveComparisonError, proactiveResearchComparison, proactiveResearchComparisonError, isLoading } = useResearchExperiments();
   const experiments = buildResearchCenterModel(payloads, errors);
   const readinessModel = normalizePromotionReadiness(readiness, readinessError);
   return (
@@ -269,6 +284,7 @@ export default function ResearchCenter({ navigateToDashboard, navigateToBacktest
         </div>
         <ReadinessSection model={readinessModel} />
         <ShadowOutcomeComparison comparison={proactiveComparison} error={proactiveComparisonError} />
+        <MatchedEntryExitTrials comparison={proactiveResearchComparison} error={proactiveResearchComparisonError} />
         {isLoading && experiments.every((item) => !item.variants.length) ? <div className="rounded border border-gray-800 bg-gray-900 p-8 text-center text-gray-500">Loading experiment evidence...</div>
           : experiments.map((experiment) => <ExperimentSection key={experiment.id} experiment={experiment} />)}
       </main>

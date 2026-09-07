@@ -19,6 +19,10 @@ import aiosqlite
 Mode = Literal["LIVE", "PAPER", "SHADOW", "REPLAY"]
 _MODES = frozenset({"LIVE", "PAPER", "SHADOW", "REPLAY"})
 SHADOW_COMPARISON_MIN_CLOSED_OUTCOMES = 20
+_SHADOW_ENTRY_PROFILES = frozenset({
+    "NEXT_EXECUTABLE_OPEN_V1", "BOUNDED_PULLBACK_LIMIT_V1", "COMPLETED_BAR_CONFIRMATION_V1",
+})
+_SHADOW_EXIT_PROFILES = frozenset({"STOP_TARGET_TIME_V1", "BOUNDED_TIME_EXIT_60M_V1"})
 _STAGES = frozenset({
     "UNIVERSE", "DATA_READY", "SETUP", "COST_VIABLE", "RISK_APPROVED",
     "SELECTED", "SUBMITTED", "FILLED", "MANAGED", "CLOSED", "DEFERRED",
@@ -269,6 +273,95 @@ def simulate_shadow_trade(
     return ShadowSimulation("OPEN", quantity, round(entry, 4), None, None, None, None, "DATA_END_OPEN_POSITION", entry_at, last_bar_at)
 
 
+def _simulate_shadow_limit_pullback(
+    proposal: ShadowProposal, future_bars: list[dict], *, cash: float, fee_rate: float,
+    slippage_bps: float,
+) -> ShadowSimulation:
+    """Evaluate a bounded buy-limit entry with conservative same-bar exits.
+
+    This is a counterfactual research fill only.  A bar that trades through a
+    limit can fill at the limit; a gap below it receives the favourable open,
+    while a gap or slippage that invalidates the stop/target geometry remains a
+    no-fill.  With OHLC data, a same-bar stop and target is deliberately
+    stop-first rather than an optimistic path assumption.
+    """
+    normalised = _normalise_shadow_bars(future_bars)
+    if normalised is None:
+        return ShadowSimulation("INVALID", 0, None, None, None, None, None, "INVALID_OR_UNORDERED_FUTURE_BARS")
+    cutoff = _stamp(proposal.data_cutoff or proposal.signal_at or proposal.valid_until)
+    entry_deadline = _stamp(proposal.entry_deadline or proposal.valid_until)
+    holding_deadline = _stamp(proposal.holding_deadline or proposal.valid_until)
+    slip = slippage_bps / 10_000
+    for index, (stamp, open_, high, low, _close) in enumerate(normalised):
+        if stamp <= cutoff or stamp > entry_deadline:
+            continue
+        if low > proposal.entry:
+            continue
+        # A price-improving opening gap is allowed, but a buy limit never pays
+        # above the stated bound because of a synthetic slippage adjustment.
+        entry = min(proposal.entry, open_ * (1 + slip))
+        if entry <= proposal.stop or entry >= proposal.target:
+            return ShadowSimulation("NO_FILL", 0, None, None, None, None, None, "GAP_INVALIDATES_ENTRY_GEOMETRY")
+        quantity = math.floor(cash / (entry * (1 + fee_rate)))
+        if quantity < 1:
+            return ShadowSimulation("NO_FILL", 0, None, None, None, None, None, "INSUFFICIENT_CASH_AFTER_FEES")
+        for exit_stamp, exit_open, exit_high, exit_low, _ in normalised[index:]:
+            if exit_stamp > holding_deadline:
+                exit_price, reason = exit_open * (1 - slip), "HOLDING_DEADLINE"
+            elif exit_low <= proposal.stop and exit_high >= proposal.target:
+                exit_price, reason = min(exit_open, proposal.stop) * (1 - slip), "AMBIGUOUS_BAR_STOP_FIRST"
+            elif exit_low <= proposal.stop:
+                exit_price, reason = min(exit_open, proposal.stop) * (1 - slip), "STOP"
+            elif exit_high >= proposal.target:
+                exit_price, reason = proposal.target * (1 - slip), "TARGET"
+            else:
+                continue
+            gross = (exit_price - entry) * quantity
+            fees = (entry + exit_price) * quantity * fee_rate
+            return ShadowSimulation("CLOSED", quantity, round(entry, 4), round(exit_price, 4), round(gross, 4),
+                                    round(fees, 4), round(gross - fees, 4), reason, stamp, exit_stamp)
+        return ShadowSimulation("OPEN", quantity, round(entry, 4), None, None, None, None,
+                                "DATA_END_OPEN_POSITION", stamp, normalised[-1][0])
+    return ShadowSimulation("NO_FILL", 0, None, None, None, None, None, "PULLBACK_LIMIT_NOT_REACHED")
+
+
+def simulate_shadow_research_trial(
+    proposal: ShadowProposal, future_bars: list[dict], *, cash: float,
+    entry_profile_id: str, exit_profile_id: str, fee_rate: float = .001,
+    slippage_bps: float = 5,
+) -> ShadowSimulation:
+    """Run one named, matched research trial; it cannot create a position."""
+    if entry_profile_id not in _SHADOW_ENTRY_PROFILES or exit_profile_id not in _SHADOW_EXIT_PROFILES:
+        raise ValueError("unsupported shadow research profile")
+    if not math.isfinite(cash) or cash <= 0 or fee_rate < 0 or slippage_bps < 0:
+        raise ValueError("invalid research simulation assumptions")
+    profiled = proposal
+    if exit_profile_id == "BOUNDED_TIME_EXIT_60M_V1":
+        cutoff = _stamp(proposal.data_cutoff or proposal.signal_at or proposal.valid_until)
+        profiled = replace(proposal, holding_deadline=min(
+            _stamp(proposal.holding_deadline or proposal.valid_until), cutoff + timedelta(minutes=60),
+        ))
+    if entry_profile_id == "NEXT_EXECUTABLE_OPEN_V1":
+        return simulate_shadow_trade(profiled, future_bars, cash=cash, fee_rate=fee_rate, slippage_bps=slippage_bps)
+    if entry_profile_id == "BOUNDED_PULLBACK_LIMIT_V1":
+        return _simulate_shadow_limit_pullback(profiled, future_bars, cash=cash, fee_rate=fee_rate,
+                                               slippage_bps=slippage_bps)
+
+    normalised = _normalise_shadow_bars(future_bars)
+    if normalised is None:
+        return ShadowSimulation("INVALID", 0, None, None, None, None, None, "INVALID_OR_UNORDERED_FUTURE_BARS")
+    cutoff = _stamp(profiled.data_cutoff or profiled.signal_at or profiled.valid_until)
+    deadline = _stamp(profiled.entry_deadline or profiled.valid_until)
+    confirmation = next((stamp for stamp, *_ in normalised if cutoff < stamp <= deadline), None)
+    if confirmation is None:
+        return ShadowSimulation("NO_FILL", 0, None, None, None, None, None, "NO_CONFIRMATION_BAR")
+    result = simulate_shadow_trade(replace(profiled, data_cutoff=confirmation), future_bars, cash=cash,
+                                   fee_rate=fee_rate, slippage_bps=slippage_bps)
+    if result.reason == "NO_EXECUTABLE_BAR_AFTER_SIGNAL":
+        return replace(result, reason="NO_EXECUTABLE_BAR_AFTER_CONFIRMATION")
+    return result
+
+
 def _normalise_shadow_bars(bars: object) -> Optional[list[tuple[datetime, float, float, float, float]]]:
     """Validate a complete OHLC series and give the simulator one time order."""
     if not isinstance(bars, list):
@@ -393,6 +486,19 @@ CREATE TABLE IF NOT EXISTS proactive_shadow_run_steps (
  PRIMARY KEY (run_key, as_of),
  FOREIGN KEY(run_key) REFERENCES proactive_shadow_runs(run_key)
 );
+CREATE TABLE IF NOT EXISTS proactive_shadow_research_runs (
+ research_run_id TEXT PRIMARY KEY, manifest_json TEXT NOT NULL, created_at TEXT NOT NULL
+);
+CREATE TABLE IF NOT EXISTS proactive_shadow_research_trials (
+ trial_id TEXT PRIMARY KEY, research_run_id TEXT NOT NULL, opportunity_id TEXT NOT NULL,
+ policy_id TEXT NOT NULL, instrument TEXT NOT NULL, entry_profile_id TEXT NOT NULL,
+ exit_profile_id TEXT NOT NULL, status TEXT NOT NULL, reason TEXT NOT NULL,
+ quantity INTEGER NOT NULL, entry_at TEXT, exit_at TEXT, gross_pnl REAL, fees REAL,
+ net_pnl REAL, created_at TEXT NOT NULL,
+ FOREIGN KEY(research_run_id) REFERENCES proactive_shadow_research_runs(research_run_id)
+);
+CREATE INDEX IF NOT EXISTS idx_shadow_research_trials_run
+ ON proactive_shadow_research_trials(research_run_id, entry_profile_id, exit_profile_id);
 """
 
 
@@ -1358,4 +1464,140 @@ async def proactive_shadow_comparison(db_path: str, *, days: int = 90) -> dict:
         "minimum_closed_outcomes": SHADOW_COMPARISON_MIN_CLOSED_OUTCOMES,
         "comparisons": comparisons,
         "note": "Closed synthetic outcomes support research review only; they cannot enable, size, place, or alter live trades.",
+    }
+
+
+def _research_proposal_manifest(proposal: ShadowProposal) -> dict:
+    return {
+        "opportunity_id": proposal.opportunity_id, "policy_id": proposal.policy_id,
+        "instrument": proposal.instrument, "entry": proposal.entry, "stop": proposal.stop,
+        "target": proposal.target, "data_cutoff": _stamp(proposal.data_cutoff or proposal.signal_at or proposal.valid_until).isoformat(),
+        "entry_deadline": _stamp(proposal.entry_deadline or proposal.valid_until).isoformat(),
+        "holding_deadline": _stamp(proposal.holding_deadline or proposal.valid_until).isoformat(),
+    }
+
+
+async def run_shadow_research_comparison(
+    db_path: str, *, research_run_id: str, proposals: list[ShadowProposal],
+    future_bars: dict[str, list[dict]], cash_per_trial: float,
+    fee_rate: float = .001, slippage_bps: float = 5,
+) -> dict:
+    """Persist a frozen, matched entry/exit experiment with all outcomes retained.
+
+    This deliberately has no dependency on the scheduled workflow, a broker or
+    a delivery mechanism.  It is a reproducible historical/fixture evaluation:
+    each named entry/exit policy receives the same opportunity and price bars,
+    and no-fill/invalid results are evidence rather than omitted observations.
+    Reusing a run id is only allowed for byte-identical assumptions and input.
+    """
+    if not isinstance(research_run_id, str) or not research_run_id.strip():
+        raise ValueError("research_run_id is required")
+    if not all(math.isfinite(float(value)) and float(value) >= 0 for value in (fee_rate, slippage_bps)):
+        raise ValueError("research costs must be finite and non-negative")
+    if not math.isfinite(float(cash_per_trial)) or cash_per_trial <= 0:
+        raise ValueError("cash_per_trial must be positive and finite")
+    if not isinstance(future_bars, dict):
+        raise ValueError("future_bars must be a mapping")
+    if len({proposal.opportunity_id for proposal in proposals}) != len(proposals):
+        raise ValueError("research proposals require unique opportunity identities")
+    manifest = {
+        "version": "shadow-research-v1", "cash_per_trial": float(cash_per_trial),
+        "fee_rate": float(fee_rate), "slippage_bps": float(slippage_bps),
+        "entry_profiles": sorted(_SHADOW_ENTRY_PROFILES), "exit_profiles": sorted(_SHADOW_EXIT_PROFILES),
+        "proposals": [_research_proposal_manifest(proposal) for proposal in proposals],
+        "future_bars": future_bars,
+    }
+    manifest_json = json.dumps(manifest, sort_keys=True, separators=(",", ":"), default=str, allow_nan=False)
+    await init_proactive_intelligence(db_path)
+    async with aiosqlite.connect(db_path) as db:
+        await db.execute("BEGIN IMMEDIATE")
+        existing = await (await db.execute(
+            "SELECT manifest_json FROM proactive_shadow_research_runs WHERE research_run_id=?", (research_run_id,),
+        )).fetchone()
+        if existing is not None and existing[0] != manifest_json:
+            await db.rollback()
+            raise ValueError("research run manifest conflicts with existing evidence; create a new research_run_id")
+        if existing is None:
+            await db.execute(
+                "INSERT INTO proactive_shadow_research_runs (research_run_id,manifest_json,created_at) VALUES (?,?,?)",
+                (research_run_id, manifest_json, datetime.now(timezone.utc).isoformat()),
+            )
+        inserted = 0
+        for proposal in proposals:
+            bars = future_bars.get(proposal.instrument, [])
+            for entry_profile_id in sorted(_SHADOW_ENTRY_PROFILES):
+                for exit_profile_id in sorted(_SHADOW_EXIT_PROFILES):
+                    result = simulate_shadow_research_trial(
+                        proposal, bars, cash=float(cash_per_trial), entry_profile_id=entry_profile_id,
+                        exit_profile_id=exit_profile_id, fee_rate=float(fee_rate), slippage_bps=float(slippage_bps),
+                    )
+                    trial_id = hashlib.sha256(
+                        f"{research_run_id}\x00{proposal.opportunity_id}\x00{entry_profile_id}\x00{exit_profile_id}".encode()
+                    ).hexdigest()[:32]
+                    cur = await db.execute(
+                        "INSERT OR IGNORE INTO proactive_shadow_research_trials ("
+                        "trial_id,research_run_id,opportunity_id,policy_id,instrument,entry_profile_id,exit_profile_id,"
+                        "status,reason,quantity,entry_at,exit_at,gross_pnl,fees,net_pnl,created_at"
+                        ") VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+                        (trial_id, research_run_id, proposal.opportunity_id, proposal.policy_id, proposal.instrument,
+                         entry_profile_id, exit_profile_id, result.status, result.reason, result.quantity,
+                         result.entry_at.isoformat() if result.entry_at else None,
+                         result.last_bar_at.isoformat() if result.status == "CLOSED" and result.last_bar_at else None,
+                         result.gross_pnl, result.fees, result.net_pnl, datetime.now(timezone.utc).isoformat()),
+                    )
+                    inserted += max(int(cur.rowcount or 0), 0)
+        await db.commit()
+    return {
+        "mode": "SHADOW", "research_only": True, "can_place_orders": False,
+        "authorization_effect": "NONE", "research_run_id": research_run_id,
+        "opportunities": len(proposals), "profile_trials": len(proposals) * len(_SHADOW_ENTRY_PROFILES) * len(_SHADOW_EXIT_PROFILES),
+        "inserted_trials": inserted,
+    }
+
+
+async def proactive_shadow_research_report(db_path: str, *, research_run_id: Optional[str] = None) -> dict:
+    """Read the immutable entry/exit trial archive without selecting a winner."""
+    await init_proactive_intelligence(db_path)
+    query = (
+        "SELECT research_run_id,entry_profile_id,exit_profile_id,status,reason,net_pnl,exit_at "
+        "FROM proactive_shadow_research_trials "
+    )
+    params: tuple = ()
+    if research_run_id is not None:
+        query += "WHERE research_run_id=? "
+        params = (research_run_id,)
+    query += "ORDER BY research_run_id,entry_profile_id,exit_profile_id,exit_at,trial_id"
+    async with aiosqlite.connect(db_path) as db:
+        rows = await (await db.execute(query, params)).fetchall()
+    groups: dict[tuple[str, str, str], list[tuple]] = {}
+    for row in rows:
+        groups.setdefault((str(row[0]), str(row[1]), str(row[2])), []).append(row)
+    comparisons = []
+    for (run_id, entry_profile_id, exit_profile_id), trials in groups.items():
+        closed = [float(row[5]) for row in trials if row[3] == "CLOSED" and row[5] is not None and math.isfinite(float(row[5]))]
+        no_fills = sum(row[3] == "NO_FILL" for row in trials)
+        invalid = sum(row[3] == "INVALID" for row in trials)
+        open_trials = sum(row[3] == "OPEN" for row in trials)
+        reasons: dict[str, int] = {}
+        for row in trials:
+            reasons[str(row[4])] = reasons.get(str(row[4]), 0) + 1
+        wins = sum(value > 0 for value in closed)
+        losses = sum(value < 0 for value in closed)
+        positive, negative = sum(value for value in closed if value > 0), abs(sum(value for value in closed if value < 0))
+        comparisons.append({
+            "research_run_id": run_id, "entry_profile_id": entry_profile_id, "exit_profile_id": exit_profile_id,
+            "trials": len(trials), "closed_outcomes": len(closed), "no_fills": no_fills,
+            "open_trials": open_trials, "invalid_trials": invalid,
+            "net_pnl": round(sum(closed), 4) if closed else None,
+            "net_expectancy": round(sum(closed) / len(closed), 4) if closed else None,
+            "win_rate": round(wins / len(closed), 6) if closed else None,
+            "profit_factor": round(positive / negative, 6) if negative else None,
+            "evidence_state": "COLLECTING_EVIDENCE" if len(closed) >= SHADOW_COMPARISON_MIN_CLOSED_OUTCOMES else "INSUFFICIENT_CLOSED_OUTCOMES",
+            "minimum_closed_outcomes": SHADOW_COMPARISON_MIN_CLOSED_OUTCOMES,
+            "outcome_reasons": [{"reason": reason, "trials": count} for reason, count in sorted(reasons.items())],
+        })
+    return {
+        "mode": "SHADOW", "research_only": True, "can_place_orders": False, "authorization_effect": "NONE",
+        "comparisons": comparisons,
+        "note": "Every matched entry/exit trial is retained, including no-fill, open and invalid outcomes; no profile is promoted automatically.",
     }
