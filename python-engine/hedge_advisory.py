@@ -849,6 +849,42 @@ async def load_hedge_delivery_backlog(db_path: str) -> dict[str, list[dict]]:
     return {"manual_recovery": unresolved, "quarantine": quarantined}
 
 
+async def load_partner_hedge_cards(db_path: str, *, limit: int = 20) -> dict:
+    """Render immutable fixture/shadow review evidence for an operator UI.
+
+    Cards deliberately expose only persisted review fields.  They cannot
+    acknowledge, resend, trade, or infer a holding that was absent from the
+    source snapshot.
+    """
+    if not 1 <= limit <= 100:
+        raise ValueError("limit must be within 1..100")
+    await init_hedge_advisory_db(db_path)
+    async with aiosqlite.connect(db_path) as db:
+        rows = await (await db.execute(
+            "SELECT evaluation_id,phase,kind,dedup_key,rendered_text,detail_json,evaluated_at "
+            "FROM partner_hedge_shadow_evaluations ORDER BY evaluated_at DESC,evaluation_id DESC LIMIT ?", (limit,),
+        )).fetchall()
+    cards = []
+    for evaluation_id, phase, kind, dedup_key, text, raw_detail, evaluated_at in rows:
+        try:
+            detail = json.loads(raw_detail or "{}")
+        except (TypeError, json.JSONDecodeError):
+            detail = {"state": "CORRUPT_EVALUATION_DETAIL"}
+        if not isinstance(detail, dict):
+            detail = {"state": "CORRUPT_EVALUATION_DETAIL"}
+        cards.append({
+            "evaluation_id": evaluation_id, "phase": phase, "kind": kind,
+            "dedup_key": dedup_key, "rendered_text": text, "evaluated_at": evaluated_at,
+            "account_id": detail.get("account_id"), "underlying": detail.get("underlying"),
+            "contracts": detail.get("contracts") if isinstance(detail.get("contracts"), list) else [],
+            "valid_until": detail.get("valid_until"), "portfolio_revision": detail.get("portfolio_revision"),
+            "decision_id": detail.get("decision_id"), "generation_id": detail.get("generation_id"),
+            "reason": detail.get("reason"), "delivery_state": "NOT_SENT_SHADOW_EVIDENCE",
+            "can_send": False, "can_trade": False,
+        })
+    return {"mode": "SHADOW", "cards": cards, "note": "Cards are persisted hedge-review evidence only; partner confirmation and delivery remain separate."}
+
+
 async def resolve_hedge_delivery_backlog(
     db_path: str, *, kind: str, dedup_key: str, action: str, resolved_by: str,
     reason: str, evidence_ref: str, now: Optional[datetime] = None,

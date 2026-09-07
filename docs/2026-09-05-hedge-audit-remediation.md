@@ -614,3 +614,16 @@ does not modify Production.
 - This is a P7 foundation, not a claim that the required AI-outage, partner
   lifecycle or browser-evidence portions of the broader demonstration are
   complete. It has no Production, broker, delivery or scheduler activation.
+
+### P6 extension — deterministic hedge-card evidence API
+
+- Added an authenticated read-only card API for persisted partner hedge SHADOW
+  evaluations. Cards expose phase, review type, account, underlying, contracts,
+  validity, portfolio revision, decision/generation identities and rendered
+  evidence. They are hard-labelled `NOT_SENT_SHADOW_EVIDENCE` with both send
+  and trade authority false; partner confirmation and delivery recovery remain
+  separate workflows.
+- This API is available to the Dev gateway at `/partner/hedge/cards`. It does
+  not create advice, change a readiness gate, call a transport or mutate a
+  partner position. Fixture lifecycle cards and browser UI integration remain
+  the next P6 work.

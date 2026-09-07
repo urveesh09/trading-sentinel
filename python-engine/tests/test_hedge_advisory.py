@@ -11,7 +11,7 @@ from fno_models import Contract, ContractQuote
 from hedge_advisory import (
     Phase2MarketContext, _claim, _complete_claim, _record, _release_claim,
     build_hedge_reviews, build_phase2_hedge_reviews,
-    load_hedge_service_state, load_vix_observations, partner_hedge_phase2_tick, partner_hedge_tick,
+    load_hedge_service_state, load_hedge_delivery_backlog, load_partner_hedge_cards, load_vix_observations, partner_hedge_phase2_tick, partner_hedge_tick,
     record_vix_observation,
 )
 from partner_bot import PartnerSendResult
@@ -21,6 +21,20 @@ from partner_input_refresh import apply_partner_input_snapshot
 IST = pytz.timezone("Asia/Kolkata")
 NOW = IST.localize(datetime(2026, 9, 2, 11, 0))
 EXPIRY = date(2026, 9, 29)
+
+
+@pytest.mark.asyncio
+async def test_shadow_hedge_cards_expose_review_evidence_without_delivery_authority(db_path):
+    await ha._record_shadow_evaluation(
+        db_path, phase="phase2", kind="covered_call_recommendation", dedup_key="fixture-card",
+        text="Synthetic card", detail={"account_id": "fixture-account", "underlying": "NIFTY",
+        "contracts": ["NIFTY-SYNTH-CE"], "valid_until": NOW.isoformat(), "portfolio_revision": 3,
+        "decision_id": "decision", "generation_id": "generation", "reason": "READINESS_BLOCKED"}, now=NOW,
+    )
+    [card] = (await load_partner_hedge_cards(db_path))["cards"]
+    assert card["delivery_state"] == "NOT_SENT_SHADOW_EVIDENCE"
+    assert card["can_send"] is card["can_trade"] is False
+    assert card["contracts"] == ["NIFTY-SYNTH-CE"] and card["account_id"] == "fixture-account"
 
 
 def _contract(kind, strike, token, lot=65):

@@ -13,7 +13,7 @@ import main as _main
 from config import settings
 from hedge_advisory import (
     init_hedge_advisory_db, load_hedge_service_state, load_vix_observations,
-    load_hedge_delivery_backlog, record_vix_observation,
+    load_hedge_delivery_backlog, load_partner_hedge_cards, record_vix_observation,
     resolve_hedge_delivery_backlog,
 )
 from hedge_analytics import (
@@ -240,6 +240,15 @@ async def get_partner_hedge_delivery_backlog(request: Request):
     """Read manual delivery/migration holds; it does not release anything."""
     _main._check_internal_secret(request, "get_partner_hedge_delivery_backlog")
     return await load_hedge_delivery_backlog(settings.DB_PATH)
+
+
+@router.get("/partner/hedge/cards")
+async def get_partner_hedge_cards(request: Request, limit: int = 20):
+    _main._check_internal_secret(request, "get_partner_hedge_cards")
+    try:
+        return await load_partner_hedge_cards(settings.DB_PATH, limit=limit)
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
 
 
 @router.post("/partner/hedge/delivery-backlog/{kind}/{dedup_key}/resolve")
