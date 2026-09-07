@@ -9,6 +9,8 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
+import json
+from pathlib import Path
 from queue import Empty, Full, Queue
 from threading import Event, RLock, Thread
 from typing import Callable, Optional
@@ -47,6 +49,7 @@ class AsyncReviewQueue:
         cooldown_seconds: float = 300,
         state_ttl_seconds: float = 900,
         max_retained_states: int | None = None,
+        budget_state_path: str | None = None,
         now: Callable[[], datetime] | None = None,
     ) -> None:
         if min(max_pending, max_requests_per_day, failure_limit) < 1:
@@ -70,7 +73,9 @@ class AsyncReviewQueue:
         self._cache: dict[str, tuple[Review, datetime]] = {}
         self._states: dict[str, ReviewSubmission] = {}
         self._state_recorded_at: dict[str, datetime] = {}
-        self._requests_by_day: dict[str, int] = {}
+        self._budget_state_path = Path(budget_state_path) if budget_state_path else None
+        self._budget_state_available = True
+        self._requests_by_day: dict[str, int] = self._load_budget_state()
         self._consecutive_failures = 0
         self._circuit_open_until: Optional[datetime] = None
         self._stop = Event()
@@ -99,16 +104,23 @@ class AsyncReviewQueue:
                 return self._remember(ReviewSubmission(key, "QUEUE_FULL", reason="bounded_queue"))
             if self._circuit_open_until is not None and now < self._circuit_open_until:
                 return self._remember(ReviewSubmission(key, "CIRCUIT_OPEN", reason="provider_failures"))
+            if not self._budget_state_available:
+                return self._remember(ReviewSubmission(key, "BUDGET_STATE_UNAVAILABLE", reason="durable_quota"))
             day = now.date().isoformat()
             if self._requests_by_day.get(day, 0) >= self._max_requests_per_day:
                 return self._remember(ReviewSubmission(key, "BUDGET_EXHAUSTED", reason="daily_request_budget"))
             task = _Task(key, dict(signal), str(sentiment), str(regime), expires_at)
+            self._requests_by_day[day] = self._requests_by_day.get(day, 0) + 1
+            if not self._persist_budget_state():
+                self._requests_by_day[day] -= 1
+                return self._remember(ReviewSubmission(key, "BUDGET_STATE_UNAVAILABLE", reason="durable_quota"))
             try:
                 self._queue.put_nowait(task)
             except Full:
+                self._requests_by_day[day] -= 1
+                self._persist_budget_state()
                 return self._remember(ReviewSubmission(key, "QUEUE_FULL", reason="bounded_queue"))
             self._pending.add(key)
-            self._requests_by_day[day] = self._requests_by_day.get(day, 0) + 1
             return self._remember(ReviewSubmission(key, "QUEUED"))
 
     def status(self, key: str) -> Optional[ReviewSubmission]:
@@ -143,9 +155,41 @@ class AsyncReviewQueue:
         self._state_recorded_at[submission.key] = self._now()
         return submission
 
+    def _load_budget_state(self) -> dict[str, int]:
+        if self._budget_state_path is None:
+            return {}
+        try:
+            if not self._budget_state_path.exists():
+                return {}
+            raw = json.loads(self._budget_state_path.read_text(encoding="utf-8"))
+            if not isinstance(raw, dict):
+                raise ValueError("budget state must be an object")
+            return {str(day): int(count) for day, count in raw.items() if int(count) >= 0}
+        except (OSError, ValueError, TypeError, json.JSONDecodeError):
+            self._budget_state_available = False
+            return {}
+
+    def _persist_budget_state(self) -> bool:
+        if self._budget_state_path is None:
+            return True
+        try:
+            self._budget_state_path.parent.mkdir(parents=True, exist_ok=True)
+            temporary = self._budget_state_path.with_suffix(self._budget_state_path.suffix + ".tmp")
+            temporary.write_text(json.dumps(self._requests_by_day, sort_keys=True), encoding="utf-8")
+            temporary.replace(self._budget_state_path)
+            self._budget_state_available = True
+            return True
+        except OSError:
+            # The optional annotation worker fails closed; the deterministic
+            # signal and risk path does not depend on it.
+            self._budget_state_available = False
+            return False
+
     def _cleanup_locked(self, now: datetime) -> None:
         self._cache = {key: value for key, value in self._cache.items() if value[1] > now}
         self._requests_by_day = {now.date().isoformat(): self._requests_by_day.get(now.date().isoformat(), 0)}
+        if self._budget_state_available:
+            self._persist_budget_state()
         for key, recorded_at in list(self._state_recorded_at.items()):
             if key not in self._pending and now - recorded_at > timedelta(seconds=self._state_ttl_seconds):
                 self._states.pop(key, None)

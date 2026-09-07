@@ -113,3 +113,32 @@ def test_terminal_state_retention_is_bounded_and_expires():
         assert queue.status("expired") is None
     finally:
         queue.shutdown()
+
+
+def test_daily_budget_survives_worker_restart(tmp_path):
+    state = str(tmp_path / "ai-budget.json")
+    expiry = datetime.now(timezone.utc) + timedelta(minutes=1)
+    first = AsyncReviewQueue(lambda *_args: unavailable("offline"), max_requests_per_day=1, budget_state_path=state)
+    try:
+        assert first.submit("one", {}, "", "UNKNOWN", expires_at=expiry).state == "QUEUED"
+    finally:
+        first.shutdown()
+    second = AsyncReviewQueue(lambda *_args: unavailable("offline"), max_requests_per_day=1, budget_state_path=state)
+    try:
+        assert second.submit("two", {}, "", "UNKNOWN", expires_at=expiry).state == "BUDGET_EXHAUSTED"
+    finally:
+        second.shutdown()
+
+
+def test_unreadable_durable_budget_fails_closed_for_optional_ai(tmp_path):
+    state = tmp_path / "ai-budget.json"
+    state.write_text("not-json", encoding="utf-8")
+    queue = AsyncReviewQueue(
+        lambda *_args: unavailable("offline"),
+        budget_state_path=str(state),
+    )
+    try:
+        expiry = datetime.now(timezone.utc) + timedelta(minutes=1)
+        assert queue.submit("blocked", {}, "", "UNKNOWN", expires_at=expiry).state == "BUDGET_STATE_UNAVAILABLE"
+    finally:
+        queue.shutdown()

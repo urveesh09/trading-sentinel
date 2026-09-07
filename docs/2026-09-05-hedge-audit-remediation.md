@@ -921,3 +921,24 @@ window before any production trading claim.
   hash before invoking the established complete-snapshot lifecycle writer.
   Actual provider authentication/transport remains an external authorised
   adapter; this code does not contact a partner or send any message.
+
+### W9 durable optional-AI quota and W10 controlled acceptance harness (2026-09-07)
+
+- `agent/async_reviews.py` can now receive an optional `budget_state_path`.
+  It persists the current UTC-day request count through an atomic replace, so
+  an optional-AI worker restart cannot reset a configured daily request cap.
+  Unreadable or unwritable quota evidence fails closed for optional-AI work;
+  deterministic signal/risk work remains independent. The worker never gains
+  decision, delivery or order authority. The existing in-memory default is
+  retained when no path is configured.
+- Added `python-engine/dev_acceptance_harness.py` and its test. The harness
+  runs the persisted integrated Dev fixture, then induces a real worker-level
+  optional-AI outage and verifies the result remains non-authoritative. Its
+  explicit evidence reports `can_place_orders: false`, `authorization_effect:
+  NONE`, and `scheduler: NOT_STARTED_BY_DESIGN`.
+- This is deliberately controlled offline evidence, not an operational live
+  canary. It does not start a registered scheduler, contact a broker/partner/
+  Telegram provider, or prove authenticated browser access. Those production
+  integration checks still require separately authorised credentials and
+  operational failure injection; neither W9 nor W10 changes live trading,
+  delivery or hedge permissions.
