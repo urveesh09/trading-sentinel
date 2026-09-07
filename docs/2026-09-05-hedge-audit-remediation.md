@@ -481,3 +481,14 @@ does not modify Production.
   time, rather than relabelling delayed source data with local receipt time.
   Regression tests cover rejected ordered envelopes without residual rows and
   exact source-fixture retry idempotency.
+
+### P6 extension — complete offline option fixture support
+
+- The Dev fixture adapter now carries option expiry, strike and explicit
+  delta/gamma/theta/vega through both staged creation and reconciliation. It
+  applies the same F&O lot-unit and non-fictional-Greek validation as the real
+  partner input boundary, rather than treating option exposure as equity or
+  silently assigning zero Greeks.
+- Equity deliverability evidence is also preserved when supplied by a fixture.
+  A regression imports and reconciles a complete NIFTY put fixture; no broker,
+  order or messaging path is involved.

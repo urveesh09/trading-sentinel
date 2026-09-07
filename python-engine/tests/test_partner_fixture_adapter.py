@@ -60,3 +60,28 @@ async def test_rejected_fixture_envelope_does_not_create_a_position(db_path, mon
     with pytest.raises(ValueError, match="sequence"):
         await apply_fixture_account(db_path, rejected, received_at=now)
     assert await load_partner_positions(db_path, include_closed=True) == []
+
+
+@pytest.mark.asyncio
+async def test_complete_fixture_accepts_an_option_with_explicit_greeks(db_path, monkeypatch):
+    now = IST.localize(datetime(2026, 9, 2, 11))
+    monkeypatch.setattr(settings, "PARTNER_HEDGE_INPUT_EXPECTED_SOURCE", "fixture")
+    monkeypatch.setattr(settings, "PARTNER_HEDGE_INPUT_EXPECTED_ACCOUNT_ID", "fixture-account")
+    fixture = {
+        "source": "fixture", "account_id": "fixture-account", "snapshot_id": "option-one",
+        "sequence": 1, "complete": True, "observed_at": now.isoformat(),
+        "positions": [{
+            "external_position_id": "nifty-put", "instrument_type": "PE", "underlying": "NIFTY",
+            "tradingsymbol": "NIFTY26SEP24500PE", "quantity": 50, "lot_size": 50,
+            "entry_price": 110, "current_price": 125, "underlying_price": 24_450,
+            "expiry": "2026-09-24", "strike": 24_500,
+            "greeks": {"delta": -0.42, "gamma": 0.001, "theta": -1.8, "vega": 2.4},
+        }],
+    }
+    result = await apply_fixture_account(db_path, fixture, received_at=now)
+    assert result["accepted"]
+    [position] = await load_partner_positions(db_path)
+    assert position.instrument_type == "PE"
+    assert position.verification_status == "RECONCILED"
+    assert position.price_as_of == now
+    assert position.greeks and position.greeks.delta == pytest.approx(-0.42)
