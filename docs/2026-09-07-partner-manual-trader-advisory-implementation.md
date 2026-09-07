@@ -16,7 +16,7 @@ paper fills, broker execution access or a fabricated partner portfolio.
 | P4 precision gate | Exchange/segment/contract/lot/tick metadata, all-leg bid/ask/depth/OI/volume/spread, quote age, expiry/lot consistency and structural payoff bounds | `test_partner_manual_advisory.py`. |
 | P5 lifecycle | Stable advisory/economic IDs, persisted card status, profile supersession, explicit manual `NOT_REPORTED`/`TAKEN`/`SKIPPED`/`CLOSED` feedback | Delivery is never interpreted as a fill. |
 | P6 observability | Separate two-minute `partner_manual_advisory_tick`; per-index unavailable/rejected/validated/overlap metrics | It runs after the legacy scan slot. |
-| P7 delivery safety | This path produces `VALIDATED_SHADOW` cards only; `can_send` and `can_place_orders` are always false | No legacy best-effort send is used. |
+| P7 delivery safety | Shadow cards are retained when delivery is off; owner-authorised queued cards use the durable claim/acknowledgement ledger | No legacy best-effort send is used, and `can_place_orders` is always false. |
 | P8 optional AI | No AI is on the numeric/card authority path | Deterministic card rendering remains available. |
 
 ## NIFTY 50 and SENSEX controls
@@ -44,10 +44,21 @@ any future delivery path to revalidate current market/profile facts.
 
 ## Configuration and rollout boundary
 
-Both advisory switches default to `false`. Setting
-`PARTNER_MANUAL_ADVISORY_SHADOW_ENABLED=true` permits an explicitly enabled
-no-send observation; `PARTNER_MANUAL_ADVISORY_ENABLED` does not grant
-delivery authority.
+The owner-approved Dev merge candidate enables `PARTNER_BOT_ENABLED`,
+`PARTNER_MANUAL_ADVISORY_ENABLED`,
+`PARTNER_MANUAL_ADVISORY_SHADOW_ENABLED` and
+`PARTNER_MANUAL_ADVISORY_DELIVERY_ENABLED`. Delivery is still advisory-only:
+it goes through the durable claim/acknowledgement ledger, is capped at two
+ideas per day, and cannot place an order. The legacy naked-option, analytics,
+portfolio-status and personalised-hedge sender paths remain suppressed while
+the manual channel is active.
+
+`PARTNER_HEDGE_ENABLED` is explicitly disabled in this rollout: it is the
+separate reconciled-holdings monitor that produced operational status updates,
+and is not needed for an independent manual trader. Existing F&O/proactive
+research shadows remain enabled as read-only evidence collectors. Their
+fixture/provider paths are intentionally not promoted to live trading or
+partner delivery, and broker/order switches remain off.
 Neither flag adds a Telegram send or broker-order consumer. The current
 delivery lifecycle has not been expanded to live partner market advice in this
 change, because that requires separately authorised routing, provider and
@@ -59,10 +70,11 @@ the rendered card and preserve the existing durable ambiguity/recovery guards.
 Focused regression suite passed:
 
 ```
-107 passed
+131 passed
 python-engine/tests/test_partner_manual_advisory.py
 python-engine/tests/test_partner_orchestrator.py
 python-engine/tests/test_partner_content.py
+python-engine/tests/test_hedge_advisory.py
 python-engine/tests/test_fno_chain.py
 python-engine/tests/test_fno_instruments.py
 python-engine/tests/test_scheduler_tick.py
@@ -78,10 +90,9 @@ registration, and authenticated non-executing APIs.
 
 ## Remaining release evidence
 
-This Dev change is a complete shadow/preview implementation, not a claim that
-the strategies are profitable or ready for live partner delivery. Before a
-separate live-delivery decision: collect current-data no-send cards for both
-exchanges, validate holiday/rollover and same-day-expiry policies from current
-exchange metadata, run the existing durable delivery lifecycle with a safe
-fake transport and authenticated UI preview, and obtain an explicit owner
-approval for destination and routing. Production was not modified.
+This is not a claim that the strategies are profitable. Same-day expiry is
+rejected, and holiday/rollover behaviour remains driven by the current
+exchange instrument book. The owner has separately approved advisory delivery
+for this merge candidate; it remains necessary to confirm the Production
+Telegram credentials/destination and inspect early delivered cards. Production
+was not modified by this work.

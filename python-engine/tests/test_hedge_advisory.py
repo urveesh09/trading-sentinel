@@ -481,6 +481,7 @@ async def test_explicitly_absent_consistent_snapshot_never_falls_back_to_new_rea
 @pytest.mark.asyncio
 async def test_recovery_respects_hedge_kill_switch(monkeypatch):
     monkeypatch.setattr(settings, "PARTNER_HEDGE_ENABLED", False)
+    monkeypatch.setattr(settings, "PARTNER_MANUAL_ADVISORY_DELIVERY_ENABLED", False)
 
     async def forbidden(*args, **kwargs):
         raise AssertionError("disabled recovery must not access delivery ledger")
@@ -587,6 +588,7 @@ async def test_recovery_retires_phase1_advice_when_current_portfolio_is_not_elig
 
     monkeypatch.setattr(settings, "DB_PATH", db_path)
     monkeypatch.setattr(settings, "PARTNER_HEDGE_ENABLED", True)
+    monkeypatch.setattr(settings, "PARTNER_MANUAL_ADVISORY_DELIVERY_ENABLED", False)
     monkeypatch.setattr(ha, "partner_enabled", lambda: True)
     monkeypatch.setattr(main, "is_trading_day", trading_day)
     monkeypatch.setattr(ha, "send_partner_result", limited)
@@ -640,6 +642,7 @@ async def test_complete_snapshot_reaches_real_phase1_builder_formatter_and_sende
 
     monkeypatch.setattr(settings, "DB_PATH", db_path)
     monkeypatch.setattr(settings, "PARTNER_HEDGE_ENABLED", True)
+    monkeypatch.setattr(settings, "PARTNER_MANUAL_ADVISORY_DELIVERY_ENABLED", False)
     monkeypatch.setattr(settings, "PARTNER_HEDGE_PROTECTIVE_PUT", True)
     monkeypatch.setattr(settings, "PARTNER_HEDGE_FUTURES", True)
     monkeypatch.setattr(settings, "PARTNER_HEDGE_COLLAR", False)

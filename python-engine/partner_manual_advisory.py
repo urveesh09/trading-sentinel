@@ -25,6 +25,7 @@ from typing import Iterable, Optional
 import aiosqlite
 import pytz
 
+from config import settings
 from fno_chain import ChainSnapshot
 from fno_costs import calc_fno_costs
 from fno_defined_risk import Structure, build_debit_spread, structure_round_trip_cost
@@ -115,6 +116,7 @@ class AdvisoryCandidate:
     valid_until: datetime
     policy_version: str
     evidence: StrategyEvidence
+    thesis_id: str
     legs: tuple[AdvisoryLeg, ...]
     net_debit_rs: Optional[float]
     net_credit_rs: Optional[float]
@@ -281,7 +283,7 @@ def build_directional_debit_spread(
     snapshot: ChainSnapshot, book: FnoInstruments, direction: FnoDirection,
     now: datetime, *, evidence: StrategyEvidence = StrategyEvidence.RESEARCH_ONLY,
     width_steps: int = 1, quote_ttl_seconds: int = 30,
-    policy_version: str = "partner-manual-v1",
+    policy_version: str = "partner-manual-v1", thesis_id: Optional[str] = None,
 ) -> Optional[AdvisoryCandidate]:
     """Build one conservative, same-index/same-expiry vertical, or ``None``.
 
@@ -331,6 +333,7 @@ def build_directional_debit_spread(
         generated_at=now, quote_time=snapshot.taken_at,
         valid_until=snapshot.taken_at + timedelta(seconds=quote_ttl_seconds),
         policy_version=policy_version, evidence=evidence,
+        thesis_id=thesis_id or f"{underlying}:{direction.value}:{snapshot.expiry.isoformat()}",
         legs=(_leg("BUY", long_quote, snapshot), _leg("SELL", short_quote, snapshot)),
         net_debit_rs=round(net_debit, 2), net_credit_rs=None,
         estimated_round_trip_cost_rs=structure_round_trip_cost(structure),
@@ -348,6 +351,7 @@ def build_conditional_index_protective_put(
     exposure_assumption: str, coverage_units: int,
     evidence: StrategyEvidence = StrategyEvidence.RESEARCH_ONLY,
     quote_ttl_seconds: int = 30, policy_version: str = "partner-manual-v1",
+    thesis_id: Optional[str] = None,
 ) -> Optional[AdvisoryCandidate]:
     """Build a conditional protective-put *idea*, never a personal hedge.
 
@@ -377,6 +381,7 @@ def build_conditional_index_protective_put(
         generated_at=now, quote_time=snapshot.taken_at,
         valid_until=snapshot.taken_at + timedelta(seconds=quote_ttl_seconds),
         policy_version=policy_version, evidence=evidence, legs=(_leg("BUY", quote, snapshot),),
+        thesis_id=thesis_id or f"{underlying}:PROTECTION:{snapshot.expiry.isoformat()}",
         net_debit_rs=round(premium_risk, 2), net_credit_rs=None,
         estimated_round_trip_cost_rs=round(calc_fno_costs(quote.ask, quote.ask, contract.lot_size), 2),
         # This bound is the option premium only, not the loss of the unknown
@@ -518,12 +523,15 @@ def advisory_identity(candidate: AdvisoryCandidate) -> tuple[str, str]:
         key: payload[key] for key in (
             "scope", "underlying", "exchange", "segment", "structure_kind", "direction",
             "legs", "net_debit_rs", "net_credit_rs", "max_loss_rs", "max_profit_rs", "breakevens",
-            "policy_version", "exposure_assumption", "coverage_units",
+            "policy_version", "thesis_id", "exposure_assumption", "coverage_units",
         )
     }
     economic_version = hashlib.sha256(json.dumps(economic, sort_keys=True).encode()).hexdigest()[:20]
+    # Delivery dedup follows an immutable market thesis (normally the source
+    # completed-bar timestamp), not every routine quote refresh.  A changed
+    # quote can invalidate a card; it cannot manufacture a new notification.
     advisory_id = hashlib.sha256(
-        f"{economic_version}:{payload['quote_time']}:{payload['valid_until']}".encode()
+        f"{payload['scope']}:{payload['underlying']}:{payload['thesis_id']}:{payload['policy_version']}".encode()
     ).hexdigest()[:24]
     return advisory_id, economic_version
 
@@ -576,6 +584,7 @@ def render_advisory_card(candidate: AdvisoryCandidate, advisory_id: str) -> str:
 async def persist_candidate(
     db_path: str, candidate: AdvisoryCandidate, profile: PartnerAdvisoryProfile,
     now: Optional[datetime] = None, *, validation_options: Optional[dict] = None,
+    queue_for_delivery: bool = False,
 ) -> dict:
     """Persist a validated shadow card with conservative dedup/version links.
 
@@ -594,7 +603,9 @@ async def persist_candidate(
         validation = ValidationResult(False, tuple(sorted(set(validation.reasons + ("profile_scope_not_permitted",)))))
         payload["validation_reasons"] = list(validation.reasons)
     card = render_advisory_card(candidate, advisory_id) if validation.valid else ""
-    status = "VALIDATED_SHADOW" if validation.valid else "REJECTED"
+    status = "QUEUED" if validation.valid and queue_for_delivery else (
+        "VALIDATED_SHADOW" if validation.valid else "REJECTED"
+    )
     stamp = _iso(now)
     async with aiosqlite.connect(db_path) as db:
         await db.execute("BEGIN IMMEDIATE")
@@ -619,10 +630,54 @@ async def persist_candidate(
         await db.commit()
     return {
         "advisory_id": advisory_id, "economic_version": economic_version, "status": status,
+        "underlying": candidate.underlying, "valid_until": _iso(candidate.valid_until),
+        "evidence": candidate.evidence.value,
         "validation": {"valid": validation.valid, "reasons": list(validation.reasons)},
-        "delivery_eligible": bool(validation.valid and candidate.evidence == StrategyEvidence.QUALIFIED_FOR_ADVISORY),
-        "can_place_orders": False, "can_send": False, "rendered_card": card,
+        "delivery_eligible": bool(validation.valid and queue_for_delivery),
+        "can_place_orders": False, "can_send": bool(status == "QUEUED"), "rendered_card": card,
     }
+
+
+async def dispatch_queued_advisory(
+    db_path: str, stored: dict, profile: PartnerAdvisoryProfile, *, now: datetime,
+) -> bool:
+    """Deliver one queued card through the durable hedge transport ledger.
+
+    This reuses claim ownership, generation/destination deduplication,
+    transport-start persistence, timeout ambiguity and bounded recovery.  The
+    hedge module independently authorizes the live manual scope immediately
+    before transport; this function cannot bypass that check.
+    """
+    if not settings.PARTNER_MANUAL_ADVISORY_DELIVERY_ENABLED or stored.get("status") != "QUEUED":
+        return False
+    from hedge_advisory import _send_claimed_review
+    candidate_id = str(stored["advisory_id"])
+    sent = await _send_claimed_review(
+        db_path, "manual_market_advisory", candidate_id, str(stored["rendered_card"]),
+        detail={
+            "phase": "manual_v1", "policy_version": "partner-manual-v1",
+            "advisory_id": candidate_id, "economic_version": stored["economic_version"],
+            "profile_id": profile.profile_id, "profile_version": profile.version,
+            "account_id": f"manual-profile:{profile.profile_id}",
+            "decision_id": candidate_id, "generation_id": candidate_id,
+            "exposure_lifecycle_id": "manual-advisory",
+            "underlying": str(stored["underlying"]),
+            "valid_until": str(stored["valid_until"]),
+        },
+        now=now, min_gap=timedelta(minutes=1),
+        daily_cap=settings.PARTNER_MANUAL_ADVISORY_DAILY_CAP,
+    )
+    if sent:
+        async with aiosqlite.connect(db_path) as db:
+            await db.execute(
+                "UPDATE partner_advisory_ideas SET status='DELIVERED_ACKNOWLEDGED', updated_at=? "
+                "WHERE advisory_id=? AND status='QUEUED'",
+                (_iso(now), candidate_id),
+            )
+            await db.commit()
+    # The dispatch authorizer reads the persisted card's original validity,
+    # so pass it here too rather than extending its life at send time.
+    return sent
 
 
 async def record_manual_feedback(
@@ -671,7 +726,7 @@ async def load_advisory_cards(db_path: str, limit: int = 20) -> dict:
             "evidence": row[6], "quote_time": row[7], "valid_until": row[8],
             "rendered_card": row[9], "validation_reasons": payload.get("validation_reasons", []),
             "supersedes_id": row[11], "manual_feedback": by_advisory.get(row[0], []),
-            "can_place_orders": False, "can_send": False,
+            "can_place_orders": False, "can_send": row[5] == "QUEUED",
         })
     return {"cards": cards, "automatic_execution": False, "delivery_authority": False}
 

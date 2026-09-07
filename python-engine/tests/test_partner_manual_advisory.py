@@ -11,7 +11,7 @@ from partner_manual_advisory import (
     AdvisoryScope, ManualDecision, PartnerAdvisoryProfile, StrategyEvidence,
     build_conditional_index_protective_put, build_directional_debit_spread, load_advisory_cards, persist_candidate,
     record_manual_feedback, save_partner_profile, validate_candidate,
-    select_preferred_market_candidates,
+    select_preferred_market_candidates, dispatch_queued_advisory,
 )
 
 IST = pytz.timezone("Asia/Kolkata")
@@ -143,6 +143,30 @@ async def test_no_holdings_market_card_persists_without_send_or_order(db_path):
     await record_manual_feedback(db_path, stored["advisory_id"], ManualDecision.TAKEN, reported_at=NOW)
     cards = await load_advisory_cards(db_path)
     assert cards["cards"][0]["manual_feedback"][0]["decision"] == "TAKEN"
+
+
+@pytest.mark.asyncio
+async def test_queued_manual_card_uses_hardened_delivery_boundary(db_path, monkeypatch):
+    from config import settings
+    import hedge_advisory
+
+    profile = PartnerAdvisoryProfile(version=1)
+    await save_partner_profile(db_path, profile, now=NOW)
+    stored = await persist_candidate(db_path, _candidate(), profile, now=NOW, queue_for_delivery=True)
+    assert stored["status"] == "QUEUED"
+    calls = []
+
+    async def acknowledged(*args, **kwargs):
+        calls.append((args, kwargs))
+        return True
+
+    monkeypatch.setattr(settings, "PARTNER_MANUAL_ADVISORY_DELIVERY_ENABLED", True)
+    monkeypatch.setattr(hedge_advisory, "_send_claimed_review", acknowledged)
+    assert await dispatch_queued_advisory(db_path, stored, profile, now=NOW)
+    assert calls[0][0][1] == "manual_market_advisory"
+    assert calls[0][1]["detail"]["phase"] == "manual_v1"
+    cards = await load_advisory_cards(db_path)
+    assert cards["cards"][0]["status"] == "DELIVERED_ACKNOWLEDGED"
 
 
 @pytest.mark.asyncio

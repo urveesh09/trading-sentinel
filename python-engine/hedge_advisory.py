@@ -990,6 +990,51 @@ async def _authorize_dispatch(
     if phase is None:
         # Status messages carry no execution instruction.
         return True
+    if phase == "manual_v1":
+        # Manual market advice is deliberately independent of a partner
+        # portfolio, but it is not a bypass around final validation.  Require
+        # the exact queued card, current profile version, complete prior
+        # validation and unexpired original quote evidence while holding the
+        # dispatch claim.  No order authority is involved.
+        if not settings.PARTNER_MANUAL_ADVISORY_DELIVERY_ENABLED:
+            return False
+        advisory_id = detail.get("advisory_id")
+        profile_id = detail.get("profile_id")
+        if not isinstance(advisory_id, str) or not isinstance(profile_id, str):
+            return False
+        try:
+            async with aiosqlite.connect(db_path, timeout=30) as db:
+                card = await (await db.execute(
+                    "SELECT status,profile_version,valid_until,rendered_card,payload "
+                    "FROM partner_advisory_ideas WHERE advisory_id=?", (advisory_id,),
+                )).fetchone()
+                profile = await (await db.execute(
+                    "SELECT version FROM partner_advisory_profiles WHERE profile_id=?", (profile_id,),
+                )).fetchone()
+                claim = await (await db.execute(
+                    "SELECT claim_token FROM partner_hedge_messages WHERE kind=? AND dedup_key=? AND delivered=0",
+                    (kind, key),
+                )).fetchone()
+            if card is None or claim is None or claim[0] != token:
+                return False
+            # A first-run default profile is intentionally implicit; any
+            # configured/custom profile must be persisted and version-matched.
+            if profile is None:
+                if profile_id != "default" or int(card[1]) != 1:
+                    return False
+            elif int(card[1]) != int(profile[0]):
+                return False
+            if card[0] != "QUEUED":
+                return False
+            if card[2] != detail.get("valid_until") or card[3] != detail.get("rendered_text"):
+                return False
+            payload = json.loads(card[4])
+            if payload.get("validation_reasons"):
+                return False
+            return _parse_ist(card[2]) is not None and _parse_ist(card[2]) > now
+        except Exception:
+            logger.error("manual_advisory_dispatch_authorization_failed", exc_info=True)
+            return False
     policy_by_phase = {"phase1": "phase1-v2", "phase2": "phase2-v1", "phase3": "phase3-v1"}
     if phase not in policy_by_phase or detail.get("policy_version") != policy_by_phase[phase]:
         return False
@@ -1201,7 +1246,7 @@ async def recover_pending_hedge_deliveries(now: Optional[datetime] = None) -> in
     the next daily digest.
     """
     now = _aware(now or datetime.now(IST), "now").astimezone(IST)
-    if not settings.PARTNER_HEDGE_ENABLED or not partner_enabled():
+    if not (settings.PARTNER_HEDGE_ENABLED or settings.PARTNER_MANUAL_ADVISORY_DELIVERY_ENABLED) or not partner_enabled():
         return 0
     await init_hedge_advisory_db(settings.DB_PATH)
     await _sweep_abandoned_delivery_claims(settings.DB_PATH, now)
@@ -1309,6 +1354,10 @@ async def _recovery_retirement_reason(detail: dict, now: datetime) -> Optional[s
         # Rebuilding advanced-strategy context is the only safe recovery. The
         # old rendered text cannot establish present readiness or economics.
         return "ADVANCED_PHASE_REQUIRES_REGENERATION"
+    if phase == "manual_v1":
+        # The final manual-scope authorizer will check the exact queued card,
+        # current profile and original expiry again before any recovery POST.
+        return None if settings.PARTNER_MANUAL_ADVISORY_DELIVERY_ENABLED else "MANUAL_ADVISORY_DELIVERY_DISABLED"
     if phase != "phase1":
         # Status summaries have no tradable instruction and retain their own
         # lifecycle semantics; legacy rows are not replayed as hedge advice.
@@ -2046,7 +2095,10 @@ async def partner_hedge_daily_summary(
     period = str(period).upper()
     if period not in {"MORNING", "EOD"}:
         raise ValueError("period must be MORNING or EOD")
-    if not settings.PARTNER_HEDGE_ENABLED or not partner_enabled():
+    if (
+        not settings.PARTNER_HEDGE_ENABLED or not partner_enabled()
+        or settings.PARTNER_MANUAL_ADVISORY_DELIVERY_ENABLED
+    ):
         return
     import main as _main
     if not await _main.is_trading_day(now.date(), settings.DB_PATH):
@@ -2073,7 +2125,10 @@ async def partner_hedge_daily_summary(
 async def partner_hedge_tick(now: Optional[datetime] = None) -> None:
     """Periodic Phase-1 advisory job. Disabled and zero-cost by default."""
     now = _aware(now or datetime.now(IST), "now").astimezone(IST)
-    if not settings.PARTNER_HEDGE_ENABLED or not partner_enabled():
+    if (
+        not settings.PARTNER_HEDGE_ENABLED or not partner_enabled()
+        or settings.PARTNER_MANUAL_ADVISORY_DELIVERY_ENABLED
+    ):
         return
     minute = now.hour * 60 + now.minute
     if not (9 * 60 + 25 <= minute <= 15 * 60 + 15):

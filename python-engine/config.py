@@ -1024,7 +1024,7 @@ class Settings(BaseSettings):
     # Disabled by default: with PARTNER_BOT_ENABLED=false every
     # partner job returns immediately -- zero Kite calls, zero sends.
     # ============================================================
-    PARTNER_BOT_ENABLED:        bool  = False
+    PARTNER_BOT_ENABLED:        bool  = True
     PARTNER_TELEGRAM_BOT_TOKEN: str   = ""
     PARTNER_TELEGRAM_CHAT_ID:   str   = ""
     PARTNER_MORNING_BRIEF_HOUR: int   = 9
@@ -1057,7 +1057,10 @@ class Settings(BaseSettings):
     # Hedge-first partner advisory. This is deliberately independent from
     # PARTNER_BOT_ENABLED. It is enabled for Phase 1, while reconciled holdings
     # and fresh quote gates still fail closed before any message can be sent.
-    PARTNER_HEDGE_ENABLED:              bool  = True
+    # Personalised portfolio monitoring is not part of the manual-advisory
+    # rollout.  It stays off unless a separately reconciled holdings service
+    # is deliberately commissioned.
+    PARTNER_HEDGE_ENABLED:              bool  = False
     PARTNER_HEDGE_PROTECTIVE_PUT:       bool  = True
     # Automatic collars stay off in Phase 1: a short call is only safe when
     # the exact deliverable holding and option contract are reconciled.
@@ -1097,10 +1100,14 @@ class Settings(BaseSettings):
     PARTNER_HEDGE_SUPPRESS_LEGACY_EOD:   bool = True
 
     # Scoped manual-trader advisory for NIFTY 50 (NSE) and SENSEX (BSE).
-    # It is shadow-first: this pipeline persists complete preview cards but
-    # has no order consumer and does not itself call Telegram delivery.
-    PARTNER_MANUAL_ADVISORY_ENABLED: bool = False
-    PARTNER_MANUAL_ADVISORY_SHADOW_ENABLED: bool = False
+    # Owner-approved delivery remains advisory-only: the hardened transport
+    # ledger can send a validated card, but no partner order consumer exists.
+    # Owner-approved advisory rollout: messages remain manual decision
+    # support only; no code path here can place a partner order.
+    PARTNER_MANUAL_ADVISORY_ENABLED: bool = True
+    PARTNER_MANUAL_ADVISORY_SHADOW_ENABLED: bool = True
+    PARTNER_MANUAL_ADVISORY_DELIVERY_ENABLED: bool = True
+    PARTNER_MANUAL_ADVISORY_DAILY_CAP: int = 2
     PARTNER_MANUAL_ADVISORY_MAX_QUOTE_AGE_SEC: int = 30
     PARTNER_MANUAL_ADVISORY_MAX_SPREAD_PCT: float = 0.15
     PARTNER_MANUAL_ADVISORY_MIN_OI: int = 1

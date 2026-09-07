@@ -158,10 +158,12 @@ async def _send_event(
     if metrics is not None:
         metrics["events_considered"] = metrics.get("events_considered", 0) + 1
     if (
-        settings.PARTNER_HEDGE_ENABLED
-        and settings.PARTNER_HEDGE_SUPPRESS_ANALYTICS
-        and kind in {"pcr_shift", "iv_move", "oi_walls", "wall_flow", "pin"}
-    ):
+        settings.PARTNER_MANUAL_ADVISORY_DELIVERY_ENABLED
+        or (
+            settings.PARTNER_HEDGE_ENABLED
+            and settings.PARTNER_HEDGE_SUPPRESS_ANALYTICS
+        )
+    ) and kind in {"pcr_shift", "iv_move", "oi_walls", "wall_flow", "pin"}:
         if metrics is not None:
             metrics["suppressed"] = metrics.get("suppressed", 0) + 1
         return "suppressed"
@@ -265,7 +267,9 @@ async def partner_scan_tick(now: Optional[datetime] = None) -> None:
     now = now or datetime.now(IST)
     if not await _gates_open(now, 9 * 60 + 45, 15 * 60 + 5):
         return
-    if settings.PARTNER_HEDGE_ENABLED and settings.PARTNER_HEDGE_SUPPRESS_DIRECTIONAL:
+    if settings.PARTNER_MANUAL_ADVISORY_DELIVERY_ENABLED or (
+        settings.PARTNER_HEDGE_ENABLED and settings.PARTNER_HEDGE_SUPPRESS_DIRECTIONAL
+    ):
         return
     import main as _main
     logger.info("partner_scan_tick_invoked now_ist=%s", now.strftime("%H:%M:%S"))
@@ -401,7 +405,8 @@ async def partner_manual_advisory_tick(now: Optional[datetime] = None) -> None:
     from fno_underlyings import SPECS
     from partner_manual_advisory import (
         INDEX_EXCHANGES, StrategyEvidence, build_directional_debit_spread,
-        load_partner_profile, persist_candidate, select_preferred_market_candidates,
+        dispatch_queued_advisory, load_partner_profile, persist_candidate,
+        select_preferred_market_candidates,
     )
 
     profile = await load_partner_profile(settings.DB_PATH)
@@ -424,6 +429,7 @@ async def partner_manual_advisory_tick(now: Optional[datetime] = None) -> None:
                 scan.snap, get_instruments_for(spec.name), scan.sig.direction, now,
                 evidence=StrategyEvidence.RESEARCH_ONLY,
                 quote_ttl_seconds=settings.PARTNER_MANUAL_ADVISORY_QUOTE_TTL_SEC,
+                thesis_id=f"{spec.name}:{scan.sig.direction.value}:{scan.sig.bar_ts}",
             )
             if candidate is None:
                 metrics["rejected"] += 1
@@ -445,9 +451,20 @@ async def partner_manual_advisory_tick(now: Optional[datetime] = None) -> None:
                 "min_volume": settings.PARTNER_MANUAL_ADVISORY_MIN_VOLUME,
                 "min_depth_units": settings.PARTNER_MANUAL_ADVISORY_MIN_DEPTH_UNITS,
             },
+            queue_for_delivery=bool(settings.PARTNER_MANUAL_ADVISORY_DELIVERY_ENABLED),
         )
-        metrics["validated_shadow" if stored["status"] == "VALIDATED_SHADOW" else "rejected"] += 1
-    logger.info("partner_manual_advisory_tick_summary", **metrics, can_send=False, can_place_orders=False)
+        if stored["status"] == "QUEUED":
+            delivered = await dispatch_queued_advisory(settings.DB_PATH, stored, profile, now=now)
+            metrics["delivered" if delivered else "queued"] = metrics.get("delivered" if delivered else "queued", 0) + 1
+        elif stored["status"] == "VALIDATED_SHADOW":
+            metrics["validated_shadow"] += 1
+        else:
+            metrics["rejected"] += 1
+    logger.info(
+        "partner_manual_advisory_tick_summary", **metrics,
+        delivery_enabled=bool(settings.PARTNER_MANUAL_ADVISORY_DELIVERY_ENABLED),
+        can_place_orders=False,
+    )
 
 
 # ---------------------------------------------------------------------------
@@ -468,8 +485,8 @@ async def partner_analytics_tick(now: Optional[datetime] = None) -> None:
         "snapshot_errors": 0, "events_considered": 0, "suppressed": 0,
         "throttled": 0, "sent": 0, "send_failed": 0,
         "analytics_suppression_enabled": bool(
-            settings.PARTNER_HEDGE_ENABLED
-            and settings.PARTNER_HEDGE_SUPPRESS_ANALYTICS
+            settings.PARTNER_MANUAL_ADVISORY_DELIVERY_ENABLED
+            or (settings.PARTNER_HEDGE_ENABLED and settings.PARTNER_HEDGE_SUPPRESS_ANALYTICS)
         ),
     }
 
@@ -605,7 +622,9 @@ async def partner_analytics_tick(now: Optional[datetime] = None) -> None:
             # --- expiry-day pin note ------------------------------------
             # [PARTNER-ENRICH 2026-07-19] T3a: once per expiry afternoon.
             if (
-                not (settings.PARTNER_HEDGE_ENABLED and settings.PARTNER_HEDGE_SUPPRESS_ANALYTICS)
+                not (settings.PARTNER_MANUAL_ADVISORY_DELIVERY_ENABLED or (
+                    settings.PARTNER_HEDGE_ENABLED and settings.PARTNER_HEDGE_SUPPRESS_ANALYTICS
+                ))
                 and
                 book.is_expiry_day(now.date())
                 and (now.hour * 60 + now.minute) >= 13 * 60 + 30
@@ -682,7 +701,9 @@ async def partner_analytics_tick(now: Optional[datetime] = None) -> None:
 
     # --- momentum stock-option cues --------------------------------------
     try:
-        if settings.PARTNER_HEDGE_ENABLED and settings.PARTNER_HEDGE_SUPPRESS_DIRECTIONAL:
+        if settings.PARTNER_MANUAL_ADVISORY_DELIVERY_ENABLED or (
+            settings.PARTNER_HEDGE_ENABLED and settings.PARTNER_HEDGE_SUPPRESS_DIRECTIONAL
+        ):
             logger.info("partner_analytics_tick_summary", **metrics)
             return
         fno_names = load_underlying_names()
@@ -762,7 +783,9 @@ async def partner_morning_brief(now: Optional[datetime] = None) -> None:
     now = now or datetime.now(IST)
     if not await _gates_open(now, 0, 24 * 60):
         return
-    if settings.PARTNER_HEDGE_ENABLED and settings.PARTNER_HEDGE_SUPPRESS_LEGACY_BRIEF:
+    if settings.PARTNER_MANUAL_ADVISORY_DELIVERY_ENABLED or (
+        settings.PARTNER_HEDGE_ENABLED and settings.PARTNER_HEDGE_SUPPRESS_LEGACY_BRIEF
+    ):
         return
     import main as _main
     day_iso = now.date().isoformat()
@@ -1058,10 +1081,9 @@ async def partner_eod_wrap(now: Optional[datetime] = None) -> None:
             row["error"] = "internal error"
         rows.append(row)
 
-    if not (
-        settings.PARTNER_HEDGE_ENABLED
-        and settings.PARTNER_HEDGE_SUPPRESS_LEGACY_EOD
-    ):
+    if not (settings.PARTNER_MANUAL_ADVISORY_DELIVERY_ENABLED or (
+        settings.PARTNER_HEDGE_ENABLED and settings.PARTNER_HEDGE_SUPPRESS_LEGACY_EOD
+    )):
         msg = format_eod(
             day_iso, rows,
             record_line=await _track_record_overall(settings.DB_PATH, now),
