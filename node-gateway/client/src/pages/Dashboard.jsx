@@ -115,6 +115,7 @@ function ActivityFunnel({ activity, isLoading, isError }) {
   if (isError || !activity) return <div className="rounded border border-amber-800 bg-amber-950/30 p-4 text-sm text-amber-200">Proactive activity is unavailable; unknown data is not treated as healthy inactivity.</div>;
   const shadowPositions = Array.isArray(activity.shadow_positions) ? activity.shadow_positions : [];
   const marketData = Array.isArray(activity.market_data?.latest) ? activity.market_data.latest : [];
+  const brokerStatement = activity.broker_statement;
   return (
     <section className="rounded-xl border border-cyan-900/70 bg-cyan-950/10 p-4">
       <h2 className="text-xl font-bold text-white">Why we traded — or did not</h2>
@@ -128,6 +129,11 @@ function ActivityFunnel({ activity, isLoading, isError }) {
             <div className="mt-2 text-[11px] text-gray-500">{Object.entries(row.stages || {}).map(([stage, count]) => `${stage}: ${count}`).join(' · ') || 'No evidence recorded'}</div>
           </div>
         ))}
+      </div>
+      <div className="mt-4 border-t border-cyan-900/60 pt-3">
+        <h3 className="text-sm font-semibold text-cyan-100">Broker statement reconciliation</h3>
+        <p className="mt-1 text-[11px] text-gray-500">Imported statement evidence only. A broker acknowledgement or this card never authorises an order.</p>
+        {brokerStatement ? <div className={`mt-2 rounded border p-3 text-xs ${brokerStatement.status === 'MATCH' ? 'border-emerald-900/70 bg-emerald-950/10' : 'border-amber-800 bg-amber-950/20'}`}><div className="flex justify-between gap-3"><b>{brokerStatement.status}</b><span>{brokerStatement.statement_id || brokerStatement.reason}</span></div>{brokerStatement.status !== 'UNAVAILABLE' && <div className="mt-2 grid grid-cols-2 gap-2 text-gray-300 sm:grid-cols-4"><span>Net after costs: <b className={pnlColour(brokerStatement.net_trading_result)}>{formatMoney(brokerStatement.net_trading_result, 'live', { signed: true })}</b></span><span>Charges: <b>{formatMoney(brokerStatement.charges, 'live')}</b></span><span>Expenses: <b>{formatMoney(brokerStatement.operating_expenses, 'live')}</b></span><span>Residual: <b>{formatMoney(brokerStatement.residual, 'live', { signed: true })}</b></span></div>}</div> : <div className="mt-2 text-xs text-gray-500">Broker statement reconciliation is unavailable.</div>}
       </div>
       <div className="mt-4 border-t border-cyan-900/60 pt-3">
         <h3 className="text-sm font-semibold text-cyan-100">Completed-bar market-data evidence</h3>

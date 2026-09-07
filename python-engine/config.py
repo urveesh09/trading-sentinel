@@ -56,6 +56,9 @@ class Settings(BaseSettings):
     PROACTIVE_SHADOW_ACCOUNT_ID: str = "dev-shadow"
     PROACTIVE_SHADOW_RUN_ID: str = "dev-shadow-v1"
     PROACTIVE_SHADOW_SCENARIO_CAPITAL: float = 8000.0
+    # Optional account label for imported broker-statement evidence. Empty is
+    # deliberately unavailable; it does not trigger a broker connection.
+    BROKER_RECONCILIATION_ACCOUNT_ID: str = ""
     # Separate proof of broker ORDER permission from token/quote readiness.
     # Empty means a state file beside DB_PATH.  BLOCKED persists across restart.
     ORDER_EXECUTION_STATE_PATH: str = ""

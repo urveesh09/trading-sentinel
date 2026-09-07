@@ -257,7 +257,14 @@ async def get_outcomes(days: int = 14):
 async def get_proactive_activity(days: int = 7):
     """Mode-separated proactive evidence; never a trading control surface."""
     from proactive_intelligence import proactive_activity_report
-    return await proactive_activity_report(settings.DB_PATH, days=days)
+    report = await proactive_activity_report(settings.DB_PATH, days=days)
+    from broker_reconciliation import broker_statement_report
+    account_id = str(settings.BROKER_RECONCILIATION_ACCOUNT_ID).strip()
+    report["broker_statement"] = (
+        await broker_statement_report(settings.DB_PATH, account_id=account_id)
+        if account_id else {"status": "UNAVAILABLE", "reason": "ACCOUNT_NOT_CONFIGURED", "can_place_orders": False}
+    )
+    return report
 
 
 @router.get("/analytics/proactive-comparison")

@@ -840,3 +840,22 @@ window before any production trading claim.
   unit tests and a production dashboard build also passed. This is provider
   contract/offline evidence, not a live data canary, broker reconciliation or
   profitability claim.
+
+### Broker-statement accounting evidence (2026-09-07)
+
+- Added `python-engine/broker_reconciliation.py`. Its atomic, idempotent
+  statement importer separates deposits, withdrawals, realised trading result,
+  broker charges and operating expenses. It retains partial, filled, cancelled
+  and rejected fill counts without treating acknowledgement as a fill.
+- The resulting cash equation is explicit: opening cash + deposits -
+  withdrawals + realised trading result - charges - operating expenses equals
+  expected closing cash. A difference greater than one paisa is `UNRESOLVED`,
+  not silently rounded into profit. Reusing a statement ID with altered
+  contents fails rather than overwriting evidence.
+- `BROKER_RECONCILIATION_ACCOUNT_ID` is optional and empty by default. When an
+  account's statement has been imported by an authorised adapter, the existing
+  authenticated proactive-activity response and Dashboard display the
+  read-only reconciliation result. The report explicitly has no order
+  authority. This supplies Dev fixture/accounting evidence only; a real broker
+  statement adapter and a mapping to local order/fill IDs remain required for
+  operational reconciliation.
