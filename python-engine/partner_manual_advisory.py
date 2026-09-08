@@ -914,6 +914,24 @@ async def persist_candidate(
         # leg arithmetic became invalid.
         delivery_reasons.append("strategy_not_qualified_for_delivery")
     payload["delivery_reasons"] = sorted(set(delivery_reasons))
+    # [DATA-PLAN D3 2026-09-08] Preserve both accepted and rejected
+    # candidate snapshots before their operational-card lifecycle can
+    # supersede them.  Archive failure never upgrades evidence or changes
+    # delivery; it is logged for the readiness view/operator.
+    if settings.RESEARCH_ARCHIVE_ENABLED:
+        try:
+            from research_archive import archive_candidate_evidence
+            payload["research_evidence"] = archive_candidate_evidence(
+                settings.RESEARCH_ARCHIVE_PATH, advisory_id=advisory_id,
+                candidate_payload=payload, validation_reasons=payload["delivery_reasons"],
+                recorded_at=now,
+            )
+        except Exception as exc:
+            payload["research_evidence"] = {"archive_error": "candidate_evidence_unavailable"}
+            # No broad exception escapes into advisory decisions.  The data
+            # archive must not make an otherwise safe card more actionable.
+            import structlog
+            structlog.get_logger().error("research_candidate_archive_failed err=%s", str(exc))
     card = render_advisory_card(candidate, advisory_id) if validation.valid else ""
     status = "QUEUED" if validation.valid and queue_for_delivery and qualified else (
         "VALIDATED_SHADOW" if validation.valid else "REJECTED"

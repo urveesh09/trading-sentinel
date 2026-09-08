@@ -1192,7 +1192,7 @@ async def partner_eod_wrap(now: Optional[datetime] = None) -> None:
     # the rolling track record (T1c) needs weeks, OI forensics needs days,
     # and a few signal rows/day is negligible disk.
     try:
-        await fno_oi_store.purge_older_than(
+        await fno_oi_store.archive_then_purge_older_than(
             settings.DB_PATH, settings.FNO_OI_RETENTION_DAYS,
         )
         cutoff = (

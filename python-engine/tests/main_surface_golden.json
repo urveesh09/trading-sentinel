@@ -157,6 +157,12 @@
       "trigger": "cron[minute='*/5', second='55']"
     },
     {
+      "func": "_run_research_quote_collection_safe",
+      "id": "research_quote_collection",
+      "kwargs": [],
+      "trigger": "cron[minute='*/1', second='25']"
+    },
+    {
       "func": "bootstrap_0800_job",
       "id": "daily_bootstrap_0800",
       "kwargs": [],
@@ -512,6 +518,14 @@
         "POST"
       ],
       "path": "/partner/advisory/research-artifacts",
+      "response_model": null
+    },
+    {
+      "endpoint": "get_partner_advisory_research_readiness",
+      "methods": [
+        "GET"
+      ],
+      "path": "/partner/advisory/research-readiness",
       "response_model": null
     },
     {

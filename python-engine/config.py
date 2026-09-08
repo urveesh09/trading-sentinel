@@ -1015,6 +1015,28 @@ class Settings(BaseSettings):
     FNO_ANALYTICS_INTERVAL_SEC: int  = 300
     FNO_OI_RETENTION_DAYS:      int  = 7          # disk at 86% -- purge is load-bearing
 
+    # --- research evidence archive (data plan D1-D7, 2026-09-08) ----------
+    # This is deliberately outside the operational SQLite database.  It is
+    # evidence collection only: it never places orders, sends partner advice,
+    # or changes a strategy qualification.  The default path is on the
+    # existing persistent /data volume, so it survives a container restart.
+    RESEARCH_ARCHIVE_ENABLED: bool = True
+    RESEARCH_ARCHIVE_PATH: str = "/data/research"
+    RESEARCH_ARCHIVE_UNDERLYINGS: str = "NIFTY,SENSEX"
+    # A failed archive must be conspicuous before the short-retention cache is
+    # purged.  It does not silently delete unpreserved research input.
+    RESEARCH_ARCHIVE_REQUIRED_BEFORE_FNO_PURGE: bool = True
+    # REST full quotes are an explicitly lower-frequency fallback.  A future
+    # supported WebSocket producer can call the same append API with mode
+    # KITE_WS_FULL; neither source is an order or delivery consumer.
+    RESEARCH_QUOTE_COLLECTION_ENABLED: bool = True
+    RESEARCH_QUOTE_INTERVAL_SEC: int = 60
+    RESEARCH_QUOTE_STRIKE_WINDOW: int = 5
+    RESEARCH_QUOTE_MAX_QUEUE: int = 2_000
+    RESEARCH_RAW_RETENTION_DAYS: int = 7
+    RESEARCH_COMPRESSED_RETENTION_DAYS: int = 90
+    RESEARCH_RESERVED_FREE_BYTES: int = 1_073_741_824  # 1 GiB operational floor
+
     # ============================================================
     # PARTNER TIPS BOT ([PARTNER-TIPS 2026-07-18])
     # Outbound-only second Telegram bot (own token + chat) sending

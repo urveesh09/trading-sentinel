@@ -906,6 +906,16 @@ def register_partner_scheduler_jobs(scheduler):
         except Exception as exc:
             logger.error("partner_analytics_tick_crashed err=%s", exc, exc_info=True)
 
+    async def _run_research_quote_collection_safe():
+        # Independent market-data observation.  It has no partner delivery,
+        # profile, qualification, or order dependency; its own entry point
+        # handles calendar/session/token availability and records gaps.
+        try:
+            from research_quote_collector import research_quote_collection_tick
+            await research_quote_collection_tick()
+        except Exception as exc:
+            logger.error("research_quote_collection_crashed err=%s", exc, exc_info=True)
+
     async def _run_partner_morning_brief_safe():
         # [CALENDAR-GATE 2026-07-03] gate delegated: partner_orchestrator.
         # _gates_open checks PARTNER_BOT_ENABLED, the session window,
@@ -1027,6 +1037,12 @@ def register_partner_scheduler_jobs(scheduler):
         max_instances=1, coalesce=True, misfire_grace_time=120,
     )
     scheduler.add_job(
+        _run_research_quote_collection_safe, "cron",
+        minute="*/1", second=25,
+        id="research_quote_collection",
+        max_instances=1, coalesce=True, misfire_grace_time=55,
+    )
+    scheduler.add_job(
         _run_partner_morning_brief_safe, "cron",
         hour=settings.PARTNER_MORNING_BRIEF_HOUR,
         minute=settings.PARTNER_MORNING_BRIEF_MIN,
@@ -1095,7 +1111,7 @@ def register_partner_scheduler_jobs(scheduler):
         max_instances=1, coalesce=True, misfire_grace_time=60,
     )
     logger.info(
-        "partner_cron_registered jobs=14 enabled=%s hedge_enabled=%s "
+        "partner_cron_registered jobs=15 enabled=%s hedge_enabled=%s "
         "hedge_phase2_enabled=%s hedge_phase3_enabled=%s shadow_enabled=%s off_grid=true",
         settings.PARTNER_BOT_ENABLED,
         settings.PARTNER_HEDGE_ENABLED,

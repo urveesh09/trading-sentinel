@@ -177,6 +177,22 @@ async def refresh_all(kite) -> Dict[str, bool]:
             for s in seg_specs:
                 results[s.name] = False
             continue
+        # [DATA-PLAN D2 2026-09-08] Preserve the exact dated provider master
+        # before loading its filtered in-memory view.  This is best-effort and
+        # never blocks the operational book refresh; a failed archive is
+        # surfaced by the research readiness view instead of being hidden.
+        if settings.RESEARCH_ARCHIVE_ENABLED:
+            try:
+                from research_archive import archive_contract_master
+                archive_contract_master(
+                    settings.RESEARCH_ARCHIVE_PATH, provider="KITE",
+                    segment=segment, raw_csv=raw,
+                )
+            except Exception as exc:
+                logger.error(
+                    "research_contract_master_archive_failed segment=%s err=%s",
+                    segment, str(exc),
+                )
         if segment == "NFO":
             _persist_underlying_names(raw)
         for s in seg_specs:

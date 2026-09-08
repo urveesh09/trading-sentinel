@@ -27,6 +27,7 @@ from partner_manual_advisory import (
     StrategyEvidence, load_partner_profile, record_manual_feedback,
     record_research_artifact, record_strategy_qualification, save_partner_profile,
 )
+from research_archive import readiness_view
 
 router = APIRouter()
 
@@ -384,6 +385,21 @@ async def get_partner_advisory_cards(request: Request, limit: int = 20):
 async def get_partner_advisory_diagnostics(request: Request):
     _main._check_internal_secret(request, "get_partner_advisory_diagnostics")
     return await load_advisory_diagnostics(settings.DB_PATH)
+
+
+@router.get("/partner/advisory/research-readiness")
+async def get_partner_advisory_research_readiness(request: Request):
+    """Show source/archive readiness; it cannot qualify or enable advice."""
+    _main._check_internal_secret(request, "get_partner_advisory_research_readiness")
+    return {
+        **readiness_view(
+            settings.RESEARCH_ARCHIVE_PATH,
+            [name.strip() for name in settings.RESEARCH_ARCHIVE_UNDERLYINGS.split(",")],
+        ),
+        "collection_enabled": bool(settings.RESEARCH_QUOTE_COLLECTION_ENABLED),
+        "qualification_changed": False,
+        "delivery_authority": False,
+    }
 
 
 @router.post("/partner/advisory/telegram-diagnostic")

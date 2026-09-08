@@ -155,6 +155,11 @@
     "trigger": "'cron'"
   },
   {
+    "func": "_run_research_quote_collection_safe",
+    "id": "'research_quote_collection'",
+    "trigger": "'cron'"
+  },
+  {
     "func": "_scheduler_tick_job",
     "id": "'scheduler_tick'",
     "trigger": "'interval'"

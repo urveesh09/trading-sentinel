@@ -20,6 +20,7 @@ from typing import Dict, Optional, Tuple
 import aiosqlite
 import structlog
 
+from config import settings
 from fno_chain import ChainSnapshot
 
 logger = structlog.get_logger()
@@ -207,3 +208,36 @@ async def purge_older_than(db_path: str, days: int, now: Optional[datetime] = No
     if removed:
         logger.info("fno_oi_purged rows=%d cutoff=%s", removed, cutoff)
     return removed
+
+
+async def archive_then_purge_older_than(
+    db_path: str, days: int, now: Optional[datetime] = None,
+) -> int:
+    """Preserve the short-retention OI cache before deletion when configured.
+
+    The archive export opens a separate read-only SQLite snapshot and writes
+    only to ``RESEARCH_ARCHIVE_PATH``.  If it cannot prove an immutable export
+    was written, deletion is skipped rather than silently erasing the only
+    available NIFTY/SENSEX research evidence.  A cache with no rows eligible
+    for deletion still purges normally (a no-op) even if no archive exists.
+    """
+    now = now or datetime.now()
+    cutoff = (now - timedelta(days=days)).strftime("%Y-%m-%d 00:00:00")
+    async with aiosqlite.connect(db_path) as db:
+        cur = await db.execute("SELECT COUNT(*) FROM fno_chain_oi WHERE snap_ts<?", (cutoff,))
+        eligible = int((await cur.fetchone())[0])
+    if not eligible or not settings.RESEARCH_ARCHIVE_REQUIRED_BEFORE_FNO_PURGE:
+        return await purge_older_than(db_path, days, now)
+    try:
+        from research_archive import export_operational_fno_evidence
+        export_operational_fno_evidence(
+            db_path, settings.RESEARCH_ARCHIVE_PATH,
+            [name.strip() for name in settings.RESEARCH_ARCHIVE_UNDERLYINGS.split(",")],
+        )
+    except Exception as exc:
+        logger.error(
+            "fno_oi_purge_blocked_archive_failed cutoff=%s eligible=%d err=%s",
+            cutoff, eligible, str(exc),
+        )
+        return 0
+    return await purge_older_than(db_path, days, now)
