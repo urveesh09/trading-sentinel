@@ -25,7 +25,7 @@ from hedge_readiness import assess_hedge_readiness, record_gate_evidence
 from partner_manual_advisory import (
     ManualDecision, PartnerAdvisoryProfile, load_advisory_cards, load_advisory_diagnostics,
     StrategyEvidence, load_partner_profile, record_manual_feedback,
-    record_strategy_qualification, save_partner_profile,
+    record_research_artifact, record_strategy_qualification, save_partner_profile,
 )
 
 router = APIRouter()
@@ -159,6 +159,13 @@ class PartnerAdvisoryQualificationPayload(BaseModel):
     dataset_ref: str = Field(min_length=3, max_length=300)
     reviewed_at: datetime
     status: str = Field(default="QUALIFIED_FOR_ADVISORY", max_length=40)
+
+
+class PartnerAdvisoryResearchArtifactPayload(BaseModel):
+    dataset_ref: str = Field(min_length=3, max_length=300)
+    content_sha256: str = Field(min_length=64, max_length=64)
+    created_at: datetime
+    description: str = Field(min_length=10, max_length=1000)
 
 
 def _position_json(position: PartnerPosition) -> dict:
@@ -327,6 +334,18 @@ async def put_partner_advisory_qualification(
     except ValueError as exc:
         raise HTTPException(status_code=422, detail=str(exc)) from exc
     return {"recorded": True, "automatic_execution": False, "delivery_authority": False}
+
+
+@router.post("/partner/advisory/research-artifacts")
+async def post_partner_advisory_research_artifact(request: Request, payload: PartnerAdvisoryResearchArtifactPayload):
+    _main._check_internal_secret(request, "post_partner_advisory_research_artifact")
+    try:
+        await record_research_artifact(settings.DB_PATH, dataset_ref=payload.dataset_ref,
+                                       content_sha256=payload.content_sha256, created_at=payload.created_at,
+                                       description=payload.description)
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+    return {"recorded": True, "automatic_execution": False}
 
 
 @router.get("/partner/advisory/effective-settings")

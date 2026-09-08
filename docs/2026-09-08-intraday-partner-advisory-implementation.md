@@ -36,3 +36,24 @@ No partner orders, fills, positions or realised P&L are accessed. Conditional
 protection remains opt-in and cannot infer holdings. No automatic same-day
 exit exists: reminders say “If you took idea X…”, and manual action remains
 the partner's responsibility.
+
+## Merge-readiness corrections
+
+The follow-up merge-readiness review is addressed as follows:
+
+- Invalidation checks precede the 15:10 reminder, and each event retains a
+  distinct immutable deduplication identity. A previously delivered reminder
+  therefore cannot hide a later invalidation.
+- `run_intraday_session_lifecycle` is a minute-level scheduler task, separate
+  from option-chain scanning. It can create a truthful clock-only reminder
+  without a price claim and retires elapsed ideas after a missed close or
+  restart, including on the next calendar day.
+- Delivery rereads its injected clock after claim/service-state waits and
+  again before transport intent. Entry quote/deadline and update-management
+  deadline checks consequently use the live boundary time.
+- Qualification now requires an operator-registered research artifact with a
+  SHA-256 fingerprint; a free-form nonempty dataset label is insufficient.
+
+The artifact registry preserves the implementation boundary, not a claim of
+market edge. An operator must register a real reviewed intraday artifact for
+each index/structure/policy before any matching qualification can be saved.

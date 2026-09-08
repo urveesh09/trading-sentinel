@@ -11,9 +11,9 @@ from partner_manual_advisory import (
     AdvisoryScope, ManualDecision, PartnerAdvisoryProfile, StrategyEvidence,
     build_conditional_index_protective_put, build_directional_debit_spread, load_advisory_cards, persist_candidate,
     record_manual_feedback, save_partner_profile, validate_candidate,
-    select_preferred_market_candidates, dispatch_queued_advisory, record_strategy_qualification,
+    select_preferred_market_candidates, dispatch_queued_advisory, record_research_artifact, record_strategy_qualification,
     advisory_identity, dispatch_queued_management_update, queue_management_updates,
-    load_advisory_diagnostics,
+    load_advisory_diagnostics, run_intraday_session_lifecycle,
 )
 
 IST = pytz.timezone("Asia/Kolkata")
@@ -196,6 +196,7 @@ async def test_queued_manual_card_uses_hardened_delivery_boundary(db_path, monke
     await save_partner_profile(db_path, profile, now=NOW)
     candidate = _candidate()
     candidate = candidate.__class__(**{**candidate.__dict__, "evidence": StrategyEvidence.QUALIFIED_FOR_ADVISORY})
+    await record_research_artifact(db_path, dataset_ref="frozen-test", content_sha256="a" * 64, created_at=NOW, description="frozen intraday fixture")
     await record_strategy_qualification(
         db_path, underlying="NIFTY", structure_kind=candidate.structure_kind,
         horizon="INTRADAY", policy_version=candidate.policy_version,
@@ -226,6 +227,7 @@ async def test_research_card_cannot_queue_and_expired_card_never_reaches_transpo
     profile = PartnerAdvisoryProfile(version=1, holding_period="INTRADAY")
     await save_partner_profile(db_path, profile, now=NOW)
     candidate = _candidate()
+    await record_research_artifact(db_path, dataset_ref="frozen-test", content_sha256="a" * 64, created_at=NOW, description="frozen intraday fixture")
     await record_strategy_qualification(
         db_path, underlying="NIFTY", structure_kind=candidate.structure_kind,
         horizon="INTRADAY", policy_version=candidate.policy_version,
@@ -341,6 +343,39 @@ async def test_session_exit_reminder_and_next_day_retirement(db_path):
     assert "do not carry overnight" in updates[0]["rendered_update"]
     next_day = reminder_time + timedelta(days=1)
     assert not await queue_management_updates(db_path, underlying="NIFTY", observed_underlying=25000, observed_at=next_day)
+
+
+@pytest.mark.asyncio
+async def test_invalidation_has_priority_over_exit_reminder_and_survives_prior_reminder(db_path):
+    import aiosqlite
+    profile = PartnerAdvisoryProfile(version=1, holding_period="INTRADAY")
+    await save_partner_profile(db_path, profile, now=NOW)
+    stored = await persist_candidate(db_path, _candidate(), profile, now=NOW)
+    async with aiosqlite.connect(db_path) as db:
+        await db.execute("UPDATE partner_advisory_ideas SET status='DELIVERED_ACKNOWLEDGED' WHERE advisory_id=?", (stored["advisory_id"],))
+        await db.commit()
+    at_1510 = IST.localize(datetime(2026, 9, 7, 15, 10))
+    reminder = await queue_management_updates(db_path, underlying="NIFTY", observed_underlying=25000, observed_at=at_1510)
+    assert reminder[0]["event_type"] == "SESSION_EXIT_REMINDER"
+    invalidation = await queue_management_updates(db_path, underlying="NIFTY", observed_underlying=24900, observed_at=at_1510 + timedelta(minutes=1))
+    assert invalidation[0]["event_type"] == "INVALIDATION"
+
+
+@pytest.mark.asyncio
+async def test_lifecycle_sweep_reminds_without_chain_and_retires_after_missed_boundary(db_path):
+    import aiosqlite
+    profile = PartnerAdvisoryProfile(version=1, holding_period="INTRADAY")
+    await save_partner_profile(db_path, profile, now=NOW)
+    stored = await persist_candidate(db_path, _candidate(), profile, now=NOW)
+    async with aiosqlite.connect(db_path) as db:
+        await db.execute("UPDATE partner_advisory_ideas SET status='DELIVERED_ACKNOWLEDGED' WHERE advisory_id=?", (stored["advisory_id"],))
+        await db.commit()
+    updates = await run_intraday_session_lifecycle(db_path, now=IST.localize(datetime(2026, 9, 7, 15, 10)))
+    assert updates and updates[0]["event_type"] == "SESSION_EXIT_REMINDER"
+    assert not await run_intraday_session_lifecycle(db_path, now=IST.localize(datetime(2026, 9, 8, 9, 45)))
+    async with aiosqlite.connect(db_path) as db:
+        status = (await (await db.execute("SELECT status FROM partner_advisory_ideas WHERE advisory_id=?", (stored["advisory_id"],))).fetchone())[0]
+    assert status == "RETIRED_SESSION_END"
 
 
 @pytest.mark.asyncio

@@ -79,6 +79,18 @@
       "trigger": "cron[minute='*/2', second='5']"
     },
     {
+      "func": "_run_partner_manual_advisory_lifecycle_tick_safe",
+      "id": "partner_manual_advisory_lifecycle_tick",
+      "kwargs": [],
+      "trigger": "cron[minute='*/1', second='5']"
+    },
+    {
+      "func": "_run_partner_manual_advisory_tick_safe",
+      "id": "partner_manual_advisory_tick",
+      "kwargs": [],
+      "trigger": "cron[minute='*/2', second='50']"
+    },
+    {
       "func": "_run_partner_morning_brief_safe",
       "id": "partner_morning_brief",
       "kwargs": [],
@@ -436,6 +448,70 @@
         "POST"
       ],
       "path": "/ops/optional-ai-status",
+      "response_model": null
+    },
+    {
+      "endpoint": "get_partner_advisory_cards",
+      "methods": [
+        "GET"
+      ],
+      "path": "/partner/advisory/cards",
+      "response_model": null
+    },
+    {
+      "endpoint": "post_partner_advisory_feedback",
+      "methods": [
+        "POST"
+      ],
+      "path": "/partner/advisory/cards/{advisory_id}/feedback",
+      "response_model": null
+    },
+    {
+      "endpoint": "get_partner_advisory_diagnostics",
+      "methods": [
+        "GET"
+      ],
+      "path": "/partner/advisory/diagnostics",
+      "response_model": null
+    },
+    {
+      "endpoint": "get_partner_advisory_effective_settings",
+      "methods": [
+        "GET"
+      ],
+      "path": "/partner/advisory/effective-settings",
+      "response_model": null
+    },
+    {
+      "endpoint": "get_partner_advisory_profile",
+      "methods": [
+        "GET"
+      ],
+      "path": "/partner/advisory/profile",
+      "response_model": null
+    },
+    {
+      "endpoint": "put_partner_advisory_profile",
+      "methods": [
+        "PUT"
+      ],
+      "path": "/partner/advisory/profile",
+      "response_model": null
+    },
+    {
+      "endpoint": "put_partner_advisory_qualification",
+      "methods": [
+        "POST"
+      ],
+      "path": "/partner/advisory/qualifications",
+      "response_model": null
+    },
+    {
+      "endpoint": "post_partner_advisory_research_artifact",
+      "methods": [
+        "POST"
+      ],
+      "path": "/partner/advisory/research-artifacts",
       "response_model": null
     },
     {

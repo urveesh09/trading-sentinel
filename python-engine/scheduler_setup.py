@@ -889,6 +889,13 @@ def register_partner_scheduler_jobs(scheduler):
         except Exception as exc:
             logger.error("partner_manual_advisory_tick_crashed err=%s", exc, exc_info=True)
 
+    async def _run_partner_manual_advisory_lifecycle_tick_safe():
+        try:
+            from partner_orchestrator import partner_manual_advisory_lifecycle_tick
+            await partner_manual_advisory_lifecycle_tick()
+        except Exception as exc:
+            logger.error("partner_manual_advisory_lifecycle_tick_crashed err=%s", exc, exc_info=True)
+
     async def _run_partner_analytics_tick_safe():
         # [CALENDAR-GATE 2026-07-03] gate delegated: partner_orchestrator.
         # _gates_open checks PARTNER_BOT_ENABLED, the session window,
@@ -1006,6 +1013,12 @@ def register_partner_scheduler_jobs(scheduler):
         minute="*/2", second=50,
         id="partner_manual_advisory_tick",
         max_instances=1, coalesce=True, misfire_grace_time=60,
+    )
+    scheduler.add_job(
+        _run_partner_manual_advisory_lifecycle_tick_safe, "cron",
+        minute="*/1", second=5,
+        id="partner_manual_advisory_lifecycle_tick",
+        max_instances=1, coalesce=True, misfire_grace_time=120,
     )
     scheduler.add_job(
         _run_partner_analytics_tick_safe, "cron",

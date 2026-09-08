@@ -549,6 +549,19 @@ async def partner_manual_advisory_tick(now: Optional[datetime] = None) -> None:
     )
 
 
+async def partner_manual_advisory_lifecycle_tick(now: Optional[datetime] = None) -> None:
+    """Clock-driven intraday reminder/retirement independent of entry scans."""
+    if not (settings.PARTNER_MANUAL_ADVISORY_ENABLED or settings.PARTNER_MANUAL_ADVISORY_SHADOW_ENABLED):
+        return
+    now = now or datetime.now(IST)
+    # Retirement is safe local bookkeeping even off-session. Transporting a
+    # reminder remains independently authorised by its durable update path.
+    from partner_manual_advisory import dispatch_queued_management_update, run_intraday_session_lifecycle
+    updates = await run_intraday_session_lifecycle(settings.DB_PATH, now=now)
+    for update in updates:
+        await dispatch_queued_management_update(settings.DB_PATH, update, now=now)
+
+
 # ---------------------------------------------------------------------------
 # job: analytics tick (wide chain -> OI store -> events)
 # ---------------------------------------------------------------------------

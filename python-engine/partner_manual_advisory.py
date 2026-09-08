@@ -200,6 +200,12 @@ CREATE TABLE IF NOT EXISTS partner_advisory_strategy_qualifications (
   status TEXT NOT NULL,
   PRIMARY KEY(underlying, structure_kind, horizon, policy_version)
 );
+CREATE TABLE IF NOT EXISTS partner_advisory_research_artifacts (
+  dataset_ref TEXT PRIMARY KEY,
+  content_sha256 TEXT NOT NULL,
+  created_at TEXT NOT NULL,
+  description TEXT NOT NULL
+);
 CREATE TABLE IF NOT EXISTS partner_advisory_updates (
   update_id TEXT PRIMARY KEY,
   advisory_id TEXT NOT NULL,
@@ -412,10 +418,34 @@ async def record_strategy_qualification(
         raise ValueError("qualification status must be QUALIFIED_FOR_ADVISORY or SUSPENDED")
     await init_partner_advisory_db(db_path)
     async with aiosqlite.connect(db_path) as db:
+        artifact = await (await db.execute(
+            "SELECT 1 FROM partner_advisory_research_artifacts WHERE dataset_ref=?", (dataset_ref,)
+        )).fetchone()
+        if artifact is None:
+            raise ValueError("qualification dataset_ref is not a registered immutable research artifact")
         await db.execute(
             "INSERT OR REPLACE INTO partner_advisory_strategy_qualifications "
             "(underlying,structure_kind,horizon,policy_version,dataset_ref,reviewed_at,status) VALUES(?,?,?,?,?,?,?)",
             (underlying, structure_kind, horizon, policy_version, dataset_ref, _iso(reviewed_at), status.value),
+        )
+        await db.commit()
+
+
+async def record_research_artifact(
+    db_path: str, *, dataset_ref: str, content_sha256: str, created_at: datetime, description: str,
+) -> None:
+    """Register an immutable, operator-reviewed research artifact reference."""
+    if created_at.tzinfo is None or created_at.astimezone(IST) > datetime.now(IST):
+        raise ValueError("artifact created_at must be non-future and timezone-aware")
+    if not dataset_ref.strip() or len(content_sha256) != 64 or any(ch not in "0123456789abcdef" for ch in content_sha256.lower()):
+        raise ValueError("artifact requires dataset_ref and sha256 content fingerprint")
+    if not description.strip():
+        raise ValueError("artifact description is required")
+    await init_partner_advisory_db(db_path)
+    async with aiosqlite.connect(db_path) as db:
+        await db.execute(
+            "INSERT INTO partner_advisory_research_artifacts(dataset_ref,content_sha256,created_at,description) VALUES(?,?,?,?)",
+            (dataset_ref, content_sha256.lower(), _iso(created_at), description.strip()),
         )
         await db.commit()
 
@@ -979,6 +1009,7 @@ async def dispatch_queued_advisory(
         },
         now=final_now, min_gap=timedelta(minutes=1),
         daily_cap=settings.PARTNER_MANUAL_ADVISORY_DAILY_CAP,
+        clock=clock or (lambda: datetime.now(IST)),
     )
     if sent:
         async with aiosqlite.connect(db_path) as db:
@@ -1034,9 +1065,11 @@ async def queue_management_updates(
         event_type = None
         level = None
         _entry_deadline, exit_reminder, _management_deadline = intraday_deadlines(observed_at)
-        if observed_at.astimezone(IST) >= exit_reminder:
-            event_type, level = "SESSION_EXIT_REMINDER", 0.0
-        elif direction == FnoDirection.LONG.value and _finite_positive(invalidation) and observed_underlying <= float(invalidation):
+        # A crossed invalidation is material risk information and takes
+        # precedence over the routine same-day reminder. Both events retain
+        # independent immutable dedup keys, so a prior reminder cannot hide a
+        # later invalidation.
+        if direction == FnoDirection.LONG.value and _finite_positive(invalidation) and observed_underlying <= float(invalidation):
             event_type, level = "INVALIDATION", float(invalidation)
         elif direction == FnoDirection.SHORT.value and _finite_positive(invalidation) and observed_underlying >= float(invalidation):
             event_type, level = "INVALIDATION", float(invalidation)
@@ -1044,6 +1077,8 @@ async def queue_management_updates(
             event_type, level = "TARGET_ZONE", float(target)
         elif direction == FnoDirection.SHORT.value and _finite_positive(target) and observed_underlying <= float(target):
             event_type, level = "TARGET_ZONE", float(target)
+        elif observed_at.astimezone(IST) >= exit_reminder:
+            event_type, level = "SESSION_EXIT_REMINDER", 0.0
         if event_type is None or not isinstance(profile_id, str):
             continue
         update_id = hashlib.sha256(f"{advisory_id}:{event_type}".encode()).hexdigest()[:24]
@@ -1070,6 +1105,63 @@ async def queue_management_updates(
     return queued
 
 
+async def run_intraday_session_lifecycle(db_path: str, *, now: datetime) -> list[dict]:
+    """Run clock-based reminders/retirement without quotes or a new signal.
+
+    This deliberately has no broker or option-chain dependency. It makes the
+    15:10 reminder and post-close retirement restart-safe even if an entry
+    scan fails or the two-minute scan cadence misses 15:15 exactly.
+    """
+    if now.tzinfo is None:
+        raise ValueError("now must be timezone-aware")
+    await init_partner_advisory_db(db_path)
+    async with aiosqlite.connect(db_path) as db:
+        rows = await (await db.execute(
+            "SELECT advisory_id,payload FROM partner_advisory_ideas WHERE status='DELIVERED_ACKNOWLEDGED'"
+        )).fetchall()
+    queued: list[dict] = []
+    for advisory_id, raw_payload in rows:
+        try:
+            payload = json.loads(raw_payload)
+            deadline = datetime.fromisoformat(str(payload["management_deadline"])).astimezone(IST)
+            session_date = str(payload["session_date"])
+            profile_id = str(payload["profile_id"])
+        except (KeyError, TypeError, ValueError, json.JSONDecodeError):
+            continue
+        # Any later calendar day is an elapsed intraday thesis, even where a
+        # process was down at the intended close boundary.
+        if now.astimezone(IST).date().isoformat() > session_date or now.astimezone(IST) >= deadline:
+            async with aiosqlite.connect(db_path) as db:
+                await db.execute(
+                    "UPDATE partner_advisory_ideas SET status='RETIRED_SESSION_END',updated_at=? "
+                    "WHERE advisory_id=? AND status='DELIVERED_ACKNOWLEDGED'", (_iso(now), advisory_id),
+                )
+                await db.commit()
+            continue
+        _entry, reminder, _end = intraday_deadlines(now)
+        if now.astimezone(IST) < reminder or now.astimezone(IST).date().isoformat() != session_date:
+            continue
+        update_id = hashlib.sha256(f"{advisory_id}:SESSION_EXIT_REMINDER".encode()).hexdigest()[:24]
+        text = (
+            f"Intraday reminder for published idea {advisory_id}: the same-day exit/reassessment deadline is "
+            f"{_iso(deadline)}. If you took the idea, reassess and manually exit or manage it before then; "
+            "do not carry overnight. This system has not observed any order or position."
+        )
+        stamp = _iso(now)
+        async with aiosqlite.connect(db_path) as db:
+            await db.execute("BEGIN IMMEDIATE")
+            cur = await db.execute(
+                "INSERT OR IGNORE INTO partner_advisory_updates(update_id,advisory_id,event_type,observed_at,observed_underlying,rendered_update,status,created_at,updated_at) "
+                "VALUES(?,?,?,?,? ,?,'QUEUED',?,?)",
+                (update_id, advisory_id, "SESSION_EXIT_REMINDER", stamp, 0.0, text, stamp, stamp),
+            )
+            await db.commit()
+        if cur.rowcount == 1:
+            queued.append({"update_id": update_id, "advisory_id": advisory_id, "profile_id": profile_id,
+                           "event_type": "SESSION_EXIT_REMINDER", "observed_at": stamp, "rendered_update": text, "status": "QUEUED"})
+    return queued
+
+
 async def dispatch_queued_management_update(db_path: str, update: dict, *, now: datetime, clock=None) -> bool:
     """Deliver a queued material update with its own quota and authorization."""
     final_now = (clock() if clock is not None else datetime.now(IST)).astimezone(IST)
@@ -1091,6 +1183,7 @@ async def dispatch_queued_management_update(db_path: str, update: dict, *, now: 
             "generation_id": update_id, "exposure_lifecycle_id": "manual-advisory-update",
         }, now=final_now, min_gap=timedelta(minutes=1),
         daily_cap=settings.PARTNER_MANUAL_ADVISORY_UPDATE_DAILY_CAP,
+        clock=clock or (lambda: datetime.now(IST)),
     )
     if sent:
         async with aiosqlite.connect(db_path) as db:
@@ -1203,5 +1296,5 @@ __all__ = [
     "ManualDecision", "PartnerAdvisoryProfile", "StrategyEvidence", "ValidationResult",
     "advisory_identity", "build_conditional_index_protective_put", "build_directional_debit_spread", "init_partner_advisory_db",
     "is_strategy_qualified", "load_advisory_cards", "load_advisory_diagnostics", "load_partner_profile", "persist_candidate", "record_manual_feedback",
-    "queue_management_updates", "dispatch_queued_management_update", "record_strategy_qualification", "render_advisory_card", "resolve_advisory_expiry", "save_partner_profile", "select_preferred_market_candidates", "validate_candidate", "validate_profile",
+    "queue_management_updates", "run_intraday_session_lifecycle", "dispatch_queued_management_update", "record_research_artifact", "record_strategy_qualification", "render_advisory_card", "resolve_advisory_expiry", "save_partner_profile", "select_preferred_market_candidates", "validate_candidate", "validate_profile",
 ]

@@ -1095,6 +1095,10 @@ async def _authorize_dispatch(
             payload = json.loads(row[4])
             if payload.get("profile_id") != profile_id or row[5] is None:
                 return False
+            management_deadline = _parse_ist(payload.get("management_deadline"))
+            if (management_deadline is None or management_deadline <= now
+                    or payload.get("session_date") != now.astimezone(IST).date().isoformat()):
+                return False
             if row[2] != detail.get("rendered_text"):
                 return False
             return True
@@ -1181,7 +1185,7 @@ async def _authorize_dispatch(
 async def _send_claimed_review(
     db_path: str, kind: str, key: str, text: str, *,
     detail: dict, now: datetime, underlying: Optional[str] = None,
-    min_gap: Optional[timedelta] = None, daily_cap: Optional[int] = None,
+    min_gap: Optional[timedelta] = None, daily_cap: Optional[int] = None, clock=None,
 ) -> bool:
     # Persist enough proposal context for a bounded recovery worker; it still
     # must re-check expiry and lease state before any network call.
@@ -1202,17 +1206,28 @@ async def _send_claimed_review(
             db_path, "last_candidate",
             {"kind": kind, "dedup_key": key, "underlying": underlying}, now=now,
         )
+        # Claims/database writes can consume a short executable-quote TTL.
+        # Re-read the injected live clock at the authority boundary rather
+        # than treating the scan-start time as a perpetual validity token.
+        authority_now = (clock() if clock is not None else now).astimezone(IST)
         if not await _authorize_dispatch(
-            db_path, kind, key, token, claim_detail, now=now,
+            db_path, kind, key, token, claim_detail, now=authority_now,
         ):
             await _fail_claim(
                 db_path, kind, key, token,
                 detail={**claim_detail, "state": "dispatch_not_authorized", "delivery": {
                     "kind": kind, "dedup_key": key, "state": "dispatch_not_authorized",
-                }}, now=now,
+                }}, now=authority_now,
             )
             return False
-        if not await _mark_transport_started(db_path, kind, key, token, now=now):
+        transport_now = (clock() if clock is not None else authority_now).astimezone(IST)
+        # A second clock read closes the interval between authorization and
+        # durable transport intent.
+        if not await _authorize_dispatch(db_path, kind, key, token, claim_detail, now=transport_now):
+            await _fail_claim(db_path, kind, key, token,
+                              detail={**claim_detail, "state": "expired_before_transport"}, now=transport_now)
+            return False
+        if not await _mark_transport_started(db_path, kind, key, token, now=transport_now):
             return False
         post_dispatch = True
         result = await send_partner_result(text, kind=kind)
