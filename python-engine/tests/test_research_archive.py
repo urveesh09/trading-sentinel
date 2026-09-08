@@ -101,6 +101,18 @@ def test_restart_repairs_corrupt_tail_before_next_valid_quote(tmp_path):
     assert list((tmp_path / "quotes" / "2026-09-08").glob("*.corrupt-*"))
 
 
+def test_readiness_is_per_index_and_reports_durable_gap(tmp_path):
+    raw = HEADER + "\n1,1,NIFTYOPT,NIFTY,0,2026-09-10,25000,0.05,75,CE,NFO-OPT,NFO"
+    archive.archive_contract_master(str(tmp_path), provider="KITE", segment="NFO", raw_csv=raw,
+                                    observed_at=datetime(2026, 9, 8, tzinfo=pytz.UTC))
+    writer = archive.QuoteArchive(str(tmp_path), reserved_free_bytes=0)
+    writer.record_collection_run({"collected": 0, "gaps": [{"underlying": "SENSEX", "reason": "quote_batch_empty"}]}, expected_interval_sec=60)
+    view = archive.readiness_view(str(tmp_path), ["NIFTY", "SENSEX"])
+    assert view["per_index"]["NIFTY"]["master"]["contract_count"] == 1
+    assert view["per_index"]["SENSEX"]["recent_gap_count"] == 1
+    assert view["per_index"]["NIFTY"]["qualification"] == "NOT_QUALIFIED"
+
+
 def test_normalise_quote_never_invents_missing_book_levels():
     contract = Contract(1, "NIFTYOPT", "NIFTY", date(2026, 9, 10), 25000, "CE", 75)
     event = normalise_quote(contract, {"last_price": 100, "depth": {"buy": [{"price": 99, "quantity": 10}]}},

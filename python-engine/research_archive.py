@@ -435,13 +435,47 @@ class QuoteArchive:
 
 
 def readiness_view(archive_root: str, underlyings: Iterable[str] = ("NIFTY", "SENSEX")) -> Dict[str, Any]:
-    """Small deterministic readiness payload for routes/dashboard consumers."""
+    """Per-index evidence readiness; archive presence is never qualification."""
     root = Path(archive_root)
     masters = list((root / "contract-masters").glob("**/manifest.json")) if root.exists() else []
     segments = list((root / "quotes").glob("**/*.manifest.json")) if root.exists() else []
+    names = [name.upper() for name in underlyings]
+    def latest_master(name: str) -> Optional[dict]:
+        found = []
+        for path in masters:
+            try:
+                data = json.loads(path.read_text(encoding="utf-8"))
+                contracts = (path.parent / "contracts.jsonl").read_text(encoding="utf-8")
+                if f'"underlying":"{name}"' in contracts:
+                    found.append(data)
+            except (OSError, json.JSONDecodeError):
+                continue
+        return max(found, key=lambda item: str(item.get("observed_at_utc", "")), default=None)
+    latest_runs: List[dict] = []
+    runs_dir = root / "collection-runs"
+    if runs_dir.exists():
+        for path in sorted(runs_dir.glob("**/runs.jsonl"))[-3:]:
+            try:
+                latest_runs.extend(json.loads(line) for line in path.read_text(encoding="utf-8").splitlines() if line)
+            except (OSError, json.JSONDecodeError):
+                continue
+    last_run = max(latest_runs, key=lambda item: str(item.get("recorded_at_utc", "")), default=None)
+    per_index = {}
+    for name in names:
+        master = latest_master(name)
+        gaps = [gap for run in latest_runs for gap in run.get("result", {}).get("gaps", []) if gap.get("underlying") == name]
+        per_index[name] = {
+            "master": {"observed_at_utc": master.get("observed_at_utc"), "raw_sha256": master.get("raw_sha256"), "contract_count": master.get("contract_count")} if master else None,
+            "recent_gap_count": len(gaps), "latest_gap": gaps[-1] if gaps else None,
+            "last_collection_run_utc": last_run.get("recorded_at_utc") if last_run else None,
+            "quote_observation_status": "NOT_YET_OBSERVED", "qualification": "NOT_QUALIFIED",
+        }
+    usage = shutil.disk_usage(root) if root.exists() else None
     return {"archive_path": str(root), "archive_exists": root.exists(),
-            "underlyings": [name.upper() for name in underlyings],
+            "underlyings": names, "per_index": per_index,
             "master_snapshots": len(masters), "finalized_quote_segments": len(segments),
+            "collection_runs": len(latest_runs), "latest_collection_run": last_run,
+            "storage": {"bytes_free": usage.free, "bytes_total": usage.total} if usage else None,
             "evidence_levels": [EVIDENCE_OPTION_LTP_OI, EVIDENCE_OBSERVED_QUOTE],
             "advisory_independent": True,
             "limitations": ["Archive presence is not a strategy qualification or execution guarantee."]}
