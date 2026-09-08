@@ -1036,7 +1036,26 @@ async def _authorize_dispatch(
                 or payload.get("profile_id") != profile_id
                 or not payload.get("strategy_qualified")
                 or payload.get("evidence") != "QUALIFIED_FOR_ADVISORY"
+                or payload.get("holding_horizon") != "INTRADAY"
+                or payload.get("policy_version") != "partner-manual-intraday-v1"
+                or payload.get("session_date") != now.astimezone(IST).date().isoformat()
             ):
+                return False
+            entry_deadline = _parse_ist(payload.get("entry_deadline"))
+            if entry_deadline is None or entry_deadline < now:
+                return False
+            # Re-read the registry at the transport boundary; a queued card
+            # cannot rely on a stale cached qualification after suspension.
+            async with aiosqlite.connect(db_path, timeout=30) as qualification_db:
+                qualification = await (await qualification_db.execute(
+                    "SELECT status,reviewed_at FROM partner_advisory_strategy_qualifications WHERE underlying=? "
+                    "AND structure_kind=? AND horizon=? AND policy_version=?",
+                    (detail.get("underlying"), payload.get("structure_kind"), "INTRADAY", "partner-manual-intraday-v1"),
+                )).fetchone()
+            if qualification is None or qualification[0] != "QUALIFIED_FOR_ADVISORY":
+                return False
+            reviewed_at = _parse_ist(qualification[1])
+            if reviewed_at is None or reviewed_at > now:
                 return False
             return _parse_ist(card[3]) is not None and _parse_ist(card[3]) > now
         except Exception:

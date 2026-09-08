@@ -1117,6 +1117,12 @@ class Settings(BaseSettings):
     PARTNER_MANUAL_ADVISORY_MIN_VOLUME: int = 1
     PARTNER_MANUAL_ADVISORY_MIN_DEPTH_UNITS: int = 1
     PARTNER_MANUAL_ADVISORY_QUOTE_TTL_SEC: int = 30
+    # Intraday policy times in IST. New entries end before management/exit
+    # observation so a late alert cannot become an overnight recommendation.
+    PARTNER_MANUAL_ADVISORY_ENTRY_START_MINUTE: int = 9 * 60 + 45
+    PARTNER_MANUAL_ADVISORY_ENTRY_END_MINUTE: int = 14 * 60 + 45
+    PARTNER_MANUAL_ADVISORY_EXIT_REMINDER_MINUTE: int = 15 * 60 + 10
+    PARTNER_MANUAL_ADVISORY_MANAGEMENT_END_MINUTE: int = 15 * 60 + 15
 
     # Advanced partner-facing phases require current readiness evidence. They
     # start disabled; Phase 1 protection and status messages remain available.

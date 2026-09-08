@@ -34,6 +34,8 @@ from fno_models import ContractQuote, FnoDirection, OptionType
 from fno_underlyings import SPECS
 
 IST = pytz.timezone("Asia/Kolkata")
+INTRADAY_HORIZON = "INTRADAY"
+INTRADAY_POLICY_VERSION = "partner-manual-intraday-v1"
 
 
 class AdvisoryScope(str, Enum):
@@ -139,6 +141,13 @@ class AdvisoryCandidate:
     invalidation_level: Optional[float] = None
     target_level: Optional[float] = None
     holding_horizon: Optional[str] = None
+    session_date: Optional[str] = None
+    signal_at: Optional[datetime] = None
+    entry_deadline: Optional[datetime] = None
+    management_deadline: Optional[datetime] = None
+    quote_observed_at: Optional[datetime] = None
+    quote_received_at: Optional[datetime] = None
+    quote_valid_until: Optional[datetime] = None
 
 
 @dataclass(frozen=True)
@@ -223,7 +232,22 @@ def _candidate_payload(candidate: AdvisoryCandidate) -> dict:
     data["generated_at"] = _iso(candidate.generated_at)
     data["quote_time"] = _iso(candidate.quote_time)
     data["valid_until"] = _iso(candidate.valid_until)
+    for key in ("signal_at", "entry_deadline", "management_deadline", "quote_observed_at", "quote_received_at", "quote_valid_until"):
+        if data[key] is not None:
+            data[key] = _iso(data[key])
     return data
+
+
+def intraday_deadlines(now: datetime) -> tuple[datetime, datetime, datetime]:
+    """Return dated IST entry, exit-reminder and management deadlines."""
+    if now.tzinfo is None:
+        raise ValueError("intraday clock must be timezone-aware")
+    local = now.astimezone(IST)
+    def at(minute: int) -> datetime:
+        return local.replace(hour=minute // 60, minute=minute % 60, second=0, microsecond=0)
+    return (at(settings.PARTNER_MANUAL_ADVISORY_ENTRY_END_MINUTE),
+            at(settings.PARTNER_MANUAL_ADVISORY_EXIT_REMINDER_MINUTE),
+            at(settings.PARTNER_MANUAL_ADVISORY_MANAGEMENT_END_MINUTE))
 
 
 def _finite_positive(value: object) -> bool:
@@ -270,18 +294,21 @@ def validate_profile(profile: PartnerAdvisoryProfile, candidate: AdvisoryCandida
     reasons: list[str] = []
     if profile.timezone != "Asia/Kolkata":
         reasons.append("unsupported_profile_timezone")
-    if not profile.holding_period or not profile.holding_period.strip():
-        reasons.append("profile_holding_horizon_missing")
-    if candidate.holding_horizon and profile.holding_period != candidate.holding_horizon:
+    if profile.holding_period != INTRADAY_HORIZON:
+        reasons.append("profile_horizon_not_intraday")
+    if candidate.holding_horizon != INTRADAY_HORIZON or profile.holding_period != candidate.holding_horizon:
         reasons.append("profile_horizon_mismatch")
     if candidate.structure_kind not in profile.permitted_structures:
         reasons.append("profile_structure_not_permitted")
     minute = now.astimezone(IST).hour * 60 + now.astimezone(IST).minute
     if not (profile.delivery_start_minute <= minute <= profile.delivery_end_minute):
         reasons.append("profile_delivery_window_closed")
-    if profile.risk_limit_rs is not None and (candidate.max_loss_rs is None or candidate.max_loss_rs > profile.risk_limit_rs):
+    cost = candidate.estimated_round_trip_cost_rs
+    all_in_risk = ((candidate.max_loss_rs or 0.0) + cost) if isinstance(cost, (int, float)) and math.isfinite(float(cost)) else math.inf
+    all_in_entry = ((candidate.net_debit_rs or 0.0) + cost) if isinstance(cost, (int, float)) and math.isfinite(float(cost)) else math.inf
+    if profile.risk_limit_rs is not None and (candidate.max_loss_rs is None or all_in_risk > profile.risk_limit_rs):
         reasons.append("profile_risk_limit_exceeded")
-    if profile.capital_limit_rs is not None and (candidate.net_debit_rs is None or candidate.net_debit_rs > profile.capital_limit_rs):
+    if profile.capital_limit_rs is not None and (candidate.net_debit_rs is None or all_in_entry > profile.capital_limit_rs):
         reasons.append("profile_capital_limit_exceeded")
     return tuple(reasons)
 
@@ -319,6 +346,8 @@ async def save_partner_profile(
         raise ValueError("risk_limit_rs must be positive when supplied")
     if profile.delivery_start_minute > profile.delivery_end_minute:
         raise ValueError("delivery window start must not follow its end")
+    if profile.holding_period not in {None, INTRADAY_HORIZON}:
+        raise ValueError("only INTRADAY holding_period is supported")
     if (profile.conditional_exposure_assumption is None) != (profile.conditional_coverage_units is None):
         raise ValueError("conditional protection requires both exposure assumption and coverage units")
     if profile.conditional_coverage_units is not None and profile.conditional_coverage_units <= 0:
@@ -371,8 +400,14 @@ async def record_strategy_qualification(
     status: StrategyEvidence = StrategyEvidence.QUALIFIED_FOR_ADVISORY,
 ) -> None:
     """Persist a reviewable qualification; a config flag cannot manufacture it."""
-    if underlying not in INDEX_EXCHANGES or not dataset_ref.strip() or not horizon.strip():
-        raise ValueError("qualification requires supported underlying, horizon and dataset_ref")
+    if reviewed_at.tzinfo is None:
+        raise ValueError("qualification reviewed_at must be timezone-aware")
+    if underlying not in INDEX_EXCHANGES or not dataset_ref.strip() or horizon != INTRADAY_HORIZON:
+        raise ValueError("qualification requires supported underlying, INTRADAY horizon and dataset_ref")
+    if policy_version != INTRADAY_POLICY_VERSION:
+        raise ValueError("qualification policy_version is not the current intraday policy")
+    if reviewed_at.astimezone(IST) > datetime.now(IST) + timedelta(minutes=5):
+        raise ValueError("qualification reviewed_at cannot be in the future")
     if status not in {StrategyEvidence.QUALIFIED_FOR_ADVISORY, StrategyEvidence.SUSPENDED}:
         raise ValueError("qualification status must be QUALIFIED_FOR_ADVISORY or SUSPENDED")
     await init_partner_advisory_db(db_path)
@@ -434,15 +469,22 @@ def build_directional_debit_spread(
     snapshot: ChainSnapshot, book: FnoInstruments, direction: FnoDirection,
     now: datetime, *, evidence: StrategyEvidence = StrategyEvidence.RESEARCH_ONLY,
     width_steps: int = 1, quote_ttl_seconds: int = 30,
-    policy_version: str = "partner-manual-v1", thesis_id: Optional[str] = None,
+    policy_version: str = INTRADAY_POLICY_VERSION, thesis_id: Optional[str] = None,
     trigger_level: Optional[float] = None, invalidation_level: Optional[float] = None,
-    target_level: Optional[float] = None, holding_horizon: str = "INTRADAY_TO_3_SESSIONS",
+    target_level: Optional[float] = None, holding_horizon: str = INTRADAY_HORIZON,
 ) -> Optional[AdvisoryCandidate]:
     """Build one conservative, same-index/same-expiry vertical, or ``None``.
 
     Long legs use ask and short legs use bid.  This prevents the common
     midpoint-only card from claiming a debit that cannot be executed.
     """
+    if holding_horizon != INTRADAY_HORIZON or policy_version != INTRADAY_POLICY_VERSION:
+        return None
+    entry_deadline, _exit_reminder, management_deadline = intraday_deadlines(now)
+    if now.astimezone(IST) > entry_deadline:
+        return None
+    if not all(_finite_positive(value) for value in (trigger_level, invalidation_level, target_level)):
+        return None
     underlying = book.underlying.upper()
     if underlying not in INDEX_EXCHANGES or book.segment != INDEX_SEGMENTS[underlying]:
         return None
@@ -498,6 +540,10 @@ def build_directional_debit_spread(
         management=(f"Consider target zone {target_level:,.2f}; " if _finite_positive(target_level) else "") + "recheck both legs together before entry; take no new entry after the stated horizon or expiry cutoff.",
         trigger_level=trigger_level, invalidation_level=invalidation_level,
         target_level=target_level, holding_horizon=holding_horizon,
+        session_date=now.astimezone(IST).date().isoformat(), signal_at=now,
+        entry_deadline=entry_deadline, management_deadline=management_deadline,
+        quote_observed_at=snapshot.taken_at, quote_received_at=now,
+        quote_valid_until=snapshot.taken_at + timedelta(seconds=quote_ttl_seconds),
     )
 
 
@@ -505,7 +551,7 @@ def build_conditional_index_protective_put(
     snapshot: ChainSnapshot, book: FnoInstruments, now: datetime, *,
     exposure_assumption: str, coverage_units: int,
     evidence: StrategyEvidence = StrategyEvidence.RESEARCH_ONLY,
-    quote_ttl_seconds: int = 30, policy_version: str = "partner-manual-v1",
+    quote_ttl_seconds: int = 30, policy_version: str = INTRADAY_POLICY_VERSION,
     thesis_id: Optional[str] = None,
 ) -> Optional[AdvisoryCandidate]:
     """Build a conditional protective-put *idea*, never a personal hedge.
@@ -515,6 +561,9 @@ def build_conditional_index_protective_put(
     units; the function refuses a vague "portfolio hedge" label and never
     derives a quantity from capital or an unconfirmed holding.
     """
+    entry_deadline, _exit_reminder, management_deadline = intraday_deadlines(now)
+    if policy_version != INTRADAY_POLICY_VERSION or now.astimezone(IST) > entry_deadline:
+        return None
     underlying = book.underlying.upper()
     if (
         underlying not in INDEX_EXCHANGES or book.segment != INDEX_SEGMENTS[underlying]
@@ -547,7 +596,10 @@ def build_conditional_index_protective_put(
         exposure_assumption=exposure_assumption, coverage_units=coverage_units,
         invalidation="Skip if coverage, expiry, executable quote or broker margin differs from the stated assumption.",
         management="Confirm the protected exposure and recheck the option quote before acting.",
-        holding_horizon="INTRADAY_TO_3_SESSIONS",
+        holding_horizon=INTRADAY_HORIZON, session_date=now.astimezone(IST).date().isoformat(),
+        signal_at=now, entry_deadline=entry_deadline, management_deadline=management_deadline,
+        quote_observed_at=snapshot.taken_at, quote_received_at=now,
+        quote_valid_until=snapshot.taken_at + timedelta(seconds=quote_ttl_seconds),
     )
 
 
@@ -596,6 +648,21 @@ def validate_candidate(
     card that pretends a displayed price is executable.
     """
     reasons: list[str] = []
+    if candidate.holding_horizon != INTRADAY_HORIZON or candidate.policy_version != INTRADAY_POLICY_VERSION:
+        reasons.append("non_intraday_policy")
+    local_now = now.astimezone(IST)
+    if candidate.session_date != local_now.date().isoformat():
+        reasons.append("wrong_or_stale_session_date")
+    for field_name in ("signal_at", "entry_deadline", "management_deadline", "quote_observed_at", "quote_received_at", "quote_valid_until"):
+        value = getattr(candidate, field_name)
+        if value is None or value.tzinfo is None:
+            reasons.append(f"{field_name}_missing")
+    if candidate.entry_deadline is not None and local_now > candidate.entry_deadline.astimezone(IST):
+        reasons.append("entry_deadline_elapsed")
+    if candidate.management_deadline is not None and candidate.entry_deadline is not None and candidate.management_deadline <= candidate.entry_deadline:
+        reasons.append("management_deadline_invalid")
+    if candidate.quote_valid_until is not None and candidate.quote_valid_until != candidate.valid_until:
+        reasons.append("quote_validity_mismatch")
     if candidate.underlying not in INDEX_EXCHANGES:
         reasons.append("unsupported_underlying")
     if candidate.exchange != INDEX_EXCHANGES.get(candidate.underlying):
@@ -666,6 +733,8 @@ def validate_candidate(
             reasons.append("defined_risk_bound_missing")
         if candidate.net_debit_rs is None or candidate.net_debit_rs <= 0:
             reasons.append("debit_missing")
+        if not all(_finite_positive(value) for value in (candidate.trigger_level, candidate.invalidation_level, candidate.target_level)):
+            reasons.append("intraday_levels_missing")
         oracle, oracle_reasons = _vertical_oracle(candidate)
         reasons.extend(oracle_reasons)
         if oracle is not None:
@@ -725,6 +794,7 @@ def render_advisory_card(candidate: AdvisoryCandidate, advisory_id: str) -> str:
     lines = [
         f"[{header}] • {candidate.underlying} ({candidate.exchange})",
         f"Idea {advisory_id}/{candidate.policy_version} • Data {_iso(candidate.quote_time)} • Valid until {_iso(candidate.valid_until)}",
+        f"INTRADAY ONLY — do not carry overnight. Manual action only; the system cannot close any position for you.",
         f"Why now: {'; '.join(candidate.why_now)}",
         "Structure:",
     ]
@@ -759,7 +829,8 @@ def render_advisory_card(candidate: AdvisoryCandidate, advisory_id: str) -> str:
     if candidate.target_level is not None:
         lines.append(f"First profit-taking / review level: {candidate.target_level:,.2f}; do not treat it as a guarantee.")
     if candidate.holding_horizon:
-        lines.append(f"Holding horizon: {candidate.holding_horizon}; exit/reassess before this policy horizon or the expiry cutoff.")
+        deadline = _iso(candidate.management_deadline) if candidate.management_deadline else "unavailable"
+        lines.append(f"Holding horizon: {candidate.holding_horizon}; exit/reassess by {deadline} (IST), not contract expiry.")
     lines.extend([
         f"Invalidation: {candidate.invalidation}",
         f"Management: {candidate.management}",
@@ -856,6 +927,8 @@ async def persist_candidate(
         "delivery_eligible": bool(validation.valid and queue_for_delivery and qualified),
         "can_place_orders": False, "can_send": bool(status == "QUEUED"), "rendered_card": card,
         "delivery_thesis_id": payload["delivery_thesis_id"],
+        "entry_deadline": payload.get("entry_deadline"), "management_deadline": payload.get("management_deadline"),
+        "session_date": payload.get("session_date"),
     }
 
 
@@ -882,12 +955,18 @@ async def dispatch_queued_advisory(
         return False
     if valid_until <= final_now:
         return False
+    try:
+        entry_deadline = datetime.fromisoformat(str(stored.get("entry_deadline", ""))).astimezone(IST) if stored.get("entry_deadline") else None
+    except (TypeError, ValueError):
+        return False
+    if entry_deadline is None or final_now > entry_deadline or stored.get("session_date") != final_now.date().isoformat():
+        return False
     from hedge_advisory import _send_claimed_review
     candidate_id = str(stored["advisory_id"])
     sent = await _send_claimed_review(
         db_path, "manual_market_advisory", candidate_id, str(stored["rendered_card"]),
         detail={
-            "phase": "manual_v1", "policy_version": "partner-manual-v1",
+            "phase": "manual_v1", "policy_version": INTRADAY_POLICY_VERSION,
             "advisory_id": candidate_id, "economic_version": stored["economic_version"],
             "profile_id": profile.profile_id, "profile_version": profile.version,
             "account_id": f"manual-profile:{profile.profile_id}",
@@ -895,6 +974,8 @@ async def dispatch_queued_advisory(
             "exposure_lifecycle_id": "manual-advisory",
             "underlying": str(stored["underlying"]),
             "valid_until": str(stored["valid_until"]),
+            "entry_deadline": str(stored["entry_deadline"]), "management_deadline": str(stored["management_deadline"]),
+            "session_date": str(stored["session_date"]),
         },
         now=final_now, min_gap=timedelta(minutes=1),
         daily_cap=settings.PARTNER_MANUAL_ADVISORY_DAILY_CAP,
@@ -936,11 +1017,26 @@ async def queue_management_updates(
             invalidation = payload.get("invalidation_level")
             target = payload.get("target_level")
             profile_id = payload.get("profile_id")
-        except (TypeError, json.JSONDecodeError):
+            session_date = payload.get("session_date")
+            management_deadline = datetime.fromisoformat(str(payload.get("management_deadline"))).astimezone(IST)
+        except (TypeError, ValueError, json.JSONDecodeError):
+            continue
+        if session_date != observed_at.astimezone(IST).date().isoformat():
+            continue
+        if observed_at.astimezone(IST) >= management_deadline:
+            async with aiosqlite.connect(db_path) as db:
+                await db.execute(
+                    "UPDATE partner_advisory_ideas SET status='RETIRED_SESSION_END',updated_at=? "
+                    "WHERE advisory_id=? AND status='DELIVERED_ACKNOWLEDGED'", (_iso(observed_at), advisory_id),
+                )
+                await db.commit()
             continue
         event_type = None
         level = None
-        if direction == FnoDirection.LONG.value and _finite_positive(invalidation) and observed_underlying <= float(invalidation):
+        _entry_deadline, exit_reminder, _management_deadline = intraday_deadlines(observed_at)
+        if observed_at.astimezone(IST) >= exit_reminder:
+            event_type, level = "SESSION_EXIT_REMINDER", 0.0
+        elif direction == FnoDirection.LONG.value and _finite_positive(invalidation) and observed_underlying <= float(invalidation):
             event_type, level = "INVALIDATION", float(invalidation)
         elif direction == FnoDirection.SHORT.value and _finite_positive(invalidation) and observed_underlying >= float(invalidation):
             event_type, level = "INVALIDATION", float(invalidation)
@@ -955,7 +1051,8 @@ async def queue_management_updates(
             f"Update to published idea {advisory_id}: underlying observed at {observed_underlying:,.2f} "
             f"at {_iso(observed_at)}. "
             + (f"It reached the published invalidation level {level:,.2f}." if event_type == "INVALIDATION"
-               else f"It reached the published target/review level {level:,.2f}.")
+               else (f"It reached the published target/review level {level:,.2f}." if event_type == "TARGET_ZONE"
+                     else f"The intraday exit/reassessment deadline is {_iso(management_deadline)}; do not carry overnight."))
             + " If you took the idea, reassess the paired structure with current executable quotes; this is not order or position monitoring."
         )
         stamp = _iso(observed_at)
@@ -987,7 +1084,7 @@ async def dispatch_queued_management_update(db_path: str, update: dict, *, now: 
     sent = await _send_claimed_review(
         db_path, "manual_advisory_update", update_id, str(update["rendered_update"]),
         detail={
-            "phase": "manual_update_v1", "policy_version": "partner-manual-v1",
+            "phase": "manual_update_v1", "policy_version": INTRADAY_POLICY_VERSION,
             "update_id": update_id, "advisory_id": str(update["advisory_id"]),
             "profile_id": str(update["profile_id"]), "event_type": str(update["event_type"]),
             "observed_at": str(update["observed_at"]), "decision_id": update_id,

@@ -336,6 +336,10 @@ async def get_partner_advisory_effective_settings(request: Request, profile_id: 
     profile = await load_partner_profile(settings.DB_PATH, profile_id)
     return {
         "profile": jsonable_encoder(profile),
+        "profile_state": "SAVED_INTRADAY" if profile.holding_period == "INTRADAY" else (
+            "IMPLICIT_DEFAULT_PROFILE" if profile.holding_period is None else "HORIZON_MISMATCH"
+        ),
+        "policy_version": "partner-manual-intraday-v1",
         "manual_advisory_enabled": bool(settings.PARTNER_MANUAL_ADVISORY_ENABLED),
         "shadow_enabled": bool(settings.PARTNER_MANUAL_ADVISORY_SHADOW_ENABLED),
         "delivery_enabled": bool(settings.PARTNER_MANUAL_ADVISORY_DELIVERY_ENABLED),
@@ -343,6 +347,9 @@ async def get_partner_advisory_effective_settings(request: Request, profile_id: 
         "daily_update_cap": settings.PARTNER_MANUAL_ADVISORY_UPDATE_DAILY_CAP,
         "quote_ttl_seconds": settings.PARTNER_MANUAL_ADVISORY_QUOTE_TTL_SEC,
         "max_quote_age_seconds": settings.PARTNER_MANUAL_ADVISORY_MAX_QUOTE_AGE_SEC,
+        "entry_window_ist": [settings.PARTNER_MANUAL_ADVISORY_ENTRY_START_MINUTE, settings.PARTNER_MANUAL_ADVISORY_ENTRY_END_MINUTE],
+        "exit_reminder_minute_ist": settings.PARTNER_MANUAL_ADVISORY_EXIT_REMINDER_MINUTE,
+        "management_end_minute_ist": settings.PARTNER_MANUAL_ADVISORY_MANAGEMENT_END_MINUTE,
         "manual_order_execution": False,
         "delivery_requires": ["fresh_quotes", "profile", "strategy_qualification", "delivery_ledger_authorization"],
     }

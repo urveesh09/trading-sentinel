@@ -265,7 +265,9 @@ async def _track_record(
 
 async def partner_scan_tick(now: Optional[datetime] = None) -> None:
     now = now or datetime.now(IST)
-    if not await _gates_open(now, 9 * 60 + 45, 15 * 60 + 5):
+    # New entry construction has its own 14:45 intraday deadline.  Keep this
+    # scheduler alive through the management deadline for exit reminders.
+    if not await _gates_open(now, 9 * 60 + 45, settings.PARTNER_MANUAL_ADVISORY_MANAGEMENT_END_MINUTE):
         return
     if settings.PARTNER_MANUAL_ADVISORY_DELIVERY_ENABLED or (
         settings.PARTNER_HEDGE_ENABLED and settings.PARTNER_HEDGE_SUPPRESS_DIRECTIONAL
@@ -399,7 +401,7 @@ async def partner_manual_advisory_tick(now: Optional[datetime] = None) -> None:
     ):
         return
     now = now or datetime.now(IST)
-    if not await _gates_open(now, 9 * 60 + 45, 15 * 60 + 5):
+    if not await _gates_open(now, settings.PARTNER_MANUAL_ADVISORY_ENTRY_START_MINUTE, settings.PARTNER_MANUAL_ADVISORY_MANAGEMENT_END_MINUTE):
         return
     import main as _main
     from fno_underlyings import SPECS

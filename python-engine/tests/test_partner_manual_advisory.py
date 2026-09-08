@@ -58,7 +58,11 @@ def _candidate(name="NIFTY", direction=FnoDirection.LONG):
         (outer, opt.value): _quote(short, 45.0, 47.0),
     }
     snap = ChainSnapshot(NOW, expiry, forward, None, lot, None, quotes)
-    candidate = build_directional_debit_spread(snap, book, direction, NOW)
+    candidate = build_directional_debit_spread(
+        snap, book, direction, NOW, trigger_level=25010.0 if name == "NIFTY" else 82010.0,
+        invalidation_level=24950.0 if name == "NIFTY" else 81900.0,
+        target_level=25100.0 if name == "NIFTY" else 82200.0,
+    )
     assert candidate is not None
     return candidate
 
@@ -72,6 +76,23 @@ def test_each_index_has_an_independent_valid_same_expiry_candidate(name):
     assert candidate.segment == ("NFO" if name == "NIFTY" else "BFO")
     assert len({leg.expiry for leg in candidate.legs}) == 1
     assert candidate.max_loss_rs and candidate.max_loss_rs > 0
+    assert candidate.holding_horizon == "INTRADAY"
+    assert candidate.entry_deadline and candidate.management_deadline
+    assert "INTRADAY ONLY" in __import__("partner_manual_advisory").render_advisory_card(candidate, "test")
+
+
+def test_intraday_policy_rejects_legacy_horizon_and_late_entries():
+    assert build_directional_debit_spread(
+        ChainSnapshot(NOW, date(2026, 9, 10), 25000.0, None, 75, None, {}),
+        _book("NIFTY", "NFO", date(2026, 9, 10), 50.0, 75), FnoDirection.LONG, NOW,
+        holding_horizon="INTRADAY_TO_3_SESSIONS", trigger_level=25010, invalidation_level=24950, target_level=25100,
+    ) is None
+    after_cutoff = IST.localize(datetime(2026, 9, 7, 14, 46))
+    assert build_directional_debit_spread(
+        ChainSnapshot(after_cutoff, date(2026, 9, 10), 25000.0, None, 75, None, {}),
+        _book("NIFTY", "NFO", date(2026, 9, 10), 50.0, 75), FnoDirection.LONG, after_cutoff,
+        trigger_level=25010, invalidation_level=24950, target_level=25100,
+    ) is None
 
 
 def test_stale_or_missing_depth_never_makes_an_actionable_card():
@@ -152,7 +173,7 @@ def test_same_direction_nifty_and_sensex_are_overlap_suppressed_by_economics():
 
 @pytest.mark.asyncio
 async def test_no_holdings_market_card_persists_without_send_or_order(db_path):
-    profile = PartnerAdvisoryProfile(version=1, holding_period="INTRADAY_TO_3_SESSIONS")
+    profile = PartnerAdvisoryProfile(version=1, holding_period="INTRADAY")
     await save_partner_profile(db_path, profile, now=NOW)
     stored = await persist_candidate(db_path, _candidate(), profile, now=NOW)
     assert stored["status"] == "VALIDATED_SHADOW"
@@ -171,13 +192,13 @@ async def test_queued_manual_card_uses_hardened_delivery_boundary(db_path, monke
     from config import settings
     import hedge_advisory
 
-    profile = PartnerAdvisoryProfile(version=1, holding_period="INTRADAY_TO_3_SESSIONS")
+    profile = PartnerAdvisoryProfile(version=1, holding_period="INTRADAY")
     await save_partner_profile(db_path, profile, now=NOW)
     candidate = _candidate()
     candidate = candidate.__class__(**{**candidate.__dict__, "evidence": StrategyEvidence.QUALIFIED_FOR_ADVISORY})
     await record_strategy_qualification(
         db_path, underlying="NIFTY", structure_kind=candidate.structure_kind,
-        horizon="INTRADAY_TO_3_SESSIONS", policy_version=candidate.policy_version,
+        horizon="INTRADAY", policy_version=candidate.policy_version,
         dataset_ref="frozen-test", reviewed_at=NOW,
     )
     stored = await persist_candidate(db_path, candidate, profile, now=NOW, queue_for_delivery=True)
@@ -202,12 +223,12 @@ async def test_research_card_cannot_queue_and_expired_card_never_reaches_transpo
     from config import settings
     import hedge_advisory
 
-    profile = PartnerAdvisoryProfile(version=1, holding_period="INTRADAY_TO_3_SESSIONS")
+    profile = PartnerAdvisoryProfile(version=1, holding_period="INTRADAY")
     await save_partner_profile(db_path, profile, now=NOW)
     candidate = _candidate()
     await record_strategy_qualification(
         db_path, underlying="NIFTY", structure_kind=candidate.structure_kind,
-        horizon="INTRADAY_TO_3_SESSIONS", policy_version=candidate.policy_version,
+        horizon="INTRADAY", policy_version=candidate.policy_version,
         dataset_ref="frozen-test", reviewed_at=NOW,
     )
     research = await persist_candidate(db_path, candidate, profile, now=NOW, queue_for_delivery=True)
@@ -233,7 +254,7 @@ async def test_research_card_cannot_queue_and_expired_card_never_reaches_transpo
 async def test_profile_structure_risk_and_window_are_delivery_gates(db_path):
     candidate = _candidate()
     profile = PartnerAdvisoryProfile(
-        version=1, holding_period="INTRADAY_TO_3_SESSIONS",
+        version=1, holding_period="INTRADAY",
         permitted_structures=("CONDITIONAL_PROTECTIVE_PUT",), risk_limit_rs=100.0,
         delivery_start_minute=11 * 60, delivery_end_minute=12 * 60,
     )
@@ -247,7 +268,7 @@ async def test_profile_structure_risk_and_window_are_delivery_gates(db_path):
 
 @pytest.mark.asyncio
 async def test_material_economics_create_linked_generation_without_quote_time_churn(db_path):
-    profile = PartnerAdvisoryProfile(version=1, holding_period="INTRADAY_TO_3_SESSIONS")
+    profile = PartnerAdvisoryProfile(version=1, holding_period="INTRADAY")
     await save_partner_profile(db_path, profile, now=NOW)
     original = _candidate()
     same_economics_new_time = original.__class__(**{**original.__dict__,
@@ -274,7 +295,7 @@ async def test_market_condition_management_update_never_reads_partner_orders(db_
     import aiosqlite
     import hedge_advisory
 
-    profile = PartnerAdvisoryProfile(version=1, holding_period="INTRADAY_TO_3_SESSIONS")
+    profile = PartnerAdvisoryProfile(version=1, holding_period="INTRADAY")
     await save_partner_profile(db_path, profile, now=NOW)
     base = _candidate()
     candidate = base.__class__(**{**base.__dict__, "trigger_level": 25010.0,
@@ -306,8 +327,25 @@ async def test_market_condition_management_update_never_reads_partner_orders(db_
 
 
 @pytest.mark.asyncio
+async def test_session_exit_reminder_and_next_day_retirement(db_path):
+    import aiosqlite
+    profile = PartnerAdvisoryProfile(version=1, holding_period="INTRADAY")
+    await save_partner_profile(db_path, profile, now=NOW)
+    stored = await persist_candidate(db_path, _candidate(), profile, now=NOW)
+    async with aiosqlite.connect(db_path) as db:
+        await db.execute("UPDATE partner_advisory_ideas SET status='DELIVERED_ACKNOWLEDGED' WHERE advisory_id=?", (stored["advisory_id"],))
+        await db.commit()
+    reminder_time = IST.localize(datetime(2026, 9, 7, 15, 10))
+    updates = await queue_management_updates(db_path, underlying="NIFTY", observed_underlying=25000, observed_at=reminder_time)
+    assert updates and updates[0]["event_type"] == "SESSION_EXIT_REMINDER"
+    assert "do not carry overnight" in updates[0]["rendered_update"]
+    next_day = reminder_time + timedelta(days=1)
+    assert not await queue_management_updates(db_path, underlying="NIFTY", observed_underlying=25000, observed_at=next_day)
+
+
+@pytest.mark.asyncio
 async def test_diagnostics_are_per_index_and_do_not_claim_partner_pnl(db_path):
-    profile = PartnerAdvisoryProfile(version=1, holding_period="INTRADAY_TO_3_SESSIONS")
+    profile = PartnerAdvisoryProfile(version=1, holding_period="INTRADAY")
     await save_partner_profile(db_path, profile, now=NOW)
     await persist_candidate(db_path, _candidate("NIFTY"), profile, now=NOW)
     rejected = _candidate("SENSEX").__class__(**{**_candidate("SENSEX").__dict__, "exchange": "NSE"})
@@ -320,10 +358,10 @@ async def test_diagnostics_are_per_index_and_do_not_claim_partner_pnl(db_path):
 
 @pytest.mark.asyncio
 async def test_profile_revision_supersedes_old_market_card(db_path):
-    profile = PartnerAdvisoryProfile(version=1, holding_period="INTRADAY_TO_3_SESSIONS")
+    profile = PartnerAdvisoryProfile(version=1, holding_period="INTRADAY")
     await save_partner_profile(db_path, profile, now=NOW)
     await persist_candidate(db_path, _candidate(), profile, now=NOW)
-    revised = PartnerAdvisoryProfile(version=2, instruments=("SENSEX",), holding_period="INTRADAY_TO_3_SESSIONS")
+    revised = PartnerAdvisoryProfile(version=2, instruments=("SENSEX",), holding_period="INTRADAY")
     await save_partner_profile(db_path, revised, now=NOW + timedelta(minutes=1))
     cards = await load_advisory_cards(db_path)
     assert cards["cards"][0]["status"] == "SUPERSEDED_PROFILE"
@@ -333,8 +371,8 @@ async def test_profile_revision_supersedes_old_market_card(db_path):
 
 @pytest.mark.asyncio
 async def test_one_profile_cannot_supersede_another_profiles_cards(db_path):
-    first = PartnerAdvisoryProfile(profile_id="desk-a", version=1, holding_period="INTRADAY_TO_3_SESSIONS")
-    second = PartnerAdvisoryProfile(profile_id="desk-b", version=5, holding_period="INTRADAY_TO_3_SESSIONS")
+    first = PartnerAdvisoryProfile(profile_id="desk-a", version=1, holding_period="INTRADAY")
+    second = PartnerAdvisoryProfile(profile_id="desk-b", version=5, holding_period="INTRADAY")
     await save_partner_profile(db_path, first, now=NOW)
     card = await persist_candidate(db_path, _candidate(), first, now=NOW)
     await save_partner_profile(db_path, second, now=NOW + timedelta(seconds=1))
