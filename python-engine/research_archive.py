@@ -362,6 +362,11 @@ class QuoteArchive:
             _atomic_bytes(recovery, bad)
             _atomic_bytes(path, b"".join(valid))
             logger.error("research_quote_tail_quarantined path=%s discarded_bytes=%d", str(path), len(bad))
+        elif valid and not valid[-1].endswith(b"\n"):
+            # JSON is complete but not newline-delimited.  Repair before the
+            # next append so two valid documents cannot fuse into one bad row.
+            _atomic_bytes(path, b"".join(valid) + b"\n")
+            logger.warning("research_journal_missing_newline_repaired path=%s", str(path))
         self._recovered_paths.add(path)
 
     def record_collection_run(self, result: Mapping[str, Any], *, expected_interval_sec: int) -> Dict[str, Any]:
@@ -370,6 +375,7 @@ class QuoteArchive:
         now = utc_now()
         day = now.strftime("%Y-%m-%d")
         path = self.root / "collection-runs" / day / "runs.jsonl"
+        self._recover_open_tail(path)
         prior_received = None
         if path.exists():
             try:
@@ -464,11 +470,24 @@ def readiness_view(archive_root: str, underlyings: Iterable[str] = ("NIFTY", "SE
     for name in names:
         master = latest_master(name)
         gaps = [gap for run in latest_runs for gap in run.get("result", {}).get("gaps", []) if gap.get("underlying") == name]
+        latest_quote = None
+        # Active segment is bounded to one session; inspect it without reading
+        # historical partitions on the request path.
+        for path in sorted((root / "quotes").glob("*/quotes.jsonl.open"))[-1:]:
+            try:
+                for line in path.read_text(encoding="utf-8").splitlines():
+                    event = json.loads(line)
+                    if event.get("contract", {}).get("underlying") == name and event.get("depth_state") == "USABLE":
+                        latest_quote = event
+            except (OSError, json.JSONDecodeError):
+                pass
         per_index[name] = {
             "master": {"observed_at_utc": master.get("observed_at_utc"), "raw_sha256": master.get("raw_sha256"), "contract_count": master.get("contract_count")} if master else None,
             "recent_gap_count": len(gaps), "latest_gap": gaps[-1] if gaps else None,
-            "last_collection_run_utc": last_run.get("recorded_at_utc") if last_run else None,
-            "quote_observation_status": "NOT_YET_OBSERVED", "qualification": "NOT_QUALIFIED",
+            "last_collection_run_utc": max((r.get("recorded_at_utc") for r in latest_runs if name in r.get("result", {}).get("indices", {}) or any(g.get("underlying") == name for g in r.get("result", {}).get("gaps", []))), default=None),
+            "last_valid_quote_utc": latest_quote.get("received_at_utc") if latest_quote else None,
+            "quote_observation_status": "OBSERVED_USABLE" if latest_quote else "NOT_YET_OBSERVED",
+            "qualification": "NOT_EVALUATED_HERE",
         }
     usage = shutil.disk_usage(root) if root.exists() else None
     return {"archive_path": str(root), "archive_exists": root.exists(),

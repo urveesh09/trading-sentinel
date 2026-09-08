@@ -67,7 +67,7 @@ def _finite_positive(value: Any, cast) -> Optional[int | float]:
     try:
         parsed = cast(value)
         return parsed if math.isfinite(float(parsed)) and parsed > 0 else None
-    except (TypeError, ValueError):
+    except (TypeError, ValueError, OverflowError):
         return None
 
 
@@ -168,7 +168,7 @@ async def collect_rest_quote_snapshot(
     explicit gaps in the result rather than synthetic quotes.
     """
     now_ist = now_ist or datetime.now(IST)
-    result: Dict[str, Any] = {"collected": 0, "requested": 0, "gaps": [], "mode": "KITE_REST_FULL_LOWER_FREQUENCY"}
+    result: Dict[str, Any] = {"collected": 0, "requested": 0, "gaps": [], "indices": {}, "mode": "KITE_REST_FULL_LOWER_FREQUENCY"}
     if not settings.RESEARCH_ARCHIVE_ENABLED or not settings.RESEARCH_QUOTE_COLLECTION_ENABLED:
         result["reason"] = "disabled"
         return result
@@ -179,6 +179,7 @@ async def collect_rest_quote_snapshot(
     await asyncio.to_thread(archive.finalize_prior_days, now_ist.astimezone(IST).date().isoformat())
     books = books or {name: get_instruments_for(name) for name in _configured_underlyings()}
     for name in _configured_underlyings():
+        result["indices"][name] = {"requested_tokens": [], "received_tokens": []}
         book = books.get(name)
         if book is None or not book.ready(now_ist.date()):
             result["gaps"].append({"underlying": name, "reason": "fresh_contract_master_unavailable"})
@@ -195,6 +196,7 @@ async def collect_rest_quote_snapshot(
             continue
         selected = _select_contracts(book, forward, now_ist.date(), settings.RESEARCH_QUOTE_STRIKE_WINDOW)
         tokens = [contract.token for contract, _ in selected]
+        result["indices"][name]["requested_tokens"] = tokens
         result["requested"] += len(tokens)
         data = await _documented_quotes(kite, [contract for contract, _ in selected], SPECS[name].segment)
         # Receipt time is deliberately captured after the provider call, not
@@ -209,11 +211,16 @@ async def collect_rest_quote_snapshot(
             if quote is None:
                 result["gaps"].append({"underlying": name, "reason": "contract_packet_missing", "token": contract.token})
                 continue
+            packet_token = quote.get("instrument_token") if isinstance(quote, Mapping) else None
+            if packet_token not in (None, "", contract.token, str(contract.token)):
+                result["gaps"].append({"underlying": name, "reason": "returned_token_mismatch", "requested_token": contract.token, "returned_token": str(packet_token)})
+                continue
             event = normalise_quote(contract, quote, source="KITE", mode=result["mode"],
                                     received_at=batch_received_at, selection_reason=reason,
                                     exchange=SPECS[name].segment)
             await asyncio.to_thread(archive.append, event)
             result["collected"] += 1
+            result["indices"][name]["received_tokens"].append(contract.token)
     await asyncio.to_thread(archive.record_collection_run, result, expected_interval_sec=settings.RESEARCH_QUOTE_INTERVAL_SEC)
     return result
 

@@ -101,6 +101,14 @@ def test_restart_repairs_corrupt_tail_before_next_valid_quote(tmp_path):
     assert list((tmp_path / "quotes" / "2026-09-08").glob("*.corrupt-*"))
 
 
+def test_restart_repairs_complete_json_without_newline(tmp_path):
+    raw = tmp_path / "quotes" / "2026-09-08" / "quotes.jsonl.open"; raw.parent.mkdir(parents=True)
+    raw.write_bytes(b'{"id":1}')
+    writer = archive.QuoteArchive(str(tmp_path), reserved_free_bytes=0)
+    writer.append({"received_at_utc": "2026-09-08T04:01:00Z", "id": 2})
+    assert writer.finalize_day("2026-09-08")["event_count"] == 2
+
+
 def test_readiness_is_per_index_and_reports_durable_gap(tmp_path):
     raw = HEADER + "\n1,1,NIFTYOPT,NIFTY,0,2026-09-10,25000,0.05,75,CE,NFO-OPT,NFO"
     archive.archive_contract_master(str(tmp_path), provider="KITE", segment="NFO", raw_csv=raw,
@@ -110,7 +118,7 @@ def test_readiness_is_per_index_and_reports_durable_gap(tmp_path):
     view = archive.readiness_view(str(tmp_path), ["NIFTY", "SENSEX"])
     assert view["per_index"]["NIFTY"]["master"]["contract_count"] == 1
     assert view["per_index"]["SENSEX"]["recent_gap_count"] == 1
-    assert view["per_index"]["NIFTY"]["qualification"] == "NOT_QUALIFIED"
+    assert view["per_index"]["NIFTY"]["qualification"] == "NOT_EVALUATED_HERE"
 
 
 def test_normalise_quote_never_invents_missing_book_levels():
@@ -131,6 +139,13 @@ def test_rest_timestamp_and_zero_book_are_preserved_but_not_usable():
     assert event["provider_timestamp_utc"] == "2026-09-08T04:30:00Z"
     assert event["missing_depth"] is True and event["depth_state"] == "MISSING_OR_UNUSABLE"
     assert event["raw_packet"]["depth"]["buy"][0]["price"] == 0
+
+
+def test_nonfinite_depth_is_isolated_as_unusable_not_an_exception():
+    contract = Contract(1, "NIFTYOPT", "NIFTY", date(2026, 9, 10), 25000, "CE", 75)
+    event = normalise_quote(contract, {"depth": {"buy": [{"price": float("inf"), "quantity": float("inf")}], "sell": [{"price": 101, "quantity": 1}]}},
+                            source="KITE", mode="KITE_REST_FULL_LOWER_FREQUENCY", selection_reason="test", exchange="NFO")
+    assert event["depth_state"] == "MISSING_OR_UNUSABLE"
 
 
 @pytest.mark.asyncio
