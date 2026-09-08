@@ -90,6 +90,16 @@
     "trigger": "'cron'"
   },
   {
+    "func": "_run_partner_manual_advisory_lifecycle_tick_safe",
+    "id": "'partner_manual_advisory_lifecycle_tick'",
+    "trigger": "'cron'"
+  },
+  {
+    "func": "_run_partner_manual_advisory_tick_safe",
+    "id": "'partner_manual_advisory_tick'",
+    "trigger": "'cron'"
+  },
+  {
     "func": "_run_partner_morning_brief_safe",
     "id": "'partner_morning_brief'",
     "trigger": "'cron'"
@@ -142,6 +152,11 @@
   {
     "func": "_run_proactive_shadow_workflow_safe",
     "id": "'proactive_shadow_workflow'",
+    "trigger": "'cron'"
+  },
+  {
+    "func": "_run_research_quote_collection_safe",
+    "id": "'research_quote_collection'",
     "trigger": "'cron'"
   },
   {

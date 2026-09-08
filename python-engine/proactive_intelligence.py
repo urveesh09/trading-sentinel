@@ -18,6 +18,17 @@ import aiosqlite
 
 Mode = Literal["LIVE", "PAPER", "SHADOW", "REPLAY"]
 _MODES = frozenset({"LIVE", "PAPER", "SHADOW", "REPLAY"})
+SHADOW_COMPARISON_MIN_CLOSED_OUTCOMES = 20
+SHADOW_ALLOCATOR_VERSION = "risk-budget-v1"
+_DEFAULT_MAX_TOTAL_RISK_FRACTION = .05
+_DEFAULT_MAX_POSITION_RISK_FRACTION = .025
+_DEFAULT_MAX_POSITION_CASH_FRACTION = .60
+_DEFAULT_GAP_RISK_MULTIPLE = 1.25
+_SHADOW_SCHEMA_VERSION = "shadow-evidence-v2"
+_SHADOW_ENTRY_PROFILES = frozenset({
+    "NEXT_EXECUTABLE_OPEN_V1", "BOUNDED_PULLBACK_LIMIT_V1", "COMPLETED_BAR_CONFIRMATION_V1",
+})
+_SHADOW_EXIT_PROFILES = frozenset({"STOP_TARGET_TIME_V1", "BOUNDED_TIME_EXIT_60M_V1"})
 _STAGES = frozenset({
     "UNIVERSE", "DATA_READY", "SETUP", "COST_VIABLE", "RISK_APPROVED",
     "SELECTED", "SUBMITTED", "FILLED", "MANAGED", "CLOSED", "DEFERRED",
@@ -90,10 +101,37 @@ class ShadowPosition:
     opened_at: datetime
     holding_deadline: datetime
     last_bar_at: datetime
+    marked_price: Optional[float] = None
+    marked_at: Optional[datetime] = None
 
 
 def _proposal_id(policy_id: str, instrument: str, bar_time: datetime) -> str:
     return hashlib.sha256(f"{policy_id}:{instrument}:{_stamp(bar_time).isoformat()}".encode()).hexdigest()[:20]
+
+
+def shadow_history_state(bars: object, *, now: datetime) -> str:
+    """Classify input before a scanner can call missing/bad data a success."""
+    now = _stamp(now)
+    if not isinstance(bars, list):
+        return "INVALID_HISTORY"
+    if len(bars) < 21:
+        return "INSUFFICIENT_HISTORY"
+    try:
+        stamps = [_stamp(datetime.fromisoformat(str(bar["timestamp"]))) for bar in bars]
+        opens = [float(bar["open"]) for bar in bars]
+        closes = [float(bar["close"]) for bar in bars]
+        highs = [float(bar["high"]) for bar in bars]
+        lows = [float(bar["low"]) for bar in bars]
+        volumes = [float(bar["volume"]) for bar in bars]
+    except (KeyError, TypeError, ValueError):
+        return "INVALID_HISTORY"
+    if (any(right <= left for left, right in zip(stamps, stamps[1:])) or any(stamp > now for stamp in stamps)
+            or not all(math.isfinite(value) and value > 0 for value in opens + closes + highs + lows)
+            or not all(math.isfinite(value) and value >= 0 for value in volumes)
+            or any(low > min(open_, close) or high < max(open_, close)
+                   for open_, high, low, close in zip(opens, highs, lows, closes))):
+        return "INVALID_HISTORY"
+    return "STALE_HISTORY" if stamps[-1] + timedelta(minutes=30) <= now else "READY"
 
 
 def build_shadow_proposals(instrument: str, bars: list[dict], *, now: datetime) -> list[ShadowProposal]:
@@ -103,7 +141,7 @@ def build_shadow_proposals(instrument: str, bars: list[dict], *, now: datetime) 
     observed completed trigger; every reference excludes it where required.
     """
     now = _stamp(now)
-    if not isinstance(bars, list) or len(bars) < 21:
+    if shadow_history_state(bars, now=now) != "READY":
         return []
     try:
         stamps = [_stamp(datetime.fromisoformat(str(bar["timestamp"]))) for bar in bars]
@@ -115,17 +153,10 @@ def build_shadow_proposals(instrument: str, bars: list[dict], *, now: datetime) 
         trigger_at = stamps[-1]
     except (KeyError, TypeError, ValueError):
         return []
-    if (any(right <= left for left, right in zip(stamps, stamps[1:])) or any(stamp > now for stamp in stamps)
-            or not all(math.isfinite(value) and value > 0 for value in opens + closes + highs + lows)
-            or not all(math.isfinite(value) and value >= 0 for value in volumes)
-            or any(low > min(open_, close) or high < max(open_, close) for open_, high, low, close in zip(opens, highs, lows, closes))):
-        return []
     last, prior = closes[-1], closes[-2]
     fast, slow = sum(closes[-5:]) / 5, sum(closes[-20:]) / 20
     proposals: list[ShadowProposal] = []
     expiry = trigger_at + timedelta(minutes=30)
-    if expiry <= now:
-        return []
     # Trend: uptrend, pullback toward fast MA, then confirmed completed-bar reclaim.
     if fast > slow and closes[-3] <= fast * 1.01 and last > prior:
         stop = min(lows[-3:])
@@ -170,26 +201,74 @@ def allocate_shadow_proposals(proposals: list[ShadowProposal], *, capital: float
 def size_shadow_allocations(
     proposals: list[ShadowProposal], *, capital: float, reserved: float = 0.0,
     fee_rate: float = .001, slippage_bps: float = 5,
+    max_total_risk_fraction: float = _DEFAULT_MAX_TOTAL_RISK_FRACTION,
+    max_position_risk_fraction: float = _DEFAULT_MAX_POSITION_RISK_FRACTION,
+    max_position_cash_fraction: float = _DEFAULT_MAX_POSITION_CASH_FRACTION,
+    gap_risk_multiple: float = _DEFAULT_GAP_RISK_MULTIPLE,
 ) -> tuple[list[ShadowAllocation], dict[str, str]]:
-    """Create the one cash reservation that both selection and simulation use."""
-    if capital < 0 or reserved < 0 or fee_rate < 0 or slippage_bps < 0:
+    """Risk-size comparable SHADOW proposals against one shared cash book.
+
+    This is an experimental, versioned allocator, not a calibrated return
+    model.  Raw sleeve scores are normalized only into bounded *ranking
+    features*; they are explicitly not probabilities or edge estimates.
+    """
+    limits = (max_total_risk_fraction, max_position_risk_fraction,
+              max_position_cash_fraction, gap_risk_multiple)
+    if (capital < 0 or reserved < 0 or fee_rate < 0 or slippage_bps < 0
+            or not all(math.isfinite(float(value)) and value > 0 for value in limits)
+            or max_position_risk_fraction > max_total_risk_fraction
+            or max_position_cash_fraction > 1):
         raise ValueError("invalid allocation assumptions")
     free = max(0.0, float(capital) - float(reserved))
     allocations: list[ShadowAllocation] = []
     reasons: dict[str, str] = {}
     instruments: set[str] = set()
-    for proposal in sorted(proposals, key=lambda item: (item.score, item.policy_id), reverse=True):
+    used_risk = 0.0
+    for proposal in sorted(proposals, key=lambda item: (_comparable_shadow_score(item), item.policy_id), reverse=True):
         if proposal.instrument in instruments:
             reasons[proposal.opportunity_id] = "DUPLICATE_INSTRUMENT_EXPOSURE"; continue
         price = proposal.entry * (1 + slippage_bps / 10_000)
-        quantity = math.floor(free / (price * (1 + fee_rate)))
+        risk_per_unit = (price - proposal.stop) * gap_risk_multiple
+        if not math.isfinite(risk_per_unit) or risk_per_unit <= 0:
+            reasons[proposal.opportunity_id] = "INVALID_STOP_RISK_GEOMETRY"; continue
+        cash_cap = free if not allocations else min(free, float(capital) * max_position_cash_fraction)
+        cash_quantity = math.floor(cash_cap / (price * (1 + fee_rate)))
+        remaining_total_risk = max(0.0, float(capital) * max_total_risk_fraction - used_risk)
+        risk_cap = min(float(capital) * max_position_risk_fraction, remaining_total_risk)
+        risk_quantity = math.floor(risk_cap / risk_per_unit)
+        # At small scenario capital, an otherwise affordable one-share/lot
+        # experiment can be valid even when integer sizing exceeds the normal
+        # per-position slice. It remains bounded by the *total* risk limit.
+        if (not allocations and cash_quantity >= 1 and risk_quantity < 1
+                and risk_per_unit <= float(capital) * max_total_risk_fraction):
+            risk_quantity = 1
+        quantity = min(cash_quantity, risk_quantity)
         if quantity < 1:
-            reasons[proposal.opportunity_id] = "INSUFFICIENT_SHADOW_CASH_AFTER_COST_RESERVE"; continue
+            reasons[proposal.opportunity_id] = (
+                "INSUFFICIENT_SHADOW_RISK_BUDGET" if cash_quantity >= 1
+                else "INSUFFICIENT_SHADOW_CASH_AFTER_COST_RESERVE"
+            ); continue
         fees = price * quantity * fee_rate
         reserve = price * quantity + fees
-        allocations.append(ShadowAllocation(proposal.opportunity_id, quantity, round(price, 4), round(fees, 4), round(reserve, 4), round((price-proposal.stop)*quantity, 4)))
-        free -= reserve; instruments.add(proposal.instrument); reasons[proposal.opportunity_id] = "SELECTED"
+        worst_case_risk = risk_per_unit * quantity
+        allocations.append(ShadowAllocation(proposal.opportunity_id, quantity, round(price, 4), round(fees, 4), round(reserve, 4), round(worst_case_risk, 4)))
+        free -= reserve; used_risk += worst_case_risk
+        instruments.add(proposal.instrument); reasons[proposal.opportunity_id] = "SELECTED"
     return allocations, reasons
+
+
+def _comparable_shadow_score(proposal: ShadowProposal) -> float:
+    """Map known sleeve metrics to bounded ranking features, never a probability."""
+    score = float(proposal.score)
+    if not math.isfinite(score):
+        return 0.0
+    if proposal.policy_id == "trend_pullback_v1":
+        return max(0.0, min(1.0, (score - 1.0) / .02))
+    if proposal.policy_id == "range_reversion_v1":
+        return max(0.0, min(1.0, score / .03))
+    if proposal.policy_id == "contraction_breakout_v1":
+        return max(0.0, min(1.0, (score - 1.0) / 1.0))
+    return 0.0
 
 
 def simulate_shadow_trade(
@@ -248,6 +327,95 @@ def simulate_shadow_trade(
     return ShadowSimulation("OPEN", quantity, round(entry, 4), None, None, None, None, "DATA_END_OPEN_POSITION", entry_at, last_bar_at)
 
 
+def _simulate_shadow_limit_pullback(
+    proposal: ShadowProposal, future_bars: list[dict], *, cash: float, fee_rate: float,
+    slippage_bps: float,
+) -> ShadowSimulation:
+    """Evaluate a bounded buy-limit entry with conservative same-bar exits.
+
+    This is a counterfactual research fill only.  A bar that trades through a
+    limit can fill at the limit; a gap below it receives the favourable open,
+    while a gap or slippage that invalidates the stop/target geometry remains a
+    no-fill.  With OHLC data, a same-bar stop and target is deliberately
+    stop-first rather than an optimistic path assumption.
+    """
+    normalised = _normalise_shadow_bars(future_bars)
+    if normalised is None:
+        return ShadowSimulation("INVALID", 0, None, None, None, None, None, "INVALID_OR_UNORDERED_FUTURE_BARS")
+    cutoff = _stamp(proposal.data_cutoff or proposal.signal_at or proposal.valid_until)
+    entry_deadline = _stamp(proposal.entry_deadline or proposal.valid_until)
+    holding_deadline = _stamp(proposal.holding_deadline or proposal.valid_until)
+    slip = slippage_bps / 10_000
+    for index, (stamp, open_, high, low, _close) in enumerate(normalised):
+        if stamp <= cutoff or stamp > entry_deadline:
+            continue
+        if low > proposal.entry:
+            continue
+        # A price-improving opening gap is allowed, but a buy limit never pays
+        # above the stated bound because of a synthetic slippage adjustment.
+        entry = min(proposal.entry, open_ * (1 + slip))
+        if entry <= proposal.stop or entry >= proposal.target:
+            return ShadowSimulation("NO_FILL", 0, None, None, None, None, None, "GAP_INVALIDATES_ENTRY_GEOMETRY")
+        quantity = math.floor(cash / (entry * (1 + fee_rate)))
+        if quantity < 1:
+            return ShadowSimulation("NO_FILL", 0, None, None, None, None, None, "INSUFFICIENT_CASH_AFTER_FEES")
+        for exit_stamp, exit_open, exit_high, exit_low, _ in normalised[index:]:
+            if exit_stamp > holding_deadline:
+                exit_price, reason = exit_open * (1 - slip), "HOLDING_DEADLINE"
+            elif exit_low <= proposal.stop and exit_high >= proposal.target:
+                exit_price, reason = min(exit_open, proposal.stop) * (1 - slip), "AMBIGUOUS_BAR_STOP_FIRST"
+            elif exit_low <= proposal.stop:
+                exit_price, reason = min(exit_open, proposal.stop) * (1 - slip), "STOP"
+            elif exit_high >= proposal.target:
+                exit_price, reason = proposal.target * (1 - slip), "TARGET"
+            else:
+                continue
+            gross = (exit_price - entry) * quantity
+            fees = (entry + exit_price) * quantity * fee_rate
+            return ShadowSimulation("CLOSED", quantity, round(entry, 4), round(exit_price, 4), round(gross, 4),
+                                    round(fees, 4), round(gross - fees, 4), reason, stamp, exit_stamp)
+        return ShadowSimulation("OPEN", quantity, round(entry, 4), None, None, None, None,
+                                "DATA_END_OPEN_POSITION", stamp, normalised[-1][0])
+    return ShadowSimulation("NO_FILL", 0, None, None, None, None, None, "PULLBACK_LIMIT_NOT_REACHED")
+
+
+def simulate_shadow_research_trial(
+    proposal: ShadowProposal, future_bars: list[dict], *, cash: float,
+    entry_profile_id: str, exit_profile_id: str, fee_rate: float = .001,
+    slippage_bps: float = 5,
+) -> ShadowSimulation:
+    """Run one named, matched research trial; it cannot create a position."""
+    if entry_profile_id not in _SHADOW_ENTRY_PROFILES or exit_profile_id not in _SHADOW_EXIT_PROFILES:
+        raise ValueError("unsupported shadow research profile")
+    if not math.isfinite(cash) or cash <= 0 or fee_rate < 0 or slippage_bps < 0:
+        raise ValueError("invalid research simulation assumptions")
+    profiled = proposal
+    if exit_profile_id == "BOUNDED_TIME_EXIT_60M_V1":
+        cutoff = _stamp(proposal.data_cutoff or proposal.signal_at or proposal.valid_until)
+        profiled = replace(proposal, holding_deadline=min(
+            _stamp(proposal.holding_deadline or proposal.valid_until), cutoff + timedelta(minutes=60),
+        ))
+    if entry_profile_id == "NEXT_EXECUTABLE_OPEN_V1":
+        return simulate_shadow_trade(profiled, future_bars, cash=cash, fee_rate=fee_rate, slippage_bps=slippage_bps)
+    if entry_profile_id == "BOUNDED_PULLBACK_LIMIT_V1":
+        return _simulate_shadow_limit_pullback(profiled, future_bars, cash=cash, fee_rate=fee_rate,
+                                               slippage_bps=slippage_bps)
+
+    normalised = _normalise_shadow_bars(future_bars)
+    if normalised is None:
+        return ShadowSimulation("INVALID", 0, None, None, None, None, None, "INVALID_OR_UNORDERED_FUTURE_BARS")
+    cutoff = _stamp(profiled.data_cutoff or profiled.signal_at or profiled.valid_until)
+    deadline = _stamp(profiled.entry_deadline or profiled.valid_until)
+    confirmation = next((stamp for stamp, *_ in normalised if cutoff < stamp <= deadline), None)
+    if confirmation is None:
+        return ShadowSimulation("NO_FILL", 0, None, None, None, None, None, "NO_CONFIRMATION_BAR")
+    result = simulate_shadow_trade(replace(profiled, data_cutoff=confirmation), future_bars, cash=cash,
+                                   fee_rate=fee_rate, slippage_bps=slippage_bps)
+    if result.reason == "NO_EXECUTABLE_BAR_AFTER_SIGNAL":
+        return replace(result, reason="NO_EXECUTABLE_BAR_AFTER_CONFIRMATION")
+    return result
+
+
 def _normalise_shadow_bars(bars: object) -> Optional[list[tuple[datetime, float, float, float, float]]]:
     """Validate a complete OHLC series and give the simulator one time order."""
     if not isinstance(bars, list):
@@ -290,6 +458,26 @@ def _bars_visible_as_of(bars: object, *, as_of: datetime) -> object:
         if stamp <= as_of:
             visible.append(bar)
     return visible
+
+
+def _shadow_entry_window_already_observed(
+    proposal: ShadowProposal, bars: object, *, now: datetime,
+) -> bool:
+    """Whether an unselected setup would require a historical fill.
+
+    At a later evaluation clock, cash released by a subsequently closed
+    position must not finance a different policy at an earlier observed open.
+    A bar at exactly ``now`` remains executable because it is the completed
+    event the current tick is evaluating; only a strictly earlier executable
+    bar makes the candidate a missed opportunity.
+    """
+    normalised = _normalise_shadow_bars(bars)
+    if normalised is None:
+        return False  # Let the simulator record invalid source evidence.
+    cutoff = _stamp(proposal.data_cutoff or proposal.signal_at or proposal.valid_until)
+    deadline = _stamp(proposal.entry_deadline or proposal.valid_until)
+    now = _stamp(now)
+    return any(cutoff < stamp < now and stamp <= deadline for stamp, *_ in normalised)
 
 
 def simulate_open_shadow_position(
@@ -346,6 +534,15 @@ CREATE TABLE IF NOT EXISTS proactive_scan_runs (
  mode TEXT NOT NULL, status TEXT NOT NULL, observed_at TEXT NOT NULL,
  reason TEXT NOT NULL
 );
+CREATE TABLE IF NOT EXISTS proactive_market_data_observations (
+ observation_id TEXT PRIMARY KEY, account_id TEXT NOT NULL, run_id TEXT NOT NULL,
+ mode TEXT NOT NULL, state TEXT NOT NULL, provider TEXT, timeframe TEXT,
+ adjustment_version TEXT, instrument_count INTEGER NOT NULL, bar_count INTEGER NOT NULL,
+ latest_exchange_at TEXT, received_at TEXT, freshness_seconds REAL,
+ fresh_until TEXT, dataset_sha256 TEXT, reason TEXT NOT NULL, observed_at TEXT NOT NULL
+);
+CREATE INDEX IF NOT EXISTS idx_proactive_market_data_scope
+ ON proactive_market_data_observations(account_id, run_id, observed_at DESC);
 CREATE TABLE IF NOT EXISTS proactive_watchlist (
  opportunity_id TEXT PRIMARY KEY, state TEXT NOT NULL, reason TEXT NOT NULL,
  updated_at TEXT NOT NULL, valid_until TEXT NOT NULL
@@ -356,7 +553,7 @@ CREATE TABLE IF NOT EXISTS proactive_shadow_positions (
  entry_price REAL NOT NULL, entry_fees REAL NOT NULL, stop_price REAL NOT NULL,
  target_price REAL NOT NULL, opened_at TEXT NOT NULL, holding_deadline TEXT NOT NULL,
  last_bar_at TEXT NOT NULL, exit_price REAL, exit_fees REAL, gross_pnl REAL,
- net_pnl REAL, closed_at TEXT, close_reason TEXT
+ net_pnl REAL, closed_at TEXT, close_reason TEXT, marked_price REAL, marked_at TEXT
 );
 CREATE INDEX IF NOT EXISTS idx_shadow_positions_account_status
  ON proactive_shadow_positions(account_id, status);
@@ -372,7 +569,22 @@ CREATE TABLE IF NOT EXISTS proactive_shadow_run_steps (
  PRIMARY KEY (run_key, as_of),
  FOREIGN KEY(run_key) REFERENCES proactive_shadow_runs(run_key)
 );
+CREATE TABLE IF NOT EXISTS proactive_shadow_research_runs (
+ research_run_id TEXT PRIMARY KEY, manifest_json TEXT NOT NULL, created_at TEXT NOT NULL
+);
+CREATE TABLE IF NOT EXISTS proactive_shadow_research_trials (
+ trial_id TEXT PRIMARY KEY, research_run_id TEXT NOT NULL, opportunity_id TEXT NOT NULL,
+ policy_id TEXT NOT NULL, instrument TEXT NOT NULL, entry_profile_id TEXT NOT NULL,
+ exit_profile_id TEXT NOT NULL, status TEXT NOT NULL, reason TEXT NOT NULL,
+ quantity INTEGER NOT NULL, entry_at TEXT, exit_at TEXT, gross_pnl REAL, fees REAL,
+ net_pnl REAL, created_at TEXT NOT NULL,
+ FOREIGN KEY(research_run_id) REFERENCES proactive_shadow_research_runs(research_run_id)
+);
+CREATE INDEX IF NOT EXISTS idx_shadow_research_trials_run
+ ON proactive_shadow_research_trials(research_run_id, entry_profile_id, exit_profile_id);
 """
+
+_SHADOW_STEP_LEASE = timedelta(minutes=5)
 
 
 def _stamp(value: Optional[datetime] = None) -> datetime:
@@ -390,6 +602,16 @@ async def init_proactive_intelligence(db_path: str) -> None:
             await db.execute("ALTER TABLE proactive_shadow_runs ADD COLUMN last_as_of TEXT")
         if "last_sequence" not in columns:
             await db.execute("ALTER TABLE proactive_shadow_runs ADD COLUMN last_sequence INTEGER NOT NULL DEFAULT 0")
+        position_columns = {row[1] for row in await (await db.execute("PRAGMA table_info(proactive_shadow_positions)")).fetchall()}
+        if "marked_price" not in position_columns:
+            await db.execute("ALTER TABLE proactive_shadow_positions ADD COLUMN marked_price REAL")
+        if "marked_at" not in position_columns:
+            await db.execute("ALTER TABLE proactive_shadow_positions ADD COLUMN marked_at TEXT")
+        market_data_columns = {row[1] for row in await (await db.execute(
+            "PRAGMA table_info(proactive_market_data_observations)"
+        )).fetchall()}
+        if "fresh_until" not in market_data_columns:
+            await db.execute("ALTER TABLE proactive_market_data_observations ADD COLUMN fresh_until TEXT")
         await db.commit()
 
 
@@ -403,17 +625,56 @@ def _shadow_run_storage_key(account_id: str, run_id: str) -> str:
     return f"shadow-run:{digest}"
 
 
+def _shadow_implementation_identity() -> str:
+    """Freeze the executing research implementation with each manifest."""
+    return hashlib.sha256(Path(__file__).read_bytes()).hexdigest()
+
+
+def _configured_shadow_run_id(run_label: str) -> str:
+    """Give scheduled configuration an explicit, code-versioned lineage.
+
+    A configured scheduler should not keep retrying an incompatible immutable
+    run after an application upgrade.  The operator-visible label is retained
+    as a prefix, while the implementation suffix starts a new evidence
+    generation. Direct callers of :func:`run_shadow_workflow` keep their exact
+    run ID and therefore still receive a conflict on incompatible reuse.
+    """
+    label = str(run_label).strip()
+    if not label:
+        raise ValueError("configured shadow run label is required")
+    return f"{label}:impl-{_shadow_implementation_identity()[:12]}"
+
+
 async def _ensure_shadow_run(
     db_path: str, *, account_id: str, run_id: str, scenario_capital: float,
-    fee_rate: float, slippage_bps: float,
+    fee_rate: float, slippage_bps: float, market_data_contract: Optional[dict] = None,
 ) -> str:
     """Bind one named research run to immutable economic assumptions."""
     if not all(isinstance(value, str) and value for value in (account_id, run_id)):
         raise ValueError("shadow account and run identity are required")
+    market_data_contract = market_data_contract or {"source_kind": "LEGACY_FIXTURE_V1"}
+    if not isinstance(market_data_contract, dict):
+        raise ValueError("market-data contract must be an object")
+    try:
+        json.dumps(market_data_contract, sort_keys=True, separators=(",", ":"))
+    except (TypeError, ValueError) as exc:
+        raise ValueError("market-data contract must be serializable") from exc
     manifest = {
-        "version": "shadow-run-v1", "scenario_capital": float(scenario_capital),
+        "version": "shadow-run-v2", "schema_version": _SHADOW_SCHEMA_VERSION,
+        "implementation_sha256": _shadow_implementation_identity(),
+        "timestamp_convention": "completed_bar_timestamp_utc",
+        "calendar": "nse_trading_day_sync",
+        "scenario_capital": float(scenario_capital),
         "fee_rate": float(fee_rate), "slippage_bps": float(slippage_bps),
-        "policy_manifest": "three-sleeves-v1",
+        "policy_manifest": {
+            "strategies": sorted({"trend_pullback_v1", "range_reversion_v1", "contraction_breakout_v1"}),
+            "allocator": SHADOW_ALLOCATOR_VERSION,
+            "max_total_risk_fraction": _DEFAULT_MAX_TOTAL_RISK_FRACTION,
+            "max_position_risk_fraction": _DEFAULT_MAX_POSITION_RISK_FRACTION,
+            "max_position_cash_fraction": _DEFAULT_MAX_POSITION_CASH_FRACTION,
+            "gap_risk_multiple": _DEFAULT_GAP_RISK_MULTIPLE,
+        },
+        "market_data_contract": market_data_contract,
     }
     if (not math.isfinite(float(scenario_capital)) or float(scenario_capital) <= 0
             or not math.isfinite(float(fee_rate)) or float(fee_rate) < 0
@@ -475,8 +736,28 @@ async def _claim_shadow_step(
         last_as_of = _stamp(datetime.fromisoformat(run[0])) if run[0] else None
         if last_as_of is not None and as_of < last_as_of:
             await db.rollback(); raise ValueError("shadow run clock cannot move backwards")
+        active = await (await db.execute(
+            "SELECT as_of,claimed_at FROM proactive_shadow_run_steps WHERE run_key=? AND status='RUNNING'",
+            (run_key,),
+        )).fetchone()
+        if active is not None and active[0] != as_of.isoformat():
+            try:
+                active_claimed_at = _stamp(datetime.fromisoformat(active[1]))
+            except (TypeError, ValueError):
+                active_claimed_at = datetime.now(timezone.utc)
+            if datetime.now(timezone.utc) - active_claimed_at <= _SHADOW_STEP_LEASE:
+                await db.rollback()
+                raise RuntimeError("shadow run already has an active evaluation step")
+            # The prior worker exceeded its lease. All economic writes are
+            # idempotent/CAS-protected, so a later run may safely recover after
+            # retaining the abandoned step as audit evidence.
+            await db.execute(
+                "UPDATE proactive_shadow_run_steps SET status='ABANDONED',completed_at=? "
+                "WHERE run_key=? AND as_of=? AND status='RUNNING'",
+                (datetime.now(timezone.utc).isoformat(), run_key, active[0]),
+            )
         row = await (await db.execute(
-            "SELECT input_digest,status,result_json FROM proactive_shadow_run_steps WHERE run_key=? AND as_of=?",
+            "SELECT input_digest,status,result_json,claimed_at FROM proactive_shadow_run_steps WHERE run_key=? AND as_of=?",
             (run_key, as_of.isoformat()),
         )).fetchone()
         if row is not None:
@@ -484,7 +765,22 @@ async def _claim_shadow_step(
                 await db.rollback(); raise ValueError("shadow run step input conflicts with established clock")
             if row[1] == "COMPLETED" and row[2]:
                 await db.rollback(); return json.loads(row[2])
-            await db.rollback(); raise RuntimeError("shadow run step is already in progress")
+            if row[1] == "RUNNING":
+                try:
+                    claimed_at = _stamp(datetime.fromisoformat(row[3]))
+                except (TypeError, ValueError):
+                    claimed_at = datetime.now(timezone.utc)
+                if datetime.now(timezone.utc) - claimed_at <= _SHADOW_STEP_LEASE:
+                    await db.rollback(); raise RuntimeError("shadow run step is already in progress")
+            if row[1] not in {"RUNNING", "ABANDONED"}:
+                await db.rollback(); raise RuntimeError("shadow run step cannot be recovered")
+            await db.execute(
+                "UPDATE proactive_shadow_run_steps SET status='RUNNING',claimed_at=?,completed_at=NULL "
+                "WHERE run_key=? AND as_of=? AND input_digest=?",
+                (datetime.now(timezone.utc).isoformat(), run_key, as_of.isoformat(), input_digest),
+            )
+            await db.commit()
+            return None
         await db.execute(
             "INSERT INTO proactive_shadow_run_steps (run_key,as_of,input_digest,origin,status,claimed_at) VALUES (?,?,?,?,?,?)",
             (run_key, as_of.isoformat(), input_digest, origin, "RUNNING", datetime.now(timezone.utc).isoformat()),
@@ -533,28 +829,54 @@ async def record_opportunity_event(
     await init_proactive_intelligence(db_path)
     async with aiosqlite.connect(db_path) as db:
         await db.execute("BEGIN IMMEDIATE")
-        await db.execute(
-            "INSERT OR IGNORE INTO proactive_opportunities "
-            "(opportunity_id,policy_id,policy_version,account_id,mode,instrument,observed_at,valid_until,current_state,current_reason,detail_json) "
-            "VALUES (?,?,?,?,?,?,?,?,?,?,?)",
-            (opportunity_id, policy_id, policy_version, account_id, mode, instrument,
-             observed.isoformat(), expiry.isoformat() if expiry else None, stage, reason_code,
-             json.dumps(payload, sort_keys=True)),
+        inserted = await _record_opportunity_event_in_transaction(
+            db, opportunity_id=opportunity_id, policy_id=policy_id,
+            policy_version=policy_version, account_id=account_id, mode=mode,
+            instrument=instrument, stage=stage, reason_code=reason_code,
+            idempotency_key=idempotency_key, observed=observed, expiry=expiry,
+            decision_id=decision_id, detail=payload,
         )
-        cur = await db.execute(
-            "INSERT OR IGNORE INTO proactive_events "
-            "(opportunity_id,decision_id,mode,stage,reason_code,event_at,session_date,idempotency_key,detail_json) "
-            "VALUES (?,?,?,?,?,?,?,?,?)",
-            (opportunity_id, decision_id, mode, stage, reason_code, observed.isoformat(),
-             observed.date().isoformat(), idempotency_key, json.dumps(payload, sort_keys=True)),
-        )
-        if cur.rowcount:
-            await db.execute(
-                "UPDATE proactive_opportunities SET current_state=?, current_reason=?, detail_json=? WHERE opportunity_id=?",
-                (stage, reason_code, json.dumps(payload, sort_keys=True), opportunity_id),
-            )
         await db.commit()
-        return bool(cur.rowcount)
+        return inserted
+
+
+async def _record_opportunity_event_in_transaction(
+    db: aiosqlite.Connection, *, opportunity_id: str, policy_id: str,
+    policy_version: str, account_id: str, mode: Mode, instrument: str,
+    stage: str, reason_code: str, idempotency_key: str, observed: datetime,
+    expiry: Optional[datetime] = None, decision_id: Optional[str] = None,
+    detail: Optional[dict] = None,
+) -> bool:
+    """Write one lifecycle event using the caller's already-open transaction.
+
+    Shadow position state and the immutable lifecycle log must never be
+    committed independently.  This deliberately small helper is also used by
+    the public event writer, keeping the idempotency and current-state rules in
+    exactly one place.
+    """
+    payload = detail or {}
+    payload_json = json.dumps(payload, sort_keys=True)
+    await db.execute(
+        "INSERT OR IGNORE INTO proactive_opportunities "
+        "(opportunity_id,policy_id,policy_version,account_id,mode,instrument,observed_at,valid_until,current_state,current_reason,detail_json) "
+        "VALUES (?,?,?,?,?,?,?,?,?,?,?)",
+        (opportunity_id, policy_id, policy_version, account_id, mode, instrument,
+         observed.isoformat(), expiry.isoformat() if expiry else None, stage,
+         reason_code, payload_json),
+    )
+    cur = await db.execute(
+        "INSERT OR IGNORE INTO proactive_events "
+        "(opportunity_id,decision_id,mode,stage,reason_code,event_at,session_date,idempotency_key,detail_json) "
+        "VALUES (?,?,?,?,?,?,?,?,?)",
+        (opportunity_id, decision_id, mode, stage, reason_code, observed.isoformat(),
+         observed.date().isoformat(), idempotency_key, payload_json),
+    )
+    if cur.rowcount:
+        await db.execute(
+            "UPDATE proactive_opportunities SET current_state=?, current_reason=?, detail_json=? WHERE opportunity_id=?",
+            (stage, reason_code, payload_json, opportunity_id),
+        )
+    return bool(cur.rowcount)
 
 
 async def transition_watchlist(
@@ -625,6 +947,55 @@ async def record_scan_run(
         return bool(cur.rowcount)
 
 
+async def record_market_data_observation(
+    db_path: str, *, account_id: str, run_id: str, observed_at: datetime,
+    state: str, reason: str, provenance: Optional[dict] = None,
+) -> bool:
+    """Persist provider freshness separately from scheduler/strategy success.
+
+    Only compact provenance is retained here. Raw responses stay in their
+    controlled fixture/provider store and are represented by a content hash.
+    """
+    if state not in {"AVAILABLE", "UNAVAILABLE"}:
+        raise ValueError("market-data state must be AVAILABLE or UNAVAILABLE")
+    if not all(isinstance(value, str) and value for value in (account_id, run_id, reason)):
+        raise ValueError("market-data identity fields are required")
+    at = _stamp(observed_at)
+    provenance = provenance or {}
+    if not isinstance(provenance, dict):
+        raise ValueError("market-data provenance must be an object")
+    provider = str(provenance.get("provider", "")).strip() or None
+    timeframe = str(provenance.get("timeframe", "")).strip() or None
+    adjustment_version = str(provenance.get("adjustment_version", "")).strip() or None
+    source_hash = str(provenance.get("dataset_sha256", "")).strip() or None
+    try:
+        instrument_count = int(provenance.get("instrument_count", 0))
+        bar_count = int(provenance.get("bar_count", 0))
+        freshness = provenance.get("freshness_seconds")
+        freshness_seconds = float(freshness) if freshness is not None else None
+    except (TypeError, ValueError) as exc:
+        raise ValueError("market-data counts and freshness are invalid") from exc
+    if instrument_count < 0 or bar_count < 0 or (freshness_seconds is not None and (
+            not math.isfinite(freshness_seconds) or freshness_seconds < 0)):
+        raise ValueError("market-data counts and freshness are invalid")
+    identity = hashlib.sha256(json.dumps({
+        "account_id": account_id, "run_id": run_id, "state": state, "reason": reason,
+        "observed_at": at.isoformat(), "dataset_sha256": source_hash,
+    }, sort_keys=True, separators=(",", ":")).encode()).hexdigest()
+    await init_proactive_intelligence(db_path)
+    async with aiosqlite.connect(db_path) as db:
+        cur = await db.execute(
+            "INSERT OR IGNORE INTO proactive_market_data_observations "
+            "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+            (identity, account_id, run_id, "SHADOW", state, provider, timeframe,
+             adjustment_version, instrument_count, bar_count,
+             provenance.get("latest_exchange_at"), provenance.get("received_at"),
+             freshness_seconds, provenance.get("fresh_until"), source_hash, reason, at.isoformat()),
+        )
+        await db.commit()
+        return bool(cur.rowcount)
+
+
 async def proactive_inactivity_diagnostics(db_path: str, *, now: datetime, max_scan_gap: timedelta = timedelta(minutes=30)) -> list[dict]:
     """Return evidence gaps; diagnostics never alter a strategy threshold."""
     now = _stamp(now)
@@ -657,11 +1028,167 @@ async def proactive_inactivity_diagnostics(db_path: str, *, now: datetime, max_s
     return findings
 
 
+def _recent_eligible_session_dates(db_path: str, *, now: datetime, count: int) -> list[str]:
+    """Return recent NSE sessions without using a network calendar refresh.
+
+    Diagnostics must remain available during a market-data outage.  The shared
+    synchronous calendar reader uses its local cache and the maintained static
+    holiday fallback; it does not fabricate a weekday-only success state.
+    """
+    if not 1 <= count <= 20:
+        raise ValueError("session count must be within 1..20")
+    from market_calendar import is_trading_day_sync
+
+    cursor = _stamp(now).date()
+    sessions: list[str] = []
+    while len(sessions) < count:
+        if is_trading_day_sync(cursor, db_path):
+            sessions.append(cursor.isoformat())
+        cursor -= timedelta(days=1)
+    return list(reversed(sessions))
+
+
+async def proactive_session_diagnostics(
+    db_path: str, *, now: datetime, session_count: int = 5,
+) -> dict:
+    """Explain two/five-session activity per policy/account/mode scope.
+
+    This is read-only evidence.  It distinguishes data/scan health from a
+    genuine lack of viable candidates, capital/risk deferrals and sparse fills;
+    it cannot relax a gate or manufacture an order.
+    """
+    now = _stamp(now)
+    sessions = _recent_eligible_session_dates(db_path, now=now, count=session_count)
+    recent_two = sessions[-2:]
+    await init_proactive_intelligence(db_path)
+    async with aiosqlite.connect(db_path) as db:
+        scopes = await (await db.execute(
+            "SELECT DISTINCT policy_id,account_id,mode FROM proactive_scan_runs "
+            "ORDER BY policy_id,account_id,mode"
+        )).fetchall()
+        reports = []
+        for policy_id, account_id, mode in scopes:
+            scan_rows = await (await db.execute(
+                "SELECT substr(observed_at,1,10),status,reason,observed_at FROM proactive_scan_runs "
+                "WHERE policy_id=? AND account_id=? AND mode=? "
+                "AND substr(observed_at,1,10) IN ({}) "
+                "ORDER BY observed_at".format(",".join("?" for _ in sessions)),
+                (policy_id, account_id, mode, *sessions),
+            )).fetchall()
+            # Last attempt per calendar session is the liveness truth for the
+            # scope; a later unavailable attempt must not be hidden by an
+            # earlier success from the same session.
+            scan_by_session = {
+                row[0]: {"status": row[1], "reason": row[2], "observed_at": row[3]}
+                for row in scan_rows
+            }
+            event_rows = await (await db.execute(
+                "SELECT e.stage,e.reason_code,COUNT(DISTINCT e.opportunity_id) "
+                "FROM proactive_events e JOIN proactive_opportunities o "
+                "ON o.opportunity_id=e.opportunity_id "
+                "WHERE o.policy_id=? AND o.account_id=? AND o.mode=? "
+                "AND e.session_date IN ({}) GROUP BY e.stage,e.reason_code".format(
+                    ",".join("?" for _ in sessions)
+                ),
+                (policy_id, account_id, mode, *sessions),
+            )).fetchall()
+            stage_counts: dict[str, int] = {}
+            reason_counts: dict[str, int] = {}
+            for stage, reason, count in event_rows:
+                stage_counts[stage] = stage_counts.get(stage, 0) + int(count)
+                reason_counts[reason] = reason_counts.get(reason, 0) + int(count)
+            session_health = [scan_by_session.get(day) for day in sessions]
+            successful_sessions = sum(row is not None and row["status"] == "SUCCESS" for row in session_health)
+            unavailable_sessions = sum(row is not None and row["status"] != "SUCCESS" for row in session_health)
+            missing_sessions = sum(row is None for row in session_health)
+            healthy_recent_two = all(
+                scan_by_session.get(day, {}).get("status") == "SUCCESS" for day in recent_two
+            )
+            fills = stage_counts.get("FILLED", 0) + stage_counts.get("CLOSED", 0)
+            # A CLOSED event follows FILLED for the same opportunity, so count
+            # unique fill-or-close opportunities instead of adding stage totals.
+            fill_row = await (await db.execute(
+                "SELECT COUNT(DISTINCT e.opportunity_id) FROM proactive_events e "
+                "JOIN proactive_opportunities o ON o.opportunity_id=e.opportunity_id "
+                "WHERE o.policy_id=? AND o.account_id=? AND o.mode=? "
+                "AND e.session_date IN ({}) AND e.stage IN ('FILLED','CLOSED')".format(
+                    ",".join("?" for _ in sessions)
+                ),
+                (policy_id, account_id, mode, *sessions),
+            )).fetchone()
+            fills = int(fill_row[0])
+            viable = sum(stage_counts.get(stage, 0) for stage in ("COST_VIABLE", "RISK_APPROVED", "SELECTED", "FILLED", "CLOSED"))
+            recent_viable_row = await (await db.execute(
+                "SELECT COUNT(DISTINCT e.opportunity_id) FROM proactive_events e "
+                "JOIN proactive_opportunities o ON o.opportunity_id=e.opportunity_id "
+                "WHERE o.policy_id=? AND o.account_id=? AND o.mode=? "
+                "AND e.session_date IN ({}) AND e.stage IN "
+                "('COST_VIABLE','RISK_APPROVED','SELECTED','FILLED','CLOSED')".format(
+                    ",".join("?" for _ in recent_two)
+                ),
+                (policy_id, account_id, mode, *recent_two),
+            )).fetchone()
+            recent_viable = int(recent_viable_row[0])
+            findings = []
+            if missing_sessions or unavailable_sessions:
+                findings.append({
+                    "code": "ELIGIBLE_SESSION_SCAN_HEALTH_INCOMPLETE",
+                    "missing_sessions": missing_sessions,
+                    "unavailable_sessions": unavailable_sessions,
+                })
+            if healthy_recent_two and recent_viable == 0:
+                findings.append({
+                    "code": "TWO_ELIGIBLE_SESSIONS_NO_VIABLE_CANDIDATES",
+                    "sessions": recent_two,
+                })
+            if successful_sessions == session_count and fills <= 1:
+                findings.append({
+                    "code": "FIVE_ELIGIBLE_SESSIONS_SPARSE_FILLS" if session_count == 5 else "ELIGIBLE_SESSIONS_SPARSE_FILLS",
+                    "fills": fills, "sessions": sessions,
+                })
+            deferred = stage_counts.get("DEFERRED", 0)
+            if deferred:
+                findings.append({
+                    "code": "VIABLE_WORKFLOWS_DEFERRED",
+                    "deferred": deferred,
+                    "reasons": {key: value for key, value in reason_counts.items() if key in {
+                        "INSUFFICIENT_SHADOW_CASH_AFTER_COST_RESERVE", "OPEN_SHADOW_INSTRUMENT_EXPOSURE",
+                        "MISSED_ENTRY_WINDOW_NO_HISTORICAL_BACKFILL",
+                    }},
+                })
+            reports.append({
+                "scope": {"policy_id": policy_id, "account_id": account_id, "mode": mode},
+                "eligible_sessions": sessions,
+                "scan_health": {
+                    "expected_sessions": session_count, "successful_sessions": successful_sessions,
+                    "unavailable_sessions": unavailable_sessions, "missing_sessions": missing_sessions,
+                    "by_session": [{"session_date": day, **(scan_by_session.get(day) or {"status": "MISSING"})} for day in sessions],
+                },
+                "activity": {
+                    "stages": stage_counts, "reasons": reason_counts, "fills": fills,
+                    "viable_events": viable,
+                },
+                "findings": findings,
+            })
+    if not reports:
+        return {
+            "mode": "OBSERVATION_ONLY", "session_count": session_count,
+            "eligible_sessions": sessions, "reports": [],
+            "findings": [{"code": "SCANNER_NEVER_CONFIGURED_OR_RAN"}],
+            "can_place_orders": False, "authorization_effect": "NONE",
+        }
+    return {
+        "mode": "OBSERVATION_ONLY", "session_count": session_count,
+        "eligible_sessions": sessions, "reports": reports, "findings": [],
+        "can_place_orders": False, "authorization_effect": "NONE",
+    }
+
+
 async def _shadow_positions(db_path: str, *, account_id: str, status: Optional[str] = None) -> list[ShadowPosition]:
     await init_proactive_intelligence(db_path)
     query = (
         "SELECT opportunity_id,account_id,policy_id,instrument,quantity,entry_price,entry_fees,"
-        "stop_price,target_price,opened_at,holding_deadline,last_bar_at "
+        "stop_price,target_price,opened_at,holding_deadline,last_bar_at,marked_price,marked_at "
         "FROM proactive_shadow_positions WHERE account_id=?"
     )
     params: tuple = (account_id,)
@@ -676,6 +1203,8 @@ async def _shadow_positions(db_path: str, *, account_id: str, status: Optional[s
         opened_at=_stamp(datetime.fromisoformat(row[9])),
         holding_deadline=_stamp(datetime.fromisoformat(row[10])),
         last_bar_at=_stamp(datetime.fromisoformat(row[11])),
+        marked_price=float(row[12]) if row[12] is not None else None,
+        marked_at=_stamp(datetime.fromisoformat(row[13])) if row[13] else None,
     ) for row in rows]
 
 
@@ -703,28 +1232,60 @@ async def _shadow_account_state(db_path: str, *, account_id: str, scenario_capit
 
 async def _persist_new_shadow_position(
     db_path: str, *, proposal: ShadowProposal, account_id: str, result: ShadowSimulation,
-    fee_rate: float = .001,
+    fee_rate: float = .001, marked_price: Optional[float] = None, marked_at: Optional[datetime] = None,
 ) -> bool:
-    """Create an immutable synthetic fill/outcome exactly once per opportunity."""
+    """Atomically create a synthetic position and its immutable evidence.
+
+    A crash cannot leave synthetic cash/exposure visible without the matching
+    ``FILLED`` (and, for same-window exits, ``CLOSED``) event.  The unique
+    position key and event idempotency keys make retries harmless.
+    """
     if result.status not in {"OPEN", "CLOSED"} or not result.entry_price or not result.entry_at:
         raise ValueError("only filled shadow simulations can create positions")
     entry_fees = round(result.entry_price * result.quantity * fee_rate, 4)
     exit_fees = round((result.fees or 0.0) - entry_fees, 4) if result.status == "CLOSED" else None
     await init_proactive_intelligence(db_path)
     async with aiosqlite.connect(db_path) as db:
+        await db.execute("BEGIN IMMEDIATE")
         cur = await db.execute(
             "INSERT OR IGNORE INTO proactive_shadow_positions ("
             "opportunity_id,account_id,policy_id,instrument,status,quantity,entry_price,entry_fees,"
             "stop_price,target_price,opened_at,holding_deadline,last_bar_at,exit_price,exit_fees,gross_pnl,net_pnl,closed_at,close_reason"
-            ") VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+            ",marked_price,marked_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
             (proposal.opportunity_id, account_id, proposal.policy_id, proposal.instrument, result.status,
              result.quantity, result.entry_price, entry_fees, proposal.stop, proposal.target,
              result.entry_at.isoformat(), _stamp(proposal.holding_deadline or proposal.valid_until).isoformat(),
              _stamp(result.last_bar_at or result.entry_at).isoformat(), result.exit_price, exit_fees,
              result.gross_pnl, result.net_pnl,
              _stamp(result.last_bar_at).isoformat() if result.status == "CLOSED" and result.last_bar_at else None,
-             result.reason if result.status == "CLOSED" else None),
+             result.reason if result.status == "CLOSED" else None,
+             result.exit_price if result.status == "CLOSED" else marked_price,
+             (_stamp(marked_at).isoformat() if marked_at else None)),
         )
+        if cur.rowcount:
+            fill_detail = {"quantity": result.quantity, "entry_price": result.entry_price,
+                           "fees": entry_fees}
+            await _record_opportunity_event_in_transaction(
+                db, opportunity_id=proposal.opportunity_id, policy_id=proposal.policy_id,
+                policy_version="v1", account_id=account_id, mode="SHADOW",
+                instrument=proposal.instrument, stage="FILLED",
+                reason_code="SIMULATED_FILL", idempotency_key=f"{proposal.opportunity_id}:filled",
+                observed=_stamp(result.entry_at), detail=fill_detail,
+            )
+            if result.status == "CLOSED":
+                await _record_opportunity_event_in_transaction(
+                    db, opportunity_id=proposal.opportunity_id, policy_id=proposal.policy_id,
+                    policy_version="v1", account_id=account_id, mode="SHADOW",
+                    instrument=proposal.instrument, stage="CLOSED",
+                    reason_code=result.reason, idempotency_key=f"{proposal.opportunity_id}:closed",
+                    observed=_stamp(result.last_bar_at or result.entry_at),
+                    detail={"quantity": result.quantity, "gross_pnl": result.gross_pnl,
+                            "fees": result.fees, "net_pnl": result.net_pnl},
+                )
+            await _complete_shadow_watchlist_in_transaction(
+                db, opportunity_id=proposal.opportunity_id,
+                reason=result.reason, observed_at=_stamp(result.last_bar_at or result.entry_at),
+            )
         await db.commit()
         return bool(cur.rowcount)
 
@@ -736,62 +1297,161 @@ async def _advance_open_shadow_positions(
     """Advance persisted synthetic positions before admitting any new exposure."""
     updates: list[tuple[ShadowPosition, ShadowSimulation]] = []
     for position in await _shadow_positions(db_path, account_id=account_id, status="OPEN"):
+        normalised = _normalise_shadow_bars(future_bars.get(position.instrument, []))
         result = simulate_open_shadow_position(
             position, future_bars.get(position.instrument, []),
             fee_rate=fee_rate, slippage_bps=slippage_bps,
         )
-        if result.status == "INVALID":
+        if result.status == "INVALID" or normalised is None:
             continue  # Preserve the existing position; malformed later data cannot close it.
         if result.status == "OPEN" and result.last_bar_at == position.last_bar_at:
             continue
+        changed = False
         async with aiosqlite.connect(db_path) as db:
+            await db.execute("BEGIN IMMEDIATE")
             if result.status == "CLOSED":
                 exit_fees = round((result.fees or 0.0) - position.entry_fees, 4)
-                await db.execute(
+                cur = await db.execute(
                     "UPDATE proactive_shadow_positions SET status='CLOSED',last_bar_at=?,exit_price=?,"
-                    "exit_fees=?,gross_pnl=?,net_pnl=?,closed_at=?,close_reason=? "
-                    "WHERE opportunity_id=? AND status='OPEN'",
+                    "exit_fees=?,gross_pnl=?,net_pnl=?,closed_at=?,close_reason=?,marked_price=?,marked_at=? "
+                    "WHERE opportunity_id=? AND status='OPEN' AND last_bar_at=?",
                     (_stamp(result.last_bar_at).isoformat(), result.exit_price, exit_fees, result.gross_pnl,
-                     result.net_pnl, _stamp(result.last_bar_at).isoformat(), result.reason, position.opportunity_id),
+                     result.net_pnl, _stamp(result.last_bar_at).isoformat(), result.reason,
+                     result.exit_price, _stamp(result.last_bar_at).isoformat(), position.opportunity_id,
+                     position.last_bar_at.isoformat()),
                 )
+                changed = bool(cur.rowcount)
+                if changed:
+                    await _record_opportunity_event_in_transaction(
+                        db, opportunity_id=position.opportunity_id, policy_id=position.policy_id,
+                        policy_version="v1", account_id=account_id, mode="SHADOW",
+                        instrument=position.instrument, stage="CLOSED", reason_code=result.reason,
+                        idempotency_key=f"{position.opportunity_id}:closed",
+                        observed=_stamp(result.last_bar_at),
+                        detail={"quantity": result.quantity, "gross_pnl": result.gross_pnl,
+                                "fees": result.fees, "net_pnl": result.net_pnl},
+                    )
+                    await _complete_shadow_watchlist_in_transaction(
+                        db, opportunity_id=position.opportunity_id, reason=result.reason,
+                        observed_at=_stamp(result.last_bar_at),
+                    )
             else:
-                await db.execute(
-                    "UPDATE proactive_shadow_positions SET last_bar_at=? WHERE opportunity_id=? AND status='OPEN'",
-                    (_stamp(result.last_bar_at).isoformat(), position.opportunity_id),
+                mark = next((close for stamp, _open, _high, _low, close in normalised
+                             if stamp == result.last_bar_at), None)
+                cur = await db.execute(
+                    "UPDATE proactive_shadow_positions SET last_bar_at=?,marked_price=?,marked_at=? "
+                    "WHERE opportunity_id=? AND status='OPEN' AND last_bar_at=?",
+                    (_stamp(result.last_bar_at).isoformat(), mark, _stamp(result.last_bar_at).isoformat(),
+                     position.opportunity_id, position.last_bar_at.isoformat()),
                 )
+                changed = bool(cur.rowcount)
             await db.commit()
-        updates.append((position, result))
+        if changed:
+            updates.append((position, result))
     return updates
 
 
-async def _expire_pending_shadow_watchlists(db_path: str, *, now: datetime) -> list[tuple[str, str, str, str, str]]:
-    """Expire unfilled pending entries independently of current universe output."""
+async def _complete_shadow_watchlist_in_transaction(
+    db: aiosqlite.Connection, *, opportunity_id: str, reason: str,
+    observed_at: datetime,
+) -> None:
+    """Make a selected synthetic lifecycle complete with its fill/close.
+
+    Legacy evidence can lack a watchlist row, so absence deliberately remains
+    non-fatal.  For a current workflow a position is only admitted after
+    selection; changing it here avoids a committed fill with a stale ARMED or
+    SELECTED explanation after a crash.
+    """
+    await db.execute(
+        "UPDATE proactive_watchlist SET state='COMPLETED',reason=?,updated_at=? "
+        "WHERE opportunity_id=? AND state IN ('WATCHING','ARMED','SELECTED')",
+        (reason, observed_at.isoformat(), opportunity_id),
+    )
+
+
+async def _expire_pending_shadow_watchlists(
+    db_path: str, *, account_id: str, now: datetime,
+) -> int:
+    """Atomically expire only this run's unfilled pending entries.
+
+    ``account_id`` is the resolved storage/run identity, not an owner-facing
+    label.  Scoping it here prevents one scenario's replay clock from expiring
+    a different account or named run sharing the same database.
+    """
     await init_proactive_intelligence(db_path)
     async with aiosqlite.connect(db_path) as db:
         await db.execute("BEGIN IMMEDIATE")
         rows = await (await db.execute(
             "SELECT w.opportunity_id,o.policy_id,o.policy_version,o.account_id,o.instrument "
             "FROM proactive_watchlist w JOIN proactive_opportunities o ON o.opportunity_id=w.opportunity_id "
-            "LEFT JOIN proactive_shadow_positions p ON p.opportunity_id=w.opportunity_id "
-            "WHERE w.state IN ('WATCHING','ARMED','SELECTED') AND w.valid_until<=? "
-            "AND p.opportunity_id IS NULL",
-            (now.isoformat(),),
+            "LEFT JOIN proactive_shadow_positions p ON p.opportunity_id=w.opportunity_id AND p.account_id=o.account_id "
+            "WHERE o.account_id=? AND o.mode='SHADOW' "
+            "AND w.state IN ('WATCHING','ARMED','TRIGGERED','DEFERRED','SELECTED') "
+            "AND w.valid_until<=? AND p.opportunity_id IS NULL",
+            (account_id, now.isoformat()),
         )).fetchall()
-        for opportunity_id, *_rest in rows:
-            await db.execute(
+        expired = 0
+        for opportunity_id, policy_id, policy_version, stored_account_id, instrument in rows:
+            cur = await db.execute(
                 "UPDATE proactive_watchlist SET state='EXPIRED',reason='ENTRY_DEADLINE',updated_at=? "
-                "WHERE opportunity_id=? AND state IN ('WATCHING','ARMED','SELECTED')",
+                "WHERE opportunity_id=? AND state IN ('WATCHING','ARMED','TRIGGERED','DEFERRED','SELECTED')",
                 (now.isoformat(), opportunity_id),
             )
+            if cur.rowcount:
+                await _record_opportunity_event_in_transaction(
+                    db, opportunity_id=opportunity_id, policy_id=policy_id,
+                    policy_version=policy_version, account_id=stored_account_id,
+                    mode="SHADOW", instrument=instrument, stage="EXPIRED",
+                    reason_code="ENTRY_DEADLINE", idempotency_key=f"{opportunity_id}:expired",
+                    observed=now,
+                )
+                expired += 1
         await db.commit()
-    return [tuple(row) for row in rows]
+    return expired
+
+
+async def repair_shadow_evidence(db_path: str, *, account_id: str) -> int:
+    """Rebuild missing immutable lifecycle events from the economic ledger.
+
+    Positions are authoritative for synthetic cash.  This idempotent repair
+    makes an interruption after a position write observable without inventing
+    a second fill or changing any economics.
+    """
+    await init_proactive_intelligence(db_path)
+    async with aiosqlite.connect(db_path) as db:
+        rows = await (await db.execute(
+            "SELECT opportunity_id,policy_id,instrument,status,quantity,entry_price,entry_fees,"
+            "opened_at,closed_at,close_reason,gross_pnl,net_pnl,exit_fees "
+            "FROM proactive_shadow_positions WHERE account_id=?", (account_id,)
+        )).fetchall()
+    repaired = 0
+    for row in rows:
+        (opportunity_id, policy_id, instrument, status, quantity, entry_price, entry_fees,
+         opened_at, closed_at, close_reason, gross_pnl, net_pnl, exit_fees) = row
+        if await record_opportunity_event(
+            db_path, opportunity_id=opportunity_id, policy_id=policy_id, policy_version="v1",
+            account_id=account_id, mode="SHADOW", instrument=instrument, stage="FILLED",
+            reason_code="RECOVERED_POSITION_LEDGER", idempotency_key=f"{opportunity_id}:filled",
+            observed_at=_stamp(datetime.fromisoformat(opened_at)),
+            detail={"quantity": quantity, "entry_price": entry_price, "fees": entry_fees},
+        ):
+            repaired += 1
+        if status == "CLOSED" and closed_at and await record_opportunity_event(
+            db_path, opportunity_id=opportunity_id, policy_id=policy_id, policy_version="v1",
+            account_id=account_id, mode="SHADOW", instrument=instrument, stage="CLOSED",
+            reason_code=close_reason or "RECOVERED_POSITION_LEDGER",
+            idempotency_key=f"{opportunity_id}:closed", observed_at=_stamp(datetime.fromisoformat(closed_at)),
+            detail={"quantity": quantity, "gross_pnl": gross_pnl, "fees": (entry_fees or 0) + (exit_fees or 0), "net_pnl": net_pnl},
+        ):
+            repaired += 1
+    return repaired
 
 
 async def run_shadow_workflow(
     db_path: str, *, account_id: str, universe: dict[str, list[dict]], now: datetime,
     scenario_capital: float = 8_000, future_bars: Optional[dict[str, list[dict]]] = None,
     run_id: str = "default-v1", fee_rate: float = .001, slippage_bps: float = 5,
-    origin: str = "SHADOW",
+    origin: str = "SHADOW", market_data_contract: Optional[dict] = None,
 ) -> dict:
     """Run the bounded fixture-backed SHADOW path; never calls a broker.
 
@@ -804,7 +1464,7 @@ async def run_shadow_workflow(
     now = _stamp(now); future_bars = future_bars or {}
     storage_account_id = await _ensure_shadow_run(
         db_path, account_id=account_id, run_id=run_id, scenario_capital=scenario_capital,
-        fee_rate=fee_rate, slippage_bps=slippage_bps,
+        fee_rate=fee_rate, slippage_bps=slippage_bps, market_data_contract=market_data_contract,
     )
     manifest = await _shadow_run_manifest(db_path, run_key=storage_account_id)
     persisted_fee_rate = float(manifest["fee_rate"])
@@ -827,15 +1487,10 @@ async def run_shadow_workflow(
     )
     if prior_result is not None:
         return prior_result
-    expired_pending = await _expire_pending_shadow_watchlists(db_path, now=now)
-    for opportunity_id, policy_id, policy_version, stored_account_id, instrument in expired_pending:
-        await record_opportunity_event(
-            db_path, opportunity_id=opportunity_id, policy_id=policy_id,
-            policy_version=policy_version, account_id=stored_account_id,
-            mode="SHADOW", instrument=instrument, stage="EXPIRED",
-            reason_code="ENTRY_DEADLINE", idempotency_key=f"{opportunity_id}:expired",
-            observed_at=now,
-        )
+    repaired_evidence = await repair_shadow_evidence(db_path, account_id=storage_account_id)
+    expired_pending = await _expire_pending_shadow_watchlists(
+        db_path, account_id=storage_account_id, now=now,
+    )
     # Existing exposure is advanced first. A malformed update cannot erase a
     # position, and any realised result is then reflected in free scenario cash.
     managed = await _advance_open_shadow_positions(
@@ -869,12 +1524,19 @@ async def run_shadow_workflow(
         # historical bar even if its final timestamp stays the same.
         source_digest = hashlib.sha256(json.dumps(visible_bars, sort_keys=True, default=str).encode()).hexdigest()[:20]
         scan_id = hashlib.sha256(f"{storage_account_id}:{instrument}:{source_digest}".encode()).hexdigest()[:20]
+        history_state = shadow_history_state(visible_bars, now=now)
         built = build_shadow_proposals(instrument, visible_bars, now=now)
         policies = {proposal.policy_id for proposal in built} or {"shadow_registry_v1"}
         for policy_id in policies:
             await record_scan_run(db_path, scan_id=f"{scan_id}:{policy_id}", policy_id=policy_id,
-                                  account_id=storage_account_id, mode="SHADOW", status="SUCCESS", observed_at=now,
-                                  reason="COMPLETED_BARS" if built else "NO_COMPLETED_SETUP")
+                                  account_id=storage_account_id, mode="SHADOW",
+                                  status="SUCCESS" if history_state == "READY" else "UNAVAILABLE",
+                                  observed_at=now,
+                                  reason="COMPLETED_BARS" if built else (
+                                      "NO_COMPLETED_SETUP" if history_state == "READY" else history_state
+                                  ))
+        if history_state != "READY":
+            continue
         for proposal in built:
             proposal = replace(
                 proposal,
@@ -906,6 +1568,10 @@ async def run_shadow_workflow(
             reasons[proposal.opportunity_id] = "RECORDED_SHADOW_OUTCOME"
         elif proposal.instrument in open_instruments:
             reasons[proposal.opportunity_id] = "OPEN_SHADOW_INSTRUMENT_EXPOSURE"
+        elif _shadow_entry_window_already_observed(
+            proposal, visible_future_bars.get(proposal.instrument, []), now=now,
+        ):
+            reasons[proposal.opportunity_id] = "MISSED_ENTRY_WINDOW_NO_HISTORICAL_BACKFILL"
         else:
             candidates.append(proposal)
     allocations, allocation_reasons = size_shadow_allocations(
@@ -954,9 +1620,16 @@ async def run_shadow_workflow(
         else:
             stage = "EXPIRED"
         if result.status in {"OPEN", "CLOSED"}:
+            initial_mark = None
+            if result.status == "OPEN":
+                normalised_bars = _normalise_shadow_bars(visible_future_bars.get(proposal.instrument, []))
+                if normalised_bars is not None:
+                    initial_mark = next((close for stamp, _open, _high, _low, close in normalised_bars
+                                         if stamp == result.last_bar_at), None)
             await _persist_new_shadow_position(
                 db_path, proposal=proposal, account_id=storage_account_id, result=result,
-                fee_rate=persisted_fee_rate,
+                fee_rate=persisted_fee_rate, marked_price=initial_mark,
+                marked_at=result.last_bar_at if initial_mark is not None else None,
             )
             await transition_watchlist(
                 db_path, opportunity_id=proposal.opportunity_id, state="COMPLETED",
@@ -976,7 +1649,8 @@ async def run_shadow_workflow(
         db_path, account_id=storage_account_id, scenario_capital=scenario_capital,
     )
     result = {"mode": "SHADOW", "origin": origin, "account_id": account_id, "run_id": run_id, "as_of": now.isoformat(), "proposals": len(proposals), "allocations": len(allocations), "outcomes": outcomes, "reasons": reasons,
-              "free_cash": round(post_free_cash, 4), "managed_positions": len(managed), "expired_pending": len(expired_pending)}
+              "free_cash": round(post_free_cash, 4), "managed_positions": len(managed), "expired_pending": expired_pending,
+              "repaired_evidence": repaired_evidence}
     await _complete_shadow_step(
         db_path, run_key=storage_account_id, as_of=now,
         input_digest=step_input_digest, result=result,
@@ -1048,6 +1722,70 @@ async def run_configured_shadow_workflow(*, now: Optional[datetime] = None) -> d
         return {"mode": "SHADOW", "state": "DISABLED"}
     if not account_id:
         raise ValueError("PROACTIVE_SHADOW_ACCOUNT_ID is required when enabled")
+    source = str(settings.PROACTIVE_SHADOW_DATA_SOURCE).strip().upper()
+    if source == "RECORDED_COMPLETED_BARS_V1":
+        from proactive_market_data import CompletedBarDataError, load_recorded_completed_bar_snapshot
+
+        run_label = str(settings.PROACTIVE_SHADOW_RUN_ID).strip()
+        run_id = _configured_shadow_run_id(run_label) if run_label else ""
+        fixture_path = str(settings.PROACTIVE_SHADOW_COMPLETED_BAR_FIXTURE_PATH).strip()
+        try:
+            max_age_seconds = int(settings.PROACTIVE_SHADOW_MAX_DATA_AGE_SECONDS)
+            capital = float(settings.PROACTIVE_SHADOW_SCENARIO_CAPITAL)
+            if not fixture_path:
+                raise ValueError("completed-bar fixture source is unconfigured")
+            if not run_id or not math.isfinite(capital) or capital <= 0:
+                raise ValueError("shadow run identity and scenario capital are required")
+            if not 1 <= max_age_seconds <= 86_400:
+                raise ValueError("completed-bar maximum age must be between one second and one day")
+            snapshot = load_recorded_completed_bar_snapshot(
+                fixture_path, as_of=observed_at, max_age=timedelta(seconds=max_age_seconds),
+            )
+        except CompletedBarDataError as exc:
+            reason = "MARKET_DATA_STALE" if "stale" in str(exc).lower() else "MARKET_DATA_SOURCE_INVALID"
+            await record_market_data_observation(
+                settings.DB_PATH, account_id=account_id, run_id=run_id or "unconfigured",
+                observed_at=observed_at, state="UNAVAILABLE", reason=reason,
+            )
+            await _record_shadow_configuration_state(
+                settings.DB_PATH, account_id=account_id, observed_at=observed_at, reason=reason,
+            )
+            return {"mode": "SHADOW", "state": reason}
+        except (TypeError, ValueError, OverflowError):
+            reason = "MARKET_DATA_SOURCE_UNCONFIGURED" if not fixture_path else "MARKET_DATA_CONFIGURATION_INVALID"
+            await record_market_data_observation(
+                settings.DB_PATH, account_id=account_id, run_id=run_id or "unconfigured",
+                observed_at=observed_at, state="UNAVAILABLE", reason=reason,
+            )
+            await _record_shadow_configuration_state(
+                settings.DB_PATH, account_id=account_id, observed_at=observed_at, reason=reason,
+            )
+            return {"mode": "SHADOW", "state": reason}
+        await record_market_data_observation(
+            settings.DB_PATH, account_id=account_id, run_id=run_id, observed_at=observed_at,
+            state="AVAILABLE", reason="COMPLETED_BARS_AVAILABLE", provenance=snapshot.provenance,
+        )
+        contract = {
+            key: snapshot.provenance[key]
+            for key in ("source_kind", "provider", "timeframe", "adjustment_version", "instrument_mapping")
+        }
+        result = await run_shadow_workflow(
+            settings.DB_PATH, account_id=account_id, universe=snapshot.decision_bars,
+            future_bars=snapshot.outcome_bars, scenario_capital=capital, run_id=run_id,
+            now=observed_at, market_data_contract=contract,
+        )
+        return {**result, "state": "COMPLETED", "market_data": snapshot.provenance}
+    if source != "LEGACY_FIXTURE_V1":
+        reason = "MARKET_DATA_SOURCE_UNSUPPORTED"
+        await record_market_data_observation(
+            settings.DB_PATH, account_id=account_id,
+            run_id=str(settings.PROACTIVE_SHADOW_RUN_ID).strip() or "unconfigured",
+            observed_at=observed_at, state="UNAVAILABLE", reason=reason,
+        )
+        await _record_shadow_configuration_state(
+            settings.DB_PATH, account_id=account_id, observed_at=observed_at, reason=reason,
+        )
+        return {"mode": "SHADOW", "state": reason}
     fixture_path = str(settings.PROACTIVE_SHADOW_FIXTURE_PATH).strip()
     if not fixture_path:
         await _record_shadow_configuration_state(
@@ -1061,7 +1799,8 @@ async def run_configured_shadow_workflow(*, now: Optional[datetime] = None) -> d
             raise ValueError("fixture must declare mode=SHADOW")
         universe = _validate_shadow_bar_collections(payload.get("universe"), field="universe", allow_empty=False)
         future_bars = _validate_shadow_bar_collections(payload.get("future_bars", {}), field="future_bars", allow_empty=True)
-        run_id = str(payload.get("run_id", settings.PROACTIVE_SHADOW_RUN_ID)).strip()
+        run_label = str(payload.get("run_id", settings.PROACTIVE_SHADOW_RUN_ID)).strip()
+        run_id = _configured_shadow_run_id(run_label)
         capital = float(settings.PROACTIVE_SHADOW_SCENARIO_CAPITAL)
         if not run_id or not math.isfinite(capital) or capital <= 0:
             raise ValueError("shadow run identity and scenario capital are required")
@@ -1078,7 +1817,9 @@ async def run_configured_shadow_workflow(*, now: Optional[datetime] = None) -> d
     return {**result, "state": "COMPLETED"}
 
 
-async def proactive_activity_report(db_path: str, *, days: int = 7) -> dict:
+async def proactive_activity_report(
+    db_path: str, *, days: int = 7, now: Optional[datetime] = None,
+) -> dict:
     """Mode-separated counts; absent evidence is explicit rather than zero-health."""
     if not 1 <= days <= 366:
         raise ValueError("days must be within 1..366")
@@ -1106,19 +1847,30 @@ async def proactive_activity_report(db_path: str, *, days: int = 7) -> dict:
         )
         flows = await cur.fetchall()
         cur = await db.execute(
-            "SELECT COALESCE(r.account_id,p.account_id),COALESCE(r.run_id,'legacy'),"
+            "SELECT p.account_id,COALESCE(r.run_id,'legacy'),r.manifest_json,"
             "SUM(CASE WHEN status='OPEN' THEN 1 ELSE 0 END),"
             "SUM(CASE WHEN status='CLOSED' THEN 1 ELSE 0 END),"
             "COALESCE(SUM(CASE WHEN status='OPEN' THEN entry_price*quantity+entry_fees ELSE 0 END),0),"
             "COALESCE(SUM(CASE WHEN status='CLOSED' THEN gross_pnl ELSE 0 END),0),"
             "COALESCE(SUM(CASE WHEN status='CLOSED' THEN exit_fees+entry_fees ELSE 0 END),0),"
-            "COALESCE(SUM(CASE WHEN status='CLOSED' THEN net_pnl ELSE 0 END),0) "
+            "COALESCE(SUM(CASE WHEN status='CLOSED' THEN net_pnl ELSE 0 END),0),"
+            "SUM(CASE WHEN status='OPEN' AND marked_price IS NOT NULL THEN 1 ELSE 0 END),"
+            "COALESCE(SUM(CASE WHEN status='OPEN' AND marked_price IS NOT NULL "
+            "THEN (marked_price-entry_price)*quantity ELSE 0 END),0),"
+            "COALESCE(SUM(CASE WHEN status='OPEN' AND marked_price IS NOT NULL "
+            "THEN (marked_price-entry_price)*quantity-entry_fees ELSE 0 END),0) "
             "FROM proactive_shadow_positions p LEFT JOIN proactive_shadow_runs r ON r.run_key=p.account_id "
-            "WHERE p.status='OPEN' OR date(p.closed_at) >= date('now', ?) "
-            "GROUP BY COALESCE(r.account_id,p.account_id),COALESCE(r.run_id,'legacy')",
-            (f'-{days - 1} days',),
+            "GROUP BY p.account_id,COALESCE(r.run_id,'legacy'),r.manifest_json",
         )
         position_rows = await cur.fetchall()
+        cur = await db.execute(
+            "SELECT account_id,run_id,state,provider,timeframe,adjustment_version,"
+            "instrument_count,bar_count,latest_exchange_at,received_at,freshness_seconds,"
+            "fresh_until,dataset_sha256,reason,observed_at "
+            "FROM proactive_market_data_observations "
+            "ORDER BY observed_at DESC, observation_id DESC"
+        )
+        market_data_rows = await cur.fetchall()
     by_mode: dict[str, dict] = {mode: {"scan_evaluations": 0, "unique_opportunities": 0, "stages": {}} for mode in sorted(_MODES)}
     for mode, stage, count, _unique_count in rows:
         by_mode[mode]["stages"][stage] = int(count)
@@ -1129,11 +1881,334 @@ async def proactive_activity_report(db_path: str, *, days: int = 7) -> dict:
     funding = {mode: {} for mode in _MODES}
     for mode, flow_type, amount in flows:
         funding[mode][flow_type] = float(amount)
-    shadow_positions = [{
-        "account_id": row[0], "run_id": row[1], "open_positions": int(row[2]), "closed_positions": int(row[3]),
-        "reserved_capital": round(float(row[4]), 4), "gross_pnl": round(float(row[5]), 4),
-        "fees": round(float(row[6]), 4), "net_pnl": round(float(row[7]), 4),
-    } for row in position_rows]
-    return {"as_of": datetime.now(timezone.utc).isoformat(), "days": days, "modes": by_mode, "funding_flows": funding,
-            "shadow_positions": shadow_positions,
+    shadow_positions = []
+    for row in position_rows:
+        try:
+            manifest = json.loads(row[2]) if row[2] else {}
+            scenario_capital = float(manifest["scenario_capital"]) if manifest else None
+        except (KeyError, TypeError, ValueError, json.JSONDecodeError):
+            scenario_capital = None
+        reserved, realised = float(row[5]), float(row[8])
+        shadow_positions.append({
+            "account_id": row[0], "run_id": row[1], "open_positions": int(row[3]), "closed_positions": int(row[4]),
+            "reserved_capital": round(reserved, 4), "gross_pnl": round(float(row[6]), 4),
+            "fees": round(float(row[7]), 4), "net_pnl": round(realised, 4),
+            "scenario_capital": scenario_capital,
+            "free_cash": (round(max(0.0, scenario_capital + realised - reserved), 4)
+                          if scenario_capital is not None else None),
+            "marked_unrealized_pnl": round(float(row[11]), 4) if int(row[9]) else None,
+            "unrealized_state": ("MARKED_COMPLETED_BAR" if int(row[3]) and int(row[9]) == int(row[3])
+                                 else "PARTIALLY_MARKED_COMPLETED_BAR" if int(row[9])
+                                 else "UNAVAILABLE_NO_CURRENT_MARK"),
+            "marked_unrealized_gross_pnl": round(float(row[10]), 4) if int(row[9]) else None,
+            "marked_unrealized_net_pnl": round(float(row[11]), 4) if int(row[9]) else None,
+        })
+    latest_market_data = []
+    report_now = _stamp(now)
+    seen_market_scopes: set[tuple[str, str]] = set()
+    for row in market_data_rows:
+        scope = (str(row[0]), str(row[1]))
+        if scope in seen_market_scopes:
+            continue
+        seen_market_scopes.add(scope)
+        state, reason = row[2], row[13]
+        received_at = row[9]
+        freshness_seconds = row[10]
+        try:
+            received_stamp = _stamp(datetime.fromisoformat(received_at)) if received_at else None
+            current_age = max(0.0, (report_now - received_stamp).total_seconds()) if received_stamp else None
+            fresh_until = _stamp(datetime.fromisoformat(row[11])) if row[11] else None
+        except (TypeError, ValueError):
+            current_age, fresh_until = None, None
+        if state == "AVAILABLE" and fresh_until is not None and report_now > fresh_until:
+            state, reason = "STALE", "MARKET_DATA_STALE_AFTER_OBSERVATION"
+        latest_market_data.append({
+            "account_id": scope[0], "run_id": scope[1], "state": state,
+            "provider": row[3], "timeframe": row[4], "adjustment_version": row[5],
+            "instrument_count": int(row[6]), "bar_count": int(row[7]),
+            "latest_exchange_at": row[8], "received_at": row[9],
+            "freshness_seconds": current_age if current_age is not None else freshness_seconds,
+            "dataset_sha256": row[12], "reason": reason, "observed_at": row[14],
+        })
+    return {"as_of": report_now.isoformat(), "days": days, "modes": by_mode, "funding_flows": funding,
+            "shadow_positions": shadow_positions, "market_data": {"latest": latest_market_data},
             "note": "Events are operational evidence; only reconciled live ledgers establish live profit."}
+
+
+async def proactive_shadow_comparison(db_path: str, *, days: int = 90) -> dict:
+    """Summarise completed synthetic outcomes without turning them into an edge claim.
+
+    The grouping intentionally includes both the immutable scenario run and the
+    policy.  Combining outcomes collected with different capital, costs, or
+    slippage assumptions would make a flattering but invalid comparison.  A
+    policy is only marked as *collecting evidence* once it has a conservative
+    number of complete, costed exits; this report never promotes or authorises
+    a strategy.
+    """
+    if not 1 <= days <= 366:
+        raise ValueError("days must be within 1..366")
+    await init_proactive_intelligence(db_path)
+    async with aiosqlite.connect(db_path) as db:
+        rows = await (await db.execute(
+            "SELECT COALESCE(r.account_id,p.account_id),COALESCE(r.run_id,'legacy'),"
+            "p.account_id,p.policy_id,p.opportunity_id,p.entry_price,p.stop_price,p.quantity,"
+            "p.gross_pnl,p.entry_fees,p.exit_fees,p.net_pnl,p.close_reason,p.closed_at "
+            "FROM proactive_shadow_positions p "
+            "LEFT JOIN proactive_shadow_runs r ON r.run_key=p.account_id "
+            "WHERE p.status='CLOSED' AND p.closed_at IS NOT NULL "
+            "AND datetime(p.closed_at) >= datetime('now', ?) "
+            "ORDER BY COALESCE(r.account_id,p.account_id),COALESCE(r.run_id,'legacy'),"
+            "p.policy_id,p.closed_at,p.opportunity_id",
+            (f'-{days - 1} days',),
+        )).fetchall()
+
+    grouped: dict[tuple[str, str, str, str], list[tuple]] = {}
+    for row in rows:
+        # A completed outcome needs the full costed close and a valid initial
+        # risk denominator.  Retain malformed records in the count below, but
+        # never coerce them to zero and distort expectancy.
+        grouped.setdefault((str(row[0]), str(row[1]), str(row[2]), str(row[3])), []).append(row)
+
+    comparisons = []
+    for (account_id, run_id, storage_account_id, policy_id), positions in grouped.items():
+        valid = []
+        invalid_outcomes = 0
+        exit_reasons: dict[str, int] = {}
+        for row in positions:
+            try:
+                gross, entry_fees, exit_fees, net = (float(row[index]) for index in (8, 9, 10, 11))
+                risk = (float(row[5]) - float(row[6])) * int(row[7])
+                if (not all(math.isfinite(value) for value in (gross, entry_fees, exit_fees, net))
+                        or not math.isfinite(risk) or risk <= 0):
+                    raise ValueError("non-finite costed outcome or non-positive initial risk")
+            except (TypeError, ValueError):
+                invalid_outcomes += 1
+                continue
+            reason = str(row[12] or "UNSPECIFIED")
+            exit_reasons[reason] = exit_reasons.get(reason, 0) + 1
+            valid.append((gross, entry_fees + exit_fees, net, net / risk))
+
+        closed_outcomes = len(valid)
+        net_values = [value[2] for value in valid]
+        wins = sum(value > 0 for value in net_values)
+        losses = sum(value < 0 for value in net_values)
+        breakevens = sum(value == 0 for value in net_values)
+        gross_wins = sum(value for value in net_values if value > 0)
+        gross_losses = abs(sum(value for value in net_values if value < 0))
+        equity = peak = max_drawdown = 0.0
+        for value in net_values:
+            equity += value
+            peak = max(peak, equity)
+            max_drawdown = max(max_drawdown, peak - equity)
+        enough_evidence = closed_outcomes >= SHADOW_COMPARISON_MIN_CLOSED_OUTCOMES
+        comparisons.append({
+            "account_id": account_id,
+            "run_id": run_id,
+            "storage_account_id": storage_account_id,
+            "policy_id": policy_id,
+            "closed_records": len(positions),
+            "closed_outcomes": closed_outcomes,
+            "invalid_closed_records": invalid_outcomes,
+            "gross_pnl": round(sum(value[0] for value in valid), 4) if valid else None,
+            "costs": round(sum(value[1] for value in valid), 4) if valid else None,
+            "net_pnl": round(sum(net_values), 4) if valid else None,
+            "net_expectancy": round(sum(net_values) / closed_outcomes, 4) if valid else None,
+            "net_r_expectancy": round(sum(value[3] for value in valid) / closed_outcomes, 6) if valid else None,
+            "wins": wins if valid else None,
+            "losses": losses if valid else None,
+            "breakevens": breakevens if valid else None,
+            "win_rate": round(wins / closed_outcomes, 6) if valid else None,
+            "profit_factor": round(gross_wins / gross_losses, 6) if gross_losses else None,
+            "profit_factor_state": ("AVAILABLE" if gross_losses else "UNDEFINED_NO_LOSSES" if valid
+                                    else "UNAVAILABLE_NO_CLOSED_OUTCOMES"),
+            "max_drawdown": round(max_drawdown, 4) if valid else None,
+            "exit_reasons": [
+                {"reason": reason, "closed_outcomes": count}
+                for reason, count in sorted(exit_reasons.items(), key=lambda item: (-item[1], item[0]))
+            ],
+            "evidence_state": "COLLECTING_EVIDENCE" if enough_evidence else "INSUFFICIENT_CLOSED_OUTCOMES",
+            "minimum_closed_outcomes": SHADOW_COMPARISON_MIN_CLOSED_OUTCOMES,
+            "exit_policy_comparison_state": "UNAVAILABLE_NOT_EXPERIMENT_TAGGED",
+            "warnings": [
+                "Synthetic fixture outcomes are not broker fills, live P&L, or a trading recommendation.",
+                "Policies are comparable only within the same immutable shadow run.",
+                "Exit-policy A/B evidence is unavailable because these historical outcomes were not tagged to distinct exit-policy variants.",
+            ] + (["Invalid closed records were excluded rather than silently counted as zero outcomes."] if invalid_outcomes else []),
+        })
+    return {
+        "as_of": datetime.now(timezone.utc).isoformat(),
+        "days": days,
+        "mode": "SHADOW",
+        "research_only": True,
+        "can_place_orders": False,
+        "authorization_effect": "NONE",
+        "minimum_closed_outcomes": SHADOW_COMPARISON_MIN_CLOSED_OUTCOMES,
+        "comparisons": comparisons,
+        "note": "Closed synthetic outcomes support research review only; they cannot enable, size, place, or alter live trades.",
+    }
+
+
+def _research_proposal_manifest(proposal: ShadowProposal) -> dict:
+    return {
+        "opportunity_id": proposal.opportunity_id, "policy_id": proposal.policy_id,
+        "instrument": proposal.instrument, "entry": proposal.entry, "stop": proposal.stop,
+        "target": proposal.target, "data_cutoff": _stamp(proposal.data_cutoff or proposal.signal_at or proposal.valid_until).isoformat(),
+        "entry_deadline": _stamp(proposal.entry_deadline or proposal.valid_until).isoformat(),
+        "holding_deadline": _stamp(proposal.holding_deadline or proposal.valid_until).isoformat(),
+    }
+
+
+async def run_shadow_research_comparison(
+    db_path: str, *, research_run_id: str, proposals: list[ShadowProposal],
+    future_bars: dict[str, list[dict]], cash_per_trial: float,
+    fee_rate: float = .001, slippage_bps: float = 5,
+) -> dict:
+    """Persist a frozen, matched entry/exit experiment with all outcomes retained.
+
+    This deliberately has no dependency on the scheduled workflow, a broker or
+    a delivery mechanism.  It is a reproducible historical/fixture evaluation:
+    each named entry/exit policy receives the same opportunity and price bars,
+    and no-fill/invalid results are evidence rather than omitted observations.
+    Reusing a run id is only allowed for byte-identical assumptions and input.
+    """
+    if not isinstance(research_run_id, str) or not research_run_id.strip():
+        raise ValueError("research_run_id is required")
+    if not all(math.isfinite(float(value)) and float(value) >= 0 for value in (fee_rate, slippage_bps)):
+        raise ValueError("research costs must be finite and non-negative")
+    if not math.isfinite(float(cash_per_trial)) or cash_per_trial <= 0:
+        raise ValueError("cash_per_trial must be positive and finite")
+    if not isinstance(future_bars, dict):
+        raise ValueError("future_bars must be a mapping")
+    if len({proposal.opportunity_id for proposal in proposals}) != len(proposals):
+        raise ValueError("research proposals require unique opportunity identities")
+    manifest = {
+        "version": "shadow-research-v2", "schema_version": _SHADOW_SCHEMA_VERSION,
+        "implementation_sha256": _shadow_implementation_identity(),
+        "timestamp_convention": "completed_bar_timestamp_utc",
+        "calendar": "nse_trading_day_sync", "cash_per_trial": float(cash_per_trial),
+        "fee_rate": float(fee_rate), "slippage_bps": float(slippage_bps),
+        "entry_profiles": sorted(_SHADOW_ENTRY_PROFILES), "exit_profiles": sorted(_SHADOW_EXIT_PROFILES),
+        "proposals": [_research_proposal_manifest(proposal) for proposal in proposals],
+        "future_bars": future_bars,
+    }
+    manifest_json = json.dumps(manifest, sort_keys=True, separators=(",", ":"), default=str, allow_nan=False)
+    await init_proactive_intelligence(db_path)
+    async with aiosqlite.connect(db_path) as db:
+        await db.execute("BEGIN IMMEDIATE")
+        existing = await (await db.execute(
+            "SELECT manifest_json FROM proactive_shadow_research_runs WHERE research_run_id=?", (research_run_id,),
+        )).fetchone()
+        if existing is not None and existing[0] != manifest_json:
+            await db.rollback()
+            raise ValueError("research run manifest conflicts with existing evidence; create a new research_run_id")
+        if existing is None:
+            await db.execute(
+                "INSERT INTO proactive_shadow_research_runs (research_run_id,manifest_json,created_at) VALUES (?,?,?)",
+                (research_run_id, manifest_json, datetime.now(timezone.utc).isoformat()),
+            )
+        inserted = 0
+        for proposal in proposals:
+            bars = future_bars.get(proposal.instrument, [])
+            for entry_profile_id in sorted(_SHADOW_ENTRY_PROFILES):
+                for exit_profile_id in sorted(_SHADOW_EXIT_PROFILES):
+                    result = simulate_shadow_research_trial(
+                        proposal, bars, cash=float(cash_per_trial), entry_profile_id=entry_profile_id,
+                        exit_profile_id=exit_profile_id, fee_rate=float(fee_rate), slippage_bps=float(slippage_bps),
+                    )
+                    trial_id = hashlib.sha256(
+                        f"{research_run_id}\x00{proposal.opportunity_id}\x00{entry_profile_id}\x00{exit_profile_id}".encode()
+                    ).hexdigest()[:32]
+                    cur = await db.execute(
+                        "INSERT OR IGNORE INTO proactive_shadow_research_trials ("
+                        "trial_id,research_run_id,opportunity_id,policy_id,instrument,entry_profile_id,exit_profile_id,"
+                        "status,reason,quantity,entry_at,exit_at,gross_pnl,fees,net_pnl,created_at"
+                        ") VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+                        (trial_id, research_run_id, proposal.opportunity_id, proposal.policy_id, proposal.instrument,
+                         entry_profile_id, exit_profile_id, result.status, result.reason, result.quantity,
+                         result.entry_at.isoformat() if result.entry_at else None,
+                         result.last_bar_at.isoformat() if result.status == "CLOSED" and result.last_bar_at else None,
+                         result.gross_pnl, result.fees, result.net_pnl, datetime.now(timezone.utc).isoformat()),
+                    )
+                    inserted += max(int(cur.rowcount or 0), 0)
+        await db.commit()
+    from proactive_portfolio_research import persist_portfolio_and_fold_research
+    portfolio_research = await persist_portfolio_and_fold_research(
+        db_path, research_run_id=research_run_id, proposals=proposals,
+        future_bars=future_bars, capital=float(cash_per_trial),
+    )
+    from proactive_execution_research import persist_execution_sensitivity
+    execution_sensitivity = await persist_execution_sensitivity(
+        db_path, research_run_id=research_run_id, proposals=proposals,
+        future_bars=future_bars, cash=float(cash_per_trial),
+    )
+    from proactive_exit_research import persist_exit_policy_comparison
+    exit_policy_comparison = await persist_exit_policy_comparison(
+        db_path, research_run_id=research_run_id, proposals=proposals,
+        future_bars=future_bars, cash=float(cash_per_trial), fee_rate=float(fee_rate), slippage_bps=float(slippage_bps),
+    )
+    return {
+        "mode": "SHADOW", "research_only": True, "can_place_orders": False,
+        "authorization_effect": "NONE", "research_run_id": research_run_id,
+        "opportunities": len(proposals), "profile_trials": len(proposals) * len(_SHADOW_ENTRY_PROFILES) * len(_SHADOW_EXIT_PROFILES),
+        "inserted_trials": inserted,
+        "portfolio_research": portfolio_research,
+        "execution_sensitivity": execution_sensitivity,
+        "exit_policy_comparison": exit_policy_comparison,
+    }
+
+
+async def proactive_shadow_research_report(db_path: str, *, research_run_id: Optional[str] = None) -> dict:
+    """Read the immutable entry/exit trial archive without selecting a winner."""
+    await init_proactive_intelligence(db_path)
+    query = (
+        "SELECT research_run_id,entry_profile_id,exit_profile_id,status,reason,net_pnl,exit_at "
+        "FROM proactive_shadow_research_trials "
+    )
+    params: tuple = ()
+    if research_run_id is not None:
+        query += "WHERE research_run_id=? "
+        params = (research_run_id,)
+    query += "ORDER BY research_run_id,entry_profile_id,exit_profile_id,exit_at,trial_id"
+    async with aiosqlite.connect(db_path) as db:
+        rows = await (await db.execute(query, params)).fetchall()
+    groups: dict[tuple[str, str, str], list[tuple]] = {}
+    for row in rows:
+        groups.setdefault((str(row[0]), str(row[1]), str(row[2])), []).append(row)
+    comparisons = []
+    for (run_id, entry_profile_id, exit_profile_id), trials in groups.items():
+        closed = [float(row[5]) for row in trials if row[3] == "CLOSED" and row[5] is not None and math.isfinite(float(row[5]))]
+        no_fills = sum(row[3] == "NO_FILL" for row in trials)
+        invalid = sum(row[3] == "INVALID" for row in trials)
+        open_trials = sum(row[3] == "OPEN" for row in trials)
+        reasons: dict[str, int] = {}
+        for row in trials:
+            reasons[str(row[4])] = reasons.get(str(row[4]), 0) + 1
+        wins = sum(value > 0 for value in closed)
+        losses = sum(value < 0 for value in closed)
+        positive, negative = sum(value for value in closed if value > 0), abs(sum(value for value in closed if value < 0))
+        comparisons.append({
+            "research_run_id": run_id, "entry_profile_id": entry_profile_id, "exit_profile_id": exit_profile_id,
+            "trials": len(trials), "closed_outcomes": len(closed), "no_fills": no_fills,
+            "open_trials": open_trials, "invalid_trials": invalid,
+            "net_pnl": round(sum(closed), 4) if closed else None,
+            "net_expectancy": round(sum(closed) / len(closed), 4) if closed else None,
+            "win_rate": round(wins / len(closed), 6) if closed else None,
+            "profit_factor": round(positive / negative, 6) if negative else None,
+            "evidence_state": "COLLECTING_EVIDENCE" if len(closed) >= SHADOW_COMPARISON_MIN_CLOSED_OUTCOMES else "INSUFFICIENT_CLOSED_OUTCOMES",
+            "minimum_closed_outcomes": SHADOW_COMPARISON_MIN_CLOSED_OUTCOMES,
+            "outcome_reasons": [{"reason": reason, "trials": count} for reason, count in sorted(reasons.items())],
+        })
+    from proactive_portfolio_research import portfolio_research_report
+    portfolio_research = await portfolio_research_report(db_path, research_run_id)
+    from proactive_execution_research import execution_sensitivity_report
+    execution_sensitivity = await execution_sensitivity_report(db_path, research_run_id)
+    from proactive_exit_research import exit_policy_report
+    exit_policy_comparison = await exit_policy_report(db_path, research_run_id)
+    return {
+        "mode": "SHADOW", "research_only": True, "can_place_orders": False, "authorization_effect": "NONE",
+        "comparisons": comparisons,
+        "portfolio_research": portfolio_research,
+        "execution_sensitivity": execution_sensitivity,
+        "exit_policy_comparison": exit_policy_comparison,
+        "note": "Every matched entry/exit trial is retained, including no-fill, open and invalid outcomes; no profile is promoted automatically.",
+    }

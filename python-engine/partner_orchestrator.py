@@ -158,10 +158,12 @@ async def _send_event(
     if metrics is not None:
         metrics["events_considered"] = metrics.get("events_considered", 0) + 1
     if (
-        settings.PARTNER_HEDGE_ENABLED
-        and settings.PARTNER_HEDGE_SUPPRESS_ANALYTICS
-        and kind in {"pcr_shift", "iv_move", "oi_walls", "wall_flow", "pin"}
-    ):
+        settings.PARTNER_MANUAL_ADVISORY_DELIVERY_ENABLED
+        or (
+            settings.PARTNER_HEDGE_ENABLED
+            and settings.PARTNER_HEDGE_SUPPRESS_ANALYTICS
+        )
+    ) and kind in {"pcr_shift", "iv_move", "oi_walls", "wall_flow", "pin"}:
         if metrics is not None:
             metrics["suppressed"] = metrics.get("suppressed", 0) + 1
         return "suppressed"
@@ -263,9 +265,13 @@ async def _track_record(
 
 async def partner_scan_tick(now: Optional[datetime] = None) -> None:
     now = now or datetime.now(IST)
-    if not await _gates_open(now, 9 * 60 + 45, 15 * 60 + 5):
+    # New entry construction has its own 14:45 intraday deadline.  Keep this
+    # scheduler alive through the management deadline for exit reminders.
+    if not await _gates_open(now, 9 * 60 + 45, settings.PARTNER_MANUAL_ADVISORY_MANAGEMENT_END_MINUTE):
         return
-    if settings.PARTNER_HEDGE_ENABLED and settings.PARTNER_HEDGE_SUPPRESS_DIRECTIONAL:
+    if settings.PARTNER_MANUAL_ADVISORY_DELIVERY_ENABLED or (
+        settings.PARTNER_HEDGE_ENABLED and settings.PARTNER_HEDGE_SUPPRESS_DIRECTIONAL
+    ):
         return
     import main as _main
     logger.info("partner_scan_tick_invoked now_ist=%s", now.strftime("%H:%M:%S"))
@@ -379,6 +385,184 @@ async def partner_scan_tick(now: Optional[datetime] = None) -> None:
 
 
 # ---------------------------------------------------------------------------
+# job: scoped manual-advisory preview tick (NIFTY/SENSEX only)
+# ---------------------------------------------------------------------------
+
+async def partner_manual_advisory_tick(now: Optional[datetime] = None) -> None:
+    """Persist independently evaluated NIFTY/SENSEX advisory previews.
+
+    The pipeline is intentionally distinct from both the legacy signal sender
+    and the portfolio-required hedge service.  It never sends, places an
+    order, invents holdings, or uses Sentinel cash to size a partner idea.
+    """
+    if not (
+        settings.PARTNER_MANUAL_ADVISORY_ENABLED
+        or settings.PARTNER_MANUAL_ADVISORY_SHADOW_ENABLED
+    ):
+        return
+    now = now or datetime.now(IST)
+    if not await _gates_open(now, settings.PARTNER_MANUAL_ADVISORY_ENTRY_START_MINUTE, settings.PARTNER_MANUAL_ADVISORY_MANAGEMENT_END_MINUTE):
+        return
+    import main as _main
+    from fno_underlyings import SPECS
+    from fno_chain import take_chain_snapshot
+    from dataclasses import replace
+    from partner_manual_advisory import (
+        AdvisoryScope, INDEX_EXCHANGES, StrategyEvidence, build_conditional_index_protective_put,
+        build_directional_debit_spread,
+        dispatch_queued_advisory, load_partner_profile, persist_candidate,
+        dispatch_queued_management_update, is_strategy_qualified, queue_management_updates,
+        resolve_advisory_expiry, select_preferred_market_candidates, validate_candidate,
+    )
+
+    profile = await load_partner_profile(settings.DB_PATH)
+    metrics = {"considered": 0, "validated_shadow": 0, "rejected": 0, "unavailable": 0, "healthy_no_setup": 0}
+    regime = _main._fno_regime_str()
+    # The legacy signal-enabled flag was a temporary BFO rollout control.  It
+    # is not an excuse to silently omit SENSEX here: each index is evaluated
+    # independently and an unavailable BSE path is visible in this metric.
+    specs = [spec for spec in analytics_underlyings() if spec.name in INDEX_EXCHANGES]
+    seen = {spec.name for spec in specs}
+    specs.extend(SPECS[name] for name in INDEX_EXCHANGES if name not in seen)
+    market_candidates = []
+    protection_candidates = []
+    management_updates = []
+    for spec in specs:
+        try:
+            scan = await scan_underlying(_main.kite, spec, regime, now)
+            if scan.error or scan.snap is None:
+                metrics["unavailable"] += 1
+                continue
+            book = get_instruments_for(spec.name)
+            advisory_expiry = resolve_advisory_expiry(book, now.date())
+            if advisory_expiry is None:
+                metrics["unavailable"] += 1
+                continue
+            snapshot = scan.snap
+            if snapshot.expiry != advisory_expiry:
+                snapshot = await take_chain_snapshot(
+                    _main.kite, book, now,
+                    strike_window=settings.FNO_ANALYTICS_STRIKE_WINDOW,
+                    option_expiry=advisory_expiry,
+                )
+            if snapshot is None:
+                metrics["unavailable"] += 1
+                continue
+            management_updates.extend(await queue_management_updates(
+                settings.DB_PATH, underlying=spec.name, observed_underlying=snapshot.forward, observed_at=snapshot.taken_at,
+            ))
+            if scan.sig is not None and scan.sig.direction is not None:
+                candidate = build_directional_debit_spread(
+                    snapshot, book, scan.sig.direction, now,
+                    evidence=StrategyEvidence.RESEARCH_ONLY,
+                    quote_ttl_seconds=settings.PARTNER_MANUAL_ADVISORY_QUOTE_TTL_SEC,
+                    thesis_id=f"{spec.name}:{scan.sig.direction.value}:{scan.sig.bar_ts}",
+                    trigger_level=(scan.sig.or_high + settings.FNO_OR_BUFFER_ATR * scan.sig.atr)
+                    if scan.sig.direction.value == "LONG" else (scan.sig.or_low - settings.FNO_OR_BUFFER_ATR * scan.sig.atr),
+                    invalidation_level=scan.sig.stop_underlying,
+                    target_level=scan.sig.target_underlying,
+                )
+                if candidate is not None:
+                    if await is_strategy_qualified(settings.DB_PATH, candidate):
+                        candidate = replace(candidate, evidence=StrategyEvidence.QUALIFIED_FOR_ADVISORY)
+                    precheck = validate_candidate(
+                        candidate, now,
+                        max_quote_age_seconds=settings.PARTNER_MANUAL_ADVISORY_MAX_QUOTE_AGE_SEC,
+                        max_spread_pct=settings.PARTNER_MANUAL_ADVISORY_MAX_SPREAD_PCT,
+                        min_oi=settings.PARTNER_MANUAL_ADVISORY_MIN_OI,
+                        min_volume=settings.PARTNER_MANUAL_ADVISORY_MIN_VOLUME,
+                        min_depth_units=settings.PARTNER_MANUAL_ADVISORY_MIN_DEPTH_UNITS,
+                    )
+                    if precheck.valid:
+                        market_candidates.append(candidate)
+                    else:
+                        metrics["rejected"] += 1
+                else:
+                    metrics["rejected"] += 1
+            else:
+                metrics["healthy_no_setup"] += 1
+            # Protection has no implied holding.  It becomes a separate
+            # category only after the profile deliberately supplies both a
+            # coverage assumption and the units to which it applies.
+            if (
+                profile.permits(AdvisoryScope.CONDITIONAL_PROTECTION, spec.name)
+                and profile.conditional_exposure_assumption
+                and profile.conditional_coverage_units
+            ):
+                protection = build_conditional_index_protective_put(
+                    snapshot, book, now,
+                    exposure_assumption=profile.conditional_exposure_assumption,
+                    coverage_units=profile.conditional_coverage_units,
+                    quote_ttl_seconds=settings.PARTNER_MANUAL_ADVISORY_QUOTE_TTL_SEC,
+                    thesis_id=f"{spec.name}:PROTECTION:{snapshot.expiry}:{scan.snap.taken_at.date()}",
+                )
+                if protection is not None:
+                    if await is_strategy_qualified(settings.DB_PATH, protection):
+                        protection = replace(protection, evidence=StrategyEvidence.QUALIFIED_FOR_ADVISORY)
+                    precheck = validate_candidate(
+                        protection, now,
+                        max_quote_age_seconds=settings.PARTNER_MANUAL_ADVISORY_MAX_QUOTE_AGE_SEC,
+                        max_spread_pct=settings.PARTNER_MANUAL_ADVISORY_MAX_SPREAD_PCT,
+                        min_oi=settings.PARTNER_MANUAL_ADVISORY_MIN_OI,
+                        min_volume=settings.PARTNER_MANUAL_ADVISORY_MIN_VOLUME,
+                        min_depth_units=settings.PARTNER_MANUAL_ADVISORY_MIN_DEPTH_UNITS,
+                    )
+                    if precheck.valid:
+                        protection_candidates.append(protection)
+                    else:
+                        metrics["rejected"] += 1
+        except Exception as exc:
+            metrics["unavailable"] += 1
+            logger.error("partner_manual_advisory_tick_failed underlying=%s err=%s", spec.name, str(exc), exc_info=True)
+    preferred, overlapping = select_preferred_market_candidates(market_candidates)
+    preferred.extend(protection_candidates)
+    metrics["overlap_suppressed"] = len(overlapping)
+    for candidate in preferred:
+        metrics["considered"] += 1
+        stored = await persist_candidate(
+            settings.DB_PATH, candidate, profile, now=now,
+            validation_options={
+                "max_quote_age_seconds": settings.PARTNER_MANUAL_ADVISORY_MAX_QUOTE_AGE_SEC,
+                "max_spread_pct": settings.PARTNER_MANUAL_ADVISORY_MAX_SPREAD_PCT,
+                "min_oi": settings.PARTNER_MANUAL_ADVISORY_MIN_OI,
+                "min_volume": settings.PARTNER_MANUAL_ADVISORY_MIN_VOLUME,
+                "min_depth_units": settings.PARTNER_MANUAL_ADVISORY_MIN_DEPTH_UNITS,
+            },
+            queue_for_delivery=bool(settings.PARTNER_MANUAL_ADVISORY_DELIVERY_ENABLED),
+        )
+        if stored["status"] == "QUEUED":
+            delivered = await dispatch_queued_advisory(settings.DB_PATH, stored, profile, now=now)
+            metrics["delivered" if delivered else "queued"] = metrics.get("delivered" if delivered else "queued", 0) + 1
+        elif stored["status"] == "VALIDATED_SHADOW":
+            metrics["validated_shadow"] += 1
+        else:
+            metrics["rejected"] += 1
+    for update in management_updates:
+        delivered = await dispatch_queued_management_update(settings.DB_PATH, update, now=now)
+        metrics["update_delivered" if delivered else "update_queued"] = metrics.get(
+            "update_delivered" if delivered else "update_queued", 0
+        ) + 1
+    logger.info(
+        "partner_manual_advisory_tick_summary", **metrics,
+        delivery_enabled=bool(settings.PARTNER_MANUAL_ADVISORY_DELIVERY_ENABLED),
+        can_place_orders=False,
+    )
+
+
+async def partner_manual_advisory_lifecycle_tick(now: Optional[datetime] = None) -> None:
+    """Clock-driven intraday reminder/retirement independent of entry scans."""
+    if not (settings.PARTNER_MANUAL_ADVISORY_ENABLED or settings.PARTNER_MANUAL_ADVISORY_SHADOW_ENABLED):
+        return
+    now = now or datetime.now(IST)
+    # Retirement is safe local bookkeeping even off-session. Transporting a
+    # reminder remains independently authorised by its durable update path.
+    from partner_manual_advisory import dispatch_queued_management_update, run_intraday_session_lifecycle
+    updates = await run_intraday_session_lifecycle(settings.DB_PATH, now=now)
+    for update in updates:
+        await dispatch_queued_management_update(settings.DB_PATH, update, now=now)
+
+
+# ---------------------------------------------------------------------------
 # job: analytics tick (wide chain -> OI store -> events)
 # ---------------------------------------------------------------------------
 
@@ -396,8 +580,8 @@ async def partner_analytics_tick(now: Optional[datetime] = None) -> None:
         "snapshot_errors": 0, "events_considered": 0, "suppressed": 0,
         "throttled": 0, "sent": 0, "send_failed": 0,
         "analytics_suppression_enabled": bool(
-            settings.PARTNER_HEDGE_ENABLED
-            and settings.PARTNER_HEDGE_SUPPRESS_ANALYTICS
+            settings.PARTNER_MANUAL_ADVISORY_DELIVERY_ENABLED
+            or (settings.PARTNER_HEDGE_ENABLED and settings.PARTNER_HEDGE_SUPPRESS_ANALYTICS)
         ),
     }
 
@@ -533,7 +717,9 @@ async def partner_analytics_tick(now: Optional[datetime] = None) -> None:
             # --- expiry-day pin note ------------------------------------
             # [PARTNER-ENRICH 2026-07-19] T3a: once per expiry afternoon.
             if (
-                not (settings.PARTNER_HEDGE_ENABLED and settings.PARTNER_HEDGE_SUPPRESS_ANALYTICS)
+                not (settings.PARTNER_MANUAL_ADVISORY_DELIVERY_ENABLED or (
+                    settings.PARTNER_HEDGE_ENABLED and settings.PARTNER_HEDGE_SUPPRESS_ANALYTICS
+                ))
                 and
                 book.is_expiry_day(now.date())
                 and (now.hour * 60 + now.minute) >= 13 * 60 + 30
@@ -610,7 +796,9 @@ async def partner_analytics_tick(now: Optional[datetime] = None) -> None:
 
     # --- momentum stock-option cues --------------------------------------
     try:
-        if settings.PARTNER_HEDGE_ENABLED and settings.PARTNER_HEDGE_SUPPRESS_DIRECTIONAL:
+        if settings.PARTNER_MANUAL_ADVISORY_DELIVERY_ENABLED or (
+            settings.PARTNER_HEDGE_ENABLED and settings.PARTNER_HEDGE_SUPPRESS_DIRECTIONAL
+        ):
             logger.info("partner_analytics_tick_summary", **metrics)
             return
         fno_names = load_underlying_names()
@@ -690,7 +878,9 @@ async def partner_morning_brief(now: Optional[datetime] = None) -> None:
     now = now or datetime.now(IST)
     if not await _gates_open(now, 0, 24 * 60):
         return
-    if settings.PARTNER_HEDGE_ENABLED and settings.PARTNER_HEDGE_SUPPRESS_LEGACY_BRIEF:
+    if settings.PARTNER_MANUAL_ADVISORY_DELIVERY_ENABLED or (
+        settings.PARTNER_HEDGE_ENABLED and settings.PARTNER_HEDGE_SUPPRESS_LEGACY_BRIEF
+    ):
         return
     import main as _main
     day_iso = now.date().isoformat()
@@ -986,10 +1176,9 @@ async def partner_eod_wrap(now: Optional[datetime] = None) -> None:
             row["error"] = "internal error"
         rows.append(row)
 
-    if not (
-        settings.PARTNER_HEDGE_ENABLED
-        and settings.PARTNER_HEDGE_SUPPRESS_LEGACY_EOD
-    ):
+    if not (settings.PARTNER_MANUAL_ADVISORY_DELIVERY_ENABLED or (
+        settings.PARTNER_HEDGE_ENABLED and settings.PARTNER_HEDGE_SUPPRESS_LEGACY_EOD
+    )):
         msg = format_eod(
             day_iso, rows,
             record_line=await _track_record_overall(settings.DB_PATH, now),
@@ -1003,7 +1192,7 @@ async def partner_eod_wrap(now: Optional[datetime] = None) -> None:
     # the rolling track record (T1c) needs weeks, OI forensics needs days,
     # and a few signal rows/day is negligible disk.
     try:
-        await fno_oi_store.purge_older_than(
+        await fno_oi_store.archive_then_purge_older_than(
             settings.DB_PATH, settings.FNO_OI_RETENTION_DAYS,
         )
         cutoff = (

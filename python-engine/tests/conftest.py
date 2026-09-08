@@ -58,6 +58,7 @@ def patch_settings(monkeypatch, tmp_path):
     # can touch /data on a dev machine.
     monkeypatch.setattr(settings, "FNO_SIGNAL_LOG_PATH", str(tmp_path / "fno_signals.csv"))
     monkeypatch.setattr(settings, "FNO_INSTRUMENTS_JSON_PATH", str(tmp_path / "fno_instruments.json"))
+    monkeypatch.setattr(settings, "RESEARCH_ARCHIVE_PATH", str(tmp_path / "research"))
     return settings
 
 

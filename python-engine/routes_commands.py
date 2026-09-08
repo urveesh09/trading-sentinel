@@ -257,14 +257,48 @@ async def get_outcomes(days: int = 14):
 async def get_proactive_activity(days: int = 7):
     """Mode-separated proactive evidence; never a trading control surface."""
     from proactive_intelligence import proactive_activity_report
-    return await proactive_activity_report(settings.DB_PATH, days=days)
+    report = await proactive_activity_report(settings.DB_PATH, days=days)
+    from broker_reconciliation import broker_statement_report
+    account_id = str(settings.BROKER_RECONCILIATION_ACCOUNT_ID).strip()
+    report["broker_statement"] = (
+        await broker_statement_report(settings.DB_PATH, account_id=account_id)
+        if account_id else {"status": "UNAVAILABLE", "reason": "ACCOUNT_NOT_CONFIGURED", "can_place_orders": False}
+    )
+    return report
+
+
+@router.get("/analytics/proactive-comparison")
+async def get_proactive_comparison(days: int = 90):
+    """Costed shadow-outcome research; never an execution control surface."""
+    from proactive_intelligence import proactive_shadow_comparison
+    return await proactive_shadow_comparison(settings.DB_PATH, days=days)
+
+
+@router.get("/analytics/proactive-research-comparison")
+async def get_proactive_research_comparison(research_run_id: str | None = None):
+    """Frozen matched SHADOW trials; no route here can change execution."""
+    from proactive_intelligence import proactive_shadow_research_report
+    return await proactive_shadow_research_report(settings.DB_PATH, research_run_id=research_run_id)
 
 
 @router.get("/analytics/proactive-diagnostics")
 async def get_proactive_diagnostics():
     from datetime import datetime, timezone
-    from proactive_intelligence import proactive_inactivity_diagnostics
-    return {"findings": await proactive_inactivity_diagnostics(settings.DB_PATH, now=datetime.now(timezone.utc))}
+    from proactive_diagnostics import proactive_owner_diagnostics
+    return await proactive_owner_diagnostics(settings.DB_PATH, now=datetime.now(timezone.utc))
+
+
+@router.get("/analytics/proactive-session-diagnostics")
+async def get_proactive_session_diagnostics(sessions: int = 5):
+    """Calendar-aware two/five-session evidence; never an execution route."""
+    from datetime import datetime, timezone
+    from proactive_intelligence import proactive_session_diagnostics
+    try:
+        return await proactive_session_diagnostics(
+            settings.DB_PATH, now=datetime.now(timezone.utc), session_count=sessions,
+        )
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
 
 
 

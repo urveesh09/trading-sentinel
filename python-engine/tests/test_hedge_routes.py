@@ -170,3 +170,25 @@ async def test_readiness_evidence_cannot_enable_configuration(hedge_client):
     assert report.status_code == 200
     assert report.json()["automatic_execution"] is False
     assert report.json()["can_place_orders"] is False
+
+
+@pytest.mark.asyncio
+async def test_manual_advisory_profile_and_cards_remain_non_executing(hedge_client):
+    assert (await hedge_client.get("/partner/advisory/profile")).status_code == 403
+    saved = await hedge_client.put(
+        "/partner/advisory/profile", headers=_headers(), json={
+            "version": 3, "enabled_scopes": ["MARKET_SETUP", "CONDITIONAL_PROTECTION"],
+            "instruments": ["NIFTY", "SENSEX"],
+            "permitted_structures": ["DIRECTIONAL_DEBIT_SPREAD"],
+        },
+    )
+    assert saved.status_code == 200, saved.text
+    assert saved.json()["automatic_execution"] is False
+    assert saved.json()["delivery_authority"] is False
+    profile = await hedge_client.get("/partner/advisory/profile", headers=_headers())
+    assert profile.status_code == 200
+    assert profile.json()["instruments"] == ["NIFTY", "SENSEX"]
+    cards = await hedge_client.get("/partner/advisory/cards", headers=_headers())
+    assert cards.status_code == 200
+    assert cards.json()["automatic_execution"] is False
+    assert cards.json()["delivery_authority"] is False

@@ -64,6 +64,73 @@ function ReadinessSection({ model }) {
   );
 }
 
+function ShadowOutcomeComparison({ comparison, error }) {
+  if (error) return <section className="rounded-xl border border-amber-800 bg-amber-950/20 p-4 text-sm text-amber-200">Shadow outcome comparison is temporarily unavailable. Missing evidence is not treated as a positive result.</section>;
+  const rows = Array.isArray(comparison?.comparisons) ? comparison.comparisons : [];
+  const contractUnsafe = comparison && (comparison.mode !== 'SHADOW' || comparison.research_only !== true || comparison.can_place_orders === true || comparison.authorization_effect !== 'NONE');
+  return (
+    <section className="rounded-xl border border-cyan-900/70 bg-cyan-950/10 p-4 sm:p-5">
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div><h2 className="text-xl font-bold text-white">Costed SHADOW outcome comparison</h2><p className="mt-1 text-sm text-gray-400">Closed fixture-simulation outcomes, grouped only within an immutable scenario run and entry policy.</p></div>
+        <span className="rounded border border-red-600 bg-red-950 px-3 py-2 text-xs font-black text-red-100">RESEARCH ONLY — NO ORDERS</span>
+      </div>
+      <p className="mt-3 rounded border border-cyan-900 bg-gray-950/60 p-3 text-xs text-cyan-100">This is not live P&amp;L, an allocation recommendation, or a strategy promotion decision. It shows costs and failures so the next experiment can be chosen from evidence.</p>
+      {contractUnsafe && <p className="mt-3 rounded border-2 border-red-500 bg-red-950 p-3 text-sm font-bold text-red-100">Contract integrity warning: the backend did not return a valid research-only contract. Treat all comparison data as non-authorizing.</p>}
+      {rows.length ? <div className="mt-4 space-y-3">{rows.map((row) => {
+        const enough = row.evidence_state === 'COLLECTING_EVIDENCE';
+        const reasons = Array.isArray(row.exit_reasons) ? row.exit_reasons : [];
+        return <article key={`${row.storage_account_id}:${row.policy_id}`} className="rounded-lg border border-gray-800 bg-gray-900/80 p-4">
+          <div className="flex flex-wrap items-start justify-between gap-2"><div><h3 className="font-mono font-bold text-white">{row.policy_id || 'Unlabelled policy'}</h3><p className="mt-1 text-[11px] text-gray-500">Account: {row.account_id || 'Unavailable'} · Run: {row.run_id || 'legacy'}</p></div><span className={`rounded-full border px-2.5 py-1 text-[10px] font-bold ${enough ? 'border-blue-700 bg-blue-950 text-blue-200' : 'border-amber-700 bg-amber-950 text-amber-200'}`}>{String(row.evidence_state || 'UNKNOWN').replaceAll('_', ' ')}</span></div>
+          <dl className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
+            <Metric label="Costed closed outcomes" value={`${formatCount(row.closed_outcomes)} / ${formatCount(row.minimum_closed_outcomes)}`} />
+            <Metric label="Net P&amp;L" value={formatPaperMoney(row.net_pnl)} />
+            <Metric label="Net expectancy" value={formatPaperMoney(row.net_expectancy)} />
+            <Metric label="Net R expectancy" value={Number.isFinite(Number(row.net_r_expectancy)) ? Number(row.net_r_expectancy).toFixed(3) : INSUFFICIENT_DATA} />
+            <Metric label="Profit factor" value={row.profit_factor == null ? (row.profit_factor_state === 'UNDEFINED_NO_LOSSES' ? 'Undefined — no losses' : INSUFFICIENT_DATA) : Number(row.profit_factor).toFixed(2)} />
+            <Metric label="Closed-trade drawdown" value={formatPaperMoney(row.max_drawdown)} />
+          </dl>
+          <div className="mt-4 border-t border-gray-800 pt-3"><h4 className="text-[10px] font-bold uppercase tracking-wide text-gray-500">Observed exits</h4>{reasons.length ? <div className="mt-2 flex flex-wrap gap-2">{reasons.map((item) => <span key={item.reason} className="rounded bg-gray-950 px-2 py-1 text-xs text-gray-300">{String(item.reason).replaceAll('_', ' ')} <strong className="text-cyan-200">{formatCount(item.closed_outcomes)}</strong></span>)}</div> : <p className="mt-2 text-xs text-gray-500">No valid closed outcomes in this window.</p>}</div>
+          <p className="mt-3 text-[11px] text-amber-200">Exit-policy comparison: {row.exit_policy_comparison_state === 'UNAVAILABLE_NOT_EXPERIMENT_TAGGED' ? 'unavailable — historical outcomes were not tagged to distinct exit variants.' : row.exit_policy_comparison_state || 'Unavailable'}</p>
+          {Array.isArray(row.warnings) && row.warnings.map((warning) => <p key={warning} className="mt-1 text-[11px] text-gray-500">{warning}</p>)}
+        </article>;
+      })}</div> : <div className="mt-4 rounded border border-gray-800 bg-gray-900 p-5 text-sm text-gray-500">No costed synthetic exits have been recorded in the last {comparison?.days || 90} days. There is no outcome comparison to infer.</div>}
+    </section>
+  );
+}
+
+function MatchedEntryExitTrials({ comparison, error }) {
+  if (error) return <section className="rounded-xl border border-amber-800 bg-amber-950/20 p-4 text-sm text-amber-200">Matched entry/exit trial archive is unavailable. No challenger result is inferred.</section>;
+  const rows = Array.isArray(comparison?.comparisons) ? comparison.comparisons : [];
+  const contractUnsafe = comparison && (comparison.mode !== 'SHADOW' || comparison.research_only !== true || comparison.can_place_orders === true || comparison.authorization_effect !== 'NONE');
+  return (
+    <section className="rounded-xl border border-violet-900/70 bg-violet-950/10 p-4 sm:p-5">
+      <div className="flex flex-wrap items-start justify-between gap-3"><div><h2 className="text-xl font-bold text-white">Matched entry / exit trials</h2><p className="mt-1 text-sm text-gray-400">Frozen research runs evaluate each entry and exit profile against the same opportunity bars. Non-fills stay in the archive.</p></div><span className="rounded border border-red-600 bg-red-950 px-3 py-2 text-xs font-black text-red-100">NO AUTO-SELECTION</span></div>
+      <p className="mt-3 rounded border border-violet-900 bg-gray-950/60 p-3 text-xs text-violet-100">A positive point estimate is not an edge claim. The incumbent strategy, sizing and live execution remain unchanged by these results.</p>
+      {contractUnsafe && <p className="mt-3 rounded border-2 border-red-500 bg-red-950 p-3 text-sm font-bold text-red-100">Contract integrity warning: this response is not valid research-only evidence. It cannot authorize any change.</p>}
+      {rows.length ? <div className="mt-4 overflow-x-auto"><table className="w-full text-left text-xs"><thead className="border-b border-gray-800 text-[10px] uppercase tracking-wide text-gray-500"><tr><th className="p-2">Frozen run</th><th className="p-2">Entry profile</th><th className="p-2">Exit profile</th><th className="p-2">Trials</th><th className="p-2">Closed / no-fill / open</th><th className="p-2">Net expectancy</th><th className="p-2">Profit factor</th><th className="p-2">Evidence</th></tr></thead><tbody>{rows.map((row) => <tr key={`${row.research_run_id}:${row.entry_profile_id}:${row.exit_profile_id}`} className="border-b border-gray-800/80 align-top"><td className="p-2 font-mono text-gray-300">{row.research_run_id}</td><td className="p-2 font-mono text-violet-200">{row.entry_profile_id}</td><td className="p-2 font-mono text-violet-200">{row.exit_profile_id}</td><td className="p-2">{formatCount(row.trials)}</td><td className="p-2">{formatCount(row.closed_outcomes)} / {formatCount(row.no_fills)} / {formatCount(row.open_trials)}</td><td className="p-2">{formatPaperMoney(row.net_expectancy)}</td><td className="p-2">{row.profit_factor == null ? INSUFFICIENT_DATA : Number(row.profit_factor).toFixed(2)}</td><td className="p-2 text-amber-200">{String(row.evidence_state || 'UNKNOWN').replaceAll('_', ' ')}</td></tr>)}</tbody></table></div> : <div className="mt-4 rounded border border-gray-800 bg-gray-900 p-5 text-sm text-gray-500">No frozen matched trial run has been recorded. This is insufficient evidence, not a failed or winning policy.</div>}
+      {rows.some((row) => Number(row.invalid_trials || 0) > 0) && <p className="mt-3 text-xs text-amber-200">One or more trials had invalid input and remain counted as invalid rather than being silently omitted.</p>}
+    </section>
+  );
+}
+
+function PortfolioAndFoldEvidence({ comparison, error }) {
+  if (error) return null;
+  const rows = Array.isArray(comparison?.portfolio_research) ? comparison.portfolio_research : [];
+  return <section className="rounded-xl border border-teal-900/70 bg-teal-950/10 p-4 sm:p-5"><div className="flex flex-wrap items-start justify-between gap-3"><div><h2 className="text-xl font-bold text-white">Common-cash basket and chronological folds</h2><p className="mt-1 text-sm text-gray-400">Risk-budget and fixed-equal baselines use the same synthetic cash clock. Fold selection is research only.</p></div><span className="rounded border border-red-600 bg-red-950 px-3 py-2 text-xs font-black text-red-100">NO AUTO-PROMOTION</span></div>{rows.length ? <div className="mt-4 space-y-3">{rows.map((row) => { const risk=row.risk_budget || {}; const fixed=row.fixed_equal || {}; const folds=row.chronological_folds || {}; return <article key={row.research_run_id} className="rounded border border-gray-800 bg-gray-900/80 p-3"><div className="font-mono text-sm text-teal-200">{row.research_run_id}</div><div className="mt-3 grid grid-cols-2 gap-3 text-xs sm:grid-cols-4"><Metric label="Risk-budget net" value={formatPaperMoney(risk.realized_net_pnl)} /><Metric label="Fixed-equal net" value={formatPaperMoney(fixed.realized_net_pnl)} /><Metric label="Risk drawdown" value={formatPaperMoney(risk.max_drawdown)} /><Metric label="OOS verdict" value={String(folds.verdict || folds.reason || 'Insufficient evidence').replaceAll('_', ' ')} /></div><p className="mt-3 text-[11px] text-amber-200">Folds scored: {formatCount(folds.n_scored_folds)} / {formatCount(folds.n_folds)} · No live selection, capital change, or order authority follows from this evidence.</p></article>; })}</div> : <div className="mt-4 text-sm text-gray-500">No frozen common-cash or chronological-fold result exists yet.</div>}</section>;
+}
+
+function ExecutionCostEvidence({ comparison, error }) {
+  if (error) return null;
+  const runs=Array.isArray(comparison?.execution_sensitivity) ? comparison.execution_sensitivity : [];
+  return <section className="rounded-xl border border-orange-900/70 bg-orange-950/10 p-4 sm:p-5"><div><h2 className="text-xl font-bold text-white">Entry and execution-cost sensitivity</h2><p className="mt-1 text-sm text-gray-400">Same SHADOW opportunities under versioned normal and stressed costs. Non-fills and gap invalidations remain visible.</p></div>{runs.length ? <div className="mt-4 overflow-x-auto"><table className="w-full text-left text-xs"><thead className="border-b border-gray-800 text-gray-500"><tr><th className="p-2">Run</th><th className="p-2">Entry</th><th className="p-2">Scenario</th><th className="p-2">Costs</th><th className="p-2">Closed / no-fill</th><th className="p-2">Net expectancy</th></tr></thead><tbody>{runs.flatMap((run) => (run.comparisons || []).map((row) => <tr key={`${run.research_run_id}:${row.scenario}:${row.entry_profile_id}`} className="border-b border-gray-800/80"><td className="p-2 font-mono">{run.research_run_id}</td><td className="p-2 font-mono text-orange-200">{row.entry_profile_id}</td><td className="p-2">{row.scenario}</td><td className="p-2">{row.cost_model_version} · {row.slippage_bps} bps</td><td className="p-2">{formatCount(row.closed_outcomes)} / {formatCount(row.no_fill)}</td><td className="p-2">{formatPaperMoney(row.net_expectancy)}</td></tr>))}</tbody></table></div> : <div className="mt-4 text-sm text-gray-500">No frozen execution-cost study exists yet.</div>}<p className="mt-3 text-[11px] text-amber-200">Research-only estimate; this does not alter broker fees, order routing, limits, or execution authority.</p></section>;
+}
+
+function ExitPolicyEvidence({ comparison, error }) {
+  if (error) return null;
+  const runs=Array.isArray(comparison?.exit_policy_comparison) ? comparison.exit_policy_comparison : [];
+  return <section className="rounded-xl border border-rose-900/70 bg-rose-950/10 p-4 sm:p-5"><h2 className="text-xl font-bold text-white">Matched exit-policy comparison</h2><p className="mt-1 text-sm text-gray-400">Baseline stop/target/time versus a conservative partial-target trailing-stop challenger with the same costs.</p>{runs.length ? <div className="mt-4 grid gap-3 md:grid-cols-2">{runs.flatMap(run => (run.comparisons || []).map(row => <article key={`${run.research_run_id}:${row.exit_profile_id}`} className="rounded border border-gray-800 bg-gray-900/80 p-3 text-xs"><div className="font-mono text-rose-200">{row.exit_profile_id}</div><div className="mt-2 grid grid-cols-2 gap-2 text-gray-300"><span>Closed: <b>{formatCount(row.closed_outcomes)}</b></span><span>No fill: <b>{formatCount(row.no_fills)}</b></span><span>Net: <b>{formatPaperMoney(row.net_pnl)}</b></span><span>Expectancy: <b>{formatPaperMoney(row.net_expectancy)}</b></span></div><p className="mt-3 text-[10px] text-amber-200">Gap-through stops and same-bar target/stop ambiguity are processed conservatively. Research only.</p></article>))}</div> : <div className="mt-4 text-sm text-gray-500">No frozen matched exit-policy study exists yet.</div>}</section>;
+}
+
 function StatusBadge({ experiment }) {
   const style = experiment.status === 'ready'
     ? 'border-emerald-600 bg-emerald-950 text-emerald-200'
@@ -218,7 +285,7 @@ function ExperimentSection({ experiment }) {
 }
 
 export default function ResearchCenter({ navigateToDashboard, navigateToBacktests }) {
-  const { payloads, errors, readiness, readinessError, isLoading } = useResearchExperiments();
+  const { payloads, errors, readiness, readinessError, proactiveComparison, proactiveComparisonError, proactiveResearchComparison, proactiveResearchComparisonError, isLoading } = useResearchExperiments();
   const experiments = buildResearchCenterModel(payloads, errors);
   const readinessModel = normalizePromotionReadiness(readiness, readinessError);
   return (
@@ -234,6 +301,11 @@ export default function ResearchCenter({ navigateToDashboard, navigateToBacktest
           Raw candidates include repeated accepted evaluations. Distinct candidates are the sample-size view. Virtual outcomes are bar-derived simulations with declared costs—not broker fills or live-equivalent returns.
         </div>
         <ReadinessSection model={readinessModel} />
+        <ShadowOutcomeComparison comparison={proactiveComparison} error={proactiveComparisonError} />
+        <MatchedEntryExitTrials comparison={proactiveResearchComparison} error={proactiveResearchComparisonError} />
+        <PortfolioAndFoldEvidence comparison={proactiveResearchComparison} error={proactiveResearchComparisonError} />
+        <ExecutionCostEvidence comparison={proactiveResearchComparison} error={proactiveResearchComparisonError} />
+        <ExitPolicyEvidence comparison={proactiveResearchComparison} error={proactiveResearchComparisonError} />
         {isLoading && experiments.every((item) => !item.variants.length) ? <div className="rounded border border-gray-800 bg-gray-900 p-8 text-center text-gray-500">Loading experiment evidence...</div>
           : experiments.map((experiment) => <ExperimentSection key={experiment.id} experiment={experiment} />)}
       </main>

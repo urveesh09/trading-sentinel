@@ -8,11 +8,17 @@ export function useResearchExperiments() {
   const penny = useSWR('/api/proxy/experiments/penny', fetcher, swrOptions);
   const fno = useSWR('/api/proxy/experiments/fno-opening-range', fetcher, swrOptions);
   const readiness = useSWR('/api/proxy/research/promotion-readiness', fetcher, swrOptions);
+  const proactiveComparison = useSWR('/api/proxy/analytics/proactive-comparison?days=90', fetcher, swrOptions);
+  const proactiveResearchComparison = useSWR('/api/proxy/analytics/proactive-research-comparison', fetcher, swrOptions);
   return {
     payloads: { momentum: momentum.data, penny: penny.data, fno: fno.data },
     errors: { momentum: momentum.error, penny: penny.error, fno: fno.error },
     readiness: readiness.data,
     readinessError: readiness.error,
-    isLoading: [momentum, penny, fno, readiness].some((item) => item.isLoading && !item.data),
+    proactiveComparison: proactiveComparison.data,
+    proactiveComparisonError: proactiveComparison.error,
+    proactiveResearchComparison: proactiveResearchComparison.data,
+    proactiveResearchComparisonError: proactiveResearchComparison.error,
+    isLoading: [momentum, penny, fno, readiness, proactiveComparison, proactiveResearchComparison].some((item) => item.isLoading && !item.data),
   };
 }

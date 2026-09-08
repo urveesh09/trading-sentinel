@@ -11,7 +11,7 @@ from fno_models import Contract, ContractQuote
 from hedge_advisory import (
     Phase2MarketContext, _claim, _complete_claim, _record, _release_claim,
     build_hedge_reviews, build_phase2_hedge_reviews,
-    load_hedge_service_state, load_vix_observations, partner_hedge_phase2_tick, partner_hedge_tick,
+    load_hedge_service_state, load_hedge_delivery_backlog, load_partner_hedge_cards, load_vix_observations, partner_hedge_phase2_tick, partner_hedge_tick,
     record_vix_observation,
 )
 from partner_bot import PartnerSendResult
@@ -21,6 +21,20 @@ from partner_input_refresh import apply_partner_input_snapshot
 IST = pytz.timezone("Asia/Kolkata")
 NOW = IST.localize(datetime(2026, 9, 2, 11, 0))
 EXPIRY = date(2026, 9, 29)
+
+
+@pytest.mark.asyncio
+async def test_shadow_hedge_cards_expose_review_evidence_without_delivery_authority(db_path):
+    await ha._record_shadow_evaluation(
+        db_path, phase="phase2", kind="covered_call_recommendation", dedup_key="fixture-card",
+        text="Synthetic card", detail={"account_id": "fixture-account", "underlying": "NIFTY",
+        "contracts": ["NIFTY-SYNTH-CE"], "valid_until": NOW.isoformat(), "portfolio_revision": 3,
+        "decision_id": "decision", "generation_id": "generation", "reason": "READINESS_BLOCKED"}, now=NOW,
+    )
+    [card] = (await load_partner_hedge_cards(db_path))["cards"]
+    assert card["delivery_state"] == "NOT_SENT_SHADOW_EVIDENCE"
+    assert card["can_send"] is card["can_trade"] is False
+    assert card["contracts"] == ["NIFTY-SYNTH-CE"] and card["account_id"] == "fixture-account"
 
 
 def _contract(kind, strike, token, lot=65):
@@ -467,6 +481,7 @@ async def test_explicitly_absent_consistent_snapshot_never_falls_back_to_new_rea
 @pytest.mark.asyncio
 async def test_recovery_respects_hedge_kill_switch(monkeypatch):
     monkeypatch.setattr(settings, "PARTNER_HEDGE_ENABLED", False)
+    monkeypatch.setattr(settings, "PARTNER_MANUAL_ADVISORY_DELIVERY_ENABLED", False)
 
     async def forbidden(*args, **kwargs):
         raise AssertionError("disabled recovery must not access delivery ledger")
@@ -573,6 +588,7 @@ async def test_recovery_retires_phase1_advice_when_current_portfolio_is_not_elig
 
     monkeypatch.setattr(settings, "DB_PATH", db_path)
     monkeypatch.setattr(settings, "PARTNER_HEDGE_ENABLED", True)
+    monkeypatch.setattr(settings, "PARTNER_MANUAL_ADVISORY_DELIVERY_ENABLED", False)
     monkeypatch.setattr(ha, "partner_enabled", lambda: True)
     monkeypatch.setattr(main, "is_trading_day", trading_day)
     monkeypatch.setattr(ha, "send_partner_result", limited)
@@ -626,6 +642,7 @@ async def test_complete_snapshot_reaches_real_phase1_builder_formatter_and_sende
 
     monkeypatch.setattr(settings, "DB_PATH", db_path)
     monkeypatch.setattr(settings, "PARTNER_HEDGE_ENABLED", True)
+    monkeypatch.setattr(settings, "PARTNER_MANUAL_ADVISORY_DELIVERY_ENABLED", False)
     monkeypatch.setattr(settings, "PARTNER_HEDGE_PROTECTIVE_PUT", True)
     monkeypatch.setattr(settings, "PARTNER_HEDGE_FUTURES", True)
     monkeypatch.setattr(settings, "PARTNER_HEDGE_COLLAR", False)
@@ -876,3 +893,20 @@ async def test_enabling_hedge_phase_suppresses_standalone_chain_noise(
     monkeypatch.setattr(settings, "PARTNER_HEDGE_SUPPRESS_ANALYTICS", True)
     monkeypatch.setattr(legacy, "send_partner", must_not_send)
     await legacy._send_event(db_path, "pcr_shift", "NIFTY", "noise", NOW)
+
+
+@pytest.mark.asyncio
+async def test_telegram_diagnostic_is_fixed_non_trading_content(db_path, monkeypatch):
+    calls = []
+
+    async def capture(*args, **kwargs):
+        calls.append((args, kwargs))
+        return True
+
+    monkeypatch.setattr(ha, "_send_claimed_review", capture)
+    assert await ha.send_partner_telegram_diagnostic(db_path, now=NOW)
+    args, kwargs = calls[0]
+    assert args[1] == "partner_telegram_diagnostic"
+    assert "NOT A TRADE RECOMMENDATION" in args[3]
+    assert "NIFTY" not in args[3] and "₹" not in args[3]
+    assert kwargs["detail"]["automatic_advice"] is False

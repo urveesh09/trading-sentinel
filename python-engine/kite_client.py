@@ -692,6 +692,32 @@ class KiteClient:
             logger.error("kite_quote_failed_unreachable %s", str(last_exc))
         return {}
 
+    async def get_quote_by_instruments(self, instruments: dict[int, str]) -> dict:
+        """Documented Kite full-quote lookup keyed by ``EXCHANGE:SYMBOL``.
+
+        Existing consumers deliberately retain ``get_quote(tokens)`` for
+        backwards compatibility.  New F&O research must not assume that a
+        numeric token is accepted by the documented full-quote endpoint: it
+        supplies the dated exchange/symbol identity and maps returned packets
+        back to the caller's token only after checking the requested key.
+        """
+        requested = {int(token): str(key) for token, key in instruments.items() if str(key).strip()}
+        if not requested:
+            return {}
+        await self.limiter.acquire()
+        try:
+            response = await self.client.get("/quote", params=[("i", key) for key in requested.values()])
+            response.raise_for_status()
+            payload = response.json().get("data", {})
+            reverse = {key: token for token, key in requested.items()}
+            result = {reverse[key]: value for key, value in payload.items() if key in reverse and isinstance(value, dict)}
+            if len(result) != len(requested):
+                logger.warning("kite_quote_instrument_partial requested=%d returned=%d", len(requested), len(result))
+            return result
+        except (httpx.HTTPStatusError, httpx.RequestError) as exc:
+            logger.warning("kite_quote_instrument_failed requested=%d err=%s", len(requested), str(exc))
+            return {}
+
     def _log_quote_batch_failure(self, n_tokens: int):
         """[AUDIT-FIX-2.3] Log a full-batch quote failure once at
         CRITICAL level, then at WARNING. Resets to CRITICAL after a

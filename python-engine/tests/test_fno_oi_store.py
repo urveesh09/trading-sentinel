@@ -7,6 +7,7 @@ from datetime import date, datetime
 
 import pytest
 import pytz
+import aiosqlite
 
 import fno_oi_store as store
 from fno_chain import ChainSnapshot
@@ -124,3 +125,30 @@ async def test_purge_older_than(db):
     assert removed == 2   # 2 chain rows from the old snapshot
     assert await store.first_fut_row_today(db, "NIFTY", "2026-07-01") is None
     assert (await store.latest_fut_row(db, "NIFTY"))["pcr"] == pytest.approx(2.0)
+
+
+@pytest.mark.asyncio
+async def test_archive_before_purge_blocks_deletion_when_preservation_fails(db, monkeypatch):
+    await store.init_oi_db(db)
+    old = IST.localize(datetime(2026, 7, 1, 10, 0))
+    await store.persist_snapshot(db, "NIFTY", _snap(old), 1.0, None, None)
+    import research_archive
+    monkeypatch.setattr(research_archive, "export_operational_fno_evidence", lambda *args, **kwargs: (_ for _ in ()).throw(OSError("full")))
+    removed = await store.archive_then_purge_older_than(db, days=7, now=datetime(2026, 7, 20, 16, 0))
+    assert removed == 0
+    assert await store.first_fut_row_today(db, "NIFTY", "2026-07-01") is not None
+
+
+@pytest.mark.asyncio
+async def test_archive_before_purge_preserves_futures_only_history(db, tmp_path, monkeypatch):
+    await store.init_oi_db(db)
+    async with aiosqlite.connect(db) as conn:
+        await conn.execute("INSERT INTO fno_fut_snap VALUES(?,?,?,?,?,?,?)", ("2026-07-01 10:00:00", "NIFTY", 1, 2, None, None, None))
+        await conn.commit()
+    from config import settings
+    monkeypatch.setattr(settings, "RESEARCH_ARCHIVE_PATH", str(tmp_path / "research"))
+    removed = await store.archive_then_purge_older_than(db, days=7, now=datetime(2026, 7, 20, 16, 0))
+    assert removed == 1
+    async with aiosqlite.connect(db) as conn:
+        assert (await (await conn.execute("SELECT COUNT(*) FROM fno_fut_snap")).fetchone())[0] == 0
+    assert list((tmp_path / "research" / "operational-fno").glob("*/manifest.json"))

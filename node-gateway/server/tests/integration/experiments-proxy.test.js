@@ -69,3 +69,48 @@ test('forwards authenticated promotion readiness with the internal secret', asyn
     }),
   );
 });
+
+test.each([
+  ['proactive activity', '/analytics/proactive-activity?days=7'],
+  ['proactive comparison', '/analytics/proactive-comparison?days=90'],
+  ['proactive research comparison', '/analytics/proactive-research-comparison'],
+])('proxies authenticated %s evidence with its bounded query', async (_label, route) => {
+  const payload = { mode: 'SHADOW', research_only: true, can_place_orders: false };
+  global.fetch.mockResolvedValue({ status: 200, json: async () => payload });
+  const response = await request(makeApp()).get(`/api/proxy${route}`);
+  expect(response.status).toBe(200);
+  expect(response.body).toEqual(payload);
+  expect(global.fetch).toHaveBeenCalledWith(
+    `http://python-engine:8000${route}`,
+    expect.objectContaining({
+      method: 'GET',
+      headers: expect.objectContaining({ 'X-Internal-Secret': 'internal-test-secret' }),
+    }),
+  );
+});
+
+test('proactive comparison proxy requires a session', async () => {
+  const response = await request(makeApp(false)).get('/api/proxy/analytics/proactive-comparison?days=90');
+  expect(response.status).toBe(401);
+  expect(global.fetch).not.toHaveBeenCalled();
+});
+
+test.each([
+  ['optional AI status', '/analytics/optional-ai-status'],
+  ['five-session proactive diagnostics', '/analytics/proactive-session-diagnostics?sessions=5'],
+  ['partner hedge cards', '/partner/hedge/cards?limit=12'],
+  ['partner delivery backlog', '/partner/hedge/delivery-backlog'],
+])('proxies authenticated %s evidence without granting authority', async (_label, route) => {
+  const payload = { can_place_orders: false, execution_authority: 'NONE' };
+  global.fetch.mockResolvedValue({ status: 200, json: async () => payload });
+  const response = await request(makeApp()).get(`/api/proxy${route}`);
+  expect(response.status).toBe(200);
+  expect(response.body).toEqual(payload);
+  expect(global.fetch).toHaveBeenCalledWith(
+    `http://python-engine:8000${route}`,
+    expect.objectContaining({
+      method: 'GET',
+      headers: expect.objectContaining({ 'X-Internal-Secret': 'internal-test-secret' }),
+    }),
+  );
+});

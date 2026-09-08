@@ -20,6 +20,7 @@ from typing import Dict, Optional, Tuple
 import aiosqlite
 import structlog
 
+from config import settings
 from fno_chain import ChainSnapshot
 
 logger = structlog.get_logger()
@@ -206,4 +207,78 @@ async def purge_older_than(db_path: str, days: int, now: Optional[datetime] = No
         await db.commit()
     if removed:
         logger.info("fno_oi_purged rows=%d cutoff=%s", removed, cutoff)
+    return removed
+
+
+async def archive_then_purge_older_than(
+    db_path: str, days: int, now: Optional[datetime] = None,
+) -> int:
+    """Preserve the short-retention OI cache before deletion when configured.
+
+    The archive export opens a separate read-only SQLite snapshot and writes
+    only to ``RESEARCH_ARCHIVE_PATH``.  If it cannot prove an immutable export
+    was written, deletion is skipped rather than silently erasing the only
+    available NIFTY/SENSEX research evidence.  A cache with no rows eligible
+    for deletion still purges normally (a no-op) even if no archive exists.
+    """
+    now = now or datetime.now()
+    cutoff = (now - timedelta(days=days)).strftime("%Y-%m-%d 00:00:00")
+    protected = tuple(sorted({name.strip().upper() for name in settings.RESEARCH_ARCHIVE_UNDERLYINGS.split(",") if name.strip()}))
+    if not protected or not settings.RESEARCH_ARCHIVE_REQUIRED_BEFORE_FNO_PURGE:
+        return await purge_older_than(db_path, days, now)
+    marks = ",".join("?" for _ in protected)
+    async with aiosqlite.connect(db_path) as db:
+        chain = await (await db.execute(f"SELECT COUNT(*) FROM fno_chain_oi WHERE snap_ts<? AND upper(underlying) IN ({marks})", (cutoff, *protected))).fetchone()
+        fut = await (await db.execute(f"SELECT COUNT(*) FROM fno_fut_snap WHERE snap_ts<? AND upper(underlying) IN ({marks})", (cutoff, *protected))).fetchone()
+        eligible = int(chain[0]) + int(fut[0])
+    if not eligible:
+        # A protected old row may arrive immediately after the count. Never
+        # use the broad legacy purge in this branch: only the explicitly
+        # unprotected operational scope is eligible for ordinary retention.
+        async with aiosqlite.connect(db_path) as db:
+            await db.execute(f"DELETE FROM fno_chain_oi WHERE snap_ts<? AND upper(underlying) NOT IN ({marks})", (cutoff, *protected))
+            await db.execute(f"DELETE FROM fno_fut_snap WHERE snap_ts<? AND upper(underlying) NOT IN ({marks})", (cutoff, *protected))
+            await db.commit()
+        return 0
+    try:
+        from research_archive import export_operational_fno_evidence, verify_export_manifest
+        export = await __import__("asyncio").to_thread(
+            export_operational_fno_evidence, db_path, settings.RESEARCH_ARCHIVE_PATH, protected,
+            cutoff_before=cutoff, reserved_free_bytes=settings.RESEARCH_RESERVED_FREE_BYTES,
+        )
+        if not await __import__("asyncio").to_thread(verify_export_manifest, export["path"]):
+            raise OSError("export manifest verification failed")
+    except Exception as exc:
+        logger.error(
+            "fno_oi_purge_blocked_archive_failed cutoff=%s eligible=%d err=%s",
+            cutoff, eligible, str(exc),
+        )
+        return 0
+    # Delete precisely the identities exported above.  A concurrent late old
+    # row cannot match one of these rowids, so it remains available for the
+    # next preservation run instead of being silently erased by a broad cutoff.
+    removed = 0
+    async with aiosqlite.connect(db_path) as db:
+        columns = {
+            "fno_chain_oi": ("snap_ts", "underlying", "expiry", "strike", "opt_type", "oi", "volume", "ltp", "iv"),
+            "fno_fut_snap": ("snap_ts", "underlying", "fut_ltp", "fut_oi", "pcr", "max_pain", "atm_iv"),
+        }
+        for table, filename in (("fno_chain_oi", "fno_chain_oi.jsonl"), ("fno_fut_snap", "fno_fut_snap.jsonl")):
+            with open(f"{export['path']}/{filename}", encoding="utf-8") as exported_rows:
+                for line in exported_rows:
+                    row = __import__("json").loads(line)
+                    fields = columns[table]
+                    # rowid narrows the delete, while all archived values make
+                    # an update/reuse fail closed until the changed record is
+                    # exported by a later preservation pass.
+                    predicate = " AND ".join(["rowid=?"] + [f"{field} IS ?" for field in fields])
+                    values = [row["_archive_rowid"]] + [row.get(field) for field in fields]
+                    cur = await db.execute(f"DELETE FROM {table} WHERE {predicate}", values)
+                    removed += max(cur.rowcount or 0, 0)
+        # Operational BANKNIFTY cache retains its pre-existing retention rule;
+        # it is intentionally outside the configured research export scope.
+        await db.execute(f"DELETE FROM fno_chain_oi WHERE snap_ts<? AND upper(underlying) NOT IN ({marks})", (cutoff, *protected))
+        await db.execute(f"DELETE FROM fno_fut_snap WHERE snap_ts<? AND upper(underlying) NOT IN ({marks})", (cutoff, *protected))
+        await db.commit()
+    logger.info("fno_oi_purge_after_verified_archive removed=%d cutoff=%s", removed, cutoff)
     return removed

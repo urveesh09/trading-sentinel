@@ -51,6 +51,8 @@ ALL_CLOSURES = [
     # gate is PARTNER_BOT_ENABLED (default false), so invoking them here
     # exercises the free-name region and exits without touching anything.
     "_run_partner_scan_tick_safe",
+    "_run_partner_manual_advisory_tick_safe",
+    "_run_partner_manual_advisory_lifecycle_tick_safe",
     "_run_partner_analytics_tick_safe",
     "_run_partner_morning_brief_safe",
     "_run_partner_eod_wrap_safe",

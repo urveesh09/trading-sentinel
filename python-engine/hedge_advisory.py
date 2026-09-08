@@ -849,6 +849,58 @@ async def load_hedge_delivery_backlog(db_path: str) -> dict[str, list[dict]]:
     return {"manual_recovery": unresolved, "quarantine": quarantined}
 
 
+async def load_partner_hedge_cards(db_path: str, *, limit: int = 20) -> dict:
+    """Render immutable fixture/shadow review evidence for an operator UI.
+
+    Cards deliberately expose only persisted review fields.  They cannot
+    acknowledge, resend, trade, or infer a holding that was absent from the
+    source snapshot.
+    """
+    if not 1 <= limit <= 100:
+        raise ValueError("limit must be within 1..100")
+    await init_hedge_advisory_db(db_path)
+    async with aiosqlite.connect(db_path) as db:
+        rows = await (await db.execute(
+            "SELECT evaluation_id,phase,kind,dedup_key,rendered_text,detail_json,evaluated_at "
+            "FROM partner_hedge_shadow_evaluations ORDER BY evaluated_at DESC,evaluation_id DESC LIMIT ?", (limit,),
+        )).fetchall()
+        revision_row = await (await db.execute(
+            "SELECT revision FROM partner_hedge_portfolio_revision "
+            "WHERE revision_key='partner_hedge'"
+        )).fetchone()
+    current_revision = int(revision_row[0]) if revision_row is not None else None
+    cards = []
+    for evaluation_id, phase, kind, dedup_key, text, raw_detail, evaluated_at in rows:
+        try:
+            detail = json.loads(raw_detail or "{}")
+        except (TypeError, json.JSONDecodeError):
+            detail = {"state": "CORRUPT_EVALUATION_DETAIL"}
+        if not isinstance(detail, dict):
+            detail = {"state": "CORRUPT_EVALUATION_DETAIL"}
+        recorded_revision = detail.get("portfolio_revision")
+        revision_is_known = isinstance(recorded_revision, int) and not isinstance(recorded_revision, bool)
+        is_superseded = bool(
+            revision_is_known and current_revision is not None and recorded_revision != current_revision
+        )
+        cards.append({
+            "evaluation_id": evaluation_id, "phase": phase, "kind": kind,
+            "dedup_key": dedup_key, "rendered_text": text, "evaluated_at": evaluated_at,
+            "account_id": detail.get("account_id"), "underlying": detail.get("underlying"),
+            "contracts": detail.get("contracts") if isinstance(detail.get("contracts"), list) else [],
+            "valid_until": detail.get("valid_until"), "portfolio_revision": recorded_revision,
+            "current_portfolio_revision": current_revision,
+            "portfolio_state": (
+                "SUPERSEDED" if is_superseded else "CURRENT" if revision_is_known and current_revision is not None
+                else "REVISION_UNAVAILABLE"
+            ),
+            "is_superseded": is_superseded,
+            "decision_id": detail.get("decision_id"), "generation_id": detail.get("generation_id"),
+            "reason": detail.get("reason"), "delivery_state": "NOT_SENT_SHADOW_EVIDENCE",
+            "can_send": False, "can_trade": False,
+        })
+    return {"mode": "SHADOW", "cards": cards, "note": "Cards are persisted hedge-review evidence only; partner confirmation and delivery remain separate."}
+
+
 async def resolve_hedge_delivery_backlog(
     db_path: str, *, kind: str, dedup_key: str, action: str, resolved_by: str,
     reason: str, evidence_ref: str, now: Optional[datetime] = None,
@@ -938,6 +990,121 @@ async def _authorize_dispatch(
     if phase is None:
         # Status messages carry no execution instruction.
         return True
+    if phase == "manual_v1":
+        # Manual market advice is deliberately independent of a partner
+        # portfolio, but it is not a bypass around final validation.  Require
+        # the exact queued card, current profile version, complete prior
+        # validation and unexpired original quote evidence while holding the
+        # dispatch claim.  No order authority is involved.
+        if not settings.PARTNER_MANUAL_ADVISORY_ENABLED or not settings.PARTNER_MANUAL_ADVISORY_DELIVERY_ENABLED:
+            return False
+        advisory_id = detail.get("advisory_id")
+        profile_id = detail.get("profile_id")
+        if not isinstance(advisory_id, str) or not isinstance(profile_id, str):
+            return False
+        try:
+            async with aiosqlite.connect(db_path, timeout=30) as db:
+                card = await (await db.execute(
+                    "SELECT status,profile_id,profile_version,valid_until,rendered_card,payload "
+                    "FROM partner_advisory_ideas WHERE advisory_id=?", (advisory_id,),
+                )).fetchone()
+                profile = await (await db.execute(
+                    "SELECT version FROM partner_advisory_profiles WHERE profile_id=?", (profile_id,),
+                )).fetchone()
+                claim = await (await db.execute(
+                    "SELECT claim_token FROM partner_hedge_messages WHERE kind=? AND dedup_key=? AND delivered=0",
+                    (kind, key),
+                )).fetchone()
+            if card is None or claim is None or claim[0] != token:
+                return False
+            # A first-run default profile is intentionally implicit; any
+            # configured/custom profile must be persisted and version-matched.
+            if card[1] != profile_id:
+                return False
+            if profile is None:
+                if profile_id != "default" or int(card[2]) != 1:
+                    return False
+            elif int(card[2]) != int(profile[0]):
+                return False
+            if card[0] != "QUEUED":
+                return False
+            if card[3] != detail.get("valid_until") or card[4] != detail.get("rendered_text"):
+                return False
+            payload = json.loads(card[5])
+            if (
+                payload.get("validation_reasons")
+                or payload.get("profile_id") != profile_id
+                or not payload.get("strategy_qualified")
+                or payload.get("evidence") != "QUALIFIED_FOR_ADVISORY"
+                or payload.get("holding_horizon") != "INTRADAY"
+                or payload.get("policy_version") != "partner-manual-intraday-v1"
+                or payload.get("session_date") != now.astimezone(IST).date().isoformat()
+            ):
+                return False
+            entry_deadline = _parse_ist(payload.get("entry_deadline"))
+            if entry_deadline is None or entry_deadline < now:
+                return False
+            # Re-read the registry at the transport boundary; a queued card
+            # cannot rely on a stale cached qualification after suspension.
+            async with aiosqlite.connect(db_path, timeout=30) as qualification_db:
+                qualification = await (await qualification_db.execute(
+                    "SELECT status,reviewed_at FROM partner_advisory_strategy_qualifications WHERE underlying=? "
+                    "AND structure_kind=? AND horizon=? AND policy_version=?",
+                    (detail.get("underlying"), payload.get("structure_kind"), "INTRADAY", "partner-manual-intraday-v1"),
+                )).fetchone()
+            if qualification is None or qualification[0] != "QUALIFIED_FOR_ADVISORY":
+                return False
+            reviewed_at = _parse_ist(qualification[1])
+            if reviewed_at is None or reviewed_at > now:
+                return False
+            return _parse_ist(card[3]) is not None and _parse_ist(card[3]) > now
+        except Exception:
+            logger.error("manual_advisory_dispatch_authorization_failed", exc_info=True)
+            return False
+    if phase == "manual_update_v1":
+        # Updates are separately persisted and rate-limited.  They may refer
+        # to a published thesis after its entry quote expired, but the market
+        # observation that triggered them must itself be fresh and must match
+        # one immutable queued update exactly.
+        if not settings.PARTNER_MANUAL_ADVISORY_ENABLED or not settings.PARTNER_MANUAL_ADVISORY_DELIVERY_ENABLED:
+            return False
+        update_id = detail.get("update_id")
+        advisory_id = detail.get("advisory_id")
+        profile_id = detail.get("profile_id")
+        observed_at = _parse_ist(detail.get("observed_at"))
+        if not all(isinstance(value, str) for value in (update_id, advisory_id, profile_id)) or observed_at is None:
+            return False
+        if (now - observed_at).total_seconds() > settings.PARTNER_MANUAL_ADVISORY_MAX_QUOTE_AGE_SEC or observed_at > now + timedelta(seconds=5):
+            return False
+        try:
+            async with aiosqlite.connect(db_path, timeout=30) as db:
+                row = await (await db.execute(
+                    "SELECT u.advisory_id,u.status,u.rendered_update,i.status,i.payload,p.version "
+                    "FROM partner_advisory_updates u JOIN partner_advisory_ideas i ON i.advisory_id=u.advisory_id "
+                    "LEFT JOIN partner_advisory_profiles p ON p.profile_id=? WHERE u.update_id=?",
+                    (profile_id, update_id),
+                )).fetchone()
+                claim = await (await db.execute(
+                    "SELECT claim_token FROM partner_hedge_messages WHERE kind=? AND dedup_key=? AND delivered=0",
+                    (kind, key),
+                )).fetchone()
+            if row is None or claim is None or claim[0] != token:
+                return False
+            if row[0] != advisory_id or row[1] != "QUEUED" or row[3] != "DELIVERED_ACKNOWLEDGED":
+                return False
+            payload = json.loads(row[4])
+            if payload.get("profile_id") != profile_id or row[5] is None:
+                return False
+            management_deadline = _parse_ist(payload.get("management_deadline"))
+            if (management_deadline is None or management_deadline <= now
+                    or payload.get("session_date") != now.astimezone(IST).date().isoformat()):
+                return False
+            if row[2] != detail.get("rendered_text"):
+                return False
+            return True
+        except Exception:
+            logger.error("manual_advisory_update_dispatch_authorization_failed", exc_info=True)
+            return False
     policy_by_phase = {"phase1": "phase1-v2", "phase2": "phase2-v1", "phase3": "phase3-v1"}
     if phase not in policy_by_phase or detail.get("policy_version") != policy_by_phase[phase]:
         return False
@@ -1018,7 +1185,7 @@ async def _authorize_dispatch(
 async def _send_claimed_review(
     db_path: str, kind: str, key: str, text: str, *,
     detail: dict, now: datetime, underlying: Optional[str] = None,
-    min_gap: Optional[timedelta] = None, daily_cap: Optional[int] = None,
+    min_gap: Optional[timedelta] = None, daily_cap: Optional[int] = None, clock=None,
 ) -> bool:
     # Persist enough proposal context for a bounded recovery worker; it still
     # must re-check expiry and lease state before any network call.
@@ -1039,17 +1206,28 @@ async def _send_claimed_review(
             db_path, "last_candidate",
             {"kind": kind, "dedup_key": key, "underlying": underlying}, now=now,
         )
+        # Claims/database writes can consume a short executable-quote TTL.
+        # Re-read the injected live clock at the authority boundary rather
+        # than treating the scan-start time as a perpetual validity token.
+        authority_now = (clock() if clock is not None else now).astimezone(IST)
         if not await _authorize_dispatch(
-            db_path, kind, key, token, claim_detail, now=now,
+            db_path, kind, key, token, claim_detail, now=authority_now,
         ):
             await _fail_claim(
                 db_path, kind, key, token,
                 detail={**claim_detail, "state": "dispatch_not_authorized", "delivery": {
                     "kind": kind, "dedup_key": key, "state": "dispatch_not_authorized",
-                }}, now=now,
+                }}, now=authority_now,
             )
             return False
-        if not await _mark_transport_started(db_path, kind, key, token, now=now):
+        transport_now = (clock() if clock is not None else authority_now).astimezone(IST)
+        # A second clock read closes the interval between authorization and
+        # durable transport intent.
+        if not await _authorize_dispatch(db_path, kind, key, token, claim_detail, now=transport_now):
+            await _fail_claim(db_path, kind, key, token,
+                              detail={**claim_detail, "state": "expired_before_transport"}, now=transport_now)
+            return False
+        if not await _mark_transport_started(db_path, kind, key, token, now=transport_now):
             return False
         post_dispatch = True
         result = await send_partner_result(text, kind=kind)
@@ -1149,7 +1327,7 @@ async def recover_pending_hedge_deliveries(now: Optional[datetime] = None) -> in
     the next daily digest.
     """
     now = _aware(now or datetime.now(IST), "now").astimezone(IST)
-    if not settings.PARTNER_HEDGE_ENABLED or not partner_enabled():
+    if not (settings.PARTNER_HEDGE_ENABLED or settings.PARTNER_MANUAL_ADVISORY_DELIVERY_ENABLED) or not partner_enabled():
         return 0
     await init_hedge_advisory_db(settings.DB_PATH)
     await _sweep_abandoned_delivery_claims(settings.DB_PATH, now)
@@ -1257,6 +1435,10 @@ async def _recovery_retirement_reason(detail: dict, now: datetime) -> Optional[s
         # Rebuilding advanced-strategy context is the only safe recovery. The
         # old rendered text cannot establish present readiness or economics.
         return "ADVANCED_PHASE_REQUIRES_REGENERATION"
+    if phase == "manual_v1":
+        # The final manual-scope authorizer will check the exact queued card,
+        # current profile and original expiry again before any recovery POST.
+        return None if settings.PARTNER_MANUAL_ADVISORY_DELIVERY_ENABLED else "MANUAL_ADVISORY_DELIVERY_DISABLED"
     if phase != "phase1":
         # Status summaries have no tradable instruction and retain their own
         # lifecycle semantics; legacy rows are not replayed as hedge advice.
@@ -1395,6 +1577,27 @@ def _phase2_positions_valid(
         return False
     name = _snapshot_underlying(snapshot)
     return bool(name and all(p.underlying == name for p in positions))
+
+
+async def send_partner_telegram_diagnostic(db_path: str, *, now: Optional[datetime] = None) -> bool:
+    """Send one fixed, auditable receipt diagnostic without enabling advice.
+
+    The caller cannot choose a destination, body, contract, price, or advice
+    category.  The normal durable ledger keeps acknowledgement/timeout
+    semantics conservative, while the absence of an advisory phase prevents
+    this probe from being mistaken for a tradable proposal.
+    """
+    sent_at = (now or datetime.now(IST)).astimezone(IST)
+    reference = f"partner-telegram-diagnostic:{sent_at.date().isoformat()}"
+    text = (
+        "TEST MESSAGE — NOT A TRADE RECOMMENDATION. Sentinel Telegram connection test. "
+        f"No action required. Diagnostic reference: {reference}; time: {sent_at.isoformat()}."
+    )
+    return await _send_claimed_review(
+        db_path, "partner_telegram_diagnostic", reference, text,
+        detail={"diagnostic": True, "diagnostic_reference": reference, "automatic_advice": False},
+        now=sent_at, min_gap=timedelta(hours=23), daily_cap=1,
+    )
 
 
 def _verified_deliverable_units(
@@ -1994,7 +2197,10 @@ async def partner_hedge_daily_summary(
     period = str(period).upper()
     if period not in {"MORNING", "EOD"}:
         raise ValueError("period must be MORNING or EOD")
-    if not settings.PARTNER_HEDGE_ENABLED or not partner_enabled():
+    if (
+        not settings.PARTNER_HEDGE_ENABLED or not partner_enabled()
+        or settings.PARTNER_MANUAL_ADVISORY_DELIVERY_ENABLED
+    ):
         return
     import main as _main
     if not await _main.is_trading_day(now.date(), settings.DB_PATH):
@@ -2021,7 +2227,10 @@ async def partner_hedge_daily_summary(
 async def partner_hedge_tick(now: Optional[datetime] = None) -> None:
     """Periodic Phase-1 advisory job. Disabled and zero-cost by default."""
     now = _aware(now or datetime.now(IST), "now").astimezone(IST)
-    if not settings.PARTNER_HEDGE_ENABLED or not partner_enabled():
+    if (
+        not settings.PARTNER_HEDGE_ENABLED or not partner_enabled()
+        or settings.PARTNER_MANUAL_ADVISORY_DELIVERY_ENABLED
+    ):
         return
     minute = now.hour * 60 + now.minute
     if not (9 * 60 + 25 <= minute <= 15 * 60 + 15):

@@ -79,6 +79,18 @@
       "trigger": "cron[minute='*/2', second='5']"
     },
     {
+      "func": "_run_partner_manual_advisory_lifecycle_tick_safe",
+      "id": "partner_manual_advisory_lifecycle_tick",
+      "kwargs": [],
+      "trigger": "cron[minute='*/1', second='5']"
+    },
+    {
+      "func": "_run_partner_manual_advisory_tick_safe",
+      "id": "partner_manual_advisory_tick",
+      "kwargs": [],
+      "trigger": "cron[minute='*/2', second='50']"
+    },
+    {
       "func": "_run_partner_morning_brief_safe",
       "id": "partner_morning_brief",
       "kwargs": [],
@@ -143,6 +155,12 @@
       "id": "proactive_shadow_workflow",
       "kwargs": [],
       "trigger": "cron[minute='*/5', second='55']"
+    },
+    {
+      "func": "_run_research_quote_collection_safe",
+      "id": "research_quote_collection",
+      "kwargs": [],
+      "trigger": "cron[minute='*/1', second='25']"
     },
     {
       "func": "bootstrap_0800_job",
@@ -223,6 +241,14 @@
       "response_model": null
     },
     {
+      "endpoint": "get_optional_ai_status",
+      "methods": [
+        "GET"
+      ],
+      "path": "/analytics/optional-ai-status",
+      "response_model": null
+    },
+    {
       "endpoint": "get_outcomes",
       "methods": [
         "GET"
@@ -239,11 +265,35 @@
       "response_model": null
     },
     {
+      "endpoint": "get_proactive_comparison",
+      "methods": [
+        "GET"
+      ],
+      "path": "/analytics/proactive-comparison",
+      "response_model": null
+    },
+    {
       "endpoint": "get_proactive_diagnostics",
       "methods": [
         "GET"
       ],
       "path": "/analytics/proactive-diagnostics",
+      "response_model": null
+    },
+    {
+      "endpoint": "get_proactive_research_comparison",
+      "methods": [
+        "GET"
+      ],
+      "path": "/analytics/proactive-research-comparison",
+      "response_model": null
+    },
+    {
+      "endpoint": "get_proactive_session_diagnostics",
+      "methods": [
+        "GET"
+      ],
+      "path": "/analytics/proactive-session-diagnostics",
       "response_model": null
     },
     {
@@ -396,6 +446,102 @@
         "GET"
       ],
       "path": "/ops/metrics",
+      "response_model": null
+    },
+    {
+      "endpoint": "post_optional_ai_status",
+      "methods": [
+        "POST"
+      ],
+      "path": "/ops/optional-ai-status",
+      "response_model": null
+    },
+    {
+      "endpoint": "get_partner_advisory_cards",
+      "methods": [
+        "GET"
+      ],
+      "path": "/partner/advisory/cards",
+      "response_model": null
+    },
+    {
+      "endpoint": "post_partner_advisory_feedback",
+      "methods": [
+        "POST"
+      ],
+      "path": "/partner/advisory/cards/{advisory_id}/feedback",
+      "response_model": null
+    },
+    {
+      "endpoint": "get_partner_advisory_diagnostics",
+      "methods": [
+        "GET"
+      ],
+      "path": "/partner/advisory/diagnostics",
+      "response_model": null
+    },
+    {
+      "endpoint": "get_partner_advisory_effective_settings",
+      "methods": [
+        "GET"
+      ],
+      "path": "/partner/advisory/effective-settings",
+      "response_model": null
+    },
+    {
+      "endpoint": "get_partner_advisory_profile",
+      "methods": [
+        "GET"
+      ],
+      "path": "/partner/advisory/profile",
+      "response_model": null
+    },
+    {
+      "endpoint": "put_partner_advisory_profile",
+      "methods": [
+        "PUT"
+      ],
+      "path": "/partner/advisory/profile",
+      "response_model": null
+    },
+    {
+      "endpoint": "put_partner_advisory_qualification",
+      "methods": [
+        "POST"
+      ],
+      "path": "/partner/advisory/qualifications",
+      "response_model": null
+    },
+    {
+      "endpoint": "post_partner_advisory_research_artifact",
+      "methods": [
+        "POST"
+      ],
+      "path": "/partner/advisory/research-artifacts",
+      "response_model": null
+    },
+    {
+      "endpoint": "get_partner_advisory_research_readiness",
+      "methods": [
+        "GET"
+      ],
+      "path": "/partner/advisory/research-readiness",
+      "response_model": null
+    },
+    {
+      "endpoint": "post_partner_advisory_telegram_diagnostic",
+      "methods": [
+        "POST"
+      ],
+      "path": "/partner/advisory/telegram-diagnostic",
+      "response_model": null
+    },
+    {
+      "endpoint": "get_partner_hedge_cards",
+      "methods": [
+        "GET"
+      ],
+      "path": "/partner/hedge/cards",
       "response_model": null
     },
     {

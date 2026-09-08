@@ -82,6 +82,53 @@ def _review(payload=None, *, unavailable_reason=None):
     return from_payload(payload or {})
 
 
+class TestOptionalAsyncReview:
+    def test_optional_ai_status_marks_a_circuit_outage_without_trade_authority(self, agent_mod):
+        worker = MagicMock()
+        worker.snapshot.return_value = {
+            "pending": 0, "cached": 0, "daily_requests": 3, "daily_budget": 40,
+            "max_pending": 16, "circuit_state": "OPEN",
+        }
+        agent_mod.client = MagicMock()
+        agent_mod.MINIMAX_ASYNC_REVIEW_ENABLED = True
+        agent_mod.MINIMAX_UNAVAILABLE_POLICY = "proceed"
+        agent_mod.MOMENTUM_MINIMAX_REJECT_POLICY = "advisory"
+        agent_mod._optional_ai_queue = worker
+
+        status = agent_mod.optional_ai_status()
+
+        assert status["state"] == "OUTAGE_CIRCUIT_OPEN"
+        assert status["queue"]["circuit_state"] == "OPEN"
+
+    def test_pending_annotation_does_not_block_the_deterministic_alert_path(self, agent_mod):
+        from async_reviews import ReviewSubmission
+
+        worker = MagicMock()
+        worker.submit.return_value = ReviewSubmission("key", "QUEUED")
+        agent_mod.MINIMAX_ASYNC_REVIEW_ENABLED = True
+        agent_mod.MINIMAX_UNAVAILABLE_POLICY = "proceed"
+        agent_mod.MOMENTUM_MINIMAX_REJECT_POLICY = "advisory"
+        agent_mod._optional_ai_queue = worker
+
+        review = agent_mod.queue_optional_ai_review(
+            {"ticker": "SYNTH", "close": 100, "target_1": 110, "stop_loss": 95,
+             "signal_time": "2026-09-07T09:30:00+00:00"},
+            "completed-bar event", "BULL",
+        )
+
+        assert review.reason == "AI_REVIEW_PENDING"
+        assert review.available is False
+        worker.submit.assert_called_once()
+
+    def test_async_worker_is_not_used_when_operator_keeps_a_hard_veto(self, agent_mod):
+        agent_mod.MINIMAX_ASYNC_REVIEW_ENABLED = True
+        agent_mod.MINIMAX_UNAVAILABLE_POLICY = "block"
+        agent_mod._optional_ai_queue = None
+        assert agent_mod.queue_optional_ai_review(
+            {"ticker": "SYNTH"}, "event", "BULL",
+        ) is None
+
+
 class TestAnalyzeWithMiniMax:
     def test_returns_parsed_output(self, agent_mod):
         content = json.dumps({

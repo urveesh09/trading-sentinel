@@ -47,9 +47,18 @@ class Settings(BaseSettings):
     # local SHADOW fixture is configured, and has no broker/delivery path.
     PROACTIVE_SHADOW_ENABLED: bool = True
     PROACTIVE_SHADOW_FIXTURE_PATH: str = ""
+    # ``LEGACY_FIXTURE_V1`` preserves the existing demonstration workflow.
+    # ``RECORDED_COMPLETED_BARS_V1`` is an explicit, read-only provider
+    # contract; it still has no order, delivery or broker-consumer path.
+    PROACTIVE_SHADOW_DATA_SOURCE: str = "LEGACY_FIXTURE_V1"
+    PROACTIVE_SHADOW_COMPLETED_BAR_FIXTURE_PATH: str = ""
+    PROACTIVE_SHADOW_MAX_DATA_AGE_SECONDS: int = 1800
     PROACTIVE_SHADOW_ACCOUNT_ID: str = "dev-shadow"
     PROACTIVE_SHADOW_RUN_ID: str = "dev-shadow-v1"
     PROACTIVE_SHADOW_SCENARIO_CAPITAL: float = 8000.0
+    # Optional account label for imported broker-statement evidence. Empty is
+    # deliberately unavailable; it does not trigger a broker connection.
+    BROKER_RECONCILIATION_ACCOUNT_ID: str = ""
     # Separate proof of broker ORDER permission from token/quote readiness.
     # Empty means a state file beside DB_PATH.  BLOCKED persists across restart.
     ORDER_EXECUTION_STATE_PATH: str = ""
@@ -1006,6 +1015,29 @@ class Settings(BaseSettings):
     FNO_ANALYTICS_INTERVAL_SEC: int  = 300
     FNO_OI_RETENTION_DAYS:      int  = 7          # disk at 86% -- purge is load-bearing
 
+    # --- research evidence archive (data plan D1-D7, 2026-09-08) ----------
+    # This is deliberately outside the operational SQLite database.  It is
+    # evidence collection only: it never places orders, sends partner advice,
+    # or changes a strategy qualification.  The default path is on the
+    # existing persistent /data volume, so it survives a container restart.
+    RESEARCH_ARCHIVE_ENABLED: bool = True
+    RESEARCH_ARCHIVE_PATH: str = "/data/research"
+    RESEARCH_ARCHIVE_UNDERLYINGS: str = "NIFTY,SENSEX"
+    # A failed archive must be conspicuous before the short-retention cache is
+    # purged.  It does not silently delete unpreserved research input.
+    RESEARCH_ARCHIVE_REQUIRED_BEFORE_FNO_PURGE: bool = True
+    # REST full quotes are an explicitly lower-frequency fallback.  A future
+    # supported WebSocket producer can call the same append API with mode
+    # KITE_WS_FULL; neither source is an order or delivery consumer.
+    RESEARCH_QUOTE_COLLECTION_ENABLED: bool = True
+    RESEARCH_QUOTE_INTERVAL_SEC: int = 60
+    RESEARCH_QUOTE_STRIKE_WINDOW: int = 5
+    RESEARCH_QUOTE_MAX_QUEUE: int = 2_000
+    RESEARCH_RAW_RETENTION_DAYS: int = 7
+    RESEARCH_COMPRESSED_RETENTION_DAYS: int = 90
+    RESEARCH_RESERVED_FREE_BYTES: int = 1_073_741_824  # 1 GiB operational floor
+    RESEARCH_SESSION_MAX_BYTES: int = 268_435_456  # 256 MiB hard passive-collection budget
+
     # ============================================================
     # PARTNER TIPS BOT ([PARTNER-TIPS 2026-07-18])
     # Outbound-only second Telegram bot (own token + chat) sending
@@ -1015,7 +1047,7 @@ class Settings(BaseSettings):
     # Disabled by default: with PARTNER_BOT_ENABLED=false every
     # partner job returns immediately -- zero Kite calls, zero sends.
     # ============================================================
-    PARTNER_BOT_ENABLED:        bool  = False
+    PARTNER_BOT_ENABLED:        bool  = True
     PARTNER_TELEGRAM_BOT_TOKEN: str   = ""
     PARTNER_TELEGRAM_CHAT_ID:   str   = ""
     PARTNER_MORNING_BRIEF_HOUR: int   = 9
@@ -1048,7 +1080,10 @@ class Settings(BaseSettings):
     # Hedge-first partner advisory. This is deliberately independent from
     # PARTNER_BOT_ENABLED. It is enabled for Phase 1, while reconciled holdings
     # and fresh quote gates still fail closed before any message can be sent.
-    PARTNER_HEDGE_ENABLED:              bool  = True
+    # Personalised portfolio monitoring is not part of the manual-advisory
+    # rollout.  It stays off unless a separately reconciled holdings service
+    # is deliberately commissioned.
+    PARTNER_HEDGE_ENABLED:              bool  = False
     PARTNER_HEDGE_PROTECTIVE_PUT:       bool  = True
     # Automatic collars stay off in Phase 1: a short call is only safe when
     # the exact deliverable holding and option contract are reconciled.
@@ -1086,6 +1121,31 @@ class Settings(BaseSettings):
     PARTNER_HEDGE_SUPPRESS_ANALYTICS:   bool  = True
     PARTNER_HEDGE_SUPPRESS_LEGACY_BRIEF: bool = True
     PARTNER_HEDGE_SUPPRESS_LEGACY_EOD:   bool = True
+
+    # Scoped manual-trader advisory for NIFTY 50 (NSE) and SENSEX (BSE).
+    # Owner-approved delivery remains advisory-only: the hardened transport
+    # ledger can send a validated card, but no partner order consumer exists.
+    # Owner-approved advisory rollout: messages remain manual decision
+    # support only; no code path here can place a partner order.
+    PARTNER_MANUAL_ADVISORY_ENABLED: bool = True
+    PARTNER_MANUAL_ADVISORY_SHADOW_ENABLED: bool = True
+    PARTNER_MANUAL_ADVISORY_DELIVERY_ENABLED: bool = True
+    PARTNER_MANUAL_ADVISORY_DAILY_CAP: int = 2
+    # Material invalidation/target updates use a separate small budget so a
+    # morning entry cannot silence a later risk-relevant follow-up.
+    PARTNER_MANUAL_ADVISORY_UPDATE_DAILY_CAP: int = 4
+    PARTNER_MANUAL_ADVISORY_MAX_QUOTE_AGE_SEC: int = 30
+    PARTNER_MANUAL_ADVISORY_MAX_SPREAD_PCT: float = 0.15
+    PARTNER_MANUAL_ADVISORY_MIN_OI: int = 1
+    PARTNER_MANUAL_ADVISORY_MIN_VOLUME: int = 1
+    PARTNER_MANUAL_ADVISORY_MIN_DEPTH_UNITS: int = 1
+    PARTNER_MANUAL_ADVISORY_QUOTE_TTL_SEC: int = 30
+    # Intraday policy times in IST. New entries end before management/exit
+    # observation so a late alert cannot become an overnight recommendation.
+    PARTNER_MANUAL_ADVISORY_ENTRY_START_MINUTE: int = 9 * 60 + 45
+    PARTNER_MANUAL_ADVISORY_ENTRY_END_MINUTE: int = 14 * 60 + 45
+    PARTNER_MANUAL_ADVISORY_EXIT_REMINDER_MINUTE: int = 15 * 60 + 10
+    PARTNER_MANUAL_ADVISORY_MANAGEMENT_END_MINUTE: int = 15 * 60 + 15
 
     # Advanced partner-facing phases require current readiness evidence. They
     # start disabled; Phase 1 protection and status messages remain available.
