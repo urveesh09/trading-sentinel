@@ -232,7 +232,14 @@ async def archive_then_purge_older_than(
         fut = await (await db.execute(f"SELECT COUNT(*) FROM fno_fut_snap WHERE snap_ts<? AND upper(underlying) IN ({marks})", (cutoff, *protected))).fetchone()
         eligible = int(chain[0]) + int(fut[0])
     if not eligible:
-        return await purge_older_than(db_path, days, now)
+        # A protected old row may arrive immediately after the count. Never
+        # use the broad legacy purge in this branch: only the explicitly
+        # unprotected operational scope is eligible for ordinary retention.
+        async with aiosqlite.connect(db_path) as db:
+            await db.execute(f"DELETE FROM fno_chain_oi WHERE snap_ts<? AND upper(underlying) NOT IN ({marks})", (cutoff, *protected))
+            await db.execute(f"DELETE FROM fno_fut_snap WHERE snap_ts<? AND upper(underlying) NOT IN ({marks})", (cutoff, *protected))
+            await db.commit()
+        return 0
     try:
         from research_archive import export_operational_fno_evidence, verify_export_manifest
         export = await __import__("asyncio").to_thread(
@@ -252,12 +259,21 @@ async def archive_then_purge_older_than(
     # next preservation run instead of being silently erased by a broad cutoff.
     removed = 0
     async with aiosqlite.connect(db_path) as db:
+        columns = {
+            "fno_chain_oi": ("snap_ts", "underlying", "expiry", "strike", "opt_type", "oi", "volume", "ltp", "iv"),
+            "fno_fut_snap": ("snap_ts", "underlying", "fut_ltp", "fut_oi", "pcr", "max_pain", "atm_iv"),
+        }
         for table, filename in (("fno_chain_oi", "fno_chain_oi.jsonl"), ("fno_fut_snap", "fno_fut_snap.jsonl")):
-            rowids = [int(__import__("json").loads(line)["_archive_rowid"]) for line in open(f"{export['path']}/{filename}", encoding="utf-8") if line.strip()]
-            for start in range(0, len(rowids), 500):
-                batch = rowids[start:start + 500]
-                if batch:
-                    cur = await db.execute(f"DELETE FROM {table} WHERE rowid IN ({','.join('?' for _ in batch)})", batch)
+            with open(f"{export['path']}/{filename}", encoding="utf-8") as exported_rows:
+                for line in exported_rows:
+                    row = __import__("json").loads(line)
+                    fields = columns[table]
+                    # rowid narrows the delete, while all archived values make
+                    # an update/reuse fail closed until the changed record is
+                    # exported by a later preservation pass.
+                    predicate = " AND ".join(["rowid=?"] + [f"{field} IS ?" for field in fields])
+                    values = [row["_archive_rowid"]] + [row.get(field) for field in fields]
+                    cur = await db.execute(f"DELETE FROM {table} WHERE {predicate}", values)
                     removed += max(cur.rowcount or 0, 0)
         # Operational BANKNIFTY cache retains its pre-existing retention rule;
         # it is intentionally outside the configured research export scope.

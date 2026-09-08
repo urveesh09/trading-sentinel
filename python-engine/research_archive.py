@@ -303,10 +303,11 @@ def archive_candidate_evidence(
 class QuoteArchive:
     """Bounded append-only quote writer with crash recovery and finalisation."""
     def __init__(self, archive_root: str, *, max_queue: int = 2_000,
-                 reserved_free_bytes: int = 1_073_741_824):
+                 reserved_free_bytes: int = 1_073_741_824, session_max_bytes: int = 268_435_456):
         self.root = Path(archive_root)
         self.max_queue = max_queue
         self.reserved_free_bytes = reserved_free_bytes
+        self.session_max_bytes = session_max_bytes
         self._sequence = 0
         self._dropped = 0
         self.writer_id = uuid.uuid4().hex
@@ -330,6 +331,10 @@ class QuoteArchive:
         normal["writer_id"] = self.writer_id
         normal["writer_sequence"] = self._sequence
         contents = _canonical_json(normal) + b"\n"
+        used = path.stat().st_size if path.exists() else 0
+        if used + len(contents) > self.session_max_bytes:
+            self._dropped += 1
+            raise OSError("research session byte budget reached")
         # One writer is called from one scheduler job.  O_APPEND + fsync means
         # a process crash leaves at most an incomplete final line, recovered on
         # next finalisation rather than a false completed segment.
@@ -338,7 +343,23 @@ class QuoteArchive:
             handle.write(contents)
             handle.flush()
             os.fsync(handle.fileno())
+        self._update_latest_observation(normal)
         return True
+
+    def _update_latest_observation(self, event: Mapping[str, Any]) -> None:
+        name = str(event.get("contract", {}).get("underlying", "")).upper()
+        if not name:
+            return
+        path = self.root / "latest-observations.json"
+        try:
+            current = json.loads(path.read_text(encoding="utf-8")) if path.exists() else {}
+        except (OSError, json.JSONDecodeError):
+            current = {}
+        current[name] = {"received_at_utc": event.get("received_at_utc"),
+                         "provider_timestamp_utc": event.get("provider_timestamp_utc"),
+                         "provider_timestamp_parse_error": event.get("provider_timestamp_parse_error"),
+                         "depth_state": event.get("depth_state")}
+        _atomic_bytes(path, _canonical_json(current) + b"\n")
 
     def _recover_open_tail(self, path: Path) -> None:
         """Quarantine a corrupt tail before a new writer appends valid JSON."""
@@ -467,10 +488,14 @@ def readiness_view(archive_root: str, underlyings: Iterable[str] = ("NIFTY", "SE
                 continue
     last_run = max(latest_runs, key=lambda item: str(item.get("recorded_at_utc", "")), default=None)
     per_index = {}
+    try:
+        latest_observations = json.loads((root / "latest-observations.json").read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        latest_observations = {}
     for name in names:
         master = latest_master(name)
         gaps = [gap for run in latest_runs for gap in run.get("result", {}).get("gaps", []) if gap.get("underlying") == name]
-        latest_quote = None
+        latest_quote = latest_observations.get(name)
         # Active segment is bounded to one session; inspect it without reading
         # historical partitions on the request path.
         for path in sorted((root / "quotes").glob("*/quotes.jsonl.open"))[-1:]:
@@ -486,7 +511,8 @@ def readiness_view(archive_root: str, underlyings: Iterable[str] = ("NIFTY", "SE
             "recent_gap_count": len(gaps), "latest_gap": gaps[-1] if gaps else None,
             "last_collection_run_utc": max((r.get("recorded_at_utc") for r in latest_runs if name in r.get("result", {}).get("indices", {}) or any(g.get("underlying") == name for g in r.get("result", {}).get("gaps", []))), default=None),
             "last_valid_quote_utc": latest_quote.get("received_at_utc") if latest_quote else None,
-            "quote_observation_status": "OBSERVED_USABLE" if latest_quote else "NOT_YET_OBSERVED",
+            "provider_timestamp_utc": latest_quote.get("provider_timestamp_utc") if latest_quote else None,
+            "quote_observation_status": "OBSERVED_USABLE" if latest_quote and latest_quote.get("depth_state") == "USABLE" else "NOT_YET_OBSERVED",
             "qualification": "NOT_EVALUATED_HERE",
         }
     usage = shutil.disk_usage(root) if root.exists() else None

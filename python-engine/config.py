@@ -1036,6 +1036,7 @@ class Settings(BaseSettings):
     RESEARCH_RAW_RETENTION_DAYS: int = 7
     RESEARCH_COMPRESSED_RETENTION_DAYS: int = 90
     RESEARCH_RESERVED_FREE_BYTES: int = 1_073_741_824  # 1 GiB operational floor
+    RESEARCH_SESSION_MAX_BYTES: int = 268_435_456  # 256 MiB hard passive-collection budget
 
     # ============================================================
     # PARTNER TIPS BOT ([PARTNER-TIPS 2026-07-18])
