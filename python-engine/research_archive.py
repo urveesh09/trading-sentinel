@@ -16,6 +16,7 @@ import os
 import shutil
 import sqlite3
 import tempfile
+import uuid
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict, Iterable, List, Mapping, Optional, Sequence
@@ -58,6 +59,12 @@ def _atomic_bytes(path: Path, contents: bytes) -> None:
             os.unlink(temporary)
 
 
+def _require_capacity(root: Path, reserve_bytes: int, required_bytes: int = 0) -> None:
+    root.mkdir(parents=True, exist_ok=True)
+    if shutil.disk_usage(root).free < max(0, reserve_bytes) + max(0, required_bytes):
+        raise OSError("research archive free-space reserve reached")
+
+
 def _safe_component(value: str) -> str:
     return "".join(c if c.isalnum() or c in "._-" else "_" for c in value)[:120]
 
@@ -91,6 +98,8 @@ def export_operational_fno_evidence(
     *,
     exported_at: Optional[datetime] = None,
     source_commit: Optional[str] = None,
+    cutoff_before: Optional[str] = None,
+    reserved_free_bytes: int = 0,
 ) -> Dict[str, Any]:
     """Read a consistent snapshot from an operational SQLite DB and export it.
 
@@ -120,17 +129,19 @@ def export_operational_fno_evidence(
         chain_rows: List[Dict[str, Any]] = []
         fut_rows: List[Dict[str, Any]] = []
         if _table_exists(conn, "fno_chain_oi"):
-            chain_rows = _rows_as_dicts(conn.execute(
-                f"SELECT * FROM fno_chain_oi WHERE upper(underlying) IN ({placeholders}) "
-                "ORDER BY underlying, snap_ts, expiry, strike, opt_type", requested
-            ))
+            sql = f"SELECT rowid AS _archive_rowid,* FROM fno_chain_oi WHERE upper(underlying) IN ({placeholders})"
+            params: List[Any] = list(requested)
+            if cutoff_before:
+                sql += " AND snap_ts<?"; params.append(cutoff_before)
+            chain_rows = _rows_as_dicts(conn.execute(sql + " ORDER BY underlying,snap_ts,expiry,strike,opt_type", params))
         else:
             missing_tables.append("fno_chain_oi")
         if _table_exists(conn, "fno_fut_snap"):
-            fut_rows = _rows_as_dicts(conn.execute(
-                f"SELECT * FROM fno_fut_snap WHERE upper(underlying) IN ({placeholders}) "
-                "ORDER BY underlying, snap_ts", requested
-            ))
+            sql = f"SELECT rowid AS _archive_rowid,* FROM fno_fut_snap WHERE upper(underlying) IN ({placeholders})"
+            params = list(requested)
+            if cutoff_before:
+                sql += " AND snap_ts<?"; params.append(cutoff_before)
+            fut_rows = _rows_as_dicts(conn.execute(sql + " ORDER BY underlying,snap_ts", params))
         else:
             missing_tables.append("fno_fut_snap")
         conn.commit()
@@ -142,6 +153,8 @@ def export_operational_fno_evidence(
         "fno_fut_snap.jsonl": b"".join(_canonical_json(row) + b"\n" for row in fut_rows),
         "source_schema.json": _canonical_json(schema_rows) + b"\n",
     }
+    # Atomic publication can temporarily consume approximately one extra copy.
+    _require_capacity(root, reserved_free_bytes, sum(len(value) for value in files.values()) * 2)
     file_manifest: Dict[str, Dict[str, Any]] = {}
     for filename, data in files.items():
         _atomic_bytes(capture / filename, data)
@@ -154,6 +167,7 @@ def export_operational_fno_evidence(
         "source": {"db_path": str(Path(source_db_path).resolve()), "mode": "sqlite_readonly_snapshot",
                    "commit": source_commit},
         "requested_underlyings": requested,
+        "cutoff_before": cutoff_before,
         "missing_tables": missing_tables,
         "coverage": {"fno_chain_oi": _coverage(chain_rows), "fno_fut_snap": _coverage(fut_rows)},
         "files": file_manifest,
@@ -162,6 +176,23 @@ def export_operational_fno_evidence(
     }
     _atomic_bytes(capture / "manifest.json", _canonical_json(manifest) + b"\n")
     return {"path": str(capture), **manifest}
+
+
+def verify_export_manifest(capture_path: str) -> bool:
+    """Check complete marker, every named file hash and row identity fields."""
+    base = Path(capture_path)
+    try:
+        manifest = json.loads((base / "manifest.json").read_text(encoding="utf-8"))
+        for filename, expected in manifest["files"].items():
+            if _sha256_bytes((base / filename).read_bytes()) != expected["sha256"]:
+                return False
+        for filename in ("fno_chain_oi.jsonl", "fno_fut_snap.jsonl"):
+            for line in (base / filename).read_bytes().splitlines():
+                if "_archive_rowid" not in json.loads(line):
+                    return False
+        return True
+    except (OSError, KeyError, TypeError, json.JSONDecodeError):
+        return False
 
 
 def verify_fno_export_for_cutoff(archive_root: str, cutoff_ist: str) -> bool:
@@ -187,6 +218,7 @@ def verify_fno_export_for_cutoff(archive_root: str, cutoff_ist: str) -> bool:
 def archive_contract_master(
     archive_root: str, *, provider: str, segment: str, raw_csv: str,
     observed_at: Optional[datetime] = None,
+    reserved_free_bytes: int = 0,
 ) -> Optional[Dict[str, Any]]:
     """Store a dated raw master and canonical contract records, immutably.
 
@@ -227,6 +259,7 @@ def archive_contract_master(
     records.sort(key=lambda item: (item["exchange"], item["underlying"], item["expiry"],
                                    item["strike"], item["instrument_type"], item["tradingsymbol"]))
     canonical = b"".join(_canonical_json(record) + b"\n" for record in records)
+    _require_capacity(Path(archive_root), reserved_free_bytes, (len(raw) + len(canonical)) * 2)
     _atomic_bytes(base / "raw.csv", raw)
     _atomic_bytes(base / "contracts.jsonl", canonical)
     manifest = {"format": ARCHIVE_FORMAT, "kind": "contract_master", "provider": provider,
@@ -241,6 +274,7 @@ def archive_contract_master(
 def archive_candidate_evidence(
     archive_root: str, *, advisory_id: str, candidate_payload: Mapping[str, Any],
     validation_reasons: Sequence[str], recorded_at: Optional[datetime] = None,
+    reserved_free_bytes: int = 0,
 ) -> Dict[str, Any]:
     """Pin every evaluated advisory candidate, including rejected ones.
 
@@ -259,6 +293,7 @@ def archive_candidate_evidence(
         "limitations": ["Exact displayed quotes are pinned for audit only; no order/fill/partner position is observed."],
     }
     payload = _canonical_json(content) + b"\n"
+    _require_capacity(Path(archive_root), reserved_free_bytes, len(payload) * 2)
     digest = _sha256_bytes(payload)
     destination = Path(archive_root) / "candidate-evidence" / recorded_at.strftime("%Y-%m-%d") / _safe_component(advisory_id) / digest
     _atomic_bytes(destination / "evidence.json", payload)
@@ -274,11 +309,11 @@ class QuoteArchive:
         self.reserved_free_bytes = reserved_free_bytes
         self._sequence = 0
         self._dropped = 0
+        self.writer_id = uuid.uuid4().hex
+        self._recovered_paths: set[Path] = set()
 
     def _check_capacity(self) -> None:
-        self.root.mkdir(parents=True, exist_ok=True)
-        if shutil.disk_usage(self.root).free < self.reserved_free_bytes:
-            raise OSError("research archive free-space reserve reached")
+        _require_capacity(self.root, self.reserved_free_bytes)
 
     def append(self, event: Mapping[str, Any]) -> bool:
         """Append a normalised observed packet; never fabricate a missing level."""
@@ -286,12 +321,14 @@ class QuoteArchive:
         received = str(event.get("received_at_utc") or _iso())
         day = received[:10]
         path = self.root / "quotes" / day / "quotes.jsonl.open"
+        self._recover_open_tail(path)
         normal = dict(event)
         self._sequence += 1
         normal.setdefault("format", ARCHIVE_FORMAT)
         normal.setdefault("evidence_level", EVIDENCE_OBSERVED_QUOTE)
         normal.setdefault("received_at_utc", received)
-        normal["receive_sequence"] = self._sequence
+        normal["writer_id"] = self.writer_id
+        normal["writer_sequence"] = self._sequence
         contents = _canonical_json(normal) + b"\n"
         # One writer is called from one scheduler job.  O_APPEND + fsync means
         # a process crash leaves at most an incomplete final line, recovered on
@@ -302,6 +339,52 @@ class QuoteArchive:
             handle.flush()
             os.fsync(handle.fileno())
         return True
+
+    def _recover_open_tail(self, path: Path) -> None:
+        """Quarantine a corrupt tail before a new writer appends valid JSON."""
+        if path in self._recovered_paths or not path.exists():
+            self._recovered_paths.add(path)
+            return
+        valid: List[bytes] = []
+        bad = b""
+        with open(path, "rb") as handle:
+            for line in handle:
+                try:
+                    json.loads(line)
+                    if bad:
+                        bad += line
+                    else:
+                        valid.append(line)
+                except (UnicodeDecodeError, json.JSONDecodeError):
+                    bad += line
+        if bad:
+            recovery = path.with_name(f"{path.name}.corrupt-{uuid.uuid4().hex}")
+            _atomic_bytes(recovery, bad)
+            _atomic_bytes(path, b"".join(valid))
+            logger.error("research_quote_tail_quarantined path=%s discarded_bytes=%d", str(path), len(bad))
+        self._recovered_paths.add(path)
+
+    def record_collection_run(self, result: Mapping[str, Any], *, expected_interval_sec: int) -> Dict[str, Any]:
+        """Durably journal successes, gaps and disabled/error outcomes."""
+        self._check_capacity()
+        now = utc_now()
+        day = now.strftime("%Y-%m-%d")
+        path = self.root / "collection-runs" / day / "runs.jsonl"
+        prior_received = None
+        if path.exists():
+            try:
+                for line in path.read_bytes().splitlines()[-1:]:
+                    prior_received = json.loads(line).get("recorded_at_utc")
+            except (OSError, ValueError, json.JSONDecodeError):
+                prior_received = None
+        record = {"format": ARCHIVE_FORMAT, "kind": "collection_run", "writer_id": self.writer_id,
+                  "recorded_at_utc": _iso(now), "expected_interval_sec": expected_interval_sec,
+                  "prior_recorded_at_utc": prior_received, "result": dict(result)}
+        path.parent.mkdir(parents=True, exist_ok=True)
+        with open(path, "ab") as handle:
+            handle.write(_canonical_json(record) + b"\n")
+            handle.flush(); os.fsync(handle.fileno())
+        return record
 
     def finalize_day(self, day: str) -> Optional[Dict[str, Any]]:
         source = self.root / "quotes" / day / "quotes.jsonl.open"

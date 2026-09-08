@@ -88,6 +88,19 @@ def test_quote_archive_preserves_missing_depth_and_recovers_partial_open_segment
     assert (tmp_path / "quotes" / "2026-09-08" / manifest["path"]).exists()
 
 
+def test_restart_repairs_corrupt_tail_before_next_valid_quote(tmp_path):
+    first = archive.QuoteArchive(str(tmp_path), reserved_free_bytes=0)
+    first.append({"received_at_utc": "2026-09-08T04:00:00Z", "event": "before"})
+    raw = tmp_path / "quotes" / "2026-09-08" / "quotes.jsonl.open"
+    with open(raw, "ab") as handle:
+        handle.write(b'{"truncated"')
+    restarted = archive.QuoteArchive(str(tmp_path), reserved_free_bytes=0)
+    restarted.append({"received_at_utc": "2026-09-08T04:01:00Z", "event": "after"})
+    manifest = restarted.finalize_day("2026-09-08")
+    assert manifest["event_count"] == 2
+    assert list((tmp_path / "quotes" / "2026-09-08").glob("*.corrupt-*"))
+
+
 def test_normalise_quote_never_invents_missing_book_levels():
     contract = Contract(1, "NIFTYOPT", "NIFTY", date(2026, 9, 10), 25000, "CE", 75)
     event = normalise_quote(contract, {"last_price": 100, "depth": {"buy": [{"price": 99, "quantity": 10}]}},
@@ -95,6 +108,17 @@ def test_normalise_quote_never_invents_missing_book_levels():
     assert event["missing_depth"] is True
     assert len(event["buy_depth"]) == len(event["sell_depth"]) == 5
     assert event["sell_depth"][0]["price"] is None
+
+
+def test_rest_timestamp_and_zero_book_are_preserved_but_not_usable():
+    contract = Contract(1, "NIFTYOPT", "NIFTY", date(2026, 9, 10), 25000, "CE", 75)
+    event = normalise_quote(contract, {"timestamp": "2026-09-08 10:00:00", "last_price": 100,
+                                       "depth": {"buy": [{"price": 0, "quantity": 0}], "sell": [{"price": 0, "quantity": 0}]}},
+                            source="KITE", mode="KITE_REST_FULL_LOWER_FREQUENCY", selection_reason="test", exchange="NFO")
+    assert event["provider_timestamp_raw"] == "2026-09-08 10:00:00"
+    assert event["provider_timestamp_utc"] == "2026-09-08T04:30:00Z"
+    assert event["missing_depth"] is True and event["depth_state"] == "MISSING_OR_UNUSABLE"
+    assert event["raw_packet"]["depth"]["buy"][0]["price"] == 0
 
 
 @pytest.mark.asyncio

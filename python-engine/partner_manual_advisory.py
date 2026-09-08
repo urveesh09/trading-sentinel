@@ -17,6 +17,7 @@ from __future__ import annotations
 import hashlib
 import json
 import math
+import asyncio
 from dataclasses import asdict, dataclass, field
 from datetime import datetime, timedelta
 from enum import Enum
@@ -921,10 +922,11 @@ async def persist_candidate(
     if settings.RESEARCH_ARCHIVE_ENABLED:
         try:
             from research_archive import archive_candidate_evidence
-            payload["research_evidence"] = archive_candidate_evidence(
+            payload["research_evidence"] = await asyncio.to_thread(
+                archive_candidate_evidence,
                 settings.RESEARCH_ARCHIVE_PATH, advisory_id=advisory_id,
                 candidate_payload=payload, validation_reasons=payload["delivery_reasons"],
-                recorded_at=now,
+                recorded_at=now, reserved_free_bytes=settings.RESEARCH_RESERVED_FREE_BYTES,
             )
         except Exception as exc:
             payload["research_evidence"] = {"archive_error": "candidate_evidence_unavailable"}

@@ -9,6 +9,10 @@ format.
 from __future__ import annotations
 
 from datetime import datetime, timezone
+import asyncio
+import hashlib
+import json
+import math
 import time
 from typing import Any, Dict, Iterable, List, Mapping, Optional, Sequence, Tuple
 
@@ -41,35 +45,47 @@ def _quote_archive() -> QuoteArchive:
     return _archive
 
 
-def _provider_timestamp(value: Any) -> Optional[str]:
-    if value is None:
-        return None
+def _provider_timestamp(value: Any) -> tuple[Optional[str], Optional[str], Optional[str]]:
+    """Return raw value, parsed UTC and an explicit parse failure."""
+    if value is None or str(value).strip() == "":
+        return None, None, None
     if isinstance(value, datetime):
         if value.tzinfo is None:
             value = IST.localize(value)
-        return _iso(value)
+        return value.isoformat(), _iso(value), None
     text = str(value).strip()
-    if not text:
-        return None
     try:
         parsed = datetime.fromisoformat(text.replace("Z", "+00:00"))
         if parsed.tzinfo is None:
             parsed = IST.localize(parsed)
-        return _iso(parsed)
+        return text, _iso(parsed), None
     except ValueError:
-        return text  # preserve an unparseable provider value, never invent UTC
+        return text, None, "unparseable_provider_timestamp"
 
 
-def _five_levels(levels: Any) -> List[Dict[str, Optional[int | float]]]:
+def _finite_positive(value: Any, cast) -> Optional[int | float]:
+    try:
+        parsed = cast(value)
+        return parsed if math.isfinite(float(parsed)) and parsed > 0 else None
+    except (TypeError, ValueError):
+        return None
+
+
+def _five_levels(levels: Any) -> tuple[List[Dict[str, Optional[int | float]]], bool]:
     values: List[Dict[str, Optional[int | float]]] = []
-    for raw in list(levels or [])[:5]:
+    malformed = not isinstance(levels or [], list)
+    for raw in list(levels or [])[:5] if isinstance(levels or [], list) else []:
+        if not isinstance(raw, Mapping):
+            malformed = True
+            values.append({"price": None, "quantity": None, "orders": None})
+            continue
         values.append({
-            "price": float(raw["price"]) if raw.get("price") not in (None, "") else None,
-            "quantity": int(raw["quantity"]) if raw.get("quantity") not in (None, "") else None,
-            "orders": int(raw["orders"]) if raw.get("orders") not in (None, "") else None,
+            "price": _finite_positive(raw.get("price"), float),
+            "quantity": _finite_positive(raw.get("quantity"), int),
+            "orders": _finite_positive(raw.get("orders"), int),
         })
     values.extend([{"price": None, "quantity": None, "orders": None}] * (5 - len(values)))
-    return values
+    return values, malformed
 
 
 def normalise_quote(
@@ -79,28 +95,42 @@ def normalise_quote(
 ) -> Dict[str, Any]:
     """Create a replay-safe quote event without replacing absent depth."""
     received_at = received_at or datetime.now(timezone.utc)
-    depth = quote.get("depth") or {}
-    bids, asks = _five_levels(depth.get("buy")), _five_levels(depth.get("sell"))
-    crossed = bool(bids[0]["price"] and asks[0]["price"] and bids[0]["price"] >= asks[0]["price"])
-    missing_depth = bids[0]["price"] is None or asks[0]["price"] is None
+    depth = quote.get("depth") if isinstance(quote.get("depth"), Mapping) else {}
+    bids, malformed_bids = _five_levels(depth.get("buy"))
+    asks, malformed_asks = _five_levels(depth.get("sell"))
+    bid_ok = bids[0]["price"] is not None and bids[0]["quantity"] is not None
+    ask_ok = asks[0]["price"] is not None and asks[0]["quantity"] is not None
+    crossed = bool(bid_ok and ask_ok and bids[0]["price"] > asks[0]["price"])
+    locked = bool(bid_ok and ask_ok and bids[0]["price"] == asks[0]["price"])
+    missing_depth = not (bid_ok and ask_ok)
+    raw_timestamp, timestamp_utc, timestamp_error = _provider_timestamp(
+        quote.get("timestamp") if mode.startswith("KITE_REST") else quote.get("exchange_timestamp")
+    )
+    raw_exchange, exchange_utc, exchange_error = _provider_timestamp(quote.get("exchange_timestamp"))
     return {
         "source": source, "mode": mode, "reconnect_epoch": int(reconnect_epoch),
         "received_at_utc": _iso(received_at),
         "local_monotonic_ns": time.monotonic_ns(),
-        "exchange_timestamp": _provider_timestamp(quote.get("exchange_timestamp")),
-        "last_trade_time": _provider_timestamp(quote.get("last_trade_time")),
+        "provider_timestamp_raw": raw_timestamp, "provider_timestamp_utc": timestamp_utc,
+        "provider_timestamp_parse_error": timestamp_error,
+        "exchange_timestamp_raw": raw_exchange, "exchange_timestamp_utc": exchange_utc,
+        "exchange_timestamp_parse_error": exchange_error,
+        "last_trade_time": _provider_timestamp(quote.get("last_trade_time"))[1],
         "contract": {"exchange": exchange.upper(),
                      "underlying": contract.name, "tradingsymbol": contract.tradingsymbol,
                      "instrument_token": str(contract.token), "expiry": contract.expiry.isoformat(),
                      "strike": contract.strike, "instrument_type": contract.instrument_type,
                      "lot_size": contract.lot_size, "tick_size": contract.tick_size},
         "selection_reason": selection_reason,
-        "ltp": float(quote.get("last_price") or 0.0), "oi": int(quote.get("oi") or 0),
-        "volume": int(quote.get("volume") or 0), "buy_depth": bids, "sell_depth": asks,
-        "missing_depth": missing_depth, "crossed_depth": crossed,
-        "raw_sha256": __import__("hashlib").sha256(
-            __import__("json").dumps(dict(quote), sort_keys=True, default=str, separators=(",", ":")).encode()
-        ).hexdigest(),
+        "ltp": _finite_positive(quote.get("last_price"), float) or 0.0,
+        "oi": int(_finite_positive(quote.get("oi"), int) or 0),
+        "volume": int(_finite_positive(quote.get("volume"), int) or 0),
+        "buy_depth": bids, "sell_depth": asks, "missing_depth": missing_depth,
+        "crossed_depth": crossed, "locked_depth": locked,
+        "depth_state": "MALFORMED" if malformed_bids or malformed_asks else (
+            "MISSING_OR_UNUSABLE" if missing_depth else "CROSSED" if crossed else "LOCKED" if locked else "USABLE"),
+        "raw_packet": dict(quote),
+        "raw_sha256": hashlib.sha256(json.dumps(dict(quote), sort_keys=True, default=str, separators=(",", ":")).encode()).hexdigest(),
     }
 
 
@@ -117,6 +147,14 @@ def _select_contracts(book: FnoInstruments, forward: float, today, window: int) 
                 if contract:
                     selected[contract.token] = (contract, f"atm_window_expiry={expiry.isoformat()}")
     return list(selected.values())
+
+
+async def _documented_quotes(kite, contracts: Sequence[Contract], segment: str) -> Mapping[int, Mapping[str, Any]]:
+    """Prefer documented exchange:symbol lookup; retain fake/legacy support."""
+    request = {contract.token: f"{segment}:{contract.tradingsymbol}" for contract in contracts}
+    if hasattr(kite, "get_quote_by_instruments"):
+        return await kite.get_quote_by_instruments(request)
+    return await kite.get_quote(list(request))
 
 
 async def collect_rest_quote_snapshot(
@@ -138,7 +176,7 @@ async def collect_rest_quote_snapshot(
         result["reason"] = "no_market_data_token"
         return result
     archive = _quote_archive()
-    archive.finalize_prior_days(now_ist.astimezone(IST).date().isoformat())
+    await asyncio.to_thread(archive.finalize_prior_days, now_ist.astimezone(IST).date().isoformat())
     books = books or {name: get_instruments_for(name) for name in _configured_underlyings()}
     for name in _configured_underlyings():
         book = books.get(name)
@@ -149,7 +187,7 @@ async def collect_rest_quote_snapshot(
         if future is None:
             result["gaps"].append({"underlying": name, "reason": "front_future_unavailable"})
             continue
-        future_data = await kite.get_quote([future.token])
+        future_data = await _documented_quotes(kite, [future], SPECS[name].segment)
         future_quote = future_data.get(future.token) if future_data else None
         forward = float((future_quote or {}).get("last_price") or 0.0)
         if forward <= 0:
@@ -158,7 +196,7 @@ async def collect_rest_quote_snapshot(
         selected = _select_contracts(book, forward, now_ist.date(), settings.RESEARCH_QUOTE_STRIKE_WINDOW)
         tokens = [contract.token for contract, _ in selected]
         result["requested"] += len(tokens)
-        data = await kite.get_quote(tokens)
+        data = await _documented_quotes(kite, [contract for contract, _ in selected], SPECS[name].segment)
         # Receipt time is deliberately captured after the provider call, not
         # from the scheduler tick's start.  It is evidence timing, never an
         # advisory validity clock.
@@ -174,19 +212,29 @@ async def collect_rest_quote_snapshot(
             event = normalise_quote(contract, quote, source="KITE", mode=result["mode"],
                                     received_at=batch_received_at, selection_reason=reason,
                                     exchange=SPECS[name].segment)
-            archive.append(event)
+            await asyncio.to_thread(archive.append, event)
             result["collected"] += 1
+    await asyncio.to_thread(archive.record_collection_run, result, expected_interval_sec=settings.RESEARCH_QUOTE_INTERVAL_SEC)
     return result
 
 
 async def research_quote_collection_tick(now_ist: Optional[datetime] = None) -> Dict[str, Any]:
     """Scheduler entry point; market-data only and independent of advice gates."""
     now_ist = now_ist or datetime.now(IST)
+    archive = _quote_archive() if settings.RESEARCH_ARCHIVE_ENABLED else None
+    async def journal(result: Dict[str, Any]) -> Dict[str, Any]:
+        if archive is not None:
+            await asyncio.to_thread(archive.record_collection_run, result, expected_interval_sec=settings.RESEARCH_QUOTE_INTERVAL_SEC)
+        return result
     if not settings.RESEARCH_QUOTE_COLLECTION_ENABLED:
-        return {"reason": "disabled"}
+        return await journal({"reason": "disabled"})
     if now_ist.weekday() > 4 or (now_ist.hour, now_ist.minute) < (9, 15) or (now_ist.hour, now_ist.minute) > (15, 30):
-        return {"reason": "outside_weekday_session"}
-    import main as _main
-    if not await _main.is_trading_day(now_ist.date(), settings.DB_PATH):
-        return {"reason": "market_closed"}
-    return await collect_rest_quote_snapshot(_main.kite, now_ist=now_ist)
+        return await journal({"reason": "outside_weekday_session"})
+    try:
+        import main as _main
+        if not await _main.is_trading_day(now_ist.date(), settings.DB_PATH):
+            return await journal({"reason": "market_closed"})
+        return await collect_rest_quote_snapshot(_main.kite, now_ist=now_ist)
+    except Exception as exc:
+        await journal({"reason": "scheduler_exception", "error_type": type(exc).__name__})
+        raise

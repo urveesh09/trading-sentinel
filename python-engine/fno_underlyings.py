@@ -22,6 +22,7 @@ from __future__ import annotations
 import json
 import os
 import tempfile
+import asyncio
 from dataclasses import dataclass
 from typing import Dict, List, Optional
 
@@ -184,9 +185,9 @@ async def refresh_all(kite) -> Dict[str, bool]:
         if settings.RESEARCH_ARCHIVE_ENABLED:
             try:
                 from research_archive import archive_contract_master
-                archive_contract_master(
+                await asyncio.to_thread(archive_contract_master,
                     settings.RESEARCH_ARCHIVE_PATH, provider="KITE",
-                    segment=segment, raw_csv=raw,
+                    segment=segment, raw_csv=raw, reserved_free_bytes=settings.RESEARCH_RESERVED_FREE_BYTES,
                 )
             except Exception as exc:
                 logger.error(

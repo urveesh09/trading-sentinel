@@ -23,6 +23,7 @@ def main(argv: list[str] | None = None) -> int:
             result = export_operational_fno_evidence(
                 args.source_db, args.archive_root,
                 [name.strip() for name in args.underlyings.split(",") if name.strip()],
+                reserved_free_bytes=settings.RESEARCH_RESERVED_FREE_BYTES,
             )
         except Exception as exc:
             print(json.dumps({"exported": False, "error": str(exc)}), file=sys.stderr)

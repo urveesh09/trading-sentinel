@@ -45,3 +45,16 @@ Focused validation passed after implementation:
 `61 passed` — archive/export, quote normalisation/collection, source capability/Breeze alias, purge safety, F&O instruments, partner orchestration/routes and configuration tests.
 
 The scheduler and route characterization goldens were deliberately regenerated and reviewed for exactly one new job and one authenticated read-only route.
+
+## Integrity corrections after independent verification
+
+The follow-up verification found three real collector defects and preservation gaps. They are corrected in the next Dev commit:
+
+- The research collector now uses the documented `EXCHANGE:SYMBOL` full-quote lookup when the existing Kite client supports it. REST `timestamp` is retained as raw text, parsed UTC where possible and a parse failure where not; WebSocket exchange time remains a separate field.
+- Raw provider packets are retained alongside their hash. Zero, negative, non-finite or malformed best-book price/quantity fields are never considered usable depth. The event records whether the book is missing/unusable, locked, crossed, malformed or usable.
+- A writer now repairs and quarantines a corrupt open-segment tail before appending after a restart. Events carry a writer UUID and writer-local sequence, so sequences are not falsely claimed to be global across process boots.
+- Every collection run—including disabled/session-closed and scheduler-exception outcomes—has a durable journal when the archive is available. Per-index missing masters, batches and packets remain in the run result instead of disappearing with the scheduler return value.
+- The purge guard now includes both `fno_chain_oi` and `fno_fut_snap` rows in the explicitly protected NIFTY/SENSEX scope. It exports only the eligible cutoff rows, verifies every manifest hash and deletes only the exact exported SQLite row identities. A concurrently inserted late old row is not removed by the cleanup. BANKNIFTY remains under its existing operational retention policy because it is outside this research scope.
+- The disk reserve applies to exports, raw masters, candidate evidence and quote writes, including their atomic temporary-write headroom. Blocking archive, master and candidate writes are moved off async operational paths.
+
+These corrections strengthen observation integrity. They do not claim live provider entitlement, historical depth, strategy profitability, partner fills or strategy qualification. The actual NIFTY/SENSEX debit-spread policy study remains the next research checkpoint after corrected deployment begins collecting reliable evidence.
