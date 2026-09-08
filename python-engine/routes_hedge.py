@@ -14,7 +14,7 @@ from config import settings
 from hedge_advisory import (
     init_hedge_advisory_db, load_hedge_service_state, load_vix_observations,
     load_hedge_delivery_backlog, load_partner_hedge_cards, record_vix_observation,
-    resolve_hedge_delivery_backlog,
+    resolve_hedge_delivery_backlog, send_partner_telegram_diagnostic,
 )
 from hedge_analytics import (
     Greeks, PartnerPosition, close_partner_position, create_partner_position,
@@ -384,6 +384,19 @@ async def get_partner_advisory_cards(request: Request, limit: int = 20):
 async def get_partner_advisory_diagnostics(request: Request):
     _main._check_internal_secret(request, "get_partner_advisory_diagnostics")
     return await load_advisory_diagnostics(settings.DB_PATH)
+
+
+@router.post("/partner/advisory/telegram-diagnostic")
+async def post_partner_advisory_telegram_diagnostic(request: Request):
+    """Authenticated, fixed-content receipt probe; never sends an idea."""
+    _main._check_internal_secret(request, "post_partner_advisory_telegram_diagnostic")
+    delivered = await send_partner_telegram_diagnostic(settings.DB_PATH)
+    return {
+        "attempted": delivered,
+        "message_class": "TEST_MESSAGE_NOT_TRADE_RECOMMENDATION",
+        "automatic_advice_enabled_by_this_call": False,
+        "recipient_read_confirmation": "UNKNOWN",
+    }
 
 
 @router.post("/partner/advisory/cards/{advisory_id}/feedback")

@@ -515,6 +515,14 @@
       "response_model": null
     },
     {
+      "endpoint": "post_partner_advisory_telegram_diagnostic",
+      "methods": [
+        "POST"
+      ],
+      "path": "/partner/advisory/telegram-diagnostic",
+      "response_model": null
+    },
+    {
       "endpoint": "get_partner_hedge_cards",
       "methods": [
         "GET"

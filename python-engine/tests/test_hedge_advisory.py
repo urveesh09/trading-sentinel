@@ -893,3 +893,20 @@ async def test_enabling_hedge_phase_suppresses_standalone_chain_noise(
     monkeypatch.setattr(settings, "PARTNER_HEDGE_SUPPRESS_ANALYTICS", True)
     monkeypatch.setattr(legacy, "send_partner", must_not_send)
     await legacy._send_event(db_path, "pcr_shift", "NIFTY", "noise", NOW)
+
+
+@pytest.mark.asyncio
+async def test_telegram_diagnostic_is_fixed_non_trading_content(db_path, monkeypatch):
+    calls = []
+
+    async def capture(*args, **kwargs):
+        calls.append((args, kwargs))
+        return True
+
+    monkeypatch.setattr(ha, "_send_claimed_review", capture)
+    assert await ha.send_partner_telegram_diagnostic(db_path, now=NOW)
+    args, kwargs = calls[0]
+    assert args[1] == "partner_telegram_diagnostic"
+    assert "NOT A TRADE RECOMMENDATION" in args[3]
+    assert "NIFTY" not in args[3] and "₹" not in args[3]
+    assert kwargs["detail"]["automatic_advice"] is False

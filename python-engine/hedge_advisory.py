@@ -1579,6 +1579,27 @@ def _phase2_positions_valid(
     return bool(name and all(p.underlying == name for p in positions))
 
 
+async def send_partner_telegram_diagnostic(db_path: str, *, now: Optional[datetime] = None) -> bool:
+    """Send one fixed, auditable receipt diagnostic without enabling advice.
+
+    The caller cannot choose a destination, body, contract, price, or advice
+    category.  The normal durable ledger keeps acknowledgement/timeout
+    semantics conservative, while the absence of an advisory phase prevents
+    this probe from being mistaken for a tradable proposal.
+    """
+    sent_at = (now or datetime.now(IST)).astimezone(IST)
+    reference = f"partner-telegram-diagnostic:{sent_at.date().isoformat()}"
+    text = (
+        "TEST MESSAGE — NOT A TRADE RECOMMENDATION. Sentinel Telegram connection test. "
+        f"No action required. Diagnostic reference: {reference}; time: {sent_at.isoformat()}."
+    )
+    return await _send_claimed_review(
+        db_path, "partner_telegram_diagnostic", reference, text,
+        detail={"diagnostic": True, "diagnostic_reference": reference, "automatic_advice": False},
+        now=sent_at, min_gap=timedelta(hours=23), daily_cap=1,
+    )
+
+
 def _verified_deliverable_units(
     positions: tuple[PartnerPosition, ...], underlying: str, now: datetime,
 ) -> int:
