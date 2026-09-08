@@ -996,7 +996,7 @@ async def _authorize_dispatch(
         # the exact queued card, current profile version, complete prior
         # validation and unexpired original quote evidence while holding the
         # dispatch claim.  No order authority is involved.
-        if not settings.PARTNER_MANUAL_ADVISORY_DELIVERY_ENABLED:
+        if not settings.PARTNER_MANUAL_ADVISORY_ENABLED or not settings.PARTNER_MANUAL_ADVISORY_DELIVERY_ENABLED:
             return False
         advisory_id = detail.get("advisory_id")
         profile_id = detail.get("profile_id")
@@ -1005,7 +1005,7 @@ async def _authorize_dispatch(
         try:
             async with aiosqlite.connect(db_path, timeout=30) as db:
                 card = await (await db.execute(
-                    "SELECT status,profile_version,valid_until,rendered_card,payload "
+                    "SELECT status,profile_id,profile_version,valid_until,rendered_card,payload "
                     "FROM partner_advisory_ideas WHERE advisory_id=?", (advisory_id,),
                 )).fetchone()
                 profile = await (await db.execute(
@@ -1019,21 +1019,68 @@ async def _authorize_dispatch(
                 return False
             # A first-run default profile is intentionally implicit; any
             # configured/custom profile must be persisted and version-matched.
+            if card[1] != profile_id:
+                return False
             if profile is None:
-                if profile_id != "default" or int(card[1]) != 1:
+                if profile_id != "default" or int(card[2]) != 1:
                     return False
-            elif int(card[1]) != int(profile[0]):
+            elif int(card[2]) != int(profile[0]):
                 return False
             if card[0] != "QUEUED":
                 return False
-            if card[2] != detail.get("valid_until") or card[3] != detail.get("rendered_text"):
+            if card[3] != detail.get("valid_until") or card[4] != detail.get("rendered_text"):
                 return False
-            payload = json.loads(card[4])
-            if payload.get("validation_reasons"):
+            payload = json.loads(card[5])
+            if (
+                payload.get("validation_reasons")
+                or payload.get("profile_id") != profile_id
+                or not payload.get("strategy_qualified")
+                or payload.get("evidence") != "QUALIFIED_FOR_ADVISORY"
+            ):
                 return False
-            return _parse_ist(card[2]) is not None and _parse_ist(card[2]) > now
+            return _parse_ist(card[3]) is not None and _parse_ist(card[3]) > now
         except Exception:
             logger.error("manual_advisory_dispatch_authorization_failed", exc_info=True)
+            return False
+    if phase == "manual_update_v1":
+        # Updates are separately persisted and rate-limited.  They may refer
+        # to a published thesis after its entry quote expired, but the market
+        # observation that triggered them must itself be fresh and must match
+        # one immutable queued update exactly.
+        if not settings.PARTNER_MANUAL_ADVISORY_ENABLED or not settings.PARTNER_MANUAL_ADVISORY_DELIVERY_ENABLED:
+            return False
+        update_id = detail.get("update_id")
+        advisory_id = detail.get("advisory_id")
+        profile_id = detail.get("profile_id")
+        observed_at = _parse_ist(detail.get("observed_at"))
+        if not all(isinstance(value, str) for value in (update_id, advisory_id, profile_id)) or observed_at is None:
+            return False
+        if (now - observed_at).total_seconds() > settings.PARTNER_MANUAL_ADVISORY_MAX_QUOTE_AGE_SEC or observed_at > now + timedelta(seconds=5):
+            return False
+        try:
+            async with aiosqlite.connect(db_path, timeout=30) as db:
+                row = await (await db.execute(
+                    "SELECT u.advisory_id,u.status,u.rendered_update,i.status,i.payload,p.version "
+                    "FROM partner_advisory_updates u JOIN partner_advisory_ideas i ON i.advisory_id=u.advisory_id "
+                    "LEFT JOIN partner_advisory_profiles p ON p.profile_id=? WHERE u.update_id=?",
+                    (profile_id, update_id),
+                )).fetchone()
+                claim = await (await db.execute(
+                    "SELECT claim_token FROM partner_hedge_messages WHERE kind=? AND dedup_key=? AND delivered=0",
+                    (kind, key),
+                )).fetchone()
+            if row is None or claim is None or claim[0] != token:
+                return False
+            if row[0] != advisory_id or row[1] != "QUEUED" or row[3] != "DELIVERED_ACKNOWLEDGED":
+                return False
+            payload = json.loads(row[4])
+            if payload.get("profile_id") != profile_id or row[5] is None:
+                return False
+            if row[2] != detail.get("rendered_text"):
+                return False
+            return True
+        except Exception:
+            logger.error("manual_advisory_update_dispatch_authorization_failed", exc_info=True)
             return False
     policy_by_phase = {"phase1": "phase1-v2", "phase2": "phase2-v1", "phase3": "phase3-v1"}
     if phase not in policy_by_phase or detail.get("policy_version") != policy_by_phase[phase]:

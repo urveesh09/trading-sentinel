@@ -1108,6 +1108,9 @@ class Settings(BaseSettings):
     PARTNER_MANUAL_ADVISORY_SHADOW_ENABLED: bool = True
     PARTNER_MANUAL_ADVISORY_DELIVERY_ENABLED: bool = True
     PARTNER_MANUAL_ADVISORY_DAILY_CAP: int = 2
+    # Material invalidation/target updates use a separate small budget so a
+    # morning entry cannot silence a later risk-relevant follow-up.
+    PARTNER_MANUAL_ADVISORY_UPDATE_DAILY_CAP: int = 4
     PARTNER_MANUAL_ADVISORY_MAX_QUOTE_AGE_SEC: int = 30
     PARTNER_MANUAL_ADVISORY_MAX_SPREAD_PCT: float = 0.15
     PARTNER_MANUAL_ADVISORY_MIN_OI: int = 1

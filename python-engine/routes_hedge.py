@@ -23,8 +23,9 @@ from hedge_analytics import (
 )
 from hedge_readiness import assess_hedge_readiness, record_gate_evidence
 from partner_manual_advisory import (
-    ManualDecision, PartnerAdvisoryProfile, load_advisory_cards,
-    load_partner_profile, record_manual_feedback, save_partner_profile,
+    ManualDecision, PartnerAdvisoryProfile, load_advisory_cards, load_advisory_diagnostics,
+    StrategyEvidence, load_partner_profile, record_manual_feedback,
+    record_strategy_qualification, save_partner_profile,
 )
 
 router = APIRouter()
@@ -124,6 +125,8 @@ class PartnerAdvisoryProfilePayload(BaseModel):
     capital_limit_rs: Optional[float] = Field(default=None, gt=0)
     risk_limit_rs: Optional[float] = Field(default=None, gt=0)
     confirmed_holdings_revision: Optional[int] = Field(default=None, ge=0)
+    conditional_exposure_assumption: Optional[str] = Field(default=None, min_length=8, max_length=500)
+    conditional_coverage_units: Optional[int] = Field(default=None, ge=1)
 
     def value(self, profile_id: str) -> PartnerAdvisoryProfile:
         return PartnerAdvisoryProfile(
@@ -137,6 +140,8 @@ class PartnerAdvisoryProfilePayload(BaseModel):
             preference=self.preference.strip().upper(), capital_limit_rs=self.capital_limit_rs,
             risk_limit_rs=self.risk_limit_rs,
             confirmed_holdings_revision=self.confirmed_holdings_revision,
+            conditional_exposure_assumption=self.conditional_exposure_assumption,
+            conditional_coverage_units=self.conditional_coverage_units,
         )
 
 
@@ -144,6 +149,16 @@ class PartnerAdvisoryFeedbackPayload(BaseModel):
     decision: str = Field(min_length=1, max_length=30)
     reported_at: datetime
     note: Optional[str] = Field(default=None, max_length=1000)
+
+
+class PartnerAdvisoryQualificationPayload(BaseModel):
+    underlying: str = Field(min_length=3, max_length=20)
+    structure_kind: str = Field(min_length=3, max_length=80)
+    horizon: str = Field(min_length=3, max_length=80)
+    policy_version: str = Field(min_length=3, max_length=80)
+    dataset_ref: str = Field(min_length=3, max_length=300)
+    reviewed_at: datetime
+    status: str = Field(default="QUALIFIED_FOR_ADVISORY", max_length=40)
 
 
 def _position_json(position: PartnerPosition) -> dict:
@@ -292,10 +307,57 @@ async def put_partner_advisory_profile(
     return {"profile": jsonable_encoder(profile), "delivery_authority": False, "automatic_execution": False}
 
 
+@router.post("/partner/advisory/qualifications")
+async def put_partner_advisory_qualification(
+    request: Request, payload: PartnerAdvisoryQualificationPayload,
+):
+    """Record a reviewable strategy decision; this is the only promotion path."""
+    _main._check_internal_secret(request, "put_partner_advisory_qualification")
+    try:
+        await record_strategy_qualification(
+            settings.DB_PATH,
+            underlying=payload.underlying.strip().upper(),
+            structure_kind=payload.structure_kind.strip().upper(),
+            horizon=payload.horizon.strip(),
+            policy_version=payload.policy_version.strip(),
+            dataset_ref=payload.dataset_ref.strip(),
+            reviewed_at=payload.reviewed_at,
+            status=StrategyEvidence(payload.status.strip().upper()),
+        )
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+    return {"recorded": True, "automatic_execution": False, "delivery_authority": False}
+
+
+@router.get("/partner/advisory/effective-settings")
+async def get_partner_advisory_effective_settings(request: Request, profile_id: str = "default"):
+    """Expose effective non-secret gates so operators can diagnose silence."""
+    _main._check_internal_secret(request, "get_partner_advisory_effective_settings")
+    profile = await load_partner_profile(settings.DB_PATH, profile_id)
+    return {
+        "profile": jsonable_encoder(profile),
+        "manual_advisory_enabled": bool(settings.PARTNER_MANUAL_ADVISORY_ENABLED),
+        "shadow_enabled": bool(settings.PARTNER_MANUAL_ADVISORY_SHADOW_ENABLED),
+        "delivery_enabled": bool(settings.PARTNER_MANUAL_ADVISORY_DELIVERY_ENABLED),
+        "daily_delivery_cap": settings.PARTNER_MANUAL_ADVISORY_DAILY_CAP,
+        "daily_update_cap": settings.PARTNER_MANUAL_ADVISORY_UPDATE_DAILY_CAP,
+        "quote_ttl_seconds": settings.PARTNER_MANUAL_ADVISORY_QUOTE_TTL_SEC,
+        "max_quote_age_seconds": settings.PARTNER_MANUAL_ADVISORY_MAX_QUOTE_AGE_SEC,
+        "manual_order_execution": False,
+        "delivery_requires": ["fresh_quotes", "profile", "strategy_qualification", "delivery_ledger_authorization"],
+    }
+
+
 @router.get("/partner/advisory/cards")
 async def get_partner_advisory_cards(request: Request, limit: int = 20):
     _main._check_internal_secret(request, "get_partner_advisory_cards")
     return await load_advisory_cards(settings.DB_PATH, limit=limit)
+
+
+@router.get("/partner/advisory/diagnostics")
+async def get_partner_advisory_diagnostics(request: Request):
+    _main._check_internal_secret(request, "get_partner_advisory_diagnostics")
+    return await load_advisory_diagnostics(settings.DB_PATH)
 
 
 @router.post("/partner/advisory/cards/{advisory_id}/feedback")
