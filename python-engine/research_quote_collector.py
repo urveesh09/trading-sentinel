@@ -197,11 +197,17 @@ async def collect_rest_quote_snapshot(
                 result["gaps"].append({"underlying": name, "reason": "future_reference_invalid", "token": future.token}); continue
         except Exception as exc:
             result["gaps"].append({"underlying": name, "reason": "future_reference_exception", "error_type": type(exc).__name__}); continue
-        selected = _select_contracts(book, float(forward), now_ist.date(), settings.RESEARCH_QUOTE_STRIKE_WINDOW)
-        tokens = [contract.token for contract, _ in selected]
-        result["indices"][name]["requested_tokens"] = tokens
-        result["requested"] += len(tokens)
-        data = await _documented_quotes(kite, [contract for contract, _ in selected], SPECS[name].segment)
+        try:
+            selected = _select_contracts(book, float(forward), now_ist.date(), settings.RESEARCH_QUOTE_STRIKE_WINDOW)
+            tokens = [contract.token for contract, _ in selected]
+            result["indices"][name]["requested_tokens"] = tokens
+            result["requested"] += len(tokens)
+            data = await _documented_quotes(kite, [contract for contract, _ in selected], SPECS[name].segment)
+            if not isinstance(data, Mapping):
+                raise ValueError("quote batch must be a mapping")
+        except Exception as exc:
+            result["gaps"].append({"underlying": name, "reason": "quote_batch_exception", "error_type": type(exc).__name__})
+            continue
         # Receipt time is deliberately captured after the provider call, not
         # from the scheduler tick's start.  It is evidence timing, never an
         # advisory validity clock.
@@ -222,6 +228,11 @@ async def collect_rest_quote_snapshot(
                 event = normalise_quote(contract, quote, source="KITE", mode=result["mode"], received_at=batch_received_at, selection_reason=reason, exchange=SPECS[name].segment)
                 await asyncio.to_thread(archive.append, event)
                 result["collected"] += 1; result["indices"][name]["received_tokens"].append(contract.token)
+            except OSError as exc:
+                logger.error("research_storage_stop reason=%s", str(exc))
+                result["reason"] = "storage_stop"
+                result["gaps"].append({"underlying": name, "reason": "storage_stop"})
+                return result
             except Exception as exc:
                 result["gaps"].append({"underlying": name, "reason": "packet_normalisation_exception", "token": contract.token, "error_type": type(exc).__name__})
     await asyncio.to_thread(archive.record_collection_run, result, expected_interval_sec=settings.RESEARCH_QUOTE_INTERVAL_SEC)

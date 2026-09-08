@@ -1,5 +1,7 @@
 # Free-data research implementation
 
+Latest correction and rollout status: see [passive release and advisory next steps](2026-09-08-passive-release-and-advisory-next-steps.md). This supersedes the earlier broad storage/readiness claims below. The release now uses shared persistent daily write accounting, fail-fast writer admission, timestamp-aware readiness and per-index batch isolation. Validation: 102 selected Python tests passed. It is ready for monitored passive deployment subject to the documented runtime checks; strategy qualification remains separate.
+
 Date: 8 September 2026. Implemented in Dev only on `codex/production-correction-hedge-p0`; Production was not edited.
 
 ## Delivered

@@ -246,7 +246,7 @@ async def archive_then_purge_older_than(
             export_operational_fno_evidence, db_path, settings.RESEARCH_ARCHIVE_PATH, protected,
             cutoff_before=cutoff, reserved_free_bytes=settings.RESEARCH_RESERVED_FREE_BYTES,
         )
-        if not verify_export_manifest(export["path"]):
+        if not await __import__("asyncio").to_thread(verify_export_manifest, export["path"]):
             raise OSError("export manifest verification failed")
     except Exception as exc:
         logger.error(

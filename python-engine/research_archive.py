@@ -17,6 +17,9 @@ import shutil
 import sqlite3
 import tempfile
 import uuid
+import threading
+from contextvars import ContextVar
+from functools import wraps
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict, Iterable, List, Mapping, Optional, Sequence
@@ -27,6 +30,70 @@ logger = structlog.get_logger()
 ARCHIVE_FORMAT = "sentinel-research-v1"
 EVIDENCE_OPTION_LTP_OI = "OPTION_LTP_OI_SNAPSHOT"
 EVIDENCE_OBSERVED_QUOTE = "OBSERVED_QUOTE_REPLAY"
+
+
+# One admitted archive operation per process; reject saturation rather than
+# accumulating an unbounded writer queue. CLI uses the same disk reserve.
+_write_lock = threading.RLock()
+_write_context = ContextVar("research_write_context", default=None)
+
+
+def guarded_write(function):
+    @wraps(function)
+    def guarded(*args, **kwargs):
+        if not _write_lock.acquire(blocking=False):
+            raise OSError("research writer busy")
+        token = None
+        lease = None
+        try:
+            from config import settings
+            owner = args[0] if args else None
+            root = getattr(owner, "root", None)
+            if root is None:
+                root = kwargs.get("archive_root")
+                if root is None:
+                    root = args[1] if function.__name__ == "export_operational_fno_evidence" else args[0]
+            reserve = kwargs.get("reserved_free_bytes", getattr(owner, "reserved_free_bytes", settings.RESEARCH_RESERVED_FREE_BYTES))
+            limit = getattr(owner, "session_max_bytes", settings.RESEARCH_SESSION_MAX_BYTES)
+            root = Path(root)
+            _require_capacity(root, reserve, 65536)
+            lease = sqlite3.connect(str(root / "writer-lease.sqlite3"), timeout=0)
+            try:
+                lease.execute("BEGIN IMMEDIATE")
+            except sqlite3.OperationalError as exc:
+                raise OSError("research writer busy") from exc
+            token = _write_context.set((root, reserve, limit))
+            return function(*args, **kwargs)
+        finally:
+            if lease is not None:
+                lease.rollback(); lease.close()
+            if token is not None:
+                _write_context.reset(token)
+            _write_lock.release()
+    return guarded
+
+
+def _admit_bytes(size: int) -> None:
+    context = _write_context.get()
+    if context is None:
+        return
+    root, reserve, limit = context
+    # Persistent conservative byte accounting counts temporary writes too.
+    # Failed operations consume budget; restarting cannot erase consumption.
+    _require_capacity(root, reserve, size + 4096)
+    path = root / ("write-budget-" + utc_now().strftime("%Y-%m-%d") + ".json")
+    used = json.loads(path.read_text())["bytes"] if path.exists() else 0
+    if used + size > limit:
+        raise OSError("research daily write budget reached")
+    data = _canonical_json({"bytes": used + size})
+    fd, temporary = tempfile.mkstemp(prefix=".budget-", dir=str(root))
+    try:
+        with os.fdopen(fd, "wb") as handle:
+            handle.write(data); handle.flush(); os.fsync(handle.fileno())
+        os.replace(temporary, path)
+    finally:
+        if os.path.exists(temporary):
+            os.unlink(temporary)
 
 
 def utc_now() -> datetime:
@@ -46,6 +113,7 @@ def _canonical_json(value: Any) -> bytes:
 
 
 def _atomic_bytes(path: Path, contents: bytes) -> None:
+    _admit_bytes(len(contents))
     path.parent.mkdir(parents=True, exist_ok=True)
     fd, temporary = tempfile.mkstemp(prefix=".research-", dir=str(path.parent))
     try:
@@ -91,6 +159,7 @@ def _coverage(rows: Sequence[Mapping[str, Any]], timestamp_field: str = "snap_ts
             "last_timestamp": stamps[-1] if stamps else None}
 
 
+@guarded_write
 def export_operational_fno_evidence(
     source_db_path: str,
     archive_root: str,
@@ -215,6 +284,7 @@ def verify_fno_export_for_cutoff(archive_root: str, cutoff_ist: str) -> bool:
     return False
 
 
+@guarded_write
 def archive_contract_master(
     archive_root: str, *, provider: str, segment: str, raw_csv: str,
     observed_at: Optional[datetime] = None,
@@ -271,6 +341,7 @@ def archive_contract_master(
     return manifest
 
 
+@guarded_write
 def archive_candidate_evidence(
     archive_root: str, *, advisory_id: str, candidate_payload: Mapping[str, Any],
     validation_reasons: Sequence[str], recorded_at: Optional[datetime] = None,
@@ -316,6 +387,7 @@ class QuoteArchive:
     def _check_capacity(self) -> None:
         _require_capacity(self.root, self.reserved_free_bytes)
 
+    @guarded_write
     def append(self, event: Mapping[str, Any]) -> bool:
         """Append a normalised observed packet; never fabricate a missing level."""
         self._check_capacity()
@@ -339,6 +411,7 @@ class QuoteArchive:
         # a process crash leaves at most an incomplete final line, recovered on
         # next finalisation rather than a false completed segment.
         path.parent.mkdir(parents=True, exist_ok=True)
+        _admit_bytes(len(contents))
         with open(path, "ab") as handle:
             handle.write(contents)
             handle.flush()
@@ -390,6 +463,7 @@ class QuoteArchive:
             logger.warning("research_journal_missing_newline_repaired path=%s", str(path))
         self._recovered_paths.add(path)
 
+    @guarded_write
     def record_collection_run(self, result: Mapping[str, Any], *, expected_interval_sec: int) -> Dict[str, Any]:
         """Durably journal successes, gaps and disabled/error outcomes."""
         self._check_capacity()
@@ -400,7 +474,10 @@ class QuoteArchive:
         prior_received = None
         if path.exists():
             try:
-                for line in path.read_bytes().splitlines()[-1:]:
+                with open(path, "rb") as tail:
+                    tail.seek(max(0, path.stat().st_size - 1048576))
+                    lines = tail.read().splitlines()
+                for line in lines[-1:]:
                     prior_received = json.loads(line).get("recorded_at_utc")
             except (OSError, ValueError, json.JSONDecodeError):
                 prior_received = None
@@ -408,11 +485,14 @@ class QuoteArchive:
                   "recorded_at_utc": _iso(now), "expected_interval_sec": expected_interval_sec,
                   "prior_recorded_at_utc": prior_received, "result": dict(result)}
         path.parent.mkdir(parents=True, exist_ok=True)
+        contents = _canonical_json(record) + b"\n"
+        _admit_bytes(len(contents))
         with open(path, "ab") as handle:
-            handle.write(_canonical_json(record) + b"\n")
+            handle.write(contents)
             handle.flush(); os.fsync(handle.fileno())
         return record
 
+    @guarded_write
     def finalize_day(self, day: str) -> Optional[Dict[str, Any]]:
         source = self.root / "quotes" / day / "quotes.jsonl.open"
         if not source.exists():
@@ -429,6 +509,7 @@ class QuoteArchive:
         digest = _sha256_bytes(payload)
         final = source.with_name(f"quotes-{digest[:16]}.jsonl.gz")
         if not final.exists():
+            _admit_bytes(len(payload) + 65536)
             fd, temporary = tempfile.mkstemp(prefix=".research-", suffix=".gz", dir=str(source.parent))
             try:
                 with os.fdopen(fd, "wb") as raw_handle:
@@ -483,7 +564,16 @@ def readiness_view(archive_root: str, underlyings: Iterable[str] = ("NIFTY", "SE
     if runs_dir.exists():
         for path in sorted(runs_dir.glob("**/runs.jsonl"))[-3:]:
             try:
-                latest_runs.extend(json.loads(line) for line in path.read_text(encoding="utf-8").splitlines() if line)
+                with open(path, "rb") as tail:
+                    offset = max(0, path.stat().st_size - 1048576)
+                    tail.seek(offset)
+                    if offset:
+                        tail.readline()
+                    for line in tail:
+                        try:
+                            latest_runs.append(json.loads(line))
+                        except (ValueError, UnicodeDecodeError):
+                            continue
             except (OSError, json.JSONDecodeError):
                 continue
     last_run = max(latest_runs, key=lambda item: str(item.get("recorded_at_utc", "")), default=None)
@@ -496,23 +586,33 @@ def readiness_view(archive_root: str, underlyings: Iterable[str] = ("NIFTY", "SE
         master = latest_master(name)
         gaps = [gap for run in latest_runs for gap in run.get("result", {}).get("gaps", []) if gap.get("underlying") == name]
         latest_quote = latest_observations.get(name)
-        # Active segment is bounded to one session; inspect it without reading
-        # historical partitions on the request path.
-        for path in sorted((root / "quotes").glob("*/quotes.jsonl.open"))[-1:]:
+        status, age = "NOT_YET_OBSERVED", None
+        if latest_quote:
+            status = "TIME_UNKNOWN"
             try:
-                for line in path.read_text(encoding="utf-8").splitlines():
-                    event = json.loads(line)
-                    if event.get("contract", {}).get("underlying") == name and event.get("depth_state") == "USABLE":
-                        latest_quote = event
-            except (OSError, json.JSONDecodeError):
+                received = datetime.fromisoformat(latest_quote["received_at_utc"].replace("Z", "+00:00"))
+                provider = datetime.fromisoformat(latest_quote["provider_timestamp_utc"].replace("Z", "+00:00"))
+                age = (utc_now() - provider).total_seconds()
+                receipt_age = (utc_now() - received).total_seconds()
+                if age < -5 or receipt_age < -5 or provider > received:
+                    status = "TIME_INVALID"
+                elif age > 120 or receipt_age > 120:
+                    status = "STALE"
+                elif latest_quote.get("depth_state") != "USABLE":
+                    status = "BOOK_UNUSABLE"
+                else:
+                    status = "OBSERVED_USABLE"
+            except (KeyError, TypeError, ValueError, AttributeError):
                 pass
         per_index[name] = {
             "master": {"observed_at_utc": master.get("observed_at_utc"), "raw_sha256": master.get("raw_sha256"), "contract_count": master.get("contract_count")} if master else None,
             "recent_gap_count": len(gaps), "latest_gap": gaps[-1] if gaps else None,
             "last_collection_run_utc": max((r.get("recorded_at_utc") for r in latest_runs if name in r.get("result", {}).get("indices", {}) or any(g.get("underlying") == name for g in r.get("result", {}).get("gaps", []))), default=None),
-            "last_valid_quote_utc": latest_quote.get("received_at_utc") if latest_quote else None,
+            "last_seen_quote_utc": latest_quote.get("received_at_utc") if latest_quote else None,
+            "last_valid_quote_utc": latest_quote.get("received_at_utc") if status == "OBSERVED_USABLE" else None,
+            "provider_age_seconds": age,
             "provider_timestamp_utc": latest_quote.get("provider_timestamp_utc") if latest_quote else None,
-            "quote_observation_status": "OBSERVED_USABLE" if latest_quote and latest_quote.get("depth_state") == "USABLE" else "NOT_YET_OBSERVED",
+            "quote_observation_status": status,
             "qualification": "NOT_EVALUATED_HERE",
         }
     usage = shutil.disk_usage(root) if root.exists() else None

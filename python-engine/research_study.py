@@ -17,7 +17,7 @@ from typing import Any, Dict, Optional
 import pandas as pd
 
 from fno_backtest import run_fno_backtest
-from research_archive import ARCHIVE_FORMAT, _atomic_bytes, _canonical_json, _iso
+from research_archive import ARCHIVE_FORMAT, _atomic_bytes, _canonical_json, _iso, guarded_write
 
 EVIDENCE_UNDERLYING_RESEARCH = "UNDERLYING_RESEARCH"
 EVIDENCE_OPTION_CANDLE_MODELLED = "OPTION_CANDLE_MODELLED"
@@ -44,6 +44,7 @@ def _fingerprint(frame: pd.DataFrame) -> str:
     return hashlib.sha256(csv.encode("utf-8")).hexdigest()
 
 
+@guarded_write
 def run_modelled_intraday_study(
     bars: pd.DataFrame, *, underlying: str, archive_root: str,
     run_id: str, model_iv: Optional[float] = None, pool: Optional[float] = None,

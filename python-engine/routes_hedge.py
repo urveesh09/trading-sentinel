@@ -392,7 +392,7 @@ async def get_partner_advisory_research_readiness(request: Request):
     """Show source/archive readiness; it cannot qualify or enable advice."""
     _main._check_internal_secret(request, "get_partner_advisory_research_readiness")
     return {
-        **readiness_view(
+        **await __import__("asyncio").to_thread(readiness_view,
             settings.RESEARCH_ARCHIVE_PATH,
             [name.strip() for name in settings.RESEARCH_ARCHIVE_UNDERLYINGS.split(",")],
         ),
