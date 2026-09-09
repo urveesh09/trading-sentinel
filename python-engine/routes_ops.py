@@ -271,6 +271,11 @@ async def health_check():
         # and is the job _main.scheduler actually running.
         snap["kite_connected"] = bool(_main.kite.access_token)
         snap["scheduler_running"] = bool(getattr(_main.scheduler, "running", False))
+        # A 200 response only proves that *some* engine is alive.  Expose the
+        # image identity separately so a deployment checker and the dashboard
+        # can distinguish a healthy old image from the reviewed release.
+        from release_identity import release_identity
+        snap["release"] = release_identity("python-engine")
 
         # [OUTAGE-2026-07-13 DEFECT 4] `trading_ready` is the question nobody
         # was asking. On 2026-07-13 all five containers reported "healthy" for

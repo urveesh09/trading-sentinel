@@ -62,7 +62,12 @@ services:
 
   # Container A: The Command Center (MERN Gateway)
   node-gateway:
-    build: ./node-gateway
+    build:
+      context: ./node-gateway
+      args:
+        SENTINEL_RELEASE_SHA: ${SENTINEL_RELEASE_SHA:-unknown}
+        SENTINEL_BUILD_UTC: ${SENTINEL_BUILD_UTC:-unknown}
+        SENTINEL_SERVICE_NAME: node-gateway
     container_name: node-gateway
     restart: unless-stopped
     mem_limit: 768m
@@ -73,6 +78,9 @@ services:
       - trading_data:/data
     environment:
       - NODE_OPTIONS=--dns-result-order=ipv4first
+      - SENTINEL_RELEASE_SHA=${SENTINEL_RELEASE_SHA:-unknown}
+      - SENTINEL_BUILD_UTC=${SENTINEL_BUILD_UTC:-unknown}
+      - SENTINEL_SERVICE_NAME=node-gateway
     env_file:
       - ./node-gateway/.env
     networks:
@@ -100,7 +108,12 @@ services:
 
   # Container B: The Quant Engine (Python Math)
   python-engine:
-    build: ./python-engine
+    build:
+      context: ./python-engine
+      args:
+        SENTINEL_RELEASE_SHA: ${SENTINEL_RELEASE_SHA:-unknown}
+        SENTINEL_BUILD_UTC: ${SENTINEL_BUILD_UTC:-unknown}
+        SENTINEL_SERVICE_NAME: python-engine
     container_name: python-engine
     restart: unless-stopped
     # Largest cap: pandas scans over the 500-ticker universe spike well
@@ -109,6 +122,9 @@ services:
     cpus: 6
     environment:
       - TZ=Asia/Kolkata
+      - SENTINEL_RELEASE_SHA=${SENTINEL_RELEASE_SHA:-unknown}
+      - SENTINEL_BUILD_UTC=${SENTINEL_BUILD_UTC:-unknown}
+      - SENTINEL_SERVICE_NAME=python-engine
     env_file:
       - ./.env
     volumes:
@@ -142,7 +158,12 @@ services:
 
   # Container C: The Reasoning Engine (Placeholder for now)
   agent:
-    build: ./agent
+    build:
+      context: ./agent
+      args:
+        SENTINEL_RELEASE_SHA: ${SENTINEL_RELEASE_SHA:-unknown}
+        SENTINEL_BUILD_UTC: ${SENTINEL_BUILD_UTC:-unknown}
+        SENTINEL_SERVICE_NAME: agent
     container_name: agent
     restart: unless-stopped
     mem_limit: 768m
@@ -155,6 +176,9 @@ services:
       - MINIMAX_BASE_URL=${MINIMAX_BASE_URL:-https://api.minimax.io/v1}
       - MINIMAX_MODEL=${MINIMAX_MODEL:-MiniMax-M3}
       - TZ=Asia/Kolkata
+      - SENTINEL_RELEASE_SHA=${SENTINEL_RELEASE_SHA:-unknown}
+      - SENTINEL_BUILD_UTC=${SENTINEL_BUILD_UTC:-unknown}
+      - SENTINEL_SERVICE_NAME=agent
     env_file:
       - ./.env
     volumes:

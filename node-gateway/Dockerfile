@@ -12,12 +12,19 @@ RUN npm run build
 
 # Stage 2 - Server
 FROM node:20-alpine
+ARG SENTINEL_RELEASE_SHA=unknown
+ARG SENTINEL_BUILD_UTC=unknown
+ARG SENTINEL_SERVICE_NAME=node-gateway
 # su-exec: Alpine's lightweight gosu equivalent for privilege drop in entrypoints
 RUN apk add --no-cache su-exec
 # Create non-root user
 RUN addgroup -S appgroup && adduser -S appuser -G appgroup
 
 WORKDIR /app
+
+ENV SENTINEL_RELEASE_SHA=${SENTINEL_RELEASE_SHA}
+ENV SENTINEL_BUILD_UTC=${SENTINEL_BUILD_UTC}
+ENV SENTINEL_SERVICE_NAME=${SENTINEL_SERVICE_NAME}
 
 # Install server dependencies
 COPY server/package*.json ./

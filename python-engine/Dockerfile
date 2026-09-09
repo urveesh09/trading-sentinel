@@ -15,6 +15,13 @@ RUN pip install --upgrade pip && \
 # Run Stage
 FROM python:3.11-slim
 
+# Supplied by Compose from the exact checkout being built.  Runtime health
+# exposes these non-secret values; an unset/unknown SHA is intentionally not
+# treated as deployment proof.
+ARG SENTINEL_RELEASE_SHA=unknown
+ARG SENTINEL_BUILD_UTC=unknown
+ARG SENTINEL_SERVICE_NAME=python-engine
+
 # Install curl for HEALTHCHECK and gosu for privilege drop in entrypoint
 RUN apt-get update && apt-get install -y curl gosu && rm -rf /var/lib/apt/lists/*
 
@@ -35,6 +42,9 @@ RUN chown -R quantuser:quantuser /app && \
 # Ensure the local bin is in PATH so uvicorn can be found
 ENV PATH=/home/quantuser/.local/bin:$PATH
 ENV PYTHONPATH=/app
+ENV SENTINEL_RELEASE_SHA=${SENTINEL_RELEASE_SHA}
+ENV SENTINEL_BUILD_UTC=${SENTINEL_BUILD_UTC}
+ENV SENTINEL_SERVICE_NAME=${SENTINEL_SERVICE_NAME}
 
 HEALTHCHECK --interval=30s --timeout=10s --retries=3 \
   CMD curl -f http://localhost:8000/health || exit 1
