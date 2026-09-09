@@ -78,9 +78,6 @@ services:
       - trading_data:/data
     environment:
       - NODE_OPTIONS=--dns-result-order=ipv4first
-      - SENTINEL_RELEASE_SHA=${SENTINEL_RELEASE_SHA:-unknown}
-      - SENTINEL_BUILD_UTC=${SENTINEL_BUILD_UTC:-unknown}
-      - SENTINEL_SERVICE_NAME=node-gateway
     env_file:
       - ./node-gateway/.env
     networks:
@@ -122,9 +119,6 @@ services:
     cpus: 6
     environment:
       - TZ=Asia/Kolkata
-      - SENTINEL_RELEASE_SHA=${SENTINEL_RELEASE_SHA:-unknown}
-      - SENTINEL_BUILD_UTC=${SENTINEL_BUILD_UTC:-unknown}
-      - SENTINEL_SERVICE_NAME=python-engine
     env_file:
       - ./.env
     volumes:
@@ -176,9 +170,6 @@ services:
       - MINIMAX_BASE_URL=${MINIMAX_BASE_URL:-https://api.minimax.io/v1}
       - MINIMAX_MODEL=${MINIMAX_MODEL:-MiniMax-M3}
       - TZ=Asia/Kolkata
-      - SENTINEL_RELEASE_SHA=${SENTINEL_RELEASE_SHA:-unknown}
-      - SENTINEL_BUILD_UTC=${SENTINEL_BUILD_UTC:-unknown}
-      - SENTINEL_SERVICE_NAME=agent
     env_file:
       - ./.env
     volumes:

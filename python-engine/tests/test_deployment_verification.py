@@ -1,3 +1,4 @@
+import copy
 import importlib.util
 from pathlib import Path
 
@@ -14,9 +15,11 @@ SHA = "a" * 40
 
 
 def _inspect(service, sha=SHA):
-    return {"Id": service * 5, "Image": "sha256:image", "State": {"StartedAt": "2026-09-09T12:00:00Z"},
+    result = {"Id": service * 5, "Image": "sha256:image", "State": {"Running": True, "StartedAt": "2026-09-09T12:00:00Z"},
             "Config": {"Env": [f"SENTINEL_RELEASE_SHA={sha}", f"SENTINEL_SERVICE_NAME={service}",
                                "SENTINEL_BUILD_UTC=2026-09-09T11:59:00Z"]}}
+    result["ImageInspect"] = {"Config": copy.deepcopy(result["Config"])}
+    return result
 
 
 def test_verifier_accepts_one_fully_identified_release():
@@ -37,3 +40,17 @@ def test_verifier_rejects_stale_gateway_health():
     with pytest.raises(verify_deployment.VerificationError, match="gateway health"):
         verify_deployment.verify_health(SHA, {"release": {"revision": "b" * 40, "declared": True},
                                               "python_engine_release": {"revision": SHA, "declared": True}})
+
+
+def test_verifier_rejects_runtime_relabelled_old_image():
+    data = {service: _inspect(service) for service in verify_deployment.APPLICATION_SERVICES}
+    data["agent"]["ImageInspect"] = _inspect("agent", "b" * 40)["ImageInspect"]
+    with pytest.raises(verify_deployment.VerificationError, match="baked image identity mismatch"):
+        verify_deployment.verify_containers(SHA, data)
+
+
+def test_verifier_rejects_stopped_container():
+    data = {service: _inspect(service) for service in verify_deployment.APPLICATION_SERVICES}
+    data["agent"]["State"]["Running"] = False
+    with pytest.raises(verify_deployment.VerificationError, match="not running"):
+        verify_deployment.verify_containers(SHA, data)

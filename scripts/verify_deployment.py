@@ -48,6 +48,12 @@ def verify_containers(expected_sha: str, containers: dict[str, dict[str, Any]]) 
             errors.append(f"{service}: container is absent")
             continue
         env = _environment(inspect.get("Config", {}).get("Env", []))
+        image_env = _environment(inspect.get("ImageInspect", {}).get("Config", {}).get("Env", []))
+        for key in ("SENTINEL_RELEASE_SHA", "SENTINEL_BUILD_UTC", "SENTINEL_SERVICE_NAME"):
+            if not image_env.get(key) or image_env.get(key) != env.get(key):
+                errors.append(f"{service}: baked image identity mismatch for {key}")
+        if not inspect.get("State", {}).get("Running"):
+            errors.append(f"{service}: container is not running")
         actual = env.get("SENTINEL_RELEASE_SHA", "")
         declared_service = env.get("SENTINEL_SERVICE_NAME", "")
         build_utc = env.get("SENTINEL_BUILD_UTC", "")
@@ -91,7 +97,9 @@ def _inspect_compose_service(service: str) -> dict[str, Any]:
     if len(ids) != 1:
         raise VerificationError(f"{service}: expected exactly one Compose container, found {len(ids)}")
     result = json.loads(_command(["docker", "inspect", ids[0]]))
-    return result[0]
+    container = result[0]
+    container["ImageInspect"] = json.loads(_command(["docker", "image", "inspect", container["Image"]]))[0]
+    return container
 
 
 def _get_json(url: str) -> dict[str, Any]:
