@@ -81,6 +81,12 @@ router.get('/partner/hedge/cards', (req, res) =>
   proxyToEngine(req, res, withQuery('/partner/hedge/cards', req.query)));
 router.get('/partner/hedge/delivery-backlog', (req, res) =>
   proxyToEngine(req, res, '/partner/hedge/delivery-backlog'));
+router.get('/partner/advisory/setup', (req, res) =>
+  proxyToEngine(req, res, withQuery('/partner/advisory/setup', req.query)));
+router.get('/partner/advisory/diagnostics', (req, res) =>
+  proxyToEngine(req, res, '/partner/advisory/diagnostics'));
+router.put('/partner/advisory/profile', (req, res) =>
+  proxyToEngine(req, res, withQuery('/partner/advisory/profile', req.query), 'PUT'));
 
 // Backtest Lab submits background work, so requests never hold an HTTP socket
 // for the duration of a replay. The longer budget protects SQLite contention

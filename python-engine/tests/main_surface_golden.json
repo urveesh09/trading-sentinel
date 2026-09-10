@@ -529,6 +529,14 @@
       "response_model": null
     },
     {
+      "endpoint": "get_partner_advisory_setup",
+      "methods": [
+        "GET"
+      ],
+      "path": "/partner/advisory/setup",
+      "response_model": null
+    },
+    {
       "endpoint": "post_partner_advisory_telegram_diagnostic",
       "methods": [
         "POST"

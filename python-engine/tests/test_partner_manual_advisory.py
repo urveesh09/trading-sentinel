@@ -13,7 +13,8 @@ from partner_manual_advisory import (
     record_manual_feedback, save_partner_profile, validate_candidate,
     select_preferred_market_candidates, dispatch_queued_advisory, record_research_artifact, record_strategy_qualification,
     advisory_identity, dispatch_queued_management_update, queue_management_updates,
-    load_advisory_diagnostics, run_intraday_session_lifecycle,
+    load_advisory_diagnostics, load_advisory_input_status, load_partner_profile_with_state,
+    record_advisory_input_status, run_intraday_session_lifecycle,
 )
 
 IST = pytz.timezone("Asia/Kolkata")
@@ -389,6 +390,35 @@ async def test_diagnostics_are_per_index_and_do_not_claim_partner_pnl(db_path):
     assert diagnostic["by_index"]["NIFTY"]["validated_shadow"] == 1
     assert diagnostic["by_index"]["SENSEX"]["rejected"] == 1
     assert "not a fill or P&L" in diagnostic["outcome_interpretation"]
+
+
+@pytest.mark.asyncio
+async def test_input_status_distinguishes_missing_profile_and_keeps_per_index_clocks(db_path):
+    profile, state = await load_partner_profile_with_state(db_path)
+    assert profile.holding_period is None and state == "MISSING_PROFILE"
+    observed = NOW - timedelta(seconds=10)
+    await record_advisory_input_status(
+        db_path, underlying="NIFTY", attempted_at=NOW, stage="NO_ENTRY_SETUP",
+        reason="no_or_break", entry_state="NO_ENTRY_SETUP", observed_at=observed,
+        profile_state=state, successful_observation=True,
+    )
+    status = await load_advisory_input_status(db_path)
+    assert status["NIFTY"]["stage"] == "NO_ENTRY_SETUP"
+    assert status["NIFTY"]["reason"] == "no_or_break"
+    assert status["NIFTY"]["freshness_seconds"] == pytest.approx(10.0)
+    assert status["NIFTY"]["last_success_at"] is not None
+    assert status["SENSEX"]["stage"] == "NOT_ATTEMPTED"
+
+    await record_advisory_input_status(
+        db_path, underlying="SENSEX", attempted_at=NOW, stage="CANDIDATE_VALIDATED",
+        reason="awaiting_strategy_qualification", entry_state="NOT_DELIVERY_ELIGIBLE",
+        profile_state="SAVED_INTRADAY", qualification_state="MISSING_QUALIFICATION",
+        successful_observation=True,
+    )
+    status = await load_advisory_input_status(db_path)
+    assert status["NIFTY"]["profile_state"] == "MISSING_PROFILE"
+    assert status["SENSEX"]["profile_state"] == "SAVED_INTRADAY"
+    assert status["SENSEX"]["qualification_state"] == "MISSING_QUALIFICATION"
 
 
 @pytest.mark.asyncio

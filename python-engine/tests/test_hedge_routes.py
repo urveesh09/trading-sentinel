@@ -192,3 +192,14 @@ async def test_manual_advisory_profile_and_cards_remain_non_executing(hedge_clie
     assert cards.status_code == 200
     assert cards.json()["automatic_execution"] is False
     assert cards.json()["delivery_authority"] is False
+
+
+@pytest.mark.asyncio
+async def test_manual_advisory_setup_exposes_missing_profile_and_per_index_input_state(hedge_client):
+    response = await hedge_client.get("/partner/advisory/setup", headers=_headers())
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["profile_state"] == "MISSING_PROFILE"
+    assert set(payload["input_status"]) == {"NIFTY", "SENSEX"}
+    assert payload["automatic_execution"] is False
+    assert payload["delivery_authority"] is False

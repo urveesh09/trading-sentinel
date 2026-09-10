@@ -1146,6 +1146,10 @@ class Settings(BaseSettings):
     PARTNER_MANUAL_ADVISORY_ENTRY_END_MINUTE: int = 14 * 60 + 45
     PARTNER_MANUAL_ADVISORY_EXIT_REMINDER_MINUTE: int = 15 * 60 + 10
     PARTNER_MANUAL_ADVISORY_MANAGEMENT_END_MINUTE: int = 15 * 60 + 15
+    # Management uses the just-closed futures bar when no new ORB direction
+    # exists.  This bounds public-condition updates without requiring a full
+    # option-chain fetch on every quiet entry tick.
+    PARTNER_MANUAL_ADVISORY_MANAGEMENT_MAX_OBSERVATION_AGE_SEC: int = 360
 
     # Advanced partner-facing phases require current readiness evidence. They
     # start disabled; Phase 1 protection and status messages remain available.

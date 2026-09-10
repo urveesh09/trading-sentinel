@@ -47,6 +47,12 @@ class _Book:
         return None
 
 
+class _AdvisoryBook(_Book):
+    """Instrument fixture with the expiry inventory advisory resolution needs."""
+
+    option_expiries = [date(2026, 7, 23)]
+
+
 @pytest.fixture
 def wired(tmp_path, monkeypatch):
     import main
@@ -129,6 +135,105 @@ async def test_outside_session_window_is_a_noop(wired):
     late = IST.localize(datetime(2026, 7, 20, 16, 30))
     await po.partner_scan_tick(late)
     assert wired.state["scan_calls"] == 0
+
+
+@pytest.mark.asyncio
+async def test_manual_tick_classifies_no_direction_without_chain_and_updates_active_conditions(wired, monkeypatch):
+    """No ORB break is a healthy no-entry result, not an input outage.
+
+    The scanner contract deliberately has no chain snapshot in this case, yet
+    fresh futures-bar data still drives public-condition management checks.
+    """
+    from partner_manual_advisory import load_advisory_input_status
+    from fno_underlyings import UnderlyingSpec
+    await _init(wired.db)
+    monkeypatch.setattr(settings, "PARTNER_MANUAL_ADVISORY_ENABLED", True)
+    monkeypatch.setattr(settings, "PARTNER_MANUAL_ADVISORY_SHADOW_ENABLED", False)
+    sensex = UnderlyingSpec("SENSEX", "BFO")
+    monkeypatch.setattr(po, "analytics_underlyings", lambda: [SPEC, sensex])
+    scans = {
+        "NIFTY": UnderlyingScan(name="NIFTY", sig=MomSignal(
+            bar_ts="2026-07-20 09:55:00", close=25100.0, reject_reason="no_or_break")),
+        "SENSEX": UnderlyingScan(name="SENSEX", sig=MomSignal(
+            bar_ts="2026-07-20 09:55:00", close=82000.0, reject_reason="rvol_below_min")),
+    }
+    async def scan(_kite, spec, _regime, _now): return scans[spec.name]
+    observed = []
+    async def management(_db, *, underlying, observed_underlying, observed_at):
+        observed.append((underlying, observed_underlying, observed_at)); return []
+    monkeypatch.setattr(po, "scan_underlying", scan)
+    monkeypatch.setattr(__import__("partner_manual_advisory"), "queue_management_updates", management)
+    # partner_orchestrator imports this name lazily, so patch its module
+    # binding after one controlled tick import path has executed.
+    monkeypatch.setattr(po, "queue_management_updates", management, raising=False)
+    await po.partner_manual_advisory_tick(NOW)
+    status = await load_advisory_input_status(wired.db)
+    assert status["NIFTY"]["stage"] == "NO_ENTRY_SETUP"
+    assert status["NIFTY"]["reason"] == "no_or_break"
+    assert status["SENSEX"]["stage"] == "NO_ENTRY_SETUP"
+    assert {row[0] for row in observed} == {"NIFTY", "SENSEX"}
+
+
+@pytest.mark.asyncio
+async def test_manual_tick_keeps_explicit_input_error_separate_from_missing_signal(wired, monkeypatch):
+    from partner_manual_advisory import load_advisory_input_status
+    from fno_underlyings import UnderlyingSpec
+    await _init(wired.db)
+    monkeypatch.setattr(settings, "PARTNER_MANUAL_ADVISORY_ENABLED", True)
+    sensex = UnderlyingSpec("SENSEX", "BFO")
+    monkeypatch.setattr(po, "analytics_underlyings", lambda: [SPEC, sensex])
+    monkeypatch.setattr(po, "get_instruments_for", lambda _name: _AdvisoryBook())
+    async def scan(_kite, spec, _regime, _now):
+        return UnderlyingScan(name=spec.name, error="instruments_not_ready") if spec.name == "NIFTY" else UnderlyingScan(name=spec.name)
+    monkeypatch.setattr(po, "scan_underlying", scan)
+    await po.partner_manual_advisory_tick(NOW)
+    status = await load_advisory_input_status(wired.db)
+    assert status["NIFTY"]["stage"] == "INPUT_ERROR"
+    assert status["NIFTY"]["reason"] == "instruments_not_ready"
+    assert status["SENSEX"]["stage"] == "MISSING_SIGNAL"
+
+
+@pytest.mark.asyncio
+async def test_manual_tick_records_fired_direction_without_snapshot_as_unavailable(wired, monkeypatch):
+    from partner_manual_advisory import load_advisory_input_status
+    from fno_underlyings import UnderlyingSpec
+    await _init(wired.db)
+    monkeypatch.setattr(settings, "PARTNER_MANUAL_ADVISORY_ENABLED", True)
+    sensex = UnderlyingSpec("SENSEX", "BFO")
+    monkeypatch.setattr(po, "analytics_underlyings", lambda: [SPEC, sensex])
+    monkeypatch.setattr(po, "get_instruments_for", lambda _name: _AdvisoryBook())
+    async def scan(_kite, spec, _regime, _now):
+        return _fired_scan() if spec.name == "NIFTY" else UnderlyingScan(name="SENSEX", error="instruments_not_ready")
+    monkeypatch.setattr(po, "scan_underlying", scan)
+    await po.partner_manual_advisory_tick(NOW)
+    status = await load_advisory_input_status(wired.db)
+    assert status["NIFTY"]["stage"] == "DIRECTION_WITHOUT_CHAIN"
+    assert status["NIFTY"]["entry_state"] == "UNAVAILABLE"
+
+
+@pytest.mark.asyncio
+async def test_manual_tick_records_fresh_expiry_chain_failure(wired, monkeypatch):
+    from fno_chain import ChainSnapshot
+    from partner_manual_advisory import load_advisory_input_status
+    from fno_underlyings import UnderlyingSpec
+    await _init(wired.db)
+    monkeypatch.setattr(settings, "PARTNER_MANUAL_ADVISORY_ENABLED", True)
+    sensex = UnderlyingSpec("SENSEX", "BFO")
+    monkeypatch.setattr(po, "analytics_underlyings", lambda: [SPEC, sensex])
+    monkeypatch.setattr(po, "get_instruments_for", lambda _name: _AdvisoryBook())
+    fired = _fired_scan()
+    # The scanner's regular-chain expiry differs from the advisory expiry,
+    # forcing the bounded fresh-chain request below.
+    fired.snap = ChainSnapshot(NOW, date(2026, 7, 16), 25100.0, None, 75, None, {})
+    async def scan(_kite, spec, _regime, _now):
+        return fired if spec.name == "NIFTY" else UnderlyingScan(name="SENSEX", error="instruments_not_ready")
+    async def no_fresh_chain(*_args, **_kwargs): return None
+    monkeypatch.setattr(po, "scan_underlying", scan)
+    monkeypatch.setattr(__import__("fno_chain"), "take_chain_snapshot", no_fresh_chain)
+    await po.partner_manual_advisory_tick(NOW)
+    status = await load_advisory_input_status(wired.db)
+    assert status["NIFTY"]["stage"] == "CHAIN_UNAVAILABLE"
+    assert status["NIFTY"]["reason"] == "advisory_expiry_chain_unavailable"
 
 
 # ---------------------------------------------------------------------------

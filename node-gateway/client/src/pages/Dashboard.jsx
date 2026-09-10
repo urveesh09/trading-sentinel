@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { AlertTriangle, BarChart3, FlaskConical, Microscope } from 'lucide-react';
 import StatusBar from '../components/StatusBar';
 import SignalCard from '../components/SignalCard';
@@ -9,11 +9,13 @@ import { usePositions } from '../hooks/usePositions';
 import { useDivisionPerformance } from '../hooks/useDivisionPerformance';
 import { useProactiveActivity } from '../hooks/useProactiveActivity';
 import { usePartnerHedgeCards } from '../hooks/usePartnerHedgeCards';
+import { usePartnerAdvisorySetup } from '../hooks/usePartnerAdvisorySetup';
 import { usePartnerDeliveryBacklog } from '../hooks/usePartnerDeliveryBacklog';
 import { useOptionalAiStatus } from '../hooks/useOptionalAiStatus';
 import { useProactiveSessionDiagnostics } from '../hooks/useProactiveSessionDiagnostics';
 import { evidenceModeEnabled } from '../evidenceMode';
 import { isActivePosition } from '../utils/positions';
+import { putClient } from '../api/client';
 import {
   INSUFFICIENT_DATA,
   buildDivisionViewModel,
@@ -202,6 +204,49 @@ function PartnerHedgeCards({ cards, isLoading, isError }) {
   );
 }
 
+function PartnerAdvisorySetup({ setup, isLoading, isError, mutate }) {
+  const [form, setForm] = useState({ version: '', capital: '', risk: '' });
+  const [saving, setSaving] = useState(false);
+  const [notice, setNotice] = useState('');
+  useEffect(() => {
+    const profile = setup?.profile;
+    if (profile) setForm({ version: String((profile.version || 0) + 1), capital: profile.capital_limit_rs ?? '', risk: profile.risk_limit_rs ?? '' });
+  }, [setup]);
+  if (isLoading) return <div className="rounded border border-gray-800 bg-gray-900 p-4 text-sm text-gray-500">Loading partner advisory setup…</div>;
+  if (isError || !setup) return <div className="rounded border border-amber-800 bg-amber-950/30 p-4 text-sm text-amber-200">Partner advisory setup is unavailable. No readiness conclusion is inferred.</div>;
+  const profile = setup.profile || {};
+  const statuses = setup.input_status || {};
+  const save = async (event) => {
+    event.preventDefault();
+    setSaving(true); setNotice('');
+    try {
+      const version = Number(form.version);
+      if (!Number.isInteger(version) || version <= Number(profile.version || 0)) throw new Error(`Version must be greater than ${profile.version || 0}.`);
+      const optionalNumber = (value) => value === '' ? null : Number(value);
+      const capital = optionalNumber(form.capital); const risk = optionalNumber(form.risk);
+      if ((capital !== null && (!Number.isFinite(capital) || capital <= 0)) || (risk !== null && (!Number.isFinite(risk) || risk <= 0))) throw new Error('Optional financial limits must be positive numbers.');
+      await putClient('/api/proxy/partner/advisory/profile', {
+        version, enabled_scopes: profile.enabled_scopes || ['MARKET_SETUP'], instruments: ['NIFTY', 'SENSEX'],
+        holding_period: 'INTRADAY', timezone: 'Asia/Kolkata',
+        delivery_start_minute: profile.delivery_start_minute ?? 560, delivery_end_minute: profile.delivery_end_minute ?? 915,
+        permitted_structures: profile.permitted_structures || ['DIRECTIONAL_DEBIT_SPREAD'], preference: profile.preference || 'ACTIONABLE',
+        capital_limit_rs: capital, risk_limit_rs: risk,
+        confirmed_holdings_revision: profile.confirmed_holdings_revision ?? null,
+        conditional_exposure_assumption: profile.conditional_exposure_assumption ?? null,
+        conditional_coverage_units: profile.conditional_coverage_units ?? null,
+      });
+      setNotice('Saved. Research qualification and delivery remain independently blocked until their evidence is present.');
+      await mutate();
+    } catch (error) { setNotice(error.message || 'Profile save failed.'); }
+    finally { setSaving(false); }
+  };
+  return <section className="rounded-xl border border-teal-900/70 bg-teal-950/10 p-4" aria-labelledby="partner-advisory-setup-heading">
+    <div className="flex flex-wrap items-start justify-between gap-3"><div><h2 id="partner-advisory-setup-heading" className="text-xl font-bold text-white">NIFTY/SENSEX advisory setup</h2><p className="mt-1 text-xs text-gray-500">Manual intraday advice only. Saving this profile cannot place orders, create research evidence, qualify a strategy, or send a card.</p></div><span className={`rounded px-2 py-1 text-[10px] font-bold tracking-widest ${setup.profile_state === 'SAVED_INTRADAY' ? 'bg-teal-950 text-teal-200' : 'bg-amber-950 text-amber-200'}`}>{setup.profile_state}</span></div>
+    <div className="mt-3 grid gap-3 md:grid-cols-2">{['NIFTY', 'SENSEX'].map((index) => { const status = statuses[index] || {}; return <div key={index} className="rounded border border-gray-800 bg-gray-950/70 p-3 text-xs"><div className="flex justify-between gap-2"><b className="text-teal-100">{index}</b><span className="text-gray-400">{status.stage || 'NOT_ATTEMPTED'}</span></div><p className="mt-2 break-words text-gray-400">{status.reason || 'No input status.'}</p><p className="mt-2 text-[10px] text-gray-500">Observed: {status.observed_at || 'None'} · Age: {status.freshness_seconds ?? 'Unavailable'}s · Qualification: {status.qualification_state || 'NOT_EVALUATED'}</p></div>; })}</div>
+    <form onSubmit={save} className="mt-4 grid gap-3 border-t border-teal-900/60 pt-3 sm:grid-cols-3"><label className="text-xs text-gray-400">Next profile version<input value={form.version} onChange={(e) => setForm({ ...form, version: e.target.value })} inputMode="numeric" className="mt-1 w-full rounded border border-gray-700 bg-gray-950 p-2 text-gray-100" /></label><label className="text-xs text-gray-400">Entry-cost ceiling ₹ (optional)<input value={form.capital} onChange={(e) => setForm({ ...form, capital: e.target.value })} inputMode="decimal" className="mt-1 w-full rounded border border-gray-700 bg-gray-950 p-2 text-gray-100" /></label><label className="text-xs text-gray-400">Risk ceiling ₹ (optional)<input value={form.risk} onChange={(e) => setForm({ ...form, risk: e.target.value })} inputMode="decimal" className="mt-1 w-full rounded border border-gray-700 bg-gray-950 p-2 text-gray-100" /></label><div className="sm:col-span-3 flex flex-wrap items-center gap-3"><button disabled={saving} className="rounded border border-teal-600 bg-teal-950 px-3 py-2 text-xs font-bold text-teal-100 disabled:opacity-50">{saving ? 'Saving…' : 'Save INTRADAY profile'}</button>{notice && <span className="text-xs text-gray-400">{notice}</span>}</div></form>
+  </section>;
+}
+
 function PartnerDeliveryBacklog({ backlog, isLoading, isError }) {
   if (isLoading) return <div className="rounded border border-gray-800 bg-gray-900 p-4 text-sm text-gray-500">Loading partner delivery recovery evidence…</div>;
   if (isError || !backlog) return <div className="rounded border border-amber-800 bg-amber-950/30 p-4 text-sm text-amber-200">Partner delivery recovery evidence is unavailable. No delivery conclusion is inferred.</div>;
@@ -270,6 +315,7 @@ export default function Dashboard({ healthData, navigateToPositions, navigateToB
   const { divisionPerformance, isLoading, isError } = useDivisionPerformance();
   const proactive = useProactiveActivity();
   const partnerHedgeCards = usePartnerHedgeCards();
+  const partnerAdvisorySetup = usePartnerAdvisorySetup();
   const partnerDeliveryBacklog = usePartnerDeliveryBacklog();
   const optionalAi = useOptionalAiStatus();
   const sessionDiagnostics = useProactiveSessionDiagnostics();
@@ -310,6 +356,7 @@ export default function Dashboard({ healthData, navigateToPositions, navigateToB
         <ActivityFunnel {...proactive} />
 
         <div className="grid gap-6 2xl:grid-cols-2">
+          <PartnerAdvisorySetup {...partnerAdvisorySetup} />
           <PartnerHedgeCards {...partnerHedgeCards} />
           <PartnerDeliveryBacklog {...partnerDeliveryBacklog} />
           <OptionalAiEvidence {...optionalAi} />
