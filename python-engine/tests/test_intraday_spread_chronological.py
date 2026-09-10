@@ -60,3 +60,13 @@ def test_chronological_runner_rejects_out_of_order_receipt_evidence():
     with pytest.raises(ReplayInputError, match="receipt-ordered"):
         replay_chronological_debit_spread(underlying="NIFTY", expiry="2026-09-24", policy=policy(),
             observations=[observation(first + timedelta(minutes=1), .9), observation(first, .9)])
+
+
+def test_management_deadline_uses_exchange_time_for_utc_archive_packets():
+    first = IST.localize(datetime(2026, 9, 10, 10, 0)).astimezone(pytz.UTC)
+    deadline = IST.localize(datetime(2026, 9, 10, 15, 15)).astimezone(pytz.UTC)
+    quiet_policy = replace(policy(), take_profit_rs=10000, stop_loss_rs=10000)
+    replay = replay_chronological_debit_spread(underlying="NIFTY", expiry="2026-09-24",
+        policy=quiet_policy, observations=[observation(first, .9), observation(deadline, 0)])
+    assert replay.state == "CLOSED"
+    assert replay.exit_trigger == "management_deadline"

@@ -13,7 +13,7 @@ from dataclasses import asdict, dataclass, replace
 from datetime import datetime, timedelta
 from typing import Iterable
 
-from intraday_spread_replay import LegQuote, ReplayInputError, ReplayResult, replay_intraday_debit_spread
+from intraday_spread_replay import IST, LegQuote, ReplayInputError, ReplayResult, replay_intraday_debit_spread
 
 
 @dataclass(frozen=True)
@@ -165,7 +165,7 @@ def replay_chronological_debit_spread(
             trigger = "take_profit"
         elif candidate.net_pnl_rs is not None and candidate.net_pnl_rs <= -policy.stop_loss_rs:
             trigger = "stop_loss"
-        elif clock.hour * 60 + clock.minute >= policy.management_deadline_minute:
+        elif clock.astimezone(IST).hour * 60 + clock.astimezone(IST).minute >= policy.management_deadline_minute:
             trigger = "management_deadline"
         else:
             continue
