@@ -13,9 +13,10 @@ import math
 from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
-from typing import Any
+from typing import Any, Callable, Mapping
 
 import pandas as pd
+import pytz
 
 
 class CompletedBarDataError(ValueError):
@@ -158,8 +159,9 @@ def load_recorded_completed_bar_snapshot(
 
 
 async def load_kite_completed_bar_snapshot(
-    kite: Any, *, instruments: dict[str, int], as_of: datetime, max_age: timedelta,
-    interval: str = "5minute",
+    kite: Any, *, instruments: Mapping[str, Mapping[str, Any]], as_of: datetime,
+    max_age: timedelta, archive_root: str | Path, interval: str = "5minute",
+    receipt_clock: Callable[[], datetime] | None = None,
 ) -> CompletedBarSnapshot:
     """Read completed Kite candles only; no quote, order, or fixture authority.
 
@@ -174,34 +176,42 @@ async def load_kite_completed_bar_snapshot(
     as_of = _utc(as_of, field="as_of")
     if interval != "5minute":
         raise CompletedBarDataError("only 5minute completed bars are supported")
-    start = (as_of - timedelta(days=2)).date().isoformat()
-    end = as_of.date().isoformat()
+    # The caller's clock only limits the request range.  It is not evidence
+    # that a response was available at that instant.  Every bar is assessed at
+    # the actual post-request receipt clock below.
+    request_at = as_of
+    start = (request_at - timedelta(days=4)).date().isoformat()
+    end = request_at.date().isoformat()
     decision: dict[str, list[dict[str, Any]]] = {}
     mapping: dict[str, str] = {}
     latest_close: datetime | None = None
-    for name, token in sorted(instruments.items()):
-        if name not in {"NIFTY", "SENSEX"} or not isinstance(token, int) or token <= 0:
-            raise CompletedBarDataError("Kite instrument mapping must contain positive NIFTY/SENSEX tokens")
+    receipts: dict[str, datetime] = {}
+    master_provenance: dict[str, dict[str, str]] = {}
+    for name, specification in sorted(instruments.items()):
+        token, master = _validated_kite_instrument(
+            name, specification, archive_root=archive_root,
+        )
         try:
             frame = await kite.get_intraday_by_token(token, start, end, interval)
         except Exception as exc:
             raise CompletedBarDataError(f"Kite completed-bar request failed for {name}") from exc
+        received_at = _utc((receipt_clock or (lambda: datetime.now(timezone.utc)))(), field=f"{name}.received_at")
+        receipts[name] = received_at
         if not isinstance(frame, pd.DataFrame) or frame.empty:
             raise CompletedBarDataError(f"Kite completed-bar response is empty for {name}")
-        stamp_column = next((column for column in ("date", "timestamp", "datetime") if column in frame.columns), None)
-        if stamp_column is None:
-            raise CompletedBarDataError(f"Kite completed-bar timestamp is missing for {name}")
+        starts = _kite_client_datetime_index(frame, instrument=name)
         bars = []
-        for _, row in frame.iterrows():
+        for start_at, (_, row) in zip(starts, frame.iterrows()):
             try:
-                start_at = _utc(pd.Timestamp(row[stamp_column]).to_pydatetime(), field=f"{name}.timestamp")
                 close_at = start_at + timedelta(minutes=5)
                 raw = {"timestamp": close_at.isoformat(), "open": row["open"], "high": row["high"],
                        "low": row["low"], "close": row["close"], "volume": row.get("volume", 0)}
                 _, bar = _normalise_bar(raw, instrument=name)
             except (KeyError, TypeError, ValueError, CompletedBarDataError) as exc:
                 raise CompletedBarDataError(f"Kite completed-bar row is invalid for {name}") from exc
-            if close_at <= as_of:
+            # Kite timestamps are interval starts.  A current interval cannot
+            # be a decision input, even when the network request started later.
+            if close_at <= received_at:
                 bars.append(bar)
         if not bars:
             raise CompletedBarDataError(f"Kite has no completed bar at evaluation clock for {name}")
@@ -209,18 +219,77 @@ async def load_kite_completed_bar_snapshot(
         if len({item["timestamp"] for item in bars}) != len(bars):
             raise CompletedBarDataError(f"Kite has duplicate completed bars for {name}")
         close_at = _utc(bars[-1]["timestamp"], field=f"{name}.close_at")
-        if as_of - close_at > max_age:
+        if received_at - close_at > max_age:
             raise CompletedBarDataError(f"Kite completed bars are stale for {name}")
         decision[name], mapping[name] = bars, str(token)
+        master_provenance[name] = master
         latest_close = max(latest_close, close_at) if latest_close else close_at
+    received_at = max(receipts.values())
     payload = {"provider": "KITE", "timeframe": interval, "instrument_mapping": mapping,
-               "bars": decision, "as_of": as_of.isoformat()}
+               "master_provenance": master_provenance, "bars": decision,
+               "request_at": request_at.isoformat(), "received_at": received_at.isoformat()}
     provenance = {"provider": "KITE", "timeframe": interval, "adjustment_version": "provider_unadjusted",
-                  "instrument_mapping": mapping, "received_at": as_of.isoformat(),
+                  "instrument_mapping": mapping, "master_provenance": master_provenance,
+                  "request_at": request_at.isoformat(), "received_at": received_at.isoformat(),
+                  "per_instrument_received_at": {name: value.isoformat() for name, value in receipts.items()},
                   "latest_exchange_at": latest_close.isoformat() if latest_close else None,
-                  "freshness_seconds": max(0.0, (as_of - latest_close).total_seconds()) if latest_close else None,
+                  "freshness_seconds": max(0.0, (received_at - latest_close).total_seconds()) if latest_close else None,
                   "fresh_until": (latest_close + max_age).isoformat() if latest_close else None,
                   "dataset_sha256": hashlib.sha256(json.dumps(payload, sort_keys=True, separators=(",", ":")).encode()).hexdigest(),
                   "instrument_count": len(decision), "bar_count": sum(len(rows) for rows in decision.values()),
                   "source_kind": "KITE_COMPLETED_BARS_V1"}
     return CompletedBarSnapshot(decision_bars=decision, outcome_bars=decision, provenance=provenance)
+
+
+def _kite_client_datetime_index(frame: pd.DataFrame, *, instrument: str) -> list[datetime]:
+    """Normalize the *actual* ``KiteClient`` DataFrame contract.
+
+    ``KiteClient.get_intraday_by_token`` puts its ``datetime`` column into a
+    timezone-naive IST ``DatetimeIndex``.  Accepting timestamp-looking data in
+    an arbitrary column caused the old adapter to test a shape the client never
+    returns.  A naive index is therefore explicitly IST, while an aware index
+    retains its supplied offset.  Object/mixed indexes and DST ambiguity are
+    rejected rather than guessed.
+    """
+    if not isinstance(frame.index, pd.DatetimeIndex) or frame.index.name != "datetime":
+        raise CompletedBarDataError(f"Kite completed-bar datetime index is invalid for {instrument}")
+    if frame.index.hasnans or not frame.index.is_monotonic_increasing or frame.index.has_duplicates:
+        raise CompletedBarDataError(f"Kite completed-bar datetime index is unordered for {instrument}")
+    try:
+        index = frame.index.tz_localize("Asia/Kolkata", ambiguous="raise", nonexistent="raise") if frame.index.tz is None else frame.index
+        return [stamp.to_pydatetime().astimezone(timezone.utc) for stamp in index]
+    except (TypeError, ValueError, pytz.AmbiguousTimeError, pytz.NonExistentTimeError) as exc:
+        raise CompletedBarDataError(f"Kite completed-bar datetime index is ambiguous for {instrument}") from exc
+
+
+def _validated_kite_instrument(
+    name: str, specification: Mapping[str, Any], *, archive_root: str | Path,
+) -> tuple[int, dict[str, str]]:
+    """Resolve a token only when a dated archived master proves its identity."""
+    if name not in {"NIFTY", "SENSEX"} or not isinstance(specification, Mapping):
+        raise CompletedBarDataError("Kite instrument mapping must declare NIFTY/SENSEX specifications")
+    token = specification.get("token")
+    basis = str(specification.get("basis", "")).upper()
+    master_sha256 = str(specification.get("master_sha256", "")).lower()
+    if isinstance(token, bool) or not isinstance(token, int) or token <= 0:
+        raise CompletedBarDataError(f"Kite token is invalid for {name}")
+    if basis not in {"SPOT", "FUTURE"} or len(master_sha256) != 64 or any(c not in "0123456789abcdef" for c in master_sha256):
+        raise CompletedBarDataError(f"Kite basis and archived master digest are required for {name}")
+    expected_exchange = "NSE" if name == "NIFTY" and basis == "SPOT" else "BSE" if basis == "SPOT" else "NFO" if name == "NIFTY" else "BFO"
+    for manifest_path in sorted(Path(archive_root).glob("contract-masters/**/manifest.json"), reverse=True):
+        try:
+            manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+            if manifest.get("raw_sha256") != master_sha256:
+                continue
+            for line in (manifest_path.parent / "contracts.jsonl").read_text(encoding="utf-8").splitlines():
+                row = json.loads(line)
+                if (str(row.get("instrument_token")) == str(token)
+                        and str(row.get("underlying", "")).upper() == name
+                        and str(row.get("exchange", "")).upper() == expected_exchange
+                        and ((basis == "FUTURE" and row.get("instrument_type") == "FUT")
+                             or (basis == "SPOT" and row.get("instrument_type") == "INDEX"))):
+                    return token, {"basis": basis, "master_sha256": master_sha256,
+                                   "exchange": expected_exchange, "tradingsymbol": str(row.get("tradingsymbol", ""))}
+        except (OSError, TypeError, ValueError, json.JSONDecodeError):
+            continue
+    raise CompletedBarDataError(f"Kite token mapping has no matching archived current master for {name}")

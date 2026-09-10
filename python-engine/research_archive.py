@@ -309,10 +309,12 @@ def archive_contract_master(
     for record in csv.DictReader(raw_csv.splitlines()):
         try:
             instrument_type = (record.get("instrument_type") or "").upper()
-            if instrument_type not in {"CE", "PE", "FUT"}:
+            if instrument_type not in {"CE", "PE", "FUT", "INDEX"}:
                 continue
             expiry = (record.get("expiry") or "")[:10]
-            if not expiry:
+            # Cash index records are the only supported SPOT identity evidence;
+            # unlike derivative contracts they legitimately have no expiry.
+            if not expiry and instrument_type != "INDEX":
                 continue
             records.append({
                 "provider": provider, "exchange": (record.get("exchange") or segment).upper(),

@@ -176,7 +176,9 @@ async def test_rest_collector_is_delivery_independent_and_records_both_legs(tmp_
                     for token in tokens}
     result = await collect_rest_quote_snapshot(Kite(), now_ist=now, books={"NIFTY": book})
     assert result["collected"] == 5 and result["mode"] == "KITE_REST_FULL_LOWER_FREQUENCY"
-    assert (tmp_path / "research" / "quotes" / "2026-09-08" / "quotes.jsonl.open").exists()
+    # Journal partitioning follows actual provider receipt, not the scheduler
+    # clock passed to the test (which may be historical during replay).
+    assert list((tmp_path / "research" / "quotes").glob("*/quotes.jsonl.open"))
 
 
 def test_modelled_report_never_auto_qualifies(tmp_path, monkeypatch):

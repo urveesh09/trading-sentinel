@@ -1736,7 +1736,8 @@ async def run_configured_shadow_workflow(*, now: Optional[datetime] = None) -> d
                 raise ValueError("completed-bar maximum age must be between one second and one day")
             import main as _main
             snapshot = await load_kite_completed_bar_snapshot(
-                _main.kite, instruments=tokens, as_of=observed_at, max_age=timedelta(seconds=max_age_seconds),
+                _main.kite, instruments=tokens, as_of=observed_at,
+                max_age=timedelta(seconds=max_age_seconds), archive_root=settings.RESEARCH_ARCHIVE_PATH,
             )
         except CompletedBarDataError as exc:
             reason = "MARKET_DATA_STALE" if "stale" in str(exc).lower() else "MARKET_DATA_SOURCE_INVALID"
@@ -1750,9 +1751,10 @@ async def run_configured_shadow_workflow(*, now: Optional[datetime] = None) -> d
             return {"mode": "SHADOW", "state": reason}
         await record_market_data_observation(settings.DB_PATH, account_id=account_id, run_id=run_id, observed_at=observed_at, state="AVAILABLE", reason="KITE_COMPLETED_BARS_AVAILABLE", provenance=snapshot.provenance)
         contract = {key: snapshot.provenance[key] for key in ("source_kind", "provider", "timeframe", "adjustment_version", "instrument_mapping")}
+        received_at = _stamp(datetime.fromisoformat(snapshot.provenance["received_at"]))
         result = await run_shadow_workflow(settings.DB_PATH, account_id=account_id, universe=snapshot.decision_bars,
                                            future_bars=snapshot.outcome_bars, scenario_capital=capital, run_id=run_id,
-                                           now=observed_at, market_data_contract=contract)
+                                           now=received_at, market_data_contract=contract)
         return {**result, "state": "COMPLETED", "market_data": snapshot.provenance}
     if source == "RECORDED_COMPLETED_BARS_V1":
         from proactive_market_data import CompletedBarDataError, load_recorded_completed_bar_snapshot

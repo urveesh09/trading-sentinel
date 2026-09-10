@@ -19,7 +19,10 @@ async def test_reconciliation_keeps_legacy_unlinked_and_proven_mismatch_visible(
         await db.commit()
     report = await reconciliation_evidence_report(db_path, source="FNO_PAPER")
     by_reason = {row["reason"]: row for row in report["sheets"]}
-    assert by_reason["stable_origin_ref_and_pnl_match"]["state"] == "MATCHED_INTERNAL"
+    # A single stable origin cannot close twice.  The old matcher labelled one
+    # duplicate clean merely because the copied amount happened to match.
+    assert by_reason["multiple_ledger_rows_share_origin_ref"]["state"] == "UNRESOLVED"
     assert by_reason["stable_origin_ref_missing"]["state"] == "UNRESOLVED"
-    assert by_reason["origin_ref_pnl_difference"]["state"] == "UNRESOLVED"
+    assert len(report["source_sheets"]) == 5
+    assert {sheet["source"] for sheet in report["source_sheets"]} == {"MOMENTUM", "EDGE_LIVE", "MOMENTUM_PAPER", "PENNY_PAPER", "EDGE_PAPER"}
     assert report["broker_reconciled"] is False

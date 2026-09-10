@@ -10,8 +10,14 @@ ENTRY = IST.localize(datetime(2026, 9, 10, 11, 0))
 EXIT = IST.localize(datetime(2026, 9, 10, 14, 30))
 
 
+MASTER = "a" * 64
+
+
 def quote(symbol, side, *, at=ENTRY, bid=100, ask=102, bid_depth=75, ask_depth=75, exchange="NFO", lot=75):
-    return LegQuote(symbol, side, exchange, lot, bid, ask, bid_depth, ask_depth, at - timedelta(seconds=2), at)
+    strike = 25000 if "25000" in symbol else 25200
+    return LegQuote(symbol, side, exchange, lot, bid, ask, bid_depth, ask_depth, at - timedelta(seconds=2), at,
+                    token=strike, option_type="CE", strike=strike, expiry="2026-09-24", quantity=lot,
+                    master_sha256=MASTER)
 
 
 def pair(*, at=ENTRY, exchange="NFO"):
@@ -80,6 +86,26 @@ def test_replay_requires_timezone_aware_research_clocks():
             underlying="NIFTY", expiry="2026-09-24", entry_at=datetime(2026, 9, 10, 11),
             entry_quotes=[], exit_at=None, exit_quotes=[], fee_per_leg_rs=1,
         )
+
+
+def test_replay_rejects_invalid_vertical_and_freezes_full_policy_assumptions():
+    from dataclasses import replace
+    invalid = [replace(pair()[0], strike=25200), pair()[1]]
+    rejected = replay_intraday_debit_spread(
+        underlying="NIFTY", expiry="2026-09-24", entry_at=ENTRY, entry_quotes=invalid,
+        exit_at=EXIT, exit_quotes=pair(at=EXIT), fee_per_leg_rs=1,
+    )
+    baseline = replay_intraday_debit_spread(
+        underlying="NIFTY", expiry="2026-09-24", entry_at=ENTRY, entry_quotes=pair(),
+        exit_at=EXIT, exit_quotes=pair(at=EXIT), fee_per_leg_rs=1,
+    )
+    delayed = replay_intraday_debit_spread(
+        underlying="NIFTY", expiry="2026-09-24", entry_at=ENTRY, entry_quotes=pair(),
+        exit_at=EXIT, exit_quotes=pair(at=EXIT), fee_per_leg_rs=1, slippage_bps=5,
+    )
+    assert rejected.reason == "entry_call_strike_order_invalid"
+    assert baseline.evidence_sha256 != delayed.evidence_sha256
+    assert delayed.total_cost_rs > baseline.total_cost_rs
 
 
 @pytest.mark.parametrize("case", ["old_observation", "wrong_exit", "negative_fee"])
