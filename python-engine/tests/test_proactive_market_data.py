@@ -3,7 +3,7 @@ from pathlib import Path
 
 import pytest
 
-from proactive_market_data import CompletedBarDataError, load_recorded_completed_bar_snapshot
+from proactive_market_data import CompletedBarDataError, load_kite_completed_bar_snapshot, load_recorded_completed_bar_snapshot
 
 
 FIXTURE = Path(__file__).parent / "fixtures" / "proactive_completed_bars_recorded_v1.json"
@@ -70,3 +70,21 @@ def test_recorded_completed_bar_provider_retains_corporate_action_adjustment_ver
         path, as_of=datetime(2026, 9, 7, 10, tzinfo=timezone.utc), max_age=timedelta(minutes=15),
     )
     assert snapshot.provenance["adjustment_version"] == "split-adjusted-v2"
+
+
+@pytest.mark.asyncio
+async def test_kite_completed_bar_source_excludes_current_candle_and_preserves_token_provenance():
+    import pandas as pd
+    as_of = datetime(2026, 9, 10, 5, 32, tzinfo=timezone.utc)
+    class Kite:
+        access_token = "present"
+        async def get_intraday_by_token(self, token, _start, _end, _interval):
+            return pd.DataFrame([
+                {"date": "2026-09-10T05:20:00+00:00", "open": 100, "high": 102, "low": 99, "close": 101, "volume": 10},
+                {"date": "2026-09-10T05:30:00+00:00", "open": 101, "high": 103, "low": 100, "close": 102, "volume": 11},
+            ])
+    snapshot = await load_kite_completed_bar_snapshot(Kite(), instruments={"NIFTY": 256265}, as_of=as_of, max_age=timedelta(minutes=10))
+    assert len(snapshot.decision_bars["NIFTY"]) == 1
+    assert snapshot.decision_bars["NIFTY"][0]["timestamp"] == "2026-09-10T05:25:00+00:00"
+    assert snapshot.provenance["source_kind"] == "KITE_COMPLETED_BARS_V1"
+    assert snapshot.provenance["instrument_mapping"] == {"NIFTY": "256265"}

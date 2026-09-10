@@ -51,8 +51,10 @@ async def operational_coverage_report(db_path: str) -> dict[str, Any]:
         )
     latest = proactive.get("market_data", {}).get("latest", [])
     if not latest:
+        source = str(settings.PROACTIVE_SHADOW_DATA_SOURCE).strip().upper()
+        configured = bool(settings.PROACTIVE_SHADOW_COMPLETED_BAR_FIXTURE_PATH) if source == "RECORDED_COMPLETED_BARS_V1" else (bool(settings.PROACTIVE_SHADOW_KITE_TOKENS_JSON) if source == "KITE_COMPLETED_BARS_V1" else bool(settings.PROACTIVE_SHADOW_FIXTURE_PATH))
         producers["proactive_completed_bars"] = _coverage(
-            source_kind="COMPLETED_BAR_SHADOW", configured=bool(settings.PROACTIVE_SHADOW_FIXTURE_PATH),
+            source_kind=source or "COMPLETED_BAR_SHADOW", configured=configured,
             enabled=bool(settings.PROACTIVE_SHADOW_ENABLED), state="UNCONFIGURED",
             reason="NO_RECORDED_COMPLETED_BAR_OBSERVATION",
         )

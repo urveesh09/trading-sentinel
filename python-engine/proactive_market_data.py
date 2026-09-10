@@ -15,6 +15,8 @@ from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any
 
+import pandas as pd
+
 
 class CompletedBarDataError(ValueError):
     """A source failure that must be reported as unavailable, never healthy."""
@@ -153,3 +155,72 @@ def load_recorded_completed_bar_snapshot(
         "source_kind": "RECORDED_COMPLETED_BARS_V1",
     }
     return CompletedBarSnapshot(decision_bars=decision, outcome_bars=outcome, provenance=provenance)
+
+
+async def load_kite_completed_bar_snapshot(
+    kite: Any, *, instruments: dict[str, int], as_of: datetime, max_age: timedelta,
+    interval: str = "5minute",
+) -> CompletedBarSnapshot:
+    """Read completed Kite candles only; no quote, order, or fixture authority.
+
+    Kite candle timestamps mark the start of the interval, so a five-minute bar
+    is usable only once ``timestamp + 5 minutes <= as_of``.  This is stricter
+    than treating a current incomplete candle as a completed observation.
+    """
+    if not getattr(kite, "access_token", None):
+        raise CompletedBarDataError("Kite completed-bar source has no access token")
+    if max_age <= timedelta(0) or not instruments:
+        raise CompletedBarDataError("Kite completed-bar source is unconfigured")
+    as_of = _utc(as_of, field="as_of")
+    if interval != "5minute":
+        raise CompletedBarDataError("only 5minute completed bars are supported")
+    start = (as_of - timedelta(days=2)).date().isoformat()
+    end = as_of.date().isoformat()
+    decision: dict[str, list[dict[str, Any]]] = {}
+    mapping: dict[str, str] = {}
+    latest_close: datetime | None = None
+    for name, token in sorted(instruments.items()):
+        if name not in {"NIFTY", "SENSEX"} or not isinstance(token, int) or token <= 0:
+            raise CompletedBarDataError("Kite instrument mapping must contain positive NIFTY/SENSEX tokens")
+        try:
+            frame = await kite.get_intraday_by_token(token, start, end, interval)
+        except Exception as exc:
+            raise CompletedBarDataError(f"Kite completed-bar request failed for {name}") from exc
+        if not isinstance(frame, pd.DataFrame) or frame.empty:
+            raise CompletedBarDataError(f"Kite completed-bar response is empty for {name}")
+        stamp_column = next((column for column in ("date", "timestamp", "datetime") if column in frame.columns), None)
+        if stamp_column is None:
+            raise CompletedBarDataError(f"Kite completed-bar timestamp is missing for {name}")
+        bars = []
+        for _, row in frame.iterrows():
+            try:
+                start_at = _utc(pd.Timestamp(row[stamp_column]).to_pydatetime(), field=f"{name}.timestamp")
+                close_at = start_at + timedelta(minutes=5)
+                raw = {"timestamp": close_at.isoformat(), "open": row["open"], "high": row["high"],
+                       "low": row["low"], "close": row["close"], "volume": row.get("volume", 0)}
+                _, bar = _normalise_bar(raw, instrument=name)
+            except (KeyError, TypeError, ValueError, CompletedBarDataError) as exc:
+                raise CompletedBarDataError(f"Kite completed-bar row is invalid for {name}") from exc
+            if close_at <= as_of:
+                bars.append(bar)
+        if not bars:
+            raise CompletedBarDataError(f"Kite has no completed bar at evaluation clock for {name}")
+        bars.sort(key=lambda item: item["timestamp"])
+        if len({item["timestamp"] for item in bars}) != len(bars):
+            raise CompletedBarDataError(f"Kite has duplicate completed bars for {name}")
+        close_at = _utc(bars[-1]["timestamp"], field=f"{name}.close_at")
+        if as_of - close_at > max_age:
+            raise CompletedBarDataError(f"Kite completed bars are stale for {name}")
+        decision[name], mapping[name] = bars, str(token)
+        latest_close = max(latest_close, close_at) if latest_close else close_at
+    payload = {"provider": "KITE", "timeframe": interval, "instrument_mapping": mapping,
+               "bars": decision, "as_of": as_of.isoformat()}
+    provenance = {"provider": "KITE", "timeframe": interval, "adjustment_version": "provider_unadjusted",
+                  "instrument_mapping": mapping, "received_at": as_of.isoformat(),
+                  "latest_exchange_at": latest_close.isoformat() if latest_close else None,
+                  "freshness_seconds": max(0.0, (as_of - latest_close).total_seconds()) if latest_close else None,
+                  "fresh_until": (latest_close + max_age).isoformat() if latest_close else None,
+                  "dataset_sha256": hashlib.sha256(json.dumps(payload, sort_keys=True, separators=(",", ":")).encode()).hexdigest(),
+                  "instrument_count": len(decision), "bar_count": sum(len(rows) for rows in decision.values()),
+                  "source_kind": "KITE_COMPLETED_BARS_V1"}
+    return CompletedBarSnapshot(decision_bars=decision, outcome_bars=decision, provenance=provenance)

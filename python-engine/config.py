@@ -52,6 +52,9 @@ class Settings(BaseSettings):
     # contract; it still has no order, delivery or broker-consumer path.
     PROACTIVE_SHADOW_DATA_SOURCE: str = "LEGACY_FIXTURE_V1"
     PROACTIVE_SHADOW_COMPLETED_BAR_FIXTURE_PATH: str = ""
+    # Explicit NIFTY/SENSEX token mapping for the read-only Kite completed-bar
+    # adapter, e.g. {"NIFTY":256265,"SENSEX":265}. Empty means unconfigured.
+    PROACTIVE_SHADOW_KITE_TOKENS_JSON: str = ""
     PROACTIVE_SHADOW_MAX_DATA_AGE_SECONDS: int = 1800
     PROACTIVE_SHADOW_ACCOUNT_ID: str = "dev-shadow"
     PROACTIVE_SHADOW_RUN_ID: str = "dev-shadow-v1"

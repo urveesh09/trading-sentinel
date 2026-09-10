@@ -88,6 +88,31 @@ the Dashboard production build and gateway proxy syntax check passed again.
   and absence of broker reconciliation without modifying cash or enabling an
   action.
 
+## Follow-up implementation: Kite completed-bar adapter
+
+- Added `KITE_COMPLETED_BARS_V1` as an explicit SHADOW-only proactive source.
+  It needs an operator-supplied JSON mapping of the current NIFTY/SENSEX Kite
+  instrument tokens; an empty or invalid mapping remains unconfigured.
+- The adapter requests historical five-minute candles through the existing
+  Kite client, treats the provider timestamp as a candle *start*, and uses
+  only bars whose close is at or before the evaluation clock. It rejects no
+  token, empty/malformed/replayed data, duplicate bars and stale observations.
+- Every retained observation records provider, tokens, five-minute convention,
+  receipt/evaluation time, data hash and an explicit `provider_unadjusted`
+  corporate-action assumption. It remains a research/shadow workflow and
+  cannot place an order or qualify partner advice.
+
+## Follow-up implementation: replay review artifact
+
+- Added a machine-readable, content-hashed intraday-spread research artifact
+  and a plain-language summary. It freezes policy, code revision, dataset hash,
+  predeclared minimum-session/trade thresholds, all closed/no-fill/unresolved
+  results and limitations.
+- The artifact can only become `READY_FOR_HUMAN_REVIEW`; it never registers a
+  qualification or makes a delivery/order decision. Insufficient sessions,
+  insufficient closed trades or any unresolved outcome remain visible as
+  `INSUFFICIENT_EVIDENCE`.
+
 ## Production prerequisites
 
 Deploy this commit through GitHub, verify deployed revision identity, then
