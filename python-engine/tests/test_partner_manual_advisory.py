@@ -402,10 +402,11 @@ async def test_input_status_distinguishes_missing_profile_and_keeps_per_index_cl
         reason="no_or_break", entry_state="NO_ENTRY_SETUP", observed_at=observed,
         profile_state=state, successful_observation=True,
     )
-    status = await load_advisory_input_status(db_path)
+    status = await load_advisory_input_status(db_path, now=NOW)
     assert status["NIFTY"]["stage"] == "NO_ENTRY_SETUP"
     assert status["NIFTY"]["reason"] == "no_or_break"
-    assert status["NIFTY"]["freshness_seconds"] == pytest.approx(10.0)
+    assert status["NIFTY"]["freshness_seconds"] == pytest.approx(0.0)
+    assert status["NIFTY"]["stored_freshness_seconds"] == pytest.approx(10.0)
     assert status["NIFTY"]["last_success_at"] is not None
     assert status["SENSEX"]["stage"] == "NOT_ATTEMPTED"
 
@@ -415,10 +416,24 @@ async def test_input_status_distinguishes_missing_profile_and_keeps_per_index_cl
         profile_state="SAVED_INTRADAY", qualification_state="MISSING_QUALIFICATION",
         successful_observation=True,
     )
-    status = await load_advisory_input_status(db_path)
+    status = await load_advisory_input_status(db_path, now=NOW)
     assert status["NIFTY"]["profile_state"] == "MISSING_PROFILE"
     assert status["SENSEX"]["profile_state"] == "SAVED_INTRADAY"
     assert status["SENSEX"]["qualification_state"] == "MISSING_QUALIFICATION"
+
+
+@pytest.mark.asyncio
+async def test_input_status_ages_at_read_time_and_older_completion_cannot_overwrite(db_path):
+    await record_advisory_input_status(db_path, underlying="NIFTY", attempted_at=NOW,
+        stage="NO_ENTRY_SETUP", reason="quiet", entry_state="NO_ENTRY_SETUP", observed_at=NOW,
+        profile_state="SAVED_INTRADAY", successful_observation=True)
+    await record_advisory_input_status(db_path, underlying="NIFTY", attempted_at=NOW - timedelta(seconds=5),
+        stage="INPUT_ERROR", reason="old_failure", entry_state="UNAVAILABLE", profile_state="SAVED_INTRADAY")
+    current = await load_advisory_input_status(db_path, now=NOW + timedelta(minutes=4), max_age_seconds=60)
+    assert current["NIFTY"]["state"] == "STALE"
+    assert current["NIFTY"]["stage"] == "NO_ENTRY_SETUP"
+    future = await load_advisory_input_status(db_path, now=NOW - timedelta(seconds=10))
+    assert future["NIFTY"]["state"] == "FUTURE_CLOCK"
 
 
 @pytest.mark.asyncio

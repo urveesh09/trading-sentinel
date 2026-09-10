@@ -127,3 +127,21 @@ async def test_kite_completed_bar_source_rejects_wrong_master_and_current_candle
         await load_kite_completed_bar_snapshot(Kite(), instruments={"NIFTY": _kite_master(tmp_path)},
             as_of=datetime(2026, 9, 10, 5, 31, tzinfo=timezone.utc), max_age=timedelta(minutes=10), archive_root=tmp_path,
             receipt_clock=lambda: datetime(2026, 9, 10, 5, 31, tzinfo=timezone.utc))
+
+
+@pytest.mark.asyncio
+async def test_kite_completed_bar_source_keeps_one_index_when_the_other_fails(tmp_path):
+    import pandas as pd
+    class Kite:
+        access_token = "present"
+        async def get_intraday_by_token(self, token, *_args):
+            if token == 265:
+                raise RuntimeError("BFO unavailable")
+            return pd.DataFrame([{"open": 100, "high": 101, "low": 99, "close": 100, "volume": 0}],
+                index=pd.DatetimeIndex(["2026-09-10 10:50:00"], name="datetime"))
+    snapshot = await load_kite_completed_bar_snapshot(Kite(),
+        instruments={"NIFTY": _kite_master(tmp_path), "SENSEX": _kite_master(tmp_path, name="SENSEX", token=265)},
+        as_of=datetime(2026, 9, 10, 5, 31, tzinfo=timezone.utc), max_age=timedelta(minutes=10), archive_root=tmp_path,
+        receipt_clock=lambda: datetime(2026, 9, 10, 5, 31, tzinfo=timezone.utc))
+    assert set(snapshot.decision_bars) == {"NIFTY"}
+    assert snapshot.provenance["per_index"]["SENSEX"]["state"] == "UNAVAILABLE"

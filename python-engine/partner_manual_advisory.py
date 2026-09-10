@@ -244,6 +244,13 @@ def _iso(value: datetime) -> str:
     return value.astimezone(IST).isoformat()
 
 
+def _parse_status_clock(value: str) -> datetime:
+    parsed = datetime.fromisoformat(value)
+    if parsed.tzinfo is None or parsed.utcoffset() is None:
+        raise ValueError("persisted advisory status clock is timezone-naive")
+    return parsed.astimezone(IST)
+
+
 def _profile_payload(profile: PartnerAdvisoryProfile) -> str:
     return json.dumps(asdict(profile), sort_keys=True, separators=(",", ":"))
 
@@ -465,7 +472,8 @@ async def record_advisory_input_status(
             "attempted_at=excluded.attempted_at,stage=excluded.stage,reason=excluded.reason,entry_state=excluded.entry_state,"
             "observed_at=excluded.observed_at,received_at=excluded.received_at,freshness_seconds=excluded.freshness_seconds,"
             "last_success_at=CASE WHEN excluded.last_success_at IS NULL THEN partner_advisory_input_status.last_success_at ELSE excluded.last_success_at END,"
-            "profile_state=excluded.profile_state,qualification_state=excluded.qualification_state,updated_at=excluded.updated_at",
+            "profile_state=excluded.profile_state,qualification_state=excluded.qualification_state,updated_at=excluded.updated_at "
+            "WHERE excluded.attempted_at >= partner_advisory_input_status.attempted_at",
             (underlying, attempted, str(stage)[:80], str(reason)[:240], str(entry_state)[:80],
              observed, received, freshness, received if successful_observation else None,
              str(profile_state)[:80], str(qualification_state)[:80], attempted),
@@ -473,8 +481,18 @@ async def record_advisory_input_status(
         await db.commit()
 
 
-async def load_advisory_input_status(db_path: str) -> dict[str, dict]:
-    """Return independent NIFTY/SENSEX status, including honest no-attempt rows."""
+async def load_advisory_input_status(db_path: str, *, now: Optional[datetime] = None,
+                                     max_age_seconds: float = 180.0) -> dict[str, dict]:
+    """Return current status using read-time freshness, not last scan's age.
+
+    ``now`` is injectable for API/interaction tests.  A stale or future source
+    is not disguised as an observed healthy no-setup condition.
+    """
+    if max_age_seconds <= 0:
+        raise ValueError("max_age_seconds must be positive")
+    now = now or datetime.now(IST)
+    if now.tzinfo is None:
+        raise ValueError("now must be timezone-aware")
     await init_partner_advisory_db(db_path)
     async with aiosqlite.connect(db_path) as db:
         rows = await (await db.execute(
@@ -490,10 +508,25 @@ async def load_advisory_input_status(db_path: str) -> dict[str, dict]:
         "qualification_state": "NOT_EVALUATED", "updated_at": None,
     } for name in INDEX_EXCHANGES}
     for row in rows:
+        try:
+            received = _parse_status_clock(row[6]) if row[6] else None
+            observed = _parse_status_clock(row[5]) if row[5] else None
+        except (TypeError, ValueError):
+            received, observed = None, None
+        age = (now - received).total_seconds() if received else None
+        state = "OBSERVED"
+        if received is None:
+            state = "UNAVAILABLE"
+        elif age is not None and age < -1:
+            state = "FUTURE_CLOCK"
+        elif age is not None and age > max_age_seconds:
+            state = "STALE"
+        elif row[4] == "NO_ENTRY_SETUP":
+            state = "HEALTHY_NO_SETUP"
         output[row[0]] = {
-            "state": "OBSERVED", "attempted_at": row[1], "stage": row[2], "reason": row[3],
+            "state": state, "attempted_at": row[1], "stage": row[2], "reason": row[3],
             "entry_state": row[4], "observed_at": row[5], "received_at": row[6],
-            "freshness_seconds": row[7], "last_success_at": row[8], "profile_state": row[9],
+            "freshness_seconds": age, "stored_freshness_seconds": row[7], "last_success_at": row[8], "profile_state": row[9],
             "qualification_state": row[10], "updated_at": row[11],
         }
     return output

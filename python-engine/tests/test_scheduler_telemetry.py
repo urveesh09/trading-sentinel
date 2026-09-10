@@ -79,3 +79,26 @@ async def test_locked_telemetry_database_never_prevents_callback(tmp_path):
         assert await instrument_async_job(db_path, "exit_lifecycle", callback)() == "business-ran"
     finally:
         lock.rollback(); lock.close()
+
+
+@pytest.mark.asyncio
+async def test_independent_exit_wrapper_is_not_blocked_by_slow_bulk_wrapper(tmp_path):
+    """Controlled isolation evidence: no shared in-process bulk queue exists."""
+    db_path = str(tmp_path / "cache.db")
+    entered, release = asyncio.Event(), asyncio.Event()
+
+    async def bulk():
+        entered.set()
+        await release.wait()
+        return {"status": "COMPLETED", "stage_durations_sec": {"provider": 60.0}}
+
+    async def lifecycle():
+        return {"status": "COMPLETED", "stage_durations_sec": {"management": .001}}
+
+    bulk_task = asyncio.create_task(instrument_async_job(db_path, "research_quote_collection", bulk)())
+    await entered.wait()
+    assert await asyncio.wait_for(instrument_async_job(db_path, "partner_manual_advisory_lifecycle_tick", lifecycle)(), timeout=.25)
+    release.set(); await bulk_task
+    report = await scheduler_timing_report(db_path)
+    assert report["jobs"]["research_quote_collection"]["executed_runs"] == 1
+    assert report["jobs"]["partner_manual_advisory_lifecycle_tick"]["executed_runs"] == 1

@@ -57,7 +57,7 @@ def test_replay_rejects_non_executable_future_and_unsynchronised_entry_evidence(
     assert result.reason == expected
 
 
-def test_replay_rejects_wrong_exchange_and_overnight_exit_without_inventing_pnl():
+def test_replay_rejects_wrong_exchange_and_keeps_overnight_exit_as_exposure_uncertainty():
     wrong_exchange = replay_intraday_debit_spread(
         underlying="NIFTY", expiry="2026-09-24", entry_at=ENTRY,
         entry_quotes=pair(exchange="BFO"), exit_at=EXIT, exit_quotes=pair(at=EXIT), fee_per_leg_rs=1,
@@ -67,7 +67,8 @@ def test_replay_rejects_wrong_exchange_and_overnight_exit_without_inventing_pnl(
         exit_at=EXIT + timedelta(days=1), exit_quotes=pair(at=EXIT + timedelta(days=1)), fee_per_leg_rs=1,
     )
     assert (wrong_exchange.state, wrong_exchange.reason, wrong_exchange.net_pnl_rs) == ("NO_FILL", "entry_wrong_exchange", None)
-    assert (overnight.state, overnight.reason, overnight.net_pnl_rs) == ("REJECTED", "overnight_or_reverse_exit_rejected", None)
+    assert (overnight.state, overnight.reason, overnight.net_pnl_rs) == ("UNRESOLVED", "overnight_or_reverse_exit_unresolved", None)
+    assert overnight.accepted_entry is True and overnight.entry_debit_rs == 4050.0
 
 
 def test_replay_keeps_missing_exit_as_uncertainty_not_expiry_payoff():
@@ -78,6 +79,9 @@ def test_replay_keeps_missing_exit_as_uncertainty_not_expiry_payoff():
     assert result.state == "UNRESOLVED"
     assert result.reason == "exit_observation_missing"
     assert result.net_pnl_rs is None
+    assert result.accepted_entry is True
+    assert result.entry_debit_rs == 4050.0
+    assert result.entry_max_loss_rs > result.entry_cost_rs
 
 
 def test_replay_requires_timezone_aware_research_clocks():

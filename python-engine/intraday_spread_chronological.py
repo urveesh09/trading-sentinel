@@ -44,6 +44,11 @@ class ChronologicalPolicy:
     fee_per_leg_rs: float = 0.0
     slippage_bps: float = 0.0
     execution_delay: timedelta = timedelta(0)
+    # A delayed manual execution must use a later packet, and a decision is
+    # short-lived rather than a standing permission to enter at any later price.
+    execution_max_wait: timedelta = timedelta(seconds=30)
+    signal_expiry: timedelta = timedelta(seconds=30)
+    cancellation_score: float | None = 0.0
 
 
 @dataclass(frozen=True)
@@ -71,15 +76,20 @@ def _policy_payload(policy: ChronologicalPolicy) -> dict:
         raise ReplayInputError("chronological policy contains a non-finite value")
     if policy.take_profit_rs <= 0 or policy.stop_loss_rs <= 0 or policy.slippage_bps < 0:
         raise ReplayInputError("chronological policy thresholds are invalid")
-    if policy.execution_delay < timedelta(0):
-        raise ReplayInputError("execution_delay must be nonnegative")
+    if (policy.execution_delay < timedelta(0) or policy.execution_max_wait <= timedelta(0)
+            or policy.signal_expiry <= timedelta(0)
+            or (policy.cancellation_score is not None and not math.isfinite(float(policy.cancellation_score)))):
+        raise ReplayInputError("chronological execution policy bounds are invalid")
     return {"policy_id": policy.policy_id, "min_signal_score": policy.min_signal_score,
             "take_profit_rs": policy.take_profit_rs, "stop_loss_rs": policy.stop_loss_rs,
             "entry_start_minute": policy.entry_start_minute, "entry_deadline_minute": policy.entry_deadline_minute,
             "management_deadline_minute": policy.management_deadline_minute,
             "max_quote_age_seconds": policy.max_quote_age.total_seconds(), "max_leg_sync_seconds": policy.max_leg_sync.total_seconds(),
             "fee_per_leg_rs": policy.fee_per_leg_rs, "slippage_bps": policy.slippage_bps,
-            "execution_delay_seconds": policy.execution_delay.total_seconds()}
+            "execution_delay_seconds": policy.execution_delay.total_seconds(),
+            "execution_max_wait_seconds": policy.execution_max_wait.total_seconds(),
+            "signal_expiry_seconds": policy.signal_expiry.total_seconds(),
+            "cancellation_score": policy.cancellation_score}
 
 
 def _observation_payload(item: SpreadObservation) -> dict:
@@ -98,6 +108,31 @@ def _evidence(*, underlying: str, expiry: str, policy: ChronologicalPolicy, obse
     return hashlib.sha256(json.dumps(payload, sort_keys=True, separators=(",", ":"), default=str).encode()).hexdigest()
 
 
+def _execution_observation(rows: list[SpreadObservation], decision_index: int,
+                           policy: ChronologicalPolicy) -> tuple[SpreadObservation | None, str | None]:
+    """Return the first later executable packet for a delayed manual entry.
+
+    The decision packet is evidence of a signal, not evidence of a fill after
+    a manual delay.  A subsequent adverse/cancelling signal removes the
+    standing decision before a fill can be assumed.
+    """
+    decision = rows[decision_index]
+    if policy.execution_delay == timedelta(0):
+        return decision, None
+    eligible_at = decision.received_at + policy.execution_delay
+    expiry_at = min(decision.received_at + policy.execution_max_wait,
+                    decision.received_at + policy.signal_expiry)
+    for item in rows[decision_index + 1:]:
+        if item.received_at > expiry_at:
+            break
+        if (policy.cancellation_score is not None
+                and item.signal_score < policy.cancellation_score):
+            return None, "signal_cancelled_before_delayed_execution"
+        if item.received_at >= eligible_at:
+            return item, None
+    return None, "delayed_execution_packet_unavailable"
+
+
 def replay_chronological_debit_spread(
     *, underlying: str, expiry: str, observations: Iterable[SpreadObservation], policy: ChronologicalPolicy,
     market_session_day: bool | None = None,
@@ -113,31 +148,40 @@ def replay_chronological_debit_spread(
     if not rows:
         raise ReplayInputError("chronological replay requires observations")
     prior_received: datetime | None = None
+    session_date = None
     for item in rows:
         observed, received = _clock(item.observed_at, "observed_at"), _clock(item.received_at, "received_at")
         if observed > received or not math.isfinite(float(item.signal_score)):
             raise ReplayInputError("chronological observation timestamps or signal are invalid")
         if prior_received is not None and received <= prior_received:
             raise ReplayInputError("chronological observations must be strictly receipt-ordered")
+        received_session_date = received.astimezone(IST).date()
+        if session_date is None:
+            session_date = received_session_date
+        elif received_session_date != session_date:
+            raise ReplayInputError("chronological replay cannot mix exchange sessions")
         prior_received = received
     attempted = 0
     rejected: list[str] = []
     entry: SpreadObservation | None = None
     entry_probe: ReplayResult | None = None
-    for item in rows:
+    for decision_index, item in enumerate(rows):
         if item.signal_score < policy.min_signal_score:
             continue
         attempted += 1
-        clock = item.received_at + policy.execution_delay
+        execution, execution_reason = _execution_observation(rows, decision_index, policy)
+        if execution is None:
+            rejected.append(execution_reason or "execution_packet_unavailable")
+            continue
         probe = replay_intraday_debit_spread(
-            underlying=underlying, expiry=expiry, entry_at=clock, entry_quotes=list(item.quotes), exit_at=None,
+            underlying=underlying, expiry=expiry, entry_at=execution.received_at, entry_quotes=list(execution.quotes), exit_at=None,
             exit_quotes=[], fee_per_leg_rs=policy.fee_per_leg_rs, entry_start_minute=policy.entry_start_minute,
             entry_deadline_minute=policy.entry_deadline_minute, management_deadline_minute=policy.management_deadline_minute,
             max_quote_age=policy.max_quote_age, max_leg_sync=policy.max_leg_sync, slippage_bps=policy.slippage_bps,
             execution_delay=policy.execution_delay, market_session_day=market_session_day,
         )
-        if probe.state == "UNRESOLVED" and probe.reason == "exit_observation_missing":
-            entry, entry_probe = item, probe
+        if probe.accepted_entry:
+            entry, entry_probe = execution, probe
             break
         rejected.append(probe.reason)
     if entry is None or entry_probe is None:
@@ -149,9 +193,13 @@ def replay_chronological_debit_spread(
     entry_index = rows.index(entry)
     last_unresolved: ReplayResult | None = None
     for item in rows[entry_index + 1:]:
-        clock = item.received_at + policy.execution_delay
+        # Exit observations are already the first sequentially available books.
+        # Never manufacture a later timestamp by adding a delay to an older
+        # packet; a delayed exit needs a later real packet and remains
+        # unresolved when it is absent.
+        clock = item.received_at
         candidate = replay_intraday_debit_spread(
-            underlying=underlying, expiry=expiry, entry_at=entry.received_at + policy.execution_delay,
+            underlying=underlying, expiry=expiry, entry_at=entry.received_at,
             entry_quotes=list(entry.quotes), exit_at=clock, exit_quotes=list(item.quotes), fee_per_leg_rs=policy.fee_per_leg_rs,
             entry_start_minute=policy.entry_start_minute, entry_deadline_minute=policy.entry_deadline_minute,
             management_deadline_minute=policy.management_deadline_minute, max_quote_age=policy.max_quote_age,

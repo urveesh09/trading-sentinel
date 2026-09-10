@@ -7,6 +7,8 @@ unavailable or outside the selected window.
 from __future__ import annotations
 
 import math
+import hashlib
+import json
 from collections import Counter
 from typing import Any
 
@@ -90,24 +92,39 @@ async def _source_sheet(db: aiosqlite.Connection, source: str) -> dict[str, Any]
         "SELECT id,timestamp,event_type,pnl,bankroll_before,bankroll_after,notes FROM bankroll_ledger WHERE source=? ORDER BY id",
         (source,),
     )).fetchall()
+    snapshot = hashlib.sha256(json.dumps([list(row) for row in rows], sort_keys=True, separators=(",", ":"), default=str).encode()).hexdigest()
     if not rows:
         return {"source": source, "status": "NO_INTERNAL_LEDGER_ROWS", "scope": {"row_count": 0, "truncated": False},
                 "time_range": {"first": None, "last": None}, "amounts": {"realized_pnl": None, "funding_or_adjustments": None, "costs": None},
                 "counts": {"trade_closed": 0, "trade_partial": 0, "trade_open": 0, "funding_or_adjustments": 0, "nonfinite_amounts": 0},
-                "coverage": ["No internal ledger rows for this source; broker evidence was not queried."], "broker_reconciled": False}
+                "coverage": ["No internal ledger rows for this source; broker evidence was not queried."], "snapshot_sha256": snapshot,
+                "reproducibility": {"query": "bankroll_ledger WHERE source=? ORDER BY id", "parameters": [source]}, "broker_reconciled": False}
     events = Counter(str(row[2]) for row in rows)
     amounts = [_finite(row[3]) for row in rows]
     nonfinite = sum(value is None for value in amounts)
     realized = sum(value for row, value in zip(rows, amounts) if row[2] in _TRADE_EVENTS and value is not None)
     adjustments = sum(value for row, value in zip(rows, amounts) if row[2] not in _TRADE_EVENTS and value is not None)
+    balance_deltas = []
+    balance_mismatches = 0
+    for row, pnl in zip(rows, amounts):
+        before, after = _finite(row[4]), _finite(row[5])
+        delta = after - before if before is not None and after is not None else None
+        balance_deltas.append(delta)
+        if delta is not None and pnl is not None and abs(delta - pnl) > .01:
+            balance_mismatches += 1
     return {"source": source, "status": "INTERNAL_EVIDENCE_AVAILABLE" if not nonfinite else "INTERNAL_EVIDENCE_HAS_INVALID_AMOUNTS",
             "scope": {"row_count": len(rows), "truncated": False, "read_consistency": "single_sqlite_read_transaction"},
             "time_range": {"first": rows[0][1], "last": rows[-1][1]},
-            "amounts": {"realized_pnl": round(realized, 4), "funding_or_adjustments": round(adjustments, 4), "costs": None},
+            "amounts": {"realized_pnl": round(realized, 4), "funding_or_adjustments": round(adjustments, 4), "costs": None,
+                        "bankroll_delta": round(sum(value for value in balance_deltas if value is not None), 4),
+                        "pnl_to_bankroll_delta_difference_count": balance_mismatches},
             "counts": {"trade_closed": events["TRADE_CLOSED"], "trade_partial": events["TRADE_PARTIAL"], "trade_open": events["TRADE_OPEN"],
                        "funding_or_adjustments": sum(count for event, count in events.items() if event not in _TRADE_EVENTS), "nonfinite_amounts": nonfinite},
             "coverage": ["Costs and broker statement balances are not present in bankroll_ledger.",
-                         "Partial exits are counted but require durable origins for position matching."], "broker_reconciled": False}
+                          "Partial exits are counted but require durable origins for position matching."],
+            "snapshot_sha256": snapshot,
+            "reproducibility": {"query": "bankroll_ledger WHERE source=? ORDER BY id", "parameters": [source]},
+            "broker_reconciled": False}
 
 
 async def reconciliation_evidence_report(db_path: str, *, source: str | None = None, limit: int = 200) -> dict[str, Any]:

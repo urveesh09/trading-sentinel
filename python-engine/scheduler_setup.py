@@ -64,10 +64,10 @@ def register_fno_scheduler_jobs(scheduler):
     # call rather than bound here: the suite patches them by name, and
     # _fno_regime_str reads main._last_regime_state, which mutates at runtime.
     import main as _main
+    from scheduler_telemetry import telemetry_job
 
     IST = _main.IST
     logger = _main.logger
-    from scheduler_telemetry import telemetry_job
     """
     [FNO 2026-07-10] F&O subsystem scheduler jobs (spec §5/§9.3).
     Module-level function (like register_penny_scheduler_jobs) so tests

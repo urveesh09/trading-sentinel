@@ -10,6 +10,7 @@ from typing import Any, Iterable, Mapping
 
 from intraday_spread_chronological import SpreadObservation
 from intraday_spread_replay import LegQuote, ReplayInputError
+from intraday_spread_signal_artifact import artifact_scores_by_receipt, load_signal_artifact
 
 
 @dataclass(frozen=True)
@@ -123,24 +124,31 @@ def _master_proves_contract(archive_root: str | Path, identity: SpreadContractId
 
 
 def build_spread_observations(*, events: Iterable[Mapping[str, Any]], long_contract: SpreadContractIdentity,
-                              short_contract: SpreadContractIdentity, master_sha256: str,
-                              archive_root: str | Path,
-                              signal_scores: Mapping[str, float] | None = None,
-                              signal_provenance_sha256: str | None = None) -> ArchiveObservationBuild:
+                               short_contract: SpreadContractIdentity, master_sha256: str,
+                               archive_root: str | Path,
+                               signal_artifact_path: str | Path | None = None,
+                               policy_id: str | None = None,
+                               session_date: str | None = None) -> ArchiveObservationBuild:
     """Pair same-receipt records; report partial packets rather than omitting them.
 
     Scores are optional because an archive of quote facts is not automatically a
-    strategy signal.  Supplying scores requires a digest of the deterministic
-    signal artifact so a later research run can prove which evaluator produced
-    them.
+    strategy signal.  A nonzero score can only originate in an immutable,
+    verified evaluator artifact; callers cannot supply a score dictionary.
     """
     if len(master_sha256) != 64 or len(long_contract.underlying) == 0 or long_contract.underlying != short_contract.underlying:
         raise ReplayInputError("two same-underlying contracts and a master digest are required")
     if not (_master_proves_contract(archive_root, long_contract, master_sha256)
             and _master_proves_contract(archive_root, short_contract, master_sha256)):
         raise ReplayInputError("archived master does not prove both spread contracts")
-    if signal_scores is not None and (not isinstance(signal_provenance_sha256, str) or len(signal_provenance_sha256) != 64):
-        raise ReplayInputError("signal scores require a deterministic provenance digest")
+    if (signal_artifact_path is None) != (policy_id is None or session_date is None):
+        raise ReplayInputError("signal artifact path, policy_id and session_date must be supplied together")
+    scores: dict[str, float] = {}
+    signal_provenance_sha256: str | None = None
+    if signal_artifact_path is not None:
+        artifact = load_signal_artifact(signal_artifact_path, underlying=long_contract.underlying,
+                                        policy_id=policy_id, session_date=session_date, source_root=archive_root)
+        scores = artifact_scores_by_receipt(artifact)
+        signal_provenance_sha256 = artifact["artifact_sha256"]
     batches: dict[str, list[Mapping[str, Any]]] = {}
     ignored = 0
     for event in events:
@@ -165,6 +173,6 @@ def build_spread_observations(*, events: Iterable[Mapping[str, Any]], long_contr
         # Side is a property of the declared spread, not the incoming packet.
         long = LegQuote(**{**long.__dict__, "side": "BUY"})
         short = LegQuote(**{**short.__dict__, "side": "SELL"})
-        score = float((signal_scores or {}).get(key, 0.0))
+        score = float(scores.get(key, 0.0))
         observations.append(SpreadObservation(min(long.observed_at, short.observed_at), received, score, (long, short)))
     return ArchiveObservationBuild(tuple(observations), tuple(partial), ignored, signal_provenance_sha256)

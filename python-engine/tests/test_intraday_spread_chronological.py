@@ -70,3 +70,49 @@ def test_management_deadline_uses_exchange_time_for_utc_archive_packets():
         policy=quiet_policy, observations=[observation(first, .9), observation(deadline, 0)])
     assert replay.state == "CLOSED"
     assert replay.exit_trigger == "management_deadline"
+
+
+def test_delayed_execution_uses_first_later_packet_not_decision_book():
+    first = IST.localize(datetime(2026, 9, 10, 10, 0))
+    executed = first + timedelta(seconds=15)
+    later = first + timedelta(minutes=5)
+    delayed = replace(policy(), execution_delay=timedelta(seconds=10), execution_max_wait=timedelta(seconds=30))
+    replay = replay_chronological_debit_spread(
+        underlying="NIFTY", expiry="2026-09-24", policy=delayed,
+        observations=[observation(first, .9), observation(executed, .2, pair(executed, long_ask=104)),
+                      observation(later, .1, pair(later, long_bid=112, long_ask=114, short_bid=43, short_ask=45))],
+    )
+    assert replay.active_entry_at == executed.isoformat()
+    assert replay.state == "CLOSED"
+
+
+def test_cancelled_delayed_signal_does_not_consume_a_later_book():
+    first = IST.localize(datetime(2026, 9, 10, 10, 0))
+    delayed = replace(policy(), execution_delay=timedelta(seconds=10), execution_max_wait=timedelta(seconds=30), cancellation_score=.5)
+    replay = replay_chronological_debit_spread(
+        underlying="NIFTY", expiry="2026-09-24", policy=delayed,
+        observations=[observation(first, .9), observation(first + timedelta(seconds=5), .1),
+                      observation(first + timedelta(seconds=15), .1)],
+    )
+    assert replay.state == "NO_FILL"
+    assert "signal_cancelled_before_delayed_execution" in replay.rejected_entry_reasons
+
+
+def test_chronological_runner_rejects_mixed_exchange_sessions():
+    first = IST.localize(datetime(2026, 9, 10, 14, 59))
+    with pytest.raises(ReplayInputError, match="mix exchange sessions"):
+        replay_chronological_debit_spread(underlying="NIFTY", expiry="2026-09-24", policy=policy(),
+            observations=[observation(first, .9), observation(first + timedelta(days=1), .1)])
+
+
+def test_invalid_first_entry_does_not_hide_a_later_accepted_exposure():
+    first = IST.localize(datetime(2026, 9, 10, 10, 0))
+    # A nonpositive debit is invalid; the next signal is independently tested.
+    invalid = (replace(pair(first)[0], bid=45, ask=47), pair(first)[1])
+    later = first + timedelta(minutes=1)
+    replay = replay_chronological_debit_spread(underlying="NIFTY", expiry="2026-09-24", policy=policy(),
+        observations=[observation(first, .9, invalid), observation(later, .9)])
+    assert replay.state == "UNRESOLVED"
+    assert replay.active_entry_at == later.isoformat()
+    assert "entry_debit_nonpositive" in replay.rejected_entry_reasons
+    assert replay.result.accepted_entry is True

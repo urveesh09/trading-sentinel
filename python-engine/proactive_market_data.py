@@ -161,7 +161,7 @@ def load_recorded_completed_bar_snapshot(
 async def load_kite_completed_bar_snapshot(
     kite: Any, *, instruments: Mapping[str, Mapping[str, Any]], as_of: datetime,
     max_age: timedelta, archive_root: str | Path, interval: str = "5minute",
-    receipt_clock: Callable[[], datetime] | None = None,
+    receipt_clock: Callable[[], datetime] | None = None, isolate_failures: bool = True,
 ) -> CompletedBarSnapshot:
     """Read completed Kite candles only; no quote, order, or fixture authority.
 
@@ -176,6 +176,38 @@ async def load_kite_completed_bar_snapshot(
     as_of = _utc(as_of, field="as_of")
     if interval != "5minute":
         raise CompletedBarDataError("only 5minute completed bars are supported")
+    # One unavailable index must not erase evidence for the other.  The
+    # single-instrument path below remains strict; this fan-out only merges
+    # independently verified results and reports failures in provenance.
+    if isolate_failures and len(instruments) > 1:
+        good: dict[str, CompletedBarSnapshot] = {}
+        failures: dict[str, str] = {}
+        for name, specification in sorted(instruments.items()):
+            try:
+                good[name] = await load_kite_completed_bar_snapshot(
+                    kite, instruments={name: specification}, as_of=as_of, max_age=max_age,
+                    archive_root=archive_root, interval=interval, receipt_clock=receipt_clock,
+                    isolate_failures=False,
+                )
+            except CompletedBarDataError as exc:
+                failures[name] = str(exc)
+        if not good:
+            raise CompletedBarDataError("Kite completed-bar source unavailable for every configured index")
+        decision = {name: snapshot.decision_bars[name] for name, snapshot in good.items()}
+        provenance_rows = {name: snapshot.provenance for name, snapshot in good.items()}
+        receipts = [snapshot.provenance["received_at"] for snapshot in good.values()]
+        payload = {"provider": "KITE", "interval": interval, "as_of": as_of.isoformat(),
+                   "good": {name: row["dataset_sha256"] for name, row in provenance_rows.items()}, "failures": failures}
+        return CompletedBarSnapshot(decision_bars=decision, outcome_bars=decision, provenance={
+            "provider": "KITE", "timeframe": interval, "adjustment_version": "provider_unadjusted",
+            "instrument_mapping": {name: row["instrument_mapping"][name] for name, row in provenance_rows.items()},
+            "per_index": {name: {"state": "OBSERVED", "dataset_sha256": row["dataset_sha256"]} for name, row in provenance_rows.items()}
+                         | {name: {"state": "UNAVAILABLE", "reason": reason} for name, reason in failures.items()},
+            "received_at": max(receipts), "dataset_sha256": hashlib.sha256(
+                json.dumps(payload, sort_keys=True, separators=(",", ":")).encode()).hexdigest(),
+            "instrument_count": len(good), "bar_count": sum(len(rows) for rows in decision.values()),
+            "source_kind": "KITE_COMPLETED_BARS_V1", "partial_failure": bool(failures),
+        })
     # The caller's clock only limits the request range.  It is not evidence
     # that a response was available at that instant.  Every bar is assessed at
     # the actual post-request receipt clock below.

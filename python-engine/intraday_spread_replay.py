@@ -62,6 +62,12 @@ class ReplayResult:
     policy_version: str = INTRADAY_POLICY_VERSION
     research_only: bool = True
     can_place_orders: bool = False
+    # An exit can be unavailable while the entry is nevertheless executable.
+    # Keeping this explicit prevents unresolved exposure being reported as a
+    # harmless rejected research candidate.
+    accepted_entry: bool = False
+    entry_cost_rs: float | None = None
+    entry_max_loss_rs: float | None = None
 
 
 def _stamp(value: datetime, field: str) -> datetime:
@@ -210,37 +216,44 @@ def replay_intraday_debit_spread(
     if entry_error:
         return ReplayResult("NO_FILL", entry_error, None, None, None, None,
                             entry_clock.isoformat(), exit_clock.isoformat() if exit_clock else None, digest)
-    if exit_clock is None:
-        return ReplayResult("UNRESOLVED", "exit_observation_missing", None, None, None, None,
-                            entry_clock.isoformat(), None, digest)
-    if exit_clock.date() != entry_clock.date() or exit_clock < entry_clock:
-        return ReplayResult("REJECTED", "overnight_or_reverse_exit_rejected", None, None, None, None,
-                            entry_clock.isoformat(), exit_clock.isoformat(), digest)
-    if exit_clock.hour * 60 + exit_clock.minute > management_deadline_minute:
-        return ReplayResult("REJECTED", "exit_after_intraday_management_deadline", None, None, None, None,
-                            entry_clock.isoformat(), exit_clock.isoformat(), digest)
-    exit_error, exit_pair = _validate_pair(underlying, exit_quotes, decision_at=exit_clock,
-                                           max_age=max_quote_age, max_sync=max_leg_sync, phase="exit", declared_expiry=expiry)
-    if exit_error:
-        return ReplayResult("UNRESOLVED", exit_error, None, None, None, None,
-                            entry_clock.isoformat(), exit_clock.isoformat(), digest)
-    if {(q.side, q.symbol, q.token, q.option_type, q.strike, q.expiry, q.lot_size, q.master_sha256) for q in entry} != {(q.side, q.symbol, q.token, q.option_type, q.strike, q.expiry, q.lot_size, q.master_sha256) for q in exit_pair}:
-        return ReplayResult("UNRESOLVED", "exit_contract_identity_mismatch", None, None, None, None,
-                            entry_clock.isoformat(), exit_clock.isoformat(), digest)
     lot = entry[0].lot_size
     entry_buy = next(item for item in entry if item.side == "BUY")
     entry_sell = next(item for item in entry if item.side == "SELL")
-    exit_buy = next(item for item in exit_pair if item.side == "BUY")
-    exit_sell = next(item for item in exit_pair if item.side == "SELL")
     debit = (float(entry_buy.ask) - float(entry_sell.bid)) * lot
-    credit = (float(exit_buy.bid) - float(exit_sell.ask)) * lot
     if debit <= 0:
         return ReplayResult("NO_FILL", "entry_debit_nonpositive", None, None, None, None,
-                            entry_clock.isoformat(), exit_clock.isoformat(), digest)
+                            entry_clock.isoformat(), exit_clock.isoformat() if exit_clock else None, digest)
     width = abs(float(entry_buy.strike) - float(entry_sell.strike)) * lot
     if debit >= width:
         return ReplayResult("NO_FILL", "entry_debit_exceeds_spread_width", None, None, None, None,
-                            entry_clock.isoformat(), exit_clock.isoformat(), digest)
+                            entry_clock.isoformat(), exit_clock.isoformat() if exit_clock else None, digest)
+    # Acceptance and entry economics precede any exit validation.  An absent
+    # exit is exposure uncertainty, never evidence that the entry did not fill.
+    entry_cost = debit + fee * 2 + debit * slippage / 10_000
+    entry_max_loss = debit + fee * 4 + debit * slippage / 10_000
+    accepted = {"accepted_entry": True, "entry_cost_rs": round(entry_cost, 4),
+                "entry_max_loss_rs": round(entry_max_loss, 4)}
+    if exit_clock is None:
+        return ReplayResult("UNRESOLVED", "exit_observation_missing", round(debit, 4), None,
+                            round(entry_cost, 4), None, entry_clock.isoformat(), None, digest, **accepted)
+    if exit_clock.date() != entry_clock.date() or exit_clock < entry_clock:
+        return ReplayResult("UNRESOLVED", "overnight_or_reverse_exit_unresolved", round(debit, 4), None,
+                            round(entry_cost, 4), None, entry_clock.isoformat(), exit_clock.isoformat(), digest, **accepted)
+    if exit_clock.hour * 60 + exit_clock.minute > management_deadline_minute:
+        return ReplayResult("UNRESOLVED", "exit_after_intraday_management_deadline", round(debit, 4), None,
+                            round(entry_cost, 4), None, entry_clock.isoformat(), exit_clock.isoformat(), digest, **accepted)
+    exit_error, exit_pair = _validate_pair(underlying, exit_quotes, decision_at=exit_clock,
+                                           max_age=max_quote_age, max_sync=max_leg_sync, phase="exit", declared_expiry=expiry)
+    if exit_error:
+        return ReplayResult("UNRESOLVED", exit_error, round(debit, 4), None, round(entry_cost, 4), None,
+                            entry_clock.isoformat(), exit_clock.isoformat(), digest, **accepted)
+    if {(q.side, q.symbol, q.token, q.option_type, q.strike, q.expiry, q.lot_size, q.master_sha256) for q in entry} != {(q.side, q.symbol, q.token, q.option_type, q.strike, q.expiry, q.lot_size, q.master_sha256) for q in exit_pair}:
+        return ReplayResult("UNRESOLVED", "exit_contract_identity_mismatch", round(debit, 4), None,
+                            round(entry_cost, 4), None, entry_clock.isoformat(), exit_clock.isoformat(), digest, **accepted)
+    exit_buy = next(item for item in exit_pair if item.side == "BUY")
+    exit_sell = next(item for item in exit_pair if item.side == "SELL")
+    credit = (float(exit_buy.bid) - float(exit_sell.ask)) * lot
     costs = fee * 4 + (debit + credit) * slippage / 10_000  # pessimistic two-leg entry and exit
     return ReplayResult("CLOSED", "two_leg_executable", round(debit, 4), round(credit, 4), round(costs, 4),
-                        round(credit - debit - costs, 4), entry_clock.isoformat(), exit_clock.isoformat(), digest)
+                        round(credit - debit - costs, 4), entry_clock.isoformat(), exit_clock.isoformat(), digest,
+                        **accepted)
