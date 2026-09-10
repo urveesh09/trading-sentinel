@@ -1,0 +1,9 @@
+{
+  "commit": "7b19ffc959a30073ca67ab45bb297f29dbf9fbe7",
+  "mode": "offline temporary SQLite, no transport",
+  "inflight_allows_second_generation": true,
+  "rate_limit_allows_second_generation": true,
+  "persisted_manual_blocks_second_generation": true,
+  "expired_generation_allows_fresh_generation": true,
+  "explicit_absence": "NO_ACCEPTED_PORTFOLIO_SNAPSHOT"
+}

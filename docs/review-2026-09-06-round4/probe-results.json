@@ -1,0 +1,9 @@
+{
+  "reviewed_commit": "c19aec65717591b5ab5c5f35d8d028cef97ea91e",
+  "mode": "offline, temporary SQLite database, mocked transport",
+  "retired_record_reclaimable": true,
+  "fresh_same_decision_blocked_by_expired_record": true,
+  "timeout_posts_after_first_ledger_write_failure": 2,
+  "retirement_clears_other_worker_inflight_token": true,
+  "explicit_missing_snapshot_reread_result": "VERIFIED_EMPTY_PORTFOLIO"
+}

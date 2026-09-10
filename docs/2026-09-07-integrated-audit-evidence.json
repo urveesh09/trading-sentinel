@@ -1,0 +1,853 @@
+{
+  "assertions": {
+    "cash_position_outcome_evidence": true,
+    "matched_entry_exit_trials": true,
+    "no_live_delivery_or_execution_authority": true,
+    "optional_ai_outage_does_not_block": true,
+    "partner_create_close_reopen_and_corporate_action": true,
+    "scheduled_workflow_contract_exercised": true
+  },
+  "authorization_effect": "NONE",
+  "can_place_orders": false,
+  "can_send": false,
+  "can_trade": false,
+  "limitations": [
+    "This is deterministic offline fixture evidence; it does not start a scheduler or contact any external service.",
+    "Live broker, partner delivery, Telegram recovery and forward market performance require separate operational evidence."
+  ],
+  "mode": "DEV_FIXTURE",
+  "optional_ai": {
+    "can_place_orders": false,
+    "detail": {
+      "async_requested": true,
+      "can_place_orders": false,
+      "execution_authority": "NONE",
+      "policy_allows_annotation": true,
+      "queue": {
+        "cached": 0,
+        "circuit_state": "OPEN",
+        "daily_budget": 20,
+        "daily_requests": 1,
+        "max_pending": 5,
+        "pending": 0
+      },
+      "reason": "deterministic integrated outage fixture"
+    },
+    "execution_authority": "NONE",
+    "mode": "OPTIONAL_ANNOTATION",
+    "note": "AI is an optional annotation. Deterministic signal, risk and delivery paths continue independently.",
+    "received_at": "2026-09-07T09:00:00+00:00",
+    "reported_at": "2026-09-07T09:00:00+00:00",
+    "reported_state": "OUTAGE_CIRCUIT_OPEN",
+    "stale": false,
+    "state": "OUTAGE_CIRCUIT_OPEN"
+  },
+  "output_dir": "..\\docs\\review-2026-09-07-next-plan",
+  "partner": {
+    "account_id": "demo-partner-account",
+    "assertions": {
+      "complete_snapshot_close": true,
+      "corporate_action_new_lifecycle": true,
+      "fresh_post_mutation_review": true,
+      "no_delivery_or_trade_authority": true,
+      "old_advice_superseded": true,
+      "reopen_new_lifecycle": true
+    },
+    "authorization_effect": "NONE",
+    "can_send": false,
+    "can_trade": false,
+    "cards": {
+      "cards": [
+        {
+          "account_id": "demo-partner-account",
+          "can_send": false,
+          "can_trade": false,
+          "contracts": [
+            "NIFTY-DEMO-CE"
+          ],
+          "current_portfolio_revision": 4,
+          "decision_id": null,
+          "dedup_key": "demo-lifecycle-advice-after-split",
+          "delivery_state": "NOT_SENT_SHADOW_EVIDENCE",
+          "evaluated_at": "2026-09-07T09:34:00+05:30",
+          "evaluation_id": "6d823bd1f40df0464880a96d",
+          "generation_id": null,
+          "is_superseded": false,
+          "kind": "covered_call_recommendation",
+          "phase": "phase2",
+          "portfolio_revision": 4,
+          "portfolio_state": "CURRENT",
+          "reason": "SHADOW_DEMO_FRESH_EVALUATION",
+          "rendered_text": "Synthetic hedge review after provider split: NIFTY coverage.",
+          "underlying": "NIFTY",
+          "valid_until": null
+        },
+        {
+          "account_id": "demo-partner-account",
+          "can_send": false,
+          "can_trade": false,
+          "contracts": [
+            "NIFTY-DEMO-CE"
+          ],
+          "current_portfolio_revision": 4,
+          "decision_id": null,
+          "dedup_key": "demo-lifecycle-advice",
+          "delivery_state": "NOT_SENT_SHADOW_EVIDENCE",
+          "evaluated_at": "2026-09-07T09:30:00+05:30",
+          "evaluation_id": "18986d80251a4bc69f57fe2d",
+          "generation_id": null,
+          "is_superseded": true,
+          "kind": "covered_call_recommendation",
+          "phase": "phase2",
+          "portfolio_revision": 1,
+          "portfolio_state": "SUPERSEDED",
+          "reason": "SHADOW_DEMO_ONLY",
+          "rendered_text": "Synthetic hedge review: NIFTY coverage.",
+          "underlying": "NIFTY",
+          "valid_until": null
+        }
+      ],
+      "mode": "SHADOW",
+      "note": "Cards are persisted hedge-review evidence only; partner confirmation and delivery remain separate."
+    },
+    "fixture_only": true,
+    "lifecycle": {
+      "closed_positions": 2,
+      "open_positions": 1,
+      "position_count": 3,
+      "revision_after": 4,
+      "revision_before": 1
+    },
+    "mode": "SHADOW",
+    "snapshots": {
+      "closed": {
+        "accepted": true,
+        "account_id": "demo-partner-account",
+        "closed": 1,
+        "complete": true,
+        "idempotent": false,
+        "observed_at": "2026-09-07T09:31:00+05:30",
+        "reconciled": 0,
+        "sequence": 2,
+        "snapshot_id": "close-2",
+        "source": "fixture",
+        "vix_recorded": false
+      },
+      "corporate_action": {
+        "accepted": true,
+        "account_id": "demo-partner-account",
+        "closed": 1,
+        "complete": true,
+        "idempotent": false,
+        "observed_at": "2026-09-07T09:33:00+05:30",
+        "reconciled": 1,
+        "sequence": 4,
+        "snapshot_id": "split-4",
+        "source": "fixture",
+        "vix_recorded": false
+      },
+      "created": {
+        "accepted": true,
+        "account_id": "demo-partner-account",
+        "closed": 0,
+        "complete": true,
+        "idempotent": false,
+        "observed_at": "2026-09-07T09:30:00+05:30",
+        "reconciled": 1,
+        "sequence": 1,
+        "snapshot_id": "open-1",
+        "source": "fixture",
+        "vix_recorded": false
+      },
+      "reopened": {
+        "accepted": true,
+        "account_id": "demo-partner-account",
+        "closed": 0,
+        "complete": true,
+        "idempotent": false,
+        "observed_at": "2026-09-07T09:32:00+05:30",
+        "reconciled": 1,
+        "sequence": 3,
+        "snapshot_id": "reopen-3",
+        "source": "fixture",
+        "vix_recorded": false
+      }
+    }
+  },
+  "proactive": {
+    "account_id": "demo-synthetic-account",
+    "activity": {
+      "as_of": "2026-09-07T09:24:37.270378+00:00",
+      "days": 30,
+      "funding_flows": {
+        "LIVE": {},
+        "PAPER": {},
+        "REPLAY": {},
+        "SHADOW": {}
+      },
+      "modes": {
+        "LIVE": {
+          "scan_evaluations": 0,
+          "stages": {},
+          "unique_opportunities": 0
+        },
+        "PAPER": {
+          "scan_evaluations": 0,
+          "stages": {},
+          "unique_opportunities": 0
+        },
+        "REPLAY": {
+          "scan_evaluations": 0,
+          "stages": {},
+          "unique_opportunities": 0
+        },
+        "SHADOW": {
+          "scan_evaluations": 4,
+          "stages": {
+            "CLOSED": 1,
+            "DEFERRED": 2,
+            "EXPIRED": 1,
+            "FILLED": 1,
+            "SELECTED": 3,
+            "SETUP": 4,
+            "UNAVAILABLE": 2
+          },
+          "unique_opportunities": 4
+        }
+      },
+      "note": "Events are operational evidence; only reconciled live ledgers establish live profit.",
+      "shadow_positions": [
+        {
+          "account_id": "shadow-run:88df8dda86f94c1a0f2e965d",
+          "closed_positions": 1,
+          "fees": 0.2124,
+          "free_cash": 154.0814,
+          "gross_pnl": 4.2938,
+          "marked_unrealized_gross_pnl": null,
+          "marked_unrealized_net_pnl": null,
+          "marked_unrealized_pnl": null,
+          "net_pnl": 4.0814,
+          "open_positions": 0,
+          "reserved_capital": 0.0,
+          "run_id": "demo-multisession-v1",
+          "scenario_capital": 150.0,
+          "unrealized_state": "UNAVAILABLE_NO_CURRENT_MARK"
+        }
+      ]
+    },
+    "assertions": {
+      "completed_bar_exit": true,
+      "five_session_inactivity_explained": true,
+      "matched_trials_retained": true,
+      "nonnegative_synthetic_cash": true,
+      "one_affordable_allocation": true,
+      "pending_expired": true
+    },
+    "authorization_effect": "NONE",
+    "can_place_orders": false,
+    "five_session_diagnostics": {
+      "authorization_effect": "NONE",
+      "can_place_orders": false,
+      "eligible_sessions": [
+        "2026-09-01",
+        "2026-09-02",
+        "2026-09-03",
+        "2026-09-04",
+        "2026-09-07"
+      ],
+      "findings": [],
+      "mode": "OBSERVATION_ONLY",
+      "reports": [
+        {
+          "activity": {
+            "fills": 1,
+            "reasons": {
+              "CONTRACTION_BREAKOUT": 1,
+              "SHARED_CASH_RESERVED": 1,
+              "SIMULATED_FILL": 1,
+              "TARGET": 1
+            },
+            "stages": {
+              "CLOSED": 1,
+              "FILLED": 1,
+              "SELECTED": 1,
+              "SETUP": 1
+            },
+            "viable_events": 3
+          },
+          "eligible_sessions": [
+            "2026-09-01",
+            "2026-09-02",
+            "2026-09-03",
+            "2026-09-04",
+            "2026-09-07"
+          ],
+          "findings": [
+            {
+              "code": "ELIGIBLE_SESSION_SCAN_HEALTH_INCOMPLETE",
+              "missing_sessions": 4,
+              "unavailable_sessions": 0
+            }
+          ],
+          "scan_health": {
+            "by_session": [
+              {
+                "observed_at": "2026-09-01T11:35:00+00:00",
+                "reason": "COMPLETED_BARS",
+                "session_date": "2026-09-01",
+                "status": "SUCCESS"
+              },
+              {
+                "session_date": "2026-09-02",
+                "status": "MISSING"
+              },
+              {
+                "session_date": "2026-09-03",
+                "status": "MISSING"
+              },
+              {
+                "session_date": "2026-09-04",
+                "status": "MISSING"
+              },
+              {
+                "session_date": "2026-09-07",
+                "status": "MISSING"
+              }
+            ],
+            "expected_sessions": 5,
+            "missing_sessions": 4,
+            "successful_sessions": 1,
+            "unavailable_sessions": 0
+          },
+          "scope": {
+            "account_id": "shadow-run:88df8dda86f94c1a0f2e965d",
+            "mode": "SHADOW",
+            "policy_id": "contraction_breakout_v1"
+          }
+        },
+        {
+          "activity": {
+            "fills": 0,
+            "reasons": {
+              "ENTRY_DEADLINE": 1,
+              "INSUFFICIENT_SHADOW_CASH_AFTER_COST_RESERVE": 1,
+              "NO_EXECUTABLE_BAR_AFTER_SIGNAL": 2,
+              "RANGE_STABILIZATION_RECLAIM": 2,
+              "SHARED_CASH_RESERVED": 2
+            },
+            "stages": {
+              "DEFERRED": 1,
+              "EXPIRED": 1,
+              "SELECTED": 2,
+              "SETUP": 2,
+              "UNAVAILABLE": 2
+            },
+            "viable_events": 2
+          },
+          "eligible_sessions": [
+            "2026-09-01",
+            "2026-09-02",
+            "2026-09-03",
+            "2026-09-04",
+            "2026-09-07"
+          ],
+          "findings": [
+            {
+              "code": "ELIGIBLE_SESSION_SCAN_HEALTH_INCOMPLETE",
+              "missing_sessions": 4,
+              "unavailable_sessions": 0
+            },
+            {
+              "code": "VIABLE_WORKFLOWS_DEFERRED",
+              "deferred": 1,
+              "reasons": {
+                "INSUFFICIENT_SHADOW_CASH_AFTER_COST_RESERVE": 1
+              }
+            }
+          ],
+          "scan_health": {
+            "by_session": [
+              {
+                "observed_at": "2026-09-01T11:35:00+00:00",
+                "reason": "COMPLETED_BARS",
+                "session_date": "2026-09-01",
+                "status": "SUCCESS"
+              },
+              {
+                "session_date": "2026-09-02",
+                "status": "MISSING"
+              },
+              {
+                "session_date": "2026-09-03",
+                "status": "MISSING"
+              },
+              {
+                "session_date": "2026-09-04",
+                "status": "MISSING"
+              },
+              {
+                "session_date": "2026-09-07",
+                "status": "MISSING"
+              }
+            ],
+            "expected_sessions": 5,
+            "missing_sessions": 4,
+            "successful_sessions": 1,
+            "unavailable_sessions": 0
+          },
+          "scope": {
+            "account_id": "shadow-run:88df8dda86f94c1a0f2e965d",
+            "mode": "SHADOW",
+            "policy_id": "range_reversion_v1"
+          }
+        },
+        {
+          "activity": {
+            "fills": 1,
+            "reasons": {
+              "NEXT_EXECUTABLE_OPEN": 1
+            },
+            "stages": {
+              "FILLED": 1
+            },
+            "viable_events": 1
+          },
+          "eligible_sessions": [
+            "2026-09-01",
+            "2026-09-02",
+            "2026-09-03",
+            "2026-09-04",
+            "2026-09-07"
+          ],
+          "findings": [
+            {
+              "code": "TWO_ELIGIBLE_SESSIONS_NO_VIABLE_CANDIDATES",
+              "sessions": [
+                "2026-09-04",
+                "2026-09-07"
+              ]
+            },
+            {
+              "code": "FIVE_ELIGIBLE_SESSIONS_SPARSE_FILLS",
+              "fills": 1,
+              "sessions": [
+                "2026-09-01",
+                "2026-09-02",
+                "2026-09-03",
+                "2026-09-04",
+                "2026-09-07"
+              ]
+            }
+          ],
+          "scan_health": {
+            "by_session": [
+              {
+                "observed_at": "2026-09-01T10:30:00+00:00",
+                "reason": "COMPLETED",
+                "session_date": "2026-09-01",
+                "status": "SUCCESS"
+              },
+              {
+                "observed_at": "2026-09-02T10:30:00+00:00",
+                "reason": "COMPLETED",
+                "session_date": "2026-09-02",
+                "status": "SUCCESS"
+              },
+              {
+                "observed_at": "2026-09-03T10:30:00+00:00",
+                "reason": "COMPLETED",
+                "session_date": "2026-09-03",
+                "status": "SUCCESS"
+              },
+              {
+                "observed_at": "2026-09-04T10:30:00+00:00",
+                "reason": "COMPLETED",
+                "session_date": "2026-09-04",
+                "status": "SUCCESS"
+              },
+              {
+                "observed_at": "2026-09-07T10:30:00+00:00",
+                "reason": "COMPLETED",
+                "session_date": "2026-09-07",
+                "status": "SUCCESS"
+              }
+            ],
+            "expected_sessions": 5,
+            "missing_sessions": 0,
+            "successful_sessions": 5,
+            "unavailable_sessions": 0
+          },
+          "scope": {
+            "account_id": "demo-sparse-activity",
+            "mode": "SHADOW",
+            "policy_id": "trend_pullback_v1"
+          }
+        },
+        {
+          "activity": {
+            "fills": 0,
+            "reasons": {
+              "DUPLICATE_INSTRUMENT_EXPOSURE": 1,
+              "TREND_PULLBACK_RECLAIM": 1
+            },
+            "stages": {
+              "DEFERRED": 1,
+              "SETUP": 1
+            },
+            "viable_events": 0
+          },
+          "eligible_sessions": [
+            "2026-09-01",
+            "2026-09-02",
+            "2026-09-03",
+            "2026-09-04",
+            "2026-09-07"
+          ],
+          "findings": [
+            {
+              "code": "ELIGIBLE_SESSION_SCAN_HEALTH_INCOMPLETE",
+              "missing_sessions": 4,
+              "unavailable_sessions": 0
+            },
+            {
+              "code": "VIABLE_WORKFLOWS_DEFERRED",
+              "deferred": 1,
+              "reasons": {}
+            }
+          ],
+          "scan_health": {
+            "by_session": [
+              {
+                "observed_at": "2026-09-01T11:35:00+00:00",
+                "reason": "COMPLETED_BARS",
+                "session_date": "2026-09-01",
+                "status": "SUCCESS"
+              },
+              {
+                "session_date": "2026-09-02",
+                "status": "MISSING"
+              },
+              {
+                "session_date": "2026-09-03",
+                "status": "MISSING"
+              },
+              {
+                "session_date": "2026-09-04",
+                "status": "MISSING"
+              },
+              {
+                "session_date": "2026-09-07",
+                "status": "MISSING"
+              }
+            ],
+            "expected_sessions": 5,
+            "missing_sessions": 4,
+            "successful_sessions": 1,
+            "unavailable_sessions": 0
+          },
+          "scope": {
+            "account_id": "shadow-run:88df8dda86f94c1a0f2e965d",
+            "mode": "SHADOW",
+            "policy_id": "trend_pullback_v1"
+          }
+        }
+      ],
+      "session_count": 5
+    },
+    "matched_trial_comparison": {
+      "authorization_effect": "NONE",
+      "can_place_orders": false,
+      "comparisons": [
+        {
+          "closed_outcomes": 2,
+          "entry_profile_id": "BOUNDED_PULLBACK_LIMIT_V1",
+          "evidence_state": "INSUFFICIENT_CLOSED_OUTCOMES",
+          "exit_profile_id": "BOUNDED_TIME_EXIT_60M_V1",
+          "invalid_trials": 0,
+          "minimum_closed_outcomes": 20,
+          "net_expectancy": 4.1335,
+          "net_pnl": 8.267,
+          "no_fills": 0,
+          "open_trials": 0,
+          "outcome_reasons": [
+            {
+              "reason": "TARGET",
+              "trials": 2
+            }
+          ],
+          "profit_factor": null,
+          "research_run_id": "demo-entry-exit-v1",
+          "trials": 2,
+          "win_rate": 1.0
+        },
+        {
+          "closed_outcomes": 2,
+          "entry_profile_id": "BOUNDED_PULLBACK_LIMIT_V1",
+          "evidence_state": "INSUFFICIENT_CLOSED_OUTCOMES",
+          "exit_profile_id": "STOP_TARGET_TIME_V1",
+          "invalid_trials": 0,
+          "minimum_closed_outcomes": 20,
+          "net_expectancy": 4.1335,
+          "net_pnl": 8.267,
+          "no_fills": 0,
+          "open_trials": 0,
+          "outcome_reasons": [
+            {
+              "reason": "TARGET",
+              "trials": 2
+            }
+          ],
+          "profit_factor": null,
+          "research_run_id": "demo-entry-exit-v1",
+          "trials": 2,
+          "win_rate": 1.0
+        },
+        {
+          "closed_outcomes": 2,
+          "entry_profile_id": "COMPLETED_BAR_CONFIRMATION_V1",
+          "evidence_state": "INSUFFICIENT_CLOSED_OUTCOMES",
+          "exit_profile_id": "BOUNDED_TIME_EXIT_60M_V1",
+          "invalid_trials": 0,
+          "minimum_closed_outcomes": 20,
+          "net_expectancy": 4.0814,
+          "net_pnl": 8.1628,
+          "no_fills": 0,
+          "open_trials": 0,
+          "outcome_reasons": [
+            {
+              "reason": "TARGET",
+              "trials": 2
+            }
+          ],
+          "profit_factor": null,
+          "research_run_id": "demo-entry-exit-v1",
+          "trials": 2,
+          "win_rate": 1.0
+        },
+        {
+          "closed_outcomes": 2,
+          "entry_profile_id": "COMPLETED_BAR_CONFIRMATION_V1",
+          "evidence_state": "INSUFFICIENT_CLOSED_OUTCOMES",
+          "exit_profile_id": "STOP_TARGET_TIME_V1",
+          "invalid_trials": 0,
+          "minimum_closed_outcomes": 20,
+          "net_expectancy": 4.0814,
+          "net_pnl": 8.1628,
+          "no_fills": 0,
+          "open_trials": 0,
+          "outcome_reasons": [
+            {
+              "reason": "TARGET",
+              "trials": 2
+            }
+          ],
+          "profit_factor": null,
+          "research_run_id": "demo-entry-exit-v1",
+          "trials": 2,
+          "win_rate": 1.0
+        },
+        {
+          "closed_outcomes": 2,
+          "entry_profile_id": "NEXT_EXECUTABLE_OPEN_V1",
+          "evidence_state": "INSUFFICIENT_CLOSED_OUTCOMES",
+          "exit_profile_id": "BOUNDED_TIME_EXIT_60M_V1",
+          "invalid_trials": 0,
+          "minimum_closed_outcomes": 20,
+          "net_expectancy": 4.0814,
+          "net_pnl": 8.1628,
+          "no_fills": 0,
+          "open_trials": 0,
+          "outcome_reasons": [
+            {
+              "reason": "TARGET",
+              "trials": 2
+            }
+          ],
+          "profit_factor": null,
+          "research_run_id": "demo-entry-exit-v1",
+          "trials": 2,
+          "win_rate": 1.0
+        },
+        {
+          "closed_outcomes": 2,
+          "entry_profile_id": "NEXT_EXECUTABLE_OPEN_V1",
+          "evidence_state": "INSUFFICIENT_CLOSED_OUTCOMES",
+          "exit_profile_id": "STOP_TARGET_TIME_V1",
+          "invalid_trials": 0,
+          "minimum_closed_outcomes": 20,
+          "net_expectancy": 4.0814,
+          "net_pnl": 8.1628,
+          "no_fills": 0,
+          "open_trials": 0,
+          "outcome_reasons": [
+            {
+              "reason": "TARGET",
+              "trials": 2
+            }
+          ],
+          "profit_factor": null,
+          "research_run_id": "demo-entry-exit-v1",
+          "trials": 2,
+          "win_rate": 1.0
+        }
+      ],
+      "mode": "SHADOW",
+      "note": "Every matched entry/exit trial is retained, including no-fill, open and invalid outcomes; no profile is promoted automatically.",
+      "research_only": true
+    },
+    "mode": "SHADOW",
+    "outcome_comparison": {
+      "as_of": "2026-09-07T09:24:37.274377+00:00",
+      "authorization_effect": "NONE",
+      "can_place_orders": false,
+      "comparisons": [
+        {
+          "account_id": "demo-synthetic-account",
+          "breakevens": 0,
+          "closed_outcomes": 1,
+          "closed_records": 1,
+          "costs": 0.2124,
+          "evidence_state": "INSUFFICIENT_CLOSED_OUTCOMES",
+          "exit_policy_comparison_state": "UNAVAILABLE_NOT_EXPERIMENT_TAGGED",
+          "exit_reasons": [
+            {
+              "closed_outcomes": 1,
+              "reason": "TARGET"
+            }
+          ],
+          "gross_pnl": 4.2938,
+          "invalid_closed_records": 0,
+          "losses": 0,
+          "max_drawdown": 0.0,
+          "minimum_closed_outcomes": 20,
+          "net_expectancy": 4.0814,
+          "net_pnl": 4.0814,
+          "net_r_expectancy": 1.812345,
+          "policy_id": "contraction_breakout_v1",
+          "profit_factor": null,
+          "profit_factor_state": "UNDEFINED_NO_LOSSES",
+          "run_id": "demo-multisession-v1",
+          "storage_account_id": "shadow-run:88df8dda86f94c1a0f2e965d",
+          "warnings": [
+            "Synthetic fixture outcomes are not broker fills, live P&L, or a trading recommendation.",
+            "Policies are comparable only within the same immutable shadow run.",
+            "Exit-policy A/B evidence is unavailable because these historical outcomes were not tagged to distinct exit-policy variants."
+          ],
+          "win_rate": 1.0,
+          "wins": 1
+        }
+      ],
+      "days": 30,
+      "minimum_closed_outcomes": 20,
+      "mode": "SHADOW",
+      "note": "Closed synthetic outcomes support research review only; they cannot enable, size, place, or alter live trades.",
+      "research_only": true
+    },
+    "research_only": true,
+    "research_run": {
+      "authorization_effect": "NONE",
+      "can_place_orders": false,
+      "inserted_trials": 12,
+      "mode": "SHADOW",
+      "opportunities": 2,
+      "profile_trials": 12,
+      "research_only": true,
+      "research_run_id": "demo-entry-exit-v1"
+    },
+    "run_id": "demo-multisession-v1",
+    "workflow": {
+      "expiry_sweep": {
+        "account_id": "demo-synthetic-account",
+        "allocations": 0,
+        "as_of": "2026-09-01T10:01:00+00:00",
+        "expired_pending": 1,
+        "free_cash": 150.0,
+        "managed_positions": 0,
+        "mode": "SHADOW",
+        "origin": "SHADOW",
+        "outcomes": [],
+        "proposals": 0,
+        "reasons": {},
+        "repaired_evidence": 0,
+        "run_id": "demo-multisession-v1"
+      },
+      "managed": {
+        "account_id": "demo-synthetic-account",
+        "allocations": 1,
+        "as_of": "2026-09-01T11:40:00+00:00",
+        "expired_pending": 0,
+        "free_cash": 154.0814,
+        "managed_positions": 1,
+        "mode": "SHADOW",
+        "origin": "SHADOW",
+        "outcomes": [
+          {
+            "net_pnl": null,
+            "opportunity_id": "4089e5d271f7939e7dc43677",
+            "reason": "NO_EXECUTABLE_BAR_AFTER_SIGNAL",
+            "status": "NO_FILL"
+          }
+        ],
+        "proposals": 3,
+        "reasons": {
+          "4089e5d271f7939e7dc43677": "SELECTED",
+          "56692636e33fabffd53ac916": "MISSED_ENTRY_WINDOW_NO_HISTORICAL_BACKFILL",
+          "f90376b563709c16e929614d": "RECORDED_SHADOW_OUTCOME"
+        },
+        "repaired_evidence": 0,
+        "run_id": "demo-multisession-v1"
+      },
+      "pending": {
+        "account_id": "demo-synthetic-account",
+        "allocations": 1,
+        "as_of": "2026-09-01T09:31:00+00:00",
+        "expired_pending": 0,
+        "free_cash": 150.0,
+        "managed_positions": 0,
+        "mode": "SHADOW",
+        "origin": "SHADOW",
+        "outcomes": [
+          {
+            "net_pnl": null,
+            "opportunity_id": "50d637d755485d97903f1a99",
+            "reason": "NO_EXECUTABLE_BAR_AFTER_SIGNAL",
+            "status": "NO_FILL"
+          }
+        ],
+        "proposals": 1,
+        "reasons": {
+          "50d637d755485d97903f1a99": "SELECTED"
+        },
+        "repaired_evidence": 0,
+        "run_id": "demo-multisession-v1"
+      },
+      "selected": {
+        "account_id": "demo-synthetic-account",
+        "allocations": 1,
+        "as_of": "2026-09-01T11:35:00+00:00",
+        "expired_pending": 0,
+        "free_cash": 45.8439,
+        "managed_positions": 0,
+        "mode": "SHADOW",
+        "origin": "SHADOW",
+        "outcomes": [
+          {
+            "net_pnl": null,
+            "opportunity_id": "f90376b563709c16e929614d",
+            "reason": "DATA_END_OPEN_POSITION",
+            "status": "OPEN"
+          }
+        ],
+        "proposals": 3,
+        "reasons": {
+          "4089e5d271f7939e7dc43677": "INSUFFICIENT_SHADOW_CASH_AFTER_COST_RESERVE",
+          "56692636e33fabffd53ac916": "DUPLICATE_INSTRUMENT_EXPOSURE",
+          "f90376b563709c16e929614d": "SELECTED"
+        },
+        "repaired_evidence": 0,
+        "run_id": "demo-multisession-v1"
+      }
+    }
+  },
+  "research_only": true
+}
