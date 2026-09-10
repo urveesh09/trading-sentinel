@@ -15,6 +15,7 @@ import { useOptionalAiStatus } from '../hooks/useOptionalAiStatus';
 import { useProactiveSessionDiagnostics } from '../hooks/useProactiveSessionDiagnostics';
 import { useSchedulerTiming } from '../hooks/useSchedulerTiming';
 import { useOperationalCoverage } from '../hooks/useOperationalCoverage';
+import { useReconciliationEvidence } from '../hooks/useReconciliationEvidence';
 import { evidenceModeEnabled } from '../evidenceMode';
 import { isActivePosition } from '../utils/positions';
 import { putClient } from '../api/client';
@@ -264,6 +265,13 @@ function OperationalCoverage({ coverage, isLoading, isError }) {
   return <section className="rounded-xl border border-gray-800 bg-gray-900 p-4" aria-labelledby="coverage-heading"><h2 id="coverage-heading" className="text-xl font-bold text-white">Production evidence coverage</h2><p className="mt-1 text-xs text-gray-500">Each source is reported independently. Empty and unavailable sources are not treated as zero opportunities or P&amp;L.</p><div className="mt-3 space-y-2">{rows.map(([id, row]) => <div key={id} className="rounded border border-gray-800 bg-gray-950/70 px-3 py-2 text-xs"><div className="flex flex-wrap justify-between gap-2"><span className="font-medium text-gray-200">{id}</span><span className={row.state === 'AVAILABLE' || row.state === 'HEALTHY_NO_SETUP' || row.state === 'OBSERVED_USABLE' ? 'text-emerald-300' : 'text-amber-300'}>{row.state}</span></div><p className="mt-1 text-gray-500">{row.reason} · observed {row.observed_at || 'Unavailable'} · received {row.receipt_at || 'Unavailable'}</p></div>)}</div></section>;
 }
 
+function ReconciliationEvidence({ reconciliationEvidence, isLoading, isError }) {
+  if (isLoading) return <div className="rounded border border-gray-800 bg-gray-900 p-4 text-sm text-gray-500">Loading reconciliation evidence…</div>;
+  if (isError || !reconciliationEvidence) return <div className="rounded border border-amber-800 bg-amber-950/30 p-4 text-sm text-amber-200">Reconciliation evidence is unavailable; internal totals are not assumed broker-reconciled.</div>;
+  const reasons = Object.entries(reconciliationEvidence.reason_counts || {}).sort(([left], [right]) => left.localeCompare(right));
+  return <section className="rounded-xl border border-gray-800 bg-gray-900 p-4" aria-labelledby="reconciliation-evidence-heading"><h2 id="reconciliation-evidence-heading" className="text-xl font-bold text-white">Accounting reconciliation evidence</h2><p className="mt-1 text-xs text-gray-500">{reconciliationEvidence.note}</p><div className="mt-3 flex flex-wrap justify-between gap-2 text-sm"><b className={reconciliationEvidence.status === 'MATCHED_INTERNAL' ? 'text-emerald-300' : 'text-amber-300'}>{reconciliationEvidence.status}</b><span className="text-gray-500">Broker reconciled: {reconciliationEvidence.broker_reconciled ? 'Yes' : 'No'}</span></div>{reasons.length ? <div className="mt-3 space-y-1 text-xs text-gray-400">{reasons.map(([reason, count]) => <div key={reason} className="flex justify-between gap-3"><span>{reason}</span><span>{count}</span></div>)}</div> : <p className="mt-3 text-xs text-gray-500">No trade-close evidence is retained for this report window.</p>}</section>;
+}
+
 function PartnerDeliveryBacklog({ backlog, isLoading, isError }) {
   if (isLoading) return <div className="rounded border border-gray-800 bg-gray-900 p-4 text-sm text-gray-500">Loading partner delivery recovery evidence…</div>;
   if (isError || !backlog) return <div className="rounded border border-amber-800 bg-amber-950/30 p-4 text-sm text-amber-200">Partner delivery recovery evidence is unavailable. No delivery conclusion is inferred.</div>;
@@ -338,6 +346,7 @@ export default function Dashboard({ healthData, navigateToPositions, navigateToB
   const sessionDiagnostics = useProactiveSessionDiagnostics();
   const schedulerTiming = useSchedulerTiming();
   const operationalCoverage = useOperationalCoverage();
+  const reconciliationEvidence = useReconciliationEvidence();
   const viewModel = buildDivisionViewModel(divisionPerformance);
   const cbHalted = healthData?.circuit_breaker_halted || false;
   const cbReasons = healthData?.circuit_breaker_reasons || [];
@@ -377,6 +386,7 @@ export default function Dashboard({ healthData, navigateToPositions, navigateToB
         <div className="grid gap-6 2xl:grid-cols-2">
           <PartnerAdvisorySetup {...partnerAdvisorySetup} />
           <OperationalCoverage {...operationalCoverage} />
+          <ReconciliationEvidence {...reconciliationEvidence} />
           <SchedulerTiming {...schedulerTiming} />
           <PartnerHedgeCards {...partnerHedgeCards} />
           <PartnerDeliveryBacklog {...partnerDeliveryBacklog} />

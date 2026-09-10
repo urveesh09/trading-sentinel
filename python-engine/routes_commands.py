@@ -318,6 +318,16 @@ async def get_operational_coverage():
     return await operational_coverage_report(settings.DB_PATH)
 
 
+@router.get("/analytics/reconciliation-evidence")
+async def get_reconciliation_evidence(source: str | None = None, limit: int = 200):
+    """Stable-link reconciliation sheets; intentionally read-only."""
+    from reconciliation_evidence import reconciliation_evidence_report
+    try:
+        return await reconciliation_evidence_report(settings.DB_PATH, source=source, limit=limit)
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+
+
 
 @router.get("/analytics/suggestions")
 async def get_suggestions(days: int = 14):

@@ -45,6 +45,9 @@ order, feature gate, profile, or qualification was activated.
 - Dashboard production build passed; gateway proxy syntax check passed.
 - `git diff --check` passed.
 
+Follow-up reconciliation/replay validation: 173 focused Python tests passed;
+the Dashboard production build and gateway proxy syntax check passed again.
+
 ## Still pending by design
 
 1. **Measured Production contention conclusion:** Dev now records the required
@@ -64,6 +67,26 @@ order, feature gate, profile, or qualification was activated.
    contingent on preserved synchronized quote/depth, contract/lot and exit
    evidence. A resulting report may validly conclude insufficient evidence;
    it must not auto-qualify advisory delivery.
+
+## Follow-up implementation: reconciliation linkage and replay core
+
+- Future F&O single-leg and defined-risk structure closes now write a bounded
+  stable `origin_ref` into the ledger (`fno_position:<id>` or
+  `fno_dr_structure:<id>`). Existing rows are immutable and remain honestly
+  unlinked.
+- Added reconciliation sheets that use only those stable references. They
+  distinguish matched internal rows, missing legacy linkage, malformed or
+  orphaned references, source mismatches, unclosed positions and P&L
+  differences. Internal matches are explicitly **not** broker reconciliation.
+- Added a deterministic research-only exact intraday debit-spread replay core.
+  It requires NIFTY/NFO or SENSEX/BFO, exactly one long and one short leg,
+  full-lot executable bid/ask depth, synchronized observed timestamps,
+  receipt-time availability, intraday entry/management deadlines and both-leg
+  costs. It reports no-fill, rejection or unresolved evidence instead of
+  inferring an LTP fill, expiry payoff, one-leg outcome or overnight carry.
+- Added reconciliation API/dashboard evidence panel. It surfaces reason counts
+  and absence of broker reconciliation without modifying cash or enabling an
+  action.
 
 ## Production prerequisites
 

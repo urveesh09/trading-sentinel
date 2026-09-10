@@ -305,6 +305,14 @@
       "response_model": null
     },
     {
+      "endpoint": "get_reconciliation_evidence",
+      "methods": [
+        "GET"
+      ],
+      "path": "/analytics/reconciliation-evidence",
+      "response_model": null
+    },
+    {
       "endpoint": "get_scheduler_timing",
       "methods": [
         "GET"
