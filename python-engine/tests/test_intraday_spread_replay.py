@@ -80,3 +80,22 @@ def test_replay_requires_timezone_aware_research_clocks():
             underlying="NIFTY", expiry="2026-09-24", entry_at=datetime(2026, 9, 10, 11),
             entry_quotes=[], exit_at=None, exit_quotes=[], fee_per_leg_rs=1,
         )
+
+
+@pytest.mark.parametrize("case", ["old_observation", "wrong_exit", "negative_fee"])
+def test_replay_rejects_false_execution_evidence(case):
+    from dataclasses import replace
+    entry, exit_ = pair(), pair(at=EXIT)
+    if case == "old_observation":
+        entry = [replace(q, observed_at=ENTRY-timedelta(minutes=10)) for q in entry]
+    if case == "wrong_exit":
+        exit_[0] = replace(exit_[0], symbol="OTHER_CONTRACT")
+    kwargs = dict(underlying="NIFTY", expiry="2026-09-24", entry_at=ENTRY,
+                  entry_quotes=entry, exit_at=EXIT, exit_quotes=exit_, fee_per_leg_rs=-1 if case == "negative_fee" else 1)
+    if case == "negative_fee":
+        with pytest.raises(ReplayInputError):
+            replay_intraday_debit_spread(**kwargs)
+    else:
+        result = replay_intraday_debit_spread(**kwargs)
+        assert result.net_pnl_rs is None
+        assert result.reason == ("entry_quote_stale" if case == "old_observation" else "exit_contract_identity_mismatch")

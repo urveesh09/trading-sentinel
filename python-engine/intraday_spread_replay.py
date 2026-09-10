@@ -112,7 +112,7 @@ def _validate_pair(underlying: str, quotes: list[LegQuote], *, decision_at: date
         observed, received = _stamp(quote.observed_at, "observed_at"), _stamp(quote.received_at, "received_at")
         if observed > received or received > decision_at:
             return f"{phase}_future_packet_or_timestamp_order_invalid", []
-        if decision_at - received > max_age:
+        if decision_at - received > max_age or decision_at - observed > max_age:
             return f"{phase}_quote_stale", []
         normalized.append(quote)
     observed = [_stamp(quote.observed_at, "observed_at") for quote in normalized]
@@ -143,6 +143,8 @@ def replay_intraday_debit_spread(
     if max_quote_age <= timedelta(0) or max_leg_sync <= timedelta(0):
         raise ReplayInputError("quote age and leg synchronisation bounds must be positive")
     fee = _finite(fee_per_leg_rs, "fee_per_leg_rs")
+    if fee < 0:
+        raise ReplayInputError("fee_per_leg_rs must be nonnegative")
     entry_minute = entry_clock.hour * 60 + entry_clock.minute
     digest = _digest(underlying=underlying, expiry=expiry, entry_at=entry_clock, exit_at=exit_clock,
                      entry=entry_quotes, exit_=exit_quotes, fee_per_leg_rs=fee)
@@ -167,6 +169,9 @@ def replay_intraday_debit_spread(
                                            max_age=max_quote_age, max_sync=max_leg_sync, phase="exit")
     if exit_error:
         return ReplayResult("UNRESOLVED", exit_error, None, None, None, None,
+                            entry_clock.isoformat(), exit_clock.isoformat(), digest)
+    if {(q.side, q.symbol, q.lot_size) for q in entry} != {(q.side, q.symbol, q.lot_size) for q in exit_pair}:
+        return ReplayResult("UNRESOLVED", "exit_contract_identity_mismatch", None, None, None, None,
                             entry_clock.isoformat(), exit_clock.isoformat(), digest)
     lot = entry[0].lot_size
     entry_buy = next(item for item in entry if item.side == "BUY")
