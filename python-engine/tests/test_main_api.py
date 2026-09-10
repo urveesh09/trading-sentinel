@@ -54,6 +54,12 @@ class TestHealthEndpoint:
         assert "halted" in body
         assert "entry_halted" in body
         assert "order_execution" in body
+        assert body["release"] == {
+            "service": "python-engine",
+            "revision": "unknown",
+            "build_utc": "unknown",
+            "declared": False,
+        }
         assert body["order_execution"]["status"] in {
             "UNVERIFIED", "AUTHORIZED", "BLOCKED",
         }

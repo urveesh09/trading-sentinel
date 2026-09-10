@@ -1,0 +1,11 @@
+{
+  "commit": "1d41eb0",
+  "mode": "offline temporary database, no network",
+  "position_accounts_after_A_and_B": ["A"],
+  "position_closed_after_workflow_now": true,
+  "watchlist_states_after_close": ["ARMED", "ARMED"],
+  "returned_cash": 8000.0,
+  "actual_cash_after_close": 7813.133,
+  "invalid_envelope_error": "snapshot sequence must be a non-negative integer",
+  "positions_after_invalid_envelope": 1
+}

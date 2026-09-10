@@ -10,6 +10,13 @@ export default function StatusBar({ cbHalted }) {
   const isMarketOpen = health?.market_open || false;
   const tokenActive = health?.token_status === 'active';
   const engineReachable = health?.python_engine === 'reachable';
+  const gatewayRelease = health?.release?.revision;
+  const engineRelease = health?.python_engine_release?.revision;
+  const releaseMatches = Boolean(
+    health?.release?.declared
+    && health?.python_engine_release?.declared
+    && gatewayRelease === engineRelease
+  );
 
   return (
     <div className="flex flex-wrap items-center justify-between bg-gray-900 px-4 py-2 text-sm text-gray-300 border-b border-gray-800">
@@ -37,6 +44,16 @@ export default function StatusBar({ cbHalted }) {
           <ShieldAlert size={16} className={cbHalted ? 'text-red-500' : 'text-green-500'} />
           <span>CB: {cbHalted ? 'HALTED' : 'Normal'}</span>
         </div>
+
+        {/* Runtime liveness cannot prove the deployed commit.  Keep the
+            identity visible, but do not imply that an unknown/mismatch is a
+            trading gate; the deployment verifier is authoritative. */}
+        {gatewayRelease && (
+          <div className="flex items-center space-x-1" title="Gateway and engine must show the same reviewed revision before a release is accepted.">
+            <Server size={16} className={releaseMatches ? 'text-green-500' : 'text-amber-500'} />
+            <span>Release: {gatewayRelease.slice(0, 12)}{releaseMatches ? '' : ' (unverified)'}</span>
+          </div>
+        )}
       </div>
 
       {lastUpdated && (

@@ -1,0 +1,11 @@
+{
+  "commit": "768741c",
+  "mode": "offline temporary SQLite, no broker or Telegram",
+  "gap_entry_notional_with_1000_cash": 1800.9,
+  "pre_signal_bar_status": "CLOSED",
+  "unique_opportunities_for_two_distinct_ids": 1,
+  "dropped_c_hidden_by_unrelated_fill": true,
+  "empty_database_diagnostics": [],
+  "reopen": "broker_order_id already belongs to a different partner position",
+  "open_rows_after_rejected_fixture": 1
+}

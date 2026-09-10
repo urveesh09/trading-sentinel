@@ -5,6 +5,7 @@ const tokenStore = require('../services/token-store');
 const { isMarketOpen } = require('../utils/market-hours');
 const { signalsDb } = require('../db/index');
 const { undeliveredAlertCount } = require('../services/telegram');
+const { releaseIdentity } = require('../release-identity');
 
 router.get('/', async (req, res) => {
   const uptime = Math.floor(process.uptime());
@@ -13,6 +14,7 @@ router.get('/', async (req, res) => {
   
   let pythonEngineStatus = 'unreachable';
   let pythonEngineMs = 0;
+  let pythonEngineRelease = null;
   
   // Probe Container B
   const startMs = Date.now();
@@ -24,6 +26,16 @@ router.get('/', async (req, res) => {
     if (bRes.ok) {
       pythonEngineStatus = 'reachable';
       pythonEngineMs = Date.now() - startMs;
+      // Release identity is diagnostic only: an unreadable response must not
+      // make the gateway health endpoint fail or conceal a connectivity fact.
+      try {
+        const engineBody = await bRes.json();
+        if (engineBody && typeof engineBody.release === 'object') {
+          pythonEngineRelease = engineBody.release;
+        }
+      } catch (err) {
+        // Leave it null; the deploy verifier will reject missing identity.
+      }
     }
   } catch (e) {
     // Fails silently, variables remain 'unreachable'
@@ -95,6 +107,8 @@ router.get('/', async (req, res) => {
     pending_signals: pendingSignals,
     unsynced_orders: unsyncedOrders,
     undelivered_alerts: undeliveredAlerts,
+    release: releaseIdentity('node-gateway'),
+    python_engine_release: pythonEngineRelease,
     timestamp: new Date().toISOString()
   });
 });

@@ -1,9 +1,16 @@
 FROM python:3.11-slim-bookworm
 
+ARG SENTINEL_RELEASE_SHA=unknown
+ARG SENTINEL_BUILD_UTC=unknown
+ARG SENTINEL_SERVICE_NAME=agent
+
 # Set environment variables for Python and Timezone
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
-    TZ=Asia/Kolkata
+    TZ=Asia/Kolkata \
+    SENTINEL_RELEASE_SHA=${SENTINEL_RELEASE_SHA} \
+    SENTINEL_BUILD_UTC=${SENTINEL_BUILD_UTC} \
+    SENTINEL_SERVICE_NAME=${SENTINEL_SERVICE_NAME}
 
 # Install timezone data and lxml dependencies
 RUN apt-get update && apt-get install -y tzdata gcc libxml2-dev libxslt-dev && \
@@ -32,4 +39,3 @@ HEALTHCHECK --interval=60s --timeout=5s --start-period=120s --retries=3 \
   CMD python -c "import os,sys,time; sys.exit(0 if time.time()-os.path.getmtime('/tmp/agent_heartbeat') < 900 else 1)"
 
 CMD ["python", "agent.py"]
-

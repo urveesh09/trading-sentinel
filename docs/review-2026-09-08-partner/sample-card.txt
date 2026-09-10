@@ -1,0 +1,15 @@
+[MARKET SETUP] • NIFTY (NSE)
+Idea AUDIT-SYNTHETIC-NOT-A-TRADE/partner-manual-v1 • Data 2026-09-07T10:00:00+05:30 • Valid until 2026-09-07T10:00:30+05:30
+Why now: LONG signal on completed bar; same-expiry capped-risk vertical
+Structure:
+BUY 1× NIFTYLONG | 2026-09-10 25000CE | lot 75 | bid/ask 100/102
+SELL 1× NIFTYSHORT | 2026-09-10 25050CE | lot 75 | bid/ask 49/51
+Act only if: combined debit ≤ ₹3,975.00 before fees
+Per structure: estimated round-trip costs ₹121.25
+Risk: theoretical maximum loss ₹3,975.00 if all intended legs fill and remain paired
+Theoretical expiry maximum profit: ₹-225.00
+Invalidation: Skip if combined executable debit exceeds the stated limit or a leg becomes stale/one-sided.
+Management: Recheck both legs together before entry; do not leg into an incomplete spread.
+Uncertainty: Research qualification is separate from any profitability claim.
+Evidence: RESEARCH_ONLY. Per-structure economics only; no personal quantity is supplied.
+Manual decision. Recheck current executable quotes and broker requirements before acting.

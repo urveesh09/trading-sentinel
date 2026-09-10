@@ -1,0 +1,14 @@
+{
+  "commit": "463608a9626b82aa8bca31dfeb8a06f7b763ab9f",
+  "mode": "isolated synthetic SQLite; no external effects",
+  "single_initial_free_cash": 980.2,
+  "watchlist_when_position_open": ["ARMED", "COMPLETED"],
+  "single_step_outcome": [[101.8, -19.8]],
+  "incremental_outcome": [[101.7491, -21.1738], [101.8, -19.8]],
+  "positions_before_future_bars_visible": 0,
+  "pending_state_after_deadline": ["ARMED", "SELECTED"],
+  "backward_run_clock_rejected": false,
+  "identical_rerun_free_cash": 960.4,
+  "policies_after_identical_rerun": ["contraction_breakout_v1", "trend_pullback_v1"],
+  "both_policies_entered_at_same_historical_bar": true
+}
