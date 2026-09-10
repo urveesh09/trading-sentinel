@@ -91,6 +91,54 @@ async def record_scheduler_event(
         await db.commit()
 
 
+async def start_scheduler_run(db_path: str, *, job_id: str, retention: int = 5000) -> str:
+    """Durably mark a callback in-flight before awaiting business work.
+
+    The marker is best-effort from the scheduler wrapper's perspective: a
+    locked telemetry database must never prevent exit management or collection
+    from running.  A process crash leaves an honest unfinished marker, which
+    the report distinguishes from a current-process invocation.
+    """
+    if not job_id:
+        raise ValueError("job_id is required")
+    run_id = uuid.uuid4().hex
+    now = _utc_now()
+    async with aiosqlite.connect(db_path, timeout=0.10) as db:
+        await db.execute("PRAGMA busy_timeout=100")
+        await db.executescript(_SCHEMA)
+        await db.execute(
+            "INSERT INTO scheduler_run_telemetry VALUES (?,?,?,?,?,?,?,?,?,?,?,?)",
+            (run_id, BOOT_ID, job_id[:120], "EXECUTION", None, _iso(now), None, None,
+             "IN_FLIGHT", None, "{}", _iso(now)),
+        )
+        await db.execute(
+            "DELETE FROM scheduler_run_telemetry WHERE run_id IN ("
+            "SELECT run_id FROM scheduler_run_telemetry ORDER BY created_at DESC LIMIT -1 OFFSET ?)", (retention,),
+        )
+        await db.commit()
+    return run_id
+
+
+async def complete_scheduler_run(
+    db_path: str, *, run_id: str, result: str, started_at: datetime, ended_at: datetime,
+    elapsed_seconds: float, reason: str | None = None, stage_durations: dict[str, Any] | None = None,
+    retention: int = 5000,
+) -> bool:
+    """Complete a pre-recorded run; returns false if its marker was absent."""
+    import json
+    payload = json.dumps(stage_durations or {}, sort_keys=True, separators=(",", ":"))
+    async with aiosqlite.connect(db_path, timeout=0.10) as db:
+        await db.execute("PRAGMA busy_timeout=100")
+        await db.executescript(_SCHEMA)
+        cursor = await db.execute(
+            "UPDATE scheduler_run_telemetry SET ended_at=?,elapsed_seconds=?,result=?,reason=?,stage_durations_json=? "
+            "WHERE run_id=? AND result='IN_FLIGHT'",
+            (_iso(ended_at), elapsed_seconds, result[:48], (reason or "")[:240], payload, run_id),
+        )
+        await db.commit()
+        return cursor.rowcount == 1
+
+
 def instrument_async_job(
     db_path: str, job_id: str, callback: Callable[[], Awaitable[Any]], *, retention: int = 5000,
 ) -> Callable[[], Awaitable[Any]]:
@@ -106,6 +154,13 @@ def instrument_async_job(
     async def wrapped() -> Any:
         started = _utc_now()
         monotonic_started = time.monotonic()
+        run_id: str | None = None
+        try:
+            run_id = await start_scheduler_run(db_path, job_id=job_id, retention=retention)
+        except Exception:
+            # Telemetry has a deliberately tiny lock budget and cannot become
+            # a dependency of the business callback.
+            pass
         result, outcome, reason, stages = None, "COMPLETED", None, None
         try:
             result = await callback()
@@ -127,11 +182,14 @@ def instrument_async_job(
             ended = _utc_now()
             elapsed = round(time.monotonic() - monotonic_started, 6)
             try:
-                await record_scheduler_event(
-                    db_path, job_id=job_id, event_kind="EXECUTION", result=outcome,
-                    started_at=started, ended_at=ended, elapsed_seconds=elapsed,
-                    reason=reason, stage_durations=stages, retention=retention,
+                completed = run_id is not None and await complete_scheduler_run(
+                    db_path, run_id=run_id, result=outcome, started_at=started, ended_at=ended,
+                    elapsed_seconds=elapsed, reason=reason, stage_durations=stages, retention=retention,
                 )
+                if not completed:
+                    await record_scheduler_event(db_path, job_id=job_id, event_kind="EXECUTION", result=outcome,
+                                                 started_at=started, ended_at=ended, elapsed_seconds=elapsed,
+                                                 reason=reason, stage_durations=stages, retention=retention)
             except Exception:
                 # Observability must not recursively destabilise scheduled
                 # work while a database is locked or storage is degraded.
@@ -208,8 +266,12 @@ async def scheduler_timing_report(db_path: str, *, limit: int = 500) -> dict[str
                 "result": row[6], "reason": row[7] or None, "stage_durations": stages,
                 "boot_id": row[9], "recorded_at": row[10]}
         events.append(item)
-        bucket = jobs.setdefault(row[0], {"runs": 0, "rejected": 0, "results": {}, "elapsed_samples": []})
-        bucket["runs"] += 1
+        bucket = jobs.setdefault(row[0], {"runs": 0, "executed_runs": 0, "rejected": 0, "in_flight": 0, "results": {}, "elapsed_samples": []})
+        bucket["runs"] += 1  # retained compatibility: all scheduler facts
+        if row[1] == "EXECUTION" and row[6] != "IN_FLIGHT":
+            bucket["executed_runs"] += 1
+        if row[1] == "EXECUTION" and row[6] == "IN_FLIGHT":
+            bucket["in_flight"] += 1
         bucket["results"][row[6]] = bucket["results"].get(row[6], 0) + 1
         if row[1] == "SCHEDULER_REJECTED":
             bucket["rejected"] += 1
@@ -217,5 +279,7 @@ async def scheduler_timing_report(db_path: str, *, limit: int = 500) -> dict[str
             bucket["elapsed_samples"].append(float(row[5]))
     for bucket in jobs.values():
         bucket["elapsed_seconds"] = _percentiles(bucket.pop("elapsed_samples"))
-    return {"boot_id": BOOT_ID, "events": events, "jobs": jobs,
-            "note": "scheduled_at is null for executions because APScheduler did not provide it to the callback; null is not a zero delay."}
+    inflight = [item | {"inflight_state": "CURRENT_PROCESS" if item["boot_id"] == BOOT_ID else "PREVIOUS_PROCESS_UNFINISHED"}
+                for item in events if item["event_kind"] == "EXECUTION" and item["result"] == "IN_FLIGHT"]
+    return {"boot_id": BOOT_ID, "events": events, "jobs": jobs, "inflight": inflight,
+            "note": "scheduled_at is null for executions because APScheduler did not provide it to the callback; null is not a zero delay. In-flight markers survive crashes and are not inferred as successful runs."}

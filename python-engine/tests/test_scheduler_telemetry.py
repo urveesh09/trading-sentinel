@@ -1,5 +1,8 @@
 from datetime import datetime, timedelta, timezone
 
+import asyncio
+import sqlite3
+
 import pytest
 
 from scheduler_telemetry import instrument_async_job, record_scheduler_event, scheduler_timing_report
@@ -41,3 +44,38 @@ async def test_instrumented_failure_preserves_job_exception_and_records_fact(tmp
     assert report["events"][0]["job_id"] == "exit_lifecycle"
     assert report["events"][0]["result"] == "FAILED"
     assert report["events"][0]["reason"] == "RuntimeError"
+
+
+@pytest.mark.asyncio
+async def test_instrumentation_exposes_inflight_callback_before_completion(tmp_path):
+    db_path = str(tmp_path / "cache.db")
+    entered, release = asyncio.Event(), asyncio.Event()
+
+    async def slow():
+        entered.set()
+        await release.wait()
+        return {"status": "COMPLETED", "stage_durations_sec": {"provider": .01}}
+
+    task = asyncio.create_task(instrument_async_job(db_path, "research_quote_collection", slow)())
+    await entered.wait()
+    live = await scheduler_timing_report(db_path)
+    assert live["jobs"]["research_quote_collection"]["in_flight"] == 1
+    assert live["inflight"][0]["inflight_state"] == "CURRENT_PROCESS"
+    release.set(); await task
+    finished = await scheduler_timing_report(db_path)
+    assert finished["jobs"]["research_quote_collection"]["executed_runs"] == 1
+    assert finished["inflight"] == []
+
+
+@pytest.mark.asyncio
+async def test_locked_telemetry_database_never_prevents_callback(tmp_path):
+    db_path = str(tmp_path / "cache.db")
+    # Materialise schema before taking a deliberate write lock.
+    await record_scheduler_event(db_path, job_id="seed", event_kind="EXECUTION", result="COMPLETED")
+    lock = sqlite3.connect(db_path); lock.execute("BEGIN EXCLUSIVE")
+    try:
+        async def callback():
+            return "business-ran"
+        assert await instrument_async_job(db_path, "exit_lifecycle", callback)() == "business-ran"
+    finally:
+        lock.rollback(); lock.close()

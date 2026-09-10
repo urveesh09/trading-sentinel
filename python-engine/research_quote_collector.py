@@ -169,7 +169,8 @@ async def collect_rest_quote_snapshot(
     explicit gaps in the result rather than synthetic quotes.
     """
     now_ist = now_ist or datetime.now(IST)
-    result: Dict[str, Any] = {"collected": 0, "requested": 0, "gaps": [], "indices": {}, "mode": "KITE_REST_FULL_LOWER_FREQUENCY"}
+    result: Dict[str, Any] = {"collected": 0, "requested": 0, "gaps": [], "indices": {},
+                              "mode": "KITE_REST_FULL_LOWER_FREQUENCY", "stage_durations_sec": {}}
     if not settings.RESEARCH_ARCHIVE_ENABLED or not settings.RESEARCH_QUOTE_COLLECTION_ENABLED:
         result["reason"] = "disabled"
         return result
@@ -178,7 +179,9 @@ async def collect_rest_quote_snapshot(
         result["reason"] = "no_market_data_token"
         await asyncio.to_thread(archive.record_collection_run, result, expected_interval_sec=settings.RESEARCH_QUOTE_INTERVAL_SEC)
         return result
+    stage_started = time.monotonic()
     await asyncio.to_thread(archive.finalize_prior_days, now_ist.astimezone(IST).date().isoformat())
+    result["stage_durations_sec"]["archive_finalization"] = round(time.monotonic() - stage_started, 6)
     books = books or {name: get_instruments_for(name) for name in _configured_underlyings()}
     for name in _configured_underlyings():
         result["indices"][name] = {"requested_tokens": [], "received_tokens": []}
@@ -189,7 +192,9 @@ async def collect_rest_quote_snapshot(
             future = book.front_future(now_ist.date())
             if future is None:
                 result["gaps"].append({"underlying": name, "reason": "front_future_unavailable"}); continue
+            stage_started = time.monotonic()
             future_data = await _documented_quotes(kite, [future], SPECS[name].segment)
+            result["stage_durations_sec"]["provider_quote"] = round(result["stage_durations_sec"].get("provider_quote", 0) + time.monotonic() - stage_started, 6)
             future_quote = future_data.get(future.token) if future_data else None
             packet_token = future_quote.get("instrument_token") if isinstance(future_quote, Mapping) else None
             forward = _finite_positive((future_quote or {}).get("last_price"), float)
@@ -202,7 +207,9 @@ async def collect_rest_quote_snapshot(
             tokens = [contract.token for contract, _ in selected]
             result["indices"][name]["requested_tokens"] = tokens
             result["requested"] += len(tokens)
+            stage_started = time.monotonic()
             data = await _documented_quotes(kite, [contract for contract, _ in selected], SPECS[name].segment)
+            result["stage_durations_sec"]["provider_quote"] = round(result["stage_durations_sec"].get("provider_quote", 0) + time.monotonic() - stage_started, 6)
             if not isinstance(data, Mapping):
                 raise ValueError("quote batch must be a mapping")
         except Exception as exc:
@@ -226,7 +233,9 @@ async def collect_rest_quote_snapshot(
                 continue
             try:
                 event = normalise_quote(contract, quote, source="KITE", mode=result["mode"], received_at=batch_received_at, selection_reason=reason, exchange=SPECS[name].segment)
+                stage_started = time.monotonic()
                 await asyncio.to_thread(archive.append, event)
+                result["stage_durations_sec"]["archive_write"] = round(result["stage_durations_sec"].get("archive_write", 0) + time.monotonic() - stage_started, 6)
                 result["collected"] += 1; result["indices"][name]["received_tokens"].append(contract.token)
             except OSError as exc:
                 logger.error("research_storage_stop reason=%s", str(exc))
@@ -235,7 +244,9 @@ async def collect_rest_quote_snapshot(
                 return result
             except Exception as exc:
                 result["gaps"].append({"underlying": name, "reason": "packet_normalisation_exception", "token": contract.token, "error_type": type(exc).__name__})
+    stage_started = time.monotonic()
     await asyncio.to_thread(archive.record_collection_run, result, expected_interval_sec=settings.RESEARCH_QUOTE_INTERVAL_SEC)
+    result["stage_durations_sec"]["archive_journal"] = round(time.monotonic() - stage_started, 6)
     return result
 
 

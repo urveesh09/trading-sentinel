@@ -53,6 +53,14 @@ reconciliation.
 - Reports expose sequential drawdown and clearly mark unseen-session behavior
   as not measured. Legacy callers without a pre-persisted manifest remain
   explicitly insufficient for readiness.
+- `intraday_spread_chronological.py` now selects the first executable signal
+  and first policy exit from receipt-ordered observations. It retains an active
+  entry and records no timely executable exit as unresolved, preventing
+  caller-selected entry/exit cherry-picking.
+- `intraday_spread_holdout.py` adds a frozen, per-index/policy holdout summary.
+  It rejects overlapping train/holdout dates and duplicate evidence while
+  retaining closed, no-fill, and unresolved outcomes. It cannot qualify,
+  deliver, or place an order.
 
 ### Five-source reconciliation evidence
 
@@ -64,21 +72,38 @@ reconciliation.
   source/P&L mismatches, and non-finite amounts. The bounded detail output now
   declares pagination/truncation rather than implying completeness.
 
+### Scheduler in-flight evidence
+
+- `scheduler_telemetry.py` creates an in-flight run marker before awaiting an
+  instrumented job and updates that same record on completion. A crash leaves
+  an explicit unfinished marker, distinguished by boot ID from a current run.
+- Timing reports separately count executed runs, scheduler rejections and
+  in-flight runs. Telemetry uses a short SQLite lock budget; a locked telemetry
+  store cannot prevent an exit, lifecycle or collection callback from running.
+- Quote collection now reports separate provider-quote, archive-finalization,
+  archive-write and archive-journal durations to the scheduler timing journal.
+
 ## Validation
 
-`228` targeted Python tests passed, covering proactive workflow integration,
+`237` connected targeted Python tests passed, covering proactive workflow integration,
 completed-bar data, replay, report artifacts, reconciliation, archive,
 scheduler telemetry, partner advisory, hedge routes, F&O lifecycle and
-performance behavior. `git diff --check` passed.
+performance behavior, chronological replay, held-out comparisons, archive
+adapters and in-flight scheduler behavior. `git diff --check` passed.
 
 ## Still intentionally pending
 
-- Chronological strategy signal/entry/exit selection from retained active-leg
-  observations, including partial-leg and no-timely-exit exposure accounting.
+- Adapter work to turn retained active-leg quote packets into declared
+  chronological strategy signals, including partial-leg execution exposure.
+  `intraday_spread_archive_adapter.py` now completes the safe input half: it
+  reads immutable journals, proves both legs against the archived master,
+  pairs only same-receipt books and reports partial batches. It deliberately
+  requires a separately hashed deterministic signal artifact before assigning
+  a non-zero signal score.
 - Observed-session collection and held-out, per-index/policy comparison needed
   for any human qualification decision.
-- Provider/DB/archive timing-stage telemetry, in-flight visibility, contention
-  measurements and capacity isolation validation.
+- DB timing-stage telemetry, production contention measurements and capacity
+  isolation validation.
 - Broker statement imports are required for external reconciliation; the five
   sheets are internal retained-ledger evidence only.
 
