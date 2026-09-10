@@ -211,7 +211,7 @@ function PartnerAdvisorySetup({ setup, isLoading, isError, mutate }) {
   useEffect(() => {
     const profile = setup?.profile;
     if (profile) setForm({ version: String((profile.version || 0) + 1), capital: profile.capital_limit_rs ?? '', risk: profile.risk_limit_rs ?? '' });
-  }, [setup]);
+  }, [setup?.profile?.version, setup?.profile_state]);
   if (isLoading) return <div className="rounded border border-gray-800 bg-gray-900 p-4 text-sm text-gray-500">Loading partner advisory setup…</div>;
   if (isError || !setup) return <div className="rounded border border-amber-800 bg-amber-950/30 p-4 text-sm text-amber-200">Partner advisory setup is unavailable. No readiness conclusion is inferred.</div>;
   const profile = setup.profile || {};
@@ -235,7 +235,7 @@ function PartnerAdvisorySetup({ setup, isLoading, isError, mutate }) {
         conditional_exposure_assumption: profile.conditional_exposure_assumption ?? null,
         conditional_coverage_units: profile.conditional_coverage_units ?? null,
       });
-      setNotice('Saved. Research qualification and delivery remain independently blocked until their evidence is present.');
+      setNotice('Saved. Check qualification and delivery readiness separately.');
       await mutate();
     } catch (error) { setNotice(error.message || 'Profile save failed.'); }
     finally { setSaving(false); }

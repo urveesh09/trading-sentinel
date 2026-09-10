@@ -30,6 +30,7 @@ from datetime import date, datetime, timedelta
 from typing import Dict, List, Optional
 
 import aiosqlite
+import math
 import pytz
 import structlog
 
@@ -70,7 +71,7 @@ def _closed_bar_observation(sig, now: datetime) -> tuple[Optional[datetime], Opt
     except (TypeError, ValueError):
         return None, None, "bar_timestamp_unusable"
     price = getattr(sig, "close", None)
-    if not isinstance(price, (int, float)) or price <= 0:
+    if isinstance(price, bool) or not isinstance(price, (int, float)) or not math.isfinite(price) or price <= 0:
         return None, None, "bar_close_unusable"
     age = (now - observed).total_seconds()
     if age < 0:
@@ -489,6 +490,19 @@ async def partner_manual_advisory_tick(now: Optional[datetime] = None) -> None:
                 metrics["management_input_unavailable"] += 1
 
             if scan.sig.direction is None:
+                if observed_at is None or scan.sig.reject_reason in {
+                    "no_bars", "no_closed_bars_today", "opening_range_incomplete",
+                    "atr_unavailable", "ema_insufficient_bars", "rvol_baseline_unavailable",
+                }:
+                    metrics["unavailable"] += 1
+                    await record_advisory_input_status(
+                        settings.DB_PATH, underlying=spec.name, attempted_at=now,
+                        stage="SIGNAL_INPUT_UNAVAILABLE",
+                        reason=scan.sig.reject_reason or _observation_reason,
+                        entry_state="UNAVAILABLE", observed_at=observed_at,
+                        profile_state=profile_state,
+                    )
+                    continue
                 metrics["healthy_no_setup"] += 1
                 await record_advisory_input_status(
                     settings.DB_PATH, underlying=spec.name, attempted_at=now,

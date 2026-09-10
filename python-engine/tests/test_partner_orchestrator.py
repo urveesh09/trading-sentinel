@@ -707,3 +707,12 @@ async def test_no_pin_before_1330_or_off_expiry(analytics_wired):
         IST.localize(datetime(2026, 7, 20, 14, 35))
     )
     assert [s for s in w.sent if s[0] == "pin"] == []
+
+
+@pytest.mark.parametrize("price", [float("nan"), float("inf"), float("-inf"), True])
+def test_management_rejects_nonfinite_or_boolean_price(price):
+    from types import SimpleNamespace
+    sig = SimpleNamespace(bar_ts="2026-07-20 10:25:00", close=price)
+    observed, value, reason = po._closed_bar_observation(sig, IST.localize(datetime(2026, 7, 20, 10, 30)))
+    assert observed is None and value is None
+    assert reason == "bar_close_unusable"
