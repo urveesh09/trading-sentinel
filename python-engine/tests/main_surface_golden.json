@@ -241,6 +241,14 @@
       "response_model": null
     },
     {
+      "endpoint": "get_operational_coverage",
+      "methods": [
+        "GET"
+      ],
+      "path": "/analytics/operational-coverage",
+      "response_model": null
+    },
+    {
       "endpoint": "get_optional_ai_status",
       "methods": [
         "GET"
@@ -294,6 +302,14 @@
         "GET"
       ],
       "path": "/analytics/proactive-session-diagnostics",
+      "response_model": null
+    },
+    {
+      "endpoint": "get_scheduler_timing",
+      "methods": [
+        "GET"
+      ],
+      "path": "/analytics/scheduler-timing",
       "response_model": null
     },
     {

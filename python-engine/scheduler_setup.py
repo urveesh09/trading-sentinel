@@ -67,6 +67,7 @@ def register_fno_scheduler_jobs(scheduler):
 
     IST = _main.IST
     logger = _main.logger
+    from scheduler_telemetry import telemetry_job
     """
     [FNO 2026-07-10] F&O subsystem scheduler jobs (spec §5/§9.3).
     Module-level function (like register_penny_scheduler_jobs) so tests
@@ -113,6 +114,7 @@ def register_fno_scheduler_jobs(scheduler):
     # callable for operator/manual use.
     _ = _run_fno_instruments_refresh  # kept: manual/ops entry point
 
+    @telemetry_job(settings.DB_PATH, "fno_tick")
     async def _run_fno_tick_safe():
         from fno_orchestrator import format_fno_telegram, run_fno_tick
         # [Rule 55] First-line breadcrumb on EVERY invocation. The tick
@@ -174,6 +176,11 @@ def register_fno_scheduler_jobs(scheduler):
             logger.info("fno_tick_complete", **fields)
             if elapsed >= settings.FNO_SCAN_INTERVAL_SEC:
                 logger.warning("fno_tick_overrun", **fields)
+        return {
+            "status": "FAILED" if outcome == "failed" else "COMPLETED",
+            "reason": "fno_tick_exception" if outcome == "failed" else "none",
+            "stage_durations_sec": fields["stage_durations_sec"],
+        }
 
     scheduler.add_job(
         _run_fno_tick_safe, "interval",
@@ -871,6 +878,7 @@ def register_partner_scheduler_jobs(scheduler):
     import main as _main
 
     logger = _main.logger
+    from scheduler_telemetry import telemetry_job
 
     async def _run_partner_scan_tick_safe():
         # [CALENDAR-GATE 2026-07-03] gate delegated: partner_orchestrator.
@@ -882,19 +890,23 @@ def register_partner_scheduler_jobs(scheduler):
         except Exception as exc:
             logger.error("partner_scan_tick_crashed err=%s", exc, exc_info=True)
 
+    @telemetry_job(settings.DB_PATH, "partner_manual_advisory_tick")
     async def _run_partner_manual_advisory_tick_safe():
         try:
             from partner_orchestrator import partner_manual_advisory_tick
             await partner_manual_advisory_tick()
         except Exception as exc:
             logger.error("partner_manual_advisory_tick_crashed err=%s", exc, exc_info=True)
+            return {"status": "FAILED", "reason": type(exc).__name__}
 
+    @telemetry_job(settings.DB_PATH, "partner_manual_advisory_lifecycle_tick")
     async def _run_partner_manual_advisory_lifecycle_tick_safe():
         try:
             from partner_orchestrator import partner_manual_advisory_lifecycle_tick
             await partner_manual_advisory_lifecycle_tick()
         except Exception as exc:
             logger.error("partner_manual_advisory_lifecycle_tick_crashed err=%s", exc, exc_info=True)
+            return {"status": "FAILED", "reason": type(exc).__name__}
 
     async def _run_partner_analytics_tick_safe():
         # [CALENDAR-GATE 2026-07-03] gate delegated: partner_orchestrator.
@@ -906,15 +918,17 @@ def register_partner_scheduler_jobs(scheduler):
         except Exception as exc:
             logger.error("partner_analytics_tick_crashed err=%s", exc, exc_info=True)
 
+    @telemetry_job(settings.DB_PATH, "research_quote_collection")
     async def _run_research_quote_collection_safe():
         # Independent market-data observation.  It has no partner delivery,
         # profile, qualification, or order dependency; its own entry point
         # handles calendar/session/token availability and records gaps.
         try:
             from research_quote_collector import research_quote_collection_tick
-            await research_quote_collection_tick()
+            return await research_quote_collection_tick()
         except Exception as exc:
             logger.error("research_quote_collection_crashed err=%s", exc, exc_info=True)
+            return {"status": "FAILED", "reason": type(exc).__name__}
 
     async def _run_partner_morning_brief_safe():
         # [CALENDAR-GATE 2026-07-03] gate delegated: partner_orchestrator.
@@ -955,12 +969,14 @@ def register_partner_scheduler_jobs(scheduler):
         except Exception as exc:
             logger.error("partner_hedge_tick_crashed err=%s", exc, exc_info=True)
 
+    @telemetry_job(settings.DB_PATH, "partner_hedge_delivery_recovery")
     async def _run_partner_hedge_delivery_recovery_safe():
         try:
             from hedge_advisory import recover_pending_hedge_deliveries
             await recover_pending_hedge_deliveries()
         except Exception as exc:
             logger.error("partner_hedge_delivery_recovery_crashed err=%s", exc, exc_info=True)
+            return {"status": "FAILED", "reason": type(exc).__name__}
 
     async def _run_partner_input_refresh_safe():
         try:

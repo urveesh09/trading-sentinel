@@ -77,6 +77,10 @@ router.get('/analytics/optional-ai-status', (req, res) =>
   proxyToEngine(req, res, '/analytics/optional-ai-status'));
 router.get('/analytics/proactive-session-diagnostics', (req, res) =>
   proxyToEngine(req, res, withQuery('/analytics/proactive-session-diagnostics', req.query)));
+router.get('/analytics/scheduler-timing', (req, res) =>
+  proxyToEngine(req, res, withQuery('/analytics/scheduler-timing', req.query)));
+router.get('/analytics/operational-coverage', (req, res) =>
+  proxyToEngine(req, res, '/analytics/operational-coverage'));
 router.get('/partner/hedge/cards', (req, res) =>
   proxyToEngine(req, res, withQuery('/partner/hedge/cards', req.query)));
 router.get('/partner/hedge/delivery-backlog', (req, res) =>

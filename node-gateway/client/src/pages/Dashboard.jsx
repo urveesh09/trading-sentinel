@@ -13,6 +13,8 @@ import { usePartnerAdvisorySetup } from '../hooks/usePartnerAdvisorySetup';
 import { usePartnerDeliveryBacklog } from '../hooks/usePartnerDeliveryBacklog';
 import { useOptionalAiStatus } from '../hooks/useOptionalAiStatus';
 import { useProactiveSessionDiagnostics } from '../hooks/useProactiveSessionDiagnostics';
+import { useSchedulerTiming } from '../hooks/useSchedulerTiming';
+import { useOperationalCoverage } from '../hooks/useOperationalCoverage';
 import { evidenceModeEnabled } from '../evidenceMode';
 import { isActivePosition } from '../utils/positions';
 import { putClient } from '../api/client';
@@ -247,6 +249,21 @@ function PartnerAdvisorySetup({ setup, isLoading, isError, mutate }) {
   </section>;
 }
 
+function SchedulerTiming({ schedulerTiming, isLoading, isError }) {
+  if (isLoading) return <div className="rounded border border-gray-800 bg-gray-900 p-4 text-sm text-gray-500">Loading scheduler timing evidence…</div>;
+  if (isError || !schedulerTiming) return <div className="rounded border border-amber-800 bg-amber-950/30 p-4 text-sm text-amber-200">Scheduler timing evidence is unavailable. This does not mean scans are idle.</div>;
+  const jobs = Object.entries(schedulerTiming.jobs || {}).sort(([left], [right]) => left.localeCompare(right));
+  if (!jobs.length) return <section className="rounded-xl border border-gray-800 bg-gray-900 p-4"><h2 className="text-xl font-bold text-white">Scheduler timing</h2><p className="mt-2 text-sm text-gray-400">No observed runs are retained yet. A missing timing record is not a successful or failed scan.</p></section>;
+  return <section className="rounded-xl border border-gray-800 bg-gray-900 p-4" aria-labelledby="scheduler-timing-heading"><h2 id="scheduler-timing-heading" className="text-xl font-bold text-white">Scheduler timing</h2><p className="mt-1 text-xs text-gray-500">Observed completion and scheduler-rejection evidence. Scheduled time is unavailable for callback executions unless APScheduler supplied it.</p><div className="mt-3 space-y-2">{jobs.map(([id, job]) => <div key={id} className="flex flex-wrap justify-between gap-2 rounded border border-gray-800 bg-gray-950/70 px-3 py-2 text-xs"><span className="font-medium text-gray-200">{id}</span><span className="text-gray-400">runs {job.runs} · rejected {job.rejected} · p95 {job.elapsed_seconds?.p95 ?? 'Unavailable'}s · max {job.elapsed_seconds?.max ?? 'Unavailable'}s</span></div>)}</div></section>;
+}
+
+function OperationalCoverage({ coverage, isLoading, isError }) {
+  if (isLoading) return <div className="rounded border border-gray-800 bg-gray-900 p-4 text-sm text-gray-500">Loading producer coverage…</div>;
+  if (isError || !coverage) return <div className="rounded border border-amber-800 bg-amber-950/30 p-4 text-sm text-amber-200">Producer coverage is unavailable. No system-wide inactivity conclusion is inferred.</div>;
+  const rows = Object.entries(coverage.producers || {}).filter(([key]) => !key.startsWith('scheduler:')).sort(([left], [right]) => left.localeCompare(right));
+  return <section className="rounded-xl border border-gray-800 bg-gray-900 p-4" aria-labelledby="coverage-heading"><h2 id="coverage-heading" className="text-xl font-bold text-white">Production evidence coverage</h2><p className="mt-1 text-xs text-gray-500">Each source is reported independently. Empty and unavailable sources are not treated as zero opportunities or P&amp;L.</p><div className="mt-3 space-y-2">{rows.map(([id, row]) => <div key={id} className="rounded border border-gray-800 bg-gray-950/70 px-3 py-2 text-xs"><div className="flex flex-wrap justify-between gap-2"><span className="font-medium text-gray-200">{id}</span><span className={row.state === 'AVAILABLE' || row.state === 'HEALTHY_NO_SETUP' || row.state === 'OBSERVED_USABLE' ? 'text-emerald-300' : 'text-amber-300'}>{row.state}</span></div><p className="mt-1 text-gray-500">{row.reason} · observed {row.observed_at || 'Unavailable'} · received {row.receipt_at || 'Unavailable'}</p></div>)}</div></section>;
+}
+
 function PartnerDeliveryBacklog({ backlog, isLoading, isError }) {
   if (isLoading) return <div className="rounded border border-gray-800 bg-gray-900 p-4 text-sm text-gray-500">Loading partner delivery recovery evidence…</div>;
   if (isError || !backlog) return <div className="rounded border border-amber-800 bg-amber-950/30 p-4 text-sm text-amber-200">Partner delivery recovery evidence is unavailable. No delivery conclusion is inferred.</div>;
@@ -319,6 +336,8 @@ export default function Dashboard({ healthData, navigateToPositions, navigateToB
   const partnerDeliveryBacklog = usePartnerDeliveryBacklog();
   const optionalAi = useOptionalAiStatus();
   const sessionDiagnostics = useProactiveSessionDiagnostics();
+  const schedulerTiming = useSchedulerTiming();
+  const operationalCoverage = useOperationalCoverage();
   const viewModel = buildDivisionViewModel(divisionPerformance);
   const cbHalted = healthData?.circuit_breaker_halted || false;
   const cbReasons = healthData?.circuit_breaker_reasons || [];
@@ -357,6 +376,8 @@ export default function Dashboard({ healthData, navigateToPositions, navigateToB
 
         <div className="grid gap-6 2xl:grid-cols-2">
           <PartnerAdvisorySetup {...partnerAdvisorySetup} />
+          <OperationalCoverage {...operationalCoverage} />
+          <SchedulerTiming {...schedulerTiming} />
           <PartnerHedgeCards {...partnerHedgeCards} />
           <PartnerDeliveryBacklog {...partnerDeliveryBacklog} />
           <OptionalAiEvidence {...optionalAi} />
