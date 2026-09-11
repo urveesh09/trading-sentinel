@@ -2,10 +2,14 @@
 from __future__ import annotations
 
 import gzip
+import hashlib
+import csv
+import io
 import json
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
+from zoneinfo import ZoneInfo
 from typing import Any, Iterable, Mapping
 
 from intraday_spread_chronological import SpreadObservation
@@ -82,12 +86,38 @@ def _leg(event: Mapping[str, Any], identity: SpreadContractIdentity, master_sha2
         return None
     if not matches:
         return None
+    raw = event.get("raw_packet")
+    if not isinstance(raw, Mapping):
+        return None
+    digest = hashlib.sha256(json.dumps(dict(raw), sort_keys=True, default=str, separators=(",", ":")).encode()).hexdigest()
+    if digest != event.get("raw_sha256") or str(raw.get("instrument_token")) != str(identity.token):
+        return None
     received = _stamp(event.get("received_at_utc"), "received_at_utc")
-    # A provider timestamp is preferred; receipt remains a truthful, bounded
-    # observation time when the REST response carries none.
-    observed = _stamp(event.get("provider_timestamp_utc") or event.get("exchange_timestamp_utc") or received, "observed_at")
+    # Missing provider time remains unavailable for execution-quality replay.
+    provider_time = event.get("provider_timestamp_utc") or event.get("exchange_timestamp_utc")
+    if provider_time is None:
+        return None  # Receipt alone cannot establish execution-quality freshness.
+    observed = _stamp(provider_time, "observed_at")
+    raw_time = raw.get("timestamp") if str(event.get("mode", "KITE_REST")).startswith("KITE_REST") else raw.get("exchange_timestamp")
+    if raw_time is None:
+        raw_time = raw.get("exchange_timestamp")
+    try:
+        parsed_raw_time = datetime.fromisoformat(str(raw_time).replace("Z", "+00:00"))
+        if parsed_raw_time.tzinfo is None:
+            parsed_raw_time = parsed_raw_time.replace(tzinfo=ZoneInfo("Asia/Kolkata"))
+        if parsed_raw_time.astimezone(timezone.utc) != observed or observed > received:
+            return None
+    except (TypeError, ValueError):
+        return None
     bids, asks = event.get("buy_depth"), event.get("sell_depth")
     if not isinstance(bids, list) or not isinstance(asks, list) or not bids or not asks:
+        return None
+    try:
+        raw_depth = raw["depth"]
+        for normalized, source in ((bids[0], raw_depth["buy"][0]), (asks[0], raw_depth["sell"][0])):
+            if float(normalized["price"]) != float(source["price"]) or int(normalized["quantity"]) != int(source["quantity"]):
+                return None
+    except (KeyError, IndexError, TypeError, ValueError):
         return None
     bid, ask = bids[0], asks[0]
     if not isinstance(bid, Mapping) or not isinstance(ask, Mapping):
@@ -107,7 +137,25 @@ def _master_proves_contract(archive_root: str | Path, identity: SpreadContractId
             manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
             if str(manifest.get("raw_sha256", "")).lower() != master_sha256.lower():
                 continue
-            for line in (manifest_path.parent / "contracts.jsonl").read_text(encoding="utf-8").splitlines():
+            raw = (manifest_path.parent / "raw.csv").read_bytes()
+            canonical = (manifest_path.parent / "contracts.jsonl").read_bytes()
+            if (hashlib.sha256(raw).hexdigest() != master_sha256.lower()
+                    or hashlib.sha256(canonical).hexdigest() != manifest.get("canonical_sha256")):
+                continue
+            raw_matches = [row for row in csv.DictReader(io.StringIO(raw.decode("utf-8-sig")))
+                           if str(row.get("instrument_token")) == str(identity.token)]
+            if len(raw_matches) != 1:
+                continue
+            source = raw_matches[0]
+            if not (source.get("tradingsymbol") == identity.symbol
+                    and str(source.get("name", "")).upper() == identity.underlying
+                    and str(source.get("exchange") or manifest.get("segment", "")).upper() == identity.exchange
+                    and source.get("instrument_type") == identity.option_type
+                    and str(source.get("expiry", ""))[:10] == identity.expiry
+                    and float(source.get("strike", "nan")) == identity.strike
+                    and int(source.get("lot_size", "0")) == identity.lot_size):
+                continue
+            for line in canonical.decode("utf-8").splitlines():
                 contract = json.loads(line)
                 if (str(contract.get("instrument_token")) == str(identity.token)
                         and str(contract.get("tradingsymbol")) == identity.symbol

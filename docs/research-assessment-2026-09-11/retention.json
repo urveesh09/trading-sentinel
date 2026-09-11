@@ -1,0 +1,42 @@
+[
+  {
+    "day": "2026-09-10",
+    "index": "NIFTY",
+    "first_entry_window_receipt": "2026-09-10T09:20:26.115934+05:30",
+    "deadline_or_later_receipt": "2026-09-10T15:15:25.453741+05:30",
+    "initial_option_tokens": 44,
+    "initial_tokens_present_at_deadline": 36,
+    "initial_tokens_missing_at_deadline": 8,
+    "interpretation": "Universe-retention diagnostic, not proof these contracts were selected or traded"
+  },
+  {
+    "day": "2026-09-10",
+    "index": "SENSEX",
+    "first_entry_window_receipt": "2026-09-10T09:20:27.481987+05:30",
+    "deadline_or_later_receipt": "2026-09-10T15:15:26.176118+05:30",
+    "initial_option_tokens": 44,
+    "initial_tokens_present_at_deadline": 36,
+    "initial_tokens_missing_at_deadline": 8,
+    "interpretation": "Universe-retention diagnostic, not proof these contracts were selected or traded"
+  },
+  {
+    "day": "2026-09-11",
+    "index": "NIFTY",
+    "first_entry_window_receipt": "2026-09-11T09:20:26.353266+05:30",
+    "deadline_or_later_receipt": "2026-09-11T15:15:25.447802+05:30",
+    "initial_option_tokens": 44,
+    "initial_tokens_present_at_deadline": 28,
+    "initial_tokens_missing_at_deadline": 16,
+    "interpretation": "Universe-retention diagnostic, not proof these contracts were selected or traded"
+  },
+  {
+    "day": "2026-09-11",
+    "index": "SENSEX",
+    "first_entry_window_receipt": "2026-09-11T09:20:27.710264+05:30",
+    "deadline_or_later_receipt": "2026-09-11T15:15:26.171035+05:30",
+    "initial_option_tokens": 44,
+    "initial_tokens_present_at_deadline": 16,
+    "initial_tokens_missing_at_deadline": 28,
+    "interpretation": "Universe-retention diagnostic, not proof these contracts were selected or traded"
+  }
+]

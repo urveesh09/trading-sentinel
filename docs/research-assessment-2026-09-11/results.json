@@ -1,0 +1,359 @@
+{
+  "assessed_at_utc": "2026-09-11T10:45:11.367276+00:00",
+  "qualification": "INSUFFICIENT_EVIDENCE",
+  "scope": "data usability, not strategy expectancy or fills",
+  "files": [
+    {
+      "path": "quotes/2026-09-10/quotes-c369bbb749ad3f66.jsonl.gz",
+      "bytes": 7608911,
+      "sha256": "7277e453aa7b2a4ad20aa8d1ca37a7762ca9d2a7ec3279a1fe6fede716ef1288"
+    },
+    {
+      "path": "quotes/2026-09-11/quotes.jsonl.open",
+      "bytes": 77266230,
+      "sha256": "5799620506da8501284c5578466294fe85a0285c4b9164e97de47af097a8a1a8"
+    }
+  ],
+  "masters": [
+    {
+      "path": "contract-masters/KITE/BFO/2026-09-10/6a51384fd919f66ae8ef2767167358d4298433da68eadd50be6009e50c457a02/manifest.json",
+      "raw_digest_matches": true,
+      "manifest": {
+        "canonical_sha256": "2b265d38dc8a49a2cafde294ef9917e60e6021748847b276cf0db04188ed6787",
+        "contract_count": 4602,
+        "format": "sentinel-research-v1",
+        "identity": "exchange+underlying+tradingsymbol+expiry+strike+instrument_type+lot_size+tick_size",
+        "kind": "contract_master",
+        "limitations": [
+          "Token mappings are dated observations; instrument tokens may be reused."
+        ],
+        "observed_at_utc": "2026-09-10T03:27:53.242058Z",
+        "provider": "KITE",
+        "raw_sha256": "6a51384fd919f66ae8ef2767167358d4298433da68eadd50be6009e50c457a02",
+        "segment": "BFO"
+      },
+      "contracts_sha256": "2b265d38dc8a49a2cafde294ef9917e60e6021748847b276cf0db04188ed6787"
+    },
+    {
+      "path": "contract-masters/KITE/BFO/2026-09-11/7e6801aecfe46bde07940a45aa9b2a0a98973ecbb7c94b4d95ad03afa9cf4572/manifest.json",
+      "raw_digest_matches": true,
+      "manifest": {
+        "canonical_sha256": "df891c029413d4013bb2f7e9445e034c64f0f64768915f33e5782c330368043b",
+        "contract_count": 4320,
+        "format": "sentinel-research-v1",
+        "identity": "exchange+underlying+tradingsymbol+expiry+strike+instrument_type+lot_size+tick_size",
+        "kind": "contract_master",
+        "limitations": [
+          "Token mappings are dated observations; instrument tokens may be reused."
+        ],
+        "observed_at_utc": "2026-09-11T03:04:03.601664Z",
+        "provider": "KITE",
+        "raw_sha256": "7e6801aecfe46bde07940a45aa9b2a0a98973ecbb7c94b4d95ad03afa9cf4572",
+        "segment": "BFO"
+      },
+      "contracts_sha256": "df891c029413d4013bb2f7e9445e034c64f0f64768915f33e5782c330368043b"
+    },
+    {
+      "path": "contract-masters/KITE/NFO/2026-09-10/93c6b03e38acdfc8191e55b8cedb1a8ac296e732c0e70eeb0ab14ae99b8c5d01/manifest.json",
+      "raw_digest_matches": true,
+      "manifest": {
+        "canonical_sha256": "4ca31e14e5d98c1ecb9805f8166a931d2128ed7a77413e146f9a105cd50edc7d",
+        "contract_count": 33727,
+        "format": "sentinel-research-v1",
+        "identity": "exchange+underlying+tradingsymbol+expiry+strike+instrument_type+lot_size+tick_size",
+        "kind": "contract_master",
+        "limitations": [
+          "Token mappings are dated observations; instrument tokens may be reused."
+        ],
+        "observed_at_utc": "2026-09-10T03:27:52.513481Z",
+        "provider": "KITE",
+        "raw_sha256": "93c6b03e38acdfc8191e55b8cedb1a8ac296e732c0e70eeb0ab14ae99b8c5d01",
+        "segment": "NFO"
+      },
+      "contracts_sha256": "4ca31e14e5d98c1ecb9805f8166a931d2128ed7a77413e146f9a105cd50edc7d"
+    },
+    {
+      "path": "contract-masters/KITE/NFO/2026-09-11/f6119864c2d8f68f53807366bbfe801f9293b5405e3ab5a753357fff2a8d61fd/manifest.json",
+      "raw_digest_matches": true,
+      "manifest": {
+        "canonical_sha256": "6469866a5c109d943330580a1f2c7ac4b0272287b2b7fbc5e935b0f4708b82cf",
+        "contract_count": 33846,
+        "format": "sentinel-research-v1",
+        "identity": "exchange+underlying+tradingsymbol+expiry+strike+instrument_type+lot_size+tick_size",
+        "kind": "contract_master",
+        "limitations": [
+          "Token mappings are dated observations; instrument tokens may be reused."
+        ],
+        "observed_at_utc": "2026-09-11T03:04:02.875244Z",
+        "provider": "KITE",
+        "raw_sha256": "f6119864c2d8f68f53807366bbfe801f9293b5405e3ab5a753357fff2a8d61fd",
+        "segment": "NFO"
+      },
+      "contracts_sha256": "6469866a5c109d943330580a1f2c7ac4b0272287b2b7fbc5e935b0f4708b82cf"
+    }
+  ],
+  "by_day_index": [
+    {
+      "day": "2026-09-10",
+      "index": "NIFTY",
+      "packets": 15345,
+      "option_packets": 15004,
+      "future_packets": 341,
+      "valid_one_lot_options_30s": 15004,
+      "rejections": {},
+      "raw_hash_mismatches": 0,
+      "master_mismatches": 0,
+      "unique_tokens": 53,
+      "first_receipt": "2026-09-10T03:45:25.441386+00:00",
+      "last_receipt": "2026-09-10T10:00:25.457045+00:00",
+      "usable_option_batches": 341,
+      "max_usable_batch_gap_seconds": 121.956668,
+      "gaps_over_90s": 38,
+      "provider_age_p95_seconds": 2.430501,
+      "executable_vertical_pair_observations": 75020,
+      "distinct_vertical_pairs": 300,
+      "batches_with_pairs": 341,
+      "entry_window_batches_with_pairs": 291,
+      "deadline_minute_batches_with_pairs": 1
+    },
+    {
+      "day": "2026-09-10",
+      "index": "SENSEX",
+      "packets": 15300,
+      "option_packets": 14960,
+      "future_packets": 340,
+      "valid_one_lot_options_30s": 14875,
+      "rejections": {
+        "provider_age_over_30s": 45,
+        "missing_clock_or_book": 40
+      },
+      "raw_hash_mismatches": 0,
+      "master_mismatches": 0,
+      "unique_tokens": 57,
+      "first_receipt": "2026-09-10T03:45:26.178231+00:00",
+      "last_receipt": "2026-09-10T10:00:26.156609+00:00",
+      "usable_option_batches": 340,
+      "max_usable_batch_gap_seconds": 153.920405,
+      "gaps_over_90s": 36,
+      "provider_age_p95_seconds": 1.587415,
+      "executable_vertical_pair_observations": 73338,
+      "distinct_vertical_pairs": 340,
+      "batches_with_pairs": 340,
+      "entry_window_batches_with_pairs": 290,
+      "deadline_minute_batches_with_pairs": 1
+    },
+    {
+      "day": "2026-09-11",
+      "index": "NIFTY",
+      "packets": 15345,
+      "option_packets": 15004,
+      "future_packets": 341,
+      "valid_one_lot_options_30s": 15004,
+      "rejections": {},
+      "raw_hash_mismatches": 0,
+      "master_mismatches": 0,
+      "unique_tokens": 61,
+      "first_receipt": "2026-09-11T03:45:28.500770+00:00",
+      "last_receipt": "2026-09-11T10:00:25.497788+00:00",
+      "usable_option_batches": 341,
+      "max_usable_batch_gap_seconds": 144.749557,
+      "gaps_over_90s": 38,
+      "provider_age_p95_seconds": 2.353266,
+      "executable_vertical_pair_observations": 75020,
+      "distinct_vertical_pairs": 380,
+      "batches_with_pairs": 341,
+      "entry_window_batches_with_pairs": 292,
+      "deadline_minute_batches_with_pairs": 1
+    },
+    {
+      "day": "2026-09-11",
+      "index": "SENSEX",
+      "packets": 15345,
+      "option_packets": 15004,
+      "future_packets": 341,
+      "valid_one_lot_options_30s": 15004,
+      "rejections": {},
+      "raw_hash_mismatches": 0,
+      "master_mismatches": 0,
+      "unique_tokens": 73,
+      "first_receipt": "2026-09-11T03:45:29.233846+00:00",
+      "last_receipt": "2026-09-11T10:00:26.241801+00:00",
+      "usable_option_batches": 341,
+      "max_usable_batch_gap_seconds": 152.32491,
+      "gaps_over_90s": 36,
+      "provider_age_p95_seconds": 1.710906,
+      "executable_vertical_pair_observations": 74610,
+      "distinct_vertical_pairs": 500,
+      "batches_with_pairs": 341,
+      "entry_window_batches_with_pairs": 291,
+      "deadline_minute_batches_with_pairs": 1
+    }
+  ],
+  "db": {
+    "fno_signals": {
+      "columns": [
+        "scan_id",
+        "evaluated_at",
+        "bar_ts",
+        "leg",
+        "underlying",
+        "direction",
+        "accepted",
+        "reject_reason",
+        "regime",
+        "fut_price",
+        "or_high",
+        "or_low",
+        "atr",
+        "rvol",
+        "ema_fast",
+        "ema_slow",
+        "tradingsymbol",
+        "strike",
+        "opt_type",
+        "expiry",
+        "premium",
+        "iv",
+        "delta",
+        "spread_pct",
+        "oi",
+        "volume",
+        "lots",
+        "max_loss_rupees",
+        "min_pool_required",
+        "pool_at_eval"
+      ],
+      "rows": 2370
+    },
+    "intraday_cache": {
+      "columns": [
+        "ticker",
+        "interval",
+        "datetime",
+        "open",
+        "high",
+        "low",
+        "close",
+        "volume",
+        "fetched_at"
+      ],
+      "rows": 887086
+    },
+    "partner_advisory_ideas": {
+      "columns": [
+        "advisory_id",
+        "economic_version",
+        "scope",
+        "underlying",
+        "exchange",
+        "status",
+        "evidence",
+        "profile_id",
+        "profile_version",
+        "quote_time",
+        "valid_until",
+        "rendered_card",
+        "payload",
+        "supersedes_id",
+        "created_at",
+        "updated_at"
+      ],
+      "rows": 0
+    },
+    "partner_advisory_research_artifacts": {
+      "columns": [
+        "dataset_ref",
+        "content_sha256",
+        "created_at",
+        "description"
+      ],
+      "rows": 0
+    },
+    "partner_advisory_strategy_qualifications": {
+      "columns": [
+        "underlying",
+        "structure_kind",
+        "horizon",
+        "policy_version",
+        "dataset_ref",
+        "reviewed_at",
+        "status"
+      ],
+      "rows": 0
+    },
+    "fno_signal_days": [
+      [
+        "2026-09-11",
+        "NIFTY",
+        60,
+        0
+      ],
+      [
+        "2026-09-10",
+        "NIFTY",
+        63,
+        0
+      ],
+      [
+        "2026-09-09",
+        "NIFTY",
+        63,
+        1
+      ],
+      [
+        "2026-09-08",
+        "NIFTY",
+        62,
+        0
+      ],
+      [
+        "2026-09-07",
+        "NIFTY",
+        60,
+        0
+      ],
+      [
+        "2026-09-04",
+        "NIFTY",
+        60,
+        1
+      ],
+      [
+        "2026-09-03",
+        "NIFTY",
+        60,
+        0
+      ],
+      [
+        "2026-09-02",
+        "NIFTY",
+        60,
+        0
+      ],
+      [
+        "2026-09-01",
+        "NIFTY",
+        62,
+        0
+      ],
+      [
+        "2026-08-31",
+        "NIFTY",
+        60,
+        0
+      ],
+      [
+        "2026-08-28",
+        "NIFTY",
+        62,
+        2
+      ],
+      [
+        "2026-08-27",
+        "NIFTY",
+        60,
+        1
+      ]
+    ]
+  }
+}

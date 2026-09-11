@@ -6,7 +6,7 @@ import asyncio
 import json
 import sys
 from dataclasses import asdict
-from datetime import timedelta
+from datetime import datetime, timedelta
 from pathlib import Path
 
 from config import settings
@@ -53,9 +53,52 @@ def _replay_spread(args: argparse.Namespace) -> dict:
             "can_place_orders": False}
 
 
+def _full_policy_diagnostic(args: argparse.Namespace) -> dict:
+    """Evaluate the complete deployed signal from explicitly-provenanced bars."""
+    import pandas as pd
+    from partner_qualification import evaluate_deployed_full_policy, write_full_policy_decision, load_candidate_evidence
+
+    raw = pd.read_csv(args.bars)
+    if "bar_start" not in raw.columns:
+        raise ValueError("bars CSV requires bar_start")
+    parsed = pd.to_datetime(raw.pop("bar_start"), errors="raise")
+    # The deployed evaluator expects naive exchange-local bar starts. An
+    # offset-aware input is converted to Asia/Kolkata before stripping tz.
+    if getattr(parsed.dt, "tz", None) is not None:
+        parsed = parsed.dt.tz_convert("Asia/Kolkata").dt.tz_localize(None)
+    raw.index = parsed
+    provenance = _json_file(args.bar_provenance)
+    for key in ("event_at", "received_at", "retrieved_at"):
+        if isinstance(provenance.get(key), str):
+            provenance[key] = datetime.fromisoformat(provenance[key].replace("Z", "+00:00"))
+    decision_at = datetime.fromisoformat(args.decision_at.replace("Z", "+00:00"))
+    candidate_inputs = {}
+    if getattr(args, "candidate_evidence", None):
+        book, snapshot, profile = load_candidate_evidence(_json_file(args.candidate_evidence),
+                                                        underlying=args.underlying, decision_at=decision_at,
+                                                        archive_root=getattr(args, "archive_root", None),
+                                                        master_sha256=args.contract_master_sha256)
+        candidate_inputs = {"book": book, "snapshot": snapshot, "profile": profile}
+    decision = evaluate_deployed_full_policy(
+        underlying=args.underlying, bars=raw, regime=args.regime, decision_at=decision_at,
+        bar_provenance=provenance, contract_master_sha256=args.contract_master_sha256,
+        **candidate_inputs,
+    )
+    result = write_full_policy_decision(args.output, decision)
+    return {"state": result["state"], "reason": result["reason"], "decision_id": result["decision_id"],
+            "path": str(Path(args.output)), "can_qualify": False, "can_place_orders": False}
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Sentinel read-only research evidence tools")
     sub = parser.add_subparsers(dest="command", required=True)
+    captured = sub.add_parser("captured-policy-diagnostic", help="re-evaluate a fingerprinted public-input capture; no qualification")
+    captured.add_argument("--public-input", required=True)
+    captured.add_argument("--underlying", required=True, choices=["NIFTY", "SENSEX"])
+    captured.add_argument("--output", required=True)
+    captured.add_argument("--candidate-evidence", help="offline observed contracts, chain and explicit profile JSON")
+    captured.add_argument("--contract-master-sha256")
+    captured.add_argument("--archive-root", help="verify supplied contract terms against archived raw master")
     export = sub.add_parser("export-fno", help="read-only export of operational NIFTY/SENSEX OI snapshots")
     export.add_argument("--source-db", default=settings.DB_PATH)
     export.add_argument("--archive-root", default=settings.RESEARCH_ARCHIVE_PATH)
@@ -71,11 +114,43 @@ def main(argv: list[str] | None = None) -> int:
     replay.add_argument("--policy", required=True, help="frozen ChronologicalPolicy JSON; duration fields are seconds")
     replay.add_argument("--policy-id", required=True)
     replay.add_argument("--session-date", required=True)
+    full_policy = sub.add_parser("full-policy-diagnostic", help="write a causal complete-policy signal diagnostic; no delivery/qualification")
+    full_policy.add_argument("--underlying", required=True, choices=["NIFTY", "SENSEX"])
+    full_policy.add_argument("--bars", required=True, help="CSV with bar_start,open,high,low,close,volume")
+    full_policy.add_argument("--regime", required=True)
+    full_policy.add_argument("--decision-at", required=True, help="timezone-aware ISO decision clock")
+    full_policy.add_argument("--bar-provenance", required=True, help="JSON event/receipt/retrieval provenance")
+    full_policy.add_argument("--contract-master-sha256")
+    full_policy.add_argument("--archive-root", help="verify supplied contract terms against archived raw master")
+    full_policy.add_argument("--candidate-evidence", help="observed JSON contracts, snapshot, receipt and explicit profile; offline only")
+    full_policy.add_argument("--output", required=True, help="atomic full-policy decision output")
     reconcile = sub.add_parser("reconcile-internal", help="write all five retained-data reconciliation investigations")
     reconcile.add_argument("--source-db", default=settings.DB_PATH)
     reconcile.add_argument("--output", required=True, help="JSON evidence output; no ledger mutation")
     reconcile.add_argument("--limit", type=int, default=1000)
     args = parser.parse_args(argv)
+    if args.command == "captured-policy-diagnostic":
+        try:
+            from partner_research_capture import load_public_input
+            from partner_qualification import evaluate_deployed_full_policy, write_full_policy_decision, load_candidate_evidence
+            bars, regime, at, provenance = load_public_input(args.public_input, underlying=args.underlying)
+            candidate_inputs = {}
+            if args.candidate_evidence:
+                book, snapshot, profile = load_candidate_evidence(_json_file(args.candidate_evidence),
+                                                                 underlying=args.underlying, decision_at=at,
+                                                                 archive_root=args.archive_root,
+                                                                 master_sha256=args.contract_master_sha256)
+                candidate_inputs = {"book": book, "snapshot": snapshot, "profile": profile}
+            decision = evaluate_deployed_full_policy(underlying=args.underlying, bars=bars, regime=regime,
+                                                     decision_at=at, bar_provenance=provenance,
+                                                     contract_master_sha256=args.contract_master_sha256, **candidate_inputs)
+            result = write_full_policy_decision(args.output, decision)
+            print(json.dumps({"state": result["state"], "reason": result["reason"], "path": args.output,
+                              "can_qualify": False}, sort_keys=True))
+            return 0
+        except (ValueError, KeyError, TypeError, OSError) as exc:
+            print(json.dumps({"state": "UNAVAILABLE", "reason": str(exc), "can_qualify": False}), file=sys.stderr)
+            return 2
     if args.command == "export-fno":
         try:
             result = export_operational_fno_evidence(
@@ -91,6 +166,13 @@ def main(argv: list[str] | None = None) -> int:
     if args.command == "replay-spread":
         try:
             print(json.dumps(_replay_spread(args), sort_keys=True, default=str))
+        except Exception as exc:
+            print(json.dumps({"state": "RESEARCH_INPUT_REJECTED", "error": str(exc), "can_place_orders": False}), file=sys.stderr)
+            return 1
+        return 0
+    if args.command == "full-policy-diagnostic":
+        try:
+            print(json.dumps(_full_policy_diagnostic(args), sort_keys=True))
         except Exception as exc:
             print(json.dumps({"state": "RESEARCH_INPUT_REJECTED", "error": str(exc), "can_place_orders": False}), file=sys.stderr)
             return 1

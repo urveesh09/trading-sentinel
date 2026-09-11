@@ -80,7 +80,9 @@ async def operational_coverage_report(db_path: str) -> dict[str, Any]:
             observed_at=record.get("provider_timestamp_utc"), receipt_at=record.get("last_seen_quote_utc"),
             counts={"recent_gaps": record.get("recent_gap_count"),
                     "provider_age_seconds": record.get("provider_age_seconds"),
-                    "contracts_in_latest_master": (record.get("master") or {}).get("contract_count")},
+                    "contracts_in_latest_master": (record.get("master") or {}).get("contract_count"),
+                    "active_selected_legs": (record.get("selected_leg_coverage") or {}).get("active_legs"),
+                    "selected_leg_missing_packets": (record.get("selected_leg_coverage") or {}).get("missing_packets")},
             identity={"underlying": underlying, "source": "research_archive",
                       "master_sha256": (record.get("master") or {}).get("raw_sha256")},
         )

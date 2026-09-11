@@ -1036,6 +1036,10 @@ class Settings(BaseSettings):
     RESEARCH_QUOTE_COLLECTION_ENABLED: bool = True
     RESEARCH_QUOTE_INTERVAL_SEC: int = 60
     RESEARCH_QUOTE_STRIKE_WINDOW: int = 5
+    # Exact legs selected by a research/advisory decision take priority over
+    # the rolling ATM discovery universe. A bounded cap makes saturation an
+    # explicit evidence gap instead of silently dropping old contracts.
+    RESEARCH_ACTIVE_LEG_MAX_TOKENS: int = 120
     RESEARCH_QUOTE_MAX_QUEUE: int = 2_000
     RESEARCH_RAW_RETENTION_DAYS: int = 7
     RESEARCH_COMPRESSED_RETENTION_DAYS: int = 90

@@ -4,7 +4,7 @@ from datetime import datetime, timedelta
 import pytest
 import pytz
 
-from intraday_spread_chronological import ChronologicalPolicy, SpreadObservation, replay_chronological_debit_spread
+from intraday_spread_chronological import ChronologicalPolicy, SpreadObservation, replay_chronological_debit_spread, replay_cost_scenarios
 from intraday_spread_replay import LegQuote, ReplayInputError
 
 
@@ -27,6 +27,42 @@ def observation(at, score, quotes=None):
 
 def policy():
     return ChronologicalPolicy("fixed-test-v1", min_signal_score=0.8, take_profit_rs=100, stop_loss_rs=200)
+
+
+def test_public_thesis_does_not_exit_on_spread_profit_alone():
+    first = IST.localize(datetime(2026, 9, 10, 10))
+    profitable = first + timedelta(minutes=1)
+    invalidated = first + timedelta(minutes=2)
+    rows = [observation(first, 1),
+            replace(observation(profitable, 0, pair(profitable, long_bid=110)),
+                    public_price=25000, public_received_at=profitable, public_observed_at=profitable),
+            replace(observation(invalidated, 0), public_price=24900, public_received_at=invalidated, public_observed_at=invalidated)]
+    result = replay_chronological_debit_spread(underlying="NIFTY", expiry="2026-09-24", observations=rows,
+        policy=replace(policy(), exit_basis="PUBLIC_THESIS", direction="LONG", invalidation_level=24900, target_level=25100))
+    assert result.exit_trigger == "INVALIDATION"
+    assert result.result.exit_at == invalidated.isoformat()
+
+
+def test_invalidation_survives_unexecutable_book_and_price_recovery():
+    first = IST.localize(datetime(2026, 9, 10, 10))
+    breach, recovery = first + timedelta(minutes=1), first + timedelta(minutes=2)
+    rows = [observation(first, 1),
+            replace(observation(breach, 0, pair(breach, depth=1)), public_price=24900, public_received_at=breach, public_observed_at=breach),
+            replace(observation(recovery, 0), public_price=25000, public_received_at=recovery, public_observed_at=recovery)]
+    result = replay_chronological_debit_spread(underlying="NIFTY", expiry="2026-09-24", observations=rows,
+        policy=replace(policy(), exit_basis="PUBLIC_THESIS", direction="LONG", invalidation_level=24900, target_level=25100))
+    assert result.state == "CLOSED"
+    assert result.exit_trigger == "INVALIDATION"
+    assert result.result.exit_at == recovery.isoformat()
+
+
+@pytest.mark.parametrize("age", [-1, 601])
+def test_public_event_time_cannot_be_future_or_stale(age):
+    first = IST.localize(datetime(2026, 9, 10, 10))
+    row = replace(observation(first, 1), public_price=25000, public_received_at=first,
+                  public_observed_at=first - timedelta(seconds=age))
+    with pytest.raises(ReplayInputError, match="public-price evidence"):
+        replay_chronological_debit_spread(underlying="NIFTY", expiry="2026-09-24", observations=[row], policy=policy())
 
 
 def test_chronological_runner_selects_first_signal_and_first_exit_trigger_without_caller_times():
@@ -116,3 +152,16 @@ def test_invalid_first_entry_does_not_hide_a_later_accepted_exposure():
     assert replay.active_entry_at == later.isoformat()
     assert "entry_debit_nonpositive" in replay.rejected_entry_reasons
     assert replay.result.accepted_entry is True
+
+
+def test_cost_sensitivity_keeps_the_same_delayed_execution_evidence():
+    first = IST.localize(datetime(2026, 9, 10, 10, 0))
+    later = first + timedelta(minutes=5)
+    report = replay_cost_scenarios(
+        underlying="NIFTY", expiry="2026-09-24", policy=replace(policy(), fee_per_leg_rs=5),
+        observations=[observation(first, .9), observation(later, .1, pair(later, long_bid=110, long_ask=112, short_bid=43, short_ask=45))],
+        fee_multipliers=[1, 2], additional_slippage_bps=[0, 10],
+    )
+    assert len(report["scenarios"]) == 4
+    assert {row["state"] for row in report["scenarios"]} == {"CLOSED"}
+    assert report["can_qualify"] is False
