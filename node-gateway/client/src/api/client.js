@@ -27,9 +27,9 @@ export const fetcher = async (url) => {
 /**
  * Utility for POST requests (Executions, Circuit Breaker reset, etc.)
  */
-export const postClient = async (url, body = {}) => {
+export const requestClient = async (url, body = {}, method = 'POST') => {
   const response = await fetch(url, {
-    method: 'POST',
+    method,
     headers: {
       'Accept': 'application/json',
       'Content-Type': 'application/json'
@@ -49,3 +49,6 @@ export const postClient = async (url, body = {}) => {
 
   return data;
 };
+
+export const postClient = (url, body = {}) => requestClient(url, body, 'POST');
+export const putClient = (url, body = {}) => requestClient(url, body, 'PUT');

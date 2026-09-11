@@ -24,7 +24,7 @@ from hedge_analytics import (
 from hedge_readiness import assess_hedge_readiness, record_gate_evidence
 from partner_manual_advisory import (
     ManualDecision, PartnerAdvisoryProfile, load_advisory_cards, load_advisory_diagnostics,
-    StrategyEvidence, load_partner_profile, record_manual_feedback,
+    StrategyEvidence, load_partner_profile_with_state, record_manual_feedback,
     record_research_artifact, record_strategy_qualification, save_partner_profile,
 )
 from research_archive import readiness_view
@@ -300,7 +300,30 @@ async def get_partner_hedge_status(request: Request):
 @router.get("/partner/advisory/profile")
 async def get_partner_advisory_profile(request: Request, profile_id: str = "default"):
     _main._check_internal_secret(request, "get_partner_advisory_profile")
-    return jsonable_encoder(await load_partner_profile(settings.DB_PATH, profile_id))
+    profile, profile_state = await load_partner_profile_with_state(settings.DB_PATH, profile_id)
+    return {**jsonable_encoder(profile), "profile_state": profile_state}
+
+
+@router.get("/partner/advisory/setup")
+async def get_partner_advisory_setup(request: Request, profile_id: str = "default"):
+    """Small operator setup/readiness view; it cannot qualify or enable delivery."""
+    _main._check_internal_secret(request, "get_partner_advisory_setup")
+    profile, profile_state = await load_partner_profile_with_state(settings.DB_PATH, profile_id)
+    diagnostics = await load_advisory_diagnostics(settings.DB_PATH)
+    return {
+        "profile": jsonable_encoder(profile),
+        "profile_state": profile_state,
+        "required_profile_values": {
+            "holding_period": "INTRADAY",
+            "instruments": ["NIFTY", "SENSEX"],
+            "market_structure": "DIRECTIONAL_DEBIT_SPREAD",
+        },
+        "optional_financial_limits": ["capital_limit_rs", "risk_limit_rs"],
+        "input_status": diagnostics["input_status"],
+        "qualification_note": "A saved profile is not research evidence and cannot qualify or deliver advice.",
+        "automatic_execution": False,
+        "delivery_authority": False,
+    }
 
 
 @router.put("/partner/advisory/profile")
@@ -353,12 +376,10 @@ async def post_partner_advisory_research_artifact(request: Request, payload: Par
 async def get_partner_advisory_effective_settings(request: Request, profile_id: str = "default"):
     """Expose effective non-secret gates so operators can diagnose silence."""
     _main._check_internal_secret(request, "get_partner_advisory_effective_settings")
-    profile = await load_partner_profile(settings.DB_PATH, profile_id)
+    profile, profile_state = await load_partner_profile_with_state(settings.DB_PATH, profile_id)
     return {
         "profile": jsonable_encoder(profile),
-        "profile_state": "SAVED_INTRADAY" if profile.holding_period == "INTRADAY" else (
-            "IMPLICIT_DEFAULT_PROFILE" if profile.holding_period is None else "HORIZON_MISMATCH"
-        ),
+        "profile_state": profile_state,
         "policy_version": "partner-manual-intraday-v1",
         "manual_advisory_enabled": bool(settings.PARTNER_MANUAL_ADVISORY_ENABLED),
         "shadow_enabled": bool(settings.PARTNER_MANUAL_ADVISORY_SHADOW_ENABLED),

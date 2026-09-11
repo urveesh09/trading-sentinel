@@ -52,6 +52,10 @@ class Settings(BaseSettings):
     # contract; it still has no order, delivery or broker-consumer path.
     PROACTIVE_SHADOW_DATA_SOURCE: str = "LEGACY_FIXTURE_V1"
     PROACTIVE_SHADOW_COMPLETED_BAR_FIXTURE_PATH: str = ""
+    # Dated, archived-master-verified NIFTY/SENSEX bar mappings, e.g.
+    # {"NIFTY":{"token":...,"basis":"FUTURE","master_sha256":"..."}}.
+    # A bare positive token is intentionally rejected: tokens may be reused.
+    PROACTIVE_SHADOW_KITE_TOKENS_JSON: str = ""
     PROACTIVE_SHADOW_MAX_DATA_AGE_SECONDS: int = 1800
     PROACTIVE_SHADOW_ACCOUNT_ID: str = "dev-shadow"
     PROACTIVE_SHADOW_RUN_ID: str = "dev-shadow-v1"
@@ -1146,6 +1150,10 @@ class Settings(BaseSettings):
     PARTNER_MANUAL_ADVISORY_ENTRY_END_MINUTE: int = 14 * 60 + 45
     PARTNER_MANUAL_ADVISORY_EXIT_REMINDER_MINUTE: int = 15 * 60 + 10
     PARTNER_MANUAL_ADVISORY_MANAGEMENT_END_MINUTE: int = 15 * 60 + 15
+    # Management uses the just-closed futures bar when no new ORB direction
+    # exists.  This bounds public-condition updates without requiring a full
+    # option-chain fetch on every quiet entry tick.
+    PARTNER_MANUAL_ADVISORY_MANAGEMENT_MAX_OBSERVATION_AGE_SEC: int = 360
 
     # Advanced partner-facing phases require current readiness evidence. They
     # start disabled; Phase 1 protection and status messages remain available.

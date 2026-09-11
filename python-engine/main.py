@@ -2060,6 +2060,13 @@ async def lifespan(app: FastAPI):
     # and returns instantly when off (zero Kite calls, zero sends).
     register_partner_scheduler_jobs(scheduler)
 
+    # Durable timing facts complement the existing liveness heartbeat.  The
+    # listener records APScheduler misfires/max-instance rejections while the
+    # selected latency-sensitive jobs record actual completion timing.  It is
+    # observational only and cannot alter scan, exit, delivery or order paths.
+    from scheduler_telemetry import attach_scheduler_listener
+    attach_scheduler_listener(scheduler, settings.DB_PATH)
+
     # [FNO 2026-07-10] fno tables exist before the first tick (rule 57
     # preflight would catch it, but creating them at startup keeps the
     # first day's log complete).

@@ -219,6 +219,22 @@ CREATE TABLE IF NOT EXISTS partner_advisory_updates (
   updated_at TEXT NOT NULL,
   UNIQUE(advisory_id, event_type)
 );
+-- Latest per-index scan/input contract.  This is diagnostic evidence only;
+-- a usable observation is never equated with qualified or deliverable advice.
+CREATE TABLE IF NOT EXISTS partner_advisory_input_status (
+  underlying TEXT PRIMARY KEY,
+  attempted_at TEXT NOT NULL,
+  stage TEXT NOT NULL,
+  reason TEXT NOT NULL,
+  entry_state TEXT NOT NULL,
+  observed_at TEXT,
+  received_at TEXT,
+  freshness_seconds REAL,
+  last_success_at TEXT,
+  profile_state TEXT NOT NULL,
+  qualification_state TEXT NOT NULL,
+  updated_at TEXT NOT NULL
+);
 """
 
 
@@ -226,6 +242,13 @@ def _iso(value: datetime) -> str:
     if value.tzinfo is None:
         raise ValueError("advisory timestamps must be timezone-aware")
     return value.astimezone(IST).isoformat()
+
+
+def _parse_status_clock(value: str) -> datetime:
+    parsed = datetime.fromisoformat(value)
+    if parsed.tzinfo is None or parsed.utcoffset() is None:
+        raise ValueError("persisted advisory status clock is timezone-naive")
+    return parsed.astimezone(IST)
 
 
 def _profile_payload(profile: PartnerAdvisoryProfile) -> str:
@@ -399,6 +422,114 @@ async def load_partner_profile(
     raw["instruments"] = tuple(raw.get("instruments", ()))
     raw["permitted_structures"] = tuple(raw.get("permitted_structures", ()))
     return PartnerAdvisoryProfile(**raw)
+
+
+async def load_partner_profile_with_state(
+    db_path: str, profile_id: str = "default",
+) -> tuple[PartnerAdvisoryProfile, str]:
+    """Return a profile plus its saved/default state without guessing readiness."""
+    await init_partner_advisory_db(db_path)
+    async with aiosqlite.connect(db_path) as db:
+        row = await (await db.execute(
+            "SELECT payload FROM partner_advisory_profiles WHERE profile_id=?", (profile_id,)
+        )).fetchone()
+    if row is None:
+        return PartnerAdvisoryProfile(profile_id=profile_id), "MISSING_PROFILE"
+    raw = json.loads(row[0])
+    raw["enabled_scopes"] = tuple(raw.get("enabled_scopes", ()))
+    raw["instruments"] = tuple(raw.get("instruments", ()))
+    raw["permitted_structures"] = tuple(raw.get("permitted_structures", ()))
+    profile = PartnerAdvisoryProfile(**raw)
+    return profile, (
+        "SAVED_INTRADAY" if profile.holding_period == INTRADAY_HORIZON
+        else "SAVED_HORIZON_MISMATCH"
+    )
+
+
+async def record_advisory_input_status(
+    db_path: str, *, underlying: str, attempted_at: datetime, stage: str,
+    reason: str, entry_state: str, observed_at: Optional[datetime] = None,
+    received_at: Optional[datetime] = None, profile_state: str = "NOT_EVALUATED",
+    qualification_state: str = "NOT_EVALUATED", successful_observation: bool = False,
+) -> None:
+    """Persist latest per-index stages with separate attempt, observation and receipt clocks."""
+    if underlying not in INDEX_EXCHANGES:
+        raise ValueError("input status requires NIFTY or SENSEX")
+    if attempted_at.tzinfo is None:
+        raise ValueError("input status attempted_at must be timezone-aware")
+    received_at = received_at or attempted_at
+    if received_at.tzinfo is None or (observed_at is not None and observed_at.tzinfo is None):
+        raise ValueError("input status timestamps must be timezone-aware")
+    freshness = (received_at - observed_at).total_seconds() if observed_at else None
+    attempted, received = _iso(attempted_at), _iso(received_at)
+    observed = _iso(observed_at) if observed_at else None
+    await init_partner_advisory_db(db_path)
+    async with aiosqlite.connect(db_path) as db:
+        await db.execute(
+            "INSERT INTO partner_advisory_input_status(underlying,attempted_at,stage,reason,entry_state,"
+            "observed_at,received_at,freshness_seconds,last_success_at,profile_state,qualification_state,updated_at) "
+            "VALUES(?,?,?,?,?,?,?,?,?,?,?,?) ON CONFLICT(underlying) DO UPDATE SET "
+            "attempted_at=excluded.attempted_at,stage=excluded.stage,reason=excluded.reason,entry_state=excluded.entry_state,"
+            "observed_at=excluded.observed_at,received_at=excluded.received_at,freshness_seconds=excluded.freshness_seconds,"
+            "last_success_at=CASE WHEN excluded.last_success_at IS NULL THEN partner_advisory_input_status.last_success_at ELSE excluded.last_success_at END,"
+            "profile_state=excluded.profile_state,qualification_state=excluded.qualification_state,updated_at=excluded.updated_at "
+            "WHERE excluded.attempted_at >= partner_advisory_input_status.attempted_at",
+            (underlying, attempted, str(stage)[:80], str(reason)[:240], str(entry_state)[:80],
+             observed, received, freshness, received if successful_observation else None,
+             str(profile_state)[:80], str(qualification_state)[:80], attempted),
+        )
+        await db.commit()
+
+
+async def load_advisory_input_status(db_path: str, *, now: Optional[datetime] = None,
+                                     max_age_seconds: float = 180.0) -> dict[str, dict]:
+    """Return current status using read-time freshness, not last scan's age.
+
+    ``now`` is injectable for API/interaction tests.  A stale or future source
+    is not disguised as an observed healthy no-setup condition.
+    """
+    if max_age_seconds <= 0:
+        raise ValueError("max_age_seconds must be positive")
+    now = now or datetime.now(IST)
+    if now.tzinfo is None:
+        raise ValueError("now must be timezone-aware")
+    await init_partner_advisory_db(db_path)
+    async with aiosqlite.connect(db_path) as db:
+        rows = await (await db.execute(
+            "SELECT underlying,attempted_at,stage,reason,entry_state,observed_at,received_at,"
+            "freshness_seconds,last_success_at,profile_state,qualification_state,updated_at "
+            "FROM partner_advisory_input_status"
+        )).fetchall()
+    output = {name: {
+        "state": "NOT_ATTEMPTED", "attempted_at": None, "stage": "NOT_ATTEMPTED",
+        "reason": "no_manual_advisory_attempt_recorded", "entry_state": "UNKNOWN",
+        "observed_at": None, "received_at": None, "freshness_seconds": None,
+        "last_success_at": None, "profile_state": "NOT_EVALUATED",
+        "qualification_state": "NOT_EVALUATED", "updated_at": None,
+    } for name in INDEX_EXCHANGES}
+    for row in rows:
+        try:
+            received = _parse_status_clock(row[6]) if row[6] else None
+            observed = _parse_status_clock(row[5]) if row[5] else None
+        except (TypeError, ValueError):
+            received, observed = None, None
+        age = (now - received).total_seconds() if received else None
+        state = "OBSERVED"
+        if received is None:
+            state = "UNAVAILABLE"
+        elif age is not None and age < -1:
+            state = "FUTURE_CLOCK"
+        elif age is not None and age > max_age_seconds:
+            state = "STALE"
+        elif row[4] == "NO_ENTRY_SETUP":
+            state = "HEALTHY_NO_SETUP"
+        output[row[0]] = {
+            "state": state, "attempted_at": row[1], "stage": row[2], "reason": row[3],
+            "entry_state": row[4], "observed_at": row[5], "received_at": row[6],
+            "freshness_seconds": age, "stored_freshness_seconds": row[7], "last_success_at": row[8], "profile_state": row[9],
+            "qualification_state": row[10], "updated_at": row[11],
+        }
+    return output
 
 
 async def record_strategy_qualification(
@@ -1306,6 +1437,7 @@ async def load_advisory_diagnostics(db_path: str) -> dict:
         updates[key] = updates.get(key, 0) + 1
     return {
         "by_index": by_index,
+        "input_status": await load_advisory_input_status(db_path),
         "outcome_interpretation": "Delivery is not a fill or P&L. Only explicitly reported feedback is partner-specific.",
         "automatic_execution": False,
     }
@@ -1315,6 +1447,6 @@ __all__ = [
     "AdvisoryCandidate", "AdvisoryLeg", "AdvisoryScope", "INDEX_EXCHANGES",
     "ManualDecision", "PartnerAdvisoryProfile", "StrategyEvidence", "ValidationResult",
     "advisory_identity", "build_conditional_index_protective_put", "build_directional_debit_spread", "init_partner_advisory_db",
-    "is_strategy_qualified", "load_advisory_cards", "load_advisory_diagnostics", "load_partner_profile", "persist_candidate", "record_manual_feedback",
+    "is_strategy_qualified", "load_advisory_cards", "load_advisory_diagnostics", "load_advisory_input_status", "load_partner_profile", "load_partner_profile_with_state", "persist_candidate", "record_advisory_input_status", "record_manual_feedback",
     "queue_management_updates", "run_intraday_session_lifecycle", "dispatch_queued_management_update", "record_research_artifact", "record_strategy_qualification", "render_advisory_card", "resolve_advisory_expiry", "save_partner_profile", "select_preferred_market_candidates", "validate_candidate", "validate_profile",
 ]

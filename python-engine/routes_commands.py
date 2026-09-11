@@ -301,6 +301,33 @@ async def get_proactive_session_diagnostics(sessions: int = 5):
         raise HTTPException(status_code=422, detail=str(exc)) from exc
 
 
+@router.get("/analytics/scheduler-timing")
+async def get_scheduler_timing(limit: int = 500):
+    """Observed scheduler timing/rejection evidence; never a control surface."""
+    from scheduler_telemetry import scheduler_timing_report
+    try:
+        return await scheduler_timing_report(settings.DB_PATH, limit=limit)
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+
+
+@router.get("/analytics/operational-coverage")
+async def get_operational_coverage():
+    """Producer-level readiness; unavailable evidence is never converted to zero."""
+    from operational_coverage import operational_coverage_report
+    return await operational_coverage_report(settings.DB_PATH)
+
+
+@router.get("/analytics/reconciliation-evidence")
+async def get_reconciliation_evidence(source: str | None = None, limit: int = 200):
+    """Stable-link reconciliation sheets; intentionally read-only."""
+    from reconciliation_evidence import reconciliation_evidence_report
+    try:
+        return await reconciliation_evidence_report(settings.DB_PATH, source=source, limit=limit)
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+
+
 
 @router.get("/analytics/suggestions")
 async def get_suggestions(days: int = 14):

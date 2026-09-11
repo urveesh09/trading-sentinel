@@ -382,7 +382,7 @@ async def _manage_open_positions(
             await record_trade_close(
                 db_path, ticker=p.tradingsymbol, pnl=pnl,
                 r_multiple=r_mult, notes=f"fno_exit {exit_reason}",
-                source=source,
+                source=source, origin_ref=f"fno_position:{p.id}",
             )
         except Exception as exc:
             logger.error("fno_ledger_write_failed id=%d err=%s", p.id, str(exc))

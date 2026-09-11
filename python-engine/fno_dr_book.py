@@ -391,6 +391,7 @@ async def manage_dr_structures(
                 await record_trade_close(
                     db_path, f"DR_{row['kind']}", round(gross - costs, 2),
                     notes=f"fno_dr_exit {reason}", source=source,
+                    origin_ref=f"fno_dr_structure:{row['id']}",
                 )
             except Exception as exc:
                 logger.error("fno_dr_ledger_write_failed id=%s err=%s", row.get("id"), str(exc))

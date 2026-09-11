@@ -13,7 +13,7 @@ async def init_ledger(db_path: str):
             CREATE TABLE IF NOT EXISTS bankroll_ledger (
                 id INTEGER PRIMARY KEY AUTOINCREMENT, timestamp TEXT, event_type TEXT,
                 ticker TEXT, pnl REAL, bankroll_before REAL, bankroll_after REAL,
-                source TEXT NOT NULL DEFAULT 'SYSTEM', notes TEXT
+                source TEXT NOT NULL DEFAULT 'SYSTEM', notes TEXT, origin_ref TEXT
             )
         """)
         # Migration: existing DBs (pre-2026-06-24) were created without the
@@ -24,6 +24,10 @@ async def init_ledger(db_path: str):
                 "ALTER TABLE bankroll_ledger "
                 "ADD COLUMN source TEXT NOT NULL DEFAULT 'SYSTEM'"
             )
+        except Exception:
+            pass  # column already exists -- safe to ignore
+        try:
+            await db.execute("ALTER TABLE bankroll_ledger ADD COLUMN origin_ref TEXT")
         except Exception:
             pass  # column already exists -- safe to ignore
         await db.execute("""
@@ -252,7 +256,8 @@ async def record_trade_close(db_path: str, ticker: str, pnl: float,
                              notes: str | None = None,
                              *, source: str,
                              outcome_pnl: float | None = None,
-                             outcome_r_multiple: float | None = None):
+                             outcome_r_multiple: float | None = None,
+                             origin_ref: str | None = None):
     """Append a realised close to the bankroll ledger.
 
     `source` names the division the P&L belongs to: SYSTEM (swing), MOMENTUM,
@@ -287,10 +292,10 @@ async def record_trade_close(db_path: str, ticker: str, pnl: float,
     async with aiosqlite.connect(db_path) as db:
         await db.execute(
             "INSERT INTO bankroll_ledger "
-            "(timestamp, event_type, ticker, pnl, bankroll_before, bankroll_after, source) "
-            "VALUES (?, ?, ?, ?, ?, ?, ?)",
+            "(timestamp, event_type, ticker, pnl, bankroll_before, bankroll_after, source, origin_ref) "
+            "VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
             (datetime.now(timezone.utc).isoformat(), "TRADE_CLOSED", ticker,
-             pnl, before, after, source)
+             pnl, before, after, source, origin_ref.strip()[:180] if origin_ref else None)
         )
         await db.commit()
     # [ANALYTICS 2026-06-16] Side-effect: record the trade outcome + join with

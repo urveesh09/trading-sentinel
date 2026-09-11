@@ -1723,6 +1723,39 @@ async def run_configured_shadow_workflow(*, now: Optional[datetime] = None) -> d
     if not account_id:
         raise ValueError("PROACTIVE_SHADOW_ACCOUNT_ID is required when enabled")
     source = str(settings.PROACTIVE_SHADOW_DATA_SOURCE).strip().upper()
+    if source == "KITE_COMPLETED_BARS_V1":
+        from proactive_market_data import CompletedBarDataError, load_kite_completed_bar_snapshot
+        run_label = str(settings.PROACTIVE_SHADOW_RUN_ID).strip()
+        run_id = _configured_shadow_run_id(run_label) if run_label else ""
+        try:
+            tokens = json.loads(str(settings.PROACTIVE_SHADOW_KITE_TOKENS_JSON))
+            max_age_seconds, capital = int(settings.PROACTIVE_SHADOW_MAX_DATA_AGE_SECONDS), float(settings.PROACTIVE_SHADOW_SCENARIO_CAPITAL)
+            if not isinstance(tokens, dict) or not run_id or not math.isfinite(capital) or capital <= 0:
+                raise ValueError("Kite completed-bar source identity/configuration is invalid")
+            if not 1 <= max_age_seconds <= 86_400:
+                raise ValueError("completed-bar maximum age must be between one second and one day")
+            import main as _main
+            snapshot = await load_kite_completed_bar_snapshot(
+                _main.kite, instruments=tokens, as_of=observed_at,
+                max_age=timedelta(seconds=max_age_seconds), archive_root=settings.RESEARCH_ARCHIVE_PATH,
+            )
+        except CompletedBarDataError as exc:
+            reason = "MARKET_DATA_STALE" if "stale" in str(exc).lower() else "MARKET_DATA_SOURCE_INVALID"
+            await record_market_data_observation(settings.DB_PATH, account_id=account_id, run_id=run_id or "unconfigured", observed_at=observed_at, state="UNAVAILABLE", reason=reason)
+            await _record_shadow_configuration_state(settings.DB_PATH, account_id=account_id, observed_at=observed_at, reason=reason)
+            return {"mode": "SHADOW", "state": reason}
+        except (TypeError, ValueError, json.JSONDecodeError):
+            reason = "MARKET_DATA_SOURCE_UNCONFIGURED"
+            await record_market_data_observation(settings.DB_PATH, account_id=account_id, run_id=run_id or "unconfigured", observed_at=observed_at, state="UNAVAILABLE", reason=reason)
+            await _record_shadow_configuration_state(settings.DB_PATH, account_id=account_id, observed_at=observed_at, reason=reason)
+            return {"mode": "SHADOW", "state": reason}
+        await record_market_data_observation(settings.DB_PATH, account_id=account_id, run_id=run_id, observed_at=observed_at, state="AVAILABLE", reason="KITE_COMPLETED_BARS_AVAILABLE", provenance=snapshot.provenance)
+        contract = {key: snapshot.provenance[key] for key in ("source_kind", "provider", "timeframe", "adjustment_version", "instrument_mapping")}
+        received_at = _stamp(datetime.fromisoformat(snapshot.provenance["received_at"]))
+        result = await run_shadow_workflow(settings.DB_PATH, account_id=account_id, universe=snapshot.decision_bars,
+                                           future_bars=snapshot.outcome_bars, scenario_capital=capital, run_id=run_id,
+                                           now=received_at, market_data_contract=contract)
+        return {**result, "state": "COMPLETED", "market_data": snapshot.provenance}
     if source == "RECORDED_COMPLETED_BARS_V1":
         from proactive_market_data import CompletedBarDataError, load_recorded_completed_bar_snapshot
 
