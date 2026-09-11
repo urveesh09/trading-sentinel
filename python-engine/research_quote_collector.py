@@ -267,6 +267,9 @@ async def collect_rest_quote_snapshot(
         batch_received_at = datetime.now(IST)
         if not data:
             result["gaps"].append({"underlying": name, "reason": "quote_batch_empty", "tokens": len(tokens)})
+            await asyncio.to_thread(subscriptions.record_collection, requested_tokens=active_tokens,
+                                    received_tokens=(), now=batch_received_at,
+                                    capacity_shortfall=capacity_shortfall)
             continue
         for contract, reason in selected:
             quote = data.get(contract.token)

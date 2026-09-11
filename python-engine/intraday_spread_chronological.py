@@ -28,6 +28,9 @@ class SpreadObservation:
     received_at: datetime
     signal_score: float
     quotes: tuple[LegQuote, ...]
+    public_price: float | None = None
+    public_received_at: datetime | None = None
+    public_observed_at: datetime | None = None
 
 
 @dataclass(frozen=True)
@@ -49,6 +52,11 @@ class ChronologicalPolicy:
     execution_max_wait: timedelta = timedelta(seconds=30)
     signal_expiry: timedelta = timedelta(seconds=30)
     cancellation_score: float | None = 0.0
+    exit_basis: str = "SPREAD_PNL"
+    direction: str | None = None
+    invalidation_level: float | None = None
+    target_level: float | None = None
+    max_public_age: timedelta = timedelta(minutes=10)
 
 
 @dataclass(frozen=True)
@@ -70,6 +78,15 @@ def _clock(value: datetime, field: str) -> datetime:
 
 
 def _policy_payload(policy: ChronologicalPolicy) -> dict:
+    if policy.exit_basis not in {"SPREAD_PNL", "PUBLIC_THESIS"}:
+        raise ReplayInputError("unknown exit basis")
+    if policy.max_public_age <= timedelta(0):
+        raise ReplayInputError("public price age bound must be positive")
+    if policy.exit_basis == "PUBLIC_THESIS":
+        if (policy.direction not in {"LONG", "SHORT"}
+                or any(value is None or not math.isfinite(value) or value <= 0
+                       for value in (policy.invalidation_level, policy.target_level))):
+            raise ReplayInputError("public thesis requires direction and finite levels")
     if not policy.policy_id.strip() or not all(math.isfinite(float(item)) for item in
                                                (policy.min_signal_score, policy.take_profit_rs, policy.stop_loss_rs,
                                                 policy.fee_per_leg_rs, policy.slippage_bps)):
@@ -89,13 +106,18 @@ def _policy_payload(policy: ChronologicalPolicy) -> dict:
             "execution_delay_seconds": policy.execution_delay.total_seconds(),
             "execution_max_wait_seconds": policy.execution_max_wait.total_seconds(),
             "signal_expiry_seconds": policy.signal_expiry.total_seconds(),
-            "cancellation_score": policy.cancellation_score}
+            "cancellation_score": policy.cancellation_score, "exit_basis": policy.exit_basis,
+            "direction": policy.direction, "invalidation_level": policy.invalidation_level, "target_level": policy.target_level,
+            "max_public_age_seconds": policy.max_public_age.total_seconds()}
 
 
 def _observation_payload(item: SpreadObservation) -> dict:
     return {"observed_at": _clock(item.observed_at, "observed_at").isoformat(),
             "received_at": _clock(item.received_at, "received_at").isoformat(),
             "signal_score": item.signal_score,
+            "public_price": item.public_price,
+            "public_received_at": item.public_received_at.isoformat() if item.public_received_at else None,
+            "public_observed_at": item.public_observed_at.isoformat() if item.public_observed_at else None,
             "quotes": [asdict(quote) | {"observed_at": _clock(quote.observed_at, "quote.observed_at").isoformat(),
                                            "received_at": _clock(quote.received_at, "quote.received_at").isoformat()}
                        for quote in item.quotes]}
@@ -150,6 +172,14 @@ def replay_chronological_debit_spread(
     prior_received: datetime | None = None
     session_date = None
     for item in rows:
+        if item.public_price is not None:
+            if (not math.isfinite(item.public_price) or item.public_price <= 0
+                    or item.public_received_at is None
+                    or item.public_observed_at is None
+                    or _clock(item.public_received_at, "public_received_at") > item.received_at
+                    or _clock(item.public_observed_at, "public_observed_at") > item.public_received_at
+                    or item.received_at - item.public_observed_at > policy.max_public_age):
+                raise ReplayInputError("invalid or future public-price evidence")
         observed, received = _clock(item.observed_at, "observed_at"), _clock(item.received_at, "received_at")
         if observed > received or not math.isfinite(float(item.signal_score)):
             raise ReplayInputError("chronological observation timestamps or signal are invalid")
@@ -192,12 +222,23 @@ def replay_chronological_debit_spread(
         return ChronologicalReplay(result, "NO_FILL", attempted, tuple(rejected), None, None, len(rows), digest)
     entry_index = rows.index(entry)
     last_unresolved: ReplayResult | None = None
+    pending_public_trigger = None
+    public_exit_eligible_at = None
     for item in rows[entry_index + 1:]:
         # Exit observations are already the first sequentially available books.
         # Never manufacture a later timestamp by adding a delay to an older
         # packet; a delayed exit needs a later real packet and remains
         # unresolved when it is absent.
         clock = item.received_at
+        if policy.exit_basis == "PUBLIC_THESIS" and pending_public_trigger is None:
+            from partner_thesis import public_thesis_event
+            if item.public_price is not None:
+                pending_public_trigger, _ = public_thesis_event(policy.direction, item.public_price,
+                                                                policy.invalidation_level, policy.target_level)
+            if pending_public_trigger is not None:
+                public_exit_eligible_at = clock + policy.execution_delay
+        if pending_public_trigger is not None and clock < public_exit_eligible_at:
+            continue
         candidate = replay_intraday_debit_spread(
             underlying=underlying, expiry=expiry, entry_at=entry.received_at,
             entry_quotes=list(entry.quotes), exit_at=clock, exit_quotes=list(item.quotes), fee_per_leg_rs=policy.fee_per_leg_rs,
@@ -209,9 +250,11 @@ def replay_chronological_debit_spread(
         if candidate.state != "CLOSED":
             last_unresolved = candidate
             continue
-        if candidate.net_pnl_rs is not None and candidate.net_pnl_rs >= policy.take_profit_rs:
+        if pending_public_trigger is not None:
+            trigger = pending_public_trigger
+        elif policy.exit_basis == "SPREAD_PNL" and candidate.net_pnl_rs is not None and candidate.net_pnl_rs >= policy.take_profit_rs:
             trigger = "take_profit"
-        elif candidate.net_pnl_rs is not None and candidate.net_pnl_rs <= -policy.stop_loss_rs:
+        elif policy.exit_basis == "SPREAD_PNL" and candidate.net_pnl_rs is not None and candidate.net_pnl_rs <= -policy.stop_loss_rs:
             trigger = "stop_loss"
         elif clock.astimezone(IST).hour * 60 + clock.astimezone(IST).minute >= policy.management_deadline_minute:
             trigger = "management_deadline"
@@ -225,10 +268,11 @@ def replay_chronological_debit_spread(
         return ChronologicalReplay(final, final.state, attempted, tuple(rejected), entry.received_at.isoformat(), trigger, len(rows), digest)
     reason = "no_timely_executable_exit" if last_unresolved is not None else "no_exit_observation_after_entry"
     outcome = {"state": "UNRESOLVED", "reason": reason, "entry_at": entry.received_at.isoformat(),
+               "pending_public_trigger": pending_public_trigger,
                "attempted_entries": attempted, "rejected": rejected}
     digest = _evidence(underlying=underlying, expiry=expiry, policy=policy, observations=rows, outcome=outcome)
     unresolved = replace(entry_probe, state="UNRESOLVED", reason=reason, evidence_sha256=digest)
-    return ChronologicalReplay(unresolved, "UNRESOLVED", attempted, tuple(rejected), entry.received_at.isoformat(), None, len(rows), digest)
+    return ChronologicalReplay(unresolved, "UNRESOLVED", attempted, tuple(rejected), entry.received_at.isoformat(), pending_public_trigger, len(rows), digest)
 
 
 def replay_cost_scenarios(*, underlying: str, expiry: str, observations: Iterable[SpreadObservation],

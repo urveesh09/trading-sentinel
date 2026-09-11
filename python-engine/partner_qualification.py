@@ -9,12 +9,14 @@ from __future__ import annotations
 import hashlib
 import inspect
 import json
+import math
 from dataclasses import asdict, dataclass
-from datetime import datetime
+from datetime import date, datetime
 from pathlib import Path
 from typing import Any, Mapping
 
 import pandas as pd
+from zoneinfo import ZoneInfo
 
 from config import settings
 from fno_chain import ChainSnapshot
@@ -27,6 +29,54 @@ from partner_manual_advisory import (
 
 
 FULL_POLICY_EVALUATOR = "partner_manual_intraday_full_policy_v1"
+
+
+def load_candidate_evidence(value: Mapping[str, Any], *, underlying: str, decision_at: datetime):
+    """Decode an offline chain/profile bundle. Never fetch or persist instruments."""
+    from fno_models import Contract, ContractQuote
+    name = underlying.upper()
+    expected_segment = {"NIFTY": "NFO", "SENSEX": "BFO"}.get(name)
+    if value.get("underlying") != name or value.get("segment") != expected_segment:
+        raise ValueError("candidate evidence index/segment mismatch")
+    received = datetime.fromisoformat(str(value["received_at"]))
+    if _clock(received, "chain received_at") > _clock(decision_at, "decision_at"):
+        raise ValueError("chain evidence unavailable at decision time")
+    contracts = []
+    for raw in value["contracts"]:
+        item = dict(raw)
+        item["expiry"] = date.fromisoformat(item["expiry"])
+        contract = Contract(**item)
+        if contract.name != name or contract.token <= 0 or contract.lot_size <= 0:
+            raise ValueError("invalid candidate evidence contract")
+        contracts.append(contract)
+    if not contracts or len({c.token for c in contracts}) != len(contracts):
+        raise ValueError("candidate evidence contracts must be nonempty and unique")
+    if len({(c.expiry, c.strike, c.instrument_type) for c in contracts}) != len(contracts):
+        raise ValueError("duplicate candidate contract terms")
+    by_token = {c.token: c for c in contracts}
+    book = FnoInstruments(name, segment=expected_segment)
+    book._load_contracts(contracts)
+    snap_raw = value["snapshot"]
+    taken = _clock(datetime.fromisoformat(snap_raw["taken_at"]), "chain taken_at")
+    if taken > received:
+        raise ValueError("chain observation follows receipt")
+    quotes = {}
+    for raw in snap_raw["quotes"]:
+        item = dict(raw)
+        contract = by_token[item.pop("token")]
+        stamp = item.get("last_trade_time")
+        if stamp is not None:
+            item["last_trade_time"] = _clock(datetime.fromisoformat(stamp), "quote timestamp")
+            if item["last_trade_time"] > received:
+                raise ValueError("quote timestamp follows receipt")
+        key = (contract.strike, contract.instrument_type)
+        if key in quotes:
+            raise ValueError("duplicate candidate quote")
+        quotes[key] = ContractQuote(contract=contract, **item)
+    snapshot = ChainSnapshot(taken, date.fromisoformat(snap_raw["expiry"]), snap_raw["forward"],
+                             snap_raw.get("parity_forward"), snap_raw["lot_size"], None, quotes)
+    profile = PartnerAdvisoryProfile(**value["profile"])
+    return book, snapshot, profile
 
 
 def _sha(value: object) -> str:
@@ -51,6 +101,19 @@ def _bars_payload(bars: pd.DataFrame) -> list[dict[str, Any]]:
     required = {"open", "high", "low", "close", "volume"}
     if not required.issubset(bars.columns):
         raise ValueError("full policy bars are missing OHLCV columns")
+    if not isinstance(bars.index, pd.DatetimeIndex) or bars.index.hasnans or not bars.index.is_unique:
+        raise ValueError("full policy bars require unique valid datetime starts")
+    if not bars.index.is_monotonic_increasing:
+        raise ValueError("full policy bars must be chronological")
+    for _, row in bars.iterrows():
+        values = {field: float(row[field]) for field in required}
+        if not all(math.isfinite(value) for value in values.values()):
+            raise ValueError("full policy OHLCV must be finite")
+        if (min(values[field] for field in ("open", "high", "low", "close")) <= 0
+                or values["volume"] < 0
+                or values["low"] > min(values["open"], values["close"])
+                or values["high"] < max(values["open"], values["close"])):
+            raise ValueError("full policy OHLCV is inconsistent")
     return [{"bar_start": str(index), **{field: float(row[field]) for field in sorted(required)}}
             for index, row in bars.sort_index().iterrows()]
 
@@ -86,9 +149,10 @@ def _causal_provenance(value: Mapping[str, Any], decision_at: datetime) -> dict[
 
 def policy_manifest(*, underlying: str, structure_kind: str, bars: pd.DataFrame,
                     regime: str, decision_at: datetime, bar_provenance: Mapping[str, Any],
-                    contract_master_sha256: str | None = None) -> dict[str, Any]:
+                    contract_master_sha256: str | None = None,
+                    profile: PartnerAdvisoryProfile | None = None) -> dict[str, Any]:
     """Freeze code/config/input identity for one full-policy decision."""
-    now = _clock(decision_at, "decision_at")
+    now = _clock(decision_at, "decision_at").astimezone(ZoneInfo("Asia/Kolkata"))
     name = underlying.upper()
     if name not in {"NIFTY", "SENSEX"} or structure_kind != "DIRECTIONAL_DEBIT_SPREAD":
         raise ValueError("only NIFTY/SENSEX directional debit-spread policy is supported")
@@ -103,6 +167,19 @@ def policy_manifest(*, underlying: str, structure_kind: str, bars: pd.DataFrame,
     )}
     bar_rows = _bars_payload(bars)
     provenance = _causal_provenance(bar_provenance, now)
+    # Whole-module fingerprints include helper changes, not just the top-level
+    # signal function. Inputs/master dates stay in the decision evidence below.
+    source_names = ("fno_engine_mom.py", "partner_manual_advisory.py", "fno_chain.py",
+                    "fno_instruments.py", "options_math.py", "partner_qualification.py", "partner_thesis.py")
+    source_hashes = {name: hashlib.sha256(Path(__file__).with_name(name).read_bytes()).hexdigest()
+                     for name in source_names}
+    frozen_config = {key: value for key, value in settings.model_dump().items()
+                     if key.startswith(("FNO_", "PARTNER_MANUAL_ADVISORY_"))
+                     and not any(word in key for word in ("TOKEN", "SECRET", "PASSWORD", "KEY"))}
+    strategy = {"format": "partner_frozen_policy_v1", "evaluator": FULL_POLICY_EVALUATOR,
+                "underlying": name, "structure_kind": structure_kind, "source_sha256": source_hashes,
+                "configuration": frozen_config, "profile": asdict(profile) if profile is not None else None}
+    strategy["manifest_sha256"] = _sha(strategy)
     deterministic = {
         "format": "partner_full_policy_manifest_v1", "evaluator": FULL_POLICY_EVALUATOR,
         "evaluator_source_sha256": hashlib.sha256(inspect.getsource(evaluate_fno_mom).encode()).hexdigest(),
@@ -110,6 +187,7 @@ def policy_manifest(*, underlying: str, structure_kind: str, bars: pd.DataFrame,
         "decision_at": now.isoformat(), "config": config, "config_sha256": _sha(config),
         "bars_sha256": _sha(bar_rows), "bar_count": len(bar_rows), "bar_provenance": provenance,
         "contract_master_sha256": contract_master_sha256,
+        "frozen_policy": strategy, "policy_sha256": strategy["manifest_sha256"],
     }
     return {**deterministic, "manifest_sha256": _sha(deterministic)}
 
@@ -138,10 +216,15 @@ def evaluate_deployed_full_policy(*, underlying: str, bars: pd.DataFrame, regime
     retrieved after the fact remain labelled RETROSPECTIVE and cannot qualify
     a policy even when their deterministic decision matches production code.
     """
-    now = _clock(decision_at, "decision_at")
+    now = _clock(decision_at, "decision_at").astimezone(ZoneInfo("Asia/Kolkata"))
+    # The deployed evaluator explicitly consumes naive IST bar starts.
+    # Convert aware input without changing the represented instants.
+    if bars is not None and isinstance(bars.index, pd.DatetimeIndex) and bars.index.tz is not None:
+        bars = bars.copy()
+        bars.index = bars.index.tz_convert("Asia/Kolkata").tz_localize(None)
     manifest = policy_manifest(underlying=underlying, structure_kind="DIRECTIONAL_DEBIT_SPREAD", bars=bars,
                                regime=regime, decision_at=now, bar_provenance=bar_provenance,
-                               contract_master_sha256=contract_master_sha256)
+                               contract_master_sha256=contract_master_sha256, profile=profile)
     signal = evaluate_fno_mom(bars, regime, now)
     base = {"manifest": manifest["manifest_sha256"], "signal": _signal_payload(signal)}
     if signal.direction is None:
@@ -172,9 +255,12 @@ def evaluate_deployed_full_policy(*, underlying: str, bars: pd.DataFrame, regime
         reasons.extend(validate_profile(profile, candidate, now))
         if not profile.permits(AdvisoryScope.MARKET_SETUP, candidate.underlying):
             reasons.append("profile_scope_not_permitted")
+    else:
+        reasons.append("profile_input_missing")
     reasons = tuple(sorted(set(reasons)))
     state = "ACCEPTED" if not reasons else "REJECTED"
-    base["candidate"] = candidate.thesis_id
+    base["candidate"] = asdict(candidate)
+    base["profile"] = asdict(profile) if profile is not None else None
     return FullPolicyDecision(_sha(base), state, "accepted" if state == "ACCEPTED" else reasons[0], signal,
                               candidate, reasons, manifest, False)
 

@@ -530,6 +530,23 @@ async def partner_manual_advisory_tick(now: Optional[datetime] = None) -> None:
                 spec.name, str(exc), exc_info=True,
             )
 
+    # Capture only after BOTH urgent public-management paths have completed.
+    # Research disk I/O must not precede an invalidation dispatch.
+    if settings.RESEARCH_ARCHIVE_ENABLED:
+        from partner_research_capture import persist_public_input
+        for capture_spec in specs:
+            capture_scan = public_facts[capture_spec.name][0]
+            try:
+                capture = await asyncio.to_thread(
+                    persist_public_input, settings.RESEARCH_ARCHIVE_PATH, capture_scan,
+                    regime=regime, evaluation_at=now,
+                )
+                key = "research_input_observed" if capture["state"] == "OBSERVED" else "research_input_unavailable"
+                metrics[key] = metrics.get(key, 0) + 1
+            except Exception as exc:
+                metrics["research_input_unavailable"] = metrics.get("research_input_unavailable", 0) + 1
+                logger.error("partner_research_input_capture_failed underlying=%s err=%s", capture_spec.name, str(exc))
+
     for spec in specs:
         try:
             scan, observed_at, observed_underlying, _observation_reason = public_facts[spec.name]

@@ -56,7 +56,7 @@ def _replay_spread(args: argparse.Namespace) -> dict:
 def _full_policy_diagnostic(args: argparse.Namespace) -> dict:
     """Evaluate the complete deployed signal from explicitly-provenanced bars."""
     import pandas as pd
-    from partner_qualification import evaluate_deployed_full_policy, write_full_policy_decision
+    from partner_qualification import evaluate_deployed_full_policy, write_full_policy_decision, load_candidate_evidence
 
     raw = pd.read_csv(args.bars)
     if "bar_start" not in raw.columns:
@@ -72,9 +72,15 @@ def _full_policy_diagnostic(args: argparse.Namespace) -> dict:
         if isinstance(provenance.get(key), str):
             provenance[key] = datetime.fromisoformat(provenance[key].replace("Z", "+00:00"))
     decision_at = datetime.fromisoformat(args.decision_at.replace("Z", "+00:00"))
+    candidate_inputs = {}
+    if getattr(args, "candidate_evidence", None):
+        book, snapshot, profile = load_candidate_evidence(_json_file(args.candidate_evidence),
+                                                        underlying=args.underlying, decision_at=decision_at)
+        candidate_inputs = {"book": book, "snapshot": snapshot, "profile": profile}
     decision = evaluate_deployed_full_policy(
         underlying=args.underlying, bars=raw, regime=args.regime, decision_at=decision_at,
         bar_provenance=provenance, contract_master_sha256=args.contract_master_sha256,
+        **candidate_inputs,
     )
     result = write_full_policy_decision(args.output, decision)
     return {"state": result["state"], "reason": result["reason"], "decision_id": result["decision_id"],
@@ -106,6 +112,7 @@ def main(argv: list[str] | None = None) -> int:
     full_policy.add_argument("--decision-at", required=True, help="timezone-aware ISO decision clock")
     full_policy.add_argument("--bar-provenance", required=True, help="JSON event/receipt/retrieval provenance")
     full_policy.add_argument("--contract-master-sha256")
+    full_policy.add_argument("--candidate-evidence", help="observed JSON contracts, snapshot, receipt and explicit profile; offline only")
     full_policy.add_argument("--output", required=True, help="atomic full-policy decision output")
     reconcile = sub.add_parser("reconcile-internal", help="write all five retained-data reconciliation investigations")
     reconcile.add_argument("--source-db", default=settings.DB_PATH)

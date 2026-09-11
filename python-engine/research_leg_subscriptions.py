@@ -9,6 +9,7 @@ or qualification imports.
 from __future__ import annotations
 
 import json
+import math
 import sqlite3
 from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
@@ -83,7 +84,7 @@ class ResearchLegSubscriptionStore:
     def register(self, *, decision_id: str, exchange: str, contracts: Iterable[Contract],
                  management_deadline: datetime, master_sha256: str | None = None,
                  registered_at: datetime | None = None) -> int:
-        """Pin exact contracts. Re-registering updates coverage, never identity."""
+        """Pin immutable contracts and deadline; exact retries are idempotent."""
         if not decision_id.strip() or not exchange.strip():
             raise ValueError("decision_id and exchange are required")
         if master_sha256 is not None and (len(master_sha256) != 64 or any(c not in "0123456789abcdef" for c in master_sha256.lower())):
@@ -94,20 +95,34 @@ class ResearchLegSubscriptionStore:
         for contract in contracts:
             if contract.token <= 0 or contract.lot_size <= 0 or not contract.tradingsymbol or contract.instrument_type not in {"CE", "PE"}:
                 raise ValueError("selected subscription contract is incomplete")
+            if ({"NIFTY": "NFO", "SENSEX": "BFO"}.get(contract.name.upper()) != exchange.upper()
+                    or not math.isfinite(contract.strike) or contract.strike <= 0
+                    or not math.isfinite(contract.tick_size) or contract.tick_size <= 0):
+                raise ValueError("selected subscription contract scope or economics is invalid")
             rows.append((decision_id, int(contract.token), exchange.upper(), contract.name.upper(), contract.tradingsymbol,
                          contract.expiry.isoformat(), float(contract.strike), contract.instrument_type.upper(), int(contract.lot_size),
                          float(contract.tick_size), master_sha256, deadline, now))
         if not rows:
             return 0
         with self._connect() as db:
+            db.execute("BEGIN IMMEDIATE")
+            # Check the whole batch under the write lock before changing any
+            # row. Retries cannot revive terminal generations or move their
+            # deadline/master binding while retaining the old contract fields.
+            for row in rows:
+                existing = db.execute("""
+                    SELECT decision_id,token,exchange,underlying,symbol,expiry,strike,instrument_type,lot_size,tick_size,
+                           master_sha256,management_deadline_utc
+                    FROM selected_leg_subscriptions WHERE decision_id=? AND token=?
+                """, row[:2]).fetchone()
+                if existing is not None and tuple(existing) != tuple(row[:12]):
+                    raise ValueError("selected subscription identity is immutable")
             db.executemany("""
               INSERT INTO selected_leg_subscriptions(
                 decision_id,token,exchange,underlying,symbol,expiry,strike,instrument_type,lot_size,tick_size,
                 master_sha256,management_deadline_utc,registered_at_utc)
               VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?)
-              ON CONFLICT(decision_id,token) DO UPDATE SET
-                management_deadline_utc=excluded.management_deadline_utc,
-                state='ACTIVE', master_sha256=COALESCE(excluded.master_sha256, selected_leg_subscriptions.master_sha256)
+              ON CONFLICT(decision_id,token) DO NOTHING
             """, rows)
         return len(rows)
 
@@ -133,7 +148,19 @@ class ResearchLegSubscriptionStore:
                                                     float(row[6]), row[7], int(row[8]), float(row[9])),
             exchange=row[2], master_sha256=row[10], management_deadline=datetime.fromisoformat(row[11]),
         ) for row in rows]
-        return legs[:capacity], legs[capacity:]
+        # Capacity is a provider-token budget, not a decision-row budget.
+        # Several ideas may depend on the same contract; retain every owner's
+        # coverage while consuming only one quote slot for that contract.
+        selected_tokens: set[tuple[str, int]] = set()
+        selected, shortfall = [], []
+        for leg in legs:
+            key = (leg.exchange, leg.contract.token)
+            if key in selected_tokens or len(selected_tokens) < capacity:
+                selected_tokens.add(key)
+                selected.append(leg)
+            else:
+                shortfall.append(leg)
+        return selected, shortfall
 
     def record_collection(self, *, requested_tokens: Iterable[int], received_tokens: Iterable[int],
                           now: datetime, capacity_shortfall: Iterable[ActiveLeg] = ()) -> None:

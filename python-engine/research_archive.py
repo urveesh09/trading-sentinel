@@ -48,7 +48,8 @@ def guarded_write(function):
         try:
             from config import settings
             owner = args[0] if args else None
-            root = getattr(owner, "root", None)
+            # pathlib.Path.root is the filesystem anchor, not the archive.
+            root = None if isinstance(owner, (str, os.PathLike)) else getattr(owner, "root", None)
             if root is None:
                 root = kwargs.get("archive_root")
                 if root is None:

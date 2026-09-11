@@ -55,6 +55,9 @@ class UnderlyingScan:
     # condition for active-advice management.
     entry_error: str = ""
     error: str = ""
+    research_bars: object = field(default=None, repr=False)
+    research_received_at: Optional[datetime] = None
+    research_future_token: Optional[int] = None
 
 
 def _liquidity_reasons(q: ContractQuote, iv: float) -> List[str]:
@@ -107,6 +110,9 @@ async def observe_underlying(
         bars = await kite.get_intraday_by_token(
             fut.token, frm, to, interval="5minute"
         )
+        out.research_received_at = datetime.now(IST)
+        out.research_future_token = fut.token
+        out.research_bars = bars.copy() if bars is not None else None
         out.sig = evaluate_fno_mom(bars, regime, now_ist)
 
         return out

@@ -1246,15 +1246,9 @@ async def queue_management_updates(
         # precedence over the routine same-day reminder. Both events retain
         # independent immutable dedup keys, so a prior reminder cannot hide a
         # later invalidation.
-        if direction == FnoDirection.LONG.value and _finite_positive(invalidation) and observed_underlying <= float(invalidation):
-            event_type, level = "INVALIDATION", float(invalidation)
-        elif direction == FnoDirection.SHORT.value and _finite_positive(invalidation) and observed_underlying >= float(invalidation):
-            event_type, level = "INVALIDATION", float(invalidation)
-        elif direction == FnoDirection.LONG.value and _finite_positive(target) and observed_underlying >= float(target):
-            event_type, level = "TARGET_ZONE", float(target)
-        elif direction == FnoDirection.SHORT.value and _finite_positive(target) and observed_underlying <= float(target):
-            event_type, level = "TARGET_ZONE", float(target)
-        elif observed_at.astimezone(IST) >= exit_reminder:
+        from partner_thesis import public_thesis_event
+        event_type, level = public_thesis_event(direction, observed_underlying, invalidation, target)
+        if event_type is None and observed_at.astimezone(IST) >= exit_reminder:
             event_type, level = "SESSION_EXIT_REMINDER", 0.0
         if event_type is None or not isinstance(profile_id, str):
             continue

@@ -1,19 +1,23 @@
-from partner_qualification_review import QualificationCriteria, build_qualification_review_package
+from partner_qualification_review import QualificationCriteria, build_qualification_review_package, _sha
+from dataclasses import replace
+import pytest
 
 
 def manifest():
-    return {"evaluator": "partner_manual_intraday_full_policy_v1", "manifest_sha256": "a" * 64}
+    body = {"evaluator": "partner_manual_intraday_full_policy_v1"}
+    return body | {"manifest_sha256": _sha(body)}
 
 
 def heldout():
-    return {"automatic_qualification": False, "evidence_sha256": "b" * 64,
+    body = {"automatic_qualification": False,
             "groups": [{"underlying": "NIFTY", "policy_id": "partner-manual-intraday-v1",
                         "coverage": {"2026-09-12": "OBSERVED"}, "closed": 0,
                         "unresolved": 0, "unavailable": 0, "net_pnl_rs": 0.0}]}
+    return body | {"evidence_sha256": _sha(body)}
 
 
 def criteria():
-    return QualificationCriteria("a" * 64, min_covered_sessions=2, min_closed_outcomes=3,
+    return QualificationCriteria(manifest()["manifest_sha256"], min_covered_sessions=2, min_closed_outcomes=3,
                                  max_unresolved_outcomes=0, max_drawdown_rs=-1000,
                                  stressed_fee_multiplier=1.25, stressed_slippage_bps=10)
 
@@ -36,3 +40,21 @@ def test_review_rejects_changed_or_simplified_policy_manifest():
         assert "complete deployed-policy" in str(exc)
     else:
         raise AssertionError("simplified evaluator was incorrectly accepted")
+
+
+@pytest.mark.parametrize("field,value", [("stressed_fee_multiplier", float("nan")),
+    ("stressed_slippage_bps", float("inf")), ("min_closed_outcomes", 1.5), ("min_covered_sessions", True)])
+def test_invalid_criteria_rejected(field, value):
+    with pytest.raises(ValueError):
+        replace(criteria(), **{field: value}).validate()
+
+
+@pytest.mark.parametrize("target", ["manifest", "report"])
+def test_tampered_artifact_rejected(target):
+    policy, report = manifest(), heldout()
+    if target == "manifest":
+        policy["config"] = {"changed": True}
+    else:
+        report["groups"][0]["closed"] = 100
+    with pytest.raises(ValueError, match="fingerprint mismatch"):
+        build_qualification_review_package(policy_manifest=policy, criteria=criteria(), heldout_report=report, readiness={})

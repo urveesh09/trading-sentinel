@@ -30,9 +30,12 @@ class QualificationCriteria:
     def validate(self) -> None:
         if len(self.policy_manifest_sha256) != 64 or any(c not in "0123456789abcdef" for c in self.policy_manifest_sha256.lower()):
             raise ValueError("criteria requires a full-policy manifest digest")
-        if self.min_covered_sessions < 1 or self.min_closed_outcomes < 1 or self.max_unresolved_outcomes < 0:
+        if (any(type(value) is not int for value in (self.min_covered_sessions, self.min_closed_outcomes, self.max_unresolved_outcomes))
+                or self.min_covered_sessions < 1 or self.min_closed_outcomes < 1 or self.max_unresolved_outcomes < 0):
             raise ValueError("qualification sample criteria are invalid")
-        if (not math.isfinite(self.max_drawdown_rs) or self.max_drawdown_rs >= 0
+        if (any(isinstance(value, bool) or not isinstance(value, (int, float)) or not math.isfinite(value)
+                for value in (self.max_drawdown_rs, self.stressed_fee_multiplier, self.stressed_slippage_bps))
+                or self.max_drawdown_rs >= 0
                 or self.stressed_fee_multiplier < 1 or self.stressed_slippage_bps < 0):
             raise ValueError("qualification risk/cost criteria are invalid")
 
@@ -46,8 +49,13 @@ def build_qualification_review_package(*, policy_manifest: Mapping[str, Any], cr
         raise ValueError("criteria does not match frozen full-policy manifest")
     if policy_manifest.get("evaluator") != "partner_manual_intraday_full_policy_v1":
         raise ValueError("only the complete deployed-policy manifest may be reviewed")
+    if _sha({key: value for key, value in policy_manifest.items() if key != "manifest_sha256"}) != claimed:
+        raise ValueError("full-policy manifest fingerprint mismatch")
     if heldout_report.get("automatic_qualification") is not False:
         raise ValueError("heldout report must not claim automatic qualification")
+    if _sha({key: value for key, value in heldout_report.items()
+             if key not in {"evidence_sha256", "review_state"}}) != heldout_report.get("evidence_sha256"):
+        raise ValueError("heldout report fingerprint mismatch")
     groups = heldout_report.get("groups")
     if not isinstance(groups, list):
         raise ValueError("heldout report groups are required")
