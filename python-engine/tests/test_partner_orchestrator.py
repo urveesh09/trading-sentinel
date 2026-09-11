@@ -270,14 +270,19 @@ async def test_active_management_runs_before_a_slow_entry_chain(wired, monkeypat
 
     async def management(_db, **_kwargs):
         order.append("management")
-        return []
+        return [{"update_id": "urgent"}]
 
+    async def dispatch(_db, update, **_kwargs):
+        order.append("dispatch")
+        return True
+
+    monkeypatch.setattr(__import__("partner_manual_advisory"), "dispatch_queued_management_update", dispatch)
     monkeypatch.setattr(po, "observe_underlying", public)
     monkeypatch.setattr(po, "attach_entry_chain", slow_chain)
     monkeypatch.setattr(__import__("partner_manual_advisory"), "queue_management_updates", management)
     task = asyncio.create_task(po.partner_manual_advisory_tick(NOW))
     await asyncio.wait_for(chain_started.wait(), timeout=1)
-    assert order == ["public", "management", "chain"]
+    assert order == ["public", "management", "dispatch", "chain"]
     release_chain.set()
     await task
 

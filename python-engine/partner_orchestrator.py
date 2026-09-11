@@ -500,6 +500,12 @@ async def partner_manual_advisory_tick(now: Optional[datetime] = None) -> None:
                     observed_underlying=observed_underlying, observed_at=observed_at,
                 ))
                 metrics["management_observed"] += 1
+                # Dispatch detected urgent conditions before optional entry I/O.
+                for update in management_updates:
+                    delivered = await dispatch_queued_management_update(settings.DB_PATH, update, now=now)
+                    key = "update_delivered" if delivered else "update_queued"
+                    metrics[key] = metrics.get(key, 0) + 1
+                management_updates.clear()
             else:
                 metrics["management_input_unavailable"] += 1
 
@@ -542,6 +548,7 @@ async def partner_manual_advisory_tick(now: Optional[datetime] = None) -> None:
                             entry_state="UNAVAILABLE", observed_at=observed_at, profile_state=profile_state,
                             successful_observation=observed_at is not None,
                         )
+                        continue
                     else:
                         await add_explicit_protection(spec, book, protection_snapshot)
                 if observed_at is None or scan.sig.reject_reason in {
@@ -603,6 +610,7 @@ async def partner_manual_advisory_tick(now: Optional[datetime] = None) -> None:
                     successful_observation=observed_at is not None,
                 )
                 continue
+            await add_explicit_protection(spec, book, snapshot)
             candidate = build_directional_debit_spread(
                 snapshot, book, scan.sig.direction, now,
                 evidence=StrategyEvidence.RESEARCH_ONLY,
@@ -650,7 +658,6 @@ async def partner_manual_advisory_tick(now: Optional[datetime] = None) -> None:
                 profile_state=profile_state, qualification_state=qualification_state,
                 successful_observation=True,
             )
-            await add_explicit_protection(spec, book, snapshot)
         except Exception as exc:
             metrics["unavailable"] += 1
             logger.error("partner_manual_advisory_tick_failed underlying=%s err=%s", spec.name, str(exc), exc_info=True)
