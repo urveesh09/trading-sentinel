@@ -25,6 +25,7 @@ suite's patch-by-name discipline depends on.
 """
 from __future__ import annotations
 
+import asyncio
 import json
 from datetime import date, datetime, timedelta
 from typing import Dict, List, Optional
@@ -41,7 +42,7 @@ from config import settings
 from fno_chain import RISK_FREE_RATE, take_chain_snapshot, years_to_expiry
 from fno_engine_mom import SESSION_OPEN_MIN
 from fno_models import FnoDirection
-from fno_signal_scan import attach_entry_chain, observe_underlying, scan_underlying
+from fno_signal_scan import UnderlyingScan, attach_entry_chain, observe_underlying, scan_underlying
 from fno_underlyings import analytics_underlyings, get_instruments_for, load_underlying_names
 from macro_events import event_note_for
 from partner_bot import partner_enabled, send_partner
@@ -454,7 +455,6 @@ async def partner_manual_advisory_tick(now: Optional[datetime] = None) -> None:
     specs.extend(SPECS[name] for name in INDEX_EXCHANGES if name not in seen)
     market_candidates = []
     protection_candidates = []
-    management_updates = []
 
     async def add_explicit_protection(spec, book, snapshot) -> None:
         """Evaluate declared protection independently of directional entry."""
@@ -483,31 +483,58 @@ async def partner_manual_advisory_tick(now: Optional[datetime] = None) -> None:
             protection_candidates.append(protection)
         else:
             metrics["rejected"] += 1
+    async def observe_one(spec):
+        """Contain an unexpected provider failure to its own underlying."""
+        try:
+            return spec, await observe_underlying(_main.kite, spec, regime, now)
+        except Exception as exc:
+            logger.error(
+                "partner_manual_advisory_public_observation_failed underlying=%s err=%s",
+                spec.name, str(exc), exc_info=True,
+            )
+            return spec, UnderlyingScan(name=spec.name, error=str(exc))
+
+    # Public observations are concurrent and are fully managed before any
+    # optional-chain I/O starts.  Consequently a stalled NIFTY entry chain
+    # cannot postpone SENSEX public observation, invalidation, or retirement.
+    public_facts = {}
+    management_errors = {}
+    for completed_observation in asyncio.as_completed(
+        [observe_one(spec) for spec in specs]
+    ):
+        spec, scan = await completed_observation
+        observed_at, observed_underlying, observation_reason = _closed_bar_observation(scan.sig, now)
+        public_facts[spec.name] = (scan, observed_at, observed_underlying, observation_reason)
+        if observed_at is None or observed_underlying is None:
+            metrics["management_input_unavailable"] += 1
+            continue
+        try:
+            updates = await queue_management_updates(
+                settings.DB_PATH, underlying=spec.name,
+                observed_underlying=observed_underlying, observed_at=observed_at,
+            )
+            metrics["management_observed"] += 1
+            # Dispatch urgent lifecycle facts before optional entry I/O and
+            # before progressing to another index's optional-chain work.
+            for update in updates:
+                delivered = await dispatch_queued_management_update(settings.DB_PATH, update, now=now)
+                key = "update_delivered" if delivered else "update_queued"
+                metrics[key] = metrics.get(key, 0) + 1
+        except Exception as exc:
+            # Do not let one index's management DB/transport fault stop the
+            # other index's public lifecycle. Its own input status below keeps
+            # the failure visible and suppresses entry construction.
+            management_errors[spec.name] = exc
+            logger.error(
+                "partner_manual_advisory_management_failed underlying=%s err=%s",
+                spec.name, str(exc), exc_info=True,
+            )
+
     for spec in specs:
         try:
-            # Public futures observation is intentionally completed before
-            # optional entry-chain acquisition.  Active advisory management
-            # must never wait behind a chain outage or slow quote provider.
-            scan = await observe_underlying(_main.kite, spec, regime, now)
-            # Existing published ideas are managed from fresh public futures
-            # observations before *any* optional entry-chain result is acted
-            # on. It does not inspect partner orders and a failed chain cannot
-            # suppress an invalidation/target update for a published idea.
-            observed_at, observed_underlying, _observation_reason = _closed_bar_observation(scan.sig, now)
-            if observed_at is not None and observed_underlying is not None:
-                management_updates.extend(await queue_management_updates(
-                    settings.DB_PATH, underlying=spec.name,
-                    observed_underlying=observed_underlying, observed_at=observed_at,
-                ))
-                metrics["management_observed"] += 1
-                # Dispatch detected urgent conditions before optional entry I/O.
-                for update in management_updates:
-                    delivered = await dispatch_queued_management_update(settings.DB_PATH, update, now=now)
-                    key = "update_delivered" if delivered else "update_queued"
-                    metrics[key] = metrics.get(key, 0) + 1
-                management_updates.clear()
-            else:
-                metrics["management_input_unavailable"] += 1
+            scan, observed_at, observed_underlying, _observation_reason = public_facts[spec.name]
+            if spec.name in management_errors:
+                raise management_errors[spec.name]
 
             if scan.error:
                 metrics["unavailable"] += 1
@@ -692,11 +719,6 @@ async def partner_manual_advisory_tick(now: Optional[datetime] = None) -> None:
             metrics["validated_shadow"] += 1
         else:
             metrics["rejected"] += 1
-    for update in management_updates:
-        delivered = await dispatch_queued_management_update(settings.DB_PATH, update, now=now)
-        metrics["update_delivered" if delivered else "update_queued"] = metrics.get(
-            "update_delivered" if delivered else "update_queued", 0
-        ) + 1
     logger.info(
         "partner_manual_advisory_tick_summary", **metrics,
         delivery_enabled=bool(settings.PARTNER_MANUAL_ADVISORY_DELIVERY_ENABLED),

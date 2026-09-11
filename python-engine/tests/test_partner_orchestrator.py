@@ -281,10 +281,61 @@ async def test_active_management_runs_before_a_slow_entry_chain(wired, monkeypat
     monkeypatch.setattr(po, "attach_entry_chain", slow_chain)
     monkeypatch.setattr(__import__("partner_manual_advisory"), "queue_management_updates", management)
     task = asyncio.create_task(po.partner_manual_advisory_tick(NOW))
-    await asyncio.wait_for(chain_started.wait(), timeout=1)
-    assert order == ["public", "management", "dispatch", "chain"]
-    release_chain.set()
-    await task
+    try:
+        await asyncio.wait_for(chain_started.wait(), timeout=1)
+        # Both configured indices complete public lifecycle work before the
+        # first optional chain is permitted to block.
+        assert order.index("chain") > max(
+            position for position, item in enumerate(order)
+            if item in {"management", "dispatch"}
+        )
+    finally:
+        release_chain.set()
+        await task
+
+
+@pytest.mark.asyncio
+async def test_slow_first_index_entry_chain_cannot_delay_second_index_lifecycle(wired, monkeypatch):
+    """All public index facts are managed before any optional chain awaits."""
+    import asyncio
+
+    await _init(wired.db)
+    monkeypatch.setattr(settings, "PARTNER_MANUAL_ADVISORY_ENABLED", True)
+    sensex = UnderlyingSpec("SENSEX", "BFO")
+    monkeypatch.setattr(po, "analytics_underlyings", lambda: [SPEC, sensex])
+    monkeypatch.setattr(po, "get_instruments_for", lambda _name: _AdvisoryBook())
+    second_observed, first_chain_started, release_chain = asyncio.Event(), asyncio.Event(), asyncio.Event()
+    managed = []
+
+    async def public(_kite, spec, *_args):
+        if spec.name == "SENSEX":
+            second_observed.set()
+        result = _fired_scan()
+        result.name = spec.name
+        return result
+
+    async def slow_first_chain(_kite, scan, _now):
+        if scan.name == "NIFTY":
+            first_chain_started.set()
+            await release_chain.wait()
+        scan.entry_error = "chain_unavailable"
+        return scan
+
+    async def management(_db, *, underlying, **_kwargs):
+        managed.append(underlying)
+        return []
+
+    monkeypatch.setattr(po, "observe_underlying", public)
+    monkeypatch.setattr(po, "attach_entry_chain", slow_first_chain)
+    monkeypatch.setattr(__import__("partner_manual_advisory"), "queue_management_updates", management)
+    task = asyncio.create_task(po.partner_manual_advisory_tick(NOW))
+    try:
+        await asyncio.wait_for(first_chain_started.wait(), timeout=1)
+        assert second_observed.is_set()
+        assert set(managed) == {"NIFTY", "SENSEX"}
+    finally:
+        release_chain.set()
+        await task
 
 
 @pytest.mark.asyncio
