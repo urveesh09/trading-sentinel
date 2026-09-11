@@ -9,7 +9,10 @@ from intraday_spread_replay import ReplayInputError
 from intraday_spread_signal_artifact import write_signal_artifact
 
 
-MASTER = "c" * 64
+RAW_MASTER = (b"instrument_token,tradingsymbol,name,exchange,instrument_type,expiry,strike,lot_size\n"
+              b"1,NIFTY25000CE,NIFTY,NFO,CE,2026-09-24,25000,75\n"
+              b"2,NIFTY25200CE,NIFTY,NFO,CE,2026-09-24,25200,75\n")
+MASTER = hashlib.sha256(RAW_MASTER).hexdigest()
 
 
 def identity(token, symbol, strike):
@@ -17,8 +20,11 @@ def identity(token, symbol, strike):
 
 
 def event(contract, received="2026-09-10T04:30:00+00:00"):
+    raw = {"instrument_token": int(contract["instrument_token"]), "timestamp": received,
+           "depth": {"buy": [{"price": 100, "quantity": 75}], "sell": [{"price": 102, "quantity": 75}]}}
     return {"received_at_utc": received, "provider_timestamp_utc": received, "contract": contract,
-            "buy_depth": [{"price": 100, "quantity": 75}], "sell_depth": [{"price": 102, "quantity": 75}]}
+            "buy_depth": [{"price": 100, "quantity": 75}], "sell_depth": [{"price": 102, "quantity": 75}],
+            "raw_packet": raw, "raw_sha256": hashlib.sha256(json.dumps(raw, sort_keys=True, default=str, separators=(",", ":")).encode()).hexdigest()}
 
 
 def contract(item):
@@ -30,8 +36,10 @@ def contract(item):
 def archive(tmp_path, *items):
     path = tmp_path / "contract-masters" / "KITE" / "NFO" / "2026-09-10" / MASTER
     path.mkdir(parents=True)
-    (path / "manifest.json").write_text(json.dumps({"raw_sha256": MASTER}), encoding="utf-8")
-    (path / "contracts.jsonl").write_text("\n".join(json.dumps(contract(item)) for item in items) + "\n", encoding="utf-8")
+    canonical = ("\n".join(json.dumps(contract(item)) for item in items) + "\n").encode()
+    (path / "raw.csv").write_bytes(RAW_MASTER)
+    (path / "manifest.json").write_text(json.dumps({"raw_sha256": MASTER, "canonical_sha256": hashlib.sha256(canonical).hexdigest()}), encoding="utf-8")
+    (path / "contracts.jsonl").write_bytes(canonical)
     return tmp_path
 
 
@@ -49,6 +57,43 @@ def artifact(tmp_path, *, receipt="2026-09-10T04:30:00+00:00", score=1.0):
                      "evaluator_input": {"direction": "LONG", "close": 101, "trigger": 100,
                      "source_packets": [{"packet_id": "bar-one", "received_at": receipt}]}}]})
     return path
+
+
+@pytest.mark.parametrize("filename", ["raw.csv", "contracts.jsonl"])
+def test_master_file_tampering_rejected(tmp_path, filename):
+    long, short = identity(1, "NIFTY25000CE", 25000), identity(2, "NIFTY25200CE", 25200)
+    archive(tmp_path, long, short)
+    path = next((tmp_path / "contract-masters").rglob(filename))
+    path.write_bytes(path.read_bytes() + b" ")
+    with pytest.raises(ReplayInputError, match="master does not prove"):
+        build_spread_observations(events=[], long_contract=long, short_contract=short,
+                                  master_sha256=MASTER, archive_root=tmp_path)
+
+
+def test_rehashed_normalized_terms_must_still_match_raw_master(tmp_path):
+    from dataclasses import replace
+    from intraday_spread_archive_adapter import _master_proves_contract
+    wrong = replace(identity(1, "NIFTY25000CE", 25000), lot_size=100)
+    archive(tmp_path, wrong)
+    assert not _master_proves_contract(tmp_path, wrong, MASTER)
+
+
+@pytest.mark.parametrize("fault", ["hash", "price", "clock", "changed_clock"])
+def test_unproven_quote_is_partial_not_executable(tmp_path, fault):
+    long, short = identity(1, "NIFTY25000CE", 25000), identity(2, "NIFTY25200CE", 25200)
+    bad = event(contract(long))
+    if fault == "hash":
+        bad["raw_sha256"] = "0" * 64
+    elif fault == "price":
+        bad["buy_depth"][0]["price"] = 999
+    elif fault == "clock":
+        bad["provider_timestamp_utc"] = None
+    else:
+        bad["provider_timestamp_utc"] = "2026-09-10T04:29:59+00:00"
+    built = build_spread_observations(events=[bad, event(contract(short))], long_contract=long,
+        short_contract=short, master_sha256=MASTER, archive_root=archive(tmp_path, long, short))
+    assert not built.observations
+    assert built.partial_batches[0]["missing"] == ["long"]
 
 
 def test_archive_adapter_pairs_only_complete_same_receipt_batches_and_retains_partial(tmp_path):

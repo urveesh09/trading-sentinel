@@ -10,6 +10,34 @@ from pathlib import Path
 from research_archive import guarded_write, _admit_bytes
 
 
+def load_public_input(path, *, underlying):
+    """Validate retained bytes and reconstruct the original evaluation inputs."""
+    from datetime import datetime
+    import pandas as pd
+    from partner_qualification import _bars_payload, _clock
+    target = Path(path)
+    raw = target.read_bytes()
+    digest = hashlib.sha256(raw).hexdigest()
+    if target.stem != digest:
+        raise ValueError("public-input filename fingerprint mismatch")
+    value = json.loads(raw)
+    if (value.get("format") != "partner_observed_public_input_v1"
+            or value.get("underlying") != underlying
+            or value.get("bar_start_timezone") != "Asia/Kolkata"):
+        raise ValueError("public-input scope or format mismatch")
+    at = _clock(datetime.fromisoformat(value["evaluation_at"]), "evaluation_at")
+    received = _clock(datetime.fromisoformat(value["received_at"]), "received_at")
+    frame = pd.DataFrame(value["bars"])
+    frame.index = pd.to_datetime(frame.pop("bar_start"), errors="raise")
+    _bars_payload(frame)
+    # Reconstruct the original scan, never silently move its decision clock
+    # forward to make the fetch appear available earlier than it was.
+    provenance = {"state": "CONTEMPORANEOUS" if received <= at else "RETROSPECTIVE",
+                  "source": f"retained-public-input:{digest}", "event_at": None,
+                  "received_at": received, "retrieved_at": received}
+    return frame, value["regime"], at, provenance
+
+
 @guarded_write
 def persist_public_input(archive_root, scan, *, regime: str, evaluation_at) -> dict:
     """Content-address a full fetched frame plus honest evaluation/receipt clocks.

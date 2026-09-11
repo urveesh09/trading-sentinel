@@ -75,7 +75,9 @@ def _full_policy_diagnostic(args: argparse.Namespace) -> dict:
     candidate_inputs = {}
     if getattr(args, "candidate_evidence", None):
         book, snapshot, profile = load_candidate_evidence(_json_file(args.candidate_evidence),
-                                                        underlying=args.underlying, decision_at=decision_at)
+                                                        underlying=args.underlying, decision_at=decision_at,
+                                                        archive_root=getattr(args, "archive_root", None),
+                                                        master_sha256=args.contract_master_sha256)
         candidate_inputs = {"book": book, "snapshot": snapshot, "profile": profile}
     decision = evaluate_deployed_full_policy(
         underlying=args.underlying, bars=raw, regime=args.regime, decision_at=decision_at,
@@ -90,6 +92,13 @@ def _full_policy_diagnostic(args: argparse.Namespace) -> dict:
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Sentinel read-only research evidence tools")
     sub = parser.add_subparsers(dest="command", required=True)
+    captured = sub.add_parser("captured-policy-diagnostic", help="re-evaluate a fingerprinted public-input capture; no qualification")
+    captured.add_argument("--public-input", required=True)
+    captured.add_argument("--underlying", required=True, choices=["NIFTY", "SENSEX"])
+    captured.add_argument("--output", required=True)
+    captured.add_argument("--candidate-evidence", help="offline observed contracts, chain and explicit profile JSON")
+    captured.add_argument("--contract-master-sha256")
+    captured.add_argument("--archive-root", help="verify supplied contract terms against archived raw master")
     export = sub.add_parser("export-fno", help="read-only export of operational NIFTY/SENSEX OI snapshots")
     export.add_argument("--source-db", default=settings.DB_PATH)
     export.add_argument("--archive-root", default=settings.RESEARCH_ARCHIVE_PATH)
@@ -112,6 +121,7 @@ def main(argv: list[str] | None = None) -> int:
     full_policy.add_argument("--decision-at", required=True, help="timezone-aware ISO decision clock")
     full_policy.add_argument("--bar-provenance", required=True, help="JSON event/receipt/retrieval provenance")
     full_policy.add_argument("--contract-master-sha256")
+    full_policy.add_argument("--archive-root", help="verify supplied contract terms against archived raw master")
     full_policy.add_argument("--candidate-evidence", help="observed JSON contracts, snapshot, receipt and explicit profile; offline only")
     full_policy.add_argument("--output", required=True, help="atomic full-policy decision output")
     reconcile = sub.add_parser("reconcile-internal", help="write all five retained-data reconciliation investigations")
@@ -119,6 +129,28 @@ def main(argv: list[str] | None = None) -> int:
     reconcile.add_argument("--output", required=True, help="JSON evidence output; no ledger mutation")
     reconcile.add_argument("--limit", type=int, default=1000)
     args = parser.parse_args(argv)
+    if args.command == "captured-policy-diagnostic":
+        try:
+            from partner_research_capture import load_public_input
+            from partner_qualification import evaluate_deployed_full_policy, write_full_policy_decision, load_candidate_evidence
+            bars, regime, at, provenance = load_public_input(args.public_input, underlying=args.underlying)
+            candidate_inputs = {}
+            if args.candidate_evidence:
+                book, snapshot, profile = load_candidate_evidence(_json_file(args.candidate_evidence),
+                                                                 underlying=args.underlying, decision_at=at,
+                                                                 archive_root=args.archive_root,
+                                                                 master_sha256=args.contract_master_sha256)
+                candidate_inputs = {"book": book, "snapshot": snapshot, "profile": profile}
+            decision = evaluate_deployed_full_policy(underlying=args.underlying, bars=bars, regime=regime,
+                                                     decision_at=at, bar_provenance=provenance,
+                                                     contract_master_sha256=args.contract_master_sha256, **candidate_inputs)
+            result = write_full_policy_decision(args.output, decision)
+            print(json.dumps({"state": result["state"], "reason": result["reason"], "path": args.output,
+                              "can_qualify": False}, sort_keys=True))
+            return 0
+        except (ValueError, KeyError, TypeError, OSError) as exc:
+            print(json.dumps({"state": "UNAVAILABLE", "reason": str(exc), "can_qualify": False}), file=sys.stderr)
+            return 2
     if args.command == "export-fno":
         try:
             result = export_operational_fno_evidence(

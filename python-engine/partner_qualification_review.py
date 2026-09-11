@@ -60,9 +60,19 @@ def build_qualification_review_package(*, policy_manifest: Mapping[str, Any], cr
     if not isinstance(groups, list):
         raise ValueError("heldout report groups are required")
     per_index = []
+    seen_groups = set()
     for group in groups:
         if not isinstance(group, Mapping) or group.get("underlying") not in {"NIFTY", "SENSEX"}:
             raise ValueError("review package contains an unsupported index group")
+        if group["underlying"] != policy_manifest.get("underlying"):
+            raise ValueError("review index does not match frozen policy")
+        identity = (group["underlying"], group.get("policy_id"))
+        if not isinstance(identity[1], str) or not identity[1].strip() or identity in seen_groups:
+            raise ValueError("review groups must have unique policy identities")
+        seen_groups.add(identity)
+        if any(type(group.get(key, 0)) is not int or group.get(key, 0) < 0
+               for key in ("closed", "unresolved", "unavailable")):
+            raise ValueError("review outcome counts must be nonnegative integers")
         covered = sum(value == "OBSERVED" for value in (group.get("coverage") or {}).values())
         closed, unresolved = int(group.get("closed", 0)), int(group.get("unresolved", 0))
         net = float(group.get("net_pnl_rs", 0.0))

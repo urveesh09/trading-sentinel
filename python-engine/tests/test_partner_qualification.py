@@ -158,3 +158,20 @@ def test_real_signal_and_candidate_pipeline_without_evaluator_mock():
     assert result.candidate is not None
     assert result.state == "ACCEPTED", result.validation_reasons
     assert result.can_qualify is False
+
+
+def test_decision_output_is_atomic_idempotent_and_never_overwritten(tmp_path):
+    from concurrent.futures import ThreadPoolExecutor
+    from dataclasses import replace
+    now = IST.localize(datetime(2026, 9, 11, 10))
+    decision = qualification.evaluate_deployed_full_policy(underlying="NIFTY", bars=bars(),
+        regime="REGIME_1_NORMAL", decision_at=now, bar_provenance=provenance(now))
+    target = tmp_path / "decision.json"
+    with ThreadPoolExecutor(max_workers=4) as pool:
+        results = list(pool.map(lambda _: qualification.write_full_policy_decision(target, decision), range(8)))
+    before = target.read_bytes()
+    assert all(result == results[0] for result in results)
+    with pytest.raises(ValueError, match="different immutable evidence"):
+        qualification.write_full_policy_decision(target, replace(decision, reason="different"))
+    assert target.read_bytes() == before
+    assert not list(tmp_path.glob(".decision-*"))

@@ -10,6 +10,8 @@ import hashlib
 import inspect
 import json
 import math
+import os
+import tempfile
 from dataclasses import asdict, dataclass
 from datetime import date, datetime
 from pathlib import Path
@@ -31,7 +33,8 @@ from partner_manual_advisory import (
 FULL_POLICY_EVALUATOR = "partner_manual_intraday_full_policy_v1"
 
 
-def load_candidate_evidence(value: Mapping[str, Any], *, underlying: str, decision_at: datetime):
+def load_candidate_evidence(value: Mapping[str, Any], *, underlying: str, decision_at: datetime,
+                            archive_root=None, master_sha256=None):
     """Decode an offline chain/profile bundle. Never fetch or persist instruments."""
     from fno_models import Contract, ContractQuote
     name = underlying.upper()
@@ -53,6 +56,15 @@ def load_candidate_evidence(value: Mapping[str, Any], *, underlying: str, decisi
         raise ValueError("candidate evidence contracts must be nonempty and unique")
     if len({(c.expiry, c.strike, c.instrument_type) for c in contracts}) != len(contracts):
         raise ValueError("duplicate candidate contract terms")
+    if archive_root is not None:
+        from intraday_spread_archive_adapter import SpreadContractIdentity, _master_proves_contract
+        if not isinstance(master_sha256, str) or len(master_sha256) != 64:
+            raise ValueError("archive verification requires a master digest")
+        for contract in contracts:
+            identity = SpreadContractIdentity(contract.token, contract.tradingsymbol, name, expected_segment,
+                contract.instrument_type, contract.strike, contract.expiry.isoformat(), contract.lot_size)
+            if not _master_proves_contract(archive_root, identity, master_sha256):
+                raise ValueError("archived master does not prove candidate contract")
     by_token = {c.token: c for c in contracts}
     book = FnoInstruments(name, segment=expected_segment)
     book._load_contracts(contracts)
@@ -225,6 +237,14 @@ def evaluate_deployed_full_policy(*, underlying: str, bars: pd.DataFrame, regime
     manifest = policy_manifest(underlying=underlying, structure_kind="DIRECTIONAL_DEBIT_SPREAD", bars=bars,
                                regime=regime, decision_at=now, bar_provenance=bar_provenance,
                                contract_master_sha256=contract_master_sha256, profile=profile)
+    if snapshot is not None:
+        # Tuple-keyed quote maps are normalized before canonical JSON hashing.
+        quote_rows = [asdict(quote) for _, quote in sorted(snapshot.quotes.items())]
+        manifest["chain_evidence_sha256"] = _sha({"taken_at": snapshot.taken_at,
+            "expiry": snapshot.expiry, "forward": snapshot.forward, "parity_forward": snapshot.parity_forward,
+            "lot_size": snapshot.lot_size, "quotes": quote_rows,
+            "future_quote": asdict(snapshot.fut_quote) if snapshot.fut_quote is not None else None})
+        manifest["manifest_sha256"] = _sha({key: value for key, value in manifest.items() if key != "manifest_sha256"})
     signal = evaluate_fno_mom(bars, regime, now)
     base = {"manifest": manifest["manifest_sha256"], "signal": _signal_payload(signal)}
     if signal.direction is None:
@@ -288,7 +308,19 @@ def write_full_policy_decision(path: str | Path, decision: FullPolicyDecision) -
         "limitations": ["A deterministic research decision is not a strategy qualification or advice delivery authority."],
     }
     target = Path(path); target.parent.mkdir(parents=True, exist_ok=True)
-    temporary = target.with_suffix(target.suffix + ".tmp")
-    temporary.write_text(json.dumps(payload, sort_keys=True, separators=(",", ":"), default=str), encoding="utf-8")
-    temporary.replace(target)
+    encoded = json.dumps(payload, sort_keys=True, separators=(",", ":"), default=str, allow_nan=False).encode()
+    fd, temporary = tempfile.mkstemp(prefix=".decision-", dir=target.parent)
+    try:
+        with os.fdopen(fd, "wb") as stream:
+            stream.write(encoded)
+            stream.flush()
+            os.fsync(stream.fileno())
+        try:
+            # Atomic create-if-absent, never replace an existing experiment.
+            os.link(temporary, target)
+        except FileExistsError:
+            if target.read_bytes() != encoded:
+                raise ValueError("decision output already contains different immutable evidence")
+    finally:
+        os.unlink(temporary)
     return payload

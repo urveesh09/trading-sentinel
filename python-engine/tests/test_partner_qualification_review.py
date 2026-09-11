@@ -4,7 +4,7 @@ import pytest
 
 
 def manifest():
-    body = {"evaluator": "partner_manual_intraday_full_policy_v1"}
+    body = {"evaluator": "partner_manual_intraday_full_policy_v1", "underlying": "NIFTY"}
     return body | {"manifest_sha256": _sha(body)}
 
 
@@ -58,3 +58,17 @@ def test_tampered_artifact_rejected(target):
         report["groups"][0]["closed"] = 100
     with pytest.raises(ValueError, match="fingerprint mismatch"):
         build_qualification_review_package(policy_manifest=policy, criteria=criteria(), heldout_report=report, readiness={})
+
+
+@pytest.mark.parametrize("fault", ["index", "duplicate", "count"])
+def test_rehashed_but_invalid_group_rejected(fault):
+    report = heldout()
+    if fault == "index":
+        report["groups"][0]["underlying"] = "SENSEX"
+    elif fault == "duplicate":
+        report["groups"].append(dict(report["groups"][0]))
+    else:
+        report["groups"][0]["closed"] = -1
+    report["evidence_sha256"] = _sha({key: value for key, value in report.items() if key != "evidence_sha256"})
+    with pytest.raises(ValueError):
+        build_qualification_review_package(policy_manifest=manifest(), criteria=criteria(), heldout_report=report, readiness={})
