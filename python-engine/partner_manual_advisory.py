@@ -19,7 +19,7 @@ import json
 import math
 import asyncio
 from dataclasses import asdict, dataclass, field
-from datetime import datetime, timedelta
+from datetime import date, datetime, timedelta
 from enum import Enum
 from typing import Iterable, Optional
 
@@ -1099,6 +1099,31 @@ async def persist_candidate(
              json.dumps(payload, sort_keys=True), prior_id, stamp, stamp),
         )
         await db.commit()
+    subscription = {"state": "not_requested"}
+    # Pin exact selected legs independently of delivery/qualification.  A
+    # research preview can be rejected or never sent and still needs its
+    # originally selected contracts observable through the intraday deadline.
+    # Subscription failure is visible evidence; it never changes the card's
+    # validation, status, or authority.
+    if settings.RESEARCH_ARCHIVE_ENABLED and candidate.management_deadline is not None:
+        try:
+            from fno_models import Contract
+            from research_leg_subscriptions import ResearchLegSubscriptionStore
+            contracts = [Contract(
+                leg.instrument_token, leg.tradingsymbol, candidate.underlying,
+                date.fromisoformat(leg.expiry), leg.strike, leg.option_type,
+                leg.lot_size, leg.tick_size,
+            ) for leg in candidate.legs]
+            count = await asyncio.to_thread(
+                ResearchLegSubscriptionStore(settings.RESEARCH_ARCHIVE_PATH).register,
+                decision_id=advisory_id, exchange=candidate.segment, contracts=contracts,
+                management_deadline=candidate.management_deadline, registered_at=now,
+            )
+            subscription = {"state": "registered", "leg_count": count}
+        except Exception as exc:
+            subscription = {"state": "unavailable", "reason": type(exc).__name__}
+            import structlog
+            structlog.get_logger().error("research_selected_leg_subscription_failed err=%s", str(exc))
     return {
         "advisory_id": advisory_id, "economic_version": economic_version, "status": status,
         "underlying": candidate.underlying, "valid_until": _iso(candidate.valid_until),
@@ -1110,6 +1135,7 @@ async def persist_candidate(
         "delivery_thesis_id": payload["delivery_thesis_id"],
         "entry_deadline": payload.get("entry_deadline"), "management_deadline": payload.get("management_deadline"),
         "session_date": payload.get("session_date"),
+        "selected_leg_subscription": subscription,
     }
 
 

@@ -229,3 +229,35 @@ def replay_chronological_debit_spread(
     digest = _evidence(underlying=underlying, expiry=expiry, policy=policy, observations=rows, outcome=outcome)
     unresolved = replace(entry_probe, state="UNRESOLVED", reason=reason, evidence_sha256=digest)
     return ChronologicalReplay(unresolved, "UNRESOLVED", attempted, tuple(rejected), entry.received_at.isoformat(), None, len(rows), digest)
+
+
+def replay_cost_scenarios(*, underlying: str, expiry: str, observations: Iterable[SpreadObservation],
+                          policy: ChronologicalPolicy, fee_multipliers: Iterable[float] = (1.0,),
+                          additional_slippage_bps: Iterable[float] = (0.0,),
+                          market_session_day: bool | None = None) -> dict:
+    """Run fixed, declared execution-cost stresses without changing inputs.
+
+    Every scenario receives the same receipt-ordered observations and manual
+    delay.  No unresolved/no-fill result is removed merely because another
+    cost scenario closes profitably.
+    """
+    rows = tuple(observations)
+    scenarios = []
+    for multiplier in sorted(set(float(value) for value in fee_multipliers)):
+        if not math.isfinite(multiplier) or multiplier < 1:
+            raise ReplayInputError("fee stress multiplier must be finite and at least one")
+        for additional in sorted(set(float(value) for value in additional_slippage_bps)):
+            if not math.isfinite(additional) or additional < 0:
+                raise ReplayInputError("additional slippage stress must be finite and non-negative")
+            stressed = replace(policy, fee_per_leg_rs=policy.fee_per_leg_rs * multiplier,
+                               slippage_bps=policy.slippage_bps + additional)
+            replay = replay_chronological_debit_spread(underlying=underlying, expiry=expiry, observations=rows,
+                                                        policy=stressed, market_session_day=market_session_day)
+            scenarios.append({"fee_multiplier": multiplier, "additional_slippage_bps": additional,
+                              "state": replay.state, "reason": replay.result.reason,
+                              "net_pnl_rs": replay.result.net_pnl_rs, "evidence_sha256": replay.evidence_sha256})
+    deterministic = {"format": "intraday_spread_cost_sensitivity_v1", "underlying": underlying,
+                     "expiry": expiry, "policy_id": policy.policy_id, "scenarios": scenarios,
+                     "can_qualify": False, "can_place_orders": False}
+    return {**deterministic, "evidence_sha256": hashlib.sha256(
+        json.dumps(deterministic, sort_keys=True, separators=(",", ":"), default=str).encode()).hexdigest()}

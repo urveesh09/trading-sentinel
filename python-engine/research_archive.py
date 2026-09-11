@@ -584,6 +584,14 @@ def readiness_view(archive_root: str, underlyings: Iterable[str] = ("NIFTY", "SE
         latest_observations = json.loads((root / "latest-observations.json").read_text(encoding="utf-8"))
     except (OSError, json.JSONDecodeError):
         latest_observations = {}
+    # Read-only visibility of exact selected-leg coverage. Absence means no
+    # selection was retained yet, never that a rolling ATM contract covered it.
+    try:
+        from research_leg_subscriptions import ResearchLegSubscriptionStore
+        selected_leg_readiness = ResearchLegSubscriptionStore(root).readiness(now=utc_now())
+    except (OSError, sqlite3.Error, ValueError):
+        selected_leg_readiness = {"per_index": {}, "recent_gap_count": None,
+                                  "qualification": "NOT_EVALUATED_HERE"}
     for name in names:
         master = latest_master(name)
         gaps = [gap for run in latest_runs for gap in run.get("result", {}).get("gaps", []) if gap.get("underlying") == name]
@@ -616,12 +624,16 @@ def readiness_view(archive_root: str, underlyings: Iterable[str] = ("NIFTY", "SE
             "provider_timestamp_utc": latest_quote.get("provider_timestamp_utc") if latest_quote else None,
             "quote_observation_status": status,
             "qualification": "NOT_EVALUATED_HERE",
+            "selected_leg_coverage": (selected_leg_readiness.get("per_index") or {}).get(name, {
+                "active_legs": 0, "missing_packets": 0,
+            }),
         }
     usage = shutil.disk_usage(root) if root.exists() else None
     return {"archive_path": str(root), "archive_exists": root.exists(),
             "underlyings": names, "per_index": per_index,
             "master_snapshots": len(masters), "finalized_quote_segments": len(segments),
             "collection_runs": len(latest_runs), "latest_collection_run": last_run,
+            "selected_leg_retention": selected_leg_readiness,
             "storage": {"bytes_free": usage.free, "bytes_total": usage.total} if usage else None,
             "evidence_levels": [EVIDENCE_OPTION_LTP_OI, EVIDENCE_OBSERVED_QUOTE],
             "advisory_independent": True,

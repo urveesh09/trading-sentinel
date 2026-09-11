@@ -4,7 +4,7 @@ from datetime import datetime, timedelta
 import pytest
 import pytz
 
-from intraday_spread_chronological import ChronologicalPolicy, SpreadObservation, replay_chronological_debit_spread
+from intraday_spread_chronological import ChronologicalPolicy, SpreadObservation, replay_chronological_debit_spread, replay_cost_scenarios
 from intraday_spread_replay import LegQuote, ReplayInputError
 
 
@@ -116,3 +116,16 @@ def test_invalid_first_entry_does_not_hide_a_later_accepted_exposure():
     assert replay.active_entry_at == later.isoformat()
     assert "entry_debit_nonpositive" in replay.rejected_entry_reasons
     assert replay.result.accepted_entry is True
+
+
+def test_cost_sensitivity_keeps_the_same_delayed_execution_evidence():
+    first = IST.localize(datetime(2026, 9, 10, 10, 0))
+    later = first + timedelta(minutes=5)
+    report = replay_cost_scenarios(
+        underlying="NIFTY", expiry="2026-09-24", policy=replace(policy(), fee_per_leg_rs=5),
+        observations=[observation(first, .9), observation(later, .1, pair(later, long_bid=110, long_ask=112, short_bid=43, short_ask=45))],
+        fee_multipliers=[1, 2], additional_slippage_bps=[0, 10],
+    )
+    assert len(report["scenarios"]) == 4
+    assert {row["state"] for row in report["scenarios"]} == {"CLOSED"}
+    assert report["can_qualify"] is False
