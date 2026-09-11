@@ -1,0 +1,43 @@
+{
+  "report_kind": "qualification_assessment_not_registry_authorization",
+  "assessment_date": "2026-09-11",
+  "policy": "partner-manual-intraday-v1",
+  "decisions": {
+    "NIFTY": {
+      "status": "INSUFFICIENT_EVIDENCE",
+      "qualified": false,
+      "reasons": [
+        "FULL_DEPLOYED_POLICY_CAUSAL_REPLAY_NOT_AVAILABLE",
+        "NO_RECORDED_ADVISORY_OUTCOMES",
+        "ACTIVE_CONTRACT_RETENTION_INCOMPLETE",
+        "NO_PREDECLARED_HELD_OUT_RESULT"
+      ],
+      "net_expectancy": null,
+      "win_rate": null,
+      "drawdown": null
+    },
+    "SENSEX": {
+      "status": "INSUFFICIENT_EVIDENCE",
+      "qualified": false,
+      "reasons": [
+        "FULL_DEPLOYED_POLICY_CAUSAL_REPLAY_NOT_AVAILABLE",
+        "NO_RECORDED_ADVISORY_OUTCOMES",
+        "ACTIVE_CONTRACT_RETENTION_INCOMPLETE",
+        "NO_PREDECLARED_HELD_OUT_RESULT"
+      ],
+      "net_expectancy": null,
+      "win_rate": null,
+      "drawdown": null
+    }
+  },
+  "evidence_sessions": [
+    "2026-09-10",
+    "2026-09-11"
+  ],
+  "packet_count": 61335,
+  "option_packet_count": 59972,
+  "option_packets_passing_screen": 59887,
+  "production_registry_modified": false,
+  "can_place_orders": false,
+  "delivery_authorized": false
+}
