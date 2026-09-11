@@ -41,7 +41,7 @@ from config import settings
 from fno_chain import RISK_FREE_RATE, take_chain_snapshot, years_to_expiry
 from fno_engine_mom import SESSION_OPEN_MIN
 from fno_models import FnoDirection
-from fno_signal_scan import scan_underlying
+from fno_signal_scan import attach_entry_chain, observe_underlying, scan_underlying
 from fno_underlyings import analytics_underlyings, get_instruments_for, load_underlying_names
 from macro_events import event_note_for
 from partner_bot import partner_enabled, send_partner
@@ -455,15 +455,61 @@ async def partner_manual_advisory_tick(now: Optional[datetime] = None) -> None:
     market_candidates = []
     protection_candidates = []
     management_updates = []
+
+    async def add_explicit_protection(spec, book, snapshot) -> None:
+        """Evaluate declared protection independently of directional entry."""
+        if not (profile.permits(AdvisoryScope.CONDITIONAL_PROTECTION, spec.name)
+                and profile.conditional_exposure_assumption and profile.conditional_coverage_units):
+            return
+        protection = build_conditional_index_protective_put(
+            snapshot, book, now, exposure_assumption=profile.conditional_exposure_assumption,
+            coverage_units=profile.conditional_coverage_units,
+            quote_ttl_seconds=settings.PARTNER_MANUAL_ADVISORY_QUOTE_TTL_SEC,
+            thesis_id=f"{spec.name}:PROTECTION:{snapshot.expiry}:{snapshot.taken_at.date()}",
+        )
+        if protection is None:
+            metrics["rejected"] += 1
+            return
+        if await is_strategy_qualified(settings.DB_PATH, protection):
+            protection = replace(protection, evidence=StrategyEvidence.QUALIFIED_FOR_ADVISORY)
+        precheck = validate_candidate(
+            protection, now, max_quote_age_seconds=settings.PARTNER_MANUAL_ADVISORY_MAX_QUOTE_AGE_SEC,
+            max_spread_pct=settings.PARTNER_MANUAL_ADVISORY_MAX_SPREAD_PCT,
+            min_oi=settings.PARTNER_MANUAL_ADVISORY_MIN_OI,
+            min_volume=settings.PARTNER_MANUAL_ADVISORY_MIN_VOLUME,
+            min_depth_units=settings.PARTNER_MANUAL_ADVISORY_MIN_DEPTH_UNITS,
+        )
+        if precheck.valid:
+            protection_candidates.append(protection)
+        else:
+            metrics["rejected"] += 1
     for spec in specs:
         try:
-            scan = await scan_underlying(_main.kite, spec, regime, now)
+            # Public futures observation is intentionally completed before
+            # optional entry-chain acquisition.  Active advisory management
+            # must never wait behind a chain outage or slow quote provider.
+            scan = await observe_underlying(_main.kite, spec, regime, now)
+            # Existing published ideas are managed from fresh public futures
+            # observations before *any* optional entry-chain result is acted
+            # on. It does not inspect partner orders and a failed chain cannot
+            # suppress an invalidation/target update for a published idea.
+            observed_at, observed_underlying, _observation_reason = _closed_bar_observation(scan.sig, now)
+            if observed_at is not None and observed_underlying is not None:
+                management_updates.extend(await queue_management_updates(
+                    settings.DB_PATH, underlying=spec.name,
+                    observed_underlying=observed_underlying, observed_at=observed_at,
+                ))
+                metrics["management_observed"] += 1
+            else:
+                metrics["management_input_unavailable"] += 1
+
             if scan.error:
                 metrics["unavailable"] += 1
                 await record_advisory_input_status(
                     settings.DB_PATH, underlying=spec.name, attempted_at=now,
                     stage="INPUT_ERROR", reason=scan.error, entry_state="UNAVAILABLE",
-                    profile_state=profile_state,
+                    observed_at=observed_at, profile_state=profile_state,
+                    successful_observation=observed_at is not None,
                 )
                 continue
             if scan.sig is None:
@@ -475,21 +521,29 @@ async def partner_manual_advisory_tick(now: Optional[datetime] = None) -> None:
                 )
                 continue
 
-            # Existing published ideas are managed from fresh public futures
-            # observations even when there is no new ORB direction.  It does
-            # not inspect partner orders and deliberately avoids an option
-            # chain fetch for a quiet entry evaluation.
-            observed_at, observed_underlying, _observation_reason = _closed_bar_observation(scan.sig, now)
-            if observed_at is not None and observed_underlying is not None:
-                management_updates.extend(await queue_management_updates(
-                    settings.DB_PATH, underlying=spec.name,
-                    observed_underlying=observed_underlying, observed_at=observed_at,
-                ))
-                metrics["management_observed"] += 1
-            else:
-                metrics["management_input_unavailable"] += 1
-
             if scan.sig.direction is None:
+                # Protection requires an explicit profile assumption, never a
+                # fresh directional signal. Fetch a chain only for that
+                # opted-in branch; an unavailable chain is visible rather than
+                # silently treating protection as healthy/no-setup.
+                if (profile.permits(AdvisoryScope.CONDITIONAL_PROTECTION, spec.name)
+                        and profile.conditional_exposure_assumption and profile.conditional_coverage_units):
+                    book = get_instruments_for(spec.name)
+                    expiry = resolve_advisory_expiry(book, now.date())
+                    protection_snapshot = await take_chain_snapshot(
+                        _main.kite, book, now, strike_window=settings.FNO_ANALYTICS_STRIKE_WINDOW,
+                        option_expiry=expiry,
+                    ) if expiry is not None else None
+                    if protection_snapshot is None:
+                        metrics["unavailable"] += 1
+                        await record_advisory_input_status(
+                            settings.DB_PATH, underlying=spec.name, attempted_at=now,
+                            stage="PROTECTION_INPUT_UNAVAILABLE", reason="conditional_protection_chain_unavailable",
+                            entry_state="UNAVAILABLE", observed_at=observed_at, profile_state=profile_state,
+                            successful_observation=observed_at is not None,
+                        )
+                    else:
+                        await add_explicit_protection(spec, book, protection_snapshot)
                 if observed_at is None or scan.sig.reject_reason in {
                     "no_bars", "no_closed_bars_today", "opening_range_incomplete",
                     "atr_unavailable", "ema_insufficient_bars", "rvol_baseline_unavailable",
@@ -512,6 +566,7 @@ async def partner_manual_advisory_tick(now: Optional[datetime] = None) -> None:
                 )
                 continue
 
+            scan = await attach_entry_chain(_main.kite, scan, now)
             book = get_instruments_for(spec.name)
             advisory_expiry = resolve_advisory_expiry(book, now.date())
             if advisory_expiry is None:
@@ -528,7 +583,7 @@ async def partner_manual_advisory_tick(now: Optional[datetime] = None) -> None:
                 metrics["unavailable"] += 1
                 await record_advisory_input_status(
                     settings.DB_PATH, underlying=spec.name, attempted_at=now,
-                    stage="DIRECTION_WITHOUT_CHAIN", reason="fired_direction_missing_chain_snapshot",
+                    stage="DIRECTION_WITHOUT_CHAIN", reason=scan.entry_error or "fired_direction_missing_chain_snapshot",
                     entry_state="UNAVAILABLE", observed_at=observed_at, profile_state=profile_state,
                     successful_observation=observed_at is not None,
                 )
@@ -595,36 +650,7 @@ async def partner_manual_advisory_tick(now: Optional[datetime] = None) -> None:
                 profile_state=profile_state, qualification_state=qualification_state,
                 successful_observation=True,
             )
-            # Protection has no implied holding.  It becomes a separate
-            # category only after the profile deliberately supplies both a
-            # coverage assumption and the units to which it applies.
-            if (
-                profile.permits(AdvisoryScope.CONDITIONAL_PROTECTION, spec.name)
-                and profile.conditional_exposure_assumption
-                and profile.conditional_coverage_units
-            ):
-                protection = build_conditional_index_protective_put(
-                    snapshot, book, now,
-                    exposure_assumption=profile.conditional_exposure_assumption,
-                    coverage_units=profile.conditional_coverage_units,
-                    quote_ttl_seconds=settings.PARTNER_MANUAL_ADVISORY_QUOTE_TTL_SEC,
-                    thesis_id=f"{spec.name}:PROTECTION:{snapshot.expiry}:{snapshot.taken_at.date()}",
-                )
-                if protection is not None:
-                    if await is_strategy_qualified(settings.DB_PATH, protection):
-                        protection = replace(protection, evidence=StrategyEvidence.QUALIFIED_FOR_ADVISORY)
-                    precheck = validate_candidate(
-                        protection, now,
-                        max_quote_age_seconds=settings.PARTNER_MANUAL_ADVISORY_MAX_QUOTE_AGE_SEC,
-                        max_spread_pct=settings.PARTNER_MANUAL_ADVISORY_MAX_SPREAD_PCT,
-                        min_oi=settings.PARTNER_MANUAL_ADVISORY_MIN_OI,
-                        min_volume=settings.PARTNER_MANUAL_ADVISORY_MIN_VOLUME,
-                        min_depth_units=settings.PARTNER_MANUAL_ADVISORY_MIN_DEPTH_UNITS,
-                    )
-                    if precheck.valid:
-                        protection_candidates.append(protection)
-                    else:
-                        metrics["rejected"] += 1
+            await add_explicit_protection(spec, book, snapshot)
         except Exception as exc:
             metrics["unavailable"] += 1
             logger.error("partner_manual_advisory_tick_failed underlying=%s err=%s", spec.name, str(exc), exc_info=True)

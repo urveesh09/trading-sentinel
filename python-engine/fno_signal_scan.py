@@ -50,6 +50,10 @@ class UnderlyingScan:
     pick: Optional[Tuple[ContractQuote, float, float]] = None  # (quote, iv, delta)
     thin_chain: bool = False
     thin_reasons: List[str] = field(default_factory=list)
+    # Public futures-bar acquisition and optional entry-chain acquisition are
+    # separate facts. A chain outage must not erase an otherwise usable public
+    # condition for active-advice management.
+    entry_error: str = ""
     error: str = ""
 
 
@@ -71,15 +75,18 @@ def _liquidity_reasons(q: ContractQuote, iv: float) -> List[str]:
     return reasons
 
 
-async def scan_underlying(
+async def observe_underlying(
     kite,
     spec: UnderlyingSpec,
     regime: str,
     now_ist: Optional[datetime] = None,
 ) -> UnderlyingScan:
-    """Evaluate the ORB signal for one underlying. Never raises: every
-    failure lands in .error so one broken underlying can't sink the
-    others in the partner tick loop."""
+    """Fetch and evaluate the public futures-bar condition only.
+
+    This deliberately does *not* request an option chain.  Published advice
+    is managed from this public observation, so a slow or unavailable entry
+    chain cannot delay an invalidation, target, or retirement update.
+    """
     now_ist = now_ist or datetime.now(IST)
     out = UnderlyingScan(name=spec.name)
     try:
@@ -102,32 +109,74 @@ async def scan_underlying(
         )
         out.sig = evaluate_fno_mom(bars, regime, now_ist)
 
-        if out.sig.direction is None:
-            return out
-
-        snap = await take_chain_snapshot(kite, book, now_ist)
-        if snap is None:
-            out.error = "chain_unavailable"
-            return out
-        out.snap = snap
-
-        opt_type = (
-            OptionType.CE if out.sig.direction == FnoDirection.LONG else OptionType.PE
-        )
-        pick = select_strike_by_delta(snap, opt_type, now_ist)
-        if pick is None:
-            out.thin_chain = True
-            out.thin_reasons = ["no strike solves for IV/delta"]
-            return out
-        out.pick = pick
-        q, iv, _delta = pick
-        out.thin_reasons = _liquidity_reasons(q, iv)
-        out.thin_chain = bool(out.thin_reasons)
         return out
     except Exception as exc:
         logger.error(
-            "fno_signal_scan_failed underlying=%s err=%s",
+            "fno_signal_public_observation_failed underlying=%s err=%s",
             spec.name, str(exc), exc_info=True,
         )
         out.error = str(exc)
         return out
+
+
+async def attach_entry_chain(
+    kite,
+    scan: UnderlyingScan,
+    now_ist: Optional[datetime] = None,
+) -> UnderlyingScan:
+    """Attach optional-chain evidence to an already observed signal.
+
+    Entry-chain failure is represented by ``entry_error`` rather than the
+    public-observation ``error`` field.  Callers can therefore manage an
+    active idea even while suppressing a new entry safely.
+    """
+    if scan.error or scan.sig is None or scan.sig.direction is None:
+        return scan
+    now_ist = now_ist or datetime.now(IST)
+    try:
+        book = get_instruments_for(scan.name)
+        if not book.ready(now_ist.date()):
+            scan.entry_error = "instruments_not_ready"
+            return scan
+        snap = await take_chain_snapshot(kite, book, now_ist)
+        if snap is None:
+            scan.entry_error = "chain_unavailable"
+            return scan
+        scan.snap = snap
+
+        opt_type = (
+            OptionType.CE if scan.sig.direction == FnoDirection.LONG else OptionType.PE
+        )
+        pick = select_strike_by_delta(snap, opt_type, now_ist)
+        if pick is None:
+            scan.thin_chain = True
+            scan.thin_reasons = ["no strike solves for IV/delta"]
+            return scan
+        scan.pick = pick
+        q, iv, _delta = pick
+        scan.thin_reasons = _liquidity_reasons(q, iv)
+        scan.thin_chain = bool(scan.thin_reasons)
+        return scan
+    except Exception as exc:
+        logger.error(
+            "fno_signal_entry_chain_failed underlying=%s err=%s",
+            scan.name, str(exc), exc_info=True,
+        )
+        scan.entry_error = str(exc)
+        return scan
+
+
+async def scan_underlying(
+    kite,
+    spec: UnderlyingSpec,
+    regime: str,
+    now_ist: Optional[datetime] = None,
+) -> UnderlyingScan:
+    """Evaluate one complete entry scan, preserving the legacy API.
+
+    New-entry consumers use this convenience composition.  The partner
+    management loop calls the two phases separately so delivery lifecycle
+    work is never held behind optional-chain I/O.
+    """
+    out = await observe_underlying(kite, spec, regime, now_ist)
+    return await attach_entry_chain(kite, out, now_ist)

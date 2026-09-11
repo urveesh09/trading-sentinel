@@ -91,6 +91,15 @@ def wired(tmp_path, monkeypatch):
         return state["scan"]
 
     monkeypatch.setattr(po, "scan_underlying", _scan)
+    # Manual advisory first asks for public futures data and only later
+    # attaches optional-chain entry evidence.  Preserve the fixture's
+    # deliberately controlled scan outcome across both phases.
+    monkeypatch.setattr(po, "observe_underlying", _scan)
+
+    async def _attach(_kite, scan, _now):
+        return scan
+
+    monkeypatch.setattr(po, "attach_entry_chain", _attach)
 
     import asyncio
     asyncio.get_event_loop()
@@ -161,7 +170,7 @@ async def test_manual_tick_classifies_no_direction_without_chain_and_updates_act
     observed = []
     async def management(_db, *, underlying, observed_underlying, observed_at):
         observed.append((underlying, observed_underlying, observed_at)); return []
-    monkeypatch.setattr(po, "scan_underlying", scan)
+    monkeypatch.setattr(po, "observe_underlying", scan)
     monkeypatch.setattr(__import__("partner_manual_advisory"), "queue_management_updates", management)
     # partner_orchestrator imports this name lazily, so patch its module
     # binding after one controlled tick import path has executed.
@@ -185,7 +194,7 @@ async def test_manual_tick_keeps_explicit_input_error_separate_from_missing_sign
     monkeypatch.setattr(po, "get_instruments_for", lambda _name: _AdvisoryBook())
     async def scan(_kite, spec, _regime, _now):
         return UnderlyingScan(name=spec.name, error="instruments_not_ready") if spec.name == "NIFTY" else UnderlyingScan(name=spec.name)
-    monkeypatch.setattr(po, "scan_underlying", scan)
+    monkeypatch.setattr(po, "observe_underlying", scan)
     await po.partner_manual_advisory_tick(NOW)
     status = await load_advisory_input_status(wired.db)
     assert status["NIFTY"]["stage"] == "INPUT_ERROR"
@@ -204,11 +213,73 @@ async def test_manual_tick_records_fired_direction_without_snapshot_as_unavailab
     monkeypatch.setattr(po, "get_instruments_for", lambda _name: _AdvisoryBook())
     async def scan(_kite, spec, _regime, _now):
         return _fired_scan() if spec.name == "NIFTY" else UnderlyingScan(name="SENSEX", error="instruments_not_ready")
-    monkeypatch.setattr(po, "scan_underlying", scan)
+    monkeypatch.setattr(po, "observe_underlying", scan)
     await po.partner_manual_advisory_tick(NOW)
     status = await load_advisory_input_status(wired.db)
     assert status["NIFTY"]["stage"] == "DIRECTION_WITHOUT_CHAIN"
     assert status["NIFTY"]["entry_state"] == "UNAVAILABLE"
+
+
+@pytest.mark.asyncio
+async def test_chain_failure_still_processes_active_public_invalidation(wired, monkeypatch):
+    """Entry-chain acquisition is not allowed to suppress active management."""
+    await _init(wired.db)
+    monkeypatch.setattr(settings, "PARTNER_MANUAL_ADVISORY_ENABLED", True)
+    monkeypatch.setattr(po, "analytics_underlyings", lambda: [SPEC])
+    monkeypatch.setattr(po, "get_instruments_for", lambda _name: _AdvisoryBook())
+    scan = _fired_scan()
+    scan.entry_error = "chain_unavailable"
+    async def public_but_chain_failed(_kite, spec, *_args, **_kwargs):
+        return scan if spec.name == "NIFTY" else UnderlyingScan(name="SENSEX", error="fixture_unavailable")
+    queued, dispatched = [], []
+    async def manage(_db, *, underlying, observed_underlying, observed_at):
+        queued.append((underlying, observed_underlying, observed_at))
+        return [{"update_id": "invalidation-fixture"}]
+    async def dispatch(_db, update, *, now):
+        dispatched.append((update, now)); return True
+    monkeypatch.setattr(po, "observe_underlying", public_but_chain_failed)
+    advisory = __import__("partner_manual_advisory")
+    monkeypatch.setattr(advisory, "queue_management_updates", manage)
+    monkeypatch.setattr(advisory, "dispatch_queued_management_update", dispatch)
+    await po.partner_manual_advisory_tick(NOW)
+    assert queued and queued[0][0] == "NIFTY"
+    assert dispatched == [({"update_id": "invalidation-fixture"}, NOW)]
+
+
+@pytest.mark.asyncio
+async def test_active_management_runs_before_a_slow_entry_chain(wired, monkeypatch):
+    """An optional entry quote must not hold a published idea's lifecycle."""
+    import asyncio
+
+    await _init(wired.db)
+    monkeypatch.setattr(settings, "PARTNER_MANUAL_ADVISORY_ENABLED", True)
+    monkeypatch.setattr(po, "analytics_underlyings", lambda: [SPEC])
+    monkeypatch.setattr(po, "get_instruments_for", lambda _name: _AdvisoryBook())
+    order, chain_started, release_chain = [], asyncio.Event(), asyncio.Event()
+
+    async def public(_kite, _spec, *_args):
+        order.append("public")
+        return _fired_scan()
+
+    async def slow_chain(_kite, scan, _now):
+        order.append("chain")
+        chain_started.set()
+        await release_chain.wait()
+        scan.entry_error = "chain_unavailable"
+        return scan
+
+    async def management(_db, **_kwargs):
+        order.append("management")
+        return []
+
+    monkeypatch.setattr(po, "observe_underlying", public)
+    monkeypatch.setattr(po, "attach_entry_chain", slow_chain)
+    monkeypatch.setattr(__import__("partner_manual_advisory"), "queue_management_updates", management)
+    task = asyncio.create_task(po.partner_manual_advisory_tick(NOW))
+    await asyncio.wait_for(chain_started.wait(), timeout=1)
+    assert order == ["public", "management", "chain"]
+    release_chain.set()
+    await task
 
 
 @pytest.mark.asyncio
@@ -228,7 +299,7 @@ async def test_manual_tick_records_fresh_expiry_chain_failure(wired, monkeypatch
     async def scan(_kite, spec, _regime, _now):
         return fired if spec.name == "NIFTY" else UnderlyingScan(name="SENSEX", error="instruments_not_ready")
     async def no_fresh_chain(*_args, **_kwargs): return None
-    monkeypatch.setattr(po, "scan_underlying", scan)
+    monkeypatch.setattr(po, "observe_underlying", scan)
     monkeypatch.setattr(__import__("fno_chain"), "take_chain_snapshot", no_fresh_chain)
     await po.partner_manual_advisory_tick(NOW)
     status = await load_advisory_input_status(wired.db)

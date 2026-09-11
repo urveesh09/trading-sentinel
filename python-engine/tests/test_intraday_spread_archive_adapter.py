@@ -35,18 +35,19 @@ def archive(tmp_path, *items):
     return tmp_path
 
 
-def artifact(tmp_path, *, receipt="2026-09-10T04:30:00+00:00", score=.9):
+def artifact(tmp_path, *, receipt="2026-09-10T04:30:00+00:00", score=1.0):
     path = tmp_path / "signals.json"
     source = tmp_path / "source-manifests" / "quotes-2026-09-10.json"
     source.parent.mkdir(parents=True, exist_ok=True)
     source.write_text('{"archive":"fixture"}', encoding="utf-8")
     digest = hashlib.sha256(source.read_bytes()).hexdigest()
-    write_signal_artifact(path, {"format": "intraday_spread_signal_artifact_v1", "evaluator_id": "fixture-v1",
+    write_signal_artifact(path, {"format": "intraday_spread_signal_artifact_v1", "evaluator_id": "orb_threshold_v1",
         "evaluator_sha256": "a" * 64, "policy_id": "policy-v1", "policy_sha256": "b" * 64,
         "config_sha256": "c" * 64, "underlying": "NIFTY", "session_date": "2026-09-10",
         "source_manifests": [{"reference": "source-manifests/quotes-2026-09-10.json", "sha256": digest}],
         "signals": [{"decision_id": "one", "received_at": receipt, "decision_cutoff": receipt, "score": score,
-                     "source_receipt_bounds": {"start": receipt, "end": receipt}}]})
+                     "evaluator_input": {"direction": "LONG", "close": 101, "trigger": 100,
+                     "source_packets": [{"packet_id": "bar-one", "received_at": receipt}]}}]})
     return path
 
 
@@ -57,15 +58,15 @@ def test_archive_adapter_pairs_only_complete_same_receipt_batches_and_retains_pa
         master_sha256=MASTER, archive_root=archive(tmp_path, long, short),
         signal_artifact_path=artifact(tmp_path), policy_id="policy-v1", session_date="2026-09-10")
     assert len(built.observations) == 1
-    assert built.observations[0].signal_score == .9
+    assert built.observations[0].signal_score == 1.0
     assert built.partial_batches[0]["missing"] == ["short"]
 
 
 def test_archive_adapter_rejects_tampered_signal_artifact(tmp_path):
     long, short = identity(1, "NIFTY25000CE", 25000), identity(2, "NIFTY25200CE", 25200)
     path = artifact(tmp_path)
-    path.write_text(path.read_text(encoding="utf-8").replace('"score":0.9', '"score":999'), encoding="utf-8")
-    with pytest.raises(ReplayInputError, match="digest"):
+    path.write_text(path.read_text(encoding="utf-8").replace('"score":1.0', '"score":999'), encoding="utf-8")
+    with pytest.raises(ReplayInputError, match="score does not reproduce"):
         build_spread_observations(events=[], long_contract=long, short_contract=short, master_sha256=MASTER, archive_root=archive(tmp_path, long, short),
                                   signal_artifact_path=path, policy_id="policy-v1", session_date="2026-09-10")
 

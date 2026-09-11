@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import argparse
+import asyncio
 import json
 import sys
 from dataclasses import asdict
@@ -70,6 +71,10 @@ def main(argv: list[str] | None = None) -> int:
     replay.add_argument("--policy", required=True, help="frozen ChronologicalPolicy JSON; duration fields are seconds")
     replay.add_argument("--policy-id", required=True)
     replay.add_argument("--session-date", required=True)
+    reconcile = sub.add_parser("reconcile-internal", help="write all five retained-data reconciliation investigations")
+    reconcile.add_argument("--source-db", default=settings.DB_PATH)
+    reconcile.add_argument("--output", required=True, help="JSON evidence output; no ledger mutation")
+    reconcile.add_argument("--limit", type=int, default=1000)
     args = parser.parse_args(argv)
     if args.command == "export-fno":
         try:
@@ -89,6 +94,21 @@ def main(argv: list[str] | None = None) -> int:
         except Exception as exc:
             print(json.dumps({"state": "RESEARCH_INPUT_REJECTED", "error": str(exc), "can_place_orders": False}), file=sys.stderr)
             return 1
+        return 0
+    if args.command == "reconcile-internal":
+        try:
+            from reconciliation_evidence import reconciliation_evidence_report
+            report = asyncio.run(reconciliation_evidence_report(args.source_db, limit=args.limit))
+            target = Path(args.output)
+            target.parent.mkdir(parents=True, exist_ok=True)
+            temporary = target.with_suffix(target.suffix + ".tmp")
+            temporary.write_text(json.dumps(report, sort_keys=True, indent=2, default=str), encoding="utf-8")
+            temporary.replace(target)
+        except Exception as exc:
+            print(json.dumps({"written": False, "error": str(exc)}), file=sys.stderr)
+            return 1
+        print(json.dumps({"written": True, "path": str(target), "status": report.get("status"),
+                          "source_sheets": len(report.get("source_sheets") or [])}, sort_keys=True))
         return 0
     return 2
 

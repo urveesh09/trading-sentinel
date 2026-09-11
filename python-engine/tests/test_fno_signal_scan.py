@@ -165,7 +165,9 @@ async def test_chain_unavailable_is_an_error_not_a_raise(wired):
     out = await scan_mod.scan_underlying(
         _Kite(_frame(LONG_ROWS)), SPEC, "REGIME_1_NORMAL", NOW,
     )
-    assert out.error == "chain_unavailable"
+    # Public futures observation remains usable; only a new entry is blocked.
+    assert out.error == ""
+    assert out.entry_error == "chain_unavailable"
     assert out.sig.direction == FnoDirection.LONG
 
 

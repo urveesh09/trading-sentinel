@@ -19,6 +19,7 @@ from intraday_spread_replay import ReplayInputError
 
 
 FORMAT = "intraday_spread_signal_artifact_v1"
+EVALUATOR_ORB_THRESHOLD_V1 = "orb_threshold_v1"
 
 
 def _sha(value: object) -> str:
@@ -41,6 +42,45 @@ def _stamp(value: object, field: str) -> datetime:
     return parsed.astimezone(timezone.utc)
 
 
+def _orb_input(value: object, *, session: str, cutoff: datetime) -> tuple[dict[str, Any], float, datetime, datetime]:
+    """Normalize causal inputs for the fixed, reproducible ORB threshold rule."""
+    if not isinstance(value, Mapping):
+        raise ReplayInputError("signal evaluator input is missing")
+    direction = str(value.get("direction", "")).upper()
+    if direction not in {"LONG", "SHORT"}:
+        raise ReplayInputError("signal evaluator direction is invalid")
+    try:
+        close, trigger = float(value.get("close")), float(value.get("trigger"))
+    except (TypeError, ValueError) as exc:
+        raise ReplayInputError("signal evaluator close/trigger is invalid") from exc
+    if not math.isfinite(close) or not math.isfinite(trigger) or close <= 0 or trigger <= 0:
+        raise ReplayInputError("signal evaluator close/trigger is non-finite")
+    packets = value.get("source_packets")
+    if not isinstance(packets, list) or not packets:
+        raise ReplayInputError("signal evaluator requires causal source packets")
+    receipts: list[datetime] = []
+    normalized_packets: list[dict[str, str]] = []
+    packet_ids: set[str] = set()
+    for packet in packets:
+        if not isinstance(packet, Mapping):
+            raise ReplayInputError("signal evaluator source packet is invalid")
+        receipt = _stamp(packet.get("received_at"), "signal.evaluator_input.source_packet.received_at")
+        if receipt.date().isoformat() != session or receipt > cutoff:
+            raise ReplayInputError("signal evaluator source packet is future or cross-session")
+        packet_id = packet.get("packet_id")
+        if not isinstance(packet_id, str) or not packet_id:
+            raise ReplayInputError("signal evaluator source packet id is invalid")
+        if packet_id in packet_ids:
+            raise ReplayInputError("signal evaluator source packet id is duplicate")
+        packet_ids.add(packet_id)
+        receipts.append(receipt)
+        normalized_packets.append({"packet_id": packet_id, "received_at": receipt.isoformat()})
+    normalized = {"direction": direction, "close": close, "trigger": trigger,
+                  "source_packets": sorted(normalized_packets, key=lambda row: (row["received_at"], row["packet_id"]))}
+    score = 1.0 if (direction == "LONG" and close >= trigger) or (direction == "SHORT" and close <= trigger) else 0.0
+    return normalized, score, min(receipts), max(receipts)
+
+
 def _canonical_payload(payload: Mapping[str, Any]) -> dict[str, Any]:
     """Validate and normalize the immutable content before hashing it."""
     if not isinstance(payload, Mapping) or payload.get("format") != FORMAT:
@@ -53,6 +93,8 @@ def _canonical_payload(payload: Mapping[str, Any]) -> dict[str, Any]:
         normalized[field] = value.strip().upper() if field == "underlying" else value.strip()
     if normalized["underlying"] not in {"NIFTY", "SENSEX"}:
         raise ReplayInputError("signal artifact underlying is unsupported")
+    if normalized["evaluator_id"] != EVALUATOR_ORB_THRESHOLD_V1:
+        raise ReplayInputError("signal artifact evaluator is not registered for reproducibility")
     try:
         date.fromisoformat(normalized["session_date"])
     except ValueError as exc:
@@ -83,21 +125,21 @@ def _canonical_payload(payload: Mapping[str, Any]) -> dict[str, Any]:
         seen.add(decision_id)
         received = _stamp(item.get("received_at"), "signal.received_at")
         cutoff = _stamp(item.get("decision_cutoff"), "signal.decision_cutoff")
-        source_start = _stamp((item.get("source_receipt_bounds") or {}).get("start"), "signal.source_receipt_bounds.start")
-        source_end = _stamp((item.get("source_receipt_bounds") or {}).get("end"), "signal.source_receipt_bounds.end")
-        if (received.date().isoformat() != session or cutoff.date().isoformat() != session
-                or source_start > source_end or source_end > cutoff or cutoff > received):
+        if received.date().isoformat() != session or cutoff.date().isoformat() != session or cutoff > received:
             raise ReplayInputError("signal artifact contains non-causal or cross-session source data")
+        evaluator_input, recomputed_score, source_start, source_end = _orb_input(
+            item.get("evaluator_input"), session=session, cutoff=cutoff)
         try:
             score = float(item.get("score"))
         except (TypeError, ValueError) as exc:
             raise ReplayInputError("signal artifact score is invalid") from exc
-        if not math.isfinite(score):
-            raise ReplayInputError("signal artifact score is non-finite")
+        if not math.isfinite(score) or score != recomputed_score:
+            raise ReplayInputError("signal artifact score does not reproduce from evaluator input")
         normalized_signals.append({
             "decision_id": decision_id, "received_at": received.isoformat(),
             "decision_cutoff": cutoff.isoformat(), "score": score,
             "source_receipt_bounds": {"start": source_start.isoformat(), "end": source_end.isoformat()},
+            "evaluator_input": evaluator_input,
         })
     normalized["signals"] = sorted(normalized_signals, key=lambda item: (item["received_at"], item["decision_id"]))
     return normalized
@@ -117,6 +159,34 @@ def write_signal_artifact(path: str | Path, payload: Mapping[str, Any]) -> dict[
     temporary.write_text(json.dumps(result, sort_keys=True, separators=(",", ":")), encoding="utf-8")
     os.replace(temporary, target)
     return result
+
+
+def generate_orb_threshold_artifact(
+    path: str | Path, *, underlying: str, policy_id: str, evaluator_sha256: str,
+    policy_sha256: str, config_sha256: str, session_date: str,
+    source_manifests: list[Mapping[str, Any]], decisions: Iterable[Mapping[str, Any]],
+) -> dict[str, Any]:
+    """Generate, rather than accept, scores for the registered ORB rule.
+
+    Each decision supplies only raw causal inputs and its decision clock. The
+    score and source bounds are derived here. Packets after a decision cutoff
+    are rejected and cannot alter an earlier decision on a later replay.
+    """
+    signals = []
+    for decision in decisions:
+        if not isinstance(decision, Mapping):
+            raise ReplayInputError("signal decision is invalid")
+        cutoff = _stamp(decision.get("decision_cutoff"), "decision_cutoff")
+        received = _stamp(decision.get("received_at"), "received_at")
+        canonical_input, score, _start, _end = _orb_input(
+            decision.get("evaluator_input"), session=session_date, cutoff=cutoff)
+        signals.append({"decision_id": decision.get("decision_id"), "received_at": received.isoformat(),
+                        "decision_cutoff": cutoff.isoformat(), "score": score,
+                        "evaluator_input": canonical_input})
+    return write_signal_artifact(path, {"format": FORMAT, "evaluator_id": EVALUATOR_ORB_THRESHOLD_V1,
+        "evaluator_sha256": evaluator_sha256, "policy_id": policy_id, "policy_sha256": policy_sha256,
+        "config_sha256": config_sha256, "underlying": underlying, "session_date": session_date,
+        "source_manifests": source_manifests, "signals": signals})
 
 
 def load_signal_artifact(path: str | Path, *, underlying: str | None = None,
