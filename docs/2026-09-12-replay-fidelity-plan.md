@@ -29,7 +29,7 @@ Rollout and rollback:
 Commit only in Dev. Rollback is the reviewed implementation commit; retained archives remain compatible because the change affects interpretation, not storage. Promotion and live collection observation remain under Workstream D and require the GitHub release path.
 
 Status and verified commit:
-TESTED_DEV; implementation commit pending. The changed archive/full-policy/holdout acceptance is 28 passed without warnings. The broader replay, qualification, capture, CLI, archive and orchestrator group is 139 passed with one pre-existing Starlette async-generator lifespan deprecation warning. The full Python repository is 2,502 passed, 3 skipped and the same 17 documented out-of-slice failures, with no new failure. Treating every warning as an error confirms the pure research paths are clean and intentionally stops the orchestrator group at that known application-import warning.
+TESTED_DEV in implementation commit `e548d24`. The changed archive/full-policy/holdout acceptance is 28 passed without warnings. The broader replay, qualification, capture, CLI, archive and orchestrator group is 139 passed with one pre-existing Starlette async-generator lifespan deprecation warning. The full Python repository is 2,502 passed, 3 skipped and the same 17 documented out-of-slice failures, with no new failure. Treating every warning as an error confirms the pure research paths are clean and intentionally stops the orchestrator group at that known application-import warning.
 
 Documentation updated:
 This plan slice was created before source edits. The system guide, code atlas, next-agent matrix and handover verification are reconciled with the tested behavior for the implementation commit.
