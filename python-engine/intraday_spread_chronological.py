@@ -34,6 +34,13 @@ class SpreadObservation:
 
 
 @dataclass(frozen=True)
+class PublicObservation:
+    observed_at: datetime
+    received_at: datetime
+    price: float
+
+
+@dataclass(frozen=True)
 class ChronologicalPolicy:
     policy_id: str
     min_signal_score: float
@@ -57,6 +64,8 @@ class ChronologicalPolicy:
     invalidation_level: float | None = None
     target_level: float | None = None
     max_public_age: timedelta = timedelta(minutes=10)
+    capital_limit_rs: float | None = None
+    risk_limit_rs: float | None = None
 
 
 @dataclass(frozen=True)
@@ -78,6 +87,9 @@ def _clock(value: datetime, field: str) -> datetime:
 
 
 def _policy_payload(policy: ChronologicalPolicy) -> dict:
+    for limit in (policy.capital_limit_rs, policy.risk_limit_rs):
+        if limit is not None and (isinstance(limit, bool) or not math.isfinite(limit) or limit <= 0):
+            raise ReplayInputError("execution capital/risk limits must be finite and positive")
     if policy.exit_basis not in {"SPREAD_PNL", "PUBLIC_THESIS"}:
         raise ReplayInputError("unknown exit basis")
     if policy.max_public_age <= timedelta(0):
@@ -108,7 +120,8 @@ def _policy_payload(policy: ChronologicalPolicy) -> dict:
             "signal_expiry_seconds": policy.signal_expiry.total_seconds(),
             "cancellation_score": policy.cancellation_score, "exit_basis": policy.exit_basis,
             "direction": policy.direction, "invalidation_level": policy.invalidation_level, "target_level": policy.target_level,
-            "max_public_age_seconds": policy.max_public_age.total_seconds()}
+            "max_public_age_seconds": policy.max_public_age.total_seconds(),
+            "capital_limit_rs": policy.capital_limit_rs, "risk_limit_rs": policy.risk_limit_rs}
 
 
 def _observation_payload(item: SpreadObservation) -> dict:
@@ -158,6 +171,7 @@ def _execution_observation(rows: list[SpreadObservation], decision_index: int,
 def replay_chronological_debit_spread(
     *, underlying: str, expiry: str, observations: Iterable[SpreadObservation], policy: ChronologicalPolicy,
     market_session_day: bool | None = None,
+    public_observations: Iterable[PublicObservation] = (),
 ) -> ChronologicalReplay:
     """Select first signal, then first policy exit using receipt-ordered data.
 
@@ -166,6 +180,7 @@ def replay_chronological_debit_spread(
     replaced.  Missing or unusable timely exits remain unresolved exposure.
     """
     rows = list(observations)
+    public_rows = tuple(public_observations)
     _policy_payload(policy)
     if not rows:
         raise ReplayInputError("chronological replay requires observations")
@@ -191,6 +206,23 @@ def replay_chronological_debit_spread(
         elif received_session_date != session_date:
             raise ReplayInputError("chronological replay cannot mix exchange sessions")
         prior_received = received
+    prior_public = None
+    for item in public_rows:
+        observed = _clock(item.observed_at, "public observed_at")
+        received = _clock(item.received_at, "public received_at")
+        if (not math.isfinite(item.price) or item.price <= 0 or observed > received
+                or received - observed > policy.max_public_age
+                or received.astimezone(IST).date() != session_date
+                or (prior_public is not None and received <= prior_public)):
+            raise ReplayInputError("invalid or unordered independent public evidence")
+        prior_public = received
+    if public_rows and any(row.public_price is not None for row in rows):
+        raise ReplayInputError("cannot mix embedded and independent public evidence")
+    # Keep independent events in every evidence fingerprint, including no-fill.
+    public_evidence = [asdict(item) for item in public_rows]
+    def evidence(outcome):
+        return _evidence(underlying=underlying, expiry=expiry, policy=policy, observations=rows,
+                         outcome={**outcome, "independent_public_observations": public_evidence})
     attempted = 0
     rejected: list[str] = []
     entry: SpreadObservation | None = None
@@ -203,6 +235,13 @@ def replay_chronological_debit_spread(
         if execution is None:
             rejected.append(execution_reason or "execution_packet_unavailable")
             continue
+        if policy.exit_basis == "PUBLIC_THESIS" and public_rows:
+            from partner_thesis import public_thesis_event
+            if any(public_thesis_event(policy.direction, event.price, policy.invalidation_level,
+                                      policy.target_level)[0] is not None
+                   for event in public_rows if item.received_at <= event.received_at <= execution.received_at):
+                rejected.append("public_thesis_cancelled_before_execution")
+                continue
         probe = replay_intraday_debit_spread(
             underlying=underlying, expiry=expiry, entry_at=execution.received_at, entry_quotes=list(execution.quotes), exit_at=None,
             exit_quotes=[], fee_per_leg_rs=policy.fee_per_leg_rs, entry_start_minute=policy.entry_start_minute,
@@ -211,12 +250,24 @@ def replay_chronological_debit_spread(
             execution_delay=policy.execution_delay, market_session_day=market_session_day,
         )
         if probe.accepted_entry:
+            buy = next(quote for quote in execution.quotes if quote.side == "BUY")
+            sell = next(quote for quote in execution.quotes if quote.side == "SELL")
+            debit = (buy.ask - sell.bid) * buy.lot_size
+            # Match the advisory profile's round-trip reserve convention, and
+            # evaluate unrounded execution economics rather than original advice.
+            all_in = debit * (1 + policy.slippage_bps / 10_000) + 4 * policy.fee_per_leg_rs
+            if policy.capital_limit_rs is not None and all_in > policy.capital_limit_rs:
+                rejected.append("execution_profile_capital_limit_exceeded")
+                continue
+            if policy.risk_limit_rs is not None and all_in > policy.risk_limit_rs:
+                rejected.append("execution_profile_risk_limit_exceeded")
+                continue
             entry, entry_probe = execution, probe
             break
         rejected.append(probe.reason)
     if entry is None or entry_probe is None:
         outcome = {"state": "NO_FILL", "reason": "no_executable_policy_entry", "attempted_entries": attempted, "rejected": rejected}
-        digest = _evidence(underlying=underlying, expiry=expiry, policy=policy, observations=rows, outcome=outcome)
+        digest = evidence(outcome)
         result = ReplayResult("NO_FILL", "no_executable_policy_entry", None, None, None, None,
                               rows[0].received_at.isoformat(), None, digest)
         return ChronologicalReplay(result, "NO_FILL", attempted, tuple(rejected), None, None, len(rows), digest)
@@ -224,12 +275,25 @@ def replay_chronological_debit_spread(
     last_unresolved: ReplayResult | None = None
     pending_public_trigger = None
     public_exit_eligible_at = None
+    public_index = 0
+    while public_index < len(public_rows) and public_rows[public_index].received_at <= entry.received_at:
+        public_index += 1
     for item in rows[entry_index + 1:]:
         # Exit observations are already the first sequentially available books.
         # Never manufacture a later timestamp by adding a delay to an older
         # packet; a delayed exit needs a later real packet and remains
         # unresolved when it is absent.
         clock = item.received_at
+        if policy.exit_basis == "PUBLIC_THESIS":
+            from partner_thesis import public_thesis_event
+            while public_index < len(public_rows) and public_rows[public_index].received_at <= clock:
+                event = public_rows[public_index]
+                public_index += 1
+                if pending_public_trigger is None:
+                    pending_public_trigger, _ = public_thesis_event(policy.direction, event.price,
+                        policy.invalidation_level, policy.target_level)
+                    if pending_public_trigger is not None:
+                        public_exit_eligible_at = event.received_at + policy.execution_delay
         if policy.exit_basis == "PUBLIC_THESIS" and pending_public_trigger is None:
             from partner_thesis import public_thesis_event
             if item.public_price is not None:
@@ -263,14 +327,22 @@ def replay_chronological_debit_spread(
         outcome = {"state": candidate.state, "reason": candidate.reason, "trigger": trigger,
                    "entry_at": entry.received_at.isoformat(), "exit_at": item.received_at.isoformat(), "attempted_entries": attempted,
                    "rejected": rejected}
-        digest = _evidence(underlying=underlying, expiry=expiry, policy=policy, observations=rows, outcome=outcome)
+        digest = evidence(outcome)
         final = replace(candidate, evidence_sha256=digest)
         return ChronologicalReplay(final, final.state, attempted, tuple(rejected), entry.received_at.isoformat(), trigger, len(rows), digest)
+    # A final public breach without a later book is still unresolved exposure.
+    if policy.exit_basis == "PUBLIC_THESIS" and pending_public_trigger is None:
+        from partner_thesis import public_thesis_event
+        for event in public_rows[public_index:]:
+            pending_public_trigger, _ = public_thesis_event(policy.direction, event.price,
+                policy.invalidation_level, policy.target_level)
+            if pending_public_trigger is not None:
+                break
     reason = "no_timely_executable_exit" if last_unresolved is not None else "no_exit_observation_after_entry"
     outcome = {"state": "UNRESOLVED", "reason": reason, "entry_at": entry.received_at.isoformat(),
                "pending_public_trigger": pending_public_trigger,
                "attempted_entries": attempted, "rejected": rejected}
-    digest = _evidence(underlying=underlying, expiry=expiry, policy=policy, observations=rows, outcome=outcome)
+    digest = evidence(outcome)
     unresolved = replace(entry_probe, state="UNRESOLVED", reason=reason, evidence_sha256=digest)
     return ChronologicalReplay(unresolved, "UNRESOLVED", attempted, tuple(rejected), entry.received_at.isoformat(), pending_public_trigger, len(rows), digest)
 
@@ -278,7 +350,8 @@ def replay_chronological_debit_spread(
 def replay_cost_scenarios(*, underlying: str, expiry: str, observations: Iterable[SpreadObservation],
                           policy: ChronologicalPolicy, fee_multipliers: Iterable[float] = (1.0,),
                           additional_slippage_bps: Iterable[float] = (0.0,),
-                          market_session_day: bool | None = None) -> dict:
+                          market_session_day: bool | None = None,
+                          public_observations: Iterable[PublicObservation] = ()) -> dict:
     """Run fixed, declared execution-cost stresses without changing inputs.
 
     Every scenario receives the same receipt-ordered observations and manual
@@ -286,6 +359,7 @@ def replay_cost_scenarios(*, underlying: str, expiry: str, observations: Iterabl
     cost scenario closes profitably.
     """
     rows = tuple(observations)
+    public_rows = tuple(public_observations)
     scenarios = []
     for multiplier in sorted(set(float(value) for value in fee_multipliers)):
         if not math.isfinite(multiplier) or multiplier < 1:
@@ -296,7 +370,8 @@ def replay_cost_scenarios(*, underlying: str, expiry: str, observations: Iterabl
             stressed = replace(policy, fee_per_leg_rs=policy.fee_per_leg_rs * multiplier,
                                slippage_bps=policy.slippage_bps + additional)
             replay = replay_chronological_debit_spread(underlying=underlying, expiry=expiry, observations=rows,
-                                                        policy=stressed, market_session_day=market_session_day)
+                                                        policy=stressed, market_session_day=market_session_day,
+                                                        public_observations=public_rows)
             scenarios.append({"fee_multiplier": multiplier, "additional_slippage_bps": additional,
                               "state": replay.state, "reason": replay.result.reason,
                               "net_pnl_rs": replay.result.net_pnl_rs, "evidence_sha256": replay.evidence_sha256})
