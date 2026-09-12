@@ -21,6 +21,7 @@ Dev branch: `codex/production-correction-hedge-p0`. This handover adds the final
 | `273fdd4` | Candidate input preservation and capture isolation |
 | `3f627cc` | Causal advisory clocks, durable collection coverage and scheduler warning correction |
 | `e548d24` | Full-policy held-out integration and conflicting quote rejection |
+| `760c086` | Predeclared criteria, source-bound stress economics and close-ordered drawdown |
 | Final handover commit | Fresh prior-book support, regressions, system guide/atlas/plan and AGENTS ritual |
 
 These are Dev changes. This handover does not push, merge, rebuild or deploy them. No partner message or broker order was sent. Production files were not edited. Check remote tracking before pushing: earlier conversational assumptions about remote state may be stale.

@@ -30,7 +30,7 @@ Rollout and rollback:
 Dev commit only. Revert the implementation commit to roll back interpretation; never rewrite stored reports. Promotion and live observation remain Workstream D.
 
 Status and verified commit:
-TESTED_DEV; implementation commit pending. After two independent read-only reviews and their corrections, the focused full-policy/holdout/review/CLI/chronology suite passes 61 tests warning-free. The broader C research/orchestrator group passes 151 tests with one pre-existing Starlette lifespan deprecation warning. The final full Python repository comparison is 2,514 passed, 3 skipped and the same 17 documented out-of-slice failures with 23 warnings; no new failure was introduced.
+TESTED_DEV in implementation commit `760c086`. After two independent read-only reviews and their corrections, the focused full-policy/holdout/review/CLI/chronology suite passes 61 tests warning-free. The broader C research/orchestrator group passes 151 tests with one pre-existing Starlette lifespan deprecation warning. The final full Python repository comparison is 2,514 passed, 3 skipped and the same 17 documented out-of-slice failures with 23 warnings; no new failure was introduced.
 
 Documentation updated:
 This slice was recorded before source edits. Guide, atlas, matrix and checklist are reconciled with the tested behavior for the implementation commit.
