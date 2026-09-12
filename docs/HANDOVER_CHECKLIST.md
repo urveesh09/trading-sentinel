@@ -1,0 +1,63 @@
+# Handover receipt and operator checklist
+
+## Read order
+
+1. [SYSTEM_GUIDE.md](SYSTEM_GUIDE.md): feature architecture, authority boundaries, before/after improvements and limitations.
+2. [SYSTEM_CODE_ATLAS.md](SYSTEM_CODE_ATLAS.md): 153 top-level engine/agent Python modules plus gateway/dashboard source navigation, declarations, dependencies and tables.
+3. [NEXT_AGENT_PLAN.md](NEXT_AGENT_PLAN.md): implementation workstreams, acceptance checks, expected effects and documentation ritual.
+4. [September 12 replay progress](2026-09-12-full-policy-replay-progress.md) and [Production inventory/CAS findings](2026-09-12-production-evidence-and-cas-findings.md).
+
+## What is being handed over
+
+Dev branch: `codex/production-correction-hedge-p0`. This handover adds the final prior-book replay correction and documentation in one new commit; existing commits are preserved, not squashed. Identify the handover commit with `git log -1 --oneline` immediately after it is created, or search the log for `finalize replay and comprehensive system handover` later.
+
+| Commit | Increment |
+|---|---|
+| `5a565df` | Full-policy inputs, capture and public-thesis replay foundations |
+| `e043276` | Archived evidence validation and immutable diagnostics |
+| `e4661d7` | Full-policy connector, independent lifecycle and execution risk limits |
+| `0b13ed5` | Verified public capture loading |
+| `d99ddd9` | Offline full-policy CLI and immutable report output |
+| `273fdd4` | Candidate input preservation and capture isolation |
+| Final handover commit | Fresh prior-book support, regressions, system guide/atlas/plan and AGENTS ritual |
+
+These are Dev changes. This handover does not push, merge, rebuild or deploy them. No partner message or broker order was sent. Production files were not edited. Check remote tracking before pushing: earlier conversational assumptions about remote state may be stale.
+
+## Validation performed for this wrap-up
+
+Final combined rerun: **171 Python tests passed, with the two warnings described below**. Dashboard **23 tests passed**, production build passed, changed Python/generator compilation passed, documentation links resolved, atlas regenerated and diff whitespace checks passed. These are scoped engineering checks, not a Production green light.
+
+131 Python tests passed in the combined research/orchestrator set. Reproduce from Dev `python-engine`:
+
+```powershell
+.\winvenv\Scripts\python.exe -m pytest tests/test_partner_full_policy_replay.py tests/test_partner_qualification.py tests/test_partner_qualification_review.py tests/test_partner_research_capture.py tests/test_research_cli_qualification.py tests/test_intraday_spread_signal_artifact.py tests/test_intraday_spread_research.py tests/test_intraday_spread_replay.py tests/test_intraday_spread_holdout.py tests/test_intraday_spread_chronological.py tests/test_intraday_spread_archive_adapter.py tests/test_partner_orchestrator.py -q
+```
+
+Dashboard: 23 tests passed with `npm run test:unit`; `npm run build` passed from `node-gateway/client`. Existing warnings: Starlette async-generator lifespan deprecation in Python and an outdated Browserslist database during the build. No dependency updates were made to remove these warnings.
+
+Additional scheduling/isolation suite: 40 tests passed after correcting an outdated test fixture to call the real ledger migration and using explicit UTF-8 source reads. Production accounting code was not changed for these test fixes. Command: `python -m pytest tests/test_scheduler_real_path_isolation.py tests/test_scheduler_telemetry.py tests/test_scheduler_closures_invoke.py tests/test_fno_isolation.py tests/test_paper_ledger_isolation.py -q` in the same environment. This run also emits an unawaited-coroutine warning from the scheduler-closure test path at scheduler_setup.py:594; investigate the fixture/runtime distinction before claiming warning-free scheduler acceptance.
+
+This is not a rerun of the entire repository test suite, gateway/native database suite, broker integration or a live session. Gateway/agent code was not modified by this wrap-up. Full release acceptance remains a task before Production promotion. A successful offline replay test does not prove historical sample sufficiency or profit.
+
+## Current outstanding limits
+
+- Production public input archives were absent at the last read-only inventory; no complete real session replay was produced from that root.
+- Original tick time versus actual acquisition/decision time still needs an explicit deployed contract. The final correction allows already received books; it does not authorize late data at an earlier clock.
+- Capture completeness, bounded write latency and conditional-protection capture remain unfinished.
+- Public capture hashes prove supplied-file integrity, not uninterrupted sampling or independent authenticity.
+- Cost calibration, contemporary entry-quality checks and full-policy held-out review integration remain to be finished.
+- CAS/session-phase correctness needs official-source-backed review across engine, gateway and research.
+- Negative earlier performance and accounting discrepancies need forensic/reconciliation work.
+- No actionable partner strategy was qualified by this work. No fixed tip-start date can be given.
+
+## First next action
+
+Inspect Dev and Production state. Then implement plan A's clock contract together with plan B's per-attempt completeness evidence. Preserve the working CLI and immutable artifacts. A passive collection release can be promoted after its own complete acceptance; do not wait for every research innovation to finish.
+
+## User-facing clarity
+
+The system is better at preserving and testing what it actually observed and proposed. It is less likely to manufacture a historical fill or hide a missing exit in research. Those are prerequisites for finding a real edge, not proof that an edge has been found. The partner's saved intraday profile is a setup input, while qualification and Telegram delivery are separate checks.
+
+## Commit ritual
+
+Before the next implementation: update the plan slice. With each commit: update the guide/atlas/plan and verification evidence. After each commit: verify the actual diff and documentation agree. Instructions are also in Dev AGENTS.md so the ritual survives this conversation.

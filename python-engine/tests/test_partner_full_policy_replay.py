@@ -80,6 +80,36 @@ def test_missing_exact_decision_book_is_evidence_gap(case):
     assert replay.replay_full_policy(**args)['reason'] == 'decision_book_missing'
 
 
+def test_prior_book_can_support_decision_without_backdating_quote(case):
+    args, rows = case
+    earlier = NOW - timedelta(seconds=2)
+    rows[0] = replace(rows[0], observed_at=earlier, received_at=earlier,
+        quotes=tuple(replace(q, observed_at=earlier, received_at=earlier) for q in rows[0].quotes))
+    result = replay.replay_full_policy(**args)
+    assert result['state'] == 'CLOSED'
+    assert result['decision_book_received_at'] == earlier.isoformat()
+    assert result['replay']['active_entry_at'] == NOW.isoformat()
+    assert all(q.received_at == earlier for q in rows[0].quotes)
+
+
+def test_prior_stale_book_cannot_be_freshened_by_decision_clock(case):
+    args, rows = case
+    earlier = NOW - timedelta(minutes=2)
+    rows[0] = replace(rows[0], observed_at=earlier, received_at=earlier,
+        quotes=tuple(replace(q, observed_at=earlier, received_at=earlier) for q in rows[0].quotes))
+    assert replay.replay_full_policy(**args)['reason'] == 'decision_book_stale'
+
+
+def test_intervening_partial_book_blocks_reuse_of_older_complete_pair(case, monkeypatch):
+    args, rows = case
+    earlier = NOW - timedelta(seconds=2)
+    rows[0] = replace(rows[0], observed_at=earlier, received_at=earlier,
+        quotes=tuple(replace(q, observed_at=earlier, received_at=earlier) for q in rows[0].quotes))
+    monkeypatch.setattr(replay, 'build_spread_observations', lambda **_: ArchiveObservationBuild(tuple(rows),
+        ({'received_at': (NOW - timedelta(seconds=1)).isoformat(), 'missing': ['short']},), 0, None))
+    assert replay.replay_full_policy(**args)['reason'] == 'partial_book_before_decision'
+
+
 def test_master_scope_mismatch_rejected(case):
     args, _ = case
     args['master_sha256'] = 'b' * 64

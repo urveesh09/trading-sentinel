@@ -36,7 +36,7 @@ Candidate capture acceptance checkpoint: 128 combined research/orchestrator test
 
 1. Validate independent public-stream completeness against archive provenance and coverage manifests; sparse supplied events alone cannot establish an uninterrupted lifecycle. Cost-sensitivity stream propagation is implemented.
 2. Extend delayed execution validation to contemporary spread-quality rules and cost-model calibration. Cost-inclusive profile capital/risk checks at the changed book are implemented; they do not establish the accuracy of fee/slippage assumptions.
-3. Support proven pre-decision books and explicit decision availability clocks rather than requiring exact equal timestamps. Never move receipts backwards to manufacture causality.
+3. Proven pre-decision books are supported by the final handover increment: constituent quote timestamps remain unchanged, stale books and newer partial observations are rejected. Explicit deployed acquisition/decision clock separation still remains; never move receipts backwards to manufacture causality.
 4. Extend the unmocked master/quote integration fixture with archived public-input provenance, missing-leg, restart, sparse-book and deadline cases. Public observations in the current integration test are explicit fixture inputs, not loaded from a verified public archive.
 5. Public input loading, offline CLI and immutable reports are implemented. Add held-out review integration only after complete and unresolved outcomes and coverage are represented faithfully.
 6. Run the full release acceptance suite before promotion. The 88-test research checkpoint is not full release acceptance. Evaluate genuine collected sessions afterwards; no fixed number of days guarantees qualification.

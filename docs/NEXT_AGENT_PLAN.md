@@ -1,0 +1,219 @@
+# Trading Sentinel — next-agent execution plan
+
+## 1. Mission, scope and non-negotiable user intent
+
+Improve Sentinel into an active, intelligent, cost-aware trading system for the owner and a timely intraday NIFTY/SENSEX manual-advisory system for the partner. The owner wants substantial profit and proactive discovery with mitigated risk. Treat that as a product objective, not a guarantee or justification to loosen safeguards. The engineering target is positive, repeatable net expectancy demonstrated with appropriate evidence, reliable execution/management, truthful accounting and bounded losses.
+
+Do not spend another sequence of commits solely making evidence machinery safer without getting to operational collection, research comparisons and useful product outcomes. Each work item below must produce an observable result, with an explicit decision about what to do next. Equally, do not skip missing evidence to claim progress toward income.
+
+The final requested handover wraps the current code and documentation; this plan preserves the broader unfinished mission. Read SYSTEM_GUIDE.md, SYSTEM_CODE_ATLAS.md and HANDOVER_CHECKLIST.md before implementation. Then inspect the actual worktree, branch, open PR and Production status. Historical chat and these documents are pointers, not fresh runtime truth.
+
+## 2. User constraints to carry forward
+
+- Owner capital: about INR 8k now; possible staged increases to INR 20–50k, INR 1 lakh, then INR 5 lakh only after confidence. Do not silently change capital or treat added funds as returns.
+- Partner: independent manual intraday trader in NIFTY and SENSEX, prioritizing hedging. No overnight recommendation under the current policy.
+- General tips do not require their personal strategy or holdings. Personalized protection does require actual exposure; conditional protection needs explicit assumptions.
+- The owner accepts some risk and wants frequent proactive scanning. A trade quota is not a substitute for an edge.
+- AI may help; deterministic operation must continue without it. No AI risk override or fabricated qualification.
+- Changes belong in Dev. Promotion is through GitHub. No direct Production edits, live order tests or unrequested partner messages.
+- Existing intraday profile was previously saved. Revalidate it rather than asking again reflexively. Ask only for genuinely missing operational preferences or credentials, through appropriate secure configuration.
+
+## 3. Starting state
+
+Recent work added full-policy replay, independent public lifecycle events, delayed-entry capital/risk checks, archived public inputs, candidate capture, immutable CLI reports, and pre-decision-book support. Detailed changes and limitations are in the system guide and September 12 progress record.
+
+Last inspected Production archive had quote journals and masters but zero captured public-input files. At that inspection the application containers were stopped. Do not assume this remains true or that restarting is authorized by a research task. The new Dev commits had not been deployed by this work.
+
+No qualified NIFTY/SENSEX strategy or reliable date for partner tips has been established. The current report functions intentionally return no qualification/delivery/order authority. General Telegram connectivity can be tested separately with an explicitly authorized TEST message; that does not qualify trading advice.
+
+## 4. First working session: establish a reproducible baseline
+
+1. Read git status, current branch, last commits and remote tracking. Preserve untracked audits, evidence and unrelated edits. Do not squash earlier commits without authorization.
+2. Read HANDOVER_CHECKLIST.md and rerun only checks invalidated by current changes/environment.
+3. Inspect Production containers, release identity and archive root read-only. Record time, SHA, source paths and limitations. Do not print `.env` or tokens.
+4. Locate current profile, qualification records, readiness reasons and per-index data timestamps using authenticated/read-only surfaces. Explain each missing gate in plain language.
+5. Write the active plan slice with IDs from this document, success conditions and a bounded acceptance procedure. Begin the highest-priority unblocked slice.
+
+Deliverable: an updated state table separating Dev-tested, release-tested, deployed, input-ready, strategy-qualified and delivery-tested. A single green label is insufficient.
+
+## 5. Workstream A — finish causal acquisition and decision timing
+
+**Priority:** P0 for usable research. **Files:** `fno_signal_scan.py`, `partner_orchestrator.py`, `partner_qualification.py`, `partner_research_capture.py`, `partner_full_policy_replay.py`, `research_cli.py`.
+
+Problem: the original tick clock precedes network acquisition. Newly captured candidate receipts honestly occur later, so feeding them back at the old clock is correctly rejected. Merely setting a replay timestamp later can change bar eligibility/strategy meaning and must not masquerade as the original decision.
+
+Implementation:
+
+1. Define explicit tick-start, public-response receipt, chain-response receipt, evaluation cutoff, candidate construction and dispatch clocks. Use injected clocks in tests.
+2. Choose and document the deployed policy: either evaluate on a declared frozen completed-bar cutoff with later availability, or recompute at a genuine post-acquisition decision clock. Do not silently mix both.
+3. Carry the chosen clocks and source IDs into the captured bundle and frozen decision manifest. Bind candidate and public captures to the same decision/run/account/index.
+4. Ensure crossing a five-minute boundary, entry cutoff or session boundary during a fetch cannot create a backdated idea.
+5. Keep final dispatch revalidation independent: source availability does not grant transport authority.
+
+Acceptance: reproduce an actual delayed-fetch case without timestamp fabrication; delayed source past entry deadline yields no advice; identical frozen inputs reproduce identity; a newly eligible bar has an explicit new decision. Quote provider timestamps remain untouched. Test both indices and timezone-aware UTC/IST input.
+
+Expected benefit: collected sessions become replayable and recommendations use genuinely available inputs. Risk: changing clocks can alter signal frequency/identity. Version the policy and invalidate incompatible prior qualifications. Retain old captures and migration notes.
+
+## 6. Workstream B — complete collection coverage, not just valid files
+
+**Priority:** P0. **Files:** archive/capture/quote collector/leg subscription modules, scheduler telemetry, ops readiness routes and dashboard hooks.
+
+1. Persist per-attempt records with expected schedule/cutoff, index, source, requested/received contracts, completion/error and references to immutable artifacts.
+2. Record public and candidate capture outcomes independently, including no-setup, missing-chain, disk-full, busy writer and malformed packet cases.
+3. Preserve all selected legs through the advice lifecycle and management horizon. Verify shared-token accounting, terminal registrations, restarts and expiry changes.
+4. Compute session completeness from expected market-aware intervals and retained attempt records. Distinguish never attempted, attempted unavailable, partial, stale, and complete. A directory containing valid files alone is not sufficient.
+5. Track quote and public-event gaps independently. Avoid pretending a stop between unobserved samples has a known fill.
+6. Finish conditional-protection input capture and declare whether it can use the same replay schema or needs a separate evaluator.
+7. Bound disk work. Current `to_thread` avoids event-loop blocking but awaiting it can still delay the advisory job. Introduce a bounded queue only with saturation/drop evidence, cancellation semantics and restart tests; never spawn unlimited writes.
+
+Acceptance: interrupted/restarted session reports gaps; one index failure does not erase the other; missing selected leg prevents complete replay; archive budget failure remains observable while public updates continue; no operational cash or position mutation occurs. Review retention cleanup so capture files and referenced masters outlive qualification review.
+
+Expected benefit: usable evidence and an honest explanation of why qualification is pending. Dependency: A's clock contract. Failure mode: collecting everything without a storage budget creates contention; measure overhead at representative load before release.
+
+## 7. Workstream C — replay fidelity and review integration
+
+**Priority:** P0 before qualification. **Files:** all `intraday_spread_*`, `partner_full_policy_replay.py`, `partner_qualification_review.py`, CLI and tests.
+
+1. Verify public-source scope includes the intended underlying/futures contract and relevant roll/expiry context, not only a name string.
+2. Bind raw/canonical master, candidate chain, public inputs, selected contracts, code/config/profile and cost schedule to immutable evidence IDs.
+3. Review delayed execution beyond capital/risk: price spread limits, liquidity, current quantity, economic reward/risk, stale public observations and exact expiry boundaries.
+4. Validate manual delay and cancellation behavior at entry and exit, including an invalidation on the fill timestamp, no later book, partial book and missed management deadline.
+5. Align management deadline/reminder semantics with the deployed policy; do not force a fill at an unavailable exact-minute quote or retroactively close unresolved exposure.
+6. Reject conflicting same-receipt quote packets rather than selecting a convenient first packet. Include failure evidence in the report.
+7. Freeze review criteria before held-out sessions; connect full-policy outcomes to review without replacing the full evaluator with `orb_threshold_v1`.
+8. Preserve zero-opportunity days, no-fills, unresolved exposure and rejected candidates. Account for overlapping ideas and repeated evaluations so sample size means independent opportunities.
+
+Acceptance: unmocked multi-session archive fixture reaches both a costed close and unresolved outcome; tampered sources fail; cost stress uses identical observations; changed policy/profile cannot inherit qualification; complete CLI reports are reproducible and cannot overwrite earlier economics.
+
+Expected benefit: a defensible decision to deliver a specific strategy. It may demonstrate that the current ORB policy lacks an edge; that is useful evidence and should lead to comparison, not suppressed losses.
+
+## 8. Workstream D — release and genuine operational evidence
+
+**Priority:** P0 after the passive collection slice is reviewed. Do not wait for an entire innovation roadmap before deploying useful, tested passive evidence collection.
+
+1. Run full relevant Python acceptance, scheduler/API contracts, gateway native-SQLite-compatible tests, dashboard tests/build and affected agent tests. Record exact command, runtime and failures.
+2. Review migrations, defaults, flags and Docker volumes. Establish consistent backup/rollback procedures without deleting data.
+3. Prepare a PR describing behavior, tests and remaining operational prerequisites. User authorization is required for actions outside existing scope, including actual partner messages or live canary orders.
+4. Promote via the release runbook: reviewed branch/SHA, stamped builds, recreate application services, resolve nginx upstream and verify live fingerprints. Never claim a merge alone deployed new code.
+5. Observe one real market session for collection correctness and latency. This session proves operations, not strategy profitability. Fix deterministic gaps promptly.
+6. Continue evidence until the predeclared review has an adequate independent sample. Report opportunity count, uncertainty and unresolved risk—not a countdown in arbitrary days.
+
+Acceptance: receipt confirms correct live SHA; per-index inputs and coverage are observable; no unsolicited messages/orders; source and delivery switches match intended rollout. Roll back code only with schema/archive compatibility checked.
+
+## 9. Workstream E — partner product activation and usefulness
+
+**Priority:** P1, prepared in parallel with evidence collection.
+
+Checklist for meaningful delivery: saved intraday profile, current index inputs, valid candidate, genuine compatible qualification, configured destination/token, transport test, final dispatch/session gates. Diagnose each separately. Never require partner positions for a general market setup.
+
+Improve cards around decisions a manual trader can take: index/exchange, timestamp/validity, setup rationale, entry trigger and bounded price, exact contract legs/expiry/lot, total debit and modeled costs, maximum defined loss, invalidation/target and intraday deadline. Explain uncertainty and liquidity limits without overwhelming the message.
+
+Hedge-first must have an explicit interpretation. Conditional protection states the exposure assumption and coverage; market directional spreads are not automatically personalized hedges. Ask for exposure details only if personalized protection is requested. Do not describe an unconfirmed action as taken/closed.
+
+Prioritize invalidation and urgent management above new ideas; suppress overlapping NIFTY/SENSEX directional exposure as appropriate. Keep destination backoff, ambiguity and claim ownership intact. A two-idea cap, if effective, is a maximum rather than a quality target.
+
+Acceptance: representative message previews are understandable, actionable and internally consistent; TEST delivery is distinguishable from advice; duplicate/recovery tests pass; strategy approval is scoped and revocable; every suppressed idea has an operator-visible reason.
+
+Expected benefit: timely usable information, rather than hedge logs/status spam. Outcome evaluation should measure timeliness, executability and costed thesis performance. Partner feedback is helpful but not broker-confirmed P&L.
+
+## 10. Workstream F — trading losses and accounting truth
+
+**Priority:** P1, independent of partner qualification.
+
+1. Reconstruct the previously reported ORB losses from actual entry/exit records, signal input, spread/leg identity, fees and market regime. Separate strategy failure, execution slippage, stale data and accounting defects.
+2. Investigate each reconciliation warning with retained ledger/position records and broker statements when supplied. Produce discrepancy IDs and explanations; never mutate books merely to make the dashboard agree.
+3. Audit true cost per trade relative to expected edge for INR 8k capital. Prevent a large configured paper bankroll from implying owner live affordability.
+4. Audit funding, expenses, partial closes, rejected/cancelled orders and open mark-to-market independently.
+5. Establish capital-increase criteria from externally reconciled net results, drawdown, execution quality and operational stability. Leave the user's loss tolerance as an explicit input if not supplied.
+
+Acceptance: per-strategy/mode/account reports reconcile or show precise unresolved differences; deposits are not profit; no forced trade is used to verify a status flag. Expected benefit: stop allocating to misunderstood losses and make future scaling decisions evidence-based.
+
+## 11. Workstream G — strategy basket and entry/exit intelligence
+
+**Priority:** P1/P2 after data/accounting reliability. These are hypotheses, not proven improvements.
+
+Predeclare a small basket rather than searching hundreds of variants until one looks profitable:
+
+| Research hypothesis | Intended condition | Comparison | Main risk |
+|---|---|---|---|
+| Trend continuation after bounded pullback | Directional session with liquidity | Existing ORB vs pullback entry | Missed strong moves; hindsight support levels |
+| Breakout with completed-bar confirmation | Expansion from compression | First break vs confirmation | Worse entry price offsets fewer false breaks |
+| Range mean reversion with strict invalidation | Stable range/no expansion | No-trade baseline and existing range logic | Regime shift produces tail losses |
+| Cost-aware abstention | Weak edge relative to spread/fees | Same setup before/after cost threshold | Overfitting threshold to recent trades |
+| Exit profile comparison | Existing accepted entries | Fixed stop/target vs bounded time/trailing exit | Selecting best exit after seeing the path |
+| Exposure-aware allocation | Multiple simultaneous ideas | Independent allocation vs shared risk cap | Correlation estimate unstable on short samples |
+
+Use `proactive_*`, watchlists and run identities to compare candidates without creating an execution consumer implicitly. Freeze training/holdout and cost assumptions. Report net expectancy with uncertainty, drawdown, frequency, turnover, rejected/no-fill count and capacity. Control for repeated trials and overlapping signals.
+
+Acceptance: one retained comparison report can explain why a strategy is promoted, rejected or still uncertain. Promotion to live requires a separate reviewed bridge and risk budget. Expected benefit is improved selection/management; no fixed profit uplift should be predicted without evidence.
+
+## 12. Workstream H — scheduling, provider efficiency and dashboard
+
+Measure p50/p95/p99/max execution time, queue wait, provider calls, cache hits/misses and database/writer contention during market hours. Prioritize order exits and public advice management, then candidate scans, then research. Cache only with explicit instrument, interval, completed-bar cutoff and freshness semantics.
+
+The wrap-up scheduler-closure tests passed but emitted an unawaited `_run_penny_edge_scan_safe` coroutine warning at scheduler_setup.py:594. Determine whether the mocked scheduling path or a runtime rejection path leaks the coroutine, add a warning-sensitive regression, and correct it before describing scheduler validation as warning-free.
+
+Investigate historical zero intraday-cache hit rates: find actual caller/key/window behavior before adding a cache. Do not mix mutable forming bars with completed historical bars or cross-account/exchange tokens.
+
+Dashboard should show effective source/scope/window and readiness reason beside numbers. Distinguish disabled, unconfigured, no session, no setup, no evidence, stale and error. Wire real Production account/run sources rather than replacing unexplained zeros with synthetic results.
+
+Acceptance: lower measured contention without missed exits or lost evidence; mocked slow-provider tests plus retained live-session measurements; UI fixture covers unavailable and zero distinctly. Be precise: reducing a job average does not prove tail latency is controlled.
+
+## 13. Workstream I — optional AI and news
+
+Use AI for bounded annotation: explain a deterministic setup, classify sourced events, summarize risk context, compare research findings and identify missing evidence. Store model/prompt/version, source references, response time and expiry. The typed result must not change capital limits, qualification or order/delivery authority.
+
+Test disabled mode, timeout, stale response, queue saturation, budget exhaustion and restart. Deterministic paths must still operate. News must have publication/event timestamps and a reliable source; an unsupported model statement is not a market fact.
+
+Expected benefit: better explanations and event-awareness. Main risk: plausible but wrong context arriving too late. Evaluate annotation usefulness separately from trading outcome and do not add synchronous model latency to exits.
+
+## 14. Workstream J — CAS and market-session correctness
+
+Read [the CAS inventory](2026-09-12-production-evidence-and-cas-findings.md) and verify current official NSE/BSE/SEBI sources before implementation. September 12 NSE information described cash CAS eligibility and different session timings from continuous cash and equity derivatives.
+
+Inventory hard-coded clocks in market calendars, gateway market-hours, scheduler jobs, bars, expiry/square-off, UI and replay. Introduce an exchange/security/session-phase model only after verifying effective dates and broker behavior. Preserve earlier strategy deadlines unless explicitly revised and qualified.
+
+Do not assume auction imbalance is available in Kite's current feed. Verify actual feed fields/rights first. If unavailable, label that limitation rather than infer imbalance from LTP. Any auction-based strategy is separate research with auction execution semantics, not an extension of a continuous-market fill model.
+
+Acceptance: ordinary days, eligibility differences, holidays, shortened/special sessions and phase transitions have tests. No accidental extension of partner holding horizon. Expected benefit: correct session behavior; an auction profit edge remains hypothetical.
+
+## 15. Suggested order and dependency graph
+
+Start A and B, then finish C. Release a reviewed passive collection slice through D as soon as its operational acceptance is satisfied. Prepare E's message/setup UX in parallel; activate only after compatible qualification. Run F independently because capital truth and losses matter now. Use G to replace an unpromising baseline with tested alternatives. H supports every operational phase. I is optional, and J begins with session correctness before strategy innovation.
+
+Do not claim A–J complete because files exist. Maintain a requirement matrix with statuses: NOT_STARTED, IMPLEMENTING, TESTED_DEV, RELEASE_VALIDATED, DEPLOYED_OBSERVED, EVIDENCE_PENDING, ACCEPTED or REJECTED. Include the precise evidence reference for each status.
+
+## 16. Mandatory documentation and plan ritual
+
+This is a user requirement for every future agent, including an agent continuing its own work:
+
+1. Before editing, reconcile current state and write/update a plan slice: problem, user impact, affected files, dependencies, assumptions, acceptance tests, rollback and what will remain.
+2. During implementation, record material discoveries and revise the plan when scope changes. Do not keep obsolete tasks marked pending or pretend abandoned approaches were implemented.
+3. With every implementation commit, update SYSTEM_GUIDE.md for changed behavior and regenerate SYSTEM_CODE_ATLAS.md when files/declarations change. Update the active plan and acceptance evidence in the same commit when practical.
+4. Immediately after every commit, inspect the commit/status. Confirm documentation and plan match actual behavior. If documentation was missed, make a prompt docs-only correction before further implementation.
+5. Record commit ID, exact verification command/result, environment, migration/config impact, release/deployment status, remaining risks and next action. Never mark Production changed just because Dev was pushed.
+6. At every handover, provide a concise current-state ledger and one executable next action. Preserve the whole product objective across context compaction.
+
+Use the following plan slice template:
+
+```text
+ID / title:
+Problem and user-visible impact:
+Current authoritative evidence:
+Files and contracts affected:
+Implementation steps and dependencies:
+Acceptance / negative / restart / timing tests:
+Data and configuration migration:
+Rollout and rollback:
+Status and verified commit:
+Documentation updated:
+Unresolved limits and exact next action:
+```
+
+## 17. Completion and communication rules
+
+A feature is done only when its acceptance conditions are met; a release is done only when promoted and verified; a strategy is qualified only when genuine reviewed evidence supports it. These are different claims.
+
+Report progress as behavior and user value first, then tests and limits. Avoid repeated vague declarations that 'only operational evidence remains' while acquisition, collection or review integration is still unfinished. Avoid predicting a date for tips from the number of elapsed sessions alone. Explain what is missing and what action produces the needed evidence.
+
+The next agent should begin with A's explicit clock contract and B's completeness records, preserving the working replay/CLI and all collected artifacts. Do not restart the architecture from scratch.

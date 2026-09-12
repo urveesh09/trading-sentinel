@@ -1,6 +1,6 @@
 """Offline full-policy replay. Results are diagnostic, never delivery authority.
 
-The entry book must be retained at the decision clock. Independent public events
+The entry book must have been received by the decision clock. Independent public events
 are consumed in receipt order, preserving breaches between option books.
 """
 from dataclasses import asdict, replace
@@ -73,11 +73,24 @@ def replay_full_policy(*, evaluation_inputs, events, archive_root, master_sha256
     build = build_spread_observations(events=events, long_contract=identity(long), short_contract=identity(short),
                                      master_sha256=master_sha256, archive_root=archive_root)
     now = inputs["decision_at"]
-    rows = [row for row in build.observations if row.received_at >= now]
+    prior_books = [row for row in build.observations if row.received_at <= now]
     report.update(partial_batches=list(build.partial_batches), ignored_events=build.ignored_events)
-    if not rows or rows[0].received_at != now:
+    if not prior_books:
         report.update(state="INSUFFICIENT_EVIDENCE", reason="decision_book_missing")
         return {**report, "evidence_sha256": _sha(report)}
+    book_at_decision = prior_books[-1]
+    report["decision_book_received_at"] = book_at_decision.received_at.isoformat()
+    if any(book_at_decision.received_at < datetime.fromisoformat(item["received_at"]) <= now
+           for item in build.partial_batches):
+        report.update(state="INSUFFICIENT_EVIDENCE", reason="partial_book_before_decision")
+        return {**report, "evidence_sha256": _sha(report)}
+    if any(now - quote.observed_at > execution_policy.max_quote_age for quote in book_at_decision.quotes):
+        report.update(state="INSUFFICIENT_EVIDENCE", reason="decision_book_stale")
+        return {**report, "evidence_sha256": _sha(report)}
+    # This is a decision event using an already received book, not a new quote.
+    # Each LegQuote retains its original provider and receipt timestamps.
+    rows = [replace(book_at_decision, received_at=now)] + [
+        row for row in build.observations if row.received_at > now]
     for quote in rows[0].quotes:
         leg = next(leg for leg in candidate.legs if leg.instrument_token == quote.token)
         if (leg.bid, leg.ask, leg.bid_quantity, leg.ask_quantity) != (quote.bid, quote.ask, quote.bid_depth, quote.ask_depth):

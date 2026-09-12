@@ -35,6 +35,14 @@ Implement, test, and validate changes in Dev first. Do not modify the Production
 
 **Assess Production. Change Dev. Promote through GitHub. Never edit Production directly.**
 
+## Continuous documentation and plan ritual (user requirement)
+
+Read `docs/SYSTEM_GUIDE.md`, `docs/SYSTEM_CODE_ATLAS.md`, `docs/NEXT_AGENT_PLAN.md` and `docs/HANDOVER_CHECKLIST.md` when starting or resuming work. Revalidate them against the current checkout and runtime evidence.
+
+Before implementation, maintain an explicit plan slice with the problem, files/contracts, acceptance checks, rollout/rollback and remaining work. With each implementation commit, update the system guide and active plan to reflect actual behavior; regenerate the atlas with `python scripts/build_system_code_atlas.py` when source files/declarations change. Immediately after every commit, verify documentation and plan consistency. Correct omissions before further implementation.
+
+Record verification commands/results, environment limits, commit identity, configuration/migration impact and whether changes are only in Dev, pushed, or actually deployed. Never equate tests with profitable strategies or deployment with partner qualification. This ritual applies even when the same agent continues across turns or context compactions.
+
 If a request appears to require a direct Production edit, stop and clarify the intended GitHub-based promotion path before making that change.
 
 ## 5.6 Sol delegation and supervision
