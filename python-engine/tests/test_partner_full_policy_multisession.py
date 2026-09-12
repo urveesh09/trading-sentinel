@@ -7,6 +7,8 @@ from intraday_spread_chronological import ChronologicalPolicy
 from intraday_spread_holdout import build_heldout_comparison, heldout_case_from_full_policy_report
 from partner_full_policy_replay import replay_full_policy
 from partner_qualification import evaluate_deployed_full_policy, load_candidate_evidence
+from partner_qualification_review import (QualificationCriteria, build_qualification_review_package,
+    freeze_qualification_criteria, write_qualification_criteria_manifest)
 from tests.test_fno_signal_scan import _frame, LONG_ROWS, NOW, EXPIRY
 from tests.test_partner_qualification import candidate_bundle, provenance
 
@@ -85,7 +87,8 @@ def test_unmocked_multisession_archive_reaches_costed_close_and_unresolved_revie
                            "price": decision.candidate.invalidation_level})
         report = replay_full_policy(evaluation_inputs=inputs, events=events, archive_root=tmp_path,
             master_sha256=master_sha256, execution_policy=ChronologicalPolicy(
-                "fixture-caller", 1, 1, 1, fee_per_leg_rs=2), public_observations=public)
+                "fixture-caller", 1, 1, 1, fee_per_leg_rs=2), public_observations=public,
+            fee_multipliers=[1, 1.25], additional_slippage_bps=[0, 10])
         reports.append(report)
 
     assert reports[0]["state"] == "CLOSED"
@@ -101,11 +104,33 @@ def test_unmocked_multisession_archive_reaches_costed_close_and_unresolved_revie
     assert len(policy_ids) == 1
     policy_id = policy_ids.pop()
     holdout_sessions = [item.session_date for item in cases]
+    criteria = QualificationCriteria(policy_id, min_covered_sessions=2, min_closed_outcomes=1,
+        max_unresolved_outcomes=1, max_drawdown_rs=-10_000,
+        stressed_fee_multiplier=1.25, stressed_slippage_bps=10)
+    declared = [("NIFTY", policy_id, day) for day in holdout_sessions]
+    criteria_manifest = freeze_qualification_criteria(criteria=criteria, underlying="NIFTY",
+        training_sessions=["2026-07-09"], holdout_sessions=holdout_sessions,
+        declared_coverage=declared, frozen_at=NOW - timedelta(days=1))
+    criteria_path = tmp_path / "criteria.json"
+    write_qualification_criteria_manifest(criteria_path, criteria_manifest)
+    before = criteria_path.read_bytes()
+    write_qualification_criteria_manifest(criteria_path, criteria_manifest)
+    assert criteria_path.read_bytes() == before
     dataset_sha256 = hashlib.sha256("".join(item["evidence_sha256"] for item in reports).encode()).hexdigest()
     heldout = build_heldout_comparison(dataset_sha256=dataset_sha256, code_revision="fixture-real-path",
         training_sessions=["2026-07-09"], holdout_sessions=holdout_sessions,
-        declared_coverage=[("NIFTY", policy_id, day) for day in holdout_sessions], cases=cases)
+        declared_coverage=declared, cases=cases,
+        review_criteria_sha256=criteria_manifest["criteria_manifest_sha256"])
     group = heldout["groups"][0]
     assert group["closed"] == 1 and group["unresolved"] == 1 and group["unavailable"] == 0
     assert group["net_pnl_rs"] == reports[0]["replay"]["result"]["net_pnl_rs"]
+    assert group["max_sequential_drawdown_rs"] <= 0
     assert heldout["automatic_qualification"] is False
+    review = build_qualification_review_package(policy_manifest=reports[0]["manifest"], criteria=criteria,
+        heldout_report=heldout, readiness={"collection": "COMPLETE", "causal_research": "COMPLETE",
+                                          "outcome_coverage": "COMPLETE"},
+        criteria_manifest=criteria_manifest)
+    row = review["per_index"][0]
+    assert row["drawdown_state"] == row["cost_stress_state"] == "VERIFIED"
+    assert row["review_state"] == "READY_FOR_HUMAN_REVIEW" and not row["blockers"]
+    assert review["automatic_qualification"] is False and review["can_send_advice"] is False

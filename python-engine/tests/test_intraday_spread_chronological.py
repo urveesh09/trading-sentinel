@@ -235,3 +235,14 @@ def test_cost_sensitivity_keeps_the_same_delayed_execution_evidence():
     assert len(report["scenarios"]) == 4
     assert {row["state"] for row in report["scenarios"]} == {"CLOSED"}
     assert report["can_qualify"] is False
+
+
+def test_cost_sensitivity_always_includes_baseline_and_rejects_boolean_coordinates():
+    first = IST.localize(datetime(2026, 9, 10, 10, 0))
+    report = replay_cost_scenarios(underlying="NIFTY", expiry="2026-09-24", policy=policy(),
+        observations=[observation(first, .9)], fee_multipliers=[1.25], additional_slippage_bps=[10])
+    assert {(row["fee_multiplier"], row["additional_slippage_bps"]) for row in report["scenarios"]} == {
+        (1.0, 0.0), (1.25, 10.0)}
+    with pytest.raises(ReplayInputError, match="booleans"):
+        replay_cost_scenarios(underlying="NIFTY", expiry="2026-09-24", policy=policy(),
+            observations=[observation(first, .9)], fee_multipliers=[True], additional_slippage_bps=[0])

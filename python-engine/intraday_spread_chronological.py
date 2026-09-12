@@ -360,21 +360,34 @@ def replay_cost_scenarios(*, underlying: str, expiry: str, observations: Iterabl
     """
     rows = tuple(observations)
     public_rows = tuple(public_observations)
+    def numeric(values, field):
+        output = set()
+        for value in values:
+            if isinstance(value, bool):
+                raise ReplayInputError(f"{field} must not contain booleans")
+            try:
+                output.add(float(value))
+            except (TypeError, ValueError) as exc:
+                raise ReplayInputError(f"{field} must contain numeric values") from exc
+        return output
+    multipliers = numeric(fee_multipliers, "fee_multipliers")
+    additions = numeric(additional_slippage_bps, "additional_slippage_bps")
+    coordinates = {(1.0, 0.0)} | {(multiplier, additional)
+        for multiplier in multipliers for additional in additions}
     scenarios = []
-    for multiplier in sorted(set(float(value) for value in fee_multipliers)):
+    for multiplier, additional in sorted(coordinates):
         if not math.isfinite(multiplier) or multiplier < 1:
             raise ReplayInputError("fee stress multiplier must be finite and at least one")
-        for additional in sorted(set(float(value) for value in additional_slippage_bps)):
-            if not math.isfinite(additional) or additional < 0:
-                raise ReplayInputError("additional slippage stress must be finite and non-negative")
-            stressed = replace(policy, fee_per_leg_rs=policy.fee_per_leg_rs * multiplier,
-                               slippage_bps=policy.slippage_bps + additional)
-            replay = replay_chronological_debit_spread(underlying=underlying, expiry=expiry, observations=rows,
-                                                        policy=stressed, market_session_day=market_session_day,
-                                                        public_observations=public_rows)
-            scenarios.append({"fee_multiplier": multiplier, "additional_slippage_bps": additional,
-                              "state": replay.state, "reason": replay.result.reason,
-                              "net_pnl_rs": replay.result.net_pnl_rs, "evidence_sha256": replay.evidence_sha256})
+        if not math.isfinite(additional) or additional < 0:
+            raise ReplayInputError("additional slippage stress must be finite and non-negative")
+        stressed = replace(policy, fee_per_leg_rs=policy.fee_per_leg_rs * multiplier,
+                           slippage_bps=policy.slippage_bps + additional)
+        replay = replay_chronological_debit_spread(underlying=underlying, expiry=expiry, observations=rows,
+                                                    policy=stressed, market_session_day=market_session_day,
+                                                    public_observations=public_rows)
+        scenarios.append({"fee_multiplier": multiplier, "additional_slippage_bps": additional,
+                          "state": replay.state, "reason": replay.result.reason,
+                          "net_pnl_rs": replay.result.net_pnl_rs, "evidence_sha256": replay.evidence_sha256})
     deterministic = {"format": "intraday_spread_cost_sensitivity_v1", "underlying": underlying,
                      "expiry": expiry, "policy_id": policy.policy_id, "scenarios": scenarios,
                      "can_qualify": False, "can_place_orders": False}

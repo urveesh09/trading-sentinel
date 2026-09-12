@@ -67,6 +67,20 @@ def test_does_not_silently_discard_between_book_invalidation(case):
     assert result['replay']['exit_trigger'] == 'INVALIDATION'
 
 
+def test_thesis_crossed_at_decision_remains_a_reviewable_costed_no_fill(case):
+    from intraday_spread_holdout import heldout_case_from_full_policy_report
+    args, _ = case
+    decision = evaluate_deployed_full_policy(**args['evaluation_inputs'])
+    args['public_observations'][0]['price'] = decision.candidate.invalidation_level
+    result = replay.replay_full_policy(**args)
+    assert result['state'] == 'NO_FILL'
+    assert result['reason'] == 'public_thesis_already_crossed_at_decision'
+    assert result['replay']['state'] == 'NO_FILL'
+    assert result['cost_sensitivity']['scenarios'][0]['state'] == 'NO_FILL'
+    heldout = heldout_case_from_full_policy_report(result, signal_artifact_sha256='d' * 64)
+    assert heldout.replay.state == 'NO_FILL'
+
+
 def test_decision_book_must_match_candidate(case):
     args, rows = case
     rows[0] = replace(rows[0], quotes=(replace(rows[0].quotes[0], ask=999), rows[0].quotes[1]))
@@ -198,7 +212,8 @@ def test_unmocked_archive_to_real_policy_and_exit(case, monkeypatch):
     chain_path, policy_path, output = root / 'chain.json', root / 'policy.json', root / 'report.json'
     chain_path.write_text(json.dumps(bundle), encoding='utf-8')
     policy_path.write_text(json.dumps(dict(policy_id='fixture', min_signal_score=1,
-        take_profit_rs=1, stop_loss_rs=1, execution_delay=0)), encoding='utf-8')
+        take_profit_rs=1, stop_loss_rs=1, execution_delay=0,
+        fee_multipliers=[1, 1.25], additional_slippage_bps=[0, 10])), encoding='utf-8')
     quote_dir = root / 'quotes' / NOW.date().isoformat()
     quote_dir.mkdir(parents=True)
     (quote_dir / 'quotes.jsonl.open').write_text('\n'.join(json.dumps(event) for event in events) + '\n', encoding='utf-8')
@@ -208,6 +223,7 @@ def test_unmocked_archive_to_real_policy_and_exit(case, monkeypatch):
     assert main(command) == 0
     stored = json.loads(output.read_text())
     assert stored['state'] == 'UNRESOLVED'  # Only initial public capture, no fabricated exit.
+    assert len(stored['cost_sensitivity']['scenarios']) == 4
     assert not stored['can_qualify']
     before = output.read_bytes()
     assert main(command) == 0

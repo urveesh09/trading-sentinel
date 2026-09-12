@@ -47,14 +47,14 @@ This is not a rerun of the entire repository test suite, gateway/native database
 - Dev now implements `FROZEN_COMPLETED_BAR_CUTOFF_V1`: tick/cutoff, public and chain request/receipt, construction and dispatch boundaries are distinct. It is not deployed or observed in Production.
 - Dev now retains per-attempt public/candidate outcomes, requested/received chain tokens and conditional-protection inputs, and bounds advisory wait on archive writes. Timeout remains outcome-unknown because an in-flight worker thread cannot be killed; Production latency and retention still need observation.
 - Public capture hashes prove supplied-file integrity, not uninterrupted sampling or independent authenticity.
-- Full-policy outcomes now enter held-out aggregation only through a verified deployed-evaluator report and manifest. Cost calibration, contemporary entry-quality checks, ordered drawdown/cost-stress review evidence and adequate real-session coverage remain unfinished.
+- Full-policy outcomes now enter held-out aggregation through a verified deployed-evaluator report, manifest and same-observation cost artifact. Ordered drawdown and exact declared stress gates are implemented. Real cost calibration, contemporary entry-quality checks and adequate real-session coverage remain unfinished.
 - CAS/session-phase correctness needs official-source-backed review across engine, gateway and research.
 - Negative earlier performance and accounting discrepancies need forensic/reconciliation work.
 - No actionable partner strategy was qualified by this work. No fixed tip-start date can be given.
 
 ## First next action
 
-Review the A/B and C implementation diffs and their acceptance records, then finish Workstream C's immutable cost-sensitivity and ordered-drawdown evidence path into qualification review. Before promotion, resolve or explicitly baseline the broader repository failures and run the release suite. Preserve the working CLI and immutable v1/v2 artifacts.
+Review the A/B and C implementation diffs and their acceptance records, then finish Workstream C's source/roll scope and remaining delayed/partial/exact-expiry boundaries. Before promotion, resolve or explicitly baseline the broader repository failures and run the release suite. Preserve the working CLI and immutable v1/v2 artifacts.
 
 ## A/B implementation verification
 
@@ -62,7 +62,7 @@ Review the A/B and C implementation diffs and their acceptance records, then fin
 - Scheduler/isolation acceptance: 41 tests passed with `RuntimeWarning` treated as an error. The previously documented unawaited `_run_penny_edge_scan_safe` coroutine warning is fixed; registration now checks for a running event loop before constructing the coroutine.
 - Dashboard: 25 unit tests passed and the Vite production build passed. The existing outdated Browserslist database warning remains.
 - Gateway: all 317 tests passed (4 skipped) in a clean Node 20 Alpine container; the focused updated proxy contract passed 15 tests. Existing forced-exit/open-handle and Telegram-library warnings remain. Agent: 91 tests passed in the existing Production agent image with networking disabled.
-- Latest full Python repository rerun after the C slice: 2,502 passed, 3 skipped and the same 17 failures, with 23 deprecation warnings and no unawaited-coroutine warning. The failures were outside the changed path: legacy test-created `bankroll_ledger` schemas omit `origin_ref`; the declared `PARTNER_BOT_ENABLED` default is already `True` while an older test expects `False`; several Windows source-inspection tests use CP1252 instead of UTF-8; and affected momentum-paper assertions cascade from the legacy ledger fixture. The 17 failures still prevent `RELEASE_VALIDATED` status even though the focused slices are green.
+- Latest full Python repository rerun after the hardened C economics slice: 2,514 passed, 3 skipped and the same 17 failures, with 23 deprecation warnings and no unawaited-coroutine warning. The failures were outside the changed path: legacy test-created `bankroll_ledger` schemas omit `origin_ref`; the declared `PARTNER_BOT_ENABLED` default is already `True` while an older test expects `False`; several Windows source-inspection tests use CP1252 instead of UTF-8; and affected momentum-paper assertions cascade from the legacy ledger fixture. The 17 failures still prevent `RELEASE_VALIDATED` status even though the focused slices are green.
 - Production remained read-only. No container was started, no message/order was sent, and no qualification was registered.
 
 ## C replay-fidelity verification
@@ -71,6 +71,7 @@ Review the A/B and C implementation diffs and their acceptance records, then fin
 - Distinct valid same-leg packets at one receipt are now explicit conflicts independent of input order. Exact duplicate retries remain idempotent, and a relevant conflict produces `decision_book_conflict` rather than a conveniently selected book.
 - Verified full-policy reports can enter held-out review through a strict adapter. Report/manifest tampering, simplified evaluators, conflicting states and malformed identities are rejected.
 - Changed C acceptance: 28 tests passed warning-free. The broader full-policy/research/qualification/archive/orchestrator group passed 139 tests with one pre-existing Starlette async-generator lifespan deprecation warning.
+- Full-policy reports now always retain a fingerprinted baseline plus caller-declared fee/slippage scenarios calculated from identical observations. Held-out aggregation revalidates full nested artifacts/source identities, sorts realised outcomes by timezone-aware close clocks, retains individual economics and computes sequential drawdown. Qualification review requires a policy/profile-bound immutable criteria manifest frozen before holdout, exact stress coordinates, unique outcome identities and matching non-closed states; legacy evidence remains readable but receives blockers. After independent invariant/test audits, the expanded focused group passes 61 tests warning-free and the broader group passes 151 tests with the same Starlette warning.
 
 ## User-facing clarity
 

@@ -56,12 +56,15 @@ def _replay_spread(args: argparse.Namespace) -> dict:
         master_sha256=args.master_sha256, archive_root=args.archive_root, signal_artifact_path=args.signal_artifact,
         policy_id=args.policy_id, session_date=args.session_date)
     if not built.observations:
-        return {"state": "INSUFFICIENT_EVIDENCE", "reason": "no_complete_two_leg_observations",
+        reason = "conflicting_two_leg_observations" if built.conflicting_batches else "no_complete_two_leg_observations"
+        return {"state": "INSUFFICIENT_EVIDENCE", "reason": reason,
                 "observation_count": 0, "partial_batches": list(built.partial_batches), "ignored_events": built.ignored_events,
+                "conflicting_batches": list(built.conflicting_batches),
                 "signal_artifact_sha256": built.signal_provenance_sha256, "can_place_orders": False}
     replay = replay_chronological_debit_spread(underlying=long_contract.underlying, expiry=long_contract.expiry,
         observations=built.observations, policy=policy)
     return {"state": replay.state, "replay": asdict(replay), "partial_batches": list(built.partial_batches),
+            "conflicting_batches": list(built.conflicting_batches),
             "ignored_events": built.ignored_events, "signal_artifact_sha256": built.signal_provenance_sha256,
             "can_place_orders": False}
 
@@ -169,6 +172,10 @@ def main(argv: list[str] | None = None) -> int:
                 underlying=args.underlying, decision_at=decision_at, archive_root=args.archive_root,
                 master_sha256=args.master_sha256)
             policy_config = _json_file(args.policy)
+            fee_multipliers = policy_config.pop("fee_multipliers", [1.0])
+            additional_slippage_bps = policy_config.pop("additional_slippage_bps", [0.0])
+            if (not isinstance(fee_multipliers, list) or not isinstance(additional_slippage_bps, list)):
+                raise ValueError("cost stress values must be JSON arrays")
             for key in ("execution_delay", "execution_max_wait", "signal_expiry", "max_quote_age", "max_leg_sync", "max_public_age"):
                 if key in policy_config:
                     if isinstance(policy_config[key], bool) or not isinstance(policy_config[key], (int, float)):
@@ -181,7 +188,8 @@ def main(argv: list[str] | None = None) -> int:
                 profile=profile, contract_master_sha256=args.master_sha256),
                 events=read_archived_quote_events(args.archive_root, days=[day]), archive_root=args.archive_root,
                 master_sha256=args.master_sha256, execution_policy=ChronologicalPolicy(**policy_config),
-                public_capture_paths=args.public_capture)
+                public_capture_paths=args.public_capture, fee_multipliers=fee_multipliers,
+                additional_slippage_bps=additional_slippage_bps)
             write_replay_report(args.output, result)
             print(json.dumps({"state": result["state"], "reason": result["reason"], "path": args.output,
                               "can_qualify": False, "can_deliver": False, "can_place_orders": False}))

@@ -476,7 +476,7 @@ Related tests: `python-engine/tests/test_intraday_spread_chronological.py`
 
 Frozen per-index/policy held-out summaries for chronological spread replay.
 
-Top-level declarations: `HeldOutCase` (line 16), `_digest` (line 27), `heldout_case_from_full_policy_report` (line 31), `build_heldout_comparison` (line 83)
+Top-level declarations: `HeldOutCase` (line 16), `_digest` (line 29), `_ordered_clock` (line 33), `_outcome_order` (line 43), `_validated_cost_sensitivity` (line 55), `heldout_case_from_full_policy_report` (line 95), `build_heldout_comparison` (line 160)
 
 Engine dependencies: `intraday_spread_chronological`, `intraday_spread_replay`
 
@@ -828,7 +828,7 @@ Related tests: `python-engine/tests/test_partner_qualification.py`, `python-engi
 
 Predeclared, human-reviewed qualification package assembly. The package binds a frozen full-policy manifest to chronological held-out outcomes. It never writes the delivery qualification registry and therefore cannot turn a favorable diagnostic into advice authority.
 
-Top-level declarations: `_sha` (line 16), `QualificationCriteria` (line 21), `build_qualification_review_package` (line 43)
+Top-level declarations: `_sha` (line 19), `QualificationCriteria` (line 24), `freeze_qualification_criteria` (line 46), `write_qualification_criteria_manifest` (line 78), `build_qualification_review_package` (line 101)
 
 Related tests: `python-engine/tests/test_partner_qualification_review.py`
 
@@ -1292,7 +1292,7 @@ Related tests: `python-engine/tests/test_research_archive.py`
 
 Operator commands for immutable research preservation (no broker actions).
 
-Top-level declarations: `_json_file` (line 16), `_candidate_file` (line 26), `_replay_spread` (line 39), `_full_policy_diagnostic` (line 69), `main` (line 105)
+Top-level declarations: `_json_file` (line 16), `_candidate_file` (line 26), `_replay_spread` (line 39), `_full_policy_diagnostic` (line 72), `main` (line 108)
 
 Engine dependencies: `config`, `intraday_spread_archive_adapter`, `intraday_spread_chronological`, `partner_full_policy_replay`, `partner_qualification`, `partner_research_capture`, `reconciliation_evidence`, `research_archive`
 

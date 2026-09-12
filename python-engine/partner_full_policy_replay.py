@@ -7,7 +7,7 @@ from dataclasses import asdict, replace
 from datetime import datetime
 
 from intraday_spread_archive_adapter import SpreadContractIdentity, build_spread_observations
-from intraday_spread_chronological import PublicObservation, replay_chronological_debit_spread
+from intraday_spread_chronological import PublicObservation, replay_chronological_debit_spread, replay_cost_scenarios
 from intraday_spread_replay import IST, ReplayInputError
 from partner_qualification import _sha, evaluate_deployed_full_policy
 
@@ -40,7 +40,8 @@ def write_replay_report(path, report):
 
 
 def replay_full_policy(*, evaluation_inputs, events, archive_root, master_sha256,
-                       execution_policy, public_observations=(), public_capture_paths=()):
+                       execution_policy, public_observations=(), public_capture_paths=(),
+                       fee_multipliers=(1.0,), additional_slippage_bps=(0.0,)):
     """Recompute the deployed decision and replay only its selected two legs."""
     inputs = dict(evaluation_inputs)
     captures = tuple(public_capture_paths)
@@ -113,16 +114,17 @@ def replay_full_policy(*, evaluation_inputs, events, archive_root, master_sha256
             raise ReplayInputError("public observations must be unique and receipt-ordered")
         previous = received
         public.append(PublicObservation(item["observed_at"], received, item["price"]))
-    for index, row in enumerate(rows):
-        rows[index] = replace(row, signal_score=1.0 if index == 0 else 0.0)
     initial = next((item for item in reversed(public) if item.received_at <= now), None)
     if initial is None or now - initial.observed_at > execution_policy.max_public_age:
         report.update(state="INSUFFICIENT_EVIDENCE", reason="public_lifecycle_coverage_missing")
         return {**report, "evidence_sha256": _sha(report)}
     from partner_thesis import public_thesis_event
-    if public_thesis_event(candidate.direction, initial.price, candidate.invalidation_level, candidate.target_level)[0]:
-        report.update(state="NO_FILL", reason="public_thesis_already_crossed_at_decision")
-        return {**report, "evidence_sha256": _sha(report)}
+    thesis_crossed_at_decision = bool(public_thesis_event(
+        candidate.direction, initial.price, candidate.invalidation_level, candidate.target_level)[0])
+    if thesis_crossed_at_decision:
+        report["decision_guard"] = "public_thesis_already_crossed_at_decision"
+    for index, row in enumerate(rows):
+        rows[index] = replace(row, signal_score=1.0 if index == 0 and not thesis_crossed_at_decision else 0.0)
     def minute(clock):
         local = clock.astimezone(IST)
         return local.hour * 60 + local.minute
@@ -148,5 +150,11 @@ def replay_full_policy(*, evaluation_inputs, events, archive_root, master_sha256
         entry_deadline_minute=min(policy.entry_deadline_minute, profile.delivery_end_minute))
     result = replay_chronological_debit_spread(underlying=candidate.underlying, expiry=long.expiry,
                                               observations=rows, policy=policy, public_observations=public)
-    report.update(state=result.state, reason=result.result.reason, replay=asdict(result))
+    sensitivity = replay_cost_scenarios(underlying=candidate.underlying, expiry=long.expiry,
+        observations=rows, policy=policy, public_observations=public,
+        fee_multipliers=fee_multipliers, additional_slippage_bps=additional_slippage_bps)
+    report.update(state=result.state, economics_contract="FULL_POLICY_ECONOMICS_V1",
+                  reason="public_thesis_already_crossed_at_decision" if thesis_crossed_at_decision else result.result.reason,
+                  replay=asdict(result),
+                  cost_sensitivity=sensitivity)
     return {**report, "evidence_sha256": _sha(report)}
