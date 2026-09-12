@@ -16,6 +16,7 @@ At resumption Dev HEAD was 841131e, containing e043276 and 5a565df. The previous
 - Cancel a delayed entry when invalidation or target is crossed before execution. Reject an already-crossed thesis or missing/stale initial public observation.
 - Recheck the actual execution debit plus round-trip fee reserve and entry slippage against the tighter declared/profile capital and risk limits. Bind entry timing to the profile window. Cost-sensitivity runs preserve independent public events across every scenario.
 - Every output remains diagnostic, with qualification, delivery and order authority false.
+- Replay accepts fingerprinted public capture paths, recomputes the closed-bar observation from saved OHLCV, preserves actual response receipt, and records source fingerprints/provenance. Mixed archive/caller observations, duplicate captures, stale observations and scope/hash mismatches are rejected. Source coverage remains explicitly SUPPLIED_CAPTURES_ONLY.
 
 ## Verification
 
@@ -24,6 +25,8 @@ At resumption Dev HEAD was 841131e, containing e043276 and 5a565df. The previous
 ## Required next work
 
 Broader checkpoint validation: 88 tests passed across full-policy replay, qualification/review, public capture, CLI qualification, signal artifacts, research, base replay, holdout, chronology and archive adapter.
+
+Public-capture follow-up: the same broader suite now passes 91 tests, including verified capture-to-replay integration and late-receipt/stale/scope/hash checks.
 
 1. Validate independent public-stream completeness against archive provenance and coverage manifests; sparse supplied events alone cannot establish an uninterrupted lifecycle. Cost-sensitivity stream propagation is implemented.
 2. Extend delayed execution validation to contemporary spread-quality rules and cost-model calibration. Cost-inclusive profile capital/risk checks at the changed book are implemented; they do not establish the accuracy of fee/slippage assumptions.

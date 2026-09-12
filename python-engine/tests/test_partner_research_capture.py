@@ -10,6 +10,40 @@ import pytest
 from partner_research_capture import persist_public_input
 
 
+def test_lifecycle_loader_recomputes_price_and_preserves_late_receipt(tmp_path):
+    from tests.test_fno_signal_scan import _frame, LONG_ROWS, NOW
+    from partner_research_capture import load_public_lifecycle
+    from pathlib import Path
+    frame = _frame(LONG_ROWS)
+    receipt = NOW + timedelta(seconds=2)
+    scan = SimpleNamespace(name='NIFTY', research_bars=frame, research_received_at=receipt,
+                           research_future_token=123, sig=None, error='')
+    capture = persist_public_input(tmp_path, scan, regime='REGIME_1_NORMAL', evaluation_at=NOW)
+    result = load_public_lifecycle([capture['path']], underlying='NIFTY', max_age_seconds=600)
+    assert result['observations'][0]['received_at'] == receipt
+    assert result['observations'][0]['observed_at'] <= NOW
+    assert result['sources'][0]['provenance_state'] == 'RETROSPECTIVE'
+    assert result['coverage'] == 'SUPPLIED_CAPTURES_ONLY'
+    assert not result['can_qualify']
+    with pytest.raises(ValueError, match='duplicate'):
+        load_public_lifecycle([capture['path']] * 2, underlying='NIFTY', max_age_seconds=600)
+    with pytest.raises(ValueError, match='scope'):
+        load_public_lifecycle([capture['path']], underlying='SENSEX', max_age_seconds=600)
+    Path(capture['path']).write_text('{}')
+    with pytest.raises(ValueError, match='fingerprint'):
+        load_public_lifecycle([capture['path']], underlying='NIFTY', max_age_seconds=600)
+
+
+def test_lifecycle_loader_rejects_stale_receipt(tmp_path):
+    from tests.test_fno_signal_scan import _frame, LONG_ROWS, NOW
+    from partner_research_capture import load_public_lifecycle
+    scan = SimpleNamespace(name='NIFTY', research_bars=_frame(LONG_ROWS),
+        research_received_at=NOW + timedelta(minutes=20), research_future_token=123, sig=None, error='')
+    capture = persist_public_input(tmp_path, scan, regime='REGIME_1_NORMAL', evaluation_at=NOW)
+    with pytest.raises(ValueError, match='stale'):
+        load_public_lifecycle([capture['path']], underlying='NIFTY', max_age_seconds=600)
+
+
 def test_capture_retains_frame_and_actual_late_receipt(tmp_path):
     now = datetime(2026, 9, 11, 10, tzinfo=ZoneInfo("Asia/Kolkata"))
     bars = pd.DataFrame({"open": [100.], "high": [102.], "low": [99.], "close": [101.], "volume": [50.]},

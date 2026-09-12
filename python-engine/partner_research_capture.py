@@ -10,6 +10,50 @@ from pathlib import Path
 from research_archive import guarded_write, _admit_bytes
 
 
+def load_public_lifecycle(paths, *, underlying, max_age_seconds):
+    """Recompute closed-bar public observations from verified retained inputs.
+
+    Receipt is when the response was available, never the historical bar close.
+    The result proves the supplied captures only, not that no captures are absent.
+    """
+    from datetime import datetime, timedelta
+    import math
+    from zoneinfo import ZoneInfo
+    from fno_engine_mom import evaluate_fno_mom
+    if not math.isfinite(max_age_seconds) or max_age_seconds <= 0:
+        raise ValueError("public maximum age must be finite and positive")
+    observations, sources = [], []
+    seen = set()
+    for path in paths:
+        target = Path(path)
+        if target.stem in seen:
+            raise ValueError("duplicate public capture")
+        seen.add(target.stem)
+        frame, regime, evaluation_at, provenance = load_public_input(target, underlying=underlying)
+        if frame.index.tz is not None:
+            frame.index = frame.index.tz_convert("Asia/Kolkata").tz_localize(None)
+        signal = evaluate_fno_mom(frame, regime, evaluation_at.astimezone(ZoneInfo("Asia/Kolkata")))
+        try:
+            observed = datetime.strptime(signal.bar_ts, "%Y-%m-%d %H:%M:%S").replace(
+                tzinfo=ZoneInfo("Asia/Kolkata")) + timedelta(minutes=5)
+            price = float(signal.close)
+        except (TypeError, ValueError, AttributeError) as exc:
+            raise ValueError("capture has no usable closed-bar observation") from exc
+        # Evaluation may precede receipt; that fact remains in source metadata.
+        received = provenance["received_at"]
+        if (not math.isfinite(price) or price <= 0 or observed > evaluation_at
+                or observed > received or (received - observed).total_seconds() > max_age_seconds):
+            raise ValueError("capture public observation is future, stale or invalid")
+        observations.append(dict(observed_at=observed, received_at=received, price=price))
+        sources.append(dict(sha256=target.stem, evaluation_at=evaluation_at.isoformat(),
+                            received_at=received.isoformat(), provenance_state=provenance["state"]))
+    observations.sort(key=lambda item: item["received_at"])
+    if any(first["received_at"] == second["received_at"] for first, second in zip(observations, observations[1:])):
+        raise ValueError("conflicting public captures share a receipt")
+    return {"observations": observations, "sources": sorted(sources, key=lambda item: item["sha256"]),
+            "coverage": "SUPPLIED_CAPTURES_ONLY", "can_qualify": False}
+
+
 def load_public_input(path, *, underlying):
     """Validate retained bytes and reconstruct the original evaluation inputs."""
     from datetime import datetime

@@ -13,15 +13,26 @@ from partner_qualification import _sha, evaluate_deployed_full_policy
 
 
 def replay_full_policy(*, evaluation_inputs, events, archive_root, master_sha256,
-                       execution_policy, public_observations=()):
+                       execution_policy, public_observations=(), public_capture_paths=()):
     """Recompute the deployed decision and replay only its selected two legs."""
     inputs = dict(evaluation_inputs)
+    captures = tuple(public_capture_paths)
+    public_observations = tuple(public_observations)
+    public_sources = None
+    if captures:
+        if public_observations:
+            raise ReplayInputError("cannot mix archived and caller-supplied public observations")
+        from partner_research_capture import load_public_lifecycle
+        public_sources = load_public_lifecycle(captures, underlying=inputs["underlying"],
+            max_age_seconds=execution_policy.max_public_age.total_seconds())
+        public_observations = public_sources["observations"]
     if inputs.get("contract_master_sha256") != master_sha256:
         raise ReplayInputError("evaluation and replay master digests must match")
     decision = evaluate_deployed_full_policy(**inputs)
     report = {"format": "partner_full_policy_replay_v1", "decision_id": decision.decision_id,
               "manifest": decision.manifest, "state": decision.state, "reason": decision.reason,
               "can_qualify": False, "can_deliver": False, "can_place_orders": False,
+              "public_sources": public_sources,
               "limitations": ["Diagnostic only; public-source completeness, delayed-entry economics and reviewed qualification remain required."]}
     if decision.state != "ACCEPTED":
         return {**report, "evidence_sha256": _sha(report)}

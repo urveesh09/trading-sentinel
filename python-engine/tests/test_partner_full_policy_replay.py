@@ -87,6 +87,24 @@ def test_master_scope_mismatch_rejected(case):
         replay.replay_full_policy(**args)
 
 
+def test_connector_consumes_verified_public_capture(case):
+    from types import SimpleNamespace
+    from partner_research_capture import persist_public_input
+    args, _ = case
+    capture = persist_public_input(args['archive_root'], SimpleNamespace(name='NIFTY',
+        research_bars=args['evaluation_inputs']['bars'], research_received_at=NOW,
+        research_future_token=123, sig=None, error=''), regime='REGIME_1_NORMAL', evaluation_at=NOW)
+    args['public_capture_paths'] = [capture['path']]
+    with pytest.raises(ReplayInputError, match='cannot mix'):
+        replay.replay_full_policy(**args)
+    args['public_observations'] = []
+    result = replay.replay_full_policy(**args)
+    assert result['public_sources']['sources'][0]['sha256'] == capture['sha256']
+    assert result['public_sources']['coverage'] == 'SUPPLIED_CAPTURES_ONLY'
+    assert result['state'] == 'UNRESOLVED'
+    assert not result['can_qualify']
+
+
 def test_unmocked_archive_to_real_policy_and_exit(case, monkeypatch):
     import hashlib
     import json
