@@ -132,7 +132,7 @@ Archive persistence is still lower priority than public management and candidate
 
 `intraday_spread_archive_adapter.py` checks master/packet evidence and builds paired books, retaining partial batches. `intraday_spread_signal_artifact.py` is a distinct signal-artifact path; its simple evaluator must not be passed off as the complete policy. `intraday_spread_replay.py` prices a bounded one-lot spread. `intraday_spread_chronological.py` chooses causal entry/exit sequences, supports manual delay, public events and cost stresses.
 
-`partner_full_policy_replay.py` binds the actual selected candidate to archived books, profile limits and public lifecycle events. `partner_qualification_review.py`, `intraday_spread_holdout.py` and `intraday_spread_research.py` provide review/holdout infrastructure. Their existence is not proof of successful integration or a passing strategy.
+`partner_full_policy_replay.py` binds the actual selected candidate to archived books, profile limits and public lifecycle events. The archive adapter rejects distinct valid packets for the same leg and receipt instead of selecting by input order; exact byte-identical retries are deduplicated. Conflicts remain explicit report evidence and can invalidate the decision book. `intraday_spread_holdout.heldout_case_from_full_policy_report` verifies the complete deployed-policy report and manifest before admitting its chronological outcome to held-out aggregation. `partner_qualification_review.py` and `intraday_spread_research.py` provide later review infrastructure. This integration is tested across a costed close and unresolved session, but it is not proof of a passing strategy or adequate real evidence.
 
 ### Important replay semantics
 

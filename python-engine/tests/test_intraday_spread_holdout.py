@@ -5,7 +5,7 @@ import pytest
 import pytz
 
 from intraday_spread_chronological import ChronologicalReplay
-from intraday_spread_holdout import HeldOutCase, build_heldout_comparison
+from intraday_spread_holdout import HeldOutCase, build_heldout_comparison, heldout_case_from_full_policy_report
 from intraday_spread_replay import ReplayResult
 
 
@@ -47,3 +47,30 @@ def test_heldout_requires_chronological_split_and_keeps_unavailable_coverage():
     with pytest.raises(ValueError, match="precede"):
         build_heldout_comparison(dataset_sha256="b" * 64, code_revision="abc", training_sessions=["2026-09-11"],
             holdout_sessions=["2026-09-10"], declared_coverage=[("NIFTY", "x", "2026-09-10")], cases=[])
+
+
+def test_full_policy_report_adapter_rejects_tampering_and_simplified_manifest():
+    from dataclasses import asdict
+    import hashlib
+    import json
+    from partner_qualification_review import _sha
+    chronological = replay("CLOSED", 5, "a")
+    manifest_body = {"evaluator": "partner_manual_intraday_full_policy_v1", "underlying": "NIFTY",
+                     "decision_at": "2026-09-10T10:00:00+05:30", "policy_sha256": "p" * 64}
+    manifest = manifest_body | {"manifest_sha256": _sha(manifest_body)}
+    body = {"format": "partner_full_policy_replay_v1", "decision_id": "decision-one",
+            "manifest": manifest, "state": "CLOSED", "replay": asdict(chronological)}
+    report = body | {"evidence_sha256": hashlib.sha256(json.dumps(body, sort_keys=True,
+        separators=(",", ":"), default=str).encode()).hexdigest()}
+    case = heldout_case_from_full_policy_report(report, signal_artifact_sha256="d" * 64)
+    assert case.opportunity_id == "decision-one" and case.replay.result.net_pnl_rs == 5
+    report["state"] = "UNRESOLVED"
+    with pytest.raises(ValueError, match="fingerprint"):
+        heldout_case_from_full_policy_report(report, signal_artifact_sha256="d" * 64)
+    report = body | {"evidence_sha256": hashlib.sha256(json.dumps(body, sort_keys=True,
+        separators=(",", ":"), default=str).encode()).hexdigest()}
+    report["manifest"] = dict(manifest, evaluator="orb_threshold_v1")
+    report["evidence_sha256"] = hashlib.sha256(json.dumps({key: value for key, value in report.items()
+        if key != "evidence_sha256"}, sort_keys=True, separators=(",", ":"), default=str).encode()).hexdigest()
+    with pytest.raises(ValueError, match="deployed"):
+        heldout_case_from_full_policy_report(report, signal_artifact_sha256="d" * 64)

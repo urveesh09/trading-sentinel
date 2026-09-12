@@ -107,6 +107,30 @@ def test_archive_adapter_pairs_only_complete_same_receipt_batches_and_retains_pa
     assert built.partial_batches[0]["missing"] == ["short"]
 
 
+def test_same_receipt_conflict_is_rejected_but_exact_retry_is_idempotent(tmp_path):
+    long, short = identity(1, "NIFTY25000CE", 25000), identity(2, "NIFTY25200CE", 25200)
+    original = event(contract(long))
+    changed = event(contract(long))
+    changed["raw_packet"]["depth"]["buy"][0]["price"] = 99
+    changed["buy_depth"][0]["price"] = 99
+    changed["raw_sha256"] = hashlib.sha256(json.dumps(changed["raw_packet"], sort_keys=True,
+        default=str, separators=(",", ":")).encode()).hexdigest()
+    root = archive(tmp_path, long, short)
+    for ordered in ([original, changed, event(contract(short))],
+                    [changed, original, event(contract(short))]):
+        built = build_spread_observations(events=ordered, long_contract=long, short_contract=short,
+            master_sha256=MASTER, archive_root=root)
+        assert not built.observations
+        assert built.conflicting_batches[0]["conflicting"] == ["long"]
+        assert built.conflicting_batches[0]["packet_sha256"]["long"] == sorted(
+            [original["raw_sha256"], changed["raw_sha256"]])
+
+    retried = build_spread_observations(events=[original, dict(original), event(contract(short))],
+        long_contract=long, short_contract=short, master_sha256=MASTER, archive_root=root)
+    assert len(retried.observations) == 1
+    assert retried.conflicting_batches == ()
+
+
 def test_archive_adapter_rejects_tampered_signal_artifact(tmp_path):
     long, short = identity(1, "NIFTY25000CE", 25000), identity(2, "NIFTY25200CE", 25200)
     path = artifact(tmp_path)

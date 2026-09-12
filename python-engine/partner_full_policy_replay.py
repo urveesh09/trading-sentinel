@@ -74,7 +74,15 @@ def replay_full_policy(*, evaluation_inputs, events, archive_root, master_sha256
                                      master_sha256=master_sha256, archive_root=archive_root)
     now = inputs["decision_at"]
     prior_books = [row for row in build.observations if row.received_at <= now]
-    report.update(partial_batches=list(build.partial_batches), ignored_events=build.ignored_events)
+    report.update(partial_batches=list(build.partial_batches),
+                  conflicting_batches=list(build.conflicting_batches),
+                  ignored_events=build.ignored_events)
+    relevant_conflicts = [item for item in build.conflicting_batches
+                          if datetime.fromisoformat(item["received_at"]) <= now]
+    if relevant_conflicts and (not prior_books or
+            datetime.fromisoformat(relevant_conflicts[-1]["received_at"]) >= prior_books[-1].received_at):
+        report.update(state="INSUFFICIENT_EVIDENCE", reason="decision_book_conflict")
+        return {**report, "evidence_sha256": _sha(report)}
     if not prior_books:
         report.update(state="INSUFFICIENT_EVIDENCE", reason="decision_book_missing")
         return {**report, "evidence_sha256": _sha(report)}

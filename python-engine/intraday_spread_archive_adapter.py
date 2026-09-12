@@ -35,6 +35,7 @@ class ArchiveObservationBuild:
     partial_batches: tuple[dict[str, Any], ...]
     ignored_events: int
     signal_provenance_sha256: str | None
+    conflicting_batches: tuple[dict[str, Any], ...] = ()
 
 
 def _stamp(value: object, field: str) -> datetime:
@@ -207,9 +208,27 @@ def build_spread_observations(*, events: Iterable[Mapping[str, Any]], long_contr
         batches.setdefault(key, []).append(event)
     observations: list[SpreadObservation] = []
     partial: list[dict[str, Any]] = []
+    conflicts: list[dict[str, Any]] = []
     for key in sorted(batches):
-        long_event = next((item for item in batches[key] if _leg(item, long_contract, master_sha256) is not None), None)
-        short_event = next((item for item in batches[key] if _leg(item, short_contract, master_sha256) is not None), None)
+        def distinct_valid(identity: SpreadContractIdentity) -> list[Mapping[str, Any]]:
+            unique: dict[str, Mapping[str, Any]] = {}
+            for item in batches[key]:
+                if _leg(item, identity, master_sha256) is not None:
+                    unique.setdefault(str(item.get("raw_sha256")), item)
+            return list(unique.values())
+
+        long_events = distinct_valid(long_contract)
+        short_events = distinct_valid(short_contract)
+        conflicting = [name for name, items in (("long", long_events), ("short", short_events)) if len(items) > 1]
+        if conflicting:
+            conflicts.append({"received_at": key, "state": "CONFLICTING_LEG_OBSERVATION",
+                              "conflicting": conflicting,
+                              "packet_sha256": {name: sorted(str(item.get("raw_sha256")) for item in items)
+                                                for name, items in (("long", long_events), ("short", short_events))
+                                                if len(items) > 1}})
+            continue
+        long_event = long_events[0] if long_events else None
+        short_event = short_events[0] if short_events else None
         if long_event is None or short_event is None:
             partial.append({"received_at": key, "state": "PARTIAL_LEG_OBSERVATION",
                             "missing": [name for name, item in (("long", long_event), ("short", short_event)) if item is None]})
@@ -223,4 +242,5 @@ def build_spread_observations(*, events: Iterable[Mapping[str, Any]], long_contr
         short = LegQuote(**{**short.__dict__, "side": "SELL"})
         score = float(scores.get(key, 0.0))
         observations.append(SpreadObservation(min(long.observed_at, short.observed_at), received, score, (long, short)))
-    return ArchiveObservationBuild(tuple(observations), tuple(partial), ignored, signal_provenance_sha256)
+    return ArchiveObservationBuild(tuple(observations), tuple(partial), ignored, signal_provenance_sha256,
+                                   tuple(conflicts))

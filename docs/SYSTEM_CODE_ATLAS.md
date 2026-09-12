@@ -456,7 +456,7 @@ Related tests: `python-engine/tests/test_integrated_dev_demo.py`
 
 Read immutable quote archives into explicit two-leg chronological evidence.
 
-Top-level declarations: `SpreadContractIdentity` (line 21), `ArchiveObservationBuild` (line 33), `_stamp` (line 40), `read_archived_quote_events` (line 50), `_leg` (line 72), `_master_proves_contract` (line 134), `build_spread_observations` (line 174)
+Top-level declarations: `SpreadContractIdentity` (line 21), `ArchiveObservationBuild` (line 33), `_stamp` (line 41), `read_archived_quote_events` (line 51), `_leg` (line 73), `_master_proves_contract` (line 135), `build_spread_observations` (line 175)
 
 Engine dependencies: `intraday_spread_chronological`, `intraday_spread_replay`, `intraday_spread_signal_artifact`
 
@@ -476,9 +476,9 @@ Related tests: `python-engine/tests/test_intraday_spread_chronological.py`
 
 Frozen per-index/policy held-out summaries for chronological spread replay.
 
-Top-level declarations: `HeldOutCase` (line 15), `_digest` (line 26), `build_heldout_comparison` (line 30)
+Top-level declarations: `HeldOutCase` (line 16), `_digest` (line 27), `heldout_case_from_full_policy_report` (line 31), `build_heldout_comparison` (line 83)
 
-Engine dependencies: `intraday_spread_chronological`
+Engine dependencies: `intraday_spread_chronological`, `intraday_spread_replay`
 
 Related tests: `python-engine/tests/test_intraday_spread_holdout.py`
 

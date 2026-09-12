@@ -110,6 +110,15 @@ def test_intervening_partial_book_blocks_reuse_of_older_complete_pair(case, monk
     assert replay.replay_full_policy(**args)['reason'] == 'partial_book_before_decision'
 
 
+def test_decision_book_conflict_is_explicit(case, monkeypatch):
+    args, rows = case
+    monkeypatch.setattr(replay, 'build_spread_observations', lambda **_: ArchiveObservationBuild(tuple(rows),
+        (), 0, None, ({'received_at': NOW.isoformat(), 'conflicting': ['long']},)))
+    result = replay.replay_full_policy(**args)
+    assert result['reason'] == 'decision_book_conflict'
+    assert result['conflicting_batches'][0]['conflicting'] == ['long']
+
+
 def test_master_scope_mismatch_rejected(case):
     args, _ = case
     args['master_sha256'] = 'b' * 64

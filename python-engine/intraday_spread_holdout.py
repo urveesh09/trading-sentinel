@@ -4,11 +4,12 @@ from __future__ import annotations
 import hashlib
 import json
 import math
-from datetime import date
+from datetime import date, datetime
 from dataclasses import dataclass
-from typing import Iterable
+from typing import Iterable, Mapping, Any
 
 from intraday_spread_chronological import ChronologicalReplay
+from intraday_spread_replay import ReplayResult
 
 
 @dataclass(frozen=True)
@@ -25,6 +26,58 @@ class HeldOutCase:
 
 def _digest(value: object) -> str:
     return hashlib.sha256(json.dumps(value, sort_keys=True, separators=(",", ":"), default=str).encode()).hexdigest()
+
+
+def heldout_case_from_full_policy_report(report: Mapping[str, Any], *,
+                                         signal_artifact_sha256: str) -> HeldOutCase:
+    """Bind a verified deployed-policy replay report to held-out review.
+
+    This is deliberately strict: review cannot be fed a hand-built low-level
+    result while claiming it came through the deployed full-policy evaluator.
+    """
+    if report.get("format") != "partner_full_policy_replay_v1":
+        raise ValueError("full-policy replay report format is required")
+    body = {key: value for key, value in report.items() if key != "evidence_sha256"}
+    if _digest(body) != report.get("evidence_sha256"):
+        raise ValueError("full-policy replay report fingerprint mismatch")
+    manifest = report.get("manifest")
+    if not isinstance(manifest, Mapping) or manifest.get("evaluator") != "partner_manual_intraday_full_policy_v1":
+        raise ValueError("deployed full-policy manifest is required")
+    manifest_body = {key: value for key, value in manifest.items() if key != "manifest_sha256"}
+    if _digest(manifest_body) != manifest.get("manifest_sha256"):
+        raise ValueError("full-policy manifest fingerprint mismatch")
+    payload = report.get("replay")
+    if not isinstance(payload, Mapping) or not isinstance(payload.get("result"), Mapping):
+        raise ValueError("complete chronological replay payload is required")
+    state = str(payload.get("state"))
+    result = ReplayResult(**dict(payload["result"]))
+    if state not in {"CLOSED", "NO_FILL", "UNRESOLVED"} or result.state != state or report.get("state") != state:
+        raise ValueError("full-policy replay outcome states conflict")
+    rejected = payload.get("rejected_entry_reasons", ())
+    if not isinstance(rejected, (list, tuple)):
+        raise ValueError("chronological rejection evidence is malformed")
+    replay = ChronologicalReplay(result=result, state=state,
+        attempted_entries=int(payload.get("attempted_entries", 0)),
+        rejected_entry_reasons=tuple(str(item) for item in rejected),
+        active_entry_at=payload.get("active_entry_at"), exit_trigger=payload.get("exit_trigger"),
+        observation_count=int(payload.get("observation_count", 0)),
+        evidence_sha256=str(payload.get("evidence_sha256", "")))
+    if replay.evidence_sha256 != result.evidence_sha256:
+        raise ValueError("chronological replay evidence identity conflicts")
+    decision_id = report.get("decision_id")
+    policy_id = manifest.get("policy_sha256")
+    underlying = manifest.get("underlying")
+    try:
+        decision_at = datetime.fromisoformat(str(manifest.get("decision_at")))
+    except ValueError as exc:
+        raise ValueError("full-policy decision clock is invalid") from exc
+    if (decision_at.tzinfo is None or not isinstance(decision_id, str) or not decision_id
+            or underlying not in {"NIFTY", "SENSEX"} or not isinstance(policy_id, str) or not policy_id
+            or len(signal_artifact_sha256) != 64
+            or any(char not in "0123456789abcdef" for char in signal_artifact_sha256.lower())):
+        raise ValueError("full-policy held-out identity is invalid")
+    return HeldOutCase(str(underlying), policy_id, decision_at.date().isoformat(), replay,
+                       decision_id, signal_artifact_sha256.lower())
 
 
 def build_heldout_comparison(*, dataset_sha256: str, code_revision: str,
