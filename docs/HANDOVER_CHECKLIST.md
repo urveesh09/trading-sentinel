@@ -3,7 +3,7 @@
 ## Read order
 
 1. [SYSTEM_GUIDE.md](SYSTEM_GUIDE.md): feature architecture, authority boundaries, before/after improvements and limitations.
-2. [SYSTEM_CODE_ATLAS.md](SYSTEM_CODE_ATLAS.md): 153 top-level engine/agent Python modules plus gateway/dashboard source navigation, declarations, dependencies and tables.
+2. [SYSTEM_CODE_ATLAS.md](SYSTEM_CODE_ATLAS.md): 155 top-level engine/agent Python modules plus gateway/dashboard source navigation, declarations, dependencies and tables.
 3. [NEXT_AGENT_PLAN.md](NEXT_AGENT_PLAN.md): implementation workstreams, acceptance checks, expected effects and documentation ritual.
 4. [September 12 replay progress](2026-09-12-full-policy-replay-progress.md) and [Production inventory/CAS findings](2026-09-12-production-evidence-and-cas-findings.md).
 
@@ -42,8 +42,8 @@ This is not a rerun of the entire repository test suite, gateway/native database
 ## Current outstanding limits
 
 - Production public input archives were absent at the last read-only inventory; no complete real session replay was produced from that root.
-- Original tick time versus actual acquisition/decision time still needs an explicit deployed contract. The final correction allows already received books; it does not authorize late data at an earlier clock.
-- Capture completeness, bounded write latency and conditional-protection capture remain unfinished.
+- Dev now implements `FROZEN_COMPLETED_BAR_CUTOFF_V1`: tick/cutoff, public and chain request/receipt, construction and dispatch boundaries are distinct. It is not deployed or observed in Production.
+- Dev now retains per-attempt public/candidate outcomes, requested/received chain tokens and conditional-protection inputs, and bounds advisory wait on archive writes. Timeout remains outcome-unknown because an in-flight worker thread cannot be killed; Production latency and retention still need observation.
 - Public capture hashes prove supplied-file integrity, not uninterrupted sampling or independent authenticity.
 - Cost calibration, contemporary entry-quality checks and full-policy held-out review integration remain to be finished.
 - CAS/session-phase correctness needs official-source-backed review across engine, gateway and research.
@@ -52,7 +52,16 @@ This is not a rerun of the entire repository test suite, gateway/native database
 
 ## First next action
 
-Inspect Dev and Production state. Then implement plan A's clock contract together with plan B's per-attempt completeness evidence. Preserve the working CLI and immutable artifacts. A passive collection release can be promoted after its own complete acceptance; do not wait for every research innovation to finish.
+Review the A/B implementation diff and its acceptance record, then build Workstream C's unmocked multi-session fixture with both a costed close and unresolved outcome. Before promotion, resolve or explicitly baseline the broader repository failures and run the release suite. Preserve the working CLI and immutable v1/v2 artifacts.
+
+## A/B implementation verification
+
+- Focused Python acceptance: 185 tests passed across decision clocks, collection attempts, chain/scanner, captures, qualification/replay, orchestrator, archive readiness and authenticated hedge routes. The 64 pure-path tests passed with all warnings treated as errors; the integration group retains one pre-existing Starlette lifespan deprecation warning.
+- Scheduler/isolation acceptance: 41 tests passed with `RuntimeWarning` treated as an error. The previously documented unawaited `_run_penny_edge_scan_safe` coroutine warning is fixed; registration now checks for a running event loop before constructing the coroutine.
+- Dashboard: 25 unit tests passed and the Vite production build passed. The existing outdated Browserslist database warning remains.
+- Gateway: all 317 tests passed (4 skipped) in a clean Node 20 Alpine container; the focused updated proxy contract passed 15 tests. Existing forced-exit/open-handle and Telegram-library warnings remain. Agent: 91 tests passed in the existing Production agent image with networking disabled.
+- Final full Python repository rerun after the scheduler correction: 2,498 passed, 3 skipped and 17 failed, with 23 deprecation warnings and no unawaited-coroutine warning. The failures were outside the changed path: legacy test-created `bankroll_ledger` schemas omit `origin_ref`; the declared `PARTNER_BOT_ENABLED` default is already `True` while an older test expects `False`; several Windows source-inspection tests use CP1252 instead of UTF-8; and affected momentum-paper assertions cascade from the legacy ledger fixture. The 17 failures still prevent `RELEASE_VALIDATED` status even though the focused slice is green.
+- Production remained read-only. No container was started, no message/order was sent, and no qualification was registered.
 
 ## User-facing clarity
 

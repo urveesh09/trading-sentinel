@@ -30,7 +30,7 @@ def _candidate_file(path: str) -> dict:
     value = json.loads(raw)
     if not isinstance(value, dict):
         raise ValueError("candidate input must be an object")
-    if value.get("format") == "partner_observed_candidate_input_v1":
+    if value.get("format") in {"partner_observed_candidate_input_v1", "partner_observed_candidate_input_v2"}:
         if Path(path).stem != hashlib.sha256(raw).hexdigest():
             raise ValueError("candidate capture fingerprint mismatch")
     return value
@@ -160,8 +160,13 @@ def main(argv: list[str] | None = None) -> int:
             from intraday_spread_chronological import ChronologicalPolicy
             from zoneinfo import ZoneInfo
             bars, regime, at, provenance = load_public_input(args.public_input, underlying=args.underlying)
-            book, snapshot, profile = load_candidate_evidence(_candidate_file(args.candidate_evidence),
-                underlying=args.underlying, decision_at=at, archive_root=args.archive_root,
+            candidate_value = _candidate_file(args.candidate_evidence)
+            clock_payload = candidate_value.get("decision_clock")
+            decision_at = datetime.fromisoformat(clock_payload["candidate_constructed_at"]) if clock_payload else at
+            if clock_payload and provenance.get("decision_clock", {}).get("run_id") != clock_payload.get("run_id"):
+                raise ValueError("public and candidate captures have different decision runs")
+            book, snapshot, profile = load_candidate_evidence(candidate_value,
+                underlying=args.underlying, decision_at=decision_at, archive_root=args.archive_root,
                 master_sha256=args.master_sha256)
             policy_config = _json_file(args.policy)
             for key in ("execution_delay", "execution_max_wait", "signal_expiry", "max_quote_age", "max_leg_sync", "max_public_age"):
@@ -171,7 +176,8 @@ def main(argv: list[str] | None = None) -> int:
                     policy_config[key] = timedelta(seconds=policy_config[key])
             day = at.astimezone(ZoneInfo("Asia/Kolkata")).date().isoformat()
             result = replay_full_policy(evaluation_inputs=dict(underlying=args.underlying, bars=bars,
-                regime=regime, decision_at=at, bar_provenance=provenance, book=book, snapshot=snapshot,
+                regime=regime, decision_at=decision_at, evaluation_cutoff_at=at,
+                decision_clock=clock_payload, bar_provenance=provenance, book=book, snapshot=snapshot,
                 profile=profile, contract_master_sha256=args.master_sha256),
                 events=read_archived_quote_events(args.archive_root, days=[day]), archive_root=args.archive_root,
                 master_sha256=args.master_sha256, execution_policy=ChronologicalPolicy(**policy_config),
@@ -191,13 +197,23 @@ def main(argv: list[str] | None = None) -> int:
             bars, regime, at, provenance = load_public_input(args.public_input, underlying=args.underlying)
             candidate_inputs = {}
             if args.candidate_evidence:
-                book, snapshot, profile = load_candidate_evidence(_candidate_file(args.candidate_evidence),
-                                                                 underlying=args.underlying, decision_at=at,
+                candidate_value = _candidate_file(args.candidate_evidence)
+                clock_payload = candidate_value.get("decision_clock")
+                decision_at = datetime.fromisoformat(clock_payload["candidate_constructed_at"]) if clock_payload else at
+                if clock_payload and provenance.get("decision_clock", {}).get("run_id") != clock_payload.get("run_id"):
+                    raise ValueError("public and candidate captures have different decision runs")
+                book, snapshot, profile = load_candidate_evidence(candidate_value,
+                                                                 underlying=args.underlying, decision_at=decision_at,
                                                                  archive_root=args.archive_root,
                                                                  master_sha256=args.contract_master_sha256)
-                candidate_inputs = {"book": book, "snapshot": snapshot, "profile": profile}
+                candidate_inputs = {"book": book, "snapshot": snapshot, "profile": profile,
+                                    "decision_at": decision_at, "evaluation_cutoff_at": at,
+                                    "decision_clock": clock_payload}
             decision = evaluate_deployed_full_policy(underlying=args.underlying, bars=bars, regime=regime,
-                                                     decision_at=at, bar_provenance=provenance,
+                                                     decision_at=candidate_inputs.pop("decision_at", at),
+                                                     evaluation_cutoff_at=candidate_inputs.pop("evaluation_cutoff_at", at),
+                                                     decision_clock=candidate_inputs.pop("decision_clock", None),
+                                                     bar_provenance=provenance,
                                                      contract_master_sha256=args.contract_master_sha256, **candidate_inputs)
             result = write_full_policy_decision(args.output, decision)
             print(json.dumps({"state": result["state"], "reason": result["reason"], "path": args.output,

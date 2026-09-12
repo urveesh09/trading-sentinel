@@ -11,6 +11,8 @@ import { useProactiveActivity } from '../hooks/useProactiveActivity';
 import { usePartnerHedgeCards } from '../hooks/usePartnerHedgeCards';
 import { usePartnerAdvisorySetup } from '../hooks/usePartnerAdvisorySetup';
 import { usePartnerDeliveryBacklog } from '../hooks/usePartnerDeliveryBacklog';
+import { usePartnerAdvisoryResearchReadiness } from '../hooks/usePartnerAdvisoryResearchReadiness';
+import { advisoryCoverageRows } from '../utils/advisoryCollectionCoverage';
 import { useOptionalAiStatus } from '../hooks/useOptionalAiStatus';
 import { useProactiveSessionDiagnostics } from '../hooks/useProactiveSessionDiagnostics';
 import { useSchedulerTiming } from '../hooks/useSchedulerTiming';
@@ -250,6 +252,13 @@ function PartnerAdvisorySetup({ setup, isLoading, isError, mutate }) {
   </section>;
 }
 
+function PartnerAdvisoryCollection({ readiness, isLoading, isError }) {
+  if (isLoading) return <div className="rounded border border-gray-800 bg-gray-900 p-4 text-sm text-gray-500">Loading advisory collection coverage…</div>;
+  if (isError || !readiness) return <div className="rounded border border-amber-800 bg-amber-950/30 p-4 text-sm text-amber-200">Advisory collection evidence is unavailable. This is not zero attempts and cannot qualify a strategy.</div>;
+  const rows = advisoryCoverageRows(readiness);
+  return <section className="rounded-xl border border-violet-900/70 bg-violet-950/10 p-4" aria-labelledby="partner-collection-heading"><h2 id="partner-collection-heading" className="text-xl font-bold text-white">Advisory evidence collection</h2><p className="mt-1 text-xs text-gray-500">Archive-local attempts for the current IST session. Public inputs, candidate chains and missing schedule slots remain distinct; this view grants no send or trading authority.</p><div className="mt-3 grid gap-3 sm:grid-cols-2">{rows.map((row) => <div key={row.index} className="rounded border border-gray-800 bg-gray-950/70 p-3 text-xs"><div className="flex justify-between gap-2"><b className="text-violet-100">{row.index}</b><span className={row.state === 'COMPLETE' ? 'text-emerald-300' : 'text-amber-300'}>{row.state}</span></div><p className="mt-2 text-gray-400">Attempts {row.attempted ?? 'Unavailable'} / {row.expected ?? 'Unavailable'} · missing schedule {row.missing ?? 'Unavailable'} · incomplete {row.incomplete ?? 'Unavailable'}</p><p className="mt-2 break-all text-[10px] text-gray-500">Session {row.sessionDate || 'Unavailable'} · latest {row.latest || 'Never'}</p></div>)}</div><p className="mt-3 text-[10px] font-semibold tracking-wide text-gray-500">QUALIFICATION: NO · DELIVERY: NO · ORDERS: NO</p></section>;
+}
+
 function SchedulerTiming({ schedulerTiming, isLoading, isError }) {
   if (isLoading) return <div className="rounded border border-gray-800 bg-gray-900 p-4 text-sm text-gray-500">Loading scheduler timing evidence…</div>;
   if (isError || !schedulerTiming) return <div className="rounded border border-amber-800 bg-amber-950/30 p-4 text-sm text-amber-200">Scheduler timing evidence is unavailable. This does not mean scans are idle.</div>;
@@ -342,6 +351,7 @@ export default function Dashboard({ healthData, navigateToPositions, navigateToB
   const partnerHedgeCards = usePartnerHedgeCards();
   const partnerAdvisorySetup = usePartnerAdvisorySetup();
   const partnerDeliveryBacklog = usePartnerDeliveryBacklog();
+  const partnerAdvisoryResearch = usePartnerAdvisoryResearchReadiness();
   const optionalAi = useOptionalAiStatus();
   const sessionDiagnostics = useProactiveSessionDiagnostics();
   const schedulerTiming = useSchedulerTiming();
@@ -385,6 +395,7 @@ export default function Dashboard({ healthData, navigateToPositions, navigateToB
 
         <div className="grid gap-6 2xl:grid-cols-2">
           <PartnerAdvisorySetup {...partnerAdvisorySetup} />
+          <PartnerAdvisoryCollection {...partnerAdvisoryResearch} />
           <OperationalCoverage {...operationalCoverage} />
           <ReconciliationEvidence {...reconciliationEvidence} />
           <SchedulerTiming {...schedulerTiming} />

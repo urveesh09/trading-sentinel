@@ -575,7 +575,19 @@ def register_penny_scheduler_jobs(scheduler):
                 "now_ist=%s",
                 _now_ist.strftime("%H:%M:%S"),
             )
-            asyncio.create_task(_run_penny_edge_scan_safe())
+            # Resolve the loop before constructing the coroutine. Registration
+            # is also exercised from synchronous tests/tooling; constructing
+            # first and then failing ``create_task`` leaked an unawaited
+            # coroutine even though the outer startup guard caught the error.
+            try:
+                _startup_loop = asyncio.get_running_loop()
+            except RuntimeError:
+                logger.warning(
+                    "penny_edge_scan_startup_catchup_deferred "
+                    "reason=no_running_event_loop"
+                )
+            else:
+                _startup_loop.create_task(_run_penny_edge_scan_safe())
         elif _now_ist >= _today_1515:
             logger.warning(
                 "penny_edge_scan_startup_skipped "

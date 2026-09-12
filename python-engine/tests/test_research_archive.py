@@ -119,6 +119,10 @@ def test_readiness_is_per_index_and_reports_durable_gap(tmp_path):
     assert view["per_index"]["NIFTY"]["master"]["contract_count"] == 1
     assert view["per_index"]["SENSEX"]["recent_gap_count"] == 1
     assert view["per_index"]["NIFTY"]["qualification"] == "NOT_EVALUATED_HERE"
+    assert view["advisory_collection_attempts"]["can_qualify"] is False
+    assert view["per_index"]["NIFTY"]["advisory_collection_coverage"]["state"] in {
+        "NEVER_ATTEMPTED", "UNAVAILABLE",
+    }
 
 
 def test_normalise_quote_never_invents_missing_book_levels():

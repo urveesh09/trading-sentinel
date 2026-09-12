@@ -1041,6 +1041,10 @@ class Settings(BaseSettings):
     # explicit evidence gap instead of silently dropping old contracts.
     RESEARCH_ACTIVE_LEG_MAX_TOKENS: int = 120
     RESEARCH_QUOTE_MAX_QUEUE: int = 2_000
+    # Awaiting archive work must not hold advisory construction indefinitely.
+    # The guarded writer continues to serialize disk access; a timed-out write
+    # is reported as outcome-unknown and never retried as if it certainly failed.
+    RESEARCH_CAPTURE_WAIT_TIMEOUT_SEC: float = 2.0
     RESEARCH_RAW_RETENTION_DAYS: int = 7
     RESEARCH_COMPRESSED_RETENTION_DAYS: int = 90
     RESEARCH_RESERVED_FREE_BYTES: int = 1_073_741_824  # 1 GiB operational floor

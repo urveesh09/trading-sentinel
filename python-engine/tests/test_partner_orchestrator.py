@@ -59,6 +59,7 @@ def wired(tmp_path, monkeypatch):
 
     db = str(tmp_path / "partner.db")
     monkeypatch.setattr(settings, "DB_PATH", db)
+    monkeypatch.setattr(settings, "RESEARCH_ARCHIVE_PATH", str(tmp_path / "research"))
     monkeypatch.setattr(settings, "PARTNER_BOT_ENABLED", True)
     # This module verifies the retained legacy partner surfaces explicitly.
     # Hedge-first mode is the runtime default and suppresses these messages.
@@ -152,6 +153,71 @@ async def test_candidate_capture_follows_both_management_paths_and_failure_isola
     await po.partner_manual_advisory_tick(NOW)
     assert len(captured) == len(built) == 2
     assert wired.sent == []
+
+
+@pytest.mark.asyncio
+async def test_delayed_chain_past_entry_deadline_cannot_create_backdated_candidate(wired, monkeypatch):
+    import partner_manual_advisory as advisory
+    await _init(wired.db)
+    tick = IST.localize(datetime(2026, 7, 20, 14, 44, 50))
+    public_received = tick.replace(second=55)
+    chain_received = tick.replace(minute=45, second=0)
+    decision_at = tick.replace(minute=45, second=1)
+    monkeypatch.setattr(settings, "PARTNER_MANUAL_ADVISORY_ENABLED", True)
+    monkeypatch.setattr(settings, "RESEARCH_ARCHIVE_ENABLED", False)
+    monkeypatch.setattr(po, "get_instruments_for", lambda _name: _AdvisoryBook())
+    built = []
+
+    async def public(_kite, spec, _regime, _now, **_kwargs):
+        scan = _fired_scan()
+        scan.name = spec.name
+        scan.public_requested_at = tick
+        scan.public_received_at = public_received
+        scan.research_received_at = public_received
+        scan.public_source_id = f"PUBLIC:{spec.name}"
+        return scan
+
+    async def attach(_kite, scan, _now, **_kwargs):
+        scan.chain_requested_at = public_received
+        scan.chain_received_at = chain_received
+        scan.chain_source_id = f"CHAIN:{scan.name}"
+        scan.snap = SimpleNamespace(expiry=date(2026, 7, 23), taken_at=chain_received)
+        return scan
+
+    monkeypatch.setattr(po, "observe_underlying", public)
+    monkeypatch.setattr(po, "attach_entry_chain", attach)
+    monkeypatch.setattr(advisory, "build_directional_debit_spread", lambda *args, **kwargs: built.append(args) or None)
+    await po.partner_manual_advisory_tick(tick, clock=lambda: decision_at)
+    assert built == []
+    assert wired.sent == []
+
+
+@pytest.mark.asyncio
+async def test_slow_archive_write_is_bounded_and_does_not_stop_candidate_evaluation(wired, monkeypatch):
+    import time
+    import partner_research_capture as capture
+    import partner_manual_advisory as advisory
+    await _init(wired.db)
+    monkeypatch.setattr(settings, "PARTNER_MANUAL_ADVISORY_ENABLED", True)
+    monkeypatch.setattr(settings, "RESEARCH_ARCHIVE_ENABLED", True)
+    monkeypatch.setattr(settings, "RESEARCH_CAPTURE_WAIT_TIMEOUT_SEC", 0.03)
+    monkeypatch.setattr(po, "get_instruments_for", lambda _name: _AdvisoryBook())
+    scan = _fired_scan()
+    scan.snap = SimpleNamespace(expiry=date(2026, 7, 23), taken_at=NOW)
+    wired.state["scan"] = scan
+    monkeypatch.setattr(capture, "persist_public_input", lambda *_args, **_kwargs: {"state": "UNAVAILABLE"})
+
+    def slow_capture(*_args, **_kwargs):
+        time.sleep(0.2)
+        return {"state": "OBSERVED", "path": "late.json"}
+
+    built = []
+    monkeypatch.setattr(capture, "persist_candidate_input", slow_capture)
+    monkeypatch.setattr(advisory, "build_directional_debit_spread", lambda *args, **kwargs: built.append(args) or None)
+    await po.partner_manual_advisory_tick(NOW)
+    assert len(built) == 2
+    assert wired.sent == []
+    await __import__("asyncio").sleep(0.25)
 
 @pytest.mark.asyncio
 async def test_disabled_is_a_total_noop(wired, monkeypatch):

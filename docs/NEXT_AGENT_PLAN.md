@@ -183,6 +183,18 @@ Start A and B, then finish C. Release a reviewed passive collection slice throug
 
 Do not claim A–J complete because files exist. Maintain a requirement matrix with statuses: NOT_STARTED, IMPLEMENTING, TESTED_DEV, RELEASE_VALIDATED, DEPLOYED_OBSERVED, EVIDENCE_PENDING, ACCEPTED or REJECTED. Include the precise evidence reference for each status.
 
+### Current requirement matrix — September 12 A/B slice
+
+| Requirement | Status | Evidence | Remaining transition |
+|---|---|---|---|
+| A — causal acquisition/decision timing | TESTED_DEV | `docs/2026-09-12-clock-and-coverage-plan.md`; focused Python timing/capture/orchestrator tests | Full release acceptance, promotion and one observed session |
+| B — per-attempt collection completeness | TESTED_DEV | Archive-local SQLite attempt journal, readiness API/card and restart/partial/unavailable/timeout tests | Production load/retention measurement and observed schedule coverage |
+| H — scheduler coroutine warning | TESTED_DEV | 41 scheduler/isolation tests with RuntimeWarning fatal | Release acceptance and deployed scheduler observation |
+| C — replay fidelity/review integration | IMPLEMENTING | Existing full-policy replay and v2 clock-bound CLI compatibility | Multi-session complete plus unresolved archive fixture and held-out review |
+| D — release/operational evidence | NOT_STARTED for this slice | Dev branch only; Production read-only at the recorded baseline | Resolve full-suite baseline failures, review/push/PR and authorized release |
+| E — partner activation/usefulness | EVIDENCE_PENDING | Existing profile/delivery gates remain independent | Genuine compatible qualification and authorized transport validation |
+| F–J | NOT_STARTED by this slice | See their workstream sections | Execute in dependency order; do not infer completion from A/B |
+
 ## 16. Mandatory documentation and plan ritual
 
 This is a user requirement for every future agent, including an agent continuing its own work:
@@ -216,4 +228,4 @@ A feature is done only when its acceptance conditions are met; a release is done
 
 Report progress as behavior and user value first, then tests and limits. Avoid repeated vague declarations that 'only operational evidence remains' while acquisition, collection or review integration is still unfinished. Avoid predicting a date for tips from the number of elapsed sessions alone. Explain what is missing and what action produces the needed evidence.
 
-The next agent should begin with A's explicit clock contract and B's completeness records, preserving the working replay/CLI and all collected artifacts. Do not restart the architecture from scratch.
+The next agent should review the tested A/B slice, resolve or explicitly baseline the broader acceptance failures, and begin C's multi-session complete/unresolved archive fixture. Preserve the working replay/CLI, v1/v2 compatibility and all collected artifacts. Do not restart the architecture from scratch.

@@ -1,0 +1,257 @@
+"""Durable per-attempt evidence for partner advisory input collection.
+
+This archive-local journal records observations only.  It deliberately has no
+imports from order, cash, position, qualification, or transport modules.
+"""
+from __future__ import annotations
+
+import json
+import sqlite3
+from datetime import date, datetime, timedelta, timezone
+from pathlib import Path
+from typing import Iterable, Mapping
+from zoneinfo import ZoneInfo
+
+from partner_decision_clock import DecisionClock, aware
+
+
+IST = ZoneInfo("Asia/Kolkata")
+TERMINAL_STATES = {"NO_SETUP", "CANDIDATE_RECORDED", "UNAVAILABLE", "REJECTED", "SUPPRESSED", "ERROR"}
+
+
+def _iso(value: datetime | None) -> str | None:
+    return None if value is None else aware(value, "attempt timestamp").astimezone(timezone.utc).isoformat()
+
+
+def _tokens(values: Iterable[int]) -> str:
+    return json.dumps(sorted({int(value) for value in values}), separators=(",", ":"))
+
+
+class PartnerCollectionAttemptStore:
+    def __init__(self, archive_root: str | Path):
+        self.path = Path(archive_root) / "partner-collection-attempts.sqlite3"
+
+    def _connect(self) -> sqlite3.Connection:
+        self.path.parent.mkdir(parents=True, exist_ok=True)
+        db = sqlite3.connect(self.path, timeout=0.25)
+        db.row_factory = sqlite3.Row
+        db.execute("PRAGMA journal_mode=WAL")
+        db.executescript("""
+        CREATE TABLE IF NOT EXISTS partner_collection_attempts (
+          attempt_id TEXT PRIMARY KEY,
+          run_id TEXT NOT NULL,
+          account_id TEXT NOT NULL,
+          underlying TEXT NOT NULL,
+          clock_policy TEXT NOT NULL,
+          tick_started_at_utc TEXT NOT NULL,
+          evaluation_cutoff_at_utc TEXT NOT NULL,
+          expected_at_utc TEXT NOT NULL,
+          public_source_id TEXT,
+          public_requested_at_utc TEXT,
+          public_received_at_utc TEXT,
+          public_observed_at_utc TEXT,
+          public_state TEXT NOT NULL DEFAULT 'PENDING',
+          public_reason TEXT,
+          public_artifact_ref TEXT,
+          chain_source_id TEXT,
+          chain_requested_at_utc TEXT,
+          chain_received_at_utc TEXT,
+          candidate_state TEXT NOT NULL DEFAULT 'PENDING',
+          candidate_reason TEXT,
+          candidate_artifact_ref TEXT,
+          requested_contracts TEXT NOT NULL DEFAULT '[]',
+          received_contracts TEXT NOT NULL DEFAULT '[]',
+          terminal_state TEXT,
+          terminal_reason TEXT,
+          updated_at_utc TEXT NOT NULL
+        );
+        CREATE INDEX IF NOT EXISTS partner_attempt_session_idx
+          ON partner_collection_attempts(underlying, expected_at_utc);
+        """)
+        columns = {row[1] for row in db.execute("PRAGMA table_info(partner_collection_attempts)")}
+        if "public_observed_at_utc" not in columns:
+            db.execute("ALTER TABLE partner_collection_attempts ADD COLUMN public_observed_at_utc TEXT")
+        return db
+
+    def start(self, clock: DecisionClock, *, expected_at: datetime | None = None) -> str:
+        attempt_id = clock.run_id
+        immutable = (
+            attempt_id, clock.run_id, clock.account_id, clock.underlying, clock.policy,
+            _iso(clock.tick_started_at), _iso(clock.evaluation_cutoff_at),
+            _iso(expected_at or clock.tick_started_at), _iso(clock.tick_started_at),
+        )
+        with self._connect() as db:
+            row = db.execute("""
+              SELECT attempt_id,run_id,account_id,underlying,clock_policy,
+                     tick_started_at_utc,evaluation_cutoff_at_utc,expected_at_utc
+              FROM partner_collection_attempts WHERE attempt_id=?
+            """, (attempt_id,)).fetchone()
+            if row is not None and tuple(row) != immutable[:8]:
+                raise ValueError("collection attempt identity is immutable")
+            db.execute("""
+              INSERT INTO partner_collection_attempts(
+                attempt_id,run_id,account_id,underlying,clock_policy,tick_started_at_utc,
+                evaluation_cutoff_at_utc,expected_at_utc,updated_at_utc)
+              VALUES(?,?,?,?,?,?,?,?,?) ON CONFLICT(attempt_id) DO NOTHING
+            """, immutable)
+        return attempt_id
+
+    def record_public(self, attempt_id: str, *, state: str, requested_at: datetime | None,
+                      received_at: datetime | None, source_id: str | None,
+                      observed_at: datetime | None = None,
+                      artifact_ref: str | None = None, reason: str | None = None,
+                      updated_at: datetime) -> None:
+        normalized = state.upper()
+        if normalized not in {"OBSERVED", "UNAVAILABLE", "ERROR"}:
+            raise ValueError("invalid public collection state")
+        with self._connect() as db:
+            existing = db.execute("""
+              SELECT public_source_id,public_requested_at_utc,public_received_at_utc,public_observed_at_utc,
+                     public_state,public_reason,public_artifact_ref
+              FROM partner_collection_attempts WHERE attempt_id=?
+            """, (attempt_id,)).fetchone()
+            incoming = (source_id, _iso(requested_at), _iso(received_at), _iso(observed_at),
+                        normalized, reason, artifact_ref)
+            if existing is None:
+                raise ValueError("collection attempt is missing")
+            if existing[4] != "PENDING":
+                if tuple(existing) != incoming:
+                    raise ValueError("public attempt evidence is immutable")
+                return
+            changed = db.execute("""
+              UPDATE partner_collection_attempts SET public_source_id=?,public_requested_at_utc=?,
+                public_received_at_utc=?,public_observed_at_utc=?,public_state=?,public_reason=?,
+                public_artifact_ref=?,updated_at_utc=?
+              WHERE attempt_id=?
+            """, (*incoming, _iso(updated_at), attempt_id)).rowcount
+            if changed != 1:
+                raise ValueError("collection attempt is missing")
+
+    def record_candidate(self, attempt_id: str, *, state: str,
+                         requested_at: datetime | None, received_at: datetime | None,
+                         source_id: str | None, requested_contracts: Iterable[int] = (),
+                         received_contracts: Iterable[int] = (), artifact_ref: str | None = None,
+                         reason: str | None = None, updated_at: datetime) -> None:
+        normalized = state.upper()
+        if normalized not in {"OBSERVED", "NOT_REQUIRED", "UNAVAILABLE", "PARTIAL", "ERROR"}:
+            raise ValueError("invalid candidate collection state")
+        requested = {int(value) for value in requested_contracts}
+        received = {int(value) for value in received_contracts}
+        if not received.issubset(requested):
+            raise ValueError("received contracts must be a subset of requested contracts")
+        if normalized == "OBSERVED" and requested != received:
+            raise ValueError("observed candidate collection requires every requested contract")
+        with self._connect() as db:
+            existing = db.execute("""
+              SELECT chain_source_id,chain_requested_at_utc,chain_received_at_utc,candidate_state,
+                     candidate_reason,candidate_artifact_ref,requested_contracts,received_contracts
+              FROM partner_collection_attempts WHERE attempt_id=?
+            """, (attempt_id,)).fetchone()
+            incoming = (source_id, _iso(requested_at), _iso(received_at), normalized, reason,
+                        artifact_ref, _tokens(requested), _tokens(received))
+            if existing is None:
+                raise ValueError("collection attempt is missing")
+            if existing[3] != "PENDING":
+                if tuple(existing) != incoming:
+                    raise ValueError("candidate attempt evidence is immutable")
+                return
+            changed = db.execute("""
+              UPDATE partner_collection_attempts SET chain_source_id=?,chain_requested_at_utc=?,
+                chain_received_at_utc=?,candidate_state=?,candidate_reason=?,candidate_artifact_ref=?,
+                requested_contracts=?,received_contracts=?,updated_at_utc=? WHERE attempt_id=?
+            """, (*incoming, _iso(updated_at), attempt_id)).rowcount
+            if changed != 1:
+                raise ValueError("collection attempt is missing")
+
+    def finish(self, attempt_id: str, *, state: str, reason: str, updated_at: datetime) -> None:
+        normalized = state.upper()
+        if normalized not in TERMINAL_STATES:
+            raise ValueError("invalid terminal attempt state")
+        with self._connect() as db:
+            existing = db.execute("SELECT terminal_state,terminal_reason FROM partner_collection_attempts WHERE attempt_id=?",
+                                  (attempt_id,)).fetchone()
+            if existing is None:
+                raise ValueError("collection attempt is missing")
+            if existing[0] is not None:
+                if tuple(existing) != (normalized, reason):
+                    raise ValueError("terminal attempt evidence is immutable")
+                return
+            changed = db.execute("""
+              UPDATE partner_collection_attempts SET terminal_state=?,terminal_reason=?,updated_at_utc=?
+              WHERE attempt_id=?
+            """, (normalized, reason, _iso(updated_at), attempt_id)).rowcount
+            if changed != 1:
+                raise ValueError("collection attempt is missing")
+
+    def session_readiness(self, *, session_date: date, now: datetime,
+                          underlyings: Iterable[str], entry_start_minute: int,
+                          entry_end_minute: int, interval_seconds: int = 120,
+                          scheduler_second: int = 50,
+                          market_open: bool | None = None,
+                          max_public_age_seconds: int = 360) -> dict:
+        current = aware(now, "readiness now")
+        if (interval_seconds <= 0 or interval_seconds % 60 or not 0 <= scheduler_second <= 59
+                or max_public_age_seconds <= 0):
+            raise ValueError("attempt schedule must use positive whole-minute intervals and a valid second")
+        interval_minutes = interval_seconds // 60
+        first_minute = ((entry_start_minute + interval_minutes - 1) // interval_minutes) * interval_minutes
+        start = (datetime.combine(session_date, datetime.min.time(), IST)
+                 + timedelta(minutes=first_minute, seconds=scheduler_second))
+        end = datetime.combine(session_date, datetime.min.time(), IST) + timedelta(minutes=entry_end_minute)
+        cutoff = min(current, end)
+        trading_session = session_date.weekday() < 5 if market_open is None else bool(market_open)
+        expected = 0 if not trading_session or cutoff < start else int((cutoff - start).total_seconds() // interval_seconds) + 1
+        lower = _iso(datetime.combine(session_date, datetime.min.time(), IST) + timedelta(minutes=entry_start_minute))
+        upper = _iso(end + timedelta(minutes=1))
+        names = [name.upper() for name in underlyings]
+        if not self.path.exists():
+            return {"session_date": session_date.isoformat(), "expected_attempts_per_index": expected,
+                    "per_index": {name: self._empty_state(expected) for name in names},
+                    "can_qualify": False}
+        with sqlite3.connect(self.path.resolve().as_uri() + "?mode=ro", uri=True) as db:
+            db.row_factory = sqlite3.Row
+            rows = db.execute("SELECT * FROM partner_collection_attempts WHERE expected_at_utc>=? AND expected_at_utc<?",
+                              (lower, upper)).fetchall()
+        per_index = {}
+        for name in names:
+            scoped = [row for row in rows if row["underlying"] == name]
+            if not scoped:
+                per_index[name] = self._empty_state(expected)
+                continue
+            unavailable = sum(row["public_state"] != "OBSERVED" for row in scoped)
+            stale_inputs = 0
+            for row in scoped:
+                if row["public_observed_at_utc"] and row["public_received_at_utc"]:
+                    age = (datetime.fromisoformat(row["public_received_at_utc"])
+                           - datetime.fromisoformat(row["public_observed_at_utc"])).total_seconds()
+                    stale_inputs += age > max_public_age_seconds or age < 0
+            incomplete = sum(
+                row["terminal_state"] is None or row["candidate_state"] not in {"OBSERVED", "NOT_REQUIRED"}
+                or not set(json.loads(row["requested_contracts"])).issubset(set(json.loads(row["received_contracts"])))
+                for row in scoped
+            )
+            missing_schedule = max(0, expected - len(scoped))
+            latest = max(datetime.fromisoformat(row["updated_at_utc"]) for row in scoped)
+            stale = current.astimezone(timezone.utc) - latest > timedelta(seconds=interval_seconds * 2)
+            if unavailable == len(scoped):
+                state = "ATTEMPTED_UNAVAILABLE"
+            elif incomplete or missing_schedule:
+                state = "PARTIAL"
+            elif stale_inputs or (stale and current <= end):
+                state = "STALE"
+            else:
+                state = "COMPLETE"
+            per_index[name] = {
+                "state": state, "attempted": len(scoped), "expected": expected,
+                "missing_schedule_count": missing_schedule, "unavailable_count": unavailable,
+                "incomplete_count": incomplete, "stale_input_count": stale_inputs,
+                "latest_updated_at_utc": latest.isoformat(),
+            }
+        return {"session_date": session_date.isoformat(), "expected_attempts_per_index": expected,
+                "per_index": per_index, "can_qualify": False}
+
+    @staticmethod
+    def _empty_state(expected: int) -> Mapping[str, object]:
+        return {"state": "NEVER_ATTEMPTED", "attempted": 0, "expected": expected,
+                "missing_schedule_count": expected, "unavailable_count": 0,
+                "incomplete_count": 0, "stale_input_count": 0, "latest_updated_at_utc": None}

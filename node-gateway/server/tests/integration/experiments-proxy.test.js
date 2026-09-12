@@ -100,6 +100,7 @@ test.each([
   ['five-session proactive diagnostics', '/analytics/proactive-session-diagnostics?sessions=5'],
   ['partner hedge cards', '/partner/hedge/cards?limit=12'],
   ['partner delivery backlog', '/partner/hedge/delivery-backlog'],
+  ['partner advisory research readiness', '/partner/advisory/research-readiness'],
 ])('proxies authenticated %s evidence without granting authority', async (_label, route) => {
   const payload = { can_place_orders: false, execution_authority: 'NONE' };
   global.fetch.mockResolvedValue({ status: 200, json: async () => payload });

@@ -200,7 +200,7 @@ Related tests: `python-engine/tests/test_fno_backtest.py`
 
 [FNO-CHAIN 2026-07-10] Option-chain snapshot for the F&O subsystem (spec §6.2). ATM +/- FNO_STRIKE_WINDOW strikes, both CE and PE (22 contracts), plus the front-month future = 23 tokens in ONE batched /quote call -- well inside Kite's 500-instrument batch limit (VERIFY-7). The penny scanner's per-ticker /quote pattern is a known production bug (BUG-2); do not repeat it. Pricing basis: the synthetic forward. We use the front-month futures LTP directly as F (spec §6.2 sanctions this alternative to put-call parity), and ALSO back a parity forward out of the ATM straddle as a cross-check; a >0.5% disagreement is logged loudly because it usually means a stale leg. Using spot for index options wou
 
-Top-level declarations: `years_to_expiry` (line 43), `ChainSnapshot` (line 53), `_parse_quote_entry` (line 69), `_parity_forward` (line 97), `take_chain_snapshot` (line 109), `select_strike_by_delta` (line 205)
+Top-level declarations: `years_to_expiry` (line 43), `ChainSnapshot` (line 53), `_parse_quote_entry` (line 71), `_parity_forward` (line 99), `take_chain_snapshot` (line 111), `select_strike_by_delta` (line 209)
 
 Engine dependencies: `config`, `fno_instruments`, `fno_models`
 
@@ -354,9 +354,9 @@ Declared tables: `fno_signals`, `is`
 
 [PARTNER-TIPS 2026-07-18] Read-only ORB signal scan per underlying (WS2). Thin composition of the already-pure F&O pieces -- bars fetch -> evaluate_fno_mom -> (on a fired direction) chain snapshot + 0.55-delta strike pick -- with ZERO executor/positions imports. This is the partner tips bot's signal source for NIFTY/BANKNIFTY/SENSEX; the NIFTY paper-trading path in fno_orchestrator is untouched and unaware of it. The liquidity check here is deliberately NOT the fno_gates §7 ladder (that needs pool/positions context): a tip on a thin chain is still a tip -- it ships with a "thin market" tag instead of being suppressed, because the partner may be looking at a different strike anyway.
 
-Top-level declarations: `UnderlyingScan` (line 42), `_liquidity_reasons` (line 63), `observe_underlying` (line 81), `attach_entry_chain` (line 128), `scan_underlying` (line 175)
+Top-level declarations: `UnderlyingScan` (line 42), `_liquidity_reasons` (line 69), `observe_underlying` (line 87), `attach_entry_chain` (line 141), `scan_underlying` (line 197)
 
-Engine dependencies: `config`, `fno_chain`, `fno_engine_mom`, `fno_models`, `fno_underlyings`
+Engine dependencies: `config`, `fno_chain`, `fno_engine_mom`, `fno_models`, `fno_underlyings`, `partner_decision_clock`
 
 Related tests: `python-engine/tests/test_fno_signal_scan.py`
 
@@ -722,6 +722,18 @@ Engine dependencies: `config`
 
 Related tests: `python-engine/tests/test_partner_bot.py`
 
+## `python-engine/partner_collection_attempts.py`
+
+Durable per-attempt evidence for partner advisory input collection. This archive-local journal records observations only. It deliberately has no imports from order, cash, position, qualification, or transport modules.
+
+Top-level declarations: `_iso` (line 22), `_tokens` (line 26), `PartnerCollectionAttemptStore` (line 30)
+
+Engine dependencies: `partner_decision_clock`
+
+Related tests: `python-engine/tests/test_partner_collection_attempts.py`
+
+Declared tables: `partner_collection_attempts`
+
 ## `python-engine/partner_content.py`
 
 [PARTNER-TIPS 2026-07-18] Partner-facing message formatters (WS5). Pure string builders: dicts/dataclasses in, plain-text Telegram messages out (no parse_mode -- see partner_bot). Audience: an INTRADAY OPTION BUYER on NIFTY/BANKNIFTY/SENSEX, so every message leads with direction, trigger levels and what premium costs to hold, not with our internals. Every actionable message carries DISCLAIMER verbatim: the ORB strategy is paper-validated only and the partner owns their trades.
@@ -729,6 +741,14 @@ Related tests: `python-engine/tests/test_partner_bot.py`
 Top-level declarations: `_fmt` (line 19), `_fmt_pct` (line 25), `buyer_verdict` (line 35), `_or_quality` (line 66), `_skew_line` (line 78), `format_morning_brief` (line 95), `format_signal_tip` (line 162), `format_event` (line 263), `format_eod` (line 283)
 
 Related tests: `python-engine/tests/test_partner_content.py`
+
+## `python-engine/partner_decision_clock.py`
+
+Explicit causal clocks for the partner intraday advisory pipeline. The deployed policy freezes public-bar eligibility at tick start, while all network response and candidate/dispatch clocks retain when work really became available. This module is pure and has no execution or delivery authority.
+
+Top-level declarations: `aware` (line 21), `source_identity` (line 27), `DecisionClock` (line 33), `start_clock` (line 84), `validate_clock_payload` (line 94), `sampled` (line 114), `crossed_entry_boundary` (line 118)
+
+Related tests: `python-engine/tests/test_partner_decision_clock.py`
 
 ## `python-engine/partner_fixture_adapter.py`
 
@@ -786,9 +806,9 @@ Declared tables: `partner_advisory_feedback`, `partner_advisory_ideas`, `partner
 
 [PARTNER-TIPS 2026-07-18] Partner tips bot orchestration (WS5). Owns the partner-facing jobs (wired in scheduler_setup.register_partner_ scheduler_jobs) and the partner_messages dedup/throttle table: - partner_scan_tick cron */2min at :40s, 09:45-15:05 -> ORB signal tips - partner_analytics_tick cron minute 2-57/5, 09:20-15:30 -> wide-chain snapshot -> OI store -> PCR/IV/OI-wall/regime/halt/momentum events - partner_morning_brief 09:50 -> per-underlying levels + options context - partner_eod_wrap 15:40 -> day recap + signal outcomes + OI purge - partner_rv_refresh 09:10 -> per-underlying 20d realized vol cache Scheduling is deliberately OFF the quarter-hour grid: the momentum screener and pe
 
-Top-level declarations: `_closed_bar_observation` (line 60), `_partner_db` (line 115), `init_partner_db` (line 119), `_seen` (line 131), `_record` (line 140), `_throttled` (line 155), `_send_event` (line 177), `_gates_open` (line 214), `_expiry_note_for` (line 230), `_dte_for` (line 237), `_track_record` (line 246), `partner_scan_tick` (line 293), `partner_manual_advisory_tick` (line 418), `partner_manual_advisory_lifecycle_tick` (line 757), `partner_analytics_tick` (line 774), `_log_non_momentum_open_positions` (line 1045), `partner_morning_brief` (line 1082), `_signal_outcome` (line 1172), `_stamp_outcome` (line 1213), `_option_outcome_line` (line 1231), `_track_record_overall` (line 1259), `partner_eod_wrap` (line 1297), `partner_rv_refresh` (line 1430)
+Top-level declarations: `_closed_bar_observation` (line 63), `_partner_db` (line 118), `init_partner_db` (line 122), `_seen` (line 134), `_record` (line 143), `_throttled` (line 158), `_send_event` (line 180), `_gates_open` (line 217), `_expiry_note_for` (line 233), `_dte_for` (line 240), `_track_record` (line 249), `partner_scan_tick` (line 296), `partner_manual_advisory_tick` (line 421), `partner_manual_advisory_lifecycle_tick` (line 1017), `partner_analytics_tick` (line 1034), `_log_non_momentum_open_positions` (line 1305), `partner_morning_brief` (line 1342), `_signal_outcome` (line 1432), `_stamp_outcome` (line 1473), `_option_outcome_line` (line 1491), `_track_record_overall` (line 1519), `partner_eod_wrap` (line 1557), `partner_rv_refresh` (line 1690)
 
-Engine dependencies: `config`, `fno_chain`, `fno_engine_mom`, `fno_models`, `fno_signal_scan`, `fno_underlyings`, `macro_events`, `partner_bot`, `partner_content`, `partner_manual_advisory`, `partner_research_capture`
+Engine dependencies: `config`, `fno_chain`, `fno_engine_mom`, `fno_models`, `fno_signal_scan`, `fno_underlyings`, `macro_events`, `partner_bot`, `partner_collection_attempts`, `partner_content`, `partner_decision_clock`, `partner_manual_advisory`, `partner_research_capture`
 
 Related tests: `python-engine/tests/test_partner_orchestrator.py`
 
@@ -798,9 +818,9 @@ Declared tables: `partner_messages`
 
 Causal research adapter for the deployed intraday partner policy. This module intentionally composes the same signal, candidate builder and validation functions used by the advisory path. It creates research facts; it cannot write qualifications, dispatch advice, or place orders.
 
-Top-level declarations: `load_candidate_evidence` (line 36), `_sha` (line 111), `_clock` (line 115), `_signal_payload` (line 121), `_bars_payload` (line 127), `_causal_provenance` (line 150), `policy_manifest` (line 179), `FullPolicyDecision` (line 225), `evaluate_deployed_full_policy` (line 236), `write_full_policy_decision` (line 305)
+Top-level declarations: `load_candidate_evidence` (line 36), `_sha` (line 123), `_clock` (line 127), `_signal_payload` (line 133), `_bars_payload` (line 139), `_causal_provenance` (line 162), `policy_manifest` (line 195), `FullPolicyDecision` (line 264), `evaluate_deployed_full_policy` (line 275), `write_full_policy_decision` (line 348)
 
-Engine dependencies: `config`, `fno_chain`, `fno_engine_mom`, `fno_instruments`, `fno_models`, `intraday_spread_archive_adapter`, `partner_manual_advisory`
+Engine dependencies: `config`, `fno_chain`, `fno_engine_mom`, `fno_instruments`, `fno_models`, `intraday_spread_archive_adapter`, `partner_decision_clock`, `partner_manual_advisory`
 
 Related tests: `python-engine/tests/test_partner_qualification.py`, `python-engine/tests/test_partner_qualification_review.py`
 
@@ -816,9 +836,9 @@ Related tests: `python-engine/tests/test_partner_qualification_review.py`
 
 Retain observed advisory inputs without granting trade or send authority.
 
-Top-level declarations: `persist_candidate_input` (line 14), `load_public_lifecycle` (line 64), `load_public_input` (line 108), `persist_public_input` (line 137)
+Top-level declarations: `persist_candidate_input` (line 14), `load_public_lifecycle` (line 74), `load_public_input` (line 118), `persist_public_input` (line 157)
 
-Engine dependencies: `fno_engine_mom`, `partner_qualification`, `research_archive`
+Engine dependencies: `fno_engine_mom`, `partner_decision_clock`, `partner_qualification`, `research_archive`
 
 Related tests: `python-engine/tests/test_partner_research_capture.py`
 
@@ -1264,7 +1284,7 @@ Immutable, non-trading market-data evidence archive. The operational ``cache.db`
 
 Top-level declarations: `guarded_write` (line 41), `_admit_bytes` (line 77), `utc_now` (line 100), `_iso` (line 104), `_sha256_bytes` (line 108), `_canonical_json` (line 112), `_atomic_bytes` (line 116), `_require_capacity` (line 131), `_safe_component` (line 137), `_sqlite_readonly` (line 141), `_table_exists` (line 146), `_rows_as_dicts` (line 152), `_coverage` (line 157), `export_operational_fno_evidence` (line 164), `verify_export_manifest` (line 251), `verify_fno_export_for_cutoff` (line 268), `archive_contract_master` (line 289), `archive_candidate_evidence` (line 348), `QuoteArchive` (line 377), `readiness_view` (line 548)
 
-Engine dependencies: `config`, `research_leg_subscriptions`
+Engine dependencies: `config`, `market_calendar`, `partner_collection_attempts`, `research_leg_subscriptions`
 
 Related tests: `python-engine/tests/test_research_archive.py`
 
@@ -1384,7 +1404,7 @@ Engine dependencies: `analytics`, `backtest_lab`, `config`, `engine_auth`, `fno_
 
 [ROADMAP-4.1 stage 2, 2026-07-13] APScheduler job registration. Extracted verbatim from main.py: register_fno_scheduler_jobs and register_penny_scheduler_jobs, and the 8 async closures they define. This is the piece stage 1 deliberately left behind. Python resolves a function's globals at CALL time against its DEFINING module, so a closure that moves house and loses a free name raises NameError only when the job fires -- in production, inside a `_safe` wrapper that catches it, logs it, and returns. The scan then never runs, silently. Import still succeeds, the job census still sees the registration, and nothing goes red. That is the 2026-07-13 failure signature, and it is why this move waite
 
-Top-level declarations: `_log_fno_watchdog_payload` (line 29), `register_fno_scheduler_jobs` (line 61), `register_penny_scheduler_jobs` (line 273), `register_partner_scheduler_jobs` (line 863)
+Top-level declarations: `_log_fno_watchdog_payload` (line 29), `register_fno_scheduler_jobs` (line 61), `register_penny_scheduler_jobs` (line 273), `register_partner_scheduler_jobs` (line 875)
 
 Engine dependencies: `config`, `daily_bootstrap`, `fno_accept_watchdog`, `fno_hourly_report`, `fno_instruments`, `fno_orchestrator`, `hedge_advisory`, `operator_alert`, `partner_input_refresh`, `partner_orchestrator`, `penny_accept_watchdog`, `penny_edge_orchestrator`, `penny_premarket_report`, `performance`, `proactive_intelligence`, `research_quote_collector`, `scheduler_telemetry`
 
@@ -1528,7 +1548,7 @@ Local routes: `GET /ltp`, `POST /square-off`, `POST /execute`
 
 Dependencies: `../config`, `../middleware/auth`, `../middleware/logger`, `express`
 
-Local routes: `GET /signals`, `GET /rejected`, `GET /positions`, `GET /performance`, `GET /performance/divisions`, `GET /health-b`, `GET /bankroll`, `GET /circuit-breaker`, `POST /circuit-breaker/reset`, `GET /experiments/momentum`, `GET /experiments/penny`, `GET /experiments/fno-opening-range`, `GET /research/promotion-readiness`, `GET /analytics/proactive-activity`, `GET /analytics/proactive-comparison`, `GET /analytics/proactive-research-comparison`, `GET /analytics/optional-ai-status`, `GET /analytics/proactive-session-diagnostics`, `GET /analytics/scheduler-timing`, `GET /analytics/operational-coverage`, `GET /analytics/reconciliation-evidence`, `GET /partner/hedge/cards`, `GET /partner/hedge/delivery-backlog`, `GET /partner/advisory/setup`, `GET /partner/advisory/diagnostics`, `PUT /partner/advisory/profile`, `GET /backtests/strategies`, `POST /backtests/runs`, `GET /backtests/runs`, `GET /backtests/runs/:runId`
+Local routes: `GET /signals`, `GET /rejected`, `GET /positions`, `GET /performance`, `GET /performance/divisions`, `GET /health-b`, `GET /bankroll`, `GET /circuit-breaker`, `POST /circuit-breaker/reset`, `GET /experiments/momentum`, `GET /experiments/penny`, `GET /experiments/fno-opening-range`, `GET /research/promotion-readiness`, `GET /analytics/proactive-activity`, `GET /analytics/proactive-comparison`, `GET /analytics/proactive-research-comparison`, `GET /analytics/optional-ai-status`, `GET /analytics/proactive-session-diagnostics`, `GET /analytics/scheduler-timing`, `GET /analytics/operational-coverage`, `GET /analytics/reconciliation-evidence`, `GET /partner/hedge/cards`, `GET /partner/hedge/delivery-backlog`, `GET /partner/advisory/setup`, `GET /partner/advisory/diagnostics`, `GET /partner/advisory/research-readiness`, `PUT /partner/advisory/profile`, `GET /backtests/strategies`, `POST /backtests/runs`, `GET /backtests/runs`, `GET /backtests/runs/:runId`
 
 ## `node-gateway/server/routes/signals.js`
 
@@ -1631,6 +1651,10 @@ Dependencies: `../api/client`, `swr`
 
 Dependencies: `../api/client`, `../evidenceMode`, `swr`
 
+## `node-gateway/client/src/hooks/usePartnerAdvisoryResearchReadiness.js`
+
+Dependencies: `../api/client`, `swr`
+
 ## `node-gateway/client/src/hooks/usePartnerAdvisorySetup.js`
 
 Dependencies: `../api/client`, `swr`
@@ -1689,7 +1713,7 @@ Dependencies: `../api/client`, `../utils/backtestLab`, `react`, `swr`
 
 ## `node-gateway/client/src/pages/Dashboard.jsx`
 
-Dependencies: `../api/client`, `../components/CircuitBreaker`, `../components/PositionRow`, `../components/SignalCard`, `../components/StatusBar`, `../evidenceMode`, `../hooks/useDivisionPerformance`, `../hooks/useOperationalCoverage`, `../hooks/useOptionalAiStatus`, `../hooks/usePartnerAdvisorySetup`, `../hooks/usePartnerDeliveryBacklog`, `../hooks/usePartnerHedgeCards`, `../hooks/usePositions`, `../hooks/useProactiveActivity`, `../hooks/useProactiveSessionDiagnostics`, `../hooks/useReconciliationEvidence`, `../hooks/useSchedulerTiming`, `../hooks/useSignals`, `../utils/divisionPerformance`, `../utils/positions`, `lucide-react`, `react`
+Dependencies: `../api/client`, `../components/CircuitBreaker`, `../components/PositionRow`, `../components/SignalCard`, `../components/StatusBar`, `../evidenceMode`, `../hooks/useDivisionPerformance`, `../hooks/useOperationalCoverage`, `../hooks/useOptionalAiStatus`, `../hooks/usePartnerAdvisoryResearchReadiness`, `../hooks/usePartnerAdvisorySetup`, `../hooks/usePartnerDeliveryBacklog`, `../hooks/usePartnerHedgeCards`, `../hooks/usePositions`, `../hooks/useProactiveActivity`, `../hooks/useProactiveSessionDiagnostics`, `../hooks/useReconciliationEvidence`, `../hooks/useSchedulerTiming`, `../hooks/useSignals`, `../utils/advisoryCollectionCoverage`, `../utils/divisionPerformance`, `../utils/positions`, `lucide-react`, `react`
 
 ## `node-gateway/client/src/pages/Login.jsx`
 
@@ -1702,6 +1726,10 @@ Dependencies: `../components/PositionRow`, `../components/StatusBar`, `../hooks/
 ## `node-gateway/client/src/pages/ResearchCenter.jsx`
 
 Dependencies: `../hooks/useResearchExperiments`, `../utils/promotionReadiness`, `../utils/researchExperiments`, `lucide-react`, `react`
+
+## `node-gateway/client/src/utils/advisoryCollectionCoverage.js`
+
+Dependencies: none extracted
 
 ## `node-gateway/client/src/utils/backtestLab.js`
 

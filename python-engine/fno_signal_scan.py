@@ -16,7 +16,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
-from typing import List, Optional, Tuple
+from typing import Callable, List, Optional, Tuple
 
 import pytz
 import structlog
@@ -58,6 +58,12 @@ class UnderlyingScan:
     research_bars: object = field(default=None, repr=False)
     research_received_at: Optional[datetime] = None
     research_future_token: Optional[int] = None
+    public_requested_at: Optional[datetime] = None
+    public_received_at: Optional[datetime] = None
+    public_source_id: Optional[str] = None
+    chain_requested_at: Optional[datetime] = None
+    chain_received_at: Optional[datetime] = None
+    chain_source_id: Optional[str] = None
 
 
 def _liquidity_reasons(q: ContractQuote, iv: float) -> List[str]:
@@ -83,6 +89,7 @@ async def observe_underlying(
     spec: UnderlyingSpec,
     regime: str,
     now_ist: Optional[datetime] = None,
+    clock: Optional[Callable[[], datetime]] = None,
 ) -> UnderlyingScan:
     """Fetch and evaluate the public futures-bar condition only.
 
@@ -90,7 +97,8 @@ async def observe_underlying(
     is managed from this public observation, so a slow or unavailable entry
     chain cannot delay an invalidation, target, or retirement update.
     """
-    now_ist = now_ist or datetime.now(IST)
+    from partner_decision_clock import aware, sampled, source_identity
+    now_ist = aware(now_ist or sampled(clock), "evaluation cutoff")
     out = UnderlyingScan(name=spec.name)
     try:
         book = get_instruments_for(spec.name)
@@ -107,10 +115,15 @@ async def observe_underlying(
             "%Y-%m-%d 09:15:00"
         )
         to = now_ist.strftime("%Y-%m-%d %H:%M:%S")
+        out.public_requested_at = sampled(clock)
         bars = await kite.get_intraday_by_token(
             fut.token, frm, to, interval="5minute"
         )
-        out.research_received_at = datetime.now(IST)
+        out.public_received_at = sampled(clock)
+        if out.public_received_at < out.public_requested_at:
+            raise ValueError("public response receipt precedes request")
+        out.public_source_id = source_identity("KITE_HISTORICAL_5MINUTE", spec.name, fut.token)
+        out.research_received_at = out.public_received_at
         out.research_future_token = fut.token
         out.research_bars = bars.copy() if bars is not None else None
         out.sig = evaluate_fno_mom(bars, regime, now_ist)
@@ -129,6 +142,7 @@ async def attach_entry_chain(
     kite,
     scan: UnderlyingScan,
     now_ist: Optional[datetime] = None,
+    clock: Optional[Callable[[], datetime]] = None,
 ) -> UnderlyingScan:
     """Attach optional-chain evidence to an already observed signal.
 
@@ -138,13 +152,21 @@ async def attach_entry_chain(
     """
     if scan.error or scan.sig is None or scan.sig.direction is None:
         return scan
-    now_ist = now_ist or datetime.now(IST)
+    from partner_decision_clock import aware, sampled, source_identity
+    explicit_now = now_ist is not None
+    now_ist = aware(now_ist or sampled(clock), "chain request clock")
     try:
+        request_at = now_ist if explicit_now and clock is None else sampled(clock)
         book = get_instruments_for(scan.name)
-        if not book.ready(now_ist.date()):
+        if not book.ready(request_at.date()):
             scan.entry_error = "instruments_not_ready"
             return scan
-        snap = await take_chain_snapshot(kite, book, now_ist)
+        scan.chain_requested_at = request_at
+        snap = await take_chain_snapshot(kite, book, request_at)
+        scan.chain_received_at = now_ist if explicit_now and clock is None else sampled(clock)
+        if scan.chain_received_at < scan.chain_requested_at:
+            raise ValueError("chain response receipt precedes request")
+        scan.chain_source_id = source_identity("KITE_OPTION_CHAIN", scan.name)
         if snap is None:
             scan.entry_error = "chain_unavailable"
             return scan
@@ -153,7 +175,7 @@ async def attach_entry_chain(
         opt_type = (
             OptionType.CE if scan.sig.direction == FnoDirection.LONG else OptionType.PE
         )
-        pick = select_strike_by_delta(snap, opt_type, now_ist)
+        pick = select_strike_by_delta(snap, opt_type, request_at)
         if pick is None:
             scan.thin_chain = True
             scan.thin_reasons = ["no strike solves for IV/delta"]
@@ -177,6 +199,7 @@ async def scan_underlying(
     spec: UnderlyingSpec,
     regime: str,
     now_ist: Optional[datetime] = None,
+    clock: Optional[Callable[[], datetime]] = None,
 ) -> UnderlyingScan:
     """Evaluate one complete entry scan, preserving the legacy API.
 
@@ -184,5 +207,5 @@ async def scan_underlying(
     management loop calls the two phases separately so delivery lifecycle
     work is never held behind optional-chain I/O.
     """
-    out = await observe_underlying(kite, spec, regime, now_ist)
-    return await attach_entry_chain(kite, out, now_ist)
+    out = await observe_underlying(kite, spec, regime, now_ist, clock=clock)
+    return await attach_entry_chain(kite, out, now_ist, clock=clock)

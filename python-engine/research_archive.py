@@ -593,6 +593,23 @@ def readiness_view(archive_root: str, underlyings: Iterable[str] = ("NIFTY", "SE
     except (OSError, sqlite3.Error, ValueError):
         selected_leg_readiness = {"per_index": {}, "recent_gap_count": None,
                                   "qualification": "NOT_EVALUATED_HERE"}
+    try:
+        from config import settings
+        from market_calendar import NSE_HOLIDAYS_STATIC
+        from partner_collection_attempts import PartnerCollectionAttemptStore
+        current = utc_now()
+        session_date = current.astimezone(__import__("zoneinfo").ZoneInfo("Asia/Kolkata")).date()
+        attempt_readiness = PartnerCollectionAttemptStore(root).session_readiness(
+            session_date=session_date,
+            now=current, underlyings=names,
+            entry_start_minute=settings.PARTNER_MANUAL_ADVISORY_ENTRY_START_MINUTE,
+            entry_end_minute=settings.PARTNER_MANUAL_ADVISORY_ENTRY_END_MINUTE,
+            market_open=session_date.weekday() < 5 and session_date not in NSE_HOLIDAYS_STATIC,
+        )
+    except (OSError, sqlite3.Error, ValueError):
+        attempt_readiness = {"session_date": None, "expected_attempts_per_index": None,
+                             "per_index": {name: {"state": "UNAVAILABLE"} for name in names},
+                             "can_qualify": False}
     for name in names:
         master = latest_master(name)
         gaps = [gap for run in latest_runs for gap in run.get("result", {}).get("gaps", []) if gap.get("underlying") == name]
@@ -628,6 +645,9 @@ def readiness_view(archive_root: str, underlyings: Iterable[str] = ("NIFTY", "SE
             "selected_leg_coverage": (selected_leg_readiness.get("per_index") or {}).get(name, {
                 "active_legs": 0, "missing_packets": 0,
             }),
+            "advisory_collection_coverage": attempt_readiness["per_index"].get(name, {
+                "state": "NEVER_ATTEMPTED",
+            }),
         }
     usage = shutil.disk_usage(root) if root.exists() else None
     return {"archive_path": str(root), "archive_exists": root.exists(),
@@ -635,6 +655,7 @@ def readiness_view(archive_root: str, underlyings: Iterable[str] = ("NIFTY", "SE
             "master_snapshots": len(masters), "finalized_quote_segments": len(segments),
             "collection_runs": len(latest_runs), "latest_collection_run": last_run,
             "selected_leg_retention": selected_leg_readiness,
+            "advisory_collection_attempts": attempt_readiness,
             "storage": {"bytes_free": usage.free, "bytes_total": usage.total} if usage else None,
             "evidence_levels": [EVIDENCE_OPTION_LTP_OI, EVIDENCE_OBSERVED_QUOTE],
             "advisory_independent": True,

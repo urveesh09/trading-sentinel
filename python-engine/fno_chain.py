@@ -58,6 +58,8 @@ class ChainSnapshot:
     lot_size: int
     fut_quote: Optional[ContractQuote]
     quotes: Dict[Tuple[float, str], ContractQuote] = field(default_factory=dict)
+    requested_tokens: Tuple[int, ...] = ()
+    received_tokens: Tuple[int, ...] = ()
 
     def age_sec(self, now_ist: datetime) -> float:
         return (now_ist - self.taken_at).total_seconds()
@@ -194,6 +196,8 @@ async def take_chain_snapshot(
         taken_at=now_ist, expiry=expiry, forward=forward,
         parity_forward=parity_f, lot_size=instruments.lot_size,
         fut_quote=fut_quote, quotes=quotes,
+        requested_tokens=tuple(sorted(tokens)),
+        received_tokens=tuple(sorted(int(token) for token in data if int(token) in set(tokens))),
     )
     logger.info(
         "fno_chain_snapshot expiry=%s forward=%.1f atm=%.0f contracts=%d/%d",

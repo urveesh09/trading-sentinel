@@ -25,6 +25,7 @@ subsystems, which have their own suites. A closure that runs to completion --
 or that fails on a mocked-out dependency -- has resolved its globals.
 """
 import inspect
+import warnings
 
 import pytest
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
@@ -84,6 +85,14 @@ def test_all_scheduled_closures_are_registered():
     jobs = _registered_jobs()
     missing = [c for c in ALL_CLOSURES if c not in jobs]
     assert not missing, f"closures missing from the scheduler: {missing}"
+
+
+def test_sync_registration_does_not_leak_startup_catchup_coroutine():
+    """A missing running loop must be detected before a coroutine is made."""
+    with warnings.catch_warnings():
+        warnings.simplefilter("error", RuntimeWarning)
+        jobs = _registered_jobs()
+    assert "_run_penny_edge_scan_safe" in jobs
 
 
 @pytest.mark.parametrize("closure_name", ALL_CLOSURES)

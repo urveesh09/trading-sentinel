@@ -11,7 +11,8 @@ from research_archive import guarded_write, _admit_bytes
 
 
 @guarded_write
-def persist_candidate_input(archive_root, *, book, snapshot, profile, evaluation_at, received_at):
+def persist_candidate_input(archive_root, *, book, snapshot, profile, evaluation_at, received_at,
+                            decision_clock=None):
     """Retain the observed candidate inputs, including a conservative receipt clock.
 
     received_at must be sampled after acquisition, never copied from the tick's
@@ -26,15 +27,24 @@ def persist_candidate_input(archive_root, *, book, snapshot, profile, evaluation
         value = asdict(quote)
         value.pop("contract")
         return {"token": quote.contract.token, **value}
-    payload = {"format": "partner_observed_candidate_input_v1", "underlying": book.underlying,
+    payload = {"format": "partner_observed_candidate_input_v2" if decision_clock else "partner_observed_candidate_input_v1", "underlying": book.underlying,
         "segment": book.segment, "evaluation_at": evaluation_at.isoformat(),
         "received_at": received_at.isoformat(), "profile": asdict(profile),
         "contracts": [asdict(contract) for contract in sorted(book.by_symbol.values(), key=lambda c: c.token)],
         "snapshot": {"taken_at": snapshot.taken_at.isoformat(), "expiry": snapshot.expiry.isoformat(),
             "forward": snapshot.forward, "parity_forward": snapshot.parity_forward, "lot_size": snapshot.lot_size,
+            "requested_tokens": list(getattr(snapshot, "requested_tokens", ())),
+            "received_tokens": list(getattr(snapshot, "received_tokens", ())),
             "quotes": [quote_payload(quote) for _, quote in sorted(snapshot.quotes.items())],
             "future_quote": quote_payload(snapshot.fut_quote) if snapshot.fut_quote else None},
         "can_qualify": False}
+    if decision_clock is not None:
+        clocks = decision_clock.payload()
+        if clocks["underlying"] != book.underlying or clocks["evaluation_cutoff_at"] != evaluation_at.isoformat():
+            raise ValueError("candidate clock scope or cutoff mismatch")
+        if clocks.get("chain_received_at") != received_at.isoformat():
+            raise ValueError("candidate receipt must match chain response receipt")
+        payload["decision_clock"] = clocks
     encoded = json.dumps(payload, sort_keys=True, separators=(",", ":"), default=str, allow_nan=False).encode()
     digest = hashlib.sha256(encoded).hexdigest()
     directory = Path(archive_root) / "partner-candidate-inputs" / received_at.date().isoformat() / book.underlying
@@ -116,7 +126,7 @@ def load_public_input(path, *, underlying):
     if target.stem != digest:
         raise ValueError("public-input filename fingerprint mismatch")
     value = json.loads(raw)
-    if (value.get("format") != "partner_observed_public_input_v1"
+    if (value.get("format") not in {"partner_observed_public_input_v1", "partner_observed_public_input_v2"}
             or value.get("underlying") != underlying
             or value.get("bar_start_timezone") != "Asia/Kolkata"):
         raise ValueError("public-input scope or format mismatch")
@@ -127,14 +137,24 @@ def load_public_input(path, *, underlying):
     _bars_payload(frame)
     # Reconstruct the original scan, never silently move its decision clock
     # forward to make the fetch appear available earlier than it was.
-    provenance = {"state": "CONTEMPORANEOUS" if received <= at else "RETROSPECTIVE",
+    state = ("CONTEMPORANEOUS" if received <= at else
+             "ACQUIRED_AFTER_FROZEN_CUTOFF" if value.get("decision_clock") is not None else "RETROSPECTIVE")
+    provenance = {"state": state,
                   "source": f"retained-public-input:{digest}", "event_at": None,
                   "received_at": received, "retrieved_at": received}
+    if value.get("decision_clock") is not None:
+        from partner_decision_clock import validate_clock_payload
+        clocks = validate_clock_payload(value["decision_clock"]).payload()
+        if (clocks.get("underlying") != underlying
+                or clocks.get("evaluation_cutoff_at") != at.isoformat()
+                or clocks.get("public_received_at") != received.isoformat()):
+            raise ValueError("public-input decision clock mismatch")
+        provenance["decision_clock"] = clocks
     return frame, value["regime"], at, provenance
 
 
 @guarded_write
-def persist_public_input(archive_root, scan, *, regime: str, evaluation_at) -> dict:
+def persist_public_input(archive_root, scan, *, regime: str, evaluation_at, decision_clock=None) -> dict:
     """Content-address a full fetched frame plus honest evaluation/receipt clocks.
 
     Receipt can be after the scanner's original evaluation clock. Preserve
@@ -152,7 +172,7 @@ def persist_public_input(archive_root, scan, *, regime: str, evaluation_at) -> d
     if not rows:
         return {"state": "UNAVAILABLE", "reason": "observed_bars_empty"}
     payload = {
-        "format": "partner_observed_public_input_v1", "underlying": scan.name,
+        "format": "partner_observed_public_input_v2" if decision_clock else "partner_observed_public_input_v1", "underlying": scan.name,
         "future_token": scan.research_future_token, "regime": regime,
         "evaluation_at": evaluation_at.isoformat(), "received_at": received.isoformat(),
         "source": "KITE_HISTORICAL_5MINUTE_OBSERVED_RESPONSE",
@@ -160,6 +180,13 @@ def persist_public_input(archive_root, scan, *, regime: str, evaluation_at) -> d
         "signal": asdict(scan.sig) if scan.sig is not None else None,
         "error": scan.error, "can_qualify": False,
     }
+    if decision_clock is not None:
+        clocks = decision_clock.payload()
+        if (clocks["underlying"] != scan.name
+                or clocks["evaluation_cutoff_at"] != evaluation_at.isoformat()
+                or clocks.get("public_received_at") != received.isoformat()):
+            raise ValueError("public capture clock scope or receipt mismatch")
+        payload["decision_clock"] = clocks
     encoded = json.dumps(payload, sort_keys=True, separators=(",", ":"), default=str, allow_nan=False).encode()
     digest = hashlib.sha256(encoded).hexdigest()
     directory = Path(archive_root) / "partner-public-inputs" / received.date().isoformat() / scan.name

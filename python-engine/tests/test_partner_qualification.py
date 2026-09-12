@@ -71,6 +71,40 @@ def test_utc_clock_and_aware_bars_match_ist_decision():
     assert utc.decision_id == local.decision_id
 
 
+def test_frozen_cutoff_reproduces_identity_and_later_decision_is_explicit():
+    from partner_decision_clock import start_clock
+    cutoff = IST.localize(datetime(2026, 9, 11, 9, 28))
+    decision_at = cutoff + timedelta(seconds=4)
+    clock = start_clock(underlying="NIFTY", account_id="manual-profile:p1", tick_started_at=cutoff).with_stage(
+        public_requested_at=cutoff, public_received_at=cutoff + timedelta(seconds=1),
+        public_source_id="PUBLIC:NIFTY", chain_requested_at=cutoff + timedelta(seconds=2),
+        chain_received_at=cutoff + timedelta(seconds=3), chain_source_id="CHAIN:NIFTY",
+        candidate_constructed_at=decision_at,
+    )
+    bar_provenance = {
+        "state": "ACQUIRED_AFTER_FROZEN_CUTOFF", "source": "recorded-futures-bars",
+        "event_at": cutoff - timedelta(minutes=5), "received_at": cutoff + timedelta(seconds=1),
+        "retrieved_at": cutoff + timedelta(seconds=1),
+    }
+    arguments = dict(
+        underlying="NIFTY", bars=bars(), regime="REGIME_1_NORMAL",
+        decision_at=decision_at, evaluation_cutoff_at=cutoff,
+        decision_clock=clock.payload(), bar_provenance=bar_provenance,
+    )
+    first = qualification.evaluate_deployed_full_policy(**arguments)
+    repeated = qualification.evaluate_deployed_full_policy(**arguments)
+    assert first.decision_id == repeated.decision_id
+    assert first.manifest["decision_at"] == decision_at.isoformat()
+    assert first.manifest["evaluation_cutoff_at"] == cutoff.isoformat()
+    assert first.manifest["decision_clock"]["run_id"] == clock.run_id
+
+    later = clock.with_stage(candidate_constructed_at=decision_at + timedelta(seconds=1))
+    changed = qualification.evaluate_deployed_full_policy(
+        **{**arguments, "decision_at": decision_at + timedelta(seconds=1), "decision_clock": later.payload()},
+    )
+    assert changed.decision_id != first.decision_id
+
+
 @pytest.mark.parametrize("fault", ["duplicate", "unordered", "nan", "inconsistent"])
 def test_invalid_bars_cannot_produce_research_decisions(fault):
     now = IST.localize(datetime(2026, 9, 11, 9, 28))

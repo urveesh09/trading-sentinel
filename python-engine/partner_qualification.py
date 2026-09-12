@@ -44,6 +44,13 @@ def load_candidate_evidence(value: Mapping[str, Any], *, underlying: str, decisi
     received = datetime.fromisoformat(str(value["received_at"]))
     if _clock(received, "chain received_at") > _clock(decision_at, "decision_at"):
         raise ValueError("chain evidence unavailable at decision time")
+    if value.get("decision_clock") is not None:
+        from partner_decision_clock import validate_clock_payload
+        clocks = validate_clock_payload(value["decision_clock"]).payload()
+        if (clocks.get("underlying") != name
+                or clocks.get("chain_received_at") != received.isoformat()
+                or datetime.fromisoformat(str(clocks.get("candidate_constructed_at"))) > decision_at):
+            raise ValueError("candidate decision clock mismatch")
     contracts = []
     for raw in value["contracts"]:
         item = dict(raw)
@@ -96,8 +103,13 @@ def load_candidate_evidence(value: Mapping[str, Any], *, underlying: str, decisi
             if item["last_trade_time"] > received:
                 raise ValueError("future quote timestamp follows receipt")
         future = ContractQuote(contract=contract, **item)
+    requested_tokens = tuple(int(token) for token in snap_raw.get("requested_tokens", ()))
+    received_tokens = tuple(int(token) for token in snap_raw.get("received_tokens", ()))
+    if received_tokens and not set(received_tokens).issubset(set(requested_tokens)):
+        raise ValueError("candidate snapshot receipt coverage is invalid")
     snapshot = ChainSnapshot(taken, date.fromisoformat(snap_raw["expiry"]), snap_raw["forward"],
-                             snap_raw.get("parity_forward"), snap_raw["lot_size"], future, quotes)
+                             snap_raw.get("parity_forward"), snap_raw["lot_size"], future, quotes,
+                             requested_tokens, received_tokens)
     profile_value = dict(value["profile"])
     for field in ("enabled_scopes", "instruments", "permitted_structures"):
         if field in profile_value:
@@ -152,7 +164,7 @@ def _causal_provenance(value: Mapping[str, Any], decision_at: datetime) -> dict[
     if not isinstance(value, Mapping):
         raise ValueError("bar provenance is required")
     state = str(value.get("state", "")).upper()
-    if state not in {"CONTEMPORANEOUS", "RETROSPECTIVE", "MISSING"}:
+    if state not in {"CONTEMPORANEOUS", "ACQUIRED_AFTER_FROZEN_CUTOFF", "RETROSPECTIVE", "MISSING"}:
         raise ValueError("bar provenance state is invalid")
     normalized = {"state": state, "source": str(value.get("source", "")).strip()}
     if not normalized["source"]:
@@ -171,6 +183,10 @@ def _causal_provenance(value: Mapping[str, Any], decision_at: datetime) -> dict[
         event_at = value.get("event_at")
         if event_at is not None and _clock(event_at, "bar provenance event_at") > decision_at:
             raise ValueError("contemporaneous bar event is after decision time")
+    if state == "ACQUIRED_AFTER_FROZEN_CUTOFF":
+        received = value.get("received_at")
+        if received is None or _clock(received, "bar provenance received_at") > decision_at:
+            raise ValueError("frozen-cutoff bar evidence was unavailable at decision time")
     if state == "MISSING" and any(value.get(key) is not None for key in ("event_at", "received_at")):
         raise ValueError("missing bar evidence cannot claim event or receipt timestamps")
     return normalized
@@ -179,14 +195,31 @@ def _causal_provenance(value: Mapping[str, Any], decision_at: datetime) -> dict[
 def policy_manifest(*, underlying: str, structure_kind: str, bars: pd.DataFrame,
                     regime: str, decision_at: datetime, bar_provenance: Mapping[str, Any],
                     contract_master_sha256: str | None = None,
-                    profile: PartnerAdvisoryProfile | None = None) -> dict[str, Any]:
+                    profile: PartnerAdvisoryProfile | None = None,
+                    evaluation_cutoff_at: datetime | None = None,
+                    decision_clock: Mapping[str, Any] | None = None) -> dict[str, Any]:
     """Freeze code/config/input identity for one full-policy decision."""
     now = _clock(decision_at, "decision_at").astimezone(ZoneInfo("Asia/Kolkata"))
+    cutoff = _clock(evaluation_cutoff_at or now, "evaluation_cutoff_at").astimezone(ZoneInfo("Asia/Kolkata"))
+    if cutoff > now:
+        raise ValueError("evaluation cutoff cannot follow decision time")
     name = underlying.upper()
     if name not in {"NIFTY", "SENSEX"} or structure_kind != "DIRECTIONAL_DEBIT_SPREAD":
         raise ValueError("only NIFTY/SENSEX directional debit-spread policy is supported")
     if contract_master_sha256 is not None and (len(contract_master_sha256) != 64 or any(c not in "0123456789abcdef" for c in contract_master_sha256.lower())):
         raise ValueError("contract_master_sha256 must be a SHA-256 digest")
+    if decision_clock is not None:
+        from partner_decision_clock import CLOCK_POLICY, validate_clock_payload
+        decision_clock = validate_clock_payload(decision_clock).payload()
+        if (decision_clock.get("policy") != CLOCK_POLICY
+                or decision_clock.get("underlying") != name
+                or decision_clock.get("evaluation_cutoff_at") != cutoff.isoformat()
+                or decision_clock.get("candidate_constructed_at") != now.isoformat()
+                or not decision_clock.get("run_id") or not decision_clock.get("account_id")):
+            raise ValueError("decision clock scope or identity mismatch")
+        for field in ("public_received_at", "chain_received_at"):
+            if decision_clock.get(field) is None or _clock(datetime.fromisoformat(decision_clock[field]), field) > now:
+                raise ValueError("decision clock source receipt is missing or late")
     config = {key: getattr(settings, key) for key in (
         "FNO_OR_MINUTES", "FNO_ATR_LEN", "FNO_EMA_FAST", "FNO_EMA_SLOW", "FNO_RVOL_LOOKBACK_DAYS",
         "FNO_OR_BUFFER_ATR", "FNO_STOP_ATR_MULT", "FNO_TARGET_R", "FNO_MIN_RVOL",
@@ -196,10 +229,13 @@ def policy_manifest(*, underlying: str, structure_kind: str, bars: pd.DataFrame,
     )}
     bar_rows = _bars_payload(bars)
     provenance = _causal_provenance(bar_provenance, now)
+    if provenance.get("event_at") and datetime.fromisoformat(provenance["event_at"]) > cutoff:
+        raise ValueError("bar event is after frozen evaluation cutoff")
     # Whole-module fingerprints include helper changes, not just the top-level
     # signal function. Inputs/master dates stay in the decision evidence below.
     source_names = ("fno_engine_mom.py", "partner_manual_advisory.py", "fno_chain.py",
-                    "fno_instruments.py", "options_math.py", "partner_qualification.py", "partner_thesis.py")
+                    "fno_instruments.py", "options_math.py", "partner_qualification.py", "partner_thesis.py",
+                    "partner_decision_clock.py")
     source_hashes = {name: hashlib.sha256(Path(__file__).with_name(name).read_bytes()).hexdigest()
                      for name in source_names}
     frozen_config = {key: value for key, value in settings.model_dump().items()
@@ -213,7 +249,10 @@ def policy_manifest(*, underlying: str, structure_kind: str, bars: pd.DataFrame,
         "format": "partner_full_policy_manifest_v1", "evaluator": FULL_POLICY_EVALUATOR,
         "evaluator_source_sha256": hashlib.sha256(inspect.getsource(evaluate_fno_mom).encode()).hexdigest(),
         "underlying": name, "structure_kind": structure_kind, "regime": str(regime),
-        "decision_at": now.isoformat(), "config": config, "config_sha256": _sha(config),
+        "decision_at": now.isoformat(), "evaluation_cutoff_at": cutoff.isoformat(),
+        "clock_policy": (decision_clock or {}).get("policy", "LEGACY_DECISION_EQUALS_CUTOFF_V1"),
+        "decision_clock": dict(decision_clock) if decision_clock is not None else None,
+        "config": config, "config_sha256": _sha(config),
         "bars_sha256": _sha(bar_rows), "bar_count": len(bar_rows), "bar_provenance": provenance,
         "contract_master_sha256": contract_master_sha256,
         "frozen_policy": strategy, "policy_sha256": strategy["manifest_sha256"],
@@ -238,7 +277,9 @@ def evaluate_deployed_full_policy(*, underlying: str, bars: pd.DataFrame, regime
                                   book: FnoInstruments | None = None,
                                   snapshot: ChainSnapshot | None = None,
                                   profile: PartnerAdvisoryProfile | None = None,
-                                  contract_master_sha256: str | None = None) -> FullPolicyDecision:
+                                  contract_master_sha256: str | None = None,
+                                  evaluation_cutoff_at: datetime | None = None,
+                                  decision_clock: Mapping[str, Any] | None = None) -> FullPolicyDecision:
     """Reproduce deployed signal -> candidate -> profile/quote validation.
 
     A no-setup is a retained decision, not a missing row.  Historical bars
@@ -246,6 +287,7 @@ def evaluate_deployed_full_policy(*, underlying: str, bars: pd.DataFrame, regime
     a policy even when their deterministic decision matches production code.
     """
     now = _clock(decision_at, "decision_at").astimezone(ZoneInfo("Asia/Kolkata"))
+    cutoff = _clock(evaluation_cutoff_at or now, "evaluation_cutoff_at").astimezone(ZoneInfo("Asia/Kolkata"))
     # The deployed evaluator explicitly consumes naive IST bar starts.
     # Convert aware input without changing the represented instants.
     if bars is not None and isinstance(bars.index, pd.DatetimeIndex) and bars.index.tz is not None:
@@ -253,7 +295,8 @@ def evaluate_deployed_full_policy(*, underlying: str, bars: pd.DataFrame, regime
         bars.index = bars.index.tz_convert("Asia/Kolkata").tz_localize(None)
     manifest = policy_manifest(underlying=underlying, structure_kind="DIRECTIONAL_DEBIT_SPREAD", bars=bars,
                                regime=regime, decision_at=now, bar_provenance=bar_provenance,
-                               contract_master_sha256=contract_master_sha256, profile=profile)
+                               contract_master_sha256=contract_master_sha256, profile=profile,
+                               evaluation_cutoff_at=cutoff, decision_clock=decision_clock)
     if snapshot is not None:
         # Tuple-keyed quote maps are normalized before canonical JSON hashing.
         quote_rows = [asdict(quote) for _, quote in sorted(snapshot.quotes.items())]
@@ -262,7 +305,7 @@ def evaluate_deployed_full_policy(*, underlying: str, bars: pd.DataFrame, regime
             "lot_size": snapshot.lot_size, "quotes": quote_rows,
             "future_quote": asdict(snapshot.fut_quote) if snapshot.fut_quote is not None else None})
         manifest["manifest_sha256"] = _sha({key: value for key, value in manifest.items() if key != "manifest_sha256"})
-    signal = evaluate_fno_mom(bars, regime, now)
+    signal = evaluate_fno_mom(bars, regime, cutoff)
     base = {"manifest": manifest["manifest_sha256"], "signal": _signal_payload(signal)}
     if signal.direction is None:
         return FullPolicyDecision(_sha(base), "NO_SETUP", signal.reject_reason or "no_direction", signal,

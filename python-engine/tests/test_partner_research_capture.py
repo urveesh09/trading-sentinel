@@ -1,6 +1,7 @@
 from datetime import datetime, timedelta
 import hashlib
 import json
+from pathlib import Path
 from types import SimpleNamespace
 from zoneinfo import ZoneInfo
 
@@ -40,6 +41,50 @@ def test_candidate_capture_roundtrip_preserves_actual_receipt(tmp_path):
     Path(result['path']).write_text(json.dumps(payload), encoding='utf-8')
     with pytest.raises(ValueError, match='fingerprint'):
         _candidate_file(result['path'])
+
+
+def test_v2_captures_bind_same_run_with_frozen_cutoff_and_later_decision(tmp_path):
+    from tests.test_partner_qualification import candidate_bundle
+    from partner_decision_clock import start_clock
+    from partner_qualification import load_candidate_evidence
+    from partner_research_capture import load_public_input, persist_candidate_input
+
+    cutoff = datetime(2026, 9, 11, 10, tzinfo=ZoneInfo("Asia/Kolkata"))
+    public_received = cutoff + timedelta(seconds=2)
+    chain_received = cutoff + timedelta(seconds=5)
+    decision_at = cutoff + timedelta(seconds=6)
+    partial_clock = start_clock(
+        underlying="NIFTY", account_id="manual-profile:p1", tick_started_at=cutoff,
+    ).with_stage(
+        public_requested_at=cutoff, public_received_at=public_received,
+        public_source_id="KITE_HISTORICAL_5MINUTE:NIFTY:123",
+    )
+    from tests.test_partner_qualification import bars as make_bars
+    bars = make_bars()
+    scan = SimpleNamespace(name="NIFTY", research_bars=bars, research_received_at=public_received,
+                           research_future_token=123, sig=None, error="")
+    public = persist_public_input(tmp_path, scan, regime="REGIME_1_NORMAL",
+                                  evaluation_at=cutoff, decision_clock=partial_clock)
+    _, _, restored_cutoff, provenance = load_public_input(public["path"], underlying="NIFTY")
+    assert restored_cutoff == cutoff
+    assert provenance["state"] == "ACQUIRED_AFTER_FROZEN_CUTOFF"
+    assert provenance["decision_clock"]["run_id"] == partial_clock.run_id
+
+    value = candidate_bundle()
+    value["received_at"] = value["snapshot"]["taken_at"] = chain_received.isoformat()
+    book, snapshot, profile = load_candidate_evidence(value, underlying="NIFTY", decision_at=decision_at)
+    full_clock = partial_clock.with_stage(
+        chain_requested_at=cutoff + timedelta(seconds=3), chain_received_at=chain_received,
+        chain_source_id="KITE_OPTION_CHAIN:NIFTY", candidate_constructed_at=decision_at,
+    )
+    candidate = persist_candidate_input(
+        tmp_path, book=book, snapshot=snapshot, profile=profile,
+        evaluation_at=cutoff, received_at=chain_received, decision_clock=full_clock,
+    )
+    payload = json.loads(Path(candidate["path"]).read_text())
+    assert payload["format"] == "partner_observed_candidate_input_v2"
+    assert payload["decision_clock"]["run_id"] == provenance["decision_clock"]["run_id"]
+    assert payload["decision_clock"]["candidate_constructed_at"] == decision_at.isoformat()
 
 
 def test_lifecycle_loader_recomputes_price_and_preserves_late_receipt(tmp_path):
