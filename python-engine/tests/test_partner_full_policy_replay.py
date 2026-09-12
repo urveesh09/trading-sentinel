@@ -142,6 +142,41 @@ def test_unmocked_archive_to_real_policy_and_exit(case, monkeypatch):
     assert result['replay']['exit_trigger'] == 'INVALIDATION'
     assert result['partial_batches'] == []
     assert not result['can_qualify']
+    from types import SimpleNamespace
+    from partner_research_capture import persist_public_input
+    from research_cli import main
+    capture = persist_public_input(args['archive_root'], SimpleNamespace(name='NIFTY',
+        research_bars=args['evaluation_inputs']['bars'], research_received_at=NOW,
+        research_future_token=123, sig=None, error=''), regime='REGIME_1_NORMAL', evaluation_at=NOW)
+    bundle = candidate_bundle()
+    bundle['received_at'] = bundle['snapshot']['taken_at'] = NOW.isoformat()
+    bundle['snapshot']['expiry'] = EXPIRY.isoformat()
+    for item in bundle['contracts']:
+        item['expiry'] = EXPIRY.isoformat()
+    for item in bundle['snapshot']['quotes']:
+        item['last_trade_time'] = NOW.isoformat()
+    root = args['archive_root']
+    chain_path, policy_path, output = root / 'chain.json', root / 'policy.json', root / 'report.json'
+    chain_path.write_text(json.dumps(bundle), encoding='utf-8')
+    policy_path.write_text(json.dumps(dict(policy_id='fixture', min_signal_score=1,
+        take_profit_rs=1, stop_loss_rs=1, execution_delay=0)), encoding='utf-8')
+    quote_dir = root / 'quotes' / NOW.date().isoformat()
+    quote_dir.mkdir(parents=True)
+    (quote_dir / 'quotes.jsonl.open').write_text('\n'.join(json.dumps(event) for event in events) + '\n', encoding='utf-8')
+    command = ['replay-full-policy', '--archive-root', str(root), '--public-input', capture['path'],
+        '--public-capture', capture['path'], '--candidate-evidence', str(chain_path), '--underlying', 'NIFTY',
+        '--master-sha256', digest, '--policy', str(policy_path), '--output', str(output)]
+    assert main(command) == 0
+    stored = json.loads(output.read_text())
+    assert stored['state'] == 'UNRESOLVED'  # Only initial public capture, no fabricated exit.
+    assert not stored['can_qualify']
+    before = output.read_bytes()
+    assert main(command) == 0
+    assert output.read_bytes() == before
+    policy_path.write_text(json.dumps(dict(policy_id='fixture', min_signal_score=1,
+        take_profit_rs=1, stop_loss_rs=1, fee_per_leg_rs=100)), encoding='utf-8')
+    assert main(command) == 2  # Same destination cannot replace earlier economics.
+    assert output.read_bytes() == before
     # Tampering with normalized quotes without modifying raw evidence removes
     # the decision book instead of producing a fabricated executable outcome.
     events[0]['buy_depth'] = [dict(price=999, quantity=500)]

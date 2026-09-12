@@ -12,6 +12,33 @@ from intraday_spread_replay import IST, ReplayInputError
 from partner_qualification import _sha, evaluate_deployed_full_policy
 
 
+def write_replay_report(path, report):
+    """Durably create an immutable report; allow only identical retries."""
+    import json
+    import os
+    import tempfile
+    from pathlib import Path
+    body = {key: value for key, value in report.items() if key != "evidence_sha256"}
+    if report.get("evidence_sha256") != _sha(body):
+        raise ValueError("replay report fingerprint mismatch")
+    target = Path(path)
+    encoded = json.dumps(report, sort_keys=True, separators=(",", ":"), default=str, allow_nan=False).encode()
+    target.parent.mkdir(parents=True, exist_ok=True)
+    fd, temporary = tempfile.mkstemp(prefix=".replay-", dir=target.parent)
+    try:
+        with os.fdopen(fd, "wb") as stream:
+            stream.write(encoded)
+            stream.flush()
+            os.fsync(stream.fileno())
+        try:
+            os.link(temporary, target)
+        except FileExistsError:
+            if target.read_bytes() != encoded:
+                raise ValueError("replay output already contains different immutable evidence")
+    finally:
+        os.unlink(temporary)
+
+
 def replay_full_policy(*, evaluation_inputs, events, archive_root, master_sha256,
                        execution_policy, public_observations=(), public_capture_paths=()):
     """Recompute the deployed decision and replay only its selected two legs."""

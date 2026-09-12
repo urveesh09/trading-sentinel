@@ -16,6 +16,7 @@ At resumption Dev HEAD was 841131e, containing e043276 and 5a565df. The previous
 - Cancel a delayed entry when invalidation or target is crossed before execution. Reject an already-crossed thesis or missing/stale initial public observation.
 - Recheck the actual execution debit plus round-trip fee reserve and entry slippage against the tighter declared/profile capital and risk limits. Bind entry timing to the profile window. Cost-sensitivity runs preserve independent public events across every scenario.
 - Every output remains diagnostic, with qualification, delivery and order authority false.
+- `research_cli replay-full-policy` now loads a decision capture, verified candidate/master bundle, session quote journals, explicit execution assumptions and lifecycle capture paths. Reports are fingerprint-checked and atomically created without overwrite; identical retries are allowed.
 - Replay accepts fingerprinted public capture paths, recomputes the closed-bar observation from saved OHLCV, preserves actual response receipt, and records source fingerprints/provenance. Mixed archive/caller observations, duplicate captures, stale observations and scope/hash mismatches are rejected. Source coverage remains explicitly SUPPLIED_CAPTURES_ONLY.
 
 ## Verification
@@ -32,7 +33,27 @@ Public-capture follow-up: the same broader suite now passes 91 tests, including 
 2. Extend delayed execution validation to contemporary spread-quality rules and cost-model calibration. Cost-inclusive profile capital/risk checks at the changed book are implemented; they do not establish the accuracy of fee/slippage assumptions.
 3. Support proven pre-decision books and explicit decision availability clocks rather than requiring exact equal timestamps. Never move receipts backwards to manufacture causality.
 4. Extend the unmocked master/quote integration fixture with archived public-input provenance, missing-leg, restart, sparse-book and deadline cases. Public observations in the current integration test are explicit fixture inputs, not loaded from a verified public archive.
-5. Bind public input provenance, expose the connector through the offline CLI, and retain immutable outcome/evidence reports. Add held-out review integration only after complete and unresolved outcomes are represented faithfully.
+5. Public input loading, offline CLI and immutable reports are implemented. Add held-out review integration only after complete and unresolved outcomes and coverage are represented faithfully.
 6. Run the full release acceptance suite before promotion. The 88-test research checkpoint is not full release acceptance. Evaluate genuine collected sessions afterwards; no fixed number of days guarantees qualification.
 
 The connector is not scheduled, does not register qualifications, and does not enable partner messages. The existing intraday profile does not need to be resubmitted for this development work.
+
+## Offline command
+
+Run from the Dev python-engine directory with its configured Python environment. Replace the example paths and digest with real retained evidence. Repeat `--public-capture` for every relevant observation in the session. The command reads the exchange-local decision session's quote journal automatically.
+
+```powershell
+.\winvenv\Scripts\python.exe -m research_cli replay-full-policy `
+  --archive-root "C:\research-archive" `
+  --underlying NIFTY `
+  --public-input "C:\research-archive\partner-public-inputs\SESSION\NIFTY\DECISION_SHA.json" `
+  --public-capture "C:\research-archive\partner-public-inputs\SESSION\NIFTY\DECISION_SHA.json" `
+  --candidate-evidence "C:\research-inputs\observed-chain-and-profile.json" `
+  --master-sha256 "ACTUAL_RAW_MASTER_SHA256" `
+  --policy "C:\research-inputs\execution-policy.json" `
+  --output "C:\research-results\unique-run.json"
+```
+
+Execution policy JSON uses ChronologicalPolicy fields, with duration fields expressed in seconds. Explicitly declare measured fees, slippage and manual delay; zero defaults are not evidence of zero real-world costs. Candidate contracts are selected by the actual strategy, not hand-picked by this command. Output state CLOSED describes a simulated result; it is never a profitability qualification. Exit code 0 means the diagnostic completed, including NO_FILL/UNRESOLVED/INSUFFICIENT_EVIDENCE. Invalid input or conflicting output returns 2.
+
+The end-to-end CLI fixture checks an unresolved result with only an initial public capture, identical retries, and rejection of altered-cost overwrite. It does not prove an operational session has complete evidence.

@@ -92,6 +92,15 @@ def _full_policy_diagnostic(args: argparse.Namespace) -> dict:
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Sentinel read-only research evidence tools")
     sub = parser.add_subparsers(dest="command", required=True)
+    full_replay = sub.add_parser("replay-full-policy", help="offline full-policy replay with verified public captures; diagnostic only")
+    full_replay.add_argument("--archive-root", required=True)
+    full_replay.add_argument("--public-input", required=True, help="fingerprinted decision input capture")
+    full_replay.add_argument("--public-capture", action="append", required=True, help="lifecycle capture; repeat for every retained observation")
+    full_replay.add_argument("--candidate-evidence", required=True)
+    full_replay.add_argument("--underlying", choices=["NIFTY", "SENSEX"], required=True)
+    full_replay.add_argument("--master-sha256", required=True)
+    full_replay.add_argument("--policy", required=True, help="ChronologicalPolicy JSON; durations in seconds")
+    full_replay.add_argument("--output", required=True, help="immutable report destination")
     captured = sub.add_parser("captured-policy-diagnostic", help="re-evaluate a fingerprinted public-input capture; no qualification")
     captured.add_argument("--public-input", required=True)
     captured.add_argument("--underlying", required=True, choices=["NIFTY", "SENSEX"])
@@ -129,6 +138,39 @@ def main(argv: list[str] | None = None) -> int:
     reconcile.add_argument("--output", required=True, help="JSON evidence output; no ledger mutation")
     reconcile.add_argument("--limit", type=int, default=1000)
     args = parser.parse_args(argv)
+    if args.command == "replay-full-policy":
+        try:
+            from partner_research_capture import load_public_input
+            from partner_qualification import load_candidate_evidence
+            from partner_full_policy_replay import replay_full_policy, write_replay_report
+            from intraday_spread_archive_adapter import read_archived_quote_events
+            from intraday_spread_chronological import ChronologicalPolicy
+            from zoneinfo import ZoneInfo
+            bars, regime, at, provenance = load_public_input(args.public_input, underlying=args.underlying)
+            book, snapshot, profile = load_candidate_evidence(_json_file(args.candidate_evidence),
+                underlying=args.underlying, decision_at=at, archive_root=args.archive_root,
+                master_sha256=args.master_sha256)
+            policy_config = _json_file(args.policy)
+            for key in ("execution_delay", "execution_max_wait", "signal_expiry", "max_quote_age", "max_leg_sync", "max_public_age"):
+                if key in policy_config:
+                    if isinstance(policy_config[key], bool) or not isinstance(policy_config[key], (int, float)):
+                        raise ValueError(f"{key} must be numeric seconds")
+                    policy_config[key] = timedelta(seconds=policy_config[key])
+            day = at.astimezone(ZoneInfo("Asia/Kolkata")).date().isoformat()
+            result = replay_full_policy(evaluation_inputs=dict(underlying=args.underlying, bars=bars,
+                regime=regime, decision_at=at, bar_provenance=provenance, book=book, snapshot=snapshot,
+                profile=profile, contract_master_sha256=args.master_sha256),
+                events=read_archived_quote_events(args.archive_root, days=[day]), archive_root=args.archive_root,
+                master_sha256=args.master_sha256, execution_policy=ChronologicalPolicy(**policy_config),
+                public_capture_paths=args.public_capture)
+            write_replay_report(args.output, result)
+            print(json.dumps({"state": result["state"], "reason": result["reason"], "path": args.output,
+                              "can_qualify": False, "can_deliver": False, "can_place_orders": False}))
+            return 0
+        except (ValueError, KeyError, TypeError, OSError, OverflowError) as exc:
+            print(json.dumps({"state": "RESEARCH_INPUT_REJECTED", "error": str(exc),
+                              "can_qualify": False, "can_deliver": False, "can_place_orders": False}), file=sys.stderr)
+            return 2
     if args.command == "captured-policy-diagnostic":
         try:
             from partner_research_capture import load_public_input
