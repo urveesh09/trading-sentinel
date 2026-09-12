@@ -655,6 +655,17 @@ async def partner_manual_advisory_tick(now: Optional[datetime] = None) -> None:
                 )
                 continue
             await add_explicit_protection(spec, book, snapshot)
+            if settings.RESEARCH_ARCHIVE_ENABLED:
+                from partner_research_capture import persist_candidate_input
+                capture_received_at = datetime.now(IST)
+                try:
+                    await asyncio.to_thread(persist_candidate_input, settings.RESEARCH_ARCHIVE_PATH,
+                        book=book, snapshot=snapshot, profile=profile,
+                        evaluation_at=now, received_at=capture_received_at)
+                    metrics["research_candidate_observed"] = metrics.get("research_candidate_observed", 0) + 1
+                except Exception as exc:
+                    metrics["research_candidate_unavailable"] = metrics.get("research_candidate_unavailable", 0) + 1
+                    logger.error("partner_research_candidate_capture_failed underlying=%s err=%s", spec.name, str(exc))
             candidate = build_directional_debit_spread(
                 snapshot, book, scan.sig.direction, now,
                 evidence=StrategyEvidence.RESEARCH_ONLY,

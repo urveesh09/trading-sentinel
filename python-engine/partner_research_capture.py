@@ -10,6 +10,57 @@ from pathlib import Path
 from research_archive import guarded_write, _admit_bytes
 
 
+@guarded_write
+def persist_candidate_input(archive_root, *, book, snapshot, profile, evaluation_at, received_at):
+    """Retain the observed candidate inputs, including a conservative receipt clock.
+
+    received_at must be sampled after acquisition, never copied from the tick's
+    start. A later receipt is retained even when it prevents causal approval.
+    """
+    from partner_qualification import _clock
+    _clock(evaluation_at, "evaluation_at")
+    _clock(received_at, "received_at")
+    if snapshot is None or _clock(snapshot.taken_at, "snapshot taken_at") > received_at:
+        raise ValueError("candidate snapshot cannot follow receipt")
+    def quote_payload(quote):
+        value = asdict(quote)
+        value.pop("contract")
+        return {"token": quote.contract.token, **value}
+    payload = {"format": "partner_observed_candidate_input_v1", "underlying": book.underlying,
+        "segment": book.segment, "evaluation_at": evaluation_at.isoformat(),
+        "received_at": received_at.isoformat(), "profile": asdict(profile),
+        "contracts": [asdict(contract) for contract in sorted(book.by_symbol.values(), key=lambda c: c.token)],
+        "snapshot": {"taken_at": snapshot.taken_at.isoformat(), "expiry": snapshot.expiry.isoformat(),
+            "forward": snapshot.forward, "parity_forward": snapshot.parity_forward, "lot_size": snapshot.lot_size,
+            "quotes": [quote_payload(quote) for _, quote in sorted(snapshot.quotes.items())],
+            "future_quote": quote_payload(snapshot.fut_quote) if snapshot.fut_quote else None},
+        "can_qualify": False}
+    encoded = json.dumps(payload, sort_keys=True, separators=(",", ":"), default=str, allow_nan=False).encode()
+    digest = hashlib.sha256(encoded).hexdigest()
+    directory = Path(archive_root) / "partner-candidate-inputs" / received_at.date().isoformat() / book.underlying
+    directory.mkdir(parents=True, exist_ok=True)
+    target = directory / f"{digest}.json"
+    if target.exists():
+        if target.read_bytes() != encoded:
+            raise ValueError("candidate archive fingerprint mismatch")
+    else:
+        _admit_bytes(len(encoded))
+        fd, temporary = tempfile.mkstemp(prefix=".candidate-", dir=directory)
+        try:
+            with os.fdopen(fd, "wb") as stream:
+                stream.write(encoded)
+                stream.flush()
+                os.fsync(stream.fileno())
+            try:
+                os.link(temporary, target)
+            except FileExistsError:
+                if target.read_bytes() != encoded:
+                    raise ValueError("candidate archive fingerprint mismatch")
+        finally:
+            os.unlink(temporary)
+    return {"state": "OBSERVED", "path": str(target), "sha256": digest, "can_qualify": False}
+
+
 def load_public_lifecycle(paths, *, underlying, max_age_seconds):
     """Recompute closed-bar public observations from verified retained inputs.
 

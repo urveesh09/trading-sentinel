@@ -114,6 +114,45 @@ async def _init(db):
 # gating
 # ---------------------------------------------------------------------------
 
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize('fail_capture', [False, True])
+async def test_candidate_capture_follows_both_management_paths_and_failure_isolated(wired, monkeypatch, fail_capture):
+    import partner_research_capture as capture
+    import partner_manual_advisory as advisory
+    await _init(wired.db)
+    monkeypatch.setattr(settings, 'PARTNER_MANUAL_ADVISORY_ENABLED', True)
+    monkeypatch.setattr(settings, 'RESEARCH_ARCHIVE_ENABLED', True)
+    monkeypatch.setattr(po, 'analytics_underlyings', lambda: [SPEC, UnderlyingSpec('SENSEX', 'BFO')])
+    monkeypatch.setattr(po, 'get_instruments_for', lambda name: _AdvisoryBook())
+    managed, captured, built = [], [], []
+    async def public(_kite, spec, *_args):
+        scan = _fired_scan()
+        scan.name = spec.name
+        scan.snap = SimpleNamespace(expiry=date(2026, 7, 23))
+        return scan
+    async def management(_db, *, underlying, **_kwargs):
+        managed.append(underlying)
+        return []
+    def retain(_root, **kwargs):
+        assert set(managed) == {'NIFTY', 'SENSEX'}
+        assert kwargs['received_at'] >= kwargs['evaluation_at']
+        captured.append(kwargs['snapshot'])
+        if fail_capture:
+            raise OSError('fixture disk full')
+        return {'state': 'OBSERVED'}
+    def build(*args, **kwargs):
+        built.append(args[0])
+        return None
+    monkeypatch.setattr(po, 'observe_underlying', public)
+    monkeypatch.setattr(advisory, 'queue_management_updates', management)
+    monkeypatch.setattr(advisory, 'build_directional_debit_spread', build)
+    monkeypatch.setattr(capture, 'persist_public_input', lambda *_args, **_kwargs: {'state': 'UNAVAILABLE'})
+    monkeypatch.setattr(capture, 'persist_candidate_input', retain)
+    await po.partner_manual_advisory_tick(NOW)
+    assert len(captured) == len(built) == 2
+    assert wired.sent == []
+
 @pytest.mark.asyncio
 async def test_disabled_is_a_total_noop(wired, monkeypatch):
     await _init(wired.db)

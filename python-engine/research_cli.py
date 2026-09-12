@@ -23,6 +23,19 @@ def _json_file(path: str) -> dict:
     return value
 
 
+def _candidate_file(path: str) -> dict:
+    """Verify content-addressed captures while retaining explicit fixture input."""
+    import hashlib
+    raw = Path(path).read_bytes()
+    value = json.loads(raw)
+    if not isinstance(value, dict):
+        raise ValueError("candidate input must be an object")
+    if value.get("format") == "partner_observed_candidate_input_v1":
+        if Path(path).stem != hashlib.sha256(raw).hexdigest():
+            raise ValueError("candidate capture fingerprint mismatch")
+    return value
+
+
 def _replay_spread(args: argparse.Namespace) -> dict:
     """Run archive -> verified signal -> chronological replay without writes."""
     from intraday_spread_archive_adapter import SpreadContractIdentity, build_spread_observations, read_archived_quote_events
@@ -74,7 +87,7 @@ def _full_policy_diagnostic(args: argparse.Namespace) -> dict:
     decision_at = datetime.fromisoformat(args.decision_at.replace("Z", "+00:00"))
     candidate_inputs = {}
     if getattr(args, "candidate_evidence", None):
-        book, snapshot, profile = load_candidate_evidence(_json_file(args.candidate_evidence),
+        book, snapshot, profile = load_candidate_evidence(_candidate_file(args.candidate_evidence),
                                                         underlying=args.underlying, decision_at=decision_at,
                                                         archive_root=getattr(args, "archive_root", None),
                                                         master_sha256=args.contract_master_sha256)
@@ -147,7 +160,7 @@ def main(argv: list[str] | None = None) -> int:
             from intraday_spread_chronological import ChronologicalPolicy
             from zoneinfo import ZoneInfo
             bars, regime, at, provenance = load_public_input(args.public_input, underlying=args.underlying)
-            book, snapshot, profile = load_candidate_evidence(_json_file(args.candidate_evidence),
+            book, snapshot, profile = load_candidate_evidence(_candidate_file(args.candidate_evidence),
                 underlying=args.underlying, decision_at=at, archive_root=args.archive_root,
                 master_sha256=args.master_sha256)
             policy_config = _json_file(args.policy)
@@ -178,7 +191,7 @@ def main(argv: list[str] | None = None) -> int:
             bars, regime, at, provenance = load_public_input(args.public_input, underlying=args.underlying)
             candidate_inputs = {}
             if args.candidate_evidence:
-                book, snapshot, profile = load_candidate_evidence(_json_file(args.candidate_evidence),
+                book, snapshot, profile = load_candidate_evidence(_candidate_file(args.candidate_evidence),
                                                                  underlying=args.underlying, decision_at=at,
                                                                  archive_root=args.archive_root,
                                                                  master_sha256=args.contract_master_sha256)

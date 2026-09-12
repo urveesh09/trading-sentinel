@@ -18,6 +18,7 @@ At resumption Dev HEAD was 841131e, containing e043276 and 5a565df. The previous
 - Every output remains diagnostic, with qualification, delivery and order authority false.
 - `research_cli replay-full-policy` now loads a decision capture, verified candidate/master bundle, session quote journals, explicit execution assumptions and lifecycle capture paths. Reports are fingerprint-checked and atomically created without overwrite; identical retries are allowed.
 - Replay accepts fingerprinted public capture paths, recomputes the closed-bar observation from saved OHLCV, preserves actual response receipt, and records source fingerprints/provenance. Mixed archive/caller observations, duplicate captures, stale observations and scope/hash mismatches are rejected. Source coverage remains explicitly SUPPLIED_CAPTURES_ONLY.
+- Directional candidate construction now passively retains the full instrument map, observed option/futures chain and explicit profile after public-management work. It records a conservative post-acquisition receipt timestamp, with capture success/failure counters and isolated errors. Profile sequence fields are normalized on reload; optional futures quote evidence is preserved.
 
 ## Verification
 
@@ -28,6 +29,10 @@ At resumption Dev HEAD was 841131e, containing e043276 and 5a565df. The previous
 Broader checkpoint validation: 88 tests passed across full-policy replay, qualification/review, public capture, CLI qualification, signal artifacts, research, base replay, holdout, chronology and archive adapter.
 
 Public-capture follow-up: the same broader suite now passes 91 tests, including verified capture-to-replay integration and late-receipt/stale/scope/hash checks.
+
+Candidate-capture follow-up: 64 focused capture/orchestrator/connector/qualification tests passed, including archive round-trip, identical retry and rejection of late chain evidence at the earlier tick clock. One existing Starlette lifespan deprecation warning remains. Capture orchestration timing/load and conditional-protection capture still require further coverage; this is not release acceptance.
+
+Candidate capture acceptance checkpoint: 128 combined research/orchestrator tests passed. Explicit two-index tests establish that public management precedes capture and simulated disk failure does not stop candidate construction. CLI verifies fingerprints of content-addressed candidate captures before parsing their evidence. This proves ordering/failure isolation in fixtures, not bounded disk latency or Production load. Conditional-protection capture and acquisition/decision clock separation remain pending.
 
 1. Validate independent public-stream completeness against archive provenance and coverage manifests; sparse supplied events alone cannot establish an uninterrupted lifecycle. Cost-sensitivity stream propagation is implemented.
 2. Extend delayed execution validation to contemporary spread-quality rules and cost-model calibration. Cost-inclusive profile capital/risk checks at the changed book are implemented; they do not establish the accuracy of fee/slippage assumptions.

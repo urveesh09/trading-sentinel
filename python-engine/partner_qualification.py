@@ -85,9 +85,26 @@ def load_candidate_evidence(value: Mapping[str, Any], *, underlying: str, decisi
         if key in quotes:
             raise ValueError("duplicate candidate quote")
         quotes[key] = ContractQuote(contract=contract, **item)
+    future = None
+    if snap_raw.get("future_quote") is not None:
+        item = dict(snap_raw["future_quote"])
+        contract = by_token[item.pop("token")]
+        if contract.instrument_type != "FUT":
+            raise ValueError("future quote must identify a futures contract")
+        if item.get("last_trade_time") is not None:
+            item["last_trade_time"] = _clock(datetime.fromisoformat(item["last_trade_time"]), "future quote timestamp")
+            if item["last_trade_time"] > received:
+                raise ValueError("future quote timestamp follows receipt")
+        future = ContractQuote(contract=contract, **item)
     snapshot = ChainSnapshot(taken, date.fromisoformat(snap_raw["expiry"]), snap_raw["forward"],
-                             snap_raw.get("parity_forward"), snap_raw["lot_size"], None, quotes)
-    profile = PartnerAdvisoryProfile(**value["profile"])
+                             snap_raw.get("parity_forward"), snap_raw["lot_size"], future, quotes)
+    profile_value = dict(value["profile"])
+    for field in ("enabled_scopes", "instruments", "permitted_structures"):
+        if field in profile_value:
+            if not isinstance(profile_value[field], (list, tuple)):
+                raise ValueError(f"profile {field} must be a sequence")
+            profile_value[field] = tuple(profile_value[field])
+    profile = PartnerAdvisoryProfile(**profile_value)
     return book, snapshot, profile
 
 

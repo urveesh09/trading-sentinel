@@ -10,6 +10,38 @@ import pytest
 from partner_research_capture import persist_public_input
 
 
+def test_candidate_capture_roundtrip_preserves_actual_receipt(tmp_path):
+    from tests.test_partner_qualification import candidate_bundle
+    from partner_qualification import load_candidate_evidence
+    from partner_research_capture import persist_candidate_input
+    from pathlib import Path
+    now = datetime(2026, 9, 11, 10, tzinfo=ZoneInfo('Asia/Kolkata'))
+    book, snapshot, profile = load_candidate_evidence(candidate_bundle(), underlying='NIFTY', decision_at=now)
+    received = now + timedelta(seconds=2)
+    result = persist_candidate_input(tmp_path, book=book, snapshot=snapshot, profile=profile,
+                                     evaluation_at=now, received_at=received)
+    payload = json.loads(Path(result['path']).read_text())
+    assert payload['received_at'] == received.isoformat()
+    assert payload['evaluation_at'] == now.isoformat()
+    assert len(payload['snapshot']['quotes']) == 2
+    assert not payload['can_qualify']
+    # Late receipt stays late; the original tick clock cannot authorize its use.
+    with pytest.raises(ValueError, match='unavailable at decision time'):
+        load_candidate_evidence(payload, underlying='NIFTY', decision_at=now)
+    restored_book, restored, restored_profile = load_candidate_evidence(payload, underlying='NIFTY', decision_at=received)
+    assert restored.quotes == snapshot.quotes
+    assert restored_profile == profile
+    assert len(restored_book.by_symbol) == len(book.by_symbol)
+    assert persist_candidate_input(tmp_path, book=book, snapshot=snapshot, profile=profile,
+        evaluation_at=now, received_at=received) == result
+    from research_cli import _candidate_file
+    assert _candidate_file(result['path']) == payload
+    payload['profile']['risk_limit_rs'] = 999999
+    Path(result['path']).write_text(json.dumps(payload), encoding='utf-8')
+    with pytest.raises(ValueError, match='fingerprint'):
+        _candidate_file(result['path'])
+
+
 def test_lifecycle_loader_recomputes_price_and_preserves_late_receipt(tmp_path):
     from tests.test_fno_signal_scan import _frame, LONG_ROWS, NOW
     from partner_research_capture import load_public_lifecycle
