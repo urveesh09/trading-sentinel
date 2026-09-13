@@ -56,6 +56,8 @@ This is not a rerun of the entire repository test suite, gateway/native database
 
 ## First next action
 
+Approval-budget/validity follow-up: twelve-file F/G suite **180 passed**, no warnings, 6.60s, current Dev winvenv with `-q -W error`. Required predeclared amount/DD/expiry, type/finite bounds, original half-open validity window, stale/legacy reads, exact expiry, whitespace signer and malformed historical signature regressions pass. No schema/default/order/transport changes. `approval_usable=False` remains explicit until genuine frozen held-out/account/F/D evidence is validated. Source commit pending; no push/deployment. Next: actual comparison/evidence validation and bounded F provenance/schema corrections, not a declaration of full G acceptance.
+
 Exit-cache source commit `dd60b0c`; immediate seven-file commit/status review confirms clean Dev and matching documentation. Next correction is approval budget/evidence/expiry validation; F evidence corrections and faithful range comparison remain open. Local only, not pushed/deployed.
 
 Exit-cache integrity follow-up: ten-file proactive/G suite **137 passed**, warnings fatal, 5.99s, current Dev winvenv. Retained v3 companion manifests bind full effective proposal/clock/cost/bar/evaluator identity; the result table retains its previous four columns and all legacy rows. Compatible concurrent retries remain idempotent; conflicting reuse fails. Old four-value writer shape tested on an isolated database, not actual deployed-data compatibility. No Production ops/remote promotion. See F/G correction plan for exact command and remaining approval/range/F evidence work.

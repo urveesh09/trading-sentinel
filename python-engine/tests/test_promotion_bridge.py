@@ -66,6 +66,11 @@ def _make_decision(**overrides):
         "decided_by": "operator-dev",
         "authorisation_state": UNSIGNED,
         "notes": "fixture",
+        # Explicit fixture predeclaration, not inferred owner risk tolerance.
+        "research_budget_inr": 100.0,
+        "live_bankroll_delta": 100.0,
+        "max_drawdown_pct": .10,
+        "expiry_seconds": 86400,
     }
     base.update(overrides)
     return BridgeDecision(**base)
@@ -425,3 +430,117 @@ async def test_committed_append_order_not_signature_clock_defines_state(db_path)
     record = await read_bridge(db_path, bridge_id)
     assert record["current_state"] == REFUSED
     assert [row["new_state"] for row in record["transitions"]] == [UNSIGNED, REFUSED]
+
+
+@pytest.mark.parametrize("state, amount", [(APPROVED_WITH_BUDGET, "research_budget_inr"), (APPROVED_LIVE_BUDGET, "live_bankroll_delta")])
+@pytest.mark.parametrize("missing", ["amount", "max_drawdown_pct", "expiry_seconds"])
+def test_approved_decision_requires_explicit_budget_drawdown_and_expiry(state, amount, missing):
+    field = amount if missing == "amount" else missing
+    with pytest.raises(BridgeMissingFieldError, match=field):
+        _make_decision(authorisation_state=state, **{field: None})
+
+
+@pytest.mark.parametrize("field, value", [("research_budget_inr", True), ("research_budget_inr", float("nan")),
+    ("max_drawdown_pct", float("inf")), ("expiry_seconds", 60.5), ("expiry_seconds", True), ("expiry_seconds", "3600")])
+@pytest.mark.parametrize("state", [UNSIGNED, APPROVED_WITH_BUDGET])
+def test_malformed_budget_is_rejected_before_sqlite_type_coercion(field, value, state):
+    with pytest.raises(BridgeMissingFieldError, match=field):
+        _make_decision(authorisation_state=state, **{field: value})
+
+
+@pytest.mark.asyncio
+async def test_unbudgeted_unsigned_record_cannot_be_approved(db_path):
+    decision = _make_decision(research_budget_inr=None, live_bankroll_delta=None, max_drawdown_pct=None, expiry_seconds=None)
+    await persist_bridge(db_path, decision)
+    with pytest.raises(BridgeMissingFieldError, match="research_budget_inr"):
+        await transition_bridge(db_path, decision.bridge_id, new_state=APPROVED_WITH_BUDGET,
+                                decided_by="operator-dev", decided_at_utc=decision.decided_at_utc)
+    record = await read_bridge(db_path, decision.bridge_id)
+    assert record["current_state"] == UNSIGNED and len(record["transitions"]) == 1
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("delta, expected", [(-1, "NOT_YET_VALID"), (0, "VALID_BUDGET_ONLY"), (59, "VALID_BUDGET_ONLY"), (60, "EXPIRED")])
+async def test_budget_status_at_exact_original_window_boundaries(db_path, delta, expected):
+    decision = _make_decision(authorisation_state=APPROVED_WITH_BUDGET, expiry_seconds=60)
+    await persist_bridge(db_path, decision)
+    record = await read_bridge(db_path, decision.bridge_id, now=decision.decided_at_utc + timedelta(seconds=delta))
+    assert record["budget_status"] == expected
+    assert record["current_state"] == APPROVED_WITH_BUDGET
+    assert record["approval_usable"] is False and record["can_place_orders"] is False
+    assert record["approval_blockers"] == ["FROZEN_HELDOUT_ACCOUNT_AND_F_D_EVIDENCE_NOT_VALIDATED"]
+
+
+@pytest.mark.asyncio
+async def test_later_approval_cannot_extend_predeclared_budget_window(db_path):
+    decision = _make_decision(expiry_seconds=60)
+    await persist_bridge(db_path, decision)
+    at = decision.decided_at_utc + timedelta(seconds=30)
+    await transition_bridge(db_path, decision.bridge_id, new_state=APPROVED_WITH_BUDGET,
+                            decided_by="operator-dev", decided_at_utc=at)
+    before = await read_bridge(db_path, decision.bridge_id, now=at - timedelta(seconds=1))
+    expired = await read_bridge(db_path, decision.bridge_id, now=decision.decided_at_utc + timedelta(seconds=60))
+    assert before["budget_status"] == "NOT_YET_VALID"
+    assert expired["budget_status"] == "EXPIRED"
+
+
+@pytest.mark.asyncio
+async def test_approval_at_original_expiry_is_rejected_without_appending(db_path):
+    decision = _make_decision(expiry_seconds=60)
+    await persist_bridge(db_path, decision)
+    with pytest.raises(BridgeMissingFieldError, match="validity window"):
+        await transition_bridge(db_path, decision.bridge_id, new_state=APPROVED_WITH_BUDGET,
+            decided_by="operator-dev", decided_at_utc=decision.decided_at_utc + timedelta(seconds=60))
+    assert (await read_bridge(db_path, decision.bridge_id))["current_state"] == UNSIGNED
+
+
+@pytest.mark.asyncio
+async def test_historical_unbudgeted_approval_is_retained_but_not_usable(db_path):
+    import aiosqlite
+    decision = _make_decision()
+    await persist_bridge(db_path, decision)
+    # Model historical pre-hardening rows on a fixture; don't repair live books.
+    async with aiosqlite.connect(db_path) as db:
+        await db.execute("UPDATE promotion_bridges SET authorisation_state=?,research_budget_inr=NULL,max_drawdown_pct=NULL,expiry_seconds=NULL WHERE bridge_id=?", (APPROVED_WITH_BUDGET, decision.bridge_id))
+        await db.execute("UPDATE promotion_bridge_transitions SET new_state=? WHERE bridge_id=?", (APPROVED_WITH_BUDGET, decision.bridge_id))
+        await db.commit()
+    record = await read_bridge(db_path, decision.bridge_id, now=decision.decided_at_utc)
+    assert record["budget_status"] == "INVALID_OR_MISSING_BUDGET"
+    assert record["current_state"] == APPROVED_WITH_BUDGET and record["approval_usable"] is False
+
+
+@pytest.mark.asyncio
+async def test_stale_approved_record_is_visible_and_new_approval_fails(db_path, monkeypatch):
+    import promotion_bridge
+    decision = _make_decision()
+    approved = _make_decision(authorisation_state=APPROVED_WITH_BUDGET)
+    await persist_bridge(db_path, decision)
+    await persist_bridge(db_path, approved)
+    monkeypatch.setattr(promotion_bridge, "EQUITY_INTRADAY_SCHEDULE_VERSION", "new-version")
+    with pytest.raises(BridgeVersionMismatchError, match="stale"):
+        await transition_bridge(db_path, decision.bridge_id, new_state=APPROVED_WITH_BUDGET,
+                                decided_by="operator-dev", decided_at_utc=decision.decided_at_utc)
+    record = await read_bridge(db_path, approved.bridge_id, now=approved.decided_at_utc)
+    assert record["budget_status"] == "STALE_VERSION" and record["approval_usable"] is False
+
+
+@pytest.mark.asyncio
+async def test_whitespace_transition_signer_is_not_a_signature(db_path):
+    decision = _make_decision()
+    await persist_bridge(db_path, decision)
+    with pytest.raises(BridgeSignerError):
+        await transition_bridge(db_path, decision.bridge_id, new_state=REFUSED,
+                                decided_by="   ", decided_at_utc=decision.decided_at_utc)
+
+
+@pytest.mark.asyncio
+async def test_historical_out_of_window_signature_is_not_valid_budget_evidence(db_path):
+    import aiosqlite
+    decision = _make_decision(authorisation_state=APPROVED_WITH_BUDGET, expiry_seconds=60)
+    await persist_bridge(db_path, decision)
+    async with aiosqlite.connect(db_path) as db:
+        await db.execute("UPDATE promotion_bridge_transitions SET decided_at_utc=? WHERE bridge_id=?",
+                         ((decision.decided_at_utc + timedelta(seconds=60)).isoformat(), decision.bridge_id))
+        await db.commit()
+    record = await read_bridge(db_path, decision.bridge_id, now=decision.decided_at_utc)
+    assert record["budget_status"] == "INVALID_OR_MISSING_BUDGET" and record["approval_usable"] is False

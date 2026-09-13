@@ -39,6 +39,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import math
 import re
 import sqlite3
 from dataclasses import asdict, dataclass, field
@@ -109,6 +110,21 @@ _BUDGET_FIELD_LIMITS = {
     "max_drawdown_pct": (0.001, 0.50),
     "expiry_seconds": (60, 60 * 60 * 24 * 365),  # 1 minute to 1 year
 }
+
+
+def _validate_approval_budget(record: dict, state: str, *, require: bool = True) -> None:
+    amount = "live_bankroll_delta" if state == AuthorisationState.APPROVED_LIVE_BUDGET.value else "research_budget_inr"
+    for name in ((amount, "max_drawdown_pct", "expiry_seconds") if require else ()):
+        if record.get(name) is None:
+            raise BridgeMissingFieldError(f"{name} is required for {state}")
+    for name, (lo, hi) in _BUDGET_FIELD_LIMITS.items():
+        value = record.get(name)
+        if value is None:
+            continue
+        if (isinstance(value, bool) or not isinstance(value, (int, float))
+                or not lo <= value <= hi or not math.isfinite(value)
+                or (name == "expiry_seconds" and not isinstance(value, int))):
+            raise BridgeMissingFieldError(f"{name} must be within [{lo}, {hi}] with a valid numeric type")
 
 
 # --- dataclasses -----------------------------------------------------------
@@ -207,40 +223,18 @@ class BridgeDecision:
                 f"match current cost schedule {EQUITY_INTRADAY_SCHEDULE_VERSION!r}."
             )
 
-        # budget fields: only consulted for APPROVED_* states, but if set on
-        # an UNSIGNED or REFUSED bridge we silently drop them. If set on
-        # APPROVED_*, we enforce the limits defined in _BUDGET_FIELD_LIMITS.
+        # Unsigned records may retain explicit predeclared budgets. Approval
+        # requires the relevant amount, drawdown and expiry; none is inferred.
         if self.authorisation_state in {
             AuthorisationState.APPROVED_WITH_BUDGET.value,
             AuthorisationState.APPROVED_LIVE_BUDGET.value,
         }:
             self._validate_budget_fields()
+        else:
+            _validate_approval_budget(asdict(self), self.authorisation_state, require=False)
 
     def _validate_budget_fields(self) -> None:
-        if self.research_budget_inr is not None:
-            lo, hi = _BUDGET_FIELD_LIMITS["research_budget_inr"]
-            if not (lo <= self.research_budget_inr <= hi):
-                raise BridgeMissingFieldError(
-                    f"research_budget_inr must be within [{lo}, {hi}]"
-                )
-        if self.live_bankroll_delta is not None:
-            lo, hi = _BUDGET_FIELD_LIMITS["live_bankroll_delta"]
-            if not (lo <= self.live_bankroll_delta <= hi):
-                raise BridgeMissingFieldError(
-                    f"live_bankroll_delta must be within [{lo}, {hi}]"
-                )
-        if self.max_drawdown_pct is not None:
-            lo, hi = _BUDGET_FIELD_LIMITS["max_drawdown_pct"]
-            if not (lo <= self.max_drawdown_pct <= hi):
-                raise BridgeMissingFieldError(
-                    f"max_drawdown_pct must be within [{lo}, {hi}]"
-                )
-        if self.expiry_seconds is not None:
-            lo, hi = _BUDGET_FIELD_LIMITS["expiry_seconds"]
-            if not (lo <= self.expiry_seconds <= hi):
-                raise BridgeMissingFieldError(
-                    f"expiry_seconds must be within [{lo}, {hi}]"
-                )
+        _validate_approval_budget(asdict(self), self.authorisation_state)
 
 
 @dataclass(frozen=True)
@@ -404,7 +398,7 @@ async def transition_bridge(
         )
     if decided_at_utc.tzinfo is None or decided_at_utc.utcoffset() is None:
         raise BridgeMissingFieldError("decided_at_utc must be timezone-aware")
-    if not _SIGNER_PATTERN.fullmatch(decided_by):
+    if not isinstance(decided_by, str) or not decided_by.strip() or not _SIGNER_PATTERN.fullmatch(decided_by):
         raise BridgeSignerError(
             "decided_by must match [A-Za-z0-9._-@ ]{1,64}"
         )
@@ -414,8 +408,9 @@ async def transition_bridge(
         # Serialize the current-state read with the append. Two callers must
         # not both observe UNSIGNED and commit conflicting terminal decisions.
         await db.execute("BEGIN IMMEDIATE")
+        db.row_factory = sqlite3.Row
         async with db.execute(
-            "SELECT authorisation_state FROM promotion_bridges WHERE bridge_id = ?",
+            "SELECT * FROM promotion_bridges WHERE bridge_id = ?",
             (bridge_id,),
         ) as cursor:
             row = await cursor.fetchone()
@@ -428,7 +423,7 @@ async def transition_bridge(
             "WHERE bridge_id = ? ORDER BY rowid DESC LIMIT 1", (bridge_id,),
         ) as cursor:
             latest = await cursor.fetchone()
-        previous_state = latest[0] if latest is not None else row[0]
+        previous_state = latest[0] if latest is not None else row["authorisation_state"]
         valid = _VALID_FORWARD_TRANSITIONS.get(
             (previous_state, new_state), False
         )
@@ -438,6 +433,17 @@ async def transition_bridge(
                 f"permitted by bridge contract section 6; issue a new bridge under a "
                 f"new bridge_id."
             )
+        if new_state in {AuthorisationState.APPROVED_WITH_BUDGET.value, AuthorisationState.APPROVED_LIVE_BUDGET.value}:
+            if (row["schema_version"] != _SHADOW_SCHEMA_VERSION
+                    or row["cost_schedule_version"] != EQUITY_INTRADAY_SCHEDULE_VERSION
+                    or row["schema_version_bridge"] != _BRIDGE_SCHEMA_VERSION):
+                raise BridgeVersionMismatchError("approval record version is stale")
+            _validate_approval_budget(dict(row), new_state)
+            original_at = datetime.fromisoformat(row["decided_at_utc"])
+            if original_at.tzinfo is None or original_at.utcoffset() is None:
+                raise BridgeMissingFieldError("stored original decision clock must be timezone-aware")
+            if not original_at <= decided_at_utc < original_at + timedelta(seconds=row["expiry_seconds"]):
+                raise BridgeMissingFieldError("approval is outside the original budget validity window")
         await db.execute(
             "INSERT INTO promotion_bridge_transitions VALUES (?,?,?,?,?,?)",
             (
@@ -453,7 +459,7 @@ async def transition_bridge(
     return bridge_id
 
 
-async def read_bridge(db_path: str, bridge_id: str) -> Optional[dict]:
+async def read_bridge(db_path: str, bridge_id: str, *, now: Optional[datetime] = None) -> Optional[dict]:
     """Return the persisted bridge row plus its full transitions history.
 
     The transitions list is *authoritative* for current state; the bridge
@@ -462,6 +468,9 @@ async def read_bridge(db_path: str, bridge_id: str) -> Optional[dict]:
     ``init_promotion_bridges`` first so an empty DB returns ``None``
     cleanly instead of raising.
     """
+    current = now or datetime.now(timezone.utc)
+    if current.tzinfo is None or current.utcoffset() is None:
+        raise BridgeMissingFieldError("now must be timezone-aware")
     await init_promotion_bridges(db_path)
     async with aiosqlite.connect(db_path) as db:
         db.row_factory = sqlite3.Row
@@ -479,10 +488,36 @@ async def read_bridge(db_path: str, bridge_id: str) -> Optional[dict]:
             (bridge_id,),
         ) as cursor:
             transitions = [dict(row) async for row in cursor]
+    state = transitions[-1]["new_state"] if transitions else bridge_row["authorisation_state"]
+    budget_status = "NOT_APPROVED"
+    expires_at = None
+    if state in {AuthorisationState.APPROVED_WITH_BUDGET.value, AuthorisationState.APPROVED_LIVE_BUDGET.value}:
+        try:
+            _validate_approval_budget(dict(bridge_row), state)
+            original_at = datetime.fromisoformat(bridge_row["decided_at_utc"])
+            if original_at.tzinfo is None or original_at.utcoffset() is None:
+                raise ValueError("stored clock is naive")
+            expires_at = original_at + timedelta(seconds=bridge_row["expiry_seconds"])
+            latest_at = datetime.fromisoformat(transitions[-1]["decided_at_utc"]) if transitions else original_at
+            if latest_at.tzinfo is None or latest_at.utcoffset() is None:
+                raise ValueError("stored signature clock is naive")
+            if not original_at <= latest_at < expires_at:
+                raise ValueError("stored approval is outside original budget validity")
+            budget_status = "EXPIRED" if current >= expires_at else "NOT_YET_VALID" if current < max(original_at, latest_at) else "VALID_BUDGET_ONLY"
+        except (BridgeMissingFieldError, ValueError, TypeError, OverflowError):
+            budget_status = "INVALID_OR_MISSING_BUDGET"
+        if (bridge_row["schema_version"] != _SHADOW_SCHEMA_VERSION
+                or bridge_row["cost_schedule_version"] != EQUITY_INTRADAY_SCHEDULE_VERSION
+                or bridge_row["schema_version_bridge"] != _BRIDGE_SCHEMA_VERSION):
+            budget_status = "STALE_VERSION"
     return {
         "bridge": dict(bridge_row),
         "transitions": transitions,
-        "current_state": transitions[-1]["new_state"] if transitions else bridge_row["authorisation_state"],
+        "current_state": state,
+        "budget_status": budget_status,
+        "budget_expires_at": expires_at.isoformat() if expires_at is not None else None,
+        "approval_usable": False,
+        "approval_blockers": ["FROZEN_HELDOUT_ACCOUNT_AND_F_D_EVIDENCE_NOT_VALIDATED"] if state.startswith("APPROVED_") else [],
         "research_only": True,
         "can_place_orders": False,
         "authorization_effect": "NONE",

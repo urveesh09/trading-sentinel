@@ -201,7 +201,7 @@ Do not claim A–J complete because files exist. Maintain a requirement matrix w
 
 ## 16. Mandatory documentation and plan ritual
 
-September 13 independent F/G audit correction: `2026-09-13-fg-independent-correction-plan.md` supersedes any implication that the whole new bridge/strategy basket is accepted. Atomic terminal-state/append-order fix and faithful trailing entry/exit composition are tested in Dev with independent review. Exit-cache full effective proposal/clock/implementation identity, retained companion manifest and atomic reuse now pass 137 root proactive/G tests with warnings fatal. Approval budget/evidence/expiry validation, faithful range semantics and unsupported F schema/provenance/historical closures remain open. External F/G agent's work is preserved, not overwritten wholesale.
+September 13 independent F/G audit correction: `2026-09-13-fg-independent-correction-plan.md` supersedes any implication that the whole new bridge/strategy basket is accepted. Atomic terminal-state/append-order fix, faithful trailing composition and immutable exit-cache manifests are tested in Dev. Approval budget/expiry/version checks now require immutable predeclared amount/DD/expiry and retain the original-clock validity window; twelve-file F/G acceptance passes 180 tests with warnings fatal. Reads still report `approval_usable=False`: frozen held-out/account/F/D evidence validation, faithful range semantics and unsupported F schema/provenance/historical closures remain open. External F/G work is preserved. The earlier whole-engine receipt predates cache and budget changes; full rerun remains required.
 
 This is a user requirement for every future agent, including an agent continuing its own work:
 
