@@ -66,12 +66,24 @@ class TestStateToDescriptorMapping:
         """Every state produced by operational_coverage.py is in
         the mapping. If a new state is added, this test fails
         until the mapping is updated explicitly.
+
+        [WORKFLOW-I I.C 2026-09-13] The vocabulary now includes
+        the eight optional-AI states (READY, DISABLED_*,
+        OUTAGE_CIRCUIT_OPEN, STALE, NOT_REPORTED,
+        CORRUPT_REPORT) on top of the eight producer states.
+        The total is sixteen; the test name is updated.
         """
         from coverage_vocabulary import STATE_TO_DESCRIPTOR
         expected_states = {
+            # Original eight producer states.
             "HEALTHY_NO_SETUP", "AVAILABLE", "UNAVAILABLE",
             "UNCONFIGURED", "OBSERVED", "SCHEDULER_REJECTED",
             "NOT_YET_OBSERVED", "OBSERVED_USABLE",
+            # Optional-AI states (I.C).
+            "READY", "DISABLED_NO_CREDENTIAL",
+            "DISABLED_BY_CONFIGURATION", "DISABLED_BY_POLICY",
+            "OUTAGE_CIRCUIT_OPEN", "STALE", "NOT_REPORTED",
+            "CORRUPT_REPORT",
         }
         assert set(STATE_TO_DESCRIPTOR.keys()) == expected_states
 
@@ -314,6 +326,9 @@ class TestVocabularySummary:
     def test_summary_shape(self) -> None:
         """``vocabulary_summary`` returns a JSON-serialisable
         dict with descriptors, mappings, and producer reasons.
+
+        [WORKFLOW-I I.C 2026-09-13] ``state_count`` grew from 8
+        to 16 when the optional-AI states joined the mapping.
         """
         from coverage_vocabulary import vocabulary_summary
         import json
@@ -321,5 +336,5 @@ class TestVocabularySummary:
         # Must round-trip through JSON.
         json.dumps(summary)
         assert summary["descriptor_count"] == 7
-        assert summary["state_count"] == 8
+        assert summary["state_count"] == 16
         assert len(summary["producer_reasons"]) >= 3

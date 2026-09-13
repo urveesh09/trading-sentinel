@@ -115,6 +115,17 @@ STATE_TO_DESCRIPTOR: Dict[str, ReadinessDescriptor] = {
     "NOT_YET_OBSERVED": ReadinessDescriptor.NO_SESSION,
     # Proactive completed-bars pass-through.
     "OBSERVED_USABLE": ReadinessDescriptor.NO_SETUP,
+    # [WORKFLOW-I I.C 2026-09-13] Optional-AI states (the agent-side
+    # annotation queue). The engine's ``load_optional_ai_status``
+    # may return any of these; mapping per the §12 vocabulary.
+    "READY": ReadinessDescriptor.NO_SETUP,
+    "DISABLED_NO_CREDENTIAL": ReadinessDescriptor.DISABLED,
+    "DISABLED_BY_CONFIGURATION": ReadinessDescriptor.DISABLED,
+    "DISABLED_BY_POLICY": ReadinessDescriptor.DISABLED,
+    "OUTAGE_CIRCUIT_OPEN": ReadinessDescriptor.ERROR,
+    "STALE": ReadinessDescriptor.STALE,
+    "NOT_REPORTED": ReadinessDescriptor.NO_SESSION,
+    "CORRUPT_REPORT": ReadinessDescriptor.ERROR,
 }
 
 

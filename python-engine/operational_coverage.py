@@ -23,15 +23,17 @@ def _coverage(*, source_kind: str, configured: bool, enabled: bool, state: str,
 
 async def operational_coverage_report(db_path: str) -> dict[str, Any]:
     """Map producer evidence without treating missing rows as zero activity."""
+    from optional_ai_status import load_optional_ai_status
     from partner_manual_advisory import load_advisory_input_status
     from proactive_intelligence import proactive_activity_report
     from research_archive import readiness_view
     from scheduler_telemetry import scheduler_timing_report
 
-    inputs, proactive, timing = await asyncio.gather(
+    inputs, proactive, timing, optional_ai = await asyncio.gather(
         load_advisory_input_status(db_path),
         proactive_activity_report(db_path, now=datetime.now(timezone.utc)),
         scheduler_timing_report(db_path, limit=250),
+        load_optional_ai_status(db_path),
     )
     archive = await asyncio.to_thread(readiness_view, settings.RESEARCH_ARCHIVE_PATH)
     producers: dict[str, dict[str, Any]] = {}
@@ -134,6 +136,63 @@ async def operational_coverage_report(db_path: str) -> dict[str, Any]:
                 "jobs": list(tier_data.get("jobs", [])),
             },
         )
+    # [WORKFLOW-I I.C 2026-09-13] Optional-AI producer. The agent's
+    # status envelope is already validated by I.A's bounded
+    # validator; here we surface it through the same
+    # ``_coverage`` contract as the other producers so the
+    # dashboard's ``OperationalCoverage`` section shows it
+    # alongside the rest. The state passes through the H5
+    # vocabulary validator at the end of this function (no
+    # additional allow-list needed -- ``STATE_TO_DESCRIPTOR``
+    # is extended in ``coverage_vocabulary.py``).
+    #
+    # The optional AI appears as a single producer (no
+    # per-account shape -- the agent is a single worker, not
+    # a per-index pipeline). The bounded ``detail`` from the
+    # engine's ``load_optional_ai_status`` carries the queue
+    # snapshot plus the I.A usefulness envelope; both are
+    # already validated by the producer side.
+    oa_state = str(optional_ai.get("state", "NOT_REPORTED"))
+    oa_detail = optional_ai.get("detail") or {}
+    oa_queue = oa_detail.get("queue") or {}
+    oa_reason = (
+        oa_detail.get("reason")
+        or oa_state.lower().replace("_", " ")
+        or "optional_annotation_unknown"
+    )
+    producers["optional_ai"] = _coverage(
+        source_kind="OPTIONAL_AI_ANNOTATION",
+        configured=True,
+        enabled=oa_state not in {
+            "DISABLED_NO_CREDENTIAL",
+            "DISABLED_BY_CONFIGURATION",
+            "DISABLED_BY_POLICY",
+            "NOT_REPORTED",
+        },
+        state=oa_state,
+        reason=str(oa_reason)[:160],
+        attempted_at=None,
+        last_success_at=None,
+        observed_at=oa_detail.get("reported_at"),
+        receipt_at=oa_detail.get("received_at"),
+        counts={
+            "stale": bool(oa_detail.get("stale", False)),
+            "pending": oa_queue.get("pending"),
+            "cached": oa_queue.get("cached"),
+            "daily_requests": oa_queue.get("daily_requests"),
+            "daily_budget": oa_queue.get("daily_budget"),
+            "circuit_state": oa_queue.get("circuit_state"),
+            # I.A usefulness envelope, when present. Absent means
+            # the operator hasn't opted in; we surface "null"
+            # explicitly so the dashboard can distinguish.
+            "usefulness": oa_detail.get("usefulness"),
+        },
+        identity={
+            "reported_state": oa_detail.get("reported_state", oa_state),
+            "execution_authority": oa_detail.get("execution_authority", "NONE"),
+            "can_place_orders": oa_detail.get("can_place_orders", False),
+        },
+    )
     report = {"as_of": datetime.now(timezone.utc).isoformat(), "producers": producers,
               "note": "Coverage is operational evidence. Empty or unavailable sources never mean zero market opportunities or broker P&L."}
     # [WORKFLOW-H H5 2026-09-13] Validate every producer's state/reason
