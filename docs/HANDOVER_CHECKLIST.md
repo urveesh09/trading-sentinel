@@ -56,6 +56,8 @@ This is not a rerun of the entire repository test suite, gateway/native database
 
 ## First next action
 
+Exit-cache source commit `dd60b0c`; immediate seven-file commit/status review confirms clean Dev and matching documentation. Next correction is approval budget/evidence/expiry validation; F evidence corrections and faithful range comparison remain open. Local only, not pushed/deployed.
+
 Exit-cache integrity follow-up: ten-file proactive/G suite **137 passed**, warnings fatal, 5.99s, current Dev winvenv. Retained v3 companion manifests bind full effective proposal/clock/cost/bar/evaluator identity; the result table retains its previous four columns and all legacy rows. Compatible concurrent retries remain idempotent; conflicting reuse fails. Old four-value writer shape tested on an isolated database, not actual deployed-data compatibility. No Production ops/remote promotion. See F/G correction plan for exact command and remaining approval/range/F evidence work.
 
 Trailing-composition source commit `5bede72`; immediate seven-file stat/status review confirms clean Dev and matching guide/atlas/plan. Local only; no Production or remote promotion. Next implementation: separate exit-cache full proposal/clock/implementation identity, then remaining approval-validation and F evidence corrections.
