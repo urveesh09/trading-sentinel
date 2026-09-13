@@ -223,10 +223,12 @@ class TestVerdictSemantics:
         )
         assert replaced.blocks() is True
 
-    def test_banner_includes_verdict_not_provenance(self) -> None:
-        """The banner is operator-facing prose; provenance is
-        for audit logs, not the alert. The banner must not
-        change shape.
+    def test_banner_is_present_for_each_verdict(self) -> None:
+        """[WORKFLOW-I I.B 2026-09-13] Note: the I1 contract said the
+        banner does NOT include provenance. I.B supersedes that:
+        the banner now carries provenance as a trailing suffix.
+        The dedicated tests for that contract live in
+        ``test_review_banner_provenance.py``.
         """
         r = Review(
             verdict=Verdict.REJECT, conviction=15,
@@ -234,9 +236,8 @@ class TestVerdictSemantics:
             prompt_version="v1",
             started_at=datetime.now(timezone.utc),
         )
+        # Banner always contains the verdict summary.
         assert "REJECT" in r.banner()
-        assert "MiniMax" not in r.banner()
-        assert "v1" not in r.banner()
 
 
 # ---- (5) Repro / fixture --------------------------------------------------

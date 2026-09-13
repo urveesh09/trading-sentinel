@@ -147,14 +147,57 @@ class Review:
         return False
 
     def banner(self) -> str:
-        """One line for the top of the Telegram alert."""
+        """One line for the top of the Telegram alert.
+
+        [WORKFLOW-I I.B 2026-09-13] When the I1 provenance fields
+        are populated (model, prompt_version, response_seconds),
+        the banner carries them as a trailing suffix so the
+        operator can audit which model and prompt produced the
+        verdict. When the provenance is absent (legacy reviews,
+        or UNAVAILABLE verdicts with no completed call), the
+        banner stays in its pre-I1 form -- the absence is the
+        contract signal that the call did not complete.
+        """
         if self.verdict is Verdict.REVIEW_UNAVAILABLE:
-            return f"AI review UNAVAILABLE ({self.reason or 'unknown'}) - unreviewed"
-        if self.verdict is Verdict.REJECT:
-            return f"AI REJECTED (conviction {self.conviction}/100)"
-        if self.verdict is Verdict.APPROVE_WITH_CONCERNS:
-            return f"AI approved WITH CONCERNS (conviction {self.conviction}/100)"
-        return f"AI approved (conviction {self.conviction}/100)"
+            base = (
+                f"AI review UNAVAILABLE ({self.reason or 'unknown'}) "
+                "- unreviewed"
+            )
+        elif self.verdict is Verdict.REJECT:
+            base = f"AI REJECTED (conviction {self.conviction}/100)"
+        elif self.verdict is Verdict.APPROVE_WITH_CONCERNS:
+            base = (
+                f"AI approved WITH CONCERNS (conviction {self.conviction}/100)"
+            )
+        else:
+            base = f"AI approved (conviction {self.conviction}/100)"
+        suffix = self._provenance_suffix()
+        return f"{base}{suffix}"
+
+    def _provenance_suffix(self) -> str:
+        """[WORKFLOW-I I.B 2026-09-13] Render the I1 provenance as
+        a compact trailing suffix, or empty string when provenance
+        is absent.
+
+        Format: `` · <model>@<prompt_version> <secs>s``
+        Examples:
+            `` · MiniMax-M3@v1 1.5s``
+            `` · MiniMax-M3@v2 ?s``   (response_seconds=None)
+
+        ``@`` separates model from prompt_version visually so an
+        operator scanning the alert can read them without context.
+        Leading space is included only when the suffix is non-empty.
+        """
+        if not self.model or not self.prompt_version:
+            return ""
+        secs = self.response_seconds
+        if secs is None:
+            secs_label = "?s"
+        else:
+            # Format to 1 decimal; clamp at 0.1 minimum so
+            # sub-100ms reviews don't render as "0.0s".
+            secs_label = f"{max(secs, 0.1):.1f}s"
+        return f" · {self.model}@{self.prompt_version} {secs_label}"
 
 
 def unavailable(reason: str) -> Review:
