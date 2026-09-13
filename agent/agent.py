@@ -8,6 +8,7 @@ import logging
 import structlog
 import threading
 import urllib.parse
+from dataclasses import replace
 from datetime import datetime, timedelta, timezone
 from typing import List, Dict, Optional
 import requests
@@ -101,6 +102,45 @@ MINIMAX_ASYNC_REVIEW_ENABLED = os.getenv("MINIMAX_ASYNC_REVIEW_ENABLED", "false"
 MINIMAX_ASYNC_REVIEW_MAX_PENDING = int(os.getenv("MINIMAX_ASYNC_REVIEW_MAX_PENDING", "16"))
 MINIMAX_ASYNC_REVIEW_DAILY_BUDGET = int(os.getenv("MINIMAX_ASYNC_REVIEW_DAILY_BUDGET", "40"))
 MINIMAX_ASYNC_REVIEW_DEADLINE_SEC = int(os.getenv("MINIMAX_ASYNC_REVIEW_DEADLINE_SEC", "90"))
+# [WORKFLOW-I I1 2026-09-13] The prompt-version identifier. Bumped when
+# the analyst prompt template changes; cached reviews keep the version
+# they were reviewed with so a prompt change never invalidates an old
+# annotation silently. Per plan §13: "Store model/prompt/version ...
+# expiry." The default ``v1`` covers the existing analyst prompt; future
+# bumps should be deliberate, with a note in the prompt diff.
+MINIMAX_PROMPT_VERSION = os.getenv("MINIMAX_PROMPT_VERSION", "v1")
+
+
+# [WORKFLOW-I I1 2026-09-13] Helper that attaches provenance fields to a
+# Review. Used at every return site of ``analyze_with_minimax`` so each
+# review carries model/base_url/prompt_version/started_at/completed_at/
+# response_seconds. ``Review`` is frozen so we use ``dataclasses.replace``.
+def _attach_provenance(
+    review: Review,
+    *,
+    started_at: datetime,
+    completed_at: datetime,
+) -> Review:
+    """Return a copy of ``review`` with provenance fields populated.
+
+    Per plan §13: "Store model/prompt/version ... response time and
+    expiry." A future model or prompt change must NOT retroactively
+    re-label old annotations; the captured fields freeze the inputs
+    that produced the verdict.
+    """
+    response_seconds = max(
+        0.0,
+        (completed_at - started_at).total_seconds(),
+    )
+    return replace(
+        review,
+        model=MINIMAX_MODEL,
+        base_url=MINIMAX_BASE_URL,
+        prompt_version=MINIMAX_PROMPT_VERSION,
+        started_at=started_at,
+        completed_at=completed_at,
+        response_seconds=response_seconds,
+    )
 # [ADVISORY 2026-08-05] What to do when the reviewer cannot render an opinion.
 # "proceed" (default) preserves today's behaviour exactly: the alert goes out
 # with an UNAVAILABLE banner and the operator decides. "block" refuses to send
@@ -677,18 +717,29 @@ def analyze_with_minimax(
             result_holder['error'] = exc
 
     minimax_thread = threading.Thread(target=_call_minimax, daemon=True)
+    # [WORKFLOW-I I1 2026-09-13] Capture started_at before the thread
+    # begins. Each return site below uses ``datetime.now(timezone.utc)``
+    # as completed_at, then attaches provenance via ``_attach_provenance``.
+    started_at = datetime.now(timezone.utc)
     minimax_thread.start()
     minimax_thread.join(timeout=MINIMAX_WALL_TIMEOUT_SEC)
+    completed_at = datetime.now(timezone.utc)
 
     if minimax_thread.is_alive():
         logger.error(
             f"MiniMax timeout ({MINIMAX_WALL_TIMEOUT_SEC}s) for {ticker} - "
             f"analysis skipped, alert still sent without conviction"
         )
-        return advisory_unavailable(f"timeout_{MINIMAX_WALL_TIMEOUT_SEC}s")
+        return _attach_provenance(
+            advisory_unavailable(f"timeout_{MINIMAX_WALL_TIMEOUT_SEC}s"),
+            started_at=started_at, completed_at=completed_at,
+        )
     if 'error' in result_holder:
         logger.error(f"MiniMax analysis failed for {ticker}: {result_holder['error']}")
-        return advisory_unavailable("api_error")
+        return _attach_provenance(
+            advisory_unavailable("api_error"),
+            started_at=started_at, completed_at=completed_at,
+        )
 
     # [ROADMAP-4.7 2026-07-13, carried through MiniMax migration] This is the
     # ONE place in the system where a third party's free-text output is parsed.
@@ -706,7 +757,10 @@ def analyze_with_minimax(
         content = response.choices[0].message.content
     except (AttributeError, IndexError, TypeError) as e:
         logger.error(f"MiniMax response had no content for {ticker}: {e}")
-        return advisory_unavailable("empty_response")
+        return _attach_provenance(
+            advisory_unavailable("empty_response"),
+            started_at=started_at, completed_at=completed_at,
+        )
 
     data = _extract_json_object(content)
     if data is None:
@@ -715,17 +769,26 @@ def analyze_with_minimax(
             f"MiniMax returned unparseable output for {ticker} -- proceeding "
             f"without analysis. First 200 chars: {preview!r}"
         )
-        return advisory_unavailable("unparseable_output")
+        return _attach_provenance(
+            advisory_unavailable("unparseable_output"),
+            started_at=started_at, completed_at=completed_at,
+        )
 
     try:
-        return review_from_payload(SignalOutput(**data).model_dump())
+        return _attach_provenance(
+            review_from_payload(SignalOutput(**data).model_dump()),
+            started_at=started_at, completed_at=completed_at,
+        )
     except (ValidationError, TypeError) as e:
         preview = (content or "")[:200]
         logger.error(
             f"MiniMax output for {ticker} did not match schema: {e} -- "
             f"proceeding without analysis. First 200 chars: {preview!r}"
         )
-        return advisory_unavailable("schema_mismatch")
+        return _attach_provenance(
+            advisory_unavailable("schema_mismatch"),
+            started_at=started_at, completed_at=completed_at,
+        )
 
 
 def _optional_review_key(signal: Dict, sentiment_text: str, market_regime: str) -> str:

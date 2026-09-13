@@ -47,6 +47,7 @@ Pure and dependency-free so it can be tested without an API key.
 from __future__ import annotations
 
 from dataclasses import dataclass, field
+from datetime import datetime
 from enum import Enum
 from typing import Any, Optional
 
@@ -91,12 +92,38 @@ class Review:
             otherwise. This is the field that did not exist before.
         payload: The model's parsed output when there is one, so existing
             renderers can keep reading pitch / rationale / risks.
+        model: The model identifier used for this review (e.g. "MiniMax-M3"),
+            or None when the review never completed. Per plan §13
+            "Store model/prompt/version ... expiry".
+        base_url: The API base URL the call was made against, or None when
+            the review never completed. Captured so a future URL change
+            doesn't invalidate old annotations retroactively.
+        prompt_version: A version string for the prompt template (e.g.
+            "v1", "v2"). Bumped when the analyst prompt changes; cached
+            reviews keep the version they were reviewed with so a prompt
+            change never invalidates an old annotation silently.
+        started_at: UTC datetime when the model call began, or None when
+            the review never completed.
+        completed_at: UTC datetime when the model call ended, or None when
+            the review never completed.
+        response_seconds: Wall-clock duration of the model call
+            (``(completed_at - started_at).total_seconds()``), or None
+            when the review never completed. Per plan §13 "response time".
     """
 
     verdict: Verdict
     conviction: Optional[int] = None
     reason: str = ""
     payload: dict[str, Any] = field(default_factory=dict)
+    # [WORKFLOW-I I1 2026-09-13] Provenance + response-time fields.
+    # Defaults are None so the dataclass remains backwards-compatible
+    # with callers that build a Review from `unavailable(reason)` etc.
+    model: Optional[str] = None
+    base_url: Optional[str] = None
+    prompt_version: Optional[str] = None
+    started_at: Optional[datetime] = None
+    completed_at: Optional[datetime] = None
+    response_seconds: Optional[float] = None
 
     @property
     def available(self) -> bool:
