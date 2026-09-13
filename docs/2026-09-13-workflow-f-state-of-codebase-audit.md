@@ -85,3 +85,37 @@ The orchestrator call sites carry **placeholder scaffold only** today: `penny_ed
 Behavioural coverage (this slice): 34 unit tests in `tests/test_affordability.py` cover every decision bucket, the input-validation contract, custom-threshold parameterisation, and reproduction determinism. 8 integration tests in `tests/test_affordability_integration.py` cover the ledger-aware wrapper through a stub ledger (the runtime ledger path is exercised by the orchestrators themselves). Whole-engine rerun: 2,751 passed / 4 skipped / 23 warnings in 125.66s; +42 net passing tests vs. the previous 2,709 baseline (34 unit + 8 integration). No regression to the previously-closed baseline failures; no new warnings.
 
 **This slice does NOT establish real affordability.** The guard exists; the integration sites are wired; no live path is currently calling the guard (live trading is structurally disarmed). Until F6 (capital policy + user-supplied loss tolerance) lands, no `APPROVED_LIVE_BUDGET` can be issued by the bridge. The guard's purpose is to be the *choke point* when F6 unblocks — not to invent authority before then.
+
+## 8. Open mark-to-market (F3 partial; producer + wire-up landed)
+
+### 8.1 What landed
+
+A standalone `python-engine/mark_to_market.py` module that computes unrealised P&L on every open position (equity, F&O, F&O debit/credit multi-leg structures) using a caller-supplied quote cache. Three named quote buckets (FRESH, STALE, UNAVAILABLE) preserve observability rather than silently degrading to zero. 43 focused tests in `python-engine/tests/test_mark_to_market.py` cover every bucket, every validation contract (NaN/Inf/string/None/empty), every F&O premium-multiplier edge, every multi-leg partial-stale conservative behaviour, and a regression test that demonstrates the silent-zero bug is closed.
+
+`main.py:run_penny_hourly_report` is patched to call `mark_open_positions` instead of reading `p.get("current_price", 0.0)`. The wire-up:
+- resolves each penny position's `instrument_token` (row first, Kite instrument cache by ticker as fallback);
+- batch-fetches one `kite.get_quote(tokens)` call (not one-per-row);
+- feeds the quote cache into `mark_open_positions`;
+- logs stale-quote counts and falls back to `Unrealised: +Rs 0` only when the whole MTM call raises (the prior silent-false-loss bug is gone).
+
+### 8.2 The bug F3 actually closes
+
+Pre-fix `main.py:1599` was:
+```python
+unrealised = sum((p.get("current_price", 0.0) - p.get("entry_price", 0.0)) * p.get("shares", 0) for p in penny_pos)
+```
+With `positions` carrying no `current_price` column, `p.get("current_price", 0.0)` always returned `0.0`. The expression collapsed to `-entry_price * shares`. For a 10-share TCS position at `entry_price=3000.0`, the hourly report printed `Unrealised: -Rs 30000` — a **false loss of 30,000 rupees on a position whose mark was unknown**. The bug was asymmetric and silent: it could not have been caught without running the orchestrator and reading the printed line. The new module makes the quote *visible* (FRESH, STALE, or UNAVAILABLE) and computes the actual P&L when a fresh quote is supplied.
+
+### 8.3 What F3 does NOT include
+
+- No UPDATE on `positions` / `fno_positions` / `fno_dr_positions`. MTM is read-only; the audit doc explicitly disallows ledger mutation in this workflow.
+- No F&O wire-up at the orchestrator level. The `fno_orchestrator` and `fno_dr_book` consumers are deferred to a follow-up commit that calls `mark_open_positions` from the F&O tick (which already has Kite open with `instrument_cache` pre-populated).
+- No `/performance` route wire-up. `operator_status.py:257` continues to read `perf.get("unrealised_pnl", 0.0)`. Wiring is deferred; the `/performance` payload is the F4/F5 territory.
+- No broker integration, no order placement. MTM is read-only and source-bound.
+
+### 8.4 Verification
+
+- Focused `tests/test_mark_to_market.py`: 43/43 pass in 0.39s (run twice: 0.39s and 0.42s; deterministic).
+- Whole-engine rerun: 2,794 passed / 4 skipped / 23 warnings in 125.65s (one rerun) and 126.15s (second rerun, `-p no:randomly`); +43 vs. previous 2,751 baseline; no regression to the previously closed baseline failures; no new warnings.
+
+**This slice does NOT establish real mark-to-market acceptance.** The producer is wired to the penny hourly report; the F&O orchestrator and the `/performance` route are not wired. Until the consumer wire-ups land, the value of MTM is structural (the producer exists, the silent-zero bug is gone, the consumer-side plumbing is one-line-per-site) — not end-to-end (the operator still sees `+Rs 0` in `/performance`).
