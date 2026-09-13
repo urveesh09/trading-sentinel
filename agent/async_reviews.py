@@ -80,6 +80,26 @@ class AsyncReviewQueue:
         self._requests_by_day: dict[str, int] = self._load_budget_state()
         self._consecutive_failures = 0
         self._circuit_open_until: Optional[datetime] = None
+        # [WORKFLOW-I I3 2026-09-13] Usefulness-instrumentation counters.
+        # These are bounded by ``_cleanup_locked`` (each list capped at
+        # ``max_retained_states``) so a long-running queue cannot leak
+        # memory. ``response_seconds`` captures wall-clock duration of
+        # the underlying model call so operators can see mean/p95
+        # latency. ``verdict_counts`` lets them verify the queue's
+        # APPROVE/REJECT distribution is sensible (e.g. an AI that
+        # always vetoes is a regression). ``cache_hits`` and
+        # ``cache_misses`` separate "the cache served it" from
+        # "we paid a model call".
+        self._response_seconds: list[float] = []
+        self._verdict_counts: dict[str, int] = {
+            "APPROVE": 0, "APPROVE_WITH_CONCERNS": 0,
+            "REVIEW_UNAVAILABLE": 0, "REJECT": 0,
+        }
+        self._cache_hits: int = 0
+        self._cache_misses: int = 0
+        self._circuit_opens: int = 0
+        self._last_response_seconds: Optional[float] = None
+        self._last_completed_at: Optional[datetime] = None
         self._stop = Event()
         self._worker = Thread(target=self._run, name="optional-ai-review", daemon=True)
         self._worker.start()
@@ -102,7 +122,12 @@ class AsyncReviewQueue:
                 valid_until = min(cached[1], expires_at)
                 self._cache[key] = (cached[0], valid_until)
                 self._review_expires_at[key] = valid_until
+                # [WORKFLOW-I I3 2026-09-13] Track cache hit.
+                self._cache_hits += 1
                 return self._remember(ReviewSubmission(key, "CACHED", review=cached[0]))
+            # [WORKFLOW-I I3 2026-09-13] Track cache miss. Anything
+            # that falls through to the queue path is a miss.
+            self._cache_misses += 1
             if key in self._pending:
                 return self._remember(ReviewSubmission(key, "PENDING", reason="already_queued"))
             if len(self._pending) >= self._max_pending:
@@ -149,6 +174,73 @@ class AsyncReviewQueue:
                 "daily_budget": self._max_requests_per_day,
                 "max_pending": self._max_pending,
                 "circuit_state": "OPEN" if circuit_open else "CLOSED",
+            }
+
+    def usefulness_snapshot(self) -> dict[str, object]:
+        """[WORKFLOW-I I3 2026-09-13] Bounded usefulness-instrumentation
+        snapshot for operator dashboards and CLI tooling.
+
+        Returns the raw numbers an operator needs to evaluate
+        annotation usefulness separately from trading outcome
+        (per plan §13). Does NOT invent a "did this help" metric;
+        that requires operator-supplied ground truth.
+
+        Fields
+        ------
+        total_completed_reviews
+            Reviews that ran through the worker thread (cache misses
+            served by the model). Excludes cache hits, queue-full
+            rejects, and circuit-open rejects.
+        verdict_counts
+            Distribution of verdicts across the four buckets
+            (APPROVE, APPROVE_WITH_CONCERNS, REVIEW_UNAVAILABLE,
+            REJECT). Useful to detect "AI always vetoes" regressions.
+        cache_hits / cache_misses
+            Counts since the queue was constructed. ``cache_hit_rate``
+            = ``hits / (hits + misses)`` when both are non-zero.
+        circuit_opens
+            Number of closed->open circuit transitions since startup.
+            Operators correlate this with provider outage windows.
+        response_seconds_mean / p95 / last
+            Aggregates across the bounded ``_response_seconds``
+            buffer (capped at ``max_retained_states``). ``last`` is
+            the most recent value.
+        last_completed_at
+            UTC datetime of the most recent completion (None if
+            the queue has never completed a review).
+        """
+        with self._lock:
+            self._cleanup_locked(self._now())
+            n_completed = sum(self._verdict_counts.values())
+            samples = list(self._response_seconds)
+            if samples:
+                mean = sum(samples) / len(samples)
+                sorted_samples = sorted(samples)
+                # p95: nearest-rank with linear interpolation.
+                idx = max(0, min(len(sorted_samples) - 1,
+                                  int(round(0.95 * (len(sorted_samples) - 1)))))
+                p95 = sorted_samples[idx]
+            else:
+                mean = None
+                p95 = None
+            total_lookups = self._cache_hits + self._cache_misses
+            cache_hit_rate = (
+                self._cache_hits / total_lookups if total_lookups else None
+            )
+            return {
+                "total_completed_reviews": n_completed,
+                "verdict_counts": dict(self._verdict_counts),
+                "cache_hits": self._cache_hits,
+                "cache_misses": self._cache_misses,
+                "cache_hit_rate": cache_hit_rate,
+                "circuit_opens": self._circuit_opens,
+                "response_seconds_mean": mean,
+                "response_seconds_p95": p95,
+                "response_seconds_last": self._last_response_seconds,
+                "last_completed_at": (
+                    self._last_completed_at.isoformat()
+                    if self._last_completed_at is not None else None
+                ),
             }
 
     def shutdown(self, timeout: float = 1.0) -> None:
@@ -242,8 +334,28 @@ class AsyncReviewQueue:
                 except Exception:
                     review = unavailable("worker_exception")
                 completed = self._now()
+                # [WORKFLOW-I I3 2026-09-13] Capture the model's response
+                # time and verdict. ``review.response_seconds`` is the
+                # producer-attached wall-clock duration (set by
+                # ``analyze_with_minimax``); we use it when available,
+                # otherwise fall back to ``(completed - now)``. Both
+                # are non-negative.
+                response_seconds = review.response_seconds
+                if response_seconds is None:
+                    response_seconds = max(0.0, (completed - now).total_seconds())
+                verdict_name = review.verdict.name if hasattr(review.verdict, "name") else str(review.verdict)
                 with self._lock:
                     self._pending.discard(task.key)
+                    # [WORKFLOW-I I3 2026-09-13] Track response time + last.
+                    self._response_seconds.append(response_seconds)
+                    if len(self._response_seconds) > self._max_retained_states:
+                        self._response_seconds = self._response_seconds[-self._max_retained_states:]
+                    self._last_response_seconds = response_seconds
+                    self._last_completed_at = completed
+                    # Track verdict distribution.
+                    self._verdict_counts[verdict_name] = (
+                        self._verdict_counts.get(verdict_name, 0) + 1
+                    )
                     if completed >= task.expires_at:
                         self._remember(ReviewSubmission(task.key, "EXPIRED", reason="review_completed_late"))
                     elif review.available:
@@ -258,6 +370,13 @@ class AsyncReviewQueue:
                     else:
                         self._consecutive_failures += 1
                         if self._consecutive_failures >= self._failure_limit:
+                            # [WORKFLOW-I I3 2026-09-13] Track circuit-open
+                            # transitions. Counted only when the circuit
+                            # transitions from closed to open (i.e. when
+                            # the threshold is crossed, not on every
+                            # subsequent failure inside an already-open
+                            # circuit).
+                            self._circuit_opens += 1
                             self._circuit_open_until = (
                                 completed + timedelta(seconds=self._cooldown_seconds)
                             )
