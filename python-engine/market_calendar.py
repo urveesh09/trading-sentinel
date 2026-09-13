@@ -11,6 +11,38 @@ logger = structlog.get_logger()
 
 IST = pytz.timezone("Asia/Kolkata")
 
+# [WORKFLOW-J 2026-09-13] Central session constants. Each value cites
+# its NSE source. Adding a new constant here is the ONLY allowed way to
+# introduce a new clock; the constants are consumed by
+# ``classify_session_phase`` (this file) and ``stamp_session_phase``
+# (``proactive_intelligence``).
+#
+# Sources:
+#   * NSE equity cash continuous trading:
+#     https://www.nseindia.com/static/products-services/closing-auction-session
+#   * NSE Closing Auction Session (CAS) effective from 2026-01-19
+#     (NSE/CMTR/72394), with Phase 1 scope = cash stocks with
+#     derivative contracts.
+#   * NSE equity derivatives session: 09:15–15:40 IST.
+#   * NSE CAS sub-windows (15:15–15:35 IST, plus 15:35–16:00 IST
+#     transition + post-close). Reference price window uses
+#     trades 15:00–15:15.
+#
+# Behavior-preservation note: the existing ``time(9, 15)`` and
+# ``time(15, 30)`` literals inside ``is_market_open`` are not
+# removed; the named constants below are aliases with the same
+# values so the function body and its callers stay identical.
+MARKET_OPEN_TIME: time = time(9, 15)
+MARKET_CLOSE_TIME: time = time(15, 30)  # cash continuous trading end
+DERIVATIVES_CLOSE_TIME: time = time(15, 40)  # equity derivatives end
+PRE_MARKET_OPEN_TIME: time = time(9, 0)
+CAS_OPEN_TIME: time = time(15, 15)
+CAS_REFERENCE_PRICE_END: time = time(15, 20)
+CAS_ORDER_ENTRY_END: time = time(15, 25)
+CAS_LIMIT_ENTRY_ONLY_END: time = time(15, 30)
+CAS_MATCHING_END: time = time(15, 35)
+CAS_POST_CLOSE_END: time = time(16, 0)
+
 # [ROADMAP-3.10 2026-07-12] Static NSE trading-holiday list -- the
 # LAST-RESORT fallback when both the DB cache is empty and the
 # nseindia.com fetch fails (it routinely bot-blocks). Source: the NSE
@@ -222,3 +254,211 @@ def trading_days_between_sync(start: date, end: date, db_path: str) -> int:
             days += 1
         d += timedelta(days=1)
     return days
+
+
+# ---- 2026-09-13 WORKFLOW-J: CAS-aware session classifier ----
+#
+# Plan §14 requires an exchange/security/session-phase model after
+# effective dates and broker behaviour are verified. We have verified
+# the dates (see ``docs/2026-09-13-workflow-j-deep-research.md``);
+# broker behaviour is NOT verified (no live broker in Dev). Therefore
+# this slice adds the classifier as a pure, total function that future
+# callers can use, but does NOT change any production behaviour
+# (production call sites still go through ``stamp_session_phase`` which
+# remains the J-forward-compat seam returning "UNKNOWN").
+
+#: Session phase values (strings). Frozen at import time; the
+#: classification function is exhaustive and total -- every
+#: (timestamp, symbol) pair returns exactly one of these values.
+SESSION_PHASE_CLOSED: str = "CLOSED"
+SESSION_PHASE_PRE_MARKET: str = "PRE_MARKET"
+SESSION_PHASE_CONTINUOUS_TRADING: str = "CONTINUOUS_TRADING"
+SESSION_PHASE_CAS_REFERENCE_PRICE_WINDOW: str = "CAS_REFERENCE_PRICE_WINDOW"
+SESSION_PHASE_CAS_ORDER_ENTRY: str = "CAS_ORDER_ENTRY"
+SESSION_PHASE_CAS_LIMIT_ENTRY_ONLY: str = "CAS_LIMIT_ENTRY_ONLY"
+SESSION_PHASE_CAS_MATCHING: str = "CAS_MATCHING"
+SESSION_PHASE_CAS_POST: str = "CAS_POST"
+SESSION_PHASE_DERIVATIVES_CAS_ALIGNED: str = "DERIVATIVES_CAS_ALIGNED"
+SESSION_PHASE_UNKNOWN: str = "UNKNOWN"
+
+#: Frozen set of all valid phase values, used by self-validation
+#: (the bounded contract test asserts the classifier never returns
+#: a value outside this set).
+_VALID_SESSION_PHASES: frozenset = frozenset({
+    SESSION_PHASE_CLOSED, SESSION_PHASE_PRE_MARKET,
+    SESSION_PHASE_CONTINUOUS_TRADING,
+    SESSION_PHASE_CAS_REFERENCE_PRICE_WINDOW,
+    SESSION_PHASE_CAS_ORDER_ENTRY,
+    SESSION_PHASE_CAS_LIMIT_ENTRY_ONLY,
+    SESSION_PHASE_CAS_MATCHING,
+    SESSION_PHASE_CAS_POST,
+    SESSION_PHASE_DERIVATIVES_CAS_ALIGNED,
+    SESSION_PHASE_UNKNOWN,
+})
+
+
+def _ist_clock_minutes(observation_at: datetime) -> tuple[int, int, int]:
+    """Return (weekday, hour, minute) in IST for any timezone-aware
+    UTC datetime. Naive datetimes are assumed UTC (the canonical form
+    used by the runner). ``None`` returns ``(0, 0, 0)`` so the caller
+    can classify as CLOSED -- the classifier never raises on None.
+    """
+    if observation_at is None:
+        return (0, 0, 0)
+    if observation_at.tzinfo is None:
+        aware = observation_at.replace(tzinfo=pytz.UTC)
+    else:
+        aware = observation_at.astimezone(pytz.UTC)
+    ist = aware.astimezone(IST)
+    return (ist.weekday(), ist.hour, ist.minute)
+
+
+def is_cas_eligible(symbol: str | None) -> bool:
+    """[WORKFLOW-J 2026-09-13] Phase 1 CAS eligibility check.
+
+    Per NSE (circular NSE/CMTR/72394, effective 2026-01-19), CAS Phase 1
+    applies only to cash-segment stocks on which derivative contracts
+    are available. The full list lives in the NSE contract-master API.
+
+    Dev has no live F&O list; the operator must populate one when known.
+    Until then, every symbol is reported as **not CAS-eligible** so the
+    classifier returns CAS-aware phases only when the operator has
+    explicitly opted in. This is the honest bounded default.
+
+    The function is **pure** (no I/O, no clock, no DB). The eligibility
+    list, when populated, should be supplied via a settings/config
+    module -- the future J.2 slice wires that.
+
+    A ``None`` symbol returns False (the operator has not told us
+    which instrument this observation is for).
+    """
+    if not symbol or not isinstance(symbol, str):
+        return False
+    return False  # populated list is operator-supplied; default = not eligible
+
+
+def classify_session_phase(
+    observation_at: datetime | None,
+    *,
+    symbol: str | None = None,
+    is_derivative: bool = False,
+) -> str:
+    """[WORKFLOW-J 2026-09-13] Classify a single observation timestamp
+    into one of the bounded ``_VALID_SESSION_PHASES``.
+
+    Contract:
+        * Pure: no I/O, no clock, no DB, no logging, no broker call.
+        * Total: every (timestamp, symbol, is_derivative) input returns
+          a phase from the documented set. Never raises.
+        * Day-agnostic of holiday data: this function does NOT consult
+          ``NSE_HOLIDAYS_STATIC``. Callers that need holiday-awareness
+          must combine this with ``is_trading_day_sync``. We intentionally
+          keep the two concerns separate -- the phase is a clock-only
+          classification, the holiday check is a calendar concern.
+
+    Phase selection (in order of precedence):
+        1. ``observation_at is None`` -> ``UNKNOWN``.
+        2. Saturday or Sunday -> ``CLOSED``.
+        3. IST 00:00–08:59 or 16:00+ -> ``CLOSED``.
+        4. IST 09:00–09:14 -> ``PRE_MARKET``.
+        5. IST 09:15–15:14 + non-derivative -> ``CONTINUOUS_TRADING``
+           (cash continuous trading including the reference-price
+           window 15:00–15:15, which IS still continuous trading for
+           non-CAS-eligible cash).
+        6. IST 09:15–15:29 + derivative -> ``CONTINUOUS_TRADING``
+           (derivatives trade through 15:40 IST; the post-15:30 CAS-
+           aligned band is handled separately).
+        7. IST 15:15–15:19 + CAS-eligible cash ->
+           ``CAS_REFERENCE_PRICE_WINDOW``.
+        8. IST 15:20–15:24 + CAS-eligible cash -> ``CAS_ORDER_ENTRY``.
+        9. IST 15:25–15:29 + CAS-eligible cash ->
+           ``CAS_LIMIT_ENTRY_ONLY``.
+       10. IST 15:15–15:29 + non-CAS-eligible cash ->
+           ``CONTINUOUS_TRADING`` (cash still open).
+       11. IST 15:30–15:34 + CAS-eligible cash -> ``CAS_MATCHING``.
+       12. IST 15:30–15:39 + derivative ->
+           ``DERIVATIVES_CAS_ALIGNED`` (NSE/CMTR/76170 futures CAS-
+           aligned price band, effective 2026-09-07).
+       13. IST 15:35–15:59 + CAS-eligible cash -> ``CAS_POST``.
+       14. IST 15:30–15:59 + non-CAS-eligible, non-derivative cash ->
+           ``CLOSED``.
+       15. IST 16:00+ -> ``CLOSED``.
+
+    The function never raises and never returns a value outside
+    ``_VALID_SESSION_PHASES``. Naive datetimes are interpreted as UTC.
+    """
+    if observation_at is None:
+        return SESSION_PHASE_UNKNOWN
+    weekday, hour, minute = _ist_clock_minutes(observation_at)
+    # Weekend: never any session.
+    if weekday >= 5:
+        return SESSION_PHASE_CLOSED
+    time_minutes = hour * 60 + minute
+    # Pre-market.
+    pre_open = PRE_MARKET_OPEN_TIME.hour * 60 + PRE_MARKET_OPEN_TIME.minute
+    market_open = MARKET_OPEN_TIME.hour * 60 + MARKET_OPEN_TIME.minute
+    market_close = MARKET_CLOSE_TIME.hour * 60 + MARKET_CLOSE_TIME.minute
+    cas_open = CAS_OPEN_TIME.hour * 60 + CAS_OPEN_TIME.minute
+    cas_ref_end = CAS_REFERENCE_PRICE_END.hour * 60 + CAS_REFERENCE_PRICE_END.minute
+    cas_order_end = CAS_ORDER_ENTRY_END.hour * 60 + CAS_ORDER_ENTRY_END.minute
+    cas_limit_end = CAS_LIMIT_ENTRY_ONLY_END.hour * 60 + CAS_LIMIT_ENTRY_ONLY_END.minute
+    cas_match_end = CAS_MATCHING_END.hour * 60 + CAS_MATCHING_END.minute
+    cas_post_end = CAS_POST_CLOSE_END.hour * 60 + CAS_POST_CLOSE_END.minute
+    deriv_close = DERIVATIVES_CLOSE_TIME.hour * 60 + DERIVATIVES_CLOSE_TIME.minute
+    # Before pre-market: closed (covers 00:00-08:59).
+    if time_minutes < pre_open:
+        return SESSION_PHASE_CLOSED
+    # Pre-market window.
+    if pre_open <= time_minutes < market_open:
+        return SESSION_PHASE_PRE_MARKET
+    # Continuous trading: 09:15-15:14 (cash continuous trading end at
+    # 15:30 IST, but CAS reference-price calc begins at 15:15; for
+    # non-CAS-eligible cash 15:15-15:29 is also still continuous
+    # trading -- the special windows below only apply when CAS-eligible).
+    # Derivatives continue continuous trading through 15:29 IST
+    # (NSE equity derivatives session is 09:15-15:40; the
+    # CAS-aligned band at 15:30-15:40 is handled separately below).
+    if is_derivative:
+        if market_open <= time_minutes < cas_limit_end:
+            return SESSION_PHASE_CONTINUOUS_TRADING
+    else:
+        if market_open <= time_minutes < cas_open:
+            return SESSION_PHASE_CONTINUOUS_TRADING
+    # CAS-eligible cash sub-windows (15:15 onward). CAS eligibility is
+    # explicit; non-eligible symbols stay in CONTINUOUS_TRADING until
+    # MARKET_CLOSE_TIME (15:30).
+    cas_eligible = is_cas_eligible(symbol)
+    if cas_eligible:
+        if cas_open <= time_minutes < cas_ref_end:
+            return SESSION_PHASE_CAS_REFERENCE_PRICE_WINDOW
+        if cas_ref_end <= time_minutes < cas_order_end:
+            return SESSION_PHASE_CAS_ORDER_ENTRY
+        if cas_order_end <= time_minutes < cas_limit_end:
+            return SESSION_PHASE_CAS_LIMIT_ENTRY_ONLY
+        if cas_limit_end <= time_minutes < cas_match_end:
+            return SESSION_PHASE_CAS_MATCHING
+        if cas_match_end <= time_minutes < cas_post_end:
+            return SESSION_PHASE_CAS_POST
+    # Non-CAS cash between 15:15 and 15:30: still continuous trading
+    # until the cash close at 15:30 IST.
+    if not is_derivative and not cas_eligible:
+        if cas_open <= time_minutes < market_close:
+            return SESSION_PHASE_CONTINUOUS_TRADING
+    # Derivatives after 15:30: NSE/CMTR/76100-style CAS-aligned band
+    # window for stock and index futures. This window ONLY applies to
+    # derivative symbols; for cash the 15:30 close is the end of the
+    # regular session.
+    if is_derivative and cas_limit_end <= time_minutes < deriv_close:
+        return SESSION_PHASE_DERIVATIVES_CAS_ALIGNED
+    # 15:40 onward for derivatives: session is closed (15:40 is the
+    # last minute of CAS-aligned band; 15:40 IST itself = closed).
+    if is_derivative and time_minutes >= deriv_close and time_minutes < cas_post_end:
+        return SESSION_PHASE_CLOSED
+    # 15:30 onward, non-derivative, non-CAS: closed (regular cash done).
+    if not is_derivative and not cas_eligible and market_close <= time_minutes < cas_post_end:
+        return SESSION_PHASE_CLOSED
+    # 16:00 onward: closed (post-close session ends).
+    if time_minutes >= cas_post_end:
+        return SESSION_PHASE_CLOSED
+    # Defensive fallback (should be unreachable given the cases above).
+    return SESSION_PHASE_UNKNOWN
