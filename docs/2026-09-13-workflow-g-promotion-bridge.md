@@ -145,16 +145,15 @@ Adding any of these here expands scope creep and re-implements work elsewhere. *
 
 ## 10. File/template persistence location
 
-Until a `promotion_bridge.py` module exists, refusal and approval records are *markdown files* under `docs/evidence/promotion_bridges/` (directory to be created when the first bridge is signed). Each file:
+Refusal and approval records are persisted by `python-engine/promotion_bridge.py` into `promotion_bridges.db` (separate file from `cache.db`, located at `<settings.DB_PATH parent>/promotion_bridges.db`). The schema is two tables:
 
-- Filename: `<bridge_id>_<proposal_run_id>_<YYYY-MM-DD>.md`
-- Body: the YAML front-matter from §5, followed by a freeform operator note.
-- Immutable by convention (no edits after sign; new bridges are new files).
+- `promotion_bridges` — one row per `bridge_id`, holding the seven required fields plus the four optional budget fields and the bridge-schema version `promotion-bridge-v1`.
+- `promotion_bridge_transitions` — append-only audit log of every state change; `previous_state NULL` for the original `UNSIGNED` write; subsequent state changes append, never update the bridge row.
 
-When the implementation lands, files are migrated into a SQLite table `promotion_bridges` with `(bridge_id PRIMARY KEY, decision_unix INT, decision_iso TEXT, ...)` and the markdown files preserved as the signed-by-hand source of truth.
+Until the operator signs, no row exists. When the first bridge is signed, the row lands in the same SQLite file via `persist_bridge(db_path, decision)`; a refile (`transition_bridge(...)`) appends an audit row rather than amending the bridge row. Markdown templates under `docs/evidence/promotion_bridges/` (filename `<bridge_id>_<proposal_run_id>_<YYYY-MM-DD>.md`) remain a valid hand-signing surface for the operator who prefers text; the recommended path is the database, since the state-machine and version guards are enforced only there.
 
 ## 11. Status
 
-This document records the contract only. Status: `CONTRACT_DEFINED — UNSIGNED` for any live candidate. Implementation commit will follow AGENTS.md §16 plan-slice template and reference this document by name. No runtime code change in this commit.
+This document defines the contract. The persistence surface (`promotion_bridge.py` + `tests/test_promotion_bridge.py`, 30 tests) is implemented on `codex/production-correction-hedge-p0` after `8c15ad6`. **Signing remains UNSIGNED for every live candidate**: no operator has yet issued a `BridgeDecision`, and the actual `INITIAL_BANKROLL` cap and loss tolerance required by §8 are still pending user input. Implementation follows AGENTS.md §16 and references this document by name.
 
-Verification (Dev, September 13): docs-only at parent commit `16fd6af`; no test rerun required. The constant-change commit on the same branch ran the focused 5-test suite (5/5 pass) and the whole-engine Python suite: 2,574 passed/4 skipped/23 warnings in 122.52s; no regression to the previously closed 17 baseline failures. Future implementation will carry its own acceptance per AGENTS.md §16.
+Verification (Dev, September 13): contract-documenting commit `16fd6af`; the persistence+state-machine commit on the same branch ran the focused 30-test suite (`python-engine/tests/test_promotion_bridge.py`, 30/30 pass) and the whole-engine Python suite: 2,604 passed/4 skipped/23 warnings in 123.04s (was 2,574 before this commit, +30 net = the new promotion-bridge tests, no regression to the previously closed 17 baseline failures). Future signing events follow AGENTS.md §16 and reference this document by name.
