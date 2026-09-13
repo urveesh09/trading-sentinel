@@ -92,12 +92,12 @@ class BridgeSignerError(BridgeTerminalError):
 
 _BRIDGE_SCHEMA_VERSION = "promotion-bridge-v1"
 _AUTHORISATION_STATES = frozenset(state.value for state in AuthorisationState)
-_VALID_FORWARD_TRANSITIONS: dict[frozenset[str], bool] = {
+_VALID_FORWARD_TRANSITIONS: dict[tuple[str, str], bool] = {
     # explicit allowlist rather than algorithmic derivation: makes the
     # state machine reviewable against bridge sections 3 and 6 at a glance
-    frozenset({AuthorisationState.UNSIGNED.value, AuthorisationState.REFUSED.value}): True,
-    frozenset({AuthorisationState.UNSIGNED.value, AuthorisationState.APPROVED_WITH_BUDGET.value}): True,
-    frozenset({AuthorisationState.UNSIGNED.value, AuthorisationState.APPROVED_LIVE_BUDGET.value}): True,
+    (AuthorisationState.UNSIGNED.value, AuthorisationState.REFUSED.value): True,
+    (AuthorisationState.UNSIGNED.value, AuthorisationState.APPROVED_WITH_BUDGET.value): True,
+    (AuthorisationState.UNSIGNED.value, AuthorisationState.APPROVED_LIVE_BUDGET.value): True,
 }
 _SIGNER_PATTERN = re.compile(r"^[A-Za-z0-9._\-@ ]{1,64}$")
 
@@ -411,6 +411,9 @@ async def transition_bridge(
 
     await init_promotion_bridges(db_path)
     async with aiosqlite.connect(db_path) as db:
+        # Serialize the current-state read with the append. Two callers must
+        # not both observe UNSIGNED and commit conflicting terminal decisions.
+        await db.execute("BEGIN IMMEDIATE")
         async with db.execute(
             "SELECT authorisation_state FROM promotion_bridges WHERE bridge_id = ?",
             (bridge_id,),
@@ -420,9 +423,14 @@ async def transition_bridge(
             raise BridgeInvalidStateError(
                 f"bridge_id={bridge_id!r} does not exist; cannot transition"
             )
-        previous_state = row[0]
+        async with db.execute(
+            "SELECT new_state FROM promotion_bridge_transitions "
+            "WHERE bridge_id = ? ORDER BY rowid DESC LIMIT 1", (bridge_id,),
+        ) as cursor:
+            latest = await cursor.fetchone()
+        previous_state = latest[0] if latest is not None else row[0]
         valid = _VALID_FORWARD_TRANSITIONS.get(
-            frozenset({previous_state, new_state}), False
+            (previous_state, new_state), False
         )
         if not valid:
             raise BridgeInvalidStateError(
@@ -467,7 +475,7 @@ async def read_bridge(db_path: str, bridge_id: str) -> Optional[dict]:
         async with db.execute(
             "SELECT previous_state, new_state, decided_by, decided_at_utc, notes "
             "FROM promotion_bridge_transitions WHERE bridge_id = ? "
-            "ORDER BY decided_at_utc ASC",
+            "ORDER BY rowid ASC",
             (bridge_id,),
         ) as cursor:
             transitions = [dict(row) async for row in cursor]

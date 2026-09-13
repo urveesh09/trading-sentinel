@@ -201,6 +201,8 @@ Do not claim A–J complete because files exist. Maintain a requirement matrix w
 
 ## 16. Mandatory documentation and plan ritual
 
+September 13 independent F/G audit correction: `2026-09-13-fg-independent-correction-plan.md` supersedes any implication that the new bridge/trailing comparison is accepted. Atomic terminal-state/append-order fix tested in Dev (81 warning-fatal focused tests); budget/evidence/expiry validation, faithful compositional trailing dispatch and unsupported F schema/provenance/historical closures remain open. External F/G agent's work is preserved, not overwritten wholesale.
+
 This is a user requirement for every future agent, including an agent continuing its own work:
 
 1. Before editing, reconcile current state and write/update a plan slice: problem, user impact, affected files, dependencies, assumptions, acceptance tests, rollback and what will remain.

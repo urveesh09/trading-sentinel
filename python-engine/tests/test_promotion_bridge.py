@@ -368,3 +368,60 @@ def test_compute_evidence_identity_treats_keys_as_unordered() -> None:
     a = compute_evidence_identity({"a": 1, "b": 2})
     b = compute_evidence_identity({"b": 2, "a": 1})
     assert a == b
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("terminal", [REFUSED, APPROVED_WITH_BUDGET, APPROVED_LIVE_BUDGET])
+async def test_latest_terminal_transition_cannot_be_amended(db_path, terminal):
+    bridge_id = await persist_bridge(db_path, _make_decision())
+    at = datetime(2026, 9, 13, 11, tzinfo=timezone.utc)
+    await transition_bridge(db_path, bridge_id, new_state=terminal,
+                            decided_by="operator-dev", decided_at_utc=at)
+    for attempted in (UNSIGNED, REFUSED, APPROVED_WITH_BUDGET, APPROVED_LIVE_BUDGET):
+        with pytest.raises(BridgeInvalidStateError, match="forward-only"):
+            await transition_bridge(db_path, bridge_id, new_state=attempted,
+                                    decided_by="operator-dev", decided_at_utc=at)
+    record = await read_bridge(db_path, bridge_id)
+    assert record["current_state"] == terminal
+    assert len(record["transitions"]) == 2
+    assert record["can_place_orders"] is False
+
+
+@pytest.mark.asyncio
+async def test_initial_approval_cannot_transition_back_to_unsigned(db_path):
+    bridge_id = await persist_bridge(db_path, _make_decision(
+        authorisation_state=APPROVED_WITH_BUDGET, research_budget_inr=100.0))
+    with pytest.raises(BridgeInvalidStateError, match="forward-only"):
+        await transition_bridge(db_path, bridge_id, new_state=UNSIGNED,
+                                decided_by="operator-dev",
+                                decided_at_utc=datetime(2026, 9, 13, 11, tzinfo=timezone.utc))
+
+
+@pytest.mark.asyncio
+async def test_concurrent_first_transitions_have_exactly_one_winner(db_path):
+    import asyncio
+    bridge_id = await persist_bridge(db_path, _make_decision())
+    at = datetime(2026, 9, 13, 11, tzinfo=timezone.utc)
+    results = await asyncio.gather(*[
+        transition_bridge(db_path, bridge_id, new_state=state,
+                          decided_by="operator-dev", decided_at_utc=at)
+        for state in (REFUSED, APPROVED_WITH_BUDGET)
+    ], return_exceptions=True)
+    assert sum(result == bridge_id for result in results) == 1
+    assert sum(isinstance(result, BridgeInvalidStateError) for result in results) == 1
+    record = await read_bridge(db_path, bridge_id)
+    assert len(record["transitions"]) == 2
+    assert record["current_state"] in {REFUSED, APPROVED_WITH_BUDGET}
+
+
+@pytest.mark.asyncio
+async def test_committed_append_order_not_signature_clock_defines_state(db_path):
+    bridge_id = await persist_bridge(db_path, _make_decision())
+    # A historical operator timestamp cannot reorder the committed transition
+    # ahead of creation and make the initial UNSIGNED row look current again.
+    await transition_bridge(db_path, bridge_id, new_state=REFUSED,
+                            decided_by="operator-dev",
+                            decided_at_utc=datetime(2025, 1, 1, tzinfo=timezone.utc))
+    record = await read_bridge(db_path, bridge_id)
+    assert record["current_state"] == REFUSED
+    assert [row["new_state"] for row in record["transitions"]] == [UNSIGNED, REFUSED]

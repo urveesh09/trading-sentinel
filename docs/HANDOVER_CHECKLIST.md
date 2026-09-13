@@ -56,6 +56,8 @@ This is not a rerun of the entire repository test suite, gateway/native database
 
 ## First next action
 
+User-requested independent F/G audit found concrete bridge terminal-state and trailing-dispatch defects plus unsupported F provenance/schema/closure claims. First atomic bridge correction passes **81 tests** in the seven-file F/G group with `-q -W error`, 1.63s, Dev engine winvenv; six new regressions cover terminal amendment, reverse transition, concurrent first decisions and backdated append clocks. Full approval validation/trailing composition/F evidence corrections remain required; see `2026-09-13-fg-independent-correction-plan.md`. No live permission inferred.
+
 Optional annotation validity source commit `59e915a`; immediate seven-file stat/status review confirms clean Dev and matching guide/atlas/plan, local only. Final focused Windows validity tests 14 passed with all warnings fatal in 1.14s.
 
 I validity slice: `2026-09-13-optional-ai-validity-plan.md`; READY/CACHED no longer outlive original/shortened validity or cache TTL, exact-deadline results discarded, nested signal inputs snapshotted. Current isolated agent suite **98 passed**, warnings fatal, 2.10s: `docker run --rm --pull=never --network none --entrypoint python --mount type=bind,source=C:\Users\Urveesh\Desktop\trading-sentinel\agent,target=/app,readonly trading-sentinel-agent-test:latest -m pytest tests -q -p no:cacheprovider -W error`. No credentials/Production mounts, all helpers removed automatically. This is not complete I provenance/news usefulness. F/G are being independently audited at user request; do not overwrite the other agent's implementation.
