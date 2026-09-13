@@ -60,6 +60,8 @@ Review the complete Dev release diff/defaults and prepare the GitHub PR; resolve
 
 ## September 13 backup/rollback safety verification
 
+Source commit `cd92830`; immediate post-commit stat/status review confirms the eight-file tool/runbook slice and clean Dev worktree. Local only, not pushed or deployed.
+
 `2026-09-13-consistent-backup-plan.md` and `consistent-data-backup-runbook.md` define full-tree/WAL capture, explicit exclusive maintenance ownership, no operational deletion and rollback that preserves newer history. Offline `scripts/verify_data_backup.py` verifies exact retained inventory/hash and SQLite integrity in scratch, never claims live consistency. Root reviewed Terra's implementation and corrected directory-only iteration, source-enumeration bounds/errors, parent case aliases and weak/optional test setup. Independent Luna audit inventories stores/retention/migration hazards incorporated in runbook.
 
 Final Windows command from `python-engine`: `.\winvenv\Scripts\python.exe -m pytest tests/test_data_backup_verification.py tests/test_deployment_verification.py tests/test_performance.py tests/test_partner_collection_attempts.py tests/test_research_leg_subscriptions.py tests/test_partner_research_capture.py -q -W error`: **117 passed, one symlink-privilege skip, no warnings**, 5.01s. Backup/deployment subset: 29 passed/one skip. WAL source connection remains open through capture; fixture byte snapshot confirms no source mutation and recovered ledger row. Missing WAL, matching corrupt SQLite, tampering, traversal/Windows aliases, hardlinks/devices, duplicate members/root, bounded expansion/enumeration, changing source/archive and receipt overwrite have negative tests. Receipt overwrite is not hidden by optional symlink skip.
