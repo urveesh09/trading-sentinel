@@ -8,7 +8,7 @@ from datetime import datetime, timezone
 
 import aiosqlite
 
-from proactive_intelligence import ShadowProposal, ShadowSimulation, _normalise_shadow_bars, _stamp, simulate_shadow_trade
+from proactive_intelligence import ShadowProposal, ShadowSimulation, _normalise_shadow_bars, _stamp, _simulate_shadow_trailing_stop, simulate_shadow_trade
 
 
 def simulate_partial_target_trail(proposal: ShadowProposal, bars: list[dict], *, cash: float, fee_rate: float=.001, slippage_bps: float=5) -> ShadowSimulation:
@@ -53,7 +53,7 @@ def simulate_partial_target_trail(proposal: ShadowProposal, bars: list[dict], *,
 
 
 async def persist_exit_policy_comparison(db_path: str, *, research_run_id: str, proposals: list[ShadowProposal], future_bars: dict[str,list[dict]], cash: float, fee_rate: float=.001, slippage_bps: float=5) -> list[dict]:
-    payload={"proposals":[(p.opportunity_id,p.entry,p.stop,p.target) for p in proposals],"bars":future_bars,"cash":cash,"fee_rate":fee_rate,"slippage_bps":slippage_bps,"version":"partial-target-trail-v1"}
+    payload={"proposals":[(p.opportunity_id,p.entry,p.stop,p.target) for p in proposals],"bars":future_bars,"cash":cash,"fee_rate":fee_rate,"slippage_bps":slippage_bps,"version":"partial-target-trail-with-trailing-stop-v2","exit_profiles":["STOP_TARGET_TIME_V1","PARTIAL_TARGET_TRAIL_V1","TRAILING_STOP_V1"]}
     digest=hashlib.sha256(json.dumps(payload,sort_keys=True,default=str,separators=(",",":")).encode()).hexdigest()
     async with aiosqlite.connect(db_path) as db:
         await db.execute("CREATE TABLE IF NOT EXISTS proactive_exit_research_runs (research_run_id TEXT PRIMARY KEY,input_sha256 TEXT NOT NULL,result_json TEXT NOT NULL,created_at TEXT NOT NULL)")
@@ -62,7 +62,7 @@ async def persist_exit_policy_comparison(db_path: str, *, research_run_id: str, 
             if row[0]!=digest: raise ValueError("exit research manifest conflicts with existing evidence")
             return json.loads(row[1])
     rows=[]
-    for name, runner in (("STOP_TARGET_TIME_V1",lambda p,b:simulate_shadow_trade(p,b,cash=cash,fee_rate=fee_rate,slippage_bps=slippage_bps)),("PARTIAL_TARGET_TRAIL_V1",lambda p,b:simulate_partial_target_trail(p,b,cash=cash,fee_rate=fee_rate,slippage_bps=slippage_bps))):
+    for name, runner in (("STOP_TARGET_TIME_V1",lambda p,b:simulate_shadow_trade(p,b,cash=cash,fee_rate=fee_rate,slippage_bps=slippage_bps)),("PARTIAL_TARGET_TRAIL_V1",lambda p,b:simulate_partial_target_trail(p,b,cash=cash,fee_rate=fee_rate,slippage_bps=slippage_bps)),("TRAILING_STOP_V1",lambda p,b:_simulate_shadow_trailing_stop(p,b,cash=cash,fee_rate=fee_rate,slippage_bps=slippage_bps))):
         outcomes=[runner(p,future_bars.get(p.instrument,[])) for p in proposals]; closed=[float(x.net_pnl) for x in outcomes if x.status=="CLOSED" and x.net_pnl is not None]
         rows.append({"exit_profile_id":name,"cost_model_version":"EQUITY_CASH_ESTIMATE_V1","trials":len(outcomes),"closed_outcomes":len(closed),"open_outcomes":sum(x.status=="OPEN" for x in outcomes),"no_fills":sum(x.status=="NO_FILL" for x in outcomes),"net_pnl":round(sum(closed),4) if closed else None,"net_expectancy":round(sum(closed)/len(closed),4) if closed else None,"reasons":{reason:sum(x.reason==reason for x in outcomes) for reason in sorted({x.reason for x in outcomes})}})
     async with aiosqlite.connect(db_path) as db:

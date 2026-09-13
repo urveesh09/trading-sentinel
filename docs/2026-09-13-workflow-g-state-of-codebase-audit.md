@@ -59,7 +59,7 @@ Plan §11 names six hypotheses; only three have shipped entry profiles.
 | Breakout with completed-bar confirmation | SHIPPED | `COMPLETED_BAR_CONFIRMATION_V1` | None |
 | Range mean reversion with strict invalidation | PARTIAL (constant only) | `RANGE_REVERSION_V1` — see update at §6 | Closed: profile accepted by dispatcher; **dedicated range-mean-reversion simulator still required for faithful semantics** |
 | Cost-aware abstention | NOT SHIPPED as a profile; covered indirectly by allocator's `INSUFFICIENT_*` reasons | n/a | Compare report, not entry profile |
-| Exit profile comparison | SHIPPED (2 profiles) | `STOP_TARGET_TIME_V1`, `BOUNDED_TIME_EXIT_60M_V1` | Partial: no 3rd exit for comparison variance |
+| Exit profile comparison | SHIPPED (3 profiles) | `STOP_TARGET_TIME_V1`, `BOUNDED_TIME_EXIT_60M_V1`, `TRAILING_STOP_V1` | Three orthogonal axes covered; `persist_exit_policy_comparison` emits three rows per run |
 | Exposure-aware allocation | NOT SHIPPED | n/a | Basket + portfolio research is the analysis surface; no third dimension (correlation cap) implemented |
 
 Conclusion: §11's six hypotheses can be evaluated with two new entry profiles (`RANGE_REVERSION_V1`, optionally a third exit). **Do not duplicate build_shadow_proposals; extend `_SHADOW_ENTRY_PROFILES`.**
@@ -132,14 +132,15 @@ Acceptance gap: write a comparison script; reuse existing stack.
 
 ### 2.5 Hypothesis #5: exit profile comparison
 
-`proactive_exit_research.simulate_partial_target_trail` (line 14) wraps proposal evaluation with two exits:
+`proactive_exit_research.simulate_partial_target_trail` (line 14) wraps proposal evaluation with three exits today (after this commit):
 
-- `STOP_TARGET_TIME_V1` — fixed stop + target + time-stop
-- `BOUNDED_TIME_EXIT_60M_V1` — 60-minute cutoff regardless of stop/target
+- `STOP_TARGET_TIME_V1` — fixed stop + target + time-stop (`simulate_shadow_trade`)
+- `BOUNDED_TIME_EXIT_60M_V1` — 60-minute cutoff regardless of stop/target (deadline-tweaked variant of `STOP_TARGET_TIME_V1`)
+- `TRAILING_STOP_V1` — Chandelier-style trailing stop with ``max(initial_stop, high - entry_risk)`` ratchet; new entry-bar high applies to *next* bar to avoid look-ahead (`python-engine/proactive_intelligence.py::_simulate_shadow_trailing_stop`, added 2026-09-13)
 
-`persist_exit_policy_comparison` (line 55) writes the side-by-side report; `exit_policy_report` (line 73) reads it. A third exit profile (e.g. trailing-Chandelier) is the natural extension but not required for §11's *comparison acceptance*.
+`persist_exit_policy_comparison` (line 55) writes a side-by-side report with one row per exit profile; `exit_policy_report` (line 73) reads it. With `TRAILING_STOP_V1` shipped, hypothesis #5 has three orthogonal points on the matrix: fixed stop/target, time-bounded, and ratcheting trailing. The fourth exit dimension (correlation with entry profile) lives at the higher cross of (`persisted_trials` rows × entry-profiles × exit-profiles = 4 × 3 = 12) available via `proactive_shadow_research_report`.
 
-Acceptance gap: zero new code needed for a two-way comparison.
+Acceptance gap: zero new code needed for a three-way comparison; a one-off comparison report can now be authored without further simulator changes.
 
 ### 2.6 Hypothesis #6: exposure-aware allocation
 
@@ -206,10 +207,10 @@ Without these, G's most dangerous failure mode is silent — a held-out comparis
 
 1. ~~`RANGE_REVERSION_V1` in `_SHADOW_ENTRY_PROFILES` (one constant change; permits hypothesis #3 to run).~~ **CLOSED 2026-09-13** (constant landed; focused 5-test suite in `tests/test_range_reversion_profile.py`; demo + neighbour tests made future-proof by deriving counts from `_SHADOW_ENTRY_PROFILES` and `_SHADOW_EXIT_PROFILES`). **Residual**: a *dedicated* range-mean-reversion simulator is still missing — the dispatcher currently routes `RANGE_REVERSION_V1` through the completed-bar-confirmation fallback, which is not a faithful interpretation. See §2.3 update.
 2. ~~A promotion bridge document + refusal record surface + risk-budget surface (governance gap).~~ **CLOSED 2026-09-13 (persistence + state machine, refusal surface + risk-budget fields implemented; signing still NOT carried out by anyone)** — see `python-engine/promotion_bridge.py` and `python-engine/tests/test_promotion_bridge.py` (30 tests covering field validation, version guards, append-only, forward-only state machine, read fail-closed, G invariant triple, budget bounds, evidence-identity hashing). **Residual**: no operator has actually signed a bridge; the contract remains `UNSIGNED` until user input declares loss tolerance and `INITIAL_BANKROLL` cap.
-3. A pre-declared comparison protocol that inherits C's `intraday_spread_holdout` split rules verbatim.
-4. A public note on the `"default-v1"` back-compat shim so future contributors don't collide.
-5. Schema-only forward-compat for `session_phase` on shadow trial rows (deferred to J's design).
-6. Optional third exit profile (`TRAILING_CHANDELIER_V1` or similar) for richer hypothesis #5 comparison.
+3. ~~Optional third exit profile (`TRAILING_STOP_V1` or similar) for richer hypothesis #5 comparison.~~ **CLOSED 2026-09-13** (`python-engine/proactive_intelligence.py` adds `TRAILING_STOP_V1` to `_SHADOW_EXIT_PROFILES`, a dedicated `_simulate_shadow_trailing_stop` simulator with a Chandelier-style ratcheting stop, an explicit dispatcher branch in `simulate_shadow_research_trial`, and a third comparison row in `proactive_exit_research.persist_exit_policy_comparison`. Focused 8-test suite at `tests/test_trailing_stop_profile.py` proves constant shipped, dispatcher accept / negative-control, three exit-reason outcomes (TRAILING_STOP after a ratchet-raising bar, TRAILING_STOP on initial-stop breach, HOLDING_DEADLINE), and a **look-ahead safety** test that verifies the entry bar's high does *not* raise the trailing level above the initial stop before the exit check fires.)
+4. A pre-declared comparison protocol that inherits C's `intraday_spread_holdout` split rules verbatim.
+5. A public note on the `"default-v1"` back-compat shim so future contributors don't collide.
+6. Schema-only forward-compat for `session_phase` on shadow trial rows (deferred to J's design).
 
 ## 7. Out-of-scope notes
 
@@ -217,6 +218,6 @@ Without these, G's most dangerous failure mode is silent — a held-out comparis
 - Live deployment (any D+E+I-style promotion) is explicitly out of scope until F + D close.
 - This slice touches no runtime code. Status update in `NEXT_AGENT_PLAN.md` §15 matrix is documentation-only.
 
-Status: G inventory documented at commits `16fd6af` (audit/bridge docs) and `8c15ad6` (range-reversion constant). The promotion-bridge persistence + state machine is the next commit on `codex/production-correction-hedge-p0`. G remains P1/P2. Future user direction needed on whether to (a) close the remaining three gaps before live comparison, (b) ship the dedicated range-mean-reversion simulator as a separate slice, or (c) defer any G implementation until F + D close. Verified audit commit `16fd6af`; constant-change commit `8c15ad6`; bridge commit SHA will be added when committed.
+Status: G inventory documented at commits `16fd6af` (audit/bridge docs), `8c15ad6` (range-reversion constant), `877fae6` (promotion bridge persistence + state machine). The trailing-stop exit profile is the next commit on `codex/production-correction-hedge-p0`. G remains P1/P2 until live promotion. Future user direction needed on whether to (a) close the remaining three gaps before live comparison, (b) ship the dedicated range-mean-reversion simulator as a separate slice, or (c) defer any G implementation until F + D close. Verified audit commit `16fd6af`; constant-change commit `8c15ad6`; bridge commit `877fae6`; trailing-stop commit SHA will be added when committed.
 
 Verification (Dev, September 13): docs-only at `16fd6af` (no test rerun required). The constant-change commit (the next commit on `codex/production-correction-hedge-p0`) ran the focused 5-test suite (5/5 pass) and the whole-engine Python suite: 2,574 passed (was 2,545), 4 skipped (was 3), 23 warnings, in 122.52s. The +29 net passing tests = 5 new in `test_range_reversion_profile.py` plus 24 comparison-trial rows now generated across the existing suite because `_SHADOW_ENTRY_PROFILES` grew from 3 to 4. **No regression** to the previously closed 17 baseline failures; no new warnings.

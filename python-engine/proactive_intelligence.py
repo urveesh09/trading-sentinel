@@ -29,7 +29,7 @@ _SHADOW_ENTRY_PROFILES = frozenset({
     "NEXT_EXECUTABLE_OPEN_V1", "BOUNDED_PULLBACK_LIMIT_V1", "COMPLETED_BAR_CONFIRMATION_V1",
     "RANGE_REVERSION_V1",
 })
-_SHADOW_EXIT_PROFILES = frozenset({"STOP_TARGET_TIME_V1", "BOUNDED_TIME_EXIT_60M_V1"})
+_SHADOW_EXIT_PROFILES = frozenset({"STOP_TARGET_TIME_V1", "BOUNDED_TIME_EXIT_60M_V1", "TRAILING_STOP_V1"})
 _STAGES = frozenset({
     "UNIVERSE", "DATA_READY", "SETUP", "COST_VIABLE", "RISK_APPROVED",
     "SELECTED", "SUBMITTED", "FILLED", "MANAGED", "CLOSED", "DEFERRED",
@@ -380,6 +380,68 @@ def _simulate_shadow_limit_pullback(
     return ShadowSimulation("NO_FILL", 0, None, None, None, None, None, "PULLBACK_LIMIT_NOT_REACHED")
 
 
+def _simulate_shadow_trailing_stop(
+    proposal: ShadowProposal, future_bars: list[dict], *, cash: float, fee_rate: float,
+    slippage_bps: float,
+) -> ShadowSimulation:
+    """Evaluate an at-open entry with a Chandelier-style trailing stop.
+
+    The trailing level is ``max(initial_stop, high - (entry - initial_stop))``
+    and is recomputed from the previous bar's extreme only — never from the
+    bar that triggered the exit (this avoids a fabricated favourable
+    intrabar sequence where the same high both raises the stop and is the
+    exit point). Same-bar exits are deliberately stop-first (ambiguity
+    fails closed). The holding deadline closes any open position at the
+    next bar's open less slippage, mirroring the limit-pullback
+    simulator's ``HOLDING_DEADLINE`` semantics.
+    """
+    normalised = _normalise_shadow_bars(future_bars)
+    if normalised is None:
+        return ShadowSimulation("INVALID", 0, None, None, None, None, None, "INVALID_OR_UNORDERED_FUTURE_BARS")
+    cutoff = _stamp(proposal.data_cutoff or proposal.signal_at or proposal.valid_until)
+    deadline = _stamp(proposal.entry_deadline or proposal.valid_until)
+    holding_deadline = _stamp(proposal.holding_deadline or proposal.valid_until)
+    if not math.isfinite(proposal.stop) or proposal.stop <= 0 or proposal.entry <= proposal.stop:
+        return ShadowSimulation("INVALID", 0, None, None, None, None, None, "INVALID_TRAILING_STOP_INPUT")
+    slip = slippage_bps / 10_000
+    entry = None; entry_at = None; quantity = 0; last_bar = None
+    trailing = proposal.stop
+    entry_risk = 0.0
+    for stamp, open_, high, low, _close in normalised:
+        last_bar = stamp
+        if entry is None:
+            if stamp <= cutoff or stamp > deadline:
+                continue
+            entry = open_ * (1 + slip)
+            entry_at = stamp
+            quantity = math.floor(cash / (entry * (1 + fee_rate)))
+            if quantity < 1:
+                return ShadowSimulation("NO_FILL", 0, None, None, None, None, None, "INSUFFICIENT_CASH_AFTER_FEES")
+            entry_risk = entry - proposal.stop
+        if stamp > holding_deadline:
+            exit_price = open_ * (1 - slip)
+            gross = (exit_price - entry) * quantity
+            fees = (entry + exit_price) * quantity * fee_rate
+            return ShadowSimulation("CLOSED", quantity, round(entry, 4), round(exit_price, 4), round(gross, 4),
+                                    round(fees, 4), round(gross - fees, 4), "HOLDING_DEADLINE", entry_at, stamp)
+        if low <= trailing:
+            exit_price = min(open_, trailing) * (1 - slip)
+            gross = (exit_price - entry) * quantity
+            fees = (entry + exit_price) * quantity * fee_rate
+            return ShadowSimulation("CLOSED", quantity, round(entry, 4), round(exit_price, 4), round(gross, 4),
+                                    round(fees, 4), round(gross - fees, 4), "TRAILING_STOP", entry_at, stamp)
+        # Raise the trailing stop using *this* bar's high; the new level
+        # applies to the next candle. This avoids a fabricated favourable
+        # intrabar sequence where the same high both raises the stop and is
+        # the exit point.
+        if entry is not None:
+            trailing = max(trailing, high - entry_risk)
+    if entry is None:
+        return ShadowSimulation("NO_FILL", 0, None, None, None, None, None, "NO_EXECUTABLE_BAR_AFTER_SIGNAL")
+    return ShadowSimulation("OPEN", quantity, round(entry, 4), None, None, None, None,
+                            "DATA_END_OPEN_POSITION", entry_at, last_bar)
+
+
 def simulate_shadow_research_trial(
     proposal: ShadowProposal, future_bars: list[dict], *, cash: float,
     entry_profile_id: str, exit_profile_id: str, fee_rate: float = .001,
@@ -401,6 +463,9 @@ def simulate_shadow_research_trial(
     if entry_profile_id == "BOUNDED_PULLBACK_LIMIT_V1":
         return _simulate_shadow_limit_pullback(profiled, future_bars, cash=cash, fee_rate=fee_rate,
                                                slippage_bps=slippage_bps)
+    if exit_profile_id == "TRAILING_STOP_V1":
+        return _simulate_shadow_trailing_stop(profiled, future_bars, cash=cash, fee_rate=fee_rate,
+                                              slippage_bps=slippage_bps)
 
     normalised = _normalise_shadow_bars(future_bars)
     if normalised is None:
