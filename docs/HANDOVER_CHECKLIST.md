@@ -56,6 +56,8 @@ This is not a rerun of the entire repository test suite, gateway/native database
 
 ## First next action
 
+Optional annotation validity source commit `59e915a`; immediate seven-file stat/status review confirms clean Dev and matching guide/atlas/plan, local only. Final focused Windows validity tests 14 passed with all warnings fatal in 1.14s.
+
 I validity slice: `2026-09-13-optional-ai-validity-plan.md`; READY/CACHED no longer outlive original/shortened validity or cache TTL, exact-deadline results discarded, nested signal inputs snapshotted. Current isolated agent suite **98 passed**, warnings fatal, 2.10s: `docker run --rm --pull=never --network none --entrypoint python --mount type=bind,source=C:\Users\Urveesh\Desktop\trading-sentinel\agent,target=/app,readonly trading-sentinel-agent-test:latest -m pytest tests -q -p no:cacheprovider -W error`. No credentials/Production mounts, all helpers removed automatically. This is not complete I provenance/news usefulness. F/G are being independently audited at user request; do not overwrite the other agent's implementation.
 
 Refreshed target/default review: [September 13 release target review](2026-09-13-release-target-review.md). Dev merge `7150ac7` non-destructively reconciles target `954e25a`; pre/post tree identical, clean status and target ancestor verified. The historical triple-dot inflation is resolved without source changes or force push. Docker/Compose/ledger migration code match the refreshed target. Partner delivery defaults are enabled in both versions: explicitly verify effective passive rollout switches, never claim disabled-by-default. Local only, not pushed/deployed.
