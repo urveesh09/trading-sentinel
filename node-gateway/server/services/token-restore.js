@@ -22,24 +22,27 @@ async function restoreTokenFromEngine({ attempts = 3, delayMs = 5000 } = {}) {
     try {
       const controller = new AbortController();
       const timeout = setTimeout(() => controller.abort(), 3000);
-      const resp = await fetch(`${config.PYTHON_ENGINE_URL}/token/current`, {
-        headers: { 'X-Internal-Secret': config.INTERNAL_API_SECRET },
-        signal: controller.signal
-      });
-      clearTimeout(timeout);
-      if (!resp.ok) throw new Error(`Engine returned ${resp.status}`);
+      try {
+        const resp = await fetch(`${config.PYTHON_ENGINE_URL}/token/current`, {
+          headers: { 'X-Internal-Secret': config.INTERNAL_API_SECRET },
+          signal: controller.signal
+        });
+        if (!resp.ok) throw new Error(`Engine returned ${resp.status}`);
 
-      const data = await resp.json();
-      if (!data.armed || !data.access_token) {
-        logger.info({ event_type: 'token_restore_skipped' },
-          'Engine holds no fresh token (normal before the daily login)');
-        return false;
+        const data = await resp.json();
+        if (!data.armed || !data.access_token) {
+          logger.info({ event_type: 'token_restore_skipped' },
+            'Engine holds no fresh token (normal before the daily login)');
+          return false;
+        }
+
+        tokenStore.setToken(data.access_token);
+        logger.info({ event_type: 'token_restore_success' },
+          'Kite token re-armed from python-engine after restart');
+        return true;
+      } finally {
+        clearTimeout(timeout);
       }
-
-      tokenStore.setToken(data.access_token);
-      logger.info({ event_type: 'token_restore_success' },
-        'Kite token re-armed from python-engine after restart');
-      return true;
     } catch (err) {
       logger.warn({ event_type: 'token_restore_attempt_failed', attempt, err: err.message },
         `Token restore attempt ${attempt}/${attempts} failed`);

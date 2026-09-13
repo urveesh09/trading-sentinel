@@ -85,4 +85,59 @@ describe('restoreTokenFromEngine()', () => {
     expect(global.fetch).toHaveBeenCalledTimes(2);
     expect(tokenStore.isValid()).toBe(false);
   });
+
+  describe('per-attempt timeout ownership', () => {
+    beforeEach(() => {
+      jest.useFakeTimers();
+    });
+
+    afterEach(() => {
+      const timerCount = jest.getTimerCount();
+      jest.useRealTimers();
+      expect(timerCount).toBe(0);
+    });
+
+    test.each([
+      ['fetch rejection', () => Promise.reject(new Error('ECONNREFUSED'))],
+      ['non-2xx response', () => Promise.resolve({ ok: false, status: 503 })],
+      ['body parse failure', () => Promise.resolve({
+        ok: true,
+        json: async () => { throw new Error('invalid json'); }
+      })],
+      ['successful token response', () => Promise.resolve({
+        ok: true,
+        json: async () => ({ armed: true, access_token: 'fresh_token_abcd' })
+      })],
+      ['successful response without a token', () => Promise.resolve({
+        ok: true,
+        json: async () => ({ armed: false })
+      })]
+    ])('cleans up the timeout after %s', async (_name, response) => {
+      global.fetch.mockImplementation(response);
+
+      await restoreTokenFromEngine({ attempts: 1 });
+    });
+
+    test('keeps the response body within the abortable timeout scope', async () => {
+      let rejectBody;
+      let abortObserved = false;
+      global.fetch.mockImplementation((_url, options) => {
+        options.signal.addEventListener('abort', () => {
+          abortObserved = true;
+          rejectBody(new Error('body read aborted'));
+        });
+        return Promise.resolve({
+          ok: true,
+          json: () => new Promise((_, reject) => { rejectBody = reject; })
+        });
+      });
+
+      const restore = restoreTokenFromEngine({ attempts: 1 });
+      await Promise.resolve();
+      jest.advanceTimersByTime(3000);
+
+      await expect(restore).resolves.toBe(false);
+      expect(abortObserved).toBe(true);
+    });
+  });
 });

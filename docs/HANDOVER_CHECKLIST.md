@@ -56,7 +56,13 @@ This is not a rerun of the entire repository test suite, gateway/native database
 
 ## First next action
 
-Finish D's gateway/resource-warning review and consistent backup/rollback prerequisites, then prepare the reviewed GitHub promotion path. C's source/roll and exact execution boundaries are tested in Dev and the 17 earlier Python acceptance failures are resolved. Preserve the working CLI and immutable v1/v2/v3 artifacts; do not infer deployment or qualification.
+Finish D's consistent backup/restore and migration/flag prerequisites, then prepare the reviewed GitHub promotion path. The documented Python/gateway resource warnings now have targeted fixes and negative controls. C's source/roll and exact execution boundaries are tested in Dev and the 17 earlier Python acceptance failures are resolved. Preserve the working CLI and immutable v1/v2/v3 artifacts; do not infer deployment or qualification.
+
+## September 13 resource ownership verification
+
+`2026-09-13-resource-clean-release-plan.md`: native Node 20 Alpine gateway `./node_modules/.bin/jest --runInBand --detectOpenHandles` passes **324 tests/four skipped** (25 suites passed/one skipped) in 16.927s and returns exit 0 naturally, with no detected open handles. Networking was disconnected after npm ci; current Dev source was recopied before acceptance. Focused token/dead-letter tests: 15 passed, natural exit. Original-code negative controls: fetch-rejection cleanup fails with one remaining timer; stalled-body regression fails by timeout. Neither working source nor Production was reverted for these controls; only a scratch container copy was replaced. Logs retained in the user Temp directory as `sentinel-d-resource-gateway-20260913.log`, `sentinel-d-timer-negative-20260913.log`, and `sentinel-d-body-negative-20260913.log`. Scratch container and original-source temp helper were removed; no operational volume was attached/deleted.
+
+Python: Terra isolates `test_option_lookup`'s manual loop; root converts it to pytest-managed async. Original four-file instrument/scanner/full-policy/multisession command with `-W error`: **32 passed**, no warnings, 3.41s. Broader 15-file research/qualification/archive/orchestrator group with `-W error::ResourceWarning -W error::pytest.PytestUnraisableExceptionWarning`: **181 passed**, one existing Starlette deprecation, 7.83s. No warning suppression or global loop fixture added. Earlier full Python baseline remains 2,545 passed/three skips; only the equivalent test loop changes after that whole-suite run. Changed JS syntax checks/Python compilation, atlas regeneration (unchanged 155 modules) and diff check pass. This is TESTED_DEV; D release/real evidence still incomplete.
 
 ## September 13 D acceptance baseline
 

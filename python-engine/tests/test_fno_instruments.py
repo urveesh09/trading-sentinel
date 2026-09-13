@@ -120,13 +120,11 @@ def test_atm_and_window_arithmetic():
     assert window == [24900.0, 24950.0, 25000.0, 25050.0, 25100.0]
 
 
-def test_option_lookup(monkeypatch):
+@pytest.mark.asyncio
+async def test_option_lookup(monkeypatch):
     book = FnoInstruments("NIFTY")
 
-    async def _run():
-        await book.refresh(_DumpKite())
-    import asyncio
-    asyncio.run(_run())
+    await book.refresh(_DumpKite())
     c = book.option(date(2026, 7, 14), 25000.0, OptionType.CE)
     assert c is not None and c.tradingsymbol == "NIFTY071425000CE"
     assert book.option(date(2026, 7, 14), 99999.0, OptionType.CE) is None
