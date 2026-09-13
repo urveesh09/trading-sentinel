@@ -246,6 +246,63 @@ Pre-fix, `scheduler_timing_report` grouped by literal `job_id` but **not by the 
 
 **This slice DOES establish per-tier scheduler observability.** The operator can now ask "what is the p95 latency across all exit-tier jobs?" or "which stage is the slowest in the research tier?" without needing to manually group by `job_id`.
 
+## 14. Intraday-cache caller/key/window diagnostic (H3 done)
+
+### 14.1 What landed
+
+Pre-investigation, the audit doc claimed "zero intraday-cache hit rates" without distinguishing three fundamentally different failure modes:
+1. **Zero callers** of the cached entry point (`get_intraday`) — true zero hits, no caller exercises the cache.
+2. **Freshness-gated misses** — the cache WOULD have served, but `last_cached_dt < expected_latest` forced a Kite round-trip.
+3. **Cold cache** — no rows ever written for that ticker/interval.
+
+H3 ships a *read-only* diagnostic that surfaces every caller (cached vs uncached), classifies the existing rows by freshness, and audits the key shape for the §12 cross-account / cross-token invariant.
+
+- `python-engine/intraday_cache_diagnostic.py` (NEW, 530 lines):
+  - `CACHED_CALLER_SITES` — every `kite.get_intraday(...)` production call (penny_scanner ×2, main.py momentum signal evaluator).
+  - `UNCACHED_CALLER_SITES` — every `kite.get_intraday_by_token(...)` production call (fno_orchestrator, fno_signal_scan, partner_orchestrator ×2, proactive_market_data, market_data_sources, scripts/verify_bfo). The by-token path is **explicitly documented** as not caching — see the kite_client docstring.
+  - `cache_row_counts(db_path)` — total rows / distinct sessions / tickers / intervals.
+  - `cache_interval_breakdown(db_path)` — per-interval row count, descending.
+  - `cache_freshness_window(db_path, interval, now_utc)` — classifies rows as `fresh` (would serve HIT) / `completed` (would force Kite round-trip) / `malformed` (clock skew or bad data).
+  - `audit_key_shape(db_path)` — verifies the PRIMARY KEY is exactly `(ticker, interval, datetime)`. Loudly fails if `account_id` / `coin_token` columns appear.
+  - `run_diagnostic(...)` — combined entry point that returns the structured dict plus a rendered operator-readable conclusion.
+  - CLI: `python -m intraday_cache_diagnostic --db <path> --interval minute --output <path>` prints the conclusion to stdout and writes a structured JSON to the output path.
+
+26 focused tests in `python-engine/tests/test_intraday_cache_diagnostic.py` cover: init / table-exists, row counts (empty / populated / sessions-distinct / missing-DB self-heal), interval breakdown (single / multiple / sort order), freshness (fresh / stale / 5-min window / malformed / interval-only), key-shape audit (compliant / account_id violation / coin_token violation), caller inventory (cached sites include penny_scanner + main; uncached include fno + partner), `run_diagnostic` (empty / partial-warm / full-warm), CLI (success / missing-DB / argparse validation), reproducibility.
+
+### 14.2 Senior-dev invariants preserved
+
+- **READ-ONLY.** No writes, no schema changes, no new tables. The diagnostic *creates* the `intraday_cache` table on first run (matches `kite_client._create_intraday_cache_table` schema byte-for-byte) so a fresh DB doesn't crash the CLI.
+- **REUSES `reconciliation_cli._write_output_atomic`** for the JSON output writer. No parallel infrastructure.
+- **REUSES `math.isfinite` from the F-series substrate** for stage-durations validation.
+- **NO new dependencies.** Stdlib only (sqlite3, argparse, json, datetime, math).
+- **NO new warnings.**
+- **Cautious junk-cleaning**: I did NOT touch unrelated code. The `penny_engine_breakout.py:85` docstring I noticed is correct (it documents the data-shape contract); not stale. The F audit doc's reference to `scripts/run_broker_reconciliation_daily.py` does not appear anywhere in the live code or docs (verified via grep) — that reference is itself stale and out of scope for H3.
+
+### 14.3 What H3 found (the diagnostic's own answer)
+
+Running the diagnostic against a fresh DB returns the operator-readable conclusion:
+```
+CONCLUSION:
+  The cache is COLD (zero rows). 'Zero hits' reflects a fresh DB or a
+  session that hasn't yet completed any get_intraday() call that fell
+  through the freshness gate to a Kite round-trip. The cache is
+  populated LAZILY (see kite_client.get_intraday INSERT OR REPLACE
+  after a miss). Once any caller triggers a miss + write, the cache
+  begins to warm.
+
+NEXT STEPS (per plan section 12):
+  Cache-add (H4) is DEFERRED until an operator signs off on the
+  cache key shape and the freshness budget. This diagnostic is the
+  input to that decision.
+```
+
+### 14.4 Verification
+
+- Focused `tests/test_intraday_cache_diagnostic.py`: 26/26 pass in 0.66s.
+- Whole-engine rerun: 2,978 passed / 4 skipped / 39 warnings in 130.89s (one rerun: 131.59s); +26 vs. previous 2,952 baseline; no regression to the previously closed baseline failures; no new warnings.
+
+**This slice DOES establish the diagnostic surface for the cache-add decision.** Cache-add (H4) is no longer blocked on "we don't know why the cache hit rate was zero"; the diagnostic tells us.
+
 ## 11. Capital policy guard (F6 partial; producer landed)
 
 ### 11.1 What landed
