@@ -56,7 +56,7 @@ This is not a rerun of the entire repository test suite, gateway/native database
 
 ## First next action
 
-Refreshed target/default review: [September 13 release target review](2026-09-13-release-target-review.md). Target `954e25a` is not a Dev ancestor; historical merges inflate triple-dot PR diff. Reconcile history non-destructively before PR acceptance. Docker/Compose/ledger migration code match the refreshed target. Partner delivery defaults are enabled in both versions: explicitly verify effective passive rollout switches, never claim disabled-by-default.
+Refreshed target/default review: [September 13 release target review](2026-09-13-release-target-review.md). Dev merge `7150ac7` non-destructively reconciles target `954e25a`; pre/post tree identical, clean status and target ancestor verified. The historical triple-dot inflation is resolved without source changes or force push. Docker/Compose/ledger migration code match the refreshed target. Partner delivery defaults are enabled in both versions: explicitly verify effective passive rollout switches, never claim disabled-by-default. Local only, not pushed/deployed.
 
 Latest whole-engine receipt on Dev `0f3a2a0`: `.\winvenv\Scripts\python.exe -m pytest tests -q --junitxml=C:/Users/Urveesh/AppData/Local/Temp/sentinel-d-final-baseline-20260913.xml` from `python-engine`: **2,569 passed/four skipped/23 existing deprecations, 121.31s**, exit0. Supersedes earlier whole-engine count; not deployment or strategy qualification.
 
