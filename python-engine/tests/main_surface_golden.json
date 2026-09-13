@@ -713,6 +713,22 @@
       "response_model": null
     },
     {
+      "endpoint": "get_reconciliation_discrepancies",
+      "methods": [
+        "GET"
+      ],
+      "path": "/reconciliation/discrepancies",
+      "response_model": null
+    },
+    {
+      "endpoint": "post_reconciliation_import_statement",
+      "methods": [
+        "POST"
+      ],
+      "path": "/reconciliation/import-statement",
+      "response_model": null
+    },
+    {
       "endpoint": "get_rejected_signals",
       "methods": [
         "GET"

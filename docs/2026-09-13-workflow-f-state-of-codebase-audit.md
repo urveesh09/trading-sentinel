@@ -149,3 +149,35 @@ A standalone `python-engine/discrepancies.py` module that turns the existing `br
 - Whole-engine rerun: 2,836 passed / 4 skipped / 23 warnings in 126.59s (one rerun) and 127.28s (second rerun); +42 vs. previous 2,794 baseline; no regression to the previously closed baseline failures; no new warnings.
 
 **This slice does NOT establish real discrepancy-ID acceptance.** The framework exists; no orchestrator or CLI calls it yet; the five DISC-A1..A5 audit-doc entries remain unresolved. The value is structural (the durable record layer is ready for F5 wire-up, the append-only discipline is enforced at the SQLite trigger level, the forward-only state machine is in place) — not end-to-end (the operator still sees no discrepancy IDs in any surface today).
+
+## 10. Broker statement automation skeleton (F5 partial; CLI + route landed)
+
+### 10.1 What landed
+
+A standalone `python-engine/reconciliation_cli.py` module and two new routes in `python-engine/routes_commands.py`:
+
+- `python -m python_engine.reconciliation_cli import-statement --payload <path> --output <path>` reads a JSON payload from disk, calls `broker_reconciliation.import_broker_statement`, then runs `record_current_state` as a side effect, and writes a structured JSON result via an atomic byte-identical helper. Re-running with the same payload is idempotent on the F4 framework's `(category, evidence_key)` boundary.
+- `python -m python_engine.reconciliation_cli run-report --account <id> [--source] [--limit] [--record] --output <path>` runs both existing reports and (with `--record`) records discrepancies. Without `--record`, the command is read-only.
+- `python -m python_engine.reconciliation_cli list-discrepancies [--account] [--source] [--category] [--status] [--since] [--until] [--limit] --output <path>` filters the discrepancies table.
+- `POST /reconciliation/import-statement` -- programmatic ingestion surface; same async function as the CLI. Returns the imported flag, broker status, and discrepancy IDs.
+- `GET /reconciliation/discrepancies` -- read-side route; mirrors the existing `/analytics/reconciliation-evidence` style. All responses carry `can_place_orders=False` to make the read-only contract explicit.
+
+29 CLI tests in `tests/test_reconciliation_cli.py` cover: ISO-8601 parsing, payload validation, atomic output writes (including byte-identical retries), import + record + report paths, idempotent re-import, every CLI subcommand end-to-end, validation errors return non-zero exit code. 16 route tests in `tests/test_routes_reconciliation.py` cover: happy path, idempotent repost flips `imported` flag, every 422 path (non-object, missing keys, naive as_of, garbage as_of, non-list entries, non-list fills), `can_place_orders=False` always, GET route validation (invalid category, invalid status, naive since/until, garbage since), end-to-end POST then GET.
+
+The `tests/main_surface_golden.json` was deliberately regenerated via `TS_UPDATE_GOLDEN=1 pytest tests/test_main_surface_characterization.py` to capture the two added routes. The diff is exactly 2 routes added; nothing else drifted.
+
+### 10.2 What F5 explicitly does NOT include
+
+- No scheduler. The CLI is operator-invoked; the route is on-demand. No periodic refresh.
+- No broker network integration. The CLI reads a local JSON file the operator supplies. The route accepts a JSON body; no Kite, no Zerodha API.
+- No retroactive DISC-A1..A5 population. The five audit-doc entries remain `UNKNOWN / UNVERIFIED`.
+- No `/reconciliation/discrepancies` mutation surface. The GET is read-only; status transitions remain a CLI-only or direct DB call.
+
+### 10.3 Verification
+
+- Focused `tests/test_reconciliation_cli.py`: 29/29 pass in 1.70s (one rerun: deterministic).
+- Focused `tests/test_routes_reconciliation.py`: 16/16 pass in 1.64s (one rerun: deterministic).
+- F3 flake fixed: `test_mark_to_market.py::TestReproducibility::test_summary_string_format_stable` was using `age_seconds=0` which crossed the freshness boundary under sub-second clock jitter between the `_quote()` and `mark_open_positions()` calls; rebuilt the tick with `age=1s` and explicitly excluded the `age=Ns` substring from the structural assertion.
+- Whole-engine rerun: 2,881 passed / 4 skipped / 39 warnings in 128.75s; +45 vs. previous 2,836 baseline; no regression to the previously closed baseline failures. The +16 warnings come from the same `'app' shortcut` DeprecationWarning that other route tests (`test_promotion_readiness_route.py`, `test_operator_status.py`) already emit; the warning *category* is unchanged, only its count grows with new route tests.
+
+**This slice does NOT establish real broker-statement automation acceptance.** The CLI and route exist; no operator has run an import against a real statement yet; no admin UI surfaces the discrepancy IDs. The value is structural (the CLI/route pair is one import away from operator use, the F4 framework is wired into the import path, the golden route table is updated).

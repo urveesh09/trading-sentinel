@@ -610,17 +610,27 @@ class TestReproducibility:
         assert r1.total_unrealised_pnl == r2.total_unrealised_pnl
 
     def test_summary_string_format_stable(self) -> None:
+        # Build a tick whose age is *strictly* in the past (age=1s)
+        # so that sub-second clock jitter between this call and the
+        # ``mark_open_positions`` invocation never crosses the
+        # freshness boundary. The summary's ``age=Ns`` substring is
+        # excluded from the assertion for the same reason.
         now = _now()
+        tick_as_of = now - timedelta(seconds=1)
+        tick = QuoteTick.build(3500.0, tick_as_of)
         result = mark_open_positions(
             equity_rows=[_equity_row()],
             fno_rows=[],
             fno_dr_rows=[],
-            quotes={"TCS": _quote(3500.0)},
+            quotes={"TCS": tick},
             now_utc=now,
         )
         s = result.marks[0].summary()
         # Snapshot the substring positions; the exact numbers come
         # from the inputs. Lock down the structural shape only.
+        # ``age=Ns`` is intentionally NOT asserted because the
+        # integer-second truncation can drift by one between
+        # subprocess calls.
         assert s.startswith("[EQUITY/PENNY/TCS]")
         assert "entry=Rs" in s
         assert "mark=Rs" in s

@@ -349,3 +349,161 @@ async def get_suggestions(days: int = 14):
 async def get_edge_statistics(days: int = 90, strategy: str | None = None):
     from analytics import edge_statistics
     return await edge_statistics(settings.DB_PATH, days=days, strategy=strategy)
+
+
+# [WORKFLOW-F F5 2026-09-13] Broker statement automation route. This is the
+# programmatic ingestion surface for an admin UI: the operator POSTs a
+# JSON payload matching ``broker_reconciliation.import_broker_statement``'s
+# kwargs, and the route returns the imported flag, broker statement
+# status, and the discrepancy IDs recorded by the F4 framework as a
+# side effect. There is no scheduler; the route is a thin wrapper around
+# the same async function the F5 CLI calls.
+#
+# Idempotent: the existing ``import_broker_statement`` rejects
+# conflicting payloads at the SHA-256 boundary, and the F4 framework
+# is idempotent on ``(category, evidence_key)``. A retried POST with
+# the same payload produces the same response (modulo the boolean
+# ``imported`` field, which flips to False on the second call).
+#
+# No broker network calls. No ledger mutation. No scheduler.
+@router.post("/reconciliation/import-statement")
+async def post_reconciliation_import_statement(payload: dict):
+    """Ingest a broker statement payload; record discrepancies as a side effect."""
+    from broker_reconciliation import (
+        broker_statement_report,
+        import_broker_statement,
+    )
+    from discrepancies import record_current_state
+    from datetime import datetime as _dt, timezone as _tz
+
+    if not isinstance(payload, dict):
+        raise HTTPException(
+            status_code=422, detail="payload must be a JSON object",
+        )
+    required = (
+        "account_id", "statement_id", "as_of",
+        "opening_cash", "closing_cash", "entries", "fills",
+    )
+    missing = [k for k in required if k not in payload]
+    if missing:
+        raise HTTPException(
+            status_code=422,
+            detail=f"payload missing required keys: {', '.join(missing)}",
+        )
+    try:
+        as_of = _dt.fromisoformat(str(payload["as_of"]).replace("Z", "+00:00"))
+    except (TypeError, ValueError) as exc:
+        raise HTTPException(status_code=422, detail=f"as_of: {exc}") from exc
+    if as_of.tzinfo is None or as_of.tzinfo.utcoffset(as_of) is None:
+        raise HTTPException(
+            status_code=422, detail="as_of must be timezone-aware",
+        )
+    if not isinstance(payload["entries"], list):
+        raise HTTPException(status_code=422, detail="entries must be a list")
+    if not isinstance(payload["fills"], list):
+        raise HTTPException(status_code=422, detail="fills must be a list")
+    try:
+        imported = await import_broker_statement(
+            settings.DB_PATH,
+            account_id=str(payload["account_id"]),
+            statement_id=str(payload["statement_id"]),
+            as_of=as_of,
+            opening_cash=float(payload["opening_cash"]),
+            closing_cash=float(payload["closing_cash"]),
+            entries=payload["entries"],
+            fills=payload["fills"],
+        )
+    except ValueError as exc:
+        # Validation error from import_broker_statement (e.g. conflicting
+        # SHA-256, unsupported entry_type, non-finite numbers).
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+    except sqlite3.Error as exc:
+        raise HTTPException(status_code=500, detail=str(exc)) from exc
+    rec = await record_current_state(
+        settings.DB_PATH, account_id=str(payload["account_id"]),
+        actor="http",
+    )
+    report = await broker_statement_report(
+        settings.DB_PATH, account_id=str(payload["account_id"]),
+    )
+    return {
+        "imported": bool(imported),
+        "broker_status": report.get("status", "UNAVAILABLE"),
+        "discrepancy_ids": {
+            "broker": list(rec.get("broker", [])),
+            "evidence": list(rec.get("evidence", [])),
+        },
+        "can_place_orders": False,  # never an order authority
+    }
+
+
+# [WORKFLOW-F F5 2026-09-13] Read-side route for recorded discrepancies.
+# Read-only; mirrors ``GET /analytics/reconciliation-evidence`` style.
+# No auth (matches the existing pattern).
+@router.get("/reconciliation/discrepancies")
+async def get_reconciliation_discrepancies(
+    account: str | None = None,
+    source: str | None = None,
+    category: str | None = None,
+    status: str | None = None,
+    since: str | None = None,
+    until: str | None = None,
+    limit: int = 200,
+):
+    from datetime import datetime as _dt
+    from discrepancies import (
+        DiscrepancyCategory, DiscrepancyStatus, list_discrepancies,
+    )
+    cat = None
+    if category is not None:
+        try:
+            cat = DiscrepancyCategory(category)
+        except ValueError as exc:
+            raise HTTPException(
+                status_code=422,
+                detail=f"category must be a DiscrepancyCategory value, got {category!r}",
+            ) from exc
+    sts = None
+    if status is not None:
+        try:
+            sts = DiscrepancyStatus(status)
+        except ValueError as exc:
+            raise HTTPException(
+                status_code=422,
+                detail=f"status must be a DiscrepancyStatus value, got {status!r}",
+            ) from exc
+    since_dt = None
+    if since is not None:
+        try:
+            since_dt = _dt.fromisoformat(since.replace("Z", "+00:00"))
+        except ValueError as exc:
+            raise HTTPException(status_code=422, detail=f"since: {exc}") from exc
+        if since_dt.tzinfo is None or since_dt.tzinfo.utcoffset(since_dt) is None:
+            raise HTTPException(status_code=422, detail="since must be timezone-aware")
+    until_dt = None
+    if until is not None:
+        try:
+            until_dt = _dt.fromisoformat(until.replace("Z", "+00:00"))
+        except ValueError as exc:
+            raise HTTPException(status_code=422, detail=f"until: {exc}") from exc
+        if until_dt.tzinfo is None or until_dt.tzinfo.utcoffset(until_dt) is None:
+            raise HTTPException(status_code=422, detail="until must be timezone-aware")
+    try:
+        rows = await list_discrepancies(
+            settings.DB_PATH,
+            account_id=account, source=source,
+            category=cat, status=sts,
+            since=since_dt, until=until_dt,
+            limit=limit,
+        )
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+    return {
+        "rows": [r.to_dict() for r in rows],
+        "filters": {
+            "account": account, "source": source,
+            "category": category, "status": status,
+            "since": since, "until": until, "limit": limit,
+        },
+        "can_place_orders": False,
+    }
