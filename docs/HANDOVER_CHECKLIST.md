@@ -56,6 +56,8 @@ This is not a rerun of the entire repository test suite, gateway/native database
 
 ## First next action
 
+Independent-review terminal-state source commit `13fb426`; immediate seven-file stat/status confirms clean Dev and matching documentation, local only. Remaining audit corrections are explicit in the F/G correction plan; terminal-state acceptance does not accept the entire governance bridge or strategy basket.
+
 User-requested independent F/G audit found concrete bridge terminal-state and trailing-dispatch defects plus unsupported F provenance/schema/closure claims. First atomic bridge correction passes **81 tests** in the seven-file F/G group with `-q -W error`, 1.63s, Dev engine winvenv; six new regressions cover terminal amendment, reverse transition, concurrent first decisions and backdated append clocks. Full approval validation/trailing composition/F evidence corrections remain required; see `2026-09-13-fg-independent-correction-plan.md`. No live permission inferred.
 
 Optional annotation validity source commit `59e915a`; immediate seven-file stat/status review confirms clean Dev and matching guide/atlas/plan, local only. Final focused Windows validity tests 14 passed with all warnings fatal in 1.14s.
