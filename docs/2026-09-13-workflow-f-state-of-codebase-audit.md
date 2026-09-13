@@ -119,3 +119,33 @@ With `positions` carrying no `current_price` column, `p.get("current_price", 0.0
 - Whole-engine rerun: 2,794 passed / 4 skipped / 23 warnings in 125.65s (one rerun) and 126.15s (second rerun, `-p no:randomly`); +43 vs. previous 2,751 baseline; no regression to the previously closed baseline failures; no new warnings.
 
 **This slice does NOT establish real mark-to-market acceptance.** The producer is wired to the penny hourly report; the F&O orchestrator and the `/performance` route are not wired. Until the consumer wire-ups land, the value of MTM is structural (the producer exists, the silent-zero bug is gone, the consumer-side plumbing is one-line-per-site) — not end-to-end (the operator still sees `+Rs 0` in `/performance`).
+
+## 9. Discrepancy-ID framework (F4 partial; producer landed)
+
+### 9.1 What landed
+
+A standalone `python-engine/discrepancies.py` module that turns the existing `broker_reconciliation.broker_statement_report` (MATCH/UNRESOLVED/UNAVAILABLE) and `reconciliation_evidence.reconciliation_evidence_report` (per-row reasons) into durable, append-only, operator-reviewable discrepancy records. The framework introduces:
+
+- `DiscrepancyCategory` enum (9 categories) that maps every existing reason string in `reconciliation_evidence.py` to a stable, namespaced identifier. New reasons added upstream become *new* categories; existing categories are not repurposed.
+- `DiscrepancyStatus` enum (OPEN / INVESTIGATING / RESOLVED_EXPLAINED / WITHDRAWN) with a forward-only state machine identical in shape to the promotion bridge.
+- Two append-only tables: `discrepancies` (immutable rows) and `discrepancy_status_log` (immutable transitions). BEFORE UPDATE/DELETE triggers on both raise `ABORT 'discrepancies_immutable'`.
+- Idempotent recording on `(category, evidence_key)` via UNIQUE INDEX. Re-recording is a no-op that returns the existing ID; the first record wins.
+- Same-state status transitions are no-ops that write no log row. Operator's "mark as INVESTIGATING" call is safe to repeat.
+- Two bridge functions: `record_from_broker_statement(...)` and `record_from_evidence_report(...)`. The bridge is the single mapping point for reason-string → category; adding a new reason upstream is a single-line addition here.
+- A combined `record_current_state(...)` that runs both existing reports and records everything in one call. This is the function F5 (broker statement automation) will call from its CLI.
+
+42 focused tests in `python-engine/tests/test_discrepancies.py` cover: schema version, every record-validation contract (severity enum, evidence_key non-empty, NaN amount, malformed evidence refs, deduplication), every status transition (including skip-investigating rejection, resolved-to-open rejection, same-state idempotency), append-only DB triggers (UPDATE/DELETE on both tables blocked at the SQLite level), every read filter (account, source, category, status, date range, limit), every bridge path (MATCH returns None, UNRESOLVED records residual, UNAVAILABLE records no-statement, MATCHED_INTERNAL skipped, unknown reason silently skipped, sheet-level invalid-amounts flag recorded), and end-to-end `record_current_state` against real `performance.record_trade_close` + `broker_reconciliation.import_broker_statement`.
+
+### 9.2 What F4 explicitly does NOT include
+
+- No retroactive population of DISC-A1..A5. The five audit-doc entries remain `UNKNOWN / UNVERIFIED`; the framework *records* findings with stable IDs as evidence arrives. A future commit can call `record_from_evidence_report` with hand-supplied evidence to back-fill the audit doc's five tentative references when real screenshots / ledger rows are obtained.
+- No consumer-side wire-up. The framework produces discrepancy records when called; orchestrators and CLIs are not wired to call `record_current_state`. F5 (broker statement automation) is the natural wiring site.
+- No UI/dashboard changes. Discrepancies are queryable via `list_discrepancies(...)` but no FastAPI route or Telegram message surfaces them yet.
+- No mutation of `bankroll_ledger`, `positions`, `fno_positions`, `fno_dr_positions`, or any `broker_statement_*` table. F4 is an observer.
+
+### 9.3 Verification
+
+- Focused `tests/test_discrepancies.py`: 42/42 pass in 2.27s (one rerun: deterministic).
+- Whole-engine rerun: 2,836 passed / 4 skipped / 23 warnings in 126.59s (one rerun) and 127.28s (second rerun); +42 vs. previous 2,794 baseline; no regression to the previously closed baseline failures; no new warnings.
+
+**This slice does NOT establish real discrepancy-ID acceptance.** The framework exists; no orchestrator or CLI calls it yet; the five DISC-A1..A5 audit-doc entries remain unresolved. The value is structural (the durable record layer is ready for F5 wire-up, the append-only discipline is enforced at the SQLite trigger level, the forward-only state machine is in place) — not end-to-end (the operator still sees no discrepancy IDs in any surface today).
