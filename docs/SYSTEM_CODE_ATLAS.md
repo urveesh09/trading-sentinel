@@ -100,7 +100,7 @@ Top-level declarations: `Settings` (line 19)
 
 Versioned transaction-cost schedules frozen into research evidence. Snapshot functions read active settings once. New evidence therefore records both its declared published schedule and any operator-overridden rates, while previously persisted JSON remains untouched and self-contained.
 
-Top-level declarations: `equity_intraday_cost_snapshot` (line 18), `options_cost_snapshot` (line 40)
+Top-level declarations: `equity_intraday_cost_snapshot` (line 20), `options_cost_snapshot` (line 42)
 
 Engine dependencies: `config`
 

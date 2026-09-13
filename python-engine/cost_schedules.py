@@ -9,7 +9,9 @@ from __future__ import annotations
 from config import settings
 
 EQUITY_INTRADAY_SCHEDULE_VERSION = "ZERODHA_NSE_EQUITY_INTRADAY_AS_OF_2026-08-10"
-EQUITY_INTRADAY_EFFECTIVE_DATE = "2026-08-10"
+# A verification date does not prove when this composite tariff took effect.
+# Keep unknown until dated primary sources establish every component rate.
+EQUITY_INTRADAY_EFFECTIVE_DATE = None
 EQUITY_INTRADAY_VERIFIED_AS_OF = "2026-08-10"
 OPTIONS_SCHEDULE_VERSION = "ZERODHA_NSE_OPTIONS_2026-04-01"
 OPTIONS_EFFECTIVE_DATE = "2026-04-01"

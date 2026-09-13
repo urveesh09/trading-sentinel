@@ -28,11 +28,8 @@ def test_current_defaults_and_versioned_metadata():
 
     equity = equity_intraday_cost_snapshot()
     assert equity["schedule_version"] == EQUITY_INTRADAY_SCHEDULE_VERSION
-    # F1.c (2026-09-13): effective_date pinned to verified_as_of because the
-    # equity schedule's effective instant equals the verified-as-of
-    # instant under Zerodha's exchange-side re-acknowledgement model.
-    assert equity["effective_date"] == "2026-08-10"
-    assert equity["effective_date"] == equity["verified_as_of"]
+    # Verification is not proof of a composite tariff's effective instant.
+    assert equity["effective_date"] is None
     assert equity["verified_as_of"] == "2026-08-10"
     options = options_cost_snapshot()
     assert options["schedule_version"] == OPTIONS_SCHEDULE_VERSION

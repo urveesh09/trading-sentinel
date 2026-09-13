@@ -4,7 +4,7 @@ Problem and impact: `docs/NEXT_AGENT_PLAN.md` §11 closes with — *"Promotion t
 
 Authoritative evidence: §11 acceptance; the literal payload key `"authorization_effect": "NONE"` returned by every `proactive_*` report function (`proactive_intelligence.py:1178, 1183, 2076, 2183, 2241`, `proactive_exit_research.py:77`, `proactive_execution_research.py:50`, `proactive_portfolio_research.py:85, 93, 104`); the `SHADOW_COMPARISON_MIN_CLOSED_OUTCOMES = 20` floor at `proactive_intelligence.py:21`; the bankroll ledger invariant from `performance.py` and `broker_reconciliation.py`; the seven-gate §9 checklist for partner activation.
 
-Affected contracts/files: this is a documentation-only contract. The reusable code surface (separate from G) will land later — likely a new module `python-engine/promotion_bridge.py` with read-only writers for the refusal record. Today there is none, deliberately, so future implementations cannot claim legacy evidence.
+Affected contracts/files: `python-engine/promotion_bridge.py` now persists non-authoritative decision/transition records. Atomic terminal transitions and budget/expiry checks are implemented; the full evidence gate is not. This document's requested gates are requirements, not proof that they run.
 
 Steps: (a) state the contract, (b) name what *cannot* be bypassed, (c) provide the refusal-record template, (d) provide the risk-budget surface, (e) clarify what counts as evidence at each gate.
 
@@ -32,7 +32,7 @@ Every `proactive_*` report returns `can_place_orders=False, authorization_effect
 
 ### 2.2 The bankroll ledger is the only cash truth
 
-`performance.py:13` defines `bankroll_ledger` as append-only. `broker_reconciliation.py` is a read-only import-and-compare surface; it never writes. **Promotion cannot set bankroll values directly — only P&L events from actual broker reconciliation can change `bankroll_after`.**
+The local `bankroll_ledger` and externally supplied broker statement are distinct evidence sources. Ledger INSERT paths have multiple owners; broker imports explicitly write separate statement tables, and report reads initialize missing tables. A statement's cash arithmetic MATCH is not broker-to-local reconciliation. Promotion records never mutate operational bankroll. Confirmed funding is not trading profit; do not invent a deposit from a bridge approval. See the corrected F inventory for exact ownership and limits.
 
 ### 2.3 Cost schedules are version-frozen
 
@@ -40,7 +40,7 @@ Every `proactive_*` report returns `can_place_orders=False, authorization_effect
 
 ### 2.4 Sample size gates are not relaxed by configuration
 
-`SHADOW_COMPARISON_MIN_CLOSED_OUTCOMES = 20` is a hard floor for any comparison report to be issued. `MIN_SAMPLE_FOR_RELIABLE = 30` in `edge_stats.py:56` is the floor above which a public claim is statistically meaningful. **Promotion cannot happen without the comparison report; a comparison report cannot have fewer than 20 closed outcomes; a *live-authorisation* request additionally requires >= 30 closed outcomes.**
+Reports may contain fewer than 20 closed outcomes and explicitly say INSUFFICIENT_CLOSED_OUTCOMES; 20 is not a report-issuance floor or proof of an edge. This proposed bridge policy requires at least 20 research/30 live closed outcomes, but counts alone do not establish statistical reliability, independent held-out provenance or live approval. The current bridge does not validate those report gates and always reads `approval_usable=False`.
 
 ## 3. Authorisation states
 
@@ -64,7 +64,7 @@ Operator-visible meaning: "approved to put this much money in the SHADOW path's 
 
 ### 3.4 `APPROVED_LIVE_BUDGET`
 
-A live bankroll addition is authorised. The amount is recorded against the user's actual `INITIAL_BANKROLL` and flows through `bankroll_ledger` as a `DEPOSIT`-class event with `origin_ref = promotion_bridge:<bridge_id>`. **APPROVED_LIVE_BUDGET is only granted after ≥ 1 successful APPROVED_WITH_BUDGET cycle with no breach, and after F (accounting truth) has reconciled the prior P&L.**
+The proposed live approval requires confirmed capital/risk input, ≥1 successful bounded observation cycle, F external reconciliation and D operational evidence. Those gates and a live consumer are not implemented by this persistence surface. The state label records operator intent only; it never creates a deposit, changes bankroll or permits orders. Reads remain `approval_usable=False` even with syntactically valid budget/signature.
 
 Operator-visible meaning: "approved to put this much real money behind this exact evidence identity."
 
@@ -150,7 +150,7 @@ Refusal and approval records are persisted by `python-engine/promotion_bridge.py
 - `promotion_bridges` — one row per `bridge_id`, holding the seven required fields plus the four optional budget fields and the bridge-schema version `promotion-bridge-v1`.
 - `promotion_bridge_transitions` — append-only audit log of every state change; `previous_state NULL` for the original `UNSIGNED` write; subsequent state changes append, never update the bridge row.
 
-Until the operator signs, no row exists. When the first bridge is signed, the row lands in the same SQLite file via `persist_bridge(db_path, decision)`; a refile (`transition_bridge(...)`) appends an audit row rather than amending the bridge row. Markdown templates under `docs/evidence/promotion_bridges/` (filename `<bridge_id>_<proposal_run_id>_<YYYY-MM-DD>.md`) remain a valid hand-signing surface for the operator who prefers text; the recommended path is the database, since the state-machine and version guards are enforced only there.
+An unsigned record may exist and explicitly predeclare immutable budget fields. `persist_bridge(db_path, decision)` writes the initial record; `transition_bridge(...)` appends the one terminal directed decision under a serialized latest-state check. Approved transitions require relevant amount/DD/integer expiry inside the original-clock validity window; they cannot extend it. Markdown is a human template, not executable authorization or validated evidence. No current record grants live permission; stored signer strings are not an authenticated operator identity proof.
 
 ## 11. Status
 

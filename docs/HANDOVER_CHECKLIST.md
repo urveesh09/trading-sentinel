@@ -3,7 +3,7 @@
 ## Read order
 
 1. [SYSTEM_GUIDE.md](SYSTEM_GUIDE.md): feature architecture, authority boundaries, before/after improvements and limitations.
-2. [SYSTEM_CODE_ATLAS.md](SYSTEM_CODE_ATLAS.md): 155 top-level engine/agent Python modules plus gateway/dashboard source navigation, declarations, dependencies and tables.
+2. [SYSTEM_CODE_ATLAS.md](SYSTEM_CODE_ATLAS.md): 156 top-level engine/agent Python modules plus gateway/dashboard source navigation, declarations, dependencies and tables.
 3. [NEXT_AGENT_PLAN.md](NEXT_AGENT_PLAN.md): implementation workstreams, acceptance checks, expected effects and documentation ritual.
 4. [September 12 replay progress](2026-09-12-full-policy-replay-progress.md) and [Production inventory/CAS findings](2026-09-12-production-evidence-and-cas-findings.md).
 
@@ -55,6 +55,10 @@ This is not a rerun of the entire repository test suite, gateway/native database
 - No actionable partner strategy was qualified by this work. No fixed tip-start date can be given.
 
 ## First next action
+
+Latest whole-engine receipt (F provenance/cache/budget source): `.\winvenv\Scripts\python.exe -m pytest tests -q --junitxml=C:/Users/Urveesh/AppData/Local/Temp/sentinel-fg-provenance-baseline-20260913.xml` from Dev engine returns0: **2,703 passed/four skipped/23 existing deprecations,126.20s**. Supersedes previous whole-engine counts. Runtime/assertions frozen; F explanatory test docstring alone edited during run. Independent F review finds no correctness blocker with existing route-import deprecation visible. Not qualification, real reconciliation, deployment or actual backup compatibility.
+
+F source/provenance correction: unknown equity tariff effective date restored with rates/version/as-of/options untouched; owning schemas/PKs, writers, settings and unsupported A1–A5 closure claims corrected. Eight-file acceptance150 passed with all warnings fatal6.48s; ten-file154 passed7.07s with one existing Starlette deprecation and ResourceWarning/unraisable warnings fatal. Fresh DB fixtures exercise real initializers and broker import; not deployed-data reconciliation. Full engine rerun in progress; source frozen. Independent final review pending. See F/G correction plan; local only, no Production/remote mutation.
 
 Approval-budget source commit `2cbe1a3`; immediate seven-file stat/status review confirms clean Dev and matching guide/atlas/plan. Independent final bridge review passes 65 tests with warnings fatal, no blocker. Local only, not pushed/deployed; required genuine evidence validation remains open.
 
