@@ -38,6 +38,14 @@ _SHADOW_EXIT_PROFILES = frozenset({"STOP_TARGET_TIME_V1", "BOUNDED_TIME_EXIT_60M
 # needs a default ``run_id`` should import this constant rather than
 # hard-code the string.
 LEGACY_DEFAULT_V1_RUN_ID = "default-v1"
+
+# Session-phase placeholder (G <-> J forward-compat; see audit section 6
+# gap #6). Plan §14 puts J (CAS and market-session correctness) ahead of
+# G's session-aware rollout, so G commits a typed placeholder now and J
+# replaces it with a real phase classifier when the official source
+# inventory lands. The placeholder is **additive** (it only adds a key
+# to the run manifest; the database schema is unchanged).
+_SESSION_PHASE_UNKNOWN = "UNKNOWN"
 _STAGES = frozenset({
     "UNIVERSE", "DATA_READY", "SETUP", "COST_VIABLE", "RISK_APPROVED",
     "SELECTED", "SUBMITTED", "FILLED", "MANAGED", "CLOSED", "DEFERRED",
@@ -719,6 +727,26 @@ def _shadow_implementation_identity() -> str:
     return hashlib.sha256(Path(__file__).read_bytes()).hexdigest()
 
 
+def stamp_session_phase(*, observation_at: datetime | None) -> str:
+    """Return the market session phase for a research observation.
+
+    This is the *single* place G classifies a bar timestamp into a session
+    phase, and the *single* place J will replace when the official NSE/BSE/
+    SEBI session inventory lands. Plan §14 (workstream J, "CAS and
+    market-session correctness") is upstream of session-aware G work, so
+    G defers the real classification and instead records the typed
+    placeholder ``_SESSION_PHASE_UNKNOWN``. New callers must pass an
+    ``observation_at`` even when the placeholder will be returned, so the
+    signature is ready for the eventual implementation without forcing a
+    breaking change at every call site.
+
+    The function is **pure** (no I/O, no clock, no DB) and **total** (returns
+    a known string for any input, including ``None``). Tests live at
+    ``tests/test_session_phase_placeholder.py``.
+    """
+    return _SESSION_PHASE_UNKNOWN
+
+
 def _configured_shadow_run_id(run_label: str) -> str:
     """Give scheduled configuration an explicit, code-versioned lineage.
 
@@ -764,6 +792,14 @@ async def _ensure_shadow_run(
             "gap_risk_multiple": _DEFAULT_GAP_RISK_MULTIPLE,
         },
         "market_data_contract": market_data_contract,
+        # Session-phase forward-compat (G / J): see
+        # ``stamp_session_phase`` docstring. The placeholder returned
+        # today does not distinguish sessions; J's eventual classifier
+        # replaces this single line and refreshes the manifest digest.
+        # ``_ensure_shadow_run`` has no observation timestamp in scope,
+        # so we pass None; the helper is documented to return the
+        # UNKNOWN placeholder for any input.
+        "session_phase": stamp_session_phase(observation_at=None),
     }
     if (not math.isfinite(float(scenario_capital)) or float(scenario_capital) <= 0
             or not math.isfinite(float(fee_rate)) or float(fee_rate) < 0
@@ -2210,6 +2246,11 @@ async def run_shadow_research_comparison(
         "calendar": "nse_trading_day_sync", "cash_per_trial": float(cash_per_trial),
         "fee_rate": float(fee_rate), "slippage_bps": float(slippage_bps),
         "entry_profiles": sorted(_SHADOW_ENTRY_PROFILES), "exit_profiles": sorted(_SHADOW_EXIT_PROFILES),
+        # Session-phase forward-compat (G / J): a placeholder is stamped
+        # now so J can replace it with a real classifier without
+        # invalidating prior manifests; every fresh run gets a fresh
+        # value through the *trial* stamp below rather than here.
+        "session_phase": stamp_session_phase(observation_at=proposals[0].signal_at if proposals else None),
         "proposals": [_research_proposal_manifest(proposal) for proposal in proposals],
         "future_bars": future_bars,
     }
