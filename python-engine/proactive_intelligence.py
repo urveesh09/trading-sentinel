@@ -30,6 +30,14 @@ _SHADOW_ENTRY_PROFILES = frozenset({
     "RANGE_REVERSION_V1",
 })
 _SHADOW_EXIT_PROFILES = frozenset({"STOP_TARGET_TIME_V1", "BOUNDED_TIME_EXIT_60M_V1", "TRAILING_STOP_V1"})
+# Legacy run-id reserved for the historical single-tenant-per-account
+# convention exercised by ``_shadow_run_storage_key``. A *configured*
+# shadow run (``run_shadow_workflow`` / ``run_configured_shadow_workflow``)
+# must never land here — its id is a hashed lineage derived from the
+# operator-visible label by ``_configured_shadow_run_id``. New code that
+# needs a default ``run_id`` should import this constant rather than
+# hard-code the string.
+LEGACY_DEFAULT_V1_RUN_ID = "default-v1"
 _STAGES = frozenset({
     "UNIVERSE", "DATA_READY", "SETUP", "COST_VIABLE", "RISK_APPROVED",
     "SELECTED", "SUBMITTED", "FILLED", "MANAGED", "CLOSED", "DEFERRED",
@@ -682,10 +690,25 @@ async def init_proactive_intelligence(db_path: str) -> None:
 
 
 def _shadow_run_storage_key(account_id: str, run_id: str) -> str:
-    """Keep legacy/default Dev records readable while isolating named scenarios."""
+    """Compute the storage key for a named shadow research run.
+
+    Single source of truth for the ``proactive_shadow_runs.run_key`` column.
+    Two distinct conceptual runs collide in storage only if their key is
+    identical under this function, so callers must ensure run IDs are
+    uniquely labelled **before** arriving here.
+
+    Legacy back-compat: the historical ``run_id == LEGACY_DEFAULT_V1_RUN_ID``
+    short-circuits to the bare ``account_id`` because pre-versioning Dev
+    fixtures did not carry a hashed lineage. *Do not* use this short-circuit
+    in new code — generate a fresh ``run_id`` via
+    :func:`_configured_shadow_run_id` (or any future helper that returns a
+    hashed lineage) and pass it explicitly. See
+    ``docs/2026-09-13-workflow-g-state-of-codebase-audit.md`` §3.3 for the
+    collision semantics.
+    """
     if not account_id or not run_id:
         raise ValueError("shadow account and run identity are required")
-    if run_id == "default-v1":
+    if run_id == LEGACY_DEFAULT_V1_RUN_ID:
         return account_id
     digest = hashlib.sha256(f"{account_id}\x00{run_id}".encode()).hexdigest()[:24]
     return f"shadow-run:{digest}"
@@ -1516,7 +1539,7 @@ async def repair_shadow_evidence(db_path: str, *, account_id: str) -> int:
 async def run_shadow_workflow(
     db_path: str, *, account_id: str, universe: dict[str, list[dict]], now: datetime,
     scenario_capital: float = 8_000, future_bars: Optional[dict[str, list[dict]]] = None,
-    run_id: str = "default-v1", fee_rate: float = .001, slippage_bps: float = 5,
+    run_id: str = LEGACY_DEFAULT_V1_RUN_ID, fee_rate: float = .001, slippage_bps: float = 5,
     origin: str = "SHADOW", market_data_contract: Optional[dict] = None,
 ) -> dict:
     """Run the bounded fixture-backed SHADOW path; never calls a broker.
@@ -1727,7 +1750,7 @@ async def run_shadow_workflow(
 async def run_shadow_replay(
     db_path: str, *, account_id: str, universe: dict[str, list[dict]],
     clock_steps: list[datetime], scenario_capital: float = 8_000,
-    future_bars: Optional[dict[str, list[dict]]] = None, run_id: str = "default-v1",
+    future_bars: Optional[dict[str, list[dict]]] = None, run_id: str = LEGACY_DEFAULT_V1_RUN_ID,
 ) -> list[dict]:
     """Run the same incremental SHADOW workflow at explicit replay clocks."""
     steps = [_stamp(step) for step in clock_steps]
