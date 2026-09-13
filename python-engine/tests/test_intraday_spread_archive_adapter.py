@@ -4,7 +4,7 @@ import json
 
 import pytest
 
-from intraday_spread_archive_adapter import SpreadContractIdentity, build_spread_observations
+from intraday_spread_archive_adapter import SpreadContractIdentity, build_spread_observations, read_archived_quote_events
 from intraday_spread_replay import ReplayInputError
 from intraday_spread_signal_artifact import write_signal_artifact
 
@@ -105,6 +105,41 @@ def test_archive_adapter_pairs_only_complete_same_receipt_batches_and_retains_pa
     assert len(built.observations) == 1
     assert built.observations[0].signal_score == 1.0
     assert built.partial_batches[0]["missing"] == ["short"]
+
+
+def test_unrelated_archive_packets_are_ignored_not_false_partial_books(tmp_path):
+    long, short = identity(1, "NIFTY25000CE", 25000), identity(2, "NIFTY25200CE", 25200)
+    unrelated = identity(999, "NIFTY26000CE", 26000)
+    built = build_spread_observations(events=[event(contract(long)), event(contract(short)),
+        event(contract(unrelated), "2026-09-10T04:31:00+00:00")], long_contract=long,
+        short_contract=short, master_sha256=MASTER, archive_root=archive(tmp_path, long, short))
+    assert len(built.observations) == 1
+    assert built.partial_batches == ()
+    assert built.ignored_events == 1
+
+
+def test_finalized_quote_segment_manifest_detects_rehashed_packet_tampering(tmp_path):
+    import gzip
+    day = "2026-09-10"
+    base = tmp_path / "quotes" / day
+    base.mkdir(parents=True)
+    payload = (json.dumps(event(contract(identity(1, "NIFTY25000CE", 25000)))) + "\n").encode()
+    digest = hashlib.sha256(payload).hexdigest()
+    path = base / f"quotes-{digest[:16]}.jsonl.gz"
+    with gzip.open(path, "wb") as stream:
+        stream.write(payload)
+    manifest = {"kind": "observed_quote_segment", "day": day, "event_count": 1,
+                "raw_sha256": digest, "path": path.name}
+    path.with_suffix(".manifest.json").write_text(json.dumps(manifest), encoding="utf-8")
+    assert len(read_archived_quote_events(tmp_path, days=[day])) == 1
+    changed = json.loads(payload)
+    changed["oi"] = 999
+    changed["raw_sha256"] = hashlib.sha256(json.dumps(changed["raw_packet"], sort_keys=True,
+        separators=(",", ":")).encode()).hexdigest()
+    with gzip.open(path, "wb") as stream:
+        stream.write((json.dumps(changed) + "\n").encode())
+    with pytest.raises(ReplayInputError, match="fingerprint mismatch"):
+        read_archived_quote_events(tmp_path, days=[day])
 
 
 def test_same_receipt_conflict_is_rejected_but_exact_retry_is_idempotent(tmp_path):

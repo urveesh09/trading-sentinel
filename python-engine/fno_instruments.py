@@ -23,6 +23,7 @@ window waiting on a 38-minute dump download.
 from __future__ import annotations
 
 import csv
+import hashlib
 import io
 import json
 import os
@@ -63,6 +64,9 @@ class FnoInstruments:
         self.future_expiries: List[date] = []
         self._lot_size: int = 0
         self._strike_step: float = 0.0
+        # Digest of the exact provider dump that produced this dated view.
+        # Token mappings are not meaningful without this immutable identity.
+        self.source_raw_sha256: Optional[str] = None
 
     # ------------------------------------------------------------------
     # refresh / persistence
@@ -97,7 +101,9 @@ class FnoInstruments:
                 self.underlying,
             )
             return False
+        source_raw_sha256 = hashlib.sha256(raw.encode("utf-8")).hexdigest()
         self._load_contracts(contracts)
+        self.source_raw_sha256 = source_raw_sha256
         self.refreshed_on = datetime.now(IST).date()
         self._persist()
         # Rule 55 companion summary: surface the inputs, loudly.
@@ -116,6 +122,8 @@ class FnoInstruments:
         for rec in reader:
             try:
                 if (rec.get("name") or "").strip().upper() != self.underlying:
+                    continue
+                if (rec.get("exchange") or self.segment).strip().upper() != self.segment:
                     continue
                 itype = (rec.get("instrument_type") or "").strip().upper()
                 if itype not in ("CE", "PE", "FUT"):
@@ -176,7 +184,10 @@ class FnoInstruments:
             os.makedirs(os.path.dirname(path), exist_ok=True)
             payload = {
                 "underlying": self.underlying,
+                "segment": self.segment,
+                "provider": "KITE",
                 "refreshed_on": self.refreshed_on.isoformat() if self.refreshed_on else None,
+                "source_raw_sha256": self.source_raw_sha256,
                 # by_key is the authoritative map: iterating by_symbol
                 # would silently drop contracts if two rows ever shared a
                 # tradingsymbol.
@@ -205,6 +216,11 @@ class FnoInstruments:
             with open(path) as f:
                 payload = json.load(f)
             snap_day = payload.get("refreshed_on")
+            if (payload.get("underlying") != self.underlying
+                    or payload.get("segment") not in {None, self.segment}
+                    or payload.get("provider") not in {None, "KITE"}):
+                logger.warning("fno_instruments_disk_snapshot_scope_mismatch")
+                return False
             if snap_day != datetime.now(IST).date().isoformat():
                 logger.info(
                     "fno_instruments_disk_snapshot_stale snap=%s today=%s -- "
@@ -223,7 +239,13 @@ class FnoInstruments:
             ]
             if not contracts:
                 return False
+            source_raw_sha256 = payload.get("source_raw_sha256")
+            if (not isinstance(source_raw_sha256, str) or len(source_raw_sha256) != 64
+                    or any(char not in "0123456789abcdef" for char in source_raw_sha256.lower())):
+                logger.warning("fno_instruments_rehydrate_failed reason=missing_source_digest")
+                return False
             self._load_contracts(contracts)
+            self.source_raw_sha256 = source_raw_sha256.lower()
             self.refreshed_on = date.fromisoformat(snap_day)
             logger.info(
                 "fno_instruments_rehydrated_from_disk contracts=%d lot_size=%d",

@@ -11,6 +11,18 @@ import pytest
 from partner_research_capture import persist_public_input
 
 
+def scoped_future(master="a" * 64):
+    return {"format": "partner_public_future_scope_v1", "provider": "KITE", "channel": "HISTORICAL",
+            "interval": "5minute", "underlying": "NIFTY", "exchange": "NFO",
+            "contract_master_raw_sha256": master, "selection_as_of": "2026-07-10",
+            "selected_future": {"token": 123, "tradingsymbol": "NIFTY26JULFUT", "expiry": "2026-07-30",
+                                "instrument_type": "FUT", "lot_size": 75, "tick_size": .05},
+            "eligible_future_expiries": ["2026-07-30", "2026-08-27"],
+            "next_future": {"token": 124, "tradingsymbol": "NIFTY26AUGFUT", "expiry": "2026-08-27",
+                            "instrument_type": "FUT", "lot_size": 75, "tick_size": .05},
+            "nearest_strictly_future_option_expiry": "2026-07-14"}
+
+
 def test_candidate_capture_roundtrip_preserves_actual_receipt(tmp_path):
     from tests.test_partner_qualification import candidate_bundle
     from partner_qualification import load_candidate_evidence
@@ -100,6 +112,7 @@ def test_lifecycle_loader_recomputes_price_and_preserves_late_receipt(tmp_path):
     assert result['observations'][0]['received_at'] == receipt
     assert result['observations'][0]['observed_at'] <= NOW
     assert result['sources'][0]['provenance_state'] == 'RETROSPECTIVE'
+    assert result['sources'][0]['public_scope_state'] == 'LEGACY_UNSCOPED'
     assert result['coverage'] == 'SUPPLIED_CAPTURES_ONLY'
     assert not result['can_qualify']
     with pytest.raises(ValueError, match='duplicate'):
@@ -150,6 +163,26 @@ def test_capture_retains_frame_and_actual_late_receipt(tmp_path):
     Path(result["path"]).write_text("corrupted")
     with pytest.raises(ValueError, match="hash mismatch"):
         persist_public_input(tmp_path, scan, regime="NORMAL", evaluation_at=now)
+
+
+def test_v3_capture_binds_verified_future_master_and_roll_scope(tmp_path):
+    from tests.test_fno_signal_scan import _frame, LONG_ROWS, NOW
+    from partner_research_capture import load_public_input, load_public_lifecycle
+    scan = SimpleNamespace(name="NIFTY", research_bars=_frame(LONG_ROWS), research_received_at=NOW,
+        research_future_token=123, research_public_scope=scoped_future(), sig=None, error="")
+    capture = persist_public_input(tmp_path, scan, regime="REGIME_1_NORMAL", evaluation_at=NOW)
+    payload = json.loads(Path(capture["path"]).read_text())
+    assert payload["format"] == "partner_observed_public_input_v3"
+    assert payload["public_scope"]["selected_future"]["expiry"] == "2026-07-30"
+    _, _, _, provenance = load_public_input(capture["path"], underlying="NIFTY")
+    assert provenance["public_scope_state"] == "VERIFIED_CONTRACT_SCOPE"
+    assert provenance["public_scope_sha256"] == payload["public_scope_sha256"]
+    lifecycle = load_public_lifecycle([capture["path"]], underlying="NIFTY", max_age_seconds=600)
+    assert lifecycle["sources"][0]["public_scope"]["next_future"]["token"] == 124
+    invalid = SimpleNamespace(**{**scan.__dict__, "research_public_scope": {
+        **scoped_future(), "eligible_future_expiries": ["2026-08-27", "2026-07-30"]}})
+    with pytest.raises(ValueError, match="front-future selection"):
+        persist_public_input(tmp_path, invalid, regime="REGIME_1_NORMAL", evaluation_at=NOW)
 
 
 def test_missing_capture_is_explicit(tmp_path):

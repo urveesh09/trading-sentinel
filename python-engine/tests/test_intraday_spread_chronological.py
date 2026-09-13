@@ -246,3 +246,47 @@ def test_cost_sensitivity_always_includes_baseline_and_rejects_boolean_coordinat
     with pytest.raises(ReplayInputError, match="booleans"):
         replay_cost_scenarios(underlying="NIFTY", expiry="2026-09-24", policy=policy(),
             observations=[observation(first, .9)], fee_multipliers=[True], additional_slippage_bps=[0])
+
+
+def test_embedded_public_breach_at_delayed_fill_cancels_entry_on_boundary():
+    start = IST.localize(datetime(2026, 9, 10, 10))
+    fill = start + timedelta(seconds=5)
+    rows = [observation(start, 1), replace(observation(fill, 0), public_price=24900,
+            public_received_at=fill, public_observed_at=fill)]
+    replay = replay_chronological_debit_spread(underlying="NIFTY", expiry="2026-09-24", observations=rows,
+        policy=replace(policy(), execution_delay=timedelta(seconds=5), exit_basis="PUBLIC_THESIS",
+                       direction="LONG", invalidation_level=24900, target_level=25100))
+    assert replay.state == "NO_FILL"
+    assert replay.rejected_entry_reasons == ("public_thesis_cancelled_before_execution",)
+
+
+def test_exact_signal_expiry_is_not_a_delayed_fill_and_late_exit_stays_unresolved():
+    start = IST.localize(datetime(2026, 9, 10, 10))
+    boundary = start + timedelta(seconds=10)
+    no_fill = replay_chronological_debit_spread(underlying="NIFTY", expiry="2026-09-24",
+        observations=[observation(start, 1), observation(boundary, 0)],
+        policy=replace(policy(), execution_delay=timedelta(seconds=10), signal_expiry=timedelta(seconds=10)))
+    assert no_fill.state == "NO_FILL"
+    assert no_fill.rejected_entry_reasons == ("delayed_execution_packet_unavailable",)
+    fill = start + timedelta(seconds=5)
+    breach = start + timedelta(seconds=6)
+    too_late = start + timedelta(seconds=40)
+    unresolved = replay_chronological_debit_spread(underlying="NIFTY", expiry="2026-09-24",
+        observations=[observation(start, 1), observation(fill, 0), observation(too_late, 0)],
+        public_observations=[PublicObservation(start, start, 25000), PublicObservation(breach, breach, 24900)],
+        policy=replace(policy(), execution_delay=timedelta(seconds=5), execution_max_wait=timedelta(seconds=30),
+                       exit_basis="PUBLIC_THESIS", direction="LONG", invalidation_level=24900, target_level=25100))
+    assert unresolved.state == "UNRESOLVED"
+    assert unresolved.result.reason == "no_timely_executable_exit"
+
+
+def test_delayed_fill_rechecks_public_observation_age():
+    start = IST.localize(datetime(2026, 9, 10, 10))
+    fill = start + timedelta(seconds=5)
+    result = replay_chronological_debit_spread(underlying="NIFTY", expiry="2026-09-24",
+        observations=[observation(start, 1), observation(fill, 0)],
+        public_observations=[PublicObservation(start - timedelta(minutes=10), start, 25000)],
+        policy=replace(policy(), execution_delay=timedelta(seconds=5), exit_basis="PUBLIC_THESIS",
+                       direction="LONG", invalidation_level=24900, target_level=25100))
+    assert result.state == "NO_FILL"
+    assert result.rejected_entry_reasons == ("execution_public_evidence_stale",)

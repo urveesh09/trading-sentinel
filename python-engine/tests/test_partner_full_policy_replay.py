@@ -12,6 +12,19 @@ from tests.test_partner_qualification import candidate_bundle, provenance
 from tests.test_fno_signal_scan import _frame, LONG_ROWS, NOW, EXPIRY
 
 
+def public_scope(master_sha256, token=123):
+    return {"format": "partner_public_future_scope_v1", "provider": "KITE",
+            "channel": "HISTORICAL", "interval": "5minute", "underlying": "NIFTY",
+            "exchange": "NFO", "contract_master_raw_sha256": master_sha256,
+            "selection_as_of": NOW.date().isoformat(),
+            "selected_future": {"token": token, "tradingsymbol": "NIFTY26SEPFUT",
+                                "expiry": "2026-09-24", "instrument_type": "FUT", "lot_size": 75, "tick_size": .05},
+            "eligible_future_expiries": ["2026-09-24", "2026-10-29"],
+            "next_future": {"token": 124, "tradingsymbol": "NIFTY26OCTFUT",
+                            "expiry": "2026-10-29", "instrument_type": "FUT", "lot_size": 75, "tick_size": .05},
+            "nearest_strictly_future_option_expiry": EXPIRY.isoformat()}
+
+
 @pytest.fixture
 def case(monkeypatch, tmp_path):
     value = candidate_bundle()
@@ -31,7 +44,8 @@ def case(monkeypatch, tmp_path):
         quotes = tuple(LegQuote(leg.tradingsymbol, leg.side, 'NFO', leg.lot_size,
             leg.bid, leg.ask, leg.bid_quantity, leg.ask_quantity, at, at,
             token=leg.instrument_token, option_type=leg.option_type, strike=leg.strike,
-            expiry=leg.expiry, quantity=leg.lot_size, master_sha256='a' * 64)
+            expiry=leg.expiry, quantity=leg.lot_size, master_sha256='a' * 64,
+            oi=leg.oi, volume=leg.volume)
             for leg in decision.candidate.legs)
         return SpreadObservation(at, at, 0, quotes)
     rows = [row(NOW), row(NOW + timedelta(minutes=1))]
@@ -50,6 +64,7 @@ def test_real_policy_connector_exits_on_invalidation(case):
     assert result['state'] == 'CLOSED'
     assert result['replay']['exit_trigger'] == 'INVALIDATION'
     assert not result['can_qualify'] and not result['can_deliver']
+    assert result['public_evidence_contract'] == 'CALLER_SUPPLIED_DIAGNOSTIC'
 
 
 def test_missing_public_evidence_cannot_claim_complete_replay(case):
@@ -140,13 +155,15 @@ def test_master_scope_mismatch_rejected(case):
         replay.replay_full_policy(**args)
 
 
-def test_connector_consumes_verified_public_capture(case):
+def test_connector_consumes_verified_public_capture(case, monkeypatch):
     from types import SimpleNamespace
     from partner_research_capture import persist_public_input
     args, _ = case
+    monkeypatch.setattr("intraday_spread_archive_adapter.master_proves_public_scope", lambda *_: True)
     capture = persist_public_input(args['archive_root'], SimpleNamespace(name='NIFTY',
         research_bars=args['evaluation_inputs']['bars'], research_received_at=NOW,
-        research_future_token=123, sig=None, error=''), regime='REGIME_1_NORMAL', evaluation_at=NOW)
+        research_future_token=123, research_public_scope=public_scope('a' * 64), sig=None, error=''),
+        regime='REGIME_1_NORMAL', evaluation_at=NOW)
     args['public_capture_paths'] = [capture['path']]
     with pytest.raises(ReplayInputError, match='cannot mix'):
         replay.replay_full_policy(**args)
@@ -158,6 +175,23 @@ def test_connector_consumes_verified_public_capture(case):
     assert not result['can_qualify']
 
 
+def test_connector_rejects_decision_bars_not_bound_to_capture(case, monkeypatch):
+    from types import SimpleNamespace
+    from partner_research_capture import persist_public_input
+    args, _ = case
+    monkeypatch.setattr("intraday_spread_archive_adapter.master_proves_public_scope", lambda *_: True)
+    capture = persist_public_input(args['archive_root'], SimpleNamespace(name='NIFTY',
+        research_bars=args['evaluation_inputs']['bars'], research_received_at=NOW,
+        research_future_token=123, research_public_scope=public_scope('a' * 64), sig=None, error=''),
+        regime='REGIME_1_NORMAL', evaluation_at=NOW)
+    args['public_observations'] = []
+    args['public_capture_paths'] = [capture['path']]
+    args['evaluation_inputs']['bars'] = args['evaluation_inputs']['bars'].copy()
+    args['evaluation_inputs']['bars'].iloc[-1, 4] += 1
+    with pytest.raises(ReplayInputError, match="decision bars are not bound"):
+        replay.replay_full_policy(**args)
+
+
 def test_unmocked_archive_to_real_policy_and_exit(case, monkeypatch):
     import hashlib
     import json
@@ -165,14 +199,22 @@ def test_unmocked_archive_to_real_policy_and_exit(case, monkeypatch):
     args, rows = case
     monkeypatch.setattr(replay, 'build_spread_observations', build_spread_observations)
     quotes = rows[0].quotes
-    raw = ('instrument_token,tradingsymbol,name,exchange,instrument_type,expiry,strike,lot_size\n' +
-           ''.join(f'{q.token},{q.symbol},NIFTY,NFO,{q.option_type},{q.expiry},{q.strike},{q.lot_size}\n'
-                   for q in quotes)).encode()
-    digest = hashlib.sha256(raw).hexdigest()
     contracts = {q.token: dict(instrument_token=str(q.token), tradingsymbol=q.symbol, underlying='NIFTY',
         exchange='NFO', instrument_type=q.option_type, expiry=q.expiry, strike=q.strike, lot_size=q.lot_size)
         for q in quotes}
-    canonical = ('\n'.join(json.dumps(item) for item in contracts.values()) + '\n').encode()
+    futures = {
+        123: dict(instrument_token='123', tradingsymbol='NIFTY26SEPFUT', underlying='NIFTY', exchange='NFO',
+                  instrument_type='FUT', expiry='2026-09-24', strike=0.0, lot_size=75, tick_size=.05),
+        124: dict(instrument_token='124', tradingsymbol='NIFTY26OCTFUT', underlying='NIFTY', exchange='NFO',
+                  instrument_type='FUT', expiry='2026-10-29', strike=0.0, lot_size=75, tick_size=.05),
+    }
+    master_contracts = [*contracts.values(), *futures.values()]
+    raw = ('instrument_token,tradingsymbol,name,exchange,instrument_type,expiry,strike,lot_size,tick_size\n' +
+           ''.join(f"{q['instrument_token']},{q['tradingsymbol']},NIFTY,NFO,{q['instrument_type']},"
+                   f"{q['expiry']},{q['strike']},{q['lot_size']},{q.get('tick_size', .05)}\n"
+                   for q in master_contracts)).encode()
+    digest = hashlib.sha256(raw).hexdigest()
+    canonical = ('\n'.join(json.dumps(item) for item in master_contracts) + '\n').encode()
     directory = args['archive_root'] / 'contract-masters' / 'NFO' / digest
     directory.mkdir(parents=True)
     (directory / 'raw.csv').write_bytes(raw)
@@ -184,9 +226,11 @@ def test_unmocked_archive_to_real_policy_and_exit(case, monkeypatch):
         for quote in row.quotes:
             depth = dict(buy=[dict(price=quote.bid, quantity=quote.bid_depth)],
                          sell=[dict(price=quote.ask, quantity=quote.ask_depth)])
-            packet = dict(instrument_token=quote.token, timestamp=row.received_at.isoformat(), depth=depth)
+            packet = dict(instrument_token=quote.token, timestamp=row.received_at.isoformat(), depth=depth,
+                          oi=quote.oi, volume=quote.volume)
             events.append(dict(received_at_utc=row.received_at.isoformat(), provider_timestamp_utc=row.received_at.isoformat(),
-                contract=contracts[quote.token], buy_depth=depth['buy'], sell_depth=depth['sell'], raw_packet=packet,
+                contract=contracts[quote.token], buy_depth=depth['buy'], sell_depth=depth['sell'],
+                oi=quote.oi, volume=quote.volume, raw_packet=packet,
                 raw_sha256=hashlib.sha256(json.dumps(packet, sort_keys=True, separators=(',', ':')).encode()).hexdigest()))
     args['master_sha256'] = args['evaluation_inputs']['contract_master_sha256'] = digest
     args['events'] = events
@@ -200,7 +244,25 @@ def test_unmocked_archive_to_real_policy_and_exit(case, monkeypatch):
     from research_cli import main
     capture = persist_public_input(args['archive_root'], SimpleNamespace(name='NIFTY',
         research_bars=args['evaluation_inputs']['bars'], research_received_at=NOW,
-        research_future_token=123, sig=None, error=''), regime='REGIME_1_NORMAL', evaluation_at=NOW)
+        research_future_token=123, research_public_scope=public_scope(digest), sig=None, error=''),
+        regime='REGIME_1_NORMAL', evaluation_at=NOW)
+    forged_scope = {**public_scope(digest), "selected_future": {
+        **public_scope(digest)["selected_future"], "tradingsymbol": "FORGEDFUT"}}
+    forged = persist_public_input(args['archive_root'], SimpleNamespace(name='NIFTY',
+        research_bars=args['evaluation_inputs']['bars'], research_received_at=NOW,
+        research_future_token=123, research_public_scope=forged_scope, sig=None, error=''),
+        regime='REGIME_1_NORMAL', evaluation_at=NOW)
+    diagnostic = dict(args, public_observations=[], public_capture_paths=[forged['path']])
+    with pytest.raises(ReplayInputError, match="does not prove public futures"):
+        replay.replay_full_policy(**diagnostic)
+    omitted_front_scope = {**public_scope(digest), "selected_future": public_scope(digest)["next_future"],
+                           "eligible_future_expiries": ["2026-10-29"], "next_future": None}
+    omitted = persist_public_input(args['archive_root'], SimpleNamespace(name='NIFTY',
+        research_bars=args['evaluation_inputs']['bars'], research_received_at=NOW,
+        research_future_token=124, research_public_scope=omitted_front_scope, sig=None, error=''),
+        regime='REGIME_1_NORMAL', evaluation_at=NOW)
+    with pytest.raises(ReplayInputError, match="does not prove public futures"):
+        replay.replay_full_policy(**dict(args, public_observations=[], public_capture_paths=[omitted['path']]))
     bundle = candidate_bundle()
     bundle['received_at'] = bundle['snapshot']['taken_at'] = NOW.isoformat()
     bundle['snapshot']['expiry'] = EXPIRY.isoformat()

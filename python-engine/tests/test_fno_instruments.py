@@ -4,6 +4,7 @@ hardcode rules (VERIFY-2/VERIFY-3), and the same-day disk rehydration
 that dodges the 38-minute cold-start pathology (ops rule 61).
 """
 from datetime import date
+import pathlib
 
 import pytest
 
@@ -179,6 +180,13 @@ def test_custom_json_path_round_trip(tmp_path):
     assert fresh.load_from_disk()
     assert fresh.lot_size == 20
     assert len(fresh.by_symbol) == 4
+    assert fresh.source_raw_sha256 == book.source_raw_sha256
+
+    import json
+    payload = json.loads(pathlib.Path(path).read_text())
+    payload["underlying"] = "NIFTY"
+    pathlib.Path(path).write_text(json.dumps(payload))
+    assert not FnoInstruments("SENSEX", segment="BFO", json_path=path).load_from_disk()
 
 
 def test_default_json_path_is_the_legacy_setting():

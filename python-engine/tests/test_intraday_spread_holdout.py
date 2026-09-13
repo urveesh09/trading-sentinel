@@ -102,7 +102,8 @@ def test_full_policy_report_adapter_rejects_tampering_and_simplified_manifest():
     sensitivity = sensitivity_body | {"evidence_sha256": _sha(sensitivity_body)}
     body = {"format": "partner_full_policy_replay_v1", "decision_id": "decision-one",
             "manifest": manifest, "state": "CLOSED", "replay": asdict(chronological),
-            "economics_contract": "FULL_POLICY_ECONOMICS_V1", "cost_sensitivity": sensitivity}
+            "economics_contract": "FULL_POLICY_ECONOMICS_V1", "cost_sensitivity": sensitivity,
+            "public_evidence_contract": "VERIFIED_ARCHIVED_FUTURE_SCOPE_V1"}
     report = body | {"evidence_sha256": hashlib.sha256(json.dumps(body, sort_keys=True,
         separators=(",", ":"), default=str).encode()).hexdigest()}
     case = heldout_case_from_full_policy_report(report, signal_artifact_sha256="d" * 64)

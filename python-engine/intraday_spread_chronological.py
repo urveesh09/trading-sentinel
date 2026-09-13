@@ -66,6 +66,11 @@ class ChronologicalPolicy:
     max_public_age: timedelta = timedelta(minutes=10)
     capital_limit_rs: float | None = None
     risk_limit_rs: float | None = None
+    max_leg_spread_pct: float | None = None
+    min_oi: int = 0
+    min_volume: int = 0
+    min_depth_units: int = 0
+    min_reward_risk: float = 0.0
 
 
 @dataclass(frozen=True)
@@ -105,11 +110,22 @@ def _policy_payload(policy: ChronologicalPolicy) -> dict:
         raise ReplayInputError("chronological policy contains a non-finite value")
     if policy.take_profit_rs <= 0 or policy.stop_loss_rs <= 0 or policy.slippage_bps < 0:
         raise ReplayInputError("chronological policy thresholds are invalid")
+    if (policy.max_leg_spread_pct is not None
+            and (isinstance(policy.max_leg_spread_pct, bool)
+                 or not math.isfinite(policy.max_leg_spread_pct)
+                 or not 0 < policy.max_leg_spread_pct <= 1)):
+        raise ReplayInputError("chronological maximum leg spread is invalid")
+    if any(not isinstance(value, int) or isinstance(value, bool) or value < 0
+           for value in (policy.min_oi, policy.min_volume, policy.min_depth_units)):
+        raise ReplayInputError("chronological liquidity thresholds are invalid")
+    if (isinstance(policy.min_reward_risk, bool) or not math.isfinite(policy.min_reward_risk)
+            or policy.min_reward_risk < 0):
+        raise ReplayInputError("chronological reward/risk threshold is invalid")
     if (policy.execution_delay < timedelta(0) or policy.execution_max_wait <= timedelta(0)
             or policy.signal_expiry <= timedelta(0)
             or (policy.cancellation_score is not None and not math.isfinite(float(policy.cancellation_score)))):
         raise ReplayInputError("chronological execution policy bounds are invalid")
-    return {"policy_id": policy.policy_id, "min_signal_score": policy.min_signal_score,
+    return ({"policy_id": policy.policy_id, "min_signal_score": policy.min_signal_score,
             "take_profit_rs": policy.take_profit_rs, "stop_loss_rs": policy.stop_loss_rs,
             "entry_start_minute": policy.entry_start_minute, "entry_deadline_minute": policy.entry_deadline_minute,
             "management_deadline_minute": policy.management_deadline_minute,
@@ -122,6 +138,9 @@ def _policy_payload(policy: ChronologicalPolicy) -> dict:
             "direction": policy.direction, "invalidation_level": policy.invalidation_level, "target_level": policy.target_level,
             "max_public_age_seconds": policy.max_public_age.total_seconds(),
             "capital_limit_rs": policy.capital_limit_rs, "risk_limit_rs": policy.risk_limit_rs}
+            | {"max_leg_spread_pct": policy.max_leg_spread_pct, "min_oi": policy.min_oi,
+               "min_volume": policy.min_volume, "min_depth_units": policy.min_depth_units,
+               "min_reward_risk": policy.min_reward_risk})
 
 
 def _observation_payload(item: SpreadObservation) -> dict:
@@ -158,7 +177,7 @@ def _execution_observation(rows: list[SpreadObservation], decision_index: int,
     expiry_at = min(decision.received_at + policy.execution_max_wait,
                     decision.received_at + policy.signal_expiry)
     for item in rows[decision_index + 1:]:
-        if item.received_at > expiry_at:
+        if item.received_at >= expiry_at:
             break
         if (policy.cancellation_score is not None
                 and item.signal_score < policy.cancellation_score):
@@ -237,9 +256,20 @@ def replay_chronological_debit_spread(
             continue
         if policy.exit_basis == "PUBLIC_THESIS" and public_rows:
             from partner_thesis import public_thesis_event
+            latest_public = next((event for event in reversed(public_rows)
+                                  if event.received_at <= execution.received_at), None)
+            if latest_public is not None and execution.received_at - latest_public.observed_at > policy.max_public_age:
+                rejected.append("execution_public_evidence_stale")
+                continue
             if any(public_thesis_event(policy.direction, event.price, policy.invalidation_level,
                                       policy.target_level)[0] is not None
                    for event in public_rows if item.received_at <= event.received_at <= execution.received_at):
+                rejected.append("public_thesis_cancelled_before_execution")
+                continue
+        if policy.exit_basis == "PUBLIC_THESIS" and execution.public_price is not None:
+            from partner_thesis import public_thesis_event
+            if public_thesis_event(policy.direction, execution.public_price,
+                                   policy.invalidation_level, policy.target_level)[0] is not None:
                 rejected.append("public_thesis_cancelled_before_execution")
                 continue
         probe = replay_intraday_debit_spread(
@@ -248,6 +278,9 @@ def replay_chronological_debit_spread(
             entry_deadline_minute=policy.entry_deadline_minute, management_deadline_minute=policy.management_deadline_minute,
             max_quote_age=policy.max_quote_age, max_leg_sync=policy.max_leg_sync, slippage_bps=policy.slippage_bps,
             execution_delay=policy.execution_delay, market_session_day=market_session_day,
+            max_leg_spread_pct=policy.max_leg_spread_pct, min_oi=policy.min_oi,
+            min_volume=policy.min_volume, min_depth_units=policy.min_depth_units,
+            min_reward_risk=policy.min_reward_risk,
         )
         if probe.accepted_entry:
             buy = next(quote for quote in execution.quotes if quote.side == "BUY")
@@ -255,7 +288,8 @@ def replay_chronological_debit_spread(
             debit = (buy.ask - sell.bid) * buy.lot_size
             # Match the advisory profile's round-trip reserve convention, and
             # evaluate unrounded execution economics rather than original advice.
-            all_in = debit * (1 + policy.slippage_bps / 10_000) + 4 * policy.fee_per_leg_rs
+            gross_entry_notional = (buy.ask + sell.bid) * buy.lot_size
+            all_in = debit + gross_entry_notional * policy.slippage_bps / 10_000 + 4 * policy.fee_per_leg_rs
             if policy.capital_limit_rs is not None and all_in > policy.capital_limit_rs:
                 rejected.append("execution_profile_capital_limit_exceeded")
                 continue
@@ -275,6 +309,7 @@ def replay_chronological_debit_spread(
     last_unresolved: ReplayResult | None = None
     pending_public_trigger = None
     public_exit_eligible_at = None
+    public_exit_expires_at = None
     public_index = 0
     while public_index < len(public_rows) and public_rows[public_index].received_at <= entry.received_at:
         public_index += 1
@@ -294,6 +329,8 @@ def replay_chronological_debit_spread(
                         policy.invalidation_level, policy.target_level)
                     if pending_public_trigger is not None:
                         public_exit_eligible_at = event.received_at + policy.execution_delay
+                        public_exit_expires_at = (event.received_at + policy.execution_max_wait
+                                                  if policy.execution_delay > timedelta(0) else None)
         if policy.exit_basis == "PUBLIC_THESIS" and pending_public_trigger is None:
             from partner_thesis import public_thesis_event
             if item.public_price is not None:
@@ -301,8 +338,15 @@ def replay_chronological_debit_spread(
                                                                 policy.invalidation_level, policy.target_level)
             if pending_public_trigger is not None:
                 public_exit_eligible_at = clock + policy.execution_delay
+                public_exit_expires_at = (clock + policy.execution_max_wait
+                                          if policy.execution_delay > timedelta(0) else None)
         if pending_public_trigger is not None and clock < public_exit_eligible_at:
             continue
+        if (pending_public_trigger is not None and public_exit_expires_at is not None
+                and clock > public_exit_expires_at):
+            last_unresolved = replace(entry_probe, state="UNRESOLVED",
+                                      reason="delayed_exit_packet_unavailable")
+            break
         candidate = replay_intraday_debit_spread(
             underlying=underlying, expiry=expiry, entry_at=entry.received_at,
             entry_quotes=list(entry.quotes), exit_at=clock, exit_quotes=list(item.quotes), fee_per_leg_rs=policy.fee_per_leg_rs,
@@ -310,6 +354,9 @@ def replay_chronological_debit_spread(
             management_deadline_minute=policy.management_deadline_minute, max_quote_age=policy.max_quote_age,
             max_leg_sync=policy.max_leg_sync, slippage_bps=policy.slippage_bps, execution_delay=policy.execution_delay,
             market_session_day=market_session_day,
+            max_leg_spread_pct=policy.max_leg_spread_pct, min_oi=policy.min_oi,
+            min_volume=policy.min_volume, min_depth_units=policy.min_depth_units,
+            min_reward_risk=policy.min_reward_risk,
         )
         if candidate.state != "CLOSED":
             last_unresolved = candidate
@@ -320,7 +367,9 @@ def replay_chronological_debit_spread(
             trigger = "take_profit"
         elif policy.exit_basis == "SPREAD_PNL" and candidate.net_pnl_rs is not None and candidate.net_pnl_rs <= -policy.stop_loss_rs:
             trigger = "stop_loss"
-        elif clock.astimezone(IST).hour * 60 + clock.astimezone(IST).minute >= policy.management_deadline_minute:
+        elif clock.astimezone(IST) >= clock.astimezone(IST).replace(
+                hour=policy.management_deadline_minute // 60,
+                minute=policy.management_deadline_minute % 60, second=0, microsecond=0):
             trigger = "management_deadline"
         else:
             continue
@@ -338,7 +387,15 @@ def replay_chronological_debit_spread(
                 policy.invalidation_level, policy.target_level)
             if pending_public_trigger is not None:
                 break
-    reason = "no_timely_executable_exit" if last_unresolved is not None else "no_exit_observation_after_entry"
+    management_deadline = entry.received_at.astimezone(IST).replace(
+        hour=policy.management_deadline_minute // 60,
+        minute=policy.management_deadline_minute % 60, second=0, microsecond=0)
+    if last_unresolved is not None:
+        reason = "no_timely_executable_exit"
+    elif rows[-1].received_at < management_deadline and pending_public_trigger is None:
+        reason = "management_deadline_exit_evidence_missing"
+    else:
+        reason = "no_exit_observation_after_entry"
     outcome = {"state": "UNRESOLVED", "reason": reason, "entry_at": entry.received_at.isoformat(),
                "pending_public_trigger": pending_public_trigger,
                "attempted_entries": attempted, "rejected": rejected}

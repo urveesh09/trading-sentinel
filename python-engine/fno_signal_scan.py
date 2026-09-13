@@ -58,6 +58,7 @@ class UnderlyingScan:
     research_bars: object = field(default=None, repr=False)
     research_received_at: Optional[datetime] = None
     research_future_token: Optional[int] = None
+    research_public_scope: Optional[dict] = field(default=None, repr=False)
     public_requested_at: Optional[datetime] = None
     public_received_at: Optional[datetime] = None
     public_source_id: Optional[str] = None
@@ -125,6 +126,27 @@ async def observe_underlying(
         out.public_source_id = source_identity("KITE_HISTORICAL_5MINUTE", spec.name, fut.token)
         out.research_received_at = out.public_received_at
         out.research_future_token = fut.token
+        future_expiries = [expiry for expiry in getattr(book, "future_expiries", (fut.expiry,)) if expiry >= today]
+        next_future = None
+        if len(future_expiries) > 1:
+            next_future = getattr(book, "by_key", {}).get((spec.name, future_expiries[1].isoformat(), 0.0, "FUT"))
+        next_option_expiry = next((expiry for expiry in getattr(book, "option_expiries", ()) if expiry > today), None)
+        master_digest = getattr(book, "source_raw_sha256", None)
+        out.research_public_scope = ({
+            "format": "partner_public_future_scope_v1", "provider": "KITE",
+            "channel": "HISTORICAL", "interval": "5minute",
+            "underlying": spec.name, "exchange": spec.segment,
+            "contract_master_raw_sha256": master_digest,
+            "selection_as_of": today.isoformat(),
+            "selected_future": {"token": fut.token, "tradingsymbol": fut.tradingsymbol,
+                                "expiry": fut.expiry.isoformat(), "instrument_type": fut.instrument_type,
+                                "lot_size": fut.lot_size, "tick_size": fut.tick_size},
+            "eligible_future_expiries": [expiry.isoformat() for expiry in future_expiries],
+            "next_future": ({"token": next_future.token, "tradingsymbol": next_future.tradingsymbol,
+                             "expiry": next_future.expiry.isoformat(), "instrument_type": next_future.instrument_type,
+                             "lot_size": next_future.lot_size, "tick_size": next_future.tick_size} if next_future is not None else None),
+            "nearest_strictly_future_option_expiry": next_option_expiry.isoformat() if next_option_expiry else None,
+        } if isinstance(master_digest, str) and len(master_digest) == 64 else None)
         out.research_bars = bars.copy() if bars is not None else None
         out.sig = evaluate_fno_mom(bars, regime, now_ist)
 

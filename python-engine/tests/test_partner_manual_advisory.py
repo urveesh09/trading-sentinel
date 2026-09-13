@@ -112,6 +112,7 @@ def test_stale_or_missing_depth_never_makes_an_actionable_card():
         )}
     )
     assert "out_of_sync_leg_quotes" in validate_candidate(out_of_sync, NOW).reasons
+    assert "candidate_expired" in validate_candidate(candidate, candidate.valid_until).reasons
 
 
 def test_full_lot_depth_and_independent_expiry_oracle_cannot_be_bypassed():

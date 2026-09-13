@@ -276,7 +276,7 @@ Engine dependencies: `config`, `performance`
 
 [FNO-INSTRUMENTS 2026-07-10] NFO instrument dump -> keyed contract maps (spec §6.1). GET /instruments/NFO returns 60,000-90,000 rows. We keep ONLY the FNO_UNDERLYING (NIFTY) rows -- a few thousand -- in our own structure, keyed (name, expiry, strike, instrument_type) -> Contract, plus a tradingsymbol side map. It is NEVER poured into kite_client's flat equity instrument_cache (symbol collisions + rule-61 cold-start bloat). From the dump we READ, never hardcode (spec §14): - lot_size (VERIFY-2: revised Nov 2024 and possibly since) - strike step (derived from the nearest expiry's strike ladder) - expiry dates (VERIFY-3: the weekly expiry day changed several times in 2025; the calendar IS the d
 
-Top-level declarations: `FnoInstruments` (line 42), `get_fno_instruments` (line 290)
+Top-level declarations: `FnoInstruments` (line 43), `get_fno_instruments` (line 312)
 
 Engine dependencies: `config`, `fno_models`
 
@@ -354,7 +354,7 @@ Declared tables: `fno_signals`, `is`
 
 [PARTNER-TIPS 2026-07-18] Read-only ORB signal scan per underlying (WS2). Thin composition of the already-pure F&O pieces -- bars fetch -> evaluate_fno_mom -> (on a fired direction) chain snapshot + 0.55-delta strike pick -- with ZERO executor/positions imports. This is the partner tips bot's signal source for NIFTY/BANKNIFTY/SENSEX; the NIFTY paper-trading path in fno_orchestrator is untouched and unaware of it. The liquidity check here is deliberately NOT the fno_gates §7 ladder (that needs pool/positions context): a tip on a thin chain is still a tip -- it ships with a "thin market" tag instead of being suppressed, because the partner may be looking at a different strike anyway.
 
-Top-level declarations: `UnderlyingScan` (line 42), `_liquidity_reasons` (line 69), `observe_underlying` (line 87), `attach_entry_chain` (line 141), `scan_underlying` (line 197)
+Top-level declarations: `UnderlyingScan` (line 42), `_liquidity_reasons` (line 70), `observe_underlying` (line 88), `attach_entry_chain` (line 163), `scan_underlying` (line 219)
 
 Engine dependencies: `config`, `fno_chain`, `fno_engine_mom`, `fno_models`, `fno_underlyings`, `partner_decision_clock`
 
@@ -456,7 +456,7 @@ Related tests: `python-engine/tests/test_integrated_dev_demo.py`
 
 Read immutable quote archives into explicit two-leg chronological evidence.
 
-Top-level declarations: `SpreadContractIdentity` (line 21), `ArchiveObservationBuild` (line 33), `_stamp` (line 41), `read_archived_quote_events` (line 51), `_leg` (line 73), `_master_proves_contract` (line 135), `build_spread_observations` (line 175)
+Top-level declarations: `SpreadContractIdentity` (line 21), `ArchiveObservationBuild` (line 34), `_stamp` (line 42), `read_archived_quote_events` (line 52), `_leg` (line 87), `_master_proves_contract` (line 154), `master_proves_public_scope` (line 198), `build_spread_observations` (line 231)
 
 Engine dependencies: `intraday_spread_chronological`, `intraday_spread_replay`, `intraday_spread_signal_artifact`
 
@@ -466,7 +466,7 @@ Related tests: `python-engine/tests/test_intraday_spread_archive_adapter.py`
 
 No-look-ahead chronological research runner for intraday debit spreads. The lower-level replay helper remains useful for one bounded observation pair. This module owns the decision sequence so a researcher cannot choose a lucky entry and exit after seeing the session. It has no broker or delivery import.
 
-Top-level declarations: `SpreadObservation` (line 20), `PublicObservation` (line 37), `ChronologicalPolicy` (line 44), `ChronologicalReplay` (line 72), `_clock` (line 83), `_policy_payload` (line 89), `_observation_payload` (line 127), `_evidence` (line 139), `_execution_observation` (line 146), `replay_chronological_debit_spread` (line 171), `replay_cost_scenarios` (line 350)
+Top-level declarations: `SpreadObservation` (line 20), `PublicObservation` (line 37), `ChronologicalPolicy` (line 44), `ChronologicalReplay` (line 77), `_clock` (line 88), `_policy_payload` (line 94), `_observation_payload` (line 146), `_evidence` (line 158), `_execution_observation` (line 165), `replay_chronological_debit_spread` (line 190), `replay_cost_scenarios` (line 407)
 
 Engine dependencies: `intraday_spread_replay`, `partner_thesis`
 
@@ -486,7 +486,7 @@ Related tests: `python-engine/tests/test_intraday_spread_holdout.py`
 
 Deterministic, conservative replay of the deployed intraday debit spread. This is a research adapter, never an order simulator. A replay can only use quotes received by its decision clock and needs executable two-leg depth for a full exchange lot on both entry and exit. Missing data produces an explicit non-fill or uncertainty result rather than an optimistic capped-loss outcome.
 
-Top-level declarations: `ReplayInputError` (line 26), `LegQuote` (line 31), `ReplayResult` (line 52), `_stamp` (line 73), `_finite` (line 79), `_quote_payload` (line 89), `_digest` (line 96), `_positive_int` (line 106), `_validate_pair` (line 110), `replay_intraday_debit_spread` (line 169)
+Top-level declarations: `ReplayInputError` (line 26), `LegQuote` (line 31), `ReplayResult` (line 54), `_stamp` (line 77), `_finite` (line 83), `_quote_payload` (line 95), `_digest` (line 102), `_positive_int` (line 112), `_validate_pair` (line 116), `replay_intraday_debit_spread` (line 185)
 
 Engine dependencies: `partner_manual_advisory`
 
@@ -794,7 +794,7 @@ Related tests: `python-engine/tests/test_partner_lifecycle_demo.py`
 
 Scoped, non-executing advisory cards for the NIFTY 50/SENSEX partner. This module deliberately sits between read-only market scanning and the hardened delivery ledger. It has no broker-order import and no dependency on Sentinel cash, paper fills or partner holdings for a ``MARKET_SETUP``. A personalised hedge is a different scope and is rejected here unless a caller supplies separately reconciled exposure. The first release is intentionally small: same-index, same-expiry directional debit spreads. Every leg comes from the current exchange-specific instrument book and the conservative executable side of a single quote batch. The module produces persisted preview/shadow cards; delivery stays s
 
-Top-level declarations: `AdvisoryScope` (line 42), `StrategyEvidence` (line 48), `ManualDecision` (line 55), `PartnerAdvisoryProfile` (line 70), `AdvisoryLeg` (line 95), `AdvisoryCandidate` (line 115), `ValidationResult` (line 155), `_iso` (line 241), `_parse_status_clock` (line 247), `_profile_payload` (line 254), `_candidate_payload` (line 258), `intraday_deadlines` (line 271), `_finite_positive` (line 283), `_vertical_oracle` (line 287), `validate_profile` (line 323), `init_partner_advisory_db` (line 346), `save_partner_profile` (line 359), `load_partner_profile` (line 410), `load_partner_profile_with_state` (line 427), `record_advisory_input_status` (line 449), `load_advisory_input_status` (line 484), `record_strategy_qualification` (line 535), `record_research_artifact` (line 566), `is_strategy_qualified` (line 585), `_quote_time` (line 605), `_leg` (line 609), `resolve_advisory_expiry` (line 621), `build_directional_debit_spread` (line 630), `build_conditional_index_protective_put` (line 712), `select_preferred_market_candidates` (line 768), `validate_candidate` (line 801), `advisory_identity` (line 927), `render_advisory_card` (line 953), `persist_candidate` (line 1009), `dispatch_queued_advisory` (line 1142), `queue_management_updates` (line 1204), `run_intraday_session_lifecycle` (line 1279), `dispatch_queued_management_update` (line 1336), `record_manual_feedback` (line 1366), `load_advisory_cards` (line 1387), `load_advisory_diagnostics` (line 1418)
+Top-level declarations: `AdvisoryScope` (line 42), `StrategyEvidence` (line 48), `ManualDecision` (line 55), `PartnerAdvisoryProfile` (line 70), `AdvisoryLeg` (line 95), `AdvisoryCandidate` (line 115), `ValidationResult` (line 155), `_iso` (line 241), `_parse_status_clock` (line 247), `_profile_payload` (line 254), `_candidate_payload` (line 258), `intraday_deadlines` (line 271), `_finite_positive` (line 283), `_vertical_oracle` (line 287), `validate_profile` (line 323), `init_partner_advisory_db` (line 346), `save_partner_profile` (line 359), `load_partner_profile` (line 410), `load_partner_profile_with_state` (line 427), `record_advisory_input_status` (line 449), `load_advisory_input_status` (line 484), `record_strategy_qualification` (line 535), `record_research_artifact` (line 566), `is_strategy_qualified` (line 585), `_quote_time` (line 605), `_leg` (line 609), `resolve_advisory_expiry` (line 621), `build_directional_debit_spread` (line 630), `build_conditional_index_protective_put` (line 712), `select_preferred_market_candidates` (line 768), `validate_candidate` (line 801), `advisory_identity` (line 929), `render_advisory_card` (line 955), `persist_candidate` (line 1011), `dispatch_queued_advisory` (line 1144), `queue_management_updates` (line 1206), `run_intraday_session_lifecycle` (line 1281), `dispatch_queued_management_update` (line 1338), `record_manual_feedback` (line 1368), `load_advisory_cards` (line 1389), `load_advisory_diagnostics` (line 1420)
 
 Engine dependencies: `config`, `fno_chain`, `fno_costs`, `fno_defined_risk`, `fno_instruments`, `fno_models`, `fno_underlyings`, `hedge_advisory`, `partner_thesis`, `research_archive`, `research_leg_subscriptions`
 
@@ -836,7 +836,7 @@ Related tests: `python-engine/tests/test_partner_qualification_review.py`
 
 Retain observed advisory inputs without granting trade or send authority.
 
-Top-level declarations: `persist_candidate_input` (line 14), `load_public_lifecycle` (line 74), `load_public_input` (line 118), `persist_public_input` (line 157)
+Top-level declarations: `_sha` (line 13), `_validated_public_scope` (line 18), `persist_candidate_input` (line 80), `load_public_lifecycle` (line 140), `load_public_input` (line 191), `persist_public_input` (line 239)
 
 Engine dependencies: `fno_engine_mom`, `partner_decision_clock`, `partner_qualification`, `research_archive`
 

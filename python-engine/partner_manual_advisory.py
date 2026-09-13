@@ -837,7 +837,9 @@ def validate_candidate(
         age = (now - candidate.quote_time).total_seconds()
         if age < -5 or age > max_quote_age_seconds:
             reasons.append("stale_or_future_quote")
-        if now > candidate.valid_until:
+        # Delivery treats the validity instant as expired; preview/review must
+        # use the same half-open interval rather than approving an undeliverable card.
+        if now >= candidate.valid_until:
             reasons.append("candidate_expired")
     if not candidate.legs:
         reasons.append("no_legs")

@@ -9,7 +9,7 @@ from datetime import datetime
 from intraday_spread_archive_adapter import SpreadContractIdentity, build_spread_observations
 from intraday_spread_chronological import PublicObservation, replay_chronological_debit_spread, replay_cost_scenarios
 from intraday_spread_replay import IST, ReplayInputError
-from partner_qualification import _sha, evaluate_deployed_full_policy
+from partner_qualification import _sha, _bars_payload, evaluate_deployed_full_policy
 
 
 def write_replay_report(path, report):
@@ -54,13 +54,36 @@ def replay_full_policy(*, evaluation_inputs, events, archive_root, master_sha256
         public_sources = load_public_lifecycle(captures, underlying=inputs["underlying"],
             max_age_seconds=execution_policy.max_public_age.total_seconds())
         public_observations = public_sources["observations"]
+        from intraday_spread_archive_adapter import master_proves_public_scope
+        expected_segment = getattr(inputs.get("book"), "segment", None)
+        for source in public_sources["sources"]:
+            scope = source.get("public_scope")
+            if (source.get("public_scope_state") != "VERIFIED_CONTRACT_SCOPE"
+                    or not isinstance(scope, dict)
+                    or scope.get("underlying") != inputs["underlying"]
+                    or scope.get("exchange") != expected_segment
+                    or scope.get("contract_master_raw_sha256") != master_sha256):
+                raise ReplayInputError("public capture contract/master scope mismatch")
+            if not master_proves_public_scope(archive_root, scope, master_sha256):
+                raise ReplayInputError("archived master does not prove public futures scope")
+        decision_bars = inputs["bars"].copy()
+        if getattr(decision_bars.index, "tz", None) is not None:
+            decision_bars.index = decision_bars.index.tz_convert("Asia/Kolkata").tz_localize(None)
+        cutoff = inputs.get("evaluation_cutoff_at", inputs["decision_at"])
+        if not any(datetime.fromisoformat(source["evaluation_at"]) == cutoff
+                   and source["bars_sha256"] == _sha(_bars_payload(decision_bars))
+                   and source["regime"] == inputs["regime"]
+                   for source in public_sources["sources"]):
+            raise ReplayInputError("decision bars are not bound to an archived public capture")
     if inputs.get("contract_master_sha256") != master_sha256:
         raise ReplayInputError("evaluation and replay master digests must match")
     decision = evaluate_deployed_full_policy(**inputs)
+    public_evidence_contract = ("VERIFIED_ARCHIVED_FUTURE_SCOPE_V1" if captures
+                                else "CALLER_SUPPLIED_DIAGNOSTIC")
     report = {"format": "partner_full_policy_replay_v1", "decision_id": decision.decision_id,
               "manifest": decision.manifest, "state": decision.state, "reason": decision.reason,
               "can_qualify": False, "can_deliver": False, "can_place_orders": False,
-              "public_sources": public_sources,
+              "public_sources": public_sources, "public_evidence_contract": public_evidence_contract,
               "limitations": ["Diagnostic only; public-source completeness, delayed-entry economics and reviewed qualification remain required."]}
     if decision.state != "ACCEPTED":
         return {**report, "evidence_sha256": _sha(report)}
@@ -147,7 +170,11 @@ def replay_full_policy(*, evaluation_inputs, events, archive_root, master_sha256
         capital_limit_rs=tighter(policy.capital_limit_rs, profile.capital_limit_rs),
         risk_limit_rs=tighter(policy.risk_limit_rs, profile.risk_limit_rs),
         entry_start_minute=max(policy.entry_start_minute, profile.delivery_start_minute),
-        entry_deadline_minute=min(policy.entry_deadline_minute, profile.delivery_end_minute))
+        entry_deadline_minute=min(policy.entry_deadline_minute, profile.delivery_end_minute),
+        max_leg_spread_pct=decision.manifest["config"]["PARTNER_MANUAL_ADVISORY_MAX_SPREAD_PCT"],
+        min_oi=decision.manifest["config"]["PARTNER_MANUAL_ADVISORY_MIN_OI"],
+        min_volume=decision.manifest["config"]["PARTNER_MANUAL_ADVISORY_MIN_VOLUME"],
+        min_depth_units=decision.manifest["config"]["PARTNER_MANUAL_ADVISORY_MIN_DEPTH_UNITS"])
     result = replay_chronological_debit_spread(underlying=candidate.underlying, expiry=long.expiry,
                                               observations=rows, policy=policy, public_observations=public)
     sensitivity = replay_cost_scenarios(underlying=candidate.underlying, expiry=long.expiry,

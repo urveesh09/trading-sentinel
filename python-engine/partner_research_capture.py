@@ -10,6 +10,72 @@ from pathlib import Path
 from research_archive import guarded_write, _admit_bytes
 
 
+def _sha(value) -> str:
+    return hashlib.sha256(json.dumps(value, sort_keys=True, separators=(",", ":"),
+                                        allow_nan=False).encode()).hexdigest()
+
+
+def _validated_public_scope(scope, *, underlying, future_token, evaluation_at):
+    """Validate contract/roll identity without inferring it from a token."""
+    from datetime import date
+    from zoneinfo import ZoneInfo
+    import math
+    if not isinstance(scope, dict) or scope.get("format") != "partner_public_future_scope_v1":
+        raise ValueError("public-input futures scope is missing or malformed")
+    selected = scope.get("selected_future")
+    expiries = scope.get("eligible_future_expiries")
+    digest = scope.get("contract_master_raw_sha256")
+    if (scope.get("provider") != "KITE" or scope.get("channel") != "HISTORICAL"
+            or scope.get("interval") != "5minute" or scope.get("underlying") != underlying
+            or scope.get("exchange") not in {"NFO", "BFO"}
+            or not isinstance(digest, str) or len(digest) != 64
+            or any(char not in "0123456789abcdef" for char in digest.lower())
+            or not isinstance(selected, dict) or selected.get("token") != future_token
+            or not isinstance(future_token, int) or isinstance(future_token, bool) or future_token <= 0
+            or selected.get("instrument_type") != "FUT"
+            or not isinstance(selected.get("tradingsymbol"), str) or not selected["tradingsymbol"]
+            or not isinstance(selected.get("lot_size"), int) or isinstance(selected.get("lot_size"), bool)
+            or selected["lot_size"] <= 0 or isinstance(selected.get("tick_size"), bool)
+            or not isinstance(selected.get("tick_size"), (int, float))
+            or not math.isfinite(selected["tick_size"]) or selected["tick_size"] <= 0
+            or not isinstance(expiries, list) or not expiries):
+        raise ValueError("public-input futures scope is invalid")
+    try:
+        selection_day = date.fromisoformat(scope["selection_as_of"])
+        selected_expiry = date.fromisoformat(selected["expiry"])
+        listed = [date.fromisoformat(item) for item in expiries]
+    except (KeyError, TypeError, ValueError) as exc:
+        raise ValueError("public-input futures expiry scope is invalid") from exc
+    if (selection_day != evaluation_at.astimezone(ZoneInfo("Asia/Kolkata")).date()
+            or listed != sorted(set(listed))
+            or any(expiry < selection_day for expiry in listed)
+            or selected_expiry != listed[0]):
+        raise ValueError("public-input front-future selection is invalid")
+    next_future = scope.get("next_future")
+    if len(listed) == 1:
+        if next_future is not None:
+            raise ValueError("public-input next-future scope is invalid")
+    elif (not isinstance(next_future, dict) or next_future.get("expiry") != listed[1].isoformat()
+          or next_future.get("instrument_type") != "FUT"
+          or not isinstance(next_future.get("token"), int) or isinstance(next_future.get("token"), bool)
+          or next_future["token"] <= 0 or next_future["token"] == selected["token"]
+          or not isinstance(next_future.get("tradingsymbol"), str) or not next_future["tradingsymbol"]
+          or not isinstance(next_future.get("lot_size"), int) or isinstance(next_future.get("lot_size"), bool)
+          or next_future["lot_size"] <= 0
+          or not isinstance(next_future.get("tick_size"), (int, float))
+          or isinstance(next_future.get("tick_size"), bool)
+          or not math.isfinite(next_future["tick_size"]) or next_future["tick_size"] <= 0):
+        raise ValueError("public-input next-future scope is invalid")
+    option_expiry = scope.get("nearest_strictly_future_option_expiry")
+    if option_expiry is not None:
+        try:
+            if date.fromisoformat(option_expiry) <= selection_day:
+                raise ValueError("public-input option expiry is not strictly future")
+        except (TypeError, ValueError) as exc:
+            raise ValueError("public-input option expiry scope is invalid") from exc
+    return json.loads(json.dumps(scope, sort_keys=True))
+
+
 @guarded_write
 def persist_candidate_input(archive_root, *, book, snapshot, profile, evaluation_at, received_at,
                             decision_clock=None):
@@ -81,6 +147,7 @@ def load_public_lifecycle(paths, *, underlying, max_age_seconds):
     import math
     from zoneinfo import ZoneInfo
     from fno_engine_mom import evaluate_fno_mom
+    from partner_qualification import _bars_payload
     if not math.isfinite(max_age_seconds) or max_age_seconds <= 0:
         raise ValueError("public maximum age must be finite and positive")
     observations, sources = [], []
@@ -107,7 +174,13 @@ def load_public_lifecycle(paths, *, underlying, max_age_seconds):
             raise ValueError("capture public observation is future, stale or invalid")
         observations.append(dict(observed_at=observed, received_at=received, price=price))
         sources.append(dict(sha256=target.stem, evaluation_at=evaluation_at.isoformat(),
-                            received_at=received.isoformat(), provenance_state=provenance["state"]))
+                            bars_sha256=_sha(_bars_payload(frame)), regime=regime,
+                            received_at=received.isoformat(), provenance_state=provenance["state"],
+                            public_scope_state=provenance["public_scope_state"],
+                            public_scope_sha256=provenance.get("public_scope_sha256"),
+                            public_scope=provenance.get("public_scope")))
+        if provenance.get("decision_clock") is not None:
+            sources[-1]["decision_clock"] = provenance["decision_clock"]
     observations.sort(key=lambda item: item["received_at"])
     if any(first["received_at"] == second["received_at"] for first, second in zip(observations, observations[1:])):
         raise ValueError("conflicting public captures share a receipt")
@@ -126,7 +199,8 @@ def load_public_input(path, *, underlying):
     if target.stem != digest:
         raise ValueError("public-input filename fingerprint mismatch")
     value = json.loads(raw)
-    if (value.get("format") not in {"partner_observed_public_input_v1", "partner_observed_public_input_v2"}
+    if (value.get("format") not in {"partner_observed_public_input_v1", "partner_observed_public_input_v2",
+                                    "partner_observed_public_input_v3"}
             or value.get("underlying") != underlying
             or value.get("bar_start_timezone") != "Asia/Kolkata"):
         raise ValueError("public-input scope or format mismatch")
@@ -141,7 +215,15 @@ def load_public_input(path, *, underlying):
              "ACQUIRED_AFTER_FROZEN_CUTOFF" if value.get("decision_clock") is not None else "RETROSPECTIVE")
     provenance = {"state": state,
                   "source": f"retained-public-input:{digest}", "event_at": None,
-                  "received_at": received, "retrieved_at": received}
+                  "received_at": received, "retrieved_at": received,
+                  "public_scope_state": "LEGACY_UNSCOPED"}
+    if value.get("format") == "partner_observed_public_input_v3":
+        scope = _validated_public_scope(value.get("public_scope"), underlying=underlying,
+                                        future_token=value.get("future_token"), evaluation_at=at)
+        if value.get("public_scope_sha256") != _sha(scope):
+            raise ValueError("public-input futures scope fingerprint mismatch")
+        provenance.update(public_scope_state="VERIFIED_CONTRACT_SCOPE", public_scope=scope,
+                          public_scope_sha256=value["public_scope_sha256"])
     if value.get("decision_clock") is not None:
         from partner_decision_clock import validate_clock_payload
         clocks = validate_clock_payload(value["decision_clock"]).payload()
@@ -171,8 +253,14 @@ def persist_public_input(archive_root, scan, *, regime: str, evaluation_at, deci
     rows = _bars_payload(frame)
     if not rows:
         return {"state": "UNAVAILABLE", "reason": "observed_bars_empty"}
+    public_scope = getattr(scan, "research_public_scope", None)
+    if public_scope is not None:
+        public_scope = _validated_public_scope(public_scope, underlying=scan.name,
+                                               future_token=scan.research_future_token,
+                                               evaluation_at=evaluation_at)
     payload = {
-        "format": "partner_observed_public_input_v2" if decision_clock else "partner_observed_public_input_v1", "underlying": scan.name,
+        "format": ("partner_observed_public_input_v3" if public_scope is not None else
+                   "partner_observed_public_input_v2" if decision_clock else "partner_observed_public_input_v1"), "underlying": scan.name,
         "future_token": scan.research_future_token, "regime": regime,
         "evaluation_at": evaluation_at.isoformat(), "received_at": received.isoformat(),
         "source": "KITE_HISTORICAL_5MINUTE_OBSERVED_RESPONSE",
@@ -180,6 +268,8 @@ def persist_public_input(archive_root, scan, *, regime: str, evaluation_at, deci
         "signal": asdict(scan.sig) if scan.sig is not None else None,
         "error": scan.error, "can_qualify": False,
     }
+    if public_scope is not None:
+        payload.update(public_scope=public_scope, public_scope_sha256=_sha(public_scope))
     if decision_clock is not None:
         clocks = decision_clock.payload()
         if (clocks["underlying"] != scan.name

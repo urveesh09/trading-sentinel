@@ -2,10 +2,12 @@
 from datetime import timedelta
 import hashlib
 import json
+from types import SimpleNamespace
 
 from intraday_spread_chronological import ChronologicalPolicy
 from intraday_spread_holdout import build_heldout_comparison, heldout_case_from_full_policy_report
 from partner_full_policy_replay import replay_full_policy
+from partner_research_capture import persist_public_input
 from partner_qualification import evaluate_deployed_full_policy, load_candidate_evidence
 from partner_qualification_review import (QualificationCriteria, build_qualification_review_package,
     freeze_qualification_criteria, write_qualification_criteria_manifest)
@@ -17,10 +19,11 @@ def _raw_event(contract, received_at, *, bid, ask):
     depth = {"buy": [{"price": bid, "quantity": 500}],
              "sell": [{"price": ask, "quantity": 500}]}
     packet = {"instrument_token": int(contract["instrument_token"]),
-              "timestamp": received_at.isoformat(), "depth": depth}
+              "timestamp": received_at.isoformat(), "depth": depth, "oi": 10_000, "volume": 5_000}
     return {"received_at_utc": received_at.isoformat(),
             "provider_timestamp_utc": received_at.isoformat(), "contract": contract,
-            "buy_depth": depth["buy"], "sell_depth": depth["sell"], "raw_packet": packet,
+            "buy_depth": depth["buy"], "sell_depth": depth["sell"], "oi": 10_000, "volume": 5_000,
+            "raw_packet": packet,
             "raw_sha256": hashlib.sha256(json.dumps(packet, sort_keys=True,
                 separators=(",", ":")).encode()).hexdigest()}
 
@@ -47,9 +50,10 @@ def _inputs(decision_at, master_sha256):
 
 
 def _write_master(root, contracts):
-    raw = ("instrument_token,tradingsymbol,name,exchange,instrument_type,expiry,strike,lot_size\n" +
+    raw = ("instrument_token,tradingsymbol,name,exchange,instrument_type,expiry,strike,lot_size,tick_size\n" +
            "".join(f"{item['instrument_token']},{item['tradingsymbol']},NIFTY,NFO,{item['instrument_type']},"
-                   f"{item['expiry']},{item['strike']},{item['lot_size']}\n" for item in contracts.values())).encode()
+                   f"{item['expiry']},{item['strike']},{item['lot_size']},{item.get('tick_size', .05)}\n"
+                   for item in contracts.values())).encode()
     digest = hashlib.sha256(raw).hexdigest()
     canonical = ("\n".join(json.dumps(item) for item in contracts.values()) + "\n").encode()
     directory = root / "contract-masters" / "NFO" / digest
@@ -61,13 +65,31 @@ def _write_master(root, contracts):
     return digest
 
 
+def _public_scope(master_sha256, day):
+    return {"format": "partner_public_future_scope_v1", "provider": "KITE", "channel": "HISTORICAL",
+            "interval": "5minute", "underlying": "NIFTY", "exchange": "NFO",
+            "contract_master_raw_sha256": master_sha256, "selection_as_of": day.isoformat(),
+            "selected_future": {"token": 900, "tradingsymbol": "NIFTY26JULFUT", "expiry": "2026-07-30",
+                                "instrument_type": "FUT", "lot_size": 75, "tick_size": .05},
+            "eligible_future_expiries": ["2026-07-30", "2026-08-27"],
+            "next_future": {"token": 901, "tradingsymbol": "NIFTY26AUGFUT", "expiry": "2026-08-27",
+                            "instrument_type": "FUT", "lot_size": 75, "tick_size": .05},
+            "nearest_strictly_future_option_expiry": EXPIRY.isoformat()}
+
+
 def test_unmocked_multisession_archive_reaches_costed_close_and_unresolved_review(tmp_path):
     template = candidate_bundle()
     contracts = {int(item["token"]): {"instrument_token": str(item["token"]),
         "tradingsymbol": item["tradingsymbol"], "underlying": "NIFTY", "exchange": "NFO",
         "instrument_type": item["instrument_type"], "expiry": EXPIRY.isoformat(),
         "strike": item["strike"], "lot_size": item["lot_size"]} for item in template["contracts"]}
-    master_sha256 = _write_master(tmp_path, contracts)
+    futures = {900: {"instrument_token": "900", "tradingsymbol": "NIFTY26JULFUT", "underlying": "NIFTY",
+        "exchange": "NFO", "instrument_type": "FUT", "expiry": "2026-07-30", "strike": 0.0,
+        "lot_size": 75, "tick_size": .05},
+        901: {"instrument_token": "901", "tradingsymbol": "NIFTY26AUGFUT", "underlying": "NIFTY",
+        "exchange": "NFO", "instrument_type": "FUT", "expiry": "2026-08-27", "strike": 0.0,
+        "lot_size": 75, "tick_size": .05}}
+    master_sha256 = _write_master(tmp_path, {**contracts, **futures})
     reports = []
     for offset, closes in ((0, True), (3, False)):
         decision_at = NOW + timedelta(days=offset)
@@ -76,21 +98,31 @@ def test_unmocked_multisession_archive_reaches_costed_close_and_unresolved_revie
         entry_events = [_raw_event(contracts[token], decision_at, bid=leg.bid, ask=leg.ask)
                         for token, leg in legs.items()]
         events = list(entry_events)
-        public = [{"observed_at": decision_at, "received_at": decision_at,
-                   "price": decision.signal.close}]
+        scope = _public_scope(master_sha256, decision_at.date())
+        initial_capture = persist_public_input(tmp_path, SimpleNamespace(name="NIFTY",
+            research_bars=inputs["bars"], research_received_at=decision_at, research_future_token=900,
+            research_public_scope=scope, sig=None, error=""), regime="REGIME_1_NORMAL",
+            evaluation_at=decision_at)
+        public_captures = [initial_capture["path"]]
         if closes:
             exit_at = decision_at + timedelta(minutes=1)
             for token, leg in legs.items():
                 bid, ask = ((80, 82) if leg.side == "BUY" else (44, 46))
                 events.append(_raw_event(contracts[token], exit_at, bid=bid, ask=ask))
-            public.append({"observed_at": exit_at, "received_at": exit_at,
-                           "price": decision.candidate.invalidation_level})
+            exit_bars = inputs["bars"].copy()
+            exit_bars.iloc[-1, exit_bars.columns.get_loc("close")] = decision.candidate.invalidation_level
+            exit_capture = persist_public_input(tmp_path, SimpleNamespace(name="NIFTY",
+                research_bars=exit_bars, research_received_at=exit_at, research_future_token=900,
+                research_public_scope=scope, sig=None, error=""), regime="REGIME_1_NORMAL",
+                evaluation_at=exit_at)
+            public_captures.append(exit_capture["path"])
         report = replay_full_policy(evaluation_inputs=inputs, events=events, archive_root=tmp_path,
             master_sha256=master_sha256, execution_policy=ChronologicalPolicy(
-                "fixture-caller", 1, 1, 1, fee_per_leg_rs=2), public_observations=public,
+                "fixture-caller", 1, 1, 1, fee_per_leg_rs=2), public_capture_paths=public_captures,
             fee_multipliers=[1, 1.25], additional_slippage_bps=[0, 10])
         reports.append(report)
 
+    assert {item["public_evidence_contract"] for item in reports} == {"VERIFIED_ARCHIVED_FUTURE_SCOPE_V1"}
     assert reports[0]["state"] == "CLOSED"
     assert reports[0]["replay"]["result"]["total_cost_rs"] > 0
     assert reports[0]["replay"]["result"]["net_pnl_rs"] is not None

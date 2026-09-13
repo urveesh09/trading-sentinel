@@ -216,6 +216,18 @@ def build_heldout_comparison(*, dataset_sha256: str, code_revision: str,
                    ("underlying", "policy_id", "session_date", "replay", "opportunity_id",
                     "signal_artifact_sha256", "cost_sensitivity")):
                 raise ValueError("heldout case differs from its verified full-policy report")
+            public_sources = case.source_report.get("public_sources")
+            source_rows = public_sources.get("sources") if isinstance(public_sources, Mapping) else None
+            source_master = case.source_report["manifest"].get("contract_master_sha256")
+            if (case.source_report.get("public_evidence_contract") != "VERIFIED_ARCHIVED_FUTURE_SCOPE_V1"
+                    or not isinstance(source_rows, list) or not source_rows
+                    or any(not isinstance(source, Mapping)
+                           or source.get("public_scope_state") != "VERIFIED_CONTRACT_SCOPE"
+                           or not isinstance(source.get("public_scope"), Mapping)
+                           or _digest(source["public_scope"]) != source.get("public_scope_sha256")
+                           or source["public_scope"].get("contract_master_raw_sha256") != source_master
+                           for source in source_rows)):
+                all_full_policy_cost_evidence = False
         if case.cost_sensitivity is None:
             all_full_policy_cost_evidence = False
         else:

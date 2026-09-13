@@ -27,6 +27,7 @@ class SpreadContractIdentity:
     strike: float
     expiry: str
     lot_size: int
+    tick_size: float | None = None
 
 
 @dataclass(frozen=True)
@@ -58,6 +59,19 @@ def read_archived_quote_events(archive_root: str | Path, *, days: Iterable[str])
         for path in candidates:
             if not path.exists():
                 continue
+            if path.suffix == ".gz":
+                manifest_path = path.with_suffix(".manifest.json")
+                try:
+                    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+                    with gzip.open(path, "rb") as compressed:
+                        payload = compressed.read()
+                    if (manifest.get("kind") != "observed_quote_segment"
+                            or manifest.get("day") != day or manifest.get("path") != path.name
+                            or manifest.get("raw_sha256") != hashlib.sha256(payload).hexdigest()
+                            or manifest.get("event_count") != len(payload.splitlines())):
+                        raise ReplayInputError(f"quote archive segment fingerprint mismatch: {path.name}")
+                except (OSError, json.JSONDecodeError) as exc:
+                    raise ReplayInputError(f"quote archive segment manifest is unreadable: {path.name}") from exc
             opener = gzip.open if path.suffix == ".gz" else open
             try:
                 with opener(path, "rt", encoding="utf-8") as handle:
@@ -124,10 +138,15 @@ def _leg(event: Mapping[str, Any], identity: SpreadContractIdentity, master_sha2
     if not isinstance(bid, Mapping) or not isinstance(ask, Mapping):
         return None
     try:
+        oi = int(event.get("oi") or 0)
+        volume = int(event.get("volume") or 0)
+        if oi != int(raw.get("oi") or 0) or volume != int(raw.get("volume") or 0):
+            return None
         return LegQuote(identity.symbol, "BUY", identity.exchange, identity.lot_size,
                         float(bid["price"]), float(ask["price"]), int(bid["quantity"]), int(ask["quantity"]),
                         observed, received, token=identity.token, option_type=identity.option_type, strike=identity.strike,
-                        expiry=identity.expiry, quantity=identity.lot_size, master_sha256=master_sha256)
+                        expiry=identity.expiry, quantity=identity.lot_size, master_sha256=master_sha256,
+                        oi=oi, volume=volume)
     except (KeyError, TypeError, ValueError) as exc:
         raise ReplayInputError("quote depth is malformed") from exc
 
@@ -154,7 +173,9 @@ def _master_proves_contract(archive_root: str | Path, identity: SpreadContractId
                     and source.get("instrument_type") == identity.option_type
                     and str(source.get("expiry", ""))[:10] == identity.expiry
                     and float(source.get("strike", "nan")) == identity.strike
-                    and int(source.get("lot_size", "0")) == identity.lot_size):
+                    and int(source.get("lot_size", "0")) == identity.lot_size
+                    and (identity.tick_size is None
+                         or float(source.get("tick_size", "nan")) == identity.tick_size)):
                 continue
             for line in canonical.decode("utf-8").splitlines():
                 contract = json.loads(line)
@@ -165,9 +186,44 @@ def _master_proves_contract(archive_root: str | Path, identity: SpreadContractId
                         and str(contract.get("instrument_type")).upper() == identity.option_type
                         and str(contract.get("expiry"))[:10] == identity.expiry
                         and float(contract.get("strike")) == identity.strike
-                        and int(contract.get("lot_size")) == identity.lot_size):
+                        and int(contract.get("lot_size")) == identity.lot_size
+                        and (identity.tick_size is None
+                             or float(contract.get("tick_size")) == identity.tick_size)):
                     return True
         except (OSError, TypeError, ValueError, json.JSONDecodeError):
+            continue
+    return False
+
+
+def master_proves_public_scope(archive_root, scope, master_sha256):
+    """Prove both identities and the complete listed front/roll selection."""
+    for contract in (scope["selected_future"], scope.get("next_future")):
+        if contract is None:
+            continue
+        identity = SpreadContractIdentity(contract["token"], contract["tradingsymbol"],
+            scope["underlying"], scope["exchange"], "FUT", 0.0, contract["expiry"],
+            contract["lot_size"], contract["tick_size"])
+        if not _master_proves_contract(archive_root, identity, master_sha256):
+            return False
+    for path in Path(archive_root).glob("contract-masters/**/manifest.json"):
+        try:
+            manifest = json.loads(path.read_text(encoding="utf-8"))
+            raw = (path.parent / "raw.csv").read_bytes()
+            if (manifest.get("raw_sha256") != master_sha256
+                    or hashlib.sha256(raw).hexdigest() != master_sha256):
+                continue
+            rows = [row for row in csv.DictReader(io.StringIO(raw.decode("utf-8-sig")))
+                    if row.get("name", "").upper() == scope["underlying"]
+                    and (row.get("exchange") or manifest.get("segment", "")).upper() == scope["exchange"]]
+            futures = sorted({row["expiry"][:10] for row in rows
+                              if row.get("instrument_type") == "FUT"
+                              and row.get("expiry", "")[:10] >= scope["selection_as_of"]})
+            options = sorted({row["expiry"][:10] for row in rows
+                              if row.get("instrument_type") in {"CE", "PE"}
+                              and row.get("expiry", "")[:10] > scope["selection_as_of"]})
+            return (futures == scope["eligible_future_expiries"]
+                    and scope.get("nearest_strictly_future_option_expiry") == (options[0] if options else None))
+        except (OSError, KeyError, TypeError, ValueError):
             continue
     return False
 
@@ -210,9 +266,19 @@ def build_spread_observations(*, events: Iterable[Mapping[str, Any]], long_contr
     partial: list[dict[str, Any]] = []
     conflicts: list[dict[str, Any]] = []
     for key in sorted(batches):
+        def targets(identity: SpreadContractIdentity, item: Mapping[str, Any]) -> bool:
+            contract = item.get("contract")
+            return isinstance(contract, Mapping) and str(contract.get("instrument_token")) == str(identity.token)
+
+        targeted = [item for item in batches[key]
+                    if targets(long_contract, item) or targets(short_contract, item)]
+        ignored += len(batches[key]) - len(targeted)
+        if not targeted:
+            continue
+
         def distinct_valid(identity: SpreadContractIdentity) -> list[Mapping[str, Any]]:
             unique: dict[str, Mapping[str, Any]] = {}
-            for item in batches[key]:
+            for item in targeted:
                 if _leg(item, identity, master_sha256) is not None:
                     unique.setdefault(str(item.get("raw_sha256")), item)
             return list(unique.values())

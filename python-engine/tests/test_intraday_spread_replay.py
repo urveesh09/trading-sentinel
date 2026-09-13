@@ -13,11 +13,12 @@ EXIT = IST.localize(datetime(2026, 9, 10, 14, 30))
 MASTER = "a" * 64
 
 
-def quote(symbol, side, *, at=ENTRY, bid=100, ask=102, bid_depth=75, ask_depth=75, exchange="NFO", lot=75):
+def quote(symbol, side, *, at=ENTRY, bid=100, ask=102, bid_depth=75, ask_depth=75, exchange="NFO", lot=75,
+          oi=10_000, volume=5_000):
     strike = 25000 if "25000" in symbol else 25200
     return LegQuote(symbol, side, exchange, lot, bid, ask, bid_depth, ask_depth, at - timedelta(seconds=2), at,
                     token=strike, option_type="CE", strike=strike, expiry="2026-09-24", quantity=lot,
-                    master_sha256=MASTER)
+                    master_sha256=MASTER, oi=oi, volume=volume)
 
 
 def pair(*, at=ENTRY, exchange="NFO"):
@@ -129,3 +130,56 @@ def test_replay_rejects_false_execution_evidence(case):
         result = replay_intraday_debit_spread(**kwargs)
         assert result.net_pnl_rs is None
         assert result.reason == ("entry_quote_stale" if case == "old_observation" else "exit_contract_identity_mismatch")
+
+
+def test_slippage_uses_gross_leg_notional_and_cannot_be_negative():
+    distressed = [quote("NIFTY26SEP25000CE", "BUY", at=EXIT, bid=1, ask=2),
+                  quote("NIFTY26SEP25200CE", "SELL", at=EXIT, bid=999, ask=1000)]
+    result = replay_intraday_debit_spread(underlying="NIFTY", expiry="2026-09-24",
+        entry_at=ENTRY, entry_quotes=pair(), exit_at=EXIT, exit_quotes=distressed,
+        fee_per_leg_rs=1, slippage_bps=10)
+    assert result.state == "CLOSED"
+    assert result.exit_credit_rs < 0
+    assert result.total_cost_rs >= 4
+
+
+@pytest.mark.parametrize("kwargs,reason", [
+    ({"max_leg_spread_pct": .005}, "entry_spread_too_wide"),
+    ({"min_oi": 20_000}, "entry_insufficient_oi"),
+    ({"min_volume": 10_000}, "entry_insufficient_volume"),
+    ({"min_depth_units": 100}, "entry_book_not_executable_for_full_lot"),
+])
+def test_execution_rechecks_deployed_liquidity_at_actual_book(kwargs, reason):
+    result = replay_intraday_debit_spread(underlying="NIFTY", expiry="2026-09-24",
+        entry_at=ENTRY, entry_quotes=pair(), exit_at=None, exit_quotes=[], fee_per_leg_rs=1, **kwargs)
+    assert (result.state, result.reason) == ("NO_FILL", reason)
+
+
+def test_cost_inclusive_reward_and_exact_expiry_and_clock_boundaries():
+    costly = [quote("NIFTY26SEP25000CE", "BUY", bid=198, ask=200),
+              quote("NIFTY26SEP25200CE", "SELL", bid=1, ask=2)]
+    erased = replay_intraday_debit_spread(underlying="NIFTY", expiry="2026-09-24",
+        entry_at=ENTRY, entry_quotes=costly, exit_at=None, exit_quotes=[], fee_per_leg_rs=20)
+    assert erased.reason == "entry_cost_erases_expiry_reward"
+    same_day = [LegQuote(**{**item.__dict__, "expiry": ENTRY.date().isoformat()}) for item in pair()]
+    assert replay_intraday_debit_spread(underlying="NIFTY", expiry=ENTRY.date().isoformat(),
+        entry_at=ENTRY, entry_quotes=same_day, exit_at=None, exit_quotes=[], fee_per_leg_rs=1).reason == \
+        "entry_not_a_valid_preexpiry_market_session"
+    cutoff = ENTRY.replace(hour=14, minute=45, second=0)
+    at_cutoff = [LegQuote(**{**item.__dict__, "observed_at": cutoff, "received_at": cutoff}) for item in pair()]
+    assert replay_intraday_debit_spread(underlying="NIFTY", expiry="2026-09-24",
+        entry_at=cutoff, entry_quotes=at_cutoff, exit_at=None, exit_quotes=[], fee_per_leg_rs=1).accepted_entry
+    after = cutoff + timedelta(microseconds=1)
+    after_quotes = [LegQuote(**{**item.__dict__, "observed_at": after, "received_at": after}) for item in pair()]
+    assert replay_intraday_debit_spread(underlying="NIFTY", expiry="2026-09-24",
+        entry_at=after, entry_quotes=after_quotes, exit_at=None, exit_quotes=[], fee_per_leg_rs=1).reason == \
+        "entry_after_intraday_deadline"
+    management = ENTRY.replace(hour=15, minute=15, second=0)
+    exact_exit = [LegQuote(**{**item.__dict__, "observed_at": management, "received_at": management}) for item in pair(at=EXIT)]
+    assert replay_intraday_debit_spread(underlying="NIFTY", expiry="2026-09-24",
+        entry_at=ENTRY, entry_quotes=pair(), exit_at=management, exit_quotes=exact_exit, fee_per_leg_rs=1).state == "CLOSED"
+    late = management + timedelta(microseconds=1)
+    late_exit = [LegQuote(**{**item.__dict__, "observed_at": late, "received_at": late}) for item in pair(at=EXIT)]
+    assert replay_intraday_debit_spread(underlying="NIFTY", expiry="2026-09-24",
+        entry_at=ENTRY, entry_quotes=pair(), exit_at=late, exit_quotes=late_exit, fee_per_leg_rs=1).reason == \
+        "exit_after_intraday_management_deadline"
