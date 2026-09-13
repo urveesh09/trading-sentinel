@@ -1,19 +1,19 @@
-"""[WORKFLOW-H H3 2026-09-13] Intraday-cache caller/key/window diagnostic.
+"""[WORKFLOW-H H3 + H4.B 2026-09-13] Intraday-cache caller/key/window diagnostic.
 
 Implements plan section 12 acceptance: *"Investigate historical zero
 intraday-cache hit rates: find actual caller/key/window behavior
 before adding a cache. Do not mix mutable forming bars with completed
 historical bars or cross-account/coin tokens."*
 
-This module is the **diagnostic** phase of H3. It is *read-only*: it
-queries the ``intraday_cache`` table and inspects the call
-shapes of ``kite_client.get_intraday`` and
+This module is the **diagnostic** phase of H3, extended in H4.B to
+cover the by-token path. It is *read-only*: it queries both cache
+tables (``intraday_cache`` and ``intraday_cache_by_token``) and
+inspects the call shapes of ``kite_client.get_intraday`` and
 ``kite_client.get_intraday_by_token`` without modifying either.
 
 The reason this exists separately from a fix: §12 mandates the
-diagnostic *before* a fix. Cache-add (H4) is deferred until the
-operator reviews this diagnostic and signs off on the cache key
-shape.
+diagnostic *before* a fix. Cache-add (H4 + H4.B) is shipped as the
+subsequent step once the operator reviews this diagnostic.
 
 [WHY-THIS-EXISTS 2026-09-13]
   Pre-investigation, the audit doc claimed "zero intraday-cache hit
@@ -59,8 +59,8 @@ from datetime import datetime, timedelta, timezone
 from typing import Any, Dict, List, Optional, Tuple
 
 
-# ---- cached entry points (the cached path) --------------------------------
-# Per kite_client.py:460-520, ``get_intraday`` is the only entry
+# ---- by-symbol entry points (the cached path) -----------------------------
+# Per kite_client.py:450-580, ``get_intraday`` is the only entry
 # point that reads from the intraday_cache table. Production callers
 # of this entry point are penny_scanner (twice), main.py:2996 (the
 # daily attribution / momentum signal evaluator).
@@ -70,22 +70,30 @@ CACHED_CALLER_SITES: Tuple[Tuple[str, str, str], ...] = (
     ("main.py", "_run_momentum_signal", "default-interval"),
 )
 
-# ---- uncached entry points (the by-token path) ---------------------------
-# Per kite_client.py:927-989, ``get_intraday_by_token`` is documented
-# as NOT caching: "the F&O signal loop re-reads the full session every
-# tick and today's candles change every 5 minutes, so a cache would
-# only serve stale bars." Production callers are fno_orchestrator,
-# fno_signal_scan, partner_orchestrator (twice), proactive_market_data,
-# market_data_sources, scripts/verify_bfo.
-UNCACHED_CALLER_SITES: Tuple[Tuple[str, str, str], ...] = (
+# ---- by-token entry points (the by-token cached path) --------------------
+# Per kite_client.py (H4.B 2026-09-13), ``get_intraday_by_token`` is
+# NOW cached via the ``intraday_cache_by_token`` table -- the previous
+# "no sqlite caching" rationale ("F&O ticks re-read every 5 minutes,
+# so a cache would only serve stale bars") is replaced by the
+# §12 forming-bar filter: forming candles are excluded from the HIT
+# path, so a HIT serves strictly completed candles.
+BY_TOKEN_CALLER_SITES: Tuple[Tuple[str, str, str], ...] = (
     ("fno_orchestrator.py", "_fetch_futures_bars", "interval=5minute"),
     ("fno_signal_scan.py", "fno_signal_scan", "interval=5minute"),
     ("partner_orchestrator.py", "partner_scan_tick", "interval=5minute"),
     ("partner_orchestrator.py", "partner_eod_wrap", "interval=5minute"),
+    ("partner_orchestrator.py", "partner_eod_wrap", "interval=day"),
     ("proactive_market_data.py", "fetch_bars", "interval=5minute"),
     ("market_data_sources.py", "fetch_intraday", "interval=variable"),
     ("scripts/verify_bfo.py", "verify_bfo", "interval=day"),
 )
+
+# Back-compat alias. Older callers and tests refer to
+# ``UNCACHED_CALLER_SITES``; keep that name exporting the by-token
+# list since the semantic is "by-token callers" rather than
+# "uncached". H4.B has moved the cache-add code from a deferred
+# proposal into shipped behaviour.
+UNCACHED_CALLER_SITES = BY_TOKEN_CALLER_SITES
 
 # The freshness check used by ``kite_client.get_intraday`` is:
 #     expected_latest = to_dt_obj - timedelta(minutes=interval_mins)
@@ -114,10 +122,10 @@ def _interval_minutes(interval: str) -> int:
 # ---- diagnostic entry points ------------------------------------------------
 
 def init_intraday_cache_diag_db(db_path: str) -> None:
-    """Ensure the intraday_cache table exists so the diagnostic
+    """Ensure the intraday_cache tables exist so the diagnostic
     queries return an empty result rather than crashing on a fresh
     DB. Idempotent; matches kite_client._create_intraday_cache_table
-    schema byte-for-byte.
+    and _create_intraday_cache_by_token_table schemas byte-for-byte.
     """
     conn = sqlite3.connect(db_path)
     try:
@@ -133,6 +141,24 @@ def init_intraday_cache_diag_db(db_path: str) -> None:
             "volume   REAL,"
             "fetched_at TIMESTAMP,"
             "PRIMARY KEY (ticker, interval, datetime)"
+            ")"
+        )
+        # [WORKFLOW-H H4.B 2026-09-13] The by-token table.
+        # PRIMARY KEY (instrument_token, interval, datetime).
+        # ``oi`` is F&O-only.
+        conn.execute(
+            "CREATE TABLE IF NOT EXISTS intraday_cache_by_token ("
+            "instrument_token INTEGER NOT NULL,"
+            "interval         TEXT NOT NULL,"
+            "datetime         TEXT NOT NULL,"
+            "open             REAL,"
+            "high             REAL,"
+            "low              REAL,"
+            "close            REAL,"
+            "volume           REAL,"
+            "oi               REAL,"
+            "fetched_at       TIMESTAMP,"
+            "PRIMARY KEY (instrument_token, interval, datetime)"
             ")"
         )
         conn.commit()
@@ -188,6 +214,64 @@ def cache_row_counts(db_path: str) -> Dict[str, Any]:
         out["distinct_sessions"] = int(sessions_row[0])
         out["distinct_tickers"] = int(tickers_row[0])
         out["distinct_intervals"] = int(intervals_row[0])
+        return out
+    finally:
+        conn.close()
+
+
+def cache_by_token_row_counts(db_path: str) -> Dict[str, Any]:
+    """[WORKFLOW-H H4.B 2026-09-13] Same shape as ``cache_row_counts``
+    but for the ``intraday_cache_by_token`` table.
+
+    Returns an empty dict (with ``table_present=False``) if the
+    table is absent (fresh DB or H4.B not yet loaded). Counts
+    are by ``instrument_token`` (not ``ticker``) because the
+    by-token path is keyed on integer tokens.
+    """
+    init_intraday_cache_diag_db(db_path)
+    out: Dict[str, Any] = {"path": db_path, "table_present": False}
+    conn = _connect(db_path)
+    try:
+        if not _table_exists(conn, "intraday_cache_by_token"):
+            return out
+        out["table_present"] = True
+        total_row = conn.execute(
+            "SELECT COUNT(*) FROM intraday_cache_by_token"
+        ).fetchone()
+        sessions_row = conn.execute(
+            "SELECT COUNT(DISTINCT substr(datetime,1,10)) FROM intraday_cache_by_token"
+        ).fetchone()
+        tokens_row = conn.execute(
+            "SELECT COUNT(DISTINCT instrument_token) FROM intraday_cache_by_token"
+        ).fetchone()
+        intervals_row = conn.execute(
+            "SELECT COUNT(DISTINCT interval) FROM intraday_cache_by_token"
+        ).fetchone()
+        out["total_rows"] = int(total_row[0])
+        out["distinct_sessions"] = int(sessions_row[0])
+        out["distinct_instrument_tokens"] = int(tokens_row[0])
+        out["distinct_intervals"] = int(intervals_row[0])
+        return out
+    finally:
+        conn.close()
+
+
+def cache_by_token_interval_breakdown(db_path: str) -> Dict[str, int]:
+    """[WORKFLOW-H H4.B 2026-09-13] Row count per interval for the
+    by-token table. Sibling of ``cache_interval_breakdown``.
+    """
+    init_intraday_cache_diag_db(db_path)
+    out: Dict[str, int] = {}
+    conn = _connect(db_path)
+    try:
+        if not _table_exists(conn, "intraday_cache_by_token"):
+            return out
+        cur = conn.execute(
+            "SELECT interval, COUNT(*) FROM intraday_cache_by_token "
+            "GROUP BY interval ORDER BY COUNT(*) DESC"
+        )
+        for row in cur.fetchall():
+            out[str(row[0])] = int(row[1])
         return out
     finally:
         conn.close()
@@ -336,6 +420,8 @@ def _render_conclusion(
     interval_breakdown: Dict[str, int],
     freshness: Dict[str, Any],
     key_audit: Dict[str, Any],
+    by_token_row_counts: Optional[Dict[str, Any]] = None,
+    by_token_interval_breakdown: Optional[Dict[str, int]] = None,
 ) -> str:
     """Render the operator-readable conclusion.
 
@@ -343,20 +429,22 @@ def _render_conclusion(
     understand WHY the cache hit rate was "zero" without
     re-deriving the reasoning.
     """
+    by_token_row_counts = by_token_row_counts or {}
+    by_token_interval_breakdown = by_token_interval_breakdown or {}
     lines: List[str] = []
     lines.append("=" * 72)
-    lines.append("H3 Intraday-cache diagnostic -- 2026-09-13")
+    lines.append("H3 + H4.B Intraday-cache diagnostic -- 2026-09-13")
     lines.append("=" * 72)
     lines.append("")
-    lines.append("CACHED ENTRY POINTS (intraday_cache table is read):")
+    lines.append("BY-SYMBOL ENTRY POINTS (intraday_cache table):")
     for site in CACHED_CALLER_SITES:
         lines.append(f"  - {site[0]}::{site[1]} ({site[2]})")
     lines.append("")
-    lines.append("UNCACHED ENTRY POINTS (intraday_cache table is NOT read):")
-    for site in UNCACHED_CALLER_SITES:
+    lines.append("BY-TOKEN ENTRY POINTS (intraday_cache_by_token table):")
+    for site in BY_TOKEN_CALLER_SITES:
         lines.append(f"  - {site[0]}::{site[1]} ({site[2]})")
     lines.append("")
-    lines.append("ROW COUNTS:")
+    lines.append("BY-SYMBOL ROW COUNTS (intraday_cache):")
     if not row_counts.get("table_present"):
         lines.append("  intraday_cache table NOT present (fresh DB)")
     else:
@@ -367,12 +455,32 @@ def _render_conclusion(
             f"  distinct_intervals={row_counts.get('distinct_intervals', 0)}"
         )
     lines.append("")
-    lines.append("INTERVAL BREAKDOWN:")
+    lines.append("BY-TOKEN ROW COUNTS (intraday_cache_by_token):")
+    if not by_token_row_counts.get("table_present"):
+        lines.append("  intraday_cache_by_token table NOT present (fresh DB)")
+    else:
+        lines.append(
+            f"  total_rows={by_token_row_counts.get('total_rows', 0)}"
+            f"  distinct_sessions={by_token_row_counts.get('distinct_sessions', 0)}"
+            f"  distinct_instrument_tokens={by_token_row_counts.get('distinct_instrument_tokens', 0)}"
+            f"  distinct_intervals={by_token_row_counts.get('distinct_intervals', 0)}"
+        )
+    lines.append("")
+    lines.append("BY-SYMBOL INTERVAL BREAKDOWN:")
     if not interval_breakdown:
         lines.append("  no rows")
     else:
         for iv, n in sorted(
             interval_breakdown.items(), key=lambda kv: -kv[1]
+        ):
+            lines.append(f"  interval={iv!r}  rows={n}")
+    lines.append("")
+    lines.append("BY-TOKEN INTERVAL BREAKDOWN:")
+    if not by_token_interval_breakdown:
+        lines.append("  no rows")
+    else:
+        for iv, n in sorted(
+            by_token_interval_breakdown.items(), key=lambda kv: -kv[1]
         ):
             lines.append(f"  interval={iv!r}  rows={n}")
     lines.append("")
@@ -484,8 +592,16 @@ def run_diagnostic(
         db_path, interval=interval, now_utc=now_utc,
     )
     key_audit = audit_key_shape(db_path)
+    # [WORKFLOW-H H4.B 2026-09-13] The by-token stats are reported
+    # under ``by_token_row_counts`` / ``by_token_interval_breakdown``
+    # so operators can see HIT/MSS-eligible rows independently of
+    # the by-symbol path. Both tables may be empty on a fresh DB.
+    by_token_row_counts = cache_by_token_row_counts(db_path)
+    by_token_interval_breakdown = cache_by_token_interval_breakdown(db_path)
     rendered = _render_conclusion(
         row_counts, interval_breakdown, freshness, key_audit,
+        by_token_row_counts=by_token_row_counts,
+        by_token_interval_breakdown=by_token_interval_breakdown,
     )
     return {
         "db_path": db_path,
@@ -493,6 +609,8 @@ def run_diagnostic(
         "interval_breakdown": interval_breakdown,
         "freshness": freshness,
         "key_audit": key_audit,
+        "by_token_row_counts": by_token_row_counts,
+        "by_token_interval_breakdown": by_token_interval_breakdown,
         "rendered": rendered,
     }
 
@@ -592,9 +710,12 @@ def main(argv: Optional[List[str]] = None) -> int:
 
 
 __all__ = [
+    "BY_TOKEN_CALLER_SITES",
     "CACHED_CALLER_SITES",
     "UNCACHED_CALLER_SITES",
     "audit_key_shape",
+    "cache_by_token_interval_breakdown",
+    "cache_by_token_row_counts",
     "cache_freshness_window",
     "cache_interval_breakdown",
     "cache_row_counts",
