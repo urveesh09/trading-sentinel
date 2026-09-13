@@ -8,7 +8,7 @@ import logging
 import structlog
 import threading
 import urllib.parse
-from dataclasses import replace
+from dataclasses import dataclass, replace
 from datetime import datetime, timedelta, timezone
 from typing import List, Dict, Optional
 import requests
@@ -427,6 +427,28 @@ class SignalOutput(BaseModel):
     rationale: str
     risks: str
 
+
+# [WORKFLOW-I I2 2026-09-13] NewsItem captures the §13 "reliable source"
+# requirement: every news item carries a parseable publication timestamp
+# and a source URL. The dataclass is frozen so a NewsItem cannot be
+# silently mutated after extraction (which would invalidate the §13
+# audit trail). ``published_at_parsed`` is None when the source did
+# not provide a parseable timestamp; ``age_label`` is computed from
+# ``published_at_parsed`` at extraction time (so the model sees a
+# stable label even if the news is cached).
+@dataclass(frozen=True)
+class NewsItem:
+    title: str
+    source_url: str
+    published_at_raw: str  # the raw pubDate string from the RSS item
+    published_at_parsed: Optional[datetime]  # tz-aware UTC, or None
+    source_name: str  # the RSS <source> element or hostname fallback
+    age_label: str  # "fresh", "2 hours ago", "3 days ago", "stale_or_unknown"
+
+    @property
+    def has_publication_timestamp(self) -> bool:
+        return self.published_at_parsed is not None
+
 # -------------------------------------------------------------------------
 # CORE FUNCTIONS
 # -------------------------------------------------------------------------
@@ -458,30 +480,194 @@ def fetch_signals() -> List[Dict]:
         return []
 
 def fetch_rss_feed(url: str, limit: int = 3) -> str:
+    """[WORKFLOW-I I2 2026-09-13] Returns a flat string of titles.
+
+    Backwards-compatible: existing callers (and tests) receive a
+    string. The structured ``NewsItem`` form is exposed via
+    :func:`fetch_news_items`. The string here is the legacy format
+    ``- title1 | - title2 | ...`` with no timestamps; the model's
+    prompt relies on :func:`scrape_sentiment`'s structured form
+    instead.
+    """
+    items = fetch_news_items(url, limit=limit)
+    if not items:
+        return ""
+    texts = [f"- {item.title}" for item in items]
+    return " | ".join(texts)
+
+
+def fetch_news_items(url: str, limit: int = 3) -> List[NewsItem]:
+    """[WORKFLOW-I I2 2026-09-13] Return a structured ``NewsItem`` list.
+
+    Per plan §13: *"News must have publication/event timestamps and a
+    reliable source; an unsupported model statement is not a market
+    fact."* This function is the structured counterpart of
+    :func:`fetch_rss_feed`: every item carries a parseable
+    ``published_at_parsed`` (or None) and a ``source_url`` /
+    ``source_name``.
+
+    The RSS schema is RSS 2.0 (Yahoo Finance, Google News). ``<item>``
+    elements may contain:
+
+      * ``<title>`` — item headline (required for our purposes)
+      * ``<link>`` — source URL (we fall back to ``""`` if absent)
+      * ``<pubDate>`` — RFC 822 / RFC 1123 date string (we parse
+        using :mod:`email.utils.parsedate_to_datetime` for both
+        Yahoo and Google News formats)
+      * ``<source>`` — RSS source element, often the publisher's
+        domain. We fall back to the request URL's hostname.
+
+    Items without a parseable ``<pubDate>`` are kept (the §13 rule
+    is "must have", but a missing timestamp may indicate a feed
+    issue we want to surface, not silently drop). The
+    ``age_label`` for such items is ``"stale_or_unknown"``.
+    """
     headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)'}
     try:
         res = requests.get(url, headers=headers, timeout=5)
         res.raise_for_status()
-        soup = BeautifulSoup(res.content, 'xml')
-        items = soup.find_all('item', limit=limit)
-        texts = [f"- {item.title.text if item.title else ''}" for item in items]
-        return " | ".join(texts)
     except Exception as e:
         logger.warning(f"RSS fetch failed for {url}: {e}")
+        return []
+    soup = BeautifulSoup(res.content, 'xml')
+    items_xml = soup.find_all('item', limit=limit)
+    parsed: List[NewsItem] = []
+    for item in items_xml:
+        title = item.title.text if item.title else ""
+        link = item.link.text if item.link else ""
+        link = (link or "").strip()
+        # RSS <pubDate> uses RFC 822 / RFC 1123 format, e.g.
+        # "Tue, 13 Sep 2026 14:25:00 +0530" or
+        # "Tue, 13 Sep 2026 08:55:00 GMT".
+        pub_raw = item.pubDate.text if item.pubDate else ""
+        pub_parsed = _parse_rss_pubdate(pub_raw)
+        # <source url="...">name</source> -- we capture the name.
+        src_tag = item.find('source')
+        if src_tag is not None and src_tag.text:
+            src_name = src_tag.text.strip()
+        else:
+            src_name = _hostname_from_url(url)
+        age_label = _age_label(pub_parsed)
+        parsed.append(NewsItem(
+            title=title,
+            source_url=link,
+            published_at_raw=pub_raw,
+            published_at_parsed=pub_parsed,
+            source_name=src_name or _hostname_from_url(url),
+            age_label=age_label,
+        ))
+    return parsed
+
+
+def _parse_rss_pubdate(raw: str) -> Optional[datetime]:
+    """Parse an RSS ``<pubDate>`` into a tz-aware UTC datetime.
+
+    Both Yahoo Finance and Google News use RFC 822 / RFC 1123
+    formats; :func:`email.utils.parsedate_to_datetime` handles
+    both. Returns None on any parse error so the caller can
+    surface ``stale_or_unknown`` rather than crashing.
+    """
+    raw = (raw or "").strip()
+    if not raw:
+        return None
+    try:
+        from email.utils import parsedate_to_datetime
+        dt = parsedate_to_datetime(raw)
+    except (TypeError, ValueError):
+        return None
+    if dt is None:
+        return None
+    if dt.tzinfo is None:
+        dt = dt.replace(tzinfo=timezone.utc)
+    return dt.astimezone(timezone.utc)
+
+
+def _hostname_from_url(url: str) -> str:
+    """Best-effort hostname extraction for the source fallback."""
+    try:
+        from urllib.parse import urlparse
+        host = urlparse(url).hostname or ""
+        return host
+    except Exception:
         return ""
 
+
+def _age_label(published_at: Optional[datetime], *,
+               now: Optional[datetime] = None) -> str:
+    """Render an age label for the model prompt.
+
+    The label is what the model sees; the raw timestamp stays on
+    the dataclass for audit. Labels:
+
+      * None or unparseable -> ``"stale_or_unknown"``
+      * ``<= 1 hour``       -> ``"fresh"``
+      * hours / days        -> ``"N hours ago"`` / ``"N days ago"``
+      * ``> 7 days``         -> ``"stale_aged_Nd"`` (still surfaced,
+        but explicitly labelled so the model knows)
+
+    The function takes ``now`` for testability; production callers
+    omit it.
+    """
+    if published_at is None:
+        return "stale_or_unknown"
+    cur = now if now is not None else datetime.now(timezone.utc)
+    delta = cur - published_at
+    seconds = delta.total_seconds()
+    if seconds < 0:
+        # Clock skew or future-dated feed item -- surface honestly.
+        return "future_dated"
+    if seconds <= 3600:
+        return "fresh"
+    hours = int(seconds // 3600)
+    if hours < 24:
+        return f"{hours} hours ago"
+    days = int(seconds // 86400)
+    if days <= 7:
+        return f"{days} days ago"
+    return f"stale_aged_{days}d"
+
+
 def scrape_sentiment(ticker: str) -> str:
+    """[WORKFLOW-I I2 2026-09-13] Render a structured sentiment
+    prompt with publication timestamps.
+
+    The prompt now includes, for every item, an explicit age label
+    (e.g. ``"[3 hours ago]"``) and the source URL. This is the §13
+    "reliable source + publication/event timestamp" requirement
+    enforced at the producer boundary: the model cannot mistake a
+    two-week-old headline for fresh news because the prompt says
+    ``"[14 days ago]"``.
+
+    Items without a parseable timestamp are surfaced with
+    ``"[stale_or_unknown]"`` so the model is explicitly told the
+    feed did not provide one.
+    """
     logger.info(f"Gathering multi-source intelligence for {ticker}...")
     yahoo_url = f"https://feeds.finance.yahoo.com/rss/2.0/headline?s={ticker}&region=US&lang=en-US"
-    yahoo_news = fetch_rss_feed(yahoo_url, limit=4)
-    
+    yahoo_items = fetch_news_items(yahoo_url, limit=4)
+
     encoded_ticker = urllib.parse.quote(f"{ticker} stock")
     google_url = f"https://news.google.com/rss/search?q={encoded_ticker}&hl=en-US&gl=US&ceid=US:en"
-    google_news = fetch_rss_feed(google_url, limit=4)
-    
-    if not yahoo_news and not google_news:
+    google_items = fetch_news_items(google_url, limit=4)
+
+    if not yahoo_items and not google_items:
         return ""
-    return f"YAHOO FINANCE FEED:\n{yahoo_news}\n\nBROADER MARKET FEED:\n{google_news}"
+
+    def _render(items: List[NewsItem], header: str) -> str:
+        lines = [header]
+        for item in items:
+            ts = f"[{item.age_label}]"
+            src = f"({item.source_name})" if item.source_name else ""
+            url = item.source_url or "<no-url>"
+            lines.append(f"  {ts} {src} {item.title}")
+            lines.append(f"    url: {url}")
+        return "\n".join(lines)
+
+    return (
+        _render(yahoo_items, "YAHOO FINANCE FEED:")
+        + "\n\n"
+        + _render(google_items, "BROADER MARKET FEED:")
+    )
 
 def _extract_json_object(text: Optional[str]) -> Optional[Dict]:
     """Pull a single JSON object out of an LLM reply, tolerantly.
