@@ -1,5 +1,7 @@
 # F/G — independent correctness audit and corrections
 
+Approval-budget post-commit reconciliation: source `2cbe1a3`; immediate seven-file stat/status review confirms clean Dev and consistent canonical docs/atlas. Slice TESTED_DEV, full correction plan IMPLEMENTING. No Production mutation, push or deployment. This replaces its pending source identity; next work remains genuine comparison/evidence validation and accurate F provenance/schema/warning records.
+
 User request: independently audit the parallel agent's F/G work and fix errors while preserving its changes. Terra reviewed the new F/G source/docs; root independently checked the bridge source, actual broker schema and 75 warning-fatal focused tests. Those tests pass but miss the reproduced behaviors below. Production untouched.
 
 Confirmed defects, not accepted work: promotion bridge reads its immutable initial state, allowing UNSIGNED → REFUSED then another UNSIGNED → APPROVED_LIVE_BUDGET; current-state ordering uses caller timestamps with no append-order tie-break. Approvals can omit budget/DD/expiry, are not bound to validated held-out/account/F/D evidence, and reads do not expose expiry/stale versions. Selected trailing exit is ignored for NEXT_EXECUTABLE_OPEN and BOUNDED_PULLBACK entry profiles; confirmation+trailing also bypasses confirmation. RANGE_REVERSION still aliases confirmation and must not be described as faithful hypothesis evaluation.

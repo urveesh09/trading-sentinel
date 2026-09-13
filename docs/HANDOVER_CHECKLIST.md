@@ -56,6 +56,8 @@ This is not a rerun of the entire repository test suite, gateway/native database
 
 ## First next action
 
+Approval-budget source commit `2cbe1a3`; immediate seven-file stat/status review confirms clean Dev and matching guide/atlas/plan. Independent final bridge review passes 65 tests with warnings fatal, no blocker. Local only, not pushed/deployed; required genuine evidence validation remains open.
+
 Approval-budget/validity follow-up: twelve-file F/G suite **180 passed**, no warnings, 6.60s, current Dev winvenv with `-q -W error`. Required predeclared amount/DD/expiry, type/finite bounds, original half-open validity window, stale/legacy reads, exact expiry, whitespace signer and malformed historical signature regressions pass. No schema/default/order/transport changes. `approval_usable=False` remains explicit until genuine frozen held-out/account/F/D evidence is validated. Source commit pending; no push/deployment. Next: actual comparison/evidence validation and bounded F provenance/schema corrections, not a declaration of full G acceptance.
 
 Exit-cache source commit `dd60b0c`; immediate seven-file commit/status review confirms clean Dev and matching documentation. Next correction is approval budget/evidence/expiry validation; F evidence corrections and faithful range comparison remain open. Local only, not pushed/deployed.
