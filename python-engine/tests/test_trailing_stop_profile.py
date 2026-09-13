@@ -271,3 +271,83 @@ async def test_persist_exit_policy_comparison_emits_three_rows(db_path) -> None:
     trailing_row = next(row for row in rows if row["exit_profile_id"] == "TRAILING_STOP_V1")
     assert trailing_row["cost_model_version"] == "EQUITY_CASH_ESTIMATE_V1"
     assert trailing_row["trials"] == 1
+
+
+@pytest.mark.parametrize("entry_profile, entry_minute", [
+    ("NEXT_EXECUTABLE_OPEN_V1", 1), ("COMPLETED_BAR_CONFIRMATION_V1", 2),
+])
+def test_dispatch_selected_trailing_exit_preserves_entry_clock(entry_profile, entry_minute):
+    proposal = _make_proposal()
+    at = proposal.data_cutoff
+    bars = _bars(at, [100, 100, 100], [102, 102, 100], [99, 99, 96], [100, 100, 99])
+    result = simulate_shadow_research_trial(proposal, bars, cash=1000,
+        entry_profile_id=entry_profile, exit_profile_id="TRAILING_STOP_V1", fee_rate=0, slippage_bps=0)
+    assert (result.status, result.reason, result.exit_price) == ("CLOSED", "TRAILING_STOP", 97)
+    assert result.entry_at == at + timedelta(minutes=entry_minute)
+    assert result.last_bar_at == at + timedelta(minutes=3)
+
+
+def test_limit_trailing_waits_for_touch_and_preserves_bound():
+    proposal = _make_proposal()
+    at = proposal.data_cutoff
+    bars = _bars(at, [103, 102, 101, 100], [104, 103, 104, 101],
+                 [101, 99, 99, 98], [103, 101, 102, 100])
+    result = simulate_shadow_research_trial(proposal, bars, cash=1000,
+        entry_profile_id="BOUNDED_PULLBACK_LIMIT_V1", exit_profile_id="TRAILING_STOP_V1",
+        fee_rate=0, slippage_bps=0)
+    assert result.entry_at == at + timedelta(minutes=2)
+    assert result.entry_price == 100 and result.quantity == 10
+    assert result.exit_price == 99 and result.last_bar_at == at + timedelta(minutes=4)
+    assert result.reason == "TRAILING_STOP" and result.net_pnl == -10
+
+
+def test_limit_trailing_does_not_ratchet_from_unproven_pre_fill_high():
+    proposal = _make_proposal()
+    bars = _bars(proposal.data_cutoff, [105, 100], [109, 100], [99, 96], [100, 99])
+    result = simulate_shadow_research_trial(proposal, bars, cash=1000,
+        entry_profile_id="BOUNDED_PULLBACK_LIMIT_V1", exit_profile_id="TRAILING_STOP_V1",
+        fee_rate=0, slippage_bps=0)
+    assert result.entry_price == 100
+    assert result.status == "OPEN" and result.reason == "DATA_END_OPEN_POSITION"
+
+
+@pytest.mark.parametrize("open_, high, low, close, reason", [
+    (103, 104, 101, 103, "PULLBACK_LIMIT_NOT_REACHED"),
+    (94, 96, 93, 94, "GAP_INVALIDATES_ENTRY_GEOMETRY"),
+])
+def test_limit_trailing_missing_touch_and_invalid_gap_are_no_fill(open_, high, low, close, reason):
+    proposal = _make_proposal()
+    bars = _bars(proposal.data_cutoff, [open_], [high], [low], [close])
+    result = simulate_shadow_research_trial(proposal, bars, cash=1000,
+        entry_profile_id="BOUNDED_PULLBACK_LIMIT_V1", exit_profile_id="TRAILING_STOP_V1",
+        fee_rate=0, slippage_bps=0)
+    assert result.status == "NO_FILL" and result.reason == reason
+    assert result.quantity == 0 and result.entry_price is None
+
+
+def test_confirmation_trailing_cannot_fill_the_confirmation_bar():
+    proposal = _make_proposal()
+    bars = _bars(proposal.data_cutoff, [100], [109], [94], [100])
+    result = simulate_shadow_research_trial(proposal, bars, cash=1000,
+        entry_profile_id="COMPLETED_BAR_CONFIRMATION_V1", exit_profile_id="TRAILING_STOP_V1",
+        fee_rate=0, slippage_bps=0)
+    assert result.status == "NO_FILL" and result.reason == "NO_EXECUTABLE_BAR_AFTER_CONFIRMATION"
+
+
+def test_confirmation_trailing_does_not_use_confirmation_extremes():
+    proposal = _make_proposal()
+    bars = _bars(proposal.data_cutoff, [100, 100, 100], [109, 102, 100], [94, 99, 96], [100, 100, 99])
+    result = simulate_shadow_research_trial(proposal, bars, cash=1000,
+        entry_profile_id="COMPLETED_BAR_CONFIRMATION_V1", exit_profile_id="TRAILING_STOP_V1",
+        fee_rate=.001, slippage_bps=5)
+    assert result.entry_at == proposal.data_cutoff + timedelta(minutes=2)
+    assert result.reason == "TRAILING_STOP"
+    assert result.fees > 0 and result.net_pnl < result.gross_pnl
+
+
+@pytest.mark.parametrize("field", ["fee_rate", "slippage_bps"])
+@pytest.mark.parametrize("value", [float("nan"), float("inf")])
+def test_nonfinite_trial_cost_assumptions_fail_closed(field, value):
+    with pytest.raises(ValueError, match="invalid research simulation assumptions"):
+        simulate_shadow_research_trial(_make_proposal(), [], cash=1000,
+            entry_profile_id="NEXT_EXECUTABLE_OPEN_V1", exit_profile_id="TRAILING_STOP_V1", **{field: value})

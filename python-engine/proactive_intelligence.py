@@ -398,9 +398,9 @@ def _simulate_shadow_limit_pullback(
 
 def _simulate_shadow_trailing_stop(
     proposal: ShadowProposal, future_bars: list[dict], *, cash: float, fee_rate: float,
-    slippage_bps: float,
+    slippage_bps: float, limit_entry: bool = False,
 ) -> ShadowSimulation:
-    """Evaluate an at-open entry with a Chandelier-style trailing stop.
+    """Evaluate an at-open or bounded-limit entry with a trailing stop.
 
     The trailing level is ``max(initial_stop, high - (entry - initial_stop))``
     and is recomputed from the previous bar's extreme only — never from the
@@ -417,7 +417,8 @@ def _simulate_shadow_trailing_stop(
     cutoff = _stamp(proposal.data_cutoff or proposal.signal_at or proposal.valid_until)
     deadline = _stamp(proposal.entry_deadline or proposal.valid_until)
     holding_deadline = _stamp(proposal.holding_deadline or proposal.valid_until)
-    if not math.isfinite(proposal.stop) or proposal.stop <= 0 or proposal.entry <= proposal.stop:
+    if (not all(math.isfinite(value) for value in (proposal.stop, proposal.entry, proposal.target))
+            or proposal.stop <= 0 or proposal.entry <= proposal.stop or proposal.target <= proposal.entry):
         return ShadowSimulation("INVALID", 0, None, None, None, None, None, "INVALID_TRAILING_STOP_INPUT")
     slip = slippage_bps / 10_000
     entry = None; entry_at = None; quantity = 0; last_bar = None
@@ -425,10 +426,16 @@ def _simulate_shadow_trailing_stop(
     entry_risk = 0.0
     for stamp, open_, high, low, _close in normalised:
         last_bar = stamp
+        intrabar_limit_fill = False
         if entry is None:
-            if stamp <= cutoff or stamp > deadline:
+            if stamp <= cutoff or stamp > deadline or stamp > holding_deadline:
                 continue
-            entry = open_ * (1 + slip)
+            if limit_entry and low > proposal.entry:
+                continue
+            entry = min(proposal.entry, open_ * (1 + slip)) if limit_entry else open_ * (1 + slip)
+            if entry <= proposal.stop or entry >= proposal.target:
+                return ShadowSimulation("NO_FILL", 0, None, None, None, None, None, "GAP_INVALIDATES_ENTRY_GEOMETRY")
+            intrabar_limit_fill = limit_entry and open_ > proposal.entry
             entry_at = stamp
             quantity = math.floor(cash / (entry * (1 + fee_rate)))
             if quantity < 1:
@@ -450,10 +457,13 @@ def _simulate_shadow_trailing_stop(
         # applies to the next candle. This avoids a fabricated favourable
         # intrabar sequence where the same high both raises the stop and is
         # the exit point.
-        if entry is not None:
+        # An intrabar limit entry cannot prove that the high occurred after
+        # the fill. Don't ratchet from that possibly pre-entry extreme.
+        if entry is not None and not intrabar_limit_fill:
             trailing = max(trailing, high - entry_risk)
     if entry is None:
-        return ShadowSimulation("NO_FILL", 0, None, None, None, None, None, "NO_EXECUTABLE_BAR_AFTER_SIGNAL")
+        reason = "PULLBACK_LIMIT_NOT_REACHED" if limit_entry else "NO_EXECUTABLE_BAR_AFTER_SIGNAL"
+        return ShadowSimulation("NO_FILL", 0, None, None, None, None, None, reason)
     return ShadowSimulation("OPEN", quantity, round(entry, 4), None, None, None, None,
                             "DATA_END_OPEN_POSITION", entry_at, last_bar)
 
@@ -466,7 +476,8 @@ def simulate_shadow_research_trial(
     """Run one named, matched research trial; it cannot create a position."""
     if entry_profile_id not in _SHADOW_ENTRY_PROFILES or exit_profile_id not in _SHADOW_EXIT_PROFILES:
         raise ValueError("unsupported shadow research profile")
-    if not math.isfinite(cash) or cash <= 0 or fee_rate < 0 or slippage_bps < 0:
+    if (not all(math.isfinite(value) for value in (cash, fee_rate, slippage_bps))
+            or cash <= 0 or fee_rate < 0 or slippage_bps < 0):
         raise ValueError("invalid research simulation assumptions")
     profiled = proposal
     if exit_profile_id == "BOUNDED_TIME_EXIT_60M_V1":
@@ -475,13 +486,16 @@ def simulate_shadow_research_trial(
             _stamp(proposal.holding_deadline or proposal.valid_until), cutoff + timedelta(minutes=60),
         ))
     if entry_profile_id == "NEXT_EXECUTABLE_OPEN_V1":
+        if exit_profile_id == "TRAILING_STOP_V1":
+            return _simulate_shadow_trailing_stop(profiled, future_bars, cash=cash, fee_rate=fee_rate,
+                                                  slippage_bps=slippage_bps)
         return simulate_shadow_trade(profiled, future_bars, cash=cash, fee_rate=fee_rate, slippage_bps=slippage_bps)
     if entry_profile_id == "BOUNDED_PULLBACK_LIMIT_V1":
+        if exit_profile_id == "TRAILING_STOP_V1":
+            return _simulate_shadow_trailing_stop(profiled, future_bars, cash=cash, fee_rate=fee_rate,
+                                                  slippage_bps=slippage_bps, limit_entry=True)
         return _simulate_shadow_limit_pullback(profiled, future_bars, cash=cash, fee_rate=fee_rate,
                                                slippage_bps=slippage_bps)
-    if exit_profile_id == "TRAILING_STOP_V1":
-        return _simulate_shadow_trailing_stop(profiled, future_bars, cash=cash, fee_rate=fee_rate,
-                                              slippage_bps=slippage_bps)
 
     normalised = _normalise_shadow_bars(future_bars)
     if normalised is None:
@@ -491,8 +505,9 @@ def simulate_shadow_research_trial(
     confirmation = next((stamp for stamp, *_ in normalised if cutoff < stamp <= deadline), None)
     if confirmation is None:
         return ShadowSimulation("NO_FILL", 0, None, None, None, None, None, "NO_CONFIRMATION_BAR")
-    result = simulate_shadow_trade(replace(profiled, data_cutoff=confirmation), future_bars, cash=cash,
-                                   fee_rate=fee_rate, slippage_bps=slippage_bps)
+    evaluator = _simulate_shadow_trailing_stop if exit_profile_id == "TRAILING_STOP_V1" else simulate_shadow_trade
+    result = evaluator(replace(profiled, data_cutoff=confirmation), future_bars, cash=cash,
+                       fee_rate=fee_rate, slippage_bps=slippage_bps)
     if result.reason == "NO_EXECUTABLE_BAR_AFTER_SIGNAL":
         return replace(result, reason="NO_EXECUTABLE_BAR_AFTER_CONFIRMATION")
     return result
