@@ -4,6 +4,7 @@ from __future__ import annotations
 import argparse
 import asyncio
 import json
+import sqlite3
 import sys
 from dataclasses import asdict
 from datetime import datetime, timedelta
@@ -21,6 +22,59 @@ def _json_file(path: str) -> dict:
     if not isinstance(value, dict):
         raise ValueError(f"JSON root must be an object: {path}")
     return value
+
+
+def _write_comparison_output(path: str, value: dict) -> None:
+    """Publish immutable offline evidence, allowing byte-identical retries."""
+    import os
+    import tempfile
+
+    target = Path(path)
+    encoded = json.dumps(value, sort_keys=True, separators=(",", ":"), allow_nan=False).encode("utf-8")
+    target.parent.mkdir(parents=True, exist_ok=True)
+    fd, temporary = tempfile.mkstemp(prefix=".comparison-", dir=target.parent)
+    try:
+        with os.fdopen(fd, "wb") as stream:
+            stream.write(encoded)
+            stream.flush()
+            os.fsync(stream.fileno())
+        try:
+            os.link(temporary, target)
+        except FileExistsError:
+            if target.read_bytes() != encoded:
+                raise ValueError("comparison output already contains different immutable evidence")
+    finally:
+        os.unlink(temporary)
+
+
+def _strategy_comparison(args: argparse.Namespace) -> dict:
+    from proactive_comparison_protocol import freeze_comparison_protocol, evaluate_comparison_protocol
+    if args.command == "freeze-strategy-comparison":
+        # The public CLI deliberately uses the real persistence clock. An old
+        # declaration timestamp cannot backdate protocol registration.
+        return asyncio.run(freeze_comparison_protocol(args.db, _json_file(args.manifest)))
+    from proactive_intelligence import ShadowProposal
+    submitted = _json_file(args.inputs)
+    rows = submitted.get("proposals")
+    if not isinstance(rows, list):
+        raise ValueError("comparison inputs require a proposals list")
+    proposals = []
+    for row in rows:
+        if not isinstance(row, dict):
+            raise ValueError("comparison proposal must be an object")
+        fields = dict(row)
+        for key in ("valid_until", "signal_at", "data_cutoff", "entry_deadline", "holding_deadline"):
+            if fields.get(key) is not None:
+                if not isinstance(fields[key], str):
+                    raise ValueError("comparison proposal clocks must be ISO strings")
+                parsed = datetime.fromisoformat(fields[key].replace("Z", "+00:00"))
+                if parsed.tzinfo is None or parsed.utcoffset() is None:
+                    raise ValueError("comparison proposal clocks must be timezone-aware")
+                fields[key] = parsed
+        proposals.append(ShadowProposal(**fields))
+    return asyncio.run(evaluate_comparison_protocol(args.db, protocol_id=args.protocol_id,
+        report_id=args.report_id, proposals=proposals, future_bars=submitted["future_bars"],
+        session_coverage=submitted["session_coverage"]))
 
 
 def _candidate_file(path: str) -> dict:
@@ -153,7 +207,30 @@ def main(argv: list[str] | None = None) -> int:
     reconcile.add_argument("--source-db", default=settings.DB_PATH)
     reconcile.add_argument("--output", required=True, help="JSON evidence output; no ledger mutation")
     reconcile.add_argument("--limit", type=int, default=1000)
+    freeze = sub.add_parser("freeze-strategy-comparison", help="register a predeclared offline strategy basket before holdout")
+    freeze.add_argument("--db", required=True, help="explicit offline comparison SQLite path; no operational default")
+    freeze.add_argument("--manifest", required=True, help="protocol JSON with explicit account/code/cost/basket/split/criteria")
+    freeze.add_argument("--output", required=True, help="immutable canonical manifest JSON")
+    compare = sub.add_parser("evaluate-strategy-comparison", help="retain a matched predeclared held-out diagnostic; never qualifies")
+    compare.add_argument("--db", required=True, help="explicit offline comparison SQLite path")
+    compare.add_argument("--protocol-id", required=True)
+    compare.add_argument("--report-id", required=True)
+    compare.add_argument("--inputs", required=True, help="JSON proposals, future_bars and session_coverage")
+    compare.add_argument("--output", required=True, help="immutable comparison report JSON")
     args = parser.parse_args(argv)
+    if args.command in {"freeze-strategy-comparison", "evaluate-strategy-comparison"}:
+        try:
+            value = _strategy_comparison(args)
+            _write_comparison_output(args.output, value)
+            print(json.dumps({"path": args.output, "protocol_id": value.get("protocol_id"),
+                              "report_id": value.get("report_id"), "can_qualify": False,
+                              "can_place_orders": False, "authorization_effect": "NONE"}, sort_keys=True))
+            return 0
+        except (ValueError, KeyError, TypeError, OSError, OverflowError, sqlite3.Error) as exc:
+            print(json.dumps({"state": "RESEARCH_INPUT_REJECTED", "error": str(exc),
+                              "can_qualify": False, "can_place_orders": False,
+                              "authorization_effect": "NONE"}), file=sys.stderr)
+            return 2
     if args.command == "replay-full-policy":
         try:
             from partner_research_capture import load_public_input
