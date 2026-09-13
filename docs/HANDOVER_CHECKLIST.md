@@ -56,7 +56,17 @@ This is not a rerun of the entire repository test suite, gateway/native database
 
 ## First next action
 
-Finish D's consistent backup/restore and migration/flag prerequisites, then prepare the reviewed GitHub promotion path. The documented Python/gateway resource warnings now have targeted fixes and negative controls. C's source/roll and exact execution boundaries are tested in Dev and the 17 earlier Python acceptance failures are resolved. Preserve the working CLI and immutable v1/v2/v3 artifacts; do not infer deployment or qualification.
+Review the complete Dev release diff/defaults and prepare the GitHub PR; resolve actual authorized quiescence/backup/restore and previous-code compatibility using the consistent-backup runbook. Production application containers were observed stopped, with no implicit restart; user was asked whether deliberate. C's boundaries and baseline/resource fixes are tested in Dev. Preserve the working CLI and immutable v1/v2/v3 artifacts; do not infer deployment or qualification.
+
+## September 13 backup/rollback safety verification
+
+`2026-09-13-consistent-backup-plan.md` and `consistent-data-backup-runbook.md` define full-tree/WAL capture, explicit exclusive maintenance ownership, no operational deletion and rollback that preserves newer history. Offline `scripts/verify_data_backup.py` verifies exact retained inventory/hash and SQLite integrity in scratch, never claims live consistency. Root reviewed Terra's implementation and corrected directory-only iteration, source-enumeration bounds/errors, parent case aliases and weak/optional test setup. Independent Luna audit inventories stores/retention/migration hazards incorporated in runbook.
+
+Final Windows command from `python-engine`: `.\winvenv\Scripts\python.exe -m pytest tests/test_data_backup_verification.py tests/test_deployment_verification.py tests/test_performance.py tests/test_partner_collection_attempts.py tests/test_research_leg_subscriptions.py tests/test_partner_research_capture.py -q -W error`: **117 passed, one symlink-privilege skip, no warnings**, 5.01s. Backup/deployment subset: 29 passed/one skip. WAL source connection remains open through capture; fixture byte snapshot confirms no source mutation and recovered ledger row. Missing WAL, matching corrupt SQLite, tampering, traversal/Windows aliases, hardlinks/devices, duplicate members/root, bounded expansion/enumeration, changing source/archive and receipt overwrite have negative tests. Receipt overwrite is not hidden by optional symlink skip.
+
+Documented helper commands were checked with dummy data, cached Python3.11-slim and Alpine images, `--pull=never --network none`, no Production volume: inventory → Alpine `tar -C /source -cf /backup/data.tar .` → verifier all return exit0. Retained fixture/receipt: `C:/Users/Urveesh/AppData/Local/Temp/sentinel-d-backup-native-20260913`. This proves CLI/native-tar compatibility, not an actual Production restore. The existing engine image lacks pytest; no dependencies were installed into it, and native command smoke replaced that unavailable cross-platform test environment. Atlas regeneration unchanged at 155 modules, compilation and diff check pass.
+
+Read-only Docker snapshot: actual `/data` volume `production_trading-sentinel_trading_data`; engine/gateway RW, agent RO; all three stopped exit137, OOMKilled=false around 01:01 UTC. Autoheal/nginx/ngrok run. No root stop/restart or Production edit occurred. This state is not a quiescence/maintenance receipt. Actual backup, isolated restore on actual data, old/new complete compatibility, PR/release and real market-session evidence remain outstanding.
 
 ## September 13 resource ownership verification
 

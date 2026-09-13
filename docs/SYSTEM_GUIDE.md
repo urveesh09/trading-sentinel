@@ -25,6 +25,8 @@ An explicit intraday profile was previously observed in Production. The previous
 
 ## 3. Runtime topology
 
+Release safety now has an optional offline `scripts/verify_data_backup.py` source inventory/tar verifier and [consistent backup/rollback runbook](consistent-data-backup-runbook.md). It checks exact file hashes, bounded safe extraction and header-identified SQLite integrity with WAL recovery in scratch. Its receipt deliberately says consistency is unproven: independent live quiescence and actual source/mount coverage are operator responsibilities. Code rollback must preserve current post-backup books/evidence and prove previous-code compatibility on copies; it must not restore older cash/trade history over the live volume. Dev fixtures, not a Production backup, validate this tool.
+
 | Layer | Entry points | Responsibility | Principal boundary |
 |---|---|---|---|
 | Reverse proxy | `node-gateway/nginx/nginx.conf`, `docker-compose.yml` | HTTP ingress, upstream routing, independent proxy health | Healthy proxy is not healthy trading |
