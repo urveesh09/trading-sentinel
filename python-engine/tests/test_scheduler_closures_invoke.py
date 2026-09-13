@@ -62,6 +62,13 @@ ALL_CLOSURES = [
     "_run_partner_hedge_delivery_recovery_safe",
     "_run_partner_hedge_phase2_tick_safe",
     "_run_proactive_shadow_workflow_safe",
+    # [H1 2026-09-13] The penny hourly report was the only penny
+    # subsystem job registered raw (no ``_safe`` wrapper). H1 added
+    # ``run_penny_hourly_report_safe`` -- a defensive wrapper with a
+    # first-line breadcrumb. Including it here exercises the
+    # global-resolution region under the same parametrised test the
+    # other penny closures pass.
+    "run_penny_hourly_report_safe",
 ]
 
 

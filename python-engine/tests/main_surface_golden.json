@@ -199,7 +199,7 @@
       "trigger": "cron[hour='15', minute='0']"
     },
     {
-      "func": "run_penny_hourly_report",
+      "func": "run_penny_hourly_report_safe",
       "id": "penny_hourly_report",
       "kwargs": [],
       "trigger": "cron[hour='10-14', minute='0']"

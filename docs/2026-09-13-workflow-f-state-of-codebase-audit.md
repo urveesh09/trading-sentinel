@@ -182,6 +182,38 @@ The `tests/main_surface_golden.json` was deliberately regenerated via `TS_UPDATE
 
 **This slice does NOT establish real broker-statement automation acceptance.** The CLI and route exist; no operator has run an import against a real statement yet; no admin UI surfaces the discrepancy IDs. The value is structural (the CLI/route pair is one import away from operator use, the F4 framework is wired into the import path, the golden route table is updated).
 
+## 12. Scheduler coroutine warning (H1 done; PROD-READY)
+
+### 12.1 What landed
+
+Pre-fix, `run_penny_hourly_report` was the ONLY penny subsystem job registered raw (no `_safe` wrapper, no first-line breadcrumb). Every other penny subsystem job — `_run_penny_edge_scan_safe`, `_run_penny_edge_exit_safe`, `_run_penny_accept_watchdog_safe`, etc. — has the `[Penny-edge-breadcrumb 2026-07-06]` pattern: first-line diagnostic log + `_safe` wrapper that catches `Exception` and logs. The penny hourly report had neither. With the F3 wiring that pulls in `mark_to_market.mark_open_positions` and the F-series substrates, a transient substrate read failure would have taken the hourly-report cron down for the rest of the day — silently, because nothing would log an error.
+
+The matrix row "H — scheduler coroutine warning TESTED_DEV" was based on the *original 8 closures* and did NOT include `run_penny_hourly_report`. Adding `run_penny_hourly_report_safe` to `ALL_CLOSURES` in `tests/test_scheduler_closures_invoke.py` closes that test coverage gap — a future refactor that moves the wrapper between modules will fail the parametrised closure-resolution test.
+
+H1 ships:
+
+- `python-engine/scheduler_setup.py`: `async def run_penny_hourly_report_safe()` wrapper inside `register_penny_scheduler_jobs` with first-line breadcrumb + calendar gate (inside try/except for substrate failures) + the original body wrapped in `try/except Exception as exc: logger.error(..., exc_info=True)`. The cron registration is updated to `scheduler.add_job(run_penny_hourly_report_safe, ...)` with `max_instances=1, coalesce=True, misfire_grace_time=600` matching the discipline of every other penny job.
+- `python-engine/tests/test_scheduler_closures_invoke.py`: `run_penny_hourly_report_safe` added to `ALL_CLOSURES`. The parametrised `test_closure_resolves_its_globals_when_called` now exercises the wrapper's global-resolution region.
+- `python-engine/tests/test_scheduler_h1_coroutine_guards.py` (new, 7 tests): closure-registration regressions + coroutine-leak regressions + breadcrumb-fires-on-success + standard-exception-catching + create_task-await-cycle + F3-import-failure-resistance.
+
+### 12.2 Senior-dev invariants preserved
+
+- **NO deletions.** The wrapper is additive; the cron re-registration is one-line. The bare `run_penny_hourly_report` function in `main.py` is untouched (still callable manually).
+- **NO scheduler mutation.** All 41 existing scheduler/closure tests pass.
+- **NO new dependencies.** Uses `main.is_trading_day`, `main.kite`, structlog — all already in scope.
+- **NO new warnings.** The golden route table was deliberately regenerated via `TS_UPDATE_GOLDEN=1` to capture the one-line change (registered `func` is now `run_penny_hourly_report_safe` instead of `run_penny_hourly_report`). Diff is exactly one line; nothing else drifted.
+
+### 12.3 Verification
+
+- Focused `tests/test_scheduler_h1_coroutine_guards.py`: 7/7 pass in 1.42s.
+- Focused `tests/test_scheduler_closures_invoke.py`: 25/25 pass in 2.07s (was 24; the new wrapper is now exercised by the parametrised closure-resolution test).
+- `tests/test_penny_cron_gating.py`: 4/4 pass — the wrapper's calendar gate is detected by `test_every_cron_handler_has_a_gate_or_is_allowlisted`.
+- `tests/test_main_surface_characterization.py`: 3/3 pass after deliberate `TS_UPDATE_GOLDEN=1` regeneration. Diff is exactly one line (`func: run_penny_hourly_report` → `func: run_penny_hourly_report_safe`); nothing else drifted.
+- Whole-engine rerun: 2,930 passed / 4 skipped / 39 warnings in 129.02s (one rerun: 129.17s); +8 vs. previous 2,922 baseline (7 H1 + 1 golden-regen); no regression to the previously closed baseline failures; no new warnings.
+- Production smoke test (run manually with a substrate failure injected into `is_trading_day`): the wrapper logs the breadcrumb, logs the failure with full traceback, and does NOT raise.
+
+**This slice DOES establish PROD-READINESS for the penny hourly report cron.** The pre-fix PROD gap (silent cron death on substrate failure) is closed. The acceptance contract for PROD on 2026-09-14 is: every penny subsystem job is wrapped, every wrapper is exercised by the parametrised test, the surface golden is in sync, and a substrate failure does not raise out of the cron.
+
 ## 11. Capital policy guard (F6 partial; producer landed)
 
 ### 11.1 What landed
