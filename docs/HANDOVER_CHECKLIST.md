@@ -56,6 +56,8 @@ This is not a rerun of the entire repository test suite, gateway/native database
 
 ## First next action
 
+F correction source `e00874b`; immediate eleven-file stat/status review confirms clean Dev, matching source/guide/atlas/plan and independent review incorporated. Local only, not pushed/deployed. Next implementation: genuine G/C predeclared comparison protocol and evidence validation; F forensic/account/statement inputs remain unresolved, not closed by this inventory correction.
+
 Latest whole-engine receipt (F provenance/cache/budget source): `.\winvenv\Scripts\python.exe -m pytest tests -q --junitxml=C:/Users/Urveesh/AppData/Local/Temp/sentinel-fg-provenance-baseline-20260913.xml` from Dev engine returns0: **2,703 passed/four skipped/23 existing deprecations,126.20s**. Supersedes previous whole-engine counts. Runtime/assertions frozen; F explanatory test docstring alone edited during run. Independent F review finds no correctness blocker with existing route-import deprecation visible. Not qualification, real reconciliation, deployment or actual backup compatibility.
 
 F source/provenance correction: unknown equity tariff effective date restored with rates/version/as-of/options untouched; owning schemas/PKs, writers, settings and unsupported A1–A5 closure claims corrected. Eight-file acceptance150 passed with all warnings fatal6.48s; ten-file154 passed7.07s with one existing Starlette deprecation and ResourceWarning/unraisable warnings fatal. Fresh DB fixtures exercise real initializers and broker import; not deployed-data reconciliation. Full engine rerun in progress; source frozen. Independent final review pending. See F/G correction plan; local only, no Production/remote mutation.
