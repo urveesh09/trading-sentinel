@@ -842,6 +842,34 @@ async def run_fno_tick(
         # switch is on.
         from fno_risk import fno_go_live_check
         unmet = await fno_go_live_check(db_path)
+        # [AFFORDABILITY-SEAM 2026-09-13] The number of rupees a growth
+        # path would request is computed here, currently always 0 because
+        # live growth is not implemented in this orchestrator. When the
+        # operator enables live-growth via the promotion-bridge contract
+        # (see ``docs/2026-09-13-workflow-g-promotion-bridge.md``), the
+        # wire-up lives at this exact site: take the growth request, call
+        # ``affordability.assert_live_entry_safety(db_path=db_path,
+        # live_source=FnoSource.FNO_LIVE.value,
+        # paper_source=FnoSource.FNO_PAPER.value, proposed_delta_inr=delta)``
+        # and refuse if it raises ``AffordabilityRefusal``. The guard
+        # module is *pure* and ledger-bound; no live trading will ever
+        # go through without consulting it.
+        _pending_live_growth_inr = 0.0
+        if _pending_live_growth_inr > 0:
+            try:
+                from affordability import assert_live_entry_safety
+                await assert_live_entry_safety(
+                    db_path=db_path,
+                    live_source=FnoSource.FNO_LIVE.value,
+                    paper_source=FnoSource.FNO_PAPER.value,
+                    proposed_delta_inr=_pending_live_growth_inr,
+                )
+            except AffordabilityRefusal as refusal:
+                logger.critical(
+                    "fno_live_growth_refused delta=%.2f reason=%s",
+                    _pending_live_growth_inr, refusal.result.summary(),
+                )
+                unmet = list(unmet) + ["affordability_guard_refused"]
         live_equity = await _fno_equity(db_path, FnoSource.FNO_LIVE.value)
         if unmet:
             logger.warning("fno_live_leg_refused_to_arm unmet=%s", unmet)
