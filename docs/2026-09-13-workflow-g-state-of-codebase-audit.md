@@ -57,7 +57,7 @@ Plan §11 names six hypotheses; only three have shipped entry profiles.
 |---|---|---|---|
 | Trend continuation after bounded pullback | SHIPPED | `BOUNDED_PULLBACK_LIMIT_V1` | None |
 | Breakout with completed-bar confirmation | SHIPPED | `COMPLETED_BAR_CONFIRMATION_V1` | None |
-| Range mean reversion with strict invalidation | **NOT SHIPPED** | `RANGE_REVERSION_V1` does not exist | New entry profile required |
+| Range mean reversion with strict invalidation | PARTIAL (constant only) | `RANGE_REVERSION_V1` — see update at §6 | Closed: profile accepted by dispatcher; **dedicated range-mean-reversion simulator still required for faithful semantics** |
 | Cost-aware abstention | NOT SHIPPED as a profile; covered indirectly by allocator's `INSUFFICIENT_*` reasons | n/a | Compare report, not entry profile |
 | Exit profile comparison | SHIPPED (2 profiles) | `STOP_TARGET_TIME_V1`, `BOUNDED_TIME_EXIT_60M_V1` | Partial: no 3rd exit for comparison variance |
 | Exposure-aware allocation | NOT SHIPPED | n/a | Basket + portfolio research is the analysis surface; no third dimension (correlation cap) implemented |
@@ -118,11 +118,11 @@ Lines 173-180 of `proactive_intelligence.py` emit a `CONTRACTION_BREAKOUT` when 
 
 Acceptance gap: same as #1. The `"first break vs confirmation"` comparison requires writing a comparison report; no new profile needed (the three existing profiles include both ends of the spectrum).
 
-### 2.3 Hypothesis #3: range mean reversion — **entry profile MISSING**
+### 2.3 Hypothesis #3: range mean reversion — *partially closed (constant only, 2026-09-13 commit)*
 
-`build_shadow_proposals` lines 167-172 emit a `RANGE_STABILIZATION_RECLAIM` proposal — *but* the policy_id is `range_reversion_v1`, which is not in `_SHADOW_ENTRY_PROFILES`. The proposal builder emits it but the simulator rejects unknown profiles at line 388 of `proactive_intelligence.py`.
+`build_shadow_proposals` lines 167-172 emit a `RANGE_STABILIZATION_RECLAIM` proposal with `policy_id="range_reversion_v1"`. The proposal was always constructible but `simulate_shadow_research_trial` (line 388) raised `ValueError("unsupported shadow research profile")` because the policy_id was not in `_SHADOW_ENTRY_PROFILES`. Closing the dispatch gap required one string literal in the frozenset. The proposal is already constructed; one constant change is sufficient. **The closure landed in the second commit on `codex/production-correction-hedge-p0`, parent `16fd6af`:** `"RANGE_REVERSION_V1"` added to `_SHADOW_ENTRY_PROFILES`, plus a 5-test focused suite (`tests/test_range_reversion_profile.py`) proving proposal emit, allocator accept, dispatcher enum-check pass and a negative-control (unknown profile id still raises). The existing neighbour tests were made future-proof by deriving their comparison counts from the same constants rather than hard-coding 6/8.
 
-**Action required before hypothesis #3 can run**: add `"RANGE_REVERSION_V1"` to `_SHADOW_ENTRY_PROFILES`, plus the corresponding `"reason": "RANGE_STABILIZATION_RECLAIM"` agreement in `validate_proposal` paths. The proposal is already constructed; one constant change is sufficient.
+**Residual gap (still open, do not assume closure)**: with only the constant change, the dispatcher (line 388-416 of `proactive_intelligence.py`) routes `RANGE_REVERSION_V1` through the same completed-bar-confirmation fallback that `COMPLETED_BAR_CONFIRMATION_V1` uses — which is *not* a faithful range-mean-reversion interpretation. A dedicated range-mean-reversion simulator (`_simulate_shadow_range_reversion` and an explicit dispatcher branch) is a separate future slice. Until that lands, *do not* read `RANGE_REVERSION_V1` trial results as a faithful evaluation of the hypothesis; read them as evidence that the constant is wired end-to-end.
 
 ### 2.4 Hypothesis #4: cost-aware abstention
 
@@ -204,7 +204,7 @@ Without these, G's most dangerous failure mode is silent — a held-out comparis
 
 ## 6. What's missing — distilled
 
-1. `RANGE_REVERSION_V1` in `_SHADOW_ENTRY_PROFILES` (one constant change; permits hypothesis #3 to run).
+1. ~~`RANGE_REVERSION_V1` in `_SHADOW_ENTRY_PROFILES` (one constant change; permits hypothesis #3 to run).~~ **CLOSED 2026-09-13** (constant landed; focused 5-test suite in `tests/test_range_reversion_profile.py`; demo + neighbour tests made future-proof by deriving counts from `_SHADOW_ENTRY_PROFILES` and `_SHADOW_EXIT_PROFILES`). **Residual**: a *dedicated* range-mean-reversion simulator is still missing — the dispatcher currently routes `RANGE_REVERSION_V1` through the completed-bar-confirmation fallback, which is not a faithful interpretation. See §2.3 update.
 2. A promotion bridge document + refusal record surface + risk-budget surface (governance gap).
 3. A pre-declared comparison protocol that inherits C's `intraday_spread_holdout` split rules verbatim.
 4. A public note on the `"default-v1"` back-compat shim so future contributors don't collide.
@@ -217,6 +217,6 @@ Without these, G's most dangerous failure mode is silent — a held-out comparis
 - Live deployment (any D+E+I-style promotion) is explicitly out of scope until F + D close.
 - This slice touches no runtime code. Status update in `NEXT_AGENT_PLAN.md` §15 matrix is documentation-only.
 
-Status: G inventory documented for this slice; G remains P1/P2 awaiting user direction on whether to (a) close the six gaps above before live comparison work, (b) ship the promotion bridge first as a separate workstream, or (c) defer any G implementation until F + D close. Verified commit `07a3b9a` (parent); this docs commit records inventory only.
+Status: G inventory documented at commit `16fd6af`; the range-profile constant change landed in a separate implementation commit (referenced by SHA in §2.3 and §6 once known). G remains P1/P2. Future user direction needed on whether to (a) close the remaining five gaps before live comparison, (b) ship the dedicated range-mean-reversion simulator as a separate slice, or (c) defer any G implementation until F + D close. Verified commit `16fd6af` (audit/bridge docs); the constant-change commit is the next commit on the same branch.
 
-Verification (Dev, September 13): no test rerun required for a docs-only commit; baseline whole-engine count (2,545 passed/3 skipped/23 deprecations) is unchanged. Module LOC and citations derived from `wc -l` and `grep -n` against the working tree at HEAD. Future implementation commit will carry its own focused + whole-engine acceptance per AGENTS.md §16.
+Verification (Dev, September 13): docs-only at `16fd6af` (no test rerun required). The constant-change commit (the next commit on `codex/production-correction-hedge-p0`) ran the focused 5-test suite (5/5 pass) and the whole-engine Python suite: 2,574 passed (was 2,545), 4 skipped (was 3), 23 warnings, in 122.52s. The +29 net passing tests = 5 new in `test_range_reversion_profile.py` plus 24 comparison-trial rows now generated across the existing suite because `_SHADOW_ENTRY_PROFILES` grew from 3 to 4. **No regression** to the previously closed 17 baseline failures; no new warnings.

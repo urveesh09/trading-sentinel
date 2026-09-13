@@ -157,4 +157,4 @@ When the implementation lands, files are migrated into a SQLite table `promotion
 
 This document records the contract only. Status: `CONTRACT_DEFINED — UNSIGNED` for any live candidate. Implementation commit will follow AGENTS.md §16 plan-slice template and reference this document by name. No runtime code change in this commit.
 
-Verification (Dev, September 13): docs-only; no test rerun required. Baseline whole-engine count unchanged at 2,545 passed/3 skipped/23 deprecations. Future implementation will carry its own acceptance per AGENTS.md §16. Verified commit `07a3b9a` (parent); this docs commit lays the contract that future G work must obey.
+Verification (Dev, September 13): docs-only at parent commit `16fd6af`; no test rerun required. The constant-change commit on the same branch ran the focused 5-test suite (5/5 pass) and the whole-engine Python suite: 2,574 passed/4 skipped/23 warnings in 122.52s; no regression to the previously closed 17 baseline failures. Future implementation will carry its own acceptance per AGENTS.md §16.
