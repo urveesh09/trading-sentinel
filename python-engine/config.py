@@ -1385,4 +1385,49 @@ class Settings(BaseSettings):
     DAILY_HISTORY_DAYS:                int   = 1095
 
 
+    # ============================================================
+    # F6 CAPITAL POLICY (2026-09-13, plan section 10.5)
+    # ============================================================
+    # The third gate in the live-growth chain:
+    #   promotion-bridge (signed state)        -- who may promote
+    #       -> affordability guard (F2)        -- can the live pool grow
+    #           -> capital policy guard (F6)    -- should the live pool grow
+    #
+    # Every knob below is a professional-conservative default that
+    # the operator can override by editing config.py (or by setting
+    # the corresponding env var, since this is a BaseSettings).
+    #
+    # CAPITAL_POLICY_LOSS_TOLERANCE_PCT is the EXPLICIT USER INPUT
+    # the plan mandates ("Leave the user's loss tolerance as an
+    # explicit input if not supplied"). Default 25.0 -- the operator
+    # stated opinion. Lower this for more conservative growth.
+    CAPITAL_POLICY_LOSS_TOLERANCE_PCT:           float = 25.0
+    # Current realised drawdown cap. Independent of loss tolerance
+    # because they measure different things: loss tolerance is the
+    # *worst-case* loss the user accepts on a single growth event;
+    # max drawdown is the *current* realised drawdown that gates
+    # all growth until it recovers.
+    CAPITAL_POLICY_MAX_DRAWDOWN_PCT:            float = 15.0
+    # Minimum closed-trade win rate required. Default 50% (half
+    # profitable). Lower for early systems with few trades.
+    CAPITAL_POLICY_MIN_WIN_RATE_PCT:             float = 50.0
+    # Minimum average R-multiple of closed trades. Default 0.0
+    # (breakeven on R). Raise to require positive expectancy.
+    CAPITAL_POLICY_MIN_AVG_R_MULTIPLE:           float = 0.0
+    # Maximum consecutive losing closed trades. Default 5
+    # (industry-standard operational stability gate).
+    CAPITAL_POLICY_MAX_CONSECUTIVE_LOSSES:       int   = 5
+    # Minimum current live bankroll before any increase is even
+    # evaluated. Default 1500 (matches PENNY_EDGE_LIVE_BANKROLL).
+    CAPITAL_POLICY_MIN_LIVE_BANKROLL_INR:        float = 1500.0
+    # If True, an UNRESOLVED or UNAVAILABLE broker statement refuses
+    # the increase. Never grow live capital on unverified broker
+    # truth.
+    CAPITAL_POLICY_REQUIRE_BROKER_RECONCILIATION: bool  = True
+    # If True, the absence of a proactive research artifact on
+    # file returns INSUFFICIENT_EVIDENCE. Never grow live capital
+    # without a recorded research basis.
+    CAPITAL_POLICY_REQUIRE_PROACTIVE_EVIDENCE:   bool  = True
+
+
 settings = Settings()

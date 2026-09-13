@@ -181,3 +181,52 @@ The `tests/main_surface_golden.json` was deliberately regenerated via `TS_UPDATE
 - Whole-engine rerun: 2,881 passed / 4 skipped / 39 warnings in 128.75s; +45 vs. previous 2,836 baseline; no regression to the previously closed baseline failures. The +16 warnings come from the same `'app' shortcut` DeprecationWarning that other route tests (`test_promotion_readiness_route.py`, `test_operator_status.py`) already emit; the warning *category* is unchanged, only its count grows with new route tests.
 
 **This slice does NOT establish real broker-statement automation acceptance.** The CLI and route exist; no operator has run an import against a real statement yet; no admin UI surfaces the discrepancy IDs. The value is structural (the CLI/route pair is one import away from operator use, the F4 framework is wired into the import path, the golden route table is updated).
+
+## 11. Capital policy guard (F6 partial; producer landed)
+
+### 11.1 What landed
+
+A standalone `python-engine/capital_policy.py` module (third gate in the live-growth chain: promotion-bridge -> affordability -> capital policy) plus a CLI surface `python-engine/capital_policy_cli.py` and `CAPITAL_POLICY_*` config knobs in `config.py`.
+
+```
+CapitalIncreaseVerdict (str, Enum)
+    AUTHORIZED                          -- all gates passed
+    LOSS_TOLERANCE_EXCEEDED             -- delta > loss_tolerance_pct * live
+    DRAWDOWN_TOO_HIGH                   -- current drawdown > max_drawdown_pct
+    EXECUTION_QUALITY_INSUFFICIENT      -- win rate / R / consecutive losses
+    RECONCILIATION_UNRESOLVED           -- broker report != MATCH
+    INSUFFICIENT_EVIDENCE               -- live below floor / no research
+
+evaluate_capital_increase(...)              -- pure function
+evaluate_capital_increase_for_account(...)   -- async wrapper, reads F1/F5
+```
+
+The guard is **pure**: no I/O of its own; every numeric input is supplied by the caller. The async wrapper reads the F1 inventory (live equity, drawdown, execution quality, consecutive losses), the F5 broker report (MATCH/UNRESOLVED/UNAVAILABLE), and the G research archive (file presence check).
+
+Eight `CAPITAL_POLICY_*` config knobs in `config.py`:
+- `CAPITAL_POLICY_LOSS_TOLERANCE_PCT = 25.0` -- the user's stated loss tolerance (the explicit input the plan mandates; preserved verbatim).
+- `CAPITAL_POLICY_MAX_DRAWDOWN_PCT = 15.0` -- current realised drawdown cap.
+- `CAPITAL_POLICY_MIN_WIN_RATE_PCT = 50.0` -- execution-quality floor.
+- `CAPITAL_POLICY_MIN_AVG_R_MULTIPLE = 0.0` -- expectancy floor.
+- `CAPITAL_POLICY_MAX_CONSECUTIVE_LOSSES = 5` -- operational stability gate.
+- `CAPITAL_POLICY_MIN_LIVE_BANKROLL_INR = 1500.0` -- pre-evaluation floor.
+- `CAPITAL_POLICY_REQUIRE_BROKER_RECONCILIATION = True` -- never grow on unverified broker truth.
+- `CAPITAL_POLICY_REQUIRE_PROACTIVE_EVIDENCE = True` -- never grow without a research basis.
+
+Every knob has an inline comment explaining what it does. The operator overrides any of them with a single edit (or env var, since `config.Settings` is a `BaseSettings`).
+
+41 focused tests in `tests/test_capital_policy.py` cover: schema version, threshold validation at construction, every verdict bucket, gate ordering (live floor -> reconciliation -> drawdown -> loss tolerance -> execution quality -> proactive evidence), CLI subcommands (print-config, evaluate), async wrapper, input validation (NaN/Inf/bool/string/negative), reproducibility.
+
+### 11.2 What F6 explicitly does NOT include
+
+- No price-prediction model. The "creative" part is the verdict structure (six named buckets with refusal reasons), NOT picking numbers the user didn't ask for.
+- No signal-reading. The "continuation evidence" check is a file-presence check on the proactive research archive, NOT a live price read.
+- No automatic growth. The guard *evaluates*; it never *acts*. The CLI/route are operator-invoked.
+- No retroactive DISC-A1..A5 population.
+
+### 11.3 Verification
+
+- Focused `tests/test_capital_policy.py`: 41/41 pass in 0.54s.
+- Whole-engine rerun: 2,922 passed / 4 skipped / 39 warnings in 129.85s (one rerun: 130.14s); +41 vs. previous 2,881 baseline; no regression to the previously closed baseline failures; no new warnings.
+
+**This slice does NOT establish real capital-policy acceptance.** The producer + CLI + config knobs exist; no orchestrator or operator has run an evaluation against a real ledger yet; the guard's "creative" content is the verdict structure, not invented numbers. The value is structural (the third gate in the live-growth chain is in place, every knob is documented and overrideable, the guard refuses with named reasons rather than guessing).
