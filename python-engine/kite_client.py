@@ -456,16 +456,51 @@ class KiteClient:
     ) -> pd.DataFrame:
         """
         Fetch intraday candles (15-minute default).
-        Cache TTL: current trading day only.
-        Cache is invalidated at next day's 00:00 IST.
-        
+
+        [WORKFLOW-H H4 2026-09-13] Cache semantics per plan section 12:
+        the four explicit invariants -- instrument, interval,
+        completed-bar cutoff, freshness -- are now honoured by
+        the HIT path. The cache still contains forming candles
+        (the writer cannot know when Kite's most recent candle is
+        closed); the HIT path EXCLUDES forming candles when
+        ``settings.INTRADAY_CACHE_INCLUDE_FORMING=False`` (default,
+        per section 12 "do not mix mutable forming bars with
+        completed historical bars").
+
+        Freshness semantics: the most recent cached candle must
+        be no older than ``expected_latest - freshness_seconds``,
+        where ``expected_latest = to_datetime - interval_minutes``.
+        The default ``freshness_seconds=0`` matches the pre-H4
+        strict "last candle covers up to most recent interval
+        boundary" gate.
+
+        Operator-tunable knobs in ``config.py``:
+            INTRADAY_CACHE_FRESHNESS_SECONDS
+            INTRADAY_CACHE_INCLUDE_FORMING
+            INTRADAY_CACHE_MIN_CANDLES
+
+        The 00:05 IST cron ``clear_intraday_cache`` (retention
+        default 365 days) does the daily ageing; the H4 path
+        does NOT change that schedule.
+
         from_datetime / to_datetime format: "YYYY-MM-DD HH:MM:SS"
         """
+        from config import settings
         interval = str(interval or "").strip().lower()
         interval_mins = _interval_minutes(interval)
         await self._init_intraday_db()
         ticker = ticker.upper()
-
+        # [WORKFLOW-H H4 2026-09-13] Config knobs read ONCE per call;
+        # defaults preserve the pre-H4 strict behaviour.
+        freshness_seconds = int(
+            getattr(settings, "INTRADAY_CACHE_FRESHNESS_SECONDS", 0)
+        )
+        include_forming = bool(
+            getattr(settings, "INTRADAY_CACHE_INCLUDE_FORMING", False)
+        )
+        min_candles = int(
+            getattr(settings, "INTRADAY_CACHE_MIN_CANDLES", 4)
+        )
 
         # Check cache: only use if all rows are from today
         async with self._cache_db() as db:
@@ -478,24 +513,91 @@ class KiteClient:
                 (ticker, interval, from_datetime, to_datetime)
             )
             rows = await cursor.fetchall()
-            if rows and len(rows) >= 4:   # minimum 4 candles for VWAP
+            if rows and len(rows) >= min_candles:
                 last_cached_dt = datetime.strptime(rows[-1][0], "%Y-%m-%d %H:%M:%S")
                 to_dt_obj      = datetime.strptime(to_datetime,  "%Y-%m-%d %H:%M:%S")
-                # Cache is fresh only if the last stored candle covers up to the
-                # expected latest complete candle (one interval before scan time).
-                # If stale, fall through to API so new candles are fetched.
-                expected_latest = to_dt_obj - timedelta(minutes=interval_mins)
+                # [WORKFLOW-H H4 2026-09-13] Freshness gate with
+                # explicit ``freshness_seconds`` budget. The
+                # default (0) matches the pre-H4 gate exactly; an
+                # operator can relax to e.g. 60 to tolerate one
+                # minute of staleness. The gate is "candle must
+                # cover up to ``expected_latest`` minus the budget":
+                # the budget is a *leniency* knob, not a *strict*
+                # knob -- a positive value makes the gate MORE
+                # permissive, never MORE strict. Negative values
+                # are clamped to 0 (treated as the strict default).
+                effective_freshness_seconds = max(0, freshness_seconds)
+                expected_latest = (
+                    to_dt_obj
+                    - timedelta(minutes=interval_mins)
+                    - timedelta(seconds=effective_freshness_seconds)
+                )
                 if last_cached_dt >= expected_latest:
-                    # [LOG-HYGIENE 2026-07-17] debug -- see the cache_hit
-                    # comment in get_historical.
-                    logger.debug("data_fetch", event_type="intraday_cache_hit",
-                                 ticker=ticker, candles=len(rows))
-                    df = pd.DataFrame(
-                        rows, columns=['datetime','open','high','low','close','volume']
-                    )
-                    df['datetime'] = pd.to_datetime(df['datetime'])
-                    df.set_index('datetime', inplace=True)
-                    return df
+                    # [WORKFLOW-H H4 2026-09-13] Completed-bar cutoff
+                    # enforcement. Section 12: "Do not mix mutable
+                    # forming bars with completed historical bars."
+                    # A candle is "completed" iff its ``datetime``
+                    # is strictly BEFORE ``to_dt_obj``. The cache
+                    # writer cannot know when Kite's most recent
+                    # candle is closed, so the cache may contain
+                    # forming candles; the HIT path filters them
+                    # out when ``include_forming=False`` (default).
+                    if include_forming:
+                        filtered_rows = list(rows)
+                    else:
+                        filtered_rows = [
+                            r for r in rows
+                            if datetime.strptime(r[0], "%Y-%m-%d %H:%M:%S")
+                            < to_dt_obj
+                        ]
+                    # [WORKFLOW-H H4 2026-09-13] Re-check min_candles
+                    # *after* forming-bar filtering. The raw-row
+                    # gate above uses the unfiltered count (which
+                    # includes forming candles); the §12 strict
+                    # defence is that the *returned* set must also
+                    # satisfy the floor.
+                    if not filtered_rows:
+                        # All cached rows were forming candles; no
+                        # HIT. Fall through to API so the forming
+                        # candles refresh to completed.
+                        logger.debug(
+                            "data_fetch",
+                            event_type="intraday_cache_only_forming",
+                            ticker=ticker,
+                            total_rows=len(rows),
+                            forming_rows=len(rows),
+                        )
+                    elif len(filtered_rows) < min_candles:
+                        # Filtered rows below the floor (the
+                        # forming-bar filtering removed too many).
+                        # Fall through to API; the fresh fetch
+                        # will replace the forming candles with
+                        # completed ones.
+                        logger.debug(
+                            "data_fetch",
+                            event_type="intraday_cache_filtered_below_floor",
+                            ticker=ticker,
+                            raw_rows=len(rows),
+                            filtered_rows=len(filtered_rows),
+                            min_candles=min_candles,
+                        )
+                    else:
+                        # [LOG-HYGIENE 2026-07-17] debug -- see the cache_hit
+                        # comment in get_historical.
+                        logger.debug(
+                            "data_fetch",
+                            event_type="intraday_cache_hit",
+                            ticker=ticker,
+                            candles=len(filtered_rows),
+                            forming_dropped=len(rows) - len(filtered_rows),
+                        )
+                        df = pd.DataFrame(
+                            filtered_rows,
+                            columns=['datetime','open','high','low','close','volume'],
+                        )
+                        df['datetime'] = pd.to_datetime(df['datetime'])
+                        df.set_index('datetime', inplace=True)
+                        return df
                 # Expected during a live session: the next caller refreshes the
                 # cache as soon as a candle closes.  INFO produced tens of
                 # thousands of lines per day and pushed operational evidence

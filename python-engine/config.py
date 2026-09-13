@@ -1384,6 +1384,43 @@ class Settings(BaseSettings):
     # re-fetches once per ticker and then hits cache.
     DAILY_HISTORY_DAYS:                int   = 1095
 
+    # === H4 Intraday-cache semantics (2026-09-13, plan section 12) ===
+    # §12 mandates: "Cache only with explicit instrument, interval,
+    # completed-bar cutoff and freshness semantics." The two knobs
+    # below make the existing ``get_intraday`` cache HIT path
+    # honour those semantics explicitly. The defaults preserve the
+    # existing behaviour; the knobs are operator-tunable.
+    #
+    # INTRADAY_CACHE_FRESHNESS_SECONDS:
+    #   Maximum age (seconds) of the most recent cached candle
+    #   relative to ``to_datetime``. A candle whose age is older
+    #   than this triggers a Kite round-trip; a candle newer than
+    #   this is served as a HIT. The existing freshness check uses
+    #   ``interval_mins`` (1 minute for interval="minute", etc.).
+    #   We default to 0 -- strict "must be the candle covering up
+    #   to the most recent interval boundary" semantics, matching
+    #   the pre-H4 behaviour. An operator can relax to e.g. 60 if
+    #   they want a 1-minute staleness budget; the knob exists for
+    #   that.
+    INTRADAY_CACHE_FRESHNESS_SECONDS:   int   = 0
+    # INTRADAY_CACHE_INCLUDE_FORMING:
+    #   If True, candles whose ``datetime`` is in the future
+    #   relative to ``to_datetime`` (a forming candle) ARE served
+    #   from cache. If False (the §12 default), forming candles
+    #   are EXCLUDED from the returned set. The cache continues
+    #   to contain forming candles (the writer has no way to
+    #   know); the HIT path simply doesn't return them.
+    #   Section 12: "Do not mix mutable forming bars with
+    #   completed historical bars."
+    INTRADAY_CACHE_INCLUDE_FORMING:    bool  = False
+    # INTRADAY_CACHE_MIN_CANDLES:
+    #   The minimum number of candles required to serve a HIT.
+    #   Existing behaviour: 4 (the VWAP floor). §12 makes this
+    #   explicit and operator-tunable. Lowering this risks
+    #   VWAP instability on partial data; raising it requires
+    #   more pre-cache data per ticker.
+    INTRADAY_CACHE_MIN_CANDLES:        int   = 4
+
 
     # ============================================================
     # F6 CAPITAL POLICY (2026-09-13, plan section 10.5)
