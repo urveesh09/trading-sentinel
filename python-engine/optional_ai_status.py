@@ -237,12 +237,16 @@ async def load_optional_ai_status(
     }
     if row is None:
         return {**base, "state": "NOT_REPORTED", "stale": True,
+                "reported_at": None, "reported_state": None,
+                "received_at": None, "detail": {},
                 "note": "No optional-AI worker report has been received."}
     try:
         reported_at = _parse_aware_timestamp(row[1], "stored reported_at")
         detail = json.loads(row[3])
     except (ValueError, TypeError, json.JSONDecodeError):
         return {**base, "state": "CORRUPT_REPORT", "stale": True,
+                "reported_at": None, "reported_state": None,
+                "received_at": None, "detail": {},
                 "note": "The optional-AI status evidence is unreadable."}
     stale = current - reported_at > _MAX_STATUS_AGE
     return {

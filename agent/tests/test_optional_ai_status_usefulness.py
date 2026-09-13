@@ -118,3 +118,135 @@ class TestAgentSideEnvelope:
         # Reload -- now the flag reflects the new env.
         agent2 = _fresh_optional_ai_status_module(monkeypatch)
         assert agent2.OPTIONAL_AI_REPORT_USEFULNESS is True
+
+
+# ---- I.F: cross-container contract ---------------------------------------
+
+#: Documented at the top of the test file. The agent's payload
+#: keys MUST be a subset of this set; the engine-side test
+#: ``test_optional_ai_cross_container_contract.py`` asserts the
+#: other side. If a future agent code change adds a payload key,
+#: this set must be updated AND the engine's allow-list updated
+#: in lock-step -- the I.F contract.
+AGENT_PAYLOAD_KEYS = frozenset({
+    "state",
+    "reported_at",
+    "async_requested",
+    "policy_allows_annotation",
+    "reason",
+    "queue",
+    "usefulness",  # optional; present only when opt-in flag is on
+})
+
+
+class TestAgentPayloadContract:
+    """[WORKFLOW-I I.F 2026-09-13] The agent's payload must use
+    only documented keys. A drift here means the engine's
+    allow-list (in ``optional_ai_status._clean_usefulness``)
+    will reject the new key silently, leaving operators without
+    the field they expected.
+    """
+
+    def test_payload_keys_are_documented(self, monkeypatch) -> None:
+        """The agent's payload, under the default opt-out,
+        contains exactly the 6 documented keys (no ``usefulness``).
+        """
+        monkeypatch.setenv("OPTIONAL_AI_REPORT_USEFULNESS", "false")
+        agent = _fresh_optional_ai_status_module(monkeypatch)
+        fake_queue = agent.AsyncReviewQueue.__new__(agent.AsyncReviewQueue)
+        with patch.object(agent, "_optional_ai_queue", fake_queue), \
+             patch.object(fake_queue, "snapshot", return_value={
+                 "pending": 0, "cached": 0, "daily_requests": 0,
+                 "daily_budget": 40, "max_pending": 16,
+                 "circuit_state": "CLOSED",
+             }):
+            payload = agent.optional_ai_status()
+        assert set(payload.keys()) == (
+            AGENT_PAYLOAD_KEYS - {"usefulness"}
+        ), (
+            f"agent payload drifted from contract: "
+            f"{set(payload.keys()) ^ (AGENT_PAYLOAD_KEYS - {'usefulness'})}"
+        )
+
+    def test_payload_with_usefulness_has_seven_keys(
+        self, monkeypatch,
+    ) -> None:
+        """With the opt-in flag on AND the queue created, the
+        agent's payload has all 7 documented keys.
+        """
+        monkeypatch.setenv("OPTIONAL_AI_REPORT_USEFULNESS", "true")
+        agent = _fresh_optional_ai_status_module(monkeypatch)
+        fake_queue = agent.AsyncReviewQueue.__new__(agent.AsyncReviewQueue)
+        with patch.object(agent, "_optional_ai_queue", fake_queue), \
+             patch.object(fake_queue, "snapshot", return_value={
+                 "pending": 0, "cached": 0, "daily_requests": 1,
+                 "daily_budget": 40, "max_pending": 16,
+                 "circuit_state": "CLOSED",
+             }), \
+             patch.object(fake_queue, "usefulness_snapshot",
+                          return_value={"total_completed_reviews": 1,
+                                         "cache_hits": 0, "cache_misses": 0,
+                                         "circuit_opens": 0,
+                                         "response_seconds_last": 1.0,
+                                         "verdict_counts": {"APPROVE": 1,
+                                                              "APPROVE_WITH_CONCERNS": 0,
+                                                              "REVIEW_UNAVAILABLE": 0,
+                                                              "REJECT": 0}}):
+            payload = agent.optional_ai_status()
+        assert set(payload.keys()) == AGENT_PAYLOAD_KEYS
+
+    def test_usefulness_keys_match_engine_allow_list(self, monkeypatch) -> None:
+        """The ``usefulness`` envelope produced by the agent uses
+        exactly the keys the engine's ``_clean_usefulness`` will
+        accept. If the agent adds a new key, the engine will
+        reject it (ValueError, status post rejected, previous
+        report retained).
+
+        Implementation: rather than mock the lock + thread,
+        we build a stub queue object whose ``usefulness_snapshot``
+        returns a fixed dict and capture the keys directly.
+        """
+        monkeypatch.setenv("OPTIONAL_AI_REPORT_USEFULNESS", "true")
+        agent = _fresh_optional_ai_status_module(monkeypatch)
+
+        class _StubQueue:
+            def snapshot(self):
+                return {
+                    "pending": 0, "cached": 0, "daily_requests": 1,
+                    "daily_budget": 40, "max_pending": 16,
+                    "circuit_state": "CLOSED",
+                }
+            def usefulness_snapshot(self):
+                # The real I3 snapshot keys.
+                return {
+                    "total_completed_reviews": 1,
+                    "cache_hits": 0, "cache_misses": 0,
+                    "circuit_opens": 0,
+                    "response_seconds_last": 1.0,
+                    "verdict_counts": {
+                        "APPROVE": 1, "APPROVE_WITH_CONCERNS": 0,
+                        "REVIEW_UNAVAILABLE": 0, "REJECT": 0,
+                    },
+                }
+
+        captured = {}
+        original_method = _StubQueue.usefulness_snapshot
+
+        def capturing(self):
+            d = original_method(self)
+            captured["keys"] = set(d.keys())
+            return d
+
+        with patch.object(agent, "_optional_ai_queue", _StubQueue()), \
+             patch.object(_StubQueue, "usefulness_snapshot", capturing):
+            agent.optional_ai_status()
+        # Every key the agent sent must be in the documented
+        # I.A usefulness allow-list.
+        ENGINE_USEFULNESS_KEYS = frozenset({
+            "total_completed_reviews", "cache_hits", "cache_misses",
+            "circuit_opens", "response_seconds_last", "verdict_counts",
+        })
+        assert captured["keys"].issubset(ENGINE_USEFULNESS_KEYS), (
+            f"agent usefulness drifted from engine allow-list: "
+            f"{captured['keys'] - ENGINE_USEFULNESS_KEYS}"
+        )
