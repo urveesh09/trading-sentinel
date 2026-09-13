@@ -134,5 +134,29 @@ async def operational_coverage_report(db_path: str) -> dict[str, Any]:
                 "jobs": list(tier_data.get("jobs", [])),
             },
         )
-    return {"as_of": datetime.now(timezone.utc).isoformat(), "producers": producers,
-            "note": "Coverage is operational evidence. Empty or unavailable sources never mean zero market opportunities or broker P&L."}
+    report = {"as_of": datetime.now(timezone.utc).isoformat(), "producers": producers,
+              "note": "Coverage is operational evidence. Empty or unavailable sources never mean zero market opportunities or broker P&L."}
+    # [WORKFLOW-H H5 2026-09-13] Validate every producer's state/reason
+    # against the documented vocabulary. Unmapped values are surfaced
+    # in the report and logged at WARNING so operators see the gap.
+    # The report is returned unchanged so callers can choose to ignore
+    # the drift list if they don't care.
+    from coverage_vocabulary import validate_coverage_report
+    _, drift = validate_coverage_report(report)
+    if drift:
+        report = dict(report)
+        report["vocabulary_drift"] = [
+            {
+                "producer_id": d.producer_id,
+                "state": d.state,
+                "reason": d.reason,
+                "descriptor": d.descriptor.value if d.descriptor else None,
+            }
+            for d in drift
+        ]
+        for d in drift:
+            import logging as _logging
+            _logging.getLogger(__name__).warning(
+                "coverage_vocabulary_drift %s", d,
+            )
+    return report
