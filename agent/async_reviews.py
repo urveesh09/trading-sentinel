@@ -8,6 +8,7 @@ field or an already-created execution instruction.
 from __future__ import annotations
 
 from dataclasses import dataclass
+from copy import deepcopy
 from datetime import datetime, timedelta, timezone
 import json
 from pathlib import Path
@@ -73,6 +74,7 @@ class AsyncReviewQueue:
         self._cache: dict[str, tuple[Review, datetime]] = {}
         self._states: dict[str, ReviewSubmission] = {}
         self._state_recorded_at: dict[str, datetime] = {}
+        self._review_expires_at: dict[str, datetime] = {}
         self._budget_state_path = Path(budget_state_path) if budget_state_path else None
         self._budget_state_available = True
         self._requests_by_day: dict[str, int] = self._load_budget_state()
@@ -97,6 +99,9 @@ class AsyncReviewQueue:
             self._cleanup_locked(now)
             cached = self._cache.get(key)
             if cached is not None:
+                valid_until = min(cached[1], expires_at)
+                self._cache[key] = (cached[0], valid_until)
+                self._review_expires_at[key] = valid_until
                 return self._remember(ReviewSubmission(key, "CACHED", review=cached[0]))
             if key in self._pending:
                 return self._remember(ReviewSubmission(key, "PENDING", reason="already_queued"))
@@ -109,7 +114,7 @@ class AsyncReviewQueue:
             day = now.date().isoformat()
             if self._requests_by_day.get(day, 0) >= self._max_requests_per_day:
                 return self._remember(ReviewSubmission(key, "BUDGET_EXHAUSTED", reason="daily_request_budget"))
-            task = _Task(key, dict(signal), str(sentiment), str(regime), expires_at)
+            task = _Task(key, deepcopy(dict(signal)), str(sentiment), str(regime), expires_at)
             self._requests_by_day[day] = self._requests_by_day.get(day, 0) + 1
             if not self._persist_budget_state():
                 self._requests_by_day[day] -= 1
@@ -187,6 +192,12 @@ class AsyncReviewQueue:
 
     def _cleanup_locked(self, now: datetime) -> None:
         self._cache = {key: value for key, value in self._cache.items() if value[1] > now}
+        for key, deadline in list(self._review_expires_at.items()):
+            if deadline <= now:
+                state = self._states.get(key)
+                if state is not None and state.state in {"READY", "CACHED"}:
+                    self._remember(ReviewSubmission(key, "EXPIRED", reason="review_validity_elapsed"))
+                self._review_expires_at.pop(key, None)
         self._requests_by_day = {now.date().isoformat(): self._requests_by_day.get(now.date().isoformat(), 0)}
         if self._budget_state_available:
             self._persist_budget_state()
@@ -194,6 +205,7 @@ class AsyncReviewQueue:
             if key not in self._pending and now - recorded_at > timedelta(seconds=self._state_ttl_seconds):
                 self._states.pop(key, None)
                 self._state_recorded_at.pop(key, None)
+                self._review_expires_at.pop(key, None)
         if len(self._states) > self._max_retained_states:
             removable = sorted(
                 (stamp, key) for key, stamp in self._state_recorded_at.items() if key not in self._pending
@@ -201,6 +213,7 @@ class AsyncReviewQueue:
             for _stamp, key in removable:
                 self._states.pop(key, None)
                 self._state_recorded_at.pop(key, None)
+                self._review_expires_at.pop(key, None)
         if self._circuit_open_until is not None and now >= self._circuit_open_until:
             self._circuit_open_until = None
             self._consecutive_failures = 0
@@ -231,14 +244,16 @@ class AsyncReviewQueue:
                 completed = self._now()
                 with self._lock:
                     self._pending.discard(task.key)
-                    if completed > task.expires_at:
+                    if completed >= task.expires_at:
                         self._remember(ReviewSubmission(task.key, "EXPIRED", reason="review_completed_late"))
                     elif review.available:
                         self._consecutive_failures = 0
+                        valid_until = min(task.expires_at, completed + timedelta(seconds=self._cache_ttl_seconds))
                         self._cache[task.key] = (
                             review,
-                            completed + timedelta(seconds=self._cache_ttl_seconds),
+                            valid_until,
                         )
+                        self._review_expires_at[task.key] = valid_until
                         self._remember(ReviewSubmission(task.key, "READY", review=review))
                     else:
                         self._consecutive_failures += 1

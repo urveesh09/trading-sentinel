@@ -1,6 +1,7 @@
 from datetime import datetime, timedelta, timezone
 from threading import Event
 import time
+import pytest
 
 from advisory import Review, Verdict, unavailable
 from async_reviews import AsyncReviewQueue
@@ -140,5 +141,92 @@ def test_unreadable_durable_budget_fails_closed_for_optional_ai(tmp_path):
     try:
         expiry = datetime.now(timezone.utc) + timedelta(minutes=1)
         assert queue.submit("blocked", {}, "", "UNKNOWN", expires_at=expiry).state == "BUDGET_STATE_UNAVAILABLE"
+    finally:
+        queue.shutdown()
+
+
+@pytest.mark.parametrize("state", ["READY", "CACHED"])
+@pytest.mark.parametrize("ttl", [5, 60])
+def test_original_deadline_and_cache_ttl_bound_returned_annotations(state, ttl):
+    clock = [datetime(2026, 9, 13, tzinfo=timezone.utc)]
+    calls = []
+    queue = AsyncReviewQueue(
+        lambda *_args: calls.append(True) or Review(Verdict.APPROVE, conviction=80),
+        now=lambda: clock[0], cache_ttl_seconds=ttl,
+    )
+    try:
+        expiry = clock[0] + timedelta(seconds=10)
+        queue.submit("bounded", {}, "", "UNKNOWN", expires_at=expiry)
+        _wait_for(queue, "bounded", {"READY"})
+        if state == "CACHED":
+            assert queue.submit("bounded", {}, "", "UNKNOWN", expires_at=expiry).state == "CACHED"
+        clock[0] += timedelta(seconds=min(ttl, 10))
+        expired = queue.status("bounded")
+        assert expired.state == "EXPIRED" and expired.review is None
+        assert expired.reason == "review_validity_elapsed"
+        assert queue.snapshot()["cached"] == 0
+        # A new validity cannot resurrect the old review. It requires new work.
+        assert queue.submit("bounded", {}, "", "UNKNOWN",
+                            expires_at=clock[0] + timedelta(seconds=10)).state == "QUEUED"
+        _wait_for(queue, "bounded", {"READY"})
+        assert len(calls) == 2
+    finally:
+        queue.shutdown()
+
+
+def test_completion_exactly_at_deadline_is_not_current_or_cached():
+    clock = [datetime(2026, 9, 13, tzinfo=timezone.utc)]
+    expiry = clock[0] + timedelta(seconds=10)
+
+    def reviewer(*_args):
+        clock[0] = expiry
+        return Review(Verdict.APPROVE, conviction=80)
+
+    queue = AsyncReviewQueue(reviewer, now=lambda: clock[0])
+    try:
+        queue.submit("exact", {}, "", "UNKNOWN", expires_at=expiry)
+        result = _wait_for(queue, "exact", {"EXPIRED"})
+        assert result.reason == "review_completed_late" and result.review is None
+        assert queue.snapshot()["cached"] == 0
+    finally:
+        queue.shutdown()
+
+
+def test_nested_signal_is_snapshotted_before_background_review():
+    started, release = Event(), Event()
+    observed = []
+
+    def reviewer(signal, *_args):
+        started.set()
+        assert release.wait(timeout=1)
+        observed.append(signal["legs"][0]["quantity"])
+        return Review(Verdict.APPROVE, conviction=80)
+
+    queue = AsyncReviewQueue(reviewer)
+    try:
+        signal = {"legs": [{"quantity": 1}]}
+        queue.submit("snapshot", signal, "", "UNKNOWN",
+                     expires_at=datetime.now(timezone.utc) + timedelta(minutes=1))
+        assert started.wait(timeout=1)
+        signal["legs"][0]["quantity"] = 999
+        release.set()
+        _wait_for(queue, "snapshot", {"READY"})
+        assert observed == [1]
+    finally:
+        release.set()
+        queue.shutdown()
+
+
+def test_cached_annotation_can_be_shortened_but_not_extended():
+    clock = [datetime(2026, 9, 13, tzinfo=timezone.utc)]
+    queue = AsyncReviewQueue(lambda *_args: Review(Verdict.APPROVE, conviction=80), now=lambda: clock[0])
+    try:
+        queue.submit("short", {}, "", "UNKNOWN", expires_at=clock[0] + timedelta(seconds=30))
+        _wait_for(queue, "short", {"READY"})
+        assert queue.submit("short", {}, "", "UNKNOWN", expires_at=clock[0] + timedelta(seconds=5)).state == "CACHED"
+        assert queue.submit("short", {}, "", "UNKNOWN", expires_at=clock[0] + timedelta(seconds=60)).state == "CACHED"
+        clock[0] += timedelta(seconds=5)
+        assert queue.status("short").state == "EXPIRED"
+        assert queue.snapshot()["cached"] == 0
     finally:
         queue.shutdown()

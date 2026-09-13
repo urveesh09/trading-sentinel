@@ -24,7 +24,7 @@ Related tests: `agent/tests/test_agent_pipeline.py`, `agent/tests/test_agent_sch
 
 Bounded, non-blocking optional-AI review worker. The queue is intentionally transport-agnostic: deterministic signal, risk and alert paths receive their own decision immediately. A model opinion is an annotation that may arrive later, never authority to change a numeric trade field or an already-created execution instruction.
 
-Top-level declarations: `ReviewSubmission` (line 22), `_Task` (line 30), `AsyncReviewQueue` (line 38)
+Top-level declarations: `ReviewSubmission` (line 23), `_Task` (line 31), `AsyncReviewQueue` (line 39)
 
 Related tests: `agent/tests/test_async_reviews.py`
 
@@ -1174,7 +1174,7 @@ Declared tables: `position_pnl_outbox`, `positions`
 
 Deterministic, isolated SHADOW workflow demonstration for Dev review. It intentionally exercises the same workflow and reports consumed by the application. The symbols, account and prices are synthetic; this module has no broker, transport, scheduler or production configuration dependency.
 
-Top-level declarations: `_trend_bars` (line 25), `_range_bars` (line 38), `run_proactive_shadow_demo` (line 50)
+Top-level declarations: `_trend_bars` (line 27), `_range_bars` (line 40), `run_proactive_shadow_demo` (line 52)
 
 Engine dependencies: `proactive_intelligence`
 
@@ -1216,7 +1216,7 @@ Declared tables: `proactive_exit_research_runs`
 
 Offline-safe evidence ledger for proactive strategy research. This module is deliberately policy-agnostic: it records what a scanner or allocator did without creating an order, and keeps shadow/replay evidence out of the live cash books.
 
-Top-level declarations: `ShadowProposal` (line 47), `ShadowSimulation` (line 66), `ShadowAllocation` (line 80), `ShadowPosition` (line 90), `_proposal_id` (line 108), `shadow_history_state` (line 112), `build_shadow_proposals` (line 137), `allocate_shadow_proposals` (line 184), `size_shadow_allocations` (line 201), `_comparable_shadow_score` (line 260), `simulate_shadow_trade` (line 274), `_simulate_shadow_limit_pullback` (line 330), `simulate_shadow_research_trial` (line 382), `_normalise_shadow_bars` (line 419), `_bars_visible_as_of` (line 442), `_shadow_entry_window_already_observed` (line 463), `simulate_open_shadow_position` (line 483), `_stamp` (line 590), `init_proactive_intelligence` (line 597), `_shadow_run_storage_key` (line 618), `_shadow_implementation_identity` (line 628), `_configured_shadow_run_id` (line 633), `_ensure_shadow_run` (line 648), `_shadow_run_manifest` (line 705), `_claim_shadow_step` (line 722), `_complete_shadow_step` (line 792), `record_opportunity_event` (line 813), `_record_opportunity_event_in_transaction` (line 843), `transition_watchlist` (line 882), `record_cash_flow` (line 909), `record_scan_run` (line 930), `record_market_data_observation` (line 950), `proactive_inactivity_diagnostics` (line 999), `_recent_eligible_session_dates` (line 1031), `proactive_session_diagnostics` (line 1051), `_shadow_positions` (line 1187), `_shadow_account_state` (line 1211), `_persist_new_shadow_position` (line 1233), `_advance_open_shadow_positions` (line 1293), `_complete_shadow_watchlist_in_transaction` (line 1354), `_expire_pending_shadow_watchlists` (line 1372), `repair_shadow_evidence` (line 1413), `run_shadow_workflow` (line 1450), `run_shadow_replay` (line 1661), `_record_shadow_configuration_state` (line 1676), `_validate_shadow_bar_collections` (line 1688), `run_configured_shadow_workflow` (line 1709), `proactive_activity_report` (line 1853), `proactive_shadow_comparison` (line 1971), `_research_proposal_manifest` (line 2084), `run_shadow_research_comparison` (line 2094), `proactive_shadow_research_report` (line 2193)
+Top-level declarations: `ShadowProposal` (line 64), `ShadowSimulation` (line 83), `ShadowAllocation` (line 97), `ShadowPosition` (line 107), `_proposal_id` (line 125), `shadow_history_state` (line 129), `build_shadow_proposals` (line 154), `allocate_shadow_proposals` (line 201), `size_shadow_allocations` (line 218), `_comparable_shadow_score` (line 277), `simulate_shadow_trade` (line 291), `_simulate_shadow_limit_pullback` (line 347), `_simulate_shadow_trailing_stop` (line 399), `simulate_shadow_research_trial` (line 461), `_normalise_shadow_bars` (line 501), `_bars_visible_as_of` (line 524), `_shadow_entry_window_already_observed` (line 545), `simulate_open_shadow_position` (line 565), `_stamp` (line 672), `init_proactive_intelligence` (line 679), `_shadow_run_storage_key` (line 700), `_shadow_implementation_identity` (line 725), `stamp_session_phase` (line 730), `_configured_shadow_run_id` (line 750), `_ensure_shadow_run` (line 765), `_shadow_run_manifest` (line 830), `_claim_shadow_step` (line 847), `_complete_shadow_step` (line 917), `record_opportunity_event` (line 938), `_record_opportunity_event_in_transaction` (line 968), `transition_watchlist` (line 1007), `record_cash_flow` (line 1034), `record_scan_run` (line 1055), `record_market_data_observation` (line 1075), `proactive_inactivity_diagnostics` (line 1124), `_recent_eligible_session_dates` (line 1156), `proactive_session_diagnostics` (line 1176), `_shadow_positions` (line 1312), `_shadow_account_state` (line 1336), `_persist_new_shadow_position` (line 1358), `_advance_open_shadow_positions` (line 1418), `_complete_shadow_watchlist_in_transaction` (line 1479), `_expire_pending_shadow_watchlists` (line 1497), `repair_shadow_evidence` (line 1538), `run_shadow_workflow` (line 1575), `run_shadow_replay` (line 1786), `_record_shadow_configuration_state` (line 1801), `_validate_shadow_bar_collections` (line 1813), `run_configured_shadow_workflow` (line 1834), `proactive_activity_report` (line 1978), `proactive_shadow_comparison` (line 2096), `_research_proposal_manifest` (line 2209), `run_shadow_research_comparison` (line 2219), `proactive_shadow_research_report` (line 2323)
 
 Engine dependencies: `config`, `market_calendar`, `proactive_execution_research`, `proactive_exit_research`, `proactive_market_data`, `proactive_portfolio_research`
 
@@ -1243,6 +1243,18 @@ Engine dependencies: `proactive_intelligence`, `walk_forward`
 Related tests: `python-engine/tests/test_proactive_portfolio_research.py`
 
 Declared tables: `proactive_portfolio_research_runs`
+
+## `python-engine/promotion_bridge.py`
+
+[WORKFLOW-G 2026-09-13] Append-only promotion-bridge persistence and state machine. Implements the contract documented at ``docs/2026-09-13-workflow-g-promotion- bridge.md``. Every held-out comparison report authored by ``proactive_*`` is *consultative evidence only*; it never authorises orders. This module owns the bridges that *might* one day carry such authority, and enforces the forward-only state machine that the contract declares. Architectural rules (all enforced here, all deliberate): * **Append-only.** Updates to a bridge that already exists raise ``BridgeAlreadyExistsError``. Edits to a bridge's authorisation state are not permitted; transitions are recorded as new rows in ``promot
+
+Top-level declarations: `AuthorisationState` (line 59), `BridgeTerminalError` (line 66), `BridgeAlreadyExistsError` (line 70), `BridgeMissingFieldError` (line 74), `BridgeInvalidStateError` (line 78), `BridgeVersionMismatchError` (line 82), `BridgeSignerError` (line 86), `BridgeDecision` (line 117), `BridgeTransition` (line 247), `_json_default` (line 259), `_hash_evidence_payload` (line 270), `init_promotion_bridges` (line 309), `default_db_path` (line 317), `persist_bridge` (line 324), `transition_bridge` (line 377), `read_bridge` (line 448), `compute_evidence_identity` (line 484), `default_bridge_id` (line 493)
+
+Engine dependencies: `config`, `cost_schedules`, `proactive_intelligence`
+
+Related tests: `python-engine/tests/test_promotion_bridge.py`
+
+Declared tables: `promotion_bridge_transitions`, `promotion_bridges`
 
 ## `python-engine/promotion_readiness.py`
 

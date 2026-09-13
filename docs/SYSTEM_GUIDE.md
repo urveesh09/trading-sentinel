@@ -166,6 +166,8 @@ The exact command and policy format are in [replay progress](2026-09-12-full-pol
 
 Optional AI is represented by `optional_ai_status.py`, agent typed `advisory.py`, and `async_reviews.py`. A disabled or unavailable model should leave deterministic signal/risk/delivery functioning. Review timeout, budget, queue saturation, stale results and process restart before extending model use. The user's preference is assistance without absolute dependency.
 
+The Dev optional-annotation queue now deep-snapshots nested signal inputs and bounds READY/CACHED validity by the original task deadline and cache TTL. A shorter cached-request deadline tightens validity; a later one cannot extend it. Completion exactly at expiry is discarded, and status returns EXPIRED without a review once validity elapses. This fixes a reproduced stale-cache defect without changing reviewer signatures, budgets or deterministic authority. The full isolated agent suite passes 98 tests with warnings fatal and networking disabled. Model/prompt/source provenance, sourced-news timestamps and annotation usefulness still require I acceptance; this lifecycle slice is not that proof.
+
 ## 11. Dashboard and API navigation
 
 The gateway mounts routing/authentication in `server/app.js`. Engine routes are split among `routes_ops.py`, `routes_hedge.py`, `routes_portfolio.py`, `routes_promotion_readiness.py`, experiment routes and `main.py`. Use the atlas to find exact local handlers; a route's local path is not necessarily its externally mounted URL.
