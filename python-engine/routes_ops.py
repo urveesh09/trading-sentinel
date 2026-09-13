@@ -49,6 +49,13 @@ class OptionalAiStatusPayload(BaseModel):
     policy_allows_annotation: bool = False
     reason: str = Field(default="", max_length=160)
     queue: dict = Field(default_factory=dict)
+    # [WORKFLOW-I I.A 2026-09-13] Optional I3 usefulness envelope.
+    # The Pydantic model accepts the field; the bounded validator
+    # in ``optional_ai_status._clean_usefulness`` enforces the
+    # exact allow-list (six top-level keys, four verdict buckets).
+    # Pydantic by default ignores unknown keys, but we declare
+    # the field explicitly so it round-trips through ``model_dump``.
+    usefulness: dict | None = None
 
 
 @router.get("/experiments/momentum")

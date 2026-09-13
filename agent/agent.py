@@ -111,6 +111,19 @@ MINIMAX_ASYNC_REVIEW_DEADLINE_SEC = int(os.getenv("MINIMAX_ASYNC_REVIEW_DEADLINE
 MINIMAX_PROMPT_VERSION = os.getenv("MINIMAX_PROMPT_VERSION", "v1")
 
 
+# [WORKFLOW-I I.A 2026-09-13] Opt-in flag for including I3 usefulness
+# metrics in the optional-AI status envelope posted to the engine.
+# Default ``false`` because the existing operator dashboards and the
+# engine's allow-list only know the bounded queue counters; rolling
+# out usefulness cross-container is a separate observable change.
+# Operators enable it after the engine-side validator accepts the
+# new field. See ``python-engine/optional_ai_status.py::_ALLOWED_USEFULNESS_KEYS``.
+OPTIONAL_AI_REPORT_USEFULNESS = (
+    os.getenv("OPTIONAL_AI_REPORT_USEFULNESS", "false").strip().lower()
+    in {"1", "true", "yes", "on"}
+)
+
+
 # [WORKFLOW-I I1 2026-09-13] Helper that attaches provenance fields to a
 # Review. Used at every return site of ``analyze_with_minimax`` so each
 # review carries model/base_url/prompt_version/started_at/completed_at/
@@ -1033,12 +1046,22 @@ def optional_ai_status() -> Dict:
         state, reason = "OUTAGE_CIRCUIT_OPEN", "provider_failures"
     else:
         state, reason = "READY", "optional_annotation_ready"
-    return {
+    payload: Dict = {
         "state": state, "reported_at": datetime.now(timezone.utc).isoformat(),
         "async_requested": MINIMAX_ASYNC_REVIEW_ENABLED,
         "policy_allows_annotation": policy_allows_annotation,
         "reason": reason, "queue": queue_snapshot,
     }
+    # [WORKFLOW-I I.A 2026-09-13] Bridge I3 usefulness metrics to the
+    # engine when the operator opts in. The envelope is built only
+    # when the queue exists (the agent has actually been processing
+    # reviews) so a never-used agent never publishes zeros that
+    # masquerade as data. The flag is the rollback path: setting
+    # ``OPTIONAL_AI_REPORT_USEFULNESS=false`` (the default) drops
+    # the field without code change.
+    if OPTIONAL_AI_REPORT_USEFULNESS and _optional_ai_queue is not None:
+        payload["usefulness"] = _optional_ai_queue.usefulness_snapshot()
+    return payload
 
 
 def publish_optional_ai_status() -> None:

@@ -299,6 +299,18 @@ function OptionalAiEvidence({ optionalAi, isLoading, isError }) {
   if (isError || !optionalAi) return <div className="rounded border border-amber-800 bg-amber-950/30 p-4 text-sm text-amber-200">Optional-AI health is unavailable. Deterministic trading paths do not depend on this display.</div>;
   const unavailable = ['NOT_REPORTED', 'STALE', 'OUTAGE_CIRCUIT_OPEN', 'UNAVAILABLE', 'CORRUPT_REPORT'].includes(optionalAi.state);
   const queue = optionalAi.detail?.queue || {};
+  // [WORKFLOW-I I.A 2026-09-13] I3 usefulness envelope. Absent when the
+  // operator has not enabled OPTIONAL_AI_REPORT_USEFULNESS; we render
+  // "Not enabled" rather than zeros so operators can distinguish
+  // "no data" from "data with zero values".
+  const usefulness = optionalAi.detail?.usefulness;
+  const hasUsefulness = usefulness && typeof usefulness === 'object';
+  // Cache hit rate is computed on the dashboard side from the
+  // bounded counters; the bridge never ships derived numbers.
+  const cacheHitRate = (hasUsefulness
+    && (usefulness.cache_hits + usefulness.cache_misses) > 0)
+    ? (usefulness.cache_hits / (usefulness.cache_hits + usefulness.cache_misses))
+    : null;
   return (
     <section className={`rounded-xl border p-4 ${unavailable ? 'border-amber-800 bg-amber-950/20' : 'border-blue-900/70 bg-blue-950/10'}`} aria-labelledby="optional-ai-heading">
       <div className="flex flex-wrap items-start justify-between gap-3">
@@ -311,6 +323,30 @@ function OptionalAiEvidence({ optionalAi, isLoading, isError }) {
         <div><div className="text-gray-500">Daily budget</div><div className="mt-1 font-semibold text-gray-200">{queue.daily_requests ?? '—'} / {queue.daily_budget ?? '—'}</div></div>
         <div><div className="text-gray-500">Reported at</div><div className="mt-1 break-all font-semibold text-gray-200">{optionalAi.reported_at || 'Never'}</div></div>
       </div>
+      {hasUsefulness ? (
+        <div className="mt-3 rounded border border-blue-900/50 bg-blue-950/20 p-3">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <div className="text-[10px] font-bold uppercase tracking-wide text-blue-200">Usefulness evidence (I.A 2026-09-13)</div>
+            <div className="text-[10px] text-blue-300">Bounded counters; non-authoritative</div>
+          </div>
+          <div className="mt-2 grid grid-cols-2 gap-3 text-xs sm:grid-cols-4">
+            <div><div className="text-gray-500">Completed</div><div className="mt-1 font-mono font-semibold text-gray-200">{usefulness.total_completed_reviews ?? 0}</div></div>
+            <div><div className="text-gray-500">Cache hit rate</div><div className="mt-1 font-mono font-semibold text-gray-200">{cacheHitRate === null ? '—' : `${(cacheHitRate * 100).toFixed(0)}%`}</div></div>
+            <div><div className="text-gray-500">Last response</div><div className="mt-1 font-mono font-semibold text-gray-200">{usefulness.response_seconds_last === null || usefulness.response_seconds_last === undefined ? '—' : `${usefulness.response_seconds_last.toFixed(1)}s`}</div></div>
+            <div><div className="text-gray-500">Circuit opens</div><div className="mt-1 font-mono font-semibold text-gray-200">{usefulness.circuit_opens ?? 0}</div></div>
+          </div>
+          {usefulness.verdict_counts ? (
+            <div className="mt-2 grid grid-cols-2 gap-3 text-xs sm:grid-cols-4">
+              <div><div className="text-gray-500">Approve</div><div className="mt-1 font-mono font-semibold text-emerald-300">{usefulness.verdict_counts.APPROVE ?? 0}</div></div>
+              <div><div className="text-gray-500">Approve+</div><div className="mt-1 font-mono font-semibold text-amber-300">{usefulness.verdict_counts.APPROVE_WITH_CONCERNS ?? 0}</div></div>
+              <div><div className="text-gray-500">Unavailable</div><div className="mt-1 font-mono font-semibold text-gray-400">{usefulness.verdict_counts.REVIEW_UNAVAILABLE ?? 0}</div></div>
+              <div><div className="text-gray-500">Reject</div><div className="mt-1 font-mono font-semibold text-red-300">{usefulness.verdict_counts.REJECT ?? 0}</div></div>
+            </div>
+          ) : null}
+        </div>
+      ) : (
+        <div className="mt-3 rounded border border-gray-800 bg-gray-950/40 p-3 text-xs text-gray-500">Usefulness instrumentation not enabled on the agent. Set <code className="font-mono text-gray-300">OPTIONAL_AI_REPORT_USEFULNESS=true</code> on the agent to bridge I3 metrics here.</div>
+      )}
       <p className="mt-3 text-xs text-gray-400">{optionalAi.note}</p>
       <p className="mt-2 text-[10px] font-semibold tracking-wide text-gray-500">EXECUTION AUTHORITY: NONE · CAN PLACE ORDERS: NO</p>
     </section>
