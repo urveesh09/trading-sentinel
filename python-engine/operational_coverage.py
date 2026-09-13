@@ -97,5 +97,42 @@ async def operational_coverage_report(db_path: str) -> dict[str, Any]:
             counts={"runs": job["runs"], "rejected": job["rejected"], **job["elapsed_seconds"]},
             identity={"job_id": job_id, "boot_id": (latest_event or {}).get("boot_id")},
         )
+    # [WORKFLOW-H H2 2026-09-13] Tier-level coverage. One entry per
+    # §12 priority tier (exit, advice, scan, research, system,
+    # other) so the operator can see WHICH priority bucket has
+    # observed activity. A tier with zero jobs is emitted with
+    # state="UNCONFIGURED" and reason="no_jobs_in_tier" -- the UI
+    # fixture covers unavailable-vs-zero per §12 acceptance.
+    by_tier = timing.get("by_tier") or {}
+    for tier_name, tier_data in sorted(by_tier.items()):
+        tier_state = (
+            "UNCONFIGURED"
+            if int(tier_data.get("job_count", 0)) == 0
+            else "OBSERVED"
+        )
+        tier_reason = (
+            "no_jobs_in_tier"
+            if tier_state == "UNCONFIGURED"
+            else "tier_observed"
+        )
+        producers[f"scheduler_tier:{tier_name}"] = _coverage(
+            source_kind="SCHEDULER_TIER_TELEMETRY",
+            configured=True,
+            enabled=True,
+            state=tier_state,
+            reason=tier_reason,
+            counts={
+                "job_count": int(tier_data.get("job_count", 0)),
+                "runs": int(tier_data.get("runs", 0)),
+                "executed_runs": int(tier_data.get("executed_runs", 0)),
+                "rejected": int(tier_data.get("rejected", 0)),
+                "in_flight": int(tier_data.get("in_flight", 0)),
+                **tier_data.get("elapsed_seconds", {}),
+            },
+            identity={
+                "tier": tier_name,
+                "jobs": list(tier_data.get("jobs", [])),
+            },
+        )
     return {"as_of": datetime.now(timezone.utc).isoformat(), "producers": producers,
             "note": "Coverage is operational evidence. Empty or unavailable sources never mean zero market opportunities or broker P&L."}

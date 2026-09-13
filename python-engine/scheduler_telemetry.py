@@ -8,6 +8,7 @@ inventing scheduled/start times that an older invocation did not expose.
 from __future__ import annotations
 
 import asyncio
+import math
 import os
 import time
 import uuid
@@ -242,6 +243,178 @@ def _percentiles(values: list[float]) -> dict[str, float | None]:
     return {"p50": percentile(.50), "p95": percentile(.95), "max": round(values[-1], 6)}
 
 
+# [WORKFLOW-H H2 2026-09-13] Priority-tier mapping. Plan §12 mandates:
+# "Prioritize order exits and public advice management, then candidate
+# scans, then research." The four tiers in priority order are:
+#
+#   exit       -- order exits, force-closes, EOD digest, force-close MIS.
+#                A latency here means a real position is unprotected.
+#   advice     -- daily attribution, hourly reports, premarket
+#                summaries, watchdog jobs. These produce operator
+#                visibility; a missed run hides information but
+#                does not by itself leave a position unprotected.
+#   scan       -- penny scans, connors scan, FNO tick, regime
+#                compute. These are the candidate-discovery loops;
+#                latency here means fewer candidates, not more risk.
+#   research   -- proactive shadow, research quote collection,
+#                archive jobs. Offline; latency here is invisible
+#                to the operator for the duration of the run.
+#
+# Anything not in the map lands in the ``other`` tier. A future agent
+# who adds a job that doesn't fit the taxonomy must add it here, NOT
+# silently drop it into ``other``. The taxonomy comment is the
+# authoritative reference; the table below is the implementation.
+JOB_TIER_MAP: dict[str, str] = {
+    # exit -- order exits / force closes / EOD digest
+    "penny_edge_exit": "exit",
+    "penny_force_close_mis": "exit",
+    "penny_eod_check": "exit",
+    "penny_eod_digest": "exit",
+    "fno_hourly_report": "exit",
+    # advice -- operator-facing reports / watchdogs
+    "penny_daily_attribution": "advice",
+    "penny_hourly_report": "advice",
+    "penny_premarket_report": "advice",
+    "penny_heatmap": "advice",
+    "penny_accept_watchdog": "advice",
+    "fno_accept_watchdog": "advice",
+    "partner_morning_brief": "advice",
+    "partner_eod_wrap": "advice",
+    "partner_hedge_morning_summary": "advice",
+    "partner_hedge_eod_summary": "advice",
+    "partner_analytics_tick": "advice",
+    # scan -- candidate-discovery loops
+    "penny_scan_interval": "scan",
+    "penny_connors_scan": "scan",
+    "penny_edge_scan": "scan",
+    "penny_regime_compute": "scan",
+    "penny_regime_refresh": "scan",
+    "fno_tick": "scan",
+    "partner_scan_tick": "scan",
+    "partner_manual_advisory_tick": "scan",
+    "partner_manual_advisory_lifecycle_tick": "scan",
+    "partner_hedge_tick": "scan",
+    "partner_hedge_delivery_recovery": "scan",
+    "partner_hedge_phase2_tick": "scan",
+    "partner_hedge_phase3_tick": "scan",
+    # research -- offline / non-time-critical
+    "proactive_shadow_workflow": "research",
+    "research_quote_collection": "research",
+    "partner_rv_refresh": "research",
+    "partner_input_refresh": "research",
+    # system / meta -- bootstrap, login, circuit-breaker enforcement
+    # (not user-facing; the cron itself is the operator signal that
+    # the system is alive). Treated as a fifth tier for honest
+    # accounting rather than folded into one of the four above.
+    "premarket_login_nudge": "system",
+    "daily_bootstrap_tick": "system",
+    "circuit_breaker_enforce": "system",
+}
+
+# The five tiers, in priority order (system last). A future tier
+# addition MUST extend this tuple AND the JOB_TIER_MAP comment.
+TIER_ORDER: tuple[str, ...] = ("exit", "advice", "scan", "research", "system")
+
+
+def _tier_for(job_id: str) -> str:
+    """Return the priority tier for a job_id. Unrecognised ids land
+    in ``other`` so the roll-up never silently drops a job.
+    """
+    return JOB_TIER_MAP.get(job_id, "other")
+
+
+def _aggregate_by_tier(jobs: dict[str, dict[str, Any]]) -> dict[str, Any]:
+    """Roll up per-job aggregates into per-tier aggregates.
+
+    For each tier:
+      * elapsed_seconds -- p50/p95/max across ALL elapsed samples
+        of jobs in this tier (NOT the median of per-job medians).
+        The operator wants "the slowest stage across this priority
+        bucket", not "the average of medians" which can hide a tail.
+      * runs / executed_runs / rejected / in_flight -- sums.
+      * results -- merged status counts.
+      * stage_durations -- per-stage aggregation across all jobs in
+        the tier. The slowest stage across the tier is the most
+        actionable single signal for capacity work.
+
+    A tier with zero jobs returns ``None`` (not ``0``) for all
+    numeric fields, per §12 acceptance: *"UI fixture covers
+    unavailable and zero distinctly."* A future dashboard must
+    be able to distinguish "no data" from "instant" without a
+    second probe.
+    """
+    by_tier: dict[str, dict[str, Any]] = {}
+    for tier in TIER_ORDER + ("other",):
+        # Collect samples and stages from every job in this tier.
+        elapsed_samples: list[float] = []
+        merged_results: dict[str, int] = {}
+        total_runs = 0
+        total_executed = 0
+        total_rejected = 0
+        total_in_flight = 0
+        merged_stages: dict[str, list[float]] = {}
+        jobs_in_tier: list[str] = []
+        for job_id, bucket in jobs.items():
+            if _tier_for(job_id) != tier:
+                continue
+            jobs_in_tier.append(job_id)
+            total_runs += int(bucket.get("runs", 0))
+            total_executed += int(bucket.get("executed_runs", 0))
+            total_rejected += int(bucket.get("rejected", 0))
+            total_in_flight += int(bucket.get("in_flight", 0))
+            for status, count in (bucket.get("results") or {}).items():
+                merged_results[status] = merged_results.get(status, 0) + int(count)
+            # [WORKFLOW-H H2 2026-09-13] Merge raw elapsed samples
+            # AND raw stage samples from every job in the tier. The
+            # per-tier p50/p95/max must be computed from the union
+            # of samples (not from the per-job percentiles, which
+            # cannot be inverse-distributed).
+            for sample in (bucket.get("elapsed_samples") or []):
+                if isinstance(sample, (int, float)) and math.isfinite(float(sample)):
+                    elapsed_samples.append(float(sample))
+            stages = bucket.get("stage_durations_samples") or {}
+            for stage_name, samples in stages.items():
+                merged_stages.setdefault(stage_name, []).extend(
+                    float(s) for s in samples
+                    if isinstance(s, (int, float)) and math.isfinite(float(s))
+                )
+        if not jobs_in_tier:
+            by_tier[tier] = {
+                "tier": tier,
+                "job_count": 0,
+                "jobs": [],
+                "runs": 0,
+                "executed_runs": 0,
+                "rejected": 0,
+                "in_flight": 0,
+                "results": {},
+                "elapsed_seconds": {"p50": None, "p95": None, "max": None},
+                "stage_durations": {},
+                "note": (
+                    "no jobs in this tier; UI must render this as "
+                    "'unavailable' rather than '0ms' or 'instant'."
+                ),
+            }
+            continue
+        # We have data; merge stages into a per-stage percentile.
+        merged_stage_percentiles: dict[str, dict[str, float | None]] = {}
+        for stage_name, samples in merged_stages.items():
+            merged_stage_percentiles[stage_name] = _percentiles(samples)
+        by_tier[tier] = {
+            "tier": tier,
+            "job_count": len(jobs_in_tier),
+            "jobs": sorted(jobs_in_tier),
+            "runs": total_runs,
+            "executed_runs": total_executed,
+            "rejected": total_rejected,
+            "in_flight": total_in_flight,
+            "results": merged_results,
+            "elapsed_seconds": _percentiles(elapsed_samples),
+            "stage_durations": merged_stage_percentiles,
+        }
+    return by_tier
+
+
 async def scheduler_timing_report(db_path: str, *, limit: int = 500) -> dict[str, Any]:
     """Reproducible report; unavailable fields remain null rather than guessed."""
     if not 1 <= limit <= 5000:
@@ -266,7 +439,17 @@ async def scheduler_timing_report(db_path: str, *, limit: int = 500) -> dict[str
                 "result": row[6], "reason": row[7] or None, "stage_durations": stages,
                 "boot_id": row[9], "recorded_at": row[10]}
         events.append(item)
-        bucket = jobs.setdefault(row[0], {"runs": 0, "executed_runs": 0, "rejected": 0, "in_flight": 0, "results": {}, "elapsed_samples": []})
+        bucket = jobs.setdefault(row[0], {
+            "runs": 0, "executed_runs": 0, "rejected": 0, "in_flight": 0,
+            "results": {}, "elapsed_samples": [],
+            # [WORKFLOW-H H2 2026-09-13] Stage-durations raw samples
+            # kept on the bucket until AFTER the per-tier roll-up.
+            # Per-stage p50/p95/max across the tier (NOT per-job)
+            # is the most actionable signal for capacity work; we
+            # therefore keep the raw per-stage samples until the
+            # tier roll-up consumes them.
+            "stage_durations_samples": {},
+        })
         bucket["runs"] += 1  # retained compatibility: all scheduler facts
         if row[1] == "EXECUTION" and row[6] != "IN_FLIGHT":
             bucket["executed_runs"] += 1
@@ -277,9 +460,29 @@ async def scheduler_timing_report(db_path: str, *, limit: int = 500) -> dict[str
             bucket["rejected"] += 1
         if isinstance(row[5], (int, float)):
             bucket["elapsed_samples"].append(float(row[5]))
+        # Accumulate stage samples. Each stage is a string -> float.
+        for stage_name, duration in (stages or {}).items():
+            if not isinstance(stage_name, str) or not isinstance(
+                duration, (int, float)
+            ):
+                continue
+            if not math.isfinite(float(duration)):
+                continue
+            bucket["stage_durations_samples"].setdefault(
+                stage_name, []
+            ).append(float(duration))
+    # [WORKFLOW-H H2 2026-09-13] Per-tier roll-up is computed
+    # BEFORE the per-job _percentiles pop so the roll-up has access
+    # to the raw samples. After the roll-up, the per-job
+    # ``elapsed_samples`` and ``stage_durations_samples`` lists
+    # are popped (the existing contract) and replaced with their
+    # p50/p95/max shape.
+    by_tier = _aggregate_by_tier(jobs)
     for bucket in jobs.values():
         bucket["elapsed_seconds"] = _percentiles(bucket.pop("elapsed_samples"))
+        bucket.pop("stage_durations_samples", None)
     inflight = [item | {"inflight_state": "CURRENT_PROCESS" if item["boot_id"] == BOOT_ID else "PREVIOUS_PROCESS_UNFINISHED"}
                 for item in events if item["event_kind"] == "EXECUTION" and item["result"] == "IN_FLIGHT"]
     return {"boot_id": BOOT_ID, "events": events, "jobs": jobs, "inflight": inflight,
-            "note": "scheduled_at is null for executions because APScheduler did not provide it to the callback; null is not a zero delay. In-flight markers survive crashes and are not inferred as successful runs."}
+            "by_tier": by_tier,
+            "note": "scheduled_at is null for executions because APScheduler did not provide it to the callback; null is not a zero delay. In-flight markers survive crashes and are not inferred as successful runs. by_tier groups jobs by priority tier per plan §12 (exit, advice, scan, research, system); unrecognised job_ids land in 'other'. A tier with zero jobs returns None -- not 0 -- for all numeric fields, so the UI can distinguish 'unavailable' from 'instant'."}

@@ -214,6 +214,38 @@ H1 ships:
 
 **This slice DOES establish PROD-READINESS for the penny hourly report cron.** The pre-fix PROD gap (silent cron death on substrate failure) is closed. The acceptance contract for PROD on 2026-09-14 is: every penny subsystem job is wrapped, every wrapper is exercised by the parametrised test, the surface golden is in sync, and a substrate failure does not raise out of the cron.
 
+## 13. Scheduler timing priority-tier breakdown (H2 done)
+
+### 13.1 What landed
+
+Pre-fix, `scheduler_timing_report` grouped by literal `job_id` but **not by the §12 priority tier**. The operator could not see "the slowest stage across all exit-tier jobs" vs "the slowest scan-tier job"; tail-latency signals were buried under a flat per-job roll-up. Plan §12 specifies: *"Prioritize order exits and public advice management, then candidate scans, then research."* H2 ships:
+
+- `python-engine/scheduler_telemetry.py`:
+  - `JOB_TIER_MAP` — every registered `penny_*`, `fno_*`, `partner_*`, and system job_id classified into one of the four §12 priority tiers (`exit`, `advice`, `scan`, `research`) plus a `system` meta-tier for bootstrap/login/circuit-breaker jobs.
+  - `TIER_ORDER` — the priority sequence in §12 spec order.
+  - `_tier_for(job_id)` — returns `"other"` for unrecognised ids so the roll-up never silently drops a job.
+  - `_aggregate_by_tier(jobs)` — computes per-tier `runs`, `executed_runs`, `rejected`, `in_flight`, `results`, `elapsed_seconds` (p50/p95/max across the **union of samples**, NOT the median of per-job medians), and per-stage `stage_durations` percentiles. A tier with zero jobs returns `None` (not `0`) for all numeric fields, per §12 acceptance *"UI fixture covers unavailable and zero distinctly."*
+  - `scheduler_timing_report` extended with a top-level `by_tier` key. Existing keys (`boot_id`, `events`, `jobs`, `inflight`, `note`) remain byte-identical.
+- `python-engine/operational_coverage.py` extended with one `scheduler_tier:{tier_name}` entry per tier, so the existing `/analytics/operational-coverage` route surfaces tier-level coverage.
+
+22 focused tests in `python-engine/tests/test_scheduler_h2_timing_tiers.py` cover: `JOB_TIER_MAP` completeness (every penny/fno/partner/system job is classified), `TIER_ORDER` priority sequence, `unrecognised → "other"`, all six tiers present in `by_tier`, empty-tier returns `None`, single-sample returns that sample, per-tier percentile math, stage-duration aggregation, multi-job merge, `results` merge, `rejected` counter semantics, Inf-sample filtering, and `operational_coverage_report` integration.
+
+### 13.2 Senior-dev invariants preserved
+
+- **NO deletions.** `boot_id`, `events`, `jobs`, `inflight` keys in `scheduler_timing_report` are byte-identical to pre-H2. The `by_tier` key is additive at the top level.
+- **NO new tables, NO new dependencies.** Reuses `math.isfinite`, `_percentiles`, and the existing `scheduler_run_telemetry` schema. New import: `math`.
+- **NO new warnings.** No golden regeneration needed (route surface unchanged).
+- **Defence at the roll-up layer, not at `_percentiles`.** Adding a `ValueError`-on-Inf guard to `_percentiles` would change behaviour for any caller passing Inf; the per-tier roll-up filters at its own boundary instead. Existing callers unaffected.
+
+### 13.3 Verification
+
+- Focused `tests/test_scheduler_h2_timing_tiers.py`: 22/22 pass in 0.85s.
+- Focused `tests/test_scheduler_telemetry.py` (existing 5 tests): all still pass.
+- Focused `tests/test_operational_coverage.py` (existing 1 test): all still pass.
+- Whole-engine rerun: 2,952 passed / 4 skipped / 39 warnings in 131.89s (one rerun: 130.78s); +22 vs. previous 2,930 baseline; no regression to the previously closed baseline failures; no new warnings.
+
+**This slice DOES establish per-tier scheduler observability.** The operator can now ask "what is the p95 latency across all exit-tier jobs?" or "which stage is the slowest in the research tier?" without needing to manually group by `job_id`.
+
 ## 11. Capital policy guard (F6 partial; producer landed)
 
 ### 11.1 What landed
