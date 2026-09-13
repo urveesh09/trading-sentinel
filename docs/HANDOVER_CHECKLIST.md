@@ -60,6 +60,8 @@ Finish D's gateway/resource-warning review and consistent backup/rollback prereq
 
 ## September 13 D acceptance baseline
 
+Implementation commit `f7e33cb` restores the full acceptance baseline. Post-commit source/docs diff and clean Dev status were checked. Atlas regeneration remains identical at 155 modules. This is local Dev only, not pushed/released.
+
 Plan/evidence: `2026-09-13-release-baseline-plan.md`. Full Dev engine command: `.\winvenv\Scripts\python.exe -m pytest tests -q --junitxml=C:/Users/Urveesh/AppData/Local/Temp/sentinel-d-baseline-20260913.xml` from `python-engine`: **2,545 passed, three skipped, 23 existing Starlette/httpx deprecations in 126.27 seconds**. This supersedes the earlier 17-failure baseline. No tests were excluded or marked xfail to hide failures.
 
 The corrected fixture/source-guard/default group passes 148 tests (one skip, one existing Starlette warning). Migration regression preserves legacy rows, exercises repeat initialization and retains new close provenance. Momentum's helper mirrors the migrated column because both sync and async tests call it; division/audit fixtures call the real migration. Scheduler/isolation passes 41 tests with RuntimeWarning fatal (one existing Starlette deprecation). Dashboard passes 25 unit tests and Vite build (existing Browserslist warning); agent passes 91 tests in the existing test image with networking disabled and current Dev source mounted read-only. Runtime accounting, flags, clocks and transport authority did not change.
