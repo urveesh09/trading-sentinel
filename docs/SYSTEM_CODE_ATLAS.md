@@ -1204,13 +1204,13 @@ Declared tables: `proactive_execution_research_runs`
 
 Conservative matched exit-policy research for SHADOW proposals only.
 
-Top-level declarations: `simulate_partial_target_trail` (line 14), `persist_exit_policy_comparison` (line 55), `exit_policy_report` (line 73)
+Top-level declarations: `_init_exit_research_schema` (line 16), `_matching_exit_result` (line 21), `simulate_partial_target_trail` (line 29), `persist_exit_policy_comparison` (line 70), `exit_policy_report` (line 109)
 
 Engine dependencies: `proactive_intelligence`
 
 Related tests: `python-engine/tests/test_proactive_exit_research.py`
 
-Declared tables: `proactive_exit_research_runs`
+Declared tables: `proactive_exit_research_manifests`, `proactive_exit_research_runs`
 
 ## `python-engine/proactive_intelligence.py`
 

@@ -201,7 +201,7 @@ Do not claim A–J complete because files exist. Maintain a requirement matrix w
 
 ## 16. Mandatory documentation and plan ritual
 
-September 13 independent F/G audit correction: `2026-09-13-fg-independent-correction-plan.md` supersedes any implication that the whole new bridge/strategy basket is accepted. Atomic terminal-state/append-order fix tested in Dev (81 warning-fatal focused tests); trailing entry/exit composition now passes 121 root proactive/G tests with warnings fatal and independent causal review. Approval budget/evidence/expiry validation, faithful range semantics, separate exit-report cache proposal-clock/implementation identity and unsupported F schema/provenance/historical closures remain open. External F/G agent's work is preserved, not overwritten wholesale.
+September 13 independent F/G audit correction: `2026-09-13-fg-independent-correction-plan.md` supersedes any implication that the whole new bridge/strategy basket is accepted. Atomic terminal-state/append-order fix and faithful trailing entry/exit composition are tested in Dev with independent review. Exit-cache full effective proposal/clock/implementation identity, retained companion manifest and atomic reuse now pass 137 root proactive/G tests with warnings fatal. Approval budget/evidence/expiry validation, faithful range semantics and unsupported F schema/provenance/historical closures remain open. External F/G agent's work is preserved, not overwritten wholesale.
 
 This is a user requirement for every future agent, including an agent continuing its own work:
 
