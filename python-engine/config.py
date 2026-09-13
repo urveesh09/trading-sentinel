@@ -1056,7 +1056,7 @@ class Settings(BaseSettings):
     # information/inferences to the operator's trading partner. NO
     # execution surface, NO fallback into the operator chat (a
     # misrouted partner message is worse than a dropped one).
-    # Disabled by default: with PARTNER_BOT_ENABLED=false every
+    # Explicit disable gate: with PARTNER_BOT_ENABLED=false every
     # partner job returns immediately -- zero Kite calls, zero sends.
     # ============================================================
     PARTNER_BOT_ENABLED:        bool  = True

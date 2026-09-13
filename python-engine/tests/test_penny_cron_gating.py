@@ -123,7 +123,7 @@ def _all_sources() -> str:
     """Every engine module, concatenated. Used for whole-package searches
     (function bodies). Line numbers from this blob are meaningless -- only
     main.py's own numbering is reported, and only as `~N` guidance."""
-    return "\n".join(p.read_text() for p in ENGINE_SOURCES)
+    return "\n".join(p.read_text(encoding="utf-8") for p in ENGINE_SOURCES)
 
 
 # [ROADMAP-4.1 stage 2 2026-07-13] The two register_*_scheduler_jobs functions
@@ -139,9 +139,9 @@ SCHEDULER_SETUP_PY = REPO_ROOT / "scheduler_setup.py"
 
 def _scheduler_src() -> str:
     """The sources that between them contain every scheduler.add_job() call."""
-    parts = [MAIN_PY.read_text()]
+    parts = [MAIN_PY.read_text(encoding="utf-8")]
     if SCHEDULER_SETUP_PY.exists():
-        parts.append(SCHEDULER_SETUP_PY.read_text())
+        parts.append(SCHEDULER_SETUP_PY.read_text(encoding="utf-8"))
     return "\n".join(parts)
 
 

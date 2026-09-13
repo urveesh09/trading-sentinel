@@ -904,6 +904,8 @@ def register_partner_scheduler_jobs(scheduler):
 
     @telemetry_job(settings.DB_PATH, "partner_manual_advisory_tick")
     async def _run_partner_manual_advisory_tick_safe():
+        # [CALENDAR-GATE 2026-07-03] delegated to _gates_open in the tick:
+        # trading day, session, enabled destination and provider token.
         try:
             from partner_orchestrator import partner_manual_advisory_tick
             await partner_manual_advisory_tick()
@@ -913,6 +915,8 @@ def register_partner_scheduler_jobs(scheduler):
 
     @telemetry_job(settings.DB_PATH, "partner_manual_advisory_lifecycle_tick")
     async def _run_partner_manual_advisory_lifecycle_tick_safe():
+        # [CALENDAR-GATE 2026-07-03] exception: local off-session retirement
+        # must continue. Any transport is separately final-authorized.
         try:
             from partner_orchestrator import partner_manual_advisory_lifecycle_tick
             await partner_manual_advisory_lifecycle_tick()
@@ -932,6 +936,8 @@ def register_partner_scheduler_jobs(scheduler):
 
     @telemetry_job(settings.DB_PATH, "research_quote_collection")
     async def _run_research_quote_collection_safe():
+        # [CALENDAR-GATE 2026-07-03] delegated to the collector tick, which
+        # checks trading day/session before provider calls and journals gaps.
         # Independent market-data observation.  It has no partner delivery,
         # profile, qualification, or order dependency; its own entry point
         # handles calendar/session/token availability and records gaps.
@@ -983,6 +989,9 @@ def register_partner_scheduler_jobs(scheduler):
 
     @telemetry_job(settings.DB_PATH, "partner_hedge_delivery_recovery")
     async def _run_partner_hedge_delivery_recovery_safe():
+        # [CALENDAR-GATE 2026-07-03] exception: sweep/retirement must run
+        # off-session. _recovery_retirement_reason and final dispatch gate
+        # prevent an expired or non-trading-day proposal from being sent.
         try:
             from hedge_advisory import recover_pending_hedge_deliveries
             await recover_pending_hedge_deliveries()
@@ -991,6 +1000,9 @@ def register_partner_scheduler_jobs(scheduler):
             return {"status": "FAILED", "reason": type(exc).__name__}
 
     async def _run_partner_input_refresh_safe():
+        # [CALENDAR-GATE 2026-07-03] exception: approved source-neutral
+        # reconciliation may arrive off-session; this path cannot advise
+        # or order. Account, completeness and freshness checks still apply.
         try:
             from partner_input_refresh import refresh_partner_input_once
             await refresh_partner_input_once()
@@ -998,6 +1010,8 @@ def register_partner_scheduler_jobs(scheduler):
             logger.error("partner_input_refresh_crashed err=%s", exc, exc_info=True)
 
     async def _run_partner_hedge_morning_summary_safe():
+        # [CALENDAR-GATE 2026-07-03] delegated to daily_summary, which checks
+        # is_trading_day before portfolio lookup or transport.
         try:
             from hedge_advisory import partner_hedge_daily_summary
             await partner_hedge_daily_summary("MORNING")
@@ -1005,6 +1019,8 @@ def register_partner_scheduler_jobs(scheduler):
             logger.error("partner_hedge_morning_summary_crashed err=%s", exc, exc_info=True)
 
     async def _run_partner_hedge_eod_summary_safe():
+        # [CALENDAR-GATE 2026-07-03] delegated to daily_summary's trading-day
+        # check before portfolio lookup or transport.
         try:
             from hedge_advisory import partner_hedge_daily_summary
             await partner_hedge_daily_summary("EOD")
@@ -1032,8 +1048,10 @@ def register_partner_scheduler_jobs(scheduler):
             logger.error("partner_hedge_phase3_tick_crashed err=%s", exc, exc_info=True)
 
     async def _run_proactive_shadow_workflow_safe():
-        # This consumer is explicitly fixture-backed and disabled by default.
-        # It never has a broker, delivery, or live-price dependency.
+        # [CALENDAR-GATE 2026-07-03] exception: disabled-by-default SHADOW
+        # research accepts explicit fixtures or a validated completed-bar
+        # provider. Off-session research has no order/delivery authority;
+        # unavailable/stale provider evidence is recorded, not made a fill.
         try:
             from proactive_intelligence import run_configured_shadow_workflow
             await run_configured_shadow_workflow()

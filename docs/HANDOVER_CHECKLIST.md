@@ -56,7 +56,15 @@ This is not a rerun of the entire repository test suite, gateway/native database
 
 ## First next action
 
-Review the A/B and C implementation diffs and their acceptance records, then finish Workstream C's source/roll scope and remaining delayed/partial/exact-expiry boundaries. Before promotion, resolve or explicitly baseline the broader repository failures and run the release suite. Preserve the working CLI and immutable v1/v2 artifacts.
+Finish D's gateway/resource-warning review and consistent backup/rollback prerequisites, then prepare the reviewed GitHub promotion path. C's source/roll and exact execution boundaries are tested in Dev and the 17 earlier Python acceptance failures are resolved. Preserve the working CLI and immutable v1/v2/v3 artifacts; do not infer deployment or qualification.
+
+## September 13 D acceptance baseline
+
+Plan/evidence: `2026-09-13-release-baseline-plan.md`. Full Dev engine command: `.\winvenv\Scripts\python.exe -m pytest tests -q --junitxml=C:/Users/Urveesh/AppData/Local/Temp/sentinel-d-baseline-20260913.xml` from `python-engine`: **2,545 passed, three skipped, 23 existing Starlette/httpx deprecations in 126.27 seconds**. This supersedes the earlier 17-failure baseline. No tests were excluded or marked xfail to hide failures.
+
+The corrected fixture/source-guard/default group passes 148 tests (one skip, one existing Starlette warning). Migration regression preserves legacy rows, exercises repeat initialization and retains new close provenance. Momentum's helper mirrors the migrated column because both sync and async tests call it; division/audit fixtures call the real migration. Scheduler/isolation passes 41 tests with RuntimeWarning fatal (one existing Starlette deprecation). Dashboard passes 25 unit tests and Vite build (existing Browserslist warning); agent passes 91 tests in the existing test image with networking disabled and current Dev source mounted read-only. Runtime accounting, flags, clocks and transport authority did not change.
+
+Gateway: **318 passed/four skipped** (25 suites passed/one skipped), 17.739 seconds, temporary Node 20 Alpine native-SQLite environment. Dependency installation uses no repository `.env` or persistent volumes; the acceptance rerun disconnects networking after installation. The existing script uses forceExit and detects two open handles: token-restore timer on fetch rejection and fake-token Telegram polling in alert-dead-letter tests. Log: `C:/Users/Urveesh/AppData/Local/Temp/sentinel-d-gateway-20260913.log`. The temporary container was removed after preserving its log, with no operational volumes involved. No actual partner message or broker order was requested or submitted. The Windows combined all-warning-fatal socket investigation is still pending. No Production edits, push, merge or deployment occurred.
 
 ## A/B implementation verification
 
