@@ -280,3 +280,61 @@ def test_cli_summary_cross_references_catalog(tmp_path):
     # Catalog is rendered above the runbook.
     catalog_idx = text.index("## Captures catalog")
     assert catalog_idx < runbook_idx
+
+
+def test_cli_status_emits_single_line_unreachable(tmp_path):
+    """``--status`` emits a single-line status suitable for
+    shell prompts. Format:
+
+        J.10: <VERDICT> <coverage_pct>% (<captured>/<total> branches,
+        <scanned> scanned, <skipped> skipped)
+
+    Exit code follows the gate's verdict (1 = UNREACHABLE).
+    Stdout does NOT contain the multi-line report.
+    """
+    (tmp_path / "2026-09-10").mkdir(parents=True)
+    result = _run_cli("--captures-dir", str(tmp_path), "--status")
+    assert result.returncode == 1
+    # Single line, ends with newline.
+    assert result.stdout.count("\n") == 1, result.stdout
+    # Format contract.
+    assert result.stdout.startswith("J.10: UNREACHABLE 0.0% (0/6 branches,")
+    assert "0 scanned" in result.stdout
+    assert "0 skipped" in result.stdout
+    # The multi-line report is suppressed.
+    assert "captured per branch:" not in result.stdout
+    assert "missing branches" not in result.stdout
+
+
+def test_cli_status_emits_single_line_reachable(tmp_path):
+    """``--status`` exits 0 when the gate is REACHABLE; the
+    status line reflects the captured/total branches count.
+    """
+    for branch in (
+        "CAS_REFERENCE_PRICE_WINDOW",
+        "CAS_ORDER_ENTRY",
+        "CAS_LIMIT_ENTRY_ONLY",
+        "CAS_MATCHING",
+        "CAS_POST",
+        "DERIVATIVES_CAS_ALIGNED",
+    ):
+        _write_capture(tmp_path, f"{branch}.json", branch)
+    result = _run_cli("--captures-dir", str(tmp_path), "--status")
+    assert result.returncode == 0
+    assert result.stdout.count("\n") == 1
+    assert "J.10: REACHABLE 100.0% (6/6 branches" in result.stdout
+
+
+def test_cli_status_counts_only_nonzero_branches(tmp_path):
+    """``--status`` counts branches with at least one capture;
+    a branch with 5 captures still counts as 1 (the gate's
+    verdict is count-driven at >=1, not proportional).
+    """
+    # Five captures all on CAS_REFERENCE_PRICE_WINDOW: that's
+    # still only 1 branch captured.
+    for i in range(5):
+        _write_capture(tmp_path, f"r{i}.json", "CAS_REFERENCE_PRICE_WINDOW")
+    result = _run_cli("--captures-dir", str(tmp_path), "--status")
+    assert result.returncode == 1
+    assert "1/6 branches" in result.stdout
+    assert "5 scanned" in result.stdout

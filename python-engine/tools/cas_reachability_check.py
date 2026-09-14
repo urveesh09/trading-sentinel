@@ -95,6 +95,15 @@ def main(argv: list[str] | None = None) -> int:
         help="Override the SUMMARY.md path (defaults to "
              "<repo>/docs/j2_captures/SUMMARY.md).",
     )
+    parser.add_argument(
+        "--status",
+        action="store_true",
+        help="Emit a single-line status (verdict + coverage_pct + "
+             "captured/total branches) suitable for shell prompts, "
+             "monitoring, or CI summaries. Exit code is REACHABLE (0) "
+             "or UNREACHABLE (1) as usual; the line itself contains the "
+             "details. Suppresses the standard human-readable report.",
+    )
     args = parser.parse_args(argv)
 
     captures_dir = args.captures_dir or (
@@ -107,7 +116,21 @@ def main(argv: list[str] | None = None) -> int:
         return 2
 
     report = cas_reachability_report(captures_dir=captures_dir)
-    if args.json:
+    if args.status:
+        # Single-line status for shell prompts / monitoring.
+        # Format: ``J.10: <VERDICT> <coverage_pct>% (<captured>/<total>
+        # branches, <scanned> scanned, <skipped> skipped)``.
+        captured_count = sum(
+            1 for c in report["captured_phases"].values() if c > 0
+        )
+        total_branches = len(report["captured_phases"])
+        sys.stdout.write(
+            f"J.10: {report['verdict']} {report['coverage_pct']:.1f}% "
+            f"({captured_count}/{total_branches} branches, "
+            f"{report['captures_scanned']} scanned, "
+            f"{report['captures_skipped']} skipped)\n"
+        )
+    elif args.json:
         sys.stdout.write(json.dumps(report, indent=2, sort_keys=True))
         sys.stdout.write("\n")
     else:
