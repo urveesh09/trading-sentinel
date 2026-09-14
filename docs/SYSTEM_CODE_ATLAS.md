@@ -488,6 +488,24 @@ Engine dependencies: `fno_chain`, `fno_models`
 
 Related tests: `python-engine/tests/test_hedge_strategies.py`
 
+## `python-engine/tools/j2_capture_review.py` (see [J.3 capture review tool](../docs/2026-09-13-j3-capture-protocol.md))
+
+Static review of j2_cas_probe captures. Six-point checklist (schema, eligibility, classifier_phase, quote_present, circuit_limits, broker_extras) plus an opt-in OHLC-continuity cross-window check. Exits 0 only when every check passes. The check logic re-imports the probe's inline validator so the review cannot drift from the probe's contract.
+
+## `python-engine/tools/holiday_drift_check.py` (see [J.5 holiday reconciliation](../docs/2026-09-13-j5-holiday-reconciliation-done.md))
+
+Operator/CI CLI for the J.5 holiday-drift detector. Reads ``holiday_drift.holiday_drift_report`` and exits 0 on ALIGNED, 1 on DRIFT. ``--json`` emits the structured report; ``--node-source PATH`` points at a fixture (the canonical Node source is the default). Use in CI to catch regressions where Node's hardcoded list drifts from Python's canonical list.
+
+## `python-engine/holiday_drift.py`
+
+[WORKFLOW-J.5 2026-09-13] Drift detector for NSE holiday lists. The Python engine and the node-gateway both maintain a "today is a trading holiday" check. Pre-J.5 each shipped its own list: * python-engine/market_calendar.py::NSE_HOLIDAYS_STATIC (20 dates) * node-gateway/server/utils/market-hours.js::NSE_HOLIDAYS (18 dates) Only 10 dates overlap. The drift caused real production hazards: a CAS-eligible stock could be scheduled for an order on a holiday that the gateway considered a trading day (or vice versa). J.5 makes Python authoritative; this module is the static cross-check that surfaces divergence between the two sources until the Node side fetches from the engine at boot. This module 
+
+Top-level declarations: `_resolve_repo_root` (line 67), `python_nse_holidays` (line 84), `parse_node_nse_holidays` (line 94), `node_nse_holidays_from_atlas` (line 121), `holiday_drift_report` (line 138), `format_drift_report` (line 181)
+
+Engine dependencies: `market_calendar`
+
+Related tests: `python-engine/tests/test_holiday_drift.py`
+
 ## `python-engine/indicators_adaptive.py`
 
 indicators_adaptive.py -- Adaptive indicator calculations. Replaces fixed thresholds with stock-specific relative measures: 1. RSI Percentile: current RSI vs its own 6-month rolling distribution 2. Volume Z-Score: current volume vs its own 20-day rolling distribution These are computed per-stock and per-scan, so they adapt to each stock's natural volatility range rather than applying a one-size-fits-all threshold.
@@ -612,7 +630,7 @@ No module docstring; use the declarations and callers below.
 
 Top-level declarations: `_is_intraday_from_product_type` (line 136), `_classic_penny_source` (line 205), `_make_penny_ledger_writer` (line 219), `_get_penny_universe` (line 230), `_get_penny_scanner` (line 247), `_within_penny_market_hours` (line 289), `run_penny_scanner_once` (line 297), `run_penny_connors_scan` (line 421), `run_penny_universe_refresh` (line 715), `run_penny_regime_compute` (line 787), `run_penny_regime_refresh` (line 812), `_penny_ltp` (line 832), `_penny_exit_event_context` (line 861), `_append_penny_exit_event` (line 896), `_settle_confirmed_penny_exit` (line 914), `_execute_scheduled_penny_exit` (line 990), `run_penny_paper_stop_monitor` (line 1186), `run_penny_eod_check` (line 1246), `run_penny_force_close_mis` (line 1342), `_run_penny_daily_attribution` (line 1425), `_run_penny_eod_digest` (line 1463), `_run_penny_heatmap` (line 1510), `run_penny_hourly_report` (line 1559), `build_breadth_engine` (line 1731), `build_breadth_kwargs` (line 1777), `_filter_by_liquidity` (line 1796), `snap_to_tick` (line 1855), `_fno_regime_str` (line 1951), `lifespan` (line 1965), `post_login_initialization` (line 2332), `_load_universe_with_fallback` (line 2403), `run_screener` (line 2460), `daily_post_market` (line 2777), `run_momentum_screener` (line 2856), `_run_momentum_screener_impl` (line 2875), `_momentum_initial_risk` (line 3289), `_aggregate_momentum_close` (line 3300), `_close_momentum_position` (line 3307), `_record_momentum_scale_out` (line 3361), `_square_off_fill_evidence` (line 3419), `_cancel_order_truth` (line 3445), `_momentum_square_off_key` (line 3475), `_record_confirmed_momentum_partial` (line 3487), `_page_unconfirmed_square_off` (line 3526), `_post_square_off_with_reconcile` (line 3537), `_rearm_momentum_residual_stop` (line 3567), `momentum_intraday_monitor` (line 3593), `auto_square_momentum` (line 3874), `_paper_ltp` (line 4114), `_run_momentum_paper_monitor` (line 4134), `_run_momentum_paper_square_off` (line 4149), `momentum_eod_warning` (line 4159), `_notify_telegram_square_off_failure` (line 4191), `_notify_momentum_heartbeat` (line 4207), `compute_performance_report` (line 4278), `notify_screener_results` (line 4340)
 
-Engine dependencies: `analytics`, `backtest`, `breadth`, `config`, `engine`, `engine_auth`, `fno_oi_store`, `fno_positions`, `fno_signal_log`, `hedge_advisory`, `kite_client`, `logging_setup`, `mark_to_market`, `market_calendar`, `memory_metrics`, `models`, `momentum_exits`, `momentum_paper`, `momentum_shadow`, `operator_alert`, `operator_status`, `ops_metrics`, `ops_watchdogs`, `partner_orchestrator`, `penny_daily_attribution`, `penny_engine_breakout`, `penny_execution_journal`, `penny_executor`, `penny_heatmap`, `penny_hourly_report`, `penny_models`, `penny_position_reservations`, `penny_regime`, `penny_risk`, `penny_scanner`, `penny_shadow`, `penny_signal_log`, `penny_universe`, `performance`, `portfolio`, `position_tracker`, `regime`, `risk_engine`, `routes_backtest`, `routes_commands`, `routes_fno_experiments`, `routes_hedge`, `routes_ops`, `routes_penny_experiments`, `routes_portfolio`, `routes_promotion_readiness`, `scheduler_setup`, `scheduler_telemetry`, `signal_log`, `token_lifecycle`, `universe`
+Engine dependencies: `analytics`, `backtest`, `breadth`, `config`, `engine`, `engine_auth`, `fno_oi_store`, `fno_positions`, `fno_signal_log`, `hedge_advisory`, `kite_client`, `logging_setup`, `mark_to_market`, `market_calendar`, `memory_metrics`, `models`, `momentum_exits`, `momentum_paper`, `momentum_shadow`, `operator_alert`, `operator_status`, `ops_metrics`, `ops_watchdogs`, `partner_orchestrator`, `penny_daily_attribution`, `penny_engine_breakout`, `penny_execution_journal`, `penny_executor`, `penny_heatmap`, `penny_hourly_report`, `penny_models`, `penny_position_reservations`, `penny_regime`, `penny_risk`, `penny_scanner`, `penny_shadow`, `penny_signal_log`, `penny_universe`, `performance`, `portfolio`, `position_tracker`, `regime`, `risk_engine`, `routes_backtest`, `routes_commands`, `routes_fno_experiments`, `routes_hedge`, `routes_holidays`, `routes_ops`, `routes_penny_experiments`, `routes_portfolio`, `routes_promotion_readiness`, `scheduler_setup`, `scheduler_telemetry`, `signal_log`, `token_lifecycle`, `universe`
 
 Related tests: `python-engine/tests/test_main_api.py`, `python-engine/tests/test_main_breadth_helpers.py`, `python-engine/tests/test_main_breadth_integration.py`, `python-engine/tests/test_main_surface_characterization.py`
 
@@ -628,7 +646,7 @@ Related tests: `python-engine/tests/test_mark_to_market.py`
 
 No module docstring; use the declarations and callers below.
 
-Top-level declarations: `_alert_static_fallback` (line 70), `is_market_open` (line 113), `get_holiday_cache` (line 130), `is_trading_day` (line 142), `next_trading_day` (line 174), `prev_trading_day` (line 180), `_load_holidays_sync` (line 189), `is_trading_day_sync` (line 216), `trading_days_between_sync` (line 239), `_ist_clock_minutes` (line 301), `is_cas_eligible` (line 317), `_normalised_cas_eligibility_set` (line 387), `classify_session_phase` (line 406)
+Top-level declarations: `_iso_sorted` (line 137), `_alert_static_fallback` (line 152), `is_market_open` (line 195), `get_holiday_cache` (line 212), `is_trading_day` (line 224), `next_trading_day` (line 256), `prev_trading_day` (line 262), `_load_holidays_sync` (line 271), `is_trading_day_sync` (line 298), `trading_days_between_sync` (line 321), `_ist_clock_minutes` (line 383), `is_cas_eligible` (line 399), `_normalised_cas_eligibility_set` (line 469), `classify_session_phase` (line 488)
 
 Engine dependencies: `config`
 
@@ -1476,6 +1494,14 @@ Top-level declarations: `GreeksPayload` (line 35), `PartnerPositionPayload` (lin
 
 Engine dependencies: `config`, `hedge_advisory`, `hedge_analytics`, `hedge_readiness`, `partner_manual_advisory`, `research_archive`
 
+## `python-engine/routes_holidays.py`
+
+[WORKFLOW-J.5 2026-09-13] GET /holidays route. The node-gateway needs the canonical NSE holiday list to decide whether ``isMarketOpen()`` should return false. Pre-J.5 the gateway shipped its own list and the two sources diverged (20 Python dates vs 18 Node dates, only 10 overlap). J.5 makes Python authoritative; this route is the surface Node fetches at boot. The route is read-only and public (no auth gate) -- the data is already published on the NSE website. The ``/holidays`` endpoint follows the same shape as the rest of the engine's read-only operational state (compare ``/ops/metrics``).
+
+Top-level declarations: `get_nse_holidays` (line 28)
+
+Engine dependencies: `market_calendar`
+
 ## `python-engine/routes_ops.py`
 
 [ROADMAP-4.1 stage 3, 2026-07-13] Ops, token and circuit-breaker endpoints. Extracted verbatim from main.py. Registered on the app via `app.include_router(router)`, so the route table -- paths, methods, endpoint names, response models -- is byte-identical; the 24-route characterization golden proves it. EVERY business name is reached through `_main` at CALL time, not imported. That is not stylistic. Two independent reasons, both load-bearing: 1. Eight of main's globals are REBOUND at runtime via `global` statements (current_signals, market_regime, momentum_signals_today, last_run, rejected_signals, current_momentum_signals, last_momentum_date, _last_regime_state). `from main import current_s
@@ -1705,7 +1731,7 @@ Dependencies: none extracted
 
 ## `node-gateway/server/utils/market-hours.js`
 
-Dependencies: none extracted
+Dependencies: `../config`, `../utils/logger`, `./market-hours`
 
 ## `node-gateway/server/utils/retry.js`
 
