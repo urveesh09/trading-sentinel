@@ -488,13 +488,9 @@ Engine dependencies: `fno_chain`, `fno_models`
 
 Related tests: `python-engine/tests/test_hedge_strategies.py`
 
-## `python-engine/tools/j2_capture_review.py` (see [J.3 capture review tool](../docs/2026-09-13-j3-capture-protocol.md))
+## `python-engine/tests/fixtures/regenerate_session_phase_golden.py` (see [J.6 done](../docs/2026-09-13-j6-node-session-phase-mirror-done.md))
 
-Static review of j2_cas_probe captures. Six-point checklist (schema, eligibility, classifier_phase, quote_present, circuit_limits, broker_extras) plus an opt-in OHLC-continuity cross-window check. Exits 0 only when every check passes. The check logic re-imports the probe's inline validator so the review cannot drift from the probe's contract.
-
-## `python-engine/tools/holiday_drift_check.py` (see [J.5 holiday reconciliation](../docs/2026-09-13-j5-holiday-reconciliation-done.md))
-
-Operator/CI CLI for the J.5 holiday-drift detector. Reads ``holiday_drift.holiday_drift_report`` and exits 0 on ALIGNED, 1 on DRIFT. ``--json`` emits the structured report; ``--node-source PATH`` points at a fixture (the canonical Node source is the default). Use in CI to catch regressions where Node's hardcoded list drifts from Python's canonical list.
+Regenerator for the Node↔Python session-phase parity golden. Two sweeps: a wide minute-granularity sweep (8 days × 24 hours × 4 minutes × 3 option-combos = 2304 vectors) and a focused second-granularity boundary pass (17 instants × 3 option-combos = 51 vectors). The second pass hits sub-windows the minute-granularity sweep misses (CAS_LIMIT_ENTRY_ONLY at 15:29:30 - 15:30 IST, CAS_POST at derivatives 15:40 - 16:00 IST). Writes to both python-engine/tests/fixtures/ and node-gateway/server/tests/fixtures/ — the Node test consumer stays in lockstep with the Python source-of-truth via dual-write. **Do not call externally**; the Python pytest fixture in `test_session_phase_golden.py` runs this as a module-scoped fixture.
 
 ## `python-engine/holiday_drift.py`
 
