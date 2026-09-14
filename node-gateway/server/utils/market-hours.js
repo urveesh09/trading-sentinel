@@ -625,6 +625,73 @@ function isExecutionAllowed(opts) {
   return { allowed, phase, reason };
 }
 
+// [WORKFLOW-J.9 2026-09-13] Session-phase stamping helper.
+//
+// Mirrors the bounded phase from the J.6 ``sessionPhase``
+// mirror for insertion into the ``session_phase`` column
+// on ``received_signals``. The contract:
+//
+//   * Returns one of STAMPABLE_PHASES (never null, never
+//     an unrecognised string).
+//   * Never throws -- null / undefined / non-string
+//     ticker inputs fall back to UNKNOWN.
+//   * The phase is the LIVE phase at the moment of
+//     stamping -- the caller is responsible for
+//     sequencing: stamp AFTER the insert-prep, before
+//     the insert runs.
+//
+// STAMPABLE_PHASES is the bounded set the DB CHECK
+// constraint accepts. Drift between this set and
+// ``VALID_SESSION_PHASES`` (the mirror's full set) is
+// a category-1 invariant failure -- the column would
+// accept the new phase but ``sessionPhase()`` could
+// return it, leaving the schema out of sync.
+const STAMPABLE_PHASES = Object.freeze([
+  'CLOSED',
+  'PRE_MARKET',
+  'CONTINUOUS_TRADING',
+  'CAS_REFERENCE_PRICE_WINDOW',
+  'CAS_ORDER_ENTRY',
+  'CAS_LIMIT_ENTRY_ONLY',
+  'CAS_MATCHING',
+  'CAS_POST',
+  'DERIVATIVES_CAS_ALIGNED',
+  'UNKNOWN',
+]);
+
+function stampSessionPhaseForSignal(ticker) {
+  // Resolve CAS eligibility from the ticker. The Node
+  // mirror does not import Python config (the engine
+  // fetch is for the holiday list, not the eligibility
+  // list); we route through the J.2.1 pattern where
+  // CAS eligibility is a domain input the caller
+  // resolves. For now, the helper defaults to
+  // ``cas_eligible = null`` -- which routes through
+  // sessionPhase's null branch (returns ``false`` for
+  // non-derivative symbols). A future slice can wire
+  // the J.2.1 list explicitly.
+  //
+  // The helper is intentionally defensive: any
+  // non-string ticker (number, object, array) falls
+  // back to UNKNOWN so the DB column never sees an
+  // unrecognised value.
+  let safeTicker = null;
+  if (typeof ticker === 'string' && ticker.length > 0) {
+    safeTicker = ticker;
+  }
+  const phase = currentSessionPhase(
+    safeTicker ? { symbol: safeTicker } : {}
+  );
+  // Defensive: if currentSessionPhase somehow returns
+  // something outside STAMPABLE_PHASES (e.g. a future
+  // phase added before the DB CHECK is updated), coerce
+  // to UNKNOWN. This keeps the DB integrity invariant.
+  if (STAMPABLE_PHASES.indexOf(phase) < 0) {
+    return 'UNKNOWN';
+  }
+  return phase;
+}
+
 module.exports = {
   isMarketOpen,
   isPreMarket,
@@ -640,6 +707,15 @@ module.exports = {
   // [WORKFLOW-J.7] Execution-allowed verdict mirror of
   // ``market_calendar.execution_allowed``.
   isExecutionAllowed,
+  // [WORKFLOW-J.9] Stamping helper for the bounded
+  // session_phase column on received_signals. Returns one
+  // of the 10 documented phases (never null, never an
+  // unrecognised string). ``STAMPABLE_PHASES`` is the
+  // set the DB CHECK constraint accepts; drift between
+  // this set and the schema is a category-1 invariant
+  // failure.
+  stampSessionPhaseForSignal,
+  STAMPABLE_PHASES,
   // Test-only seam: rebind NSE_HOLIDAYS to a curated Set. The
   // jest.config.js + setup.js combination sets NODE_ENV=test
   // before the suite runs. Production code MUST NOT call this;

@@ -11,7 +11,22 @@ CREATE TABLE IF NOT EXISTS received_signals (
   status          TEXT NOT NULL CHECK (status IN ('PENDING','EXECUTING','EXECUTED','REJECTED','EXPIRED')),
   -- Fine-grained safety state. Kept separate from the legacy workflow status
   -- so existing SQLite CHECK constraints remain migration-compatible.
-  execution_state TEXT NOT NULL DEFAULT 'IDLE'
+  execution_state TEXT NOT NULL DEFAULT 'IDLE',
+  -- [WORKFLOW-J.9 2026-09-13] Bounded session phase at the moment
+  -- of signal insertion (NOT signal_time). Stamped by the Node
+  -- ``stampSessionPhaseForSignal`` helper from the J.6 mirror.
+  -- The 10-string CHECK constraint mirrors
+  -- ``market-hours.js::STAMPABLE_PHASES``; drift between the
+  -- two is a category-1 invariant failure. DEFAULT 'UNKNOWN'
+  -- covers existing rows (pre-J.9) so the additive migration
+  -- does not break the production SQLite DB.
+  session_phase   TEXT NOT NULL DEFAULT 'UNKNOWN'
+    CHECK (session_phase IN (
+      'CLOSED','PRE_MARKET','CONTINUOUS_TRADING',
+      'CAS_REFERENCE_PRICE_WINDOW','CAS_ORDER_ENTRY',
+      'CAS_LIMIT_ENTRY_ONLY','CAS_MATCHING','CAS_POST',
+      'DERIVATIVES_CAS_ALIGNED','UNKNOWN'
+    ))
 );
 
 CREATE TABLE IF NOT EXISTS executed_orders (

@@ -6,6 +6,10 @@ const { validate } = require('../middleware/validate');
 const telegram = require('../services/telegram');
 const { signalsDb } = require('../db');
 const logger = require('pino')();
+// [WORKFLOW-J.9 2026-09-13] Phase stamping helper. Mirrors
+// the J.6 sessionPhase mirror; result is one of the 10
+// documented bounded phases.
+const { stampSessionPhaseForSignal } = require('../utils/market-hours');
 
 const notifySchema = z.object({
   message: z.string().min(1)
@@ -59,11 +63,17 @@ router.post('/register-signal', requireInternalSecret, validate(registerSignalSc
         VALUES (?, ?, ?, ?, ?)
       `).run(signal_id, ticker, action, JSON.stringify(trackedPayload), now);
       if (action === 'EXEC') {
+        // [WORKFLOW-J.9 2026-09-13] Stamp the bounded session
+        // phase at insertion time. The Python engine callback
+        // arrives when the operator presses EXEC on Telegram;
+        // the phase recorded here is the LIVE phase at the
+        // moment of callback arrival.
+        const sessionPhase = stampSessionPhaseForSignal(ticker);
         signalsDb.prepare(`
           INSERT OR IGNORE INTO received_signals
-            (signal_id, ticker, signal_time, received_at, payload_json, status, execution_state)
-          VALUES (?, ?, ?, ?, ?, 'PENDING', 'IDLE')
-        `).run(signal_id, ticker, payload.signal_time || now, now, JSON.stringify(trackedPayload));
+            (signal_id, ticker, signal_time, received_at, payload_json, status, execution_state, session_phase)
+          VALUES (?, ?, ?, ?, ?, 'PENDING', 'IDLE', ?)
+        `).run(signal_id, ticker, payload.signal_time || now, now, JSON.stringify(trackedPayload), sessionPhase);
       }
       return info;
     });
