@@ -106,6 +106,7 @@ module.exports = {
   StaleSignalError,
   PriceDriftError,
   MarketClosedError,
+  CasPhaseError,
   DuplicateSignalError,
   ReplayAttackError
 };

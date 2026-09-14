@@ -29,44 +29,47 @@
  */
 'use strict';
 
-// FALLBACK (documented degraded-mode) -- the canonical list lives
-// in python-engine/market_calendar.py::NSE_HOLIDAYS_STATIC (20
-// dates for 2026, NSE Equity-trading segment). This set is the
-// pre-J.5 Node hardcoded list, retained as a defensive fallback
-// when the engine is unreachable. Operators can also inject a
-// curated list via MARKET_HOURS_HOLIDAYS_JSON (CI / closed-env).
+// FALLBACK (documented degraded-mode) -- this is the exact ISO projection of
+// python-engine/market_calendar.py::NSE_HOLIDAYS_STATIC. It is immediately
+// safe before the asynchronous engine refresh completes. The static calendar
+// is valid only through NSE_HOLIDAYS_VALID_THROUGH; beyond that date a failed
+// refresh blocks trading rather than assuming a weekday is open.
 const NSE_HOLIDAYS_FALLBACK = new Set([
+  '2026-01-15', // Municipal Corporation Election - Maharashtra
   '2026-01-26', // Republic Day
-  '2026-03-10', // Maha Shivaratri
-  '2026-03-17', // Holi
-  '2026-03-31', // Id-Ul-Fitr (Ramadan)
+  '2026-02-15', // Mahashivratri
+  '2026-03-03', // Holi
+  '2026-03-21', // Id-Ul-Fitr (Ramadan Eid)
+  '2026-03-26', // Shri Ram Navami
+  '2026-03-31', // Shri Mahavir Jayanti
   '2026-04-03', // Good Friday
   '2026-04-14', // Dr. Ambedkar Jayanti
   '2026-05-01', // Maharashtra Day
-  '2026-06-07', // Id-Ul-Adha (Bakri Id)
-  '2026-07-07', // Muharram
+  '2026-05-28', // Bakri Id
+  '2026-06-26', // Muharram
   '2026-08-15', // Independence Day
-  '2026-08-26', // Janmashtami
-  '2026-09-05', // Milad-un-Nabi (Prophet's Birthday)
+  '2026-09-14', // Ganesh Chaturthi
   '2026-10-02', // Mahatma Gandhi Jayanti
   '2026-10-20', // Dussehra
-  '2026-11-09', // Diwali (Laxmi Puja)
+  '2026-11-08', // Diwali Laxmi Pujan
   '2026-11-10', // Diwali (Balipratipada)
-  '2026-11-27', // Guru Nanak Jayanti
+  '2026-11-24', // Prakash Gurpurb Sri Guru Nanak Dev
   '2026-12-25', // Christmas
 ]);
+const NSE_HOLIDAYS_FALLBACK_VALID_THROUGH = '2026-12-31';
 
 // The live, mutable holiday set. Pre-fetch: the documented
 // fallback. Post-fetch: the engine's canonical list (replaces
 // the fallback in-place via ``replaceHolidays``).
 let NSE_HOLIDAYS = new Set(NSE_HOLIDAYS_FALLBACK);
+let NSE_HOLIDAYS_VALID_THROUGH = NSE_HOLIDAYS_FALLBACK_VALID_THROUGH;
 
 // Diagnostic: which source produced the current set?
 // ``fallback`` initially; ``engine`` after a successful fetch;
 // ``env`` after MARKET_HOURS_HOLIDAYS_JSON override.
 let NSE_HOLIDAYS_SOURCE = 'fallback:NSE_HOLIDAYS_FALLBACK';
 
-function replaceHolidays(set, source) {
+function replaceHolidays(set, source, validThrough = null) {
   // Mutating the same Set object keeps the closure-bindings of
   // ``isMarketOpen`` and ``isPreMarket`` pointing at the live
   // list. Production code does NOT keep a local reference to
@@ -74,6 +77,7 @@ function replaceHolidays(set, source) {
   NSE_HOLIDAYS.clear();
   for (const d of set) NSE_HOLIDAYS.add(d);
   NSE_HOLIDAYS_SOURCE = source;
+  if (validThrough != null) NSE_HOLIDAYS_VALID_THROUGH = validThrough;
 }
 
 function isValidIsoDate(s) {
@@ -95,7 +99,7 @@ function applyOverride(logger) {
       }
       set.add(d);
     }
-    replaceHolidays(set, 'env:MARKET_HOURS_HOLIDAYS_JSON');
+    replaceHolidays(set, 'env:MARKET_HOURS_HOLIDAYS_JSON', null);
     logger.info && logger.info('market_hours_holidays_override_applied', {
       count: set.size,
     });
@@ -136,7 +140,7 @@ function scheduleFetch(logger) {
       return res.json();
     })
     .then((body) => {
-      if (!body || !Array.isArray(body.holidays)) {
+      if (!body || !Array.isArray(body.holidays) || !isValidIsoDate(body.valid_through)) {
         logger.warn && logger.warn('market_hours_holidays_payload_invalid', { url });
         return;
       }
@@ -148,7 +152,7 @@ function scheduleFetch(logger) {
         logger.warn && logger.warn('market_hours_holidays_empty_set');
         return;
       }
-      replaceHolidays(set, `engine:${url}`);
+      replaceHolidays(set, `engine:${url}`, body.valid_through);
       logger.info && logger.info('market_hours_holidays_loaded', {
         count: set.size, source: NSE_HOLIDAYS_SOURCE,
       });
@@ -192,6 +196,13 @@ function getISTDate() {
   }).format(new Date());
 }
 
+function isHolidayCalendarUsable() {
+  // An explicit operator override remains an operator-owned source. The
+  // embedded fallback, however, is bounded to the audited calendar year.
+  if (!NSE_HOLIDAYS_SOURCE.startsWith('fallback:')) return true;
+  return getISTDate() <= NSE_HOLIDAYS_VALID_THROUGH;
+}
+
 /**
  * Checks if the current time in IST is within active market hours.
  * Market Hours: 09:15 - 15:30 IST, Monday to Friday, excluding NSE holidays.
@@ -221,6 +232,7 @@ function isMarketOpen() {
   if (weekday === 'Sat' || weekday === 'Sun') {
     return false;
   }
+  if (!isHolidayCalendarUsable()) return false;
 
   const hour = parseInt(parts.hour, 10);
   const minute = parseInt(parts.minute, 10);
@@ -261,6 +273,7 @@ function isPreMarket() {
   if (weekday === 'Sat' || weekday === 'Sun') {
     return false;
   }
+  if (!isHolidayCalendarUsable()) return false;
 
   const hour = parseInt(parts.hour, 10);
   const minute = parseInt(parts.minute, 10);
@@ -407,6 +420,23 @@ function _istClockMinutes(d) {
   const hour = parseInt(timeStr.split(':')[0], 10);
   const minute = parseInt(timeStr.split(':')[1], 10);
   return [weekday, hour, minute];
+}
+
+// True only in the cash-session interval where a missing CAS eligibility
+// decision could turn a live entry into an unsafe false CONTINUOUS verdict.
+// The async resolver owns the fetch; this helper stays pure and testable.
+function isCashCasEligibilityResolutionWindow(observationAt) {
+  let d;
+  try {
+    d = observationAt instanceof Date ? observationAt : new Date(observationAt);
+    if (Number.isNaN(d.getTime())) return false;
+  } catch (_) {
+    return false;
+  }
+  const [weekday, hour, minute] = _istClockMinutes(d);
+  if (weekday >= 5) return false;
+  const totalMin = hour * 60 + minute;
+  return totalMin >= _IST_MIN_CAS_OPEN && totalMin < _IST_MIN_MARKET_CLOSE;
 }
 
 /**
@@ -698,6 +728,7 @@ module.exports = {
   NSE_HOLIDAYS,
   NSE_HOLIDAYS_SOURCE,
   NSE_HOLIDAYS_FALLBACK, // documented degraded-mode (read-only)
+  NSE_HOLIDAYS_FALLBACK_VALID_THROUGH,
   getISTDate,
   initialisationResult: _initialisationResult,
   // [WORKFLOW-J.6] Session-phase mirror.
@@ -707,6 +738,7 @@ module.exports = {
   // [WORKFLOW-J.7] Execution-allowed verdict mirror of
   // ``market_calendar.execution_allowed``.
   isExecutionAllowed,
+  isCashCasEligibilityResolutionWindow,
   // [WORKFLOW-J.9] Stamping helper for the bounded
   // session_phase column on received_signals. Returns one
   // of the 10 documented phases (never null, never an

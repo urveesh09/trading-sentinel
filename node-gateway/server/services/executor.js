@@ -3,7 +3,8 @@ const { signalsDb } = require('../db/index');
 const { withRetry } = require('../utils/retry');
 const config = require('../config');
 const telegram = require('./telegram');
-const { isMarketOpen, isExecutionAllowed } = require('../utils/market-hours');
+const { isMarketOpen } = require('../utils/market-hours');
+const { entrySessionVerdict } = require('./cas-eligibility');
 const {
   TokenExpiredError, ValidationError, PriceDriftError,
   MarketClosedError, CasPhaseError, OrderExecutionError, InsufficientMarginError
@@ -433,10 +434,7 @@ async function executeSignal(signal, action, isIntraday = false) {
   // auction are blocked. The verdict carries a phase-specific
   // reason that surfaces in the operator dashboard / telegram
   // callback.
-  const verdict = isExecutionAllowed({
-    observation_at: new Date(),
-    symbol: signal.ticker,
-  });
+  const verdict = await entrySessionVerdict(signal.ticker, new Date());
   if (!verdict.allowed) {
     logger.info({
       event_type: 'execution_phase_at_reject',

@@ -52,6 +52,16 @@ jest.mock('../../utils/market-hours', () => ({
   })),
 }));
 
+jest.mock('../../services/cas-eligibility', () => ({
+  // Default to a permissive verdict so existing tests continue
+  // to reach executor.executeSignal; tests that need the
+  // eligibility gate to fail can override via
+  // entrySessionVerdict.mockResolvedValueOnce.
+  entrySessionVerdict: jest.fn(() => Promise.resolve({
+    allowed: true, phase: 'CONTINUOUS_TRADING', reason: null,
+  })),
+}));
+
 // ── A tiny in-memory stand-in for the two tables the handler touches ──
 const snapshots = new Map();   // signal_id -> {action, payload_json}
 const received = new Map();    // signal_id -> {status, ...}

@@ -5,7 +5,8 @@ const { logger } = require('./middleware/logger');
 const { signalsDb, appDb } = require('./db/index');
 const executor = require('./services/executor');
 const telegram = require('./services/telegram');
-const { isMarketOpen, isExecutionAllowed, currentSessionPhase } = require('./utils/market-hours');
+const { isMarketOpen, currentSessionPhase } = require('./utils/market-hours');
+const { entrySessionVerdict } = require('./services/cas-eligibility');
 
 const server = http.createServer(app);
 
@@ -100,23 +101,6 @@ telegram.bot.on('callback_query', async (query) => {
       });
       return;
     }
-    // [WORKFLOW-J.7 2026-09-13] CAS-aware guard. The binary
-    // ``isMarketOpen()`` above already covers CLOSED and the
-    // post-close hours; this additional check enforces the
-    // closing-auction sub-window policy so the operator sees
-    // the phase-specific reason via the telegram callback.
-    if (action === 'EXEC' || action === 'EM') {
-      const verdict = isExecutionAllowed({ observation_at: new Date() });
-      if (!verdict.allowed) {
-        await telegram.bot.answerCallbackQuery(query.id, {
-          text: verdict.reason ||
-            `Market in ${verdict.phase}. Cannot execute now.`,
-          show_alert: true,
-        });
-        return;
-      }
-    }
-
     // 6. Reject Action
     if (action === 'REJ') {
       if (row) {
@@ -166,11 +150,8 @@ telegram.bot.on('callback_query', async (query) => {
         // Container A path: signal pre-stored in DB with full UUID
         signalData   = JSON.parse(row.payload_json);
         fullSignalId = row.signal_id; // full UUID from DB row
-        signalsDb.prepare(`UPDATE received_signals SET status = 'EXECUTING', execution_state = 'SUBMITTING' WHERE signal_id = ?`).run(fullSignalId);
-        await telegram.bot.answerCallbackQuery(query.id, { text: 'Executing Swing Trade...' });
       } else if (snapshot) {
         signalData = snapshot;
-        await telegram.bot.answerCallbackQuery(query.id, { text: 'Executing Swing Trade...' });
       } else {
         // Never execute a live re-fetch that has no durable execution record.
         // A broker fill followed by a tracking INSERT failure is worse than a
@@ -180,6 +161,21 @@ telegram.bot.on('callback_query', async (query) => {
         await telegram.sendAlert(`❌ ${signal_id}: approved snapshot/registration missing. No broker order placed.`);
         return;
       }
+
+      const sessionVerdict = await entrySessionVerdict(signalData.ticker, new Date());
+      if (!sessionVerdict.allowed) {
+        await telegram.bot.answerCallbackQuery(query.id, {
+          text: sessionVerdict.reason ||
+            `Market in ${sessionVerdict.phase}. Cannot execute now.`,
+          show_alert: true,
+        });
+        return;
+      }
+
+      if (fullSignalId) {
+        signalsDb.prepare(`UPDATE received_signals SET status = 'EXECUTING', execution_state = 'SUBMITTING' WHERE signal_id = ?`).run(fullSignalId);
+      }
+      await telegram.bot.answerCallbackQuery(query.id, { text: 'Executing Swing Trade...' });
 
       try {
         const result = await executor.executeSignal(signalData, 'EXEC', false);
@@ -209,6 +205,15 @@ telegram.bot.on('callback_query', async (query) => {
 
     // 8. Execute Action (Momentum) — with atomic idempotency lock
     if (action === 'EM') {
+      const sessionVerdict = await entrySessionVerdict(cleanId, new Date());
+      if (!sessionVerdict.allowed) {
+        await telegram.bot.answerCallbackQuery(query.id, {
+          text: sessionVerdict.reason ||
+            `Market in ${sessionVerdict.phase}. Cannot execute now.`,
+          show_alert: true,
+        });
+        return;
+      }
       const today         = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
       const momentumLockId = `${cleanId}_MOM_${today}`;
 

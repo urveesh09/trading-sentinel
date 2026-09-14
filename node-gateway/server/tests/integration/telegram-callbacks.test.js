@@ -38,6 +38,12 @@ jest.mock('../../utils/market-hours', () => ({
   })),
 }));
 
+jest.mock('../../services/cas-eligibility', () => ({
+  entrySessionVerdict: jest.fn(() => Promise.resolve({
+    allowed: true, phase: 'CONTINUOUS_TRADING', reason: null,
+  })),
+}));
+
 const mockPrepare = jest.fn();
 const mockRun = jest.fn().mockReturnValue({ changes: 0, lastInsertRowid: 0 });
 const mockGet = jest.fn();
@@ -77,6 +83,7 @@ global.fetch = jest.fn();
 const telegram = require('../../services/telegram');
 const executor = require('../../services/executor');
 const { isMarketOpen } = require('../../utils/market-hours');
+const { entrySessionVerdict } = require('../../services/cas-eligibility');
 
 // Mock http before requiring index.js
 jest.mock('http', () => ({
@@ -252,6 +259,25 @@ describe('Telegram Callback Handler', () => {
       'cb-query-1',
       expect.objectContaining({ text: expect.stringContaining('closed') })
     );
+  });
+
+  runTest('EXEC blocks in the callback when authoritative CAS eligibility is unavailable', async () => {
+    entrySessionVerdict.mockResolvedValueOnce({
+      allowed: false,
+      phase: 'CAS_ELIGIBILITY_UNAVAILABLE',
+      reason: 'CAS eligibility service is unavailable; entry blocked.',
+    });
+    await callbackHandler(makeCallbackQuery('EXEC', 'a1b2c3d4'));
+
+    expect(executor.executeSignal).not.toHaveBeenCalled();
+    expect(mockAnswerCallbackQuery).toHaveBeenCalledWith(
+      'cb-query-1',
+      expect.objectContaining({ text: expect.stringContaining('eligibility service') })
+    );
+    const executionTransitions = mockPrepare.mock.calls
+      .map(c => c[0])
+      .filter(sql => typeof sql === 'string' && sql.includes("status = 'EXECUTING'"));
+    expect(executionTransitions).toHaveLength(0);
   });
 
   // ─── 6. EXEC for non-PENDING signal ───

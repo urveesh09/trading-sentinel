@@ -1,7 +1,11 @@
 /**
  * Tests for utils/market-hours.js - IST market window enforcement.
  */
-const { isMarketOpen, isPreMarket } = require('../../utils/market-hours');
+const {
+  isMarketOpen,
+  isPreMarket,
+  isCashCasEligibilityResolutionWindow,
+} = require('../../utils/market-hours');
 
 // Helper to mock Date.now() and global Date for specific IST times
 function withMockedTime(isoString, fn) {
@@ -91,35 +95,9 @@ describe('isMarketOpen()', () => {
   });
 
   describe('holiday handling (WORKFLOW-J.5)', () => {
-    // [WORKFLOW-J.5] The Node fallback is the pre-J.5 hardcoded
-    // 18-date list. CI / closed-env Node processes will use this
-    // fallback (no live engine). The fallback is DOCUMENTED to be
-    // divergent from the canonical Python list; we make the
-    // divergence visible so a regression to the fallback in a
-    // production environment that CAN reach the engine fails
-    // loud.
-    //
-    // The first three tests pin the fallback's wrong-answer on
-    // known 2026 NSE holidays (Ganesh Chaturthi / Sep 14,
-    // Independence Day / Aug 15) so anyone reviewing the suite
-    // understands the fallback's coverage gap. The last two
-    // tests pin the engine-fetch / env-override contract that
-    // can flip the live Set from fallback to canonical.
-
-    test('FALLBACK returns true at 11:00 IST on Ganesh Chaturthi (gap documented; see NSE_HOLIDAYS_FALLBACK coverage)', () => {
-      // Pre-fix expected behaviour: the fallback list does NOT
-      // contain 2026-09-14 (Ganesh Chaturthi). isMarketOpen() on
-      // the fallback therefore returns true on that date. The
-      // test is intentionally named FALLBACK to make the
-      // documented coverage gap loud at review time.
-      //
-      // The J.5 story is: this fallback path will be exercised
-      // only when the engine is unreachable. Production with a
-      // reachable engine overrides the fallback within ~5s of
-      // boot (see the next two tests, which simulate the engine
-      // fetch through MARKET_HOURS_HOLIDAYS_JSON).
+    test('FALLBACK blocks the audited Ganesh Chaturthi holiday immediately', () => {
       withMockedTime('2026-09-14T05:30:00Z', () => {
-        expect(isMarketOpen()).toBe(true);
+        expect(isMarketOpen()).toBe(false);
       });
     });
 
@@ -134,20 +112,14 @@ describe('isMarketOpen()', () => {
       });
     });
 
-    test('FALLBACK is still wrong on at least Ganesh Chaturthi (drift check pin)', () => {
-      // The drift detector (python-engine/holiday_drift.py)
-      // characterises this exact gap. The Node-side test
-      // exists as a sanity pin: as long as the fallback list
-      // and the canonical NSE list diverge, the divergence is
-      // visible in the unit test name itself.
+    test('FALLBACK contains the canonical Ganesh Chaturthi date', () => {
       const {
         NSE_HOLIDAYS,
         NSE_HOLIDAYS_FALLBACK,
       } = require('../../utils/market-hours');
-      // The fallback does NOT contain Ganesh Chaturthi.
-      expect(NSE_HOLIDAYS_FALLBACK.has('2026-09-14')).toBe(false);
+      expect(NSE_HOLIDAYS_FALLBACK.has('2026-09-14')).toBe(true);
       // The live set is currently a copy of the fallback (no engine).
-      expect(NSE_HOLIDAYS.has('2026-09-14')).toBe(false);
+      expect(NSE_HOLIDAYS.has('2026-09-14')).toBe(true);
     });
 
     test('env override replaces the live holiday set, fixing Ganesh Chaturthi', () => {
@@ -193,6 +165,12 @@ describe('isMarketOpen()', () => {
       expect(NSE_HOLIDAYS.size).toBe(1);
       __resetHolidaysForTest(new Set());
     });
+
+    test('stale embedded fallback fails closed after its audited validity period', () => {
+      withMockedTime('2027-01-04T05:30:00Z', () => {
+        expect(isMarketOpen()).toBe(false);
+      });
+    });
   });
 });
 
@@ -230,5 +208,17 @@ describe('isPreMarket()', () => {
     withMockedTime('2026-01-10T03:40:00Z', () => {
       expect(isPreMarket()).toBe(false);
     });
+  });
+});
+
+describe('isCashCasEligibilityResolutionWindow()', () => {
+  test('is true only from 15:15 through 15:29 IST on weekdays', () => {
+    expect(isCashCasEligibilityResolutionWindow(new Date('2026-09-15T09:45:00Z'))).toBe(true); // 15:15 IST
+    expect(isCashCasEligibilityResolutionWindow(new Date('2026-09-15T09:59:00Z'))).toBe(true); // 15:29 IST
+    expect(isCashCasEligibilityResolutionWindow(new Date('2026-09-15T10:00:00Z'))).toBe(false); // 15:30 IST
+  });
+
+  test('is false for an invalid timestamp', () => {
+    expect(isCashCasEligibilityResolutionWindow('not-a-date')).toBe(false);
   });
 });
