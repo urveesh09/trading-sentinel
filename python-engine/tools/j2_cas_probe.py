@@ -134,6 +134,77 @@ class ProbeRow:
         return out
 
 
+# --- Schema / wiring ---------------------------------------------------
+
+#: Schema version embedded in every captured document. Bump when
+#: the row shape evolves. The receipt-review tool refuses documents
+#: whose ``schema_version`` does not match.
+SCHEMA_VERSION: int = 2
+
+#: The JSON Schema for the captured document. Surfaced via
+#: ``--schema-print`` so the operator (and the J.3 capture-review
+#: tool) can validate against the same shape independent of Python.
+#: Kept inline because the document is small and lives/evolves
+#: with the tool.
+CAPTURE_JSON_SCHEMA: dict = {
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "title": "j2_cas_probe capture document",
+    "type": "object",
+    "required": [
+        "tool", "schema_version", "generated_at_utc", "dry_run",
+        "observation_at_utc", "observation_at_ist",
+        "symbol_count", "rows",
+    ],
+    "additionalProperties": False,
+    "properties": {
+        "tool": {"const": "j2_cas_probe"},
+        "schema_version": {"const": SCHEMA_VERSION},
+        "generated_at_utc": {"type": "string", "format": "date-time"},
+        "dry_run": {"type": "boolean"},
+        "observation_at_utc": {"type": "string", "format": "date-time"},
+        "observation_at_ist": {"type": "string"},
+        "symbol_count": {"type": "integer", "minimum": 0},
+        "rows": {
+            "type": "array",
+            "items": {"$ref": "#/$defs/row"},
+        },
+    },
+    "$defs": {
+        "row": {
+            "type": "object",
+            "required": [
+                "symbol", "observation_at_utc", "observation_at_ist",
+                "is_cas_eligible", "classifier_phase", "quote",
+            ],
+            "additionalProperties": False,
+            "properties": {
+                "symbol": {"type": "string", "minLength": 1},
+                "observation_at_utc": {"type": "string"},
+                "observation_at_ist": {"type": "string"},
+                "is_cas_eligible": {"type": "boolean"},
+                "classifier_phase": {
+                    "type": "string",
+                    "enum": [
+                        "CLOSED", "PRE_MARKET", "CONTINUOUS_TRADING",
+                        "CAS_REFERENCE_PRICE_WINDOW",
+                        "CAS_ORDER_ENTRY", "CAS_LIMIT_ENTRY_ONLY",
+                        "CAS_MATCHING", "CAS_POST",
+                        "DERIVATIVES_CAS_ALIGNED", "UNKNOWN",
+                    ],
+                },
+                "quote": {
+                    "oneOf": [
+                        {"type": "null"},
+                        {"type": "object"},
+                    ],
+                },
+                "quote_error": {"type": "string"},
+            },
+        },
+    },
+}
+
+
 # --- Probe logic -------------------------------------------------------
 
 def _normalise_symbols(raw: str) -> tuple[str, ...]:
@@ -152,17 +223,25 @@ def _probe_one(
     symbol: str,
     observation_at: datetime,
     dry_run: bool,
+    eligibility_override_csv: str | None = None,
 ) -> ProbeRow:
     """Probe one symbol at one observation moment. Returns a ProbeRow;
     never raises (brokers errors are captured in ``quote_error``).
+
+    Resolves CAS eligibility ONCE per row (via the override CSV if
+    provided, else via the settings-driven ``is_cas_eligible``) and
+    passes the explicit boolean to the classifier. This keeps the
+    override path authoritative end-to-end: the row-level
+    ``is_cas_eligible`` and the classifier's CAS-aware phase both
+    reflect the same eligibility verdict.
     """
     obs_utc = observation_at.astimezone(_tz("UTC"))
     obs_iso = obs_utc.isoformat()
     obs_ist = observation_at.astimezone(IST).strftime("%Y-%m-%d %H:%M:%S %Z")
 
-    cas = is_cas_eligible(symbol)
+    cas = _resolve_eligibility(symbol, eligibility_override_csv)
     phase = classify_session_phase(
-        obs_utc, symbol=symbol, is_derivative=False,
+        obs_utc, symbol=symbol, is_derivative=False, cas_eligible=cas,
     )
 
     quote: dict | None = None
@@ -183,6 +262,70 @@ def _probe_one(
         quote=quote,
         quote_error=quote_error,
     )
+
+
+def _resolve_eligibility(symbol: str, override_csv: str | None) -> bool:
+    """Decide whether ``symbol`` is CAS-eligible. When ``override_csv``
+    is non-empty the override is authoritative for THIS call -- the
+    normal ``config.settings.CAS_PHASE1_FNO_UNDERLYINGS`` lookup is
+    bypassed. This makes staging captures reproducible without
+    depending on shell env state across many invocations.
+
+    Defensive: any non-string, None, or empty input returns False.
+    """
+    if not symbol or not isinstance(symbol, str):
+        return False
+    target = symbol.strip().upper()
+    if not target:
+        return False
+    if override_csv is not None:
+        # Override path: parse the override locally (no settings
+        # import required). Same parser semantics as
+        # ``market_calendar._normalised_cas_eligibility_set``: split
+        # on comma, strip, uppercase, drop empties.
+        parts = [p.strip().upper() for p in override_csv.split(",")]
+        return target in {p for p in parts if p}
+    # Default path: consult the lazy-imported config settings.
+    from market_calendar import is_cas_eligible as _impl  # local rebind
+    return _impl(symbol)
+
+
+def _validate_document_against_schema(document: dict) -> list[str]:
+    """Validate the captured document against the inline JSON Schema.
+    Returns a list of human-readable error messages; empty list =
+    pass. The validator is intentionally minimal: it confirms
+    schema_version + required fields + the row enum. We deliberately
+    do NOT bring in jsonschema as a hard dependency for a CLI
+    tool -- the schema is small enough to validate by hand and an
+    upgrade adds an installation requirement to staging.
+    """
+    errs: list[str] = []
+    if document.get("tool") != "j2_cas_probe":
+        errs.append(f"tool must be 'j2_cas_probe', got {document.get('tool')!r}")
+    if document.get("schema_version") != SCHEMA_VERSION:
+        errs.append(
+            f"schema_version must be {SCHEMA_VERSION}, "
+            f"got {document.get('schema_version')!r}"
+        )
+    for required in CAPTURE_JSON_SCHEMA["required"]:
+        if required not in document:
+            errs.append(f"missing required field {required!r}")
+    valid_phases = set(CAPTURE_JSON_SCHEMA["$defs"]["row"]["properties"]["classifier_phase"]["enum"])
+    rows = document.get("rows") or []
+    if not isinstance(rows, list):
+        errs.append("rows must be a list")
+        return errs
+    for i, row in enumerate(rows):
+        phase = row.get("classifier_phase")
+        if phase not in valid_phases:
+            errs.append(f"row[{i}].classifier_phase {phase!r} not in documented enum")
+        if not isinstance(row.get("is_cas_eligible"), bool):
+            errs.append(f"row[{i}].is_cas_eligible must be bool")
+        if not isinstance(row.get("symbol"), str) or not row["symbol"]:
+            errs.append(f"row[{i}].symbol must be non-empty string")
+        if row.get("quote") is not None and not isinstance(row.get("quote"), dict):
+            errs.append(f"row[{i}].quote must be null or object")
+    return errs
 
 
 async def _fetch_quote_async(symbol: str) -> dict:
@@ -253,15 +396,48 @@ def _now_ist() -> datetime:
 
 
 def _parse_observation_at(raw: str) -> datetime:
-    """Parse an ISO 8601 instant. Tolerates the operator's preference
-    for either ``+05:30`` (IST) or ``Z`` (UTC).
+    """Parse an ISO 8601 instant. **Strict**: requires a timezone
+    offset (``+05:30`` or ``Z``). Naive timestamps are rejected with
+    a clear ``ValueError`` because the operator's working timezone
+    is ambiguous -- and we'd rather make the operator think about it
+    than silently assume IST.
+
+    Accepts ``Z`` (UTC) per ISO 8601:2019 and ``+HH:MM`` offsets
+    for any zone (including IST ``+05:30``). Space separators
+    (``"2026-09-14 15:17:00+05:30"``) are also accepted because
+    ``datetime.fromisoformat`` handles them in modern Python, but
+    we still flag the convention.
     """
     from datetime import datetime as _dt_cls
-    parsed = _dt_cls.fromisoformat(raw)
+    if not raw or not isinstance(raw, str):
+        raise ValueError(
+            "observation_at must be a non-empty string"
+        )
+    # Refuse naive timestamps with a precise message: ambiguous
+    # timezone is one of the most expensive bugs in scheduling
+    # code. The operator must write the offset.
+    candidate = raw.strip()
+    if not candidate:
+        raise ValueError("observation_at must be non-empty")
+    looks_offseted = (
+        candidate.endswith("Z")
+        or "+" in candidate[10:]  # skip the date prefix
+        or "-" in candidate[10:]
+    )
+    if not looks_offseted:
+        raise ValueError(
+            f"observation_at must carry a timezone offset "
+            f"(e.g. '+05:30' or 'Z'); got naive timestamp "
+            f"{candidate!r}"
+        )
+    parsed = _dt_cls.fromisoformat(candidate)
     if parsed.tzinfo is None:
-        # Naive timestamps are interpreted as IST (the operator's
-        # working timezone) per the runbook.
-        parsed = IST.localize(parsed)
+        # Defensive double-check: if the offset character was
+        # dropped at parse time we still want to refuse.
+        raise ValueError(
+            f"observation_at parsed to a naive datetime; "
+            f"please supply an explicit offset"
+        )
     return parsed
 
 
@@ -278,7 +454,12 @@ def _build_arg_parser() -> argparse.ArgumentParser:
     )
     p.add_argument(
         "--symbols",
-        required=True,
+        # Not argparse-required: we validate manually in main()
+        # so that --schema-print can short-circuit before the
+        # argparse error. For every other invocation, missing
+        # --symbols returns exit 2 just like argparse's
+        # required=True would have.
+        default="",
         help=(
             "Comma-separated NSE symbols to probe, e.g. "
             "'RELIANCE,HDFCBANK'. Whitespace tolerated; "
@@ -322,11 +503,80 @@ def _build_arg_parser() -> argparse.ArgumentParser:
             "sanity-check the wiring without hitting Kite."
         ),
     )
+    p.add_argument(
+        "--eligibility-list",
+        default="",
+        help=(
+            "Override the CAS Phase 1 eligibility CSV for THIS "
+            "call only. Same format as the env var "
+            "CAS_PHASE1_FNO_UNDERLYINGS (comma-separated, "
+            "whitespace-tolerated). When provided (even as an "
+            "empty string explicitly) the override is "
+            "authoritative; ``config.settings`` is bypassed. "
+            "Use this in staging to make captures reproducible "
+            "across invocations without depending on shell env "
+            "state."
+        ),
+    )
+    p.add_argument(
+        "--require-eligible",
+        action="store_true",
+        help=(
+            "Exit with code 1 if every probed symbol returns "
+            "is_cas_eligible=False. Use this to catch the "
+            "common staging mistake of forgetting to populate "
+            "CAS_PHASE1_FNO_UNDERLYINGS. The exit code "
+            "distinguishes \"eligibility list missing\" from "
+            "the broader \"config error\" exit code 2."
+        ),
+    )
+    p.add_argument(
+        "--validate",
+        action="store_true",
+        help=(
+            "Run the captured document through the inline "
+            "schema check before printing. Any schema failure "
+            "exits 1. Useful for CI / for verifying that a "
+            "refactor of the probe did not change the row "
+            "shape. The schema is also exposed via "
+            "--schema-print for external validators."
+        ),
+    )
+    p.add_argument(
+        "--schema-print",
+        action="store_true",
+        help=(
+            "Print the inline JSON Schema of the captured "
+            "document to stdout and exit. Lets external tools "
+            "(jq pipelines, dashboards, the J.3 capture-review "
+            "tool) validate against the same shape independent "
+            "of Python. Note: this flag short-circuits the rest "
+            "of validation, so an operator can introspect the "
+            "schema even without a valid symbol list."
+        ),
+    )
     return p
 
 
 def main(argv: Iterable[str] | None = None) -> int:
+    # --schema-print is a print-and-exit shortcut. Pre-parse with
+    # argparse just to harvest this one flag so an operator can
+    # inspect the schema without supplying a valid symbol list.
+    pre = _build_arg_parser().parse_known_args(
+        list(argv) if argv is not None else None
+    )
+    pre_args, _ = pre
+    if getattr(pre_args, "schema_print", False):
+        sys.stdout.write(json.dumps(CAPTURE_JSON_SCHEMA, indent=2) + "\n")
+        return 0
+
     args = _build_arg_parser().parse_args(list(argv) if argv is not None else None)
+
+    # We removed ``required=True`` from --symbols above so that
+    # ``--schema-print`` can short-circuit. Re-validate manually.
+    if not args.symbols or not args.symbols.strip():
+        print("ERROR: --symbols is required (non-empty)", file=sys.stderr)
+        return 2
 
     # Validate exactly one of --now / --observation-at.
     if bool(args.now) == bool(args.observation_at):
@@ -351,20 +601,49 @@ def main(argv: Iterable[str] | None = None) -> int:
             print(f"ERROR: unparseable --observation-at: {exc}", file=sys.stderr)
             return 2
 
+    # The override CSV, when explicitly passed (argparse default
+    # is ""), suppresses the settings-driven eligibility lookup.
+    # We use a sentinel marker: ``--eligibility-list ANYTHING``
+    # sets override_csv to ANYTHING; omitting the flag keeps
+    # override_csv at None and defers to ``config.settings``.
+    # To preserve the distinction explicitly, an empty-string
+    # explicit value ALSO activates the override (authoritative
+    # "nothing is eligible"). This is consistent with the
+    # senior-dev rule that explicit beats implicit.
+    override_active = "--eligibility-list" in sys.argv
+    override_csv: str | None = args.eligibility_list if override_active else None
+
     rows = [
-        _probe_one(sym, observation_at, dry_run=args.dry_run)
+        _probe_one(sym, observation_at, dry_run=args.dry_run, eligibility_override_csv=override_csv)
         for sym in symbols
     ]
     document = {
         "tool": "j2_cas_probe",
-        "schema_version": 1,
+        "schema_version": SCHEMA_VERSION,
         "generated_at_utc": datetime.now(tz=_tz("UTC")).isoformat(),
         "dry_run": bool(args.dry_run),
         "observation_at_utc": observation_at.astimezone(_tz("UTC")).isoformat(),
         "observation_at_ist": observation_at.strftime("%Y-%m-%d %H:%M:%S %Z"),
         "symbol_count": len(rows),
+        "eligibility_source": (
+            "override_cli" if override_csv is not None else "settings"
+        ),
         "rows": [r.to_dict() for r in rows],
     }
+
+    # Optional schema validation. Failures here are exit 1, the
+    # "broker-class error" bucket, because a schema-drift is
+    # functionally equivalent to a stale response.
+    if args.validate:
+        schema_errs = _validate_document_against_schema(document)
+        if schema_errs:
+            print(
+                "ERROR: schema validation failed:\n  - "
+                + "\n  - ".join(schema_errs),
+                file=sys.stderr,
+            )
+            return 1
+
     payload = json.dumps(document, indent=2, sort_keys=True, default=str)
 
     if args.output == "-":
@@ -380,6 +659,19 @@ def main(argv: Iterable[str] | None = None) -> int:
             return 2
         out_path.write_text(payload + "\n", encoding="utf-8")
         sys.stdout.write(f"wrote {out_path}\n")
+
+    # Eligibility-missing is a config-class signal that we want
+    # to surface distinctly. Exit code 1 for "broker error" is
+    # the closest bucket; operators see the stderr-style exit
+    # code AND the row-level is_cas_eligible flag in the JSON.
+    if args.require_eligible and not any(r.is_cas_eligible for r in rows):
+        print(
+            "ERROR: --require-eligible set but no probed symbol "
+            "returned is_cas_eligible=True; check the eligibility "
+            "list (env var or --eligibility-list)",
+            file=sys.stderr,
+        )
+        return 1
 
     # Any row with a quote_error is a hard "broker failed" signal;
     # surface exit code so CI / operator notice. Classifier-only

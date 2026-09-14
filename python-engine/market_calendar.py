@@ -408,8 +408,9 @@ def classify_session_phase(
     *,
     symbol: str | None = None,
     is_derivative: bool = False,
+    cas_eligible: bool | None = None,
 ) -> str:
-    """[WORKFLOW-J 2026-09-13] Classify a single observation timestamp
+    """[WORKFLOW-J 2026-09-13, +J.3 2026-09-13] Classify a single observation timestamp
     into one of the bounded ``_VALID_SESSION_PHASES``.
 
     Contract:
@@ -421,6 +422,17 @@ def classify_session_phase(
           must combine this with ``is_trading_day_sync``. We intentionally
           keep the two concerns separate -- the phase is a clock-only
           classification, the holiday check is a calendar concern.
+        * CAS eligibility is resolved at the boundary, not from inside
+          this function. The function NEVER calls ``is_cas_eligible``
+          on its own -- the caller passes ``cas_eligible`` as an
+          explicit keyword. Default ``None`` falls back to the legacy
+          behavior: the function calls ``is_cas_eligible(symbol)`` so
+          existing callers (tests, J.1 contract) keep their
+          character-for-character behavior. New callers (J.3 probe,
+          any consumer that resolves eligibility upstream) should pass
+          ``cas_eligible=True`` / ``False`` to make the contract
+          explicit and to bypass ``config.settings`` (which matters
+          for staging reproducibility and for fast unit tests).
 
     Phase selection (in order of precedence):
         1. ``observation_at is None`` -> ``UNKNOWN``.
@@ -490,10 +502,20 @@ def classify_session_phase(
     else:
         if market_open <= time_minutes < cas_open:
             return SESSION_PHASE_CONTINUOUS_TRADING
+    # CAS eligibility resolution.
+    # Senior-dev boundary: the classifier's phase decision is a
+    # deterministic function of (timestamp, symbol, is_derivative,
+    # CAS eligibility). Eligibility is a domain input that the
+    # caller resolves -- this function does NOT decide it. The
+    # default ``None`` is the legacy path for the J.1 contract
+    # (callers who pass no ``cas_eligible`` arg get the settings-
+    # driven lookup, preserving J.1 byte-identity). New callers
+    # pass the explicit value, making the contract honest.
+    if cas_eligible is None:
+        cas_eligible = is_cas_eligible(symbol)
     # CAS-eligible cash sub-windows (15:15 onward). CAS eligibility is
     # explicit; non-eligible symbols stay in CONTINUOUS_TRADING until
     # MARKET_CLOSE_TIME (15:30).
-    cas_eligible = is_cas_eligible(symbol)
     if cas_eligible:
         if cas_open <= time_minutes < cas_ref_end:
             return SESSION_PHASE_CAS_REFERENCE_PRICE_WINDOW

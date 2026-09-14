@@ -368,7 +368,85 @@ class TestProductionBehaviourPreserved:
         assert callable(is_market_open)
 
 
-# ---- (9) J.2 CAS eligibility list -------------------------------------
+# ---- (9.5) J.3 explicit ``cas_eligible`` kwarg -----------------------
+
+class TestClassifierCasEligibleKwarg:
+    """[WORKFLOW-J.3 2026-09-13] J.3 introduces an explicit
+    ``cas_eligible`` keyword on ``classify_session_phase``. Default
+    ``None`` preserves J.1 byte-identity (the function calls
+    ``is_cas_eligible(symbol)`` itself). Explicit values short-
+    circuit the lookup, which is what the J.3 probe uses to
+    reproduce staging captures without mutating settings.
+
+    These tests pin BOTH branches -- the legacy path (None) and
+    the explicit path (True / False) -- so future refactors
+    cannot accidentally regress the contract.
+    """
+
+    @pytest.mark.parametrize(
+        "hh,mm,cas_in,expected",
+        [
+            # CAS-eligible cash at the boundaries: every documented
+            # CAS sub-window resolves correctly when the caller
+            # explicitly passes cas_eligible=True.
+            (15, 14, True, SESSION_PHASE_CONTINUOUS_TRADING),  # last second pre-CAS
+            (15, 15, True, SESSION_PHASE_CAS_REFERENCE_PRICE_WINDOW),
+            (15, 19, True, SESSION_PHASE_CAS_REFERENCE_PRICE_WINDOW),
+            (15, 20, True, SESSION_PHASE_CAS_ORDER_ENTRY),
+            (15, 24, True, SESSION_PHASE_CAS_ORDER_ENTRY),
+            (15, 25, True, SESSION_PHASE_CAS_LIMIT_ENTRY_ONLY),
+            (15, 29, True, SESSION_PHASE_CAS_LIMIT_ENTRY_ONLY),
+            (15, 30, True, SESSION_PHASE_CAS_MATCHING),
+            (15, 34, True, SESSION_PHASE_CAS_MATCHING),
+            (15, 35, True, SESSION_PHASE_CAS_POST),
+            (15, 37, True, SESSION_PHASE_CAS_POST),  # post-CAS
+            (15, 59, True, SESSION_PHASE_CAS_POST),
+            # CAS-ineligible cash falls through to non-CAS paths:
+            # 15:15-15:29 is still CONTINUOUS_TRADING; 15:30+ is
+            # CLOSED.
+            (15, 14, False, SESSION_PHASE_CONTINUOUS_TRADING),
+            (15, 15, False, SESSION_PHASE_CONTINUOUS_TRADING),
+            (15, 29, False, SESSION_PHASE_CONTINUOUS_TRADING),
+            (15, 30, False, SESSION_PHASE_CLOSED),
+        ],
+    )
+    def test_explicit_cas_eligible_overrides_settings(
+        self, hh: int, mm: int, cas_in: bool, expected: str,
+    ) -> None:
+        phase = classify_session_phase(
+            _ist(hh, mm), symbol="RELIANCE", cas_eligible=cas_in,
+        )
+        assert phase == expected
+
+    def test_default_none_preserves_j1_legacy_path(
+        self, monkeypatch: pytest.MonkeyPatch,
+    ) -> None:
+        """When ``cas_eligible`` is not passed, the classifier
+        calls ``is_cas_eligible(symbol)`` internally -- exactly
+        as J.1 defined it. We monkeypatch ``market_calendar.is_cas_eligible``
+        to a known true/false and verify the phase resolves
+        consistently. J.1's 41 tests already pin this path;
+        this test makes the contract explicit at the J.3 boundary.
+        """
+        # Force True via monkeypatch.
+        monkeypatch.setattr(
+            "market_calendar.is_cas_eligible",
+            lambda sym: bool(sym),
+        )
+        assert classify_session_phase(_ist(15, 17), symbol="X") == (
+            SESSION_PHASE_CAS_REFERENCE_PRICE_WINDOW
+        )
+        # Force False via monkeypatch.
+        monkeypatch.setattr(
+            "market_calendar.is_cas_eligible",
+            lambda sym: False,
+        )
+        assert classify_session_phase(_ist(15, 17), symbol="X") == (
+            SESSION_PHASE_CONTINUOUS_TRADING
+        )
+
+
+# ---- (10) J.2 CAS eligibility list ------------------------------------
 
 class TestIsCasEligible:
     """[WORKFLOW-J.2 2026-09-13] Tests for the operator-supplied
