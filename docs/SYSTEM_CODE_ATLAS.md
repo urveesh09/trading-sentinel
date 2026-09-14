@@ -118,6 +118,16 @@ Top-level declarations: `_write_output_atomic` (line 44), `_thresholds_from_conf
 
 Engine dependencies: `capital_policy`, `config`
 
+## `python-engine/cas_reachability_gate.py`
+
+[WORKFLOW-J.10 2026-09-13] CAS-branch reachability gate. Plan §14 says ``auction-imbalance research is excluded`` and ``any auction-based strategy is separate research with auction execution semantics, not an extension of a continuous-market fill model``. J.10 ships the **gate** that enforces this boundary -- not the strategy itself. The gate answers: "have the CAS sub-window branches of ``classify_session_phase`` been exercised by real production call sites?" It walks ``docs/j2_captures/`` (the J.3 receipt directory) and emits a structured verdict: { "verdict": "REACHABLE" | "UNREACHABLE", "captured_phases": {"PHASE": count, ...}, "missing_phases": ["PHASE", ...], "coverage_pct": float, # %
+
+Top-level declarations: `_safe_phase_from_capture` (line 75), `cas_reachability_report` (line 113), `format_report` (line 177), `write_report` (line 199), `_format_missing_section` (line 276), `update_summary` (line 294)
+
+Engine dependencies: `market_calendar`
+
+Related tests: `python-engine/tests/test_cas_reachability_gate.py`
+
 ## `python-engine/chandelier_stop.py`
 
 chandelier_stop.py -- Chandelier trailing stop implementation. OPEN QUESTION RESOLUTION (Task 9): GTT (Good Till Triggered) Orders --------------------------------------------------------------------- Issue: Can Kite GTT API replace the in-engine Chandelier trailing stop? Kite GTT API v3 supports OHLC trigger conditions: - trigger_type: "ohlc" with comparison operators (>, <, >=, <=) - Compares last_price against OHLC fields (open, high, low, close) - BUT: trigger_price is FIXED at GTT creation time Chandelier stop challenge: - trigger_price = highest_close_since_entry - (atr_mult x ATR) - highest_close increases whenever a new closing high is made - This means the trigger price would need t
@@ -497,14 +507,6 @@ Top-level declarations: `_resolve_repo_root` (line 67), `python_nse_holidays` (l
 Engine dependencies: `market_calendar`
 
 Related tests: `python-engine/tests/test_holiday_drift.py`
-
-## `python-engine/tests/fixtures/regenerate_session_phase_golden.py` (see [J.6 done](../docs/2026-09-13-j6-node-session-phase-mirror-done.md))
-
-Regenerator for the Node↔Python session-phase parity golden. Two sweeps: a wide minute-granularity sweep (8 days × 24 hours × 4 minutes × 3 option-combos = 2304 vectors) and a focused second-granularity boundary pass (17 instants × 3 option-combos = 51 vectors). The second pass hits sub-windows the minute-granularity sweep misses (CAS_LIMIT_ENTRY_ONLY at 15:25-15:30 IST, CAS_POST at cash 15:35-16:00 IST). Writes to both python-engine/tests/fixtures/ and node-gateway/server/tests/fixtures/ — the Node test consumer stays in lockstep with the Python source-of-truth via dual-write. **Do not call externally**; the Python pytest fixture in `test_session_phase_golden.py` runs this as a module-scoped fixture.
-
-## `python-engine/tests/fixtures/regenerate_execution_allowed_golden.py` (see [J.7 done](../docs/2026-09-13-j7-cas-aware-execution-gating-done.md))
-
-Regenerator for the Node↔Python execution-allowed parity golden. Same dual-sweep pattern as `regenerate_session_phase_golden.py` (broad minute-granularity + second-granularity boundary pass at 15:15/15:20/15:25/15:30/15:35/15:40 IST). Produces 3,525 vectors covering every phase × every option-combo × every pre-market override branch. Writes to both python-engine and node-gateway test fixtures. **Do not call externally**; the Python pytest fixture in `test_execution_allowed.py` runs this as a module-scoped fixture.
 
 ## `python-engine/indicators_adaptive.py`
 
@@ -1668,7 +1670,7 @@ Local routes: `GET /`
 
 ## `node-gateway/server/routes/internal.js`
 
-Dependencies: `../db`, `../middleware/auth`, `../middleware/validate`, `../services/telegram`, `express`, `pino`, `zod`
+Dependencies: `../db`, `../middleware/auth`, `../middleware/validate`, `../services/telegram`, `../utils/market-hours`, `express`, `pino`, `zod`
 
 Local routes: `POST /notify`, `POST /register-signal`
 
@@ -1686,7 +1688,7 @@ Local routes: `GET /signals`, `GET /rejected`, `GET /positions`, `GET /performan
 
 ## `node-gateway/server/routes/signals.js`
 
-Dependencies: `../config`, `../db/index`, `../middleware/logger`, `../services/telegram`, `../utils/errors`, `crypto`, `express`, `uuid`, `zod`
+Dependencies: `../config`, `../db/index`, `../middleware/logger`, `../services/telegram`, `../utils/errors`, `../utils/market-hours`, `crypto`, `express`, `uuid`, `zod`
 
 Local routes: `POST /`
 
@@ -1757,13 +1759,21 @@ Dependencies: `../api/client`, `lucide-react`, `react`
 
 Dependencies: `react`
 
+## `node-gateway/client/src/components/SessionPhaseBadge.jsx`
+
+Dependencies: `../utils/sessionPhase`, `react`
+
+## `node-gateway/client/src/components/SessionPhaseCard.jsx`
+
+Dependencies: `../utils/sessionPhase`, `lucide-react`, `react`
+
 ## `node-gateway/client/src/components/SignalCard.jsx`
 
-Dependencies: `../api/client`, `react`
+Dependencies: `../api/client`, `../utils/sessionPhase`, `react`
 
 ## `node-gateway/client/src/components/StatusBar.jsx`
 
-Dependencies: `../hooks/useHealth`, `lucide-react`, `react`
+Dependencies: `../hooks/useHealth`, `./SessionPhaseBadge`, `lucide-react`, `react`
 
 ## `node-gateway/client/src/evidenceMode.js`
 
@@ -1861,10 +1871,6 @@ Dependencies: `../components/PositionRow`, `../components/StatusBar`, `../hooks/
 
 Dependencies: `../hooks/useResearchExperiments`, `../utils/promotionReadiness`, `../utils/researchExperiments`, `lucide-react`, `react`
 
-## `node-gateway/client/src/utils/sessionPhase.js` (see [J.8 done](../docs/2026-09-13-j8-operator-session-phase-card-done.md))
-
-[WORKFLOW-J.8 2026-09-13] Pure single-source-of-truth utility for the dashboard's bounded-session-phase UI. Maps the 10 bounded phase strings (from `python-engine/market_calendar.classify_session_phase`, exposed via the J.6 Node mirror and surfaced through `health.session_phase`) to: (a) display label, (b) Tailwind colour class (green/yellow/red buckets), (c) execution-blocked boolean mirroring the J.7 server gate. Exports `VALID_SESSION_PHASES`, `PHASE_DISPLAY_LABEL`, `PHASE_COLOR_CLASS`, `coercePhase`, `isExecutionBlockedByPhase`, `describePhase`. Fail-closed contract: any non-bounded input (null/undefined/numbers/garbage strings) returns `executionBlocked: true` so a misconfigured health payload never silently allows an order that the server would reject. Consumed by `SessionPhaseBadge` (compact chip in StatusBar), `SessionPhaseCard` (full card on Dashboard), and `SignalCard` (action-disabled gate). When the bounded phase set changes, update this file + `market-hours.js` (`_EXEC_BLOCKING_PHASES`) + `market_calendar.py` (`_PHASE_EXECUTION_ALLOWED`) in lockstep.
-
 ## `node-gateway/client/src/utils/advisoryCollectionCoverage.js`
 
 Dependencies: none extracted
@@ -1886,6 +1892,10 @@ Dependencies: none extracted
 Dependencies: none extracted
 
 ## `node-gateway/client/src/utils/researchExperiments.js`
+
+Dependencies: none extracted
+
+## `node-gateway/client/src/utils/sessionPhase.js`
 
 Dependencies: none extracted
 
