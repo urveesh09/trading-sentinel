@@ -8,8 +8,10 @@ Pins:
   2. The python_nse_holidays() helper exposes the canonical set as
      ISO strings.
   3. holiday_drift_report() surfaces the documented drift between
-     Python (20 dates, NSE-aligned) and Node (18 dates, partially
-     drifted).
+     Python (20 dates, NSE-aligned) and Node (20 dates, the exact
+     ISO projection post-correction; the pre-correction 18-date
+     degraded set is documented in the test as the historical
+     drift signature).
   4. holiday_drift_report() with both sets equal returns ALIGNED.
   5. The CLI hook (run as a module) exits 0 on ALIGNED, 1 on DRIFT.
   6. /holidays route returns the canonical holiday set as a JSON
@@ -96,23 +98,27 @@ class TestParseNodeNseHolidays:
         )
         assert result == set()
 
-    def test_real_node_source_parses_to_eighteen_dates(self) -> None:
+    def test_real_node_source_parses_to_twenty_dates(self) -> None:
         """Cross-check: the canonical Node source file (the one in
         this repo at node-gateway/server/utils/market-hours.js)
-        has 18 dates. The detector must read that many. If this
+        has 20 dates. The detector must read that many. If this
         fails in the future, either the source was rewritten (and
         the detector's regex needs to learn the new syntax) or
         someone altered the file without running the drift check.
+
+        The post-correction-plan Node fallback is the exact ISO
+        projection of ``market_calendar.NSE_HOLIDAYS_STATIC``
+        (20 dates), not the pre-correction 18-date degraded set.
         """
         path = drift._NODE_MARKET_HOURS_JS
         if not path.exists():
             pytest.skip(f"canonical Node source not present: {path}")
         assert drift.node_nse_holidays_from_atlas(path) == {
-            "2026-01-26", "2026-03-10", "2026-03-17", "2026-03-31",
-            "2026-04-03", "2026-04-14", "2026-05-01", "2026-06-07",
-            "2026-07-07", "2026-08-15", "2026-08-26", "2026-09-05",
-            "2026-10-02", "2026-10-20", "2026-11-09", "2026-11-10",
-            "2026-11-27", "2026-12-25",
+            "2026-01-15", "2026-01-26", "2026-02-15", "2026-03-03",
+            "2026-03-21", "2026-03-26", "2026-03-31", "2026-04-03",
+            "2026-04-14", "2026-05-01", "2026-05-28", "2026-06-26",
+            "2026-08-15", "2026-09-14", "2026-10-02", "2026-10-20",
+            "2026-11-08", "2026-11-10", "2026-11-24", "2026-12-25",
         }
 
 
@@ -194,21 +200,34 @@ class TestHolidayDriftReport:
         assert len(rpt["in_both"]) == 10
 
     def test_real_world_drift_against_actual_node_source(self) -> None:
-        """The pre-J.5 documented drift must surface when the
-        detector is pointed at the canonical Node source.
+        """The post-correction Node source aligns with Python.
+
+        The pre-correction documented drift (Python=20,
+        Node=18) was caused by the Node fallback being a stale
+        hand-maintained list rather than the engine-projected
+        canonical set. The independent correction plan replaced
+        the Node ``NSE_HOLIDAYS_FALLBACK`` with the exact ISO
+        projection of ``market_calendar.NSE_HOLIDAYS_STATIC``,
+        so the drift detector now reports ALIGNED.
+
+        This test pins the post-correction ALIGNED state. If
+        Node ever diverges from Python again (a fresh holiday
+        announcement, an engine-projection regression), the
+        detector will report DRIFT and this test will fail.
         """
         path = drift._NODE_MARKET_HOURS_JS
         if not path.exists():
             pytest.skip(f"canonical Node source not present: {path}")
         rpt = drift.holiday_drift_report()
-        assert rpt["verdict"] == "DRIFT"
-        # Pre-J.5: python=20, node=18, drift_count=18.
+        assert rpt["verdict"] == "ALIGNED"
+        # Post-correction: python=20, node=20, drift_count=0.
         assert rpt["python_count"] == 20
-        assert rpt["node_count"] == 18
-        assert rpt["drift_count"] == 18
-        # Spot-check known Python-only and Node-only dates.
-        assert "2026-09-14" in rpt["python_only"]
-        assert "2026-03-10" in rpt["node_only"]
+        assert rpt["node_count"] == 20
+        assert rpt["drift_count"] == 0
+        # Spot-check that the canonical Python-only date is now
+        # present in both surfaces.
+        assert "2026-09-14" not in rpt["python_only"]
+        assert "2026-09-14" not in rpt["node_only"]
 
 
 # ---- (4) File-reading path ----------------------------------------

@@ -19,6 +19,7 @@ from market_calendar import (
     NSE_HOLIDAYS_ISO,
     NSE_HOLIDAY_DESCRIPTIONS,
     NSE_HOLIDAYS_STATIC,
+    NSE_HOLIDAYS_VALID_THROUGH,
 )
 
 router = APIRouter()
@@ -63,6 +64,7 @@ def get_nse_holidays():
         "holidays": list(NSE_HOLIDAYS_ISO),
         "descriptions": descriptions_iso,
         "count": len(NSE_HOLIDAYS_ISO),
+        "valid_through": NSE_HOLIDAYS_VALID_THROUGH,
         "source": (
             "python-engine/market_calendar.py::NSE_HOLIDAYS_STATIC"
         ),

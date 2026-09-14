@@ -139,6 +139,10 @@ def _iso_sorted() -> tuple[str, ...]:
 
 
 NSE_HOLIDAYS_ISO: tuple[str, ...] = _iso_sorted()
+# The audited static set is a 2026 fallback only.  Consumers that cannot
+# refresh it must fail closed after this date instead of silently treating a
+# future weekday as a trading day.
+NSE_HOLIDAYS_VALID_THROUGH: str = "2026-12-31"
 # Capture the ISO projection at import time. The holiday set is
 # static (process-pinned) -- this tuple never changes for the
 # lifetime of the process. Recomputing on every call would be

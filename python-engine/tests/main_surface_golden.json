@@ -457,6 +457,14 @@
       "response_model": null
     },
     {
+      "endpoint": "cas_eligibility",
+      "methods": [
+        "GET"
+      ],
+      "path": "/market-session/cas-eligibility",
+      "response_model": null
+    },
+    {
       "endpoint": "get_momentum_signals",
       "methods": [
         "GET"

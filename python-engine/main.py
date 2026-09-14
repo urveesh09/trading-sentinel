@@ -1609,7 +1609,7 @@ async def run_penny_hourly_report():
         # When Kite has no access_token (paper-mode CI, after-hours
         # cron in a fresh container, etc.) we degrade to UNKNOWN
         # quotes rather than crashing the report.
-        unrealised = 0.0
+        unrealised = None if penny_pos else 0.0
         try:
             from datetime import timezone as _tz
             from mark_to_market import (
@@ -1659,7 +1659,7 @@ async def run_penny_hourly_report():
                 now_utc=_now_utc,
                 freshness_seconds=MAX_QUOTE_AGE_SECONDS,
             )
-            unrealised = _mtm.total_unrealised_pnl
+            unrealised = _mtm.complete_unrealised_pnl
             from mark_to_market import QuoteStatus as _QS
             _stale_count = _mtm.count_by_status.get(_QS.STALE, 0)
             if _stale_count:
@@ -1668,13 +1668,11 @@ async def run_penny_hourly_report():
                     _stale_count, len(_mtm.marks),
                 )
         except Exception as _exc:
-            # Fail-closed-but-loud: log the failure but keep the
-            # hourly report going with the previous (zero) unrealised
-            # value rather than crashing the whole report.
+            # Preserve unknown valuation in the operator report, not zero.
             logger.warning(
                 "penny_hourly_mtm_unavailable err=%s", type(_exc).__name__,
             )
-            unrealised = 0.0
+            unrealised = None if penny_pos else 0.0
         # [AUDIT-FIX-2.4] Plumb universe as_of / age_days into the hourly
         # report so stale data is visible to the operator. Read directly
         # from the JSON (cheap -- one file read + 2 string fields).
@@ -4445,6 +4443,7 @@ from routes_penny_experiments import router as _penny_experiments_router
 from routes_promotion_readiness import router as _promotion_readiness_router
 from routes_hedge import router as _hedge_router
 from routes_holidays import router as _holidays_router  # WORKFLOW-J.5
+from routes_market_session import router as _market_session_router
 
 app.include_router(_ops_router)
 app.include_router(_portfolio_router)
@@ -4455,3 +4454,4 @@ app.include_router(_penny_experiments_router)
 app.include_router(_promotion_readiness_router)
 app.include_router(_hedge_router)
 app.include_router(_holidays_router)  # WORKFLOW-J.5
+app.include_router(_market_session_router)
