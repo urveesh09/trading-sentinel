@@ -84,6 +84,8 @@ The G forward-compat seam `proactive_intelligence.py::stamp_session_phase` still
 
 Operator evidence collection during a real CAS window uses `python-engine/tools/j2_cas_probe.py` (staging-only CLI; `--dry-run` for Dev sanity checks). The probe captures the classifier verdict + eligibility verdict + Kite quote (cash fields + circuit limits + broker-side extras), with `--now` or `--observation-at`, `--output` JSON path, and exit codes 0/1/2. It is NOT exercised by pytest — see `docs/2026-09-13-j2-broker-behaviour-probe.md` for the operator procedure and six-point review checklist. Until that evidence is captured and passed, no CAS-aware strategy is authorised.
 
+J.3 (this slice's J.3.1 + J.3.0) sharpens the probe (`SCHEMA_VERSION: 2`, inline JSON Schema, `--schema-print`, `--eligibility-list`, `--require-eligible`, `--validate`, strict ISO 8601) and adds the deterministic review tool `python-engine/tools/j2_capture_review.py`. The review tool runs the six-point checklist + an opt-in OHLC-continuity cross-window check against captured JSON and exits 0 only when every check passes. The operator protocol (`docs/2026-09-13-j3-capture-protocol.md`) prescribes a six-window capture grid (15:10 / 15:17 / 15:22 / 15:27 / 15:32 / 15:42 IST); the receipts land in `docs/j2_captures/YYYY-MM-DD/`. Until those receipts arrive, the broker-behaviour question remains open.
+
 The historical 15:30 → 15:40 expiry mismatch for derivatives (`fno_chain.EXPIRY_CUTOFF_HOUR/_MIN` and `hedge_strategies._EXPIRY_CUTOFF`) is documented but explicitly NOT fixed in J.1/J.2 — plan §14 forbids changing strategy deadlines without operator sign-off.
 
 ## 6. Broker execution and accounting
