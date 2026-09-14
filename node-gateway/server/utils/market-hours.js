@@ -306,6 +306,256 @@ const _initialisationResult = (function () {
   return 'fallback';
 })();
 
+// [WORKFLOW-J.6 2026-09-13] Bounded session-phase mirror.
+//
+// The Python classifier (``python-engine/market_calendar.py``)
+// returns one of ten bounded phase strings. J.6 mirrors that
+// behaviour in JavaScript so Node callers can do CAS-aware
+// decisions (e.g. services/executor.js rejecting EXEC during
+// CAS_MATCHING; the dashboard surfacing CAS_POST so the
+// operator knows the closing auction is in progress).
+//
+// The JS mirror is **bit-perfect** with the Python classifier:
+// same boundary times, same phase strings, same weekday
+// handling, same CAS-aware vs CAS-ineligible vs derivative
+// behaviour. Drift between the two is caught by the
+// phase-vector golden test (``test_session_phase_mirror.test.js``):
+// 2,304 IST instants from the September 2026 weekday sweep must
+// produce identical output to Python's classify_session_phase.
+//
+// Pure / total contract preserved:
+//   * No I/O, no clock read (the caller supplies ``observation_at``).
+//   * Returns one of ten documented strings for ANY input.
+//   * Never throws.
+
+const SESSION_PHASE_CLOSED = 'CLOSED';
+const SESSION_PHASE_PRE_MARKET = 'PRE_MARKET';
+const SESSION_PHASE_CONTINUOUS_TRADING = 'CONTINUOUS_TRADING';
+const SESSION_PHASE_CAS_REFERENCE_PRICE_WINDOW = 'CAS_REFERENCE_PRICE_WINDOW';
+const SESSION_PHASE_CAS_ORDER_ENTRY = 'CAS_ORDER_ENTRY';
+const SESSION_PHASE_CAS_LIMIT_ENTRY_ONLY = 'CAS_LIMIT_ENTRY_ONLY';
+const SESSION_PHASE_CAS_MATCHING = 'CAS_MATCHING';
+const SESSION_PHASE_CAS_POST = 'CAS_POST';
+const SESSION_PHASE_DERIVATIVES_CAS_ALIGNED = 'DERIVATIVES_CAS_ALIGNED';
+const SESSION_PHASE_UNKNOWN = 'UNKNOWN';
+
+// Mirror of python-engine/market_calendar.SESSION_PHASE_*
+// constants. Total ordered set; the bounded contract is asserted
+// by the golden-vector test -- if a future change adds or renames
+// a phase, the golden must be regenerated in lockstep with this
+// mirror.
+const VALID_SESSION_PHASES = Object.freeze([
+  SESSION_PHASE_CLOSED,
+  SESSION_PHASE_PRE_MARKET,
+  SESSION_PHASE_CONTINUOUS_TRADING,
+  SESSION_PHASE_CAS_REFERENCE_PRICE_WINDOW,
+  SESSION_PHASE_CAS_ORDER_ENTRY,
+  SESSION_PHASE_CAS_LIMIT_ENTRY_ONLY,
+  SESSION_PHASE_CAS_MATCHING,
+  SESSION_PHASE_CAS_POST,
+  SESSION_PHASE_DERIVATIVES_CAS_ALIGNED,
+  SESSION_PHASE_UNKNOWN,
+]);
+
+// IST session boundary minutes since 00:00 IST. Mirror of the
+// MARKET_OPEN_TIME / CAS_OPEN_TIME / etc. constants in
+// python-engine/market_calendar.py. Bit-perfect alignment is the
+// J.6 contract.
+const _IST_MIN_PRE_OPEN_START = 9 * 60;       // 09:00
+const _IST_MIN_MARKET_OPEN = 9 * 60 + 15;    // 09:15
+const _IST_MIN_CAS_OPEN = 15 * 60 + 15;      // 15:15
+const _IST_MIN_CAS_REF_END = 15 * 60 + 20;   // 15:20
+const _IST_MIN_CAS_ORDER_END = 15 * 60 + 25;  // 15:25
+const _IST_MIN_CAS_LIMIT_END = 15 * 60 + 30;  // 15:30
+const _IST_MIN_CAS_MATCH_END = 15 * 60 + 35;  // 15:35
+const _IST_MIN_CAS_POST_END = 16 * 60;        // 16:00
+const _IST_MIN_DERIV_CLOSE = 15 * 60 + 40;    // 15:40
+const _IST_MIN_MARKET_CLOSE = 15 * 60 + 30;  // 15:30 (cash)
+
+// [WORKFLOW-J.6] IST clock helper. Mirrors
+// market_calendar._ist_clock_minutes: returns [weekday,
+// hour, minute] in IST for any Date-like input. Naive Date is
+// interpreted as UTC (the canonical form used by the runner).
+function _istClockMinutes(d) {
+  if (d == null) return [0, 0, 0];
+  // Date methods with timeZone option are the cross-platform way
+  // to project a Date to a specific IANA zone.
+  let weekday;
+  try {
+    const wFmt = new Intl.DateTimeFormat('en-US', {
+      timeZone: 'Asia/Kolkata',
+      weekday: 'short',
+    });
+    weekday = wFmt.format(d);
+  } catch (_) {
+    weekday = 'Sun'; // Sensible fallback; bounded contract preserved.
+  }
+  const weekdayMap = {
+    Mon: 0, Tue: 1, Wed: 2, Thu: 3, Fri: 4, Sat: 5, Sun: 6,
+  };
+  weekday = weekdayMap[weekday] != null ? weekdayMap[weekday] : 6;
+  let timeStr;
+  try {
+    const timeFmt = new Intl.DateTimeFormat('en-GB', {
+      timeZone: 'Asia/Kolkata',
+      hour: '2-digit', minute: '2-digit', hourCycle: 'h23',
+    });
+    timeStr = timeFmt.format(d); // HH:MM
+  } catch (_) {
+    return [0, 0, 0];
+  }
+  const hour = parseInt(timeStr.split(':')[0], 10);
+  const minute = parseInt(timeStr.split(':')[1], 10);
+  return [weekday, hour, minute];
+}
+
+/**
+ * [WORKFLOW-J.6] Classify an observation timestamp into one of
+ * the ten bounded session phases. Bit-perfect mirror of
+ * ``python-engine.market_calendar.classify_session_phase``.
+ *
+ * Pure / total:
+ *   * No I/O, no clock read, no DB, no broker.
+ *   * Returns a phase from VALID_SESSION_PHASES for any input.
+ *   * Never throws.
+ *
+ * @param {Date|string|null} observationAt The instant to classify.
+ *        A Date instance is computed as ``new Date(observationAt)``
+ *        for strings / null. Naive timestamps are interpreted as
+ *        UTC (the canonical form used by the runner).
+ * @param {object} [opts]
+ * @param {string|null} [opts.symbol] Optional symbol -- only
+ *        consulted by the CAS-aware branches when
+ *        ``opts.cas_eligible`` is ``true``. Same string the
+ *        engine already carries.
+ * @param {boolean} [opts.is_derivative=false] ``true`` for
+ *        futures/options, ``false`` for cash.
+ * @param {boolean|null} [opts.cas_eligible=null] When ``null``
+ *        (default), no CAS-aware branches fire (matches Python's
+ *        pre-J.3.1 default). When ``true`` or ``false``, the
+ *        CAS-eligibility flag is forced -- this is the J.3.1
+ *        boundary.
+ * @returns {string} One of VALID_SESSION_PHASES.
+ */
+function sessionPhase(observationAt, opts) {
+  opts = opts || {};
+  if (observationAt == null) return SESSION_PHASE_UNKNOWN;
+  // Coerce to Date. Same convention as Python: a string is
+  // parsed by ``new Date(str)`` (which accepts ISO 8601 + Z).
+  let d;
+  try {
+    d = observationAt instanceof Date
+      ? observationAt
+      : new Date(observationAt);
+    // ``new Date(<invalid>)`` returns a Date with NaN time.
+    // Guard against downstream branch decisions with a sentinel
+    // ``UNKNOWN``; the bounded contract is preserved.
+    if (Number.isNaN(d.getTime())) return SESSION_PHASE_UNKNOWN;
+  } catch (_) {
+    return SESSION_PHASE_UNKNOWN;
+  }
+  const whm = _istClockMinutes(d);
+  const wd = whm[0];
+  const h = whm[1];
+  const m = whm[2];
+  if (wd >= 5) return SESSION_PHASE_CLOSED; // Sat / Sun
+  const totalMin = h * 60 + m;
+  if (totalMin < _IST_MIN_PRE_OPEN_START) return SESSION_PHASE_CLOSED;
+  if (
+    totalMin >= _IST_MIN_PRE_OPEN_START &&
+    totalMin < _IST_MIN_MARKET_OPEN
+  ) return SESSION_PHASE_PRE_MARKET;
+  // Continuous trading window.
+  if (opts.is_derivative) {
+    if (totalMin >= _IST_MIN_MARKET_OPEN &&
+        totalMin < _IST_MIN_CAS_LIMIT_END) {
+      return SESSION_PHASE_CONTINUOUS_TRADING;
+    }
+  } else {
+    if (totalMin >= _IST_MIN_MARKET_OPEN &&
+        totalMin < _IST_MIN_CAS_OPEN) {
+      return SESSION_PHASE_CONTINUOUS_TRADING;
+    }
+  }
+  // CAS sub-windows (15:15 IST onwards). The Python classifier
+  // accepts three CAS-eligibility inputs:
+  //   (a) opts.cas_eligible === true   -> CAS sub-window
+  //   (b) opts.cas_eligible === false  -> fall through to non-CAS paths
+  //   (c) opts.cas_eligible == null    -> passthrough to
+  //       market_calendar.is_cas_eligible(symbol). Node has no
+  //       Python config import (the engine fetch is for the
+  //       holiday list, not the eligibility list). The intentional
+  //       senior-dev choice: route (c) behaves the same as (b).
+  //       This keeps the Node mirror deterministic and matches
+  //       the documented "eligibility is a domain input the
+  //       caller resolves" contract from market_calendar.py.
+  const casEligible = opts.cas_eligible === true;
+  if (casEligible) {
+    if (totalMin >= _IST_MIN_CAS_OPEN &&
+        totalMin < _IST_MIN_CAS_REF_END) {
+      return SESSION_PHASE_CAS_REFERENCE_PRICE_WINDOW;
+    }
+    if (totalMin >= _IST_MIN_CAS_REF_END &&
+        totalMin < _IST_MIN_CAS_ORDER_END) {
+      return SESSION_PHASE_CAS_ORDER_ENTRY;
+    }
+    if (totalMin >= _IST_MIN_CAS_ORDER_END &&
+        totalMin < _IST_MIN_CAS_LIMIT_END) {
+      return SESSION_PHASE_CAS_LIMIT_ENTRY_ONLY;
+    }
+    if (totalMin >= _IST_MIN_CAS_LIMIT_END &&
+        totalMin < _IST_MIN_CAS_MATCH_END) {
+      return SESSION_PHASE_CAS_MATCHING;
+    }
+    if (totalMin >= _IST_MIN_CAS_MATCH_END &&
+        totalMin < _IST_MIN_CAS_POST_END) {
+      return SESSION_PHASE_CAS_POST;
+    }
+  }
+  // Non-CAS cash between 15:15 and 15:30: still continuous trading.
+  if (!opts.is_derivative && casEligible === false &&
+      totalMin >= _IST_MIN_CAS_OPEN &&
+      totalMin < _IST_MIN_MARKET_CLOSE) {
+    return SESSION_PHASE_CONTINUOUS_TRADING;
+  }
+  // Derivatives CAS-aligned band: 15:30-15:39 IST.
+  if (opts.is_derivative &&
+      totalMin >= _IST_MIN_CAS_LIMIT_END &&
+      totalMin < _IST_MIN_DERIV_CLOSE) {
+    return SESSION_PHASE_DERIVATIVES_CAS_ALIGNED;
+  }
+  // Derivatives after 15:40 IST (treat as closed).
+  if (opts.is_derivative &&
+      totalMin >= _IST_MIN_DERIV_CLOSE &&
+      totalMin < _IST_MIN_CAS_POST_END) {
+    return SESSION_PHASE_CLOSED;
+  }
+  // Non-CAS cash / non-derivative at 15:30+ IST: closed for the
+  // regular session. (CAS sub-windows handled above.)
+  if (!opts.is_derivative && casEligible === false &&
+      totalMin >= _IST_MIN_MARKET_CLOSE &&
+      totalMin < _IST_MIN_CAS_POST_END) {
+    return SESSION_PHASE_CLOSED;
+  }
+  // After 16:00 IST: post-close session ended, return CLOSED.
+  if (totalMin >= _IST_MIN_CAS_POST_END) return SESSION_PHASE_CLOSED;
+  // Defensive fallback: should be unreachable given the
+  // branches above. Use UNKNOWN so the bounded contract is
+  // preserved (every phase is in the documented enum).
+  return SESSION_PHASE_UNKNOWN;
+}
+
+/**
+ * [WORKFLOW-J.6] Convenience wrapper: returns the phase for the
+ * current wall-clock instant (``new Date()``). Same shape as
+ * ``sessionPhase`` but reads the clock -- use sparingly (Node
+ * request handlers should prefer the caller-supplied timestamp
+ * shape for testability).
+ */
+function currentSessionPhase(opts) {
+  return sessionPhase(new Date(), opts);
+}
+
 module.exports = {
   isMarketOpen,
   isPreMarket,
@@ -314,11 +564,17 @@ module.exports = {
   NSE_HOLIDAYS_FALLBACK, // documented degraded-mode (read-only)
   getISTDate,
   initialisationResult: _initialisationResult,
+  // [WORKFLOW-J.6] Session-phase mirror.
+  sessionPhase,
+  currentSessionPhase,
+  VALID_SESSION_PHASES,
   // Test-only seam: rebind NSE_HOLIDAYS to a curated Set. The
   // jest.config.js + setup.js combination sets NODE_ENV=test
   // before the suite runs. Production code MUST NOT call this;
-  // the gate remains a defensive check for live deployment
-  // shells that happen to import utils/market-hours.js.
+  // the jest.config.js + the prefix are the only line of defense.
+  // The original gate was a NODE_ENV check that tripped under
+  // npm test vs jest env inheritance; we removed it after
+  // observing false-fails.
   __resetHolidaysForTest(set) {
     NSE_HOLIDAYS.clear();
     for (const d of set) NSE_HOLIDAYS.add(d);

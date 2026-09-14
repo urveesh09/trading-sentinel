@@ -51,6 +51,8 @@ jest.mock('../../services/token-store', () => ({
 
 jest.mock('../../utils/market-hours', () => ({
   isMarketOpen: jest.fn(() => true),
+  // [WORKFLOW-J.6] Mirror the export surface.
+  currentSessionPhase: jest.fn(() => 'CONTINUOUS_TRADING'),
 }));
 
 const mockPrepare = jest.fn();

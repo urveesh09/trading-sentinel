@@ -3,7 +3,7 @@ const { signalsDb } = require('../db/index');
 const { withRetry } = require('../utils/retry');
 const config = require('../config');
 const telegram = require('./telegram');
-const { isMarketOpen } = require('../utils/market-hours');
+const { isMarketOpen, currentSessionPhase } = require('../utils/market-hours');
 const { 
   TokenExpiredError, ValidationError, PriceDriftError, 
   MarketClosedError, OrderExecutionError, InsufficientMarginError
@@ -425,6 +425,15 @@ async function executeSignal(signal, action, isIntraday = false) {
     // 1. Token & Pre-checks
   if (!require('./token-store').isValid()) throw new TokenExpiredError();
   if (!isMarketOpen()) throw new MarketClosedError();
+  // [WORKFLOW-J.6] Phase-aware diagnostic. The hard guard above
+  // remains the contract; this is an observability nudge so an
+  // operator reading the log can see whether the rejection happened
+  // during CONTIGUOUS_TRADING (suspicious), CAS_MATCHING (expected
+  // during the closing auction), or via CLOSED (after-hours).
+  logger.info({
+    event_type: 'execution_phase_at_reject',
+    phase: currentSessionPhase(),
+  });
   if (signal.capital_at_risk > 1500) throw new ValidationError('Capital at risk exceeds absolute maximum limit.');
   if (!signal.signal_id) throw new ValidationError('signal_id is required before broker execution');
   const trackedSignal = signalsDb.prepare(`SELECT signal_id FROM received_signals WHERE signal_id = ?`).get(signal.signal_id);

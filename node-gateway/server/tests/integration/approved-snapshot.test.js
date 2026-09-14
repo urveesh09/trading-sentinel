@@ -41,7 +41,12 @@ jest.mock('../../services/executor', () => ({
   syncToEngine: jest.fn(),
 }));
 
-jest.mock('../../utils/market-hours', () => ({ isMarketOpen: jest.fn() }));
+jest.mock('../../utils/market-hours', () => ({
+  isMarketOpen: jest.fn(),
+  // [WORKFLOW-J.6] Mirror the export surface so production code
+  // that calls ``currentSessionPhase()`` does not raise.
+  currentSessionPhase: jest.fn(() => 'CONTINUOUS_TRADING'),
+}));
 
 // ── A tiny in-memory stand-in for the two tables the handler touches ──
 const snapshots = new Map();   // signal_id -> {action, payload_json}

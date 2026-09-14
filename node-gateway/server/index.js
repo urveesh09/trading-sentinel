@@ -5,7 +5,7 @@ const { logger } = require('./middleware/logger');
 const { signalsDb, appDb } = require('./db/index');
 const executor = require('./services/executor');
 const telegram = require('./services/telegram');
-const { isMarketOpen } = require('./utils/market-hours');
+const { isMarketOpen, currentSessionPhase } = require('./utils/market-hours');
 
 const server = http.createServer(app);
 
@@ -86,7 +86,18 @@ telegram.bot.on('callback_query', async (query) => {
 
     // 5. Market Hours Check (Only for Executions)
     if ((action === 'EXEC' || action === 'EM') && !isMarketOpen()) {
-      await telegram.bot.answerCallbackQuery(query.id, { text: 'Market closed. Cannot execute now.', show_alert: true });
+      // [WORKFLOW-J.6] Phase-aware user message. The hard guard
+      // above remains the contract; the message tells the operator
+      // / telegram callback which phase rejected the action
+      // (suspicious: CAS_MATCHING; expected: CLOSED).
+      const phase = currentSessionPhase();
+      const phaseLabel = phase === 'CLOSED'
+        ? 'Market closed'
+        : `Market in ${phase}`;
+      await telegram.bot.answerCallbackQuery(query.id, {
+        text: `${phaseLabel}. Cannot execute now.`,
+        show_alert: true,
+      });
       return;
     }
 

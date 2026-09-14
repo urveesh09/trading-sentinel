@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const config = require('../config');
 const tokenStore = require('../services/token-store');
-const { isMarketOpen } = require('../utils/market-hours');
+const { isMarketOpen, sessionPhase, currentSessionPhase } = require('../utils/market-hours');
 const { signalsDb } = require('../db/index');
 const { undeliveredAlertCount } = require('../services/telegram');
 const { releaseIdentity } = require('../release-identity');
@@ -101,6 +101,13 @@ router.get('/', async (req, res) => {
     python_engine: pythonEngineStatus,
     python_engine_ms: pythonEngineMs,
     market_open: marketOpen,
+    // [WORKFLOW-J.6] Bounded session phase (mirror of
+    // ``python-engine/market_calendar.classify_session_phase``).
+    // Operators can use this to surface CAS sub-windows in
+    // dashboards and to gate CAS-aware decisions in services.
+    // The reading is fresh on every request (no caching) so the
+    // phase is always current as of the response moment.
+    session_phase: currentSessionPhase(),
     last_signal_received: lastSignalReceived,
     last_order_placed: lastOrderPlaced,
     last_order_ticker: lastOrderTicker,

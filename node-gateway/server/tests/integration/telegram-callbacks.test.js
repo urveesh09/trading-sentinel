@@ -30,6 +30,8 @@ jest.mock('../../services/executor', () => ({
 
 jest.mock('../../utils/market-hours', () => ({
   isMarketOpen: jest.fn(),
+  // [WORKFLOW-J.6] Mirror the export surface.
+  currentSessionPhase: jest.fn(() => 'CONTINUOUS_TRADING'),
 }));
 
 const mockPrepare = jest.fn();
@@ -232,6 +234,12 @@ describe('Telegram Callback Handler', () => {
   // ─── 5. EXEC outside market hours ───
   runTest('EXEC outside market hours - blocked', async () => {
     isMarketOpen.mockReturnValue(false);
+    // [WORKFLOW-J.6] The hard guard ``isMarketOpen() = false``
+    // is paired with the bounded phase ``CLOSED``. The
+    // sessionPhase mirror and isMarketOpen are not redundant:
+    // the binary ``isMarketOpen`` is the gate, the bounded
+    // phase is the explanatory label.
+    require('../../utils/market-hours').currentSessionPhase.mockReturnValue('CLOSED');
     const query = makeCallbackQuery('EXEC', 'a1b2c3d4');
     await callbackHandler(query);
 
@@ -320,6 +328,9 @@ describe('Telegram Callback Handler', () => {
   // ─── 11. EM outside market hours - blocked ───
   runTest('EM outside market hours - blocked', async () => {
     isMarketOpen.mockReturnValue(false);
+    // [WORKFLOW-J.6] Pair the binary gate with the bounded
+    // phase so the explanatory label is realistic.
+    require('../../utils/market-hours').currentSessionPhase.mockReturnValue('CLOSED');
     const query = makeCallbackQuery('EM', 'RELIANCE_MOM');
     await callbackHandler(query);
 
