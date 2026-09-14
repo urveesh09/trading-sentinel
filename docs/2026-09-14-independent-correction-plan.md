@@ -1,0 +1,21 @@
+# September14 bounded independent corrections
+
+Starting source7d70e82; G correction8561820 reconciled before further source edits. Production read-only, GitHub promotion only. Preserve two external golden timestamp edits, all existing history and unrelated changes. Root owns docs/commits and F6. Assigned agents own disjoint bounded source/tests; no agent commit or transport/broker calls.
+
+## F3/F4/F5 writer/account/output contracts
+
+Files: mark_to_market.py, discrepancies.py, reconciliation_cli.py and their tests. FNO qty already contract units: never multiply lot_size again. Test owning SQLite writer/readback. Existing DR legs lack immutable quote identity: explicit unsupported status, no guessed symbols or book migration. Internal ledger facts are accountless: record under INTERNAL_UNSCOPED, preserve and label legacy account attribution unverified rather than rewriting history. Broker-account evidence remains distinct. Explicit statement import mutates dedicated tables; immutable CLI artifacts exclude retry-varying flags, reject null/blank IDs, handle collisions explicitly. Writer-faithful temp-DB regressions and three-file warnings-fatal acceptance; root independently review integration/old tests before commit.
+
+## J/H live eligibility and degraded calendar
+
+Files: authenticated Python eligibility route, Node resolver/executor/callback/market-hours and focused tests. Python configured eligibility is authoritative; no new independent Node env list. Pass explicit eligibility to actual execution callers; unavailable resolution in affected CAS interval blocks entry, never defaults to continuous trading. Exact Python audited holiday set projects to Node immediately; calendar validity bounds fail closed when stale and refresh unavailable. Mock service/broker boundaries in actual entry/callback tests; no real HTTP/broker execution. Separate square-off deadline/ownership and product-kind classifier work remains open, not silently bundled into this repair. Official CAS source verification required before boundary edits.
+
+## F6 fail-closed capital evidence
+
+Files: capital_policy.py/config.py/capital_policy_cli.py and focused tests. Loss tolerance unknown until explicit input; reject bool/nonfinite/nonpositive increases. Accountless allocation/quality/loss facts and arbitrary archive existence cannot authorize an account. Unavailable source/refused linkage must yield INSUFFICIENT_EVIDENCE, never zero DD/loss defaults or AUTHORIZED. Preserve pure API fields/CLI evaluation-only authority with explicit limitations; genuine independently validated account/F/G/D linkage remains separate. No existing live pool or execution change.
+
+## Verification and release
+
+F3 reporting follow-up after writer repair review: root owns `mark_to_market.py` aggregate completeness, `main.py` hourly-report region only and `penny_hourly_report.py`/focused tests. Keep existing partial numeric subtotal API for compatibility but expose complete-fresh valuation separately; incomplete/stale/unsupported quotes must render UNAVAILABLE instead of a misleading zero in both active and no-action operator reports. No send/transport behavior changed or tested live. J agent retains only its main.py import/include lines.
+
+Record failing reproduction before repair when possible, then focused warnings-fatal suites, full engine clean exit (currently3304-case receipt has no failures but teardown still active), native Node tests/client/agent checks and canonical guide/plan/checklist/atlas reconciliation. New source commit reviewed/stat/status immediately, fix docs before further implementation. Rollback code through GitHub preserves books/evidence; no operational schema/history rewrite. Test counts do not establish profitable strategy, operator risk approval, deployment or market-session acceptance.
