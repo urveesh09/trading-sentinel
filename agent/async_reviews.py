@@ -29,11 +29,27 @@ class ReviewSubmission:
 
 @dataclass(frozen=True)
 class _Task:
+    """[WORKFLOW-I.4.D 2026-09-14] Internal queue task. The
+    optional ``pre_classifications`` field carries the bounded
+    classifier's output through the queue so the async reviewer
+    can render the CLASSIFIED SENTIMENT DATA section in the
+    prompt. When None (the default, and every pre-I.4.D
+    caller's path), the verdict pipeline consumes raw
+    sentiment_text exactly as before.
+
+    The field is frozen (the dataclass is frozen) and forwarded
+    by reference -- the queue does not mutate the list. The
+    queue's cache key is still just ``key``; pre_classifications
+    is part of the task payload, not the cache key, because the
+    same signal may have different classifications across calls
+    (the classifier is opt-in via ENABLE_NEWS_CLASSIFIER=1).
+    """
     key: str
     signal: dict
     sentiment: str
     regime: str
     expires_at: datetime
+    pre_classifications: tuple = ()
 
 
 class AsyncReviewQueue:
@@ -41,7 +57,7 @@ class AsyncReviewQueue:
 
     def __init__(
         self,
-        reviewer: Callable[[dict, str, str], Review],
+        reviewer: Callable[..., Review],  # [WORKFLOW-I.4.D 2026-09-14] widened signature
         *,
         max_pending: int = 16,
         max_requests_per_day: int = 40,
@@ -105,9 +121,21 @@ class AsyncReviewQueue:
         self._worker.start()
 
     def submit(
-        self, key: str, signal: dict, sentiment: str, regime: str, *, expires_at: datetime,
+        self, key: str, signal: dict, sentiment: str, regime: str, *,
+        expires_at: datetime,
+        pre_classifications: Optional[List["ClassificationResult"]] = None,
     ) -> ReviewSubmission:
-        """Queue one immutable decision/event review without blocking callers."""
+        """Queue one immutable decision/event review without blocking callers.
+
+        [WORKFLOW-I.4.D 2026-09-14] Optional ``pre_classifications``:
+        forwarded to the reviewer when the queued task runs.
+        ``None`` (the default, every pre-I.4.D caller's path)
+        preserves the existing verdict-prompt shape (the
+        "no pre-classifications supplied" placeholder renders
+        and raw sentiment_text flows through unchanged). The
+        list is captured by reference; the queue does not
+        mutate it.
+        """
         if not isinstance(key, str) or not key.strip():
             raise ValueError("review key is required")
         if expires_at.tzinfo is None or expires_at.utcoffset() is None:
@@ -139,7 +167,18 @@ class AsyncReviewQueue:
             day = now.date().isoformat()
             if self._requests_by_day.get(day, 0) >= self._max_requests_per_day:
                 return self._remember(ReviewSubmission(key, "BUDGET_EXHAUSTED", reason="daily_request_budget"))
-            task = _Task(key, deepcopy(dict(signal)), str(sentiment), str(regime), expires_at)
+            # [WORKFLOW-I.4.D 2026-09-14] The classifications tuple
+            # is frozen (so the in-queue task cannot be mutated)
+            # and carries the operator's per-call pre_classifications
+            # through the queue to the reviewer. ``None`` becomes an
+            # empty tuple so the reviewer signature is uniform.
+            classifications_tuple = (
+                tuple(pre_classifications) if pre_classifications else ()
+            )
+            task = _Task(
+                key, deepcopy(dict(signal)), str(sentiment), str(regime),
+                expires_at, classifications_tuple,
+            )
             self._requests_by_day[day] = self._requests_by_day.get(day, 0) + 1
             if not self._persist_budget_state():
                 self._requests_by_day[day] -= 1
@@ -330,7 +369,44 @@ class AsyncReviewQueue:
                         self._remember(ReviewSubmission(task.key, "CIRCUIT_OPEN", reason="provider_failures"))
                         continue
                 try:
-                    review = self._reviewer(task.signal, task.sentiment, task.regime)
+                    # [WORKFLOW-I.4.D 2026-09-14] Forward the
+                    # queued pre_classifications to the reviewer
+                    # when the reviewer accepts the
+                    # ``pre_classifications`` keyword. Older
+                    # reviewers (e.g. lambdas in tests) that don't
+                    # accept the keyword are invoked with the
+                    # original 3-arg shape so this queue stays
+                    # backwards-compatible with the existing test
+                    # suite.
+                    import inspect
+                    reviewer_params = inspect.signature(self._reviewer).parameters
+                    accepts_pre_cls = (
+                        "pre_classifications" in reviewer_params
+                    )
+                    if accepts_pre_cls and task.pre_classifications:
+                        review = self._reviewer(
+                            task.signal,
+                            task.sentiment,
+                            task.regime,
+                            pre_classifications=list(task.pre_classifications),
+                        )
+                    elif accepts_pre_cls:
+                        # Pre-classifications empty -> call with
+                        # None so the renderer's "no pre-classifications
+                        # supplied" placeholder still triggers.
+                        review = self._reviewer(
+                            task.signal,
+                            task.sentiment,
+                            task.regime,
+                            pre_classifications=None,
+                        )
+                    else:
+                        # Backwards-compatible: 3-arg call shape.
+                        review = self._reviewer(
+                            task.signal,
+                            task.sentiment,
+                            task.regime,
+                        )
                 except Exception:
                     review = unavailable("worker_exception")
                 completed = self._now()

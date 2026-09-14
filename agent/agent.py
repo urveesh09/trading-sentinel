@@ -1231,12 +1231,26 @@ def publish_optional_ai_status() -> None:
     threading.Thread(target=_post, name="optional-ai-status", daemon=True).start()
 
 
-def queue_optional_ai_review(signal: Dict, sentiment_text: str, market_regime: str) -> Optional[Review]:
+def queue_optional_ai_review(
+    signal: Dict,
+    sentiment_text: str,
+    market_regime: str,
+    pre_classifications: Optional[List["ClassificationResult"]] = None,
+) -> Optional[Review]:
     """Queue a momentum-only annotation, returning immediately to the alert path.
 
     ``None`` means the caller must retain its existing synchronous policy.
     A pending or dropped review is represented explicitly in the operator
     alert; it is never mistaken for approval and cannot mutate signal numbers.
+
+    [WORKFLOW-I.4.D 2026-09-14] Optional ``pre_classifications``:
+    forwarded to ``analyze_with_minimax`` when the queued review
+    runs. ``None`` (the default, and every pre-I.4.D caller's
+    path) preserves the existing verdict-prompt shape. When the
+    caller passes a non-None list, the queue's task carries it
+    through and the reviewer renders the CLASSIFIED SENTIMENT
+    DATA section in its prompt. The list is captured by
+    reference (the queue does not mutate it).
     """
     if client is None:
         return advisory_unavailable("AI_DISABLED")
@@ -1246,6 +1260,7 @@ def queue_optional_ai_review(signal: Dict, sentiment_text: str, market_regime: s
     submission = queue.submit(
         _optional_review_key(signal, sentiment_text, market_regime), signal,
         sentiment_text, market_regime,
+        pre_classifications=pre_classifications,
         expires_at=datetime.now(timezone.utc) + timedelta(seconds=MINIMAX_ASYNC_REVIEW_DEADLINE_SEC),
     )
     if submission.review is not None:
@@ -1390,11 +1405,25 @@ def run_momentum_pipeline():
         touch_heartbeat()  # [ROADMAP-2.2] progressing, not hung
         try:
             sentiment_text = scrape_sentiment(ticker)
-            review = queue_optional_ai_review(signal, sentiment_text, regime)
+            # [WORKFLOW-I.4.D 2026-09-14] Opt-in classification:
+            # when ENABLE_NEWS_CLASSIFIER=1, classify the news
+            # batch and pass the classifications to BOTH the
+            # async queue and the synchronous fallback. When the
+            # env flag is off (the default), returns None and
+            # both paths consume raw sentiment_text exactly as
+            # before. See _maybe_classify_news for the contract.
+            pre_classifications = _maybe_classify_news(ticker)
+            review = queue_optional_ai_review(
+                signal, sentiment_text, regime,
+                pre_classifications=pre_classifications,
+            )
             if review is None:
                 # Preserve the existing synchronous hard-veto behaviour when
                 # the operator explicitly configured a blocking AI policy.
-                review = analyze_with_minimax(signal, sentiment_text, regime)
+                review = analyze_with_minimax(
+                    signal, sentiment_text, regime,
+                    pre_classifications=pre_classifications,
+                )
 
             hard_reject = (
                 review.verdict is Verdict.REJECT
@@ -1596,7 +1625,13 @@ def run_pipeline():
         # pipeline: one bad ticker must not kill the rest of the batch.
         try:
             sentiment_text = scrape_sentiment(ticker)
-            review = analyze_with_minimax(signal, sentiment_text, regime)
+            # [WORKFLOW-I.4.D 2026-09-14] Opt-in classification
+            # (see _maybe_classify_news for the env-flag contract).
+            pre_classifications = _maybe_classify_news(ticker)
+            review = analyze_with_minimax(
+                signal, sentiment_text, regime,
+                pre_classifications=pre_classifications,
+            )
 
             if review.blocks(unavailable_policy=MINIMAX_UNAVAILABLE_POLICY):
                 logger.info(f"Skipped {ticker}: {review.verdict.value} "
