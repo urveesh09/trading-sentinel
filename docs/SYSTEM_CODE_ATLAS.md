@@ -1861,6 +1861,10 @@ Dependencies: `../components/PositionRow`, `../components/StatusBar`, `../hooks/
 
 Dependencies: `../hooks/useResearchExperiments`, `../utils/promotionReadiness`, `../utils/researchExperiments`, `lucide-react`, `react`
 
+## `node-gateway/client/src/utils/sessionPhase.js` (see [J.8 done](../docs/2026-09-13-j8-operator-session-phase-card-done.md))
+
+[WORKFLOW-J.8 2026-09-13] Pure single-source-of-truth utility for the dashboard's bounded-session-phase UI. Maps the 10 bounded phase strings (from `python-engine/market_calendar.classify_session_phase`, exposed via the J.6 Node mirror and surfaced through `health.session_phase`) to: (a) display label, (b) Tailwind colour class (green/yellow/red buckets), (c) execution-blocked boolean mirroring the J.7 server gate. Exports `VALID_SESSION_PHASES`, `PHASE_DISPLAY_LABEL`, `PHASE_COLOR_CLASS`, `coercePhase`, `isExecutionBlockedByPhase`, `describePhase`. Fail-closed contract: any non-bounded input (null/undefined/numbers/garbage strings) returns `executionBlocked: true` so a misconfigured health payload never silently allows an order that the server would reject. Consumed by `SessionPhaseBadge` (compact chip in StatusBar), `SessionPhaseCard` (full card on Dashboard), and `SignalCard` (action-disabled gate). When the bounded phase set changes, update this file + `market-hours.js` (`_EXEC_BLOCKING_PHASES`) + `market_calendar.py` (`_PHASE_EXECUTION_ALLOWED`) in lockstep.
+
 ## `node-gateway/client/src/utils/advisoryCollectionCoverage.js`
 
 Dependencies: none extracted
