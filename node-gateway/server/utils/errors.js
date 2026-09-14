@@ -65,6 +65,25 @@ class MarketClosedError extends AppError {
   }
 }
 
+// [WORKFLOW-J.7 2026-09-13] CAS-aware execution guard.
+// Thrown when the bounded session phase is one that blocks
+// broker orders (CAS_REFERENCE_PRICE_WINDOW / CAS_ORDER_ENTRY /
+// CAS_LIMIT_ENTRY_ONLY / CAS_MATCHING / CAS_POST) or PRE_MARKET
+// when allow_pre_market is not set. The ``phase`` and
+// ``reason`` fields surface the verdict to the operator.
+class CasPhaseError extends AppError {
+  constructor(phase, reason) {
+    super(
+      reason || `CAS phase ${phase} blocks broker orders`,
+      'cas_phase_blocked',
+      422,
+      reason || 'Closing-auction phase; broker orders are blocked until continuous trading resumes.'
+    );
+    this.phase = phase;
+    this.reason = reason;
+  }
+}
+
 class DuplicateSignalError extends AppError {
   constructor(message = 'Duplicate signal received') {
     super(message, 'duplicate_signal', 200, 'Signal already processed.');
@@ -87,6 +106,7 @@ module.exports = {
   StaleSignalError,
   PriceDriftError,
   MarketClosedError,
+  CasPhaseError,
   DuplicateSignalError,
   ReplayAttackError
 };

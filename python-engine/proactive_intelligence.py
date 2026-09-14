@@ -27,8 +27,25 @@ _DEFAULT_GAP_RISK_MULTIPLE = 1.25
 _SHADOW_SCHEMA_VERSION = "shadow-evidence-v2"
 _SHADOW_ENTRY_PROFILES = frozenset({
     "NEXT_EXECUTABLE_OPEN_V1", "BOUNDED_PULLBACK_LIMIT_V1", "COMPLETED_BAR_CONFIRMATION_V1",
+    "RANGE_REVERSION_V1",
 })
-_SHADOW_EXIT_PROFILES = frozenset({"STOP_TARGET_TIME_V1", "BOUNDED_TIME_EXIT_60M_V1"})
+_SHADOW_EXIT_PROFILES = frozenset({"STOP_TARGET_TIME_V1", "BOUNDED_TIME_EXIT_60M_V1", "TRAILING_STOP_V1"})
+# Legacy run-id reserved for the historical single-tenant-per-account
+# convention exercised by ``_shadow_run_storage_key``. A *configured*
+# shadow run (``run_shadow_workflow`` / ``run_configured_shadow_workflow``)
+# must never land here — its id is a hashed lineage derived from the
+# operator-visible label by ``_configured_shadow_run_id``. New code that
+# needs a default ``run_id`` should import this constant rather than
+# hard-code the string.
+LEGACY_DEFAULT_V1_RUN_ID = "default-v1"
+
+# Session-phase placeholder (G <-> J forward-compat; see audit section 6
+# gap #6). Plan §14 puts J (CAS and market-session correctness) ahead of
+# G's session-aware rollout, so G commits a typed placeholder now and J
+# replaces it with a real phase classifier when the official source
+# inventory lands. The placeholder is **additive** (it only adds a key
+# to the run manifest; the database schema is unchanged).
+_SESSION_PHASE_UNKNOWN = "UNKNOWN"
 _STAGES = frozenset({
     "UNIVERSE", "DATA_READY", "SETUP", "COST_VIABLE", "RISK_APPROVED",
     "SELECTED", "SUBMITTED", "FILLED", "MANAGED", "CLOSED", "DEFERRED",
@@ -379,6 +396,78 @@ def _simulate_shadow_limit_pullback(
     return ShadowSimulation("NO_FILL", 0, None, None, None, None, None, "PULLBACK_LIMIT_NOT_REACHED")
 
 
+def _simulate_shadow_trailing_stop(
+    proposal: ShadowProposal, future_bars: list[dict], *, cash: float, fee_rate: float,
+    slippage_bps: float, limit_entry: bool = False,
+) -> ShadowSimulation:
+    """Evaluate an at-open or bounded-limit entry with a trailing stop.
+
+    The trailing level is ``max(initial_stop, high - (entry - initial_stop))``
+    and is recomputed from the previous bar's extreme only — never from the
+    bar that triggered the exit (this avoids a fabricated favourable
+    intrabar sequence where the same high both raises the stop and is the
+    exit point). Same-bar exits are deliberately stop-first (ambiguity
+    fails closed). The holding deadline closes any open position at the
+    next bar's open less slippage, mirroring the limit-pullback
+    simulator's ``HOLDING_DEADLINE`` semantics.
+    """
+    normalised = _normalise_shadow_bars(future_bars)
+    if normalised is None:
+        return ShadowSimulation("INVALID", 0, None, None, None, None, None, "INVALID_OR_UNORDERED_FUTURE_BARS")
+    cutoff = _stamp(proposal.data_cutoff or proposal.signal_at or proposal.valid_until)
+    deadline = _stamp(proposal.entry_deadline or proposal.valid_until)
+    holding_deadline = _stamp(proposal.holding_deadline or proposal.valid_until)
+    if (not all(math.isfinite(value) for value in (proposal.stop, proposal.entry, proposal.target))
+            or proposal.stop <= 0 or proposal.entry <= proposal.stop or proposal.target <= proposal.entry):
+        return ShadowSimulation("INVALID", 0, None, None, None, None, None, "INVALID_TRAILING_STOP_INPUT")
+    slip = slippage_bps / 10_000
+    entry = None; entry_at = None; quantity = 0; last_bar = None
+    trailing = proposal.stop
+    entry_risk = 0.0
+    for stamp, open_, high, low, _close in normalised:
+        last_bar = stamp
+        intrabar_limit_fill = False
+        if entry is None:
+            if stamp <= cutoff or stamp > deadline or stamp > holding_deadline:
+                continue
+            if limit_entry and low > proposal.entry:
+                continue
+            entry = min(proposal.entry, open_ * (1 + slip)) if limit_entry else open_ * (1 + slip)
+            if entry <= proposal.stop or entry >= proposal.target:
+                return ShadowSimulation("NO_FILL", 0, None, None, None, None, None, "GAP_INVALIDATES_ENTRY_GEOMETRY")
+            intrabar_limit_fill = limit_entry and open_ > proposal.entry
+            entry_at = stamp
+            quantity = math.floor(cash / (entry * (1 + fee_rate)))
+            if quantity < 1:
+                return ShadowSimulation("NO_FILL", 0, None, None, None, None, None, "INSUFFICIENT_CASH_AFTER_FEES")
+            entry_risk = entry - proposal.stop
+        if stamp > holding_deadline:
+            exit_price = open_ * (1 - slip)
+            gross = (exit_price - entry) * quantity
+            fees = (entry + exit_price) * quantity * fee_rate
+            return ShadowSimulation("CLOSED", quantity, round(entry, 4), round(exit_price, 4), round(gross, 4),
+                                    round(fees, 4), round(gross - fees, 4), "HOLDING_DEADLINE", entry_at, stamp)
+        if low <= trailing:
+            exit_price = min(open_, trailing) * (1 - slip)
+            gross = (exit_price - entry) * quantity
+            fees = (entry + exit_price) * quantity * fee_rate
+            return ShadowSimulation("CLOSED", quantity, round(entry, 4), round(exit_price, 4), round(gross, 4),
+                                    round(fees, 4), round(gross - fees, 4), "TRAILING_STOP", entry_at, stamp)
+        # Raise the trailing stop using *this* bar's high; the new level
+        # applies to the next candle. This avoids a fabricated favourable
+        # intrabar sequence where the same high both raises the stop and is
+        # the exit point.
+        # An intrabar limit entry cannot prove that the high occurred after
+        # the fill. Don't ratchet from that possibly pre-entry extreme.
+        if entry is not None and not intrabar_limit_fill:
+            trailing = max(trailing, high - entry_risk)
+    if entry is None:
+        reason = "PULLBACK_LIMIT_NOT_REACHED" if limit_entry else "NO_EXECUTABLE_BAR_AFTER_SIGNAL"
+        return ShadowSimulation("NO_FILL", 0, None, None, None, None, None, reason)
+    return ShadowSimulation("OPEN", quantity, round(entry, 4), None, None, None, None,
+                            "DATA_END_OPEN_POSITION", entry_at, last_bar)
+
+
 def simulate_shadow_research_trial(
     proposal: ShadowProposal, future_bars: list[dict], *, cash: float,
     entry_profile_id: str, exit_profile_id: str, fee_rate: float = .001,
@@ -387,7 +476,8 @@ def simulate_shadow_research_trial(
     """Run one named, matched research trial; it cannot create a position."""
     if entry_profile_id not in _SHADOW_ENTRY_PROFILES or exit_profile_id not in _SHADOW_EXIT_PROFILES:
         raise ValueError("unsupported shadow research profile")
-    if not math.isfinite(cash) or cash <= 0 or fee_rate < 0 or slippage_bps < 0:
+    if (not all(math.isfinite(value) for value in (cash, fee_rate, slippage_bps))
+            or cash <= 0 or fee_rate < 0 or slippage_bps < 0):
         raise ValueError("invalid research simulation assumptions")
     profiled = proposal
     if exit_profile_id == "BOUNDED_TIME_EXIT_60M_V1":
@@ -396,8 +486,14 @@ def simulate_shadow_research_trial(
             _stamp(proposal.holding_deadline or proposal.valid_until), cutoff + timedelta(minutes=60),
         ))
     if entry_profile_id == "NEXT_EXECUTABLE_OPEN_V1":
+        if exit_profile_id == "TRAILING_STOP_V1":
+            return _simulate_shadow_trailing_stop(profiled, future_bars, cash=cash, fee_rate=fee_rate,
+                                                  slippage_bps=slippage_bps)
         return simulate_shadow_trade(profiled, future_bars, cash=cash, fee_rate=fee_rate, slippage_bps=slippage_bps)
     if entry_profile_id == "BOUNDED_PULLBACK_LIMIT_V1":
+        if exit_profile_id == "TRAILING_STOP_V1":
+            return _simulate_shadow_trailing_stop(profiled, future_bars, cash=cash, fee_rate=fee_rate,
+                                                  slippage_bps=slippage_bps, limit_entry=True)
         return _simulate_shadow_limit_pullback(profiled, future_bars, cash=cash, fee_rate=fee_rate,
                                                slippage_bps=slippage_bps)
 
@@ -409,8 +505,9 @@ def simulate_shadow_research_trial(
     confirmation = next((stamp for stamp, *_ in normalised if cutoff < stamp <= deadline), None)
     if confirmation is None:
         return ShadowSimulation("NO_FILL", 0, None, None, None, None, None, "NO_CONFIRMATION_BAR")
-    result = simulate_shadow_trade(replace(profiled, data_cutoff=confirmation), future_bars, cash=cash,
-                                   fee_rate=fee_rate, slippage_bps=slippage_bps)
+    evaluator = _simulate_shadow_trailing_stop if exit_profile_id == "TRAILING_STOP_V1" else simulate_shadow_trade
+    result = evaluator(replace(profiled, data_cutoff=confirmation), future_bars, cash=cash,
+                       fee_rate=fee_rate, slippage_bps=slippage_bps)
     if result.reason == "NO_EXECUTABLE_BAR_AFTER_SIGNAL":
         return replace(result, reason="NO_EXECUTABLE_BAR_AFTER_CONFIRMATION")
     return result
@@ -616,10 +713,25 @@ async def init_proactive_intelligence(db_path: str) -> None:
 
 
 def _shadow_run_storage_key(account_id: str, run_id: str) -> str:
-    """Keep legacy/default Dev records readable while isolating named scenarios."""
+    """Compute the storage key for a named shadow research run.
+
+    Single source of truth for the ``proactive_shadow_runs.run_key`` column.
+    Two distinct conceptual runs collide in storage only if their key is
+    identical under this function, so callers must ensure run IDs are
+    uniquely labelled **before** arriving here.
+
+    Legacy back-compat: the historical ``run_id == LEGACY_DEFAULT_V1_RUN_ID``
+    short-circuits to the bare ``account_id`` because pre-versioning Dev
+    fixtures did not carry a hashed lineage. *Do not* use this short-circuit
+    in new code — generate a fresh ``run_id`` via
+    :func:`_configured_shadow_run_id` (or any future helper that returns a
+    hashed lineage) and pass it explicitly. See
+    ``docs/2026-09-13-workflow-g-state-of-codebase-audit.md`` §3.3 for the
+    collision semantics.
+    """
     if not account_id or not run_id:
         raise ValueError("shadow account and run identity are required")
-    if run_id == "default-v1":
+    if run_id == LEGACY_DEFAULT_V1_RUN_ID:
         return account_id
     digest = hashlib.sha256(f"{account_id}\x00{run_id}".encode()).hexdigest()[:24]
     return f"shadow-run:{digest}"
@@ -628,6 +740,71 @@ def _shadow_run_storage_key(account_id: str, run_id: str) -> str:
 def _shadow_implementation_identity() -> str:
     """Freeze the executing research implementation with each manifest."""
     return hashlib.sha256(Path(__file__).read_bytes()).hexdigest()
+
+
+def stamp_session_phase(
+    *,
+    observation_at: datetime | None,
+    symbol: str | None = None,
+    is_derivative: bool = False,
+    cas_eligible: bool | None = None,
+) -> str:
+    """Return the market session phase for a research observation.
+
+    [WORKFLOW-G 2026-09-13 → WORKFLOW-J.4 2026-09-13] Originally a
+    typed placeholder returning ``_SESSION_PHASE_UNKNOWN`` for every
+    input (the G forward-compat seam pre-dating J). J.4 wires the
+    function to ``market_calendar.classify_session_phase``.
+
+    Contract:
+
+      1. **None observation** → ``"UNKNOWN"``. Preserved exactly
+         (the ``_ensure_shadow_run`` call site has no timestamp
+         in scope; downstream manifests and the integration test
+         at ``test_run_workflow_manifest_records_session_phase_unknown``
+         pin this branch). Keyword-only kwargs supplied alongside
+         ``None`` are silently ignored; the conservative pre-J.4
+         contract takes precedence.
+
+      2. **Real datetime** → resolves to a phase from
+         ``market_calendar._VALID_SESSION_PHASES``. The optional
+         kwargs mirror ``classify_session_phase``:
+
+         - ``symbol``: same string the engine already carries
+           (passed-through to the classifier).
+         - ``is_derivative``: ``False`` for cash, ``True`` for
+           futures/options.
+         - ``cas_eligible``: ``None`` (default) → the classifier
+           consults ``is_cas_eligible(symbol)`` itself; ``True``
+           or ``False`` forces the branch and bypasses the
+           settings lookup. This is the J.3.1 boundary wired
+           through the G seam.
+
+      3. **Pure** (no I/O, no clock) and **total** (returns a known
+         string from the bounded phase set for any input).
+         ``datetime.now`` and friends would violate this.
+
+      4. **Lazy import** of ``market_calendar`` inside the function
+         so ``proactive_intelligence`` stays policy-agnostic at
+         module-import time. The prior arc explicitly avoided
+         coupling to session-aware modules at import; we honour
+         that. The import runs once per process.
+
+    Sign-off: see ``tests/test_j4_stamp_session_phase.py``.
+    """
+    if observation_at is None:
+        # Pre-J.4 contract: None → "UNKNOWN" preserved exactly.
+        return _SESSION_PHASE_UNKNOWN
+    # Lazy import keeps proactive_intelligence policy-agnostic at
+    # module-import time, matching the G-side seam's design goal
+    # of not coupling to session-aware modules at import.
+    from market_calendar import classify_session_phase
+    return classify_session_phase(
+        observation_at,
+        symbol=symbol,
+        is_derivative=is_derivative,
+        cas_eligible=cas_eligible,
+    )
 
 
 def _configured_shadow_run_id(run_label: str) -> str:
@@ -675,6 +852,14 @@ async def _ensure_shadow_run(
             "gap_risk_multiple": _DEFAULT_GAP_RISK_MULTIPLE,
         },
         "market_data_contract": market_data_contract,
+        # Session-phase forward-compat (G / J): see
+        # ``stamp_session_phase`` docstring. The placeholder returned
+        # today does not distinguish sessions; J's eventual classifier
+        # replaces this single line and refreshes the manifest digest.
+        # ``_ensure_shadow_run`` has no observation timestamp in scope,
+        # so we pass None; the helper is documented to return the
+        # UNKNOWN placeholder for any input.
+        "session_phase": stamp_session_phase(observation_at=None),
     }
     if (not math.isfinite(float(scenario_capital)) or float(scenario_capital) <= 0
             or not math.isfinite(float(fee_rate)) or float(fee_rate) < 0
@@ -1450,7 +1635,7 @@ async def repair_shadow_evidence(db_path: str, *, account_id: str) -> int:
 async def run_shadow_workflow(
     db_path: str, *, account_id: str, universe: dict[str, list[dict]], now: datetime,
     scenario_capital: float = 8_000, future_bars: Optional[dict[str, list[dict]]] = None,
-    run_id: str = "default-v1", fee_rate: float = .001, slippage_bps: float = 5,
+    run_id: str = LEGACY_DEFAULT_V1_RUN_ID, fee_rate: float = .001, slippage_bps: float = 5,
     origin: str = "SHADOW", market_data_contract: Optional[dict] = None,
 ) -> dict:
     """Run the bounded fixture-backed SHADOW path; never calls a broker.
@@ -1661,7 +1846,7 @@ async def run_shadow_workflow(
 async def run_shadow_replay(
     db_path: str, *, account_id: str, universe: dict[str, list[dict]],
     clock_steps: list[datetime], scenario_capital: float = 8_000,
-    future_bars: Optional[dict[str, list[dict]]] = None, run_id: str = "default-v1",
+    future_bars: Optional[dict[str, list[dict]]] = None, run_id: str = LEGACY_DEFAULT_V1_RUN_ID,
 ) -> list[dict]:
     """Run the same incremental SHADOW workflow at explicit replay clocks."""
     steps = [_stamp(step) for step in clock_steps]
@@ -2121,6 +2306,11 @@ async def run_shadow_research_comparison(
         "calendar": "nse_trading_day_sync", "cash_per_trial": float(cash_per_trial),
         "fee_rate": float(fee_rate), "slippage_bps": float(slippage_bps),
         "entry_profiles": sorted(_SHADOW_ENTRY_PROFILES), "exit_profiles": sorted(_SHADOW_EXIT_PROFILES),
+        # Session-phase forward-compat (G / J): a placeholder is stamped
+        # now so J can replace it with a real classifier without
+        # invalidating prior manifests; every fresh run gets a fresh
+        # value through the *trial* stamp below rather than here.
+        "session_phase": stamp_session_phase(observation_at=proposals[0].signal_at if proposals else None),
         "proposals": [_research_proposal_manifest(proposal) for proposal in proposals],
         "future_bars": future_bars,
     }

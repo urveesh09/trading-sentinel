@@ -8,6 +8,7 @@ import logging
 import structlog
 import threading
 import urllib.parse
+from dataclasses import dataclass, replace
 from datetime import datetime, timedelta, timezone
 from typing import List, Dict, Optional
 import requests
@@ -23,6 +24,7 @@ from advisory import (  # [ADVISORY 2026-08-05] typed verdicts
     unavailable as advisory_unavailable,
 )
 from async_reviews import AsyncReviewQueue
+import news_classifier  # [WORKFLOW-I.4.D 2026-09-14]
 
 # -------------------------------------------------------------------------
 # CONFIG & LOGGING
@@ -101,6 +103,58 @@ MINIMAX_ASYNC_REVIEW_ENABLED = os.getenv("MINIMAX_ASYNC_REVIEW_ENABLED", "false"
 MINIMAX_ASYNC_REVIEW_MAX_PENDING = int(os.getenv("MINIMAX_ASYNC_REVIEW_MAX_PENDING", "16"))
 MINIMAX_ASYNC_REVIEW_DAILY_BUDGET = int(os.getenv("MINIMAX_ASYNC_REVIEW_DAILY_BUDGET", "40"))
 MINIMAX_ASYNC_REVIEW_DEADLINE_SEC = int(os.getenv("MINIMAX_ASYNC_REVIEW_DEADLINE_SEC", "90"))
+# [WORKFLOW-I I1 2026-09-13] The prompt-version identifier. Bumped when
+# the analyst prompt template changes; cached reviews keep the version
+# they were reviewed with so a prompt change never invalidates an old
+# annotation silently. Per plan §13: "Store model/prompt/version ...
+# expiry." The default ``v1`` covers the existing analyst prompt; future
+# bumps should be deliberate, with a note in the prompt diff.
+MINIMAX_PROMPT_VERSION = os.getenv("MINIMAX_PROMPT_VERSION", "v1")
+
+
+# [WORKFLOW-I I.A 2026-09-13] Opt-in flag for including I3 usefulness
+# metrics in the optional-AI status envelope posted to the engine.
+# Default ``false`` because the existing operator dashboards and the
+# engine's allow-list only know the bounded queue counters; rolling
+# out usefulness cross-container is a separate observable change.
+# Operators enable it after the engine-side validator accepts the
+# new field. See ``python-engine/optional_ai_status.py::_ALLOWED_USEFULNESS_KEYS``.
+OPTIONAL_AI_REPORT_USEFULNESS = (
+    os.getenv("OPTIONAL_AI_REPORT_USEFULNESS", "false").strip().lower()
+    in {"1", "true", "yes", "on"}
+)
+
+
+# [WORKFLOW-I I1 2026-09-13] Helper that attaches provenance fields to a
+# Review. Used at every return site of ``analyze_with_minimax`` so each
+# review carries model/base_url/prompt_version/started_at/completed_at/
+# response_seconds. ``Review`` is frozen so we use ``dataclasses.replace``.
+def _attach_provenance(
+    review: Review,
+    *,
+    started_at: datetime,
+    completed_at: datetime,
+) -> Review:
+    """Return a copy of ``review`` with provenance fields populated.
+
+    Per plan §13: "Store model/prompt/version ... response time and
+    expiry." A future model or prompt change must NOT retroactively
+    re-label old annotations; the captured fields freeze the inputs
+    that produced the verdict.
+    """
+    response_seconds = max(
+        0.0,
+        (completed_at - started_at).total_seconds(),
+    )
+    return replace(
+        review,
+        model=MINIMAX_MODEL,
+        base_url=MINIMAX_BASE_URL,
+        prompt_version=MINIMAX_PROMPT_VERSION,
+        started_at=started_at,
+        completed_at=completed_at,
+        response_seconds=response_seconds,
+    )
 # [ADVISORY 2026-08-05] What to do when the reviewer cannot render an opinion.
 # "proceed" (default) preserves today's behaviour exactly: the alert goes out
 # with an UNAVAILABLE banner and the operator decides. "block" refuses to send
@@ -387,6 +441,28 @@ class SignalOutput(BaseModel):
     rationale: str
     risks: str
 
+
+# [WORKFLOW-I I2 2026-09-13] NewsItem captures the §13 "reliable source"
+# requirement: every news item carries a parseable publication timestamp
+# and a source URL. The dataclass is frozen so a NewsItem cannot be
+# silently mutated after extraction (which would invalidate the §13
+# audit trail). ``published_at_parsed`` is None when the source did
+# not provide a parseable timestamp; ``age_label`` is computed from
+# ``published_at_parsed`` at extraction time (so the model sees a
+# stable label even if the news is cached).
+@dataclass(frozen=True)
+class NewsItem:
+    title: str
+    source_url: str
+    published_at_raw: str  # the raw pubDate string from the RSS item
+    published_at_parsed: Optional[datetime]  # tz-aware UTC, or None
+    source_name: str  # the RSS <source> element or hostname fallback
+    age_label: str  # "fresh", "2 hours ago", "3 days ago", "stale_or_unknown"
+
+    @property
+    def has_publication_timestamp(self) -> bool:
+        return self.published_at_parsed is not None
+
 # -------------------------------------------------------------------------
 # CORE FUNCTIONS
 # -------------------------------------------------------------------------
@@ -418,30 +494,194 @@ def fetch_signals() -> List[Dict]:
         return []
 
 def fetch_rss_feed(url: str, limit: int = 3) -> str:
+    """[WORKFLOW-I I2 2026-09-13] Returns a flat string of titles.
+
+    Backwards-compatible: existing callers (and tests) receive a
+    string. The structured ``NewsItem`` form is exposed via
+    :func:`fetch_news_items`. The string here is the legacy format
+    ``- title1 | - title2 | ...`` with no timestamps; the model's
+    prompt relies on :func:`scrape_sentiment`'s structured form
+    instead.
+    """
+    items = fetch_news_items(url, limit=limit)
+    if not items:
+        return ""
+    texts = [f"- {item.title}" for item in items]
+    return " | ".join(texts)
+
+
+def fetch_news_items(url: str, limit: int = 3) -> List[NewsItem]:
+    """[WORKFLOW-I I2 2026-09-13] Return a structured ``NewsItem`` list.
+
+    Per plan §13: *"News must have publication/event timestamps and a
+    reliable source; an unsupported model statement is not a market
+    fact."* This function is the structured counterpart of
+    :func:`fetch_rss_feed`: every item carries a parseable
+    ``published_at_parsed`` (or None) and a ``source_url`` /
+    ``source_name``.
+
+    The RSS schema is RSS 2.0 (Yahoo Finance, Google News). ``<item>``
+    elements may contain:
+
+      * ``<title>`` — item headline (required for our purposes)
+      * ``<link>`` — source URL (we fall back to ``""`` if absent)
+      * ``<pubDate>`` — RFC 822 / RFC 1123 date string (we parse
+        using :mod:`email.utils.parsedate_to_datetime` for both
+        Yahoo and Google News formats)
+      * ``<source>`` — RSS source element, often the publisher's
+        domain. We fall back to the request URL's hostname.
+
+    Items without a parseable ``<pubDate>`` are kept (the §13 rule
+    is "must have", but a missing timestamp may indicate a feed
+    issue we want to surface, not silently drop). The
+    ``age_label`` for such items is ``"stale_or_unknown"``.
+    """
     headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)'}
     try:
         res = requests.get(url, headers=headers, timeout=5)
         res.raise_for_status()
-        soup = BeautifulSoup(res.content, 'xml')
-        items = soup.find_all('item', limit=limit)
-        texts = [f"- {item.title.text if item.title else ''}" for item in items]
-        return " | ".join(texts)
     except Exception as e:
         logger.warning(f"RSS fetch failed for {url}: {e}")
+        return []
+    soup = BeautifulSoup(res.content, 'xml')
+    items_xml = soup.find_all('item', limit=limit)
+    parsed: List[NewsItem] = []
+    for item in items_xml:
+        title = item.title.text if item.title else ""
+        link = item.link.text if item.link else ""
+        link = (link or "").strip()
+        # RSS <pubDate> uses RFC 822 / RFC 1123 format, e.g.
+        # "Tue, 13 Sep 2026 14:25:00 +0530" or
+        # "Tue, 13 Sep 2026 08:55:00 GMT".
+        pub_raw = item.pubDate.text if item.pubDate else ""
+        pub_parsed = _parse_rss_pubdate(pub_raw)
+        # <source url="...">name</source> -- we capture the name.
+        src_tag = item.find('source')
+        if src_tag is not None and src_tag.text:
+            src_name = src_tag.text.strip()
+        else:
+            src_name = _hostname_from_url(url)
+        age_label = _age_label(pub_parsed)
+        parsed.append(NewsItem(
+            title=title,
+            source_url=link,
+            published_at_raw=pub_raw,
+            published_at_parsed=pub_parsed,
+            source_name=src_name or _hostname_from_url(url),
+            age_label=age_label,
+        ))
+    return parsed
+
+
+def _parse_rss_pubdate(raw: str) -> Optional[datetime]:
+    """Parse an RSS ``<pubDate>`` into a tz-aware UTC datetime.
+
+    Both Yahoo Finance and Google News use RFC 822 / RFC 1123
+    formats; :func:`email.utils.parsedate_to_datetime` handles
+    both. Returns None on any parse error so the caller can
+    surface ``stale_or_unknown`` rather than crashing.
+    """
+    raw = (raw or "").strip()
+    if not raw:
+        return None
+    try:
+        from email.utils import parsedate_to_datetime
+        dt = parsedate_to_datetime(raw)
+    except (TypeError, ValueError):
+        return None
+    if dt is None:
+        return None
+    if dt.tzinfo is None:
+        dt = dt.replace(tzinfo=timezone.utc)
+    return dt.astimezone(timezone.utc)
+
+
+def _hostname_from_url(url: str) -> str:
+    """Best-effort hostname extraction for the source fallback."""
+    try:
+        from urllib.parse import urlparse
+        host = urlparse(url).hostname or ""
+        return host
+    except Exception:
         return ""
 
+
+def _age_label(published_at: Optional[datetime], *,
+               now: Optional[datetime] = None) -> str:
+    """Render an age label for the model prompt.
+
+    The label is what the model sees; the raw timestamp stays on
+    the dataclass for audit. Labels:
+
+      * None or unparseable -> ``"stale_or_unknown"``
+      * ``<= 1 hour``       -> ``"fresh"``
+      * hours / days        -> ``"N hours ago"`` / ``"N days ago"``
+      * ``> 7 days``         -> ``"stale_aged_Nd"`` (still surfaced,
+        but explicitly labelled so the model knows)
+
+    The function takes ``now`` for testability; production callers
+    omit it.
+    """
+    if published_at is None:
+        return "stale_or_unknown"
+    cur = now if now is not None else datetime.now(timezone.utc)
+    delta = cur - published_at
+    seconds = delta.total_seconds()
+    if seconds < 0:
+        # Clock skew or future-dated feed item -- surface honestly.
+        return "future_dated"
+    if seconds <= 3600:
+        return "fresh"
+    hours = int(seconds // 3600)
+    if hours < 24:
+        return f"{hours} hours ago"
+    days = int(seconds // 86400)
+    if days <= 7:
+        return f"{days} days ago"
+    return f"stale_aged_{days}d"
+
+
 def scrape_sentiment(ticker: str) -> str:
+    """[WORKFLOW-I I2 2026-09-13] Render a structured sentiment
+    prompt with publication timestamps.
+
+    The prompt now includes, for every item, an explicit age label
+    (e.g. ``"[3 hours ago]"``) and the source URL. This is the §13
+    "reliable source + publication/event timestamp" requirement
+    enforced at the producer boundary: the model cannot mistake a
+    two-week-old headline for fresh news because the prompt says
+    ``"[14 days ago]"``.
+
+    Items without a parseable timestamp are surfaced with
+    ``"[stale_or_unknown]"`` so the model is explicitly told the
+    feed did not provide one.
+    """
     logger.info(f"Gathering multi-source intelligence for {ticker}...")
     yahoo_url = f"https://feeds.finance.yahoo.com/rss/2.0/headline?s={ticker}&region=US&lang=en-US"
-    yahoo_news = fetch_rss_feed(yahoo_url, limit=4)
-    
+    yahoo_items = fetch_news_items(yahoo_url, limit=4)
+
     encoded_ticker = urllib.parse.quote(f"{ticker} stock")
     google_url = f"https://news.google.com/rss/search?q={encoded_ticker}&hl=en-US&gl=US&ceid=US:en"
-    google_news = fetch_rss_feed(google_url, limit=4)
-    
-    if not yahoo_news and not google_news:
+    google_items = fetch_news_items(google_url, limit=4)
+
+    if not yahoo_items and not google_items:
         return ""
-    return f"YAHOO FINANCE FEED:\n{yahoo_news}\n\nBROADER MARKET FEED:\n{google_news}"
+
+    def _render(items: List[NewsItem], header: str) -> str:
+        lines = [header]
+        for item in items:
+            ts = f"[{item.age_label}]"
+            src = f"({item.source_name})" if item.source_name else ""
+            url = item.source_url or "<no-url>"
+            lines.append(f"  {ts} {src} {item.title}")
+            lines.append(f"    url: {url}")
+        return "\n".join(lines)
+
+    return (
+        _render(yahoo_items, "YAHOO FINANCE FEED:")
+        + "\n\n"
+        + _render(google_items, "BROADER MARKET FEED:")
+    )
 
 def _extract_json_object(text: Optional[str]) -> Optional[Dict]:
     """Pull a single JSON object out of an LLM reply, tolerantly.
@@ -495,10 +735,132 @@ def _extract_json_object(text: Optional[str]) -> Optional[Dict]:
             pass
     return None
 
+
+
+def _fetch_news_items_for_ticker(ticker: str) -> List[NewsItem]:
+    """[WORKFLOW-I.4.D 2026-09-14] Fetch the raw NewsItem list
+    that ``scrape_sentiment`` would render. Same URLs, same
+    limit; used by the classifier feature flag.
+
+    Returns an empty list if both feeds fail. Never raises:
+    the classifier is fail-closed and a missing feed is just
+    an empty batch.
+    """
+    import urllib.parse
+    yahoo_url = (
+        f"https://feeds.finance.yahoo.com/rss/2.0/headline?s={ticker}"
+        "&region=US&lang=en-US"
+    )
+    encoded = urllib.parse.quote(f"{ticker} stock")
+    google_url = (
+        f"https://news.google.com/rss/search?q={encoded}&hl=en-US"
+        "&gl=US&ceid=US:en"
+    )
+    items: List[NewsItem] = []
+    try:
+        items.extend(fetch_news_items(yahoo_url, limit=4))
+    except Exception as exc:  # noqa: BLE001
+        logger.warning(
+            "news_classifier_yahoo_fetch_failed ticker=%s err=%s",
+            ticker, type(exc).__name__,
+        )
+    try:
+        items.extend(fetch_news_items(google_url, limit=4))
+    except Exception as exc:  # noqa: BLE001
+        logger.warning(
+            "news_classifier_google_fetch_failed ticker=%s err=%s",
+            ticker, type(exc).__name__,
+        )
+    return items
+
+
+def _maybe_classify_news(ticker: str) -> Optional[List["ClassificationResult"]]:
+    """[WORKFLOW-I.4.D 2026-09-14] Run the classifier on the
+    ticker's news if the ``ENABLE_NEWS_CLASSIFIER`` env flag is
+    on (and the classifier itself is not disabled).
+
+    Returns None when the flag is off -- this is the existing
+    caller's path (the verdict prompt renders the placeholder
+    text and consumes raw ``sentiment_text`` exactly as before).
+
+    Returns a list of ClassificationResult (possibly empty) when
+    the flag is on. The list is empty when:
+      * the classifier is disabled via ``DISABLE_CLASSIFIER=1``
+      * the feeds returned no items
+      * the classifier raised an exception (fail-closed)
+
+    Returns a non-empty list of bounded ClassificationResult when
+    classification succeeded for at least one headline.
+
+    Never raises; the verdict pipeline consumes raw
+    ``sentiment_text`` even when classification is broken.
+    """
+    if os.getenv("ENABLE_NEWS_CLASSIFIER", "0") != "1":
+        return None
+    if news_classifier.CLASSIFIER_DISABLED:
+        return []
+    try:
+        items = _fetch_news_items_for_ticker(ticker)
+        if not items:
+            return []
+        return news_classifier.classify_news_items(items)
+    except Exception as exc:  # noqa: BLE001
+        logger.warning(
+            "news_classifier_unexpected_failure ticker=%s err=%s",
+            ticker, type(exc).__name__,
+        )
+        return []
+
+
+def _render_classified_section(
+    classifications: Optional[List["ClassificationResult"]],
+) -> str:
+    """[WORKFLOW-I.4.D 2026-09-14] Render the CLASSIFIED SENTIMENT
+    DATA section for ``analyze_with_minimax``'s prompt.
+
+    Returns the empty string when ``classifications`` is None or
+    empty, so the caller can detect "no section" and fall back to
+    the placeholder. The rendered section lists each headline's
+    title_hash, category, confidence, and rationale -- bounded so
+    a single item cannot bloat the prompt budget.
+
+    Format:
+        HEADLINE <title_hash>  CATEGORY=<cat> CONF=<float>
+          RATIONALE: <one short sentence>
+
+    The section is bounded to MAX_RENDERED_LINES (default 32) so
+    a 100-item news batch does not exceed the prompt budget. If
+    there are more, the section appends a "and N more" line.
+    """
+    if not classifications:
+        return ""
+    MAX_RENDERED_LINES = 32
+    lines: List[str] = []
+    for c in classifications:
+        # ``rationale`` is already bounded to 280 chars by the
+        # classifier; we do a defensive cap here at 120 to keep
+        # the prompt section tight.
+        rationale = c.rationale[:120] if c.rationale else ""
+        lines.append(
+            f"HEADLINE {c.title_hash}  "
+            f"CATEGORY={c.category.value} "
+            f"CONF={c.confidence:.2f}"
+        )
+        if rationale:
+            lines.append(f"  RATIONALE: {rationale}")
+    if len(lines) > MAX_RENDERED_LINES:
+        kept = lines[:MAX_RENDERED_LINES]
+        dropped = (len(lines) - MAX_RENDERED_LINES) // 2
+        kept.append(f"  (and {dropped} more headlines classified)")
+        lines = kept
+    return "\n".join(lines)
+
+
 def analyze_with_minimax(
     signal: Dict,
     sentiment_text: str,
-    market_regime: str = "UNKNOWN"
+    market_regime: str = "UNKNOWN",
+    pre_classifications: Optional[List["ClassificationResult"]] = None,
 ) -> Review:
     """[ADVISORY 2026-08-05] Returns a typed Review, never a bare None.
 
@@ -507,6 +869,17 @@ def analyze_with_minimax(
     caller. They are now distinct verdicts carrying the specific reason, so
     the operator's phone can say WHICH failure happened and a later audit can
     tell an outage from an opinion. See advisory.py.
+
+    [WORKFLOW-I.4.D 2026-09-14] Optional ``pre_classifications``: when the
+    caller supplies a list of ``ClassificationResult`` (one per news item),
+    they are surfaced in the prompt as a "CLASSIFIED SENTIMENT DATA" section
+    *above* the existing "MULTI-SOURCE SENTIMENT DATA" section. The model
+    sees both: the bounded taxonomy per headline (regulatory / earnings /
+    M&A / guidance / macro / rumor / technical / unknown) and the raw text.
+    When ``pre_classifications`` is None (the default, and every existing
+    caller's path), the prompt is byte-identical to its pre-I.4.D shape:
+    only "MULTI-SOURCE SENTIMENT DATA" is rendered. This preserves the
+    existing verdict pipeline contract.
     """
     if client is None:
         return advisory_unavailable("AI_DISABLED")
@@ -514,6 +887,13 @@ def analyze_with_minimax(
     price = signal.get("close", 0)     # FIX: Aligned with models.py
     target = signal.get("target_1", 0) # FIX: Aligned with models.py
     stop_loss = signal.get("stop_loss", 0)
+
+    # [WORKFLOW-I.4.D 2026-09-14] Build the CLASSIFIED SENTIMENT DATA
+    # section when the caller supplied pre-classifications. The
+    # section is empty-string when no classifications are supplied
+    # so the f-string template below renders byte-identical to its
+    # pre-I.4.D shape (every existing caller's path).
+    classified_section = _render_classified_section(pre_classifications)
 
     prompt = f"""
     You are a cynical, risk-first quantitative trading analyst.
@@ -591,6 +971,12 @@ def analyze_with_minimax(
     60-79  : Acceptable, standard market risks present
     50-59  : Marginal, one significant concern exists
     0-49   : High risk of false positive, do not execute
+
+    ===========================================
+    CLASSIFIED SENTIMENT DATA
+    ===========================================
+    {classified_section if classified_section else
+    "(no pre-classifications supplied; use the raw MULTI-SOURCE SENTIMENT DATA below)"}
 
     ===========================================
     MULTI-SOURCE SENTIMENT DATA
@@ -677,18 +1063,29 @@ def analyze_with_minimax(
             result_holder['error'] = exc
 
     minimax_thread = threading.Thread(target=_call_minimax, daemon=True)
+    # [WORKFLOW-I I1 2026-09-13] Capture started_at before the thread
+    # begins. Each return site below uses ``datetime.now(timezone.utc)``
+    # as completed_at, then attaches provenance via ``_attach_provenance``.
+    started_at = datetime.now(timezone.utc)
     minimax_thread.start()
     minimax_thread.join(timeout=MINIMAX_WALL_TIMEOUT_SEC)
+    completed_at = datetime.now(timezone.utc)
 
     if minimax_thread.is_alive():
         logger.error(
             f"MiniMax timeout ({MINIMAX_WALL_TIMEOUT_SEC}s) for {ticker} - "
             f"analysis skipped, alert still sent without conviction"
         )
-        return advisory_unavailable(f"timeout_{MINIMAX_WALL_TIMEOUT_SEC}s")
+        return _attach_provenance(
+            advisory_unavailable(f"timeout_{MINIMAX_WALL_TIMEOUT_SEC}s"),
+            started_at=started_at, completed_at=completed_at,
+        )
     if 'error' in result_holder:
         logger.error(f"MiniMax analysis failed for {ticker}: {result_holder['error']}")
-        return advisory_unavailable("api_error")
+        return _attach_provenance(
+            advisory_unavailable("api_error"),
+            started_at=started_at, completed_at=completed_at,
+        )
 
     # [ROADMAP-4.7 2026-07-13, carried through MiniMax migration] This is the
     # ONE place in the system where a third party's free-text output is parsed.
@@ -706,7 +1103,10 @@ def analyze_with_minimax(
         content = response.choices[0].message.content
     except (AttributeError, IndexError, TypeError) as e:
         logger.error(f"MiniMax response had no content for {ticker}: {e}")
-        return advisory_unavailable("empty_response")
+        return _attach_provenance(
+            advisory_unavailable("empty_response"),
+            started_at=started_at, completed_at=completed_at,
+        )
 
     data = _extract_json_object(content)
     if data is None:
@@ -715,17 +1115,26 @@ def analyze_with_minimax(
             f"MiniMax returned unparseable output for {ticker} -- proceeding "
             f"without analysis. First 200 chars: {preview!r}"
         )
-        return advisory_unavailable("unparseable_output")
+        return _attach_provenance(
+            advisory_unavailable("unparseable_output"),
+            started_at=started_at, completed_at=completed_at,
+        )
 
     try:
-        return review_from_payload(SignalOutput(**data).model_dump())
+        return _attach_provenance(
+            review_from_payload(SignalOutput(**data).model_dump()),
+            started_at=started_at, completed_at=completed_at,
+        )
     except (ValidationError, TypeError) as e:
         preview = (content or "")[:200]
         logger.error(
             f"MiniMax output for {ticker} did not match schema: {e} -- "
             f"proceeding without analysis. First 200 chars: {preview!r}"
         )
-        return advisory_unavailable("schema_mismatch")
+        return _attach_provenance(
+            advisory_unavailable("schema_mismatch"),
+            started_at=started_at, completed_at=completed_at,
+        )
 
 
 def _optional_review_key(signal: Dict, sentiment_text: str, market_regime: str) -> str:
@@ -784,12 +1193,22 @@ def optional_ai_status() -> Dict:
         state, reason = "OUTAGE_CIRCUIT_OPEN", "provider_failures"
     else:
         state, reason = "READY", "optional_annotation_ready"
-    return {
+    payload: Dict = {
         "state": state, "reported_at": datetime.now(timezone.utc).isoformat(),
         "async_requested": MINIMAX_ASYNC_REVIEW_ENABLED,
         "policy_allows_annotation": policy_allows_annotation,
         "reason": reason, "queue": queue_snapshot,
     }
+    # [WORKFLOW-I I.A 2026-09-13] Bridge I3 usefulness metrics to the
+    # engine when the operator opts in. The envelope is built only
+    # when the queue exists (the agent has actually been processing
+    # reviews) so a never-used agent never publishes zeros that
+    # masquerade as data. The flag is the rollback path: setting
+    # ``OPTIONAL_AI_REPORT_USEFULNESS=false`` (the default) drops
+    # the field without code change.
+    if OPTIONAL_AI_REPORT_USEFULNESS and _optional_ai_queue is not None:
+        payload["usefulness"] = _optional_ai_queue.usefulness_snapshot()
+    return payload
 
 
 def publish_optional_ai_status() -> None:
@@ -812,12 +1231,26 @@ def publish_optional_ai_status() -> None:
     threading.Thread(target=_post, name="optional-ai-status", daemon=True).start()
 
 
-def queue_optional_ai_review(signal: Dict, sentiment_text: str, market_regime: str) -> Optional[Review]:
+def queue_optional_ai_review(
+    signal: Dict,
+    sentiment_text: str,
+    market_regime: str,
+    pre_classifications: Optional[List["ClassificationResult"]] = None,
+) -> Optional[Review]:
     """Queue a momentum-only annotation, returning immediately to the alert path.
 
     ``None`` means the caller must retain its existing synchronous policy.
     A pending or dropped review is represented explicitly in the operator
     alert; it is never mistaken for approval and cannot mutate signal numbers.
+
+    [WORKFLOW-I.4.D 2026-09-14] Optional ``pre_classifications``:
+    forwarded to ``analyze_with_minimax`` when the queued review
+    runs. ``None`` (the default, and every pre-I.4.D caller's
+    path) preserves the existing verdict-prompt shape. When the
+    caller passes a non-None list, the queue's task carries it
+    through and the reviewer renders the CLASSIFIED SENTIMENT
+    DATA section in its prompt. The list is captured by
+    reference (the queue does not mutate it).
     """
     if client is None:
         return advisory_unavailable("AI_DISABLED")
@@ -827,6 +1260,7 @@ def queue_optional_ai_review(signal: Dict, sentiment_text: str, market_regime: s
     submission = queue.submit(
         _optional_review_key(signal, sentiment_text, market_regime), signal,
         sentiment_text, market_regime,
+        pre_classifications=pre_classifications,
         expires_at=datetime.now(timezone.utc) + timedelta(seconds=MINIMAX_ASYNC_REVIEW_DEADLINE_SEC),
     )
     if submission.review is not None:
@@ -971,11 +1405,25 @@ def run_momentum_pipeline():
         touch_heartbeat()  # [ROADMAP-2.2] progressing, not hung
         try:
             sentiment_text = scrape_sentiment(ticker)
-            review = queue_optional_ai_review(signal, sentiment_text, regime)
+            # [WORKFLOW-I.4.D 2026-09-14] Opt-in classification:
+            # when ENABLE_NEWS_CLASSIFIER=1, classify the news
+            # batch and pass the classifications to BOTH the
+            # async queue and the synchronous fallback. When the
+            # env flag is off (the default), returns None and
+            # both paths consume raw sentiment_text exactly as
+            # before. See _maybe_classify_news for the contract.
+            pre_classifications = _maybe_classify_news(ticker)
+            review = queue_optional_ai_review(
+                signal, sentiment_text, regime,
+                pre_classifications=pre_classifications,
+            )
             if review is None:
                 # Preserve the existing synchronous hard-veto behaviour when
                 # the operator explicitly configured a blocking AI policy.
-                review = analyze_with_minimax(signal, sentiment_text, regime)
+                review = analyze_with_minimax(
+                    signal, sentiment_text, regime,
+                    pre_classifications=pre_classifications,
+                )
 
             hard_reject = (
                 review.verdict is Verdict.REJECT
@@ -1177,7 +1625,13 @@ def run_pipeline():
         # pipeline: one bad ticker must not kill the rest of the batch.
         try:
             sentiment_text = scrape_sentiment(ticker)
-            review = analyze_with_minimax(signal, sentiment_text, regime)
+            # [WORKFLOW-I.4.D 2026-09-14] Opt-in classification
+            # (see _maybe_classify_news for the env-flag contract).
+            pre_classifications = _maybe_classify_news(ticker)
+            review = analyze_with_minimax(
+                signal, sentiment_text, regime,
+                pre_classifications=pre_classifications,
+            )
 
             if review.blocks(unavailable_policy=MINIMAX_UNAVAILABLE_POLICY):
                 logger.info(f"Skipped {ticker}: {review.verdict.value} "

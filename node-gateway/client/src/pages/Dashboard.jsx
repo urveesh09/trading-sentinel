@@ -11,6 +11,8 @@ import { useProactiveActivity } from '../hooks/useProactiveActivity';
 import { usePartnerHedgeCards } from '../hooks/usePartnerHedgeCards';
 import { usePartnerAdvisorySetup } from '../hooks/usePartnerAdvisorySetup';
 import { usePartnerDeliveryBacklog } from '../hooks/usePartnerDeliveryBacklog';
+import { usePartnerAdvisoryResearchReadiness } from '../hooks/usePartnerAdvisoryResearchReadiness';
+import { advisoryCoverageRows } from '../utils/advisoryCollectionCoverage';
 import { useOptionalAiStatus } from '../hooks/useOptionalAiStatus';
 import { useProactiveSessionDiagnostics } from '../hooks/useProactiveSessionDiagnostics';
 import { useSchedulerTiming } from '../hooks/useSchedulerTiming';
@@ -250,6 +252,13 @@ function PartnerAdvisorySetup({ setup, isLoading, isError, mutate }) {
   </section>;
 }
 
+function PartnerAdvisoryCollection({ readiness, isLoading, isError }) {
+  if (isLoading) return <div className="rounded border border-gray-800 bg-gray-900 p-4 text-sm text-gray-500">Loading advisory collection coverage…</div>;
+  if (isError || !readiness) return <div className="rounded border border-amber-800 bg-amber-950/30 p-4 text-sm text-amber-200">Advisory collection evidence is unavailable. This is not zero attempts and cannot qualify a strategy.</div>;
+  const rows = advisoryCoverageRows(readiness);
+  return <section className="rounded-xl border border-violet-900/70 bg-violet-950/10 p-4" aria-labelledby="partner-collection-heading"><h2 id="partner-collection-heading" className="text-xl font-bold text-white">Advisory evidence collection</h2><p className="mt-1 text-xs text-gray-500">Archive-local attempts for the current IST session. Public inputs, candidate chains and missing schedule slots remain distinct; this view grants no send or trading authority.</p><div className="mt-3 grid gap-3 sm:grid-cols-2">{rows.map((row) => <div key={row.index} className="rounded border border-gray-800 bg-gray-950/70 p-3 text-xs"><div className="flex justify-between gap-2"><b className="text-violet-100">{row.index}</b><span className={row.state === 'COMPLETE' ? 'text-emerald-300' : 'text-amber-300'}>{row.state}</span></div><p className="mt-2 text-gray-400">Attempts {row.attempted ?? 'Unavailable'} / {row.expected ?? 'Unavailable'} · missing schedule {row.missing ?? 'Unavailable'} · incomplete {row.incomplete ?? 'Unavailable'}</p><p className="mt-2 break-all text-[10px] text-gray-500">Session {row.sessionDate || 'Unavailable'} · latest {row.latest || 'Never'}</p></div>)}</div><p className="mt-3 text-[10px] font-semibold tracking-wide text-gray-500">QUALIFICATION: NO · DELIVERY: NO · ORDERS: NO</p></section>;
+}
+
 function SchedulerTiming({ schedulerTiming, isLoading, isError }) {
   if (isLoading) return <div className="rounded border border-gray-800 bg-gray-900 p-4 text-sm text-gray-500">Loading scheduler timing evidence…</div>;
   if (isError || !schedulerTiming) return <div className="rounded border border-amber-800 bg-amber-950/30 p-4 text-sm text-amber-200">Scheduler timing evidence is unavailable. This does not mean scans are idle.</div>;
@@ -290,6 +299,18 @@ function OptionalAiEvidence({ optionalAi, isLoading, isError }) {
   if (isError || !optionalAi) return <div className="rounded border border-amber-800 bg-amber-950/30 p-4 text-sm text-amber-200">Optional-AI health is unavailable. Deterministic trading paths do not depend on this display.</div>;
   const unavailable = ['NOT_REPORTED', 'STALE', 'OUTAGE_CIRCUIT_OPEN', 'UNAVAILABLE', 'CORRUPT_REPORT'].includes(optionalAi.state);
   const queue = optionalAi.detail?.queue || {};
+  // [WORKFLOW-I I.A 2026-09-13] I3 usefulness envelope. Absent when the
+  // operator has not enabled OPTIONAL_AI_REPORT_USEFULNESS; we render
+  // "Not enabled" rather than zeros so operators can distinguish
+  // "no data" from "data with zero values".
+  const usefulness = optionalAi.detail?.usefulness;
+  const hasUsefulness = usefulness && typeof usefulness === 'object';
+  // Cache hit rate is computed on the dashboard side from the
+  // bounded counters; the bridge never ships derived numbers.
+  const cacheHitRate = (hasUsefulness
+    && (usefulness.cache_hits + usefulness.cache_misses) > 0)
+    ? (usefulness.cache_hits / (usefulness.cache_hits + usefulness.cache_misses))
+    : null;
   return (
     <section className={`rounded-xl border p-4 ${unavailable ? 'border-amber-800 bg-amber-950/20' : 'border-blue-900/70 bg-blue-950/10'}`} aria-labelledby="optional-ai-heading">
       <div className="flex flex-wrap items-start justify-between gap-3">
@@ -302,6 +323,30 @@ function OptionalAiEvidence({ optionalAi, isLoading, isError }) {
         <div><div className="text-gray-500">Daily budget</div><div className="mt-1 font-semibold text-gray-200">{queue.daily_requests ?? '—'} / {queue.daily_budget ?? '—'}</div></div>
         <div><div className="text-gray-500">Reported at</div><div className="mt-1 break-all font-semibold text-gray-200">{optionalAi.reported_at || 'Never'}</div></div>
       </div>
+      {hasUsefulness ? (
+        <div className="mt-3 rounded border border-blue-900/50 bg-blue-950/20 p-3">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <div className="text-[10px] font-bold uppercase tracking-wide text-blue-200">Usefulness evidence (I.A 2026-09-13)</div>
+            <div className="text-[10px] text-blue-300">Bounded counters; non-authoritative</div>
+          </div>
+          <div className="mt-2 grid grid-cols-2 gap-3 text-xs sm:grid-cols-4">
+            <div><div className="text-gray-500">Completed</div><div className="mt-1 font-mono font-semibold text-gray-200">{usefulness.total_completed_reviews ?? 0}</div></div>
+            <div><div className="text-gray-500">Cache hit rate</div><div className="mt-1 font-mono font-semibold text-gray-200">{cacheHitRate === null ? '—' : `${(cacheHitRate * 100).toFixed(0)}%`}</div></div>
+            <div><div className="text-gray-500">Last response</div><div className="mt-1 font-mono font-semibold text-gray-200">{usefulness.response_seconds_last === null || usefulness.response_seconds_last === undefined ? '—' : `${usefulness.response_seconds_last.toFixed(1)}s`}</div></div>
+            <div><div className="text-gray-500">Circuit opens</div><div className="mt-1 font-mono font-semibold text-gray-200">{usefulness.circuit_opens ?? 0}</div></div>
+          </div>
+          {usefulness.verdict_counts ? (
+            <div className="mt-2 grid grid-cols-2 gap-3 text-xs sm:grid-cols-4">
+              <div><div className="text-gray-500">Approve</div><div className="mt-1 font-mono font-semibold text-emerald-300">{usefulness.verdict_counts.APPROVE ?? 0}</div></div>
+              <div><div className="text-gray-500">Approve+</div><div className="mt-1 font-mono font-semibold text-amber-300">{usefulness.verdict_counts.APPROVE_WITH_CONCERNS ?? 0}</div></div>
+              <div><div className="text-gray-500">Unavailable</div><div className="mt-1 font-mono font-semibold text-gray-400">{usefulness.verdict_counts.REVIEW_UNAVAILABLE ?? 0}</div></div>
+              <div><div className="text-gray-500">Reject</div><div className="mt-1 font-mono font-semibold text-red-300">{usefulness.verdict_counts.REJECT ?? 0}</div></div>
+            </div>
+          ) : null}
+        </div>
+      ) : (
+        <div className="mt-3 rounded border border-gray-800 bg-gray-950/40 p-3 text-xs text-gray-500">Usefulness instrumentation not enabled on the agent. Set <code className="font-mono text-gray-300">OPTIONAL_AI_REPORT_USEFULNESS=true</code> on the agent to bridge I3 metrics here.</div>
+      )}
       <p className="mt-3 text-xs text-gray-400">{optionalAi.note}</p>
       <p className="mt-2 text-[10px] font-semibold tracking-wide text-gray-500">EXECUTION AUTHORITY: NONE · CAN PLACE ORDERS: NO</p>
     </section>
@@ -342,6 +387,7 @@ export default function Dashboard({ healthData, navigateToPositions, navigateToB
   const partnerHedgeCards = usePartnerHedgeCards();
   const partnerAdvisorySetup = usePartnerAdvisorySetup();
   const partnerDeliveryBacklog = usePartnerDeliveryBacklog();
+  const partnerAdvisoryResearch = usePartnerAdvisoryResearchReadiness();
   const optionalAi = useOptionalAiStatus();
   const sessionDiagnostics = useProactiveSessionDiagnostics();
   const schedulerTiming = useSchedulerTiming();
@@ -351,6 +397,11 @@ export default function Dashboard({ healthData, navigateToPositions, navigateToB
   const cbHalted = healthData?.circuit_breaker_halted || false;
   const cbReasons = healthData?.circuit_breaker_reasons || [];
   const isMarketOpen = healthData?.market_open || false;
+  // [WORKFLOW-J.8 2026-09-13] Bounded session phase for the
+  // SignalCard disabled-state gate. Mirrors the J.7 server
+  // gate so the operator sees the same allow/block verdict
+  // the server will enforce.
+  const sessionPhase = healthData?.session_phase || null;
   const activePositions = Array.isArray(positions) ? positions.filter(isActivePosition).slice(0, 5) : [];
 
   return (
@@ -383,8 +434,20 @@ export default function Dashboard({ healthData, navigateToPositions, navigateToB
 
         <ActivityFunnel {...proactive} />
 
+        {/* [WORKFLOW-J.8 2026-09-13] Session-phase card surfaces
+            the bounded phase (10 documented values) instead of
+            the binary market_open indicator. The card shows the
+            phase label, broker-order verdict, and a short
+            description; the SignalCard below also disables the
+            action button when the phase blocks execution. */}
+        <section aria-labelledby="session-phase-heading">
+          <h2 id="session-phase-heading" className="mb-3 text-xl font-bold text-white">Session Phase</h2>
+          <SessionPhaseCard phase={sessionPhase} />
+        </section>
+
         <div className="grid gap-6 2xl:grid-cols-2">
           <PartnerAdvisorySetup {...partnerAdvisorySetup} />
+          <PartnerAdvisoryCollection {...partnerAdvisoryResearch} />
           <OperationalCoverage {...operationalCoverage} />
           <ReconciliationEvidence {...reconciliationEvidence} />
           <SchedulerTiming {...schedulerTiming} />
@@ -399,7 +462,7 @@ export default function Dashboard({ healthData, navigateToPositions, navigateToB
           <div className="space-y-4 xl:col-span-1">
             <h2 className="border-b border-gray-800 pb-2 text-xl font-bold text-white">Active Signals</h2>
             {!signals?.length ? <div className="rounded border border-gray-800 bg-gray-900 p-4 text-sm italic text-gray-500">No pending signals.</div>
-              : signals.map((signal) => <SignalCard key={signal.signal_id} signal={signal} isMarketOpen={isMarketOpen} cbHalted={cbHalted} onActionComplete={refreshSignals} />)}
+              : signals.map((signal) => <SignalCard key={signal.signal_id} signal={signal} isMarketOpen={isMarketOpen} sessionPhase={sessionPhase} cbHalted={cbHalted} onActionComplete={refreshSignals} />)}
           </div>
           <div className="xl:col-span-2">
             <div className="mb-4 flex items-end justify-between border-b border-gray-800 pb-2"><h2 className="text-xl font-bold text-white">Open Positions</h2><button onClick={navigateToPositions} className="text-sm text-blue-400 hover:text-blue-300">View All -&gt;</button></div>

@@ -30,6 +30,7 @@ async def test_statement_residual_stays_unresolved_and_conflicting_retry_is_reje
 @pytest.mark.asyncio
 async def test_activity_surface_exposes_imported_statement_without_order_authority(db_path, monkeypatch):
     from config import settings
+    import main  # Initialize the application before its main-bound route modules.
     from routes_commands import get_proactive_activity
 
     await import_broker_statement(

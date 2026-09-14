@@ -6,7 +6,7 @@ import json
 import pytest
 
 from proactive_intelligence import (
-    ShadowProposal, ShadowSimulation, allocate_shadow_proposals, build_shadow_proposals, proactive_activity_report,
+    ShadowProposal, ShadowSimulation, _SHADOW_ENTRY_PROFILES, _SHADOW_EXIT_PROFILES, allocate_shadow_proposals, build_shadow_proposals, proactive_activity_report,
     proactive_shadow_comparison, proactive_shadow_research_report, run_shadow_research_comparison,
     size_shadow_allocations,
     record_opportunity_event,
@@ -371,7 +371,8 @@ async def test_frozen_shadow_research_trials_retain_matched_entry_exit_nonfills(
         future_bars=future_bars, cash_per_trial=1_000, fee_rate=0, slippage_bps=0,
     )
     assert first["mode"] == "SHADOW" and first["can_place_orders"] is False
-    assert first["opportunities"] == 2 and first["profile_trials"] == first["inserted_trials"] == 12
+    expected_trials = len(proposals) * len(_SHADOW_ENTRY_PROFILES) * len(_SHADOW_EXIT_PROFILES)
+    assert first["opportunities"] == 2 and first["profile_trials"] == first["inserted_trials"] == expected_trials
     retry = await run_shadow_research_comparison(
         db_path, research_run_id="fixture-entry-exit-v1", proposals=proposals,
         future_bars=future_bars, cash_per_trial=1_000, fee_rate=0, slippage_bps=0,
@@ -384,7 +385,8 @@ async def test_frozen_shadow_research_trials_retain_matched_entry_exit_nonfills(
         )
     report = await proactive_shadow_research_report(db_path, research_run_id="fixture-entry-exit-v1")
     assert report["research_only"] is True and report["authorization_effect"] == "NONE"
-    assert len(report["comparisons"]) == 6
+    expected_comparisons = len(_SHADOW_ENTRY_PROFILES) * len(_SHADOW_EXIT_PROFILES)
+    assert len(report["comparisons"]) == expected_comparisons
     pullback = next(row for row in report["comparisons"] if row["entry_profile_id"] == "BOUNDED_PULLBACK_LIMIT_V1" and row["exit_profile_id"] == "STOP_TARGET_TIME_V1")
     assert pullback["trials"] == 2 and pullback["no_fills"] == 1 and pullback["open_trials"] == 1
     bounded_time = next(row for row in report["comparisons"] if row["entry_profile_id"] == "NEXT_EXECUTABLE_OPEN_V1" and row["exit_profile_id"] == "BOUNDED_TIME_EXIT_60M_V1")

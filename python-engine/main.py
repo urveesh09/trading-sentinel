@@ -1597,7 +1597,82 @@ async def run_penny_hourly_report():
             ledger_writer=_make_penny_ledger_writer(penny_source),
         )
         deployed = sum((p.get("entry_price", 0.0) * p.get("shares", 0)) for p in penny_pos)
-        unrealised = sum((p.get("current_price", 0.0) - p.get("entry_price", 0.0)) * p.get("shares", 0) for p in penny_pos)
+        # [MTM-WIRED 2026-09-13] Replace the silent-zero expression with
+        # ``mark_to_market.mark_open_positions`` so the hourly report
+        # reflects actual LTP. Pre-fix the orchestrator read
+        # ``p.get("current_price", 0.0)``; because ``positions`` has no
+        # ``current_price`` column, every row contributed
+        # ``-entry_price * shares`` and the report silently produced a
+        # false -Rs 30,000 loss on a 10-share TCS position. Now we
+        # fetch a single batched Kite quote per ticker (one call, not
+        # one per row) and feed the result into the MTM module.
+        # When Kite has no access_token (paper-mode CI, after-hours
+        # cron in a fresh container, etc.) we degrade to UNKNOWN
+        # quotes rather than crashing the report.
+        unrealised = None if penny_pos else 0.0
+        try:
+            from datetime import timezone as _tz
+            from mark_to_market import (
+                mark_open_positions, QuoteTick,
+                MAX_QUOTE_AGE_SECONDS,
+            )
+            _quote_cache: dict = {}
+            _now_utc = datetime.now(_tz.utc)
+            if kite.access_token and penny_pos:
+                # Resolve ticker -> instrument token via the Kite
+                # instrument cache, then batch-fetch LTP for all
+                # tickers in one call (not one-per-row).
+                _tokens: list = []
+                for _p in penny_pos:
+                    _tk_raw = _p.get("instrument_token") or _p.get("token")
+                    _tk = None
+                    if _tk_raw is not None:
+                        try:
+                            _tk = int(_tk_raw)
+                        except (TypeError, ValueError):
+                            _tk = None
+                    if _tk is None:
+                        # Fall back to the instrument cache by ticker.
+                        _tk = kite.instrument_cache.get(_p.get("ticker", ""))
+                    if isinstance(_tk, int) and _tk > 0:
+                        _tokens.append(_tk)
+                if _tokens:
+                    try:
+                        _raw_quotes = await kite.get_quote(_tokens)
+                        for _tk, _payload in _raw_quotes.items():
+                            if isinstance(_payload, dict):
+                                _lp = _payload.get("last_price")
+                                if isinstance(_lp, (int, float)):
+                                    _quote_cache[int(_tk)] = QuoteTick.build(
+                                        float(_lp), _now_utc,
+                                    )
+                    except Exception as _exc:
+                        logger.warning(
+                            "penny_hourly_mtm_kite_quote_failed err=%s",
+                            type(_exc).__name__,
+                        )
+            _mtm = mark_open_positions(
+                equity_rows=penny_pos,
+                fno_rows=[],
+                fno_dr_rows=[],
+                quotes=_quote_cache,
+                now_utc=_now_utc,
+                freshness_seconds=MAX_QUOTE_AGE_SECONDS,
+            )
+            unrealised = _mtm.complete_unrealised_pnl
+            from mark_to_market import QuoteStatus as _QS
+            _stale_count = _mtm.count_by_status.get(_QS.STALE, 0)
+            if _stale_count:
+                logger.info(
+                    "penny_hourly_mtm_stale_quotes count=%d total=%d",
+                    _stale_count, len(_mtm.marks),
+                )
+        except Exception as _exc:
+            # Preserve unknown valuation in the operator report, not zero.
+            logger.warning(
+                "penny_hourly_mtm_unavailable err=%s", type(_exc).__name__,
+            )
+            unrealised = None if penny_pos else 0.0
         # [AUDIT-FIX-2.4] Plumb universe as_of / age_days into the hourly
         # report so stale data is visible to the operator. Read directly
         # from the JSON (cheap -- one file read + 2 string fields).
@@ -4367,6 +4442,8 @@ from routes_fno_experiments import router as _fno_experiments_router
 from routes_penny_experiments import router as _penny_experiments_router
 from routes_promotion_readiness import router as _promotion_readiness_router
 from routes_hedge import router as _hedge_router
+from routes_holidays import router as _holidays_router  # WORKFLOW-J.5
+from routes_market_session import router as _market_session_router
 
 app.include_router(_ops_router)
 app.include_router(_portfolio_router)
@@ -4376,3 +4453,5 @@ app.include_router(_fno_experiments_router)
 app.include_router(_penny_experiments_router)
 app.include_router(_promotion_readiness_router)
 app.include_router(_hedge_router)
+app.include_router(_holidays_router)  # WORKFLOW-J.5
+app.include_router(_market_session_router)

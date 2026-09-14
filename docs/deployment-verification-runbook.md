@@ -6,6 +6,8 @@ messages.
 
 ## Promotion procedure
 
+Before recreating any application service, complete the [consistent data backup and rollback procedure](consistent-data-backup-runbook.md) in an authorized exclusive after-hours window. Resolve actual mounts and all writers, retain quiescence plus integrity receipts, and rehearse isolated restore/schema compatibility. Do not infer consistency from a copied main SQLite file or from the offline verifier alone.
+
 1. From the Production checkout, preserve the named data volume and record
    `git status --short`. Stop if tracked files are modified or history is not
    a fast-forward to the reviewed `evolve/smart-strategies` target. Do not
@@ -54,7 +56,7 @@ compares the actual image's metadata with container metadata and rejects stopped
 containers. Regression tests cover an old image relabelled with a new runtime SHA.
 
 After merging the correction into evolve/smart-strategies, use PowerShell below.
-Complete the consistent data backup described above first. Run after market hours.
+Complete the linked consistent data backup procedure first. Run after market hours.
 Every native-command failure stops the procedure; do not continue manually past it.
 
 ```powershell

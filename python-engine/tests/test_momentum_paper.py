@@ -47,7 +47,7 @@ def _db(tmp_path):
         CREATE TABLE bankroll_ledger (
             id INTEGER PRIMARY KEY AUTOINCREMENT, timestamp TEXT, event_type TEXT,
             ticker TEXT, pnl REAL, bankroll_before REAL, bankroll_after REAL,
-            notes TEXT, source TEXT
+            notes TEXT, source TEXT, origin_ref TEXT
         )""")
     con.commit()
     con.close()

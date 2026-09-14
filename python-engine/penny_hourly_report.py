@@ -63,7 +63,7 @@ class PennyHourlyReport:
         regime: str,
         open_positions: list,
         deployed_capital: float,
-        unrealised_pnl: float,
+        unrealised_pnl: Optional[float],
         kill_switch_active: bool,
         circuit_blocks: int,
         universe_size: int = 0,
@@ -141,6 +141,8 @@ class PennyHourlyReport:
         if not has_activity:
             suffix = f" (regime: {regime}, open: {len(open_positions)}/5, deployed: Rs {deployed_capital:.0f})"
             head = f"No action in Penny this hour.{suffix}"
+            if unrealised_pnl is None:
+                head += "\nUnrealised: UNAVAILABLE (incomplete/stale quotes)"
             # Diagnostic tail (2026-06-24): when the universe had N>0
             # tickers but none triggered an entry, tell the operator
             # WHY. Renders as a second line; keeps <1000 char limit.
@@ -192,7 +194,7 @@ class PennyHourlyReport:
 
         lines.append(
             f"Open: {len(open_positions)}/5, deployed: Rs {deployed_capital:.0f}, "
-            f"unrealised: Rs {unrealised_pnl:+.0f}"
+            f"unrealised: {'UNAVAILABLE (incomplete/stale quotes)' if unrealised_pnl is None else f'Rs {unrealised_pnl:+.0f}'}"
         )
         return "\n".join(lines)
 
@@ -406,7 +408,7 @@ class PennyHourlyReport:
 
 
 async def run_hourly_report(db_path: str, regime: str, open_positions: list,
-                             deployed_capital: float, unrealised_pnl: float,
+                             deployed_capital: float, unrealised_pnl: Optional[float],
                              kill_switch_active: bool, circuit_blocks: int,
                              universe_size: int = 0,
                              data_quality_audit: Optional[dict] = None,

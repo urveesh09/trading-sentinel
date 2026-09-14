@@ -63,6 +63,25 @@ class Settings(BaseSettings):
     # Optional account label for imported broker-statement evidence. Empty is
     # deliberately unavailable; it does not trigger a broker connection.
     BROKER_RECONCILIATION_ACCOUNT_ID: str = ""
+    # [WORKFLOW-J.2 2026-09-13] Operator-supplied Phase 1 F&O eligibility
+    # list for CAS. Per NSE/CMTR/72394 (effective 2026-01-19), CAS Phase 1
+    # applies only to cash-segment stocks on which derivative contracts
+    # are available. The full list lives in the NSE contract-master API;
+    # Dev has no live fetch, so the list is operator-curated.
+    #
+    # Wire format (env var, comma-separated): one symbol per token,
+    # whitespace tolerated around commas. Examples:
+    #   CAS_PHASE1_FNO_UNDERLYINGS="RELIANCE"
+    #   CAS_PHASE1_FNO_UNDERLYINGS="RELIANCE, HDFCBANK, INFY"
+    #
+    # We store it as the raw CSV string -- NOT a typed tuple / list --
+    # because pydantic-settings v2.2.1 parses complex (list/tuple)
+    # fields as JSON by default, which would force operators to write
+    # JSON syntax in their .env. Keeping the wire format as a plain
+    # string is operator-friendly AND lets us validate / normalise at
+    # the point of use (``is_cas_eligible`` strips whitespace,
+    # uppercases, drops empty tokens).
+    CAS_PHASE1_FNO_UNDERLYINGS: str = ""
     # Separate proof of broker ORDER permission from token/quote readiness.
     # Empty means a state file beside DB_PATH.  BLOCKED persists across restart.
     ORDER_EXECUTION_STATE_PATH: str = ""
@@ -1041,6 +1060,10 @@ class Settings(BaseSettings):
     # explicit evidence gap instead of silently dropping old contracts.
     RESEARCH_ACTIVE_LEG_MAX_TOKENS: int = 120
     RESEARCH_QUOTE_MAX_QUEUE: int = 2_000
+    # Awaiting archive work must not hold advisory construction indefinitely.
+    # The guarded writer continues to serialize disk access; a timed-out write
+    # is reported as outcome-unknown and never retried as if it certainly failed.
+    RESEARCH_CAPTURE_WAIT_TIMEOUT_SEC: float = 2.0
     RESEARCH_RAW_RETENTION_DAYS: int = 7
     RESEARCH_COMPRESSED_RETENTION_DAYS: int = 90
     RESEARCH_RESERVED_FREE_BYTES: int = 1_073_741_824  # 1 GiB operational floor
@@ -1052,7 +1075,7 @@ class Settings(BaseSettings):
     # information/inferences to the operator's trading partner. NO
     # execution surface, NO fallback into the operator chat (a
     # misrouted partner message is worse than a dropped one).
-    # Disabled by default: with PARTNER_BOT_ENABLED=false every
+    # Explicit disable gate: with PARTNER_BOT_ENABLED=false every
     # partner job returns immediately -- zero Kite calls, zero sends.
     # ============================================================
     PARTNER_BOT_ENABLED:        bool  = True
@@ -1379,6 +1402,88 @@ class Settings(BaseSettings):
     # Cost is one-off: get_historical caches by window coverage, so widening
     # re-fetches once per ticker and then hits cache.
     DAILY_HISTORY_DAYS:                int   = 1095
+
+    # === H4 Intraday-cache semantics (2026-09-13, plan section 12) ===
+    # §12 mandates: "Cache only with explicit instrument, interval,
+    # completed-bar cutoff and freshness semantics." The two knobs
+    # below make the existing ``get_intraday`` cache HIT path
+    # honour those semantics explicitly. The defaults preserve the
+    # existing behaviour; the knobs are operator-tunable.
+    #
+    # INTRADAY_CACHE_FRESHNESS_SECONDS:
+    #   Maximum age (seconds) of the most recent cached candle
+    #   relative to ``to_datetime``. A candle whose age is older
+    #   than this triggers a Kite round-trip; a candle newer than
+    #   this is served as a HIT. The existing freshness check uses
+    #   ``interval_mins`` (1 minute for interval="minute", etc.).
+    #   We default to 0 -- strict "must be the candle covering up
+    #   to the most recent interval boundary" semantics, matching
+    #   the pre-H4 behaviour. An operator can relax to e.g. 60 if
+    #   they want a 1-minute staleness budget; the knob exists for
+    #   that.
+    INTRADAY_CACHE_FRESHNESS_SECONDS:   int   = 0
+    # INTRADAY_CACHE_INCLUDE_FORMING:
+    #   If True, candles whose ``datetime`` is in the future
+    #   relative to ``to_datetime`` (a forming candle) ARE served
+    #   from cache. If False (the §12 default), forming candles
+    #   are EXCLUDED from the returned set. The cache continues
+    #   to contain forming candles (the writer has no way to
+    #   know); the HIT path simply doesn't return them.
+    #   Section 12: "Do not mix mutable forming bars with
+    #   completed historical bars."
+    INTRADAY_CACHE_INCLUDE_FORMING:    bool  = False
+    # INTRADAY_CACHE_MIN_CANDLES:
+    #   The minimum number of candles required to serve a HIT.
+    #   Existing behaviour: 4 (the VWAP floor). §12 makes this
+    #   explicit and operator-tunable. Lowering this risks
+    #   VWAP instability on partial data; raising it requires
+    #   more pre-cache data per ticker.
+    INTRADAY_CACHE_MIN_CANDLES:        int   = 4
+
+
+    # ============================================================
+    # F6 CAPITAL POLICY (2026-09-13, plan section 10.5)
+    # ============================================================
+    # The third gate in the live-growth chain:
+    #   promotion-bridge (signed state)        -- who may promote
+    #       -> affordability guard (F2)        -- can the live pool grow
+    #           -> capital policy guard (F6)    -- should the live pool grow
+    #
+    # Every knob below is a professional-conservative default that
+    # the operator can override by editing config.py (or by setting
+    # the corresponding env var, since this is a BaseSettings).
+    #
+    # CAPITAL_POLICY_LOSS_TOLERANCE_PCT is the EXPLICIT USER INPUT
+    # the plan mandates ("Leave the user's loss tolerance as an
+    # explicit input if not supplied"). Unknown until explicitly set;
+    # do not infer a user's loss tolerance from engineering defaults.
+    CAPITAL_POLICY_LOSS_TOLERANCE_PCT:           float | None = None
+    # Current realised drawdown cap. Independent of loss tolerance
+    # because they measure different things: loss tolerance is the
+    # *worst-case* loss the user accepts on a single growth event;
+    # max drawdown is the *current* realised drawdown that gates
+    # all growth until it recovers.
+    CAPITAL_POLICY_MAX_DRAWDOWN_PCT:            float = 15.0
+    # Minimum closed-trade win rate required. Default 50% (half
+    # profitable). Lower for early systems with few trades.
+    CAPITAL_POLICY_MIN_WIN_RATE_PCT:             float = 50.0
+    # Minimum average R-multiple of closed trades. Default 0.0
+    # (breakeven on R). Raise to require positive expectancy.
+    CAPITAL_POLICY_MIN_AVG_R_MULTIPLE:           float = 0.0
+    # Maximum consecutive losing closed trades. Default 5
+    # (industry-standard operational stability gate).
+    CAPITAL_POLICY_MAX_CONSECUTIVE_LOSSES:       int   = 5
+    # Minimum current live bankroll before any increase is even
+    # evaluated. Default 1500 (matches PENNY_EDGE_LIVE_BANKROLL).
+    CAPITAL_POLICY_MIN_LIVE_BANKROLL_INR:        float = 1500.0
+    # If True, an UNRESOLVED or UNAVAILABLE broker statement refuses
+    # the increase. Never grow live capital on unverified broker
+    # truth.
+    CAPITAL_POLICY_REQUIRE_BROKER_RECONCILIATION: bool  = True
+    # If True, the absence of a proactive research artifact on
+    # file returns INSUFFICIENT_EVIDENCE. Never grow live capital
+    # without a recorded research basis.
+    CAPITAL_POLICY_REQUIRE_PROACTIVE_EVIDENCE:   bool  = True
 
 
 settings = Settings()

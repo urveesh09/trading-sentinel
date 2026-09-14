@@ -199,7 +199,7 @@
       "trigger": "cron[hour='15', minute='0']"
     },
     {
-      "func": "run_penny_hourly_report",
+      "func": "run_penny_hourly_report_safe",
       "id": "penny_hourly_report",
       "kwargs": [],
       "trigger": "cron[hour='10-14', minute='0']"
@@ -446,6 +446,22 @@
         "GET"
       ],
       "path": "/health",
+      "response_model": null
+    },
+    {
+      "endpoint": "get_nse_holidays",
+      "methods": [
+        "GET"
+      ],
+      "path": "/holidays",
+      "response_model": null
+    },
+    {
+      "endpoint": "cas_eligibility",
+      "methods": [
+        "GET"
+      ],
+      "path": "/market-session/cas-eligibility",
       "response_model": null
     },
     {
@@ -710,6 +726,22 @@
         "POST"
       ],
       "path": "/positions/manual",
+      "response_model": null
+    },
+    {
+      "endpoint": "get_reconciliation_discrepancies",
+      "methods": [
+        "GET"
+      ],
+      "path": "/reconciliation/discrepancies",
+      "response_model": null
+    },
+    {
+      "endpoint": "post_reconciliation_import_statement",
+      "methods": [
+        "POST"
+      ],
+      "path": "/reconciliation/import-statement",
       "response_model": null
     },
     {

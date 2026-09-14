@@ -575,7 +575,19 @@ def register_penny_scheduler_jobs(scheduler):
                 "now_ist=%s",
                 _now_ist.strftime("%H:%M:%S"),
             )
-            asyncio.create_task(_run_penny_edge_scan_safe())
+            # Resolve the loop before constructing the coroutine. Registration
+            # is also exercised from synchronous tests/tooling; constructing
+            # first and then failing ``create_task`` leaked an unawaited
+            # coroutine even though the outer startup guard caught the error.
+            try:
+                _startup_loop = asyncio.get_running_loop()
+            except RuntimeError:
+                logger.warning(
+                    "penny_edge_scan_startup_catchup_deferred "
+                    "reason=no_running_event_loop"
+                )
+            else:
+                _startup_loop.create_task(_run_penny_edge_scan_safe())
         elif _now_ist >= _today_1515:
             logger.warning(
                 "penny_edge_scan_startup_skipped "
@@ -735,6 +747,61 @@ def register_penny_scheduler_jobs(scheduler):
     # Fires after the 15:30 daily attribution (T3-A) and the 15:00
     # force-close (G5). At 16:00 all MIS positions are closed, CNC
     # positions are held overnight, and the day's trades are in the
+    # [PENNY-HOURLY-BREADCRUMB 2026-09-13] First-line diagnostic log
+    # inside the hourly report. Rule 49 (trading-sentinel-ops): every
+    # wall-clock cron needs a startup-catchup + first-line breadcrumb
+    # so the absence of any penny_hourly_report log lines at 10:00,
+    # 11:00, ..., 14:00 IST is debuggable in 30 seconds instead of
+    # needing a full re-deploy. PROD-RISK: a missing first-line log
+    # at any of these hours means the cron silently did NOT fire;
+    # without a breadcrumb that is indistinguishable from "fired
+    # and reported nothing".
+    #
+    # [CALENDAR-GATE 2026-09-13] The wrapper carries its own
+    # is_trading_day gate so the test
+    # test_every_cron_handler_has_a_gate_or_is_allowlisted (in
+    # tests/test_penny_cron_gating.py) accepts this new cron.
+    # Without the gate here the inner function would still gate,
+    # but the rule is "every scheduler-registered handler must
+    # gate at its top" -- the wrapper IS the handler from the
+    # scheduler's point of view.
+    #
+    # [PROD-DEFENSE 2026-09-13] The calendar gate is INSIDE the
+    # try/except so a substrate failure in ``is_trading_day`` is
+    # caught and logged, NOT propagated. The whole body of the
+    # wrapper is the protected region: breadcrumb -> gate -> run.
+    # Anything that raises in any of those three steps is caught
+    # and logged with exc_info=True. This is the only penny
+    # subsystem handler whose failure mode would silently kill
+    # the cron (it is the only one without a _safe wrapper prior
+    # to H1), so the wrapper's defence is comprehensive.
+    async def run_penny_hourly_report_safe():
+        logger.info(
+            "penny_hourly_report_invoked now_ist=%s source=cron_or_catchup",
+            datetime.now(IST).strftime("%Y-%m-%d %H:%M:%S"),
+        )
+        try:
+            today = datetime.now(IST).date()
+            if not await _main.is_trading_day(today, settings.DB_PATH):
+                logger.info("penny_hourly_report_skip reason=non_trading_day")
+                return
+            await run_penny_hourly_report()
+        except Exception as exc:
+            # [PROD-DEFENSE 2026-09-13] The previous behaviour was to
+            # let any NameError/AttributeError/KeyError propagate out
+            # of the cron (the bare ``run_penny_hourly_report`` was
+            # the only penny subsystem job registered without a
+            # ``_safe`` wrapper). With the F3 wiring that pulls in
+            # ``mark_to_market.mark_open_positions`` and the F-series
+            # substrates, a transient substrate read failure would
+            # take the whole hourly-report cron down for the day.
+            # This wrapper is a defensive belt-and-braces that
+            # matches the discipline already applied to every other
+            # penny subsystem job.
+            logger.error(
+                "penny_hourly_report_failed err=%s", exc, exc_info=True,
+            )
+
     # bankroll_ledger. Body builder lives in operator_status.py.
     scheduler.add_job(
         _run_penny_eod_digest, "cron",
@@ -742,13 +809,29 @@ def register_penny_scheduler_jobs(scheduler):
         id="penny_eod_digest",
     )
     scheduler.add_job(
-        run_penny_hourly_report, "cron",
+        # [PROD-DEFENSE 2026-09-13] Re-registered to use the
+        # ``_safe`` wrapper instead of the bare
+        # ``run_penny_hourly_report``. The cron contract is
+        # unchanged from the scheduler's point of view; the wrapper
+        # only catches failures so a transient substrate error
+        # does not silently kill the hourly report.
+        run_penny_hourly_report_safe, "cron",
         hour=(
             f"{settings.PENNY_HOURLY_REPORT_START_HOUR}-"
             f"{settings.PENNY_HOURLY_REPORT_END_HOUR}"
         ),
         minute=0,
         id="penny_hourly_report",
+        max_instances=1,
+        coalesce=True,
+        misfire_grace_time=600,
+    )
+    logger.info(
+        "penny_hourly_report_cron_registered id=penny_hourly_report "
+        "schedule=\"%s:00 IST\" max_instances=1 coalesce=True "
+        "misfire_grace_time=600",
+        f"{settings.PENNY_HOURLY_REPORT_START_HOUR}-"
+        f"{settings.PENNY_HOURLY_REPORT_END_HOUR}",
     )
 
     # [GAP-2 ZERO-ACCEPT ALARM 2026-07-10] 15:45 IST accept-rate
@@ -892,6 +975,8 @@ def register_partner_scheduler_jobs(scheduler):
 
     @telemetry_job(settings.DB_PATH, "partner_manual_advisory_tick")
     async def _run_partner_manual_advisory_tick_safe():
+        # [CALENDAR-GATE 2026-07-03] delegated to _gates_open in the tick:
+        # trading day, session, enabled destination and provider token.
         try:
             from partner_orchestrator import partner_manual_advisory_tick
             await partner_manual_advisory_tick()
@@ -901,6 +986,8 @@ def register_partner_scheduler_jobs(scheduler):
 
     @telemetry_job(settings.DB_PATH, "partner_manual_advisory_lifecycle_tick")
     async def _run_partner_manual_advisory_lifecycle_tick_safe():
+        # [CALENDAR-GATE 2026-07-03] exception: local off-session retirement
+        # must continue. Any transport is separately final-authorized.
         try:
             from partner_orchestrator import partner_manual_advisory_lifecycle_tick
             await partner_manual_advisory_lifecycle_tick()
@@ -920,6 +1007,8 @@ def register_partner_scheduler_jobs(scheduler):
 
     @telemetry_job(settings.DB_PATH, "research_quote_collection")
     async def _run_research_quote_collection_safe():
+        # [CALENDAR-GATE 2026-07-03] delegated to the collector tick, which
+        # checks trading day/session before provider calls and journals gaps.
         # Independent market-data observation.  It has no partner delivery,
         # profile, qualification, or order dependency; its own entry point
         # handles calendar/session/token availability and records gaps.
@@ -971,6 +1060,9 @@ def register_partner_scheduler_jobs(scheduler):
 
     @telemetry_job(settings.DB_PATH, "partner_hedge_delivery_recovery")
     async def _run_partner_hedge_delivery_recovery_safe():
+        # [CALENDAR-GATE 2026-07-03] exception: sweep/retirement must run
+        # off-session. _recovery_retirement_reason and final dispatch gate
+        # prevent an expired or non-trading-day proposal from being sent.
         try:
             from hedge_advisory import recover_pending_hedge_deliveries
             await recover_pending_hedge_deliveries()
@@ -979,6 +1071,9 @@ def register_partner_scheduler_jobs(scheduler):
             return {"status": "FAILED", "reason": type(exc).__name__}
 
     async def _run_partner_input_refresh_safe():
+        # [CALENDAR-GATE 2026-07-03] exception: approved source-neutral
+        # reconciliation may arrive off-session; this path cannot advise
+        # or order. Account, completeness and freshness checks still apply.
         try:
             from partner_input_refresh import refresh_partner_input_once
             await refresh_partner_input_once()
@@ -986,6 +1081,8 @@ def register_partner_scheduler_jobs(scheduler):
             logger.error("partner_input_refresh_crashed err=%s", exc, exc_info=True)
 
     async def _run_partner_hedge_morning_summary_safe():
+        # [CALENDAR-GATE 2026-07-03] delegated to daily_summary, which checks
+        # is_trading_day before portfolio lookup or transport.
         try:
             from hedge_advisory import partner_hedge_daily_summary
             await partner_hedge_daily_summary("MORNING")
@@ -993,6 +1090,8 @@ def register_partner_scheduler_jobs(scheduler):
             logger.error("partner_hedge_morning_summary_crashed err=%s", exc, exc_info=True)
 
     async def _run_partner_hedge_eod_summary_safe():
+        # [CALENDAR-GATE 2026-07-03] delegated to daily_summary's trading-day
+        # check before portfolio lookup or transport.
         try:
             from hedge_advisory import partner_hedge_daily_summary
             await partner_hedge_daily_summary("EOD")
@@ -1020,8 +1119,10 @@ def register_partner_scheduler_jobs(scheduler):
             logger.error("partner_hedge_phase3_tick_crashed err=%s", exc, exc_info=True)
 
     async def _run_proactive_shadow_workflow_safe():
-        # This consumer is explicitly fixture-backed and disabled by default.
-        # It never has a broker, delivery, or live-price dependency.
+        # [CALENDAR-GATE 2026-07-03] exception: disabled-by-default SHADOW
+        # research accepts explicit fixtures or a validated completed-bar
+        # provider. Off-session research has no order/delivery authority;
+        # unavailable/stale provider evidence is recorded, not made a fill.
         try:
             from proactive_intelligence import run_configured_shadow_workflow
             await run_configured_shadow_workflow()

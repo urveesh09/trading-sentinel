@@ -43,6 +43,9 @@ from fno_chain import RISK_FREE_RATE, take_chain_snapshot, years_to_expiry
 from fno_engine_mom import SESSION_OPEN_MIN
 from fno_models import FnoDirection
 from fno_signal_scan import UnderlyingScan, attach_entry_chain, observe_underlying, scan_underlying
+
+
+_background_capture_tasks: set[asyncio.Task] = set()
 from fno_underlyings import analytics_underlyings, get_instruments_for, load_underlying_names
 from macro_events import event_note_for
 from partner_bot import partner_enabled, send_partner
@@ -415,7 +418,7 @@ async def partner_scan_tick(now: Optional[datetime] = None) -> None:
 # job: scoped manual-advisory preview tick (NIFTY/SENSEX only)
 # ---------------------------------------------------------------------------
 
-async def partner_manual_advisory_tick(now: Optional[datetime] = None) -> None:
+async def partner_manual_advisory_tick(now: Optional[datetime] = None, *, clock=None) -> None:
     """Persist independently evaluated NIFTY/SENSEX advisory previews.
 
     The pipeline is intentionally distinct from both the legacy signal sender
@@ -427,7 +430,11 @@ async def partner_manual_advisory_tick(now: Optional[datetime] = None) -> None:
         or settings.PARTNER_MANUAL_ADVISORY_SHADOW_ENABLED
     ):
         return
-    now = now or datetime.now(IST)
+    from partner_decision_clock import aware, crossed_entry_boundary, sampled, start_clock
+    explicit_now = now is not None
+    now = aware(now or sampled(clock), "tick start")
+    def stage_now():
+        return now if explicit_now and clock is None else sampled(clock)
     if not await _gates_open(now, settings.PARTNER_MANUAL_ADVISORY_ENTRY_START_MINUTE, settings.PARTNER_MANUAL_ADVISORY_MANAGEMENT_END_MINUTE):
         return
     import main as _main
@@ -455,25 +462,110 @@ async def partner_manual_advisory_tick(now: Optional[datetime] = None) -> None:
     specs.extend(SPECS[name] for name in INDEX_EXCHANGES if name not in seen)
     market_candidates = []
     protection_candidates = []
+    decision_clocks = {
+        spec.name: start_clock(underlying=spec.name,
+                               account_id=f"manual-profile:{profile.profile_id}",
+                               tick_started_at=now)
+        for spec in specs
+    }
+    attempt_store = None
+    if settings.RESEARCH_ARCHIVE_ENABLED:
+        try:
+            from partner_collection_attempts import PartnerCollectionAttemptStore
+            attempt_store = PartnerCollectionAttemptStore(settings.RESEARCH_ARCHIVE_PATH)
+            for item in decision_clocks.values():
+                await asyncio.to_thread(attempt_store.start, item, expected_at=now)
+        except Exception as exc:
+            attempt_store = None
+            logger.error("partner_collection_attempt_start_failed err=%s", str(exc), exc_info=True)
 
-    async def add_explicit_protection(spec, book, snapshot) -> None:
+    async def bounded_archive_write(function, *args, **kwargs):
+        """Bound advisory wait while retaining an explicit ambiguous outcome.
+
+        ``to_thread`` work cannot be force-cancelled safely. The archive's
+        nonblocking writer lease prevents an unbounded active-writer pileup;
+        the callback consumes the eventual result and logs its disposition.
+        """
+        task = asyncio.create_task(asyncio.to_thread(function, *args, **kwargs))
+        _background_capture_tasks.add(task)
+        task.add_done_callback(_background_capture_tasks.discard)
+        try:
+            return await asyncio.wait_for(
+                asyncio.shield(task), timeout=settings.RESEARCH_CAPTURE_WAIT_TIMEOUT_SEC,
+            )
+        except asyncio.TimeoutError as exc:
+            def completed(late_task):
+                try:
+                    late_task.result()
+                    logger.warning("partner_research_capture_completed_after_timeout")
+                except Exception as late_exc:
+                    logger.error("partner_research_capture_failed_after_timeout err=%s", str(late_exc))
+            task.add_done_callback(completed)
+            raise TimeoutError("research capture wait timed out; final artifact state is unknown") from exc
+
+    async def record_public_attempt(spec_name, scan, capture) -> None:
+        if attempt_store is None:
+            return
+        state = "OBSERVED" if capture and capture.get("state") == "OBSERVED" else "UNAVAILABLE"
+        try:
+            await asyncio.to_thread(
+                attempt_store.record_public, decision_clocks[spec_name].run_id,
+                state=state, requested_at=getattr(scan, "public_requested_at", None),
+                received_at=getattr(scan, "public_received_at", None) or getattr(scan, "research_received_at", None),
+                observed_at=(public_facts.get(spec_name) or (None, None))[1],
+                source_id=getattr(scan, "public_source_id", None),
+                artifact_ref=(capture or {}).get("path"),
+                reason=(capture or {}).get("reason") or getattr(scan, "error", None),
+                updated_at=stage_now(),
+            )
+        except Exception as exc:
+            logger.error("partner_public_attempt_write_failed underlying=%s err=%s", spec_name, str(exc))
+
+    async def record_candidate_attempt(spec_name, scan, *, state, artifact=None, reason=None,
+                                       requested=(), received=()) -> None:
+        if attempt_store is None:
+            return
+        try:
+            await asyncio.to_thread(
+                attempt_store.record_candidate, decision_clocks[spec_name].run_id,
+                state=state, requested_at=getattr(scan, "chain_requested_at", None),
+                received_at=getattr(scan, "chain_received_at", None),
+                source_id=getattr(scan, "chain_source_id", None),
+                requested_contracts=requested, received_contracts=received,
+                artifact_ref=(artifact or {}).get("path"), reason=reason,
+                updated_at=stage_now(),
+            )
+        except Exception as exc:
+            logger.error("partner_candidate_attempt_write_failed underlying=%s err=%s", spec_name, str(exc))
+
+    async def finish_attempt(spec_name, state, reason) -> None:
+        if attempt_store is None:
+            return
+        try:
+            await asyncio.to_thread(attempt_store.finish, decision_clocks[spec_name].run_id,
+                                    state=state, reason=reason, updated_at=stage_now())
+        except Exception as exc:
+            logger.error("partner_attempt_finish_failed underlying=%s err=%s", spec_name, str(exc))
+
+    async def add_explicit_protection(spec, book, snapshot, decision_at=None) -> bool:
         """Evaluate declared protection independently of directional entry."""
         if not (profile.permits(AdvisoryScope.CONDITIONAL_PROTECTION, spec.name)
                 and profile.conditional_exposure_assumption and profile.conditional_coverage_units):
-            return
+            return False
+        decision_at = decision_at or now
         protection = build_conditional_index_protective_put(
-            snapshot, book, now, exposure_assumption=profile.conditional_exposure_assumption,
+            snapshot, book, decision_at, exposure_assumption=profile.conditional_exposure_assumption,
             coverage_units=profile.conditional_coverage_units,
             quote_ttl_seconds=settings.PARTNER_MANUAL_ADVISORY_QUOTE_TTL_SEC,
             thesis_id=f"{spec.name}:PROTECTION:{snapshot.expiry}:{snapshot.taken_at.date()}",
         )
         if protection is None:
             metrics["rejected"] += 1
-            return
+            return False
         if await is_strategy_qualified(settings.DB_PATH, protection):
             protection = replace(protection, evidence=StrategyEvidence.QUALIFIED_FOR_ADVISORY)
         precheck = validate_candidate(
-            protection, now, max_quote_age_seconds=settings.PARTNER_MANUAL_ADVISORY_MAX_QUOTE_AGE_SEC,
+            protection, decision_at, max_quote_age_seconds=settings.PARTNER_MANUAL_ADVISORY_MAX_QUOTE_AGE_SEC,
             max_spread_pct=settings.PARTNER_MANUAL_ADVISORY_MAX_SPREAD_PCT,
             min_oi=settings.PARTNER_MANUAL_ADVISORY_MIN_OI,
             min_volume=settings.PARTNER_MANUAL_ADVISORY_MIN_VOLUME,
@@ -483,10 +575,13 @@ async def partner_manual_advisory_tick(now: Optional[datetime] = None) -> None:
             protection_candidates.append(protection)
         else:
             metrics["rejected"] += 1
+        return precheck.valid
     async def observe_one(spec):
         """Contain an unexpected provider failure to its own underlying."""
         try:
-            return spec, await observe_underlying(_main.kite, spec, regime, now)
+            if explicit_now and clock is None:
+                return spec, await observe_underlying(_main.kite, spec, regime, now)
+            return spec, await observe_underlying(_main.kite, spec, regime, now, clock=stage_now)
         except Exception as exc:
             logger.error(
                 "partner_manual_advisory_public_observation_failed underlying=%s err=%s",
@@ -503,6 +598,13 @@ async def partner_manual_advisory_tick(now: Optional[datetime] = None) -> None:
         [observe_one(spec) for spec in specs]
     ):
         spec, scan = await completed_observation
+        public_received = getattr(scan, "public_received_at", None) or getattr(scan, "research_received_at", None)
+        if public_received is not None:
+            decision_clocks[spec.name] = decision_clocks[spec.name].with_stage(
+                public_requested_at=getattr(scan, "public_requested_at", None) or now,
+                public_received_at=public_received,
+                public_source_id=getattr(scan, "public_source_id", None) or f"PUBLIC:{spec.name}",
+            )
         observed_at, observed_underlying, observation_reason = _closed_bar_observation(scan.sig, now)
         public_facts[spec.name] = (scan, observed_at, observed_underlying, observation_reason)
         if observed_at is None or observed_underlying is None:
@@ -536,16 +638,27 @@ async def partner_manual_advisory_tick(now: Optional[datetime] = None) -> None:
         from partner_research_capture import persist_public_input
         for capture_spec in specs:
             capture_scan = public_facts[capture_spec.name][0]
+            capture = None
+            capture_failure_reason = None
             try:
-                capture = await asyncio.to_thread(
+                capture = await bounded_archive_write(
                     persist_public_input, settings.RESEARCH_ARCHIVE_PATH, capture_scan,
                     regime=regime, evaluation_at=now,
+                    decision_clock=decision_clocks[capture_spec.name],
                 )
                 key = "research_input_observed" if capture["state"] == "OBSERVED" else "research_input_unavailable"
                 metrics[key] = metrics.get(key, 0) + 1
+            except TimeoutError as exc:
+                capture_failure_reason = "public_archive_outcome_unknown"
+                metrics["research_input_unavailable"] = metrics.get("research_input_unavailable", 0) + 1
+                logger.error("partner_research_input_capture_ambiguous underlying=%s err=%s", capture_spec.name, str(exc))
             except Exception as exc:
+                capture_failure_reason = "public_archive_write_failed"
                 metrics["research_input_unavailable"] = metrics.get("research_input_unavailable", 0) + 1
                 logger.error("partner_research_input_capture_failed underlying=%s err=%s", capture_spec.name, str(exc))
+            if capture is None and capture_failure_reason:
+                capture = {"state": "UNAVAILABLE", "reason": capture_failure_reason}
+            await record_public_attempt(capture_spec.name, capture_scan, capture)
 
     for spec in specs:
         try:
@@ -561,6 +674,8 @@ async def partner_manual_advisory_tick(now: Optional[datetime] = None) -> None:
                     observed_at=observed_at, profile_state=profile_state,
                     successful_observation=observed_at is not None,
                 )
+                await record_candidate_attempt(spec.name, scan, state="NOT_REQUIRED", reason="public_input_error")
+                await finish_attempt(spec.name, "UNAVAILABLE", "public_input_error")
                 continue
             if scan.sig is None:
                 metrics["unavailable"] += 1
@@ -569,6 +684,8 @@ async def partner_manual_advisory_tick(now: Optional[datetime] = None) -> None:
                     stage="MISSING_SIGNAL", reason="scan_returned_no_signal", entry_state="UNAVAILABLE",
                     profile_state=profile_state,
                 )
+                await record_candidate_attempt(spec.name, scan, state="NOT_REQUIRED", reason="missing_signal")
+                await finish_attempt(spec.name, "UNAVAILABLE", "missing_signal")
                 continue
 
             if scan.sig.direction is None:
@@ -576,14 +693,28 @@ async def partner_manual_advisory_tick(now: Optional[datetime] = None) -> None:
                 # fresh directional signal. Fetch a chain only for that
                 # opted-in branch; an unavailable chain is visible rather than
                 # silently treating protection as healthy/no-setup.
+                protection_attempted = False
+                protection_capture_ok = False
                 if (profile.permits(AdvisoryScope.CONDITIONAL_PROTECTION, spec.name)
                         and profile.conditional_exposure_assumption and profile.conditional_coverage_units):
+                    protection_attempted = True
                     book = get_instruments_for(spec.name)
                     expiry = resolve_advisory_expiry(book, now.date())
+                    protection_requested_at = stage_now()
                     protection_snapshot = await take_chain_snapshot(
-                        _main.kite, book, now, strike_window=settings.FNO_ANALYTICS_STRIKE_WINDOW,
+                        _main.kite, book, protection_requested_at, strike_window=settings.FNO_ANALYTICS_STRIKE_WINDOW,
                         option_expiry=expiry,
                     ) if expiry is not None else None
+                    protection_received_at = stage_now()
+                    scan.chain_requested_at = protection_requested_at
+                    scan.chain_received_at = protection_received_at
+                    scan.chain_source_id = f"KITE_OPTION_CHAIN:{spec.name}:CONDITIONAL_PROTECTION"
+                    decision_clocks[spec.name] = decision_clocks[spec.name].with_stage(
+                        chain_requested_at=protection_requested_at,
+                        chain_received_at=protection_received_at,
+                        chain_source_id=scan.chain_source_id,
+                        candidate_constructed_at=protection_received_at,
+                    )
                     if protection_snapshot is None:
                         metrics["unavailable"] += 1
                         await record_advisory_input_status(
@@ -592,9 +723,51 @@ async def partner_manual_advisory_tick(now: Optional[datetime] = None) -> None:
                             entry_state="UNAVAILABLE", observed_at=observed_at, profile_state=profile_state,
                             successful_observation=observed_at is not None,
                         )
+                        await record_candidate_attempt(spec.name, scan, state="UNAVAILABLE",
+                                                       reason="conditional_protection_chain_unavailable")
+                        await finish_attempt(spec.name, "UNAVAILABLE", "protection_input_unavailable")
                         continue
                     else:
-                        await add_explicit_protection(spec, book, protection_snapshot)
+                        boundary_reason = crossed_entry_boundary(
+                            decision_clocks[spec.name],
+                            entry_end_minute=settings.PARTNER_MANUAL_ADVISORY_ENTRY_END_MINUTE,
+                        )
+                        if boundary_reason:
+                            await record_candidate_attempt(spec.name, scan, state="UNAVAILABLE", reason=boundary_reason)
+                            await finish_attempt(spec.name, "SUPPRESSED", boundary_reason)
+                            continue
+                        protection_capture = {"state": "SKIPPED"} if not settings.RESEARCH_ARCHIVE_ENABLED else None
+                        if settings.RESEARCH_ARCHIVE_ENABLED:
+                            try:
+                                from partner_research_capture import persist_candidate_input
+                                protection_capture = await bounded_archive_write(
+                                    persist_candidate_input, settings.RESEARCH_ARCHIVE_PATH,
+                                    book=book, snapshot=protection_snapshot, profile=profile,
+                                    evaluation_at=now, received_at=protection_received_at,
+                                    decision_clock=decision_clocks[spec.name],
+                                )
+                            except Exception as exc:
+                                logger.error("partner_protection_capture_failed underlying=%s err=%s", spec.name, str(exc))
+                        protection_received = list(getattr(protection_snapshot, "received_tokens", ()))
+                        if not protection_received:
+                            protection_received = [quote.contract.token for quote in getattr(protection_snapshot, "quotes", {}).values()]
+                            if getattr(protection_snapshot, "fut_quote", None) is not None:
+                                protection_received.append(protection_snapshot.fut_quote.contract.token)
+                        protection_requested = list(getattr(protection_snapshot, "requested_tokens", ())) or protection_received
+                        await record_candidate_attempt(
+                            spec.name, scan,
+                            state=("ERROR" if not protection_capture else
+                                   "OBSERVED" if set(protection_requested) == set(protection_received) else "PARTIAL"),
+                            artifact=protection_capture,
+                            reason=("conditional_protection_archive_write_failed" if not protection_capture else
+                                    None if set(protection_requested) == set(protection_received) else "candidate_contracts_missing"),
+                            requested=protection_requested, received=protection_received,
+                        )
+                        await add_explicit_protection(
+                            spec, book, protection_snapshot,
+                            decision_at=decision_clocks[spec.name].candidate_constructed_at,
+                        )
+                        protection_capture_ok = bool(protection_capture) and set(protection_requested) == set(protection_received)
                 if observed_at is None or scan.sig.reject_reason in {
                     "no_bars", "no_closed_bars_today", "opening_range_incomplete",
                     "atr_unavailable", "ema_insufficient_bars", "rvol_baseline_unavailable",
@@ -607,6 +780,9 @@ async def partner_manual_advisory_tick(now: Optional[datetime] = None) -> None:
                         entry_state="UNAVAILABLE", observed_at=observed_at,
                         profile_state=profile_state,
                     )
+                    await record_candidate_attempt(spec.name, scan, state="NOT_REQUIRED",
+                                                   reason=scan.sig.reject_reason or _observation_reason)
+                    await finish_attempt(spec.name, "UNAVAILABLE", "signal_input_unavailable")
                     continue
                 metrics["healthy_no_setup"] += 1
                 await record_advisory_input_status(
@@ -615,9 +791,26 @@ async def partner_manual_advisory_tick(now: Optional[datetime] = None) -> None:
                     entry_state="NO_ENTRY_SETUP", observed_at=observed_at,
                     profile_state=profile_state, successful_observation=observed_at is not None,
                 )
+                if protection_attempted:
+                    await finish_attempt(
+                        spec.name, "CANDIDATE_RECORDED" if protection_capture_ok else "ERROR",
+                        "conditional_protection_recorded" if protection_capture_ok else "conditional_protection_archive_write_failed",
+                    )
+                else:
+                    await record_candidate_attempt(spec.name, scan, state="NOT_REQUIRED", reason="no_direction")
+                    await finish_attempt(spec.name, "NO_SETUP", scan.sig.reject_reason or "no_direction")
                 continue
 
-            scan = await attach_entry_chain(_main.kite, scan, now)
+            if explicit_now and clock is None:
+                scan = await attach_entry_chain(_main.kite, scan, now)
+            else:
+                scan = await attach_entry_chain(_main.kite, scan, now, clock=stage_now)
+            if getattr(scan, "chain_received_at", None) is not None:
+                decision_clocks[spec.name] = decision_clocks[spec.name].with_stage(
+                    chain_requested_at=getattr(scan, "chain_requested_at", None) or decision_clocks[spec.name].public_received_at,
+                    chain_received_at=scan.chain_received_at,
+                    chain_source_id=getattr(scan, "chain_source_id", None) or f"CHAIN:{spec.name}",
+                )
             book = get_instruments_for(spec.name)
             advisory_expiry = resolve_advisory_expiry(book, now.date())
             if advisory_expiry is None:
@@ -628,6 +821,8 @@ async def partner_manual_advisory_tick(now: Optional[datetime] = None) -> None:
                     entry_state="UNAVAILABLE", observed_at=observed_at, profile_state=profile_state,
                     successful_observation=observed_at is not None,
                 )
+                await record_candidate_attempt(spec.name, scan, state="UNAVAILABLE", reason="expiry_unavailable")
+                await finish_attempt(spec.name, "UNAVAILABLE", "expiry_unavailable")
                 continue
             snapshot = scan.snap
             if snapshot is None:
@@ -638,13 +833,26 @@ async def partner_manual_advisory_tick(now: Optional[datetime] = None) -> None:
                     entry_state="UNAVAILABLE", observed_at=observed_at, profile_state=profile_state,
                     successful_observation=observed_at is not None,
                 )
+                await record_candidate_attempt(spec.name, scan, state="UNAVAILABLE",
+                                               reason=scan.entry_error or "chain_snapshot_missing")
+                await finish_attempt(spec.name, "UNAVAILABLE", "direction_without_chain")
                 continue
             if snapshot.expiry != advisory_expiry:
+                replacement_requested_at = stage_now()
                 snapshot = await take_chain_snapshot(
-                    _main.kite, book, now,
+                    _main.kite, book, replacement_requested_at,
                     strike_window=settings.FNO_ANALYTICS_STRIKE_WINDOW,
                     option_expiry=advisory_expiry,
                 )
+                replacement_received_at = stage_now()
+                decision_clocks[spec.name] = decision_clocks[spec.name].with_stage(
+                    chain_requested_at=replacement_requested_at,
+                    chain_received_at=replacement_received_at,
+                    chain_source_id=f"KITE_OPTION_CHAIN:{spec.name}:ADVISORY_EXPIRY",
+                )
+                scan.chain_requested_at = replacement_requested_at
+                scan.chain_received_at = replacement_received_at
+                scan.chain_source_id = f"KITE_OPTION_CHAIN:{spec.name}:ADVISORY_EXPIRY"
             if snapshot is None:
                 metrics["unavailable"] += 1
                 await record_advisory_input_status(
@@ -653,10 +861,29 @@ async def partner_manual_advisory_tick(now: Optional[datetime] = None) -> None:
                     entry_state="UNAVAILABLE", observed_at=observed_at, profile_state=profile_state,
                     successful_observation=observed_at is not None,
                 )
+                await record_candidate_attempt(spec.name, scan, state="UNAVAILABLE",
+                                               reason="advisory_expiry_chain_unavailable")
+                await finish_attempt(spec.name, "UNAVAILABLE", "chain_unavailable")
                 continue
             await add_explicit_protection(spec, book, snapshot)
+            candidate_clock = decision_clocks[spec.name].with_stage(candidate_constructed_at=stage_now())
+            decision_clocks[spec.name] = candidate_clock
+            boundary_reason = crossed_entry_boundary(
+                candidate_clock, entry_end_minute=settings.PARTNER_MANUAL_ADVISORY_ENTRY_END_MINUTE,
+            )
+            if boundary_reason:
+                metrics["unavailable"] += 1
+                await record_candidate_attempt(spec.name, scan, state="UNAVAILABLE", reason=boundary_reason)
+                await finish_attempt(spec.name, "SUPPRESSED", boundary_reason)
+                await record_advisory_input_status(
+                    settings.DB_PATH, underlying=spec.name, attempted_at=now,
+                    stage="ACQUISITION_BOUNDARY_CROSSED", reason=boundary_reason,
+                    entry_state="UNAVAILABLE", observed_at=snapshot.taken_at,
+                    profile_state=profile_state, successful_observation=True,
+                )
+                continue
             candidate = build_directional_debit_spread(
-                snapshot, book, scan.sig.direction, now,
+                snapshot, book, scan.sig.direction, candidate_clock.candidate_constructed_at,
                 evidence=StrategyEvidence.RESEARCH_ONLY,
                 quote_ttl_seconds=settings.PARTNER_MANUAL_ADVISORY_QUOTE_TTL_SEC,
                 thesis_id=f"{spec.name}:{scan.sig.direction.value}:{scan.sig.bar_ts}",
@@ -664,6 +891,43 @@ async def partner_manual_advisory_tick(now: Optional[datetime] = None) -> None:
                 if scan.sig.direction.value == "LONG" else (scan.sig.or_low - settings.FNO_OR_BUFFER_ATR * scan.sig.atr),
                 invalidation_level=scan.sig.stop_underlying, target_level=scan.sig.target_underlying,
             )
+            candidate_capture_ok = not settings.RESEARCH_ARCHIVE_ENABLED
+            if settings.RESEARCH_ARCHIVE_ENABLED:
+                from partner_research_capture import persist_candidate_input
+                capture_received_at = candidate_clock.chain_received_at or candidate_clock.candidate_constructed_at
+                candidate_capture = None
+                candidate_capture_reason = None
+                try:
+                    candidate_capture = await bounded_archive_write(persist_candidate_input, settings.RESEARCH_ARCHIVE_PATH,
+                        book=book, snapshot=snapshot, profile=profile,
+                        evaluation_at=now, received_at=capture_received_at,
+                        decision_clock=candidate_clock)
+                    candidate_capture_ok = True
+                    metrics["research_candidate_observed"] = metrics.get("research_candidate_observed", 0) + 1
+                except TimeoutError as exc:
+                    candidate_capture_reason = "candidate_archive_outcome_unknown"
+                    metrics["research_candidate_unavailable"] = metrics.get("research_candidate_unavailable", 0) + 1
+                    logger.error("partner_research_candidate_capture_ambiguous underlying=%s err=%s", spec.name, str(exc))
+                except Exception as exc:
+                    candidate_capture_reason = "candidate_archive_write_failed"
+                    metrics["research_candidate_unavailable"] = metrics.get("research_candidate_unavailable", 0) + 1
+                    logger.error("partner_research_candidate_capture_failed underlying=%s err=%s", spec.name, str(exc))
+                received_tokens = list(getattr(snapshot, "received_tokens", ()))
+                if not received_tokens:
+                    received_tokens = [quote.contract.token for quote in getattr(snapshot, "quotes", {}).values()]
+                    if getattr(snapshot, "fut_quote", None) is not None:
+                        received_tokens.append(snapshot.fut_quote.contract.token)
+                requested_tokens = list(getattr(snapshot, "requested_tokens", ())) or received_tokens
+                candidate_capture_ok = candidate_capture_ok and set(requested_tokens) == set(received_tokens)
+                await record_candidate_attempt(
+                    spec.name, scan,
+                    state=("ERROR" if not candidate_capture else
+                           "OBSERVED" if set(requested_tokens) == set(received_tokens) else "PARTIAL"),
+                    artifact=candidate_capture,
+                    reason=(candidate_capture_reason if not candidate_capture else
+                            None if set(requested_tokens) == set(received_tokens) else "candidate_contracts_missing"),
+                    requested=requested_tokens, received=received_tokens,
+                )
             if candidate is None:
                 metrics["rejected"] += 1
                 await record_advisory_input_status(
@@ -672,13 +936,14 @@ async def partner_manual_advisory_tick(now: Optional[datetime] = None) -> None:
                     entry_state="REJECTED", observed_at=snapshot.taken_at, profile_state=profile_state,
                     successful_observation=True,
                 )
+                await finish_attempt(spec.name, "REJECTED", "candidate_construction_failed")
                 continue
             qualified = await is_strategy_qualified(settings.DB_PATH, candidate)
             qualification_state = "QUALIFIED" if qualified else "MISSING_QUALIFICATION"
             if qualified:
                 candidate = replace(candidate, evidence=StrategyEvidence.QUALIFIED_FOR_ADVISORY)
             precheck = validate_candidate(
-                candidate, now,
+                candidate, candidate_clock.candidate_constructed_at,
                 max_quote_age_seconds=settings.PARTNER_MANUAL_ADVISORY_MAX_QUOTE_AGE_SEC,
                 max_spread_pct=settings.PARTNER_MANUAL_ADVISORY_MAX_SPREAD_PCT,
                 min_oi=settings.PARTNER_MANUAL_ADVISORY_MIN_OI,
@@ -693,6 +958,7 @@ async def partner_manual_advisory_tick(now: Optional[datetime] = None) -> None:
                     entry_state="REJECTED", observed_at=snapshot.taken_at, profile_state=profile_state,
                     qualification_state=qualification_state, successful_observation=True,
                 )
+                await finish_attempt(spec.name, "REJECTED", "candidate_validation_rejected")
                 continue
             market_candidates.append(candidate)
             await record_advisory_input_status(
@@ -701,6 +967,10 @@ async def partner_manual_advisory_tick(now: Optional[datetime] = None) -> None:
                 entry_state="CANDIDATE_VALIDATED", observed_at=snapshot.taken_at,
                 profile_state=profile_state, qualification_state=qualification_state,
                 successful_observation=True,
+            )
+            await finish_attempt(
+                spec.name, "CANDIDATE_RECORDED" if candidate_capture_ok else "ERROR",
+                "candidate_validated" if candidate_capture_ok else "candidate_archive_write_failed",
             )
         except Exception as exc:
             metrics["unavailable"] += 1
@@ -713,6 +983,7 @@ async def partner_manual_advisory_tick(now: Optional[datetime] = None) -> None:
                 )
             except Exception:
                 logger.error("partner_manual_advisory_input_status_write_failed underlying=%s", spec.name, exc_info=True)
+            await finish_attempt(spec.name, "ERROR", type(exc).__name__)
     preferred, overlapping = select_preferred_market_candidates(market_candidates)
     preferred.extend(protection_candidates)
     metrics["overlap_suppressed"] = len(overlapping)

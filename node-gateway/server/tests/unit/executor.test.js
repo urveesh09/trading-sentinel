@@ -25,6 +25,18 @@ jest.mock('../../services/token-store', () => ({
 
 jest.mock('../../utils/market-hours', () => ({
   isMarketOpen: jest.fn(),
+  // [WORKFLOW-J.6] Mirror the export surface.
+  currentSessionPhase: jest.fn(() => 'CONTINUOUS_TRADING'),
+  // [WORKFLOW-J.7] Mirror the export surface for the CAS guard.
+  isExecutionAllowed: jest.fn(() => ({
+    allowed: true, phase: 'CONTINUOUS_TRADING', reason: null,
+  })),
+}));
+
+jest.mock('../../services/cas-eligibility', () => ({
+  entrySessionVerdict: jest.fn(() => Promise.resolve({
+    allowed: true, phase: 'CONTINUOUS_TRADING', reason: null,
+  })),
 }));
 
 jest.mock('../../services/telegram', () => ({
@@ -49,10 +61,12 @@ global.fetch = jest.fn();
 const kite = require('../../services/kite');
 const tokenStore = require('../../services/token-store');
 const { isMarketOpen } = require('../../utils/market-hours');
+const { entrySessionVerdict } = require('../../services/cas-eligibility');
 const { executeSignal, usableEntryMargin, requiredOrderMargin } = require('../../services/executor');
 const {
   TokenExpiredError,
   MarketClosedError,
+  CasPhaseError,
   PriceDriftError,
   OrderExecutionError,
   ValidationError,
@@ -116,6 +130,27 @@ describe('executeSignal()', () => {
   test('throws MarketClosedError when market is closed', async () => {
     isMarketOpen.mockReturnValue(false);
     await expect(executeSignal(makeSignal(), 'EXEC')).rejects.toThrow(MarketClosedError);
+  });
+
+  test('blocks before broker calls when CAS eligibility cannot be resolved', async () => {
+    entrySessionVerdict.mockResolvedValueOnce({
+      allowed: false,
+      phase: 'CAS_ELIGIBILITY_UNAVAILABLE',
+      reason: 'CAS eligibility service is unavailable; entry blocked.',
+    });
+    await expect(executeSignal(makeSignal(), 'EXEC')).rejects.toThrow(
+      /CAS eligibility service is unavailable/
+    );
+    expect(kite.getLTP).not.toHaveBeenCalled();
+    expect(kite.placeOrder).not.toHaveBeenCalled();
+  });
+
+  test('passes the actual ticker to the authoritative CAS eligibility resolver', async () => {
+    kite.getLTP.mockResolvedValue({
+      'NSE:INFY': { last_price: 1005 },
+    });
+    await executeSignal(makeSignal({ ticker: 'INFY' }), 'EXEC');
+    expect(entrySessionVerdict).toHaveBeenCalledWith('INFY', expect.any(Date));
   });
 
   test('throws ValidationError when capital_at_risk exceeds 1500', async () => {

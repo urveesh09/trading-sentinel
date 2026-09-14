@@ -4,6 +4,7 @@ All tests use temp SQLite files (aiosqlite needs file paths, not :memory: for mu
 """
 import pytest
 import pytest_asyncio
+import sqlite3
 from datetime import datetime
 from performance import (
     init_ledger,
@@ -33,6 +34,29 @@ async def seeded_db(db_path):
 
 
 class TestLedgerInit:
+
+    @pytest.mark.asyncio
+    async def test_legacy_migration_preserves_rows_and_close_provenance(self, db_path):
+        with sqlite3.connect(db_path) as con:
+            con.execute("""CREATE TABLE bankroll_ledger (
+                id INTEGER PRIMARY KEY AUTOINCREMENT, timestamp TEXT,
+                event_type TEXT, ticker TEXT, pnl REAL, bankroll_before REAL,
+                bankroll_after REAL, source TEXT, notes TEXT
+            )""")
+            con.execute("""INSERT INTO bankroll_ledger
+                (timestamp, event_type, ticker, pnl, bankroll_before,
+                 bankroll_after, source, notes)
+                VALUES ('legacy', 'TRADE_CLOSED', 'OLD', 25, 5000, 5025,
+                        'SYSTEM', 'preserve')""")
+        await init_ledger(db_path)
+        await init_ledger(db_path)
+        await record_trade_close(db_path, "NEW", 10, source="SYSTEM",
+                                 origin_ref="migration-regression")
+        with sqlite3.connect(db_path) as con:
+            rows = con.execute("""SELECT ticker, pnl, notes, origin_ref
+                FROM bankroll_ledger ORDER BY id""").fetchall()
+        assert rows == [("OLD", 25, "preserve", None),
+                        ("NEW", 10, None, "migration-regression")]
 
     @pytest.mark.asyncio
     async def test_initial_bankroll_seeded(self, seeded_db):

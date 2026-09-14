@@ -10,6 +10,8 @@ from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 from proactive_intelligence import (
+    _SHADOW_ENTRY_PROFILES,
+    _SHADOW_EXIT_PROFILES,
     build_shadow_proposals,
     proactive_activity_report,
     proactive_session_diagnostics,
@@ -133,7 +135,7 @@ async def run_proactive_shadow_demo(db_path: str) -> dict:
         raise RuntimeError("demo did not prove historical entries are rejected after later cash release")
     if len(activity["shadow_positions"]) != 1 or activity["shadow_positions"][0]["closed_positions"] != 1:
         raise RuntimeError("demo admitted more than the single intended synthetic fill")
-    if not outcomes["comparisons"] or len(trials["comparisons"]) != 6:
+    if not outcomes["comparisons"] or len(trials["comparisons"]) != len(_SHADOW_ENTRY_PROFILES) * len(_SHADOW_EXIT_PROFILES):
         raise RuntimeError("demo did not persist its outcome and matched-trial evidence")
     diagnostic_scope = next(
         row for row in session_diagnostics["reports"]

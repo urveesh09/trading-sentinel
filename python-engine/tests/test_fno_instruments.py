@@ -4,6 +4,7 @@ hardcode rules (VERIFY-2/VERIFY-3), and the same-day disk rehydration
 that dodges the 38-minute cold-start pathology (ops rule 61).
 """
 from datetime import date
+import pathlib
 
 import pytest
 
@@ -119,13 +120,11 @@ def test_atm_and_window_arithmetic():
     assert window == [24900.0, 24950.0, 25000.0, 25050.0, 25100.0]
 
 
-def test_option_lookup(monkeypatch):
+@pytest.mark.asyncio
+async def test_option_lookup(monkeypatch):
     book = FnoInstruments("NIFTY")
 
-    async def _run():
-        await book.refresh(_DumpKite())
-    import asyncio
-    asyncio.run(_run())
+    await book.refresh(_DumpKite())
     c = book.option(date(2026, 7, 14), 25000.0, OptionType.CE)
     assert c is not None and c.tradingsymbol == "NIFTY071425000CE"
     assert book.option(date(2026, 7, 14), 99999.0, OptionType.CE) is None
@@ -179,6 +178,13 @@ def test_custom_json_path_round_trip(tmp_path):
     assert fresh.load_from_disk()
     assert fresh.lot_size == 20
     assert len(fresh.by_symbol) == 4
+    assert fresh.source_raw_sha256 == book.source_raw_sha256
+
+    import json
+    payload = json.loads(pathlib.Path(path).read_text())
+    payload["underlying"] = "NIFTY"
+    pathlib.Path(path).write_text(json.dumps(payload))
+    assert not FnoInstruments("SENSEX", segment="BFO", json_path=path).load_from_disk()
 
 
 def test_default_json_path_is_the_legacy_setting():

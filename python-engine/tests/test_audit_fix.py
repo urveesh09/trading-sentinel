@@ -410,7 +410,7 @@ def test_record_trade_close_uses_per_source_before(tmp_path):
     and vice versa.
     """
     import asyncio
-    from performance import record_trade_close, bankroll_for_source
+    from performance import init_ledger, record_trade_close, bankroll_for_source
     db = str(tmp_path / "test.db")
     with sqlite3.connect(db) as con:
         con.executescript("""
@@ -422,6 +422,7 @@ def test_record_trade_close_uses_per_source_before(tmp_path):
             );
         """)
     # Swing close first
+    asyncio.run(init_ledger(db))
     asyncio.run(record_trade_close(db, "RELIANCE", 200.0, source="SYSTEM"))
     # Penny close
     asyncio.run(record_trade_close(db, "GOLDSTAR-SM", 100.0, source="PENNY"))
@@ -429,7 +430,8 @@ def test_record_trade_close_uses_per_source_before(tmp_path):
     # accumulated P&L, not swing's.
     with sqlite3.connect(db) as con:
         cur = con.execute(
-            "SELECT source, bankroll_before, bankroll_after FROM bankroll_ledger ORDER BY id"
+            "SELECT source, bankroll_before, bankroll_after FROM bankroll_ledger "
+            "WHERE event_type = 'TRADE_CLOSED' ORDER BY id"
         )
         rows = list(cur.fetchall())
     # Row 1: SYSTEM, before=5000, after=5200

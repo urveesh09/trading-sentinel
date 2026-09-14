@@ -28,6 +28,7 @@ def test_current_defaults_and_versioned_metadata():
 
     equity = equity_intraday_cost_snapshot()
     assert equity["schedule_version"] == EQUITY_INTRADAY_SCHEDULE_VERSION
+    # Verification is not proof of a composite tariff's effective instant.
     assert equity["effective_date"] is None
     assert equity["verified_as_of"] == "2026-08-10"
     options = options_cost_snapshot()

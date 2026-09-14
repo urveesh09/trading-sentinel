@@ -6,10 +6,80 @@ import pytz
 
 from intraday_spread_chronological import ChronologicalPolicy, SpreadObservation, replay_chronological_debit_spread, replay_cost_scenarios
 from intraday_spread_replay import LegQuote, ReplayInputError
+from intraday_spread_chronological import PublicObservation
 
 
 IST = pytz.timezone("Asia/Kolkata")
 MASTER = "b" * 64
+
+
+@pytest.mark.parametrize('limit_field', ['capital_limit_rs', 'risk_limit_rs'])
+def test_execution_book_rechecks_cost_inclusive_limit(limit_field):
+    start = IST.localize(datetime(2026, 9, 10, 10))
+    later = start + timedelta(seconds=5)
+    rows = [observation(start, 1), observation(later, 0, pair(later, long_ask=110))]
+    result = replay_chronological_debit_spread(underlying='NIFTY', expiry='2026-09-24', observations=rows,
+        policy=replace(policy(), execution_delay=timedelta(seconds=5), fee_per_leg_rs=10,
+                       **{limit_field: 4500}))
+    # Original debit is 4050; delayed debit plus round-trip fees is 4690.
+    assert result.state == 'NO_FILL'
+    assert result.rejected_entry_reasons == (f'execution_profile_{limit_field.removesuffix("_rs")}_exceeded',)
+
+
+def test_round_trip_cost_reserve_cannot_be_omitted_at_entry():
+    start = IST.localize(datetime(2026, 9, 10, 10))
+    result = replay_chronological_debit_spread(underlying='NIFTY', expiry='2026-09-24',
+        observations=[observation(start, 1)], policy=replace(policy(), fee_per_leg_rs=10, capital_limit_rs=4080))
+    assert result.state == 'NO_FILL'  # 4050 debit + 40 reserve, not entry fees of 20.
+
+
+def test_cost_scenarios_reuse_independent_public_stream():
+    start = IST.localize(datetime(2026, 9, 10, 10))
+    breach = start + timedelta(seconds=1)
+    result = replay_cost_scenarios(underlying='NIFTY', expiry='2026-09-24',
+        observations=[observation(start, 1), observation(start + timedelta(seconds=5), 0)],
+        public_observations=iter([PublicObservation(breach, breach, 24900)]),
+        fee_multipliers=[1, 2], policy=replace(policy(), exit_basis='PUBLIC_THESIS', direction='LONG',
+                                             invalidation_level=24900, target_level=25100))
+    assert len(result['scenarios']) == 2
+    assert all(item['state'] == 'CLOSED' for item in result['scenarios'])
+
+
+def test_independent_breach_survives_recovery_and_delay_uses_actual_receipt():
+    start = IST.localize(datetime(2026, 9, 10, 10))
+    # Entry at +5s; breach at +11s, recovery at +12s, executable book at +16s.
+    rows = [observation(start, 1), observation(start + timedelta(seconds=5), 0),
+            observation(start + timedelta(seconds=16), 0)]
+    public = [PublicObservation(start + timedelta(seconds=s), start + timedelta(seconds=s), price)
+              for s, price in [(0, 25000), (11, 24900), (12, 25000)]]
+    result = replay_chronological_debit_spread(underlying='NIFTY', expiry='2026-09-24', observations=rows,
+        public_observations=public, policy=replace(policy(), execution_delay=timedelta(seconds=5),
+            exit_basis='PUBLIC_THESIS', direction='LONG', invalidation_level=24900, target_level=25100))
+    assert result.state == 'CLOSED'
+    assert result.exit_trigger == 'INVALIDATION'
+    assert result.result.exit_at == rows[-1].received_at.isoformat()
+
+
+def test_independent_breach_before_delayed_entry_cancels_even_after_recovery():
+    start = IST.localize(datetime(2026, 9, 10, 10))
+    rows = [observation(start, 1), observation(start + timedelta(seconds=5), 0)]
+    public = [PublicObservation(start + timedelta(seconds=s), start + timedelta(seconds=s), price)
+              for s, price in [(1, 24900), (2, 25000)]]
+    result = replay_chronological_debit_spread(underlying='NIFTY', expiry='2026-09-24', observations=rows,
+        public_observations=public, policy=replace(policy(), execution_delay=timedelta(seconds=5),
+            exit_basis='PUBLIC_THESIS', direction='LONG', invalidation_level=24900, target_level=25100))
+    assert result.state == 'NO_FILL'
+    assert 'public_thesis_cancelled_before_execution' in result.rejected_entry_reasons
+
+
+def test_public_breach_without_later_book_remains_unresolved():
+    start = IST.localize(datetime(2026, 9, 10, 10))
+    breach = start + timedelta(seconds=1)
+    result = replay_chronological_debit_spread(underlying='NIFTY', expiry='2026-09-24',
+        observations=[observation(start, 1)], public_observations=[PublicObservation(breach, breach, 24900)],
+        policy=replace(policy(), exit_basis='PUBLIC_THESIS', direction='LONG', invalidation_level=24900, target_level=25100))
+    assert result.state == 'UNRESOLVED'
+    assert result.exit_trigger == 'INVALIDATION'
 
 
 def pair(at, *, long_bid=100, long_ask=102, short_bid=48, short_ask=50, depth=75):
@@ -165,3 +235,58 @@ def test_cost_sensitivity_keeps_the_same_delayed_execution_evidence():
     assert len(report["scenarios"]) == 4
     assert {row["state"] for row in report["scenarios"]} == {"CLOSED"}
     assert report["can_qualify"] is False
+
+
+def test_cost_sensitivity_always_includes_baseline_and_rejects_boolean_coordinates():
+    first = IST.localize(datetime(2026, 9, 10, 10, 0))
+    report = replay_cost_scenarios(underlying="NIFTY", expiry="2026-09-24", policy=policy(),
+        observations=[observation(first, .9)], fee_multipliers=[1.25], additional_slippage_bps=[10])
+    assert {(row["fee_multiplier"], row["additional_slippage_bps"]) for row in report["scenarios"]} == {
+        (1.0, 0.0), (1.25, 10.0)}
+    with pytest.raises(ReplayInputError, match="booleans"):
+        replay_cost_scenarios(underlying="NIFTY", expiry="2026-09-24", policy=policy(),
+            observations=[observation(first, .9)], fee_multipliers=[True], additional_slippage_bps=[0])
+
+
+def test_embedded_public_breach_at_delayed_fill_cancels_entry_on_boundary():
+    start = IST.localize(datetime(2026, 9, 10, 10))
+    fill = start + timedelta(seconds=5)
+    rows = [observation(start, 1), replace(observation(fill, 0), public_price=24900,
+            public_received_at=fill, public_observed_at=fill)]
+    replay = replay_chronological_debit_spread(underlying="NIFTY", expiry="2026-09-24", observations=rows,
+        policy=replace(policy(), execution_delay=timedelta(seconds=5), exit_basis="PUBLIC_THESIS",
+                       direction="LONG", invalidation_level=24900, target_level=25100))
+    assert replay.state == "NO_FILL"
+    assert replay.rejected_entry_reasons == ("public_thesis_cancelled_before_execution",)
+
+
+def test_exact_signal_expiry_is_not_a_delayed_fill_and_late_exit_stays_unresolved():
+    start = IST.localize(datetime(2026, 9, 10, 10))
+    boundary = start + timedelta(seconds=10)
+    no_fill = replay_chronological_debit_spread(underlying="NIFTY", expiry="2026-09-24",
+        observations=[observation(start, 1), observation(boundary, 0)],
+        policy=replace(policy(), execution_delay=timedelta(seconds=10), signal_expiry=timedelta(seconds=10)))
+    assert no_fill.state == "NO_FILL"
+    assert no_fill.rejected_entry_reasons == ("delayed_execution_packet_unavailable",)
+    fill = start + timedelta(seconds=5)
+    breach = start + timedelta(seconds=6)
+    too_late = start + timedelta(seconds=40)
+    unresolved = replay_chronological_debit_spread(underlying="NIFTY", expiry="2026-09-24",
+        observations=[observation(start, 1), observation(fill, 0), observation(too_late, 0)],
+        public_observations=[PublicObservation(start, start, 25000), PublicObservation(breach, breach, 24900)],
+        policy=replace(policy(), execution_delay=timedelta(seconds=5), execution_max_wait=timedelta(seconds=30),
+                       exit_basis="PUBLIC_THESIS", direction="LONG", invalidation_level=24900, target_level=25100))
+    assert unresolved.state == "UNRESOLVED"
+    assert unresolved.result.reason == "no_timely_executable_exit"
+
+
+def test_delayed_fill_rechecks_public_observation_age():
+    start = IST.localize(datetime(2026, 9, 10, 10))
+    fill = start + timedelta(seconds=5)
+    result = replay_chronological_debit_spread(underlying="NIFTY", expiry="2026-09-24",
+        observations=[observation(start, 1), observation(fill, 0)],
+        public_observations=[PublicObservation(start - timedelta(minutes=10), start, 25000)],
+        policy=replace(policy(), execution_delay=timedelta(seconds=5), exit_basis="PUBLIC_THESIS",
+                       direction="LONG", invalidation_level=24900, target_level=25100))
+    assert result.state == "NO_FILL"
+    assert result.rejected_entry_reasons == ("execution_public_evidence_stale",)

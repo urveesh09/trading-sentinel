@@ -452,6 +452,41 @@ async def run_penny_edge_scan(kite, db_path: Optional[str] = None) -> dict:
         paper_disabled, live_disabled, live_master,
     )
 
+    # [AFFORDABILITY-SEAM 2026-09-13] Live-growth affordability hook.
+    #
+    # The number of rupees a growth path would request is computed
+    # here, currently always 0 because live growth is not implemented
+    # in this orchestrator. When the operator enables live-growth via
+    # the promotion-bridge contract (see
+    # ``docs/2026-09-13-workflow-g-promotion-bridge.md``), the wire-up
+    # lives at this exact site: take the growth request, call
+    # ``affordability.assert_live_entry_safety(db_path=db_path,
+    # live_source=SOURCE_LIVE, paper_source=SOURCE_PAPER,
+    # proposed_delta_inr=requested_delta)`` and refuse if it raises
+    # ``AffordabilityRefusal``. The guard module is *pure* and
+    # ledger-bound; no live trading will ever go through without
+    # consulting it. This block is positioned *after* the
+    # orchestrator breadcrumb because the
+    # ``test_orchestrator_scan_has_first_line_breadcrumb`` invariant
+    # requires the breadcrumb to be the first logger call; the seam
+    # below must never log before the breadcrumb fires.
+    _pending_live_growth_inr = 0.0
+    if _pending_live_growth_inr > 0:
+        try:
+            from affordability import assert_live_entry_safety
+            await assert_live_entry_safety(
+                db_path=db_path,
+                live_source=SOURCE_LIVE,
+                paper_source=SOURCE_PAPER,
+                proposed_delta_inr=_pending_live_growth_inr,
+            )
+        except AffordabilityRefusal as refusal:
+            logger.critical(
+                "penny_edge_live_growth_refused delta=%.2f reason=%s",
+                _pending_live_growth_inr, refusal.result.summary(),
+            )
+            live_disabled = True
+
     # If both legs are disabled, short-circuit.
     if paper_disabled and live_disabled:
         logger.info("penny_edge_scan_both_legs_disabled date=%s", today_str)

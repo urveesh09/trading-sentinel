@@ -8,6 +8,7 @@ Telegram formatter renders it without error.
 """
 import sqlite3
 import pytest
+import pytest_asyncio
 
 import performance
 from performance import (
@@ -17,8 +18,8 @@ from performance import (
 )
 
 
-@pytest.fixture
-def db(tmp_path):
+@pytest_asyncio.fixture
+async def db(tmp_path):
     path = str(tmp_path / "cache.db")
     con = sqlite3.connect(path)
     con.execute(
@@ -32,6 +33,8 @@ def db(tmp_path):
     )
     con.commit()
     con.close()
+    # Match startup: migrate the intentionally legacy schema before writes.
+    await performance.init_ledger(path)
     return path
 
 

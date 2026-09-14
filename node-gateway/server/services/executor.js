@@ -4,9 +4,10 @@ const { withRetry } = require('../utils/retry');
 const config = require('../config');
 const telegram = require('./telegram');
 const { isMarketOpen } = require('../utils/market-hours');
-const { 
-  TokenExpiredError, ValidationError, PriceDriftError, 
-  MarketClosedError, OrderExecutionError, InsufficientMarginError
+const { entrySessionVerdict } = require('./cas-eligibility');
+const {
+  TokenExpiredError, ValidationError, PriceDriftError,
+  MarketClosedError, CasPhaseError, OrderExecutionError, InsufficientMarginError
 } = require('../utils/errors');
 const { logger } = require('../middleware/logger');
 const { resolveRiskDistance, anchorLevels, sizeToRisk } = require('./risk-geometry');
@@ -425,6 +426,30 @@ async function executeSignal(signal, action, isIntraday = false) {
     // 1. Token & Pre-checks
   if (!require('./token-store').isValid()) throw new TokenExpiredError();
   if (!isMarketOpen()) throw new MarketClosedError();
+  // [WORKFLOW-J.7 2026-09-13] CAS-aware execution guard.
+  // The binary ``isMarketOpen()`` gate above still runs (it
+  // remains the contract for the closed / pre-market boundary);
+  // the additional ``isExecutionAllowed`` check enforces the
+  // CAS sub-window policy: orders placed during the closing
+  // auction are blocked. The verdict carries a phase-specific
+  // reason that surfaces in the operator dashboard / telegram
+  // callback.
+  const verdict = await entrySessionVerdict(signal.ticker, new Date());
+  if (!verdict.allowed) {
+    logger.info({
+      event_type: 'execution_phase_at_reject',
+      phase: verdict.phase,
+      reason: verdict.reason,
+    });
+    // CLOSED becomes MarketClosedError (preserves the J.6
+    // contract for tests + the existing error code surface).
+    // All other blocking phases throw CasPhaseError, a new
+    // error class added in J.7.
+    if (verdict.phase === 'CLOSED') {
+      throw new MarketClosedError();
+    }
+    throw new CasPhaseError(verdict.phase, verdict.reason);
+  }
   if (signal.capital_at_risk > 1500) throw new ValidationError('Capital at risk exceeds absolute maximum limit.');
   if (!signal.signal_id) throw new ValidationError('signal_id is required before broker execution');
   const trackedSignal = signalsDb.prepare(`SELECT signal_id FROM received_signals WHERE signal_id = ?`).get(signal.signal_id);

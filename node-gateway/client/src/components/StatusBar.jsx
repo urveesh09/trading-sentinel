@@ -1,6 +1,7 @@
 import React from 'react';
 import { Activity, Clock, Server, ShieldAlert } from 'lucide-react';
 import { useHealth } from '../hooks/useHealth';
+import SessionPhaseBadge from './SessionPhaseBadge';
 
 export default function StatusBar({ cbHalted }) {
   const { health, isLoading, isError, lastUpdated } = useHealth();
@@ -8,6 +9,12 @@ export default function StatusBar({ cbHalted }) {
   if (isLoading && !health) return <div className="h-10 bg-gray-900 animate-pulse border-b border-gray-800" />;
 
   const isMarketOpen = health?.market_open || false;
+  // [WORKFLOW-J.8 2026-09-13] Bounded session phase surfaced
+  // alongside the binary ``market_open`` indicator. The
+  // J.6 Node mirror exposes ``health.session_phase``; the
+  // badge uses it as a colour-coded chip with a lock icon
+  // when the phase blocks broker orders.
+  const sessionPhase = health?.session_phase || null;
   const tokenActive = health?.token_status === 'active';
   const engineReachable = health?.python_engine === 'reachable';
   const gatewayRelease = health?.release?.revision;
@@ -31,6 +38,7 @@ export default function StatusBar({ cbHalted }) {
         <div className="flex items-center space-x-1">
           <Clock size={16} className={isMarketOpen ? 'text-green-500' : 'text-yellow-500'} />
           <span>Market: {isMarketOpen ? 'Open' : 'Closed'}</span>
+          <SessionPhaseBadge phase={sessionPhase} />
         </div>
 
         {/* Python Engine Status */}

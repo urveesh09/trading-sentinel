@@ -80,7 +80,7 @@ def _naive_day_calls(path: pathlib.Path) -> list[str]:
     "is it given a timezone?" check looked at the WRONG call's arg list and
     flagged a perfectly explicit UTC timestamp. Three false positives.
     """
-    tree = ast.parse(path.read_text())
+    tree = ast.parse(path.read_text(encoding="utf-8"))
     hits = []
     for node in ast.walk(tree):
         if not isinstance(node, ast.Call):
@@ -154,7 +154,7 @@ def test_every_gating_family_has_a_zero_accept_watchdog(family):
         "The penny dead-gate went unnoticed for nine months precisely "
         "because nothing watched for a gate that never accepts."
     )
-    src = watchdog.read_text()
+    src = watchdog.read_text(encoding="utf-8")
     assert "zero_accept_scan" in src
     assert "format_zero_accept_alert" in src
 
@@ -163,7 +163,7 @@ def test_zero_accept_watchdogs_are_actually_scheduled():
     """A watchdog that exists but is never registered is decoration. Assert
     each one is wired into a real add_job call somewhere in the package."""
     all_src = "\n".join(
-        p.read_text() for p in ENGINE.glob("*.py")
+        p.read_text(encoding="utf-8") for p in ENGINE.glob("*.py")
     )
     for family in FAMILIES_THAT_GATE:
         assert f"_run_{family}_accept_watchdog_safe" in all_src, (
@@ -211,7 +211,7 @@ def test_deprecated_global_bankroll_never_returns_to_a_sizing_path():
         path = ENGINE / name
         if not path.exists():
             continue
-        for node in ast.walk(ast.parse(path.read_text())):
+        for node in ast.walk(ast.parse(path.read_text(encoding="utf-8"))):
             if isinstance(node, ast.Call):
                 try:
                     called = ast.unparse(node.func)

@@ -90,6 +90,12 @@ def _chain(oi=10000, volume=5000):
 
 
 class _Book:
+    source_raw_sha256 = "a" * 64
+    future_expiries = [date(2026, 7, 30), date(2026, 8, 27)]
+    option_expiries = [EXPIRY]
+    by_key = {("NIFTY", "2026-08-27", 0.0, "FUT"): Contract(
+        token=901, tradingsymbol="NIFTYNEXTFUT", name="NIFTY", expiry=date(2026, 8, 27),
+        strike=0.0, instrument_type="FUT", lot_size=75)}
     def ready(self, today):
         return True
 
@@ -128,6 +134,10 @@ async def test_fired_long_scan_picks_a_strike(wired):
     )
     assert out.error == ""
     assert out.sig.direction == FnoDirection.LONG
+    assert out.research_public_scope["selected_future"]["tradingsymbol"] == "NIFTYFUT"
+    assert out.research_public_scope["eligible_future_expiries"] == ["2026-07-30", "2026-08-27"]
+    assert out.research_public_scope["next_future"]["token"] == 901
+    assert out.research_public_scope["contract_master_raw_sha256"] == "a" * 64
     assert out.pick is not None
     q, iv, delta = out.pick
     assert q.contract.instrument_type == "CE"

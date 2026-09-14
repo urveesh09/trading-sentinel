@@ -41,7 +41,26 @@ jest.mock('../../services/executor', () => ({
   syncToEngine: jest.fn(),
 }));
 
-jest.mock('../../utils/market-hours', () => ({ isMarketOpen: jest.fn() }));
+jest.mock('../../utils/market-hours', () => ({
+  isMarketOpen: jest.fn(),
+  // [WORKFLOW-J.6] Mirror the export surface so production code
+  // that calls ``currentSessionPhase()`` does not raise.
+  currentSessionPhase: jest.fn(() => 'CONTINUOUS_TRADING'),
+  // [WORKFLOW-J.7] Mirror the export surface for the CAS guard.
+  isExecutionAllowed: jest.fn(() => ({
+    allowed: true, phase: 'CONTINUOUS_TRADING', reason: null,
+  })),
+}));
+
+jest.mock('../../services/cas-eligibility', () => ({
+  // Default to a permissive verdict so existing tests continue
+  // to reach executor.executeSignal; tests that need the
+  // eligibility gate to fail can override via
+  // entrySessionVerdict.mockResolvedValueOnce.
+  entrySessionVerdict: jest.fn(() => Promise.resolve({
+    allowed: true, phase: 'CONTINUOUS_TRADING', reason: null,
+  })),
+}));
 
 // ── A tiny in-memory stand-in for the two tables the handler touches ──
 const snapshots = new Map();   // signal_id -> {action, payload_json}

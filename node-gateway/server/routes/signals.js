@@ -8,6 +8,10 @@ const telegram = require('../services/telegram');
 const { logger } = require('../middleware/logger');
 const { StaleSignalError } = require('../utils/errors');
 const config = require('../config');
+// [WORKFLOW-J.9 2026-09-13] Phase stamping helper. Mirrors
+// the J.6 sessionPhase mirror; result is one of the 10
+// documented bounded phases.
+const { stampSessionPhaseForSignal } = require('../utils/market-hours');
 
 // Zod Schema for Signal
 const signalSchema = z.object({
@@ -83,10 +87,17 @@ router.post('/', verifySignalWebhook, async (req, res, next) => {
     const signalId = uuidv4();
     signalData.signal_id = signalId; // attach ID for telegram formatter
 
+    // [WORKFLOW-J.9 2026-09-13] Stamp the bounded session
+    // phase at insertion time. The phase is the LIVE phase
+    // at the moment the signal arrives -- not signal_time.
+    // Operators querying "how many signals arrived during
+    // CAS_MATCHING?" read this column.
+    const sessionPhase = stampSessionPhaseForSignal(signalData.ticker);
+
     signalsDb.prepare(`
-      INSERT INTO received_signals (signal_id, ticker, signal_time, received_at, payload_json, status)
-      VALUES (?, ?, ?, ?, ?, 'PENDING')
-    `).run(signalId, signalData.ticker, signalData.signal_time, new Date().toISOString(), JSON.stringify(signalData));
+      INSERT INTO received_signals (signal_id, ticker, signal_time, received_at, payload_json, status, session_phase)
+      VALUES (?, ?, ?, ?, ?, 'PENDING', ?)
+    `).run(signalId, signalData.ticker, signalData.signal_time, new Date().toISOString(), JSON.stringify(signalData), sessionPhase);
 
     // 4. Send Telegram Alert
     const msgId = await telegram.sendSignalAlert(signalData);

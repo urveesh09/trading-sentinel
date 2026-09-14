@@ -47,6 +47,7 @@ Pure and dependency-free so it can be tested without an API key.
 from __future__ import annotations
 
 from dataclasses import dataclass, field
+from datetime import datetime
 from enum import Enum
 from typing import Any, Optional
 
@@ -91,12 +92,38 @@ class Review:
             otherwise. This is the field that did not exist before.
         payload: The model's parsed output when there is one, so existing
             renderers can keep reading pitch / rationale / risks.
+        model: The model identifier used for this review (e.g. "MiniMax-M3"),
+            or None when the review never completed. Per plan §13
+            "Store model/prompt/version ... expiry".
+        base_url: The API base URL the call was made against, or None when
+            the review never completed. Captured so a future URL change
+            doesn't invalidate old annotations retroactively.
+        prompt_version: A version string for the prompt template (e.g.
+            "v1", "v2"). Bumped when the analyst prompt changes; cached
+            reviews keep the version they were reviewed with so a prompt
+            change never invalidates an old annotation silently.
+        started_at: UTC datetime when the model call began, or None when
+            the review never completed.
+        completed_at: UTC datetime when the model call ended, or None when
+            the review never completed.
+        response_seconds: Wall-clock duration of the model call
+            (``(completed_at - started_at).total_seconds()``), or None
+            when the review never completed. Per plan §13 "response time".
     """
 
     verdict: Verdict
     conviction: Optional[int] = None
     reason: str = ""
     payload: dict[str, Any] = field(default_factory=dict)
+    # [WORKFLOW-I I1 2026-09-13] Provenance + response-time fields.
+    # Defaults are None so the dataclass remains backwards-compatible
+    # with callers that build a Review from `unavailable(reason)` etc.
+    model: Optional[str] = None
+    base_url: Optional[str] = None
+    prompt_version: Optional[str] = None
+    started_at: Optional[datetime] = None
+    completed_at: Optional[datetime] = None
+    response_seconds: Optional[float] = None
 
     @property
     def available(self) -> bool:
@@ -120,14 +147,57 @@ class Review:
         return False
 
     def banner(self) -> str:
-        """One line for the top of the Telegram alert."""
+        """One line for the top of the Telegram alert.
+
+        [WORKFLOW-I I.B 2026-09-13] When the I1 provenance fields
+        are populated (model, prompt_version, response_seconds),
+        the banner carries them as a trailing suffix so the
+        operator can audit which model and prompt produced the
+        verdict. When the provenance is absent (legacy reviews,
+        or UNAVAILABLE verdicts with no completed call), the
+        banner stays in its pre-I1 form -- the absence is the
+        contract signal that the call did not complete.
+        """
         if self.verdict is Verdict.REVIEW_UNAVAILABLE:
-            return f"AI review UNAVAILABLE ({self.reason or 'unknown'}) - unreviewed"
-        if self.verdict is Verdict.REJECT:
-            return f"AI REJECTED (conviction {self.conviction}/100)"
-        if self.verdict is Verdict.APPROVE_WITH_CONCERNS:
-            return f"AI approved WITH CONCERNS (conviction {self.conviction}/100)"
-        return f"AI approved (conviction {self.conviction}/100)"
+            base = (
+                f"AI review UNAVAILABLE ({self.reason or 'unknown'}) "
+                "- unreviewed"
+            )
+        elif self.verdict is Verdict.REJECT:
+            base = f"AI REJECTED (conviction {self.conviction}/100)"
+        elif self.verdict is Verdict.APPROVE_WITH_CONCERNS:
+            base = (
+                f"AI approved WITH CONCERNS (conviction {self.conviction}/100)"
+            )
+        else:
+            base = f"AI approved (conviction {self.conviction}/100)"
+        suffix = self._provenance_suffix()
+        return f"{base}{suffix}"
+
+    def _provenance_suffix(self) -> str:
+        """[WORKFLOW-I I.B 2026-09-13] Render the I1 provenance as
+        a compact trailing suffix, or empty string when provenance
+        is absent.
+
+        Format: `` · <model>@<prompt_version> <secs>s``
+        Examples:
+            `` · MiniMax-M3@v1 1.5s``
+            `` · MiniMax-M3@v2 ?s``   (response_seconds=None)
+
+        ``@`` separates model from prompt_version visually so an
+        operator scanning the alert can read them without context.
+        Leading space is included only when the suffix is non-empty.
+        """
+        if not self.model or not self.prompt_version:
+            return ""
+        secs = self.response_seconds
+        if secs is None:
+            secs_label = "?s"
+        else:
+            # Format to 1 decimal; clamp at 0.1 minimum so
+            # sub-100ms reviews don't render as "0.0s".
+            secs_label = f"{max(secs, 0.1):.1f}s"
+        return f" · {self.model}@{self.prompt_version} {secs_label}"
 
 
 def unavailable(reason: str) -> Review:

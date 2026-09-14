@@ -37,14 +37,147 @@ def _interval_minutes(interval: str) -> int:
     intervals ``3minute``, ``5minute`` ... ``60minute``.  Rejecting unknown
     values here is safer than silently applying the old 15-minute freshness
     rule to a new interval.
+
+    [WORKFLOW-H H4.B 2026-09-13] ``day`` is also supported: ``partner_orchestrator``
+    calls ``get_intraday_by_token(..., interval="day")`` for the realised-vol
+    computation. A daily candle has no "minute-level" freshness concern; the
+    freshness gate for daily uses a 24-hour (1440-minute) window. The §12
+    forming-bar filter exempts daily in
+    ``_INTERVALS_EXEMPT_FROM_FORMING_FILTER``.
     """
     value = str(interval or "").strip().lower()
     if value == "minute":
         return 1
+    if value == "day":
+        return 1440
     match = re.fullmatch(r"([1-9][0-9]*)minute", value)
     if match:
         return int(match.group(1))
     raise ValueError(f"unsupported intraday interval: {interval!r}")
+
+
+# Intervals that are exempt from the §12 completed-bar cutoff filter.
+# A daily candle has no "forming" problem in the cache sense: today's
+# candle IS the current day, and the same day's row gets overwritten
+# on the next fetch. Forcing a forming-bar exclusion on daily would
+# drop today's row entirely (datetime == to_datetime), which is wrong.
+# Per plan §12: "Do not mix mutable forming bars with completed
+# historical bars" -- the intent is intraday bars. Daily is exempt.
+_INTERVALS_EXEMPT_FROM_FORMING_FILTER = frozenset({"day"})
+
+
+def _intraday_cache_gate_evaluate(
+    *,
+    rows: list,
+    to_datetime_str: str,
+    interval: str,
+    interval_mins: int,
+    freshness_seconds: int,
+    include_forming: bool,
+    min_candles: int,
+    source_kind: str,
+    source_id: object,
+) -> tuple | None:
+    """[WORKFLOW-H H4 + H4.B 2026-09-13] Shared HIT-path gate.
+
+    Evaluates the four §12 explicit semantics on a list of raw cache
+    rows and returns either ``None`` (no HIT) or a tuple
+    ``(filtered_rows, debug_event)``. Caller logs the debug event
+    and constructs the DataFrame from filtered_rows.
+
+    The two callers (``get_intraday`` and ``get_intraday_by_token``)
+    share this gate so the four semantics can never drift between
+    the by-symbol and by-token paths.
+
+    Parameters
+    ----------
+    rows
+        Raw rows from a cache table, ordered by datetime ascending.
+        Each row's first column is the ``datetime`` string in the
+        ``"%Y-%m-%d %H:%M:%S"`` format.
+    to_datetime_str
+        The ``to_datetime`` argument the caller passed in.
+    interval
+        The Kite interval name (``"minute"``, ``"5minute"``, ...).
+        Used only for the "exempt from forming filter" check.
+    interval_mins
+        Numeric candle width (1 for "minute", 5 for "5minute", ...).
+    freshness_seconds
+        Operator-tunable leniency budget on the freshness gate.
+        Negative values are clamped to 0.
+    include_forming
+        §12 completed-bar cutoff. ``False`` (default) means forming
+        candles (``datetime >= to_datetime_str``) are EXCLUDED from
+        the returned set. Daily interval is exempt.
+    min_candles
+        Floor on the returned candle count after the forming-bar
+        filter. Below the floor: no HIT.
+    source_kind
+        ``"ticker"`` or ``"instrument_token"``. Logged only.
+    source_id
+        The ticker string or instrument_token int. Logged only.
+
+    Returns
+    -------
+    ``None`` if no HIT. Otherwise ``(filtered_rows, debug_event)``
+    where ``debug_event`` is a dict suitable for
+    ``logger.debug(..., **debug_event)``.
+    """
+    if not rows or len(rows) < min_candles:
+        return None
+    last_cached_dt = datetime.strptime(rows[-1][0], "%Y-%m-%d %H:%M:%S")
+    to_dt_obj = datetime.strptime(to_datetime_str, "%Y-%m-%d %H:%M:%S")
+
+    # Freshness gate: the most recent cached candle must cover up
+    # to ``to_dt_obj - interval_minutes - freshness_seconds``. The
+    # default freshness_seconds=0 matches the strict pre-H4 gate.
+    effective_freshness_seconds = max(0, freshness_seconds)
+    expected_latest = (
+        to_dt_obj
+        - timedelta(minutes=interval_mins)
+        - timedelta(seconds=effective_freshness_seconds)
+    )
+    if last_cached_dt < expected_latest:
+        return None
+
+    # Completed-bar cutoff: drop forming candles unless the operator
+    # has opted in OR the interval is exempt (e.g. daily).
+    if include_forming or interval in _INTERVALS_EXEMPT_FROM_FORMING_FILTER:
+        filtered_rows = list(rows)
+    else:
+        filtered_rows = [
+            r for r in rows
+            if datetime.strptime(r[0], "%Y-%m-%d %H:%M:%S") < to_dt_obj
+        ]
+
+    if not filtered_rows:
+        return (
+            [],
+            dict(
+                event_type="intraday_cache_only_forming",
+                source_kind=source_kind, source_id=source_id,
+                total_rows=len(rows), forming_rows=len(rows),
+            ),
+        )
+    if len(filtered_rows) < min_candles:
+        return (
+            [],
+            dict(
+                event_type="intraday_cache_filtered_below_floor",
+                source_kind=source_kind, source_id=source_id,
+                raw_rows=len(rows), filtered_rows=len(filtered_rows),
+                min_candles=min_candles,
+            ),
+        )
+    return (
+        filtered_rows,
+        dict(
+            event_type="intraday_cache_hit",
+            source_kind=source_kind, source_id=source_id,
+            candles=len(filtered_rows),
+            forming_dropped=len(rows) - len(filtered_rows),
+        ),
+    )
 
 class RateLimiter:
     def __init__(self, rate: float, burst: int):
@@ -144,6 +277,14 @@ class KiteClient:
                 f"PRAGMA busy_timeout={int(SQLITE_OPERATION_TIMEOUT_SEC * 1000)}"
             )
             await db.execute("PRAGMA synchronous=NORMAL")
+            # [WORKFLOW-H H4.B 2026-09-13] The by-token cache
+            # table is created here alongside the by-symbol one.
+            # F&O candles include an OI column (open interest),
+            # which the by-symbol path does not store. PRIMARY KEY
+            # is (instrument_token, interval, datetime) to match
+            # the by-symbol PRIMARY KEY shape (ticker, interval,
+            # datetime) -- never the two keys mixed.
+            await self._create_intraday_cache_by_token_table(db)
             # `interval` was absent from the original schema even though this
             # client stores both one-minute Penny bars and 15-minute Momentum
             # bars.  The old (ticker, datetime) key allowed one resolution to
@@ -221,6 +362,40 @@ class KiteClient:
                 volume   REAL,
                 fetched_at TIMESTAMP,
                 PRIMARY KEY (ticker, interval, datetime)
+            )
+        """)
+
+    @staticmethod
+    async def _create_intraday_cache_by_token_table(db) -> None:
+        """[WORKFLOW-H H4.B 2026-09-13] The by-token cache table.
+
+        Sibling of ``intraday_cache`` keyed on ``instrument_token``
+        instead of ``ticker``. The two tables NEVER share rows:
+        the by-token path is for NFO/F&O contracts whose symbol
+        cache (``self.instrument_cache``) covers NSE equities only,
+        and the by-symbol path is for cash equity Penny scanners.
+
+        The ``oi`` (open-interest) column is by-token-only because
+        F&O candles include OI; the by-symbol path does not.
+
+        PRIMARY KEY shape mirrors the by-symbol path
+        ``(instrument_token, interval, datetime)`` so §12 four
+        semantics (instrument + interval + completed-bar cutoff +
+        freshness) are honoured on the same gate contract.
+        """
+        await db.execute("""
+            CREATE TABLE IF NOT EXISTS intraday_cache_by_token (
+                instrument_token INTEGER NOT NULL,
+                interval         TEXT NOT NULL,
+                datetime         TEXT NOT NULL,
+                open             REAL,
+                high             REAL,
+                low              REAL,
+                close            REAL,
+                volume           REAL,
+                oi               REAL,
+                fetched_at       TIMESTAMP,
+                PRIMARY KEY (instrument_token, interval, datetime)
             )
         """)
 
@@ -456,16 +631,51 @@ class KiteClient:
     ) -> pd.DataFrame:
         """
         Fetch intraday candles (15-minute default).
-        Cache TTL: current trading day only.
-        Cache is invalidated at next day's 00:00 IST.
-        
+
+        [WORKFLOW-H H4 2026-09-13] Cache semantics per plan section 12:
+        the four explicit invariants -- instrument, interval,
+        completed-bar cutoff, freshness -- are now honoured by
+        the HIT path. The cache still contains forming candles
+        (the writer cannot know when Kite's most recent candle is
+        closed); the HIT path EXCLUDES forming candles when
+        ``settings.INTRADAY_CACHE_INCLUDE_FORMING=False`` (default,
+        per section 12 "do not mix mutable forming bars with
+        completed historical bars").
+
+        Freshness semantics: the most recent cached candle must
+        be no older than ``expected_latest - freshness_seconds``,
+        where ``expected_latest = to_datetime - interval_minutes``.
+        The default ``freshness_seconds=0`` matches the pre-H4
+        strict "last candle covers up to most recent interval
+        boundary" gate.
+
+        Operator-tunable knobs in ``config.py``:
+            INTRADAY_CACHE_FRESHNESS_SECONDS
+            INTRADAY_CACHE_INCLUDE_FORMING
+            INTRADAY_CACHE_MIN_CANDLES
+
+        The 00:05 IST cron ``clear_intraday_cache`` (retention
+        default 365 days) does the daily ageing; the H4 path
+        does NOT change that schedule.
+
         from_datetime / to_datetime format: "YYYY-MM-DD HH:MM:SS"
         """
+        from config import settings
         interval = str(interval or "").strip().lower()
         interval_mins = _interval_minutes(interval)
         await self._init_intraday_db()
         ticker = ticker.upper()
-
+        # [WORKFLOW-H H4 2026-09-13] Config knobs read ONCE per call;
+        # defaults preserve the pre-H4 strict behaviour.
+        freshness_seconds = int(
+            getattr(settings, "INTRADAY_CACHE_FRESHNESS_SECONDS", 0)
+        )
+        include_forming = bool(
+            getattr(settings, "INTRADAY_CACHE_INCLUDE_FORMING", False)
+        )
+        min_candles = int(
+            getattr(settings, "INTRADAY_CACHE_MIN_CANDLES", 4)
+        )
 
         # Check cache: only use if all rows are from today
         async with self._cache_db() as db:
@@ -478,31 +688,59 @@ class KiteClient:
                 (ticker, interval, from_datetime, to_datetime)
             )
             rows = await cursor.fetchall()
-            if rows and len(rows) >= 4:   # minimum 4 candles for VWAP
-                last_cached_dt = datetime.strptime(rows[-1][0], "%Y-%m-%d %H:%M:%S")
-                to_dt_obj      = datetime.strptime(to_datetime,  "%Y-%m-%d %H:%M:%S")
-                # Cache is fresh only if the last stored candle covers up to the
-                # expected latest complete candle (one interval before scan time).
-                # If stale, fall through to API so new candles are fetched.
-                expected_latest = to_dt_obj - timedelta(minutes=interval_mins)
-                if last_cached_dt >= expected_latest:
-                    # [LOG-HYGIENE 2026-07-17] debug -- see the cache_hit
-                    # comment in get_historical.
-                    logger.debug("data_fetch", event_type="intraday_cache_hit",
-                                 ticker=ticker, candles=len(rows))
+            # [WORKFLOW-H H4 2026-09-13] Shared gate evaluates the
+            # four §12 explicit semantics. See ``_intraday_cache_gate_evaluate``
+            # for the gate contract.
+            verdict = _intraday_cache_gate_evaluate(
+                rows=rows,
+                to_datetime_str=to_datetime,
+                interval=interval,
+                interval_mins=interval_mins,
+                freshness_seconds=freshness_seconds,
+                include_forming=include_forming,
+                min_candles=min_candles,
+                source_kind="ticker",
+                source_id=ticker,
+            )
+            if verdict is not None:
+                filtered_rows, debug_event = verdict
+                # The gate's debug_event uses ``source_kind`` /
+                # ``source_id`` for the cross-cutting case. The
+                # by-symbol path keeps the legacy ``ticker`` field
+                # name so log-grep operators continue to find it.
+                if "ticker" not in debug_event:
+                    debug_event["ticker"] = ticker
+                if filtered_rows:
+                    logger.debug("data_fetch", **debug_event)
                     df = pd.DataFrame(
-                        rows, columns=['datetime','open','high','low','close','volume']
+                        filtered_rows,
+                        columns=['datetime','open','high','low','close','volume'],
                     )
                     df['datetime'] = pd.to_datetime(df['datetime'])
                     df.set_index('datetime', inplace=True)
                     return df
-                # Expected during a live session: the next caller refreshes the
-                # cache as soon as a candle closes.  INFO produced tens of
-                # thousands of lines per day and pushed operational evidence
-                # out of bounded `docker logs --tail` audits.
-                logger.debug("data_fetch", event_type="intraday_cache_stale",
-                             ticker=ticker, last_candle=str(last_cached_dt),
-                             expected=str(expected_latest))
+                # No HIT (only-forming or below-floor). Fall through.
+                logger.debug("data_fetch", **debug_event)
+            else:
+                # Stale: gate rejected on freshness. Differentiate
+                # this from a true miss so operators can distinguish
+                # "cache out of date" from "cache empty".
+                last_cached_dt = (
+                    datetime.strptime(rows[-1][0], "%Y-%m-%d %H:%M:%S")
+                    if rows else None
+                )
+                expected_latest = (
+                    datetime.strptime(to_datetime, "%Y-%m-%d %H:%M:%S")
+                    - timedelta(minutes=interval_mins)
+                    - timedelta(seconds=max(0, freshness_seconds))
+                )
+                logger.debug(
+                    "data_fetch",
+                    event_type="intraday_cache_stale",
+                    ticker=ticker,
+                    last_candle=str(last_cached_dt) if last_cached_dt else None,
+                    expected=str(expected_latest),
+                )
 
         # Cache miss -> API
         logger.debug("data_fetch", event_type="intraday_cache_miss", ticker=ticker)
@@ -932,13 +1170,111 @@ class KiteClient:
         interval: str = "5minute",
     ) -> pd.DataFrame:
         """
-        [FNO 2026-07-10] Intraday candles by raw instrument token (the
-        symbol->token cache only covers NSE equities, so NFO callers
-        resolve their own tokens). No sqlite caching: the F&O signal loop
-        re-reads the full session every tick and today's candles change
-        every 5 minutes, so a cache would only serve stale bars.
-        Returns an empty DataFrame on failure.
+        [WORKFLOW-H H4.B 2026-09-13] Intraday candles by raw
+        instrument token, with §12 cache semantics. The four
+        explicit invariants -- instrument, interval, completed-bar
+        cutoff, freshness -- are honoured by the same HIT-path
+        gate as ``get_intraday`` (see ``_intraday_cache_gate_evaluate``).
+        The previous "no sqlite caching" rationale ("F&O ticks
+        re-read every 5 minutes, so a cache would only serve
+        stale bars") is replaced by the forming-bar filter:
+        forming candles are EXCLUDED from the HIT path, so a
+        cache HIT serves strictly completed candles.
+
+        The ``oi`` (open-interest) column is preserved through
+        the HIT path -- it is part of the Kite F&O candle schema
+        and downstream callers (``partner_orchestrator.realized_vol_20d``)
+        read it.
+
+        Failure contract: returns an empty DataFrame on cache
+        MISS + API failure (preserves pre-H4 behaviour). The
+        5-attempt retry loop is preserved.
+
+        from_datetime / to_datetime format: "YYYY-MM-DD HH:MM:SS"
         """
+        from config import settings
+        interval = str(interval or "").strip().lower()
+        interval_mins = _interval_minutes(interval)
+        await self._init_intraday_db()
+        # [WORKFLOW-H H4.B 2026-09-13] Same three knobs as the
+        # by-symbol path, read once per call. Defaults preserve
+        # the pre-H4 strict behaviour.
+        freshness_seconds = int(
+            getattr(settings, "INTRADAY_CACHE_FRESHNESS_SECONDS", 0)
+        )
+        include_forming = bool(
+            getattr(settings, "INTRADAY_CACHE_INCLUDE_FORMING", False)
+        )
+        min_candles = int(
+            getattr(settings, "INTRADAY_CACHE_MIN_CANDLES", 4)
+        )
+
+        # Check cache: HIT path. The by-token table has an
+        # additional ``oi`` column (F&O open interest) that the
+        # by-symbol path does not store.
+        async with self._cache_db() as db:
+            cursor = await db.execute(
+                """SELECT datetime, open, high, low, close, volume, oi
+                   FROM intraday_cache_by_token
+                   WHERE instrument_token=? AND interval=?
+                     AND datetime >= ? AND datetime <= ?
+                   ORDER BY datetime""",
+                (int(instrument_token), interval, from_datetime, to_datetime)
+            )
+            rows = await cursor.fetchall()
+            verdict = _intraday_cache_gate_evaluate(
+                rows=rows,
+                to_datetime_str=to_datetime,
+                interval=interval,
+                interval_mins=interval_mins,
+                freshness_seconds=freshness_seconds,
+                include_forming=include_forming,
+                min_candles=min_candles,
+                source_kind="instrument_token",
+                source_id=int(instrument_token),
+            )
+            if verdict is not None:
+                filtered_rows, debug_event = verdict
+                if "instrument_token" not in debug_event:
+                    debug_event["instrument_token"] = int(instrument_token)
+                if filtered_rows:
+                    logger.debug("data_fetch", **debug_event)
+                    cols = ['datetime','open','high','low','close','volume','oi']
+                    df = pd.DataFrame(filtered_rows, columns=cols)
+                    df['datetime'] = pd.to_datetime(df['datetime'])
+                    df.set_index('datetime', inplace=True)
+                    return df
+                # No HIT (only-forming or below-floor). Fall through.
+                logger.debug("data_fetch", **debug_event)
+            else:
+                # Stale: gate rejected on freshness. The by-token
+                # path logs ``instrument_token`` instead of
+                # ``ticker`` -- operators grep differently for the
+                # two paths.
+                last_cached_dt = (
+                    datetime.strptime(rows[-1][0], "%Y-%m-%d %H:%M:%S")
+                    if rows else None
+                )
+                expected_latest = (
+                    datetime.strptime(to_datetime, "%Y-%m-%d %H:%M:%S")
+                    - timedelta(minutes=interval_mins)
+                    - timedelta(seconds=max(0, freshness_seconds))
+                )
+                logger.debug(
+                    "data_fetch",
+                    event_type="intraday_cache_stale",
+                    instrument_token=int(instrument_token),
+                    last_candle=str(last_cached_dt) if last_cached_dt else None,
+                    expected=str(expected_latest),
+                )
+
+        # Cache MISS -> API. Retry loop preserved from the pre-H4.B
+        # implementation; on success, INSERT OR REPLACE the rows
+        # into ``intraday_cache_by_token`` for future HITs.
+        logger.debug(
+            "data_fetch", event_type="intraday_cache_miss",
+            instrument_token=int(instrument_token),
+        )
         for attempt in range(5):
             await self.limiter.acquire()
             try:
@@ -957,6 +1293,34 @@ class KiteClient:
                     cols = cols + ['oi']
                 df = pd.DataFrame(data, columns=cols)
                 df['datetime'] = pd.to_datetime(df['datetime']).dt.tz_localize(None)
+
+                # [WORKFLOW-H H4.B 2026-09-13] Write-through to
+                # the by-token cache. INSERT OR REPLACE on the
+                # PRIMARY KEY (instrument_token, interval,
+                # datetime) ensures idempotency on retry.
+                async with self._cache_db() as db:
+                    for _, row in df.iterrows():
+                        oi_value = (
+                            float(row['oi']) if 'oi' in row and row['oi'] is not None
+                            and not (isinstance(row['oi'], float)
+                                     and (row['oi'] != row['oi']))  # NaN check
+                            else None
+                        )
+                        await db.execute(
+                            """INSERT OR REPLACE INTO intraday_cache_by_token
+                               (instrument_token, interval, datetime, open, high,
+                                low, close, volume, oi, fetched_at)
+                               VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)""",
+                            (
+                                int(instrument_token),
+                                interval,
+                                row['datetime'].strftime("%Y-%m-%d %H:%M:%S"),
+                                row['open'], row['high'], row['low'],
+                                row['close'], row['volume'], oi_value,
+                            ),
+                        )
+                    await db.commit()
+
                 df.set_index('datetime', inplace=True)
                 return df
             except httpx.HTTPStatusError as e:

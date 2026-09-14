@@ -26,6 +26,7 @@ rule that sizing must never use the mixed `current_bankroll()`. It just had one
 caller that silently mislabelled the source.
 """
 import pytest
+import pytest_asyncio
 
 import performance
 from performance import bankroll_for_source, record_trade_close
@@ -35,8 +36,8 @@ PAPER_SOURCES = ("EDGE_PAPER", "FNO_PAPER", "PENNY_PAPER")
 LIVE_SOURCES = ("SYSTEM", "MOMENTUM", "PENNY", "EDGE_LIVE")
 
 
-@pytest.fixture
-def db(tmp_path, monkeypatch):
+@pytest_asyncio.fixture
+async def db(tmp_path, monkeypatch):
     import sqlite3
     path = str(tmp_path / "cache.db")
     con = sqlite3.connect(path)
@@ -49,6 +50,8 @@ def db(tmp_path, monkeypatch):
     """)
     con.commit()
     con.close()
+    # Exercise the production startup migration from this legacy schema.
+    await performance.init_ledger(path)
     return path
 
 
@@ -160,7 +163,7 @@ def test_no_production_caller_omits_source():
     engine_dir = pathlib.Path(__file__).resolve().parent.parent
     offenders = []
     for py in engine_dir.glob("*.py"):
-        tree = ast.parse(py.read_text())
+        tree = ast.parse(py.read_text(encoding="utf-8-sig"))
         for node in ast.walk(tree):
             if not isinstance(node, ast.Call):
                 continue

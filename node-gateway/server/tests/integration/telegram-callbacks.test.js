@@ -30,6 +30,18 @@ jest.mock('../../services/executor', () => ({
 
 jest.mock('../../utils/market-hours', () => ({
   isMarketOpen: jest.fn(),
+  // [WORKFLOW-J.6] Mirror the export surface.
+  currentSessionPhase: jest.fn(() => 'CONTINUOUS_TRADING'),
+  // [WORKFLOW-J.7] Mirror the export surface for the CAS guard.
+  isExecutionAllowed: jest.fn(() => ({
+    allowed: true, phase: 'CONTINUOUS_TRADING', reason: null,
+  })),
+}));
+
+jest.mock('../../services/cas-eligibility', () => ({
+  entrySessionVerdict: jest.fn(() => Promise.resolve({
+    allowed: true, phase: 'CONTINUOUS_TRADING', reason: null,
+  })),
 }));
 
 const mockPrepare = jest.fn();
@@ -71,6 +83,7 @@ global.fetch = jest.fn();
 const telegram = require('../../services/telegram');
 const executor = require('../../services/executor');
 const { isMarketOpen } = require('../../utils/market-hours');
+const { entrySessionVerdict } = require('../../services/cas-eligibility');
 
 // Mock http before requiring index.js
 jest.mock('http', () => ({
@@ -232,6 +245,12 @@ describe('Telegram Callback Handler', () => {
   // ─── 5. EXEC outside market hours ───
   runTest('EXEC outside market hours - blocked', async () => {
     isMarketOpen.mockReturnValue(false);
+    // [WORKFLOW-J.6] The hard guard ``isMarketOpen() = false``
+    // is paired with the bounded phase ``CLOSED``. The
+    // sessionPhase mirror and isMarketOpen are not redundant:
+    // the binary ``isMarketOpen`` is the gate, the bounded
+    // phase is the explanatory label.
+    require('../../utils/market-hours').currentSessionPhase.mockReturnValue('CLOSED');
     const query = makeCallbackQuery('EXEC', 'a1b2c3d4');
     await callbackHandler(query);
 
@@ -240,6 +259,25 @@ describe('Telegram Callback Handler', () => {
       'cb-query-1',
       expect.objectContaining({ text: expect.stringContaining('closed') })
     );
+  });
+
+  runTest('EXEC blocks in the callback when authoritative CAS eligibility is unavailable', async () => {
+    entrySessionVerdict.mockResolvedValueOnce({
+      allowed: false,
+      phase: 'CAS_ELIGIBILITY_UNAVAILABLE',
+      reason: 'CAS eligibility service is unavailable; entry blocked.',
+    });
+    await callbackHandler(makeCallbackQuery('EXEC', 'a1b2c3d4'));
+
+    expect(executor.executeSignal).not.toHaveBeenCalled();
+    expect(mockAnswerCallbackQuery).toHaveBeenCalledWith(
+      'cb-query-1',
+      expect.objectContaining({ text: expect.stringContaining('eligibility service') })
+    );
+    const executionTransitions = mockPrepare.mock.calls
+      .map(c => c[0])
+      .filter(sql => typeof sql === 'string' && sql.includes("status = 'EXECUTING'"));
+    expect(executionTransitions).toHaveLength(0);
   });
 
   // ─── 6. EXEC for non-PENDING signal ───
@@ -320,6 +358,9 @@ describe('Telegram Callback Handler', () => {
   // ─── 11. EM outside market hours - blocked ───
   runTest('EM outside market hours - blocked', async () => {
     isMarketOpen.mockReturnValue(false);
+    // [WORKFLOW-J.6] Pair the binary gate with the bounded
+    // phase so the explanatory label is realistic.
+    require('../../utils/market-hours').currentSessionPhase.mockReturnValue('CLOSED');
     const query = makeCallbackQuery('EM', 'RELIANCE_MOM');
     await callbackHandler(query);
 

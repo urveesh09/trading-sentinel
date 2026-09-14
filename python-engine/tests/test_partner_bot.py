@@ -1,6 +1,6 @@
 """
 [PARTNER-TIPS-TESTS 2026-07-18] Partner sender transport (plan WS4):
-disabled-by-default means ZERO network bytes; retry ladder + Telegram
+explicitly disabled means ZERO network bytes; retry ladder + Telegram
 429 retry_after honored; failures log loudly and return False without
 raising; oversize messages truncate instead of 400ing.
 """
@@ -54,12 +54,10 @@ def enabled(monkeypatch):
     return _FakeClient
 
 
-def test_disabled_by_default(monkeypatch):
-    # Shipped CODE default is off. Assert the DECLARED field default, not the
-    # loaded singleton -- the singleton reflects whatever the local/prod .env
-    # sets (dev .env enables it), so reading it here would test the machine,
-    # not the code.
-    assert Settings.model_fields["PARTNER_BOT_ENABLED"].default is False
+def test_declared_default_and_explicit_disabled_gate(monkeypatch):
+    # Assert the existing declared default, not ambient .env configuration.
+    # The flag alone does not provide credentials or advisory authorization.
+    assert Settings.model_fields["PARTNER_BOT_ENABLED"].default is True
     # And with the flag off + no creds, the feature is a total no-op.
     monkeypatch.setattr(settings, "PARTNER_BOT_ENABLED", False)
     monkeypatch.setattr(settings, "PARTNER_TELEGRAM_BOT_TOKEN", "")

@@ -48,7 +48,7 @@ def test_no_forbidden_imports_in_penny_modules():
     assert files, "no penny_*.py files to check"
     violations = []
     for path in files:
-        with open(path) as f:
+        with open(path, encoding="utf-8") as f:
             tree = ast.parse(f.read(), filename=path)
         for node in ast.walk(tree):
             if isinstance(node, ast.Import):

@@ -46,6 +46,8 @@ class LegQuote:
     expiry: str | None = None
     quantity: int | None = None
     master_sha256: str | None = None
+    oi: int | None = None
+    volume: int | None = None
 
 
 @dataclass(frozen=True)
@@ -68,6 +70,8 @@ class ReplayResult:
     accepted_entry: bool = False
     entry_cost_rs: float | None = None
     entry_max_loss_rs: float | None = None
+    entry_max_reward_rs: float | None = None
+    entry_reward_risk: float | None = None
 
 
 def _stamp(value: datetime, field: str) -> datetime:
@@ -77,6 +81,8 @@ def _stamp(value: datetime, field: str) -> datetime:
 
 
 def _finite(value: float, field: str, *, positive: bool = False) -> float:
+    if isinstance(value, bool):
+        raise ReplayInputError(f"{field} must be numeric")
     try:
         number = float(value)
     except (TypeError, ValueError) as exc:
@@ -109,7 +115,9 @@ def _positive_int(value: object) -> bool:
 
 def _validate_pair(underlying: str, quotes: list[LegQuote], *, decision_at: datetime,
                    max_age: timedelta, max_sync: timedelta, phase: str,
-                   declared_expiry: str) -> tuple[str | None, list[LegQuote]]:
+                   declared_expiry: str, max_spread_pct: float | None = None,
+                   min_oi: int = 0, min_volume: int = 0,
+                   min_depth_units: int = 0) -> tuple[str | None, list[LegQuote]]:
     if len(quotes) != 2:
         return f"{phase}_requires_exactly_two_legs", []
     expected_exchange = _EXCHANGES.get(underlying)
@@ -139,8 +147,16 @@ def _validate_pair(underlying: str, quotes: list[LegQuote], *, decision_at: date
                 or not isinstance(quote.ask_depth, int) or isinstance(quote.ask_depth, bool)):
             return f"{phase}_depth_invalid", []
         bid, ask = _finite(quote.bid, "bid", positive=True), _finite(quote.ask, "ask", positive=True)
-        if bid > ask or quote.bid_depth < quote.lot_size or quote.ask_depth < quote.lot_size:
+        required_depth = max(quote.lot_size, min_depth_units)
+        if bid > ask or quote.bid_depth < required_depth or quote.ask_depth < required_depth:
             return f"{phase}_book_not_executable_for_full_lot", []
+        midpoint = (bid + ask) / 2
+        if max_spread_pct is not None and (ask - bid) / midpoint > max_spread_pct:
+            return f"{phase}_spread_too_wide", []
+        if min_oi and (not _positive_int(quote.oi) or quote.oi < min_oi):
+            return f"{phase}_insufficient_oi", []
+        if min_volume and (not _positive_int(quote.volume) or quote.volume < min_volume):
+            return f"{phase}_insufficient_volume", []
         observed, received = _stamp(quote.observed_at, "observed_at"), _stamp(quote.received_at, "received_at")
         if observed > received or received > decision_at:
             return f"{phase}_future_packet_or_timestamp_order_invalid", []
@@ -173,6 +189,8 @@ def replay_intraday_debit_spread(
     management_deadline_minute: int = 15 * 60 + 15, max_quote_age: timedelta = timedelta(seconds=30),
     max_leg_sync: timedelta = timedelta(seconds=5), slippage_bps: float = 0.0,
     execution_delay: timedelta = timedelta(0), market_session_day: bool | None = None,
+    max_leg_spread_pct: float | None = None, min_oi: int = 0, min_volume: int = 0,
+    min_depth_units: int = 0, min_reward_risk: float = 0.0,
 ) -> ReplayResult:
     """Replay a one-lot debit spread with real bid/ask/depth requirements.
 
@@ -194,25 +212,42 @@ def replay_intraday_debit_spread(
     if fee < 0:
         raise ReplayInputError("fee_per_leg_rs must be nonnegative")
     slippage = _finite(slippage_bps, "slippage_bps")
-    if slippage < 0 or not (0 <= entry_start_minute <= entry_deadline_minute <= management_deadline_minute < 24 * 60):
+    reward_risk_floor = _finite(min_reward_risk, "min_reward_risk")
+    if (max_leg_spread_pct is not None
+            and (_finite(max_leg_spread_pct, "max_leg_spread_pct", positive=True) > 1)):
+        raise ReplayInputError("maximum leg spread must be in (0, 1]")
+    if any(not isinstance(value, int) or isinstance(value, bool) or value < 0
+           for value in (min_oi, min_volume, min_depth_units)):
+        raise ReplayInputError("minimum liquidity fields must be non-negative integers")
+    if slippage < 0 or reward_risk_floor < 0 or not (0 <= entry_start_minute <= entry_deadline_minute <= management_deadline_minute < 24 * 60):
         raise ReplayInputError("replay policy windows are invalid")
     policy = {"fee_per_leg_rs": fee, "entry_start_minute": entry_start_minute,
               "entry_deadline_minute": entry_deadline_minute, "management_deadline_minute": management_deadline_minute,
               "max_quote_age_seconds": max_quote_age.total_seconds(), "max_leg_sync_seconds": max_leg_sync.total_seconds(),
               "slippage_bps": slippage, "execution_delay_seconds": execution_delay.total_seconds(),
-              "market_session_day": market_session_day}
-    entry_minute = entry_clock.hour * 60 + entry_clock.minute
+              "market_session_day": market_session_day, "max_leg_spread_pct": max_leg_spread_pct,
+              "min_oi": min_oi, "min_volume": min_volume, "min_depth_units": min_depth_units,
+              "min_reward_risk": reward_risk_floor}
+    entry_start = entry_clock.replace(hour=entry_start_minute // 60, minute=entry_start_minute % 60,
+                                      second=0, microsecond=0)
+    entry_deadline = entry_clock.replace(hour=entry_deadline_minute // 60, minute=entry_deadline_minute % 60,
+                                         second=0, microsecond=0)
+    management_deadline = entry_clock.replace(hour=management_deadline_minute // 60,
+                                               minute=management_deadline_minute % 60,
+                                               second=0, microsecond=0)
     digest = _digest(underlying=underlying, expiry=expiry, entry_at=entry_clock, exit_at=exit_clock,
                      entry=entry_quotes, exit_=exit_quotes, policy=policy)
     session_ok = entry_clock.weekday() < 5 if market_session_day is None else market_session_day
-    if not session_ok or expiry_day < entry_clock.date():
+    if not session_ok or expiry_day <= entry_clock.date():
         return ReplayResult("REJECTED", "entry_not_a_valid_preexpiry_market_session", None, None, None, None,
                             entry_clock.isoformat(), exit_clock.isoformat() if exit_clock else None, digest)
-    if entry_minute < entry_start_minute or entry_minute > entry_deadline_minute:
+    if entry_clock < entry_start or entry_clock > entry_deadline:
         return ReplayResult("REJECTED", "entry_after_intraday_deadline", None, None, None, None,
                             entry_clock.isoformat(), exit_clock.isoformat() if exit_clock else None, digest)
     entry_error, entry = _validate_pair(underlying, entry_quotes, decision_at=entry_clock,
-                                        max_age=max_quote_age, max_sync=max_leg_sync, phase="entry", declared_expiry=expiry)
+                                        max_age=max_quote_age, max_sync=max_leg_sync, phase="entry", declared_expiry=expiry,
+                                        max_spread_pct=max_leg_spread_pct, min_oi=min_oi,
+                                        min_volume=min_volume, min_depth_units=min_depth_units)
     if entry_error:
         return ReplayResult("NO_FILL", entry_error, None, None, None, None,
                             entry_clock.isoformat(), exit_clock.isoformat() if exit_clock else None, digest)
@@ -227,23 +262,35 @@ def replay_intraday_debit_spread(
     if debit >= width:
         return ReplayResult("NO_FILL", "entry_debit_exceeds_spread_width", None, None, None, None,
                             entry_clock.isoformat(), exit_clock.isoformat() if exit_clock else None, digest)
+    gross_entry_notional = (float(entry_buy.ask) + float(entry_sell.bid)) * lot
+    round_trip_reserve = fee * 4 + gross_entry_notional * slippage / 10_000
+    max_reward = width - debit - round_trip_reserve
+    max_loss = debit + round_trip_reserve
+    reward_risk = max_reward / max_loss if max_loss > 0 else -math.inf
+    if max_reward <= 0 or reward_risk < reward_risk_floor:
+        return ReplayResult("NO_FILL", "entry_cost_erases_expiry_reward", None, None, None, None,
+                            entry_clock.isoformat(), exit_clock.isoformat() if exit_clock else None, digest)
     # Acceptance and entry economics precede any exit validation.  An absent
     # exit is exposure uncertainty, never evidence that the entry did not fill.
-    entry_cost = debit + fee * 2 + debit * slippage / 10_000
-    entry_max_loss = debit + fee * 4 + debit * slippage / 10_000
+    entry_cost = debit + fee * 2 + gross_entry_notional * slippage / 10_000
+    entry_max_loss = max_loss
     accepted = {"accepted_entry": True, "entry_cost_rs": round(entry_cost, 4),
-                "entry_max_loss_rs": round(entry_max_loss, 4)}
+                "entry_max_loss_rs": round(entry_max_loss, 4),
+                "entry_max_reward_rs": round(max_reward, 4),
+                "entry_reward_risk": round(reward_risk, 8)}
     if exit_clock is None:
         return ReplayResult("UNRESOLVED", "exit_observation_missing", round(debit, 4), None,
                             round(entry_cost, 4), None, entry_clock.isoformat(), None, digest, **accepted)
     if exit_clock.date() != entry_clock.date() or exit_clock < entry_clock:
         return ReplayResult("UNRESOLVED", "overnight_or_reverse_exit_unresolved", round(debit, 4), None,
                             round(entry_cost, 4), None, entry_clock.isoformat(), exit_clock.isoformat(), digest, **accepted)
-    if exit_clock.hour * 60 + exit_clock.minute > management_deadline_minute:
+    if exit_clock > management_deadline:
         return ReplayResult("UNRESOLVED", "exit_after_intraday_management_deadline", round(debit, 4), None,
                             round(entry_cost, 4), None, entry_clock.isoformat(), exit_clock.isoformat(), digest, **accepted)
     exit_error, exit_pair = _validate_pair(underlying, exit_quotes, decision_at=exit_clock,
-                                           max_age=max_quote_age, max_sync=max_leg_sync, phase="exit", declared_expiry=expiry)
+                                           max_age=max_quote_age, max_sync=max_leg_sync, phase="exit", declared_expiry=expiry,
+                                           max_spread_pct=max_leg_spread_pct, min_oi=min_oi,
+                                           min_volume=min_volume, min_depth_units=min_depth_units)
     if exit_error:
         return ReplayResult("UNRESOLVED", exit_error, round(debit, 4), None, round(entry_cost, 4), None,
                             entry_clock.isoformat(), exit_clock.isoformat(), digest, **accepted)
@@ -253,7 +300,11 @@ def replay_intraday_debit_spread(
     exit_buy = next(item for item in exit_pair if item.side == "BUY")
     exit_sell = next(item for item in exit_pair if item.side == "SELL")
     credit = (float(exit_buy.bid) - float(exit_sell.ask)) * lot
-    costs = fee * 4 + (debit + credit) * slippage / 10_000  # pessimistic two-leg entry and exit
+    # Slippage is charged on gross executable leg notional. Netting the spread
+    # can make costs negative when a distressed close has negative net credit.
+    gross_notional = (float(entry_buy.ask) + float(entry_sell.bid)
+                      + float(exit_buy.bid) + float(exit_sell.ask)) * lot
+    costs = fee * 4 + gross_notional * slippage / 10_000
     return ReplayResult("CLOSED", "two_leg_executable", round(debit, 4), round(credit, 4), round(costs, 4),
                         round(credit - debit - costs, 4), entry_clock.isoformat(), exit_clock.isoformat(), digest,
                         **accepted)

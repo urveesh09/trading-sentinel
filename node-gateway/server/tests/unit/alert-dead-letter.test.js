@@ -12,6 +12,13 @@ const fs = require('fs');
 const os = require('os');
 const path = require('path');
 
+jest.mock('node-telegram-bot-api', () => jest.fn().mockImplementation(() => ({
+  on: jest.fn(),
+  sendMessage: jest.fn(),
+  setWebHook: jest.fn().mockResolvedValue(true),
+  stopPolling: jest.fn().mockResolvedValue(true),
+})));
+
 describe('undelivered alert dead-letter', () => {
   let tmpFile;
   let telegram;

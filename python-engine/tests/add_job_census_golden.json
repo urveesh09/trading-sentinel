@@ -240,7 +240,7 @@
     "trigger": "'cron'"
   },
   {
-    "func": "run_penny_hourly_report",
+    "func": "run_penny_hourly_report_safe",
     "id": "'penny_hourly_report'",
     "trigger": "'cron'"
   },
