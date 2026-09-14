@@ -24,6 +24,7 @@ from advisory import (  # [ADVISORY 2026-08-05] typed verdicts
     unavailable as advisory_unavailable,
 )
 from async_reviews import AsyncReviewQueue
+import news_classifier  # [WORKFLOW-I.4.D 2026-09-14]
 
 # -------------------------------------------------------------------------
 # CONFIG & LOGGING
@@ -734,6 +735,81 @@ def _extract_json_object(text: Optional[str]) -> Optional[Dict]:
             pass
     return None
 
+
+
+def _fetch_news_items_for_ticker(ticker: str) -> List[NewsItem]:
+    """[WORKFLOW-I.4.D 2026-09-14] Fetch the raw NewsItem list
+    that ``scrape_sentiment`` would render. Same URLs, same
+    limit; used by the classifier feature flag.
+
+    Returns an empty list if both feeds fail. Never raises:
+    the classifier is fail-closed and a missing feed is just
+    an empty batch.
+    """
+    import urllib.parse
+    yahoo_url = (
+        f"https://feeds.finance.yahoo.com/rss/2.0/headline?s={ticker}"
+        "&region=US&lang=en-US"
+    )
+    encoded = urllib.parse.quote(f"{ticker} stock")
+    google_url = (
+        f"https://news.google.com/rss/search?q={encoded}&hl=en-US"
+        "&gl=US&ceid=US:en"
+    )
+    items: List[NewsItem] = []
+    try:
+        items.extend(fetch_news_items(yahoo_url, limit=4))
+    except Exception as exc:  # noqa: BLE001
+        logger.warning(
+            "news_classifier_yahoo_fetch_failed ticker=%s err=%s",
+            ticker, type(exc).__name__,
+        )
+    try:
+        items.extend(fetch_news_items(google_url, limit=4))
+    except Exception as exc:  # noqa: BLE001
+        logger.warning(
+            "news_classifier_google_fetch_failed ticker=%s err=%s",
+            ticker, type(exc).__name__,
+        )
+    return items
+
+
+def _maybe_classify_news(ticker: str) -> Optional[List["ClassificationResult"]]:
+    """[WORKFLOW-I.4.D 2026-09-14] Run the classifier on the
+    ticker's news if the ``ENABLE_NEWS_CLASSIFIER`` env flag is
+    on (and the classifier itself is not disabled).
+
+    Returns None when the flag is off -- this is the existing
+    caller's path (the verdict prompt renders the placeholder
+    text and consumes raw ``sentiment_text`` exactly as before).
+
+    Returns a list of ClassificationResult (possibly empty) when
+    the flag is on. The list is empty when:
+      * the classifier is disabled via ``DISABLE_CLASSIFIER=1``
+      * the feeds returned no items
+      * the classifier raised an exception (fail-closed)
+
+    Returns a non-empty list of bounded ClassificationResult when
+    classification succeeded for at least one headline.
+
+    Never raises; the verdict pipeline consumes raw
+    ``sentiment_text`` even when classification is broken.
+    """
+    if os.getenv("ENABLE_NEWS_CLASSIFIER", "0") != "1":
+        return None
+    if news_classifier.CLASSIFIER_DISABLED:
+        return []
+    try:
+        items = _fetch_news_items_for_ticker(ticker)
+        if not items:
+            return []
+        return news_classifier.classify_news_items(items)
+    except Exception as exc:  # noqa: BLE001
+        logger.warning(
+            "news_classifier_unexpected_failure ticker=%s err=%s",
+            ticker, type(exc).__name__,
+        )
+        return []
 
 
 def _render_classified_section(
