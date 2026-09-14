@@ -120,13 +120,20 @@ def test_summary_lists_per_branch_counts(tmp_path):
     """Each captured branch's count is shown in the SUMMARY."""
     day = tmp_path / "2026-09-10"
     day.mkdir()
-    # Two captures of CAS_ORDER_ENTRY, one of CAS_MATCHING.
+    # Two DISTINCT captures of CAS_ORDER_ENTRY (different
+    # observation_at so the fingerprints differ -- the dedup
+    # contract is that unique observations count, not files),
+    # one of CAS_MATCHING.
     (day / "a.json").write_text(
-        '{"schema_version": 2, "rows": [{"classifier_phase": "CAS_ORDER_ENTRY"}]}',
+        '{"schema_version": 2, '
+        '"observation_at_utc": "2026-09-10T09:51:00+00:00", '
+        '"rows": [{"classifier_phase": "CAS_ORDER_ENTRY"}]}',
         encoding="utf-8",
     )
     (day / "b.json").write_text(
-        '{"schema_version": 2, "rows": [{"classifier_phase": "CAS_ORDER_ENTRY"}]}',
+        '{"schema_version": 2, '
+        '"observation_at_utc": "2026-09-10T09:53:00+00:00", '
+        '"rows": [{"classifier_phase": "CAS_ORDER_ENTRY"}]}',
         encoding="utf-8",
     )
     (day / "c.json").write_text(

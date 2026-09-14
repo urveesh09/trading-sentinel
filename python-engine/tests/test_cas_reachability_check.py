@@ -197,6 +197,9 @@ def test_cli_json_shape_is_stable(tmp_path):
     _write_capture(tmp_path, "a.json", "CAS_ORDER_ENTRY")
     result = _run_cli("--captures-dir", str(tmp_path), "--json")
     payload = json.loads(result.stdout)
+    # [WORKFLOW-J.10.DEDUP 2026-09-14] The ``duplicates_by_branch``
+    # field is additive; the contract is "the 8 documented keys are
+    # present, no extras, no missing".
     expected_keys = {
         "verdict",
         "captured_phases",
@@ -205,6 +208,7 @@ def test_cli_json_shape_is_stable(tmp_path):
         "captures_scanned",
         "captures_skipped",
         "captures_by_branch",
+        "duplicates_by_branch",
     }
     assert set(payload.keys()) == expected_keys, (
         f"JSON shape drift: extra={set(payload.keys()) - expected_keys}, "

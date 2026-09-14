@@ -40,6 +40,12 @@ from typing import Any
 
 from market_calendar import _VALID_SESSION_PHASES
 
+from cas_reachability_dedup import (
+    FINGERPRINT_HEX_LENGTH,
+    dedup_count,
+    fingerprint_of,
+)
+
 
 # CAS sub-window branches + DERIVATIVES_CAS_ALIGNED that need
 # real broker-behaviour evidence before any auction-aware
@@ -139,6 +145,25 @@ def cas_reachability_report(captures_dir: Path) -> dict[str, Any]:
     captures_by_branch: dict[str, list[str]] = {
         phase: [] for phase in CAS_BRANCHES_REQUIRING_EVIDENCE
     }
+    # [WORKFLOW-J.10.DEDUP 2026-09-14] Per-branch fingerprint
+    # tracking. A fingerprint is SHA-256[:16] of the capture
+    # bytes; the gate dedups within each branch so a duplicate
+    # capture (operator retry, accidental copy) does not silently
+    # inflate the branch's count toward the REACHABLE threshold.
+    # The dedup is per-branch: the same fingerprint can back
+    # TWO branches only when the capture genuinely exercises
+    # both (a multi-row capture); the gate's row[0] classifier
+    # phase determines the canonical phase, so a fingerprint
+    # will never legitimately appear under two distinct branches.
+    fingerprints_by_branch: dict[str, list[str]] = {
+        phase: [] for phase in CAS_BRANCHES_REQUIRING_EVIDENCE
+    }
+    # ``fingerprints_by_branch`` records EVERY fingerprint seen
+    # under the branch (including duplicates); ``dedup_count``
+    # of this list yields the per-branch duplicate count.
+    # We only count the first occurrence toward ``captures[phase]``
+    # (the REACHABLE threshold); subsequent occurrences are
+    # surfaced via ``duplicates_by_branch[phase]`` for audit.
     captures_scanned = 0
     captures_skipped = 0
 
@@ -153,6 +178,9 @@ def cas_reachability_report(captures_dir: Path) -> dict[str, Any]:
             "captures_scanned": 0,
             "captures_skipped": 0,
             "captures_by_branch": captures_by_branch,
+            "duplicates_by_branch": {
+                phase: 0 for phase in CAS_BRANCHES_REQUIRING_EVIDENCE
+            },
         }
 
     for capture_path in sorted(captures_root.rglob("*.json")):
@@ -162,6 +190,43 @@ def cas_reachability_report(captures_dir: Path) -> dict[str, Any]:
             captures_skipped += 1
             continue
         if phase in captures:
+            # [WORKFLOW-J.10.DEDUP 2026-09-14] Dedup by fingerprint.
+            # Two captures with the same fingerprint under the same
+            # branch are the same observation -- the operator
+            # retried the probe without changing inputs, or the file
+            # was accidentally copied. We count the FIRST occurrence
+            # toward the branch's coverage; subsequent occurrences
+            # increment ``duplicates_by_branch[phase]`` so the SUMMARY
+            # surfaces the redundancy but the gate's verdict stays
+            # count-driven on UNIQUE observations.
+            fp = fingerprint_of(capture_path)
+            if fp is None:
+                # Unreadable: treat as skipped (defensive -- the
+                # file already passed the schema check above so this
+                # path is rare; the gate counts it as "we couldn't
+                # verify it's a duplicate").
+                captures_skipped += 1
+                continue
+            # ``fingerprints_by_branch`` records EVERY fingerprint
+            # seen, including duplicates -- that's what makes
+            # ``dedup_count`` work at the end of the loop. We only
+            # increment ``captures[phase]`` for the first occurrence.
+            fp_already_seen = fp in fingerprints_by_branch[phase]
+            fingerprints_by_branch[phase].append(fp)
+            if fp_already_seen:
+                # Still record the path in captures_by_branch so the
+                # catalog surfaces the redundant capture; operators
+                # can see "RELIANCE_15_17.json appears twice" and
+                # investigate. Path is the FIRST observed order
+                # (sorted) so the catalog is deterministic.
+                try:
+                    rel = capture_path.relative_to(captures_root)
+                except ValueError:
+                    rel = capture_path
+                rel_str = str(rel)
+                if rel_str not in captures_by_branch[phase]:
+                    captures_by_branch[phase].append(rel_str)
+                continue
             captures[phase] += 1
             # Relative path so the SUMMARY is portable; falls
             # back to the absolute path when a non-captures_root
@@ -172,6 +237,10 @@ def cas_reachability_report(captures_dir: Path) -> dict[str, Any]:
                 rel = capture_path
             captures_by_branch[phase].append(str(rel))
 
+    duplicates_by_branch = {
+        phase: dedup_count(fingerprints_by_branch[phase])
+        for phase in CAS_BRANCHES_REQUIRING_EVIDENCE
+    }
     missing = [phase for phase, count in captures.items() if count == 0]
     coverage_pct = round(
         100.0 * (len(CAS_BRANCHES_REQUIRING_EVIDENCE) - len(missing))
@@ -188,6 +257,7 @@ def cas_reachability_report(captures_dir: Path) -> dict[str, Any]:
         "captures_scanned": captures_scanned,
         "captures_skipped": captures_skipped,
         "captures_by_branch": captures_by_branch,
+        "duplicates_by_branch": duplicates_by_branch,
     }
 
 
@@ -219,6 +289,16 @@ def format_report(report: dict[str, Any]) -> str:
             lines.append(f"    [{phase}]")
             for p in paths:
                 lines.append(f"      - {p}")
+    # [WORKFLOW-J.10.DEDUP 2026-09-14] Per-branch duplicates
+    # in the human-readable report. The duplicates are
+    # informational (verdict is driven by UNIQUE captures);
+    # the operator sees them so they can prune if they want.
+    duplicates_by_branch = report.get("duplicates_by_branch", {})
+    if duplicates_by_branch and any(duplicates_by_branch.values()):
+        lines.append("  duplicates (per-branch, by SHA-256[:16] fingerprint):")
+        for phase, dup_count in duplicates_by_branch.items():
+            if dup_count > 0:
+                lines.append(f"    [{phase}] {dup_count} duplicate(s)")
     if report["missing_phases"]:
         lines.append("  missing branches (need at least 1 capture each):")
         for phase in report["missing_phases"]:
@@ -275,7 +355,18 @@ as malformed / non-bounded).
 | Branch | Captures |
 |---|---|
 {branch_rows}
-{catalog_section}{missing_section}## How to add captures
+{catalog_section}{missing_section}## Duplicate captures
+
+{duplicates_section}
+
+Captures whose SHA-256[:{fingerprint_hex_length}] fingerprint
+appears more than once under the same branch are counted ONCE
+toward coverage and surfaced here so operators can prune the
+redundancy. The gate's verdict is driven by **unique** observations
+-- an accidental ``cp RELIANCE_15_17.json RELIANCE_15_17.bak.json``
+will not flip the gate to REACHABLE.
+
+## How to add captures
 
 The J.10 gate requires at least one capture from each of the
 6 bounded branches. Each branch has a fixed IST window; the
@@ -347,6 +438,35 @@ def _format_missing_section(missing_phases: list[str]) -> str:
         lines.append(f"- [ ] {phase}")
     lines.append("")
     return "\n".join(lines) + "\n"
+
+
+def _format_duplicates_section(duplicates_by_branch: dict[str, int]) -> str:
+    """[WORKFLOW-J.10.DEDUP 2026-09-14] Render the
+    duplicate-captures section. Returns a single line when every
+    branch has zero duplicates (the common case); returns a
+    per-branch table otherwise.
+
+    The section is purely informational -- it does not influence
+    the gate's verdict. The verdict remains count-driven on
+    UNIQUE observations; duplicates are surfaced so the operator
+    can prune them if they wish.
+    """
+    total = sum(duplicates_by_branch.values())
+    if total == 0:
+        return "_No duplicate captures detected._"
+    lines = [
+        "The following branches contain duplicate captures "
+        "(same fingerprint, multiple files). The gate counts "
+        "each branch's UNIQUE captures toward the REACHABLE "
+        "threshold; duplicates here are for your audit only.",
+        "",
+        "| Branch | Duplicates |",
+        "|---|---|",
+    ]
+    for phase, dup_count in duplicates_by_branch.items():
+        if dup_count > 0:
+            lines.append(f"| {phase} | {dup_count} |")
+    return "\n".join(lines)
 
 
 def _format_catalog_section(captures_by_branch: dict[str, list[str]]) -> str:
@@ -425,6 +545,14 @@ def update_summary(
     # Build the missing-branches section.
     missing_section = _format_missing_section(report["missing_phases"])
 
+    # [WORKFLOW-J.10.DEDUP 2026-09-14] Build the duplicates
+    # section from the new ``duplicates_by_branch`` field.
+    duplicates_by_branch = report.get(
+        "duplicates_by_branch",
+        {phase: 0 for phase in CAS_BRANCHES_REQUIRING_EVIDENCE},
+    )
+    duplicates_section = _format_duplicates_section(duplicates_by_branch)
+
     # Compose the SUMMARY body. Use the gate's verdict directly;
     # never coerce it. ``captures_dir`` defaults to the
     # canonical J.3 path.
@@ -442,5 +570,7 @@ def update_summary(
         branch_rows=branch_rows,
         catalog_section=catalog_section,
         missing_section=missing_section,
+        duplicates_section=duplicates_section,
+        fingerprint_hex_length=FINGERPRINT_HEX_LENGTH,
     )
     summary_path.write_text(body, encoding="utf-8")
