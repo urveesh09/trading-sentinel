@@ -210,3 +210,73 @@ def test_cli_json_shape_is_stable(tmp_path):
         f"JSON shape drift: extra={set(payload.keys()) - expected_keys}, "
         f"missing={expected_keys - set(payload.keys())}"
     )
+
+
+def test_cli_summary_documents_per_branch_ist_windows(tmp_path):
+    """The SUMMARY written by --update-summary lists the IST
+    window for every required branch. Operators need this
+    cheat-sheet to know which ``--observation-at`` value to
+    pass to ``tools/j2_cas_probe.py`` for each branch.
+
+    The CLI is the public surface for SUMMARY generation, so
+    this test runs the CLI subprocess rather than calling
+    ``update_summary`` directly.
+    """
+    (tmp_path / "2026-09-10").mkdir(parents=True)
+    summary = tmp_path / "SUMMARY.md"
+    result = _run_cli(
+        "--captures-dir", str(tmp_path),
+        "--update-summary", "--summary-path", str(summary),
+    )
+    assert result.returncode == 1  # UNREACHABLE
+    assert summary.exists()
+    text = summary.read_text(encoding="utf-8")
+    # Every required branch is documented with its IST window.
+    assert "CAS_REFERENCE_PRICE_WINDOW | 15:15:00 .. 15:19:59" in text
+    assert "CAS_ORDER_ENTRY | 15:20:00 .. 15:24:59" in text
+    assert "CAS_LIMIT_ENTRY_ONLY | 15:25:00 .. 15:29:59" in text
+    assert "CAS_MATCHING | 15:30:00 .. 15:34:59" in text
+    assert "CAS_POST (cash) | 15:35:00 .. 15:59:59" in text
+    assert "DERIVATIVES_CAS_ALIGNED | 15:30:00 .. 15:39:59" in text
+
+
+def test_cli_summary_uses_iso_8601_in_probe_example(tmp_path):
+    """The probe command in the SUMMARY uses ISO 8601 timestamps
+    (with the timezone offset or naive-IST default), NOT the
+    legacy ``15:22:00 IST`` syntax that the probe CLI doesn't
+    accept. Pinning this prevents the example from regressing.
+    """
+    (tmp_path / "2026-09-10").mkdir(parents=True)
+    summary = tmp_path / "SUMMARY.md"
+    result = _run_cli(
+        "--captures-dir", str(tmp_path),
+        "--update-summary", "--summary-path", str(summary),
+    )
+    assert result.returncode == 1
+    text = summary.read_text(encoding="utf-8")
+    # The legacy broken syntax must NOT appear.
+    assert "15:22:00 IST" not in text
+    # The ISO 8601 examples DO appear.
+    assert "2026-09-14T15:17:00" in text
+    assert "2026-09-14T15:22:00" in text
+
+
+def test_cli_summary_cross_references_catalog(tmp_path):
+    """The SUMMARY cross-references the Captures catalog section
+    from the 'How to add captures' section so operators don't
+    need to re-run the CLI to confirm a passing review.
+    """
+    _write_capture(tmp_path, "x.json", "CAS_REFERENCE_PRICE_WINDOW")
+    summary = tmp_path / "SUMMARY.md"
+    result = _run_cli(
+        "--captures-dir", str(tmp_path),
+        "--update-summary", "--summary-path", str(summary),
+    )
+    assert result.returncode == 1
+    text = summary.read_text(encoding="utf-8")
+    # Catalog cross-reference in runbook section.
+    runbook_idx = text.index("## How to add captures")
+    assert '"Captures catalog"' in text[runbook_idx:]
+    # Catalog is rendered above the runbook.
+    catalog_idx = text.index("## Captures catalog")
+    assert catalog_idx < runbook_idx
