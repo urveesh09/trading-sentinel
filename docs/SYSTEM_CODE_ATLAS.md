@@ -120,7 +120,7 @@ Engine dependencies: `capital_policy`, `config`
 
 [WORKFLOW-J.10 2026-09-13] CAS-branch reachability gate. Plan §14 says ``auction-imbalance research is excluded`` and ``any auction-based strategy is separate research with auction execution semantics, not an extension of a continuous-market fill model``. J.10 ships the **gate** that enforces this boundary -- not the strategy itself. The gate answers: "have the CAS sub-window branches of ``classify_session_phase`` been exercised by real production call sites?" It walks ``docs/j2_captures/`` (the J.3 receipt directory) and emits a structured verdict: { "verdict": "REACHABLE" | "UNREACHABLE", "captured_phases": {"PHASE": count, ...}, "missing_phases": ["PHASE", ...], "coverage_pct": float, # %
 
-Top-level declarations: `_safe_phase_from_capture` (line 75), `cas_reachability_report` (line 113), `format_report` (line 177), `write_report` (line 199), `_format_missing_section` (line 276), `update_summary` (line 294)
+Top-level declarations: `_safe_phase_from_capture` (line 75), `cas_reachability_report` (line 113), `format_report` (line 194), `write_report` (line 229), `_format_missing_section` (line 307), `_format_catalog_section` (line 325), `update_summary` (line 353)
 
 Engine dependencies: `market_calendar`
 
