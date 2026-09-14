@@ -742,24 +742,69 @@ def _shadow_implementation_identity() -> str:
     return hashlib.sha256(Path(__file__).read_bytes()).hexdigest()
 
 
-def stamp_session_phase(*, observation_at: datetime | None) -> str:
+def stamp_session_phase(
+    *,
+    observation_at: datetime | None,
+    symbol: str | None = None,
+    is_derivative: bool = False,
+    cas_eligible: bool | None = None,
+) -> str:
     """Return the market session phase for a research observation.
 
-    This is the *single* place G classifies a bar timestamp into a session
-    phase, and the *single* place J will replace when the official NSE/BSE/
-    SEBI session inventory lands. Plan §14 (workstream J, "CAS and
-    market-session correctness") is upstream of session-aware G work, so
-    G defers the real classification and instead records the typed
-    placeholder ``_SESSION_PHASE_UNKNOWN``. New callers must pass an
-    ``observation_at`` even when the placeholder will be returned, so the
-    signature is ready for the eventual implementation without forcing a
-    breaking change at every call site.
+    [WORKFLOW-G 2026-09-13 → WORKFLOW-J.4 2026-09-13] Originally a
+    typed placeholder returning ``_SESSION_PHASE_UNKNOWN`` for every
+    input (the G forward-compat seam pre-dating J). J.4 wires the
+    function to ``market_calendar.classify_session_phase``.
 
-    The function is **pure** (no I/O, no clock, no DB) and **total** (returns
-    a known string for any input, including ``None``). Tests live at
-    ``tests/test_session_phase_placeholder.py``.
+    Contract:
+
+      1. **None observation** → ``"UNKNOWN"``. Preserved exactly
+         (the ``_ensure_shadow_run`` call site has no timestamp
+         in scope; downstream manifests and the integration test
+         at ``test_run_workflow_manifest_records_session_phase_unknown``
+         pin this branch). Keyword-only kwargs supplied alongside
+         ``None`` are silently ignored; the conservative pre-J.4
+         contract takes precedence.
+
+      2. **Real datetime** → resolves to a phase from
+         ``market_calendar._VALID_SESSION_PHASES``. The optional
+         kwargs mirror ``classify_session_phase``:
+
+         - ``symbol``: same string the engine already carries
+           (passed-through to the classifier).
+         - ``is_derivative``: ``False`` for cash, ``True`` for
+           futures/options.
+         - ``cas_eligible``: ``None`` (default) → the classifier
+           consults ``is_cas_eligible(symbol)`` itself; ``True``
+           or ``False`` forces the branch and bypasses the
+           settings lookup. This is the J.3.1 boundary wired
+           through the G seam.
+
+      3. **Pure** (no I/O, no clock) and **total** (returns a known
+         string from the bounded phase set for any input).
+         ``datetime.now`` and friends would violate this.
+
+      4. **Lazy import** of ``market_calendar`` inside the function
+         so ``proactive_intelligence`` stays policy-agnostic at
+         module-import time. The prior arc explicitly avoided
+         coupling to session-aware modules at import; we honour
+         that. The import runs once per process.
+
+    Sign-off: see ``tests/test_j4_stamp_session_phase.py``.
     """
-    return _SESSION_PHASE_UNKNOWN
+    if observation_at is None:
+        # Pre-J.4 contract: None → "UNKNOWN" preserved exactly.
+        return _SESSION_PHASE_UNKNOWN
+    # Lazy import keeps proactive_intelligence policy-agnostic at
+    # module-import time, matching the G-side seam's design goal
+    # of not coupling to session-aware modules at import.
+    from market_calendar import classify_session_phase
+    return classify_session_phase(
+        observation_at,
+        symbol=symbol,
+        is_derivative=is_derivative,
+        cas_eligible=cas_eligible,
+    )
 
 
 def _configured_shadow_run_id(run_label: str) -> str:

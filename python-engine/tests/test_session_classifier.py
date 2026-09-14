@@ -349,14 +349,50 @@ class TestProductionBehaviourPreserved:
     that).
     """
 
-    def test_stamp_session_phase_still_returns_unknown(self) -> None:
+    def test_stamp_session_phase_preserves_unknown_for_none(self) -> None:
+        """J.4 preserves the pre-J.4 contract for ``observation_at=None``:
+        the helper still returns ``"UNKNOWN"`` so the
+        ``_ensure_shadow_run`` manifest site (which has no
+        timestamp in scope) and the integration test
+        ``test_run_workflow_manifest_records_session_phase_unknown``
+        both keep their pinned value.
+        """
         from proactive_intelligence import stamp_session_phase
         from datetime import datetime
-        # The existing call site shape (single keyword arg,
-        # observation_at).
+        # Three observations of None: each pins UNKNOWN.
         assert stamp_session_phase(observation_at=None) == "UNKNOWN"
-        assert stamp_session_phase(observation_at=datetime(2026, 9, 14, 10, 0)) == "UNKNOWN"
-        assert stamp_session_phase(observation_at=datetime(2026, 9, 14, 10, 0, tzinfo=pytz.UTC)) == "UNKNOWN"
+        # Symbol / cas_eligible kwargs are accepted but ignored
+        # when observation_at is None -- the None branch takes
+        # precedence so the pre-J.4 contract is preserved.
+        assert stamp_session_phase(
+            observation_at=None, symbol="RELIANCE",
+        ) == "UNKNOWN"
+        assert stamp_session_phase(
+            observation_at=None, symbol="RELIANCE",
+            is_derivative=True, cas_eligible=True,
+        ) == "UNKNOWN"
+
+    def test_stamp_session_phase_real_datetime_returns_real_phase(self) -> None:
+        """J.4 wires the helper to ``classify_session_phase``.
+        A real datetime now returns a bounded phase from the
+        documented enum (no longer ``"UNKNOWN"``). We pin the
+        CONTINUOUS_TRADING phase for an IST midday timestamp to
+        prove the wire is active.
+        """
+        from proactive_intelligence import stamp_session_phase
+        from datetime import datetime
+        import pytz
+
+        ist = pytz.timezone("Asia/Kolkata")
+        # 2026-09-14 is a Monday trading day (per the test
+        # classifier fixtures). 12:00 IST = mid-session.
+        noon_ist = ist.localize(datetime(2026, 9, 14, 12, 0))
+        noon_utc = noon_ist.astimezone(pytz.UTC)
+        phase = stamp_session_phase(observation_at=noon_utc)
+        # Pre-market or post-market would not produce
+        # CONTINUOUS_TRADING; this IST moment pins the band.
+        assert phase == "CONTINUOUS_TRADING"
+        assert phase != "UNKNOWN"
 
     def test_existing_is_market_open_unchanged(self) -> None:
         """The existing ``is_market_open`` helper is untouched;
