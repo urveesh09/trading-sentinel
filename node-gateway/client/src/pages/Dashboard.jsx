@@ -397,6 +397,11 @@ export default function Dashboard({ healthData, navigateToPositions, navigateToB
   const cbHalted = healthData?.circuit_breaker_halted || false;
   const cbReasons = healthData?.circuit_breaker_reasons || [];
   const isMarketOpen = healthData?.market_open || false;
+  // [WORKFLOW-J.8 2026-09-13] Bounded session phase for the
+  // SignalCard disabled-state gate. Mirrors the J.7 server
+  // gate so the operator sees the same allow/block verdict
+  // the server will enforce.
+  const sessionPhase = healthData?.session_phase || null;
   const activePositions = Array.isArray(positions) ? positions.filter(isActivePosition).slice(0, 5) : [];
 
   return (
@@ -429,6 +434,17 @@ export default function Dashboard({ healthData, navigateToPositions, navigateToB
 
         <ActivityFunnel {...proactive} />
 
+        {/* [WORKFLOW-J.8 2026-09-13] Session-phase card surfaces
+            the bounded phase (10 documented values) instead of
+            the binary market_open indicator. The card shows the
+            phase label, broker-order verdict, and a short
+            description; the SignalCard below also disables the
+            action button when the phase blocks execution. */}
+        <section aria-labelledby="session-phase-heading">
+          <h2 id="session-phase-heading" className="mb-3 text-xl font-bold text-white">Session Phase</h2>
+          <SessionPhaseCard phase={sessionPhase} />
+        </section>
+
         <div className="grid gap-6 2xl:grid-cols-2">
           <PartnerAdvisorySetup {...partnerAdvisorySetup} />
           <PartnerAdvisoryCollection {...partnerAdvisoryResearch} />
@@ -446,7 +462,7 @@ export default function Dashboard({ healthData, navigateToPositions, navigateToB
           <div className="space-y-4 xl:col-span-1">
             <h2 className="border-b border-gray-800 pb-2 text-xl font-bold text-white">Active Signals</h2>
             {!signals?.length ? <div className="rounded border border-gray-800 bg-gray-900 p-4 text-sm italic text-gray-500">No pending signals.</div>
-              : signals.map((signal) => <SignalCard key={signal.signal_id} signal={signal} isMarketOpen={isMarketOpen} cbHalted={cbHalted} onActionComplete={refreshSignals} />)}
+              : signals.map((signal) => <SignalCard key={signal.signal_id} signal={signal} isMarketOpen={isMarketOpen} sessionPhase={sessionPhase} cbHalted={cbHalted} onActionComplete={refreshSignals} />)}
           </div>
           <div className="xl:col-span-2">
             <div className="mb-4 flex items-end justify-between border-b border-gray-800 pb-2"><h2 className="text-xl font-bold text-white">Open Positions</h2><button onClick={navigateToPositions} className="text-sm text-blue-400 hover:text-blue-300">View All -&gt;</button></div>

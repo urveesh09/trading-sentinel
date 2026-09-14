@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { postClient } from '../api/client';
+import { isExecutionBlockedByPhase } from '../utils/sessionPhase';
 
-export default function SignalCard({ signal, isMarketOpen, cbHalted, onActionComplete }) {
+export default function SignalCard({ signal, isMarketOpen, sessionPhase, cbHalted, onActionComplete }) {
   const [isProcessing, setIsProcessing] = useState(false);
   const [errorMsg, setErrorMsg] = useState(null);
 
@@ -29,7 +30,23 @@ export default function SignalCard({ signal, isMarketOpen, cbHalted, onActionCom
     }
   };
 
-  const actionDisabled = !isMarketOpen || cbHalted || isProcessing || ageMinutes > 5;
+  // [WORKFLOW-J.8 2026-09-13] The action-disabled gate now
+  // considers the bounded session phase, not just the
+  // binary ``isMarketOpen``. The J.7 wiring gates execution
+  // server-side; the dashboard mirrors the same policy so
+  // the operator's view of the EXEC button matches what the
+  // server will accept. ``isExecutionBlockedByPhase``
+  // mirrors the Node ``isExecutionAllowed`` contract
+  // (PRE_MARKET blocked by default, all CAS_* blocked,
+  // CLOSED / UNKNOWN blocked, CONTINUOUS_TRADING /
+  // DERIVATIVES_CAS_ALIGNED allowed).
+  const phaseBlocksExecution = isExecutionBlockedByPhase(sessionPhase);
+  const actionDisabled =
+    !isMarketOpen ||
+    phaseBlocksExecution ||
+    cbHalted ||
+    isProcessing ||
+    ageMinutes > 5;
 
   return (
     <div className="bg-gray-800 border border-gray-700 rounded-lg p-4 shadow-sm relative">
