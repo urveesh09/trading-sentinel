@@ -16,7 +16,7 @@ Related tests: `agent/tests/test_advisory.py`
 
 No module docstring; use the declarations and callers below.
 
-Top-level declarations: `_attach_provenance` (line 131), `register_approved_snapshot` (line 205), `_today_str` (line 286), `_load_dedup_state` (line 291), `_save_dedup_state` (line 311), `mark_processed` (line 326), `clear_memory` (line 332), `touch_heartbeat` (line 349), `_is_market_hours` (line 376), `read_scheduler_tick_age` (line 387), `check_engine_liveness` (line 399), `SignalOutput` (line 437), `NewsItem` (line 453), `fetch_signals` (line 468), `fetch_rss_feed` (line 495), `fetch_news_items` (line 512), `_parse_rss_pubdate` (line 575), `_hostname_from_url` (line 598), `_age_label` (line 608), `scrape_sentiment` (line 643), `_extract_json_object` (line 685), `analyze_with_minimax` (line 737), `_optional_review_key` (line 993), `_get_optional_ai_queue` (line 1007), `optional_ai_status` (line 1027), `publish_optional_ai_status` (line 1067), `queue_optional_ai_review` (line 1087), `send_telegram_alert` (line 1113), `system_health_check` (line 1162), `run_momentum_pipeline` (line 1191), `send_conviction_veto_notice` (line 1288), `send_momentum_telegram_alert` (line 1306), `run_pipeline` (line 1418), `main` (line 1470)
+Top-level declarations: `_attach_provenance` (line 132), `register_approved_snapshot` (line 206), `_today_str` (line 287), `_load_dedup_state` (line 292), `_save_dedup_state` (line 312), `mark_processed` (line 327), `clear_memory` (line 333), `touch_heartbeat` (line 350), `_is_market_hours` (line 377), `read_scheduler_tick_age` (line 388), `check_engine_liveness` (line 400), `SignalOutput` (line 438), `NewsItem` (line 454), `fetch_signals` (line 469), `fetch_rss_feed` (line 496), `fetch_news_items` (line 513), `_parse_rss_pubdate` (line 576), `_hostname_from_url` (line 599), `_age_label` (line 609), `scrape_sentiment` (line 644), `_extract_json_object` (line 686), `_fetch_news_items_for_ticker` (line 740), `_maybe_classify_news` (line 777), `_render_classified_section` (line 815), `analyze_with_minimax` (line 859), `_optional_review_key` (line 1140), `_get_optional_ai_queue` (line 1154), `optional_ai_status` (line 1174), `publish_optional_ai_status` (line 1214), `queue_optional_ai_review` (line 1234), `send_telegram_alert` (line 1260), `system_health_check` (line 1309), `run_momentum_pipeline` (line 1338), `send_conviction_veto_notice` (line 1435), `send_momentum_telegram_alert` (line 1453), `run_pipeline` (line 1565), `main` (line 1617)
 
 Related tests: `agent/tests/test_agent_pipeline.py`, `agent/tests/test_agent_schedule.py`, `agent/tests/test_agent_watchdog.py`
 
@@ -27,6 +27,14 @@ Bounded, non-blocking optional-AI review worker. The queue is intentionally tran
 Top-level declarations: `ReviewSubmission` (line 23), `_Task` (line 31), `AsyncReviewQueue` (line 39)
 
 Related tests: `agent/tests/test_async_reviews.py`
+
+## `agent/news_classifier.py`
+
+[WORKFLOW-I.4.D 2026-09-14] Source-event classification. This module classifies one or more ``NewsItem`` (from the I.2 news provenance work) against a fixed taxonomy of 8 categories. The classification is **informational only** -- the verdict pipeline (``analyze_with_minimax``) is not modified; classification is surfaced as a bounded annotation that the operator can inspect. Per plan §13, the agent must "classify sourced events" before the existing pipeline summarises them. Today the prompt to ``analyze_with_minimax`` includes raw news text and asks the model to "evaluate whether the news/catalyst justifies a sustained move" -- the model has to do its own classification implicitly. This modu
+
+Top-level declarations: `NewsCategory` (line 115), `ClassificationResult` (line 156), `_title_hash` (line 205), `_extract_json_object` (line 229), `_rationale` (line 285), `_coerce_category` (line 299), `_coerce_confidence` (line 311), `_build_classification` (line 336), `_classify_single` (line 367), `classify_news_items` (line 486), `to_dict` (line 525)
+
+Related tests: `agent/tests/test_news_classifier.py`, `agent/tests/test_news_classifier_helpers.py`, `agent/tests/test_news_classifier_integration.py`
 
 ## `agent/optional_ai_metrics.py`
 
@@ -120,7 +128,7 @@ Engine dependencies: `capital_policy`, `config`
 
 [WORKFLOW-J.10 2026-09-13] CAS-branch reachability gate. Plan §14 says ``auction-imbalance research is excluded`` and ``any auction-based strategy is separate research with auction execution semantics, not an extension of a continuous-market fill model``. J.10 ships the **gate** that enforces this boundary -- not the strategy itself. The gate answers: "have the CAS sub-window branches of ``classify_session_phase`` been exercised by real production call sites?" It walks ``docs/j2_captures/`` (the J.3 receipt directory) and emits a structured verdict: { "verdict": "REACHABLE" | "UNREACHABLE", "captured_phases": {"PHASE": count, ...}, "missing_phases": ["PHASE", ...], "coverage_pct": float, # %
 
-Top-level declarations: `_safe_phase_from_capture` (line 75), `cas_reachability_report` (line 113), `format_report` (line 194), `write_report` (line 229), `_format_missing_section` (line 307), `_format_catalog_section` (line 325), `update_summary` (line 353)
+Top-level declarations: `_safe_phase_from_capture` (line 75), `cas_reachability_report` (line 113), `format_report` (line 194), `write_report` (line 229), `_format_missing_section` (line 334), `_format_catalog_section` (line 352), `update_summary` (line 380)
 
 Engine dependencies: `market_calendar`
 
