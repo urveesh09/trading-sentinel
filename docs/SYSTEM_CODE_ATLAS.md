@@ -1270,7 +1270,7 @@ Declared tables: `position_pnl_outbox`, `positions`
 
 Immutable, offline-only predeclared G/C strategy comparison evidence. This module deliberately has no live imports or side effects. A favourable report is research evidence only, never an authorization or promotion input.
 
-Top-level declarations: `_json` (line 34), `_hash` (line 41), `_clock` (line 45), `_date_sessions` (line 58), `_finite` (line 70), `_alternatives` (line 82), `_canonical_manifest` (line 97), `_schema` (line 144), `freeze_comparison_protocol` (line 152), `_coverage` (line 173), `_proposal_session` (line 190), `_summarise` (line 194), `evaluate_comparison_protocol` (line 216)
+Top-level declarations: `_json` (line 35), `_hash` (line 42), `_clock` (line 46), `_date_sessions` (line 59), `_finite` (line 71), `_alternatives` (line 83), `_canonical_manifest` (line 98), `_schema` (line 149), `freeze_comparison_protocol` (line 157), `_coverage` (line 185), `_proposal_session` (line 202), `_summarise` (line 206), `evaluate_comparison_protocol` (line 238)
 
 Engine dependencies: `proactive_intelligence`
 

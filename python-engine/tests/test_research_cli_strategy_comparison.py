@@ -4,7 +4,15 @@ from types import SimpleNamespace
 
 import pytest
 
-from research_cli import main, _write_comparison_output
+from research_cli import main as _main, _write_comparison_output
+
+
+def main(args):
+    # The CLI owns asyncio.run as a standalone process. Keep its loop policy
+    # away from pytest's main-thread async-test lifecycle in contract checks.
+    from concurrent.futures import ThreadPoolExecutor
+    with ThreadPoolExecutor(max_workers=1) as executor:
+        return executor.submit(_main, args).result()
 
 
 def test_freeze_cli_explicit_inputs_and_no_backdating(tmp_path, monkeypatch, capsys):

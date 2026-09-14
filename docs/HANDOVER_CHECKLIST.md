@@ -1,9 +1,17 @@
 # Handover receipt and operator checklist
 
+## September14 independently reviewed correction (Dev only)
+
+G/C protocol source plus real-simulator/temp-SQLite acceptance are corrected; exact late freeze/output retries preserve immutable history, full manifest/cost/source identity is retained, all declared sessions and outcome states appear, seeded cluster CI matches the opportunity-weighted estimand, actual-price turnover replaces quantity-as-turnover, and every profile has explicit baseline/stress research gates. CLI tests isolate standalone `asyncio.run` in a worker thread; no runtime suppression or scheduler changes.
+
+Command from Dev `python-engine`: `.\winvenv\Scripts\python.exe -m pytest tests/test_comparison_protocol_acceptance.py tests/test_research_cli_strategy_comparison.py tests/test_research_cli_qualification.py tests/test_proactive_intelligence.py tests/test_proactive_execution_research.py tests/test_proactive_exit_research.py tests/test_proactive_portfolio_research.py tests/test_trailing_stop_profile.py tests/test_promotion_bridge.py tests/test_range_reversion_profile.py -q -W error`:156 passed/no warnings6.84s, exit0. Full `-m pytest tests -q --junitxml=C:/Users/Urveesh/AppData/Local/Temp/sentinel-g-protocol-reviewed-20260914.xml`: receipt3304 cases/zero failures/errors/four skips173.475s; process teardown still active at inspection, exit/warning summary unconfirmed. Do not call this a clean full run yet.
+
+Source identity is current reviewed Dev content on parent7474199; commit pending. Only new offline tables/triggers, no operational ALTER/history rewrite, no flags/order/transport authority. Preserve existing protocols; incompatible source identities require a newly frozen ID, never rewriting an old manifest. No push/deploy. F/J claimed closure is superseded by [independent findings](2026-09-14-external-work-independent-audit.md); I, real coverage/heldout results, risk preferences, account reconciliation and D release/session acceptance remain pending. Two external golden generated-at edits are excluded from this correction.
+
 ## Read order
 
 1. [SYSTEM_GUIDE.md](SYSTEM_GUIDE.md): feature architecture, authority boundaries, before/after improvements and limitations.
-2. [SYSTEM_CODE_ATLAS.md](SYSTEM_CODE_ATLAS.md): 156 top-level engine/agent Python modules plus gateway/dashboard source navigation, declarations, dependencies and tables.
+2. [SYSTEM_CODE_ATLAS.md](SYSTEM_CODE_ATLAS.md): 169 top-level engine/agent Python modules plus gateway/dashboard source navigation, declarations, dependencies and tables (September14 regeneration).
 3. [NEXT_AGENT_PLAN.md](NEXT_AGENT_PLAN.md): implementation workstreams, acceptance checks, expected effects and documentation ritual.
 4. [September 12 replay progress](2026-09-12-full-policy-replay-progress.md) and [Production inventory/CAS findings](2026-09-12-production-evidence-and-cas-findings.md).
 

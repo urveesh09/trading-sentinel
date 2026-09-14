@@ -2,6 +2,10 @@
 
 ## 1. Read this first
 
+September14 independent correction: the offline predeclared G/C comparison now freezes full cost metadata and code identity before holdout, supports identical late retries without backdating new protocols, preserves every session/state, reports actual turnover and opportunity-weighted session-cluster uncertainty, and applies baseline/stress gates to every declared profile. Missing declared coverage blocks support even when a lower minimum is met. Explicit CLI paths have no live DB default or backdating switch. Reports retain the complete frozen manifest and remain diagnostic research only: no winner selection, qualification, approval or order authority. See [protocol plan](2026-09-13-predeclared-strategy-comparison-plan.md). RANGE remains an unsupported confirmation alias; independent trials are not shared-book capacity proof.
+
+The [external-work audit](2026-09-14-external-work-independent-audit.md) supersedes F-series/J closure claims: actual F&O quantities, account evidence, capital defaults/failure handling, live CAS eligibility, square-off windows and holiday fallback need corrections. Passing synthetic tests are not acceptance of these contracts. Dev only; no push/deployment or operational data mutation.
+
 This is the canonical architecture and feature guide. It is paired with [the code atlas](SYSTEM_CODE_ATLAS.md), [the next-agent plan](NEXT_AGENT_PLAN.md), and [the handover checklist](HANDOVER_CHECKLIST.md). Snapshot date: September 12, 2026. It describes the Dev source, not an assertion that all features are enabled or deployed.
 
 The immediate handover is a bounded engineering deliverable. The broader objective—reliable, cost-aware trading income and valuable intraday partner advice—is not proven achieved. No documentation, test count, model score or green container demonstrates profitability.
