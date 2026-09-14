@@ -86,9 +86,7 @@ def test_all_six_branches_covered_returns_reachable(tmp_path):
         cap = day / f"RELIANCE_{branch}.json"
         cap.write_text(json.dumps({
             "schema_version": 2,
-            "classifier": {
-                "phase": branch,
-            },
+            "rows": [{"classifier_phase": branch}],
         }), encoding="utf-8")
     report = cas_reachability_report(captures_dir=tmp_path)
     assert report["verdict"] == "REACHABLE"
@@ -107,7 +105,7 @@ def test_partial_coverage_lists_missing_branches(tmp_path):
         cap = day / f"RELIANCE_{branch}.json"
         cap.write_text(json.dumps({
             "schema_version": 2,
-            "classifier": {"phase": branch},
+            "rows": [{"classifier_phase": branch}],
         }), encoding="utf-8")
     report = cas_reachability_report(captures_dir=tmp_path)
     assert report["verdict"] == "UNREACHABLE"
@@ -132,7 +130,7 @@ def test_extra_files_are_tolerated(tmp_path):
         cap = day / f"RELIANCE_{branch}.json"
         cap.write_text(json.dumps({
             "schema_version": 2,
-            "classifier": {"phase": branch},
+            "rows": [{"classifier_phase": branch}],
         }), encoding="utf-8")
     report = cas_reachability_report(captures_dir=tmp_path)
     assert report["verdict"] == "REACHABLE"
@@ -147,7 +145,7 @@ def test_corrupt_capture_is_skipped(tmp_path):
         cap = day / f"RELIANCE_{branch}.json"
         cap.write_text(json.dumps({
             "schema_version": 2,
-            "classifier": {"phase": branch},
+            "rows": [{"classifier_phase": branch}],
         }), encoding="utf-8")
     report = cas_reachability_report(captures_dir=tmp_path)
     # 6 valid captures -> REACHABLE; the broken one is skipped.
@@ -166,12 +164,12 @@ def test_capture_with_unknown_phase_is_ignored(tmp_path):
         cap = day / f"RELIANCE_{branch}.json"
         cap.write_text(json.dumps({
             "schema_version": 2,
-            "classifier": {"phase": branch},
+            "rows": [{"classifier_phase": branch}],
         }), encoding="utf-8")
     # Add a capture with a non-bounded phase -- ignored.
     (day / "FUTURE.json").write_text(json.dumps({
         "schema_version": 2,
-        "classifier": {"phase": "FUTURE_CAS_SUB_WINDOW"},
+        "rows": [{"classifier_phase": "FUTURE_CAS_SUB_WINDOW"}],
     }), encoding="utf-8")
     report = cas_reachability_report(captures_dir=tmp_path)
     assert report["verdict"] == "REACHABLE"

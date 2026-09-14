@@ -86,6 +86,15 @@ if str(_ENGINE_DIR) not in sys.path:
 
 import j2_cas_probe as _probe  # noqa: E402
 
+# [WORKFLOW-J.10.CLOSURE 2026-09-13] Auto-update the SUMMARY.md
+# surface when a capture review passes. Imports the J.10 gate
+# so a happy-path review flips the audit surface in lockstep
+# with the operator's per-capture work.
+from cas_reachability_gate import (  # noqa: E402
+    cas_reachability_report,
+    update_summary,
+)
+
 
 # ---- Result types ---------------------------------------------------
 
@@ -481,6 +490,47 @@ def main(argv: Iterable[str] | None = None) -> int:
     document_report["overall_passed"] = all_passed
 
     sys.stdout.write(json.dumps(document_report, indent=2, sort_keys=True) + "\n")
+
+    # [WORKFLOW-J.10.CLOSURE 2026-09-13] Auto-update SUMMARY.md
+    # when a capture review passes. This keeps the audit surface
+    # in lockstep with the operator's per-capture work -- they
+    # never need to remember to run ``--update-summary`` after
+    # a passing review; the SUMMARY auto-flips. The auto-update
+    # is suppressed if the review fails (the operator must fix
+    # the capture first; updating the SUMMARY on a failed
+    # review would propagate the broken state into the audit
+    # surface). The captures directory is resolved by walking
+    # up from the capture file to find the day directory's
+    # parent (``docs/j2_captures/``).
+    if all_passed:
+        try:
+            captures_dir = capture_path.parent
+            while captures_dir.name and captures_dir.parent:
+                if (captures_dir / "README.md").exists() or captures_dir.name == "j2_captures":
+                    break
+                captures_dir = captures_dir.parent
+            if captures_dir.name == "j2_captures":
+                # Resolve to absolute -- the gate's rglob walks
+                # from ``Path(captures_dir).resolve()``, and
+                # relative paths depend on the caller's cwd
+                # (which may not be the synthetic repo's root).
+                captures_dir = captures_dir.resolve()
+                summary_path = captures_dir / "SUMMARY.md"
+                gate_report = cas_reachability_report(captures_dir=captures_dir)
+                update_summary(
+                    gate_report,
+                    summary_path=summary_path,
+                    captures_dir=captures_dir,
+                )
+                sys.stderr.write(f"updated {summary_path}\n")
+        except Exception as exc:  # noqa: BLE001
+            # Auto-update is best-effort; the review itself has
+            # already produced its document_report. Surface the
+            # SUMMARY-update error to stderr but do not fail the
+            # review (the operator can re-run ``--update-summary``).
+            sys.stderr.write(
+                f"WARN: SUMMARY auto-update failed: {exc}\n"
+            )
 
     return 0 if all_passed else 1
 

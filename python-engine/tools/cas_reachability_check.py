@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""[WORKFLOW-J.10 2026-09-13] CAS-branch reachability check CLI.
+"""[WORKFLOW-J.10 / J.10.CLOSURE 2026-09-13] CAS-branch reachability check CLI.
 
 Operator-facing tool: walk ``docs/j2_captures/`` and emit
 the reachability verdict. Exit 0 if every CAS sub-window +
@@ -20,6 +20,11 @@ Usage:
     # Write the report next to the captures directory:
     python tools/cas_reachability_check.py --write docs/j2_captures/reachability.json
 
+    # Update the persistent operator-facing SUMMARY.md
+    # (the audit surface for the gate; default path is
+    # ``<repo>/docs/j2_captures/SUMMARY.md``):
+    python tools/cas_reachability_check.py --update-summary
+
 This CLI is the J.10 gate. Per plan §14, ``auction-imbalance
 research is excluded`` and ``any auction-based strategy is
 separate research with auction execution semantics, not an
@@ -37,6 +42,7 @@ from pathlib import Path
 from cas_reachability_gate import (
     cas_reachability_report,
     format_report,
+    update_summary,
     write_report,
 )
 
@@ -74,6 +80,21 @@ def main(argv: list[str] | None = None) -> int:
         default=None,
         help="Write the report as JSON to this path.",
     )
+    parser.add_argument(
+        "--update-summary",
+        action="store_true",
+        help="Update the persistent operator-facing SUMMARY.md "
+             "at docs/j2_captures/SUMMARY.md. Use after each "
+             "capture-review pass to keep the audit surface "
+             "in sync with the gate.",
+    )
+    parser.add_argument(
+        "--summary-path",
+        type=Path,
+        default=None,
+        help="Override the SUMMARY.md path (defaults to "
+             "<repo>/docs/j2_captures/SUMMARY.md).",
+    )
     args = parser.parse_args(argv)
 
     captures_dir = args.captures_dir or (
@@ -94,6 +115,18 @@ def main(argv: list[str] | None = None) -> int:
         sys.stdout.write("\n")
     if args.write:
         write_report(report, out_path=args.write)
+    if args.update_summary:
+        # The SUMMARY.md is the persistent operator-facing surface.
+        # The default path is next to the captures directory; the
+        # ``--summary-path`` flag overrides for tests / power users.
+        if args.summary_path is not None:
+            summary_path = args.summary_path
+        else:
+            summary_path = captures_dir / "SUMMARY.md"
+        update_summary(
+            report, summary_path=summary_path, captures_dir=captures_dir,
+        )
+        sys.stderr.write(f"updated {summary_path}\n")
     # Exit 0 on REACHABLE, exit 1 on UNREACHABLE. Exit codes
     # are documented for CI / operator scripts.
     return 0 if report["verdict"] == "REACHABLE" else 1
