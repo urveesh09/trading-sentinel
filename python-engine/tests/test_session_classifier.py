@@ -366,3 +366,179 @@ class TestProductionBehaviourPreserved:
         # We can't easily mock datetime.now() here; just confirm
         # the function exists and uses the same constants.
         assert callable(is_market_open)
+
+
+# ---- (9) J.2 CAS eligibility list -------------------------------------
+
+class TestIsCasEligible:
+    """[WORKFLOW-J.2 2026-09-13] Tests for the operator-supplied
+    Phase 1 F&O eligibility list.
+
+    Contract:
+
+      1. Empty list returns False for any symbol (the documented
+         bounded default -- no symbol is CAS-eligible until the
+         operator opts in).
+      2. A symbol present in the configured list returns True.
+      3. Case-insensitive match works on both the input symbol AND
+         the configured list entries (we normalise on both sides).
+      4. Whitespace is stripped on both the input symbol AND the
+         configured list entries.
+      5. ``is_cas_eligible`` does not crash if ``config.settings``
+         cannot be imported (lazy-import defensive). The function
+         is total -- it returns False rather than raising.
+
+    These tests use ``monkeypatch.setattr`` on
+    ``_normalised_cas_eligibility_set`` in ``market_calendar``
+    rather than mutating the env / patching ``settings``: that
+    keeps the tests independent of how settings are loaded AND
+    avoids contaminating the lru_cache across tests.
+    """
+
+    def _clear_cache(self) -> None:
+        """Clear the lru_cache. The function is decorated at module
+        load with ``@functools.lru_cache(maxsize=1)`` so any test
+        that calls it once will see the cached value for the
+        remainder of the process. Clearing each test starts with a
+        clean cache so a future test does not inherit a previous
+        test's mock.
+        """
+        from market_calendar import _normalised_cas_eligibility_set
+        _normalised_cas_eligibility_set.cache_clear()
+
+    def test_empty_list_returns_false_for_any_symbol(self) -> None:
+        """Default behaviour (empty setting) returns False for every
+        symbol. The classifier stays in non-CAS mode until the
+        operator opts in.
+        """
+        from market_calendar import is_cas_eligible
+        self._clear_cache()
+        assert is_cas_eligible("RELIANCE") is False
+        assert is_cas_eligible("HDFCBANK") is False
+        assert is_cas_eligible("TCS") is False
+        assert is_cas_eligible("ANYTHING") is False
+        # Documented defensive inputs also stay False.
+        assert is_cas_eligible(None) is False
+        assert is_cas_eligible("") is False
+        assert is_cas_eligible(12345) is False  # type: ignore[arg-type]
+
+    def test_symbol_in_list_returns_true(self, monkeypatch) -> None:
+        """A configured underlying returns True. We patch the
+        Settings attribute that drives ``is_cas_eligible`` so the
+        test is deterministic regardless of process env.
+        """
+        from market_calendar import is_cas_eligible
+        from config import settings
+
+        monkeypatch.setattr(
+            settings, "CAS_PHASE1_FNO_UNDERLYINGS",
+            "RELIANCE, HDFCBANK, INFY",
+        )
+
+        assert is_cas_eligible("RELIANCE") is True
+        assert is_cas_eligible("HDFCBANK") is True
+        assert is_cas_eligible("INFY") is True
+        assert is_cas_eligible("TCS") is False
+        assert is_cas_eligible("NOTINTABLE") is False
+
+    def test_case_insensitive_match(self, monkeypatch) -> None:
+        """Uppercase vs lowercase vs mixed case all resolve the same
+        way. Real upstream callers (Kite, our own scanners) sometimes
+        hand us lowercase symbols.
+        """
+        from market_calendar import is_cas_eligible
+        from config import settings
+
+        monkeypatch.setattr(
+            settings, "CAS_PHASE1_FNO_UNDERLYINGS",
+            "RELIANCE, HDFCBANK",
+        )
+
+        assert is_cas_eligible("RELIANCE") is True
+        assert is_cas_eligible("reliance") is True
+        assert is_cas_eligible("ReLiAnCe") is True
+        assert is_cas_eligible("hdfcbank") is True
+        assert is_cas_eligible("HdfcbAnk") is True
+
+    def test_whitespace_stripped(self, monkeypatch) -> None:
+        """Leading / trailing whitespace on the input symbol AND on
+        the configured list entries is stripped defensively.
+        """
+        from market_calendar import is_cas_eligible
+        from config import settings
+
+        # Use a CSV with embedded whitespace + capitalised entries.
+        monkeypatch.setattr(
+            settings, "CAS_PHASE1_FNO_UNDERLYINGS",
+            "  RELIANCE , HDFCBANK  ",
+        )
+
+        assert is_cas_eligible("  RELIANCE  ") is True
+        assert is_cas_eligible("\tHDFCBANK\n") is True
+        assert is_cas_eligible("  reliance  ") is True
+        assert is_cas_eligible("  ReLiAnCe  ") is True
+
+    def test_lazy_import_no_crash_on_config_failure(self, monkeypatch) -> None:
+        """``is_cas_eligible`` must NOT crash if the lazy
+        ``from config import settings`` raises (e.g. partial
+        deploy, bad .env, missing module). It degrades to False --
+        the safest default per the bounded contract -- rather than
+        propagating the import error.
+
+        We simulate the failure by patching the module-level
+        ``__import__`` builtin to raise for the ``config`` module
+        only. pytest's monkeypatch restores the original after the
+        test so the other tests in this file (and elsewhere) are
+        not affected.
+        """
+        import builtins
+        from market_calendar import is_cas_eligible
+        from market_calendar import _normalised_cas_eligibility_set
+
+        real_import = builtins.__import__
+
+        def _failing_import(name, *args, **kwargs):
+            # Match both ``import config`` and ``from config import ...``
+            if name == "config" or name.startswith("config"):
+                raise RuntimeError("simulated config import failure")
+            return real_import(name, *args, **kwargs)
+
+        monkeypatch.setattr(builtins, "__import__", _failing_import)
+        # The cached lru_cache entry from earlier tests could mask
+        # the import path. Clear it so this exercise really walks
+        # the import.
+        _normalised_cas_eligibility_set.cache_clear()
+
+        # Even with config import failing, the function must return
+        # a value (False) and not raise.
+        result = is_cas_eligible("RELIANCE")
+        assert result is False
+        assert is_cas_eligible(None) is False
+        assert is_cas_eligible(12345) is False  # type: ignore[arg-type]
+
+    def test_csv_whitespace_tolerance_in_parser(self) -> None:
+        """The underlying parser tolerates whitespace around commas,
+        trailing commas, double commas, and mixed case in the raw
+        CSV. This is a unit test on ``_normalised_cas_eligibility_set``
+        so a future regex refactor cannot silently lose coverage.
+        """
+        from market_calendar import _normalised_cas_eligibility_set
+        # Standard CSV with spaces.
+        assert (
+            _normalised_cas_eligibility_set("RELIANCE, HDFCBANK ,INFY")
+            == frozenset({"RELIANCE", "HDFCBANK", "INFY"})
+        )
+        # Trailing + double commas dropped.
+        assert (
+            _normalised_cas_eligibility_set("RELIANCE,, HDFCBANK,")
+            == frozenset({"RELIANCE", "HDFCBANK"})
+        )
+        # Mixed case normalised to upper.
+        assert (
+            _normalised_cas_eligibility_set("Reliance,hdfcbank , InFy")
+            == frozenset({"RELIANCE", "HDFCBANK", "INFY"})
+        )
+        # Empty / whitespace-only / all-commas -> empty frozenset.
+        assert _normalised_cas_eligibility_set("") == frozenset()
+        assert _normalised_cas_eligibility_set("   ") == frozenset()
+        assert _normalised_cas_eligibility_set(", , ,") == frozenset()

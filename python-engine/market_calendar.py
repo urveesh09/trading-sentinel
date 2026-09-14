@@ -1,5 +1,6 @@
 import aiosqlite
 #import aiosqlite
+import functools
 import httpx
 import sqlite3
 from datetime import date, timedelta, time
@@ -314,27 +315,92 @@ def _ist_clock_minutes(observation_at: datetime) -> tuple[int, int, int]:
 
 
 def is_cas_eligible(symbol: str | None) -> bool:
-    """[WORKFLOW-J 2026-09-13] Phase 1 CAS eligibility check.
+    """[WORKFLOW-J 2026-09-13, +J.2 2026-09-13] Phase 1 CAS eligibility check.
 
     Per NSE (circular NSE/CMTR/72394, effective 2026-01-19), CAS Phase 1
     applies only to cash-segment stocks on which derivative contracts
     are available. The full list lives in the NSE contract-master API.
 
-    Dev has no live F&O list; the operator must populate one when known.
-    Until then, every symbol is reported as **not CAS-eligible** so the
-    classifier returns CAS-aware phases only when the operator has
-    explicitly opted in. This is the honest bounded default.
+    Dev has no live fetch for that list. The list is supplied as the
+    operator-curated CSV string ``settings.CAS_PHASE1_FNO_UNDERLYINGS``
+    (env var with the same name). The wire format is comma-separated
+    uppercase symbols; whitespace around commas is tolerated and
+    normalised at this call site -- we do NOT normalise at the
+    ``config.py`` layer (kept the layer pure-string so pydantic-settings
+    does not JSON-decode the env var).
 
-    The function is **pure** (no I/O, no clock, no DB). The eligibility
-    list, when populated, should be supplied via a settings/config
-    module -- the future J.2 slice wires that.
+    Design choices:
 
-    A ``None`` symbol returns False (the operator has not told us
-    which instrument this observation is for).
+      * **Pure** (no I/O, no clock, no DB, no broker call). The only
+        non-purity is the lazy ``from config import settings`` below,
+        which happens at most once per process and is idempotent.
+      * **Lazy import** of ``config.settings`` -- importing at module
+        load would force ``market_calendar`` to pull pydantic + .env
+        parsers and would couple the two modules; this keeps
+        ``market_calendar`` independently importable (a future
+        scheduler unit test that doesn't want config can still
+        ``import market_calendar`` in isolation).
+      * **Defensive normalisation** at the call site:
+        ``symbol.strip().upper()`` and the same normalisation on every
+        list entry. This protects against any case the upstream
+        caller hands us and against any operator-curated token that
+        happens to be in mixed case.
+      * **Frozenset** of the normalised list is built at most once
+        per process via ``functools.lru_cache`` so the per-call
+        overhead is a single set membership test.
+      * **None / empty / non-string symbol** returns False (the
+        operator has not told us which instrument this observation
+        is for, or the input was malformed).
+
+    When the setting is empty (the documented default), this function
+    returns False for every symbol, so the classifier's CAS-aware
+    branches are unreachable and the bounded behaviour is preserved.
     """
+    # Defensive input handling: None, non-string, or empty -> False.
+    # Done before the import so a bad input never touches ``settings``.
     if not symbol or not isinstance(symbol, str):
         return False
-    return False  # populated list is operator-supplied; default = not eligible
+    # Lazy import keeps ``market_calendar`` importable in isolation
+    # (test isolation is part of the J.1/J.2 contract).
+    try:
+        from config import settings
+    except Exception:
+        # If config cannot be imported for any reason (e.g. a partial
+        # deploy), the classifier degrades to "not eligible" -- the
+        # safest default per the bounded contract. We do NOT raise
+        # because the classifier is total and never returns raise.
+        return False
+    raw = getattr(settings, "CAS_PHASE1_FNO_UNDERLYINGS", "") or ""
+    if not raw:
+        return False
+    target = symbol.strip().upper()
+    if not target:
+        return False
+    # Memoised normalisation of the configured CSV. Cached for the
+    # process lifetime -- invalidation is a process restart, which
+    # is also when ``settings`` reloads from env / .env.
+    allowed = _normalised_cas_eligibility_set(raw)
+    return target in allowed
+
+
+@functools.lru_cache(maxsize=1)
+def _normalised_cas_eligibility_set(raw_csv: str) -> frozenset:
+    """Parse ``CAS_PHASE1_FNO_UNDERLYINGS`` into a frozenset of
+    uppercase, whitespace-stripped symbols. Cached so we parse the
+    CSV once per process. Cache key is the raw string so a future
+    settings reload (with a different env) will re-parse on first
+    call after restart.
+
+    The parser tolerates:
+
+      * leading / trailing whitespace on the whole value
+      * whitespace around individual commas (``"RELIANCE , HDFCBANK"``)
+      * trailing / double commas (drop empty tokens defensively)
+      * mixed case (``"Reliance"`` -> ``"RELIANCE"``)
+    """
+    parts = (raw_csv or "").split(",")
+    cleaned = tuple(p.strip().upper() for p in parts if p and p.strip())
+    return frozenset(cleaned)
 
 
 def classify_session_phase(

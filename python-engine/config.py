@@ -63,6 +63,25 @@ class Settings(BaseSettings):
     # Optional account label for imported broker-statement evidence. Empty is
     # deliberately unavailable; it does not trigger a broker connection.
     BROKER_RECONCILIATION_ACCOUNT_ID: str = ""
+    # [WORKFLOW-J.2 2026-09-13] Operator-supplied Phase 1 F&O eligibility
+    # list for CAS. Per NSE/CMTR/72394 (effective 2026-01-19), CAS Phase 1
+    # applies only to cash-segment stocks on which derivative contracts
+    # are available. The full list lives in the NSE contract-master API;
+    # Dev has no live fetch, so the list is operator-curated.
+    #
+    # Wire format (env var, comma-separated): one symbol per token,
+    # whitespace tolerated around commas. Examples:
+    #   CAS_PHASE1_FNO_UNDERLYINGS="RELIANCE"
+    #   CAS_PHASE1_FNO_UNDERLYINGS="RELIANCE, HDFCBANK, INFY"
+    #
+    # We store it as the raw CSV string -- NOT a typed tuple / list --
+    # because pydantic-settings v2.2.1 parses complex (list/tuple)
+    # fields as JSON by default, which would force operators to write
+    # JSON syntax in their .env. Keeping the wire format as a plain
+    # string is operator-friendly AND lets us validate / normalise at
+    # the point of use (``is_cas_eligible`` strips whitespace,
+    # uppercases, drops empty tokens).
+    CAS_PHASE1_FNO_UNDERLYINGS: str = ""
     # Separate proof of broker ORDER permission from token/quote readiness.
     # Empty means a state file beside DB_PATH.  BLOCKED persists across restart.
     ORDER_EXECUTION_STATE_PATH: str = ""
