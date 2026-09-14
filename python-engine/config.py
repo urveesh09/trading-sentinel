@@ -1455,9 +1455,9 @@ class Settings(BaseSettings):
     #
     # CAPITAL_POLICY_LOSS_TOLERANCE_PCT is the EXPLICIT USER INPUT
     # the plan mandates ("Leave the user's loss tolerance as an
-    # explicit input if not supplied"). Default 25.0 -- the operator
-    # stated opinion. Lower this for more conservative growth.
-    CAPITAL_POLICY_LOSS_TOLERANCE_PCT:           float = 25.0
+    # explicit input if not supplied"). Unknown until explicitly set;
+    # do not infer a user's loss tolerance from engineering defaults.
+    CAPITAL_POLICY_LOSS_TOLERANCE_PCT:           float | None = None
     # Current realised drawdown cap. Independent of loss tolerance
     # because they measure different things: loss tolerance is the
     # *worst-case* loss the user accepts on a single growth event;

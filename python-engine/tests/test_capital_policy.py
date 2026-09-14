@@ -23,6 +23,7 @@ import asyncio
 import json
 import os
 import sqlite3
+from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime, timezone
 from typing import Any, Dict
 
@@ -42,6 +43,12 @@ from capital_policy import (
 
 # ---- helpers ---------------------------------------------------------------
 
+def _cli_main(arguments):
+    # The real CLI is a standalone process. Its asyncio.run must not replace
+    # pytest's managed main-thread event loop in an in-process contract test.
+    with ThreadPoolExecutor(max_workers=1) as executor:
+        return executor.submit(capital_policy_cli.main, arguments).result()
+
 def _good_kwargs(**overrides: Any) -> Dict[str, Any]:
     """Baseline kwargs for ``evaluate_capital_increase`` happy path."""
     base = dict(
@@ -53,6 +60,7 @@ def _good_kwargs(**overrides: Any) -> Dict[str, Any]:
         consecutive_losses=1,
         reconciliation_status="MATCH",
         proactive_research_evidence_present=True,
+        thresholds=CapitalPolicyThresholds(loss_tolerance_pct=25.0),
     )
     base.update(overrides)
     return base
@@ -96,7 +104,7 @@ class TestThresholdsValidation:
     def test_all_defaults_construct_cleanly(self) -> None:
         # The defaults should construct without raising.
         t = CapitalPolicyThresholds()
-        assert t.loss_tolerance_pct == 25.0
+        assert t.loss_tolerance_pct is None
         assert t.max_drawdown_pct == 15.0
         assert t.min_win_rate_pct == 50.0
         assert t.min_avg_r_multiple == 0.0
@@ -138,11 +146,11 @@ class TestVerdictMapping:
         # is False the gate is skipped. We pair this with a lower
         # loss_tolerance so the request still AUTHORIZES.
         thresholds = CapitalPolicyThresholds(
+            loss_tolerance_pct=25.0,
             require_broker_reconciliation=False,
         )
         ev = evaluate_capital_increase(
-            **_good_kwargs(reconciliation_status="UNRESOLVED"),
-            thresholds=thresholds,
+            **_good_kwargs(reconciliation_status="UNRESOLVED", thresholds=thresholds),
         )
         assert ev.verdict == CapitalIncreaseVerdict.AUTHORIZED
 
@@ -160,11 +168,11 @@ class TestVerdictMapping:
 
     def test_proactive_evidence_disabled_allows(self) -> None:
         thresholds = CapitalPolicyThresholds(
+            loss_tolerance_pct=25.0,
             require_proactive_research_evidence=False,
         )
         ev = evaluate_capital_increase(
-            **_good_kwargs(proactive_research_evidence_present=False),
-            thresholds=thresholds,
+            **_good_kwargs(proactive_research_evidence_present=False, thresholds=thresholds),
         )
         assert ev.verdict == CapitalIncreaseVerdict.AUTHORIZED
 
@@ -316,7 +324,7 @@ class TestSummary:
 class TestCli:
     def test_print_config_runs(self, tmp_path) -> None:
         output_path = str(tmp_path / "cfg.json")
-        rc = capital_policy_cli.main([
+        rc = _cli_main([
             "--db", str(tmp_path / "test.db"),
             "print-config",
             "--output", output_path,
@@ -325,7 +333,7 @@ class TestCli:
         with open(output_path) as f:
             data = json.load(f)
         assert data["ok"] is True
-        assert data["thresholds"]["loss_tolerance_pct"] == 25.0
+        assert data["thresholds"]["loss_tolerance_pct"] is None
         assert "CAPITAL_POLICY_LOSS_TOLERANCE_PCT" in data["config_keys"]
 
     def test_evaluate_with_no_db_returns_insufficient(self, tmp_path) -> None:
@@ -339,7 +347,7 @@ class TestCli:
         # to distinguish "CLI failed" (rc=2) from "CLI ran and the
         # system said no" (rc=0 with refusal in JSON).
         output_path = str(tmp_path / "eval.json")
-        rc = capital_policy_cli.main([
+        rc = _cli_main([
             "--db", str(tmp_path / "no_such.db"),
             "evaluate",
             "--account", "owner",
@@ -353,12 +361,10 @@ class TestCli:
         assert data["verdict"] in {"INSUFFICIENT_EVIDENCE", "RECONCILIATION_UNRESOLVED"}
         assert data["can_grow_live_capital"] is False
 
-    def test_evaluate_negative_delta_allowed(self, tmp_path) -> None:
-        # A negative delta (shrinking live) is allowed by the guard
-        # because loss-tolerance budget is positive. The guard does
-        # NOT refuse a reduction; that's a separate (future) guard.
+    def test_evaluate_negative_delta_rejected(self, tmp_path) -> None:
+        # Capital reductions require a separate policy, not a growth approval.
         output_path = str(tmp_path / "eval.json")
-        rc = capital_policy_cli.main([
+        rc = _cli_main([
             "--db", str(tmp_path / "no_such.db"),
             "evaluate",
             "--account", "owner",
@@ -370,7 +376,10 @@ class TestCli:
         # negative delta must NOT itself cause a refusal.
         with open(output_path) as f:
             data = json.load(f)
-        assert "negative" not in (data.get("reason") or "").lower()
+        assert rc == 1
+        assert data["ok"] is False
+        assert "strictly positive" in data["error"]
+        assert data["can_grow_live_capital"] is False
 
     def test_evaluate_validation_error_returns_1(self, tmp_path) -> None:
         # argparse rejects --delta=not-a-number with rc=2 BEFORE our
@@ -379,7 +388,7 @@ class TestCli:
         # stderr for the argparse message.
         output_path = str(tmp_path / "eval.json")
         with pytest.raises(SystemExit) as exc_info:
-            capital_policy_cli.main([
+            _cli_main([
                 "--db", str(tmp_path / "no_such.db"),
                 "evaluate",
                 "--account", "owner",

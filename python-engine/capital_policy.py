@@ -1,66 +1,18 @@
-"""[WORKFLOW-F 2026-09-13] Capital policy guard (Phase 6).
+"""Offline F6 capital-policy evaluation, never an execution authorization.
 
-Implements plan section 10.5 -- *"Establish capital-increase criteria
-from externally reconciled net results, drawdown, execution quality
-and operational stability. Leave the user's loss tolerance as an
-explicit input if not supplied."* The guard is the *third* gate in
-the live-growth chain:
-
-    promotion-bridge (signed state)        -- who may promote
-        -> affordability guard (F2)        -- can the live pool grow
-            -> capital policy guard (F6)    -- should the live pool grow
-
-The guard is **pure**: every input is supplied by the caller; no I/O,
-no network, no DB write. The async wrapper
-``evaluate_capital_increase_for_account(...)`` is a thin coroutine
-that reads the F1/F5 substrates (performance, broker_reconciliation,
-trade_outcomes, ops_liveness_daily) and feeds them into the guard.
-
-[DESIGN-INVARIANTS 2026-09-13]
-  1. PURE function. No I/O of its own.
-  2. Caller supplies EVERY numeric input; the ledger-aware wrapper
-     is a thin async function.
-  3. NaN/Inf in any numeric field raises ``ValueError``.
-  4. Forward-only verdict structure -- the guard never *invents*
-     authority to grow live capital. INSUFFICIENT_EVIDENCE on
-     missing inputs.
-  5. Loss tolerance is an EXPLICIT USER INPUT, not an invented
-     default. The module defaults ``loss_tolerance_pct=25.0`` (the
-     user's stated opinion) but the value is loaded from
-     ``config.CAPITAL_POLICY_LOSS_TOLERANCE_PCT`` so a single env
-     override changes it system-wide.
-  6. Every other threshold is also loaded from ``config.py`` with a
-     professional-conservative default and a comment explaining
-     what the knob does. The user can dial any of them.
-  7. The "creative" part is the *verdict structure* -- six named
-     buckets with refusal reasons the user can act on. It is NOT
-     picking numbers the user didn't ask for.
-
-[WHY-THIS-EXISTS 2026-09-13]
-  Pre-fix, ``affordability.assert_live_entry_safety`` returned
-  ``AFFORDABLE`` even when the broker reconciliation was unresolved,
-  the realised drawdown was past any cap, and the execution
-  quality was unknown. The affordability guard only checks *can* the
-  pool grow; it does not check *should* it grow. F6 closes the
-  *should* question by reading the four substrates the audit doc
-  explicitly preserves as inputs:
-
-    * externally reconciled net result -- broker_reconciliation
-    * realised drawdown -- bankroll_ledger (via performance.py)
-    * execution quality -- trade_outcomes (via analytics.py)
-    * operational stability -- ops_liveness_daily (via ops_metrics.py)
-
-  If any of these is unavailable, the guard returns
-  ``INSUFFICIENT_EVIDENCE`` rather than guessing. This is the
-  fail-closed senior-dev choice.
+Loss tolerance is unknown until explicitly supplied. The pure function evaluates
+caller-declared inputs; their authenticity/account scope is not established by
+this API. The account wrapper refuses until immutable source linkage and genuine
+F/G/D evidence can be independently validated. Existing accountless histories
+and arbitrary archive files are not account-specific growth authority.
 """
 from __future__ import annotations
 
 import math
 from dataclasses import dataclass
-from datetime import datetime, timezone
+from datetime import datetime
 from enum import Enum
-from typing import Any, Mapping, Optional, Sequence
+from typing import Any, Optional
 
 
 # ---- enums ------------------------------------------------------------------
@@ -89,12 +41,12 @@ class CapitalIncreaseEvaluation:
 
     verdict: CapitalIncreaseVerdict
     requested_delta_inr: float
-    loss_tolerance_pct: float
-    live_current_inr: float
-    drawdown_pct: float
+    loss_tolerance_pct: Optional[float]
+    live_current_inr: Optional[float]
+    drawdown_pct: Optional[float]
     win_rate_pct: Optional[float]
     avg_r_multiple: Optional[float]
-    consecutive_losses: int
+    consecutive_losses: Optional[int]
     reconciliation_status: str
     reason: str
     notes: tuple[str, ...] = ()
@@ -103,8 +55,8 @@ class CapitalIncreaseEvaluation:
         sign = "+" if self.requested_delta_inr >= 0 else ""
         return (
             f"[{self.verdict.value}] delta={sign}Rs {self.requested_delta_inr:.0f} "
-            f"loss_tolerance={self.loss_tolerance_pct:.1f}% "
-            f"drawdown={self.drawdown_pct:.1f}% "
+            f"loss_tolerance={'unknown' if self.loss_tolerance_pct is None else f'{self.loss_tolerance_pct:.1f}%'} "
+            f"drawdown={'unknown' if self.drawdown_pct is None else f'{self.drawdown_pct:.1f}%'} "
             f"win_rate={'n/a' if self.win_rate_pct is None else f'{self.win_rate_pct:.1f}%'} "
             f"reconciliation={self.reconciliation_status} "
             f"reason={self.reason}"
@@ -124,10 +76,9 @@ class CapitalPolicyThresholds:
 
     Fields:
       loss_tolerance_pct:
-        Maximum live-pool drawdown (as a percentage of the live
-        allocation) the user is willing to accept. The user's stated
-        opinion is 25.0 (preserved as the default). Lower this for
-        more conservative growth; raise it for more aggressive.
+        Explicit user input, unknown by default. This diagnostic evaluator
+        caps the requested addition by that percentage of declared bankroll;
+        this allocation proxy is not proof of bounded trading loss.
 
       max_drawdown_pct:
         The *current* realised drawdown cap on the live pool. Any
@@ -166,7 +117,7 @@ class CapitalPolicyThresholds:
         basis.
     """
 
-    loss_tolerance_pct: float = 25.0
+    loss_tolerance_pct: Optional[float] = None
     max_drawdown_pct: float = 15.0
     min_win_rate_pct: float = 50.0
     min_avg_r_multiple: float = 0.0
@@ -177,7 +128,15 @@ class CapitalPolicyThresholds:
 
     def __post_init__(self) -> None:
         """Reject nonsensical threshold combinations at construction time."""
-        if not 0.0 <= self.loss_tolerance_pct <= 100.0:
+        for name in ("loss_tolerance_pct", "max_drawdown_pct", "min_win_rate_pct", "min_avg_r_multiple", "min_live_bankroll_inr"):
+            value = getattr(self, name)
+            if name == "loss_tolerance_pct" and value is None:
+                continue
+            _validate_numeric(value, name)
+        for name in ("require_broker_reconciliation", "require_proactive_research_evidence"):
+            if not isinstance(getattr(self, name), bool):
+                raise ValueError(f"{name} must be a bool")
+        if self.loss_tolerance_pct is not None and not 0.0 <= self.loss_tolerance_pct <= 100.0:
             raise ValueError(
                 f"loss_tolerance_pct must be in [0, 100], "
                 f"got {self.loss_tolerance_pct}"
@@ -210,6 +169,8 @@ class CapitalPolicyThresholds:
 
 def _validate_numeric(value: Any, field_name: str) -> float:
     """Coerce to float; reject NaN/Inf. Used for ALL numeric inputs."""
+    if isinstance(value, bool):
+        raise ValueError(f"{field_name} must be a real number, not bool")
     try:
         n = float(value)
     except (TypeError, ValueError) as exc:
@@ -233,7 +194,7 @@ def _validate_pct(value: Any, field_name: str, *, low: float, high: float) -> fl
 
 def _validate_thresholds(thresholds: CapitalPolicyThresholds) -> None:
     """Reject nonsensical threshold combinations at construction time."""
-    if not 0.0 <= thresholds.loss_tolerance_pct <= 100.0:
+    if thresholds.loss_tolerance_pct is not None and not 0.0 <= thresholds.loss_tolerance_pct <= 100.0:
         raise ValueError(
             f"loss_tolerance_pct must be in [0, 100], "
             f"got {thresholds.loss_tolerance_pct}"
@@ -290,6 +251,8 @@ def evaluate_capital_increase(
     requested_delta_inr = _validate_numeric(
         requested_delta_inr, "requested_delta_inr",
     )
+    if requested_delta_inr <= 0:
+        raise ValueError("requested_delta_inr must be strictly positive; reductions are a separate policy")
     live_current_inr = _validate_numeric(
         live_current_inr, "live_current_inr",
     )
@@ -325,6 +288,11 @@ def evaluate_capital_increase(
         )
 
     notes: list[str] = []
+
+    if thresholds.loss_tolerance_pct is None:
+        return _insufficient(requested_delta_inr, thresholds, "explicit user loss tolerance is unknown")
+    if win_rate_pct is None or avg_r_multiple is None:
+        return _insufficient(requested_delta_inr, thresholds, "execution quality is unknown")
 
     # ---- Gate 1: live bankroll must be at least the floor.
     if live_current_inr < thresholds.min_live_bankroll_inr:
@@ -385,13 +353,8 @@ def evaluate_capital_increase(
         )
 
     # ---- Gate 4: the proposed increase must not push the live pool
-    # past the user's loss tolerance. We model this as:
-    #   worst_case_loss = live_current_inr + requested_delta_inr
-    #   worst_case_loss_pct = worst_case_loss / INITIAL_LIVE_BANKROLL
-    # If the user's stated loss tolerance is 25% of the live pool,
-    # the worst-case loss cannot exceed 25% of live_current_inr.
-    # We refuse if requested_delta_inr > loss_tolerance_pct/100 *
-    # live_current_inr (so the operator can dial either knob).
+    # past an explicit allocation proxy. This is NOT a worst-case
+    # trading-loss model or sufficient evidence for a live risk budget.
     max_additional_inr = (
         live_current_inr * thresholds.loss_tolerance_pct / 100.0
     )
@@ -516,99 +479,22 @@ async def evaluate_capital_increase_for_account(
     thresholds: Optional[CapitalPolicyThresholds] = None,
     now_utc: Optional[datetime] = None,
 ) -> CapitalIncreaseEvaluation:
-    """Async wrapper that reads the F1/F5 substrates and feeds the guard.
+    """Refuse account evaluation until immutable account/source linkage exists.
 
-    Reads:
-      * live_current_inr        -- performance.division_equity(db, source)
-      * drawdown_pct            -- performance.division_breakdown-derived
-      * win_rate_pct, avg_r     -- trade_outcomes (via analytics)
-      * consecutive_losses      -- bankroll_ledger tail-walk
-      * reconciliation_status   -- broker_reconciliation.broker_statement_report
-      * proactive_research      -- file existence check on the
-                                   proactive_research_compare output path
-                                   (NOT a kite call -- pure file presence)
-
-    The wrapper is fail-closed: every substrate read is wrapped in
-    a try/except that returns ``INSUFFICIENT_EVIDENCE`` on read
-    failure rather than crashing the caller.
+    Current performance/quality/loss stores are accountless. A broker statement
+    MATCH or archive file cannot link them to this account or validate G/D.
+    No DB is opened and no missing quantity is fabricated as zero.
     """
-    if now_utc is None:
-        now_utc = datetime.now(timezone.utc)
+    if not isinstance(account_id, str) or not account_id.strip():
+        raise ValueError("account_id must be a nonblank string")
+    requested_delta_inr = _validate_numeric(requested_delta_inr, "requested_delta_inr")
+    if requested_delta_inr <= 0:
+        raise ValueError("requested_delta_inr must be strictly positive")
     if thresholds is None:
         thresholds = CapitalPolicyThresholds()
-
-    # ---- Read live equity.
-    try:
-        from performance import division_equity, allocation_for_source
-        live_current = float(
-            await division_equity(db_path, source=f"EDGE_LIVE")
-        )
-    except Exception:
-        return _insufficient(
-            requested_delta_inr, thresholds,
-            "live equity read failed",
-        )
-
-    # ---- Read drawdown. We compute realised drawdown vs the
-    # current allocation; if division_equity is below allocation, the
-    # drawdown is positive.
-    try:
-        alloc = float(allocation_for_source("EDGE_LIVE"))
-        if alloc <= 0:
-            drawdown_pct = 0.0
-        else:
-            dd_inr = max(0.0, alloc - live_current)
-            drawdown_pct = (dd_inr / alloc) * 100.0
-    except Exception:
-        drawdown_pct = 0.0
-
-    # ---- Read execution quality + consecutive losses.
-    win_rate_pct: Optional[float] = None
-    avg_r_multiple: Optional[float] = None
-    consecutive_losses = 0
-    try:
-        from analytics import outcome_correlator
-        report = await outcome_correlator(db_path, days=30)
-        total = int(report.get("total_trades", 0) or 0)
-        wins = int(report.get("winning_trades", 0) or 0)
-        if total > 0:
-            win_rate_pct = (wins / total) * 100.0
-        ar = report.get("avg_r_multiple")
-        if ar is not None:
-            avg_r_multiple = float(ar)
-    except Exception:
-        pass
-    try:
-        consecutive_losses = await _consecutive_losses(db_path)
-    except Exception:
-        consecutive_losses = 0
-
-    # ---- Read reconciliation status.
-    try:
-        from broker_reconciliation import broker_statement_report
-        statement = await broker_statement_report(
-            db_path, account_id=account_id,
-        )
-        reconciliation_status = str(statement.get("status", "UNAVAILABLE"))
-    except Exception:
-        reconciliation_status = "UNAVAILABLE"
-
-    # ---- Check proactive research evidence.
-    proactive_research_evidence_present = await _proactive_research_present(
-        db_path,
-    )
-
-    return evaluate_capital_increase(
-        requested_delta_inr=requested_delta_inr,
-        live_current_inr=live_current,
-        drawdown_pct=drawdown_pct,
-        win_rate_pct=win_rate_pct,
-        avg_r_multiple=avg_r_multiple,
-        consecutive_losses=consecutive_losses,
-        reconciliation_status=reconciliation_status,
-        proactive_research_evidence_present=proactive_research_evidence_present,
-        thresholds=thresholds,
-    )
+    _validate_thresholds(thresholds)
+    return _insufficient(requested_delta_inr, thresholds,
+        "account-to-source linkage and independently validated F/G/D evidence are unavailable")
 
 
 def _insufficient(
@@ -621,68 +507,16 @@ def _insufficient(
         verdict=CapitalIncreaseVerdict.INSUFFICIENT_EVIDENCE,
         requested_delta_inr=requested_delta_inr,
         loss_tolerance_pct=thresholds.loss_tolerance_pct,
-        live_current_inr=0.0,
-        drawdown_pct=0.0,
+        live_current_inr=None,
+        drawdown_pct=None,
         win_rate_pct=None,
         avg_r_multiple=None,
-        consecutive_losses=0,
+        consecutive_losses=None,
         reconciliation_status="UNAVAILABLE",
         reason=reason,
     )
 
 
-async def _consecutive_losses(db_path: str) -> int:
-    """Walk the bankroll_ledger tail counting the consecutive losing closes."""
-    import aiosqlite
-    async with aiosqlite.connect(db_path) as db:
-        db.row_factory = aiosqlite.Row
-        async with db.execute(
-            "SELECT pnl FROM bankroll_ledger "
-            "WHERE event_type='TRADE_CLOSED' "
-            "ORDER BY id DESC LIMIT 20"
-        ) as cursor:
-            rows = await cursor.fetchall()
-    count = 0
-    for r in rows:
-        try:
-            pnl = float(r["pnl"])
-        except (TypeError, ValueError):
-            break
-        if not math.isfinite(pnl):
-            break
-        if pnl < 0:
-            count += 1
-        else:
-            break
-    return count
-
-
-async def _proactive_research_present(db_path: str) -> bool:
-    """True iff a proactive research artifact exists on disk.
-
-    We do NOT call Kite; we check the proactive_research_compare
-    output file. The presence of ANY output is the threshold; the
-    *content* is validated elsewhere.
-    """
-    try:
-        from config import settings
-        # The research_archive output is what the F4 framework already
-        # references; we re-use the same path so there is one source
-        # of truth.
-        archive = getattr(settings, "RESEARCH_ARCHIVE_PATH", None)
-        if not archive:
-            return False
-        from pathlib import Path
-        p = Path(archive)
-        if not p.exists():
-            return False
-        # Look for any non-empty file under the archive root.
-        for child in p.iterdir():
-            if child.is_file() and child.stat().st_size > 0:
-                return True
-        return False
-    except Exception:
-        return False
 
 
 __all__ = [
@@ -695,4 +529,4 @@ __all__ = [
 ]
 
 
-CAPITAL_POLICY_SCHEMA_VERSION = 1
+CAPITAL_POLICY_SCHEMA_VERSION = 2

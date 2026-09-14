@@ -8,11 +8,10 @@ authorised, given the current ledger state.
 
 Subcommands:
 
-  * ``evaluate`` -- read the F1/F5 substrates (live equity,
-    drawdown, execution quality, reconciliation status, proactive
-    research evidence) and run ``evaluate_capital_increase``.
-    Outputs a structured JSON with the verdict and per-gate
-    breakdown.
+  * ``evaluate`` -- validate the increase request and report the missing
+    account/source and independently validated F/G/D evidence. Current
+    accountless stores cannot authorize an account; unknown facts stay null.
+    This CLI never grants executable capital-growth authority.
 
   * ``print-config`` -- print the current capital-policy thresholds
     from ``config.py`` so the operator can see what defaults are
@@ -22,9 +21,9 @@ Subcommands:
   1. The CLI NEVER mutates the ledger. It is read-only by design.
   2. The CLI uses the same ``_write_output_atomic`` discipline as
      F5: byte-identical retries produce the same file.
-  3. The CLI exits 0 on success, 1 on validation/evaluation
-     refusal, 2 on I/O error. The output JSON is written even on
-     refusal so the operator can see why.
+  3. The CLI exits 0 on a completed evaluation (including refusal),
+     1 on evaluation validation or output errors; argparse usage errors
+     exit 2. Read the verdict and authority fields, not merely the exit code.
 """
 from __future__ import annotations
 
@@ -133,9 +132,9 @@ async def _evaluate(args: argparse.Namespace) -> dict[str, Any]:
             "consecutive_losses": evaluation.consecutive_losses,
             "reconciliation_status": evaluation.reconciliation_status,
         }
-        out["can_grow_live_capital"] = (
-            evaluation.verdict.value == "AUTHORIZED"
-        )
+        # An operator evaluation is never an executable promotion grant.
+        out["can_grow_live_capital"] = False
+        out["authorization_effect"] = "NONE"
         out["ok"] = True
     except (ValueError, TypeError, OSError) as exc:
         out["error"] = f"{type(exc).__name__}: {exc}"
@@ -231,7 +230,7 @@ def main(argv: Optional[list[str]] = None) -> int:
         return 2
     try:
         _write_output_atomic(args.output, out)
-    except OSError as exc:
+    except (OSError, ValueError) as exc:
         print(
             json.dumps(
                 {"ok": False, "error": f"output write failed: {exc}"},
@@ -240,8 +239,7 @@ def main(argv: Optional[list[str]] = None) -> int:
             file=sys.stderr,
         )
         return 1
-    # The CLI exits 0 on success, 1 on evaluation refusal (so the
-    # operator can wire it into a CI gate). I/O errors return 2.
+    # A completed refusal is still a successful diagnostic, never authority.
     print(json.dumps(
         {"path": args.output, "ok": out["ok"],
          "verdict": out.get("verdict")},
