@@ -129,8 +129,15 @@ def cas_reachability_report(captures_dir: Path) -> dict[str, Any]:
     is counted as ``captures_skipped`` and does not contribute
     to coverage.
     """
-    captured: dict[str, int] = {
+    captures: dict[str, int] = {
         phase: 0 for phase in CAS_BRANCHES_REQUIRING_EVIDENCE
+    }
+    # [WORKFLOW-J.10.CLOSURE 2026-09-14] Per-branch catalog of
+    # capture paths. The SUMMARY surfaces this so operators
+    # can see exactly which captures back each branch -- the
+    # per-branch count alone hides the actual evidence.
+    captures_by_branch: dict[str, list[str]] = {
+        phase: [] for phase in CAS_BRANCHES_REQUIRING_EVIDENCE
     }
     captures_scanned = 0
     captures_skipped = 0
@@ -140,11 +147,12 @@ def cas_reachability_report(captures_dir: Path) -> dict[str, Any]:
         missing = list(CAS_BRANCHES_REQUIRING_EVIDENCE)
         return {
             "verdict": "UNREACHABLE",
-            "captured_phases": {phase: 0 for phase in captured},
+            "captured_phases": {phase: 0 for phase in captures},
             "missing_phases": missing,
             "coverage_pct": 0.0,
             "captures_scanned": 0,
             "captures_skipped": 0,
+            "captures_by_branch": captures_by_branch,
         }
 
     for capture_path in sorted(captures_root.rglob("*.json")):
@@ -153,10 +161,18 @@ def cas_reachability_report(captures_dir: Path) -> dict[str, Any]:
         if phase is None:
             captures_skipped += 1
             continue
-        if phase in captured:
-            captured[phase] += 1
+        if phase in captures:
+            captures[phase] += 1
+            # Relative path so the SUMMARY is portable; falls
+            # back to the absolute path when a non-captures_root
+            # capture shows up (defensive).
+            try:
+                rel = capture_path.relative_to(captures_root)
+            except ValueError:
+                rel = capture_path
+            captures_by_branch[phase].append(str(rel))
 
-    missing = [phase for phase, count in captured.items() if count == 0]
+    missing = [phase for phase, count in captures.items() if count == 0]
     coverage_pct = round(
         100.0 * (len(CAS_BRANCHES_REQUIRING_EVIDENCE) - len(missing))
         / len(CAS_BRANCHES_REQUIRING_EVIDENCE),
@@ -166,11 +182,12 @@ def cas_reachability_report(captures_dir: Path) -> dict[str, Any]:
 
     return {
         "verdict": verdict,
-        "captured_phases": captured,
+        "captured_phases": captures,
         "missing_phases": missing,
         "coverage_pct": coverage_pct,
         "captures_scanned": captures_scanned,
         "captures_skipped": captures_skipped,
+        "captures_by_branch": captures_by_branch,
     }
 
 
@@ -189,6 +206,19 @@ def format_report(report: dict[str, Any]) -> str:
     for phase, count in report["captured_phases"].items():
         marker = "+" if count > 0 else "-"
         lines.append(f"    [{marker}] {phase}: {count}")
+    # [WORKFLOW-J.10.CLOSURE 2026-09-14] Per-branch catalog
+    # for the human-readable CLI output. Operators running the
+    # CLI without --json still see exactly which captures
+    # back each branch.
+    captures_by_branch = report.get("captures_by_branch", {})
+    if any(captures_by_branch.values()):
+        lines.append("  captures catalog:")
+        for phase, paths in captures_by_branch.items():
+            if not paths:
+                continue
+            lines.append(f"    [{phase}]")
+            for p in paths:
+                lines.append(f"      - {p}")
     if report["missing_phases"]:
         lines.append("  missing branches (need at least 1 capture each):")
         for phase in report["missing_phases"]:
@@ -244,7 +274,8 @@ as malformed / non-bounded).
 
 | Branch | Captures |
 |---|---|
-{branch_rows}{missing_section}## How to add captures
+{branch_rows}
+{catalog_section}{missing_section}## How to add captures
 
 1. Run the staging-only probe:
    ```bash
@@ -291,6 +322,34 @@ def _format_missing_section(missing_phases: list[str]) -> str:
     return "\n".join(lines) + "\n"
 
 
+def _format_catalog_section(captures_by_branch: dict[str, list[str]]) -> str:
+    """Render a per-branch catalog of capture paths. Each
+    branch is shown as a markdown sub-heading followed by a
+    bulleted list of relative paths. Branches with zero
+    captures render ``(no captures yet)`` so operators see
+    the gap explicitly.
+
+    The catalog is purely informational -- it does not
+    influence the gate's verdict (that's still purely
+    count-driven per ``captures_by_branch[phase] >= 1``).
+    """
+    lines = ["", "## Captures catalog", ""]
+    lines.append(
+        "Each branch lists every capture that contributed to its"
+    )
+    lines.append("count. Paths are relative to the captures directory.")
+    lines.append("")
+    for phase, paths in captures_by_branch.items():
+        lines.append(f"### {phase}")
+        if paths:
+            for p in paths:
+                lines.append(f"- `{p}`")
+        else:
+            lines.append("- _(no captures yet)_")
+        lines.append("")
+    return "\n".join(lines) + "\n"
+
+
 def update_summary(
     report: dict[str, Any],
     summary_path: Path,
@@ -328,6 +387,14 @@ def update_summary(
         )
     branch_rows = "\n".join(branch_rows_lines) + "\n" if branch_rows_lines else ""
 
+    # [WORKFLOW-J.10.CLOSURE 2026-09-14] Per-branch catalog of
+    # capture paths. The gate already reads each capture; we
+    # just persist the path metadata so the SUMMARY can show
+    # operators which captures back each branch. Pure-read.
+    catalog_section = _format_catalog_section(
+        report.get("captures_by_branch", {})
+    )
+
     # Build the missing-branches section.
     missing_section = _format_missing_section(report["missing_phases"])
 
@@ -346,6 +413,7 @@ def update_summary(
         captures_scanned=report["captures_scanned"],
         captures_skipped=report["captures_skipped"],
         branch_rows=branch_rows,
+        catalog_section=catalog_section,
         missing_section=missing_section,
     )
     summary_path.write_text(body, encoding="utf-8")
