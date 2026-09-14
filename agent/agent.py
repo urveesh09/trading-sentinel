@@ -734,10 +734,57 @@ def _extract_json_object(text: Optional[str]) -> Optional[Dict]:
             pass
     return None
 
+
+
+def _render_classified_section(
+    classifications: Optional[List["ClassificationResult"]],
+) -> str:
+    """[WORKFLOW-I.4.D 2026-09-14] Render the CLASSIFIED SENTIMENT
+    DATA section for ``analyze_with_minimax``'s prompt.
+
+    Returns the empty string when ``classifications`` is None or
+    empty, so the caller can detect "no section" and fall back to
+    the placeholder. The rendered section lists each headline's
+    title_hash, category, confidence, and rationale -- bounded so
+    a single item cannot bloat the prompt budget.
+
+    Format:
+        HEADLINE <title_hash>  CATEGORY=<cat> CONF=<float>
+          RATIONALE: <one short sentence>
+
+    The section is bounded to MAX_RENDERED_LINES (default 32) so
+    a 100-item news batch does not exceed the prompt budget. If
+    there are more, the section appends a "and N more" line.
+    """
+    if not classifications:
+        return ""
+    MAX_RENDERED_LINES = 32
+    lines: List[str] = []
+    for c in classifications:
+        # ``rationale`` is already bounded to 280 chars by the
+        # classifier; we do a defensive cap here at 120 to keep
+        # the prompt section tight.
+        rationale = c.rationale[:120] if c.rationale else ""
+        lines.append(
+            f"HEADLINE {c.title_hash}  "
+            f"CATEGORY={c.category.value} "
+            f"CONF={c.confidence:.2f}"
+        )
+        if rationale:
+            lines.append(f"  RATIONALE: {rationale}")
+    if len(lines) > MAX_RENDERED_LINES:
+        kept = lines[:MAX_RENDERED_LINES]
+        dropped = (len(lines) - MAX_RENDERED_LINES) // 2
+        kept.append(f"  (and {dropped} more headlines classified)")
+        lines = kept
+    return "\n".join(lines)
+
+
 def analyze_with_minimax(
     signal: Dict,
     sentiment_text: str,
-    market_regime: str = "UNKNOWN"
+    market_regime: str = "UNKNOWN",
+    pre_classifications: Optional[List["ClassificationResult"]] = None,
 ) -> Review:
     """[ADVISORY 2026-08-05] Returns a typed Review, never a bare None.
 
@@ -746,6 +793,17 @@ def analyze_with_minimax(
     caller. They are now distinct verdicts carrying the specific reason, so
     the operator's phone can say WHICH failure happened and a later audit can
     tell an outage from an opinion. See advisory.py.
+
+    [WORKFLOW-I.4.D 2026-09-14] Optional ``pre_classifications``: when the
+    caller supplies a list of ``ClassificationResult`` (one per news item),
+    they are surfaced in the prompt as a "CLASSIFIED SENTIMENT DATA" section
+    *above* the existing "MULTI-SOURCE SENTIMENT DATA" section. The model
+    sees both: the bounded taxonomy per headline (regulatory / earnings /
+    M&A / guidance / macro / rumor / technical / unknown) and the raw text.
+    When ``pre_classifications`` is None (the default, and every existing
+    caller's path), the prompt is byte-identical to its pre-I.4.D shape:
+    only "MULTI-SOURCE SENTIMENT DATA" is rendered. This preserves the
+    existing verdict pipeline contract.
     """
     if client is None:
         return advisory_unavailable("AI_DISABLED")
@@ -753,6 +811,13 @@ def analyze_with_minimax(
     price = signal.get("close", 0)     # FIX: Aligned with models.py
     target = signal.get("target_1", 0) # FIX: Aligned with models.py
     stop_loss = signal.get("stop_loss", 0)
+
+    # [WORKFLOW-I.4.D 2026-09-14] Build the CLASSIFIED SENTIMENT DATA
+    # section when the caller supplied pre-classifications. The
+    # section is empty-string when no classifications are supplied
+    # so the f-string template below renders byte-identical to its
+    # pre-I.4.D shape (every existing caller's path).
+    classified_section = _render_classified_section(pre_classifications)
 
     prompt = f"""
     You are a cynical, risk-first quantitative trading analyst.
@@ -830,6 +895,12 @@ def analyze_with_minimax(
     60-79  : Acceptable, standard market risks present
     50-59  : Marginal, one significant concern exists
     0-49   : High risk of false positive, do not execute
+
+    ===========================================
+    CLASSIFIED SENTIMENT DATA
+    ===========================================
+    {classified_section if classified_section else
+    "(no pre-classifications supplied; use the raw MULTI-SOURCE SENTIMENT DATA below)"}
 
     ===========================================
     MULTI-SOURCE SENTIMENT DATA
