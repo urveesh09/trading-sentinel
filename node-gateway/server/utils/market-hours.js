@@ -556,6 +556,75 @@ function currentSessionPhase(opts) {
   return sessionPhase(new Date(), opts);
 }
 
+// [WORKFLOW-J.7 2026-09-13] Execution-allowed verdict.
+//
+// Translation table from bounded phase to binary verdict.
+// This mirrors ``python-engine/market_calendar.execution_allowed``
+// bit-perfect. The translation lives here, not in the
+// caller, because the policy is mechanical and a future
+// phase-set change must surface as a single-file review.
+//
+// CAS_REFERENCE_PRICE_WINDOW / CAS_ORDER_ENTRY /
+// CAS_LIMIT_ENTRY_ONLY / CAS_MATCHING / CAS_POST -> blocked.
+// CLOSED -> blocked.
+// PRE_MARKET -> blocked by default; allowed iff
+//   opts.allow_pre_market === true.
+// CONTINUOUS_TRADING / DERIVATIVES_CAS_ALIGNED -> allowed.
+// UNKNOWN -> blocked (defensive).
+
+const _EXEC_BLOCKING_PHASES = new Set([
+  'CLOSED',
+  'CAS_REFERENCE_PRICE_WINDOW',
+  'CAS_ORDER_ENTRY',
+  'CAS_LIMIT_ENTRY_ONLY',
+  'CAS_MATCHING',
+  'CAS_POST',
+  'UNKNOWN',
+]);
+
+const _EXEC_PHASE_REASON = {
+  CLOSED: 'Market is closed; no orders are accepted outside continuous trading hours.',
+  PRE_MARKET: 'Pre-market session; broker orders are blocked until 09:15 IST. Pass allow_pre_market=true to override.',
+  CAS_REFERENCE_PRICE_WINDOW: 'Closing auction reference-price window (15:15-15:20 IST); broker orders are blocked until CAS completes.',
+  CAS_ORDER_ENTRY: 'Closing auction order-entry window (15:20-15:29:30 IST); broker orders are blocked until CAS completes.',
+  CAS_LIMIT_ENTRY_ONLY: 'Closing auction limit-entry-only window (15:29:30-15:30 IST); broker orders are blocked.',
+  CAS_MATCHING: 'Closing auction matching (15:30-15:40 IST); broker orders are blocked.',
+  CAS_POST: 'Closing auction post-close (15:40-16:00 IST); cash equities are closed. Derivatives in this window are DERIVATIVES_CAS_ALIGNED, not CAS_POST.',
+  UNKNOWN: 'Observation timestamp could not be classified; broker order blocked for safety.',
+};
+
+function isExecutionAllowed(opts) {
+  // Bit-perfect mirror of ``market_calendar.execution_allowed``.
+  // opts: { observation_at, symbol?, is_derivative?, cas_eligible?,
+  //         allow_pre_market? }
+  // Returns { allowed: bool, phase: string, reason: string|null }.
+  const o = opts || {};
+  const phase = sessionPhase(
+    o.observation_at,
+    {
+      symbol: o.symbol,
+      is_derivative: o.is_derivative,
+      cas_eligible: o.cas_eligible,
+    }
+  );
+  // Default policy: only CONTINUOUS_TRADING and
+  // DERIVATIVES_CAS_ALIGNED are allowed. PRE_MARKET is
+  // blocked unless opts.allow_pre_market is true.
+  let allowed = (
+    phase === 'CONTINUOUS_TRADING' ||
+    phase === 'DERIVATIVES_CAS_ALIGNED'
+  );
+  if (phase === 'PRE_MARKET' && o.allow_pre_market === true) {
+    allowed = true;
+  }
+  let reason = null;
+  if (!allowed) {
+    reason = _EXEC_PHASE_REASON[phase] ||
+      `Phase ${phase} does not permit broker orders.`;
+  }
+  return { allowed, phase, reason };
+}
+
 module.exports = {
   isMarketOpen,
   isPreMarket,
@@ -568,6 +637,9 @@ module.exports = {
   sessionPhase,
   currentSessionPhase,
   VALID_SESSION_PHASES,
+  // [WORKFLOW-J.7] Execution-allowed verdict mirror of
+  // ``market_calendar.execution_allowed``.
+  isExecutionAllowed,
   // Test-only seam: rebind NSE_HOLIDAYS to a curated Set. The
   // jest.config.js + setup.js combination sets NODE_ENV=test
   // before the suite runs. Production code MUST NOT call this;

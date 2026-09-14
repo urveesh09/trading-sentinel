@@ -5,7 +5,7 @@ const { logger } = require('./middleware/logger');
 const { signalsDb, appDb } = require('./db/index');
 const executor = require('./services/executor');
 const telegram = require('./services/telegram');
-const { isMarketOpen, currentSessionPhase } = require('./utils/market-hours');
+const { isMarketOpen, isExecutionAllowed, currentSessionPhase } = require('./utils/market-hours');
 
 const server = http.createServer(app);
 
@@ -99,6 +99,22 @@ telegram.bot.on('callback_query', async (query) => {
         show_alert: true,
       });
       return;
+    }
+    // [WORKFLOW-J.7 2026-09-13] CAS-aware guard. The binary
+    // ``isMarketOpen()`` above already covers CLOSED and the
+    // post-close hours; this additional check enforces the
+    // closing-auction sub-window policy so the operator sees
+    // the phase-specific reason via the telegram callback.
+    if (action === 'EXEC' || action === 'EM') {
+      const verdict = isExecutionAllowed({ observation_at: new Date() });
+      if (!verdict.allowed) {
+        await telegram.bot.answerCallbackQuery(query.id, {
+          text: verdict.reason ||
+            `Market in ${verdict.phase}. Cannot execute now.`,
+          show_alert: true,
+        });
+        return;
+      }
     }
 
     // 6. Reject Action

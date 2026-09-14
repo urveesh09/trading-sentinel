@@ -632,3 +632,99 @@ def classify_session_phase(
         return SESSION_PHASE_CLOSED
     # Defensive fallback (should be unreachable given the cases above).
     return SESSION_PHASE_UNKNOWN
+
+
+# [WORKFLOW-J.7 2026-09-13] Execution-allowed verdict.
+#
+# The phase classifier returns one of ten bounded strings; this
+# helper translates the phase into a binary verdict that the
+# Node execution path can act on directly. The translation
+# table is the authoritative policy:
+#
+#   CONTINUOUS_TRADING           -> allowed (cash/derivatives)
+#   DERIVATIVES_CAS_ALIGNED      -> allowed (derivatives only;
+#                                   cash would say CAS_MATCHING
+#                                   here, never DERIVATIVES_CAS_ALIGNED)
+#   PRE_MARKET                   -> blocked by default; allowed
+#                                   only when allow_pre_market=True
+#   CLOSED                       -> blocked
+#   CAS_* (all five CAS sub-windows) -> blocked
+#   UNKNOWN                      -> blocked
+#
+# Why this lives here (not in the Node mirror): the policy
+# is the SAME policy as the phase classifier -- the
+# translation table is mechanical. Putting it next to the
+# classifier keeps the contract local: future changes to
+# the phase set (e.g. adding a new sub-window) surface as a
+# single-file review in market_calendar.py. The Node
+# ``isExecutionAllowed`` mirrors this function exactly.
+
+_PHASE_EXECUTION_ALLOWED: dict[str, bool] = {
+    SESSION_PHASE_CONTINUOUS_TRADING: True,
+    SESSION_PHASE_DERIVATIVES_CAS_ALIGNED: True,
+    SESSION_PHASE_PRE_MARKET: False,  # becomes True with allow_pre_market
+    SESSION_PHASE_CLOSED: False,
+    SESSION_PHASE_CAS_REFERENCE_PRICE_WINDOW: False,
+    SESSION_PHASE_CAS_ORDER_ENTRY: False,
+    SESSION_PHASE_CAS_LIMIT_ENTRY_ONLY: False,
+    SESSION_PHASE_CAS_MATCHING: False,
+    SESSION_PHASE_CAS_POST: False,
+    SESSION_PHASE_UNKNOWN: False,
+}
+
+_PHASE_EXECUTION_REASON: dict[str, str] = {
+    SESSION_PHASE_CLOSED: "Market is closed; no orders are accepted outside continuous trading hours.",
+    SESSION_PHASE_PRE_MARKET: "Pre-market session; broker orders are blocked until 09:15 IST. Pass allow_pre_market=true to override.",
+    SESSION_PHASE_CAS_REFERENCE_PRICE_WINDOW: "Closing auction reference-price window (15:15-15:20 IST); broker orders are blocked until CAS completes.",
+    SESSION_PHASE_CAS_ORDER_ENTRY: "Closing auction order-entry window (15:20-15:29:30 IST); broker orders are blocked until CAS completes.",
+    SESSION_PHASE_CAS_LIMIT_ENTRY_ONLY: "Closing auction limit-entry-only window (15:29:30-15:30 IST); broker orders are blocked.",
+    SESSION_PHASE_CAS_MATCHING: "Closing auction matching (15:30-15:40 IST); broker orders are blocked.",
+    SESSION_PHASE_CAS_POST: "Closing auction post-close (15:40-16:00 IST); cash equities are closed. Derivatives in this window are DERIVATIVES_CAS_ALIGNED, not CAS_POST.",
+    SESSION_PHASE_UNKNOWN: "Observation timestamp could not be classified; broker order blocked for safety.",
+}
+
+
+def execution_allowed(
+    observation_at: datetime | None,
+    *,
+    symbol: str | None = None,
+    is_derivative: bool = False,
+    cas_eligible: bool | None = None,
+    allow_pre_market: bool = False,
+) -> dict:
+    """[WORKFLOW-J.7 2026-09-13] Verdict on whether a broker
+    order is allowed at the given observation time.
+
+    Contract:
+      * Pure: no I/O, no clock, no DB, no broker call. The
+        caller supplies ``observation_at``.
+      * Total: never raises. Invalid / null inputs return
+        ``{allowed=False, phase="UNKNOWN", reason="..."}``.
+      * Returns a JSON-serialisable dict:
+            {"allowed": bool, "phase": str, "reason": str | None}
+      * ``reason`` is None when ``allowed=True``; otherwise
+        it is a phase-specific human-readable explanation
+        the operator dashboard / telegram callback can show.
+
+    The translation table is in
+    ``_PHASE_EXECUTION_ALLOWED`` / ``_PHASE_EXECUTION_REASON``.
+    ``allow_pre_market=True`` only affects the PRE_MARKET row;
+    no other phase honours it.
+    """
+    phase = classify_session_phase(
+        observation_at,
+        symbol=symbol,
+        is_derivative=is_derivative,
+        cas_eligible=cas_eligible,
+    )
+    allowed = bool(_PHASE_EXECUTION_ALLOWED.get(phase, False))
+    if phase == SESSION_PHASE_PRE_MARKET and allow_pre_market:
+        allowed = True
+    if allowed:
+        reason = None
+    else:
+        reason = _PHASE_EXECUTION_REASON.get(
+            phase,
+            f"Phase {phase} does not permit broker orders.",
+        )
+    return {"allowed": allowed, "phase": phase, "reason": reason}

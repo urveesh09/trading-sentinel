@@ -46,6 +46,10 @@ jest.mock('../../utils/market-hours', () => ({
   // [WORKFLOW-J.6] Mirror the export surface so production code
   // that calls ``currentSessionPhase()`` does not raise.
   currentSessionPhase: jest.fn(() => 'CONTINUOUS_TRADING'),
+  // [WORKFLOW-J.7] Mirror the export surface for the CAS guard.
+  isExecutionAllowed: jest.fn(() => ({
+    allowed: true, phase: 'CONTINUOUS_TRADING', reason: null,
+  })),
 }));
 
 // ── A tiny in-memory stand-in for the two tables the handler touches ──

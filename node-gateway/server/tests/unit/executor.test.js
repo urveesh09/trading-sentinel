@@ -27,6 +27,10 @@ jest.mock('../../utils/market-hours', () => ({
   isMarketOpen: jest.fn(),
   // [WORKFLOW-J.6] Mirror the export surface.
   currentSessionPhase: jest.fn(() => 'CONTINUOUS_TRADING'),
+  // [WORKFLOW-J.7] Mirror the export surface for the CAS guard.
+  isExecutionAllowed: jest.fn(() => ({
+    allowed: true, phase: 'CONTINUOUS_TRADING', reason: null,
+  })),
 }));
 
 jest.mock('../../services/telegram', () => ({
