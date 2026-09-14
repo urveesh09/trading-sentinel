@@ -488,10 +488,6 @@ Engine dependencies: `fno_chain`, `fno_models`
 
 Related tests: `python-engine/tests/test_hedge_strategies.py`
 
-## `python-engine/tests/fixtures/regenerate_session_phase_golden.py` (see [J.6 done](../docs/2026-09-13-j6-node-session-phase-mirror-done.md))
-
-Regenerator for the Node↔Python session-phase parity golden. Two sweeps: a wide minute-granularity sweep (8 days × 24 hours × 4 minutes × 3 option-combos = 2304 vectors) and a focused second-granularity boundary pass (17 instants × 3 option-combos = 51 vectors). The second pass hits sub-windows the minute-granularity sweep misses (CAS_LIMIT_ENTRY_ONLY at 15:29:30 - 15:30 IST, CAS_POST at derivatives 15:40 - 16:00 IST). Writes to both python-engine/tests/fixtures/ and node-gateway/server/tests/fixtures/ — the Node test consumer stays in lockstep with the Python source-of-truth via dual-write. **Do not call externally**; the Python pytest fixture in `test_session_phase_golden.py` runs this as a module-scoped fixture.
-
 ## `python-engine/holiday_drift.py`
 
 [WORKFLOW-J.5 2026-09-13] Drift detector for NSE holiday lists. The Python engine and the node-gateway both maintain a "today is a trading holiday" check. Pre-J.5 each shipped its own list: * python-engine/market_calendar.py::NSE_HOLIDAYS_STATIC (20 dates) * node-gateway/server/utils/market-hours.js::NSE_HOLIDAYS (18 dates) Only 10 dates overlap. The drift caused real production hazards: a CAS-eligible stock could be scheduled for an order on a holiday that the gateway considered a trading day (or vice versa). J.5 makes Python authoritative; this module is the static cross-check that surfaces divergence between the two sources until the Node side fetches from the engine at boot. This module 
@@ -501,6 +497,14 @@ Top-level declarations: `_resolve_repo_root` (line 67), `python_nse_holidays` (l
 Engine dependencies: `market_calendar`
 
 Related tests: `python-engine/tests/test_holiday_drift.py`
+
+## `python-engine/tests/fixtures/regenerate_session_phase_golden.py` (see [J.6 done](../docs/2026-09-13-j6-node-session-phase-mirror-done.md))
+
+Regenerator for the Node↔Python session-phase parity golden. Two sweeps: a wide minute-granularity sweep (8 days × 24 hours × 4 minutes × 3 option-combos = 2304 vectors) and a focused second-granularity boundary pass (17 instants × 3 option-combos = 51 vectors). The second pass hits sub-windows the minute-granularity sweep misses (CAS_LIMIT_ENTRY_ONLY at 15:25-15:30 IST, CAS_POST at cash 15:35-16:00 IST). Writes to both python-engine/tests/fixtures/ and node-gateway/server/tests/fixtures/ — the Node test consumer stays in lockstep with the Python source-of-truth via dual-write. **Do not call externally**; the Python pytest fixture in `test_session_phase_golden.py` runs this as a module-scoped fixture.
+
+## `python-engine/tests/fixtures/regenerate_execution_allowed_golden.py` (see [J.7 done](../docs/2026-09-13-j7-cas-aware-execution-gating-done.md))
+
+Regenerator for the Node↔Python execution-allowed parity golden. Same dual-sweep pattern as `regenerate_session_phase_golden.py` (broad minute-granularity + second-granularity boundary pass at 15:15/15:20/15:25/15:30/15:35/15:40 IST). Produces 3,525 vectors covering every phase × every option-combo × every pre-market override branch. Writes to both python-engine and node-gateway test fixtures. **Do not call externally**; the Python pytest fixture in `test_execution_allowed.py` runs this as a module-scoped fixture.
 
 ## `python-engine/indicators_adaptive.py`
 
@@ -642,7 +646,7 @@ Related tests: `python-engine/tests/test_mark_to_market.py`
 
 No module docstring; use the declarations and callers below.
 
-Top-level declarations: `_iso_sorted` (line 137), `_alert_static_fallback` (line 152), `is_market_open` (line 195), `get_holiday_cache` (line 212), `is_trading_day` (line 224), `next_trading_day` (line 256), `prev_trading_day` (line 262), `_load_holidays_sync` (line 271), `is_trading_day_sync` (line 298), `trading_days_between_sync` (line 321), `_ist_clock_minutes` (line 383), `is_cas_eligible` (line 399), `_normalised_cas_eligibility_set` (line 469), `classify_session_phase` (line 488)
+Top-level declarations: `_iso_sorted` (line 137), `_alert_static_fallback` (line 152), `is_market_open` (line 195), `get_holiday_cache` (line 212), `is_trading_day` (line 224), `next_trading_day` (line 256), `prev_trading_day` (line 262), `_load_holidays_sync` (line 271), `is_trading_day_sync` (line 298), `trading_days_between_sync` (line 321), `_ist_clock_minutes` (line 383), `is_cas_eligible` (line 399), `_normalised_cas_eligibility_set` (line 469), `classify_session_phase` (line 488), `execution_allowed` (line 687)
 
 Engine dependencies: `config`
 
