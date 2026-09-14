@@ -4444,6 +4444,7 @@ from routes_fno_experiments import router as _fno_experiments_router
 from routes_penny_experiments import router as _penny_experiments_router
 from routes_promotion_readiness import router as _promotion_readiness_router
 from routes_hedge import router as _hedge_router
+from routes_holidays import router as _holidays_router  # WORKFLOW-J.5
 
 app.include_router(_ops_router)
 app.include_router(_portfolio_router)
@@ -4453,3 +4454,4 @@ app.include_router(_fno_experiments_router)
 app.include_router(_penny_experiments_router)
 app.include_router(_promotion_readiness_router)
 app.include_router(_hedge_router)
+app.include_router(_holidays_router)  # WORKFLOW-J.5

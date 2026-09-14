@@ -50,17 +50,99 @@ CAS_POST_CLOSE_END: time = time(16, 0)
 # holiday-master API response fetched successfully on 2026-06-15
 # (verified against the prod holidays cache). MAINTENANCE: NSE publishes
 # the next year's list each December -- refresh this list every January
-# (it only matters for fresh deploys / wiped caches; a populated cache
-# always wins).
+# [WORKFLOW-J.5 2026-09-13] Canonical NSE Equity trading holiday
+# list for 2026. This is the single source of truth for the
+# whole system (Python engine + node-gateway + dashboard).
+#
+# SOURCES (cross-checked 2026-09-13):
+#   * https://www.nseindia.com/resources/exchange-communication-holidays
+#       (Equities, calendar year 2026)
+#   * https://www.nseindia.com/products-services/currency-derivatives-timings-holidays
+#       (Equity-equivalent trading holidays)
+#   * NSE/CMTR/72260 (Jan-2026 supplementary circular: Municipal
+#     Corporation Election in Maharashtra -> 2026-01-15 trading
+#     holiday in CM segment)
+#   * Secondary corroboration via web-search snippets
+#     (decoded in docs/2026-09-13-workflow-j-deep-research.md)
+#
+# Each entry is a (date, description) tuple. The list mixes
+# weekday trading holidays (e.g. Republic Day Monday) and
+# weekend holidays (e.g. Independence Day Saturday) -- NSE
+# publishes both because some scripts treat either as
+# non-trading regardless of weekday.
+#
+# NOTE: node-gateway/server/utils/market-hours.js used to ship
+# its own divergent list (18 dates, only 10 overlapping). J.5
+# establishes Python as authoritative; the Node side fetches from
+# this module at boot and falls back to its old hardcoded list
+# ONLY when the engine is unreachable (defensive).
 NSE_HOLIDAYS_STATIC = frozenset({
-    date(2026, 1, 15), date(2026, 1, 26), date(2026, 2, 15),
-    date(2026, 3, 3),  date(2026, 3, 21), date(2026, 3, 26),
-    date(2026, 3, 31), date(2026, 4, 3),  date(2026, 4, 14),
-    date(2026, 5, 1),  date(2026, 5, 28), date(2026, 6, 26),
-    date(2026, 8, 15), date(2026, 9, 14), date(2026, 10, 2),
-    date(2026, 10, 20), date(2026, 11, 8), date(2026, 11, 10),
-    date(2026, 11, 24), date(2026, 12, 25),
+    # (date, description)
+    date(2026, 1, 15),   # Municipal Corporation Election - Maharashtra (NSE/CMTR/72260)
+    date(2026, 1, 26),   # Republic Day
+    date(2026, 2, 15),   # Mahashivratri (Sunday)
+    date(2026, 3, 3),    # Holi
+    date(2026, 3, 21),   # Id-Ul-Fitr / Ramadan Eid (Saturday)
+    date(2026, 3, 26),   # Shri Ram Navami
+    date(2026, 3, 31),   # Shri Mahavir Jayanti
+    date(2026, 4, 3),    # Good Friday
+    date(2026, 4, 14),   # Dr. Baba Saheb Ambedkar Jayanti
+    date(2026, 5, 1),    # Maharashtra Day
+    date(2026, 5, 28),   # Bakri Id
+    date(2026, 6, 26),   # Muharram
+    date(2026, 8, 15),   # Independence Day (Saturday)
+    date(2026, 9, 14),   # Ganesh Chaturthi
+    date(2026, 10, 2),   # Mahatma Gandhi Jayanti
+    date(2026, 10, 20),  # Dussehra
+    date(2026, 11, 8),   # Diwali Laxmi Pujan (Sunday, muhurat trading) -- NSE notes "Muhurat Trading will be conducted on that day" so we treat it as a non-regular-session date; engines that need a muhurat-trading path can layer that on later
+    date(2026, 11, 10),  # Diwali-Balipratipada
+    date(2026, 11, 24),  # Prakash Gurpurb Sri Guru Nanak Dev
+    date(2026, 12, 25),  # Christmas
 })
+
+
+#: Companion table: date -> description string. NOT a contract
+#: gate; the canonical truth is ``NSE_HOLIDAYS_STATIC``. The table
+#: exists so the drift detector can surface drift in human-
+#: readable form ("2026-09-14 present but no description
+#: matches" vs. just "missing 2026-09-14").
+NSE_HOLIDAY_DESCRIPTIONS: dict[date, str] = {
+    date(2026, 1, 15): "Municipal Corporation Election - Maharashtra",
+    date(2026, 1, 26): "Republic Day",
+    date(2026, 2, 15): "Mahashivratri",
+    date(2026, 3, 3): "Holi",
+    date(2026, 3, 21): "Id-Ul-Fitr (Ramadan Eid)",
+    date(2026, 3, 26): "Shri Ram Navami",
+    date(2026, 3, 31): "Shri Mahavir Jayanti",
+    date(2026, 4, 3): "Good Friday",
+    date(2026, 4, 14): "Dr. Baba Saheb Ambedkar Jayanti",
+    date(2026, 5, 1): "Maharashtra Day",
+    date(2026, 5, 28): "Bakri Id",
+    date(2026, 6, 26): "Muharram",
+    date(2026, 8, 15): "Independence Day",
+    date(2026, 9, 14): "Ganesh Chaturthi",
+    date(2026, 10, 2): "Mahatma Gandhi Jayanti",
+    date(2026, 10, 20): "Dussehra",
+    date(2026, 11, 8): "Diwali Laxmi Pujan (muhurat trading)",
+    date(2026, 11, 10): "Diwali-Balipratipada",
+    date(2026, 11, 24): "Prakash Gurpurb Sri Guru Nanak Dev",
+    date(2026, 12, 25): "Christmas",
+}
+
+
+#: ISO-8601 (YYYY-MM-DD) projection of the canonical set, sorted.
+#: Used by the JSON-serialisable route at ``/holidays`` and by the
+#: drift detector (which compares strings, not Python dates, so
+#: the Node source can be regex-parsed without datetime parsing).
+def _iso_sorted() -> tuple[str, ...]:
+    return tuple(sorted(d.isoformat() for d in NSE_HOLIDAYS_STATIC))
+
+
+NSE_HOLIDAYS_ISO: tuple[str, ...] = _iso_sorted()
+# Capture the ISO projection at import time. The holiday set is
+# static (process-pinned) -- this tuple never changes for the
+# lifetime of the process. Recomputing on every call would be
+# needless work; the constant is the documented surface.
 
 # One loud page per process when the static fallback is in use (the
 # operator must know the system is running on a baked-in calendar).

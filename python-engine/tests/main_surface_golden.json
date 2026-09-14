@@ -449,6 +449,14 @@
       "response_model": null
     },
     {
+      "endpoint": "get_nse_holidays",
+      "methods": [
+        "GET"
+      ],
+      "path": "/holidays",
+      "response_model": null
+    },
+    {
       "endpoint": "get_momentum_signals",
       "methods": [
         "GET"
