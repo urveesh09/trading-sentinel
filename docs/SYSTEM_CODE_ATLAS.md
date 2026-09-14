@@ -102,19 +102,17 @@ Declared tables: `broker_statement_entries`, `broker_statement_fills`, `broker_s
 
 ## `python-engine/capital_policy.py`
 
-[WORKFLOW-F 2026-09-13] Capital policy guard (Phase 6). Implements plan section 10.5 -- *"Establish capital-increase criteria from externally reconciled net results, drawdown, execution quality and operational stability. Leave the user's loss tolerance as an explicit input if not supplied."* The guard is the *third* gate in the live-growth chain: promotion-bridge (signed state) -- who may promote -> affordability guard (F2) -- can the live pool grow -> capital policy guard (F6) -- should the live pool grow The guard is **pure**: every input is supplied by the caller; no I/O, no network, no DB write. The async wrapper ``evaluate_capital_increase_for_account(...)`` is a thin coroutine that rea
+Offline F6 capital-policy evaluation, never an execution authorization. Loss tolerance is unknown until explicitly supplied. The pure function evaluates caller-declared inputs; their authenticity/account scope is not established by this API. The account wrapper refuses until immutable source linkage and genuine F/G/D evidence can be independently validated. Existing accountless histories and arbitrary archive files are not account-specific growth authority.
 
-Top-level declarations: `CapitalIncreaseVerdict` (line 68), `CapitalIncreaseEvaluation` (line 87), `CapitalPolicyThresholds` (line 115), `_validate_numeric` (line 211), `_validate_pct` (line 224), `_validate_thresholds` (line 234), `evaluate_capital_increase` (line 263), `evaluate_capital_increase_for_account` (line 511), `_insufficient` (line 614), `_consecutive_losses` (line 634), `_proactive_research_present` (line 660)
+Top-level declarations: `CapitalIncreaseVerdict` (line 20), `CapitalIncreaseEvaluation` (line 39), `CapitalPolicyThresholds` (line 67), `_validate_numeric` (line 170), `_validate_pct` (line 185), `_validate_thresholds` (line 195), `evaluate_capital_increase` (line 224), `evaluate_capital_increase_for_account` (line 474), `_insufficient` (line 500)
 
-Engine dependencies: `analytics`, `broker_reconciliation`, `config`, `performance`
-
-Related tests: `python-engine/tests/test_capital_policy.py`
+Related tests: `python-engine/tests/test_capital_policy.py`, `python-engine/tests/test_capital_policy_independent.py`
 
 ## `python-engine/capital_policy_cli.py`
 
-[WORKFLOW-F 2026-09-13] Capital policy CLI (Phase 6). Operator-facing CLI for the F6 capital policy guard. Mirrors the F5 ``reconciliation_cli`` discipline: offline-only, no scheduler, no broker network calls. The operator runs this from outside the container to ask *should* a candidate live-capital increase be authorised, given the current ledger state. Subcommands: * ``evaluate`` -- read the F1/F5 substrates (live equity, drawdown, execution quality, reconciliation status, proactive research evidence) and run ``evaluate_capital_increase``. Outputs a structured JSON with the verdict and per-gate breakdown. * ``print-config`` -- print the current capital-policy thresholds from ``config.py`` 
+[WORKFLOW-F 2026-09-13] Capital policy CLI (Phase 6). Operator-facing CLI for the F6 capital policy guard. Mirrors the F5 ``reconciliation_cli`` discipline: offline-only, no scheduler, no broker network calls. The operator runs this from outside the container to ask *should* a candidate live-capital increase be authorised, given the current ledger state. Subcommands: * ``evaluate`` -- validate the increase request and report the missing account/source and independently validated F/G/D evidence. Current accountless stores cannot authorize an account; unknown facts stay null. This CLI never grants executable capital-growth authority. * ``print-config`` -- print the current capital-policy thres
 
-Top-level declarations: `_write_output_atomic` (line 44), `_thresholds_from_config` (line 72), `_evaluate` (line 91), `_print_config` (line 145), `_build_parser` (line 179), `main` (line 222)
+Top-level declarations: `_write_output_atomic` (line 43), `_thresholds_from_config` (line 71), `_evaluate` (line 90), `_print_config` (line 144), `_build_parser` (line 178), `main` (line 221)
 
 Engine dependencies: `capital_policy`, `config`
 
@@ -184,7 +182,7 @@ Related tests: `python-engine/tests/test_dev_acceptance_harness.py`
 
 [WORKFLOW-F 2026-09-13] Discrepancy-ID framework + durable records (Phase 4). Implements plan section 10.2 -- "Investigate each retained reconciliation warning using actual evidence; build durable discrepancy records and operator-reviewed explanations without repairing books to agree." F4 ships: * A ``DiscrepancyCategory`` enum that maps every reason string already emitted by ``reconciliation_evidence.py`` and every state already emitted by ``broker_reconciliation.py`` into a stable, namespaced identifier (no free-text categories). * A ``DiscrepancyRecord`` dataclass + an append-only ``discrepancies`` table with a separate append-only ``discrepancy_status_log`` table. State transitions live 
 
-Top-level declarations: `DiscrepancyCategory` (line 80), `DiscrepancyStatus` (line 100), `DiscrepancyTransitionError` (line 117), `DiscrepancyRecord` (line 185), `_now_utc` (line 230), `_coerce_dt` (line 234), `_validate_evidence_refs` (line 252), `_finite_amount` (line 277), `init_discrepancies_db` (line 289), `record_discrepancy` (line 306), `update_discrepancy_status` (line 405), `_row_to_record` (line 489), `list_discrepancies` (line 512), `record_from_evidence_report` (line 618), `record_from_broker_statement` (line 709), `record_current_state` (line 767)
+Top-level declarations: `DiscrepancyCategory` (line 80), `DiscrepancyStatus` (line 100), `DiscrepancyTransitionError` (line 128), `DiscrepancyRecord` (line 196), `_now_utc` (line 243), `_coerce_dt` (line 247), `_validate_evidence_refs` (line 265), `_finite_amount` (line 290), `init_discrepancies_db` (line 302), `record_discrepancy` (line 319), `update_discrepancy_status` (line 418), `_row_to_record` (line 502), `list_discrepancies` (line 535), `record_from_evidence_report` (line 641), `record_from_broker_statement` (line 732), `record_current_state` (line 790)
 
 Engine dependencies: `broker_reconciliation`, `reconciliation_evidence`
 
@@ -630,9 +628,9 @@ Related tests: `python-engine/tests/test_macro_events.py`
 
 No module docstring; use the declarations and callers below.
 
-Top-level declarations: `_is_intraday_from_product_type` (line 136), `_classic_penny_source` (line 205), `_make_penny_ledger_writer` (line 219), `_get_penny_universe` (line 230), `_get_penny_scanner` (line 247), `_within_penny_market_hours` (line 289), `run_penny_scanner_once` (line 297), `run_penny_connors_scan` (line 421), `run_penny_universe_refresh` (line 715), `run_penny_regime_compute` (line 787), `run_penny_regime_refresh` (line 812), `_penny_ltp` (line 832), `_penny_exit_event_context` (line 861), `_append_penny_exit_event` (line 896), `_settle_confirmed_penny_exit` (line 914), `_execute_scheduled_penny_exit` (line 990), `run_penny_paper_stop_monitor` (line 1186), `run_penny_eod_check` (line 1246), `run_penny_force_close_mis` (line 1342), `_run_penny_daily_attribution` (line 1425), `_run_penny_eod_digest` (line 1463), `_run_penny_heatmap` (line 1510), `run_penny_hourly_report` (line 1559), `build_breadth_engine` (line 1731), `build_breadth_kwargs` (line 1777), `_filter_by_liquidity` (line 1796), `snap_to_tick` (line 1855), `_fno_regime_str` (line 1951), `lifespan` (line 1965), `post_login_initialization` (line 2332), `_load_universe_with_fallback` (line 2403), `run_screener` (line 2460), `daily_post_market` (line 2777), `run_momentum_screener` (line 2856), `_run_momentum_screener_impl` (line 2875), `_momentum_initial_risk` (line 3289), `_aggregate_momentum_close` (line 3300), `_close_momentum_position` (line 3307), `_record_momentum_scale_out` (line 3361), `_square_off_fill_evidence` (line 3419), `_cancel_order_truth` (line 3445), `_momentum_square_off_key` (line 3475), `_record_confirmed_momentum_partial` (line 3487), `_page_unconfirmed_square_off` (line 3526), `_post_square_off_with_reconcile` (line 3537), `_rearm_momentum_residual_stop` (line 3567), `momentum_intraday_monitor` (line 3593), `auto_square_momentum` (line 3874), `_paper_ltp` (line 4114), `_run_momentum_paper_monitor` (line 4134), `_run_momentum_paper_square_off` (line 4149), `momentum_eod_warning` (line 4159), `_notify_telegram_square_off_failure` (line 4191), `_notify_momentum_heartbeat` (line 4207), `compute_performance_report` (line 4278), `notify_screener_results` (line 4340)
+Top-level declarations: `_is_intraday_from_product_type` (line 136), `_classic_penny_source` (line 205), `_make_penny_ledger_writer` (line 219), `_get_penny_universe` (line 230), `_get_penny_scanner` (line 247), `_within_penny_market_hours` (line 289), `run_penny_scanner_once` (line 297), `run_penny_connors_scan` (line 421), `run_penny_universe_refresh` (line 715), `run_penny_regime_compute` (line 787), `run_penny_regime_refresh` (line 812), `_penny_ltp` (line 832), `_penny_exit_event_context` (line 861), `_append_penny_exit_event` (line 896), `_settle_confirmed_penny_exit` (line 914), `_execute_scheduled_penny_exit` (line 990), `run_penny_paper_stop_monitor` (line 1186), `run_penny_eod_check` (line 1246), `run_penny_force_close_mis` (line 1342), `_run_penny_daily_attribution` (line 1425), `_run_penny_eod_digest` (line 1463), `_run_penny_heatmap` (line 1510), `run_penny_hourly_report` (line 1559), `build_breadth_engine` (line 1729), `build_breadth_kwargs` (line 1775), `_filter_by_liquidity` (line 1794), `snap_to_tick` (line 1853), `_fno_regime_str` (line 1949), `lifespan` (line 1963), `post_login_initialization` (line 2330), `_load_universe_with_fallback` (line 2401), `run_screener` (line 2458), `daily_post_market` (line 2775), `run_momentum_screener` (line 2854), `_run_momentum_screener_impl` (line 2873), `_momentum_initial_risk` (line 3287), `_aggregate_momentum_close` (line 3298), `_close_momentum_position` (line 3305), `_record_momentum_scale_out` (line 3359), `_square_off_fill_evidence` (line 3417), `_cancel_order_truth` (line 3443), `_momentum_square_off_key` (line 3473), `_record_confirmed_momentum_partial` (line 3485), `_page_unconfirmed_square_off` (line 3524), `_post_square_off_with_reconcile` (line 3535), `_rearm_momentum_residual_stop` (line 3565), `momentum_intraday_monitor` (line 3591), `auto_square_momentum` (line 3872), `_paper_ltp` (line 4112), `_run_momentum_paper_monitor` (line 4132), `_run_momentum_paper_square_off` (line 4147), `momentum_eod_warning` (line 4157), `_notify_telegram_square_off_failure` (line 4189), `_notify_momentum_heartbeat` (line 4205), `compute_performance_report` (line 4276), `notify_screener_results` (line 4338)
 
-Engine dependencies: `analytics`, `backtest`, `breadth`, `config`, `engine`, `engine_auth`, `fno_oi_store`, `fno_positions`, `fno_signal_log`, `hedge_advisory`, `kite_client`, `logging_setup`, `mark_to_market`, `market_calendar`, `memory_metrics`, `models`, `momentum_exits`, `momentum_paper`, `momentum_shadow`, `operator_alert`, `operator_status`, `ops_metrics`, `ops_watchdogs`, `partner_orchestrator`, `penny_daily_attribution`, `penny_engine_breakout`, `penny_execution_journal`, `penny_executor`, `penny_heatmap`, `penny_hourly_report`, `penny_models`, `penny_position_reservations`, `penny_regime`, `penny_risk`, `penny_scanner`, `penny_shadow`, `penny_signal_log`, `penny_universe`, `performance`, `portfolio`, `position_tracker`, `regime`, `risk_engine`, `routes_backtest`, `routes_commands`, `routes_fno_experiments`, `routes_hedge`, `routes_holidays`, `routes_ops`, `routes_penny_experiments`, `routes_portfolio`, `routes_promotion_readiness`, `scheduler_setup`, `scheduler_telemetry`, `signal_log`, `token_lifecycle`, `universe`
+Engine dependencies: `analytics`, `backtest`, `breadth`, `config`, `engine`, `engine_auth`, `fno_oi_store`, `fno_positions`, `fno_signal_log`, `hedge_advisory`, `kite_client`, `logging_setup`, `mark_to_market`, `market_calendar`, `memory_metrics`, `models`, `momentum_exits`, `momentum_paper`, `momentum_shadow`, `operator_alert`, `operator_status`, `ops_metrics`, `ops_watchdogs`, `partner_orchestrator`, `penny_daily_attribution`, `penny_engine_breakout`, `penny_execution_journal`, `penny_executor`, `penny_heatmap`, `penny_hourly_report`, `penny_models`, `penny_position_reservations`, `penny_regime`, `penny_risk`, `penny_scanner`, `penny_shadow`, `penny_signal_log`, `penny_universe`, `performance`, `portfolio`, `position_tracker`, `regime`, `risk_engine`, `routes_backtest`, `routes_commands`, `routes_fno_experiments`, `routes_hedge`, `routes_holidays`, `routes_market_session`, `routes_ops`, `routes_penny_experiments`, `routes_portfolio`, `routes_promotion_readiness`, `scheduler_setup`, `scheduler_telemetry`, `signal_log`, `token_lifecycle`, `universe`
 
 Related tests: `python-engine/tests/test_main_api.py`, `python-engine/tests/test_main_breadth_helpers.py`, `python-engine/tests/test_main_breadth_integration.py`, `python-engine/tests/test_main_surface_characterization.py`
 
@@ -640,7 +638,7 @@ Related tests: `python-engine/tests/test_main_api.py`, `python-engine/tests/test
 
 [WORKFLOW-F 2026-09-13] Open mark-to-market valuation (Phase 3). Implements plan section 10.4 -- "Audit funding, expenses, partial closes, rejected/cancelled orders and open mark-to-market independently." The function is purely read-only: it computes unrealised P&L on every open position (equity, F&O, and F&O debit/credit structures) using a caller-supplied quote cache, and returns an aggregate plus per-row breakdown with named freshness buckets. The reason this module exists at all: ``operator_status.py:257`` and ``penny_hourly_report.py:66`` consume an ``unrealised_pnl`` field that no production code path produces. ``main.py:1599`` previously read ``p.get("current_price", 0.0)`` from each 
 
-Top-level declarations: `QuoteStatus` (line 54), `QuoteTick` (line 63), `PositionMark` (line 93), `OpenMarkToMarket` (line 122), `_validate_equity_row` (line 155), `_mark_equity_row` (line 200), `_validate_fno_row` (line 260), `_mark_fno_row` (line 313), `_validate_fno_dr_row` (line 387), `_mark_fno_dr_row` (line 419), `mark_open_positions` (line 547)
+Top-level declarations: `QuoteStatus` (line 54), `QuoteTick` (line 64), `PositionMark` (line 94), `OpenMarkToMarket` (line 123), `_validate_equity_row` (line 164), `_mark_equity_row` (line 209), `_validate_fno_row` (line 269), `_mark_fno_row` (line 322), `_validate_fno_dr_row` (line 397), `_mark_fno_dr_row` (line 429), `mark_open_positions` (line 577)
 
 Related tests: `python-engine/tests/test_mark_to_market.py`
 
@@ -648,7 +646,7 @@ Related tests: `python-engine/tests/test_mark_to_market.py`
 
 No module docstring; use the declarations and callers below.
 
-Top-level declarations: `_iso_sorted` (line 137), `_alert_static_fallback` (line 152), `is_market_open` (line 195), `get_holiday_cache` (line 212), `is_trading_day` (line 224), `next_trading_day` (line 256), `prev_trading_day` (line 262), `_load_holidays_sync` (line 271), `is_trading_day_sync` (line 298), `trading_days_between_sync` (line 321), `_ist_clock_minutes` (line 383), `is_cas_eligible` (line 399), `_normalised_cas_eligibility_set` (line 469), `classify_session_phase` (line 488), `execution_allowed` (line 687)
+Top-level declarations: `_iso_sorted` (line 137), `_alert_static_fallback` (line 156), `is_market_open` (line 199), `get_holiday_cache` (line 216), `is_trading_day` (line 228), `next_trading_day` (line 260), `prev_trading_day` (line 266), `_load_holidays_sync` (line 275), `is_trading_day_sync` (line 302), `trading_days_between_sync` (line 325), `_ist_clock_minutes` (line 387), `is_cas_eligible` (line 403), `_normalised_cas_eligibility_set` (line 473), `classify_session_phase` (line 492), `execution_allowed` (line 691)
 
 Engine dependencies: `config`
 
@@ -1106,7 +1104,7 @@ Related tests: `python-engine/tests/test_penny_heatmap.py`
 
 [PENNY-HOURLY 2026-06-21] Per-hour penny subsystem status report (spec §9.4). Fires at PENNY_HOURLY_REPORT_START_HOUR through PENNY_HOURLY_REPORT_END_HOUR IST (default 10:00 - 14:00, five reports per trading day). Mandatory heartbeat rule: the report fires EVERY hour within the window regardless of activity. A missing report is itself an alert. Delivery: - Always logged at INFO level (key: penny_hourly_report) - Optional webhook POST when PENNY_HOURLY_REPORT_WEBHOOK is configured - Webhook failures are logged but never raised Hard architectural rule (enforced by tests/test_penny_isolation.py): this module MUST NOT import from engine, regime, risk_engine, portfolio, evaluate_signal, or evalua
 
-Top-level declarations: `is_in_report_window` (line 35), `PennyHourlyReport` (line 56), `run_hourly_report` (line 408)
+Top-level declarations: `is_in_report_window` (line 35), `PennyHourlyReport` (line 56), `run_hourly_report` (line 410)
 
 Engine dependencies: `config`, `penny_signal_log`
 
@@ -1374,7 +1372,7 @@ Related tests: `python-engine/tests/test_promotion_readiness.py`, `python-engine
 
 [WORKFLOW-F 2026-09-13] Broker statement automation CLI (Phase 5). Implements plan section 10 -- F5 sub-slices: a CLI for the operator to ingest a broker statement, run reconciliation reports, and list discrepancies. F5 is offline-only: no scheduler, no daemon, no broker network calls. The operator runs the CLI from outside the container with a local JSON payload. The CLI is *the* wiring site for ``discrepancies.record_current_state``: every successful statement import records discrepancies as a side effect. Re-running with the same payload is idempotent -- the existing ``broker_reconciliation.import_broker_statement`` already rejects conflicting payloads at the SHA-256 boundary, and the dis
 
-Top-level declarations: `_json_file` (line 68), `_write_output_atomic` (line 81), `_parse_iso` (line 119), `_payload_to_import_kwargs` (line 131), `_import_statement` (line 172), `_run_report` (line 237), `_list_discrepancies` (line 273), `_build_parser` (line 332), `main` (line 413)
+Top-level declarations: `_json_file` (line 68), `_write_output_atomic` (line 81), `_parse_iso` (line 119), `_payload_to_import_kwargs` (line 131), `_import_statement` (line 178), `_run_report` (line 240), `_list_discrepancies` (line 276), `_build_parser` (line 335), `main` (line 416)
 
 Engine dependencies: `broker_reconciliation`, `config`, `discrepancies`, `reconciliation_evidence`
 
@@ -1500,9 +1498,17 @@ Engine dependencies: `config`, `hedge_advisory`, `hedge_analytics`, `hedge_readi
 
 [WORKFLOW-J.5 2026-09-13] GET /holidays route. The node-gateway needs the canonical NSE holiday list to decide whether ``isMarketOpen()`` should return false. Pre-J.5 the gateway shipped its own list and the two sources diverged (20 Python dates vs 18 Node dates, only 10 overlap). J.5 makes Python authoritative; this route is the surface Node fetches at boot. The route is read-only and public (no auth gate) -- the data is already published on the NSE website. The ``/holidays`` endpoint follows the same shape as the rest of the engine's read-only operational state (compare ``/ops/metrics``).
 
-Top-level declarations: `get_nse_holidays` (line 28)
+Top-level declarations: `get_nse_holidays` (line 29)
 
 Engine dependencies: `market_calendar`
+
+## `python-engine/routes_market_session.py`
+
+Authenticated, read-only session inputs consumed by the Node gateway.
+
+Top-level declarations: `_eligibility_version` (line 16), `cas_eligibility` (line 23)
+
+Engine dependencies: `config`, `engine_auth`, `market_calendar`
 
 ## `python-engine/routes_ops.py`
 
@@ -1630,7 +1636,7 @@ Dependencies: none extracted
 
 ## `node-gateway/server/index.js`
 
-Dependencies: `./app`, `./config`, `./db/index`, `./middleware/logger`, `./services/executor`, `./services/telegram`, `./services/token-restore`, `./utils/market-hours`, `http`
+Dependencies: `./app`, `./config`, `./db/index`, `./middleware/logger`, `./services/cas-eligibility`, `./services/executor`, `./services/telegram`, `./services/token-restore`, `./utils/market-hours`, `http`
 
 ## `node-gateway/server/jest.config.js`
 
@@ -1698,9 +1704,13 @@ Dependencies: `../config`, `../middleware/security`, `../services/telegram`, `..
 
 Local routes: `GET /`, `POST /invalidate`
 
+## `node-gateway/server/services/cas-eligibility.js`
+
+Dependencies: `../config`, `../utils/market-hours`
+
 ## `node-gateway/server/services/executor.js`
 
-Dependencies: `../config`, `../db/index`, `../middleware/logger`, `../utils/errors`, `../utils/market-hours`, `../utils/retry`, `./kite`, `./risk-geometry`, `./telegram`, `./token-store`, `already
+Dependencies: `../config`, `../db/index`, `../middleware/logger`, `../utils/errors`, `../utils/market-hours`, `../utils/retry`, `./cas-eligibility`, `./kite`, `./risk-geometry`, `./telegram`, `./token-store`, `already
   // breached`, `crypto`, `the engine rejected this payload`
 
 ## `node-gateway/server/services/halt-switch.js`
