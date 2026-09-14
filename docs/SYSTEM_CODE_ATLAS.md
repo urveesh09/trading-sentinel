@@ -44,6 +44,14 @@ Top-level declarations: `print_config` (line 114), `read_snapshot` (line 134), `
 
 Related tests: `agent/tests/test_optional_ai_metrics.py`
 
+## `agent/contract_health.py`
+
+[WORKFLOW-I.4.E 2026-09-14] Bounded contract-health self-evaluation. Per plan §13 ("The typed result must not change capital limits, qualification or order/delivery authority"), this module is the "guard the guards" layer that periodically asserts the bounded contract on the agent's own surfaces. Five independent invariants: (1) `status_envelope_authority` — the bounded health envelope carries no execution authority (rejects `can_place_orders != False`, `authorization_effect != "NONE"`, unknown top-level keys); (2) `no_prompt_leakage` — no prompt or reviewer content in any persisted snapshot; (3) `usefulness_counters_only` — every `usefulness` key is in `USEFULNESS_ALLOWED_KEYS` and every value is a bounded primitive; (4) `classifier_fail_closed` — every `ClassificationResult` below `CONFIDENCE_THRESHOLD=0.6` must map to `UNKNOWN`, every category outside the bounded enum is a violation, every rationale > 280 chars is a violation; (5) `review_non_authoritative` — a `Review` must not carry any of `FORBIDDEN_REVIEW_DELTA_FIELDS` (`can_place_orders`, `authorization_effect`, `live_delta_inr`, `capital_delta`, `qualification`, `approved_live_budget`). `evaluate_contract(...)` aggregates every invariant into a `ContractReport` (`passed`, `checks[]`, `evaluated_at`, `schema_version="i4e-v1"`). All inputs are optional (`None` means "not inspected in this run", never a violation). The pure module imports `agent.news_classifier` lazily inside `check_classifier_fail_closed` so it stays importable in isolation (the `agent.py` import path triggers a Telegram env-var check at module load).
+
+Top-level declarations: `STATUS_ENVELOPE_ALLOWED_KEYS`, `USEFULNESS_ALLOWED_KEYS`, `FORBIDDEN_REVIEW_DELTA_FIELDS`, `ContractCheck`, `ContractReport`, `check_status_envelope_authority`, `check_no_prompt_leakage`, `check_usefulness_counters_only`, `check_classifier_fail_closed`, `check_review_non_authoritative`, `evaluate_contract`
+
+Related tests: `agent/tests/test_contract_health.py`
+
 ## `python-engine/affordability.py`
 
 [WORKFLOW-F 2026-09-13] Paper-vs-live affordability guard (Phase 2). Implements plan section 10.3 — *"Audit true cost per trade relative to expected edge for INR 8k capital. Prevent a large configured paper bankroll from implying owner live affordability."* This module is the F-side seam the promotion-bridge contract (see ``docs/2026-09-13-workflow-g-promotion-bridge.md`` sections 3.3 and 4) depends on for ``APPROVED_LIVE_BUDGET`` decisions. Concretely: * ``evaluate_paper_to_live_affordability(...)`` returns a structured result describing whether a proposed *live* delta is affordable from the *live* bank's current state, the *paper* P&L earned over the same period, and the operator-tunable m
