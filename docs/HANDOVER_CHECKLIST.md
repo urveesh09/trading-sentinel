@@ -30,6 +30,15 @@ Independent correction plan (`docs/2026-09-14-independent-correction-plan.md`) c
 
 The J series is now operationally closed (J.1 → J.2.1 → J.2.2 → J.3 → J.4 → J.5 → J.6 → J.7 → J.7-HARDENING → J.8 → J.9 → J.10 → J.10.CLOSURE = 13 sub-slices). F3/F4/F5/F6 are hardened. The only J-related follow-up is operator-supplied staging captures (gate-flip UNREACHABLE → REACHABLE); the only F-related follow-up is operator-signed `BridgeDecision` + actual release validation under D.
 
+J.10 follow-up operator-surface enhancements (post-CLOSURE):
+- `12912b1` per-branch captures catalog in SUMMARY + CLI; gate report gains `captures_by_branch: dict[str, list[str]]`; SUMMARY renders a `## Captures catalog` section with sub-headings per branch (zero-capture branches render `(no captures yet)`); CLI human output gains a `captures catalog:` block; CLI `--json` includes the field.
+- `37f585f` end-to-end CLI test coverage (9 tests via subprocess) — pins exit codes, `--json` shape stability (exactly 7 keys), `--update-summary` writes SUMMARY.md, `--summary-path` overrides, `--write` persists JSON report.
+- `1c35633` per-branch IST-window runbook in SUMMARY — fixed the legacy `--observation-at 15:22:00 IST` syntax bug (the probe CLI doesn't accept it); replaced with a per-branch IST-window cheat-sheet + two ISO 8601 example commands.
+- `2b7a670` `--status` flag for shell prompts and monitoring — single-line output, exit code follows verdict, count-driven branch counting (5 captures on 1 branch = 1 branch captured).
+- `181f6ee`, `4630131` docs sweeps to reflect the J.10.CLOSURE + independent correction plan + these follow-up enhancements.
+
+Net J.10 follow-up slice delta: python-engine +18 new tests across 4 commits (3 catalog + 9 CLI + 3 runbook + 3 status). All defensive regressions clean: Python 380/380 PASS (was 3267/4/1 at J.7 close, +113 net); Node 394 pass / 4 skip / 0 fail (was 380/4/0 at J.7 close, +14 net); Client 40/40 PASS (no client changes).
+
 ## Read order
 
 1. [SYSTEM_GUIDE.md](SYSTEM_GUIDE.md): feature architecture, authority boundaries, before/after improvements and limitations.
