@@ -57,7 +57,8 @@ class TestAsyncEvaluator:
     sync/async shim.
     """
 
-    def test_async_matches_sync_for_affordable_case(self) -> None:
+    @pytest.mark.asyncio
+    async def test_async_matches_sync_for_affordable_case(self) -> None:
         kwargs = dict(
             live_source="EDGE_LIVE",
             paper_source="EDGE_PAPER",
@@ -66,15 +67,14 @@ class TestAsyncEvaluator:
             paper_pnl_inr=0.0,
         )
         sync_eval = evaluate_paper_to_live_affordability(**kwargs)
-        async_eval = asyncio.run(
-            async_evaluate_paper_to_live_affordability(**kwargs)
-        )
+        async_eval = await async_evaluate_paper_to_live_affordability(**kwargs)
         assert async_eval.verdict == sync_eval.verdict
         assert async_eval.live_current_inr == sync_eval.live_current_inr
         assert async_eval.paper_pnl_inr == sync_eval.paper_pnl_inr
         assert async_eval.refusal_reasons == sync_eval.refusal_reasons
 
-    def test_async_matches_sync_for_margin_exceeded(self) -> None:
+    @pytest.mark.asyncio
+    async def test_async_matches_sync_for_margin_exceeded(self) -> None:
         kwargs = dict(
             live_source="EDGE_LIVE",
             paper_source="EDGE_PAPER",
@@ -83,9 +83,7 @@ class TestAsyncEvaluator:
             paper_pnl_inr=0.0,
         )
         sync_eval = evaluate_paper_to_live_affordability(**kwargs)
-        async_eval = asyncio.run(
-            async_evaluate_paper_to_live_affordability(**kwargs)
-        )
+        async_eval = await async_evaluate_paper_to_live_affordability(**kwargs)
         assert async_eval.verdict == AffordabilityVerdict.MARGIN_EXCEEDED
         assert async_eval.refusal_reasons == sync_eval.refusal_reasons
 

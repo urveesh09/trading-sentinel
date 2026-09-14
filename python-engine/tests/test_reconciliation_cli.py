@@ -142,6 +142,16 @@ class TestPayloadToImportKwargs:
         with pytest.raises(ValueError, match="timezone-aware"):
             _payload_to_import_kwargs(bad)
 
+    @pytest.mark.parametrize("field,value", [
+        ("account_id", None), ("account_id", "  "),
+        ("statement_id", None), ("statement_id", "  "),
+    ])
+    def test_null_or_blank_identity_rejected(self, field, value) -> None:
+        bad = _good_payload()
+        bad[field] = value
+        with pytest.raises(ValueError, match=field):
+            _payload_to_import_kwargs(bad)
+
 
 # ---- _write_output_atomic --------------------------------------------------
 
@@ -193,7 +203,6 @@ class TestImportStatement:
         )
         out = await _import_statement(args)
         assert out["ok"] is True
-        assert out["imported"] is True
         assert out["broker_status"] == "UNRESOLVED"
         assert out["account_id"] == "owner"
         assert out["statement_id"] == "2026-09-08"
@@ -214,8 +223,6 @@ class TestImportStatement:
         first = await _import_statement(args)
         second = await _import_statement(args)
         assert first["ok"] and second["ok"]
-        assert first["imported"] is True
-        assert second["imported"] is False
         # The recorded discrepancy IDs must be byte-identical.
         assert (
             first["discrepancy_ids"]["broker"]
@@ -225,6 +232,19 @@ class TestImportStatement:
             first["discrepancy_ids"]["evidence"]
             == second["discrepancy_ids"]["evidence"]
         )
+
+    def test_main_retry_writes_identical_immutable_output(self, cli_db: str, tmp_path) -> None:
+        payload_path = str(tmp_path / "statement.json")
+        output_path = str(tmp_path / "out.json")
+        _write_payload(payload_path, _good_payload())
+        argv = ["--db", cli_db, "import-statement", "--payload", payload_path,
+                "--output", output_path]
+        assert main(argv) == 0
+        with open(output_path, "rb") as stream:
+            first = stream.read()
+        assert main(argv) == 0
+        with open(output_path, "rb") as stream:
+            assert stream.read() == first
 
     @pytest.mark.asyncio
     async def test_bad_payload_records_error(
@@ -391,7 +411,6 @@ class TestMainIntegration:
         with open(output_path, "rb") as f:
             out = json.loads(f.read())
         assert out["ok"] is True
-        assert out["imported"] is True
 
     def test_list_discrepancies_subcommand_runs(
         self, cli_db, tmp_path,

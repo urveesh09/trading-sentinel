@@ -113,6 +113,17 @@ _VALID_STATUS_TRANSITIONS = frozenset({
     (DiscrepancyStatus.INVESTIGATING, DiscrepancyStatus.WITHDRAWN),
 })
 
+INTERNAL_UNSCOPED_ACCOUNT_ID = "INTERNAL_UNSCOPED"
+_INTERNAL_EVIDENCE_CATEGORIES = frozenset({
+    DiscrepancyCategory.ORIGIN_REF_PNL_DIFFERENCE,
+    DiscrepancyCategory.ORIGIN_REF_SOURCE_MISMATCH,
+    DiscrepancyCategory.ORIGIN_REF_HAS_NO_MATCHING_POSITION,
+    DiscrepancyCategory.MULTIPLE_LEDGER_ROWS_SHARE_ORIGIN_REF,
+    DiscrepancyCategory.ORIGIN_REF_POSITION_NOT_CLOSED_OR_UNVALUED,
+    DiscrepancyCategory.LEDGER_PNL_NONFINITE_OR_MISSING,
+    DiscrepancyCategory.INTERNAL_EVIDENCE_INVALID_AMOUNTS,
+})
+
 
 class DiscrepancyTransitionError(RuntimeError):
     """Raised when a status transition violates the forward-only machine."""
@@ -202,6 +213,7 @@ class DiscrepancyRecord:
     current_status: DiscrepancyStatus
     status_updated_at: Optional[datetime]
     status_note: Optional[str] = None
+    account_attribution: str = "ACCOUNT_SCOPED"
 
     def to_dict(self) -> dict[str, Any]:
         return {
@@ -222,6 +234,7 @@ class DiscrepancyRecord:
                 if self.status_updated_at else None
             ),
             "status_note": self.status_note,
+            "account_attribution": self.account_attribution,
         }
 
 
@@ -493,11 +506,20 @@ def _row_to_record(
     status_updated_at: Optional[datetime],
     status_note: Optional[str],
 ) -> DiscrepancyRecord:
+    category = DiscrepancyCategory(str(row["category"]))
+    account_id = str(row["account_id"])
+    attribution = (
+        "INTERNAL_UNSCOPED"
+        if account_id == INTERNAL_UNSCOPED_ACCOUNT_ID
+        else "UNVERIFIED_LEGACY_ACCOUNT_ATTRIBUTION"
+        if category in _INTERNAL_EVIDENCE_CATEGORIES
+        else "ACCOUNT_SCOPED"
+    )
     return DiscrepancyRecord(
         id=int(row["id"]),
-        category=DiscrepancyCategory(str(row["category"])),
+        category=category,
         evidence_key=str(row["evidence_key"]),
-        account_id=str(row["account_id"]),
+        account_id=account_id,
         source=str(row["source"]),
         severity=str(row["severity"]),
         amount_inr=row["amount_inr"],
@@ -506,6 +528,7 @@ def _row_to_record(
         current_status=current_status,
         status_updated_at=status_updated_at,
         status_note=status_note,
+        account_attribution=attribution,
     )
 
 
@@ -676,7 +699,7 @@ async def record_from_evidence_report(
             db_path,
             category=category,
             evidence_key=evidence_key,
-            account_id=account_id,
+            account_id=INTERNAL_UNSCOPED_ACCOUNT_ID,
             source=source,
             severity=severity,
             amount_inr=amount,
@@ -695,7 +718,7 @@ async def record_from_evidence_report(
                     f"{DiscrepancyCategory.INTERNAL_EVIDENCE_INVALID_AMOUNTS.value}"
                     f"|{source}|sheet"
                 ),
-                account_id=account_id,
+                account_id=INTERNAL_UNSCOPED_ACCOUNT_ID,
                 source=source,
                 severity="MEDIUM",
                 amount_inr=None,

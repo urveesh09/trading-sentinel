@@ -57,6 +57,7 @@ class QuoteStatus(Enum):
     FRESH = "FRESH"
     STALE = "STALE"
     UNAVAILABLE = "UNAVAILABLE"
+    UNSUPPORTED = "UNSUPPORTED"
 
 
 @dataclass(frozen=True)
@@ -127,7 +128,15 @@ class OpenMarkToMarket:
 
     @property
     def total_unrealised_pnl(self) -> float:
+        """Partial subtotal only; use complete_unrealised_pnl for accounting."""
         return sum(m.unrealised_pnl for m in self.marks)
+
+    @property
+    def complete_unrealised_pnl(self) -> Optional[float]:
+        """Unknown if any position is unpriced, stale or unsupported."""
+        if any(mark.quote_status != QuoteStatus.FRESH for mark in self.marks):
+            return None
+        return self.total_unrealised_pnl
 
     @property
     def count_by_status(self) -> Dict[QuoteStatus, int]:
@@ -318,11 +327,12 @@ def _mark_fno_row(
 ) -> PositionMark:
     """Mark a single F&O row using the premium multiplier.
 
-    P&L formula:
-        pnl = (current_premium - entry_premium) * qty * lot_size
+    ``fno_positions.qty`` is already the number of option contracts:
+    its writer persists ``lots * lot_size``.  ``lot_size`` remains
+    position metadata and must not be applied again.
 
-    The ``lot_size`` multiplier is essential -- one F&O contract is
-    ``qty * lot_size`` shares of the underlying, not ``qty`` shares.
+    P&L formula:
+        pnl = (current_premium - entry_premium) * qty
     """
     _validate_fno_row(row)
     tradingsymbol = str(row["tradingsymbol"])
@@ -330,7 +340,7 @@ def _mark_fno_row(
     qty = int(row["qty"])
     lot_size = int(row["lot_size"])
     entry_premium = float(row["entry_premium"])
-    entry_cost = entry_premium * qty * lot_size
+    entry_cost = entry_premium * qty
 
     tick = quotes.get(tradingsymbol)
     if tick is None and "token" in row and row["token"]:
@@ -369,7 +379,7 @@ def _mark_fno_row(
             ),
         )
 
-    pnl = (tick.last_price - entry_premium) * qty * lot_size
+    pnl = (tick.last_price - entry_premium) * qty
     return PositionMark(
         subsystem="FNO",
         source=source,
@@ -466,6 +476,26 @@ def _mark_fno_dr_row(
             notes="legs_json empty or not a list",
         )
 
+    # The owning fno_dr_book persists only opt_type/strike/quantity/premium.
+    # That cannot identify a broker instrument later, so never manufacture a
+    # symbol from it: distinguish this unsupported row from a missing quote.
+    if any(
+        not isinstance(leg, dict)
+        or (not leg.get("tradingsymbol") and not leg.get("token"))
+        for leg in legs
+    ):
+        return PositionMark(
+            subsystem="FNO_DR",
+            source=source,
+            identity=structure_id,
+            entry_cost=float(row["net_premium_rs"]),
+            mark_price=0.0,
+            unrealised_pnl=0.0,
+            quote_status=QuoteStatus.UNSUPPORTED,
+            quote_age_seconds=None,
+            notes="stored legs lack immutable tradingsymbol or token",
+        )
+
     net_premium = float(row["net_premium_rs"])
     leg_pnl = 0.0
     worst_status = QuoteStatus.FRESH
@@ -557,10 +587,10 @@ def mark_open_positions(
 
     Each subsystem is marked independently; an UNAVAILABLE row in one
     subsystem does not affect the others. The aggregate is the sum of
-    per-row marks (so UNAVAILABLE rows contribute 0, which is the
-    conservative choice for the *aggregate* -- the per-row
-    ``quote_status`` lets the caller see *which* positions are
-    missing marks).
+    per-row marks. Missing rows contribute zero to that legacy partial
+    subtotal, which is NOT a conservative loss estimate. Accounting/report
+    callers must use complete_unrealised_pnl, which is unknown unless all
+    marks are fresh, and inspect quote_status for the missing positions.
     """
     if freshness_seconds < 0:
         raise ValueError(

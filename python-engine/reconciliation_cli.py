@@ -156,9 +156,15 @@ def _payload_to_import_kwargs(payload: Any) -> dict[str, Any]:
         raise ValueError("payload.entries must be a list")
     if not isinstance(payload["fills"], list):
         raise ValueError("payload.fills must be a list")
+    identities: dict[str, str] = {}
+    for field in ("account_id", "statement_id"):
+        value = payload[field]
+        if not isinstance(value, str) or not value.strip():
+            raise ValueError(f"payload.{field} must be a non-empty string")
+        identities[field] = value.strip()
     return {
-        "account_id": str(payload["account_id"]),
-        "statement_id": str(payload["statement_id"]),
+        "account_id": identities["account_id"],
+        "statement_id": identities["statement_id"],
         "as_of": _parse_iso(payload["as_of"], "as_of"),
         "opening_cash": float(payload["opening_cash"]),
         "closing_cash": float(payload["closing_cash"]),
@@ -176,7 +182,6 @@ async def _import_statement(args: argparse.Namespace) -> dict[str, Any]:
         {
           "command": "import-statement",
           "ok": <bool>,
-          "imported": <bool>,                  # False on idempotent re-import
           "broker_status": "MATCH" | "UNRESOLVED" | "UNAVAILABLE",
           "discrepancy_ids": {"broker": [...], "evidence": [...]},
           "account_id": <str>,
@@ -192,7 +197,6 @@ async def _import_statement(args: argparse.Namespace) -> dict[str, Any]:
     out: dict[str, Any] = {
         "command": "import-statement",
         "ok": False,
-        "imported": False,
         "broker_status": "UNAVAILABLE",
         "discrepancy_ids": {"broker": [], "evidence": []},
         "account_id": "",
@@ -206,10 +210,9 @@ async def _import_statement(args: argparse.Namespace) -> dict[str, Any]:
         statement_id_for_record = kwargs["statement_id"]
         out["account_id"] = account_id_for_record
         out["statement_id"] = statement_id_for_record
-        imported = await import_broker_statement(
+        await import_broker_statement(
             args.db, **kwargs,
         )
-        out["imported"] = bool(imported)
         # Run record_current_state on every successful import
         # (including idempotent re-imports -- the F4 framework is
         # idempotent so the duplicate record call is a no-op).
@@ -426,7 +429,7 @@ def main(argv: Optional[list[str]] = None) -> int:
     # can inspect what went wrong.
     try:
         _write_output_atomic(args.output, out)
-    except OSError as exc:
+    except (OSError, ValueError) as exc:
         print(
             json.dumps(
                 {"ok": False, "error": f"output write failed: {exc}"},

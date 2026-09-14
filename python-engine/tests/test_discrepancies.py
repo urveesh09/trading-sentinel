@@ -124,6 +124,19 @@ class TestRecordDiscrepancy:
         assert rows[0].amount_inr is None
 
     @pytest.mark.asyncio
+    async def test_legacy_internal_account_attribution_is_unverified(
+        self, discrepancies_db: str,
+    ) -> None:
+        await record_discrepancy(
+            discrepancies_db,
+            category=DiscrepancyCategory.ORIGIN_REF_PNL_DIFFERENCE,
+            evidence_key="legacy|ledger:1", account_id="old-account",
+            source="PENNY_PAPER", severity="HIGH",
+        )
+        [row] = await list_discrepancies(discrepancies_db)
+        assert row.account_attribution == "UNVERIFIED_LEGACY_ACCOUNT_ATTRIBUTION"
+
+    @pytest.mark.asyncio
     async def test_invalid_severity_rejected(
         self, discrepancies_db: str,
     ) -> None:
@@ -675,6 +688,30 @@ class TestBridgeFromEvidenceReport:
         assert rows[0].category == DiscrepancyCategory.ORIGIN_REF_PNL_DIFFERENCE
         assert rows[0].severity == "HIGH"
         assert rows[0].amount_inr == -10.0
+        assert rows[0].account_id == "INTERNAL_UNSCOPED"
+        assert rows[0].account_attribution == "INTERNAL_UNSCOPED"
+
+    @pytest.mark.asyncio
+    async def test_same_internal_fact_is_not_attached_to_each_broker_account(
+        self, discrepancies_db: str,
+    ) -> None:
+        payload = {
+            "sheets": [{
+                "ledger_id": 777, "ticker": "TCS", "source": "PENNY_PAPER",
+                "ledger_pnl": -10.0, "state": "UNRESOLVED",
+                "reason": "origin_ref_pnl_difference", "position": None,
+            }],
+            "source_sheets": [],
+        }
+        first = await record_from_evidence_report(
+            discrepancies_db, evidence_report=payload, account_id="broker-a",
+        )
+        second = await record_from_evidence_report(
+            discrepancies_db, evidence_report=payload, account_id="broker-b",
+        )
+        assert first == second
+        assert await list_discrepancies(discrepancies_db, account_id="broker-a") == []
+        assert await list_discrepancies(discrepancies_db, account_id="broker-b") == []
 
     @pytest.mark.asyncio
     async def test_matched_internal_skipped(

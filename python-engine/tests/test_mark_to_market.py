@@ -18,6 +18,7 @@ from __future__ import annotations
 
 import json
 import math
+from dataclasses import asdict
 from datetime import datetime, timedelta, timezone
 from typing import Any, Dict, List
 
@@ -319,10 +320,10 @@ class TestEquityValidation:
 class TestFnoMark:
     def test_fresh_quote_uses_premium_multiplier(self) -> None:
         now = _now()
-        # (110 - 100) * 1 * 25 (lot_size) = 250
+        # qty is contracts, not lots: (110 - 100) * 25 = 250.
         result = mark_open_positions(
             equity_rows=[],
-            fno_rows=[_fno_row(entry_premium=100.0, lot_size=25, qty=1)],
+            fno_rows=[_fno_row(entry_premium=100.0, lot_size=25, qty=25)],
             fno_dr_rows=[],
             quotes={"BANKNIFTY26SEP25400CE": _quote(110.0)},
             now_utc=now,
@@ -330,18 +331,18 @@ class TestFnoMark:
         assert result.total_unrealised_pnl == pytest.approx(250.0)
         m = result.marks[0]
         assert m.subsystem == "FNO"
-        assert m.entry_cost == pytest.approx(2500.0)  # 100 * 1 * 25
+        assert m.entry_cost == pytest.approx(2500.0)  # 100 * 25
 
     def test_fno_negative_premium_quote(self) -> None:
         now = _now()
         result = mark_open_positions(
             equity_rows=[],
-            fno_rows=[_fno_row(entry_premium=100.0, lot_size=25, qty=1)],
+            fno_rows=[_fno_row(entry_premium=100.0, lot_size=25, qty=25)],
             fno_dr_rows=[],
             quotes={"BANKNIFTY26SEP25400CE": _quote(80.0)},
             now_utc=now,
         )
-        # (80 - 100) * 1 * 25 = -500
+        # (80 - 100) * 25 = -500
         assert result.total_unrealised_pnl == pytest.approx(-500.0)
 
     def test_fno_lookup_by_token_fallback(self) -> None:
@@ -349,14 +350,35 @@ class TestFnoMark:
         now = _now()
         result = mark_open_positions(
             equity_rows=[],
-            fno_rows=[_fno_row(tradingsymbol="MISS", token=98765, entry_premium=50.0)],
+            fno_rows=[_fno_row(tradingsymbol="MISS", token=98765, qty=15, entry_premium=50.0)],
             fno_dr_rows=[],
             quotes={98765: _quote(70.0)},
             now_utc=now,
         )
-        # (70 - 50) * 1 * 15 = +300
+        # (70 - 50) * 15 = +300
         assert result.total_unrealised_pnl == pytest.approx(300.0)
         assert result.marks[0].quote_status == QuoteStatus.FRESH
+
+    @pytest.mark.asyncio
+    async def test_actual_fno_writer_qty_is_not_multiplied_twice(self, tmp_path) -> None:
+        """Bind MTM to the owning SQLite writer/readback contract."""
+        from fno_positions import insert_position, open_positions
+
+        db_path = str(tmp_path / "fno.db")
+        await insert_position(
+            db_path,
+            source="FNO_PAPER", tradingsymbol="BANKNIFTY26SEP25400CE",
+            token=12345, lots=1, lot_size=50, qty=50,
+            entry_premium=100.0,
+        )
+        [stored] = await open_positions(db_path, "FNO_PAPER")
+        now = _now()
+        result = mark_open_positions(
+            equity_rows=[], fno_rows=[asdict(stored)], fno_dr_rows=[],
+            quotes={12345: _quote(110.0)}, now_utc=now,
+        )
+        assert result.marks[0].entry_cost == pytest.approx(5_000.0)
+        assert result.total_unrealised_pnl == pytest.approx(500.0)
 
     def test_fno_zero_qty_is_flat(self) -> None:
         now = _now()
@@ -405,6 +427,31 @@ class TestFnoMark:
 # ---- F&O debit/credit MTM --------------------------------------------------
 
 class TestFnoDrMark:
+    @pytest.mark.asyncio
+    async def test_actual_dr_writer_row_is_explicitly_unsupported(self, tmp_path) -> None:
+        """Real stored DR legs lack an immutable quote identity."""
+        from fno_defined_risk import Structure, StructureKind
+        from fno_dr_book import PlannedStructure, init_dr_db, insert_structure, open_structures
+        from fno_models import Leg, OptionType
+
+        db_path = str(tmp_path / "dr.db")
+        await init_dr_db(db_path)
+        structure = Structure(
+            kind=StructureKind.DEBIT_SPREAD,
+            legs=[Leg(OptionType.CE, 25_000.0, 1, 100.0)],
+            lot_size=25, net_premium=-100.0, max_profit_rs=100.0,
+            max_loss_rs=100.0, breakevens=[25_100.0],
+        )
+        await insert_structure(
+            db_path, "FNO_PAPER", PlannedStructure(structure, 25_000.0), _now(),
+        )
+        [stored] = await open_structures(db_path, "FNO_PAPER")
+        result = mark_open_positions(
+            equity_rows=[], fno_rows=[], fno_dr_rows=[stored],
+            quotes={"unrelated": _quote(999.0)}, now_utc=_now(),
+        )
+        assert result.marks[0].quote_status == QuoteStatus.UNSUPPORTED
+        assert "immutable" in result.marks[0].notes
     def test_all_legs_fresh(self) -> None:
         now = _now()
         # Two-leg spread: long 25400CE @ 100, short 25600CE @ 50. Net
@@ -493,7 +540,7 @@ class TestFnoDrMark:
         )
         assert result.marks[0].quote_status == QuoteStatus.UNAVAILABLE
 
-    def test_non_dict_leg_is_marked_unavailable(self) -> None:
+    def test_non_dict_leg_is_marked_unsupported(self) -> None:
         now = _now()
         result = mark_open_positions(
             equity_rows=[],
@@ -502,7 +549,7 @@ class TestFnoDrMark:
             quotes={},
             now_utc=now,
         )
-        assert result.marks[0].quote_status == QuoteStatus.UNAVAILABLE
+        assert result.marks[0].quote_status == QuoteStatus.UNSUPPORTED
 
     def test_nan_net_premium_rejected(self) -> None:
         with pytest.raises(ValueError, match="net_premium_rs"):
@@ -542,6 +589,7 @@ class TestAggregation:
             QuoteStatus.FRESH: 1,
             QuoteStatus.STALE: 1,
             QuoteStatus.UNAVAILABLE: 1,
+            QuoteStatus.UNSUPPORTED: 0,
         }
 
     def test_filter_by_source_isolates_rows(self) -> None:
@@ -575,6 +623,7 @@ class TestAggregation:
             QuoteStatus.FRESH: 0,
             QuoteStatus.STALE: 0,
             QuoteStatus.UNAVAILABLE: 0,
+            QuoteStatus.UNSUPPORTED: 0,
         }
 
     def test_count_by_subsystem(self) -> None:
