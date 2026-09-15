@@ -1693,6 +1693,37 @@ def main():
     # the engine and a failed report leaves deterministic alerts untouched.
     schedule.every(1).minutes.do(publish_optional_ai_status)
 
+    # [WORKFLOW-I.4.E.CRON_WIRING 2026-09-14] Hourly contract-health
+    # self-policing. The I.4.E bounded invariants (status envelope
+    # authority, no prompt leakage, usefulness counters only,
+    # classifier fail-closed, review non-authoritative) are the
+    # "guard the guards" discipline -- without a cron, they only
+    # run when the operator remembers to invoke the CLI. Hourly
+    # cadence is enough: status envelope shape doesn't drift
+    # minute-to-minute, and the check is O(1) (no broker / model
+    # / filesystem calls). On any violation, the tick fires a
+    # Telegram alert so the operator sees the drift immediately.
+    # The tick is fire-and-forget; a contract-health failure must
+    # NEVER block the agent's main loop.
+    from contract_health_cron import contract_health_cron_tick
+
+    def _contract_health_cron_safe():
+        # Defensive wrapper: the tick already handles its own
+        # try/except internally, but a second layer here means
+        # ANY exception (import failure, scheduler-side bug) is
+        # contained. The agent's main loop is the priority.
+        try:
+            contract_health_cron_tick(
+                status_envelope=optional_ai_status(),
+            )
+        except Exception:  # pragma: no cover - defensive
+            logger.warning(
+                "contract_health_cron_tick_unhandled",
+                exc_info=True,
+            )
+
+    schedule.every(1).hours.do(_contract_health_cron_safe)
+
     # [ROADMAP-2.4 2026-07-12] Engine loop-progress watchdog (self-gates
     # to market hours; alerts when /data/scheduler_tick.json goes stale).
     schedule.every(5).minutes.do(check_engine_liveness)
