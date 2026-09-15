@@ -532,16 +532,48 @@ class QuoteArchive:
         return manifest
 
     def finalize_prior_days(self, current_day: str) -> List[Dict[str, Any]]:
-        """Finish only old open segments; never seal the active session."""
+        """Finish only old open segments; never seal the active session.
+
+        [WORKFLOW-C.B.1 2026-09-15] Hold ``_write_lock`` for the
+        ENTIRE iteration loop, not per-day. The per-day
+        ``@guarded_write`` decorator on ``finalize_day`` uses
+        ``acquire(blocking=False)``, so two concurrent ticks
+        both calling ``finalize_prior_days`` would race:
+        Tick A acquires the lock for ``finalize_day("day1")``,
+        releases, then Tick B starts and tries
+        ``finalize_day("day2")`` -- succeeds. Tick A then
+        calls ``finalize_day("day3")`` -- succeeds. But if
+        both ticks land on the same day at the same time,
+        the second one gets ``"research writer busy"`` and
+        crashes with a traceback (F-3 in the 2026-09-15
+        production audit).
+
+        The bounded fix: use ``_write_lock.acquire(blocking=True)``
+        at the ``finalize_prior_days`` level (outside the
+        per-day loop) so concurrent ticks serialize cleanly.
+        Since ``_write_lock`` is an ``RLock``, the inner
+        ``finalize_day`` calls re-acquire without deadlock
+        -- the per-day ``@guarded_write`` decorator still
+        runs (and provides the capacity check + sqlite lease),
+        but it never fires ``"research writer busy"`` for
+        contention (the outer lock absorbed the contention).
+        """
         base = self.root / "quotes"
         if not base.exists():
             return []
         finalized: List[Dict[str, Any]] = []
-        for directory in sorted(base.iterdir()):
-            if directory.is_dir() and directory.name < current_day:
-                item = self.finalize_day(directory.name)
-                if item is not None:
-                    finalized.append(item)
+        # Outer lock absorbs cross-tick contention. The
+        # inner ``@guarded_write`` decorator on
+        # ``finalize_day`` re-acquires the same ``RLock``
+        # without deadlock. ``blocking=True`` ensures a
+        # second concurrent tick WAITS rather than firing
+        # ``"research writer busy"`` mid-iteration.
+        with _write_lock:
+            for directory in sorted(base.iterdir()):
+                if directory.is_dir() and directory.name < current_day:
+                    item = self.finalize_day(directory.name)
+                    if item is not None:
+                        finalized.append(item)
         return finalized
 
 

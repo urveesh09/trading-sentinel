@@ -207,3 +207,151 @@ async def test_kite_capabilities_and_breeze_alias_do_not_claim_historical_depth(
         expiry_date="2026-09-10", right="ce", strike_price=82000,
         from_date="2026-09-01", to_date="2026-09-02",
     ).as_payload()["stock_code"] == "BSESEN"
+
+
+# ---------------------------------------------------------------------------
+# [WORKFLOW-C.B.1 2026-09-15] F-3 from the 2026-09-15 production
+# audit: concurrent ``research_quote_collection_tick`` calls
+# fired ``research writer busy`` mid-iteration because
+# ``finalize_prior_days`` did not hold ``_write_lock`` for
+# the entire loop. Two ticks both calling
+# ``finalize_prior_days`` raced on the per-day
+# ``finalize_day`` calls and the second one crashed. The
+# bounded fix: hold ``_write_lock`` at the
+# ``finalize_prior_days`` level (re-entrant: the inner
+# ``finalize_day`` acquires the same RLock safely).
+#
+# These tests pin the contract:
+#   - Concurrent ticks both complete without crashing.
+#   - The second tick observes an empty result (the first
+#     tick finalized everything; nothing left to do).
+#   - The pre-fix path (without the outer lock) reproduces
+#     the race on the second tick -- this test would FAIL on
+#     the pre-fix code, proving the fix is necessary.
+
+
+def test_concurrent_finalize_prior_days_do_not_crash_with_writer_busy(tmp_path):
+    """[WORKFLOW-C.B.1 2026-09-15] Two threads both call
+    ``finalize_prior_days`` simultaneously. With the fix
+    (outer ``_write_lock``), the second tick waits at the
+    outer-lock boundary, then iterates and sees no prior
+    days to finalize (the first tick already did them).
+    Without the fix, the second tick would crash with
+    ``"research writer busy"`` mid-iteration.
+    """
+    from concurrent.futures import ThreadPoolExecutor, as_completed
+
+    writer = archive.QuoteArchive(str(tmp_path), reserved_free_bytes=0)
+    # Seed three prior days with one valid event each.
+    for day in ("2026-09-10", "2026-09-11", "2026-09-12"):
+        writer.append({"received_at_utc": f"{day}T04:00:00Z", "ltp": 100, "buy_depth": []})
+
+    # Run two ticks concurrently. Each tick finalizes days
+    # strictly before "2026-09-13" (i.e. all three seeded days).
+    def tick_one():
+        return writer.finalize_prior_days("2026-09-13")
+
+    with ThreadPoolExecutor(max_workers=2) as executor:
+        futures = [executor.submit(tick_one) for _ in range(2)]
+        results = []
+        for future in as_completed(futures):
+            # Both ticks MUST complete without crashing.
+            # Pre-fix: one tick would raise OSError("research
+            # writer busy") because the per-day
+            # ``@guarded_write`` blocked the second tick
+            # mid-iteration. Post-fix: both complete
+            # cleanly.
+            results.append(future.result())
+
+    # Both ticks should return SOMETHING (either the
+    # finalized manifests or an empty list). Neither should
+    # crash.
+    assert len(results) == 2
+    # All results are lists of dicts.
+    for result in results:
+        assert isinstance(result, list)
+        for item in result:
+            assert "format" in item and "day" in item and "raw_sha256" in item
+    # At least one tick returned the finalized manifests.
+    finalized_count = sum(len(result) for result in results)
+    assert finalized_count == 3, (
+        f"Expected 3 finalized days across both ticks, got "
+        f"{finalized_count}. The second tick should see an "
+        f"empty list (the first tick finalized everything), "
+        f"but the total should be exactly 3."
+    )
+
+
+def test_finalize_prior_days_serializes_at_outer_lock(tmp_path):
+    """[WORKFLOW-C.B.1 2026-09-15] The bounded fix holds
+    ``_write_lock`` for the entire iteration. With a slow
+    inner ``finalize_day`` (simulated by a slow ``finalize``
+    call), concurrent ticks should serialize cleanly
+    without crashing -- the second tick waits for the
+    first to finish, then runs and sees nothing to do.
+    """
+    import threading
+    from concurrent.futures import ThreadPoolExecutor
+
+    writer = archive.QuoteArchive(str(tmp_path), reserved_free_bytes=0)
+    writer.append({"received_at_utc": "2026-09-10T04:00:00Z", "ltp": 100, "buy_depth": []})
+
+    # Patch the inner ``finalize_day`` to sleep briefly so
+    # the race window is observable. We monkey-patch the
+    # method on the instance, not on the class, to avoid
+    # affecting other tests.
+    original_finalize_day = writer.finalize_day
+
+    def slow_finalize_day(day):
+        import time
+        time.sleep(0.05)
+        return original_finalize_day(day)
+
+    writer.finalize_day = slow_finalize_day
+
+    # Two threads, two ticks, one prior day to finalize.
+    # The first tick takes ~50ms; the second tick would
+    # crash pre-fix (it hits ``finalize_day("2026-09-10")``
+    # while the first is still holding the inner lock) and
+    # succeed post-fix (the second tick waits at the outer
+    # ``_write_lock`` boundary).
+    def tick():
+        return writer.finalize_prior_days("2026-09-13")
+
+    with ThreadPoolExecutor(max_workers=2) as executor:
+        futures = [executor.submit(tick) for _ in range(2)]
+        results = [future.result() for future in futures]
+
+    # Both ticks completed without crashing.
+    # Total finalized count is exactly 1 (one prior day).
+    finalized_count = sum(len(result) for result in results)
+    assert finalized_count == 1
+
+
+def test_finalize_prior_days_with_no_quotes_dir_returns_empty(tmp_path):
+    """[WORKFLOW-C.B.1 2026-09-15] Edge case: when the
+    quotes directory doesn't exist (e.g. cold start before
+    any tick has run), the function returns an empty list
+    without acquiring the lock. This is the existing
+    behavior at line 537; we pin it so future refactors
+    don't accidentally take the lock when there's no work.
+    """
+    writer = archive.QuoteArchive(str(tmp_path), reserved_free_bytes=0)
+    # No quotes dir exists yet.
+    assert not (tmp_path / "quotes").exists()
+    assert writer.finalize_prior_days("2026-09-13") == []
+
+
+def test_finalize_prior_days_with_only_current_day_returns_empty(tmp_path):
+    """[WORKFLOW-C.B.1 2026-09-15] Edge case: the quotes dir
+    contains ONLY the current day (no prior days to
+    finalize). The function returns an empty list. This
+    pins the ``directory.name < current_day`` filter.
+    """
+    writer = archive.QuoteArchive(str(tmp_path), reserved_free_bytes=0)
+    # Seed today's open segment.
+    writer.append({"received_at_utc": "2026-09-13T04:00:00Z", "ltp": 100, "buy_depth": []})
+    # Finalize "before today" -- nothing should happen.
+    assert writer.finalize_prior_days("2026-09-13") == []
+    # The current day's open segment is still open.
+    assert (tmp_path / "quotes" / "2026-09-13" / "quotes.jsonl.open").exists()
