@@ -56,6 +56,9 @@ from cas_reachability_aggregate import (
     format_per_day_table,
     per_day_breakdown,
 )
+from cas_reachability_atomic import (
+    write_report_atomic,
+)
 
 
 # CAS sub-window branches + DERIVATIVES_CAS_ALIGNED that need
@@ -428,13 +431,16 @@ def format_report(report: dict[str, Any]) -> str:
 def write_report(report: dict[str, Any], out_path: Path) -> None:
     """Persist the report as JSON. Idempotent for the same
     input -- writes the same shape on every call.
+
+    [WORKFLOW-J.10.WRITE_ATOMIC 2026-09-14] The implementation
+    is now atomic + byte-identical via ``write_report_atomic``
+    (write-to-tempfile + ``os.link``). A byte-identical retry
+    produces an identical file; a different-content pre-existing
+    file raises ``ValueError`` (defensive against accidental
+    path-mismatch or stale output). Mirrors the F5
+    ``reconciliation_cli._write_output_atomic`` discipline.
     """
-    out_path = Path(out_path)
-    out_path.parent.mkdir(parents=True, exist_ok=True)
-    out_path.write_text(
-        json.dumps(report, indent=2, sort_keys=True),
-        encoding="utf-8",
-    )
+    write_report_atomic(report, out_path)
 
 
 # [WORKFLOW-J.10.CLOSURE 2026-09-13] Operator-facing SUMMARY.md
