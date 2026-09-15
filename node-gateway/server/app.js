@@ -104,20 +104,55 @@ app.use('/api/internal', require('./routes/internal'));
 
 
 // 7. React Static File Serving
-//app.use(express.static(path.join(__dirname, '../public')));
-//app.get('*', (req, res) => {
- // res.sendFile(path.join(__dirname, '../public/index.html'));
-//});
-// 7. React Static File Serving
-//app.use(express.static(path.join(__dirname, '../client/dist')));
-//app.get('*', (req, res) => {
-//  res.sendFile(path.join(__dirname, '../client/dist/index.html'));
-//});
-
-// 7. React Static File Serving
-app.use(express.static(path.join(__dirname, 'public')));
+// [FIX 2026-09-14] The static dir resolution now handles BOTH
+// the Docker layout (``/app/public/``, where the Dockerfile
+// copies ``client/dist``) AND the local-dev layout
+// (``../client/dist/``, where engineers run the server
+// directly from the repo). Without this fallback, local-dev
+// users see "login happened but dashboard is not visible"
+// because ``app.get('*', ...)`` calls ``sendFile('public/index.html')``
+// on a path that doesn't exist -- Express returns its default
+// 500 page and the React bundle never loads.
+//
+// We pick the FIRST existing directory and log which one
+// won. If neither exists we emit a loud startup-time ERROR
+// rather than serving a broken app silently. ``fs`` is
+// already imported at the top of this file (see DATA_DIR
+// setup above).
+const STATIC_DIR_CANDIDATES = [
+  path.join(__dirname, 'public'),                       // Docker layout
+  path.join(__dirname, '..', 'client', 'dist'),         // local dev
+];
+const STATIC_DIR = STATIC_DIR_CANDIDATES.find((candidate) => {
+  try {
+    return fs.existsSync(path.join(candidate, 'index.html'));
+  } catch (_err) {
+    return false;
+  }
+});
+if (!STATIC_DIR) {
+  // Fail loudly: the operator MUST see this at startup, not
+  // discover it via a broken dashboard. We log via console
+  // because the structured logger may not be initialised yet
+  // at this point in the require graph (app.js loads before
+  // middleware/logger.js finishes setting up). Both stderr
+  // writes and a thrown error ensure the operator sees it.
+  const tried = STATIC_DIR_CANDIDATES.join(', ');
+  const msg = `[STARTUP ERROR] No built React bundle found. Tried: ${tried}. ` +
+    `Run \`npm run build\` inside node-gateway/client/ to produce ` +
+    `node-gateway/client/dist/index.html, or rebuild the Docker ` +
+    `image (which copies it to server/public/).`;
+// eslint-disable-next-line no-console
+console.error(msg);
+  throw new Error(msg);
+}
+// eslint-disable-next-line no-console
+console.log(
+  `[startup] Serving React bundle from: ${STATIC_DIR}`
+);
+app.use(express.static(STATIC_DIR));
 app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public/index.html'));
+  res.sendFile(path.join(STATIC_DIR, 'index.html'));
 });
 
 // 8. Global Error Handler
