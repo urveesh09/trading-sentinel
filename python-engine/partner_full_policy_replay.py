@@ -100,6 +100,18 @@ def replay_full_policy(*, evaluation_inputs, events, archive_root, master_sha256
     prior_books = [row for row in build.observations if row.received_at <= now]
     report.update(partial_batches=list(build.partial_batches),
                   conflicting_batches=list(build.conflicting_batches),
+                  # [WORKFLOW-C.A1 2026-09-15] Asymmetric-
+                  # fills diagnostic. When one leg had
+                  # executable depth and the other did not
+                  # at a receipt time <= the decision clock,
+                  # the decision book itself was partially
+                  # executable -- the operator cannot claim
+                  # the decision was made against a fully
+                  # executable two-leg book. Surface the
+                  # diagnostic AND fail-closed (treat as
+                  # INSUFFICIENT_EVIDENCE) below. Mirrors the
+                  # partial_batches discipline at lines 115-118.
+                  asymmetric_batches=list(build.asymmetric_batches or []),
                   ignored_events=build.ignored_events)
     relevant_conflicts = [item for item in build.conflicting_batches
                           if datetime.fromisoformat(item["received_at"]) <= now]
@@ -115,6 +127,17 @@ def replay_full_policy(*, evaluation_inputs, events, archive_root, master_sha256
     if any(book_at_decision.received_at < datetime.fromisoformat(item["received_at"]) <= now
            for item in build.partial_batches):
         report.update(state="INSUFFICIENT_EVIDENCE", reason="partial_book_before_decision")
+        return {**report, "evidence_sha256": _sha(report)}
+    # [WORKFLOW-C.A1 2026-09-15] Asymmetric execution
+    # quality at the decision book is also INSUFFICIENT_
+    # EVIDENCE. The decision was made when one leg had
+    # executable depth and the other did not -- the
+    # operator cannot claim a fully executable two-leg book
+    # at decision time. Mirror the partial-book discipline
+    # above (treat as fail-closed, surface the diagnostic).
+    if any(book_at_decision.received_at < datetime.fromisoformat(item["received_at"]) <= now
+           for item in build.asymmetric_batches or []):
+        report.update(state="INSUFFICIENT_EVIDENCE", reason="asymmetric_execution_quality_before_decision")
         return {**report, "evidence_sha256": _sha(report)}
     if any(now - quote.observed_at > execution_policy.max_quote_age for quote in book_at_decision.quotes):
         report.update(state="INSUFFICIENT_EVIDENCE", reason="decision_book_stale")

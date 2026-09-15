@@ -148,6 +148,71 @@ def test_decision_book_conflict_is_explicit(case, monkeypatch):
     assert result['conflicting_batches'][0]['conflicting'] == ['long']
 
 
+# [WORKFLOW-C.A1 2026-09-15] Asymmetric-fills
+# diagnostic surfaces through the full-policy report.
+# Mirror the existing ``test_decision_book_conflict_is_explicit``
+# and ``test_intervening_partial_book_blocks_reuse_of_older_complete_pair``
+# patterns: monkeypatch ``build_spread_observations`` to
+# return an ``ArchiveObservationBuild`` with an
+# ``asymmetric_batches`` entry between the decision book's
+# receipt time and the decision clock -- the operator
+# cannot claim a fully executable two-leg book at decision
+# time. The report must be INSUFFICIENT_EVIDENCE with
+# reason ``asymmetric_execution_quality_before_decision``.
+
+
+def test_asymmetric_execution_quality_before_decision_is_insufficient_evidence(case, monkeypatch):
+    args, rows = case
+    # [WORKFLOW-C.A1 2026-09-15] Mirror the partial-book
+    # discipline at line 127. The check at line 138 is
+    # ``book_at_decision.received_at < received_at <= now``.
+    # To trigger it: move the decision book EARLIER than
+    # NOW, then place the asymmetric batch BETWEEN the
+    # decision book's receipt time and the decision clock.
+    # The decision clock (``now``) stays at NOW.
+    earlier = NOW - timedelta(seconds=2)
+    rows[0] = replace(rows[0], observed_at=earlier, received_at=earlier,
+        quotes=tuple(replace(q, observed_at=earlier, received_at=earlier) for q in rows[0].quotes))
+    asymmetric_received = (NOW - timedelta(seconds=1)).isoformat()
+    monkeypatch.setattr(replay, 'build_spread_observations', lambda **_: ArchiveObservationBuild(tuple(rows),
+        (), 0, None, (), ({'received_at': asymmetric_received, 'state': 'ASYMMETRIC_EXECUTION_QUALITY',
+                            'executable': ['long'], 'insufficient': ['short'],
+                            'depth_by_leg': {'long': {'bid_depth': 75, 'ask_depth': 75, 'lot_size': 75},
+                                             'short': {'bid_depth': 1, 'ask_depth': 1, 'lot_size': 75}}},)))
+    result = replay.replay_full_policy(**args)
+    assert result['reason'] == 'asymmetric_execution_quality_before_decision'
+    assert result['state'] == 'INSUFFICIENT_EVIDENCE'
+    # The diagnostic is surfaced in the report for the
+    # qualification review to read.
+    assert result['asymmetric_batches'][0]['state'] == 'ASYMMETRIC_EXECUTION_QUALITY'
+    assert result['asymmetric_batches'][0]['insufficient'] == ['short']
+
+
+def test_asymmetric_after_decision_does_not_block_replay(case, monkeypatch):
+    """[WORKFLOW-C.A1 2026-09-15] An asymmetric batch that
+    arrives AFTER the decision clock does not invalidate
+    the decision -- the operator had a fully executable
+    two-leg book at decision time. The diagnostic still
+    surfaces in the report (so the operator can see
+    post-decision liquidity shifts), but the report's state
+    is not INSUFFICIENT_EVIDENCE.
+    """
+    args, rows = case
+    # Asymmetric batch 1 minute AFTER the decision clock.
+    asymmetric_received = (NOW + timedelta(minutes=1)).isoformat()
+    monkeypatch.setattr(replay, 'build_spread_observations', lambda **_: ArchiveObservationBuild(tuple(rows),
+        (), 0, None, (), ({'received_at': asymmetric_received, 'state': 'ASYMMETRIC_EXECUTION_QUALITY',
+                            'executable': ['long'], 'insufficient': ['short'],
+                            'depth_by_leg': {'long': {'bid_depth': 75, 'ask_depth': 75, 'lot_size': 75},
+                                             'short': {'bid_depth': 1, 'ask_depth': 1, 'lot_size': 75}}},)))
+    result = replay.replay_full_policy(**args)
+    # The decision was made against a fully executable
+    # book; the asymmetric batch is post-decision.
+    assert result['reason'] != 'asymmetric_execution_quality_before_decision'
+    # The diagnostic still surfaces for transparency.
+    assert result['asymmetric_batches'][0]['state'] == 'ASYMMETRIC_EXECUTION_QUALITY'
+
+
 def test_master_scope_mismatch_rejected(case):
     args, _ = case
     args['master_sha256'] = 'b' * 64

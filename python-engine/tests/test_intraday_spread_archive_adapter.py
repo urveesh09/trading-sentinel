@@ -4,8 +4,13 @@ import json
 
 import pytest
 
-from intraday_spread_archive_adapter import SpreadContractIdentity, build_spread_observations, read_archived_quote_events
-from intraday_spread_replay import ReplayInputError
+from intraday_spread_archive_adapter import (
+    SpreadContractIdentity,
+    _has_executable_depth,
+    build_spread_observations,
+    read_archived_quote_events,
+)
+from intraday_spread_replay import LegQuote, ReplayInputError
 from intraday_spread_signal_artifact import write_signal_artifact
 
 
@@ -183,3 +188,297 @@ def test_archive_adapter_rejects_signal_artifact_with_missing_source_manifest(tm
     with pytest.raises(ReplayInputError, match="source manifest is missing"):
         build_spread_observations(events=[], long_contract=long, short_contract=short, master_sha256=MASTER,
             archive_root=root, signal_artifact_path=path, policy_id="policy-v1", session_date="2026-09-10")
+
+
+# ---------------------------------------------------------------------------
+# [WORKFLOW-C.A1 2026-09-15] Asymmetric-fills diagnostic tests.
+
+
+def _asymmetric_event(contract, *, bid_quantity, ask_quantity, received="2026-09-10T04:30:00+00:00"):
+    """A same-shape event helper that lets the test vary bid/ask quantity.
+
+    The default ``event()`` helper always sets quantity to 75 (= lot_size
+    for NIFTY options). This variant lets the test break the executable-
+    depth invariant for one leg while keeping the other leg valid.
+    """
+    raw = {
+        "instrument_token": int(contract["instrument_token"]),
+        "timestamp": received,
+        "depth": {
+            "buy": [{"price": 100, "quantity": bid_quantity}],
+            "sell": [{"price": 102, "quantity": ask_quantity}],
+        },
+    }
+    return {
+        "received_at_utc": received,
+        "provider_timestamp_utc": received,
+        "contract": contract,
+        "buy_depth": [{"price": 100, "quantity": bid_quantity}],
+        "sell_depth": [{"price": 102, "quantity": ask_quantity}],
+        "raw_packet": raw,
+        "raw_sha256": hashlib.sha256(
+            json.dumps(raw, sort_keys=True, default=str, separators=(",", ":")).encode()
+        ).hexdigest(),
+    }
+
+
+class TestAsymmetricFills:
+    """[WORKFLOW-C.A1 2026-09-15] Per the plan, asymmetric
+    actual fills are "not modeled" -- the archive adapter
+    silently rejected them by reporting PARTIAL_LEG_OBSERVATION
+    or by passing them to the replay layer which rejected
+    the whole pair. This class pins the new bounded
+    diagnostic: when both legs have valid packets but only
+    one leg has executable depth for a full exchange lot,
+    the operator gets an explicit ASYMMETRIC_EXECUTION_QUALITY
+    entry that names the executable and insufficient legs
+    and surfaces the observed depths.
+    """
+
+    def test_long_executable_short_insufficient_is_asymmetric(self, tmp_path):
+        long, short = identity(1, "NIFTY25000CE", 25000), identity(2, "NIFTY25200CE", 25200)
+        # Long: 75 lots available (>= lot_size). Short: 1 lot only.
+        long_ev = _asymmetric_event(
+            contract(long), bid_quantity=75, ask_quantity=75,
+        )
+        short_ev = _asymmetric_event(
+            contract(short), bid_quantity=1, ask_quantity=1,
+        )
+        built = build_spread_observations(
+            events=[long_ev, short_ev],
+            long_contract=long, short_contract=short,
+            master_sha256=MASTER, archive_root=archive(tmp_path, long, short),
+        )
+        # No observation was constructed -- the asymmetric case is rejected.
+        assert built.observations == ()
+        # The partial_batches is empty -- this is NOT a PARTIAL case.
+        assert built.partial_batches == ()
+        # The conflicting_batches is empty -- no per-leg contention.
+        assert built.conflicting_batches == ()
+        # The asymmetric_batches carries the explicit diagnostic.
+        assert built.asymmetric_batches is not None
+        assert len(built.asymmetric_batches) == 1
+        entry = built.asymmetric_batches[0]
+        assert entry["state"] == "ASYMMETRIC_EXECUTION_QUALITY"
+        assert entry["executable"] == ["long"]
+        assert entry["insufficient"] == ["short"]
+        # The depth_by_leg block surfaces the observed quantities
+        # so the operator can investigate WHY the short leg was thin.
+        assert entry["depth_by_leg"]["long"]["bid_depth"] == 75
+        assert entry["depth_by_leg"]["short"]["bid_depth"] == 1
+
+    def test_short_executable_long_insufficient_is_asymmetric(self, tmp_path):
+        long, short = identity(1, "NIFTY25000CE", 25000), identity(2, "NIFTY25200CE", 25200)
+        # The opposite asymmetry: short has depth, long does not.
+        long_ev = _asymmetric_event(
+            contract(long), bid_quantity=0, ask_quantity=0,
+        )
+        short_ev = _asymmetric_event(
+            contract(short), bid_quantity=75, ask_quantity=75,
+        )
+        built = build_spread_observations(
+            events=[long_ev, short_ev],
+            long_contract=long, short_contract=short,
+            master_sha256=MASTER, archive_root=archive(tmp_path, long, short),
+        )
+        assert built.observations == ()
+        assert built.partial_batches == ()
+        assert built.conflicting_batches == ()
+        assert built.asymmetric_batches is not None
+        entry = built.asymmetric_batches[0]
+        assert entry["executable"] == ["short"]
+        assert entry["insufficient"] == ["long"]
+
+    def test_both_legs_executable_constructs_observation(self, tmp_path):
+        """[WORKFLOW-C.A1 2026-09-15] When both legs have
+        executable depth, no asymmetric diagnostic is raised.
+        The observation is constructed normally -- backward
+        compatibility for the happy path.
+        """
+        long, short = identity(1, "NIFTY25000CE", 25000), identity(2, "NIFTY25200CE", 25200)
+        long_ev = _asymmetric_event(contract(long), bid_quantity=75, ask_quantity=75)
+        short_ev = _asymmetric_event(contract(short), bid_quantity=75, ask_quantity=75)
+        built = build_spread_observations(
+            events=[long_ev, short_ev],
+            long_contract=long, short_contract=short,
+            master_sha256=MASTER, archive_root=archive(tmp_path, long, short),
+        )
+        assert len(built.observations) == 1
+        # No diagnostic -- the symmetric happy path.
+        assert built.asymmetric_batches is None
+
+    def test_both_legs_insufficient_is_not_asymmetric(self, tmp_path):
+        """[WORKFLOW-C.A1 2026-09-15] When BOTH legs lack
+        executable depth, this is NOT the asymmetric-fills
+        case -- it's a uniformly thin book. The diagnostic
+        only fires when exactly one leg passes the depth
+        check. Both legs failing is a different operational
+        condition (the pair is uniformly un-executable) and
+        the rejection surfaces at the replay layer
+        (``book_not_executable_for_full_lot``).
+
+        The archive-layer diagnostic does NOT fire here
+        because both legs fail the depth check symmetrically.
+        The observation is constructed (the archive layer
+        only checks packet integrity) and the replay layer
+        rejects it downstream. This is the pre-existing
+        behavior -- A1 just narrows the diagnostic to the
+        asymmetric case.
+
+        The default master writes contracts with
+        ``lot_size=75``, so the bid/ask quantities of 1 are
+        valid for the master_proves_contract check (it doesn't
+        inspect bid/ask depth) but fail the depth check.
+        """
+        long, short = identity(1, "NIFTY25000CE", 25000), identity(2, "NIFTY25200CE", 25200)
+        long_ev = _asymmetric_event(contract(long), bid_quantity=1, ask_quantity=1)
+        short_ev = _asymmetric_event(contract(short), bid_quantity=1, ask_quantity=1)
+        built = build_spread_observations(
+            events=[long_ev, short_ev],
+            long_contract=long, short_contract=short,
+            master_sha256=MASTER, archive_root=archive(tmp_path, long, short),
+        )
+        # The archive layer constructs the observation
+        # (packet integrity is fine). The replay layer
+        # rejects it as book_not_executable_for_full_lot.
+        # The ASYMMETRIC diagnostic does NOT fire here.
+        assert built.asymmetric_batches is None
+
+    def test_lot_size_zero_falls_through_to_observation(self, tmp_path):
+        """[WORKFLOW-C.A1 2026-09-15] Defensive: if
+        ``lot_size`` is malformed (zero or negative), the
+        executable-depth check degrades to ``False`` for both
+        legs. The symmetric-failure case applies -- the
+        asymmetric diagnostic does not fire.
+
+        To test this we construct a NEW master/contract pair
+        with ``lot_size=0`` so the master_proves_contract
+        check accepts the contract. We can't reuse the
+        default archive fixture (which writes lot_size=75)
+        because the master_proves_contract check would
+        reject the malformed contract before the depth check
+        runs.
+        """
+        # Write a separate master for lot_size=0 contracts.
+        raw_master_zero = (
+            b"instrument_token,tradingsymbol,name,exchange,instrument_type,expiry,strike,lot_size\n"
+            b"1,NIFTY25000CE,NIFTY,NFO,CE,2026-09-24,25000,0\n"
+            b"2,NIFTY25200CE,NIFTY,NFO,CE,2026-09-24,25200,0\n"
+        )
+        master_zero = hashlib.sha256(raw_master_zero).hexdigest()
+        long = SpreadContractIdentity(1, "NIFTY25000CE", "NIFTY", "NFO", "CE", 25000, "2026-09-24", 0)
+        short = SpreadContractIdentity(2, "NIFTY25200CE", "NIFTY", "NFO", "CE", 25200, "2026-09-24", 0)
+        path = tmp_path / "contract-masters" / "KITE" / "NFO" / "2026-09-10" / master_zero
+        path.mkdir(parents=True)
+        canonical = ("\n".join(json.dumps(contract(item)) for item in (long, short)) + "\n").encode()
+        (path / "raw.csv").write_bytes(raw_master_zero)
+        (path / "manifest.json").write_text(
+            json.dumps({"raw_sha256": master_zero, "canonical_sha256": hashlib.sha256(canonical).hexdigest()}),
+            encoding="utf-8",
+        )
+        (path / "contracts.jsonl").write_bytes(canonical)
+        long_ev = _asymmetric_event(contract(long), bid_quantity=75, ask_quantity=75)
+        short_ev = _asymmetric_event(contract(short), bid_quantity=75, ask_quantity=75)
+        built = build_spread_observations(
+            events=[long_ev, short_ev],
+            long_contract=long, short_contract=short,
+            master_sha256=master_zero, archive_root=tmp_path,
+        )
+        # Both legs fail the depth check symmetrically -- no
+        # asymmetric diagnostic.
+        assert built.asymmetric_batches is None
+
+    def test_asymmetric_only_fires_once_per_receipt(self, tmp_path):
+        """[WORKFLOW-C.A1 2026-09-15] When the SAME receipt
+        has multiple asymmetric outcomes (e.g. multiple
+        long-leg packets at different prices but all lacking
+        depth), the diagnostic fires once per receipt
+        timestamp, not once per packet. This mirrors the
+        existing PARTIAL_LEG_OBSERVATION discipline -- the
+        diagnostic is keyed by ``received_at``.
+        """
+        long, short = identity(1, "NIFTY25000CE", 25000), identity(2, "NIFTY25200CE", 25200)
+        # Two distinct long packets, both with insufficient depth.
+        # The existing ``distinct_valid`` collapses them by
+        # ``raw_sha256`` -- different prices mean different
+        # hashes -- so this becomes a CONFLICTING_LEG_OBSERVATION,
+        # NOT an asymmetric case. To exercise the
+        # asymmetric-only-once-per-receipt contract, we use
+        # two long packets with the SAME price but the test
+        # is constructed so they share a hash -- this is
+        # impossible in practice (different receipts always
+        # have different prices) -- so we only need to verify
+        # that the asymmetric diagnostic does NOT duplicate
+        # itself when the depth check fires once.
+        long_ev = _asymmetric_event(contract(long), bid_quantity=1, ask_quantity=1)
+        short_ev = _asymmetric_event(contract(short), bid_quantity=75, ask_quantity=75)
+        built = build_spread_observations(
+            events=[long_ev, short_ev],
+            long_contract=long, short_contract=short,
+            master_sha256=MASTER, archive_root=archive(tmp_path, long, short),
+        )
+        assert built.asymmetric_batches is not None
+        assert len(built.asymmetric_batches) == 1
+
+
+class TestHasExecutableDepth:
+    """[WORKFLOW-C.A1 2026-09-15] The pure executable-depth
+    helper. Pins the contract: ``lot_size`` is a positive
+    int, ``bid_depth`` and ``ask_depth`` are non-bool ints
+    both ``>= lot_size``.
+    """
+
+    def _leg(self, lot, bid, ask):
+        from datetime import datetime, timezone
+        return LegQuote(
+            "TEST", "BUY", "NFO", lot,
+            100.0, 102.0, bid, ask,
+            datetime(2026, 9, 10, 4, 30, tzinfo=timezone.utc),
+            datetime(2026, 9, 10, 4, 30, tzinfo=timezone.utc),
+            token=1, option_type="CE", strike=25000.0, expiry="2026-09-24",
+            quantity=lot, master_sha256="a" * 64,
+            oi=0, volume=0,
+        )
+
+    def test_full_lot_on_both_sides_is_executable(self):
+        assert _has_executable_depth(self._leg(lot=75, bid=75, ask=75)) is True
+
+    def test_oversized_bid_is_executable(self):
+        # More depth than lot_size is fine.
+        assert _has_executable_depth(self._leg(lot=75, bid=150, ask=150)) is True
+
+    def test_undersized_bid_is_not_executable(self):
+        assert _has_executable_depth(self._leg(lot=75, bid=74, ask=75)) is False
+
+    def test_undersized_ask_is_not_executable(self):
+        assert _has_executable_depth(self._leg(lot=75, bid=75, ask=0)) is False
+
+    def test_zero_bid_is_not_executable(self):
+        assert _has_executable_depth(self._leg(lot=75, bid=0, ask=75)) is False
+
+    def test_negative_depth_is_not_executable(self):
+        """Defensive: a corrupt depth field (negative int) is
+        not executable. The helper treats any non-positive
+        depth as not executable.
+        """
+        assert _has_executable_depth(self._leg(lot=75, bid=-1, ask=75)) is False
+
+    def test_bool_depth_is_not_executable(self):
+        """[WORKFLOW-C.A1 2026-09-15] ``bool`` is a subclass
+        of ``int`` in Python -- a stray ``True`` / ``False``
+        would pass the ``isinstance(depth, int)`` check. The
+        helper explicitly excludes ``bool`` to keep the
+        contract honest.
+        """
+        assert _has_executable_depth(self._leg(lot=75, bid=True, ask=75)) is False
+
+    def test_string_depth_is_not_executable(self):
+        assert _has_executable_depth(self._leg(lot=75, bid="75", ask=75)) is False
+
+    def test_zero_lot_size_is_not_executable(self):
+        """Defensive: ``lot_size <= 0`` (the contract was
+        malformed) degrades to ``False`` -- we don't want to
+        construct a "fully executable" book on a degenerate
+        contract.
+        """
+        assert _has_executable_depth(self._leg(lot=0, bid=75, ask=75)) is False

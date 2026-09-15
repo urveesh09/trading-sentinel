@@ -37,6 +37,20 @@ class ArchiveObservationBuild:
     ignored_events: int
     signal_provenance_sha256: str | None
     conflicting_batches: tuple[dict[str, Any], ...] = ()
+    # [WORKFLOW-C.A1 2026-09-15] Asymmetric-fills diagnostic.
+    # When both legs have valid packets AND both pass the
+    # basic ``_leg()`` validation, but only one leg has
+    # executable depth for a full exchange lot, the batch is
+    # NOT a PARTIAL_LEG_OBSERVATION (a packet is present) and
+    # NOT a CONFLICTING_LEG_OBSERVATION (no per-leg
+    # contention). It is an asymmetric execution-quality
+    # outcome -- the operator needs to see WHICH leg passed
+    # and WHICH leg failed the depth check, and the
+    # quantities each side actually had at the receipt time.
+    # ``None`` when no asymmetric batches were observed (the
+    # default -- preserves backward compatibility for callers
+    # that don't read the field).
+    asymmetric_batches: tuple[dict[str, Any], ...] | None = None
 
 
 def _stamp(value: object, field: str) -> datetime:
@@ -149,6 +163,38 @@ def _leg(event: Mapping[str, Any], identity: SpreadContractIdentity, master_sha2
                         oi=oi, volume=volume)
     except (KeyError, TypeError, ValueError) as exc:
         raise ReplayInputError("quote depth is malformed") from exc
+
+
+def _has_executable_depth(quote: LegQuote) -> bool:
+    """[WORKFLOW-C.A1 2026-09-15] True iff a leg's book can
+    fill a full exchange lot on both sides.
+
+    A leg has executable depth when its ``bid_depth`` AND
+    ``ask_depth`` are both ``>= quote.lot_size``. This is the
+    archive-layer mirror of the replay-layer check at
+    ``intraday_spread_replay.py:151`` (``book_not_executable_for_full_lot``).
+    The archive layer surfaces the asymmetry BEFORE
+    constructing observations so the operator sees the
+    partial-fill diagnostic in the build report, not deep in
+    the replay output where it's harder to attribute.
+
+    The function is total -- non-integer or negative depths
+    degrade to ``False`` (the leg is not executable for a
+    full lot). ``bool`` returns are explicitly excluded from
+    the integer check.
+    """
+    lot = quote.lot_size
+    bid_depth = quote.bid_depth
+    ask_depth = quote.ask_depth
+    if not isinstance(bid_depth, int) or isinstance(bid_depth, bool):
+        return False
+    if not isinstance(ask_depth, int) or isinstance(ask_depth, bool):
+        return False
+    if not isinstance(lot, int) or isinstance(lot, bool):
+        return False
+    if lot <= 0:
+        return False
+    return bid_depth >= lot and ask_depth >= lot
 
 
 def _master_proves_contract(archive_root: str | Path, identity: SpreadContractIdentity, master_sha256: str) -> bool:
@@ -265,6 +311,7 @@ def build_spread_observations(*, events: Iterable[Mapping[str, Any]], long_contr
     observations: list[SpreadObservation] = []
     partial: list[dict[str, Any]] = []
     conflicts: list[dict[str, Any]] = []
+    asymmetric: list[dict[str, Any]] = []
     for key in sorted(batches):
         def targets(identity: SpreadContractIdentity, item: Mapping[str, Any]) -> bool:
             contract = item.get("contract")
@@ -303,10 +350,54 @@ def build_spread_observations(*, events: Iterable[Mapping[str, Any]], long_contr
         long = _leg(long_event, long_contract, master_sha256)
         short = _leg(short_event, short_contract, master_sha256)
         assert long is not None and short is not None
+        # [WORKFLOW-C.A1 2026-09-15] Asymmetric-fills
+        # diagnostic. When both legs pass the basic ``_leg()``
+        # validation (which only checks packet integrity --
+        # hashes, clocks, depth-fields-present), one leg may
+        # still lack executable depth for a full exchange
+        # lot. This is the asymmetric-fills case the plan
+        # flags as "not modeled": the operator needs to know
+        # WHICH leg passed, which leg failed, and the
+        # observed quantities on each side. Without this
+        # diagnostic, the asymmetry surfaces only deep in
+        # ``replay_intraday_debit_spread`` as a generic
+        # ``book_not_executable_for_full_lot`` rejection --
+        # the operator can't attribute it to a specific leg
+        # without re-running the replay. The archive layer
+        # surfaces the attribution directly.
+        long_exec = _has_executable_depth(long)
+        short_exec = _has_executable_depth(short)
+        if long_exec != short_exec:
+            # Exactly one leg is executable -- this is the
+            # bounded asymmetric-fills diagnostic. Both legs
+            # failing depth would still be rejected (the
+            # pair has no executable book) but the operator
+            # sees "both legs insufficient" -- a different
+            # diagnostic. We surface the ASYMMETRIC state
+            # only when one leg passes and one leg fails.
+            asymmetric.append({
+                "received_at": key,
+                "state": "ASYMMETRIC_EXECUTION_QUALITY",
+                "executable": [name for name, ok in (("long", long_exec), ("short", short_exec)) if ok],
+                "insufficient": [name for name, ok in (("long", long_exec), ("short", short_exec)) if not ok],
+                "depth_by_leg": {
+                    "long": {
+                        "bid_depth": long.bid_depth,
+                        "ask_depth": long.ask_depth,
+                        "lot_size": long.lot_size,
+                    },
+                    "short": {
+                        "bid_depth": short.bid_depth,
+                        "ask_depth": short.ask_depth,
+                        "lot_size": short.lot_size,
+                    },
+                },
+            })
+            continue
         # Side is a property of the declared spread, not the incoming packet.
         long = LegQuote(**{**long.__dict__, "side": "BUY"})
         short = LegQuote(**{**short.__dict__, "side": "SELL"})
         score = float(scores.get(key, 0.0))
         observations.append(SpreadObservation(min(long.observed_at, short.observed_at), received, score, (long, short)))
     return ArchiveObservationBuild(tuple(observations), tuple(partial), ignored, signal_provenance_sha256,
-                                   tuple(conflicts))
+                                   tuple(conflicts), tuple(asymmetric) if asymmetric else None)
