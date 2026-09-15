@@ -45,6 +45,10 @@ from cas_reachability_dedup import (
     dedup_count,
     fingerprint_of,
 )
+from cas_reachability_freshness import (
+    capture_age_days,
+    is_within_max_age,
+)
 
 
 # CAS sub-window branches + DERIVATIVES_CAS_ALIGNED that need
@@ -116,7 +120,11 @@ def _safe_phase_from_capture(capture_path: Path) -> str | None:
     return phase
 
 
-def cas_reachability_report(captures_dir: Path) -> dict[str, Any]:
+def cas_reachability_report(
+    captures_dir: Path,
+    *,
+    max_age_days: float | None = None,
+) -> dict[str, Any]:
     """Walk ``captures_dir`` and produce the reachability
     verdict. Pure / total -- never raises.
 
@@ -134,6 +142,17 @@ def cas_reachability_report(captures_dir: Path) -> dict[str, Any]:
     Anything that is a J.3 capture but malformed / non-bounded
     is counted as ``captures_skipped`` and does not contribute
     to coverage.
+
+    [WORKFLOW-J.10.FRESHNESS 2026-09-14] ``max_age_days`` is an
+    optional freshness filter. When supplied (positive float),
+    captures whose ``generated_at_utc`` is older than
+    ``now_utc - max_age_days`` are skipped and counted under
+    the new ``captures_skipped_stale`` field. The default
+    (``None``) preserves the pre-freshness behaviour: every
+    capture counts regardless of age. Stale vs malformed are
+    distinct categories -- ``captures_skipped`` is for
+    "couldn't parse the schema", ``captures_skipped_stale`` is
+    for "parsed fine but too old".
     """
     captures: dict[str, int] = {
         phase: 0 for phase in CAS_BRANCHES_REQUIRING_EVIDENCE
@@ -181,10 +200,24 @@ def cas_reachability_report(captures_dir: Path) -> dict[str, Any]:
             "duplicates_by_branch": {
                 phase: 0 for phase in CAS_BRANCHES_REQUIRING_EVIDENCE
             },
+            "captures_skipped_stale": 0,
         }
 
+    captures_skipped_stale = 0
     for capture_path in sorted(captures_root.rglob("*.json")):
         captures_scanned += 1
+        # [WORKFLOW-J.10.FRESHNESS 2026-09-14] Freshness filter.
+        # When ``max_age_days`` is set, captures older than the
+        # threshold are skipped BEFORE the dedup logic -- the
+        # fingerprint and phase parsing are wasted work for a
+        # capture that won't count anyway. Stale is its own
+        # skip category; malformed captures continue to be
+        # counted under ``captures_skipped``.
+        if max_age_days is not None:
+            age = capture_age_days(capture_path)
+            if not is_within_max_age(age, max_age_days):
+                captures_skipped_stale += 1
+                continue
         phase = _safe_phase_from_capture(capture_path)
         if phase is None:
             captures_skipped += 1
@@ -258,6 +291,7 @@ def cas_reachability_report(captures_dir: Path) -> dict[str, Any]:
         "captures_skipped": captures_skipped,
         "captures_by_branch": captures_by_branch,
         "duplicates_by_branch": duplicates_by_branch,
+        "captures_skipped_stale": captures_skipped_stale,
     }
 
 
@@ -271,8 +305,16 @@ def format_report(report: dict[str, Any]) -> str:
         f"  coverage:        {report['coverage_pct']:.1f}%",
         f"  captures scanned: {report['captures_scanned']}",
         f"  captures skipped: {report['captures_skipped']}",
-        "  captured per branch:",
     ]
+    # [WORKFLOW-J.10.FRESHNESS 2026-09-14] Stale-skip count
+    # surfaces in the human-readable output when the report
+    # used a freshness filter. Default reports (no filter)
+    # show 0 here, which is the right answer -- "no captures
+    # were filtered out as stale".
+    stale = report.get("captures_skipped_stale", 0)
+    if stale > 0:
+        lines.append(f"  captures skipped (stale): {stale}")
+    lines.append("  captured per branch:")
     for phase, count in report["captured_phases"].items():
         marker = "+" if count > 0 else "-"
         lines.append(f"    [{marker}] {phase}: {count}")
@@ -348,7 +390,7 @@ see the latest verdict without re-running the CLI.
 
 **{verdict}** -- coverage **{coverage_pct:.1f}%**
 ({captures_scanned} captures scanned, {captures_skipped} skipped
-as malformed / non-bounded).
+as malformed / non-bounded{stale_clause}).
 
 ## Captured per branch
 
@@ -553,6 +595,18 @@ def update_summary(
     )
     duplicates_section = _format_duplicates_section(duplicates_by_branch)
 
+    # [WORKFLOW-J.10.FRESHNESS 2026-09-14] Build the stale
+    # clause for the verdict paragraph. Default reports (no
+    # freshness filter) show empty string -- the SUMMARY reads
+    # exactly as it did pre-freshness. When the gate filtered
+    # stale captures, the SUMMARY shows the count.
+    stale_count = int(report.get("captures_skipped_stale", 0))
+    stale_clause = (
+        f", {stale_count} skipped as stale (--captures-since filter)"
+        if stale_count > 0
+        else ""
+    )
+
     # Compose the SUMMARY body. Use the gate's verdict directly;
     # never coerce it. ``captures_dir`` defaults to the
     # canonical J.3 path.
@@ -567,6 +621,7 @@ def update_summary(
         coverage_pct=report["coverage_pct"],
         captures_scanned=report["captures_scanned"],
         captures_skipped=report["captures_skipped"],
+        stale_clause=stale_clause,
         branch_rows=branch_rows,
         catalog_section=catalog_section,
         missing_section=missing_section,

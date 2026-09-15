@@ -23,6 +23,7 @@ import json
 import os
 import subprocess
 import sys
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 import pytest
@@ -198,7 +199,7 @@ def test_cli_json_shape_is_stable(tmp_path):
     result = _run_cli("--captures-dir", str(tmp_path), "--json")
     payload = json.loads(result.stdout)
     # [WORKFLOW-J.10.DEDUP 2026-09-14] The ``duplicates_by_branch``
-    # field is additive; the contract is "the 8 documented keys are
+    # field is additive; the contract is "the 9 documented keys are
     # present, no extras, no missing".
     expected_keys = {
         "verdict",
@@ -209,6 +210,11 @@ def test_cli_json_shape_is_stable(tmp_path):
         "captures_skipped",
         "captures_by_branch",
         "duplicates_by_branch",
+        # [WORKFLOW-J.10.FRESHNESS 2026-09-14] The new
+        # ``captures_skipped_stale`` field is the freshness
+        # filter's audit surface; always present, default 0
+        # when no filter was applied.
+        "captures_skipped_stale",
     }
     assert set(payload.keys()) == expected_keys, (
         f"JSON shape drift: extra={set(payload.keys()) - expected_keys}, "
@@ -342,3 +348,165 @@ def test_cli_status_counts_only_nonzero_branches(tmp_path):
     assert result.returncode == 1
     assert "1/6 branches" in result.stdout
     assert "5 scanned" in result.stdout
+
+
+# ---------------------------------------------------------------------------
+# [WORKFLOW-J.10.FRESHNESS 2026-09-14] --captures-since CLI tests
+# ---------------------------------------------------------------------------
+
+
+def _write_capture_with_age(
+    dir_: Path, name: str, phase: str, *, days_old: float
+) -> Path:
+    """Write a J.3-schema capture with a controlled
+    ``generated_at_utc`` so we can exercise the freshness filter."""
+    day = dir_ / "2026-09-10"
+    day.mkdir(parents=True, exist_ok=True)
+    cap = day / name
+    generated = (
+        datetime.now(timezone.utc) - timedelta(days=days_old)
+    ).isoformat()
+    cap.write_text(
+        json.dumps(
+            {
+                "schema_version": 2,
+                "generated_at_utc": generated,
+                "rows": [{"classifier_phase": phase}],
+            }
+        ),
+        encoding="utf-8",
+    )
+    return cap
+
+
+def test_cli_captures_since_filters_stale_captures(tmp_path):
+    """``--captures-since 7`` keeps only the fresh capture;
+    the ancient one is skipped and surfaces in
+    ``captures_skipped_stale``."""
+    for branch in (
+        "CAS_REFERENCE_PRICE_WINDOW",
+        "CAS_ORDER_ENTRY",
+        "CAS_LIMIT_ENTRY_ONLY",
+        "CAS_MATCHING",
+        "CAS_POST",
+        "DERIVATIVES_CAS_ALIGNED",
+    ):
+        # Every capture is 90 days old -> all stale under a 7-day filter.
+        _write_capture_with_age(
+            tmp_path, f"{branch}.json", branch, days_old=90.0
+        )
+    result = _run_cli(
+        "--captures-dir", str(tmp_path),
+        "--captures-since", "7",
+        "--json",
+    )
+    assert result.returncode == 1  # UNREACHABLE under filter
+    payload = json.loads(result.stdout)
+    assert payload["verdict"] == "UNREACHABLE"
+    assert payload["captures_skipped_stale"] == 6
+    # No captures counted under the filter.
+    for branch in payload["captured_phases"]:
+        assert payload["captured_phases"][branch] == 0
+
+
+def test_cli_captures_since_keeps_fresh_captures(tmp_path):
+    """``--captures-since 30`` keeps the fresh capture and
+    surfaces the stale-skip count."""
+    for branch in (
+        "CAS_REFERENCE_PRICE_WINDOW",
+        "CAS_ORDER_ENTRY",
+        "CAS_LIMIT_ENTRY_ONLY",
+        "CAS_MATCHING",
+        "CAS_POST",
+        "DERIVATIVES_CAS_ALIGNED",
+    ):
+        # All fresh (0 days old) -> all count under any filter.
+        _write_capture_with_age(
+            tmp_path, f"{branch}.json", branch, days_old=0.0
+        )
+    result = _run_cli(
+        "--captures-dir", str(tmp_path),
+        "--captures-since", "30",
+        "--json",
+    )
+    assert result.returncode == 0  # REACHABLE
+    payload = json.loads(result.stdout)
+    assert payload["verdict"] == "REACHABLE"
+    assert payload["captures_skipped_stale"] == 0
+
+
+def test_cli_captures_since_rejects_non_positive(tmp_path):
+    """``--captures-since 0`` and ``--captures-since -5`` are
+    rejected at the CLI boundary with exit code 2."""
+    result = _run_cli(
+        "--captures-dir", str(tmp_path),
+        "--captures-since", "0",
+        "--json",
+    )
+    assert result.returncode == 2
+    assert "must be > 0" in result.stderr
+
+    result = _run_cli(
+        "--captures-dir", str(tmp_path),
+        "--captures-since", "-5",
+        "--json",
+    )
+    assert result.returncode == 2
+    assert "must be > 0" in result.stderr
+
+
+def test_cli_captures_since_mixed_fresh_and_stale(tmp_path):
+    """A 14-day filter keeps captures younger than 14 days; older
+    ones are skipped and counted under captures_skipped_stale."""
+    # 3 fresh (0 days), 3 ancient (60 days) -- one of each per
+    # the first three branches.
+    fresh_branches = (
+        "CAS_REFERENCE_PRICE_WINDOW",
+        "CAS_ORDER_ENTRY",
+        "CAS_LIMIT_ENTRY_ONLY",
+    )
+    stale_branches = (
+        "CAS_MATCHING",
+        "CAS_POST",
+        "DERIVATIVES_CAS_ALIGNED",
+    )
+    for branch in fresh_branches:
+        _write_capture_with_age(
+            tmp_path, f"{branch}.json", branch, days_old=0.0
+        )
+    for branch in stale_branches:
+        _write_capture_with_age(
+            tmp_path, f"{branch}.json", branch, days_old=60.0
+        )
+    result = _run_cli(
+        "--captures-dir", str(tmp_path),
+        "--captures-since", "14",
+        "--json",
+    )
+    assert result.returncode == 1  # UNREACHABLE: 3 missing
+    payload = json.loads(result.stdout)
+    assert payload["captures_skipped_stale"] == 3
+    assert (
+        payload["captured_phases"]["CAS_REFERENCE_PRICE_WINDOW"] == 1
+    )
+    assert (
+        payload["captured_phases"]["CAS_MATCHING"] == 0
+    )
+
+
+def test_cli_captures_since_works_with_status_flag(tmp_path):
+    """``--captures-since`` composes with ``--status``: the
+    single-line status reflects the filtered verdict."""
+    _write_capture_with_age(
+        tmp_path,
+        "stale.json",
+        "CAS_REFERENCE_PRICE_WINDOW",
+        days_old=100.0,
+    )
+    result = _run_cli(
+        "--captures-dir", str(tmp_path),
+        "--captures-since", "7",
+        "--status",
+    )
+    assert result.returncode == 1  # UNREACHABLE: 0/6 fresh branches
+    assert "J.10: UNREACHABLE" in result.stdout

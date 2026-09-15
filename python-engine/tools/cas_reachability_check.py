@@ -104,6 +104,22 @@ def main(argv: list[str] | None = None) -> int:
              "or UNREACHABLE (1) as usual; the line itself contains the "
              "details. Suppresses the standard human-readable report.",
     )
+    parser.add_argument(
+        "--captures-since",
+        type=float,
+        default=None,
+        metavar="DAYS",
+        help=(
+            "Freshness filter: only count captures whose "
+            "``generated_at_utc`` is within the last DAYS days. "
+            "Default: no filter (every capture counts regardless "
+            "of age). Captures older than the threshold are skipped "
+            "and surfaced in the new ``captures_skipped_stale`` "
+            "report field. Use this to answer 'is the gate "
+            "REACHABLE with fresh evidence?' without manually "
+            "inspecting each capture's timestamp."
+        ),
+    )
     args = parser.parse_args(argv)
 
     captures_dir = args.captures_dir or (
@@ -115,7 +131,25 @@ def main(argv: list[str] | None = None) -> int:
         )
         return 2
 
-    report = cas_reachability_report(captures_dir=captures_dir)
+    # [WORKFLOW-J.10.FRESHNESS 2026-09-14] Forward the
+    # --captures-since flag to the gate. Negative values are
+    # nonsensical (would mark every capture as stale) and are
+    # rejected at the CLI boundary; the gate itself trusts the
+    # value when it is a positive float.
+    max_age_days: float | None = None
+    if args.captures_since is not None:
+        if args.captures_since <= 0:
+            sys.stderr.write(
+                f"--captures-since must be > 0 days, "
+                f"got {args.captures_since}\n"
+            )
+            return 2
+        max_age_days = args.captures_since
+
+    report = cas_reachability_report(
+        captures_dir=captures_dir,
+        max_age_days=max_age_days,
+    )
     if args.status:
         # Single-line status for shell prompts / monitoring.
         # Format: ``J.10: <VERDICT> <coverage_pct>% (<captured>/<total>
