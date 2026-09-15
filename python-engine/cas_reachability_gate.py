@@ -52,6 +52,13 @@ from cas_reachability_freshness import (
 from cas_reachability_threshold import (
     meets_min_unique_threshold,
 )
+from cas_reachability_aggregate import (
+    format_per_day_table,
+    per_day_breakdown,
+)
+from cas_reachability_atomic import (
+    write_report_atomic,
+)
 
 
 # CAS sub-window branches + DERIVATIVES_CAS_ALIGNED that need
@@ -200,6 +207,14 @@ def cas_reachability_report(
     # surfaced via ``duplicates_by_branch[phase]`` for audit.
     captures_scanned = 0
     captures_skipped = 0
+    # [WORKFLOW-J.10.CAPTURE_SUMMARY_AGGREGATE 2026-09-14]
+    # Track which paths were the FIRST occurrence of their
+    # fingerprint under their branch. The per-day histogram
+    # uses this to count ``unique`` (the captures that
+    # contributed to coverage) vs ``scanned`` (every file
+    # in the directory tree). Paths are stored as the
+    # ``str(capture_path)`` the aggregate helper looks up.
+    first_occurrence_paths: set[str] = set()
 
     captures_root = Path(captures_dir)
     if not captures_root.exists():
@@ -217,6 +232,7 @@ def cas_reachability_report(
             },
             "captures_skipped_stale": 0,
             "min_unique_per_branch": min_unique_per_branch,
+            "captures_per_day": {},
         }
 
     captures_skipped_stale = 0
@@ -276,6 +292,10 @@ def cas_reachability_report(
                 if rel_str not in captures_by_branch[phase]:
                     captures_by_branch[phase].append(rel_str)
                 continue
+            # [WORKFLOW-J.10.CAPTURE_SUMMARY_AGGREGATE 2026-09-14]
+            # First occurrence under this branch -> mark the path
+            # so the per-day histogram counts it as ``unique``.
+            first_occurrence_paths.add(str(capture_path))
             captures[phase] += 1
             # Relative path so the SUMMARY is portable; falls
             # back to the absolute path when a non-captures_root
@@ -308,6 +328,29 @@ def cas_reachability_report(
     )
     verdict = "REACHABLE" if not missing else "UNREACHABLE"
 
+    # [WORKFLOW-J.10.CAPTURE_SUMMARY_AGGREGATE 2026-09-14]
+    # Per-day histogram. Build the path -> fingerprint mapping
+    # ONLY for first-occurrence paths (the dedup filter's
+    # verdict-contributing paths). The aggregate helper
+    # increments ``unique`` per mapped path; ``scanned`` is
+    # every JSON file under that day regardless of validity.
+    # Build the mapping from a path -> fingerprint dict: only
+    # paths we recorded as first-occurrence are mapped.
+    #
+    # NOTE: we don't have per-path fingerprint tracking yet;
+    # the gate currently tracks fingerprint-only-per-branch.
+    # For the histogram's purposes, "unique" = path was a
+    # first-occurrence under some branch. Pass a mapping where
+    # every first-occurrence path maps to a sentinel value;
+    # the helper only checks ``key present``.
+    path_to_fp_marker: dict[str, str] = {
+        p: "first_occurrence" for p in first_occurrence_paths
+    }
+    captures_per_day = per_day_breakdown(
+        captures_root,
+        unique_per_path=path_to_fp_marker,
+    )
+
     return {
         "verdict": verdict,
         "captured_phases": captures,
@@ -319,6 +362,7 @@ def cas_reachability_report(
         "duplicates_by_branch": duplicates_by_branch,
         "captures_skipped_stale": captures_skipped_stale,
         "min_unique_per_branch": min_unique_per_branch,
+        "captures_per_day": captures_per_day,
     }
 
 
@@ -387,13 +431,16 @@ def format_report(report: dict[str, Any]) -> str:
 def write_report(report: dict[str, Any], out_path: Path) -> None:
     """Persist the report as JSON. Idempotent for the same
     input -- writes the same shape on every call.
+
+    [WORKFLOW-J.10.WRITE_ATOMIC 2026-09-14] The implementation
+    is now atomic + byte-identical via ``write_report_atomic``
+    (write-to-tempfile + ``os.link``). A byte-identical retry
+    produces an identical file; a different-content pre-existing
+    file raises ``ValueError`` (defensive against accidental
+    path-mismatch or stale output). Mirrors the F5
+    ``reconciliation_cli._write_output_atomic`` discipline.
     """
-    out_path = Path(out_path)
-    out_path.parent.mkdir(parents=True, exist_ok=True)
-    out_path.write_text(
-        json.dumps(report, indent=2, sort_keys=True),
-        encoding="utf-8",
-    )
+    write_report_atomic(report, out_path)
 
 
 # [WORKFLOW-J.10.CLOSURE 2026-09-13] Operator-facing SUMMARY.md
@@ -433,7 +480,17 @@ as malformed / non-bounded{stale_clause}).
 | Branch | Captures |
 |---|---|
 {branch_rows}
-{catalog_section}{missing_section}## Duplicate captures
+{catalog_section}{missing_section}## Captures per day
+
+{per_day_section}
+
+The per-day histogram buckets every capture by its parent
+directory's ``YYYY-MM-DD`` date. ``Scanned`` is every JSON file
+under that day; ``Unique`` is the count that contributed to
+coverage (after J.10.DEDUP). Use this to spot stale evidence
+clusters and evidence-velocity regressions.
+
+## Duplicate captures
 
 {duplicates_section}
 
@@ -643,6 +700,18 @@ def update_summary(
         else ""
     )
 
+    # [WORKFLOW-J.10.CAPTURE_SUMMARY_AGGREGATE 2026-09-14]
+    # Per-day histogram. The aggregate helper returns an
+    # empty dict when the captures directory is missing or
+    # has no JSON; the ``format_per_day_table`` helper renders
+    # "_No captures scanned yet._" in that case. Default
+    # max_rows=7 keeps the SUMMARY readable; operators with
+    # long histories get a "(+ N more days)" footer.
+    per_day_section = format_per_day_table(
+        report.get("captures_per_day", {}),
+        max_rows=7,
+    )
+
     # Compose the SUMMARY body. Use the gate's verdict directly;
     # never coerce it. ``captures_dir`` defaults to the
     # canonical J.3 path.
@@ -662,6 +731,7 @@ def update_summary(
         catalog_section=catalog_section,
         missing_section=missing_section,
         duplicates_section=duplicates_section,
+        per_day_section=per_day_section,
         fingerprint_hex_length=FINGERPRINT_HEX_LENGTH,
     )
     summary_path.write_text(body, encoding="utf-8")

@@ -199,7 +199,7 @@ def test_cli_json_shape_is_stable(tmp_path):
     result = _run_cli("--captures-dir", str(tmp_path), "--json")
     payload = json.loads(result.stdout)
     # [WORKFLOW-J.10.DEDUP 2026-09-14] The ``duplicates_by_branch``
-    # field is additive; the contract is "the 10 documented keys are
+    # field is additive; the contract is "the 11 documented keys are
     # present, no extras, no missing".
     expected_keys = {
         "verdict",
@@ -220,6 +220,11 @@ def test_cli_json_shape_is_stable(tmp_path):
         # audit surface; always present, default 1 when no
         # threshold was applied.
         "min_unique_per_branch",
+        # [WORKFLOW-J.10.CAPTURE_SUMMARY_AGGREGATE 2026-09-14]
+        # The new ``captures_per_day`` field is the per-day
+        # histogram (date -> {scanned, unique}); always
+        # present, default {} when no captures exist.
+        "captures_per_day",
     }
     assert set(payload.keys()) == expected_keys, (
         f"JSON shape drift: extra={set(payload.keys()) - expected_keys}, "
