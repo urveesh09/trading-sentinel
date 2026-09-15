@@ -92,6 +92,55 @@ def _validated_cost_sensitivity(value: Mapping[str, Any], *, underlying: str,
     return scenarios
 
 
+def canonical_cost_sensitivity_fingerprint(scenarios: list[Mapping[str, Any]]) -> str:
+    """[WORKFLOW-C.A3 2026-09-15] Deterministic fingerprint of a
+    cost-sensitivity scenarios list, ordered by
+    ``(fee_multiplier, additional_slippage_bps)``.
+
+    The qualification review needs to verify that the
+    cost-stress runs used the SAME scenario set across
+    qualification windows. ``case.cost_sensitivity`` is
+    provided by the caller and its scenarios array order
+    is whatever the upstream code chose. Without a
+    deterministic pin, two runs of the SAME logical
+    scenario set can produce DIFFERENT ``evidence_sha256``
+    values (because the upstream ordering may differ).
+
+    This helper computes a stable SHA-256 hex digest over
+    the scenarios SORTED by ``(fee_multiplier,
+    additional_slippage_bps)``. The pin is invariant under
+    input-order permutations, so the operator can compare
+    pins across qualification windows to prove the
+    scenario set is unchanged.
+
+    The helper is total -- a non-list input degrades to an
+    empty digest (the operator can still detect a
+    malformed input by comparing against the canonical
+    empty-string fingerprint). Non-finite or missing
+    coordinates sort stably via string-coercion of the
+    tuple, which preserves ``(fee, slippage)`` ordering
+    when the values are well-formed. The validation in
+    ``_validated_cost_sensitivity`` already enforces
+    well-formed coordinates, so the sort is deterministic
+    for any payload that survived validation.
+    """
+    if not isinstance(scenarios, list):
+        return _digest([])
+    sortable = []
+    for row in scenarios:
+        if not isinstance(row, Mapping):
+            sortable.append((0, 0, row))
+            continue
+        try:
+            fee = float(row.get("fee_multiplier", 0))
+            slippage = float(row.get("additional_slippage_bps", 0))
+        except (TypeError, ValueError):
+            fee, slippage = 0.0, 0.0
+        sortable.append((fee, slippage, dict(row)))
+    sortable.sort(key=lambda triple: (triple[0], triple[1]))
+    return _digest([row for _, _, row in sortable])
+
+
 def heldout_case_from_full_policy_report(report: Mapping[str, Any], *,
                                          signal_artifact_sha256: str) -> HeldOutCase:
     """Bind a verified deployed-policy replay report to held-out review.
@@ -246,10 +295,25 @@ def build_heldout_comparison(*, dataset_sha256: str, code_revision: str,
             "state": state, "net_pnl_rs": case.replay.result.net_pnl_rs,
             "opportunity_id": case.opportunity_id, "evidence_sha256": case.replay.evidence_sha256})
         if case.cost_sensitivity is not None:
+            # [WORKFLOW-C.A3 2026-09-15] Deterministic
+            # scenario-set fingerprint. The pin is invariant
+            # under input-order permutations of the scenarios
+            # list -- two qualification windows that used the
+            # same logical scenario set produce the same pin
+            # regardless of how the upstream code ordered
+            # them. The pin is computed AFTER the scenarios
+            # are validated (so a malformed scenario set has
+            # already raised by this point -- the bucket is
+            # only constructed for cases that survived
+            # ``_validated_cost_sensitivity``).
+            scenario_fingerprint = canonical_cost_sensitivity_fingerprint(
+                list(case.cost_sensitivity.get("scenarios", ())),
+            )
             bucket["cost_sensitivity"].append({"opportunity_id": case.opportunity_id,
                 "source_report_sha256": case.source_report.get("evidence_sha256") if case.source_report else None,
                 "source_manifest_sha256": case.source_report.get("manifest", {}).get("manifest_sha256")
                     if case.source_report else None,
+                "cost_sensitivity_sha256": scenario_fingerprint,
                 "artifact": dict(case.cost_sensitivity)})
         if case.replay.state == "CLOSED":
             pnl = case.replay.result.net_pnl_rs
