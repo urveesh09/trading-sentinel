@@ -217,6 +217,22 @@ def main(argv: list[str] | None = None) -> int:
     compare.add_argument("--report-id", required=True)
     compare.add_argument("--inputs", required=True, help="JSON proposals, future_bars and session_coverage")
     compare.add_argument("--output", required=True, help="immutable comparison report JSON")
+    # [WORKFLOW-C.A4-CLI 2026-09-15] Operator-facing manifest
+    # drift verification. Reuses the helper added in A4.
+    # Exit codes mirror the J.10.SUMMARY_VERIFY convention:
+    # 0 = MATCH (intact, body matches fingerprint), 1 = real
+    # drift (MANIFEST_FINGERPRINT_MISMATCH or
+    # CRITERIA_NOT_RECONSTRUCTABLE), 2 = missing file or
+    # unreadable bytes. The CLI NEVER writes to the manifest;
+    # use ``freeze-strategy-comparison`` (or the underlying
+    # ``write_qualification_criteria_manifest``) to commit a
+    # fresh manifest.
+    verify_manifest = sub.add_parser("verify-criteria-manifest",
+        help="read-only verification of an on-disk qualification criteria manifest")
+    verify_manifest.add_argument("--manifest-path", required=True,
+        help="path to the criteria manifest JSON to verify")
+    verify_manifest.add_argument("--json", action="store_true",
+        help="emit structured JSON instead of human-readable text")
     args = parser.parse_args(argv)
     if args.command in {"freeze-strategy-comparison", "evaluate-strategy-comparison"}:
         try:
@@ -348,6 +364,58 @@ def main(argv: list[str] | None = None) -> int:
         print(json.dumps({"written": True, "path": str(target), "status": report.get("status"),
                           "source_sheets": len(report.get("source_sheets") or [])}, sort_keys=True))
         return 0
+    if args.command == "verify-criteria-manifest":
+        # [WORKFLOW-C.A4-CLI 2026-09-15] Drift verification
+        # CLI. Read-only by contract -- never writes to the
+        # manifest. Exit codes match J.10.SUMMARY_VERIFY so
+        # monitoring tools can use a unified drift-handling
+        # pattern.
+        from partner_qualification_verify import (
+            ManifestDriftKind,
+            verify_qualification_criteria_manifest,
+        )
+        result = verify_qualification_criteria_manifest(Path(args.manifest_path))
+        if args.json:
+            sys.stdout.write(json.dumps({
+                "kind": result.kind.value,
+                "on_disk_path": result.on_disk_path,
+                "on_disk_fingerprint": result.on_disk_fingerprint,
+                "reconstructed_fingerprint": result.reconstructed_fingerprint,
+                "on_disk_size": result.on_disk_size,
+                "matches": result.matches,
+            }, indent=2, sort_keys=True))
+            sys.stdout.write("\n")
+        else:
+            sys.stdout.write(f"qualification manifest drift: {result.kind.value}\n")
+            if result.on_disk_path is None:
+                sys.stdout.write("  on-disk:       (missing)\n")
+            else:
+                sys.stdout.write(f"  on-disk:       {result.on_disk_path}\n")
+                if result.on_disk_fingerprint:
+                    sys.stdout.write(
+                        f"  on-disk fingerprint: {result.on_disk_fingerprint[:16]}...\n"
+                    )
+                if result.reconstructed_fingerprint:
+                    sys.stdout.write(
+                        f"  reconstructed: {result.reconstructed_fingerprint[:16]}...\n"
+                    )
+                if result.on_disk_size is not None:
+                    sys.stdout.write(f"  on-disk size:  {result.on_disk_size} bytes\n")
+        # Exit code semantics:
+        #   0 = MATCH (intact)
+        #   1 = real drift (MANIFEST_FINGERPRINT_MISMATCH or
+        #       CRITERIA_NOT_RECONSTRUCTABLE)
+        #   2 = ON_DISK_MISSING or BYTES_UNREADABLE
+        # This mirrors J.10.SUMMARY_VERIFY so monitoring can
+        # use a single drift-handling pattern.
+        if result.kind == ManifestDriftKind.MATCH:
+            return 0
+        if result.kind in (
+            ManifestDriftKind.ON_DISK_MISSING,
+            ManifestDriftKind.BYTES_UNREADABLE,
+        ):
+            return 2
+        return 1
     return 2
 
 
