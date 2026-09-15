@@ -291,12 +291,37 @@ def _today_str() -> str:
 
 def _load_dedup_state() -> None:
     """Restore today's alerted ids on boot. Never raises: a corrupt or absent
-    file must degrade to 'remember nothing' (re-alert), never to a crash."""
+    file must degrade to 'remember nothing' (re-alert), never to a crash.
+
+    [WORKFLOW-C.B.2 2026-09-15] F-7 from the 2026-09-15 production
+    audit: when the agent processes zero signals in a day, the
+    dedup file is never created -- operators cannot distinguish
+    "agent booted today but found no signals" from "agent did
+    not boot at all". The bounded fix: if the file does not
+    exist on boot, write an initial empty-state file with
+    ``{"date": <today>, "ids": []}``. The file's existence is
+    now a clean "agent booted today" marker; its content
+    reflects processed-signal state.
+
+    This is a pure observability improvement. The dedup
+    mechanism itself is unchanged: a missing file still means
+    "remember nothing" (re-alert), and the new initial write
+    is the same payload that ``_save_dedup_state`` would have
+    produced. No new dependencies.
+    """
     try:
         with open(DEDUP_FILE) as fh:
             state = json.load(fh)
         if state.get("date") != _today_str():
             logger.info("Dedup file is from a previous day -- starting fresh.")
+            # [WORKFLOW-C.B.2] Don't leave yesterday's stale
+            # file lying around -- write today's empty state
+            # so the file's existence is always a "fresh boot"
+            # marker. ``_save_dedup_state`` is the same code
+            # path used for the periodic save, so the format
+            # is identical to what subsequent writes would
+            # produce.
+            _save_dedup_state()
             return
         processed_signals_today.update(state.get("ids", []))
         logger.info(
@@ -304,7 +329,13 @@ def _load_dedup_state() -> None:
             f"from {DEDUP_FILE} -- a restart will not re-alert them."
         )
     except FileNotFoundError:
-        pass
+        # [WORKFLOW-C.B.2] The file is missing. Either the
+        # container was just restarted (no prior state) OR
+        # the operator has been investigating the audit's
+        # F-7 finding by deleting the file. Either way,
+        # write today's initial state so the file's
+        # existence is a "fresh boot" marker.
+        _save_dedup_state()
     except Exception as e:
         logger.error(f"Could not read dedup state ({e}) -- starting fresh.")
 
