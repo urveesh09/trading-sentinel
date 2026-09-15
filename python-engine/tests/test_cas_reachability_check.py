@@ -230,6 +230,12 @@ def test_cli_json_shape_is_stable(tmp_path):
         # matrix (branch -> date -> {scanned, unique}); always
         # present, default empty matrix when no captures exist.
         "branch_per_day",
+        # [WORKFLOW-J.10.CAPTURE_OLDEST_NEWEST 2026-09-14] The
+        # ``recency_by_branch`` field is the per-branch
+        # timestamp range (oldest / newest first-occurrence
+        # capture + backing paths + span in days); always
+        # present, default {} when no captures exist.
+        "recency_by_branch",
     }
     assert set(payload.keys()) == expected_keys, (
         f"JSON shape drift: extra={set(payload.keys()) - expected_keys}, "
