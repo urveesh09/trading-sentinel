@@ -4,6 +4,13 @@ import StatusBar from '../components/StatusBar';
 import SignalCard from '../components/SignalCard';
 import PositionRow from '../components/PositionRow';
 import CircuitBreaker from '../components/CircuitBreaker';
+// [FIX 2026-09-14] SessionPhaseCard is referenced at line ~445
+// (the "Session Phase" section heading) but the import was
+// missing -- production console showed
+//   ReferenceError: SessionPhaseCard is not defined
+// after the J.8 dashboard cards merged. Adding the default
+// export import resolves the runtime crash.
+import SessionPhaseCard from '../components/SessionPhaseCard';
 import { useSignals } from '../hooks/useSignals';
 import { usePositions } from '../hooks/usePositions';
 import { useDivisionPerformance } from '../hooks/useDivisionPerformance';
