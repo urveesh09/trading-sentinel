@@ -157,6 +157,23 @@ def main(argv: list[str] | None = None) -> int:
             "always 0 -- the listing is informational only."
         ),
     )
+    parser.add_argument(
+        "--show-branch-histogram",
+        action="store_true",
+        help=(
+            "[WORKFLOW-J.10.BRANCH_HISTOGRAM 2026-09-14] Print "
+            "the per-branch-per-day matrix in addition to the "
+            "standard verdict report. The matrix shows which "
+            "branches have evidence on which days -- useful for "
+            "spotting branches that never got refreshed vs "
+            "branches with evidence clustered on a single day. "
+            "Composes with --json (the matrix is appended to "
+            "the JSON output as the ``branch_per_day`` field). "
+            "The matrix is also rendered in the persistent "
+            "SUMMARY.md (the gate runs the full report regardless "
+            "of this flag)."
+        ),
+    )
     args = parser.parse_args(argv)
 
     # [WORKFLOW-J.10.CAPTURE_LISTING 2026-09-14] Short-circuit:
@@ -282,6 +299,23 @@ def main(argv: list[str] | None = None) -> int:
     else:
         sys.stdout.write(format_report(report))
         sys.stdout.write("\n")
+        # [WORKFLOW-J.10.BRANCH_HISTOGRAM 2026-09-14] When
+        # --show-branch-histogram is set, append the per-branch-
+        # per-day matrix to the human-readable output. The JSON
+        # output (--json) already includes the matrix under
+        # ``branch_per_day``; the human-readable output gets the
+        # matrix as a follow-up section so the operator can read
+        # it without flipping to JSON.
+        if args.show_branch_histogram:
+            sys.stdout.write("\n")
+            sys.stdout.write("Captures per branch per day:\n")
+            sys.stdout.write(
+                format_branch_per_day_table(
+                    report.get("branch_per_day", {}),
+                    max_dates=7,
+                )
+            )
+            sys.stdout.write("\n")
     if args.write:
         write_report(report, out_path=args.write)
     if args.update_summary:

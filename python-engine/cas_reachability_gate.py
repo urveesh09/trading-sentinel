@@ -56,6 +56,10 @@ from cas_reachability_aggregate import (
     format_per_day_table,
     per_day_breakdown,
 )
+from cas_reachability_branch_histogram import (
+    branch_per_day_breakdown,
+    format_branch_per_day_table,
+)
 from cas_reachability_atomic import (
     write_report_atomic,
 )
@@ -233,6 +237,9 @@ def cas_reachability_report(
             "captures_skipped_stale": 0,
             "min_unique_per_branch": min_unique_per_branch,
             "captures_per_day": {},
+            "branch_per_day": {
+                phase: {} for phase in CAS_BRANCHES_REQUIRING_EVIDENCE
+            },
         }
 
     captures_skipped_stale = 0
@@ -350,6 +357,13 @@ def cas_reachability_report(
         captures_root,
         unique_per_path=path_to_fp_marker,
     )
+    # [WORKFLOW-J.10.BRANCH_HISTOGRAM 2026-09-14] Per-branch-
+    # per-day matrix. Slices the per-day histogram by branch
+    # so the operator sees "which branch has which day".
+    branch_per_day = branch_per_day_breakdown(
+        captures_root,
+        first_occurrence_per_path=path_to_fp_marker,
+    )
 
     return {
         "verdict": verdict,
@@ -363,6 +377,7 @@ def cas_reachability_report(
         "captures_skipped_stale": captures_skipped_stale,
         "min_unique_per_branch": min_unique_per_branch,
         "captures_per_day": captures_per_day,
+        "branch_per_day": branch_per_day,
     }
 
 
@@ -489,6 +504,16 @@ directory's ``YYYY-MM-DD`` date. ``Scanned`` is every JSON file
 under that day; ``Unique`` is the count that contributed to
 coverage (after J.10.DEDUP). Use this to spot stale evidence
 clusters and evidence-velocity regressions.
+
+## Captures per branch per day
+
+{branch_per_day_section}
+
+Rows are the 6 required branches; columns are dates ascending.
+Cell values are the **unique** count under that branch on
+that day (post-J.10.DEDUP). Empty cells render as ``-``. Use
+this to spot which branches have evidence clustered on a
+single day vs which branches never got refreshed.
 
 ## Duplicate captures
 
@@ -712,6 +737,15 @@ def update_summary(
         max_rows=7,
     )
 
+    # [WORKFLOW-J.10.BRANCH_HISTOGRAM 2026-09-14] Per-branch-
+    # per-day matrix. Same default ``max_dates=7`` so the
+    # SUMMARY stays readable. Empty matrix renders a
+    # "_No captures with a bounded phase on disk._" line.
+    branch_per_day_section = format_branch_per_day_table(
+        report.get("branch_per_day", {}),
+        max_dates=7,
+    )
+
     # Compose the SUMMARY body. Use the gate's verdict directly;
     # never coerce it. ``captures_dir`` defaults to the
     # canonical J.3 path.
@@ -732,6 +766,7 @@ def update_summary(
         missing_section=missing_section,
         duplicates_section=duplicates_section,
         per_day_section=per_day_section,
+        branch_per_day_section=branch_per_day_section,
         fingerprint_hex_length=FINGERPRINT_HEX_LENGTH,
     )
     summary_path.write_text(body, encoding="utf-8")

@@ -199,7 +199,7 @@ def test_cli_json_shape_is_stable(tmp_path):
     result = _run_cli("--captures-dir", str(tmp_path), "--json")
     payload = json.loads(result.stdout)
     # [WORKFLOW-J.10.DEDUP 2026-09-14] The ``duplicates_by_branch``
-    # field is additive; the contract is "the 11 documented keys are
+    # field is additive; the contract is "the 12 documented keys are
     # present, no extras, no missing".
     expected_keys = {
         "verdict",
@@ -225,6 +225,11 @@ def test_cli_json_shape_is_stable(tmp_path):
         # histogram (date -> {scanned, unique}); always
         # present, default {} when no captures exist.
         "captures_per_day",
+        # [WORKFLOW-J.10.BRANCH_HISTOGRAM 2026-09-14] The new
+        # ``branch_per_day`` field is the per-branch-per-day
+        # matrix (branch -> date -> {scanned, unique}); always
+        # present, default empty matrix when no captures exist.
+        "branch_per_day",
     }
     assert set(payload.keys()) == expected_keys, (
         f"JSON shape drift: extra={set(payload.keys()) - expected_keys}, "
@@ -612,3 +617,60 @@ def test_cli_min_unique_per_branch_status_reflects_verdict(tmp_path):
     assert result.returncode == 1  # UNREACHABLE
     assert "J.10: UNREACHABLE" in result.stdout
     assert "0/6 branches" in result.stdout
+
+
+# ---------------------------------------------------------------------------
+# [WORKFLOW-J.10.BRANCH_HISTOGRAM 2026-09-14] --show-branch-histogram CLI tests
+# ---------------------------------------------------------------------------
+
+
+def test_cli_show_branch_histogram_appends_matrix_human(tmp_path):
+    """``--show-branch-histogram`` appends the per-branch-per-day
+    matrix to the human-readable report.
+    """
+    from tests.test_cas_reachability_branch_histogram import (
+        _make_capture, _write_capture
+    )
+    _write_capture(
+        tmp_path, "2026-09-10", "a.json",
+        _make_capture("CAS_MATCHING", symbol="RELIANCE"),
+    )
+    _write_capture(
+        tmp_path, "2026-09-14", "b.json",
+        _make_capture("CAS_MATCHING", symbol="TCS"),
+    )
+    result = _run_cli(
+        "--captures-dir", str(tmp_path),
+        "--show-branch-histogram",
+    )
+    assert result.returncode == 1  # UNREACHABLE (5 missing branches)
+    out = result.stdout
+    # The matrix header is present.
+    assert "Captures per branch per day:" in out
+    # The branch row appears.
+    assert "CAS_MATCHING" in out
+    # The two dates appear as columns.
+    assert "2026-09-10" in out
+    assert "2026-09-14" in out
+
+
+def test_cli_show_branch_histogram_in_json_payload(tmp_path):
+    """``--show-branch-histogram`` doesn't change the JSON
+    payload -- the matrix is ALWAYS included as
+    ``branch_per_day`` (the flag only affects the
+    human-readable output)."""
+    from tests.test_cas_reachability_branch_histogram import (
+        _make_capture, _write_capture
+    )
+    _write_capture(
+        tmp_path, "2026-09-14", "a.json",
+        _make_capture("CAS_MATCHING"),
+    )
+    result = _run_cli(
+        "--captures-dir", str(tmp_path),
+        "--json",
+    )
+    payload = json.loads(result.stdout)
+    # branch_per_day is present in JSON regardless of the flag.
+    assert "branch_per_day" in payload
+    assert "CAS_MATCHING" in payload["branch_per_day"]
