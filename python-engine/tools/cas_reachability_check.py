@@ -46,6 +46,10 @@ from cas_reachability_gate import (
     update_summary,
     write_report,
 )
+from cas_reachability_listing import (
+    format_listing,
+    list_captures,
+)
 
 
 def _resolve_repo_root() -> Path:
@@ -136,7 +140,72 @@ def main(argv: list[str] | None = None) -> int:
             "to require corroborating evidence per branch."
         ),
     )
+    parser.add_argument(
+        "--list-captures",
+        action="store_true",
+        help=(
+            "[WORKFLOW-J.10.CAPTURE_LISTING 2026-09-14] Print a "
+            "structured listing of every capture on disk, grouped "
+            "by branch, WITHOUT computing the verdict. This is a "
+            "fast, side-effect-free audit tool -- no fingerprinting, "
+            "no freshness check, no dedup. Use it to answer 'what "
+            "captures exist?' without paying the cost of the "
+            "full gate walk. Composes with --json (the listing is "
+            "emitted as machine-readable JSON) and --captures-dir. "
+            "Mutually exclusive with --status / --update-summary / "
+            "--write (those are verdict-output flags). Exit code is "
+            "always 0 -- the listing is informational only."
+        ),
+    )
     args = parser.parse_args(argv)
+
+    # [WORKFLOW-J.10.CAPTURE_LISTING 2026-09-14] Short-circuit:
+    # if the operator asked for a listing, we don't need to run
+    # the freshness / dedup / threshold machinery at all. The
+    # listing is a fast walk that only reads rows[0].classifier_phase.
+    if args.list_captures:
+        # Listing does NOT honour --captures-since / --min-unique-per-branch:
+        # those are verdict filters, not listing filters. Refuse early so
+        # the operator doesn't get a confusing result.
+        if args.captures_since is not None:
+            sys.stderr.write(
+                "--list-captures does not compose with --captures-since. "
+                "Listing is a side-effect-free audit tool; freshness is a "
+                "verdict concern. Use the gate (without --list-captures) "
+                "for freshness-filtered output.\n"
+            )
+            return 2
+        if args.min_unique_per_branch is not None:
+            sys.stderr.write(
+                "--list-captures does not compose with --min-unique-per-branch. "
+                "Listing is a side-effect-free audit tool; the threshold "
+                "is a verdict concern.\n"
+            )
+            return 2
+        if args.update_summary or args.write or args.status:
+            sys.stderr.write(
+                "--list-captures is mutually exclusive with --update-summary, "
+                "--write, and --status (those are verdict-output flags). "
+                "The listing does not produce a verdict or update the SUMMARY.\n"
+            )
+            return 2
+        captures_dir = args.captures_dir or (
+            _resolve_repo_root() / "docs" / "j2_captures"
+        )
+        # The listing tolerates a missing directory: it returns an
+        # empty listing rather than raising. The operator gets a
+        # clean "0 captures" report instead of an error.
+        listing = list_captures(captures_dir)
+        if args.json:
+            sys.stdout.write(
+                json.dumps(listing, indent=2, sort_keys=True)
+            )
+            sys.stdout.write("\n")
+        else:
+            sys.stdout.write(format_listing(listing))
+            sys.stdout.write("\n")
+        # Exit 0 always -- listing is informational.
+        return 0
 
     captures_dir = args.captures_dir or (
         _resolve_repo_root() / "docs" / "j2_captures"
