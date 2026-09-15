@@ -199,7 +199,7 @@ def test_cli_json_shape_is_stable(tmp_path):
     result = _run_cli("--captures-dir", str(tmp_path), "--json")
     payload = json.loads(result.stdout)
     # [WORKFLOW-J.10.DEDUP 2026-09-14] The ``duplicates_by_branch``
-    # field is additive; the contract is "the 9 documented keys are
+    # field is additive; the contract is "the 10 documented keys are
     # present, no extras, no missing".
     expected_keys = {
         "verdict",
@@ -215,6 +215,11 @@ def test_cli_json_shape_is_stable(tmp_path):
         # filter's audit surface; always present, default 0
         # when no filter was applied.
         "captures_skipped_stale",
+        # [WORKFLOW-J.10.MIN_THRESHOLD 2026-09-14] The new
+        # ``min_unique_per_branch`` field is the threshold's
+        # audit surface; always present, default 1 when no
+        # threshold was applied.
+        "min_unique_per_branch",
     }
     assert set(payload.keys()) == expected_keys, (
         f"JSON shape drift: extra={set(payload.keys()) - expected_keys}, "
@@ -510,3 +515,95 @@ def test_cli_captures_since_works_with_status_flag(tmp_path):
     )
     assert result.returncode == 1  # UNREACHABLE: 0/6 fresh branches
     assert "J.10: UNREACHABLE" in result.stdout
+
+
+# ---------------------------------------------------------------------------
+# [WORKFLOW-J.10.MIN_THRESHOLD 2026-09-14] --min-unique-per-branch CLI tests
+# ---------------------------------------------------------------------------
+
+
+def test_cli_min_unique_per_branch_blocks_single_capture(tmp_path):
+    """``--min-unique-per-branch 2`` keeps the gate UNREACHABLE
+    when each branch has only one unique capture.
+    """
+    for branch in (
+        "CAS_REFERENCE_PRICE_WINDOW",
+        "CAS_ORDER_ENTRY",
+        "CAS_LIMIT_ENTRY_ONLY",
+        "CAS_MATCHING",
+        "CAS_POST",
+        "DERIVATIVES_CAS_ALIGNED",
+    ):
+        _write_capture(tmp_path, f"{branch}.json", branch)
+    result = _run_cli(
+        "--captures-dir", str(tmp_path),
+        "--min-unique-per-branch", "2",
+        "--json",
+    )
+    assert result.returncode == 1  # UNREACHABLE
+    payload = json.loads(result.stdout)
+    assert payload["verdict"] == "UNREACHABLE"
+    assert payload["min_unique_per_branch"] == 2
+    assert len(payload["missing_phases"]) == 6
+
+
+def test_cli_min_unique_per_branch_rejects_non_positive(tmp_path):
+    """``--min-unique-per-branch 0`` and ``-5`` are rejected
+    at the CLI boundary with exit code 2."""
+    result = _run_cli(
+        "--captures-dir", str(tmp_path),
+        "--min-unique-per-branch", "0",
+        "--json",
+    )
+    assert result.returncode == 2
+    assert "must be > 0" in result.stderr
+
+    result = _run_cli(
+        "--captures-dir", str(tmp_path),
+        "--min-unique-per-branch", "-3",
+        "--json",
+    )
+    assert result.returncode == 2
+    assert "must be > 0" in result.stderr
+
+
+def test_cli_min_unique_per_branch_default_is_one(tmp_path):
+    """Without ``--min-unique-per-branch``, the JSON report's
+    ``min_unique_per_branch`` is 1 (backwards-compatible)."""
+    for branch in (
+        "CAS_REFERENCE_PRICE_WINDOW",
+        "CAS_ORDER_ENTRY",
+        "CAS_LIMIT_ENTRY_ONLY",
+        "CAS_MATCHING",
+        "CAS_POST",
+        "DERIVATIVES_CAS_ALIGNED",
+    ):
+        _write_capture(tmp_path, f"{branch}.json", branch)
+    result = _run_cli("--captures-dir", str(tmp_path), "--json")
+    payload = json.loads(result.stdout)
+    assert payload["min_unique_per_branch"] == 1
+    assert payload["verdict"] == "REACHABLE"
+
+
+def test_cli_min_unique_per_branch_status_reflects_verdict(tmp_path):
+    """``--min-unique-per-branch`` composes with ``--status``:
+    a high threshold flips the gate's single-line status to
+    UNREACHABLE even when every branch has at least one
+    capture."""
+    for branch in (
+        "CAS_REFERENCE_PRICE_WINDOW",
+        "CAS_ORDER_ENTRY",
+        "CAS_LIMIT_ENTRY_ONLY",
+        "CAS_MATCHING",
+        "CAS_POST",
+        "DERIVATIVES_CAS_ALIGNED",
+    ):
+        _write_capture(tmp_path, f"{branch}.json", branch)
+    result = _run_cli(
+        "--captures-dir", str(tmp_path),
+        "--min-unique-per-branch", "2",
+        "--status",
+    )
+    assert result.returncode == 1  # UNREACHABLE
+    assert "J.10: UNREACHABLE" in result.stdout
+    assert "0/6 branches" in result.stdout

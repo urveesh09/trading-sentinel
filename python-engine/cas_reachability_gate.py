@@ -49,6 +49,9 @@ from cas_reachability_freshness import (
     capture_age_days,
     is_within_max_age,
 )
+from cas_reachability_threshold import (
+    meets_min_unique_threshold,
+)
 
 
 # CAS sub-window branches + DERIVATIVES_CAS_ALIGNED that need
@@ -124,6 +127,7 @@ def cas_reachability_report(
     captures_dir: Path,
     *,
     max_age_days: float | None = None,
+    min_unique_per_branch: int = 1,
 ) -> dict[str, Any]:
     """Walk ``captures_dir`` and produce the reachability
     verdict. Pure / total -- never raises.
@@ -153,6 +157,17 @@ def cas_reachability_report(
     distinct categories -- ``captures_skipped`` is for
     "couldn't parse the schema", ``captures_skipped_stale`` is
     for "parsed fine but too old".
+
+    [WORKFLOW-J.10.MIN_THRESHOLD 2026-09-14] ``min_unique_per_branch``
+    is the minimum number of UNIQUE fingerprints (per J.10.DEDUP)
+    required per branch for the branch to count as "captured"
+    toward the REACHABLE verdict. Default 1, preserving the
+    pre-threshold behaviour. When >1, the per-branch count
+    shown in ``captured_phases`` is still the unique count --
+    the verdict logic only treats the branch as captured when
+    the unique count meets the threshold. The per-branch count
+    field continues to show the actual unique count so the
+    operator sees progress toward the threshold.
     """
     captures: dict[str, int] = {
         phase: 0 for phase in CAS_BRANCHES_REQUIRING_EVIDENCE
@@ -201,6 +216,7 @@ def cas_reachability_report(
                 phase: 0 for phase in CAS_BRANCHES_REQUIRING_EVIDENCE
             },
             "captures_skipped_stale": 0,
+            "min_unique_per_branch": min_unique_per_branch,
         }
 
     captures_skipped_stale = 0
@@ -274,7 +290,17 @@ def cas_reachability_report(
         phase: dedup_count(fingerprints_by_branch[phase])
         for phase in CAS_BRANCHES_REQUIRING_EVIDENCE
     }
-    missing = [phase for phase, count in captures.items() if count == 0]
+    # ``captures`` was incremented per UNIQUE fingerprint during
+    # the loop, so the per-phase count is already the unique
+    # count. The threshold filter compares against that.
+    missing = [
+        phase
+        for phase in CAS_BRANCHES_REQUIRING_EVIDENCE
+        if not meets_min_unique_threshold(
+            fingerprints_by_branch[phase],
+            min_unique_per_branch,
+        )
+    ]
     coverage_pct = round(
         100.0 * (len(CAS_BRANCHES_REQUIRING_EVIDENCE) - len(missing))
         / len(CAS_BRANCHES_REQUIRING_EVIDENCE),
@@ -292,6 +318,7 @@ def cas_reachability_report(
         "captures_by_branch": captures_by_branch,
         "duplicates_by_branch": duplicates_by_branch,
         "captures_skipped_stale": captures_skipped_stale,
+        "min_unique_per_branch": min_unique_per_branch,
     }
 
 
@@ -314,6 +341,15 @@ def format_report(report: dict[str, Any]) -> str:
     stale = report.get("captures_skipped_stale", 0)
     if stale > 0:
         lines.append(f"  captures skipped (stale): {stale}")
+    # [WORKFLOW-J.10.MIN_THRESHOLD 2026-09-14] Surface the
+    # per-branch minimum-unique threshold when it's > 1. Default
+    # (1) is the pre-threshold behaviour; showing it would add
+    # noise to the common case.
+    threshold = report.get("min_unique_per_branch", 1)
+    if threshold > 1:
+        lines.append(
+            f"  min unique captures per branch: {threshold}"
+        )
     lines.append("  captured per branch:")
     for phase, count in report["captured_phases"].items():
         marker = "+" if count > 0 else "-"

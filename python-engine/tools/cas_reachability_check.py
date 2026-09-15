@@ -40,6 +40,7 @@ import sys
 from pathlib import Path
 
 from cas_reachability_gate import (
+    CAS_BRANCHES_REQUIRING_EVIDENCE,
     cas_reachability_report,
     format_report,
     update_summary,
@@ -120,6 +121,21 @@ def main(argv: list[str] | None = None) -> int:
             "inspecting each capture's timestamp."
         ),
     )
+    parser.add_argument(
+        "--min-unique-per-branch",
+        type=int,
+        default=None,
+        metavar="N",
+        help=(
+            "Per-branch minimum UNIQUE capture count (per J.10.DEDUP "
+            "fingerprint) for the branch to count as captured toward "
+            "the REACHABLE verdict. Default: 1 (the pre-threshold "
+            "behaviour). Values <= 0 are nonsensical and rejected "
+            "at the CLI boundary. Use this to defend against a "
+            "single flaky capture flipping the gate -- set to 2 "
+            "to require corroborating evidence per branch."
+        ),
+    )
     args = parser.parse_args(argv)
 
     captures_dir = args.captures_dir or (
@@ -146,16 +162,43 @@ def main(argv: list[str] | None = None) -> int:
             return 2
         max_age_days = args.captures_since
 
+    # [WORKFLOW-J.10.MIN_THRESHOLD 2026-09-14] Forward the
+    # --min-unique-per-branch flag to the gate. Values <= 0
+    # would mark every branch as captured regardless of
+    # evidence, which is nonsensical; rejected at the CLI.
+    min_unique_per_branch: int = 1
+    if args.min_unique_per_branch is not None:
+        if args.min_unique_per_branch <= 0:
+            sys.stderr.write(
+                f"--min-unique-per-branch must be > 0, "
+                f"got {args.min_unique_per_branch}\n"
+            )
+            return 2
+        min_unique_per_branch = args.min_unique_per_branch
+
     report = cas_reachability_report(
         captures_dir=captures_dir,
         max_age_days=max_age_days,
+        min_unique_per_branch=min_unique_per_branch,
     )
     if args.status:
         # Single-line status for shell prompts / monitoring.
         # Format: ``J.10: <VERDICT> <coverage_pct>% (<captured>/<total>
         # branches, <scanned> scanned, <skipped> skipped)``.
+        # [WORKFLOW-J.10.MIN_THRESHOLD 2026-09-14] The captured
+        # count must reflect the threshold, not just ``count > 0``.
+        # Without this, ``--status`` would say "6/6 branches"
+        # when the verdict is UNREACHABLE because of a high
+        # threshold -- a confusing diagnostic for shell prompts
+        # and monitoring. We compute the count from the same
+        # predicate the gate used for the verdict.
+        threshold = int(
+            report.get("min_unique_per_branch", 1)
+        )
         captured_count = sum(
-            1 for c in report["captured_phases"].values() if c > 0
+            1
+            for phase in CAS_BRANCHES_REQUIRING_EVIDENCE
+            if report["captured_phases"].get(phase, 0) >= threshold
         )
         total_branches = len(report["captured_phases"])
         sys.stdout.write(
