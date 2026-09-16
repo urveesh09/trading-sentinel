@@ -68,7 +68,7 @@ router.get('/ltp', requireInternalSecret, async (req, res, next) => {
 });
 
 // POST /api/orders/square-off
-// Called by Container B at 15:15 IST for momentum auto-square
+// Called by Container B from 15:13 IST, before the 15:15 CAS boundary.
 router.post('/square-off', requireInternalSecret, validate(squareOffSchema, 'body'), async (req, res, next) => {
   let releaseLock = null;
   try {

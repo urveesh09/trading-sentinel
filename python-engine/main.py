@@ -1865,6 +1865,29 @@ def snap_to_tick(price: float, direction: int = -1) -> float:
 
 # Shared State
 state_lock = asyncio.Lock()
+
+# [MOMENTUM-CAS-BOUNDARY 2026-09-16] One owner may mutate momentum exits at a
+# time.  EOD ownership begins before the 15:15 CAS reference-price window and
+# no new square-off may be submitted at/after the hard cutoff.
+MOMENTUM_EOD_OWNERSHIP_HOUR = 15
+MOMENTUM_EOD_OWNERSHIP_MINUTE = 13
+MOMENTUM_EOD_SUBMIT_CUTOFF_SECOND = 15 * 60 * 60 + 14 * 60 + 30
+_momentum_exit_ownership_lock = asyncio.Lock()
+
+
+def _momentum_exit_clock(now_ist=None) -> dict[str, bool]:
+    """Pure ownership/deadline verdict for live momentum exit writers."""
+    observed = now_ist or datetime.now(IST)
+    second = observed.hour * 3600 + observed.minute * 60 + observed.second
+    ownership_start = (
+        MOMENTUM_EOD_OWNERSHIP_HOUR * 3600
+        + MOMENTUM_EOD_OWNERSHIP_MINUTE * 60
+    )
+    return {
+        "monitor_allowed": second < ownership_start,
+        "eod_started": second >= ownership_start,
+        "submit_allowed": second < MOMENTUM_EOD_SUBMIT_CUTOFF_SECOND,
+    }
 current_signals = []
 rejected_signals = []
 current_momentum_signals = []
@@ -2001,12 +2024,17 @@ async def lifespan(app: FastAPI):
     scheduler.add_job(run_screener, 'cron', hour=14, minute=45)
     scheduler.add_job(daily_post_market, 'cron', hour=15, minute=45)
     scheduler.add_job(momentum_eod_warning, 'cron', hour=15, minute=10, id="momentum_eod_warning")
-    # [MOMENTUM-EOD 2026-06-16] 15:15 auto-square: only when MOMENTUM_ALLOW_OVERNIGHT=False.
+    # [MOMENTUM-CAS-BOUNDARY 2026-09-16] Start at 15:13 so the final
+    # broker submission precedes the 15:15 CAS reference-price window.
     # When True, let momentum winners run past 3:15 IST (operator takes the risk).
     if not settings.MOMENTUM_ALLOW_OVERNIGHT:
-        scheduler.add_job(auto_square_momentum, 'cron', hour=15, minute=15, id="momentum_auto_square")
+        scheduler.add_job(
+            auto_square_momentum, 'cron', hour=MOMENTUM_EOD_OWNERSHIP_HOUR,
+            minute=MOMENTUM_EOD_OWNERSHIP_MINUTE, id="momentum_auto_square",
+            max_instances=1, coalesce=True, misfire_grace_time=60,
+        )
     else:
-        logger.info("momentum_overnight_enabled", message="15:15 auto-square DISABLED per MOMENTUM_ALLOW_OVERNIGHT=True")
+        logger.info("momentum_overnight_enabled", message="15:13 auto-square DISABLED per MOMENTUM_ALLOW_OVERNIGHT=True")
 
     # [TIER0-0.1 2026-07-14] Manage open MIS momentum positions intraday.
     # Without this the ONLY jobs touching a momentum position were the 15:10
@@ -3589,6 +3617,26 @@ async def _rearm_momentum_residual_stop(pos: dict, quantity: int) -> str | None:
 
 
 async def momentum_intraday_monitor():
+    """Run the intraday manager only while it owns the momentum book."""
+    # [CALENDAR-GATE 2026-07-03] The scheduler-visible financial-risk
+    # handler owns its gate directly; the inner implementation repeats it as
+    # defence in depth for direct callers.
+    today = datetime.now(IST).date()
+    if not await is_trading_day(today, settings.DB_PATH):
+        logger.info("momentum_monitor_skip reason=non_trading_day")
+        return
+    if not _momentum_exit_clock()["monitor_allowed"]:
+        logger.info("momentum_monitor_skip reason=eod_ownership")
+        return
+    async with _momentum_exit_ownership_lock:
+        # The lock may have been held across the 15:13 handoff.
+        if not _momentum_exit_clock()["monitor_allowed"]:
+            logger.info("momentum_monitor_skip reason=eod_ownership_after_lock")
+            return
+        await _momentum_intraday_monitor_owned()
+
+
+async def _momentum_intraday_monitor_owned():
     """
     [TIER0-0.1 2026-07-14] Manage open MIS momentum positions DURING the day.
 
@@ -3618,8 +3666,8 @@ async def momentum_intraday_monitor():
         return
 
     # Only manage while the market is actually open. Outside those hours there is
-    # no LTP to act on, and after 15:15 auto_square_momentum owns the book.
-    if not (dt_time(9, 15) <= now_ist.time() <= dt_time(15, 15)):
+    # no LTP to act on, and from 15:13 auto_square_momentum owns the book.
+    if not (dt_time(9, 15) <= now_ist.time() < dt_time(15, 13)):
         return
 
     open_pos = await get_open_positions(settings.DB_PATH)
@@ -3869,9 +3917,80 @@ async def momentum_intraday_monitor():
             logger.error("momentum_monitor_failed", ticker=ticker, error=str(e))
 
 
+async def _restore_momentum_protection_after_eod_abort(
+    pos: dict, old_order_id: str, context: str,
+) -> None:
+    """Re-arm and persist protection after EOD cancelled the prior stop."""
+    ticker = pos["ticker"]
+    replacement = await _rearm_momentum_residual_stop(pos, int(pos["shares"]))
+    persisted = False
+    if replacement:
+        try:
+            async with aiosqlite.connect(settings.DB_PATH) as db:
+                cur = await db.execute(
+                    "UPDATE positions SET sl_order_id=? WHERE ticker=? "
+                    "AND source='MOMENTUM' AND exit_date IS NULL "
+                    "AND shares=? AND sl_order_id=?",
+                    (replacement, ticker, int(pos["shares"]), str(old_order_id)),
+                )
+                await db.commit()
+                persisted = cur.rowcount == 1
+        except Exception as exc:
+            logger.error(
+                "momentum_eod_replacement_stop_persist_failed", ticker=ticker,
+                replacement_order_id=replacement, error=str(exc),
+            )
+    if replacement and persisted:
+        await _notify_operator(
+            f"⚠️ `{ticker}` EOD square-off aborted ({context}); protective "
+            f"stop was restored as `{replacement}`. Position remains open; "
+            "verify it in Zerodha.",
+            event="momentum_eod_deadline_stop_restored",
+        )
+        return
+    await _notify_operator(
+        f"🚨 `{ticker}` EOD square-off aborted ({context}) after protective "
+        "stop cancellation, and replacement protection could not be durably "
+        "confirmed. Position may be UNPROTECTED; reconcile or flatten manually.",
+        event="momentum_eod_deadline_unprotected",
+    )
+
+
 async def auto_square_momentum():
+    """Acquire exclusive EOD ownership and enforce the pre-CAS deadline."""
+    # [CALENDAR-GATE 2026-07-03] Keep the gate in the scheduler-visible
+    # handler.  This path can place real broker orders.
+    today = datetime.now(IST).date()
+    if not await is_trading_day(today, settings.DB_PATH):
+        logger.info("auto_square_momentum_skip reason=non_trading_day")
+        return
+    initial = _momentum_exit_clock()
+    if not initial["eod_started"]:
+        logger.warning("auto_square_momentum_skip reason=before_1513")
+        return
+    if not initial["submit_allowed"]:
+        await _notify_operator(
+            "🚨 Momentum EOD square-off did not start before the 15:14:30 IST "
+            "submission cutoff. No protective stop was cancelled and no late "
+            "sell was sent; verify all open momentum positions manually.",
+            event="momentum_eod_start_deadline_missed",
+        )
+        return
+    async with _momentum_exit_ownership_lock:
+        if not _momentum_exit_clock()["submit_allowed"]:
+            await _notify_operator(
+                "🚨 Momentum EOD ownership was delayed beyond 15:14:30 IST. "
+                "No protective stop was cancelled and no late sell was sent; "
+                "verify all open momentum positions manually.",
+                event="momentum_eod_lock_deadline_missed",
+            )
+            return
+        await _auto_square_momentum_owned()
+
+
+async def _auto_square_momentum_owned():
     """
-    [AUTO-SQUARE] 15:15 IST: Square off all open MOMENTUM positions.
+    [AUTO-SQUARE] 15:13 IST: Square off all open MOMENTUM positions before CAS.
     Calls Container A's internal square-off API.
     Uses smart order selection based on P&L state and market conditions.
 
@@ -3929,7 +4048,17 @@ async def auto_square_momentum():
 
     for pos in momentum_pos:
         ticker = pos['ticker']
+        protective_stop_cancelled = False
+        square_off_submitted = False
         try:
+            if not _momentum_exit_clock()["submit_allowed"]:
+                await _notify_operator(
+                    f"🚨 `{ticker}` was not processed before the 15:14:30 IST "
+                    "submission cutoff. Its protective stop was left unchanged; "
+                    "verify the position manually.",
+                    event="momentum_eod_position_deadline_missed",
+                )
+                continue
             # Never stack the EOD SELL beside a resting full-size SL. Confirm
             # cancellation (or consume an already-COMPLETE stop) first.
             sl_order_id = pos.get("sl_order_id")
@@ -3965,6 +4094,13 @@ async def auto_square_momentum():
                         "No second SELL was submitted; reconcile manually.",
                         event="auto_square_sl_unresolved",
                     )
+                    continue
+                protective_stop_cancelled = True
+                if not _momentum_exit_clock()["submit_allowed"]:
+                    await _restore_momentum_protection_after_eod_abort(
+                        pos, str(sl_order_id), "deadline elapsed after stop cancellation",
+                    )
+                    protective_stop_cancelled = False
                     continue
             # Fetch current LTP to decide order type
             async with _httpx.AsyncClient() as _client:
@@ -4013,6 +4149,20 @@ async def auto_square_momentum():
                 "idempotency_key": _momentum_square_off_key(pos),
             }
 
+            if not _momentum_exit_clock()["submit_allowed"]:
+                if protective_stop_cancelled:
+                    await _restore_momentum_protection_after_eod_abort(
+                        pos, str(sl_order_id), "deadline elapsed before square-off submission",
+                    )
+                    protective_stop_cancelled = False
+                else:
+                    await _notify_operator(
+                        f"🚨 `{ticker}` missed the 15:14:30 IST submission "
+                        "cutoff. No late sell was sent; verify manually.",
+                        event="momentum_eod_submit_deadline_missed",
+                    )
+                continue
+            square_off_submitted = True
             resp = await _post_square_off_with_reconcile(
                 f"{container_a_url}/api/orders/square-off", payload,
             )
@@ -4105,6 +4255,11 @@ async def auto_square_momentum():
 
         except Exception as e:
             logger.error("auto_square_failed", ticker=ticker, error=str(e))
+            if protective_stop_cancelled and not square_off_submitted:
+                await _restore_momentum_protection_after_eod_abort(
+                    pos, str(pos.get("sl_order_id") or ""),
+                    "pre-submission failure",
+                )
             # On failure: send Telegram alert for manual intervention
             await _notify_telegram_square_off_failure(ticker, pos)
 
@@ -4155,7 +4310,7 @@ async def _run_momentum_paper_square_off():
 
 
 async def momentum_eod_warning():
-    """15:10 IST: Send 5-minute warning before auto-square.
+    """15:10 IST: Send 3-minute warning before auto-square.
 
     [CALENDAR-GATE 2026-07-03] Skip on weekends + NSE holidays. On a
     non-trading day the auto-square it warns about is also suppressed
@@ -4179,7 +4334,7 @@ async def momentum_eod_warning():
         async with _httpx.AsyncClient() as _client:
             await _client.post(
                 f"{settings.CONTAINER_A_URL}/api/internal/notify",
-                json={"message": f"⚠️ AUTO-SQUARE in 5 min: {tickers}"},
+                json={"message": f"⚠️ AUTO-SQUARE in 3 min: {tickers}"},
                 headers={"X-Internal-Secret": settings.INTERNAL_API_SECRET},
                 timeout=5.0
             )

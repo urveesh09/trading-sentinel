@@ -1567,7 +1567,7 @@ def send_momentum_telegram_alert(
                 f"Price: Rs{price} | VWAP: Rs{vwap}\n"
                 f"Target: Rs{target} | SL: Rs{sl}\n"
                 f"⚠️ {review.banner()}. Manual review required.\n"
-                f"Auto-square at 15:15 IST.")
+                f"Auto-square starts at 15:13 IST (hard submit cutoff 15:14:30).")
     else:
         text = (f"{header}\n\n"
                 f"{age_line}"
@@ -1578,7 +1578,7 @@ def send_momentum_telegram_alert(
                 f"{review.banner()}\n\n"
                 f"Pitch: {analysis.get('pitch', 'N/A')}\n"
                 f"Risk: {analysis.get('risks', 'N/A')}\n\n"
-                f"⚠️ INTRADAY: Auto-square at 15:15 IST regardless of P&L.")
+                f"⚠️ INTRADAY: Auto-square starts at 15:13 IST with a 15:14:30 hard submit cutoff, regardless of P&L.")
 
     # [CRIT-001/002] Unified callback format: ACTION:signal_id:unix_ts
     sig_id = f"{ticker}_MOM"[:40]

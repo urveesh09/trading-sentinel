@@ -300,11 +300,12 @@ class Settings(BaseSettings):
     MOMENTUM_R_TARGET_R1:       float = 1.6     # 1.6R target in R1 (trail carries the runners)
     MOMENTUM_R_TARGET_R2:       float = 1.3     # 1.3R target in R2 (faster take-profit)
 
-    # [MOMENTUM-EOD 2026-06-16] Auto-square-off at 15:15 IST is on by default
+    # [MOMENTUM-CAS-BOUNDARY 2026-09-16] Auto-square starts at 15:13 IST
+    # with a hard 15:14:30 submit cutoff, before the 15:15 CAS boundary.
     # (MIS = intraday product; broker auto-squares anyway). Flip to True in .env
     # to let momentum winners run past 3:15 IST. Only effective when the engine
     # has switched positions to CNC (see evaluate_momentum_signal [MR3]).
-    MOMENTUM_ALLOW_OVERNIGHT:   bool  = False   # False = 15:15 auto-square stays; True = hold to trailing-stop only
+    MOMENTUM_ALLOW_OVERNIGHT:   bool  = False   # False = 15:13 auto-square stays; True = hold to trailing-stop only
     MOMENTUM_R3_MAX_POSITIONS:  int   = 1       # Soft cap for R3 entries (replaces hard block)
 
     # [TIER0-0.1 2026-07-14] Intraday exit management for MIS momentum.
