@@ -77,11 +77,18 @@ function replaceHolidays(set, source, validThrough = null) {
   NSE_HOLIDAYS.clear();
   for (const d of set) NSE_HOLIDAYS.add(d);
   NSE_HOLIDAYS_SOURCE = source;
-  if (validThrough != null) NSE_HOLIDAYS_VALID_THROUGH = validThrough;
+  NSE_HOLIDAYS_VALID_THROUGH = validThrough;
 }
 
 function isValidIsoDate(s) {
   return typeof s === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(s);
+}
+
+function validatedHolidayPayload(body) {
+  if (!body || !Array.isArray(body.holidays) || !isValidIsoDate(body.valid_through) ||
+      body.holidays.length === 0 || body.holidays.some((d) => !isValidIsoDate(d)) ||
+      body.holidays.some((d) => d > body.valid_through)) return null;
+  return { holidays: new Set(body.holidays), validThrough: body.valid_through };
 }
 
 function applyOverride(logger) {
@@ -140,21 +147,14 @@ function scheduleFetch(logger) {
       return res.json();
     })
     .then((body) => {
-      if (!body || !Array.isArray(body.holidays) || !isValidIsoDate(body.valid_through)) {
+      const validated = validatedHolidayPayload(body);
+      if (!validated) {
         logger.warn && logger.warn('market_hours_holidays_payload_invalid', { url });
         return;
       }
-      const set = new Set();
-      for (const d of body.holidays) {
-        if (isValidIsoDate(d)) set.add(d);
-      }
-      if (set.size === 0) {
-        logger.warn && logger.warn('market_hours_holidays_empty_set');
-        return;
-      }
-      replaceHolidays(set, `engine:${url}`, body.valid_through);
+      replaceHolidays(validated.holidays, `engine:${url}`, validated.validThrough);
       logger.info && logger.info('market_hours_holidays_loaded', {
-        count: set.size, source: NSE_HOLIDAYS_SOURCE,
+        count: validated.holidays.size, source: NSE_HOLIDAYS_SOURCE,
       });
     })
     .catch((e) => {
@@ -197,10 +197,11 @@ function getISTDate() {
 }
 
 function isHolidayCalendarUsable() {
-  // An explicit operator override remains an operator-owned source. The
-  // embedded fallback, however, is bounded to the audited calendar year.
-  if (!NSE_HOLIDAYS_SOURCE.startsWith('fallback:')) return true;
-  return getISTDate() <= NSE_HOLIDAYS_VALID_THROUGH;
+  // Every audited/static engine source is bounded. Only an explicit operator
+  // override owns its continuing validity; it must be reviewed separately.
+  if (NSE_HOLIDAYS_SOURCE.startsWith('env:')) return true;
+  return isValidIsoDate(NSE_HOLIDAYS_VALID_THROUGH) &&
+    getISTDate() <= NSE_HOLIDAYS_VALID_THROUGH;
 }
 
 /**
@@ -629,6 +630,13 @@ function isExecutionAllowed(opts) {
   //         allow_pre_market? }
   // Returns { allowed: bool, phase: string, reason: string|null }.
   const o = opts || {};
+  if (!isHolidayCalendarUsable()) {
+    return {
+      allowed: false,
+      phase: 'UNKNOWN',
+      reason: 'Holiday calendar validity has expired; broker order blocked for safety.',
+    };
+  }
   const phase = sessionPhase(
     o.observation_at,
     {
@@ -739,6 +747,7 @@ module.exports = {
   // ``market_calendar.execution_allowed``.
   isExecutionAllowed,
   isCashCasEligibilityResolutionWindow,
+  validatedHolidayPayload,
   // [WORKFLOW-J.9] Stamping helper for the bounded
   // session_phase column on received_signals. Returns one
   // of the 10 documented phases (never null, never an
@@ -755,8 +764,7 @@ module.exports = {
   // The original gate was a NODE_ENV check that tripped under
   // npm test vs jest env inheritance; we removed it after
   // observing false-fails.
-  __resetHolidaysForTest(set) {
-    NSE_HOLIDAYS.clear();
-    for (const d of set) NSE_HOLIDAYS.add(d);
+  __resetHolidaysForTest(set, source = 'fallback:test', validThrough = NSE_HOLIDAYS_FALLBACK_VALID_THROUGH) {
+    replaceHolidays(set, source, validThrough);
   },
 };

@@ -69,6 +69,14 @@ from cas_reachability_atomic import (
 )
 
 
+class ReachabilityReport(dict[str, Any]):
+    """Public JSON-shaped report with private per-evaluation render time."""
+
+    def __init__(self, payload: dict[str, Any]) -> None:
+        super().__init__(payload)
+        self.generated_at_utc = datetime.now(timezone.utc).isoformat()
+
+
 # CAS sub-window branches + DERIVATIVES_CAS_ALIGNED that need
 # real broker-behaviour evidence before any auction-aware
 # strategy can be built on top of ``classify_session_phase``.
@@ -271,7 +279,7 @@ def cas_reachability_report(
     captures_root = Path(captures_dir)
     if not captures_root.exists():
         missing = list(CAS_BRANCHES_REQUIRING_EVIDENCE)
-        return {
+        return ReachabilityReport({
             "verdict": "UNREACHABLE",
             "captured_phases": {phase: 0 for phase in captures},
             "missing_phases": missing,
@@ -288,7 +296,7 @@ def cas_reachability_report(
             "branch_per_day": {
                 phase: {} for phase in CAS_BRANCHES_REQUIRING_EVIDENCE
             },
-        }
+        })
 
     captures_skipped_stale = 0
     for capture_path in sorted(captures_root.rglob("*.json")):
@@ -436,7 +444,7 @@ def cas_reachability_report(
         first_occurrence_paths=first_occurrence_paths,
     )
 
-    return {
+    return ReachabilityReport({
         "verdict": verdict,
         "captured_phases": captures,
         "missing_phases": missing,
@@ -459,7 +467,7 @@ def cas_reachability_report(
             **dry_run_unique_counts,
             "total_unique": sum(dry_run_unique_counts.values()),
         },
-    }
+    })
 
 
 def format_report(report: dict[str, Any]) -> str:
@@ -865,7 +873,8 @@ def update_summary(
     )
     body = _SUMMARY_TEMPLATE.format(
         captures_dir=captures,
-        generated_at_utc=datetime.now(timezone.utc).isoformat(),
+        generated_at_utc=getattr(report, "generated_at_utc", None)
+        or datetime.now(timezone.utc).isoformat(),
         verdict=report["verdict"],
         coverage_pct=report["coverage_pct"],
         captures_scanned=report["captures_scanned"],

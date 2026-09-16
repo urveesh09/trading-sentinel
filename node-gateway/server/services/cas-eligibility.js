@@ -4,10 +4,22 @@
 // classifier. The Python engine is authoritative; a Node environment variable
 // here would create a second, silently divergent eligibility list.
 const config = require('../config');
+const crypto = require('crypto');
 const {
   isCashCasEligibilityResolutionWindow,
   isExecutionAllowed,
 } = require('../utils/market-hours');
+
+const ELIGIBILITY_SOURCE = 'python-engine/market_calendar.py::is_cas_eligible';
+const SOURCE_VERSION_RE = /^[0-9a-f]{16}$/;
+const SIGNATURE_RE = /^[0-9a-f]{64}$/;
+
+function validSignature(body) {
+  if (!SIGNATURE_RE.test(body.signature || '')) return false;
+  const message = `${body.symbol}|${String(body.cas_eligible).toLowerCase()}|${body.source_version}`;
+  const expected = crypto.createHmac('sha256', config.INTERNAL_API_SECRET).update(message).digest('hex');
+  return crypto.timingSafeEqual(Buffer.from(body.signature, 'hex'), Buffer.from(expected, 'hex'));
+}
 
 
 async function resolveCasEligibility(symbol, observationAt = new Date()) {
@@ -37,7 +49,11 @@ async function resolveCasEligibility(symbol, observationAt = new Date()) {
       };
     }
     const body = await response.json();
-    if (!body || typeof body.cas_eligible !== 'boolean') {
+    const requestedSymbol = symbol.trim().toUpperCase();
+    if (!body || typeof body.cas_eligible !== 'boolean' ||
+        body.symbol !== requestedSymbol || body.source !== ELIGIBILITY_SOURCE ||
+        typeof body.source_version !== 'string' ||
+        !SOURCE_VERSION_RE.test(body.source_version) || !validSignature(body)) {
       return {
         required: true, resolved: false, casEligible: null,
         reason: 'CAS eligibility service returned an invalid payload.',

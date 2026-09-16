@@ -29,12 +29,16 @@ async def operational_coverage_report(db_path: str) -> dict[str, Any]:
     from research_archive import readiness_view
     from scheduler_telemetry import scheduler_timing_report
 
-    inputs, proactive, timing, optional_ai = await asyncio.gather(
-        load_advisory_input_status(db_path),
-        proactive_activity_report(db_path, now=datetime.now(timezone.utc)),
-        scheduler_timing_report(db_path, limit=250),
-        load_optional_ai_status(db_path),
+    # These readers also perform idempotent schema initialization.  Running
+    # them concurrently against one SQLite file can race on WAL/schema locks,
+    # making this read-only report intermittently fail.  Serialize the local
+    # DB reads; archive inspection below remains offloaded from the event loop.
+    inputs = await load_advisory_input_status(db_path)
+    proactive = await proactive_activity_report(
+        db_path, now=datetime.now(timezone.utc)
     )
+    timing = await scheduler_timing_report(db_path, limit=250)
+    optional_ai = await load_optional_ai_status(db_path)
     archive = await asyncio.to_thread(readiness_view, settings.RESEARCH_ARCHIVE_PATH)
     producers: dict[str, dict[str, Any]] = {}
     for underlying, status in sorted(inputs.items()):

@@ -19,7 +19,7 @@ def build():
         rel = path.relative_to(ROOT).as_posix()
         lines += [f'## `{rel}`', '']
         doc = ast.get_docstring(tree)
-        lines += [(' '.join(doc.split())[:700] if doc else 'No module docstring; use the declarations and callers below.'), '']
+        lines += [(' '.join(doc.split())[:700].rstrip() if doc else 'No module docstring; use the declarations and callers below.'), '']
         definitions = [f'`{node.name}` (line {node.lineno})' for node in tree.body
                        if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef))]
         lines += ['Top-level declarations: ' + (', '.join(definitions) or 'none'), '']

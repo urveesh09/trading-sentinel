@@ -16,7 +16,7 @@ Related tests: `agent/tests/test_advisory.py`
 
 No module docstring; use the declarations and callers below.
 
-Top-level declarations: `_attach_provenance` (line 132), `register_approved_snapshot` (line 206), `_today_str` (line 287), `_load_dedup_state` (line 292), `_save_dedup_state` (line 312), `mark_processed` (line 327), `clear_memory` (line 333), `touch_heartbeat` (line 350), `_is_market_hours` (line 377), `read_scheduler_tick_age` (line 388), `check_engine_liveness` (line 400), `SignalOutput` (line 438), `NewsItem` (line 454), `fetch_signals` (line 469), `fetch_rss_feed` (line 496), `fetch_news_items` (line 513), `_parse_rss_pubdate` (line 576), `_hostname_from_url` (line 599), `_age_label` (line 609), `scrape_sentiment` (line 644), `_extract_json_object` (line 686), `_fetch_news_items_for_ticker` (line 740), `_maybe_classify_news` (line 777), `_render_classified_section` (line 815), `analyze_with_minimax` (line 859), `_optional_review_key` (line 1140), `_get_optional_ai_queue` (line 1154), `optional_ai_status` (line 1174), `publish_optional_ai_status` (line 1214), `queue_optional_ai_review` (line 1234), `send_telegram_alert` (line 1260), `system_health_check` (line 1309), `run_momentum_pipeline` (line 1338), `send_conviction_veto_notice` (line 1435), `send_momentum_telegram_alert` (line 1453), `run_pipeline` (line 1565), `main` (line 1617)
+Top-level declarations: `_attach_provenance` (line 132), `register_approved_snapshot` (line 206), `_today_str` (line 287), `_load_dedup_state` (line 292), `_save_dedup_state` (line 343), `mark_processed` (line 358), `clear_memory` (line 364), `touch_heartbeat` (line 381), `_is_market_hours` (line 408), `read_scheduler_tick_age` (line 419), `check_engine_liveness` (line 431), `SignalOutput` (line 469), `NewsItem` (line 485), `fetch_signals` (line 500), `fetch_rss_feed` (line 527), `fetch_news_items` (line 544), `_parse_rss_pubdate` (line 607), `_hostname_from_url` (line 630), `_age_label` (line 640), `scrape_sentiment` (line 675), `_extract_json_object` (line 717), `_fetch_news_items_for_ticker` (line 771), `_maybe_classify_news` (line 808), `_render_classified_section` (line 846), `analyze_with_minimax` (line 890), `_optional_review_key` (line 1171), `_get_optional_ai_queue` (line 1185), `optional_ai_status` (line 1205), `publish_optional_ai_status` (line 1245), `queue_optional_ai_review` (line 1265), `send_telegram_alert` (line 1306), `system_health_check` (line 1355), `run_momentum_pipeline` (line 1384), `send_conviction_veto_notice` (line 1495), `send_momentum_telegram_alert` (line 1513), `run_pipeline` (line 1625), `main` (line 1683)
 
 Related tests: `agent/tests/test_agent_pipeline.py`, `agent/tests/test_agent_schedule.py`, `agent/tests/test_agent_watchdog.py`
 
@@ -24,9 +24,25 @@ Related tests: `agent/tests/test_agent_pipeline.py`, `agent/tests/test_agent_sch
 
 Bounded, non-blocking optional-AI review worker. The queue is intentionally transport-agnostic: deterministic signal, risk and alert paths receive their own decision immediately. A model opinion is an annotation that may arrive later, never authority to change a numeric trade field or an already-created execution instruction.
 
-Top-level declarations: `ReviewSubmission` (line 23), `_Task` (line 31), `AsyncReviewQueue` (line 39)
+Top-level declarations: `ReviewSubmission` (line 23), `_Task` (line 31), `AsyncReviewQueue` (line 55)
 
-Related tests: `agent/tests/test_async_reviews.py`
+Related tests: `agent/tests/test_async_reviews.py`, `agent/tests/test_async_reviews_i4d.py`
+
+## `agent/contract_health.py`
+
+[WORKFLOW-I.4.E 2026-09-14] Bounded contract-health self-evaluation. Per plan §13 ("The typed result must not change capital limits, qualification or order/delivery authority"), this module is the "guard the guards" layer that periodically asserts the bounded contract on the agent's own surfaces: 1. No execution authority in the status envelope (``can_place_orders=False`` + ``authorization_effect=NONE``). 2. No prompt leakage in any persisted snapshot (the bounded status / usefulness envelope has a fixed allow-list of keys; any other key is a leak). 3. No review content in the bounded usefulness snapshot (only counters cross the agent->engine bridge; never pitch/rationale/risks). 4. Classifi
+
+Top-level declarations: `ContractCheck` (line 96), `ContractReport` (line 125), `check_status_envelope_authority` (line 165), `check_no_prompt_leakage` (line 242), `check_usefulness_counters_only` (line 316), `check_classifier_fail_closed` (line 403), `check_review_non_authoritative` (line 502), `evaluate_contract` (line 557)
+
+Related tests: `agent/tests/test_contract_health.py`, `agent/tests/test_contract_health_cron.py`
+
+## `agent/contract_health_cron.py`
+
+[WORKFLOW-I.4.E.CRON_WIRING 2026-09-14] Hourly contract-health cron tick. The I.4.E bounded contract-health self-evaluation (slice ``feat(agent): I.4.E bounded contract-health self-evaluation``) ships five bounded invariants + a CLI. The CLI is a manual audit tool. Without cron wiring, the harness only runs when the operator remembers to invoke it. This module exposes ``contract_health_cron_tick()``: 1. Build the bounded status envelope via the agent's ``optional_ai_status()`` (the same envelope the agent publishes every minute to the engine). 2. Run ``evaluate_contract(status_envelope=...)`` against it. 3. If the report surfaces ANY violation, fire a Telegram alert via ``send_telegram_alert
+
+Top-level declarations: `format_violation_alert` (line 50), `contract_health_cron_tick` (line 80), `_dispatch_alert` (line 171)
+
+Related tests: `agent/tests/test_contract_health_cron.py`
 
 ## `agent/news_classifier.py`
 
@@ -43,14 +59,6 @@ Related tests: `agent/tests/test_news_classifier.py`, `agent/tests/test_news_cla
 Top-level declarations: `print_config` (line 114), `read_snapshot` (line 134), `main` (line 151)
 
 Related tests: `agent/tests/test_optional_ai_metrics.py`
-
-## `agent/contract_health.py`
-
-[WORKFLOW-I.4.E 2026-09-14] Bounded contract-health self-evaluation. Per plan §13 ("The typed result must not change capital limits, qualification or order/delivery authority"), this module is the "guard the guards" layer that periodically asserts the bounded contract on the agent's own surfaces. Five independent invariants: (1) `status_envelope_authority` — the bounded health envelope carries no execution authority (rejects `can_place_orders != False`, `authorization_effect != "NONE"`, unknown top-level keys); (2) `no_prompt_leakage` — no prompt or reviewer content in any persisted snapshot; (3) `usefulness_counters_only` — every `usefulness` key is in `USEFULNESS_ALLOWED_KEYS` and every value is a bounded primitive; (4) `classifier_fail_closed` — every `ClassificationResult` below `CONFIDENCE_THRESHOLD=0.6` must map to `UNKNOWN`, every category outside the bounded enum is a violation, every rationale > 280 chars is a violation; (5) `review_non_authoritative` — a `Review` must not carry any of `FORBIDDEN_REVIEW_DELTA_FIELDS` (`can_place_orders`, `authorization_effect`, `live_delta_inr`, `capital_delta`, `qualification`, `approved_live_budget`). `evaluate_contract(...)` aggregates every invariant into a `ContractReport` (`passed`, `checks[]`, `evaluated_at`, `schema_version="i4e-v1"`). All inputs are optional (`None` means "not inspected in this run", never a violation). The pure module imports `agent.news_classifier` lazily inside `check_classifier_fail_closed` so it stays importable in isolation (the `agent.py` import path triggers a Telegram env-var check at module load).
-
-Top-level declarations: `STATUS_ENVELOPE_ALLOWED_KEYS`, `USEFULNESS_ALLOWED_KEYS`, `FORBIDDEN_REVIEW_DELTA_FIELDS`, `ContractCheck`, `ContractReport`, `check_status_envelope_authority`, `check_no_prompt_leakage`, `check_usefulness_counters_only`, `check_classifier_fail_closed`, `check_review_non_authoritative`, `evaluate_contract`
-
-Related tests: `agent/tests/test_contract_health.py`
 
 ## `python-engine/affordability.py`
 
@@ -73,6 +81,14 @@ Engine dependencies: `config`, `edge_stats`, `performance`
 Related tests: `python-engine/tests/test_analytics.py`
 
 Declared tables: `trade_outcomes`
+
+## `python-engine/asymmetric_fill_model.py`
+
+[WORKFLOW-C.C2 2026-09-15] Asymmetric partial-fill pricing model. Per the 2026-09-15 production deep audit C.2 (operator decisions 2026-09-16): > Q1: 'Filled at mid + 2bps' (estimate from mid-price) > Q2: All exchanges same (no per-exchange differentiation). > Q3: Partial counts as CLOSED with partial P&L (realized > partial fill). > Q4: No new operator-config knobs. This module implements the bounded mid+2bps fill-price estimator for the missing leg of a partial fill. It is PURE / TOTAL / SIDE-EFFECT FREE -- no DB calls, no Kite calls, no logging. The full-policy replay uses these helpers to compute the partial fill P&L when an asymmetric batch is observed in the pre-decision window. Before
+
+Top-level declarations: `mid_price` (line 70), `estimate_missing_leg_price` (line 89), `compute_partial_fill_pnl` (line 126)
+
+Related tests: `python-engine/tests/test_asymmetric_fill_model.py`
 
 ## `python-engine/backtest.py`
 
@@ -132,15 +148,101 @@ Top-level declarations: `_write_output_atomic` (line 43), `_thresholds_from_conf
 
 Engine dependencies: `capital_policy`, `config`
 
+## `python-engine/cas_reachability_aggregate.py`
+
+[WORKFLOW-J.10.CAPTURE_SUMMARY_AGGREGATE 2026-09-14] Per-day capture histogram. The J.10 SUMMARY surfaces TOTAL counts (captures_scanned, captures_skipped, captured_phases). The operator's audit picture is complete only when they can see *evidence velocity over time* -- how many captures per day, when the bulk of evidence was collected, and whether evidence is fresh or stale. This module exposes two pure helpers: per_day_breakdown( captures_root: Path, *, unique_per_path: Optional[Mapping[str, str]] = None, ) -> dict[str, dict[str, int]] Walk ``captures_root.rglob("*.json")`` and bucket by the ``YYYY-MM-DD`` subdirectory name. Each day maps to ``{"unique": N, "scanned": M}``. ``unique`` is t
+
+Top-level declarations: `per_day_breakdown` (line 49), `format_per_day_table` (line 134)
+
+Related tests: `python-engine/tests/test_cas_reachability_aggregate.py`
+
+## `python-engine/cas_reachability_atomic.py`
+
+[WORKFLOW-J.10.WRITE_ATOMIC 2026-09-14] Atomic-write helpers for the J.10 gate. The J.10 gate's audit trail is the JSON report persisted via ``write_report``. Today the function uses ``Path.write_text``, which is a non-atomic overwrite: a crash between truncate and write leaves a partial / empty file, and a concurrent reader sees a torn write. The F5 ``reconciliation_cli._write_output_atomic`` (per ``docs/2026-09-13-fg-independent-correction-plan.md``) solves this with a write-to-tempfile + ``os.link`` discipline: 1. Write the encoded bytes to a sibling tempfile. 2. ``fsync`` to flush to disk. 3. ``os.link`` the tempfile to the target path -- this is atomic on POSIX and on Windows (NTFS) for
+
+Top-level declarations: `write_report_atomic` (line 39)
+
+Related tests: `python-engine/tests/test_cas_reachability_atomic.py`
+
+## `python-engine/cas_reachability_branch_histogram.py`
+
+[WORKFLOW-J.10.BRANCH_HISTOGRAM 2026-09-14] Per-branch-per-day capture matrix. The J.10 SUMMARY already surfaces per-day totals across all branches (J.10.CAPTURE_SUMMARY_AGGREGATE). That tells the operator "evidence is concentrated on 2026-09-10". This slice adds the per-branch dimension: "evidence is concentrated on 2026-09-10 for CAS_MATCHING but CAS_REFERENCE_PRICE_WINDOW never got refreshed". The matrix is the natural complement to the per-day histogram. Operators triaging evidence gaps can read the matrix top-to-bottom (one branch per row) and see at a glance which days each branch was exercised. This module exposes two pure helpers: branch_per_day_breakdown( captures_root, *, first_occ
+
+Top-level declarations: `_gate_constants` (line 61), `branch_per_day_breakdown` (line 76), `format_branch_per_day_table` (line 155)
+
+Engine dependencies: `cas_reachability_gate`
+
+Related tests: `python-engine/tests/test_cas_reachability_branch_histogram.py`
+
+## `python-engine/cas_reachability_dedup.py`
+
+[WORKFLOW-J.10.DEDUP 2026-09-14] Capture-fingerprint dedup helpers. Per the inheritance doc's senior-dev protocol #1 ("read the file before patching"), the gate's reachability count is the count of captures that *exist* in the directory. When an operator accidentally commits the same capture twice (e.g. retrying the probe without changing inputs), the gate currently counts both copies toward the branch coverage threshold. That is wrong: the gate is supposed to answer "have these branches been *exercised* by real captures?" -- a count of *unique* observations, not of files-on-disk. A duplicate capture silently flipping the gate to REACHABLE is exactly the kind of silent authority-grant the us
+
+Top-level declarations: `fingerprint_of` (line 55), `dedup_count` (line 83)
+
+Related tests: `python-engine/tests/test_cas_reachability_dedup.py`
+
+## `python-engine/cas_reachability_features.py`
+
+[WORKFLOW-C.F5 2026-09-15] J.10 features inventory helper. Per the 2026-09-15 production deep audit F-5: PR #89-#92 features were deployed but invisible in production runtime. The audit observed 0 log lines for J.10 capture gate features (MIN_THRESHOLD, FRESHNESS, DEDUP, BRANCH_HISTOGRAM), WRITE_ATOMIC, etc. because no captures happened that day -- the features are wired but only fire on specific events. This module gives operators a single command that, when run, prints the full list of J.10 features wired into this engine version, so a future audit can confirm wiring without needing captures to happen. The inventory is a structured list of dicts: - feature_id: stable identifier (e.g. "J.10
+
+Top-level declarations: `format_features_inventory` (line 148), `features_inventory_as_json` (line 176)
+
+Related tests: `python-engine/tests/test_cas_reachability_features.py`
+
+## `python-engine/cas_reachability_freshness.py`
+
+[WORKFLOW-J.10.FRESHNESS 2026-09-14] Capture-freshness helpers. The J.10 gate's per-branch count was always "files-on-disk that exercise this branch". J.10.DEDUP made that "unique observations". J.10.FRESHNESS adds the third dimension: **age**. A capture collected in a previous quarter is not the same evidence as a capture collected yesterday. The operator's question "is the gate REACHABLE with captures from the last 7 days?" requires a freshness filter. Without one, an operator who hasn't refreshed the captures directory in months sees a green REACHABLE that's actually based on stale evidence. This module exposes two pure helpers: capture_age_days(capture_path, *, now_utc=None) -> Optional[
+
+Top-level declarations: `capture_age_days` (line 47), `is_within_max_age` (line 100)
+
+Related tests: `python-engine/tests/test_cas_reachability_freshness.py`
+
 ## `python-engine/cas_reachability_gate.py`
 
 [WORKFLOW-J.10 2026-09-13] CAS-branch reachability gate. Plan §14 says ``auction-imbalance research is excluded`` and ``any auction-based strategy is separate research with auction execution semantics, not an extension of a continuous-market fill model``. J.10 ships the **gate** that enforces this boundary -- not the strategy itself. The gate answers: "have the CAS sub-window branches of ``classify_session_phase`` been exercised by real production call sites?" It walks ``docs/j2_captures/`` (the J.3 receipt directory) and emits a structured verdict: { "verdict": "REACHABLE" | "UNREACHABLE", "captured_phases": {"PHASE": count, ...}, "missing_phases": ["PHASE", ...], "coverage_pct": float, # %
 
-Top-level declarations: `_safe_phase_from_capture` (line 75), `cas_reachability_report` (line 113), `format_report` (line 194), `write_report` (line 229), `_format_missing_section` (line 334), `_format_catalog_section` (line 352), `update_summary` (line 380)
+Top-level declarations: `ReachabilityReport` (line 72), `_safe_phase_from_capture` (line 111), `_read_dry_run` (line 161), `cas_reachability_report` (line 188), `format_report` (line 473), `write_report` (line 535), `_format_missing_section` (line 695), `_format_duplicates_section` (line 713), `_format_catalog_section` (line 742), `update_summary` (line 770)
 
-Engine dependencies: `market_calendar`
+Engine dependencies: `cas_reachability_aggregate`, `cas_reachability_atomic`, `cas_reachability_branch_histogram`, `cas_reachability_dedup`, `cas_reachability_freshness`, `cas_reachability_recency`, `cas_reachability_threshold`, `market_calendar`
 
 Related tests: `python-engine/tests/test_cas_reachability_gate.py`
+
+## `python-engine/cas_reachability_listing.py`
+
+[WORKFLOW-J.10.CAPTURE_LISTING 2026-09-14] Lightweight capture listing. The full ``cas_reachability_report`` walk does fingerprinting, freshness checks, dedup logic, and per-day aggregation. An operator asking "what captures exist on disk?" doesn't need any of that -- they want a fast, side-effect-free listing. This module exposes ``list_captures(captures_root)``: - walks ``captures_root.rglob("*.json")``, - reads each capture's ``rows[0].classifier_phase`` (the J.3 schema -- same source of truth the gate reads; preserves the J.10.CLOSURE schema-bug fix), - skips malformed / non-bounded captures (same contract as the gate's ``captures_skipped``), - returns a structured dict with per-branch l
+
+Top-level declarations: `list_captures` (line 35), `format_listing` (line 124)
+
+Engine dependencies: `cas_reachability_gate`
+
+Related tests: `python-engine/tests/test_cas_reachability_listing.py`
+
+## `python-engine/cas_reachability_recency.py`
+
+[WORKFLOW-J.10.CAPTURE_OLDEST_NEWEST 2026-09-14] Per-branch recency. The J.10 SUMMARY surfaces counts (captures per branch, per day, per branch-per-day) but not the **timestamp range** of evidence. A branch with 4 captures all on the same day looks identical to a branch with 4 captures spread across 4 days -- but those are different risk profiles. Operators need the timestamp range to spot: - Branches whose evidence is concentrated on a single day (suspicious -- one CAS observation doesn't establish the behaviour holds across market conditions). - Branches whose newest capture is weeks old (stale evidence; the operator hasn't refreshed the broker-behaviour probe recently). - Branches with a
+
+Top-level declarations: `_safe_observation_at_utc` (line 38), `_safe_phase_from_recency` (line 57), `_span_days` (line 83), `oldest_newest_per_branch` (line 114), `format_recency_table` (line 223)
+
+Related tests: `python-engine/tests/test_cas_reachability_recency.py`
+
+## `python-engine/cas_reachability_threshold.py`
+
+[WORKFLOW-J.10.MIN_THRESHOLD 2026-09-14] Per-branch minimum-captures threshold. The J.10 gate's verdict is "REACHABLE when every branch has >= 1 capture". That threshold was right when the only failure mode was "no evidence at all". After J.10.DEDUP and J.10.FRESHNESS, a single unique fresh capture is enough to flip a branch to "captured". A single flaky capture is a real failure mode: - A probe that crashed mid-write but left a valid-looking JSON file - A timestamp that's accidentally the right minute (e.g. 15:30:00 IST) but a different day - An operator who reviewed a capture without actually observing the corresponding CAS sub-window This module exposes one pure helper: meets_min_unique_t
+
+Top-level declarations: `meets_min_unique_threshold` (line 41)
+
+Related tests: `python-engine/tests/test_cas_reachability_threshold.py`
+
+## `python-engine/cas_reachability_verify.py`
+
+[WORKFLOW-J.10.SUMMARY_VERIFY 2026-09-14] SUMMARY.md drift verification. The J.10 SUMMARY.md is the persistent audit surface for the gate. Today it's written by ``update_summary(report, summary_path, captures_dir)`` -- a one-way write that overwrites whatever is on disk. If something corrupts the on-disk file (manual edit, disk error, partial write, race with a stale process), the SUMMARY diverges from what the gate would produce right now. This module exposes ``verify_summary(report, summary_path, *, captures_dir=None)``: - Render the report into a fresh SUMMARY (via ``update_summary``). - Compare bytes against the on-disk file. - Return a structured ``VerificationReport`` with ``match: boo
+
+Top-level declarations: `DiffKind` (line 37), `VerificationReport` (line 47), `verify_summary` (line 89), `_extract_generated_at` (line 224), `_strip_generated_at` (line 245)
+
+Engine dependencies: `cas_reachability_gate`
+
+Related tests: `python-engine/tests/test_cas_reachability_verify.py`
 
 ## `python-engine/chandelier_stop.py`
 
@@ -168,7 +270,7 @@ Related tests: `python-engine/tests/test_cost_schedules.py`
 
 ## `python-engine/coverage_vocabulary.py`
 
-[WORKFLOW-H H5 2026-09-13] Bounded dashboard readiness vocabulary. Implements plan section 12 acceptance: *"Dashboard should show effective source/scope/window and readiness reason beside numbers. Distinguish disabled, unconfigured, no session, no setup, no evidence, stale and error."* This module is the **vocabulary** layer for ``operational_coverage_report``'s output. It does not produce or modify the report; it validates that the produced state/reason pairs are members of the documented vocabulary, so a future engineer adding a new state cannot silently change dashboard colours without review. The vocabulary has two pieces: 1. ``READINESS_DESCRIPTORS``: the seven §12 explicit descriptors 
+[WORKFLOW-H H5 2026-09-13] Bounded dashboard readiness vocabulary. Implements plan section 12 acceptance: *"Dashboard should show effective source/scope/window and readiness reason beside numbers. Distinguish disabled, unconfigured, no session, no setup, no evidence, stale and error."* This module is the **vocabulary** layer for ``operational_coverage_report``'s output. It does not produce or modify the report; it validates that the produced state/reason pairs are members of the documented vocabulary, so a future engineer adding a new state cannot silently change dashboard colours without review. The vocabulary has two pieces: 1. ``READINESS_DESCRIPTORS``: the seven §12 explicit descriptors
 
 Top-level declarations: `ReadinessDescriptor` (line 52), `VocabularyDrift` (line 154), `descriptor_for_state` (line 183), `validate_coverage_report` (line 192), `vocabulary_summary` (line 260)
 
@@ -196,7 +298,7 @@ Related tests: `python-engine/tests/test_dev_acceptance_harness.py`
 
 ## `python-engine/discrepancies.py`
 
-[WORKFLOW-F 2026-09-13] Discrepancy-ID framework + durable records (Phase 4). Implements plan section 10.2 -- "Investigate each retained reconciliation warning using actual evidence; build durable discrepancy records and operator-reviewed explanations without repairing books to agree." F4 ships: * A ``DiscrepancyCategory`` enum that maps every reason string already emitted by ``reconciliation_evidence.py`` and every state already emitted by ``broker_reconciliation.py`` into a stable, namespaced identifier (no free-text categories). * A ``DiscrepancyRecord`` dataclass + an append-only ``discrepancies`` table with a separate append-only ``discrepancy_status_log`` table. State transitions live 
+[WORKFLOW-F 2026-09-13] Discrepancy-ID framework + durable records (Phase 4). Implements plan section 10.2 -- "Investigate each retained reconciliation warning using actual evidence; build durable discrepancy records and operator-reviewed explanations without repairing books to agree." F4 ships: * A ``DiscrepancyCategory`` enum that maps every reason string already emitted by ``reconciliation_evidence.py`` and every state already emitted by ``broker_reconciliation.py`` into a stable, namespaced identifier (no free-text categories). * A ``DiscrepancyRecord`` dataclass + an append-only ``discrepancies`` table with a separate append-only ``discrepancy_status_log`` table. State transitions live
 
 Top-level declarations: `DiscrepancyCategory` (line 80), `DiscrepancyStatus` (line 100), `DiscrepancyTransitionError` (line 128), `DiscrepancyRecord` (line 196), `_now_utc` (line 243), `_coerce_dt` (line 247), `_validate_evidence_refs` (line 265), `_finite_amount` (line 290), `init_discrepancies_db` (line 302), `record_discrepancy` (line 319), `update_discrepancy_status` (line 418), `_row_to_record` (line 502), `list_discrepancies` (line 535), `record_from_evidence_report` (line 641), `record_from_broker_statement` (line 732), `record_current_state` (line 790)
 
@@ -320,7 +422,7 @@ Declared tables: `fno_dr_positions`
 
 ## `python-engine/fno_engine_mom.py`
 
-[FNO-MOM 2026-07-10] Opening-range momentum signal for NIFTY (spec §8). THE rule this module exists to enforce: every signal is computed on NIFTY FRONT-MONTH FUTURES 5-min bars, never on option premium. A premium series is contaminated by theta decay and IV changes at once, so an EMA or RSI on premium measures three things and reports on none of them (spec §8.1). The option is purely the expression vehicle. Entry (on a CLOSED 5-min bar): LONG (buy CE): close > OR_high + 0.25*ATR(14), EMA(21) > EMA(50), RVOL >= 1.2, regime != CRISIS SHORT (buy PE): symmetric below OR_low. "Fresh break" rule: the signal fires only on the bar that CROSSES the threshold (previous close inside the range, current 
+[FNO-MOM 2026-07-10] Opening-range momentum signal for NIFTY (spec §8). THE rule this module exists to enforce: every signal is computed on NIFTY FRONT-MONTH FUTURES 5-min bars, never on option premium. A premium series is contaminated by theta decay and IV changes at once, so an EMA or RSI on premium measures three things and reports on none of them (spec §8.1). The option is purely the expression vehicle. Entry (on a CLOSED 5-min bar): LONG (buy CE): close > OR_high + 0.25*ATR(14), EMA(21) > EMA(50), RVOL >= 1.2, regime != CRISIS SHORT (buy PE): symmetric below OR_low. "Fresh break" rule: the signal fires only on the bar that CROSSES the threshold (previous close inside the range, current
 
 Top-level declarations: `MomSignal` (line 49), `_minutes_ist` (line 66), `wilder_atr` (line 70), `_rvol_time_adjusted` (line 85), `evaluate_fno_mom` (line 112)
 
@@ -504,7 +606,7 @@ Declared tables: `partner_hedge_gate_evidence`
 
 ## `python-engine/hedge_strategies.py`
 
-Pure, quote-backed advisory hedge constructors. This module deliberately sits below the scheduler/orchestrator boundary. It does not read settings, call a broker, or manufacture a price. A plan can only be returned when the supplied :class:`fno_chain.ChainSnapshot` contains an actual, fresh, two-sided quote for every leg. The public builders are intentionally conservative: ``protective_put_alert`` Buys puts against an existing long holding. Lots are rounded down so a hedge can never become a speculative net-long put position. ``collar_recommendation`` Buys puts and sells calls against a holding. It refuses a partial lot so that the call leg can never be naked. ``futures_hedge_size`` Sizes a 
+Pure, quote-backed advisory hedge constructors. This module deliberately sits below the scheduler/orchestrator boundary. It does not read settings, call a broker, or manufacture a price. A plan can only be returned when the supplied :class:`fno_chain.ChainSnapshot` contains an actual, fresh, two-sided quote for every leg. The public builders are intentionally conservative: ``protective_put_alert`` Buys puts against an existing long holding. Lots are rounded down so a hedge can never become a speculative net-long put position. ``collar_recommendation`` Buys puts and sells calls against a holding. It refuses a partial lot so that the call leg can never be naked. ``futures_hedge_size`` Sizes a
 
 Top-level declarations: `LegSpec` (line 47), `HedgePlan` (line 107), `ProtectivePutPlan` (line 140), `CollarPlan` (line 148), `CoveredCallPlan` (line 159), `BullPutSpreadPlan` (line 170), `BearCallSpreadPlan` (line 182), `IronCondorPlan` (line 192), `FuturesHedgeSizePlan` (line 207), `DeltaRebalancePlan` (line 216), `LongVolPlan` (line 227), `IronButterflyPlan` (line 237), `CalendarSpreadPlan` (line 249), `RatioSpreadPlan` (line 257), `_aware_now` (line 264), `_nonnegative_finite` (line 272), `_positive_finite` (line 279), `_valid_snapshot` (line 286), `_years_to_expiry` (line 315), `_liquid_quote` (line 320), `_chain_entry_matches_contract` (line 355), `_same_option_series` (line 380), `_quote_iv_delta` (line 395), `_select_quote` (line 417), `_exact_quote` (line 458), `_builder_inputs_valid` (line 486), `_leg` (line 507), `protective_put_alert` (line 528), `collar_recommendation` (line 579), `covered_call_recommendation` (line 652), `bull_put_spread` (line 719), `bear_call_spread` (line 790), `iron_condor` (line 861), `delta_hedge_rebalance` (line 959), `_atm_pair` (line 1038), `long_straddle` (line 1050), `long_strangle` (line 1085), `iron_butterfly` (line 1126), `calendar_diary_spread` (line 1175), `ratio_spread` (line 1226), `futures_hedge_size` (line 1276)
 
@@ -514,7 +616,7 @@ Related tests: `python-engine/tests/test_hedge_strategies.py`
 
 ## `python-engine/holiday_drift.py`
 
-[WORKFLOW-J.5 2026-09-13] Drift detector for NSE holiday lists. The Python engine and the node-gateway both maintain a "today is a trading holiday" check. Pre-J.5 each shipped its own list: * python-engine/market_calendar.py::NSE_HOLIDAYS_STATIC (20 dates) * node-gateway/server/utils/market-hours.js::NSE_HOLIDAYS (18 dates) Only 10 dates overlap. The drift caused real production hazards: a CAS-eligible stock could be scheduled for an order on a holiday that the gateway considered a trading day (or vice versa). J.5 makes Python authoritative; this module is the static cross-check that surfaces divergence between the two sources until the Node side fetches from the engine at boot. This module 
+[WORKFLOW-J.5 2026-09-13] Drift detector for NSE holiday lists. The Python engine and the node-gateway both maintain a "today is a trading holiday" check. Pre-J.5 each shipped its own list: * python-engine/market_calendar.py::NSE_HOLIDAYS_STATIC (20 dates) * node-gateway/server/utils/market-hours.js::NSE_HOLIDAYS (18 dates) Only 10 dates overlap. The drift caused real production hazards: a CAS-eligible stock could be scheduled for an order on a holiday that the gateway considered a trading day (or vice versa). J.5 makes Python authoritative; this module is the static cross-check that surfaces divergence between the two sources until the Node side fetches from the engine at boot. This module
 
 Top-level declarations: `_resolve_repo_root` (line 67), `python_nse_holidays` (line 84), `parse_node_nse_holidays` (line 94), `node_nse_holidays_from_atlas` (line 121), `holiday_drift_report` (line 138), `format_drift_report` (line 181)
 
@@ -558,7 +660,7 @@ Declared tables: `intraday_cache`, `intraday_cache_by_token`
 
 Read immutable quote archives into explicit two-leg chronological evidence.
 
-Top-level declarations: `SpreadContractIdentity` (line 21), `ArchiveObservationBuild` (line 34), `_stamp` (line 42), `read_archived_quote_events` (line 52), `_leg` (line 87), `_master_proves_contract` (line 154), `master_proves_public_scope` (line 198), `build_spread_observations` (line 231)
+Top-level declarations: `SpreadContractIdentity` (line 21), `ArchiveObservationBuild` (line 34), `_stamp` (line 56), `read_archived_quote_events` (line 66), `_leg` (line 101), `_has_executable_depth` (line 168), `_master_proves_contract` (line 200), `master_proves_public_scope` (line 244), `build_spread_observations` (line 277)
 
 Engine dependencies: `intraday_spread_chronological`, `intraday_spread_replay`, `intraday_spread_signal_artifact`
 
@@ -578,11 +680,19 @@ Related tests: `python-engine/tests/test_intraday_spread_chronological.py`
 
 Frozen per-index/policy held-out summaries for chronological spread replay.
 
-Top-level declarations: `HeldOutCase` (line 16), `_digest` (line 29), `_ordered_clock` (line 33), `_outcome_order` (line 43), `_validated_cost_sensitivity` (line 55), `heldout_case_from_full_policy_report` (line 95), `build_heldout_comparison` (line 160)
+Top-level declarations: `HeldOutCase` (line 16), `_digest` (line 29), `_ordered_clock` (line 33), `_outcome_order` (line 43), `_validated_cost_sensitivity` (line 55), `canonical_cost_sensitivity_fingerprint` (line 95), `heldout_case_from_full_policy_report` (line 144), `build_heldout_comparison` (line 209)
 
 Engine dependencies: `intraday_spread_chronological`, `intraday_spread_replay`
 
-Related tests: `python-engine/tests/test_intraday_spread_holdout.py`
+Related tests: `python-engine/tests/test_intraday_spread_holdout.py`, `python-engine/tests/test_intraday_spread_holdout_adequacy.py`
+
+## `python-engine/intraday_spread_holdout_adequacy.py`
+
+[WORKFLOW-C.B1 2026-09-15] Held-out evidence adequacy diagnostic. Per the 2026-09-15 production deep audit B-1: > 6. **Adequate genuine held-out evidence.** Need real production > sessions with non-tampered captures. Per inheritance doc §11 > and AGENTS.md: this requires the operator to run the J.3 capture > review happy-path under live conditions. The plan doc's acceptance criterion for held-out evidence is: > "two unmocked archived sessions containing one finite costed > close and one unresolved outcome" So a held-out sample is "ADEQUATE" iff it contains AT LEAST: - 1 CLOSED case (finite costed close with measurable P&L). - 1 UNRESOLVED case (no fill, ambiguous exit, or non-closed). This m
+
+Top-level declarations: `AdequacyThresholds` (line 37), `HeldOutAdequacy` (line 55), `evaluate_heldout_adequacy` (line 79), `format_adequacy` (line 171)
+
+Related tests: `python-engine/tests/test_intraday_spread_holdout_adequacy.py`
 
 ## `python-engine/intraday_spread_replay.py`
 
@@ -602,7 +712,15 @@ Top-level declarations: `_sha` (line 14), `_date_from_result` (line 18), `create
 
 Engine dependencies: `intraday_spread_replay`, `partner_manual_advisory`
 
-Related tests: `python-engine/tests/test_intraday_spread_research.py`
+Related tests: `python-engine/tests/test_intraday_spread_research.py`, `python-engine/tests/test_intraday_spread_research_verify.py`
+
+## `python-engine/intraday_spread_research_verify.py`
+
+[WORKFLOW-C.A5 2026-09-15] Research summary drift verification. The research summary is the deterministic markdown render of ``intraday_spread_research_v2`` artifacts. The artifact itself is hashed via ``evidence_sha256`` (computed from a ``deterministic`` dict that excludes the timestamp). The operator needs a read-only check that an on-disk artifact matches what its declared ``evidence_sha256`` claims. This module exposes ``verify_research_artifact``: - Reads the on-disk JSON. - Recomputes the canonical hash from the artifact's deterministic fields and compares to the on-disk ``evidence_sha256``. - Cross-checks the embedded ``manifest``'s ``manifest_sha256`` against its body. - Returns a s
+
+Top-level declarations: `ArtifactDriftKind` (line 36), `ArtifactVerificationReport` (line 55), `_sha` (line 87), `_recompute_evidence_fingerprint` (line 99), `verify_research_artifact` (line 123)
+
+Related tests: `python-engine/tests/test_intraday_spread_research_verify.py`
 
 ## `python-engine/intraday_spread_signal_artifact.py`
 
@@ -618,17 +736,17 @@ Related tests: `python-engine/tests/test_intraday_spread_signal_artifact.py`
 
 No module docstring; use the declarations and callers below.
 
-Top-level declarations: `_interval_minutes` (line 33), `_intraday_cache_gate_evaluate` (line 69), `RateLimiter` (line 182), `KiteClient` (line 202), `latest_order_state` (line 1633)
+Top-level declarations: `_interval_minutes` (line 33), `_intraday_cache_gate_evaluate` (line 69), `RateLimiter` (line 182), `KiteClient` (line 202), `latest_order_state` (line 1664)
 
 Engine dependencies: `config`, `halt_switch`, `operator_alert`, `order_execution_readiness`
 
-Related tests: `python-engine/tests/test_kite_client.py`, `python-engine/tests/test_kite_client_methods.py`
+Related tests: `python-engine/tests/test_kite_client.py`, `python-engine/tests/test_kite_client_cache_miss_reason_f3.py`, `python-engine/tests/test_kite_client_methods.py`
 
 Declared tables: `intraday_cache`, `intraday_cache_by_token`, `ohlcv_cache`
 
 ## `python-engine/logging_setup.py`
 
-structlog configuration for the trading-sentinel python-engine. [STRUCTLOG-CONFIGURE 2026-07-07] The 2026-07-07 incident (`docker logs python-engine` showing 9,769 lines of `penny_metrics_history_fetch_failed symbol=...` WITHOUT the `2026-..-.. [warning]` structlog prefix that 95% of the other log lines carry) exposed that the project was relying on structlog's *default* configuration -- which in turn delegates to the stdlib `logging` module's configuration. uvicorn sets up stdlib logging for its own access/error loggers at startup, and that configuration appears to interact with structlog's defaults in a way that drops the timestamp processor for some warning calls. The fix is explicit and 
+structlog configuration for the trading-sentinel python-engine. [STRUCTLOG-CONFIGURE 2026-07-07] The 2026-07-07 incident (`docker logs python-engine` showing 9,769 lines of `penny_metrics_history_fetch_failed symbol=...` WITHOUT the `2026-..-.. [warning]` structlog prefix that 95% of the other log lines carry) exposed that the project was relying on structlog's *default* configuration -- which in turn delegates to the stdlib `logging` module's configuration. uvicorn sets up stdlib logging for its own access/error loggers at startup, and that configuration appears to interact with structlog's defaults in a way that drops the timestamp processor for some warning calls. The fix is explicit and
 
 Top-level declarations: `configure_structlog` (line 38)
 
@@ -652,7 +770,7 @@ Related tests: `python-engine/tests/test_main_api.py`, `python-engine/tests/test
 
 ## `python-engine/mark_to_market.py`
 
-[WORKFLOW-F 2026-09-13] Open mark-to-market valuation (Phase 3). Implements plan section 10.4 -- "Audit funding, expenses, partial closes, rejected/cancelled orders and open mark-to-market independently." The function is purely read-only: it computes unrealised P&L on every open position (equity, F&O, and F&O debit/credit structures) using a caller-supplied quote cache, and returns an aggregate plus per-row breakdown with named freshness buckets. The reason this module exists at all: ``operator_status.py:257`` and ``penny_hourly_report.py:66`` consume an ``unrealised_pnl`` field that no production code path produces. ``main.py:1599`` previously read ``p.get("current_price", 0.0)`` from each 
+[WORKFLOW-F 2026-09-13] Open mark-to-market valuation (Phase 3). Implements plan section 10.4 -- "Audit funding, expenses, partial closes, rejected/cancelled orders and open mark-to-market independently." The function is purely read-only: it computes unrealised P&L on every open position (equity, F&O, and F&O debit/credit structures) using a caller-supplied quote cache, and returns an aggregate plus per-row breakdown with named freshness buckets. The reason this module exists at all: ``operator_status.py:257`` and ``penny_hourly_report.py:66`` consume an ``unrealised_pnl`` field that no production code path produces. ``main.py:1599`` previously read ``p.get("current_price", 0.0)`` from each
 
 Top-level declarations: `QuoteStatus` (line 54), `QuoteTick` (line 64), `PositionMark` (line 94), `OpenMarkToMarket` (line 123), `_validate_equity_row` (line 164), `_mark_equity_row` (line 209), `_validate_fno_row` (line 269), `_mark_fno_row` (line 322), `_validate_fno_dr_row` (line 397), `_mark_fno_dr_row` (line 429), `mark_open_positions` (line 577)
 
@@ -874,9 +992,9 @@ Related tests: `python-engine/tests/test_partner_fixture_adapter.py`
 
 Offline full-policy replay. Results are diagnostic, never delivery authority. The entry book must have been received by the decision clock. Independent public events are consumed in receipt order, preserving breaches between option books.
 
-Top-level declarations: `write_replay_report` (line 15), `replay_full_policy` (line 42)
+Top-level declarations: `_pre_decision_window_hit` (line 16), `write_replay_report` (line 45), `replay_full_policy` (line 72)
 
-Engine dependencies: `intraday_spread_archive_adapter`, `intraday_spread_chronological`, `intraday_spread_replay`, `partner_qualification`, `partner_research_capture`, `partner_thesis`
+Engine dependencies: `asymmetric_fill_model`, `intraday_spread_archive_adapter`, `intraday_spread_chronological`, `intraday_spread_replay`, `partner_qualification`, `partner_research_capture`, `partner_thesis`
 
 Related tests: `python-engine/tests/test_partner_full_policy_replay.py`
 
@@ -932,7 +1050,7 @@ Top-level declarations: `load_candidate_evidence` (line 36), `_sha` (line 123), 
 
 Engine dependencies: `config`, `fno_chain`, `fno_engine_mom`, `fno_instruments`, `fno_models`, `intraday_spread_archive_adapter`, `partner_decision_clock`, `partner_manual_advisory`
 
-Related tests: `python-engine/tests/test_partner_qualification.py`, `python-engine/tests/test_partner_qualification_review.py`
+Related tests: `python-engine/tests/test_partner_qualification.py`, `python-engine/tests/test_partner_qualification_review.py`, `python-engine/tests/test_partner_qualification_verify.py`
 
 ## `python-engine/partner_qualification_review.py`
 
@@ -941,6 +1059,16 @@ Predeclared, human-reviewed qualification package assembly. The package binds a 
 Top-level declarations: `_sha` (line 19), `QualificationCriteria` (line 24), `freeze_qualification_criteria` (line 46), `write_qualification_criteria_manifest` (line 78), `build_qualification_review_package` (line 101)
 
 Related tests: `python-engine/tests/test_partner_qualification_review.py`
+
+## `python-engine/partner_qualification_verify.py`
+
+[WORKFLOW-C.A4 2026-09-15] Qualification criteria manifest drift verification. The qualification criteria manifest is the frozen predeclared contract that binds a deployed policy to a disjoint training/holdout schedule. Operators must be able to verify, in isolation, that an on-disk manifest hasn't been tampered with -- without rebuilding the qualification review package. This module exposes ``verify_qualification_criteria_manifest``: - Reads the on-disk JSON. - Recomputes the ``criteria_manifest_sha256`` from the manifest body. - Reconstructs the canonical manifest from the manifest's fields via ``freeze_qualification_criteria`` (same function used by ``build_qualification_review_package``)
+
+Top-level declarations: `ManifestDriftKind` (line 39), `ManifestVerificationReport` (line 55), `verify_qualification_criteria_manifest` (line 91)
+
+Engine dependencies: `partner_qualification_review`
+
+Related tests: `python-engine/tests/test_partner_qualification_verify.py`
 
 ## `python-engine/partner_research_capture.py`
 
@@ -970,7 +1098,7 @@ Related tests: `python-engine/tests/test_partner_thesis.py`
 
 ## `python-engine/penny_accept_watchdog.py`
 
-[GAP-2 ZERO-ACCEPT ALARM 2026-07-10] Accept-rate watchdog for the penny subsystem, backported from the F&O module spec (docs/superpowers/specs/ fno-module.md §9.2). Why this exists: production ran a mathematically unsatisfiable breakout gate for nine months (215,814 evaluations, 0 accepts) and no health check noticed, because every existing check asks "did the engine run?" and none asks "does the engine ever say yes?". Rule-59's breadcrumb tree classified every one of those days as "legit empty day". The rule: if accepts == 0 across N consecutive evaluation days while evaluations > 0, fire a Telegram alert carrying the top reject-reason histogram. Per the spec, the alert must distinguish: - 
+[GAP-2 ZERO-ACCEPT ALARM 2026-07-10] Accept-rate watchdog for the penny subsystem, backported from the F&O module spec (docs/superpowers/specs/ fno-module.md §9.2). Why this exists: production ran a mathematically unsatisfiable breakout gate for nine months (215,814 evaluations, 0 accepts) and no health check noticed, because every existing check asks "did the engine run?" and none asks "does the engine ever say yes?". Rule-59's breadcrumb tree classified every one of those days as "legit empty day". The rule: if accepts == 0 across N consecutive evaluation days while evaluations > 0, fire a Telegram alert carrying the top reject-reason histogram. Per the spec, the alert must distinguish: -
 
 Top-level declarations: `_normalise_reason` (line 76), `zero_accept_scan` (line 87), `format_zero_accept_alert` (line 234)
 
@@ -988,7 +1116,7 @@ Related tests: `python-engine/tests/test_penny_backtest.py`, `python-engine/test
 
 ## `python-engine/penny_backtest_v2.py`
 
-[PENNY-BACKTEST-V2 2026-07-01] Honest round-trip backtest of the penny MIS Breakout strategy using DAILY bars from the ohlcv_cache table. Why this exists --------------- The existing penny_backtest.py (v1, 2026-06-25) re-runs the scanner over historical dates and counts signals fired/rejected, but does NOT model the executor round-trip -- the trade ledger stays empty and Sharpe/win-rate are always 0. The skill description and the operator both flagged this gap: "executor round-trip not modelled, Sharpe/max-DD/win-rate always 0. Use for gate-regression testing, NOT performance validation." This module is the v2 the operator asked for. The question it answers: "If I had taken every signal the 
+[PENNY-BACKTEST-V2 2026-07-01] Honest round-trip backtest of the penny MIS Breakout strategy using DAILY bars from the ohlcv_cache table. Why this exists --------------- The existing penny_backtest.py (v1, 2026-06-25) re-runs the scanner over historical dates and counts signals fired/rejected, but does NOT model the executor round-trip -- the trade ledger stays empty and Sharpe/win-rate are always 0. The skill description and the operator both flagged this gap: "executor round-trip not modelled, Sharpe/max-DD/win-rate always 0. Use for gate-regression testing, NOT performance validation." This module is the v2 the operator asked for. The question it answers: "If I had taken every signal the
 
 Top-level declarations: `SignalDecision` (line 187), `BacktestResult` (line 208), `_connect` (line 247), `_load_daily_bars` (line 253), `_trading_dates` (line 278), `_all_trading_dates` (line 287), `_rsi_14` (line 297), `_median` (line 319), `_evaluate_breakout_daily` (line 332), `_simulate_round_trip` (line 441), `_in_universe` (line 501), `run_backtest` (line 512), `_max_drawdown_pct` (line 654), `_format_report` (line 671), `_to_json` (line 737), `_main` (line 745)
 
@@ -1042,7 +1170,7 @@ Related tests: `python-engine/tests/test_penny_edge_engine.py`
 
 ## `python-engine/penny_edge_live.py`
 
-[PENNY-EDGE-LIVE 2026-07-01] Live signal scanner that wires penny_edge_engine to the live ohlcv_cache and produces a list of candidate trades for the day. This is the integration layer. It: 1. Loads today's bars from cache.db 2. Computes signal features for every (date, ticker) pair 3. Filters to candidates with strength >= min_strength 4. Sorts by regime-adjusted strength 5. Outputs the top N for execution (paper or live) The actual ORDER PLACEMENT is NOT in this module. The orchestrator (a new penny_edge_orchestrator.py -- to be written) takes the candidates and decides whether to enter paper trades or live trades via the existing penny_executor. The HARD problem we don't solve here: live 
+[PENNY-EDGE-LIVE 2026-07-01] Live signal scanner that wires penny_edge_engine to the live ohlcv_cache and produces a list of candidate trades for the day. This is the integration layer. It: 1. Loads today's bars from cache.db 2. Computes signal features for every (date, ticker) pair 3. Filters to candidates with strength >= min_strength 4. Sorts by regime-adjusted strength 5. Outputs the top N for execution (paper or live) The actual ORDER PLACEMENT is NOT in this module. The orchestrator (a new penny_edge_orchestrator.py -- to be written) takes the candidates and decides whether to enter paper trades or live trades via the existing penny_executor. The HARD problem we don't solve here: live
 
 Top-level declarations: `scan_today` (line 46), `_rank_for_leg` (line 251), `format_positions_report` (line 274)
 
@@ -1052,7 +1180,7 @@ Engine dependencies: `event_calendar`, `penny_edge_backtest`
 
 [PENNY-EDGE-ORCHESTRATOR 2026-07-01] Glue between the adaptive signal engine (penny_edge_engine) and the live trading system. The orchestrator runs TWO legs in parallel each morning: 1. PAPER leg: large bankroll (default Rs 100,000), no real orders. Used for statistical confidence -- what would the strategy do with real-sized capital? 2. LIVE leg: small bankroll (default Rs 1,000), real Kite orders. Used for live fill validation -- what does the broker actually fill at the prices we see? Both legs share the SAME signal scan (same set of candidates ranked by regime-adjusted strength). The bankroll scales each leg's position sizing. Both legs are: - Idempotent (separate source tags in the posi
 
-Top-level declarations: `_edge_max_positions` (line 66), `_edge_min_strength` (line 70), `_edge_paper_bankroll` (line 74), `_edge_live_bankroll` (line 79), `_edge_equity` (line 84), `_edge_halted` (line 102), `_edge_paper_disabled` (line 122), `_edge_live_disabled` (line 126), `_edge_max_hold_days` (line 130), `_live_trading_enabled` (line 134), `_executor_for` (line 145), `_already_entered_today` (line 154), `_write_edge_position` (line 171), `_run_one_leg` (line 224), `_log_edge_signals` (line 355), `run_penny_edge_scan` (line 398), `_kite_daily_bars_after` (line 641), `_settle_confirmed_edge_fill` (line 678), `_cancel_edge_protective_stop` (line 758), `_edge_long_position_truth` (line 780), `run_penny_edge_exit` (line 800), `format_telegram` (line 1107), `format_exit_telegram` (line 1154)
+Top-level declarations: `_edge_max_positions` (line 67), `_edge_min_strength` (line 71), `_edge_paper_bankroll` (line 75), `_edge_live_bankroll` (line 80), `_edge_equity` (line 85), `_edge_halted` (line 103), `_edge_paper_disabled` (line 123), `_edge_live_disabled` (line 127), `_edge_max_hold_days` (line 131), `_live_trading_enabled` (line 135), `_executor_for` (line 146), `_already_entered_today` (line 155), `_write_edge_position` (line 172), `_run_one_leg` (line 280), `_log_edge_signals` (line 411), `run_penny_edge_scan` (line 454), `_kite_daily_bars_after` (line 697), `_settle_confirmed_edge_fill` (line 734), `_cancel_edge_protective_stop` (line 814), `_edge_long_position_truth` (line 836), `run_penny_edge_exit` (line 856), `format_telegram` (line 1163), `format_exit_telegram` (line 1210)
 
 Engine dependencies: `affordability`, `config`, `kite_client`, `memory_metrics`, `operator_alert`, `penny_executor`, `penny_models`, `penny_risk`, `penny_signal_log`, `performance`, `position_tracker`
 
@@ -1230,7 +1358,7 @@ Declared tables: `penny_signals`
 
 [PENNY-UNIVERSE 2026-06-21] Penny-stock universe loader + eligibility filter. Mirrors the structure of universe.py but is owned by the penny subsystem. Loads a JSON file of penny candidates, validates each ticker against the spec §2.3 eligibility gates, resolves to Kite instrument tokens via an injected instrument_cache dict, and exposes the eligible set. Hard architectural rule (enforced by tests/test_penny_isolation.py): this module MUST NOT import from engine, regime, risk_engine, portfolio, evaluate_signal, or evaluate_momentum_signal. Allowed shared imports: kite_client, models (base only), config, position_tracker, performance, analytics, stdlib.
 
-Top-level declarations: `_is_non_equity_symbol` (line 67), `UniverseError` (line 103), `PennyUniverse` (line 107), `_compute_one_history_metric` (line 442), `compute_metrics_from_history` (line 507), `_repo_seed_path` (line 650), `_universe_audit_is_degraded` (line 665), `refresh_from_kite` (line 697)
+Top-level declarations: `_is_non_equity_symbol` (line 67), `UniverseError` (line 103), `PennyUniverse` (line 107), `_compute_one_history_metric` (line 480), `compute_metrics_from_history` (line 545), `_repo_seed_path` (line 688), `_universe_audit_is_degraded` (line 703), `refresh_from_kite` (line 735)
 
 Engine dependencies: `config`
 
@@ -1424,7 +1552,7 @@ Related tests: `python-engine/tests/test_release_identity.py`
 
 Immutable, non-trading market-data evidence archive. The operational ``cache.db`` is a short-retention analytics store. This module deliberately writes *only* to a separate research directory so that preserving evidence never changes the live advisory or trading database. It labels every record by what was actually observed; LTP/OI snapshots are not upgraded to quote/depth data.
 
-Top-level declarations: `guarded_write` (line 41), `_admit_bytes` (line 77), `utc_now` (line 100), `_iso` (line 104), `_sha256_bytes` (line 108), `_canonical_json` (line 112), `_atomic_bytes` (line 116), `_require_capacity` (line 131), `_safe_component` (line 137), `_sqlite_readonly` (line 141), `_table_exists` (line 146), `_rows_as_dicts` (line 152), `_coverage` (line 157), `export_operational_fno_evidence` (line 164), `verify_export_manifest` (line 251), `verify_fno_export_for_cutoff` (line 268), `archive_contract_master` (line 289), `archive_candidate_evidence` (line 348), `QuoteArchive` (line 377), `readiness_view` (line 548)
+Top-level declarations: `guarded_write` (line 41), `_admit_bytes` (line 77), `utc_now` (line 100), `_iso` (line 104), `_sha256_bytes` (line 108), `_canonical_json` (line 112), `_atomic_bytes` (line 116), `_require_capacity` (line 131), `_safe_component` (line 137), `_sqlite_readonly` (line 141), `_table_exists` (line 146), `_rows_as_dicts` (line 152), `_coverage` (line 157), `export_operational_fno_evidence` (line 164), `verify_export_manifest` (line 251), `verify_fno_export_for_cutoff` (line 268), `archive_contract_master` (line 289), `archive_candidate_evidence` (line 348), `QuoteArchive` (line 377), `readiness_view` (line 580)
 
 Engine dependencies: `config`, `market_calendar`, `partner_collection_attempts`, `research_leg_subscriptions`
 
@@ -1436,7 +1564,7 @@ Operator commands for immutable research preservation (no broker actions).
 
 Top-level declarations: `_json_file` (line 17), `_write_comparison_output` (line 27), `_strategy_comparison` (line 50), `_candidate_file` (line 80), `_replay_spread` (line 93), `_full_policy_diagnostic` (line 126), `main` (line 162)
 
-Engine dependencies: `config`, `intraday_spread_archive_adapter`, `intraday_spread_chronological`, `partner_full_policy_replay`, `partner_qualification`, `partner_research_capture`, `proactive_comparison_protocol`, `proactive_intelligence`, `reconciliation_evidence`, `research_archive`
+Engine dependencies: `config`, `intraday_spread_archive_adapter`, `intraday_spread_chronological`, `partner_full_policy_replay`, `partner_qualification`, `partner_qualification_verify`, `partner_research_capture`, `proactive_comparison_protocol`, `proactive_intelligence`, `reconciliation_evidence`, `research_archive`
 
 Related tests: `python-engine/tests/test_research_cli_qualification.py`, `python-engine/tests/test_research_cli_strategy_comparison.py`
 
@@ -1456,7 +1584,7 @@ Declared tables: `selected_leg_collection_gaps`, `selected_leg_subscriptions`
 
 Forward-only NIFTY/SENSEX quote evidence collection. This module is intentionally independent from partner delivery, profiles, qualification and every order API. It records exactly what the permitted provider returned and marks the REST path as lower-frequency; a WebSocket consumer may feed ``ingest_provider_packet`` without changing its evidence format.
 
-Top-level declarations: `_configured_underlyings` (line 35), `_quote_archive` (line 40), `_provider_timestamp` (line 50), `_finite_positive` (line 68), `_five_levels` (line 76), `normalise_quote` (line 93), `_select_contracts` (line 139), `_with_active_legs` (line 154), `_documented_quotes` (line 166), `collect_rest_quote_snapshot` (line 174), `research_quote_collection_tick` (line 307)
+Top-level declarations: `_configured_underlyings` (line 35), `_quote_archive` (line 40), `_provider_timestamp` (line 50), `_finite_positive` (line 68), `_five_levels` (line 76), `normalise_quote` (line 93), `_select_contracts` (line 139), `_with_active_legs` (line 154), `_documented_quotes` (line 166), `collect_rest_quote_snapshot` (line 174), `research_quote_collection_tick` (line 336)
 
 Engine dependencies: `config`, `fno_instruments`, `fno_models`, `fno_underlyings`, `research_archive`, `research_leg_subscriptions`
 
@@ -1488,7 +1616,7 @@ Engine dependencies: `backtest_lab`, `config`, `engine_auth`
 
 ## `python-engine/routes_commands.py`
 
-[ROADMAP-4.1 stage 3, 2026-07-13] Telegram command dispatch and analytics endpoints. Extracted verbatim from main.py. Registered on the app via `app.include_router(router)`, so the route table -- paths, methods, endpoint names, response models -- is byte-identical; the 24-route characterization golden proves it. EVERY business name is reached through `_main` at CALL time, not imported. That is not stylistic. Two independent reasons, both load-bearing: 1. Eight of main's globals are REBOUND at runtime via `global` statements (current_signals, market_regime, momentum_signals_today, last_run, rejected_signals, current_momentum_signals, last_momentum_date, _last_regime_state). `from main import 
+[ROADMAP-4.1 stage 3, 2026-07-13] Telegram command dispatch and analytics endpoints. Extracted verbatim from main.py. Registered on the app via `app.include_router(router)`, so the route table -- paths, methods, endpoint names, response models -- is byte-identical; the 24-route characterization golden proves it. EVERY business name is reached through `_main` at CALL time, not imported. That is not stylistic. Two independent reasons, both load-bearing: 1. Eight of main's globals are REBOUND at runtime via `global` statements (current_signals, market_regime, momentum_signals_today, last_run, rejected_signals, current_momentum_signals, last_momentum_date, _last_regime_state). `from main import
 
 Top-level declarations: `penny_command_get` (line 46), `penny_command_post` (line 55), `nifty_command_get` (line 71), `top_level_command_get` (line 86), `_halt_status_text` (line 127), `top_level_command_post` (line 155), `get_funnel` (line 227), `get_strategy_funnel` (line 233), `get_strategy_promotion` (line 241), `get_outcomes` (line 251), `get_proactive_activity` (line 257), `get_proactive_comparison` (line 271), `get_proactive_research_comparison` (line 278), `get_proactive_diagnostics` (line 285), `get_proactive_session_diagnostics` (line 292), `get_scheduler_timing` (line 305), `get_operational_coverage` (line 315), `get_reconciliation_evidence` (line 322), `get_suggestions` (line 333), `get_edge_statistics` (line 349), `post_reconciliation_import_statement` (line 370), `get_reconciliation_discrepancies` (line 444)
 
@@ -1522,7 +1650,7 @@ Engine dependencies: `market_calendar`
 
 Authenticated, read-only session inputs consumed by the Node gateway.
 
-Top-level declarations: `_eligibility_version` (line 16), `cas_eligibility` (line 23)
+Top-level declarations: `_eligibility_version` (line 17), `_eligibility_signature` (line 23), `cas_eligibility` (line 29)
 
 Engine dependencies: `config`, `engine_auth`, `market_calendar`
 
@@ -1575,6 +1703,14 @@ Top-level declarations: `_utc_now` (line 43), `_iso` (line 47), `init_scheduler_
 Related tests: `python-engine/tests/test_scheduler_telemetry.py`
 
 Declared tables: `scheduler_run_telemetry`
+
+## `python-engine/settlement_assumptions.py`
+
+[WORKFLOW-C.B3 2026-09-15] Per-exchange settlement assumption reference table. Per the 2026-09-15 production deep audit B-3: > 8. **Exchange-specific settlement assumptions.** Need operator > to confirm settlement assumptions per exchange (NSE cash, NSE > F&O, BSE). Not derivable from code alone. This module is a frozen reference table that: 1. Documents the operator-confirmed settlement assumptions for each (exchange, product_type) combination the system trades. 2. Is queried at runtime by tests to pin the existing behavior so future changes don't drift silently. 3. Acts as the single source of truth that future operator confirmations can UPDATE -- without touching the rest of the system. T
+
+Top-level declarations: `SettlementAssumption` (line 58), `lookup_settlement` (line 144), `format_assumptions_table` (line 157), `assumptions_as_dicts` (line 184)
+
+Related tests: `python-engine/tests/test_settlement_assumptions.py`
 
 ## `python-engine/signal_log.py`
 
@@ -1636,7 +1772,7 @@ Imports/requires describe dependencies; route mounting and authentication must b
 
 Dependencies: `./config`, `./middleware/logger`, `./middleware/security`, `./routes/auth`, `./routes/health`, `./routes/internal`, `./routes/orders`, `./routes/proxy`, `./routes/signals`, `./routes/token`, `./services/telegram`, `connect-sqlite3`, `express`, `express-session`, `fs`, `path`
 
-Local routes: `GET *`, `GET *`, `GET *`
+Local routes: `GET *`, `GET *`
 
 ## `node-gateway/server/config.js`
 
@@ -1722,7 +1858,7 @@ Local routes: `GET /`, `POST /invalidate`
 
 ## `node-gateway/server/services/cas-eligibility.js`
 
-Dependencies: `../config`, `../utils/market-hours`
+Dependencies: `../config`, `../utils/market-hours`, `crypto`
 
 ## `node-gateway/server/services/executor.js`
 
@@ -1883,7 +2019,7 @@ Dependencies: `../api/client`, `../utils/backtestLab`, `react`, `swr`
 
 ## `node-gateway/client/src/pages/Dashboard.jsx`
 
-Dependencies: `../api/client`, `../components/CircuitBreaker`, `../components/PositionRow`, `../components/SignalCard`, `../components/StatusBar`, `../evidenceMode`, `../hooks/useDivisionPerformance`, `../hooks/useOperationalCoverage`, `../hooks/useOptionalAiStatus`, `../hooks/usePartnerAdvisoryResearchReadiness`, `../hooks/usePartnerAdvisorySetup`, `../hooks/usePartnerDeliveryBacklog`, `../hooks/usePartnerHedgeCards`, `../hooks/usePositions`, `../hooks/useProactiveActivity`, `../hooks/useProactiveSessionDiagnostics`, `../hooks/useReconciliationEvidence`, `../hooks/useSchedulerTiming`, `../hooks/useSignals`, `../utils/advisoryCollectionCoverage`, `../utils/divisionPerformance`, `../utils/positions`, `data with zero values`, `lucide-react`, `react`
+Dependencies: `../api/client`, `../components/CircuitBreaker`, `../components/PositionRow`, `../components/SessionPhaseCard`, `../components/SignalCard`, `../components/StatusBar`, `../evidenceMode`, `../hooks/useDivisionPerformance`, `../hooks/useOperationalCoverage`, `../hooks/useOptionalAiStatus`, `../hooks/usePartnerAdvisoryResearchReadiness`, `../hooks/usePartnerAdvisorySetup`, `../hooks/usePartnerDeliveryBacklog`, `../hooks/usePartnerHedgeCards`, `../hooks/usePositions`, `../hooks/useProactiveActivity`, `../hooks/useProactiveSessionDiagnostics`, `../hooks/useReconciliationEvidence`, `../hooks/useSchedulerTiming`, `../hooks/useSignals`, `../utils/advisoryCollectionCoverage`, `../utils/divisionPerformance`, `../utils/positions`, `data with zero values`, `lucide-react`, `react`
 
 ## `node-gateway/client/src/pages/Login.jsx`
 

@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import hashlib
+import hmac
 
 from fastapi import APIRouter, Query, Request
 
@@ -19,6 +20,11 @@ def _eligibility_version() -> str:
     return hashlib.sha256(raw).hexdigest()[:16]
 
 
+def _eligibility_signature(symbol: str, eligible: bool, version: str) -> str:
+    body = f"{symbol}|{str(eligible).lower()}|{version}".encode("utf-8")
+    return hmac.new(settings.INTERNAL_API_SECRET.encode("utf-8"), body, hashlib.sha256).hexdigest()
+
+
 @router.get("/cas-eligibility")
 def cas_eligibility(
     request: Request,
@@ -33,9 +39,12 @@ def cas_eligibility(
     """
     _check_internal_secret(request, "market_session_cas_eligibility")
     normalized = symbol.strip().upper()
+    version = _eligibility_version()
+    eligible = is_cas_eligible(normalized)
     return {
         "symbol": normalized,
-        "cas_eligible": is_cas_eligible(normalized),
+        "cas_eligible": eligible,
         "source": "python-engine/market_calendar.py::is_cas_eligible",
-        "source_version": _eligibility_version(),
+        "source_version": version,
+        "signature": _eligibility_signature(normalized, eligible, version),
     }

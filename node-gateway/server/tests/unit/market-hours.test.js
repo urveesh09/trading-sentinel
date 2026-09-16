@@ -5,6 +5,7 @@ const {
   isMarketOpen,
   isPreMarket,
   isCashCasEligibilityResolutionWindow,
+  validatedHolidayPayload,
 } = require('../../utils/market-hours');
 
 // Helper to mock Date.now() and global Date for specific IST times
@@ -220,5 +221,33 @@ describe('isCashCasEligibilityResolutionWindow()', () => {
 
   test('is false for an invalid timestamp', () => {
     expect(isCashCasEligibilityResolutionWindow('not-a-date')).toBe(false);
+  });
+
+  test('execution verdict fails closed when an engine calendar is expired', () => {
+    const { __resetHolidaysForTest, isExecutionAllowed } = require('../../utils/market-hours');
+    __resetHolidaysForTest(new Set(['2026-12-25']), 'engine:test', '2026-12-31');
+    withMockedTime('2027-01-04T05:30:00Z', () => {
+      expect(isExecutionAllowed({ observation_at: new Date(), symbol: 'TCS', cas_eligible: false }))
+        .toEqual(expect.objectContaining({ allowed: false, phase: 'UNKNOWN' }));
+    });
+    __resetHolidaysForTest(new Set(), 'fallback:test', '2026-12-31');
+  });
+});
+
+describe('holiday payload validation', () => {
+  test.each([
+    null,
+    { holidays: [], valid_through: '2026-12-31' },
+    { holidays: ['not-a-date'], valid_through: '2026-12-31' },
+    { holidays: ['2027-01-01'], valid_through: '2026-12-31' },
+    { holidays: ['2026-12-25'], valid_through: 'invalid' },
+  ])('rejects malformed or incoherent payload %#', (payload) => {
+    expect(validatedHolidayPayload(payload)).toBeNull();
+  });
+
+  test('accepts a nonempty bounded payload without filtering rows', () => {
+    const result = validatedHolidayPayload({ holidays: ['2026-12-25'], valid_through: '2026-12-31' });
+    expect([...result.holidays]).toEqual(['2026-12-25']);
+    expect(result.validThrough).toBe('2026-12-31');
   });
 });
