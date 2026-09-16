@@ -1054,6 +1054,17 @@ class Settings(BaseSettings):
     # KITE_WS_FULL; neither source is an order or delivery consumer.
     RESEARCH_QUOTE_COLLECTION_ENABLED: bool = True
     RESEARCH_QUOTE_INTERVAL_SEC: int = 60
+    # [WORKFLOW-C.F2 2026-09-16] Soft cap on per-tick runtime.
+    # When the tick exceeds this, it returns early with whatever
+    # it has collected so far (partial_collected) and the audit
+    # log surfaces ``runtime_capped=True`` + ``elapsed_sec``. The
+    # default 80% of the trigger interval leaves headroom for the
+    # scheduler overhead + archive_journal write at the end.
+    # Per the audit: avg runtime = 14s, max = 114s on a 60s
+    # trigger. The cap brings tail latency under control without
+    # changing the trigger interval (operators want fresh data
+    # every 60s -- "earn good and fast profit").
+    RESEARCH_QUOTE_RUNTIME_CAP_SEC: float = 48.0
     RESEARCH_QUOTE_STRIKE_WINDOW: int = 5
     # Exact legs selected by a research/advisory decision take priority over
     # the rolling ATM discovery universe. A bounded cap makes saturation an

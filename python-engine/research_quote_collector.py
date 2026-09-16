@@ -14,7 +14,7 @@ import hashlib
 import json
 import math
 import time
-from typing import Any, Dict, Iterable, List, Mapping, Optional, Sequence, Tuple
+from typing import Any, Callable, Dict, Iterable, List, Mapping, Optional, Sequence, Tuple
 
 import pytz
 import structlog
@@ -174,14 +174,34 @@ async def _documented_quotes(kite, contracts: Sequence[Contract], segment: str) 
 async def collect_rest_quote_snapshot(
     kite, *, now_ist: Optional[datetime] = None,
     books: Optional[Mapping[str, FnoInstruments]] = None,
+    runtime_exceeded: Optional[Callable[[], bool]] = None,
+    partial_collected_ref: Optional[Dict[str, int]] = None,
 ) -> Dict[str, Any]:
     """Collect a bounded REST full-quote snapshot for active research books.
 
     REST is deliberately recorded as ``KITE_REST_FULL_LOWER_FREQUENCY``.  It
     is not presented as tick/depth history and all unavailable packets become
     explicit gaps in the result rather than synthetic quotes.
+
+    [WORKFLOW-C.F2 2026-09-16] Defensive runtime cap.
+    ``runtime_exceeded`` is an optional callable invoked
+    between underlyings. When it returns True, the loop
+    breaks early -- the tick returns with whatever data has
+    already been collected (``partial_collected`` field
+    counts observable collection). The caller (the
+    scheduler entry point) sets up the cap and records
+    ``runtime_capped=True`` for the audit. ``None`` disables
+    the cap (legacy behaviour preserved).
     """
     now_ist = now_ist or datetime.now(IST)
+    # Local no-op defaults so the cap-discipline is testable
+    # in isolation -- ``runtime_exceeded`` always returns
+    # False when not provided.
+    if runtime_exceeded is None:
+        runtime_exceeded = lambda: False
+    if partial_collected_ref is None:
+        partial_collected_ref = {"n": 0}
+    partial_collected_ref["n"] = 0
     result: Dict[str, Any] = {"collected": 0, "requested": 0, "gaps": [], "indices": {},
                               "mode": "KITE_REST_FULL_LOWER_FREQUENCY", "stage_durations_sec": {}}
     if not settings.RESEARCH_ARCHIVE_ENABLED or not settings.RESEARCH_QUOTE_COLLECTION_ENABLED:
@@ -203,6 +223,14 @@ async def collect_rest_quote_snapshot(
     result["stage_durations_sec"]["archive_finalization"] = round(time.monotonic() - stage_started, 6)
     books = books or {name: get_instruments_for(name) for name in _configured_underlyings()}
     for name in _configured_underlyings():
+        # [WORKFLOW-C.F2 2026-09-16] Cap check at the start
+        # of each underlying's iteration. If the tick has
+        # already exceeded its runtime budget, break out
+        # -- the partial result is still useful, and we
+        # avoid cascade-skip at the scheduler.
+        if runtime_exceeded():
+            result["partial_collected"] = partial_collected_ref["n"]
+            break
         result["indices"][name] = {"requested_tokens": [], "received_tokens": [],
                                    "active_leg_requested_tokens": [], "active_leg_received_tokens": [],
                                    "active_leg_capacity_shortfall_tokens": []}
@@ -286,6 +314,7 @@ async def collect_rest_quote_snapshot(
                 await asyncio.to_thread(archive.append, event)
                 result["stage_durations_sec"]["archive_write"] = round(result["stage_durations_sec"].get("archive_write", 0) + time.monotonic() - stage_started, 6)
                 result["collected"] += 1; result["indices"][name]["received_tokens"].append(contract.token)
+                partial_collected_ref["n"] += 1
             except OSError as exc:
                 logger.error("research_storage_stop reason=%s", str(exc))
                 result["reason"] = "storage_stop"
@@ -308,7 +337,45 @@ async def research_quote_collection_tick(now_ist: Optional[datetime] = None) -> 
     """Scheduler entry point; market-data only and independent of advice gates."""
     now_ist = now_ist or datetime.now(IST)
     archive = _quote_archive() if settings.RESEARCH_ARCHIVE_ENABLED else None
+    # [WORKFLOW-C.F2 2026-09-16] Defensive runtime cap.
+    # The 2026-09-16 production audit reported avg runtime 14s
+    # but max runtime 114s on a 60s trigger -- the tail causes
+    # ``MAX_INSTANCES`` skips at the scheduler. Per the user's
+    # directive ("earn good and fast profit"): keep the 60s
+    # cadence (fresh data is critical), but cap tail latency
+    # so a slow tick no longer cascades into a skip.
+    #
+    # The cap is checked between underlyings (NIFTY, SENSEX) in
+    # the underlying loop; the tick returns early with whatever
+    # data has already been collected. ``runtime_capped=True``
+    # surfaces in the result so the audit's diagnostic SQL
+    # can distinguish "tick completed normally" from
+    # "tick was capped before all underlyings were covered".
+    tick_started_at = time.monotonic()
+    runtime_cap_sec = float(getattr(
+        settings, "RESEARCH_QUOTE_RUNTIME_CAP_SEC", 48.0,
+    ))
+    runtime_capped = False
+    partial_collected = 0
+    tick_index = {"n": 0}  # mutable counter for the helper closure below
+
+    def _runtime_exceeded() -> bool:
+        nonlocal runtime_capped
+        elapsed = time.monotonic() - tick_started_at
+        if elapsed >= runtime_cap_sec:
+            runtime_capped = True
+            return True
+        return False
+
     async def journal(result: Dict[str, Any]) -> Dict[str, Any]:
+        # [WORKFLOW-C.F2 2026-09-16] Annotate the journal entry
+        # with runtime-capped diagnostics so the audit's
+        # ``SELECT * FROM research_runs WHERE runtime_capped``-
+        # style query returns rows.
+        elapsed = round(time.monotonic() - tick_started_at, 6)
+        result.setdefault("runtime_capped", runtime_capped)
+        result.setdefault("elapsed_sec", elapsed)
+        result.setdefault("runtime_cap_sec", runtime_cap_sec)
         if archive is not None:
             await asyncio.to_thread(archive.record_collection_run, result, expected_interval_sec=settings.RESEARCH_QUOTE_INTERVAL_SEC)
         return result
@@ -320,7 +387,11 @@ async def research_quote_collection_tick(now_ist: Optional[datetime] = None) -> 
         import main as _main
         if not await _main.is_trading_day(now_ist.date(), settings.DB_PATH):
             return await journal({"reason": "market_closed"})
-        return await collect_rest_quote_snapshot(_main.kite, now_ist=now_ist)
+        return await collect_rest_quote_snapshot(
+            _main.kite, now_ist=now_ist,
+            runtime_exceeded=_runtime_exceeded,
+            partial_collected_ref=tick_index,
+        )
     except Exception as exc:
         await journal({"reason": "scheduler_exception", "error_type": type(exc).__name__})
         raise
