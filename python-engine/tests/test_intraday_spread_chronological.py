@@ -204,6 +204,100 @@ def test_cancelled_delayed_signal_does_not_consume_a_later_book():
     assert "signal_cancelled_before_delayed_execution" in replay.rejected_entry_reasons
 
 
+# [WORKFLOW-C.A2 2026-09-15] Monotonic delayed-execution
+# assertion. The chronological replay's delayed-execution
+# helper (``_execution_observation``) returns the FIRST
+# later observation whose ``received_at >= eligible_at``
+# where ``eligible_at = decision.received_at +
+# execution_delay``. The invariant -- the active entry
+# can never be earlier than the configured execution
+# delay -- is critical for the operator to trust the
+# diagnostic. Without a hard test, a future refactor
+# could break the invariant silently.
+
+
+def test_delayed_execution_entry_is_strictly_at_or_after_configured_delay():
+    """[WORKFLOW-C.A2 2026-09-15] The active entry's
+    received_at MUST be at or after the decision packet's
+    received_at + the configured execution_delay. Pin
+    this monotonic invariant.
+    """
+    first = IST.localize(datetime(2026, 9, 10, 10, 0))
+    delay = timedelta(seconds=10)
+    executed = first + timedelta(seconds=15)  # 5s after eligible_at
+    later = first + timedelta(minutes=5)
+    delayed = replace(policy(), execution_delay=delay, execution_max_wait=timedelta(seconds=30))
+    replay = replay_chronological_debit_spread(
+        underlying="NIFTY", expiry="2026-09-24", policy=delayed,
+        observations=[observation(first, .9), observation(executed, .2, pair(executed, long_ask=104)),
+                      observation(later, .1, pair(later, long_bid=112, long_ask=114, short_bid=43, short_ask=45))],
+    )
+    active_entry_at = datetime.fromisoformat(replay.active_entry_at)
+    decision_at = first  # the first observation is the decision.
+    eligible_at = decision_at + delay
+    assert active_entry_at >= eligible_at, (
+        f"active_entry_at={active_entry_at} is BEFORE eligible_at={eligible_at} "
+        f"(decision={decision_at}, delay={delay})"
+    )
+
+
+def test_delayed_execution_chooses_first_eligible_packet_in_receipt_order():
+    """[WORKFLOW-C.A2 2026-09-15] When multiple packets
+    arrive after eligible_at, the helper must choose the
+    FIRST eligible one in RECEIPT order. The chronological
+    replay requires observations to be strictly receipt-
+    ordered (line 221: ``prior_received < received``), so
+    the list order IS the receipt order.
+
+    The active entry is therefore the EARLIEST packet whose
+    ``received_at >= eligible_at``. This pins the "forward
+    consumption" invariant: the helper never skips an
+    earlier eligible packet for a later one.
+    """
+    first = IST.localize(datetime(2026, 9, 10, 10, 0))
+    delay = timedelta(seconds=10)
+    # Three candidates, all AFTER eligible_at, in receipt
+    # order (strictly increasing ``received_at``).
+    candidate_a = first + timedelta(seconds=10)  # exactly at eligible_at
+    candidate_b = first + timedelta(seconds=20)
+    candidate_c = first + timedelta(seconds=30)
+    delayed = replace(policy(), execution_delay=delay, execution_max_wait=timedelta(seconds=60))
+    replay = replay_chronological_debit_spread(
+        underlying="NIFTY", expiry="2026-09-24", policy=delayed,
+        observations=[
+            observation(first, .9),
+            observation(candidate_a, .2, pair(candidate_a, long_ask=104)),
+            observation(candidate_b, .2, pair(candidate_b, long_ask=104)),
+            observation(candidate_c, .1, pair(candidate_c, long_bid=112, long_ask=114, short_bid=43, short_ask=45)),
+        ],
+    )
+    active_entry_at = datetime.fromisoformat(replay.active_entry_at)
+    # The active entry is candidate_a -- the FIRST eligible
+    # packet by receipt order.
+    assert active_entry_at == candidate_a, (
+        f"active_entry_at={active_entry_at} != candidate_a={candidate_a} "
+        f"(the first eligible packet by receipt order)"
+    )
+
+
+def test_delayed_execution_zero_delay_returns_decision_packet():
+    """[WORKFLOW-C.A2 2026-09-15] When execution_delay is
+    zero, the helper returns the decision packet itself.
+    The monotonic invariant trivially holds (active_entry
+    == decision + 0 delay).
+    """
+    first = IST.localize(datetime(2026, 9, 10, 10, 0))
+    replay = replay_chronological_debit_spread(
+        underlying="NIFTY", expiry="2026-09-24", policy=policy(),
+        observations=[observation(first, .9, pair(first, long_ask=104)),
+                      observation(first + timedelta(seconds=10), .1, pair(first + timedelta(seconds=10),
+                                                                       long_bid=112, long_ask=114,
+                                                                       short_bid=43, short_ask=45))],
+    )
+    active_entry_at = datetime.fromisoformat(replay.active_entry_at)
+    assert active_entry_at == first
+
+
 def test_chronological_runner_rejects_mixed_exchange_sessions():
     first = IST.localize(datetime(2026, 9, 10, 14, 59))
     with pytest.raises(ReplayInputError, match="mix exchange sessions"):

@@ -5,11 +5,41 @@ are consumed in receipt order, preserving breaches between option books.
 """
 from dataclasses import asdict, replace
 from datetime import datetime
+from typing import Any, Mapping
 
 from intraday_spread_archive_adapter import SpreadContractIdentity, build_spread_observations
 from intraday_spread_chronological import PublicObservation, replay_chronological_debit_spread, replay_cost_scenarios
 from intraday_spread_replay import IST, ReplayInputError
 from partner_qualification import _sha, _bars_payload, evaluate_deployed_full_policy
+
+
+def _pre_decision_window_hit(
+    item: Mapping[str, Any],
+    book_at_decision_received_at: "datetime",
+    now: "datetime",
+) -> bool:
+    """[WORKFLOW-C.C1 2026-09-15] Defensive predicate for the
+    pre-decision asymmetric/partial-batch window check.
+
+    Returns True iff ``item`` has a parseable ``received_at``
+    in the strict window
+    ``book_at_decision_received_at < ts <= now`` -- the same
+    window the A1 fail-closed check uses inline. Malformed
+    timestamps (missing field, non-string, unparseable)
+    degrade to ``False`` rather than crashing the replay.
+
+    The replay MUST stay alive even when individual capture
+    events have malformed fields; the structured
+    ``asymmetric_diagnostic`` block surfaces what we can.
+    """
+    raw = item.get("received_at")
+    if not isinstance(raw, str) or not raw:
+        return False
+    try:
+        ts = datetime.fromisoformat(raw)
+    except (TypeError, ValueError):
+        return False
+    return book_at_decision_received_at < ts <= now
 
 
 def write_replay_report(path, report):
@@ -100,6 +130,18 @@ def replay_full_policy(*, evaluation_inputs, events, archive_root, master_sha256
     prior_books = [row for row in build.observations if row.received_at <= now]
     report.update(partial_batches=list(build.partial_batches),
                   conflicting_batches=list(build.conflicting_batches),
+                  # [WORKFLOW-C.A1 2026-09-15] Asymmetric-
+                  # fills diagnostic. When one leg had
+                  # executable depth and the other did not
+                  # at a receipt time <= the decision clock,
+                  # the decision book itself was partially
+                  # executable -- the operator cannot claim
+                  # the decision was made against a fully
+                  # executable two-leg book. Surface the
+                  # diagnostic AND fail-closed (treat as
+                  # INSUFFICIENT_EVIDENCE) below. Mirrors the
+                  # partial_batches discipline at lines 115-118.
+                  asymmetric_batches=list(build.asymmetric_batches or []),
                   ignored_events=build.ignored_events)
     relevant_conflicts = [item for item in build.conflicting_batches
                           if datetime.fromisoformat(item["received_at"]) <= now]
@@ -112,9 +154,157 @@ def replay_full_policy(*, evaluation_inputs, events, archive_root, master_sha256
         return {**report, "evidence_sha256": _sha(report)}
     book_at_decision = prior_books[-1]
     report["decision_book_received_at"] = book_at_decision.received_at.isoformat()
+    # [WORKFLOW-C.C1 2026-09-15] Structured asymmetric-fill
+    # diagnostic (Option 3 from the C-investigation). The
+    # asymmetric_batches list is the raw evidence; this
+    # block is the operator-visible summary that answers:
+    #  - Was there an asymmetric-fill condition at the
+    #    decision clock? (boolean)
+    #  - Which legs were executable / insufficient?
+    #  - When did the condition first appear? last appear?
+    # The replay is still fail-closed below (Option 1
+    # behavior preserved): a pre-decision asymmetric batch
+    # causes INSUFFICIENT_EVIDENCE. This block just makes the
+    # attribution visible without forcing the operator to
+    # grep asymmetric_batches. Mirrors how conflicting_batches
+    # is reported alongside state/reason.
+    pre_decision_asymmetric: list[dict] = []
+    executable_legs: set[str] = set()
+    insufficient_legs: set[str] = set()
+    for item in build.asymmetric_batches or []:
+        for leg in item.get("executable", []):
+            executable_legs.add(str(leg))
+        for leg in item.get("insufficient", []):
+            insufficient_legs.add(str(leg))
+        # [WORKFLOW-C.C1 2026-09-15] Use the defensive
+        # helper for the pre-decision window check. Malformed
+        # ``received_at`` degrades to exclusion from the
+        # pre-decision subset (the diagnostic still counts
+        # the batch in ``asymmetric_batch_count`` and
+        # attributes the leg names).
+        if _pre_decision_window_hit(item, book_at_decision.received_at, now):
+            pre_decision_asymmetric.append(item)
+    pre_decision_received_ats = [item["received_at"] for item in pre_decision_asymmetric
+                                  if isinstance(item.get("received_at"), str)]
+    report["asymmetric_diagnostic"] = {
+        "pre_decision_asymmetric_observed": bool(pre_decision_asymmetric),
+        "asymmetric_batch_count": len(build.asymmetric_batches or []),
+        "pre_decision_batch_count": len(pre_decision_asymmetric),
+        "executable_legs": sorted(executable_legs),
+        "insufficient_legs": sorted(insufficient_legs),
+        "earliest_received_at": min(pre_decision_received_ats)
+            if pre_decision_received_ats else None,
+        "latest_received_at": max(pre_decision_received_ats)
+            if pre_decision_received_ats else None,
+    }
     if any(book_at_decision.received_at < datetime.fromisoformat(item["received_at"]) <= now
            for item in build.partial_batches):
         report.update(state="INSUFFICIENT_EVIDENCE", reason="partial_book_before_decision")
+        return {**report, "evidence_sha256": _sha(report)}
+    # [WORKFLOW-C.C2.WIRE 2026-09-16] Wire the asymmetric
+    # partial-fill model (Q1-Q4) into the full-policy replay.
+    #
+    # Per the 2026-09-16 operator decisions on C.2:
+    #   Q1: 'Filled at mid + 2bps' (estimate from mid-price).
+    #   Q2: All exchanges same (no per-exchange differentiation).
+    #   Q3: Partial counts as CLOSED with partial P&L
+    #       (realized partial fill).
+    #   Q4: No new operator-config knobs.
+    #
+    # Before this slice: a pre-decision asymmetric batch
+    # caused ``INSUFFICIENT_EVIDENCE,
+    # reason=asymmetric_execution_quality_before_decision``
+    # (C.A1 fail-closed discipline).
+    #
+    # After this slice: the missing leg's fill price is
+    # estimated via ``estimate_missing_leg_price`` (mid+2bps),
+    # the replay returns ``state=CLOSED,
+    # reason=partial_fill_modeled, partial_fill_observed=True``
+    # with the modelled missing-leg P&L contribution. The
+    # asymmetric_diagnostic block already in place (C.C1) is
+    # extended with the modelled price for auditability.
+    #
+    # The wiring is exchange-agnostic (Q2): no per-exchange
+    # switch. The slippage is hard-coded at the function
+    # default (Q4): no runtime config knob.
+    from asymmetric_fill_model import compute_partial_fill_pnl, estimate_missing_leg_price
+    # First pre-decision asymmetric batch drives the
+    # modelled fill. Multiple asymmetric batches in the same
+    # window get aggregated via the model.
+    pre_decision_asymmetric_batches = [
+        item for item in build.asymmetric_batches or []
+        if _pre_decision_window_hit(item, book_at_decision.received_at, now)
+    ]
+    if pre_decision_asymmetric_batches:
+        # Map leg name -> bid/ask from book_at_decision.
+        # The decision book has one quote per leg (matched
+        # by instrument_token against candidate.legs).
+        leg_quote_by_name = {
+            "long": next(q for leg, q in zip(candidate.legs, book_at_decision.quotes) if leg.side == "BUY"),
+            "short": next(q for leg, q in zip(candidate.legs, book_at_decision.quotes) if leg.side == "SELL"),
+        }
+        leg_side_by_name = {"long": "BUY", "short": "SELL"}
+        # For each asymmetric batch, identify the missing
+        # leg(s). With the C.A1 diagnostic contract, exactly
+        # one leg is executable and one is insufficient per
+        # batch. We model the missing (insufficient) leg.
+        missing_legs_by_batch = []
+        for batch in pre_decision_asymmetric_batches:
+            for missing_name in batch.get("insufficient", []):
+                if missing_name not in leg_quote_by_name:
+                    continue
+                quote = leg_quote_by_name[missing_name]
+                side = leg_side_by_name[missing_name]
+                modelled_fill = estimate_missing_leg_price(
+                    bid=getattr(quote, "bid", None),
+                    ask=getattr(quote, "ask", None),
+                    side=side,  # type: ignore[arg-type]
+                )
+                missing_legs_by_batch.append({
+                    "received_at": batch.get("received_at"),
+                    "leg_name": missing_name,
+                    "side": side,
+                    "modeled_fill_price": modelled_fill,
+                    "modeled_mid_slippage_bps": 2.0,
+                })
+        # Compute partial fill P&L using the model. For the
+        # asymmetric-batch case, no leg has a broker fill
+        # yet -- we are modelling the missing leg AS IF
+        # the order would have been submitted and the
+        # missing leg would have filled at mid+2bps.
+        # ``filled_legs`` is empty here; the partial P&L is
+        # the modelled missing-leg contribution only.
+        # qty: use the leg's quantity (or fall back to 1).
+        total_modeled_pnl = 0.0
+        for ml in missing_legs_by_batch:
+            quote = leg_quote_by_name[ml["leg_name"]]
+            qty = int(quote.quantity or 1)
+            partial_pnl = compute_partial_fill_pnl(
+                qty=qty,
+                filled_legs={},
+                missing_legs={
+                    ml["leg_name"]: {
+                        "side": ml["side"],
+                        "bid": getattr(quote, "bid", None),
+                        "ask": getattr(quote, "ask", None),
+                    },
+                },
+                mid_slippage_bps=2.0,
+            )
+            ml["partial_pnl_rs"] = partial_pnl
+            total_modeled_pnl += partial_pnl
+        # Extend the asymmetric_diagnostic block with the
+        # modelled missing-leg attribution. The existing
+        # fields remain unchanged for backwards
+        # compatibility with C.C1 consumers.
+        report["asymmetric_diagnostic"] = {
+            **report.get("asymmetric_diagnostic", {}),
+            "modeled_missing_legs": missing_legs_by_batch,
+            "total_modeled_pnl_rs": round(float(total_modeled_pnl), 4),
+            "modeled_slippage_bps": 2.0,
+        }
+        report.update(state="CLOSED", reason="partial_fill_modeled",
+                      partial_fill_observed=True)
         return {**report, "evidence_sha256": _sha(report)}
     if any(now - quote.observed_at > execution_policy.max_quote_age for quote in book_at_decision.quotes):
         report.update(state="INSUFFICIENT_EVIDENCE", reason="decision_book_stale")

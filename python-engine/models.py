@@ -223,8 +223,8 @@ class LedgerRow(BaseModel):
     id: int
     timestamp: datetime
     event_type: Literal[
-        "INITIAL", "TRADE_PARTIAL", "TRADE_CLOSED", "MANUAL_DEPOSIT",
-        "MANUAL_WITHDRAWAL", "MANUAL_ADJUSTMENT",
+        "INITIAL", "TRADE_OPENED", "TRADE_PARTIAL", "TRADE_CLOSED",
+        "MANUAL_DEPOSIT", "MANUAL_WITHDRAWAL", "MANUAL_ADJUSTMENT",
     ]
     ticker: Optional[str]
     pnl: float

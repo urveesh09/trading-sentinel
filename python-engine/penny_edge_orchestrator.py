@@ -48,6 +48,7 @@ from config import settings
 from kite_client import latest_order_state
 from penny_executor import PennyExecutor
 from penny_models import PennyLeg
+from performance import division_equity, init_ledger
 from position_tracker import init_positions_db
 
 logger = logging.getLogger(__name__)
@@ -179,6 +180,7 @@ async def _write_edge_position(
     await init_positions_db(db_path)
     # [PENNY-FD-LEAK 2026-07-01] Same fix as above: `with` so the
     # connection is closed even on partial-write / DB-locked paths.
+    notional = float(entry_price) * int(shares)
     with sqlite3.connect(db_path) as conn:
         cur = conn.cursor()
         cur.execute("""
@@ -216,6 +218,60 @@ async def _write_edge_position(
             None, 0, sl_order_id,
             max(0.0, float(entry_price) - float(stop_loss)) * int(shares),
         ))
+        # [WORKFLOW-C.F8 2026-09-15] F-8 from the 2026-09-15
+        # production audit: GRAVISSHO position opened at 09:30
+        # IST but was NEVER recorded in bankroll_ledger. The
+        # EDGE_PAPER pool showed ₹91,244.66 (last update Sept
+        # 4) -- opening the position didn't debit the pool.
+        # Day-end reconciliation couldn't verify the open
+        # position existed.
+        #
+        # Bounded fix: write a TRADE_OPENED entry alongside
+        # the positions row. The entry has pnl=0 (no realised
+        # P&L yet) so the existing equity formula
+        # ``allocation + SUM(pnl)`` is unchanged. The fix is
+        # purely additive: operators can now query
+        # ``bankroll_ledger WHERE event_type='TRADE_OPENED'``
+        # to see every open position's notional. The notes
+        # field carries the audit surface
+        # (notional/shares/entry_price/stop_loss/sl_order_id).
+        #
+        # Why pnl=0 (not -notional): the audit's concern is
+        # the AUDITABILITY of the open position, not a
+        # paper-money "debit". A -notional entry would
+        # change division_equity() and break position
+        # sizing. The pool already takes the realised hit
+        # at TRADE_CLOSED -- TRADE_OPENED is purely an
+        # audit-trail entry.
+        await init_ledger(db_path)
+        # Capture the current equity before this entry.
+        # division_equity() returns allocation + sum(pnl)
+        # for this source. Since this TRADE_OPENED row has
+        # pnl=0, bankroll_before == bankroll_after and the
+        # equity formula is preserved.
+        equity_now = await division_equity(db_path, source)
+        cur.execute(
+            """INSERT INTO bankroll_ledger
+               (timestamp, event_type, ticker, pnl,
+                bankroll_before, bankroll_after, notes, source)
+               VALUES (?, ?, ?, ?, ?, ?, ?, ?)""",
+            (
+                datetime.now(timezone.utc).isoformat(),
+                "TRADE_OPENED",
+                ticker,
+                0.0,
+                equity_now,
+                equity_now,
+                (
+                    f"edge_open:notional={notional:.2f};"
+                    f"shares={int(shares)};"
+                    f"entry_price={float(entry_price):.2f};"
+                    f"stop_loss={float(stop_loss):.2f};"
+                    f"sl_order_id={sl_order_id or ''}"
+                ),
+                source,
+            ),
+        )
         conn.commit()
 
 

@@ -254,6 +254,127 @@ class TestDeduplication:
         assert len(agent_mod.processed_signals_today) == 0
 
 
+class TestDedupStateFile:
+    """[WORKFLOW-C.B.2 2026-09-15] F-7 from the production
+    audit: the agent dedup file was missing on a day when
+    the agent processed zero signals. The bounded fix:
+    ``_load_dedup_state`` writes an initial empty-state
+    file when the file is missing, so operators can
+    distinguish "agent booted but found no signals" from
+    "agent did not boot at all".
+
+    These tests pin the contract:
+      - On a missing file, ``_load_dedup_state`` creates
+        a file with ``{"date": <today>, "ids": []}``.
+      - On a stale file (date != today), the helper
+        overwrites with today's empty state.
+      - On a fresh file (date == today), the helper
+        restores the ids and does NOT overwrite.
+      - ``_save_dedup_state`` is atomic (temp + os.replace).
+      - The dedup mechanism itself is unchanged (missing
+        file still means "remember nothing" at the in-memory
+        layer; the file is a side-effect observability
+        improvement).
+    """
+
+    def test_missing_file_creates_initial_empty_state(self, tmp_path, agent_mod, monkeypatch):
+        """[WORKFLOW-C.B.2] On a missing file, ``_load_dedup_state``
+        writes today's empty state so the file's existence is
+        a clean "agent booted today" marker.
+        """
+        monkeypatch.setattr(agent_mod, "DEDUP_FILE", str(tmp_path / "dedup.json"))
+        # Pre-condition: no file.
+        assert not (tmp_path / "dedup.json").exists()
+        agent_mod.processed_signals_today.clear()
+        agent_mod._load_dedup_state()
+        # The file now exists with today's empty state.
+        assert (tmp_path / "dedup.json").exists()
+        payload = json.loads((tmp_path / "dedup.json").read_text(encoding="utf-8"))
+        assert payload["date"] == agent_mod._today_str()
+        assert payload["ids"] == []
+
+    def test_stale_file_overwrites_with_today_empty_state(self, tmp_path, agent_mod, monkeypatch):
+        """[WORKFLOW-C.B.2] When the on-disk file is from
+        yesterday (date != today), the helper overwrites
+        with today's empty state -- otherwise yesterday's
+        stale file would falsely look like a "fresh boot"
+        marker that didn't actually run today.
+        """
+        dedup_path = tmp_path / "dedup.json"
+        dedup_path.write_text(json.dumps({"date": "1999-01-01", "ids": ["STALE"]}),
+                              encoding="utf-8")
+        monkeypatch.setattr(agent_mod, "DEDUP_FILE", str(dedup_path))
+        agent_mod.processed_signals_today.clear()
+        agent_mod._load_dedup_state()
+        payload = json.loads(dedup_path.read_text(encoding="utf-8"))
+        assert payload["date"] == agent_mod._today_str()
+        assert payload["ids"] == []
+        # The stale id from yesterday is NOT in the in-memory
+        # set (we started fresh for today).
+        assert "STALE" not in agent_mod.processed_signals_today
+
+    def test_fresh_file_restores_ids_and_does_not_overwrite(self, tmp_path, agent_mod, monkeypatch):
+        """[WORKFLOW-C.B.2] When the on-disk file is from
+        today (date == today), the helper restores the ids
+        and does NOT overwrite -- the file already reflects
+        today's state.
+        """
+        dedup_path = tmp_path / "dedup.json"
+        dedup_path.write_text(json.dumps({"date": agent_mod._today_str(),
+                                          "ids": ["RELIANCE", "TCS"]}),
+                              encoding="utf-8")
+        monkeypatch.setattr(agent_mod, "DEDUP_FILE", str(dedup_path))
+        # Capture the mtime before load; load should not
+        # overwrite.
+        mtime_before = dedup_path.stat().st_mtime_ns
+        agent_mod.processed_signals_today.clear()
+        agent_mod._load_dedup_state()
+        mtime_after = dedup_path.stat().st_mtime_ns
+        assert mtime_after == mtime_before  # NOT overwritten
+        # The ids are restored.
+        assert "RELIANCE" in agent_mod.processed_signals_today
+        assert "TCS" in agent_mod.processed_signals_today
+
+    def test_save_dedup_state_is_atomic(self, tmp_path, agent_mod, monkeypatch):
+        """[WORKFLOW-C.B.2] ``_save_dedup_state`` writes to
+        a temp file and ``os.replace``s into place. A torn
+        file read on the next boot would silently drop
+        dedup memory -- the existing atomic discipline is
+        what makes the file safe to use as a "fresh boot"
+        marker.
+        """
+        monkeypatch.setattr(agent_mod, "DEDUP_FILE", str(tmp_path / "dedup.json"))
+        agent_mod.processed_signals_today.add("RELIANCE")
+        agent_mod._save_dedup_state()
+        # No .tmp file should remain after os.replace.
+        remaining = list(tmp_path.glob("*.tmp"))
+        assert remaining == [], f"Atomic write leaked temp files: {remaining}"
+        # The on-disk file has the expected payload.
+        payload = json.loads((tmp_path / "dedup.json").read_text(encoding="utf-8"))
+        assert payload["ids"] == ["RELIANCE"]
+
+    def test_load_after_missing_does_not_block_initial_save(self, tmp_path, agent_mod, monkeypatch):
+        """[WORKFLOW-C.B.2] The fix does not change the dedup
+        mechanism itself: after a missing-file load, the
+        in-memory set is empty (no ids), and a subsequent
+        ``mark_processed`` call writes the new state. This
+        is the same behavior as the pre-fix code -- the
+        only difference is that the file is now observable
+        even when zero signals were processed.
+        """
+        monkeypatch.setattr(agent_mod, "DEDUP_FILE", str(tmp_path / "dedup.json"))
+        agent_mod.processed_signals_today.clear()
+        agent_mod._load_dedup_state()
+        # In-memory state is empty (we have no prior state).
+        assert len(agent_mod.processed_signals_today) == 0
+        # Now process a signal.
+        agent_mod.mark_processed("RELIANCE")
+        assert "RELIANCE" in agent_mod.processed_signals_today
+        # The on-disk file reflects the processed signal.
+        payload = json.loads((tmp_path / "dedup.json").read_text(encoding="utf-8"))
+        assert payload["ids"] == ["RELIANCE"]
+
+
 class TestRunPipeline:
     def test_skips_low_conviction_signals(self, agent_mod):
         mock_resp = MagicMock()
