@@ -149,7 +149,29 @@ module.exports = {
     // returns response.data.data which is undefined when Zerodha omits the data
     // field or returns an unexpected Content-Type. Direct axios gives us full
     // response visibility and proper error handling.
-    if (!tokenStore.isValid()) throw new TokenExpiredError();
+    // [WORKFLOW-C.F2 2026-09-15] F-2 from the 2026-09-15 production
+    // audit: 31 calls to /api/orders/ltp produced 0 ltp_raw_response
+    // events. The audit identified two failure modes: (a) Kite
+    // LTP endpoint failing silently, (b) gateway log writer
+    // stopped. Neither was directly diagnosable from the
+    // audit data. The bounded observability fix here: log a
+    // single ``ltp_call_started`` event on entry, and a
+    // ``ltp_call_skipped_token_invalid`` event if the
+    // pre-call token check fails. After this slice, a future
+    // audit can attribute the missing ltp_raw_response
+    // events to one of these paths. No new dependencies.
+    logger.info({
+      event_type: 'ltp_call_started',
+      instruments,
+      instrumentCount: instruments.length,
+    }, 'Kite LTP fanout call entered');
+    if (!tokenStore.isValid()) {
+      logger.error({
+        event_type: 'ltp_call_skipped_token_invalid',
+        instruments,
+      }, 'getLTP rejected -- Zerodha token is invalid or absent');
+      throw new TokenExpiredError();
+    }
     await kiteLimiter.waitForToken();
 
     const accessToken = tokenStore.getToken();

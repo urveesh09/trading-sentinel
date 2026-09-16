@@ -28,9 +28,15 @@ jest.mock('../../services/token-store', () => ({
   markExpired: jest.fn(),
 }));
 
+jest.mock('../../middleware/logger', () => ({
+  logger: { info: jest.fn(), error: jest.fn(), warn: jest.fn(), debug: jest.fn() },
+  httpLogger: jest.fn(),
+}));
+
 const axios = require('axios');
 const { _mockInstance: mockKite } = require('kiteconnect');
 const tokenStore = require('../../services/token-store');
+const { logger } = require('../../middleware/logger');
 const kiteService = require('../../services/kite');
 const { TokenExpiredError, OrderExecutionError } = require('../../utils/errors');
 
@@ -240,4 +246,53 @@ describe('Kite Service', () => {
     await expect(kiteService.getLTP(['NSE:RELIANCE'])).rejects.toThrow(OrderExecutionError);
     expect(axios.get).toHaveBeenCalledTimes(3);
   }, 10000);
+
+  // ─── F-2 from 2026-09-15 production audit ───
+  // The audit observed 31 calls to /api/orders/ltp but 0
+  // ltp_raw_response events. The bounded fix adds an entry
+  // log + a token-invalid log so a future audit can
+  // attribute missing ltp_raw_response events to one of
+  // these paths.
+
+  test('getLTP emits ltp_call_started on every entry (F-2 observability)', async () => {
+    await kiteService.getLTP(['NSE:RELIANCE']);
+    const info_calls = logger.info.mock.calls;
+    const started = info_calls.find(([payload]) => payload && payload.event_type === 'ltp_call_started');
+    expect(started).toBeDefined();
+    expect(started[0].instruments).toEqual(['NSE:RELIANCE']);
+    expect(started[0].instrumentCount).toBe(1);
+  });
+
+  test('getLTP emits ltp_call_skipped_token_invalid when token is invalid (F-2 observability)', async () => {
+    tokenStore.isValid.mockReturnValue(false);
+    await expect(kiteService.getLTP(['NSE:RELIANCE'])).rejects.toThrow(TokenExpiredError);
+    const error_calls = logger.error.mock.calls;
+    const skipped = error_calls.find(([payload]) =>
+      payload && payload.event_type === 'ltp_call_skipped_token_invalid');
+    expect(skipped).toBeDefined();
+    expect(skipped[0].instruments).toEqual(['NSE:RELIANCE']);
+    // The pre-fix audit gap: with no skipped event, the
+    // operator couldn't tell whether getLTP was even
+    // called when the token was invalid. After this slice,
+    // the ltp_call_skipped_token_invalid event gives a
+    // countable signal.
+  });
+
+  test('ltp_call_started fires BEFORE ltp_call_skipped_token_invalid (F-2 ordering)', async () => {
+    // When the token is invalid, both events fire (in this
+    // order). The audit can now see "started but skipped" as
+    // a distinct failure mode from "started but failed at
+    // Kite" (which fires ltp_retry / ltp_all_retries_failed).
+    tokenStore.isValid.mockReturnValue(false);
+    await expect(kiteService.getLTP(['NSE:RELIANCE'])).rejects.toThrow(TokenExpiredError);
+    const all_log_calls = [
+      ...logger.info.mock.calls.map(c => ({ level: 'info', payload: c[0] })),
+      ...logger.error.mock.calls.map(c => ({ level: 'error', payload: c[0] })),
+    ];
+    const started_idx = all_log_calls.findIndex(c => c.payload.event_type === 'ltp_call_started');
+    const skipped_idx = all_log_calls.findIndex(c => c.payload.event_type === 'ltp_call_skipped_token_invalid');
+    expect(started_idx).toBeGreaterThanOrEqual(0)
+    expect(skipped_idx).toBeGreaterThanOrEqual(0)
+    expect(started_idx).toBeLessThan(skipped_idx)
+  });
 });
