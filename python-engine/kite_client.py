@@ -534,15 +534,34 @@ class KiteClient:
             except (ValueError, TypeError):
                 _min_rows = 60  # malformed dates -> fall back to the old floor
 
-            if rows and len(rows) >= _min_rows:
+            # [WORKFLOW-C.F3 2026-09-16] F-3 from the 2026-09-16
+            # production audit: 0% cache_hit rate is chronic
+            # (4th consecutive audit). The bounded fix here
+            # is observability -- surface WHICH condition
+            # caused the cache_miss so the audit can answer
+            # "is the writer broken, the freshness window
+            # too short, or the date window off?". The 4
+            # miss reasons are: no_rows, insufficient_rows,
+            # date_window_miss, freshness_exceeded.
+            cache_miss_reason: str | None = None
+
+            if not rows:
+                cache_miss_reason = "no_rows"
+            elif len(rows) < _min_rows:
+                cache_miss_reason = "insufficient_rows"
+            else:
                 last_cached_date = rows[-1][0] # Index 0 is 'date'
-                
                 # [CRIT] FIX: Force a cache miss if the DB doesn't have today's live candle yet!
-                if last_cached_date >= to_date:
+                if last_cached_date < to_date:
+                    cache_miss_reason = "date_window_miss"
+                else:
                     last_fetched_str = rows[-1][6] # fetched_at is index 6
                     try:
                         last_fetched = datetime.strptime(last_fetched_str, "%Y-%m-%d %H:%M:%S").replace(tzinfo=timezone.utc)
-                        if (datetime.now(timezone.utc) - last_fetched).total_seconds() < 86400:
+                        age_seconds = (datetime.now(timezone.utc) - last_fetched).total_seconds()
+                        if age_seconds >= 86400:
+                            cache_miss_reason = "freshness_exceeded"
+                        else:
                             # [LOG-HYGIENE 2026-07-17] debug, not info: the
                             # 30s penny loop emitted ~55k of these per
                             # morning -- 53% of all engine log lines -- and
@@ -561,6 +580,7 @@ class KiteClient:
                         # cache timestamp format ever drifts, EVERY ticker
                         # silently becomes a cache miss and the scan starts
                         # hammering the Kite rate limiter for no visible reason.
+                        cache_miss_reason = "timestamp_parse_failed"
                         logger.debug("cache_timestamp_parse_failed",
                                      ticker=ticker, error=str(e))
 
@@ -578,7 +598,18 @@ class KiteClient:
         #         return df
 
         # Cache Miss -> API
-        logger.info("data_fetch", event_type="cache_miss", ticker=ticker)
+        # [WORKFLOW-C.F3 2026-09-16] F-3 observability: include
+        # the cache_miss_reason so the audit can attribute
+        # zero-hit-rate days to one of: no_rows,
+        # insufficient_rows, date_window_miss,
+        # freshness_exceeded, or timestamp_parse_failed.
+        # Without this, "0% hit rate" is unattributable.
+        logger.info(
+            "data_fetch",
+            event_type="cache_miss",
+            ticker=ticker,
+            cache_miss_reason=cache_miss_reason or "unknown",
+        )
         instrument_token = self.instrument_cache.get(ticker)
         if not instrument_token:
             raise ValueError(f"Unknown ticker: {ticker}")
