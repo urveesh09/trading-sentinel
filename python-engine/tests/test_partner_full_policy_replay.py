@@ -155,16 +155,17 @@ def test_decision_book_conflict_is_explicit(case, monkeypatch):
 # patterns: monkeypatch ``build_spread_observations`` to
 # return an ``ArchiveObservationBuild`` with an
 # ``asymmetric_batches`` entry between the decision book's
-# receipt time and the decision clock -- the operator
-# cannot claim a fully executable two-leg book at decision
-# time. The report must be INSUFFICIENT_EVIDENCE with
-# reason ``asymmetric_execution_quality_before_decision``.
+# receipt time and the decision clock -- per the C.2 model
+# (Q1-Q4), the missing leg is modelled at mid+2bps and the
+# replay returns CLOSED with the modelled P&L. See also the
+# ``test_partial_fill_modeling_*`` tests below for the
+# detailed contract.
 
 
-def test_asymmetric_execution_quality_before_decision_is_insufficient_evidence(case, monkeypatch):
+def test_asymmetric_execution_quality_before_decision_is_partial_fill_modeled(case, monkeypatch):
     args, rows = case
-    # [WORKFLOW-C.A1 2026-09-15] Mirror the partial-book
-    # discipline at line 127. The check at line 138 is
+    # [WORKFLOW-C.A1 + C.C2.WIRE 2026-09-16] Mirror the
+    # partial-book discipline. The pre-decision window is
     # ``book_at_decision.received_at < received_at <= now``.
     # To trigger it: move the decision book EARLIER than
     # NOW, then place the asymmetric batch BETWEEN the
@@ -174,14 +175,41 @@ def test_asymmetric_execution_quality_before_decision_is_insufficient_evidence(c
     rows[0] = replace(rows[0], observed_at=earlier, received_at=earlier,
         quotes=tuple(replace(q, observed_at=earlier, received_at=earlier) for q in rows[0].quotes))
     asymmetric_received = (NOW - timedelta(seconds=1)).isoformat()
-    monkeypatch.setattr(replay, 'build_spread_observations', lambda **_: ArchiveObservationBuild(tuple(rows),
-        (), 0, None, (), ({'received_at': asymmetric_received, 'state': 'ASYMMETRIC_EXECUTION_QUALITY',
-                            'executable': ['long'], 'insufficient': ['short'],
-                            'depth_by_leg': {'long': {'bid_depth': 75, 'ask_depth': 75, 'lot_size': 75},
-                                             'short': {'bid_depth': 1, 'ask_depth': 1, 'lot_size': 75}}},)))
+    asymmetric_batch = {
+        'received_at': asymmetric_received,
+        'state': 'ASYMMETRIC_EXECUTION_QUALITY',
+        'executable': ['long'],
+        'insufficient': ['short'],
+        'depth_by_leg': {
+            'long': {'bid_depth': 75, 'ask_depth': 75, 'lot_size': 75},
+            'short': {'bid_depth': 1, 'ask_depth': 1, 'lot_size': 75},
+        },
+    }
+    build_obs = ArchiveObservationBuild(tuple(rows), (), 0, None, (), (asymmetric_batch,))
+    monkeypatch.setattr(replay, 'build_spread_observations', lambda **_: build_obs)
     result = replay.replay_full_policy(**args)
-    assert result['reason'] == 'asymmetric_execution_quality_before_decision'
-    assert result['state'] == 'INSUFFICIENT_EVIDENCE'
+    # [WORKFLOW-C.C2.WIRE 2026-09-16] Per Q3, partial fills
+    # count as CLOSED with partial P&L. The replay is no
+    # longer fail-closed at this path; the missing leg is
+    # modelled at mid+2bps.
+    assert result['state'] == 'CLOSED'
+    assert result['reason'] == 'partial_fill_modeled'
+    assert result['partial_fill_observed'] is True
+    # The asymmetric_diagnostic block carries the modelled
+    # attribution.
+    diag = result['asymmetric_diagnostic']
+    modeled = diag.get('modeled_missing_legs', [])
+    assert len(modeled) == 1
+    assert modeled[0]['leg_name'] == 'short'
+    assert modeled[0]['side'] == 'SELL'
+    # The modelled fill price is the short leg's mid - 2bps.
+    short_quote = next(q for q in rows[0].quotes if q.side == 'SELL')
+    from asymmetric_fill_model import mid_price
+    expected_mid = mid_price(short_quote.bid, short_quote.ask)
+    assert expected_mid is not None
+    expected_fill = expected_mid * (1.0 - 0.0002)
+    assert modeled[0]['modeled_fill_price'] is not None
+    assert abs(modeled[0]['modeled_fill_price'] - expected_fill) < 1e-6
     # The diagnostic is surfaced in the report for the
     # qualification review to read.
     assert result['asymmetric_batches'][0]['state'] == 'ASYMMETRIC_EXECUTION_QUALITY'
@@ -292,9 +320,18 @@ def test_asymmetric_diagnostic_attribution_pre_decision(case, monkeypatch):
     # received_at (only one batch in this test).
     assert diag["earliest_received_at"] == asymmetric_received
     assert diag["latest_received_at"] == asymmetric_received
-    # The replay is still fail-closed (Option 1 behavior
-    # preserved): the state is INSUFFICIENT_EVIDENCE.
-    assert result["reason"] == "asymmetric_execution_quality_before_decision"
+    # [WORKFLOW-C.C2.WIRE 2026-09-16] Per Q3, partial fills
+    # count as CLOSED with partial P&L. The replay is no
+    # longer fail-closed at this path; the missing leg is
+    # modelled at mid+2bps.
+    assert result["reason"] == "partial_fill_modeled"
+    assert result["state"] == "CLOSED"
+    assert result["partial_fill_observed"] is True
+    # One modelled missing-leg entry (the short leg).
+    modeled = diag.get("modeled_missing_legs", [])
+    assert len(modeled) == 1
+    assert modeled[0]["leg_name"] == "short"
+    assert modeled[0]["side"] == "SELL"
 
 
 def test_asymmetric_diagnostic_post_decision_does_not_trigger_observed(case, monkeypatch):
@@ -372,8 +409,18 @@ def test_asymmetric_diagnostic_aggregates_multiple_batches(case, monkeypatch):
     # Timestamp range: earliest is batch1, latest is batch2.
     assert diag["earliest_received_at"] == batch1
     assert diag["latest_received_at"] == batch2
-    # Still fail-closed.
-    assert result["reason"] == "asymmetric_execution_quality_before_decision"
+    # [WORKFLOW-C.C2.WIRE 2026-09-16] Per Q3, partial fills
+    # count as CLOSED with partial P&L. The replay is no
+    # longer fail-closed at this path; the missing leg is
+    # modelled at mid+2bps.
+    assert result["reason"] == "partial_fill_modeled"
+    assert result["state"] == "CLOSED"
+    assert result["partial_fill_observed"] is True
+    # Two modelled missing-leg entries (one per batch).
+    modeled = diag.get("modeled_missing_legs", [])
+    assert len(modeled) == 2
+    # The modelled P&L is summed across both missing legs.
+    assert "total_modeled_pnl_rs" in diag
 
 
 def test_asymmetric_diagnostic_malformed_received_at_does_not_crash(case, monkeypatch):
