@@ -113,7 +113,24 @@ class PennyUniverse:
     instrument_cache is injected (not imported) so this module has no
     dependency on a live KiteClient instance. Production callers pass
     kite_client.KiteClient().instrument_cache; tests pass a fixture dict.
+
+    [WORKFLOW-C.B.3 2026-09-15] F-4 from the 2026-09-15 production
+    audit: the penny universe stale warning
+    (``penny_universe_stale as_of=... age_days=...``) fires on
+    every PennyUniverse construction -- which happens every
+    penny scan (every 5 min). When the universe is 4 days
+    stale, that produces 13+ identical warnings per day,
+    drowning the operator's view of distinct staleness
+    windows. The bounded fix: deduplicate at the class
+    level so the warning fires at most ONCE per process
+    lifetime per staleness bucket. Mirrors the existing
+    ``_universe_csv_warn_emitted`` pattern in main.py:2419.
     """
+
+    # Class-level single-shot guards. Process-scoped (not
+    # thread-scoped) -- penny scans are sequential within a
+    # process; cross-process coordination is not needed.
+    _stale_warn_emitted: set[str] = set()  # keyed by as_of date
 
     def __init__(self, json_path: str, instrument_cache: Optional[Dict[str, int]] = None):
         cache = instrument_cache if instrument_cache is not None else {}
@@ -155,26 +172,47 @@ class PennyUniverse:
                 today = date.today()
                 age_days = (today - as_of_date).days
                 if age_days > 1:
-                    logger.warning(
-                        "penny_universe_stale as_of=%s age_days=%d "
-                        "FIX=run run_penny_universe_refresh() (scheduled 08:00 IST). "
-                        "Scanner continues with stale data; signals may "
-                        "miss fresh eligibility changes.",
-                        self._as_of, age_days,
-                    )
+                    # [WORKFLOW-C.B.3 2026-09-15] F-4 dedup:
+                    # this warning fired 13+ times today (once
+                    # per penny scan). The bounded fix dedupes
+                    # by as_of date so a process sees ONE
+                    # warning per distinct as_of bucket. When
+                    # the operator runs ``run_penny_universe_refresh``
+                    # and as_of advances to a new date, a fresh
+                    # warning fires -- so the dedup doesn't
+                    # hide fresh staleness.
+                    if self._as_of not in PennyUniverse._stale_warn_emitted:
+                        PennyUniverse._stale_warn_emitted.add(self._as_of)
+                        logger.warning(
+                            "penny_universe_stale as_of=%s age_days=%d "
+                            "FIX=run run_penny_universe_refresh() (scheduled 08:00 IST). "
+                            "Scanner continues with stale data; signals may "
+                            "miss fresh eligibility changes.",
+                            self._as_of, age_days,
+                        )
                 elif age_days < 0:
                     # as_of in the future -- clock skew or manual edit.
+                    # Same dedup discipline: one warning per distinct
+                    # as_of date.
+                    if self._as_of not in PennyUniverse._stale_warn_emitted:
+                        PennyUniverse._stale_warn_emitted.add(self._as_of)
+                        logger.warning(
+                            "penny_universe_as_of_in_future as_of=%s "
+                            "(clock skew or manual edit; treating as fresh)",
+                            self._as_of,
+                        )
+            except ValueError:
+                # [WORKFLOW-C.B.3 2026-09-15] Same dedup
+                # discipline: one warning per as_of value
+                # (even an unparseable one -- otherwise the
+                # warning fires every scan).
+                if self._as_of not in PennyUniverse._stale_warn_emitted:
+                    PennyUniverse._stale_warn_emitted.add(self._as_of)
                     logger.warning(
-                        "penny_universe_as_of_in_future as_of=%s "
-                        "(clock skew or manual edit; treating as fresh)",
+                        "penny_universe_as_of_unparseable as_of=%r "
+                        "(expected YYYY-MM-DD)",
                         self._as_of,
                     )
-            except ValueError:
-                logger.warning(
-                    "penny_universe_as_of_unparseable as_of=%r "
-                    "(expected YYYY-MM-DD)",
-                    self._as_of,
-                )
         else:
             logger.warning(
                 "penny_universe_no_as_of "
