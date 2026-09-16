@@ -69,6 +69,14 @@ from cas_reachability_atomic import (
 )
 
 
+class ReachabilityReport(dict[str, Any]):
+    """Public JSON-shaped report with private per-evaluation render time."""
+
+    def __init__(self, payload: dict[str, Any]) -> None:
+        super().__init__(payload)
+        self.generated_at_utc = datetime.now(timezone.utc).isoformat()
+
+
 # CAS sub-window branches + DERIVATIVES_CAS_ALIGNED that need
 # real broker-behaviour evidence before any auction-aware
 # strategy can be built on top of ``classify_session_phase``.
@@ -136,6 +144,45 @@ def _safe_phase_from_capture(capture_path: Path) -> str | None:
     if phase not in _VALID_SESSION_PHASES:
         return None
     return phase
+
+
+# [WORKFLOW-J.10.DRY_RUN_ATTRIBUTION 2026-09-16] The
+# J.3 capture schema (CAPTURE_JSON_SCHEMA) has a top-level
+# ``dry_run`` boolean: ``true`` means the capture was
+# simulated, ``false`` means real broker behaviour. Per the
+# 2026-09-15 production audit F-5 ("features invisible in
+# runtime"), operators want to confirm the REACHABLE verdict
+# is grounded in REAL captures, not just simulation.
+#
+# This helper reads ``dry_run`` defensively -- it returns
+# ``None`` if the field is missing or non-boolean (the gate
+# treats unknown dry_run as a separate diagnostic bucket so
+# operators can audit schema drift).
+def _read_dry_run(capture_path: Path) -> bool | None:
+    """Read a single J.3 capture's ``dry_run`` field.
+
+    Returns:
+        - ``True`` if the capture was a dry_run / simulation.
+        - ``False`` if the capture was a real broker call.
+        - ``None`` if the field is missing, non-boolean, or
+          the capture document is unreadable.
+
+    The defensive None bucket is intentional: a capture
+    with an unknown dry_run value is a schema-drift
+    diagnostic, NOT silently bucketed as either real or
+    simulation. Operators can audit the bucket to fix the
+    upstream probe.
+    """
+    try:
+        doc = json.loads(capture_path.read_text(encoding="utf-8"))
+    except (json.JSONDecodeError, OSError):
+        return None
+    if not isinstance(doc, dict):
+        return None
+    dry_run = doc.get("dry_run")
+    if not isinstance(dry_run, bool):
+        return None
+    return dry_run
 
 
 def cas_reachability_report(
@@ -223,11 +270,16 @@ def cas_reachability_report(
     # in the directory tree). Paths are stored as the
     # ``str(capture_path)`` the aggregate helper looks up.
     first_occurrence_paths: set[str] = set()
+    # [WORKFLOW-J.10.DRY_RUN_ATTRIBUTION 2026-09-16] Bucket
+    # counts for unique first-occurrence captures by dry_run
+    # value. ``unknown`` is a separate diagnostic bucket for
+    # schema-drift captures (missing or non-boolean dry_run).
+    dry_run_unique_counts: dict[str, int] = {"real": 0, "dry_run": 0, "unknown": 0}
 
     captures_root = Path(captures_dir)
     if not captures_root.exists():
         missing = list(CAS_BRANCHES_REQUIRING_EVIDENCE)
-        return {
+        return ReachabilityReport({
             "verdict": "UNREACHABLE",
             "captured_phases": {phase: 0 for phase in captures},
             "missing_phases": missing,
@@ -244,7 +296,7 @@ def cas_reachability_report(
             "branch_per_day": {
                 phase: {} for phase in CAS_BRANCHES_REQUIRING_EVIDENCE
             },
-        }
+        })
 
     captures_skipped_stale = 0
     for capture_path in sorted(captures_root.rglob("*.json")):
@@ -308,6 +360,19 @@ def cas_reachability_report(
             # so the per-day histogram counts it as ``unique``.
             first_occurrence_paths.add(str(capture_path))
             captures[phase] += 1
+            # [WORKFLOW-J.10.DRY_RUN_ATTRIBUTION 2026-09-16]
+            # Track dry_run attribution ONLY for UNIQUE first-
+            # occurrence captures -- duplicates shouldn't
+            # inflate the real/sim count. Reads ``dry_run``
+            # defensively; ``None`` is bucketed as ``unknown``
+            # so schema drift is visible in the audit.
+            dry_run = _read_dry_run(capture_path)
+            if dry_run is True:
+                dry_run_unique_counts["dry_run"] += 1
+            elif dry_run is False:
+                dry_run_unique_counts["real"] += 1
+            else:
+                dry_run_unique_counts["unknown"] += 1
             # Relative path so the SUMMARY is portable; falls
             # back to the absolute path when a non-captures_root
             # capture shows up (defensive).
@@ -379,7 +444,7 @@ def cas_reachability_report(
         first_occurrence_paths=first_occurrence_paths,
     )
 
-    return {
+    return ReachabilityReport({
         "verdict": verdict,
         "captured_phases": captures,
         "missing_phases": missing,
@@ -393,7 +458,16 @@ def cas_reachability_report(
         "captures_per_day": captures_per_day,
         "branch_per_day": branch_per_day,
         "recency_by_branch": recency_by_branch,
-    }
+        # [WORKFLOW-J.10.DRY_RUN_ATTRIBUTION 2026-09-16]
+        # Per-audit F-5: surface how many unique first-
+        # occurrence captures are real vs dry_run vs unknown.
+        # The verdict logic is unchanged (real + dry_run both
+        # count toward REACHABLE); this is purely diagnostic.
+        "dry_run_attribution": {
+            **dry_run_unique_counts,
+            "total_unique": sum(dry_run_unique_counts.values()),
+        },
+    })
 
 
 def format_report(report: dict[str, Any]) -> str:
@@ -799,7 +873,8 @@ def update_summary(
     )
     body = _SUMMARY_TEMPLATE.format(
         captures_dir=captures,
-        generated_at_utc=datetime.now(timezone.utc).isoformat(),
+        generated_at_utc=getattr(report, "generated_at_utc", None)
+        or datetime.now(timezone.utc).isoformat(),
         verdict=report["verdict"],
         coverage_pct=report["coverage_pct"],
         captures_scanned=report["captures_scanned"],

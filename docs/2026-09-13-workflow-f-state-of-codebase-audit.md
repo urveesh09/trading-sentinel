@@ -303,7 +303,9 @@ NEXT STEPS (per plan section 12):
 
 **This slice DOES establish the diagnostic surface for the cache-add decision.** Cache-add (H4) is no longer blocked on "we don't know why the cache hit rate was zero"; the diagnostic tells us.
 
-## 11. Capital policy guard (F6 partial; producer landed)
+## 11. Capital policy guard (F6 diagnostic producer; operational authority incomplete)
+
+September16 correction supersedes historical claims below: the user did not provide25%; `CAPITAL_POLICY_LOSS_TOLERANCE_PCT` is now `None` until explicitly supplied. The account wrapper refuses because current performance/quality/loss facts are accountless, and the CLI always reports `authorization_effect=NONE`. Actual broker/account linkage, validated F/G/D evidence and a signed BridgeDecision remain open.
 
 ### 11.1 What landed
 
@@ -325,7 +327,7 @@ evaluate_capital_increase_for_account(...)   -- async wrapper, reads F1/F5
 The guard is **pure**: no I/O of its own; every numeric input is supplied by the caller. The async wrapper reads the F1 inventory (live equity, drawdown, execution quality, consecutive losses), the F5 broker report (MATCH/UNRESOLVED/UNAVAILABLE), and the G research archive (file presence check).
 
 Eight `CAPITAL_POLICY_*` config knobs in `config.py`:
-- `CAPITAL_POLICY_LOSS_TOLERANCE_PCT = 25.0` -- the user's stated loss tolerance (the explicit input the plan mandates; preserved verbatim).
+- `CAPITAL_POLICY_LOSS_TOLERANCE_PCT = None` -- mandatory explicit operator input; no invented user tolerance.
 - `CAPITAL_POLICY_MAX_DRAWDOWN_PCT = 15.0` -- current realised drawdown cap.
 - `CAPITAL_POLICY_MIN_WIN_RATE_PCT = 50.0` -- execution-quality floor.
 - `CAPITAL_POLICY_MIN_AVG_R_MULTIPLE = 0.0` -- expectancy floor.

@@ -1,5 +1,7 @@
 """Contract tests for the internal CAS-eligibility projection."""
 from __future__ import annotations
+import hashlib
+import hmac
 
 import pytest
 import pytest_asyncio
@@ -34,6 +36,11 @@ async def test_cas_eligibility_projects_python_configuration(client, monkeypatch
     assert body["cas_eligible"] is True
     assert body["source"] == "python-engine/market_calendar.py::is_cas_eligible"
     assert isinstance(body["source_version"], str) and len(body["source_version"]) == 16
+    assert isinstance(body["signature"], str) and len(body["signature"]) == 64
+    signed = f"RELIANCE|true|{body['source_version']}".encode()
+    assert body["signature"] == hmac.new(
+        settings.INTERNAL_API_SECRET.encode(), signed, hashlib.sha256
+    ).hexdigest()
 
 
 @pytest.mark.asyncio

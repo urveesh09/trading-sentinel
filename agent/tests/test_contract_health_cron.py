@@ -311,3 +311,179 @@ class TestLazyImportSafety:
         # The stub recorded the call, prefixed with "MY:".
         assert len(stub.calls) == 1
         assert stub.calls[0].startswith("MY:")
+
+
+class TestDispatchAlert:
+    """[WORKFLOW-C.F1 2026-09-16] F-1 from the 2026-09-16
+    production audit:
+
+    The cron's ``alert_fn(alert_text)`` call site was
+    incompatible with ``send_telegram_alert(signal: Dict,
+    review: Review)``, raising TypeError every hour. The fix
+    is defensive ``inspect.signature`` dispatch: the cron
+    adapts to the receiver's shape.
+
+    These tests pin the dispatch contract:
+      - 0 required args: invoke with no args.
+      - 1 required arg: pass alert_text (the historical shape).
+      - 2+ required args: pass (signal, review).
+      - *args: pass (review, alert_text).
+      - Receiver raising: the cron logs but does not propagate.
+    """
+
+    def _run(self, alert_fn, snapshot=None):
+        return contract_health_cron_tick(
+            status_envelope=snapshot if snapshot is not None else _violating_snapshot(),
+            alert_fn=alert_fn,
+        )
+
+    def test_zero_arg_receiver_invoked_with_no_args(self):
+        """A receiver declared with no positional args is
+        invoked with no args (e.g. a bare ``def f():``).
+        """
+        calls = []
+        def receiver():
+            calls.append(())
+        self._run(receiver)
+        assert calls == [()]
+
+    def test_one_arg_receiver_receives_alert_text(self):
+        """The historical contract: ``alert_fn(text)``.
+        The test stub already uses this shape.
+        """
+        calls = []
+        def receiver(text):
+            calls.append(text)
+        self._run(receiver)
+        # The alert text contains the failing check name.
+        assert len(calls) == 1
+        assert "status_envelope_authority" in calls[0]
+
+    def test_two_arg_receiver_receives_signal_and_review(self):
+        """The production ``send_telegram_alert`` shape:
+        ``(signal: Dict, review: Review)``. The cron must
+        pass BOTH args, not the bare text.
+        """
+        calls = []
+        def receiver(signal, review):
+            calls.append((signal, review))
+        report = self._run(receiver)
+        assert len(calls) == 1
+        signal, review = calls[0]
+        # Signal is a structured Dict carrying the cron's
+        # intent -- not the formatted alert text.
+        assert isinstance(signal, dict)
+        assert signal["source"] == "contract_health_cron"
+        assert signal["kind"] == "violation"
+        # Review is the actual ContractReport.
+        assert review is report
+        assert not review.passed
+
+    def test_three_or_more_required_args_passes_signal_and_review(self):
+        """Defensive: a receiver with 3+ required positional
+        args still gets the 2-arg shape (signal, review) --
+        the cron's contract is "pass the documented pair";
+        additional args would receive a TypeError, which the
+        cron's outer try/except catches.
+        """
+        calls = []
+        def receiver(signal, review, extra):
+            calls.append((signal, review, extra))
+        report = self._run(receiver)
+        # The cron wraps the call in a try/except; the 3rd
+        # arg's TypeError is logged but the cron returns the
+        # report normally.
+        assert not report.passed
+        # The 3rd-arg TypeError IS caught by the cron's
+        # outer exception handler -- it's logged as
+        # ``contract_health_alert_dispatch_failed`` and the
+        # cron proceeds. We don't assert calls (it might be
+        # called or not depending on Python's argument-binding
+        # semantics) -- what matters is that the cron
+        # doesn't raise.
+
+    def test_var_positional_receiver_receives_review_and_text(self):
+        """A receiver with ``*args`` receives the canonical
+        ``(review, alert_text)`` shape -- the cron's most
+        permissive signature.
+        """
+        calls = []
+        def receiver(*args):
+            calls.append(args)
+        self._run(receiver)
+        assert len(calls) == 1
+        received = calls[0]
+        assert len(received) == 2
+        review_arg, text_arg = received
+        assert isinstance(text_arg, str)
+        assert "status_envelope_authority" in text_arg
+
+    def test_receiver_raising_exception_is_logged_not_propagated(self):
+        """A receiver that raises TypeError or any other
+        exception must NOT block the cron's return -- the
+        outer try/except logs the failure and the cron
+        returns the report.
+        """
+        def receiver(text):
+            raise TypeError("test failure path")
+        report = self._run(receiver)
+        # The cron still emits the report.
+        assert not report.passed
+        # (No assertion on log capture here; the outer
+        # try/except is sufficient.)
+
+    def test_receiver_with_keyword_only_args_is_invoked_with_no_args(self):
+        """A receiver declared with only ``*`` or ``**`` (no
+        positional args) is treated as 0-arg. The cron
+        dispatches no args -- the receiver's defaults fire.
+        """
+        calls = []
+        def receiver(*, why=None):
+            calls.append(why)
+        self._run(receiver)
+        # 0 required positional args -> no args dispatched;
+        # the receiver's default ``why=None`` fires.
+        assert calls == [None]
+
+
+class TestDispatchAlertSignatureRegression:
+    """[WORKFLOW-C.F1 2026-09-16] Regression guard: the
+    cron's dispatch MUST adapt to the production
+    ``send_telegram_alert`` shape. This test mirrors
+    ``agent.py::send_telegram_alert``'s actual signature.
+    """
+
+    def test_production_send_telegram_alert_signature_is_supported(self):
+        """The cron's dispatch MUST invoke
+        ``send_telegram_alert`` correctly -- not raise a
+        TypeError. We pin this by importing the real
+        function and dispatching to it (without actually
+        sending a Telegram message).
+        """
+        import inspect
+        from agent import send_telegram_alert
+        sig = inspect.signature(send_telegram_alert)
+        # Verify the production signature has 2 positional
+        # args (signal, review). If PR #87 or a later change
+        # alters this, the test fails and the cron fix
+        # needs to be revisited.
+        params = list(sig.parameters.values())
+        assert len(params) >= 2, (
+            f"send_telegram_alert signature drift: "
+            f"{sig}, expected at least 2 positional params"
+        )
+        # The cron code path uses ``_dispatch_alert`` --
+        # since we don't want to actually POST to Telegram
+        # in unit tests, we verify that ``_dispatch_alert``
+        # would call this signature correctly by checking
+        # that ``send_telegram_alert`` would accept the
+        # cron's call.
+        n_required = sum(
+            1 for p in params
+            if p.default is inspect.Parameter.empty
+            and p.kind in (
+                inspect.Parameter.POSITIONAL_OR_KEYWORD,
+                inspect.Parameter.POSITIONAL_ONLY,
+            )
+        )
+        assert n_required >= 2

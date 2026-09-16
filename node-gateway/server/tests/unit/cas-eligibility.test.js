@@ -11,7 +11,13 @@ jest.mock('../../utils/market-hours', () => ({
   })),
 }));
 
+const crypto = require('crypto');
 global.fetch = jest.fn();
+
+function signed(body) {
+  const message = `${body.symbol}|${String(body.cas_eligible).toLowerCase()}|${body.source_version}`;
+  return { ...body, signature: crypto.createHmac('sha256', 'internal-test-secret').update(message).digest('hex') };
+}
 
 const {
   isCashCasEligibilityResolutionWindow,
@@ -39,10 +45,11 @@ describe('CAS eligibility resolver', () => {
     isCashCasEligibilityResolutionWindow.mockReturnValue(true);
     global.fetch.mockResolvedValue({
       ok: true,
-      json: async () => ({
+      json: async () => signed({
+        symbol: 'RELIANCE',
         cas_eligible: true,
         source: 'python-engine/market_calendar.py::is_cas_eligible',
-        source_version: 'abc123',
+        source_version: 'abcdef0123456789',
       }),
     });
 
@@ -56,6 +63,18 @@ describe('CAS eligibility resolver', () => {
         headers: { 'X-Internal-Secret': 'internal-test-secret' },
       })
     );
+  });
+
+  test.each([
+    [signed({ symbol: 'OTHER', cas_eligible: true, source: 'python-engine/market_calendar.py::is_cas_eligible', source_version: 'abcdef0123456789' })],
+    [signed({ symbol: 'RELIANCE', cas_eligible: true, source: 'untrusted', source_version: 'abcdef0123456789' })],
+    [{ ...signed({ symbol: 'RELIANCE', cas_eligible: true, source: 'python-engine/market_calendar.py::is_cas_eligible', source_version: 'abcdef0123456789' }), signature: '0'.repeat(64) }],
+  ])('fails closed on an unbound projection payload %#', async (payload) => {
+    isCashCasEligibilityResolutionWindow.mockReturnValue(true);
+    global.fetch.mockResolvedValue({ ok: true, json: async () => payload });
+    const result = await resolveCasEligibility('RELIANCE', new Date());
+    expect(result.resolved).toBe(false);
+    expect(result.casEligible).toBeNull();
   });
 
   test('fails closed when the affected-interval resolver is unavailable', async () => {
