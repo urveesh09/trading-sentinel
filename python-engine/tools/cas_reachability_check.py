@@ -55,6 +55,11 @@ from cas_reachability_verify import (
     VerificationReport,
     verify_summary,
 )
+from cas_reachability_features import (
+    FEATURES_INVENTORY,
+    features_inventory_as_json,
+    format_features_inventory,
+)
 
 
 def _resolve_repo_root() -> Path:
@@ -199,7 +204,34 @@ def main(argv: list[str] | None = None) -> int:
             "VerificationReport) and --captures-dir."
         ),
     )
+    parser.add_argument(
+        "--features-inventory",
+        action="store_true",
+        help=(
+            "[WORKFLOW-C.F5 2026-09-15] Print the J.10 features "
+            "inventory: every feature wired into this CLI version, "
+            "the date it was added, its description, and the CLI "
+            "flags that activate it. Lets operators confirm wiring "
+            "without needing captures to happen (per the 2026-09-15 "
+            "production audit F-5: PR #89-#92 features deployed but "
+            "invisible in runtime). Side-effect free -- no captures "
+            "dir is read. Composes with --json (emits the inventory "
+            "as a structured JSON object). Exit code is always 0."
+        ),
+    )
     args = parser.parse_args(argv)
+
+    # [WORKFLOW-C.F5 2026-09-15] Short-circuit: if the operator
+    # asked for the features inventory, we don't need any
+    # captures dir or verdict machinery. The inventory is a
+    # constant table -- the same answer every time, no matter
+    # the deployment.
+    if args.features_inventory:
+        if args.json:
+            sys.stdout.write(features_inventory_as_json())
+        else:
+            sys.stdout.write(format_features_inventory())
+        return 0
 
     # [WORKFLOW-J.10.CAPTURE_LISTING 2026-09-14] Short-circuit:
     # if the operator asked for a listing, we don't need to run
