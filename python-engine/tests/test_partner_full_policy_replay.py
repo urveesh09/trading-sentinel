@@ -213,6 +213,224 @@ def test_asymmetric_after_decision_does_not_block_replay(case, monkeypatch):
     assert result['asymmetric_batches'][0]['state'] == 'ASYMMETRIC_EXECUTION_QUALITY'
 
 
+# ---------------------------------------------------------------------------
+# [WORKFLOW-C.C1 2026-09-15] Structured asymmetric-fill
+# diagnostic (Option 3). Tests pin the shape and content of
+# the new ``asymmetric_diagnostic`` block on the report.
+
+
+def test_asymmetric_diagnostic_present_on_clean_run(case, monkeypatch):
+    """[WORKFLOW-C.C1] Even on a clean run (no asymmetric
+    batches), the report carries an ``asymmetric_diagnostic``
+    block with default empty values. Operators can rely on
+    the field always being present -- they don't have to
+    check ``'asymmetric_diagnostic' in report`` before
+    reading its keys.
+    """
+    args, rows = case
+    monkeypatch.setattr(replay, 'build_spread_observations',
+                        lambda **_: ArchiveObservationBuild(tuple(rows), (), 0, None))
+    result = replay.replay_full_policy(**args)
+    assert "asymmetric_diagnostic" in result
+    diag = result["asymmetric_diagnostic"]
+    # Default state: no asymmetric batches.
+    assert diag["pre_decision_asymmetric_observed"] is False
+    assert diag["asymmetric_batch_count"] == 0
+    assert diag["pre_decision_batch_count"] == 0
+    assert diag["executable_legs"] == []
+    assert diag["insufficient_legs"] == []
+    assert diag["earliest_received_at"] is None
+    assert diag["latest_received_at"] is None
+
+
+def test_asymmetric_diagnostic_attribution_pre_decision(case, monkeypatch):
+    """[WORKFLOW-C.C1] When a pre-decision asymmetric batch
+    exists, the diagnostic names the executable and
+    insufficient legs, surfaces the timestamp range, and
+    sets ``pre_decision_asymmetric_observed`` to True.
+    Mirrors the existing A1 ``asymmetric_batches`` field
+    but in a single structured block.
+    """
+    args, rows = case
+    # The case fixture has ``book_at_decision.received_at
+    # == NOW`` (the first observation). The pre-decision
+    # window is strictly AFTER book_at_decision and at-or-
+    # before now. Drop the post-decision row (NOW + 1min)
+    # so prior_books doesn't include it, and APPEND an
+    # earlier observation AFTER rows[0] so book_at_decision
+    # (= prior_books[-1]) is that earlier timestamp. Now
+    # book_at_decision.received_at = NOW - 60s, the
+    # asymmetric batch at NOW - 30s is in the pre-decision
+    # window.
+    earlier = NOW - timedelta(seconds=60)
+    new_last = rows[0].__class__(
+        observed_at=earlier, received_at=earlier,
+        signal_score=rows[0].signal_score, quotes=rows[0].quotes,
+    )
+    new_rows = (rows[0], new_last)
+    # Asymmetric batch 30s before the decision clock -- but
+    # after book_at_decision (which is now at NOW - 60s).
+    asymmetric_received = (NOW - timedelta(seconds=30)).isoformat()
+    monkeypatch.setattr(replay, 'build_spread_observations', lambda **_: ArchiveObservationBuild(
+        new_rows, (), 0, None, (), ({'received_at': asymmetric_received,
+                            'state': 'ASYMMETRIC_EXECUTION_QUALITY',
+                            'executable': ['long'], 'insufficient': ['short'],
+                            'depth_by_leg': {'long': {'bid_depth': 75, 'ask_depth': 75, 'lot_size': 75},
+                                             'short': {'bid_depth': 1, 'ask_depth': 1, 'lot_size': 75}}},)))
+    result = replay.replay_full_policy(**args)
+    diag = result["asymmetric_diagnostic"]
+    # The diagnostic correctly attributes the asymmetry to
+    # the LONG leg (executable) and SHORT leg (insufficient).
+    assert diag["pre_decision_asymmetric_observed"] is True
+    assert diag["executable_legs"] == ["long"]
+    assert diag["insufficient_legs"] == ["short"]
+    # The pre-decision batch count is 1; the asymmetric
+    # batch count (all batches, pre + post) is also 1.
+    assert diag["pre_decision_batch_count"] == 1
+    assert diag["asymmetric_batch_count"] == 1
+    # The timestamp range is the asymmetric batch's
+    # received_at (only one batch in this test).
+    assert diag["earliest_received_at"] == asymmetric_received
+    assert diag["latest_received_at"] == asymmetric_received
+    # The replay is still fail-closed (Option 1 behavior
+    # preserved): the state is INSUFFICIENT_EVIDENCE.
+    assert result["reason"] == "asymmetric_execution_quality_before_decision"
+
+
+def test_asymmetric_diagnostic_post_decision_does_not_trigger_observed(case, monkeypatch):
+    """[WORKFLOW-C.C1] An asymmetric batch that arrives
+    AFTER the decision clock does NOT count as a pre-decision
+    observation. The diagnostic block correctly reports
+    ``pre_decision_asymmetric_observed`` = False, even when
+    there's a post-decision asymmetric batch in the report.
+    The post-decision batch is still surfaced in the raw
+    ``asymmetric_batches`` list for transparency.
+    """
+    args, rows = case
+    asymmetric_received = (NOW + timedelta(minutes=1)).isoformat()
+    monkeypatch.setattr(replay, 'build_spread_observations', lambda **_: ArchiveObservationBuild(tuple(rows),
+        (), 0, None, (), ({'received_at': asymmetric_received, 'state': 'ASYMMETRIC_EXECUTION_QUALITY',
+                            'executable': ['long'], 'insufficient': ['short'],
+                            'depth_by_leg': {'long': {'bid_depth': 75, 'ask_depth': 75, 'lot_size': 75},
+                                             'short': {'bid_depth': 1, 'ask_depth': 1, 'lot_size': 75}}},)))
+    result = replay.replay_full_policy(**args)
+    diag = result["asymmetric_diagnostic"]
+    # Post-decision batches don't count as pre-decision
+    # observations -- the decision was made against a
+    # fully executable book.
+    assert diag["pre_decision_asymmetric_observed"] is False
+    assert diag["pre_decision_batch_count"] == 0
+    # But the raw batch IS in the asymmetric_batches list --
+    # post-decision liquidity shifts are still surfaced.
+    assert diag["asymmetric_batch_count"] == 1
+
+
+def test_asymmetric_diagnostic_aggregates_multiple_batches(case, monkeypatch):
+    """[WORKFLOW-C.C1] When multiple pre-decision
+    asymmetric batches exist, the diagnostic aggregates:
+    the executable/insufficient leg SETS are unions across
+    batches; the timestamp range spans the earliest and
+    latest pre-decision received_at.
+    """
+    args, rows = case
+    # Make book_at_decision earlier than the asymmetric
+    # batches (same fix as test_asymmetric_diagnostic_attribution_pre_decision).
+    earlier = NOW - timedelta(seconds=90)
+    new_last = rows[0].__class__(
+        observed_at=earlier, received_at=earlier,
+        signal_score=rows[0].signal_score, quotes=rows[0].quotes,
+    )
+    new_rows = (rows[0], new_last)
+    # Two asymmetric batches: one with long-executable,
+    # one with short-executable (different asymmetry
+    # polarity). Both AFTER book_at_decision (NOW - 90s)
+    # and BEFORE now.
+    batch1 = (NOW - timedelta(seconds=60)).isoformat()
+    batch2 = (NOW - timedelta(seconds=30)).isoformat()
+    monkeypatch.setattr(replay, 'build_spread_observations', lambda **_: ArchiveObservationBuild(
+        new_rows, (), 0, None, (), (
+            {'received_at': batch1, 'state': 'ASYMMETRIC_EXECUTION_QUALITY',
+             'executable': ['long'], 'insufficient': ['short'],
+             'depth_by_leg': {'long': {'bid_depth': 75, 'ask_depth': 75, 'lot_size': 75},
+                              'short': {'bid_depth': 1, 'ask_depth': 1, 'lot_size': 75}}},
+            {'received_at': batch2, 'state': 'ASYMMETRIC_EXECUTION_QUALITY',
+             'executable': ['short'], 'insufficient': ['long'],
+             'depth_by_leg': {'long': {'bid_depth': 1, 'ask_depth': 1, 'lot_size': 75},
+                              'short': {'bid_depth': 75, 'ask_depth': 75, 'lot_size': 75}}},
+        )))
+    result = replay.replay_full_policy(**args)
+    diag = result["asymmetric_diagnostic"]
+    # Both batches are pre-decision.
+    assert diag["pre_decision_asymmetric_observed"] is True
+    assert diag["pre_decision_batch_count"] == 2
+    assert diag["asymmetric_batch_count"] == 2
+    # Union: both legs appear in both executable and
+    # insufficient (across different batches with different
+    # polarity). sorted() gives deterministic ordering.
+    assert diag["executable_legs"] == ["long", "short"]
+    assert diag["insufficient_legs"] == ["long", "short"]
+    # Timestamp range: earliest is batch1, latest is batch2.
+    assert diag["earliest_received_at"] == batch1
+    assert diag["latest_received_at"] == batch2
+    # Still fail-closed.
+    assert result["reason"] == "asymmetric_execution_quality_before_decision"
+
+
+def test_asymmetric_diagnostic_malformed_received_at_does_not_crash(case, monkeypatch):
+    """[WORKFLOW-C.C1] Defensive: a malformed ``received_at``
+    in an asymmetric batch entry degrades to exclusion from
+    the timestamp range (not a crash). The diagnostic block
+    still surfaces the leg attribution and counts.
+    """
+    args, rows = case
+    # The case fixture has ``book_at_decision.received_at
+    # == NOW`` (the first observation). The pre-decision
+    # window is strictly AFTER book_at_decision and at-or-
+    # before now. Drop the post-decision row (NOW + 1min)
+    # so prior_books doesn't include it, and APPEND an
+    # earlier observation AFTER rows[0] so book_at_decision
+    # (= prior_books[-1]) is that earlier timestamp.
+    # Now book_at_decision.received_at = NOW - 60s, the
+    # asymmetric batch at NOW - 30s is in the pre-decision
+    # window (NOW - 60s < NOW - 30s <= NOW), and the
+    # malformed batch is excluded by the defensive helper.
+    earlier = NOW - timedelta(seconds=60)
+    new_last = rows[0].__class__(
+        observed_at=earlier, received_at=earlier,
+        signal_score=rows[0].signal_score, quotes=rows[0].quotes,
+    )
+    new_rows = (rows[0], new_last)
+    monkeypatch.setattr(replay, 'build_spread_observations', lambda **_: ArchiveObservationBuild(
+        new_rows, (), 0, None, (), (
+            {'received_at': 'not-a-date', 'state': 'ASYMMETRIC_EXECUTION_QUALITY',
+             'executable': ['long'], 'insufficient': ['short'],
+             'depth_by_leg': {'long': {'bid_depth': 75, 'ask_depth': 75, 'lot_size': 75},
+                              'short': {'bid_depth': 1, 'ask_depth': 1, 'lot_size': 75}}},
+            {'received_at': (NOW - timedelta(seconds=30)).isoformat(),
+             'state': 'ASYMMETRIC_EXECUTION_QUALITY',
+             'executable': ['short'], 'insufficient': ['long'],
+             'depth_by_leg': {'long': {'bid_depth': 1, 'ask_depth': 1, 'lot_size': 75},
+                              'short': {'bid_depth': 75, 'ask_depth': 75, 'lot_size': 75}}},
+        )))
+    # Should not raise.
+    result = replay.replay_full_policy(**args)
+    diag = result["asymmetric_diagnostic"]
+    # The malformed batch is excluded from the pre-decision
+    # LIST (the timestamp doesn't parse), so pre_decision_batch_count
+    # is 1 (only the well-formed batch).
+    assert diag["pre_decision_batch_count"] == 1
+    # But both batches contribute to the LEG attribution --
+    # the malformed batch still has a parseable
+    # ``executable``/``insufficient`` field, so the union
+    # spans both batches. This is the operator-visible
+    # answer to "which legs were involved?"
+    assert diag["executable_legs"] == ["long", "short"]
+    assert diag["insufficient_legs"] == ["long", "short"]
+    # And the timestamp range is the well-formed batch only
+    # (the malformed one can't contribute to earliest/latest).
+    assert diag["earliest_received_at"] == (NOW - timedelta(seconds=30)).isoformat()
+
+
 def test_master_scope_mismatch_rejected(case):
     args, _ = case
     args['master_sha256'] = 'b' * 64

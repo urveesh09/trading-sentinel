@@ -5,11 +5,41 @@ are consumed in receipt order, preserving breaches between option books.
 """
 from dataclasses import asdict, replace
 from datetime import datetime
+from typing import Any, Mapping
 
 from intraday_spread_archive_adapter import SpreadContractIdentity, build_spread_observations
 from intraday_spread_chronological import PublicObservation, replay_chronological_debit_spread, replay_cost_scenarios
 from intraday_spread_replay import IST, ReplayInputError
 from partner_qualification import _sha, _bars_payload, evaluate_deployed_full_policy
+
+
+def _pre_decision_window_hit(
+    item: Mapping[str, Any],
+    book_at_decision_received_at: "datetime",
+    now: "datetime",
+) -> bool:
+    """[WORKFLOW-C.C1 2026-09-15] Defensive predicate for the
+    pre-decision asymmetric/partial-batch window check.
+
+    Returns True iff ``item`` has a parseable ``received_at``
+    in the strict window
+    ``book_at_decision_received_at < ts <= now`` -- the same
+    window the A1 fail-closed check uses inline. Malformed
+    timestamps (missing field, non-string, unparseable)
+    degrade to ``False`` rather than crashing the replay.
+
+    The replay MUST stay alive even when individual capture
+    events have malformed fields; the structured
+    ``asymmetric_diagnostic`` block surfaces what we can.
+    """
+    raw = item.get("received_at")
+    if not isinstance(raw, str) or not raw:
+        return False
+    try:
+        ts = datetime.fromisoformat(raw)
+    except (TypeError, ValueError):
+        return False
+    return book_at_decision_received_at < ts <= now
 
 
 def write_replay_report(path, report):
@@ -124,6 +154,49 @@ def replay_full_policy(*, evaluation_inputs, events, archive_root, master_sha256
         return {**report, "evidence_sha256": _sha(report)}
     book_at_decision = prior_books[-1]
     report["decision_book_received_at"] = book_at_decision.received_at.isoformat()
+    # [WORKFLOW-C.C1 2026-09-15] Structured asymmetric-fill
+    # diagnostic (Option 3 from the C-investigation). The
+    # asymmetric_batches list is the raw evidence; this
+    # block is the operator-visible summary that answers:
+    #  - Was there an asymmetric-fill condition at the
+    #    decision clock? (boolean)
+    #  - Which legs were executable / insufficient?
+    #  - When did the condition first appear? last appear?
+    # The replay is still fail-closed below (Option 1
+    # behavior preserved): a pre-decision asymmetric batch
+    # causes INSUFFICIENT_EVIDENCE. This block just makes the
+    # attribution visible without forcing the operator to
+    # grep asymmetric_batches. Mirrors how conflicting_batches
+    # is reported alongside state/reason.
+    pre_decision_asymmetric: list[dict] = []
+    executable_legs: set[str] = set()
+    insufficient_legs: set[str] = set()
+    for item in build.asymmetric_batches or []:
+        for leg in item.get("executable", []):
+            executable_legs.add(str(leg))
+        for leg in item.get("insufficient", []):
+            insufficient_legs.add(str(leg))
+        # [WORKFLOW-C.C1 2026-09-15] Use the defensive
+        # helper for the pre-decision window check. Malformed
+        # ``received_at`` degrades to exclusion from the
+        # pre-decision subset (the diagnostic still counts
+        # the batch in ``asymmetric_batch_count`` and
+        # attributes the leg names).
+        if _pre_decision_window_hit(item, book_at_decision.received_at, now):
+            pre_decision_asymmetric.append(item)
+    pre_decision_received_ats = [item["received_at"] for item in pre_decision_asymmetric
+                                  if isinstance(item.get("received_at"), str)]
+    report["asymmetric_diagnostic"] = {
+        "pre_decision_asymmetric_observed": bool(pre_decision_asymmetric),
+        "asymmetric_batch_count": len(build.asymmetric_batches or []),
+        "pre_decision_batch_count": len(pre_decision_asymmetric),
+        "executable_legs": sorted(executable_legs),
+        "insufficient_legs": sorted(insufficient_legs),
+        "earliest_received_at": min(pre_decision_received_ats)
+            if pre_decision_received_ats else None,
+        "latest_received_at": max(pre_decision_received_ats)
+            if pre_decision_received_ats else None,
+    }
     if any(book_at_decision.received_at < datetime.fromisoformat(item["received_at"]) <= now
            for item in build.partial_batches):
         report.update(state="INSUFFICIENT_EVIDENCE", reason="partial_book_before_decision")
@@ -135,7 +208,13 @@ def replay_full_policy(*, evaluation_inputs, events, archive_root, master_sha256
     # operator cannot claim a fully executable two-leg book
     # at decision time. Mirror the partial-book discipline
     # above (treat as fail-closed, surface the diagnostic).
-    if any(book_at_decision.received_at < datetime.fromisoformat(item["received_at"]) <= now
+    # [WORKFLOW-C.C1 2026-09-15] Defensive: a malformed
+    # ``received_at`` in an asymmetric batch entry degrades
+    # to exclusion (the structured diagnostic block above
+    # applies the same defensive handling). The replay
+    # must never crash on a malformed capture; the
+    # diagnostic block surfaces what we can.
+    if any(_pre_decision_window_hit(item, book_at_decision.received_at, now)
            for item in build.asymmetric_batches or []):
         report.update(state="INSUFFICIENT_EVIDENCE", reason="asymmetric_execution_quality_before_decision")
         return {**report, "evidence_sha256": _sha(report)}
