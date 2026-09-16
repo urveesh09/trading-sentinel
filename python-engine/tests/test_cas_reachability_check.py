@@ -236,6 +236,12 @@ def test_cli_json_shape_is_stable(tmp_path):
         # capture + backing paths + span in days); always
         # present, default {} when no captures exist.
         "recency_by_branch",
+        # [WORKFLOW-J.10.DRY_RUN_ATTRIBUTION 2026-09-16] The
+        # ``dry_run_attribution`` field surfaces how many
+        # unique first-occurrence captures are real vs
+        # dry_run vs unknown; always present, default all
+        # zeros when no captures exist.
+        "dry_run_attribution",
     }
     assert set(payload.keys()) == expected_keys, (
         f"JSON shape drift: extra={set(payload.keys()) - expected_keys}, "
