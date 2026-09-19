@@ -13,6 +13,7 @@ skipped/42 known deprecations**. Genuine retained sessions, adequate predeclared
 holdout coverage, human qualification and release/Production observation are
 still required. Details are in the
 [completed slice](2026-09-19-workflow-c-asymmetric-source-binding-plan.md).
+Implementation commit: `e2212cb`; push pending. Production is unchanged.
 
 ## September 19 Workflow C.C2.HOLDOUT completion (Dev only)
 

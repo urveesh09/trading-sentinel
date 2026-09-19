@@ -1,7 +1,7 @@
 # Workflow C.C2.SOURCE — asymmetric quote-source binding
 
-**Status:** IMPLEMENTED_AND_TESTED_DEV; commit/push pending. Production is
-unchanged.
+**Status:** IMPLEMENTED_AND_TESTED_DEV in implementation commit `e2212cb`;
+push pending. Production is unchanged.
 
 ## Problem
 
@@ -69,3 +69,5 @@ does not demonstrate profitability or make partner delivery production-ready.
   `git diff --check` passed.
 - No database/configuration/data migration and no external or Production-side
   action.
+- Implementation commit: `e2212cb` on
+  `codex/production-correction-hedge-p0`.
