@@ -17,8 +17,10 @@ known framework deprecations in 204.44s**; JUnit:
 `C:/Users/Urveesh/AppData/Local/Temp/sentinel-g7-range-causality-20260919.xml`.
 Atlas remains 203 modules; changed-source compilation and diff checks pass.
 Implementation commit `fefa5a3` contains source, tests, atlas and documentation;
-its immediate consistency review passed with a clean Dev worktree. Push is
-pending. No schema/config/default, broker call, order, partner delivery or
+its immediate consistency review passed with a clean Dev worktree. Verification
+receipt `bc79325` also passed its immediate review; both commits were pushed to
+`origin/codex/production-correction-hedge-p0`. They are not merged, released or
+deployed. No schema/config/default, broker call, order, partner delivery or
 Production mutation occurred.
 
 ## September 19 Workflow F.10A (Dev tested)

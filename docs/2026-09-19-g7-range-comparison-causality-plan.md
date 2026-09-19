@@ -1,7 +1,8 @@
 # Workflow G.7 — range comparison causality correction
 
-**Status:** TESTED_DEV. Implementation commit `fefa5a3`; push pending.
-Production is unchanged.
+**Status:** TESTED_DEV and pushed. Implementation commit `fefa5a3` and
+verification receipt `bc79325` are on
+`origin/codex/production-correction-hedge-p0`. Production is unchanged.
 
 ## Problem
 
@@ -93,4 +94,6 @@ capital/qualification authority, partner delivery or Production edit occurred.
 Implementation, documentation receipt and push identities will be recorded
 after each step is verified. Implementation commit `fefa5a3` contains source,
 tests, atlas and documentation; its immediate stat/status/guide/plan/atlas
-consistency review passed with a clean Dev worktree.
+consistency review passed with a clean Dev worktree. Receipt commit `bc79325`
+also passed its immediate consistency review; both commits were pushed to the
+same Dev branch. This is not a merge, release or deployment.
