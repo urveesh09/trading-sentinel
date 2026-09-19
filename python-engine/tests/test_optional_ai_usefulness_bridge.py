@@ -26,6 +26,7 @@ Coverage
 from __future__ import annotations
 
 from datetime import datetime, timezone
+import math
 
 import pytest
 from fastapi import FastAPI
@@ -86,8 +87,12 @@ class TestCleanUsefulness:
             "total_completed_reviews": 12,
             "cache_hits": 5,
             "cache_misses": 3,
+            "cache_hit_rate": 0.625,
             "circuit_opens": 1,
+            "response_seconds_mean": 1.25,
+            "response_seconds_p95": 2.5,
             "response_seconds_last": 1.5,
+            "last_completed_at": "2026-09-19T10:00:00+00:00",
             "verdict_counts": {
                 "APPROVE": 8,
                 "APPROVE_WITH_CONCERNS": 2,
@@ -119,8 +124,70 @@ class TestCleanUsefulness:
             _clean_usefulness({"cache_hits": True})
 
     def test_negative_response_seconds_rejected(self) -> None:
-        with pytest.raises(ValueError, match="non-negative"):
+        with pytest.raises(ValueError, match="finite non-negative"):
             _clean_usefulness({"response_seconds_last": -1.0})
+
+    @pytest.mark.parametrize(
+        "field", [
+            "response_seconds_mean",
+            "response_seconds_p95",
+            "response_seconds_last",
+        ],
+    )
+    @pytest.mark.parametrize("value", [float("nan"), float("inf"), -0.1, True])
+    def test_latency_fields_reject_invalid_numbers(self, field, value) -> None:
+        with pytest.raises(ValueError, match="finite non-negative"):
+            _clean_usefulness({field: value})
+
+    @pytest.mark.parametrize("value", [-0.1, 1.1, float("nan"), True])
+    def test_cache_hit_rate_rejects_invalid_values(self, value) -> None:
+        with pytest.raises(ValueError, match="between 0 and 1"):
+            _clean_usefulness({"cache_hit_rate": value})
+
+    def test_cache_hit_rate_must_match_counters_when_all_are_present(self) -> None:
+        with pytest.raises(ValueError, match="inconsistent with cache counters"):
+            _clean_usefulness({
+                "cache_hits": 1,
+                "cache_misses": 3,
+                "cache_hit_rate": 0.5,
+            })
+        with pytest.raises(ValueError, match="inconsistent with cache counters"):
+            _clean_usefulness({
+                "cache_hits": 0,
+                "cache_misses": 0,
+                "cache_hit_rate": 0.0,
+            })
+
+    def test_completed_total_must_match_verdicts_when_both_are_present(self) -> None:
+        with pytest.raises(ValueError, match="inconsistent with verdict counts"):
+            _clean_usefulness({
+                "total_completed_reviews": 2,
+                "verdict_counts": {"APPROVE": 1},
+            })
+
+    def test_nullable_metrics_preserve_explicit_null(self) -> None:
+        clean = _clean_usefulness({
+            "cache_hit_rate": None,
+            "response_seconds_mean": None,
+            "response_seconds_p95": None,
+            "response_seconds_last": None,
+            "last_completed_at": None,
+        })
+        assert clean == {
+            "cache_hit_rate": None,
+            "response_seconds_mean": None,
+            "response_seconds_p95": None,
+            "response_seconds_last": None,
+            "last_completed_at": None,
+        }
+
+    def test_last_completed_at_requires_timezone_and_normalises_utc(self) -> None:
+        with pytest.raises(ValueError, match="include a timezone"):
+            _clean_usefulness({"last_completed_at": "2026-09-19T10:00:00"})
+        clean = _clean_usefulness({
+            "last_completed_at": "2026-09-19T15:30:00+05:30",
+        })
+        assert clean["last_completed_at"] == "2026-09-19T10:00:00+00:00"
 
     def test_response_seconds_int_accepted(self) -> None:
         """``1`` (int) is a valid number; the validator must coerce
@@ -131,8 +198,22 @@ class TestCleanUsefulness:
         assert isinstance(clean["response_seconds_last"], float)
 
     def test_string_for_response_seconds_rejected(self) -> None:
-        with pytest.raises(ValueError, match="non-negative number"):
+        with pytest.raises(ValueError, match="finite non-negative number"):
             _clean_usefulness({"response_seconds_last": "1.5"})
+
+    def test_legacy_six_field_envelope_remains_accepted(self) -> None:
+        legacy = {
+            "total_completed_reviews": 1,
+            "cache_hits": 0,
+            "cache_misses": 1,
+            "circuit_opens": 0,
+            "response_seconds_last": 1.0,
+            "verdict_counts": {"APPROVE": 1},
+        }
+        clean = _clean_usefulness(legacy)
+        assert clean["total_completed_reviews"] == 1
+        assert clean["response_seconds_last"] == 1.0
+        assert not any(math.isnan(v) for v in clean.values() if isinstance(v, float))
 
     def test_verdict_counts_partial_defaults_to_zero(self) -> None:
         """A verdict_counts dict missing one of the four buckets
@@ -334,8 +415,12 @@ class TestBoundedContract:
             "total_completed_reviews",
             "cache_hits",
             "cache_misses",
+            "cache_hit_rate",
             "circuit_opens",
+            "response_seconds_mean",
+            "response_seconds_p95",
             "response_seconds_last",
+            "last_completed_at",
             "verdict_counts",
         })
         assert _ALLOWED_VERDICT_KEYS == frozenset({

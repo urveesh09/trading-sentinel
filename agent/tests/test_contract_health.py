@@ -129,10 +129,11 @@ class TestStatusEnvelopeAuthority:
     def test_well_formed_envelope_passes(self):
         envelope = {
             "state": "READY",
-            "queue_size": 0,
-            "in_flight": 0,
-            "circuit_open": False,
-            "last_completed_at": "2026-09-14T10:00:00+00:00",
+            "reported_at": "2026-09-14T10:00:01+00:00",
+            "async_requested": True,
+            "policy_allows_annotation": True,
+            "reason": "optional_annotation_ready",
+            "queue": {"pending": 0, "circuit_state": "CLOSED"},
             "usefulness": {
                 "verdict_counts": {"approve": 1},
                 "cache_hits": 0,
@@ -256,15 +257,27 @@ class TestUsefulnessCountersOnly:
                 "verdict_counts": {"approve": 1, "reject": 0},
                 "cache_hits": 1,
                 "cache_misses": 0,
+                "cache_hit_rate": 1.0,
                 "circuit_opens": 0,
+                "total_completed_reviews": 1,
                 "response_seconds_mean": 1.5,
                 "response_seconds_p95": 2.4,
-                "last_response_seconds": 1.5,
+                "response_seconds_last": 1.5,
                 "last_completed_at": "2026-09-14T10:00:00+00:00",
-                "snapshot_at": "2026-09-14T10:00:01+00:00",
             }
         }
         c = check_usefulness_counters_only(snapshot)
+        assert c.passed is True, c.violations
+
+    def test_real_queue_snapshot_passes_contract_health(self):
+        from async_reviews import AsyncReviewQueue
+
+        queue = AsyncReviewQueue(lambda *_args, **_kwargs: None)
+        try:
+            snapshot = {"usefulness": queue.usefulness_snapshot()}
+            c = check_usefulness_counters_only(snapshot)
+        finally:
+            queue.shutdown()
         assert c.passed is True, c.violations
 
     def test_usefulness_unknown_key_is_violation(self):
@@ -473,9 +486,11 @@ class TestEvaluateContract:
     def test_all_clean_inputs_pass(self):
         snapshot = {
             "state": "READY",
-            "queue_size": 0,
-            "in_flight": 0,
-            "circuit_open": False,
+            "reported_at": "2026-09-14T10:00:01+00:00",
+            "async_requested": True,
+            "policy_allows_annotation": True,
+            "reason": "optional_annotation_ready",
+            "queue": {"pending": 0, "circuit_state": "CLOSED"},
             "usefulness": {
                 "verdict_counts": {"approve": 1, "reject": 0},
                 "cache_hits": 0,

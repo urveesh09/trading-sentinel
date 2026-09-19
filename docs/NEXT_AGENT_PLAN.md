@@ -1,5 +1,25 @@
 # Trading Sentinel — next-agent execution plan
 
+## September 19 Workflow I usefulness-contract correction (Dev only)
+
+The optional-AI status bridge no longer rejects the real ten-field usefulness
+snapshot while accepting only reduced test doubles. Engine validation now
+covers all producer fields and their internal counter/rate consistency; the
+agent's hourly contract-health check uses the real status shape and actually
+runs its leakage/usefulness invariants. The dashboard renders p95 response time
+and last completion without converting absent legacy fields to zero. No schema,
+flag-default, authority, delivery, risk, capital, strategy, or order behavior
+changes. Focused engine is **72 passed** with four known deprecations, full
+agent is **340 passed** warning-fatal, and dashboard is **46 passed** plus build.
+Whole-engine validation is **4,117 passed/four skipped/46 known deprecations**;
+the implementation commit/push receipt follows this source freeze. Real
+Production observations and operator-labelled usefulness remain required;
+per-ticker I.4.G is still deferred. See the
+[active plan](2026-09-19-workflow-i-usefulness-contract-plan.md).
+This correction supersedes the historical six-field I.A allow-list wording in
+the long-form state table below; the current authoritative contract has ten
+fields.
+
 ## September 19 Workflow C.C2.SOURCE completion (Dev only)
 
 The remaining causal-pricing defect in the modeled-partial path is corrected:

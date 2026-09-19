@@ -1,5 +1,27 @@
 # Trading Sentinel — system guide and engineering handover
 
+## September 19 Workflow I usefulness-contract correction
+
+Dev now accepts the complete ten-field usefulness snapshot emitted by the
+optional-AI worker. The engine strictly validates finite/non-negative latency,
+cache-rate bounds and counter consistency, bounded verdicts, and an aware
+completion clock while retaining partial legacy envelope compatibility. The
+agent's contract-health allow-lists now match its real status producer, and the
+hourly check evaluates leakage/usefulness invariants instead of inspecting only
+the top-level authority shape. Real-producer boundary tests replace the former
+six-field doubles. The dashboard adds p95 latency and last-completion evidence
+and displays missing legacy values as unavailable, not observed zero.
+
+This remains opt-in operational evidence under
+`OPTIONAL_AI_REPORT_USEFULNESS`; it cannot alter a signal, qualification,
+delivery, capital, risk, or order. No schema or default changes. Focused engine
+acceptance is **72 passed** with four known framework deprecations; the complete
+agent suite is **340 passed** warning-fatal; dashboard acceptance is **46
+passed** plus a successful build. Whole-engine acceptance is **4,117 passed,
+four skipped and 46 known framework deprecations in 209.34s**. See the
+[implementation plan](2026-09-19-workflow-i-usefulness-contract-plan.md).
+Production remains untouched.
+
 ## September 19 Workflow G.7 range-comparison causality correction
 
 The dedicated `RANGE_REVERSION_V1` research path now evaluates the first

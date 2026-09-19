@@ -33,6 +33,26 @@ def _fresh_optional_ai_status_module(monkeypatch):
     return importlib.reload(agent)
 
 
+def _full_fake_snapshot():
+    return {
+        "total_completed_reviews": 5,
+        "cache_hits": 2,
+        "cache_misses": 3,
+        "cache_hit_rate": 0.4,
+        "circuit_opens": 0,
+        "response_seconds_mean": 1.2,
+        "response_seconds_p95": 2.0,
+        "response_seconds_last": 1.5,
+        "last_completed_at": "2026-09-19T10:00:00+00:00",
+        "verdict_counts": {
+            "APPROVE": 3,
+            "APPROVE_WITH_CONCERNS": 0,
+            "REVIEW_UNAVAILABLE": 1,
+            "REJECT": 1,
+        },
+    }
+
+
 class TestAgentSideEnvelope:
     def test_default_flag_omits_usefulness(self, monkeypatch) -> None:
         """Default behaviour (no env var) omits the ``usefulness``
@@ -44,13 +64,7 @@ class TestAgentSideEnvelope:
         assert agent.OPTIONAL_AI_REPORT_USEFULNESS is False
         # Build the envelope with a mocked queue so we don't
         # require the LiteLLM client to be initialised.
-        fake_snapshot = {"total_completed_reviews": 5, "cache_hits": 2,
-                         "cache_misses": 3, "circuit_opens": 0,
-                         "response_seconds_last": 1.5,
-                         "verdict_counts": {"APPROVE": 3,
-                                              "APPROVE_WITH_CONCERNS": 0,
-                                              "REVIEW_UNAVAILABLE": 1,
-                                              "REJECT": 1}}
+        fake_snapshot = _full_fake_snapshot()
         fake_queue = agent.AsyncReviewQueue.__new__(agent.AsyncReviewQueue)
         with patch.object(agent, "_optional_ai_queue", fake_queue), \
              patch.object(fake_queue, "snapshot", return_value={
@@ -73,13 +87,7 @@ class TestAgentSideEnvelope:
         monkeypatch.setenv("OPTIONAL_AI_REPORT_USEFULNESS", "true")
         agent = _fresh_optional_ai_status_module(monkeypatch)
         assert agent.OPTIONAL_AI_REPORT_USEFULNESS is True
-        fake_snapshot = {"total_completed_reviews": 5, "cache_hits": 2,
-                         "cache_misses": 3, "circuit_opens": 0,
-                         "response_seconds_last": 1.5,
-                         "verdict_counts": {"APPROVE": 3,
-                                              "APPROVE_WITH_CONCERNS": 0,
-                                              "REVIEW_UNAVAILABLE": 1,
-                                              "REJECT": 1}}
+        fake_snapshot = _full_fake_snapshot()
         fake_queue = agent.AsyncReviewQueue.__new__(agent.AsyncReviewQueue)
         with patch.object(agent, "_optional_ai_queue", fake_queue), \
              patch.object(fake_queue, "snapshot", return_value={
@@ -184,14 +192,7 @@ class TestAgentPayloadContract:
                  "circuit_state": "CLOSED",
              }), \
              patch.object(fake_queue, "usefulness_snapshot",
-                          return_value={"total_completed_reviews": 1,
-                                         "cache_hits": 0, "cache_misses": 0,
-                                         "circuit_opens": 0,
-                                         "response_seconds_last": 1.0,
-                                         "verdict_counts": {"APPROVE": 1,
-                                                              "APPROVE_WITH_CONCERNS": 0,
-                                                              "REVIEW_UNAVAILABLE": 0,
-                                                              "REJECT": 0}}):
+                          return_value=_full_fake_snapshot()):
             payload = agent.optional_ai_status()
         assert set(payload.keys()) == AGENT_PAYLOAD_KEYS
 
@@ -202,51 +203,26 @@ class TestAgentPayloadContract:
         reject it (ValueError, status post rejected, previous
         report retained).
 
-        Implementation: rather than mock the lock + thread,
-        we build a stub queue object whose ``usefulness_snapshot``
-        returns a fixed dict and capture the keys directly.
+        The real queue method is called so this test cannot hide producer
+        drift behind a hand-maintained fake payload.
         """
         monkeypatch.setenv("OPTIONAL_AI_REPORT_USEFULNESS", "true")
         agent = _fresh_optional_ai_status_module(monkeypatch)
 
-        class _StubQueue:
-            def snapshot(self):
-                return {
-                    "pending": 0, "cached": 0, "daily_requests": 1,
-                    "daily_budget": 40, "max_pending": 16,
-                    "circuit_state": "CLOSED",
-                }
-            def usefulness_snapshot(self):
-                # The real I3 snapshot keys.
-                return {
-                    "total_completed_reviews": 1,
-                    "cache_hits": 0, "cache_misses": 0,
-                    "circuit_opens": 0,
-                    "response_seconds_last": 1.0,
-                    "verdict_counts": {
-                        "APPROVE": 1, "APPROVE_WITH_CONCERNS": 0,
-                        "REVIEW_UNAVAILABLE": 0, "REJECT": 0,
-                    },
-                }
-
-        captured = {}
-        original_method = _StubQueue.usefulness_snapshot
-
-        def capturing(self):
-            d = original_method(self)
-            captured["keys"] = set(d.keys())
-            return d
-
-        with patch.object(agent, "_optional_ai_queue", _StubQueue()), \
-             patch.object(_StubQueue, "usefulness_snapshot", capturing):
-            agent.optional_ai_status()
-        # Every key the agent sent must be in the documented
-        # I.A usefulness allow-list.
+        queue = agent.AsyncReviewQueue(lambda *_args, **_kwargs: None)
+        try:
+            with patch.object(agent, "_optional_ai_queue", queue):
+                payload = agent.optional_ai_status()
+        finally:
+            queue.shutdown()
         ENGINE_USEFULNESS_KEYS = frozenset({
             "total_completed_reviews", "cache_hits", "cache_misses",
-            "circuit_opens", "response_seconds_last", "verdict_counts",
+            "cache_hit_rate", "circuit_opens", "response_seconds_mean",
+            "response_seconds_p95", "response_seconds_last",
+            "last_completed_at", "verdict_counts",
         })
-        assert captured["keys"].issubset(ENGINE_USEFULNESS_KEYS), (
+        captured_keys = set(payload["usefulness"])
+        assert captured_keys == ENGINE_USEFULNESS_KEYS, (
             f"agent usefulness drifted from engine allow-list: "
-            f"{captured['keys'] - ENGINE_USEFULNESS_KEYS}"
+            f"{captured_keys ^ ENGINE_USEFULNESS_KEYS}"
         )

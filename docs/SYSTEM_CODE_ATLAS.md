@@ -32,15 +32,15 @@ Related tests: `agent/tests/test_async_reviews.py`, `agent/tests/test_async_revi
 
 [WORKFLOW-I.4.E 2026-09-14] Bounded contract-health self-evaluation. Per plan §13 ("The typed result must not change capital limits, qualification or order/delivery authority"), this module is the "guard the guards" layer that periodically asserts the bounded contract on the agent's own surfaces: 1. No execution authority in the status envelope (``can_place_orders=False`` + ``authorization_effect=NONE``). 2. No prompt leakage in any persisted snapshot (the bounded status / usefulness envelope has a fixed allow-list of keys; any other key is a leak). 3. No review content in the bounded usefulness snapshot (only counters cross the agent->engine bridge; never pitch/rationale/risks). 4. Classifi
 
-Top-level declarations: `ContractCheck` (line 96), `ContractReport` (line 125), `check_status_envelope_authority` (line 165), `check_no_prompt_leakage` (line 242), `check_usefulness_counters_only` (line 316), `check_classifier_fail_closed` (line 403), `check_review_non_authoritative` (line 502), `evaluate_contract` (line 557)
+Top-level declarations: `ContractCheck` (line 98), `ContractReport` (line 127), `check_status_envelope_authority` (line 167), `check_no_prompt_leakage` (line 244), `check_usefulness_counters_only` (line 318), `check_classifier_fail_closed` (line 405), `check_review_non_authoritative` (line 504), `evaluate_contract` (line 559)
 
 Related tests: `agent/tests/test_contract_health.py`, `agent/tests/test_contract_health_cron.py`
 
 ## `agent/contract_health_cron.py`
 
-[WORKFLOW-I.4.E.CRON_WIRING 2026-09-14] Hourly contract-health cron tick. The I.4.E bounded contract-health self-evaluation (slice ``feat(agent): I.4.E bounded contract-health self-evaluation``) ships five bounded invariants + a CLI. The CLI is a manual audit tool. Without cron wiring, the harness only runs when the operator remembers to invoke it. This module exposes ``contract_health_cron_tick()``: 1. Build the bounded status envelope via the agent's ``optional_ai_status()`` (the same envelope the agent publishes every minute to the engine). 2. Run ``evaluate_contract(status_envelope=...)`` against it. 3. If the report surfaces ANY violation, fire a Telegram alert via ``send_telegram_alert
+[WORKFLOW-I.4.E.CRON_WIRING 2026-09-14] Hourly contract-health cron tick. The I.4.E bounded contract-health self-evaluation (slice ``feat(agent): I.4.E bounded contract-health self-evaluation``) ships five bounded invariants + a CLI. The CLI is a manual audit tool. Without cron wiring, the harness only runs when the operator remembers to invoke it. This module exposes ``contract_health_cron_tick()``: 1. Build the bounded status envelope via the agent's ``optional_ai_status()`` (the same envelope the agent publishes every minute to the engine). 2. Run the authority, leakage and usefulness checks against that same real envelope. 3. If the report surfaces ANY violation, fire a Telegram alert vi
 
-Top-level declarations: `format_violation_alert` (line 50), `contract_health_cron_tick` (line 80), `_dispatch_alert` (line 171)
+Top-level declarations: `format_violation_alert` (line 51), `contract_health_cron_tick` (line 81), `_dispatch_alert` (line 173)
 
 Related tests: `agent/tests/test_contract_health_cron.py`
 
@@ -1000,7 +1000,7 @@ Engine dependencies: `config`, `halt_switch`, `market_calendar`, `operator_alert
 
 Persisted, non-authoritative health evidence from the optional AI worker. The agent is deliberately a separate container with no database write access. It posts this small, authenticated status envelope to the engine instead. The record is operational evidence only: no value written here can approve a signal, place an order, or change a deterministic decision.
 
-Top-level declarations: `_parse_aware_timestamp` (line 66), `_init` (line 78), `_clean_usefulness` (line 86), `record_optional_ai_status` (line 164), `load_optional_ai_status` (line 223)
+Top-level declarations: `_parse_aware_timestamp` (line 77), `_init` (line 89), `_clean_usefulness` (line 97), `record_optional_ai_status` (line 229), `load_optional_ai_status` (line 288)
 
 Engine dependencies: `hedge_analytics`
 

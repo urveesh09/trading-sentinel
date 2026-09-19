@@ -1,5 +1,30 @@
 # Handover receipt and operator checklist
 
+## September 19 Workflow I usefulness contract (Dev tested)
+
+The real ten-field optional-AI usefulness snapshot now crosses the agent/engine
+boundary without rejection. Strict validation rejects unknown/leakage keys,
+booleans, negative/nonfinite latency, invalid or inconsistent cache rates,
+inconsistent review totals, invalid verdict buckets, and naive completion
+timestamps. Partial historical envelopes remain readable. The hourly
+contract-health job now recognizes the real status envelope and runs both the
+leakage and usefulness checks. Dashboard evidence includes p95 latency and last
+completion, with unavailable legacy fields shown as `—` rather than zero.
+
+Focused engine acceptance: **72 passed/four known framework deprecations**.
+Broader optional-AI engine acceptance: **89 passed/five known deprecations**.
+Complete isolated agent acceptance: **340 passed**, warnings fatal, networking
+disabled and Dev source mounted read-only. Dashboard: **46 passed** and Vite
+build passed with the existing outdated Browserslist notice. Whole engine:
+**4,117 passed/four skipped/46 known framework deprecations in 209.34s**;
+JUnit: `C:/Users/Urveesh/AppData/Local/Temp/sentinel-workflow-i-usefulness-contract-20260919.xml`.
+Atlas regenerated at 203 modules; changed Python compilation and diff checks
+passed. The implementation commit/push receipt follows this source freeze. No schema/config
+default, broker/network call, partner message, order, Production edit, or
+authority change. Real Production status evidence and operator usefulness
+labels remain open. See the
+[plan](2026-09-19-workflow-i-usefulness-contract-plan.md).
+
 ## September 19 Workflow G.7 (Dev tested)
 
 The range-reversion simulator no longer chooses the last bar before the entry

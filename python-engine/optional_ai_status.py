@@ -8,6 +8,7 @@ signal, place an order, or change a deterministic decision.
 from __future__ import annotations
 
 import json
+import math
 from datetime import datetime, timedelta, timezone
 from typing import Any
 
@@ -23,11 +24,12 @@ _ALLOWED_STATES = {
 
 # [WORKFLOW-I I.A 2026-09-13] Allow-list for the bounded ``usefulness``
 # envelope bridged from the agent's I3 ``usefulness_snapshot``. Each
-# key is a non-negative integer except ``response_seconds_last`` which
-# is a non-negative float (or None, which is rejected so the field is
-# either present-with-value or absent). The bounded four verdict
-# buckets are documented as a frozen set; the dict must contain all
-# four keys with int values when the envelope is present.
+# Counters are non-negative integers; the cache rate is finite in [0, 1];
+# latency aggregates are finite non-negative floats or null; and the last
+# completion clock is a timezone-aware ISO timestamp or null. The bounded
+# four verdict buckets are documented as a frozen set. For compatibility,
+# partial historical envelopes remain readable and missing verdict buckets
+# are normalised to zero.
 #
 # The bounded contract is enforced inside ``_clean_usefulness``,
 # which is the only path that mutates the persisted detail. The
@@ -39,8 +41,12 @@ _ALLOWED_USEFULNESS_KEYS = frozenset({
     "total_completed_reviews",
     "cache_hits",
     "cache_misses",
+    "cache_hit_rate",
     "circuit_opens",
+    "response_seconds_mean",
+    "response_seconds_p95",
     "response_seconds_last",
+    "last_completed_at",
     "verdict_counts",
 })
 _ALLOWED_VERDICT_KEYS = frozenset({
@@ -51,6 +57,11 @@ _USEFULNESS_NON_NEG_INT_FIELDS = (
     "cache_hits",
     "cache_misses",
     "circuit_opens",
+)
+_USEFULNESS_NON_NEG_NUMBER_FIELDS = (
+    "response_seconds_mean",
+    "response_seconds_p95",
+    "response_seconds_last",
 )
 _SCHEMA = """
 CREATE TABLE IF NOT EXISTS optional_ai_status_reports (
@@ -93,9 +104,13 @@ def _clean_usefulness(raw: Any) -> dict[str, Any]:
           Any unknown key is rejected -- we do NOT silently drop.
         * ``total_completed_reviews``, ``cache_hits``, ``cache_misses``,
           ``circuit_opens`` are non-negative ints (bool rejected).
-        * ``response_seconds_last`` is a non-negative float (or
-          ``None`` to mean "no review completed yet"; persisted as
-          ``null``).
+        * ``cache_hit_rate`` is a finite number in ``[0, 1]`` or
+          ``None`` when there have been no lookups.
+        * ``response_seconds_mean``, ``response_seconds_p95`` and
+          ``response_seconds_last`` are finite non-negative numbers or
+          ``None`` when no review has completed.
+        * ``last_completed_at`` is a timezone-aware ISO timestamp or
+          ``None`` and is normalised to UTC.
         * ``verdict_counts`` is a dict with exactly the four bounded
           verdict keys, each a non-negative int.
         * On any violation, ``ValueError`` is raised. The producer
@@ -122,18 +137,47 @@ def _clean_usefulness(raw: Any) -> dict[str, Any]:
                 f"usefulness.{name} must be a non-negative integer"
             )
         clean[name] = value
-    # ``response_seconds_last`` is a non-negative float or None.
-    rsl = raw.get("response_seconds_last")
-    if rsl is not None:
-        if isinstance(rsl, bool) or not isinstance(rsl, (int, float)):
+    if "cache_hit_rate" in raw:
+        rate = raw["cache_hit_rate"]
+        if rate is None:
+            clean["cache_hit_rate"] = None
+        elif (
+            isinstance(rate, bool)
+            or not isinstance(rate, (int, float))
+            or not math.isfinite(rate)
+            or not 0 <= rate <= 1
+        ):
             raise ValueError(
-                "usefulness.response_seconds_last must be a non-negative number"
+                "usefulness.cache_hit_rate must be a finite number between 0 and 1"
             )
-        if rsl < 0:
+        else:
+            clean["cache_hit_rate"] = float(rate)
+    for name in _USEFULNESS_NON_NEG_NUMBER_FIELDS:
+        if name not in raw:
+            continue
+        value = raw[name]
+        if value is None:
+            clean[name] = None
+        elif (
+            isinstance(value, bool)
+            or not isinstance(value, (int, float))
+            or not math.isfinite(value)
+            or value < 0
+        ):
             raise ValueError(
-                "usefulness.response_seconds_last must be a non-negative number"
+                f"usefulness.{name} must be a finite non-negative number"
             )
-        clean["response_seconds_last"] = float(rsl)
+        else:
+            clean[name] = float(value)
+    if "last_completed_at" in raw:
+        completed_at = raw["last_completed_at"]
+        clean["last_completed_at"] = (
+            None
+            if completed_at is None
+            else _parse_aware_timestamp(
+                completed_at, "usefulness.last_completed_at"
+            ).isoformat()
+        )
     # ``verdict_counts``: bounded 4-bucket dict.
     vc = raw.get("verdict_counts")
     if vc is not None:
@@ -158,6 +202,29 @@ def _clean_usefulness(raw: Any) -> dict[str, Any]:
                 )
             clean_v[v_name] = v_val
         clean["verdict_counts"] = clean_v
+    if {
+        "cache_hits", "cache_misses", "cache_hit_rate",
+    }.issubset(raw):
+        lookups = clean.get("cache_hits", 0) + clean.get("cache_misses", 0)
+        expected_rate = None if lookups == 0 else clean["cache_hits"] / lookups
+        actual_rate = clean.get("cache_hit_rate")
+        if (
+            (expected_rate is None) != (actual_rate is None)
+            or (
+                expected_rate is not None
+                and not math.isclose(actual_rate, expected_rate, abs_tol=1e-12)
+            )
+        ):
+            raise ValueError(
+                "usefulness.cache_hit_rate is inconsistent with cache counters"
+            )
+    if "total_completed_reviews" in clean and "verdict_counts" in clean:
+        if clean["total_completed_reviews"] != sum(
+            clean["verdict_counts"].values()
+        ):
+            raise ValueError(
+                "usefulness.total_completed_reviews is inconsistent with verdict counts"
+            )
     return clean
 
 

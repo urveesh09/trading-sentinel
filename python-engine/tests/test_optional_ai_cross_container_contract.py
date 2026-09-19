@@ -38,6 +38,8 @@ from __future__ import annotations
 
 import json
 from datetime import datetime, timezone
+from pathlib import Path
+import sys
 from typing import Any, Dict, FrozenSet, Optional
 
 import pytest
@@ -82,7 +84,9 @@ ENGINE_QUEUE_KEYS: FrozenSet[str] = frozenset({
 #: Bounded usefulness keys (the I.A validator's allow-list).
 ENGINE_USEFULNESS_KEYS: FrozenSet[str] = frozenset({
     "total_completed_reviews", "cache_hits", "cache_misses",
-    "circuit_opens", "response_seconds_last", "verdict_counts",
+    "cache_hit_rate", "circuit_opens", "response_seconds_mean",
+    "response_seconds_p95", "response_seconds_last",
+    "last_completed_at", "verdict_counts",
 })
 
 #: Bounded verdict keys inside the usefulness envelope.
@@ -165,6 +169,25 @@ class TestEnvelopeAcceptance:
             assert stored["detail"]["usefulness"]["total_completed_reviews"] == 1
         finally:
             os.unlink(db)
+
+    def test_real_agent_snapshot_is_accepted_without_test_double(self) -> None:
+        """Exercise the actual producer method against the engine validator."""
+        agent_dir = Path(__file__).resolve().parents[2] / "agent"
+        sys.path.insert(0, str(agent_dir))
+        try:
+            from async_reviews import AsyncReviewQueue
+            from optional_ai_status import _clean_usefulness
+
+            queue = AsyncReviewQueue(lambda *_args, **_kwargs: None)
+            try:
+                snapshot = queue.usefulness_snapshot()
+            finally:
+                queue.shutdown()
+        finally:
+            sys.path.remove(str(agent_dir))
+
+        assert set(snapshot) == ENGINE_USEFULNESS_KEYS
+        assert _clean_usefulness(snapshot) == snapshot
 
     def test_no_unknown_keys_in_payload_round_trip(self) -> None:
         """The canonical payload must use only documented keys.
@@ -333,8 +356,12 @@ class TestRoundTrip:
             usefulness = {
                 "total_completed_reviews": 7,
                 "cache_hits": 4, "cache_misses": 3,
+                "cache_hit_rate": 4 / 7,
                 "circuit_opens": 0,
+                "response_seconds_mean": 1.2,
+                "response_seconds_p95": 2.1,
                 "response_seconds_last": 1.5,
+                "last_completed_at": "2026-09-19T10:00:00+00:00",
                 "verdict_counts": {"APPROVE": 5, "APPROVE_WITH_CONCERNS": 1,
                                      "REVIEW_UNAVAILABLE": 1, "REJECT": 0},
             }
