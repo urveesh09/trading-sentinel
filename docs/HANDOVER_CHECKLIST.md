@@ -12,7 +12,8 @@ passed/four skipped/42 known deprecations in 205.51s**. JUnit is retained at
 `C:/Users/Urveesh/AppData/Local/Temp/sentinel-workflow-c-source-binding-20260919.xml`.
 No schema/config/data migration, broker call, delivery authority, flag change,
 or Production edit. Implementation commit: `e2212cb` on
-`codex/production-correction-hedge-p0`; push pending. See
+`codex/production-correction-hedge-p0`; verification receipt: `1a97932`. Both
+were pushed to `origin/codex/production-correction-hedge-p0`. See
 [the plan and receipt](2026-09-19-workflow-c-asymmetric-source-binding-plan.md).
 
 ## September 19 Workflow C.C2.HOLDOUT (Dev tested)
