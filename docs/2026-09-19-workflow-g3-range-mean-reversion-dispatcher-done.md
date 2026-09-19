@@ -1,5 +1,11 @@
 # Workflow G.3 — Range Mean-Reversion Dispatcher (DONE)
 
+> **Superseded timing detail:** G.7 found that this slice selected the last
+> candidate up to the deadline while generic execution could start earlier.
+> `2026-09-19-g7-range-comparison-causality-plan.md` corrects that temporal
+> leakage, insufficient-history fallback and comparison alias gate. This file
+> remains the historical G.3 receipt, not the current timing contract.
+
 Date: 2026-09-19
 
 ## What
@@ -13,7 +19,7 @@ Before this slice, the matrix note was:
 > completed-bar-confirmation fallback.
 
 After this slice, the dispatcher short-circuits the trade and returns
-`NO_FILL` with one of three reasons that name the violated invariant:
+`NO_FILL` with one of four reasons that name the violated invariant:
 
   - `RANGE_REVERSION_WAIT_RANGE_NOT_INTACT`
     (range_pct > max_range_pct)

@@ -1,5 +1,5 @@
 """Independent unmocked acceptance checks for the predeclared G/C workflow."""
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 
 import pytest
 
@@ -129,3 +129,53 @@ async def test_actual_two_profile_two_session_report_retains_all_gates_and_retri
     body = {key: value for key, value in report.items() if key != "report_sha256"}
     assert hashlib.sha256(json.dumps(body, sort_keys=True, separators=(",", ":"), allow_nan=False).encode()).hexdigest() == report["report_sha256"]
     assert await evaluate_comparison_protocol(path, **{**args, "now": _at("2026-09-16T00:00:00Z")}) == report
+
+
+@pytest.mark.asyncio
+async def test_causal_range_profile_uses_ordinary_predeclared_gates(tmp_path):
+    """A dedicated range profile is no longer mislabeled as a confirmation alias."""
+    from dataclasses import replace
+
+    manifest = _manifest()
+    manifest["holdout_sessions"] = ["2026-09-11"]
+    manifest["alternatives"] = [{
+        "name": "range", "entry": "RANGE_REVERSION_V1",
+        "exit": "STOP_TARGET_TIME_V1",
+    }]
+    manifest["baseline"] = "range"
+    path = str(tmp_path / "range.db")
+    await freeze_comparison_protocol(
+        path, manifest, now=_at("2026-09-10T01:00:00Z"),
+    )
+    proposal = replace(
+        _proposal(), entry_deadline=_at("2026-09-11T04:20:00Z"),
+    )
+    cutoff = _at("2026-09-11T04:00:00Z")
+    bars = []
+    for index in range(14):
+        close = 100.0 + (index % 4 - 1.5) * .03
+        bars.append({
+            "timestamp": (cutoff - timedelta(
+                minutes=(14 - index) * 5,
+            )).isoformat(),
+            "open": close, "high": close + .5, "low": close - .5,
+            "close": close,
+        })
+    bars.extend([
+        {"timestamp": "2026-09-11T04:05:00+00:00", "open": 100,
+         "high": 100.2, "low": 99.4, "close": 99.8},
+        {"timestamp": "2026-09-11T04:10:00+00:00", "open": 99.9,
+         "high": 100.2, "low": 99.8, "close": 100.1},
+    ])
+    report = await evaluate_comparison_protocol(
+        path, protocol_id="independent", report_id="range-causal",
+        proposals=[proposal], future_bars={proposal.opportunity_id: bars},
+        session_coverage={"range": {"2026-09-11": "COMPLETE"}},
+        now=_at("2026-09-12T00:00:00Z"),
+    )
+    profile = report["profiles"][0]
+    assert profile["semantic_limitation"] is None
+    assert profile["baseline"]["closed"] == 1, profile["outcomes"]["baseline"][0]["reason"]
+    assert profile["stress"]["closed"] == 1
+    assert profile["disposition"] == "SUPPORTS_FURTHER_RESEARCH"
+    assert report["approval_usable"] is False

@@ -17,11 +17,10 @@ This file proves:
   2. The proposal flow is end-to-end (build emits, allocator accepts).
   3. The dispatcher's enum-check no longer trips on the new profile.
 
-It deliberately does NOT assert a specific numerical P&L because the
-shipped dispatcher routes RANGE_REVERSION_V1 through the same
-completed-bar-confirmation path used by COMPLETED_BAR_CONFIRMATION_V1
-(see audit §6 for why a dedicated range-mean-reversion simulator is a
-separate future slice, not closed by this constant change).
+The original constant-only slice deliberately avoided numerical semantics.
+G.3 later added a dedicated dispatcher and G.7 makes that dispatcher causal;
+the detailed timing/invalidation contract is pinned in
+``test_range_reversion_dispatcher.py``.
 """
 from __future__ import annotations
 
@@ -114,11 +113,8 @@ def test_simulator_dispatcher_accepts_range_reversion_v1() -> None:
 
     This is the gap that the constant change closes. Before the change
     this test raised ``ValueError('unsupported shadow research profile')``.
-    After the change it returns a ShadowSimulation whose ``status`` is
-    one of the documented outcomes (``NO_FILL``, ``FILLED``, ``INVALID``,
-    etc.); we make no claim about which outcome is correct here because
-    the dedicated range-mean-reversion simulator is a separate future
-    slice (audit § gap #3).
+    After the change it returns a bounded ShadowSimulation outcome. Detailed
+    causal semantics are tested separately.
     """
     now = datetime(2026, 9, 13, 10, 0, tzinfo=timezone.utc)
     bars = _range_stabilization_bars(now)
@@ -147,10 +143,7 @@ def test_simulator_dispatcher_accepts_range_reversion_v1() -> None:
     )
     assert simulation is not None
     assert hasattr(simulation, "status")
-    # The call must return a documented ShadowSimulation outcome; we do not
-    # commit to which one because the dedicated range-mean-reversion
-    # simulator is a separate future slice (audit § gap #3). The set
-    # below is every ``status`` value ShadowSimulation can carry today,
+    # The set below is every ``status`` value ShadowSimulation can carry today,
     # observed across all entry profiles; ``OPEN`` is included because the
     # 3-bar future fixture is short enough that the simulator legitimately
     # reports ``DATA_END_OPEN_POSITION``.

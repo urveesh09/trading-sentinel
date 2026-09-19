@@ -126,7 +126,13 @@ def test_range_reversion_enters_when_range_intact():
     """[WORKFLOW-G.3 2026-09-17] Stable range + entry bar
     touches the lower band -> simulator ENTERS (NOT a
     NO_FILL fallback)."""
-    bars = _stable_range_bars()
+    bars, cutoff = _causal_history_and_decisions()
+    bars.extend([
+        {"timestamp": (cutoff + timedelta(minutes=5)).isoformat(),
+         "open": 100.0, "high": 100.1, "low": 99.8, "close": 99.95},
+        {"timestamp": (cutoff + timedelta(minutes=10)).isoformat(),
+         "open": 99.95, "high": 100.2, "low": 99.9, "close": 100.1},
+    ])
     proposal = _make_proposal(bars)
     result = simulate_shadow_research_trial(
         proposal, bars, cash=100000.0,
@@ -147,7 +153,13 @@ def test_range_reversion_strict_stop_is_propagated():
     a strict stop, the proposal's stop is updated before
     the simulator runs. This means tail risk is bounded
     even when the range_reversion thesis fails."""
-    bars = _stable_range_bars()
+    bars, cutoff = _causal_history_and_decisions()
+    bars.extend([
+        {"timestamp": (cutoff + timedelta(minutes=5)).isoformat(),
+         "open": 100.0, "high": 100.1, "low": 99.8, "close": 99.95},
+        {"timestamp": (cutoff + timedelta(minutes=10)).isoformat(),
+         "open": 99.95, "high": 100.2, "low": 99.7, "close": 99.8},
+    ])
     proposal = _make_proposal(bars, stop=97.5)
     result = simulate_shadow_research_trial(
         proposal, bars, cash=100000.0,
@@ -195,18 +207,18 @@ def test_range_reversion_suppresses_when_no_lower_touch():
     # touch_threshold = window_min + mean * 0.005.
     # window_min ~ 99.85; mean ~ 100.0.
     # touch_threshold ~ 100.35.
-    # Replace the last bar with an entry bar whose low is
+    # Replace the first eligible decision bar with one whose low is
     # strictly above the touch threshold (101.0 > 100.35).
     # All OHLC consistent: low <= min(open, close).
     entry_bar = {
-        "timestamp": bars[-1]["timestamp"],
+        "timestamp": bars[21]["timestamp"],
         "open": 101.5,
         "high": 101.8,
         "low": 101.0,  # 101.0 > touch_threshold ~100.35.
         "close": 101.4,
         "volume": 100,
     }
-    bars[-1] = entry_bar
+    bars[21] = entry_bar
     proposal = _make_proposal(bars)
     result = simulate_shadow_research_trial(
         proposal, bars, cash=100000.0,
@@ -277,3 +289,102 @@ def test_range_reversion_differs_from_completed_bar_confirmation():
         f"COMPLETED_BAR_CONFIRMATION unexpectedly produced "
         f"RANGE_REVERSION reason: {cbc_result.reason}"
     )
+
+
+# -- 4. G.7 causal decision boundary -----------------------
+
+
+def _causal_history_and_decisions() -> tuple[list[dict], datetime]:
+    cutoff = datetime(2026, 9, 13, 10, 0, tzinfo=timezone.utc)
+    history = []
+    for index in range(14):
+        close = 100.0 + (index % 4 - 1.5) * 0.03
+        history.append({
+            "timestamp": (cutoff - timedelta(minutes=(14 - index) * 5)).isoformat(),
+            "open": close, "high": close + 0.05, "low": close - 0.05,
+            "close": close, "volume": 100,
+        })
+    return history, cutoff
+
+
+def test_first_decision_bar_cannot_be_rewritten_by_later_favorable_bar():
+    """A later lower-band touch cannot backdate an earlier entry decision."""
+    history, cutoff = _causal_history_and_decisions()
+    first_no_touch = {
+        "timestamp": (cutoff + timedelta(minutes=5)).isoformat(),
+        "open": 101.0, "high": 101.2, "low": 100.8, "close": 101.0,
+    }
+    later_touch = {
+        "timestamp": (cutoff + timedelta(minutes=10)).isoformat(),
+        "open": 100.0, "high": 100.1, "low": 99.8, "close": 99.95,
+    }
+    proposal = _make_proposal(history)
+    first = simulate_shadow_research_trial(
+        proposal, history + [first_no_touch], cash=100000.0,
+        entry_profile_id="RANGE_REVERSION_V1",
+        exit_profile_id="STOP_TARGET_TIME_V1",
+    )
+    with_later_bar = simulate_shadow_research_trial(
+        proposal, history + [first_no_touch, later_touch], cash=100000.0,
+        entry_profile_id="RANGE_REVERSION_V1",
+        exit_profile_id="STOP_TARGET_TIME_V1",
+    )
+    assert first.status == with_later_bar.status == "NO_FILL"
+    assert first.reason == with_later_bar.reason == (
+        "RANGE_REVERSION_WAIT_NO_LOWER_TOUCH"
+    )
+
+
+def test_range_execution_starts_strictly_after_decision_bar():
+    history, cutoff = _causal_history_and_decisions()
+    decision = {
+        "timestamp": (cutoff + timedelta(minutes=5)).isoformat(),
+        "open": 100.0, "high": 100.1, "low": 99.8, "close": 99.95,
+    }
+    execution = {
+        "timestamp": (cutoff + timedelta(minutes=10)).isoformat(),
+        "open": 99.95, "high": 100.2, "low": 99.9, "close": 100.1,
+    }
+    proposal = _make_proposal(history, entry=99.0, target=100.0)
+    result = simulate_shadow_research_trial(
+        proposal, history + [decision, execution], cash=100000.0,
+        entry_profile_id="RANGE_REVERSION_V1",
+        exit_profile_id="STOP_TARGET_TIME_V1",
+        fee_rate=0.0, slippage_bps=0.0,
+    )
+    assert result.status == "CLOSED"
+    assert result.entry_at == cutoff + timedelta(minutes=10)
+    assert result.entry_at > datetime.fromisoformat(decision["timestamp"])
+
+
+def test_insufficient_range_history_never_falls_through_to_confirmation():
+    history, cutoff = _causal_history_and_decisions()
+    decision = {
+        "timestamp": (cutoff + timedelta(minutes=5)).isoformat(),
+        "open": 100.0, "high": 100.1, "low": 99.8, "close": 99.95,
+    }
+    result = simulate_shadow_research_trial(
+        _make_proposal(history), history[-5:] + [decision], cash=100000.0,
+        entry_profile_id="RANGE_REVERSION_V1",
+        exit_profile_id="STOP_TARGET_TIME_V1",
+    )
+    assert result.status == "NO_FILL"
+    assert result.reason == "RANGE_REVERSION_WAIT_INSUFFICIENT_BARS"
+
+
+def test_malformed_range_bars_fail_closed_without_generic_confirmation():
+    history, cutoff = _causal_history_and_decisions()
+    duplicate = {
+        **history[-1],
+        "timestamp": history[-2]["timestamp"],
+    }
+    result = simulate_shadow_research_trial(
+        _make_proposal(history), history[:-1] + [duplicate] + [{
+            "timestamp": (cutoff + timedelta(minutes=5)).isoformat(),
+            "open": 100.0, "high": 100.1, "low": 99.8, "close": 99.95,
+        }], cash=100000.0,
+        entry_profile_id="RANGE_REVERSION_V1",
+        exit_profile_id="STOP_TARGET_TIME_V1",
+    )
+    assert result.status == "INVALID"
+    assert result.reason == "RANGE_REVERSION_INVALID_OR_UNORDERED_BARS"

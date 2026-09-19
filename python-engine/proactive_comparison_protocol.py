@@ -280,14 +280,12 @@ async def evaluate_comparison_protocol(db_path: str, *, protocol_id: str, report
                     all_profiles[a["name"]][label].append({"opportunity_id": p.opportunity_id, "session": session, "status": r.status, "reason": r.reason, "quantity": r.quantity, "net_pnl": r.net_pnl, "entry_price": r.entry_price, "exit_price": r.exit_price, "entry_at": r.entry_at.isoformat() if r.entry_at else None, "exit_at": r.last_bar_at.isoformat() if r.status == "CLOSED" and r.last_bar_at else None})
         baseline = manifest["baseline"]; results = []
         adjusted_confidence = 1 - (1 - manifest["thresholds"]["confidence_level"]) / len(manifest["alternatives"])
-        for name, coords in all_profiles.items(): results.append({"name": name, "coverage": [{"session": d, "status": coverage[name, d]} for d in manifest["holdout_sessions"]], "baseline": _summarise(coords["baseline"], all_profiles[baseline]["baseline"], cash=manifest["cash"], confidence=adjusted_confidence, samples=manifest["thresholds"]["bootstrap_samples"]), "stress": _summarise(coords["stress"], all_profiles[baseline]["stress"], cash=manifest["cash"], confidence=adjusted_confidence, samples=manifest["thresholds"]["bootstrap_samples"]), "outcomes": coords, "family_wise_confidence": adjusted_confidence, "semantic_limitation": "RANGE_REVERSION_V1 is a confirmation alias, not an independent range hypothesis" if next(a for a in manifest["alternatives"] if a["name"] == name)["entry_profile_id"] == "RANGE_REVERSION_V1" else None})
+        for name, coords in all_profiles.items(): results.append({"name": name, "coverage": [{"session": d, "status": coverage[name, d]} for d in manifest["holdout_sessions"]], "baseline": _summarise(coords["baseline"], all_profiles[baseline]["baseline"], cash=manifest["cash"], confidence=adjusted_confidence, samples=manifest["thresholds"]["bootstrap_samples"]), "stress": _summarise(coords["stress"], all_profiles[baseline]["stress"], cash=manifest["cash"], confidence=adjusted_confidence, samples=manifest["thresholds"]["bootstrap_samples"]), "outcomes": coords, "family_wise_confidence": adjusted_confidence, "semantic_limitation": None})
         # Thresholds are gates, never an authorization mechanism.
         base_profile = next(x for x in results if x["name"] == baseline); base = base_profile["baseline"]; stress_summary = base_profile["stress"]; thresholds = manifest["thresholds"]
         complete = sum(coverage[baseline, d] == "COMPLETE" for d in manifest["holdout_sessions"]); missing = len(manifest["holdout_sessions"]) - complete
         rejection = ((base["net_expectancy"] is not None and base["net_expectancy"] < thresholds["minimum_net_expectancy"]) or base["ordered_realised_drawdown_pct_initial_cash"] > thresholds["maximum_drawdown_pct"] or stress_summary["ordered_realised_drawdown_pct_initial_cash"] > thresholds["maximum_drawdown_pct"])
         uncertain = (missing > 0 or complete < thresholds["minimum_complete_sessions"] or base["closed"] < thresholds["minimum_closed_outcomes"] or base["open_or_invalid_blocks_inference"] or base["paired_baseline_delta"] is None or base["paired_session_cluster_bootstrap_ci"][0] is None or base["paired_session_cluster_bootstrap_ci"][0] < thresholds["minimum_paired_delta"])
-        baseline_entry = next(a for a in manifest["alternatives"] if a["name"] == baseline)["entry_profile_id"]
-        if baseline_entry == "RANGE_REVERSION_V1": uncertain = True
         # Each challenger receives its own predeclared gate result.  Baseline
         # has no meaningful paired delta against itself, so its paired gate is
         # explicitly N/A rather than silently treated as a win.
@@ -313,7 +311,6 @@ async def evaluate_comparison_protocol(db_path: str, *, protocol_id: str, report
                           or summary["closed"] < thresholds["minimum_closed_outcomes"] or stressed["closed"] < thresholds["minimum_closed_outcomes"]
                           or summary["open_or_invalid_blocks_inference"] or stressed["open_or_invalid_blocks_inference"])
             if profile["name"] != baseline and any(coord["paired_session_cluster_bootstrap_ci"][0] is None or coord["paired_session_cluster_bootstrap_ci"][0] < thresholds["minimum_paired_delta"] for coord in (summary, stressed)): incomplete = True
-            if profile["semantic_limitation"]: incomplete = True
             profile["disposition"] = "REJECTED" if failed else "UNCERTAIN" if incomplete else "SUPPORTS_FURTHER_RESEARCH"
             if failed: profile_reasons.append("baseline or stress economic/drawdown gate breached")
             if incomplete: profile_reasons.append("insufficient complete independent session evidence or paired uncertainty")

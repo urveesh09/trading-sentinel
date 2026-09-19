@@ -1,5 +1,28 @@
 # Trading Sentinel — system guide and engineering handover
 
+## September 19 Workflow G.7 range-comparison causality correction
+
+The dedicated `RANGE_REVERSION_V1` research path now evaluates the first
+completed bar after its frozen decision cutoff, requires 14 prior bars, and
+starts any modeled execution strictly after that decision bar. Later favorable
+bars can no longer validate an earlier hypothetical fill. Missing history,
+missing decision bars, malformed/duplicate bars, verifier failures and invalid
+range geometry return named fail-closed outcomes rather than falling through to
+generic completed-bar confirmation.
+
+The predeclared comparison protocol no longer carries the obsolete statement
+that range reversion is a confirmation alias or forces every range profile to
+`UNCERTAIN`. Range evidence now faces the same completeness, baseline/stress
+economics, drawdown and paired uncertainty gates as every other declared
+profile. Protocol and evaluator source hashes remain frozen, so existing
+protocols cannot be silently reinterpreted and require a new protocol ID under
+the corrected implementation. This is offline research only: no qualification,
+approval, order, capital or delivery authority. Production remains untouched.
+Focused range/comparison acceptance is **81 passed** warning-fatal; the broader
+G surface is **222 passed** warning-fatal; whole-engine acceptance is **4,095
+passed/four skipped/46 known framework deprecations in 204.44s**.
+See the [G.7 plan](2026-09-19-g7-range-comparison-causality-plan.md).
+
 ## September 19 Workflow F.10A broker/internal reference verification
 
 Dev now compares each executed `FILLED`/`PARTIAL` broker order in an imported
@@ -58,7 +81,7 @@ September16 momentum/CAS correction: Dev now transfers exclusive live-momentum e
 
 September16 independent post-commit review: the first J.7 resolver hardening was incomplete. The corrected Dev contract HMAC-binds the eligibility decision to the requested symbol, authoritative source label and configuration fingerprint; malformed responses fail closed before execution. Holiday refresh rejects an entire malformed/empty/out-of-validity payload rather than silently filtering it, and both fallback and engine-loaded calendars expire at declared `valid_through`. The audit also removed intermittent operational-coverage SQLite lock races and made J.10 SUMMARY verification deterministic without altering its public JSON shape. Final Dev Python receipt: 3725 passed/four skipped/42 existing deprecation warnings; native runtime-matching Node: 424 passed/four skipped; dashboard: 43 passed and build; agent: 338 passed. The completed Python run retained aiosqlite worker threads after printing the receipt, so clean interpreter teardown remains an environment/runtime follow-up. This is Dev source/test evidence only; Production remains at merge `967e07a`, and real CAS staging captures remain absent. See [independent correction plan](2026-09-14-independent-correction-plan.md).
 
-September14 independent correction: the offline predeclared G/C comparison now freezes full cost metadata and code identity before holdout, supports identical late retries without backdating new protocols, preserves every session/state, reports actual turnover and opportunity-weighted session-cluster uncertainty, and applies baseline/stress gates to every declared profile. Missing declared coverage blocks support even when a lower minimum is met. Explicit CLI paths have no live DB default or backdating switch. Reports retain the complete frozen manifest and remain diagnostic research only: no winner selection, qualification, approval or order authority. See [protocol plan](2026-09-13-predeclared-strategy-comparison-plan.md). RANGE remains an unsupported confirmation alias; independent trials are not shared-book capacity proof.
+September14 independent correction: the offline predeclared G/C comparison now freezes full cost metadata and code identity before holdout, supports identical late retries without backdating new protocols, preserves every session/state, reports actual turnover and opportunity-weighted session-cluster uncertainty, and applies baseline/stress gates to every declared profile. Missing declared coverage blocks support even when a lower minimum is met. Explicit CLI paths have no live DB default or backdating switch. Reports retain the complete frozen manifest and remain diagnostic research only: no winner selection, qualification, approval or order authority. See [protocol plan](2026-09-13-predeclared-strategy-comparison-plan.md). G.7 supersedes the historical RANGE alias limitation with a causal dedicated dispatcher; independent trials still are not shared-book capacity proof.
 
 The [external-work audit](2026-09-14-external-work-independent-audit.md) supersedes F-series/J closure claims: actual F&O quantities, account evidence, capital defaults/failure handling, live CAS eligibility, square-off windows and holiday fallback need corrections. Passing synthetic tests are not acceptance of these contracts. Dev only; no push/deployment or operational data mutation.
 
@@ -280,7 +303,7 @@ Independent F source review corrected materially inferred accounting schemas and
 
 Independent F/G review identified mislabeled trailing-exit dispatch and incomplete promotion approval validation despite passing focused tests. The first correction makes `promotion_bridge.py` transitions atomic and directed, reads the latest committed append state, and prevents a terminal refusal/approval from being amended. Signature timestamps cannot reorder that state. This preserves both tables and all rows. Its records remain non-authoritative (`can_place_orders=False`); approval budget/evidence/expiry validation and faithful entry/exit composition are still required, so neither a stored approval nor a green focused suite establishes live permission. See `2026-09-13-fg-independent-correction-plan.md`.
 
-The trailing-composition follow-up now honors NEXT at-open, bounded pullback limit and completed-bar-confirmation entry behavior before applying the selected trailing exit. Intrabar limit fills don't ratchet from a possibly pre-fill entry-bar high; confirmation bars cannot fill or ratchet the position. Gap-invalid entries remain no-fill and nonfinite cost assumptions fail closed. Root's ten-file proactive/G suite passes 121 tests with warnings fatal; Terra independently reviewed causality and found no blocker. Existing primary comparison runs retain their implementation fingerprint and reject incompatible reuse. RANGE_REVERSION remains an acknowledged confirmation alias, not a faithful mean-reversion result; the separate exit-policy report cache still needs full proposal-clock/implementation identity, and bridge approval validation remains unfinished. Old reports are retained, not reinterpreted as corrected results.
+The trailing-composition follow-up now honors NEXT at-open, bounded pullback limit and completed-bar-confirmation entry behavior before applying the selected trailing exit. Intrabar limit fills don't ratchet from a possibly pre-fill entry-bar high; confirmation bars cannot fill or ratchet the position. Gap-invalid entries remain no-fill and nonfinite cost assumptions fail closed. Root's ten-file proactive/G suite passes 121 tests with warnings fatal; Terra independently reviewed causality and found no blocker. Existing primary comparison runs retain their implementation fingerprint and reject incompatible reuse. G.7 subsequently makes RANGE_REVERSION a causal dedicated hypothesis and removes the stale alias gate; old reports remain retained and cannot be reinterpreted because implementation hashes differ.
 
 The exit-cache follow-up closes that proposal-clock/implementation identity gap: new `matched-exit-evidence-v3` manifests bind effective full proposal identities/timings, snapshotted bars, costs and both evaluator source hashes. A companion `proactive_exit_research_manifests` table retains canonical JSON without changing the original four-column results table. Legacy reports remain readable but cannot be reused as current-version runs; incompatible reuse fails rather than overwriting history. Atomic final recheck handles concurrent identical/conflicting requests, and duplicate opportunity IDs cannot inflate the sample. Root's current proactive/G suite passes 137 tests with warnings fatal. These are input/implementation integrity checks, not genuine held-out provenance, qualification or live authorization; approval validation/range semantics/F evidence remain open.
 

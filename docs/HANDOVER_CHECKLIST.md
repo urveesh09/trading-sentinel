@@ -1,5 +1,24 @@
 # Handover receipt and operator checklist
 
+## September 19 Workflow G.7 (Dev tested)
+
+The range-reversion simulator no longer chooses the last bar before the entry
+deadline and then backdates a modeled fill to an earlier bar. It evaluates only
+the first completed post-cutoff decision bar and begins execution after it.
+Insufficient/malformed inputs never fall through to generic confirmation. The
+comparison protocol removes its stale alias/forced-uncertain rule while keeping
+all ordinary evidence gates and no-authority fields. Existing frozen protocols
+remain implementation-hash bound and require a new protocol ID.
+
+Focused range/comparison baseline was **76 passed** warning-fatal; corrected
+focused range/comparison is **81 passed** and the broader G surface is **222
+passed**, both warning-fatal. Whole engine is **4,095 passed/four skipped/46
+known framework deprecations in 204.44s**; JUnit:
+`C:/Users/Urveesh/AppData/Local/Temp/sentinel-g7-range-causality-20260919.xml`.
+Atlas remains 203 modules; changed-source compilation and diff checks pass.
+Commit/push receipts remain pending. No schema/config/default, broker call,
+order, partner delivery or Production mutation occurred.
+
 ## September 19 Workflow F.10A (Dev tested)
 
 The new read-only broker/internal report checks executed imported broker order
