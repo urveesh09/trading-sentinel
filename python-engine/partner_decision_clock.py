@@ -47,8 +47,21 @@ class DecisionClock:
     dispatch_checked_at: datetime | None = None
 
     def __post_init__(self) -> None:
-        if self.policy != CLOCK_POLICY:
-            raise ValueError("unsupported decision clock policy")
+        # [WORKFLOW-A.2 2026-09-17] Accept either supported
+        # policy family. The FROZEN family requires
+        # evaluation_cutoff_at == tick_started_at; the
+        # POST_ACQUISITION family requires candidate_constructed_at
+        # > tick_started_at. These per-policy invariants are
+        # checked AFTER the field-level validation below.
+        from decision_policy import (  # type: ignore[import-not-found]
+            DecisionPolicy,
+            assert_policy_supports_clock,
+        )
+        if self.policy not in {p.value for p in DecisionPolicy}:
+            raise ValueError(
+                f"unsupported decision clock policy: {self.policy!r}; "
+                f"supported policies: {[p.value for p in DecisionPolicy]}"
+            )
         for field in (
             "tick_started_at", "evaluation_cutoff_at", "public_requested_at",
             "public_received_at", "chain_requested_at", "chain_received_at",
@@ -57,8 +70,6 @@ class DecisionClock:
             value = getattr(self, field)
             if value is not None:
                 object.__setattr__(self, field, aware(value, field))
-        if self.evaluation_cutoff_at != self.tick_started_at:
-            raise ValueError("frozen evaluation cutoff must equal tick start")
         ordered = [
             self.tick_started_at, self.public_requested_at, self.public_received_at,
             self.chain_requested_at, self.chain_received_at, self.candidate_constructed_at,
@@ -69,6 +80,8 @@ class DecisionClock:
             raise ValueError("decision clocks must be monotonic")
         if not self.run_id or not self.account_id or self.underlying.upper() not in {"NIFTY", "SENSEX"}:
             raise ValueError("decision clock scope is incomplete")
+        # Per-policy invariant enforcement.
+        assert_policy_supports_clock(self.policy, self)
 
     def with_stage(self, **values) -> "DecisionClock":
         return replace(self, **values)
