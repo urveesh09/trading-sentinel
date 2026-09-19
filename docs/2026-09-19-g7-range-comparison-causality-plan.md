@@ -1,6 +1,7 @@
 # Workflow G.7 — range comparison causality correction
 
-**Status:** TESTED_DEV. Commit/push receipt pending. Production is unchanged.
+**Status:** TESTED_DEV. Implementation commit `fefa5a3`; push pending.
+Production is unchanged.
 
 ## Problem
 
@@ -90,4 +91,6 @@ predeclared sessions, F/D evidence and operator review remain required.
 No schema/data migration, configuration/default change, network call, order,
 capital/qualification authority, partner delivery or Production edit occurred.
 Implementation, documentation receipt and push identities will be recorded
-after each step is verified.
+after each step is verified. Implementation commit `fefa5a3` contains source,
+tests, atlas and documentation; its immediate stat/status/guide/plan/atlas
+consistency review passed with a clean Dev worktree.
