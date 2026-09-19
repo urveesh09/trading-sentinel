@@ -1,5 +1,29 @@
 # Handover receipt and operator checklist
 
+## September 19 Workflow F.10A (Dev tested)
+
+The new read-only broker/internal report checks executed imported broker order
+IDs against retained live references in both position books and records
+missing, ambiguous and insufficient-scope results without granting any trading
+or capital authority. A broker cash `MATCH` can no longer suppress a missing
+internal order reference. The HTTP and CLI response changes are additive.
+
+This slice has no table migration, history rewrite, configuration/default
+change, broker/network call, order submission or partner delivery. It does add
+three discrepancy category strings; rollback removes the producer/bridge, but
+already appended rows require code that recognizes those values. Bidirectional
+economic reconciliation still needs account-scoped internal books, statement
+period bounds, universal order IDs, richer immutable fill data and genuine
+broker evidence. Focused reconciliation acceptance: **118 passed/21 known
+framework deprecations in 6.95s**. Whole engine: **4,090 passed/four skipped/46
+known deprecations in 204.15s**; JUnit:
+`C:/Users/Urveesh/AppData/Local/Temp/sentinel-f10a-broker-internal-final2-20260919.xml`.
+The first whole run exposed an unrelated microsecond clock race in one MTM test
+fixture; binding its quote and report to the same instant made that test
+deterministic, and the exact final tree passed. Atlas regenerated at 203 Python
+modules; changed Python compilation and diff checks passed. Production remains
+unchanged. Commit/push receipt is recorded below after creation.
+
 ## September 19 Workflow C.C2.SOURCE (Dev tested)
 
 The modeled asymmetric path no longer borrows prices from the earlier decision

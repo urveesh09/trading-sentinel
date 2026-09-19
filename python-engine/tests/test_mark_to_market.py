@@ -733,7 +733,11 @@ class TestSilentZeroRegression:
         # MTM with a fresh quote produces the correct unrealised P&L.
         result = mark_open_positions(
             equity_rows=penny_pos, fno_rows=[], fno_dr_rows=[],
-            quotes={"TCS": _quote(3500.0)}, now_utc=now,
+            # Bind the quote to the same clock as the report. Calling _quote()
+            # here samples a second ``now`` which can cross a Windows clock
+            # tick under full-suite load and make the quote microscopically
+            # future-dated (correctly rejected by the runtime as stale).
+            quotes={"TCS": QuoteTick.build(3500.0, now)}, now_utc=now,
         )
         assert result.total_unrealised_pnl == pytest.approx(5000.0)
 

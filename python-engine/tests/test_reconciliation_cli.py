@@ -208,6 +208,8 @@ class TestImportStatement:
         assert out["statement_id"] == "2026-09-08"
         assert len(out["discrepancy_ids"]["broker"]) >= 1
         assert len(out["discrepancy_ids"]["evidence"]) >= 1
+        assert "broker_internal" in out["discrepancy_ids"]
+        assert out["broker_internal"]["status"] == "INSUFFICIENT_SCOPE"
 
     @pytest.mark.asyncio
     async def test_idempotent_reimport_no_new_discrepancies(
@@ -232,6 +234,36 @@ class TestImportStatement:
             first["discrepancy_ids"]["evidence"]
             == second["discrepancy_ids"]["evidence"]
         )
+
+    @pytest.mark.asyncio
+    async def test_import_reports_unique_live_reference_without_reconciliation_claim(
+        self, cli_db: str, tmp_path, monkeypatch,
+    ) -> None:
+        from config import settings
+        from fno_positions import init_fno_positions_db
+        from position_tracker import init_positions_db
+        monkeypatch.setattr(settings, "BROKER_RECONCILIATION_ACCOUNT_ID", "owner")
+        await init_positions_db(cli_db)
+        await init_fno_positions_db(cli_db)
+        with sqlite3.connect(cli_db) as db:
+            db.execute(
+                "INSERT INTO positions "
+                "(ticker,exchange,entry_date,entry_price,shares,status,source,broker_entry_order_id) "
+                "VALUES ('TCS','NSE','2026-09-19',100,1,'OPEN','PENNY','order-1')")
+        payload = _good_payload(statement="matched-reference")
+        payload["fills"] = [{
+            "fill_id": "fill-1", "order_id": "order-1", "status": "FILLED",
+            "quantity": 1, "price": 100, "fees": 1,
+        }]
+        path = str(tmp_path / "matched.json")
+        _write_payload(path, payload)
+        out = await _import_statement(argparse.Namespace(
+            db=cli_db, payload=path, output=str(tmp_path / "out.json"),
+            command="import-statement"))
+        assert out["ok"] is True
+        assert out["broker_internal"]["status"] == "MATCHED_REFERENCE"
+        assert out["broker_internal"]["broker_reconciled"] is False
+        assert out["discrepancy_ids"]["broker_internal"] == []
 
     def test_main_retry_writes_identical_immutable_output(self, cli_db: str, tmp_path) -> None:
         payload_path = str(tmp_path / "statement.json")
@@ -326,6 +358,8 @@ class TestRunReport:
         # the keys must exist.
         assert "broker" in out["discrepancy_ids"]
         assert "evidence" in out["discrepancy_ids"]
+        assert "broker_internal" in out["discrepancy_ids"]
+        assert out["broker_internal"]["broker_reconciled"] is False
 
 
 # ---- _list_discrepancies ---------------------------------------------------

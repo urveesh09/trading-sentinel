@@ -76,6 +76,9 @@ class TestImportStatementRoute:
         assert body["can_place_orders"] is False
         assert "broker" in body["discrepancy_ids"]
         assert "evidence" in body["discrepancy_ids"]
+        assert "broker_internal" in body["discrepancy_ids"]
+        assert body["broker_internal"]["broker_reconciled"] is False
+        assert body["broker_internal"]["authorization_effect"] == "NONE"
 
     def test_idempotent_repost_flips_imported_flag(
         self, monkeypatch, tmp_path,
@@ -130,6 +133,20 @@ class TestImportStatementRoute:
         assert resp.status_code == 422
         assert "missing required keys" in resp.json()["detail"]
         assert "statement_id" in resp.json()["detail"]
+
+    @pytest.mark.parametrize("field,value", [
+        ("account_id", None), ("account_id", "  "),
+        ("statement_id", None), ("statement_id", "  "),
+    ])
+    def test_blank_or_null_identity_422(self, monkeypatch, tmp_path, field, value) -> None:
+        monkeypatch.setattr(
+            "config.settings.DB_PATH", str(tmp_path / "test.db"),
+        )
+        bad = _good_payload()
+        bad[field] = value
+        resp = _client().post("/reconciliation/import-statement", json=bad)
+        assert resp.status_code == 422
+        assert field in resp.json()["detail"]
 
     def test_naive_as_of_422(self, monkeypatch, tmp_path) -> None:
         monkeypatch.setattr(

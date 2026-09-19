@@ -1,5 +1,28 @@
 # Trading Sentinel — system guide and engineering handover
 
+## September 19 Workflow F.10A broker/internal reference verification
+
+Dev now compares each executed `FILLED`/`PARTIAL` broker order in an imported
+statement with the retained live order references in `positions` and
+`fno_positions`. The report aggregates fills by order, separates cancelled and
+rejected evidence, and fails closed on missing schemas, incomplete table
+coverage, account-binding gaps, paper/unsupported sources, duplicate
+references, missing references and F&O quantity excess. Findings are persisted
+idempotently under three additive discrepancy categories and are returned by
+the reconciliation CLI and import route.
+
+A unique reference is only `MATCHED_REFERENCE`: internal books still lack
+broker `account_id`, statement period bounds are unavailable, and equity
+`shares` is a mutable remaining quantity. Accordingly every report keeps
+`account_attribution_verified=false`, `broker_reconciled=false`,
+`can_place_orders=false`, `can_grow_live_capital=false` and
+`authorization_effect=NONE`. This is a diagnostic bridge, not bidirectional
+economic reconciliation, capital permission or evidence of profitability.
+Focused reconciliation acceptance is **118 passed** with 21 known framework
+deprecations; the final whole-engine run is **4,090 passed/four skipped/46
+known deprecations in 204.15s**. Production remains untouched. See the
+[F.10A plan and receipt](2026-09-19-f10a-broker-internal-reference-plan.md).
+
 ## September 19 Workflow C asymmetric source binding
 
 `MODELED_PARTIAL_FILL_V1` now prices each missing leg from the exact verified
@@ -157,7 +180,7 @@ Gateway files `services/kite.js`, `executor.js`, `risk-geometry.js`, `halt-switc
 
 Token restoration now releases each abort timer in `finally`, including fetch failures, and keeps response-body parsing under the same three-second abort scope. Retries and internal authentication remain unchanged. Filesystem-only dead-letter tests stub Telegram rather than start fake-token polling. The current native gateway suite passes 324 tests (four skips) and exits naturally without forceExit or detected open handles. The Windows instrument-test socket warning was traced to a manual asyncio.run between pytest-managed async tests; that test now uses pytest's lifecycle. Original failing four-file warning-fatal acceptance passes 32 tests; broader resource-warning-fatal research acceptance passes 181 tests. This does not prove all operational resources are leak-free in Production.
 
-`performance.py` owns ledger functions used by the application. `performance_analytics.py` and `performance.py` must be read with the relevant position stores. `broker_reconciliation.py` and `reconciliation_evidence.py` distinguish imported external statements from internal ledger/position observations. `order_execution_readiness.py` reports order-path evidence; submitting a real order merely to turn UNVERIFIED green is not a valid test plan.
+`performance.py` owns ledger functions used by the application. `performance_analytics.py` and `performance.py` must be read with the relevant position stores. `broker_reconciliation.py` checks imported statement cash arithmetic, `reconciliation_evidence.py` checks internal ledger/position links, and `broker_internal_reconciliation.py` performs the narrower one-way executed-order reference check described above. None alone proves full broker reconciliation. `order_execution_readiness.py` reports order-path evidence; submitting a real order merely to turn UNVERIFIED green is not a valid test plan.
 
 Five reconciliation warnings were previously observed in the UI. Historical screenshots are not current facts. Investigate by account, module, execution mode, close identity and fee treatment; do not overwrite one store to match another. Broker confirmation, net cash and gross position P&L can have different timing and cost conventions.
 

@@ -23,8 +23,9 @@ Subcommands:
     atomically with byte-identical retries so re-running with the
     same payload produces the same file.
 
-  * ``run-report`` -- run both existing reports without importing
-    anything. Useful for periodic inspection and CI smoke tests.
+  * ``run-report`` -- run broker cash, internal evidence and the narrower
+    broker/internal order-reference report without importing anything. Useful
+    for periodic inspection and CI smoke tests.
 
   * ``list-discrepancies`` -- filter the ``discrepancies`` table by
     ``--account``, ``--source``, ``--category``, ``--status``,
@@ -183,7 +184,9 @@ async def _import_statement(args: argparse.Namespace) -> dict[str, Any]:
           "command": "import-statement",
           "ok": <bool>,
           "broker_status": "MATCH" | "UNRESOLVED" | "UNAVAILABLE",
-          "discrepancy_ids": {"broker": [...], "evidence": [...]},
+          "broker_internal": <reference report>,
+          "discrepancy_ids": {"broker": [...], "evidence": [...],
+                              "broker_internal": [...]},
           "account_id": <str>,
           "statement_id": <str>,
           "error": <str | None>,
@@ -198,7 +201,8 @@ async def _import_statement(args: argparse.Namespace) -> dict[str, Any]:
         "command": "import-statement",
         "ok": False,
         "broker_status": "UNAVAILABLE",
-        "discrepancy_ids": {"broker": [], "evidence": []},
+        "broker_internal": None,
+        "discrepancy_ids": {"broker": [], "evidence": [], "broker_internal": []},
         "account_id": "",
         "statement_id": "",
         "error": None,
@@ -213,22 +217,30 @@ async def _import_statement(args: argparse.Namespace) -> dict[str, Any]:
         await import_broker_statement(
             args.db, **kwargs,
         )
+        from broker_reconciliation import broker_statement_report
+        from broker_internal_reconciliation import broker_internal_reference_report
+        report = await broker_statement_report(
+            args.db, account_id=account_id_for_record,
+        )
+        out["broker_internal"] = await broker_internal_reference_report(
+            args.db,
+            account_id=account_id_for_record,
+            configured_account_id=settings.BROKER_RECONCILIATION_ACCOUNT_ID,
+            statement_id=statement_id_for_record,
+        )
         # Run record_current_state on every successful import
         # (including idempotent re-imports -- the F4 framework is
         # idempotent so the duplicate record call is a no-op).
         rec = await record_current_state(
             args.db, account_id=account_id_for_record, actor="cli",
+            broker_report=report,
+            broker_internal_report=out["broker_internal"],
         )
         out["discrepancy_ids"] = {
             "broker": list(rec.get("broker", [])),
             "evidence": list(rec.get("evidence", [])),
+            "broker_internal": list(rec.get("broker_internal", [])),
         }
-        # Determine the broker status for the output JSON by reading
-        # the report directly.
-        from broker_reconciliation import broker_statement_report
-        report = await broker_statement_report(
-            args.db, account_id=account_id_for_record,
-        )
         out["broker_status"] = str(report.get("status", "UNAVAILABLE"))
         out["ok"] = True
     except (ValueError, KeyError, TypeError, OSError, OverflowError,
@@ -247,8 +259,9 @@ async def _run_report(args: argparse.Namespace) -> dict[str, Any]:
         "ok": False,
         "account_id": args.account,
         "broker": None,
+        "broker_internal": None,
         "evidence": None,
-        "discrepancy_ids": {"broker": [], "evidence": []},
+        "discrepancy_ids": {"broker": [], "evidence": [], "broker_internal": []},
         "error": None,
     }
     try:
@@ -258,13 +271,22 @@ async def _run_report(args: argparse.Namespace) -> dict[str, Any]:
         out["evidence"] = await reconciliation_evidence_report(
             args.db, source=args.source, limit=args.limit,
         )
+        from broker_internal_reconciliation import broker_internal_reference_report
+        out["broker_internal"] = await broker_internal_reference_report(
+            args.db,
+            account_id=args.account,
+            configured_account_id=settings.BROKER_RECONCILIATION_ACCOUNT_ID,
+        )
         if args.record:
             rec = await record_current_state(
                 args.db, account_id=args.account, actor="cli",
+                broker_report=out["broker"],
+                broker_internal_report=out["broker_internal"],
             )
             out["discrepancy_ids"] = {
                 "broker": list(rec.get("broker", [])),
                 "evidence": list(rec.get("evidence", [])),
+                "broker_internal": list(rec.get("broker_internal", [])),
             }
         out["ok"] = True
     except (ValueError, KeyError, TypeError, OSError, OverflowError,

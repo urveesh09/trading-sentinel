@@ -132,6 +132,14 @@ Engine dependencies: `config`
 
 Related tests: `python-engine/tests/test_breadth.py`
 
+## `python-engine/broker_internal_reconciliation.py`
+
+Read-only broker-fill to internal order-reference verification. This is deliberately narrower than economic reconciliation. It proves only whether executed order IDs in one imported broker statement have a unique, supported live reference in Sentinel's retained position books. Internal books are not account-scoped, so even a successful result is never presented as broker reconciliation or execution authority.
+
+Top-level declarations: `_sha` (line 33), `_finish` (line 40), `_base_report` (line 44), `_table_columns` (line 82), `_scope_for_source` (line 92), `_load_internal_references` (line 107), `_aggregate_fills` (line 179), `_evaluate_order` (line 216), `broker_internal_reference_report` (line 258)
+
+Related tests: `python-engine/tests/test_broker_internal_reconciliation.py`
+
 ## `python-engine/broker_reconciliation.py`
 
 Read-only broker statement reconciliation for account-level cash truth. Imports are explicit fixtures/adapters, never broker calls. This keeps a statement's reported closing cash distinct from local strategy books while making funding, costs and unresolved residuals visible.
@@ -362,9 +370,9 @@ Related tests: `python-engine/tests/test_dev_acceptance_harness.py`
 
 [WORKFLOW-F 2026-09-13] Discrepancy-ID framework + durable records (Phase 4). Implements plan section 10.2 -- "Investigate each retained reconciliation warning using actual evidence; build durable discrepancy records and operator-reviewed explanations without repairing books to agree." F4 ships: * A ``DiscrepancyCategory`` enum that maps every reason string already emitted by ``reconciliation_evidence.py`` and every state already emitted by ``broker_reconciliation.py`` into a stable, namespaced identifier (no free-text categories). * A ``DiscrepancyRecord`` dataclass + an append-only ``discrepancies`` table with a separate append-only ``discrepancy_status_log`` table. State transitions live
 
-Top-level declarations: `DiscrepancyCategory` (line 80), `DiscrepancyStatus` (line 100), `DiscrepancyTransitionError` (line 128), `DiscrepancyRecord` (line 196), `_now_utc` (line 243), `_coerce_dt` (line 247), `_validate_evidence_refs` (line 265), `_finite_amount` (line 290), `init_discrepancies_db` (line 302), `record_discrepancy` (line 319), `update_discrepancy_status` (line 418), `_row_to_record` (line 502), `list_discrepancies` (line 535), `record_from_evidence_report` (line 641), `record_from_broker_statement` (line 732), `record_current_state` (line 790)
+Top-level declarations: `DiscrepancyCategory` (line 77), `DiscrepancyStatus` (line 100), `DiscrepancyTransitionError` (line 133), `DiscrepancyRecord` (line 201), `_now_utc` (line 248), `_coerce_dt` (line 252), `_validate_evidence_refs` (line 270), `_finite_amount` (line 295), `init_discrepancies_db` (line 307), `record_discrepancy` (line 324), `update_discrepancy_status` (line 423), `_row_to_record` (line 507), `list_discrepancies` (line 542), `record_from_evidence_report` (line 648), `record_from_broker_statement` (line 739), `record_from_broker_internal_report` (line 797), `record_current_state` (line 895)
 
-Engine dependencies: `broker_reconciliation`, `reconciliation_evidence`
+Engine dependencies: `broker_internal_reconciliation`, `broker_reconciliation`, `config`, `reconciliation_evidence`
 
 Related tests: `python-engine/tests/test_discrepancies.py`
 
@@ -1620,9 +1628,9 @@ Related tests: `python-engine/tests/test_range_reversion.py`, `python-engine/tes
 
 [WORKFLOW-F 2026-09-13] Broker statement automation CLI (Phase 5). Implements plan section 10 -- F5 sub-slices: a CLI for the operator to ingest a broker statement, run reconciliation reports, and list discrepancies. F5 is offline-only: no scheduler, no daemon, no broker network calls. The operator runs the CLI from outside the container with a local JSON payload. The CLI is *the* wiring site for ``discrepancies.record_current_state``: every successful statement import records discrepancies as a side effect. Re-running with the same payload is idempotent -- the existing ``broker_reconciliation.import_broker_statement`` already rejects conflicting payloads at the SHA-256 boundary, and the dis
 
-Top-level declarations: `_json_file` (line 68), `_write_output_atomic` (line 81), `_parse_iso` (line 119), `_payload_to_import_kwargs` (line 131), `_import_statement` (line 178), `_run_report` (line 240), `_list_discrepancies` (line 276), `_build_parser` (line 335), `main` (line 416)
+Top-level declarations: `_json_file` (line 69), `_write_output_atomic` (line 82), `_parse_iso` (line 120), `_payload_to_import_kwargs` (line 132), `_import_statement` (line 179), `_run_report` (line 252), `_list_discrepancies` (line 298), `_build_parser` (line 357), `main` (line 438)
 
-Engine dependencies: `broker_reconciliation`, `config`, `discrepancies`, `reconciliation_evidence`
+Engine dependencies: `broker_internal_reconciliation`, `broker_reconciliation`, `config`, `discrepancies`, `reconciliation_evidence`
 
 Related tests: `python-engine/tests/test_reconciliation_cli.py`
 
@@ -1722,9 +1730,9 @@ Engine dependencies: `backtest_lab`, `config`, `engine_auth`
 
 [ROADMAP-4.1 stage 3, 2026-07-13] Telegram command dispatch and analytics endpoints. Extracted verbatim from main.py. Registered on the app via `app.include_router(router)`, so the route table -- paths, methods, endpoint names, response models -- is byte-identical; the 24-route characterization golden proves it. EVERY business name is reached through `_main` at CALL time, not imported. That is not stylistic. Two independent reasons, both load-bearing: 1. Eight of main's globals are REBOUND at runtime via `global` statements (current_signals, market_regime, momentum_signals_today, last_run, rejected_signals, current_momentum_signals, last_momentum_date, _last_regime_state). `from main import
 
-Top-level declarations: `penny_command_get` (line 46), `penny_command_post` (line 55), `nifty_command_get` (line 71), `top_level_command_get` (line 86), `_halt_status_text` (line 127), `top_level_command_post` (line 155), `get_funnel` (line 227), `get_strategy_funnel` (line 233), `get_strategy_promotion` (line 241), `get_outcomes` (line 251), `get_proactive_activity` (line 257), `get_proactive_comparison` (line 271), `get_proactive_research_comparison` (line 278), `get_proactive_diagnostics` (line 285), `get_proactive_session_diagnostics` (line 292), `get_scheduler_timing` (line 305), `get_operational_coverage` (line 315), `get_reconciliation_evidence` (line 322), `get_suggestions` (line 333), `get_edge_statistics` (line 349), `post_reconciliation_import_statement` (line 370), `get_reconciliation_discrepancies` (line 444)
+Top-level declarations: `penny_command_get` (line 46), `penny_command_post` (line 55), `nifty_command_get` (line 71), `top_level_command_get` (line 86), `_halt_status_text` (line 127), `top_level_command_post` (line 155), `get_funnel` (line 227), `get_strategy_funnel` (line 233), `get_strategy_promotion` (line 241), `get_outcomes` (line 251), `get_proactive_activity` (line 257), `get_proactive_comparison` (line 271), `get_proactive_research_comparison` (line 278), `get_proactive_diagnostics` (line 285), `get_proactive_session_diagnostics` (line 292), `get_scheduler_timing` (line 305), `get_operational_coverage` (line 315), `get_reconciliation_evidence` (line 322), `get_suggestions` (line 333), `get_edge_statistics` (line 349), `post_reconciliation_import_statement` (line 370), `get_reconciliation_discrepancies` (line 460)
 
-Engine dependencies: `analytics`, `broker_reconciliation`, `config`, `discrepancies`, `nifty_commands`, `operational_coverage`, `penny_commands`, `performance`, `proactive_diagnostics`, `proactive_intelligence`, `reconciliation_evidence`, `scheduler_telemetry`
+Engine dependencies: `analytics`, `broker_internal_reconciliation`, `broker_reconciliation`, `config`, `discrepancies`, `nifty_commands`, `operational_coverage`, `penny_commands`, `performance`, `proactive_diagnostics`, `proactive_intelligence`, `reconciliation_evidence`, `scheduler_telemetry`
 
 ## `python-engine/routes_fno_experiments.py`
 
