@@ -24,7 +24,10 @@ deterministic, and the exact final tree passed. Atlas regenerated at 203 Python
 modules; changed Python compilation and diff checks passed. Production remains
 unchanged. Implementation commit `1dde067` contains source, tests, atlas and
 canonical documentation. Its immediate stat/status/guide/plan/atlas review
-passed with a clean Dev worktree; push is pending.
+passed with a clean Dev worktree. Verification receipt `d2735e9` also passed
+its immediate consistency review. Both commits were pushed to
+`origin/codex/production-correction-hedge-p0`; they are not merged, released or
+deployed.
 
 ## September 19 Workflow C.C2.SOURCE (Dev tested)
 

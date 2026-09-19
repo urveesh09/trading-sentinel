@@ -1,7 +1,8 @@
 # Workflow F.10A — broker/internal order-reference verification
 
-**Status:** TESTED_DEV. Implementation commit `1dde067`; push pending.
-Production is unchanged.
+**Status:** TESTED_DEV and pushed. Implementation commit `1dde067` and
+verification receipt `d2735e9` are on
+`origin/codex/production-correction-hedge-p0`. Production is unchanged.
 
 ## Problem
 
@@ -92,5 +93,6 @@ call, order/capital authority or partner delivery occurred. All implementation
 is confined to Dev; Production remains untouched. Implementation commit
 `1dde067` contains source, tests, atlas and canonical documentation; its
 immediate stat/status/guide/plan/atlas consistency review passed with a clean
-Dev worktree. The documentation receipt commit and remote state will be added
-after each step is verified.
+Dev worktree. Receipt commit `d2735e9` passed its immediate consistency review;
+both commits were pushed to `origin/codex/production-correction-hedge-p0`.
+This is remote Dev source, not a merge, release or deployment.
