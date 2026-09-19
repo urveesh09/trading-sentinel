@@ -10,6 +10,8 @@ from typing import Iterable, Mapping, Any
 
 from intraday_spread_chronological import ChronologicalReplay
 from intraday_spread_replay import ReplayResult
+from asymmetric_fill_model import (compute_modeled_entry_slippage_pnl,
+                                   estimate_missing_leg_price)
 
 
 @dataclass(frozen=True)
@@ -185,6 +187,7 @@ def heldout_case_from_full_policy_report(report: Mapping[str, Any], *,
         diagnostic = report.get("asymmetric_diagnostic")
         modeled_legs = diagnostic.get("modeled_missing_legs") if isinstance(diagnostic, Mapping) else None
         modeled_pnl = diagnostic.get("total_modeled_pnl_rs") if isinstance(diagnostic, Mapping) else None
+        asymmetric_batches = report.get("asymmetric_batches")
         expected_modeled_evidence = _digest({
             "format": "modeled_partial_fill_replay_v1",
             "decision_id": report.get("decision_id"),
@@ -214,6 +217,56 @@ def heldout_case_from_full_policy_report(report: Mapping[str, Any], *,
                 or replay.exit_trigger != "MODELED_PARTIAL_FILL"
                 or replay.attempted_entries != 1):
             raise ValueError("modeled partial-fill replay attribution conflicts")
+        if not isinstance(asymmetric_batches, list):
+            raise ValueError("modeled partial-fill source attribution conflicts")
+        for modeled in modeled_legs:
+            received_at = modeled.get("received_at")
+            leg_name = modeled.get("leg_name")
+            matches = [batch for batch in asymmetric_batches
+                       if isinstance(batch, Mapping)
+                       and batch.get("received_at") == received_at
+                       and isinstance(batch.get("insufficient"), list)
+                       and leg_name in batch["insufficient"]]
+            if len(matches) != 1:
+                raise ValueError("modeled partial-fill source attribution conflicts")
+            quote_by_leg = matches[0].get("quote_by_leg")
+            source = (quote_by_leg.get(leg_name)
+                      if isinstance(quote_by_leg, Mapping) else None)
+            if not isinstance(source, Mapping):
+                raise ValueError("modeled partial-fill source attribution conflicts")
+            expected_fields = {
+                "side": source.get("side"),
+                "source_quote_sha256": source.get("raw_sha256"),
+                "source_observed_at": source.get("observed_at"),
+                "source_received_at": source.get("received_at"),
+                "source_bid": source.get("bid"),
+                "source_ask": source.get("ask"),
+                "quantity": source.get("quantity"),
+            }
+            if any(modeled.get(key) != value for key, value in expected_fields.items()):
+                raise ValueError("modeled partial-fill source attribution conflicts")
+            try:
+                expected_fill = estimate_missing_leg_price(
+                    bid=source.get("bid"), ask=source.get("ask"),
+                    side=source.get("side"), mid_slippage_bps=2.0)
+                quantity = source.get("quantity")
+                valid_fill = (expected_fill is not None
+                    and not isinstance(quantity, bool) and isinstance(quantity, int)
+                    and quantity > 0
+                    and modeled.get("modeled_mid_slippage_bps") == 2.0
+                    and round(float(modeled.get("modeled_fill_price")), 10)
+                        == round(float(expected_fill), 10))
+                expected_pnl = (compute_modeled_entry_slippage_pnl(
+                    qty=quantity, bid=source.get("bid"), ask=source.get("ask"),
+                    side=source.get("side"), mid_slippage_bps=2.0)
+                    if valid_fill else None)
+                valid_pnl = (expected_pnl is not None
+                    and round(float(modeled.get("partial_pnl_rs")), 4)
+                        == round(float(expected_pnl), 4))
+            except (TypeError, ValueError):
+                valid_fill = valid_pnl = False
+            if not valid_fill or not valid_pnl:
+                raise ValueError("modeled partial-fill source attribution conflicts")
     elif (result.reason == "partial_fill_modeled"
           or report.get("economics_contract") == "MODELED_PARTIAL_FILL_V1"):
         raise ValueError("modeled partial-fill replay is missing provenance")

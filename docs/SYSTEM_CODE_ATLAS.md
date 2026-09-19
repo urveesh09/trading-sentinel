@@ -758,9 +758,9 @@ Related tests: `python-engine/tests/test_intraday_spread_chronological.py`
 
 Frozen per-index/policy held-out summaries for chronological spread replay.
 
-Top-level declarations: `HeldOutCase` (line 16), `_digest` (line 30), `_ordered_clock` (line 34), `_outcome_order` (line 44), `_validated_cost_sensitivity` (line 56), `canonical_cost_sensitivity_fingerprint` (line 96), `heldout_case_from_full_policy_report` (line 145), `build_heldout_comparison` (line 252)
+Top-level declarations: `HeldOutCase` (line 18), `_digest` (line 32), `_ordered_clock` (line 36), `_outcome_order` (line 46), `_validated_cost_sensitivity` (line 58), `canonical_cost_sensitivity_fingerprint` (line 98), `heldout_case_from_full_policy_report` (line 147), `build_heldout_comparison` (line 305)
 
-Engine dependencies: `intraday_spread_chronological`, `intraday_spread_replay`
+Engine dependencies: `asymmetric_fill_model`, `intraday_spread_chronological`, `intraday_spread_replay`
 
 Related tests: `python-engine/tests/test_intraday_spread_holdout.py`, `python-engine/tests/test_intraday_spread_holdout_adequacy.py`
 

@@ -162,6 +162,30 @@ def test_decision_book_conflict_is_explicit(case, monkeypatch):
 # detailed contract.
 
 
+def _asymmetric_quote_by_leg(observation, received_at, *, prices=None):
+    """Build the source projection emitted by the real archive adapter."""
+    prices = prices or {}
+    projected = {}
+    for name, side, digest_char in (("long", "BUY", "1"), ("short", "SELL", "2")):
+        quote = next(item for item in observation.quotes if item.side == side)
+        bid, ask = prices.get(name, (quote.bid, quote.ask))
+        projected[name] = {
+            "instrument_token": quote.token,
+            "symbol": quote.symbol,
+            "side": side,
+            "bid": bid,
+            "ask": ask,
+            "bid_depth": quote.bid_depth,
+            "ask_depth": quote.ask_depth,
+            "quantity": quote.quantity,
+            "lot_size": quote.lot_size,
+            "observed_at": received_at,
+            "received_at": received_at,
+            "raw_sha256": digest_char * 64,
+        }
+    return projected
+
+
 def test_asymmetric_execution_quality_before_decision_is_partial_fill_modeled(case, monkeypatch):
     args, rows = case
     # [WORKFLOW-C.A1 + C.C2.WIRE 2026-09-16] Mirror the
@@ -184,6 +208,8 @@ def test_asymmetric_execution_quality_before_decision_is_partial_fill_modeled(ca
             'long': {'bid_depth': 75, 'ask_depth': 75, 'lot_size': 75},
             'short': {'bid_depth': 1, 'ask_depth': 1, 'lot_size': 75},
         },
+        'quote_by_leg': _asymmetric_quote_by_leg(
+            rows[0], asymmetric_received, prices={'short': (200.0, 204.0)}),
     }
     build_obs = ArchiveObservationBuild(tuple(rows), (), 0, None, (), (asymmetric_batch,))
     monkeypatch.setattr(replay, 'build_spread_observations', lambda **_: build_obs)
@@ -206,14 +232,17 @@ def test_asymmetric_execution_quality_before_decision_is_partial_fill_modeled(ca
     assert len(modeled) == 1
     assert modeled[0]['leg_name'] == 'short'
     assert modeled[0]['side'] == 'SELL'
-    # The modelled fill price is the short leg's mid - 2bps.
-    short_quote = next(q for q in rows[0].quotes if q.side == 'SELL')
+    # The modelled fill price comes from the later asymmetric packet, not the
+    # earlier complete decision book.
     from asymmetric_fill_model import mid_price
-    expected_mid = mid_price(short_quote.bid, short_quote.ask)
+    expected_mid = mid_price(200.0, 204.0)
     assert expected_mid is not None
     expected_fill = expected_mid * (1.0 - 0.0002)
     assert modeled[0]['modeled_fill_price'] is not None
     assert abs(modeled[0]['modeled_fill_price'] - expected_fill) < 1e-6
+    assert modeled[0]['source_bid'] == 200.0
+    assert modeled[0]['source_ask'] == 204.0
+    assert modeled[0]['source_quote_sha256'] == '2' * 64
     assert modeled[0]['partial_pnl_rs'] < 0
     assert diag['total_modeled_pnl_rs'] < 0
     # The diagnostic is surfaced in the report for the
@@ -243,23 +272,69 @@ def test_asymmetric_execution_quality_before_decision_is_partial_fill_modeled(ca
     with pytest.raises(ValueError, match='missing provenance'):
         heldout_case_from_full_policy_report(contradictory, signal_artifact_sha256='d' * 64)
 
+    # Rehashing a changed archived source quote cannot leave the modeled
+    # attribution untouched and still enter held-out review.
+    source_mutation = {**result,
+        'asymmetric_batches': [dict(item) for item in result['asymmetric_batches']]}
+    source_mutation['asymmetric_batches'][0] = {
+        **source_mutation['asymmetric_batches'][0],
+        'quote_by_leg': {
+            **source_mutation['asymmetric_batches'][0]['quote_by_leg'],
+            'short': {
+                **source_mutation['asymmetric_batches'][0]['quote_by_leg']['short'],
+                'bid': 199.0,
+            },
+        },
+    }
+    source_mutation['evidence_sha256'] = _sha({
+        key: value for key, value in source_mutation.items()
+        if key != 'evidence_sha256'})
+    with pytest.raises(ValueError, match='source attribution conflicts'):
+        heldout_case_from_full_policy_report(
+            source_mutation, signal_artifact_sha256='d' * 64)
+
 
 def test_asymmetric_model_fails_closed_when_missing_leg_cannot_be_priced(case, monkeypatch):
     args, rows = case
     earlier = NOW - timedelta(seconds=2)
     rows[0] = replace(rows[0], observed_at=earlier, received_at=earlier,
-        quotes=tuple(replace(q, observed_at=earlier, received_at=earlier,
-                             bid=0.0 if q.side == 'SELL' else q.bid)
+        quotes=tuple(replace(q, observed_at=earlier, received_at=earlier)
                      for q in rows[0].quotes))
-    batch = {'received_at': (NOW - timedelta(seconds=1)).isoformat(),
+    received = (NOW - timedelta(seconds=1)).isoformat()
+    batch = {'received_at': received,
              'state': 'ASYMMETRIC_EXECUTION_QUALITY', 'executable': ['long'],
-             'insufficient': ['short']}
+             'insufficient': ['short'],
+             'quote_by_leg': _asymmetric_quote_by_leg(
+                 rows[0], received, prices={'short': (0.0, 204.0)})}
     monkeypatch.setattr(replay, 'build_spread_observations', lambda **_:
         ArchiveObservationBuild(tuple(rows), (), 0, None, (), (batch,)))
     result = replay.replay_full_policy(**args)
     assert result['state'] == 'INSUFFICIENT_EVIDENCE'
     assert result['reason'] == 'partial_fill_model_unavailable'
     assert result['asymmetric_diagnostic']['modeled_missing_legs'][0]['modeled_fill_price'] is None
+    assert 'replay' not in result
+
+
+def test_asymmetric_model_does_not_fallback_for_legacy_depth_only_batch(case, monkeypatch):
+    args, rows = case
+    earlier = NOW - timedelta(seconds=2)
+    rows[0] = replace(rows[0], observed_at=earlier, received_at=earlier,
+        quotes=tuple(replace(q, observed_at=earlier, received_at=earlier)
+                     for q in rows[0].quotes))
+    batch = {'received_at': (NOW - timedelta(seconds=1)).isoformat(),
+             'state': 'ASYMMETRIC_EXECUTION_QUALITY', 'executable': ['long'],
+             'insufficient': ['short'],
+             'depth_by_leg': {'long': {'bid_depth': 75, 'ask_depth': 75, 'lot_size': 75},
+                              'short': {'bid_depth': 1, 'ask_depth': 1, 'lot_size': 75}}}
+    monkeypatch.setattr(replay, 'build_spread_observations', lambda **_:
+        ArchiveObservationBuild(tuple(rows), (), 0, None, (), (batch,)))
+
+    result = replay.replay_full_policy(**args)
+
+    assert result['state'] == 'INSUFFICIENT_EVIDENCE'
+    assert result['reason'] == 'partial_fill_model_unavailable'
+    assert result['asymmetric_diagnostic']['modeled_missing_legs'][0][
+        'source_quote_sha256'] is None
     assert 'replay' not in result
 
 
@@ -351,7 +426,8 @@ def test_asymmetric_diagnostic_attribution_pre_decision(case, monkeypatch):
                             'state': 'ASYMMETRIC_EXECUTION_QUALITY',
                             'executable': ['long'], 'insufficient': ['short'],
                             'depth_by_leg': {'long': {'bid_depth': 75, 'ask_depth': 75, 'lot_size': 75},
-                                             'short': {'bid_depth': 1, 'ask_depth': 1, 'lot_size': 75}}},)))
+                                             'short': {'bid_depth': 1, 'ask_depth': 1, 'lot_size': 75}},
+                            'quote_by_leg': _asymmetric_quote_by_leg(rows[0], asymmetric_received)},)))
     result = replay.replay_full_policy(**args)
     diag = result["asymmetric_diagnostic"]
     # The diagnostic correctly attributes the asymmetry to
@@ -436,11 +512,15 @@ def test_asymmetric_diagnostic_aggregates_multiple_batches(case, monkeypatch):
             {'received_at': batch1, 'state': 'ASYMMETRIC_EXECUTION_QUALITY',
              'executable': ['long'], 'insufficient': ['short'],
              'depth_by_leg': {'long': {'bid_depth': 75, 'ask_depth': 75, 'lot_size': 75},
-                              'short': {'bid_depth': 1, 'ask_depth': 1, 'lot_size': 75}}},
+                              'short': {'bid_depth': 1, 'ask_depth': 1, 'lot_size': 75}},
+             'quote_by_leg': _asymmetric_quote_by_leg(
+                 rows[0], batch1, prices={'short': (150.0, 154.0)})},
             {'received_at': batch2, 'state': 'ASYMMETRIC_EXECUTION_QUALITY',
              'executable': ['short'], 'insufficient': ['long'],
              'depth_by_leg': {'long': {'bid_depth': 1, 'ask_depth': 1, 'lot_size': 75},
-                              'short': {'bid_depth': 75, 'ask_depth': 75, 'lot_size': 75}}},
+                              'short': {'bid_depth': 75, 'ask_depth': 75, 'lot_size': 75}},
+             'quote_by_leg': _asymmetric_quote_by_leg(
+                 rows[0], batch2, prices={'long': (250.0, 254.0)})},
         )))
     result = replay.replay_full_policy(**args)
     diag = result["asymmetric_diagnostic"]
@@ -466,6 +546,8 @@ def test_asymmetric_diagnostic_aggregates_multiple_batches(case, monkeypatch):
     # Two modelled missing-leg entries (one per batch).
     modeled = diag.get("modeled_missing_legs", [])
     assert len(modeled) == 2
+    assert [(item["source_bid"], item["source_ask"]) for item in modeled] == [
+        (150.0, 154.0), (250.0, 254.0)]
     # The modelled P&L is summed across both missing legs.
     assert "total_modeled_pnl_rs" in diag
 

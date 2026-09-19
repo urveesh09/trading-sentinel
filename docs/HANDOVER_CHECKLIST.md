@@ -1,5 +1,19 @@
 # Handover receipt and operator checklist
 
+## September 19 Workflow C.C2.SOURCE (Dev tested)
+
+The modeled asymmetric path no longer borrows prices from the earlier decision
+book. Each missing-leg estimate retains and uses its own archive-verified
+packet hash, clock, bid/ask and quantity; incomplete legacy evidence fails
+closed. Held-out admission cross-checks the source and recomputes the fill/P&L,
+including rejection of a rehashed source mutation. Focused acceptance: **87
+passed** with warnings fatal; broader C: **259 passed**; whole engine: **4,070
+passed/four skipped/42 known deprecations in 205.51s**. JUnit is retained at
+`C:/Users/Urveesh/AppData/Local/Temp/sentinel-workflow-c-source-binding-20260919.xml`.
+No schema/config/data migration, broker call, delivery authority, flag change,
+or Production edit. Commit/push identity is pending. See
+[the plan and receipt](2026-09-19-workflow-c-asymmetric-source-binding-plan.md).
+
 ## September 19 Workflow C.C2.HOLDOUT (Dev tested)
 
 The modeled partial CLOSED path is now held-out ingestible and separately

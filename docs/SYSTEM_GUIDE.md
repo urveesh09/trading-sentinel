@@ -1,5 +1,20 @@
 # Trading Sentinel — system guide and engineering handover
 
+## September 19 Workflow C asymmetric source binding
+
+`MODELED_PARTIAL_FILL_V1` now prices each missing leg from the exact verified
+asymmetric archive packet that produced the execution-quality diagnostic. The
+packet hash, quote clock, bid/ask and quantity flow into the modeled
+attribution; the earlier complete decision book is never substituted. Legacy,
+missing or malformed source projections fail closed, and held-out ingestion
+recomputes the fill and P&L while cross-checking the retained source. Focused
+acceptance is **87 passed** with warnings fatal; the broader C group is **259
+passed**; the whole engine is **4,070 passed/four skipped/42 known
+deprecations**. This remains modeled research evidence, not a broker fill,
+qualification, delivery permission, or profitability claim. See the
+[source-binding receipt](2026-09-19-workflow-c-asymmetric-source-binding-plan.md).
+Production remains untouched.
+
 ## September 19 Workflow C partial-fill review correction
 
 The asymmetric partial-fill path now binds its operator-selected CLOSED result
