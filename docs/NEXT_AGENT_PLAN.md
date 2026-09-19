@@ -12,7 +12,8 @@ flag-default, authority, delivery, risk, capital, strategy, or order behavior
 changes. Focused engine is **72 passed** with four known deprecations, full
 agent is **340 passed** warning-fatal, and dashboard is **46 passed** plus build.
 Whole-engine validation is **4,117 passed/four skipped/46 known deprecations**;
-the implementation commit/push receipt follows this source freeze. Real
+implementation commit `8dd2c41` was consistency-checked and pushed to
+`origin/codex/production-correction-hedge-p0`. Real
 Production observations and operator-labelled usefulness remain required;
 per-ticker I.4.G is still deferred. See the
 [active plan](2026-09-19-workflow-i-usefulness-contract-plan.md).
