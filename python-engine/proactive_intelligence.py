@@ -497,6 +497,56 @@ def simulate_shadow_research_trial(
         return _simulate_shadow_limit_pullback(profiled, future_bars, cash=cash, fee_rate=fee_rate,
                                                slippage_bps=slippage_bps)
 
+    # [WORKFLOW-G.3 2026-09-17] Range mean-reversion entry
+    # profile. Distinct from COMPLETED_BAR_CONFIRMATION_V1
+    # fallback: the entry decision depends on the range
+    # being intact + the entry bar touching the lower band.
+    # If the range is broken or the band is not touched, we
+    # suppress the trade instead of falling through to
+    # the generic confirmation logic.
+    if entry_profile_id == "RANGE_REVERSION_V1":
+        rr_cutoff = _stamp(
+            profiled.data_cutoff or profiled.signal_at
+            or profiled.valid_until
+        )
+        rr_entry_deadline = _stamp(
+            profiled.entry_deadline or profiled.valid_until
+        )
+        rr_history = []
+        rr_entry_bars = []
+        for bar in future_bars:
+            stamp = _stamp(datetime.fromisoformat(str(bar["timestamp"])))
+            if stamp <= rr_cutoff:
+                rr_history.append(bar)
+            elif stamp <= rr_entry_deadline:
+                rr_entry_bars.append(bar)
+        rr_entry_bar = (rr_entry_bars[-1] if rr_entry_bars else (
+            rr_history[-1] if rr_history else None
+        ))
+        if rr_entry_bar is not None and len(rr_history) >= 14:
+            rr_analysis = rr_history[-14:]
+            try:
+                from range_reversion import (
+                    range_reversion_entry as _rr_entry,
+                )
+                rr_verdict = _rr_entry(
+                    rr_analysis + [rr_entry_bar]
+                )
+            except (ValueError, TypeError, KeyError):
+                rr_verdict = None
+            if rr_verdict is not None and getattr(
+                rr_verdict, "signal", None
+            ) is not None:
+                if rr_verdict.signal.value == "ENTER":
+                    if rr_verdict.strict_stop is not None:
+                        profiled = replace(profiled,
+                                             stop=rr_verdict.strict_stop)
+                else:
+                    return ShadowSimulation(
+                        "NO_FILL", 0, None, None, None, None, None,
+                        f"RANGE_REVERSION_{rr_verdict.signal.value}",
+                    )
+
     normalised = _normalise_shadow_bars(future_bars)
     if normalised is None:
         return ShadowSimulation("INVALID", 0, None, None, None, None, None, "INVALID_OR_UNORDERED_FUTURE_BARS")
