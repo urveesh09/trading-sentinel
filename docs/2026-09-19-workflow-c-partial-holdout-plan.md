@@ -1,8 +1,8 @@
 # Workflow C.C2.HOLDOUT — modeled partial-fill held-out provenance
 
-**Status:** IMPLEMENTED_AND_TESTED_DEV in implementation commit `6348fdb` on
-`codex/production-correction-hedge-p0`; remote push is recorded by the final
-handover receipt. Production was not changed.
+**Status:** IMPLEMENTED_TESTED_AND_PUSHED_DEV. Implementation commit `6348fdb`
+and verification receipt `070e9c0` were pushed to
+`origin/codex/production-correction-hedge-p0`. Production was not changed.
 
 ## Problem
 

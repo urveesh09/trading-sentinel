@@ -17,8 +17,10 @@ broker action, or Production mutation. Implementation commit: `6348fdb` on
 `codex/production-correction-hedge-p0`; immediate post-commit source/guide/plan/
 checklist/atlas consistency review passed with a clean Dev worktree. The
 read-only Production checkout remained at `fef35e7` with its pre-existing
-untracked audit/migration files untouched. Push, real held-out collection,
-qualification, deployment, and partner delivery evidence remain unchecked.
+untracked audit/migration files untouched. Commits `6348fdb` and `070e9c0`
+were pushed to `origin/codex/production-correction-hedge-p0`. Merge/PR, real
+held-out collection, qualification, deployment, and partner delivery evidence
+remain unchecked.
 See [the slice receipt](2026-09-19-workflow-c-partial-holdout-plan.md).
 
 ## September16 current-state override
