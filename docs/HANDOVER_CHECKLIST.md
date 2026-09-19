@@ -13,7 +13,11 @@ JUnit is retained at
 `C:/Users/Urveesh/AppData/Local/Temp/sentinel-workflow-c-partial-holdout-20260919.xml`.
 System Python lacked pytest, so validation used the checked-in Windows venv.
 No schema/config migration, retained-data rewrite, external call, delivery,
-broker action, or Production mutation. Commit/push and real held-out collection,
+broker action, or Production mutation. Implementation commit: `6348fdb` on
+`codex/production-correction-hedge-p0`; immediate post-commit source/guide/plan/
+checklist/atlas consistency review passed with a clean Dev worktree. The
+read-only Production checkout remained at `fef35e7` with its pre-existing
+untracked audit/migration files untouched. Push, real held-out collection,
 qualification, deployment, and partner delivery evidence remain unchecked.
 See [the slice receipt](2026-09-19-workflow-c-partial-holdout-plan.md).
 
