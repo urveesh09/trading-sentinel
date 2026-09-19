@@ -1,6 +1,7 @@
 # Workflow F.10A — broker/internal order-reference verification
 
-**Status:** TESTED_DEV. Commit/push receipt pending. Production is unchanged.
+**Status:** TESTED_DEV. Implementation commit `1dde067`; push pending.
+Production is unchanged.
 
 ## Problem
 
@@ -88,6 +89,8 @@ remain separate gates.
 
 No schema/table migration, data rewrite, config/default change, broker/network
 call, order/capital authority or partner delivery occurred. All implementation
-is confined to Dev; Production remains untouched. The implementation commit,
-documentation receipt commit and remote state will be added after each step is
-verified.
+is confined to Dev; Production remains untouched. Implementation commit
+`1dde067` contains source, tests, atlas and canonical documentation; its
+immediate stat/status/guide/plan/atlas consistency review passed with a clean
+Dev worktree. The documentation receipt commit and remote state will be added
+after each step is verified.
