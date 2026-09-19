@@ -24,6 +24,7 @@ class HeldOutCase:
     signal_artifact_sha256: str
     cost_sensitivity: Mapping[str, Any] | None = None
     source_report: Mapping[str, Any] | None = None
+    partial_fill_observed: bool = False
 
 
 def _digest(value: object) -> str:
@@ -177,9 +178,48 @@ def heldout_case_from_full_policy_report(report: Mapping[str, Any], *,
         evidence_sha256=str(payload.get("evidence_sha256", "")))
     if replay.evidence_sha256 != result.evidence_sha256:
         raise ValueError("chronological replay evidence identity conflicts")
+    partial_fill = report.get("partial_fill_observed", False)
+    if not isinstance(partial_fill, bool):
+        raise ValueError("partial-fill provenance must be boolean")
+    if partial_fill:
+        diagnostic = report.get("asymmetric_diagnostic")
+        modeled_legs = diagnostic.get("modeled_missing_legs") if isinstance(diagnostic, Mapping) else None
+        modeled_pnl = diagnostic.get("total_modeled_pnl_rs") if isinstance(diagnostic, Mapping) else None
+        expected_modeled_evidence = _digest({
+            "format": "modeled_partial_fill_replay_v1",
+            "decision_id": report.get("decision_id"),
+            "manifest_sha256": manifest.get("manifest_sha256"),
+            "decision_book_received_at": report.get("decision_book_received_at"),
+            "asymmetric_diagnostic": diagnostic,
+        })
+        if (state != "CLOSED" or result.reason != "partial_fill_modeled"
+                or report.get("reason") != "partial_fill_modeled"
+                or report.get("economics_contract") != "MODELED_PARTIAL_FILL_V1"
+                or not isinstance(modeled_legs, list) or not modeled_legs
+                or not isinstance(diagnostic.get("pre_decision_asymmetric_observed"), bool)
+                or diagnostic.get("pre_decision_asymmetric_observed") is not True
+                or isinstance(modeled_pnl, bool) or not isinstance(modeled_pnl, (int, float))
+                or not math.isfinite(float(modeled_pnl)) or float(modeled_pnl) > 0
+                or any(not isinstance(item, Mapping)
+                       or isinstance(item.get("partial_pnl_rs"), bool)
+                       or not isinstance(item.get("partial_pnl_rs"), (int, float))
+                       or not math.isfinite(float(item.get("partial_pnl_rs")))
+                       or float(item.get("partial_pnl_rs")) > 0
+                       for item in modeled_legs)
+                or round(sum(float(item["partial_pnl_rs"]) for item in modeled_legs), 4)
+                    != round(float(modeled_pnl), 4)
+                or result.net_pnl_rs is None
+                or round(float(modeled_pnl), 4) != round(float(result.net_pnl_rs), 4)
+                or replay.evidence_sha256 != expected_modeled_evidence
+                or replay.exit_trigger != "MODELED_PARTIAL_FILL"
+                or replay.attempted_entries != 1):
+            raise ValueError("modeled partial-fill replay attribution conflicts")
+    elif (result.reason == "partial_fill_modeled"
+          or report.get("economics_contract") == "MODELED_PARTIAL_FILL_V1"):
+        raise ValueError("modeled partial-fill replay is missing provenance")
     sensitivity = report.get("cost_sensitivity")
     if sensitivity is None:
-        if report.get("economics_contract") is not None:
+        if report.get("economics_contract") not in (None, "MODELED_PARTIAL_FILL_V1"):
             raise ValueError("declared full-policy economics are missing")
         retained_sensitivity = None
     elif isinstance(sensitivity, Mapping):
@@ -202,8 +242,11 @@ def heldout_case_from_full_policy_report(report: Mapping[str, Any], *,
             or len(signal_artifact_sha256) != 64
             or any(char not in "0123456789abcdef" for char in signal_artifact_sha256.lower())):
         raise ValueError("full-policy held-out identity is invalid")
-    return HeldOutCase(str(underlying), policy_id, decision_at.date().isoformat(), replay,
-                       decision_id, signal_artifact_sha256.lower(), retained_sensitivity, dict(report))
+    return HeldOutCase(underlying=str(underlying), policy_id=policy_id,
+        session_date=decision_at.date().isoformat(), replay=replay,
+        opportunity_id=decision_id, signal_artifact_sha256=signal_artifact_sha256.lower(),
+        partial_fill_observed=partial_fill, cost_sensitivity=retained_sensitivity,
+        source_report=dict(report))
 
 
 def build_heldout_comparison(*, dataset_sha256: str, code_revision: str,
@@ -244,6 +287,7 @@ def build_heldout_comparison(*, dataset_sha256: str, code_revision: str,
         key = f"{index}:{policy}"
         groups.setdefault(key, {"underlying": index, "policy_id": policy,
                                 "sessions": [], "coverage": {}, "closed": 0, "no_fill": 0,
+                                "full_closes": 0, "modeled_partial_closes": 0,
                                 "unresolved": 0, "unavailable": 0, "net_pnl_rs": 0.0,
                                 "evidence_ids": [], "opportunity_ids": [], "signal_artifact_ids": [],
                                 "ordered_outcomes": [], "cost_sensitivity": []})["coverage"].setdefault(day, "UNAVAILABLE")
@@ -265,6 +309,8 @@ def build_heldout_comparison(*, dataset_sha256: str, code_revision: str,
                    ("underlying", "policy_id", "session_date", "replay", "opportunity_id",
                     "signal_artifact_sha256", "cost_sensitivity")):
                 raise ValueError("heldout case differs from its verified full-policy report")
+            if verified.partial_fill_observed != case.partial_fill_observed:
+                raise ValueError("heldout partial-fill provenance differs from its verified report")
             public_sources = case.source_report.get("public_sources")
             source_rows = public_sources.get("sources") if isinstance(public_sources, Mapping) else None
             source_master = case.source_report["manifest"].get("contract_master_sha256")
@@ -293,6 +339,8 @@ def build_heldout_comparison(*, dataset_sha256: str, code_revision: str,
         bucket["ordered_outcomes"].append({"session_date": case.session_date,
             "entry_at": case.replay.result.entry_at, "exit_at": case.replay.result.exit_at,
             "state": state, "net_pnl_rs": case.replay.result.net_pnl_rs,
+            "partial_fill_observed": case.partial_fill_observed,
+            "outcome_basis": "MODELED_PARTIAL_FILL" if case.partial_fill_observed else "FULL_SPREAD_EXECUTION",
             "opportunity_id": case.opportunity_id, "evidence_sha256": case.replay.evidence_sha256})
         if case.cost_sensitivity is not None:
             # [WORKFLOW-C.A3 2026-09-15] Deterministic
@@ -320,6 +368,10 @@ def build_heldout_comparison(*, dataset_sha256: str, code_revision: str,
             if pnl is None or not math.isfinite(float(pnl)):
                 raise ValueError("closed heldout replay requires finite net P&L")
             bucket["closed"] += 1; bucket["net_pnl_rs"] += float(pnl)
+            if case.partial_fill_observed:
+                bucket["modeled_partial_closes"] += 1
+            else:
+                bucket["full_closes"] += 1
         elif case.replay.state == "NO_FILL":
             bucket["no_fill"] += 1
         elif case.replay.state == "UNRESOLVED":
@@ -333,6 +385,8 @@ def build_heldout_comparison(*, dataset_sha256: str, code_revision: str,
         bucket["ordered_outcomes"].sort(key=_outcome_order)
         bucket["cost_sensitivity"].sort(key=lambda row: row["opportunity_id"])
         bucket["net_pnl_rs"] = round(bucket["net_pnl_rs"], 4)
+        if bucket["full_closes"] + bucket["modeled_partial_closes"] != bucket["closed"]:
+            raise ValueError("heldout close provenance does not match aggregate")
         running = peak = max_drawdown = 0.0
         for row in bucket["ordered_outcomes"]:
             if row["state"] == "CLOSED":

@@ -86,7 +86,7 @@ Declared tables: `trade_outcomes`
 
 [WORKFLOW-C.C2 2026-09-15] Asymmetric partial-fill pricing model. Per the 2026-09-15 production deep audit C.2 (operator decisions 2026-09-16): > Q1: 'Filled at mid + 2bps' (estimate from mid-price) > Q2: All exchanges same (no per-exchange differentiation). > Q3: Partial counts as CLOSED with partial P&L (realized > partial fill). > Q4: No new operator-config knobs. This module implements the bounded mid+2bps fill-price estimator for the missing leg of a partial fill. It is PURE / TOTAL / SIDE-EFFECT FREE -- no DB calls, no Kite calls, no logging. The full-policy replay uses these helpers to compute the partial fill P&L when an asymmetric batch is observed in the pre-decision window. Before
 
-Top-level declarations: `mid_price` (line 70), `estimate_missing_leg_price` (line 89), `compute_partial_fill_pnl` (line 126)
+Top-level declarations: `mid_price` (line 71), `estimate_missing_leg_price` (line 91), `compute_modeled_entry_slippage_pnl` (line 131), `compute_partial_fill_pnl` (line 153)
 
 Related tests: `python-engine/tests/test_asymmetric_fill_model.py`
 
@@ -112,6 +112,16 @@ Related tests: `python-engine/tests/test_backtest_lab.py`
 
 Declared tables: `backtest_experiments`, `backtest_runs`
 
+## `python-engine/boundary_safety.py`
+
+[WORKFLOW-A.4 2026-09-17] Cross-boundary safety net for decision clocks. Per Workstream A in NEXT_AGENT_PLAN.md: > Ensure crossing a five-minute boundary, entry cutoff or > session boundary during a fetch cannot create a > backdated idea. The base ``partner_decision_clock.crossed_entry_boundary`` covers entry-cutoff and session-boundary crossings but only one at a time. This module adds: - ``BoundaryKind`` -- enum of boundary types the plan calls out (5-minute bar, entry cutoff, session boundary). - ``crossed_boundaries(...)`` -- returns ALL boundary crossings the clock experienced during acquisition, not just the first one. Operators can use this to attribute ideas that should have been sup
+
+Top-level declarations: `BoundaryKind` (line 56), `BoundaryCrossing` (line 78), `_is_session_boundary_crossed` (line 94), `_is_entry_cutoff_crossed` (line 144), `_is_bar_boundary_crossed` (line 174), `crossed_boundaries` (line 213), `has_crossed_boundary` (line 263)
+
+Engine dependencies: `partner_decision_clock`
+
+Related tests: `python-engine/tests/test_boundary_safety.py`
+
 ## `python-engine/breadth.py`
 
 Two-tier market-breadth computation engine. Tier 1 (hourly): fetches 60-day daily history for the Nifty 100 universe, computes SMA50 and signed distance_pct per stock, caches the result with a 1-hour stale-while-revalidate window. Tier 2 (per-scan): uses the scan pass's live LTP + cached SMA50 to refresh breadth_pct_above_sma50 and per-stock rank. Zero Kite calls. Both tiers return a BreadthResult. When Tier 1 fails on more than ``degraded_threshold`` of fetches, returns a degraded result (breadth_pct=None, rank_map={}).
@@ -132,6 +142,14 @@ Related tests: `python-engine/tests/test_broker_reconciliation.py`
 
 Declared tables: `broker_statement_entries`, `broker_statement_fills`, `broker_statement_imports`
 
+## `python-engine/capital_loss_tolerance.py`
+
+[WORKFLOW-F.9 2026-09-17] Capital-increase loss-tolerance loader. Per Workstream F in NEXT_AGENT_PLAN.md: > Establish capital-increase criteria from externally > reconciled net results, drawdown, execution quality and > operational stability. Leave the user's loss tolerance > as an explicit input if not supplied. This module complements the existing ``python-engine.capital_policy`` (and its CLI). The base policy reads ``LOSS_TOLERANCE_PCT`` from settings. This module adds: - ``load_loss_tolerance(input_path)`` -- reads an explicit loss-tolerance from a JSON file supplied by the user. Format:: { "loss_tolerance_pct": 25.0, "max_drawdown_pct": 15.0, "min_win_rate_pct": 50.0, "max_consecutive_l
+
+Top-level declarations: `LossToleranceField` (line 52), `LossToleranceConfig` (line 72), `_validate_field` (line 92), `load_loss_tolerance` (line 139), `merge_loss_tolerance` (line 196)
+
+Related tests: `python-engine/tests/test_capital_loss_tolerance.py`
+
 ## `python-engine/capital_policy.py`
 
 Offline F6 capital-policy evaluation, never an execution authorization. Loss tolerance is unknown until explicitly supplied. The pure function evaluates caller-declared inputs; their authenticity/account scope is not established by this API. The account wrapper refuses until immutable source linkage and genuine F/G/D evidence can be independently validated. Existing accountless histories and arbitrary archive files are not account-specific growth authority.
@@ -147,6 +165,14 @@ Related tests: `python-engine/tests/test_capital_policy.py`, `python-engine/test
 Top-level declarations: `_write_output_atomic` (line 43), `_thresholds_from_config` (line 71), `_evaluate` (line 90), `_print_config` (line 144), `_build_parser` (line 178), `main` (line 221)
 
 Engine dependencies: `capital_policy`, `config`
+
+## `python-engine/capture_bundle.py`
+
+[WORKFLOW-A.3 2026-09-17] Capture-bundle binding. Per Workstream A in NEXT_AGENT_PLAN.md: > Carry the chosen clocks and source IDs into the > captured bundle and frozen decision manifest. Bind > candidate and public captures to the same > decision/run/account/index. This module introduces the canonical capture bundle -- the dict that ties together: - the candidate card (the structured advisory) - the decision clock (the explicit causal clocks) - the source identities (which feeds were used) - the decision / run / account / index identifiers The captured bundle is the canonical replay artifact: a later audit can re-derive the candidate from the bundle and verify it matches the live dispatch.
+
+Top-level declarations: `BundleValidationCode` (line 55), `BundleValidationProblem` (line 69), `CaptureBundle` (line 77), `_decision_id_hash` (line 119), `build_capture_bundle` (line 128), `bundle_from_clock_and_card` (line 193), `validate_bundle` (line 223), `has_required_bundle_fields` (line 295)
+
+Related tests: `python-engine/tests/test_capture_bundle.py`
 
 ## `python-engine/cas_reachability_aggregate.py`
 
@@ -252,11 +278,27 @@ Top-level declarations: `StopResult` (line 56), `ChandelierStop` (line 68)
 
 Related tests: `python-engine/tests/test_chandelier_stop.py`
 
+## `python-engine/conditional_protection_schema.py`
+
+[WORKFLOW-B.4 2026-09-17] Conditional-protection capture schema. Per Workstream B in NEXT_AGENT_PLAN.md: > Finish conditional-protection input capture and declare > whether it can use the same replay schema or needs a > separate evaluator. Background: The ``AdvisoryScope.CONDITIONAL_PROTECTION`` scope emits a ``partner_advisory_ideas`` row whose ``payload`` JSON carries an extra ``coverage_assumption`` / ``coverage_units`` block and uses a different ``risk_label`` than ``MARKET_SETUP``. The question is whether the standard replay schema (``partner_full_policy_replay_v1``) can consume a CONDITIONAL_PROTECTION payload as-is, or needs a separate evaluator. This module exposes: - ``ReplaySchemaC
+
+Top-level declarations: `ReplaySchemaCompat` (line 63), `CompatVerdict` (line 97), `assess_replay_compatibility` (line 113), `compatible_payload` (line 183), `conditional_protection_schema_notes` (line 193)
+
+Related tests: `python-engine/tests/test_conditional_protection_schema.py`
+
 ## `python-engine/config.py`
 
 No module docstring; use the declarations and callers below.
 
 Top-level declarations: `Settings` (line 19)
+
+## `python-engine/cost_audit.py`
+
+[WORKFLOW-F.8 2026-09-17] Cost-per-trade audit. Per Workstream F in NEXT_AGENT_PLAN.md: > Audit true cost per trade relative to expected edge for > INR 8k capital. Prevent a large configured paper > bankroll from implying owner live affordability. This module is a pure analyzer. Given a list of trades and a list of cost lines, it computes: - ``TradeCost`` -- per-trade cost breakdown (broker_fees, slippage, charges, total_cost, expected_edge, cost_to_edge_ratio). - ``CostAuditReport`` -- aggregate stats over the trades: total cost, total edge, mean cost_to_edge, worst trade, threshold-breach count. - ``audit_costs(trades, costs)`` -- end-to-end audit. The plan's "prevent a large configured pa
+
+Top-level declarations: `CostSeverity` (line 40), `TradeCost` (line 49), `CostAuditReport` (line 93), `_cost_severity` (line 138), `audit_costs` (line 158)
+
+Related tests: `python-engine/tests/test_cost_audit.py`
 
 ## `python-engine/cost_schedules.py`
 
@@ -286,6 +328,26 @@ Engine dependencies: `config`, `fno_instruments`, `fno_underlyings`, `operator_a
 
 Related tests: `python-engine/tests/test_daily_bootstrap.py`
 
+## `python-engine/decision_clocks_extensions.py`
+
+[WORKFLOW-A.1 2026-09-17] Decision-clock extension helpers. The base ``DecisionClock`` lives in ``partner_decision_clock`` and is the canonical clock contract. This module adds the bounded extension helpers the Workstream A plan calls for without touching the canonical dataclass: - ``build_clock_for_test(...)`` -- deterministic factory that returns a DecisionClock with sensible defaults derived from a single tick instant. - ``validate_clocks(clock) -> list[str]`` -- returns ALL clock problems (instead of raising the first one). - ``has_required_stages(clock) -> bool`` -- asserts the clock has at least public_received, chain_received, and candidate_constructed (the minimum required to support
+
+Top-level declarations: `ClockValidationProblem` (line 57), `has_required_stages` (line 71), `missing_required_stages` (line 84), `validate_clocks` (line 92), `clock_distance` (line 189), `summarize_clock` (line 211), `compare_clock_policies` (line 248), `build_clock_for_test` (line 278)
+
+Engine dependencies: `partner_decision_clock`
+
+Related tests: `python-engine/tests/test_decision_clocks_extensions.py`
+
+## `python-engine/decision_policy.py`
+
+[WORKFLOW-A.2 2026-09-17] Decision-policy enum + version. Per Workstream A in NEXT_AGENT_PLAN.md: > Choose and document the deployed policy: either evaluate > on a declared frozen completed-bar cutoff with later > availability, or recompute at a genuine post-acquisition > decision clock. Do not silently mix both. The base ``partner_decision_clock.py`` hardcodes a single policy ``FROZEN_COMPLETED_BAR_CUTOFF_V1``. This module introduces the policy enum, lists the supported policies, and exposes: - ``DecisionPolicy`` -- enum of supported policies. - ``SUPPORTED_POLICIES`` -- tuple of all supported policy versions. - ``policy_family(policy) -> str`` -- strip the ``_V<n>`` suffix to get the famil
+
+Top-level declarations: `DecisionPolicy` (line 47), `policy_family` (line 77), `policy_is_frozen` (line 90), `policy_is_post_acquisition` (line 95), `is_supported_policy` (line 100), `assert_policy_supports_clock` (line 105), `incompatible_policies` (line 163), `start_clock_for_policy` (line 193)
+
+Engine dependencies: `partner_decision_clock`
+
+Related tests: `python-engine/tests/test_decision_policy.py`
+
 ## `python-engine/dev_acceptance_harness.py`
 
 Controlled Dev acceptance harness; no external service or order path.
@@ -307,6 +369,14 @@ Engine dependencies: `broker_reconciliation`, `reconciliation_evidence`
 Related tests: `python-engine/tests/test_discrepancies.py`
 
 Declared tables: `discrepancies`, `discrepancy_status_log`
+
+## `python-engine/dispatch_independence.py`
+
+[WORKFLOW-A.5 2026-09-17] Dispatch independence verification. Per Workstream A in NEXT_AGENT_PLAN.md: > Keep final dispatch revalidation independent: source > availability does not grant transport authority. The dispatcher (``partner_orchestrator._send_event``) must not send a message just because the source data was available. It must independently revalidate: 1. partner is enabled (``settings.PARTNER_MANUAL_ADVISORY_DELIVERY_ENABLED``) 2. within the configured session window 3. trading day 4. fresh-ish Kite access token If any of these fail, the dispatcher suppresses the message even if the source data was captured and the candidate was constructed. This module exposes: - ``DispatchGateSta
+
+Top-level declarations: `GateOutcome` (line 49), `DispatchGateStatus` (line 59), `DispatchGateReport` (line 66), `check_dispatch_gates` (line 123), `dispatch_independence_assertion` (line 195)
+
+Related tests: `python-engine/tests/test_dispatch_independence.py`
 
 ## `python-engine/edge_stats.py`
 
@@ -552,6 +622,14 @@ Engine dependencies: `config`, `fno_instruments`, `research_archive`
 
 Related tests: `python-engine/tests/test_fno_underlyings.py`
 
+## `python-engine/gap_detector.py`
+
+[WORKFLOW-B.2 2026-09-17] Quote + public-event gap detector. Per Workstream B in NEXT_AGENT_PLAN.md: > Track quote and public-event gaps independently. Avoid > pretending a stop between unobserved samples has a known > fill. This module is a pure analyzer. Given an ordered list of observation timestamps, it computes: - ``detect_gaps(timestamps, ...)`` -- returns a list of ``Gap`` records (one per gap > the threshold). - ``gap_summary(gaps)`` -- aggregate stats (count, total_seconds, max_seconds, mean_seconds). - ``gap_crosses_entry_cutoff(gap, entry_cutoff)`` -- whether the gap spans the configured entry cutoff. - ``gap_could_hide_fill(gap, max_acceptable_gap)`` -- whether the gap is wide en
+
+Top-level declarations: `GapSeverity` (line 44), `Gap` (line 52), `GapSummary` (line 78), `_gap_severity` (line 107), `detect_gaps` (line 121), `gap_summary` (line 166), `gap_crosses_entry_cutoff` (line 190), `gap_could_hide_fill` (line 213), `audit_gaps` (line 226)
+
+Related tests: `python-engine/tests/test_gap_detector.py`
+
 ## `python-engine/halt_switch.py`
 
 [HALT 2026-08-05] Filesystem kill switch, enforced at the broker boundary. THE DEFECT THIS EXISTS TO FIX ----------------------------- `performance.check_circuit_breakers` has computed a correct `halted` boolean since the system was built, and nothing has ever acted on it. The candour is already in the tree, at partner_orchestrator.py:533: # [HONEST-HALT 2026-07-26] This used to broadcast "Our system halted its # own trading" ... No entry path is gated by it, so nothing was halted. Worse, node-gateway -- the container that actually places the momentum orders -- had no concept of a halt at all. The kill switch was a Telegram message. WHY A FILE AND NOT A DATABASE FLAG ------------------------
@@ -680,7 +758,7 @@ Related tests: `python-engine/tests/test_intraday_spread_chronological.py`
 
 Frozen per-index/policy held-out summaries for chronological spread replay.
 
-Top-level declarations: `HeldOutCase` (line 16), `_digest` (line 29), `_ordered_clock` (line 33), `_outcome_order` (line 43), `_validated_cost_sensitivity` (line 55), `canonical_cost_sensitivity_fingerprint` (line 95), `heldout_case_from_full_policy_report` (line 144), `build_heldout_comparison` (line 209)
+Top-level declarations: `HeldOutCase` (line 16), `_digest` (line 30), `_ordered_clock` (line 34), `_outcome_order` (line 44), `_validated_cost_sensitivity` (line 56), `canonical_cost_sensitivity_fingerprint` (line 96), `heldout_case_from_full_policy_report` (line 145), `build_heldout_comparison` (line 252)
 
 Engine dependencies: `intraday_spread_chronological`, `intraday_spread_replay`
 
@@ -950,6 +1028,14 @@ Engine dependencies: `config`
 
 Related tests: `python-engine/tests/test_partner_bot.py`
 
+## `python-engine/partner_card_renderer.py`
+
+[WORKFLOW-E.4 2026-09-17] Pure card renderer. Per Workstream E in NEXT_AGENT_PLAN.md: > Improve cards around decisions a manual trader can take: > index/exchange, timestamp/validity, setup rationale, entry > trigger and bounded price, exact contract legs/expiry/lot, > total debit and modeled costs, maximum defined loss, > invalidation/target and intraday deadline. Explain > uncertainty and liquidity limits without overwhelming the > message. This module extracts the card-rendering logic from ``partner_manual_advisory.py`` into a pure function that takes a dict (the same shape ``_candidate_payload()`` produces) and returns the rendered Telegram card body. Why a separate module: - The original
+
+Top-level declarations: `CardRenderError` (line 44), `_iso` (line 54), `_format_rupees` (line 74), `_format_strike` (line 81), `render_card` (line 92), `validate_rendered_card` (line 269), `render_and_validate` (line 332)
+
+Related tests: `python-engine/tests/test_partner_card_renderer.py`
+
 ## `python-engine/partner_collection_attempts.py`
 
 Durable per-attempt evidence for partner advisory input collection. This archive-local journal records observations only. It deliberately has no imports from order, cash, position, qualification, or transport modules.
@@ -974,7 +1060,9 @@ Related tests: `python-engine/tests/test_partner_content.py`
 
 Explicit causal clocks for the partner intraday advisory pipeline. The deployed policy freezes public-bar eligibility at tick start, while all network response and candidate/dispatch clocks retain when work really became available. This module is pure and has no execution or delivery authority.
 
-Top-level declarations: `aware` (line 21), `source_identity` (line 27), `DecisionClock` (line 33), `start_clock` (line 84), `validate_clock_payload` (line 94), `sampled` (line 114), `crossed_entry_boundary` (line 118)
+Top-level declarations: `aware` (line 21), `source_identity` (line 27), `DecisionClock` (line 33), `start_clock` (line 97), `validate_clock_payload` (line 107), `sampled` (line 127), `crossed_entry_boundary` (line 131)
+
+Engine dependencies: `decision_policy`
 
 Related tests: `python-engine/tests/test_partner_decision_clock.py`
 
@@ -992,7 +1080,7 @@ Related tests: `python-engine/tests/test_partner_fixture_adapter.py`
 
 Offline full-policy replay. Results are diagnostic, never delivery authority. The entry book must have been received by the decision clock. Independent public events are consumed in receipt order, preserving breaches between option books.
 
-Top-level declarations: `_pre_decision_window_hit` (line 16), `write_replay_report` (line 45), `replay_full_policy` (line 72)
+Top-level declarations: `_pre_decision_window_hit` (line 18), `write_replay_report` (line 49), `replay_full_policy` (line 76)
 
 Engine dependencies: `asymmetric_fill_model`, `intraday_spread_archive_adapter`, `intraday_spread_chronological`, `intraday_spread_replay`, `partner_qualification`, `partner_research_capture`, `partner_thesis`
 
@@ -1022,7 +1110,7 @@ Related tests: `python-engine/tests/test_partner_lifecycle_demo.py`
 
 Scoped, non-executing advisory cards for the NIFTY 50/SENSEX partner. This module deliberately sits between read-only market scanning and the hardened delivery ledger. It has no broker-order import and no dependency on Sentinel cash, paper fills or partner holdings for a ``MARKET_SETUP``. A personalised hedge is a different scope and is rejected here unless a caller supplies separately reconciled exposure. The first release is intentionally small: same-index, same-expiry directional debit spreads. Every leg comes from the current exchange-specific instrument book and the conservative executable side of a single quote batch. The module produces persisted preview/shadow cards; delivery stays s
 
-Top-level declarations: `AdvisoryScope` (line 42), `StrategyEvidence` (line 48), `ManualDecision` (line 55), `PartnerAdvisoryProfile` (line 70), `AdvisoryLeg` (line 95), `AdvisoryCandidate` (line 115), `ValidationResult` (line 155), `_iso` (line 241), `_parse_status_clock` (line 247), `_profile_payload` (line 254), `_candidate_payload` (line 258), `intraday_deadlines` (line 271), `_finite_positive` (line 283), `_vertical_oracle` (line 287), `validate_profile` (line 323), `init_partner_advisory_db` (line 346), `save_partner_profile` (line 359), `load_partner_profile` (line 410), `load_partner_profile_with_state` (line 427), `record_advisory_input_status` (line 449), `load_advisory_input_status` (line 484), `record_strategy_qualification` (line 535), `record_research_artifact` (line 566), `is_strategy_qualified` (line 585), `_quote_time` (line 605), `_leg` (line 609), `resolve_advisory_expiry` (line 621), `build_directional_debit_spread` (line 630), `build_conditional_index_protective_put` (line 712), `select_preferred_market_candidates` (line 768), `validate_candidate` (line 801), `advisory_identity` (line 929), `render_advisory_card` (line 955), `persist_candidate` (line 1011), `dispatch_queued_advisory` (line 1144), `queue_management_updates` (line 1206), `run_intraday_session_lifecycle` (line 1281), `dispatch_queued_management_update` (line 1338), `record_manual_feedback` (line 1368), `load_advisory_cards` (line 1389), `load_advisory_diagnostics` (line 1420)
+Top-level declarations: `AdvisoryScope` (line 42), `StrategyEvidence` (line 48), `ManualDecision` (line 55), `PartnerAdvisoryProfile` (line 70), `AdvisoryLeg` (line 95), `AdvisoryCandidate` (line 115), `ValidationResult` (line 155), `_iso` (line 241), `_parse_status_clock` (line 247), `_profile_payload` (line 254), `_candidate_payload` (line 258), `intraday_deadlines` (line 271), `_finite_positive` (line 283), `_vertical_oracle` (line 287), `validate_profile` (line 323), `init_partner_advisory_db` (line 346), `save_partner_profile` (line 359), `load_partner_profile` (line 410), `load_partner_profile_with_state` (line 427), `record_advisory_input_status` (line 449), `load_advisory_input_status` (line 484), `record_strategy_qualification` (line 535), `record_research_artifact` (line 566), `is_strategy_qualified` (line 585), `_quote_time` (line 605), `_leg` (line 609), `resolve_advisory_expiry` (line 621), `build_directional_debit_spread` (line 630), `build_conditional_index_protective_put` (line 712), `select_preferred_market_candidates` (line 768), `validate_candidate` (line 801), `advisory_identity` (line 929), `render_advisory_card` (line 955), `persist_candidate` (line 971), `dispatch_queued_advisory` (line 1104), `queue_management_updates` (line 1166), `run_intraday_session_lifecycle` (line 1241), `dispatch_queued_management_update` (line 1298), `record_manual_feedback` (line 1328), `load_advisory_cards` (line 1349), `load_advisory_diagnostics` (line 1380)
 
 Engine dependencies: `config`, `fno_chain`, `fno_costs`, `fno_defined_risk`, `fno_instruments`, `fno_models`, `fno_underlyings`, `hedge_advisory`, `partner_thesis`, `research_archive`, `research_leg_subscriptions`
 
@@ -1079,6 +1167,14 @@ Top-level declarations: `_sha` (line 13), `_validated_public_scope` (line 18), `
 Engine dependencies: `fno_engine_mom`, `partner_decision_clock`, `partner_qualification`, `research_archive`
 
 Related tests: `python-engine/tests/test_partner_research_capture.py`
+
+## `python-engine/partner_sizing.py`
+
+[WORKFLOW-E.5 2026-09-17] Liquidity-aware sizing. Per Workstream E in NEXT_AGENT_PLAN.md: > Explain uncertainty and liquidity limits without > overwhelming the message. This module computes liquidity-aware sizing for a partner advisory card. Given a card with bid_quantity / ask_quantity on each leg, it produces: - ``max_fillable_contracts`` -- how many contracts of the requested size can fill without walking past top-of-book. - ``walk_the_book_cost`` -- total slippage (in bps) if the requested size is larger than top-of-book. - ``liquidity_tier`` -- SURPLUS / TIGHT / INSUFFICIENT. - ``per_leg`` -- per-leg fillable / slippage breakdown. The module is read-only: it does NOT place orders, does
+
+Top-level declarations: `LiquidityTier` (line 38), `LegLiquidity` (line 59), `LiquiditySizingResult` (line 88), `_walk_the_book_bps` (line 135), `_tier_for` (line 153), `compute_liquidity_sizing` (line 170)
+
+Related tests: `python-engine/tests/test_partner_sizing.py`
 
 ## `python-engine/partner_source_adapter.py`
 
@@ -1464,9 +1560,9 @@ Declared tables: `proactive_exit_research_manifests`, `proactive_exit_research_r
 
 Offline-safe evidence ledger for proactive strategy research. This module is deliberately policy-agnostic: it records what a scanner or allocator did without creating an order, and keeps shadow/replay evidence out of the live cash books.
 
-Top-level declarations: `ShadowProposal` (line 64), `ShadowSimulation` (line 83), `ShadowAllocation` (line 97), `ShadowPosition` (line 107), `_proposal_id` (line 125), `shadow_history_state` (line 129), `build_shadow_proposals` (line 154), `allocate_shadow_proposals` (line 201), `size_shadow_allocations` (line 218), `_comparable_shadow_score` (line 277), `simulate_shadow_trade` (line 291), `_simulate_shadow_limit_pullback` (line 347), `_simulate_shadow_trailing_stop` (line 399), `simulate_shadow_research_trial` (line 471), `_normalise_shadow_bars` (line 516), `_bars_visible_as_of` (line 539), `_shadow_entry_window_already_observed` (line 560), `simulate_open_shadow_position` (line 580), `_stamp` (line 687), `init_proactive_intelligence` (line 694), `_shadow_run_storage_key` (line 715), `_shadow_implementation_identity` (line 740), `stamp_session_phase` (line 745), `_configured_shadow_run_id` (line 810), `_ensure_shadow_run` (line 825), `_shadow_run_manifest` (line 890), `_claim_shadow_step` (line 907), `_complete_shadow_step` (line 977), `record_opportunity_event` (line 998), `_record_opportunity_event_in_transaction` (line 1028), `transition_watchlist` (line 1067), `record_cash_flow` (line 1094), `record_scan_run` (line 1115), `record_market_data_observation` (line 1135), `proactive_inactivity_diagnostics` (line 1184), `_recent_eligible_session_dates` (line 1216), `proactive_session_diagnostics` (line 1236), `_shadow_positions` (line 1372), `_shadow_account_state` (line 1396), `_persist_new_shadow_position` (line 1418), `_advance_open_shadow_positions` (line 1478), `_complete_shadow_watchlist_in_transaction` (line 1539), `_expire_pending_shadow_watchlists` (line 1557), `repair_shadow_evidence` (line 1598), `run_shadow_workflow` (line 1635), `run_shadow_replay` (line 1846), `_record_shadow_configuration_state` (line 1861), `_validate_shadow_bar_collections` (line 1873), `run_configured_shadow_workflow` (line 1894), `proactive_activity_report` (line 2038), `proactive_shadow_comparison` (line 2156), `_research_proposal_manifest` (line 2269), `run_shadow_research_comparison` (line 2279), `proactive_shadow_research_report` (line 2383)
+Top-level declarations: `ShadowProposal` (line 64), `ShadowSimulation` (line 83), `ShadowAllocation` (line 97), `ShadowPosition` (line 107), `_proposal_id` (line 125), `shadow_history_state` (line 129), `build_shadow_proposals` (line 154), `allocate_shadow_proposals` (line 201), `size_shadow_allocations` (line 218), `_comparable_shadow_score` (line 277), `simulate_shadow_trade` (line 291), `_simulate_shadow_limit_pullback` (line 347), `_simulate_shadow_trailing_stop` (line 399), `simulate_shadow_research_trial` (line 471), `_normalise_shadow_bars` (line 566), `_bars_visible_as_of` (line 589), `_shadow_entry_window_already_observed` (line 610), `simulate_open_shadow_position` (line 630), `_stamp` (line 737), `init_proactive_intelligence` (line 744), `_shadow_run_storage_key` (line 765), `_shadow_implementation_identity` (line 790), `stamp_session_phase` (line 795), `_configured_shadow_run_id` (line 860), `_ensure_shadow_run` (line 875), `_shadow_run_manifest` (line 940), `_claim_shadow_step` (line 957), `_complete_shadow_step` (line 1027), `record_opportunity_event` (line 1048), `_record_opportunity_event_in_transaction` (line 1078), `transition_watchlist` (line 1117), `record_cash_flow` (line 1144), `record_scan_run` (line 1165), `record_market_data_observation` (line 1185), `proactive_inactivity_diagnostics` (line 1234), `_recent_eligible_session_dates` (line 1266), `proactive_session_diagnostics` (line 1286), `_shadow_positions` (line 1422), `_shadow_account_state` (line 1446), `_persist_new_shadow_position` (line 1468), `_advance_open_shadow_positions` (line 1528), `_complete_shadow_watchlist_in_transaction` (line 1589), `_expire_pending_shadow_watchlists` (line 1607), `repair_shadow_evidence` (line 1648), `run_shadow_workflow` (line 1685), `run_shadow_replay` (line 1896), `_record_shadow_configuration_state` (line 1911), `_validate_shadow_bar_collections` (line 1923), `run_configured_shadow_workflow` (line 1944), `proactive_activity_report` (line 2088), `proactive_shadow_comparison` (line 2206), `_research_proposal_manifest` (line 2319), `run_shadow_research_comparison` (line 2329), `proactive_shadow_research_report` (line 2433)
 
-Engine dependencies: `config`, `market_calendar`, `proactive_execution_research`, `proactive_exit_research`, `proactive_market_data`, `proactive_portfolio_research`
+Engine dependencies: `config`, `market_calendar`, `proactive_execution_research`, `proactive_exit_research`, `proactive_market_data`, `proactive_portfolio_research`, `range_reversion`
 
 Related tests: `python-engine/tests/test_proactive_intelligence.py`
 
@@ -1511,6 +1607,14 @@ Pure research promotion-readiness assessment. This module can only recommend pap
 Top-level declarations: `ReadinessThresholds` (line 23), `_family` (line 54), `_finite` (line 61), `_integer` (line 71), `_variant_row` (line 76), `_latest_run` (line 84), `_result_variant` (line 90), `_first` (line 104), `_block` (line 108), `_reconciliation_status` (line 112), `_legacy_assessment` (line 123), `assess_promotion_readiness` (line 145), `_json_safe` (line 316), `readiness_json` (line 333)
 
 Related tests: `python-engine/tests/test_promotion_readiness.py`, `python-engine/tests/test_promotion_readiness_route.py`
+
+## `python-engine/range_reversion.py`
+
+[WORKFLOW-G.3 2026-09-17] Range mean-reversion entry profile. Per Workstream G in NEXT_AGENT_PLAN.md: > Range mean reversion with strict invalidation. Stable > range/no expansion. Comparison: No-trade baseline and > existing range logic. Main risk: Regime shift produces > tail losses. G.3 introduces a DEDICATED entry semantics for ``RANGE_REVERSION_V1`` proposals. Previously the proactive-intelligence dispatcher routed these proposals through the ``COMPLETED_BAR_CONFIRMATION_V1`` fallback, which is the plan note: > RANGE_REVERSION_V1 dispatcher still routes through > completed-bar-confirmation fallback. This module implements the range-specific entry: 1. **Range detection**: a window of N ba
+
+Top-level declarations: `EntrySignal` (line 61), `RangeReversionVerdict` (line 71), `_safe_mean` (line 132), `range_reversion_entry` (line 142)
+
+Related tests: `python-engine/tests/test_range_reversion.py`, `python-engine/tests/test_range_reversion_dispatcher.py`, `python-engine/tests/test_range_reversion_profile.py`
 
 ## `python-engine/reconciliation_cli.py`
 
@@ -1686,6 +1790,14 @@ Top-level declarations: `_full_runs` (line 47), `promotion_readiness_report` (li
 
 Engine dependencies: `analytics`, `backtest_lab`, `config`, `engine_auth`, `fno_shadow`, `momentum_shadow`, `penny_shadow`, `performance_analytics`, `promotion_readiness`
 
+## `python-engine/saturation_diagnostic.py`
+
+[WORKFLOW-B.5 2026-09-17] Saturation evidence diagnostic. Per Workstream B in NEXT_AGENT_PLAN.md: > Bound disk work. Current ``to_thread`` avoids event-loop > blocking but awaiting it can still delay the advisory > job. Introduce a bounded queue only with > saturation/drop evidence, cancellation semantics and > restart tests; never spawn unlimited writes. This module is a read-only diagnostic. It does NOT introduce a bounded queue (the plan reserves that for after evidence is collected). Instead, it analyzes advisory-job timing data and reports whether the system is exhibiting saturation symptoms. A system is "saturated" when: - tail latency (p95 / p99) exceeds a configured threshold, OR - t
+
+Top-level declarations: `SaturationLevel` (line 42), `LatencyStats` (line 50), `SaturationVerdict` (line 77), `_percentile` (line 95), `compute_latency_stats` (line 112), `assess_saturation` (line 147)
+
+Related tests: `python-engine/tests/test_saturation_diagnostic.py`
+
 ## `python-engine/scheduler_setup.py`
 
 [ROADMAP-4.1 stage 2, 2026-07-13] APScheduler job registration. Extracted verbatim from main.py: register_fno_scheduler_jobs and register_penny_scheduler_jobs, and the 8 async closures they define. This is the piece stage 1 deliberately left behind. Python resolves a function's globals at CALL time against its DEFINING module, so a closure that moves house and loses a free name raises NameError only when the job fires -- in production, inside a `_safe` wrapper that catches it, logs it, and returns. The scan then never runs, silently. Import still succeeds, the job census still sees the registration, and nothing goes red. That is the 2026-07-13 failure signature, and it is why this move waite
@@ -1703,6 +1815,14 @@ Top-level declarations: `_utc_now` (line 43), `_iso` (line 47), `init_scheduler_
 Related tests: `python-engine/tests/test_scheduler_telemetry.py`
 
 Declared tables: `scheduler_run_telemetry`
+
+## `python-engine/selected_legs_verifier.py`
+
+[WORKFLOW-B.3 2026-09-17] Selected-leg persistence verifier. Per Workstream B in NEXT_AGENT_PLAN.md: > Preserve all selected legs through the advice lifecycle > and management horizon. Verify shared-token accounting, > terminal registrations, restarts and expiry changes. This module exposes a pure verifier that checks a qualification record's ``selected_legs`` against the ``fno_chain_oi`` chain snapshot table: - ``verify_selected_legs(...)`` -- returns a list of ``SelectedLegFinding`` records (one per leg + an aggregate row). PASS / WARN / FAIL classification. - ``SelectedLegFinding`` -- per-leg result with ``leg_token``, ``leg_symbol``, ``has_chain_snapshot``, ``has_quote_at_decision``, ``s
+
+Top-level declarations: `LegStatus` (line 38), `SelectedLegFinding` (line 46), `SelectedLegsReport` (line 96), `_leg_token` (line 147), `_check_unique_tokens` (line 151), `verify_selected_legs` (line 163)
+
+Related tests: `python-engine/tests/test_selected_legs_verifier.py`
 
 ## `python-engine/settlement_assumptions.py`
 

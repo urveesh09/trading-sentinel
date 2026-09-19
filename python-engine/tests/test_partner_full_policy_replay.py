@@ -195,6 +195,10 @@ def test_asymmetric_execution_quality_before_decision_is_partial_fill_modeled(ca
     assert result['state'] == 'CLOSED'
     assert result['reason'] == 'partial_fill_modeled'
     assert result['partial_fill_observed'] is True
+    assert result['economics_contract'] == 'MODELED_PARTIAL_FILL_V1'
+    assert result['replay']['state'] == 'CLOSED'
+    assert result['replay']['result']['reason'] == 'partial_fill_modeled'
+    assert result['replay']['exit_trigger'] == 'MODELED_PARTIAL_FILL'
     # The asymmetric_diagnostic block carries the modelled
     # attribution.
     diag = result['asymmetric_diagnostic']
@@ -210,10 +214,53 @@ def test_asymmetric_execution_quality_before_decision_is_partial_fill_modeled(ca
     expected_fill = expected_mid * (1.0 - 0.0002)
     assert modeled[0]['modeled_fill_price'] is not None
     assert abs(modeled[0]['modeled_fill_price'] - expected_fill) < 1e-6
+    assert modeled[0]['partial_pnl_rs'] < 0
+    assert diag['total_modeled_pnl_rs'] < 0
     # The diagnostic is surfaced in the report for the
     # qualification review to read.
     assert result['asymmetric_batches'][0]['state'] == 'ASYMMETRIC_EXECUTION_QUALITY'
     assert result['asymmetric_batches'][0]['insufficient'] == ['short']
+    from intraday_spread_holdout import (build_heldout_comparison,
+                                         heldout_case_from_full_policy_report)
+    heldout = heldout_case_from_full_policy_report(result, signal_artifact_sha256='d' * 64)
+    assert heldout.partial_fill_observed is True
+    assert heldout.replay.result.net_pnl_rs == diag['total_modeled_pnl_rs']
+    day = NOW.date().isoformat()
+    summary = build_heldout_comparison(dataset_sha256='b' * 64, code_revision='test',
+        training_sessions=[(NOW.date() - timedelta(days=1)).isoformat()],
+        holdout_sessions=[day],
+        declared_coverage=[('NIFTY', heldout.policy_id, day)], cases=[heldout])
+    group = summary['groups'][0]
+    assert group['closed'] == group['modeled_partial_closes'] == 1
+    assert group['full_closes'] == 0
+    assert summary['evidence_contract'] == 'LEGACY_CHRONOLOGICAL_CASES'
+
+    # Rehashing the outer report cannot erase modeled-partial provenance.
+    from partner_qualification_review import _sha
+    contradictory = {**result, 'partial_fill_observed': False}
+    contradictory['evidence_sha256'] = _sha({key: value for key, value in contradictory.items()
+                                             if key != 'evidence_sha256'})
+    with pytest.raises(ValueError, match='missing provenance'):
+        heldout_case_from_full_policy_report(contradictory, signal_artifact_sha256='d' * 64)
+
+
+def test_asymmetric_model_fails_closed_when_missing_leg_cannot_be_priced(case, monkeypatch):
+    args, rows = case
+    earlier = NOW - timedelta(seconds=2)
+    rows[0] = replace(rows[0], observed_at=earlier, received_at=earlier,
+        quotes=tuple(replace(q, observed_at=earlier, received_at=earlier,
+                             bid=0.0 if q.side == 'SELL' else q.bid)
+                     for q in rows[0].quotes))
+    batch = {'received_at': (NOW - timedelta(seconds=1)).isoformat(),
+             'state': 'ASYMMETRIC_EXECUTION_QUALITY', 'executable': ['long'],
+             'insufficient': ['short']}
+    monkeypatch.setattr(replay, 'build_spread_observations', lambda **_:
+        ArchiveObservationBuild(tuple(rows), (), 0, None, (), (batch,)))
+    result = replay.replay_full_policy(**args)
+    assert result['state'] == 'INSUFFICIENT_EVIDENCE'
+    assert result['reason'] == 'partial_fill_model_unavailable'
+    assert result['asymmetric_diagnostic']['modeled_missing_legs'][0]['modeled_fill_price'] is None
+    assert 'replay' not in result
 
 
 def test_asymmetric_after_decision_does_not_block_replay(case, monkeypatch):
@@ -476,6 +523,12 @@ def test_asymmetric_diagnostic_malformed_received_at_does_not_crash(case, monkey
     # And the timestamp range is the well-formed batch only
     # (the malformed one can't contribute to earliest/latest).
     assert diag["earliest_received_at"] == (NOW - timedelta(seconds=30)).isoformat()
+
+
+def test_asymmetric_naive_receipt_clock_is_excluded_without_crashing():
+    assert replay._pre_decision_window_hit(
+        {"received_at": NOW.replace(tzinfo=None).isoformat()},
+        NOW - timedelta(minutes=1), NOW) is False
 
 
 def test_master_scope_mismatch_rejected(case):

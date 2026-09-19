@@ -1,5 +1,19 @@
 # Trading Sentinel — next-agent execution plan
 
+## September 19 Workflow C.C2.HOLDOUT completion (Dev only)
+
+`C.C2.HOLDOUT` closes the modeled-partial review seam. The evaluator now emits
+a separately identified `MODELED_PARTIAL_FILL_V1` replay, and held-out/review
+outputs split `full_closes` from `modeled_partial_closes`. Adverse mid-plus-2bps
+entry slippage is non-positive; a degenerate missing-leg quote fails closed.
+Modeled outcomes remain outside `VERIFIED_FULL_POLICY_REPORTS` until honest
+cost-stress and archived-public-scope evidence exists. Verification: 90
+focused, 134 broader qualification/held-out, 226 Workflow C/research, and
+4,069 whole-engine tests passed; four skipped and 42 known deprecations in the
+whole run. Details and remaining runtime evidence are in
+[the completed slice](2026-09-19-workflow-c-partial-holdout-plan.md).
+Production is read-only.
+
 ## 1. Mission, scope and non-negotiable user intent
 
 September16 square-off acceptance update: pushed Dev commit `ee0a300` moves live momentum EOD ownership to 15:13 IST with a strict 15:14:30 submission cutoff and one shared monitor/EOD lock. Deadline expiry after protective-stop cancellation re-arms and persists replacement protection when possible and always escalates; no late sell is submitted. Focused momentum/calendar/lifecycle/surface coverage is green (79 passed), the scheduler/calendar regression subset is green (25 passed), agent is green (338 passed), and final Python is3730 passed/four skipped/42 existing deprecation warnings in214.84s. The completed pytest receipt again retained aiosqlite worker processes; the exact processes were stopped. Merge/release observation remains required before Production acceptance. This removes the identified 15:15 CAS collision in Dev source; it does not supply staging CAS evidence, broker execution verification or partner strategy qualification.

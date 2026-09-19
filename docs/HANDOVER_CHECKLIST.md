@@ -1,5 +1,22 @@
 # Handover receipt and operator checklist
 
+## September 19 Workflow C.C2.HOLDOUT (Dev tested)
+
+The modeled partial CLOSED path is now held-out ingestible and separately
+counted, with negative adverse-entry slippage, degenerate-book fail-closed
+behavior, strict provenance validation, and qualification propagation. It does
+not claim verified full economics. Focused: **90 passed**; qualification and
+held-out: **134 passed**; broader Workflow C/research/orchestrator: **226
+passed**, one known Starlette warning; whole engine: **4,069 passed/four
+skipped/42 known deprecations in 214.71s**. Atlas regenerated at 202 modules.
+JUnit is retained at
+`C:/Users/Urveesh/AppData/Local/Temp/sentinel-workflow-c-partial-holdout-20260919.xml`.
+System Python lacked pytest, so validation used the checked-in Windows venv.
+No schema/config migration, retained-data rewrite, external call, delivery,
+broker action, or Production mutation. Commit/push and real held-out collection,
+qualification, deployment, and partner delivery evidence remain unchecked.
+See [the slice receipt](2026-09-19-workflow-c-partial-holdout-plan.md).
+
 ## September16 current-state override
 
 Momentum/CAS release candidate: pushed Dev commit `ee0a300` schedules live momentum auto-square at 15:13 IST, transfers exclusive ownership from the monitor under a shared lock and enforces a 15:14:30 hard submission cutoff. The path checks before stop cancellation and immediately before submission; a pre-submit abort after cancellation attempts and persists replacement protection and pages the operator. Focused suites:79 passed; scheduler/calendar subset after restoring direct wrapper gates:25 passed; final Python:3730 passed/four skipped/42 existing deprecation warnings; agent:338 passed. The completed pytest receipt retained aiosqlite worker processes, and the exact processes were stopped. No schema/config migration, retained-data rewrite, broker call or Production mutation. Merge, deployment SHA and market-session observation remain unchecked.

@@ -1,5 +1,19 @@
 # Trading Sentinel — system guide and engineering handover
 
+## September 19 Workflow C partial-fill review correction
+
+The asymmetric partial-fill path now binds its operator-selected CLOSED result
+to a dedicated tamper-evident `MODELED_PARTIAL_FILL_V1` replay. Held-out groups
+and qualification packages expose full closes separately from modeled partial
+closes. The economic correction records mid-plus-2bps entry slippage as a cost,
+never profit; missing/invalid top-of-book or naive receipt clocks cannot create
+a modeled close. Because this path has no honest full cost-sensitivity artifact,
+it remains outside `VERIFIED_FULL_POLICY_REPORTS` and cannot silently satisfy
+that qualification gate. Full engine verification is 4,069 passed/four
+skipped/42 known deprecations. See the
+[C.C2.HOLDOUT receipt](2026-09-19-workflow-c-partial-holdout-plan.md).
+Production remains untouched.
+
 ## 1. Read this first
 
 September16 momentum/CAS correction: Dev now transfers exclusive live-momentum exit ownership from the intraday monitor to EOD at 15:13 IST and refuses every new square-off submission at or after 15:14:30, before the 15:15 CAS reference-price window. A shared lock prevents the monitor and EOD job from cancelling or selling the same position concurrently. The EOD path checks its deadline before cancelling a protective stop and immediately before submission; if the deadline or another pre-submit failure occurs after cancellation, it attempts to re-arm and durably persist replacement protection and pages the operator. The scheduler uses `max_instances=1`, coalescing and a bounded 60-second misfire window. Final Python receipt:3730 passed/four skipped/42 existing deprecation warnings in214.84s; agent:338 passed. As in the preceding baseline, aiosqlite workers retained the completed pytest processes after the receipt, so the exact test processes were stopped. This changes scheduling/control flow only: no schema, retained position, ledger, broker or configuration migration.

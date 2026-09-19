@@ -120,6 +120,30 @@ def test_review_evaluates_ordered_and_exact_stressed_economics():
     assert "declared_cost_stress_scenario_missing" in missing["per_index"][0]["blockers"]
 
 
+def test_review_exposes_and_validates_modeled_partial_close_split():
+    report = economic_heldout(base_pnl=10, stressed_pnl=9)
+    group = report["groups"][0]
+    group["full_closes"] = 0
+    group["modeled_partial_closes"] = 1
+    group["ordered_outcomes"][0].update(
+        partial_fill_observed=True, outcome_basis="MODELED_PARTIAL_FILL")
+    report["evidence_sha256"] = _sha({key: value for key, value in report.items()
+                                      if key != "evidence_sha256"})
+    result = build_qualification_review_package(policy_manifest=manifest(), criteria=criteria(),
+                                                heldout_report=report, readiness={})
+    row = result["per_index"][0]
+    assert row["closed_outcomes"] == 1
+    assert row["full_close_outcomes"] == 0
+    assert row["modeled_partial_close_outcomes"] == 1
+
+    group["modeled_partial_closes"] = 0
+    report["evidence_sha256"] = _sha({key: value for key, value in report.items()
+                                      if key != "evidence_sha256"})
+    with pytest.raises(ValueError, match="close provenance"):
+        build_qualification_review_package(policy_manifest=manifest(), criteria=criteria(),
+                                           heldout_report=report, readiness={})
+
+
 def test_review_rejects_heldout_from_a_different_policy():
     report = economic_heldout()
     report["groups"][0]["policy_id"] = "e" * 64
