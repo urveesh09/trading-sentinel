@@ -629,6 +629,148 @@ def _check_session_gates(engine_dir: Path, db_path: Path) -> ChecklistItem:
     )
 
 
+# [WORKFLOW-A6 2026-09-20] Provider-freshness check.
+#
+# Distinguishes three operational states so a Sunday does not
+# look like a broken provider:
+#   - ``IN_SESSION``: market hours + last public quote fresh.
+#   - ``OFF_SESSION``: market closed (Sunday, holiday, post-close)
+#     + last quote older than the freshness window. The system is
+#     intentionally quiet; this is NOT a provider failure.
+#   - ``STALE_IN_SESSION``: market hours + last public quote
+#     stale. This IS a provider failure and is a BLOCKER.
+#
+# The audit required this separation so deployment automation
+# doesn't trigger a "broken provider" alert when no market
+# session is running.
+
+
+def _check_provider_freshness(db_path: Path) -> ChecklistItem:
+    """[WORKFLOW-A6 2026-09-20] Public-quote freshness vs market hours.
+
+    Reads the latest public_observed_at_utc from
+    intraday_cache_diagnostic and the current session phase
+    from market_calendar.classify_session_phase. Distinguishes
+    the three operational states described in the audit.
+    """
+    if not db_path.is_file():
+        return ChecklistItem(
+            name="provider_freshness",
+            title="Provider quote freshness",
+            status=Status.WARN,
+            detail=(f"DB not found at {db_path}; cannot read provider state."),
+            next_step="Re-run with '--db-path /data/cache.db'.",
+            evidence={},
+        )
+    try:
+        # Probe the latest public observation.
+        import sqlite3 as _sqlite3
+        with _sqlite3.connect(db_path) as conn:
+            row = conn.execute(
+                "SELECT MAX(public_observed_at_utc) FROM partner_collection_attempts"
+            ).fetchone()
+        latest = row[0] if row and row[0] else None
+    except Exception as exc:
+        return ChecklistItem(
+            name="provider_freshness",
+            title="Provider quote freshness",
+            status=Status.WARN,
+            detail=f"DB read error: {exc}",
+            next_step="Verify the DB path and permissions.",
+            evidence={},
+        )
+    # Determine current session phase.
+    try:
+        sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "python-engine"))
+        from market_calendar import classify_session_phase
+        phase = classify_session_phase(__import__("datetime").datetime.now(__import__("datetime").timezone.utc))
+    except Exception as exc:
+        phase = "UNKNOWN"
+    # Compute freshness delta in seconds.
+    from datetime import datetime as _dt, timezone as _tz
+    now_utc = _dt.now(_tz.utc)
+    age_seconds = None
+    if latest:
+        try:
+            age_seconds = (now_utc - _dt.fromisoformat(latest)).total_seconds()
+        except Exception:
+            age_seconds = None
+    # [WORKFLOW-A6 2026-09-20] State classification.
+    in_session = phase in {"CONTINUOUS_TRADING", "DERIVATIVES_CAS_ALIGNED"}
+    if latest is None or age_seconds is None:
+        # No provider input ever → BLOCKER (the operator must
+        # investigate), even off-session.
+        return ChecklistItem(
+            name="provider_freshness",
+            title="Provider quote freshness",
+            status=Status.BLOCKER,
+            detail="No public observation has ever been recorded.",
+            next_step=(
+                "Run a diagnostic probe with --db-path or investigate "
+                "the upstream provider."
+            ),
+            evidence={"phase": phase, "latest_observed_at_utc": latest},
+        )
+    if not in_session and age_seconds > 3600:
+        # Off-session with stale-but-expected data: PASS.
+        # Sunday's last quote at Friday's close is intentional.
+        return ChecklistItem(
+            name="provider_freshness",
+            title="Provider quote freshness",
+            status=Status.PASS,
+            detail=(
+                f"Off-session phase={phase}; last public observation "
+                f"is {int(age_seconds)}s old (>1h). "
+                "Stale quotes during off-session are expected."
+            ),
+            next_step=(
+                "No action needed; re-check at next session open."
+            ),
+            evidence={
+                "phase": phase,
+                "in_session": False,
+                "latest_observed_at_utc": latest,
+                "age_seconds": int(age_seconds),
+            },
+        )
+    if in_session and age_seconds > 360:
+        # In-session with stale data: BLOCKER.
+        return ChecklistItem(
+            name="provider_freshness",
+            title="Provider quote freshness",
+            status=Status.BLOCKER,
+            detail=(
+                f"In-session phase={phase}; last public observation "
+                f"is {int(age_seconds)}s old (>6m). Provider is stale."
+            ),
+            next_step=(
+                "Investigate provider latency or the upstream feed."
+            ),
+            evidence={
+                "phase": phase,
+                "in_session": True,
+                "latest_observed_at_utc": latest,
+                "age_seconds": int(age_seconds),
+            },
+        )
+    # Fresh or in-session with recent data: PASS.
+    return ChecklistItem(
+        name="provider_freshness",
+        title="Provider quote freshness",
+        status=Status.PASS,
+        detail=(
+            f"phase={phase}; last public observation is {int(age_seconds)}s old."
+        ),
+        next_step="No action needed.",
+        evidence={
+            "phase": phase,
+            "in_session": in_session,
+            "latest_observed_at_utc": latest,
+            "age_seconds": int(age_seconds),
+        },
+    )
+
+
 def _check_index_inputs_via_db(db_path: Path) -> ChecklistItem:
     """Check 2 with DB: query partner_advisory_input_status."""
     if not db_path.is_file():
@@ -785,10 +927,16 @@ def _check_qualification_via_db(db_path: Path) -> ChecklistItem:
             evidence={},
         )
     if not rows:
+        # [WORKFLOW-A6 2026-09-20] Audit acceptance: missing
+        # qualification is a DELIVERY BLOCKER, not a soft WARN.
+        # The diagnostic still describes what is wrong; the
+        # exit code separates "diagnostic ran" from "delivery
+        # is ready" (see ``delivery_ready`` in the top-level
+        # report).
         return ChecklistItem(
             name="compatible_qualification",
             title="Genuine compatible qualification exists",
-            status=Status.WARN,
+            status=Status.BLOCKER,
             detail="No partner_advisory_strategy_qualifications rows on disk.",
             next_step=(
                 "Complete and review genuine current-policy research; only then "
@@ -799,16 +947,37 @@ def _check_qualification_via_db(db_path: Path) -> ChecklistItem:
     compatible = [row for row in rows if row[2] == "INTRADAY"
                   and row[3] == "partner-manual-intraday-v1"
                   and row[6] == "QUALIFIED_FOR_ADVISORY"]
+    if not compatible:
+        # [WORKFLOW-A6 2026-09-20] Same audit acceptance: any
+        # retained row that does NOT match the current INTRADAY
+        # policy is a DELIVERY BLOCKER. ``do not relabel
+        # incompatible evidence`` is preserved as the next step
+        # but the diagnostic is escalated to BLOCKER so an
+        # automation cannot interpret a WARN as delivery-ready.
+        return ChecklistItem(
+            name="compatible_qualification",
+            title="Genuine compatible qualification exists",
+            status=Status.BLOCKER,
+            detail=(
+                f"{len(compatible)} compatible qualification(s) across "
+                f"{len(rows)} retained row(s); no row matches the current "
+                "INTRADAY policy."
+            ),
+            next_step=(
+                "Review retained rows against the current INTRADAY policy; "
+                "do not relabel incompatible evidence."
+            ),
+            evidence={},
+        )
     return ChecklistItem(
         name="compatible_qualification",
         title="Genuine compatible qualification exists",
-        status=Status.PASS if compatible else Status.WARN,
+        status=Status.PASS,
         detail=(
             f"{len(compatible)} compatible qualification(s) across "
             f"{len(rows)} retained row(s)."
         ),
-        next_step=("No action needed." if compatible else
-                   "Review retained rows against the current INTRADAY policy; do not relabel incompatible evidence."),
+        next_step="No action needed.",
         evidence={
             "rows": [
                 {"underlying": row[0], "structure_kind": row[1],
@@ -822,7 +991,7 @@ def _check_qualification_via_db(db_path: Path) -> ChecklistItem:
 
 
 def run_checks(engine_dir: Path, db_path: Path | None) -> list[ChecklistItem]:
-    """Run all 7 checklist items and return them in order."""
+    """Run all checklist items and return them in order."""
     items = [_check_destination_configured(engine_dir)]
     # DB-dependent checks.
     if db_path is not None:
@@ -832,6 +1001,8 @@ def run_checks(engine_dir: Path, db_path: Path | None) -> list[ChecklistItem]:
         items.append(_check_qualification_via_db(db_path))
         items.append(_check_transport_via_db(db_path))
         items.append(_check_session_gates(engine_dir, db_path))
+        # [WORKFLOW-A6 2026-09-20] Provider freshness check (DB only).
+        items.append(_check_provider_freshness(db_path))
     else:
         # Static-only checks (WARN without DB).
         items.insert(0, _check_intraday_profile(engine_dir))
@@ -888,6 +1059,10 @@ def main(argv: list[str] | None = None) -> int:
                         help="Path to cache.db (optional; enables DB checks).")
     parser.add_argument("--json", action="store_true",
                         help="emit machine-readable JSON to stdout.")
+    parser.add_argument("--delivery-ready-only", action="store_true",
+                        help="[WORKFLOW-A6 2026-09-20] exit 0 only when "
+                        "``delivery_ready`` is True; otherwise exit 1. "
+                        "Diagnostic detail is still emitted to stdout.")
     args = parser.parse_args(argv)
     if not args.engine_dir.is_dir():
         print(
@@ -896,18 +1071,44 @@ def main(argv: list[str] | None = None) -> int:
         )
         return 2
     items = run_checks(args.engine_dir, args.db_path)
-    if args.json:
-        sys.stdout.write(
-            json.dumps(items_as_dicts(items), indent=2) + "\n"
-        )
-    else:
-        sys.stdout.write(format_checklist(items))
-    # Exit code: 2 if any BLOCKER, 1 if any FAIL, else 0.
     has_blocker = any(i.status == Status.BLOCKER for i in items)
     has_fail = any(i.status == Status.FAIL for i in items)
+    # [WORKFLOW-A6 2026-09-20] ``delivery_ready`` separates
+    # "diagnostic ran cleanly" from "delivery is actually ready".
+    # A missing qualification (or any other BLOCKER) is a
+    # delivery blocker; a WARN-only diagnostic was the audit's
+    # specific failure mode. ``delivery_ready`` is True iff
+    # there are NO BLOCKERs and NO FAILs.
+    delivery_ready = not has_blocker and not has_fail
+    if args.json:
+        payload = {
+            "delivery_ready": delivery_ready,
+            "has_blocker": has_blocker,
+            "has_fail": has_fail,
+            "items": items_as_dicts(items),
+        }
+        sys.stdout.write(json.dumps(payload, indent=2) + "\n")
+    else:
+        sys.stdout.write(
+            f"delivery_ready: {delivery_ready}\n"
+            f"has_blocker:    {has_blocker}\n"
+            f"has_fail:        {has_fail}\n"
+        )
+        sys.stdout.write(format_checklist(items))
+    # Exit codes (audit's acceptance: a missing qualification
+    # does NOT return 0):
+    #   2  any BLOCKER (delivery-blocking condition)
+    #   1  any FAIL (broken preconditions) OR ``delivery_ready``
+    #      is False with --delivery-ready-only
+    #   0  diagnostic ran, no FAIL/BLOCKER
     if has_blocker:
         return 2
     if has_fail:
+        return 1
+    if args.delivery_ready_only and not delivery_ready:
+        # [WORKFLOW-A6 2026-09-20] Explicit exit-1 when the
+        # operator requests ``--delivery-ready-only`` and the
+        # diagnostic ran cleanly but delivery is not ready.
         return 1
     return 0
 
