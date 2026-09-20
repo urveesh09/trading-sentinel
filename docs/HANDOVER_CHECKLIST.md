@@ -418,8 +418,10 @@ Before the next implementation: update the plan slice. With each commit: update 
   and the valid base-equals-HEAD case.
 - [x] A live Dev generation against `origin/evolve/smart-strategies` matched
   `git rev-list --count` at 31 commits before this correction was committed.
-- [ ] Regenerate the handoff after the implementation commit so its resolved
-  head and count include this correction; reviewer still owns PR/merge/deploy.
+- [x] Release handoff generated from source head `2766b00`: resolved range and
+  count include the correction (32 commits). Its final docs-only commit is
+  intentionally identified for one last regeneration before PR creation.
+- [ ] Reviewer still owns PR approval/merge, backup/restore and deployment.
 - [x] Production remained read-only and untouched.
 - [x] Broker-statement text output is cp1252-safe (`INR`); reconciliation
   amounts, statuses and exit codes are unchanged.

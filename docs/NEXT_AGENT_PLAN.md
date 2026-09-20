@@ -370,3 +370,9 @@ The same acceptance run closed an adjacent F.7 operator-tool defect: text
 broker-statement reports now use `INR`, remaining encodable by cp1252 Windows
 consoles. The full warning-fatal scripts suite passes 225/225. No calculation,
 database, delivery or Production behavior changed.
+
+The operator-ready PR handoff is captured in
+`docs/2026-09-20-release-pr-handoff.md` from immutable source head `2766b00`
+and base `fef35e7` (32 commits). Because the handoff is itself a final
+documentation-only commit, regenerate once immediately before opening the PR;
+the exact-range tool makes that final receipt deterministic.
