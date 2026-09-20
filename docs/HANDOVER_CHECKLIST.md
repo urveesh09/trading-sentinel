@@ -21,8 +21,10 @@ Python compilation and `git diff --check` passed; the code atlas regenerated at
 receipts remain the applicable cross-component baseline and were not rerun.
 No schema/config default/broker/partner message/order/Production edit or
 authority change. Implementation commit **`3495ecb`** passed its immediate
-source/docs/atlas consistency review; the push state is recorded by the receipt
-commit. Real provider freshness/latency and operator-labelled usefulness
+source/docs/atlas consistency review. Implementation and receipt commits
+**`3495ecb` + `a4e189f` are pushed** to
+`origin/codex/production-correction-hedge-p0`. Real provider
+freshness/latency and operator-labelled usefulness
 remain Production evidence, not test claims. See the
 [plan](2026-09-20-i4d-classification-provenance-plan.md).
 
