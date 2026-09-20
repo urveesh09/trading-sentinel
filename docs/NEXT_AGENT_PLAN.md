@@ -315,3 +315,42 @@ A feature is done only when its acceptance conditions are met; a release is done
 Report progress as behavior and user value first, then tests and limits. Avoid repeated vague declarations that 'only operational evidence remains' while acquisition, collection or review integration is still unfinished. Avoid predicting a date for tips from the number of elapsed sessions alone. Explain what is missing and what action produces the needed evidence.
 
 The next agent should review the complete Dev release diff/defaults and prepare the GitHub PR, while resolving actual authorized quiescence/backup/restore and previous-code schema compatibility using the consistent-backup plan/runbook. Production application containers were observed stopped; user was asked whether this was deliberate, with no implicit restart. The 17 earlier Python failures and two detected gateway handles are corrected; full baseline acceptance is 2,545 passed/3 skipped. Genuine Production collection and adequate held-out evidence remain required. Preserve the working replay/CLI, legacy-read compatibility and all retained artifacts. Do not restart the architecture from scratch.
+
+## 18. September 20 closeout — AI activation and staging evidence
+
+Status: **IMPLEMENTED_DEV; NOT DEPLOYED**. Detailed plan and Production facts:
+`docs/2026-09-20-ai-and-partner-readiness-gap-plan.md`.
+
+Completed in Dev:
+
+- Compose explicitly enables bounded optional-AI annotation, source-event
+  classification and usefulness reporting with non-blocking safe policies.
+- Manual partner advisory is explicit; advanced hedge shadow observation is
+  enabled while Phase-2/3 delivery remains explicitly disabled.
+- A staging date is recorded only after genuine reconciled-portfolio and fresh
+  option-chain shadow processing. One date is idempotent across repeated ticks.
+- The E.1 readiness diagnostic now queries the deployed runtime schemas and
+  hardened transport ledger. It no longer mislabels advanced Phase-3 0/7 as a
+  blocker for ordinary manual index advice.
+- Seven Phase-3 dates, live-chain verification and per-kind sample reviews are
+  still required. No threshold was lowered and no delivery/order authority was
+  added.
+
+Remaining work is operational/evidence work, not another threshold change:
+
+1. Promote through GitHub and restore healthy Production application services.
+2. Verify deployed release/config identities and effective flags.
+3. Log in on each intended market day and provide a genuine, fresh reconciled
+   partner-position snapshot if advanced personalized hedge staging is wanted.
+4. Observe actual shadow receipts/evaluations; perform live-chain and sample
+   reviews. Do not backfill missed days from container uptime.
+5. Separately complete genuine manual-advisory strategy qualification. The
+   advanced hedge 7/7 counter is not that qualification and does not control
+   generic NIFTY/SENSEX advisory scanning.
+
+Acceptance receipt: 4,122 Python-engine tests passed/four skipped; 357 agent
+tests passed in the built image with networking disabled; 27 corrected E.1
+tests passed with warnings fatal; both affected images built; rendered and
+runtime Compose flag checks match the safe matrix. Existing deprecation and
+Dockerfile casing warnings remain. These checks establish Dev regression
+fitness, not deployment, strategy profitability or qualification.

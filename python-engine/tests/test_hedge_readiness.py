@@ -5,7 +5,7 @@ import pytest
 
 from hedge_readiness import (
     PHASE3_KINDS, assess_phase_readiness, inspect_earnings_calendar,
-    record_gate_evidence,
+    record_gate_evidence, record_shadow_staging_day,
 )
 
 
@@ -74,3 +74,56 @@ async def test_gate_evidence_rejects_future_or_cross_phase_claims(db_path):
             kind=next(iter(PHASE3_KINDS)), observed_on=NOW.date(),
             observed_at=NOW, source="invalid",
         )
+
+
+@pytest.mark.asyncio
+async def test_shadow_staging_day_requires_real_processed_input_and_deduplicates(db_path):
+    assert await record_shadow_staging_day(
+        db_path,
+        phase="phase3",
+        observed_at=NOW,
+        processed_underlyings=0,
+        emitted_candidates=0,
+    ) is None
+    empty = await assess_phase_readiness(db_path, "phase3", now=NOW)
+    assert empty["staging_days"] == []
+
+    first = await record_shadow_staging_day(
+        db_path,
+        phase="phase3",
+        observed_at=NOW,
+        processed_underlyings=2,
+        emitted_candidates=0,
+    )
+    second = await record_shadow_staging_day(
+        db_path,
+        phase="phase3",
+        observed_at=NOW + timedelta(minutes=30),
+        processed_underlyings=2,
+        emitted_candidates=3,
+    )
+    report = await assess_phase_readiness(db_path, "phase3", now=NOW)
+
+    assert first["source"] == "system:advanced-hedge-shadow"
+    assert second["observed_on"] == first["observed_on"]
+    assert report["staging_days"] == [NOW.astimezone().date().isoformat()]
+    assert report["evidence_rows"] == 1
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("field,value", [
+    ("processed_underlyings", -1),
+    ("processed_underlyings", 1.5),
+    ("emitted_candidates", -1),
+    ("emitted_candidates", True),
+])
+async def test_shadow_staging_day_rejects_invalid_counters(db_path, field, value):
+    kwargs = {
+        "phase": "phase2",
+        "observed_at": NOW,
+        "processed_underlyings": 1,
+        "emitted_candidates": 0,
+    }
+    kwargs[field] = value
+    with pytest.raises(ValueError, match="non-negative integer"):
+        await record_shadow_staging_day(db_path, **kwargs)

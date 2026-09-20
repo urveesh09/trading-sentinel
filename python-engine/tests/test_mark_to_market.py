@@ -325,7 +325,7 @@ class TestFnoMark:
             equity_rows=[],
             fno_rows=[_fno_row(entry_premium=100.0, lot_size=25, qty=25)],
             fno_dr_rows=[],
-            quotes={"BANKNIFTY26SEP25400CE": _quote(110.0)},
+            quotes={"BANKNIFTY26SEP25400CE": QuoteTick.build(110.0, now)},
             now_utc=now,
         )
         assert result.total_unrealised_pnl == pytest.approx(250.0)
@@ -339,7 +339,7 @@ class TestFnoMark:
             equity_rows=[],
             fno_rows=[_fno_row(entry_premium=100.0, lot_size=25, qty=25)],
             fno_dr_rows=[],
-            quotes={"BANKNIFTY26SEP25400CE": _quote(80.0)},
+            quotes={"BANKNIFTY26SEP25400CE": QuoteTick.build(80.0, now)},
             now_utc=now,
         )
         # (80 - 100) * 25 = -500

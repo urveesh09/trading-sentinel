@@ -176,3 +176,27 @@ f07735f feat(kite): C.F3 -- surface cache_miss_reason observability
 Both are bounded dev-side slices, shippable from this dev box.
 
 PROD untouched. Dev only.
+
+## September 20 correction
+
+The original E.1 implementation was not compatible with the deployed runtime
+schema. It queried legacy/nonexistent fields in `partner_advisory_input_status`
+and `partner_advisory_ideas`, queried a nonexistent `partner_research_capture`
+table instead of `partner_advisory_strategy_qualifications`, and used legacy
+`partner_messages` rather than the hardened `partner_hedge_messages` transport
+ledger. Those paths could only return DB warnings instead of an accurate
+diagnosis.
+
+It also incorrectly made `assess_hedge_readiness()` the seventh blocking check.
+Phase-3's seven staging days, live-chain verification and samples protect the
+advanced personalized hedge rollout; they are not prerequisites for ordinary
+NIFTY/SENSEX manual-advisory cards. The corrected CLI reports those counts as
+separate informational evidence with `blocks_manual_advisory=false`. The actual
+seventh check is the effective manual-advisory enable/delivery configuration.
+
+Current checks use the persisted profile, read-time input freshness, current
+ideas, the current INTRADAY qualification registry and the hardened transport
+ledger. SQLite opens read-only. Immutable fallback is allowed only on a
+quiescent read-only mount with no non-empty WAL. The corrected suite passes 27
+tests with warnings fatal, including a regression proving 0/7 cannot block the
+manual-advisory result and a no-schema-creation read-only regression.

@@ -363,3 +363,42 @@ The system is better at preserving and testing what it actually observed and pro
 ## Commit ritual
 
 Before the next implementation: update the plan slice. With each commit: update the guide/atlas/plan and verification evidence. After each commit: verify the actual diff and documentation agree. Instructions are also in Dev AGENTS.md so the ritual survives this conversation.
+
+## September 20 AI/readiness deployment checklist
+
+- [x] Production inspected read-only; no Production source/config/database edit.
+- [x] Confirm MiniMax, Telegram bot and partner chat credentials are present
+  without printing their values.
+- [x] Explain 0/7 from persistent evidence: no gate rows, no advanced shadow
+  evaluations, no reconciled partner positions; only 2026-09-17 produced manual
+  advisory ideas.
+- [x] Render Dev Compose and confirm AI flags on, safe AI policies selected,
+  manual advisory on, advanced shadow on, advanced delivery off.
+- [x] Add idempotent, genuine-input-only system staging receipt.
+- [x] Correct E.1 diagnostic schema drift and the false coupling between
+  advanced hedge 0/7 and manual-advisory dispatch.
+- [x] E.1 diagnostic suite: 27 passed with warnings fatal, 1.37 seconds.
+- [x] Full Python engine rerun: 4,122 passed, four skipped, 46 existing
+  deprecation warnings, 218.99 seconds. A first run exposed a test-only
+  microsecond future-clock race in two F&O quote fixtures; binding the fixture
+  quote to the test's declared `now` made the acceptance deterministic without
+  changing runtime valuation behavior.
+- [x] Agent image suite: 357 passed, 3.82 seconds, network disabled.
+- [x] Agent enabled-flag import smoke confirms async review/usefulness true and
+  proceed/advisory policies. Python-engine Compose run confirms manual advice,
+  hedge parent and shadow flags true with Phase-2/3 live delivery false.
+- [x] Dev `agent` and `python-engine` images build successfully. The Python
+  Dockerfile retains one existing `FromAsCasing` warning.
+- [x] Focused readiness/Phase-2/Phase-3 suite: 59 passed, one existing Starlette
+  deprecation warning, 4.39 seconds.
+- [ ] Commit and push the Dev change; record commit identity and clean status.
+- [ ] Merge/deploy through GitHub; recreate affected services and verify release
+  identity. Never copy or edit Production directly.
+- [ ] Confirm `agent`, `node-gateway`, `python-engine`, nginx and autoheal are
+  healthy. Current read-only observation has the three application containers
+  stopped (exit 137, not OOM-killed) and nginx restarting.
+- [ ] During a logged-in trading session, confirm optional-AI status receipts,
+  partner input state, advanced shadow evaluations and one staging receipt only
+  when a fresh reconciled position and chain were genuinely processed.
+- [ ] Record manual live-chain/sample-review evidence separately; do not infer
+  it from uptime or automatically enable Phase-2/3 delivery.

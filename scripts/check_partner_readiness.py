@@ -31,16 +31,17 @@ Usage:
     # JSON output for piping into the audit pipeline.
     python scripts/check_partner_readiness.py --json
 
-    # With the readiness DB (reads partner_hedge_service_state
-    # + phase3 evidence counts).
+    # With the runtime DB (reads the current manual-advisory schemas and
+    # reports advanced hedge progress separately).
     python scripts/check_partner_readiness.py \
         --db-path /data/cache.db
 
-    # Exit code 0 (all PASS), 1 (any FAIL), 2 (any BLOCKER).
+    # Exit code 0 (all PASS/WARN), 1 (any FAIL), 2 (any BLOCKER).
 """
 from __future__ import annotations
 
 import argparse
+import ast
 import dataclasses
 import enum
 import importlib.util
@@ -48,6 +49,7 @@ import json
 import os
 import sqlite3
 import sys
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any, Iterable
 
@@ -91,6 +93,86 @@ class ChecklistItem:
     detail: str
     next_step: str
     evidence: dict[str, Any] = dataclasses.field(default_factory=dict)
+
+
+def _load_settings(engine_dir: Path):
+    """Load the effective engine settings without exposing credential values."""
+    config_path = engine_dir / "config.py"
+    if not config_path.is_file():
+        return None
+    try:
+        module_name = f"_partner_check_config_{abs(hash(config_path.resolve()))}"
+        spec = importlib.util.spec_from_file_location(module_name, str(config_path))
+        module = importlib.util.module_from_spec(spec)
+        sys.modules[module_name] = module
+        engine_text = str(engine_dir.resolve())
+        inserted = engine_text not in sys.path
+        if inserted:
+            sys.path.insert(0, engine_text)
+        try:
+            spec.loader.exec_module(module)
+        finally:
+            if inserted:
+                sys.path.remove(engine_text)
+        return module.Settings()
+    except Exception:
+        return None
+
+
+def _effective_bool(engine_dir: Path, name: str, default: bool = False) -> bool:
+    """Resolve a boolean env override, then its literal Settings default."""
+    raw = os.getenv(name)
+    if raw is not None:
+        return raw.strip().lower() in {"1", "true", "yes", "on"}
+    try:
+        tree = ast.parse((engine_dir / "config.py").read_text(encoding="utf-8-sig"))
+        for node in tree.body:
+            if isinstance(node, ast.ClassDef) and node.name == "Settings":
+                for item in node.body:
+                    if (isinstance(item, ast.AnnAssign)
+                            and isinstance(item.target, ast.Name)
+                            and item.target.id == name
+                            and isinstance(item.value, ast.Constant)
+                            and isinstance(item.value.value, bool)):
+                        return item.value.value
+    except (OSError, SyntaxError):
+        pass
+    return default
+
+
+def _parse_clock(value: Any) -> datetime | None:
+    try:
+        parsed = datetime.fromisoformat(str(value).replace("Z", "+00:00"))
+    except (TypeError, ValueError):
+        return None
+    if parsed.tzinfo is None or parsed.utcoffset() is None:
+        return None
+    return parsed.astimezone(timezone.utc)
+
+
+def _connect_readonly(db_path: Path) -> sqlite3.Connection:
+    uri = f"file:{db_path.resolve().as_posix()}?mode=ro"
+    try:
+        conn = sqlite3.connect(uri, uri=True)
+        conn.execute("PRAGMA schema_version").fetchone()
+        return conn
+    except sqlite3.OperationalError:
+        try:
+            conn.close()
+        except UnboundLocalError:
+            pass
+    wal = Path(f"{db_path}-wal")
+    if wal.is_file() and wal.stat().st_size:
+        raise sqlite3.OperationalError(
+            "read-only mount has a non-empty WAL; take a consistent read-only snapshot first"
+        )
+    # A truly quiescent read-only Docker volume may still reject SQLite's
+    # shared-memory setup. Immutable mode is safe only after the WAL check.
+    conn = sqlite3.connect(
+        f"file:{db_path.resolve().as_posix()}?mode=ro&immutable=1", uri=True,
+    )
+    conn.execute("PRAGMA schema_version").fetchone()
+    return conn
 
 
 def _check_intraday_profile(engine_dir: Path) -> ChecklistItem:
@@ -146,6 +228,66 @@ def _check_intraday_profile(engine_dir: Path) -> ChecklistItem:
             "--save-profile' to capture the current profile."
         ),
         evidence={"path": str(profile_path)},
+    )
+
+
+def _check_intraday_profile_via_db(db_path: Path) -> ChecklistItem:
+    """Check the persisted profile used by the runtime, not a legacy file."""
+    if not db_path.is_file():
+        return ChecklistItem(
+            name="saved_intraday_profile",
+            title="Saved intraday profile",
+            status=Status.WARN,
+            detail=f"DB not found at {db_path}.",
+            next_step="Re-run with the correct cache.db path.",
+            evidence={},
+        )
+    try:
+        conn = _connect_readonly(db_path)
+        try:
+            row = conn.execute(
+                "SELECT profile_id, version, payload, updated_at "
+                "FROM partner_advisory_profiles WHERE profile_id='default'"
+            ).fetchone()
+        finally:
+            conn.close()
+    except Exception as exc:
+        return ChecklistItem(
+            name="saved_intraday_profile",
+            title="Saved intraday profile",
+            status=Status.WARN,
+            detail=f"DB read error: {exc}",
+            next_step="Verify the runtime schema and DB path.",
+            evidence={},
+        )
+    if row is None:
+        return ChecklistItem(
+            name="saved_intraday_profile",
+            title="Saved intraday profile",
+            status=Status.FAIL,
+            detail="The runtime has no saved default partner advisory profile.",
+            next_step="Save the reviewed default INTRADAY profile through the authenticated profile route.",
+            evidence={},
+        )
+    try:
+        payload = json.loads(row[2])
+    except (TypeError, json.JSONDecodeError):
+        payload = {}
+    intraday = payload.get("holding_period") == "INTRADAY"
+    instruments = set(payload.get("instruments") or ())
+    supported = {"NIFTY", "SENSEX"} <= instruments
+    valid = intraday and supported
+    return ChecklistItem(
+        name="saved_intraday_profile",
+        title="Saved intraday profile",
+        status=Status.PASS if valid else Status.FAIL,
+        detail=(f"profile_id={row[0]}, version={row[1]}, intraday={intraday}, "
+                f"NIFTY+SENSEX={supported}."),
+        next_step=("No action needed." if valid else
+                   "Save a reviewed INTRADAY profile covering NIFTY and SENSEX."),
+        evidence={"profile_id": row[0], "version": row[1],
+                  "holding_period": payload.get("holding_period"),
+                  "instruments": sorted(instruments), "updated_at": row[3]},
     )
 
 
@@ -239,20 +381,13 @@ def _check_destination_configured(engine_dir: Path) -> ChecklistItem:
     # come from env vars at runtime -- the diagnostic only
     # checks whether the SETTINGS have defaults that look
     # like real credentials (non-empty strings).
-    config_path = engine_dir / "config.py"
     has_partner_token = False
     has_partner_chat_id = False
     has_global_token = False
     has_global_chat_id = False
-    if config_path.is_file():
+    s = _load_settings(engine_dir)
+    if s is not None:
         try:
-            spec = importlib.util.spec_from_file_location(
-                "_partner_check_config", str(config_path),
-            )
-            module = importlib.util.module_from_spec(spec)
-            spec.loader.exec_module(module)
-            Settings = module.Settings
-            s = Settings()
             has_partner_token = bool(
                 getattr(s, "PARTNER_TELEGRAM_BOT_TOKEN", "")
             )
@@ -315,11 +450,7 @@ def _check_destination_configured(engine_dir: Path) -> ChecklistItem:
 
 
 def _check_transport_via_db(db_path: Path) -> ChecklistItem:
-    """Check 6: transport test (last successful Telegram send).
-
-    Queries the partner_messages table for the most recent
-    row + checks if `delivered=1` was ever recorded.
-    """
+    """Check 6 against the hardened advisory/hedge transport ledger."""
     if not db_path.is_file():
         return ChecklistItem(
             name="transport_test",
@@ -335,18 +466,18 @@ def _check_transport_via_db(db_path: Path) -> ChecklistItem:
             evidence={},
         )
     try:
-        conn = sqlite3.connect(str(db_path))
+        conn = _connect_readonly(db_path)
         try:
             row = conn.execute(
-                "SELECT sent_at, kind, delivered, detail "
-                "FROM partner_messages ORDER BY sent_at DESC "
+                "SELECT sent_at, kind, delivered "
+                "FROM partner_hedge_messages ORDER BY sent_at DESC "
                 "LIMIT 1"
             ).fetchone()
             total = conn.execute(
-                "SELECT COUNT(*) FROM partner_messages"
+                "SELECT COUNT(*) FROM partner_hedge_messages"
             ).fetchone()[0]
             delivered_count = conn.execute(
-                "SELECT COUNT(*) FROM partner_messages "
+                "SELECT COUNT(*) FROM partner_hedge_messages "
                 "WHERE delivered=1"
             ).fetchone()[0]
         finally:
@@ -366,9 +497,9 @@ def _check_transport_via_db(db_path: Path) -> ChecklistItem:
             name="transport_test",
             title="Transport test (last successful send)",
             status=Status.FAIL,
-            detail="No partner_messages rows on disk.",
+            detail="No partner_hedge_messages rows on disk.",
             next_step=(
-                "Check why partner_messages is empty: "
+                "Check why the hardened transport ledger is empty: "
                 "telegram_init, telegram_send failures, "
                 "or the cron hasn't fired yet."
             ),
@@ -376,46 +507,86 @@ def _check_transport_via_db(db_path: Path) -> ChecklistItem:
         )
 
     delivered = bool(row[2])
+    sent_at = _parse_clock(row[0])
+    age = ((datetime.now(timezone.utc) - sent_at).total_seconds()
+           if sent_at is not None else None)
+    recent = age is not None and -60 <= age <= 7 * 86400
+    status = Status.PASS if delivered and recent else Status.WARN
     return ChecklistItem(
         name="transport_test",
         title="Transport test (last successful send)",
-        status=Status.PASS if delivered else Status.WARN,
+        status=status,
         detail=(
             f"Last message: kind={row[1]} sent_at={row[0]} "
-            f"delivered={delivered}. Total: {total} rows, "
+            f"delivered={delivered}, recent_7d={recent}. Total: {total} rows, "
             f"{delivered_count} delivered."
         ),
-        next_step="No action needed." if delivered else (
-            "Most recent send was NOT delivered. Check "
-            "TELEGRAM_BOT_TOKEN validity."
+        next_step=(
+            "No action needed." if delivered and recent else
+            "Run an explicitly authorized no-advice transport test if current "
+            "routing evidence is required; do not manufacture a trade card."
         ),
         evidence={
             "last_kind": row[1],
             "last_sent_at": row[0],
             "last_delivered": delivered,
-            "last_detail": row[3],
+            "last_recent_7d": recent,
             "total_rows": total,
             "delivered_count": delivered_count,
         },
     )
 
 
-def _check_session_gates(db_path: Path) -> ChecklistItem:
-    """Check 7: final dispatch/session gates (phase3 readiness).
+def _advanced_hedge_progress(db_path: Path) -> dict[str, Any]:
+    """Read advanced-hedge evidence without initializing or mutating the DB."""
+    try:
+        conn = _connect_readonly(db_path)
+        try:
+            exists = conn.execute(
+                "SELECT 1 FROM sqlite_master WHERE type='table' "
+                "AND name='partner_hedge_gate_evidence'"
+            ).fetchone()
+            if not exists:
+                return {"available": False, "reason": "evidence_table_missing"}
+            rows = conn.execute(
+                "SELECT evidence_type, kind, observed_on "
+                "FROM partner_hedge_gate_evidence WHERE phase='phase3'"
+            ).fetchall()
+        finally:
+            conn.close()
+    except Exception as exc:
+        return {"available": False, "reason": f"read_failed:{type(exc).__name__}"}
+    cutoff = (
+        datetime.now(timezone(timedelta(hours=5, minutes=30))).date()
+        - timedelta(days=30)
+    ).isoformat()
+    rows = [row for row in rows if str(row[2]) >= cutoff]
+    staging_days = sorted({row[2] for row in rows if row[0] == "phase3_staging_day"})
+    live_checks = sum(row[0] == "phase3_live_chain_verification" for row in rows)
+    sample_reviews: dict[str, int] = {}
+    for evidence_type, kind, _ in rows:
+        if evidence_type == "phase3_sample_review":
+            sample_reviews[kind] = sample_reviews.get(kind, 0) + 1
+    return {
+        "available": True,
+        "staging_days": len(staging_days),
+        "required_staging_days": 7,
+        "evidence_window_days": 30,
+        "live_chain_verifications": live_checks,
+        "sample_reviews": dict(sorted(sample_reviews.items())),
+        "blocks_manual_advisory": False,
+    }
 
-    Reads hedge_readiness.assess_hedge_readiness() to
-    surface the phase3 blockers. The most common ones are
-    staging_days < 7, live_chain_verification == 0,
-    sample_review < 5 per kind.
-    """
+
+def _check_session_gates(engine_dir: Path, db_path: Path) -> ChecklistItem:
+    """Check 7: manual-advisory switches, independent of advanced hedges."""
     if not db_path.is_file():
         return ChecklistItem(
             name="session_gates",
             title="Final dispatch / session gates",
             status=Status.WARN,
             detail=(
-                f"DB not found at {db_path}. Cannot read "
-                "phase3 readiness."
+                f"DB not found at {db_path}. Cannot read runtime evidence."
             ),
             next_step=(
                 "Re-run with '--db-path /data/cache.db'."
@@ -423,65 +594,39 @@ def _check_session_gates(db_path: Path) -> ChecklistItem:
             evidence={},
         )
 
-    # Lazy-import hedge_readiness to avoid heavy deps on a
-    # static check. We exec the module via importlib so the
-    # path requirement is just one file.
-    hr_path = ENGINE_DIR / "hedge_readiness.py"
-    if not hr_path.is_file():
-        return ChecklistItem(
-            name="session_gates",
-            title="Final dispatch / session gates",
-            status=Status.WARN,
-            detail=(
-                "hedge_readiness.py not found at "
-                f"{hr_path}. Cannot run assess_hedge_readiness."
-            ),
-            next_step="Verify the python-engine checkout.",
-            evidence={},
-        )
-
-    try:
-        import asyncio
-        spec = importlib.util.spec_from_file_location(
-            "_check_hedge_readiness", str(hr_path),
-        )
-        module = importlib.util.module_from_spec(spec)
-        sys.modules["_check_hedge_readiness"] = module
-        spec.loader.exec_module(module)
-        readiness = asyncio.run(module.assess_hedge_readiness(str(db_path)))
-        can_enable = bool(readiness.get("can_enable"))
-        blockers = readiness.get("blockers") or []
-        # Categorize each blocker for the operator.
-        return ChecklistItem(
-            name="session_gates",
-            title="Final dispatch / session gates",
-            status=Status.PASS if can_enable else Status.BLOCKER,
-            detail=(
-                f"can_enable={can_enable}. "
-                f"{len(blockers)} blocker(s) found."
-            ),
-            next_step=(
-                "Resolve blockers listed in 'evidence.blockers'. "
-                "Common fixes: advance staging_days, run "
-                "live_chain_verification, populate sample_review."
-            ),
-            evidence={
-                "can_enable": can_enable,
-                "blockers": blockers,
-                "research_only": readiness.get("research_only"),
-                "automatic_execution": readiness.get("automatic_execution"),
-                "can_place_orders": readiness.get("can_place_orders"),
-            },
-        )
-    except Exception as exc:
-        return ChecklistItem(
-            name="session_gates",
-            title="Final dispatch / session gates",
-            status=Status.WARN,
-            detail=f"assess_hedge_readiness failed: {exc}",
-            next_step="Verify the readiness DB schema.",
-            evidence={"error": str(exc)},
-        )
+    resolved = _load_settings(engine_dir)
+    enabled = (bool(getattr(resolved, "PARTNER_MANUAL_ADVISORY_ENABLED"))
+               if resolved is not None else
+               _effective_bool(engine_dir, "PARTNER_MANUAL_ADVISORY_ENABLED"))
+    delivery = (bool(getattr(resolved, "PARTNER_MANUAL_ADVISORY_DELIVERY_ENABLED"))
+                if resolved is not None else
+                _effective_bool(engine_dir, "PARTNER_MANUAL_ADVISORY_DELIVERY_ENABLED"))
+    configured = enabled and delivery
+    advanced = _advanced_hedge_progress(db_path)
+    return ChecklistItem(
+        name="session_gates",
+        title="Manual advisory final dispatch configuration",
+        status=Status.PASS if configured else Status.BLOCKER,
+        detail=(
+            f"manual_advisory_enabled={enabled}, delivery_enabled={delivery}. "
+            "Advanced Phase-3 hedge evidence is separate and does not block "
+            "ordinary NIFTY/SENSEX manual advisory cards."
+        ),
+        next_step=(
+            "No configuration action needed; evaluate the independent input, "
+            "candidate, qualification and transport rows above."
+            if configured else
+            "Enable both manual-advisory switches through the reviewed deployment "
+            "configuration, then recreate and verify the engine service."
+        ),
+        evidence={
+            "manual_advisory_enabled": enabled,
+            "manual_advisory_delivery_enabled": delivery,
+            "advanced_phase3": advanced,
+            "advanced_phase3_blocks_manual_advisory": False,
+            "can_place_orders": False,
+        },
+    )
 
 
 def _check_index_inputs_via_db(db_path: Path) -> ChecklistItem:
@@ -489,11 +634,12 @@ def _check_index_inputs_via_db(db_path: Path) -> ChecklistItem:
     if not db_path.is_file():
         return _check_index_inputs(ENGINE_DIR)
     try:
-        conn = sqlite3.connect(str(db_path))
+        conn = _connect_readonly(db_path)
         try:
             rows = conn.execute(
-                "SELECT underlying, status, freshness_sec, "
-                "evaluated_at FROM partner_advisory_input_status"
+                "SELECT underlying, stage, reason, entry_state, received_at, "
+                "profile_state, qualification_state "
+                "FROM partner_advisory_input_status"
             ).fetchall()
         finally:
             conn.close()
@@ -519,8 +665,15 @@ def _check_index_inputs_via_db(db_path: Path) -> ChecklistItem:
             evidence={},
         )
     by_underlying = {row[0]: row for row in rows}
-    fresh = all(
-        r[2] is not None and r[2] < 600 for r in rows
+    now = datetime.now(timezone.utc)
+    freshness = {
+        row[0]: ((now - stamp).total_seconds() if (stamp := _parse_clock(row[4])) else None)
+        for row in rows
+    }
+    required = {"NIFTY", "SENSEX"}
+    fresh = required <= set(by_underlying) and all(
+        freshness[name] is not None and -60 <= freshness[name] <= 180
+        for name in required
     )
     return ChecklistItem(
         name="current_index_inputs",
@@ -528,18 +681,20 @@ def _check_index_inputs_via_db(db_path: Path) -> ChecklistItem:
         status=Status.PASS if fresh else Status.WARN,
         detail=(
             f"{len(rows)} underlying(s) tracked: "
-            + ", ".join(f"{name}={row[1]}/freshness={row[2]}s"
+            + ", ".join(f"{name}={row[1]}/freshness={freshness[name]}s"
                           for name, row in by_underlying.items())
         ),
         next_step=(
             "No action needed." if fresh else
-            "Freshness > 600s for at least one underlying. "
-            "Check the advisory lifecycle tick is firing."
+            "Both NIFTY and SENSEX require a current <=180s receipt. Check the "
+            "broker login, public-input fetch and advisory lifecycle tick."
         ),
         evidence={
             "rows": [
-                {"underlying": r[0], "status": r[1],
-                 "freshness_sec": r[2], "evaluated_at": r[3]}
+                {"underlying": r[0], "stage": r[1], "reason": r[2],
+                 "entry_state": r[3], "freshness_seconds": freshness[r[0]],
+                 "received_at": r[4], "profile_state": r[5],
+                 "qualification_state": r[6]}
                 for r in rows
             ],
         },
@@ -551,11 +706,11 @@ def _check_valid_candidate_via_db(db_path: Path) -> ChecklistItem:
     if not db_path.is_file():
         return _check_valid_candidate(ENGINE_DIR)
     try:
-        conn = sqlite3.connect(str(db_path))
+        conn = _connect_readonly(db_path)
         try:
             row = conn.execute(
-                "SELECT idea_id, generated_at, regime, direction "
-                "FROM partner_advisory_ideas ORDER BY generated_at "
+                "SELECT advisory_id, created_at, underlying, status, valid_until "
+                "FROM partner_advisory_ideas ORDER BY created_at "
                 "DESC LIMIT 1"
             ).fetchone()
         finally:
@@ -582,18 +737,25 @@ def _check_valid_candidate_via_db(db_path: Path) -> ChecklistItem:
             ),
             evidence={},
         )
+    created_at = _parse_clock(row[1])
+    current_session = bool(
+        created_at and created_at.astimezone(timezone(timedelta(hours=5, minutes=30))).date()
+        == datetime.now(timezone(timedelta(hours=5, minutes=30))).date()
+    )
     return ChecklistItem(
         name="valid_candidate",
         title="Valid candidate generated recently",
-        status=Status.PASS,
+        status=Status.PASS if current_session else Status.WARN,
         detail=(
             f"Latest idea: id={row[0]} at {row[1]} "
-            f"(regime={row[2]}, direction={row[3]})."
+            f"(underlying={row[2]}, status={row[3]}, current_session={current_session})."
         ),
-        next_step="No action needed.",
+        next_step=("No action needed." if current_session else
+                   "Wait for a genuine current-session setup; do not relax gates merely to create a message."),
         evidence={
-            "idea_id": row[0], "generated_at": row[1],
-            "regime": row[2], "direction": row[3],
+            "advisory_id": row[0], "created_at": row[1],
+            "underlying": row[2], "status": row[3],
+            "valid_until": row[4], "current_session": current_session,
         },
     )
 
@@ -603,13 +765,14 @@ def _check_qualification_via_db(db_path: Path) -> ChecklistItem:
     if not db_path.is_file():
         return _check_qualification_compatibility(ENGINE_DIR)
     try:
-        conn = sqlite3.connect(str(db_path))
+        conn = _connect_readonly(db_path)
         try:
-            row = conn.execute(
-                "SELECT capture_id, generated_at, kind, state "
-                "FROM partner_research_capture ORDER BY "
-                "generated_at DESC LIMIT 1"
-            ).fetchone()
+            rows = conn.execute(
+                "SELECT underlying, structure_kind, horizon, policy_version, "
+                "dataset_ref, reviewed_at, status "
+                "FROM partner_advisory_strategy_qualifications "
+                "ORDER BY reviewed_at DESC"
+            ).fetchall()
         finally:
             conn.close()
     except Exception as exc:
@@ -621,50 +784,57 @@ def _check_qualification_via_db(db_path: Path) -> ChecklistItem:
             next_step="Verify the DB path and permissions.",
             evidence={},
         )
-    if row is None:
+    if not rows:
         return ChecklistItem(
             name="compatible_qualification",
             title="Genuine compatible qualification exists",
             status=Status.WARN,
-            detail="No partner_research_capture rows on disk.",
+            detail="No partner_advisory_strategy_qualifications rows on disk.",
             next_step=(
-                "The qualification pipeline hasn't produced a "
-                "compatible candidate yet. Check the J.10 "
-                "capture gate (CAS_REACHABILITY)."
+                "Complete and review genuine current-policy research; only then "
+                "record a qualification linked to an immutable artifact."
             ),
             evidence={},
         )
+    compatible = [row for row in rows if row[2] == "INTRADAY"
+                  and row[3] == "partner-manual-intraday-v1"
+                  and row[6] == "QUALIFIED_FOR_ADVISORY"]
     return ChecklistItem(
         name="compatible_qualification",
         title="Genuine compatible qualification exists",
-        status=Status.PASS,
+        status=Status.PASS if compatible else Status.WARN,
         detail=(
-            f"Latest capture: id={row[0]} at {row[1]} "
-            f"(kind={row[2]}, state={row[3]})."
+            f"{len(compatible)} compatible qualification(s) across "
+            f"{len(rows)} retained row(s)."
         ),
-        next_step="No action needed.",
+        next_step=("No action needed." if compatible else
+                   "Review retained rows against the current INTRADAY policy; do not relabel incompatible evidence."),
         evidence={
-            "capture_id": row[0], "generated_at": row[1],
-            "kind": row[2], "state": row[3],
+            "rows": [
+                {"underlying": row[0], "structure_kind": row[1],
+                 "horizon": row[2], "policy_version": row[3],
+                 "dataset_ref": row[4], "reviewed_at": row[5],
+                 "status": row[6]}
+                for row in rows
+            ],
         },
     )
 
 
 def run_checks(engine_dir: Path, db_path: Path | None) -> list[ChecklistItem]:
     """Run all 7 checklist items and return them in order."""
-    items = [
-        _check_intraday_profile(engine_dir),
-        _check_destination_configured(engine_dir),
-    ]
+    items = [_check_destination_configured(engine_dir)]
     # DB-dependent checks.
     if db_path is not None:
+        items.insert(0, _check_intraday_profile_via_db(db_path))
         items.append(_check_index_inputs_via_db(db_path))
         items.append(_check_valid_candidate_via_db(db_path))
         items.append(_check_qualification_via_db(db_path))
         items.append(_check_transport_via_db(db_path))
-        items.append(_check_session_gates(db_path))
+        items.append(_check_session_gates(engine_dir, db_path))
     else:
         # Static-only checks (WARN without DB).
+        items.insert(0, _check_intraday_profile(engine_dir))
         items.append(_check_index_inputs(engine_dir))
         items.append(_check_valid_candidate(engine_dir))
         items.append(_check_qualification_compatibility(engine_dir))

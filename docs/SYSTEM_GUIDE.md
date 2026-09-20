@@ -412,3 +412,40 @@ See HANDOVER_CHECKLIST.md for wrap-up validation and limits. The final handover 
 The atlas indexes all top-level engine/agent Python modules, declared symbols/line numbers, engine dependencies, related tests and declared tables, plus gateway/dashboard source dependencies and local routes. It is generated navigation, not a substitute for semantic review.
 
 After every implementation commit, update affected sections here, regenerate the atlas, reconcile the active plan, and record checks/deployment state. Prefer doing those updates in the implementation commit; verify immediately afterwards. The mandatory ritual is specified in AGENTS.md and NEXT_AGENT_PLAN.md.
+
+## 16. September 20 AI activation and truthful hedge staging
+
+The Compose contract now explicitly enables the bounded optional-AI queue,
+source-event classification and usefulness telemetry. Its safe policies remain
+`proceed`/`advisory`: AI supplies non-authoritative context and cannot place an
+order, change capital or silently become a hard veto. The manual partner
+advisory switches are also explicit. `PARTNER_HEDGE_ENABLED=true` permits the
+advanced Phase-2/3 shadow jobs to observe real inputs, while both advanced
+delivery switches remain explicitly false and both shadow switches remain
+true.
+
+Phase-2/3 staging days are no longer expected to arise from elapsed uptime or
+manual bookkeeping alone. `record_shadow_staging_day` writes one idempotent
+system receipt per phase and IST date only after the shadow cycle processes at
+least one reconciled underlying through a fresh option-chain context. Missing
+login, missing positions, a closed market, stale/unavailable chains, stopped
+services and scheduler invocation alone do not count. This system receipt does
+not satisfy manual live-chain verification or per-kind Telegram sample review,
+does not enable delivery and does not create qualification.
+
+The read-only Production inspection behind this change found three manual
+advisory ideas on 2026-09-17, no advanced hedge shadow evaluations, no hedge
+gate evidence and no reconciled partner positions. Core application containers
+were stopped with exit 137 and `OOMKilled=false`. Production flags were unset
+despite a present MiniMax credential. These facts explain 0/7; they do not show
+that the strategy gates rejected seven genuine staging sessions.
+
+The partner-readiness CLI now reads the actual persisted profile, input-status,
+idea, strategy-qualification and hardened `partner_hedge_messages` schemas.
+The predecessor version used obsolete column/table names and treated advanced
+Phase-3 readiness as the final gate for ordinary manual advice. The corrected
+seventh check reports the manual-advisory enable/delivery configuration;
+advanced 0/7 progress remains nested informational evidence with
+`blocks_manual_advisory=false`. Database connections are read-only, and a
+quiescent read-only Docker mount may use immutable SQLite mode only when no
+non-empty WAL exists.

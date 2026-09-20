@@ -24,6 +24,7 @@ import os
 import sqlite3
 import sys
 import tempfile
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 import pytest
@@ -137,49 +138,66 @@ def _make_stub_db(
     conn = sqlite3.connect(str(db_path))
     try:
         conn.execute(
-            "CREATE TABLE partner_messages ("
-            "  sent_at TEXT, kind TEXT, dedup_key TEXT, "
-            "  delivered INTEGER, detail TEXT, "
+            "CREATE TABLE partner_hedge_messages ("
+            "  kind TEXT, dedup_key TEXT, sent_at TEXT, "
+            "  delivered INTEGER, detail TEXT, claim_token TEXT, "
             "  PRIMARY KEY (kind, dedup_key))"
         )
         conn.execute(
             "CREATE TABLE partner_advisory_input_status ("
-            "  underlying TEXT, status TEXT, "
-            "  freshness_sec INTEGER, evaluated_at TEXT)"
+            "  underlying TEXT, attempted_at TEXT, stage TEXT, reason TEXT, "
+            "  entry_state TEXT, observed_at TEXT, received_at TEXT, "
+            "  freshness_seconds REAL, last_success_at TEXT, profile_state TEXT, "
+            "  qualification_state TEXT, updated_at TEXT)"
         )
         conn.execute(
             "CREATE TABLE partner_advisory_ideas ("
-            "  idea_id TEXT, generated_at TEXT, "
-            "  regime TEXT, direction TEXT)"
+            "  advisory_id TEXT, created_at TEXT, underlying TEXT, status TEXT, "
+            "  valid_until TEXT)"
         )
         conn.execute(
-            "CREATE TABLE partner_research_capture ("
-            "  capture_id TEXT, generated_at TEXT, "
-            "  kind TEXT, state TEXT)"
+            "CREATE TABLE partner_advisory_strategy_qualifications ("
+            "  underlying TEXT, structure_kind TEXT, horizon TEXT, "
+            "  policy_version TEXT, dataset_ref TEXT, reviewed_at TEXT, status TEXT)"
+        )
+        conn.execute(
+            "CREATE TABLE partner_advisory_profiles ("
+            "  profile_id TEXT PRIMARY KEY, version INTEGER, payload TEXT, updated_at TEXT)"
+        )
+        conn.execute(
+            "INSERT INTO partner_advisory_profiles VALUES "
+            "('default', 2, ?, '2026-09-17T09:00:00+05:30')",
+            (json.dumps({"holding_period": "INTRADAY", "instruments": ["NIFTY", "SENSEX"]}),),
         )
         if with_messages:
             conn.execute(
-                "INSERT INTO partner_messages VALUES "
-                "('2026-09-17T10:00:00+00:00', 'regime_change', "
-                "'k1', 1, NULL)"
+                "INSERT INTO partner_hedge_messages VALUES "
+                "('regime_change', 'k1', ?, 1, NULL, NULL)",
+                (datetime.now(timezone.utc).isoformat(),),
             )
         if with_status:
-            conn.execute(
-                "INSERT INTO partner_advisory_input_status VALUES "
-                "('NIFTY', 'NO_ENTRY_SETUP', 290, "
-                "'2026-09-17T15:00:00+00:00')"
-            )
+            stamp = datetime.now(timezone.utc).isoformat()
+            for underlying in ("NIFTY", "SENSEX"):
+                conn.execute(
+                    "INSERT INTO partner_advisory_input_status VALUES "
+                    "(?, ?, 'NO_ENTRY_SETUP', 'no_or_break', 'NO_ENTRY_SETUP', "
+                    "?, ?, 0, ?, 'SAVED_INTRADAY', 'QUALIFIED_FOR_ADVISORY', ?)",
+                    (underlying, stamp, stamp, stamp, stamp, stamp),
+                )
         if with_ideas:
             conn.execute(
                 "INSERT INTO partner_advisory_ideas VALUES "
-                "('idea-1', '2026-09-17T14:00:00+00:00', "
-                "'PR1_CALM', 'LONG')"
+                "('idea-1', ?, 'NIFTY', 'VALIDATED_SHADOW', ?)",
+                (datetime.now(timezone.utc).isoformat(),
+                 (datetime.now(timezone.utc) + timedelta(minutes=30)).isoformat()),
             )
         if with_captures:
             conn.execute(
-                "INSERT INTO partner_research_capture VALUES "
-                "('cap-1', '2026-09-17T13:00:00+00:00', "
-                "'qualified', 'VERIFIED')"
+                "INSERT INTO partner_advisory_strategy_qualifications VALUES "
+                "('NIFTY', 'DEBIT_SPREAD', 'INTRADAY', "
+                "'partner-manual-intraday-v1', 'artifact-1', ?, "
+                "'QUALIFIED_FOR_ADVISORY')",
+                (datetime.now(timezone.utc).isoformat(),),
             )
         conn.commit()
     finally:
@@ -200,9 +218,9 @@ def test_check_transport_warn_when_message_undelivered():
     db_path = _make_stub_db()
     conn = sqlite3.connect(str(db_path))
     conn.execute(
-        "INSERT INTO partner_messages VALUES "
-        "('2026-09-17T10:00:00+00:00', 'regime_change', "
-        "'k1', 0, 'telegram_send_failed')"
+        "INSERT INTO partner_hedge_messages VALUES "
+        "('regime_change', 'k1', ?, 0, 'telegram_send_failed', NULL)",
+        (datetime.now(timezone.utc).isoformat(),),
     )
     conn.commit()
     conn.close()
@@ -236,9 +254,12 @@ def test_check_index_inputs_warn_when_stale():
     """A row with freshness_sec >= 600 returns WARN."""
     db_path = _make_stub_db()
     conn = sqlite3.connect(str(db_path))
+    stale = (datetime.now(timezone.utc) - timedelta(seconds=1200)).isoformat()
     conn.execute(
         "INSERT INTO partner_advisory_input_status VALUES "
-        "('NIFTY', 'NO_ENTRY_SETUP', 1200, '2026-09-17T15:00:00+00:00')"
+        "('NIFTY', ?, 'NO_ENTRY_SETUP', 'no_or_break', 'NO_ENTRY_SETUP', "
+        "?, ?, 1200, ?, 'SAVED_INTRADAY', 'NOT_EVALUATED', ?)",
+        (stale, stale, stale, stale, stale),
     )
     conn.commit()
     conn.close()
@@ -258,6 +279,51 @@ def test_check_valid_candidate_warn_when_empty():
     db_path = _make_stub_db()
     item = check_partner_readiness._check_valid_candidate_via_db(db_path)
     assert item.status == check_partner_readiness.Status.WARN
+
+
+def test_runtime_profile_check_reads_persisted_current_schema():
+    db_path = _make_stub_db()
+    item = check_partner_readiness._check_intraday_profile_via_db(db_path)
+    assert item.status == check_partner_readiness.Status.PASS
+    assert item.evidence["holding_period"] == "INTRADAY"
+
+
+def test_qualification_check_reads_current_registry():
+    db_path = _make_stub_db(with_captures=True)
+    item = check_partner_readiness._check_qualification_via_db(db_path)
+    assert item.status == check_partner_readiness.Status.PASS
+    assert item.evidence["rows"][0]["status"] == "QUALIFIED_FOR_ADVISORY"
+
+
+def test_zero_of_seven_advanced_hedge_days_does_not_block_manual_advisory():
+    db_path = _make_stub_db()
+    conn = sqlite3.connect(str(db_path))
+    conn.execute(
+        "CREATE TABLE partner_hedge_gate_evidence ("
+        "evidence_type TEXT, phase TEXT, kind TEXT, evidence_ref TEXT, "
+        "observed_on TEXT, observed_at TEXT, source TEXT, note TEXT)"
+    )
+    conn.commit()
+    conn.close()
+
+    item = check_partner_readiness._check_session_gates(ENGINE_DIR, db_path)
+
+    assert item.status == check_partner_readiness.Status.PASS
+    assert item.evidence["advanced_phase3"]["staging_days"] == 0
+    assert item.evidence["advanced_phase3_blocks_manual_advisory"] is False
+
+
+def test_advanced_progress_is_read_only_and_does_not_create_missing_table():
+    db_path = _make_stub_db()
+    progress = check_partner_readiness._advanced_hedge_progress(db_path)
+    conn = sqlite3.connect(str(db_path))
+    exists = conn.execute(
+        "SELECT 1 FROM sqlite_master WHERE type='table' "
+        "AND name='partner_hedge_gate_evidence'"
+    ).fetchone()
+    conn.close()
+    assert progress == {"available": False, "reason": "evidence_table_missing"}
+    assert exists is None
 
 
 # ─── run_checks() integration ───────────────────────────
@@ -297,7 +363,7 @@ def test_main_human_readable(capsys, tmp_path):
     rc = check_partner_readiness.main([
         "--engine-dir", str(ENGINE_DIR),
     ])
-    assert rc == 0
+    assert rc in (0, 1)  # credential presence is environment-owned
     out = capsys.readouterr().out
     assert "Partner readiness diagnostic" in out
     assert "checklist items" in out
@@ -311,7 +377,7 @@ def test_main_json_is_valid(capsys, tmp_path):
         "--db-path", str(db_path),
         "--json",
     ])
-    assert rc == 0
+    assert rc in (0, 1)  # credential presence is environment-owned
     out = capsys.readouterr().out
     parsed = json.loads(out)
     assert isinstance(parsed, list)
