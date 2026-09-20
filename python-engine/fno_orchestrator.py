@@ -369,23 +369,51 @@ async def _manage_open_positions(
         pnl = gross - costs
         risk_rupees = p.entry_premium * settings.FNO_STOP_PREMIUM_PCT * p.qty
         r_mult = pnl / risk_rupees if risk_rupees > 0 else 0.0
-        await fpos.close_position(
-            db_path, p.id,
-            exit_time_ist=now_ist, exit_premium=fill,
-            exit_underlying=fut_price or 0.0, exit_reason=exit_reason,
-            gross_pnl=gross, costs=costs, pnl=pnl, r_multiple=r_mult,
-            exit_order_id=result.get("order_id"),
-        )
-        # Pool accounting: additive source tag in the shared ledger (§10.3).
+        # [WORKFLOW-A2 2026-09-20] Atomic settlement: one
+        # transaction for the position UPDATE and the ledger INSERT.
+        # Previously these were two separate transactions; a crash
+        # between them could leave a closed position without its
+        # cash movement. ``settlement_generation`` defaults to 0
+        # for legacy positions; the unique index on
+        # ``(origin_ref, settlement_generation)`` makes duplicate
+        # settles fail at the constraint rather than silently.
         try:
-            from performance import record_trade_close
-            await record_trade_close(
-                db_path, ticker=p.tradingsymbol, pnl=pnl,
-                r_multiple=r_mult, notes=f"fno_exit {exit_reason}",
-                source=source, origin_ref=f"fno_position:{p.id}",
+            await fpos.settle_position_close(
+                db_path, p.id,
+                exit_time_ist=now_ist, exit_premium=fill,
+                exit_underlying=fut_price or 0.0, exit_reason=exit_reason,
+                gross_pnl=gross, costs=costs, pnl=pnl, r_multiple=r_mult,
+                exit_order_id=result.get("order_id"),
+                source=source, ticker=p.tradingsymbol,
+                settlement_generation=0,
+                notes=f"fno_exit {exit_reason}",
             )
-        except Exception as exc:
-            logger.error("fno_ledger_write_failed id=%d err=%s", p.id, str(exc))
+        except fpos.PositionNotOpen:
+            # Another worker (or a retry) already settled this
+            # position. Log and continue; the close attempt is
+            # idempotent.
+            logger.info(
+                "fno_settle_skipped_already_closed id=%d symbol=%s",
+                p.id, p.tradingsymbol,
+            )
+            continue
+        except fpos.SettlementConflict:
+            # The unique index caught a duplicate. Log and continue;
+            # the first settle was the authoritative one.
+            logger.warning(
+                "fno_settle_duplicate_caught id=%d symbol=%s",
+                p.id, p.tradingsymbol,
+            )
+            continue
+        except fpos.SettlementError as exc:
+            # The position UPDATE was rolled back; the position is
+            # still OPEN. Log and continue so the next tick can
+            # retry once the configuration is repaired.
+            logger.error(
+                "fno_settle_failed id=%d symbol=%s err=%s",
+                p.id, p.tradingsymbol, str(exc),
+            )
+            continue
         logger.info(
             "fno_position_closed source=%s symbol=%s reason=%s entry=%.2f "
             "exit=%.2f pnl=%.0f r=%.2f",

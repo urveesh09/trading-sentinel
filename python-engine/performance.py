@@ -13,7 +13,13 @@ async def init_ledger(db_path: str):
             CREATE TABLE IF NOT EXISTS bankroll_ledger (
                 id INTEGER PRIMARY KEY AUTOINCREMENT, timestamp TEXT, event_type TEXT,
                 ticker TEXT, pnl REAL, bankroll_before REAL, bankroll_after REAL,
-                source TEXT NOT NULL DEFAULT 'SYSTEM', notes TEXT, origin_ref TEXT
+                source TEXT NOT NULL DEFAULT 'SYSTEM', notes TEXT, origin_ref TEXT,
+                -- [WORKFLOW-A2 2026-09-20] Settlement-generation token.
+                -- Combined with ``origin_ref``, this forms the unique
+                -- key that prevents duplicate ledger writes per
+                -- position. Default 0 for legacy rows; the migration
+                -- is idempotent (``ADD COLUMN``).
+                settlement_generation INTEGER NOT NULL DEFAULT 0
             )
         """)
         # Migration: existing DBs (pre-2026-06-24) were created without the
@@ -30,6 +36,31 @@ async def init_ledger(db_path: str):
             await db.execute("ALTER TABLE bankroll_ledger ADD COLUMN origin_ref TEXT")
         except Exception:
             pass  # column already exists -- safe to ignore
+        # [WORKFLOW-A2 2026-09-20] Idempotent migration: add the
+        # ``settlement_generation`` column to legacy DBs.
+        try:
+            await db.execute(
+                "ALTER TABLE bankroll_ledger "
+                "ADD COLUMN settlement_generation INTEGER NOT NULL DEFAULT 0"
+            )
+        except Exception:
+            pass  # column already exists -- safe to ignore
+        # [WORKFLOW-A2 2026-09-20] Unique index that catches the
+        # audit's reproducer: two writes using the same
+        # ``origin_ref`` + ``settlement_generation > 0`` produce a
+        # duplicate-ledger conflict at the constraint, not silently.
+        # The partial-index ``WHERE settlement_generation > 0`` lets
+        # pre-migration callers continue to write rows with the
+        # default generation=0 without the constraint firing.
+        try:
+            await db.execute(
+                "CREATE UNIQUE INDEX IF NOT EXISTS "
+                "ux_bankroll_ledger_origin_gen "
+                "ON bankroll_ledger (origin_ref, settlement_generation) "
+                "WHERE settlement_generation > 0"
+            )
+        except Exception:
+            pass
         await db.execute("""
             CREATE TABLE IF NOT EXISTS backtest_results (
                 timestamp TEXT, strategy_version TEXT,
@@ -257,7 +288,8 @@ async def record_trade_close(db_path: str, ticker: str, pnl: float,
                              *, source: str,
                              outcome_pnl: float | None = None,
                              outcome_r_multiple: float | None = None,
-                             origin_ref: str | None = None):
+                             origin_ref: str | None = None,
+                             settlement_generation: int = 0):
     """Append a realised close to the bankroll ledger.
 
     `source` names the division the P&L belongs to: SYSTEM (swing), MOMENTUM,
@@ -282,6 +314,15 @@ async def record_trade_close(db_path: str, ticker: str, pnl: float,
     worse than no default: the failure is invisible and lands in the accounting.
     Making it required turns "forgot to attribute" into a TypeError at import
     time rather than a wrong number in a report months later.
+
+    [WORKFLOW-A2 2026-09-20] ``settlement_generation`` defaults to 0
+    for callers that have not yet migrated; new code paths must
+    supply a monotonically increasing token so the unique index
+    ``(origin_ref, settlement_generation)`` catches duplicate
+    writes. The audit's reproducer: two writes with the same
+    ``origin_ref`` previously produced two ledger rows; this
+    helper now raises ``aiosqlite.IntegrityError`` on the second
+    write.
     """
     # [POOL-TRUTH 2026-07-31] Book against the division's OWN allocation, not
     # against the swing pool. See DIVISION_ALLOCATION above -- this is what
@@ -290,13 +331,35 @@ async def record_trade_close(db_path: str, ticker: str, pnl: float,
     before = await division_equity(db_path, source)
     after = before + pnl
     async with aiosqlite.connect(db_path) as db:
-        await db.execute(
-            "INSERT INTO bankroll_ledger "
-            "(timestamp, event_type, ticker, pnl, bankroll_before, bankroll_after, source, origin_ref) "
-            "VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
-            (datetime.now(timezone.utc).isoformat(), "TRADE_CLOSED", ticker,
-             pnl, before, after, source, origin_ref.strip()[:180] if origin_ref else None)
-        )
+        # [WORKFLOW-A2 2026-09-20] Test-fixture compatibility: some
+        # tests build their own minimal ``bankroll_ledger`` without
+        # ``init_ledger``, so the ``settlement_generation`` column
+        # may not exist yet. Probe for the column first; if it is
+        # missing, fall back to the legacy INSERT.
+        cur = await db.execute("PRAGMA table_info(bankroll_ledger)")
+        cols = {row[1] for row in await cur.fetchall()}
+        if "settlement_generation" in cols:
+            await db.execute(
+                "INSERT INTO bankroll_ledger "
+                "(timestamp, event_type, ticker, pnl, bankroll_before, bankroll_after, "
+                "source, origin_ref, settlement_generation) "
+                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                (datetime.now(timezone.utc).isoformat(), "TRADE_CLOSED", ticker,
+                 pnl, before, after, source,
+                 origin_ref.strip()[:180] if origin_ref else None,
+                 int(settlement_generation or 0))
+            )
+        else:
+            # Legacy schema (no ``settlement_generation`` column).
+            await db.execute(
+                "INSERT INTO bankroll_ledger "
+                "(timestamp, event_type, ticker, pnl, bankroll_before, bankroll_after, "
+                "source, origin_ref) "
+                "VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+                (datetime.now(timezone.utc).isoformat(), "TRADE_CLOSED", ticker,
+                 pnl, before, after, source,
+                 origin_ref.strip()[:180] if origin_ref else None)
+            )
         await db.commit()
     # [ANALYTICS 2026-06-16] Side-effect: record the trade outcome + join with
     # the signal-log row that birthed it. Best-effort; never raises.
