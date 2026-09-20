@@ -355,3 +355,18 @@ tests passed with warnings fatal; both affected images built; rendered and
 runtime Compose flag checks match the safe matrix. Existing deprecation and
 Dockerfile casing warnings remain. These checks establish Dev regression
 fitness, not deployment, strategy profitability or qualification.
+
+### 2026-09-20 D.3 exact-range correction
+
+The bounded Dev release-note generator now makes `--base-ref` authoritative:
+it resolves both endpoints, includes every commit in `base..HEAD` without the
+legacy 30-commit cap, reports the exact SHA range/ahead count, and fails closed
+on an invalid or unreadable range. Regression coverage includes the observed
+31-commit boundary and a valid zero-commit range. D.3 PR preparation is now
+truthful at the tooling boundary; reviewer approval, merge, deployment,
+backup/restore evidence and Production verification remain operator-owned.
+
+The same acceptance run closed an adjacent F.7 operator-tool defect: text
+broker-statement reports now use `INR`, remaining encodable by cp1252 Windows
+consoles. The full warning-fatal scripts suite passes 225/225. No calculation,
+database, delivery or Production behavior changed.

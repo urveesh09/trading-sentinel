@@ -25,6 +25,7 @@ from __future__ import annotations
 import importlib.util
 import json
 import os
+import subprocess
 import sys
 import tempfile
 from pathlib import Path
@@ -140,6 +141,74 @@ def test_get_git_state_handles_missing_repo(tmp_path):
     assert state["commits"] == []
 
 
+def _git(repo: Path, *args: str) -> str:
+    """Run a deterministic local-git command for range tests."""
+    return subprocess.run(
+        ["git", *args],
+        cwd=repo,
+        check=True,
+        capture_output=True,
+        text=True,
+        encoding="utf-8",
+    ).stdout.strip()
+
+
+def _commit(repo: Path, filename: str, subject: str) -> None:
+    (repo / filename).write_text(subject, encoding="utf-8")
+    _git(repo, "add", filename)
+    _git(repo, "commit", "-m", subject)
+
+
+def _make_git_repo(repo: Path) -> str:
+    _git(repo, "init")
+    _git(repo, "config", "user.name", "Release Notes Test")
+    _git(repo, "config", "user.email", "release-notes@example.invalid")
+    _commit(repo, "base.txt", "chore: base")
+    return _git(repo, "rev-parse", "HEAD")
+
+
+def test_get_git_state_uses_exact_base_range(tmp_path):
+    """A supplied base collects every commit in base..HEAD, without a cap."""
+    base_sha = _make_git_repo(tmp_path)
+    for index in range(31):
+        _commit(tmp_path, f"post-{index}.txt", f"feat: post base {index}")
+
+    state = build_release_notes.get_git_state(tmp_path, base_ref=base_sha)
+
+    assert state["base_ref_valid"] is True
+    assert state["range_valid"] is True
+    assert state["base_sha"] == base_sha
+    assert state["commit_scope"] == f"{base_sha}..{state['head_sha']}"
+    assert state["ahead_count"] == 31
+    assert len(state["commits"]) == 31
+    assert state["commits"][0]["subject"] == "feat: post base 30"
+    assert state["commits"][-1]["subject"] == "feat: post base 0"
+
+    bounded_state = build_release_notes.get_git_state(tmp_path)
+    assert len(bounded_state["commits"]) == 30
+
+
+def test_get_git_state_accepts_base_at_head(tmp_path):
+    """A valid empty range is not mistaken for a Git failure."""
+    head_sha = _make_git_repo(tmp_path)
+    state = build_release_notes.get_git_state(tmp_path, base_ref=head_sha)
+    assert state["base_ref_valid"] is True
+    assert state["range_valid"] is True
+    assert state["ahead_count"] == 0
+    assert state["commits"] == []
+
+
+def test_get_git_state_marks_invalid_base(tmp_path):
+    """An unresolved base is distinguishable from a valid zero-commit range."""
+    _make_git_repo(tmp_path)
+    state = build_release_notes.get_git_state(
+        tmp_path, base_ref="definitely-missing"
+    )
+    assert state["base_ref_valid"] is False
+    assert state["base_sha"] == ""
+    assert state["commits"] == []
+
+
 # ─── Markdown rendering ───────────────────────────────────
 
 
@@ -192,6 +261,23 @@ def test_render_release_notes_includes_operator_checklist():
     assert "Operator checklist (pre-deploy)" in notes
     assert "Operator checklist (post-deploy)" in notes
     assert "[ ]" in notes  # checkbox marker
+
+
+def test_render_release_notes_includes_resolved_range_metadata():
+    """Exact-range provenance is visible for operator review."""
+    state = _make_minimal_git_state()
+    state.update({
+        "base_sha": "0123456789abcdef",
+        "commit_scope": "0123456789abcdef..fedcba9876543210",
+        "ahead_count": 4,
+    })
+    notes = build_release_notes.render_release_notes(
+        state, base_ref="origin/main"
+    )
+    assert "**Resolved base SHA**: `0123456789abcdef`" in notes
+    assert "**Requested range**: `origin/main..HEAD`" in notes
+    assert "**Resolved range**: `0123456789abcdef..fedcba9876543210`" in notes
+    assert "**Commits ahead**: **4**" in notes
 
 
 # ─── Audit integration ───────────────────────────────────
@@ -321,6 +407,24 @@ def test_main_errors_on_missing_repo():
         "--repo", "/nonexistent/path/never/exists",
     ])
     assert rc == 2
+
+
+def test_main_rejects_invalid_base_without_writing(tmp_path, capsys):
+    """A misspelled base fails closed instead of producing misleading notes."""
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    _make_git_repo(repo)
+    out_path = tmp_path / "RELEASE_NOTES.md"
+    rc = build_release_notes.main([
+        "--repo", str(repo),
+        "--base-ref", "missing-base",
+        "--out", str(out_path),
+    ])
+    captured = capsys.readouterr()
+    assert rc == 2
+    assert "base ref does not resolve" in captured.err
+    assert captured.out == ""
+    assert not out_path.exists()
 
 
 # ─── Determinism ─────────────────────────────────────────

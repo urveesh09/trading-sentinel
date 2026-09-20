@@ -135,16 +135,16 @@ def _format_report(report: dict) -> str:
         return "\n".join(lines) + "\n"
 
     lines.extend([
-        f"# opening_cash:    ₹{report.get('opening_cash', 0):,.2f}",
-        f"# closing_cash:    ₹{report.get('closing_cash', 0):,.2f}",
-        f"# expected:        ₹{report.get('expected_closing_cash', 0):,.2f}",
-        f"# residual:        ₹{report.get('residual', 0):,.2f}",
+        f"# opening_cash:    INR {report.get('opening_cash', 0):,.2f}",
+        f"# closing_cash:    INR {report.get('closing_cash', 0):,.2f}",
+        f"# expected:        INR {report.get('expected_closing_cash', 0):,.2f}",
+        f"# residual:        INR {report.get('residual', 0):,.2f}",
         "",
-        f"# net trading P&L: ₹{report.get('net_trading_result', 0):,.2f}",
-        f"# deposits:        ₹{report.get('deposits', 0):,.2f}",
-        f"# withdrawals:     ₹{report.get('withdrawals', 0):,.2f}",
-        f"# charges:         ₹{report.get('charges', 0):,.2f}",
-        f"# operating_exp:   ₹{report.get('operating_expenses', 0):,.2f}",
+        f"# net trading P&L: INR {report.get('net_trading_result', 0):,.2f}",
+        f"# deposits:        INR {report.get('deposits', 0):,.2f}",
+        f"# withdrawals:     INR {report.get('withdrawals', 0):,.2f}",
+        f"# charges:         INR {report.get('charges', 0):,.2f}",
+        f"# operating_exp:   INR {report.get('operating_expenses', 0):,.2f}",
         "",
         "# Fills by status:",
     ])

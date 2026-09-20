@@ -215,6 +215,9 @@ def test_report_when_statement_reconciles(tmp_path):
     )
     assert result.returncode == 0
     assert "MATCH" in result.stdout
+    assert "INR 100,000.00" in result.stdout
+    # Human output must remain safe on a standard Windows console.
+    result.stdout.encode("cp1252")
 
 
 def test_report_when_statement_unresolved(tmp_path):

@@ -449,3 +449,22 @@ advanced 0/7 progress remains nested informational evidence with
 `blocks_manual_advisory=false`. Database connections are read-only, and a
 quiescent read-only Docker mount may use immutable SQLite mode only when no
 non-empty WAL exists.
+
+### Exact release-range notes (2026-09-20)
+
+`scripts/build_release_notes.py --base-ref REF` now resolves `REF` and `HEAD`
+to immutable commit SHAs and inventories the complete two-dot range. It no
+longer labels a latest-30 snapshot as though it were the requested release
+range. The generated header records the requested range, resolved base SHA,
+resolved SHA range and ahead count. An invalid base or an uninspectable range
+fails with exit code 2 before stdout or `--out` is written. Omitting
+`--base-ref` intentionally retains the bounded latest-30 diagnostic view.
+
+The tool never fetches, merges, deploys or edits Git state. Reviewers must
+fetch explicitly before generation when they need a fresh remote-tracking
+base, then verify the resolved base SHA against the intended PR target.
+
+The broker-statement operator report uses the ASCII currency code `INR`
+instead of the rupee glyph. Numeric reconciliation semantics are unchanged;
+the representation prevents Windows cp1252 consoles from crashing before a
+`MATCH` or `UNRESOLVED` result can be displayed.

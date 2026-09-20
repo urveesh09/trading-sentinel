@@ -405,3 +405,22 @@ Before the next implementation: update the plan slice. With each commit: update 
   when a fresh reconciled position and chain were genuinely processed.
 - [ ] Record manual live-chain/sample-review evidence separately; do not infer
   it from uptime or automatically enable Phase-2/3 delivery.
+
+## 2026-09-20 exact release-range receipt
+
+- [x] `--base-ref` drives exact `base..HEAD` commit selection rather than only
+  changing the rendered label.
+- [x] Both endpoints are captured as SHAs; requested/resolved ranges and ahead
+  count are visible in the generated notes.
+- [x] Invalid or uninspectable bases exit 2 without emitting or writing notes.
+- [x] No-base diagnostic behavior remains capped at the latest 30 commits.
+- [x] 31 warning-fatal release-note tests pass, including 31 post-base commits
+  and the valid base-equals-HEAD case.
+- [x] A live Dev generation against `origin/evolve/smart-strategies` matched
+  `git rev-list --count` at 31 commits before this correction was committed.
+- [ ] Regenerate the handoff after the implementation commit so its resolved
+  head and count include this correction; reviewer still owns PR/merge/deploy.
+- [x] Production remained read-only and untouched.
+- [x] Broker-statement text output is cp1252-safe (`INR`); reconciliation
+  amounts, statuses and exit codes are unchanged.
+- [x] Complete scripts suite: 225 passed with warnings fatal (20.63 seconds).
