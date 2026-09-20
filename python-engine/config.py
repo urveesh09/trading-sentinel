@@ -1202,6 +1202,16 @@ class Settings(BaseSettings):
     PARTNER_MANUAL_ADVISORY_ENABLED: bool = True
     PARTNER_MANUAL_ADVISORY_SHADOW_ENABLED: bool = True
     PARTNER_MANUAL_ADVISORY_DELIVERY_ENABLED: bool = True
+    # [WORKFLOW-ITEMS-5/6/9 2026-09-20] Operations freshness thresholds.
+    #
+    # The audit requires the operator to be alerted BEFORE useful
+    # session data is lost. The freshness diagnostic surfaces
+    # login / input / candidate / ledger ages against these
+    # thresholds. Each channel has its own bound because
+    # Kite logins are daily while public inputs are minutes.
+    OPS_FRESHNESS_MAX_LOGIN_AGE_SECONDS: int = 86_400  # 24 hours
+    OPS_FRESHNESS_MAX_INPUT_AGE_SECONDS: int = 1_800  # 30 minutes
+    OPS_FRESHNESS_MAX_LEDGER_AGE_SECONDS: int = 300  # 5 minutes
     PARTNER_MANUAL_ADVISORY_DAILY_CAP: int = 2
     # [WORKFLOW-A3 2026-09-20] Research artifact verification gate.
     #
