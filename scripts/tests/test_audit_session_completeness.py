@@ -317,9 +317,19 @@ def test_to_dict_includes_all_required_keys(tmp_path):
     d = report.to_dict()
     expected = {
         "session_date", "archive_root", "expected_attempts_per_index",
+        # [WORKFLOW-A5/A6 2026-09-20] Audit's new diagnostic keys.
+        # `collection_complete` and `eligible_for_replay` are the
+        # new names; `can_qualify` is preserved as a constant
+        # False (collection completeness does NOT confer
+        # strategy qualification).
+        "collection_complete", "eligible_for_replay",
         "can_qualify", "underlyings",
     }
     assert set(d.keys()) == expected
+    # Collection is never "complete" without an underlying
+    # being observed; ``collection_complete`` is therefore False
+    # in this empty-archive case.
+    assert d["can_qualify"] is False
 
 
 def test_underlying_to_dict_includes_state(tmp_path):
