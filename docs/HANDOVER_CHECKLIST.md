@@ -1,5 +1,151 @@
 # Handover receipt and operator checklist
 
+## September 20 Workflow I.4.D provenance correction (Dev tested)
+
+The classifier no longer refetches news after rendering sentiment: Yahoo and
+Google are fetched once each and the same frozen items feed both raw and typed
+context. Results retain the requested ticker, bounded source URL/name, aware
+publication time and source digest; unreliable source metadata fails closed to
+UNKNOWN. That includes stale-at-seven-days, missing/naive/future clocks and
+invalid/non-HTTP(S) URLs. Classification context is part of enabled cache
+identity, while the disabled legacy key is unchanged; the queue independently
+guards direct reused-key collisions. Available/unavailable/exception typed
+reviews retain structured immutable source provenance and expiry. Sync late
+results are payload-free unavailable; READY/CACHED expiry can tighten but never
+extend. CLI file input now parses aware RFC/ISO clocks.
+
+Focused warning-fatal acceptance: **185 passed**. Complete isolated agent:
+**357 passed**, warning-fatal, network disabled, Dev mounted read-only. Changed
+Python compilation and `git diff --check` passed; the code atlas regenerated at
+**203 modules**. No engine/dashboard source changed, so their September 19 full
+receipts remain the applicable cross-component baseline and were not rerun.
+No schema/config default/broker/partner message/order/Production edit or
+authority change. Implementation commit **`3495ecb`** passed its immediate
+source/docs/atlas consistency review. Implementation and receipt commits
+**`3495ecb` + `a4e189f` are pushed** to
+`origin/codex/production-correction-hedge-p0`. Real provider
+freshness/latency and operator-labelled usefulness
+remain Production evidence, not test claims. See the
+[plan](2026-09-20-i4d-classification-provenance-plan.md).
+
+## September 19 Workflow I usefulness contract (Dev tested)
+
+The real ten-field optional-AI usefulness snapshot now crosses the agent/engine
+boundary without rejection. Strict validation rejects unknown/leakage keys,
+booleans, negative/nonfinite latency, invalid or inconsistent cache rates,
+inconsistent review totals, invalid verdict buckets, and naive completion
+timestamps. Partial historical envelopes remain readable. The hourly
+contract-health job now recognizes the real status envelope and runs both the
+leakage and usefulness checks. Dashboard evidence includes p95 latency and last
+completion, with unavailable legacy fields shown as `—` rather than zero.
+
+Focused engine acceptance: **72 passed/four known framework deprecations**.
+Broader optional-AI engine acceptance: **89 passed/five known deprecations**.
+Complete isolated agent acceptance: **340 passed**, warnings fatal, networking
+disabled and Dev source mounted read-only. Dashboard: **46 passed** and Vite
+build passed with the existing outdated Browserslist notice. Whole engine:
+**4,117 passed/four skipped/46 known framework deprecations in 209.34s**;
+JUnit: `C:/Users/Urveesh/AppData/Local/Temp/sentinel-workflow-i-usefulness-contract-20260919.xml`.
+Atlas regenerated at 203 modules; changed Python compilation and diff checks
+passed. Implementation commit `8dd2c41` passed its immediate source/docs/atlas
+consistency review with a clean worktree and was pushed to
+`origin/codex/production-correction-hedge-p0`. No schema/config
+default, broker/network call, partner message, order, Production edit, or
+authority change. Real Production status evidence and operator usefulness
+labels remain open. See the
+[plan](2026-09-19-workflow-i-usefulness-contract-plan.md).
+
+## September 19 Workflow G.7 (Dev tested)
+
+The range-reversion simulator no longer chooses the last bar before the entry
+deadline and then backdates a modeled fill to an earlier bar. It evaluates only
+the first completed post-cutoff decision bar and begins execution after it.
+Insufficient/malformed inputs never fall through to generic confirmation. The
+comparison protocol removes its stale alias/forced-uncertain rule while keeping
+all ordinary evidence gates and no-authority fields. Existing frozen protocols
+remain implementation-hash bound and require a new protocol ID.
+
+Focused range/comparison baseline was **76 passed** warning-fatal; corrected
+focused range/comparison is **81 passed** and the broader G surface is **222
+passed**, both warning-fatal. Whole engine is **4,095 passed/four skipped/46
+known framework deprecations in 204.44s**; JUnit:
+`C:/Users/Urveesh/AppData/Local/Temp/sentinel-g7-range-causality-20260919.xml`.
+Atlas remains 203 modules; changed-source compilation and diff checks pass.
+Implementation commit `fefa5a3` contains source, tests, atlas and documentation;
+its immediate consistency review passed with a clean Dev worktree. Verification
+receipt `bc79325` also passed its immediate review; both commits were pushed to
+`origin/codex/production-correction-hedge-p0`. They are not merged, released or
+deployed. No schema/config/default, broker call, order, partner delivery or
+Production mutation occurred.
+
+## September 19 Workflow F.10A (Dev tested)
+
+The new read-only broker/internal report checks executed imported broker order
+IDs against retained live references in both position books and records
+missing, ambiguous and insufficient-scope results without granting any trading
+or capital authority. A broker cash `MATCH` can no longer suppress a missing
+internal order reference. The HTTP and CLI response changes are additive.
+
+This slice has no table migration, history rewrite, configuration/default
+change, broker/network call, order submission or partner delivery. It does add
+three discrepancy category strings; rollback removes the producer/bridge, but
+already appended rows require code that recognizes those values. Bidirectional
+economic reconciliation still needs account-scoped internal books, statement
+period bounds, universal order IDs, richer immutable fill data and genuine
+broker evidence. Focused reconciliation acceptance: **118 passed/21 known
+framework deprecations in 6.95s**. Whole engine: **4,090 passed/four skipped/46
+known deprecations in 204.15s**; JUnit:
+`C:/Users/Urveesh/AppData/Local/Temp/sentinel-f10a-broker-internal-final2-20260919.xml`.
+The first whole run exposed an unrelated microsecond clock race in one MTM test
+fixture; binding its quote and report to the same instant made that test
+deterministic, and the exact final tree passed. Atlas regenerated at 203 Python
+modules; changed Python compilation and diff checks passed. Production remains
+unchanged. Implementation commit `1dde067` contains source, tests, atlas and
+canonical documentation. Its immediate stat/status/guide/plan/atlas review
+passed with a clean Dev worktree. Verification receipt `d2735e9` also passed
+its immediate consistency review. Both commits were pushed to
+`origin/codex/production-correction-hedge-p0`; they are not merged, released or
+deployed.
+
+## September 19 Workflow C.C2.SOURCE (Dev tested)
+
+The modeled asymmetric path no longer borrows prices from the earlier decision
+book. Each missing-leg estimate retains and uses its own archive-verified
+packet hash, clock, bid/ask and quantity; incomplete legacy evidence fails
+closed. Held-out admission cross-checks the source and recomputes the fill/P&L,
+including rejection of a rehashed source mutation. Focused acceptance: **87
+passed** with warnings fatal; broader C: **259 passed**; whole engine: **4,070
+passed/four skipped/42 known deprecations in 205.51s**. JUnit is retained at
+`C:/Users/Urveesh/AppData/Local/Temp/sentinel-workflow-c-source-binding-20260919.xml`.
+No schema/config/data migration, broker call, delivery authority, flag change,
+or Production edit. Implementation commit: `e2212cb` on
+`codex/production-correction-hedge-p0`; verification receipt: `1a97932`. Both
+were pushed to `origin/codex/production-correction-hedge-p0`. See
+[the plan and receipt](2026-09-19-workflow-c-asymmetric-source-binding-plan.md).
+
+## September 19 Workflow C.C2.HOLDOUT (Dev tested)
+
+The modeled partial CLOSED path is now held-out ingestible and separately
+counted, with negative adverse-entry slippage, degenerate-book fail-closed
+behavior, strict provenance validation, and qualification propagation. It does
+not claim verified full economics. Focused: **90 passed**; qualification and
+held-out: **134 passed**; broader Workflow C/research/orchestrator: **226
+passed**, one known Starlette warning; whole engine: **4,069 passed/four
+skipped/42 known deprecations in 214.71s**. Atlas regenerated at 202 modules.
+JUnit is retained at
+`C:/Users/Urveesh/AppData/Local/Temp/sentinel-workflow-c-partial-holdout-20260919.xml`.
+System Python lacked pytest, so validation used the checked-in Windows venv.
+No schema/config migration, retained-data rewrite, external call, delivery,
+broker action, or Production mutation. Implementation commit: `6348fdb` on
+`codex/production-correction-hedge-p0`; immediate post-commit source/guide/plan/
+checklist/atlas consistency review passed with a clean Dev worktree. The
+read-only Production checkout remained at `fef35e7` with its pre-existing
+untracked audit/migration files untouched. Commits `6348fdb` and `070e9c0`
+were pushed to `origin/codex/production-correction-hedge-p0`. Merge/PR, real
+held-out collection, qualification, deployment, and partner delivery evidence
+remain unchecked.
+See [the slice receipt](2026-09-19-workflow-c-partial-holdout-plan.md).
+
 ## September16 current-state override
 
 Momentum/CAS release candidate: pushed Dev commit `ee0a300` schedules live momentum auto-square at 15:13 IST, transfers exclusive ownership from the monitor under a shared lock and enforces a 15:14:30 hard submission cutoff. The path checks before stop cancellation and immediately before submission; a pre-submit abort after cancellation attempts and persists replacement protection and pages the operator. Focused suites:79 passed; scheduler/calendar subset after restoring direct wrapper gates:25 passed; final Python:3730 passed/four skipped/42 existing deprecation warnings; agent:338 passed. The completed pytest receipt retained aiosqlite worker processes, and the exact processes were stopped. No schema/config migration, retained-data rewrite, broker call or Production mutation. Merge, deployment SHA and market-session observation remain unchecked.
@@ -217,3 +363,80 @@ The system is better at preserving and testing what it actually observed and pro
 ## Commit ritual
 
 Before the next implementation: update the plan slice. With each commit: update the guide/atlas/plan and verification evidence. After each commit: verify the actual diff and documentation agree. Instructions are also in Dev AGENTS.md so the ritual survives this conversation.
+
+## September 20 AI/readiness deployment checklist
+
+- [x] Production inspected read-only; no Production source/config/database edit.
+- [x] Confirm MiniMax, Telegram bot and partner chat credentials are present
+  without printing their values.
+- [x] Explain 0/7 from persistent evidence: no gate rows, no advanced shadow
+  evaluations, no reconciled partner positions; only 2026-09-17 produced manual
+  advisory ideas.
+- [x] Render Dev Compose and confirm AI flags on, safe AI policies selected,
+  manual advisory on, advanced shadow on, advanced delivery off.
+- [x] Add idempotent, genuine-input-only system staging receipt.
+- [x] Correct E.1 diagnostic schema drift and the false coupling between
+  advanced hedge 0/7 and manual-advisory dispatch.
+- [x] E.1 diagnostic suite: 27 passed with warnings fatal, 1.37 seconds.
+- [x] Full Python engine rerun: 4,122 passed, four skipped, 46 existing
+  deprecation warnings, 218.99 seconds. A first run exposed a test-only
+  microsecond future-clock race in two F&O quote fixtures; binding the fixture
+  quote to the test's declared `now` made the acceptance deterministic without
+  changing runtime valuation behavior.
+- [x] Agent image suite: 357 passed, 3.82 seconds, network disabled.
+- [x] Agent enabled-flag import smoke confirms async review/usefulness true and
+  proceed/advisory policies. Python-engine Compose run confirms manual advice,
+  hedge parent and shadow flags true with Phase-2/3 live delivery false.
+- [x] Dev `agent` and `python-engine` images build successfully. The Python
+  Dockerfile retains one existing `FromAsCasing` warning.
+- [x] Focused readiness/Phase-2/Phase-3 suite: 59 passed, one existing Starlette
+  deprecation warning, 4.39 seconds.
+- [x] Implementation/docs commit `1a6e0d9` pushed to
+  `origin/codex/production-correction-hedge-p0`. The task diff is committed;
+  two pre-existing unstaged generated session-fixture timestamp changes remain
+  intentionally untouched.
+- [ ] Merge/deploy through GitHub; recreate affected services and verify release
+  identity. Never copy or edit Production directly.
+- [ ] Confirm `agent`, `node-gateway`, `python-engine`, nginx and autoheal are
+  healthy. Current read-only observation has the three application containers
+  stopped (exit 137, not OOM-killed) and nginx restarting.
+- [ ] During a logged-in trading session, confirm optional-AI status receipts,
+  partner input state, advanced shadow evaluations and one staging receipt only
+  when a fresh reconciled position and chain were genuinely processed.
+- [ ] Record manual live-chain/sample-review evidence separately; do not infer
+  it from uptime or automatically enable Phase-2/3 delivery.
+
+## 2026-09-20 exact release-range receipt
+
+- [x] `--base-ref` drives exact `base..HEAD` commit selection rather than only
+  changing the rendered label.
+- [x] Both endpoints are captured as SHAs; requested/resolved ranges and ahead
+  count are visible in the generated notes.
+- [x] Invalid or uninspectable bases exit 2 without emitting or writing notes.
+- [x] No-base diagnostic behavior remains capped at the latest 30 commits.
+- [x] 31 warning-fatal release-note tests pass, including 31 post-base commits
+  and the valid base-equals-HEAD case.
+- [x] A live Dev generation against `origin/evolve/smart-strategies` matched
+  `git rev-list --count` at 31 commits before this correction was committed.
+- [x] Release handoff generated from source head `2766b00`: resolved range and
+  count include the correction (32 commits). Its final docs-only commit is
+  intentionally identified for one last regeneration before PR creation.
+- [ ] Reviewer still owns PR approval/merge, backup/restore and deployment.
+- [x] Production remained read-only and untouched.
+- [x] Broker-statement text output is cp1252-safe (`INR`); reconciliation
+  amounts, statuses and exit codes are unchanged.
+- [x] Complete scripts suite: 225 passed with warnings fatal (20.63 seconds).
+
+## 2026-09-20 deterministic session-golden receipt
+
+- [x] Unchanged 2,355-vector payload preserves `generated_at_utc` and is
+  byte-identical across consecutive generations.
+- [x] Semantic payload changes cannot reuse the prior provenance timestamp.
+- [x] Python and Node copies are written from one canonical newline-terminated
+  UTF-8 string; already-matching files are not rewritten.
+- [x] Python focused suite: 7 passed with warnings fatal (1.95 seconds),
+  including raw-byte CRLF normalization on Windows.
+- [x] Node session mirror: 43 passed with natural exit (1.56 seconds); one
+  expected offline holiday-fetch warning was logged.
+- [x] Existing timestamp-only local fixture changes remain unstaged. Production
+  was not read from, written to or restarted.

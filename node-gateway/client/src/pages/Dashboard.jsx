@@ -312,11 +312,8 @@ function OptionalAiEvidence({ optionalAi, isLoading, isError }) {
   // "no data" from "data with zero values".
   const usefulness = optionalAi.detail?.usefulness;
   const hasUsefulness = usefulness && typeof usefulness === 'object';
-  // Cache hit rate is computed on the dashboard side from the
-  // bounded counters; the bridge never ships derived numbers.
-  const cacheHitRate = (hasUsefulness
-    && (usefulness.cache_hits + usefulness.cache_misses) > 0)
-    ? (usefulness.cache_hits / (usefulness.cache_hits + usefulness.cache_misses))
+  const cacheHitRate = hasUsefulness && Number.isFinite(usefulness.cache_hit_rate)
+    ? usefulness.cache_hit_rate
     : null;
   return (
     <section className={`rounded-xl border p-4 ${unavailable ? 'border-amber-800 bg-amber-950/20' : 'border-blue-900/70 bg-blue-950/10'}`} aria-labelledby="optional-ai-heading">
@@ -336,18 +333,20 @@ function OptionalAiEvidence({ optionalAi, isLoading, isError }) {
             <div className="text-[10px] font-bold uppercase tracking-wide text-blue-200">Usefulness evidence (I.A 2026-09-13)</div>
             <div className="text-[10px] text-blue-300">Bounded counters; non-authoritative</div>
           </div>
-          <div className="mt-2 grid grid-cols-2 gap-3 text-xs sm:grid-cols-4">
-            <div><div className="text-gray-500">Completed</div><div className="mt-1 font-mono font-semibold text-gray-200">{usefulness.total_completed_reviews ?? 0}</div></div>
+          <div className="mt-2 grid grid-cols-2 gap-3 text-xs sm:grid-cols-3 lg:grid-cols-6">
+            <div><div className="text-gray-500">Completed</div><div className="mt-1 font-mono font-semibold text-gray-200">{usefulness.total_completed_reviews ?? '—'}</div></div>
             <div><div className="text-gray-500">Cache hit rate</div><div className="mt-1 font-mono font-semibold text-gray-200">{cacheHitRate === null ? '—' : `${(cacheHitRate * 100).toFixed(0)}%`}</div></div>
             <div><div className="text-gray-500">Last response</div><div className="mt-1 font-mono font-semibold text-gray-200">{usefulness.response_seconds_last === null || usefulness.response_seconds_last === undefined ? '—' : `${usefulness.response_seconds_last.toFixed(1)}s`}</div></div>
-            <div><div className="text-gray-500">Circuit opens</div><div className="mt-1 font-mono font-semibold text-gray-200">{usefulness.circuit_opens ?? 0}</div></div>
+            <div><div className="text-gray-500">P95 response</div><div className="mt-1 font-mono font-semibold text-gray-200">{usefulness.response_seconds_p95 === null || usefulness.response_seconds_p95 === undefined ? '—' : `${usefulness.response_seconds_p95.toFixed(1)}s`}</div></div>
+            <div><div className="text-gray-500">Circuit opens</div><div className="mt-1 font-mono font-semibold text-gray-200">{usefulness.circuit_opens ?? '—'}</div></div>
+            <div><div className="text-gray-500">Last completed</div><div className="mt-1 break-all font-mono font-semibold text-gray-200">{usefulness.last_completed_at || '—'}</div></div>
           </div>
           {usefulness.verdict_counts ? (
             <div className="mt-2 grid grid-cols-2 gap-3 text-xs sm:grid-cols-4">
-              <div><div className="text-gray-500">Approve</div><div className="mt-1 font-mono font-semibold text-emerald-300">{usefulness.verdict_counts.APPROVE ?? 0}</div></div>
-              <div><div className="text-gray-500">Approve+</div><div className="mt-1 font-mono font-semibold text-amber-300">{usefulness.verdict_counts.APPROVE_WITH_CONCERNS ?? 0}</div></div>
-              <div><div className="text-gray-500">Unavailable</div><div className="mt-1 font-mono font-semibold text-gray-400">{usefulness.verdict_counts.REVIEW_UNAVAILABLE ?? 0}</div></div>
-              <div><div className="text-gray-500">Reject</div><div className="mt-1 font-mono font-semibold text-red-300">{usefulness.verdict_counts.REJECT ?? 0}</div></div>
+              <div><div className="text-gray-500">Approve</div><div className="mt-1 font-mono font-semibold text-emerald-300">{usefulness.verdict_counts.APPROVE ?? '—'}</div></div>
+              <div><div className="text-gray-500">Approve+</div><div className="mt-1 font-mono font-semibold text-amber-300">{usefulness.verdict_counts.APPROVE_WITH_CONCERNS ?? '—'}</div></div>
+              <div><div className="text-gray-500">Unavailable</div><div className="mt-1 font-mono font-semibold text-gray-400">{usefulness.verdict_counts.REVIEW_UNAVAILABLE ?? '—'}</div></div>
+              <div><div className="text-gray-500">Reject</div><div className="mt-1 font-mono font-semibold text-red-300">{usefulness.verdict_counts.REJECT ?? '—'}</div></div>
             </div>
           ) : null}
         </div>

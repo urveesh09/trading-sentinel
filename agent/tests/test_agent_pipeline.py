@@ -3,8 +3,11 @@ Tests for agent.py pipeline functions - fetch, analyze, alert.
 """
 
 import json
+import hashlib
+import time
 import pytest
 import requests
+from datetime import datetime, timedelta, timezone
 from unittest.mock import patch, MagicMock
 import os
 import sys
@@ -83,6 +86,46 @@ def _review(payload=None, *, unavailable_reason=None):
 
 
 class TestOptionalAsyncReview:
+    def test_cache_key_binds_classification_context_and_preserves_legacy(self, agent_mod):
+        from news_classifier import ClassificationResult, NewsCategory
+
+        signal = {
+            "ticker": "SYNTH", "signal_time": "2026-09-20T09:30:00Z",
+            "strategy_type": "MOMENTUM", "close": 100,
+            "target_1": 105, "stop_loss": 97,
+        }
+        legacy_payload = json.dumps({
+            "decision": {
+                "ticker": "SYNTH", "signal_time": "2026-09-20T09:30:00Z",
+                "strategy_type": "MOMENTUM", "close": 100,
+                "target_1": 105, "stop_loss": 97,
+                "market_regime": "BULL",
+            },
+            "event_digest": hashlib.sha256(b"raw").hexdigest(),
+        }, sort_keys=True, default=str, separators=(",", ":"))
+        expected_legacy = hashlib.sha256(legacy_payload.encode("utf-8")).hexdigest()
+        assert agent_mod._optional_review_key(signal, "raw", "BULL") == expected_legacy
+
+        common = dict(
+            ticker="SYNTH", title_hash="abc", confidence=0.9,
+            rationale="evidence", prompt_version="v1",
+            classified_at=datetime.now(timezone.utc), source_name="Reuters",
+            source_url="https://example.test/a",
+            published_at=datetime(2026, 9, 20, 9, 0, tzinfo=timezone.utc),
+            source_ref="a" * 64,
+            source_valid_until=datetime(2026, 9, 27, 9, 0, tzinfo=timezone.utc),
+        )
+        earnings = ClassificationResult(category=NewsCategory.EARNINGS, **common)
+        regulatory = ClassificationResult(category=NewsCategory.REGULATORY, **common)
+        earnings_key = agent_mod._optional_review_key(
+            signal, "raw", "BULL", [earnings],
+        )
+        regulatory_key = agent_mod._optional_review_key(
+            signal, "raw", "BULL", [regulatory],
+        )
+        assert earnings_key != expected_legacy
+        assert earnings_key != regulatory_key
+
     def test_optional_ai_status_marks_a_circuit_outage_without_trade_authority(self, agent_mod):
         worker = MagicMock()
         worker.snapshot.return_value = {
@@ -130,6 +173,67 @@ class TestOptionalAsyncReview:
 
 
 class TestAnalyzeWithMiniMax:
+    def test_elapsed_deadline_fails_before_model_call(self, agent_mod):
+        agent_mod.client = MagicMock()
+        result = agent_mod.analyze_with_minimax(
+            {"ticker": "RELIANCE"}, "raw", "BULL",
+            expires_at=datetime.now(timezone.utc) - timedelta(microseconds=1),
+        )
+        assert result.reason == "review_deadline_elapsed"
+        assert result.available is False
+        agent_mod.client.chat.completions.create.assert_not_called()
+
+    def test_review_completing_at_or_after_deadline_is_unavailable(self, agent_mod):
+        content = json.dumps({
+            "conviction_score": 75, "pitch": "late",
+            "rationale": "late", "risks": "late",
+        })
+        agent_mod.client = MagicMock()
+
+        def slow_response(*_args, **_kwargs):
+            time.sleep(0.02)
+            return _fake_llm_response(content)
+
+        agent_mod.client.chat.completions.create.side_effect = slow_response
+        result = agent_mod.analyze_with_minimax(
+            {"ticker": "RELIANCE"}, "raw", "BULL",
+            expires_at=datetime.now(timezone.utc) + timedelta(milliseconds=5),
+        )
+        assert result.reason == "review_completed_late"
+        assert result.available is False
+        assert result.completed_at >= result.expires_at
+
+    def test_source_expiry_applies_when_request_deadline_is_omitted(self, agent_mod):
+        from news_classifier import ClassificationResult, NewsCategory
+
+        content = json.dumps({
+            "conviction_score": 75, "pitch": "late",
+            "rationale": "late", "risks": "late",
+        })
+        agent_mod.client = MagicMock()
+
+        def slow_response(*_args, **_kwargs):
+            time.sleep(0.02)
+            return _fake_llm_response(content)
+
+        agent_mod.client.chat.completions.create.side_effect = slow_response
+        now = datetime.now(timezone.utc)
+        classification = ClassificationResult(
+            ticker="RELIANCE", title_hash="abc",
+            category=NewsCategory.EARNINGS, confidence=0.9,
+            rationale="beat", prompt_version="v1", classified_at=now,
+            source_name="Reuters", source_url="https://example.test/a",
+            published_at=now - timedelta(minutes=5), source_ref="a" * 64,
+            source_valid_until=now + timedelta(milliseconds=5),
+        )
+        result = agent_mod.analyze_with_minimax(
+            {"ticker": "RELIANCE"}, "raw", "BULL",
+            pre_classifications=[classification],
+        )
+        assert result.reason == "review_completed_late"
+        assert result.expires_at == classification.source_valid_until
+        assert result.payload == {}
+
     def test_returns_parsed_output(self, agent_mod):
         content = json.dumps({
             "conviction_score": 75,
@@ -392,7 +496,7 @@ class TestRunPipeline:
         }
 
         with patch("requests.get", return_value=mock_resp), \
-             patch.object(agent_mod, "scrape_sentiment", return_value=""), \
+             patch.object(agent_mod, "_collect_news_context", return_value=("", None)), \
              patch.object(agent_mod, "analyze_with_minimax", return_value=_review(low_analysis)), \
              patch.object(agent_mod, "send_telegram_alert") as mock_send, \
              patch("time.sleep"):
@@ -418,7 +522,7 @@ class TestRunPipeline:
         }
 
         with patch("requests.get", return_value=mock_resp), \
-             patch.object(agent_mod, "scrape_sentiment", return_value=""), \
+             patch.object(agent_mod, "_collect_news_context", return_value=("", None)), \
              patch.object(agent_mod, "analyze_with_minimax", return_value=_review(high_analysis)), \
              patch.object(agent_mod, "send_telegram_alert") as mock_send, \
              patch("time.sleep"):
@@ -505,10 +609,10 @@ class TestRunMomentumPipeline:
         def sentiment_side_effect(ticker):
             if ticker == "COCHINSHIP":
                 raise RuntimeError("scrape blew up")
-            return ""
+            return "", None
 
         with patch("requests.get", return_value=mock_resp), \
-             patch.object(agent_mod, "scrape_sentiment", side_effect=sentiment_side_effect), \
+             patch.object(agent_mod, "_collect_news_context", side_effect=sentiment_side_effect), \
              patch.object(agent_mod, "analyze_with_minimax", return_value=_review(high_analysis)), \
              patch.object(agent_mod, "send_momentum_telegram_alert") as mock_send, \
              patch("time.sleep"):
@@ -534,7 +638,7 @@ class TestRunMomentumPipeline:
         low_analysis = {"conviction_score": 30, "pitch": "Weak", "rationale": "No catalyst", "risks": "High"}
 
         with patch("requests.get", return_value=mock_resp), \
-             patch.object(agent_mod, "scrape_sentiment", return_value=""), \
+             patch.object(agent_mod, "_collect_news_context", return_value=("", None)), \
              patch.object(agent_mod, "analyze_with_minimax", return_value=_review(low_analysis)), \
              patch.object(agent_mod, "send_momentum_telegram_alert") as mock_buttons, \
              patch.object(agent_mod, "send_conviction_veto_notice") as mock_veto, \
@@ -563,7 +667,7 @@ class TestRunMomentumPipeline:
         }
 
         with patch("requests.get", return_value=mock_resp), \
-             patch.object(agent_mod, "scrape_sentiment", return_value=""), \
+             patch.object(agent_mod, "_collect_news_context", return_value=("", None)), \
              patch.object(agent_mod, "analyze_with_minimax", return_value=_review(low_analysis)), \
              patch.object(agent_mod, "send_momentum_telegram_alert") as mock_buttons, \
              patch.object(agent_mod, "send_conviction_veto_notice") as mock_veto, \
@@ -606,7 +710,7 @@ class TestRunMomentumPipeline:
         high_analysis = {"conviction_score": 70, "pitch": "OK", "rationale": "Vol", "risks": "Low"}
 
         with patch("requests.get", return_value=mock_resp), \
-             patch.object(agent_mod, "scrape_sentiment", return_value=""), \
+             patch.object(agent_mod, "_collect_news_context", return_value=("", None)), \
              patch.object(agent_mod, "analyze_with_minimax", return_value=_review(high_analysis)), \
              patch.object(agent_mod, "send_momentum_telegram_alert") as mock_send, \
              patch("time.sleep"):
@@ -653,7 +757,7 @@ class TestRunMomentumPipeline:
 
         with patch("requests.get", return_value=engine_resp), \
              patch("requests.post", side_effect=post_by_url) as mock_post, \
-             patch.object(agent_mod, "scrape_sentiment", return_value=""), \
+             patch.object(agent_mod, "_collect_news_context", return_value=("", None)), \
              patch.object(agent_mod, "analyze_with_minimax", return_value=_review(analysis)), \
              patch("time.sleep"):
             agent_mod.processed_signals_today.clear()

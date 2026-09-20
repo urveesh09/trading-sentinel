@@ -124,6 +124,13 @@ class Review:
     started_at: Optional[datetime] = None
     completed_at: Optional[datetime] = None
     response_seconds: Optional[float] = None
+    # [WORKFLOW-I I4D 2026-09-20] Immutable evidence identity and validity.
+    # These defaults preserve every legacy Review constructor.
+    classification_context_sha256: Optional[str] = None
+    classification_count: int = 0
+    # (source_ref_sha256, canonical_url, published_at_iso) tuples.
+    source_references: tuple[tuple[str, str, str], ...] = field(default_factory=tuple)
+    expires_at: Optional[datetime] = None
 
     @property
     def available(self) -> bool:

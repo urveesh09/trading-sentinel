@@ -355,9 +355,9 @@ async def get_edge_statistics(days: int = 90, strategy: str | None = None):
 # programmatic ingestion surface for an admin UI: the operator POSTs a
 # JSON payload matching ``broker_reconciliation.import_broker_statement``'s
 # kwargs, and the route returns the imported flag, broker statement
-# status, and the discrepancy IDs recorded by the F4 framework as a
-# side effect. There is no scheduler; the route is a thin wrapper around
-# the same async function the F5 CLI calls.
+# status, the fail-closed broker/internal reference report, and discrepancy IDs
+# recorded by the F4/F.10A framework as a side effect. There is no scheduler;
+# the route is a thin wrapper around the same async function the F5 CLI calls.
 #
 # Idempotent: the existing ``import_broker_statement`` rejects
 # conflicting payloads at the SHA-256 boundary, and the F4 framework
@@ -402,11 +402,18 @@ async def post_reconciliation_import_statement(payload: dict):
         raise HTTPException(status_code=422, detail="entries must be a list")
     if not isinstance(payload["fills"], list):
         raise HTTPException(status_code=422, detail="fills must be a list")
+    account_id = payload["account_id"]
+    statement_id = payload["statement_id"]
+    if not isinstance(account_id, str) or not account_id.strip():
+        raise HTTPException(status_code=422, detail="account_id must be a non-empty string")
+    if not isinstance(statement_id, str) or not statement_id.strip():
+        raise HTTPException(status_code=422, detail="statement_id must be a non-empty string")
+    account_id, statement_id = account_id.strip(), statement_id.strip()
     try:
         imported = await import_broker_statement(
             settings.DB_PATH,
-            account_id=str(payload["account_id"]),
-            statement_id=str(payload["statement_id"]),
+            account_id=account_id,
+            statement_id=statement_id,
             as_of=as_of,
             opening_cash=float(payload["opening_cash"]),
             closing_cash=float(payload["closing_cash"]),
@@ -419,12 +426,19 @@ async def post_reconciliation_import_statement(payload: dict):
         raise HTTPException(status_code=422, detail=str(exc)) from exc
     except sqlite3.Error as exc:
         raise HTTPException(status_code=500, detail=str(exc)) from exc
-    rec = await record_current_state(
-        settings.DB_PATH, account_id=str(payload["account_id"]),
-        actor="http",
-    )
     report = await broker_statement_report(
-        settings.DB_PATH, account_id=str(payload["account_id"]),
+        settings.DB_PATH, account_id=account_id,
+    )
+    from broker_internal_reconciliation import broker_internal_reference_report
+    broker_internal = await broker_internal_reference_report(
+        settings.DB_PATH,
+        account_id=account_id,
+        configured_account_id=settings.BROKER_RECONCILIATION_ACCOUNT_ID,
+        statement_id=statement_id,
+    )
+    rec = await record_current_state(
+        settings.DB_PATH, account_id=account_id, actor="http",
+        broker_report=report, broker_internal_report=broker_internal,
     )
     return {
         "imported": bool(imported),
@@ -432,7 +446,9 @@ async def post_reconciliation_import_statement(payload: dict):
         "discrepancy_ids": {
             "broker": list(rec.get("broker", [])),
             "evidence": list(rec.get("evidence", [])),
+            "broker_internal": list(rec.get("broker_internal", [])),
         },
+        "broker_internal": broker_internal,
         "can_place_orders": False,  # never an order authority
     }
 

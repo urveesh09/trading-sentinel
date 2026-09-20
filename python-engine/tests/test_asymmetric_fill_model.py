@@ -32,6 +32,7 @@ if ENGINE_DIR not in sys.path:
 
 from asymmetric_fill_model import (  # noqa: E402
     DEFAULT_MID_SLIPPAGE_BPS,
+    compute_modeled_entry_slippage_pnl,
     compute_partial_fill_pnl,
     estimate_missing_leg_price,
     mid_price,
@@ -80,6 +81,7 @@ def test_mid_price_returns_none_on_non_numeric():
     """Non-numeric inputs return None."""
     assert mid_price("not-a-number", 101.0) is None
     assert mid_price(100.0, [1, 2]) is None
+    assert mid_price(float("inf"), float("inf")) is None
 
 
 # ─── estimate_missing_leg_price ─────────────────────────────
@@ -147,6 +149,24 @@ def test_estimate_missing_leg_price_side_case_insensitive():
     price_upper = estimate_missing_leg_price(bid=99.0, ask=101.0, side="BUY")
     price_lower = estimate_missing_leg_price(bid=99.0, ask=101.0, side="buy")
     assert price_upper == price_lower
+
+
+def test_estimate_missing_leg_price_rejects_unknown_side():
+    with pytest.raises(ValueError, match="side must be"):
+        estimate_missing_leg_price(bid=99.0, ask=101.0, side="HOLD")
+
+
+@pytest.mark.parametrize("side", ["BUY", "SELL"])
+def test_modeled_entry_slippage_is_a_cost(side):
+    pnl = compute_modeled_entry_slippage_pnl(
+        qty=10, bid=99.0, ask=101.0, side=side)
+    assert pnl is not None
+    assert math.isclose(pnl, -0.2, rel_tol=1e-4)
+
+
+def test_modeled_entry_slippage_refuses_degenerate_quote():
+    assert compute_modeled_entry_slippage_pnl(
+        qty=10, bid=None, ask=101.0, side="BUY") is None
 
 
 # ─── compute_partial_fill_pnl ──────────────────────────────

@@ -228,6 +228,48 @@ async def record_gate_evidence(
     }
 
 
+async def record_shadow_staging_day(
+    db_path: str,
+    *,
+    phase: str,
+    observed_at: datetime,
+    processed_underlyings: int,
+    emitted_candidates: int,
+) -> Optional[dict]:
+    """Persist one objective staging-day receipt after genuine shadow work.
+
+    A scheduler tick or a running container is not staging evidence.  The
+    caller must have processed at least one reconciled portfolio underlying
+    through a fresh option-chain context.  The readiness table's primary key
+    makes repeated ticks on the same phase/day idempotent.  This receipt does
+    not satisfy the separate operator live-chain or sample-review gates and
+    never changes a feature switch.
+    """
+    phase = str(phase).strip().lower()
+    if phase not in {"phase2", "phase3"}:
+        raise ValueError("phase must be phase2 or phase3")
+    if observed_at.tzinfo is None or observed_at.utcoffset() is None:
+        raise ValueError("observed_at must be timezone-aware")
+    if not isinstance(processed_underlyings, int) or isinstance(processed_underlyings, bool) or processed_underlyings < 0:
+        raise ValueError("processed_underlyings must be a non-negative integer")
+    if not isinstance(emitted_candidates, int) or isinstance(emitted_candidates, bool) or emitted_candidates < 0:
+        raise ValueError("emitted_candidates must be a non-negative integer")
+    if processed_underlyings == 0:
+        return None
+    return await record_gate_evidence(
+        db_path,
+        evidence_type=f"{phase}_staging_day",
+        phase=phase,
+        observed_on=_now(observed_at).date(),
+        observed_at=observed_at,
+        source="system:advanced-hedge-shadow",
+        note=(
+            f"fresh shadow contexts={processed_underlyings}; "
+            f"emitted candidates={emitted_candidates}"
+        ),
+    )
+
+
 async def _evidence(db_path: str, phase: str, now: datetime) -> list[dict]:
     await init_readiness_db(db_path)
     async with aiosqlite.connect(db_path) as db:
@@ -325,6 +367,7 @@ __all__ = [
     "PHASE2_KINDS", "PHASE3_KINDS", "EVIDENCE_TYPES",
     "PHASE3_SAMPLES_PER_KIND",
     "inspect_earnings_calendar", "earnings_calendar_readiness", "calendar_readiness",
-    "init_readiness_db", "record_gate_evidence", "assess_phase_readiness",
+    "init_readiness_db", "record_gate_evidence", "record_shadow_staging_day",
+    "assess_phase_readiness",
     "assess_hedge_readiness",
 ]

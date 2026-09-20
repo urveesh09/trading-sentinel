@@ -25,6 +25,7 @@ from __future__ import annotations
 
 import asyncio
 import time
+from dataclasses import replace
 from datetime import datetime, timedelta, timezone
 from typing import List
 from unittest.mock import MagicMock
@@ -34,7 +35,7 @@ import pytest
 import async_reviews
 from async_reviews import AsyncReviewQueue, _Task
 from news_classifier import ClassificationResult, NewsCategory
-from advisory import Review, Verdict
+from advisory import Review, Verdict, unavailable
 
 
 def _wait_for(queue, key, states, timeout_s: float = 2.0):
@@ -52,11 +53,15 @@ def _stub_classification(
     category: NewsCategory = NewsCategory.EARNINGS,
     confidence: float = 0.9,
 ) -> ClassificationResult:
+    now = datetime.now(timezone.utc)
     return ClassificationResult(
         ticker="RELIANCE", title_hash=title_hash,
         category=category, confidence=confidence,
         rationale="ok", prompt_version="v1",
-        classified_at=None,
+        classified_at=now,
+        source_name="Reuters", source_url=f"https://example.test/{title_hash}",
+        published_at=now - timedelta(minutes=5), source_ref=title_hash.ljust(64, "0"),
+        source_valid_until=now + timedelta(days=6),
     )
 
 
@@ -247,5 +252,85 @@ def test_pre_classifications_flows_through_queue_to_reviewer():
         for got, want in zip(captured[0], items):
             assert got.title_hash == want.title_hash
             assert got.category == want.category
+    finally:
+        queue.shutdown()
+
+
+def test_same_external_key_with_changed_classification_is_cache_miss():
+    seen: list[NewsCategory] = []
+
+    def reviewer(_signal, _sentiment, _regime, *, pre_classifications=None):
+        category = pre_classifications[0].category
+        seen.append(category)
+        verdict = Verdict.APPROVE if category is NewsCategory.EARNINGS else Verdict.REJECT
+        return Review(verdict, conviction=80 if verdict is Verdict.APPROVE else 20)
+
+    queue = AsyncReviewQueue(reviewer)
+    try:
+        expiry = datetime.now(timezone.utc) + timedelta(seconds=30)
+        first = [_stub_classification("h", NewsCategory.EARNINGS)]
+        second = [_stub_classification("h", NewsCategory.REGULATORY)]
+        assert queue.submit(
+            "same-key", {}, "raw", "BULL",
+            pre_classifications=first, expires_at=expiry,
+        ).state == "QUEUED"
+        assert _wait_for(queue, "same-key", {"READY"}).review.verdict is Verdict.APPROVE
+        assert queue.submit(
+            "same-key", {}, "raw", "BULL",
+            pre_classifications=second, expires_at=expiry,
+        ).state == "QUEUED"
+        assert _wait_for(queue, "same-key", {"READY"}).review.verdict is Verdict.REJECT
+        assert seen == [NewsCategory.EARNINGS, NewsCategory.REGULATORY]
+    finally:
+        queue.shutdown()
+
+
+@pytest.mark.parametrize("raise_error", [False, True])
+def test_unavailable_worker_results_retain_context_and_expiry(raise_error):
+    def reviewer(*_args, **_kwargs):
+        if raise_error:
+            raise RuntimeError("provider exploded")
+        return unavailable("provider_down")
+
+    queue = AsyncReviewQueue(reviewer)
+    try:
+        classification = _stub_classification("h")
+        expiry = datetime.now(timezone.utc) + timedelta(seconds=30)
+        queue.submit(
+            "unavailable", {}, "raw", "BULL",
+            pre_classifications=[classification], expires_at=expiry,
+        )
+        result = _wait_for(queue, "unavailable", {"UNAVAILABLE"}).review
+        assert result.expires_at == expiry
+        assert result.classification_count == 1
+        assert result.classification_context_sha256
+        assert result.source_references[0][0] == classification.source_ref
+    finally:
+        queue.shutdown()
+
+
+def test_mixed_source_validity_bounds_queue_expiry_and_stale_is_rejected():
+    clock = [datetime(2026, 9, 20, 10, 0, tzinfo=timezone.utc)]
+    reviewer = MagicMock(return_value=Review(Verdict.APPROVE, conviction=80))
+    queue = AsyncReviewQueue(reviewer, now=lambda: clock[0])
+    try:
+        base = _stub_classification("h")
+        early = replace(base, source_valid_until=clock[0] + timedelta(seconds=5))
+        later = replace(base, title_hash="h2", source_valid_until=clock[0] + timedelta(seconds=20))
+        queue.submit(
+            "mixed", {}, "raw", "BULL",
+            pre_classifications=[later, early],
+            expires_at=clock[0] + timedelta(seconds=30),
+        )
+        ready = _wait_for(queue, "mixed", {"READY"})
+        assert ready.review.expires_at == clock[0] + timedelta(seconds=5)
+
+        stale = replace(base, source_valid_until=clock[0])
+        rejected = queue.submit(
+            "stale", {}, "raw", "BULL", pre_classifications=[stale],
+            expires_at=clock[0] + timedelta(seconds=30),
+        )
+        assert rejected.state == "EXPIRED"
+        assert reviewer.call_count == 1
     finally:
         queue.shutdown()

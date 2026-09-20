@@ -48,10 +48,11 @@ from typing import Any, Iterable, List, Optional
 STATUS_ENVELOPE_ALLOWED_KEYS: frozenset[str] = frozenset(
     {
         "state",
-        "queue_size",
-        "in_flight",
-        "circuit_open",
-        "last_completed_at",
+        "reported_at",
+        "async_requested",
+        "policy_allows_annotation",
+        "reason",
+        "queue",
         "usefulness",
     }
 )
@@ -61,15 +62,16 @@ STATUS_ENVELOPE_ALLOWED_KEYS: frozenset[str] = frozenset(
 #: agent->engine bridge auditable.
 USEFULNESS_ALLOWED_KEYS: frozenset[str] = frozenset(
     {
+        "total_completed_reviews",
         "verdict_counts",
         "cache_hits",
         "cache_misses",
+        "cache_hit_rate",
         "circuit_opens",
         "response_seconds_mean",
         "response_seconds_p95",
-        "last_response_seconds",
+        "response_seconds_last",
         "last_completed_at",
-        "snapshot_at",
     }
 )
 

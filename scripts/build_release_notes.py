@@ -60,13 +60,57 @@ def _run_git(*args: str, cwd: Path | None = None) -> str:
     return proc.stdout
 
 
-def get_git_state(repo: Path) -> dict[str, Any]:
-    """Capture the current git state for the release notes."""
+def _run_git_checked(
+    *args: str, cwd: Path | None = None
+) -> tuple[bool, str]:
+    """Run git while preserving success for valid empty-output commands."""
+    proc = subprocess.run(
+        ["git", *args],
+        cwd=str(cwd or REPO_ROOT),
+        capture_output=True,
+        text=True,
+        encoding="utf-8",
+    )
+    return proc.returncode == 0, proc.stdout
+
+
+def get_git_state(repo: Path, base_ref: str = "") -> dict[str, Any]:
+    """Capture git state, optionally for the exact ``base_ref..HEAD`` range."""
     head_sha = _run_git("rev-parse", "HEAD", cwd=repo).strip()
     head_short = _run_git("rev-parse", "--short", "HEAD", cwd=repo).strip()
     branch = _run_git("rev-parse", "--abbrev-ref", "HEAD", cwd=repo).strip()
-    # Commits since base_ref (default: last 30).
-    commits_raw = _run_git("log", "--oneline", "-30", cwd=repo)
+    base_sha = ""
+    base_ref_valid = True
+    range_valid = True
+    commit_scope = "latest 30 commits"
+    ahead_count: int | None = None
+    if base_ref:
+        base_ok, base_output = _run_git_checked(
+            "rev-parse", "--verify", "--end-of-options",
+            f"{base_ref}^{{commit}}", cwd=repo,
+        )
+        base_sha = base_output.strip() if base_ok else ""
+        base_ref_valid = base_ok and bool(base_sha)
+        commit_scope = f"{base_sha}..{head_sha}" if base_ref_valid else ""
+        if base_ref_valid:
+            log_ok, commits_raw = _run_git_checked(
+                "log", "--oneline", commit_scope, "--", cwd=repo
+            )
+            count_ok, ahead_output = _run_git_checked(
+                "rev-list", "--count", commit_scope, "--", cwd=repo
+            )
+            ahead_raw = ahead_output.strip()
+            try:
+                ahead_count = int(ahead_raw)
+            except ValueError:
+                ahead_count = None
+            range_valid = log_ok and count_ok and ahead_count is not None
+            if not range_valid:
+                commits_raw = ""
+        else:
+            commits_raw = ""
+    else:
+        commits_raw = _run_git("log", "--oneline", "-30", cwd=repo)
     commits: list[dict] = []
     for line in commits_raw.splitlines():
         m = _COMMIT_LINE_RE.match(line.strip())
@@ -85,6 +129,12 @@ def get_git_state(repo: Path) -> dict[str, Any]:
         "head_sha": head_sha,
         "head_short": head_short,
         "branch": branch,
+        "base_ref": base_ref,
+        "base_sha": base_sha,
+        "base_ref_valid": base_ref_valid,
+        "range_valid": range_valid,
+        "commit_scope": commit_scope,
+        "ahead_count": ahead_count,
         "commits": commits,
         "tags": tags,
         "uncommitted_files": uncommitted,
@@ -149,6 +199,16 @@ def render_release_notes(
                  f"(full: `{git_state['head_sha']}`)")
     if base_ref:
         lines.append(f"- **Base ref**: `{base_ref}`")
+        base_sha = git_state.get("base_sha", "")
+        if base_sha:
+            lines.append(f"- **Resolved base SHA**: `{base_sha}`")
+        lines.append(f"- **Requested range**: `{base_ref}..HEAD`")
+        commit_scope = git_state.get("commit_scope", "")
+        if commit_scope:
+            lines.append(f"- **Resolved range**: `{commit_scope}`")
+        ahead_count = git_state.get("ahead_count")
+        if ahead_count is not None:
+            lines.append(f"- **Commits ahead**: **{ahead_count}**")
     if git_state["tags"]:
         lines.append(f"- **Recent tags**: {', '.join(git_state['tags'][:5])}")
     if git_state["uncommitted_files"]:
@@ -173,7 +233,7 @@ def render_release_notes(
             lines.append(f"- **{cat}**: {n}")
     lines.append("")
 
-    # Detailed list (newest first).
+    # Detailed list (oldest first, for chronological review).
     for c in reversed(git_state["commits"]):
         cat = categorize_commit(c["subject"])
         lines.append(f"- `{c['sha']}` ({cat}): {c['subject']}")
@@ -276,7 +336,21 @@ def main(argv: list[str] | None = None) -> int:
         print(f"build_release_notes: not a directory: {args.repo}",
               file=sys.stderr)
         return 2
-    git_state = get_git_state(args.repo)
+    git_state = get_git_state(args.repo, base_ref=args.base_ref)
+    if args.base_ref and not git_state["base_ref_valid"]:
+        print(
+            f"build_release_notes: base ref does not resolve to a commit: "
+            f"{args.base_ref}",
+            file=sys.stderr,
+        )
+        return 2
+    if args.base_ref and not git_state["range_valid"]:
+        print(
+            f"build_release_notes: unable to inspect resolved range for base: "
+            f"{args.base_ref}",
+            file=sys.stderr,
+        )
+        return 2
     test_receipt = _try_load_json(args.test_receipt) if args.test_receipt else None
     migration_ledger_data = _try_load_json(args.migration_ledger) if args.migration_ledger else None
     if migration_ledger_data and "ledger" in migration_ledger_data:

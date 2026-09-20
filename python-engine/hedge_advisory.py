@@ -2394,6 +2394,8 @@ async def partner_hedge_phase2_tick(now: Optional[datetime] = None) -> None:
         underlyings=len(grouped),
     )
 
+    processed_underlyings = 0
+    emitted_candidates = 0
     for underlying, group in grouped.items():
         try:
             book = get_instruments_for(underlying)
@@ -2415,8 +2417,10 @@ async def partner_hedge_phase2_tick(now: Optional[datetime] = None) -> None:
             if snapshot is None:
                 continue
             context = await _phase2_market_context(settings.DB_PATH, snapshot, now)
+            processed_underlyings += 1
             reviews = build_phase2_hedge_reviews(group, snapshot, context, now=now)
             for kind, plan, review_context in reviews:
+                emitted_candidates += 1
                 is_delta = kind == "delta_hedge_rebalance"
                 if is_delta:
                     gap = timedelta(minutes=settings.PARTNER_HEDGE_PHASE2_DELTA_GAP_MIN)
@@ -2470,6 +2474,15 @@ async def partner_hedge_phase2_tick(now: Optional[datetime] = None) -> None:
                 "partner_hedge_phase2_tick_failed underlying=%s err=%s",
                 underlying, str(exc), exc_info=True,
             )
+    if not sending and settings.PARTNER_HEDGE_PHASE2_SHADOW_ENABLED:
+        from hedge_readiness import record_shadow_staging_day
+        await record_shadow_staging_day(
+            settings.DB_PATH,
+            phase="phase2",
+            observed_at=now,
+            processed_underlyings=processed_underlyings,
+            emitted_candidates=emitted_candidates,
+        )
 
 
 async def partner_hedge_phase3_tick(now: Optional[datetime] = None) -> None:
@@ -2542,6 +2555,8 @@ async def partner_hedge_phase3_tick(now: Optional[datetime] = None) -> None:
     grouped: dict[str, list[PartnerPosition]] = defaultdict(list)
     for position in positions:
         grouped[position.underlying].append(position)
+    processed_underlyings = 0
+    emitted_candidates = 0
     for underlying, group in grouped.items():
         try:
             book = get_instruments_for(underlying)
@@ -2580,8 +2595,10 @@ async def partner_hedge_phase3_tick(now: Optional[datetime] = None) -> None:
                 gamma_exposure=gamma, back_atm_iv=back_iv,
                 portfolio_stress=stress,
             )
+            processed_underlyings += 1
             for kind, value, review_context in build_phase3_hedge_reviews(
                     group, front, context, now=now, back_snapshot=back):
+                emitted_candidates += 1
                 key = f"{underlying}:{now.date().isoformat()}:{kind}:{front.expiry.isoformat()}"
                 text = _format_phase3_review(kind, value, review_context, now)
                 contracts = [leg.tradingsymbol for leg in getattr(value, "legs", ())]
@@ -2634,6 +2651,15 @@ async def partner_hedge_phase3_tick(now: Optional[datetime] = None) -> None:
         except Exception as exc:
             logger.error("partner_hedge_phase3_tick_failed underlying=%s err=%s",
                          underlying, str(exc), exc_info=True)
+    if not sending and settings.PARTNER_HEDGE_PHASE3_SHADOW_ENABLED:
+        from hedge_readiness import record_shadow_staging_day
+        await record_shadow_staging_day(
+            settings.DB_PATH,
+            phase="phase3",
+            observed_at=now,
+            processed_underlyings=processed_underlyings,
+            emitted_candidates=emitted_candidates,
+        )
 
 
 __all__ = [

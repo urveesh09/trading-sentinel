@@ -8,8 +8,10 @@ from datetime import datetime
 from typing import Any, Mapping
 
 from intraday_spread_archive_adapter import SpreadContractIdentity, build_spread_observations
-from intraday_spread_chronological import PublicObservation, replay_chronological_debit_spread, replay_cost_scenarios
-from intraday_spread_replay import IST, ReplayInputError
+from intraday_spread_chronological import (ChronologicalReplay, PublicObservation,
+                                           replay_chronological_debit_spread,
+                                           replay_cost_scenarios)
+from intraday_spread_replay import IST, ReplayInputError, ReplayResult
 from partner_qualification import _sha, _bars_payload, evaluate_deployed_full_policy
 
 
@@ -37,9 +39,11 @@ def _pre_decision_window_hit(
         return False
     try:
         ts = datetime.fromisoformat(raw)
+        if ts.tzinfo is None or ts.utcoffset() is None:
+            return False
+        return book_at_decision_received_at < ts <= now
     except (TypeError, ValueError):
         return False
-    return book_at_decision_received_at < ts <= now
 
 
 def write_replay_report(path, report):
@@ -227,7 +231,8 @@ def replay_full_policy(*, evaluation_inputs, events, archive_root, master_sha256
     # The wiring is exchange-agnostic (Q2): no per-exchange
     # switch. The slippage is hard-coded at the function
     # default (Q4): no runtime config knob.
-    from asymmetric_fill_model import compute_partial_fill_pnl, estimate_missing_leg_price
+    from asymmetric_fill_model import (compute_modeled_entry_slippage_pnl,
+                                       estimate_missing_leg_price)
     # First pre-decision asymmetric batch drives the
     # modelled fill. Multiple asymmetric batches in the same
     # window get aggregated via the model.
@@ -236,13 +241,10 @@ def replay_full_policy(*, evaluation_inputs, events, archive_root, master_sha256
         if _pre_decision_window_hit(item, book_at_decision.received_at, now)
     ]
     if pre_decision_asymmetric_batches:
-        # Map leg name -> bid/ask from book_at_decision.
-        # The decision book has one quote per leg (matched
-        # by instrument_token against candidate.legs).
-        leg_quote_by_name = {
-            "long": next(q for leg, q in zip(candidate.legs, book_at_decision.quotes) if leg.side == "BUY"),
-            "short": next(q for leg, q in zip(candidate.legs, book_at_decision.quotes) if leg.side == "SELL"),
-        }
+        # Bind the model to the exact archived quote that produced each
+        # asymmetric diagnostic.  The older complete decision book is not a
+        # valid substitute: its prices may predate the observed asymmetry.
+        leg_by_name = {"long": long, "short": short}
         leg_side_by_name = {"long": "BUY", "short": "SELL"}
         # For each asymmetric batch, identify the missing
         # leg(s). With the C.A1 diagnostic contract, exactly
@@ -251,19 +253,65 @@ def replay_full_policy(*, evaluation_inputs, events, archive_root, master_sha256
         missing_legs_by_batch = []
         for batch in pre_decision_asymmetric_batches:
             for missing_name in batch.get("insufficient", []):
-                if missing_name not in leg_quote_by_name:
+                if missing_name not in leg_by_name:
                     continue
-                quote = leg_quote_by_name[missing_name]
                 side = leg_side_by_name[missing_name]
+                quote_by_leg = batch.get("quote_by_leg")
+                source = (quote_by_leg.get(missing_name)
+                          if isinstance(quote_by_leg, Mapping) else None)
+                expected_leg = leg_by_name[missing_name]
+                valid_source = isinstance(source, Mapping)
+                if valid_source:
+                    raw_sha = source.get("raw_sha256")
+                    quantity = source.get("quantity")
+                    try:
+                        source_observed_at = datetime.fromisoformat(
+                            str(source.get("observed_at")))
+                        source_received_at = datetime.fromisoformat(
+                            str(source.get("received_at")))
+                        batch_received_at = datetime.fromisoformat(
+                            str(batch.get("received_at")))
+                        valid_clocks = (
+                            source_observed_at.tzinfo is not None
+                            and source_observed_at.utcoffset() is not None
+                            and source_received_at.tzinfo is not None
+                            and source_received_at.utcoffset() is not None
+                            and batch_received_at.tzinfo is not None
+                            and batch_received_at.utcoffset() is not None
+                            and source_received_at == batch_received_at
+                            and source_observed_at <= source_received_at
+                        )
+                    except (TypeError, ValueError):
+                        valid_clocks = False
+                    valid_source = (
+                        source.get("side") == side
+                        and str(source.get("instrument_token")) == str(expected_leg.instrument_token)
+                        and source.get("symbol") == expected_leg.tradingsymbol
+                        and source.get("received_at") == batch.get("received_at")
+                        and source.get("lot_size") == expected_leg.lot_size
+                        and valid_clocks
+                        and isinstance(raw_sha, str) and len(raw_sha) == 64
+                        and all(char in "0123456789abcdef" for char in raw_sha.lower())
+                        and not isinstance(quantity, bool) and isinstance(quantity, int)
+                        and quantity == expected_leg.lot_size
+                    )
+                bid = source.get("bid") if valid_source else None
+                ask = source.get("ask") if valid_source else None
                 modelled_fill = estimate_missing_leg_price(
-                    bid=getattr(quote, "bid", None),
-                    ask=getattr(quote, "ask", None),
+                    bid=bid,
+                    ask=ask,
                     side=side,  # type: ignore[arg-type]
                 )
                 missing_legs_by_batch.append({
                     "received_at": batch.get("received_at"),
                     "leg_name": missing_name,
                     "side": side,
+                    "source_quote_sha256": source.get("raw_sha256") if valid_source else None,
+                    "source_observed_at": source.get("observed_at") if valid_source else None,
+                    "source_received_at": source.get("received_at") if valid_source else None,
+                    "source_bid": bid,
+                    "source_ask": ask,
+                    "quantity": source.get("quantity") if valid_source else None,
                     "modeled_fill_price": modelled_fill,
                     "modeled_mid_slippage_bps": 2.0,
                 })
@@ -277,22 +325,37 @@ def replay_full_policy(*, evaluation_inputs, events, archive_root, master_sha256
         # qty: use the leg's quantity (or fall back to 1).
         total_modeled_pnl = 0.0
         for ml in missing_legs_by_batch:
-            quote = leg_quote_by_name[ml["leg_name"]]
-            qty = int(quote.quantity or 1)
-            partial_pnl = compute_partial_fill_pnl(
-                qty=qty,
-                filled_legs={},
-                missing_legs={
-                    ml["leg_name"]: {
-                        "side": ml["side"],
-                        "bid": getattr(quote, "bid", None),
-                        "ask": getattr(quote, "ask", None),
-                    },
-                },
-                mid_slippage_bps=2.0,
-            )
+            qty = ml.get("quantity")
+            if (ml.get("modeled_fill_price") is None or isinstance(qty, bool)
+                    or not isinstance(qty, int) or qty <= 0):
+                ml["partial_pnl_rs"] = None
+                report["asymmetric_diagnostic"] = {
+                    **report.get("asymmetric_diagnostic", {}),
+                    "modeled_missing_legs": missing_legs_by_batch,
+                    "modeled_slippage_bps": 2.0,
+                }
+                report.update(state="INSUFFICIENT_EVIDENCE",
+                              reason="partial_fill_model_unavailable")
+                return {**report, "evidence_sha256": _sha(report)}
+            partial_pnl = compute_modeled_entry_slippage_pnl(
+                qty=qty, side=ml["side"],
+                bid=ml["source_bid"], ask=ml["source_ask"],
+                mid_slippage_bps=2.0)
             ml["partial_pnl_rs"] = partial_pnl
+            if partial_pnl is None:
+                report["asymmetric_diagnostic"] = {
+                    **report.get("asymmetric_diagnostic", {}),
+                    "modeled_missing_legs": missing_legs_by_batch,
+                    "modeled_slippage_bps": 2.0,
+                }
+                report.update(state="INSUFFICIENT_EVIDENCE",
+                              reason="partial_fill_model_unavailable")
+                return {**report, "evidence_sha256": _sha(report)}
             total_modeled_pnl += partial_pnl
+        if not missing_legs_by_batch:
+            report.update(state="INSUFFICIENT_EVIDENCE",
+                          reason="partial_fill_model_unavailable")
+            return {**report, "evidence_sha256": _sha(report)}
         # Extend the asymmetric_diagnostic block with the
         # modelled missing-leg attribution. The existing
         # fields remain unchanged for backwards
@@ -303,8 +366,36 @@ def replay_full_policy(*, evaluation_inputs, events, archive_root, master_sha256
             "total_modeled_pnl_rs": round(float(total_modeled_pnl), 4),
             "modeled_slippage_bps": 2.0,
         }
+        # This is not a normal two-leg chronological close. Preserve the
+        # operator-selected CLOSED state while emitting a separate, explicit
+        # replay contract so held-out review can ingest and distinguish it.
+        # No full-policy cost-sensitivity artifact is fabricated here.
+        model_clocks = sorted(datetime.fromisoformat(str(item["received_at"]))
+                              for item in pre_decision_asymmetric_batches)
+        modeled_evidence = _sha({
+            "format": "modeled_partial_fill_replay_v1",
+            "decision_id": decision.decision_id,
+            "manifest_sha256": decision.manifest["manifest_sha256"],
+            "decision_book_received_at": book_at_decision.received_at.isoformat(),
+            "asymmetric_diagnostic": report["asymmetric_diagnostic"],
+        })
+        modeled_result = ReplayResult(
+            state="CLOSED", reason="partial_fill_modeled",
+            entry_debit_rs=None, exit_credit_rs=None, total_cost_rs=None,
+            net_pnl_rs=round(float(total_modeled_pnl), 4),
+            entry_at=model_clocks[0].isoformat(), exit_at=model_clocks[-1].isoformat(),
+            evidence_sha256=modeled_evidence, accepted_entry=True,
+        )
+        modeled_replay = ChronologicalReplay(
+            result=modeled_result, state="CLOSED", attempted_entries=1,
+            rejected_entry_reasons=(), active_entry_at=modeled_result.entry_at,
+            exit_trigger="MODELED_PARTIAL_FILL", observation_count=len(model_clocks),
+            evidence_sha256=modeled_evidence,
+        )
         report.update(state="CLOSED", reason="partial_fill_modeled",
-                      partial_fill_observed=True)
+                      partial_fill_observed=True,
+                      economics_contract="MODELED_PARTIAL_FILL_V1",
+                      replay=asdict(modeled_replay))
         return {**report, "evidence_sha256": _sha(report)}
     if any(now - quote.observed_at > execution_policy.max_quote_age for quote in book_at_decision.quotes):
         report.update(state="INSUFFICIENT_EVIDENCE", reason="decision_book_stale")

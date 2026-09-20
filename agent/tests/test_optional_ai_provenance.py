@@ -293,3 +293,30 @@ class TestReproducibility:
             started_at=now, completed_at=earlier,
         )
         assert attached.response_seconds == 0.0
+
+    def test_attach_provenance_binds_classification_sources_and_expiry(self) -> None:
+        from agent import _attach_provenance
+        from news_classifier import ClassificationResult, NewsCategory
+
+        now = datetime.now(timezone.utc)
+        expiry = now + timedelta(seconds=90)
+        classification = ClassificationResult(
+            ticker="RELIANCE", title_hash="abc",
+            category=NewsCategory.EARNINGS, confidence=0.9,
+            rationale="beat", prompt_version="v1", classified_at=now,
+            source_name="Reuters", source_url="https://example.test/a",
+            published_at=now - timedelta(minutes=5), source_ref="a" * 64,
+            source_valid_until=now + timedelta(days=6),
+        )
+        attached = _attach_provenance(
+            Review(Verdict.APPROVE, conviction=80),
+            started_at=now, completed_at=now,
+            pre_classifications=[classification], expires_at=expiry,
+        )
+        assert attached.classification_count == 1
+        assert len(attached.classification_context_sha256) == 64
+        assert attached.source_references == ((
+            "a" * 64, "https://example.test/a",
+            (now - timedelta(minutes=5)).isoformat(),
+        ),)
+        assert attached.expires_at == expiry

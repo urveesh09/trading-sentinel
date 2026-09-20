@@ -181,3 +181,23 @@ d212250  D.1              -- release-readiness test receipt
 ```
 
 PROD untouched. Dev only.
+
+## 2026-09-20 correction: `--base-ref` is now authoritative
+
+The original implementation rendered the requested base label but always read
+only `git log --oneline -30`. That was misleading once this branch became 31
+commits ahead of its Production target. The corrected implementation resolves
+the supplied base and HEAD to commit SHAs, reads the complete two-dot range,
+reports its resolved provenance and count, and fails closed before output when
+the base/range cannot be inspected. Calls without a base preserve the original
+latest-30 bounded diagnostic behavior.
+
+The focused suite is now 31 warning-fatal tests. It includes a temporary Git
+repository with 31 commits after the base (all 31 must be present), the
+unchanged no-base cap of 30, a valid empty range when base equals HEAD, rendered
+range provenance, and an invalid-base CLI case that must not create `--out`.
+
+The broader warning-fatal scripts acceptance initially found two F.7 report
+failures on Windows: the rupee glyph could not be encoded by cp1252 stdout.
+The human report now renders `INR` without changing any amount or
+reconciliation behavior, and the complete scripts suite passes 225/225.

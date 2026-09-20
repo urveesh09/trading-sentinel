@@ -56,6 +56,7 @@ runtime config knob).
 """
 from __future__ import annotations
 
+import math
 from typing import Literal
 
 
@@ -81,7 +82,8 @@ def mid_price(bid: float | None, ask: float | None) -> float | None:
         ask_f = float(ask)
     except (TypeError, ValueError):
         return None
-    if bid_f <= 0 or ask_f <= 0 or ask_f < bid_f:
+    if (not math.isfinite(bid_f) or not math.isfinite(ask_f)
+            or bid_f <= 0 or ask_f <= 0 or ask_f < bid_f):
         return None
     return (bid_f + ask_f) / 2.0
 
@@ -119,8 +121,33 @@ def estimate_missing_leg_price(
     # (the buyer crosses the spread and pays a slippage premium).
     # For SELL the fill happens at mid-slippage (the seller crosses
     # the spread and receives less than mid).
-    sign = 1.0 if side.upper() == "BUY" else -1.0
+    normalized_side = str(side).upper()
+    if normalized_side not in {"BUY", "SELL"}:
+        raise ValueError(f"side must be BUY or SELL, got {side}")
+    sign = 1.0 if normalized_side == "BUY" else -1.0
     return m * (1.0 + sign * float(mid_slippage_bps) / 10_000.0)
+
+
+def compute_modeled_entry_slippage_pnl(
+    *, qty: int, bid: float | None, ask: float | None, side: Side,
+    mid_slippage_bps: float = DEFAULT_MID_SLIPPAGE_BPS,
+) -> float | None:
+    """Return the adverse execution delta versus mid for a modeled entry.
+
+    A BUY above mid and a SELL below mid are both costs, so the result is
+    always non-positive. ``None`` means the quote cannot support the model and
+    the caller must fail closed rather than invent a zero-P&L fill.
+    """
+    if isinstance(qty, bool) or not isinstance(qty, int) or qty <= 0:
+        raise ValueError(f"qty must be a positive integer, got {qty}")
+    fair = mid_price(bid, ask)
+    fill = estimate_missing_leg_price(
+        bid=bid, ask=ask, side=side, mid_slippage_bps=mid_slippage_bps)
+    if fair is None or fill is None:
+        return None
+    normalized_side = str(side).upper()
+    delta = fair - fill if normalized_side == "BUY" else fill - fair
+    return round(float(qty) * delta, 4)
 
 
 def compute_partial_fill_pnl(
@@ -255,6 +282,7 @@ __all__ = [
     "DEFAULT_MID_SLIPPAGE_BPS",
     "Side",
     "compute_partial_fill_pnl",
+    "compute_modeled_entry_slippage_pnl",
     "estimate_missing_leg_price",
     "mid_price",
 ]

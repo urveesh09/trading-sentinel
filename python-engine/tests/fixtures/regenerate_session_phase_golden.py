@@ -12,6 +12,9 @@ diffing the golden.
 The Node ``sessionPhase`` mirror under ``tests/unit/sessionPhase.test.js``
 must produce identical output for every vector. A divergence is a
 category-1 invariant failure: J.6 is broken.
+
+``generated_at_utc`` records the last semantic content change. A no-op
+regeneration preserves it so release verification is byte-reproducible.
 """
 from __future__ import annotations
 
@@ -25,6 +28,33 @@ from market_calendar import (
     classify_session_phase,
 )
 from pytz import timezone
+
+
+def _preserved_generated_at(path: Path, semantic_payload: dict) -> str | None:
+    """Return the prior timestamp only for byte-equivalent semantics."""
+    try:
+        prior = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return None
+    generated_at = prior.pop("generated_at_utc", None)
+    if prior != semantic_payload:
+        return None
+    if not isinstance(generated_at, str) or not generated_at.strip():
+        return None
+    return generated_at
+
+
+def _write_if_changed(path: Path, content: str) -> bool:
+    """Write canonical UTF-8 only when the on-disk bytes differ."""
+    expected = content.encode("utf-8")
+    try:
+        if path.read_bytes() == expected:
+            return False
+    except OSError:
+        pass
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_bytes(expected)
+    return True
 
 
 def _sweep_broad(ist, utc, vectors):
@@ -152,9 +182,8 @@ def main() -> int:
     # CAS_POST) the broad sweep cannot reach.
     _sweep_broad(ist, utc, vectors)
     _sweep_second_granularity(ist, utc, vectors)
-    payload = {
+    semantic_payload = {
         "schema_version": 1,
-        "generated_at_utc": datetime.now(tz=utc).isoformat(),
         "python_classifier": "market_calendar.classify_session_phase",
         "vector_count": len(vectors),
         "vectors": vectors,
@@ -166,29 +195,34 @@ def main() -> int:
     # sessionPhase.test.js assertion stays accurate whenever
     # someone regenerates.
     here = Path(__file__).resolve().parents[0] / "session_phase_golden.json"
-    here.write_text(
-        json.dumps(payload, indent=2),
-        encoding="utf-8",
-    )
+    generated_at = _preserved_generated_at(here, semantic_payload)
+    if generated_at is None:
+        generated_at = datetime.now(tz=utc).isoformat()
+    payload = {
+        "schema_version": semantic_payload["schema_version"],
+        "generated_at_utc": generated_at,
+        "python_classifier": semantic_payload["python_classifier"],
+        "vector_count": semantic_payload["vector_count"],
+        "vectors": semantic_payload["vectors"],
+    }
+    content = json.dumps(payload, indent=2) + "\n"
+    py_changed = _write_if_changed(here, content)
     node_target = (
         Path(__file__).resolve().parents[3]
         / "node-gateway" / "server" / "tests" / "fixtures"
         / "session_phase_golden.json"
     )
     if node_target.parent.is_dir() or node_target.parent.exists():
-        node_target.parent.mkdir(parents=True, exist_ok=True)
-        node_target.write_text(
-            json.dumps(payload, indent=2),
-            encoding="utf-8",
-        )
+        node_changed = _write_if_changed(node_target, content)
         sys.stdout.write(
-            f"wrote {len(vectors)} vectors to:\n"
-            f"  {here}\n"
-            f"  {node_target}\n"
+            f"generated {len(vectors)} vectors:\n"
+            f"  {'updated' if py_changed else 'unchanged'} {here}\n"
+            f"  {'updated' if node_changed else 'unchanged'} {node_target}\n"
         )
     else:
         sys.stdout.write(
-            f"wrote {len(vectors)} vectors to:\n  {here}\n"
+            f"generated {len(vectors)} vectors:\n"
+            f"  {'updated' if py_changed else 'unchanged'} {here}\n"
         )
     return 0
 

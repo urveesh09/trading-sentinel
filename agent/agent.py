@@ -125,6 +125,58 @@ OPTIONAL_AI_REPORT_USEFULNESS = (
 )
 
 
+def _effective_classification_expiry(
+    pre_classifications: Optional[List["ClassificationResult"]],
+    requested_expiry: Optional[datetime],
+    *,
+    now: Optional[datetime] = None,
+) -> Optional[datetime]:
+    """Bound annotation validity by request and every source clock."""
+    if not pre_classifications:
+        return requested_expiry
+    current = now or datetime.now(timezone.utc)
+    bounds = [requested_expiry] if requested_expiry is not None else []
+    for classification in pre_classifications:
+        bound = classification.source_valid_until
+        if bound is None:
+            bound = classification.classified_at or current
+        if bound.tzinfo is None or bound.utcoffset() is None:
+            bound = current
+        bounds.append(bound.astimezone(timezone.utc))
+    return min(bounds) if bounds else requested_expiry
+
+
+def _attach_classification_context(
+    review: Review,
+    pre_classifications: Optional[List["ClassificationResult"]],
+    expires_at: Optional[datetime],
+) -> Review:
+    """Attach bounded source evidence without claiming a model call ran."""
+    effective_expiry = _effective_classification_expiry(
+        pre_classifications, expires_at,
+    )
+    if pre_classifications is None:
+        return replace(review, expires_at=effective_expiry)
+    source_references = tuple(dict.fromkeys(
+        (
+            c.source_ref,
+            c.source_url,
+            c.published_at.isoformat() if c.published_at else "",
+        )
+        for c in pre_classifications
+        if c.source_ref or c.source_url or c.published_at
+    ))
+    return replace(
+        review,
+        classification_context_sha256=(
+            news_classifier.classification_context_sha256(pre_classifications)
+        ),
+        classification_count=len(pre_classifications),
+        source_references=source_references,
+        expires_at=effective_expiry,
+    )
+
+
 # [WORKFLOW-I I1 2026-09-13] Helper that attaches provenance fields to a
 # Review. Used at every return site of ``analyze_with_minimax`` so each
 # review carries model/base_url/prompt_version/started_at/completed_at/
@@ -134,6 +186,8 @@ def _attach_provenance(
     *,
     started_at: datetime,
     completed_at: datetime,
+    pre_classifications: Optional[List["ClassificationResult"]] = None,
+    expires_at: Optional[datetime] = None,
 ) -> Review:
     """Return a copy of ``review`` with provenance fields populated.
 
@@ -145,6 +199,9 @@ def _attach_provenance(
     response_seconds = max(
         0.0,
         (completed_at - started_at).total_seconds(),
+    )
+    review = _attach_classification_context(
+        review, pre_classifications, expires_at,
     )
     return replace(
         review,
@@ -672,29 +729,38 @@ def _age_label(published_at: Optional[datetime], *,
     return f"stale_aged_{days}d"
 
 
-def scrape_sentiment(ticker: str) -> str:
-    """[WORKFLOW-I I2 2026-09-13] Render a structured sentiment
-    prompt with publication timestamps.
-
-    The prompt now includes, for every item, an explicit age label
-    (e.g. ``"[3 hours ago]"``) and the source URL. This is the §13
-    "reliable source + publication/event timestamp" requirement
-    enforced at the producer boundary: the model cannot mistake a
-    two-week-old headline for fresh news because the prompt says
-    ``"[14 days ago]"``.
-
-    Items without a parseable timestamp are surfaced with
-    ``"[stale_or_unknown]"`` so the model is explicitly told the
-    feed did not provide one.
-    """
+def _fetch_news_bundle_for_ticker(
+    ticker: str,
+) -> tuple[List[NewsItem], List[NewsItem]]:
+    """Fetch each configured feed exactly once for one signal evaluation."""
     logger.info(f"Gathering multi-source intelligence for {ticker}...")
     yahoo_url = f"https://feeds.finance.yahoo.com/rss/2.0/headline?s={ticker}&region=US&lang=en-US"
-    yahoo_items = fetch_news_items(yahoo_url, limit=4)
+    try:
+        yahoo_items = fetch_news_items(yahoo_url, limit=4)
+    except Exception as exc:  # noqa: BLE001
+        logger.warning(
+            "news_yahoo_fetch_failed ticker=%s err=%s",
+            ticker, type(exc).__name__,
+        )
+        yahoo_items = []
 
     encoded_ticker = urllib.parse.quote(f"{ticker} stock")
     google_url = f"https://news.google.com/rss/search?q={encoded_ticker}&hl=en-US&gl=US&ceid=US:en"
-    google_items = fetch_news_items(google_url, limit=4)
+    try:
+        google_items = fetch_news_items(google_url, limit=4)
+    except Exception as exc:  # noqa: BLE001
+        logger.warning(
+            "news_google_fetch_failed ticker=%s err=%s",
+            ticker, type(exc).__name__,
+        )
+        google_items = []
+    return yahoo_items, google_items
 
+
+def _render_news_bundle(
+    yahoo_items: List[NewsItem], google_items: List[NewsItem],
+) -> str:
+    """Render the same immutable items later supplied to classification."""
     if not yahoo_items and not google_items:
         return ""
 
@@ -713,6 +779,24 @@ def scrape_sentiment(ticker: str) -> str:
         + "\n\n"
         + _render(google_items, "BROADER MARKET FEED:")
     )
+
+
+def scrape_sentiment(ticker: str) -> str:
+    """[WORKFLOW-I I2 2026-09-13] Render a structured sentiment
+    prompt with publication timestamps.
+
+    The prompt now includes, for every item, an explicit age label
+    (e.g. ``"[3 hours ago]"``) and the source URL. This is the §13
+    "reliable source + publication/event timestamp" requirement
+    enforced at the producer boundary: the model cannot mistake a
+    two-week-old headline for fresh news because the prompt says
+    ``"[14 days ago]"``.
+
+    Items without a parseable timestamp are surfaced with
+    ``"[stale_or_unknown]"`` so the model is explicitly told the
+    feed did not provide one.
+    """
+    return _render_news_bundle(*_fetch_news_bundle_for_ticker(ticker))
 
 def _extract_json_object(text: Optional[str]) -> Optional[Dict]:
     """Pull a single JSON object out of an LLM reply, tolerantly.
@@ -777,35 +861,14 @@ def _fetch_news_items_for_ticker(ticker: str) -> List[NewsItem]:
     the classifier is fail-closed and a missing feed is just
     an empty batch.
     """
-    import urllib.parse
-    yahoo_url = (
-        f"https://feeds.finance.yahoo.com/rss/2.0/headline?s={ticker}"
-        "&region=US&lang=en-US"
-    )
-    encoded = urllib.parse.quote(f"{ticker} stock")
-    google_url = (
-        f"https://news.google.com/rss/search?q={encoded}&hl=en-US"
-        "&gl=US&ceid=US:en"
-    )
-    items: List[NewsItem] = []
-    try:
-        items.extend(fetch_news_items(yahoo_url, limit=4))
-    except Exception as exc:  # noqa: BLE001
-        logger.warning(
-            "news_classifier_yahoo_fetch_failed ticker=%s err=%s",
-            ticker, type(exc).__name__,
-        )
-    try:
-        items.extend(fetch_news_items(google_url, limit=4))
-    except Exception as exc:  # noqa: BLE001
-        logger.warning(
-            "news_classifier_google_fetch_failed ticker=%s err=%s",
-            ticker, type(exc).__name__,
-        )
-    return items
+    yahoo_items, google_items = _fetch_news_bundle_for_ticker(ticker)
+    return [*yahoo_items, *google_items]
 
 
-def _maybe_classify_news(ticker: str) -> Optional[List["ClassificationResult"]]:
+def _maybe_classify_news(
+    ticker: str,
+    items: Optional[List[NewsItem]] = None,
+) -> Optional[List["ClassificationResult"]]:
     """[WORKFLOW-I.4.D 2026-09-14] Run the classifier on the
     ticker's news if the ``ENABLE_NEWS_CLASSIFIER`` env flag is
     on (and the classifier itself is not disabled).
@@ -831,16 +894,29 @@ def _maybe_classify_news(ticker: str) -> Optional[List["ClassificationResult"]]:
     if news_classifier.CLASSIFIER_DISABLED:
         return []
     try:
-        items = _fetch_news_items_for_ticker(ticker)
+        if items is None:
+            items = _fetch_news_items_for_ticker(ticker)
         if not items:
             return []
-        return news_classifier.classify_news_items(items)
+        return news_classifier.classify_news_items(items, ticker=ticker)
     except Exception as exc:  # noqa: BLE001
         logger.warning(
             "news_classifier_unexpected_failure ticker=%s err=%s",
             ticker, type(exc).__name__,
         )
         return []
+
+
+def _collect_news_context(
+    ticker: str,
+) -> tuple[str, Optional[List["ClassificationResult"]]]:
+    """Fetch once, then render and classify the exact same item objects."""
+    yahoo_items, google_items = _fetch_news_bundle_for_ticker(ticker)
+    items = [*yahoo_items, *google_items]
+    return (
+        _render_news_bundle(yahoo_items, google_items),
+        _maybe_classify_news(ticker, items),
+    )
 
 
 def _render_classified_section(
@@ -892,6 +968,7 @@ def analyze_with_minimax(
     sentiment_text: str,
     market_regime: str = "UNKNOWN",
     pre_classifications: Optional[List["ClassificationResult"]] = None,
+    expires_at: Optional[datetime] = None,
 ) -> Review:
     """[ADVISORY 2026-08-05] Returns a typed Review, never a bare None.
 
@@ -912,8 +989,20 @@ def analyze_with_minimax(
     only "MULTI-SOURCE SENTIMENT DATA" is rendered. This preserves the
     existing verdict pipeline contract.
     """
+    started_at = datetime.now(timezone.utc)
+    expires_at = _effective_classification_expiry(
+        pre_classifications, expires_at, now=started_at,
+    )
+    if expires_at is not None and started_at >= expires_at:
+        return _attach_classification_context(
+            advisory_unavailable("review_deadline_elapsed"),
+            pre_classifications,
+            expires_at,
+        )
     if client is None:
-        return advisory_unavailable("AI_DISABLED")
+        return _attach_classification_context(
+            advisory_unavailable("AI_DISABLED"), pre_classifications, expires_at,
+        )
     ticker = signal.get("ticker", "UNKNOWN")
     price = signal.get("close", 0)     # FIX: Aligned with models.py
     target = signal.get("target_1", 0) # FIX: Aligned with models.py
@@ -1097,10 +1186,16 @@ def analyze_with_minimax(
     # [WORKFLOW-I I1 2026-09-13] Capture started_at before the thread
     # begins. Each return site below uses ``datetime.now(timezone.utc)``
     # as completed_at, then attaches provenance via ``_attach_provenance``.
-    started_at = datetime.now(timezone.utc)
     minimax_thread.start()
     minimax_thread.join(timeout=MINIMAX_WALL_TIMEOUT_SEC)
     completed_at = datetime.now(timezone.utc)
+
+    if expires_at is not None and completed_at >= expires_at:
+        return _attach_provenance(
+            advisory_unavailable("review_completed_late"),
+            started_at=started_at, completed_at=completed_at,
+            pre_classifications=pre_classifications, expires_at=expires_at,
+        )
 
     if minimax_thread.is_alive():
         logger.error(
@@ -1110,12 +1205,14 @@ def analyze_with_minimax(
         return _attach_provenance(
             advisory_unavailable(f"timeout_{MINIMAX_WALL_TIMEOUT_SEC}s"),
             started_at=started_at, completed_at=completed_at,
+            pre_classifications=pre_classifications, expires_at=expires_at,
         )
     if 'error' in result_holder:
         logger.error(f"MiniMax analysis failed for {ticker}: {result_holder['error']}")
         return _attach_provenance(
             advisory_unavailable("api_error"),
             started_at=started_at, completed_at=completed_at,
+            pre_classifications=pre_classifications, expires_at=expires_at,
         )
 
     # [ROADMAP-4.7 2026-07-13, carried through MiniMax migration] This is the
@@ -1137,6 +1234,7 @@ def analyze_with_minimax(
         return _attach_provenance(
             advisory_unavailable("empty_response"),
             started_at=started_at, completed_at=completed_at,
+            pre_classifications=pre_classifications, expires_at=expires_at,
         )
 
     data = _extract_json_object(content)
@@ -1149,12 +1247,14 @@ def analyze_with_minimax(
         return _attach_provenance(
             advisory_unavailable("unparseable_output"),
             started_at=started_at, completed_at=completed_at,
+            pre_classifications=pre_classifications, expires_at=expires_at,
         )
 
     try:
         return _attach_provenance(
             review_from_payload(SignalOutput(**data).model_dump()),
             started_at=started_at, completed_at=completed_at,
+            pre_classifications=pre_classifications, expires_at=expires_at,
         )
     except (ValidationError, TypeError) as e:
         preview = (content or "")[:200]
@@ -1165,10 +1265,16 @@ def analyze_with_minimax(
         return _attach_provenance(
             advisory_unavailable("schema_mismatch"),
             started_at=started_at, completed_at=completed_at,
+            pre_classifications=pre_classifications, expires_at=expires_at,
         )
 
 
-def _optional_review_key(signal: Dict, sentiment_text: str, market_regime: str) -> str:
+def _optional_review_key(
+    signal: Dict,
+    sentiment_text: str,
+    market_regime: str,
+    pre_classifications: Optional[List["ClassificationResult"]] = None,
+) -> str:
     """Bind a cache entry to immutable decision fields and its event evidence."""
     decision = {
         "ticker": signal.get("ticker"), "signal_time": signal.get("signal_time"),
@@ -1177,8 +1283,17 @@ def _optional_review_key(signal: Dict, sentiment_text: str, market_regime: str) 
         "market_regime": market_regime,
     }
     event_digest = hashlib.sha256(str(sentiment_text).encode("utf-8")).hexdigest()
-    payload = json.dumps({"decision": decision, "event_digest": event_digest},
-                         sort_keys=True, default=str, separators=(",", ":"))
+    cache_identity = {"decision": decision, "event_digest": event_digest}
+    # Preserve the exact legacy key when classification is disabled (None).
+    # Enabled classification, including an explicitly empty result set, gets
+    # a deterministic context digest so changed evidence cannot reuse a prior
+    # model opinion.
+    if pre_classifications is not None:
+        cache_identity["classification_context_sha256"] = (
+            news_classifier.classification_context_sha256(pre_classifications)
+        )
+    payload = json.dumps(cache_identity, sort_keys=True, default=str,
+                         separators=(",", ":"))
     return hashlib.sha256(payload.encode("utf-8")).hexdigest()
 
 
@@ -1288,11 +1403,20 @@ def queue_optional_ai_review(
     queue = _get_optional_ai_queue()
     if queue is None:
         return None
+    requested_expiry = (
+        datetime.now(timezone.utc)
+        + timedelta(seconds=MINIMAX_ASYNC_REVIEW_DEADLINE_SEC)
+    )
+    review_expires_at = _effective_classification_expiry(
+        pre_classifications, requested_expiry,
+    )
     submission = queue.submit(
-        _optional_review_key(signal, sentiment_text, market_regime), signal,
+        _optional_review_key(
+            signal, sentiment_text, market_regime, pre_classifications,
+        ), signal,
         sentiment_text, market_regime,
         pre_classifications=pre_classifications,
-        expires_at=datetime.now(timezone.utc) + timedelta(seconds=MINIMAX_ASYNC_REVIEW_DEADLINE_SEC),
+        expires_at=review_expires_at,
     )
     if submission.review is not None:
         return submission.review
@@ -1301,7 +1425,13 @@ def queue_optional_ai_review(
         "QUEUE_FULL": "AI_REVIEW_QUEUE_FULL", "BUDGET_EXHAUSTED": "AI_REVIEW_BUDGET_EXHAUSTED",
         "CIRCUIT_OPEN": "AI_REVIEW_CIRCUIT_OPEN", "EXPIRED": "AI_REVIEW_EXPIRED",
     }
-    return advisory_unavailable(reasons.get(submission.state, "AI_REVIEW_UNAVAILABLE"))
+    return _attach_classification_context(
+        advisory_unavailable(
+            reasons.get(submission.state, "AI_REVIEW_UNAVAILABLE")
+        ),
+        pre_classifications,
+        review_expires_at,
+    )
 
 def send_telegram_alert(signal: Dict, review: "Review"):
     url = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage"
@@ -1435,7 +1565,7 @@ def run_momentum_pipeline():
         # the next poll retries it (bounded: polls run every 15 min).
         touch_heartbeat()  # [ROADMAP-2.2] progressing, not hung
         try:
-            sentiment_text = scrape_sentiment(ticker)
+            sentiment_text, pre_classifications = _collect_news_context(ticker)
             # [WORKFLOW-I.4.D 2026-09-14] Opt-in classification:
             # when ENABLE_NEWS_CLASSIFIER=1, classify the news
             # batch and pass the classifications to BOTH the
@@ -1443,7 +1573,6 @@ def run_momentum_pipeline():
             # env flag is off (the default), returns None and
             # both paths consume raw sentiment_text exactly as
             # before. See _maybe_classify_news for the contract.
-            pre_classifications = _maybe_classify_news(ticker)
             review = queue_optional_ai_review(
                 signal, sentiment_text, regime,
                 pre_classifications=pre_classifications,
@@ -1454,6 +1583,10 @@ def run_momentum_pipeline():
                 review = analyze_with_minimax(
                     signal, sentiment_text, regime,
                     pre_classifications=pre_classifications,
+                    expires_at=(
+                        datetime.now(timezone.utc)
+                        + timedelta(seconds=MINIMAX_ASYNC_REVIEW_DEADLINE_SEC)
+                    ),
                 )
 
             hard_reject = (
@@ -1655,13 +1788,16 @@ def run_pipeline():
         # [FIX 2026-07-11 STALL] Same per-signal isolation as the momentum
         # pipeline: one bad ticker must not kill the rest of the batch.
         try:
-            sentiment_text = scrape_sentiment(ticker)
+            sentiment_text, pre_classifications = _collect_news_context(ticker)
             # [WORKFLOW-I.4.D 2026-09-14] Opt-in classification
             # (see _maybe_classify_news for the env-flag contract).
-            pre_classifications = _maybe_classify_news(ticker)
             review = analyze_with_minimax(
                 signal, sentiment_text, regime,
                 pre_classifications=pre_classifications,
+                expires_at=(
+                    datetime.now(timezone.utc)
+                    + timedelta(seconds=MINIMAX_ASYNC_REVIEW_DEADLINE_SEC)
+                ),
             )
 
             if review.blocks(unavailable_policy=MINIMAX_UNAVAILABLE_POLICY):

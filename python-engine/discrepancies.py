@@ -31,15 +31,11 @@ repairing books to agree." F4 ships:
     Anything else (including ``RESOLVED_EXPLAINED -> OPEN``) is
     rejected with ``DiscrepancyTransitionError``. There is no
     auto-close path. The operator reviews every transition.
-  * Two bridge functions -- ``record_from_broker_statement(...)``
-    and ``record_from_evidence_report(...)`` -- turn the existing
-    reports' structured output into discrepancy records. The bridge
-    is *the* place where reason-string -> category mapping lives;
-    adding a new reason string in ``reconciliation_evidence.py`` is
-    a single-line addition here.
-  * ``record_current_state(...)`` runs both existing reports and
-    records everything in one call. This is the function F5 (broker
-    statement automation) will call from its CLI.
+  * Bridge functions for broker cash, internal evidence and the additive
+    broker/internal reference report turn structured output into discrepancy
+    records. This module is the bounded reason/state -> category mapping site.
+  * ``record_current_state(...)`` runs all three reports and records everything
+    in one call. F5's CLI and F.10A's import path share this entry point.
 
 The five DISC-A1..A5 entries in the F audit doc remain
 ``UNKNOWN / UNVERIFIED``. F4 does NOT retroactively populate them;
@@ -66,6 +62,7 @@ references when real screenshots / ledger rows are obtained.
 """
 from __future__ import annotations
 
+import hashlib
 import json
 import math
 import sqlite3
@@ -95,6 +92,9 @@ class DiscrepancyCategory(str, Enum):
     ORIGIN_REF_POSITION_NOT_CLOSED_OR_UNVALUED = "ORIGIN_REF_POSITION_NOT_CLOSED_OR_UNVALUED"
     LEDGER_PNL_NONFINITE_OR_MISSING = "LEDGER_PNL_NONFINITE_OR_MISSING"
     INTERNAL_EVIDENCE_INVALID_AMOUNTS = "INTERNAL_EVIDENCE_INVALID_AMOUNTS"
+    BROKER_EXECUTED_ORDER_UNRESOLVED = "BROKER_EXECUTED_ORDER_UNRESOLVED"
+    BROKER_ORDER_REFERENCE_AMBIGUOUS = "BROKER_ORDER_REFERENCE_AMBIGUOUS"
+    BROKER_INTERNAL_SCOPE_INSUFFICIENT = "BROKER_INTERNAL_SCOPE_INSUFFICIENT"
 
 
 class DiscrepancyStatus(str, Enum):
@@ -122,6 +122,11 @@ _INTERNAL_EVIDENCE_CATEGORIES = frozenset({
     DiscrepancyCategory.ORIGIN_REF_POSITION_NOT_CLOSED_OR_UNVALUED,
     DiscrepancyCategory.LEDGER_PNL_NONFINITE_OR_MISSING,
     DiscrepancyCategory.INTERNAL_EVIDENCE_INVALID_AMOUNTS,
+})
+_BROKER_INTERNAL_REFERENCE_CATEGORIES = frozenset({
+    DiscrepancyCategory.BROKER_EXECUTED_ORDER_UNRESOLVED,
+    DiscrepancyCategory.BROKER_ORDER_REFERENCE_AMBIGUOUS,
+    DiscrepancyCategory.BROKER_INTERNAL_SCOPE_INSUFFICIENT,
 })
 
 
@@ -511,6 +516,8 @@ def _row_to_record(
     attribution = (
         "INTERNAL_UNSCOPED"
         if account_id == INTERNAL_UNSCOPED_ACCOUNT_ID
+        else "OPERATOR_DECLARED_UNSCOPED_INTERNAL_BOOKS"
+        if category in _BROKER_INTERNAL_REFERENCE_CATEGORIES
         else "UNVERIFIED_LEGACY_ACCOUNT_ATTRIBUTION"
         if category in _INTERNAL_EVIDENCE_CATEGORIES
         else "ACCOUNT_SCOPED"
@@ -787,6 +794,104 @@ async def record_from_broker_statement(
     raise ValueError(f"unknown broker report status: {status!r}")
 
 
+async def record_from_broker_internal_report(
+    db_path: str,
+    *,
+    report: Mapping[str, Any],
+    actor: str = "system",
+) -> list[int]:
+    """Persist unresolved cross-book reference findings idempotently.
+
+    A ``MATCHED_REFERENCE`` row is deliberately not recorded.  Scope failures
+    are durable because a broker cash MATCH must not hide the fact that the
+    internal books could not be checked.  The records retain the broker account
+    while ``account_attribution`` states that internal tables are unscoped.
+    """
+    if report.get("format") != "broker_internal_reference_report_v1":
+        raise ValueError("broker/internal reference report format is invalid")
+    body = {key: value for key, value in report.items() if key != "evidence_sha256"}
+    digest = hashlib.sha256(json.dumps(
+        body, sort_keys=True, separators=(",", ":"), allow_nan=False,
+    ).encode("utf-8")).hexdigest()
+    if report.get("evidence_sha256") != digest:
+        raise ValueError("broker/internal reference report fingerprint mismatch")
+    if (report.get("broker_reconciled") is not False
+            or report.get("can_place_orders") is not False
+            or report.get("can_grow_live_capital") is not False
+            or report.get("authorization_effect") != "NONE"):
+        raise ValueError("broker/internal reference report authority contract is invalid")
+    if report.get("status") not in {"MATCHED_REFERENCE", "UNRESOLVED", "INSUFFICIENT_SCOPE"}:
+        raise ValueError("broker/internal reference report status is invalid")
+    if not isinstance(report.get("executed_orders"), list):
+        raise ValueError("broker/internal executed_orders must be a list")
+    account_id = str(report.get("account_id", "")).strip()
+    if not account_id:
+        raise ValueError("broker/internal reference report account_id is required")
+    statement_id = str(report.get("statement_id") or "no_statement_id")
+    out: list[int] = []
+    for order in report.get("executed_orders", []) or []:
+        if not isinstance(order, Mapping):
+            raise ValueError("broker/internal executed order must be an object")
+        state = str(order.get("state", ""))
+        if state == "MATCHED_REFERENCE":
+            continue
+        category = (
+            DiscrepancyCategory.BROKER_ORDER_REFERENCE_AMBIGUOUS
+            if state == "AMBIGUOUS"
+            else DiscrepancyCategory.BROKER_EXECUTED_ORDER_UNRESOLVED
+            if state == "UNRESOLVED"
+            else DiscrepancyCategory.BROKER_INTERNAL_SCOPE_INSUFFICIENT
+            if state == "INSUFFICIENT_SCOPE"
+            else None
+        )
+        if category is None:
+            raise ValueError(f"unknown broker/internal order state: {state!r}")
+        order_id = str(order.get("order_id", "")).strip()
+        reason = str(order.get("reason", "")).strip()
+        if not order_id or not reason:
+            raise ValueError("broker/internal order identity and reason are required")
+        refs = [("broker_statement_imports", f"{account_id}:{statement_id}")]
+        for fill_id in order.get("fill_ids", []) or []:
+            refs.append((
+                "broker_statement_fills",
+                f"{account_id}:{statement_id}:{str(fill_id)}",
+            ))
+        for match in order.get("matches", []) or []:
+            if isinstance(match, Mapping) and match.get("table") and match.get("row_id"):
+                refs.append((str(match["table"]), str(match["row_id"])))
+        did = await record_discrepancy(
+            db_path,
+            category=category,
+            evidence_key=f"{category.value}|{account_id}|{statement_id}|{order_id}|{reason}",
+            account_id=account_id,
+            source="BROKER_INTERNAL_REFERENCE",
+            severity="HIGH" if state in {"UNRESOLVED", "AMBIGUOUS"} else "MEDIUM",
+            amount_inr=None,
+            evidence_refs=refs,
+            actor=actor,
+        )
+        out.append(did)
+    if (not report.get("executed_orders")
+            and report.get("status") == "INSUFFICIENT_SCOPE"
+            and report.get("reason") != "NO_EXECUTED_BROKER_FILLS"):
+        reason = str(report.get("reason", "UNKNOWN_SCOPE_FAILURE"))
+        category = DiscrepancyCategory.BROKER_INTERNAL_SCOPE_INSUFFICIENT
+        refs = ([] if statement_id == "no_statement_id" else [
+            ("broker_statement_imports", f"{account_id}:{statement_id}")])
+        out.append(await record_discrepancy(
+            db_path,
+            category=category,
+            evidence_key=f"{category.value}|{account_id}|{statement_id}|report|{reason}",
+            account_id=account_id,
+            source="BROKER_INTERNAL_REFERENCE",
+            severity="MEDIUM",
+            amount_inr=None,
+            evidence_refs=refs,
+            actor=actor,
+        ))
+    return out
+
+
 async def record_current_state(
     db_path: str,
     *,
@@ -794,18 +899,19 @@ async def record_current_state(
     actor: str = "system",
     broker_report: Optional[Mapping[str, Any]] = None,
     evidence_report: Optional[Mapping[str, Any]] = None,
+    broker_internal_report: Optional[Mapping[str, Any]] = None,
 ) -> dict[str, list[int]]:
-    """Run both existing reports (or accept pre-fetched payloads) and record.
+    """Run all reconciliation reports (or accept pre-fetched payloads) and record.
 
-    When ``broker_report`` / ``evidence_report`` are not supplied,
-    the function calls the existing async producers in
-    ``broker_reconciliation`` and ``reconciliation_evidence``. Both
-    producer functions are read-only; F4 only adds the recording
-    layer on top.
+    When a payload is not supplied, the function calls the corresponding
+    read-only producer. F4/F10A add only the append-only discrepancy layer.
 
-    Returns ``{"broker": [id_or_None], "evidence": [id, id, ...]}``
-    so callers can log the freshly-recorded IDs.
+    Returns IDs grouped under ``broker``, ``evidence`` and
+    ``broker_internal`` so callers can retain the exact findings.
     """
+    if not isinstance(account_id, str) or not account_id.strip():
+        raise ValueError("account_id must be a non-empty string")
+    account_id = account_id.strip()
     broker_payload = broker_report
     if broker_payload is None:
         from broker_reconciliation import broker_statement_report
@@ -828,7 +934,25 @@ async def record_current_state(
         account_id=account_id,
         actor=actor,
     )
-    return {"broker": [broker_id] if broker_id is not None else [], "evidence": evidence_ids}
+    broker_internal_payload = broker_internal_report
+    if broker_internal_payload is None:
+        from broker_internal_reconciliation import broker_internal_reference_report
+        from config import settings
+        broker_internal_payload = await broker_internal_reference_report(
+            db_path,
+            account_id=account_id,
+            configured_account_id=settings.BROKER_RECONCILIATION_ACCOUNT_ID,
+        )
+    if str(broker_internal_payload.get("account_id", "")).strip() != account_id.strip():
+        raise ValueError("broker/internal report account_id does not match requested account")
+    broker_internal_ids = await record_from_broker_internal_report(
+        db_path, report=broker_internal_payload, actor=actor,
+    )
+    return {
+        "broker": [broker_id] if broker_id is not None else [],
+        "evidence": evidence_ids,
+        "broker_internal": broker_internal_ids,
+    }
 
 
 __all__ = [
@@ -842,6 +966,7 @@ __all__ = [
     "record_current_state",
     "record_discrepancy",
     "record_from_broker_statement",
+    "record_from_broker_internal_report",
     "record_from_evidence_report",
     "update_discrepancy_status",
 ]

@@ -34,6 +34,25 @@ def test_heldout_comparison_preserves_group_and_no_fill_coverage():
     assert report["groups"][1]["unresolved"] == 1
 
 
+def test_heldout_separates_full_and_modeled_partial_closes_deterministically():
+    full = HeldOutCase("NIFTY", "policy-a", "2026-09-10",
+        replay("CLOSED", 8, "a"), "full", "d" * 64)
+    partial = HeldOutCase("NIFTY", "policy-a", "2026-09-10",
+        replay("CLOSED", -2, "b"), "partial", "d" * 64,
+        partial_fill_observed=True)
+    arguments = dict(dataset_sha256="b" * 64, code_revision="abc",
+        training_sessions=["2026-09-08"], holdout_sessions=["2026-09-10"],
+        declared_coverage=[("NIFTY", "policy-a", "2026-09-10")])
+    report = build_heldout_comparison(**arguments, cases=[partial, full])
+    group = report["groups"][0]
+    assert group["closed"] == 2
+    assert group["full_closes"] == 1
+    assert group["modeled_partial_closes"] == 1
+    assert {row["outcome_basis"] for row in group["ordered_outcomes"]} == {
+        "FULL_SPREAD_EXECUTION", "MODELED_PARTIAL_FILL"}
+    assert report == build_heldout_comparison(**arguments, cases=[full, partial])
+
+
 def test_heldout_comparison_rejects_overlap_and_duplicate_evidence():
     with pytest.raises(ValueError, match="non-overlapping"):
         build_heldout_comparison(dataset_sha256="b" * 64, code_revision="abc", training_sessions=["2026-09-10"],

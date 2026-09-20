@@ -119,6 +119,18 @@ services:
     cpus: 6
     environment:
       - TZ=Asia/Kolkata
+      # Partner manual advice is the live advisory-only surface.  The hedge
+      # parent switch also permits Phase-2/3 SHADOW collection; the advanced
+      # delivery switches stay explicitly false until their evidence gates pass.
+      - PARTNER_MANUAL_ADVISORY_ENABLED=${PARTNER_MANUAL_ADVISORY_ENABLED:-true}
+      - PARTNER_MANUAL_ADVISORY_SHADOW_ENABLED=${PARTNER_MANUAL_ADVISORY_SHADOW_ENABLED:-true}
+      - PARTNER_MANUAL_ADVISORY_DELIVERY_ENABLED=${PARTNER_MANUAL_ADVISORY_DELIVERY_ENABLED:-true}
+      - PARTNER_HEDGE_ENABLED=${PARTNER_HEDGE_ENABLED:-true}
+      - PARTNER_HEDGE_PHASE2_ENABLED=${PARTNER_HEDGE_PHASE2_ENABLED:-false}
+      - PARTNER_HEDGE_PHASE2_SHADOW_ENABLED=${PARTNER_HEDGE_PHASE2_SHADOW_ENABLED:-true}
+      - PARTNER_HEDGE_PHASE3_ENABLED=${PARTNER_HEDGE_PHASE3_ENABLED:-false}
+      - PARTNER_HEDGE_PHASE3_SHADOW_ENABLED=${PARTNER_HEDGE_PHASE3_SHADOW_ENABLED:-true}
+      - PROACTIVE_SHADOW_ENABLED=${PROACTIVE_SHADOW_ENABLED:-true}
     env_file:
       - ./.env
     volumes:
@@ -169,6 +181,15 @@ services:
       - MINIMAX_API_KEY=${MINIMAX_API_KEY}
       - MINIMAX_BASE_URL=${MINIMAX_BASE_URL:-https://api.minimax.io/v1}
       - MINIMAX_MODEL=${MINIMAX_MODEL:-MiniMax-M3}
+      # These are bounded annotations/observability, not order authority.
+      # Keep the AI unavailable/reject policies non-blocking while async review
+      # is enabled; agent.py rejects unsafe combinations at runtime.
+      - MINIMAX_ASYNC_REVIEW_ENABLED=${MINIMAX_ASYNC_REVIEW_ENABLED:-true}
+      - MINIMAX_UNAVAILABLE_POLICY=${MINIMAX_UNAVAILABLE_POLICY:-proceed}
+      - MOMENTUM_MINIMAX_REJECT_POLICY=${MOMENTUM_MINIMAX_REJECT_POLICY:-advisory}
+      - ENABLE_NEWS_CLASSIFIER=${ENABLE_NEWS_CLASSIFIER:-1}
+      - DISABLE_CLASSIFIER=${DISABLE_CLASSIFIER:-0}
+      - OPTIONAL_AI_REPORT_USEFULNESS=${OPTIONAL_AI_REPORT_USEFULNESS:-true}
       - TZ=Asia/Kolkata
     env_file:
       - ./.env

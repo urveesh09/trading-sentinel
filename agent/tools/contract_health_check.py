@@ -224,20 +224,34 @@ def _well_formed_snapshot() -> dict[str, Any]:
     """
     return {
         "state": "READY",
-        "queue_size": 0,
-        "in_flight": 0,
-        "circuit_open": False,
-        "last_completed_at": "2026-09-14T10:00:00+00:00",
+        "reported_at": "2026-09-14T10:00:01+00:00",
+        "async_requested": True,
+        "policy_allows_annotation": True,
+        "reason": "optional_annotation_ready",
+        "queue": {
+            "pending": 0,
+            "cached": 0,
+            "daily_requests": 1,
+            "daily_budget": 40,
+            "max_pending": 16,
+            "circuit_state": "CLOSED",
+        },
         "usefulness": {
-            "verdict_counts": {"approve": 5, "reject": 1},
+            "total_completed_reviews": 6,
+            "verdict_counts": {
+                "APPROVE": 5,
+                "APPROVE_WITH_CONCERNS": 0,
+                "REVIEW_UNAVAILABLE": 0,
+                "REJECT": 1,
+            },
             "cache_hits": 12,
             "cache_misses": 3,
+            "cache_hit_rate": 0.8,
             "circuit_opens": 0,
             "response_seconds_mean": 1.5,
             "response_seconds_p95": 2.4,
-            "last_response_seconds": 1.2,
+            "response_seconds_last": 1.2,
             "last_completed_at": "2026-09-14T10:00:00+00:00",
-            "snapshot_at": "2026-09-14T10:00:01+00:00",
         },
     }
 

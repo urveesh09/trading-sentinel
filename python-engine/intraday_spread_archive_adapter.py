@@ -392,6 +392,41 @@ def build_spread_observations(*, events: Iterable[Mapping[str, Any]], long_contr
                         "lot_size": short.lot_size,
                     },
                 },
+                # Retain the exact, already-verified top-of-book inputs used
+                # by any downstream modeled-partial calculation.  Depth alone
+                # cannot support a price: falling back to an older complete
+                # decision book would make the model causally incorrect when
+                # the market moved between receipts.
+                "quote_by_leg": {
+                    "long": {
+                        "instrument_token": long.token,
+                        "symbol": long.symbol,
+                        "side": "BUY",
+                        "bid": long.bid,
+                        "ask": long.ask,
+                        "bid_depth": long.bid_depth,
+                        "ask_depth": long.ask_depth,
+                        "quantity": long.quantity,
+                        "lot_size": long.lot_size,
+                        "observed_at": long.observed_at.isoformat(),
+                        "received_at": long.received_at.isoformat(),
+                        "raw_sha256": str(long_event.get("raw_sha256")),
+                    },
+                    "short": {
+                        "instrument_token": short.token,
+                        "symbol": short.symbol,
+                        "side": "SELL",
+                        "bid": short.bid,
+                        "ask": short.ask,
+                        "bid_depth": short.bid_depth,
+                        "ask_depth": short.ask_depth,
+                        "quantity": short.quantity,
+                        "lot_size": short.lot_size,
+                        "observed_at": short.observed_at.isoformat(),
+                        "received_at": short.received_at.isoformat(),
+                        "raw_sha256": str(short_event.get("raw_sha256")),
+                    },
+                },
             })
             continue
         # Side is a property of the declared spread, not the incoming packet.

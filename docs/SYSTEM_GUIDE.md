@@ -1,12 +1,139 @@
 # Trading Sentinel — system guide and engineering handover
 
+## September 20 Workflow I.4.D evidence-provenance correction
+
+The opt-in news classifier now renders and classifies one immutable Yahoo +
+Google feed snapshot per signal rather than fetching the feeds twice. Each
+frozen classification carries the requested ticker, bounded source name/URL,
+an aware UTC publication time and a full source-evidence digest. Missing URLs,
+missing/naive publication clocks, future-dated items, sources at or beyond the
+declared seven-day freshness boundary, and non-HTTP(S)/hostless URLs fail
+closed to `UNKNOWN` without a model call. The classification-context digest binds source,
+publication time, category, confidence, rationale and prompt version while
+deliberately excluding the completion clock.
+
+Optional-review cache keys include that digest only when classification is
+enabled, so the disabled-path key remains byte-compatible and changed
+classifications cannot retrieve an older opinion. The queue independently
+checks context even if a caller reuses an external key. Typed reviews retain
+the classification digest/count and immutable `(source digest, URL,
+publication clock)` references plus expiry. Sync late completions become
+payload-free `REVIEW_UNAVAILABLE`; async unavailable/exception paths retain
+their context and deadline. Async READY/CACHED reviews
+expose the earlier of request deadline and cache TTL; a shorter repeat request
+tightens, and can never extend, that deadline. This is evidence provenance
+only: no strategy, threshold, risk, capital, qualification, delivery, broker or
+order authority changed. CLI file input parses aware RFC/ISO clocks without
+importing the full agent. Focused warning-fatal acceptance is **185 passed**;
+the complete isolated network-disabled agent suite is **357 passed**. The
+203-module atlas was regenerated. Production remains untouched. See the
+[implementation plan](2026-09-20-i4d-classification-provenance-plan.md).
+Implementation commit: **`3495ecb`**.
+
+## September 19 Workflow I usefulness-contract correction
+
+Dev now accepts the complete ten-field usefulness snapshot emitted by the
+optional-AI worker. The engine strictly validates finite/non-negative latency,
+cache-rate bounds and counter consistency, bounded verdicts, and an aware
+completion clock while retaining partial legacy envelope compatibility. The
+agent's contract-health allow-lists now match its real status producer, and the
+hourly check evaluates leakage/usefulness invariants instead of inspecting only
+the top-level authority shape. Real-producer boundary tests replace the former
+six-field doubles. The dashboard adds p95 latency and last-completion evidence
+and displays missing legacy values as unavailable, not observed zero.
+
+This remains opt-in operational evidence under
+`OPTIONAL_AI_REPORT_USEFULNESS`; it cannot alter a signal, qualification,
+delivery, capital, risk, or order. No schema or default changes. Focused engine
+acceptance is **72 passed** with four known framework deprecations; the complete
+agent suite is **340 passed** warning-fatal; dashboard acceptance is **46
+passed** plus a successful build. Whole-engine acceptance is **4,117 passed,
+four skipped and 46 known framework deprecations in 209.34s**. See the
+[implementation plan](2026-09-19-workflow-i-usefulness-contract-plan.md).
+Production remains untouched.
+
+## September 19 Workflow G.7 range-comparison causality correction
+
+The dedicated `RANGE_REVERSION_V1` research path now evaluates the first
+completed bar after its frozen decision cutoff, requires 14 prior bars, and
+starts any modeled execution strictly after that decision bar. Later favorable
+bars can no longer validate an earlier hypothetical fill. Missing history,
+missing decision bars, malformed/duplicate bars, verifier failures and invalid
+range geometry return named fail-closed outcomes rather than falling through to
+generic completed-bar confirmation.
+
+The predeclared comparison protocol no longer carries the obsolete statement
+that range reversion is a confirmation alias or forces every range profile to
+`UNCERTAIN`. Range evidence now faces the same completeness, baseline/stress
+economics, drawdown and paired uncertainty gates as every other declared
+profile. Protocol and evaluator source hashes remain frozen, so existing
+protocols cannot be silently reinterpreted and require a new protocol ID under
+the corrected implementation. This is offline research only: no qualification,
+approval, order, capital or delivery authority. Production remains untouched.
+Focused range/comparison acceptance is **81 passed** warning-fatal; the broader
+G surface is **222 passed** warning-fatal; whole-engine acceptance is **4,095
+passed/four skipped/46 known framework deprecations in 204.44s**.
+See the [G.7 plan](2026-09-19-g7-range-comparison-causality-plan.md).
+
+## September 19 Workflow F.10A broker/internal reference verification
+
+Dev now compares each executed `FILLED`/`PARTIAL` broker order in an imported
+statement with the retained live order references in `positions` and
+`fno_positions`. The report aggregates fills by order, separates cancelled and
+rejected evidence, and fails closed on missing schemas, incomplete table
+coverage, account-binding gaps, paper/unsupported sources, duplicate
+references, missing references and F&O quantity excess. Findings are persisted
+idempotently under three additive discrepancy categories and are returned by
+the reconciliation CLI and import route.
+
+A unique reference is only `MATCHED_REFERENCE`: internal books still lack
+broker `account_id`, statement period bounds are unavailable, and equity
+`shares` is a mutable remaining quantity. Accordingly every report keeps
+`account_attribution_verified=false`, `broker_reconciled=false`,
+`can_place_orders=false`, `can_grow_live_capital=false` and
+`authorization_effect=NONE`. This is a diagnostic bridge, not bidirectional
+economic reconciliation, capital permission or evidence of profitability.
+Focused reconciliation acceptance is **118 passed** with 21 known framework
+deprecations; the final whole-engine run is **4,090 passed/four skipped/46
+known deprecations in 204.15s**. Production remains untouched. See the
+[F.10A plan and receipt](2026-09-19-f10a-broker-internal-reference-plan.md).
+
+## September 19 Workflow C asymmetric source binding
+
+`MODELED_PARTIAL_FILL_V1` now prices each missing leg from the exact verified
+asymmetric archive packet that produced the execution-quality diagnostic. The
+packet hash, quote clock, bid/ask and quantity flow into the modeled
+attribution; the earlier complete decision book is never substituted. Legacy,
+missing or malformed source projections fail closed, and held-out ingestion
+recomputes the fill and P&L while cross-checking the retained source. Focused
+acceptance is **87 passed** with warnings fatal; the broader C group is **259
+passed**; the whole engine is **4,070 passed/four skipped/42 known
+deprecations**. This remains modeled research evidence, not a broker fill,
+qualification, delivery permission, or profitability claim. See the
+[source-binding receipt](2026-09-19-workflow-c-asymmetric-source-binding-plan.md).
+Production remains untouched.
+
+## September 19 Workflow C partial-fill review correction
+
+The asymmetric partial-fill path now binds its operator-selected CLOSED result
+to a dedicated tamper-evident `MODELED_PARTIAL_FILL_V1` replay. Held-out groups
+and qualification packages expose full closes separately from modeled partial
+closes. The economic correction records mid-plus-2bps entry slippage as a cost,
+never profit; missing/invalid top-of-book or naive receipt clocks cannot create
+a modeled close. Because this path has no honest full cost-sensitivity artifact,
+it remains outside `VERIFIED_FULL_POLICY_REPORTS` and cannot silently satisfy
+that qualification gate. Full engine verification is 4,069 passed/four
+skipped/42 known deprecations. See the
+[C.C2.HOLDOUT receipt](2026-09-19-workflow-c-partial-holdout-plan.md).
+Production remains untouched.
+
 ## 1. Read this first
 
 September16 momentum/CAS correction: Dev now transfers exclusive live-momentum exit ownership from the intraday monitor to EOD at 15:13 IST and refuses every new square-off submission at or after 15:14:30, before the 15:15 CAS reference-price window. A shared lock prevents the monitor and EOD job from cancelling or selling the same position concurrently. The EOD path checks its deadline before cancelling a protective stop and immediately before submission; if the deadline or another pre-submit failure occurs after cancellation, it attempts to re-arm and durably persist replacement protection and pages the operator. The scheduler uses `max_instances=1`, coalescing and a bounded 60-second misfire window. Final Python receipt:3730 passed/four skipped/42 existing deprecation warnings in214.84s; agent:338 passed. As in the preceding baseline, aiosqlite workers retained the completed pytest processes after the receipt, so the exact test processes were stopped. This changes scheduling/control flow only: no schema, retained position, ledger, broker or configuration migration.
 
 September16 independent post-commit review: the first J.7 resolver hardening was incomplete. The corrected Dev contract HMAC-binds the eligibility decision to the requested symbol, authoritative source label and configuration fingerprint; malformed responses fail closed before execution. Holiday refresh rejects an entire malformed/empty/out-of-validity payload rather than silently filtering it, and both fallback and engine-loaded calendars expire at declared `valid_through`. The audit also removed intermittent operational-coverage SQLite lock races and made J.10 SUMMARY verification deterministic without altering its public JSON shape. Final Dev Python receipt: 3725 passed/four skipped/42 existing deprecation warnings; native runtime-matching Node: 424 passed/four skipped; dashboard: 43 passed and build; agent: 338 passed. The completed Python run retained aiosqlite worker threads after printing the receipt, so clean interpreter teardown remains an environment/runtime follow-up. This is Dev source/test evidence only; Production remains at merge `967e07a`, and real CAS staging captures remain absent. See [independent correction plan](2026-09-14-independent-correction-plan.md).
 
-September14 independent correction: the offline predeclared G/C comparison now freezes full cost metadata and code identity before holdout, supports identical late retries without backdating new protocols, preserves every session/state, reports actual turnover and opportunity-weighted session-cluster uncertainty, and applies baseline/stress gates to every declared profile. Missing declared coverage blocks support even when a lower minimum is met. Explicit CLI paths have no live DB default or backdating switch. Reports retain the complete frozen manifest and remain diagnostic research only: no winner selection, qualification, approval or order authority. See [protocol plan](2026-09-13-predeclared-strategy-comparison-plan.md). RANGE remains an unsupported confirmation alias; independent trials are not shared-book capacity proof.
+September14 independent correction: the offline predeclared G/C comparison now freezes full cost metadata and code identity before holdout, supports identical late retries without backdating new protocols, preserves every session/state, reports actual turnover and opportunity-weighted session-cluster uncertainty, and applies baseline/stress gates to every declared profile. Missing declared coverage blocks support even when a lower minimum is met. Explicit CLI paths have no live DB default or backdating switch. Reports retain the complete frozen manifest and remain diagnostic research only: no winner selection, qualification, approval or order authority. See [protocol plan](2026-09-13-predeclared-strategy-comparison-plan.md). G.7 supersedes the historical RANGE alias limitation with a causal dedicated dispatcher; independent trials still are not shared-book capacity proof.
 
 The [external-work audit](2026-09-14-external-work-independent-audit.md) supersedes F-series/J closure claims: actual F&O quantities, account evidence, capital defaults/failure handling, live CAS eligibility, square-off windows and holiday fallback need corrections. Passing synthetic tests are not acceptance of these contracts. Dev only; no push/deployment or operational data mutation.
 
@@ -128,7 +255,7 @@ Gateway files `services/kite.js`, `executor.js`, `risk-geometry.js`, `halt-switc
 
 Token restoration now releases each abort timer in `finally`, including fetch failures, and keeps response-body parsing under the same three-second abort scope. Retries and internal authentication remain unchanged. Filesystem-only dead-letter tests stub Telegram rather than start fake-token polling. The current native gateway suite passes 324 tests (four skips) and exits naturally without forceExit or detected open handles. The Windows instrument-test socket warning was traced to a manual asyncio.run between pytest-managed async tests; that test now uses pytest's lifecycle. Original failing four-file warning-fatal acceptance passes 32 tests; broader resource-warning-fatal research acceptance passes 181 tests. This does not prove all operational resources are leak-free in Production.
 
-`performance.py` owns ledger functions used by the application. `performance_analytics.py` and `performance.py` must be read with the relevant position stores. `broker_reconciliation.py` and `reconciliation_evidence.py` distinguish imported external statements from internal ledger/position observations. `order_execution_readiness.py` reports order-path evidence; submitting a real order merely to turn UNVERIFIED green is not a valid test plan.
+`performance.py` owns ledger functions used by the application. `performance_analytics.py` and `performance.py` must be read with the relevant position stores. `broker_reconciliation.py` checks imported statement cash arithmetic, `reconciliation_evidence.py` checks internal ledger/position links, and `broker_internal_reconciliation.py` performs the narrower one-way executed-order reference check described above. None alone proves full broker reconciliation. `order_execution_readiness.py` reports order-path evidence; submitting a real order merely to turn UNVERIFIED green is not a valid test plan.
 
 Five reconciliation warnings were previously observed in the UI. Historical screenshots are not current facts. Investigate by account, module, execution mode, close identity and fee treatment; do not overwrite one store to match another. Broker confirmation, net cash and gross position P&L can have different timing and cost conventions.
 
@@ -228,7 +355,7 @@ Independent F source review corrected materially inferred accounting schemas and
 
 Independent F/G review identified mislabeled trailing-exit dispatch and incomplete promotion approval validation despite passing focused tests. The first correction makes `promotion_bridge.py` transitions atomic and directed, reads the latest committed append state, and prevents a terminal refusal/approval from being amended. Signature timestamps cannot reorder that state. This preserves both tables and all rows. Its records remain non-authoritative (`can_place_orders=False`); approval budget/evidence/expiry validation and faithful entry/exit composition are still required, so neither a stored approval nor a green focused suite establishes live permission. See `2026-09-13-fg-independent-correction-plan.md`.
 
-The trailing-composition follow-up now honors NEXT at-open, bounded pullback limit and completed-bar-confirmation entry behavior before applying the selected trailing exit. Intrabar limit fills don't ratchet from a possibly pre-fill entry-bar high; confirmation bars cannot fill or ratchet the position. Gap-invalid entries remain no-fill and nonfinite cost assumptions fail closed. Root's ten-file proactive/G suite passes 121 tests with warnings fatal; Terra independently reviewed causality and found no blocker. Existing primary comparison runs retain their implementation fingerprint and reject incompatible reuse. RANGE_REVERSION remains an acknowledged confirmation alias, not a faithful mean-reversion result; the separate exit-policy report cache still needs full proposal-clock/implementation identity, and bridge approval validation remains unfinished. Old reports are retained, not reinterpreted as corrected results.
+The trailing-composition follow-up now honors NEXT at-open, bounded pullback limit and completed-bar-confirmation entry behavior before applying the selected trailing exit. Intrabar limit fills don't ratchet from a possibly pre-fill entry-bar high; confirmation bars cannot fill or ratchet the position. Gap-invalid entries remain no-fill and nonfinite cost assumptions fail closed. Root's ten-file proactive/G suite passes 121 tests with warnings fatal; Terra independently reviewed causality and found no blocker. Existing primary comparison runs retain their implementation fingerprint and reject incompatible reuse. G.7 subsequently makes RANGE_REVERSION a causal dedicated hypothesis and removes the stale alias gate; old reports remain retained and cannot be reinterpreted because implementation hashes differ.
 
 The exit-cache follow-up closes that proposal-clock/implementation identity gap: new `matched-exit-evidence-v3` manifests bind effective full proposal identities/timings, snapshotted bars, costs and both evaluator source hashes. A companion `proactive_exit_research_manifests` table retains canonical JSON without changing the original four-column results table. Legacy reports remain readable but cannot be reused as current-version runs; incompatible reuse fails rather than overwriting history. Atomic final recheck handles concurrent identical/conflicting requests, and duplicate opportunity IDs cannot inflate the sample. Root's current proactive/G suite passes 137 tests with warnings fatal. These are input/implementation integrity checks, not genuine held-out provenance, qualification or live authorization; approval validation/range semantics/F evidence remain open.
 
@@ -285,3 +412,69 @@ See HANDOVER_CHECKLIST.md for wrap-up validation and limits. The final handover 
 The atlas indexes all top-level engine/agent Python modules, declared symbols/line numbers, engine dependencies, related tests and declared tables, plus gateway/dashboard source dependencies and local routes. It is generated navigation, not a substitute for semantic review.
 
 After every implementation commit, update affected sections here, regenerate the atlas, reconcile the active plan, and record checks/deployment state. Prefer doing those updates in the implementation commit; verify immediately afterwards. The mandatory ritual is specified in AGENTS.md and NEXT_AGENT_PLAN.md.
+
+## 16. September 20 AI activation and truthful hedge staging
+
+The Compose contract now explicitly enables the bounded optional-AI queue,
+source-event classification and usefulness telemetry. Its safe policies remain
+`proceed`/`advisory`: AI supplies non-authoritative context and cannot place an
+order, change capital or silently become a hard veto. The manual partner
+advisory switches are also explicit. `PARTNER_HEDGE_ENABLED=true` permits the
+advanced Phase-2/3 shadow jobs to observe real inputs, while both advanced
+delivery switches remain explicitly false and both shadow switches remain
+true.
+
+Phase-2/3 staging days are no longer expected to arise from elapsed uptime or
+manual bookkeeping alone. `record_shadow_staging_day` writes one idempotent
+system receipt per phase and IST date only after the shadow cycle processes at
+least one reconciled underlying through a fresh option-chain context. Missing
+login, missing positions, a closed market, stale/unavailable chains, stopped
+services and scheduler invocation alone do not count. This system receipt does
+not satisfy manual live-chain verification or per-kind Telegram sample review,
+does not enable delivery and does not create qualification.
+
+The read-only Production inspection behind this change found three manual
+advisory ideas on 2026-09-17, no advanced hedge shadow evaluations, no hedge
+gate evidence and no reconciled partner positions. Core application containers
+were stopped with exit 137 and `OOMKilled=false`. Production flags were unset
+despite a present MiniMax credential. These facts explain 0/7; they do not show
+that the strategy gates rejected seven genuine staging sessions.
+
+The partner-readiness CLI now reads the actual persisted profile, input-status,
+idea, strategy-qualification and hardened `partner_hedge_messages` schemas.
+The predecessor version used obsolete column/table names and treated advanced
+Phase-3 readiness as the final gate for ordinary manual advice. The corrected
+seventh check reports the manual-advisory enable/delivery configuration;
+advanced 0/7 progress remains nested informational evidence with
+`blocks_manual_advisory=false`. Database connections are read-only, and a
+quiescent read-only Docker mount may use immutable SQLite mode only when no
+non-empty WAL exists.
+
+### Exact release-range notes (2026-09-20)
+
+`scripts/build_release_notes.py --base-ref REF` now resolves `REF` and `HEAD`
+to immutable commit SHAs and inventories the complete two-dot range. It no
+longer labels a latest-30 snapshot as though it were the requested release
+range. The generated header records the requested range, resolved base SHA,
+resolved SHA range and ahead count. An invalid base or an uninspectable range
+fails with exit code 2 before stdout or `--out` is written. Omitting
+`--base-ref` intentionally retains the bounded latest-30 diagnostic view.
+
+The tool never fetches, merges, deploys or edits Git state. Reviewers must
+fetch explicitly before generation when they need a fresh remote-tracking
+base, then verify the resolved base SHA against the intended PR target.
+
+The broker-statement operator report uses the ASCII currency code `INR`
+instead of the rupee glyph. Numeric reconciliation semantics are unchanged;
+the representation prevents Windows cp1252 consoles from crashing before a
+`MATCH` or `UNRESOLVED` result can be displayed.
+
+### Reproducible session-phase goldens (2026-09-20)
+
+The J.6 regenerator treats `generated_at_utc` as the time the semantic fixture
+content last changed. If schema/classifier/vector content is identical, it
+preserves that timestamp, emits canonical UTF-8 with a trailing newline and
+skips writes whose bytes already match. If any semantic content changes, a new
+timestamp is assigned and the exact same payload is dual-written to the Python
+and Node consumers. No-op verification therefore leaves a clean checkout while
+real phase changes remain visible and attributable.

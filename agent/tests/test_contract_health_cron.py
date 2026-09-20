@@ -41,28 +41,31 @@ from contract_health_cron import (  # noqa: E402
 def _well_formed_snapshot() -> dict[str, Any]:
     """A bounded status envelope that satisfies every invariant.
 
-    Top-level keys must match ``STATUS_ENVELOPE_ALLOWED_KEYS`` in
-    agent/contract_health.py (state, queue_size, in_flight,
-    circuit_open, last_completed_at, usefulness). Any other
+    Top-level keys match the real ``optional_ai_status()`` producer. Any other
     top-level key triggers a ``status_envelope_authority``
     violation.
     """
     return {
         "state": "READY",
-        "queue_size": 0,
-        "in_flight": 0,
-        "circuit_open": False,
-        "last_completed_at": "2026-09-14T10:00:00+00:00",
+        "reported_at": "2026-09-14T10:00:01+00:00",
+        "async_requested": True,
+        "policy_allows_annotation": True,
+        "reason": "optional_annotation_ready",
+        "queue": {"pending": 0, "cached": 0, "daily_requests": 1,
+                  "daily_budget": 40, "max_pending": 16,
+                  "circuit_state": "CLOSED"},
         "usefulness": {
-            "verdict_counts": {"approve": 5, "reject": 1},
+            "total_completed_reviews": 6,
+            "verdict_counts": {"APPROVE": 5, "APPROVE_WITH_CONCERNS": 0,
+                               "REVIEW_UNAVAILABLE": 0, "REJECT": 1},
             "cache_hits": 12,
             "cache_misses": 3,
+            "cache_hit_rate": 0.8,
             "circuit_opens": 0,
             "response_seconds_mean": 1.5,
             "response_seconds_p95": 2.4,
-            "last_response_seconds": 1.5,
+            "response_seconds_last": 1.5,
             "last_completed_at": "2026-09-14T10:00:00+00:00",
-            "snapshot_at": "2026-09-14T10:00:01+00:00",
         },
     }
 
@@ -75,27 +78,11 @@ def _violating_snapshot() -> dict[str, Any]:
     execution authority. The I.4.E harness surfaces this
     loudly (see the ``status_envelope_authority`` invariant).
     """
-    return {
-        "state": "READY",
-        "queue_size": 0,
-        "in_flight": 0,
-        "circuit_open": False,
-        "last_completed_at": "2026-09-14T10:00:00+00:00",
-        "can_place_orders": True,  # FORBIDDEN -- would never appear
+    snapshot = _well_formed_snapshot()
+    snapshot["can_place_orders"] = True  # FORBIDDEN -- would never appear
         # in a real envelope; the test asserts the harness
         # catches it.
-        "usefulness": {
-            "verdict_counts": {"approve": 5, "reject": 1},
-            "cache_hits": 12,
-            "cache_misses": 3,
-            "circuit_opens": 0,
-            "response_seconds_mean": 1.5,
-            "response_seconds_p95": 2.4,
-            "last_response_seconds": 1.5,
-            "last_completed_at": "2026-09-14T10:00:00+00:00",
-            "snapshot_at": "2026-09-14T10:00:01+00:00",
-        },
-    }
+    return snapshot
 
 
 class _StubAlert:
@@ -190,6 +177,18 @@ class TestContractHealthCronTick:
         )
         assert report.passed is True
         assert stub.calls == []
+
+    def test_usefulness_violation_is_checked_by_hourly_tick(self):
+        stub = _StubAlert()
+        snapshot = _well_formed_snapshot()
+        snapshot["usefulness"]["prompt"] = "must not cross"
+        report = contract_health_cron_tick(
+            status_envelope=snapshot,
+            alert_fn=stub,
+        )
+        assert report.passed is False
+        assert len(stub.calls) == 1
+        assert "no_prompt_leakage" in stub.calls[0]
 
     def test_violating_envelope_fires_alert(self):
         stub = _StubAlert()

@@ -953,59 +953,19 @@ def advisory_identity(candidate: AdvisoryCandidate) -> tuple[str, str]:
 
 
 def render_advisory_card(candidate: AdvisoryCandidate, advisory_id: str) -> str:
-    """Render a complete bounded card; never transport-truncate an advisory."""
-    header = candidate.scope.value.replace("_", " ")
-    lines = [
-        f"[{header}] • {candidate.underlying} ({candidate.exchange})",
-        f"Idea {advisory_id}/{candidate.policy_version} • Data {_iso(candidate.quote_time)} • Valid until {_iso(candidate.valid_until)}",
-        f"INTRADAY ONLY — do not carry overnight. Manual action only; the system cannot close any position for you.",
-        f"Why now: {'; '.join(candidate.why_now)}",
-        "Structure:",
-    ]
-    for leg in candidate.legs:
-        lines.append(
-            f"{leg.side} {leg.ratio}× {leg.tradingsymbol} | {leg.expiry} {leg.strike:g}{leg.option_type} "
-            f"| lot {leg.lot_size} | bid/ask {leg.bid:g}/{leg.ask:g}"
-        )
-    if candidate.net_debit_rs is not None:
-        lines.append(f"Act only if: combined debit ≤ ₹{candidate.net_debit_rs:,.2f} before fees")
-    if candidate.net_credit_rs is not None:
-        lines.append(f"Act only if: combined credit ≥ ₹{candidate.net_credit_rs:,.2f} before fees")
-    if candidate.estimated_round_trip_cost_rs is not None:
-        lines.append(f"Per structure: estimated round-trip costs ₹{candidate.estimated_round_trip_cost_rs:,.2f}")
-    if candidate.max_loss_rs is not None:
-        risk_label = "Protection premium at risk" if candidate.scope == AdvisoryScope.CONDITIONAL_PROTECTION else "Risk: theoretical maximum loss"
-        lines.append(
-            f"{risk_label} ₹{candidate.max_loss_rs:,.2f}"
-            + ("; this is not the loss bound of an unknown protected position" if candidate.scope == AdvisoryScope.CONDITIONAL_PROTECTION else " if all intended legs fill and remain paired")
-        )
-    if candidate.max_profit_rs is not None:
-        lines.append(f"Theoretical expiry maximum profit: ₹{candidate.max_profit_rs:,.2f}")
-    if candidate.breakevens:
-        lines.append("Expiry breakeven(s): " + ", ".join(f"{item:,.2f}" for item in candidate.breakevens))
-    if candidate.exposure_assumption:
-        lines.append(f"Coverage assumption: {candidate.exposure_assumption}")
-    if candidate.trigger_level is not None:
-        comparator = "above" if candidate.direction == FnoDirection.LONG.value else "below"
-        lines.append(f"Entry trigger: underlying confirms {comparator} {candidate.trigger_level:,.2f} on the stated completed-bar signal.")
-    if candidate.invalidation_level is not None:
-        lines.append(f"Thesis invalidation level: {candidate.invalidation_level:,.2f}.")
-    if candidate.target_level is not None:
-        lines.append(f"First profit-taking / review level: {candidate.target_level:,.2f}; do not treat it as a guarantee.")
-    if candidate.holding_horizon:
-        deadline = _iso(candidate.management_deadline) if candidate.management_deadline else "unavailable"
-        lines.append(f"Holding horizon: {candidate.holding_horizon}; exit/reassess by {deadline} (IST), not contract expiry.")
-    lines.extend([
-        f"Invalidation: {candidate.invalidation}",
-        f"Management: {candidate.management}",
-        f"Uncertainty: {candidate.uncertainty}",
-        f"Evidence: {candidate.evidence.value}. Per-structure economics only; no personal quantity is supplied.",
-        "Manual decision. Recheck current executable quotes and broker requirements before acting.",
-    ])
-    text = "\n".join(lines)
-    if len(text) > 4096:
-        raise ValueError("advisory_card_over_telegram_limit")
-    return text
+    """Render a complete bounded card; never transport-truncate an advisory.
+
+    [WORKFLOW-E.4 2026-09-17] Delegates to
+    ``partner_card_renderer.render_card`` for the dict-driven
+    path so the renderer can be unit-tested in isolation
+    without instantiating the dataclass tree. The text output
+    is byte-identical for the same input.
+    """
+    import partner_card_renderer  # type: ignore[import-not-found]
+
+    card = _candidate_payload(candidate)
+    card["advisory_id"] = advisory_id
+    return partner_card_renderer.render_card(card)
 
 
 async def persist_candidate(

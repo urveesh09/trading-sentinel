@@ -266,6 +266,11 @@ class TestAsymmetricFills:
         # so the operator can investigate WHY the short leg was thin.
         assert entry["depth_by_leg"]["long"]["bid_depth"] == 75
         assert entry["depth_by_leg"]["short"]["bid_depth"] == 1
+        assert entry["quote_by_leg"]["long"]["bid"] == 100
+        assert entry["quote_by_leg"]["short"]["ask"] == 102
+        assert entry["quote_by_leg"]["long"]["raw_sha256"] == long_ev["raw_sha256"]
+        assert entry["quote_by_leg"]["short"]["raw_sha256"] == short_ev["raw_sha256"]
+        assert entry["quote_by_leg"]["short"]["received_at"] == entry["received_at"]
 
     def test_short_executable_long_insufficient_is_asymmetric(self, tmp_path):
         long, short = identity(1, "NIFTY25000CE", 25000), identity(2, "NIFTY25200CE", 25200)

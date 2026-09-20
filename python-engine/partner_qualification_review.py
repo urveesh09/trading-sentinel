@@ -161,6 +161,14 @@ def build_qualification_review_package(*, policy_manifest: Mapping[str, Any], cr
         if any(type(group.get(key, 0)) is not int or group.get(key, 0) < 0
                for key in ("closed", "no_fill", "unresolved", "unavailable")):
             raise ValueError("review outcome counts must be nonnegative integers")
+        close_split_present = "full_closes" in group or "modeled_partial_closes" in group
+        full_closes = group.get("full_closes", group.get("closed", 0))
+        modeled_partial_closes = group.get("modeled_partial_closes", 0)
+        if (close_split_present and not {"full_closes", "modeled_partial_closes"} <= set(group)
+                or type(full_closes) is not int or full_closes < 0
+                or type(modeled_partial_closes) is not int or modeled_partial_closes < 0
+                or full_closes + modeled_partial_closes != group.get("closed", 0)):
+            raise ValueError("review close provenance does not match aggregate")
         coverage = group.get("coverage")
         if not isinstance(coverage, Mapping):
             raise ValueError("review coverage must be a mapping")
@@ -195,6 +203,17 @@ def build_qualification_review_package(*, policy_manifest: Mapping[str, Any], cr
                 raise ValueError("heldout outcome identities must be unique and complete")
             state_counts = {state: sum(item.get("state") == state for item in ordered)
                             for state in ("CLOSED", "NO_FILL", "UNRESOLVED")}
+            partial_count = sum(item.get("partial_fill_observed", False) is True
+                                for item in ordered if item.get("state") == "CLOSED")
+            if any(item.get("partial_fill_observed", False) not in (True, False)
+                   or item.get("outcome_basis", "FULL_SPREAD_EXECUTION") not in
+                        {"FULL_SPREAD_EXECUTION", "MODELED_PARTIAL_FILL"}
+                   or (item.get("partial_fill_observed", False) is True) !=
+                        (item.get("outcome_basis") == "MODELED_PARTIAL_FILL")
+                   or (item.get("state") != "CLOSED"
+                       and item.get("partial_fill_observed", False) is True)
+                   for item in ordered):
+                raise ValueError("heldout close provenance is malformed")
             try:
                 entries = [datetime.fromisoformat(str(item.get("entry_at")).replace("Z", "+00:00"))
                            for item in ordered]
@@ -223,6 +242,7 @@ def build_qualification_review_package(*, policy_manifest: Mapping[str, Any], cr
             if (order_keys != sorted(order_keys) or state_counts["CLOSED"] != closed
                     or state_counts["NO_FILL"] != int(group.get("no_fill", 0))
                     or state_counts["UNRESOLVED"] != unresolved
+                    or partial_count != modeled_partial_closes
                     or round(sum(closed_pnls), 4) != round(net, 4)
                     or round(recomputed_drawdown, 4) != round(drawdown, 4)):
                 raise ValueError("heldout ordered economics do not match aggregate")
@@ -311,7 +331,10 @@ def build_qualification_review_package(*, policy_manifest: Mapping[str, Any], cr
         if not math.isfinite(net):
             blockers.append("nonfinite_net_outcome")
         per_index.append({"underlying": group["underlying"], "policy_id": group.get("policy_id"),
-                          "covered_sessions": covered, "closed_outcomes": closed, "unresolved_outcomes": unresolved,
+                          "covered_sessions": covered, "closed_outcomes": closed,
+                          "full_close_outcomes": full_closes,
+                          "modeled_partial_close_outcomes": modeled_partial_closes,
+                          "unresolved_outcomes": unresolved,
                           "net_pnl_rs": net, "drawdown_state": drawdown_state,
                           "max_sequential_drawdown_rs": drawdown, "cost_stress_state": stress_state,
                           "stressed_net_pnl_rs": round(sum(stressed_pnls), 4) if stress_state == "VERIFIED" else None,

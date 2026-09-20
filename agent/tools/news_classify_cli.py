@@ -11,8 +11,8 @@ The CLI is intentionally structured so the heavy agent.py
 imports (which open network sockets at import time and run a
 Telegram heartbeat) are NOT loaded just to run --input. For
 --input the CLI uses a lightweight stand-in item class with
-the three attributes the classifier reads (.title,
-.age_label, .source_name). For --ticker the CLI loads
+the source attributes the classifier reads (title, age label, source URL/name
+and parsed publication clock). For --ticker the CLI loads
 agent.py to use its fetch_news_items; if that load fails the
 CLI exits 3 with a diagnostic.
 
@@ -26,8 +26,11 @@ Subcommands (mutually exclusive):
   --input PATH
       Read a JSON file of news items and classify each.
       Expected schema:
-        [{"title": "...", "age_label": "...", "source_name": "..."}, ...]
-      Items missing optional fields default sensibly.
+        [{"title": "...", "source_url": "https://...",
+          "published_at": "2026-09-20T09:00:00Z",
+          "age_label": "...", "source_name": "..."}, ...]
+      ``pubDate`` / ``published_at_raw`` RFC timestamps are also accepted.
+      Missing/invalid URL or aware timestamp remains a fail-closed UNKNOWN.
 
   --dry-run
       Do not call the model; instead, parse a fixed
@@ -49,6 +52,8 @@ Exit codes:
 from __future__ import annotations
 
 import argparse
+from datetime import datetime, timezone
+from email.utils import parsedate_to_datetime
 import json
 import sys
 from dataclasses import dataclass
@@ -70,8 +75,7 @@ from news_classifier import (
 @dataclass(frozen=True)
 class _Item:
     """[WORKFLOW-I.4.D 2026-09-14] Lightweight stand-in for
-    agent.NewsItem. The classifier reads only ``title``,
-    ``age_label``, ``source_name``. We don't import
+    agent.NewsItem. We don't import
     ``agent.NewsItem`` (which transitively pulls in the
     heavy module) so the CLI module loads in <100ms without
     touching the network or Telegram.
@@ -85,16 +89,37 @@ class _Item:
     age_label: str = "unknown"
 
 
+def _parse_publication_clock(raw: object) -> Optional[datetime]:
+    text = str(raw or "").strip()
+    if not text:
+        return None
+    try:
+        parsed = parsedate_to_datetime(text)
+    except (TypeError, ValueError, OverflowError):
+        try:
+            parsed = datetime.fromisoformat(text.replace("Z", "+00:00"))
+        except (TypeError, ValueError, OverflowError):
+            return None
+    if parsed.tzinfo is None or parsed.utcoffset() is None:
+        return None
+    return parsed.astimezone(timezone.utc)
+
+
 def _make_item(raw: Dict[str, Any]) -> _Item:
     """[WORKFLOW-I.4.D 2026-09-14] Build a stand-in _Item from
     a JSON dict (--input mode). Tolerates missing optional
     fields with field aliases (``url`` -> ``source_url``,
     ``pubDate`` -> ``published_at_raw``).
     """
+    publication_raw = raw.get(
+        "published_at",
+        raw.get("published_at_raw", raw.get("pubDate", "")),
+    )
     return _Item(
         title=str(raw.get("title", "")),
         source_url=str(raw.get("source_url", raw.get("url", ""))),
-        published_at_raw=str(raw.get("published_at_raw", raw.get("pubDate", ""))),
+        published_at_raw=str(publication_raw),
+        published_at_parsed=_parse_publication_clock(publication_raw),
         source_name=str(raw.get("source_name", "")),
         age_label=str(raw.get("age_label", "unknown")),
     )
@@ -281,7 +306,9 @@ def main(argv: Optional[List[str]] = None) -> int:
             sys.stdout.write(_render_dry_run_table(items))
         return 0
 
-    results = news_classifier.classify_news_items(items)
+    results = news_classifier.classify_news_items(
+        items, ticker=args.ticker or "UNKNOWN",
+    )
 
     # --- Step 3: render ---
     if args.json:

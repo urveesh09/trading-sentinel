@@ -497,6 +497,99 @@ def simulate_shadow_research_trial(
         return _simulate_shadow_limit_pullback(profiled, future_bars, cash=cash, fee_rate=fee_rate,
                                                slippage_bps=slippage_bps)
 
+    # [WORKFLOW-G.7 2026-09-19] Causal range mean-reversion entry. The first
+    # completed bar after the decision cutoff is the only entry-decision bar;
+    # later bars must never validate an earlier modeled fill. Every failure in
+    # this branch returns directly, so missing/malformed range evidence cannot
+    # silently fall through to generic completed-bar confirmation.
+    if entry_profile_id == "RANGE_REVERSION_V1":
+        rr_normalised = _normalise_shadow_bars(future_bars)
+        if rr_normalised is None:
+            return ShadowSimulation(
+                "INVALID", 0, None, None, None, None, None,
+                "RANGE_REVERSION_INVALID_OR_UNORDERED_BARS",
+            )
+        rr_cutoff = _stamp(
+            profiled.data_cutoff or profiled.signal_at
+            or profiled.valid_until
+        )
+        rr_entry_deadline = _stamp(
+            profiled.entry_deadline or profiled.valid_until
+        )
+        if rr_entry_deadline < rr_cutoff:
+            return ShadowSimulation(
+                "INVALID", 0, None, None, None, None, None,
+                "INVALID_PROPOSAL_GEOMETRY_OR_TIMING",
+            )
+        rr_history = [row for row in rr_normalised if row[0] <= rr_cutoff]
+        rr_decision = next((
+            row for row in rr_normalised
+            if rr_cutoff < row[0] <= rr_entry_deadline
+        ), None)
+        if rr_decision is None:
+            return ShadowSimulation(
+                "NO_FILL", 0, None, None, None, None, None,
+                "RANGE_REVERSION_WAIT_NO_DECISION_BAR",
+            )
+
+        def _rr_bar(row):
+            stamp, open_, high, low, close = row
+            return {
+                "timestamp": stamp.isoformat(), "open": open_, "high": high,
+                "low": low, "close": close,
+            }
+
+        try:
+            from range_reversion import range_reversion_entry as _rr_entry
+            rr_verdict = _rr_entry(
+                [_rr_bar(row) for row in rr_history[-14:]]
+                + [_rr_bar(rr_decision)]
+            )
+        except (ValueError, TypeError, KeyError, ArithmeticError):
+            return ShadowSimulation(
+                "INVALID", 0, None, None, None, None, None,
+                "RANGE_REVERSION_VERIFIER_ERROR",
+            )
+        if rr_verdict.signal.value != "ENTER":
+            return ShadowSimulation(
+                "NO_FILL", 0, None, None, None, None, None,
+                f"RANGE_REVERSION_{rr_verdict.signal.value}",
+            )
+        if (rr_verdict.strict_stop is None
+                or rr_verdict.mean_target is None):
+            return ShadowSimulation(
+                "INVALID", 0, None, None, None, None, None,
+                "RANGE_REVERSION_ENTER_WITHOUT_BOUNDED_GEOMETRY",
+            )
+        rr_reference_entry = rr_decision[4]
+        if not (
+            rr_verdict.strict_stop < rr_reference_entry
+            < rr_verdict.mean_target
+        ):
+            return ShadowSimulation(
+                "NO_FILL", 0, None, None, None, None, None,
+                "RANGE_REVERSION_DECISION_CLOSE_INVALIDATES_GEOMETRY",
+            )
+        profiled = replace(
+            profiled, entry=rr_reference_entry,
+            stop=rr_verdict.strict_stop, target=rr_verdict.mean_target,
+            data_cutoff=rr_decision[0],
+        )
+        evaluator = (
+            _simulate_shadow_trailing_stop
+            if exit_profile_id == "TRAILING_STOP_V1"
+            else simulate_shadow_trade
+        )
+        result = evaluator(
+            profiled, future_bars, cash=cash,
+            fee_rate=fee_rate, slippage_bps=slippage_bps,
+        )
+        if result.reason == "NO_EXECUTABLE_BAR_AFTER_SIGNAL":
+            return replace(
+                result, reason="NO_EXECUTABLE_BAR_AFTER_RANGE_DECISION",
+            )
+        return result
+
     normalised = _normalise_shadow_bars(future_bars)
     if normalised is None:
         return ShadowSimulation("INVALID", 0, None, None, None, None, None, "INVALID_OR_UNORDERED_FUTURE_BARS")

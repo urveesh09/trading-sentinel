@@ -10,7 +10,8 @@ This module exposes ``contract_health_cron_tick()``:
   1. Build the bounded status envelope via the agent's
      ``optional_ai_status()`` (the same envelope the agent
      publishes every minute to the engine).
-  2. Run ``evaluate_contract(status_envelope=...)`` against it.
+  2. Run the authority, leakage and usefulness checks against that same
+     real envelope.
   3. If the report surfaces ANY violation, fire a Telegram
      alert via ``send_telegram_alert`` so the operator sees
      the drift immediately.
@@ -111,6 +112,7 @@ def contract_health_cron_tick(
     """
     report = evaluate_contract(
         status_envelope=status_envelope,
+        usefulness_snapshot=status_envelope,
         evaluated_at=None,  # harness default: datetime.now(UTC)
     )
 

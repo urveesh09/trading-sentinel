@@ -7,14 +7,14 @@ field or an already-created execution instruction.
 """
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from copy import deepcopy
 from datetime import datetime, timedelta, timezone
 import json
 from pathlib import Path
 from queue import Empty, Full, Queue
 from threading import Event, RLock, Thread
-from typing import Callable, Optional
+from typing import Callable, List, Optional
 
 from advisory import Review, unavailable
 
@@ -38,11 +38,9 @@ class _Task:
     sentiment_text exactly as before.
 
     The field is frozen (the dataclass is frozen) and forwarded
-    by reference -- the queue does not mutate the list. The
-    queue's cache key is still just ``key``; pre_classifications
-    is part of the task payload, not the cache key, because the
-    same signal may have different classifications across calls
-    (the classifier is opt-in via ENABLE_NEWS_CLASSIFIER=1).
+    by reference -- the queue does not mutate the list. The caller
+    binds its classification-context digest into ``key`` so changed
+    evidence cannot retrieve an older review.
     """
     key: str
     signal: dict
@@ -50,6 +48,47 @@ class _Task:
     regime: str
     expires_at: datetime
     pre_classifications: tuple = ()
+    classification_context_sha256: Optional[str] = None
+
+
+def _classification_digest(pre_classifications) -> Optional[str]:
+    if pre_classifications is None:
+        return None
+    from news_classifier import classification_context_sha256
+    return classification_context_sha256(pre_classifications)
+
+
+def _bound_expiry(expires_at: datetime, pre_classifications, now: datetime) -> datetime:
+    if not pre_classifications:
+        return expires_at
+    bounds = [expires_at]
+    for classification in pre_classifications:
+        bound = classification.source_valid_until
+        if bound is None:
+            bound = classification.classified_at or now
+        if bound.tzinfo is None or bound.utcoffset() is None:
+            bound = now
+        bounds.append(bound.astimezone(timezone.utc))
+    return min(bounds)
+
+
+def _attach_task_context(review: Review, task: _Task, expires_at: datetime) -> Review:
+    references = tuple(dict.fromkeys(
+        (
+            c.source_ref,
+            c.source_url,
+            c.published_at.isoformat() if c.published_at else "",
+        )
+        for c in task.pre_classifications
+        if c.source_ref or c.source_url or c.published_at
+    ))
+    return replace(
+        review,
+        classification_context_sha256=task.classification_context_sha256,
+        classification_count=len(task.pre_classifications),
+        source_references=references,
+        expires_at=expires_at,
+    )
 
 
 class AsyncReviewQueue:
@@ -87,7 +126,8 @@ class AsyncReviewQueue:
         self._now = now or (lambda: datetime.now(timezone.utc))
         self._lock = RLock()
         self._pending: set[str] = set()
-        self._cache: dict[str, tuple[Review, datetime]] = {}
+        self._pending_context: dict[str, Optional[str]] = {}
+        self._cache: dict[str, tuple[Review, datetime, Optional[str]]] = {}
         self._states: dict[str, ReviewSubmission] = {}
         self._state_recorded_at: dict[str, datetime] = {}
         self._review_expires_at: dict[str, datetime] = {}
@@ -141,23 +181,38 @@ class AsyncReviewQueue:
         if expires_at.tzinfo is None or expires_at.utcoffset() is None:
             raise ValueError("review expiry must be timezone-aware")
         now = self._now()
+        classifications_tuple = (
+            tuple(pre_classifications) if pre_classifications else ()
+        )
+        classification_digest = _classification_digest(pre_classifications)
+        expires_at = _bound_expiry(expires_at, classifications_tuple, now)
         if expires_at <= now:
             return self._remember(ReviewSubmission(key, "EXPIRED", reason="deadline_elapsed"))
         with self._lock:
             self._cleanup_locked(now)
             cached = self._cache.get(key)
-            if cached is not None:
+            if cached is not None and cached[2] == classification_digest:
                 valid_until = min(cached[1], expires_at)
-                self._cache[key] = (cached[0], valid_until)
+                cached_review = replace(cached[0], expires_at=valid_until)
+                self._cache[key] = (
+                    cached_review, valid_until, classification_digest,
+                )
                 self._review_expires_at[key] = valid_until
                 # [WORKFLOW-I I3 2026-09-13] Track cache hit.
                 self._cache_hits += 1
-                return self._remember(ReviewSubmission(key, "CACHED", review=cached[0]))
+                return self._remember(
+                    ReviewSubmission(key, "CACHED", review=cached_review)
+                )
             # [WORKFLOW-I I3 2026-09-13] Track cache miss. Anything
             # that falls through to the queue path is a miss.
             self._cache_misses += 1
             if key in self._pending:
-                return self._remember(ReviewSubmission(key, "PENDING", reason="already_queued"))
+                reason = (
+                    "already_queued"
+                    if self._pending_context.get(key) == classification_digest
+                    else "classification_context_conflict"
+                )
+                return self._remember(ReviewSubmission(key, "PENDING", reason=reason))
             if len(self._pending) >= self._max_pending:
                 return self._remember(ReviewSubmission(key, "QUEUE_FULL", reason="bounded_queue"))
             if self._circuit_open_until is not None and now < self._circuit_open_until:
@@ -172,12 +227,9 @@ class AsyncReviewQueue:
             # and carries the operator's per-call pre_classifications
             # through the queue to the reviewer. ``None`` becomes an
             # empty tuple so the reviewer signature is uniform.
-            classifications_tuple = (
-                tuple(pre_classifications) if pre_classifications else ()
-            )
             task = _Task(
                 key, deepcopy(dict(signal)), str(sentiment), str(regime),
-                expires_at, classifications_tuple,
+                expires_at, classifications_tuple, classification_digest,
             )
             self._requests_by_day[day] = self._requests_by_day.get(day, 0) + 1
             if not self._persist_budget_state():
@@ -190,6 +242,7 @@ class AsyncReviewQueue:
                 self._persist_budget_state()
                 return self._remember(ReviewSubmission(key, "QUEUE_FULL", reason="bounded_queue"))
             self._pending.add(key)
+            self._pending_context[key] = classification_digest
             return self._remember(ReviewSubmission(key, "QUEUED"))
 
     def status(self, key: str) -> Optional[ReviewSubmission]:
@@ -360,12 +413,14 @@ class AsyncReviewQueue:
                 if task.expires_at <= now:
                     with self._lock:
                         self._pending.discard(task.key)
+                        self._pending_context.pop(task.key, None)
                         self._remember(ReviewSubmission(task.key, "EXPIRED", reason="deadline_elapsed"))
                     continue
                 with self._lock:
                     self._cleanup_locked(now)
                     if self._circuit_open_until is not None and now < self._circuit_open_until:
                         self._pending.discard(task.key)
+                        self._pending_context.pop(task.key, None)
                         self._remember(ReviewSubmission(task.key, "CIRCUIT_OPEN", reason="provider_failures"))
                         continue
                 try:
@@ -410,6 +465,7 @@ class AsyncReviewQueue:
                 except Exception:
                     review = unavailable("worker_exception")
                 completed = self._now()
+                review = _attach_task_context(review, task, task.expires_at)
                 # [WORKFLOW-I I3 2026-09-13] Capture the model's response
                 # time and verdict. ``review.response_seconds`` is the
                 # producer-attached wall-clock duration (set by
@@ -422,6 +478,7 @@ class AsyncReviewQueue:
                 verdict_name = review.verdict.name if hasattr(review.verdict, "name") else str(review.verdict)
                 with self._lock:
                     self._pending.discard(task.key)
+                    self._pending_context.pop(task.key, None)
                     # [WORKFLOW-I I3 2026-09-13] Track response time + last.
                     self._response_seconds.append(response_seconds)
                     if len(self._response_seconds) > self._max_retained_states:
@@ -433,13 +490,23 @@ class AsyncReviewQueue:
                         self._verdict_counts.get(verdict_name, 0) + 1
                     )
                     if completed >= task.expires_at:
-                        self._remember(ReviewSubmission(task.key, "EXPIRED", reason="review_completed_late"))
+                        expired_review = _attach_task_context(
+                            unavailable("review_completed_late"),
+                            task,
+                            task.expires_at,
+                        )
+                        self._remember(ReviewSubmission(
+                            task.key, "EXPIRED", review=expired_review,
+                            reason="review_completed_late",
+                        ))
                     elif review.available:
                         self._consecutive_failures = 0
                         valid_until = min(task.expires_at, completed + timedelta(seconds=self._cache_ttl_seconds))
+                        review = replace(review, expires_at=valid_until)
                         self._cache[task.key] = (
                             review,
                             valid_until,
+                            task.classification_context_sha256,
                         )
                         self._review_expires_at[task.key] = valid_until
                         self._remember(ReviewSubmission(task.key, "READY", review=review))

@@ -27,6 +27,7 @@ These are pure helpers (never raise). Tests pin:
 """
 from __future__ import annotations
 
+from datetime import datetime, timezone
 from unittest.mock import MagicMock, patch
 
 import pytest
@@ -53,8 +54,8 @@ def _stub_news_item(title: str) -> NewsItem:
     return NewsItem(
         title=title,
         source_url="https://example.com/" + title.replace(" ", "-"),
-        published_at_raw="",
-        published_at_parsed=None,
+        published_at_raw="Sun, 20 Sep 2026 09:00:00 GMT",
+        published_at_parsed=datetime(2026, 9, 20, 9, 0, tzinfo=timezone.utc),
         source_name="Example",
         age_label="fresh",
     )
@@ -229,3 +230,26 @@ def test_fetch_news_items_uses_same_urls_as_scrape_sentiment(monkeypatch):
     # Both URLs are for the ticker we passed.
     for u in captured_urls:
         assert "RELIANCE" in u
+
+
+def test_collect_news_context_fetches_once_and_classifies_rendered_objects(monkeypatch):
+    """Rendered text and classifications must derive from one feed snapshot."""
+    yahoo = _stub_news_item("Yahoo headline")
+    google = _stub_news_item("Google headline")
+    fetch = MagicMock(side_effect=[[yahoo], [google]])
+    classify = MagicMock(return_value=[])
+    monkeypatch.setattr(agent, "fetch_news_items", fetch)
+    monkeypatch.setattr(agent.news_classifier, "classify_news_items", classify)
+    monkeypatch.setattr(agent.news_classifier, "CLASSIFIER_DISABLED", False)
+    monkeypatch.setenv("ENABLE_NEWS_CLASSIFIER", "1")
+
+    rendered, classifications = agent._collect_news_context("RELIANCE")
+
+    assert fetch.call_count == 2
+    assert "Yahoo headline" in rendered
+    assert "Google headline" in rendered
+    assert classifications == []
+    classified_items = classify.call_args.args[0]
+    assert classified_items[0] is yahoo
+    assert classified_items[1] is google
+    assert classify.call_args.kwargs == {"ticker": "RELIANCE"}
