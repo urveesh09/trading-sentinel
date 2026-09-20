@@ -19,6 +19,7 @@ modules** after regeneration. No schema/config default/authority/trading
 behavior changed. Production evidence is still required; I.4.G remains
 deferred. See the
 [active plan](2026-09-20-i4d-classification-provenance-plan.md).
+Implementation commit: **`3495ecb`**; promotion remains GitHub-only.
 
 ## September 19 Workflow I usefulness-contract correction (Dev only)
 

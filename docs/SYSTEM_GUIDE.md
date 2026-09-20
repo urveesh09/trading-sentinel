@@ -28,6 +28,7 @@ importing the full agent. Focused warning-fatal acceptance is **185 passed**;
 the complete isolated network-disabled agent suite is **357 passed**. The
 203-module atlas was regenerated. Production remains untouched. See the
 [implementation plan](2026-09-20-i4d-classification-provenance-plan.md).
+Implementation commit: **`3495ecb`**.
 
 ## September 19 Workflow I usefulness-contract correction
 

@@ -85,6 +85,10 @@ attempt named a nonexistent test file and ran no tests; it is not acceptance.
 
 Status: **TESTED_DEV; not deployed or Production-observed**.
 
+Implementation commit: **`3495ecb`** (`fix(i): bind reviews to classified
+source evidence`). This receipt update is documentation-only; both commits are
+intended for `origin/codex/production-correction-hedge-p0`.
+
 - One feed bundle now supplies both raw rendering and classification; direct
   identity tests prove the classifier receives the exact fetched objects.
 - `ClassificationResult` now carries the actual ticker, bounded source fields,
