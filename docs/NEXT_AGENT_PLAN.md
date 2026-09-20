@@ -318,7 +318,8 @@ The next agent should review the complete Dev release diff/defaults and prepare 
 
 ## 18. September 20 closeout — AI activation and staging evidence
 
-Status: **IMPLEMENTED_DEV; NOT DEPLOYED**. Detailed plan and Production facts:
+Status: **IMPLEMENTED_DEV, PUSHED; NOT DEPLOYED**. Source commit `1a6e0d9` is
+on `origin/codex/production-correction-hedge-p0`. Detailed plan and Production facts:
 `docs/2026-09-20-ai-and-partner-readiness-gap-plan.md`.
 
 Completed in Dev:

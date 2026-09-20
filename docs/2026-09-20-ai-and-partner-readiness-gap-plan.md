@@ -91,3 +91,5 @@ from elapsed days.
 - Rendered Compose and a Python-engine Compose run both show manual advisory,
   hedge parent, advanced shadow and proactive shadow enabled; Phase-2/3 live
   delivery disabled. Production remains unmodified and stopped.
+- Implementation/docs commit `1a6e0d9` is pushed to
+  `origin/codex/production-correction-hedge-p0`; it is not merged or deployed.

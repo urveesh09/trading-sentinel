@@ -391,7 +391,10 @@ Before the next implementation: update the plan slice. With each commit: update 
   Dockerfile retains one existing `FromAsCasing` warning.
 - [x] Focused readiness/Phase-2/Phase-3 suite: 59 passed, one existing Starlette
   deprecation warning, 4.39 seconds.
-- [ ] Commit and push the Dev change; record commit identity and clean status.
+- [x] Implementation/docs commit `1a6e0d9` pushed to
+  `origin/codex/production-correction-hedge-p0`. The task diff is committed;
+  two pre-existing unstaged generated session-fixture timestamp changes remain
+  intentionally untouched.
 - [ ] Merge/deploy through GitHub; recreate affected services and verify release
   identity. Never copy or edit Production directly.
 - [ ] Confirm `agent`, `node-gateway`, `python-engine`, nginx and autoheal are
