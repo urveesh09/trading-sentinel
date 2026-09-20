@@ -566,13 +566,91 @@ async def record_strategy_qualification(
 async def record_research_artifact(
     db_path: str, *, dataset_ref: str, content_sha256: str, created_at: datetime, description: str,
 ) -> None:
-    """Register an immutable, operator-reviewed research artifact reference."""
+    """Register an immutable, operator-reviewed research artifact reference.
+
+    [WORKFLOW-A3 2026-09-20] When
+    ``settings.PARTNER_VERIFY_RESEARCH_ARTIFACTS`` is True (the
+    default), the helper reads ``<PARTNER_ARTIFACT_ROOT>/<dataset_ref>``
+    from disk, recomputes the SHA-256, and rejects on mismatch. The
+    audit's defect A3: the previous implementation accepted any
+    syntactically-valid SHA-256 without verifying the report bytes.
+    """
     if created_at.tzinfo is None or created_at.astimezone(IST) > datetime.now(IST):
         raise ValueError("artifact created_at must be non-future and timezone-aware")
     if not dataset_ref.strip() or len(content_sha256) != 64 or any(ch not in "0123456789abcdef" for ch in content_sha256.lower()):
         raise ValueError("artifact requires dataset_ref and sha256 content fingerprint")
     if not description.strip():
         raise ValueError("artifact description is required")
+    if bool(getattr(settings, "PARTNER_VERIFY_RESEARCH_ARTIFACTS", True)):
+        # Read the report bytes from the configured artifact root
+        # and verify the SHA-256 matches what was registered.
+        # This is the audit's defect A3 fix: a syntactically-valid
+        # SHA-256 string is not sufficient evidence.
+        import os as _os
+        root = str(getattr(settings, "PARTNER_ARTIFACT_ROOT", "./artifacts"))
+        path = _os.path.join(root, dataset_ref)
+        try:
+            with open(path, "rb") as _fh:
+                report_bytes = _fh.read()
+        except OSError as exc:
+            raise ValueError(
+                f"research artifact verification failed: cannot read "
+                f"{path!r} ({exc})"
+            ) from exc
+        from qualification_verifier import (
+            QualificationReason,
+            qualify_research_package,
+        )
+        deployed_manifest = str(
+            getattr(settings, "DEPLOYED_POLICY_MANIFEST_SHA256", "") or ""
+        )
+        verdict = qualify_research_package(
+            report_bytes=report_bytes,
+            registered_sha256=content_sha256.lower(),
+            expected_index="",  # Index is decided by the qualification, not the artifact.
+            expected_structure_kind="",
+            expected_horizon="",
+            expected_policy_version="",
+            deployed_policy_manifest_sha256=deployed_manifest,
+            now=datetime.now(IST),
+        )
+        # For the artifact registration we only need the byte
+        # verification and the basic schema. The full per-index /
+        # per-horizon checks run at qualification time.
+        fatal_codes = {
+            QualificationReason.REPORT_BYTES_MISMATCH,
+            QualificationReason.REPORT_NOT_JSON,
+        }
+        schema_codes = {
+            QualificationReason.SCHEMA_MISSING_INDEX,
+            QualificationReason.SCHEMA_MISSING_STRUCTURE,
+            QualificationReason.SCHEMA_MISSING_HORIZON,
+            QualificationReason.SCHEMA_MISSING_POLICY_VERSION,
+            QualificationReason.SCHEMA_MISSING_CRITERIA,
+            QualificationReason.SCHEMA_MISSING_HELDOUT,
+            QualificationReason.SCHEMA_MISSING_OUTCOMES,
+            QualificationReason.SCHEMA_MISSING_COSTS,
+            QualificationReason.SCHEMA_MISSING_REVIEW,
+            QualificationReason.SCHEMA_MISSING_VALIDITY,
+            QualificationReason.SCHEMA_MISSING_POLICY_MANIFEST,
+        }
+        # A byte mismatch is fatal at registration; schema gaps
+        # are recorded as warnings only (operators may register a
+        # raw SHA-256 stub while the report is being assembled).
+        if any(code in fatal_codes for code in verdict.reason_codes):
+            joined = ", ".join(r.value for r in verdict.reason_codes)
+            raise ValueError(
+                f"research artifact verification failed: {joined}"
+            )
+        if any(code in schema_codes for code in verdict.reason_codes):
+            # Persist the warning in the structured log so the
+            # operator sees the gap during the next audit sweep.
+            import logging as _logging
+            _logging.getLogger(__name__).warning(
+                "research_artifact_schema_gap dataset_ref=%s codes=%s",
+                dataset_ref,
+                ",".join(r.value for r in verdict.reason_codes),
+            )
     await init_partner_advisory_db(db_path)
     async with aiosqlite.connect(db_path) as db:
         await db.execute(

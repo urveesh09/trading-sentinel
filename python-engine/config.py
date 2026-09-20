@@ -1203,6 +1203,17 @@ class Settings(BaseSettings):
     PARTNER_MANUAL_ADVISORY_SHADOW_ENABLED: bool = True
     PARTNER_MANUAL_ADVISORY_DELIVERY_ENABLED: bool = True
     PARTNER_MANUAL_ADVISORY_DAILY_CAP: int = 2
+    # [WORKFLOW-A3 2026-09-20] Research artifact verification gate.
+    #
+    # When True, ``record_research_artifact`` reads the report bytes
+    # from ``PARTNER_ARTIFACT_ROOT/<dataset_ref>``, recomputes the
+    # SHA-256, and rejects on mismatch. The flag defaults True so a
+    # partial deployment cannot bypass the gate; operators disable
+    # it only for the duration of an authorised diagnostic.
+    PARTNER_VERIFY_RESEARCH_ARTIFACTS: bool = True
+    # Filesystem root where the operator curates research reports.
+    # Each ``dataset_ref`` maps to ``<root>/<dataset_ref>``.
+    PARTNER_ARTIFACT_ROOT: str = "./artifacts"
     # Material invalidation/target updates use a separate small budget so a
     # morning entry cannot silence a later risk-relevant follow-up.
     PARTNER_MANUAL_ADVISORY_UPDATE_DAILY_CAP: int = 4
