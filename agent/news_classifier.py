@@ -52,15 +52,17 @@ are unaffected.
 """
 from __future__ import annotations
 
+import hashlib
 import json
 import logging
 import os
 import re
 import time
 from dataclasses import dataclass
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from enum import Enum
-from typing import TYPE_CHECKING, List, Optional
+from typing import TYPE_CHECKING, Iterable, List, Optional
+from urllib.parse import urlsplit, urlunsplit
 
 if TYPE_CHECKING:
     from agent import NewsItem
@@ -105,6 +107,10 @@ CLASSIFIER_MODEL: str = os.getenv(
 # classifier model is unavailable but the verdict pipeline
 # still runs.
 CLASSIFIER_DISABLED: bool = os.getenv("DISABLE_CLASSIFIER", "0") == "1"
+
+# Matches the existing ``stale_aged_Nd`` prompt vocabulary. At seven days the
+# source ceases to be current evidence for a newly minted annotation.
+SOURCE_MAX_AGE = timedelta(days=7)
 
 
 # ---------------------------------------------------------------------------
@@ -186,6 +192,13 @@ class ClassificationResult:
         classified_at: UTC timestamp the model call completed.
             None when the call did not complete (timeout /
             error / disabled).
+        source_name/source_url: Bounded publisher label and retrievable source
+            reference from the exact rendered feed item.
+        published_at: Normalised aware UTC publication time, or None when the
+            feed clock was absent/invalid (which forces UNKNOWN).
+        source_ref: Full SHA-256 over title plus normalised source evidence.
+        source_valid_until: Publication time plus the declared seven-day
+            freshness window, retained even when the item is already stale.
     """
 
     ticker: str
@@ -195,6 +208,11 @@ class ClassificationResult:
     rationale: str
     prompt_version: str
     classified_at: Optional[datetime]
+    source_name: str = ""
+    source_url: str = ""
+    published_at: Optional[datetime] = None
+    source_ref: str = ""
+    source_valid_until: Optional[datetime] = None
 
 
 # ---------------------------------------------------------------------------
@@ -210,9 +228,95 @@ def _title_hash(title: str) -> str:
     Format: 12 hex chars (48 bits of SHA-256). Not for security
     use; just a deterministic, short identifier.
     """
-    import hashlib
-
     return hashlib.sha256(title.encode("utf-8", errors="replace")).hexdigest()[:12]
+
+
+def _bounded_text(value: object, limit: int) -> str:
+    return str(value or "").strip()[:limit]
+
+
+def _normalise_source_url(value: object) -> str:
+    raw = _bounded_text(value, 2048)
+    try:
+        parsed = urlsplit(raw)
+        # Access validates non-numeric and out-of-range ports.
+        _ = parsed.port
+    except ValueError:
+        return ""
+    if (
+        parsed.scheme.lower() not in {"http", "https"}
+        or not parsed.hostname
+        or parsed.username is not None
+        or parsed.password is not None
+    ):
+        return ""
+    return urlunsplit((
+        parsed.scheme.lower(), parsed.netloc.lower(), parsed.path or "/",
+        parsed.query, "",
+    ))
+
+
+def _normalise_published_at(value: object) -> Optional[datetime]:
+    if not isinstance(value, datetime):
+        return None
+    if value.tzinfo is None or value.utcoffset() is None:
+        return None
+    return value.astimezone(timezone.utc)
+
+
+def _source_ref(
+    *, title: str, source_name: str, source_url: str,
+    published_at: Optional[datetime],
+) -> str:
+    """Return an immutable digest of the exact source evidence."""
+    payload = json.dumps(
+        {
+            "title": str(title),
+            "source_name": source_name,
+            "source_url": source_url,
+            "published_at": published_at.isoformat() if published_at else None,
+        },
+        sort_keys=True,
+        separators=(",", ":"),
+        ensure_ascii=False,
+    )
+    return hashlib.sha256(payload.encode("utf-8", errors="replace")).hexdigest()
+
+
+def _item_source_metadata(
+    item: "NewsItem", *, now: Optional[datetime] = None,
+) -> tuple[
+    str, str, Optional[datetime], Optional[datetime], str, Optional[str]
+]:
+    """Normalise source evidence and report why it cannot be trusted."""
+    source_name = _bounded_text(getattr(item, "source_name", ""), 160)
+    raw_source_url = getattr(item, "source_url", "")
+    source_url = _normalise_source_url(raw_source_url)
+    published_at = _normalise_published_at(
+        getattr(item, "published_at", getattr(item, "published_at_parsed", None))
+    )
+    source_ref = _source_ref(
+        title=str(getattr(item, "title", "")),
+        source_name=source_name,
+        source_url=source_url,
+        published_at=published_at,
+    )
+    source_valid_until = (
+        published_at + SOURCE_MAX_AGE if published_at is not None else None
+    )
+    if not source_url:
+        reason = "missing source URL" if not str(raw_source_url or "").strip() else "invalid source URL"
+        return source_name, source_url, published_at, source_valid_until, source_ref, reason
+    if published_at is None:
+        return source_name, source_url, published_at, source_valid_until, source_ref, "missing or invalid publication time"
+    current = now or datetime.now(timezone.utc)
+    if current.tzinfo is None or current.utcoffset() is None:
+        raise ValueError("now must be timezone-aware")
+    if published_at > current.astimezone(timezone.utc):
+        return source_name, source_url, published_at, source_valid_until, source_ref, "future-dated publication time"
+    if source_valid_until is not None and current.astimezone(timezone.utc) >= source_valid_until:
+        return source_name, source_url, published_at, source_valid_until, source_ref, "stale publication time"
+    return source_name, source_url, published_at, source_valid_until, source_ref, None
 
 
 # ---------------------------------------------------------------------------
@@ -339,6 +443,12 @@ def _build_classification(
     category: NewsCategory,
     confidence: float,
     rationale: str,
+    *,
+    source_name: str = "",
+    source_url: str = "",
+    published_at: Optional[datetime] = None,
+    source_ref: str = "",
+    source_valid_until: Optional[datetime] = None,
 ) -> ClassificationResult:
     """[WORKFLOW-I.4.D 2026-09-14] Apply the threshold rule + dataclass
     constructor. A result below ``CONFIDENCE_THRESHOLD`` is forced
@@ -356,6 +466,11 @@ def _build_classification(
         rationale=_rationale(rationale),
         prompt_version=CLASSIFIER_PROMPT_VERSION,
         classified_at=datetime.now(timezone.utc),
+        source_name=_bounded_text(source_name, 160),
+        source_url=_bounded_text(source_url, 2048),
+        published_at=_normalise_published_at(published_at),
+        source_ref=_bounded_text(source_ref, 64),
+        source_valid_until=_normalise_published_at(source_valid_until),
     )
 
 
@@ -365,7 +480,8 @@ def _build_classification(
 
 
 def _classify_single(
-    item: "NewsItem", client: object, model: str, timeout_sec: float
+    item: "NewsItem", client: object, model: str, timeout_sec: float,
+    *, ticker: str = "UNKNOWN", now: Optional[datetime] = None,
 ) -> ClassificationResult:
     """[WORKFLOW-I.4.D 2026-09-14] Classify one ``NewsItem`` via a
     small MiniMax call. The prompt asks for ``{category, confidence,
@@ -373,13 +489,41 @@ def _classify_single(
     authority. On any failure (timeout, parse error, schema
     mismatch, disabled), returns ``UNKNOWN`` with confidence=0.0.
     """
-    if CLASSIFIER_DISABLED or client is None:
+    ticker = _bounded_text(ticker, 64) or "UNKNOWN"
+    (
+        source_name, source_url, published_at, source_valid_until,
+        source_ref, source_error,
+    ) = (
+        _item_source_metadata(item, now=now)
+    )
+
+    def _result(
+        category: NewsCategory, confidence: float, rationale: str,
+    ) -> ClassificationResult:
         return _build_classification(
-            ticker=item.source_name or "UNKNOWN",
+            ticker=ticker,
             item_title=item.title,
-            category=NewsCategory.UNKNOWN,
-            confidence=0.0,
-            rationale=(
+            category=category,
+            confidence=confidence,
+            rationale=rationale,
+            source_name=source_name,
+            source_url=source_url,
+            published_at=published_at,
+            source_ref=source_ref,
+            source_valid_until=source_valid_until,
+        )
+
+    # A label without a retrievable source and an auditable publication
+    # clock is not reliable evidence. Preserve the metadata but do not call
+    # the model or let the item acquire a confident category.
+    if source_error is not None:
+        return _result(NewsCategory.UNKNOWN, 0.0, source_error)
+
+    if CLASSIFIER_DISABLED or client is None:
+        return _result(
+            NewsCategory.UNKNOWN,
+            0.0,
+            (
                 "classifier disabled"
                 if CLASSIFIER_DISABLED
                 else "no MiniMax client available"
@@ -419,63 +563,42 @@ def _classify_single(
         elapsed = time.monotonic() - started
         logger.warning(
             "news_classifier_call_failed elapsed=%.2fs ticker=%s err=%s",
-            elapsed, item.source_name or "UNKNOWN", type(exc).__name__,
+            elapsed, ticker, type(exc).__name__,
         )
-        return _build_classification(
-            ticker=item.source_name or "UNKNOWN",
-            item_title=item.title,
-            category=NewsCategory.UNKNOWN,
-            confidence=0.0,
-            rationale=f"classifier call failed: {type(exc).__name__}",
+        return _result(
+            NewsCategory.UNKNOWN, 0.0,
+            f"classifier call failed: {type(exc).__name__}",
         )
 
     elapsed = time.monotonic() - started
     if elapsed > timeout_sec:
         logger.warning(
             "news_classifier_timeout elapsed=%.2fs ticker=%s",
-            elapsed, item.source_name or "UNKNOWN",
+            elapsed, ticker,
         )
-        return _build_classification(
-            ticker=item.source_name or "UNKNOWN",
-            item_title=item.title,
-            category=NewsCategory.UNKNOWN,
-            confidence=0.0,
-            rationale="classifier timeout",
-        )
+        return _result(NewsCategory.UNKNOWN, 0.0, "classifier timeout")
 
     raw_text = response.choices[0].message.content if response.choices else None
     payload = _extract_json_object(raw_text)
     if payload is None:
-        return _build_classification(
-            ticker=item.source_name or "UNKNOWN",
-            item_title=item.title,
-            category=NewsCategory.UNKNOWN,
-            confidence=0.0,
-            rationale="classifier returned unparseable output",
+        return _result(
+            NewsCategory.UNKNOWN, 0.0,
+            "classifier returned unparseable output",
         )
 
     # Schema check: exactly 3 keys (category, confidence, rationale).
     # Anything extra / missing -> UNKNOWN.
     expected = {"category", "confidence", "rationale"}
     if set(payload.keys()) != expected:
-        return _build_classification(
-            ticker=item.source_name or "UNKNOWN",
-            item_title=item.title,
-            category=NewsCategory.UNKNOWN,
-            confidence=0.0,
-            rationale="classifier payload schema mismatch",
+        return _result(
+            NewsCategory.UNKNOWN, 0.0,
+            "classifier payload schema mismatch",
         )
 
     category = _coerce_category(payload.get("category"))
     confidence = _coerce_confidence(payload.get("confidence"))
     rationale = _rationale(payload.get("rationale"))
-    return _build_classification(
-        ticker=item.source_name or "UNKNOWN",
-        item_title=item.title,
-        category=category,
-        confidence=confidence,
-        rationale=rationale,
-    )
+    return _result(category, confidence, rationale)
 
 
 # ---------------------------------------------------------------------------
@@ -489,6 +612,7 @@ def classify_news_items(
     client: Optional[object] = None,
     model: Optional[str] = None,
     timeout_sec: Optional[float] = None,
+    ticker: str = "UNKNOWN",
 ) -> List[ClassificationResult]:
     """[WORKFLOW-I.4.D 2026-09-14] Classify a batch of ``NewsItem``
     against the fixed taxonomy.
@@ -517,9 +641,45 @@ def classify_news_items(
     results: List[ClassificationResult] = []
     for item in items:
         results.append(
-            _classify_single(item, client, model, timeout_sec)
+            _classify_single(
+                item, client, model, timeout_sec, ticker=ticker,
+            )
         )
     return results
+
+
+def classification_context_sha256(
+    results: Iterable[ClassificationResult],
+) -> str:
+    """Digest classification meaning and source evidence, not wall time.
+
+    ``classified_at`` is intentionally excluded: an equivalent re-run may
+    reuse a review, while any changed source, category, confidence, rationale,
+    ticker, or prompt version produces a different cache identity.
+    """
+    projection = [
+        {
+            "ticker": r.ticker,
+            "title_hash": r.title_hash,
+            "source_ref": r.source_ref,
+            "source_valid_until": (
+                r.source_valid_until.isoformat()
+                if r.source_valid_until else None
+            ),
+            "source_name": r.source_name,
+            "source_url": r.source_url,
+            "published_at": r.published_at.isoformat() if r.published_at else None,
+            "category": r.category.value,
+            "confidence": r.confidence,
+            "rationale": r.rationale,
+            "prompt_version": r.prompt_version,
+        }
+        for r in results
+    ]
+    payload = json.dumps(
+        projection, sort_keys=True, separators=(",", ":"), ensure_ascii=False,
+    )
+    return hashlib.sha256(payload.encode("utf-8", errors="replace")).hexdigest()
 
 
 def to_dict(results: List[ClassificationResult]) -> List[dict]:
@@ -542,6 +702,19 @@ def to_dict(results: List[ClassificationResult]) -> List[dict]:
                 "classified_at": (
                     r.classified_at.isoformat()
                     if r.classified_at is not None
+                    else None
+                ),
+                "source_name": r.source_name,
+                "source_url": r.source_url,
+                "published_at": (
+                    r.published_at.isoformat()
+                    if r.published_at is not None
+                    else None
+                ),
+                "source_ref": r.source_ref,
+                "source_valid_until": (
+                    r.source_valid_until.isoformat()
+                    if r.source_valid_until is not None
                     else None
                 ),
             }

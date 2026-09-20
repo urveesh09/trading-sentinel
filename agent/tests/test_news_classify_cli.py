@@ -74,8 +74,23 @@ def test_make_item_full_dict():
     item = _make_item(raw)
     assert item.title == "RELIANCE Q3 results"
     assert item.source_url == "https://example.com/reliance-q3"
+    assert item.published_at_parsed is not None
+    assert item.published_at_parsed.isoformat() == "2026-09-14T09:00:00+00:00"
     assert item.source_name == "Reuters"
     assert item.age_label == "fresh"
+
+
+def test_make_item_parses_aware_iso_and_rejects_naive_clock():
+    aware = _make_item({
+        "title": "aware", "source_url": "https://example.test/a",
+        "published_at": "2026-09-20T09:00:00+05:30",
+    })
+    naive = _make_item({
+        "title": "naive", "source_url": "https://example.test/b",
+        "published_at": "2026-09-20T09:00:00",
+    })
+    assert aware.published_at_parsed.isoformat() == "2026-09-20T03:30:00+00:00"
+    assert naive.published_at_parsed is None
 
 
 # ---------------------------------------------------------------------------
@@ -291,7 +306,7 @@ def test_main_ticker_with_items_calls_classifier():
     ) as classify_mock:
         rc = main(["--ticker", "RELIANCE"])
     assert rc == 0
-    classify_mock.assert_called_once_with(items)
+    classify_mock.assert_called_once_with(items, ticker="RELIANCE")
 
 
 # ---------------------------------------------------------------------------

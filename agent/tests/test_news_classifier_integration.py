@@ -24,7 +24,7 @@ from __future__ import annotations
 
 import json
 import time
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from unittest.mock import MagicMock
 
 import pytest
@@ -47,6 +47,7 @@ def _stub_classification(
     """Build a ClassificationResult for use in prompt-rendering
     tests. Avoids touching the network (no model call).
     """
+    now = datetime.now(timezone.utc)
     return ClassificationResult(
         ticker="RELIANCE",
         title_hash=title_hash,
@@ -54,7 +55,12 @@ def _stub_classification(
         confidence=confidence,
         rationale=rationale,
         prompt_version="v1",
-        classified_at=datetime(2026, 9, 14, 9, 0, 0, tzinfo=timezone.utc),
+        classified_at=now,
+        source_name="Reuters",
+        source_url=f"https://example.test/{title_hash}",
+        published_at=now - timedelta(minutes=5),
+        source_ref=title_hash.ljust(64, "0"),
+        source_valid_until=now + timedelta(days=6),
     )
 
 

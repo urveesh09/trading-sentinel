@@ -1,5 +1,25 @@
 # Trading Sentinel — next-agent execution plan
 
+## September 20 Workflow I.4.D provenance correction (Dev only)
+
+Classification is now bound to the exact feed snapshot shown to the verdict
+model. The requested ticker, bounded source URL/name, aware publication clock
+and source digest survive in each result; invalid source evidence fails closed
+without a model call. HTTP(S)+host validation and a seven-day source-validity
+boundary are explicit. Optional-review keys bind the deterministic
+classification-context digest when the feature is enabled and preserve the
+legacy key when disabled; the queue also rejects context-mismatched cache hits
+for direct callers. Typed reviews retain digest/count/structured source
+references and actual expiry on available, unavailable and worker-exception
+paths. Synchronous late results are discarded as unavailable; cached repeats
+can shorten but cannot extend validity. Focused warning-fatal acceptance is
+**185 passed**, full isolated agent is **357 passed**, compilation/diff checks
+pass, and the atlas remains **203
+modules** after regeneration. No schema/config default/authority/trading
+behavior changed. Production evidence is still required; I.4.G remains
+deferred. See the
+[active plan](2026-09-20-i4d-classification-provenance-plan.md).
+
 ## September 19 Workflow I usefulness-contract correction (Dev only)
 
 The optional-AI status bridge no longer rejects the real ten-field usefulness

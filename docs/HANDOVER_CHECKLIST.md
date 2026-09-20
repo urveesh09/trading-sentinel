@@ -1,5 +1,30 @@
 # Handover receipt and operator checklist
 
+## September 20 Workflow I.4.D provenance correction (Dev tested)
+
+The classifier no longer refetches news after rendering sentiment: Yahoo and
+Google are fetched once each and the same frozen items feed both raw and typed
+context. Results retain the requested ticker, bounded source URL/name, aware
+publication time and source digest; unreliable source metadata fails closed to
+UNKNOWN. That includes stale-at-seven-days, missing/naive/future clocks and
+invalid/non-HTTP(S) URLs. Classification context is part of enabled cache
+identity, while the disabled legacy key is unchanged; the queue independently
+guards direct reused-key collisions. Available/unavailable/exception typed
+reviews retain structured immutable source provenance and expiry. Sync late
+results are payload-free unavailable; READY/CACHED expiry can tighten but never
+extend. CLI file input now parses aware RFC/ISO clocks.
+
+Focused warning-fatal acceptance: **185 passed**. Complete isolated agent:
+**357 passed**, warning-fatal, network disabled, Dev mounted read-only. Changed
+Python compilation and `git diff --check` passed; the code atlas regenerated at
+**203 modules**. No engine/dashboard source changed, so their September 19 full
+receipts remain the applicable cross-component baseline and were not rerun.
+No schema/config default/broker/partner message/order/Production edit or
+authority change. GitHub commit/push receipt is recorded after the implementation
+commit below. Real provider freshness/latency and operator-labelled usefulness
+remain Production evidence, not test claims. See the
+[plan](2026-09-20-i4d-classification-provenance-plan.md).
+
 ## September 19 Workflow I usefulness contract (Dev tested)
 
 The real ten-field optional-AI usefulness snapshot now crosses the agent/engine

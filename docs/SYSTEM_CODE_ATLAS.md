@@ -8,7 +8,7 @@ Module descriptions below are source-declared intent; inspect implementation and
 
 [ADVISORY 2026-08-05] Typed verdicts for the MiniMax conviction gate. THE DEFECT ---------- `analyze_with_minimax` returned a dict on success and `None` on failure, and `None` collapsed four genuinely different outcomes into one: the request timed out after 100s the model returned prose instead of JSON the JSON was missing a field the API itself errored All four then took the SAME path as each other, and that path was "send the EXEC button anyway with an 'AI analysis failed' banner". Meanwhile a conviction of 30 -- the model working perfectly and saying no -- blocked the button. So the gate blocks when it works and permits when it breaks. On 2026-08-04 the single trade this system executed g
 
-Top-level declarations: `Verdict` (line 55), `Review` (line 84), `unavailable` (line 203), `from_payload` (line 208), `worst` (line 235)
+Top-level declarations: `Verdict` (line 55), `Review` (line 84), `unavailable` (line 210), `from_payload` (line 215), `worst` (line 242)
 
 Related tests: `agent/tests/test_advisory.py`
 
@@ -16,7 +16,7 @@ Related tests: `agent/tests/test_advisory.py`
 
 No module docstring; use the declarations and callers below.
 
-Top-level declarations: `_attach_provenance` (line 132), `register_approved_snapshot` (line 206), `_today_str` (line 287), `_load_dedup_state` (line 292), `_save_dedup_state` (line 343), `mark_processed` (line 358), `clear_memory` (line 364), `touch_heartbeat` (line 381), `_is_market_hours` (line 408), `read_scheduler_tick_age` (line 419), `check_engine_liveness` (line 431), `SignalOutput` (line 469), `NewsItem` (line 485), `fetch_signals` (line 500), `fetch_rss_feed` (line 527), `fetch_news_items` (line 544), `_parse_rss_pubdate` (line 607), `_hostname_from_url` (line 630), `_age_label` (line 640), `scrape_sentiment` (line 675), `_extract_json_object` (line 717), `_fetch_news_items_for_ticker` (line 771), `_maybe_classify_news` (line 808), `_render_classified_section` (line 846), `analyze_with_minimax` (line 890), `_optional_review_key` (line 1171), `_get_optional_ai_queue` (line 1185), `optional_ai_status` (line 1205), `publish_optional_ai_status` (line 1245), `queue_optional_ai_review` (line 1265), `send_telegram_alert` (line 1306), `system_health_check` (line 1355), `run_momentum_pipeline` (line 1384), `send_conviction_veto_notice` (line 1495), `send_momentum_telegram_alert` (line 1513), `run_pipeline` (line 1625), `main` (line 1683)
+Top-level declarations: `_effective_classification_expiry` (line 128), `_attach_classification_context` (line 149), `_attach_provenance` (line 184), `register_approved_snapshot` (line 263), `_today_str` (line 344), `_load_dedup_state` (line 349), `_save_dedup_state` (line 400), `mark_processed` (line 415), `clear_memory` (line 421), `touch_heartbeat` (line 438), `_is_market_hours` (line 465), `read_scheduler_tick_age` (line 476), `check_engine_liveness` (line 488), `SignalOutput` (line 526), `NewsItem` (line 542), `fetch_signals` (line 557), `fetch_rss_feed` (line 584), `fetch_news_items` (line 601), `_parse_rss_pubdate` (line 664), `_hostname_from_url` (line 687), `_age_label` (line 697), `_fetch_news_bundle_for_ticker` (line 732), `_render_news_bundle` (line 760), `scrape_sentiment` (line 784), `_extract_json_object` (line 801), `_fetch_news_items_for_ticker` (line 855), `_maybe_classify_news` (line 868), `_collect_news_context` (line 910), `_render_classified_section` (line 922), `analyze_with_minimax` (line 966), `_optional_review_key` (line 1272), `_get_optional_ai_queue` (line 1300), `optional_ai_status` (line 1320), `publish_optional_ai_status` (line 1360), `queue_optional_ai_review` (line 1380), `send_telegram_alert` (line 1436), `system_health_check` (line 1485), `run_momentum_pipeline` (line 1514), `send_conviction_veto_notice` (line 1628), `send_momentum_telegram_alert` (line 1646), `run_pipeline` (line 1758), `main` (line 1819)
 
 Related tests: `agent/tests/test_agent_pipeline.py`, `agent/tests/test_agent_schedule.py`, `agent/tests/test_agent_watchdog.py`
 
@@ -24,7 +24,7 @@ Related tests: `agent/tests/test_agent_pipeline.py`, `agent/tests/test_agent_sch
 
 Bounded, non-blocking optional-AI review worker. The queue is intentionally transport-agnostic: deterministic signal, risk and alert paths receive their own decision immediately. A model opinion is an annotation that may arrive later, never authority to change a numeric trade field or an already-created execution instruction.
 
-Top-level declarations: `ReviewSubmission` (line 23), `_Task` (line 31), `AsyncReviewQueue` (line 55)
+Top-level declarations: `ReviewSubmission` (line 23), `_Task` (line 31), `_classification_digest` (line 54), `_bound_expiry` (line 61), `_attach_task_context` (line 75), `AsyncReviewQueue` (line 94)
 
 Related tests: `agent/tests/test_async_reviews.py`, `agent/tests/test_async_reviews_i4d.py`
 
@@ -48,7 +48,7 @@ Related tests: `agent/tests/test_contract_health_cron.py`
 
 [WORKFLOW-I.4.D 2026-09-14] Source-event classification. This module classifies one or more ``NewsItem`` (from the I.2 news provenance work) against a fixed taxonomy of 8 categories. The classification is **informational only** -- the verdict pipeline (``analyze_with_minimax``) is not modified; classification is surfaced as a bounded annotation that the operator can inspect. Per plan §13, the agent must "classify sourced events" before the existing pipeline summarises them. Today the prompt to ``analyze_with_minimax`` includes raw news text and asks the model to "evaluate whether the news/catalyst justifies a sustained move" -- the model has to do its own classification implicitly. This modu
 
-Top-level declarations: `NewsCategory` (line 115), `ClassificationResult` (line 156), `_title_hash` (line 205), `_extract_json_object` (line 229), `_rationale` (line 285), `_coerce_category` (line 299), `_coerce_confidence` (line 311), `_build_classification` (line 336), `_classify_single` (line 367), `classify_news_items` (line 486), `to_dict` (line 525)
+Top-level declarations: `NewsCategory` (line 121), `ClassificationResult` (line 162), `_title_hash` (line 223), `_bounded_text` (line 234), `_normalise_source_url` (line 238), `_normalise_published_at` (line 259), `_source_ref` (line 267), `_item_source_metadata` (line 286), `_extract_json_object` (line 333), `_rationale` (line 389), `_coerce_category` (line 403), `_coerce_confidence` (line 415), `_build_classification` (line 440), `_classify_single` (line 482), `classify_news_items` (line 609), `classification_context_sha256` (line 651), `to_dict` (line 685)
 
 Related tests: `agent/tests/test_news_classifier.py`, `agent/tests/test_news_classifier_helpers.py`, `agent/tests/test_news_classifier_integration.py`
 
@@ -1000,7 +1000,7 @@ Engine dependencies: `config`, `halt_switch`, `market_calendar`, `operator_alert
 
 Persisted, non-authoritative health evidence from the optional AI worker. The agent is deliberately a separate container with no database write access. It posts this small, authenticated status envelope to the engine instead. The record is operational evidence only: no value written here can approve a signal, place an order, or change a deterministic decision.
 
-Top-level declarations: `_parse_aware_timestamp` (line 77), `_init` (line 89), `_clean_usefulness` (line 97), `record_optional_ai_status` (line 229), `load_optional_ai_status` (line 288)
+Top-level declarations: `_parse_aware_timestamp` (line 77), `_init` (line 89), `_clean_usefulness` (line 97), `record_optional_ai_status` (line 231), `load_optional_ai_status` (line 290)
 
 Engine dependencies: `hedge_analytics`
 

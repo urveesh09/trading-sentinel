@@ -1,5 +1,34 @@
 # Trading Sentinel — system guide and engineering handover
 
+## September 20 Workflow I.4.D evidence-provenance correction
+
+The opt-in news classifier now renders and classifies one immutable Yahoo +
+Google feed snapshot per signal rather than fetching the feeds twice. Each
+frozen classification carries the requested ticker, bounded source name/URL,
+an aware UTC publication time and a full source-evidence digest. Missing URLs,
+missing/naive publication clocks, future-dated items, sources at or beyond the
+declared seven-day freshness boundary, and non-HTTP(S)/hostless URLs fail
+closed to `UNKNOWN` without a model call. The classification-context digest binds source,
+publication time, category, confidence, rationale and prompt version while
+deliberately excluding the completion clock.
+
+Optional-review cache keys include that digest only when classification is
+enabled, so the disabled-path key remains byte-compatible and changed
+classifications cannot retrieve an older opinion. The queue independently
+checks context even if a caller reuses an external key. Typed reviews retain
+the classification digest/count and immutable `(source digest, URL,
+publication clock)` references plus expiry. Sync late completions become
+payload-free `REVIEW_UNAVAILABLE`; async unavailable/exception paths retain
+their context and deadline. Async READY/CACHED reviews
+expose the earlier of request deadline and cache TTL; a shorter repeat request
+tightens, and can never extend, that deadline. This is evidence provenance
+only: no strategy, threshold, risk, capital, qualification, delivery, broker or
+order authority changed. CLI file input parses aware RFC/ISO clocks without
+importing the full agent. Focused warning-fatal acceptance is **185 passed**;
+the complete isolated network-disabled agent suite is **357 passed**. The
+203-module atlas was regenerated. Production remains untouched. See the
+[implementation plan](2026-09-20-i4d-classification-provenance-plan.md).
+
 ## September 19 Workflow I usefulness-contract correction
 
 Dev now accepts the complete ten-field usefulness snapshot emitted by the

@@ -186,7 +186,11 @@ def test_completion_exactly_at_deadline_is_not_current_or_cached():
     try:
         queue.submit("exact", {}, "", "UNKNOWN", expires_at=expiry)
         result = _wait_for(queue, "exact", {"EXPIRED"})
-        assert result.reason == "review_completed_late" and result.review is None
+        assert result.reason == "review_completed_late"
+        assert result.review.available is False
+        assert result.review.reason == "review_completed_late"
+        assert result.review.payload == {}
+        assert result.review.expires_at == expiry
         assert queue.snapshot()["cached"] == 0
     finally:
         queue.shutdown()
@@ -222,9 +226,20 @@ def test_cached_annotation_can_be_shortened_but_not_extended():
     queue = AsyncReviewQueue(lambda *_args: Review(Verdict.APPROVE, conviction=80), now=lambda: clock[0])
     try:
         queue.submit("short", {}, "", "UNKNOWN", expires_at=clock[0] + timedelta(seconds=30))
-        _wait_for(queue, "short", {"READY"})
-        assert queue.submit("short", {}, "", "UNKNOWN", expires_at=clock[0] + timedelta(seconds=5)).state == "CACHED"
-        assert queue.submit("short", {}, "", "UNKNOWN", expires_at=clock[0] + timedelta(seconds=60)).state == "CACHED"
+        ready = _wait_for(queue, "short", {"READY"})
+        assert ready.review.expires_at == clock[0] + timedelta(seconds=30)
+        shortened = queue.submit(
+            "short", {}, "", "UNKNOWN",
+            expires_at=clock[0] + timedelta(seconds=5),
+        )
+        assert shortened.state == "CACHED"
+        assert shortened.review.expires_at == clock[0] + timedelta(seconds=5)
+        not_extended = queue.submit(
+            "short", {}, "", "UNKNOWN",
+            expires_at=clock[0] + timedelta(seconds=60),
+        )
+        assert not_extended.state == "CACHED"
+        assert not_extended.review.expires_at == clock[0] + timedelta(seconds=5)
         clock[0] += timedelta(seconds=5)
         assert queue.status("short").state == "EXPIRED"
         assert queue.snapshot()["cached"] == 0

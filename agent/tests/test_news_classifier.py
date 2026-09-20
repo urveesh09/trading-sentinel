@@ -24,7 +24,7 @@ from __future__ import annotations
 
 import json
 import time
-from dataclasses import FrozenInstanceError
+from dataclasses import FrozenInstanceError, replace
 from datetime import datetime, timedelta, timezone
 from unittest.mock import MagicMock
 
@@ -35,6 +35,7 @@ from news_classifier import (
     CLASSIFIER_PROMPT_VERSION,
     CLASSIFIER_TIMEOUT_SEC,
     CONFIDENCE_THRESHOLD,
+    SOURCE_MAX_AGE,
     NewsCategory,
     ClassificationResult,
     _build_classification,
@@ -44,6 +45,7 @@ from news_classifier import (
     _extract_json_object,
     _rationale,
     _title_hash,
+    classification_context_sha256,
     classify_news_items,
     to_dict,
 )
@@ -56,11 +58,22 @@ from news_classifier import (
 # ---------------------------------------------------------------------------
 
 
+_UNSET = object()
+
+
 class _StubItem:
-    def __init__(self, title, age_label="fresh", source_name="Yahoo"):
+    def __init__(
+        self, title, age_label="fresh", source_name="Yahoo",
+        source_url="https://example.test/news/1", published_at=_UNSET,
+    ):
         self.title = title
         self.age_label = age_label
         self.source_name = source_name
+        self.source_url = source_url
+        self.published_at = (
+            datetime.now(timezone.utc) - timedelta(minutes=5)
+            if published_at is _UNSET else published_at
+        )
 
 
 # ---------------------------------------------------------------------------
@@ -393,12 +406,118 @@ def test_classify_happy_path_with_mock_client():
     }
     client = _mock_client_with_payload(payload)
     result = _classify_single(
-        item, client=client, model="MiniMax-M3", timeout_sec=1.0
+        item, client=client, model="MiniMax-M3", timeout_sec=1.0,
+        ticker="RELIANCE",
     )
     assert result.category == NewsCategory.EARNINGS
     assert result.confidence == pytest.approx(0.92)
     assert "Quarterly beat" in result.rationale
-    assert result.ticker == "Reuters"  # ticker field carries source_name
+    assert result.ticker == "RELIANCE"
+    assert result.source_name == "Reuters"
+    assert result.source_url == "https://example.test/news/1"
+    assert result.source_ref
+
+
+def test_missing_source_url_fails_closed_without_model_call():
+    item = _StubItem("Headline", source_url="")
+    client = _mock_client_with_payload({
+        "category": "earnings", "confidence": 0.9, "rationale": "beat",
+    })
+    result = _classify_single(
+        item, client=client, model="MiniMax-M3", timeout_sec=1.0,
+        ticker="RELIANCE",
+    )
+    assert result.category is NewsCategory.UNKNOWN
+    assert result.confidence == 0.0
+    assert "source URL" in result.rationale
+    client.chat.completions.create.assert_not_called()
+
+
+def test_future_publication_time_fails_closed_without_model_call():
+    now = datetime(2026, 9, 20, 10, 0, tzinfo=timezone.utc)
+    item = _StubItem(
+        "Headline", published_at=now + timedelta(seconds=1),
+    )
+    client = _mock_client_with_payload({
+        "category": "earnings", "confidence": 0.9, "rationale": "beat",
+    })
+    result = _classify_single(
+        item, client=client, model="MiniMax-M3", timeout_sec=1.0,
+        ticker="RELIANCE", now=now,
+    )
+    assert result.category is NewsCategory.UNKNOWN
+    assert "future-dated" in result.rationale
+    client.chat.completions.create.assert_not_called()
+
+
+def test_missing_and_naive_publication_times_fail_closed_without_model_call():
+    for published_at in (None, datetime(2026, 9, 20, 9, 0)):
+        item = _StubItem("Headline", published_at=published_at)
+        client = _mock_client_with_payload({
+            "category": "earnings", "confidence": 0.9, "rationale": "beat",
+        })
+        result = _classify_single(
+            item, client=client, model="MiniMax-M3", timeout_sec=1.0,
+            ticker="RELIANCE",
+        )
+        assert result.category is NewsCategory.UNKNOWN
+        assert "publication time" in result.rationale
+        client.chat.completions.create.assert_not_called()
+
+
+def test_stale_boundary_and_invalid_urls_fail_closed_without_model_call():
+    now = datetime(2026, 9, 20, 10, 0, tzinfo=timezone.utc)
+    cases = [
+        (now - SOURCE_MAX_AGE, "https://example.test/a", "stale"),
+        (now - timedelta(minutes=5), "javascript:alert(1)", "invalid source URL"),
+        (now - timedelta(minutes=5), "https:///missing-host", "invalid source URL"),
+        (now - timedelta(minutes=5), "https://example.test:bad/x", "invalid source URL"),
+    ]
+    for published_at, source_url, reason in cases:
+        item = _StubItem(
+            "Headline", source_url=source_url, published_at=published_at,
+        )
+        client = _mock_client_with_payload({
+            "category": "earnings", "confidence": 0.9, "rationale": "beat",
+        })
+        result = _classify_single(
+            item, client=client, model="MiniMax-M3", timeout_sec=1.0,
+            ticker="RELIANCE", now=now,
+        )
+        assert result.category is NewsCategory.UNKNOWN
+        assert reason in result.rationale
+        client.chat.completions.create.assert_not_called()
+
+
+def test_one_microsecond_inside_source_boundary_remains_eligible():
+    now = datetime(2026, 9, 20, 10, 0, tzinfo=timezone.utc)
+    item = _StubItem(
+        "Headline", published_at=now - SOURCE_MAX_AGE + timedelta(microseconds=1),
+    )
+    client = _mock_client_with_payload({
+        "category": "earnings", "confidence": 0.9, "rationale": "beat",
+    })
+    result = _classify_single(
+        item, client=client, model="MiniMax-M3", timeout_sec=1.0,
+        ticker="RELIANCE", now=now,
+    )
+    assert result.category is NewsCategory.EARNINGS
+
+
+def test_context_digest_ignores_classification_clock_but_binds_evidence():
+    published = datetime(2026, 9, 20, 9, 0, tzinfo=timezone.utc)
+    base = ClassificationResult(
+        ticker="RELIANCE", title_hash="abc", category=NewsCategory.EARNINGS,
+        confidence=0.9, rationale="beat", prompt_version="v1",
+        classified_at=published, source_name="Reuters",
+        source_url="https://example.test/a", published_at=published,
+        source_ref="a" * 64,
+        source_valid_until=published + SOURCE_MAX_AGE,
+    )
+    later = replace(base, classified_at=published + timedelta(minutes=1))
+    changed = replace(base, source_url="https://example.test/b")
+    assert classification_context_sha256([base]) == classification_context_sha256([later])
+    assert classification_context_sha256([base]) != classification_context_sha256([changed])
 
 
 def test_classify_handles_think_block_in_response():
@@ -607,6 +726,11 @@ def test_to_dict_serialises_all_fields():
     assert d["rationale"] == "Q3 beat."
     assert d["prompt_version"] == "v1"
     assert d["classified_at"] == "2026-09-14T09:00:00+00:00"
+    assert d["source_name"] == ""
+    assert d["source_url"] == ""
+    assert d["published_at"] is None
+    assert d["source_ref"] == ""
+    assert d["source_valid_until"] is None
     # JSON-safe end-to-end.
     serialised = json.dumps(d)
     assert json.loads(serialised) == d
