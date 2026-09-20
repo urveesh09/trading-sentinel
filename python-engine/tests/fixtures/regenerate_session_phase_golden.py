@@ -46,13 +46,14 @@ def _preserved_generated_at(path: Path, semantic_payload: dict) -> str | None:
 
 def _write_if_changed(path: Path, content: str) -> bool:
     """Write canonical UTF-8 only when the on-disk bytes differ."""
+    expected = content.encode("utf-8")
     try:
-        if path.read_text(encoding="utf-8") == content:
+        if path.read_bytes() == expected:
             return False
     except OSError:
         pass
     path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(content, encoding="utf-8", newline="\n")
+    path.write_bytes(expected)
     return True
 
 

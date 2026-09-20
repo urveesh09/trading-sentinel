@@ -382,7 +382,7 @@ the exact-range tool makes that final receipt deterministic.
 The session-phase golden producer is now byte-reproducible for unchanged
 classifier semantics. It preserves provenance time only for an equal semantic
 payload, updates it on a real change, writes both consumers from one canonical
-string and avoids no-op writes. Focused acceptance: six Python contract tests
+string and avoids no-op writes. Focused acceptance: seven Python contract tests
 and all 43 Node mirror tests pass. The two already-present local timestamp-only
 fixture edits remain deliberately unstaged; a clean checkout running the new
 producer will no longer create them.

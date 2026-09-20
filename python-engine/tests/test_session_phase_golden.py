@@ -141,6 +141,7 @@ def test_regenerator_is_byte_stable_when_semantics_are_unchanged(
     assert regenerated_goldens["node"].read_bytes() == node_before
     assert py_before == node_before
     assert py_before.endswith(b"\n")
+    assert b"\r\n" not in py_before
 
 
 def test_semantic_change_does_not_preserve_old_timestamp(tmp_path) -> None:
@@ -160,6 +161,16 @@ def test_semantic_change_does_not_preserve_old_timestamp(tmp_path) -> None:
     assert regen_module._preserved_generated_at(
         target, {"schema_version": 1, "vectors": [{"changed": True}]}
     ) is None
+
+
+def test_writer_normalizes_equal_text_with_crlf_bytes(tmp_path) -> None:
+    """Windows newline normalization must not hide a byte-level drift."""
+    target = tmp_path / "golden.json"
+    target.write_bytes(b'{\r\n  "schema_version": 1\r\n}\r\n')
+    canonical = '{\n  "schema_version": 1\n}\n'
+    assert regen_module._write_if_changed(target, canonical) is True
+    assert target.read_bytes() == canonical.encode("utf-8")
+    assert regen_module._write_if_changed(target, canonical) is False
 
 
 def test_golden_phase_values_are_bounded(regenerated_goldens) -> None:

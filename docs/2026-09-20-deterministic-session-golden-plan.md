@@ -43,8 +43,9 @@ no-op runs from changing them again.
 
 ## Verification receipt
 
-- `python-engine`: `winvenv` Python, six focused tests passed with warnings
-  fatal in 2.03 seconds.
+- `python-engine`: `winvenv` Python, seven focused tests passed with warnings
+  fatal in 1.95 seconds. The seventh pins raw-byte CRLF normalization so
+  Windows text-mode translation cannot mask non-canonical content.
 - `node-gateway/server`: Jest explicit-path run passed all 43 mirror tests and
   exited naturally in 1.56 seconds. The offline holiday fetch logged its
   expected warning and did not affect parity.

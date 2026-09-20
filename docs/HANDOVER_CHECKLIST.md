@@ -434,7 +434,8 @@ Before the next implementation: update the plan slice. With each commit: update 
 - [x] Semantic payload changes cannot reuse the prior provenance timestamp.
 - [x] Python and Node copies are written from one canonical newline-terminated
   UTF-8 string; already-matching files are not rewritten.
-- [x] Python focused suite: 6 passed with warnings fatal (2.03 seconds).
+- [x] Python focused suite: 7 passed with warnings fatal (1.95 seconds),
+  including raw-byte CRLF normalization on Windows.
 - [x] Node session mirror: 43 passed with natural exit (1.56 seconds); one
   expected offline holiday-fetch warning was logged.
 - [x] Existing timestamp-only local fixture changes remain unstaged. Production
