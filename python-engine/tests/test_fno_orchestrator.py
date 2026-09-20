@@ -408,6 +408,13 @@ async def test_hard_flat_closes_at_bid_with_costs_and_ledger(kite, db_path, book
 
 @pytest.mark.asyncio
 async def test_premium_backstop_exit(kite, db_path, book):
+    # [WORKFLOW-A2 2026-09-20] Atomic settlement requires the
+    # ledger table to exist before settle_position_close can
+    # record the close. Initialise it explicitly; this mirrors
+    # the contract enforced by ``init_fno_positions_db`` in
+    # production where both schemas are created at startup.
+    from performance import init_ledger
+    await init_ledger(db_path)
     await run_fno_tick(kite, db_path=db_path, regime="REGIME_1_NORMAL", now_ist=NOW)
     # Crush the option quotes ~40% below entry: bid <= premium_stop fires.
     later = IST.localize(datetime(2026, 7, 10, 10, 30))

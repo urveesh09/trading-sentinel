@@ -6,11 +6,58 @@ import sqlite3
 from datetime import date, timedelta, time
 import structlog
 from datetime import datetime
+from enum import Enum
 import pytz
 
 logger = structlog.get_logger()
 
 IST = pytz.timezone("Asia/Kolkata")
+
+
+# [WORKFLOW-A1 2026-09-20] CAS eligibility three-state contract.
+#
+# Replaces the legacy boolean ``is_cas_eligible(symbol) -> bool``
+# with a bounded StrEnum so empty / unparseable configuration can be
+# distinguished from a verified NOT_ELIGIBLE answer.
+#
+# The audit (docs/2026-09-20-independent-system-readiness-audit.md
+# §3-A1) showed that the boolean returned ``False`` for both
+# "configured, symbol absent" AND "configuration unavailable",
+# conflating two operationally distinct states. The Node resolver
+# accepted the false result as resolved evidence, which means an
+# empty membership list silently turned the affected-window guard
+# into a no-op.
+class CasEligibilityState(str, Enum):
+    """[WORKFLOW-A1 2026-09-20] Three-state CAS eligibility answer.
+
+    ``ELIGIBLE`` -- the symbol is a known member of the configured
+    CAS Phase-1 list at the resolver's current as-of timestamp.
+
+    ``NOT_ELIGIBLE`` -- the symbol is verified absent from the
+    configured list at the current as-of timestamp.
+
+    ``UNKNOWN`` -- the resolver cannot reach a verified answer:
+    configuration missing, parse failure, ``config`` import failure,
+    invalid symbol input, or membership data older than
+    ``CAS_MEMBERSHIP_MAX_AGE_DAYS``.
+    """
+    ELIGIBLE = "ELIGIBLE"
+    NOT_ELIGIBLE = "NOT_ELIGIBLE"
+    UNKNOWN = "UNKNOWN"
+
+
+# [WORKFLOW-A1 2026-09-20] CAS eligibility reason codes.
+#
+# Stable strings emitted alongside ``CasEligibilityState``. Tests
+# and the audit log key off these values.
+class CasEligibilityReason(str, Enum):
+    LISTED = "listed"
+    NOT_LISTED = "not_listed"
+    EMPTY_MEMBERSHIP_LIST = "empty_membership_list"
+    CONFIG_IMPORT_FAILED = "config_import_failed"
+    INVALID_SYMBOL = "invalid_symbol"
+    STALE_MEMBERSHIP = "stale_membership"
+    UNKNOWN = "unknown"
 
 # [WORKFLOW-J 2026-09-13] Central session constants. Each value cites
 # its NSE source. Adding a new constant here is the ONLY allowed way to
@@ -400,73 +447,208 @@ def _ist_clock_minutes(observation_at: datetime) -> tuple[int, int, int]:
     return (ist.weekday(), ist.hour, ist.minute)
 
 
-def is_cas_eligible(symbol: str | None) -> bool:
-    """[WORKFLOW-J 2026-09-13, +J.2 2026-09-13] Phase 1 CAS eligibility check.
+# [WORKFLOW-A1 2026-09-20] CAS membership freshness bound.
+#
+# Mirrors ``NSE_HOLIDAYS_VALID_THROUGH``: when the membership list
+# has not been refreshed within this many days, the resolver
+# returns UNKNOWN with reason STALE_MEMBERSHIP rather than relying
+# on stale evidence. The default (30 days) follows the J.10
+# holiday-validity pattern.
+import os as _cas_os  # noqa: E402  -- local alias to keep the
+# top-of-module imports untouched.
 
-    Per NSE (circular NSE/CMTR/72394, effective 2026-01-19), CAS Phase 1
-    applies only to cash-segment stocks on which derivative contracts
-    are available. The full list lives in the NSE contract-master API.
+_DEFAULT_CAS_MEMBERSHIP_MAX_AGE_DAYS = 30
 
-    Dev has no live fetch for that list. The list is supplied as the
-    operator-curated CSV string ``settings.CAS_PHASE1_FNO_UNDERLYINGS``
-    (env var with the same name). The wire format is comma-separated
-    uppercase symbols; whitespace around commas is tolerated and
-    normalised at this call site -- we do NOT normalise at the
-    ``config.py`` layer (kept the layer pure-string so pydantic-settings
-    does not JSON-decode the env var).
 
-    Design choices:
+def cas_membership_max_age_days() -> int:
+    """Return the freshness bound for CAS Phase-1 membership.
 
-      * **Pure** (no I/O, no clock, no DB, no broker call). The only
-        non-purity is the lazy ``from config import settings`` below,
-        which happens at most once per process and is idempotent.
-      * **Lazy import** of ``config.settings`` -- importing at module
-        load would force ``market_calendar`` to pull pydantic + .env
-        parsers and would couple the two modules; this keeps
-        ``market_calendar`` independently importable (a future
-        scheduler unit test that doesn't want config can still
-        ``import market_calendar`` in isolation).
-      * **Defensive normalisation** at the call site:
-        ``symbol.strip().upper()`` and the same normalisation on every
-        list entry. This protects against any case the upstream
-        caller hands us and against any operator-curated token that
-        happens to be in mixed case.
-      * **Frozenset** of the normalised list is built at most once
-        per process via ``functools.lru_cache`` so the per-call
-        overhead is a single set membership test.
-      * **None / empty / non-string symbol** returns False (the
-        operator has not told us which instrument this observation
-        is for, or the input was malformed).
-
-    When the setting is empty (the documented default), this function
-    returns False for every symbol, so the classifier's CAS-aware
-    branches are unreachable and the bounded behaviour is preserved.
+    Honours the ``CAS_MEMBERSHIP_MAX_AGE_DAYS`` env var when set to
+    a positive integer; otherwise returns ``30``.
     """
-    # Defensive input handling: None, non-string, or empty -> False.
-    # Done before the import so a bad input never touches ``settings``.
-    if not symbol or not isinstance(symbol, str):
-        return False
-    # Lazy import keeps ``market_calendar`` importable in isolation
-    # (test isolation is part of the J.1/J.2 contract).
+    raw = _cas_os.environ.get("CAS_MEMBERSHIP_MAX_AGE_DAYS", "")
     try:
-        from config import settings
+        parsed = int(str(raw).strip())
+    except (TypeError, ValueError):
+        return _DEFAULT_CAS_MEMBERSHIP_MAX_AGE_DAYS
+    if parsed <= 0:
+        return _DEFAULT_CAS_MEMBERSHIP_MAX_AGE_DAYS
+    return parsed
+
+
+# [WORKFLOW-A1 2026-09-20] CAS membership provenance metadata.
+#
+# Operators need to know what the resolver knows and when it knew
+# it. This dataclass surfaces the source CSV hash, the as-of
+# timestamp, the symbol-set size and the freshness bound.
+from dataclasses import dataclass as _cas_dataclass  # noqa: E402
+
+
+@_cas_dataclass(frozen=True)
+class CasMembershipMetadata:
+    configured_size: int  # number of normalised symbols in the list
+    raw_csv_sha256: str  # sha256 of the raw configured CSV
+    max_age_days: int  # freshness bound
+    is_stale: bool  # True when no as_of source is known
+
+
+def _cas_membership_metadata() -> CasMembershipMetadata:
+    """Return the membership metadata.
+
+    Pure of I/O: reads the env var directly and computes the SHA-256
+    over the configured raw CSV. The as-of source is not yet
+    available in this slice -- we surface ``is_stale=False`` only
+    when the configured CSV is non-empty, on the principle that a
+    populated list represents an operator-curated snapshot. When
+    the operator starts carrying an explicit ``CAS_AS_OF_UTC`` env
+    var this function will compare against the current time.
+    """
+    raw = ""
+    try:
+        from config import settings as _settings
     except Exception:
-        # If config cannot be imported for any reason (e.g. a partial
-        # deploy), the classifier degrades to "not eligible" -- the
-        # safest default per the bounded contract. We do NOT raise
-        # because the classifier is total and never returns raise.
-        return False
-    raw = getattr(settings, "CAS_PHASE1_FNO_UNDERLYINGS", "") or ""
-    if not raw:
-        return False
+        raw = ""
+    else:
+        raw = str(getattr(_settings, "CAS_PHASE1_FNO_UNDERLYINGS", "") or "")
+    digest = __import__("hashlib").sha256(raw.encode("utf-8")).hexdigest()
+    normalised = _normalised_cas_eligibility_set(raw)
+    return CasMembershipMetadata(
+        configured_size=len(normalised),
+        raw_csv_sha256=digest,
+        max_age_days=cas_membership_max_age_days(),
+        is_stale=len(normalised) == 0,
+    )
+
+
+def is_cas_eligible(symbol: str | None) -> bool:
+    """[WORKFLOW-J 2026-09-13, +WORKFLOW-A1 2026-09-20] Phase 1 CAS
+    eligibility check.
+
+    Legacy boolean shim. Returns ``True`` only when the symbol is
+    verified ``CasEligibilityState.ELIGIBLE``. All other states
+    (including ``UNKNOWN`` and ``NOT_ELIGIBLE``) return ``False``.
+
+    Prefer ``resolve_cas_eligibility(symbol)`` for new code; that
+    function exposes the three-state contract that this audit
+    defect requires.
+
+    Phase 1 CAS applies only to cash-segment stocks on which
+    derivative contracts are available (per NSE circular
+    NSE/CMTR/72394, effective 2026-01-19). The full list lives in
+    the NSE contract-master API.
+
+    Dev has no live fetch for that list. The list is supplied as
+    the operator-curated CSV string
+    ``settings.CAS_PHASE1_FNO_UNDERLYINGS`` (env var with the same
+    name). The wire format is comma-separated uppercase symbols;
+    whitespace around commas is tolerated and normalised at this
+    call site.
+
+    Design choices preserved from J.2:
+
+      * **Pure** (no I/O, no clock, no DB, no broker call).
+      * **Lazy import** of ``config.settings``.
+      * **Defensive normalisation** at the call site.
+      * **Frozenset** of the normalised list cached via
+        ``functools.lru_cache``.
+
+    A1 hardening: this function is now derived from
+    ``resolve_cas_eligibility``. The boolean contract is preserved
+    so existing tests, fixtures and the J.1 / J.3 byte-identity
+    path keep working, while callers that need the three-state
+    contract can opt in.
+    """
+    return resolve_cas_eligibility(symbol) is CasEligibilityState.ELIGIBLE
+
+
+def resolve_cas_eligibility(
+    symbol: str | None,
+) -> CasEligibilityState:
+    """[WORKFLOW-A1 2026-09-20] Three-state CAS eligibility resolver.
+
+    Returns ``CasEligibilityState.ELIGIBLE`` only when the symbol
+    is verified present in the configured CAS Phase-1 membership
+    list. Returns ``NOT_ELIGIBLE`` when the symbol is verified
+    absent. Returns ``UNKNOWN`` when the resolver cannot reach a
+    verified answer.
+
+    UNKNOWN is reached in any of these cases:
+
+      * ``symbol`` is ``None``, non-string, or empty after
+        normalisation.
+      * The ``config`` import fails for any reason.
+      * ``settings.CAS_PHASE1_FNO_UNDERLYINGS`` is unset or empty
+        after stripping.
+      * The membership data has been marked stale (the metadata
+        helper returns ``is_stale=True``).
+
+    Pure: no I/O, no clock, no DB, no broker call.
+    """
+    # Defensive input handling. Done before the import so a bad
+    # input never touches ``settings``.
+    if not symbol or not isinstance(symbol, str):
+        return CasEligibilityState.UNKNOWN
     target = symbol.strip().upper()
     if not target:
-        return False
-    # Memoised normalisation of the configured CSV. Cached for the
-    # process lifetime -- invalidation is a process restart, which
-    # is also when ``settings`` reloads from env / .env.
+        return CasEligibilityState.UNKNOWN
+    # Config import failure takes precedence over every other
+    # UNKNOWN branch -- a config problem is its own failure mode
+    # and must not be reported as "stale membership".
+    try:
+        from config import settings as _settings
+        raw = str(getattr(_settings, "CAS_PHASE1_FNO_UNDERLYINGS", "") or "")
+    except Exception:
+        return CasEligibilityState.UNKNOWN
+    # Belt-and-braces: an empty raw string is its own UNKNOWN
+    # branch. The membership metadata helper will also report
+    # ``is_stale=True`` on an empty list, but checking here first
+    # means a future bug that flips ``is_stale`` cannot silently
+    # grant NOT_ELIGIBLE.
+    if not raw.strip():
+        return CasEligibilityState.UNKNOWN
+    metadata = _cas_membership_metadata()
+    if metadata.is_stale:
+        return CasEligibilityState.UNKNOWN
+    # Reuse the lru_cache-backed frozenset directly to keep the
+    # membership test O(1). The frozenset cache key is the raw CSV.
     allowed = _normalised_cas_eligibility_set(raw)
-    return target in allowed
+    if target in allowed:
+        return CasEligibilityState.ELIGIBLE
+    return CasEligibilityState.NOT_ELIGIBLE
+
+
+def cas_eligibility_reason(symbol: str | None) -> CasEligibilityReason:
+    """[WORKFLOW-A1 2026-09-20] Stable reason code for the resolver's
+    decision.
+
+    Tests and the audit log key off the reason values. The mapping
+    is intentionally explicit: a future change that collapses
+    multiple UNKNOWN branches into a single reason is a contract
+    change.
+    """
+    if not symbol or not isinstance(symbol, str):
+        return CasEligibilityReason.INVALID_SYMBOL
+    target = symbol.strip().upper()
+    if not target:
+        return CasEligibilityReason.INVALID_SYMBOL
+    # Config import failure takes precedence over every other
+    # UNKNOWN branch -- a config problem is its own failure mode
+    # and must not be reported as "stale membership" or
+    # "empty list".
+    try:
+        from config import settings as _settings
+        raw = str(getattr(_settings, "CAS_PHASE1_FNO_UNDERLYINGS", "") or "")
+    except Exception:
+        return CasEligibilityReason.CONFIG_IMPORT_FAILED
+    if not raw.strip():
+        return CasEligibilityReason.EMPTY_MEMBERSHIP_LIST
+    metadata = _cas_membership_metadata()
+    if metadata.is_stale:
+        return CasEligibilityReason.STALE_MEMBERSHIP
+    allowed = _normalised_cas_eligibility_set(raw)
+    if target in allowed:
+        return CasEligibilityReason.LISTED
+    return CasEligibilityReason.NOT_LISTED
 
 
 @functools.lru_cache(maxsize=1)

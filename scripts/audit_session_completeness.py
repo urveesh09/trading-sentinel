@@ -162,7 +162,20 @@ class SessionAuditReport:
             scheduler expected.
         underlyings: tuple of UnderlyingAudit, one per
             underlying audited.
-        can_qualify: True iff every underlying is COMPLETE.
+        can_qualify: ALWAYS False. The audit (A5) makes this
+            explicit: collection completeness does NOT confer
+            strategy qualification. The field is preserved
+            for byte-identical output but its value is
+            constant.
+        collection_complete: True iff every underlying is COMPLETE.
+            The audit (A6) adds this as the new "every
+            collection slot is filled" boolean.
+        eligible_for_replay: True iff every underlying is
+            COMPLETE. The audit (A6) adds this as the
+            separate "ready for replay" boolean; replay can
+            run on a complete collection but it still needs
+            a registered qualification to authorise a
+            card.
     """
     session_date: str
     archive_root: str
@@ -170,16 +183,38 @@ class SessionAuditReport:
     underlyings: tuple[UnderlyingAudit, ...]
 
     @property
-    def can_qualify(self) -> bool:
+    def collection_complete(self) -> bool:
         return all(
             u.state == CompletenessState.COMPLETE for u in self.underlyings
         )
+
+    @property
+    def eligible_for_replay(self) -> bool:
+        return self.collection_complete
+
+    @property
+    def can_qualify(self) -> bool:
+        # [WORKFLOW-A5 2026-09-20] Collection completeness does
+        # NOT confer strategy qualification. The audit's
+        # explicit invariant: a clean collection is necessary
+        # but not sufficient. A registered, verified, in-window
+        # qualification is also required.
+        return False
 
     def to_dict(self) -> dict:
         return {
             "session_date": self.session_date,
             "archive_root": self.archive_root,
             "expected_attempts_per_index": self.expected_attempts_per_index,
+            # [WORKFLOW-A5/A6 2026-09-20] Two new diagnostic keys.
+            # `collection_complete`: every slot is filled; this is
+            # the audit's "collection is clean" boolean.
+            # `eligible_for_replay`: same definition today, but
+            # preserved separately so a future change can split
+            # "complete collection" from "ready for replay".
+            # `can_qualify` is preserved as a constant False.
+            "collection_complete": self.collection_complete,
+            "eligible_for_replay": self.eligible_for_replay,
             "can_qualify": self.can_qualify,
             "underlyings": [u.to_dict() for u in self.underlyings],
         }

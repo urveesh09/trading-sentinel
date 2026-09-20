@@ -4,6 +4,7 @@ from datetime import date, datetime, timedelta
 import pytest
 import pytz
 
+from config import settings
 from fno_chain import ChainSnapshot
 from fno_instruments import FnoInstruments
 from fno_models import Contract, ContractQuote, FnoDirection, OptionType
@@ -19,6 +20,17 @@ from partner_manual_advisory import (
 
 IST = pytz.timezone("Asia/Kolkata")
 NOW = IST.localize(datetime(2026, 9, 7, 10, 0))
+
+
+@pytest.fixture(autouse=True)
+def _disable_research_artifact_verification(monkeypatch):
+    """[WORKFLOW-A3 2026-09-20] Disable the byte-verification gate
+    so the pre-existing qualification-registration tests can run
+    with their stub SHA-256 (``"a" * 64``). The verification gate
+    is a separate concern covered by
+    ``tests/test_qualification_verifier.py``.
+    """
+    monkeypatch.setattr(settings, "PARTNER_VERIFY_RESEARCH_ARTIFACTS", False)
 
 
 def _book(name: str, segment: str, expiry: date, step: float, lot: int) -> FnoInstruments:

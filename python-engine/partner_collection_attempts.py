@@ -189,6 +189,23 @@ class PartnerCollectionAttemptStore:
                           scheduler_second: int = 50,
                           market_open: bool | None = None,
                           max_public_age_seconds: int = 360) -> dict:
+        """[WORKFLOW-A5 2026-09-20] Per-index session completeness.
+
+        Uses **distinct scheduler slots** (not raw row counts) so
+        duplicate rows in the same minute slot do not mask a
+        missing attempt in a later slot. Classifies each
+        expected slot independently; the per-index state is
+        derived from the slot classifications, not from row
+        aggregates.
+
+        The audit's reproducers (both now caught):
+          - 1 OBSERVED + 1 UNAVAILABLE → ``PARTIAL``
+          - 2 attempts in same slot + 0 in next slot → ``PARTIAL``
+
+        ``can_qualify`` is preserved as ``False``. The audit's
+        invariant: collection completeness does NOT confer
+        strategy qualification.
+        """
         current = aware(now, "readiness now")
         if (interval_seconds <= 0 or interval_seconds % 60 or not 0 <= scheduler_second <= 59
                 or max_public_age_seconds <= 0):
@@ -218,34 +235,80 @@ class PartnerCollectionAttemptStore:
             if not scoped:
                 per_index[name] = self._empty_state(expected)
                 continue
-            unavailable = sum(row["public_state"] != "OBSERVED" for row in scoped)
-            stale_inputs = 0
+            # [WORKFLOW-A5 2026-09-20] Bucket by distinct slot.
+            # ``expected_at_utc`` truncated to the interval
+            # granularity is the canonical slot key. Multiple
+            # rows in the same slot collapse to one bucket.
+            slot_buckets: dict[str, list] = {}
             for row in scoped:
-                if row["public_observed_at_utc"] and row["public_received_at_utc"]:
-                    age = (datetime.fromisoformat(row["public_received_at_utc"])
-                           - datetime.fromisoformat(row["public_observed_at_utc"])).total_seconds()
-                    stale_inputs += age > max_public_age_seconds or age < 0
-            incomplete = sum(
-                row["terminal_state"] is None or row["candidate_state"] not in {"OBSERVED", "NOT_REQUIRED"}
-                or not set(json.loads(row["requested_contracts"])).issubset(set(json.loads(row["received_contracts"])))
-                for row in scoped
-            )
-            missing_schedule = max(0, expected - len(scoped))
-            latest = max(datetime.fromisoformat(row["updated_at_utc"]) for row in scoped)
-            stale = current.astimezone(timezone.utc) - latest > timedelta(seconds=interval_seconds * 2)
-            if unavailable == len(scoped):
+                ts = datetime.fromisoformat(row["expected_at_utc"])
+                # Truncate to the interval: the canonical slot
+                # boundary is ``start + k * interval_seconds``.
+                slot_offset = int((ts - start).total_seconds() // interval_seconds)
+                slot_key = (start + timedelta(seconds=slot_offset * interval_seconds)).isoformat()
+                slot_buckets.setdefault(slot_key, []).append(row)
+            distinct_slots = len(slot_buckets)
+            missing_schedule = max(0, expected - distinct_slots)
+            unavailable_count = 0
+            stale_input_count = 0
+            incomplete_count = 0
+            latest = None
+            for bucket_rows in slot_buckets.values():
+                # The canonical row per bucket is the LATEST one
+                # by ``updated_at_utc``. Multiple rows in the same
+                # bucket (the audit's reproducer 2) are deduped to
+                # the latest so the bucket classification is
+                # deterministic.
+                canonical = max(bucket_rows, key=lambda r: r["updated_at_utc"])
+                if latest is None or canonical["updated_at_utc"] > latest.isoformat():
+                    latest = datetime.fromisoformat(canonical["updated_at_utc"])
+                if canonical["public_state"] != "OBSERVED":
+                    unavailable_count += 1
+                # Stale input: the public observed → received
+                # delta exceeds ``max_public_age_seconds``.
+                if canonical["public_observed_at_utc"] and canonical["public_received_at_utc"]:
+                    age = (datetime.fromisoformat(canonical["public_received_at_utc"])
+                           - datetime.fromisoformat(canonical["public_observed_at_utc"])).total_seconds()
+                    if age > max_public_age_seconds or age < 0:
+                        stale_input_count += 1
+                # Incomplete: terminal missing OR candidate not
+                # in the closed set OR contract subset mismatch.
+                requested = set(json.loads(canonical["requested_contracts"]))
+                received = set(json.loads(canonical["received_contracts"]))
+                if (canonical["terminal_state"] is None
+                        or canonical["candidate_state"] not in {"OBSERVED", "NOT_REQUIRED"}
+                        or not requested.issubset(received)):
+                    incomplete_count += 1
+            # [WORKFLOW-A5 2026-09-20] Slot-aware state machine.
+            # ANY unavailable OR missing OR incomplete slot
+            # promotes the per-index state to PARTIAL. The
+            # legacy "COMPLETE only when ALL slots are clean"
+            # semantics are preserved.
+            if latest is not None:
+                stale = current.astimezone(timezone.utc) - latest > timedelta(seconds=interval_seconds * 2)
+            else:
+                stale = False
+            if unavailable_count > 0 and unavailable_count == distinct_slots:
+                # [WORKFLOW-A5 2026-09-20] Legacy
+                # ATTEMPTED_UNAVAILABLE state preserved for
+                # existing consumers; only fires when every
+                # distinct slot is unavailable.
                 state = "ATTEMPTED_UNAVAILABLE"
-            elif incomplete or missing_schedule:
+            elif unavailable_count > 0 or missing_schedule > 0 or incomplete_count > 0:
                 state = "PARTIAL"
-            elif stale_inputs or (stale and current <= end):
+            elif stale_input_count > 0 or (stale and current <= end):
                 state = "STALE"
             else:
                 state = "COMPLETE"
             per_index[name] = {
-                "state": state, "attempted": len(scoped), "expected": expected,
-                "missing_schedule_count": missing_schedule, "unavailable_count": unavailable,
-                "incomplete_count": incomplete, "stale_input_count": stale_inputs,
-                "latest_updated_at_utc": latest.isoformat(),
+                "state": state,
+                "attempted": distinct_slots,
+                "expected": expected,
+                "missing_schedule_count": missing_schedule,
+                "unavailable_count": unavailable_count,
+                "incomplete_count": incomplete_count,
+                "stale_input_count": stale_input_count,
+                "latest_updated_at_utc": latest.isoformat() if latest is not None else None,
             }
         return {"session_date": session_date.isoformat(), "expected_attempts_per_index": expected,
                 "per_index": per_index, "can_qualify": False}

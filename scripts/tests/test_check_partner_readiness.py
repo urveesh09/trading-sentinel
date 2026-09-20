@@ -370,20 +370,55 @@ def test_main_human_readable(capsys, tmp_path):
 
 
 def test_main_json_is_valid(capsys, tmp_path):
-    """``--json`` flag emits parseable JSON with the right shape."""
+    """``--json`` flag emits parseable JSON with the right shape.
+
+    [WORKFLOW-A6 2026-09-20] The JSON payload now has a
+    top-level ``delivery_ready`` boolean that separates
+    "diagnostic ran cleanly" from "delivery is actually
+    ready". The audit acceptance: a missing qualification
+    does NOT return ``delivery_ready=True``.
+    """
     db_path = _make_stub_db(with_messages=True)
     rc = check_partner_readiness.main([
         "--engine-dir", str(ENGINE_DIR),
         "--db-path", str(db_path),
         "--json",
     ])
-    assert rc in (0, 1)  # credential presence is environment-owned
+    assert rc in (0, 1, 2)  # exit code depends on the diagnostic state
     out = capsys.readouterr().out
     parsed = json.loads(out)
-    assert isinstance(parsed, list)
-    for item in parsed:
+    # Top-level: ``delivery_ready`` separates the diagnostic
+    # outcome from the delivery gate.
+    assert isinstance(parsed, dict)
+    assert "delivery_ready" in parsed
+    assert "has_blocker" in parsed
+    assert "has_fail" in parsed
+    assert "items" in parsed
+    for item in parsed["items"]:
         assert {"name", "title", "status", "detail",
                 "next_step", "evidence"} <= item.keys()
+
+
+def test_delivery_ready_false_when_no_qualification(capsys, tmp_path):
+    """[WORKFLOW-A6 2026-09-20] Audit acceptance: no
+    qualifications + valid token/profile yields
+    ``delivery_ready=False`` and exit code 2.
+    """
+    db_path = _make_stub_db(with_messages=True)
+    rc = check_partner_readiness.main([
+        "--engine-dir", str(ENGINE_DIR),
+        "--db-path", str(db_path),
+        "--json",
+    ])
+    out = capsys.readouterr().out
+    parsed = json.loads(out)
+    # ``has_blocker`` must be True because the
+    # ``compatible_qualification`` check returns BLOCKER
+    # when no row exists (the audit's required semantics).
+    assert parsed["has_blocker"] is True
+    assert parsed["delivery_ready"] is False
+    # Exit code 2 (BLOCKER) per the audit's contract.
+    assert rc == 2
 
 
 def test_main_exit_code_2_for_session_gate_blocker(capsys, tmp_path):

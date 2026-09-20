@@ -156,6 +156,35 @@ class Settings(BaseSettings):
     # default; a manual `/halt <reason>` is still global.
     CB_HALT_CHANNELS: str = "momentum"
 
+    # [WORKFLOW-A1 2026-09-20] Owner entry-only global halt.
+    #
+    # When True, the engine refuses every NEW entry (F&O, EDGE,
+    # Momentum, Penny) outside shadow. Exit handling, position
+    # management, and cash-ledger reconciliation continue. The
+    # motivation per the audit
+    # (docs/2026-09-20-independent-system-readiness-audit.md §4):
+    # manual Momentum Telegram execution remains broker-capable
+    # even after the per-sleeve live-disable switches, which is
+    # not a global live halt. This knob makes the global halt
+    # explicit and visible to operators.
+    #
+    # Default OFF. Read at process start; flipping it requires a
+    # restart (documented below). When set via the env var the
+    # value ``1``, ``true``, ``yes`` (case-insensitive) means True;
+    # anything else means False.
+    OWNER_LIVE_ENTRY_HALT: bool = False
+
+    # [WORKFLOW-A1 2026-09-20] Per-channel kill-switch defaults.
+    #
+    # Comma-separated, NOT a JSON list (see CB_HALT_CHANNELS note
+    # above for the rationale). Channels are:
+    #   momentum, penny, edge, fno
+    # An EMPTY string means no per-channel controls. A channel
+    # listed here is BLOCKED at the entry gate; exits continue.
+    # This is the per-channel companion to OWNER_LIVE_ENTRY_HALT
+    # so operators can silence one sleeve without halting the rest.
+    OWNER_LIVE_ENTRY_HALT_CHANNELS: str = ""
+
     # Momentum
     MAX_MOMENTUM_POSITIONS:   int   = 5
     # [CAPITAL-REALLOC 2026-07-26] 0.50 -> 5/9. The Rs 500 that left the Nifty
@@ -1173,7 +1202,28 @@ class Settings(BaseSettings):
     PARTNER_MANUAL_ADVISORY_ENABLED: bool = True
     PARTNER_MANUAL_ADVISORY_SHADOW_ENABLED: bool = True
     PARTNER_MANUAL_ADVISORY_DELIVERY_ENABLED: bool = True
+    # [WORKFLOW-ITEMS-5/6/9 2026-09-20] Operations freshness thresholds.
+    #
+    # The audit requires the operator to be alerted BEFORE useful
+    # session data is lost. The freshness diagnostic surfaces
+    # login / input / candidate / ledger ages against these
+    # thresholds. Each channel has its own bound because
+    # Kite logins are daily while public inputs are minutes.
+    OPS_FRESHNESS_MAX_LOGIN_AGE_SECONDS: int = 86_400  # 24 hours
+    OPS_FRESHNESS_MAX_INPUT_AGE_SECONDS: int = 1_800  # 30 minutes
+    OPS_FRESHNESS_MAX_LEDGER_AGE_SECONDS: int = 300  # 5 minutes
     PARTNER_MANUAL_ADVISORY_DAILY_CAP: int = 2
+    # [WORKFLOW-A3 2026-09-20] Research artifact verification gate.
+    #
+    # When True, ``record_research_artifact`` reads the report bytes
+    # from ``PARTNER_ARTIFACT_ROOT/<dataset_ref>``, recomputes the
+    # SHA-256, and rejects on mismatch. The flag defaults True so a
+    # partial deployment cannot bypass the gate; operators disable
+    # it only for the duration of an authorised diagnostic.
+    PARTNER_VERIFY_RESEARCH_ARTIFACTS: bool = True
+    # Filesystem root where the operator curates research reports.
+    # Each ``dataset_ref`` maps to ``<root>/<dataset_ref>``.
+    PARTNER_ARTIFACT_ROOT: str = "./artifacts"
     # Material invalidation/target updates use a separate small budget so a
     # morning entry cannot silence a later risk-relevant follow-up.
     PARTNER_MANUAL_ADVISORY_UPDATE_DAILY_CAP: int = 4
