@@ -468,3 +468,13 @@ The broker-statement operator report uses the ASCII currency code `INR`
 instead of the rupee glyph. Numeric reconciliation semantics are unchanged;
 the representation prevents Windows cp1252 consoles from crashing before a
 `MATCH` or `UNRESOLVED` result can be displayed.
+
+### Reproducible session-phase goldens (2026-09-20)
+
+The J.6 regenerator treats `generated_at_utc` as the time the semantic fixture
+content last changed. If schema/classifier/vector content is identical, it
+preserves that timestamp, emits canonical UTF-8 with a trailing newline and
+skips writes whose bytes already match. If any semantic content changes, a new
+timestamp is assigned and the exact same payload is dual-written to the Python
+and Node consumers. No-op verification therefore leaves a clean checkout while
+real phase changes remain visible and attributable.

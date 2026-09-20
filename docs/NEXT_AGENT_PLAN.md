@@ -376,3 +376,13 @@ The operator-ready PR handoff is captured in
 and base `fef35e7` (32 commits). Because the handoff is itself a final
 documentation-only commit, regenerate once immediately before opening the PR;
 the exact-range tool makes that final receipt deterministic.
+
+### 2026-09-20 J.6 reproducibility correction
+
+The session-phase golden producer is now byte-reproducible for unchanged
+classifier semantics. It preserves provenance time only for an equal semantic
+payload, updates it on a real change, writes both consumers from one canonical
+string and avoids no-op writes. Focused acceptance: six Python contract tests
+and all 43 Node mirror tests pass. The two already-present local timestamp-only
+fixture edits remain deliberately unstaged; a clean checkout running the new
+producer will no longer create them.

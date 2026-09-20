@@ -426,3 +426,16 @@ Before the next implementation: update the plan slice. With each commit: update 
 - [x] Broker-statement text output is cp1252-safe (`INR`); reconciliation
   amounts, statuses and exit codes are unchanged.
 - [x] Complete scripts suite: 225 passed with warnings fatal (20.63 seconds).
+
+## 2026-09-20 deterministic session-golden receipt
+
+- [x] Unchanged 2,355-vector payload preserves `generated_at_utc` and is
+  byte-identical across consecutive generations.
+- [x] Semantic payload changes cannot reuse the prior provenance timestamp.
+- [x] Python and Node copies are written from one canonical newline-terminated
+  UTF-8 string; already-matching files are not rewritten.
+- [x] Python focused suite: 6 passed with warnings fatal (2.03 seconds).
+- [x] Node session mirror: 43 passed with natural exit (1.56 seconds); one
+  expected offline holiday-fetch warning was logged.
+- [x] Existing timestamp-only local fixture changes remain unstaged. Production
+  was not read from, written to or restarted.

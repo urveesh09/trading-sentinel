@@ -19,6 +19,7 @@ regenerator against the live ``classify_session_phase``.
 from __future__ import annotations
 
 import json
+import importlib.util
 import os
 import subprocess
 import sys
@@ -34,6 +35,13 @@ REGEN_SCRIPT = (
 )
 PY_GOLDEN = PY_ENGINE / "tests" / "fixtures" / "session_phase_golden.json"
 NODE_GOLDEN = NG_SERVER / "tests" / "fixtures" / "session_phase_golden.json"
+
+_regen_spec = importlib.util.spec_from_file_location(
+    "regenerate_session_phase_golden", REGEN_SCRIPT
+)
+assert _regen_spec is not None and _regen_spec.loader is not None
+regen_module = importlib.util.module_from_spec(_regen_spec)
+_regen_spec.loader.exec_module(regen_module)
 
 
 @pytest.fixture(scope="module")
@@ -73,6 +81,9 @@ def regenerated_goldens():
         "py": PY_GOLDEN,
         "node": NODE_GOLDEN,
         "stdout": proc.stdout,
+        "command": [sys.executable, str(regen_native)],
+        "cwd": py_engine_native,
+        "env": env,
     }
 
 
@@ -109,6 +120,46 @@ def test_regenerator_writes_both_locations(regenerated_goldens) -> None:
     # node-side consumer does not need to match).
     assert py["vectors"] == node["vectors"]
     assert py["python_classifier"] == node["python_classifier"]
+
+
+def test_regenerator_is_byte_stable_when_semantics_are_unchanged(
+    regenerated_goldens,
+) -> None:
+    """A second no-op generation must not churn timestamp metadata."""
+    py_before = regenerated_goldens["py"].read_bytes()
+    node_before = regenerated_goldens["node"].read_bytes()
+    proc = subprocess.run(
+        regenerated_goldens["command"],
+        cwd=str(regenerated_goldens["cwd"]),
+        env=regenerated_goldens["env"],
+        capture_output=True,
+        text=True,
+        check=True,
+    )
+    assert "unchanged" in proc.stdout
+    assert regenerated_goldens["py"].read_bytes() == py_before
+    assert regenerated_goldens["node"].read_bytes() == node_before
+    assert py_before == node_before
+    assert py_before.endswith(b"\n")
+
+
+def test_semantic_change_does_not_preserve_old_timestamp(tmp_path) -> None:
+    """Only an identical semantic payload may reuse provenance time."""
+    target = tmp_path / "golden.json"
+    target.write_text(
+        json.dumps({
+            "generated_at_utc": "2026-01-01T00:00:00+00:00",
+            "schema_version": 1,
+            "vectors": [],
+        }),
+        encoding="utf-8",
+    )
+    assert regen_module._preserved_generated_at(
+        target, {"schema_version": 1, "vectors": []}
+    ) == "2026-01-01T00:00:00+00:00"
+    assert regen_module._preserved_generated_at(
+        target, {"schema_version": 1, "vectors": [{"changed": True}]}
+    ) is None
 
 
 def test_golden_phase_values_are_bounded(regenerated_goldens) -> None:
