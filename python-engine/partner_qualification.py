@@ -226,16 +226,46 @@ def policy_manifest(*, underlying: str, structure_kind: str, bars: pd.DataFrame,
         "PARTNER_MANUAL_ADVISORY_QUOTE_TTL_SEC", "PARTNER_MANUAL_ADVISORY_MAX_QUOTE_AGE_SEC",
         "PARTNER_MANUAL_ADVISORY_MAX_SPREAD_PCT", "PARTNER_MANUAL_ADVISORY_MIN_OI",
         "PARTNER_MANUAL_ADVISORY_MIN_VOLUME", "PARTNER_MANUAL_ADVISORY_MIN_DEPTH_UNITS",
-    )}
+        # [WORKFLOW-A4 2026-09-20] Cost / fee / exit semantics drive
+        # full-policy economics. Including them in the identity
+        # means a fee-model change invalidates old evidence. Keys
+        # not present in a particular deployment are dropped with
+        # a sentinel so the identity hash is still computable.
+        "FNO_TICK_SIZE", "FNO_STOP_PREMIUM_PCT",
+        "FNO_SLIPPAGE_BPS", "FNO_FEE_RATE",
+        "MOMENTUM_STOP_PCT", "MOMENTUM_TARGET_R",
+        "PENNY_STOP_PCT", "PENNY_FEE_RATE",
+        "PARTNER_VERIFY_RESEARCH_ARTIFACTS",
+    ) if hasattr(settings, key)}
     bar_rows = _bars_payload(bars)
     provenance = _causal_provenance(bar_provenance, now)
     if provenance.get("event_at") and datetime.fromisoformat(provenance["event_at"]) > cutoff:
         raise ValueError("bar event is after frozen evaluation cutoff")
     # Whole-module fingerprints include helper changes, not just the top-level
     # signal function. Inputs/master dates stay in the decision evidence below.
-    source_names = ("fno_engine_mom.py", "partner_manual_advisory.py", "fno_chain.py",
-                    "fno_instruments.py", "options_math.py", "partner_qualification.py", "partner_thesis.py",
-                    "partner_decision_clock.py")
+    # [WORKFLOW-A4 2026-09-20] The identity MUST include the
+    # chronological fill/exit/replay modules because they drive
+    # full-policy economics. Without them, a delayed-fill or fee
+    # change can leave the frozen identity unchanged.
+    source_names = (
+        # Original signal / advisory core.
+        "fno_engine_mom.py", "partner_manual_advisory.py", "fno_chain.py",
+        "fno_instruments.py", "options_math.py", "partner_qualification.py",
+        "partner_thesis.py", "partner_decision_clock.py",
+        # Chronological execution + replay (A4: previously omitted).
+        "intraday_spread_chronological.py",
+        "intraday_spread_replay.py",
+        "intraday_spread_holdout.py",
+        "intraday_spread_research.py",
+        "intraday_spread_research_verify.py",
+        # Exit / cost / quality (A4: previously omitted).
+        "momentum_exits.py",
+        "fno_costs.py",
+        "exit_quality.py",
+        "cost_audit.py",
+        # Full-policy replay (A4: previously omitted).
+        "partner_full_policy_replay.py",
+    )
     source_hashes = {name: hashlib.sha256(Path(__file__).with_name(name).read_bytes()).hexdigest()
                      for name in source_names}
     frozen_config = {key: value for key, value in settings.model_dump().items()
@@ -245,6 +275,23 @@ def policy_manifest(*, underlying: str, structure_kind: str, bars: pd.DataFrame,
                 "underlying": name, "structure_kind": structure_kind, "source_sha256": source_hashes,
                 "configuration": frozen_config, "profile": asdict(profile) if profile is not None else None}
     strategy["manifest_sha256"] = _sha(strategy)
+    # [WORKFLOW-A4 2026-09-20] Economic-model manifest: separated
+    # from the policy manifest so a data-only change (a new bar
+    # capture timestamp) does NOT invalidate the economic
+    # fingerprint. The economic_model_manifest field is the
+    # authoritative binding for fill/exit/replay/cost code; the
+    # outer manifest_sha256 still binds everything for
+    # end-to-end integrity.
+    economic_model = {
+        "format": "partner_economic_model_v1",
+        "evaluator": FULL_POLICY_EVALUATOR,
+        "underlying": name,
+        "structure_kind": structure_kind,
+        "source_sha256": source_hashes,
+        "config": config,
+        "config_sha256": _sha(config),
+    }
+    economic_model_sha256 = _sha(economic_model)
     deterministic = {
         "format": "partner_full_policy_manifest_v1", "evaluator": FULL_POLICY_EVALUATOR,
         "evaluator_source_sha256": hashlib.sha256(inspect.getsource(evaluate_fno_mom).encode()).hexdigest(),
@@ -256,6 +303,13 @@ def policy_manifest(*, underlying: str, structure_kind: str, bars: pd.DataFrame,
         "bars_sha256": _sha(bar_rows), "bar_count": len(bar_rows), "bar_provenance": provenance,
         "contract_master_sha256": contract_master_sha256,
         "frozen_policy": strategy, "policy_sha256": strategy["manifest_sha256"],
+        # A4: economic-model manifest lives inside the deterministic
+        # manifest so its fingerprint is part of the end-to-end
+        # binding. Downstream callers can match
+        # ``manifest["economic_model_sha256"]`` to a stored value
+        # without recomputing the policy fingerprint.
+        "economic_model": economic_model,
+        "economic_model_sha256": economic_model_sha256,
     }
     return {**deterministic, "manifest_sha256": _sha(deterministic)}
 
