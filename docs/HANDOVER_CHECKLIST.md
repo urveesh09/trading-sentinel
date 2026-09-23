@@ -4,7 +4,7 @@
 
 Read the [review, migration and recovery instructions](2026-09-21-independent-remediation-review.md)
 before taking over. Dev branch: `codex/production-correction-hedge-p0`; reviewed
-incoming HEAD `674a6fe`. Find the implementation with `git log --oneline --grep="complete independent remediation review"`.
+incoming HEAD `674a6fe`; correction commit `8f8f39f` (post-commit consistency checked).
 Production remains untouched. Earlier audit artifacts and pre-existing golden
 fixture edits are not part of the correction commit.
 

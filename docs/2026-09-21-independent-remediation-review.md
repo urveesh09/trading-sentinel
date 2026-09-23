@@ -176,3 +176,5 @@ UTC and retain PARTIAL when expected slots are missing.
 - API golden change is the authenticated owner-entry-halt GET route only.
 - Atlas regenerated: **209 Python modules**. All four canonical handover documents updated.
 - Dev correction only; commit identity/push receipt is recorded below after commit. No claim of deployed or profitable behavior.
+
+Implementation commit: `8f8f39f34377851075a3299e4b72f7dc0d1f610d`. Post-commit canonical-document and staged-scope consistency verified. Promotion remains GitHub-only; Production was not edited.
