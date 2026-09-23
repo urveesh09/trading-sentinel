@@ -1,5 +1,25 @@
 # Trading Sentinel — system guide and engineering handover
 
+## September 23 independent remediation review (Dev only)
+
+The seven incoming audit-fix commits through `674a6fe` required corrections at
+real entry, settlement and qualification boundaries. Owner-entry halts now reach
+both gateway and direct Kite paths; unknown CAS fails closed. Single-leg F&O exits
+retain durable dispatch intents and acknowledged-fill receipts, then atomically
+settle position/ledger with source-scoped positive generations and allocated equity.
+Ambiguous exits require reconciliation; they cannot automatically resubmit.
+
+New entry advice requires a current `partner_advisory_authorization_v1` package,
+recomputed held-out review, exact current code/config/profile, immutable bytes and
+explicit dated human approval. Legacy status-only rows and the old bypass setting
+cannot authorize delivery. Collection coverage is slot/account scoped; readiness
+WARN is not green. Real token/archive freshness is on-demand observational evidence.
+
+Read [the completion and recovery handover](2026-09-21-independent-remediation-review.md)
+for contracts, migrations, rollout/rollback and remaining work. Production has not
+been changed or re-certified by this Dev completion. Tests prove software behavior,
+not strategy profitability or partner qualification.
+
 ## September 20 Workflow I.4.D evidence-provenance correction
 
 The opt-in news classifier now renders and classifies one immutable Yahoo +

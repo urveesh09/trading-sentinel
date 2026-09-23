@@ -564,7 +564,7 @@ Declared tables: `fno_chain_oi`, `fno_fut_snap`
 
 [FNO-ORCHESTRATOR 2026-07-10] Dual-leg tick runner for the F&O subsystem (spec §10.4). Reuses the EDGE_PAPER / EDGE_LIVE shape from penny_edge_orchestrator: one candidate scan, two legs, bankroll scales the sizing, separate source tags (FNO_PAPER / FNO_LIVE) so the legs cannot see each other's rows. In P1 the live leg is structurally disarmed three ways: FNO_DISABLE_LIVE=True, FNO_LIVE_TRADING=False, FNO_LIVE_BANKROLL=0 -- and even with all three flipped it still refuses unless fno_go_live_check() returns []. run_fno_tick() fires every FNO_SCAN_INTERVAL_SEC during market hours: 1. manage open positions (stops / target+trail / time stop / 15:10 hard flat) -- exits are checked BEFORE entries s
 
-Top-level declarations: `_now_min` (line 60), `_fno_pool_paper` (line 64), `_fno_pool_live` (line 69), `_fno_equity` (line 81), `_fno_halted` (line 87), `_fetch_futures_bars` (line 108), `_record_shadow_observation` (line 116), `_schedule_shadow_observation` (line 133), `_manage_open_positions` (line 163), `_try_entry_for_leg` (line 406), `run_fno_tick` (line 630), `_bar_already_logged` (line 901), `format_fno_telegram` (line 922)
+Top-level declarations: `_now_min` (line 61), `_settle_exit_receipt` (line 65), `_fno_pool_paper` (line 126), `_fno_pool_live` (line 131), `_fno_equity` (line 143), `_fno_halted` (line 149), `_fetch_futures_bars` (line 170), `_record_shadow_observation` (line 178), `_schedule_shadow_observation` (line 195), `_manage_open_positions` (line 225), `_try_entry_for_leg` (line 489), `run_fno_tick` (line 713), `_bar_already_logged` (line 984), `format_fno_telegram` (line 1005)
 
 Engine dependencies: `affordability`, `config`, `fno_chain`, `fno_costs`, `fno_engine_mom`, `fno_executor`, `fno_gates`, `fno_instruments`, `fno_models`, `fno_risk`, `fno_signal_log`, `operator_alert`, `performance`
 
@@ -574,9 +574,11 @@ Related tests: `python-engine/tests/test_fno_orchestrator.py`
 
 [FNO-POSITIONS 2026-07-10] Position store for the F&O subsystem. Options positions don't fit the equity `positions` table (premium vs price, lots vs shares, underlying-level stops next to premium backstops), so they get their own table. Pool accounting still flows into the shared bankroll_ledger via performance.record_trade_close(source=FNO_PAPER/ FNO_LIVE) at close time -- purely additive next to the existing source tags (spec §10.3). All dates/times stored in IST (the exchange's clock), ISO format. Kill switches and day-queries key off entry_date / exit_date, so the module's "day" can never drift against the trading session the way UTC dates do. Rule 57: every reader preflights the table a
 
-Top-level declarations: `FnoPosition` (line 75), `_row_to_position` (line 116), `init_fno_positions_db` (line 120), `_table_exists` (line 129), `insert_position` (line 136), `open_positions` (line 150), `open_premium_committed` (line 164), `trades_today` (line 178), `already_entered_bar` (line 190), `update_trail` (line 202), `close_position` (line 216), `closed_today` (line 237)
+Top-level declarations: `FnoPosition` (line 132), `_row_to_position` (line 173), `init_fno_positions_db` (line 177), `_table_exists` (line 218), `insert_position` (line 225), `open_positions` (line 239), `open_premium_committed` (line 253), `trades_today` (line 267), `already_entered_bar` (line 279), `update_trail` (line 291), `close_position` (line 305), `exit_execution_receipt` (line 337), `claim_exit_intent` (line 356), `record_exit_execution_receipt` (line 373), `SettlementError` (line 476), `PositionNotOpen` (line 480), `SettlementConflict` (line 490), `settle_position_close` (line 515), `settle_position_close_idempotent` (line 741), `closed_today` (line 794)
 
-Declared tables: `fno_positions`
+Engine dependencies: `performance`
+
+Declared tables: `fno_exit_execution_receipts`, `fno_exit_intents`, `fno_positions`
 
 ## `python-engine/fno_risk.py`
 
@@ -650,9 +652,9 @@ Related tests: `python-engine/tests/test_halt_switch.py`
 
 Hedge-first partner advisory orchestration. Only reconciled positions and live, two-sided exchange quotes can produce a review. This module has no execution path. Missing positions, stale prices, unsupported expiries and incomplete volatility data all fail closed.
 
-Top-level declarations: `Phase2MarketContext` (line 73), `Phase3MarketContext` (line 100), `_aware` (line 182), `init_hedge_advisory_db` (line 188), `record_vix_observation` (line 206), `load_vix_observations` (line 231), `_set_service_state` (line 248), `_record_shadow_evaluation` (line 268), `load_hedge_service_state` (line 292), `_decision_identity` (line 311), `_parse_ist` (line 322), `_ledger_underlying` (line 329), `_quarantine_ledger_row` (line 335), `_claim` (line 349), `_record` (line 630), `_complete_claim` (line 646), `_mark_transport_started` (line 672), `_release_claim` (line 708), `_fail_claim` (line 725), `_mark_acknowledgement_recovery_required` (line 792), `load_hedge_delivery_backlog` (line 819), `load_partner_hedge_cards` (line 852), `resolve_hedge_delivery_backlog` (line 904), `_authorize_dispatch` (line 979), `_send_claimed_review` (line 1185), `recover_pending_hedge_deliveries` (line 1321), `_sweep_abandoned_delivery_claims` (line 1369), `_retire_pending_delivery` (line 1412), `_recovery_retirement_reason` (line 1431), `_settings_kwargs` (line 1471), `build_hedge_reviews` (line 1480), `_snapshot_underlying` (line 1560), `_phase2_positions_valid` (line 1570), `send_partner_telegram_diagnostic` (line 1582), `_verified_deliverable_units` (line 1603), `build_phase2_hedge_reviews` (line 1631), `_format_review` (line 1762), `build_phase3_hedge_reviews` (line 1778), `_phase2_trigger_quote_current` (line 1846), `_fresh_oi_walls` (line 1867), `_phase2_market_context` (line 1883), `_phase2_context_text` (line 1994), `_format_phase2_review` (line 2009), `_format_phase3_review` (line 2024), `_phase2_dedup_key` (line 2048), `_send_vix_review` (line 2063), `_portfolio_input_reason` (line 2084), `_whole_portfolio_input_reason` (line 2102), `_proposal_identity` (line 2132), `_advanced_proposal_identity` (line 2155), `_record_no_advice` (line 2170), `partner_hedge_daily_summary` (line 2188), `partner_hedge_tick` (line 2227), `partner_hedge_phase2_tick` (line 2347), `partner_hedge_phase3_tick` (line 2488)
+Top-level declarations: `Phase2MarketContext` (line 73), `Phase3MarketContext` (line 100), `_aware` (line 182), `init_hedge_advisory_db` (line 188), `record_vix_observation` (line 206), `load_vix_observations` (line 231), `_set_service_state` (line 248), `_record_shadow_evaluation` (line 268), `load_hedge_service_state` (line 292), `_decision_identity` (line 311), `_parse_ist` (line 322), `_ledger_underlying` (line 329), `_quarantine_ledger_row` (line 335), `_claim` (line 349), `_record` (line 630), `_complete_claim` (line 646), `_mark_transport_started` (line 672), `_release_claim` (line 708), `_fail_claim` (line 725), `_mark_acknowledgement_recovery_required` (line 792), `load_hedge_delivery_backlog` (line 819), `load_partner_hedge_cards` (line 852), `resolve_hedge_delivery_backlog` (line 904), `_authorize_dispatch` (line 979), `_send_claimed_review` (line 1179), `recover_pending_hedge_deliveries` (line 1315), `_sweep_abandoned_delivery_claims` (line 1363), `_retire_pending_delivery` (line 1406), `_recovery_retirement_reason` (line 1425), `_settings_kwargs` (line 1465), `build_hedge_reviews` (line 1474), `_snapshot_underlying` (line 1554), `_phase2_positions_valid` (line 1564), `send_partner_telegram_diagnostic` (line 1576), `_verified_deliverable_units` (line 1597), `build_phase2_hedge_reviews` (line 1625), `_format_review` (line 1756), `build_phase3_hedge_reviews` (line 1772), `_phase2_trigger_quote_current` (line 1840), `_fresh_oi_walls` (line 1861), `_phase2_market_context` (line 1877), `_phase2_context_text` (line 1988), `_format_phase2_review` (line 2003), `_format_phase3_review` (line 2018), `_phase2_dedup_key` (line 2042), `_send_vix_review` (line 2057), `_portfolio_input_reason` (line 2078), `_whole_portfolio_input_reason` (line 2096), `_proposal_identity` (line 2126), `_advanced_proposal_identity` (line 2149), `_record_no_advice` (line 2164), `partner_hedge_daily_summary` (line 2182), `partner_hedge_tick` (line 2221), `partner_hedge_phase2_tick` (line 2341), `partner_hedge_phase3_tick` (line 2482)
 
-Engine dependencies: `config`, `event_calendar`, `fno_chain`, `fno_underlyings`, `hedge_analytics`, `hedge_formatters`, `hedge_readiness`, `hedge_strategies`, `macro_events`, `partner_bot`
+Engine dependencies: `config`, `event_calendar`, `fno_chain`, `fno_underlyings`, `hedge_analytics`, `hedge_formatters`, `hedge_readiness`, `hedge_strategies`, `macro_events`, `partner_bot`, `partner_manual_advisory`
 
 Related tests: `python-engine/tests/test_hedge_advisory.py`
 
@@ -822,9 +824,9 @@ Related tests: `python-engine/tests/test_intraday_spread_signal_artifact.py`
 
 No module docstring; use the declarations and callers below.
 
-Top-level declarations: `_interval_minutes` (line 33), `_intraday_cache_gate_evaluate` (line 69), `RateLimiter` (line 182), `KiteClient` (line 202), `latest_order_state` (line 1664)
+Top-level declarations: `_interval_minutes` (line 34), `_intraday_cache_gate_evaluate` (line 70), `RateLimiter` (line 183), `KiteClient` (line 203), `latest_order_state` (line 1692)
 
-Engine dependencies: `config`, `halt_switch`, `operator_alert`, `order_execution_readiness`
+Engine dependencies: `config`, `halt_switch`, `operator_alert`, `order_execution_readiness`, `owner_entry_halt`
 
 Related tests: `python-engine/tests/test_kite_client.py`, `python-engine/tests/test_kite_client_cache_miss_reason_f3.py`, `python-engine/tests/test_kite_client_methods.py`
 
@@ -866,7 +868,7 @@ Related tests: `python-engine/tests/test_mark_to_market.py`
 
 No module docstring; use the declarations and callers below.
 
-Top-level declarations: `_iso_sorted` (line 137), `_alert_static_fallback` (line 156), `is_market_open` (line 199), `get_holiday_cache` (line 216), `is_trading_day` (line 228), `next_trading_day` (line 260), `prev_trading_day` (line 266), `_load_holidays_sync` (line 275), `is_trading_day_sync` (line 302), `trading_days_between_sync` (line 325), `_ist_clock_minutes` (line 387), `is_cas_eligible` (line 403), `_normalised_cas_eligibility_set` (line 473), `classify_session_phase` (line 492), `execution_allowed` (line 691)
+Top-level declarations: `CasEligibilityState` (line 30), `CasEligibilityReason` (line 53), `_iso_sorted` (line 184), `_alert_static_fallback` (line 203), `is_market_open` (line 246), `get_holiday_cache` (line 263), `is_trading_day` (line 275), `next_trading_day` (line 307), `prev_trading_day` (line 313), `_load_holidays_sync` (line 322), `is_trading_day_sync` (line 349), `trading_days_between_sync` (line 372), `_ist_clock_minutes` (line 434), `cas_membership_max_age_days` (line 463), `CasMembershipMetadata` (line 488), `_cas_membership_metadata` (line 495), `is_cas_eligible` (line 523), `resolve_cas_eligibility` (line 564), `cas_eligibility_reason` (line 620), `_normalised_cas_eligibility_set` (line 655), `classify_session_phase` (line 674), `execution_allowed` (line 873)
 
 Engine dependencies: `config`
 
@@ -976,6 +978,14 @@ Engine dependencies: `halt_switch`, `main`, `order_execution_readiness`, `penny_
 
 Related tests: `python-engine/tests/test_operator_status.py`
 
+## `python-engine/ops_freshness_diagnostic.py`
+
+Read-only freshness checks over the real login and archive evidence.
+
+Top-level declarations: `ChannelState` (line 16), `ChannelReport` (line 23), `FreshnessDiagnostic` (line 35), `_age_seconds` (line 45), `_report` (line 50), `_login_age` (line 55), `_public_input_age` (line 68), `diagnose_freshness` (line 85)
+
+Related tests: `python-engine/tests/test_ops_freshness_diagnostic.py`
+
 ## `python-engine/ops_metrics.py`
 
 [ROADMAP-2.8 2026-07-12] Persistent ops metrics time-series. Docker's log ring buffer forgets; these two tables don't. They exist so that "did the engine run clean for 30 days?" and "how many accepts did each subsystem produce last week?" are SQL queries instead of manual log greps: ops_liveness_daily -- one row per IST day: scheduler-tick count and the worst gap between consecutive ticks (total and market-hours). Fed by main._scheduler_tick_job (the ROADMAP-2.4 loop-progress tick, 60s, 24/7). This is the attestation source for the F&O go-live liveness gate (fno_risk.fno_go_live_check condition 4, FNO_LIVENESS_30D_CLEAN) -- previously an operator log grep over logs that rotate away. ops_funn
@@ -1025,6 +1035,14 @@ Top-level declarations: `_state_path` (line 33), `_default_state` (line 40), `_l
 Engine dependencies: `config`
 
 Related tests: `python-engine/tests/test_order_execution_readiness.py`
+
+## `python-engine/owner_entry_halt.py`
+
+[WORKFLOW-A1 2026-09-20] Owner entry-only global halt + per-channel control. Audit-defect A1 required an explicit owner entry-only halt and per-channel kill-switch surface. Per ``docs/2026-09-20-independent-system-readiness-audit.md`` §3-A1 and §4, manual Momentum Telegram execution remained broker-capable after the per-sleeve live-disable switches; that left an operator without a single lever to silence all new entries while preserving exits. This module is the lever. It exposes a pure predicate ``is_owner_entry_halted(channel)`` and a structured result type ``EntryHaltVerdict`` that callers can serialize into the structured log or surface in the operator readiness report. Design choices: *
+
+Top-level declarations: `HaltChannel` (line 42), `EntryHaltVerdict` (line 60), `normalise_channel` (line 86), `_parse_channels_csv` (line 107), `is_owner_entry_halted` (line 126)
+
+Engine dependencies: `config`
 
 ## `python-engine/partner_bot.py`
 
@@ -1118,9 +1136,9 @@ Related tests: `python-engine/tests/test_partner_lifecycle_demo.py`
 
 Scoped, non-executing advisory cards for the NIFTY 50/SENSEX partner. This module deliberately sits between read-only market scanning and the hardened delivery ledger. It has no broker-order import and no dependency on Sentinel cash, paper fills or partner holdings for a ``MARKET_SETUP``. A personalised hedge is a different scope and is rejected here unless a caller supplies separately reconciled exposure. The first release is intentionally small: same-index, same-expiry directional debit spreads. Every leg comes from the current exchange-specific instrument book and the conservative executable side of a single quote batch. The module produces persisted preview/shadow cards; delivery stays s
 
-Top-level declarations: `AdvisoryScope` (line 42), `StrategyEvidence` (line 48), `ManualDecision` (line 55), `PartnerAdvisoryProfile` (line 70), `AdvisoryLeg` (line 95), `AdvisoryCandidate` (line 115), `ValidationResult` (line 155), `_iso` (line 241), `_parse_status_clock` (line 247), `_profile_payload` (line 254), `_candidate_payload` (line 258), `intraday_deadlines` (line 271), `_finite_positive` (line 283), `_vertical_oracle` (line 287), `validate_profile` (line 323), `init_partner_advisory_db` (line 346), `save_partner_profile` (line 359), `load_partner_profile` (line 410), `load_partner_profile_with_state` (line 427), `record_advisory_input_status` (line 449), `load_advisory_input_status` (line 484), `record_strategy_qualification` (line 535), `record_research_artifact` (line 566), `is_strategy_qualified` (line 585), `_quote_time` (line 605), `_leg` (line 609), `resolve_advisory_expiry` (line 621), `build_directional_debit_spread` (line 630), `build_conditional_index_protective_put` (line 712), `select_preferred_market_candidates` (line 768), `validate_candidate` (line 801), `advisory_identity` (line 929), `render_advisory_card` (line 955), `persist_candidate` (line 971), `dispatch_queued_advisory` (line 1104), `queue_management_updates` (line 1166), `run_intraday_session_lifecycle` (line 1241), `dispatch_queued_management_update` (line 1298), `record_manual_feedback` (line 1328), `load_advisory_cards` (line 1349), `load_advisory_diagnostics` (line 1380)
+Top-level declarations: `AdvisoryScope` (line 42), `StrategyEvidence` (line 48), `ManualDecision` (line 55), `PartnerAdvisoryProfile` (line 70), `AdvisoryLeg` (line 95), `AdvisoryCandidate` (line 115), `ValidationResult` (line 155), `_iso` (line 241), `_parse_status_clock` (line 247), `_profile_payload` (line 254), `_candidate_payload` (line 258), `intraday_deadlines` (line 271), `_finite_positive` (line 283), `_vertical_oracle` (line 287), `validate_profile` (line 323), `init_partner_advisory_db` (line 346), `save_partner_profile` (line 359), `load_partner_profile` (line 410), `load_partner_profile_with_state` (line 427), `record_advisory_input_status` (line 449), `load_advisory_input_status` (line 484), `record_strategy_qualification` (line 535), `record_research_artifact` (line 576), `qualification_is_current` (line 604), `is_strategy_qualified` (line 636), `_quote_time` (line 643), `_leg` (line 647), `resolve_advisory_expiry` (line 659), `build_directional_debit_spread` (line 668), `build_conditional_index_protective_put` (line 750), `select_preferred_market_candidates` (line 806), `validate_candidate` (line 839), `advisory_identity` (line 967), `render_advisory_card` (line 993), `persist_candidate` (line 1009), `dispatch_queued_advisory` (line 1142), `queue_management_updates` (line 1204), `run_intraday_session_lifecycle` (line 1279), `dispatch_queued_management_update` (line 1336), `record_manual_feedback` (line 1366), `load_advisory_cards` (line 1387), `load_advisory_diagnostics` (line 1418)
 
-Engine dependencies: `config`, `fno_chain`, `fno_costs`, `fno_defined_risk`, `fno_instruments`, `fno_models`, `fno_underlyings`, `hedge_advisory`, `partner_thesis`, `research_archive`, `research_leg_subscriptions`
+Engine dependencies: `config`, `fno_chain`, `fno_costs`, `fno_defined_risk`, `fno_instruments`, `fno_models`, `fno_underlyings`, `hedge_advisory`, `partner_qualification_authority`, `partner_thesis`, `research_archive`, `research_leg_subscriptions`
 
 Related tests: `python-engine/tests/test_partner_manual_advisory.py`
 
@@ -1142,11 +1160,19 @@ Declared tables: `partner_messages`
 
 Causal research adapter for the deployed intraday partner policy. This module intentionally composes the same signal, candidate builder and validation functions used by the advisory path. It creates research facts; it cannot write qualifications, dispatch advice, or place orders.
 
-Top-level declarations: `load_candidate_evidence` (line 36), `_sha` (line 123), `_clock` (line 127), `_signal_payload` (line 133), `_bars_payload` (line 139), `_causal_provenance` (line 162), `policy_manifest` (line 195), `FullPolicyDecision` (line 264), `evaluate_deployed_full_policy` (line 275), `write_full_policy_decision` (line 348)
+Top-level declarations: `load_candidate_evidence` (line 36), `_sha` (line 123), `_clock` (line 127), `_signal_payload` (line 133), `_bars_payload` (line 139), `_causal_provenance` (line 162), `policy_manifest` (line 195), `FullPolicyDecision` (line 297), `evaluate_deployed_full_policy` (line 308), `write_full_policy_decision` (line 381)
 
-Engine dependencies: `config`, `fno_chain`, `fno_engine_mom`, `fno_instruments`, `fno_models`, `intraday_spread_archive_adapter`, `partner_decision_clock`, `partner_manual_advisory`
+Engine dependencies: `config`, `fno_chain`, `fno_engine_mom`, `fno_instruments`, `fno_models`, `intraday_spread_archive_adapter`, `partner_decision_clock`, `partner_manual_advisory`, `partner_qualification_authority`, `policy_identity`
 
 Related tests: `python-engine/tests/test_partner_qualification.py`, `python-engine/tests/test_partner_qualification_review.py`, `python-engine/tests/test_partner_qualification_verify.py`
+
+## `python-engine/partner_qualification_authority.py`
+
+Read-only verification of reviewed evidence at each advisory authority boundary. Registration is not authority. An artifact must reproduce the existing heldout and review contracts, bind current code/config/profile, and carry a dated human approval. No configuration switch bypasses these delivery requirements.
+
+Top-level declarations: `read_artifact` (line 21), `_clock` (line 36), `_digest` (line 43), `policy_configuration` (line 48), `verify_authorization_package` (line 55)
+
+Engine dependencies: `config`, `intraday_spread_holdout`, `partner_qualification_review`, `policy_identity`
 
 ## `python-engine/partner_qualification_review.py`
 
@@ -1472,7 +1498,7 @@ Related tests: `python-engine/tests/test_penny_universe.py`, `python-engine/test
 
 No module docstring; use the declarations and callers below.
 
-Top-level declarations: `init_ledger` (line 10), `current_bankroll` (line 52), `bankroll_for_source` (line 79), `allocation_for_source` (line 149), `division_equity` (line 156), `nifty_bankroll` (line 178), `fno_bankroll` (line 223), `record_trade_close` (line 254), `record_partial_realisation` (line 326), `record_cb_reset` (line 363), `_last_cb_reset_id` (line 386), `check_circuit_breakers` (line 393), `cb_halt_channels` (line 485), `enforce_circuit_breakers` (line 495), `penny_pool_pnl` (line 560), `pool_breakdown` (line 602), `is_paper_source` (line 720), `fmt_money` (line 739), `_division_registry` (line 765), `division_breakdown` (line 798), `format_division_breakdown` (line 867)
+Top-level declarations: `init_ledger` (line 10), `current_bankroll` (line 84), `bankroll_for_source` (line 111), `allocation_for_source` (line 181), `division_equity` (line 188), `nifty_bankroll` (line 210), `fno_bankroll` (line 255), `record_trade_close` (line 286), `record_partial_realisation` (line 390), `record_cb_reset` (line 427), `_last_cb_reset_id` (line 450), `check_circuit_breakers` (line 457), `cb_halt_channels` (line 549), `enforce_circuit_breakers` (line 559), `penny_pool_pnl` (line 624), `pool_breakdown` (line 666), `is_paper_source` (line 784), `fmt_money` (line 803), `_division_registry` (line 829), `division_breakdown` (line 862), `format_division_breakdown` (line 931)
 
 Engine dependencies: `analytics`, `config`
 
@@ -1489,6 +1515,14 @@ Top-level declarations: `_round` (line 19), `_analytics_registry` (line 23), `_t
 Engine dependencies: `config`, `performance`
 
 Related tests: `python-engine/tests/test_performance_analytics.py`
+
+## `python-engine/policy_identity.py`
+
+[WORKFLOW-A4 2026-09-20] Policy identity fingerprint helper. Exposes the policy + economic-model fingerprint computation as a public helper so callers (full-policy replay, downstream verification routes, qualification re-validation) can: 1. Recompute the identity from the same source modules the `policy_manifest` in `partner_qualification` uses. 2. Reject a stored identity when a material fill/exit/fee-model change has invalidated it. 3. Separate the policy identity from data identity so a new bar capture timestamp does NOT create a new strategy. Pure of I/O: takes the module source bytes / config dict and returns the fingerprint. The caller reads the modules from disk and the config from `s
+
+Top-level declarations: `_canonical_sha256` (line 69), `module_sha256s` (line 77), `policy_fingerprint` (line 91), `economic_model_fingerprint` (line 109)
+
+Related tests: `python-engine/tests/test_policy_identity_completeness.py`
 
 ## `python-engine/portfolio.py`
 
@@ -1568,9 +1602,9 @@ Declared tables: `proactive_exit_research_manifests`, `proactive_exit_research_r
 
 Offline-safe evidence ledger for proactive strategy research. This module is deliberately policy-agnostic: it records what a scanner or allocator did without creating an order, and keeps shadow/replay evidence out of the live cash books.
 
-Top-level declarations: `ShadowProposal` (line 64), `ShadowSimulation` (line 83), `ShadowAllocation` (line 97), `ShadowPosition` (line 107), `_proposal_id` (line 125), `shadow_history_state` (line 129), `build_shadow_proposals` (line 154), `allocate_shadow_proposals` (line 201), `size_shadow_allocations` (line 218), `_comparable_shadow_score` (line 277), `simulate_shadow_trade` (line 291), `_simulate_shadow_limit_pullback` (line 347), `_simulate_shadow_trailing_stop` (line 399), `simulate_shadow_research_trial` (line 471), `_normalise_shadow_bars` (line 609), `_bars_visible_as_of` (line 632), `_shadow_entry_window_already_observed` (line 653), `simulate_open_shadow_position` (line 673), `_stamp` (line 780), `init_proactive_intelligence` (line 787), `_shadow_run_storage_key` (line 808), `_shadow_implementation_identity` (line 833), `stamp_session_phase` (line 838), `_configured_shadow_run_id` (line 903), `_ensure_shadow_run` (line 918), `_shadow_run_manifest` (line 983), `_claim_shadow_step` (line 1000), `_complete_shadow_step` (line 1070), `record_opportunity_event` (line 1091), `_record_opportunity_event_in_transaction` (line 1121), `transition_watchlist` (line 1160), `record_cash_flow` (line 1187), `record_scan_run` (line 1208), `record_market_data_observation` (line 1228), `proactive_inactivity_diagnostics` (line 1277), `_recent_eligible_session_dates` (line 1309), `proactive_session_diagnostics` (line 1329), `_shadow_positions` (line 1465), `_shadow_account_state` (line 1489), `_persist_new_shadow_position` (line 1511), `_advance_open_shadow_positions` (line 1571), `_complete_shadow_watchlist_in_transaction` (line 1632), `_expire_pending_shadow_watchlists` (line 1650), `repair_shadow_evidence` (line 1691), `run_shadow_workflow` (line 1728), `run_shadow_replay` (line 1939), `_record_shadow_configuration_state` (line 1954), `_validate_shadow_bar_collections` (line 1966), `run_configured_shadow_workflow` (line 1987), `proactive_activity_report` (line 2131), `proactive_shadow_comparison` (line 2249), `_research_proposal_manifest` (line 2362), `run_shadow_research_comparison` (line 2372), `proactive_shadow_research_report` (line 2476)
+Top-level declarations: `ShadowProposal` (line 67), `ShadowSimulation` (line 86), `ShadowAllocation` (line 100), `ShadowPosition` (line 110), `_proposal_id` (line 128), `shadow_history_state` (line 132), `build_shadow_proposals` (line 157), `allocate_shadow_proposals` (line 204), `size_shadow_allocations` (line 221), `_comparable_shadow_score` (line 280), `simulate_shadow_trade` (line 294), `_simulate_shadow_limit_pullback` (line 350), `_simulate_shadow_trailing_stop` (line 402), `simulate_shadow_research_trial` (line 474), `_normalise_shadow_bars` (line 612), `_bars_visible_as_of` (line 635), `_shadow_entry_window_already_observed` (line 656), `simulate_open_shadow_position` (line 676), `_stamp` (line 783), `init_proactive_intelligence` (line 790), `_shadow_run_storage_key` (line 811), `_shadow_implementation_identity` (line 836), `stamp_session_phase` (line 841), `_configured_shadow_run_id` (line 906), `_ensure_shadow_run` (line 921), `_shadow_run_manifest` (line 986), `_claim_shadow_step` (line 1003), `_complete_shadow_step` (line 1073), `record_opportunity_event` (line 1094), `_record_opportunity_event_in_transaction` (line 1124), `transition_watchlist` (line 1163), `record_cash_flow` (line 1190), `record_scan_run` (line 1211), `record_market_data_observation` (line 1231), `proactive_inactivity_diagnostics` (line 1280), `_recent_eligible_session_dates` (line 1312), `proactive_session_diagnostics` (line 1332), `_shadow_positions` (line 1468), `_shadow_account_state` (line 1492), `_persist_new_shadow_position` (line 1514), `_advance_open_shadow_positions` (line 1574), `_complete_shadow_watchlist_in_transaction` (line 1635), `_expire_pending_shadow_watchlists` (line 1653), `repair_shadow_evidence` (line 1694), `run_shadow_workflow` (line 1731), `run_shadow_replay` (line 1942), `_record_shadow_configuration_state` (line 1957), `_validate_shadow_bar_collections` (line 1969), `run_configured_shadow_workflow` (line 1990), `proactive_activity_report` (line 2163), `proactive_shadow_comparison` (line 2281), `_research_proposal_manifest` (line 2394), `run_shadow_research_comparison` (line 2404), `proactive_shadow_research_report` (line 2508)
 
-Engine dependencies: `config`, `market_calendar`, `proactive_execution_research`, `proactive_exit_research`, `proactive_market_data`, `proactive_portfolio_research`, `range_reversion`
+Engine dependencies: `config`, `market_calendar`, `proactive_execution_research`, `proactive_exit_research`, `proactive_market_data`, `proactive_portfolio_research`, `proactive_source_verifier`, `range_reversion`
 
 Related tests: `python-engine/tests/test_proactive_intelligence.py`
 
@@ -1596,6 +1630,14 @@ Related tests: `python-engine/tests/test_proactive_portfolio_research.py`
 
 Declared tables: `proactive_portfolio_research_runs`
 
+## `python-engine/proactive_source_verifier.py`
+
+[WORKFLOW-ITEMS-5/6/9 2026-09-20] Proactive source configuration verifier. The audit (items 5) requires that the ``KITE_COMPLETED_BARS_V1`` branch in ``proactive_intelligence._run_proactive_shadow`` reads explicit, current instrument-token mapping + a Production research account/run ID + immutable capital/cost assumptions. The branch exists (proactive_intelligence.py:2004) but a misconfigured source silently returns ``MARKET_DATA_SOURCE_UNCONFIGURED`` AFTER the broker call returns its own error. This verifier runs BEFORE the broker call and surfaces a structured verdict: which fields are missing or invalid. The caller maps the verdict's ``reasons`` to the existing ``MARKET_DATA_SOURCE_UNCONF
+
+Top-level declarations: `SourceConfigReason` (line 39), `ConfigVerdict` (line 55), `_read_int` (line 77), `_read_float` (line 85), `verify_kite_completed_bar_config` (line 94)
+
+Related tests: `python-engine/tests/test_proactive_source_verifier.py`
+
 ## `python-engine/promotion_bridge.py`
 
 [WORKFLOW-G 2026-09-13] Append-only promotion-bridge persistence and state machine. Implements the contract documented at ``docs/2026-09-13-workflow-g-promotion- bridge.md``. Every held-out comparison report authored by ``proactive_*`` is *consultative evidence only*; it never authorises orders. This module owns the bridges that *might* one day carry such authority, and enforces the forward-only state machine that the contract declares. Architectural rules (all enforced here, all deliberate): * **Append-only.** Updates to a bridge that already exists raise ``BridgeAlreadyExistsError``. Edits to a bridge's authorisation state are not permitted; transitions are recorded as new rows in ``promot
@@ -1615,6 +1657,14 @@ Pure research promotion-readiness assessment. This module can only recommend pap
 Top-level declarations: `ReadinessThresholds` (line 23), `_family` (line 54), `_finite` (line 61), `_integer` (line 71), `_variant_row` (line 76), `_latest_run` (line 84), `_result_variant` (line 90), `_first` (line 104), `_block` (line 108), `_reconciliation_status` (line 112), `_legacy_assessment` (line 123), `assess_promotion_readiness` (line 145), `_json_safe` (line 316), `readiness_json` (line 333)
 
 Related tests: `python-engine/tests/test_promotion_readiness.py`, `python-engine/tests/test_promotion_readiness_route.py`
+
+## `python-engine/qualification_verifier.py`
+
+Legacy package-shape diagnostic; it confers no registry or delivery authority. The authoritative boundary is partner_qualification_authority, which reconstructs heldout/review evidence and checks current code/config/profile and validity. This older pure diagnostic remains for compatibility; its qualified field is not an authorization decision. [WORKFLOW-A3 2026-09-20] Qualification verifier. The audit (docs/2026-09-20-independent-system-readiness-audit.md §3-A3) flagged that ``record_strategy_qualification`` (and the upstream ``record_research_artifact``) accept a SHA-256 string + dataset_ref without reading and verifying the referenced report bytes. The fix is a pure verifier that: 1. Reads
+
+Top-level declarations: `QualificationReason` (line 53), `QualificationVerdict` (line 95), `_required_keys_present` (line 124), `_check_heldout` (line 153), `_check_costs` (line 167), `_check_review` (line 177), `_parse_dt` (line 187), `_check_validity` (line 206), `_sha256_bytes` (line 229), `_sha256_canonical` (line 235), `qualify_research_package` (line 242)
+
+Related tests: `python-engine/tests/test_qualification_verifier.py`
 
 ## `python-engine/range_reversion.py`
 
@@ -1746,7 +1796,7 @@ Engine dependencies: `config`, `fno_shadow`
 
 Authenticated intake and observability for partner hedge advisory data.
 
-Top-level declarations: `GreeksPayload` (line 35), `PartnerPositionPayload` (line 45), `ReconcilePayload` (line 69), `ClosePayload` (line 84), `VixPayload` (line 90), `HedgeGateEvidencePayload` (line 96), `HedgeDeliveryResolutionPayload` (line 109), `PartnerAdvisoryProfilePayload` (line 116), `PartnerAdvisoryFeedbackPayload` (line 149), `PartnerAdvisoryQualificationPayload` (line 155), `PartnerAdvisoryResearchArtifactPayload` (line 165), `_position_json` (line 172), `add_partner_hedge_position` (line 177), `reconcile_partner_hedge_position` (line 219), `close_partner_hedge_position` (line 245), `get_partner_hedge_positions` (line 257), `add_partner_vix_observation` (line 264), `get_partner_hedge_status` (line 277), `get_partner_advisory_profile` (line 301), `get_partner_advisory_setup` (line 308), `put_partner_advisory_profile` (line 330), `put_partner_advisory_qualification` (line 342), `post_partner_advisory_research_artifact` (line 364), `get_partner_advisory_effective_settings` (line 376), `get_partner_advisory_cards` (line 400), `get_partner_advisory_diagnostics` (line 406), `get_partner_advisory_research_readiness` (line 412), `post_partner_advisory_telegram_diagnostic` (line 427), `post_partner_advisory_feedback` (line 440), `get_partner_hedge_delivery_backlog` (line 455), `get_partner_hedge_cards` (line 462), `resolve_partner_hedge_delivery_backlog` (line 471), `get_partner_hedge_readiness` (line 486), `add_partner_hedge_gate_evidence` (line 493)
+Top-level declarations: `GreeksPayload` (line 35), `PartnerPositionPayload` (line 45), `ReconcilePayload` (line 69), `ClosePayload` (line 84), `VixPayload` (line 90), `HedgeGateEvidencePayload` (line 96), `HedgeDeliveryResolutionPayload` (line 109), `PartnerAdvisoryProfilePayload` (line 116), `PartnerAdvisoryFeedbackPayload` (line 149), `PartnerAdvisoryQualificationPayload` (line 155), `PartnerAdvisoryResearchArtifactPayload` (line 166), `_position_json` (line 173), `add_partner_hedge_position` (line 178), `reconcile_partner_hedge_position` (line 220), `close_partner_hedge_position` (line 246), `get_partner_hedge_positions` (line 258), `add_partner_vix_observation` (line 265), `get_partner_hedge_status` (line 278), `get_partner_advisory_profile` (line 302), `get_partner_advisory_setup` (line 309), `put_partner_advisory_profile` (line 331), `put_partner_advisory_qualification` (line 343), `post_partner_advisory_research_artifact` (line 366), `get_partner_advisory_effective_settings` (line 378), `get_partner_advisory_cards` (line 402), `get_partner_advisory_diagnostics` (line 408), `get_partner_advisory_research_readiness` (line 414), `post_partner_advisory_telegram_diagnostic` (line 429), `post_partner_advisory_feedback` (line 442), `get_partner_hedge_delivery_backlog` (line 457), `get_partner_hedge_cards` (line 464), `resolve_partner_hedge_delivery_backlog` (line 473), `get_partner_hedge_readiness` (line 488), `add_partner_hedge_gate_evidence` (line 495)
 
 Engine dependencies: `config`, `hedge_advisory`, `hedge_analytics`, `hedge_readiness`, `partner_manual_advisory`, `research_archive`
 
@@ -1762,9 +1812,9 @@ Engine dependencies: `market_calendar`
 
 Authenticated, read-only session inputs consumed by the Node gateway.
 
-Top-level declarations: `_eligibility_version` (line 17), `_eligibility_signature` (line 23), `cas_eligibility` (line 29)
+Top-level declarations: `_eligibility_version` (line 29), `_eligibility_signature` (line 35), `_owner_entry_halt_version` (line 54), `_owner_entry_halt_signature` (line 63), `cas_eligibility` (line 83), `owner_entry_halt` (line 137), `_now_iso` (line 169)
 
-Engine dependencies: `config`, `engine_auth`, `market_calendar`
+Engine dependencies: `config`, `engine_auth`, `market_calendar`, `owner_entry_halt`
 
 ## `python-engine/routes_ops.py`
 

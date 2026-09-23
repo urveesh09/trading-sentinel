@@ -16,9 +16,14 @@ from market_calendar import (
     CasEligibilityState,
     _cas_membership_metadata,
 )
+from owner_entry_halt import is_owner_entry_halted
 
 
 router = APIRouter(prefix="/market-session", tags=["market-session"])
+
+OWNER_ENTRY_HALT_SOURCE = (
+    "python-engine/owner_entry_halt.py::is_owner_entry_halted"
+)
 
 
 def _eligibility_version() -> str:
@@ -38,6 +43,34 @@ def _eligibility_signature(
     """
     body = (
         f"{symbol}|{str(state).lower()}|{str(reason).lower()}|{version}"
+    ).encode("utf-8")
+    return hmac.new(
+        settings.INTERNAL_API_SECRET.encode("utf-8"),
+        body,
+        hashlib.sha256,
+    ).hexdigest()
+
+
+def _owner_entry_halt_version() -> str:
+    """Expose the lineage of the owner-entry halt configuration."""
+    raw = (
+        f"{bool(getattr(settings, 'OWNER_LIVE_ENTRY_HALT', False))}|"
+        f"{str(getattr(settings, 'OWNER_LIVE_ENTRY_HALT_CHANNELS', '') or '')}"
+    ).encode("utf-8")
+    return hashlib.sha256(raw).hexdigest()[:16]
+
+
+def _owner_entry_halt_signature(
+    channel: str,
+    allowed: bool,
+    global_halt: bool,
+    per_channel: bool,
+    reason: str,
+    version: str,
+) -> str:
+    body = (
+        f"{channel}|{str(allowed).lower()}|{str(global_halt).lower()}|"
+        f"{str(per_channel).lower()}|{reason}|{version}"
     ).encode("utf-8")
     return hmac.new(
         settings.INTERNAL_API_SECRET.encode("utf-8"),
@@ -96,6 +129,39 @@ def cas_eligibility(
         "source_version": version,
         "signature": _eligibility_signature(
             normalized, state.value, reason.value, version,
+        ),
+    }
+
+
+@router.get("/owner-entry-halt")
+def owner_entry_halt(
+    request: Request,
+    channel: str = Query(..., min_length=1, max_length=32),
+):
+    """Return the authenticated entry-only owner halt for one channel.
+
+    This projection is intentionally separate from CAS membership: the halt
+    applies throughout the entry session, while exits and position management
+    continue. Node verifies the signed verdict immediately before dispatch.
+    """
+    _check_internal_secret(request, "market_session_owner_entry_halt")
+    verdict = is_owner_entry_halted(channel)
+    version = _owner_entry_halt_version()
+    return {
+        "channel": verdict.channel,
+        "allowed": verdict.allowed,
+        "global_halt": verdict.global_halt,
+        "per_channel": verdict.per_channel,
+        "reason": verdict.reason,
+        "source": OWNER_ENTRY_HALT_SOURCE,
+        "source_version": version,
+        "signature": _owner_entry_halt_signature(
+            verdict.channel,
+            verdict.allowed,
+            verdict.global_halt,
+            verdict.per_channel,
+            verdict.reason,
+            version,
         ),
     }
 

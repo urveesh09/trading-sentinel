@@ -188,7 +188,8 @@ class PartnerCollectionAttemptStore:
                           entry_end_minute: int, interval_seconds: int = 120,
                           scheduler_second: int = 50,
                           market_open: bool | None = None,
-                          max_public_age_seconds: int = 360) -> dict:
+                          max_public_age_seconds: int = 360,
+                          account_id: str | None = None) -> dict:
         """[WORKFLOW-A5 2026-09-20] Per-index session completeness.
 
         Uses **distinct scheduler slots** (not raw row counts) so
@@ -221,6 +222,9 @@ class PartnerCollectionAttemptStore:
         lower = _iso(datetime.combine(session_date, datetime.min.time(), IST) + timedelta(minutes=entry_start_minute))
         upper = _iso(end + timedelta(minutes=1))
         names = [name.upper() for name in underlyings]
+        requested_account_id = None if account_id is None else str(account_id).strip()
+        if account_id is not None and not requested_account_id:
+            raise ValueError("account_id must be a non-empty string when supplied")
         if not self.path.exists():
             return {"session_date": session_date.isoformat(), "expected_attempts_per_index": expected,
                     "per_index": {name: self._empty_state(expected) for name in names},
@@ -231,9 +235,34 @@ class PartnerCollectionAttemptStore:
                               (lower, upper)).fetchall()
         per_index = {}
         for name in names:
-            scoped = [row for row in rows if row["underlying"] == name]
+            # Rows scheduled after the audit clock are future evidence.  They
+            # cannot fill an earlier missing slot, even if a clock-skewed
+            # writer has already retained them.
+            scoped = []
+            for row in rows:
+                if row["underlying"] != name:
+                    continue
+                expected_at = datetime.fromisoformat(row["expected_at_utc"])
+                if expected_at < start or expected_at > cutoff:
+                    continue
+                if requested_account_id is not None and row["account_id"] != requested_account_id:
+                    continue
+                scoped.append(row)
             if not scoped:
                 per_index[name] = self._empty_state(expected)
+                continue
+            account_ids = sorted({str(row["account_id"]) for row in scoped})
+            if requested_account_id is None and len(account_ids) > 1:
+                # A profile/account change must not let two partial streams
+                # manufacture one apparently complete collection.  Callers
+                # can audit one known account with ``account_id``.
+                row = dict(self._empty_state(expected))
+                row.update({
+                    "state": "PARTIAL",
+                    "account_ids": account_ids,
+                    "account_scope_ambiguous": True,
+                })
+                per_index[name] = row
                 continue
             # [WORKFLOW-A5 2026-09-20] Bucket by distinct slot.
             # ``expected_at_utc`` truncated to the interval
@@ -288,7 +317,8 @@ class PartnerCollectionAttemptStore:
                 stale = current.astimezone(timezone.utc) - latest > timedelta(seconds=interval_seconds * 2)
             else:
                 stale = False
-            if unavailable_count > 0 and unavailable_count == distinct_slots:
+            if (unavailable_count > 0 and unavailable_count == distinct_slots
+                    and missing_schedule == 0 and incomplete_count == 0):
                 # [WORKFLOW-A5 2026-09-20] Legacy
                 # ATTEMPTED_UNAVAILABLE state preserved for
                 # existing consumers; only fires when every
@@ -309,6 +339,8 @@ class PartnerCollectionAttemptStore:
                 "incomplete_count": incomplete_count,
                 "stale_input_count": stale_input_count,
                 "latest_updated_at_utc": latest.isoformat() if latest is not None else None,
+                "account_ids": account_ids,
+                "account_scope_ambiguous": False,
             }
         return {"session_date": session_date.isoformat(), "expected_attempts_per_index": expected,
                 "per_index": per_index, "can_qualify": False}
@@ -317,4 +349,5 @@ class PartnerCollectionAttemptStore:
     def _empty_state(expected: int) -> Mapping[str, object]:
         return {"state": "NEVER_ATTEMPTED", "attempted": 0, "expected": expected,
                 "missing_schedule_count": expected, "unavailable_count": 0,
-                "incomplete_count": 0, "stale_input_count": 0, "latest_updated_at_utc": None}
+                "incomplete_count": 0, "stale_input_count": 0, "latest_updated_at_utc": None,
+                "account_ids": [], "account_scope_ambiguous": False}

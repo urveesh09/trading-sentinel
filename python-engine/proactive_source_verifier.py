@@ -32,6 +32,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from enum import Enum
+import math
 from typing import Any, Mapping
 
 
@@ -69,7 +70,7 @@ class ConfigVerdict:
         }
 
 
-_DEFAULT_MAX_DATA_AGE_SECONDS = 300  # 5 minutes
+_DEFAULT_MAX_DATA_AGE_SECONDS = 1_800  # Matches Settings' production default.
 _ABSOLUTE_MAX_DATA_AGE_SECONDS = 86_400  # 1 day
 
 
@@ -128,18 +129,30 @@ def verify_kite_completed_bar_config(settings: Any) -> ConfigVerdict:
     evidence["parsed_tokens_keys"] = (
         sorted(parsed_tokens.keys()) if isinstance(parsed_tokens, dict) else []
     )
+    if isinstance(parsed_tokens, dict):
+        for name, specification in parsed_tokens.items():
+            token = specification.get("token") if isinstance(specification, dict) else None
+            basis = str(specification.get("basis", "")).upper() if isinstance(specification, dict) else ""
+            master_sha256 = str(specification.get("master_sha256", "")).lower() if isinstance(specification, dict) else ""
+            if (name not in {"NIFTY", "SENSEX"}
+                    or isinstance(token, bool) or not isinstance(token, int) or token <= 0
+                    or basis not in {"SPOT", "FUTURE"}
+                    or len(master_sha256) != 64
+                    or any(char not in "0123456789abcdef" for char in master_sha256)):
+                reasons.append(SourceConfigReason.INVALID_TOKENS_SHAPE)
+                break
 
     # 3. Scenario capital. Must be positive finite.
     capital_raw = getattr(settings, "PROACTIVE_SHADOW_SCENARIO_CAPITAL", None)
     capital = _read_float(capital_raw)
     evidence["scenario_capital"] = capital
-    if capital is None or not (capital > 0):
+    if capital is None or not math.isfinite(capital) or not (capital > 0):
         reasons.append(SourceConfigReason.INVALID_CAPITAL)
 
     # 4. Maximum data age. Must be 1..86400 seconds.
     max_age_raw = getattr(settings, "PROACTIVE_SHADOW_MAX_DATA_AGE_SECONDS", None)
     max_age = _read_int(max_age_raw)
-    if max_age is None:
+    if max_age_raw is None:
         # [WORKFLOW-ITEMS-5/6/9 2026-09-20] When the field is
         # missing or unparseable, fall back to the documented
         # default rather than blocking the source. The audit
@@ -148,8 +161,10 @@ def verify_kite_completed_bar_config(settings: Any) -> ConfigVerdict:
         # capital/cost assumptions``. The default age is
         # conservative and matches the existing operator config.
         max_age = _DEFAULT_MAX_DATA_AGE_SECONDS
+    elif max_age is None:
+        reasons.append(SourceConfigReason.INVALID_MAX_AGE)
     evidence["max_data_age_seconds"] = max_age
-    if not (1 <= max_age <= _ABSOLUTE_MAX_DATA_AGE_SECONDS):
+    if max_age is None or not (1 <= max_age <= _ABSOLUTE_MAX_DATA_AGE_SECONDS):
         reasons.append(SourceConfigReason.INVALID_MAX_AGE)
 
     # 5. Archive root. Must be a non-empty string.

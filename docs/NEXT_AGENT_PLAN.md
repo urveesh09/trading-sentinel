@@ -1,5 +1,20 @@
 # Trading Sentinel — next-agent execution plan
 
+## Current handover — September 23 remediation completion
+
+Start with [the independent review and next-agent execution order](2026-09-21-independent-remediation-review.md).
+This supersedes earlier claims that A1–A6 helper tests alone completed integration.
+The corrected Dev implementation and tests are ready for review; actual deployed
+identity, inputs and partner qualification must be checked separately.
+
+Remaining priorities: (1) GitHub promotion and stamped-release verification with
+backups; (2) real-session readiness/coverage/contention evidence; (3) authenticated
+F&O ambiguous/partial/zero-fill recovery workflow before live single-leg activation;
+(4) real source activation and held-out per-index research; (5) explicit profile,
+reviewed qualification and authorized Telegram canary; (6) broker reconciliation
+and Production dashboard scope verification. Do not loosen gates to produce tips.
+Never erase an unresolved exit intent to force a retry. No guarantee of profitability.
+
 ## September 20 Workflow I.4.D provenance correction (Dev only)
 
 Classification is now bound to the exact feed snapshot shown to the verdict

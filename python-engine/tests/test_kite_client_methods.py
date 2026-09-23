@@ -127,7 +127,7 @@ def test_place_order_posts_to_orders_regular(mock_kite_client):
     result = asyncio.run(client.place_order(
         tradingsymbol="AAA", transaction_type="BUY", quantity=50,
         product="MIS", order_type="LIMIT", price=12.5,
-        intent="entry",
+        intent="entry", channel="momentum",
     ))
     assert result["status"] == "PLACED"
     assert result["order_id"] == "ORD-001"
@@ -224,6 +224,7 @@ def test_halt_blocks_an_entry_before_any_http_call(mock_kite_client, halt_dir):
     result = asyncio.run(client.place_order(
         tradingsymbol="AAA", transaction_type="BUY", quantity=50,
         product="MIS", order_type="LIMIT", price=12.5, intent="entry",
+        channel="momentum",
     ))
 
     assert result["order_id"] is None
@@ -239,7 +240,7 @@ def test_halted_entry_reports_status_ERROR_not_a_novel_string(mock_kite_client, 
     client, _ = mock_kite_client
     halt_switch.trip("test")
     result = asyncio.run(client.place_order(
-        tradingsymbol="AAA", quantity=50, intent="entry",
+        tradingsymbol="AAA", quantity=50, intent="entry", channel="momentum",
     ))
     assert result["status"] == "ERROR"
 
@@ -274,6 +275,103 @@ def test_channel_halt_blocks_only_that_channel(mock_kite_client, halt_dir):
 
     assert blocked.get("halted") is True
     assert allowed["status"] == "PLACED"
+
+
+def test_owner_global_halt_blocks_entry_but_preserves_exit(mock_kite_client, monkeypatch):
+    import config
+
+    monkeypatch.setattr(config.settings, "OWNER_LIVE_ENTRY_HALT", True)
+    monkeypatch.setattr(config.settings, "OWNER_LIVE_ENTRY_HALT_CHANNELS", "")
+    client, requests = mock_kite_client
+
+    blocked = asyncio.run(client.place_order(
+        tradingsymbol="AAA", quantity=50, intent="entry", channel="fno",
+    ))
+    exited = asyncio.run(client.place_order(
+        tradingsymbol="AAA", transaction_type="SELL", quantity=50,
+        intent="exit", channel="fno",
+    ))
+
+    assert blocked["status"] == "ERROR"
+    assert blocked["owner_entry_halted"] is True
+    assert blocked["halted"] is True
+    assert exited["status"] == "PLACED"
+    assert sum(r["method"] == "POST" for r in requests) == 1
+
+
+def test_owner_per_channel_halt_blocks_only_named_entry_channel(mock_kite_client, monkeypatch):
+    import config
+
+    monkeypatch.setattr(config.settings, "OWNER_LIVE_ENTRY_HALT", False)
+    monkeypatch.setattr(config.settings, "OWNER_LIVE_ENTRY_HALT_CHANNELS", "penny")
+    client, requests = mock_kite_client
+
+    blocked = asyncio.run(client.place_order(
+        tradingsymbol="AAA", quantity=50, intent="entry", channel="penny",
+    ))
+    allowed = asyncio.run(client.place_order(
+        tradingsymbol="AAA", quantity=50, intent="entry", channel="fno",
+    ))
+
+    assert blocked["owner_entry_halted"] is True
+    assert allowed["status"] == "PLACED"
+    assert sum(r["method"] == "POST" for r in requests) == 1
+
+
+def test_owner_entry_halt_fails_closed_for_missing_channel(mock_kite_client):
+    client, requests = mock_kite_client
+
+    result = asyncio.run(client.place_order(
+        tradingsymbol="AAA", quantity=50, intent="entry",
+    ))
+
+    assert result["status"] == "ERROR"
+    assert result["owner_entry_halted"] is True
+    assert result["message"].endswith("unknown_channel")
+    assert not any(r["method"] == "POST" for r in requests)
+
+
+@pytest.mark.parametrize("halt_kind", ["owner", "sentinel"])
+def test_entry_rechecks_halt_after_rate_limit_wait(
+    mock_kite_client, monkeypatch, halt_dir, halt_kind,
+):
+    import config
+    import halt_switch
+
+    monkeypatch.setattr(config.settings, "OWNER_LIVE_ENTRY_HALT", False)
+    monkeypatch.setattr(config.settings, "OWNER_LIVE_ENTRY_HALT_CHANNELS", "")
+    client, requests = mock_kite_client
+
+    async def trip_during_wait():
+        if halt_kind == "owner":
+            monkeypatch.setattr(config.settings, "OWNER_LIVE_ENTRY_HALT", True)
+        else:
+            halt_switch.trip("tripped while rate limited")
+
+    client.limiter.acquire = trip_during_wait
+    result = asyncio.run(client.place_order(
+        tradingsymbol="AAA", quantity=50, intent="entry", channel="momentum",
+    ))
+    assert result["status"] == "ERROR"
+    assert result["halted"] is True
+    assert not requests
+
+
+@pytest.mark.parametrize("side", ["BUY", "SELL"])
+def test_exit_never_resolves_owner_halt(mock_kite_client, monkeypatch, side):
+    import kite_client
+
+    def unavailable(*args, **kwargs):
+        raise AssertionError("exit consulted the owner entry halt")
+
+    monkeypatch.setattr(kite_client, "is_owner_entry_halted", unavailable)
+    client, requests = mock_kite_client
+    result = asyncio.run(client.place_order(
+        tradingsymbol="AAA", transaction_type=side, quantity=50,
+        intent="exit", channel=None,
+    ))
+    assert result["status"] == "PLACED"
+    assert len(requests) == 1
 
 
 def test_intent_is_required_and_validated(mock_kite_client, halt_dir):

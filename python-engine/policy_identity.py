@@ -60,6 +60,9 @@ _POLICY_IDENTITY_MODULES = (
     "cost_audit.py",
     # Full-policy replay (A4: previously omitted).
     "partner_full_policy_replay.py",
+    "fno_defined_risk.py", "asymmetric_fill_model.py",
+    "partner_qualification_review.py", "partner_qualification_authority.py",
+    "policy_identity.py",
 )
 
 
@@ -74,16 +77,13 @@ def _canonical_sha256(payload: Any) -> str:
 def module_sha256s(root: Path) -> dict[str, str]:
     """Compute per-module SHA-256 fingerprints under ``root``.
 
-    Skips a module silently when the file is absent so a partial
-    deployment (e.g. a future removal of a deprecated module)
-    does not crash the helper. The caller decides whether a
-    missing module is acceptable.
+    Missing participating modules invalidate the identity and raise ValueError.
     """
     out: dict[str, str] = {}
     for name in _POLICY_IDENTITY_MODULES:
         path = root / name
         if not path.is_file():
-            continue
+            raise ValueError(f"policy identity module is missing: {name}")
         out[name] = hashlib.sha256(path.read_bytes()).hexdigest()
     return out
 
@@ -97,10 +97,7 @@ def policy_fingerprint(root: Path) -> str:
     fill/exit/fee-model change invalidates old evidence"
     requirement is enforced.
 
-    Modules that are absent on disk are simply omitted from the
-    fingerprint input, so a partial deployment does not crash the
-    helper. Callers that need to REJECT on missing modules must
-    compute the expected set themselves and compare.
+    Missing modules fail closed instead of producing a partial identity.
     """
     shas = module_sha256s(root)
     return _canonical_sha256({

@@ -235,7 +235,6 @@ def policy_manifest(*, underlying: str, structure_kind: str, bars: pd.DataFrame,
         "FNO_SLIPPAGE_BPS", "FNO_FEE_RATE",
         "MOMENTUM_STOP_PCT", "MOMENTUM_TARGET_R",
         "PENNY_STOP_PCT", "PENNY_FEE_RATE",
-        "PARTNER_VERIFY_RESEARCH_ARTIFACTS",
     ) if hasattr(settings, key)}
     bar_rows = _bars_payload(bars)
     provenance = _causal_provenance(bar_provenance, now)
@@ -247,30 +246,10 @@ def policy_manifest(*, underlying: str, structure_kind: str, bars: pd.DataFrame,
     # chronological fill/exit/replay modules because they drive
     # full-policy economics. Without them, a delayed-fill or fee
     # change can leave the frozen identity unchanged.
-    source_names = (
-        # Original signal / advisory core.
-        "fno_engine_mom.py", "partner_manual_advisory.py", "fno_chain.py",
-        "fno_instruments.py", "options_math.py", "partner_qualification.py",
-        "partner_thesis.py", "partner_decision_clock.py",
-        # Chronological execution + replay (A4: previously omitted).
-        "intraday_spread_chronological.py",
-        "intraday_spread_replay.py",
-        "intraday_spread_holdout.py",
-        "intraday_spread_research.py",
-        "intraday_spread_research_verify.py",
-        # Exit / cost / quality (A4: previously omitted).
-        "momentum_exits.py",
-        "fno_costs.py",
-        "exit_quality.py",
-        "cost_audit.py",
-        # Full-policy replay (A4: previously omitted).
-        "partner_full_policy_replay.py",
-    )
-    source_hashes = {name: hashlib.sha256(Path(__file__).with_name(name).read_bytes()).hexdigest()
-                     for name in source_names}
-    frozen_config = {key: value for key, value in settings.model_dump().items()
-                     if key.startswith(("FNO_", "PARTNER_MANUAL_ADVISORY_"))
-                     and not any(word in key for word in ("TOKEN", "SECRET", "PASSWORD", "KEY"))}
+    from policy_identity import module_sha256s
+    from partner_qualification_authority import policy_configuration
+    source_hashes = module_sha256s(Path(__file__).parent)
+    frozen_config = policy_configuration()
     strategy = {"format": "partner_frozen_policy_v1", "evaluator": FULL_POLICY_EVALUATOR,
                 "underlying": name, "structure_kind": structure_kind, "source_sha256": source_hashes,
                 "configuration": frozen_config, "profile": asdict(profile) if profile is not None else None}

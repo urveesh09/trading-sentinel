@@ -2000,23 +2000,6 @@ async def run_configured_shadow_workflow(*, now: Optional[datetime] = None) -> d
     observed_at = _stamp(now or datetime.now(timezone.utc))
     account_id = str(settings.PROACTIVE_SHADOW_ACCOUNT_ID).strip()
     if not settings.PROACTIVE_SHADOW_ENABLED:
-        # [WORKFLOW-ITEMS-5/6/9 2026-09-20] Configuration
-        # verifier runs BEFORE the broker call so a misconfigured
-        # source surfaces a structured reason code instead of
-        # silently returning ``MARKET_DATA_SOURCE_UNCONFIGURED``
-        # only after the broker round-trip fails.
-        from proactive_source_verifier import (
-            SourceConfigReason,
-            verify_kite_completed_bar_config,
-        )
-        config_verdict = verify_kite_completed_bar_config(settings)
-        if not config_verdict.ok:
-            joined = ",".join(r.value for r in config_verdict.reasons)
-            logger.warning(
-                "proactive_shadow_config_incomplete reasons=%s evidence=%s",
-                joined,
-                config_verdict.evidence,
-            )
         return {"mode": "SHADOW", "state": "DISABLED"}
     if not account_id:
         raise ValueError("PROACTIVE_SHADOW_ACCOUNT_ID is required when enabled")
@@ -2049,7 +2032,8 @@ async def run_configured_shadow_workflow(*, now: Optional[datetime] = None) -> d
                 observed_at=observed_at,
                 reason="MARKET_DATA_SOURCE_UNCONFIGURED",
             )
-            return {"mode": "SHADOW", "state": "MARKET_DATA_SOURCE_UNCONFIGURED"}
+            return {"mode": "SHADOW", "state": "MARKET_DATA_SOURCE_UNCONFIGURED",
+                    "source_config": config_verdict.to_dict()}
         from proactive_market_data import CompletedBarDataError, load_kite_completed_bar_snapshot
         run_label = str(settings.PROACTIVE_SHADOW_RUN_ID).strip()
         run_id = _configured_shadow_run_id(run_label) if run_label else ""

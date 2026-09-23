@@ -55,10 +55,72 @@ IST = pytz.timezone("Asia/Kolkata")
 RVOL_FETCH_CALENDAR_DAYS = 21   # ~14 sessions of 5-min bars for EMA/RVOL
 _SHADOW_EXECUTOR = ThreadPoolExecutor(max_workers=1, thread_name_prefix="fno-shadow")
 _SHADOW_TASKS: set[Future] = set()
+_SETTLEMENT_GENERATION = 1
 
 
 def _now_min(now_ist: datetime) -> int:
     return now_ist.hour * 60 + now_ist.minute
+
+
+async def _settle_exit_receipt(
+    db_path: str, position, receipt: dict,
+) -> Optional[dict]:
+    """Commit an acknowledged exit without calling the broker again.
+
+    A receipt is written immediately after an executor reports a fill.  This
+    helper consumes it only as part of the atomic position/ledger commit, so
+    any local accounting error leaves a durable recovery record.
+    """
+    try:
+        outcome = await fpos.settle_position_close_idempotent(
+            db_path,
+            position.id,
+            int(receipt["settlement_generation"]),
+            exit_time_ist=datetime.fromisoformat(receipt["exit_time"]),
+            exit_premium=float(receipt["exit_premium"]),
+            exit_underlying=float(receipt["exit_underlying"]),
+            exit_reason=receipt["exit_reason"],
+            gross_pnl=float(receipt["gross_pnl"]),
+            costs=float(receipt["costs"]),
+            pnl=float(receipt["pnl"]),
+            r_multiple=float(receipt["r_multiple"]),
+            exit_order_id=receipt["exit_order_id"],
+            source=receipt["source"],
+            ticker=receipt["ticker"],
+            notes=receipt["notes"],
+            execution_receipt_id=int(receipt["id"]),
+        )
+    except Exception as exc:
+        logger.error(
+            "fno_settle_receipt_failed id=%d symbol=%s receipt_id=%s err=%s "
+            "-- broker exit will not be resubmitted; recovery remains pending",
+            position.id, position.tradingsymbol, receipt.get("id"), str(exc),
+        )
+        return None
+
+    if not outcome["settled"]:
+        logger.info(
+            "fno_settle_receipt_already_applied id=%d symbol=%s receipt_id=%s",
+            position.id, position.tradingsymbol, receipt.get("id"),
+        )
+        return None
+
+    logger.info(
+        "fno_position_closed source=%s symbol=%s reason=%s entry=%.2f "
+        "exit=%.2f pnl=%.0f r=%.2f receipt_id=%s",
+        receipt["source"], position.tradingsymbol, receipt["exit_reason"],
+        position.entry_premium, float(receipt["exit_premium"]),
+        float(receipt["pnl"]), float(receipt["r_multiple"]), receipt["id"],
+    )
+    return {
+        "symbol": position.tradingsymbol,
+        "reason": receipt["exit_reason"],
+        "entry": position.entry_premium,
+        "exit": float(receipt["exit_premium"]),
+        "pnl": float(receipt["pnl"]),
+        "r": float(receipt["r_multiple"]),
+        "source": receipt["source"],
+    }
 
 
 def _fno_pool_paper() -> float:
@@ -170,13 +232,29 @@ async def _manage_open_positions(
     if not positions:
         return []
 
+    # First settle previously acknowledged exits.  These positions remain OPEN
+    # after a local accounting fault, but their broker fill is already durable
+    # in the receipt table; do not price or submit them again.
+    closed: List[dict] = []
+    positions_needing_exit_evaluation = []
+    for p in positions:
+        receipt = await fpos.exit_execution_receipt(db_path, p.id, source)
+        if receipt is None:
+            positions_needing_exit_evaluation.append(p)
+            continue
+        recovered = await _settle_exit_receipt(db_path, p, receipt)
+        if recovered is not None:
+            closed.append(recovered)
+
+    if not positions_needing_exit_evaluation:
+        return closed
+
     # One batched quote for every held contract.
-    tokens = [p.token for p in positions if p.token]
+    tokens = [p.token for p in positions_needing_exit_evaluation if p.token]
     quotes = await kite.get_quote(tokens) if tokens else {}
 
     hard_flat = _now_min(now_ist) >= settings.FNO_HARD_FLAT_MIN
-    closed: List[dict] = []
-    for p in positions:
+    for p in positions_needing_exit_evaluation:
         q = quotes.get(p.token) or {}
         depth = q.get("depth") or {}
         buys = depth.get("buy") or []
@@ -351,14 +429,21 @@ async def _manage_open_positions(
             )
             continue
 
-        result = await executor.execute_exit(
-            p.tradingsymbol, p.qty, exit_px_basis,
-            tick_size=settings.FNO_TICK_SIZE,
-            hard_flat=exit_reason.startswith("hard_flat"),
-        )
+        if not await fpos.claim_exit_intent(db_path, p.id, source):
+            logger.critical("fno_exit_reconciliation_required id=%s source=%s", p.id, source)
+            continue
+        try:
+            result = await executor.execute_exit(
+                p.tradingsymbol, p.qty, exit_px_basis,
+                tick_size=settings.FNO_TICK_SIZE,
+                hard_flat=exit_reason.startswith("hard_flat"),
+            )
+        except Exception:
+            logger.exception("fno_exit_dispatch_ambiguous id=%s; reconcile before retry", p.id)
+            continue
         if result["status"] not in ("paper", "filled"):
             logger.warning(
-                "fno_exit_not_filled id=%d symbol=%s status=%s -- retry next tick",
+                "fno_exit_not_filled id=%d symbol=%s status=%s -- reconcile before retry",
                 p.id, p.tradingsymbol, result["status"],
             )
             continue
@@ -369,61 +454,31 @@ async def _manage_open_positions(
         pnl = gross - costs
         risk_rupees = p.entry_premium * settings.FNO_STOP_PREMIUM_PCT * p.qty
         r_mult = pnl / risk_rupees if risk_rupees > 0 else 0.0
-        # [WORKFLOW-A2 2026-09-20] Atomic settlement: one
-        # transaction for the position UPDATE and the ledger INSERT.
-        # Previously these were two separate transactions; a crash
-        # between them could leave a closed position without its
-        # cash movement. ``settlement_generation`` defaults to 0
-        # for legacy positions; the unique index on
-        # ``(origin_ref, settlement_generation)`` makes duplicate
-        # settles fail at the constraint rather than silently.
         try:
-            await fpos.settle_position_close(
+            receipt = await fpos.record_exit_execution_receipt(
                 db_path, p.id,
                 exit_time_ist=now_ist, exit_premium=fill,
                 exit_underlying=fut_price or 0.0, exit_reason=exit_reason,
                 gross_pnl=gross, costs=costs, pnl=pnl, r_multiple=r_mult,
                 exit_order_id=result.get("order_id"),
                 source=source, ticker=p.tradingsymbol,
-                settlement_generation=0,
+                settlement_generation=_SETTLEMENT_GENERATION,
                 notes=f"fno_exit {exit_reason}",
             )
-        except fpos.PositionNotOpen:
-            # Another worker (or a retry) already settled this
-            # position. Log and continue; the close attempt is
-            # idempotent.
-            logger.info(
-                "fno_settle_skipped_already_closed id=%d symbol=%s",
-                p.id, p.tradingsymbol,
+        except Exception as exc:
+            # A broker fill without a durable local receipt is an uncertain
+            # external state.  Do not turn it into a normal retry: a later
+            # pass could submit a second exit.  The operator must reconcile
+            # the returned order id before reopening this position locally.
+            logger.critical(
+                "fno_filled_exit_receipt_failed id=%d symbol=%s order_id=%s err=%s "
+                "-- local retry blocked pending broker reconciliation",
+                p.id, p.tradingsymbol, result.get("order_id"), str(exc),
             )
             continue
-        except fpos.SettlementConflict:
-            # The unique index caught a duplicate. Log and continue;
-            # the first settle was the authoritative one.
-            logger.warning(
-                "fno_settle_duplicate_caught id=%d symbol=%s",
-                p.id, p.tradingsymbol,
-            )
-            continue
-        except fpos.SettlementError as exc:
-            # The position UPDATE was rolled back; the position is
-            # still OPEN. Log and continue so the next tick can
-            # retry once the configuration is repaired.
-            logger.error(
-                "fno_settle_failed id=%d symbol=%s err=%s",
-                p.id, p.tradingsymbol, str(exc),
-            )
-            continue
-        logger.info(
-            "fno_position_closed source=%s symbol=%s reason=%s entry=%.2f "
-            "exit=%.2f pnl=%.0f r=%.2f",
-            source, p.tradingsymbol, exit_reason, p.entry_premium, fill, pnl, r_mult,
-        )
-        closed.append({
-            "symbol": p.tradingsymbol, "reason": exit_reason,
-            "entry": p.entry_premium, "exit": fill,
-            "pnl": pnl, "r": r_mult, "source": source,
-        })
+        settled = await _settle_exit_receipt(db_path, p, receipt)
+        if settled is not None:
+            closed.append(settled)
     return closed
 
 

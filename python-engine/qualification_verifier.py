@@ -1,4 +1,11 @@
-"""[WORKFLOW-A3 2026-09-20] Qualification verifier.
+"""Legacy package-shape diagnostic; it confers no registry or delivery authority.
+
+The authoritative boundary is partner_qualification_authority, which reconstructs
+heldout/review evidence and checks current code/config/profile and validity.
+This older pure diagnostic remains for compatibility; its qualified field is
+not an authorization decision.
+
+[WORKFLOW-A3 2026-09-20] Qualification verifier.
 
 The audit (docs/2026-09-20-independent-system-readiness-audit.md §3-A3)
 flagged that ``record_strategy_qualification`` (and the upstream

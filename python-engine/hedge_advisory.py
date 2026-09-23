@@ -1046,16 +1046,10 @@ async def _authorize_dispatch(
                 return False
             # Re-read the registry at the transport boundary; a queued card
             # cannot rely on a stale cached qualification after suspension.
-            async with aiosqlite.connect(db_path, timeout=30) as qualification_db:
-                qualification = await (await qualification_db.execute(
-                    "SELECT status,reviewed_at FROM partner_advisory_strategy_qualifications WHERE underlying=? "
-                    "AND structure_kind=? AND horizon=? AND policy_version=?",
-                    (detail.get("underlying"), payload.get("structure_kind"), "INTRADAY", "partner-manual-intraday-v1"),
-                )).fetchone()
-            if qualification is None or qualification[0] != "QUALIFIED_FOR_ADVISORY":
-                return False
-            reviewed_at = _parse_ist(qualification[1])
-            if reviewed_at is None or reviewed_at > now:
+            from partner_manual_advisory import qualification_is_current
+            if not await qualification_is_current(db_path, underlying=detail.get("underlying"),
+                    structure_kind=payload.get("structure_kind"), horizon="INTRADAY",
+                    policy_version="partner-manual-intraday-v1", profile_id=profile_id, now=now):
                 return False
             return _parse_ist(card[3]) is not None and _parse_ist(card[3]) > now
         except Exception:

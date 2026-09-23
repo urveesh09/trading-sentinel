@@ -153,6 +153,7 @@ class PartnerAdvisoryFeedbackPayload(BaseModel):
 
 
 class PartnerAdvisoryQualificationPayload(BaseModel):
+    profile_id: str = Field(default="default", min_length=1, max_length=120)
     underlying: str = Field(min_length=3, max_length=20)
     structure_kind: str = Field(min_length=3, max_length=80)
     horizon: str = Field(min_length=3, max_length=80)
@@ -354,6 +355,7 @@ async def put_partner_advisory_qualification(
             dataset_ref=payload.dataset_ref.strip(),
             reviewed_at=payload.reviewed_at,
             status=StrategyEvidence(payload.status.strip().upper()),
+            profile_id=payload.profile_id,
         )
     except ValueError as exc:
         raise HTTPException(status_code=422, detail=str(exc)) from exc

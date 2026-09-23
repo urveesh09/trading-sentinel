@@ -245,10 +245,14 @@ class TestGateMinThreshold:
         )
         assert report["min_unique_per_branch"] == 3
 
-    def test_threshold_composes_with_freshness(self, tmp_path: Path):
+    def test_threshold_composes_with_freshness(self, tmp_path: Path, monkeypatch):
         """Composition: a fresh filter and a threshold filter
         can apply together.
         """
+        from datetime import datetime, timezone
+        from cas_reachability_freshness import capture_age_days
+        monkeypatch.setattr("cas_reachability_gate.capture_age_days",
+            lambda path: capture_age_days(path, now_utc=datetime(2026, 9, 15, tzinfo=timezone.utc)))
         # 2 unique captures per branch, all fresh.
         for phase in CAS_BRANCHES_REQUIRING_EVIDENCE:
             _write_capture(
