@@ -91,8 +91,11 @@ class FnoExecutor:
         self, tradingsymbol: str, qty: int, bid: float,
         tick_size: float, hard_flat: bool = False,
     ) -> dict:
-        """SELL LIMIT at bid; escalate to bid-3 ticks after 15s; on the
-        hard flat go straight to a deeply marketable limit."""
+        """Submit one SELL LIMIT. An uncertain fill requires reconciliation.
+
+        On hard flat use a deeply marketable limit. Never replace an order
+        merely because polling or cancellation did not prove its final fill.
+        """
         if self.paper_mode:
             logger.info(
                 "fno_paper_exit symbol=%s qty=%d fill=bid=%.2f hard_flat=%s tag=%s",
@@ -126,20 +129,9 @@ class FnoExecutor:
         fill = await self._wait_for_fill(order_id, timeout=15.0)
         if fill is not None:
             return {"status": "filled", "order_id": order_id, "fill_price": fill}
-        await self._cancel_quietly(order_id)
-        price2 = max(tick_size, bid - 3 * tick_size)
-        resp2 = await self._place_limit(tradingsymbol, "SELL", qty, price2, intent="exit")
-        order_id2 = resp2.get("order_id")
-        fill2 = await self._wait_for_fill(order_id2) if order_id2 else None
-        if fill2 is None:
-            logger.warning(
-                "fno_exit_ladder_unfilled symbol=%s -- will retry next tick",
-                tradingsymbol,
-            )
-            if order_id2:
-                await self._cancel_quietly(order_id2)
-            return {"status": "unfilled", "order_id": order_id2, "fill_price": None}
-        return {"status": "filled", "order_id": order_id2, "fill_price": fill2}
+        logger.critical("fno_exit_ambiguous symbol=%s order_id=%s -- reconcile before retry",
+                        tradingsymbol, order_id)
+        return {"status": "unfilled", "order_id": order_id, "fill_price": None}
 
     # ------------------------------------------------------------------
     # plumbing

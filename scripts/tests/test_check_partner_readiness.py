@@ -291,8 +291,8 @@ def test_runtime_profile_check_reads_persisted_current_schema():
 def test_qualification_check_reads_current_registry():
     db_path = _make_stub_db(with_captures=True)
     item = check_partner_readiness._check_qualification_via_db(db_path)
-    assert item.status == check_partner_readiness.Status.PASS
-    assert item.evidence["rows"][0]["status"] == "QUALIFIED_FOR_ADVISORY"
+    assert item.status == check_partner_readiness.Status.BLOCKER
+    assert item.evidence["current_rows"] == 0
 
 
 def test_zero_of_seven_advanced_hedge_days_does_not_block_manual_advisory():

@@ -22,17 +22,6 @@ IST = pytz.timezone("Asia/Kolkata")
 NOW = IST.localize(datetime(2026, 9, 7, 10, 0))
 
 
-@pytest.fixture(autouse=True)
-def _disable_research_artifact_verification(monkeypatch):
-    """[WORKFLOW-A3 2026-09-20] Disable the byte-verification gate
-    so the pre-existing qualification-registration tests can run
-    with their stub SHA-256 (``"a" * 64``). The verification gate
-    is a separate concern covered by
-    ``tests/test_qualification_verifier.py``.
-    """
-    monkeypatch.setattr(settings, "PARTNER_VERIFY_RESEARCH_ARTIFACTS", False)
-
-
 def _book(name: str, segment: str, expiry: date, step: float, lot: int) -> FnoInstruments:
     book = FnoInstruments(name, segment=segment)
     atm = 25000 if name == "NIFTY" else 82000
@@ -210,12 +199,9 @@ async def test_queued_manual_card_uses_hardened_delivery_boundary(db_path, monke
     await save_partner_profile(db_path, profile, now=NOW)
     candidate = _candidate()
     candidate = candidate.__class__(**{**candidate.__dict__, "evidence": StrategyEvidence.QUALIFIED_FOR_ADVISORY})
-    await record_research_artifact(db_path, dataset_ref="frozen-test", content_sha256="a" * 64, created_at=NOW, description="frozen intraday fixture")
-    await record_strategy_qualification(
-        db_path, underlying="NIFTY", structure_kind=candidate.structure_kind,
-        horizon="INTRADAY", policy_version=candidate.policy_version,
-        dataset_ref="frozen-test", reviewed_at=NOW,
-    )
+    from tests.qualification_package_fixture import register_test_package
+    await register_test_package(db_path, profile, NOW, monkeypatch)
+
     stored = await persist_candidate(db_path, candidate, profile, now=NOW, queue_for_delivery=True)
     assert stored["status"] == "QUEUED"
     calls = []
@@ -241,12 +227,9 @@ async def test_research_card_cannot_queue_and_expired_card_never_reaches_transpo
     profile = PartnerAdvisoryProfile(version=1, holding_period="INTRADAY")
     await save_partner_profile(db_path, profile, now=NOW)
     candidate = _candidate()
-    await record_research_artifact(db_path, dataset_ref="frozen-test", content_sha256="a" * 64, created_at=NOW, description="frozen intraday fixture")
-    await record_strategy_qualification(
-        db_path, underlying="NIFTY", structure_kind=candidate.structure_kind,
-        horizon="INTRADAY", policy_version=candidate.policy_version,
-        dataset_ref="frozen-test", reviewed_at=NOW,
-    )
+    from tests.qualification_package_fixture import register_test_package
+    await register_test_package(db_path, profile, NOW, monkeypatch)
+
     research = await persist_candidate(db_path, candidate, profile, now=NOW, queue_for_delivery=True)
     assert research["status"] == "VALIDATED_SHADOW"
     assert research["delivery_eligible"] is False

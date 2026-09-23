@@ -39,7 +39,7 @@ def _full_settings() -> _StubSettings:
     """Fully configured settings the verifier accepts."""
     return _StubSettings(
         PROACTIVE_SHADOW_RUN_ID="research-run-2026-09-20",
-        PROACTIVE_SHADOW_KITE_TOKENS_JSON='{"NIFTY": {"token": 256265}}',
+        PROACTIVE_SHADOW_KITE_TOKENS_JSON=__import__("json").dumps({"NIFTY": {"token": 256265, "basis": "SPOT", "master_sha256": "a" * 64}}),
         PROACTIVE_SHADOW_SCENARIO_CAPITAL=250000.0,
         PROACTIVE_SHADOW_MAX_DATA_AGE_SECONDS=300,
         RESEARCH_ARCHIVE_PATH="/data/research",
@@ -136,15 +136,16 @@ def test_default_max_age_is_accepted():
     del s.PROACTIVE_SHADOW_MAX_DATA_AGE_SECONDS
     verdict = verify_kite_completed_bar_config(s)
     assert verdict.ok
-    assert verdict.evidence["max_data_age_seconds"] == 300
+    assert verdict.evidence["max_data_age_seconds"] == 1800
 
 
-def test_invalid_max_age_falls_back_to_default():
-    """An unparseable max-age falls back to the documented default."""
+def test_invalid_max_age_fails_closed():
+    """Explicit malformed limits must not silently change the policy."""
     s = _full_settings()
     s.PROACTIVE_SHADOW_MAX_DATA_AGE_SECONDS = "not-a-number"
     verdict = verify_kite_completed_bar_config(s)
-    assert verdict.ok
+    assert not verdict.ok
+    assert SourceConfigReason.INVALID_MAX_AGE in verdict.reasons
 
 
 # -- Evidence surface ----------------------------------------------

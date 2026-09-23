@@ -536,6 +536,7 @@ async def record_strategy_qualification(
     db_path: str, *, underlying: str, structure_kind: str, horizon: str,
     policy_version: str, dataset_ref: str, reviewed_at: datetime,
     status: StrategyEvidence = StrategyEvidence.QUALIFIED_FOR_ADVISORY,
+    profile_id: str = "default",
 ) -> None:
     """Persist a reviewable qualification; a config flag cannot manufacture it."""
     if reviewed_at.tzinfo is None:
@@ -551,10 +552,19 @@ async def record_strategy_qualification(
     await init_partner_advisory_db(db_path)
     async with aiosqlite.connect(db_path) as db:
         artifact = await (await db.execute(
-            "SELECT 1 FROM partner_advisory_research_artifacts WHERE dataset_ref=?", (dataset_ref,)
+            "SELECT content_sha256 FROM partner_advisory_research_artifacts WHERE dataset_ref=?", (dataset_ref,)
         )).fetchone()
         if artifact is None:
             raise ValueError("qualification dataset_ref is not a registered immutable research artifact")
+        if status == StrategyEvidence.QUALIFIED_FOR_ADVISORY:
+            from partner_qualification_authority import read_artifact, verify_authorization_package
+            profile, state = await load_partner_profile_with_state(db_path, profile_id)
+            if state != "SAVED_INTRADAY":
+                raise ValueError("qualification requires an explicit saved INTRADAY profile")
+            data = await asyncio.to_thread(read_artifact, dataset_ref)
+            await asyncio.to_thread(verify_authorization_package, data, artifact[0],
+                underlying=underlying, structure_kind=structure_kind, horizon=horizon,
+                policy_version=policy_version, profile=profile, now=datetime.now(IST), reviewed_at=reviewed_at)
         await db.execute(
             "INSERT OR REPLACE INTO partner_advisory_strategy_qualifications "
             "(underlying,structure_kind,horizon,policy_version,dataset_ref,reviewed_at,status) VALUES(?,?,?,?,?,?,?)",
@@ -566,91 +576,22 @@ async def record_strategy_qualification(
 async def record_research_artifact(
     db_path: str, *, dataset_ref: str, content_sha256: str, created_at: datetime, description: str,
 ) -> None:
-    """Register an immutable, operator-reviewed research artifact reference.
-
-    [WORKFLOW-A3 2026-09-20] When
-    ``settings.PARTNER_VERIFY_RESEARCH_ARTIFACTS`` is True (the
-    default), the helper reads ``<PARTNER_ARTIFACT_ROOT>/<dataset_ref>``
-    from disk, recomputes the SHA-256, and rejects on mismatch. The
-    audit's defect A3: the previous implementation accepted any
-    syntactically-valid SHA-256 without verifying the report bytes.
-    """
+    """Register verified bytes; this alone grants no advisory authority."""
     if created_at.tzinfo is None or created_at.astimezone(IST) > datetime.now(IST):
         raise ValueError("artifact created_at must be non-future and timezone-aware")
     if not dataset_ref.strip() or len(content_sha256) != 64 or any(ch not in "0123456789abcdef" for ch in content_sha256.lower()):
         raise ValueError("artifact requires dataset_ref and sha256 content fingerprint")
     if not description.strip():
         raise ValueError("artifact description is required")
-    if bool(getattr(settings, "PARTNER_VERIFY_RESEARCH_ARTIFACTS", True)):
-        # Read the report bytes from the configured artifact root
-        # and verify the SHA-256 matches what was registered.
-        # This is the audit's defect A3 fix: a syntactically-valid
-        # SHA-256 string is not sufficient evidence.
-        import os as _os
-        root = str(getattr(settings, "PARTNER_ARTIFACT_ROOT", "./artifacts"))
-        path = _os.path.join(root, dataset_ref)
-        try:
-            with open(path, "rb") as _fh:
-                report_bytes = _fh.read()
-        except OSError as exc:
-            raise ValueError(
-                f"research artifact verification failed: cannot read "
-                f"{path!r} ({exc})"
-            ) from exc
-        from qualification_verifier import (
-            QualificationReason,
-            qualify_research_package,
-        )
-        deployed_manifest = str(
-            getattr(settings, "DEPLOYED_POLICY_MANIFEST_SHA256", "") or ""
-        )
-        verdict = qualify_research_package(
-            report_bytes=report_bytes,
-            registered_sha256=content_sha256.lower(),
-            expected_index="",  # Index is decided by the qualification, not the artifact.
-            expected_structure_kind="",
-            expected_horizon="",
-            expected_policy_version="",
-            deployed_policy_manifest_sha256=deployed_manifest,
-            now=datetime.now(IST),
-        )
-        # For the artifact registration we only need the byte
-        # verification and the basic schema. The full per-index /
-        # per-horizon checks run at qualification time.
-        fatal_codes = {
-            QualificationReason.REPORT_BYTES_MISMATCH,
-            QualificationReason.REPORT_NOT_JSON,
-        }
-        schema_codes = {
-            QualificationReason.SCHEMA_MISSING_INDEX,
-            QualificationReason.SCHEMA_MISSING_STRUCTURE,
-            QualificationReason.SCHEMA_MISSING_HORIZON,
-            QualificationReason.SCHEMA_MISSING_POLICY_VERSION,
-            QualificationReason.SCHEMA_MISSING_CRITERIA,
-            QualificationReason.SCHEMA_MISSING_HELDOUT,
-            QualificationReason.SCHEMA_MISSING_OUTCOMES,
-            QualificationReason.SCHEMA_MISSING_COSTS,
-            QualificationReason.SCHEMA_MISSING_REVIEW,
-            QualificationReason.SCHEMA_MISSING_VALIDITY,
-            QualificationReason.SCHEMA_MISSING_POLICY_MANIFEST,
-        }
-        # A byte mismatch is fatal at registration; schema gaps
-        # are recorded as warnings only (operators may register a
-        # raw SHA-256 stub while the report is being assembled).
-        if any(code in fatal_codes for code in verdict.reason_codes):
-            joined = ", ".join(r.value for r in verdict.reason_codes)
-            raise ValueError(
-                f"research artifact verification failed: {joined}"
-            )
-        if any(code in schema_codes for code in verdict.reason_codes):
-            # Persist the warning in the structured log so the
-            # operator sees the gap during the next audit sweep.
-            import logging as _logging
-            _logging.getLogger(__name__).warning(
-                "research_artifact_schema_gap dataset_ref=%s codes=%s",
-                dataset_ref,
-                ",".join(r.value for r in verdict.reason_codes),
-            )
+    from partner_qualification_authority import read_artifact
+    data = await asyncio.to_thread(read_artifact, dataset_ref)
+    if hashlib.sha256(data).hexdigest() != content_sha256.lower():
+        raise ValueError("research artifact verification failed: fingerprint mismatch")
+    try:
+        if not isinstance(json.loads(data), dict):
+            raise ValueError("research artifact must be a JSON object")
+    except (UnicodeDecodeError, json.JSONDecodeError) as exc:
+        raise ValueError("research artifact must be valid JSON") from exc
     await init_partner_advisory_db(db_path)
     async with aiosqlite.connect(db_path) as db:
         await db.execute(
@@ -660,24 +601,43 @@ async def record_research_artifact(
         await db.commit()
 
 
-async def is_strategy_qualified(db_path: str, candidate: AdvisoryCandidate) -> bool:
-    """Return whether an independently recorded review permits this setup.
-
-    Evidence carried by a just-built candidate is deliberately not an input to
-    this lookup.  The scanner starts every idea as research-only and upgrades
-    it only after this persisted registry answers yes; otherwise a caller
-    could self-assert qualification by choosing an enum value.
-    """
-    if not candidate.holding_horizon:
+async def qualification_is_current(db_path: str, *, underlying: str, structure_kind: str,
+                                   horizon: str, policy_version: str, profile_id: str = "default",
+                                   now: Optional[datetime] = None) -> bool:
+    from partner_qualification_authority import read_artifact, verify_authorization_package
+    try:
+        from pathlib import Path
+        async with aiosqlite.connect(Path(db_path).resolve().as_uri() + "?mode=ro", uri=True) as db:
+            row = await (await db.execute(
+                "SELECT q.status,q.reviewed_at,a.dataset_ref,a.content_sha256,p.payload,p.version "
+                "FROM partner_advisory_strategy_qualifications q JOIN partner_advisory_research_artifacts a "
+                "ON a.dataset_ref=q.dataset_ref JOIN partner_advisory_profiles p ON p.profile_id=? "
+                "WHERE q.underlying=? AND q.structure_kind=? "
+                "AND q.horizon=? AND q.policy_version=?",
+                (profile_id, underlying, structure_kind, horizon, policy_version))).fetchone()
+        if not row or row[0] != StrategyEvidence.QUALIFIED_FOR_ADVISORY.value:
+            return False
+        raw = json.loads(row[4])
+        for field in ("enabled_scopes", "instruments", "permitted_structures"):
+            raw[field] = tuple(raw.get(field, ()))
+        profile = PartnerAdvisoryProfile(**raw)
+        if (profile.holding_period != INTRADAY_HORIZON or profile.profile_id != profile_id
+                or profile.version != row[5]):
+            return False
+        data = await asyncio.to_thread(read_artifact, row[2])
+        await asyncio.to_thread(verify_authorization_package, data, row[3], underlying=underlying,
+            structure_kind=structure_kind, horizon=horizon, policy_version=policy_version,
+            profile=profile, now=now or datetime.now(IST), reviewed_at=datetime.fromisoformat(row[1]))
+        return True
+    except (ValueError, TypeError, KeyError, OSError, aiosqlite.Error):
         return False
-    await init_partner_advisory_db(db_path)
-    async with aiosqlite.connect(db_path) as db:
-        row = await (await db.execute(
-            "SELECT status FROM partner_advisory_strategy_qualifications WHERE underlying=? AND structure_kind=? "
-            "AND horizon=? AND policy_version=?",
-            (candidate.underlying, candidate.structure_kind, candidate.holding_horizon, candidate.policy_version),
-        )).fetchone()
-    return bool(row and row[0] == StrategyEvidence.QUALIFIED_FOR_ADVISORY.value)
+
+
+async def is_strategy_qualified(db_path: str, candidate: AdvisoryCandidate, *,
+                                profile_id: str = "default", now: Optional[datetime] = None) -> bool:
+    return await qualification_is_current(db_path, underlying=candidate.underlying,
+        structure_kind=candidate.structure_kind, horizon=candidate.holding_horizon,
+        policy_version=candidate.policy_version, profile_id=profile_id, now=now)
 
 
 def _quote_time(quote: ContractQuote, snapshot: ChainSnapshot) -> Optional[str]:
@@ -1073,7 +1033,7 @@ async def persist_candidate(
     if profile_reasons:
         validation = ValidationResult(False, tuple(sorted(set(validation.reasons + profile_reasons))))
         payload["validation_reasons"] = list(validation.reasons)
-    registry_qualified = await is_strategy_qualified(db_path, candidate)
+    registry_qualified = await is_strategy_qualified(db_path, candidate, profile_id=profile.profile_id, now=now)
     # The registry permits promotion, but a raw research result must still be
     # explicitly promoted by the controlled scanner before it can queue.
     qualified = registry_qualified and candidate.evidence == StrategyEvidence.QUALIFIED_FOR_ADVISORY

@@ -37,6 +37,9 @@ jest.mock('../../services/cas-eligibility', () => ({
   entrySessionVerdict: jest.fn(() => Promise.resolve({
     allowed: true, phase: 'CONTINUOUS_TRADING', reason: null,
   })),
+  resolveOwnerEntryHalt: jest.fn(() => Promise.resolve({
+    resolved: true, allowed: true, reason: 'allowed',
+  })),
 }));
 
 jest.mock('../../services/telegram', () => ({
@@ -61,7 +64,10 @@ global.fetch = jest.fn();
 const kite = require('../../services/kite');
 const tokenStore = require('../../services/token-store');
 const { isMarketOpen } = require('../../utils/market-hours');
-const { entrySessionVerdict } = require('../../services/cas-eligibility');
+const {
+  entrySessionVerdict,
+  resolveOwnerEntryHalt,
+} = require('../../services/cas-eligibility');
 const { executeSignal, usableEntryMargin, requiredOrderMargin } = require('../../services/executor');
 const {
   TokenExpiredError,
@@ -89,6 +95,12 @@ const makeSignal = (overrides = {}) => ({
 });
 
 function setupHappyPath() {
+  resolveOwnerEntryHalt.mockReset().mockResolvedValue({
+    resolved: true, allowed: true, reason: 'allowed',
+  });
+  entrySessionVerdict.mockReset().mockResolvedValue({
+    allowed: true, phase: 'CONTINUOUS_TRADING', reason: null,
+  });
   tokenStore.isValid.mockReturnValue(true);
   isMarketOpen.mockReturnValue(true);
   kite.getLTP.mockResolvedValue({
@@ -145,12 +157,84 @@ describe('executeSignal()', () => {
     expect(kite.placeOrder).not.toHaveBeenCalled();
   });
 
+  test('blocks before broker calls when the owner entry halt is unavailable', async () => {
+    resolveOwnerEntryHalt.mockResolvedValueOnce({
+      resolved: false,
+      allowed: false,
+      reason: 'service_unavailable',
+      detail: 'Owner entry halt service is unavailable; entry blocked.',
+    });
+    await expect(executeSignal(makeSignal(), 'EM', true)).rejects.toThrow(
+      /Owner entry halt unavailable/,
+    );
+    expect(kite.getLTP).not.toHaveBeenCalled();
+    expect(kite.placeOrder).not.toHaveBeenCalled();
+  });
+
+  test('rechecks the owner halt and session after margin preflight', async () => {
+    const calls = [];
+    resolveOwnerEntryHalt.mockImplementation(() => {
+      calls.push('halt');
+      return Promise.resolve({ resolved: true, allowed: true, reason: 'allowed' });
+    });
+    entrySessionVerdict.mockImplementation((_ticker, _at, options) => {
+      calls.push(options?.refreshClockAfterResolve ? 'final-session' : 'initial-session');
+      return Promise.resolve({ allowed: true, phase: 'CONTINUOUS_TRADING', reason: null });
+    });
+    await executeSignal(makeSignal(), 'EM', true);
+    expect(calls).toEqual([
+      'halt', 'initial-session', 'halt', 'final-session',
+    ]);
+    expect(kite.getOrderMargins).toHaveBeenCalled();
+    expect(kite.placeOrder).toHaveBeenCalled();
+  });
+
+  test('a halt activated during margin preflight prevents BUY dispatch', async () => {
+    resolveOwnerEntryHalt
+      .mockResolvedValueOnce({ resolved: true, allowed: true, reason: 'allowed' })
+      .mockResolvedValueOnce({ resolved: true, allowed: false, reason: 'global_owner_entry_halt' });
+    await expect(executeSignal(makeSignal(), 'EM', true)).rejects.toThrow(/Owner entry halted/);
+    expect(kite.getOrderMargins).toHaveBeenCalled();
+    expect(kite.placeOrder).not.toHaveBeenCalled();
+  });
+
+  test('protective and emergency exits bypass unavailable entry admission', async () => {
+    const { placeProtectiveStop, marketUnwind } = require('../../services/executor');
+    resolveOwnerEntryHalt.mockResolvedValue({ resolved: false, allowed: false });
+    entrySessionVerdict.mockResolvedValue({ allowed: false, phase: 'CAS_ELIGIBILITY_UNKNOWN' });
+    await placeProtectiveStop(makeSignal(), 950);
+    await marketUnwind(makeSignal(), 1005);
+    expect(resolveOwnerEntryHalt).not.toHaveBeenCalled();
+    expect(entrySessionVerdict).not.toHaveBeenCalled();
+    expect(kite.placeOrder).toHaveBeenCalledTimes(2);
+    for (const [, options] of kite.placeOrder.mock.calls) {
+      expect(options).toEqual(expect.objectContaining({ intent: 'exit' }));
+    }
+  });
+
+  test('a final CAS rejection after margin preflight never dispatches BUY', async () => {
+    entrySessionVerdict
+      .mockResolvedValueOnce({ allowed: true, phase: 'CONTINUOUS_TRADING', reason: null })
+      .mockResolvedValueOnce({
+        allowed: false,
+        phase: 'CAS_ORDER_ENTRY',
+        reason: 'Closing auction order-entry window',
+      });
+    await expect(executeSignal(makeSignal(), 'EM', true)).rejects.toThrow(
+      /Closing auction order-entry window/,
+    );
+    expect(kite.getOrderMargins).toHaveBeenCalled();
+    expect(kite.placeOrder).not.toHaveBeenCalled();
+  });
+
   test('passes the actual ticker to the authoritative CAS eligibility resolver', async () => {
     kite.getLTP.mockResolvedValue({
       'NSE:INFY': { last_price: 1005 },
     });
     await executeSignal(makeSignal({ ticker: 'INFY' }), 'EXEC');
-    expect(entrySessionVerdict).toHaveBeenCalledWith('INFY', expect.any(Date));
+    expect(entrySessionVerdict).toHaveBeenNthCalledWith(
+      1, 'INFY', expect.any(Date), {},
+    );
   });
 
   test('throws ValidationError when capital_at_risk exceeds 1500', async () => {

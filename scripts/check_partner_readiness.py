@@ -41,6 +41,7 @@ Usage:
 from __future__ import annotations
 
 import argparse
+import asyncio
 import ast
 import dataclasses
 import enum
@@ -969,12 +970,39 @@ def _check_qualification_via_db(db_path: Path) -> ChecklistItem:
             ),
             evidence={},
         )
+    sys.path.insert(0, str(ENGINE_DIR))
+    from partner_manual_advisory import qualification_is_current
+    current = [row for row in compatible if asyncio.run(qualification_is_current(
+        str(db_path), underlying=row[0], structure_kind=row[1], horizon=row[2],
+        policy_version=row[3], profile_id="default", now=datetime.now(timezone.utc),
+    ))]
+    try:
+        conn = _connect_readonly(db_path)
+        try:
+            profile_row = conn.execute("SELECT payload FROM partner_advisory_profiles WHERE profile_id='default'").fetchone()
+        finally:
+            conn.close()
+        profile = json.loads(profile_row[0])
+        required = {(index, structure) for index in profile["instruments"]
+                    for structure in profile["permitted_structures"]}
+    except (TypeError, KeyError, ValueError, sqlite3.Error):
+        required = {("NIFTY", "DIRECTIONAL_DEBIT_SPREAD"), ("SENSEX", "DIRECTIONAL_DEBIT_SPREAD")}
+    verified = {(row[0], row[1]) for row in current}
+    if not current or not required or not required.issubset(verified):
+        return ChecklistItem(
+            name="compatible_qualification",
+            title="Genuine compatible qualification exists",
+            status=Status.BLOCKER,
+            detail="Registered qualification rows do not pass current package/profile validation.",
+            next_step="Restore a current verified authorization package; do not relabel registry rows.",
+            evidence={"registered_rows": len(compatible), "current_rows": len(current), "missing_scopes": sorted(required - verified)},
+        )
     return ChecklistItem(
         name="compatible_qualification",
         title="Genuine compatible qualification exists",
         status=Status.PASS,
         detail=(
-            f"{len(compatible)} compatible qualification(s) across "
+            f"{len(current)} current verified qualification(s) across "
             f"{len(rows)} retained row(s)."
         ),
         next_step="No action needed.",
@@ -984,13 +1012,34 @@ def _check_qualification_via_db(db_path: Path) -> ChecklistItem:
                  "horizon": row[2], "policy_version": row[3],
                  "dataset_ref": row[4], "reviewed_at": row[5],
                  "status": row[6]}
-                for row in rows
+                for row in current
             ],
         },
     )
 
 
-def run_checks(engine_dir: Path, db_path: Path | None) -> list[ChecklistItem]:
+def _check_operations_freshness(db_path: Path, archive_root: Path | None,
+                                token_path: Path | None) -> ChecklistItem:
+    """Run the real-evidence diagnostic from this read-only operator CLI."""
+    sys.path.insert(0, str(ENGINE_DIR))
+    from ops_freshness_diagnostic import diagnose_freshness
+    token = token_path or (db_path.parent / "kite_token.json")
+    archive = archive_root or Path("__missing_archive_root__")
+    diagnostic = diagnose_freshness(token_path=token, archive_root=archive)
+    healthy = not diagnostic.any_stale and not diagnostic.any_missing
+    return ChecklistItem(
+        name="operations_freshness", title="Login and public-input freshness",
+        status=Status.PASS if healthy else Status.BLOCKER,
+        detail=("Current persisted login and collection evidence is available."
+                if healthy else "Login or archive collection evidence is missing or stale."),
+        next_step=("No action needed." if healthy else
+                   "Provide the real archive root and restore the current Kite login/input collection."),
+        evidence={"token_path": str(token), "archive_root": str(archive), **diagnostic.to_dict()},
+    )
+
+
+def run_checks(engine_dir: Path, db_path: Path | None, *, archive_root: Path | None = None,
+               token_path: Path | None = None) -> list[ChecklistItem]:
     """Run all checklist items and return them in order."""
     items = [_check_destination_configured(engine_dir)]
     # DB-dependent checks.
@@ -1002,7 +1051,7 @@ def run_checks(engine_dir: Path, db_path: Path | None) -> list[ChecklistItem]:
         items.append(_check_transport_via_db(db_path))
         items.append(_check_session_gates(engine_dir, db_path))
         # [WORKFLOW-A6 2026-09-20] Provider freshness check (DB only).
-        items.append(_check_provider_freshness(db_path))
+        items.append(_check_operations_freshness(db_path, archive_root, token_path))
     else:
         # Static-only checks (WARN without DB).
         items.insert(0, _check_intraday_profile(engine_dir))
@@ -1057,6 +1106,10 @@ def main(argv: list[str] | None = None) -> int:
                         help="Path to the python-engine directory.")
     parser.add_argument("--db-path", type=Path, default=None,
                         help="Path to cache.db (optional; enables DB checks).")
+    parser.add_argument("--archive-root", type=Path, default=None,
+                        help="research archive root containing partner-collection-attempts.sqlite3")
+    parser.add_argument("--token-path", type=Path, default=None,
+                        help="persisted Kite token path (default: alongside --db-path)")
     parser.add_argument("--json", action="store_true",
                         help="emit machine-readable JSON to stdout.")
     parser.add_argument("--delivery-ready-only", action="store_true",
@@ -1070,16 +1123,19 @@ def main(argv: list[str] | None = None) -> int:
             file=sys.stderr,
         )
         return 2
-    items = run_checks(args.engine_dir, args.db_path)
+    items = run_checks(args.engine_dir, args.db_path, archive_root=args.archive_root,
+                       token_path=args.token_path)
     has_blocker = any(i.status == Status.BLOCKER for i in items)
     has_fail = any(i.status == Status.FAIL for i in items)
     # [WORKFLOW-A6 2026-09-20] ``delivery_ready`` separates
     # "diagnostic ran cleanly" from "delivery is actually ready".
-    # A missing qualification (or any other BLOCKER) is a
-    # delivery blocker; a WARN-only diagnostic was the audit's
-    # specific failure mode. ``delivery_ready`` is True iff
-    # there are NO BLOCKERs and NO FAILs.
-    delivery_ready = not has_blocker and not has_fail
+    # A WARN has not positively established the condition.  Delivery is ready
+    # only after every required check passes.
+    # A delivery check is only ready when every required condition has been
+    # positively verified.  WARN means evidence is absent, stale, or could
+    # not be read; treating it as ready would reintroduce the audit's
+    # false-positive path.
+    delivery_ready = all(item.status == Status.PASS for item in items)
     if args.json:
         payload = {
             "delivery_ready": delivery_ready,

@@ -92,3 +92,49 @@ async def test_cas_eligibility_returns_unknown_for_invalid_symbol(client, monkey
     assert body["cas_eligible"] is False
     assert body["state"] == "UNKNOWN"
     assert body["reason"] == "invalid_symbol"
+
+
+@pytest.mark.asyncio
+async def test_owner_entry_halt_requires_internal_secret(client):
+    response = await client.get("/market-session/owner-entry-halt?channel=momentum")
+    assert response.status_code == 403
+
+
+@pytest.mark.asyncio
+async def test_owner_entry_halt_signature_matches_verdict(client, monkeypatch):
+    monkeypatch.setattr(settings, "OWNER_LIVE_ENTRY_HALT", True)
+    monkeypatch.setattr(settings, "OWNER_LIVE_ENTRY_HALT_CHANNELS", "")
+    response = await client.get(
+        "/market-session/owner-entry-halt?channel=momentum",
+        headers={"X-Internal-Secret": settings.INTERNAL_API_SECRET},
+    )
+    assert response.status_code == 200
+    body = response.json()
+    assert body["channel"] == "momentum"
+    assert body["allowed"] is False
+    assert body["global_halt"] is True
+    assert body["reason"] == "global_owner_entry_halt"
+    assert body["source"] == (
+        "python-engine/owner_entry_halt.py::is_owner_entry_halted"
+    )
+    signed = (
+        f"momentum|false|true|false|global_owner_entry_halt|"
+        f"{body['source_version']}"
+    ).encode()
+    assert body["signature"] == hmac.new(
+        settings.INTERNAL_API_SECRET.encode(), signed, hashlib.sha256
+    ).hexdigest()
+
+
+@pytest.mark.asyncio
+async def test_owner_entry_halt_preserves_allowed_baseline(client, monkeypatch):
+    monkeypatch.setattr(settings, "OWNER_LIVE_ENTRY_HALT", False)
+    monkeypatch.setattr(settings, "OWNER_LIVE_ENTRY_HALT_CHANNELS", "")
+    response = await client.get(
+        "/market-session/owner-entry-halt?channel=momentum",
+        headers={"X-Internal-Secret": settings.INTERNAL_API_SECRET},
+    )
+    assert response.status_code == 200
+    body = response.json()
+    assert body["allowed"] is True
+    assert body["reason"] == "allowed"

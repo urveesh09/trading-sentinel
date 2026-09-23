@@ -11,6 +11,7 @@ from datetime import datetime, timedelta, timezone
 import aiosqlite
 from config import settings
 from halt_switch import TradingHalted, assert_not_halted, trip as trip_halt
+from owner_entry_halt import is_owner_entry_halted
 from order_execution_readiness import (
     is_permission_or_static_ip_rejection,
     mark_authorized as mark_order_execution_authorized,
@@ -1420,7 +1421,24 @@ class KiteClient:
             return {"order_id": None, "status": "ERROR",
                     "message": "tradingsymbol and positive quantity are required"}
 
-        if intent == "entry":
+        def entry_blocker():
+            if intent != "entry":
+                return None
+            owner_halt = is_owner_entry_halted(channel)
+            if not owner_halt.allowed:
+                logger.error(
+                    "kite_order_blocked_by_owner_entry_halt",
+                    tradingsymbol=tradingsymbol,
+                    channel=channel,
+                    reason=owner_halt.reason,
+                )
+                return {
+                    "order_id": None,
+                    "status": "ERROR",
+                    "halted": True,
+                    "owner_entry_halted": True,
+                    "message": f"Owner entry halt: {owner_halt.reason}",
+                }
             try:
                 assert_not_halted(channel)
             except TradingHalted as exc:
@@ -1437,6 +1455,11 @@ class KiteClient:
                 # flag is there for callers that want to tell the two apart.
                 return {"order_id": None, "status": "ERROR", "halted": True,
                         "message": str(exc)}
+            return None
+
+        blocked = entry_blocker()
+        if blocked is not None:
+            return blocked
         params = {
             "exchange": exchange,
             "tradingsymbol": tradingsymbol.upper(),
@@ -1454,6 +1477,11 @@ class KiteClient:
             params["tag"] = tag
 
         await self.limiter.acquire()
+        # The limiter can yield while an operator trips either entry halt.
+        # Recheck at dispatch; exits never consult either halt predicate.
+        blocked = entry_blocker()
+        if blocked is not None:
+            return blocked
         try:
             resp = await self.client.post(f"/orders/{variety}", data=params)
             resp.raise_for_status()

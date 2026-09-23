@@ -1,5 +1,28 @@
 # Handover receipt and operator checklist
 
+## September 23 independent remediation completion
+
+Read the [review, migration and recovery instructions](2026-09-21-independent-remediation-review.md)
+before taking over. Dev branch: `codex/production-correction-hedge-p0`; reviewed
+incoming HEAD `674a6fe`. Find the implementation with `git log --oneline --grep="complete independent remediation review"`.
+Production remains untouched. Earlier audit artifacts and pre-existing golden
+fixture edits are not part of the correction commit.
+
+- Verify source/ledger index and additive exit-intent/receipt tables on a backup.
+- An acknowledged fill retries accounting only; an ambiguous dispatch needs broker
+  reconciliation. Preserve evidence and keep live single-leg execution off until
+  the operator recovery workflow is ready.
+- Mount real immutable authorization packages and confirm exact profile/code/config
+  compatibility. Old qualification rows may now correctly block new advice.
+- Run read-only readiness with explicit DB/archive/token paths; absent/WARN evidence
+  is not delivery-ready. Current token-file metadata is not a broker auth probe.
+- Promote only through GitHub and verify all running image identities. Test success
+  never substitutes for real strategy qualification, reconciliation or canary consent.
+
+Verification: **4,476 Python passed / 4 skipped**, **460 gateway passed / 4 skipped**
+in compatible Node 20; 46 known Python framework deprecation warnings. Syntax,
+staged diff and 209-module regenerated atlas checked. No dashboard source changed.
+
 ## September 20 Workflow I.4.D provenance correction (Dev tested)
 
 The classifier no longer refetches news after rendering sentiment: Yahoo and

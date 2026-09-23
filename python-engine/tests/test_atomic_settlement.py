@@ -21,8 +21,7 @@ Tests pin:
   - Settling twice with the same generation raises
     ``SettlementConflict``; the position UPDATE does NOT
     roll back a prior commit's state (the first settle sticks).
-  - Settling with two distinct generations produces two ledger
-    rows (re-settle after broker fill revision).
+  - Closed-position revisions require reconciliation, never another close.
   - Idempotent retry (``settle_position_close_idempotent``) is a
     no-op when the position is already at the requested
     generation.
@@ -136,7 +135,7 @@ async def test_settle_unknown_position_raises(fno_db):
             exit_reason="stop_hit", gross_pnl=750.0, costs=15.0,
             pnl=735.0, r_multiple=1.0, exit_order_id="ord-1",
             source="FNO_PAPER", ticker="NIFTY26SEP19500CE",
-            settlement_generation=0,
+            settlement_generation=1,
         )
     # No ledger row created.
     assert await _ledger_count(fno_db, "fno_position:999") == 0
@@ -159,7 +158,7 @@ async def test_duplicate_settle_with_same_generation_raises_conflict(fno_db):
         exit_reason="stop_hit", gross_pnl=750.0, costs=15.0,
         pnl=735.0, r_multiple=1.0, exit_order_id="ord-1",
         source="FNO_PAPER", ticker="NIFTY26SEP19500CE",
-        settlement_generation=0,
+        settlement_generation=1,
     )
     # First settle: succeeds.
     result = await settle_position_close(fno_db, pos_id, **base)
@@ -180,7 +179,7 @@ async def test_duplicate_settle_with_same_generation_raises_conflict(fno_db):
 @pytest.mark.asyncio
 async def test_duplicate_settle_without_generation_raises(fno_db):
     """[WORKFLOW-A2 2026-09-20] Audit reproducer: two writes with
-    the default ``settlement_generation=0`` and the same
+    the default ``settlement_generation=1`` and the same
     ``origin_ref`` must produce exactly one ledger row.
 
     This pins the unique-index defence even when callers have
@@ -207,15 +206,8 @@ async def test_duplicate_settle_without_generation_raises(fno_db):
 
 
 @pytest.mark.asyncio
-async def test_settle_with_distinct_generations_produces_two_rows(fno_db):
-    """[WORKFLOW-A2 2026-09-20] Re-settle after a broker fill
-    revision (different ``settlement_generation``) must produce a
-    new ledger row; the first settle stays committed.
-
-    The audit's reproducer was specifically about the SAME origin
-    + same generation producing duplicates. Distinct generations
-    are a legitimate re-settle path.
-    """
+async def test_repeated_settlement_produces_only_one_row(fno_db):
+    """Same-generation retries cannot book another cash delta."""
     from fno_positions import settle_position_close
     pos_id = await _insert_open_position(fno_db)
     base = dict(
@@ -225,20 +217,20 @@ async def test_settle_with_distinct_generations_produces_two_rows(fno_db):
         pnl=735.0, r_multiple=1.0, exit_order_id="ord-1",
         source="FNO_PAPER", ticker="NIFTY26SEP19500CE",
     )
-    # First settle (generation 0).
-    await settle_position_close(fno_db, pos_id, settlement_generation=0, **base)
-    # But the position is now CLOSED at generation 0, so a re-settle
+    # First settle (generation 1).
+    await settle_position_close(fno_db, pos_id, settlement_generation=1, **base)
+    # But the position is now CLOSED at generation 1, so a re-settle
     # would raise ``PositionNotOpen``. To simulate a re-settle path
     # the test instead exercises the idempotent wrapper, which is
     # what ``_manage_exits`` would call on a retry.
     from fno_positions import settle_position_close_idempotent
     result = await settle_position_close_idempotent(
-        fno_db, pos_id, requested_generation=0,
+        fno_db, pos_id, requested_generation=1,
         **base,
     )
     assert result["settled"] is False
     assert result["already"] is True
-    assert result["current_generation"] == 0
+    assert result["current_generation"] == 1
     assert await _ledger_count(fno_db, f"fno_position:{pos_id}") == 1
 
 
@@ -261,24 +253,19 @@ async def test_idempotent_wrapper_no_op_when_already_settled(fno_db):
         exit_reason="stop_hit", gross_pnl=750.0, costs=15.0,
         pnl=735.0, r_multiple=1.0, exit_order_id="ord-1",
         source="FNO_PAPER", ticker="NIFTY26SEP19500CE",
-        settlement_generation=0,
+        settlement_generation=1,
     )
     await settle_position_close(fno_db, pos_id, **base)
     retry = await settle_position_close_idempotent(
-        fno_db, pos_id, requested_generation=0,
+        fno_db, pos_id, requested_generation=1,
         **{k: v for k, v in base.items() if k != "settlement_generation"},
     )
-    assert retry == {"settled": False, "already": True, "current_generation": 0}
+    assert retry == {"settled": False, "already": True, "current_generation": 1}
 
 
 @pytest.mark.asyncio
-async def test_idempotent_wrapper_settles_when_generation_ahead(fno_db):
-    """[WORKFLOW-A2 2026-09-20] A retry with a higher
-    ``requested_generation`` settles normally even when the
-    position is already CLOSED at a lower generation.
-
-    In production this corresponds to a broker fill revision
-    that arrived after the initial settle."""
+async def test_idempotent_wrapper_does_not_rebook_closed_position(fno_db):
+    """Only the original generation is an idempotent retry."""
     from fno_positions import (
         settle_position_close,
         settle_position_close_idempotent,
@@ -291,11 +278,11 @@ async def test_idempotent_wrapper_settles_when_generation_ahead(fno_db):
         pnl=735.0, r_multiple=1.0, exit_order_id="ord-1",
         source="FNO_PAPER", ticker="NIFTY26SEP19500CE",
     )
-    # Initial settle at generation 0.
-    await settle_position_close(fno_db, pos_id, settlement_generation=0, **base)
-    # Idempotent retry at generation 0 = no-op (already settled).
+    # Initial settle at generation 1.
+    await settle_position_close(fno_db, pos_id, settlement_generation=1, **base)
+    # Idempotent retry at generation 1 = no-op (already settled).
     no_op = await settle_position_close_idempotent(
-        fno_db, pos_id, requested_generation=0, **base,
+        fno_db, pos_id, requested_generation=1, **base,
     )
     assert no_op["already"] is True
 
@@ -319,7 +306,7 @@ async def test_settle_rolls_back_when_position_missing(fno_db):
             exit_reason="stop_hit", gross_pnl=750.0, costs=15.0,
             pnl=735.0, r_multiple=1.0, exit_order_id="ord-1",
             source="FNO_PAPER", ticker="NIFTY26SEP19500CE",
-            settlement_generation=0,
+            settlement_generation=1,
         )
     assert await _ledger_count(fno_db, "fno_position:1") == 0
 
@@ -405,10 +392,12 @@ async def test_settle_records_division_equity_before_after(fno_db):
         exit_reason="target_hit", gross_pnl=750.0, costs=15.0,
         pnl=735.0, r_multiple=1.5, exit_order_id="ord-2",
         source="FNO_PAPER", ticker="NIFTY26SEP19500CE",
-        settlement_generation=0,
+        settlement_generation=1,
     )
-    assert result["bankroll_before"] == 0.0
-    assert result["bankroll_after"] == 735.0
+    from performance import allocation_for_source
+    allocated = allocation_for_source("FNO_PAPER")
+    assert result["bankroll_before"] == allocated
+    assert result["bankroll_after"] == allocated + 735.0
     async with __import__("aiosqlite").connect(fno_db) as db:
         cur = await db.execute(
             "SELECT bankroll_before, bankroll_after, source "
@@ -416,8 +405,8 @@ async def test_settle_records_division_equity_before_after(fno_db):
             (result["ledger_id"],),
         )
         row = await cur.fetchone()
-    assert row[0] == 0.0
-    assert row[1] == 735.0
+    assert row[0] == allocated
+    assert row[1] == allocated + 735.0
     assert row[2] == "FNO_PAPER"
 
 
@@ -443,7 +432,7 @@ async def test_concurrent_settles_only_one_succeeds(fno_db):
         exit_reason="target_hit", gross_pnl=750.0, costs=15.0,
         pnl=735.0, r_multiple=1.5, exit_order_id="ord-3",
         source="FNO_PAPER", ticker="NIFTY26SEP19500CE",
-        settlement_generation=0,
+        settlement_generation=1,
     )
     results = await asyncio.gather(
         settle_position_close(fno_db, pos_id, **base),

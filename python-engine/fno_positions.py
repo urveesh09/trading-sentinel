@@ -96,9 +96,35 @@ _LEDGER_DDL = """
 -- a follow-up migration can drop the partial index and create a
 -- full unique index. The partial index is the right default for
 -- an idempotent migration.
-CREATE UNIQUE INDEX IF NOT EXISTS ux_bankroll_ledger_origin_gen
-    ON bankroll_ledger (origin_ref, settlement_generation)
+CREATE UNIQUE INDEX IF NOT EXISTS ux_bankroll_ledger_source_origin_gen
+    ON bankroll_ledger (source, origin_ref, settlement_generation)
     WHERE settlement_generation > 0
+"""
+
+
+# A filled exit is an external fact.  Keep it independently of local
+# accounting so a failed local settlement can be retried without asking the
+# executor to submit another exit order.  The row is consumed in the same
+# transaction that closes the position and writes the ledger delta.
+_EXIT_RECEIPT_DDL = """
+CREATE TABLE IF NOT EXISTS fno_exit_execution_receipts (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    position_id INTEGER NOT NULL UNIQUE,
+    source TEXT NOT NULL,
+    ticker TEXT NOT NULL,
+    exit_time TEXT NOT NULL,
+    exit_premium REAL NOT NULL,
+    exit_underlying REAL NOT NULL,
+    exit_reason TEXT NOT NULL,
+    gross_pnl REAL NOT NULL,
+    costs REAL NOT NULL,
+    pnl REAL NOT NULL,
+    r_multiple REAL NOT NULL,
+    exit_order_id TEXT,
+    settlement_generation INTEGER NOT NULL,
+    notes TEXT,
+    created_at TEXT NOT NULL
+)
 """
 
 
@@ -170,16 +196,22 @@ async def init_fno_positions_db(db_path: str) -> None:
                 "ALTER TABLE fno_positions "
                 "ADD COLUMN settlement_generation INTEGER NOT NULL DEFAULT 0"
             )
-        except Exception:
-            pass
+        except aiosqlite.OperationalError as exc:
+            if "duplicate column name" not in str(exc).lower():
+                raise
         # Create the unique index on the shared ledger. The table
         # itself is owned by ``performance.init_ledger``; we wrap
         # the index creation in a try so a test DB that doesn't
         # have ``bankroll_ledger`` yet does not fail this init.
         try:
             await db.execute(_LEDGER_DDL)
-        except Exception:
-            pass
+        except aiosqlite.OperationalError as exc:
+            if "no such table" not in str(exc).lower():
+                raise
+        await db.execute(_EXIT_RECEIPT_DDL)
+        await db.execute("""CREATE TABLE IF NOT EXISTS fno_exit_intents (
+            position_id INTEGER PRIMARY KEY, source TEXT NOT NULL,
+            created_at TEXT NOT NULL)""")
         await db.commit()
 
 
@@ -302,6 +334,138 @@ async def close_position(
         await db.commit()
 
 
+async def exit_execution_receipt(
+    db_path: str, position_id: int, source: str,
+) -> Optional[dict]:
+    """Return an acknowledged-but-unsettled exit for one open position."""
+    async with aiosqlite.connect(db_path) as db:
+        db.row_factory = aiosqlite.Row
+        try:
+            cur = await db.execute(
+                "SELECT * FROM fno_exit_execution_receipts "
+                "WHERE position_id=? AND source=?",
+                (position_id, source),
+            )
+            row = await cur.fetchone()
+        except aiosqlite.OperationalError:
+            # Unreadable execution evidence must never authorize another exit.
+            raise
+    return dict(row) if row is not None else None
+
+
+async def claim_exit_intent(db_path: str, position_id: int, source: str) -> bool:
+    """Durably claim one external exit; ambiguous dispatches require reconciliation.
+
+    No lease expiry: a crash cannot prove an external order was never submitted.
+    Successful accounting consumes the claim in the same transaction.
+    """
+    async with aiosqlite.connect(db_path) as db:
+        await db.execute("BEGIN IMMEDIATE")
+        cur = await db.execute(
+            "INSERT OR IGNORE INTO fno_exit_intents(position_id,source,created_at) "
+            "SELECT id,source,? FROM fno_positions WHERE id=? AND source=? AND status='OPEN'",
+            (datetime.now(timezone.utc).isoformat(), position_id, source),
+        )
+        await db.commit()
+        return cur.rowcount == 1
+
+
+async def record_exit_execution_receipt(
+    db_path: str,
+    position_id: int,
+    *,
+    source: str,
+    ticker: str,
+    exit_time_ist: datetime,
+    exit_premium: float,
+    exit_underlying: float,
+    exit_reason: str,
+    gross_pnl: float,
+    costs: float,
+    pnl: float,
+    r_multiple: float,
+    exit_order_id: Optional[str],
+    settlement_generation: int = 1,
+    notes: Optional[str] = None,
+) -> dict:
+    """Persist a broker-acknowledged exit before local settlement.
+
+    The receipt is deliberately a separate, durable fact.  It is deleted by
+    ``settle_position_close`` only when the position update and ledger insert
+    commit together.  Therefore a local ledger failure leaves recovery input
+    for the next tick and does not cause another broker exit submission.
+    """
+    if type(settlement_generation) is not int or settlement_generation <= 0:
+        raise ValueError(
+            "settlement_generation must be a positive integer; "
+            f"got {settlement_generation!r}"
+        )
+    await init_fno_positions_db(db_path)
+    async with aiosqlite.connect(db_path) as db:
+        db.row_factory = aiosqlite.Row
+        await db.execute("BEGIN IMMEDIATE")
+        try:
+            cur = await db.execute(
+                "SELECT source, status FROM fno_positions WHERE id=?",
+                (position_id,),
+            )
+            position = await cur.fetchone()
+            if position is None or position["status"] != "OPEN":
+                raise PositionNotOpen(
+                    f"position {position_id} is not OPEN; cannot record exit receipt"
+                )
+            if position["source"] != source:
+                raise SettlementConflict(
+                    f"position {position_id} belongs to {position['source']!r}, "
+                    f"not {source!r}"
+                )
+            cur = await db.execute(
+                "SELECT * FROM fno_exit_execution_receipts WHERE position_id=?",
+                (position_id,),
+            )
+            existing = await cur.fetchone()
+            if existing is not None:
+                if (
+                    existing["source"] == source
+                    and existing["exit_order_id"] == exit_order_id
+                    and float(existing["exit_premium"]) == float(exit_premium)
+                    and int(existing["settlement_generation"]) == settlement_generation
+                ):
+                    await db.commit()
+                    return dict(existing)
+                raise SettlementConflict(
+                    f"position {position_id} already has a different exit receipt"
+                )
+            cur = await db.execute(
+                "INSERT INTO fno_exit_execution_receipts "
+                "(position_id, source, ticker, exit_time, exit_premium, "
+                "exit_underlying, exit_reason, gross_pnl, costs, pnl, r_multiple, "
+                "exit_order_id, settlement_generation, notes, created_at) "
+                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                (
+                    position_id, source, ticker, exit_time_ist.isoformat(),
+                    exit_premium, exit_underlying, exit_reason, gross_pnl, costs,
+                    pnl, r_multiple, exit_order_id, settlement_generation,
+                    (notes or "").strip()[:500] or None,
+                    datetime.now(timezone.utc).isoformat(),
+                ),
+            )
+            receipt_id = cur.lastrowid
+            await db.commit()
+        except Exception:
+            try:
+                await db.rollback()
+            except Exception:
+                pass
+            raise
+    receipt = await exit_execution_receipt(db_path, position_id, source)
+    if receipt is None or receipt["id"] != receipt_id:
+        raise SettlementError(
+            f"exit receipt for position {position_id} was not readable after commit"
+        )
+    return receipt
+
+
 # [WORKFLOW-A2 2026-09-20] Settlement exceptions.
 #
 # These are raised by ``settle_position_close`` to communicate
@@ -363,12 +527,13 @@ async def settle_position_close(
     exit_order_id: Optional[str],
     source: str,
     ticker: str,
-    settlement_generation: int = 0,
+    settlement_generation: int = 1,
     origin_ref: Optional[str] = None,
     notes: Optional[str] = None,
     ledger_timestamp: Optional[datetime] = None,
     outcome_pnl: Optional[float] = None,
     outcome_r_multiple: Optional[float] = None,
+    execution_receipt_id: Optional[int] = None,
 ) -> dict:
     """[WORKFLOW-A2 2026-09-20] Atomic position close + ledger write.
 
@@ -408,9 +573,9 @@ async def settle_position_close(
         A row with the same ``(origin_ref, settlement_generation)`` already
         exists in the ledger. The unique index caught a duplicate.
     """
-    if not isinstance(settlement_generation, int) or settlement_generation < 0:
+    if type(settlement_generation) is not int or settlement_generation <= 0:
         raise ValueError(
-            "settlement_generation must be a non-negative integer; "
+            "settlement_generation must be a positive integer; "
             f"got {settlement_generation!r}"
         )
     if origin_ref is None:
@@ -429,7 +594,7 @@ async def settle_position_close(
                 "exit_premium=?, exit_underlying=?, exit_reason=?, "
                 "gross_pnl=?, costs=?, pnl=?, r_multiple=?, "
                 "exit_order_id=?, settlement_generation=? "
-                "WHERE id=? AND status='OPEN'",
+                "WHERE id=? AND source=? AND status='OPEN'",
                 (
                     exit_time_ist.isoformat(),
                     exit_time_ist.date().isoformat(),
@@ -443,6 +608,7 @@ async def settle_position_close(
                     exit_order_id,
                     settlement_generation,
                     position_id,
+                    source,
                 ),
             )
             if cur.rowcount != 1:
@@ -485,7 +651,10 @@ async def settle_position_close(
                 (source,),
             )
             row = await cur.fetchone()
-            bankroll_before = float(row[0]) if row and row[0] is not None else 0.0
+            from performance import allocation_for_source
+            bankroll_before = allocation_for_source(source) + (
+                float(row[0]) if row and row[0] is not None else 0.0
+            )
             bankroll_after = bankroll_before + pnl
             try:
                 cur = await db.execute(
@@ -513,6 +682,29 @@ async def settle_position_close(
                     f"settlement_generation={settlement_generation} already exists"
                 ) from exc
             ledger_id = cur.lastrowid
+            if execution_receipt_id is not None:
+                # Receipt consumption shares the position + ledger commit
+                # boundary.  A local failure retains the broker fill for
+                # recovery; a successful commit cannot leave it pending.
+                cur = await db.execute(
+                    "DELETE FROM fno_exit_execution_receipts "
+                    "WHERE id=? AND position_id=? AND source=? "
+                    "AND settlement_generation=?",
+                    (
+                        execution_receipt_id, position_id, source,
+                        settlement_generation,
+                    ),
+                )
+                if cur.rowcount != 1:
+                    await db.rollback()
+                    raise SettlementConflict(
+                        f"exit receipt {execution_receipt_id} is missing or does not "
+                        f"belong to position {position_id}"
+                    )
+            await db.execute(
+                "DELETE FROM fno_exit_intents WHERE position_id=? AND source=?",
+                (position_id, source),
+            )
             await db.commit()
         except Exception:
             # Defensive: any uncaught exception in the transaction
@@ -563,7 +755,8 @@ async def settle_position_close_idempotent(
     """
     async with aiosqlite.connect(db_path) as db:
         cur = await db.execute(
-            "SELECT status, settlement_generation FROM fno_positions WHERE id=?",
+            "SELECT source, status, settlement_generation "
+            "FROM fno_positions WHERE id=?",
             (position_id,),
         )
         row = await cur.fetchone()
@@ -571,13 +764,25 @@ async def settle_position_close_idempotent(
         raise PositionNotOpen(
             f"position {position_id} does not exist; cannot settle"
         )
-    status, current_generation = row[0], int(row[1] or 0)
-    if status == "CLOSED" and current_generation >= requested_generation:
+    position_source, status, current_generation = row[0], row[1], int(row[2] or 0)
+    requested_source = kwargs.get("source")
+    if requested_source != position_source:
+        raise SettlementConflict(
+            f"position {position_id} belongs to {position_source!r}, "
+            f"not {requested_source!r}"
+        )
+    if status == "CLOSED" and current_generation == requested_generation:
         return {
             "settled": False,
             "already": True,
             "current_generation": current_generation,
         }
+    if status == "CLOSED":
+        raise SettlementConflict(
+            f"position {position_id} was settled at generation "
+            f"{current_generation}, not requested generation {requested_generation}; "
+            "reconcile the broker revision without a second ledger close"
+        )
     result = await settle_position_close(
         db_path, position_id,
         settlement_generation=requested_generation,

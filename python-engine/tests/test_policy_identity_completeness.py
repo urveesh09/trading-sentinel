@@ -10,7 +10,7 @@ Pins every audit-acceptance check from
 Plus defensive tests:
 
   - Module SHA-256 helpers match per-module bytes.
-  - Missing modules are silently omitted (no crash).
+  - Missing modules fail closed.
   - Two rebuilds of the same identity produce the same fingerprint.
 """
 from __future__ import annotations
@@ -151,19 +151,20 @@ def test_module_set_matches_qualification_source_names():
         "cost_audit.py",
         "partner_full_policy_replay.py",
     }
+    expected.update({"fno_defined_risk.py", "asymmetric_fill_model.py", "partner_qualification_review.py", "partner_qualification_authority.py", "policy_identity.py"})
     assert set(_POLICY_IDENTITY_MODULES) == expected
 
 
 def test_module_sha256s_handles_missing_modules(tmp_path: Path):
-    """When a module is absent on disk, ``module_sha256s`` omits it
-    silently so a partial deployment does not crash."""
-    shas = module_sha256s(tmp_path)
-    assert shas == {}
+    """A partial deployment cannot produce a usable policy identity."""
+    with pytest.raises(ValueError, match="missing"):
+        module_sha256s(tmp_path)
 
 
 def test_module_sha256s_only_reads_participating_modules(tmp_path: Path):
     """A non-participating module is ignored even if it exists."""
-    (tmp_path / "fno_costs.py").write_bytes(b"hello")
+    for name in _POLICY_IDENTITY_MODULES:
+        (tmp_path / name).write_bytes(b"hello")
     (tmp_path / "not_participating.py").write_bytes(b"world")
     shas = module_sha256s(tmp_path)
     assert "fno_costs.py" in shas

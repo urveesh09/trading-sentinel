@@ -465,6 +465,14 @@
       "response_model": null
     },
     {
+      "endpoint": "owner_entry_halt",
+      "methods": [
+        "GET"
+      ],
+      "path": "/market-session/owner-entry-halt",
+      "response_model": null
+    },
+    {
       "endpoint": "get_momentum_signals",
       "methods": [
         "GET"

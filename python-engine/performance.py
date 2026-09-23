@@ -46,21 +46,22 @@ async def init_ledger(db_path: str):
         except Exception:
             pass  # column already exists -- safe to ignore
         # [WORKFLOW-A2 2026-09-20] Unique index that catches the
-        # audit's reproducer: two writes using the same
+        # audit's reproducer: two writes using the same source,
         # ``origin_ref`` + ``settlement_generation > 0`` produce a
         # duplicate-ledger conflict at the constraint, not silently.
         # The partial-index ``WHERE settlement_generation > 0`` lets
         # pre-migration callers continue to write rows with the
         # default generation=0 without the constraint firing.
-        try:
-            await db.execute(
-                "CREATE UNIQUE INDEX IF NOT EXISTS "
-                "ux_bankroll_ledger_origin_gen "
-                "ON bankroll_ledger (origin_ref, settlement_generation) "
-                "WHERE settlement_generation > 0"
-            )
-        except Exception:
-            pass
+        await db.execute(
+            "CREATE UNIQUE INDEX IF NOT EXISTS "
+            "ux_bankroll_ledger_source_origin_gen "
+            "ON bankroll_ledger (source, origin_ref, settlement_generation) "
+            "WHERE settlement_generation > 0"
+        )
+        # The first A2 commit created a source-less index.  Only drop it
+        # after its replacement exists, so a legacy DB cannot lose its
+        # duplicate protection if index creation fails.
+        await db.execute("DROP INDEX IF EXISTS ux_bankroll_ledger_origin_gen")
         await db.execute("""
             CREATE TABLE IF NOT EXISTS backtest_results (
                 timestamp TEXT, strategy_version TEXT,

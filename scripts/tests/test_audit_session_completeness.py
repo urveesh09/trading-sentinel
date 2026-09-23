@@ -188,11 +188,11 @@ def test_audit_empty_archive_returns_never_attempted(tmp_path):
 
 def test_audit_classifies_attempted_unavailable(tmp_path):
     """[WORKFLOW-B.1 2026-09-17] All attempts UNAVAILABLE
-    -> ATTEMPTED_UNAVAILABLE."""
+    with missing expected slots -> PARTIAL."""
     archive = _make_archive(tmp_path)
     for i in range(3):
         expected_at = datetime(2026, 9, 14, 9, 16 + i * 2, 50,
-                                 tzinfo=timezone.utc)
+                                 tzinfo=IST).astimezone(timezone.utc)
         _insert_attempt(
             archive, underlying="SENSEX", expected_at=expected_at,
             public_state="UNAVAILABLE",
@@ -208,7 +208,7 @@ def test_audit_classifies_attempted_unavailable(tmp_path):
         now=datetime(2026, 9, 14, 11, 0, tzinfo=IST),
     )
     u = report.underlyings[0]
-    assert u.state == CompletenessState.ATTEMPTED_UNAVAILABLE
+    assert u.state == CompletenessState.PARTIAL
     assert u.unavailable_count >= 1
 
 
@@ -219,7 +219,7 @@ def test_audit_classifies_partial_when_missing_schedule(tmp_path):
     # Only 2 attempts in a window expecting ~50.
     for i in range(2):
         expected_at = datetime(2026, 9, 14, 9, 16 + i * 2, 50,
-                                 tzinfo=timezone.utc)
+                                 tzinfo=IST).astimezone(timezone.utc)
         _insert_attempt(
             archive, underlying="NIFTY", expected_at=expected_at,
             public_state="OBSERVED",
@@ -368,7 +368,7 @@ def test_blocking_reasons_for_attempted_unavailable(tmp_path):
     archive = _make_archive(tmp_path)
     for i in range(3):
         expected_at = datetime(2026, 9, 14, 9, 16 + i * 2, 50,
-                                 tzinfo=timezone.utc)
+                                 tzinfo=IST).astimezone(timezone.utc)
         _insert_attempt(
             archive, underlying="SENSEX", expected_at=expected_at,
             public_state="UNAVAILABLE",

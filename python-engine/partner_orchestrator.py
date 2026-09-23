@@ -562,7 +562,7 @@ async def partner_manual_advisory_tick(now: Optional[datetime] = None, *, clock=
         if protection is None:
             metrics["rejected"] += 1
             return False
-        if await is_strategy_qualified(settings.DB_PATH, protection):
+        if await is_strategy_qualified(settings.DB_PATH, protection, profile_id=profile.profile_id, now=now):
             protection = replace(protection, evidence=StrategyEvidence.QUALIFIED_FOR_ADVISORY)
         precheck = validate_candidate(
             protection, decision_at, max_quote_age_seconds=settings.PARTNER_MANUAL_ADVISORY_MAX_QUOTE_AGE_SEC,
@@ -938,7 +938,7 @@ async def partner_manual_advisory_tick(now: Optional[datetime] = None, *, clock=
                 )
                 await finish_attempt(spec.name, "REJECTED", "candidate_construction_failed")
                 continue
-            qualified = await is_strategy_qualified(settings.DB_PATH, candidate)
+            qualified = await is_strategy_qualified(settings.DB_PATH, candidate, profile_id=profile.profile_id, now=now)
             qualification_state = "QUALIFIED" if qualified else "MISSING_QUALIFICATION"
             if qualified:
                 candidate = replace(candidate, evidence=StrategyEvidence.QUALIFIED_FOR_ADVISORY)

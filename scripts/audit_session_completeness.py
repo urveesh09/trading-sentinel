@@ -134,6 +134,8 @@ class UnderlyingAudit:
     incomplete_count: int
     stale_input_count: int
     latest_updated_at_utc: Optional[str]
+    account_ids: tuple[str, ...]
+    account_scope_ambiguous: bool
     blocking_reasons: tuple[str, ...]
 
     def to_dict(self) -> dict:
@@ -147,6 +149,8 @@ class UnderlyingAudit:
             "incomplete_count": self.incomplete_count,
             "stale_input_count": self.stale_input_count,
             "latest_updated_at_utc": self.latest_updated_at_utc,
+            "account_ids": list(self.account_ids),
+            "account_scope_ambiguous": self.account_scope_ambiguous,
             "blocking_reasons": list(self.blocking_reasons),
         }
 
@@ -225,6 +229,10 @@ def _blocking_reasons_for(audit: dict) -> tuple[str, ...]:
     underlying audit row."""
     reasons: list[str] = []
     state = audit.get("state")
+    if audit.get("account_scope_ambiguous"):
+        reasons.append(
+            "records span multiple account IDs; rerun with an explicit account scope"
+        )
     if state == CompletenessState.NEVER_ATTEMPTED.value:
         reasons.append(
             f"no attempts in window (expected {audit.get('expected', 0)})"
@@ -234,6 +242,8 @@ def _blocking_reasons_for(audit: dict) -> tuple[str, ...]:
             f"all {audit.get('attempted', 0)} attempts UNAVAILABLE"
         )
     elif state == CompletenessState.PARTIAL.value:
+        if audit.get("unavailable_count", 0):
+            reasons.append(f"{audit['unavailable_count']} attempt(s) UNAVAILABLE")
         missing = audit.get("missing_schedule_count", 0)
         incomplete = audit.get("incomplete_count", 0)
         if missing:
@@ -265,6 +275,7 @@ def audit_session(
     scheduler_second: int = 50,
     market_open: Optional[bool] = None,
     max_public_age_seconds: int = 360,
+    account_id: Optional[str] = None,
 ) -> SessionAuditReport:
     """Audit a session's collection completeness.
 
@@ -311,6 +322,7 @@ def audit_session(
         scheduler_second=scheduler_second,
         market_open=market_open,
         max_public_age_seconds=max_public_age_seconds,
+        account_id=account_id,
     )
     per_index = raw.get("per_index", {})
     audits: list[UnderlyingAudit] = []
@@ -330,6 +342,8 @@ def audit_session(
             incomplete_count=int(row.get("incomplete_count", 0)),
             stale_input_count=int(row.get("stale_input_count", 0)),
             latest_updated_at_utc=row.get("latest_updated_at_utc"),
+            account_ids=tuple(str(value) for value in row.get("account_ids", [])),
+            account_scope_ambiguous=bool(row.get("account_scope_ambiguous", False)),
             blocking_reasons=_blocking_reasons_for(row),
         )
         audits.append(audit)
@@ -385,6 +399,8 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--underlyings", nargs="+",
                         default=["NIFTY", "SENSEX"],
                         help="underlyings to audit")
+    parser.add_argument("--account-id", default=None,
+                        help="optional exact account scope; required when multiple account IDs share a session")
     parser.add_argument("--entry-start-minute", type=int,
                         default=9*60 + 15,
                         help="session open minute (default 9:15 IST)")
@@ -447,6 +463,7 @@ def main(argv: list[str] | None = None) -> int:
         interval_seconds=args.interval_seconds,
         scheduler_second=args.scheduler_second,
         market_open=market_open,
+        account_id=args.account_id,
     )
     per_index = raw.get("per_index", {})
     audits: list[UnderlyingAudit] = []
@@ -466,6 +483,8 @@ def main(argv: list[str] | None = None) -> int:
             incomplete_count=int(row.get("incomplete_count", 0)),
             stale_input_count=int(row.get("stale_input_count", 0)),
             latest_updated_at_utc=row.get("latest_updated_at_utc"),
+            account_ids=tuple(str(value) for value in row.get("account_ids", [])),
+            account_scope_ambiguous=bool(row.get("account_scope_ambiguous", False)),
             blocking_reasons=_blocking_reasons_for(row),
         ))
     report = SessionAuditReport(
