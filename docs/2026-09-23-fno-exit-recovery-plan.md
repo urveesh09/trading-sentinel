@@ -56,3 +56,10 @@ creates `fno_exit_recoveries`; take a database backup before rollout. Rollback
 should preserve these rows and the existing intents/ledger. If a recovery
 cannot corroborate an older event, keep live single-leg entries disabled and
 reconcile with broker statements and an operator-reviewed process.
+
+Implementation commit `30a6b8c` was pushed to
+`origin/codex/production-correction-hedge-p0` on 24 September. Post-commit
+scope review confirmed only this slice's code, tests, route golden and canonical
+documents were committed. The two pre-existing session-golden timestamp edits
+and independent audit files remain unstaged/untracked. No PR, merge, deployment
+or broker rehearsal is implied by this push.

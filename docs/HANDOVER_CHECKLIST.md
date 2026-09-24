@@ -13,7 +13,10 @@
   cross-session kill-switch, migration and read-only inspection fixes passed 65
   broker-client/recovery/risk/surface tests. Existing framework
   deprecations remain. Atlas regenerated to 210 Python modules.
-- [ ] Record commit/push receipt below.
+- [x] Implementation commit `30a6b8c` pushed to
+  `origin/codex/production-correction-hedge-p0`; post-commit scope and
+  canonical documentation checked. Existing unrelated worktree files were not
+  staged. This new slice is Dev-only until a GitHub promotion.
 - [ ] Promote through GitHub, rehearse with real broker evidence and keep live
   single-leg activation a separate operator decision. Older unknown intents
   need statement-level reconciliation; never delete one to force retry.
