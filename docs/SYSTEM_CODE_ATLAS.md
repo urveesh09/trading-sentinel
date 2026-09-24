@@ -1766,7 +1766,7 @@ Declared tables: `selected_leg_collection_gaps`, `selected_leg_subscriptions`
 
 Forward-only NIFTY/SENSEX quote evidence collection. This module is intentionally independent from partner delivery, profiles, qualification and every order API. It records exactly what the permitted provider returned and marks the REST path as lower-frequency; a WebSocket consumer may feed ``ingest_provider_packet`` without changing its evidence format.
 
-Top-level declarations: `_configured_underlyings` (line 35), `_quote_archive` (line 40), `_provider_timestamp` (line 50), `_finite_positive` (line 68), `_five_levels` (line 76), `normalise_quote` (line 93), `_select_contracts` (line 139), `_with_active_legs` (line 154), `_documented_quotes` (line 166), `collect_rest_quote_snapshot` (line 174), `research_quote_collection_tick` (line 336)
+Top-level declarations: `_configured_underlyings` (line 35), `_fair_collection_order` (line 40), `_quote_archive` (line 59), `_provider_timestamp` (line 69), `_finite_positive` (line 87), `_five_levels` (line 95), `normalise_quote` (line 112), `_select_contracts` (line 158), `_with_active_legs` (line 173), `_documented_quotes` (line 185), `_ProviderDeadlineExceeded` (line 193), `_bounded_documented_quotes` (line 197), `_index_coverage` (line 227), `collect_rest_quote_snapshot` (line 236), `research_quote_collection_tick` (line 483)
 
 Engine dependencies: `config`, `fno_instruments`, `fno_models`, `fno_underlyings`, `research_archive`, `research_leg_subscriptions`
 

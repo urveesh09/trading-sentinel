@@ -1,5 +1,32 @@
 # Trading Sentinel — system guide and engineering handover
 
+## September 24 P1 research quote deadlines and coverage evidence (Dev)
+
+The research scheduler now bounds every NIFTY/SENSEX provider await to the
+remaining 48-second collection cap, rather than checking only between
+underlyings. `asyncio.wait_for` cancels and joins the actual shared Kite
+coroutine; it creates no replacement client or hidden late provider task. A
+deadline is retained as evidence: current-index `provider_deadline_exceeded`,
+exact active-leg tokens already known as unobserved, and later indices as
+explicit skipped/unobserved coverage. Nothing is replaced with a stale quote.
+
+Every scheduler result and persisted collection run carries `runtime_capped`,
+`elapsed_sec`, `runtime_cap_sec`, `partial_collected` and `partial_count` for
+normal, deadline and error paths. Per-index `collection_state` distinguishes
+completed, empty, batch error, provider deadline, storage stop and skipped
+deadline outcomes. The 60-second cadence and 48-second cap are unchanged.
+The first underlying rotates deterministically by UTC scheduler slot and the
+chosen order is retained, preventing repeated capped slots from permanently
+favoring one index after a restart.
+The scheduler regression proves cancellation of a stalled first operation and
+complete NIFTY/SENSEX gap accounting; the normal path proves durable telemetry.
+Focused coverage passed 54 tests, all research tests passed 62, the combined
+collector/scheduler/Kite-client surface passed 173 with one skip and one
+pre-existing Starlette lifespan deprecation, and compilation passed. This is
+Dev-only evidence: three real logged-in sessions must still
+show fairness/latency coverage before operational claims. See the
+[P1 receipt](2026-09-24-three-day-production-audit-plan.md).
+
 ## September 24 P0 decision-forensics retention verification (Dev)
 
 Read-only Production evidence showed that `python-engine` already uses

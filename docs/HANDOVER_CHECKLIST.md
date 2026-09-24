@@ -1,5 +1,24 @@
 # Handover receipt and operator checklist
 
+## September 24 P1 research quote deadlines and truthful coverage (Dev)
+
+- [x] Replace the between-index-only cap with a per-provider remaining-budget
+  boundary that cancels and joins the shared Kite coroutine before return.
+- [x] Persist/return cap, elapsed and partial-count fields for normal, deadline
+  and error outcomes; expose a named per-index state and exact/unknown active-
+  leg coverage gaps without fabricating a quote; rotate first-index ownership
+  by deterministic scheduler-slot order across restarts.
+- [x] Prove a stalled first NIFTY provider cancels, returns within its cap,
+  records the NIFTY active-leg/SENSEX coverage gaps, and leaves no operation
+  alive. Prove normal durable telemetry. Focused suite: 54 passed; all
+  `test_research_*`: 62 passed; combined collector/scheduler/Kite-client:
+  173 passed/one skipped with one pre-existing Starlette lifespan deprecation;
+  compilation passed.
+- [ ] After reviewed promotion, collect and retain three logged-in session
+  receipts showing per-index requested/received active legs, cap count,
+  p50/p95/max provider stages, overruns and skipped slots. Do not change the
+  60-second cadence or qualify advice from this implementation alone.
+
 ## September 24 P0 decision-forensics retention verification (Dev)
 
 - [x] Inspect Production read-only: Python and gateway use `json-file`,

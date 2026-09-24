@@ -1,5 +1,22 @@
 # Trading Sentinel — next-agent execution plan
 
+## September 24 implementation update — P1 research collection deadline
+
+The first P1 collector slice is complete in Dev. Each provider quote operation
+is cancellation-bounded by the remaining 48-second tick budget, while the
+60-second schedule stays unchanged. Normal, capped and error results plus
+their durable collection-run journal now carry cap/elapsed/partial telemetry
+and truthful per-index coverage states; the first underlying rotates by UTC
+scheduler slot so repeated caps do not starve one index. A stalled NIFTY provider is cancelled
+and joined before return; its known active leg and skipped SENSEX coverage are
+retained as gaps. Focused tests passed 54 and the complete research surface
+passed 62. No Production change or strategy qualification occurred.
+
+Next operationally, observe three logged-in sessions before making cadence or
+evidence-quality claims. Next development in the ordered plan is the separate
+F&O tick-tail diagnosis; do not alter its 90-second schedule before a minimal
+real-stage reproducer exists. See [the active plan](2026-09-24-three-day-production-audit-plan.md).
+
 ## September 24 implementation update — P0 decision-forensics retention
 
 P0 is complete as a measured no-value-change Dev slice. Read-only Production
@@ -26,12 +43,12 @@ paper/AI authority solely from the audit's recommendation. Production remains
 read-only and no new Dev application change is implemented by this plan.
 
 The user additionally queued three Dev slices in that document. The
-full-session `python-engine` Compose-retention verification is complete; now
-isolate the
-23 September F&O tick tail and implement the smallest evidence-led mitigation
-without weakening exit deadlines; and trace TATATECH's accepted signals to a
-durable, bounded momentum-paper admission outcome. These are not implemented
-or authorized for Production by this documentation update.
+full-session `python-engine` Compose-retention and research-collection deadline
+slices are complete. Next, isolate the 23 September F&O tick tail and implement
+the smallest evidence-led mitigation without weakening exit deadlines; then
+trace TATATECH's accepted signals to a durable, bounded momentum-paper
+admission outcome. Those two remaining slices are not implemented or
+authorized for Production by this documentation update.
 
 ## September 24 implementation update — real research package boundary
 

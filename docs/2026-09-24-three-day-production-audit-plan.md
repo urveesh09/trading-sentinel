@@ -114,6 +114,44 @@ on 120s after measuring whether the lost half of sampling is acceptable to
 held-out research and active-leg evidence; update both schedule and declared
 interval if authorized.
 
+**P1 Dev result (24 September):** `research_quote_collection_tick` now passes
+the remaining 48-second tick budget into every future-reference and selected-
+contract provider call. The collector uses `asyncio.wait_for`, which cancels
+and joins the provider coroutine before the tick returns; it does not detach a
+late request onto the shared Kite client. The existing read-only Kite transport
+remains shared and unmodified: its rate-limiter/HTTP await is inside that
+cancellation boundary, so no separate client is created, closed, or leaked.
+
+Every scheduler result and its durable `collection_run` now records
+`runtime_capped`, `elapsed_sec`, `runtime_cap_sec`, `partial_collected` and
+`partial_count` on normal, deadline and error outcomes. Each configured index
+has a truthful `collection_state`; a deadline emits
+`provider_deadline_exceeded` for the interrupted NIFTY/SENSEX stage,
+`underlying_skipped_runtime_deadline` for later underlyings, and either exact
+`active_leg_unobserved_runtime_deadline` tokens already read or the explicit
+`active_leg_coverage_unobserved_runtime_deadline` unknown. It never labels an
+unobserved leg as received or manufactures a replacement packet. Empty/error
+batches similarly receive a named state rather than appearing as normal
+completion. To prevent a cap from repeatedly favoring NIFTY, the first index
+rotates deterministically by UTC scheduler slot and the selected
+`underlying_order` is retained in the run; this remains stable across process
+restart without a mutable in-memory toggle.
+
+The new scheduler-entry regression stalls NIFTY's first provider operation,
+observes cancellation, verifies the bounded return and persisted telemetry,
+and verifies explicit NIFTY active-leg and SENSEX skipped coverage. A normal
+two-index run verifies the same persisted telemetry. Focused collector/archive/
+subscription/scheduler tests passed **54**; the complete `test_research_*`
+surface passed **62**; the combined collector/scheduler/Kite-client regression
+surface passed **173** with one skip and one pre-existing Starlette
+async-generator-lifespan deprecation; `py_compile` passed. The legacy runtime-cap assertions
+were updated so a capped index is now explicitly auditable instead of absent.
+The 60-second schedule and 48-second cap did not change. Production was not
+edited, deployed, restarted, queried for mutation, sent a Telegram message or
+allowed to place an order. Operational acceptance still requires three real
+logged-in sessions with per-index coverage, cap and stage-latency observations;
+this code does not make a research or partner-advice qualification claim.
+
 ### P1 — Diagnose F&O tick tail independently (evidence first)
 
 The 24 Sep 93.231s tick and 15 `MAX_INSTANCES` skips justify a targeted
