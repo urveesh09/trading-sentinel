@@ -1,5 +1,23 @@
 # Handover receipt and operator checklist
 
+## September 24 gateway test-lifecycle correction and Dev acceptance
+
+- [x] Stop the Jest-only background holiday refresh from outliving the suite,
+  without changing the production engine-refresh default or calendar
+  fail-closed fallback.
+- [x] Pin the explicit Jest worker/setup contract in the market-hours unit test.
+- [x] Compatible Node 20 gateway: 30 suites passed/1 skipped; 461 tests
+  passed/4 skipped; natural exit 0. Scripts: 226 passed. Agent: 357 passed.
+  Dashboard: 46 passed and production build completed. Atlas regenerated to
+  211 Python modules.
+- [ ] Treat full `python-engine/tests` as unconfirmed for this receipt: its
+  aiosqlite-worker teardown did not terminate after early progress and was
+  stopped. Do not replace a fresh clean full-engine receipt with this note.
+- [ ] GitHub promotion, stamped deployment verification, retained-data backup,
+  real-session collection/reconciliation, a saved INTRADAY profile, genuine
+  held-out qualification and an explicitly authorized Telegram canary remain
+  operator/research gates. Nothing here sends an order or a partner message.
+
 ## September 24 real-research package-builder implementation (Dev)
 
 - [x] Add a root-confined, size-bounded authorization-package assembly CLI; it

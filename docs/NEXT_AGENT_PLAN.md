@@ -11,6 +11,19 @@ checks and rollout boundary are in
 Real completed-bar/active-leg collection, future held-out evidence and an
 operator review remain operational prerequisites, not test-fixture substitutes.
 
+## September 24 implementation update — Dev release acceptance
+
+Dev-side release acceptance is now recorded, including the repair for a
+post-Jest background holiday-refresh log. The compatible Node 20 gateway
+receipt naturally exits zero (461 passed / 4 skipped), scripts pass 226,
+agent tests pass 357, and dashboard tests/build pass (46 / build). The full
+engine process remains an environment-limited non-receipt because its
+aiosqlite-worker teardown did not terminate; do not call it green. The exact
+commands, boundary and source contract are in
+[the release-acceptance slice](2026-09-24-dev-release-acceptance-plan.md).
+This is Dev evidence only: it does not merge, deploy, qualify advice or send
+Telegram/broker traffic.
+
 ## September 24 implementation update — F&O exit recovery
 
 Item 3 of the September 23 next-agent order is implemented in Dev for same-day

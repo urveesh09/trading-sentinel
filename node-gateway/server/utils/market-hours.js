@@ -175,15 +175,6 @@ function scheduleFetch(logger) {
 // ``NSE_HOLIDAYS`` in place when it succeeds. Until the fetch
 // completes, calls to ``isMarketOpen`` / ``isPreMarket`` use the
 // documented fallback set.
-function _initialise(logger) {
-  if (!logger) logger = require('../utils/logger') || console;
-  // Operator env override wins over the fetch (CI / closed env).
-  if (applyOverride(logger)) return 'override';
-  // Otherwise fire-and-forget the engine fetch.
-  scheduleFetch(logger);
-  return 'fallback';
-}
-
 /**
  * Returns the current date in IST as 'YYYY-MM-DD'.
  */
@@ -312,10 +303,25 @@ function _tryLoadLogger() {
     return console;
   }
 }
+
+function shouldScheduleEngineHolidayFetch() {
+  // The suite's setup file sets the explicit second condition before any
+  // module import. Requiring Jest's worker marker confines this bypass to
+  // tests: a production process always keeps the engine refresh, even if its
+  // environment contains the test flag by mistake. We deliberately do not
+  // use NODE_ENV because the gateway's test fixture validates development
+  // configuration while still running under Jest.
+  return !(
+    typeof process.env.JEST_WORKER_ID === 'string' &&
+    process.env.MARKET_HOURS_TEST_DISABLE_ENGINE_FETCH === '1'
+  );
+}
+
 const _logger = _tryLoadLogger();
 const _initialisationResult = (function () {
   // Operator env override wins over the fetch.
   if (applyOverride(_logger)) return 'override';
+  if (!shouldScheduleEngineHolidayFetch()) return 'fallback:test-network-suppressed';
   scheduleFetch(_logger);
   return 'fallback';
 })();

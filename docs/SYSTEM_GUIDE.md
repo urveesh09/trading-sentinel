@@ -1,5 +1,25 @@
 # Trading Sentinel — system guide and engineering handover
 
+## September 24 gateway test-lifecycle correction and Dev acceptance (Dev only)
+
+`node-gateway/server/utils/market-hours.js` still refreshes the canonical
+holiday calendar from the Python engine during normal module initialisation.
+Only when the Jest worker marker and the test setup's explicit
+`MARKET_HOURS_TEST_DISABLE_ENGINE_FETCH=1` flag are both present does it retain
+the fail-closed fallback without beginning that background request. This avoids
+post-test asynchronous logs while making it impossible for an accidental
+production flag alone to disable the refresh. `tests/setup.js` preserves the
+development-safe `.env.test` fixture and sets only the test-specific switch;
+`market-hours.test.js` verifies the exact initialization result.
+
+Dev receipt: Node 20 gateway 461 passed/4 skipped with exit 0; scripts 226
+passed; agent 357 passed; dashboard 46 passed and builds. The full engine
+runner remains inconclusive because its aiosqlite worker did not exit, so this
+is not stated as a whole-engine pass. The code atlas was regenerated (211
+Python modules). No Production file/service/data, Telegram delivery or broker
+order changed. See
+[the release-acceptance receipt](2026-09-24-dev-release-acceptance-plan.md).
+
 ## September 24 real-research authorization package builder (Dev implementation)
 
 `research_cli.py build-qualification-package` assembles the existing
