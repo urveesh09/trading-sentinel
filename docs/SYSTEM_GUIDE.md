@@ -1,5 +1,33 @@
 # Trading Sentinel — system guide and engineering handover
 
+## September 24 real-research authorization package builder (Dev implementation)
+
+`research_cli.py build-qualification-package` assembles the existing
+`partner_advisory_authorization_v1` artifact only from bounded, root-confined
+full-policy replay reports, a frozen criteria manifest, a reconstructed
+held-out aggregate, and an externally created `APPROVED` human-review identity.
+It reconstructs every held-out case and the review package before publishing
+canonical immutable bytes; source-report policy identity, criteria identity,
+scope, review/validity clocks and the 16 MiB authority limit all fail closed.
+The output is then locally checked by the same current authority verifier used
+at registration and final dispatch.
+
+The command has no database parameter or side effect: it cannot save a profile,
+register a qualification, approve evidence, alter configuration, send Telegram
+or place an order.  The review identity and validity period must already exist
+as separate operator records; `APPROVED` is an input, never inferred from P&L.
+Inputs and output are relative to caller-declared roots to prevent traversal,
+and a different existing output cannot be overwritten.  See
+[the active package slice](2026-09-24-real-research-package-plan.md) for the
+exact input layout and remaining real-market prerequisites.
+
+Verification: the package/replay/held-out/review/authority/CLI acceptance group
+passed 64 tests with warnings fatal. The wider research/advisory group passed
+235 tests with one pre-existing Starlette async-generator-lifespan deprecation;
+that legacy warning fails setup when warnings are deliberately made fatal.
+The atlas was regenerated to 211 Python modules. Production was not read for
+mutation, edited, deployed, or sent any broker/Telegram action.
+
 ## September 24 F&O exit recovery (Dev implementation)
 
 An authenticated operator can list pending live single-leg F&O exit intents at

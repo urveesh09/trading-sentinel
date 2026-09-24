@@ -834,7 +834,7 @@ Related tests: `python-engine/tests/test_intraday_spread_signal_artifact.py`
 
 No module docstring; use the declarations and callers below.
 
-Top-level declarations: `_interval_minutes` (line 34), `_intraday_cache_gate_evaluate` (line 70), `RateLimiter` (line 183), `KiteClient` (line 203), `latest_order_state` (line 1706)
+Top-level declarations: `_interval_minutes` (line 34), `_intraday_cache_gate_evaluate` (line 70), `RateLimiter` (line 183), `KiteClient` (line 203), `latest_order_state` (line 1707)
 
 Engine dependencies: `config`, `halt_switch`, `operator_alert`, `order_execution_readiness`, `owner_entry_halt`
 
@@ -1174,7 +1174,7 @@ Top-level declarations: `load_candidate_evidence` (line 36), `_sha` (line 123), 
 
 Engine dependencies: `config`, `fno_chain`, `fno_engine_mom`, `fno_instruments`, `fno_models`, `intraday_spread_archive_adapter`, `partner_decision_clock`, `partner_manual_advisory`, `partner_qualification_authority`, `policy_identity`
 
-Related tests: `python-engine/tests/test_partner_qualification.py`, `python-engine/tests/test_partner_qualification_review.py`, `python-engine/tests/test_partner_qualification_verify.py`
+Related tests: `python-engine/tests/test_partner_qualification.py`, `python-engine/tests/test_partner_qualification_package.py`, `python-engine/tests/test_partner_qualification_review.py`, `python-engine/tests/test_partner_qualification_verify.py`
 
 ## `python-engine/partner_qualification_authority.py`
 
@@ -1183,6 +1183,16 @@ Read-only verification of reviewed evidence at each advisory authority boundary.
 Top-level declarations: `read_artifact` (line 21), `_clock` (line 36), `_digest` (line 43), `policy_configuration` (line 48), `verify_authorization_package` (line 55)
 
 Engine dependencies: `config`, `intraday_spread_holdout`, `partner_qualification_review`, `policy_identity`
+
+## `python-engine/partner_qualification_package.py`
+
+Bounded assembly of reviewed full-policy research evidence. This is deliberately an *artifact builder*, not an approval, registry or delivery API. It can only package independently supplied, already-approved review identity and immutable replay evidence. The normal registry and final dispatch paths continue to call :mod:`partner_qualification_authority`.
+
+Top-level declarations: `_clock` (line 28), `_sha` (line 40), `_package_bytes` (line 45), `_load_json` (line 53), `resolve_evidence_path` (line 69), `read_bounded_evidence` (line 80), `_validate_scope` (line 84), `_validate_review_identity` (line 93), `_validate_validity_period` (line 106), `build_authorization_package` (line 116), `write_authorization_package` (line 227), `build_package_from_evidence_manifest` (line 248)
+
+Engine dependencies: `intraday_spread_holdout`, `partner_manual_advisory`, `partner_qualification_authority`, `partner_qualification_review`
+
+Related tests: `python-engine/tests/test_partner_qualification_package.py`
 
 ## `python-engine/partner_qualification_review.py`
 
@@ -1736,7 +1746,7 @@ Operator commands for immutable research preservation (no broker actions).
 
 Top-level declarations: `_json_file` (line 17), `_write_comparison_output` (line 27), `_strategy_comparison` (line 50), `_candidate_file` (line 80), `_replay_spread` (line 93), `_full_policy_diagnostic` (line 126), `main` (line 162)
 
-Engine dependencies: `config`, `intraday_spread_archive_adapter`, `intraday_spread_chronological`, `partner_full_policy_replay`, `partner_qualification`, `partner_qualification_verify`, `partner_research_capture`, `proactive_comparison_protocol`, `proactive_intelligence`, `reconciliation_evidence`, `research_archive`
+Engine dependencies: `config`, `intraday_spread_archive_adapter`, `intraday_spread_chronological`, `partner_full_policy_replay`, `partner_qualification`, `partner_qualification_package`, `partner_qualification_verify`, `partner_research_capture`, `proactive_comparison_protocol`, `proactive_intelligence`, `reconciliation_evidence`, `research_archive`
 
 Related tests: `python-engine/tests/test_research_cli_qualification.py`, `python-engine/tests/test_research_cli_strategy_comparison.py`
 

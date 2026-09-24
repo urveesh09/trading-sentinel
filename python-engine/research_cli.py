@@ -233,6 +233,30 @@ def main(argv: list[str] | None = None) -> int:
         help="path to the criteria manifest JSON to verify")
     verify_manifest.add_argument("--json", action="store_true",
         help="emit structured JSON instead of human-readable text")
+    package = sub.add_parser("build-qualification-package",
+        help="assemble bounded reviewed full-policy evidence; never approves, registers or delivers")
+    package.add_argument("--evidence-root", required=True,
+        help="root containing all relative immutable input evidence")
+    package.add_argument("--evidence-manifest", required=True,
+        help="relative JSON naming policy manifest and full-policy replay reports")
+    package.add_argument("--criteria-manifest", required=True,
+        help="relative frozen qualification criteria JSON")
+    package.add_argument("--heldout-report", required=True,
+        help="relative held-out aggregate JSON to reconstruct")
+    package.add_argument("--review-identity", required=True,
+        help="relative externally-created APPROVED review identity JSON")
+    package.add_argument("--validity-period", required=True,
+        help="relative start/end validity JSON (maximum 30 days from review)")
+    package.add_argument("--readiness", help="optional relative readiness JSON; informational only")
+    package.add_argument("--artifact-root", required=True,
+        help="root under which the immutable package output must be created")
+    package.add_argument("--output", required=True,
+        help="relative package output under --artifact-root")
+    package.add_argument("--underlying", choices=["NIFTY", "SENSEX"], required=True)
+    package.add_argument("--structure-kind", default="DIRECTIONAL_DEBIT_SPREAD",
+        choices=["DIRECTIONAL_DEBIT_SPREAD"])
+    package.add_argument("--horizon", default="INTRADAY", choices=["INTRADAY"])
+    package.add_argument("--policy-version", default="partner-manual-intraday-v1")
     args = parser.parse_args(argv)
     if args.command in {"freeze-strategy-comparison", "evaluate-strategy-comparison"}:
         try:
@@ -416,6 +440,33 @@ def main(argv: list[str] | None = None) -> int:
         ):
             return 2
         return 1
+    if args.command == "build-qualification-package":
+        try:
+            from partner_qualification_package import (build_package_from_evidence_manifest,
+                                                        resolve_evidence_path,
+                                                        write_authorization_package)
+            package = build_package_from_evidence_manifest(
+                evidence_root=args.evidence_root, manifest_path=args.evidence_manifest,
+                criteria_path=args.criteria_manifest, heldout_path=args.heldout_report,
+                review_path=args.review_identity, validity_path=args.validity_period,
+                readiness_path=args.readiness, underlying=args.underlying,
+                structure_kind=args.structure_kind, horizon=args.horizon,
+                policy_version=args.policy_version,
+            )
+            output = resolve_evidence_path(args.artifact_root, args.output)
+            digest = write_authorization_package(output, package)
+            print(json.dumps({"path": str(output), "sha256": digest,
+                              "underlying": args.underlying,
+                              "can_qualify": False, "can_send_advice": False,
+                              "can_place_orders": False, "authorization_effect": "NONE",
+                              "next_action": "independent human review and explicit registry admission"},
+                             sort_keys=True))
+            return 0
+        except (ValueError, KeyError, TypeError, OSError, OverflowError) as exc:
+            print(json.dumps({"state": "RESEARCH_INPUT_REJECTED", "error": str(exc),
+                              "can_qualify": False, "can_send_advice": False,
+                              "can_place_orders": False, "authorization_effect": "NONE"}), file=sys.stderr)
+            return 2
     return 2
 
 

@@ -1,5 +1,16 @@
 # Trading Sentinel — next-agent execution plan
 
+## September 24 implementation update — real research package boundary
+
+The next Dev-implementable package boundary after F&O exit recovery is complete:
+the bounded operator workflow assembles already replayed, reviewed full-policy
+evidence into the existing authorization envelope. It cannot manufacture
+evidence or approve/register/deliver advice. The exact contracts, acceptance
+checks and rollout boundary are in
+[the real-research package slice](2026-09-24-real-research-package-plan.md).
+Real completed-bar/active-leg collection, future held-out evidence and an
+operator review remain operational prerequisites, not test-fixture substitutes.
+
 ## September 24 implementation update — F&O exit recovery
 
 Item 3 of the September 23 next-agent order is implemented in Dev for same-day

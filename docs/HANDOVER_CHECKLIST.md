@@ -1,5 +1,23 @@
 # Handover receipt and operator checklist
 
+## September 24 real-research package-builder implementation (Dev)
+
+- [x] Add a root-confined, size-bounded authorization-package assembly CLI; it
+  reads immutable full-policy reports and never uses an operational DB default.
+- [x] Reconstruct held-out evidence and review from every source report; reject
+  mismatched scope/policy/criteria, altered replay bytes, non-approved review
+  identities, invalid clocks and non-identical replacement output.
+- [x] Verify assembled bytes through the real current authority verifier without
+  registering a qualification or granting any delivery/order authority.
+- [x] Focused package/replay/held-out/review/authority/CLI suite: 64 passed
+  warning-fatal. Broader research/advisory suite: 235 passed with one existing
+  Starlette async-generator-lifespan deprecation; the warning becomes a setup
+  error only under warning-fatal mode. Atlas regenerated to 211 Python modules.
+- [ ] Collect real completed-bar and selected-leg data, freeze a future holdout,
+  obtain an independent human review and explicitly admit only compatible
+  evidence through the existing registry. Tests and package assembly do not
+  establish profitability or authorize partner tips.
+
 ## September 24 F&O exit recovery implementation (Dev)
 
 - [x] Authenticate pending-intent inspection and explicit named resolution.
