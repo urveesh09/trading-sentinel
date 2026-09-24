@@ -12,6 +12,13 @@ separate collection defect. Do not lengthen research/F&O schedules or change
 paper/AI authority solely from the audit's recommendation. Production remains
 read-only and no new Dev application change is implemented by this plan.
 
+The user additionally queued three **plan-only** Dev slices in that document:
+size and verify full-session `python-engine` Compose log retention; isolate the
+23 September F&O tick tail and implement the smallest evidence-led mitigation
+without weakening exit deadlines; and trace TATATECH's accepted signals to a
+durable, bounded momentum-paper admission outcome. These are not implemented
+or authorized for Production by this documentation update.
+
 ## September 24 implementation update — real research package boundary
 
 The next Dev-implementable package boundary after F&O exit recovery is complete:

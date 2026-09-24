@@ -52,6 +52,18 @@ independent audit can retrieve opening-to-close decision logs for at least
 three consecutive logged-in sessions, with measured disk use and no missing
 errors/health alerts. Gateway and Python are verified separately.
 
+**Requested Dev slice (plan only):** Fix the `python-engine` Compose
+log-rotation settings to retain a complete market session. Check the effective
+current `json-file` options, measured production byte rate and available disk
+before selecting `max-size`/`max-file`; document the resulting minimum session
+window, disk ceiling, and whether container recreation is needed for options to
+take effect. Verify the rendered Dev configuration with `docker compose config`
+and a focused config assertion, not just a YAML diff. A read-only post-release
+`docker inspect` and opening-to-close retrieval are the operational acceptance;
+do not edit or restart Production as part of implementation. Roll back the
+Compose change through GitHub if disk pressure or log loss is observed; retain
+the old logs/evidence where possible.
+
 ### P1 — Fix research collection deadline and truthful coverage (Dev code)
 
 Files/contracts: `python-engine/research_quote_collector.py`, the read-only
@@ -84,14 +96,56 @@ interval if authorized.
 The 24 Sep 93.231s tick and 15 `MAX_INSTANCES` skips justify a targeted
 read-only breakdown of `stage_durations_sec`, broker/limiter wait, DR exit and
 single-leg exit stages, with one-to-one mapping between skipped slots and
-completed runs. Investigate the 23 Sep 112s maximum too, using comparable
-windows. Prioritize exit monitoring and risk-boundary latency over entry
-frequency. Write a minimal stalled-stage reproducer before changing code.
+completed runs. The audit's 74 `MAX_INSTANCES` events on 23 Sep are for all
+jobs, not 74 proven F&O skips. Investigate the 23 Sep 9.6s average/112s
+maximum and any F&O-specific skips using comparable retained windows; do not
+attribute latency to the remediation deploy without pre/post stage evidence.
+Use existing scheduler telemetry, structured `fno_tick_complete` stage
+durations, F&O tests and broker/limiter instrumentation to isolate the slow
+stage. Prioritize exit monitoring and risk-boundary latency over entry
+frequency. Write a minimal stalled-stage reproducer before changing code, then
+implement only the smallest demonstrated Dev mitigation (for example, bounding
+an identified noncritical wait) without broad scheduler rewrites.
 Acceptance for any fix: exit evaluation remains on time, unknown broker state
 fails closed, no duplicate orders/intents appear, and an observed session has
-no avoidable 90s overrun. Do not increase the 90s interval merely to hide a
-slow exit path. DR broker reconciliation, if truly needed, is a separate
-scoped design/evidence decision, not covered by single-leg recovery.
+no avoidable 90s overrun. Focused regression tests must cover a stalled stage,
+entry and exit cutoffs, missing broker evidence, and the unchanged fail-closed
+path; run the F&O/scheduler suites and review the resulting telemetry fields.
+Do not increase the 90s interval merely to hide a slow exit path. DR broker
+reconciliation, if truly needed, is a separate scoped design/evidence decision,
+not covered by single-leg recovery. Roll back through GitHub if exit latency
+or unknown-state handling worsens.
+
+### P1 — Explain TATATECH acceptance without a paper opening
+
+The 23 Sep audit has two `ACCEPTED` TATATECH momentum-signal rows, fifteen
+minutes apart, but no paper opening; the cause is not established. Trace the
+two signal identities and timestamps through accepted-signal generation,
+same-day alert deduplication in `python-engine/main.py`, and
+`open_momentum_paper_positions` in `python-engine/momentum_paper.py`. Compare
+the position already held at each attempt, sizing inputs and available paper
+capital, feature enablement, relevant entry-halt state, transaction result,
+and retained event/log evidence. An owner live-entry halt must not be reported
+as a paper-book veto unless the actual call path proves it; the paper baseline
+has separate authority. Do not infer success solely from `ACCEPTED`, or infer a
+bug solely from the absence of `trade_outcomes`.
+
+Implement a bounded, durable admission outcome keyed to the accepted signal
+and paper-book attempt (or an equivalently retained structured event) with a
+small enumerated result/reason: opened, already-held, zero-shares, disabled,
+upstream-deduplicated, actual halt/gate, or transaction failure as applicable.
+Make the outcome truthful after commit/rollback, idempotent across repeated
+scans, retention-bounded, and free of credentials or full signal payloads.
+Record upstream skips at their actual boundary; do not claim the paper opener
+made a decision it never received. Preserve the current paper-only authority,
+capital/risk sizing, no-duplicate guarantee and nonfatal screener hook.
+
+Acceptance: focused tests reproduce TATATECH-like duplicate accepted rows,
+already-held, zero-shares, disabled/halt only where actually wired, and a
+database failure; each accepted signal has an explainable outcome or explicit
+upstream deduplication, no extra position/order is created, and a rolled-back
+insert is never marked opened. Update the guide/active plan and atlas if source
+declarations change. Rollback must leave existing positions and ledger intact.
 
 ### P2 — Tighten classifier latency only, not its authority
 
