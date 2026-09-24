@@ -574,7 +574,7 @@ Declared tables: `fno_chain_oi`, `fno_fut_snap`
 
 [FNO-ORCHESTRATOR 2026-07-10] Dual-leg tick runner for the F&O subsystem (spec §10.4). Reuses the EDGE_PAPER / EDGE_LIVE shape from penny_edge_orchestrator: one candidate scan, two legs, bankroll scales the sizing, separate source tags (FNO_PAPER / FNO_LIVE) so the legs cannot see each other's rows. In P1 the live leg is structurally disarmed three ways: FNO_DISABLE_LIVE=True, FNO_LIVE_TRADING=False, FNO_LIVE_BANKROLL=0 -- and even with all three flipped it still refuses unless fno_go_live_check() returns []. run_fno_tick() fires every FNO_SCAN_INTERVAL_SEC during market hours: 1. manage open positions (stops / target+trail / time stop / 15:10 hard flat) -- exits are checked BEFORE entries s
 
-Top-level declarations: `_now_min` (line 60), `_settle_exit_receipt` (line 64), `_fno_pool_paper` (line 125), `_fno_pool_live` (line 130), `_fno_equity` (line 142), `_fno_halted` (line 148), `_fetch_futures_bars` (line 169), `_record_shadow_observation` (line 177), `_schedule_shadow_observation` (line 194), `_manage_open_positions` (line 224), `_try_entry_for_leg` (line 490), `run_fno_tick` (line 714), `_bar_already_logged` (line 985), `format_fno_telegram` (line 1006)
+Top-level declarations: `_now_min` (line 60), `_settle_exit_receipt` (line 64), `_fno_pool_paper` (line 125), `_fno_pool_live` (line 130), `_load_dr_entry_inputs` (line 142), `_fno_equity` (line 195), `_fno_halted` (line 201), `_fetch_futures_bars` (line 222), `_record_shadow_observation` (line 230), `_schedule_shadow_observation` (line 247), `_manage_open_positions` (line 277), `_try_entry_for_leg` (line 543), `run_fno_tick` (line 767), `_bar_already_logged` (line 1081), `format_fno_telegram` (line 1102)
 
 Engine dependencies: `affordability`, `config`, `fno_chain`, `fno_costs`, `fno_engine_mom`, `fno_executor`, `fno_gates`, `fno_instruments`, `fno_models`, `fno_risk`, `fno_signal_log`, `operator_alert`, `performance`
 
@@ -1880,7 +1880,7 @@ Related tests: `python-engine/tests/test_saturation_diagnostic.py`
 
 [ROADMAP-4.1 stage 2, 2026-07-13] APScheduler job registration. Extracted verbatim from main.py: register_fno_scheduler_jobs and register_penny_scheduler_jobs, and the 8 async closures they define. This is the piece stage 1 deliberately left behind. Python resolves a function's globals at CALL time against its DEFINING module, so a closure that moves house and loses a free name raises NameError only when the job fires -- in production, inside a `_safe` wrapper that catches it, logs it, and returns. The scan then never runs, silently. Import still succeeds, the job census still sees the registration, and nothing goes red. That is the 2026-07-13 failure signature, and it is why this move waite
 
-Top-level declarations: `_log_fno_watchdog_payload` (line 29), `register_fno_scheduler_jobs` (line 61), `register_penny_scheduler_jobs` (line 273), `register_partner_scheduler_jobs` (line 946)
+Top-level declarations: `_log_fno_watchdog_payload` (line 29), `register_fno_scheduler_jobs` (line 61), `register_penny_scheduler_jobs` (line 274), `register_partner_scheduler_jobs` (line 947)
 
 Engine dependencies: `config`, `daily_bootstrap`, `fno_accept_watchdog`, `fno_hourly_report`, `fno_instruments`, `fno_orchestrator`, `hedge_advisory`, `operator_alert`, `partner_input_refresh`, `partner_orchestrator`, `penny_accept_watchdog`, `penny_edge_orchestrator`, `penny_premarket_report`, `performance`, `proactive_intelligence`, `research_quote_collector`, `scheduler_telemetry`
 

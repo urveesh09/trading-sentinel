@@ -916,6 +916,10 @@ class Settings(BaseSettings):
     # misbehaves) without also disabling the proven single-leg paper book, which
     # FNO_DISABLE_PAPER would do. Default False = DR book active (current behaviour).
     FNO_DR_DISABLE_PAPER:      bool  = False
+    # Shared deadline for cancellable quote/history reads used solely to
+    # prepare a new paper defined-risk structure.  It never caps management
+    # of an existing structure or a ledger admission write.
+    FNO_DR_ENTRY_MARKET_DATA_MAX_SEC: float = 20.0
 
     # --- universe ----------------------------------------------------------
     FNO_UNDERLYING:            str   = "NIFTY"    # NIFTY only in P1

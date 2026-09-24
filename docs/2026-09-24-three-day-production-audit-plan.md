@@ -177,6 +177,40 @@ reconciliation, if truly needed, is a separate scoped design/evidence decision,
 not covered by single-leg recovery. Roll back through GitHub if exit latency
 or unknown-state handling worsens.
 
+**P1 F&O Dev result (24 September):** Read-only retained Production logs were
+aggregated by day before source changes. They contain 236 `fno_tick_complete`
+records on 23 Sep (maximum 111.480s; 12 at/over the 90s cadence) and 233 on
+24 Sep (maximum 93.280s; 15 at/over cadence), plus 27 retained APScheduler
+F&O `MAX_INSTANCES` skips. Every at/over-cadence record reported zero DR opens
+and exits. The repeatable tail was `defined_risk` (up to 75.799s/76.203s),
+with variable quote/history waits; this proves the observed avoidable work was
+paper DR entry preparation, not an active DR lifecycle action. The retained
+window is evidence for that conclusion only; it does not prove every historic
+skip or broader scheduler latency has the same cause.
+
+Dev now sets `FNO_DR_ENTRY_MARKET_DATA_MAX_SEC=20.0` and applies one shared
+deadline only to the cancellable chain-snapshot and futures-history reads that
+prepare a *new* paper DR structure. A timeout cancels and joins the underlying
+coroutine through `asyncio.wait_for`, emits a named `dr_entry_skip_reason`, and
+does not continue with an admission. Existing DR management—including an
+unpriced hard-flat fallback—single-leg exits, and a database admission write
+are explicitly not deadline-cancelled. Successful inputs still flow into the
+directional leg as the same tick-local snapshot/bar view, preserving its
+one-fetch contract. The tick exposes separate `defined_risk_snapshot`,
+`defined_risk_management`, `defined_risk_entry_inputs`, and
+`defined_risk_entry_admission` durations so the next operational trace can
+distinguish a true risk-management delay from a speculative-entry delay.
+
+The deterministic stalled-input regression verifies cancellation/join, bounded
+return, explicit reason and no order; existing F&O/DR/scheduler tests retain
+entry/exit, hard-flat and fail-closed coverage. The full F&O and scheduler
+regression surface ran 357 tests successfully with two pre-existing
+deprecations, plus Python compilation. This is a Dev-only mitigation. After reviewed GitHub
+promotion, collect a comparable logged-in session and inspect the new fields;
+do not alter the 90-second cadence or infer resolved active-exit latency from
+this test result. Production was never edited, restarted, deployed, sent an
+order or sent a message.
+
 ### P1 — Explain TATATECH acceptance without a paper opening
 
 The 23 Sep audit has two `ACCEPTED` TATATECH momentum-signal rows, fifteen

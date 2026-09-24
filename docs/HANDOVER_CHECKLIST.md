@@ -1,5 +1,24 @@
 # Handover receipt and operator checklist
 
+## September 24 P1 F&O tick-tail containment and exit-safe telemetry (Dev)
+
+- [x] Read Production logs without mutation and isolate 27 F&O runs at/over
+  90 seconds (12 on 23 Sep, 15 on 24 Sep). Their repeatable tail was paper DR
+  entry preparation; each showed zero DR opens/exits. Do not infer that all
+  broader scheduler skips or any active-exit delay share this cause.
+- [x] Bound only the new paper-DR entry's cancellable chain/history reads with
+  `FNO_DR_ENTRY_MARKET_DATA_MAX_SEC=20`. Existing DR management, hard-flat,
+  single-leg exit handling and the mutation that admits a structure remain
+  unbounded by this entry deadline.
+- [x] Emit separate DR snapshot/management/entry-input/admission durations and
+  `dr_entry_skip_reason`. A stalled-input regression proves cancellation and
+  join, named evidence and no order; focused F&O/DR/scheduler checks pass.
+- [ ] After reviewed GitHub promotion, compare at least one complete logged-in
+  session with the new fields. Keep the 90-second cadence unless evidence
+  proves an active risk-management path needs a separate correction. Roll back
+  this bounded paper-entry change through GitHub if it worsens exit timing or
+  produces unknown-state handling.
+
 ## September 24 P1 research quote deadlines and truthful coverage (Dev)
 
 - [x] Replace the between-index-only cap with a per-provider remaining-budget

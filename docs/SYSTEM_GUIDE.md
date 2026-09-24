@@ -1,5 +1,30 @@
 # Trading Sentinel — system guide and engineering handover
 
+## September 24 P1 F&O tick-tail containment and exit-safe telemetry (Dev)
+
+Read-only Production evidence across the retained 23–24 September window found
+27 `fno_tick_complete` runs at or above the 90-second cadence (12 on the 23rd,
+15 on the 24th). Their repeated tail was the defined-risk stage; all had zero
+DR opens and exits. This identifies speculative paper DR entry preparation,
+not ordinary single-leg exit management, as the demonstrated avoidable work.
+
+`fno_orchestrator.py` now gives only the cancellable quote/history reads used
+to prepare a *new* paper defined-risk structure one shared 20-second budget.
+`asyncio.wait_for` cancels and joins a late input read. It never wraps existing
+DR lifecycle management, hard-flat handling, broker-facing single-leg exits,
+or a database admission write. Successful DR reads are still reused by the
+directional path exactly as before. The tick now separately records
+`defined_risk_snapshot`, `defined_risk_management`,
+`defined_risk_entry_inputs`, and `defined_risk_entry_admission`; the scheduler
+also logs an explicit `dr_entry_skip_reason`.
+
+The stalled-entry test proves prompt cancellation/join, a named timeout, no
+order and no detached request; existing F&O/DR/scheduler tests prove the
+ordinary path remains intact. This is Dev-only containment, not a claim that
+active-exit latency is solved: after reviewed promotion, collect comparable
+session telemetry and inspect those new stage fields before any cadence change.
+Production was inspected read-only; it was not edited, restarted or deployed.
+
 ## September 24 P1 research quote deadlines and coverage evidence (Dev)
 
 The research scheduler now bounds every NIFTY/SENSEX provider await to the

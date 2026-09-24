@@ -1,5 +1,23 @@
 # Trading Sentinel — next-agent execution plan
 
+## September 24 implementation update — P1 F&O tick-tail containment
+
+The F&O tick-tail slice is complete in Dev. Read-only retained Production logs
+showed 27 ticks at/over cadence (12 on 23 Sep and 15 on 24 Sep); all had zero
+DR opens/exits and the repeatable tail was defined-risk entry preparation. Dev
+therefore bounds only the cancellable market-data reads that prepare a new
+paper DR entry to a shared 20 seconds. Active DR management, hard-flat
+handling, single-leg exits and database admissions are deliberately outside
+that deadline. A stalled-read regression proves cancellation is joined, the
+skip is explicit and no order is created; F&O/DR/scheduler focused tests pass.
+
+Next operationally, promote only through reviewed GitHub flow and collect
+comparable session telemetry using `defined_risk_snapshot`,
+`defined_risk_management`, `defined_risk_entry_inputs`,
+`defined_risk_entry_admission` and `dr_entry_skip_reason`. Do not change the
+90-second cadence to conceal a slow active-exit path. The next Dev slice in
+the ordered plan is TATATECH accepted-signal admission evidence.
+
 ## September 24 implementation update — P1 research collection deadline
 
 The first P1 collector slice is complete in Dev. Each provider quote operation
@@ -13,9 +31,7 @@ retained as gaps. Focused tests passed 54 and the complete research surface
 passed 62. No Production change or strategy qualification occurred.
 
 Next operationally, observe three logged-in sessions before making cadence or
-evidence-quality claims. Next development in the ordered plan is the separate
-F&O tick-tail diagnosis; do not alter its 90-second schedule before a minimal
-real-stage reproducer exists. See [the active plan](2026-09-24-three-day-production-audit-plan.md).
+evidence-quality claims. See [the active plan](2026-09-24-three-day-production-audit-plan.md).
 
 ## September 24 implementation update — P0 decision-forensics retention
 

@@ -139,6 +139,59 @@ def _fno_pool_live() -> float:
 FNO_MAX_DRAWDOWN_PCT = 0.25
 
 
+async def _load_dr_entry_inputs(
+    kite, instruments, fut_token: int, regime: str, now_ist: datetime,
+    snapshot: Optional[ChainSnapshot] = None,
+) -> tuple[Optional[ChainSnapshot], Optional[object], Optional[MomSignal], str]:
+    """Load only the cancellable inputs needed to *open* a paper DR idea.
+
+    This deliberately does not wrap ``maybe_open_dr_structure`` or DR
+    lifecycle management.  An entry-input deadline may safely cancel a quote
+    or historical-bars request before it mutates a position, order-intent, or
+    ledger state; cancelling an admission mutation would make its outcome
+    ambiguous. Existing DR structures are managed by the caller before this
+    helper is considered.
+
+    The budget is shared by the optional chain snapshot and futures-history
+    download.  That prevents the experimental paper-entry branch from using
+    two independent full waits and crowding out the next 90-second tick.
+    ``asyncio.wait_for`` waits for cancellation to finish, so this never
+    detaches a late request onto the shared Kite client.
+    """
+    budget = max(0.1, float(settings.FNO_DR_ENTRY_MARKET_DATA_MAX_SEC))
+    deadline = monotonic() + budget
+
+    def _remaining() -> float:
+        return max(0.001, deadline - monotonic())
+
+    if snapshot is None:
+        try:
+            snapshot = await asyncio.wait_for(
+                take_chain_snapshot(kite, instruments, now_ist),
+                timeout=_remaining(),
+            )
+        except asyncio.TimeoutError:
+            return None, None, None, "chain_snapshot_deadline"
+        except Exception as exc:
+            logger.error("fno_dr_entry_snapshot_failed err=%s", str(exc))
+            return None, None, None, "chain_snapshot_failed"
+    if snapshot is None:
+        return None, None, None, "chain_snapshot_unavailable"
+
+    try:
+        bars = await asyncio.wait_for(
+            _fetch_futures_bars(kite, fut_token, now_ist),
+            timeout=_remaining(),
+        )
+    except asyncio.TimeoutError:
+        return snapshot, None, None, "futures_history_deadline"
+    except Exception as exc:
+        logger.error("fno_dr_entry_bars_failed err=%s", str(exc))
+        return snapshot, None, None, "futures_history_failed"
+
+    return snapshot, bars, evaluate_fno_mom(bars, regime, now_ist), ""
+
+
 async def _fno_equity(db_path: str, source: str) -> float:
     """[POOL-TRUTH 2026-07-31] Live F&O equity: allocation + realised P&L."""
     from performance import division_equity
@@ -811,29 +864,72 @@ async def run_fno_tick(
             open_dr = await _dr.open_structures(db_path)
             nm_dr = _now_min(now_ist)
             in_dr_window = _dr._entry_lo_min() <= nm_dr <= _dr._entry_hi_min()
-            if open_dr or in_dr_window:
-                snap = await take_chain_snapshot(kite, instruments, now_ist)
-                if open_dr:
-                    # manage_dr_structures returns a COUNT (int), while
-                    # summary["exits"] is a list of single-leg exit *records*
-                    # consumed key-by-key in format_fno_telegram. Keep the DR
-                    # tally in its own key (mirrors "dr_opened" below) so the
-                    # two shapes never collide -- the DR closes are detailed in
-                    # their own fno_dr_closed log lines.
-                    summary["dr_exits"] = summary.get("dr_exits", 0) + \
-                        await _dr.manage_dr_structures(db_path, snap, now_ist)
-                if in_dr_window and not await _dr.open_structures(db_path):
+
+            # An existing structure is risk-management work.  It remains
+            # outside the paper-entry deadline, including a hard-flat close
+            # when a chain quote is unavailable.  This split also makes the
+            # next Production trace able to distinguish an exit delay from a
+            # speculative-entry delay.
+            if open_dr:
+                snapshot_started = monotonic()
+                try:
+                    snap = await take_chain_snapshot(kite, instruments, now_ist)
+                except Exception as exc:
+                    logger.error("fno_dr_management_snapshot_failed err=%s", str(exc))
+                    snap = None
+                finally:
+                    summary["stage_durations_sec"]["defined_risk_snapshot"] = round(
+                        monotonic() - snapshot_started, 3
+                    )
+
+                management_started = monotonic()
+                # manage_dr_structures intentionally accepts ``None`` and
+                # fail-closes a hard-flat structure even without a quote.
+                summary["dr_exits"] = summary.get("dr_exits", 0) + \
+                    await _dr.manage_dr_structures(db_path, snap, now_ist)
+                summary["stage_durations_sec"]["defined_risk_management"] = round(
+                    monotonic() - management_started, 3
+                )
+
+            if in_dr_window and not await _dr.open_structures(db_path):
+                entry_inputs_started = monotonic()
+                entry_snap, entry_bars, entry_sig, entry_skip_reason = await _load_dr_entry_inputs(
+                    kite, instruments, fut.token, regime, now_ist, snap,
+                )
+                summary["stage_durations_sec"]["defined_risk_entry_inputs"] = round(
+                    monotonic() - entry_inputs_started, 3
+                )
+                if entry_skip_reason:
+                    summary["dr_entry_skip_reason"] = entry_skip_reason
+                    logger.warning(
+                        "fno_dr_entry_skipped reason=%s budget_sec=%.3f",
+                        entry_skip_reason,
+                        float(settings.FNO_DR_ENTRY_MARKET_DATA_MAX_SEC),
+                    )
+                elif entry_snap is not None and entry_sig is not None:
+                    # Preserve the original tick-local reuse contract: a
+                    # successful DR entry read is the directional engine's
+                    # exact same closed-bar and chain view.
+                    snap, bars, sig = entry_snap, entry_bars, entry_sig
+                    # Mutating paper-book admission runs only after all
+                    # deadline-cancellable reads succeed.  Do not place it
+                    # under ``wait_for``: a cancelled write would make the
+                    # admission outcome ambiguous.
+                    entry_started = monotonic()
                     try:
-                        bars = await _fetch_futures_bars(kite, fut.token, now_ist)
-                        sig = evaluate_fno_mom(bars, regime, now_ist)
                         opened = await _dr.maybe_open_dr_structure(
-                            db_path, snap, sig.direction is not None,
-                            sig.direction, now_ist,
+                            db_path, entry_snap,
+                            entry_sig.direction is not None,
+                            entry_sig.direction, now_ist,
                         )
                         if opened:
                             summary.setdefault("dr_opened", []).append(opened)
                     except Exception as exc:
                         logger.error("fno_dr_entry_failed err=%s", str(exc))
+                    finally:
+                        summary["stage_durations_sec"]["defined_risk_entry_admission"] = round(
+                            monotonic() - entry_started, 3
+                        )
         except Exception as exc:
             logger.error("fno_dr_block_failed err=%s", str(exc), exc_info=True)
     summary["stage_durations_sec"]["defined_risk"] = round(
