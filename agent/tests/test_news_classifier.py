@@ -33,6 +33,7 @@ import pytest
 import news_classifier
 from news_classifier import (
     CLASSIFIER_PROMPT_VERSION,
+    CLASSIFIER_MAX_RETRIES,
     CLASSIFIER_TIMEOUT_SEC,
     CONFIDENCE_THRESHOLD,
     SOURCE_MAX_AGE,
@@ -625,6 +626,25 @@ def test_classify_handles_model_exception():
     assert "TimeoutError" in result.rationale
 
 
+def test_classifier_timeout_failure_makes_one_bounded_attempt():
+    """Retry belongs to the transport client, so its configured zero-retry
+    contract is paired with a one-call failure boundary here."""
+    item = _StubItem("Some headline", "fresh", "Reuters")
+    client = MagicMock()
+    client.chat.completions.create.side_effect = TimeoutError("API timed out")
+    started = time.monotonic()
+    result = _classify_single(
+        item, client=client, model="MiniMax-M3", timeout_sec=0.01,
+    )
+    elapsed = time.monotonic() - started
+
+    assert CLASSIFIER_MAX_RETRIES == 0
+    assert client.chat.completions.create.call_count == 1
+    assert elapsed < 0.1
+    assert result.category is NewsCategory.UNKNOWN
+    assert result.confidence == 0.0
+
+
 # ---------------------------------------------------------------------------
 # Batch API
 # ---------------------------------------------------------------------------
@@ -784,28 +804,37 @@ def test_prompt_version_is_non_empty():
 
 
 # ---------------------------------------------------------------------------
-# End-to-end: classify_news_items without explicit client (uses
-# module-level fallback). When ``agent.client`` is None the
+# End-to-end: classify_news_items without explicit client uses
+# the dedicated no-retry classifier client. When that client is None the
 # classifier returns UNKNOWN for every item without raising.
 # ---------------------------------------------------------------------------
 
 
-def test_classify_news_items_uses_module_client(monkeypatch):
-    """``classify_news_items`` falls back to the agent module's
-    ``client`` global when ``client=None`` is passed. The agent
-    module's ``client`` is None in our test environment (no
-    ``MINIMAX_API_KEY``); the classifier should return UNKNOWN
-    for every item without raising.
-    """
+def test_classify_news_items_uses_no_retry_classifier_client(monkeypatch):
+    """The shared verdict client must never be the implicit fallback."""
     import agent
-    # The agent module's ``client`` is None in our test env
-    # because conftest.py sets a fake MINIMAX_API_KEY but the
-    # OpenAI client object is never instantiated when network
-    # is unavailable. We patch it to None to simulate the
-    # "no client" case deterministically.
-    monkeypatch.setattr(agent, "client", None)
+    monkeypatch.setattr(agent, "classifier_client", None)
+    # A live review client would be unsafe as a fallback; prove it is ignored.
+    monkeypatch.setattr(agent, "client", MagicMock())
     items = [_StubItem("a"), _StubItem("b")]
     results = classify_news_items(items, client=None)
     assert len(results) == 2
     assert all(r.category == NewsCategory.UNKNOWN for r in results)
     assert all(r.confidence == 0.0 for r in results)
+    agent.client.chat.completions.create.assert_not_called()
+
+
+def test_implicit_classifier_call_uses_dedicated_client_not_verdict_client(monkeypatch):
+    import agent
+    payload = {
+        "category": "earnings", "confidence": 0.9, "rationale": "results",
+    }
+    classifier_client = _mock_client_with_payload(payload)
+    verdict_client = MagicMock()
+    monkeypatch.setattr(agent, "classifier_client", classifier_client)
+    monkeypatch.setattr(agent, "client", verdict_client)
+
+    [result] = classify_news_items([_StubItem("RELIANCE results")], client=None)
+    assert result.category is NewsCategory.EARNINGS
+    classifier_client.chat.completions.create.assert_called_once()
+    verdict_client.chat.completions.create.assert_not_called()

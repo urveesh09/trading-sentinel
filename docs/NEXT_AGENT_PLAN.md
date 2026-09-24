@@ -1,5 +1,20 @@
 # Trading Sentinel — next-agent execution plan
 
+## September 24 implementation update — P2 classifier latency containment
+
+The classifier latency correction is complete in Dev. Source analysis showed
+that the one-second informational classifier reused the analyst client with
+one SDK retry. It now uses a separate MiniMax/OpenAI client configured with
+`CLASSIFIER_MAX_RETRIES=0`; all direct/fallback classifier calls select that
+client. The analyst review client retains its original retry budget. A
+wall-clock regression confirms a timeout failure is one bounded call and
+returns `UNKNOWN`; no background or detached retry is introduced. The complete
+agent test suite passed 361 tests. AI remains informational/non-authoritative.
+
+Next is the separately scoped P2 F&O signal-row and financial interpretation
+review: first inspect retained Production evidence read-only and verify the
+actual switch/gate path before changing any code or financial presentation.
+
 ## September 24 implementation update — P1 momentum-paper admission evidence
 
 The TATATECH acceptance slice is complete in Dev. The paper book now persists

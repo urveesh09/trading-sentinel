@@ -80,6 +80,11 @@ logger = logging.getLogger(__name__)
 # ``UNKNOWN``. The verdict pipeline is unaffected.
 CLASSIFIER_TIMEOUT_SEC: float = float(os.getenv("CLASSIFIER_TIMEOUT_SEC", "1.0"))
 
+# The classifier is informational and has a per-item latency contract. It must
+# not inherit the verdict reviewer's retry budget: a second SDK attempt can
+# turn a nominal one-second request into the observed multi-second wait.
+CLASSIFIER_MAX_RETRIES: int = 0
+
 # [WORKFLOW-I.4.D 2026-09-14] Confidence floor. A result below
 # this threshold is forced to ``UNKNOWN`` (fail-closed). The
 # taxonomy is fixed; we trust the model to assign a calibrated
@@ -95,8 +100,8 @@ CLASSIFIER_PROMPT_VERSION: str = os.getenv("CLASSIFIER_PROMPT_VERSION", "v1")
 
 # [WORKFLOW-I.4.D 2026-09-14] Model. Same env var as the verdict
 # path; the classifier uses a smaller / faster prompt and a
-# tighter timeout, but the model is shared so the operator can
-# upgrade one place.
+# tighter timeout, but its no-retry client is deliberately separate
+# from the verdict client's longer retry policy.
 CLASSIFIER_MODEL: str = os.getenv(
     "CLASSIFIER_MODEL", os.getenv("MINIMAX_MODEL", "MiniMax-M3")
 )
@@ -631,8 +636,11 @@ def classify_news_items(
     if not items:
         return []
     if client is None:
-        from agent import client as _agent_client
-        client = _agent_client
+        # The classifier must use the dedicated no-retry client. Do not fall
+        # back to the verdict client: its configured retry policy is correct
+        # for a long review, but violates the classifier's short budget.
+        from agent import classifier_client as _classifier_client
+        client = _classifier_client
     if model is None:
         model = CLASSIFIER_MODEL
     if timeout_sec is None:

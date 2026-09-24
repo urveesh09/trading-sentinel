@@ -1,5 +1,21 @@
 # Handover receipt and operator checklist
 
+## September 24 P2 classifier latency containment (Dev)
+
+- [x] Identify the owned retry mismatch: the 1-second informational classifier
+  reused the analyst client with `MINIMAX_MAX_RETRIES=1`.
+- [x] Construct and select an isolated classifier client with
+  `CLASSIFIER_MAX_RETRIES=0`; retain the analyst review client's existing
+  retry configuration and all review/entry authority semantics.
+- [x] Verify direct fallback and agent helper client selection, one bounded
+  timeout call returning `UNKNOWN`, unchanged classifier provenance/fallback
+  and the complete agent suite: 361 passed. Compilation and atlas regeneration
+  passed.
+- [ ] After reviewed promotion, observe classifier elapsed/error telemetry on
+  real provider calls. Treat a provider service tail as an operational issue;
+  do not re-enable retries or change deterministic entry authority without a
+  separately reviewed budget and evidence.
+
 ## September 24 P1 momentum-paper admission forensics (Dev)
 
 - [x] Record an opaque accepted-signal identity and enumerated immutable

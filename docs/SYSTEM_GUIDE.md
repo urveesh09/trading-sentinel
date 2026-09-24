@@ -1,5 +1,24 @@
 # Trading Sentinel — system guide and engineering handover
 
+## September 24 P2 classifier latency containment (Dev)
+
+The news classifier previously reused the analyst verdict client, which is
+configured with one SDK retry for a long reasoning review. That retry policy
+made a one-second classifier request capable of making a second transport
+attempt. The classifier now receives its own MiniMax/OpenAI client with
+`CLASSIFIER_MAX_RETRIES=0`; it retains the per-item request timeout and has no
+background thread or detached retry. The main analyst client remains at its
+existing `MINIMAX_MAX_RETRIES` policy, so this correction does not change
+review behavior.
+
+Both the direct classifier fallback and `agent._maybe_classify_news` explicitly
+select the no-retry client. A timeout/error still returns the existing bounded
+`UNKNOWN` annotation with zero confidence; deterministic signal capture and
+the configured advisory/block review policy are unchanged. Agent validation
+passed **361 tests** and Python compilation/atlas generation passed. This is
+Dev-only latency containment, not a claim that the external provider will meet
+its service objective or that AI determines entry authority.
+
 ## September 24 P1 momentum-paper admission forensics (Dev)
 
 Accepted momentum signals now receive durable, bounded paper-admission

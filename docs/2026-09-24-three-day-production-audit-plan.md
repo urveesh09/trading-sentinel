@@ -285,6 +285,28 @@ policy. Timeout remains `UNKNOWN`; deterministic paper capture and
 `proceed`/`advisory` authority stay unchanged. Acceptance: wall-clock-bound
 test, provenance/UNKNOWN fallback and unchanged paper/reviewer contracts.
 
+**P2 classifier-latency Dev result (24 September):** Source review reproduced
+the owned budget mismatch without calling a provider: `news_classifier` passed
+its 1.0-second timeout into `agent.client`, while that client was configured
+with `MINIMAX_MAX_RETRIES=1`. A retryable timeout could therefore make a second
+transport attempt inside a classifier operation. Dev adds a separate long-lived
+`classifier_client` with `CLASSIFIER_MAX_RETRIES=0` and routes both
+`_maybe_classify_news` and the classifier's implicit fallback to it. The
+existing analyst `client` remains configured with `MINIMAX_MAX_RETRIES`; no
+review retry, prompt, policy or authority changes.
+
+The classifier still passes its declared per-item timeout to the SDK and does
+not start a thread, task or retry loop of its own. A deterministic timeout
+regression verifies one call, bounded wall-clock return and the existing
+zero-confidence `UNKNOWN` result; construction/wiring tests pin the zero-retry
+client rather than assuming the shared reviewer configuration. The full agent
+suite passed **361 tests** and compilation/atlas regeneration passed. This
+eliminates the repository-owned retry tail but does not promise external API
+latency, establish a trading edge, authorize advice or alter the deterministic
+paper/review paths. Production was not edited, restarted, messaged or sent an
+order. Post-promotion, inspect real classifier elapsed/error telemetry before
+considering any provider-specific timeout adjustment.
+
 ### P2 — Audit rows and financial interpretation
 
 Explain the 24 Sep two-bar/six-evaluation F&O pattern, log/inspect the actual
