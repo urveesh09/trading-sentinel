@@ -516,6 +516,16 @@ Top-level declarations: `FnoExecutor` (line 45)
 
 Engine dependencies: `config`, `kite_client`
 
+## `python-engine/fno_exit_recovery.py`
+
+Evidence-backed, operator-authorized reconciliation of one F&O exit intent. Broker order/trade/position reads are deliberately required on every resolve. The broker's daily order book cannot prove an older unknown dispatch; those intents remain blocked for statement-level manual reconciliation.
+
+Top-level declarations: `RecoveryConflict` (line 26), `pending_exit_intents` (line 30), `_positive_int` (line 54), `_price` (line 60), `_broker_time` (line 70), `verify_broker_exit` (line 80), `resolve_exit_intent` (line 191)
+
+Engine dependencies: `fno_costs`, `fno_positions`, `performance`
+
+Related tests: `python-engine/tests/test_fno_exit_recovery.py`, `python-engine/tests/test_fno_exit_recovery_boundary.py`
+
 ## `python-engine/fno_gates.py`
 
 [FNO-GATES 2026-07-10] Entry gates with mandatory witnesses (spec §7 + §9.1). Production penny ran a mathematically unsatisfiable breakout gate for nine months (bar_close > running day_high, 215,814 evaluations, zero accepts) while passing every health check. The defence adopted here from the FIRST commit: every gate is an object that ships a `witness_input()` constructing an input which PASSES it, and CI asserts satisfiability for every gate (tests/test_fno_gate_falsifiability.py). A gate without a witness does not merge. Gates evaluate in spec §7 order; the first failure is THE reject_reason written to /data/fno_signals.csv, which feeds the zero-accept watchdog's histogram (§9.2). `pool_be
@@ -564,7 +574,7 @@ Declared tables: `fno_chain_oi`, `fno_fut_snap`
 
 [FNO-ORCHESTRATOR 2026-07-10] Dual-leg tick runner for the F&O subsystem (spec §10.4). Reuses the EDGE_PAPER / EDGE_LIVE shape from penny_edge_orchestrator: one candidate scan, two legs, bankroll scales the sizing, separate source tags (FNO_PAPER / FNO_LIVE) so the legs cannot see each other's rows. In P1 the live leg is structurally disarmed three ways: FNO_DISABLE_LIVE=True, FNO_LIVE_TRADING=False, FNO_LIVE_BANKROLL=0 -- and even with all three flipped it still refuses unless fno_go_live_check() returns []. run_fno_tick() fires every FNO_SCAN_INTERVAL_SEC during market hours: 1. manage open positions (stops / target+trail / time stop / 15:10 hard flat) -- exits are checked BEFORE entries s
 
-Top-level declarations: `_now_min` (line 61), `_settle_exit_receipt` (line 65), `_fno_pool_paper` (line 126), `_fno_pool_live` (line 131), `_fno_equity` (line 143), `_fno_halted` (line 149), `_fetch_futures_bars` (line 170), `_record_shadow_observation` (line 178), `_schedule_shadow_observation` (line 195), `_manage_open_positions` (line 225), `_try_entry_for_leg` (line 489), `run_fno_tick` (line 713), `_bar_already_logged` (line 984), `format_fno_telegram` (line 1005)
+Top-level declarations: `_now_min` (line 60), `_settle_exit_receipt` (line 64), `_fno_pool_paper` (line 125), `_fno_pool_live` (line 130), `_fno_equity` (line 142), `_fno_halted` (line 148), `_fetch_futures_bars` (line 169), `_record_shadow_observation` (line 177), `_schedule_shadow_observation` (line 194), `_manage_open_positions` (line 224), `_try_entry_for_leg` (line 490), `run_fno_tick` (line 714), `_bar_already_logged` (line 985), `format_fno_telegram` (line 1006)
 
 Engine dependencies: `affordability`, `config`, `fno_chain`, `fno_costs`, `fno_engine_mom`, `fno_executor`, `fno_gates`, `fno_instruments`, `fno_models`, `fno_risk`, `fno_signal_log`, `operator_alert`, `performance`
 
@@ -574,17 +584,17 @@ Related tests: `python-engine/tests/test_fno_orchestrator.py`
 
 [FNO-POSITIONS 2026-07-10] Position store for the F&O subsystem. Options positions don't fit the equity `positions` table (premium vs price, lots vs shares, underlying-level stops next to premium backstops), so they get their own table. Pool accounting still flows into the shared bankroll_ledger via performance.record_trade_close(source=FNO_PAPER/ FNO_LIVE) at close time -- purely additive next to the existing source tags (spec §10.3). All dates/times stored in IST (the exchange's clock), ISO format. Kill switches and day-queries key off entry_date / exit_date, so the module's "day" can never drift against the trading session the way UTC dates do. Rule 57: every reader preflights the table a
 
-Top-level declarations: `FnoPosition` (line 132), `_row_to_position` (line 173), `init_fno_positions_db` (line 177), `_table_exists` (line 218), `insert_position` (line 225), `open_positions` (line 239), `open_premium_committed` (line 253), `trades_today` (line 267), `already_entered_bar` (line 279), `update_trail` (line 291), `close_position` (line 305), `exit_execution_receipt` (line 337), `claim_exit_intent` (line 356), `record_exit_execution_receipt` (line 373), `SettlementError` (line 476), `PositionNotOpen` (line 480), `SettlementConflict` (line 490), `settle_position_close` (line 515), `settle_position_close_idempotent` (line 741), `closed_today` (line 794)
+Top-level declarations: `FnoPosition` (line 135), `_row_to_position` (line 178), `init_fno_positions_db` (line 182), `_table_exists` (line 250), `insert_position` (line 257), `open_positions` (line 274), `open_premium_committed` (line 288), `trades_today` (line 302), `already_entered_bar` (line 314), `update_trail` (line 326), `close_position` (line 340), `exit_execution_receipt` (line 372), `claim_exit_intent` (line 391), `record_exit_execution_receipt` (line 417), `SettlementError` (line 528), `PositionNotOpen` (line 532), `SettlementConflict` (line 542), `settle_position_close` (line 567), `settle_position_close_idempotent` (line 798), `closed_today` (line 851)
 
 Engine dependencies: `performance`
 
-Declared tables: `fno_exit_execution_receipts`, `fno_exit_intents`, `fno_positions`
+Declared tables: `fno_exit_execution_receipts`, `fno_exit_intents`, `fno_exit_recoveries`, `fno_positions`
 
 ## `python-engine/fno_risk.py`
 
 [FNO-RISK 2026-07-10] The constitution of the F&O subsystem (spec §4). Owns: max_loss(legs, lot_size) -- rupee max loss; math.inf if unbounded validate_position(legs, ...) -- the ONLY order-path entry point; there is no code path that places an order for a position whose max_loss is inf. No config flag, no env var, no force=True kwarg. min_viable_pool(...) -- per-trade pool floor (spec §3) kill_switch_status(...) -- daily / weekly / monthly / consecutive fno_go_live_check(...) -- promotion as a function, not a judgment Purity rules (spec §4): - max_loss() is pure: no I/O, no options_math import, no model, no IV. The expiry P&L of any option combination is continuous piecewise-linear in the u
 
-Top-level declarations: `_pnl_points` (line 41), `max_loss` (line 53), `validate_position` (line 77), `min_viable_pool` (line 107), `lots_for_pool` (line 122), `kill_switch_status` (line 147), `fno_go_live_check` (line 226)
+Top-level declarations: `_pnl_points` (line 42), `max_loss` (line 54), `validate_position` (line 78), `min_viable_pool` (line 108), `lots_for_pool` (line 123), `kill_switch_status` (line 148), `fno_go_live_check` (line 255)
 
 Engine dependencies: `config`, `fno_models`
 
@@ -824,7 +834,7 @@ Related tests: `python-engine/tests/test_intraday_spread_signal_artifact.py`
 
 No module docstring; use the declarations and callers below.
 
-Top-level declarations: `_interval_minutes` (line 34), `_intraday_cache_gate_evaluate` (line 70), `RateLimiter` (line 183), `KiteClient` (line 203), `latest_order_state` (line 1692)
+Top-level declarations: `_interval_minutes` (line 34), `_intraday_cache_gate_evaluate` (line 70), `RateLimiter` (line 183), `KiteClient` (line 203), `latest_order_state` (line 1706)
 
 Engine dependencies: `config`, `halt_switch`, `operator_alert`, `order_execution_readiness`, `owner_entry_halt`
 
@@ -1820,9 +1830,9 @@ Engine dependencies: `config`, `engine_auth`, `market_calendar`, `owner_entry_ha
 
 [ROADMAP-4.1 stage 3, 2026-07-13] Ops, token and circuit-breaker endpoints. Extracted verbatim from main.py. Registered on the app via `app.include_router(router)`, so the route table -- paths, methods, endpoint names, response models -- is byte-identical; the 24-route characterization golden proves it. EVERY business name is reached through `_main` at CALL time, not imported. That is not stylistic. Two independent reasons, both load-bearing: 1. Eight of main's globals are REBOUND at runtime via `global` statements (current_signals, market_regime, momentum_signals_today, last_run, rejected_signals, current_momentum_signals, last_momentum_date, _last_regime_state). `from main import current_s
 
-Top-level declarations: `OptionalAiStatusPayload` (line 43), `get_momentum_experiment` (line 62), `post_optional_ai_status` (line 104), `get_optional_ai_status` (line 114), `inject_token` (line 123), `get_current_token` (line 171), `invalidate_token` (line 192), `get_ops_metrics` (line 217), `get_circuit_breaker` (line 235), `reset_circuit_breaker` (line 243), `health_check` (line 260), `test_momentum_screener` (line 360)
+Top-level declarations: `FnoExitRecoveryRequest` (line 44), `get_fno_exit_intents` (line 54), `post_fno_exit_resolution` (line 63), `OptionalAiStatusPayload` (line 78), `get_momentum_experiment` (line 97), `post_optional_ai_status` (line 139), `get_optional_ai_status` (line 149), `inject_token` (line 158), `get_current_token` (line 206), `invalidate_token` (line 227), `get_ops_metrics` (line 252), `get_circuit_breaker` (line 270), `reset_circuit_breaker` (line 278), `health_check` (line 295), `test_momentum_screener` (line 395)
 
-Engine dependencies: `config`, `halt_switch`, `ops_metrics`, `optional_ai_status`, `order_execution_readiness`, `penny_health`, `performance`, `release_identity`, `token_lifecycle`
+Engine dependencies: `config`, `fno_exit_recovery`, `halt_switch`, `ops_metrics`, `optional_ai_status`, `order_execution_readiness`, `penny_health`, `performance`, `release_identity`, `token_lifecycle`
 
 ## `python-engine/routes_penny_experiments.py`
 

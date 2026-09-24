@@ -23,8 +23,9 @@ Purity rules (spec §4):
 from __future__ import annotations
 
 import math
-from datetime import date, timedelta
+from datetime import date, datetime, timedelta
 from typing import List, Optional, Tuple
+from zoneinfo import ZoneInfo
 
 import structlog
 
@@ -172,18 +173,46 @@ async def kill_switch_status(
                     )
                     return []
 
-            async def _pnl_since(day: date) -> float:
+            # Each actual settlement belongs to its own IST day. A partial
+            # loss cannot migrate into the eventual full-close day merely
+            # because fno_positions keeps cumulative position economics.
+            realized: list[tuple[date, float]] = []
+            ledger_origins: set[str] = set()
+            async with db.execute(
+                "SELECT name FROM sqlite_master WHERE type='table' "
+                "AND name='bankroll_ledger'"
+            ) as c:
+                has_ledger = await c.fetchone() is not None
+            if has_ledger:
                 async with db.execute(
-                    "SELECT COALESCE(SUM(pnl), 0.0) FROM fno_positions "
-                    "WHERE source=? AND status='CLOSED' AND exit_date >= ?",
-                    (source, day.isoformat()),
+                    "SELECT timestamp,pnl,origin_ref FROM bankroll_ledger "
+                    "WHERE source=? AND event_type='TRADE_CLOSED' "
+                    "AND origin_ref LIKE 'fno_position:%' AND timestamp>=?",
+                    (source, (month_start - timedelta(days=1)).isoformat()),
                 ) as c:
-                    row = await c.fetchone()
-                    return float(row[0]) if row and row[0] is not None else 0.0
+                    for stamp, pnl, origin in await c.fetchall():
+                        clock = datetime.fromisoformat(stamp)
+                        if clock.tzinfo is None:
+                            raise ValueError("naive F&O ledger timestamp")
+                        realized.append((clock.astimezone(ZoneInfo("Asia/Kolkata")).date(), float(pnl)))
+                        ledger_origins.add(str(origin))
+            # Pre-atomic-settlement rows can lack an origin-tagged ledger
+            # entry. Keep them visible without counting newer closes twice.
+            async with db.execute(
+                "SELECT id,pnl,exit_date FROM fno_positions "
+                "WHERE source=? AND status='CLOSED' AND exit_date>=?",
+                (source, month_start.isoformat()),
+            ) as c:
+                for position_id, pnl, exit_date in await c.fetchall():
+                    if f"fno_position:{position_id}" not in ledger_origins:
+                        realized.append((date.fromisoformat(exit_date), float(pnl or 0)))
 
-            day_pnl = await _pnl_since(today_ist)
-            week_pnl = await _pnl_since(week_start)
-            month_pnl = await _pnl_since(month_start)
+            def _pnl_since(day: date) -> float:
+                return sum(pnl for event_day, pnl in realized if event_day >= day)
+
+            day_pnl = _pnl_since(today_ist)
+            week_pnl = _pnl_since(week_start)
+            month_pnl = _pnl_since(month_start)
             if day_pnl <= -settings.FNO_DAILY_KILL_PCT * pool:
                 active.append(f"daily_loss_halt pnl={day_pnl:.0f}")
             if week_pnl <= -settings.FNO_WEEKLY_KILL_PCT * pool:

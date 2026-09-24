@@ -35,9 +35,44 @@ import asyncio
 
 from config import settings
 from optional_ai_status import load_optional_ai_status, record_optional_ai_status
+from fno_exit_recovery import RecoveryConflict, pending_exit_intents, resolve_exit_intent
 from token_lifecycle import TokenPayload
 
 router = APIRouter()
+
+
+class FnoExitRecoveryRequest(BaseModel):
+    source: str = Field(pattern="^FNO_LIVE$")
+    expected_created_at: str = Field(min_length=20, max_length=80)
+    account_id: str = Field(min_length=1, max_length=80)
+    order_id: str = Field(min_length=1, max_length=80)
+    operator: str = Field(min_length=1, max_length=100)
+    confirm: str = Field(pattern="^RECONCILE_VERIFIED_BROKER_EXIT$")
+
+
+@router.get("/ops/fno-exit-intents")
+async def get_fno_exit_intents(request: Request):
+    _main._check_internal_secret(request, "get_fno_exit_intents")
+    try:
+        return {"intents": await pending_exit_intents(settings.DB_PATH)}
+    except RecoveryConflict as exc:
+        raise HTTPException(status_code=409, detail=str(exc)) from exc
+
+
+@router.post("/ops/fno-exit-intents/{position_id}/resolve")
+async def post_fno_exit_resolution(
+    position_id: int, payload: FnoExitRecoveryRequest, request: Request,
+):
+    _main._check_internal_secret(request, "post_fno_exit_resolution")
+    try:
+        return await resolve_exit_intent(
+            settings.DB_PATH, _main.kite, position_id=position_id,
+            source=payload.source, expected_created_at=payload.expected_created_at,
+            account_id=payload.account_id, order_id=payload.order_id,
+            operator=payload.operator,
+        )
+    except RecoveryConflict as exc:
+        raise HTTPException(status_code=409, detail=str(exc)) from exc
 
 
 class OptionalAiStatusPayload(BaseModel):

@@ -74,7 +74,10 @@ CREATE TABLE IF NOT EXISTS fno_positions (
     -- prevents two closes of the same position from producing two
     -- ledger rows -- the audit's reproducer. Default 0 for legacy
     -- rows; the migration is idempotent (``ADD COLUMN``).
-    settlement_generation INTEGER NOT NULL DEFAULT 0
+    settlement_generation INTEGER NOT NULL DEFAULT 0,
+    initial_qty INTEGER,
+    initial_lots INTEGER,
+    initial_max_loss_rupees REAL
 )
 """
 
@@ -159,6 +162,7 @@ class FnoPosition:
     max_loss_rupees: float
     status: str
     bar_ts: str
+    settlement_generation: int
 
 
 _SELECT_COLS = (
@@ -166,7 +170,8 @@ _SELECT_COLS = (
     "direction, lots, lot_size, qty, entry_time, entry_date, entry_premium, "
     "entry_underlying, delta_at_entry, iv_at_entry, atr_at_entry, "
     "stop_underlying, target_underlying, premium_stop, trail_active, "
-    "trail_stop_underlying, best_underlying, max_loss_rupees, status, bar_ts"
+    "trail_stop_underlying, best_underlying, max_loss_rupees, status, bar_ts, "
+    "settlement_generation"
 )
 
 
@@ -199,6 +204,20 @@ async def init_fno_positions_db(db_path: str) -> None:
         except aiosqlite.OperationalError as exc:
             if "duplicate column name" not in str(exc).lower():
                 raise
+        for column, datatype in (("initial_qty", "INTEGER"),
+                                 ("initial_lots", "INTEGER"),
+                                 ("initial_max_loss_rupees", "REAL")):
+            try:
+                await db.execute(f"ALTER TABLE fno_positions ADD COLUMN {column} {datatype}")
+            except aiosqlite.OperationalError as exc:
+                if "duplicate column name" not in str(exc).lower():
+                    raise
+        await db.execute("""UPDATE fno_positions SET
+            initial_qty=COALESCE(initial_qty,qty),
+            initial_lots=COALESCE(initial_lots,lots),
+            initial_max_loss_rupees=COALESCE(initial_max_loss_rupees,max_loss_rupees)
+            WHERE initial_qty IS NULL OR initial_lots IS NULL
+               OR initial_max_loss_rupees IS NULL""")
         # Create the unique index on the shared ledger. The table
         # itself is owned by ``performance.init_ledger``; we wrap
         # the index creation in a try so a test DB that doesn't
@@ -212,6 +231,19 @@ async def init_fno_positions_db(db_path: str) -> None:
         await db.execute("""CREATE TABLE IF NOT EXISTS fno_exit_intents (
             position_id INTEGER PRIMARY KEY, source TEXT NOT NULL,
             created_at TEXT NOT NULL)""")
+        await db.execute("""CREATE TABLE IF NOT EXISTS fno_exit_recoveries (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            position_id INTEGER NOT NULL, source TEXT NOT NULL,
+            intent_created_at TEXT NOT NULL, order_id TEXT NOT NULL,
+            operator TEXT NOT NULL, account_id TEXT NOT NULL,
+            broker_evidence_sha256 TEXT NOT NULL,
+            broker_evidence_json TEXT NOT NULL,
+            terminal_status TEXT NOT NULL, filled_qty INTEGER NOT NULL,
+            remaining_qty INTEGER NOT NULL, fill_price REAL,
+            settlement_generation INTEGER NOT NULL,
+            ledger_id INTEGER, resolved_at TEXT NOT NULL,
+            UNIQUE(position_id, intent_created_at), UNIQUE(source, order_id)
+        )""")
         await db.commit()
 
 
@@ -225,6 +257,9 @@ async def _table_exists(db) -> bool:
 async def insert_position(db_path: str, **fields) -> int:
     """Insert an OPEN position; returns the row id."""
     await init_fno_positions_db(db_path)
+    fields.setdefault("initial_qty", fields.get("qty"))
+    fields.setdefault("initial_lots", fields.get("lots"))
+    fields.setdefault("initial_max_loss_rupees", fields.get("max_loss_rupees"))
     cols = ", ".join(fields.keys())
     marks = ", ".join(["?"] * len(fields))
     async with aiosqlite.connect(db_path) as db:
@@ -353,18 +388,27 @@ async def exit_execution_receipt(
     return dict(row) if row is not None else None
 
 
-async def claim_exit_intent(db_path: str, position_id: int, source: str) -> bool:
+async def claim_exit_intent(
+    db_path: str, position_id: int, source: str,
+    *, evaluation_started_at: datetime | None = None,
+) -> bool:
     """Durably claim one external exit; ambiguous dispatches require reconciliation.
 
     No lease expiry: a crash cannot prove an external order was never submitted.
     Successful accounting consumes the claim in the same transaction.
     """
+    evaluation_started_at = evaluation_started_at or datetime.now(timezone.utc)
+    if evaluation_started_at.tzinfo is None:
+        raise ValueError("evaluation_started_at must be timezone-aware")
     async with aiosqlite.connect(db_path) as db:
         await db.execute("BEGIN IMMEDIATE")
         cur = await db.execute(
             "INSERT OR IGNORE INTO fno_exit_intents(position_id,source,created_at) "
-            "SELECT id,source,? FROM fno_positions WHERE id=? AND source=? AND status='OPEN'",
-            (datetime.now(timezone.utc).isoformat(), position_id, source),
+            "SELECT id,source,? FROM fno_positions WHERE id=? AND source=? AND status='OPEN' "
+            "AND NOT EXISTS (SELECT 1 FROM fno_exit_recoveries "
+            "WHERE position_id=? AND resolved_at>=?)",
+            (datetime.now(timezone.utc).isoformat(), position_id, source,
+             position_id, evaluation_started_at.astimezone(timezone.utc).isoformat()),
         )
         await db.commit()
         return cur.rowcount == 1
@@ -427,8 +471,16 @@ async def record_exit_execution_receipt(
             if existing is not None:
                 if (
                     existing["source"] == source
+                    and existing["ticker"] == ticker
                     and existing["exit_order_id"] == exit_order_id
+                    and existing["exit_time"] == exit_time_ist.isoformat()
                     and float(existing["exit_premium"]) == float(exit_premium)
+                    and float(existing["exit_underlying"]) == float(exit_underlying)
+                    and existing["exit_reason"] == exit_reason
+                    and float(existing["gross_pnl"]) == float(gross_pnl)
+                    and float(existing["costs"]) == float(costs)
+                    and float(existing["pnl"]) == float(pnl)
+                    and float(existing["r_multiple"]) == float(r_multiple)
                     and int(existing["settlement_generation"]) == settlement_generation
                 ):
                     await db.commit()
@@ -592,7 +644,11 @@ async def settle_position_close(
                 "UPDATE fno_positions SET "
                 "status='CLOSED', exit_time=?, exit_date=?, "
                 "exit_premium=?, exit_underlying=?, exit_reason=?, "
-                "gross_pnl=?, costs=?, pnl=?, r_multiple=?, "
+                "gross_pnl=COALESCE(gross_pnl,0)+?, "
+                "costs=COALESCE(costs,0)+?, pnl=COALESCE(pnl,0)+?, "
+                "r_multiple=CASE WHEN settlement_generation>0 "
+                "AND COALESCE(initial_max_loss_rupees,0)>0 "
+                "THEN (COALESCE(pnl,0)+?)/initial_max_loss_rupees ELSE ? END, "
                 "exit_order_id=?, settlement_generation=? "
                 "WHERE id=? AND source=? AND status='OPEN'",
                 (
@@ -603,6 +659,7 @@ async def settle_position_close(
                     exit_reason,
                     gross_pnl,
                     costs,
+                    pnl,
                     pnl,
                     r_multiple,
                     exit_order_id,
@@ -798,7 +855,8 @@ async def closed_today(db_path: str, source: str, today_iso: str) -> List[dict]:
             return []
         db.row_factory = aiosqlite.Row
         async with db.execute(
-            "SELECT tradingsymbol, direction, lots, entry_premium, exit_premium, "
+            "SELECT tradingsymbol, direction, COALESCE(initial_lots,lots) AS lots, "
+            "entry_premium, exit_premium, "
             "pnl, r_multiple, exit_reason, exit_time FROM fno_positions "
             "WHERE source=? AND status='CLOSED' AND exit_date=? ORDER BY exit_time",
             (source, today_iso),

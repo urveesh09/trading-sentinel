@@ -55,7 +55,6 @@ IST = pytz.timezone("Asia/Kolkata")
 RVOL_FETCH_CALENDAR_DAYS = 21   # ~14 sessions of 5-min bars for EMA/RVOL
 _SHADOW_EXECUTOR = ThreadPoolExecutor(max_workers=1, thread_name_prefix="fno-shadow")
 _SHADOW_TASKS: set[Future] = set()
-_SETTLEMENT_GENERATION = 1
 
 
 def _now_min(now_ist: datetime) -> int:
@@ -228,6 +227,7 @@ async def _manage_open_positions(
 ) -> List[dict]:
     """Check every OPEN position for this leg against the §8.4/§8.5 exit
     ladder. Returns records of closed positions."""
+    evaluation_started_at = datetime.now(pytz.UTC)
     positions = await fpos.open_positions(db_path, source)
     if not positions:
         return []
@@ -404,15 +404,14 @@ async def _manage_open_positions(
             # leave the position open through the weekend (MIS auto-sq-off
             # at 15:30 is the broker safety net, not a guarantee). On a
             # non-trading-day next-tick the carry is real -> page the
-            # operator so they can flatten manually or patch the
-            # fno_positions row directly.
+            # operator so they can reconcile broker exposure and local ledger.
             msg = (
                 f"⚠️ *F&O hard flat blocked by no quote*\n"
                 f"id={p.id} symbol={p.tradingsymbol} reason={exit_reason}\n"
                 f"The 15:10 hard flat could not price -- position may "
                 f"carry into the next session. Action required: manual "
-                f"flatten or UPDATE fno_positions SET status='CLOSED' for "
-                f"id={p.id} once broker quotes return."
+                f"inspect broker exposure and use authenticated F&O exit "
+                f"recovery for id={p.id}; preserve ledger evidence."
             )
             try:
                 from operator_alert import notify_operator
@@ -429,7 +428,9 @@ async def _manage_open_positions(
             )
             continue
 
-        if not await fpos.claim_exit_intent(db_path, p.id, source):
+        if not await fpos.claim_exit_intent(
+            db_path, p.id, source, evaluation_started_at=evaluation_started_at,
+        ):
             logger.critical("fno_exit_reconciliation_required id=%s source=%s", p.id, source)
             continue
         try:
@@ -462,7 +463,7 @@ async def _manage_open_positions(
                 gross_pnl=gross, costs=costs, pnl=pnl, r_multiple=r_mult,
                 exit_order_id=result.get("order_id"),
                 source=source, ticker=p.tradingsymbol,
-                settlement_generation=_SETTLEMENT_GENERATION,
+                settlement_generation=p.settlement_generation + 1,
                 notes=f"fno_exit {exit_reason}",
             )
         except Exception as exc:

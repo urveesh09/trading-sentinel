@@ -489,6 +489,22 @@
       "response_model": null
     },
     {
+      "endpoint": "get_fno_exit_intents",
+      "methods": [
+        "GET"
+      ],
+      "path": "/ops/fno-exit-intents",
+      "response_model": null
+    },
+    {
+      "endpoint": "post_fno_exit_resolution",
+      "methods": [
+        "POST"
+      ],
+      "path": "/ops/fno-exit-intents/{position_id}/resolve",
+      "response_model": null
+    },
+    {
       "endpoint": "get_ops_metrics",
       "methods": [
         "GET"

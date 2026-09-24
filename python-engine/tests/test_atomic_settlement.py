@@ -84,7 +84,7 @@ async def _insert_open_position(
         tradingsymbol=tradingsymbol,
         token=1, underlying="NIFTY", expiry="2026-09-24",
         strike=19500.0, opt_type="CE", direction="LONG",
-        lots=1, lot_size=75, qty=qty,
+        lots=qty // 75, lot_size=75, qty=qty,
         entry_time=datetime(2026, 9, 13, 10, 0, tzinfo=timezone.utc),
         entry_date="2026-09-13", entry_premium=entry_premium,
         entry_underlying=19500.0, delta_at_entry=0.5, iv_at_entry=0.15,

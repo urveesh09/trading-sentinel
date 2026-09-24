@@ -59,6 +59,11 @@ def mock_kite_client():
             return httpx.Response(200, json={"data": {"order_id": order_id}})
         if request.url.path == "/orders" and request.method == "GET":
             return httpx.Response(200, json={"data": []})
+        if request.url.path == "/orders/ORD-001/trades" and request.method == "GET":
+            return httpx.Response(200, json={"data": [
+                {"trade_id": "TRADE-1", "order_id": "ORD-001", "quantity": 50,
+                 "average_price": 12.5}
+            ]})
         if request.url.path.startswith("/orders/") and request.method == "GET":
             return httpx.Response(200, json={"data": [
                 {"order_id": "ORD-001", "status": "COMPLETE", "filled_quantity": 50,
@@ -78,6 +83,14 @@ def mock_kite_client():
         return None
     client.limiter.acquire = fast_acquire
     return client, captured_requests
+
+
+def test_order_trades_uses_order_scoped_broker_endpoint(mock_kite_client):
+    client, requests = mock_kite_client
+    trades = asyncio.run(client.order_trades("ORD-001"))
+    assert trades == [{"trade_id": "TRADE-1", "order_id": "ORD-001",
+                       "quantity": 50, "average_price": 12.5}]
+    assert any(r["url"].endswith("/orders/ORD-001/trades") for r in requests)
 
 
 def test_get_quote_returns_normalized_dict(mock_kite_client):

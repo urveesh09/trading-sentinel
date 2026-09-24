@@ -1,5 +1,23 @@
 # Handover receipt and operator checklist
 
+## September 24 F&O exit recovery implementation (Dev)
+
+- [x] Authenticate pending-intent inspection and explicit named resolution.
+- [x] Verify same-day broker order, trades and net position; retain the bounded
+  snapshot/digest and fail closed on missing, stale, conflicting evidence.
+- [x] Atomically account partial/full fills and terminal zero fills, preserve
+  cumulative P&L and residual risk, and reject stale/concurrent retry claims.
+- [x] Broad Python run: 4,493 passed/four skipped, with the sole intentional
+  route-golden mismatch; regenerated diff adds only GET/POST recovery routes.
+  Route/F&O acceptance then passed 74 tests. Focused recovery/risk after the
+  cross-session kill-switch, migration and read-only inspection fixes passed 65
+  broker-client/recovery/risk/surface tests. Existing framework
+  deprecations remain. Atlas regenerated to 210 Python modules.
+- [ ] Record commit/push receipt below.
+- [ ] Promote through GitHub, rehearse with real broker evidence and keep live
+  single-leg activation a separate operator decision. Older unknown intents
+  need statement-level reconciliation; never delete one to force retry.
+
 ## September 23 independent remediation completion
 
 Read the [review, migration and recovery instructions](2026-09-21-independent-remediation-review.md)

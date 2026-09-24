@@ -1,5 +1,19 @@
 # Trading Sentinel — next-agent execution plan
 
+## September 24 implementation update — F&O exit recovery
+
+Item 3 of the September 23 next-agent order is implemented in Dev for same-day
+`FNO_LIVE` terminal zero, partial and full exits. The authenticated operator
+route verifies the current broker order, executions and net position, retains
+the bounded source snapshot, and atomically resolves the intent with a ledger
+entry for actual fills. Ambiguous, older, unaccounted concurrent orders and
+broker read failures remain blocked. Partial economics and residual risk carry
+through the eventual final close. See
+[the active recovery slice](2026-09-23-fno-exit-recovery-plan.md) for exact
+tests, migration and rollout status. Production HEAD `782bbb7` contains the
+earlier handover commit `f0e23b4`; this new recovery source is Dev only until
+GitHub promotion. Items 1, 2 and 4–6 still require their own evidence/work.
+
 ## Current handover — September 23 remediation completion
 
 Start with [the independent review and next-agent execution order](2026-09-21-independent-remediation-review.md).

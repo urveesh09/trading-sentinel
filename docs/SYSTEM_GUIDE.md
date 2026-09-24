@@ -1,5 +1,43 @@
 # Trading Sentinel — system guide and engineering handover
 
+## September 24 F&O exit recovery (Dev implementation)
+
+An authenticated operator can list pending live single-leg F&O exit intents at
+`GET /ops/fno-exit-intents` and reconcile one at
+`POST /ops/fno-exit-intents/{position_id}/resolve`. The resolution requires a
+named operator, account/order ID, exact intent timestamp and an explicit
+confirmation. It reads the current day's broker order book, that order's trades
+and net positions. Account, NFO/MIS symbol, SELL side, source tag, order and
+trade quantities, terminal status, clocks and residual net quantity must agree.
+An unavailable or ambiguous broker response leaves the intent untouched.
+
+A verified terminal zero fill releases the intent with a retained broker
+snapshot. A partial fill posts only realized economics to the ledger, scales
+the open quantity/risk, preserves cumulative position P&L and permits only a
+fresh later exit evaluation. A full fill closes the position and ledger in one
+transaction. Each resolution retains bounded broker evidence and its SHA-256,
+operator, account, order, and generation. Prior recovered orders are distinct
+from unaccounted same-symbol orders. A tick that began before recovery cannot
+immediately claim a replacement exit. The no-quote alert no longer suggests a
+direct database status edit. Existing ambiguous exits still block automatically.
+Daily/weekly/monthly F&O loss switches use each realized ledger event's IST
+date, including partial fills; legacy closes without a tagged ledger entry
+remain visible through position history.
+
+The operator first reads the authenticated intent list to obtain the exact
+`created_at`, then posts a JSON body containing `source: "FNO_LIVE"`,
+`expected_created_at`, `account_id`, `order_id`, `operator`, and
+`confirm: "RECONCILE_VERIFIED_BROKER_EXIT"`. Both routes require the existing
+`X-Internal-Secret` header. A `409` means the evidence is insufficient or
+changed; the intent remains for investigation. The stored snapshot is in
+`fno_exit_recoveries`, alongside its digest and the linked ledger ID.
+
+Kite's order/trade API is daily; an older unverified intent cannot be cleared
+by this endpoint. It needs external statement-level reconciliation and review.
+The internal secret authenticates the route; the operator name is an auditable
+claim within that trust boundary. No broker order is sent by recovery itself.
+Live single-leg activation still needs a supervised broker rehearsal.
+
 ## September 23 independent remediation review (Dev only)
 
 The seven incoming audit-fix commits through `674a6fe` required corrections at
