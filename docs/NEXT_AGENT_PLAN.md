@@ -1,5 +1,17 @@
 # Trading Sentinel — next-agent execution plan
 
+## September 24 three-day Production audit reconciliation
+
+The 22–24 September deep audits were cross-checked against Production evidence
+and current Dev source. The new [audit reconciliation and ordered plan](2026-09-24-three-day-production-audit-plan.md)
+corrects several auditor inferences and identifies a confirmed research
+collector cap/telemetry defect. It supersedes the September 24 release-slice
+statement that no unblocked product-code issue remained: that statement was
+correct for the six release gates, but the later Production audit exposed a
+separate collection defect. Do not lengthen research/F&O schedules or change
+paper/AI authority solely from the audit's recommendation. Production remains
+read-only and no new Dev application change is implemented by this plan.
+
 ## September 24 implementation update — real research package boundary
 
 The next Dev-implementable package boundary after F&O exit recovery is complete:
