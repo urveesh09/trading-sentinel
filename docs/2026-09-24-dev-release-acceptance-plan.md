@@ -70,3 +70,16 @@ full-engine receipt. The current source change is isolated to the gateway test
 bootstrap; previously recorded focused engine evidence remains in the package
 and recovery receipts. No Production source, data, service, Telegram message or
 broker order was changed.
+
+## Gate classification correction — 24 September 2026
+
+The six remaining high-level items are **not six pending product-development
+packages**. F&O exit recovery, bounded qualification-package construction and
+gateway test-lifecycle isolation are complete Dev implementations. The
+remaining full-engine natural-exit receipt is test-runtime/CI hygiene only:
+earlier full runs completed their test assertions and then retained aiosqlite
+worker threads. Do not change application teardown or add global warning
+suppression without a minimal reproducer that identifies an owned connection
+leak. The remaining rollout, session-evidence, reconciliation, held-out
+research, profile/review and Telegram-canary gates require GitHub promotion,
+real retained data, or explicit operator authority—not more code.

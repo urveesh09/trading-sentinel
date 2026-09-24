@@ -24,6 +24,18 @@ commands, boundary and source contract are in
 This is Dev evidence only: it does not merge, deploy, qualify advice or send
 Telegram/broker traffic.
 
+### Remaining-gate classification
+
+There is no further unblocked product-development task in the current release
+slice. The clean full-engine process exit is a test-runtime/CI follow-up, not
+an application-behaviour change: prior full receipts completed assertions but
+retained aiosqlite workers. Diagnose only from a minimal reproducer; do not
+weaken warnings, force an exit, or add broad shutdown code speculatively. The
+other outstanding gates—GitHub promotion/release identity, session evidence,
+real broker reconciliation, held-out research, saved profile/review and an
+authorized Telegram canary—are operational or evidence tasks. See the
+[acceptance receipt](2026-09-24-dev-release-acceptance-plan.md).
+
 ## September 24 implementation update — F&O exit recovery
 
 Item 3 of the September 23 next-agent order is implemented in Dev for same-day

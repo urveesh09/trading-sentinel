@@ -20,6 +20,13 @@ Python modules). No Production file/service/data, Telegram delivery or broker
 order changed. See
 [the release-acceptance receipt](2026-09-24-dev-release-acceptance-plan.md).
 
+The remaining six high-level gates are classified deliberately: no further
+product source change is currently unblocked. The Python runner's retained
+aiosqlite worker is test-runtime hygiene, to be fixed only after a minimal
+owned-leak reproducer; the other gates depend on promotion, real observations,
+broker records, held-out evidence and explicit operator approval. Test success
+does not replace any of those requirements.
+
 ## September 24 real-research authorization package builder (Dev implementation)
 
 `research_cli.py build-qualification-package` assembles the existing

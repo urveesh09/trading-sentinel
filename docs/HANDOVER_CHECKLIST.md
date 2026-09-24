@@ -10,9 +10,11 @@
   passed/4 skipped; natural exit 0. Scripts: 226 passed. Agent: 357 passed.
   Dashboard: 46 passed and production build completed. Atlas regenerated to
   211 Python modules.
-- [ ] Treat full `python-engine/tests` as unconfirmed for this receipt: its
-  aiosqlite-worker teardown did not terminate after early progress and was
-  stopped. Do not replace a fresh clean full-engine receipt with this note.
+- [ ] Obtain a fresh clean full `python-engine/tests` process exit for the
+  receipt. This is test-runtime/CI hygiene—not an unimplemented product
+  feature. Prior full receipts completed assertions before retained aiosqlite
+  workers; diagnose an owned leak with a minimal reproducer before changing
+  application teardown or suppressing warnings globally.
 - [ ] GitHub promotion, stamped deployment verification, retained-data backup,
   real-session collection/reconciliation, a saved INTRADAY profile, genuine
   held-out qualification and an explicitly authorized Telegram canary remain
