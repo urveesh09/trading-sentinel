@@ -1666,6 +1666,21 @@ class KiteClient:
             logger.error("kite_orders_snapshot_failed error=%s", str(e))
             return None
 
+    async def order_trades(self, order_id: str) -> list | None:
+        """Today's executions for one order; None means broker read failed."""
+        if not order_id:
+            return None
+        await self.limiter.acquire()
+        try:
+            resp = await self.client.get(f"/orders/{order_id}/trades")
+            resp.raise_for_status()
+            payload = resp.json()
+            data = payload.get("data") if isinstance(payload, dict) else None
+            return data if isinstance(data, list) else None
+        except (httpx.HTTPStatusError, httpx.RequestError, ValueError) as exc:
+            logger.error("kite_order_trades_failed order_id=%s error=%s", order_id, str(exc))
+            return None
+
     async def get_broker_positions(self) -> dict:
         """Broker-side positions. Kite endpoint: GET /portfolio/positions.
         Returns {"net": [...], "day": [...]} ({} on failure).

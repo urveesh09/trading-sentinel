@@ -195,13 +195,37 @@ ALL_ENTRY_GATES: List[Gate] = [
 _REJECT_BY_GATE = {g.name: g.name for g in ALL_ENTRY_GATES}
 
 
-def evaluate_entry_gates(ctx: GateContext) -> Tuple[bool, str]:
-    """Run the §7 ladder in order. Returns (ok, first_reject_reason)."""
+def _reject_reason(gate: Gate) -> str:
+    """Return the stable external reason for a failed gate."""
+    # The min-viable gate intentionally has a report-specific taxonomy.  Keep
+    # this mapping central so the legacy two-value evaluator and the richer
+    # audit evaluator can never disagree about a persisted reject reason.
+    if gate.name == "pool_min_viable":
+        return "pool_below_min_viable"
+    return _REJECT_BY_GATE[gate.name]
+
+
+def evaluate_entry_gates_with_trace(ctx: GateContext) -> Tuple[bool, str, Tuple[str, ...]]:
+    """Run the entry ladder and retain only the names proven to have passed.
+
+    The trace is operational evidence, not a new decision input.  In
+    particular, a ``kill_switches_clear`` failure can now show that every
+    earlier gate passed *for that captured context*, while making no claim
+    about later sizing, reward/risk, executor, or admission checks.
+    """
+    passed: list[str] = []
     for gate in ALL_ENTRY_GATES:
         if not gate.accepts(ctx):
-            # Spec §3/§9.2 taxonomy: the min-viable rejection keeps its
-            # spec name so the watchdog can classify it as self-regulation.
-            if gate.name == "pool_min_viable":
-                return False, "pool_below_min_viable"
-            return False, gate.name
-    return True, ""
+            return False, _reject_reason(gate), tuple(passed)
+        passed.append(gate.name)
+    return True, "", tuple(passed)
+
+
+def evaluate_entry_gates(ctx: GateContext) -> Tuple[bool, str]:
+    """Run the §7 ladder in order. Returns (ok, first_reject_reason).
+
+    Kept as the stable decision API.  Audit consumers that need the exact
+    preceding-gate evidence use :func:`evaluate_entry_gates_with_trace`.
+    """
+    ok, reason, _passed = evaluate_entry_gates_with_trace(ctx)
+    return ok, reason

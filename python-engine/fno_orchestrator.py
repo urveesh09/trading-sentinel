@@ -41,7 +41,7 @@ from fno_chain import ChainSnapshot, select_strike_by_delta, take_chain_snapshot
 from fno_costs import calc_fno_costs
 from fno_engine_mom import MomSignal, evaluate_fno_mom
 from fno_executor import FnoExecutor
-from fno_gates import GateContext, evaluate_entry_gates
+from fno_gates import GateContext, evaluate_entry_gates_with_trace
 from fno_instruments import get_fno_instruments
 from fno_models import FnoDirection, FnoSource, Leg, OptionType
 from fno_risk import (
@@ -55,7 +55,6 @@ IST = pytz.timezone("Asia/Kolkata")
 RVOL_FETCH_CALENDAR_DAYS = 21   # ~14 sessions of 5-min bars for EMA/RVOL
 _SHADOW_EXECUTOR = ThreadPoolExecutor(max_workers=1, thread_name_prefix="fno-shadow")
 _SHADOW_TASKS: set[Future] = set()
-_SETTLEMENT_GENERATION = 1
 
 
 def _now_min(now_ist: datetime) -> int:
@@ -138,6 +137,59 @@ def _fno_pool_live() -> float:
 # because sizing read a constant and the ledger was posting the damage
 # against an unrelated pool.
 FNO_MAX_DRAWDOWN_PCT = 0.25
+
+
+async def _load_dr_entry_inputs(
+    kite, instruments, fut_token: int, regime: str, now_ist: datetime,
+    snapshot: Optional[ChainSnapshot] = None,
+) -> tuple[Optional[ChainSnapshot], Optional[object], Optional[MomSignal], str]:
+    """Load only the cancellable inputs needed to *open* a paper DR idea.
+
+    This deliberately does not wrap ``maybe_open_dr_structure`` or DR
+    lifecycle management.  An entry-input deadline may safely cancel a quote
+    or historical-bars request before it mutates a position, order-intent, or
+    ledger state; cancelling an admission mutation would make its outcome
+    ambiguous. Existing DR structures are managed by the caller before this
+    helper is considered.
+
+    The budget is shared by the optional chain snapshot and futures-history
+    download.  That prevents the experimental paper-entry branch from using
+    two independent full waits and crowding out the next 90-second tick.
+    ``asyncio.wait_for`` waits for cancellation to finish, so this never
+    detaches a late request onto the shared Kite client.
+    """
+    budget = max(0.1, float(settings.FNO_DR_ENTRY_MARKET_DATA_MAX_SEC))
+    deadline = monotonic() + budget
+
+    def _remaining() -> float:
+        return max(0.001, deadline - monotonic())
+
+    if snapshot is None:
+        try:
+            snapshot = await asyncio.wait_for(
+                take_chain_snapshot(kite, instruments, now_ist),
+                timeout=_remaining(),
+            )
+        except asyncio.TimeoutError:
+            return None, None, None, "chain_snapshot_deadline"
+        except Exception as exc:
+            logger.error("fno_dr_entry_snapshot_failed err=%s", str(exc))
+            return None, None, None, "chain_snapshot_failed"
+    if snapshot is None:
+        return None, None, None, "chain_snapshot_unavailable"
+
+    try:
+        bars = await asyncio.wait_for(
+            _fetch_futures_bars(kite, fut_token, now_ist),
+            timeout=_remaining(),
+        )
+    except asyncio.TimeoutError:
+        return snapshot, None, None, "futures_history_deadline"
+    except Exception as exc:
+        logger.error("fno_dr_entry_bars_failed err=%s", str(exc))
+        return snapshot, None, None, "futures_history_failed"
+
+    return snapshot, bars, evaluate_fno_mom(bars, regime, now_ist), ""
 
 
 async def _fno_equity(db_path: str, source: str) -> float:
@@ -228,6 +280,7 @@ async def _manage_open_positions(
 ) -> List[dict]:
     """Check every OPEN position for this leg against the §8.4/§8.5 exit
     ladder. Returns records of closed positions."""
+    evaluation_started_at = datetime.now(pytz.UTC)
     positions = await fpos.open_positions(db_path, source)
     if not positions:
         return []
@@ -404,15 +457,14 @@ async def _manage_open_positions(
             # leave the position open through the weekend (MIS auto-sq-off
             # at 15:30 is the broker safety net, not a guarantee). On a
             # non-trading-day next-tick the carry is real -> page the
-            # operator so they can flatten manually or patch the
-            # fno_positions row directly.
+            # operator so they can reconcile broker exposure and local ledger.
             msg = (
                 f"⚠️ *F&O hard flat blocked by no quote*\n"
                 f"id={p.id} symbol={p.tradingsymbol} reason={exit_reason}\n"
                 f"The 15:10 hard flat could not price -- position may "
                 f"carry into the next session. Action required: manual "
-                f"flatten or UPDATE fno_positions SET status='CLOSED' for "
-                f"id={p.id} once broker quotes return."
+                f"inspect broker exposure and use authenticated F&O exit "
+                f"recovery for id={p.id}; preserve ledger evidence."
             )
             try:
                 from operator_alert import notify_operator
@@ -429,7 +481,9 @@ async def _manage_open_positions(
             )
             continue
 
-        if not await fpos.claim_exit_intent(db_path, p.id, source):
+        if not await fpos.claim_exit_intent(
+            db_path, p.id, source, evaluation_started_at=evaluation_started_at,
+        ):
             logger.critical("fno_exit_reconciliation_required id=%s source=%s", p.id, source)
             continue
         try:
@@ -462,7 +516,7 @@ async def _manage_open_positions(
                 gross_pnl=gross, costs=costs, pnl=pnl, r_multiple=r_mult,
                 exit_order_id=result.get("order_id"),
                 source=source, ticker=p.tradingsymbol,
-                settlement_generation=_SETTLEMENT_GENERATION,
+                settlement_generation=p.settlement_generation + 1,
                 notes=f"fno_exit {exit_reason}",
             )
         except Exception as exc:
@@ -566,9 +620,17 @@ async def _try_entry_for_leg(
         pool_at_eval=round(float(pool), 2),
     )
 
-    ok, reject = evaluate_entry_gates(ctx)
+    # The evaluator keeps the first-failure decision semantics unchanged while
+    # exposing its already-passed prefix for the append-only audit row.  This
+    # lets an operator distinguish "blocked by a switch after prior gates"
+    # from a hypothetical viable order without weakening any gate.
+    ok, reject, passed_gates = evaluate_entry_gates_with_trace(ctx)
+    gate_audit_fields = {
+        "passed_gates": passed_gates,
+        "active_kill_switches": switches,
+    }
     if not ok:
-        await _log(False, reject, **contract_fields)
+        await _log(False, reject, **contract_fields, **gate_audit_fields)
         return None
 
     # [NO-PYRAMID 2026-07-26] Refuse a second position on a contract this leg is
@@ -586,7 +648,10 @@ async def _try_entry_for_leg(
     held = [p for p in await fpos.open_positions(db_path, source)
             if p.tradingsymbol == contract.tradingsymbol]
     if held:
-        await _log(False, "already_holding_this_contract", **contract_fields)
+        await _log(
+            False, "already_holding_this_contract", **contract_fields,
+            **gate_audit_fields,
+        )
         logger.info(
             "fno_entry_skip source=%s reason=already_holding_this_contract symbol=%s open_lots=%d",
             source, contract.tradingsymbol, sum(p.lots for p in held),
@@ -603,14 +668,20 @@ async def _try_entry_for_leg(
     while lots > 0 and open_prem + lots * ask * lot_size > settings.FNO_MAX_OPEN_PREMIUM_PCT * pool:
         lots -= 1
     if lots < 1:
-        await _log(False, "pool_below_min_viable", **contract_fields, lots=0)
+        await _log(
+            False, "pool_below_min_viable", **contract_fields, lots=0,
+            **gate_audit_fields,
+        )
         return None
 
     # §4 constitution -- the order path runs through validate_position.
     legs = [Leg(opt_type=opt_type, strike=contract.strike, quantity=lots, premium=ask)]
     ok_ml, reject_ml, ml = validate_position(legs, lot_size)
     if not ok_ml:
-        await _log(False, reject_ml, **contract_fields, lots=lots, max_loss_rupees=ml)
+        await _log(
+            False, reject_ml, **contract_fields, lots=lots,
+            max_loss_rupees=ml, **gate_audit_fields,
+        )
         return None
 
     # [NAKED-LEG-EXPECTANCY 2026-07-31] A long option is only a trade if its
@@ -646,7 +717,7 @@ async def _try_entry_for_leg(
     if rr < settings.FNO_MIN_REWARD_RISK:
         await _log(
             False, "reward_risk_below_min", **contract_fields,
-            lots=lots, max_loss_rupees=ml,
+            lots=lots, max_loss_rupees=ml, **gate_audit_fields,
         )
         logger.info(
             "fno_entry_skip source=%s reason=reward_risk_below_min symbol=%s "
@@ -660,7 +731,10 @@ async def _try_entry_for_leg(
     qty = lots * lot_size
     result = await executor.execute_entry(contract.tradingsymbol, qty, ask)
     if result["status"] not in ("paper", "filled"):
-        await _log(False, f"entry_{result['status']}", **contract_fields, lots=lots)
+        await _log(
+            False, f"entry_{result['status']}", **contract_fields, lots=lots,
+            **gate_audit_fields,
+        )
         return None
     fill = float(result["fill_price"])
 
@@ -691,7 +765,10 @@ async def _try_entry_for_leg(
         entry_order_id=result.get("order_id"),
         bar_ts=sig.bar_ts,
     )
-    await _log(True, "", **contract_fields, lots=lots, max_loss_rupees=ml)
+    await _log(
+        True, "", **contract_fields, lots=lots, max_loss_rupees=ml,
+        **gate_audit_fields,
+    )
     logger.info(
         "fno_entry_submitted source=%s symbol=%s dir=%s lots=%d fill=%.2f "
         "delta=%.2f iv=%.2f stop_u=%.1f target_u=%.1f prem_stop=%.2f max_loss=%.0f",
@@ -810,29 +887,72 @@ async def run_fno_tick(
             open_dr = await _dr.open_structures(db_path)
             nm_dr = _now_min(now_ist)
             in_dr_window = _dr._entry_lo_min() <= nm_dr <= _dr._entry_hi_min()
-            if open_dr or in_dr_window:
-                snap = await take_chain_snapshot(kite, instruments, now_ist)
-                if open_dr:
-                    # manage_dr_structures returns a COUNT (int), while
-                    # summary["exits"] is a list of single-leg exit *records*
-                    # consumed key-by-key in format_fno_telegram. Keep the DR
-                    # tally in its own key (mirrors "dr_opened" below) so the
-                    # two shapes never collide -- the DR closes are detailed in
-                    # their own fno_dr_closed log lines.
-                    summary["dr_exits"] = summary.get("dr_exits", 0) + \
-                        await _dr.manage_dr_structures(db_path, snap, now_ist)
-                if in_dr_window and not await _dr.open_structures(db_path):
+
+            # An existing structure is risk-management work.  It remains
+            # outside the paper-entry deadline, including a hard-flat close
+            # when a chain quote is unavailable.  This split also makes the
+            # next Production trace able to distinguish an exit delay from a
+            # speculative-entry delay.
+            if open_dr:
+                snapshot_started = monotonic()
+                try:
+                    snap = await take_chain_snapshot(kite, instruments, now_ist)
+                except Exception as exc:
+                    logger.error("fno_dr_management_snapshot_failed err=%s", str(exc))
+                    snap = None
+                finally:
+                    summary["stage_durations_sec"]["defined_risk_snapshot"] = round(
+                        monotonic() - snapshot_started, 3
+                    )
+
+                management_started = monotonic()
+                # manage_dr_structures intentionally accepts ``None`` and
+                # fail-closes a hard-flat structure even without a quote.
+                summary["dr_exits"] = summary.get("dr_exits", 0) + \
+                    await _dr.manage_dr_structures(db_path, snap, now_ist)
+                summary["stage_durations_sec"]["defined_risk_management"] = round(
+                    monotonic() - management_started, 3
+                )
+
+            if in_dr_window and not await _dr.open_structures(db_path):
+                entry_inputs_started = monotonic()
+                entry_snap, entry_bars, entry_sig, entry_skip_reason = await _load_dr_entry_inputs(
+                    kite, instruments, fut.token, regime, now_ist, snap,
+                )
+                summary["stage_durations_sec"]["defined_risk_entry_inputs"] = round(
+                    monotonic() - entry_inputs_started, 3
+                )
+                if entry_skip_reason:
+                    summary["dr_entry_skip_reason"] = entry_skip_reason
+                    logger.warning(
+                        "fno_dr_entry_skipped reason=%s budget_sec=%.3f",
+                        entry_skip_reason,
+                        float(settings.FNO_DR_ENTRY_MARKET_DATA_MAX_SEC),
+                    )
+                elif entry_snap is not None and entry_sig is not None:
+                    # Preserve the original tick-local reuse contract: a
+                    # successful DR entry read is the directional engine's
+                    # exact same closed-bar and chain view.
+                    snap, bars, sig = entry_snap, entry_bars, entry_sig
+                    # Mutating paper-book admission runs only after all
+                    # deadline-cancellable reads succeed.  Do not place it
+                    # under ``wait_for``: a cancelled write would make the
+                    # admission outcome ambiguous.
+                    entry_started = monotonic()
                     try:
-                        bars = await _fetch_futures_bars(kite, fut.token, now_ist)
-                        sig = evaluate_fno_mom(bars, regime, now_ist)
                         opened = await _dr.maybe_open_dr_structure(
-                            db_path, snap, sig.direction is not None,
-                            sig.direction, now_ist,
+                            db_path, entry_snap,
+                            entry_sig.direction is not None,
+                            entry_sig.direction, now_ist,
                         )
                         if opened:
                             summary.setdefault("dr_opened", []).append(opened)
                     except Exception as exc:
                         logger.error("fno_dr_entry_failed err=%s", str(exc))
+                    finally:
+                        summary["stage_durations_sec"]["defined_risk_entry_admission"] = round(
+                            monotonic() - entry_started, 3
+                        )
         except Exception as exc:
             logger.error("fno_dr_block_failed err=%s", str(exc), exc_info=True)
     summary["stage_durations_sec"]["defined_risk"] = round(

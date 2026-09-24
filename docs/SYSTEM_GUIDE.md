@@ -1,5 +1,243 @@
 # Trading Sentinel — system guide and engineering handover
 
+## September 24 P2 F&O audit evidence and financial interpretation (Dev)
+
+`fno_signals` now retains two additive, JSON-encoded audit fields:
+`passed_gates_json` is exactly the ordered prefix which passed before the
+first rejection, and `active_kill_switches_json` is the switch evidence
+returned for that same gate context.  The existing first reject reason,
+gate order, thresholds, sizing and execution path are unchanged.  This means a
+`kill_switches_clear` row can prove its preceding gates passed, but it never
+claims later sizing, reward/risk, execution or admission would have succeeded.
+Legacy rows remain readable and are explicitly labelled as lacking those later
+audit fields.
+
+`fno_audit_report.py` is a read-only daily CLI/builder.  It opens only an
+existing SQLite file with SQLite read-only mode; a missing path is reported and
+is never created.  It groups repeated signal rows by IST bar/underlying/
+direction as a decision unit, records re-evaluation counts, projects the
+current configured kill-switch policy next to retained switch evidence, and
+separates `TRADE_PARTIAL` ledger cash from `TRADE_CLOSED` outcomes per
+FNO_PAPER/FNO_LIVE source.  Isolated costs are shown as unavailable because the
+ledger schema does not retain them.  It emits no expectancy score or
+qualification verdict: a good day or small close sample is not an edge.
+
+Focused report/gate/log/orchestrator/hourly checks passed **84 tests**; the
+broader F&O/performance/division surface passed **376 tests**, with two
+pre-existing framework deprecation warnings.  Compilation passed.  Production
+was inspected read-only and has no recoverable local database copy for the
+historical six-row switch identity; new Dev rows preserve it going forward.
+
+## September 24 P2 classifier latency containment (Dev)
+
+The news classifier previously reused the analyst verdict client, which is
+configured with one SDK retry for a long reasoning review. That retry policy
+made a one-second classifier request capable of making a second transport
+attempt. The classifier now receives its own MiniMax/OpenAI client with
+`CLASSIFIER_MAX_RETRIES=0`; it retains the per-item request timeout and has no
+background thread or detached retry. The main analyst client remains at its
+existing `MINIMAX_MAX_RETRIES` policy, so this correction does not change
+review behavior.
+
+Both the direct classifier fallback and `agent._maybe_classify_news` explicitly
+select the no-retry client. A timeout/error still returns the existing bounded
+`UNKNOWN` annotation with zero confidence; deterministic signal capture and
+the configured advisory/block review policy are unchanged. Agent validation
+passed **361 tests** and Python compilation/atlas generation passed. This is
+Dev-only latency containment, not a claim that the external provider will meet
+its service objective or that AI determines entry authority.
+
+## September 24 P1 momentum-paper admission forensics (Dev)
+
+Accepted momentum signals now receive durable, bounded paper-admission
+evidence. `momentum_paper_admission_outcomes` retains only an opaque
+deterministic signal digest, ticker, enumerated outcome and timestamp—never a
+raw signal payload. The result is written in the same transaction as an
+opening position: `opened`, `already_held`, or `zero_shares` is therefore not
+reported before commit. A rolled-back position mutation is separately retained
+as `transaction_failure` when SQLite is available; an unavailable database is
+logged, never fabricated as durable evidence.
+
+`main.py` now records repeat accepted signals at the alert-deduplication
+boundary as `upstream_deduplicated`, rather than falsely saying the paper book
+rejected them. A deliberately disabled paper book similarly records `disabled`.
+Outcomes are idempotent, retention-bounded by
+`MOMENTUM_PAPER_ADMISSION_RETENTION` (20,000), and reopening an already closed
+paper position creates a separate immutable admission attempt. This remains a
+paper-only bookkeeping path with no order capability or broker authority.
+
+Focused paper/regime/shadow integration checks cover TATATECH-like repeats,
+held and zero-share outcomes, disabled state, rollback receipt, retention and
+the real upstream boundary (**159 passed**, with one existing Starlette
+deprecation). Dev tests establish explainability, not a trading
+edge or live/paper promotion. Production was not edited or deployed.
+
+## September 24 P1 F&O tick-tail containment and exit-safe telemetry (Dev)
+
+Read-only Production evidence across the retained 23–24 September window found
+27 `fno_tick_complete` runs at or above the 90-second cadence (12 on the 23rd,
+15 on the 24th). Their repeated tail was the defined-risk stage; all had zero
+DR opens and exits. This identifies speculative paper DR entry preparation,
+not ordinary single-leg exit management, as the demonstrated avoidable work.
+
+`fno_orchestrator.py` now gives only the cancellable quote/history reads used
+to prepare a *new* paper defined-risk structure one shared 20-second budget.
+`asyncio.wait_for` cancels and joins a late input read. It never wraps existing
+DR lifecycle management, hard-flat handling, broker-facing single-leg exits,
+or a database admission write. Successful DR reads are still reused by the
+directional path exactly as before. The tick now separately records
+`defined_risk_snapshot`, `defined_risk_management`,
+`defined_risk_entry_inputs`, and `defined_risk_entry_admission`; the scheduler
+also logs an explicit `dr_entry_skip_reason`.
+
+The stalled-entry test proves prompt cancellation/join, a named timeout, no
+order and no detached request; existing F&O/DR/scheduler tests prove the
+ordinary path remains intact. This is Dev-only containment, not a claim that
+active-exit latency is solved: after reviewed promotion, collect comparable
+session telemetry and inspect those new stage fields before any cadence change.
+Production was inspected read-only; it was not edited, restarted or deployed.
+
+## September 24 P1 research quote deadlines and coverage evidence (Dev)
+
+The research scheduler now bounds every NIFTY/SENSEX provider await to the
+remaining 48-second collection cap, rather than checking only between
+underlyings. `asyncio.wait_for` cancels and joins the actual shared Kite
+coroutine; it creates no replacement client or hidden late provider task. A
+deadline is retained as evidence: current-index `provider_deadline_exceeded`,
+exact active-leg tokens already known as unobserved, and later indices as
+explicit skipped/unobserved coverage. Nothing is replaced with a stale quote.
+
+Every scheduler result and persisted collection run carries `runtime_capped`,
+`elapsed_sec`, `runtime_cap_sec`, `partial_collected` and `partial_count` for
+normal, deadline and error paths. Per-index `collection_state` distinguishes
+completed, empty, batch error, provider deadline, storage stop and skipped
+deadline outcomes. The 60-second cadence and 48-second cap are unchanged.
+The first underlying rotates deterministically by UTC scheduler slot and the
+chosen order is retained, preventing repeated capped slots from permanently
+favoring one index after a restart.
+The scheduler regression proves cancellation of a stalled first operation and
+complete NIFTY/SENSEX gap accounting; the normal path proves durable telemetry.
+Focused coverage passed 54 tests, all research tests passed 62, the combined
+collector/scheduler/Kite-client surface passed 173 with one skip and one
+pre-existing Starlette lifespan deprecation, and compilation passed. This is
+Dev-only evidence: three real logged-in sessions must still
+show fairness/latency coverage before operational claims. See the
+[P1 receipt](2026-09-24-three-day-production-audit-plan.md).
+
+## September 24 P0 decision-forensics retention verification (Dev)
+
+Read-only Production evidence showed that `python-engine` already uses
+Docker `json-file` logging at `20m × 10` (200 MiB) and retained one 18.13 MiB
+file across 35.897 hours, an observed 0.50 MiB/hour. Gateway used the same
+configuration and retained 2.07 MiB over that interval. There was no rotation
+to correct and the 104.42 GiB C: free-space observation did not justify an
+unmeasured retention increase. Dev therefore preserves the existing Compose
+values and adds `scripts/verify_compose_logging.py`: it renders Compose JSON,
+checks only `python-engine`'s `json-file` driver, `max-size`, `max-file` and
+the minimum 200 MiB ceiling, and never prints rendered environment values.
+The focused unit suite passed 8 tests; direct rendered verification passed.
+
+This is a configuration-regression guard, not proof of three-session
+forensics retention: post-promotion acceptance is a read-only inspect and
+opening-to-close retrieval for three logged-in sessions. Docker logging
+options apply only after container recreation; no recreation was needed or
+performed because no Compose value changed. Production was inspected read-only
+and no service/data, order or message changed. Details and rollback criteria
+are in [the P0 plan](2026-09-24-three-day-production-audit-plan.md).
+
+## September 24 gateway test-lifecycle correction and Dev acceptance (Dev only)
+
+`node-gateway/server/utils/market-hours.js` still refreshes the canonical
+holiday calendar from the Python engine during normal module initialisation.
+Only when the Jest worker marker and the test setup's explicit
+`MARKET_HOURS_TEST_DISABLE_ENGINE_FETCH=1` flag are both present does it retain
+the fail-closed fallback without beginning that background request. This avoids
+post-test asynchronous logs while making it impossible for an accidental
+production flag alone to disable the refresh. `tests/setup.js` preserves the
+development-safe `.env.test` fixture and sets only the test-specific switch;
+`market-hours.test.js` verifies the exact initialization result.
+
+Dev receipt: Node 20 gateway 461 passed/4 skipped with exit 0; scripts 226
+passed; agent 357 passed; dashboard 46 passed and builds. The full engine
+runner remains inconclusive because its aiosqlite worker did not exit, so this
+is not stated as a whole-engine pass. The code atlas was regenerated (211
+Python modules). No Production file/service/data, Telegram delivery or broker
+order changed. See
+[the release-acceptance receipt](2026-09-24-dev-release-acceptance-plan.md).
+
+The remaining six high-level gates are classified deliberately: no further
+product source change is currently unblocked. The Python runner's retained
+aiosqlite worker is test-runtime hygiene, to be fixed only after a minimal
+owned-leak reproducer; the other gates depend on promotion, real observations,
+broker records, held-out evidence and explicit operator approval. Test success
+does not replace any of those requirements.
+
+## September 24 real-research authorization package builder (Dev implementation)
+
+`research_cli.py build-qualification-package` assembles the existing
+`partner_advisory_authorization_v1` artifact only from bounded, root-confined
+full-policy replay reports, a frozen criteria manifest, a reconstructed
+held-out aggregate, and an externally created `APPROVED` human-review identity.
+It reconstructs every held-out case and the review package before publishing
+canonical immutable bytes; source-report policy identity, criteria identity,
+scope, review/validity clocks and the 16 MiB authority limit all fail closed.
+The output is then locally checked by the same current authority verifier used
+at registration and final dispatch.
+
+The command has no database parameter or side effect: it cannot save a profile,
+register a qualification, approve evidence, alter configuration, send Telegram
+or place an order.  The review identity and validity period must already exist
+as separate operator records; `APPROVED` is an input, never inferred from P&L.
+Inputs and output are relative to caller-declared roots to prevent traversal,
+and a different existing output cannot be overwritten.  See
+[the active package slice](2026-09-24-real-research-package-plan.md) for the
+exact input layout and remaining real-market prerequisites.
+
+Verification: the package/replay/held-out/review/authority/CLI acceptance group
+passed 64 tests with warnings fatal. The wider research/advisory group passed
+235 tests with one pre-existing Starlette async-generator-lifespan deprecation;
+that legacy warning fails setup when warnings are deliberately made fatal.
+The atlas was regenerated to 211 Python modules. Production was not read for
+mutation, edited, deployed, or sent any broker/Telegram action.
+
+## September 24 F&O exit recovery (Dev implementation)
+
+An authenticated operator can list pending live single-leg F&O exit intents at
+`GET /ops/fno-exit-intents` and reconcile one at
+`POST /ops/fno-exit-intents/{position_id}/resolve`. The resolution requires a
+named operator, account/order ID, exact intent timestamp and an explicit
+confirmation. It reads the current day's broker order book, that order's trades
+and net positions. Account, NFO/MIS symbol, SELL side, source tag, order and
+trade quantities, terminal status, clocks and residual net quantity must agree.
+An unavailable or ambiguous broker response leaves the intent untouched.
+
+A verified terminal zero fill releases the intent with a retained broker
+snapshot. A partial fill posts only realized economics to the ledger, scales
+the open quantity/risk, preserves cumulative position P&L and permits only a
+fresh later exit evaluation. A full fill closes the position and ledger in one
+transaction. Each resolution retains bounded broker evidence and its SHA-256,
+operator, account, order, and generation. Prior recovered orders are distinct
+from unaccounted same-symbol orders. A tick that began before recovery cannot
+immediately claim a replacement exit. The no-quote alert no longer suggests a
+direct database status edit. Existing ambiguous exits still block automatically.
+Daily/weekly/monthly F&O loss switches use each realized ledger event's IST
+date, including partial fills; legacy closes without a tagged ledger entry
+remain visible through position history.
+
+The operator first reads the authenticated intent list to obtain the exact
+`created_at`, then posts a JSON body containing `source: "FNO_LIVE"`,
+`expected_created_at`, `account_id`, `order_id`, `operator`, and
+`confirm: "RECONCILE_VERIFIED_BROKER_EXIT"`. Both routes require the existing
+`X-Internal-Secret` header. A `409` means the evidence is insufficient or
+changed; the intent remains for investigation. The stored snapshot is in
+`fno_exit_recoveries`, alongside its digest and the linked ledger ID.
+
+Kite's order/trade API is daily; an older unverified intent cannot be cleared
+by this endpoint. It needs external statement-level reconciliation and review.
+The internal secret authenticates the route; the operator name is an auditable
+claim within that trust boundary. No broker order is sent by recovery itself.
+Live single-leg activation still needs a supervised broker rehearsal.
+
 ## September 23 independent remediation review (Dev only)
 
 The seven incoming audit-fix commits through `674a6fe` required corrections at

@@ -5,6 +5,7 @@ const {
   isMarketOpen,
   isPreMarket,
   isCashCasEligibilityResolutionWindow,
+  initialisationResult,
   validatedHolidayPayload,
 } = require('../../utils/market-hours');
 
@@ -30,6 +31,12 @@ function withMockedTime(isoString, fn) {
 }
 
 describe('isMarketOpen()', () => {
+  test('test setup suppresses only the background engine holiday refresh', () => {
+    expect(process.env.JEST_WORKER_ID).toBeDefined();
+    expect(process.env.MARKET_HOURS_TEST_DISABLE_ENGINE_FETCH).toBe('1');
+    expect(initialisationResult).toBe('fallback:test-network-suppressed');
+  });
+
   test('returns false before 09:15 IST (09:14)', () => {
     // 09:14 IST = 03:44 UTC
     withMockedTime('2026-01-07T03:44:00Z', () => {

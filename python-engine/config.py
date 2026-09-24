@@ -290,6 +290,9 @@ class Settings(BaseSettings):
     # order-placing code path at all rather than a flag that must stay False.
     MOMENTUM_PAPER_ENABLED:   bool  = True
     MOMENTUM_PAPER_BANKROLL:  float = 50000.0
+    # Bounded decision-forensics ledger for accepted momentum signals.  It
+    # stores only an opaque identity, ticker and enumerated admission outcome.
+    MOMENTUM_PAPER_ADMISSION_RETENTION: int = 20000
     # Broker-free research side-channel. It evaluates declared variants using
     # frames already fetched by the live scanner and never reaches sizing or
     # order execution, so evidence collection is safe to enable by default.
@@ -916,6 +919,10 @@ class Settings(BaseSettings):
     # misbehaves) without also disabling the proven single-leg paper book, which
     # FNO_DISABLE_PAPER would do. Default False = DR book active (current behaviour).
     FNO_DR_DISABLE_PAPER:      bool  = False
+    # Shared deadline for cancellable quote/history reads used solely to
+    # prepare a new paper defined-risk structure.  It never caps management
+    # of an existing structure or a ledger admission write.
+    FNO_DR_ENTRY_MARKET_DATA_MAX_SEC: float = 20.0
 
     # --- universe ----------------------------------------------------------
     FNO_UNDERLYING:            str   = "NIFTY"    # NIFTY only in P1

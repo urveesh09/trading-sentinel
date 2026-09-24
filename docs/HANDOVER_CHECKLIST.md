@@ -1,5 +1,173 @@
 # Handover receipt and operator checklist
 
+## September 24 P2 F&O audit evidence and financial interpretation (Dev)
+
+- [x] Preserve the first-reject contract and add only the passed-gate prefix
+  plus active-switch evidence to future F&O signal rows.  The trace proves
+  preceding gates, never hypothetical later sizing/execution/admission.
+- [x] Add a strictly read-only daily audit builder/CLI: it refuses to create a
+  missing database, groups repeated rows as one decision unit, exposes
+  switch-policy thresholds/evidence, and labels legacy evidence unavailable.
+- [x] Separate `TRADE_PARTIAL` cash events from `TRADE_CLOSED` outcomes by
+  FNO_PAPER/FNO_LIVE, mark costs unavailable where the ledger lacks them, and
+  emit no expectancy/qualification verdict.  Focused suite: 84 passed;
+  broader F&O/performance/division suite: 376 passed with two pre-existing
+  framework deprecation warnings; compilation passed.
+- [ ] After reviewed promotion, run `fno_audit_report.py` read-only against a
+  retained F&O database for a logged-in session. Compare its decision-unit and
+  switch evidence to raw rows; do not call repeated leg rows independent trade
+  opportunities or infer an edge from daily paper P&L.
+
+## September 24 P2 classifier latency containment (Dev)
+
+- [x] Identify the owned retry mismatch: the 1-second informational classifier
+  reused the analyst client with `MINIMAX_MAX_RETRIES=1`.
+- [x] Construct and select an isolated classifier client with
+  `CLASSIFIER_MAX_RETRIES=0`; retain the analyst review client's existing
+  retry configuration and all review/entry authority semantics.
+- [x] Verify direct fallback and agent helper client selection, one bounded
+  timeout call returning `UNKNOWN`, unchanged classifier provenance/fallback
+  and the complete agent suite: 361 passed. Compilation and atlas regeneration
+  passed.
+- [ ] After reviewed promotion, observe classifier elapsed/error telemetry on
+  real provider calls. Treat a provider service tail as an operational issue;
+  do not re-enable retries or change deterministic entry authority without a
+  separately reviewed budget and evidence.
+
+## September 24 P1 momentum-paper admission forensics (Dev)
+
+- [x] Record an opaque accepted-signal identity and enumerated immutable
+  outcome after the actual paper boundary: opened, already-held, zero-shares,
+  disabled, upstream-deduplicated or transaction-failure. No raw signal
+  payload, broker route or order capability is added.
+- [x] Write normal outcomes with the position transaction; a rolled-back insert
+  cannot appear opened. Where the evidence database remains available, retain
+  a separate transaction-failure receipt. Bound retained outcomes at 20,000.
+- [x] Record repeated accepted signals at the `main.py` alert-dedup boundary,
+  not as a decision by the paper opener; preserve a separate immutable attempt
+  if a legitimately closed paper position reopens.
+- [x] Focused paper/regime/shadow checks cover TATATECH-like repeats, held,
+  zero-share, disabled, rollback and retention outcomes plus real boundary
+  wiring: 159 passed with one existing Starlette deprecation. This is
+  explainability evidence, not strategy qualification.
+- [ ] After reviewed promotion, inspect real admission outcomes alongside the
+  retained accepted-signal log. Investigate an unexplained missing record; do
+  not infer a trade from `opened`, nor a profitable strategy from paper P&L.
+
+## September 24 P1 F&O tick-tail containment and exit-safe telemetry (Dev)
+
+- [x] Read Production logs without mutation and isolate 27 F&O runs at/over
+  90 seconds (12 on 23 Sep, 15 on 24 Sep). Their repeatable tail was paper DR
+  entry preparation; each showed zero DR opens/exits. Do not infer that all
+  broader scheduler skips or any active-exit delay share this cause.
+- [x] Bound only the new paper-DR entry's cancellable chain/history reads with
+  `FNO_DR_ENTRY_MARKET_DATA_MAX_SEC=20`. Existing DR management, hard-flat,
+  single-leg exit handling and the mutation that admits a structure remain
+  unbounded by this entry deadline.
+- [x] Emit separate DR snapshot/management/entry-input/admission durations and
+  `dr_entry_skip_reason`. A stalled-input regression proves cancellation and
+  join, named evidence and no order; focused F&O/DR/scheduler checks pass.
+- [ ] After reviewed GitHub promotion, compare at least one complete logged-in
+  session with the new fields. Keep the 90-second cadence unless evidence
+  proves an active risk-management path needs a separate correction. Roll back
+  this bounded paper-entry change through GitHub if it worsens exit timing or
+  produces unknown-state handling.
+
+## September 24 P1 research quote deadlines and truthful coverage (Dev)
+
+- [x] Replace the between-index-only cap with a per-provider remaining-budget
+  boundary that cancels and joins the shared Kite coroutine before return.
+- [x] Persist/return cap, elapsed and partial-count fields for normal, deadline
+  and error outcomes; expose a named per-index state and exact/unknown active-
+  leg coverage gaps without fabricating a quote; rotate first-index ownership
+  by deterministic scheduler-slot order across restarts.
+- [x] Prove a stalled first NIFTY provider cancels, returns within its cap,
+  records the NIFTY active-leg/SENSEX coverage gaps, and leaves no operation
+  alive. Prove normal durable telemetry. Focused suite: 54 passed; all
+  `test_research_*`: 62 passed; combined collector/scheduler/Kite-client:
+  173 passed/one skipped with one pre-existing Starlette lifespan deprecation;
+  compilation passed.
+- [ ] After reviewed promotion, collect and retain three logged-in session
+  receipts showing per-index requested/received active legs, cap count,
+  p50/p95/max provider stages, overruns and skipped slots. Do not change the
+  60-second cadence or qualify advice from this implementation alone.
+
+## September 24 P0 decision-forensics retention verification (Dev)
+
+- [x] Inspect Production read-only: Python and gateway use `json-file`,
+  `max-size=20m`, `max-file=10`; Python's retained 18.13 MiB file spans
+  35.897 hours at 0.50 MiB/hour observed, with no rotation confirmed.
+- [x] Preserve the existing 200 MiB engine cap rather than enlarge it from an
+  unsupported daily-rate estimate; record 104.42 GiB host free space and the
+  Docker artifact sizes as bounded evidence, not a peak-rate guarantee.
+- [x] Add the rendered-Compose guard and run 8 focused tests plus the live Dev
+  `docker compose config --format json` assertion. It exposes no environment
+  values and changes no running service.
+- [ ] After GitHub promotion, recreate only if a future approved Compose change
+  requires it, inspect the effective engine log config read-only, and retain
+  opening-to-close logs for three consecutive logged-in sessions. Roll back a
+  future retention change through GitHub if disk pressure or log loss occurs;
+  do not delete existing evidence.
+
+## September 24 gateway test-lifecycle correction and Dev acceptance
+
+- [x] Stop the Jest-only background holiday refresh from outliving the suite,
+  without changing the production engine-refresh default or calendar
+  fail-closed fallback.
+- [x] Pin the explicit Jest worker/setup contract in the market-hours unit test.
+- [x] Compatible Node 20 gateway: 30 suites passed/1 skipped; 461 tests
+  passed/4 skipped; natural exit 0. Scripts: 226 passed. Agent: 357 passed.
+  Dashboard: 46 passed and production build completed. Atlas regenerated to
+  211 Python modules.
+- [ ] Obtain a fresh clean full `python-engine/tests` process exit for the
+  receipt. This is test-runtime/CI hygiene—not an unimplemented product
+  feature. Prior full receipts completed assertions before retained aiosqlite
+  workers; diagnose an owned leak with a minimal reproducer before changing
+  application teardown or suppressing warnings globally.
+- [ ] GitHub promotion, stamped deployment verification, retained-data backup,
+  real-session collection/reconciliation, a saved INTRADAY profile, genuine
+  held-out qualification and an explicitly authorized Telegram canary remain
+  operator/research gates. Nothing here sends an order or a partner message.
+
+## September 24 real-research package-builder implementation (Dev)
+
+- [x] Add a root-confined, size-bounded authorization-package assembly CLI; it
+  reads immutable full-policy reports and never uses an operational DB default.
+- [x] Reconstruct held-out evidence and review from every source report; reject
+  mismatched scope/policy/criteria, altered replay bytes, non-approved review
+  identities, invalid clocks and non-identical replacement output.
+- [x] Verify assembled bytes through the real current authority verifier without
+  registering a qualification or granting any delivery/order authority.
+- [x] Focused package/replay/held-out/review/authority/CLI suite: 64 passed
+  warning-fatal. Broader research/advisory suite: 235 passed with one existing
+  Starlette async-generator-lifespan deprecation; the warning becomes a setup
+  error only under warning-fatal mode. Atlas regenerated to 211 Python modules.
+- [ ] Collect real completed-bar and selected-leg data, freeze a future holdout,
+  obtain an independent human review and explicitly admit only compatible
+  evidence through the existing registry. Tests and package assembly do not
+  establish profitability or authorize partner tips.
+
+## September 24 F&O exit recovery implementation (Dev)
+
+- [x] Authenticate pending-intent inspection and explicit named resolution.
+- [x] Verify same-day broker order, trades and net position; retain the bounded
+  snapshot/digest and fail closed on missing, stale, conflicting evidence.
+- [x] Atomically account partial/full fills and terminal zero fills, preserve
+  cumulative P&L and residual risk, and reject stale/concurrent retry claims.
+- [x] Broad Python run: 4,493 passed/four skipped, with the sole intentional
+  route-golden mismatch; regenerated diff adds only GET/POST recovery routes.
+  Route/F&O acceptance then passed 74 tests. Focused recovery/risk after the
+  cross-session kill-switch, migration and read-only inspection fixes passed 65
+  broker-client/recovery/risk/surface tests. Existing framework
+  deprecations remain. Atlas regenerated to 210 Python modules.
+- [x] Implementation commit `30a6b8c` pushed to
+  `origin/codex/production-correction-hedge-p0`; post-commit scope and
+  canonical documentation checked. Existing unrelated worktree files were not
+  staged. This new slice is Dev-only until a GitHub promotion.
+- [ ] Promote through GitHub, rehearse with real broker evidence and keep live
+  single-leg activation a separate operator decision. Older unknown intents
+  need statement-level reconciliation; never delete one to force retry.
+
 ## September 23 independent remediation completion
 
 Read the [review, migration and recovery instructions](2026-09-21-independent-remediation-review.md)

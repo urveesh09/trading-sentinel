@@ -306,7 +306,25 @@ if not all([TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID]):
 # happen INSIDE the per-request budget, so the default made the budget
 # unsatisfiable, and an abandoned daemon thread kept spending API calls after
 # the wall had already given up on it.
+def _build_classifier_client():
+    """Build the short-budget classifier transport with no SDK retries.
+
+    The main reviewer's one retry is intentional and remains on ``client``.
+    Classification is informational: retrying its one-second call can delay
+    the deterministic pipeline without adding execution authority, so it gets
+    an isolated connection pool and an explicit zero-retry contract.
+    """
+    if not MINIMAX_API_KEY:
+        return None
+    return OpenAI(
+        api_key=MINIMAX_API_KEY,
+        base_url=MINIMAX_BASE_URL,
+        max_retries=news_classifier.CLASSIFIER_MAX_RETRIES,
+    )
+
+
 client = None
+classifier_client = None
 AI_STATUS = "AI_DISABLED"
 _optional_ai_queue: Optional[AsyncReviewQueue] = None
 if MINIMAX_API_KEY:
@@ -315,6 +333,7 @@ if MINIMAX_API_KEY:
         base_url=MINIMAX_BASE_URL,
         max_retries=MINIMAX_MAX_RETRIES,
     )
+    classifier_client = _build_classifier_client()
     AI_STATUS = "AI_AVAILABLE"
 else:
     logger.warning("AI_DISABLED: no MINIMAX_API_KEY; deterministic alerts remain active")
@@ -898,7 +917,9 @@ def _maybe_classify_news(
             items = _fetch_news_items_for_ticker(ticker)
         if not items:
             return []
-        return news_classifier.classify_news_items(items, ticker=ticker)
+        return news_classifier.classify_news_items(
+            items, ticker=ticker, client=classifier_client,
+        )
     except Exception as exc:  # noqa: BLE001
         logger.warning(
             "news_classifier_unexpected_failure ticker=%s err=%s",

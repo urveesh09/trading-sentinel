@@ -27,6 +27,7 @@ from momentum_paper import (
     momentum_paper_square_off,
     open_momentum_paper_positions,
     paper_position_size,
+    record_momentum_paper_upstream_deduplications,
 )
 
 
@@ -189,6 +190,103 @@ def test_open_is_a_noop_when_disabled(tmp_path, monkeypatch):
     monkeypatch.setattr(settings, "MOMENTUM_PAPER_ENABLED", False)
     db = _db(tmp_path)
     assert asyncio.run(open_momentum_paper_positions(db, [_sig()])) == []
+
+
+def _admissions(db):
+    con = sqlite3.connect(db)
+    rows = con.execute(
+        "SELECT admission_key, ticker, outcome FROM momentum_paper_admission_outcomes "
+        "ORDER BY id"
+    ).fetchall()
+    con.close()
+    return rows
+
+
+def test_open_persists_a_truthful_opened_admission_outcome(tmp_path):
+    db = _db(tmp_path)
+    assert asyncio.run(open_momentum_paper_positions(db, [_sig("TATATECH")])) == ["TATATECH"]
+    rows = _admissions(db)
+    assert len(rows) == 1
+    assert rows[0][1:] == ("TATATECH", "opened")
+    assert rows[0][0].startswith("entry:")
+
+
+def test_admission_outcomes_distinguish_held_and_zero_share_inputs(tmp_path, monkeypatch):
+    db = _db(tmp_path)
+    asyncio.run(open_momentum_paper_positions(db, [_sig("TATATECH")]))
+    # Different signal identity, same held ticker: this is a real paper-book
+    # decision, unlike an upstream alert duplicate.
+    held = _sig("TATATECH", close=101.0, stop=100.0)
+    assert asyncio.run(open_momentum_paper_positions(db, [held])) == []
+
+    monkeypatch.setattr(settings, "MOMENTUM_PAPER_BANKROLL", 10.0)
+    zero = _sig("NOSHARES", close=100.0, stop=99.0)
+    assert asyncio.run(open_momentum_paper_positions(db, [zero])) == []
+
+    assert [row[2] for row in _admissions(db)] == [
+        "opened", "already_held", "zero_shares",
+    ]
+
+
+def test_disabled_and_upstream_deduplicated_are_explicit_distinct_outcomes(
+    tmp_path, monkeypatch,
+):
+    db = _db(tmp_path)
+    sig = _sig("TATATECH")
+    assert asyncio.run(record_momentum_paper_upstream_deduplications(db, [sig])) == 1
+    monkeypatch.setattr(settings, "MOMENTUM_PAPER_ENABLED", False)
+    assert asyncio.run(open_momentum_paper_positions(db, [sig])) == []
+    assert [row[2] for row in _admissions(db)] == [
+        "upstream_deduplicated", "disabled",
+    ]
+
+
+def test_repeated_identical_admission_is_idempotent_but_closed_position_reopens(tmp_path):
+    db = _db(tmp_path)
+    sig = _sig("TATATECH")
+    assert asyncio.run(open_momentum_paper_positions(db, [sig])) == ["TATATECH"]
+    assert asyncio.run(open_momentum_paper_positions(db, [sig])) == []
+    assert len(_admissions(db)) == 1
+
+    con = sqlite3.connect(db)
+    con.execute("UPDATE positions SET exit_date='2026-07-25T10:00:00', status='CLOSED_TIME'")
+    con.commit()
+    con.close()
+    assert asyncio.run(open_momentum_paper_positions(db, [sig])) == ["TATATECH"]
+    rows = _admissions(db)
+    assert [row[2] for row in rows] == ["opened", "opened"]
+    assert rows[0][0] != rows[1][0]
+
+
+def test_position_insert_failure_is_not_reported_opened_and_is_retained(tmp_path):
+    db = str(tmp_path / "broken.db")
+    con = sqlite3.connect(db)
+    # Enough columns for the held/deployed read; deliberately omit an INSERT
+    # column so the position transaction rolls back after the outcome table is
+    # available for the independent failure receipt.
+    con.execute(
+        "CREATE TABLE positions (ticker TEXT, entry_price REAL, shares INTEGER, "
+        "source TEXT, exit_date TEXT)"
+    )
+    con.commit()
+    con.close()
+
+    assert asyncio.run(open_momentum_paper_positions(db, [_sig("TATATECH")])) == []
+    assert _admissions(db)[0][1:] == ("TATATECH", "transaction_failure")
+    con = sqlite3.connect(db)
+    assert con.execute("SELECT COUNT(*) FROM positions").fetchone()[0] == 0
+    con.close()
+
+
+def test_admission_outcomes_have_bounded_retention(tmp_path, monkeypatch):
+    monkeypatch.setattr(settings, "MOMENTUM_PAPER_ADMISSION_RETENTION", 1)
+    db = _db(tmp_path)
+    asyncio.run(record_momentum_paper_upstream_deduplications(
+        db, [_sig("FIRST"), _sig("SECOND")],
+    ))
+    rows = _admissions(db)
+    assert len(rows) == 1
+    assert rows[0][1:] == ("SECOND", "upstream_deduplicated")
 
 
 # ---- exits ---------------------------------------------------------

@@ -1,5 +1,174 @@
 # Trading Sentinel — next-agent execution plan
 
+## September 24 implementation update — P2 F&O audit evidence
+
+The P2 F&O audit/financial-interpretation slice is complete in Dev.
+`fno_signals` now records the exact passed-gate prefix and active switch
+evidence in additive JSON fields; the stable first-reject reason and all
+decision behavior are unchanged.  The new read-only
+`fno_audit_report.py --db <existing-db> --date YYYY-MM-DD` groups repeated
+leg evaluations into one bar/underlying/direction decision unit, so the 24 Sep
+two-bar/six-row pattern cannot be described as six trade opportunities.  It
+reports per-source FNO_PAPER/FNO_LIVE partial cash events and closed outcomes
+separately, labels isolated costs unavailable, and deliberately issues no
+expectancy or qualification verdict.  Legacy rows remain readable but state
+that switch/gate evidence was not retained.
+
+Focused report/gate/log/orchestrator/hourly tests passed 84; the broader
+F&O/performance/division surface passed 376 (two existing framework warnings).
+The retained Production audit has no local SQLite copy, so the historical six
+rows cannot be retroactively enriched.  After reviewed promotion, run the
+read-only report against a retained database and compare the two decision units
+and switch evidence to the log before interpreting a block.  No remaining
+source change is currently unblocked in this three-day plan; its remaining
+items are production promotion and real-session evidence gates.
+
+## September 24 implementation update — P2 classifier latency containment
+
+The classifier latency correction is complete in Dev. Source analysis showed
+that the one-second informational classifier reused the analyst client with
+one SDK retry. It now uses a separate MiniMax/OpenAI client configured with
+`CLASSIFIER_MAX_RETRIES=0`; all direct/fallback classifier calls select that
+client. The analyst review client retains its original retry budget. A
+wall-clock regression confirms a timeout failure is one bounded call and
+returns `UNKNOWN`; no background or detached retry is introduced. The complete
+agent test suite passed 361 tests. AI remains informational/non-authoritative.
+
+Next is the separately scoped P2 F&O signal-row and financial interpretation
+review: first inspect retained Production evidence read-only and verify the
+actual switch/gate path before changing any code or financial presentation.
+
+## September 24 implementation update — P1 momentum-paper admission evidence
+
+The TATATECH acceptance slice is complete in Dev. The paper book now persists
+a bounded, idempotent outcome only after its real decision/transaction:
+`opened`, `already_held`, `zero_shares`, `disabled`,
+`upstream_deduplicated`, or `transaction_failure`. Repeated accepted signals
+are recorded at `main.py`'s alert-dedup boundary, so the paper opener is not
+credited with a decision it never received. The table contains an opaque
+digest/ticker/outcome/timestamp, not raw strategy payloads. A position insert
+rollback cannot be marked opened; reopening a closed position preserves a new
+immutable attempt. The paper-only/no-order boundary is unchanged.
+
+Next development is P2 classifier latency diagnosis, only after reproducing
+the owned retry/transport tail. Do not change AI authority, paper-entry
+authority or schedule cadence from this evidence work.
+
+## September 24 implementation update — P1 F&O tick-tail containment
+
+The F&O tick-tail slice is complete in Dev. Read-only retained Production logs
+showed 27 ticks at/over cadence (12 on 23 Sep and 15 on 24 Sep); all had zero
+DR opens/exits and the repeatable tail was defined-risk entry preparation. Dev
+therefore bounds only the cancellable market-data reads that prepare a new
+paper DR entry to a shared 20 seconds. Active DR management, hard-flat
+handling, single-leg exits and database admissions are deliberately outside
+that deadline. A stalled-read regression proves cancellation is joined, the
+skip is explicit and no order is created; F&O/DR/scheduler focused tests pass.
+
+Next operationally, promote only through reviewed GitHub flow and collect
+comparable session telemetry using `defined_risk_snapshot`,
+`defined_risk_management`, `defined_risk_entry_inputs`,
+`defined_risk_entry_admission` and `dr_entry_skip_reason`. Do not change the
+90-second cadence to conceal a slow active-exit path. The next Dev slice in
+the ordered plan is TATATECH accepted-signal admission evidence.
+
+## September 24 implementation update — P1 research collection deadline
+
+The first P1 collector slice is complete in Dev. Each provider quote operation
+is cancellation-bounded by the remaining 48-second tick budget, while the
+60-second schedule stays unchanged. Normal, capped and error results plus
+their durable collection-run journal now carry cap/elapsed/partial telemetry
+and truthful per-index coverage states; the first underlying rotates by UTC
+scheduler slot so repeated caps do not starve one index. A stalled NIFTY provider is cancelled
+and joined before return; its known active leg and skipped SENSEX coverage are
+retained as gaps. Focused tests passed 54 and the complete research surface
+passed 62. No Production change or strategy qualification occurred.
+
+Next operationally, observe three logged-in sessions before making cadence or
+evidence-quality claims. See [the active plan](2026-09-24-three-day-production-audit-plan.md).
+
+## September 24 implementation update — P0 decision-forensics retention
+
+P0 is complete as a measured no-value-change Dev slice. Read-only Production
+inspection confirmed `python-engine` already has a 200 MiB `json-file` cap and
+retained 35.897 hours/18.13 MiB at an observed 0.50 MiB/hour; no rotation was
+present to justify a speculative Compose increase. Dev now pins that rendered
+contract through `scripts/verify_compose_logging.py` and eight focused tests.
+It prints no Compose environment values and fails closed on an absent,
+malformed or non-`json-file` engine configuration. No Production container was
+recreated. The remaining P0 operational acceptance is three logged-in
+opening-to-close retrievals after reviewed promotion; see the
+[P0 receipt](2026-09-24-three-day-production-audit-plan.md).
+
+## September 24 three-day Production audit reconciliation
+
+The 22–24 September deep audits were cross-checked against Production evidence
+and current Dev source. The new [audit reconciliation and ordered plan](2026-09-24-three-day-production-audit-plan.md)
+corrects several auditor inferences and identifies a confirmed research
+collector cap/telemetry defect. It supersedes the September 24 release-slice
+statement that no unblocked product-code issue remained: that statement was
+correct for the six release gates, but the later Production audit exposed a
+separate collection defect. Do not lengthen research/F&O schedules or change
+paper/AI authority solely from the audit's recommendation. Production remains
+read-only and no new Dev application change is implemented by this plan.
+
+The user additionally queued three Dev slices in that document. The
+full-session `python-engine` Compose-retention, research-collection deadline,
+F&O tick-tail containment and TATATECH momentum-paper-admission slices are
+complete in Dev. None is authorized for Production by this documentation
+update; the next code investigation is the separately scoped P2 classifier
+latency reproduction.
+
+## September 24 implementation update — real research package boundary
+
+The next Dev-implementable package boundary after F&O exit recovery is complete:
+the bounded operator workflow assembles already replayed, reviewed full-policy
+evidence into the existing authorization envelope. It cannot manufacture
+evidence or approve/register/deliver advice. The exact contracts, acceptance
+checks and rollout boundary are in
+[the real-research package slice](2026-09-24-real-research-package-plan.md).
+Real completed-bar/active-leg collection, future held-out evidence and an
+operator review remain operational prerequisites, not test-fixture substitutes.
+
+## September 24 implementation update — Dev release acceptance
+
+Dev-side release acceptance is now recorded, including the repair for a
+post-Jest background holiday-refresh log. The compatible Node 20 gateway
+receipt naturally exits zero (461 passed / 4 skipped), scripts pass 226,
+agent tests pass 357, and dashboard tests/build pass (46 / build). The full
+engine process remains an environment-limited non-receipt because its
+aiosqlite-worker teardown did not terminate; do not call it green. The exact
+commands, boundary and source contract are in
+[the release-acceptance slice](2026-09-24-dev-release-acceptance-plan.md).
+This is Dev evidence only: it does not merge, deploy, qualify advice or send
+Telegram/broker traffic.
+
+### Remaining-gate classification
+
+There is no further unblocked product-development task in the current release
+slice. The clean full-engine process exit is a test-runtime/CI follow-up, not
+an application-behaviour change: prior full receipts completed assertions but
+retained aiosqlite workers. Diagnose only from a minimal reproducer; do not
+weaken warnings, force an exit, or add broad shutdown code speculatively. The
+other outstanding gates—GitHub promotion/release identity, session evidence,
+real broker reconciliation, held-out research, saved profile/review and an
+authorized Telegram canary—are operational or evidence tasks. See the
+[acceptance receipt](2026-09-24-dev-release-acceptance-plan.md).
+
+## September 24 implementation update — F&O exit recovery
+
+Item 3 of the September 23 next-agent order is implemented in Dev for same-day
+`FNO_LIVE` terminal zero, partial and full exits. The authenticated operator
+route verifies the current broker order, executions and net position, retains
+the bounded source snapshot, and atomically resolves the intent with a ledger
+entry for actual fills. Ambiguous, older, unaccounted concurrent orders and
+broker read failures remain blocked. Partial economics and residual risk carry
+through the eventual final close. See
+[the active recovery slice](2026-09-23-fno-exit-recovery-plan.md) for exact
+tests, migration and rollout status. Production HEAD `782bbb7` contains the
+earlier handover commit `f0e23b4`; this new recovery source is Dev only until
+GitHub promotion. Items 1, 2 and 4–6 still require their own evidence/work.
+
 ## Current handover — September 23 remediation completion
 
 Start with [the independent review and next-agent execution order](2026-09-21-independent-remediation-review.md).

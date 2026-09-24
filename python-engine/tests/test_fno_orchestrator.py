@@ -9,6 +9,7 @@ form: paper fills reconcile against real bid/ask, gates are satisfiable,
 max_loss holds, the log tells the truth.
 """
 import asyncio
+import json
 from datetime import date, datetime, timedelta
 
 import pandas as pd
@@ -20,6 +21,7 @@ import options_math
 from config import settings
 from fno_chain import RISK_FREE_RATE, years_to_expiry
 from fno_executor import FnoExecutor
+from fno_engine_mom import MomSignal
 from fno_instruments import FnoInstruments
 from fno_models import Contract
 from fno_orchestrator import format_fno_telegram, run_fno_tick
@@ -202,10 +204,14 @@ async def test_paper_entry_end_to_end(kite, db_path):
     # accepted row in the signal log
     async with aiosqlite.connect(db_path) as db:
         async with db.execute(
-            "SELECT accepted, reject_reason FROM fno_signals WHERE leg='FNO_PAPER'"
+            "SELECT accepted, reject_reason, passed_gates_json, active_kill_switches_json "
+            "FROM fno_signals WHERE leg='FNO_PAPER'"
         ) as cur:
             log_rows = await cur.fetchall()
-    assert (1, "") in log_rows
+    accepted_rows = [row for row in log_rows if row[:2] == (1, "")]
+    assert len(accepted_rows) == 1
+    assert json.loads(accepted_rows[0][2])[-1] == "chain_freshness"
+    assert json.loads(accepted_rows[0][3]) == []
 
     # Telegram formatter includes the entry
     msg = format_fno_telegram(summary)
@@ -233,6 +239,99 @@ async def test_defined_risk_and_directional_books_share_tick_market_data(
     # One future mark + the chain's anchor and batched ladder.  A second chain
     # fetch for the directional book would add two more calls.
     assert kite.quote_calls == 3
+
+
+@pytest.mark.asyncio
+async def test_dr_entry_input_deadline_cancels_only_speculative_reads(
+    kite, db_path, book, monkeypatch,
+):
+    """A stalled DR-entry quote cannot consume the next 90-second slot.
+
+    The delayed call is deliberately the paper-only entry input.  The test
+    also proves its coroutine was cancelled and joined; it does not silently
+    continue against the shared Kite client after the tick returns.
+    """
+    import fno_orchestrator
+
+    monkeypatch.setattr(settings, "FNO_DR_DISABLE_PAPER", False)
+    monkeypatch.setattr(settings, "FNO_DR_ENTRY_MARKET_DATA_MAX_SEC", 0.01)
+    cancelled = asyncio.Event()
+
+    async def stalled_snapshot(*_args, **_kwargs):
+        try:
+            await asyncio.sleep(30)
+        except asyncio.CancelledError:
+            cancelled.set()
+            raise
+
+    # Make the ordinary directional path reject after its normal bar fetch so
+    # the test isolates only the DR entry-input boundary.
+    monkeypatch.setattr(fno_orchestrator, "take_chain_snapshot", stalled_snapshot)
+    monkeypatch.setattr(
+        fno_orchestrator,
+        "evaluate_fno_mom",
+        lambda *_args, **_kwargs: MomSignal(
+            bar_ts="2026-07-10 10:00:00", reject_reason="test_no_signal",
+        ),
+    )
+
+    started = asyncio.get_running_loop().time()
+    summary = await run_fno_tick(
+        kite, db_path=db_path, regime="REGIME_1_NORMAL", now_ist=NOW,
+    )
+    elapsed = asyncio.get_running_loop().time() - started
+
+    assert summary["dr_entry_skip_reason"] == "chain_snapshot_deadline"
+    assert summary["stage_durations_sec"]["defined_risk_entry_inputs"] < 0.2
+    assert elapsed < 0.5
+    await asyncio.wait_for(cancelled.wait(), timeout=0.2)
+    assert summary["entries"] == []
+    assert kite.orders_placed == []
+
+
+@pytest.mark.asyncio
+async def test_dr_hard_flat_management_is_not_suppressed_by_entry_deadline(
+    kite, db_path, book, monkeypatch,
+):
+    """An active DR lifecycle remains eligible even when entry reads are tight."""
+    import fno_dr_book
+    import fno_orchestrator
+
+    monkeypatch.setattr(settings, "FNO_DR_DISABLE_PAPER", False)
+    monkeypatch.setattr(settings, "FNO_DR_ENTRY_MARKET_DATA_MAX_SEC", 0.01)
+    managed = asyncio.Event()
+
+    async def one_open_structure(*_args, **_kwargs):
+        return [{"id": 7}]
+
+    async def delayed_management_snapshot(*_args, **_kwargs):
+        await asyncio.sleep(0.04)
+        return None  # unpriced hard-flat is an explicit supported path
+
+    async def manage_hard_flat(_db_path, snapshot, now_ist, *_args, **_kwargs):
+        assert snapshot is None
+        assert now_ist.hour == 15 and now_ist.minute == 11
+        managed.set()
+        return 1
+
+    monkeypatch.setattr(fno_dr_book, "open_structures", one_open_structure)
+    monkeypatch.setattr(fno_dr_book, "manage_dr_structures", manage_hard_flat)
+    monkeypatch.setattr(
+        fno_orchestrator, "take_chain_snapshot", delayed_management_snapshot,
+    )
+    hard_flat = IST.localize(datetime(2026, 7, 10, 15, 11))
+
+    summary = await run_fno_tick(
+        kite, db_path=db_path, regime="REGIME_1_NORMAL", now_ist=hard_flat,
+    )
+
+    assert managed.is_set()
+    assert summary["dr_exits"] == 1
+    # It exceeded the 10ms *entry* budget, proving lifecycle management did
+    # not inherit that speculative-read cancellation boundary.  Keep room for
+    # timer granularity on loaded Windows test runners.
+    assert summary["stage_durations_sec"]["defined_risk_snapshot"] >= 0.015
+    assert "defined_risk_management" in summary["stage_durations_sec"]
 
 
 @pytest.mark.asyncio

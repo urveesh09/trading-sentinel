@@ -188,11 +188,13 @@ async def test_runtime_cap_engages_when_callable_returns_true(tmp_path, monkeypa
     # before any contract was archived).
     assert "partial_collected" in result
     assert result["partial_collected"] == 0
-    # The NIFTY index was never populated (cap broke the loop
-    # before any iteration body ran).
-    assert "NIFTY" not in result["indices"]
-    # The gaps list contains the cap-engagement signal via the
-    # partial_collected field (operators audit on this).
+    # The cap now records the skipped index rather than making a missing key
+    # look like absent configuration/coverage.
+    assert result["indices"]["NIFTY"]["collection_state"] == "skipped_runtime_deadline"
+    assert {gap["reason"] for gap in result["gaps"]} >= {
+        "underlying_skipped_runtime_deadline",
+        "active_leg_coverage_unobserved_runtime_deadline",
+    }
 
 
 @pytest.mark.asyncio
@@ -326,9 +328,10 @@ async def test_partial_collected_zero_when_no_quotes_returned(tmp_path, monkeypa
     assert result["collected"] == 0
     # partial_collected explicitly recorded as 0 (not absent).
     assert result["partial_collected"] == 0
-    # Both indices are absent (we broke out before any iteration body).
-    assert "NIFTY" not in result["indices"]
-    assert "SENSEX" not in result["indices"]
+    # Both indices are explicit deadline gaps; neither is misreported as a
+    # completed empty collection.
+    assert result["indices"]["NIFTY"]["collection_state"] == "skipped_runtime_deadline"
+    assert result["indices"]["SENSEX"]["collection_state"] == "skipped_runtime_deadline"
 
 
 # [WORKFLOW-C.F2 2026-09-16] Config audit: the cap default

@@ -3211,16 +3211,32 @@ async def _run_momentum_screener_impl(t0):
 
         # Filter for completely new signals that haven't been alerted today
         new_alerts = []
+        upstream_deduplicated = []
         for s in accepted:
             ticker = s.ticker if hasattr(s, 'ticker') else s.get('ticker')
             if ticker not in signaled_momentum_today:
                 new_alerts.append(s)
                 signaled_momentum_today.add(ticker)
+            else:
+                upstream_deduplicated.append(s)
 
         # [MOM-FUNNEL 2026-07-11] new_alerts is exactly the deduped-by-ticker
         # delta, so extending here keeps momentum_signals_today cumulative
         # for the day with first-accept-wins semantics.
         momentum_signals_today.extend(new_alerts)
+
+        # These accepted signals are intentionally suppressed before both the
+        # Telegram alert and paper opener. Retain that exact boundary instead
+        # of later reporting a paper-book "already held" or an unexplained
+        # absence for a signal the paper book never received.
+        if upstream_deduplicated:
+            try:
+                from momentum_paper import record_momentum_paper_upstream_deduplications
+                await record_momentum_paper_upstream_deduplications(
+                    settings.DB_PATH, upstream_deduplicated,
+                )
+            except Exception as _e:
+                logger.warning("momentum_paper_upstream_dedup_hook_failed", error=str(_e))
 
         # [MOMENTUM-PAPER 2026-07-26] Take every accepted signal in the paper
         # book, whether or not the operator presses EXEC on the alert. This is

@@ -116,6 +116,33 @@ def test_maybe_classify_returns_list_when_flag_on(monkeypatch):
     assert result[0].category == NewsCategory.EARNINGS
 
 
+def test_maybe_classify_passes_the_dedicated_no_retry_client(monkeypatch):
+    monkeypatch.setenv("ENABLE_NEWS_CLASSIFIER", "1")
+    monkeypatch.setattr(agent.news_classifier, "CLASSIFIER_DISABLED", False)
+    dedicated = MagicMock()
+    monkeypatch.setattr(agent, "classifier_client", dedicated)
+    items = [_stub_news_item("RELIANCE Q3 results")]
+    with patch.object(agent, "_fetch_news_items_for_ticker", return_value=items), \
+         patch.object(agent.news_classifier, "classify_news_items", return_value=[]) as classify:
+        assert agent._maybe_classify_news("RELIANCE") == []
+    assert classify.call_args.kwargs["client"] is dedicated
+
+
+def test_classifier_client_builder_configures_zero_sdk_retries(monkeypatch):
+    constructed = []
+
+    def fake_openai(**kwargs):
+        constructed.append(kwargs)
+        return object()
+
+    monkeypatch.setattr(agent, "OpenAI", fake_openai)
+    monkeypatch.setattr(agent, "MINIMAX_API_KEY", "test-key")
+    built = agent._build_classifier_client()
+
+    assert built is not None
+    assert constructed[0]["max_retries"] == agent.news_classifier.CLASSIFIER_MAX_RETRIES == 0
+
+
 def test_maybe_classify_returns_empty_list_when_no_items(monkeypatch):
     """Flag is on but the feeds fail: returns [] (the verdict
     pipeline renders the placeholder, not None)."""
@@ -252,4 +279,6 @@ def test_collect_news_context_fetches_once_and_classifies_rendered_objects(monke
     classified_items = classify.call_args.args[0]
     assert classified_items[0] is yahoo
     assert classified_items[1] is google
-    assert classify.call_args.kwargs == {"ticker": "RELIANCE"}
+    assert classify.call_args.kwargs == {
+        "ticker": "RELIANCE", "client": agent.classifier_client,
+    }

@@ -16,7 +16,7 @@ Related tests: `agent/tests/test_advisory.py`
 
 No module docstring; use the declarations and callers below.
 
-Top-level declarations: `_effective_classification_expiry` (line 128), `_attach_classification_context` (line 149), `_attach_provenance` (line 184), `register_approved_snapshot` (line 263), `_today_str` (line 344), `_load_dedup_state` (line 349), `_save_dedup_state` (line 400), `mark_processed` (line 415), `clear_memory` (line 421), `touch_heartbeat` (line 438), `_is_market_hours` (line 465), `read_scheduler_tick_age` (line 476), `check_engine_liveness` (line 488), `SignalOutput` (line 526), `NewsItem` (line 542), `fetch_signals` (line 557), `fetch_rss_feed` (line 584), `fetch_news_items` (line 601), `_parse_rss_pubdate` (line 664), `_hostname_from_url` (line 687), `_age_label` (line 697), `_fetch_news_bundle_for_ticker` (line 732), `_render_news_bundle` (line 760), `scrape_sentiment` (line 784), `_extract_json_object` (line 801), `_fetch_news_items_for_ticker` (line 855), `_maybe_classify_news` (line 868), `_collect_news_context` (line 910), `_render_classified_section` (line 922), `analyze_with_minimax` (line 966), `_optional_review_key` (line 1272), `_get_optional_ai_queue` (line 1300), `optional_ai_status` (line 1320), `publish_optional_ai_status` (line 1360), `queue_optional_ai_review` (line 1380), `send_telegram_alert` (line 1436), `system_health_check` (line 1485), `run_momentum_pipeline` (line 1514), `send_conviction_veto_notice` (line 1628), `send_momentum_telegram_alert` (line 1646), `run_pipeline` (line 1758), `main` (line 1819)
+Top-level declarations: `_effective_classification_expiry` (line 128), `_attach_classification_context` (line 149), `_attach_provenance` (line 184), `register_approved_snapshot` (line 263), `_build_classifier_client` (line 309), `_today_str` (line 363), `_load_dedup_state` (line 368), `_save_dedup_state` (line 419), `mark_processed` (line 434), `clear_memory` (line 440), `touch_heartbeat` (line 457), `_is_market_hours` (line 484), `read_scheduler_tick_age` (line 495), `check_engine_liveness` (line 507), `SignalOutput` (line 545), `NewsItem` (line 561), `fetch_signals` (line 576), `fetch_rss_feed` (line 603), `fetch_news_items` (line 620), `_parse_rss_pubdate` (line 683), `_hostname_from_url` (line 706), `_age_label` (line 716), `_fetch_news_bundle_for_ticker` (line 751), `_render_news_bundle` (line 779), `scrape_sentiment` (line 803), `_extract_json_object` (line 820), `_fetch_news_items_for_ticker` (line 874), `_maybe_classify_news` (line 887), `_collect_news_context` (line 931), `_render_classified_section` (line 943), `analyze_with_minimax` (line 987), `_optional_review_key` (line 1293), `_get_optional_ai_queue` (line 1321), `optional_ai_status` (line 1341), `publish_optional_ai_status` (line 1381), `queue_optional_ai_review` (line 1401), `send_telegram_alert` (line 1457), `system_health_check` (line 1506), `run_momentum_pipeline` (line 1535), `send_conviction_veto_notice` (line 1649), `send_momentum_telegram_alert` (line 1667), `run_pipeline` (line 1779), `main` (line 1840)
 
 Related tests: `agent/tests/test_agent_pipeline.py`, `agent/tests/test_agent_schedule.py`, `agent/tests/test_agent_watchdog.py`
 
@@ -48,7 +48,7 @@ Related tests: `agent/tests/test_contract_health_cron.py`
 
 [WORKFLOW-I.4.D 2026-09-14] Source-event classification. This module classifies one or more ``NewsItem`` (from the I.2 news provenance work) against a fixed taxonomy of 8 categories. The classification is **informational only** -- the verdict pipeline (``analyze_with_minimax``) is not modified; classification is surfaced as a bounded annotation that the operator can inspect. Per plan §13, the agent must "classify sourced events" before the existing pipeline summarises them. Today the prompt to ``analyze_with_minimax`` includes raw news text and asks the model to "evaluate whether the news/catalyst justifies a sustained move" -- the model has to do its own classification implicitly. This modu
 
-Top-level declarations: `NewsCategory` (line 121), `ClassificationResult` (line 162), `_title_hash` (line 223), `_bounded_text` (line 234), `_normalise_source_url` (line 238), `_normalise_published_at` (line 259), `_source_ref` (line 267), `_item_source_metadata` (line 286), `_extract_json_object` (line 333), `_rationale` (line 389), `_coerce_category` (line 403), `_coerce_confidence` (line 415), `_build_classification` (line 440), `_classify_single` (line 482), `classify_news_items` (line 609), `classification_context_sha256` (line 651), `to_dict` (line 685)
+Top-level declarations: `NewsCategory` (line 126), `ClassificationResult` (line 167), `_title_hash` (line 228), `_bounded_text` (line 239), `_normalise_source_url` (line 243), `_normalise_published_at` (line 264), `_source_ref` (line 272), `_item_source_metadata` (line 291), `_extract_json_object` (line 338), `_rationale` (line 394), `_coerce_category` (line 408), `_coerce_confidence` (line 420), `_build_classification` (line 445), `_classify_single` (line 487), `classify_news_items` (line 614), `classification_context_sha256` (line 659), `to_dict` (line 693)
 
 Related tests: `agent/tests/test_news_classifier.py`, `agent/tests/test_news_classifier_helpers.py`, `agent/tests/test_news_classifier_integration.py`
 
@@ -446,6 +446,16 @@ Engine dependencies: `config`, `fno_chain`
 
 Related tests: `python-engine/tests/test_fno_analytics.py`
 
+## `python-engine/fno_audit_report.py`
+
+Read-only, evidence-first F&O daily audit report. This module deliberately reports what the retained signal and ledger rows can prove. It does not recalculate a strategy, change a gate, or infer an order from a row that stopped before admission. In particular, repeated leg evaluations for one underlying/direction/bar are grouped as one *decision unit*, not marketed as several opportunities.
+
+Top-level declarations: `_coerce_day` (line 28), `_connect_read_only` (line 34), `_table_columns` (line 42), `_decode_audit_list` (line 52), `_switch_policy` (line 65), `_empty_source` (line 102), `_parse_aware_timestamp` (line 118), `build_fno_daily_audit_report` (line 128), `_main` (line 273)
+
+Engine dependencies: `config`, `performance`
+
+Related tests: `python-engine/tests/test_fno_audit_report.py`
+
 ## `python-engine/fno_backtest.py`
 
 [ROADMAP-3.11 2026-07-12] F&O momentum backtest -- the module's first historical validation. REUSED VERBATIM from the live stack (the penny-edge pattern: shared code between live and backtest is what makes a backtest trustworthy): - fno_engine_mom.evaluate_fno_mom -- the entry signal, bar by bar - fno_gates.evaluate_entry_gates -- the §7 ladder (see caveats) - fno_risk.lots_for_pool / validate_position -- sizing + constitution - fno_costs.calc_fno_costs -- the real cost model, no bypass - options_math.black76_price/delta -- the module's own pricer - the orchestrator's exit ladder ORDER: hard-flat -> underlying stop -> trail stop -> premium backstop -> time stop MODEL SUBSTITUTIONS (read befo
@@ -516,11 +526,21 @@ Top-level declarations: `FnoExecutor` (line 45)
 
 Engine dependencies: `config`, `kite_client`
 
+## `python-engine/fno_exit_recovery.py`
+
+Evidence-backed, operator-authorized reconciliation of one F&O exit intent. Broker order/trade/position reads are deliberately required on every resolve. The broker's daily order book cannot prove an older unknown dispatch; those intents remain blocked for statement-level manual reconciliation.
+
+Top-level declarations: `RecoveryConflict` (line 26), `pending_exit_intents` (line 30), `_positive_int` (line 54), `_price` (line 60), `_broker_time` (line 70), `verify_broker_exit` (line 80), `resolve_exit_intent` (line 191)
+
+Engine dependencies: `fno_costs`, `fno_positions`, `performance`
+
+Related tests: `python-engine/tests/test_fno_exit_recovery.py`, `python-engine/tests/test_fno_exit_recovery_boundary.py`
+
 ## `python-engine/fno_gates.py`
 
 [FNO-GATES 2026-07-10] Entry gates with mandatory witnesses (spec §7 + §9.1). Production penny ran a mathematically unsatisfiable breakout gate for nine months (bar_close > running day_high, 215,814 evaluations, zero accepts) while passing every health check. The defence adopted here from the FIRST commit: every gate is an object that ships a `witness_input()` constructing an input which PASSES it, and CI asserts satisfiability for every gate (tests/test_fno_gate_falsifiability.py). A gate without a witness does not merge. Gates evaluate in spec §7 order; the first failure is THE reject_reason written to /data/fno_signals.csv, which feeds the zero-accept watchdog's histogram (§9.2). `pool_be
 
-Top-level declarations: `GateContext` (line 28), `Gate` (line 61), `make_witness_context` (line 73), `_mid` (line 107), `_intrinsic` (line 111), `evaluate_entry_gates` (line 198)
+Top-level declarations: `GateContext` (line 28), `Gate` (line 61), `make_witness_context` (line 73), `_mid` (line 107), `_intrinsic` (line 111), `_reject_reason` (line 198), `evaluate_entry_gates_with_trace` (line 208), `evaluate_entry_gates` (line 224)
 
 Engine dependencies: `config`, `fno_risk`
 
@@ -564,7 +584,7 @@ Declared tables: `fno_chain_oi`, `fno_fut_snap`
 
 [FNO-ORCHESTRATOR 2026-07-10] Dual-leg tick runner for the F&O subsystem (spec §10.4). Reuses the EDGE_PAPER / EDGE_LIVE shape from penny_edge_orchestrator: one candidate scan, two legs, bankroll scales the sizing, separate source tags (FNO_PAPER / FNO_LIVE) so the legs cannot see each other's rows. In P1 the live leg is structurally disarmed three ways: FNO_DISABLE_LIVE=True, FNO_LIVE_TRADING=False, FNO_LIVE_BANKROLL=0 -- and even with all three flipped it still refuses unless fno_go_live_check() returns []. run_fno_tick() fires every FNO_SCAN_INTERVAL_SEC during market hours: 1. manage open positions (stops / target+trail / time stop / 15:10 hard flat) -- exits are checked BEFORE entries s
 
-Top-level declarations: `_now_min` (line 61), `_settle_exit_receipt` (line 65), `_fno_pool_paper` (line 126), `_fno_pool_live` (line 131), `_fno_equity` (line 143), `_fno_halted` (line 149), `_fetch_futures_bars` (line 170), `_record_shadow_observation` (line 178), `_schedule_shadow_observation` (line 195), `_manage_open_positions` (line 225), `_try_entry_for_leg` (line 489), `run_fno_tick` (line 713), `_bar_already_logged` (line 984), `format_fno_telegram` (line 1005)
+Top-level declarations: `_now_min` (line 60), `_settle_exit_receipt` (line 64), `_fno_pool_paper` (line 125), `_fno_pool_live` (line 130), `_load_dr_entry_inputs` (line 142), `_fno_equity` (line 195), `_fno_halted` (line 201), `_fetch_futures_bars` (line 222), `_record_shadow_observation` (line 230), `_schedule_shadow_observation` (line 247), `_manage_open_positions` (line 277), `_try_entry_for_leg` (line 543), `run_fno_tick` (line 790), `_bar_already_logged` (line 1104), `format_fno_telegram` (line 1125)
 
 Engine dependencies: `affordability`, `config`, `fno_chain`, `fno_costs`, `fno_engine_mom`, `fno_executor`, `fno_gates`, `fno_instruments`, `fno_models`, `fno_risk`, `fno_signal_log`, `operator_alert`, `performance`
 
@@ -574,17 +594,17 @@ Related tests: `python-engine/tests/test_fno_orchestrator.py`
 
 [FNO-POSITIONS 2026-07-10] Position store for the F&O subsystem. Options positions don't fit the equity `positions` table (premium vs price, lots vs shares, underlying-level stops next to premium backstops), so they get their own table. Pool accounting still flows into the shared bankroll_ledger via performance.record_trade_close(source=FNO_PAPER/ FNO_LIVE) at close time -- purely additive next to the existing source tags (spec §10.3). All dates/times stored in IST (the exchange's clock), ISO format. Kill switches and day-queries key off entry_date / exit_date, so the module's "day" can never drift against the trading session the way UTC dates do. Rule 57: every reader preflights the table a
 
-Top-level declarations: `FnoPosition` (line 132), `_row_to_position` (line 173), `init_fno_positions_db` (line 177), `_table_exists` (line 218), `insert_position` (line 225), `open_positions` (line 239), `open_premium_committed` (line 253), `trades_today` (line 267), `already_entered_bar` (line 279), `update_trail` (line 291), `close_position` (line 305), `exit_execution_receipt` (line 337), `claim_exit_intent` (line 356), `record_exit_execution_receipt` (line 373), `SettlementError` (line 476), `PositionNotOpen` (line 480), `SettlementConflict` (line 490), `settle_position_close` (line 515), `settle_position_close_idempotent` (line 741), `closed_today` (line 794)
+Top-level declarations: `FnoPosition` (line 135), `_row_to_position` (line 178), `init_fno_positions_db` (line 182), `_table_exists` (line 250), `insert_position` (line 257), `open_positions` (line 274), `open_premium_committed` (line 288), `trades_today` (line 302), `already_entered_bar` (line 314), `update_trail` (line 326), `close_position` (line 340), `exit_execution_receipt` (line 372), `claim_exit_intent` (line 391), `record_exit_execution_receipt` (line 417), `SettlementError` (line 528), `PositionNotOpen` (line 532), `SettlementConflict` (line 542), `settle_position_close` (line 567), `settle_position_close_idempotent` (line 798), `closed_today` (line 851)
 
 Engine dependencies: `performance`
 
-Declared tables: `fno_exit_execution_receipts`, `fno_exit_intents`, `fno_positions`
+Declared tables: `fno_exit_execution_receipts`, `fno_exit_intents`, `fno_exit_recoveries`, `fno_positions`
 
 ## `python-engine/fno_risk.py`
 
 [FNO-RISK 2026-07-10] The constitution of the F&O subsystem (spec §4). Owns: max_loss(legs, lot_size) -- rupee max loss; math.inf if unbounded validate_position(legs, ...) -- the ONLY order-path entry point; there is no code path that places an order for a position whose max_loss is inf. No config flag, no env var, no force=True kwarg. min_viable_pool(...) -- per-trade pool floor (spec §3) kill_switch_status(...) -- daily / weekly / monthly / consecutive fno_go_live_check(...) -- promotion as a function, not a judgment Purity rules (spec §4): - max_loss() is pure: no I/O, no options_math import, no model, no IV. The expiry P&L of any option combination is continuous piecewise-linear in the u
 
-Top-level declarations: `_pnl_points` (line 41), `max_loss` (line 53), `validate_position` (line 77), `min_viable_pool` (line 107), `lots_for_pool` (line 122), `kill_switch_status` (line 147), `fno_go_live_check` (line 226)
+Top-level declarations: `_pnl_points` (line 42), `max_loss` (line 54), `validate_position` (line 78), `min_viable_pool` (line 108), `lots_for_pool` (line 123), `kill_switch_status` (line 148), `fno_go_live_check` (line 255)
 
 Engine dependencies: `config`, `fno_models`
 
@@ -606,7 +626,7 @@ Declared tables: `fno_shadow_evaluations`
 
 [FNO-LOG 2026-07-10] Append-only signal log for the F&O subsystem (spec §9.2). Every evaluation -- accepted or rejected, including "engine said no signal" ticks where a bar was actually evaluated -- writes one row to: 1. CSV at settings.FNO_SIGNAL_LOG_PATH (default /data/fno_signals.csv) 2. SQLite table `fno_signals` in settings.DB_PATH Ops rule 75: the CSV, not docker logs, is the ground truth for "is it really doing nothing?". The zero-accept watchdog reads the SQLite table. Schema is a stable contract -- never rename columns, only add. Best-effort writes: failures here must NOT crash the scan tick.
 
-Top-level declarations: `init_fno_signal_db` (line 41), `log_fno_signal` (line 65)
+Top-level declarations: `_column_type` (line 56), `_encode_audit_list` (line 64), `init_fno_signal_db` (line 80), `log_fno_signal` (line 103)
 
 Engine dependencies: `config`
 
@@ -824,7 +844,7 @@ Related tests: `python-engine/tests/test_intraday_spread_signal_artifact.py`
 
 No module docstring; use the declarations and callers below.
 
-Top-level declarations: `_interval_minutes` (line 34), `_intraday_cache_gate_evaluate` (line 70), `RateLimiter` (line 183), `KiteClient` (line 203), `latest_order_state` (line 1692)
+Top-level declarations: `_interval_minutes` (line 34), `_intraday_cache_gate_evaluate` (line 70), `RateLimiter` (line 183), `KiteClient` (line 203), `latest_order_state` (line 1707)
 
 Engine dependencies: `config`, `halt_switch`, `operator_alert`, `order_execution_readiness`, `owner_entry_halt`
 
@@ -850,7 +870,7 @@ Related tests: `python-engine/tests/test_macro_events.py`
 
 No module docstring; use the declarations and callers below.
 
-Top-level declarations: `_is_intraday_from_product_type` (line 136), `_classic_penny_source` (line 205), `_make_penny_ledger_writer` (line 219), `_get_penny_universe` (line 230), `_get_penny_scanner` (line 247), `_within_penny_market_hours` (line 289), `run_penny_scanner_once` (line 297), `run_penny_connors_scan` (line 421), `run_penny_universe_refresh` (line 715), `run_penny_regime_compute` (line 787), `run_penny_regime_refresh` (line 812), `_penny_ltp` (line 832), `_penny_exit_event_context` (line 861), `_append_penny_exit_event` (line 896), `_settle_confirmed_penny_exit` (line 914), `_execute_scheduled_penny_exit` (line 990), `run_penny_paper_stop_monitor` (line 1186), `run_penny_eod_check` (line 1246), `run_penny_force_close_mis` (line 1342), `_run_penny_daily_attribution` (line 1425), `_run_penny_eod_digest` (line 1463), `_run_penny_heatmap` (line 1510), `run_penny_hourly_report` (line 1559), `build_breadth_engine` (line 1729), `build_breadth_kwargs` (line 1775), `_filter_by_liquidity` (line 1794), `snap_to_tick` (line 1853), `_momentum_exit_clock` (line 1878), `_fno_regime_str` (line 1972), `lifespan` (line 1986), `post_login_initialization` (line 2358), `_load_universe_with_fallback` (line 2429), `run_screener` (line 2486), `daily_post_market` (line 2803), `run_momentum_screener` (line 2882), `_run_momentum_screener_impl` (line 2901), `_momentum_initial_risk` (line 3315), `_aggregate_momentum_close` (line 3326), `_close_momentum_position` (line 3333), `_record_momentum_scale_out` (line 3387), `_square_off_fill_evidence` (line 3445), `_cancel_order_truth` (line 3471), `_momentum_square_off_key` (line 3501), `_record_confirmed_momentum_partial` (line 3513), `_page_unconfirmed_square_off` (line 3552), `_post_square_off_with_reconcile` (line 3563), `_rearm_momentum_residual_stop` (line 3593), `momentum_intraday_monitor` (line 3619), `_momentum_intraday_monitor_owned` (line 3639), `_restore_momentum_protection_after_eod_abort` (line 3920), `auto_square_momentum` (line 3959), `_auto_square_momentum_owned` (line 3991), `_paper_ltp` (line 4267), `_run_momentum_paper_monitor` (line 4287), `_run_momentum_paper_square_off` (line 4302), `momentum_eod_warning` (line 4312), `_notify_telegram_square_off_failure` (line 4344), `_notify_momentum_heartbeat` (line 4360), `compute_performance_report` (line 4431), `notify_screener_results` (line 4493)
+Top-level declarations: `_is_intraday_from_product_type` (line 136), `_classic_penny_source` (line 205), `_make_penny_ledger_writer` (line 219), `_get_penny_universe` (line 230), `_get_penny_scanner` (line 247), `_within_penny_market_hours` (line 289), `run_penny_scanner_once` (line 297), `run_penny_connors_scan` (line 421), `run_penny_universe_refresh` (line 715), `run_penny_regime_compute` (line 787), `run_penny_regime_refresh` (line 812), `_penny_ltp` (line 832), `_penny_exit_event_context` (line 861), `_append_penny_exit_event` (line 896), `_settle_confirmed_penny_exit` (line 914), `_execute_scheduled_penny_exit` (line 990), `run_penny_paper_stop_monitor` (line 1186), `run_penny_eod_check` (line 1246), `run_penny_force_close_mis` (line 1342), `_run_penny_daily_attribution` (line 1425), `_run_penny_eod_digest` (line 1463), `_run_penny_heatmap` (line 1510), `run_penny_hourly_report` (line 1559), `build_breadth_engine` (line 1729), `build_breadth_kwargs` (line 1775), `_filter_by_liquidity` (line 1794), `snap_to_tick` (line 1853), `_momentum_exit_clock` (line 1878), `_fno_regime_str` (line 1972), `lifespan` (line 1986), `post_login_initialization` (line 2358), `_load_universe_with_fallback` (line 2429), `run_screener` (line 2486), `daily_post_market` (line 2803), `run_momentum_screener` (line 2882), `_run_momentum_screener_impl` (line 2901), `_momentum_initial_risk` (line 3331), `_aggregate_momentum_close` (line 3342), `_close_momentum_position` (line 3349), `_record_momentum_scale_out` (line 3403), `_square_off_fill_evidence` (line 3461), `_cancel_order_truth` (line 3487), `_momentum_square_off_key` (line 3517), `_record_confirmed_momentum_partial` (line 3529), `_page_unconfirmed_square_off` (line 3568), `_post_square_off_with_reconcile` (line 3579), `_rearm_momentum_residual_stop` (line 3609), `momentum_intraday_monitor` (line 3635), `_momentum_intraday_monitor_owned` (line 3655), `_restore_momentum_protection_after_eod_abort` (line 3936), `auto_square_momentum` (line 3975), `_auto_square_momentum_owned` (line 4007), `_paper_ltp` (line 4283), `_run_momentum_paper_monitor` (line 4303), `_run_momentum_paper_square_off` (line 4318), `momentum_eod_warning` (line 4328), `_notify_telegram_square_off_failure` (line 4360), `_notify_momentum_heartbeat` (line 4376), `compute_performance_report` (line 4447), `notify_screener_results` (line 4509)
 
 Engine dependencies: `analytics`, `backtest`, `breadth`, `config`, `engine`, `engine_auth`, `fno_oi_store`, `fno_positions`, `fno_signal_log`, `hedge_advisory`, `kite_client`, `logging_setup`, `mark_to_market`, `market_calendar`, `memory_metrics`, `models`, `momentum_exits`, `momentum_paper`, `momentum_shadow`, `operator_alert`, `operator_status`, `ops_metrics`, `ops_watchdogs`, `partner_orchestrator`, `penny_daily_attribution`, `penny_engine_breakout`, `penny_execution_journal`, `penny_executor`, `penny_heatmap`, `penny_hourly_report`, `penny_models`, `penny_position_reservations`, `penny_regime`, `penny_risk`, `penny_scanner`, `penny_shadow`, `penny_signal_log`, `penny_universe`, `performance`, `portfolio`, `position_tracker`, `regime`, `risk_engine`, `routes_backtest`, `routes_commands`, `routes_fno_experiments`, `routes_hedge`, `routes_holidays`, `routes_market_session`, `routes_ops`, `routes_penny_experiments`, `routes_portfolio`, `routes_promotion_readiness`, `scheduler_setup`, `scheduler_telemetry`, `signal_log`, `token_lifecycle`, `universe`
 
@@ -912,7 +932,7 @@ Related tests: `python-engine/tests/test_momentum_exits.py`
 
 [MOMENTUM-PAPER 2026-07-26] A paper twin of the live momentum book. WHY THIS EXISTS --------------- Live momentum entry is manual: the screener sends a Telegram EXEC button and a human decides. The ledger therefore records what the *operator* did, never what the *strategy* proposed -- 8 recorded momentum trades in months of running, which is why nothing can be concluded about the strategy from them. A signal that fired at 11:04 while nobody was looking left no trace at all. This book takes EVERY accepted momentum signal automatically, sizes it off its own pool, manages it with the same pure exit logic the live book uses, and books cost-adjusted P&L to source='MOMENTUM_PAPER'. The result is a
 
-Top-level declarations: `paper_position_size` (line 61), `_sig_get` (line 90), `_sqlite_safe` (line 99), `_paper_risk_pct` (line 126), `open_momentum_paper_positions` (line 146), `_close_paper_position` (line 232), `momentum_paper_monitor` (line 285), `momentum_paper_square_off` (line 382)
+Top-level declarations: `paper_position_size` (line 72), `_sig_get` (line 101), `_sqlite_safe` (line 110), `_paper_risk_pct` (line 137), `_admission_signal_key` (line 157), `_init_admission_outcomes` (line 181), `_record_admission_outcome` (line 203), `_bound_admission_outcomes` (line 219), `record_momentum_paper_upstream_deduplications` (line 229), `_record_disabled_admissions` (line 266), `_record_transaction_failures` (line 290), `open_momentum_paper_positions` (line 320), `_close_paper_position` (line 458), `momentum_paper_monitor` (line 511), `momentum_paper_square_off` (line 608)
 
 Engine dependencies: `config`, `engine`, `models`, `momentum_exits`, `performance`
 
@@ -1164,7 +1184,7 @@ Top-level declarations: `load_candidate_evidence` (line 36), `_sha` (line 123), 
 
 Engine dependencies: `config`, `fno_chain`, `fno_engine_mom`, `fno_instruments`, `fno_models`, `intraday_spread_archive_adapter`, `partner_decision_clock`, `partner_manual_advisory`, `partner_qualification_authority`, `policy_identity`
 
-Related tests: `python-engine/tests/test_partner_qualification.py`, `python-engine/tests/test_partner_qualification_review.py`, `python-engine/tests/test_partner_qualification_verify.py`
+Related tests: `python-engine/tests/test_partner_qualification.py`, `python-engine/tests/test_partner_qualification_package.py`, `python-engine/tests/test_partner_qualification_review.py`, `python-engine/tests/test_partner_qualification_verify.py`
 
 ## `python-engine/partner_qualification_authority.py`
 
@@ -1173,6 +1193,16 @@ Read-only verification of reviewed evidence at each advisory authority boundary.
 Top-level declarations: `read_artifact` (line 21), `_clock` (line 36), `_digest` (line 43), `policy_configuration` (line 48), `verify_authorization_package` (line 55)
 
 Engine dependencies: `config`, `intraday_spread_holdout`, `partner_qualification_review`, `policy_identity`
+
+## `python-engine/partner_qualification_package.py`
+
+Bounded assembly of reviewed full-policy research evidence. This is deliberately an *artifact builder*, not an approval, registry or delivery API. It can only package independently supplied, already-approved review identity and immutable replay evidence. The normal registry and final dispatch paths continue to call :mod:`partner_qualification_authority`.
+
+Top-level declarations: `_clock` (line 28), `_sha` (line 40), `_package_bytes` (line 45), `_load_json` (line 53), `resolve_evidence_path` (line 69), `read_bounded_evidence` (line 80), `_validate_scope` (line 84), `_validate_review_identity` (line 93), `_validate_validity_period` (line 106), `build_authorization_package` (line 116), `write_authorization_package` (line 227), `build_package_from_evidence_manifest` (line 248)
+
+Engine dependencies: `intraday_spread_holdout`, `partner_manual_advisory`, `partner_qualification_authority`, `partner_qualification_review`
+
+Related tests: `python-engine/tests/test_partner_qualification_package.py`
 
 ## `python-engine/partner_qualification_review.py`
 
@@ -1726,7 +1756,7 @@ Operator commands for immutable research preservation (no broker actions).
 
 Top-level declarations: `_json_file` (line 17), `_write_comparison_output` (line 27), `_strategy_comparison` (line 50), `_candidate_file` (line 80), `_replay_spread` (line 93), `_full_policy_diagnostic` (line 126), `main` (line 162)
 
-Engine dependencies: `config`, `intraday_spread_archive_adapter`, `intraday_spread_chronological`, `partner_full_policy_replay`, `partner_qualification`, `partner_qualification_verify`, `partner_research_capture`, `proactive_comparison_protocol`, `proactive_intelligence`, `reconciliation_evidence`, `research_archive`
+Engine dependencies: `config`, `intraday_spread_archive_adapter`, `intraday_spread_chronological`, `partner_full_policy_replay`, `partner_qualification`, `partner_qualification_package`, `partner_qualification_verify`, `partner_research_capture`, `proactive_comparison_protocol`, `proactive_intelligence`, `reconciliation_evidence`, `research_archive`
 
 Related tests: `python-engine/tests/test_research_cli_qualification.py`, `python-engine/tests/test_research_cli_strategy_comparison.py`
 
@@ -1746,7 +1776,7 @@ Declared tables: `selected_leg_collection_gaps`, `selected_leg_subscriptions`
 
 Forward-only NIFTY/SENSEX quote evidence collection. This module is intentionally independent from partner delivery, profiles, qualification and every order API. It records exactly what the permitted provider returned and marks the REST path as lower-frequency; a WebSocket consumer may feed ``ingest_provider_packet`` without changing its evidence format.
 
-Top-level declarations: `_configured_underlyings` (line 35), `_quote_archive` (line 40), `_provider_timestamp` (line 50), `_finite_positive` (line 68), `_five_levels` (line 76), `normalise_quote` (line 93), `_select_contracts` (line 139), `_with_active_legs` (line 154), `_documented_quotes` (line 166), `collect_rest_quote_snapshot` (line 174), `research_quote_collection_tick` (line 336)
+Top-level declarations: `_configured_underlyings` (line 35), `_fair_collection_order` (line 40), `_quote_archive` (line 59), `_provider_timestamp` (line 69), `_finite_positive` (line 87), `_five_levels` (line 95), `normalise_quote` (line 112), `_select_contracts` (line 158), `_with_active_legs` (line 173), `_documented_quotes` (line 185), `_ProviderDeadlineExceeded` (line 193), `_bounded_documented_quotes` (line 197), `_index_coverage` (line 227), `collect_rest_quote_snapshot` (line 236), `research_quote_collection_tick` (line 483)
 
 Engine dependencies: `config`, `fno_instruments`, `fno_models`, `fno_underlyings`, `research_archive`, `research_leg_subscriptions`
 
@@ -1820,9 +1850,9 @@ Engine dependencies: `config`, `engine_auth`, `market_calendar`, `owner_entry_ha
 
 [ROADMAP-4.1 stage 3, 2026-07-13] Ops, token and circuit-breaker endpoints. Extracted verbatim from main.py. Registered on the app via `app.include_router(router)`, so the route table -- paths, methods, endpoint names, response models -- is byte-identical; the 24-route characterization golden proves it. EVERY business name is reached through `_main` at CALL time, not imported. That is not stylistic. Two independent reasons, both load-bearing: 1. Eight of main's globals are REBOUND at runtime via `global` statements (current_signals, market_regime, momentum_signals_today, last_run, rejected_signals, current_momentum_signals, last_momentum_date, _last_regime_state). `from main import current_s
 
-Top-level declarations: `OptionalAiStatusPayload` (line 43), `get_momentum_experiment` (line 62), `post_optional_ai_status` (line 104), `get_optional_ai_status` (line 114), `inject_token` (line 123), `get_current_token` (line 171), `invalidate_token` (line 192), `get_ops_metrics` (line 217), `get_circuit_breaker` (line 235), `reset_circuit_breaker` (line 243), `health_check` (line 260), `test_momentum_screener` (line 360)
+Top-level declarations: `FnoExitRecoveryRequest` (line 44), `get_fno_exit_intents` (line 54), `post_fno_exit_resolution` (line 63), `OptionalAiStatusPayload` (line 78), `get_momentum_experiment` (line 97), `post_optional_ai_status` (line 139), `get_optional_ai_status` (line 149), `inject_token` (line 158), `get_current_token` (line 206), `invalidate_token` (line 227), `get_ops_metrics` (line 252), `get_circuit_breaker` (line 270), `reset_circuit_breaker` (line 278), `health_check` (line 295), `test_momentum_screener` (line 395)
 
-Engine dependencies: `config`, `halt_switch`, `ops_metrics`, `optional_ai_status`, `order_execution_readiness`, `penny_health`, `performance`, `release_identity`, `token_lifecycle`
+Engine dependencies: `config`, `fno_exit_recovery`, `halt_switch`, `ops_metrics`, `optional_ai_status`, `order_execution_readiness`, `penny_health`, `performance`, `release_identity`, `token_lifecycle`
 
 ## `python-engine/routes_penny_experiments.py`
 
@@ -1860,7 +1890,7 @@ Related tests: `python-engine/tests/test_saturation_diagnostic.py`
 
 [ROADMAP-4.1 stage 2, 2026-07-13] APScheduler job registration. Extracted verbatim from main.py: register_fno_scheduler_jobs and register_penny_scheduler_jobs, and the 8 async closures they define. This is the piece stage 1 deliberately left behind. Python resolves a function's globals at CALL time against its DEFINING module, so a closure that moves house and loses a free name raises NameError only when the job fires -- in production, inside a `_safe` wrapper that catches it, logs it, and returns. The scan then never runs, silently. Import still succeeds, the job census still sees the registration, and nothing goes red. That is the 2026-07-13 failure signature, and it is why this move waite
 
-Top-level declarations: `_log_fno_watchdog_payload` (line 29), `register_fno_scheduler_jobs` (line 61), `register_penny_scheduler_jobs` (line 273), `register_partner_scheduler_jobs` (line 946)
+Top-level declarations: `_log_fno_watchdog_payload` (line 29), `register_fno_scheduler_jobs` (line 61), `register_penny_scheduler_jobs` (line 274), `register_partner_scheduler_jobs` (line 947)
 
 Engine dependencies: `config`, `daily_bootstrap`, `fno_accept_watchdog`, `fno_hourly_report`, `fno_instruments`, `fno_orchestrator`, `hedge_advisory`, `operator_alert`, `partner_input_refresh`, `partner_orchestrator`, `penny_accept_watchdog`, `penny_edge_orchestrator`, `penny_premarket_report`, `performance`, `proactive_intelligence`, `research_quote_collector`, `scheduler_telemetry`
 

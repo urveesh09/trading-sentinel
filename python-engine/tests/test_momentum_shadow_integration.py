@@ -55,7 +55,10 @@ def _shadow_rows(ticker, bar_ts):
     } for variant in ("MOM_BASE", "MOM_RECENCY_5")]
 
 
-async def _run_scan(main, monkeypatch, shadow_enabled, shadow_side_effect=None):
+async def _run_scan(
+    main, monkeypatch, shadow_enabled, shadow_side_effect=None,
+    reset_state=True, cleanup_state=True,
+):
     fake_now = main.IST.localize(RealDateTime(2026, 8, 10, 11, 0, 0))
     fake_kite = MagicMock()
     fake_kite.access_token = "fake"
@@ -84,10 +87,11 @@ async def _run_scan(main, monkeypatch, shadow_enabled, shadow_side_effect=None):
     notify = AsyncMock()
     monkeypatch.setattr(main.settings, "MOMENTUM_SHADOW_ENABLED", shadow_enabled)
     monkeypatch.setattr(main.settings, "MOMENTUM_LOG_ENABLED", False)
-    main.current_momentum_signals = []
-    main.signaled_momentum_today = set()
-    main.momentum_signals_today = []
-    main.last_momentum_date = None
+    if reset_state:
+        main.current_momentum_signals = []
+        main.signaled_momentum_today = set()
+        main.momentum_signals_today = []
+        main.last_momentum_date = None
     main._momentum_scan_in_progress = False
     main.market_regime = "BULL"
 
@@ -102,22 +106,27 @@ async def _run_scan(main, monkeypatch, shadow_enabled, shadow_side_effect=None):
          patch.object(main, "evaluate_momentum_shadows", side_effect=shadow_eval) as shadow_mock, \
          patch.object(main, "filter_momentum_signals", side_effect=filter_signals), \
          patch.object(main, "notify_screener_results", notify), \
+         patch.object(main, "_notify_momentum_heartbeat", new=AsyncMock()), \
          patch.object(main, "is_market_open", return_value=True), \
          patch("main.datetime", wraps=RealDateTime) as mock_dt:
         mock_dt.now = lambda tz=None: fake_now.astimezone(tz) if tz else fake_now
         await main.run_momentum_screener()
 
     captured["accepted"] = [dict(item) for item in main.current_momentum_signals]
-    captured["rejected"] = [dict(item) for item in notify.await_args.args[2]]
+    captured["rejected"] = (
+        [dict(item) for item in notify.await_args.args[2]]
+        if notify.await_args is not None else []
+    )
     captured["intraday_calls"] = fake_kite.get_intraday.await_count
     captured["historical_calls"] = fake_kite.get_historical.await_count
     captured["shadow_calls"] = shadow_mock.call_args_list
     # Avoid leaking the synthetic dict signals into route tests that expect
     # the production Signal model stored in this process-global day cache.
-    main.current_momentum_signals = []
-    main.momentum_signals_today = []
-    main.signaled_momentum_today = set()
-    main.last_momentum_date = None
+    if cleanup_state:
+        main.current_momentum_signals = []
+        main.momentum_signals_today = []
+        main.signaled_momentum_today = set()
+        main.last_momentum_date = None
     return captured
 
 
@@ -139,6 +148,42 @@ async def test_shadow_on_off_preserves_baseline_and_adds_no_market_calls(monkeyp
         assert call.kwargs["market_regime"] == "BULL"
         assert call.kwargs["trading_date"].isoformat() == "2026-08-10"
         assert call.kwargs["bar_ts"] == _intra().index[-1]
+
+
+@pytest.mark.asyncio
+async def test_repeat_accepted_signal_is_recorded_at_upstream_dedup_boundary(
+    monkeypatch, db_path,
+):
+    """The paper opener must not be blamed for a signal it never received."""
+    import main
+    import momentum_paper
+
+    record_dedup = AsyncMock(return_value=1)
+    open_paper = AsyncMock(return_value=[])
+    monkeypatch.setattr(
+        momentum_paper, "record_momentum_paper_upstream_deduplications", record_dedup,
+    )
+    monkeypatch.setattr(momentum_paper, "open_momentum_paper_positions", open_paper)
+
+    try:
+        await _run_scan(
+            main, monkeypatch, True, reset_state=True, cleanup_state=False,
+        )
+        await _run_scan(
+            main, monkeypatch, True, reset_state=False, cleanup_state=True,
+        )
+    finally:
+        # The second scan's cleanup normally handles this; retain an explicit
+        # reset if an assertion or mocked scan fails midway.
+        main.current_momentum_signals = []
+        main.momentum_signals_today = []
+        main.signaled_momentum_today = set()
+        main.last_momentum_date = None
+
+    assert open_paper.await_count == 1
+    assert record_dedup.await_count == 1
+    deduped = record_dedup.await_args.args[1]
+    assert [row["ticker"] for row in deduped] == ["AAA"]
 
 
 @pytest.mark.asyncio
