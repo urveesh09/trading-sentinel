@@ -1,5 +1,30 @@
 # Trading Sentinel — system guide and engineering handover
 
+## September 24 P1 momentum-paper admission forensics (Dev)
+
+Accepted momentum signals now receive durable, bounded paper-admission
+evidence. `momentum_paper_admission_outcomes` retains only an opaque
+deterministic signal digest, ticker, enumerated outcome and timestamp—never a
+raw signal payload. The result is written in the same transaction as an
+opening position: `opened`, `already_held`, or `zero_shares` is therefore not
+reported before commit. A rolled-back position mutation is separately retained
+as `transaction_failure` when SQLite is available; an unavailable database is
+logged, never fabricated as durable evidence.
+
+`main.py` now records repeat accepted signals at the alert-deduplication
+boundary as `upstream_deduplicated`, rather than falsely saying the paper book
+rejected them. A deliberately disabled paper book similarly records `disabled`.
+Outcomes are idempotent, retention-bounded by
+`MOMENTUM_PAPER_ADMISSION_RETENTION` (20,000), and reopening an already closed
+paper position creates a separate immutable admission attempt. This remains a
+paper-only bookkeeping path with no order capability or broker authority.
+
+Focused paper/regime/shadow integration checks cover TATATECH-like repeats,
+held and zero-share outcomes, disabled state, rollback receipt, retention and
+the real upstream boundary (**159 passed**, with one existing Starlette
+deprecation). Dev tests establish explainability, not a trading
+edge or live/paper promotion. Production was not edited or deployed.
+
 ## September 24 P1 F&O tick-tail containment and exit-safe telemetry (Dev)
 
 Read-only Production evidence across the retained 23–24 September window found

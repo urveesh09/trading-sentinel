@@ -242,6 +242,37 @@ upstream deduplication, no extra position/order is created, and a rolled-back
 insert is never marked opened. Update the guide/active plan and atlas if source
 declarations change. Rollback must leave existing positions and ledger intact.
 
+**P1 TATATECH admission-forensics Dev result (24 September):** The new
+`momentum_paper_admission_outcomes` table retains an opaque SHA-256 signal
+identity, ticker, enumerated outcome/reason and timestamp—not a full signal
+payload. Its allowed outcomes are `opened`, `already_held`, `zero_shares`,
+`disabled`, `upstream_deduplicated` and `transaction_failure`. Entries are
+idempotent by immutable attempt identity and retention-bounded by
+`MOMENTUM_PAPER_ADMISSION_RETENTION=20000`. A fresh attempt after a legitimately
+closed paper position gets a separate immutable key; repeated scans of the same
+active decision do not create another position or outcome.
+
+`open_momentum_paper_positions` creates/updates the evidence within its same
+SQLite transaction as the paper position. It writes `opened` only after its
+position insert is pending for commit; an exception rolls every opening back,
+returns no opened ticker and records `transaction_failure` in a fresh evidence
+transaction when SQLite is still available. If SQLite itself cannot be opened,
+the failure is logged rather than manufactured as a durable outcome. The
+existing paper-only/no-order module boundary, capital sizing, held-ticker fence
+and nonfatal screener hook are unchanged.
+
+`main.py` now gathers repeated accepted signals while it applies the existing
+same-day alert deduplication and calls the dedicated writer for
+`upstream_deduplicated`. This is intentionally outside the paper opener: it
+truthfully says the opener never saw that signal. The focused paper, regime and
+real screener-boundary suite covers TATATECH-like repeats, held, zero-share,
+disabled, rollback and retention paths, as well as real dedup wiring. No
+Production file/service/data, broker action, Telegram message or qualification
+state changed. Focused momentum/regime/entry integration validation ran **159
+passed** with one existing Starlette deprecation. Post-promotion, compare admission outcomes to retained accepted
+signal rows before explaining a real absence; this code does not establish
+profitability or authorize partner advice.
+
 ### P2 — Tighten classifier latency only, not its authority
 
 Files/contracts: `agent/news_classifier.py`, client construction in

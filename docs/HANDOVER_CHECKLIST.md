@@ -1,5 +1,25 @@
 # Handover receipt and operator checklist
 
+## September 24 P1 momentum-paper admission forensics (Dev)
+
+- [x] Record an opaque accepted-signal identity and enumerated immutable
+  outcome after the actual paper boundary: opened, already-held, zero-shares,
+  disabled, upstream-deduplicated or transaction-failure. No raw signal
+  payload, broker route or order capability is added.
+- [x] Write normal outcomes with the position transaction; a rolled-back insert
+  cannot appear opened. Where the evidence database remains available, retain
+  a separate transaction-failure receipt. Bound retained outcomes at 20,000.
+- [x] Record repeated accepted signals at the `main.py` alert-dedup boundary,
+  not as a decision by the paper opener; preserve a separate immutable attempt
+  if a legitimately closed paper position reopens.
+- [x] Focused paper/regime/shadow checks cover TATATECH-like repeats, held,
+  zero-share, disabled, rollback and retention outcomes plus real boundary
+  wiring: 159 passed with one existing Starlette deprecation. This is
+  explainability evidence, not strategy qualification.
+- [ ] After reviewed promotion, inspect real admission outcomes alongside the
+  retained accepted-signal log. Investigate an unexplained missing record; do
+  not infer a trade from `opened`, nor a profitable strategy from paper P&L.
+
 ## September 24 P1 F&O tick-tail containment and exit-safe telemetry (Dev)
 
 - [x] Read Production logs without mutation and isolate 27 F&O runs at/over

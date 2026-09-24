@@ -31,6 +31,8 @@ here is to leave the capability out of the module entirely.
 """
 from __future__ import annotations
 
+import hashlib
+import json
 import math
 from datetime import datetime, timezone
 from typing import Awaitable, Callable, Optional
@@ -49,6 +51,15 @@ from momentum_exits import (
 logger = structlog.get_logger()
 
 SOURCE = "MOMENTUM_PAPER"
+_ADMISSION_OUTCOMES_TABLE = "momentum_paper_admission_outcomes"
+_ADMISSION_OUTCOMES = frozenset({
+    "opened",
+    "already_held",
+    "zero_shares",
+    "disabled",
+    "upstream_deduplicated",
+    "transaction_failure",
+})
 
 # Fills are modelled at the quoted price with real Zerodha costs applied on top.
 # No slippage model: intraday MIS on liquid NSE names fills close to the quote,
@@ -143,6 +154,169 @@ def _paper_risk_pct(sig) -> float:
     return 0.0 if should_block else float(risk_pct)
 
 
+def _admission_signal_key(sig, now_utc: datetime) -> tuple[str, str]:
+    """Return an opaque, deterministic identity for one accepted signal.
+
+    Admission evidence needs to distinguish a genuinely changed signal from a
+    duplicate scan, but must not persist the full strategy payload.  The hash
+    is computed from the small set of decision inputs that can alter a paper
+    admission, plus the UTC trading date.  Only the digest and ticker are
+    retained in SQLite.
+    """
+    ticker = str(_sig_get(sig, "ticker", "") or "").strip().upper()
+    identity = {
+        "ticker": ticker,
+        "date": now_utc.date().isoformat(),
+        "close": _sqlite_safe(_sig_get(sig, "close")),
+        "stop_loss": _sqlite_safe(_sig_get(sig, "stop_loss")),
+        "target_1": _sqlite_safe(_sig_get(sig, "target_1")),
+        "target_2": _sqlite_safe(_sig_get(sig, "target_2")),
+        "regime": _sqlite_safe(_sig_get(sig, "regime")),
+        "bar_ts": _sqlite_safe(_sig_get(sig, "bar_ts")),
+    }
+    encoded = json.dumps(identity, sort_keys=True, separators=(",", ":"), default=str)
+    return hashlib.sha256(encoded.encode("utf-8")).hexdigest(), ticker
+
+
+async def _init_admission_outcomes(db) -> None:
+    await db.execute(f"""
+        CREATE TABLE IF NOT EXISTS {_ADMISSION_OUTCOMES_TABLE} (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            admission_key TEXT NOT NULL UNIQUE,
+            signal_key TEXT NOT NULL,
+            ticker TEXT NOT NULL,
+            outcome TEXT NOT NULL CHECK(outcome IN (
+                'opened', 'already_held', 'zero_shares', 'disabled',
+                'upstream_deduplicated', 'transaction_failure'
+            )),
+            reason TEXT NOT NULL,
+            recorded_at TEXT NOT NULL
+        )
+    """)
+    await db.execute(
+        f"CREATE INDEX IF NOT EXISTS idx_{_ADMISSION_OUTCOMES_TABLE}_recorded "
+        f"ON {_ADMISSION_OUTCOMES_TABLE}(recorded_at DESC)"
+    )
+    await db.commit()
+
+
+async def _record_admission_outcome(
+    db, admission_key: str, signal_key: str, ticker: str, outcome: str,
+    now_utc: datetime,
+) -> bool:
+    """Insert one immutable outcome, returning whether it was newly recorded."""
+    if outcome not in _ADMISSION_OUTCOMES:
+        raise ValueError(f"unsupported momentum-paper admission outcome: {outcome}")
+    cur = await db.execute(
+        f"INSERT OR IGNORE INTO {_ADMISSION_OUTCOMES_TABLE} "
+        "(admission_key, signal_key, ticker, outcome, reason, recorded_at) "
+        "VALUES (?,?,?,?,?,?)",
+        (admission_key, signal_key, ticker, outcome, outcome, now_utc.isoformat()),
+    )
+    return bool(cur.rowcount)
+
+
+async def _bound_admission_outcomes(db) -> None:
+    retention = max(1, int(settings.MOMENTUM_PAPER_ADMISSION_RETENTION))
+    await db.execute(
+        f"DELETE FROM {_ADMISSION_OUTCOMES_TABLE} WHERE id IN ("
+        f"SELECT id FROM {_ADMISSION_OUTCOMES_TABLE} "
+        "ORDER BY id DESC LIMIT -1 OFFSET ?)",
+        (retention,),
+    )
+
+
+async def record_momentum_paper_upstream_deduplications(
+    db_path: str, signals: list, now_utc: Optional[datetime] = None,
+) -> int:
+    """Durably record accepted signals suppressed before the paper opener.
+
+    This function is called at the alert-deduplication boundary in ``main``.
+    It intentionally says ``upstream_deduplicated`` rather than pretending the
+    paper book evaluated or rejected an input it never received.
+    """
+    if not signals:
+        return 0
+    now_utc = now_utc or datetime.now(timezone.utc)
+    written = 0
+    try:
+        async with aiosqlite.connect(db_path) as db:
+            await _init_admission_outcomes(db)
+            await db.execute("BEGIN IMMEDIATE")
+            for sig in signals:
+                signal_key, ticker = _admission_signal_key(sig, now_utc)
+                if not ticker:
+                    logger.warning("momentum_paper_admission_skip reason=missing_ticker")
+                    continue
+                written += int(await _record_admission_outcome(
+                    db, f"upstream:{signal_key}", signal_key, ticker,
+                    "upstream_deduplicated", now_utc,
+                ))
+            await _bound_admission_outcomes(db)
+            await db.commit()
+    except Exception as exc:
+        logger.error(
+            "momentum_paper_upstream_dedup_record_failed err=%s", str(exc),
+            exc_info=True,
+        )
+        return 0
+    return written
+
+
+async def _record_disabled_admissions(
+    db_path: str, candidates: list[tuple[str, str]], now_utc: datetime,
+) -> None:
+    """Best-effort durable evidence for a deliberately disabled paper book."""
+    if not candidates:
+        return
+    try:
+        async with aiosqlite.connect(db_path) as db:
+            await _init_admission_outcomes(db)
+            await db.execute("BEGIN IMMEDIATE")
+            for signal_key, ticker in candidates:
+                await _record_admission_outcome(
+                    db, f"disabled:{signal_key}", signal_key, ticker,
+                    "disabled", now_utc,
+                )
+            await _bound_admission_outcomes(db)
+            await db.commit()
+    except Exception as exc:
+        logger.error(
+            "momentum_paper_disabled_record_failed err=%s", str(exc),
+            exc_info=True,
+        )
+
+
+async def _record_transaction_failures(
+    db_path: str, candidates: list[tuple[str, str, str]], now_utc: datetime,
+) -> None:
+    """Record a rolled-back admission failure when the evidence DB permits.
+
+    If SQLite itself is unavailable this cannot manufacture durable evidence;
+    the outer caller logs the failure and returns no opened ticker.  When a
+    position mutation fails after the admission table exists, a fresh short
+    transaction preserves the truthful ``transaction_failure`` result.
+    """
+    if not candidates:
+        return
+    try:
+        async with aiosqlite.connect(db_path) as db:
+            await _init_admission_outcomes(db)
+            await db.execute("BEGIN IMMEDIATE")
+            for admission_key, signal_key, ticker in candidates:
+                await _record_admission_outcome(
+                    db, admission_key, signal_key, ticker,
+                    "transaction_failure", now_utc,
+                )
+            await _bound_admission_outcomes(db)
+            await db.commit()
+    except Exception as exc:
+        logger.error(
+            "momentum_paper_admission_failure_record_failed err=%s", str(exc),
+            exc_info=True,
+        )
+
+
 async def open_momentum_paper_positions(db_path: str, accepted: list,
                                         now_utc: Optional[datetime] = None) -> list:
     """Open a paper position for each accepted signal not already held today.
@@ -150,15 +324,28 @@ async def open_momentum_paper_positions(db_path: str, accepted: list,
     Returns the list of opened tickers. Never raises into the screener: a paper
     bookkeeping failure must not take down the live scan that produced the signal.
     """
-    if not settings.MOMENTUM_PAPER_ENABLED or not accepted:
+    if not accepted:
         return []
 
     now_utc = now_utc or datetime.now(timezone.utc)
+    candidates = []
+    for sig in accepted:
+        candidate = _admission_signal_key(sig, now_utc)
+        if candidate[1]:
+            candidates.append(candidate)
+    if not settings.MOMENTUM_PAPER_ENABLED:
+        # Feature disablement is a real outcome, not an invisible empty list.
+        # This helper remains paper-only and never touches a broker/order path.
+        await _record_disabled_admissions(db_path, candidates, now_utc)
+        return []
+
     pool = float(settings.MOMENTUM_PAPER_BANKROLL)
     opened = []
+    attempted: list[tuple[str, str, str]] = []
 
     try:
         async with aiosqlite.connect(db_path) as db:
+            await _init_admission_outcomes(db)
             # Serialize capital allocation within this SQLite book.  The
             # scheduler normally calls this once, but BEGIN IMMEDIATE also
             # prevents overlapping scans from both observing the same cash.
@@ -169,17 +356,48 @@ async def open_momentum_paper_positions(db_path: str, accepted: list,
                 (SOURCE,),
             ) as cur:
                 open_rows = await cur.fetchall()
-                held = {r[0] for r in open_rows}
+                held = {str(r[0] or "").strip().upper() for r in open_rows}
                 deployed = sum(
                     max(0.0, float(r[1] or 0)) * max(0, int(r[2] or 0))
                     for r in open_rows
                 )
 
             for sig in accepted:
-                ticker = _sig_get(sig, "ticker")
+                signal_key, ticker = _admission_signal_key(sig, now_utc)
+                if not ticker:
+                    logger.warning("momentum_paper_admission_skip reason=missing_ticker")
+                    continue
+                admission_key = f"entry:{signal_key}"
+                async with db.execute(
+                    f"SELECT outcome FROM {_ADMISSION_OUTCOMES_TABLE} "
+                    "WHERE admission_key=?",
+                    (admission_key,),
+                ) as cur:
+                    prior = await cur.fetchone()
+                # Preserve the established reopen-after-close contract. A
+                # committed former opening is not a current position; assign a
+                # new immutable attempt key rather than overwriting history.
+                if prior is not None and prior[0] == "opened" and ticker not in held:
+                    async with db.execute(
+                        f"SELECT COUNT(*) FROM {_ADMISSION_OUTCOMES_TABLE} "
+                        "WHERE signal_key=? AND outcome='opened'",
+                        (signal_key,),
+                    ) as cur:
+                        reopen_number = int((await cur.fetchone())[0]) + 1
+                    admission_key = f"entry:{signal_key}:reopen:{reopen_number}"
+                    prior = None
+                if prior is not None:
+                    # The same accepted decision was already accounted for.
+                    # Preserve the public return contract: repeat calls never
+                    # report a prior committed opening as a new opening.
+                    continue
+                attempted.append((admission_key, signal_key, ticker))
                 close = float(_sig_get(sig, "close", 0) or 0)
                 stop = float(_sig_get(sig, "stop_loss", 0) or 0)
-                if not ticker or ticker in held:
+                if ticker in held:
+                    await _record_admission_outcome(
+                        db, admission_key, signal_key, ticker, "already_held", now_utc,
+                    )
                     continue
                 shares = paper_position_size(
                     close, stop, pool, _paper_risk_pct(sig),
@@ -188,6 +406,9 @@ async def open_momentum_paper_positions(db_path: str, accepted: list,
                 if shares < 1:
                     logger.info("momentum_paper_skip ticker=%s reason=zero_shares "
                                 "close=%s stop=%s", ticker, close, stop)
+                    await _record_admission_outcome(
+                        db, admission_key, signal_key, ticker, "zero_shares", now_utc,
+                    )
                     continue
 
                 await db.execute(
@@ -214,16 +435,21 @@ async def open_momentum_paper_positions(db_path: str, accepted: list,
                 held.add(ticker)
                 deployed += shares * close
                 opened.append(ticker)
+                await _record_admission_outcome(
+                    db, admission_key, signal_key, ticker, "opened", now_utc,
+                )
                 logger.info(
                     "momentum_paper_opened ticker=%s shares=%d entry=%.2f stop=%.2f "
                     "notional=%.0f pool=%.0f", ticker, shares, close, stop,
                     shares * close, pool,
                 )
+            await _bound_admission_outcomes(db)
             await db.commit()
     except Exception as exc:
         logger.error("momentum_paper_open_failed err=%s", str(exc), exc_info=True)
         # The single transaction rolls every INSERT back. Never report tickers
         # from the in-memory list as opened when none were committed.
+        await _record_transaction_failures(db_path, attempted, now_utc)
         return []
 
     return opened

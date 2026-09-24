@@ -1,5 +1,21 @@
 # Trading Sentinel — next-agent execution plan
 
+## September 24 implementation update — P1 momentum-paper admission evidence
+
+The TATATECH acceptance slice is complete in Dev. The paper book now persists
+a bounded, idempotent outcome only after its real decision/transaction:
+`opened`, `already_held`, `zero_shares`, `disabled`,
+`upstream_deduplicated`, or `transaction_failure`. Repeated accepted signals
+are recorded at `main.py`'s alert-dedup boundary, so the paper opener is not
+credited with a decision it never received. The table contains an opaque
+digest/ticker/outcome/timestamp, not raw strategy payloads. A position insert
+rollback cannot be marked opened; reopening a closed position preserves a new
+immutable attempt. The paper-only/no-order boundary is unchanged.
+
+Next development is P2 classifier latency diagnosis, only after reproducing
+the owned retry/transport tail. Do not change AI authority, paper-entry
+authority or schedule cadence from this evidence work.
+
 ## September 24 implementation update — P1 F&O tick-tail containment
 
 The F&O tick-tail slice is complete in Dev. Read-only retained Production logs
@@ -59,12 +75,11 @@ paper/AI authority solely from the audit's recommendation. Production remains
 read-only and no new Dev application change is implemented by this plan.
 
 The user additionally queued three Dev slices in that document. The
-full-session `python-engine` Compose-retention and research-collection deadline
-slices are complete. Next, isolate the 23 September F&O tick tail and implement
-the smallest evidence-led mitigation without weakening exit deadlines; then
-trace TATATECH's accepted signals to a durable, bounded momentum-paper
-admission outcome. Those two remaining slices are not implemented or
-authorized for Production by this documentation update.
+full-session `python-engine` Compose-retention, research-collection deadline,
+F&O tick-tail containment and TATATECH momentum-paper-admission slices are
+complete in Dev. None is authorized for Production by this documentation
+update; the next code investigation is the separately scoped P2 classifier
+latency reproduction.
 
 ## September 24 implementation update — real research package boundary
 

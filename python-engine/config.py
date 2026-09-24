@@ -290,6 +290,9 @@ class Settings(BaseSettings):
     # order-placing code path at all rather than a flag that must stay False.
     MOMENTUM_PAPER_ENABLED:   bool  = True
     MOMENTUM_PAPER_BANKROLL:  float = 50000.0
+    # Bounded decision-forensics ledger for accepted momentum signals.  It
+    # stores only an opaque identity, ticker and enumerated admission outcome.
+    MOMENTUM_PAPER_ADMISSION_RETENTION: int = 20000
     # Broker-free research side-channel. It evaluates declared variants using
     # frames already fetched by the live scanner and never reaches sizing or
     # order execution, so evidence collection is safe to enable by default.
