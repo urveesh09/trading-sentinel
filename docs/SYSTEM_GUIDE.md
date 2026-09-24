@@ -1,5 +1,33 @@
 # Trading Sentinel — system guide and engineering handover
 
+## September 24 P2 F&O audit evidence and financial interpretation (Dev)
+
+`fno_signals` now retains two additive, JSON-encoded audit fields:
+`passed_gates_json` is exactly the ordered prefix which passed before the
+first rejection, and `active_kill_switches_json` is the switch evidence
+returned for that same gate context.  The existing first reject reason,
+gate order, thresholds, sizing and execution path are unchanged.  This means a
+`kill_switches_clear` row can prove its preceding gates passed, but it never
+claims later sizing, reward/risk, execution or admission would have succeeded.
+Legacy rows remain readable and are explicitly labelled as lacking those later
+audit fields.
+
+`fno_audit_report.py` is a read-only daily CLI/builder.  It opens only an
+existing SQLite file with SQLite read-only mode; a missing path is reported and
+is never created.  It groups repeated signal rows by IST bar/underlying/
+direction as a decision unit, records re-evaluation counts, projects the
+current configured kill-switch policy next to retained switch evidence, and
+separates `TRADE_PARTIAL` ledger cash from `TRADE_CLOSED` outcomes per
+FNO_PAPER/FNO_LIVE source.  Isolated costs are shown as unavailable because the
+ledger schema does not retain them.  It emits no expectancy score or
+qualification verdict: a good day or small close sample is not an edge.
+
+Focused report/gate/log/orchestrator/hourly checks passed **84 tests**; the
+broader F&O/performance/division surface passed **376 tests**, with two
+pre-existing framework deprecation warnings.  Compilation passed.  Production
+was inspected read-only and has no recoverable local database copy for the
+historical six-row switch identity; new Dev rows preserve it going forward.
+
 ## September 24 P2 classifier latency containment (Dev)
 
 The news classifier previously reused the analyst verdict client, which is

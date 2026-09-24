@@ -1,5 +1,28 @@
 # Trading Sentinel — next-agent execution plan
 
+## September 24 implementation update — P2 F&O audit evidence
+
+The P2 F&O audit/financial-interpretation slice is complete in Dev.
+`fno_signals` now records the exact passed-gate prefix and active switch
+evidence in additive JSON fields; the stable first-reject reason and all
+decision behavior are unchanged.  The new read-only
+`fno_audit_report.py --db <existing-db> --date YYYY-MM-DD` groups repeated
+leg evaluations into one bar/underlying/direction decision unit, so the 24 Sep
+two-bar/six-row pattern cannot be described as six trade opportunities.  It
+reports per-source FNO_PAPER/FNO_LIVE partial cash events and closed outcomes
+separately, labels isolated costs unavailable, and deliberately issues no
+expectancy or qualification verdict.  Legacy rows remain readable but state
+that switch/gate evidence was not retained.
+
+Focused report/gate/log/orchestrator/hourly tests passed 84; the broader
+F&O/performance/division surface passed 376 (two existing framework warnings).
+The retained Production audit has no local SQLite copy, so the historical six
+rows cannot be retroactively enriched.  After reviewed promotion, run the
+read-only report against a retained database and compare the two decision units
+and switch evidence to the log before interpreting a block.  No remaining
+source change is currently unblocked in this three-day plan; its remaining
+items are production promotion and real-session evidence gates.
+
 ## September 24 implementation update — P2 classifier latency containment
 
 The classifier latency correction is complete in Dev. Source analysis showed

@@ -9,6 +9,7 @@ form: paper fills reconcile against real bid/ask, gates are satisfiable,
 max_loss holds, the log tells the truth.
 """
 import asyncio
+import json
 from datetime import date, datetime, timedelta
 
 import pandas as pd
@@ -203,10 +204,14 @@ async def test_paper_entry_end_to_end(kite, db_path):
     # accepted row in the signal log
     async with aiosqlite.connect(db_path) as db:
         async with db.execute(
-            "SELECT accepted, reject_reason FROM fno_signals WHERE leg='FNO_PAPER'"
+            "SELECT accepted, reject_reason, passed_gates_json, active_kill_switches_json "
+            "FROM fno_signals WHERE leg='FNO_PAPER'"
         ) as cur:
             log_rows = await cur.fetchall()
-    assert (1, "") in log_rows
+    accepted_rows = [row for row in log_rows if row[:2] == (1, "")]
+    assert len(accepted_rows) == 1
+    assert json.loads(accepted_rows[0][2])[-1] == "chain_freshness"
+    assert json.loads(accepted_rows[0][3]) == []
 
     # Telegram formatter includes the entry
     msg = format_fno_telegram(summary)

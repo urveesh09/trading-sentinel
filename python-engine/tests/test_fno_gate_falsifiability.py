@@ -11,7 +11,8 @@ import dataclasses
 import pytest
 
 from fno_gates import (
-    ALL_ENTRY_GATES, GateContext, evaluate_entry_gates, make_witness_context,
+    ALL_ENTRY_GATES, GateContext, evaluate_entry_gates,
+    evaluate_entry_gates_with_trace, make_witness_context,
 )
 from fno_risk import lots_for_pool, validate_position
 from fno_models import Leg, OptionType
@@ -41,6 +42,20 @@ def test_ladder_reports_first_failure_in_spec_order():
     assert not ok
     # trading_day (§7.1) is evaluated before min_oi (§7.3)
     assert reason == "trading_day"
+
+
+def test_trace_proves_only_the_gates_before_a_kill_switch_passed():
+    ctx = dataclasses.replace(
+        make_witness_context(), active_kill_switches=["daily_loss_halt pnl=-17000"],
+    )
+
+    ok, reason, passed = evaluate_entry_gates_with_trace(ctx)
+
+    assert not ok
+    assert reason == "kill_switches_clear"
+    assert passed == tuple(gate.name for gate in ALL_ENTRY_GATES[:-2])
+    assert "kill_switches_clear" not in passed
+    assert "chain_freshness" not in passed
 
 
 def test_pool_min_viable_uses_spec_reject_taxonomy():

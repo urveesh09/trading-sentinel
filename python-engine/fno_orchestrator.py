@@ -41,7 +41,7 @@ from fno_chain import ChainSnapshot, select_strike_by_delta, take_chain_snapshot
 from fno_costs import calc_fno_costs
 from fno_engine_mom import MomSignal, evaluate_fno_mom
 from fno_executor import FnoExecutor
-from fno_gates import GateContext, evaluate_entry_gates
+from fno_gates import GateContext, evaluate_entry_gates_with_trace
 from fno_instruments import get_fno_instruments
 from fno_models import FnoDirection, FnoSource, Leg, OptionType
 from fno_risk import (
@@ -620,9 +620,17 @@ async def _try_entry_for_leg(
         pool_at_eval=round(float(pool), 2),
     )
 
-    ok, reject = evaluate_entry_gates(ctx)
+    # The evaluator keeps the first-failure decision semantics unchanged while
+    # exposing its already-passed prefix for the append-only audit row.  This
+    # lets an operator distinguish "blocked by a switch after prior gates"
+    # from a hypothetical viable order without weakening any gate.
+    ok, reject, passed_gates = evaluate_entry_gates_with_trace(ctx)
+    gate_audit_fields = {
+        "passed_gates": passed_gates,
+        "active_kill_switches": switches,
+    }
     if not ok:
-        await _log(False, reject, **contract_fields)
+        await _log(False, reject, **contract_fields, **gate_audit_fields)
         return None
 
     # [NO-PYRAMID 2026-07-26] Refuse a second position on a contract this leg is
@@ -640,7 +648,10 @@ async def _try_entry_for_leg(
     held = [p for p in await fpos.open_positions(db_path, source)
             if p.tradingsymbol == contract.tradingsymbol]
     if held:
-        await _log(False, "already_holding_this_contract", **contract_fields)
+        await _log(
+            False, "already_holding_this_contract", **contract_fields,
+            **gate_audit_fields,
+        )
         logger.info(
             "fno_entry_skip source=%s reason=already_holding_this_contract symbol=%s open_lots=%d",
             source, contract.tradingsymbol, sum(p.lots for p in held),
@@ -657,14 +668,20 @@ async def _try_entry_for_leg(
     while lots > 0 and open_prem + lots * ask * lot_size > settings.FNO_MAX_OPEN_PREMIUM_PCT * pool:
         lots -= 1
     if lots < 1:
-        await _log(False, "pool_below_min_viable", **contract_fields, lots=0)
+        await _log(
+            False, "pool_below_min_viable", **contract_fields, lots=0,
+            **gate_audit_fields,
+        )
         return None
 
     # §4 constitution -- the order path runs through validate_position.
     legs = [Leg(opt_type=opt_type, strike=contract.strike, quantity=lots, premium=ask)]
     ok_ml, reject_ml, ml = validate_position(legs, lot_size)
     if not ok_ml:
-        await _log(False, reject_ml, **contract_fields, lots=lots, max_loss_rupees=ml)
+        await _log(
+            False, reject_ml, **contract_fields, lots=lots,
+            max_loss_rupees=ml, **gate_audit_fields,
+        )
         return None
 
     # [NAKED-LEG-EXPECTANCY 2026-07-31] A long option is only a trade if its
@@ -700,7 +717,7 @@ async def _try_entry_for_leg(
     if rr < settings.FNO_MIN_REWARD_RISK:
         await _log(
             False, "reward_risk_below_min", **contract_fields,
-            lots=lots, max_loss_rupees=ml,
+            lots=lots, max_loss_rupees=ml, **gate_audit_fields,
         )
         logger.info(
             "fno_entry_skip source=%s reason=reward_risk_below_min symbol=%s "
@@ -714,7 +731,10 @@ async def _try_entry_for_leg(
     qty = lots * lot_size
     result = await executor.execute_entry(contract.tradingsymbol, qty, ask)
     if result["status"] not in ("paper", "filled"):
-        await _log(False, f"entry_{result['status']}", **contract_fields, lots=lots)
+        await _log(
+            False, f"entry_{result['status']}", **contract_fields, lots=lots,
+            **gate_audit_fields,
+        )
         return None
     fill = float(result["fill_price"])
 
@@ -745,7 +765,10 @@ async def _try_entry_for_leg(
         entry_order_id=result.get("order_id"),
         bar_ts=sig.bar_ts,
     )
-    await _log(True, "", **contract_fields, lots=lots, max_loss_rupees=ml)
+    await _log(
+        True, "", **contract_fields, lots=lots, max_loss_rupees=ml,
+        **gate_audit_fields,
+    )
     logger.info(
         "fno_entry_submitted source=%s symbol=%s dir=%s lots=%d fill=%.2f "
         "delta=%.2f iv=%.2f stop_u=%.1f target_u=%.1f prem_stop=%.2f max_loss=%.0f",

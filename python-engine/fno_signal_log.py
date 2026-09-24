@@ -16,9 +16,10 @@ Best-effort writes: failures here must NOT crash the scan tick.
 from __future__ import annotations
 
 import csv
+import json
 import os
 from datetime import datetime, timezone
-from typing import Optional
+from typing import Optional, Sequence
 
 import aiosqlite
 import structlog
@@ -35,15 +36,50 @@ _COLUMNS = [
     # min_pool_required alone records the threshold but not what cleared it,
     # which made the 2026-08-03 F&O rows unfalsifiable -- see fno_orchestrator.
     "pool_at_eval",
+    # Audit-only fields.  They retain the preceding gates actually passed and
+    # the active kill-switch evidence without changing the first-reject
+    # contract used by the watchdog and historical reports.
+    "passed_gates_json",
+    "active_kill_switches_json",
 ]
+
+_TEXT_COLUMNS = {
+    "scan_id", "evaluated_at", "bar_ts", "leg", "underlying", "direction",
+    "reject_reason", "regime", "tradingsymbol", "opt_type", "expiry",
+    "passed_gates_json", "active_kill_switches_json",
+}
+_INTEGER_COLUMNS = {"accepted", "oi", "volume", "lots"}
+_MAX_AUDIT_LIST_ITEMS = 32
+_MAX_AUDIT_LIST_ITEM_CHARS = 240
+
+
+def _column_type(column: str) -> str:
+    if column in _INTEGER_COLUMNS:
+        return "INTEGER"
+    if column in _TEXT_COLUMNS:
+        return "TEXT"
+    return "REAL"
+
+
+def _encode_audit_list(values: Optional[Sequence[str]]) -> str:
+    """Return a compact, deterministic JSON list for append-only audit rows.
+
+    Coercing to text keeps an unexpected provider object from breaking a
+    best-effort signal log.  Both the count and each value are capped before
+    persistence: a database-error detail cannot turn an observability row into
+    an unbounded retention path.  The normal gate/switch vocabulary is much
+    smaller than these caps.
+    """
+    bounded = [
+        str(value)[:_MAX_AUDIT_LIST_ITEM_CHARS]
+        for value in (values or ())[:_MAX_AUDIT_LIST_ITEMS]
+    ]
+    return json.dumps(bounded, separators=(",", ":"))
 
 
 async def init_fno_signal_db(db_path: str) -> None:
     """Create the fno_signals table if absent. Idempotent."""
-    cols_sql = ", ".join(
-        f"{c} {'INTEGER' if c in ('accepted', 'oi', 'volume', 'lots') else 'TEXT' if c in ('scan_id', 'evaluated_at', 'bar_ts', 'leg', 'underlying', 'direction', 'reject_reason', 'regime', 'tradingsymbol', 'opt_type', 'expiry') else 'REAL'}"
-        for c in _COLUMNS
-    )
+    cols_sql = ", ".join(f"{column} {_column_type(column)}" for column in _COLUMNS)
     try:
         async with aiosqlite.connect(db_path) as db:
             await db.execute(f"CREATE TABLE IF NOT EXISTS fno_signals ({cols_sql})")
@@ -55,7 +91,9 @@ async def init_fno_signal_db(db_path: str) -> None:
                 existing = {r[1] for r in await cur.fetchall()}
             for col in _COLUMNS:
                 if col not in existing:
-                    await db.execute(f"ALTER TABLE fno_signals ADD COLUMN {col} REAL")
+                    await db.execute(
+                        f"ALTER TABLE fno_signals ADD COLUMN {col} {_column_type(col)}"
+                    )
                     logger.info("fno_signal_db_column_added column=%s", col)
             await db.commit()
     except Exception as e:
@@ -93,6 +131,8 @@ async def log_fno_signal(
     max_loss_rupees: Optional[float] = None,
     min_pool_required: Optional[float] = None,
     pool_at_eval: Optional[float] = None,
+    passed_gates: Optional[Sequence[str]] = None,
+    active_kill_switches: Optional[Sequence[str]] = None,
 ) -> None:
     """Best-effort append of one evaluation row to CSV + SQLite."""
     from config import settings
@@ -128,6 +168,8 @@ async def log_fno_signal(
         "max_loss_rupees": max_loss_rupees,
         "min_pool_required": min_pool_required,
         "pool_at_eval": pool_at_eval,
+        "passed_gates_json": _encode_audit_list(passed_gates),
+        "active_kill_switches_json": _encode_audit_list(active_kill_switches),
     }
 
     # 1. CSV append

@@ -446,6 +446,16 @@ Engine dependencies: `config`, `fno_chain`
 
 Related tests: `python-engine/tests/test_fno_analytics.py`
 
+## `python-engine/fno_audit_report.py`
+
+Read-only, evidence-first F&O daily audit report. This module deliberately reports what the retained signal and ledger rows can prove. It does not recalculate a strategy, change a gate, or infer an order from a row that stopped before admission. In particular, repeated leg evaluations for one underlying/direction/bar are grouped as one *decision unit*, not marketed as several opportunities.
+
+Top-level declarations: `_coerce_day` (line 28), `_connect_read_only` (line 34), `_table_columns` (line 42), `_decode_audit_list` (line 52), `_switch_policy` (line 65), `_empty_source` (line 102), `_parse_aware_timestamp` (line 118), `build_fno_daily_audit_report` (line 128), `_main` (line 273)
+
+Engine dependencies: `config`, `performance`
+
+Related tests: `python-engine/tests/test_fno_audit_report.py`
+
 ## `python-engine/fno_backtest.py`
 
 [ROADMAP-3.11 2026-07-12] F&O momentum backtest -- the module's first historical validation. REUSED VERBATIM from the live stack (the penny-edge pattern: shared code between live and backtest is what makes a backtest trustworthy): - fno_engine_mom.evaluate_fno_mom -- the entry signal, bar by bar - fno_gates.evaluate_entry_gates -- the §7 ladder (see caveats) - fno_risk.lots_for_pool / validate_position -- sizing + constitution - fno_costs.calc_fno_costs -- the real cost model, no bypass - options_math.black76_price/delta -- the module's own pricer - the orchestrator's exit ladder ORDER: hard-flat -> underlying stop -> trail stop -> premium backstop -> time stop MODEL SUBSTITUTIONS (read befo
@@ -530,7 +540,7 @@ Related tests: `python-engine/tests/test_fno_exit_recovery.py`, `python-engine/t
 
 [FNO-GATES 2026-07-10] Entry gates with mandatory witnesses (spec §7 + §9.1). Production penny ran a mathematically unsatisfiable breakout gate for nine months (bar_close > running day_high, 215,814 evaluations, zero accepts) while passing every health check. The defence adopted here from the FIRST commit: every gate is an object that ships a `witness_input()` constructing an input which PASSES it, and CI asserts satisfiability for every gate (tests/test_fno_gate_falsifiability.py). A gate without a witness does not merge. Gates evaluate in spec §7 order; the first failure is THE reject_reason written to /data/fno_signals.csv, which feeds the zero-accept watchdog's histogram (§9.2). `pool_be
 
-Top-level declarations: `GateContext` (line 28), `Gate` (line 61), `make_witness_context` (line 73), `_mid` (line 107), `_intrinsic` (line 111), `evaluate_entry_gates` (line 198)
+Top-level declarations: `GateContext` (line 28), `Gate` (line 61), `make_witness_context` (line 73), `_mid` (line 107), `_intrinsic` (line 111), `_reject_reason` (line 198), `evaluate_entry_gates_with_trace` (line 208), `evaluate_entry_gates` (line 224)
 
 Engine dependencies: `config`, `fno_risk`
 
@@ -574,7 +584,7 @@ Declared tables: `fno_chain_oi`, `fno_fut_snap`
 
 [FNO-ORCHESTRATOR 2026-07-10] Dual-leg tick runner for the F&O subsystem (spec §10.4). Reuses the EDGE_PAPER / EDGE_LIVE shape from penny_edge_orchestrator: one candidate scan, two legs, bankroll scales the sizing, separate source tags (FNO_PAPER / FNO_LIVE) so the legs cannot see each other's rows. In P1 the live leg is structurally disarmed three ways: FNO_DISABLE_LIVE=True, FNO_LIVE_TRADING=False, FNO_LIVE_BANKROLL=0 -- and even with all three flipped it still refuses unless fno_go_live_check() returns []. run_fno_tick() fires every FNO_SCAN_INTERVAL_SEC during market hours: 1. manage open positions (stops / target+trail / time stop / 15:10 hard flat) -- exits are checked BEFORE entries s
 
-Top-level declarations: `_now_min` (line 60), `_settle_exit_receipt` (line 64), `_fno_pool_paper` (line 125), `_fno_pool_live` (line 130), `_load_dr_entry_inputs` (line 142), `_fno_equity` (line 195), `_fno_halted` (line 201), `_fetch_futures_bars` (line 222), `_record_shadow_observation` (line 230), `_schedule_shadow_observation` (line 247), `_manage_open_positions` (line 277), `_try_entry_for_leg` (line 543), `run_fno_tick` (line 767), `_bar_already_logged` (line 1081), `format_fno_telegram` (line 1102)
+Top-level declarations: `_now_min` (line 60), `_settle_exit_receipt` (line 64), `_fno_pool_paper` (line 125), `_fno_pool_live` (line 130), `_load_dr_entry_inputs` (line 142), `_fno_equity` (line 195), `_fno_halted` (line 201), `_fetch_futures_bars` (line 222), `_record_shadow_observation` (line 230), `_schedule_shadow_observation` (line 247), `_manage_open_positions` (line 277), `_try_entry_for_leg` (line 543), `run_fno_tick` (line 790), `_bar_already_logged` (line 1104), `format_fno_telegram` (line 1125)
 
 Engine dependencies: `affordability`, `config`, `fno_chain`, `fno_costs`, `fno_engine_mom`, `fno_executor`, `fno_gates`, `fno_instruments`, `fno_models`, `fno_risk`, `fno_signal_log`, `operator_alert`, `performance`
 
@@ -616,7 +626,7 @@ Declared tables: `fno_shadow_evaluations`
 
 [FNO-LOG 2026-07-10] Append-only signal log for the F&O subsystem (spec §9.2). Every evaluation -- accepted or rejected, including "engine said no signal" ticks where a bar was actually evaluated -- writes one row to: 1. CSV at settings.FNO_SIGNAL_LOG_PATH (default /data/fno_signals.csv) 2. SQLite table `fno_signals` in settings.DB_PATH Ops rule 75: the CSV, not docker logs, is the ground truth for "is it really doing nothing?". The zero-accept watchdog reads the SQLite table. Schema is a stable contract -- never rename columns, only add. Best-effort writes: failures here must NOT crash the scan tick.
 
-Top-level declarations: `init_fno_signal_db` (line 41), `log_fno_signal` (line 65)
+Top-level declarations: `_column_type` (line 56), `_encode_audit_list` (line 64), `init_fno_signal_db` (line 80), `log_fno_signal` (line 103)
 
 Engine dependencies: `config`
 

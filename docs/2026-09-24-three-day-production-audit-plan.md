@@ -317,6 +317,55 @@ review must reconcile per-pool day totals and identify paper versus live
 activity, costs and sample size; no positive-expectancy declaration from three
 DR trades or a profitable day.
 
+**P2 implementation slice (24 September, Dev):** The retained Production
+evidence has no local SQLite copy, so it can establish only that six retained
+rows map to two NIFTY/SHORT bar timestamps; it cannot reconstruct missing
+per-row switch identity after the fact.  The Dev signal schema currently
+stores only the first reject code, which cannot prove which preceding gates
+passed or the active kill-switch evidence.  Add append-only, bounded JSON
+fields for the passed-gate prefix and active switches, preserving the existing
+first-reject contract.  Add a read-only daily F&O audit builder/CLI which
+groups signal rows by underlying/direction/bar (not as independent trade
+opportunities), exposes switch policy thresholds and retained evidence, and
+separates `TRADE_PARTIAL` cash realisations from `TRADE_CLOSED` outcomes by
+FNO_PAPER/FNO_LIVE source.  It must report costs as unavailable when the
+ledger does not retain an isolated fee amount, and must state that neither a
+daily P&L nor a small close count establishes expectancy.  It must not alter
+gate ordering, thresholds, sizing, execution, ledger writes, or scheduled
+work.  Acceptance: migration/backward-compatible rows; exact preceding-gate
+prefix and switch evidence; a three-row/single-bar report that shows two
+re-evaluations rather than three opportunities; separate partial/close totals;
+paper/live separation; unavailable costs; no expectancy verdict.  Rollback is
+GitHub revert of the additive Dev fields/tool; historical rows remain readable.
+
+**P2 Dev result (24 September):** `evaluate_entry_gates_with_trace` retains
+the existing gate loop and stable first-reject result while exposing only the
+already-passed prefix.  `fno_orchestrator` persists that prefix and the active
+switch strings from the exact `GateContext` in two capped (32 items × 240
+characters) append-only JSON fields; the normal vocabulary is far smaller.
+It does not alter a threshold, ordering, source, executor call, admission,
+or schedule.  Existing signal tables migrate the new fields as `TEXT`; older
+rows stay readable and are labelled unavailable rather than invented.
+
+`fno_audit_report.py --db <existing-db> --date YYYY-MM-DD` opens SQLite in
+read-only URI mode, refuses to create a missing path, groups each same
+bar/underlying/direction set as one decision unit, and reports its extra rows
+as re-evaluations.  For retained kill-switch blocks it projects the current
+policy threshold alongside the verbatim observed switch evidence and labels
+that policy as current configuration rather than history.  Its financial
+section separates `TRADE_PARTIAL` cash events from `TRADE_CLOSED` outcome
+events by FNO_PAPER/FNO_LIVE, reports isolated costs unavailable, and returns
+`NOT_ASSESSED` instead of an expectancy/qualification conclusion.
+
+Focused report/gate/log/orchestrator/hourly acceptance passed **84** tests;
+the complete F&O plus performance/division surface passed **376** with two
+pre-existing framework deprecation warnings; compilation, a missing-database
+read-only CLI probe, diff check and atlas regeneration (**212** Python modules)
+passed.  Production was inspected read-only and its retained historical audit
+does not include a local database copy to enrich the old six rows.  After
+reviewed promotion, run the report over a retained F&O database and compare
+the decision-unit/switch output with raw rows before interpreting it.
+
 ### Release and product gates — distinct from fixes above
 
 Dev HEAD `4174feb` is ahead of deployed Production `782bbb7`; the pending

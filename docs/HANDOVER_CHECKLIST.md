@@ -1,5 +1,23 @@
 # Handover receipt and operator checklist
 
+## September 24 P2 F&O audit evidence and financial interpretation (Dev)
+
+- [x] Preserve the first-reject contract and add only the passed-gate prefix
+  plus active-switch evidence to future F&O signal rows.  The trace proves
+  preceding gates, never hypothetical later sizing/execution/admission.
+- [x] Add a strictly read-only daily audit builder/CLI: it refuses to create a
+  missing database, groups repeated rows as one decision unit, exposes
+  switch-policy thresholds/evidence, and labels legacy evidence unavailable.
+- [x] Separate `TRADE_PARTIAL` cash events from `TRADE_CLOSED` outcomes by
+  FNO_PAPER/FNO_LIVE, mark costs unavailable where the ledger lacks them, and
+  emit no expectancy/qualification verdict.  Focused suite: 84 passed;
+  broader F&O/performance/division suite: 376 passed with two pre-existing
+  framework deprecation warnings; compilation passed.
+- [ ] After reviewed promotion, run `fno_audit_report.py` read-only against a
+  retained F&O database for a logged-in session. Compare its decision-unit and
+  switch evidence to raw rows; do not call repeated leg rows independent trade
+  opportunities or infer an edge from daily paper P&L.
+
 ## September 24 P2 classifier latency containment (Dev)
 
 - [x] Identify the owned retry mismatch: the 1-second informational classifier
