@@ -1,5 +1,26 @@
 # Trading Sentinel — system guide and engineering handover
 
+## September 24 P0 decision-forensics retention verification (Dev)
+
+Read-only Production evidence showed that `python-engine` already uses
+Docker `json-file` logging at `20m × 10` (200 MiB) and retained one 18.13 MiB
+file across 35.897 hours, an observed 0.50 MiB/hour. Gateway used the same
+configuration and retained 2.07 MiB over that interval. There was no rotation
+to correct and the 104.42 GiB C: free-space observation did not justify an
+unmeasured retention increase. Dev therefore preserves the existing Compose
+values and adds `scripts/verify_compose_logging.py`: it renders Compose JSON,
+checks only `python-engine`'s `json-file` driver, `max-size`, `max-file` and
+the minimum 200 MiB ceiling, and never prints rendered environment values.
+The focused unit suite passed 8 tests; direct rendered verification passed.
+
+This is a configuration-regression guard, not proof of three-session
+forensics retention: post-promotion acceptance is a read-only inspect and
+opening-to-close retrieval for three logged-in sessions. Docker logging
+options apply only after container recreation; no recreation was needed or
+performed because no Compose value changed. Production was inspected read-only
+and no service/data, order or message changed. Details and rollback criteria
+are in [the P0 plan](2026-09-24-three-day-production-audit-plan.md).
+
 ## September 24 gateway test-lifecycle correction and Dev acceptance (Dev only)
 
 `node-gateway/server/utils/market-hours.js` still refreshes the canonical

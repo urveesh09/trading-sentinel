@@ -52,17 +52,40 @@ independent audit can retrieve opening-to-close decision logs for at least
 three consecutive logged-in sessions, with measured disk use and no missing
 errors/health alerts. Gateway and Python are verified separately.
 
-**Requested Dev slice (plan only):** Fix the `python-engine` Compose
-log-rotation settings to retain a complete market session. Check the effective
-current `json-file` options, measured production byte rate and available disk
-before selecting `max-size`/`max-file`; document the resulting minimum session
-window, disk ceiling, and whether container recreation is needed for options to
-take effect. Verify the rendered Dev configuration with `docker compose config`
-and a focused config assertion, not just a YAML diff. A read-only post-release
-`docker inspect` and opening-to-close retrieval are the operational acceptance;
-do not edit or restart Production as part of implementation. Roll back the
-Compose change through GitHub if disk pressure or log loss is observed; retain
-the old logs/evidence where possible.
+**P0 Dev result (24 September):** Read-only Production inspection found
+`python-engine` and `node-gateway` each on `json-file`, `max-size=20m`,
+`max-file=10`. Python retained one unrotated 18.13 MiB file spanning
+35.897 hours (84,397 lines; 0.50 MiB/hour across that observed period), and
+gateway retained one unrotated 2.07 MiB file over the same period. The current
+per-container ceiling is therefore 200 MiB, about 400 observed Python log
+hours; it already comfortably covers one complete market session and does not
+justify an unmeasured increase. Host C: had 104.42 GiB free; Docker reported
+7.865 GiB images, 4.364 GiB volumes and 30.85 GiB build cache (21.47 GiB
+reclaimable). This is a bounded observation, not a peak-rate guarantee or a
+three-session operational receipt.
+
+No Compose value changed: rotation was not confirmed and changing a working
+200 MiB bound would be guesswork. Dev adds
+`scripts/verify_compose_logging.py`, which calls `docker compose config
+--format json` and asserts only the rendered `python-engine` driver,
+`max-size`, `max-file` and minimum 200 MiB ceiling without printing rendered
+environment values. It fails closed on absent/malformed/non-`json-file`
+logging. The focused assertion and unit tests are the Dev acceptance; post-
+promotion acceptance remains a read-only `docker inspect` plus opening-to-
+close retrieval for three logged-in sessions. Docker logging options take
+effect only when the container is recreated, so there is nothing to recreate
+for this no-value-change result. If a future measured peak proves the bound
+insufficient, make a separately reviewed Compose change through GitHub; roll
+back that change through GitHub if it causes disk pressure or log loss, without
+deleting retained logs or evidence.
+
+Dev verification: `python-engine/winvenv` ran the new focused verifier suite
+with **8 passed**; `python scripts/verify_compose_logging.py` and a separate
+`docker compose config --format json` inspection both resolved
+`python-engine` to `json-file`, `20m × 10`. The host's system Python has no
+`pytest`, so the repository virtual environment is required for this test.
+No Production file, service, container, data volume, Telegram route, broker
+route or Compose runtime was changed.
 
 ### P1 — Fix research collection deadline and truthful coverage (Dev code)
 

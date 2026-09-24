@@ -1,5 +1,22 @@
 # Handover receipt and operator checklist
 
+## September 24 P0 decision-forensics retention verification (Dev)
+
+- [x] Inspect Production read-only: Python and gateway use `json-file`,
+  `max-size=20m`, `max-file=10`; Python's retained 18.13 MiB file spans
+  35.897 hours at 0.50 MiB/hour observed, with no rotation confirmed.
+- [x] Preserve the existing 200 MiB engine cap rather than enlarge it from an
+  unsupported daily-rate estimate; record 104.42 GiB host free space and the
+  Docker artifact sizes as bounded evidence, not a peak-rate guarantee.
+- [x] Add the rendered-Compose guard and run 8 focused tests plus the live Dev
+  `docker compose config --format json` assertion. It exposes no environment
+  values and changes no running service.
+- [ ] After GitHub promotion, recreate only if a future approved Compose change
+  requires it, inspect the effective engine log config read-only, and retain
+  opening-to-close logs for three consecutive logged-in sessions. Roll back a
+  future retention change through GitHub if disk pressure or log loss occurs;
+  do not delete existing evidence.
+
 ## September 24 gateway test-lifecycle correction and Dev acceptance
 
 - [x] Stop the Jest-only background holiday refresh from outliving the suite,

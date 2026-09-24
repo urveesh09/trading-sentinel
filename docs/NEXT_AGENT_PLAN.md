@@ -1,5 +1,18 @@
 # Trading Sentinel — next-agent execution plan
 
+## September 24 implementation update — P0 decision-forensics retention
+
+P0 is complete as a measured no-value-change Dev slice. Read-only Production
+inspection confirmed `python-engine` already has a 200 MiB `json-file` cap and
+retained 35.897 hours/18.13 MiB at an observed 0.50 MiB/hour; no rotation was
+present to justify a speculative Compose increase. Dev now pins that rendered
+contract through `scripts/verify_compose_logging.py` and eight focused tests.
+It prints no Compose environment values and fails closed on an absent,
+malformed or non-`json-file` engine configuration. No Production container was
+recreated. The remaining P0 operational acceptance is three logged-in
+opening-to-close retrievals after reviewed promotion; see the
+[P0 receipt](2026-09-24-three-day-production-audit-plan.md).
+
 ## September 24 three-day Production audit reconciliation
 
 The 22–24 September deep audits were cross-checked against Production evidence
@@ -12,8 +25,9 @@ separate collection defect. Do not lengthen research/F&O schedules or change
 paper/AI authority solely from the audit's recommendation. Production remains
 read-only and no new Dev application change is implemented by this plan.
 
-The user additionally queued three **plan-only** Dev slices in that document:
-size and verify full-session `python-engine` Compose log retention; isolate the
+The user additionally queued three Dev slices in that document. The
+full-session `python-engine` Compose-retention verification is complete; now
+isolate the
 23 September F&O tick tail and implement the smallest evidence-led mitigation
 without weakening exit deadlines; and trace TATATECH's accepted signals to a
 durable, bounded momentum-paper admission outcome. These are not implemented
