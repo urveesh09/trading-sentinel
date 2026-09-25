@@ -157,3 +157,13 @@ only through reviewed GitHub flow. Roll back a losing or operationally unsafe
 variant to the prior version while retaining all paper, ledger and research
 evidence. The current task only records this roadmap; no trading behavior,
 configuration, Production service or authority changed.
+
+## Active Dev implementation slice
+
+The first paper-only paired study is specified in
+[the adaptive exit-study plan](2026-09-25-adaptive-exit-study-plan.md).  It
+uses an immutable timestamped-LTP input packet rather than treating sparse OHLC
+as a faithful monitor history.  Any missing, gapped, ambiguous or late-session
+path is explicitly unresolved.  No runtime exit policy, broker authority,
+EXEC approval, partner message or Production configuration is changed by this
+research instrumentation.

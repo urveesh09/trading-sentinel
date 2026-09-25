@@ -1,5 +1,33 @@
 # Trading Sentinel — system guide and engineering handover
 
+## September 25 adaptive momentum exit study (Dev)
+
+`momentum_exit_study.py` is an inert, read-only paper-research builder for
+paired momentum exit evidence.  It accepts only a bounded timestamped-LTP JSON
+packet with a source archive fingerprint per entry and emits a deterministic
+`momentum_exit_study_report_v1`.  The baseline reuses the current pure
+`evaluate_momentum_exit` state machine and explicitly models the existing
+broker SL-M at the first observed LTP trigger.  The only comparator is the
+predeclared `target_hold_trail_v1`: after the baseline would close at an
+observed target, it holds paper quantity behind a fixed 0.5R trail while
+preserving initial stop, time stops and the 15:15 IST hard-flat deadline.
+
+The module rejects a non-timezone-aware, non-chronological, cross-session,
+pre-entry, conflicting, gapped or no-exact-15:15 quote path as
+`INSUFFICIENT_EVIDENCE`; it never substitutes later quotes or fabricates an
+exit.  It includes costs, partial legs, net cash/R, drawdown, observed capture
+and unresolved counts, and permanently says qualification is `NOT_ASSESSED`.
+It has no DB/broker/HTTP/scheduler/message imports or runtime caller.  Optional
+report output is exclusive-create only; it cannot replace past evidence.
+
+Focused exit-study validation passed 13 tests with warnings fatal.  Affected
+momentum exit/paper/replay/shadow validation passed 109 tests with one
+pre-existing Starlette lifespan deprecation warning.  Compilation and diff
+checks passed and the atlas is now 213 Python modules.  This Dev-only research
+instrumentation did not change a live/paper monitor, entry/EXEC authority,
+risk/broker check, scheduler, database schema, Production service or partner
+delivery.  See [the active implementation receipt](2026-09-25-adaptive-exit-study-plan.md).
+
 ## September 25 owner authority and adaptive-trader vision (plan only)
 
 The current `momentum_paper.py` book automatically opens eligible accepted

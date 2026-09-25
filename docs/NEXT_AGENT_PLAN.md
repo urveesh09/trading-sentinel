@@ -26,6 +26,24 @@ verify deployed safety/coverage; then produce predeclared, costed, held-out
 general NIFTY/SENSEX research for human review. No advice, order or gate
 relaxation follows automatically from this plan or three paper-ledger days.
 
+## September 25 completed Dev slice — paper-only adaptive exit study
+
+`momentum_exit_study.py` now provides the scoped no-runtime paired study in
+[2026-09-25-adaptive-exit-study-plan.md](2026-09-25-adaptive-exit-study-plan.md).
+It requires source-bound timezone-aware LTP input, rejects incomplete path
+evidence, compares the current evaluator to one target-hold/0.5R-trail policy,
+accounts for costs/partials, and cannot claim qualification.  It has no live
+monitor, entry, EXEC, broker, database, scheduler or partner-delivery caller.
+Focused validation: 13 new tests warnings-fatal; affected momentum surface:
+109 passed with one existing Starlette lifespan deprecation warning.
+
+Next only after retained quote packets exist: run the report over a predeclared
+bounded set of real momentum-paper entries.  If any path is unavailable, retain
+`INSUFFICIENT_EVIDENCE` and improve evidence collection rather than changing an
+exit parameter.  Compare future held-out sessions before any human-reviewed
+proposal; no study result grants live-exit authority.  Preserve unrelated
+unstaged fixtures and independent audit documents.
+
 ## September 24 implementation update — P2 F&O audit evidence
 
 The P2 F&O audit/financial-interpretation slice is complete in Dev.

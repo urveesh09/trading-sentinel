@@ -918,6 +918,16 @@ Top-level declarations: `Regime` (line 9), `round_float_2dp` (line 17), `round_f
 
 Related tests: `python-engine/tests/test_models.py`
 
+## `python-engine/momentum_exit_study.py`
+
+Read-only paired research for momentum-paper exit policies. This module deliberately has no database, broker, HTTP, scheduler, order, or message dependency. It replays already captured timestamped LTP observations and compares the production pure exit evaluator with one fixed paper-only target-hold/trail alternative. It is not imported by any runtime manager.
+
+Top-level declarations: `ExitStudyError` (line 59), `StudyEntry` (line 64), `Quote` (line 79), `_canonical_bytes` (line 84), `_parse_timestamp` (line 91), `_finite_positive` (line 103), `_optional_positive` (line 115), `_entry_from_json` (line 121), `_quotes_from_json` (line 163), `load_exit_study_packet` (line 181), `_policy_snapshot` (line 217), `_deadline` (line 234), `_validated_quote_path` (line 238), `_position` (line 278), `_leg` (line 294), `_finalise` (line 308), `_close` (line 344), `_apply_current_decision` (line 351), `_simulate` (line 387), `_insufficient_pair` (line 424), `_summary` (line 439), `build_momentum_exit_study` (line 459), `write_study_report_once` (line 502), `_main` (line 532)
+
+Engine dependencies: `config`, `engine`, `momentum_exits`
+
+Related tests: `python-engine/tests/test_momentum_exit_study.py`
+
 ## `python-engine/momentum_exits.py`
 
 [TIER0-0.1 2026-07-14] Intraday exit management for MIS momentum positions. WHY THIS FILE EXISTS -------------------- Until today, a momentum position had no stop and no target -- not in the engine, not at the broker: * Broker side: node-gateway/server/services/executor.js guarded GTT placement with `if (!isIntraday)`. Zerodha GTT is CNC/NRML-only, so MIS positions got no protective order at all, and nothing took its place. * Engine side: the only scheduled jobs that touched a momentum position were momentum_eod_warning (15:10) and auto_square_momentum (15:15). Nothing evaluated the stop or the target in between. So the stop_loss and target_1 computed by evaluate_momentum_signal -- the numbe

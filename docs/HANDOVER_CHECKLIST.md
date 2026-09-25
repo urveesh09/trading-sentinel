@@ -8,9 +8,17 @@
 - [x] Add the [adaptive trader roadmap](2026-09-25-adaptive-trader-vision-plan.md):
   opportunity/thesis lifecycle, paper-only paired exit study, predeclared
   strategy basket, costed allocation research and separate partner authority.
-- [ ] Implement the first Dev paper-only exit comparison with source-bound
-  chronological evidence, net costs, deadlines, drawdown and unresolved gaps.
-  No Production or live-order behavior is changed by this checklist update.
+- [x] Implement the first Dev paper-only exit comparison according to
+  [the exit-study slice](2026-09-25-adaptive-exit-study-plan.md): source-bound
+  chronological LTP evidence, net costs, deadline/gap checks, drawdown and
+  explicit unresolved paths.  `momentum_exit_study.py` is no-runtime research
+  code; focused acceptance passed 13 warnings-fatal tests and the affected
+  momentum surface passed 109 with one existing Starlette lifespan warning.
+- [ ] Preserve actual timestamped quote packets and run the comparison over a
+  predeclared bounded momentum-paper sample.  Keep incomplete evidence marked
+  `INSUFFICIENT_EVIDENCE`; obtain independent future holdout before any
+  owner-reviewed proposal.  No result authorizes live exits, orders or partner
+  advice.
 
 ## September 25 Production audit response (plan only)
 
