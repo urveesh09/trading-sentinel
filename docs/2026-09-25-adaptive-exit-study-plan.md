@@ -104,6 +104,8 @@ Validation in Dev: 13 new exit-study tests passed with warnings fatal; 109
 focused momentum exit/paper/replay/shadow tests passed with one pre-existing
 Starlette lifespan deprecation warning; Python compilation and `git diff
 --check` passed.  The system code atlas was regenerated to 213 Python modules.
-No Production file, service, broker order, Telegram message, runtime
+The implementation commit is `cbc5fca` on
+`codex/production-correction-hedge-p0`, pushed to GitHub and not deployed.  No
+Production file, service, broker order, Telegram message, runtime
 configuration, database schema, monitor schedule, live exit or EXEC authority
 changed.

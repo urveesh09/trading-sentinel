@@ -14,6 +14,7 @@
   explicit unresolved paths.  `momentum_exit_study.py` is no-runtime research
   code; focused acceptance passed 13 warnings-fatal tests and the affected
   momentum surface passed 109 with one existing Starlette lifespan warning.
+  Source commit `cbc5fca` is pushed on the Dev branch and not deployed.
 - [ ] Preserve actual timestamped quote packets and run the comparison over a
   predeclared bounded momentum-paper sample.  Keep incomplete evidence marked
   `INSUFFICIENT_EVIDENCE`; obtain independent future holdout before any

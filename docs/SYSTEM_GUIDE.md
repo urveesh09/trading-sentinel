@@ -26,7 +26,9 @@ pre-existing Starlette lifespan deprecation warning.  Compilation and diff
 checks passed and the atlas is now 213 Python modules.  This Dev-only research
 instrumentation did not change a live/paper monitor, entry/EXEC authority,
 risk/broker check, scheduler, database schema, Production service or partner
-delivery.  See [the active implementation receipt](2026-09-25-adaptive-exit-study-plan.md).
+delivery.  Source commit `cbc5fca` is pushed on
+`codex/production-correction-hedge-p0`; it is not deployed.  See [the active
+implementation receipt](2026-09-25-adaptive-exit-study-plan.md).
 
 ## September 25 owner authority and adaptive-trader vision (plan only)
 
