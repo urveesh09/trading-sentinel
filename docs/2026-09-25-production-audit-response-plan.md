@@ -44,7 +44,7 @@ The audit also describes 16:15 as “mid-market,” despite identifying it as af
 - **Research collector/DR deadlines:** Compare per-index requested/received/partial/capped quote evidence and `fno_tick` stage durations for three logged-in sessions after `d19b30f`/`311cc24`. A 48s research max is good only if SENSEX/NIFTY active legs and public management evidence are not silently lost. Preserve exits/hard-flat ahead of speculative DR entry; investigate recurrent 20s skips with stage and provider/limiter timings before changing budgets.
 - **Parity warning:** Reconstruct same-tick future and ATM call/put contract identities, expiries, bid/ask mids, last-trade and receipt timestamps, spread/depth, and tenor/carry assumptions. Write a minimal counterexample and test if the calculation or wording is wrong. Do not relax a genuine price/quality gate or claim Kite staleness without packet evidence. If quality genuinely fails, make the entry decision explicit and fail closed; keep exit management independent.
 - **Penny health:** On the next logged-in market session, verify the first successful scanner tick sets scan and regime state and health returns to OK within the documented freshness budget. If not, reproduce the restart path and fix only the ownership of the missing state, with off-hours and no-token tests. Do not fabricate a post-close “healthy” scan.
-- **Classifier/reviewer:** Check the typed review and Telegram policy for TENNIND independently of the paper book. Keep `UNKNOWN` informational and no-retry classifier latency bounded. A proposed default-veto is a product-authority change requiring a separate decision and evidence, not a fix established by this loss.
+- **Classifier/reviewer:** Check the typed review and Telegram policy for TENNIND independently of the paper book. Keep `UNKNOWN` informational and no-retry classifier latency bounded. **Do not implement a default AI veto:** the owner explicitly wants autonomous paper decisions and explicit approval only for new real-money momentum entries. A classifier failure did not cause the prior paper opening.
 
 **Acceptance:** Focused tests for each demonstrated defect; unchanged order/alert authority, admission and exit deadlines; no stale or fabricated market packet; read-only Production session receipt after GitHub promotion. If a result remains an unproven audit inference, close it as such rather than creating a speculative patch.
 
@@ -58,9 +58,24 @@ The audit also describes 16:15 as “mid-market,” despite identifying it as af
 
 **Acceptance:** Per-index explainable readiness, immutable replay and predeclared held-out review with a costed outcome and explicit uncertainty; no qualification if the current strategy fails. After authorization, a TEST canary is distinguishable from advice and no message is sent twice. Rollback revokes qualification/delivery without erasing evidence.
 
-### P2 — Predeclared strategy comparisons; no immediate gate loosening
+### P2 — Adaptive trader research; no immediate live rule change
 
-The 25 Sep five penny STOPs and TENNIND loss are hypotheses, not statistical proof. Research two bounded alternatives against the current baseline in shadow only: (a) an entry-time liquidity/spread and volatility-persistence filter for penny breakouts, using only information available at the decision; and (b) a cost-aware momentum or defined-risk index candidate whose entry/exit deadlines and maximum loss are unchanged. Do not use post-entry stop timing as an entry feature, change thresholds after seeing held-out results, or transfer a stock-paper result to partner index options. Pre-register variants and evaluation rules, compare the same independent opportunities with realistic fees, spreads, slippage, missed fills and adverse periods, then reserve future sessions for held-out testing. A variant that reduces trades but has no robust net benefit stays research-only. See the [primary backtest-overfitting study](https://escholarship.org/uc/item/4w1110bb) and [SEBI's F&O loss study](https://www.sebi.gov.in/media-and-notifications/press-releases/sep-2024/updated-sebi-study-reveals-93-of-individual-traders-incurred-losses-in-equity-fando-between-fy22-and-fy24-aggregate-losses-exceed-1-8-lakh-crores-over-three-years_86906.html) for why positive in-sample paper P&L is insufficient.
+The owner wants proactive opportunity discovery, flexible whole-trade
+management and better upside capture—not a growing wall of veto filters.
+The [adaptive trader roadmap](2026-09-25-adaptive-trader-vision-plan.md)
+sets the authority boundary and ordered research: baseline decision-quality,
+a small predeclared strategy basket, paired entry/exit comparisons, adaptive
+capital allocation and an honest feedback loop. The first executable slice is
+a **paper-only paired exit study** on identical momentum entries: current
+exit versus one predeclared trailing/hold variant, with net costs, drawdown,
+gap/late-exit risk and favorable-excursion capture. The 25 Sep five penny STOPs
+and TENNIND loss motivate investigation but cannot select a winning variant.
+Any owner longer-horizon/overnight strategy is a separate product; partner
+ideas remain intraday. No strategy experiment grants order authority or
+changes an active live position's exit contract. See the
+[primary backtest-overfitting study](https://escholarship.org/uc/item/4w1110bb)
+and [SEBI's F&O loss study](https://www.sebi.gov.in/media-and-notifications/press-releases/sep-2024/updated-sebi-study-reveals-93-of-individual-traders-incurred-losses-in-equity-fando-between-fy22-and-fy24-aggregate-losses-exceed-1-8-lakh-crores-over-three-years_86906.html)
+for why positive in-sample paper P&L is insufficient.
 
 ## Documentation, release and remaining authority
 

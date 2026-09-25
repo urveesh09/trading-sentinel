@@ -1,5 +1,18 @@
 # Trading Sentinel — next-agent execution plan
 
+## September 25 owner vision — autonomous paper, approved real money
+
+The owner's [adaptive trader roadmap](2026-09-25-adaptive-trader-vision-plan.md)
+supersedes any proposed default-veto response to a news-classifier timeout.
+Paper momentum remains autonomous under deterministic sizing/exits; optional
+AI is an annotation, not trade authority. Every **new real-money momentum
+entry** still requires explicit owner EXEC approval and the existing hard
+broker/session/risk gates. The strategy objective is proactive discovery,
+thesis-based management, upside capture and evidence-led capital allocation,
+not merely more entry filters. Start with a paper-only paired exit study and
+no automatic live promotion. Partner general ideas remain manual intraday
+advice with their own qualification and delivery gates.
+
 ## September 25 Production audit response and partner activation
 
 Start with the [September 25 corrected audit response and ordered plan](2026-09-25-production-audit-response-plan.md).

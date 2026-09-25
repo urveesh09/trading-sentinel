@@ -1,5 +1,17 @@
 # Handover receipt and operator checklist
 
+## September 25 adaptive-trader product decision (plan only)
+
+- [x] Preserve autonomous deterministic momentum paper trading and explicit
+  owner EXEC approval for every new real-money momentum entry. Reject an
+  unrequested default AI veto on classifier timeout.
+- [x] Add the [adaptive trader roadmap](2026-09-25-adaptive-trader-vision-plan.md):
+  opportunity/thesis lifecycle, paper-only paired exit study, predeclared
+  strategy basket, costed allocation research and separate partner authority.
+- [ ] Implement the first Dev paper-only exit comparison with source-bound
+  chronological evidence, net costs, deadlines, drawdown and unresolved gaps.
+  No Production or live-order behavior is changed by this checklist update.
+
 ## September 25 Production audit response (plan only)
 
 - [x] Reconcile the deployed merge and 25 September paper ledger read-only;

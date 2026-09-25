@@ -1,5 +1,20 @@
 # Trading Sentinel — system guide and engineering handover
 
+## September 25 owner authority and adaptive-trader vision (plan only)
+
+The current `momentum_paper.py` book automatically opens eligible accepted
+deterministic signals and contains no order-placement path; the owner-facing
+real momentum entry is a manual Telegram EXEC decision. The owner confirmed
+this authority split: an informational news-classifier timeout is not a reason
+to add a default paper veto, while each new real-money momentum entry requires
+explicit approval and existing execution/risk checks. The next roadmap uses
+paper/shadow evidence to compare full trade theses, adaptive exits and capital
+allocation so Sentinel can pursue more upside without hiding downside or
+loosening live authority. Longer owner holding horizons require a separate
+product; partner advice remains manual intraday. See
+[the adaptive trader roadmap](2026-09-25-adaptive-trader-vision-plan.md).
+This is documentation only; no trading behavior was changed.
+
 ## September 25 Production audit interpretation (read-only)
 
 Production merge `f52f4d5c` now includes the September 24 Dev improvements.
