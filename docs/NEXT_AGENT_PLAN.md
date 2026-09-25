@@ -1,5 +1,18 @@
 # Trading Sentinel — next-agent execution plan
 
+## September 25 Production audit response and partner activation
+
+Start with the [September 25 corrected audit response and ordered plan](2026-09-25-production-audit-response-plan.md).
+Production merge `f52f4d5c` contains the previous Dev source. Read-only checks
+correct the audit's claimed missing paper-admission migration and distinguish
+post-close container replacement from unproved log rotation. The saved general
+intraday profile and per-index collection attempts exist; general strategy
+qualification is still absent, while the 0/7 staging-days gate belongs to a
+separate personalized-hedge phase. First preserve release-spanning logs and
+verify deployed safety/coverage; then produce predeclared, costed, held-out
+general NIFTY/SENSEX research for human review. No advice, order or gate
+relaxation follows automatically from this plan or three paper-ledger days.
+
 ## September 24 implementation update — P2 F&O audit evidence
 
 The P2 F&O audit/financial-interpretation slice is complete in Dev.

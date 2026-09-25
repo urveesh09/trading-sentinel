@@ -1,5 +1,23 @@
 # Handover receipt and operator checklist
 
+## September 25 Production audit response (plan only)
+
+- [x] Reconcile the deployed merge and 25 September paper ledger read-only;
+  correct the paper-admission table name and verify TENNIND `opened` plus
+  PARADEEP `zero_shares`. No speculative migration is required.
+- [x] Separate post-close container replacement from unproved Docker log
+  rotation, informational F&O parity warning from entry veto, and expected
+  post-close penny health staleness from a proven restart defect.
+- [x] Verify a saved general INTRADAY profile, 165 collection attempts per
+  index on 25 September, six SENSEX candidate decisions and zero general
+  qualifications. The hedge phase's 0/7 staging counter is separate.
+- [ ] Execute the ordered [September 25 plan](2026-09-25-production-audit-response-plan.md):
+  release-spanning forensic logs, three-session deployed coverage/safety
+  observation, packet-level parity diagnosis, next-session penny recovery,
+  and predeclared held-out general partner research/review.
+- [ ] Any TEST canary, advice, broker action or Production deployment requires
+  its separate authority and evidence. This documentation change grants none.
+
 ## September 24 P2 F&O audit evidence and financial interpretation (Dev)
 
 - [x] Preserve the first-reject contract and add only the passed-gate prefix

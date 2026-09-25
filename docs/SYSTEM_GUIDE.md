@@ -1,5 +1,22 @@
 # Trading Sentinel — system guide and engineering handover
 
+## September 25 Production audit interpretation (read-only)
+
+Production merge `f52f4d5c` now includes the September 24 Dev improvements.
+The new paper-admission table is already present as
+`momentum_paper_admission_outcomes`; 25 September retained TENNIND `opened` and
+PARADEEP `zero_shares`. The informational news-classifier timeout did not cause
+the earlier TENNIND paper opening. A 16:15 IST post-close container replacement,
+not confirmed 200 MiB rotation, explains the missing old-container log view;
+the penny scan intentionally does not run after 15:30 IST, so post-restart
+health stays stale until a genuine market-hours scan. The F&O parity warning
+is diagnostic and does not itself veto a DR entry. General partner intraday
+collection and a saved profile exist, but qualification/review are absent;
+the hedge pathway's 0/7 operator staging counter is separate. Exact evidence,
+limitations and the next plan are in
+[the September 25 audit response](2026-09-25-production-audit-response-plan.md).
+No source, configuration, broker or Telegram behavior changed in this update.
+
 ## September 24 P2 F&O audit evidence and financial interpretation (Dev)
 
 `fno_signals` now retains two additive, JSON-encoded audit fields:
