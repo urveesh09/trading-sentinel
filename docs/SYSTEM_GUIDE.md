@@ -21,7 +21,9 @@ order, network, message, schedule, entry/exit or owner-EXEC authority.
 Focused audit/lifecycle checks passed 9 tests with warnings fatal; the affected
 surface passed 194 with one existing Starlette lifespan deprecation warning.
 Compilation/diff checks passed and the atlas now lists 214 modules. This is
-Dev-only and not deployed. See [the Phase 2 implementation receipt](2026-09-26-adaptive-decision-baseline-plan.md).
+Dev-only and not deployed. Source commit `94871f2` is pushed on
+`codex/production-correction-hedge-p0`. See [the Phase 2 implementation
+receipt](2026-09-26-adaptive-decision-baseline-plan.md).
 
 ## September 25 adaptive momentum exit study (Dev)
 

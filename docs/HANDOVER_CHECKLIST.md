@@ -24,8 +24,9 @@
   retain new admission-to-position-to-cash keys, audit them read-only, and
   label all legacy/unlinked lifecycle evidence unavailable. Focused acceptance:
   9 warnings-fatal audit/lifecycle tests; affected momentum surface: 194 passed
-  with one existing Starlette lifespan warning. No backfill, live/paper strategy
-  change or new authority was added.
+  with one existing Starlette lifespan warning. Source commit `94871f2` is
+  pushed on `codex/production-correction-hedge-p0`, not deployed. No backfill,
+  live/paper strategy change or new authority was added.
 - [ ] After reviewed promotion, verify the additive `paper_admission_key`
   migration and run the read-only decision audit against fresh paper entries.
   Preserve old unlinked evidence as unavailable; do not infer a strategy edge,

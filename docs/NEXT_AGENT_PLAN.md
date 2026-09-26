@@ -37,6 +37,9 @@ broker, scheduler, AI or partner behavior changed. New audit/lifecycle tests:
 9 warnings-fatal; affected momentum surface: 194 passed with one existing
 Starlette lifespan deprecation warning.
 
+Source commit `94871f2` is pushed on `codex/production-correction-hedge-p0`;
+it is not deployed.
+
 Next: promote through reviewed GitHub flow, then collect new keyed paper
 lifecycle records and source-bound LTP packets. Run both audit tools on those
 records before beginning the predeclared strategy basket; historical unlinked

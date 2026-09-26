@@ -92,4 +92,5 @@ compilation and `git diff --check` passed. The atlas was regenerated to 214
 Python modules. This is an additive Dev schema migration with no configuration
 or backfill; no Production service/data, broker action, Telegram message,
 runtime strategy rule, paper sizing, EXEC gate or partner delivery behavior was
-changed.
+changed. Source commit `94871f2` is pushed to
+`codex/production-correction-hedge-p0`; it is not deployed.
