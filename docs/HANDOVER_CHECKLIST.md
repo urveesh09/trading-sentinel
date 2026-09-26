@@ -31,6 +31,16 @@
   migration and run the read-only decision audit against fresh paper entries.
   Preserve old unlinked evidence as unavailable; do not infer a strategy edge,
   partner qualification or live authority from the report.
+- [x] Implement the [Phase 3 source-bound evidence review](2026-09-26-adaptive-evidence-binding-plan.md):
+  future exit-study packets may carry the exact admission key and the
+  read-only composite review rejects all heuristic/ticker joins. Focused
+  Phase 1/3 tests: 20 passed warnings-fatal; affected paper/replay suite: 214
+  passed with one existing Starlette lifespan warning. No runtime authority,
+  strategy, allocation, exit, broker, EXEC or partner behavior changed.
+- [ ] After reviewed promotion, retain a predeclared sample of fresh keyed
+  admissions and complete LTP paths; run the Phase 3 review and preserve every
+  unavailable/unresolved row. Run the frozen strategy-basket comparison only
+  on later held-out sessions. No report can qualify advice or change a trade.
 
 ## September 25 Production audit response (plan only)
 

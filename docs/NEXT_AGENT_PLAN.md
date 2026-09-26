@@ -45,6 +45,24 @@ lifecycle records and source-bound LTP packets. Run both audit tools on those
 records before beginning the predeclared strategy basket; historical unlinked
 rows are not a reason to backfill or infer performance.
 
+## September 26 completed Dev slice — source-bound evidence review
+
+The [Phase 3 evidence-binding slice](2026-09-26-adaptive-evidence-binding-plan.md)
+is implemented. It joins a Phase-1 exit study to a Phase-2 paper lifecycle
+only through a supplied exact admission key; ticker/time similarity is never a
+fallback. It remains read-only and reports missing/duplicate/mismatched keys,
+incomplete paths and unreconciled cash explicitly. Phase 1/3 focused checks:
+20 passed warnings-fatal; the affected paper/replay surface: 214 passed with
+one existing Starlette lifespan warning. No entry, exit, sizing, scheduler,
+broker, EXEC, partner or delivery behavior changed.
+
+Next: promote the reviewed evidence instrumentation, preserve fresh keyed
+admissions and source-bound LTP paths, then run the Phase 3 review on a
+predeclared bounded sample. Any missing path or non-matching lifecycle remains
+unavailable. Only after independent future-held-out data exists should the
+already-implemented frozen strategy-basket comparison be run; do not invent
+or tune a result from the current sample.
+
 ## September 25 completed Dev slice — paper-only adaptive exit study
 
 `momentum_exit_study.py` now provides the scoped no-runtime paired study in

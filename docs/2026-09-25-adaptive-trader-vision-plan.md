@@ -175,3 +175,13 @@ The next bounded step is the
 add immutable admission-to-position-to-ledger lineage for future paper entries
 and a read-only audit. It preserves all trading behavior and treats old,
 unlinked evidence as unavailable rather than applying unsafe ticker/date joins.
+
+## Phase 3 active Dev slice
+
+The [source-bound paper evidence review](2026-09-26-adaptive-evidence-binding-plan.md)
+binds a future Phase-1 exit-study entry to a Phase-2 lifecycle only through the
+same opaque paper admission key. It is read-only and rejects missing,
+duplicate or same-ticker-but-different identities. This completes the
+diagnostic connection required before interpreting a paired exit sample; it
+does not supply the fresh quote/path evidence, future holdout, strategy basket
+result or any authority to change a trade.

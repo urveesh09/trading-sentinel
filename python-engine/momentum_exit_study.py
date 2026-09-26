@@ -63,6 +63,10 @@ class ExitStudyError(ValueError):
 @dataclass(frozen=True)
 class StudyEntry:
     entry_id: str
+    # Optional only for compatibility with the original v1 evidence packet.
+    # The Phase-3 composite review requires it and treats an absent key as
+    # unavailable evidence rather than guessing from ticker or time.
+    admission_key: str | None
     source_ref: str
     ticker: str
     entry_at: datetime
@@ -118,6 +122,17 @@ def _optional_positive(value: object, field: str) -> float | None:
     return _finite_positive(value, field)
 
 
+def _optional_admission_key(value: object) -> str | None:
+    if value is None:
+        return None
+    if not isinstance(value, str):
+        raise ExitStudyError("entry.admission_key must be a bounded string when supplied")
+    key = value.strip()
+    if not key or len(key) > 200 or any(ord(char) < 32 for char in key):
+        raise ExitStudyError("entry.admission_key must be a non-empty <=200-character printable string")
+    return key
+
+
 def _entry_from_json(raw: object) -> StudyEntry:
     if not isinstance(raw, dict):
         raise ExitStudyError("entry must be an object")
@@ -147,6 +162,7 @@ def _entry_from_json(raw: object) -> StudyEntry:
         raise ExitStudyError("entry.target_1 must exceed entry.entry_price")
     return StudyEntry(
         entry_id=entry_id,
+        admission_key=_optional_admission_key(raw.get("admission_key")),
         source_ref=source_ref,
         ticker=ticker,
         entry_at=_parse_timestamp(raw.get("entry_at"), "entry.entry_at"),
@@ -424,6 +440,7 @@ def _simulate(entry: StudyEntry, quotes: Sequence[Quote], variant: str) -> dict[
 def _insufficient_pair(entry: StudyEntry, issue: str) -> dict[str, Any]:
     evidence = {
         "entry_id": entry.entry_id,
+        "admission_key": entry.admission_key,
         "ticker": entry.ticker,
         "source_ref": entry.source_ref,
         "status": "INSUFFICIENT_EVIDENCE",
@@ -468,6 +485,7 @@ def build_momentum_exit_study(path: str | os.PathLike[str]) -> dict[str, Any]:
             continue
         pairs.append({
             "entry_id": entry.entry_id,
+            "admission_key": entry.admission_key,
             "ticker": entry.ticker,
             "source_ref": entry.source_ref,
             "status": "COMPLETE",

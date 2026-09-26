@@ -1,5 +1,24 @@
 # Trading Sentinel — system guide and engineering handover
 
+## September 26 source-bound momentum-paper evidence review (Dev)
+
+`momentum_paper_evidence_review.py --db <existing-db> --input <packet>` joins
+the Phase-1 paired exit study to the Phase-2 paper lifecycle audit only when
+the input entry includes the exact opaque `admission_key`. The exit-study v1
+packet remains backward-compatible, but its unkeyed entries are explicitly
+unavailable to this composite review. Duplicate keys, same-ticker collisions,
+missing/non-opened admissions, incomplete quote paths and unresolved cash all
+remain visible rather than being joined or scored. It does not equate an
+alternative simulated exit with actual ledger cash; it only reports a paired
+research delta for exact, closed, cash-matched lifecycles.
+
+The review is an inert, read-only CLI: no runtime caller, database write,
+network, broker, order, scheduler, Telegram, EXEC, allocation, partner or
+qualification behavior was added. Focused Phase 1/3 checks passed 20 tests
+with warnings fatal; the affected suite passed 214 with one existing Starlette
+lifespan deprecation warning. This is Dev-only and not deployed. See [the
+Phase 3 implementation receipt](2026-09-26-adaptive-evidence-binding-plan.md).
+
 ## September 26 momentum-paper decision baseline (Dev)
 
 Future `MOMENTUM_PAPER` lifecycles now retain the opaque admission identity
