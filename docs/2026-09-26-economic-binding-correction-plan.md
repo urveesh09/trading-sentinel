@@ -29,3 +29,8 @@ Regression cases cover altered original quantity, entry time/price, stop,
 target, ATR/VWAP/regime, corrupted snapshots, timezone equivalence, mutable
 remaining shares, repeat admission and transactional rollback. Tests establish
 binding correctness, not profitable exits or partner readiness.
+
+Source receipt: `94adfc0`, pushed to `codex/production-correction-hedge-p0`.
+Post-commit guide/plan/checklist/atlas consistency verified. Production was
+neither edited nor restarted; migration is not deployed by this work.
+Unrelated dirty fixtures and prior audit artifacts were left untouched.
