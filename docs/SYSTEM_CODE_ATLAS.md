@@ -942,11 +942,19 @@ Related tests: `python-engine/tests/test_momentum_exits.py`
 
 [MOMENTUM-PAPER 2026-07-26] A paper twin of the live momentum book. WHY THIS EXISTS --------------- Live momentum entry is manual: the screener sends a Telegram EXEC button and a human decides. The ledger therefore records what the *operator* did, never what the *strategy* proposed -- 8 recorded momentum trades in months of running, which is why nothing can be concluded about the strategy from them. A signal that fired at 11:04 while nobody was looking left no trace at all. This book takes EVERY accepted momentum signal automatically, sizes it off its own pool, manages it with the same pure exit logic the live book uses, and books cost-adjusted P&L to source='MOMENTUM_PAPER'. The result is a
 
-Top-level declarations: `paper_position_size` (line 72), `_sig_get` (line 101), `_sqlite_safe` (line 110), `_paper_risk_pct` (line 137), `_admission_signal_key` (line 157), `_init_admission_outcomes` (line 181), `_record_admission_outcome` (line 203), `_bound_admission_outcomes` (line 219), `record_momentum_paper_upstream_deduplications` (line 229), `_record_disabled_admissions` (line 266), `_record_transaction_failures` (line 290), `open_momentum_paper_positions` (line 320), `_close_paper_position` (line 458), `momentum_paper_monitor` (line 511), `momentum_paper_square_off` (line 608)
+Top-level declarations: `paper_position_size` (line 72), `_sig_get` (line 101), `_sqlite_safe` (line 110), `_paper_risk_pct` (line 137), `_admission_signal_key` (line 157), `_init_admission_outcomes` (line 181), `_record_admission_outcome` (line 203), `_bound_admission_outcomes` (line 219), `_supports_paper_admission_identity` (line 229), `record_momentum_paper_upstream_deduplications` (line 241), `_record_disabled_admissions` (line 278), `_record_transaction_failures` (line 302), `open_momentum_paper_positions` (line 332), `_close_paper_position` (line 472), `momentum_paper_monitor` (line 526), `momentum_paper_square_off` (line 624)
 
 Engine dependencies: `config`, `engine`, `models`, `momentum_exits`, `performance`
 
-Related tests: `python-engine/tests/test_momentum_paper.py`
+Related tests: `python-engine/tests/test_momentum_paper.py`, `python-engine/tests/test_momentum_paper_audit.py`
+
+## `python-engine/momentum_paper_audit.py`
+
+Read-only, exact-key lifecycle audit for momentum-paper evidence. The audit intentionally refuses ticker/date joins. Only future paper rows with the immutable ``paper_admission_key`` and ledger ``origin_ref`` can form a complete lifecycle; legacy records remain visible as unavailable evidence.
+
+Top-level declarations: `MomentumPaperAuditError` (line 26), `_canonical` (line 30), `_unavailable` (line 34), `_open_readonly` (line 46), `_table_columns` (line 56), `_round` (line 63), `_position_view` (line 67), `_cash_view` (line 81), `build_momentum_paper_decision_audit` (line 120), `_main` (line 261)
+
+Related tests: `python-engine/tests/test_momentum_paper_audit.py`
 
 ## `python-engine/momentum_replay.py`
 
@@ -1538,7 +1546,7 @@ Related tests: `python-engine/tests/test_penny_universe.py`, `python-engine/test
 
 No module docstring; use the declarations and callers below.
 
-Top-level declarations: `init_ledger` (line 10), `current_bankroll` (line 84), `bankroll_for_source` (line 111), `allocation_for_source` (line 181), `division_equity` (line 188), `nifty_bankroll` (line 210), `fno_bankroll` (line 255), `record_trade_close` (line 286), `record_partial_realisation` (line 390), `record_cb_reset` (line 427), `_last_cb_reset_id` (line 450), `check_circuit_breakers` (line 457), `cb_halt_channels` (line 549), `enforce_circuit_breakers` (line 559), `penny_pool_pnl` (line 624), `pool_breakdown` (line 666), `is_paper_source` (line 784), `fmt_money` (line 803), `_division_registry` (line 829), `division_breakdown` (line 862), `format_division_breakdown` (line 931)
+Top-level declarations: `init_ledger` (line 10), `current_bankroll` (line 84), `bankroll_for_source` (line 111), `allocation_for_source` (line 181), `division_equity` (line 188), `nifty_bankroll` (line 210), `fno_bankroll` (line 255), `record_trade_close` (line 286), `record_partial_realisation` (line 390), `record_cb_reset` (line 441), `_last_cb_reset_id` (line 464), `check_circuit_breakers` (line 471), `cb_halt_channels` (line 563), `enforce_circuit_breakers` (line 573), `penny_pool_pnl` (line 638), `pool_breakdown` (line 680), `is_paper_source` (line 798), `fmt_money` (line 817), `_division_registry` (line 843), `division_breakdown` (line 876), `format_division_breakdown` (line 945)
 
 Engine dependencies: `analytics`, `config`
 
@@ -1578,7 +1586,7 @@ Related tests: `python-engine/tests/test_portfolio.py`
 
 No module docstring; use the declarations and callers below.
 
-Top-level declarations: `_init_pnl_outbox` (line 16), `_deliver_pnl_outbox` (line 29), `_add_column_if_missing` (line 53), `init_positions_db` (line 85), `get_open_positions` (line 144), `update_daily_positions` (line 186)
+Top-level declarations: `_init_pnl_outbox` (line 16), `_deliver_pnl_outbox` (line 29), `_add_column_if_missing` (line 53), `init_positions_db` (line 85), `get_open_positions` (line 154), `update_daily_positions` (line 196)
 
 Engine dependencies: `chandelier_stop`, `config`, `engine`, `models`
 

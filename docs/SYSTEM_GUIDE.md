@@ -1,5 +1,28 @@
 # Trading Sentinel — system guide and engineering handover
 
+## September 26 momentum-paper decision baseline (Dev)
+
+Future `MOMENTUM_PAPER` lifecycles now retain the opaque admission identity
+already generated at the real admission boundary. `init_positions_db` adds
+nullable `positions.paper_admission_key` with a partial unique index; existing
+and non-paper rows remain NULL. A paper open records that exact key, and paper
+partial/final ledger events retain it as `origin_ref`. Existing minimal/legacy
+schemas still perform their established paper bookkeeping, but evidence without
+those keys is explicitly unlinked rather than guessed.
+
+`momentum_paper_audit.py --db <existing-db>` is a read-only JSON audit of
+admission → position → ledger evidence. It only makes exact-key joins, treats
+the ledger as cash truth, separates partial from terminal cash, cross-checks
+position P&L, and exposes missing/duplicate/unlinked lifecycle data as
+unavailable or unresolved. It neither initializes a database nor emits a
+qualification conclusion. It is not a runtime caller and adds no broker,
+order, network, message, schedule, entry/exit or owner-EXEC authority.
+
+Focused audit/lifecycle checks passed 9 tests with warnings fatal; the affected
+surface passed 194 with one existing Starlette lifespan deprecation warning.
+Compilation/diff checks passed and the atlas now lists 214 modules. This is
+Dev-only and not deployed. See [the Phase 2 implementation receipt](2026-09-26-adaptive-decision-baseline-plan.md).
+
 ## September 25 adaptive momentum exit study (Dev)
 
 `momentum_exit_study.py` is an inert, read-only paper-research builder for

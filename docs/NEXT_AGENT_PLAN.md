@@ -26,6 +26,22 @@ verify deployed safety/coverage; then produce predeclared, costed, held-out
 general NIFTY/SENSEX research for human review. No advice, order or gate
 relaxation follows automatically from this plan or three paper-ledger days.
 
+## September 26 completed Dev slice — momentum-paper decision baseline
+
+The [phase 2 plan](2026-09-26-adaptive-decision-baseline-plan.md) is now
+implemented. Future momentum-paper opens persist their exact admission key in
+the additive position column, partial/final paper cash retains it as
+`origin_ref`, and the new read-only audit refuses ticker/date matching.
+Legacy/unlinked evidence remains unavailable. No runtime strategy, authority,
+broker, scheduler, AI or partner behavior changed. New audit/lifecycle tests:
+9 warnings-fatal; affected momentum surface: 194 passed with one existing
+Starlette lifespan deprecation warning.
+
+Next: promote through reviewed GitHub flow, then collect new keyed paper
+lifecycle records and source-bound LTP packets. Run both audit tools on those
+records before beginning the predeclared strategy basket; historical unlinked
+rows are not a reason to backfill or infer performance.
+
 ## September 25 completed Dev slice — paper-only adaptive exit study
 
 `momentum_exit_study.py` now provides the scoped no-runtime paired study in

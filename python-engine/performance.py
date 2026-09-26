@@ -394,6 +394,7 @@ async def record_partial_realisation(
     *,
     source: str,
     notes: str | None = None,
+    origin_ref: str | None = None,
 ) -> None:
     """Book realised partial P&L without fabricating a closed trade outcome.
 
@@ -406,22 +407,35 @@ async def record_partial_realisation(
     before = await division_equity(db_path, source)
     after = before + pnl
     async with aiosqlite.connect(db_path) as db:
-        await db.execute(
-            "INSERT INTO bankroll_ledger "
-            "(timestamp, event_type, ticker, pnl, bankroll_before, "
-            " bankroll_after, source, notes) "
-            "VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
-            (
-                datetime.now(timezone.utc).isoformat(),
-                "TRADE_PARTIAL",
-                ticker,
-                pnl,
-                before,
-                after,
-                source,
-                notes,
-            ),
-        )
+        columns = {row[1] for row in await (await db.execute(
+            "PRAGMA table_info(bankroll_ledger)"
+        )).fetchall()}
+        if origin_ref and "origin_ref" in columns:
+            await db.execute(
+                "INSERT INTO bankroll_ledger "
+                "(timestamp, event_type, ticker, pnl, bankroll_before, "
+                " bankroll_after, source, notes, origin_ref) "
+                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                (
+                    datetime.now(timezone.utc).isoformat(),
+                    "TRADE_PARTIAL", ticker, pnl, before, after, source,
+                    notes, origin_ref.strip()[:180],
+                ),
+            )
+        else:
+            # Old test/operational schemas can predate origin_ref.  Do not
+            # fail an already-safe partial accounting path just because the
+            # audit lineage is unavailable; the report labels it unlinked.
+            await db.execute(
+                "INSERT INTO bankroll_ledger "
+                "(timestamp, event_type, ticker, pnl, bankroll_before, "
+                " bankroll_after, source, notes) "
+                "VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+                (
+                    datetime.now(timezone.utc).isoformat(),
+                    "TRADE_PARTIAL", ticker, pnl, before, after, source, notes,
+                ),
+            )
         await db.commit()
 
 async def record_cb_reset(db_path: str) -> None:

@@ -167,3 +167,11 @@ as a faithful monitor history.  Any missing, gapped, ambiguous or late-session
 path is explicitly unresolved.  No runtime exit policy, broker authority,
 EXEC approval, partner message or Production configuration is changed by this
 research instrumentation.
+
+## Phase 2 active Dev slice
+
+The next bounded step is the
+[momentum-paper decision baseline](2026-09-26-adaptive-decision-baseline-plan.md):
+add immutable admission-to-position-to-ledger lineage for future paper entries
+and a read-only audit. It preserves all trading behavior and treats old,
+unlinked evidence as unavailable rather than applying unsafe ticker/date joins.

@@ -20,6 +20,16 @@
   `INSUFFICIENT_EVIDENCE`; obtain independent future holdout before any
   owner-reviewed proposal.  No result authorizes live exits, orders or partner
   advice.
+- [x] Implement the [Phase 2 momentum-paper decision baseline](2026-09-26-adaptive-decision-baseline-plan.md):
+  retain new admission-to-position-to-cash keys, audit them read-only, and
+  label all legacy/unlinked lifecycle evidence unavailable. Focused acceptance:
+  9 warnings-fatal audit/lifecycle tests; affected momentum surface: 194 passed
+  with one existing Starlette lifespan warning. No backfill, live/paper strategy
+  change or new authority was added.
+- [ ] After reviewed promotion, verify the additive `paper_admission_key`
+  migration and run the read-only decision audit against fresh paper entries.
+  Preserve old unlinked evidence as unavailable; do not infer a strategy edge,
+  partner qualification or live authority from the report.
 
 ## September 25 Production audit response (plan only)
 

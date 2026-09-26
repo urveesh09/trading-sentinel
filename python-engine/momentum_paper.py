@@ -226,6 +226,18 @@ async def _bound_admission_outcomes(db) -> None:
     )
 
 
+async def _supports_paper_admission_identity(db) -> bool:
+    """Whether this connection has received the additive position migration.
+
+    Main startup applies the migration before paper admission.  Keeping this
+    small probe lets isolated legacy fixtures retain their established paper
+    bookkeeping behavior while making their missing lineage visible to the
+    Phase-2 audit instead of failing the strategy path.
+    """
+    rows = await (await db.execute("PRAGMA table_info(positions)")).fetchall()
+    return any(str(row[1]) == "paper_admission_key" for row in rows)
+
+
 async def record_momentum_paper_upstream_deduplications(
     db_path: str, signals: list, now_utc: Optional[datetime] = None,
 ) -> int:
@@ -350,6 +362,7 @@ async def open_momentum_paper_positions(db_path: str, accepted: list,
             # scheduler normally calls this once, but BEGIN IMMEDIATE also
             # prevents overlapping scans from both observing the same cash.
             await db.execute("BEGIN IMMEDIATE")
+            has_admission_identity = await _supports_paper_admission_identity(db)
             async with db.execute(
                 "SELECT ticker,entry_price,shares FROM positions "
                 "WHERE source=? AND exit_date IS NULL",
@@ -411,26 +424,27 @@ async def open_momentum_paper_positions(db_path: str, accepted: list,
                     )
                     continue
 
+                columns = (
+                    "ticker, exchange, entry_date, entry_price, shares, "
+                    "stop_loss_initial, trailing_stop_current, target_1, target_2, "
+                    "atr_14_at_entry, highest_close_since_entry, status, source, "
+                    "product_type, regime_at_entry, t1_fired, vwap_at_entry, "
+                    "initial_capital_at_risk"
+                )
+                values = [
+                    ticker, "NSE", now_utc.isoformat(), close, shares, stop, stop,
+                    _sqlite_safe(_sig_get(sig, "target_1")),
+                    _sqlite_safe(_sig_get(sig, "target_2")),
+                    _sqlite_safe(_sig_get(sig, "atr_at_entry")), close, "OPEN", SOURCE,
+                    "MIS", _sqlite_safe(_sig_get(sig, "regime")), 0,
+                    _sqlite_safe(_sig_get(sig, "vwap")), (close - stop) * shares,
+                ]
+                if has_admission_identity:
+                    columns += ", paper_admission_key"
+                    values.append(admission_key)
                 await db.execute(
-                    "INSERT INTO positions "
-                    "(ticker, exchange, entry_date, entry_price, shares, "
-                    " stop_loss_initial, trailing_stop_current, target_1, target_2, "
-                    " atr_14_at_entry, highest_close_since_entry, status, source, "
-                    " product_type, regime_at_entry, t1_fired, vwap_at_entry, "
-                    " initial_capital_at_risk) "
-                    "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
-                    (ticker, "NSE", now_utc.isoformat(), close, shares,
-                     stop, stop,
-                     _sqlite_safe(_sig_get(sig, "target_1")),
-                     _sqlite_safe(_sig_get(sig, "target_2")),
-                     _sqlite_safe(_sig_get(sig, "atr_at_entry")),
-                     close, "OPEN", SOURCE,
-                     "MIS", _sqlite_safe(_sig_get(sig, "regime")), 0,
-                     # [THESIS-EXIT 2026-08-04] The paper book must test the
-                     # same thesis the live book does, or it measures a
-                     # strategy nobody is running.
-                     _sqlite_safe(_sig_get(sig, "vwap")),
-                     (close - stop) * shares),
+                    f"INSERT INTO positions ({columns}) VALUES ({','.join('?' for _ in values)})",
+                    values,
                 )
                 held.add(ticker)
                 deployed += shares * close
@@ -502,7 +516,8 @@ async def _close_paper_position(db, db_path: str, pos: dict, exit_price: float,
                             r_multiple=r_multiple, notes=f"paper:{reason}",
                             outcome_pnl=total_realised,
                             outcome_r_multiple=r_multiple,
-                            source=SOURCE)
+                            source=SOURCE,
+                            origin_ref=pos.get("paper_admission_key"))
     logger.info("momentum_paper_closed ticker=%s exit=%.2f pnl=%.2f r=%.2f reason=%s",
                 pos["ticker"], exit_price, total_realised, r_multiple, reason)
     return total_realised
@@ -585,6 +600,7 @@ async def momentum_paper_monitor(db_path: str, ltp_fn: LtpFn,
                         pnl,
                         source=SOURCE,
                         notes=f"momentum_scale_out {decision['reason']}",
+                        origin_ref=pos.get("paper_admission_key"),
                     )
                     scaled.append((pos["ticker"], round(pnl, 2)))
 
