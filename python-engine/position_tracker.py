@@ -139,6 +139,16 @@ async def init_positions_db(db_path: str):
             ON positions(broker_entry_order_id)
             WHERE broker_entry_order_id IS NOT NULL
         """)
+        # Paper-only immutable lifecycle identity.  It intentionally remains
+        # NULL for every historical/live/non-momentum row; new momentum-paper
+        # opens retain the admission key that actually admitted the position so
+        # later research can join evidence without ticker/date guesswork.
+        await _add_column_if_missing(db, "paper_admission_key", "TEXT")
+        await db.execute("""
+            CREATE UNIQUE INDEX IF NOT EXISTS idx_positions_paper_admission_key
+            ON positions(paper_admission_key)
+            WHERE paper_admission_key IS NOT NULL
+        """)
         await db.commit()
 
 async def get_open_positions(db_path: str) -> List[dict]:

@@ -211,6 +211,23 @@ def test_open_persists_a_truthful_opened_admission_outcome(tmp_path):
     assert rows[0][0].startswith("entry:")
 
 
+def test_original_entry_economics_survive_partial_exit_and_repeat(tmp_path):
+    import json
+    db = _db(tmp_path)
+    sig = _sig("TATATECH")
+    assert asyncio.run(open_momentum_paper_positions(db, [sig])) == ["TATATECH"]
+    with sqlite3.connect(db) as con:
+        raw = con.execute("SELECT entry_economics_json FROM momentum_paper_admission_outcomes").fetchone()[0]
+        evidence = json.loads(raw)
+        position = con.execute("SELECT entry_price, shares, stop_loss_initial, target_1 FROM positions").fetchone()
+        assert (evidence["entry_price"], evidence["shares"], evidence["stop_loss_initial"], evidence["target_1"]) == position
+        assert evidence["initial_capital_at_risk"] == (position[0] - position[2]) * position[1]
+        con.execute("UPDATE positions SET shares=1")
+    assert asyncio.run(open_momentum_paper_positions(db, [sig])) == []
+    with sqlite3.connect(db) as con:
+        assert con.execute("SELECT entry_economics_json FROM momentum_paper_admission_outcomes").fetchone()[0] == raw
+
+
 def test_admission_outcomes_distinguish_held_and_zero_share_inputs(tmp_path, monkeypatch):
     db = _db(tmp_path)
     asyncio.run(open_momentum_paper_positions(db, [_sig("TATATECH")]))
@@ -275,6 +292,7 @@ def test_position_insert_failure_is_not_reported_opened_and_is_retained(tmp_path
     assert _admissions(db)[0][1:] == ("TATATECH", "transaction_failure")
     con = sqlite3.connect(db)
     assert con.execute("SELECT COUNT(*) FROM positions").fetchone()[0] == 0
+    assert con.execute("SELECT entry_economics_json FROM momentum_paper_admission_outcomes").fetchone()[0] is None
     con.close()
 
 

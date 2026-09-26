@@ -1,5 +1,126 @@
 # Trading Sentinel — system guide and engineering handover
 
+## September 26 replay economics correction (Dev)
+
+Exact admission identity alone is insufficient. New opened paper admissions
+atomically retain a bounded (4096-character) immutable entry-economics snapshot:
+UTC entry time, price, original shares, initial stop/risk, target, ATR, VWAP and
+regime. The composite review requires all replay terms to match this snapshot
+before counting a paired delta. Partial exits cannot redefine original shares.
+Missing, legacy, corrupt or mismatched evidence stays unavailable/unresolved.
+The additive nullable `entry_economics_json` column is initialized idempotently;
+historical admissions are not backfilled. Invalid/oversized snapshots are
+omitted without changing paper trading authority. This is Dev-only evidence
+hardening, not live approval, partner qualification or profitability proof.
+See [the correction and next-evidence plan](2026-09-26-economic-binding-correction-plan.md).
+
+## September 26 source-bound momentum-paper evidence review (Dev)
+
+`momentum_paper_evidence_review.py --db <existing-db> --input <packet>` joins
+the Phase-1 paired exit study to the Phase-2 paper lifecycle audit only when
+the input entry includes the exact opaque `admission_key`. The exit-study v1
+packet remains backward-compatible, but its unkeyed entries are explicitly
+unavailable to this composite review. Duplicate keys, same-ticker collisions,
+missing/non-opened admissions, incomplete quote paths and unresolved cash all
+remain visible rather than being joined or scored. It does not equate an
+alternative simulated exit with actual ledger cash; it only reports a paired
+research delta for exact, closed, cash-matched lifecycles.
+
+The review is an inert, read-only CLI: no runtime caller, database write,
+network, broker, order, scheduler, Telegram, EXEC, allocation, partner or
+qualification behavior was added. Focused Phase 1/3 checks passed 20 tests
+with warnings fatal; the affected suite passed 214 with one existing Starlette
+lifespan deprecation warning. This is Dev-only and not deployed. See [the
+Phase 3 implementation receipt](2026-09-26-adaptive-evidence-binding-plan.md).
+Source commit `beb7e78` is pushed on `codex/production-correction-hedge-p0`.
+
+## September 26 momentum-paper decision baseline (Dev)
+
+Future `MOMENTUM_PAPER` lifecycles now retain the opaque admission identity
+already generated at the real admission boundary. `init_positions_db` adds
+nullable `positions.paper_admission_key` with a partial unique index; existing
+and non-paper rows remain NULL. A paper open records that exact key, and paper
+partial/final ledger events retain it as `origin_ref`. Existing minimal/legacy
+schemas still perform their established paper bookkeeping, but evidence without
+those keys is explicitly unlinked rather than guessed.
+
+`momentum_paper_audit.py --db <existing-db>` is a read-only JSON audit of
+admission → position → ledger evidence. It only makes exact-key joins, treats
+the ledger as cash truth, separates partial from terminal cash, cross-checks
+position P&L, and exposes missing/duplicate/unlinked lifecycle data as
+unavailable or unresolved. It neither initializes a database nor emits a
+qualification conclusion. It is not a runtime caller and adds no broker,
+order, network, message, schedule, entry/exit or owner-EXEC authority.
+
+Focused audit/lifecycle checks passed 9 tests with warnings fatal; the affected
+surface passed 194 with one existing Starlette lifespan deprecation warning.
+Compilation/diff checks passed and the atlas now lists 214 modules. This is
+Dev-only and not deployed. Source commit `94871f2` is pushed on
+`codex/production-correction-hedge-p0`. See [the Phase 2 implementation
+receipt](2026-09-26-adaptive-decision-baseline-plan.md).
+
+## September 25 adaptive momentum exit study (Dev)
+
+`momentum_exit_study.py` is an inert, read-only paper-research builder for
+paired momentum exit evidence.  It accepts only a bounded timestamped-LTP JSON
+packet with a source archive fingerprint per entry and emits a deterministic
+`momentum_exit_study_report_v1`.  The baseline reuses the current pure
+`evaluate_momentum_exit` state machine and explicitly models the existing
+broker SL-M at the first observed LTP trigger.  The only comparator is the
+predeclared `target_hold_trail_v1`: after the baseline would close at an
+observed target, it holds paper quantity behind a fixed 0.5R trail while
+preserving initial stop, time stops and the 15:15 IST hard-flat deadline.
+
+The module rejects a non-timezone-aware, non-chronological, cross-session,
+pre-entry, conflicting, gapped or no-exact-15:15 quote path as
+`INSUFFICIENT_EVIDENCE`; it never substitutes later quotes or fabricates an
+exit.  It includes costs, partial legs, net cash/R, drawdown, observed capture
+and unresolved counts, and permanently says qualification is `NOT_ASSESSED`.
+It has no DB/broker/HTTP/scheduler/message imports or runtime caller.  Optional
+report output is exclusive-create only; it cannot replace past evidence.
+
+Focused exit-study validation passed 13 tests with warnings fatal.  Affected
+momentum exit/paper/replay/shadow validation passed 109 tests with one
+pre-existing Starlette lifespan deprecation warning.  Compilation and diff
+checks passed and the atlas is now 213 Python modules.  This Dev-only research
+instrumentation did not change a live/paper monitor, entry/EXEC authority,
+risk/broker check, scheduler, database schema, Production service or partner
+delivery.  Source commit `cbc5fca` is pushed on
+`codex/production-correction-hedge-p0`; it is not deployed.  See [the active
+implementation receipt](2026-09-25-adaptive-exit-study-plan.md).
+
+## September 25 owner authority and adaptive-trader vision (plan only)
+
+The current `momentum_paper.py` book automatically opens eligible accepted
+deterministic signals and contains no order-placement path; the owner-facing
+real momentum entry is a manual Telegram EXEC decision. The owner confirmed
+this authority split: an informational news-classifier timeout is not a reason
+to add a default paper veto, while each new real-money momentum entry requires
+explicit approval and existing execution/risk checks. The next roadmap uses
+paper/shadow evidence to compare full trade theses, adaptive exits and capital
+allocation so Sentinel can pursue more upside without hiding downside or
+loosening live authority. Longer owner holding horizons require a separate
+product; partner advice remains manual intraday. See
+[the adaptive trader roadmap](2026-09-25-adaptive-trader-vision-plan.md).
+This is documentation only; no trading behavior was changed.
+
+## September 25 Production audit interpretation (read-only)
+
+Production merge `f52f4d5c` now includes the September 24 Dev improvements.
+The new paper-admission table is already present as
+`momentum_paper_admission_outcomes`; 25 September retained TENNIND `opened` and
+PARADEEP `zero_shares`. The informational news-classifier timeout did not cause
+the earlier TENNIND paper opening. A 16:15 IST post-close container replacement,
+not confirmed 200 MiB rotation, explains the missing old-container log view;
+the penny scan intentionally does not run after 15:30 IST, so post-restart
+health stays stale until a genuine market-hours scan. The F&O parity warning
+is diagnostic and does not itself veto a DR entry. General partner intraday
+collection and a saved profile exist, but qualification/review are absent;
+the hedge pathway's 0/7 operator staging counter is separate. Exact evidence,
+limitations and the next plan are in
+[the September 25 audit response](2026-09-25-production-audit-response-plan.md).
+No source, configuration, broker or Telegram behavior changed in this update.
+
 ## September 24 P2 F&O audit evidence and financial interpretation (Dev)
 
 `fno_signals` now retains two additive, JSON-encoded audit fields:

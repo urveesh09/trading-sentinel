@@ -193,6 +193,13 @@ async def _init_admission_outcomes(db) -> None:
             recorded_at TEXT NOT NULL
         )
     """)
+    columns = {row[1] for row in await (await db.execute(
+        f"PRAGMA table_info({_ADMISSION_OUTCOMES_TABLE})"
+    )).fetchall()}
+    if "entry_economics_json" not in columns:
+        await db.execute(
+            f"ALTER TABLE {_ADMISSION_OUTCOMES_TABLE} ADD COLUMN entry_economics_json TEXT"
+        )
     await db.execute(
         f"CREATE INDEX IF NOT EXISTS idx_{_ADMISSION_OUTCOMES_TABLE}_recorded "
         f"ON {_ADMISSION_OUTCOMES_TABLE}(recorded_at DESC)"
@@ -202,16 +209,27 @@ async def _init_admission_outcomes(db) -> None:
 
 async def _record_admission_outcome(
     db, admission_key: str, signal_key: str, ticker: str, outcome: str,
-    now_utc: datetime,
+    now_utc: datetime, *, entry_economics: Optional[dict] = None,
 ) -> bool:
     """Insert one immutable outcome, returning whether it was newly recorded."""
     if outcome not in _ADMISSION_OUTCOMES:
         raise ValueError(f"unsupported momentum-paper admission outcome: {outcome}")
+    encoded_economics = None
+    if entry_economics is not None:
+        try:
+            candidate = json.dumps(entry_economics, sort_keys=True, separators=(",", ":"), allow_nan=False)
+            if len(candidate) <= 4096:
+                encoded_economics = candidate
+        except (ValueError, TypeError):
+            # Invalid evidence must not change paper admission authority.
+            # A missing snapshot makes the offline review unavailable.
+            pass
     cur = await db.execute(
         f"INSERT OR IGNORE INTO {_ADMISSION_OUTCOMES_TABLE} "
-        "(admission_key, signal_key, ticker, outcome, reason, recorded_at) "
-        "VALUES (?,?,?,?,?,?)",
-        (admission_key, signal_key, ticker, outcome, outcome, now_utc.isoformat()),
+        "(admission_key, signal_key, ticker, outcome, reason, recorded_at, entry_economics_json) "
+        "VALUES (?,?,?,?,?,?,?)",
+        (admission_key, signal_key, ticker, outcome, outcome, now_utc.isoformat(),
+         encoded_economics),
     )
     return bool(cur.rowcount)
 
@@ -224,6 +242,18 @@ async def _bound_admission_outcomes(db) -> None:
         "ORDER BY id DESC LIMIT -1 OFFSET ?)",
         (retention,),
     )
+
+
+async def _supports_paper_admission_identity(db) -> bool:
+    """Whether this connection has received the additive position migration.
+
+    Main startup applies the migration before paper admission.  Keeping this
+    small probe lets isolated legacy fixtures retain their established paper
+    bookkeeping behavior while making their missing lineage visible to the
+    Phase-2 audit instead of failing the strategy path.
+    """
+    rows = await (await db.execute("PRAGMA table_info(positions)")).fetchall()
+    return any(str(row[1]) == "paper_admission_key" for row in rows)
 
 
 async def record_momentum_paper_upstream_deduplications(
@@ -350,6 +380,7 @@ async def open_momentum_paper_positions(db_path: str, accepted: list,
             # scheduler normally calls this once, but BEGIN IMMEDIATE also
             # prevents overlapping scans from both observing the same cash.
             await db.execute("BEGIN IMMEDIATE")
+            has_admission_identity = await _supports_paper_admission_identity(db)
             async with db.execute(
                 "SELECT ticker,entry_price,shares FROM positions "
                 "WHERE source=? AND exit_date IS NULL",
@@ -411,32 +442,43 @@ async def open_momentum_paper_positions(db_path: str, accepted: list,
                     )
                     continue
 
+                columns = (
+                    "ticker, exchange, entry_date, entry_price, shares, "
+                    "stop_loss_initial, trailing_stop_current, target_1, target_2, "
+                    "atr_14_at_entry, highest_close_since_entry, status, source, "
+                    "product_type, regime_at_entry, t1_fired, vwap_at_entry, "
+                    "initial_capital_at_risk"
+                )
+                values = [
+                    ticker, "NSE", now_utc.isoformat(), close, shares, stop, stop,
+                    _sqlite_safe(_sig_get(sig, "target_1")),
+                    _sqlite_safe(_sig_get(sig, "target_2")),
+                    _sqlite_safe(_sig_get(sig, "atr_at_entry")), close, "OPEN", SOURCE,
+                    "MIS", _sqlite_safe(_sig_get(sig, "regime")), 0,
+                    _sqlite_safe(_sig_get(sig, "vwap")), (close - stop) * shares,
+                ]
+                if has_admission_identity:
+                    columns += ", paper_admission_key"
+                    values.append(admission_key)
                 await db.execute(
-                    "INSERT INTO positions "
-                    "(ticker, exchange, entry_date, entry_price, shares, "
-                    " stop_loss_initial, trailing_stop_current, target_1, target_2, "
-                    " atr_14_at_entry, highest_close_since_entry, status, source, "
-                    " product_type, regime_at_entry, t1_fired, vwap_at_entry, "
-                    " initial_capital_at_risk) "
-                    "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
-                    (ticker, "NSE", now_utc.isoformat(), close, shares,
-                     stop, stop,
-                     _sqlite_safe(_sig_get(sig, "target_1")),
-                     _sqlite_safe(_sig_get(sig, "target_2")),
-                     _sqlite_safe(_sig_get(sig, "atr_at_entry")),
-                     close, "OPEN", SOURCE,
-                     "MIS", _sqlite_safe(_sig_get(sig, "regime")), 0,
-                     # [THESIS-EXIT 2026-08-04] The paper book must test the
-                     # same thesis the live book does, or it measures a
-                     # strategy nobody is running.
-                     _sqlite_safe(_sig_get(sig, "vwap")),
-                     (close - stop) * shares),
+                    f"INSERT INTO positions ({columns}) VALUES ({','.join('?' for _ in values)})",
+                    values,
                 )
                 held.add(ticker)
                 deployed += shares * close
                 opened.append(ticker)
                 await _record_admission_outcome(
                     db, admission_key, signal_key, ticker, "opened", now_utc,
+                    entry_economics={
+                        "schema": "momentum_paper_entry_economics_v1",
+                        "ticker": ticker,
+                        "entry_at": now_utc.astimezone(timezone.utc).isoformat(),
+                        "entry_price": close, "shares": shares,
+                        "stop_loss_initial": stop, "target_1": values[7],
+                        "atr_14_at_entry": values[9], "vwap_at_entry": values[16],
+                        "regime_at_entry": values[14],
+                        "initial_capital_at_risk": (close - stop) * shares,
+                    },
                 )
                 logger.info(
                     "momentum_paper_opened ticker=%s shares=%d entry=%.2f stop=%.2f "
@@ -502,7 +544,8 @@ async def _close_paper_position(db, db_path: str, pos: dict, exit_price: float,
                             r_multiple=r_multiple, notes=f"paper:{reason}",
                             outcome_pnl=total_realised,
                             outcome_r_multiple=r_multiple,
-                            source=SOURCE)
+                            source=SOURCE,
+                            origin_ref=pos.get("paper_admission_key"))
     logger.info("momentum_paper_closed ticker=%s exit=%.2f pnl=%.2f r=%.2f reason=%s",
                 pos["ticker"], exit_price, total_realised, r_multiple, reason)
     return total_realised
@@ -585,6 +628,7 @@ async def momentum_paper_monitor(db_path: str, ltp_fn: LtpFn,
                         pnl,
                         source=SOURCE,
                         notes=f"momentum_scale_out {decision['reason']}",
+                        origin_ref=pos.get("paper_admission_key"),
                     )
                     scaled.append((pos["ticker"], round(pnl, 2)))
 

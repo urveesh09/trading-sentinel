@@ -918,6 +918,16 @@ Top-level declarations: `Regime` (line 9), `round_float_2dp` (line 17), `round_f
 
 Related tests: `python-engine/tests/test_models.py`
 
+## `python-engine/momentum_exit_study.py`
+
+Read-only paired research for momentum-paper exit policies. This module deliberately has no database, broker, HTTP, scheduler, order, or message dependency. It replays already captured timestamped LTP observations and compares the production pure exit evaluator with one fixed paper-only target-hold/trail alternative. It is not imported by any runtime manager.
+
+Top-level declarations: `ExitStudyError` (line 59), `StudyEntry` (line 64), `Quote` (line 83), `_canonical_bytes` (line 88), `_parse_timestamp` (line 95), `_finite_positive` (line 107), `_optional_positive` (line 119), `_optional_admission_key` (line 125), `_entry_from_json` (line 136), `_quotes_from_json` (line 179), `load_exit_study_packet` (line 197), `_policy_snapshot` (line 233), `_deadline` (line 250), `_validated_quote_path` (line 254), `_position` (line 294), `_leg` (line 310), `_finalise` (line 324), `_close` (line 360), `_apply_current_decision` (line 367), `_simulate` (line 403), `_entry_economics` (line 440), `_insufficient_pair` (line 452), `_summary` (line 469), `build_momentum_exit_study` (line 489), `write_study_report_once` (line 534), `_main` (line 564)
+
+Engine dependencies: `config`, `engine`, `momentum_exits`
+
+Related tests: `python-engine/tests/test_momentum_exit_study.py`
+
 ## `python-engine/momentum_exits.py`
 
 [TIER0-0.1 2026-07-14] Intraday exit management for MIS momentum positions. WHY THIS FILE EXISTS -------------------- Until today, a momentum position had no stop and no target -- not in the engine, not at the broker: * Broker side: node-gateway/server/services/executor.js guarded GTT placement with `if (!isIntraday)`. Zerodha GTT is CNC/NRML-only, so MIS positions got no protective order at all, and nothing took its place. * Engine side: the only scheduled jobs that touched a momentum position were momentum_eod_warning (15:10) and auto_square_momentum (15:15). Nothing evaluated the stop or the target in between. So the stop_loss and target_1 computed by evaluate_momentum_signal -- the numbe
@@ -932,11 +942,29 @@ Related tests: `python-engine/tests/test_momentum_exits.py`
 
 [MOMENTUM-PAPER 2026-07-26] A paper twin of the live momentum book. WHY THIS EXISTS --------------- Live momentum entry is manual: the screener sends a Telegram EXEC button and a human decides. The ledger therefore records what the *operator* did, never what the *strategy* proposed -- 8 recorded momentum trades in months of running, which is why nothing can be concluded about the strategy from them. A signal that fired at 11:04 while nobody was looking left no trace at all. This book takes EVERY accepted momentum signal automatically, sizes it off its own pool, manages it with the same pure exit logic the live book uses, and books cost-adjusted P&L to source='MOMENTUM_PAPER'. The result is a
 
-Top-level declarations: `paper_position_size` (line 72), `_sig_get` (line 101), `_sqlite_safe` (line 110), `_paper_risk_pct` (line 137), `_admission_signal_key` (line 157), `_init_admission_outcomes` (line 181), `_record_admission_outcome` (line 203), `_bound_admission_outcomes` (line 219), `record_momentum_paper_upstream_deduplications` (line 229), `_record_disabled_admissions` (line 266), `_record_transaction_failures` (line 290), `open_momentum_paper_positions` (line 320), `_close_paper_position` (line 458), `momentum_paper_monitor` (line 511), `momentum_paper_square_off` (line 608)
+Top-level declarations: `paper_position_size` (line 72), `_sig_get` (line 101), `_sqlite_safe` (line 110), `_paper_risk_pct` (line 137), `_admission_signal_key` (line 157), `_init_admission_outcomes` (line 181), `_record_admission_outcome` (line 210), `_bound_admission_outcomes` (line 237), `_supports_paper_admission_identity` (line 247), `record_momentum_paper_upstream_deduplications` (line 259), `_record_disabled_admissions` (line 296), `_record_transaction_failures` (line 320), `open_momentum_paper_positions` (line 350), `_close_paper_position` (line 500), `momentum_paper_monitor` (line 554), `momentum_paper_square_off` (line 652)
 
 Engine dependencies: `config`, `engine`, `models`, `momentum_exits`, `performance`
 
-Related tests: `python-engine/tests/test_momentum_paper.py`
+Related tests: `python-engine/tests/test_momentum_paper.py`, `python-engine/tests/test_momentum_paper_audit.py`, `python-engine/tests/test_momentum_paper_evidence_review.py`
+
+## `python-engine/momentum_paper_audit.py`
+
+Read-only, exact-key lifecycle audit for momentum-paper evidence. The audit intentionally refuses ticker/date joins. Only future paper rows with the immutable ``paper_admission_key`` and ledger ``origin_ref`` can form a complete lifecycle; legacy records remain visible as unavailable evidence.
+
+Top-level declarations: `MomentumPaperAuditError` (line 26), `_canonical` (line 30), `_unavailable` (line 34), `_open_readonly` (line 46), `_table_columns` (line 56), `_round` (line 63), `_entry_snapshot` (line 67), `_position_view` (line 79), `_cash_view` (line 93), `build_momentum_paper_decision_audit` (line 132), `_main` (line 275)
+
+Related tests: `python-engine/tests/test_momentum_paper_audit.py`
+
+## `python-engine/momentum_paper_evidence_review.py`
+
+Read-only exact-key review of momentum paper and paired exit evidence. The module intentionally has no runtime caller. It binds a Phase-1 exit study to the Phase-2 lifecycle audit only when the input packet names the same opaque admission key stored with the paper position and ledger cash rows. Ticker/time similarity is not a fallback identity.
+
+Top-level declarations: `MomentumPaperEvidenceReviewError` (line 23), `_canonical` (line 27), `_round` (line 31), `_economic_binding` (line 35), `_review_pair` (line 60), `build_momentum_paper_evidence_review` (line 95), `_main` (line 165)
+
+Engine dependencies: `momentum_exit_study`, `momentum_paper_audit`
+
+Related tests: `python-engine/tests/test_momentum_paper_evidence_review.py`
 
 ## `python-engine/momentum_replay.py`
 
@@ -1528,7 +1556,7 @@ Related tests: `python-engine/tests/test_penny_universe.py`, `python-engine/test
 
 No module docstring; use the declarations and callers below.
 
-Top-level declarations: `init_ledger` (line 10), `current_bankroll` (line 84), `bankroll_for_source` (line 111), `allocation_for_source` (line 181), `division_equity` (line 188), `nifty_bankroll` (line 210), `fno_bankroll` (line 255), `record_trade_close` (line 286), `record_partial_realisation` (line 390), `record_cb_reset` (line 427), `_last_cb_reset_id` (line 450), `check_circuit_breakers` (line 457), `cb_halt_channels` (line 549), `enforce_circuit_breakers` (line 559), `penny_pool_pnl` (line 624), `pool_breakdown` (line 666), `is_paper_source` (line 784), `fmt_money` (line 803), `_division_registry` (line 829), `division_breakdown` (line 862), `format_division_breakdown` (line 931)
+Top-level declarations: `init_ledger` (line 10), `current_bankroll` (line 84), `bankroll_for_source` (line 111), `allocation_for_source` (line 181), `division_equity` (line 188), `nifty_bankroll` (line 210), `fno_bankroll` (line 255), `record_trade_close` (line 286), `record_partial_realisation` (line 390), `record_cb_reset` (line 441), `_last_cb_reset_id` (line 464), `check_circuit_breakers` (line 471), `cb_halt_channels` (line 563), `enforce_circuit_breakers` (line 573), `penny_pool_pnl` (line 638), `pool_breakdown` (line 680), `is_paper_source` (line 798), `fmt_money` (line 817), `_division_registry` (line 843), `division_breakdown` (line 876), `format_division_breakdown` (line 945)
 
 Engine dependencies: `analytics`, `config`
 
@@ -1568,7 +1596,7 @@ Related tests: `python-engine/tests/test_portfolio.py`
 
 No module docstring; use the declarations and callers below.
 
-Top-level declarations: `_init_pnl_outbox` (line 16), `_deliver_pnl_outbox` (line 29), `_add_column_if_missing` (line 53), `init_positions_db` (line 85), `get_open_positions` (line 144), `update_daily_positions` (line 186)
+Top-level declarations: `_init_pnl_outbox` (line 16), `_deliver_pnl_outbox` (line 29), `_add_column_if_missing` (line 53), `init_positions_db` (line 85), `get_open_positions` (line 154), `update_daily_positions` (line 196)
 
 Engine dependencies: `chandelier_stop`, `config`, `engine`, `models`
 

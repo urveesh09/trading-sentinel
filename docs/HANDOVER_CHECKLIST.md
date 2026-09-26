@@ -1,5 +1,80 @@
 # Handover receipt and operator checklist
 
+## September 26 economic-binding correction
+
+- [x] Require original entry economics as well as exact admission identity;
+  reject altered replay size/time/price/stop/target/optional exit inputs.
+- [x] Retain immutable bounded snapshots atomically with opened admissions;
+  keep legacy/corrupt evidence unavailable and preserve trading authority.
+- [x] Validate 42 research/audit tests with warnings fatal; 122 affected tests
+  pass with one existing Starlette lifespan deprecation warning.
+- [ ] Promote through GitHub; collect fresh snapshot-bearing admissions and
+  provenance-verified LTP paths, then review a predeclared reconciled sample.
+- [ ] Independently qualify partner research and authorize a transport canary.
+  Production remains untouched by this correction.
+
+## September 25 adaptive-trader product decision (plan only)
+
+- [x] Preserve autonomous deterministic momentum paper trading and explicit
+  owner EXEC approval for every new real-money momentum entry. Reject an
+  unrequested default AI veto on classifier timeout.
+- [x] Add the [adaptive trader roadmap](2026-09-25-adaptive-trader-vision-plan.md):
+  opportunity/thesis lifecycle, paper-only paired exit study, predeclared
+  strategy basket, costed allocation research and separate partner authority.
+- [x] Implement the first Dev paper-only exit comparison according to
+  [the exit-study slice](2026-09-25-adaptive-exit-study-plan.md): source-bound
+  chronological LTP evidence, net costs, deadline/gap checks, drawdown and
+  explicit unresolved paths.  `momentum_exit_study.py` is no-runtime research
+  code; focused acceptance passed 13 warnings-fatal tests and the affected
+  momentum surface passed 109 with one existing Starlette lifespan warning.
+  Source commit `cbc5fca` is pushed on the Dev branch and not deployed.
+- [ ] Preserve actual timestamped quote packets and run the comparison over a
+  predeclared bounded momentum-paper sample.  Keep incomplete evidence marked
+  `INSUFFICIENT_EVIDENCE`; obtain independent future holdout before any
+  owner-reviewed proposal.  No result authorizes live exits, orders or partner
+  advice.
+- [x] Implement the [Phase 2 momentum-paper decision baseline](2026-09-26-adaptive-decision-baseline-plan.md):
+  retain new admission-to-position-to-cash keys, audit them read-only, and
+  label all legacy/unlinked lifecycle evidence unavailable. Focused acceptance:
+  9 warnings-fatal audit/lifecycle tests; affected momentum surface: 194 passed
+  with one existing Starlette lifespan warning. Source commit `94871f2` is
+  pushed on `codex/production-correction-hedge-p0`, not deployed. No backfill,
+  live/paper strategy change or new authority was added.
+- [ ] After reviewed promotion, verify the additive `paper_admission_key`
+  migration and run the read-only decision audit against fresh paper entries.
+  Preserve old unlinked evidence as unavailable; do not infer a strategy edge,
+  partner qualification or live authority from the report.
+- [x] Implement the [Phase 3 source-bound evidence review](2026-09-26-adaptive-evidence-binding-plan.md):
+  future exit-study packets may carry the exact admission key and the
+  read-only composite review rejects all heuristic/ticker joins. Focused
+  Phase 1/3 tests: 20 passed warnings-fatal; affected paper/replay suite: 214
+  passed with one existing Starlette lifespan warning. Source commit `beb7e78`
+  is pushed on `codex/production-correction-hedge-p0`, not deployed. No runtime
+  authority, strategy, allocation, exit, broker, EXEC or partner behavior
+  changed.
+- [ ] After reviewed promotion, retain a predeclared sample of fresh keyed
+  admissions and complete LTP paths; run the Phase 3 review and preserve every
+  unavailable/unresolved row. Run the frozen strategy-basket comparison only
+  on later held-out sessions. No report can qualify advice or change a trade.
+
+## September 25 Production audit response (plan only)
+
+- [x] Reconcile the deployed merge and 25 September paper ledger read-only;
+  correct the paper-admission table name and verify TENNIND `opened` plus
+  PARADEEP `zero_shares`. No speculative migration is required.
+- [x] Separate post-close container replacement from unproved Docker log
+  rotation, informational F&O parity warning from entry veto, and expected
+  post-close penny health staleness from a proven restart defect.
+- [x] Verify a saved general INTRADAY profile, 165 collection attempts per
+  index on 25 September, six SENSEX candidate decisions and zero general
+  qualifications. The hedge phase's 0/7 staging counter is separate.
+- [ ] Execute the ordered [September 25 plan](2026-09-25-production-audit-response-plan.md):
+  release-spanning forensic logs, three-session deployed coverage/safety
+  observation, packet-level parity diagnosis, next-session penny recovery,
+  and predeclared held-out general partner research/review.
+- [ ] Any TEST canary, advice, broker action or Production deployment requires
+  its separate authority and evidence. This documentation change grants none.
+
 ## September 24 P2 F&O audit evidence and financial interpretation (Dev)
 
 - [x] Preserve the first-reject contract and add only the passed-gate prefix
