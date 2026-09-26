@@ -56,6 +56,9 @@ incomplete paths and unreconciled cash explicitly. Phase 1/3 focused checks:
 one existing Starlette lifespan warning. No entry, exit, sizing, scheduler,
 broker, EXEC, partner or delivery behavior changed.
 
+Source commit `beb7e78` is pushed on `codex/production-correction-hedge-p0`;
+it is not deployed.
+
 Next: promote the reviewed evidence instrumentation, preserve fresh keyed
 admissions and source-bound LTP paths, then run the Phase 3 review on a
 predeclared bounded sample. Any missing path or non-matching lifecycle remains

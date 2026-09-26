@@ -18,6 +18,7 @@ qualification behavior was added. Focused Phase 1/3 checks passed 20 tests
 with warnings fatal; the affected suite passed 214 with one existing Starlette
 lifespan deprecation warning. This is Dev-only and not deployed. See [the
 Phase 3 implementation receipt](2026-09-26-adaptive-evidence-binding-plan.md).
+Source commit `beb7e78` is pushed on `codex/production-correction-hedge-p0`.
 
 ## September 26 momentum-paper decision baseline (Dev)
 

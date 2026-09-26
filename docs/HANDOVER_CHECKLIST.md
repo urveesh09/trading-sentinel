@@ -35,8 +35,10 @@
   future exit-study packets may carry the exact admission key and the
   read-only composite review rejects all heuristic/ticker joins. Focused
   Phase 1/3 tests: 20 passed warnings-fatal; affected paper/replay suite: 214
-  passed with one existing Starlette lifespan warning. No runtime authority,
-  strategy, allocation, exit, broker, EXEC or partner behavior changed.
+  passed with one existing Starlette lifespan warning. Source commit `beb7e78`
+  is pushed on `codex/production-correction-hedge-p0`, not deployed. No runtime
+  authority, strategy, allocation, exit, broker, EXEC or partner behavior
+  changed.
 - [ ] After reviewed promotion, retain a predeclared sample of fresh keyed
   admissions and complete LTP paths; run the Phase 3 review and preserve every
   unavailable/unresolved row. Run the frozen strategy-basket comparison only

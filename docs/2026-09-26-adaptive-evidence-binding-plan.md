@@ -66,4 +66,5 @@ compilation and `git diff --check` passed; the atlas was regenerated to 215
 Python modules. This source has no runtime caller and has not changed
 Production, strategy behavior, paper sizing, exits, allocation, scheduler,
 broker, EXEC, Telegram, partner delivery or configuration. Commit/push identity
-is recorded after the source commit.
+is `beb7e78`, pushed on `codex/production-correction-hedge-p0`; it is not
+deployed.
