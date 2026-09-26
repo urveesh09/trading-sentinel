@@ -64,6 +64,18 @@ def _round(value: float | None, digits: int = 6) -> float | None:
     return round(float(value), digits) if value is not None else None
 
 
+def _entry_snapshot(raw: object) -> dict[str, Any] | None:
+    if not isinstance(raw, str) or len(raw) > 4096:
+        return None
+    try:
+        value = json.loads(raw)
+        # Reject NaN/Infinity even though Python's JSON reader accepts them.
+        json.dumps(value, allow_nan=False)
+    except (ValueError, TypeError):
+        return None
+    return value if isinstance(value, dict) else None
+
+
 def _position_view(row: sqlite3.Row) -> dict[str, Any]:
     return {
         "ticker": row["ticker"],
@@ -131,8 +143,9 @@ def build_momentum_paper_decision_audit(db_path: str, *, limit: int = 1000) -> d
         if not _OUTCOME_COLUMNS.issubset(outcome_cols):
             return _unavailable("admission_outcome_schema_unavailable", limit=limit)
         connection.row_factory = sqlite3.Row
+        economics_column = "entry_economics_json" if "entry_economics_json" in outcome_cols else "NULL AS entry_economics_json"
         admissions = connection.execute(
-            "SELECT admission_key,signal_key,ticker,outcome,recorded_at "
+            f"SELECT admission_key,signal_key,ticker,outcome,recorded_at,{economics_column} "
             "FROM momentum_paper_admission_outcomes "
             "ORDER BY recorded_at,admission_key LIMIT ?",
             (limit + 1,),
@@ -209,6 +222,7 @@ def build_momentum_paper_decision_audit(db_path: str, *, limit: int = 1000) -> d
                 "ticker": admission["ticker"],
                 "outcome": outcome,
                 "recorded_at": admission["recorded_at"],
+                "entry_economics": _entry_snapshot(admission["entry_economics_json"]),
                 "lifecycle": lifecycle,
                 "position": position,
                 "cash": cash,

@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import argparse
 import json
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Sequence
 
@@ -29,6 +30,31 @@ def _canonical(value: dict[str, Any]) -> str:
 
 def _round(value: float | None, digits: int = 6) -> float | None:
     return round(float(value), digits) if value is not None else None
+
+
+def _economic_binding(pair: dict[str, Any], lifecycle: dict[str, Any]) -> str | None:
+    actual = lifecycle.get("entry_economics")
+    submitted = pair.get("entry_economics")
+    if not isinstance(actual, dict) or not isinstance(submitted, dict):
+        return "UNAVAILABLE_ENTRY_ECONOMICS"
+    if set(actual) != set(submitted) or actual.get("schema") != "momentum_paper_entry_economics_v1":
+        return "UNAVAILABLE_ENTRY_ECONOMICS"
+    if type(actual.get("shares")) is not int or actual["shares"] <= 0:
+        return "UNAVAILABLE_ENTRY_ECONOMICS"
+    try:
+        stamp = datetime.fromisoformat(actual["entry_at"])
+        if stamp.tzinfo is None or stamp.utcoffset() is None:
+            return "UNAVAILABLE_ENTRY_ECONOMICS"
+        actual = {**actual, "entry_at": stamp.astimezone(timezone.utc).isoformat()}
+        json.dumps(actual, allow_nan=False)
+    except (ValueError, TypeError, KeyError):
+        return "UNAVAILABLE_ENTRY_ECONOMICS"
+    # Financial numbers must not accept bools as equal to 0/1.
+    for field, expected in submitted.items():
+        if isinstance(expected, (int, float)) and not isinstance(expected, bool):
+            if actual[field] is not None and type(actual[field]) not in (int, float):
+                return "UNAVAILABLE_ENTRY_ECONOMICS"
+    return None if actual == submitted else "UNRESOLVED_ENTRY_ECONOMICS_MISMATCH"
 
 
 def _review_pair(pair: dict[str, Any], *, audit_status: str,
@@ -58,6 +84,9 @@ def _review_pair(pair: dict[str, Any], *, audit_status: str,
         return {**base, "state": "UNRESOLVED_NONOPENED_ADMISSION", "lifecycle": lifecycle}
     if pair.get("status") != "COMPLETE":
         return {**base, "state": "INSUFFICIENT_EXIT_PATH", "lifecycle": lifecycle}
+    economic_issue = _economic_binding(pair, lifecycle)
+    if economic_issue:
+        return {**base, "state": economic_issue, "lifecycle": lifecycle}
     if lifecycle.get("lifecycle") != "CLOSED" or lifecycle.get("cash", {}).get("state") != "MATCH":
         return {**base, "state": "UNRESOLVED_LIFECYCLE", "lifecycle": lifecycle}
     return {**base, "state": "COMPLETE", "lifecycle": lifecycle}

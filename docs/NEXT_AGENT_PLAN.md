@@ -1,5 +1,17 @@
 # Trading Sentinel — next-agent execution plan
 
+## September 26 P1 economic binding — corrected in Dev
+
+Follow [the economic-binding correction plan](2026-09-26-economic-binding-correction-plan.md).
+Replay quantity, time, price and all recorded exit inputs must match immutable
+original admission evidence, not mutable remaining shares. Legacy entries are
+unavailable. Next is GitHub-based reviewed deployment, fresh keyed admissions
+with snapshots and preserved LTP paths, then a predeclared reconciled sample
+review. Independently verify archive provenance; a formatted source hash alone
+does not authenticate quotes. Do not expand strategy code or interpret held-out
+results until this evidence exists. Partner qualification and an authorized
+delivery canary remain separate; no automatic tips/live promotion follows.
+
 ## September 25 owner vision — autonomous paper, approved real money
 
 The owner's [adaptive trader roadmap](2026-09-25-adaptive-trader-vision-plan.md)

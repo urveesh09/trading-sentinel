@@ -1,5 +1,18 @@
 # Handover receipt and operator checklist
 
+## September 26 economic-binding correction
+
+- [x] Require original entry economics as well as exact admission identity;
+  reject altered replay size/time/price/stop/target/optional exit inputs.
+- [x] Retain immutable bounded snapshots atomically with opened admissions;
+  keep legacy/corrupt evidence unavailable and preserve trading authority.
+- [x] Validate 42 research/audit tests with warnings fatal; 122 affected tests
+  pass with one existing Starlette lifespan deprecation warning.
+- [ ] Promote through GitHub; collect fresh snapshot-bearing admissions and
+  provenance-verified LTP paths, then review a predeclared reconciled sample.
+- [ ] Independently qualify partner research and authorize a transport canary.
+  Production remains untouched by this correction.
+
 ## September 25 adaptive-trader product decision (plan only)
 
 - [x] Preserve autonomous deterministic momentum paper trading and explicit

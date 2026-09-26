@@ -12,11 +12,12 @@ import momentum_paper_evidence_review as review
 SOURCE_REF = "sha256:" + ("b" * 64)
 
 
-def _db(path, *, key="entry:key-1", ticker="ACME", outcome="opened", closed=True):
+def _db(path, *, key="entry:key-1", ticker="ACME", outcome="opened", closed=True, snapshot=True):
     con = sqlite3.connect(path)
     con.executescript("""
         CREATE TABLE momentum_paper_admission_outcomes (
-            admission_key TEXT, signal_key TEXT, ticker TEXT, outcome TEXT, recorded_at TEXT
+            admission_key TEXT, signal_key TEXT, ticker TEXT, outcome TEXT, recorded_at TEXT,
+            entry_economics_json TEXT
         );
         CREATE TABLE positions (
             paper_admission_key TEXT, ticker TEXT, entry_date TEXT, exit_date TEXT,
@@ -27,8 +28,16 @@ def _db(path, *, key="entry:key-1", ticker="ACME", outcome="opened", closed=True
             origin_ref TEXT, event_type TEXT, pnl REAL, timestamp TEXT, source TEXT
         );
     """)
-    con.execute("INSERT INTO momentum_paper_admission_outcomes VALUES (?,?,?,?,?)",
-                (key, "signal-1", ticker, outcome, "2026-09-25T04:30:00+00:00"))
+    economics = {
+        "schema": "momentum_paper_entry_economics_v1", "ticker": ticker,
+        "entry_at": "2026-09-25T04:30:00+00:00", "entry_price": 100.0,
+        "shares": 10, "stop_loss_initial": 98.0, "target_1": 104.0,
+        "atr_14_at_entry": None, "vwap_at_entry": None, "regime_at_entry": None,
+        "initial_capital_at_risk": 20.0,
+    }
+    con.execute("INSERT INTO momentum_paper_admission_outcomes VALUES (?,?,?,?,?,?)",
+                (key, "signal-1", ticker, outcome, "2026-09-25T04:30:00+00:00",
+                 json.dumps(economics) if snapshot else None))
     if outcome == "opened":
         con.execute("INSERT INTO positions VALUES (?,?,?,?,?,?,?,?,?,?,?)", (
             key, ticker, "2026-09-25T10:00:00+05:30",
@@ -89,6 +98,40 @@ def test_same_ticker_cannot_bind_when_opaque_admission_key_differs(tmp_path, mon
     assert result["status"] == "PARTIAL"
     assert result["pairs"][0]["state"] == "UNRESOLVED_ADMISSION_NOT_FOUND"
     assert result["summary"]["paired_delta_count"] == 0
+
+
+@pytest.mark.parametrize("field,value", [
+    ("shares", 999), ("entry_price", 101.0), ("stop_loss_initial", 97.0),
+    ("target_1", 105.0), ("entry_at", "2026-09-25T09:59:00+05:30"),
+    ("atr_14_at_entry", 2.0), ("vwap_at_entry", 99.0), ("regime_at_entry", "BULL"),
+])
+def test_correct_key_cannot_bind_altered_economics(tmp_path, monkeypatch, field, value):
+    monkeypatch.setattr("momentum_exit_study.settings.MOMENTUM_USE_SCALE_OUT", False)
+    db = tmp_path / "paper.db"; _db(db)
+    entry = _entry(); entry[field] = value
+    result = review.build_momentum_paper_evidence_review(str(db), str(_input(tmp_path, [entry])))
+    assert result["pairs"][0]["state"] == "UNRESOLVED_ENTRY_ECONOMICS_MISMATCH"
+    assert result["summary"]["paired_delta_count"] == 0
+
+
+@pytest.mark.parametrize("raw", [None, "{", '{"schema":"wrong"}', '{"shares":NaN}'])
+def test_missing_or_corrupt_original_snapshot_stays_unavailable(tmp_path, raw):
+    db = tmp_path / "paper.db"; _db(db)
+    with sqlite3.connect(db) as con:
+        con.execute("UPDATE momentum_paper_admission_outcomes SET entry_economics_json=?", (raw,))
+    result = review.build_momentum_paper_evidence_review(str(db), str(_input(tmp_path, [_entry()])))
+    assert result["pairs"][0]["state"] == "UNAVAILABLE_ENTRY_ECONOMICS"
+    assert result["summary"]["paired_delta_count"] == 0
+
+
+def test_original_quantity_not_mutable_remaining_quantity(tmp_path, monkeypatch):
+    monkeypatch.setattr("momentum_exit_study.settings.MOMENTUM_USE_SCALE_OUT", False)
+    db = tmp_path / "paper.db"; _db(db)
+    with sqlite3.connect(db) as con:
+        con.execute("UPDATE positions SET shares=5")
+    entry = _entry(); entry["entry_at"] = "2026-09-25T04:30:00+00:00"
+    result = review.build_momentum_paper_evidence_review(str(db), str(_input(tmp_path, [entry])))
+    assert result["pairs"][0]["state"] == "COMPLETE"
 
 
 def test_legacy_exit_packet_without_key_is_unavailable_not_guessed(tmp_path, monkeypatch):

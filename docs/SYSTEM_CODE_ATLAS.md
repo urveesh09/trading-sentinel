@@ -922,7 +922,7 @@ Related tests: `python-engine/tests/test_models.py`
 
 Read-only paired research for momentum-paper exit policies. This module deliberately has no database, broker, HTTP, scheduler, order, or message dependency. It replays already captured timestamped LTP observations and compares the production pure exit evaluator with one fixed paper-only target-hold/trail alternative. It is not imported by any runtime manager.
 
-Top-level declarations: `ExitStudyError` (line 59), `StudyEntry` (line 64), `Quote` (line 83), `_canonical_bytes` (line 88), `_parse_timestamp` (line 95), `_finite_positive` (line 107), `_optional_positive` (line 119), `_optional_admission_key` (line 125), `_entry_from_json` (line 136), `_quotes_from_json` (line 179), `load_exit_study_packet` (line 197), `_policy_snapshot` (line 233), `_deadline` (line 250), `_validated_quote_path` (line 254), `_position` (line 294), `_leg` (line 310), `_finalise` (line 324), `_close` (line 360), `_apply_current_decision` (line 367), `_simulate` (line 403), `_insufficient_pair` (line 440), `_summary` (line 456), `build_momentum_exit_study` (line 476), `write_study_report_once` (line 520), `_main` (line 550)
+Top-level declarations: `ExitStudyError` (line 59), `StudyEntry` (line 64), `Quote` (line 83), `_canonical_bytes` (line 88), `_parse_timestamp` (line 95), `_finite_positive` (line 107), `_optional_positive` (line 119), `_optional_admission_key` (line 125), `_entry_from_json` (line 136), `_quotes_from_json` (line 179), `load_exit_study_packet` (line 197), `_policy_snapshot` (line 233), `_deadline` (line 250), `_validated_quote_path` (line 254), `_position` (line 294), `_leg` (line 310), `_finalise` (line 324), `_close` (line 360), `_apply_current_decision` (line 367), `_simulate` (line 403), `_entry_economics` (line 440), `_insufficient_pair` (line 452), `_summary` (line 469), `build_momentum_exit_study` (line 489), `write_study_report_once` (line 534), `_main` (line 564)
 
 Engine dependencies: `config`, `engine`, `momentum_exits`
 
@@ -942,7 +942,7 @@ Related tests: `python-engine/tests/test_momentum_exits.py`
 
 [MOMENTUM-PAPER 2026-07-26] A paper twin of the live momentum book. WHY THIS EXISTS --------------- Live momentum entry is manual: the screener sends a Telegram EXEC button and a human decides. The ledger therefore records what the *operator* did, never what the *strategy* proposed -- 8 recorded momentum trades in months of running, which is why nothing can be concluded about the strategy from them. A signal that fired at 11:04 while nobody was looking left no trace at all. This book takes EVERY accepted momentum signal automatically, sizes it off its own pool, manages it with the same pure exit logic the live book uses, and books cost-adjusted P&L to source='MOMENTUM_PAPER'. The result is a
 
-Top-level declarations: `paper_position_size` (line 72), `_sig_get` (line 101), `_sqlite_safe` (line 110), `_paper_risk_pct` (line 137), `_admission_signal_key` (line 157), `_init_admission_outcomes` (line 181), `_record_admission_outcome` (line 203), `_bound_admission_outcomes` (line 219), `_supports_paper_admission_identity` (line 229), `record_momentum_paper_upstream_deduplications` (line 241), `_record_disabled_admissions` (line 278), `_record_transaction_failures` (line 302), `open_momentum_paper_positions` (line 332), `_close_paper_position` (line 472), `momentum_paper_monitor` (line 526), `momentum_paper_square_off` (line 624)
+Top-level declarations: `paper_position_size` (line 72), `_sig_get` (line 101), `_sqlite_safe` (line 110), `_paper_risk_pct` (line 137), `_admission_signal_key` (line 157), `_init_admission_outcomes` (line 181), `_record_admission_outcome` (line 210), `_bound_admission_outcomes` (line 237), `_supports_paper_admission_identity` (line 247), `record_momentum_paper_upstream_deduplications` (line 259), `_record_disabled_admissions` (line 296), `_record_transaction_failures` (line 320), `open_momentum_paper_positions` (line 350), `_close_paper_position` (line 500), `momentum_paper_monitor` (line 554), `momentum_paper_square_off` (line 652)
 
 Engine dependencies: `config`, `engine`, `models`, `momentum_exits`, `performance`
 
@@ -952,7 +952,7 @@ Related tests: `python-engine/tests/test_momentum_paper.py`, `python-engine/test
 
 Read-only, exact-key lifecycle audit for momentum-paper evidence. The audit intentionally refuses ticker/date joins. Only future paper rows with the immutable ``paper_admission_key`` and ledger ``origin_ref`` can form a complete lifecycle; legacy records remain visible as unavailable evidence.
 
-Top-level declarations: `MomentumPaperAuditError` (line 26), `_canonical` (line 30), `_unavailable` (line 34), `_open_readonly` (line 46), `_table_columns` (line 56), `_round` (line 63), `_position_view` (line 67), `_cash_view` (line 81), `build_momentum_paper_decision_audit` (line 120), `_main` (line 261)
+Top-level declarations: `MomentumPaperAuditError` (line 26), `_canonical` (line 30), `_unavailable` (line 34), `_open_readonly` (line 46), `_table_columns` (line 56), `_round` (line 63), `_entry_snapshot` (line 67), `_position_view` (line 79), `_cash_view` (line 93), `build_momentum_paper_decision_audit` (line 132), `_main` (line 275)
 
 Related tests: `python-engine/tests/test_momentum_paper_audit.py`
 
@@ -960,7 +960,7 @@ Related tests: `python-engine/tests/test_momentum_paper_audit.py`
 
 Read-only exact-key review of momentum paper and paired exit evidence. The module intentionally has no runtime caller. It binds a Phase-1 exit study to the Phase-2 lifecycle audit only when the input packet names the same opaque admission key stored with the paper position and ledger cash rows. Ticker/time similarity is not a fallback identity.
 
-Top-level declarations: `MomentumPaperEvidenceReviewError` (line 22), `_canonical` (line 26), `_round` (line 30), `_review_pair` (line 34), `build_momentum_paper_evidence_review` (line 66), `_main` (line 136)
+Top-level declarations: `MomentumPaperEvidenceReviewError` (line 23), `_canonical` (line 27), `_round` (line 31), `_economic_binding` (line 35), `_review_pair` (line 60), `build_momentum_paper_evidence_review` (line 95), `_main` (line 165)
 
 Engine dependencies: `momentum_exit_study`, `momentum_paper_audit`
 

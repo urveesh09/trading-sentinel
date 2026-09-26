@@ -193,6 +193,13 @@ async def _init_admission_outcomes(db) -> None:
             recorded_at TEXT NOT NULL
         )
     """)
+    columns = {row[1] for row in await (await db.execute(
+        f"PRAGMA table_info({_ADMISSION_OUTCOMES_TABLE})"
+    )).fetchall()}
+    if "entry_economics_json" not in columns:
+        await db.execute(
+            f"ALTER TABLE {_ADMISSION_OUTCOMES_TABLE} ADD COLUMN entry_economics_json TEXT"
+        )
     await db.execute(
         f"CREATE INDEX IF NOT EXISTS idx_{_ADMISSION_OUTCOMES_TABLE}_recorded "
         f"ON {_ADMISSION_OUTCOMES_TABLE}(recorded_at DESC)"
@@ -202,16 +209,27 @@ async def _init_admission_outcomes(db) -> None:
 
 async def _record_admission_outcome(
     db, admission_key: str, signal_key: str, ticker: str, outcome: str,
-    now_utc: datetime,
+    now_utc: datetime, *, entry_economics: Optional[dict] = None,
 ) -> bool:
     """Insert one immutable outcome, returning whether it was newly recorded."""
     if outcome not in _ADMISSION_OUTCOMES:
         raise ValueError(f"unsupported momentum-paper admission outcome: {outcome}")
+    encoded_economics = None
+    if entry_economics is not None:
+        try:
+            candidate = json.dumps(entry_economics, sort_keys=True, separators=(",", ":"), allow_nan=False)
+            if len(candidate) <= 4096:
+                encoded_economics = candidate
+        except (ValueError, TypeError):
+            # Invalid evidence must not change paper admission authority.
+            # A missing snapshot makes the offline review unavailable.
+            pass
     cur = await db.execute(
         f"INSERT OR IGNORE INTO {_ADMISSION_OUTCOMES_TABLE} "
-        "(admission_key, signal_key, ticker, outcome, reason, recorded_at) "
-        "VALUES (?,?,?,?,?,?)",
-        (admission_key, signal_key, ticker, outcome, outcome, now_utc.isoformat()),
+        "(admission_key, signal_key, ticker, outcome, reason, recorded_at, entry_economics_json) "
+        "VALUES (?,?,?,?,?,?,?)",
+        (admission_key, signal_key, ticker, outcome, outcome, now_utc.isoformat(),
+         encoded_economics),
     )
     return bool(cur.rowcount)
 
@@ -451,6 +469,16 @@ async def open_momentum_paper_positions(db_path: str, accepted: list,
                 opened.append(ticker)
                 await _record_admission_outcome(
                     db, admission_key, signal_key, ticker, "opened", now_utc,
+                    entry_economics={
+                        "schema": "momentum_paper_entry_economics_v1",
+                        "ticker": ticker,
+                        "entry_at": now_utc.astimezone(timezone.utc).isoformat(),
+                        "entry_price": close, "shares": shares,
+                        "stop_loss_initial": stop, "target_1": values[7],
+                        "atr_14_at_entry": values[9], "vwap_at_entry": values[16],
+                        "regime_at_entry": values[14],
+                        "initial_capital_at_risk": (close - stop) * shares,
+                    },
                 )
                 logger.info(
                     "momentum_paper_opened ticker=%s shares=%d entry=%.2f stop=%.2f "

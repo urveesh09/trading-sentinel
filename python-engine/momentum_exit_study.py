@@ -9,7 +9,7 @@ from __future__ import annotations
 
 import argparse
 from dataclasses import dataclass
-from datetime import datetime, time
+from datetime import datetime, time, timezone
 import hashlib
 import json
 import math
@@ -437,12 +437,25 @@ def _simulate(entry: StudyEntry, quotes: Sequence[Quote], variant: str) -> dict[
     return _finalise(entry, variant, state, observed_prices)
 
 
+def _entry_economics(entry: StudyEntry) -> dict[str, Any]:
+    return {
+        "schema": "momentum_paper_entry_economics_v1", "ticker": entry.ticker,
+        "entry_at": entry.entry_at.astimezone(timezone.utc).isoformat(),
+        "entry_price": entry.entry_price, "shares": entry.shares,
+        "stop_loss_initial": entry.stop_loss_initial, "target_1": entry.target_1,
+        "atr_14_at_entry": entry.atr_14_at_entry, "vwap_at_entry": entry.vwap_at_entry,
+        "regime_at_entry": entry.regime_at_entry,
+        "initial_capital_at_risk": (entry.entry_price - entry.stop_loss_initial) * entry.shares,
+    }
+
+
 def _insufficient_pair(entry: StudyEntry, issue: str) -> dict[str, Any]:
     evidence = {
         "entry_id": entry.entry_id,
         "admission_key": entry.admission_key,
         "ticker": entry.ticker,
         "source_ref": entry.source_ref,
+        "entry_economics": _entry_economics(entry),
         "status": "INSUFFICIENT_EVIDENCE",
         "reason": issue,
     }
@@ -488,6 +501,7 @@ def build_momentum_exit_study(path: str | os.PathLike[str]) -> dict[str, Any]:
             "admission_key": entry.admission_key,
             "ticker": entry.ticker,
             "source_ref": entry.source_ref,
+            "entry_economics": _entry_economics(entry),
             "status": "COMPLETE",
             "baseline": _simulate(entry, quotes, BASELINE_POLICY),
             "alternative": _simulate(entry, quotes, ALTERNATIVE_POLICY),

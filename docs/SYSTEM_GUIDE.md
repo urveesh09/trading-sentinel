@@ -1,5 +1,19 @@
 # Trading Sentinel — system guide and engineering handover
 
+## September 26 replay economics correction (Dev)
+
+Exact admission identity alone is insufficient. New opened paper admissions
+atomically retain a bounded (4096-character) immutable entry-economics snapshot:
+UTC entry time, price, original shares, initial stop/risk, target, ATR, VWAP and
+regime. The composite review requires all replay terms to match this snapshot
+before counting a paired delta. Partial exits cannot redefine original shares.
+Missing, legacy, corrupt or mismatched evidence stays unavailable/unresolved.
+The additive nullable `entry_economics_json` column is initialized idempotently;
+historical admissions are not backfilled. Invalid/oversized snapshots are
+omitted without changing paper trading authority. This is Dev-only evidence
+hardening, not live approval, partner qualification or profitability proof.
+See [the correction and next-evidence plan](2026-09-26-economic-binding-correction-plan.md).
+
 ## September 26 source-bound momentum-paper evidence review (Dev)
 
 `momentum_paper_evidence_review.py --db <existing-db> --input <packet>` joins
