@@ -1,5 +1,15 @@
 # Trading Sentinel — next-agent execution plan
 
+## September 28 Jev decision-layer proposal — design only
+
+The revised [Jev decision-layer draft](superpowers/specs/2026-09-27-jev-decision-layer-design.md)
+proposes one disabled-by-default, shadow-only news-category experiment after
+a frozen labelled evaluation contract. It does not authorize classifier
+replacement, trade grading, signal filtering, M2/M3 promotion, live orders, or
+partner advice. The Word/PDF copies remain the earlier draft until the Markdown
+design is approved and regenerated. No Jev implementation or deployment has
+been performed.
+
 ## September 26 P1 economic binding — corrected in Dev
 
 Follow [the economic-binding correction plan](2026-09-26-economic-binding-correction-plan.md).
