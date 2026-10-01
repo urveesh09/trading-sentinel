@@ -25,6 +25,7 @@ this slice and remains a test-hygiene follow-up. This migration is additive colu
 broker, entry-threshold, scheduler, EXEC, partner or Production behavior was
 changed. Dev-local source is pending GitHub review/push and is not deployed;
 inspect real post-promotion settlement receipts before making economic claims.
+Source commit `9e26e1b` is local on `codex/production-correction-hedge-p0`.
 
 ## October 1 Production assessment and smart-trader plan (documentation only)
 

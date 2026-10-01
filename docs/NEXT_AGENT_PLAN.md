@@ -42,6 +42,8 @@ alone but fails only in the grouped run and is outside this slice. Additive data
 broker, entry logic, schedule, owner EXEC, partner authority or Production
 change. Next: regenerate/review atlas and documentation, commit the scoped Dev
 slice, then use GitHub promotion and inspect real schema/settlement receipts.
+Source commit `9e26e1b` is local on `codex/production-correction-hedge-p0`;
+it is not pushed or deployed.
 
 ## September 28 Jev decision-layer proposal — design only
 

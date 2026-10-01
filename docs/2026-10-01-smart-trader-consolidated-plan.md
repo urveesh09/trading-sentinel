@@ -147,6 +147,8 @@ grouped run and is outside this slice. Migration is additive columns only;
 there is no configuration, broker, scheduler, entry-threshold or Production
 change. Remaining S1 rollout: review/push through GitHub, verify deployed
 schema and inspect real unresolved/settled receipts before interpreting cash.
+Source commit `9e26e1b` is local on `codex/production-correction-hedge-p0`;
+it is not pushed or deployed.
 
 ### S2 — P0: timely management and honest final decision clocks
 

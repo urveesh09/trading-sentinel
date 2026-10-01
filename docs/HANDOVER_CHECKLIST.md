@@ -16,7 +16,8 @@
   one deselected timing-sensitive recovery test, and one existing Starlette
   deprecation. Additive migration only; Dev-local,
   unpushed/not deployed at this receipt. Review/push via GitHub and inspect
-  deployed receipts before considering S1 operationally complete.
+  deployed receipts before considering S1 operationally complete. Source
+  commit: `9e26e1b` on `codex/production-correction-hedge-p0`.
 - [ ] Implement S2 in Dev with focused regression coverage and receipts.
 - [x] Reproduce optional-review expiry from mixed fresh/stale/undated sources;
   inspect queue/deadline/completion visibility without provider/message calls.
