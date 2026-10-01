@@ -1,5 +1,32 @@
 # Handover receipt and operator checklist
 
+## October 1 consolidated planning receipt
+
+- [x] Read October 1 audit and cross-check it against Production ledger,
+  admissions, retained contract master, collection attempts and telemetry.
+- [x] Correct penny/momentum balance confusion, bearish-view versus option-sale
+  confusion, and market-hours versus post-market scheduler conclusions.
+- [x] Record configured DR lot mismatch plus unpriced/non-atomic settlement
+  hazards; no historical incident or corrected cash is fabricated.
+- [x] Save [the ordered smart-trader plan](2026-10-01-smart-trader-consolidated-plan.md),
+  with files/contracts, reproductions, acceptance, rollout/rollback and effort.
+- [x] Implement S1 in Dev: exact selected-contract lot/identity, unresolved
+  hard-flat state, atomic/idempotent cash settlement and model-versus-cash
+  reporting. Focused warnings-fatal tests: 24; affected F&O suite: 84 passed,
+  one deselected timing-sensitive recovery test, and one existing Starlette
+  deprecation. Additive migration only; Dev-local,
+  unpushed/not deployed at this receipt. Review/push via GitHub and inspect
+  deployed receipts before considering S1 operationally complete.
+- [ ] Implement S2 in Dev with focused regression coverage and receipts.
+- [x] Reproduce optional-review expiry from mixed fresh/stale/undated sources;
+  inspect queue/deadline/completion visibility without provider/message calls.
+- [ ] Implement S10 context/expiry/deadline fixes and bounded completion updates,
+  preserving paper autonomy, source truthfulness and owner EXEC authority.
+- [ ] Preserve paths/coverage; freeze future exit/allocation/partner studies.
+- [ ] Complete compatible partner qualification and authorized delivery canary.
+- [x] Production unchanged; this receipt is planning only. No new software
+  tests, source changes, deployment or profitability conclusion are claimed.
+
 ## September 26 economic-binding correction
 
 - [x] Require original entry economics as well as exact admission identity;

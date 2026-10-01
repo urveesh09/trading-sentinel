@@ -1,5 +1,48 @@
 # Trading Sentinel — next-agent execution plan
 
+## October 1 consolidated smart-trader plan — active, planning only
+
+Start with [the consolidated implementation plan](2026-10-01-smart-trader-consolidated-plan.md).
+It incorporates September 28–October 1 Production evidence and corrects audit
+book/time/count errors. First reproduce/fix defined-risk contract lot identity
+and truthful atomic settlement, then bound management reads and action clocks.
+Preserve complete equity/research paths, compare entry/exit/allocation policies
+on frozen future evidence, and complete the existing partner qualification
+workflow. This is a smart-trader roadmap, not a mandate to add entry filters.
+Jev is deferred. No implementation, Production change or delivery follows from
+this planning update; all development remains in Dev with GitHub promotion.
+The September 26 admission/economics tools are deployed in PR #99 and four
+fresh momentum closes match cash; older "not deployed" receipts below remain
+historical. Full paired paths/held-out review are still required.
+S10 now covers frequent AI_REVIEW_EXPIRED: stale/undated classified news can
+expire the whole review before submission. Correct sanitized context/expiry,
+propagate remaining deadlines and expose valid completed annotations without
+changing paper autonomy or owner EXEC. See the plan's reproduced evidence and
+regression/rollout contracts; this fix is planned, not implemented.
+
+## October 1 S1 defined-risk contract/settlement correction — Dev complete, pending review
+
+The first implementation slice from the consolidated plan is complete in Dev
+only (GitHub review/push pending; not deployed at this receipt). New
+defined-risk admissions bind every selected leg to its exact NFO identity and
+derive quantity economics from the selected contract lot rather than the
+configured fallback. The lifecycle refuses missing/inconsistent/replaced
+contracts, leaves legacy rows explicitly unverified, preserves an unpriced
+hard-flat as `UNRESOLVED` with no fabricated ledger cash, and blocks another
+DR opening while unresolved exposure exists. New priced closes use the named
+`ENTRY_MID_EXIT_BID_ASK_V1` policy: mid valuation and executable cash are
+separate; the terminal row and uniquely generated ledger event are atomic and
+idempotent. `fno_audit_report.py` exposes settled/unresolved/legacy evidence
+and model-versus-cash totals without recalculating legacy cash.
+
+Verification: 24 focused warnings-fatal DR/audit tests pass; the surrounding
+suite passes 84 with one intentionally deselected timing-sensitive recovery
+test and one existing Starlette lifespan deprecation. That recovery test passes
+alone but fails only in the grouped run and is outside this slice. Additive database columns only; no config,
+broker, entry logic, schedule, owner EXEC, partner authority or Production
+change. Next: regenerate/review atlas and documentation, commit the scoped Dev
+slice, then use GitHub promotion and inspect real schema/settlement receipts.
+
 ## September 28 Jev decision-layer proposal — design only
 
 The revised [Jev decision-layer draft](superpowers/specs/2026-09-27-jev-decision-layer-design.md)

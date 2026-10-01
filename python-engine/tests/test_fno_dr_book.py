@@ -5,7 +5,7 @@ range day, stand-aside otherwise), mark-to-market, exit logic, and the
 open/close storage round-trip.
 """
 import asyncio
-from datetime import datetime
+from datetime import date, datetime
 
 import pytest
 
@@ -13,23 +13,15 @@ import fno_dr_book as book
 from fno_dr_book import (
     evaluate_dr_exit, expected_move_pct_from_snapshot, iv_rank_proxy,
     plan_structure, premium_lookup_from_snapshot, structure_mtm_rs,
-    insert_structure, open_structures, close_structure, init_dr_db, PlannedStructure,
+    insert_structure, open_structures, init_dr_db, PlannedStructure,
 )
 from fno_defined_risk import build_debit_spread, StructureKind
-from fno_models import FnoDirection, OptionType
+from fno_models import Contract, ContractQuote, FnoDirection, OptionType
 
 STEP = 50.0
 LOT = 75
 NOW = datetime(2026, 7, 20, 11, 0)     # inside the entry window
 SQUAREOFF = datetime(2026, 7, 20, 15, 15)
-
-
-class _Q:
-    def __init__(self, mid):
-        self._m = mid
-    @property
-    def mid(self):
-        return self._m
 
 
 class FakeSnap:
@@ -39,12 +31,27 @@ class FakeSnap:
     pricing basis -- there is no ``spot`` attribute. This fake must mirror that
     exact name, otherwise the adapter can regress against a field the live
     snapshot never had (which is precisely what slipped past before)."""
-    def __init__(self, forward, table):
+    def __init__(self, forward, table, *, lot_size=LOT, include_contract=True):
         self.forward = forward
         self._t = {(float(k[0]), k[1].value): v for k, v in table.items()}
+        self.expiry = date(2026, 7, 30)
+        self._lot_size = lot_size
+        self._include_contract = include_contract
     def quote(self, strike, opt):
         m = self._t.get((float(strike), opt.value))
-        return _Q(m) if m is not None else None
+        if m is None:
+            return None
+        contract = Contract(
+            token=int(strike * 10) + (1 if opt == OptionType.CE else 2),
+            tradingsymbol=f"NIFTY26JUL{int(strike)}{opt.value}", name="NIFTY",
+            expiry=self.expiry, strike=float(strike), instrument_type=opt.value, lot_size=self._lot_size,
+        )
+        # A two-sided fake preserves the executable exit path while keeping
+        # the original ``mid`` test values exact.
+        quote = ContractQuote(contract=contract, bid=float(m) - 0.5, ask=float(m) + 0.5, ltp=float(m))
+        if not self._include_contract:
+            quote.contract = None
+        return quote
 
 
 # --------------------------------------------------------------------------
@@ -117,6 +124,28 @@ def test_plan_skips_structure_over_max_loss_ceiling(monkeypatch):
     assert plan_structure(snap, True, FnoDirection.LONG, NOW) is None
 
 
+def test_plan_uses_the_selected_contract_lot_and_retains_identity(monkeypatch):
+    monkeypatch.setattr(book, "atm_iv", lambda snap, now: 0.15)
+    snap = FakeSnap(25000, {
+        (25000, OptionType.CE): 120.0, (25100, OptionType.CE): 50.0,
+        (25000, OptionType.PE): 110.0,
+    }, lot_size=65)
+    planned = plan_structure(snap, True, FnoDirection.LONG, NOW)
+    assert planned is not None
+    assert planned.structure.lot_size == 65
+    assert {item["contract"]["lot_size"] for item in planned.contract_legs} == {65}
+    assert {item["contract"]["expiry"] for item in planned.contract_legs} == {"2026-07-30"}
+
+
+def test_plan_rejects_missing_contract_identity(monkeypatch):
+    monkeypatch.setattr(book, "atm_iv", lambda snap, now: 0.15)
+    snap = FakeSnap(25000, {
+        (25000, OptionType.CE): 120.0, (25100, OptionType.CE): 50.0,
+        (25000, OptionType.PE): 110.0,
+    }, include_contract=False)
+    assert plan_structure(snap, True, FnoDirection.LONG, NOW) is None
+
+
 # --------------------------------------------------------------------------
 # mark-to-market + exit
 # --------------------------------------------------------------------------
@@ -157,14 +186,19 @@ def test_exit_target_stop_and_squareoff():
 # storage round-trip
 # --------------------------------------------------------------------------
 
-def test_open_close_storage_roundtrip(tmp_path):
+def test_insert_storage_retains_contract_identity(tmp_path):
     db = str(tmp_path / "cache.db")
     s = build_debit_spread(
         FnoDirection.LONG, 25000, STEP, 2,
         lambda o, k: {(OptionType.CE, 25000.0): 120.0, (OptionType.CE, 25100.0): 50.0}.get((o, k)),
         LOT,
     )
-    planned = PlannedStructure(structure=s, entry_underlying=25000.0)
+    snap = FakeSnap(25000, {
+        (25000, OptionType.CE): 120.0, (25100, OptionType.CE): 50.0,
+    })
+    contract_legs = book._selected_contract_legs(snap, s.legs)
+    assert contract_legs is not None
+    planned = PlannedStructure(structure=s, entry_underlying=25000.0, contract_legs=contract_legs)
 
     async def go():
         await init_dr_db(db)
@@ -172,8 +206,149 @@ def test_open_close_storage_roundtrip(tmp_path):
         rows = await open_structures(db, book.SOURCE_PAPER)
         assert len(rows) == 1 and rows[0]["kind"] == "DEBIT_SPREAD"
         assert rows[0]["max_loss_rs"] == pytest.approx(s.max_loss_rs)
-        await close_structure(db, rid, gross_pnl=750.0, costs=50.0,
-                              exit_underlying=25120.0, reason="target", now_ist=SQUAREOFF)
-        assert await open_structures(db, book.SOURCE_PAPER) == []
+        assert rows[0]["id"] == rid
+        assert book._bound_legs_from_row(rows[0]) is not None
 
+    asyncio.run(go())
+
+
+def test_hard_flat_with_missing_exact_leg_stays_unresolved_and_writes_no_cash(tmp_path, monkeypatch):
+    monkeypatch.setattr(book, "atm_iv", lambda snap, now: 0.15)
+    db = str(tmp_path / "cache.db")
+    entry = FakeSnap(25000, {
+        (25000, OptionType.CE): 120.0, (25100, OptionType.CE): 50.0,
+        (25000, OptionType.PE): 110.0,
+    })
+    planned = plan_structure(entry, True, FnoDirection.LONG, NOW)
+    assert planned is not None
+
+    async def go():
+        await init_dr_db(db)
+        await insert_structure(db, book.SOURCE_PAPER, planned, NOW)
+        # The short call is absent at the hard-flat deadline.  It must not be
+        # turned into the old zero-cash close.
+        incomplete = FakeSnap(25000, {(25000, OptionType.CE): 150.0})
+        assert await book.manage_dr_structures(db, incomplete, SQUAREOFF) == 0
+        rows = await open_structures(db)
+        assert len(rows) == 1
+        assert rows[0]["status"] == "UNRESOLVED"
+        assert rows[0]["settlement_state"] == "UNRESOLVED"
+        import aiosqlite
+        async with aiosqlite.connect(db) as conn:
+            exists = await (await conn.execute(
+                "SELECT COUNT(*) FROM sqlite_master WHERE type='table' AND name='bankroll_ledger'"
+            )).fetchone()
+            assert exists[0] == 0
+    asyncio.run(go())
+
+
+def test_exact_priced_close_is_atomic_and_idempotent(tmp_path, monkeypatch):
+    monkeypatch.setattr(book, "atm_iv", lambda snap, now: 0.15)
+    db = str(tmp_path / "cache.db")
+    entry = FakeSnap(25000, {
+        (25000, OptionType.CE): 120.0, (25100, OptionType.CE): 50.0,
+        (25000, OptionType.PE): 110.0,
+    })
+    planned = plan_structure(entry, True, FnoDirection.LONG, NOW)
+    assert planned is not None
+
+    async def go():
+        await init_dr_db(db)
+        row_id = await insert_structure(db, book.SOURCE_PAPER, planned, NOW)
+        # The mid valuation crosses the target and every leg has an executable
+        # bid/ask.  The ledger cash and terminal row commit together.
+        exit_snap = FakeSnap(25000, {
+            (25000, OptionType.CE): 210.0, (25100, OptionType.CE): 50.0,
+        })
+        assert await book.manage_dr_structures(db, exit_snap, NOW) == 1
+        assert await book.manage_dr_structures(db, exit_snap, NOW) == 0
+        import aiosqlite
+        async with aiosqlite.connect(db) as conn:
+            conn.row_factory = aiosqlite.Row
+            position = await (await conn.execute(
+                "SELECT status, settlement_state, model_gross_pnl, cash_gross_pnl, pnl, pricing_policy "
+                "FROM fno_dr_positions WHERE id=?", (row_id,)
+            )).fetchone()
+            assert position["status"] == "CLOSED"
+            assert position["settlement_state"] == "SETTLED"
+            assert position["pricing_policy"] == "ENTRY_MID_EXIT_BID_ASK_V1"
+            assert position["model_gross_pnl"] != position["cash_gross_pnl"]
+            cash_rows = await (await conn.execute(
+                "SELECT pnl, origin_ref, settlement_generation FROM bankroll_ledger "
+                "WHERE origin_ref=?", (f"fno_dr_structure:{row_id}",)
+            )).fetchall()
+            assert len(cash_rows) == 1
+            assert cash_rows[0]["pnl"] == position["pnl"]
+            assert cash_rows[0]["settlement_generation"] == 1
+    asyncio.run(go())
+
+
+def test_concurrent_exact_close_writes_one_terminal_cash_event(tmp_path, monkeypatch):
+    monkeypatch.setattr(book, "atm_iv", lambda snap, now: 0.15)
+    db = str(tmp_path / "cache.db")
+    entry = FakeSnap(25000, {
+        (25000, OptionType.CE): 120.0, (25100, OptionType.CE): 50.0,
+        (25000, OptionType.PE): 110.0,
+    })
+    planned = plan_structure(entry, True, FnoDirection.LONG, NOW)
+    assert planned is not None
+
+    async def go():
+        await init_dr_db(db)
+        row_id = await insert_structure(db, book.SOURCE_PAPER, planned, NOW)
+        exit_snap = FakeSnap(25000, {
+            (25000, OptionType.CE): 210.0, (25100, OptionType.CE): 50.0,
+        })
+        results = await asyncio.gather(
+            book.manage_dr_structures(db, exit_snap, NOW),
+            book.manage_dr_structures(db, exit_snap, NOW),
+        )
+        assert sum(results) == 1
+        import aiosqlite
+        async with aiosqlite.connect(db) as conn:
+            cash_count = await (await conn.execute(
+                "SELECT COUNT(*) FROM bankroll_ledger WHERE origin_ref=?", (f"fno_dr_structure:{row_id}",)
+            )).fetchone()
+            assert cash_count[0] == 1
+    asyncio.run(go())
+
+
+def test_ledger_write_failure_rolls_back_terminal_position_mutation(tmp_path, monkeypatch):
+    monkeypatch.setattr(book, "atm_iv", lambda snap, now: 0.15)
+    db = str(tmp_path / "cache.db")
+    entry = FakeSnap(25000, {
+        (25000, OptionType.CE): 120.0, (25100, OptionType.CE): 50.0,
+        (25000, OptionType.PE): 110.0,
+    })
+    planned = plan_structure(entry, True, FnoDirection.LONG, NOW)
+    assert planned is not None
+
+    async def go():
+        await init_dr_db(db)
+        row_id = await insert_structure(db, book.SOURCE_PAPER, planned, NOW)
+        from performance import init_ledger
+        await init_ledger(db)
+        import aiosqlite
+        # A database-side failure is closer to the real failure mode than a
+        # mocked helper: it exercises the transaction containing both writes.
+        async with aiosqlite.connect(db) as conn:
+            await conn.execute(
+                "CREATE TRIGGER fail_dr_cash BEFORE INSERT ON bankroll_ledger "
+                f"WHEN NEW.origin_ref = 'fno_dr_structure:{row_id}' "
+                "BEGIN SELECT RAISE(ABORT, 'injected terminal ledger failure'); END"
+            )
+            await conn.commit()
+        exit_snap = FakeSnap(25000, {
+            (25000, OptionType.CE): 210.0, (25100, OptionType.CE): 50.0,
+        })
+        assert await book.manage_dr_structures(db, exit_snap, NOW) == 0
+        async with aiosqlite.connect(db) as conn:
+            position = await (await conn.execute(
+                "SELECT status FROM fno_dr_positions WHERE id=?", (row_id,)
+            )).fetchone()
+            assert position[0] == "OPEN"
+            cash_count = await (await conn.execute(
+                "SELECT COUNT(*) FROM bankroll_ledger WHERE origin_ref=?", (f"fno_dr_structure:{row_id}",)
+            )).fetchone()
+            assert cash_count[0] == 0
     asyncio.run(go())

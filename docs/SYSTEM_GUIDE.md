@@ -1,5 +1,54 @@
 # Trading Sentinel — system guide and engineering handover
 
+## October 1 S1 defined-risk economics and truthful settlement (Dev)
+
+New defined-risk paper admissions bind every selected option leg to bounded,
+immutable NFO contract identity (underlying, expiry, token, symbol, lot and
+leg ratio) and derive structure economics from those selected lots—not the
+stale global fallback. Missing, inconsistent or subsequently replaced contract
+identity is rejected/unpriceable; legacy rows remain readable but explicitly
+unverified and are never reconstructed. At hard-flat, a missing exact-leg price
+is recorded as `UNRESOLVED` with a reason and no fabricated zero-cash close;
+the existing one-open-structure guard retains that exposure as unavailable
+capital. For a fully priced exact close, `ENTRY_MID_EXIT_BID_ASK_V1` retains
+model-mid valuation separately from executable bid/ask cash. The terminal DR
+row and unique generated FNO ledger close share one SQLite transaction, so a
+repeat, concurrent attempt or ledger-write failure cannot create duplicate or
+orphaned cash. The read-only F&O daily audit now reports settled, unresolved
+and legacy-unverified DR evidence with separate model/cash totals.
+
+Focused warnings-fatal DR/audit checks passed 24. The affected defined-risk,
+orchestrator and exit suite passed 84 with one deselected timing-sensitive
+exit-recovery test and one existing Starlette lifespan deprecation warning.
+The recovery test passes alone but fails only in its grouped run; it is outside
+this slice and remains a test-hygiene follow-up. This migration is additive columns only; no configuration,
+broker, entry-threshold, scheduler, EXEC, partner or Production behavior was
+changed. Dev-local source is pending GitHub review/push and is not deployed;
+inspect real post-promotion settlement receipts before making economic claims.
+
+## October 1 Production assessment and smart-trader plan (documentation only)
+
+The [consolidated plan](2026-10-01-smart-trader-consolidated-plan.md) records
+verified September 28–October 1 evidence. PR #99 includes the September 26
+admission/economics tools; four fresh momentum lifecycles reconcile to cash.
+The latest INR 47,647.44 ledger balance belongs to MOMENTUM_PAPER, not penny.
+General partner collection/profile exist, but qualifications remain absent;
+personalized snapshot refresh is a separate disabled path. Market-hours F&O
+management still has long read stages/overlap skips. DR planning currently
+uses a configured lot fallback (75), inconsistent with the retained October 6
+65-unit contracts, and unpriced/nonatomic settlement paths require correction.
+These are assessed findings and planned changes, not implemented behavior.
+The goal is timely thesis-based entry/management, capital allocation and
+measured learning. Paper remains autonomous, new real-money momentum entries
+retain owner EXEC approval, and qualified partner advice grants no order power.
+Jev work is deferred. Production was inspected read-only and left untouched.
+The optional-AI investigation reproduced pre-submission expiry when a fresh
+review includes stale/undated news classification. Today's zero analyst-request
+status is consistent with this path; exact historical headline causality is
+not retained. The consolidated plan's S10 corrects source-context handling,
+deadline propagation and visibility of completed reviews. No AI/runtime change
+has been implemented; unavailable review remains informational under proceed.
+
 ## September 26 replay economics correction (Dev)
 
 Exact admission identity alone is insufficient. New opened paper admissions
