@@ -1,5 +1,5 @@
 """S7b timing hypotheses are frozen research, never admission authority."""
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 import pytest
 from zoneinfo import ZoneInfo
@@ -88,3 +88,60 @@ def test_timing_freeze_rejects_unknown_deadline_policy():
         freeze_timing_manifest(experiment_id="invalid", max_gap_seconds=60,
                                deadline_policy="invented",
                                frozen_at=datetime(2026, 10, 1, tzinfo=IST))
+
+
+# [S7b R5 2026-10-02] Candidates built only from immutable admission evidence.
+def _evidence_db(tmp_path, price_at):
+    import asyncio as _asyncio
+    from datetime import timedelta as _td, timezone as _tz
+    from momentum_paper import open_momentum_paper_positions, record_momentum_paper_path_observations
+    from tests.test_momentum_paper import _db, _envelope
+    db = _db(tmp_path)
+    entry_at = datetime(2026, 9, 25, 9, 0, tzinfo=_tz.utc)   # 14:30 IST
+    signal = {"ticker": "ACME", "close": 100.0, "stop_loss": 98.0, "target_1": 106.0, "target_2": 106.0,
+              "regime": "REGIME_1_NORMAL", "vwap": 99.0}
+    assert _asyncio.run(open_momentum_paper_positions(db, [signal], entry_at)) == ["ACME"]
+    observations, current = [], entry_at + _td(seconds=30)
+    while current <= datetime(2026, 9, 25, 9, 45, 30, tzinfo=_tz.utc):
+        minute = (current - entry_at).total_seconds() / 60
+        price = round(price_at(minute), 4)
+        observations.append({"ticker": "ACME", "ltp": price, "provider_observed_at": current.isoformat(),
+                             "receipt_at": current.isoformat(), "source_packet": _envelope("ACME", price, current)})
+        current += _td(seconds=60)
+    _asyncio.run(record_momentum_paper_path_observations(db, observations))
+    return db
+
+
+def test_adapter_builds_candidates_with_the_frozen_zone_rule(tmp_path):
+    from momentum_entry_timing_research import ZONE_RULE, timing_candidates_from_db
+    built = timing_candidates_from_db(_evidence_db(tmp_path, lambda m: 100.2))
+    assert built["unavailable"] == [] and len(built["candidates"]) == 1
+    candidate = built["candidates"][0]
+    # VWAP 99 is above stop + 0.25R (98.5), so it is the floor; cap = close + 0.25R.
+    assert (candidate.pullback_floor, candidate.no_chase_cap) == (99.0, 100.5)
+    assert candidate.thesis_id and candidate.state_id.startswith("sha256:")
+    assert (candidate.pullback_deadline - candidate.continuation_at).total_seconds() == ZONE_RULE["pullback_max_wait_seconds"]
+
+
+def test_pullback_after_the_window_expires_instead_of_entering(tmp_path):
+    from momentum_entry_timing_research import PULLBACK, evaluate_entry_timing, timing_candidates_from_db
+    from momentum_exit_study import DEADLINE_FIRST_WITHIN_GAP
+    built = timing_candidates_from_db(_evidence_db(tmp_path, lambda m: 101.0 if m < 40 else 99.5))
+    rows = evaluate_entry_timing(built["candidates"], policy=PULLBACK, max_gap_seconds=300,
+                                 deadline_policy=DEADLINE_FIRST_WITHIN_GAP)
+    assert rows[0]["state"] == "PULLBACK_WINDOW_EXPIRED"
+
+
+def test_missing_evidence_is_unavailable_and_zone_rule_drift_is_refused(tmp_path, monkeypatch):
+    import momentum_entry_timing_research as timing
+    from momentum_exit_study import DEADLINE_FIRST_WITHIN_GAP, ExitStudyError
+    from tests.test_momentum_paper import _db
+    db = _db(tmp_path)
+    assert timing.timing_candidates_from_db(db)["candidates"] == []
+    manifest = timing.freeze_timing_manifest(experiment_id="r5", max_gap_seconds=300,
+                                             deadline_policy=DEADLINE_FIRST_WITHIN_GAP,
+                                             frozen_at=datetime(2026, 9, 1, tzinfo=timezone.utc))
+    assert manifest["zone_rule"] == timing.ZONE_RULE
+    monkeypatch.setattr(timing, "ZONE_RULE", {**timing.ZONE_RULE, "no_chase_cap_r": 1.0})
+    with pytest.raises(ExitStudyError, match="zone_rule"):
+        timing.build_timing_report([], manifest)

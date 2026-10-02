@@ -90,7 +90,13 @@ def _source_packet_receipt(raw: object, claimed: object) -> dict[str, Any]:
     actual = f"sha256:{hashlib.sha256(raw_bytes).hexdigest()}"
     if claimed != actual:
         return {"state": "MISMATCH_SOURCE_PACKET", "claimed": claimed, "computed": actual}
-    return {"state": "VERIFIED_SOURCE_PACKET", "sha256": actual}
+    receipt = {"state": "VERIFIED_SOURCE_PACKET", "sha256": actual}
+    if isinstance(packet, dict):
+        # Clocks from the verified bytes only (S8 decision-timing evidence).
+        for field in ("bar_ts", "received_at"):
+            if isinstance(packet.get(field), str):
+                receipt[field] = packet[field]
+    return receipt
 
 
 def _position_view(row: sqlite3.Row) -> dict[str, Any]:
@@ -140,7 +146,8 @@ def _cash_view(rows: list[sqlite3.Row], position: dict[str, Any] | None) -> dict
         "net_pnl": _round(net_pnl) if rows else None,
         "position_pnl_delta": reconciled,
         "events": [
-            {"event_type": row["event_type"], "timestamp": row["timestamp"], "pnl": _round(row["pnl"])}
+            {"event_type": row["event_type"], "timestamp": row["timestamp"], "pnl": _round(row["pnl"]),
+             "ledger_rowid": row["ledger_rowid"]}
             for row in rows
         ],
     }
@@ -196,7 +203,7 @@ def build_momentum_paper_decision_audit(db_path: str, *, limit: int = 1000) -> d
         if ledger_schema_available and keys:
             marks = ",".join("?" for _ in keys)
             ledger_rows = connection.execute(
-                "SELECT origin_ref,event_type,pnl,timestamp FROM bankroll_ledger "
+                "SELECT origin_ref,event_type,pnl,timestamp,rowid AS ledger_rowid FROM bankroll_ledger "
                 f"WHERE source=? AND origin_ref IN ({marks}) ORDER BY timestamp,rowid",
                 (SOURCE, *sorted(keys)),
             ).fetchall()

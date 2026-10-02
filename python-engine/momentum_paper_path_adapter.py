@@ -104,10 +104,18 @@ def build_allocation_candidates(db_path: str) -> dict[str, Any]:
                 continue
             entry_row, quotes = built
             batch_at = _timestamp(row["recorded_at"])
-            arrival[batch_at] = arrival.get(batch_at, -1) + 1
+            economics = json.loads(row["admission_economics_json"])
+            recorded_batch = economics.get("admission_batch_id")
+            recorded_index = economics.get("arrival_index")
+            if isinstance(recorded_batch, str) and recorded_batch and isinstance(recorded_index, int):
+                batch_id, arrival_index = recorded_batch, recorded_index
+            else:
+                # Legacy admission: group by its exact recorded clock (no rounding).
+                arrival[batch_at] = arrival.get(batch_at, -1) + 1
+                batch_id, arrival_index = "", arrival[batch_at]
             candidates.append(Candidate(
                 admission_key=row["admission_key"], kind=str(row["subscription_kind"]),
-                batch_at=batch_at, arrival_index=arrival[batch_at],
+                batch_at=batch_at, arrival_index=arrival_index, batch_id=batch_id,
                 entry=_entry_from_json(entry_row), risk_pct=risk_pct,
                 quotes=tuple(Quote(observed_at=datetime.fromisoformat(q["observed_at"]).astimezone(
                     _entry_from_json(entry_row).entry_at.tzinfo), ltp=float(q["ltp"])) for q in quotes),

@@ -28,7 +28,14 @@ MANIFEST_SCHEMA = "momentum_entry_timing_manifest_v1"
 CONTINUATION = "COMPLETED_BAR_CONTINUATION_V1"
 PULLBACK = "BOUNDED_PULLBACK_NO_CHASE_V1"
 POLICIES = (CONTINUATION, PULLBACK)
-_SOURCE_MODULES = ("momentum_entry_timing_research.py", "momentum_exit_study.py", "momentum_exits.py", "engine.py", "cost_schedules.py")
+_SOURCE_MODULES = ("momentum_entry_timing_research.py", "momentum_exit_study.py", "momentum_exits.py", "engine.py",
+                   "cost_schedules.py", "momentum_paper_path_adapter.py", "momentum_path_envelope.py")
+# [S7b R5 2026-10-02] Frozen entry-zone rule used by the evidence adapter.
+# Pullback floor: VWAP-at-entry when recorded, else close - 0.5R, never below
+# stop + 0.25R.  No-chase cap: close + 0.25R.  A pullback must occur within
+# 30 minutes of the completed-bar decision or the candidate expires.
+ZONE_RULE = {"pullback_depth_r_without_vwap": 0.5, "floor_min_above_stop_r": 0.25,
+             "no_chase_cap_r": 0.25, "pullback_max_wait_seconds": 1800}
 
 
 @dataclass(frozen=True)
@@ -48,6 +55,7 @@ class TimingCandidate:
     source_ref: str
     quotes: tuple[Quote, ...]
     reentry_of: tuple[str, str] | None = None
+    pullback_deadline: datetime | None = None   # None = no expiry (legacy declared candidates)
 
 
 def _finite(value: object) -> float:
@@ -96,6 +104,8 @@ def _entry(candidate: TimingCandidate, policy: str) -> tuple[datetime, float, tu
     for quote in candidate.quotes:
         if quote.observed_at < candidate.continuation_at:
             continue
+        if candidate.pullback_deadline is not None and quote.observed_at > candidate.pullback_deadline:
+            return None, "PULLBACK_WINDOW_EXPIRED", ()
         if quote.ltp > candidate.no_chase_cap:
             saw_above_cap = True
             continue
@@ -158,6 +168,7 @@ def freeze_timing_manifest(*, experiment_id: str, max_gap_seconds: int, deadline
     return {"schema": MANIFEST_SCHEMA, "experiment_id": experiment_id, "policies": list(POLICIES),
             "max_gap_seconds": int(max_gap_seconds), "deadline_policy": deadline_policy,
             "evaluator_settings": deepcopy({name: getattr(settings, name) for name in _POLICY_SETTINGS}),
+            "zone_rule": deepcopy(ZONE_RULE),
             "cost_schedule": equity_intraday_cost_snapshot(),
             "source_fingerprint": _fingerprint(), "frozen_at": frozen_at.isoformat(),
             "holdout_rule": "only signals strictly after frozen_at are HOLDOUT"}
@@ -169,7 +180,7 @@ def build_timing_report(candidates: Sequence[TimingCandidate], manifest: Mapping
     if manifest.get("source_fingerprint") != _fingerprint():
         raise ExitStudyError("FROZEN_POLICY_MISMATCH: source fingerprint differs")
     expected = {"evaluator_settings": {name: getattr(settings, name) for name in _POLICY_SETTINGS},
-                "cost_schedule": equity_intraday_cost_snapshot()}
+                "cost_schedule": equity_intraday_cost_snapshot(), "zone_rule": ZONE_RULE}
     for field, current in expected.items():
         if manifest.get(field) != current:
             raise ExitStudyError(f"FROZEN_POLICY_MISMATCH: {field} differs")
@@ -187,3 +198,81 @@ def build_timing_report(candidates: Sequence[TimingCandidate], manifest: Mapping
     return {"schema": SCHEMA, "manifest": dict(manifest), "development": section([c for c in candidates if c.signal_at <= frozen_at]),
             "holdout": section([c for c in candidates if c.signal_at > frozen_at]), "qualification": "NOT_ASSESSED",
             "authorization_effect": "NONE", "warning": "Timing research is not an entry-policy authorization."}
+
+
+def timing_candidates_from_db(db_path: str) -> dict[str, Any]:
+    """Build timing candidates only from immutable admission evidence (S7b R5).
+
+    Read-only.  Uses opened and capital-skipped admissions whose passive path
+    verifies (packet bytes, envelope columns, clocks, gaps, closing quote) via
+    the same adapter as the exit study.  Identity: ``thesis_id`` is the
+    accepted signal key and ``state_id`` the sealed source-packet hash, so a
+    re-entry is only a recorded re-opening and a repeated state is rejected.
+    The completed-bar decision is the admission clock; continuation enters at
+    the recorded close.  Missing VWAP/stop/target evidence makes a candidate
+    unavailable; nothing is guessed.
+    """
+    from datetime import timedelta
+    import sqlite3
+    from momentum_paper_path_adapter import _entry_path, _timestamp
+    path = Path(db_path)
+    if not path.is_file():
+        return {"candidates": [], "unavailable": [{"reason": "database_unavailable_or_missing"}],
+                "deadline_policy": DEADLINE_FIRST_WITHIN_GAP}
+    con = sqlite3.connect(f"{path.resolve().as_uri()}?mode=ro", uri=True)
+    con.row_factory = sqlite3.Row
+    candidates, unavailable = [], []
+    try:
+        columns = {row[1] for row in con.execute("PRAGMA table_info(momentum_paper_path_subscriptions)")}
+        if not columns:
+            return {"candidates": [], "unavailable": [{"reason": "passive_path_schema_unavailable"}],
+                    "deadline_policy": DEADLINE_FIRST_WITHIN_GAP}
+        rows = con.execute(
+            "SELECT a.id,a.admission_key,a.signal_key,a.ticker,a.outcome,a.recorded_at,a.entry_economics_json,"
+            "a.admission_economics_json,a.source_packet_json,a.source_packet_sha256,s.entry_at,"
+            "s.study_deadline_at,s.original_shares FROM momentum_paper_admission_outcomes a "
+            "JOIN momentum_paper_path_subscriptions s ON s.admission_key=a.admission_key "
+            "WHERE a.outcome IN ('opened','zero_shares') ORDER BY a.recorded_at,a.id").fetchall()
+        max_gap = max(1, min(300, int(settings.MOMENTUM_PAPER_PATH_MAX_GAP_SECONDS)))
+        prior_state: dict[str, tuple[str, str]] = {}
+        for row in rows:
+            built = _entry_path(con, row, max_gap)
+            if isinstance(built, str):
+                unavailable.append({"admission_key": row["admission_key"], "reason": built})
+                continue
+            entry, quotes = built
+            try:
+                close = _finite(entry["entry_price"])
+                stop = _finite(entry["stop_loss_initial"])
+                target = _finite(entry["target_1"])
+            except ExitStudyError:
+                unavailable.append({"admission_key": row["admission_key"], "reason": "entry_terms_unavailable"})
+                continue
+            risk = close - stop
+            vwap = entry.get("vwap_at_entry")
+            floor = float(vwap) if isinstance(vwap, (int, float)) and vwap > 0 else \
+                close - ZONE_RULE["pullback_depth_r_without_vwap"] * risk
+            floor = max(floor, stop + ZONE_RULE["floor_min_above_stop_r"] * risk)
+            cap = close + ZONE_RULE["no_chase_cap_r"] * risk
+            decided_at = _timestamp(row["recorded_at"])
+            thesis_id, state_id = str(row["signal_key"]), str(row["source_packet_sha256"])
+            reentry_of = prior_state.get(thesis_id) if ":reopen:" in str(row["admission_key"]) else None
+            if reentry_of == (thesis_id, state_id):
+                # Same recorded state again: not a new thesis.  Leave it to the
+                # evaluator to mark REENTRY_DUPLICATE_STATE, not abort the report.
+                reentry_of = None
+            prior_state[thesis_id] = (thesis_id, state_id)
+            candidates.append(TimingCandidate(
+                candidate_id=str(row["admission_key"]), ticker=str(row["ticker"]), thesis_id=thesis_id,
+                state_id=state_id,
+                signal_at=decided_at, continuation_at=decided_at, continuation_price=close,
+                pullback_floor=min(floor, cap), no_chase_cap=cap, stop_loss=stop, target_1=target,
+                shares=int(entry["shares"]), source_ref=str(entry["source_ref"]),
+                quotes=tuple(Quote(observed_at=datetime.fromisoformat(q["observed_at"]), ltp=float(q["ltp"]))
+                             for q in quotes),
+                reentry_of=reentry_of,
+                pullback_deadline=decided_at + timedelta(seconds=ZONE_RULE["pullback_max_wait_seconds"]),
+            ))
+    finally:
+        con.close()
+    return {"candidates": candidates, "unavailable": unavailable, "deadline_policy": DEADLINE_FIRST_WITHIN_GAP}

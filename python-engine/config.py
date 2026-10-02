@@ -1,7 +1,7 @@
 from pathlib import Path
 from pydantic import field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
-from typing import ClassVar
+from typing import ClassVar, Optional
 
 # [2026-07-19] Resolve env files by ABSOLUTE path from this module's location,
 # not a CWD-relative ".env". Order is low->high precedence: the local
@@ -290,6 +290,9 @@ class Settings(BaseSettings):
     # order-placing code path at all rather than a flag that must stay False.
     MOMENTUM_PAPER_ENABLED:   bool  = True
     MOMENTUM_PAPER_BANKROLL:  float = 50000.0
+    # [S7 R5] Operator-confirmed real budget for capacity analysis only
+    # (research). None keeps the capacity section explicitly unavailable.
+    MOMENTUM_REAL_BUDGET_INR: Optional[float] = None
     # Bounded decision-forensics ledger for accepted momentum signals.  It
     # stores only an opaque identity, ticker and enumerated admission outcome.
     MOMENTUM_PAPER_ADMISSION_RETENTION: int = 20000

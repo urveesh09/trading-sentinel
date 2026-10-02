@@ -204,3 +204,63 @@ def test_capital_skipped_admission_records_candidate_path_without_trading_effect
     assert states == {"BRIGADE": "SELECTED", "BANDHANBNK": "CAPITAL_UNAVAILABLE"}
     equal = {row["ticker"]: row["state"] for row in report["holdout"]["policies"][alloc.FIXED_EQUAL]["outcomes"]}
     assert equal == {"BRIGADE": "SELECTED", "BANDHANBNK": "SELECTED"}
+
+
+# [S7 R5 2026-10-02] Causality, capital bases and recorded batch identity.
+@pytest.mark.parametrize("basis", [alloc.FIXED_POOL, alloc.REALIZED_EQUITY])
+@pytest.mark.parametrize("policy", alloc.POLICIES)
+def test_future_path_cannot_change_admission_time_selection(policy, basis):
+    base = _brigade_batch()
+    crashed = [alloc.Candidate(**{**vars(c), "quotes": c.quotes[:5] + tuple(
+        Quote(observed_at=q.observed_at, ltp=q.ltp * 0.9) for q in c.quotes[5:])}) if c.entry.ticker == "IDFCFIRSTB"
+               else c for c in base]
+    first = _run_basis(base, policy, basis)
+    second = _run_basis(crashed, policy, basis)
+    sizing = lambda report: {row["ticker"]: (row["state"], row["shares"]) for row in report["outcomes"]}
+    assert sizing(first) == sizing(second)
+
+
+def _run_basis(candidates, policy, basis, pool=POOL):
+    return alloc.replay_allocation(candidates, policy=policy, pool=pool, max_gap_seconds=60, basis=basis)
+
+
+def test_realized_equity_grows_with_wins_and_reserves_fees():
+    start = IST.localize(datetime(2026, 9, 25, 10, 0))
+    winner = _candidate("1-win", "WIN", 100.0, 99.0, 102.0, batch_at=start, index=0, risk_pct=0.05,
+                        path=lambda m: 100.0 if m < 20 else 102.5)
+    later = _candidate("2-late", "LATE", 50.0, 49.5, 52.0, batch_at=start + timedelta(minutes=60), index=0,
+                       risk_pct=0.2)
+    fixed = _shares(_run_basis([winner, later], alloc.FIRST_ARRIVAL, alloc.FIXED_POOL))
+    equity = _shares(_run_basis([winner, later], alloc.FIRST_ARRIVAL, alloc.REALIZED_EQUITY))
+    assert equity["LATE"][1] > fixed["LATE"][1]          # realised gains add capacity
+    # A batch that exactly fills the pool cannot also pay reserved entry fees.
+    full = [_candidate("x", "FULL", 100.0, 99.0, 103.0, batch_at=start, index=0, risk_pct=1.0)]
+    assert _shares(_run_basis(full, alloc.FIRST_ARRIVAL, alloc.REALIZED_EQUITY))["FULL"][1] < \
+        _shares(_run_basis(full, alloc.FIRST_ARRIVAL, alloc.FIXED_POOL))["FULL"][1]
+
+
+def test_recorded_batch_identity_separates_same_clock_admissions():
+    at = IST.localize(datetime(2026, 9, 25, 10, 0))
+    a = alloc.Candidate(**{**vars(_candidate("a", "AAA", 100.0, 99.0, 103.0, batch_at=at, index=0, risk_pct=1.0)),
+                           "batch_id": "batch-1"})
+    b = alloc.Candidate(**{**vars(_candidate("b", "BBB", 100.0, 99.0, 103.0, batch_at=at, index=0, risk_pct=1.0)),
+                           "batch_id": "batch-2"})
+    states = _shares(_run(_brigade_batch()[:0] + [a, b], alloc.FIXED_EQUAL))
+    # Separate recorded batches do not split one equal slice between them.
+    assert states["AAA"][1] * 100.0 > 0.9 * POOL and states["BBB"][0] == "CAPITAL_UNAVAILABLE"
+
+
+def test_real_budget_capacity_is_unavailable_until_configured_and_concentration_reported(monkeypatch):
+    from config import settings
+    early = datetime(2026, 9, 1, tzinfo=timezone.utc)
+    report = alloc.build_allocation_report(_brigade_batch(), alloc.freeze_allocation_manifest(
+        experiment_id="r5", frozen_at=early), deadline_policy="exact_1515")
+    bases = report["holdout"]["bases"]
+    assert bases[alloc.REAL_BUDGET] == {"state": "UNAVAILABLE_NO_OPERATOR_CONFIRMED_BUDGET"}
+    first = bases[alloc.FIXED_POOL]["policies"][alloc.FIRST_ARRIVAL]
+    assert first["max_concurrent_positions"] == 2 and first["max_single_position_share_of_deployed"] > 0.9
+    monkeypatch.setattr(settings, "MOMENTUM_REAL_BUDGET_INR", 8000.0)
+    report = alloc.build_allocation_report(_brigade_batch(), alloc.freeze_allocation_manifest(
+        experiment_id="r5b", frozen_at=early), deadline_policy="exact_1515")
+    capacity = report["holdout"]["bases"][alloc.REAL_BUDGET]["policies"][alloc.FIRST_ARRIVAL]
+    assert capacity["pool_inr"] == 8000.0 and capacity["peak_deployed_inr"] <= 8000.0

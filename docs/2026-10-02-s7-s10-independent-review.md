@@ -308,3 +308,19 @@ and is supplied in the final handoff.
   - A torn final row is newline-isolated.
   - Momentum and penny writers now append off the event loop (`asyncio.to_thread`).
 - Tests: session/signal-log/telemetry 29 passed warnings-fatal. Still operational: real peak session volume, prior-boot log retention and a disk check after deployment.
+
+## Response — R5 completed in source (Dev, October 2)
+
+- **S7a.**
+  - Paper admissions record an immutable `admission_batch_id` and `arrival_index` in their admission evidence (additive; sizing is unchanged). The allocation reader uses them; legacy rows group by their exact recorded clock, never rounded.
+  - The replay reports three separately labelled capital bases: `FIXED_POOL` (the current benchmark); `REALIZED_EQUITY` (pool plus realised net cash, minus deployed notional, minus entry fees reserved at sizing and released at exit); and `REAL_BUDGET` (capacity at `MOMENTUM_REAL_BUDGET_INR`, unavailable until you confirm a budget).
+  - Each run reports maximum concurrent positions and the largest single-position share of deployed capital.
+  - A causal test shows that changing a candidate's future path cannot change any admission-time size or selection, under any policy or basis.
+- **S7b.** `timing_candidates_from_db` builds timing candidates only from opened or capital-skipped admissions with verified passive paths. The thesis is the signal key and the state is the sealed packet hash; re-entry happens only through recorded re-openings, and a repeated state is marked rather than aborting the report. A frozen `ZONE_RULE` (VWAP or −0.5R floor, at least stop + 0.25R; no-chase cap +0.25R; 30-minute pullback window that expires to `PULLBACK_WINDOW_EXPIRED`) is bound into the manifest and its drift is refused.
+- **S8.**
+  - The audit exposes `ledger_rowid` and the verified packet's `bar_ts`/`received_at`. Equal ledger clocks are ordered by row id; without row ids, drawdown stays unknown.
+  - Shadow books count unique ticker/bar opportunities separately from variant evaluations. Shadow acceptances are not positions, and absent books are unavailable rather than zero.
+  - Momentum adds a per-trade decomposition (seconds from the signal bar timestamp, hold minutes, exit status, net cash, R; giveback and costs explicitly unavailable), lineage by policy version and regime, missed allocation, and best-winner-excluded net cash.
+  - Selection remains human review; no automatic proposal or retuning.
+- Tests: allocation 21, timing 10, decision quality 10, audit/review updated. The affected engine selection: 438 passed, with the known Starlette/HTTPX deprecations.
+- Old S7 manifests are invalid; freeze again before future data. These are tools: any learning conclusion still needs future holdout evidence and human review.

@@ -346,7 +346,7 @@ Related tests: `python-engine/tests/test_daily_bootstrap.py`
 
 Read-only S8 daily decision-quality report; never a strategy controller.
 
-Top-level declarations: `_day` (line 21), `_event_clock` (line 28), `_same_ist_day` (line 39), `_cash_summary` (line 44), `_momentum_book` (line 65), `_shadow_book` (line 82), `build_daily_decision_quality_report` (line 107), `_main` (line 132)
+Top-level declarations: `_day` (line 21), `_event_clock` (line 28), `_same_ist_day` (line 39), `_cash_summary` (line 44), `_momentum_book` (line 72), `_trade_decomposition` (line 113), `_shadow_book` (line 136), `build_daily_decision_quality_report` (line 171), `_main` (line 196)
 
 Engine dependencies: `fno_audit_report`, `momentum_paper_audit`
 
@@ -972,9 +972,9 @@ Related tests: `python-engine/tests/test_models.py`
 
 Read-only allocation research for momentum-paper opportunities (S7a). The paper book admits accepted signals in arrival order from a fixed pool (``MOMENTUM_PAPER_FIXED_POOL_V1``); later signals can be skipped as ``capital_exhausted``. This module replays the *same* candidates -- opened and capital-skipped, each with a complete verified price path -- under frozen allocation policies on one common cash book: * ``FIRST_ARRIVAL_FIXED_POOL_V1`` -- the current rule, sized by the live ``momentum_paper.paper_position_size`` against undeployed notional; * ``FIXED_EQUAL_V1`` -- each admission batch splits available notional equally; * ``RISK_BUDGET_PROPORTIONAL_V1`` -- risk-sized shares scaled down to
 
-Top-level declarations: `Candidate` (line 54), `_risk_shares` (line 65), `_size_batch` (line 73), `replay_allocation` (line 101), `_source_fingerprint` (line 193), `_frozen_terms` (line 202), `freeze_allocation_manifest` (line 210), `verify_allocation_manifest` (line 222), `build_allocation_report` (line 237), `_main` (line 267)
+Top-level declarations: `Candidate` (line 61), `_risk_shares` (line 73), `_size_batch` (line 81), `replay_allocation` (line 109), `_source_fingerprint` (line 244), `_real_budget` (line 253), `_frozen_terms` (line 262), `freeze_allocation_manifest` (line 272), `verify_allocation_manifest` (line 284), `build_allocation_report` (line 299), `_main` (line 343)
 
-Engine dependencies: `config`, `cost_schedules`, `momentum_exit_study`, `momentum_paper`, `momentum_paper_path_adapter`
+Engine dependencies: `config`, `cost_schedules`, `engine`, `momentum_exit_study`, `momentum_paper`, `momentum_paper_path_adapter`
 
 Related tests: `python-engine/tests/test_momentum_allocation_research.py`
 
@@ -982,9 +982,9 @@ Related tests: `python-engine/tests/test_momentum_allocation_research.py`
 
 Frozen, broker-free S7b entry-timing hypotheses for momentum evidence. This module deliberately consumes declared completed-bar/quote evidence only. It does not import runtime scanners, storage, a broker, HTTP, or an order path. The two policies are hypotheses, not a replacement for paper admission.
 
-Top-level declarations: `TimingCandidate` (line 35), `_finite` (line 53), `_validate` (line 65), `_entry` (line 89), `evaluate_entry_timing` (line 107), `_fingerprint` (line 143), `freeze_timing_manifest` (line 152), `build_timing_report` (line 166)
+Top-level declarations: `TimingCandidate` (line 42), `_finite` (line 61), `_validate` (line 73), `_entry` (line 97), `evaluate_entry_timing` (line 117), `_fingerprint` (line 153), `freeze_timing_manifest` (line 162), `build_timing_report` (line 177), `timing_candidates_from_db` (line 203)
 
-Engine dependencies: `config`, `cost_schedules`, `momentum_exit_study`
+Engine dependencies: `config`, `cost_schedules`, `momentum_exit_study`, `momentum_paper_path_adapter`
 
 Related tests: `python-engine/tests/test_momentum_entry_timing_research.py`
 
@@ -1022,7 +1022,7 @@ Related tests: `python-engine/tests/test_momentum_exits.py`
 
 [MOMENTUM-PAPER 2026-07-26] A paper twin of the live momentum book. WHY THIS EXISTS --------------- Live momentum entry is manual: the screener sends a Telegram EXEC button and a human decides. The ledger therefore records what the *operator* did, never what the *strategy* proposed -- 8 recorded momentum trades in months of running, which is why nothing can be concluded about the strategy from them. A signal that fired at 11:04 while nobody was looking left no trace at all. This book takes EVERY accepted momentum signal automatically, sizes it off its own pool, manages it with the same pure exit logic the live book uses, and books cost-adjusted P&L to source='MOMENTUM_PAPER'. The result is a
 
-Top-level declarations: `paper_position_size` (line 78), `_sig_get` (line 107), `_sqlite_safe` (line 116), `_paper_risk_pct` (line 143), `_admission_signal_key` (line 163), `_admission_source_packet` (line 187), `_zero_share_reason` (line 220), `_realised_paper_cash_basis` (line 236), `_admission_economics` (line 250), `_init_admission_outcomes` (line 274), `_init_path_collector` (line 315), `_study_deadline_utc` (line 357), `_subscribe_paper_path` (line 362), `_parse_observation_clock` (line 375), `active_paper_path_tickers` (line 387), `record_momentum_paper_path_observations` (line 417), `_record_admission_outcome` (line 489), `_bound_admission_outcomes` (line 525), `_supports_paper_admission_identity` (line 535), `record_momentum_paper_upstream_deduplications` (line 547), `_record_disabled_admissions` (line 584), `_record_transaction_failures` (line 608), `open_momentum_paper_positions` (line 638), `_close_paper_position` (line 840), `momentum_paper_monitor` (line 894), `momentum_paper_square_off` (line 992)
+Top-level declarations: `paper_position_size` (line 78), `_sig_get` (line 107), `_sqlite_safe` (line 116), `_paper_risk_pct` (line 143), `_admission_signal_key` (line 163), `_admission_source_packet` (line 187), `_zero_share_reason` (line 220), `_realised_paper_cash_basis` (line 236), `_admission_economics` (line 250), `_init_admission_outcomes` (line 279), `_init_path_collector` (line 320), `_study_deadline_utc` (line 362), `_subscribe_paper_path` (line 367), `_parse_observation_clock` (line 380), `active_paper_path_tickers` (line 392), `record_momentum_paper_path_observations` (line 422), `_record_admission_outcome` (line 494), `_bound_admission_outcomes` (line 530), `_supports_paper_admission_identity` (line 540), `record_momentum_paper_upstream_deduplications` (line 552), `_record_disabled_admissions` (line 589), `_record_transaction_failures` (line 613), `open_momentum_paper_positions` (line 643), `_close_paper_position` (line 851), `momentum_paper_monitor` (line 905), `momentum_paper_square_off` (line 1003)
 
 Engine dependencies: `config`, `engine`, `models`, `momentum_exits`, `momentum_path_envelope`, `performance`
 
@@ -1032,7 +1032,7 @@ Related tests: `python-engine/tests/test_momentum_paper.py`, `python-engine/test
 
 Read-only, exact-key lifecycle audit for momentum-paper evidence. The audit intentionally refuses ticker/date joins. Only future paper rows with the immutable ``paper_admission_key`` and ledger ``origin_ref`` can form a complete lifecycle; legacy records remain visible as unavailable evidence.
 
-Top-level declarations: `MomentumPaperAuditError` (line 27), `_canonical` (line 31), `_unavailable` (line 35), `_open_readonly` (line 47), `_table_columns` (line 57), `_round` (line 64), `_entry_snapshot` (line 68), `_source_packet_receipt` (line 80), `_position_view` (line 96), `_cash_view` (line 110), `build_momentum_paper_decision_audit` (line 149), `_main` (line 302)
+Top-level declarations: `MomentumPaperAuditError` (line 27), `_canonical` (line 31), `_unavailable` (line 35), `_open_readonly` (line 47), `_table_columns` (line 57), `_round` (line 64), `_entry_snapshot` (line 68), `_source_packet_receipt` (line 80), `_position_view` (line 102), `_cash_view` (line 116), `build_momentum_paper_decision_audit` (line 156), `_main` (line 309)
 
 Related tests: `python-engine/tests/test_momentum_paper_audit.py`
 
@@ -1050,7 +1050,7 @@ Related tests: `python-engine/tests/test_momentum_paper_evidence_review.py`
 
 Read-only adapter from passive momentum-paper quote receipts to a study packet. It has no scheduler and no market-data client. A caller may export only a fully verifiable, exact-admission path; otherwise the exact missing evidence is returned and no synthetic study input is produced.
 
-Top-level declarations: `_unavailable` (line 25), `_timestamp` (line 30), `_packet_hash` (line 42), `build_allocation_candidates` (line 62), `_entry_path` (line 121), `build_momentum_paper_exit_study_packet` (line 193)
+Top-level declarations: `_unavailable` (line 25), `_timestamp` (line 30), `_packet_hash` (line 42), `build_allocation_candidates` (line 62), `_entry_path` (line 129), `build_momentum_paper_exit_study_packet` (line 201)
 
 Engine dependencies: `config`, `momentum_allocation_research`, `momentum_exit_study`, `momentum_path_envelope`
 

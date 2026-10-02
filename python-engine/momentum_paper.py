@@ -249,9 +249,14 @@ async def _realised_paper_cash_basis(db, pool: float) -> float:
 
 def _admission_economics(*, pool: float, deployed: float, risk_pct: float,
                          close: float, stop: float, shares: int,
-                         realised_cash_basis: float, source_packet_sha256: str | None) -> dict:
+                         realised_cash_basis: float, source_packet_sha256: str | None,
+                         batch_id: str | None = None, arrival_index: int | None = None) -> dict:
     available = max(0.0, pool - deployed)
     return {
+        # [S7a R5 2026-10-02] Immutable competing-batch identity recorded at
+        # admission time, so research never regroups by rounding clocks later.
+        "admission_batch_id": batch_id,
+        "arrival_index": arrival_index,
         "schema": "momentum_paper_admission_economics_v1",
         "sizing_benchmark_pool_inr": pool,
         "sizing_benchmark_label": "FIXED_CONFIGURED_PAPER_POOL_NOT_DRAWDOWN_ADJUSTED",
@@ -682,7 +687,10 @@ async def open_momentum_paper_positions(db_path: str, accepted: list,
                 )
             realised_cash_basis = await _realised_paper_cash_basis(db, pool)
 
-            for sig in accepted:
+            batch_id = hashlib.sha256(
+                (now_utc.isoformat() + "|" + "|".join(key for key, _ticker in candidates)).encode("utf-8")
+            ).hexdigest()[:24]
+            for arrival_index, sig in enumerate(accepted):
                 signal_key, ticker = _admission_signal_key(sig, now_utc)
                 if not ticker:
                     logger.warning("momentum_paper_admission_skip reason=missing_ticker")
@@ -722,6 +730,7 @@ async def open_momentum_paper_positions(db_path: str, accepted: list,
                         db, admission_key, signal_key, ticker, "already_held", now_utc,
                         reason="ticker_already_open",
                         admission_economics=_admission_economics(
+                            batch_id=batch_id, arrival_index=arrival_index,
                             pool=pool, deployed=deployed, risk_pct=risk_pct, close=close,
                             stop=stop, shares=0, realised_cash_basis=realised_cash_basis,
                             source_packet_sha256=source_packet_sha256,
@@ -762,6 +771,7 @@ async def open_momentum_paper_positions(db_path: str, accepted: list,
                         db, admission_key, signal_key, ticker, "zero_shares", now_utc,
                         reason=zero_reason, entry_economics=candidate_economics,
                         admission_economics=_admission_economics(
+                            batch_id=batch_id, arrival_index=arrival_index,
                             pool=pool, deployed=deployed, risk_pct=risk_pct, close=close,
                             stop=stop, shares=0, realised_cash_basis=realised_cash_basis,
                             source_packet_sha256=source_packet_sha256,
@@ -813,6 +823,7 @@ async def open_momentum_paper_positions(db_path: str, accepted: list,
                         "initial_capital_at_risk": (close - stop) * shares,
                     },
                     admission_economics=_admission_economics(
+                            batch_id=batch_id, arrival_index=arrival_index,
                         pool=pool, deployed=deployed - (shares * close), risk_pct=risk_pct,
                         close=close, stop=stop, shares=shares,
                         realised_cash_basis=realised_cash_basis,
