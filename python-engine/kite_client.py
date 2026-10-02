@@ -933,7 +933,7 @@ class KiteClient:
         result, _timing = await self.get_quote_with_timing(tokens)
         return result
 
-    async def get_quote_with_timing(self, tokens, *, priority: str = "normal") -> tuple[dict, dict]:
+    async def get_quote_with_timing(self, tokens, *, priority: Optional[str] = None) -> tuple[dict, dict]:
         """Fetch live quote for one or more instrument tokens.
         Kite endpoint: GET /quote?i={token1}&i={token2}...
         Returns: dict {token_int: {last_price, ohlc, volume, depth, ...}, ...}

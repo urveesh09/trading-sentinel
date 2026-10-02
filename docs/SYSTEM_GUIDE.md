@@ -1,5 +1,31 @@
 # Trading Sentinel — system guide and engineering handover
 
+## October 2 independent S1–S6 review (Dev)
+
+[The review](2026-10-02-s1-s6-independent-review.md) supersedes broad phase
+completion claims. Small corrections reject foreign returned DR tokens and
+non-finite exit prices, reject impossible/over-late passive receipt clocks and
+corrupt scalar prices/economics, retain the first future receipt paired with
+exact active research legs (even when the optional ladder times out), and let
+ordinary token quotes inherit the screener's bulk lane. Collection counts now
+include that additional retained reference observation; received-token coverage
+remains unique, and no provider request was added. S6 freezes deep-copy policy
+parameters and pin fee schedule/model/source; old manifests must be retained as
+development artifacts and replaced by a fresh pre-session freeze, not edited.
+The momentum fingerprint now includes `engine.py` and `cost_schedules.py`;
+F&O includes `cost_schedules.py`, so fee implementation drift also invalidates
+the freeze. No live exit policy, rate, order/AI/partner authority changed.
+
+S1/S2 safeguards have passing affected regression coverage. S3 still needs
+rotation crash-fault recovery and deployed session/previous-boot retention
+acceptance. S4 is not wired to a runtime quote fanout and hashes establish byte
+integrity, not quote-column/provider-packet binding. S5 still needs frozen fresh
+evidence, qualification and an authorized delivery canary. S6 momentum and
+single-leg tools remain research-only; full archive/economic binding, candidate
+partial fee allocation and the defined-risk spread experiment remain open.
+None of the new evidence or experiment tools proves profitability or enables
+tips. Production was not edited/restarted; this correction is Dev-local.
+
 ## October 1 S1 defined-risk economics and truthful settlement (Dev)
 
 New defined-risk paper admissions bind every selected option leg to bounded,

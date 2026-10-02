@@ -54,6 +54,19 @@ def _slow_then(after):
     return lambda minute: 100.2 if minute <= 90 else after(minute)
 
 
+def test_freeze_parameters_do_not_alias_policy_and_cost_drift_is_refused(monkeypatch):
+    manifest = experiment.freeze_experiment_manifest(experiment_id="immutable", candidate_policy=experiment.THESIS_POLICY)
+    manifest["candidate_parameters"]["replaceable_exits"].append("protective_stop")
+    assert "protective_stop" not in experiment.CANDIDATE_POLICIES[experiment.THESIS_POLICY]["replaceable_exits"]
+    with pytest.raises(ExitStudyError, match="candidate_parameters"):
+        experiment.verify_experiment_manifest(manifest)
+    fresh = experiment.freeze_experiment_manifest(experiment_id="rates", candidate_policy=experiment.THESIS_POLICY)
+    from config import settings
+    monkeypatch.setattr(settings, "ZERODHA_GST_PCT", settings.ZERODHA_GST_PCT + 0.01)
+    with pytest.raises(ExitStudyError, match="cost_schedule"):
+        experiment.verify_experiment_manifest(fresh)
+
+
 def _rising(minute):
     return min(103.5, 100.2 + (minute - 90) * 0.05)
 

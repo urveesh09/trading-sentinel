@@ -413,14 +413,14 @@ def _bound_price_functions(row: dict, snap: Optional[ChainSnapshot]) -> tuple[Op
 
     def mid(opt: OptionType, strike: float) -> Optional[float]:
         quote = quotes.get((float(strike), opt.value))
-        return float(quote.mid) if quote is not None and quote.mid > 0 else None
+        return float(quote.mid) if quote is not None and math.isfinite(quote.mid) and quote.mid > 0 else None
 
     def executable(opt: OptionType, strike: float, quantity: int) -> Optional[float]:
         quote = quotes.get((float(strike), opt.value))
         if quote is None:
             return None
         price = quote.bid if quantity > 0 else quote.ask
-        return float(price) if price and price > 0 else None
+        return float(price) if price and math.isfinite(price) and price > 0 else None
     return mid, executable, "ok"
 
 
@@ -456,6 +456,8 @@ def exact_leg_snapshot_from_quotes(
             token = int(identity["token"])
             raw = raw_quotes.get(token)
             if not isinstance(raw, dict):
+                return None
+            if raw.get("instrument_token") not in (None, token, str(token)):
                 return None
             try:
                 contract = Contract(

@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import math
 from datetime import datetime, timezone
 from pathlib import Path
 import sqlite3
@@ -90,7 +91,7 @@ def build_momentum_paper_exit_study_packet(db_path: str, *, study_id: str = "mom
                 entry = json.loads(row["entry_economics_json"])
             except (TypeError, json.JSONDecodeError):
                 return _unavailable(f"entry_economics_unavailable:{row['admission_key']}")
-            if entry.get("schema") != "momentum_paper_entry_economics_v1" or entry.get("ticker") != row["ticker"]:
+            if not isinstance(entry, dict) or entry.get("schema") != "momentum_paper_entry_economics_v1" or entry.get("ticker") != row["ticker"]:
                 return _unavailable(f"entry_economics_mismatch:{row['admission_key']}")
             if entry.get("shares") != row["original_shares"]:
                 return _unavailable(f"original_quantity_mismatch:{row['admission_key']}")
@@ -109,8 +110,12 @@ def build_momentum_paper_exit_study_packet(db_path: str, *, study_id: str = "mom
             for quote in observed:
                 observed_at, receipt_at = _timestamp(quote["provider_observed_at"]), _timestamp(quote["receipt_at"])
                 if (quote["ticker"] != row["ticker"] or observed_at is None or receipt_at is None
-                        or observed_at < entry_at or observed_at > deadline):
+                        or observed_at < entry_at or observed_at > deadline or receipt_at < observed_at):
                     return _unavailable(f"invalid_quote_clock_or_ticker:{row['admission_key']}")
+                if (receipt_at - observed_at).total_seconds() > max_gap:
+                    return _unavailable(f"quote_receipt_delay_exceeds_declared_maximum:{row['admission_key']}")
+                if not isinstance(quote["ltp"], (int, float)) or not math.isfinite(quote["ltp"]) or quote["ltp"] <= 0:
+                    return _unavailable(f"invalid_quote_price:{row['admission_key']}")
                 if _packet_hash(quote["source_packet"]) != quote["source_packet_sha256"]:
                     return _unavailable(f"quote_packet_identity_mismatch:{row['admission_key']}")
                 if previous is not None and (observed_at <= previous or (observed_at - previous).total_seconds() > max_gap):

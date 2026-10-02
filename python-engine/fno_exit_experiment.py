@@ -15,6 +15,7 @@ assessed; a positive sample authorizes nothing.
 from __future__ import annotations
 
 import argparse
+from copy import deepcopy
 from dataclasses import dataclass
 from datetime import datetime, time, timezone
 import hashlib
@@ -28,6 +29,7 @@ from typing import Any, Iterable, Mapping, Sequence
 from zoneinfo import ZoneInfo
 
 from config import settings
+from cost_schedules import options_cost_snapshot
 from fno_costs import calc_fno_costs
 from fno_exit_rules import evaluate_single_leg_exit, live_single_leg_exit_params
 from exit_experiment_metrics import paired_deltas as _paired_deltas, policy_summary as _policy_summary
@@ -45,7 +47,7 @@ _SHA256 = re.compile(r"^sha256:[0-9a-f]{64}$")
 _MAX_PACKET_BYTES = 16 * 1024 * 1024
 _MAX_ENTRIES = 500
 _MAX_OBSERVATIONS = 250_000
-_SOURCE_MODULES = ("fno_exit_rules.py", "fno_exit_experiment.py", "fno_costs.py", "exit_experiment_metrics.py")
+_SOURCE_MODULES = ("fno_exit_rules.py", "fno_exit_experiment.py", "fno_costs.py", "exit_experiment_metrics.py", "cost_schedules.py")
 
 CANDIDATE_POLICIES: dict[str, dict[str, Any]] = {
     PARTIAL_POLICY: {
@@ -375,8 +377,9 @@ def freeze_manifest(*, experiment_id: str, candidate_policy: str,
     if frozen_at.tzinfo is None:
         raise FnoExitStudyError("frozen_at must be timezone-aware")
     return {"schema": MANIFEST_SCHEMA, "experiment_id": experiment_id, "baseline_policy": BASELINE_POLICY,
-            "candidate_policy": candidate_policy, "candidate_parameters": CANDIDATE_POLICIES[candidate_policy],
+            "candidate_policy": candidate_policy, "candidate_parameters": deepcopy(CANDIDATE_POLICIES[candidate_policy]),
             "live_settings": _live_settings(), "cost_model": "fno_costs.calc_fno_costs",
+            "cost_schedule": options_cost_snapshot(),
             "cost_multipliers": list(COST_MULTIPLIERS), "source_fingerprint": _source_fingerprint(),
             "frozen_at": frozen_at.astimezone(timezone.utc).isoformat(),
             "holdout_rule": "only entries strictly after frozen_at are HOLDOUT"}
@@ -389,6 +392,8 @@ def verify_manifest(manifest: Mapping[str, Any]) -> datetime:
     if policy not in CANDIDATE_POLICIES:
         raise FnoExitStudyError("FROZEN_POLICY_MISMATCH: unknown candidate policy")
     expected = {"baseline_policy": BASELINE_POLICY, "candidate_parameters": CANDIDATE_POLICIES[policy],
+                "cost_model": "fno_costs.calc_fno_costs",
+                "cost_schedule": options_cost_snapshot(),
                 "live_settings": _live_settings(), "cost_multipliers": list(COST_MULTIPLIERS),
                 "source_fingerprint": _source_fingerprint()}
     for field, current in expected.items():

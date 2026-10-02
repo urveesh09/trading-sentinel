@@ -397,6 +397,8 @@ async def record_momentum_paper_path_observations(db_path: str, observations: li
                         raise ValueError("ticker and positive finite ltp are required")
                     provider_at = _parse_observation_clock(raw.get("provider_observed_at"), "provider_observed_at")
                     receipt_at = _parse_observation_clock(raw.get("receipt_at"), "receipt_at")
+                    if receipt_at < provider_at:
+                        raise ValueError("receipt_at cannot precede provider_observed_at")
                     packet = raw.get("source_packet")
                     if not isinstance(packet, bytes) or not packet or len(packet) > packet_cap:
                         raise ValueError("source_packet must be bounded non-empty bytes")

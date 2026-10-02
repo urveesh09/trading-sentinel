@@ -164,6 +164,18 @@ def test_entries_before_freeze_are_development(tmp_path):
     assert report["summary"]["holdout"]["pairs"] == 0
 
 
+def test_freeze_parameters_do_not_alias_policy_and_cost_drift_is_refused(monkeypatch):
+    manifest = fx.freeze_manifest(experiment_id="immutable", candidate_policy=fx.EXTENSION_POLICY)
+    manifest["candidate_parameters"]["max_pullback_from_best_r"] = 99
+    assert fx.CANDIDATE_POLICIES[fx.EXTENSION_POLICY]["max_pullback_from_best_r"] == 0.5
+    with pytest.raises(ExitStudyError, match="candidate_parameters"):
+        fx.verify_manifest(manifest)
+    fresh = fx.freeze_manifest(experiment_id="rates", candidate_policy=fx.EXTENSION_POLICY)
+    monkeypatch.setattr(settings, "FNO_BROKERAGE_FLAT", settings.FNO_BROKERAGE_FLAT + 1)
+    with pytest.raises(ExitStudyError, match="cost_schedule"):
+        fx.verify_manifest(fresh)
+
+
 def _event(token, received, ltp, bid=None):
     return {"contract": {"instrument_token": str(token)}, "received_at_utc": received, "ltp": ltp,
             "buy_depth": [{"price": bid, "quantity": 75, "orders": 1}] if bid else

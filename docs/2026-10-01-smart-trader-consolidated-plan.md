@@ -90,6 +90,13 @@ on the auditors' recommendations. None is supported by the reviewed evidence.
 
 ### S1 — P0: exact defined-risk economics and truthful settlement
 
+October 2 cross-phase acceptance is superseded by
+[the independent S1–S6 review](2026-10-02-s1-s6-independent-review.md): small
+Dev corrections and passing suites do not close S3 crash faults, S4 runtime
+capture/provider-byte binding, S5 qualification or S6 archive/economic/cost
+binding and the missing DR experiment. Complete these reviewed slices before
+calling the end-to-end roadmap operationally ready.
+
 Problem: 75-versus-65 lot mismatch, incomplete contract identity and potentially
 invented/nonatomic closes undermine learning from DR results.
 

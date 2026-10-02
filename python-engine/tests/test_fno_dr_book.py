@@ -199,6 +199,20 @@ def test_exact_leg_snapshot_refuses_missing_or_inconsistent_retained_identity(mo
         for token in book.exact_open_leg_tokens([bad_row])
     }
     assert book.exact_leg_snapshot_from_quotes([bad_row], full, NOW, 25000.0) is None
+    full[tokens[0]]["instrument_token"] = 999
+    assert book.exact_leg_snapshot_from_quotes([row], full, NOW, 25000.0) is None
+
+
+def test_nonfinite_exact_exit_prices_are_unavailable(monkeypatch):
+    monkeypatch.setattr(book, "atm_iv", lambda snap, now: 0.15)
+    entry = FakeSnap(25000, {(25000, OptionType.CE): 120.0,
+                            (25100, OptionType.CE): 50.0, (25000, OptionType.PE): 110.0})
+    planned = plan_structure(entry, True, FnoDirection.LONG, NOW)
+    row = {"legs_json": book._bound_legs_to_json(planned.contract_legs)}
+    bad = FakeSnap(25000, {(25000, OptionType.CE): float("inf"), (25100, OptionType.CE): 50.0})
+    mid, executable, _ = book._bound_price_functions(row, bad)
+    assert mid(OptionType.CE, 25000) is None
+    assert executable(OptionType.CE, 25000, 1) is None
 
 
 # --------------------------------------------------------------------------

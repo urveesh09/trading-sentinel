@@ -504,6 +504,15 @@ async def collect_rest_quote_snapshot(
         if ladder_state == "empty":
             result["gaps"].append({"underlying": name, "reason": "quote_batch_empty", "tokens": len(remaining)})
             result["indices"][name]["collection_state"] = "completed_empty_batch"
+        observed_packets = []
+        if (active_tokens and future is not None and future.token not in prefetched
+                and future.token in first_data):
+            # Active legs use the first request's receipt. Preserve its actual
+            # future too: a later reference is not a same-receipt substitute.
+            # Count this additional reference observation, not another request.
+            observed_packets.append((future, "active_leg_future_reference",
+                                     first_data[future.token], first_received_at))
+            result["requested"] += 1
         for contract, reason in selected:
             if contract.token in prefetched:
                 quote, received_at = prefetched[contract.token], first_received_at
@@ -513,6 +522,8 @@ async def collect_rest_quote_snapshot(
                 continue
             else:
                 quote, received_at = data.get(contract.token), batch_received_at
+            observed_packets.append((contract, reason, quote, received_at))
+        for contract, reason, quote, received_at in observed_packets:
             if quote is None:
                 result["gaps"].append({"underlying": name, "reason": "contract_packet_missing", "token": contract.token})
                 continue
@@ -525,7 +536,9 @@ async def collect_rest_quote_snapshot(
                 stage_started = time.monotonic()
                 await asyncio.to_thread(archive.append, event)
                 result["stage_durations_sec"]["archive_write"] = round(result["stage_durations_sec"].get("archive_write", 0) + time.monotonic() - stage_started, 6)
-                result["collected"] += 1; result["indices"][name]["received_tokens"].append(contract.token)
+                result["collected"] += 1
+                if contract.token not in result["indices"][name]["received_tokens"]:
+                    result["indices"][name]["received_tokens"].append(contract.token)
                 partial_collected_ref["n"] += 1
             except OSError as exc:
                 logger.error("research_storage_stop reason=%s", str(exc))

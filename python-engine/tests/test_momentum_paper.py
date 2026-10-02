@@ -306,6 +306,41 @@ def test_passive_path_adapter_rejects_forged_quote_packet_identity(tmp_path):
     assert build_momentum_paper_exit_study_packet(db)["reason"].startswith("quote_packet_identity_mismatch:")
 
 
+def test_passive_collector_rejects_receipt_before_provider_time(tmp_path):
+    db = _db(tmp_path)
+    stamp = datetime(2026, 9, 25, 4, 30, tzinfo=timezone.utc)
+    asyncio.run(open_momentum_paper_positions(db, [_sig("ACME")], stamp))
+    assert asyncio.run(record_momentum_paper_path_observations(db, [{
+        "ticker": "ACME", "ltp": 100.0, "provider_observed_at": stamp.isoformat(),
+        "receipt_at": (stamp - timedelta(seconds=1)).isoformat(), "source_packet": b'{"ltp":100}',
+    }])) == 0
+
+
+@pytest.mark.parametrize("fault,reason", [
+    ("clock", "invalid_quote_clock_or_ticker"),
+    ("delay", "quote_receipt_delay_exceeds_declared_maximum"),
+    ("price", "invalid_quote_price"),
+    ("economics", "entry_economics_mismatch"),
+])
+def test_passive_adapter_rejects_corrupt_clock_price_or_economics(tmp_path, fault, reason):
+    db = _db(tmp_path)
+    stamp = datetime(2026, 9, 25, 4, 30, tzinfo=timezone.utc)
+    asyncio.run(open_momentum_paper_positions(db, [_sig("ACME")], stamp))
+    assert asyncio.run(record_momentum_paper_path_observations(db, [{
+        "ticker": "ACME", "ltp": 100.0, "provider_observed_at": stamp.isoformat(),
+        "receipt_at": stamp.isoformat(), "source_packet": b'{"ltp":100}',
+    }])) == 1
+    with sqlite3.connect(db) as con:
+        if fault in ("clock", "delay"):
+            value = stamp + timedelta(seconds=-1 if fault == "clock" else 301)
+            con.execute("UPDATE momentum_paper_path_observations SET receipt_at=?", (value.isoformat(),))
+        elif fault == "price":
+            con.execute("UPDATE momentum_paper_path_observations SET ltp=?", (float("inf"),))
+        else:
+            con.execute("UPDATE momentum_paper_admission_outcomes SET entry_economics_json='[]'")
+    assert build_momentum_paper_exit_study_packet(db)["reason"].startswith(reason + ":")
+
+
 def test_disabled_and_upstream_deduplicated_are_explicit_distinct_outcomes(
     tmp_path, monkeypatch,
 ):

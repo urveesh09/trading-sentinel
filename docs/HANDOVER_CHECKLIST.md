@@ -1,5 +1,28 @@
 # Handover receipt and operator checklist
 
+## October 2 independent S1–S6 review receipt
+
+- [x] Revalidate phase commits/contracts and rendered Dev Compose, not just
+  prior completion claims. See `2026-10-02-s1-s6-independent-review.md`.
+- [x] Small Dev corrections: DR token/finite prices, passive clock/price
+  validation, exact-leg paired future receipt, ambient quote lane, fee/source
+  freezes and independent candidate parameter copies. No trading authority,
+  exit policy, schema, provider request/rate or Production change.
+- [x] Expanded affected suite 948 passed; isolated warnings-fatal checks
+  54 DR/S6, seven passive S4 and 11 S5 passed. Broad warnings-fatal socket
+  hygiene remains explicitly open. Compose verifier eight passed, rendered
+  retention 500 MiB; compilation and atlas (222 modules) passed.
+- [ ] S3: recover manifest/state failures across rotation, bound/offload
+  writers and preserve durable elapsed/session distinctions; prove actual
+  full-session and prior-boot retention after promotion.
+- [ ] S4: typed provider-byte/quote binding, bounded existing-fanout integration,
+  post-close paths, saturation tests and five fresh reconciled lifecycles.
+- [ ] S5: frozen protocol, independent future sample, reviewed qualification
+  package and separately authorized delivery canary. No guaranteed tips date.
+- [ ] S6: strict raw-packet/contract/clock/conflict and economic/cash binding,
+  versioned one-entry/multiple-exit candidate fees, DR spread exit experiment
+  and future paired holdout review before any paper-policy promotion.
+
 ## October 1 consolidated planning receipt
 
 - [x] Read October 1 audit and cross-check it against Production ledger,

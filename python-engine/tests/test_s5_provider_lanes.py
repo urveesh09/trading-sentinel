@@ -143,6 +143,35 @@ def test_unknown_provider_lane_is_rejected():
 
 
 @pytest.mark.asyncio
+async def test_ordinary_token_quote_inherits_bulk_lane(tmp_path):
+    from unittest.mock import MagicMock
+    from kite_client import KiteClient
+    client = KiteClient(str(tmp_path / "cache.db"))
+    limiter = RateLimiter(rate=200, burst=10)
+    client.limiter = limiter
+    lanes = []
+    original = limiter._lane_turn
+
+    def spy():
+        lanes.append(original())
+        return original()
+
+    async def get(*args, **kwargs):
+        response = MagicMock()
+        response.json.return_value = {"data": {"7": {"last_price": 100}}}
+        return response
+
+    limiter._lane_turn = spy
+    client.client.get = get
+    try:
+        with provider_lane("bulk"):
+            assert await client.get_quote([7]) == {7: {"last_price": 100}}
+        assert lanes == ["bulk"]
+    finally:
+        await client.client.aclose()
+
+
+@pytest.mark.asyncio
 async def test_timed_documented_quote_reports_limiter_and_transport(tmp_path):
     from unittest.mock import MagicMock
     from kite_client import KiteClient
@@ -250,8 +279,15 @@ async def test_exact_active_leg_survives_a_ladder_deadline(tmp_path, monkeypatch
     index = result["indices"]["NIFTY"]
     assert index["collection_state"] == "provider_deadline_exceeded"
     assert index["active_leg_received_tokens"] == [102]
-    assert [event["contract"]["instrument_token"] for event in archive.events] == ["102"]
-    assert "active_selected_leg decision=s5b-exact-leg" in archive.events[0]["selection_reason"]
+    assert [event["contract"]["instrument_token"] for event in archive.events] == ["101", "102"]
+    assert archive.events[0]["received_at_utc"] == archive.events[1]["received_at_utc"]
+    from fno_exit_experiment import build_packet_from_archive_events
+    packet = build_packet_from_archive_events(
+        archive.events, entry={"entry_id": "held", "option_token": 102},
+        future_token=101, study_id="same-receipt",
+    )
+    assert len(packet["observations"]) == 1
+    assert "active_selected_leg decision=s5b-exact-leg" in archive.events[1]["selection_reason"]
     assert {"underlying": "NIFTY", "reason": "provider_deadline_exceeded",
             "stage": "quote_batch", "tokens": 3} in result["gaps"]
     assert not [gap for gap in result["gaps"] if gap.get("reason", "").startswith("active_leg_")]

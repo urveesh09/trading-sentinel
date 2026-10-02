@@ -1,5 +1,22 @@
 # Trading Sentinel — next-agent execution plan
 
+## October 2 independent S1–S6 review — active correction slice
+
+See [the independent review](2026-10-02-s1-s6-independent-review.md) for
+small correction contracts, verification and larger remaining implementation.
+Earlier source-complete receipts do not close S3 crash-fault acceptance, S4
+fanout/source-packet binding, S5 qualification/canary or the missing S6
+defined-risk experiment and archive/economics binding. No Production mutation,
+authority expansion or profitable-strategy claim follows from this review.
+
+Small corrections are implemented in Dev with expanded 948-test regression
+and isolated warnings-fatal checks; see the receipt for commands and known
+runtime-warning limits. Next development: S4 typed source binding and bounded
+fanout capture, S3 rotation-journal recovery, then S6 strict archive/economic
+binding and versioned partial fees/DR experiment. Existing qualification still
+requires frozen future evidence and authorized canary. Do not relabel missing
+source work as a deployed-session-only requirement or edit old freeze manifests.
+
 ## October 2 S5 partner research readiness — in progress (Dev)
 
 S5a (partner action clock, commit `f45ce43`) is complete in Dev: persistence

@@ -22,6 +22,7 @@ assessed here and a positive sample authorizes nothing.
 from __future__ import annotations
 
 import argparse
+from copy import deepcopy
 from datetime import datetime, timezone
 import hashlib
 import json
@@ -30,6 +31,7 @@ from pathlib import Path
 from typing import Any, Mapping, Sequence
 
 from config import settings
+from cost_schedules import equity_intraday_cost_snapshot
 from momentum_exit_study import (
     ALTERNATIVE_POLICY as TARGET_HOLD_TRAIL_POLICY,
     BASELINE_POLICY,
@@ -58,7 +60,7 @@ REPORT_SCHEMA = "momentum_exit_experiment_report_v1"
 THESIS_POLICY = "thesis_confirmed_extension_v1"
 COST_MULTIPLIERS = (1.0, 1.5, 2.0)
 _SOURCE_MODULES = ("momentum_exit_study.py", "momentum_exit_experiment.py", "momentum_exits.py",
-                   "exit_experiment_metrics.py")
+                   "exit_experiment_metrics.py", "engine.py", "cost_schedules.py")
 
 CANDIDATE_POLICIES: dict[str, dict[str, Any]] = {
     TARGET_HOLD_TRAIL_POLICY: {
@@ -118,9 +120,10 @@ def freeze_experiment_manifest(*, experiment_id: str, candidate_policy: str,
         "experiment_id": experiment_id,
         "baseline_policy": BASELINE_POLICY,
         "candidate_policy": candidate_policy,
-        "candidate_parameters": CANDIDATE_POLICIES[candidate_policy],
+        "candidate_parameters": deepcopy(CANDIDATE_POLICIES[candidate_policy]),
         "evaluator_settings": _evaluator_settings(),
         "cost_model": "engine.calc_zerodha_costs_intraday",
+        "cost_schedule": equity_intraday_cost_snapshot(),
         "cost_multipliers": list(COST_MULTIPLIERS),
         "source_fingerprint": _source_fingerprint(),
         "frozen_at": frozen_at.astimezone(timezone.utc).isoformat(),
@@ -137,7 +140,9 @@ def verify_experiment_manifest(manifest: Mapping[str, Any]) -> datetime:
         raise ExitStudyError("FROZEN_POLICY_MISMATCH: unknown candidate policy")
     expected = {
         "baseline_policy": BASELINE_POLICY,
+        "cost_model": "engine.calc_zerodha_costs_intraday",
         "candidate_parameters": CANDIDATE_POLICIES[policy],
+        "cost_schedule": equity_intraday_cost_snapshot(),
         "evaluator_settings": _evaluator_settings(),
         "cost_multipliers": list(COST_MULTIPLIERS),
         "source_fingerprint": _source_fingerprint(),
