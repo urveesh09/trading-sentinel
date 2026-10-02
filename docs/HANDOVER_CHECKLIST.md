@@ -79,6 +79,9 @@
 - [x] S6b step 1: extract the live single-leg F&O exit ladder into pure
   `fno_exit_rules.py` (behaviour-preserving; characterization and 20,000-case
   differential tests; F&O/scheduler suites 397 passed).
+- [x] S6b step 2: frozen single-leg F&O exit experiment and read-only
+  archive packet adapter; shared metrics module; AST-based no-caller guards.
+  30 experiment/ladder tests warnings-fatal; related suites 110 passed.
 - [ ] After S4 paths are collecting: freeze the S6 candidate before the next
   session and evaluate HOLDOUT entries only; F&O exit experiments separately.
 - [x] S5c: read-only `partner-delivery-blockers` report (ordered per-candidate

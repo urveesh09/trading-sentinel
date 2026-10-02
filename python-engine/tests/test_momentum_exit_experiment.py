@@ -179,7 +179,21 @@ def test_experiment_has_no_runtime_caller_or_side_effect_imports():
         alias.name for node in ast.walk(tree) if isinstance(node, ast.Import) for alias in node.names}
     assert not imported & {"aiosqlite", "sqlite3", "httpx", "requests", "kite_client", "main",
                            "scheduler_setup", "telegram", "fno_executor"}
-    callers = [path.name for path in root.glob("*.py")
-               if path.name != "momentum_exit_experiment.py"
-               and "momentum_exit_experiment" in path.read_text(encoding="utf-8", errors="ignore")]
-    assert callers == []
+    assert _importers(root, "momentum_exit_experiment") == []
+
+
+def _importers(root, module):
+    """Engine modules that actually import ``module`` (AST, not text)."""
+    found = []
+    for path in sorted(root.glob("*.py")):
+        if path.stem == module:
+            continue
+        try:
+            tree = ast.parse(path.read_text(encoding="utf-8", errors="ignore"))
+        except SyntaxError:
+            continue
+        names = {node.module for node in ast.walk(tree) if isinstance(node, ast.ImportFrom)} | {
+            alias.name for node in ast.walk(tree) if isinstance(node, ast.Import) for alias in node.names}
+        if module in names:
+            found.append(path.name)
+    return found

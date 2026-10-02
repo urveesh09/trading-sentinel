@@ -570,6 +570,43 @@ suite tests passed; no configuration or behaviour change. Step 2: a frozen
 single-leg experiment on archived futures and exact-option paths, reusing
 the S6a manifest/holdout discipline.
 
+Step 2 contract: new inert `fno_exit_experiment.py`.
+- Packet schema `fno_single_leg_exit_study_input_v1`: one entry per position
+  (token/symbol, direction, quantity, entry premium/underlying,
+  stop/target/premium stop, ATR, entry time) plus paired observations
+  (futures LTP and option exit basis at the same receipt).
+- A read-only archive adapter builds packets from research-archive quote
+  events only where the front future and the exact option share one
+  collection receipt. The exit basis is the best bid, or LTP when no bid
+  exists, exactly as live. Provenance hashes the archived raw-packet
+  digests. Gaps above the declared maximum, a late first observation or a
+  missing observation at/after 15:10 are `INSUFFICIENT_EVIDENCE`.
+- Baseline replays `evaluate_single_leg_exit` with paper bid fills,
+  `calc_fno_costs` and live R (net / entry premium x FNO_STOP_PREMIUM_PCT x
+  quantity). An exit with no positive basis is `UNRESOLVED`, never priced.
+- Candidates are frozen in a manifest (parameters, live ladder settings,
+  hard-flat minute, backstop percentage, source fingerprint):
+  - `fno_partial_at_target_v1`: bank floor(lots/2) lots at the bid when the
+    target arms the trail; the rest follows the live ladder. Fewer than two
+    lots means identical to baseline.
+  - `fno_confirmed_time_extension_v1`: defer a live time stop only while
+    underlying progress is non-adverse, the underlying is within 0.5R of
+    its best and the basis is at least 10% above the premium stop. All other
+    exits are unchanged, and hard flat stays.
+- Development/holdout labelling, exposure metrics and cost-stressed paired
+  deltas as in S6a.
+- Acceptance: baseline parity with the live ladder decisions, no future
+  leakage, partial-lot arithmetic, unresolved basis, insufficient paths,
+  manifest tamper refusal and adapter pairing/provenance.
+
+Step 2 receipt (Dev, October 2): implemented as contracted. The S6a no-caller
+guard caught cross-experiment helper reuse, so the summary arithmetic moved
+to shared `exit_experiment_metrics.py` (included in both fingerprints), and
+the guards were tightened to AST import checks. Tests: 15 new; 30
+experiment/ladder tests warnings-fatal; 110 related suites. Remaining S6:
+defined-risk spread exits (separate R and two-leg pricing), and every
+operational holdout run.
+
 ### S7 — P2: opportunity-aware allocation and entry timing
 
 Files/contracts: `proactive_intelligence.py`, `proactive_portfolio_research.py`,

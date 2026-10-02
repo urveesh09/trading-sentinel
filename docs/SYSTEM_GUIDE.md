@@ -107,6 +107,45 @@ does not migrate trading evidence.
 deployment requires operator free-space, prior-boot preservation and full
 market-session volume checks. Optional AI remains non-blocking when unavailable.
 
+## October 2 S6b frozen single-leg F&O exit experiments (Dev)
+
+`fno_exit_experiment.py` is an inert research CLI (`freeze`, `evaluate`,
+`build-packet`). The baseline replays the live ladder
+(`fno_exit_rules.evaluate_single_leg_exit`) over paired futures/option
+observations and settles exactly as the paper path does: exit at the basis
+(best bid, else LTP), `calc_fno_costs`, and R = net / (entry premium x
+FNO_STOP_PREMIUM_PCT x quantity). An exit without a positive basis is
+`UNRESOLVED`, never priced. Gaps above the declared maximum, a late first
+observation or no observation at/after 15:10 are `INSUFFICIENT_EVIDENCE`.
+Manifests pin the candidate, live ladder settings, hard-flat minute, backstop
+percentage and a source fingerprint; mismatches are refused, and entries at or
+before the freeze are `DEVELOPMENT`.
+
+Candidates:
+- `fno_partial_at_target_v1` banks floor(lots/2) lots at the bid when the
+  target arms the trail; the rest follows the live ladder. A single lot is
+  identical to the baseline.
+- `fno_confirmed_time_extension_v1` defers a live time stop only while the
+  underlying is not adverse, is within 0.5R of its best and the basis is at
+  least 1.10x the premium stop. Every other exit and the hard flat are
+  unchanged.
+
+The read-only archive adapter pairs front-future and exact-option events only
+when their `received_at_utc` is identical (no interpolation) and hashes the
+archived raw-packet digests as provenance. Equity and F&O summary arithmetic
+now lives in the shared pure `exit_experiment_metrics.py`, and both freeze
+fingerprints include it. The no-runtime-caller guards now inspect actual
+imports (AST) instead of text matches.
+
+Tests: 15 F&O experiment tests (live-settlement parity, partial-lot
+arithmetic, single-lot identity, confirmed and failed extensions, unresolved
+basis, insufficient paths, no future leakage, tamper/setting drift,
+development labelling, adapter pairing/provenance, end-to-end CLI, guards).
+With the ladder and S6a tests, 30 passed warnings-fatal; related F&O/momentum
+suites passed 110. On synthetic paths, partial-at-target slightly
+underperformed and a confirmed extension outperformed; these are mechanism
+checks, not evidence. Dev-only, not deployed.
+
 ## October 2 S6b shared single-leg F&O exit ladder (Dev; behaviour-preserving)
 
 The live single-leg exit ladder that was inline in `fno_orchestrator.py` is now
@@ -128,7 +167,7 @@ the inline code before extraction and unchanged after it. A seeded
 20,000-case differential test against a frozen transcription of the inline
 block matched every exit reason and every persisted trail value. F&O,
 scheduler and related suites: 397 passed. No configuration, threshold, order,
-settlement or schema change. Dev-only; not deployed.
+settlement or schema change. Dev-only; not deployed. Source commit: `02047d4`.
 
 ## October 2 S6a frozen momentum exit experiments (Dev)
 

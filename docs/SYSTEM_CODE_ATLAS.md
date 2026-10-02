@@ -420,6 +420,12 @@ Top-level declarations: `load_event_map` (line 51), `_events_cached` (line 85), 
 
 Engine dependencies: `config`
 
+## `python-engine/exit_experiment_metrics.py`
+
+Shared summary arithmetic for the inert paired exit experiments (S6). Pure functions over already-settled result rows; used by the equity (``momentum_exit_experiment``) and single-leg F&O (``fno_exit_experiment``) studies. No I/O and no runtime caller.
+
+Top-level declarations: `policy_summary` (line 13), `paired_deltas` (line 32)
+
 ## `python-engine/exit_quality.py`
 
 [EXIT-QUALITY 2026-08-05] Where does the money actually go? THE FINDING THAT MOTIVATED THIS ------------------------------- The random-control skill test (skill_test.py) run against 1,437 Connors trades on real NSE daily bars returned something more useful than a pass/fail: observed mean R -0.029 random control mean R -0.091 excess over random +0.062 (p = 0.005) Read that carefully. A RANDOM entry, run through Connors' own exit rules, loses 0.091R. The screener beats that by a consistent, replicable margin -- so the entry selection does carry information. The book still loses money because the exit rules bleed more than the selection earns. That reframes the whole problem. "The strategy does
@@ -525,6 +531,16 @@ Related tests: `python-engine/tests/test_fno_engine_mom.py`
 Top-level declarations: `FnoExecutor` (line 45)
 
 Engine dependencies: `config`, `kite_client`
+
+## `python-engine/fno_exit_experiment.py`
+
+Frozen, read-only paired experiments for single-leg F&O exits (S6b). The baseline replays the *live* ladder (``fno_exit_rules.evaluate_single_leg_exit``) over paired futures/option observations, settling exactly as the paper path does: fill at the exit basis (best bid, else LTP), ``calc_fno_costs`` and live R (net / entry premium x FNO_STOP_PREMIUM_PCT x quantity). One frozen candidate is compared on the identical path. A read-only adapter builds packets from the research quote archive. Inert research: no database writes, broker, HTTP, scheduler, order or message dependency and no runtime caller. Equity momentum studies and defined-risk spreads are separate (different R denominators). Qualif
+
+Top-level declarations: `FnoExitStudyError` (line 66), `FnoEntry` (line 71), `Observation` (line 90), `_stamp` (line 96), `_positive` (line 108), `_int` (line 120), `_entry` (line 126), `load_fno_exit_packet` (line 166), `_hard_flat_at` (line 210), `_validated_path` (line 215), `_leg` (line 246), `_position` (line 253), `_extension_confirmed` (line 263), `simulate` (line 275), `replace_trail` (line 317), `_finalise` (line 324), `_exposure` (line 336), `_source_fingerprint` (line 352), `_live_settings` (line 361), `freeze_manifest` (line 367), `verify_manifest` (line 385), `build_fno_exit_experiment` (line 406), `_event_basis` (line 459), `build_packet_from_archive_events` (line 470), `_read_json` (line 508), `_main` (line 518)
+
+Engine dependencies: `config`, `exit_experiment_metrics`, `fno_costs`, `fno_exit_rules`, `intraday_spread_archive_adapter`, `momentum_exit_study`
+
+Related tests: `python-engine/tests/test_fno_exit_experiment.py`
 
 ## `python-engine/fno_exit_recovery.py`
 
@@ -930,9 +946,9 @@ Related tests: `python-engine/tests/test_models.py`
 
 Frozen, read-only paired experiments for momentum-paper exit policies (S6a). This extends the v1 exit study (``momentum_exit_study``) without changing it. The same immutable LTP packet loader, path validation, pure live evaluator, cost model and leg arithmetic are reused. What is added: * a freeze manifest that pins one candidate policy, its parameters, the live evaluator settings and a source fingerprint *before* evaluation, so a policy cannot be re-tuned after its outcomes are seen; * development/holdout labelling: entries at or before the freeze time are ``DEVELOPMENT`` and can never be presented as held-out evidence; * ``thesis_confirmed_extension_v1``: a candidate that changes only the
 
-Top-level declarations: `_source_fingerprint` (line 86), `_evaluator_settings` (line 96), `_aware` (line 100), `freeze_experiment_manifest` (line 106), `verify_experiment_manifest` (line 130), `confirmation` (line 154), `_replaceable` (line 173), `_simulate_thesis` (line 177), `_exposure_metrics` (line 252), `_policy_summary` (line 276), `_paired_deltas` (line 295), `build_exit_experiment` (line 321), `_read_json` (line 386), `_main` (line 396)
+Top-level declarations: `_source_fingerprint` (line 87), `_evaluator_settings` (line 97), `_aware` (line 101), `freeze_experiment_manifest` (line 107), `verify_experiment_manifest` (line 131), `confirmation` (line 155), `_replaceable` (line 174), `_simulate_thesis` (line 178), `_exposure_metrics` (line 253), `build_exit_experiment` (line 277), `_read_json` (line 342), `_main` (line 352)
 
-Engine dependencies: `config`, `momentum_exit_study`, `momentum_exits`
+Engine dependencies: `config`, `exit_experiment_metrics`, `momentum_exit_study`, `momentum_exits`
 
 Related tests: `python-engine/tests/test_momentum_exit_experiment.py`
 

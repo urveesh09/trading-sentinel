@@ -20,8 +20,13 @@ qualification package and canary need fresh post-promotion sessions. S5c commit:
 S6b step 1 (done): the live single-leg F&O exit ladder is now the pure
 `fno_exit_rules.evaluate_single_leg_exit`, shared by the orchestrator and
 research; behaviour proven identical (characterization + 20,000-case
-differential; 397 suite tests). Next: a frozen F&O single-leg exit
-experiment replaying that function on archived futures/option paths.
+differential; 397 suite tests; commit `02047d4`). Step 2 (done):
+`fno_exit_experiment.py` freezes `fno_partial_at_target_v1` or
+`fno_confirmed_time_extension_v1` and replays the shared ladder on paired
+archive paths. Next operational step: export real single-leg positions as
+entries, build packets from the research archive, freeze a candidate before
+the next session and evaluate only HOLDOUT positions. Remaining S6 source:
+a defined-risk spread exit experiment (different R and leg pricing).
 S5a–S6a commits are pushed (`19a5471`); the PR toward Production must be
 opened on GitHub (no `gh` CLI in this environment).
 
