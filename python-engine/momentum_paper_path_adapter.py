@@ -16,6 +16,7 @@ from typing import Any
 
 from config import settings
 from momentum_exit_study import INPUT_SCHEMA
+from momentum_path_envelope import PathEnvelopeError, verify_path_quote_envelope
 
 
 SOURCE = "MOMENTUM_PAPER"
@@ -118,6 +119,11 @@ def build_momentum_paper_exit_study_packet(db_path: str, *, study_id: str = "mom
                     return _unavailable(f"invalid_quote_price:{row['admission_key']}")
                 if _packet_hash(quote["source_packet"]) != quote["source_packet_sha256"]:
                     return _unavailable(f"quote_packet_identity_mismatch:{row['admission_key']}")
+                try:
+                    verify_path_quote_envelope(bytes(quote["source_packet"]), ticker=row["ticker"],
+                                               ltp=float(quote["ltp"]), provider_observed_at=observed_at)
+                except PathEnvelopeError:
+                    return _unavailable(f"quote_packet_column_mismatch:{row['admission_key']}")
                 if previous is not None and (observed_at <= previous or (observed_at - previous).total_seconds() > max_gap):
                     return _unavailable(f"quote_gap_or_order_invalid:{row['admission_key']}")
                 if previous is None and (observed_at - entry_at).total_seconds() > max_gap:

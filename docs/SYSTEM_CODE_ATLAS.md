@@ -976,9 +976,9 @@ Related tests: `python-engine/tests/test_momentum_exits.py`
 
 [MOMENTUM-PAPER 2026-07-26] A paper twin of the live momentum book. WHY THIS EXISTS --------------- Live momentum entry is manual: the screener sends a Telegram EXEC button and a human decides. The ledger therefore records what the *operator* did, never what the *strategy* proposed -- 8 recorded momentum trades in months of running, which is why nothing can be concluded about the strategy from them. A signal that fired at 11:04 while nobody was looking left no trace at all. This book takes EVERY accepted momentum signal automatically, sizes it off its own pool, manages it with the same pure exit logic the live book uses, and books cost-adjusted P&L to source='MOMENTUM_PAPER'. The result is a
 
-Top-level declarations: `paper_position_size` (line 77), `_sig_get` (line 106), `_sqlite_safe` (line 115), `_paper_risk_pct` (line 142), `_admission_signal_key` (line 162), `_admission_source_packet` (line 186), `_zero_share_reason` (line 216), `_realised_paper_cash_basis` (line 232), `_admission_economics` (line 246), `_init_admission_outcomes` (line 270), `_init_path_collector` (line 311), `_study_deadline_utc` (line 343), `_subscribe_paper_path` (line 348), `_parse_observation_clock` (line 361), `record_momentum_paper_path_observations` (line 373), `_record_admission_outcome` (line 437), `_bound_admission_outcomes` (line 473), `_supports_paper_admission_identity` (line 483), `record_momentum_paper_upstream_deduplications` (line 495), `_record_disabled_admissions` (line 532), `_record_transaction_failures` (line 556), `open_momentum_paper_positions` (line 586), `_close_paper_position` (line 765), `momentum_paper_monitor` (line 819), `momentum_paper_square_off` (line 917)
+Top-level declarations: `paper_position_size` (line 78), `_sig_get` (line 107), `_sqlite_safe` (line 116), `_paper_risk_pct` (line 143), `_admission_signal_key` (line 163), `_admission_source_packet` (line 187), `_zero_share_reason` (line 217), `_realised_paper_cash_basis` (line 233), `_admission_economics` (line 247), `_init_admission_outcomes` (line 271), `_init_path_collector` (line 312), `_study_deadline_utc` (line 344), `_subscribe_paper_path` (line 349), `_parse_observation_clock` (line 362), `record_momentum_paper_path_observations` (line 374), `_record_admission_outcome` (line 442), `_bound_admission_outcomes` (line 478), `_supports_paper_admission_identity` (line 488), `record_momentum_paper_upstream_deduplications` (line 500), `_record_disabled_admissions` (line 537), `_record_transaction_failures` (line 561), `open_momentum_paper_positions` (line 591), `_close_paper_position` (line 770), `momentum_paper_monitor` (line 824), `momentum_paper_square_off` (line 922)
 
-Engine dependencies: `config`, `engine`, `models`, `momentum_exits`, `performance`
+Engine dependencies: `config`, `engine`, `models`, `momentum_exits`, `momentum_path_envelope`, `performance`
 
 Related tests: `python-engine/tests/test_momentum_paper.py`, `python-engine/tests/test_momentum_paper_audit.py`, `python-engine/tests/test_momentum_paper_evidence_review.py`
 
@@ -1004,9 +1004,15 @@ Related tests: `python-engine/tests/test_momentum_paper_evidence_review.py`
 
 Read-only adapter from passive momentum-paper quote receipts to a study packet. It has no scheduler and no market-data client. A caller may export only a fully verifiable, exact-admission path; otherwise the exact missing evidence is returned and no synthetic study input is produced.
 
-Top-level declarations: `_unavailable` (line 24), `_timestamp` (line 29), `_packet_hash` (line 41), `build_momentum_paper_exit_study_packet` (line 53)
+Top-level declarations: `_unavailable` (line 25), `_timestamp` (line 30), `_packet_hash` (line 42), `build_momentum_paper_exit_study_packet` (line 54)
 
-Engine dependencies: `config`, `momentum_exit_study`
+Engine dependencies: `config`, `momentum_exit_study`, `momentum_path_envelope`
+
+## `python-engine/momentum_path_envelope.py`
+
+Typed, source-bound provider envelope for passive momentum-paper paths (S4). A SHA-256 of caller-supplied bytes proves only that the bytes did not change. It does not prove that the separately supplied ticker, LTP or provider clock columns came *from* those bytes. The envelope wraps the exact Kite quote object for one instrument under its documented ``EXCHANGE:SYMBOL`` key, and ``verify_path_quote_envelope`` re-derives ticker, LTP and provider time from the bytes, requiring exact agreement with the stored columns. Pure: no I/O, no provider call.
+
+Top-level declarations: `PathEnvelopeError` (line 23), `encode_path_quote_envelope` (line 27), `_provider_clock` (line 35), `verify_path_quote_envelope` (line 47)
 
 ## `python-engine/momentum_replay.py`
 

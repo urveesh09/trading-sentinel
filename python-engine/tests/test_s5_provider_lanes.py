@@ -283,7 +283,7 @@ async def test_exact_active_leg_survives_a_ladder_deadline(tmp_path, monkeypatch
     assert archive.events[0]["received_at_utc"] == archive.events[1]["received_at_utc"]
     from fno_exit_experiment import build_packet_from_archive_events
     packet = build_packet_from_archive_events(
-        archive.events, entry={"entry_id": "held", "option_token": 102},
+        archive.events, entry={"entry_id": "held", "option_token": 102, "tradingsymbol": "NIFTY30SEP25100CE"},
         future_token=101, study_id="same-receipt",
     )
     assert len(packet["observations"]) == 1

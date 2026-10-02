@@ -267,6 +267,13 @@ def test_capital_skip_has_precise_reason_and_fixed_pool_snapshot(tmp_path, monke
     assert evidence["available_notional_inr"] == 400.0
 
 
+def _envelope(ticker, ltp, at):
+    """A genuine typed provider envelope for one Kite equity quote."""
+    from momentum_path_envelope import encode_path_quote_envelope
+    return encode_path_quote_envelope(instrument_key=f"NSE:{ticker}",
+                                      quote={"last_price": ltp, "timestamp": at.isoformat()})
+
+
 def test_passive_path_adapter_verifies_bytes_and_preserves_original_quantity(tmp_path):
     db = _db(tmp_path)
     entry_at = datetime(2026, 9, 25, 4, 30, tzinfo=timezone.utc)
@@ -278,7 +285,7 @@ def test_passive_path_adapter_verifies_bytes_and_preserves_original_quantity(tmp
         observations.append({
             "ticker": "ACME", "ltp": 100.0, "provider_observed_at": current.isoformat(),
             "receipt_at": (current + timedelta(seconds=1)).isoformat(),
-            "source_packet": json.dumps({"quote_at": current.isoformat()}).encode(),
+            "source_packet": _envelope("ACME", 100.0, current),
         })
         current += timedelta(minutes=5)
     assert asyncio.run(record_momentum_paper_path_observations(db, observations)) == len(observations)
@@ -295,7 +302,7 @@ def test_passive_path_adapter_rejects_forged_quote_packet_identity(tmp_path):
     db = _db(tmp_path)
     entry_at = datetime(2026, 9, 25, 4, 30, tzinfo=timezone.utc)
     asyncio.run(open_momentum_paper_positions(db, [_sig("ACME", 100.0, 98.0, 104.0)], entry_at))
-    packet = b'{"quote":"real"}'
+    packet = _envelope("ACME", 100.0, entry_at)
     asyncio.run(record_momentum_paper_path_observations(db, [{
         "ticker": "ACME", "ltp": 100.0, "provider_observed_at": entry_at.isoformat(),
         "receipt_at": entry_at.isoformat(), "source_packet": packet,
@@ -312,7 +319,7 @@ def test_passive_collector_rejects_receipt_before_provider_time(tmp_path):
     asyncio.run(open_momentum_paper_positions(db, [_sig("ACME")], stamp))
     assert asyncio.run(record_momentum_paper_path_observations(db, [{
         "ticker": "ACME", "ltp": 100.0, "provider_observed_at": stamp.isoformat(),
-        "receipt_at": (stamp - timedelta(seconds=1)).isoformat(), "source_packet": b'{"ltp":100}',
+        "receipt_at": (stamp - timedelta(seconds=1)).isoformat(), "source_packet": _envelope("ACME", 100.0, stamp),
     }])) == 0
 
 
@@ -328,7 +335,7 @@ def test_passive_adapter_rejects_corrupt_clock_price_or_economics(tmp_path, faul
     asyncio.run(open_momentum_paper_positions(db, [_sig("ACME")], stamp))
     assert asyncio.run(record_momentum_paper_path_observations(db, [{
         "ticker": "ACME", "ltp": 100.0, "provider_observed_at": stamp.isoformat(),
-        "receipt_at": stamp.isoformat(), "source_packet": b'{"ltp":100}',
+        "receipt_at": stamp.isoformat(), "source_packet": _envelope("ACME", 100.0, stamp),
     }])) == 1
     with sqlite3.connect(db) as con:
         if fault in ("clock", "delay"):
@@ -691,3 +698,43 @@ def test_sqlite_safe_passes_primitives_through_untouched():
     assert _sqlite_safe(3.5) == 3.5 and isinstance(_sqlite_safe(3.5), float)
     assert _sqlite_safe(7) == 7 and isinstance(_sqlite_safe(7), int)
     assert _sqlite_safe("REGIME_1_NORMAL") == "REGIME_1_NORMAL"
+
+
+# [S4 review 2026-10-02] Columns must be derived from the packet bytes.
+@pytest.mark.parametrize("change", ["ticker", "ltp", "time", "not_envelope"])
+def test_passive_collector_rejects_columns_that_disagree_with_packet(tmp_path, change):
+    db = _db(tmp_path)
+    stamp = datetime(2026, 9, 25, 4, 30, tzinfo=timezone.utc)
+    asyncio.run(open_momentum_paper_positions(db, [_sig("ACME")], stamp))
+    packet = {
+        "ticker": _envelope("OTHER", 100.0, stamp), "ltp": _envelope("ACME", 101.0, stamp),
+        "time": _envelope("ACME", 100.0, stamp + timedelta(seconds=30)),
+        "not_envelope": b'{"last_price":100.0}',
+    }[change]
+    assert asyncio.run(record_momentum_paper_path_observations(db, [{
+        "ticker": "ACME", "ltp": 100.0, "provider_observed_at": stamp.isoformat(),
+        "receipt_at": stamp.isoformat(), "source_packet": packet,
+    }])) == 0
+
+
+def test_passive_adapter_rejects_rehashed_packet_whose_ltp_column_was_altered(tmp_path):
+    db = _db(tmp_path)
+    stamp = datetime(2026, 9, 25, 4, 30, tzinfo=timezone.utc)
+    asyncio.run(open_momentum_paper_positions(db, [_sig("ACME")], stamp))
+    assert asyncio.run(record_momentum_paper_path_observations(db, [{
+        "ticker": "ACME", "ltp": 100.0, "provider_observed_at": stamp.isoformat(),
+        "receipt_at": stamp.isoformat(), "source_packet": _envelope("ACME", 100.0, stamp),
+    }])) == 1
+    with sqlite3.connect(db) as con:
+        # Hash still matches the bytes; only the separately stored column lies.
+        con.execute("UPDATE momentum_paper_path_observations SET ltp=105.0")
+        con.commit()
+    assert build_momentum_paper_exit_study_packet(db)["reason"].startswith("quote_packet_column_mismatch:")
+
+
+def test_naive_kite_timestamp_is_read_as_exchange_local_time():
+    from momentum_path_envelope import encode_path_quote_envelope, verify_path_quote_envelope
+    packet = encode_path_quote_envelope(instrument_key="NSE:ACME",
+                                        quote={"last_price": 100.0, "timestamp": "2026-09-25 10:00:00"})
+    verify_path_quote_envelope(packet, ticker="ACME", ltp=100.0,
+                               provider_observed_at=datetime(2026, 9, 25, 4, 30, tzinfo=timezone.utc))

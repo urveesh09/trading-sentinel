@@ -39,6 +39,7 @@ from typing import Awaitable, Callable, Optional
 from zoneinfo import ZoneInfo
 
 import aiosqlite
+from momentum_path_envelope import verify_path_quote_envelope
 import structlog
 
 from config import settings
@@ -402,6 +403,10 @@ async def record_momentum_paper_path_observations(db_path: str, observations: li
                     packet = raw.get("source_packet")
                     if not isinstance(packet, bytes) or not packet or len(packet) > packet_cap:
                         raise ValueError("source_packet must be bounded non-empty bytes")
+                    # Columns must be derived from the bytes, not merely
+                    # accompany them (typed envelope; S4 review correction).
+                    verify_path_quote_envelope(packet, ticker=ticker, ltp=ltp,
+                                               provider_observed_at=provider_at)
                     packet_hash = f"sha256:{hashlib.sha256(packet).hexdigest()}"
                 except (TypeError, ValueError, OverflowError):
                     logger.warning("momentum_paper_path_observation_rejected")
