@@ -151,3 +151,39 @@ def test_torn_manifest_line_is_isolated_and_later_records_stay_parseable(tmp_pat
         handle.write(b'{"archive":"torn')  # crash mid-append, no newline
     append_session_rows(str(current), COLUMNS, [_row(DAY3, "third")])
     assert [record["archive"] for record in _manifest(tmp_path)] == ["2026-10-01.csv", "2026-10-02.csv"]
+
+
+# [S3 R4 2026-10-02] Capacity handling.
+def test_low_free_space_refuses_and_counts_rows_without_touching_files(tmp_path, monkeypatch):
+    import session_csv
+    from collections import namedtuple
+    current = tmp_path / "signals.csv"
+    append_session_rows(str(current), COLUMNS, [_row(DAY1, "first")])
+    before = current.read_bytes()
+    usage = namedtuple("usage", "total used free")
+    monkeypatch.setattr(session_csv.shutil, "disk_usage", lambda _p: usage(10, 10, 10))
+    result = append_session_rows(str(current), COLUMNS, [_row(DAY1, "x"), _row(DAY1, "y")])
+    assert result["dropped"] == 2 and result["reason"] == "insufficient_free_space"
+    assert current.read_bytes() == before
+    assert session_csv.dropped_row_counts()[str(current)] >= 2
+
+
+def test_over_quota_archive_is_flagged_and_never_pruned(tmp_path, monkeypatch):
+    from config import settings
+    monkeypatch.setattr(settings, "SESSION_CSV_ARCHIVE_MAX_BYTES", 1)
+    current = tmp_path / "signals.csv"
+    append_session_rows(str(current), COLUMNS, [_row(DAY1, "first")])
+    result = append_session_rows(str(current), COLUMNS, [_row(DAY2, "second")])
+    assert result["rotated"] is True and result["archive_over_quota"] is True
+    assert _rows(tmp_path / "signals.sessions" / "2026-10-01.csv") == [{"scanned_at": DAY1, "value": "first"}]
+
+
+def test_torn_final_row_is_isolated_before_the_next_append(tmp_path):
+    current = tmp_path / "signals.csv"
+    append_session_rows(str(current), COLUMNS, [_row(DAY1, "first")])
+    with current.open("ab") as handle:
+        handle.write(b"2026-10-01T09:31:00+05:30,tor")  # crash mid-row, no newline
+    append_session_rows(str(current), COLUMNS, [_row(DAY1, "second")])
+    lines = current.read_text(encoding="utf-8").splitlines()
+    assert lines[-2] == "2026-10-01T09:31:00+05:30,tor"
+    assert lines[-1] == "2026-10-01T09:30:00+05:30,second"

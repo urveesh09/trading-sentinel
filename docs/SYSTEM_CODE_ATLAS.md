@@ -2028,7 +2028,7 @@ Engine dependencies: `config`, `daily_bootstrap`, `fno_accept_watchdog`, `fno_ho
 
 Bounded, read-only scheduler timing evidence. APScheduler's own log lines are useful for a live operator but cannot answer later whether a job was skipped, ran late, or simply returned because the market was closed. This module records what is actually known without inventing scheduled/start times that an older invocation did not expose.
 
-Top-level declarations: `_utc_now` (line 56), `_iso` (line 60), `_session_date` (line 68), `_record_daily_summary` (line 73), `init_scheduler_telemetry` (line 115), `record_scheduler_event` (line 121), `start_scheduler_run` (line 161), `complete_scheduler_run` (line 189), `scheduler_daily_summary_report` (line 218), `instrument_async_job` (line 250), `telemetry_job` (line 308), `attach_scheduler_listener` (line 315), `_percentiles` (line 343), `_tier_for` (line 426), `_aggregate_by_tier` (line 433), `scheduler_timing_report` (line 525)
+Top-level declarations: `_utc_now` (line 56), `_iso` (line 60), `_session_date` (line 68), `_market_segment` (line 79), `_fold_elapsed` (line 88), `elapsed_quantile_upper_bound` (line 100), `_ensure_summary_columns` (line 114), `_record_daily_summary` (line 122), `init_scheduler_telemetry` (line 174), `record_scheduler_event` (line 180), `start_scheduler_run` (line 220), `complete_scheduler_run` (line 248), `scheduler_daily_summary_report` (line 278), `instrument_async_job` (line 328), `telemetry_job` (line 386), `attach_scheduler_listener` (line 393), `_percentiles` (line 421), `_tier_for` (line 504), `_aggregate_by_tier` (line 511), `scheduler_timing_report` (line 603)
 
 Related tests: `python-engine/tests/test_scheduler_telemetry.py`
 
@@ -2046,7 +2046,9 @@ Related tests: `python-engine/tests/test_selected_legs_verifier.py`
 
 Crash-tolerant session rotation for append-only operational CSV evidence. The current session remains at the configured path for existing dashboards and operators. At the first write of a new IST session, the prior complete file is moved into a sibling evidence archive with its header and bytes unchanged; an append-only manifest records its digest. No routine retention deletion is performed here: archive expiry requires a separate backup/restore policy.
 
-Top-level declarations: `_session_date` (line 27), `_paths` (line 39), `_atomic_bytes` (line 50), `_write_header` (line 64), `_read_state` (line 71), `_write_state` (line 82), `_digest` (line 86), `_append_manifest` (line 94), `_manifest_archives` (line 120), `_reconcile_manifest` (line 134), `_is_header_only` (line 149), `_archive_current` (line 160), `append_session_rows` (line 174)
+Top-level declarations: `_capacity_settings` (line 36), `dropped_row_counts` (line 46), `_archive_bytes` (line 52), `_session_date` (line 58), `_paths` (line 70), `_atomic_bytes` (line 81), `_write_header` (line 95), `_read_state` (line 102), `_write_state` (line 113), `_digest` (line 117), `_append_manifest` (line 125), `_manifest_archives` (line 151), `_reconcile_manifest` (line 165), `_is_header_only` (line 180), `_archive_current` (line 191), `append_session_rows` (line 205)
+
+Engine dependencies: `config`
 
 Related tests: `python-engine/tests/test_session_csv.py`
 
@@ -2062,7 +2064,7 @@ Related tests: `python-engine/tests/test_settlement_assumptions.py`
 
 [MOMENTUM-LOG 2026-06-16] Append-only signal log for momentum scans. Every momentum signal evaluation (accepted or rejected) is persisted to: 1. CSV at settings.MOMENTUM_LOG_CSV_PATH (default /data/momentum_signals.csv) 2. SQLite table `momentum_signals` in settings.DB_PATH This is the data source for future backtests of new entry filters (MC7 RVOL, MC8 RSI trim, ORB structure, etc.). Without it, every filter change is a guess. Schema (stable contract -- do NOT rename columns, only add): scan_id TEXT -- uuid per scan (groups all rows from one scan call) scanned_at TEXT -- ISO8601 UTC timestamp ticker TEXT accepted INTEGER-- 1 if signal fired, 0 if rejected reject_reason TEXT -- empty when ac
 
-Top-level declarations: `init_momentum_log_db` (line 103), `_row_from_dict` (line 116), `_ensure_csv_header` (line 163), `log_momentum_batch` (line 175), `make_scan_id` (line 223), `now_utc_iso` (line 228), `build_row` (line 232)
+Top-level declarations: `init_momentum_log_db` (line 104), `_row_from_dict` (line 117), `_ensure_csv_header` (line 164), `log_momentum_batch` (line 176), `make_scan_id` (line 225), `now_utc_iso` (line 230), `build_row` (line 234)
 
 Engine dependencies: `config`, `session_csv`
 

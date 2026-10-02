@@ -482,6 +482,10 @@ class Settings(BaseSettings):
     # backtest on; the SQLite table is for future API-driven backtest queries.
     MOMENTUM_LOG_ENABLED:       bool  = True    # Master switch -- set False to disable entirely
     MOMENTUM_LOG_CSV_PATH:      str   = "/data/momentum_signals.csv"
+    # [S3 R4] Session CSV capacity: refuse rows below this free-space reserve;
+    # flag (never prune) archives above this total.
+    SESSION_CSV_RESERVED_FREE_BYTES: int = 1_073_741_824
+    SESSION_CSV_ARCHIVE_MAX_BYTES:   int = 2_147_483_648
     # [MED-002 / ROADMAP-4.6 2026-07-12] Container B's plain-text scan
     # summaries duplicated the agent's button alerts (two messages per
     # cycle, only one actionable). OFF by default; the data lives on in

@@ -70,27 +70,85 @@ def _session_date(value: datetime) -> str:
     return value.astimezone(IST).date().isoformat()
 
 
+# [S3 R4 2026-10-02] Durable elapsed distributions.  Fixed upper bounds in
+# seconds; the last bucket is open-ended.  Counts survive raw-tail eviction.
+ELAPSED_BUCKETS = (0.1, 0.25, 0.5, 1.0, 2.0, 5.0, 10.0, 20.0, 30.0, 45.0, 60.0, 90.0, 120.0, 180.0, 300.0)
+_MARKET_OPEN_MIN, _MARKET_CLOSE_MIN = 9 * 60 + 15, 15 * 60 + 30
+
+
+def _market_segment(value: datetime) -> str:
+    """NSE continuous-session hours (IST, weekdays) versus everything else."""
+    local = value.astimezone(IST)
+    minute = local.hour * 60 + local.minute
+    if local.weekday() < 5 and _MARKET_OPEN_MIN <= minute < _MARKET_CLOSE_MIN:
+        return "market_hours"
+    return "off_hours"
+
+
+def _fold_elapsed(histograms: dict, segment: str, elapsed: float) -> None:
+    hist = histograms.setdefault(segment, {"count": 0, "sum": 0.0, "max": 0.0,
+                                           "buckets": [0] * (len(ELAPSED_BUCKETS) + 1)})
+    if len(hist.get("buckets", [])) != len(ELAPSED_BUCKETS) + 1:
+        hist["buckets"] = [0] * (len(ELAPSED_BUCKETS) + 1)
+    index = next((i for i, bound in enumerate(ELAPSED_BUCKETS) if elapsed <= bound), len(ELAPSED_BUCKETS))
+    hist["buckets"][index] += 1
+    hist["count"] = int(hist["count"]) + 1
+    hist["sum"] = round(float(hist["sum"]) + elapsed, 6)
+    hist["max"] = max(float(hist["max"]), elapsed)
+
+
+def elapsed_quantile_upper_bound(hist: dict, quantile: float) -> float | None:
+    """Bucket upper bound containing the quantile (None if open-ended/empty)."""
+    count = int(hist.get("count", 0))
+    if count <= 0:
+        return None
+    target = math.ceil(quantile * count)
+    running = 0
+    for index, bucket in enumerate(hist.get("buckets", [])):
+        running += int(bucket)
+        if running >= target:
+            return ELAPSED_BUCKETS[index] if index < len(ELAPSED_BUCKETS) else None
+    return None
+
+
+async def _ensure_summary_columns(db) -> None:
+    columns = {row[1] for row in await (await db.execute(
+        "PRAGMA table_info(scheduler_daily_summaries)")).fetchall()}
+    if "elapsed_hist_json" not in columns:
+        await db.execute(
+            "ALTER TABLE scheduler_daily_summaries ADD COLUMN elapsed_hist_json TEXT NOT NULL DEFAULT '{}'")
+
+
 async def _record_daily_summary(
     db, *, job_id: str, event_kind: str, result: str,
     occurred_at: datetime, stage_durations: dict[str, Any] | None,
+    elapsed_seconds: float | None = None,
 ) -> None:
     """Fold one final scheduler fact into durable, bounded daily evidence."""
     import json
+    await _ensure_summary_columns(db)
     session_date = _session_date(occurred_at)
     row = await (await db.execute(
-        "SELECT runs,result_counts_json,stage_stats_json,first_recorded_at "
+        "SELECT runs,result_counts_json,stage_stats_json,first_recorded_at,elapsed_hist_json "
         "FROM scheduler_daily_summaries WHERE session_date=? AND job_id=? AND event_kind=?",
         (session_date, job_id[:120], event_kind[:48]),
     )).fetchone()
     if row:
-        runs, result_counts, stage_stats, first = row
+        runs, result_counts, stage_stats, first, hist_json = row
         try:
             results = json.loads(result_counts)
             stages = json.loads(stage_stats)
         except json.JSONDecodeError:
             results, stages = {}, {}
+        try:
+            histograms = json.loads(hist_json or "{}")
+        except json.JSONDecodeError:
+            histograms = {}
     else:
-        runs, results, stages, first = 0, {}, {}, _iso(occurred_at)
+        runs, results, stages, first, histograms = 0, {}, {}, _iso(occurred_at), {}
+    if (isinstance(elapsed_seconds, (int, float)) and not isinstance(elapsed_seconds, bool)
+            and math.isfinite(float(elapsed_seconds)) and float(elapsed_seconds) >= 0):
+        _fold_elapsed(histograms, _market_segment(occurred_at), float(elapsed_seconds))
     results[result[:48]] = int(results.get(result[:48], 0)) + 1
     for name, value in (stage_durations or {}).items():
         if not isinstance(name, str) or not isinstance(value, (int, float)):
@@ -103,12 +161,13 @@ async def _record_daily_summary(
         stat["max"] = max(float(stat.get("max", 0.0)), float(value))
     await db.execute(
         "INSERT OR REPLACE INTO scheduler_daily_summaries "
-        "(session_date,job_id,event_kind,runs,result_counts_json,stage_stats_json,first_recorded_at,last_recorded_at) "
-        "VALUES (?,?,?,?,?,?,?,?)",
+        "(session_date,job_id,event_kind,runs,result_counts_json,stage_stats_json,first_recorded_at,last_recorded_at,"
+        "elapsed_hist_json) VALUES (?,?,?,?,?,?,?,?,?)",
         (session_date, job_id[:120], event_kind[:48], int(runs) + 1,
          json.dumps(results, sort_keys=True, separators=(",", ":")),
          json.dumps(stages, sort_keys=True, separators=(",", ":")),
-         first, _iso(occurred_at)),
+         first, _iso(occurred_at),
+         json.dumps(histograms, sort_keys=True, separators=(",", ":"))),
     )
 
 
@@ -146,7 +205,7 @@ async def record_scheduler_event(
             await _record_daily_summary(
                 db, job_id=job_id, event_kind=event_kind, result=result,
                 occurred_at=ended_at or started_at or created_at,
-                stage_durations=stage_durations,
+                stage_durations=stage_durations, elapsed_seconds=elapsed_seconds,
             )
         # Keep a fixed forensic tail.  This is deliberately a bounded deletion
         # of telemetry only, never trading or research evidence.
@@ -210,6 +269,7 @@ async def complete_scheduler_run(
             await _record_daily_summary(
                 db, job_id=existing[0], event_kind=existing[1], result=result,
                 occurred_at=ended_at, stage_durations=stage_durations,
+                elapsed_seconds=elapsed_seconds,
             )
         await db.commit()
         return cursor.rowcount == 1
@@ -224,9 +284,11 @@ async def scheduler_daily_summary_report(
     if len(selected) != 10:
         raise ValueError("session_date must be ISO YYYY-MM-DD")
     async with aiosqlite.connect(db_path) as db:
+        await _ensure_summary_columns(db)
+        await db.commit()
         rows = await (await db.execute(
-            "SELECT job_id,event_kind,runs,result_counts_json,stage_stats_json,first_recorded_at,last_recorded_at "
-            "FROM scheduler_daily_summaries WHERE session_date=? ORDER BY job_id,event_kind",
+            "SELECT job_id,event_kind,runs,result_counts_json,stage_stats_json,first_recorded_at,last_recorded_at,"
+            "elapsed_hist_json FROM scheduler_daily_summaries WHERE session_date=? ORDER BY job_id,event_kind",
             (selected,),
         )).fetchall()
     import json
@@ -236,9 +298,25 @@ async def scheduler_daily_summary_report(
             results, stages = json.loads(row[3]), json.loads(row[4])
         except json.JSONDecodeError:
             results, stages = {}, {}
+        try:
+            histograms = json.loads(row[7] or "{}")
+        except json.JSONDecodeError:
+            histograms = {}
+        elapsed = {}
+        for segment, hist in sorted(histograms.items()):
+            count = int(hist.get("count", 0))
+            elapsed[segment] = {
+                "count": count, "max": hist.get("max"),
+                "mean": round(float(hist["sum"]) / count, 6) if count else None,
+                "p50_upper_bound": elapsed_quantile_upper_bound(hist, 0.50),
+                "p95_upper_bound": elapsed_quantile_upper_bound(hist, 0.95),
+                "bucket_upper_bounds": list(ELAPSED_BUCKETS) + ["inf"],
+                "buckets": hist.get("buckets"),
+            }
         summaries.append({
             "job_id": row[0], "event_kind": row[1], "runs": row[2],
             "results": results, "stage_stats": stages,
+            "elapsed_distribution": elapsed,
             "first_recorded_at": row[5], "last_recorded_at": row[6],
         })
     return {

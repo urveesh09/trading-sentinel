@@ -11,7 +11,9 @@ from __future__ import annotations
 import csv
 import hashlib
 import json
+import logging
 import os
+import shutil
 import tempfile
 import threading
 from datetime import datetime
@@ -22,6 +24,35 @@ from zoneinfo import ZoneInfo
 
 IST = ZoneInfo("Asia/Kolkata")
 _LOCK = threading.RLock()
+logger = logging.getLogger(__name__)
+# [S3 R4 2026-10-02] Capacity bounds.  Writes are refused (counted, never
+# raised) when free space would fall below the reserve; an over-quota archive
+# is flagged for the operator's backup policy but never pruned here.
+DEFAULT_RESERVED_FREE_BYTES = 1_073_741_824
+DEFAULT_ARCHIVE_MAX_BYTES = 2_147_483_648
+_dropped_rows: dict[str, int] = {}
+
+
+def _capacity_settings() -> tuple[int, int]:
+    try:
+        from config import settings
+        reserve = int(getattr(settings, "SESSION_CSV_RESERVED_FREE_BYTES", DEFAULT_RESERVED_FREE_BYTES))
+        quota = int(getattr(settings, "SESSION_CSV_ARCHIVE_MAX_BYTES", DEFAULT_ARCHIVE_MAX_BYTES))
+    except Exception:  # pragma: no cover - isolated use without config
+        reserve, quota = DEFAULT_RESERVED_FREE_BYTES, DEFAULT_ARCHIVE_MAX_BYTES
+    return max(0, reserve), max(1, quota)
+
+
+def dropped_row_counts() -> dict[str, int]:
+    """Rows refused for capacity since process start, by CSV path."""
+    with _LOCK:
+        return dict(_dropped_rows)
+
+
+def _archive_bytes(archive_dir: Path) -> int:
+    if not archive_dir.is_dir():
+        return 0
+    return sum(path.stat().st_size for path in archive_dir.iterdir() if path.is_file())
 
 
 def _session_date(value: object) -> str:
@@ -187,6 +218,15 @@ def append_session_rows(
         raise ValueError("CSV evidence batch must belong to one IST session")
     session_date = session_dates.pop()
     current, state_path, archive_dir, manifest = _paths(csv_path)
+    reserve, quota = _capacity_settings()
+    estimated = sum(len(json.dumps(row, default=str)) for row in batch) + 4096
+    probe = current.parent if current.parent.exists() else Path(".")
+    if shutil.disk_usage(probe).free - estimated < reserve:
+        with _LOCK:
+            _dropped_rows[str(current)] = _dropped_rows.get(str(current), 0) + len(batch)
+        logger.error("session_csv_rows_refused_low_free_space path=%s rows=%d", current, len(batch))
+        return {"rows": 0, "rotated": False, "session_date": session_date,
+                "dropped": len(batch), "reason": "insufficient_free_space"}
     with _LOCK:
         prior_session = _read_state(state_path)
         rotated = False
@@ -213,9 +253,21 @@ def append_session_rows(
             _write_state(state_path, session_date)
         if not current.exists():
             _write_header(current, columns)
+        archive_over_quota = rotated and _archive_bytes(archive_dir) > quota
+        if archive_over_quota:
+            logger.warning("session_csv_archive_over_quota dir=%s quota_bytes=%d", archive_dir, quota)
+        with current.open("ab") as raw_handle:
+            # A crash mid-append can leave a torn final row; terminate it so
+            # the next row stays independently parseable (bytes are kept).
+            if raw_handle.tell() > 0:
+                with current.open("rb") as reader:
+                    reader.seek(-1, os.SEEK_END)
+                    if reader.read(1) != b"\n":
+                        raw_handle.write(b"\n")
         with current.open("a", newline="", encoding="utf-8") as handle:
             writer = csv.DictWriter(handle, fieldnames=list(columns), extrasaction="ignore")
             writer.writerows(batch)
             handle.flush()
             os.fsync(handle.fileno())
-    return {"rows": len(batch), "rotated": rotated, "session_date": session_date}
+    return {"rows": len(batch), "rotated": rotated, "session_date": session_date,
+            **({"archive_over_quota": True} if archive_over_quota else {})}

@@ -130,7 +130,8 @@ async def log_penny_signal(
     # 1. CSV append
     try:
         csv_path = settings.PENNY_LOG_CSV_PATH
-        append_session_rows(csv_path, _COLUMNS, [row])
+        # [S3 R4] Off the event loop: the fsync'd append never stalls a scan.
+        await asyncio.to_thread(append_session_rows, csv_path, _COLUMNS, [row])
     except Exception as e:
         logger.error("penny_signal_csv_write_failed error=%s", str(e))
 

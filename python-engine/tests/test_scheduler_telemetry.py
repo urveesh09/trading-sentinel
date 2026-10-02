@@ -122,6 +122,13 @@ async def test_daily_summary_survives_raw_tail_retention_and_keeps_stage_outcome
         "job_id": "fno_tick", "event_kind": "EXECUTION", "runs": 101,
         "results": {"COMPLETED": 101},
         "stage_stats": {"provider": {"count": 101, "total": 5070.2, "max": 100.2}},
+        # [S3 R4] Durable elapsed distribution; 16:00 IST is off-hours.
+        "elapsed_distribution": {"off_hours": {
+            "count": 101, "max": 0.1, "mean": 0.1, "p50_upper_bound": 0.1, "p95_upper_bound": 0.1,
+            "bucket_upper_bounds": [0.1, 0.25, 0.5, 1.0, 2.0, 5.0, 10.0, 20.0, 30.0, 45.0, 60.0, 90.0,
+                                    120.0, 180.0, 300.0, "inf"],
+            "buckets": [101] + [0] * 15,
+        }},
         "first_recorded_at": ended.isoformat(),
         "last_recorded_at": (ended + timedelta(seconds=100)).isoformat(),
     }]
@@ -146,3 +153,46 @@ async def test_inflight_marker_is_not_counted_as_completed_daily_evidence(tmp_pa
     daily = await scheduler_daily_summary_report(db_path)
     assert daily["summaries"][0]["results"] == {"COMPLETED": 1}
     assert daily["summaries"][0]["stage_stats"]["management"]["count"] == 1
+
+
+# [S3 R4 2026-10-02] Durable market-hours elapsed distributions.
+@pytest.mark.asyncio
+async def test_elapsed_distribution_is_segmented_by_market_hours_with_p95_bound(tmp_path):
+    from datetime import timezone as _tz
+    from scheduler_telemetry import record_scheduler_event, scheduler_daily_summary_report
+    db_path = str(tmp_path / "telemetry.db")
+    market = datetime(2026, 10, 1, 5, 0, tzinfo=_tz.utc)      # 10:30 IST Thursday
+    evening = datetime(2026, 10, 1, 12, 0, tzinfo=_tz.utc)    # 17:30 IST
+    for index in range(20):
+        elapsed = 100.0 if index >= 18 else 0.4
+        await record_scheduler_event(db_path, job_id="research", event_kind="EXECUTION", result="COMPLETED",
+                                     ended_at=market + timedelta(seconds=index), elapsed_seconds=elapsed)
+    await record_scheduler_event(db_path, job_id="research", event_kind="EXECUTION", result="COMPLETED",
+                                 ended_at=evening, elapsed_seconds=1.5)
+    report = await scheduler_daily_summary_report(db_path, session_date="2026-10-01")
+    dist = report["summaries"][0]["elapsed_distribution"]
+    assert dist["market_hours"]["count"] == 20 and dist["off_hours"]["count"] == 1
+    assert dist["market_hours"]["p50_upper_bound"] == 0.5
+    assert dist["market_hours"]["p95_upper_bound"] == 120.0
+    assert dist["market_hours"]["max"] == 100.0
+
+
+@pytest.mark.asyncio
+async def test_legacy_summary_table_gains_the_histogram_column(tmp_path):
+    import aiosqlite
+    from datetime import timezone as _tz
+    from scheduler_telemetry import record_scheduler_event, scheduler_daily_summary_report
+    db_path = str(tmp_path / "legacy.db")
+    async with aiosqlite.connect(db_path) as db:
+        await db.execute("CREATE TABLE scheduler_daily_summaries (session_date TEXT NOT NULL, job_id TEXT NOT NULL,"
+                         " event_kind TEXT NOT NULL, runs INTEGER NOT NULL, result_counts_json TEXT NOT NULL,"
+                         " stage_stats_json TEXT NOT NULL, first_recorded_at TEXT NOT NULL,"
+                         " last_recorded_at TEXT NOT NULL, PRIMARY KEY (session_date, job_id, event_kind))")
+        await db.execute("INSERT INTO scheduler_daily_summaries VALUES ('2026-10-01','old','EXECUTION',3,"
+                         "'{\"COMPLETED\":3}','{}','2026-10-01T04:00:00+00:00','2026-10-01T04:10:00+00:00')")
+        await db.commit()
+    await record_scheduler_event(db_path, job_id="old", event_kind="EXECUTION", result="COMPLETED",
+                                 ended_at=datetime(2026, 10, 1, 4, 20, tzinfo=_tz.utc), elapsed_seconds=2.0)
+    summary = (await scheduler_daily_summary_report(db_path, session_date="2026-10-01"))["summaries"][0]
+    assert summary["runs"] == 4 and summary["results"] == {"COMPLETED": 4}
+    assert summary["elapsed_distribution"]["market_hours"]["count"] == 1

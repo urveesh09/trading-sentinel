@@ -296,3 +296,15 @@ and is supplied in the final handoff.
   - An expired window, an unavailable or expired review, or a state lost to a restart is recorded, never published. Persistence is atomic and bounded in `/tmp`.
 - **Worker lifecycle.** `shutdown()` marks queued and in-flight keys `UNAVAILABLE` (`worker_shutdown`), refuses new submissions and discards any later result (counted, never cached). SIGTERM triggers it. Python cannot force-cancel a socket blocked in a thread; the bound remains the per-request transport timeout fitted under the deadline, now surfaced by `inflight_overruns`.
 - Tests: agent 383 passed warnings-fatal (15 new, repeated 5 times); engine status-bridge group 74 passed (4 new) with the known Starlette/HTTPX deprecations.
+
+## Response — R4 completed (Dev, October 2)
+
+- **Scheduler daily summaries** now keep a durable elapsed histogram (fixed buckets 0.1–300 s plus open-ended; count, sum and max), split into NSE market hours (09:15–15:30 IST, weekdays) and off-hours.
+  - The report gives the mean, max and p50/p95 **bucket upper bounds**. These are stated as bounds, not exact quantiles.
+  - The additive `elapsed_hist_json` column upgrades legacy tables in place. Histograms survive eviction of the raw tail.
+- **Session CSV capacity**, configured by `SESSION_CSV_RESERVED_FREE_BYTES` (1 GiB) and `SESSION_CSV_ARCHIVE_MAX_BYTES` (2 GiB):
+  - Writes that would breach the free-space reserve are refused and counted (`dropped_row_counts`), never raised.
+  - An over-quota archive is flagged on rotation and never pruned.
+  - A torn final row is newline-isolated.
+  - Momentum and penny writers now append off the event loop (`asyncio.to_thread`).
+- Tests: session/signal-log/telemetry 29 passed warnings-fatal. Still operational: real peak session volume, prior-boot log retention and a disk check after deployment.
