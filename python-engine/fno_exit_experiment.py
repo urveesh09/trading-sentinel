@@ -438,33 +438,70 @@ def verify_manifest(manifest: Mapping[str, Any]) -> datetime:
     return frozen_at
 
 
+RECONCILIATION_TOLERANCE_RS = 1.0
+
+
+def reconcile_single_leg(raw_entry: Mapping[str, Any], baseline: Mapping[str, Any]) -> dict[str, Any]:
+    """Compare the replayed baseline with the position row's settlement and ledger.
+
+    Only a database-bound entry whose closed row, ledger cash and replayed
+    baseline agree (same exit reason, net within tolerance) is usable for
+    paired comparison.  Archive cadence differs from management ticks, so a
+    mismatch is reported, not forced.
+    """
+    if raw_entry.get("evidence_kind") != "FNO_POSITIONS_ROW":
+        return {"state": "UNBOUND_CALLER_ENTRY", "usable": False}
+    settlement = raw_entry.get("settlement") if isinstance(raw_entry.get("settlement"), Mapping) else {}
+    if settlement.get("status") != "CLOSED":
+        return {"state": "UNSETTLED", "usable": False}
+    ledger, row_net = settlement.get("ledger_net_pnl"), settlement.get("position_net_pnl")
+    if ledger is None or row_net is None or abs(float(ledger) - float(row_net)) > RECONCILIATION_TOLERANCE_RS:
+        return {"state": "LEDGER_MISMATCH_OR_MISSING", "usable": False}
+    if baseline.get("status") != "CLOSED":
+        return {"state": "BASELINE_NOT_CLOSED", "usable": False}
+    same_reason = settlement.get("exit_reason") == baseline.get("reason")
+    delta = float(baseline["net_pnl"]) - float(ledger)
+    usable = same_reason and abs(delta) <= RECONCILIATION_TOLERANCE_RS
+    return {"state": "RECONCILED" if usable else "BASELINE_DIFFERS_FROM_SETTLEMENT", "usable": usable,
+            "ledger_net_pnl": float(ledger), "baseline_minus_ledger": round(delta, 6),
+            "exit_reason_matches": same_reason}
+
+
 def build_fno_exit_experiment(packet_path: str | os.PathLike[str], manifest: Mapping[str, Any]) -> dict[str, Any]:
     frozen_at = verify_manifest(manifest)
     packet, entries, grouped, input_fingerprint = load_fno_exit_packet(packet_path)
     policy = str(manifest["candidate_policy"])
     max_gap = int(packet["max_observation_gap_seconds"])
     pairs = []
+    raw_entries = {str(item.get("entry_id")): item for item in packet["entries"]}
     for entry in sorted(entries, key=lambda item: item.entry_id):
         sample = "HOLDOUT" if entry.entry_time > frozen_at else "DEVELOPMENT"
+        raw = raw_entries.get(entry.entry_id, {})
         base = {"entry_id": entry.entry_id, "position_ref": entry.position_ref,
-                "tradingsymbol": entry.tradingsymbol, "source_ref": entry.source_ref, "sample_class": sample}
+                "tradingsymbol": entry.tradingsymbol, "source_ref": entry.source_ref, "sample_class": sample,
+                "entry_evidence": raw.get("evidence_kind", "CALLER_SUPPLIED_UNVERIFIED")}
         path, issue = _validated_path(entry, sorted(grouped[entry.entry_id], key=lambda o: o.observed_at), max_gap)
         if issue is not None:
             unresolved = {"status": "INSUFFICIENT_EVIDENCE", "reason": issue, "legs": []}
             pairs.append({**base, "status": "INSUFFICIENT_EVIDENCE", "reason": issue,
                           "baseline": {"policy": BASELINE_POLICY, **unresolved},
-                          "candidate": {"policy": policy, **unresolved}})
+                          "candidate": {"policy": policy, **unresolved},
+                          "reconciliation": {"state": "PATH_INSUFFICIENT", "usable": False}})
             continue
-        pairs.append({**base, "status": "COMPLETE",
-                      "baseline": _exposure(entry, path, simulate(entry, path, BASELINE_POLICY)),
-                      "candidate": _exposure(entry, path, simulate(entry, path, policy))})
+        baseline = _exposure(entry, path, simulate(entry, path, BASELINE_POLICY))
+        pairs.append({**base, "status": "COMPLETE", "baseline": baseline,
+                      "candidate": _exposure(entry, path, simulate(entry, path, policy)),
+                      "reconciliation": reconcile_single_leg(raw, baseline)})
 
     def section(sample: str | None) -> dict[str, Any]:
         chosen = [pair for pair in pairs if sample is None or pair["sample_class"] == sample]
-        return {"pairs": len(chosen),
+        usable = [pair for pair in chosen if pair["reconciliation"]["usable"]]
+        return {"pairs": len(chosen), "reconciled_usable": len(usable),
                 "baseline": _policy_summary([pair["baseline"] for pair in chosen]),
                 "candidate": _policy_summary([pair["candidate"] for pair in chosen]),
-                "paired": _paired_deltas(chosen)}
+                "paired": _paired_deltas(chosen),
+                # Deltas only over baselines that reproduce persisted settlement cash.
+                "paired_reconciled": _paired_deltas(usable)}
 
     report = {
         "schema": REPORT_SCHEMA, "experiment_id": manifest["experiment_id"], "study_id": packet["study_id"],
@@ -509,29 +546,84 @@ def _raw_price(raw: Mapping[str, Any], *path: Any) -> float | None:
     return float(value)
 
 
-def _verified_event(event: Mapping[str, Any]) -> tuple[float | None, float, str]:
-    """Return (ltp, exit basis, digest) recomputed from the archived raw bytes.
+def _column_price(levels: Any) -> float | None:
+    first = levels[0] if isinstance(levels, list) and levels and isinstance(levels[0], Mapping) else {}
+    value = first.get("price")
+    return float(value) if isinstance(value, (int, float)) and math.isfinite(value) and value > 0 else None
 
-    The normalised columns must equal the raw provider packet: a column that
-    disagrees with the bytes it claims to come from is rejected, not trusted.
+
+@dataclass(frozen=True)
+class VerifiedQuote:
+    token: int
+    ltp: float | None
+    bid: float | None
+    ask: float | None
+    provider_at: datetime
+    receipt_at: datetime
+
+    @property
+    def exit_basis(self) -> float:
+        """Live paper exit basis for a long: best bid, else LTP."""
+        return self.bid if self.bid is not None else (self.ltp or 0.0)
+
+    @property
+    def mid(self) -> float | None:
+        """``ContractQuote.mid``: bid/ask midpoint, else LTP."""
+        if self.bid is not None and self.ask is not None:
+            return (self.bid + self.ask) / 2.0
+        return self.ltp
+
+
+def verify_archive_event(event: Mapping[str, Any], *, token: int, symbol: str | None,
+                         max_age_seconds: int) -> tuple[VerifiedQuote | None, str | None]:
+    """Re-derive every used field of one archived event from its raw bytes.
+
+    Integrity faults (digest, token/identity, price or clock columns that
+    disagree with the raw provider packet) raise: the archive is not trusted
+    to be partially right.  A missing, future or stale provider clock is not
+    an integrity fault but makes the observation unusable; it is returned as
+    an exclusion reason and counted by the caller.
     """
+    from research_quote_collector import _provider_timestamp
+
     raw = event.get("raw_packet")
     if not isinstance(raw, Mapping):
         raise FnoExitStudyError("archive event lacks its raw provider packet")
-    digest = _raw_digest(raw)
-    if event.get("raw_sha256") != digest:
+    if event.get("raw_sha256") != _raw_digest(raw):
         raise FnoExitStudyError("archive event raw_sha256 does not match its raw packet")
-    ltp = _raw_price(raw, "last_price")
-    bid = _raw_price(raw, "depth", "buy", 0, "price")
+    contract = event.get("contract") if isinstance(event.get("contract"), Mapping) else {}
+    if str(contract.get("instrument_token")) != str(token):
+        raise FnoExitStudyError("archive event contract token does not match the requested leg")
+    if raw.get("instrument_token") not in (None, token, str(token)):
+        raise FnoExitStudyError("raw provider packet token does not match the requested leg")
+    if symbol is not None and contract.get("tradingsymbol") != symbol:
+        raise FnoExitStudyError("archived contract identity does not match the entry tradingsymbol")
+    ltp, bid, ask = _raw_price(raw, "last_price"), _raw_price(raw, "depth", "buy", 0, "price"), \
+        _raw_price(raw, "depth", "sell", 0, "price")
     column_ltp = event.get("ltp")
     if (ltp or 0.0) != (float(column_ltp) if isinstance(column_ltp, (int, float)) else 0.0):
         raise FnoExitStudyError("archive event ltp column does not match its raw packet")
-    depth = event.get("buy_depth") or []
-    column_bid = depth[0].get("price") if depth and isinstance(depth[0], Mapping) else None
-    if (bid or None) != (float(column_bid) if isinstance(column_bid, (int, float)) and column_bid > 0 else None):
+    if bid != _column_price(event.get("buy_depth")):
         raise FnoExitStudyError("archive event bid column does not match its raw packet")
-    # Live paper exit basis: best bid when usable, else LTP.
-    return ltp, (bid if bid is not None else (ltp or 0.0)), digest
+    if ask != _column_price(event.get("sell_depth")):
+        raise FnoExitStudyError("archive event ask column does not match its raw packet")
+    mode = str(event.get("mode") or "")
+    raw_clock = raw.get("timestamp") if mode.startswith("KITE_REST") else raw.get("exchange_timestamp")
+    derived = _provider_timestamp(raw_clock)[1]
+    if derived != event.get("provider_timestamp_utc"):
+        raise FnoExitStudyError("archive event provider clock column does not match its raw packet")
+    receipt = _event_clock(event.get("received_at_utc"))
+    provider = _event_clock(derived)
+    if receipt is None:
+        return None, "receipt_clock_invalid"
+    if provider is None:
+        return None, "provider_clock_unavailable"
+    if provider > receipt:
+        return None, "provider_clock_after_receipt"
+    if (receipt - provider).total_seconds() > max_age_seconds:
+        return None, "provider_quote_older_than_declared_maximum"
+    return VerifiedQuote(token=int(token), ltp=ltp, bid=bid, ask=ask,
+                         provider_at=provider, receipt_at=receipt), None
 
 
 def _event_clock(value: Any) -> datetime | None:
@@ -544,65 +636,120 @@ def _event_clock(value: Any) -> datetime | None:
     return parsed if parsed.tzinfo is not None else None
 
 
+def index_archive_events(events: Iterable[Mapping[str, Any]], tokens: Iterable[int]) -> dict[int, dict[str, Mapping[str, Any]]]:
+    """Group events by token and receipt; exact duplicates are idempotent."""
+    wanted = {int(token) for token in tokens}
+    by_token: dict[int, dict[str, Mapping[str, Any]]] = {token: {} for token in wanted}
+    for event in events:
+        contract = event.get("contract") if isinstance(event.get("contract"), Mapping) else {}
+        try:
+            token = int(contract.get("instrument_token"))
+        except (TypeError, ValueError):
+            continue
+        received = event.get("received_at_utc")
+        if token not in by_token or not isinstance(received, str):
+            continue
+        prior = by_token[token].get(received)
+        if prior is not None and prior.get("raw_sha256") != event.get("raw_sha256"):
+            raise FnoExitStudyError(f"conflicting archive events for token {token} at {received}")
+        by_token[token][received] = event
+    return by_token
+
+
 def build_packet_from_archive_events(
     events: Iterable[Mapping[str, Any]], *, entry: Mapping[str, Any], future_token: int,
     study_id: str, max_observation_gap_seconds: int = 120,
 ) -> dict[str, Any]:
     """Pair verified futures and exact-option events captured at one receipt.
 
-    Only events whose ``received_at_utc`` is identical for the front future
-    and the exact option are paired; nothing is interpolated or carried
-    forward.  Every used event's raw bytes are re-hashed and its price columns
-    checked against them; contract identity must match; an exact duplicate is
-    idempotent and a conflicting duplicate fails the build.  An observation
-    whose provider clock is after receipt or older than the declared maximum
-    is excluded and counted.  ``source_ref`` is derived from the archived
-    digests -- it binds this packet to those bytes, not to external provenance.
+    Both packets are verified from raw bytes (digest, token, identity, price
+    and provider-clock columns) and both provider clocks must be present, not
+    after receipt and within the declared gap: a stale futures packet next to
+    a fresh option is excluded and counted.  ``source_ref`` binds the packet
+    to the archived digests and to the entry's own evidence reference; it is
+    not external provenance.
     """
-    option_token, symbol = str(entry["option_token"]), str(entry["tradingsymbol"])
-    by_token: dict[str, dict[str, Mapping[str, Any]]] = {str(future_token): {}, option_token: {}}
-    for event in events:
-        contract = event.get("contract") if isinstance(event.get("contract"), Mapping) else {}
-        token = str(contract.get("instrument_token"))
-        received = event.get("received_at_utc")
-        if token not in by_token or not isinstance(received, str):
-            continue
-        if token == option_token and contract.get("tradingsymbol") != symbol:
-            raise FnoExitStudyError("archived option identity does not match the entry tradingsymbol")
-        if token == str(future_token) and contract.get("instrument_type") not in (None, "FUT"):
+    option_token = int(entry["option_token"])
+    symbol = str(entry["tradingsymbol"])
+    indexed = index_archive_events(events, (future_token, option_token))
+    futures, options = indexed[int(future_token)], indexed[option_token]
+    for event in futures.values():
+        if (event.get("contract") or {}).get("instrument_type") not in (None, "FUT"):
             raise FnoExitStudyError("future_token does not identify a futures contract")
-        prior = by_token[token].get(received)
-        if prior is not None and prior.get("raw_sha256") != event.get("raw_sha256"):
-            raise FnoExitStudyError(f"conflicting archive events for token {token} at {received}")
-        by_token[token][received] = event
-    futures, options = by_token[str(future_token)], by_token[option_token]
     observations, digests, excluded = [], [], {}
     for received in sorted(set(futures) & set(options)):
-        receipt = _event_clock(received)
-        fut_ltp, _fut_basis, fut_digest = _verified_event(futures[received])
-        _opt_ltp, basis, opt_digest = _verified_event(options[received])
-        provider = _event_clock(options[received].get("provider_timestamp_utc"))
-        if receipt is None:
-            reason = "receipt_clock_invalid"
-        elif provider is not None and provider > receipt:
-            reason = "provider_clock_after_receipt"
-        elif provider is not None and (receipt - provider).total_seconds() > max_observation_gap_seconds:
-            reason = "provider_quote_older_than_declared_maximum"
-        else:
-            reason = None
+        fut, fut_reason = verify_archive_event(futures[received], token=int(future_token), symbol=None,
+                                               max_age_seconds=max_observation_gap_seconds)
+        opt, opt_reason = verify_archive_event(options[received], token=option_token, symbol=symbol,
+                                               max_age_seconds=max_observation_gap_seconds)
+        reason = opt_reason or fut_reason
         if reason is not None:
             excluded[reason] = excluded.get(reason, 0) + 1
             continue
         observations.append({"entry_id": entry["entry_id"], "observed_at": received,
-                             "fut_price": fut_ltp, "exit_basis": basis})
-        digests += [fut_digest, opt_digest]
-    source_ref = "sha256:" + hashlib.sha256("\n".join(digests).encode("utf-8")).hexdigest()
+                             "fut_price": fut.ltp, "exit_basis": opt.exit_basis})
+        digests += [str(futures[received]["raw_sha256"]), str(options[received]["raw_sha256"])]
+    binding = str(entry.get("evidence_ref") or "unbound-caller-entry")
+    source_ref = "sha256:" + hashlib.sha256("\n".join([binding, *digests]).encode("utf-8")).hexdigest()
     return {"schema": INPUT_SCHEMA, "study_id": study_id,
             "max_observation_gap_seconds": max_observation_gap_seconds,
             "provenance": {"kind": "derived_from_archived_raw_packet_digests",
+                           "entry_evidence": entry.get("evidence_kind", "CALLER_SUPPLIED_UNVERIFIED"),
                            "verified_external_provenance": False,
                            "excluded_observations": dict(sorted(excluded.items()))},
             "entries": [{**dict(entry), "source_ref": source_ref}], "observations": observations}
+
+
+def entry_from_position_row(db_path: str, position_id: int) -> dict[str, Any]:
+    """Bind a study entry to one persisted ``fno_positions`` row and its ledger cash.
+
+    Read-only.  Economics come from the stored row (never caller JSON); the
+    settlement is the sum of that position's ledger events.  ``evidence_ref``
+    hashes the canonical row fields used, so a later edit is detectable.
+    """
+    import sqlite3
+    path = Path(db_path)
+    if not path.is_file():
+        raise FnoExitStudyError("database unavailable")
+    con = sqlite3.connect(f"{path.resolve().as_uri()}?mode=ro", uri=True)
+    con.row_factory = sqlite3.Row
+    try:
+        row = con.execute("SELECT * FROM fno_positions WHERE id=?", (int(position_id),)).fetchone()
+        if row is None:
+            raise FnoExitStudyError(f"fno_positions row {position_id} not found")
+        try:
+            ledger = con.execute(
+                "SELECT COALESCE(SUM(pnl),0), COUNT(*) FROM bankroll_ledger WHERE origin_ref=? "
+                "AND event_type IN ('TRADE_PARTIAL','TRADE_CLOSED')", (f"fno_position:{int(position_id)}",),
+            ).fetchone()
+        except sqlite3.Error:
+            ledger = (None, 0)
+    finally:
+        con.close()
+    fields = {key: row[key] for key in (
+        "id", "source", "tradingsymbol", "token", "direction", "qty", "lot_size", "entry_time",
+        "entry_premium", "entry_underlying", "stop_underlying", "target_underlying", "premium_stop",
+        "atr_at_entry")}
+    evidence = json.dumps(fields, sort_keys=True, separators=(",", ":"), default=str)
+    entry = {
+        "entry_id": f"fno_position:{row['id']}", "position_ref": str(row["id"]),
+        "tradingsymbol": row["tradingsymbol"], "option_token": row["token"], "direction": row["direction"],
+        "quantity": row["qty"], "lot_size": row["lot_size"], "entry_time": row["entry_time"],
+        "entry_premium": row["entry_premium"], "entry_underlying": row["entry_underlying"],
+        "stop_underlying": row["stop_underlying"], "target_underlying": row["target_underlying"],
+        "premium_stop": row["premium_stop"], "atr_at_entry": row["atr_at_entry"],
+        "evidence_kind": "FNO_POSITIONS_ROW",
+        "evidence_ref": "sha256:" + hashlib.sha256(evidence.encode("utf-8")).hexdigest(),
+        # Until archive digests are bound in by the packet builder, the row's
+        # own evidence hash is the entry's source reference.
+        "source_ref": "sha256:" + hashlib.sha256(evidence.encode("utf-8")).hexdigest(),
+        "settlement": {"status": row["status"], "exit_reason": row["exit_reason"], "exit_time": row["exit_time"],
+                       "position_net_pnl": row["pnl"],
+                       "ledger_net_pnl": None if ledger[1] == 0 else float(ledger[0]),
+                       "ledger_events": int(ledger[1])},
+    }
+    _entry(entry)  # same validation the evaluator applies
+    return entry
 
 
 def _read_json(path: str) -> dict[str, Any]:
@@ -629,7 +776,10 @@ def _main(argv: Sequence[str] | None = None) -> int:
     packet = sub.add_parser("build-packet", help="pair archived futures/option events for one position")
     packet.add_argument("--archive-root", required=True)
     packet.add_argument("--day", required=True, help="archive session day YYYY-MM-DD")
-    packet.add_argument("--entry", required=True, help="JSON entry (position economics, option_token)")
+    source = packet.add_mutually_exclusive_group(required=True)
+    source.add_argument("--position-id", type=int, help="bind the entry to this fno_positions row (with --db)")
+    source.add_argument("--entry", help="caller JSON entry; labelled CALLER_SUPPLIED_UNVERIFIED, never usable")
+    packet.add_argument("--db", help="engine SQLite holding fno_positions (opened read-only)")
     packet.add_argument("--future-token", required=True, type=int)
     packet.add_argument("--study-id", required=True)
     packet.add_argument("--output", required=True)
@@ -642,7 +792,13 @@ def _main(argv: Sequence[str] | None = None) -> int:
         else:
             from intraday_spread_archive_adapter import read_archived_quote_events
             events = read_archived_quote_events(args.archive_root, days=[args.day])
-            value = build_packet_from_archive_events(events, entry=_read_json(args.entry),
+            if args.position_id is not None:
+                if not args.db:
+                    raise FnoExitStudyError("--position-id requires --db")
+                entry = entry_from_position_row(args.db, args.position_id)
+            else:
+                entry = {**_read_json(args.entry), "evidence_kind": "CALLER_SUPPLIED_UNVERIFIED"}
+            value = build_packet_from_archive_events(events, entry=entry,
                                                      future_token=args.future_token, study_id=args.study_id)
         write_study_report_once(value, args.output)
     except (ExitStudyError, ValueError) as exc:

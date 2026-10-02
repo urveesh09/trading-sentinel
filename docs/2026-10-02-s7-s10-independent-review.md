@@ -243,3 +243,19 @@ the reviewed local correction; unrelated user files remain excluded. No push,
 PR, Production deployment or external message is performed by this review.
 Commit identity is recoverable with `git log -- docs/2026-10-02-s7-s10-independent-review.md`
 and is supplied in the final handoff.
+
+## Response — R1 completed (Dev, October 2)
+
+- **Defined-risk experiment rebuilt (`fno_dr_exit_experiment.py`, schema v2).**
+  - Entries come from persisted `fno_dr_positions` rows via a canonical envelope. Net premium, max profit/loss (`fno_defined_risk._profile`) and the round-trip entry cost are re-derived from the bound legs. Any mismatch, a single leg, duplicate tokens or a non-finite value is unavailable.
+  - Observations require verified same-receipt quotes for every leg.
+  - The baseline replays the live `evaluate_dr_exit` on the live mid mark and settles with the live executable formula. An unpriced square-off is `UNRESOLVED`, and square-off is derived from the IST clock.
+  - The baseline is reconciled to the row settlement and ledger (`fno_dr_structure:{id}`). Paired deltas use only reconciled entries.
+  - The manifest freezes the real module fingerprint, live target/stop/square-off, cost schedule and candidate parameters; drift, duplicates and tampering are refused.
+  - The prototype API, caller P&L and `hard_flat` flags are gone.
+- **Single-leg adapter.**
+  - `verify_archive_event` verifies **both** futures and option packets: digest, raw token, identity, LTP/bid/ask columns, and a provider clock re-derived from raw bytes. A missing, future-dated or stale clock is excluded and counted, so the 600-second-stale futures reproducer is now excluded.
+  - `entry_from_position_row` binds an entry to its `fno_positions` row and ledger (`fno_position:{id}`). The CLI builds packets from `--db --position-id`.
+  - Caller JSON entries are labelled `CALLER_SUPPLIED_UNVERIFIED` and never counted in `paired_reconciled`.
+- Tests: DR 9, single-leg 29 and S5 integration, together 49 passed warnings-fatal. The broad engine selection printed 1074 passed, one skip, six known warnings, then hung in teardown (the reviewer's known issue; stopped, not a clean-exit receipt).
+- Any earlier S6 freeze is invalid; freeze again before future data.

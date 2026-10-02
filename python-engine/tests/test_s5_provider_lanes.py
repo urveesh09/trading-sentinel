@@ -246,7 +246,9 @@ async def test_exact_active_leg_survives_a_ladder_deadline(tmp_path, monkeypatch
                     await asyncio.Event().wait()  # the optional ladder stalls
                 finally:
                     cancelled.set()
-            return {int(token): {"instrument_token": int(token), "last_price": 25000.0,
+            # Kite REST quotes carry an exchange-local provider timestamp.
+            stamp = datetime.now(IST).strftime("%Y-%m-%d %H:%M:%S")
+            return {int(token): {"instrument_token": int(token), "last_price": 25000.0, "timestamp": stamp,
                                  "depth": {"buy": [{"price": 99, "quantity": 75}],
                                            "sell": [{"price": 101, "quantity": 75}]}}
                     for token in tokens}

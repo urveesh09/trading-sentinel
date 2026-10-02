@@ -526,11 +526,11 @@ Declared tables: `fno_dr_positions`
 
 ## `python-engine/fno_dr_exit_experiment.py`
 
-Frozen, structure-level defined-risk exit experiment (S6). Research-only: callers supply exact selected-leg identities and signed packet bytes. It neither reads a broker nor mutates the defined-risk paper book.
+Frozen, evidence-bound defined-risk exit experiment (S6, R1 correction). Every replayed fact is derived from persisted or archived evidence, never from caller-supplied P&L, flags or bytes: * **Entry** -- a canonical envelope built from one persisted ``fno_dr_positions`` row with exact bound legs. Net premium, maximum profit/loss (``fno_defined_risk._profile``) and the round-trip entry cost (the live ``structure_round_trip_cost`` formula) are re-derived from the legs; any disagreement, a single-leg "structure", duplicate tokens or a non-finite number makes the entry unavailable. * **Observations** -- research-archive quotes for *every* leg at one receipt, each verified from raw bytes (``fno_e
 
-Top-level declarations: `DrObservation` (line 22), `DrEntry` (line 30), `_valid` (line 43), `simulate` (line 64), `freeze_manifest` (line 84), `build_report` (line 93)
+Top-level declarations: `DrStudyError` (line 70), `_finite` (line 74), `entry_envelope` (line 82), `_envelope_bytes` (line 93), `DrEntry` (line 104), `verify_entry` (line 120), `DrObservation` (line 175), `observations_from_archive` (line 180), `_lookups` (line 205), `simulate` (line 225), `reconcile` (line 272), `_source_fingerprint` (line 290), `_frozen_terms` (line 299), `freeze_manifest` (line 310), `verify_manifest` (line 322), `build_report` (line 337), `entries_from_db` (line 373), `_main` (line 404)
 
-Engine dependencies: `momentum_exit_study`
+Engine dependencies: `config`, `cost_schedules`, `exit_experiment_metrics`, `fno_costs`, `fno_defined_risk`, `fno_dr_book`, `fno_exit_experiment`, `intraday_spread_archive_adapter`, `momentum_exit_study`
 
 Related tests: `python-engine/tests/test_fno_dr_exit_experiment.py`
 
@@ -556,9 +556,9 @@ Engine dependencies: `config`, `kite_client`
 
 Frozen, read-only paired experiments for single-leg F&O exits (S6b). The baseline replays the *live* ladder (``fno_exit_rules.evaluate_single_leg_exit``) over paired futures/option observations, settling exactly as the paper path does: fill at the exit basis (best bid, else LTP), live option charges and live R (net / entry premium x FNO_STOP_PREMIUM_PCT x quantity). One frozen candidate is compared on the identical path. A read-only adapter builds packets from the research quote archive. Inert research: no database writes, broker, HTTP, scheduler, order or message dependency and no runtime caller. Equity momentum studies and defined-risk spreads are separate (different R denominators). Quali
 
-Top-level declarations: `FnoExitStudyError` (line 67), `FnoEntry` (line 72), `Observation` (line 91), `_stamp` (line 97), `_positive` (line 109), `_int` (line 121), `_entry` (line 127), `load_fno_exit_packet` (line 167), `_hard_flat_at` (line 211), `_validated_path` (line 216), `_side_cost` (line 250), `_leg` (line 272), `_position` (line 283), `_extension_confirmed` (line 293), `simulate` (line 305), `replace_trail` (line 349), `_finalise` (line 356), `_exposure` (line 368), `_source_fingerprint` (line 384), `_live_settings` (line 393), `freeze_manifest` (line 399), `verify_manifest` (line 418), `build_fno_exit_experiment` (line 441), `_raw_digest` (line 494), `_raw_price` (line 500), `_verified_event` (line 512), `_event_clock` (line 537), `build_packet_from_archive_events` (line 547), `_read_json` (line 608), `_main` (line 618)
+Top-level declarations: `FnoExitStudyError` (line 67), `FnoEntry` (line 72), `Observation` (line 91), `_stamp` (line 97), `_positive` (line 109), `_int` (line 121), `_entry` (line 127), `load_fno_exit_packet` (line 167), `_hard_flat_at` (line 211), `_validated_path` (line 216), `_side_cost` (line 250), `_leg` (line 272), `_position` (line 283), `_extension_confirmed` (line 293), `simulate` (line 305), `replace_trail` (line 349), `_finalise` (line 356), `_exposure` (line 368), `_source_fingerprint` (line 384), `_live_settings` (line 393), `freeze_manifest` (line 399), `verify_manifest` (line 418), `reconcile_single_leg` (line 444), `build_fno_exit_experiment` (line 470), `_raw_digest` (line 531), `_raw_price` (line 537), `_column_price` (line 549), `VerifiedQuote` (line 556), `verify_archive_event` (line 577), `_event_clock` (line 629), `index_archive_events` (line 639), `build_packet_from_archive_events` (line 659), `entry_from_position_row` (line 703), `_read_json` (line 755), `_main` (line 765)
 
-Engine dependencies: `config`, `cost_schedules`, `exit_experiment_metrics`, `fno_exit_rules`, `intraday_spread_archive_adapter`, `momentum_exit_study`
+Engine dependencies: `config`, `cost_schedules`, `exit_experiment_metrics`, `fno_exit_rules`, `intraday_spread_archive_adapter`, `momentum_exit_study`, `research_quote_collector`
 
 Related tests: `python-engine/tests/test_fno_exit_experiment.py`
 
@@ -2196,6 +2196,14 @@ Dependencies: `../config`, `../middleware/security`, `../services/telegram`, `..
 
 Local routes: `GET /`, `POST /invalidate`
 
+## `node-gateway/server/scripts/backlog-reconciliation.js`
+
+Dependencies: `../services/backlog-reconciliation`, `better-sqlite3`, `fs`
+
+## `node-gateway/server/services/backlog-reconciliation.js`
+
+Dependencies: `crypto`, `fs`
+
 ## `node-gateway/server/services/cas-eligibility.js`
 
 Dependencies: `../config`, `../utils/market-hours`, `crypto`
@@ -2219,7 +2227,7 @@ Dependencies: none extracted
 
 ## `node-gateway/server/services/telegram.js`
 
-Dependencies: `../config`, `../middleware/logger`, `axios`, `fs`, `node-telegram-bot-api`, `path`
+Dependencies: `../config`, `../middleware/logger`, `axios`, `crypto`, `fs`, `node-telegram-bot-api`, `path`
 
 ## `node-gateway/server/services/token-restore.js`
 

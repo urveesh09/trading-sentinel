@@ -310,12 +310,16 @@ def test_no_runtime_caller_or_side_effect_imports():
     tree = ast.parse((root / "fno_exit_experiment.py").read_text(encoding="utf-8"))
     imported = {node.module for node in ast.walk(tree) if isinstance(node, ast.ImportFrom)} | {
         alias.name for node in ast.walk(tree) if isinstance(node, ast.Import) for alias in node.names}
-    assert not imported & {"aiosqlite", "sqlite3", "httpx", "kite_client", "main", "fno_executor",
+    assert not imported & {"aiosqlite", "httpx", "kite_client", "main", "fno_executor",
                            "fno_orchestrator", "scheduler_setup", "fno_positions"}
-    assert _importers(root, "fno_exit_experiment") == []
+    # sqlite3 is permitted only for read-only evidence binding.
+    source = (root / "fno_exit_experiment.py").read_text(encoding="utf-8")
+    assert source.count("sqlite3.connect(") == source.count("?mode=ro\", uri=True)")
+    # Only the inert defined-risk experiment reuses the verified archive reader.
+    assert _importers(root, "fno_exit_experiment") == ["fno_dr_exit_experiment.py"]
     # The shared metrics and pure ladder are imported only by research and the
     # (unchanged-behaviour) orchestrator, never the other way round.
-    assert _importers(root, "exit_experiment_metrics") == ["fno_exit_experiment.py",
+    assert _importers(root, "exit_experiment_metrics") == ["fno_dr_exit_experiment.py", "fno_exit_experiment.py",
                                                           "momentum_exit_experiment.py"]
 
 
@@ -334,3 +338,80 @@ def _importers(root, module):
         if module in names:
             found.append(path.name)
     return found
+
+
+# [R1 2026-10-02] Both packets verified; entries bound to persisted evidence.
+def test_stale_futures_packet_next_to_fresh_option_is_excluded():
+    packet = fx.build_packet_from_archive_events(
+        [_event(999, T1, 25010.0, provider_lag_sec=600), _event(501, T1, 102.0, bid=101.5),
+         _event(999, T2, 25012.0), _event(501, T2, 103.0, bid=102.5)],
+        entry=_entry(), future_token=999, study_id="stale-future", max_observation_gap_seconds=120)
+    assert [row["exit_basis"] for row in packet["observations"]] == [102.5]
+    assert packet["provenance"]["excluded_observations"] == {"provider_quote_older_than_declared_maximum": 1}
+
+
+def test_clock_column_must_be_rederived_from_raw_and_must_exist():
+    option = _event(501, T1, 102.0, bid=101.5, provider_lag_sec=600)
+    option["provider_timestamp_utc"] = option["received_at_utc"]  # a "fresh" column over stale bytes
+    with pytest.raises(ExitStudyError, match="provider clock column"):
+        fx.build_packet_from_archive_events([_event(999, T1, 25010.0), option], entry=_entry(),
+                                            future_token=999, study_id="clock")
+    future = _event(999, T1, 25010.0)
+    del future["raw_packet"]["timestamp"]
+    future["raw_sha256"] = fx._raw_digest(future["raw_packet"])
+    future["provider_timestamp_utc"] = None
+    packet = fx.build_packet_from_archive_events([future, _event(501, T1, 102.0, bid=101.5)], entry=_entry(),
+                                                 future_token=999, study_id="no-clock")
+    assert packet["observations"] == []
+    assert packet["provenance"]["excluded_observations"] == {"provider_clock_unavailable": 1}
+
+
+def _position_db(tmp_path, *, pnl, ledger_pnl, exit_reason="trail_stop"):
+    import sqlite3
+    from fno_positions import _DDL
+    db = tmp_path / "positions.db"
+    with sqlite3.connect(db) as con:
+        con.executescript(_DDL)
+        con.execute("CREATE TABLE IF NOT EXISTS bankroll_ledger (origin_ref TEXT, event_type TEXT, pnl REAL)")
+        e = _entry()
+        con.execute(
+            "INSERT INTO fno_positions (id,source,tradingsymbol,token,direction,qty,lot_size,entry_time,entry_premium,"
+            "entry_underlying,stop_underlying,target_underlying,premium_stop,atr_at_entry,status,exit_reason,pnl) "
+            "VALUES (4,'FNO_PAPER',?,?,?,?,?,?,?,?,?,?,?,?,'CLOSED',?,?)",
+            (e["tradingsymbol"], e["option_token"], e["direction"], e["quantity"], e["lot_size"], e["entry_time"],
+             e["entry_premium"], e["entry_underlying"], e["stop_underlying"], e["target_underlying"],
+             e["premium_stop"], e["atr_at_entry"], exit_reason, pnl))
+        if ledger_pnl is not None:
+            con.execute("INSERT INTO bankroll_ledger VALUES ('fno_position:4','TRADE_CLOSED',?)", (ledger_pnl,))
+    return db
+
+
+def test_entry_binds_to_position_row_and_baseline_reconciles_to_ledger(tmp_path):
+    probe = _run(tmp_path, _observations(_runner, _runner_basis))["pairs"][0]["baseline"]
+    db = _position_db(tmp_path, pnl=probe["net_pnl"], ledger_pnl=probe["net_pnl"])
+    before = db.read_bytes()
+    entry = fx.entry_from_position_row(str(db), 4)
+    assert db.read_bytes() == before
+    assert entry["evidence_kind"] == "FNO_POSITIONS_ROW" and entry["settlement"]["ledger_events"] == 1
+    assert fx.reconcile_single_leg(entry, probe)["state"] == "RECONCILED"
+    assert fx.reconcile_single_leg({**entry, "settlement": {**entry["settlement"], "ledger_net_pnl": 0.0}},
+                                   probe)["state"] == "LEDGER_MISMATCH_OR_MISSING"
+    assert fx.reconcile_single_leg(_entry(), probe) == {"state": "UNBOUND_CALLER_ENTRY", "usable": False}
+
+
+def test_report_paired_reconciled_counts_only_bound_matching_entries(tmp_path):
+    probe = _run(tmp_path, _observations(_runner, _runner_basis))["pairs"][0]["baseline"]
+    db = _position_db(tmp_path, pnl=probe["net_pnl"], ledger_pnl=probe["net_pnl"])
+    entry = fx.entry_from_position_row(str(db), 4)
+    rows = _observations(_runner, _runner_basis, entry_id=entry["entry_id"])
+    packet = {"schema": fx.INPUT_SCHEMA, "study_id": "bound", "max_observation_gap_seconds": 120,
+              "entries": [{**entry, "source_ref": SOURCE_REF}], "observations": rows}
+    path = tmp_path / "bound.json"
+    path.write_text(json.dumps(packet), encoding="utf-8")
+    manifest = fx.freeze_manifest(experiment_id="bound", candidate_policy=fx.PARTIAL_POLICY, frozen_at=BEFORE)
+    report = fx.build_fno_exit_experiment(path, manifest)
+    assert report["pairs"][0]["reconciliation"]["state"] == "RECONCILED"
+    assert report["summary"]["holdout"]["reconciled_usable"] == 1
+    unbound = _run(tmp_path, _observations(_runner, _runner_basis))
+    assert unbound["summary"]["holdout"]["reconciled_usable"] == 0
+    assert unbound["summary"]["holdout"]["paired_reconciled"] == {"complete_pairs": 0}
