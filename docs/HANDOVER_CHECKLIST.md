@@ -1,5 +1,238 @@
 # Handover receipt and operator checklist
 
+## October 2 release checklist
+
+- [x] R1–R5 source completed and pushed (R4 `c118598`, R5 `addf46b`).
+- [x] Production `.env`: AI-safe keys appended; backup `.env.bak-2026-10-02`; render verified.
+- [ ] Merge the GitHub PR into Production and recreate containers (operator).
+- [ ] Post-deployment read-only checks listed in NEXT_AGENT_PLAN.
+- [ ] Backlog `apply` only after reviewing `report` (operator approval).
+- [ ] When the AI returns: `ENABLE_NEWS_CLASSIFIER=1`; diagnostics opt-in after verification.
+- [ ] R6 operational acceptance gates.
+
+## October 2 review priorities R1–R3
+
+- [x] R1: evidence-bound S6 replays (DR v2 and single-leg binding/reconciliation). 49 tests warnings-fatal.
+- [x] R2: gateway backlog report/apply with idempotent receipts; dead-letter acknowledgement. Node 20 suite 471 passed.
+- [x] R3: S10 diagnostics, once-only completion updates, strict worker shutdown. Agent 383 / engine bridge 74 passed.
+- [ ] Operator: review the backlog `report` in Production, then approve `apply` separately.
+- [ ] Deploy the engine diagnostics allow-list, then enable `OPTIONAL_AI_REPORT_DIAGNOSTICS`.
+- [ ] R4 (S3 retention), R5 (S7/S8 learning), R6 operational acceptance.
+
+## October 2 continuation review — current acceptance
+
+Use [the independent S7–S10 review](2026-10-02-s7-s10-independent-review.md)
+and NEXT_AGENT_PLAN.md's top section; older checkboxes are historical receipts.
+
+- [x] Review new commits and four pending S10 files; preserve unrelated user
+  fixtures/audits/Jev artifacts and leave Production untouched.
+- [x] Small S10 deadline/retry, S8 cash order/day/coverage, S7 freeze and minimal
+  reproduced test-loop corrections; no config/schema/order/authority change.
+- [x] Agent 368 warnings-fatal; focused research 28 warnings-fatal; expanded
+  engine 1016 passed with six recorded warnings; daily/partner 48; Penny five;
+  Node health two; Compose eight and rendered 500 MiB.
+  Expanded process hung after its pass summary and required stopping its
+  verified Dev PID; clean teardown remains open. Focused checks exited normally.
+- [ ] R1: full DR typed source/leg/economics/observation/cash and freeze binding;
+  both single-leg raw clocks/tokens and position-economics/cash binding.
+- [ ] R2: supported S9 read-only reconciliation and separately reviewed
+  idempotent expiry/resolution migration, with receipts and race tests.
+- [ ] R3: bounded S10 cause/stage status, once-only valid original-message
+  annotation update and strict worker/transport lifecycle tests.
+- [ ] R4: S3 bounded CSV capacity/off-path writes and durable elapsed/market-
+  hours summaries; actual peak-session/prior-boot retention verification.
+- [ ] R5: S7 source-bound thesis/bar eligibility and separate constrained equity/
+  correlation research; full S8 learning analytics and versioned proposals.
+- [ ] S1/S2 deployed keyed cash/schema/recovery and three market sessions;
+  S4 five reconciled paths; S6/S7 newly frozen future HOLDOUT review.
+- [ ] S5 frozen protocol, initial 20-session target with adequate closes/coverage,
+  authorized qualification and separate delivery canary. No guaranteed tips date.
+- [ ] Remaining Windows socket/aiosqlite/coroutine hygiene: minimal reproducer
+  only; no warnings-clean full suite is claimed. Promote via GitHub only;
+  this review does not push/deploy or send messages.
+
+## October 2 independent S1–S6 review receipt
+
+- [x] S7a: capital-skipped candidate economics and passive paths; frozen
+  first-arrival / fixed-equal / risk-proportional common-book replay. 11 tests
+  warnings-fatal; cross-phase 1114 passed. No sizing or exit change.
+- [ ] After promotion: freeze the allocation manifest before the next session;
+  evaluate holdout batches only. S7b holdout acceptance remains open.
+- [x] S7b: inert frozen completed-bar continuation versus bounded-pullback
+  no-chase research; no-fill/path outcomes, gap/deadline validation and
+  distinct thesis/state re-entry condition are explicit. Rejected evaluator
+  receipts are available through a bounded isolated-shadow near-miss view.
+  Focused timing/shadow suite: 18 passed warnings-fatal. No entry/exit/sizing,
+  broker, AI, Production or authority change.
+- [ ] Freeze S7b before a new session and evaluate only post-freeze HOLDOUT
+  observations; do not promote a timing hypothesis from development evidence.
+- [x] S8 initial read-only daily decision-quality report: distinct book/mode/
+  policy evidence, partial versus terminal cash, rejected-receipt visibility
+  and per-version drawdown where supported. Selection remains human review
+  only. Focused warnings-fatal tests: 2 passed; no Production change.
+- [ ] S6 spread prototype has mechanism tests, not verified packet/economics
+  binding. R1 source correction is required before HOLDOUT interpretation,
+  followed by independent review; no runtime authority.
+- [x] S9 initial truthful operator-state slice: additive Penny attempt/completed
+  clocks and bounded outcome; IST per-source ledger facts with paper books
+  kept separate; evidence-labelled Telegram status/dead-letter backlog; health
+  probe deadline cleanup. Focused Node health (2), operator status (14) and
+  Penny health (5) checks passed. Dev-only; no queue, order, broker, database
+  migration or Production change. Source commit `5c9834a`, not deployed.
+- [ ] S9 operational backlog handling: review a read-only expiry/reconciliation
+  report and a supported idempotent migration for stale requests/callbacks,
+  unsynced orders and historical dead letters. Preserve audit records; do not
+  use ad-hoc Production SQL or resend stale trade instructions.
+- [x] S10 first source-validity slice: optional-AI review excludes stale,
+  undated and timezone-unverifiable source classifications instead of expiring
+  the whole advisory review; rendered context marks the exclusion as
+  `NEWS_UNAVAILABLE`. Focused agent/queue suite: 55 warnings-fatal passed.
+  Dev-only; no authority, capital, entry, broker or Production change.
+- [ ] S10 remaining: bind provider transport/retry to the task's remaining
+  deadline, update the original alert when an annotation completes, then
+  collect post-promotion evidence under the existing advisory policy.
+- [x] S4 runtime wiring: equity paths attached to the existing research request,
+  bounded background writer, deadline-close policy, per-entry adapter
+  exclusion. End-to-end test plus 1091 selected tests passed. No Production
+  environment change needed (defaults apply; `.env` has no override).
+- [ ] After promotion: confirm `momentum_paper_paths` writes in collection runs
+  and five reconciled fresh lifecycles.
+- [x] Review response: S6 one-entry fee allocation and verified archive pairing
+  (`ea8695d`); S3 crash-recoverable rotation (`c054bf3`); S4 typed
+  byte-bound path envelope (`bfd343d`). Regressions fail on prior source;
+  1024 selected tests passed. Dev only, unpushed.
+
+- [x] Revalidate phase commits/contracts and rendered Dev Compose, not just
+  prior completion claims. See `2026-10-02-s1-s6-independent-review.md`.
+- [x] Small Dev corrections: DR token/finite prices, passive clock/price
+  validation, exact-leg paired future receipt, ambient quote lane, fee/source
+  freezes and independent candidate parameter copies. No trading authority,
+  exit policy, schema, provider request/rate or Production change.
+- [x] Expanded affected suite 948 passed; isolated warnings-fatal checks
+  54 DR/S6, seven passive S4 and 11 S5 passed. Broad warnings-fatal socket
+  hygiene remains explicitly open. Compose verifier eight passed, rendered
+  retention 500 MiB; compilation and atlas (222 modules) passed.
+- [ ] S3: recover manifest/state failures across rotation, bound/offload
+  writers and preserve durable elapsed/session distinctions; prove actual
+  full-session and prior-boot retention after promotion.
+- [ ] S4: typed provider-byte/quote binding, bounded existing-fanout integration,
+  post-close paths, saturation tests and five fresh reconciled lifecycles.
+- [ ] S5: frozen protocol, independent future sample, reviewed qualification
+  package and separately authorized delivery canary. No guaranteed tips date.
+- [ ] S6: strict raw-packet/contract/clock/conflict and economic/cash binding,
+  versioned one-entry/multiple-exit candidate fees, DR spread exit experiment
+  and future paired holdout review before any paper-policy promotion.
+
+## October 1 consolidated planning receipt
+
+- [x] Read October 1 audit and cross-check it against Production ledger,
+  admissions, retained contract master, collection attempts and telemetry.
+- [x] Correct penny/momentum balance confusion, bearish-view versus option-sale
+  confusion, and market-hours versus post-market scheduler conclusions.
+- [x] Record configured DR lot mismatch plus unpriced/non-atomic settlement
+  hazards; no historical incident or corrected cash is fabricated.
+- [x] Save [the ordered smart-trader plan](2026-10-01-smart-trader-consolidated-plan.md),
+  with files/contracts, reproductions, acceptance, rollout/rollback and effort.
+- [x] Implement S1 in Dev: exact selected-contract lot/identity, unresolved
+  hard-flat state, atomic/idempotent cash settlement and model-versus-cash
+  reporting. Focused warnings-fatal tests: 24; affected F&O suite: 84 passed,
+  one deselected timing-sensitive recovery test, and one existing Starlette
+  deprecation. Additive migration only; Dev-local,
+  unpushed/not deployed at this receipt. Review/push via GitHub and inspect
+  deployed receipts before considering S1 operationally complete. Source
+  commit: `9e26e1b` on `codex/production-correction-hedge-p0`.
+- [x] Implement S2 in Dev with focused regression coverage and receipts.
+  October 2 initial sub-slice: management provider reads now have explicit
+  5-second exit / 10-second DR snapshot caps with cancellation-joined degraded
+  paths and bounded read outcomes; 34 focused checks pass. Remaining: action
+  clocks, priority, detailed timing and deployed evidence. Dev-only source
+  commit `5ae54a8` is unpushed/not deployed; no broker/settlement/admission
+  mutation is deadline-wrapped.
+- [x] Implement S2 provider-stage timing/attempt evidence,
+  quote-age evidence and refreshed real action clocks. Focused validation: 59
+  passed; compilation/atlas passed. Earlier full-completion claim is superseded
+  by the independent review below; no cadence/rate increase was made. Source commit
+  `d2319e2` is local, unpushed and not deployed.
+- [x] Independently review S1/S2; correct post-read/final action clocks,
+  frozen signal cutoff, timezone/partial quote-age evidence and scheduler
+  completion-log retention. See `2026-10-02-s1-s2-independent-review.md` for
+  commands/results and limits. Dev only; existing user changes preserved.
+- [x] Finish S2 exact-leg DR management reads, shared-provider priority/fairness
+  and DB-wait/timeout-stage attribution. Exact retained legs are never rebuilt
+  from a nearest chain; bounded three-admission management priority preserves
+  normal fairness and original provider capacity; DB elapsed is honestly
+  labelled inclusive of lock wait; cancelled deadlines are partial/unknown.
+  Focused checks: 105 passed/one known skip; isolated warnings-fatal DR/Kite:
+  53 passed/one known skip. Broad warnings-fatal aggregation still exposes two
+  unrelated unclosed-socket warnings. Dev only, pending GitHub promotion.
+- [x] Implement S3 evidence retention in Dev: rendered Python-engine logging is
+  `20m x 25` (500 MiB); momentum/penny CSVs rotate by IST session into
+  SHA-256-manifested archives without routine deletion; final scheduler facts
+  are retained in daily outcome/stage rollups before raw-tail pruning. S3
+  focused: 57 passed; warnings-fatal rotation/summary: 13 passed; Compose
+  verifier: 8 passed. No data migration/deletion, broker, AI authority or
+  Production recreation. Rollback is GitHub reversion without archive removal.
+- [x] Implement S4 admission-capital and passive equity-path evidence in Dev:
+  admitted outcomes retain bounded fixed-pool/cash/deployment/risk/fee policy
+  facts and a precise `zero_shares` reason; the INR 50,000 configured benchmark
+  is explicitly not drawdown-adjusted. Opened keys seal canonical admission
+  packet bytes and an audit-recomputed SHA-256 receipt. Exact-key passive path
+  subscriptions preserve original quantity through scale-outs. The caller-fed
+  collector accepts only already-observed packet bytes and provider/receipt
+  clocks, never fetching data itself; the read-only adapter rejects forged
+  bytes, wrong ticker/key, invalid gaps/clocks or missing exact deadline data.
+  Focused S4 tests: 73 passed; compilation passed. Additive Dev-only SQLite
+  evidence; no strategy/sizing/exit, broker, AI, deployment or Production edit.
+  Rollback via GitHub reversion/collector disablement retains evidence.
+- [x] S5a: partner candidate persistence/protection use the live action clock;
+  explicit replay stays frozen; stale quotes still reject. Late-chain
+  regression reproduces the September 30 `stale_or_future_leg_quote`
+  rejection on the old source. Partner/hedge/scheduler suites: 373 passed.
+  Dev only; no threshold, qualification, profile, delivery or message change.
+- [x] S5b: owner-approved `bulk` limiter lane for momentum screener fetches
+  (normal ahead, at most three normal admissions while bulk waits; management
+  unchanged; rate/burst/concurrency unchanged). Research requests the future plus
+  exact active legs first, then the ladder, and records per-call timing.
+  141 passed/one skip; warnings-fatal subset 24 passed. Pre-existing partner
+  fixture ordering errors are reproduced on clean HEAD; follow-up only.
+- [x] S6a: frozen read-only exit experiment (`momentum_exit_experiment.py`):
+  manifest freeze/verify, DEVELOPMENT/HOLDOUT labels, thesis-confirmed time
+  stop/target extension, exposure and cost-stressed paired metrics. 13 tests
+  warnings-fatal; momentum suites 125 passed. No runtime caller.
+- [x] S6b step 1: extract the live single-leg F&O exit ladder into pure
+  `fno_exit_rules.py` (behaviour-preserving; characterization and 20,000-case
+  differential tests; F&O/scheduler suites 397 passed).
+- [x] S6b step 2: frozen single-leg F&O exit experiment and read-only
+  archive packet adapter; shared metrics module; AST-based no-caller guards.
+  30 experiment/ladder tests warnings-fatal; related suites 110 passed.
+- [ ] After S4 paths are collecting: freeze the S6 candidate before the next
+  session and evaluate HOLDOUT entries only; F&O exit experiments separately.
+- [x] S5c: read-only `partner-delivery-blockers` report (ordered per-candidate
+  blockers, aggregate attempt/idea disagreement, registry facts, labelled
+  current-flag projection; `mode=ro`, never creates DBs). 10 passed
+  warnings-fatal; CLI/qualification/partner regression 110 passed.
+- [ ] Run the blocker report read-only on Production after promotion; then
+  freeze the S5 protocol before any fresh holdout session.
+- [ ] After promotion, measure screener elapsed (estimate +10–20%), research
+  cap count, `provider_timing` and penny skips on three deployed sessions.
+- [ ] Configure S4 path caps, connect an existing quote fanout without adding a
+  provider request, then collect five fresh reconciled passive lifecycles.
+  These are instrumentation acceptance only, not proof of profitability,
+  partner qualification, deployment or trading authority.
+- [ ] Before deployment, verify host free space, preserve prior-boot logs and
+  collect a complete market-session volume/rotation receipt. This does not
+  prove profitability, partner qualification or operational deployment.
+- [ ] Inspect at least three complete deployed sessions; no tests establish
+  profitability, partner qualification or operational deployment.
+- [x] Reproduce optional-review expiry from mixed fresh/stale/undated sources;
+  inspect queue/deadline/completion visibility without provider/message calls.
+- [ ] Implement S10 context/expiry/deadline fixes and bounded completion updates,
+  preserving paper autonomy, source truthfulness and owner EXEC authority.
+- [ ] Preserve paths/coverage; freeze future exit/allocation/partner studies.
+- [ ] Complete compatible partner qualification and authorized delivery canary.
+- [x] Production unchanged; this receipt is planning only. No new software
+  tests, source changes, deployment or profitability conclusion are claimed.
+
 ## September 26 economic-binding correction
 
 - [x] Require original entry economics as well as exact admission identity;

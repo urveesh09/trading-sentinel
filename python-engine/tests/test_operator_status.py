@@ -12,7 +12,6 @@ Pins:
 """
 import sqlite3
 from datetime import datetime, timezone
-
 import pytest
 
 
@@ -55,6 +54,41 @@ def _seed_positions(path: str, rows):
                 "INSERT INTO positions VALUES (?, ?, ?, ?, ?, ?)",
                 (ticker, status, source, entry, sl, shares),
             )
+
+
+def test_today_pnl_uses_ist_not_sqlite_utc_date(tmp_path):
+    from operator_status import _today_pnl_by_source
+    path = str(tmp_path / "status.db")
+    with sqlite3.connect(path) as con:
+        con.execute(
+            "CREATE TABLE bankroll_ledger "
+            "(timestamp TEXT,event_type TEXT,pnl REAL,source TEXT)"
+        )
+        # 20:00 UTC is already the following IST business date.
+        con.execute(
+            "INSERT INTO bankroll_ledger VALUES (?,?,?,?)",
+            ("2026-10-01T20:00:00+00:00", "TRADE_CLOSED", 42.0, "MOMENTUM_PAPER"),
+        )
+    report = _today_pnl_by_source(path, now=datetime(2026, 10, 2, 4, 0, tzinfo=timezone.utc))
+    assert report["MOMENTUM_PAPER"] == 42.0
+
+
+def test_today_pnl_treats_legacy_naive_ledger_timestamps_as_utc(tmp_path):
+    from operator_status import _today_pnl_by_source
+
+    path = str(tmp_path / "status.db")
+    with sqlite3.connect(path) as con:
+        con.execute("CREATE TABLE bankroll_ledger (timestamp TEXT,event_type TEXT,pnl REAL,source TEXT)")
+        con.execute(
+            "INSERT INTO bankroll_ledger VALUES (?,?,?,?)",
+            ("2026-10-01 20:00:00", "TRADE_CLOSED", 7.0, "PENNY_PAPER"),
+        )
+
+    report = _today_pnl_by_source(
+        path, now=datetime(2026, 10, 2, 4, 0, tzinfo=timezone.utc)
+    )
+
+    assert report["PENNY_PAPER"] == 7.0
 
 
 # ---- /status builder -------------------------------------------------
@@ -188,7 +222,15 @@ def test_format_status_under_telegram_limit():
                   "pnl_today": 150.0, "open_positions": 1},
         "halted": False,
         "halt_reasons": [],
-        "by_source_today": {"PENNY": 100, "SYSTEM": 200, "MOMENTUM": -50},
+        "by_source_today": {
+            "PENNY": 100,
+            "SYSTEM": 200,
+            "MOMENTUM": -50,
+            "MOMENTUM_PAPER": 12,
+            "PENNY_PAPER": -8,
+            "EDGE_PAPER": 3,
+            "FNO_PAPER": 4,
+        },
     }
     body = format_status(snap)
     assert len(body) < 1500
@@ -196,6 +238,10 @@ def test_format_status_under_telegram_limit():
     assert "Nifty" in body
     assert "+Rs 100" in body
     assert "+Rs 150" in body
+    assert (
+        "Paper ledger today: Momentum +12 Rs | Penny -8 Rs | "
+        "Edge +3 Rs | F&O +4 Rs"
+    ) in body
 
 
 def test_status_surfaces_unresolved_penny_reservations(tmp_path, monkeypatch):

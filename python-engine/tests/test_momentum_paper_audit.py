@@ -87,8 +87,8 @@ def test_audit_exactly_reconciles_partial_and_terminal_cash_without_double_count
         "other_event_count": 0, "partial_pnl": 10.0, "terminal_pnl": 20.0,
         "net_pnl": 30.0, "position_pnl_delta": 0.0,
         "events": [
-            {"event_type": "TRADE_PARTIAL", "timestamp": "2026-09-26T11:00:00+05:30", "pnl": 10.0},
-            {"event_type": "TRADE_CLOSED", "timestamp": "2026-09-26T15:15:00+05:30", "pnl": 20.0},
+            {"event_type": "TRADE_PARTIAL", "timestamp": "2026-09-26T11:00:00+05:30", "pnl": 10.0, "ledger_rowid": 1},
+            {"event_type": "TRADE_CLOSED", "timestamp": "2026-09-26T15:15:00+05:30", "pnl": 20.0, "ledger_rowid": 2},
         ],
     }
     assert report["summary"]["matched_closed_count"] == 1

@@ -63,6 +63,14 @@ _USEFULNESS_NON_NEG_NUMBER_FIELDS = (
     "response_seconds_p95",
     "response_seconds_last",
 )
+# [S10 R3 2026-10-02] Bounded ``diagnostics`` envelope: submission/expiry
+# stage counters, source exclusions, classifier vs analyst timing, worker
+# lifecycle and once-only completion-update outcomes.  Strict allow-list;
+# any unknown key or out-of-range value rejects the whole status post.
+_DIAGNOSTIC_INT_FIELDS = tuple(['pending', 'inflight', 'ready', 'expired_before_submit', 'expired_in_queue', 'expired_after_call', 'source_excluded_total', 'classifier_calls', 'classifier_failures', 'late_results_discarded', 'shutdown_rejected', 'inflight_overruns', 'completion_published', 'completion_expired_not_published', 'completion_review_not_available', 'completion_worker_state_lost', 'completion_edit_failed'])
+_DIAGNOSTIC_NUMBER_FIELDS = tuple(['classifier_seconds_mean', 'classifier_seconds_p95', 'analyst_seconds_mean', 'analyst_seconds_p95'])
+_DIAGNOSTIC_SUBMIT_STATES = frozenset(['QUEUED', 'PENDING', 'CACHED', 'QUEUE_FULL', 'CIRCUIT_OPEN', 'BUDGET_EXHAUSTED', 'BUDGET_STATE_UNAVAILABLE', 'EXPIRED', 'UNAVAILABLE'])
+_ALLOWED_DIAGNOSTIC_KEYS = frozenset(_DIAGNOSTIC_INT_FIELDS + _DIAGNOSTIC_NUMBER_FIELDS + ("submit_states",))
 _SCHEMA = """
 CREATE TABLE IF NOT EXISTS optional_ai_status_reports (
     report_key TEXT PRIMARY KEY CHECK (report_key = 'optional_ai'),
@@ -228,6 +236,45 @@ def _clean_usefulness(raw: Any) -> dict[str, Any]:
     return clean
 
 
+def _clean_diagnostics(raw: Any) -> dict[str, Any]:
+    """Validate the bounded diagnostics envelope (counts and timings only)."""
+    if raw is None:
+        return {}
+    if not isinstance(raw, dict):
+        raise ValueError("diagnostics must be an object")
+    unknown = set(raw) - _ALLOWED_DIAGNOSTIC_KEYS
+    if unknown:
+        raise ValueError(f"diagnostics has unknown keys: {sorted(unknown)!r}")
+    clean: dict[str, Any] = {}
+    for name in _DIAGNOSTIC_INT_FIELDS:
+        if name in raw:
+            value = raw[name]
+            if isinstance(value, bool) or not isinstance(value, int) or value < 0:
+                raise ValueError(f"diagnostics.{name} must be a non-negative integer")
+            clean[name] = value
+    if "inflight" in clean and clean["inflight"] > 1:
+        raise ValueError("diagnostics.inflight must be 0 or 1 (single worker)")
+    for name in _DIAGNOSTIC_NUMBER_FIELDS:
+        if name in raw:
+            value = raw[name]
+            if value is None:
+                clean[name] = None
+            elif (isinstance(value, bool) or not isinstance(value, (int, float))
+                  or not math.isfinite(value) or value < 0):
+                raise ValueError(f"diagnostics.{name} must be a finite non-negative number or null")
+            else:
+                clean[name] = float(value)
+    if "submit_states" in raw:
+        states = raw["submit_states"]
+        if not isinstance(states, dict) or set(states) - _DIAGNOSTIC_SUBMIT_STATES:
+            raise ValueError("diagnostics.submit_states has unknown states")
+        for state, count in states.items():
+            if isinstance(count, bool) or not isinstance(count, int) or count < 0:
+                raise ValueError(f"diagnostics.submit_states.{state} must be a non-negative integer")
+        clean["submit_states"] = {state: states[state] for state in sorted(states)}
+    return clean
+
+
 async def record_optional_ai_status(
     db_path: str, payload: dict[str, Any], *, received_at: datetime | None = None,
 ) -> dict[str, Any]:
@@ -275,6 +322,9 @@ async def record_optional_ai_status(
     clean_usefulness = _clean_usefulness(payload.get("usefulness"))
     if clean_usefulness:
         detail["usefulness"] = clean_usefulness
+    clean_diagnostics = _clean_diagnostics(payload.get("diagnostics"))
+    if clean_diagnostics:
+        detail["diagnostics"] = clean_diagnostics
     await _init(db_path)
     async with aiosqlite.connect(db_path, timeout=30) as db:
         await db.execute("PRAGMA busy_timeout=5000")

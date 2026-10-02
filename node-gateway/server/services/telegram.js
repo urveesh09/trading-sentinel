@@ -362,12 +362,24 @@ const recordUndeliveredAlert = (message, err) => {
 };
 
 const undeliveredAlertCount = () => {
+  let lines;
   try {
-    const raw = fs.readFileSync(DEAD_LETTER_PATH, 'utf8');
-    return raw.split('\n').filter(Boolean).length;
+    lines = fs.readFileSync(DEAD_LETTER_PATH, 'utf8').split('\n').filter(Boolean);
   } catch (_) {
     return 0;   // no file = nothing undelivered
   }
+  // [S9 R2] Lines acknowledged by the reviewed backlog reconciliation are
+  // recorded (by SHA-256) in an append-only sibling ledger. They stay in the
+  // dead-letter file as evidence but no longer count as an open backlog.
+  // Acknowledgement never resends the alert.
+  const acknowledged = new Set();
+  try {
+    for (const line of fs.readFileSync(`${DEAD_LETTER_PATH}.ack.jsonl`, 'utf8').split('\n').filter(Boolean)) {
+      try { acknowledged.add(JSON.parse(line).fingerprint); } catch (_) { /* torn line */ }
+    }
+  } catch (_) { /* no acknowledgements yet */ }
+  const crypto = require('crypto');
+  return lines.filter((line) => !acknowledged.has(crypto.createHash('sha256').update(line).digest('hex'))).length;
 };
 
 const _retryAlertInBackground = async (message) => {

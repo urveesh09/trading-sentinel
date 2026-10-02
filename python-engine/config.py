@@ -1,7 +1,7 @@
 from pathlib import Path
 from pydantic import field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
-from typing import ClassVar
+from typing import ClassVar, Optional
 
 # [2026-07-19] Resolve env files by ABSOLUTE path from this module's location,
 # not a CWD-relative ".env". Order is low->high precedence: the local
@@ -290,9 +290,23 @@ class Settings(BaseSettings):
     # order-placing code path at all rather than a flag that must stay False.
     MOMENTUM_PAPER_ENABLED:   bool  = True
     MOMENTUM_PAPER_BANKROLL:  float = 50000.0
+    # [S7 R5] Operator-confirmed real budget for capacity analysis only
+    # (research). None keeps the capacity section explicitly unavailable.
+    MOMENTUM_REAL_BUDGET_INR: Optional[float] = None
     # Bounded decision-forensics ledger for accepted momentum signals.  It
     # stores only an opaque identity, ticker and enumerated admission outcome.
     MOMENTUM_PAPER_ADMISSION_RETENTION: int = 20000
+    # Passive quote-path evidence is deliberately bounded separately from the
+    # admission receipts.  It is written only from already-observed quote
+    # fanout packets; it never authorises or triggers a quote-provider call.
+    MOMENTUM_PAPER_PATH_RETENTION: int = 100000
+    MOMENTUM_PAPER_PATH_PACKET_MAX_BYTES: int = 4096
+    MOMENTUM_PAPER_PATH_MAX_GAP_SECONDS: int = 300
+    # [S4 wiring 2026-10-02] Subscribed paper tickers ride along in the research
+    # collector's existing per-minute quote request (no additional request).
+    MOMENTUM_PAPER_PATH_CAPTURE_ENABLED: bool = True
+    MOMENTUM_PAPER_PATH_MAX_TICKERS: int = 20
+    MOMENTUM_PAPER_PATH_EXCHANGE: str = "NSE"
     # Broker-free research side-channel. It evaluates declared variants using
     # frames already fetched by the live scanner and never reaches sizing or
     # order execution, so evidence collection is safe to enable by default.
@@ -471,6 +485,10 @@ class Settings(BaseSettings):
     # backtest on; the SQLite table is for future API-driven backtest queries.
     MOMENTUM_LOG_ENABLED:       bool  = True    # Master switch -- set False to disable entirely
     MOMENTUM_LOG_CSV_PATH:      str   = "/data/momentum_signals.csv"
+    # [S3 R4] Session CSV capacity: refuse rows below this free-space reserve;
+    # flag (never prune) archives above this total.
+    SESSION_CSV_RESERVED_FREE_BYTES: int = 1_073_741_824
+    SESSION_CSV_ARCHIVE_MAX_BYTES:   int = 2_147_483_648
     # [MED-002 / ROADMAP-4.6 2026-07-12] Container B's plain-text scan
     # summaries duplicated the agent's button alerts (two messages per
     # cycle, only one actionable). OFF by default; the data lives on in
@@ -923,6 +941,10 @@ class Settings(BaseSettings):
     # prepare a new paper defined-risk structure.  It never caps management
     # of an existing structure or a ledger admission write.
     FNO_DR_ENTRY_MARKET_DATA_MAX_SEC: float = 20.0
+    # Existing-position management has independent, cancellable provider-read
+    # caps. They never wrap broker dispatch, settlement, or database mutation.
+    FNO_EXIT_QUOTE_READ_MAX_SEC: float = 5.0
+    FNO_DR_MANAGEMENT_READ_MAX_SEC: float = 10.0
 
     # --- universe ----------------------------------------------------------
     FNO_UNDERLYING:            str   = "NIFTY"    # NIFTY only in P1

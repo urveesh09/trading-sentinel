@@ -242,6 +242,20 @@ async def test_defined_risk_and_directional_books_share_tick_market_data(
 
 
 @pytest.mark.asyncio
+async def test_management_db_stage_timing_is_explicit_and_does_not_claim_lock_only_time(
+    kite, db_path, monkeypatch,
+):
+    monkeypatch.setattr(settings, "FNO_DR_DISABLE_PAPER", True)
+    summary = await run_fno_tick(
+        kite, db_path=db_path, regime="REGIME_1_NORMAL", now_ist=NOW,
+    )
+    timing = summary["database_stage_timing"]
+    assert timing["measurement"] == "operation_elapsed_includes_sqlite_lock_wait"
+    assert timing["stages"]["open_positions:FNO_PAPER"]["calls"] == 1
+    assert timing["stages"]["open_positions:FNO_PAPER"]["elapsed_sec"] >= 0
+
+
+@pytest.mark.asyncio
 async def test_dr_entry_input_deadline_cancels_only_speculative_reads(
     kite, db_path, book, monkeypatch,
 ):
@@ -299,14 +313,12 @@ async def test_dr_hard_flat_management_is_not_suppressed_by_entry_deadline(
 
     monkeypatch.setattr(settings, "FNO_DR_DISABLE_PAPER", False)
     monkeypatch.setattr(settings, "FNO_DR_ENTRY_MARKET_DATA_MAX_SEC", 0.01)
+    monkeypatch.setattr(settings, "FNO_DR_MANAGEMENT_READ_MAX_SEC", 0.01)
     managed = asyncio.Event()
+    cancelled = asyncio.Event()
 
     async def one_open_structure(*_args, **_kwargs):
         return [{"id": 7}]
-
-    async def delayed_management_snapshot(*_args, **_kwargs):
-        await asyncio.sleep(0.04)
-        return None  # unpriced hard-flat is an explicit supported path
 
     async def manage_hard_flat(_db_path, snapshot, now_ist, *_args, **_kwargs):
         assert snapshot is None
@@ -316,9 +328,6 @@ async def test_dr_hard_flat_management_is_not_suppressed_by_entry_deadline(
 
     monkeypatch.setattr(fno_dr_book, "open_structures", one_open_structure)
     monkeypatch.setattr(fno_dr_book, "manage_dr_structures", manage_hard_flat)
-    monkeypatch.setattr(
-        fno_orchestrator, "take_chain_snapshot", delayed_management_snapshot,
-    )
     hard_flat = IST.localize(datetime(2026, 7, 10, 15, 11))
 
     summary = await run_fno_tick(
@@ -327,10 +336,11 @@ async def test_dr_hard_flat_management_is_not_suppressed_by_entry_deadline(
 
     assert managed.is_set()
     assert summary["dr_exits"] == 1
-    # It exceeded the 10ms *entry* budget, proving lifecycle management did
-    # not inherit that speculative-read cancellation boundary.  Keep room for
-    # timer granularity on loaded Windows test runners.
-    assert summary["stage_durations_sec"]["defined_risk_snapshot"] >= 0.015
+    observation = summary["management_read_outcomes"]["defined_risk_snapshot"]
+    assert observation["state"] == "UNAVAILABLE"
+    assert observation["elapsed_sec"] < 0.1
+    assert observation["cap_sec"] == 0.1
+    assert observation["provider_timing_status"] == "UNAVAILABLE_CLIENT_INTERFACE"
     assert "defined_risk_management" in summary["stage_durations_sec"]
 
 
@@ -726,6 +736,83 @@ async def test_premium_deferral_can_be_switched_off(kite, db_path, book, monkeyp
     assert summary["exits"][0]["reason"] == "time_stop"
 
 
+# ---------------------------------------------------------------------------
+# [S6b 2026-10-02] Characterization of the remaining live single-leg exits.
+# Written and passed against the inline ladder *before* it was extracted into
+# the pure ``fno_exit_rules`` module, then re-run unchanged afterwards.
+# ---------------------------------------------------------------------------
+
+async def _open_single_leg(kite, db_path, monkeypatch):
+    monkeypatch.setattr(settings, "FNO_DR_DISABLE_PAPER", True)
+    from performance import init_ledger
+    await init_ledger(db_path)
+    await run_fno_tick(kite, db_path=db_path, regime="REGIME_1_NORMAL", now_ist=NOW)
+    import aiosqlite
+    async with aiosqlite.connect(db_path) as db:
+        async with db.execute(
+            "SELECT id, direction, entry_underlying, stop_underlying, target_underlying, "
+            "atr_at_entry FROM fno_positions WHERE source='FNO_PAPER' AND status='OPEN'"
+        ) as cur:
+            row = await cur.fetchone()
+    assert row is not None, "fixture must open one paper single-leg position"
+    return row
+
+
+def _with_future(table, price):
+    table[FUT_TOKEN]["last_price"] = price
+    return table
+
+
+@pytest.mark.asyncio
+async def test_underlying_stop_exit_takes_precedence(kite, db_path, book, monkeypatch):
+    _id, direction, entry_u, stop_u, _target, _atr = await _open_single_leg(kite, db_path, monkeypatch)
+    beyond = stop_u - 1.0 if direction == "LONG" else stop_u + 1.0
+    later = NOW + timedelta(minutes=10)
+    # Premium also crushed: the underlying stop is checked first and must win.
+    table = _with_future(_quote_table(book, later, opt_bid_shift=-30.0), beyond)
+    kite.quote_table = table
+    summary = await run_fno_tick(kite, db_path=db_path, regime="REGIME_1_NORMAL", now_ist=later)
+    assert [x["reason"] for x in summary["exits"]] == ["underlying_stop"]
+
+
+@pytest.mark.asyncio
+async def test_target_arms_trail_and_later_trail_stop_exits(kite, db_path, book, monkeypatch):
+    pid, direction, entry_u, stop_u, target_u, atr = await _open_single_leg(kite, db_path, monkeypatch)
+    sign = 1.0 if direction == "LONG" else -1.0
+    beyond_target = target_u + sign * 5.0
+    armed_at = NOW + timedelta(minutes=10)
+    kite.quote_table = _with_future(_quote_table(book, armed_at, opt_bid_shift=+20.0), beyond_target)
+    summary = await run_fno_tick(kite, db_path=db_path, regime="REGIME_1_NORMAL", now_ist=armed_at)
+    assert summary["exits"] == []
+    import aiosqlite
+    async with aiosqlite.connect(db_path) as db:
+        async with db.execute(
+            "SELECT trail_active, trail_stop_underlying, best_underlying FROM fno_positions WHERE id=?",
+            (pid,),
+        ) as cur:
+            active, trail, best = await cur.fetchone()
+    assert active == 1 and best == pytest.approx(beyond_target)
+    assert trail == pytest.approx(beyond_target - sign * settings.FNO_TRAIL_ATR_MULT * atr)
+    # Retrace through the trail but stay beyond the underlying stop.
+    through = trail - sign * 1.0
+    later = armed_at + timedelta(minutes=5)
+    kite.quote_table = _with_future(_quote_table(book, later, opt_bid_shift=+20.0), through)
+    summary = await run_fno_tick(kite, db_path=db_path, regime="REGIME_1_NORMAL", now_ist=later)
+    assert [x["reason"] for x in summary["exits"]] == ["trail_stop"]
+
+
+@pytest.mark.asyncio
+async def test_missing_future_quote_still_allows_premium_backstop_only(kite, db_path, book, monkeypatch):
+    await _open_single_leg(kite, db_path, monkeypatch)
+    later = NOW + timedelta(minutes=settings.FNO_TIME_STOP_MIN + 5)
+    table = _quote_table(book, later, opt_bid_shift=-4.0)
+    table.pop(FUT_TOKEN)
+    kite.quote_table = table
+    summary = await run_fno_tick(kite, db_path=db_path, regime="REGIME_1_NORMAL", now_ist=later)
+    # Time stop needs the underlying; without it only the backstop could fire.
+    assert summary["exits"] == []
+
+
 def test_fno_formatter_keeps_defined_risk_only_activity_visible():
     message = format_fno_telegram({
         "scan_id": "dr-only", "entries": [], "exits": [],
@@ -742,3 +829,111 @@ def test_fno_tick_exposes_major_stage_durations(db_path, kite):
     durations = summary["stage_durations_sec"]
     assert {"futures_quote", "exit_management", "defined_risk"} <= set(durations)
     assert all(value >= 0 for value in durations.values())
+
+
+@pytest.mark.parametrize("delay", [timedelta(hours=5), timedelta(seconds=120)])
+@pytest.mark.asyncio
+async def test_live_final_admission_rechecks_time_without_advancing_signal_cutoff(
+    db_path, kite, monkeypatch, delay,
+):
+    import fno_orchestrator as fo
+    monkeypatch.setattr(settings, "FNO_DR_DISABLE_PAPER", True)
+    clock = {"now": NOW}
+    evaluated = []
+
+    class Clock(datetime):
+        @classmethod
+        def now(cls, tz=None):
+            return clock["now"]
+
+    original_read = kite.get_intraday_by_token
+    original_evaluate = fo.evaluate_fno_mom
+
+    async def delayed_read(*args, **kwargs):
+        result = await original_read(*args, **kwargs)
+        clock["now"] = NOW + delay
+        return result
+
+    def evaluate(bars, regime, now):
+        evaluated.append(now)
+        return original_evaluate(bars, regime, now)
+
+    monkeypatch.setattr(fo, "datetime", Clock)
+    monkeypatch.setattr(kite, "get_intraday_by_token", delayed_read)
+    monkeypatch.setattr(fo, "evaluate_fno_mom", evaluate)
+    summary = await run_fno_tick(kite, db_path=db_path, regime="REGIME_1_NORMAL")
+    assert evaluated == [NOW]
+    assert summary["entries"] == []
+    import aiosqlite
+    async with aiosqlite.connect(db_path) as conn:
+        row = await (await conn.execute(
+            "SELECT accepted, reject_reason FROM fno_signals WHERE leg='FNO_PAPER'"
+        )).fetchone()
+    assert row == (0, "entry_window" if delay > timedelta(hours=1) else "chain_freshness")
+
+
+def test_exact_leg_quote_age_preserves_offsets_and_requires_complete_coverage():
+    from fno_orchestrator import _oldest_quote_age_sec
+    quotes = {1: {"last_trade_time": "2026-07-10T04:32:40+00:00"}}
+    assert _oldest_quote_age_sec(quotes, [1], NOW) == 20.0
+    assert _oldest_quote_age_sec(quotes, [1, 2], NOW) is None
+    quotes[2] = {"last_trade_time": "invalid"}
+    assert _oldest_quote_age_sec(quotes, [1, 2], NOW) is None
+
+
+def test_cancelled_management_deadline_keeps_timeout_stage_explicit():
+    from fno_orchestrator import _record_management_read
+    observations = {}
+    _record_management_read(
+        observations, "test", "DEADLINE_EXCEEDED", 0.0, 1.0,
+        timeout_partial=True,
+    )
+    assert observations["test"]["provider_timing_status"] == "PARTIAL_UNAVAILABLE_AFTER_CANCELLATION"
+    assert observations["test"]["timeout_stage"] == "provider_or_limiter_or_retry_unknown"
+
+
+@pytest.mark.asyncio
+async def test_live_dr_management_refreshes_after_snapshot(db_path, kite, monkeypatch):
+    import fno_dr_book as dr
+    import fno_orchestrator as fo
+    monkeypatch.setattr(settings, "FNO_DR_DISABLE_PAPER", False)
+    before = NOW.replace(hour=15, minute=14, second=59)
+    after = before + timedelta(seconds=2)
+    clock = {"now": before}
+    managed = []
+
+    class Clock(datetime):
+        @classmethod
+        def now(cls, tz=None):
+            return clock["now"]
+
+    legs_json = json.dumps([
+        {"opt_type": "CE", "strike": 25000.0, "quantity": 1, "premium": 100.0,
+         "contract": {"token": 1001, "tradingsymbol": "NIFTY26JUL25000CE", "underlying": "NIFTY",
+                      "expiry": "2026-07-14", "lot_size": 75, "exchange": "NFO", "instrument_type": "CE"}},
+        {"opt_type": "CE", "strike": 25100.0, "quantity": -1, "premium": 50.0,
+         "contract": {"token": 1002, "tradingsymbol": "NIFTY26JUL25100CE", "underlying": "NIFTY",
+                      "expiry": "2026-07-14", "lot_size": 75, "exchange": "NFO", "instrument_type": "CE"}},
+    ])
+
+    async def open_rows(*args, **kwargs):
+        return [{"id": 7, "legs_json": legs_json}]
+
+    async def exact_quote(_kite, tokens):
+        assert tokens == [1001, 1002]
+        clock["now"] = after
+        return {
+            1001: {"last_price": 100.0, "depth": {"buy": [{"price": 99.0}], "sell": [{"price": 101.0}]}},
+            1002: {"last_price": 50.0, "depth": {"buy": [{"price": 49.0}], "sell": [{"price": 51.0}]}},
+        }, None
+
+    async def manage(db, snap, now):
+        managed.append(now)
+        return 0
+
+    monkeypatch.setattr(fo, "datetime", Clock)
+    monkeypatch.setattr(fo, "_management_quote", exact_quote)
+    monkeypatch.setattr(dr, "open_structures", open_rows)
+    monkeypatch.setattr(dr, "manage_dr_structures", manage)
+    await run_fno_tick(kite, db_path=db_path)
+    assert managed == [after]

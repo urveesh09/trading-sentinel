@@ -1,5 +1,626 @@
 # Trading Sentinel — system guide and engineering handover
 
+## October 2 source work complete for R1–R5; release and Production environment (Dev)
+
+- **R4 (`c118598`).**
+  - Scheduler summaries keep durable market-hours/off-hours elapsed histograms (p50/p95 bucket upper bounds).
+  - Session CSVs refuse and count writes below a 1 GiB free-space reserve, flag over-quota archives (2 GiB, never pruned), isolate torn rows, and append off the event loop.
+- **R5 (`addf46b`).**
+  - Allocation research gains recorded batch identity, fixed-pool / realised-equity / real-budget bases, concentration metrics and a causal guarantee.
+  - Timing research builds candidates only from verified admission evidence with a frozen zone rule.
+  - The daily decision-quality report adds row-id ordering, unique opportunities, unavailable absent books, per-trade decomposition, lineage, missed allocation and best-winner exclusion.
+
+**Production environment (owner-authorised, October 2).** The optional AI is temporarily unavailable. Production `.env` was backed up to the git-ignored `.env.bak-2026-10-02`, and these keys were appended:
+- `MINIMAX_ASYNC_REVIEW_ENABLED=true` — must stay true; false forces synchronous AI calls inside the alert path.
+- `MINIMAX_UNAVAILABLE_POLICY=proceed` and `MOMENTUM_MINIMAX_REJECT_POLICY=advisory` — AI never blocks.
+- `ENABLE_NEWS_CLASSIFIER=0` — no per-headline classifier calls to a dead provider.
+- `OPTIONAL_AI_REPORT_DIAGNOSTICS=false` — diagnostics stay off.
+
+Dev Compose rendered with this file shows those agent values and engine logging `json-file 20m x 25`. No other Production file, service or data was changed. When the AI returns, set `ENABLE_NEWS_CLASSIFIER=1` and, after verifying engine status posts, optionally `OPTIONAL_AI_REPORT_DIAGNOSTICS=true`.
+
+## October 2 review priorities R1–R3 completed (Dev)
+
+Response to the S7–S10 independent review (details and receipts in
+`2026-10-02-s7-s10-independent-review.md`):
+
+- **R1 (`af6f424`).** S6 replays are bound to evidence.
+  - The defined-risk experiment v2 derives entries from persisted rows with re-derived economics, uses same-receipt verified leg quotes, replays the live exit and settlement, and reconciles to the ledger.
+  - The single-leg adapter verifies both packets from raw bytes, binds entries to `fno_positions` and the ledger, and counts paired deltas only for reconciled entries.
+- **R2 (`dcc2f35`).** The gateway gains `scripts/backlog-reconciliation.js`.
+  - `report` is a read-only classification of pending requests, interrupted executions, unsynced orders and dead letters.
+  - `apply` takes an operator-reviewed plan, rechecks preconditions in one transaction and writes idempotent receipts. It never deletes, sends, orders or fabricates fills. Dead letters are acknowledged but never resent.
+  - Health counts only unacknowledged dead letters.
+  - Gateway suite (Node 20): 471 passed, 4 skipped.
+- **R3 (`1550886`).** S10 completion.
+  - Bounded diagnostics are published behind `OPTIONAL_AI_REPORT_DIAGNOSTICS` once the engine allow-list is deployed.
+  - A completed review is posted once, as an edit to its original valid alert with the same buttons.
+  - Worker shutdown fails pending reviews closed and discards late results. Socket cancellation is not claimed.
+
+Production was not changed. Still open from the review: R4 (S3 CSV quota and
+market-hours timing distributions), R5 (S7/S8 learning contracts) and every
+operational acceptance gate.
+
+## October 2 continuation review — current behavior and limits
+
+See [the independent S7–S10 review](2026-10-02-s7-s10-independent-review.md)
+and the top of NEXT_AGENT_PLAN.md. They supersede older source-complete claims.
+
+Optional-AI reviewers now receive the original task expiry. Deadline-bound
+MiniMax calls use request-local zero retries and deduct queue/prompt/setup
+time before dispatch, limiting socket timeout and wall wait with cleanup
+margin. Exact-deadline completion remains unavailable. Legacy no-deadline
+calls keep configured retries. Daemon join is not transport cancellation;
+strict shutdown, bounded cause/stage counters and original-alert completion
+delivery remain development. Paper proceeds under its existing advisory policy.
+
+S7 timing freezes snapshot exit settings and equity fees; allocation freezes
+snapshot fees too. Runtime-only drift/unknown timing deadline policies are
+refused. Earlier incomplete manifests must be replaced before new future data,
+never retroactively edited. S8 cash uses event day (including earlier admissions)
+and UTC chronology; legacy naive ledger clocks mean UTC. Linked-stream
+`daily_cash_drawdown` is unknown for ambiguous equal clocks, and
+`version_specific_cash_drawdown` is null without management-version lineage.
+The report declares bounded linked cash coverage, not complete daily ledger
+coverage. Full setup/regime/delay/hold/cost learning analytics remain source work.
+
+S6 spread is an inert prototype, not an exact-economics-bound research pipeline.
+R1 covers typed source/economics/cash binding, actual manifest validation and
+finite observations, plus both raw clocks/tokens in the single-leg adapter.
+S9 supported reconciliation/migration and S3 CSV capacity/durable elapsed
+distributions also remain development. Partner qualification, future evidence
+and an authorized delivery canary remain distinct gates. This correction is
+Dev-only: no configuration, schema, broker, messaging, Production or authority
+change. Agent 368 warnings-fatal; focused research 28; expanded engine 1016
+passed with six documented warnings. Tests do not establish profits or delivery.
+The broad Windows process hung after reporting its passes and was stopped;
+that is not clean teardown verification. Focused runs exited normally.
+
+## October 2 S7a allocation research (Dev)
+
+The paper book admits accepted signals first-come from the fixed INR 50,000
+pool (`MOMENTUM_PAPER_FIXED_POOL_V1`). Capital-skipped signals previously left
+no price path, so no alternative allocation could be measured.
+
+Capture (paper bookkeeping only): a `zero_shares` admission whose reason is
+`capital_exhausted` or `allocation_rounding` now also records
+`momentum_paper_candidate_economics_v1` (admitted shares 0, plus the shares the
+fixed-pool rule would size with free capital). It subscribes a passive path
+with `subscription_kind='CAPITAL_SKIPPED'` (additive column, default
+`OPENED`) in the same admission transaction. S4 wiring collects it like any
+other path. Nothing is opened, sized or exited differently, and the
+exit-study adapter still uses opened admissions only.
+
+`momentum_allocation_research.py` (inert; `freeze`, `evaluate`) reads opened
+and capital-skipped candidates with complete verified paths
+(`build_allocation_candidates`). It replays three frozen policies on one
+common book:
+- `FIRST_ARRIVAL_FIXED_POOL_V1`: the live rule via `paper_position_size`.
+- `FIXED_EQUAL_V1`: equal notional per admission batch.
+- `RISK_BUDGET_PROPORTIONAL_V1`: risk-sized shares scaled to fit.
+
+Exits replay the live evaluator; notional and net cash are released leg by
+leg. Outcomes are SELECTED, CAPITAL_UNAVAILABLE, ROUNDED_TO_ZERO,
+TICKER_ALREADY_HELD, PATH_UNAVAILABLE or UNRESOLVED. Each policy reports net
+P&L, costs, drawdown, peak deployed and turnover, with the delta versus
+first-arrival, split HOLDOUT/DEVELOPMENT by a frozen manifest. The pool is
+labelled fixed, not drawdown-adjusted. Overspend raises.
+
+Tests (11, warnings-fatal): first-arrival reproduces live admission sizes
+(BRIGADE 87 shares, matching October 1 Production); order-invariant
+policies under every permutation; 90 random books per policy with no
+overspend or duplicate; capital release enabling a later batch; duplicate
+and incomplete candidates; manifest drift refusal and holdout split; and a
+database run in which a capital-skipped candidate is captured, its path
+collected, excluded from the exit study and selected by `FIXED_EQUAL_V1`.
+Cross-phase selection: 1114 passed, one known skip. A synthetic concentration
+example is a mechanism check, not evidence that any policy earns more.
+S7b timing/near-miss research is recorded below; its future-holdout acceptance remains open.
+
+## October 2 S7b frozen entry-timing research (Dev)
+
+S7b adds the inert `momentum_entry_timing_research.py`, with no runtime caller,
+broker, HTTP, database or order dependency. Its frozen report compares only
+`COMPLETED_BAR_CONTINUATION_V1` (the explicitly supplied next completed-bar
+clock and price) with `BOUNDED_PULLBACK_NO_CHASE_V1` (the first existing quote
+inside the supplied pullback zone, never above the no-chase cap). It never
+invents a fill: no entry, no-chase and incomplete path states remain explicit;
+the shared gap/deadline validator and pure current exit evaluator run only
+after entry. Re-entry must identify a newly different thesis/state, and a
+duplicate ticker/thesis/state is not replayed. The existing isolated shadow
+ledger now has a bounded near-miss view over rejected evaluator receipts,
+retaining real reject reason/features/config rather than reconstructing an
+opportunity. Focused timing/shadow tests: 18 warnings-fatal passed.
+
+This is Dev-only research. Freeze terms before a future session and assess only
+post-freeze HOLDOUT observations. No paper/live entry, allocation, sizing, exit,
+AI, broker, Production environment or trading authority changed. A rollback is
+a GitHub reversion and does not delete prior shadow evidence.
+
+## October 2 S8 daily decision-quality reporting (Dev)
+
+`daily_decision_quality.py` is a read-only daily evidence composer. It keeps
+MOMENTUM_PAPER exact admissions/cash, F&O daily audit sources, and isolated
+momentum/penny shadow evaluations in distinct book/mode/policy rows; it does
+not sum incompatible R values or relabel partial cash as completed trades.
+Daily linked cash drawdown requires proven order; version-specific cash drawdown
+is unavailable without actual policy lineage. Rejected receipts retain an absence
+state. Selection is always `HUMAN_REVIEW_REQUIRED` with no automatic change.
+Focused tests: 2 warnings-fatal passed. Dev-only; no database mutation,
+strategy retune, capital change, qualification, broker, AI or Production change.
+
+## October 2 S9 operator-state truthfulness (Dev)
+
+S9's first additive source slice makes existing operator surfaces say only what
+their evidence supports. Gateway `/health` retains `telegram_status` for
+clients, but no longer calls a constructed bot `connected`: its value is
+`diagnostic_bot_instance_present` with an explicit
+`telegram_status_basis`, or `delivery_backlog_present` when the durable local
+dead-letter count is non-zero. The Python-engine probe deadline is released on
+every response path. Health reads remain SELECT-only and do not queue, resend,
+acknowledge or expire anything.
+
+Penny scan health now preserves the legacy completed-success clock
+(`last_scan_at`) and exposes additive `last_scan_attempted_at`, age and a
+bounded outcome (`NEVER`, `IN_FLIGHT`, `COMPLETED`, `TIMED_OUT`, `FAILED`, or
+`CANCELLED`). An attempt means `scanner.scan_once` was invoked; pre-gate
+returns such as no token are not misrepresented as a scan. This lets a slow
+provider call be distinguished from no completed scan without changing its
+90-second deadline, cadence, provider load or entry behaviour. Operator status
+groups realised ledger rows by IST day and reports Momentum, Penny, Edge and
+F&O paper books separately as ledger facts, never as live cash/balance estimates;
+legacy timezone-less ledger clocks remain UTC as all writers specify. Focused
+checks: 2 Node health tests, 14 operator-status tests and 5 Penny-health tests
+passed. The old Windows FastAPI import leaves an existing shutdown
+event-loop/socket ResourceWarning after the Penny-health run; it is not hidden
+as a product result. Dev only; no Production, broker, order, queue or database
+migration change. Source commit: `5c9834a` on
+`codex/production-correction-hedge-p0`; not deployed.
+
+## October 2 S10 optional-AI source validity (Dev, first slice)
+
+Optional AI is an annotation, never an authority change when the configured
+unavailable policy is `proceed`/`advisory`. S10 now removes expired,
+undated, or timezone-unverifiable classified sources from the review context
+instead of allowing one to expire the entire review before queue admission.
+The exact rendered/classified feed context now omits those items and states
+`NEWS_UNAVAILABLE` with an exclusion count; a review with no usable news can
+still assess deterministic market facts without inventing a catalyst. Fresh
+included sources retain their genuine validity bound, and both direct review
+and async queue paths receive only the usable classification list. Focused
+agent/queue checks: 55 warnings-fatal passed. Dev-only; no API call is made by
+the filtering itself, and no paper/live entry, approval, capital, broker or
+Production behaviour changed. Remaining S10 work: forward remaining task
+budget into provider transport/retry, surface completed annotation updates to
+the original alert, and obtain post-promotion evidence.
+
+## October 2 S6 defined-risk spread exit research (Dev)
+
+`fno_dr_exit_experiment.py` is an inert structure-level prototype, separate
+from the single-leg experiment. It hashes supplied bytes and checks supplied
+leg identities but does not prove they describe the economics or observations.
+Its declared target/stop/hard-flat and hold/giveback simulation uses max loss
+for R and entry/exit cost terms. Independent review reproduced manifest drift
+and NaN-cost acceptance. R1 in the continuation review is required before
+interpreting its evidence. No runtime exit or authority behavior changed.
+
+## October 2 S4 passive-path runtime wiring (Dev)
+
+The paper monitor's gateway LTP has no provider timestamp or raw quote, so it
+cannot feed source-bound paths. Instead, each research-collector tick attaches
+the active subscribed paper tickers (`NSE:TICKER`, up to
+`MOMENTUM_PAPER_PATH_MAX_TICKERS=20`) to its existing first quote request
+(future plus exact legs). Kite accepts mixed exchanges in one call, so no
+provider request is added; the ladder request is unchanged. Equity packets
+are removed from the F&O data before any research logic runs and wrapped in
+`kite_equity_quote_envelope_v1`. One background writer at a time stores them;
+a busy writer drops the batch as a counted gap (`momentum_paper_paths` in the
+collection result), and collection never waits on the trading database.
+Gated by `MOMENTUM_PAPER_PATH_CAPTURE_ENABLED` (default true),
+`MOMENTUM_PAPER_ENABLED` and research collection. Production `.env` overrides
+none of these, so no environment change is needed.
+
+Two S4 design defects that would have blocked every real path are corrected:
+- Provider timestamps never equal exactly 15:15:00, so the exact-15:15 rule
+  could not complete. Opt-in `deadline_quote_policy:
+  first_at_or_after_1515_within_gap` (v1 study and S6a) closes at the first
+  observation at or after 15:15 within the declared gap, with its real time.
+  Capture keeps observations up to the gap past the deadline. Packets
+  without the field keep the exact rule (unchanged reports).
+- The adapter returned UNAVAILABLE for every path when any one admission was
+  incomplete. It now packs complete entries and lists `unavailable_entries`
+  with reasons; with no complete entry it returns the first reason as before.
+
+Tests: an end-to-end wiring run (real collector, capture, background writer,
+adapter and v1 study, closing at 15:15:25), no-attachment cases, busy-writer
+gap, per-entry exclusion and deadline-policy study tests. Cross-phase
+selection: 1091 passed, one known skip. Dev only. After promotion: confirm
+`momentum_paper_paths` in collection runs and collect five reconciled fresh
+lifecycles before any study is treated as evidence.
+
+## October 2 review-response corrections (Dev)
+
+- Session CSV rotation is crash-recoverable: unrecorded archives are
+  reconciled into the manifest, torn lines isolated, state written before a
+  new header, and header-only files never archived (fixes a permanent
+  `FileExistsError` lockout).
+- Passive momentum paths require `kite_equity_quote_envelope_v1` packets whose
+  ticker, LTP and provider time equal the stored columns, both at capture and
+  at export.
+- The F&O exit experiment charges the entry order once, and its archive
+  adapter verifies raw bytes, identity, duplicates and provider clocks.
+
+See the review's response section. Commits `ea8695d`, `c054bf3`, `bfd343d`;
+Dev-only, unpushed.
+
+## October 2 independent S1–S6 review (Dev)
+
+[The review](2026-10-02-s1-s6-independent-review.md) supersedes broad phase
+completion claims. Small corrections reject foreign returned DR tokens and
+non-finite exit prices, reject impossible/over-late passive receipt clocks and
+corrupt scalar prices/economics, retain the first future receipt paired with
+exact active research legs (even when the optional ladder times out), and let
+ordinary token quotes inherit the screener's bulk lane. Collection counts now
+include that additional retained reference observation; received-token coverage
+remains unique, and no provider request was added. S6 freezes deep-copy policy
+parameters and pin fee schedule/model/source; old manifests must be retained as
+development artifacts and replaced by a fresh pre-session freeze, not edited.
+The momentum fingerprint now includes `engine.py` and `cost_schedules.py`;
+F&O includes `cost_schedules.py`, so fee implementation drift also invalidates
+the freeze. No live exit policy, rate, order/AI/partner authority changed.
+
+S1/S2 safeguards have passing affected regression coverage. S3 still needs
+rotation crash-fault recovery and deployed session/previous-boot retention
+acceptance. S4 is not wired to a runtime quote fanout and hashes establish byte
+integrity, not quote-column/provider-packet binding. S5 still needs frozen fresh
+evidence, qualification and an authorized delivery canary. S6 momentum and
+single-leg tools remain research-only; full archive/economic binding, candidate
+partial fee allocation and the defined-risk spread experiment remain open.
+None of the new evidence or experiment tools proves profitability or enables
+tips. Production was not edited/restarted; this correction is Dev-local.
+
+## October 1 S1 defined-risk economics and truthful settlement (Dev)
+
+New defined-risk paper admissions bind every selected option leg to bounded,
+immutable NFO contract identity (underlying, expiry, token, symbol, lot and
+leg ratio) and derive structure economics from those selected lots—not the
+stale global fallback. Missing, inconsistent or subsequently replaced contract
+identity is rejected/unpriceable; legacy rows remain readable but explicitly
+unverified and are never reconstructed. At hard-flat, a missing exact-leg price
+is recorded as `UNRESOLVED` with a reason and no fabricated zero-cash close;
+the existing one-open-structure guard retains that exposure as unavailable
+capital. For a fully priced exact close, `ENTRY_MID_EXIT_BID_ASK_V1` retains
+model-mid valuation separately from executable bid/ask cash. The terminal DR
+row and unique generated FNO ledger close share one SQLite transaction, so a
+repeat, concurrent attempt or ledger-write failure cannot create duplicate or
+orphaned cash. The read-only F&O daily audit now reports settled, unresolved
+and legacy-unverified DR evidence with separate model/cash totals.
+
+Focused warnings-fatal DR/audit checks passed 24. The affected defined-risk,
+orchestrator and exit suite passed 84 with one deselected timing-sensitive
+exit-recovery test and one existing Starlette lifespan deprecation warning.
+The recovery test passes alone but fails only in its grouped run; it is outside
+this slice and remains a test-hygiene follow-up. This migration is additive columns only; no configuration,
+broker, entry-threshold, scheduler, EXEC, partner or Production behavior was
+changed. Dev-local source is pending GitHub review/push and is not deployed;
+inspect real post-promotion settlement receipts before making economic claims.
+Source commit `9e26e1b` is local on `codex/production-correction-hedge-p0`.
+
+## October 2 S2 initial management-read containment (Dev)
+
+Existing F&O management now gives cancellable provider reads separate budgets:
+five seconds for futures/open-exit quotes and ten seconds for an open DR chain
+snapshot. The tick records bounded completion/deadline/failure state and
+elapsed/cap seconds per read. A deadline cancels and joins the provider task,
+then retains the existing unpriced/hard-flat handling; it never encloses a
+broker dispatch, cash settlement, admission or SQLite mutation. Focused
+orchestrator/recovery/audit checks passed 34. Warnings-fatal mode found an
+existing unclosed-socket ResourceWarning in an unrelated stage-duration test,
+so this is not claimed as a clean warnings-fatal suite. This is Dev-only and
+unpushed/not deployed; source commit `5ae54a8` is local on
+`codex/production-correction-hedge-p0`. The completion receipt below records
+the subsequent action-clock and provider-timing work.
+
+## October 2 S2 action clocks and provider timing (Dev; partial scope)
+
+The real Kite quote client now returns limiter-wait, transport, parsing,
+attempt and retry timing to F&O management; unsupported test/replay adapters
+are explicitly marked unavailable. Management retains a conservative oldest
+exact-leg quote age, refreshes live action time after provider waits and before
+admission cutoffs, and keeps supplied replay clocks deterministic. Exit work
+still precedes optional DR entry and no rate/concurrency setting changed.
+Focused validation passed 59 with compilation and atlas regeneration. This is
+Dev-only/unpushed/not deployed. The independent review below supersedes the
+earlier claim that only deployed-session receipts remain. Source commit `d2319e2` is local on
+`codex/production-correction-hedge-p0`.
+
+Independent October 2 review corrected action time after held-option and DR
+reads and at final directional/DR admission, including database reads before
+DR admission. Existing chain/quote freshness thresholds are rechecked at live
+admission; supplied replay clocks remain frozen. Signal evaluation retains its
+own tick-start cutoff independently of refreshed action time. Quote-age evidence
+preserves timezone offsets and reports unavailable when any held leg lacks a
+valid timestamp. The scheduler completion/overrun structured logs now retain
+management read outcomes, action time and management lag (not new scheduler DB
+columns). No mutation is wrapped in a deadline. S1's focused exact-identity,
+atomic/idempotent settlement and unresolved-state checks pass; no historical
+cash is rewritten. Remaining S2 source scope: exact-held-leg DR read selection,
+shared-provider priority with bounded fairness, and DB-wait/timeout-stage timing
+attribution. Exit-before-entry ordering alone does not implement queue priority.
+See [review and verification](2026-10-02-s1-s2-independent-review.md).
+
+## October 2 S2 exact-leg, shared-priority and timing completion (Dev)
+
+Open defined-risk management reads only the validated persisted leg tokens and
+constructs an exact retained-contract snapshot; it never reconstructs a
+nearest-expiry chain for legacy, missing or inconsistent identity. Those rows
+remain unpriced/unresolved, including at hard-flat, with no fabricated cash.
+The shared Kite token bucket now admits up to three management requests ahead
+of queued normal work before one normal admission, preserving the original
+3/s rate, burst-one capacity and concurrency. Cancelled waiters are removed.
+Completed provider evidence separates limiter, transport, parse and retry
+backoff; deadline cancellation is explicitly partial/unknown. Management DB
+stage elapsed includes any SQLite lock wait and is labelled accordingly rather
+than presented as a false lock-only measurement. Focused checks: 105 passed,
+one known skip; isolated warnings-fatal DR/Kite checks: 53 passed, one known
+skip. The broad warnings-fatal aggregate retains two unrelated socket warnings.
+No migration, provider capacity, broker, policy, AI, Production or deployment
+change occurred. Deployed recovery/session acceptance remains open.
+
+## October 2 S3 evidence retention completion (Dev)
+
+The Python engine Compose log contract is `json-file` `20m x 25` (500 MiB),
+verified from rendered Compose without exposing environment values. Signal CSV
+evidence now rotates by IST session: the existing configured path stays the
+current-session file, the prior file is atomically preserved under a sibling
+session archive with its header/rows intact, and a SHA-256 manifest records the
+archive. Unknown legacy files are retained separately rather than misdated;
+routine code does not delete archives. Scheduler telemetry keeps a durable
+daily final-outcome rollup by market session/job/kind with outcome and stage
+statistics before bounded raw events can be pruned. Unfinished crash markers
+are not called successful. Research archive capacity/lease protections remain
+unchanged. S3 tests passed 57, with 13 rotation/summary tests warnings-fatal
+and 8 Compose-verifier tests. This is Dev-only configuration/evidence work;
+Its only schema effect is the additive scheduler telemetry-summary table; it
+does not migrate trading evidence.
+deployment requires operator free-space, prior-boot preservation and full
+market-session volume checks. Optional AI remains non-blocking when unavailable.
+
+## October 2 S6b frozen single-leg F&O exit experiments (Dev)
+
+`fno_exit_experiment.py` is an inert research CLI (`freeze`, `evaluate`,
+`build-packet`). The baseline replays the live ladder
+(`fno_exit_rules.evaluate_single_leg_exit`) over paired futures/option
+observations and settles exactly as the paper path does: exit at the basis
+(best bid, else LTP), `calc_fno_costs`, and R = net / (entry premium x
+FNO_STOP_PREMIUM_PCT x quantity). An exit without a positive basis is
+`UNRESOLVED`, never priced. Gaps above the declared maximum, a late first
+observation or no observation at/after 15:10 are `INSUFFICIENT_EVIDENCE`.
+Manifests pin the candidate, live ladder settings, hard-flat minute, backstop
+percentage and a source fingerprint; mismatches are refused, and entries at or
+before the freeze are `DEVELOPMENT`.
+
+Candidates:
+- `fno_partial_at_target_v1` banks floor(lots/2) lots at the bid when the
+  target arms the trail; the rest follows the live ladder. A single lot is
+  identical to the baseline.
+- `fno_confirmed_time_extension_v1` defers a live time stop only while the
+  underlying is not adverse, is within 0.5R of its best and the basis is at
+  least 1.10x the premium stop. Every other exit and the hard flat are
+  unchanged.
+
+The read-only archive adapter pairs front-future and exact-option events only
+when their `received_at_utc` is identical (no interpolation) and hashes the
+archived raw-packet digests as provenance. Equity and F&O summary arithmetic
+now lives in the shared pure `exit_experiment_metrics.py`, and both freeze
+fingerprints include it. The no-runtime-caller guards now inspect actual
+imports (AST) instead of text matches.
+
+Tests: 15 F&O experiment tests (live-settlement parity, partial-lot
+arithmetic, single-lot identity, confirmed and failed extensions, unresolved
+basis, insufficient paths, no future leakage, tamper/setting drift,
+development labelling, adapter pairing/provenance, end-to-end CLI, guards).
+With the ladder and S6a tests, 30 passed warnings-fatal; related F&O/momentum
+suites passed 110. On synthetic paths, partial-at-target slightly
+underperformed and a confirmed extension outperformed; these are mechanism
+checks, not evidence. Dev-only, not deployed.
+
+## October 2 S6b shared single-leg F&O exit ladder (Dev; behaviour-preserving)
+
+The live single-leg exit ladder that was inline in `fno_orchestrator.py` is now
+the pure `fno_exit_rules.evaluate_single_leg_exit`, so paper/live management
+and the forthcoming F&O exit experiments evaluate identical rules. Order and
+semantics are unchanged: hard flat; then, with a futures quote, underlying
+stop, trail stop (armed at target, ratcheting from the best underlying by
+`FNO_TRAIL_ATR_MULT` x ATR), premium backstop, and the time stop (before the
+trail only, deferred while premium is in profit when
+`FNO_TIME_STOP_RESPECTS_PREMIUM`); without a futures quote only the backstop.
+The orchestrator still logs trail arming, unparseable entry times and
+deferrals, and persists trail state only when no exit fires with a futures
+quote present.
+
+Verification: new orchestrator characterization tests (underlying stop wins
+over a crushed premium; target arms the trail and a retrace exits on
+`trail_stop`; missing futures quote suppresses the time stop) passed against
+the inline code before extraction and unchanged after it. A seeded
+20,000-case differential test against a frozen transcription of the inline
+block matched every exit reason and every persisted trail value. F&O,
+scheduler and related suites: 397 passed. No configuration, threshold, order,
+settlement or schema change. Dev-only; not deployed. Source commit: `02047d4`.
+
+## October 2 S6a frozen momentum exit experiments (Dev)
+
+`momentum_exit_experiment.py` is an inert, read-only research CLI. It leaves the
+v1 study and its evidence-review consumer unchanged. `freeze` writes an
+immutable manifest (candidate policy and parameters, live evaluator settings,
+cost multipliers, a line-ending-neutral source fingerprint of the study,
+experiment and evaluator modules, and freeze time). `evaluate` refuses any
+mismatch (`FROZEN_POLICY_MISMATCH`), so a policy cannot be re-tuned after its
+outcomes are seen. Entries at or before the freeze are `DEVELOPMENT`; only
+later entries are `HOLDOUT`. September 28–October 1 can therefore never be
+presented as holdout.
+
+Candidates: `target_hold_trail_v1` (reproduces the v1 alternative exactly) and
+`thesis_confirmed_extension_v1`. The latter replays the live pure evaluator and
+replaces only its time-stop or target exit, and only while confirmation known
+at that quote holds: LTP above VWAP-at-entry, not below entry, within 0.5R of
+the running high, and a regime not marked REGIME_3/CRISIS. Volume is not in
+the packet and is declared unused. Once a replacement is active, the
+protective stop is still checked first, losing confirmation exits at that
+observation, the stop only ratchets up (running high minus 1.0R) and 15:15
+IST stays forced. The live +1R scale-out and existing fast-stop VWAP deferral
+are untouched.
+
+Reports add MFE/MAE in R over the exposure window, giveback, minutes exposed,
+worst R, net at 1.0/1.5/2.0x costs, and paired deltas (better/worse/ties,
+mean/median/worst, sum excluding the best, cost-stressed sums), split into
+all/holdout/development. Qualification stays `NOT_ASSESSED`.
+
+Tests: 13 passed warnings-fatal (continuation, bad continuation, gap through
+stop, missing VWAP, crisis regime, target extension, no future leakage, v1
+parity, tamper/stale-settings refusal, development labelling, incomplete path,
+no-overwrite CLI, no runtime caller). Momentum exit/paper/review suites: 125
+passed. No complete source-bound equity path exists yet (S4 collection is
+not deployed), so no result is claimed. Equity only; F&O single-leg and
+defined-risk experiments are separate future slices. Dev-only, not deployed.
+Source commit: `19a5471` (pushed).
+
+## October 2 S5c partner delivery-blocker diagnostic (Dev)
+
+`research_cli.py partner-delivery-blockers --db <engine-db> [--attempts-db
+<partner-collection-attempts.sqlite3>] [--session-from/--session-to YYYY-MM-DD]
+--output <json>` writes an immutable report (byte-identical retries only).
+For every persisted manual-advisory idea it lists ordered blockers:
+validation reasons, evidence class, qualification-registry match at decision
+time, delivery reasons and terminal status (`SUPERSEDED_*`, `RETIRED_*`,
+`QUEUED_NOT_DISPATCHED`, unknown statuses, or `UNEXPLAINED_NOT_DELIVERED`).
+Attempts and ideas share no exact identity, so the attempt journal is summarised
+per IST session/index and an `attempt_idea_disagreement` is aggregate only; it
+detects the S5a frozen-clock defect class. Qualification rows are registry
+facts, not re-verified packages. Current delivery flags are labelled as today's
+projection, not historical configuration. Databases open with SQLite
+`mode=ro`; a missing file is reported and never created. There is no write,
+registration, qualification, network, broker or message path.
+
+S5c tests: 10 passed warnings-fatal. CLI/qualification/collection/partner
+regression: 110 passed. A Production run was not performed in this session
+(copying Production data was not permitted); run it read-only after promotion.
+Expected first result from the earlier read-only queries: every September
+28–October 1 idea is `EVIDENCE:RESEARCH_ONLY` / no qualification, and the
+September 30 indices show attempt/idea disagreement. Dev-only, not deployed.
+Source commit: `89a7595`.
+
+## October 2 S5b shared-provider bulk lane and exact-leg-first research (Dev)
+
+Root cause of the recurring 48-second research caps (read-only Production,
+September 28–October 1): `run_momentum_screener` fetches about 500 tickers every
+quarter hour with up to 50 concurrent waiters on the shared 3/s, burst-one
+Kite limiter. A one-token research, F&O snapshot or penny request then waited
+behind that backlog for roughly 40 seconds; no provider timeout or retry was
+logged. With owner approval, `RateLimiter` now has a third `bulk` lane below
+`normal`. Queued normal work is admitted first, but at most three consecutive
+normal admissions occur while bulk waits, so the screener cannot starve. S2
+management priority is unchanged and still yields to any lower lane after
+its burst. The screener's per-ticker tasks are created inside
+`provider_lane("bulk")` (a context variable inherited by those tasks only).
+Rate, burst, concurrency, signal logic and every other caller are unchanged.
+
+Research collection now requests the future reference and every exact active
+selected leg in its first call, then requests only the remaining optional ATM
+ladder (the future is re-read with the ladder as before). A ladder deadline
+therefore no longer loses an exact retained leg. Each provider call records
+bounded limiter-wait/transport/parse/outcome timing in `provider_timing`
+(test doubles are labelled `UNAVAILABLE`; deadline splits `PARTIAL_UNKNOWN`).
+
+Expected effect: the token bucket is work-conserving, so total throughput is
+unchanged. The screener should take roughly 10–20% longer (about 243 s to an
+estimated 270–285 s), because penny scans and F&O snapshots that previously
+stretched, timed out or were skipped during its window now complete first.
+This is an estimate from Production logs, not a measurement. Verify
+`momentum_per_ticker_eval_done` elapsed, research `runtime_capped` counts,
+`provider_timing` and penny skip counts on deployed sessions.
+
+S5b/affected tests: 141 passed, one known skip; warnings-fatal S5b,
+deadline and leg-subscription subset: 24 passed. The exact-leg regression
+fails on the previous collector. A combined cross-module run shows the
+`test_partner_orchestrator.py` `wired` fixture erroring after another module
+closes the default event loop. A clean HEAD worktree reproduces the same 30
+errors, so that ordering issue pre-dates S5b; the partner suites pass 91 alone.
+HEAD's combined run also showed a timing flake in
+`test_stalled_first_underlying_is_cancelled_and_reports_second_gap`. Both are
+test-hygiene follow-ups. Dev-only; no schema/config migration and not deployed.
+Source commit: `18c7f2a`.
+
+## October 2 S5a partner candidate action clock (Dev)
+
+Read-only Production evidence (September 30) showed seven partner ideas stored
+`REJECTED` with `stale_or_future_leg_quote` while the collection-attempt
+journal recorded the same ticks as `candidate_validated`. `persist_candidate`
+re-validated at the frozen tick-start clock, so an option chain received more
+than five seconds after the tick began looked like a quote from the future.
+The manual-advisory tick now passes its live `stage_now()` action clock to
+persistence and to conditional-protection construction/precheck. Explicit
+replay/test calls without a clock remain frozen. Validation thresholds,
+qualification, profile, delivery and message rules are unchanged; a genuinely
+stale quote still rejects. Partner/hedge/scheduler suites: 373 passed; the
+new late-chain regression fails on the previous source with the Production
+reason. Dev-only; not deployed. This does not qualify any partner strategy:
+every observed idea remains `RESEARCH_ONLY` and qualification-blocked.
+Source commit: `f45ce43` (Dev, unpushed at receipt).
+
+## October 2 S4 equity-path and admission-capital evidence completion (Dev)
+
+New paper-admission outcomes retain an additive, bounded capital snapshot:
+the configured fixed INR 50,000 benchmark is explicitly labelled as **not**
+drawdown-adjusted, while realised paper cash basis, deployed/reserved/available
+notional, risk budget, fee basis and allocation-policy version are recorded for
+the decision. Existing `zero_shares` values remain compatible and now carry a
+precise cause such as `capital_exhausted` or `risk_budget_below_one_share`.
+Opened outcomes also seal the accepted decision inputs as canonical packet bytes
+plus a SHA-256 receipt; the read-only audit recomputes the digest from those
+bytes and reports a mismatch rather than trusting a formatted hash.
+
+Each opened admission registers an exact-key passive path subscription with the
+original share quantity and intraday deadline. The caller-fed collector accepts
+only existing provider packet bytes with both provider-observation and receipt
+clocks; it has no HTTP client or LTP callback and therefore cannot cause a
+provider call on admission or exit. It is bounded by configurable packet and
+row retention. The read-only path adapter rejects absent paths, tickers/keys,
+clock order/gaps, missing exact 15:15 IST observation, altered original
+quantity and forged packet bytes; only a complete path produces an S1 study
+packet. Scale-outs cannot change that immutable study quantity. The adapter is
+an instrumentation surface, not a strategy, sizing, broker, AI or execution
+authority change. Focused S4 evidence tests: 73 passed; `py_compile` passed.
+
+This is Dev-only, additive SQLite evidence. Historical rows remain available
+but cannot become source-verified paths. Rollback is a GitHub reversion or
+collector disablement; it must retain existing receipts/tables. Before any
+operational claim, configure caps, wire an already-existing quote fanout to the
+caller-fed collector, and obtain five fresh reconciled lifecycles. These are
+instrumentation smoke checks, not profitability, qualification or deployment.
+
+## October 1 Production assessment and smart-trader plan (documentation only)
+
+The [consolidated plan](2026-10-01-smart-trader-consolidated-plan.md) records
+verified September 28–October 1 evidence. PR #99 includes the September 26
+admission/economics tools; four fresh momentum lifecycles reconcile to cash.
+The latest INR 47,647.44 ledger balance belongs to MOMENTUM_PAPER, not penny.
+General partner collection/profile exist, but qualifications remain absent;
+personalized snapshot refresh is a separate disabled path. Market-hours F&O
+management still has long read stages/overlap skips. DR planning currently
+uses a configured lot fallback (75), inconsistent with the retained October 6
+65-unit contracts, and unpriced/nonatomic settlement paths require correction.
+These are assessed findings and planned changes, not implemented behavior.
+The goal is timely thesis-based entry/management, capital allocation and
+measured learning. Paper remains autonomous, new real-money momentum entries
+retain owner EXEC approval, and qualified partner advice grants no order power.
+Jev work is deferred. Production was inspected read-only and left untouched.
+The optional-AI investigation reproduced pre-submission expiry when a fresh
+review includes stale/undated news classification. Today's zero analyst-request
+status is consistent with this path; exact historical headline causality is
+not retained. The consolidated plan's S10 corrects source-context handling,
+deadline propagation and visibility of completed reviews. No AI/runtime change
+has been implemented; unavailable review remains informational under proceed.
+
 ## September 26 replay economics correction (Dev)
 
 Exact admission identity alone is insufficient. New opened paper admissions

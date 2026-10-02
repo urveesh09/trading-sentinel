@@ -25,7 +25,7 @@ from typing import Any, Sequence
 
 SERVICE_NAME = "python-engine"
 REQUIRED_DRIVER = "json-file"
-MINIMUM_CAPACITY_MIB = 200
+MINIMUM_CAPACITY_MIB = 500
 _SIZE_RE = re.compile(r"^(?P<number>[1-9][0-9]*)(?P<unit>[kmg])$", re.IGNORECASE)
 _MIB_BY_UNIT = {"k": 1 / 1024, "m": 1, "g": 1024}
 

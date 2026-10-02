@@ -173,6 +173,121 @@ class TestOptionalAsyncReview:
 
 
 class TestAnalyzeWithMiniMax:
+    def test_review_uses_only_remaining_deadline_for_transport_timeout(self, agent_mod):
+        agent_mod.client = MagicMock()
+        agent_mod.client.with_options.return_value = agent_mod.client
+        agent_mod.client.chat.completions.create.return_value = _fake_llm_response(json.dumps({
+            "conviction_score": 70, "pitch": "ok", "rationale": "ok", "risks": "ok",
+        }))
+        agent_mod.MINIMAX_REQUEST_TIMEOUT_SEC = 45
+        result = agent_mod.analyze_with_minimax(
+            {"ticker": "RELIANCE"}, "", "BULL",
+            expires_at=datetime.now(timezone.utc) + timedelta(seconds=3),
+        )
+        assert result.available is True
+        timeout = agent_mod.client.chat.completions.create.call_args.kwargs["timeout"]
+        assert 0 < timeout < 3
+        agent_mod.client.with_options.assert_called_once_with(max_retries=0)
+
+    def test_prompt_time_is_deducted_before_provider_dispatch(self, agent_mod, monkeypatch):
+        agent_mod.client = MagicMock()
+        agent_mod.client.with_options.return_value = agent_mod.client
+        started = datetime(2026, 10, 2, 10, tzinfo=timezone.utc)
+        clocks = iter([started])
+        clock = MagicMock()
+        clock.now.side_effect = lambda *_args: next(clocks, started + timedelta(seconds=4))
+        monkeypatch.setattr(agent_mod, "datetime", clock)
+        review = agent_mod.analyze_with_minimax(
+            {"ticker": "RELIANCE"}, "", "BULL", expires_at=started + timedelta(seconds=5),
+        )
+        assert review.reason == "review_deadline_insufficient"
+        agent_mod.client.chat.completions.create.assert_not_called()
+
+    def test_deadline_request_timeout_also_fits_configured_wall(self, agent_mod, monkeypatch):
+        agent_mod.client = MagicMock()
+        agent_mod.client.with_options.return_value = agent_mod.client
+        agent_mod.client.chat.completions.create.return_value = _fake_llm_response(json.dumps({
+            "conviction_score": 70, "pitch": "ok", "rationale": "ok", "risks": "ok",
+        }))
+        monkeypatch.setattr(agent_mod, "MINIMAX_WALL_TIMEOUT_SEC", 2)
+        result = agent_mod.analyze_with_minimax(
+            {"ticker": "RELIANCE"}, "", "BULL",
+            expires_at=datetime.now(timezone.utc) + timedelta(seconds=30),
+        )
+        assert result.available
+        assert agent_mod.client.chat.completions.create.call_args.kwargs["timeout"] == 1
+
+    def test_provider_answer_after_exact_deadline_remains_unavailable(self, agent_mod, monkeypatch):
+        started = datetime(2026, 10, 2, 10, tzinfo=timezone.utc)
+        expiry = started + timedelta(seconds=3)
+        current = [started]
+        clock = MagicMock()
+        clock.now.side_effect = lambda *_args: current[0]
+        monkeypatch.setattr(agent_mod, "datetime", clock)
+        agent_mod.client = MagicMock()
+        agent_mod.client.with_options.return_value = agent_mod.client
+
+        def complete(*_args, **_kwargs):
+            current[0] = expiry
+            return _fake_llm_response(json.dumps({
+                "conviction_score": 70, "pitch": "ok", "rationale": "ok", "risks": "ok",
+            }))
+
+        agent_mod.client.chat.completions.create.side_effect = complete
+        result = agent_mod.analyze_with_minimax({"ticker": "RELIANCE"}, "", "BULL", expires_at=expiry)
+        assert result.reason == "review_completed_late"
+        assert not result.available
+        assert result.payload == {}
+
+    def test_insufficient_remaining_deadline_does_not_call_provider(self, agent_mod):
+        agent_mod.client = MagicMock()
+        result = agent_mod.analyze_with_minimax(
+            {"ticker": "RELIANCE"}, "", "BULL",
+            expires_at=datetime.now(timezone.utc) + timedelta(milliseconds=100),
+        )
+        assert result.reason == "review_deadline_insufficient"
+        agent_mod.client.chat.completions.create.assert_not_called()
+
+    def test_stale_classification_does_not_expire_fresh_optional_review(self, agent_mod):
+        from news_classifier import ClassificationResult, NewsCategory
+
+        now = datetime.now(timezone.utc)
+        fresh = ClassificationResult(
+            ticker="RELIANCE", title_hash="fresh", category=NewsCategory.EARNINGS,
+            confidence=0.9, rationale="current result", prompt_version="v1",
+            classified_at=now, source_name="Reuters", source_url="https://example.test/fresh",
+            published_at=now, source_ref="f" * 64,
+            source_valid_until=now + timedelta(minutes=5),
+        )
+        stale = ClassificationResult(
+            ticker="RELIANCE", title_hash="stale", category=NewsCategory.RUMOR,
+            confidence=0.9, rationale="old", prompt_version="v1",
+            classified_at=now - timedelta(days=8), source_name="Old feed",
+            source_url="https://example.test/stale", published_at=now - timedelta(days=8),
+            source_ref="s" * 64, source_valid_until=now - timedelta(seconds=1),
+        )
+        agent_mod.client = MagicMock()
+        agent_mod.client.with_options.return_value = agent_mod.client
+        agent_mod.client.chat.completions.create.return_value = _fake_llm_response(json.dumps({
+            "conviction_score": 70, "pitch": "current", "rationale": "current", "risks": "normal",
+        }))
+
+        result = agent_mod.analyze_with_minimax(
+            {"ticker": "RELIANCE"}, "fresh evidence only", "BULL",
+            pre_classifications=[fresh, stale],
+            expires_at=now + timedelta(seconds=30),
+        )
+
+        assert result.available is True
+        assert result.classification_count == 1
+        assert result.expires_at > now
+        prompt = "\n".join(
+            message["content"]
+            for message in agent_mod.client.chat.completions.create.call_args.kwargs["messages"]
+        )
+        assert "HEADLINE fresh" in prompt
+        assert "HEADLINE stale" not in prompt
+
     def test_elapsed_deadline_fails_before_model_call(self, agent_mod):
         agent_mod.client = MagicMock()
         result = agent_mod.analyze_with_minimax(
@@ -199,9 +314,9 @@ class TestAnalyzeWithMiniMax:
             {"ticker": "RELIANCE"}, "raw", "BULL",
             expires_at=datetime.now(timezone.utc) + timedelta(milliseconds=5),
         )
-        assert result.reason == "review_completed_late"
+        assert result.reason == "review_deadline_insufficient"
         assert result.available is False
-        assert result.completed_at >= result.expires_at
+        agent_mod.client.chat.completions.create.assert_not_called()
 
     def test_source_expiry_applies_when_request_deadline_is_omitted(self, agent_mod):
         from news_classifier import ClassificationResult, NewsCategory
@@ -230,9 +345,10 @@ class TestAnalyzeWithMiniMax:
             {"ticker": "RELIANCE"}, "raw", "BULL",
             pre_classifications=[classification],
         )
-        assert result.reason == "review_completed_late"
+        assert result.reason == "review_deadline_insufficient"
         assert result.expires_at == classification.source_valid_until
         assert result.payload == {}
+        agent_mod.client.chat.completions.create.assert_not_called()
 
     def test_returns_parsed_output(self, agent_mod):
         content = json.dumps({

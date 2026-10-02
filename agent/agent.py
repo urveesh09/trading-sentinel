@@ -111,6 +111,16 @@ MINIMAX_ASYNC_REVIEW_DEADLINE_SEC = int(os.getenv("MINIMAX_ASYNC_REVIEW_DEADLINE
 # bumps should be deliberate, with a note in the prompt diff.
 MINIMAX_PROMPT_VERSION = os.getenv("MINIMAX_PROMPT_VERSION", "v1")
 
+# Preserve a small completion/cleanup margin.  A request that cannot leave this
+# margin is not dispatched. Socket deadlines bound normal SDK work; an
+# unresponsive transport cannot be forcibly cancelled by a daemon-thread join.
+MINIMAX_DEADLINE_CLEANUP_SECONDS = 1.0
+
+# A news item that cannot prove a still-current source clock cannot support a
+# catalyst claim.  It is excluded from optional review context rather than
+# shortening (and thereby blocking) a deterministic signal's annotation.
+NEWS_SOURCE_MAX_AGE = timedelta(days=7)
+
 
 # [WORKFLOW-I I.A 2026-09-13] Opt-in flag for including I3 usefulness
 # metrics in the optional-AI status envelope posted to the engine.
@@ -123,6 +133,35 @@ OPTIONAL_AI_REPORT_USEFULNESS = (
     os.getenv("OPTIONAL_AI_REPORT_USEFULNESS", "false").strip().lower()
     in {"1", "true", "yes", "on"}
 )
+# [S10 R3 2026-10-02] Opt-in like usefulness: enable after the engine-side
+# ``_clean_diagnostics`` allow-list is deployed, or status posts are rejected.
+OPTIONAL_AI_REPORT_DIAGNOSTICS = (
+    os.getenv("OPTIONAL_AI_REPORT_DIAGNOSTICS", "false").strip().lower()
+    in {"1", "true", "yes", "on"}
+)
+# Persisted to /tmp for the same reason as the dedup file (/data is read-only).
+REVIEW_COMPLETION_FILE = os.getenv("REVIEW_COMPLETION_FILE", "/tmp/agent_review_completions.json")
+# The EXEC/EM callback rejects a press older than this (node-gateway index.js).
+EXEC_CALLBACK_VALIDITY_SEC = 300
+
+
+def _usable_classifications(
+    pre_classifications: Optional[List["ClassificationResult"]],
+    *,
+    now: datetime,
+) -> List["ClassificationResult"]:
+    """Keep only source-bound classifications that are current at ``now``."""
+    usable = []
+    for classification in pre_classifications or []:
+        valid_until = classification.source_valid_until
+        if (
+            valid_until is not None
+            and valid_until.tzinfo is not None
+            and valid_until.utcoffset() is not None
+            and valid_until.astimezone(timezone.utc) > now
+        ):
+            usable.append(classification)
+    return usable
 
 
 def _effective_classification_expiry(
@@ -132,17 +171,15 @@ def _effective_classification_expiry(
     now: Optional[datetime] = None,
 ) -> Optional[datetime]:
     """Bound annotation validity by request and every source clock."""
-    if not pre_classifications:
-        return requested_expiry
     current = now or datetime.now(timezone.utc)
+    usable = _usable_classifications(pre_classifications, now=current)
+    if not usable:
+        return requested_expiry
     bounds = [requested_expiry] if requested_expiry is not None else []
-    for classification in pre_classifications:
-        bound = classification.source_valid_until
-        if bound is None:
-            bound = classification.classified_at or current
-        if bound.tzinfo is None or bound.utcoffset() is None:
-            bound = current
-        bounds.append(bound.astimezone(timezone.utc))
+    bounds.extend(
+        classification.source_valid_until.astimezone(timezone.utc)
+        for classification in usable
+    )
     return min(bounds) if bounds else requested_expiry
 
 
@@ -155,6 +192,9 @@ def _attach_classification_context(
     effective_expiry = _effective_classification_expiry(
         pre_classifications, expires_at,
     )
+    usable = _usable_classifications(
+        pre_classifications, now=datetime.now(timezone.utc),
+    )
     if pre_classifications is None:
         return replace(review, expires_at=effective_expiry)
     source_references = tuple(dict.fromkeys(
@@ -163,15 +203,16 @@ def _attach_classification_context(
             c.source_url,
             c.published_at.isoformat() if c.published_at else "",
         )
-        for c in pre_classifications
+        for c in usable
         if c.source_ref or c.source_url or c.published_at
     ))
     return replace(
         review,
         classification_context_sha256=(
-            news_classifier.classification_context_sha256(pre_classifications)
+            news_classifier.classification_context_sha256(usable)
+            if usable else None
         ),
-        classification_count=len(pre_classifications),
+        classification_count=len(usable),
         source_references=source_references,
         expires_at=effective_expiry,
     )
@@ -917,9 +958,18 @@ def _maybe_classify_news(
             items = _fetch_news_items_for_ticker(ticker)
         if not items:
             return []
-        return news_classifier.classify_news_items(
-            items, ticker=ticker, client=classifier_client,
-        )
+        started = time.monotonic()
+        try:
+            result = news_classifier.classify_news_items(
+                items, ticker=ticker, client=classifier_client,
+            )
+        except Exception:
+            if _optional_ai_queue is not None:
+                _optional_ai_queue.record_classifier(time.monotonic() - started, ok=False)
+            raise
+        if _optional_ai_queue is not None:
+            _optional_ai_queue.record_classifier(time.monotonic() - started, ok=True)
+        return result
     except Exception as exc:  # noqa: BLE001
         logger.warning(
             "news_classifier_unexpected_failure ticker=%s err=%s",
@@ -931,11 +981,32 @@ def _maybe_classify_news(
 def _collect_news_context(
     ticker: str,
 ) -> tuple[str, Optional[List["ClassificationResult"]]]:
-    """Fetch once, then render and classify the exact same item objects."""
+    """Fetch once, then render/classify only source-current item objects."""
     yahoo_items, google_items = _fetch_news_bundle_for_ticker(ticker)
-    items = [*yahoo_items, *google_items]
+    now = datetime.now(timezone.utc)
+
+    def usable(items: List[NewsItem]) -> List[NewsItem]:
+        return [
+            item for item in items
+            if item.published_at_parsed is not None
+            and item.published_at_parsed.tzinfo is not None
+            and item.published_at_parsed.astimezone(timezone.utc) + NEWS_SOURCE_MAX_AGE > now
+        ]
+
+    usable_yahoo, usable_google = usable(yahoo_items), usable(google_items)
+    excluded = len(yahoo_items) + len(google_items) - len(usable_yahoo) - len(usable_google)
+    if excluded and _optional_ai_queue is not None:
+        _optional_ai_queue.record_source_exclusions(excluded)
+    items = [*usable_yahoo, *usable_google]
+    rendered = _render_news_bundle(usable_yahoo, usable_google)
+    if excluded:
+        unavailable = (
+            f"NEWS_UNAVAILABLE: excluded {excluded} stale_or_unverifiable "
+            "headline(s); no catalyst claim may rely on them."
+        )
+        rendered = f"{unavailable}\n\n{rendered}" if rendered else unavailable
     return (
-        _render_news_bundle(yahoo_items, google_items),
+        rendered,
         _maybe_classify_news(ticker, items),
     )
 
@@ -1011,6 +1082,9 @@ def analyze_with_minimax(
     existing verdict pipeline contract.
     """
     started_at = datetime.now(timezone.utc)
+    pre_classifications = _usable_classifications(
+        pre_classifications, now=started_at,
+    )
     expires_at = _effective_classification_expiry(
         pre_classifications, expires_at, now=started_at,
     )
@@ -1020,6 +1094,15 @@ def analyze_with_minimax(
             pre_classifications,
             expires_at,
         )
+    remaining_seconds = None
+    if expires_at is not None:
+        remaining_seconds = (expires_at - started_at).total_seconds()
+        if remaining_seconds <= MINIMAX_DEADLINE_CLEANUP_SECONDS:
+            return _attach_classification_context(
+                advisory_unavailable("review_deadline_insufficient"),
+                pre_classifications,
+                expires_at,
+            )
     if client is None:
         return _attach_classification_context(
             advisory_unavailable("AI_DISABLED"), pre_classifications, expires_at,
@@ -1157,21 +1240,34 @@ def analyze_with_minimax(
     # if 30s were a generous allowance for a reasoning model that spends
     # output tokens on a <think> block before answering.
     #
-    # Now: one retry maximum (bounding what an abandoned thread can still
-    # spend), a per-request timeout that fits a slow-but-healthy call, and a
-    # wall wide enough for the retry. The whole budget stays well inside the
-    # 3-minute poll cadence, so a hung call still cannot stall the pipeline.
+    # Legacy synchronous calls keep their configured retry budget. A review
+    # with an absolute usefulness deadline gets a request-local no-retry client:
+    # per-attempt socket timeouts plus SDK backoff are not a total deadline.
     result_holder: Dict = {}
 
     def _call_minimax():
         try:
+            request_client = client
+            request_timeout = MINIMAX_REQUEST_TIMEOUT_SEC
+            if expires_at is not None:
+                request_client = client.with_options(max_retries=0)
+                # Deduct prompt building, client setup and thread scheduling.
+                remaining = (expires_at - datetime.now(timezone.utc)).total_seconds()
+                request_timeout = min(
+                    MINIMAX_REQUEST_TIMEOUT_SEC,
+                    MINIMAX_WALL_TIMEOUT_SEC - MINIMAX_DEADLINE_CLEANUP_SECONDS,
+                    remaining - MINIMAX_DEADLINE_CLEANUP_SECONDS,
+                )
+                if request_timeout <= 0:
+                    result_holder['deadline_insufficient'] = True
+                    return
             # [MINIMAX-MIGRATION 2026-07-15] MiniMax speaks the OpenAI
             # chat-completions dialect, so the analyst prompt is split into a
             # short system role (identity + the exact JSON contract) and the
             # user role (the trade dossier built above). MiniMax has no
             # Gemini-style server-side schema enforcement, so the contract is
             # carried in the prompt and validated on the way out (below).
-            resp = client.chat.completions.create(
+            resp = request_client.chat.completions.create(
                 model=MINIMAX_MODEL,
                 messages=[
                     {
@@ -1197,7 +1293,7 @@ def analyze_with_minimax(
                 # Belt-and-braces: the SDK's own request timeout backs up the
                 # thread wall. Kept under the wall so the SDK errors (giving us
                 # a clean log line) before the thread is abandoned.
-                timeout=MINIMAX_REQUEST_TIMEOUT_SEC,
+                timeout=request_timeout,
             )
             result_holder['response'] = resp
         except Exception as exc:
@@ -1208,7 +1304,13 @@ def analyze_with_minimax(
     # begins. Each return site below uses ``datetime.now(timezone.utc)``
     # as completed_at, then attaches provenance via ``_attach_provenance``.
     minimax_thread.start()
-    minimax_thread.join(timeout=MINIMAX_WALL_TIMEOUT_SEC)
+    wall_timeout = (
+        max(0.0, min(MINIMAX_WALL_TIMEOUT_SEC,
+                     (expires_at - datetime.now(timezone.utc)).total_seconds()))
+        if expires_at is not None
+        else MINIMAX_WALL_TIMEOUT_SEC
+    )
+    minimax_thread.join(timeout=wall_timeout)
     completed_at = datetime.now(timezone.utc)
 
     if expires_at is not None and completed_at >= expires_at:
@@ -1220,11 +1322,17 @@ def analyze_with_minimax(
 
     if minimax_thread.is_alive():
         logger.error(
-            f"MiniMax timeout ({MINIMAX_WALL_TIMEOUT_SEC}s) for {ticker} - "
+            f"MiniMax timeout ({wall_timeout:.3f}s) for {ticker} - "
             f"analysis skipped, alert still sent without conviction"
         )
         return _attach_provenance(
-            advisory_unavailable(f"timeout_{MINIMAX_WALL_TIMEOUT_SEC}s"),
+            advisory_unavailable(f"timeout_{wall_timeout:.3f}s"),
+            started_at=started_at, completed_at=completed_at,
+            pre_classifications=pre_classifications, expires_at=expires_at,
+        )
+    if result_holder.get('deadline_insufficient'):
+        return _attach_provenance(
+            advisory_unavailable("review_deadline_insufficient"),
             started_at=started_at, completed_at=completed_at,
             pre_classifications=pre_classifications, expires_at=expires_at,
         )
@@ -1375,6 +1483,12 @@ def optional_ai_status() -> Dict:
     # the field without code change.
     if OPTIONAL_AI_REPORT_USEFULNESS and _optional_ai_queue is not None:
         payload["usefulness"] = _optional_ai_queue.usefulness_snapshot()
+    if OPTIONAL_AI_REPORT_DIAGNOSTICS and _optional_ai_queue is not None:
+        diagnostics = dict(_optional_ai_queue.diagnostics_snapshot())
+        tracker = _review_completion_tracker()
+        for name, value in tracker.counters.items():
+            diagnostics[f"completion_{name}"] = value
+        payload["diagnostics"] = diagnostics
     return payload
 
 
@@ -1404,6 +1518,18 @@ def queue_optional_ai_review(
     market_regime: str,
     pre_classifications: Optional[List["ClassificationResult"]] = None,
 ) -> Optional[Review]:
+    """Compatibility wrapper; see ``queue_optional_ai_review_with_key``."""
+    return queue_optional_ai_review_with_key(
+        signal, sentiment_text, market_regime, pre_classifications,
+    )[0]
+
+
+def queue_optional_ai_review_with_key(
+    signal: Dict,
+    sentiment_text: str,
+    market_regime: str,
+    pre_classifications: Optional[List["ClassificationResult"]] = None,
+) -> tuple[Optional[Review], Optional[str]]:
     """Queue a momentum-only annotation, returning immediately to the alert path.
 
     ``None`` means the caller must retain its existing synchronous policy.
@@ -1420,10 +1546,13 @@ def queue_optional_ai_review(
     reference (the queue does not mutate it).
     """
     if client is None:
-        return advisory_unavailable("AI_DISABLED")
+        return advisory_unavailable("AI_DISABLED"), None
     queue = _get_optional_ai_queue()
     if queue is None:
-        return None
+        return None, None
+    pre_classifications = _usable_classifications(
+        pre_classifications, now=datetime.now(timezone.utc),
+    )
     requested_expiry = (
         datetime.now(timezone.utc)
         + timedelta(seconds=MINIMAX_ASYNC_REVIEW_DEADLINE_SEC)
@@ -1431,16 +1560,17 @@ def queue_optional_ai_review(
     review_expires_at = _effective_classification_expiry(
         pre_classifications, requested_expiry,
     )
+    review_key = _optional_review_key(
+        signal, sentiment_text, market_regime, pre_classifications,
+    )
     submission = queue.submit(
-        _optional_review_key(
-            signal, sentiment_text, market_regime, pre_classifications,
-        ), signal,
+        review_key, signal,
         sentiment_text, market_regime,
         pre_classifications=pre_classifications,
         expires_at=review_expires_at,
     )
     if submission.review is not None:
-        return submission.review
+        return submission.review, review_key
     reasons = {
         "QUEUED": "AI_REVIEW_PENDING", "PENDING": "AI_REVIEW_PENDING",
         "QUEUE_FULL": "AI_REVIEW_QUEUE_FULL", "BUDGET_EXHAUSTED": "AI_REVIEW_BUDGET_EXHAUSTED",
@@ -1452,7 +1582,73 @@ def queue_optional_ai_review(
         ),
         pre_classifications,
         review_expires_at,
-    )
+    ), review_key
+
+
+_completion_tracker = None
+
+
+def _review_completion_tracker():
+    global _completion_tracker
+    if _completion_tracker is None:
+        from review_completion import CompletionTracker
+        _completion_tracker = CompletionTracker(REVIEW_COMPLETION_FILE)
+    return _completion_tracker
+
+
+def _completion_annotation(review: "Review") -> str:
+    """Bounded annotation appended to the original alert; never trade fields."""
+    analysis = review.payload or {}
+    lines = [f"AI review completed: {review.banner()}"]
+    if review.verdict is Verdict.REJECT:
+        lines.append("Advisory only: deterministic risk controls and your approval remain authoritative.")
+    for label, field in (("Pitch", "pitch"), ("Risk", "risks")):
+        value = str(analysis.get(field) or "").strip()
+        if value:
+            lines.append(f"{label}: {value[:300]}")
+    return "\n".join(lines)
+
+
+def _edit_telegram_message(*, chat_id, message_id: int, text: str, reply_markup: str) -> str:
+    """Edit one existing message, keeping its keyboard unchanged.
+
+    Returns OK, NOT_MODIFIED (an earlier identical edit already landed),
+    AMBIGUOUS (timeout: a retry is idempotent) or FAILED.  The bot token is
+    never logged.
+    """
+    url = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/editMessageText"
+    try:
+        response = requests.post(url, json={"chat_id": chat_id, "message_id": message_id, "text": text,
+                                            "reply_markup": reply_markup}, timeout=10)
+    except requests.Timeout:
+        return "AMBIGUOUS"
+    except requests.RequestException as exc:
+        logger.warning("review_completion_edit_failed error=%s", type(exc).__name__)
+        return "FAILED"
+    try:
+        body = response.json()
+    except ValueError:
+        body = {}
+    if response.ok and body.get("ok"):
+        return "OK"
+    if "message is not modified" in str(body.get("description", "")).lower():
+        return "NOT_MODIFIED"
+    logger.warning("review_completion_edit_rejected status=%s", response.status_code)
+    return "FAILED"
+
+
+def deliver_review_completions() -> None:
+    """Publish completed reviews to their original, still-valid alerts once."""
+    if _optional_ai_queue is None:
+        return
+    try:
+        outcome = _review_completion_tracker().deliver_due(
+            _optional_ai_queue.status, _edit_telegram_message, _completion_annotation,
+        )
+        if any(outcome.values()):
+            logger.info("review_completion_pass %s", json.dumps(outcome, sort_keys=True))
+    except Exception:  # an annotation failure must never affect alerts or trading
+        logger.warning("review_completion_pass_failed", exc_info=True)
 
 def send_telegram_alert(signal: Dict, review: "Review"):
     url = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage"
@@ -1594,7 +1790,7 @@ def run_momentum_pipeline():
             # env flag is off (the default), returns None and
             # both paths consume raw sentiment_text exactly as
             # before. See _maybe_classify_news for the contract.
-            review = queue_optional_ai_review(
+            review, completion_key = queue_optional_ai_review_with_key(
                 signal, sentiment_text, regime,
                 pre_classifications=pre_classifications,
             )
@@ -1637,7 +1833,8 @@ def run_momentum_pipeline():
                     "controls and operator approval remain authoritative."
                 )
 
-            send_momentum_telegram_alert(signal, review, momentum_pool)
+            send_momentum_telegram_alert(signal, review, momentum_pool,
+                                         completion_key=completion_key)
             mark_processed(sig_id)
         except Exception as e:
             logger.error(
@@ -1665,7 +1862,8 @@ def send_conviction_veto_notice(signal: Dict, review: "Review"):
         logger.error(f"Conviction veto notice failed: {ticker}: {e}")
 
 def send_momentum_telegram_alert(
-    signal: Dict, review: "Review", momentum_pool: float
+    signal: Dict, review: "Review", momentum_pool: float,
+    *, completion_key: Optional[str] = None,
 ):
     """Send a distinct, plain-text INTRADAY alert.
 
@@ -1762,19 +1960,44 @@ def send_momentum_telegram_alert(
         res.raise_for_status()
         logger.info(f"Momentum Telegram sent: {ticker}")
     except Exception as e:
-        # requests' HTTPError includes the request URL, and Telegram embeds
-        # the live bot token in that URL.  Raise only a redacted exception:
-        # the caller logs it (with traceback) and leaves the signal unmarked
-        # so it is retried on the next poll.
-        safe_error = str(e)
-        if TELEGRAM_BOT_TOKEN:
-            safe_error = safe_error.replace(str(TELEGRAM_BOT_TOKEN), "<redacted>")
-        safe_error = re.sub(
-            r"(?i)(/bot)[^/\s?]+", r"\1<redacted>", safe_error
+        _raise_redacted_delivery_error(ticker, e)
+    _register_pending_completion(res, review, completion_key, text, payload["reply_markup"], ts)
+
+
+def _register_pending_completion(res, review: "Review", completion_key: Optional[str],
+                                 text: str, reply_markup: str, sent_ts: int) -> None:
+    """Remember the alert so a pending review can annotate it once later."""
+    if not completion_key or review.available or review.reason != "AI_REVIEW_PENDING":
+        return
+    try:
+        message_id = int(res.json()["result"]["message_id"])
+        window_end = datetime.fromtimestamp(sent_ts, timezone.utc) + timedelta(seconds=EXEC_CALLBACK_VALIDITY_SEC)
+        valid_until = min(window_end, review.expires_at) if review.expires_at else window_end
+        _review_completion_tracker().register(
+            review_key=completion_key, chat_id=TELEGRAM_CHAT_ID, message_id=message_id,
+            text=text, reply_markup=reply_markup, valid_until=valid_until,
         )
-        raise RuntimeError(
-            f"Momentum Telegram delivery failed for {ticker}: {safe_error}"
-        ) from None
+    except Exception:  # registration is optional evidence; the alert already went out
+        logger.warning("review_completion_register_failed", exc_info=True)
+
+
+def _raise_redacted_delivery_error(ticker, e) -> None:
+    """Re-raise a momentum delivery failure without the bot token.
+
+    requests' HTTPError includes the request URL, and Telegram embeds the live
+    bot token in that URL.  Raise only a redacted exception: the caller logs it
+    (with traceback) and leaves the signal unmarked so it is retried on the
+    next poll.
+    """
+    safe_error = str(e)
+    if TELEGRAM_BOT_TOKEN:
+        safe_error = safe_error.replace(str(TELEGRAM_BOT_TOKEN), "<redacted>")
+    safe_error = re.sub(
+        r"(?i)(/bot)[^/\s?]+", r"\1<redacted>", safe_error
+    )
+    raise RuntimeError(
+        f"Momentum Telegram delivery failed for {ticker}: {safe_error}"
+    ) from None
 
 def run_pipeline():
     # Fetch regime from Container B health/signals endpoint
@@ -1880,6 +2103,17 @@ def main():
     # Status is separate from the decision path: publishing it never waits for
     # the engine and a failed report leaves deterministic alerts untouched.
     schedule.every(1).minutes.do(publish_optional_ai_status)
+    # [S10 R3] Once-only completion updates to the original valid alert.
+    schedule.every(15).seconds.do(deliver_review_completions)
+
+    def _shutdown_review_worker(signum, _frame):
+        # Fail queued/in-flight reviews closed and make late results inert.
+        if _optional_ai_queue is not None:
+            _optional_ai_queue.shutdown(timeout=2.0)
+        raise SystemExit(0)
+
+    import signal as _signal
+    _signal.signal(_signal.SIGTERM, _shutdown_review_worker)
 
     # [WORKFLOW-I.4.E.CRON_WIRING 2026-09-14] Hourly contract-health
     # self-policing. The I.4.E bounded invariants (status envelope

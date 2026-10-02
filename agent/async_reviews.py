@@ -156,11 +156,107 @@ class AsyncReviewQueue:
         self._circuit_opens: int = 0
         self._last_response_seconds: Optional[float] = None
         self._last_completed_at: Optional[datetime] = None
+        # [S10 R3 2026-10-02] Bounded diagnostics: counts and bounded
+        # timing samples only -- never prompts, sources or review text.
+        self._submit_states: dict[str, int] = {}
+        self._expired_before_submit = 0
+        self._expired_in_queue = 0
+        self._expired_after_call = 0
+        self._ready = 0
+        self._source_excluded_total = 0
+        self._classifier_calls = 0
+        self._classifier_failures = 0
+        self._classifier_seconds: list[float] = []
+        self._late_results_discarded = 0
+        self._shutdown_rejected = 0
+        self._inflight_overruns = 0
+        self._inflight_key: Optional[str] = None
+        self._inflight_deadline: Optional[datetime] = None
+        self._closed = False
         self._stop = Event()
         self._worker = Thread(target=self._run, name="optional-ai-review", daemon=True)
         self._worker.start()
 
     def submit(
+        self, key: str, signal: dict, sentiment: str, regime: str, *,
+        expires_at: datetime,
+        pre_classifications: Optional[List["ClassificationResult"]] = None,
+    ) -> ReviewSubmission:
+        """Queue one review; see ``_submit``. Records the bounded outcome."""
+        with self._lock:
+            if self._closed:
+                self._shutdown_rejected += 1
+                return self._count_submission(
+                    ReviewSubmission(key, "UNAVAILABLE", reason="worker_shutdown"))
+        return self._count_submission(self._submit(
+            key, signal, sentiment, regime, expires_at=expires_at,
+            pre_classifications=pre_classifications,
+        ))
+
+    def _count_submission(self, submission: ReviewSubmission) -> ReviewSubmission:
+        with self._lock:
+            self._submit_states[submission.state] = self._submit_states.get(submission.state, 0) + 1
+            if submission.state == "EXPIRED":
+                self._expired_before_submit += 1
+        return submission
+
+    def record_source_exclusions(self, count: int) -> None:
+        """Count headlines excluded as stale/unverifiable before review."""
+        if isinstance(count, int) and not isinstance(count, bool) and count > 0:
+            with self._lock:
+                self._source_excluded_total += count
+
+    def record_classifier(self, seconds: float, *, ok: bool) -> None:
+        """Classifier timing, kept separate from the analyst's response time."""
+        if not isinstance(seconds, (int, float)) or isinstance(seconds, bool) or seconds < 0 or seconds != seconds:
+            return
+        with self._lock:
+            self._classifier_calls += 1
+            if not ok:
+                self._classifier_failures += 1
+            self._classifier_seconds.append(float(seconds))
+            if len(self._classifier_seconds) > self._max_retained_states:
+                self._classifier_seconds = self._classifier_seconds[-self._max_retained_states:]
+
+    def diagnostics_snapshot(self) -> dict[str, object]:
+        """Bounded counters/timings for the engine allow-list (no content)."""
+        def stats(samples: list[float]) -> tuple[Optional[float], Optional[float]]:
+            if not samples:
+                return None, None
+            ordered = sorted(samples)
+            p95 = ordered[max(0, min(len(ordered) - 1, int(round(0.95 * (len(ordered) - 1)))))]
+            return sum(samples) / len(samples), p95
+        with self._lock:
+            now = self._now()
+            if (self._inflight_deadline is not None and now > self._inflight_deadline
+                    and self._inflight_key is not None):
+                # A provider call still running past its deadline: the
+                # transport timeout should have bounded it.  Count it once.
+                self._inflight_overruns += 1
+                self._inflight_deadline = None
+            classifier_mean, classifier_p95 = stats(self._classifier_seconds)
+            analyst_mean, analyst_p95 = stats(self._response_seconds)
+            return {
+                "submit_states": dict(sorted(self._submit_states.items())),
+                "pending": len(self._pending),
+                "inflight": 1 if self._inflight_key is not None else 0,
+                "ready": self._ready,
+                "expired_before_submit": self._expired_before_submit,
+                "expired_in_queue": self._expired_in_queue,
+                "expired_after_call": self._expired_after_call,
+                "source_excluded_total": self._source_excluded_total,
+                "classifier_calls": self._classifier_calls,
+                "classifier_failures": self._classifier_failures,
+                "classifier_seconds_mean": classifier_mean,
+                "classifier_seconds_p95": classifier_p95,
+                "analyst_seconds_mean": analyst_mean,
+                "analyst_seconds_p95": analyst_p95,
+                "late_results_discarded": self._late_results_discarded,
+                "shutdown_rejected": self._shutdown_rejected,
+                "inflight_overruns": self._inflight_overruns,
+            }
+
+    def _submit(
         self, key: str, signal: dict, sentiment: str, regime: str, *,
         expires_at: datetime,
         pre_classifications: Optional[List["ClassificationResult"]] = None,
@@ -336,8 +432,26 @@ class AsyncReviewQueue:
             }
 
     def shutdown(self, timeout: float = 1.0) -> None:
+        """Stop accepting work and fail every queued/in-flight review closed.
+
+        Python cannot force-cancel a socket blocked inside the worker thread.
+        Instead: no new submission is accepted, queued and in-flight keys are
+        marked UNAVAILABLE now, and any result that arrives later is discarded
+        (counted), never cached or published.  The per-request transport
+        timeout fitted below the review deadline is what bounds the socket.
+        """
+        with self._lock:
+            self._closed = True
+            for key in list(self._pending):
+                self._remember(ReviewSubmission(key, "UNAVAILABLE", reason="worker_shutdown"))
+            self._pending.clear()
+            self._pending_context.clear()
         self._stop.set()
         self._worker.join(timeout=timeout)
+
+    @property
+    def worker_alive(self) -> bool:
+        return self._worker.is_alive()
 
     def _remember(self, submission: ReviewSubmission) -> ReviewSubmission:
         self._states[submission.key] = submission
@@ -410,10 +524,14 @@ class AsyncReviewQueue:
                 continue
             try:
                 now = self._now()
+                with self._lock:
+                    if self._closed:
+                        continue
                 if task.expires_at <= now:
                     with self._lock:
                         self._pending.discard(task.key)
                         self._pending_context.pop(task.key, None)
+                        self._expired_in_queue += 1
                         self._remember(ReviewSubmission(task.key, "EXPIRED", reason="deadline_elapsed"))
                     continue
                 with self._lock:
@@ -423,6 +541,9 @@ class AsyncReviewQueue:
                         self._pending_context.pop(task.key, None)
                         self._remember(ReviewSubmission(task.key, "CIRCUIT_OPEN", reason="provider_failures"))
                         continue
+                with self._lock:
+                    self._inflight_key = task.key
+                    self._inflight_deadline = task.expires_at
                 try:
                     # [WORKFLOW-I.4.D 2026-09-14] Forward the
                     # queued pre_classifications to the reviewer
@@ -438,12 +559,17 @@ class AsyncReviewQueue:
                     accepts_pre_cls = (
                         "pre_classifications" in reviewer_params
                     )
+                    accepts_expiry = "expires_at" in reviewer_params
+                    reviewer_kwargs = (
+                        {"expires_at": task.expires_at} if accepts_expiry else {}
+                    )
                     if accepts_pre_cls and task.pre_classifications:
                         review = self._reviewer(
                             task.signal,
                             task.sentiment,
                             task.regime,
                             pre_classifications=list(task.pre_classifications),
+                            **reviewer_kwargs,
                         )
                     elif accepts_pre_cls:
                         # Pre-classifications empty -> call with
@@ -454,6 +580,7 @@ class AsyncReviewQueue:
                             task.sentiment,
                             task.regime,
                             pre_classifications=None,
+                            **reviewer_kwargs,
                         )
                     else:
                         # Backwards-compatible: 3-arg call shape.
@@ -461,9 +588,19 @@ class AsyncReviewQueue:
                             task.signal,
                             task.sentiment,
                             task.regime,
+                            **reviewer_kwargs,
                         )
                 except Exception:
                     review = unavailable("worker_exception")
+                finally:
+                    with self._lock:
+                        self._inflight_key = None
+                        self._inflight_deadline = None
+                with self._lock:
+                    if self._closed:
+                        # Result arrived after shutdown: inert by contract.
+                        self._late_results_discarded += 1
+                        continue
                 completed = self._now()
                 review = _attach_task_context(review, task, task.expires_at)
                 # [WORKFLOW-I I3 2026-09-13] Capture the model's response
@@ -490,6 +627,7 @@ class AsyncReviewQueue:
                         self._verdict_counts.get(verdict_name, 0) + 1
                     )
                     if completed >= task.expires_at:
+                        self._expired_after_call += 1
                         expired_review = _attach_task_context(
                             unavailable("review_completed_late"),
                             task,
@@ -509,6 +647,7 @@ class AsyncReviewQueue:
                             task.classification_context_sha256,
                         )
                         self._review_expires_at[task.key] = valid_until
+                        self._ready += 1
                         self._remember(ReviewSubmission(task.key, "READY", review=review))
                     else:
                         self._consecutive_failures += 1

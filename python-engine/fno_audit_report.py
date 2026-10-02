@@ -147,6 +147,15 @@ async def build_fno_daily_audit_report(db_path: str, day: date | str) -> dict[st
             "legacy_audit_fields": False,
         },
         "financial": {"status": "UNAVAILABLE", "by_source": {}},
+        "defined_risk_settlement": {
+            "status": "UNAVAILABLE",
+            "reason": "fno_dr_positions is absent or predates contract-bound settlement evidence",
+            "settled_count": 0,
+            "unresolved_count": 0,
+            "legacy_unverified_count": 0,
+            "model_gross_pnl": None,
+            "cash_gross_pnl": None,
+        },
         "expectancy": {
             "status": "NOT_ASSESSED",
             "reason": "A daily realised P&L or small close count does not establish expectancy.",
@@ -263,6 +272,63 @@ async def build_fno_daily_audit_report(db_path: str, day: date | str) -> dict[st
                 result["expectancy"]["closed_outcome_sample_size"] = sum(
                     value["closed"]["event_count"] for value in by_source.values()
                 )
+
+        dr_columns = await _table_columns(db, "fno_dr_positions")
+        if dr_columns:
+            # The v1 DR book recorded only a model mark.  Never project a cash
+            # value backwards from that mark: report it as legacy/unverified.
+            required = {"source", "status", "opened_at", "closed_at", "unresolved_at"}
+            new_fields = {"settlement_state", "pricing_policy", "model_gross_pnl", "cash_gross_pnl"}
+            if not required <= dr_columns:
+                result["defined_risk_settlement"] = {
+                    "status": "UNAVAILABLE_SCHEMA",
+                    "reason": "fno_dr_positions lacks lifecycle timestamp fields",
+                    "settled_count": 0, "unresolved_count": 0,
+                    "legacy_unverified_count": 0,
+                    "model_gross_pnl": None, "cash_gross_pnl": None,
+                }
+            elif not new_fields <= dr_columns:
+                async with db.execute(
+                    "SELECT COUNT(*) FROM fno_dr_positions WHERE source IN (?, ?)", FNO_SOURCES
+                ) as cursor:
+                    legacy_count = int((await cursor.fetchone())[0] or 0)
+                result["defined_risk_settlement"] = {
+                    "status": "LEGACY_UNVERIFIED",
+                    "reason": "legacy DR rows have no immutable contract identity or executable-cash fields",
+                    "settled_count": 0, "unresolved_count": 0,
+                    "legacy_unverified_count": legacy_count,
+                    "model_gross_pnl": None, "cash_gross_pnl": None,
+                }
+            else:
+                async with db.execute(
+                    "SELECT status, settlement_state, pricing_policy, model_gross_pnl, cash_gross_pnl, "
+                    "closed_at, unresolved_at FROM fno_dr_positions WHERE source IN (?, ?)", FNO_SOURCES
+                ) as cursor:
+                    dr_rows = await cursor.fetchall()
+                settled = unresolved = legacy = 0
+                model_total = cash_total = 0.0
+                for status, state, policy, model, cash, closed_at, unresolved_at in dr_rows:
+                    stamp = closed_at or unresolved_at
+                    observed_at = _parse_aware_timestamp(stamp)
+                    if observed_at is None or observed_at.astimezone(IST).date() != report_day:
+                        continue
+                    if state == "SETTLED" and policy == "ENTRY_MID_EXIT_BID_ASK_V1":
+                        settled += 1
+                        model_total += float(model or 0.0)
+                        cash_total += float(cash or 0.0)
+                    elif state == "UNRESOLVED" or status == "UNRESOLVED":
+                        unresolved += 1
+                    else:
+                        legacy += 1
+                result["defined_risk_settlement"] = {
+                    "status": "OK",
+                    "reason": "model-mid valuation and executable bid/ask cash are separate evidence fields",
+                    "settled_count": settled,
+                    "unresolved_count": unresolved,
+                    "legacy_unverified_count": legacy,
+                    "model_gross_pnl": round(model_total, 2),
+                    "cash_gross_pnl": round(cash_total, 2),
+                }
     except aiosqlite.Error as exc:
         result["errors"].append(f"sqlite_error:{type(exc).__name__}")
     finally:

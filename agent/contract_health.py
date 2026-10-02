@@ -54,7 +54,14 @@ STATUS_ENVELOPE_ALLOWED_KEYS: frozenset[str] = frozenset(
         "reason",
         "queue",
         "usefulness",
+        "diagnostics",
     }
+)
+
+#: [S10 R3] Keys permitted inside the ``diagnostics`` sub-dict: bounded
+#: counts and timing aggregates only -- never prompts, sources or review text.
+DIAGNOSTICS_ALLOWED_KEYS: frozenset[str] = frozenset(
+    ['pending', 'inflight', 'ready', 'expired_before_submit', 'expired_in_queue', 'expired_after_call', 'source_excluded_total', 'classifier_calls', 'classifier_failures', 'late_results_discarded', 'shutdown_rejected', 'inflight_overruns', 'completion_published', 'completion_expired_not_published', 'completion_review_not_available', 'completion_worker_state_lost', 'completion_edit_failed'] + ['classifier_seconds_mean', 'classifier_seconds_p95', 'analyst_seconds_mean', 'analyst_seconds_p95'] + ["submit_states"]
 )
 
 #: Keys permitted inside the ``usefulness`` sub-dict (counters only --
@@ -232,6 +239,15 @@ def check_status_envelope_authority(envelope: Optional[dict[str, Any]]) -> Contr
                 f"allow-list): {u_extras}"
             )
         observed["usefulness_keys"] = u_keys
+
+    if "diagnostics" in envelope and isinstance(envelope["diagnostics"], dict):
+        d_keys = sorted(envelope["diagnostics"].keys())
+        d_extras = sorted(set(d_keys) - DIAGNOSTICS_ALLOWED_KEYS)
+        if d_extras:
+            violations.append(
+                f"diagnostics envelope has unknown keys (not in allow-list): {d_extras}"
+            )
+        observed["diagnostics_keys"] = d_keys
 
     return ContractCheck(
         name="status_envelope_authority",

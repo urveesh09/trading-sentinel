@@ -28,13 +28,14 @@ import asyncio
 from concurrent.futures import Future, ThreadPoolExecutor
 from datetime import datetime, timedelta
 from time import monotonic
-from typing import List, Optional
+from typing import Callable, List, Optional
 from uuid import uuid4
 
 import pytz
 import structlog
 
 import fno_positions as fpos
+from fno_exit_rules import evaluate_single_leg_exit, live_single_leg_exit_params
 import fno_shadow
 from config import settings
 from fno_chain import ChainSnapshot, select_strike_by_delta, take_chain_snapshot
@@ -59,6 +60,95 @@ _SHADOW_TASKS: set[Future] = set()
 
 def _now_min(now_ist: datetime) -> int:
     return now_ist.hour * 60 + now_ist.minute
+
+
+def _read_cap(value: float) -> float:
+    """Defend a management deadline from an invalid runtime setting."""
+    return max(0.1, float(value))
+
+
+def _record_management_read(
+    observations: Optional[dict], name: str, state: str, started: float, cap_sec: float,
+    *, provider_timing: Optional[dict] = None, timeout_partial: bool = False,
+) -> None:
+    """Retain bounded, non-sensitive evidence for one provider read."""
+    if observations is not None:
+        observation = {
+            "state": state,
+            "elapsed_sec": round(monotonic() - started, 3),
+            "cap_sec": round(cap_sec, 3),
+        }
+        if provider_timing is None:
+            observation["provider_timing_status"] = (
+                "PARTIAL_UNAVAILABLE_AFTER_CANCELLATION" if timeout_partial
+                else "UNAVAILABLE_CLIENT_INTERFACE"
+            )
+            if timeout_partial:
+                observation["timeout_stage"] = "provider_or_limiter_or_retry_unknown"
+        else:
+            observation["provider_timing_status"] = "PRESENT"
+            for field in (
+                "limiter_wait_sec", "transport_sec", "parse_sec", "retry_backoff_sec",
+                "attempt_count", "retry_count",
+            ):
+                value = provider_timing.get(field)
+                if isinstance(value, (int, float)) and value >= 0:
+                    observation[field] = round(float(value), 6)
+        observations[name] = observation
+
+
+async def _timed_database_operation(timing: Optional[dict], stage: str, operation):
+    """Measure an awaited DB stage without changing its cancellation semantics.
+
+    SQLite does not expose lock wait separately from statement execution.  The
+    recorded elapsed value therefore deliberately includes both, making a
+    contention-induced stall visible without claiming a false exact split.
+    This helper never adds a timeout around a mutation.
+    """
+    started = monotonic()
+    try:
+        return await operation
+    finally:
+        if timing is not None:
+            stages = timing.setdefault("stages", {})
+            current = stages.setdefault(stage, {"calls": 0, "elapsed_sec": 0.0})
+            current["calls"] += 1
+            current["elapsed_sec"] = round(
+                current["elapsed_sec"] + monotonic() - started, 3
+            )
+
+
+async def _management_quote(kite, tokens) -> tuple[dict, Optional[dict]]:
+    """Use detailed provider timing when the concrete client exposes it.
+
+    Test/replay adapters deliberately need not implement the observability
+    extension.  Their timing is labelled unavailable rather than simulated.
+    """
+    # Check the concrete type, not an instance attribute: loose test/broker
+    # doubles can synthesize arbitrary AsyncMock attributes that are not the
+    # tuple-returning observability contract.
+    observed = getattr(type(kite), "get_quote_with_timing", None)
+    if callable(observed):
+        result, timing = await observed(kite, tokens, priority="management")
+        return result, timing if isinstance(timing, dict) else None
+    return await kite.get_quote(tokens), None
+
+
+def _oldest_quote_age_sec(quotes: dict, tokens: list[int], now_ist: datetime) -> Optional[float]:
+    """Return a conservative exact-leg quote-age observation when supplied."""
+    ages: list[float] = []
+    for token in tokens:
+        raw = (quotes.get(token) or {}).get("last_trade_time")
+        if not raw:
+            return None
+        try:
+            observed = datetime.fromisoformat(str(raw))
+            if observed.tzinfo is None:
+                observed = IST.localize(observed)
+            ages.append(max(0.0, (now_ist - observed.astimezone(IST)).total_seconds()))
+        except (TypeError, ValueError):
+            return None
+    return round(max(ages), 3) if ages else None
 
 
 async def _settle_exit_receipt(
@@ -276,12 +366,16 @@ def _schedule_shadow_observation(
 
 async def _manage_open_positions(
     kite, db_path: str, source: str, executor: FnoExecutor,
-    now_ist: datetime, fut_price: Optional[float],
+    now_ist: datetime, fut_price: Optional[float], *, read_observations: Optional[dict] = None,
+    db_timing: Optional[dict] = None,
+    action_clock: Optional[Callable[[], datetime]] = None,
 ) -> List[dict]:
     """Check every OPEN position for this leg against the §8.4/§8.5 exit
     ladder. Returns records of closed positions."""
     evaluation_started_at = datetime.now(pytz.UTC)
-    positions = await fpos.open_positions(db_path, source)
+    positions = await _timed_database_operation(
+        db_timing, f"open_positions:{source}", fpos.open_positions(db_path, source),
+    )
     if not positions:
         return []
 
@@ -291,23 +385,64 @@ async def _manage_open_positions(
     closed: List[dict] = []
     positions_needing_exit_evaluation = []
     for p in positions:
-        receipt = await fpos.exit_execution_receipt(db_path, p.id, source)
+        receipt = await _timed_database_operation(
+            db_timing, f"exit_receipt_read:{source}",
+            fpos.exit_execution_receipt(db_path, p.id, source),
+        )
         if receipt is None:
             positions_needing_exit_evaluation.append(p)
             continue
-        recovered = await _settle_exit_receipt(db_path, p, receipt)
+        recovered = await _timed_database_operation(
+            db_timing, f"exit_settlement:{source}",
+            _settle_exit_receipt(db_path, p, receipt),
+        )
         if recovered is not None:
             closed.append(recovered)
 
     if not positions_needing_exit_evaluation:
         return closed
 
-    # One batched quote for every held contract.
+    # One batched quote for every held contract. This is a cancellable provider
+    # read, so it gets a total budget. A timeout joins cancellation and falls
+    # through to the existing unpriced/hard-flat path; no mutation is wrapped.
     tokens = [p.token for p in positions_needing_exit_evaluation if p.token]
-    quotes = await kite.get_quote(tokens) if tokens else {}
+    quotes = {}
+    if tokens:
+        quote_cap = _read_cap(settings.FNO_EXIT_QUOTE_READ_MAX_SEC)
+        quote_started = monotonic()
+        try:
+            quotes, provider_timing = await asyncio.wait_for(
+                _management_quote(kite, tokens), timeout=quote_cap,
+            )
+            _record_management_read(
+                read_observations, f"exit_quotes:{source}", "COMPLETED", quote_started, quote_cap,
+                provider_timing=provider_timing,
+            )
+        except asyncio.TimeoutError:
+            _record_management_read(
+                read_observations, f"exit_quotes:{source}", "DEADLINE_EXCEEDED", quote_started, quote_cap,
+                timeout_partial=True,
+            )
+            logger.warning("fno_exit_quote_deadline_exceeded source=%s cap_sec=%.3f", source, quote_cap)
+        except Exception as exc:
+            _record_management_read(
+                read_observations, f"exit_quotes:{source}", "FAILED", quote_started, quote_cap,
+            )
+            logger.error("fno_exit_quote_failed source=%s err=%s", source, str(exc))
 
-    hard_flat = _now_min(now_ist) >= settings.FNO_HARD_FLAT_MIN
+    if action_clock is not None:
+        now_ist = action_clock()
+    if read_observations is not None and tokens:
+        observation = read_observations.get(f"exit_quotes:{source}")
+        if observation is not None:
+            age = _oldest_quote_age_sec(quotes, tokens, now_ist)
+            observation["oldest_exact_leg_quote_age_sec"] = age
+            observation["quote_age_status"] = "PRESENT" if age is not None else "UNAVAILABLE"
+
     for p in positions_needing_exit_evaluation:
+        if action_clock is not None:
+            now_ist = action_clock()
+        hard_flat = _now_min(now_ist) >= settings.FNO_HARD_FLAT_MIN
         q = quotes.get(p.token) or {}
         depth = q.get("depth") or {}
         buys = depth.get("buy") or []
@@ -315,138 +450,48 @@ async def _manage_open_positions(
         ltp = float(q.get("last_price") or 0.0)
         exit_px_basis = bid if bid > 0 else ltp
 
-        exit_reason = ""
-        long_view = p.direction == FnoDirection.LONG.value
-
-        if hard_flat:
-            exit_reason = "hard_flat_1510"
-        elif fut_price is not None and fut_price > 0:
-            # progress/trail bookkeeping first
-            best = p.best_underlying or p.entry_underlying
-            best = max(best, fut_price) if long_view else min(best, fut_price)
-            trail_active = bool(p.trail_active)
-            trail_stop = p.trail_stop_underlying
-
-            target_hit = (
-                fut_price >= p.target_underlying if long_view
-                else fut_price <= p.target_underlying
+        # [S6b 2026-10-02] The exit ladder is the pure, shared
+        # ``fno_exit_rules.evaluate_single_leg_exit`` (extracted verbatim so
+        # research replays the identical rules).  Logging and trail
+        # persistence remain here.  Rationale for the time-stop premium
+        # deferral (8 time-stop exits, -Rs 7,010, two cut in profit) is
+        # retained in that module and in config.FNO_TIME_STOP_RESPECTS_PREMIUM.
+        decision = evaluate_single_leg_exit(
+            p, now_ist=now_ist, fut_price=fut_price, exit_px_basis=exit_px_basis,
+            hard_flat=hard_flat, params=live_single_leg_exit_params(settings),
+        )
+        exit_reason = decision.exit_reason
+        if decision.trail_newly_armed:
+            logger.info(
+                "fno_trail_armed id=%d symbol=%s fut=%.1f target=%.1f",
+                p.id, p.tradingsymbol, fut_price, p.target_underlying,
             )
-            if target_hit and not trail_active:
-                trail_active = True
-                logger.info(
-                    "fno_trail_armed id=%d symbol=%s fut=%.1f target=%.1f",
-                    p.id, p.tradingsymbol, fut_price, p.target_underlying,
-                )
-            if trail_active:
-                dist = settings.FNO_TRAIL_ATR_MULT * (p.atr_at_entry or 0.0)
-                new_trail = best - dist if long_view else best + dist
-                if trail_stop is None:
-                    trail_stop = new_trail
-                else:
-                    trail_stop = max(trail_stop, new_trail) if long_view else min(trail_stop, new_trail)
-
-            # 1) underlying stop (structural/volatility, tightest at entry)
-            stopped = (
-                fut_price <= p.stop_underlying if long_view
-                else fut_price >= p.stop_underlying
+        if decision.entry_time_unparseable:
+            # [AUDIT-FIX-PHASE1 2026-07-11] Loud-but-non-blocking.
+            logger.warning(
+                "fno_time_stop_age_parse_failed id=%d entry_time=%r "
+                "-- age_min defaulted to 0; time stop DEFEATED for "
+                "this position (operator must patch entry_time "
+                "to force the exit)",
+                p.id, p.entry_time,
             )
-            # 2) trailing stop after target
-            trailed = (
-                trail_active and trail_stop is not None
-                and (fut_price <= trail_stop if long_view else fut_price >= trail_stop)
+        if decision.time_stop_deferred is not None:
+            deferred = decision.time_stop_deferred
+            logger.info(
+                "fno_time_stop_deferred_in_profit id=%d age=%.0f "
+                "underlying_progress=%.1f needed=%.1f "
+                "premium_pnl_per_unit=%.2f",
+                p.id, deferred["age_min"], deferred["underlying_progress"],
+                deferred["needed"], deferred["premium_pnl_per_unit"],
             )
-            # 3) premium backstop -- the one that bounds risk_per_lot (§8.4)
-            premium_stopped = exit_px_basis > 0 and exit_px_basis <= p.premium_stop
-            # 4) time stop: not +0.5R (underlying points) within 45 min
-            timed_out = False
-            if not trail_active:
-                try:
-                    entry_dt = datetime.fromisoformat(p.entry_time)
-                    if entry_dt.tzinfo is None:
-                        entry_dt = IST.localize(entry_dt)
-                    age_min = (now_ist - entry_dt).total_seconds() / 60.0
-                except (ValueError, TypeError):
-                    # [AUDIT-FIX-PHASE1 2026-07-11] Loud-but-non-blocking.
-                    # Silently fall-through to age=0 means the time
-                    # stop never fires for the malformed row -- a
-                    # position can live forever. Log loudly so the
-                    # operator sees the malformed entry_time and can
-                    # patch the row directly.
-                    logger.warning(
-                        "fno_time_stop_age_parse_failed id=%d entry_time=%r "
-                        "-- age_min defaulted to 0; time stop DEFEATED for "
-                        "this position (operator must patch entry_time "
-                        "to force the exit)",
-                        p.id, p.entry_time,
-                    )
-                    age_min = 0.0
-                if age_min >= settings.FNO_TIME_STOP_MIN:
-                    r_points = abs(p.entry_underlying - p.stop_underlying)
-                    progress = (
-                        fut_price - p.entry_underlying if long_view
-                        else p.entry_underlying - fut_price
-                    )
-                    if progress < settings.FNO_TIME_STOP_MIN_R * r_points:
-                        timed_out = True
-
-                    # [TIME-STOP-PREMIUM 2026-08-04] Do not cut a position that
-                    # is making money.
-                    #
-                    # The clause above measures progress in UNDERLYING points
-                    # while the P&L is in PREMIUM, and on a near-ATM long the
-                    # two are separated by delta. Requiring 0.5R of underlying
-                    # movement on a 31-point R means ~16 index points, which on
-                    # a 0.49-delta contract is ~8 premium points -- a quarter of
-                    # a 30-rupee option. So a contract could be up 15% and still
-                    # read as "gone nowhere".
-                    #
-                    # That is not hypothetical. The time stop is the single
-                    # biggest loser in this book (8 exits, -7,010) and two of
-                    # those eight were CUT WHILE PROFITABLE: 2026-07-23 at
-                    # +286 and 2026-08-03 at +530. Meanwhile trail_stop is the
-                    # only exit reason with positive expectancy in the book's
-                    # entire history (2 exits, +2,869, avg +0.62R) -- and a
-                    # trade can only reach the trail by surviving long enough
-                    # to get there.
-                    #
-                    # So the clock now only cuts trades that are BOTH going
-                    # nowhere on the underlying AND not in profit on premium.
-                    # A losing position is still cut on schedule; the whole
-                    # point of the time stop is preserved.
-                    if timed_out and settings.FNO_TIME_STOP_RESPECTS_PREMIUM:
-                        premium_pnl_per_lot = (exit_px_basis - p.entry_premium)
-                        if p.direction == "SHORT":
-                            premium_pnl_per_lot = -premium_pnl_per_lot
-                        if exit_px_basis > 0 and premium_pnl_per_lot > 0:
-                            timed_out = False
-                            logger.info(
-                                "fno_time_stop_deferred_in_profit id=%d age=%.0f "
-                                "underlying_progress=%.1f needed=%.1f "
-                                "premium_pnl_per_unit=%.2f",
-                                p.id, age_min, progress,
-                                settings.FNO_TIME_STOP_MIN_R * r_points,
-                                premium_pnl_per_lot,
-                            )
-
-            if stopped:
-                exit_reason = "underlying_stop"
-            elif trailed:
-                exit_reason = "trail_stop"
-            elif premium_stopped:
-                exit_reason = "premium_backstop"
-            elif timed_out:
-                exit_reason = "time_stop"
-
-            # persist trail state even when not exiting
-            if not exit_reason:
-                await fpos.update_trail(
-                    db_path, p.id, 1 if trail_active else 0, trail_stop, best,
-                )
-        else:
-            # No futures quote this tick: only the premium backstop can
-            # still protect us. Chain staleness blocks entries elsewhere.
-            if exit_px_basis > 0 and exit_px_basis <= p.premium_stop:
-                exit_reason = "premium_backstop"
+        # persist trail state even when not exiting (futures quote present)
+        if decision.persist_trail:
+            await _timed_database_operation(
+                db_timing, f"trail_update:{source}", fpos.update_trail(
+                    db_path, p.id, 1 if decision.trail_active else 0,
+                    decision.trail_stop, decision.best_underlying,
+                ),
+            )
 
         if not exit_reason:
             continue
@@ -481,9 +526,12 @@ async def _manage_open_positions(
             )
             continue
 
-        if not await fpos.claim_exit_intent(
-            db_path, p.id, source, evaluation_started_at=evaluation_started_at,
-        ):
+        claimed = await _timed_database_operation(
+            db_timing, f"exit_intent_claim:{source}", fpos.claim_exit_intent(
+                db_path, p.id, source, evaluation_started_at=evaluation_started_at,
+            ),
+        )
+        if not claimed:
             logger.critical("fno_exit_reconciliation_required id=%s source=%s", p.id, source)
             continue
         try:
@@ -509,15 +557,17 @@ async def _manage_open_positions(
         risk_rupees = p.entry_premium * settings.FNO_STOP_PREMIUM_PCT * p.qty
         r_mult = pnl / risk_rupees if risk_rupees > 0 else 0.0
         try:
-            receipt = await fpos.record_exit_execution_receipt(
-                db_path, p.id,
-                exit_time_ist=now_ist, exit_premium=fill,
-                exit_underlying=fut_price or 0.0, exit_reason=exit_reason,
-                gross_pnl=gross, costs=costs, pnl=pnl, r_multiple=r_mult,
-                exit_order_id=result.get("order_id"),
-                source=source, ticker=p.tradingsymbol,
-                settlement_generation=p.settlement_generation + 1,
-                notes=f"fno_exit {exit_reason}",
+            receipt = await _timed_database_operation(
+                db_timing, f"exit_receipt_write:{source}", fpos.record_exit_execution_receipt(
+                    db_path, p.id,
+                    exit_time_ist=now_ist, exit_premium=fill,
+                    exit_underlying=fut_price or 0.0, exit_reason=exit_reason,
+                    gross_pnl=gross, costs=costs, pnl=pnl, r_multiple=r_mult,
+                    exit_order_id=result.get("order_id"),
+                    source=source, ticker=p.tradingsymbol,
+                    settlement_generation=p.settlement_generation + 1,
+                    notes=f"fno_exit {exit_reason}",
+                ),
             )
         except Exception as exc:
             # A broker fill without a durable local receipt is an uncertain
@@ -530,7 +580,10 @@ async def _manage_open_positions(
                 p.id, p.tradingsymbol, result.get("order_id"), str(exc),
             )
             continue
-        settled = await _settle_exit_receipt(db_path, p, receipt)
+        settled = await _timed_database_operation(
+            db_timing, f"exit_settlement:{source}",
+            _settle_exit_receipt(db_path, p, receipt),
+        )
         if settled is not None:
             closed.append(settled)
     return closed
@@ -544,6 +597,7 @@ async def _try_entry_for_leg(
     kite, db_path: str, source: str, pool: float, executor: FnoExecutor,
     sig: MomSignal, snap: ChainSnapshot, regime: str,
     now_ist: datetime, scan_id: str, is_trading_day: bool,
+    *, action_clock: Optional[Callable[[], datetime]] = None,
 ) -> Optional[dict]:
     """Run the §7 gate ladder + §4 constitution + sizing for ONE leg and,
     if everything passes, place the entry. Logs the evaluation either way."""
@@ -728,6 +782,23 @@ async def _try_entry_for_leg(
         )
         return None
 
+    # Database/limiter waits must not turn an earlier valid evaluation into
+    # authority to enter after cutoff or with a now-stale quote. Replay callers
+    # retain their supplied clock; broker dispatch itself is never cancelled.
+    if action_clock is not None:
+        now_ist = action_clock()
+        ctx.now_min = _now_min(now_ist)
+        ctx.quote_age_sec = (
+            (now_ist - quote.last_trade_time).total_seconds()
+            if quote.last_trade_time else float("inf")
+        )
+        ctx.chain_age_sec = snap.age_sec(now_ist)
+        ok, reject, passed_gates = evaluate_entry_gates_with_trace(ctx)
+        if not ok:
+            await _log(False, reject, **contract_fields,
+                       passed_gates=passed_gates, active_kill_switches=switches)
+            return None
+        today_iso = now_ist.date().isoformat()
     qty = lots * lot_size
     result = await executor.execute_entry(contract.tradingsymbol, qty, ask)
     if result["status"] not in ("paper", "filled"):
@@ -796,11 +867,20 @@ async def run_fno_tick(
     """One scan tick. Called by the main.py cron wrapper (which owns the
     calendar gate + no-token guard + Telegram delivery)."""
     db_path = db_path or settings.DB_PATH
+    supplied_now_ist = now_ist
     now_ist = now_ist or datetime.now(IST)
+    evaluation_now_ist = now_ist
+    action_clock = (lambda: datetime.now(IST)) if supplied_now_ist is None else None
+    tick_started = monotonic()
     scan_id = f"FNO-{now_ist.strftime('%Y%m%d-%H%M%S')}-{uuid4().hex[:6]}"
     summary: dict = {
         "scan_id": scan_id, "entries": [], "exits": [], "note": "",
         "stage_durations_sec": {},
+        "management_read_outcomes": {},
+        "database_stage_timing": {
+            "measurement": "operation_elapsed_includes_sqlite_lock_wait",
+            "stages": {},
+        },
     }
 
     # Rule 56: first-line orchestrator breadcrumb.
@@ -846,7 +926,28 @@ async def run_fno_tick(
 
     # ---- futures price for exit management ---------------------------
     stage_started = monotonic()
-    fut_quote = await kite.get_quote([fut.token])
+    fut_quote = {}
+    fut_quote_cap = _read_cap(settings.FNO_EXIT_QUOTE_READ_MAX_SEC)
+    try:
+        fut_quote, provider_timing = await asyncio.wait_for(
+            _management_quote(kite, [fut.token]), timeout=fut_quote_cap,
+        )
+        _record_management_read(
+            summary["management_read_outcomes"], "futures_quote", "COMPLETED",
+            stage_started, fut_quote_cap, provider_timing=provider_timing,
+        )
+    except asyncio.TimeoutError:
+        _record_management_read(
+            summary["management_read_outcomes"], "futures_quote", "DEADLINE_EXCEEDED",
+            stage_started, fut_quote_cap, timeout_partial=True,
+        )
+        logger.warning("fno_futures_quote_deadline_exceeded cap_sec=%.3f", fut_quote_cap)
+    except Exception as exc:
+        _record_management_read(
+            summary["management_read_outcomes"], "futures_quote", "FAILED",
+            stage_started, fut_quote_cap,
+        )
+        logger.error("fno_futures_quote_failed err=%s", str(exc))
     summary["stage_durations_sec"]["futures_quote"] = round(
         monotonic() - stage_started, 3
     )
@@ -855,16 +956,31 @@ async def run_fno_tick(
     if fq and fq.get("last_price"):
         fut_price = float(fq["last_price"])
 
+    # A real scheduler tick can cross hard-flat while queued on a provider.
+    # The completed-bar/signal timestamp remains frozen in ``sig`` later, but
+    # management, session cutoffs and admission decisions use a fresh action
+    # clock. Explicit caller clocks are retained for deterministic replay/tests.
+    if supplied_now_ist is None:
+        now_ist = datetime.now(IST)
+    summary["action_clock_ist"] = now_ist.isoformat()
+    summary["management_lag_sec"] = round(monotonic() - tick_started, 3)
+
     # ---- 1) exits first ----------------------------------------------
     stage_started = monotonic()
     try:
         if not settings.FNO_DISABLE_PAPER:
             summary["exits"] += await _manage_open_positions(
                 kite, db_path, FnoSource.FNO_PAPER.value, paper_exec, now_ist, fut_price,
+                read_observations=summary["management_read_outcomes"],
+                db_timing=summary["database_stage_timing"],
+                action_clock=action_clock,
             )
         if not settings.FNO_DISABLE_LIVE:
             summary["exits"] += await _manage_open_positions(
                 kite, db_path, FnoSource.FNO_LIVE.value, live_exec, now_ist, fut_price,
+                read_observations=summary["management_read_outcomes"],
+                db_timing=summary["database_stage_timing"],
+                action_clock=action_clock,
             )
     except Exception as exc:
         logger.error("fno_exit_management_failed err=%s", str(exc), exc_info=True)
@@ -883,8 +999,15 @@ async def run_fno_tick(
     if not settings.FNO_DISABLE_PAPER and not settings.FNO_DR_DISABLE_PAPER:
         try:
             import fno_dr_book as _dr
-            await _dr.init_dr_db(db_path)
-            open_dr = await _dr.open_structures(db_path)
+            await _timed_database_operation(
+                summary["database_stage_timing"], "defined_risk_init", _dr.init_dr_db(db_path),
+            )
+            open_dr = await _timed_database_operation(
+                summary["database_stage_timing"], "defined_risk_open_read", _dr.open_structures(db_path),
+            )
+            if supplied_now_ist is None:
+                now_ist = datetime.now(IST)
+                summary["action_clock_ist"] = now_ist.isoformat()
             nm_dr = _now_min(now_ist)
             in_dr_window = _dr._entry_lo_min() <= nm_dr <= _dr._entry_hi_min()
 
@@ -895,29 +1018,68 @@ async def run_fno_tick(
             # speculative-entry delay.
             if open_dr:
                 snapshot_started = monotonic()
+                management_cap = _read_cap(settings.FNO_DR_MANAGEMENT_READ_MAX_SEC)
                 try:
-                    snap = await take_chain_snapshot(kite, instruments, now_ist)
+                    exact_tokens = _dr.exact_open_leg_tokens(open_dr)
+                    if exact_tokens:
+                        raw_quotes, provider_timing = await asyncio.wait_for(
+                            _management_quote(kite, exact_tokens), timeout=management_cap,
+                        )
+                        dr_snap = _dr.exact_leg_snapshot_from_quotes(
+                            open_dr, raw_quotes, now_ist, fut_price,
+                        )
+                        read_name = "defined_risk_snapshot"
+                    else:
+                        # Never rebuild a nearest-expiry ladder for legacy or
+                        # malformed rows: that could price different contracts.
+                        # ``manage_dr_structures`` receives None and keeps the
+                        # lifecycle unresolved (or records a no-cash hard-flat).
+                        dr_snap = None
+                        provider_timing = None
+                        read_name = "defined_risk_snapshot"
+                    _record_management_read(
+                        summary["management_read_outcomes"], read_name,
+                        "COMPLETED" if dr_snap is not None else "UNAVAILABLE",
+                        snapshot_started, management_cap, provider_timing=provider_timing,
+                    )
+                except asyncio.TimeoutError:
+                    logger.warning("fno_dr_management_snapshot_deadline_exceeded cap_sec=%.3f", management_cap)
+                    _record_management_read(
+                        summary["management_read_outcomes"], "defined_risk_snapshot", "DEADLINE_EXCEEDED",
+                        snapshot_started, management_cap, timeout_partial=True,
+                    )
+                    dr_snap = None
                 except Exception as exc:
                     logger.error("fno_dr_management_snapshot_failed err=%s", str(exc))
-                    snap = None
+                    _record_management_read(
+                        summary["management_read_outcomes"], "defined_risk_snapshot", "FAILED",
+                        snapshot_started, management_cap,
+                    )
+                    dr_snap = None
                 finally:
                     summary["stage_durations_sec"]["defined_risk_snapshot"] = round(
                         monotonic() - snapshot_started, 3
                     )
 
                 management_started = monotonic()
+                if action_clock is not None:
+                    now_ist = action_clock()
+                    summary["action_clock_ist"] = now_ist.isoformat()
                 # manage_dr_structures intentionally accepts ``None`` and
                 # fail-closes a hard-flat structure even without a quote.
                 summary["dr_exits"] = summary.get("dr_exits", 0) + \
-                    await _dr.manage_dr_structures(db_path, snap, now_ist)
+                    await _dr.manage_dr_structures(db_path, dr_snap, now_ist)
                 summary["stage_durations_sec"]["defined_risk_management"] = round(
                     monotonic() - management_started, 3
                 )
 
-            if in_dr_window and not await _dr.open_structures(db_path):
+            remaining_open_dr = await _timed_database_operation(
+                summary["database_stage_timing"], "defined_risk_open_read", _dr.open_structures(db_path),
+            )
+            if in_dr_window and not remaining_open_dr:
                 entry_inputs_started = monotonic()
                 entry_snap, entry_bars, entry_sig, entry_skip_reason = await _load_dr_entry_inputs(
-                    kite, instruments, fut.token, regime, now_ist, snap,
+                    kite, instruments, fut.token, regime, evaluation_now_ist, snap,
                 )
                 summary["stage_durations_sec"]["defined_risk_entry_inputs"] = round(
                     monotonic() - entry_inputs_started, 3
@@ -939,11 +1101,15 @@ async def run_fno_tick(
                     # under ``wait_for``: a cancelled write would make the
                     # admission outcome ambiguous.
                     entry_started = monotonic()
+                    if action_clock is not None:
+                        now_ist = action_clock()
+                        summary["action_clock_ist"] = now_ist.isoformat()
                     try:
                         opened = await _dr.maybe_open_dr_structure(
                             db_path, entry_snap,
                             entry_sig.direction is not None,
                             entry_sig.direction, now_ist,
+                            action_clock=action_clock,
                         )
                         if opened:
                             summary.setdefault("dr_opened", []).append(opened)
@@ -960,6 +1126,9 @@ async def run_fno_tick(
     )
 
     # ---- 2) entries ----------------------------------------------------
+    if supplied_now_ist is None:
+        now_ist = datetime.now(IST)
+        summary["action_clock_ist"] = now_ist.isoformat()
     nm = _now_min(now_ist)
     if not (settings.FNO_ENTRY_START_MIN <= nm < settings.FNO_ENTRY_END_MIN):
         summary["note"] = "outside_entry_window"
@@ -968,7 +1137,7 @@ async def run_fno_tick(
     if bars is None:
         stage_started = monotonic()
         try:
-            bars = await _fetch_futures_bars(kite, fut.token, now_ist)
+            bars = await _fetch_futures_bars(kite, fut.token, evaluation_now_ist)
         except Exception as exc:
             logger.error("fno_futures_bars_failed err=%s", str(exc))
             summary["note"] = "futures_bars_failed"
@@ -980,7 +1149,7 @@ async def run_fno_tick(
 
     if sig is None:
         stage_started = monotonic()
-        sig = evaluate_fno_mom(bars, regime, now_ist)
+        sig = evaluate_fno_mom(bars, regime, evaluation_now_ist)
         summary["stage_durations_sec"]["entry_evaluation"] = round(
             monotonic() - stage_started, 3
         )
@@ -1033,6 +1202,7 @@ async def run_fno_tick(
                 entry = await _try_entry_for_leg(
                     kite, db_path, FnoSource.FNO_PAPER.value, paper_equity,
                     paper_exec, sig, snap, regime, now_ist, scan_id, is_trading_day,
+                    action_clock=action_clock,
                 )
                 if entry:
                     summary["entries"].append(entry)
@@ -1085,6 +1255,7 @@ async def run_fno_tick(
                 entry = await _try_entry_for_leg(
                     kite, db_path, FnoSource.FNO_LIVE.value, live_equity,
                     live_exec, sig, snap, regime, now_ist, scan_id, is_trading_day,
+                    action_clock=action_clock,
                 )
                 if entry:
                     summary["entries"].append(entry)

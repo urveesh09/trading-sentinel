@@ -27,6 +27,7 @@ These are pure helpers (never raise). Tests pin:
 """
 from __future__ import annotations
 
+from dataclasses import replace
 from datetime import datetime, timezone
 from unittest.mock import MagicMock, patch
 
@@ -263,6 +264,12 @@ def test_collect_news_context_fetches_once_and_classifies_rendered_objects(monke
     """Rendered text and classifications must derive from one feed snapshot."""
     yahoo = _stub_news_item("Yahoo headline")
     google = _stub_news_item("Google headline")
+    # This checks fetch identity, not stale-source admission. The helper's
+    # fixed September fixture is now expired under the S10 source contract.
+    fresh_clock = datetime.now(timezone.utc)
+    fresh_raw = fresh_clock.strftime("%a, %d %b %Y %H:%M:%S GMT")
+    yahoo = replace(yahoo, published_at_parsed=fresh_clock, published_at_raw=fresh_raw)
+    google = replace(google, published_at_parsed=fresh_clock, published_at_raw=fresh_raw)
     fetch = MagicMock(side_effect=[[yahoo], [google]])
     classify = MagicMock(return_value=[])
     monkeypatch.setattr(agent, "fetch_news_items", fetch)

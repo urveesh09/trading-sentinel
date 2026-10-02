@@ -20,7 +20,7 @@ sys.modules["verify_compose_logging"] = verify_compose_logging
 _spec.loader.exec_module(verify_compose_logging)
 
 
-def _payload(*, driver="json-file", max_size="20m", max_file="10"):
+def _payload(*, driver="json-file", max_size="20m", max_file="25"):
     return {
         "services": {
             "python-engine": {
@@ -36,8 +36,8 @@ def test_accepts_current_rendered_python_engine_log_contract():
         "service": "python-engine",
         "driver": "json-file",
         "max_size": "20m",
-        "max_file": 10,
-        "capacity_mib": 200,
+        "max_file": 25,
+        "capacity_mib": 500,
     }
 
 
@@ -48,7 +48,7 @@ def test_accepts_current_rendered_python_engine_log_contract():
         (_payload(driver="local"), "driver must be 'json-file'"),
         (_payload(max_size="20"), "positive whole K/M/G"),
         (_payload(max_file="0"), "positive integer"),
-        (_payload(max_size="10m", max_file="10"), "expected at least 200 MiB"),
+        (_payload(max_size="10m", max_file="25"), "expected at least 500 MiB"),
     ],
 )
 def test_rejects_unsafe_or_unrendered_contract(payload, message):
@@ -72,7 +72,7 @@ def test_main_renders_then_reports_only_logging_values(monkeypatch, capsys, tmp_
     assert verify_compose_logging.main(["--compose-file", str(tmp_path / "compose.yml")]) == 0
     assert commands[0][0][-2:] == ["--format", "json"]
     out = capsys.readouterr().out
-    assert "capacity=200MiB" in out
+    assert "capacity=500MiB" in out
     assert "environment" not in out.lower()
 
 

@@ -624,3 +624,28 @@ async def momentum_shadow_comparison(db_path: str) -> dict:
                 "warnings": warnings,
             })
     return {"execution": momentum_shadow_execution_config(), "variants": rows}
+
+
+async def momentum_shadow_near_misses(db_path: str, *, limit: int = 500) -> dict:
+    """Read bounded rejected shadow evaluations without changing entry authority.
+
+    A near miss is the evaluator's actual reject receipt, not a reconstructed
+    'would have traded' signal.  This gives S7b timing research a separate,
+    immutable-receipt source for distinguishing timing hypotheses from absent
+    opportunities or deterministic gate failures.
+    """
+    if isinstance(limit, bool) or not isinstance(limit, int) or not 1 <= limit <= 5_000:
+        raise ValueError("limit must be an integer from 1 through 5000")
+    await init_momentum_shadow_db(db_path)
+    async with aiosqlite.connect(db_path) as db:
+        rows = await (await db.execute("""
+            SELECT trading_date,ticker,bar_ts,variant,reject_reason,features_json,config_json
+            FROM momentum_shadow_evaluations WHERE accepted=0
+            ORDER BY trading_date DESC,bar_ts DESC,ticker,variant LIMIT ?
+        """, (limit,))).fetchall()
+    return {"schema": "momentum_shadow_near_misses_v1", "status": "COMPLETE",
+            "authority": {"research_only": True, "authorization_effect": "NONE"},
+            "near_misses": [{"trading_date": row[0], "ticker": row[1], "bar_ts": row[2],
+                              "variant": row[3], "reject_reason": row[4],
+                              "features": json.loads(row[5]), "config": json.loads(row[6])}
+                             for row in rows]}

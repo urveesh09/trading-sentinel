@@ -1,5 +1,348 @@
 # Trading Sentinel — next-agent execution plan
 
+## October 2 — release candidate; operational acceptance next (R6)
+
+All review source items R1–R5 are in Dev and pushed. Promote through the GitHub
+PR to Production, then perform post-deployment checks (read-only first):
+
+1. Containers healthy; the engine runs startup migrations (additive columns only).
+2. Collection runs show `momentum_paper_paths.write` after a paper admission, plus `provider_timing`. Research `runtime_capped` should fall after the screener bulk lane.
+3. The scheduler daily summary shows the `elapsed_distribution` for market hours.
+4. The gateway backlog `report` is reviewed by the operator; `apply` is run only with separate approval.
+5. AI unavailable: alerts arrive with an AI-unavailable banner and paper trading continues; check that no classifier calls happen.
+6. Then R6: three representative sessions, five reconciled paths, fresh S6/S7 freezes before future data, and partner qualification plus a delivery canary (separately authorised).
+
+## October 2 review priorities — R1–R3 done; R4–R6 remain
+
+R1 `af6f424`, R2 `dcc2f35`, R3 `1550886` in Dev. Next in priority order:
+- R4: S3 CSV archive quota/free-space handling and durable market-hours elapsed distributions.
+- R5: S7/S8 source-bound entry/thesis evidence, equity-constrained allocation and complete decision-quality analytics.
+- R6: operational acceptance.
+
+Deployment notes:
+- Deploy the engine diagnostics allow-list before setting `OPTIONAL_AI_REPORT_DIAGNOSTICS=true` on the agent.
+- Running the backlog `apply` against Production needs separate operator approval after reviewing its `report` output.
+- Freeze fresh S6 manifests before future data.
+
+## October 2 continuation review — authoritative current status
+
+Start with [the independent S7–S10 review](2026-10-02-s7-s10-independent-review.md).
+Its implementation contracts/status supersede historical completion and next-
+priority statements below. **Not all remaining work is operational**: S6 spread
+is an unbound prototype, and S8 is an initial composer, not complete learning.
+
+Small Dev corrections: S10 original deadline forwarding, dispatch-time budget
+and request-local zero retries; S8 ordered cash including earlier admissions
+and honest drawdown/coverage; S7 settings/fees freeze; reproduced test-fixture
+current-loop dependency removed. Agent 368 warnings-fatal; focused research 28
+warnings-fatal; expanded engine 1016 passed with six recorded warnings; Node
+health two; Compose eight, rendered 500 MiB. No Production/authority change.
+The expanded process hung after its pass summary and was stopped by verified
+Dev PID; its clean teardown is not established. Focused runs exited normally.
+
+Next source queue, with files/tests/rollout/rollback in the review:
+
+1. **R1 / S6:** typed DR source/leg/economics/cash and actual freeze binding;
+   both single-leg raw provider clocks/tokens and position-economics/cash binding.
+   Fix reproduced stale-future, modified-manifest and NaN-cost acceptance
+   before research interpretation. Freeze anew, never rewrite old manifests.
+2. **R2 / S9:** read-only proposed-action reconciliation report and separately
+   reviewed idempotent expiry/resolution migration; preserve rows, verify races,
+   no fabricated fills or historical trade-card resend.
+3. **R3 / S10:** bounded expiry/source/stage counters, once-only still-valid
+   original-alert annotation updates and strict transport/shutdown acceptance.
+   Daemon-thread join is not forced socket cancellation.
+4. **R4 / S3:** bounded/off-path CSV quota/free-space behavior and durable
+   elapsed distributions/market-hours summaries before raw-tail eviction.
+5. **R5 / S7–S8:** immutable completed-bar/thesis/eligibility adapters,
+   separate realized-equity/correlation capacity research, full unique-opportunity
+   learning analytics and genuinely versioned human-reviewed proposals.
+
+After GitHub promotion: S1 keyed cash/schema verification; S2 recovery and three
+market sessions; S3 peak-volume/prior-boot logs; S4 five reconciled paths;
+S5 frozen future protocol, initial 20-session target with adequate closes/
+coverage, authorized qualification and separate delivery canary. S6/S7 need
+future paired HOLDOUT review before a paper-policy pilot. Paper remains
+autonomous, real-money momentum needs owner EXEC, Jev stays deferred. No fixed
+calendar-day promise for tips. This review does not push, deploy or send messages.
+
+## October 2 independent S1–S6 review — active correction slice
+
+See [the independent review](2026-10-02-s1-s6-independent-review.md) for
+small correction contracts, verification and larger remaining implementation.
+Earlier source-complete receipts do not close S3 crash-fault acceptance, S4
+fanout/source-packet binding, S5 qualification/canary or the missing S6
+defined-risk experiment and archive/economics binding. No Production mutation,
+authority expansion or profitable-strategy claim follows from this review.
+
+S7a (Dev): capital-skipped admissions now get candidate economics and a
+passive path, and `momentum_allocation_research.py` replays first-arrival
+against equal and risk-proportional allocation on one frozen common book.
+1114 selected tests passed. After promotion: freeze a manifest before the
+next session and evaluate only holdout batches. S7b is completed below;
+the next source priority is the S6 defined-risk experiment.
+
+S7b (Dev): frozen completed-bar continuation and bounded-pullback/no-chase
+research is now implemented with new-thesis/state re-entry validation and a
+bounded read-only view of existing rejected shadow receipts. Focused
+warnings-fatal timing/shadow checks: 18 passed. It has no runtime caller.
+Before learning from it, freeze the manifest before a new session and use only
+signals after that freeze as HOLDOUT; no result authorizes a change to entry
+timing. Next meaningful source work is S6's defined-risk experiment.
+
+S8 initial Dev slice: `daily_decision_quality.py` composes isolated daily
+book/policy facts from existing read-only audits and shadow receipts, retaining
+partial versus terminal cash and rejected evidence. It is explicitly human
+review only. Focused warnings-fatal tests: 2 passed. Future source-complete
+sessions and reviewed versioned proposals remain required.
+
+S6 defined-risk prototype exists, with its own max-loss R and entry/exit terms.
+Independent review found its packet contents are not bound to economics,
+manifest verification is incomplete and NaN costs pass. R1 above is required
+source development before using its HOLDOUT labels or paired results.
+
+S9 initial Dev slice: gateway health now labels Telegram bot presence as a
+diagnostic rather than a transport-confirmed connection, surfaces any durable
+dead-letter backlog, and releases its Python probe timer on every response
+path. Penny health separates the legacy completed scan clock from a bounded
+attempt/outcome state; operator status uses IST ledger-day attribution and
+lists each paper book without folding it into live cash. Focused checks: 2
+Node, 14 operator-status and 5 Penny-health tests passed. Remaining S9 work is
+operationally sensitive: define a reviewed read-only report and supported
+expiry/reconciliation migration for old pending requests, callbacks, unsynced
+orders and historical dead letters; then collect fresh slow-provider and
+no-trade evidence after GitHub promotion. Never use ad-hoc Production SQL.
+
+S10 first Dev slice: stale, undated and timezone-unverifiable classified
+sources are excluded from the optional-AI review context rather than poisoning
+the annotation deadline. The source renderer emits an explicit
+`NEWS_UNAVAILABLE` exclusion summary; deterministic facts may still receive an
+advisory review under `proceed` policy. Fresh sources retain their true
+validity. Focused agent/async-queue checks: 55 warnings-fatal passed. Next:
+make provider transport/retry consume the task's remaining deadline and
+surface completed annotations back to the original operator alert.
+
+S4 runtime wiring (Dev): subscribed paper tickers ride the research
+collector's existing first quote request into byte-bound envelopes via one
+background writer. The deadline-close policy and per-entry adapter exclusion
+correct two blockers. 1091 selected tests passed. No Production environment
+change is required. Next: after promotion, verify `momentum_paper_paths`
+telemetry and five reconciled lifecycles.
+
+Review response (Dev): S6 partial fees and archive pairing (`ea8695d`), S3
+crash-recoverable rotation (`c054bf3`) and the S4 typed byte-bound envelope
+(`bfd343d`) are corrected; 1024 selected tests passed. Remaining: S4 fanout
+wiring, S3 archive quota/elapsed distributions, S5 qualification/canary, S6
+DR experiment and F&O position-economics binding.
+
+Small corrections are implemented in Dev with expanded 948-test regression
+and isolated warnings-fatal checks; see the receipt for commands and known
+runtime-warning limits. Next development: S4 typed source binding and bounded
+fanout capture, S3 rotation-journal recovery, then S6 strict archive/economic
+binding and versioned partial fees/DR experiment. Existing qualification still
+requires frozen future evidence and authorized canary. Do not relabel missing
+source work as a deployed-session-only requirement or edit old freeze manifests.
+
+## October 2 S5 partner research readiness — in progress (Dev)
+
+S5a (partner action clock, commit `f45ce43`) is complete in Dev: persistence
+and protection prechecks use the live action clock, so a late-received chain
+is no longer misclassified as a future quote. S5b is complete in Dev: the
+owner-approved bulk Kite lane admits normal research/F&O/penny/partner requests
+ahead of the momentum screener's per-ticker fetches with bounded fairness, and
+research observes exact active legs with the future reference before the
+optional ladder. Expect the screener to take roughly 10–20% longer; verify it
+on deployed sessions (commit `18c7f2a`). S5c is complete in Dev: the read-only
+`research_cli partner-delivery-blockers` report explains each candidate's
+blockers. S5 source work is complete; the frozen protocol, 20-session holdout,
+qualification package and canary need fresh post-promotion sessions. S5c commit:
+`89a7595`.
+
+## October 2 S6 exit research — S6a complete; S6b in progress (Dev)
+
+S6b step 1 (done): the live single-leg F&O exit ladder is now the pure
+`fno_exit_rules.evaluate_single_leg_exit`, shared by the orchestrator and
+research; behaviour proven identical (characterization + 20,000-case
+differential; 397 suite tests; commit `02047d4`). Step 2 (done):
+`fno_exit_experiment.py` freezes `fno_partial_at_target_v1` or
+`fno_confirmed_time_extension_v1` and replays the shared ladder on paired
+archive paths. Next operational step: export real single-leg positions as
+entries, build packets from the research archive, freeze a candidate before
+the next session and evaluate only HOLDOUT positions after R1's binding
+correction. The defined-risk spread prototype also requires R1 before review.
+S5a–S6a commits are pushed (`19a5471`); the PR toward Production must be
+opened on GitHub (no `gh` CLI in this environment).
+
+
+`momentum_exit_experiment.py` freezes one candidate exit policy before
+evaluation and reports paired, cost-stressed, holdout-labelled results against
+the live evaluator. No runtime caller; no live or paper exit changed. Next S6
+work: once S4 paths are deployed and collecting, freeze
+`thesis_confirmed_extension_v1` (and/or `target_hold_trail_v1`) before the
+next session, then evaluate only HOLDOUT entries. F&O single-leg and
+defined-risk exit experiments need their own path sources and R definitions.
+A positive small sample authorizes nothing; promotion is versioned paper-only
+management after review. Frozen protocol, 20-session holdout,
+qualification package and delivery canary reuse existing tooling and need
+fresh post-promotion sessions. See the consolidated plan's S5 slice for the
+Production evidence. Production remains untouched.
+
+## October 2 S4 equity-path evidence — Dev complete, operational acceptance open
+
+S4 now provides bounded, additive paper evidence only. Every new opened
+admission records immutable v1 entry economics, the explicit fixed configured
+paper-pool capital snapshot, and canonical accepted-signal packet bytes with a
+SHA-256 receipt. The audit recomputes the digest from stored bytes. Existing
+`zero_shares` is retained, with a reason that distinguishes exhausted capital,
+risk budget and invalid input. A passive exact-admission-key subscription keeps
+original quantity through scale-outs. `record_momentum_paper_path_observations`
+accepts caller-supplied provider packet bytes plus provider/receipt clocks only;
+it has no network capability. The read-only path adapter validates packet bytes,
+exact ticker/key, deadline, clock order and configured gaps before it emits a
+study packet. Focused S4 evidence tests: 73 passed; compilation passed.
+
+Dev-only source must be pushed/reviewed through GitHub; Production remains
+untouched. Before any deployment/learning conclusion, configure bounded caps,
+verify the implemented existing-request passive fanout (without a new provider
+request), and collect five fresh reconciled lifecycles. Missing/forged/gapped
+paths remain insufficient evidence. No test or deployment proves profitability,
+strategy quality, partner qualification or live authority. Next priority is S5
+or the separately scoped S10 work, not a silent sizing or exit-policy change.
+
+## October 2 S3 evidence-retention — Dev complete, operational acceptance open
+
+S2 source completion is committed in Dev and must be promoted only through
+GitHub; Production remains untouched. Start S3 with an inventory of existing
+engine/Compose log retention, CSV evidence rotation, scheduler summaries and
+archive/restart behavior. Maintain a plan slice before edits: files/contracts,
+peak-session retention calculation, tests, rollout/rollback and no-delete
+archive rule. Do not change Production or delete retained evidence. S3 needs
+rendered Compose verification, bounded writer/disk-failure behavior and
+rotation/restart coverage before any deployment request. The optional AI path
+must remain non-blocking when its API is unavailable.
+
+S3 implementation slice (October 2) covered
+`docker-compose.yml`, `scripts/verify_compose_logging.py` and its focused
+tests. The Python engine currently renders `json-file` `20m x 10` (200 MiB),
+below the planned `20m x 25` (500 MiB) retention floor. Raise only that engine
+contract, render and validate it without printing environment values, and test
+rejection of smaller/malformed policies. Rollback is a GitHub reversion of the
+Compose/verifier change; never delete old container logs or research archives.
+Effective recreation/free-space verification is an operator deployment step.
+
+Completion: the rendered Python-engine contract is now 500 MiB; session CSV
+rotation preserves header/rows and SHA-256 manifest evidence; daily scheduler
+rollups retain final outcomes/stage statistics before raw-tail pruning. Verify
+deployed free space, preserve prior-boot logs and measure complete-session
+volume before claiming operational retention. Do not delete archives during
+rollback. Next implementation priority is S4; optional AI remains non-blocking
+if its API is unavailable.
+
+## October 2 independent S1/S2 review — completed source correction
+
+Review found small S2 gaps: action time was not refreshed after held-option/DR
+reads or at final dispatch, quote-age parsing discarded time-zone offsets, and
+the scheduler omitted management observations from its completion log. Correct
+these in `fno_orchestrator.py` and `scheduler_setup.py`, with cutoff, hard-flat,
+quote-age and replay-clock regressions. Preserve frozen signal evaluation time,
+all authority gates and non-cancellable mutations. Verify the affected suite,
+compile, regenerate the atlas and review the diff. Dev only; promotion/rollback
+through GitHub, no Production edit/restart or migration. The original S2 scope
+also includes provider queue priority/fairness, exact-leg management reads and
+DB-wait timing; existing exit-before-entry ordering is not shared-queue priority.
+These source corrections are now complete; stale-IN_FLIGHT recovery review and
+three deployed-session observations remain operational acceptance, not proof of
+profitability, partner qualification or deployment.
+
+## October 1 consolidated smart-trader plan — active, planning only
+
+Start with [the consolidated implementation plan](2026-10-01-smart-trader-consolidated-plan.md).
+It incorporates September 28–October 1 Production evidence and corrects audit
+book/time/count errors. First reproduce/fix defined-risk contract lot identity
+and truthful atomic settlement, then bound management reads and action clocks.
+Preserve complete equity/research paths, compare entry/exit/allocation policies
+on frozen future evidence, and complete the existing partner qualification
+workflow. This is a smart-trader roadmap, not a mandate to add entry filters.
+Jev is deferred. No implementation, Production change or delivery follows from
+this planning update; all development remains in Dev with GitHub promotion.
+The September 26 admission/economics tools are deployed in PR #99 and four
+fresh momentum closes match cash; older "not deployed" receipts below remain
+historical. Full paired paths/held-out review are still required.
+S10 now covers frequent AI_REVIEW_EXPIRED: stale/undated classified news can
+expire the whole review before submission. Correct sanitized context/expiry,
+propagate remaining deadlines and expose valid completed annotations without
+changing paper autonomy or owner EXEC. See the plan's reproduced evidence and
+regression/rollout contracts; this fix is planned, not implemented.
+
+## October 1 S1 defined-risk contract/settlement correction — Dev complete, pending review
+
+The first implementation slice from the consolidated plan is complete in Dev
+only (GitHub review/push pending; not deployed at this receipt). New
+defined-risk admissions bind every selected leg to its exact NFO identity and
+derive quantity economics from the selected contract lot rather than the
+configured fallback. The lifecycle refuses missing/inconsistent/replaced
+contracts, leaves legacy rows explicitly unverified, preserves an unpriced
+hard-flat as `UNRESOLVED` with no fabricated ledger cash, and blocks another
+DR opening while unresolved exposure exists. New priced closes use the named
+`ENTRY_MID_EXIT_BID_ASK_V1` policy: mid valuation and executable cash are
+separate; the terminal row and uniquely generated ledger event are atomic and
+idempotent. `fno_audit_report.py` exposes settled/unresolved/legacy evidence
+and model-versus-cash totals without recalculating legacy cash.
+
+Verification: 24 focused warnings-fatal DR/audit tests pass; the surrounding
+suite passes 84 with one intentionally deselected timing-sensitive recovery
+test and one existing Starlette lifespan deprecation. That recovery test passes
+alone but fails only in the grouped run and is outside this slice. Additive database columns only; no config,
+broker, entry logic, schedule, owner EXEC, partner authority or Production
+change. Next: regenerate/review atlas and documentation, commit the scoped Dev
+slice, then use GitHub promotion and inspect real schema/settlement receipts.
+Source commit `9e26e1b` is local on `codex/production-correction-hedge-p0`;
+it is not pushed or deployed.
+
+## October 2 S2 management-read containment — initial Dev slice
+
+The first S2 sub-slice bounds only cancellable management provider reads:
+five seconds for futures/open-exit quotes and ten seconds for an existing DR
+snapshot. Tick telemetry now exposes per-read completion, deadline or failure
+state plus elapsed/cap seconds. A deadline cancels and joins its read, then
+uses existing degraded/unpriced handling; it never wraps broker execution,
+cash settlement, admission or a database write. Focused checks pass 34. The
+warnings-fatal variant encounters an existing unclosed-socket ResourceWarning
+in an unrelated stage-duration test, so it is not a clean warnings-fatal
+receipt. Source commit `5ae54a8` is Dev-local, unpushed and not deployed;
+complete the remaining S2 clock/priority instrumentation before treating the
+slice done.
+
+## October 2 S2 management clocks and timing — partial Dev scope, review corrected
+
+S2 now records provider limiter wait, transport, parsing, attempt/retry data
+where the real Kite client provides it; non-production adapters explicitly say
+the fine timing is unavailable. It retains exact-leg oldest quote age and
+refreshes the real action clock after reads and before entry admission, without
+altering supplied replay clocks or completed-bar causality. Exits continue to
+precede optional DR entry work, and no provider-rate/concurrency increase was
+made. Focused coverage passes 59. Pending work is GitHub promotion and three
+complete deployed-session receipts. This historical completion claim is
+superseded by the independent review: exact-leg DR reads, queue priority/fairness
+and DB-wait/timeout-stage attribution still require development. Source commit
+`d2319e2` is local, unpushed and not deployed.
+
+Correction slice verification and remaining acceptance are recorded in
+[the independent S1/S2 review](2026-10-02-s1-s2-independent-review.md). Small
+clock/age/logging corrections are in Dev; no migration, rate/cadence change,
+authority expansion, Production edit or restart. Continue with bounded exact-leg
+management and shared-request priority before declaring the full S2 complete.
+
+## September 28 Jev decision-layer proposal — design only
+
+The revised [Jev decision-layer draft](superpowers/specs/2026-09-27-jev-decision-layer-design.md)
+proposes one disabled-by-default, shadow-only news-category experiment after
+a frozen labelled evaluation contract. It does not authorize classifier
+replacement, trade grading, signal filtering, M2/M3 promotion, live orders, or
+partner advice. The Word/PDF copies remain the earlier draft until the Markdown
+design is approved and regenerated. No Jev implementation or deployment has
+been performed.
+
 ## September 26 P1 economic binding — corrected in Dev
 
 Follow [the economic-binding correction plan](2026-09-26-economic-binding-correction-plan.md).

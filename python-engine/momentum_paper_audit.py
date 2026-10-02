@@ -7,6 +7,7 @@ complete lifecycle; legacy records remain visible as unavailable evidence.
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 from pathlib import Path
 import sqlite3
@@ -76,6 +77,28 @@ def _entry_snapshot(raw: object) -> dict[str, Any] | None:
     return value if isinstance(value, dict) else None
 
 
+def _source_packet_receipt(raw: object, claimed: object) -> dict[str, Any]:
+    """Verify the claimed source identity from persisted bytes, never by format."""
+    if not isinstance(raw, str) or not isinstance(claimed, str):
+        return {"state": "UNAVAILABLE_SOURCE_PACKET"}
+    try:
+        raw_bytes = raw.encode("utf-8")
+        packet = json.loads(raw)
+        json.dumps(packet, sort_keys=True, separators=(",", ":"), allow_nan=False)
+    except (UnicodeEncodeError, ValueError, TypeError):
+        return {"state": "UNAVAILABLE_SOURCE_PACKET"}
+    actual = f"sha256:{hashlib.sha256(raw_bytes).hexdigest()}"
+    if claimed != actual:
+        return {"state": "MISMATCH_SOURCE_PACKET", "claimed": claimed, "computed": actual}
+    receipt = {"state": "VERIFIED_SOURCE_PACKET", "sha256": actual}
+    if isinstance(packet, dict):
+        # Clocks from the verified bytes only (S8 decision-timing evidence).
+        for field in ("bar_ts", "received_at"):
+            if isinstance(packet.get(field), str):
+                receipt[field] = packet[field]
+    return receipt
+
+
 def _position_view(row: sqlite3.Row) -> dict[str, Any]:
     return {
         "ticker": row["ticker"],
@@ -123,7 +146,8 @@ def _cash_view(rows: list[sqlite3.Row], position: dict[str, Any] | None) -> dict
         "net_pnl": _round(net_pnl) if rows else None,
         "position_pnl_delta": reconciled,
         "events": [
-            {"event_type": row["event_type"], "timestamp": row["timestamp"], "pnl": _round(row["pnl"])}
+            {"event_type": row["event_type"], "timestamp": row["timestamp"], "pnl": _round(row["pnl"]),
+             "ledger_rowid": row["ledger_rowid"]}
             for row in rows
         ],
     }
@@ -143,9 +167,14 @@ def build_momentum_paper_decision_audit(db_path: str, *, limit: int = 1000) -> d
         if not _OUTCOME_COLUMNS.issubset(outcome_cols):
             return _unavailable("admission_outcome_schema_unavailable", limit=limit)
         connection.row_factory = sqlite3.Row
+        reason_column = "reason" if "reason" in outcome_cols else "NULL AS reason"
         economics_column = "entry_economics_json" if "entry_economics_json" in outcome_cols else "NULL AS entry_economics_json"
+        admission_economics_column = "admission_economics_json" if "admission_economics_json" in outcome_cols else "NULL AS admission_economics_json"
+        source_packet_column = "source_packet_json" if "source_packet_json" in outcome_cols else "NULL AS source_packet_json"
+        source_hash_column = "source_packet_sha256" if "source_packet_sha256" in outcome_cols else "NULL AS source_packet_sha256"
         admissions = connection.execute(
-            f"SELECT admission_key,signal_key,ticker,outcome,recorded_at,{economics_column} "
+            f"SELECT admission_key,signal_key,ticker,outcome,{reason_column},recorded_at,{economics_column},"
+            f"{admission_economics_column},{source_packet_column},{source_hash_column} "
             "FROM momentum_paper_admission_outcomes "
             "ORDER BY recorded_at,admission_key LIMIT ?",
             (limit + 1,),
@@ -174,7 +203,7 @@ def build_momentum_paper_decision_audit(db_path: str, *, limit: int = 1000) -> d
         if ledger_schema_available and keys:
             marks = ",".join("?" for _ in keys)
             ledger_rows = connection.execute(
-                "SELECT origin_ref,event_type,pnl,timestamp FROM bankroll_ledger "
+                "SELECT origin_ref,event_type,pnl,timestamp,rowid AS ledger_rowid FROM bankroll_ledger "
                 f"WHERE source=? AND origin_ref IN ({marks}) ORDER BY timestamp,rowid",
                 (SOURCE, *sorted(keys)),
             ).fetchall()
@@ -221,8 +250,13 @@ def build_momentum_paper_decision_audit(db_path: str, *, limit: int = 1000) -> d
                 "signal_key": admission["signal_key"],
                 "ticker": admission["ticker"],
                 "outcome": outcome,
+                "reason": admission["reason"],
                 "recorded_at": admission["recorded_at"],
                 "entry_economics": _entry_snapshot(admission["entry_economics_json"]),
+                "admission_economics": _entry_snapshot(admission["admission_economics_json"]),
+                "source_packet": _source_packet_receipt(
+                    admission["source_packet_json"], admission["source_packet_sha256"],
+                ),
                 "lifecycle": lifecycle,
                 "position": position,
                 "cash": cash,

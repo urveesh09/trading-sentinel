@@ -144,3 +144,33 @@ async def test_missing_database_stays_missing_and_is_reported_read_only(tmp_path
     assert not missing.exists()
     assert report["read_only"] is True
     assert report["errors"] == ["database_unavailable_or_missing"]
+
+
+@pytest.mark.asyncio
+async def test_report_separates_contract_bound_model_and_executable_cash(db_path):
+    con = sqlite3.connect(db_path)
+    con.execute(
+        "CREATE TABLE fno_dr_positions (source TEXT, status TEXT, opened_at TEXT, "
+        "closed_at TEXT, unresolved_at TEXT, settlement_state TEXT, pricing_policy TEXT, "
+        "model_gross_pnl REAL, cash_gross_pnl REAL)"
+    )
+    con.executemany(
+        "INSERT INTO fno_dr_positions VALUES (?,?,?,?,?,?,?,?,?)",
+        [
+            ("FNO_PAPER", "CLOSED", "2026-09-24T10:00:00+05:30", "2026-09-24T12:00:00+05:30", None,
+             "SETTLED", "ENTRY_MID_EXIT_BID_ASK_V1", 1200.0, 1100.0),
+            ("FNO_PAPER", "UNRESOLVED", "2026-09-24T10:00:00+05:30", None, "2026-09-24T15:10:00+05:30",
+             "UNRESOLVED", None, None, None),
+        ],
+    )
+    con.commit()
+    con.close()
+
+    report = await build_fno_daily_audit_report(db_path, DAY)
+
+    settlement = report["defined_risk_settlement"]
+    assert settlement["status"] == "OK"
+    assert settlement["settled_count"] == 1
+    assert settlement["unresolved_count"] == 1
+    assert settlement["model_gross_pnl"] == 1200.0
+    assert settlement["cash_gross_pnl"] == 1100.0

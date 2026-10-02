@@ -61,6 +61,38 @@ class TestRateLimiter:
         assert limiter.burst == 1
         assert limiter.tokens == 1
 
+    @pytest.mark.asyncio
+    async def test_management_priority_is_bounded_and_normal_work_is_fair(self):
+        limiter = RateLimiter(rate=100.0, burst=1, management_burst=2)
+        await limiter.acquire()  # empty the initial bucket before queueing.
+        admitted = []
+
+        async def request(name, priority):
+            await limiter.acquire(priority=priority)
+            admitted.append(name)
+
+        normals = [asyncio.create_task(request(f"normal-{i}", "normal")) for i in range(3)]
+        await asyncio.sleep(0)
+        management = [asyncio.create_task(request(f"management-{i}", "management")) for i in range(2)]
+        await asyncio.gather(*management, *normals)
+
+        # Management wins the next provider tokens despite queued research,
+        # but cannot take a third while normal work remains queued.
+        assert set(admitted[:2]) == {"management-0", "management-1"}
+        assert admitted[2].startswith("normal-")
+
+    @pytest.mark.asyncio
+    async def test_cancelled_priority_waiter_is_removed_before_next_admission(self):
+        limiter = RateLimiter(rate=100.0, burst=1)
+        await limiter.acquire()
+        cancelled = asyncio.create_task(limiter.acquire(priority="management"))
+        await asyncio.sleep(0)
+        cancelled.cancel()
+        with pytest.raises(asyncio.CancelledError):
+            await cancelled
+        await asyncio.wait_for(limiter.acquire(), timeout=0.2)
+        assert limiter._waiting == {"management": 0, "normal": 0, "bulk": 0}
+
 
 # ---------------------------------------------------------------------
 # KiteClient - Initialisation & Token

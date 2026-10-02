@@ -1,0 +1,1 @@
+{"nonexistent_position_close_return": null, "same_origin_ledger_rows": 2, "pnl": -20.0}

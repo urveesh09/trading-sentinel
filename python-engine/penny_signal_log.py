@@ -45,6 +45,8 @@ from datetime import datetime, timezone
 
 import aiosqlite
 
+from session_csv import append_session_rows
+
 logger = logging.getLogger(__name__)
 
 _COLUMNS = [
@@ -128,13 +130,8 @@ async def log_penny_signal(
     # 1. CSV append
     try:
         csv_path = settings.PENNY_LOG_CSV_PATH
-        os.makedirs(os.path.dirname(csv_path), exist_ok=True)
-        new_file = not os.path.exists(csv_path)
-        with open(csv_path, "a", newline="") as f:
-            writer = csv.DictWriter(f, fieldnames=_COLUMNS, extrasaction="ignore")
-            if new_file:
-                writer.writeheader()
-            writer.writerow(row)
+        # [S3 R4] Off the event loop: the fsync'd append never stalls a scan.
+        await asyncio.to_thread(append_session_rows, csv_path, _COLUMNS, [row])
     except Exception as e:
         logger.error("penny_signal_csv_write_failed error=%s", str(e))
 

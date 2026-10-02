@@ -257,7 +257,40 @@ def main(argv: list[str] | None = None) -> int:
         choices=["DIRECTIONAL_DEBIT_SPREAD"])
     package.add_argument("--horizon", default="INTRADAY", choices=["INTRADAY"])
     package.add_argument("--policy-version", default="partner-manual-intraday-v1")
+    blockers = sub.add_parser("partner-delivery-blockers",
+        help="read-only per-candidate delivery-blocker diagnostic; never qualifies or sends")
+    blockers.add_argument("--db", required=True,
+        help="explicit engine SQLite path holding partner_advisory_ideas (opened read-only)")
+    blockers.add_argument("--attempts-db",
+        help="optional partner-collection-attempts.sqlite3 path (opened read-only)")
+    blockers.add_argument("--session-from", help="inclusive IST session date YYYY-MM-DD")
+    blockers.add_argument("--session-to", help="inclusive IST session date YYYY-MM-DD")
+    blockers.add_argument("--output", required=True, help="immutable JSON report destination")
     args = parser.parse_args(argv)
+    if args.command == "partner-delivery-blockers":
+        try:
+            from datetime import date
+            from partner_delivery_blockers import build_delivery_blocker_report
+            value = build_delivery_blocker_report(
+                db_path=args.db, attempts_path=args.attempts_db,
+                session_from=date.fromisoformat(args.session_from) if args.session_from else None,
+                session_to=date.fromisoformat(args.session_to) if args.session_to else None,
+                current_configuration={
+                    "PARTNER_MANUAL_ADVISORY_ENABLED": bool(settings.PARTNER_MANUAL_ADVISORY_ENABLED),
+                    "PARTNER_MANUAL_ADVISORY_DELIVERY_ENABLED": bool(settings.PARTNER_MANUAL_ADVISORY_DELIVERY_ENABLED),
+                },
+            )
+            _write_comparison_output(args.output, value)
+            print(json.dumps({"path": args.output, "candidates": value["totals"]["candidates"],
+                              "delivered": value["totals"]["delivered"],
+                              "primary_blockers": value["totals"]["primary_blockers"],
+                              "can_qualify": False, "can_send": False, "can_place_orders": False,
+                              "authorization_effect": "NONE"}, sort_keys=True))
+            return 0
+        except (ValueError, OSError, sqlite3.Error) as exc:
+            print(json.dumps({"state": "DIAGNOSTIC_INPUT_REJECTED", "error": str(exc),
+                              "authorization_effect": "NONE"}), file=sys.stderr)
+            return 2
     if args.command in {"freeze-strategy-comparison", "evaluate-strategy-comparison"}:
         try:
             value = _strategy_comparison(args)

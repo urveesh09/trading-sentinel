@@ -138,6 +138,7 @@ def _mock_client_with_text(text: str) -> MagicMock:
     response = MagicMock()
     response.choices = [choice]
     client = MagicMock()
+    client.with_options.return_value = client
     client.chat.completions.create.return_value = response
     return client
 

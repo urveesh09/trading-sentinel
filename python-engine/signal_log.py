@@ -44,12 +44,14 @@ import csv
 import json
 import os
 import uuid
+import asyncio
 from datetime import datetime, timezone
 from typing import Any, Iterable, Optional
 
 import aiosqlite
 
 from config import settings
+from session_csv import append_session_rows
 
 
 # -------------------------------------------------------------------
@@ -191,11 +193,8 @@ async def log_momentum_batch(
     # -- CSV write (append mode) --
     csv_path = settings.MOMENTUM_LOG_CSV_PATH
     try:
-        _ensure_csv_header(csv_path)
-        with open(csv_path, "a", newline="") as f:
-            writer = csv.DictWriter(f, fieldnames=_COLUMNS, extrasaction="ignore")
-            for row in rows_list:
-                writer.writerow(row)
+        # [S3 R4] Off the event loop: the fsync'd append never stalls a scan.
+        await asyncio.to_thread(append_session_rows, csv_path, _COLUMNS, rows_list)
     except OSError as e:
         # Don't crash a live scan because the log disk is full / read-only
         # -- but make it visible in the next log line.
