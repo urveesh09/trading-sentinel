@@ -107,6 +107,46 @@ does not migrate trading evidence.
 deployment requires operator free-space, prior-boot preservation and full
 market-session volume checks. Optional AI remains non-blocking when unavailable.
 
+## October 2 S5b shared-provider bulk lane and exact-leg-first research (Dev)
+
+Root cause of the recurring 48-second research caps (read-only Production,
+September 28–October 1): `run_momentum_screener` fetches about 500 tickers every
+quarter hour with up to 50 concurrent waiters on the shared 3/s, burst-one
+Kite limiter. A one-token research, F&O snapshot or penny request then waited
+behind that backlog for roughly 40 seconds; no provider timeout or retry was
+logged. With owner approval, `RateLimiter` now has a third `bulk` lane below
+`normal`. Queued normal work is admitted first, but at most three consecutive
+normal admissions occur while bulk waits, so the screener cannot starve. S2
+management priority is unchanged and still yields to any lower lane after
+its burst. The screener's per-ticker tasks are created inside
+`provider_lane("bulk")` (a context variable inherited by those tasks only).
+Rate, burst, concurrency, signal logic and every other caller are unchanged.
+
+Research collection now requests the future reference and every exact active
+selected leg in its first call, then requests only the remaining optional ATM
+ladder (the future is re-read with the ladder as before). A ladder deadline
+therefore no longer loses an exact retained leg. Each provider call records
+bounded limiter-wait/transport/parse/outcome timing in `provider_timing`
+(test doubles are labelled `UNAVAILABLE`; deadline splits `PARTIAL_UNKNOWN`).
+
+Expected effect: the token bucket is work-conserving, so total throughput is
+unchanged. The screener should take roughly 10–20% longer (about 243 s to an
+estimated 270–285 s), because penny scans and F&O snapshots that previously
+stretched, timed out or were skipped during its window now complete first.
+This is an estimate from Production logs, not a measurement. Verify
+`momentum_per_ticker_eval_done` elapsed, research `runtime_capped` counts,
+`provider_timing` and penny skip counts on deployed sessions.
+
+S5b/affected tests: 141 passed, one known skip; warnings-fatal S5b,
+deadline and leg-subscription subset: 24 passed. The exact-leg regression
+fails on the previous collector. A combined cross-module run shows the
+`test_partner_orchestrator.py` `wired` fixture erroring after another module
+closes the default event loop. A clean HEAD worktree reproduces the same 30
+errors, so that ordering issue pre-dates S5b; the partner suites pass 91 alone.
+HEAD's combined run also showed a timing flake in
+`test_stalled_first_underlying_is_cancelled_and_reports_second_gap`. Both are
+test-hygiene follow-ups. Dev-only; no schema/config migration and not deployed.
+
 ## October 2 S5a partner candidate action clock (Dev)
 
 Read-only Production evidence (September 30) showed seven partner ideas stored
@@ -122,6 +162,7 @@ stale quote still rejects. Partner/hedge/scheduler suites: 373 passed; the
 new late-chain regression fails on the previous source with the Production
 reason. Dev-only; not deployed. This does not qualify any partner strategy:
 every observed idea remains `RESEARCH_ONLY` and qualification-blocked.
+Source commit: `f45ce43` (Dev, unpushed at receipt).
 
 ## October 2 S4 equity-path and admission-capital evidence completion (Dev)
 

@@ -66,6 +66,14 @@
   regression reproduces the September 30 `stale_or_future_leg_quote`
   rejection on the old source. Partner/hedge/scheduler suites: 373 passed.
   Dev only; no threshold, qualification, profile, delivery or message change.
+- [x] S5b: owner-approved `bulk` limiter lane for momentum screener fetches
+  (normal ahead, at most three normal admissions while bulk waits; management
+  unchanged; rate/burst/concurrency unchanged). Research requests the future plus
+  exact active legs first, then the ladder, and records per-call timing.
+  141 passed/one skip; warnings-fatal subset 24 passed. Pre-existing partner
+  fixture ordering errors are reproduced on clean HEAD; follow-up only.
+- [ ] After promotion, measure screener elapsed (estimate +10–20%), research
+  cap count, `provider_timing` and penny skips on three deployed sessions.
 - [ ] Configure S4 path caps, connect an existing quote fanout without adding a
   provider request, then collect five fresh reconciled passive lifecycles.
   These are instrumentation acceptance only, not proof of profitability,

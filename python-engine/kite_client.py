@@ -1,4 +1,6 @@
 import asyncio
+import contextlib
+import contextvars
 import os
 import re
 import time
@@ -180,37 +182,82 @@ def _intraday_cache_gate_evaluate(
         ),
     )
 
+_PROVIDER_LANES = ("management", "normal", "bulk")
+_provider_lane: contextvars.ContextVar[str] = contextvars.ContextVar(
+    "kite_provider_lane", default="normal",
+)
+
+
+@contextlib.contextmanager
+def provider_lane(lane: str):
+    """Run provider calls created in this scope in one limiter lane.
+
+    asyncio tasks copy the current context when they are created, so wrapping
+    the creation of a bulk ``gather`` labels every request those tasks make
+    without threading a priority argument through each fetch helper.  An
+    explicit ``priority=`` on ``RateLimiter.acquire`` still wins.
+    """
+    if lane not in _PROVIDER_LANES:
+        raise ValueError(f"unknown provider lane: {lane}")
+    token = _provider_lane.set(lane)
+    try:
+        yield
+    finally:
+        _provider_lane.reset(token)
+
+
 class RateLimiter:
-    """Shared token bucket with bounded management priority.
+    """Shared token bucket with bounded management priority and a bulk lane.
 
     Every provider caller uses this one limiter.  Management reads may pass
     ``priority="management"`` so an already-queued research request cannot
     repeatedly win the next token, but ``management_burst`` prevents a steady
-    stream of exits from starving ordinary/research work forever.  Waiting is
-    cancellation-safe: a cancelled waiter removes itself before another
-    caller is admitted.
+    stream of exits from starving lower lanes forever.  Bulk scans (the
+    momentum screener's per-ticker fetches) use ``"bulk"``: queued normal work
+    is admitted ahead of them, but at most ``normal_burst`` consecutive normal
+    admissions occur while bulk waits, so a bulk scan cannot starve either.
+    Lanes change ordering only; rate, burst and concurrency are unchanged.
+    Waiting is cancellation-safe: a cancelled waiter removes itself before
+    another caller is admitted.
     """
 
-    def __init__(self, rate: float, burst: int, *, management_burst: int = 3):
-        if rate <= 0 or burst < 1 or management_burst < 1:
-            raise ValueError("rate, burst, and management_burst must be positive")
+    def __init__(self, rate: float, burst: int, *, management_burst: int = 3,
+                 normal_burst: int = 3):
+        if rate <= 0 or burst < 1 or management_burst < 1 or normal_burst < 1:
+            raise ValueError("rate, burst, management_burst and normal_burst must be positive")
         self.rate = rate
         self.burst = burst
         self.tokens = burst
         self.last_update = time.monotonic()
         self.management_burst = management_burst
+        self.normal_burst = normal_burst
         self._condition = asyncio.Condition()
-        self._waiting = {"management": 0, "normal": 0}
+        self._waiting = {lane: 0 for lane in _PROVIDER_LANES}
         self._management_streak = 0
+        self._normal_streak = 0
 
-    async def acquire(self, *, priority: str = "normal"):
+    def _lane_turn(self) -> Optional[str]:
+        """Return the lane entitled to the next token, or None if idle."""
+        management = self._waiting["management"] > 0
+        normal = self._waiting["normal"] > 0
+        bulk = self._waiting["bulk"] > 0
+        if management and (not (normal or bulk) or self._management_streak < self.management_burst):
+            return "management"
+        if normal and (not bulk or self._normal_streak < self.normal_burst):
+            return "normal"
+        if bulk:
+            return "bulk"
+        return None
+
+    async def acquire(self, *, priority: Optional[str] = None):
         """Acquire one shared provider token without exceeding ``rate``.
 
-        Management gets at most ``management_burst`` consecutive admissions
-        while normal work is queued.  This is admission ordering only; it
-        adds no token capacity or parallelism.
+        ``priority`` defaults to the ambient ``provider_lane`` (normal unless a
+        caller opted into another lane); an unknown value is treated as normal.
         """
-        lane = "management" if priority == "management" else "normal"
+        lane = priority if priority is not None else _provider_lane.get()
+        if lane not in _PROVIDER_LANES:
+            lane = "normal"
         admitted = False
         async with self._condition:
             self._waiting[lane] += 1
@@ -220,22 +267,16 @@ class RateLimiter:
                     elapsed = now - self.last_update
                     self.tokens = min(self.burst, self.tokens + elapsed * self.rate)
                     self.last_update = now
-                    normal_waiting = self._waiting["normal"] > 0
-                    management_waiting = self._waiting["management"] > 0
-                    management_turn = management_waiting and (
-                        not normal_waiting
-                        or self._management_streak < self.management_burst
-                    )
-                    our_turn = (
-                        lane == "management" and management_turn
-                    ) or (
-                        lane == "normal" and not management_turn
-                    )
-                    if our_turn and self.tokens >= 1:
+                    if self._lane_turn() == lane and self.tokens >= 1:
                         self.tokens -= 1
-                        self._management_streak = (
-                            self._management_streak + 1 if lane == "management" else 0
-                        )
+                        if lane == "management":
+                            self._management_streak += 1
+                        elif lane == "normal":
+                            self._management_streak = 0
+                            self._normal_streak += 1
+                        else:
+                            self._management_streak = 0
+                            self._normal_streak = 0
                         admitted = True
                         self._condition.notify_all()
                         return
@@ -1067,22 +1108,52 @@ class KiteClient:
         supplies the dated exchange/symbol identity and maps returned packets
         back to the caller's token only after checking the requested key.
         """
+        result, _timing = await self.get_quote_by_instruments_with_timing(instruments)
+        return result
+
+    async def get_quote_by_instruments_with_timing(
+        self, instruments: dict[int, str],
+    ) -> tuple[dict, dict]:
+        """``get_quote_by_instruments`` plus bounded limiter/transport timing.
+
+        Research collection uses this to attribute a slow call to shared
+        limiter queueing versus provider transport.  Behaviour, single attempt
+        and failure-to-empty semantics are identical to the untimed method.
+        """
+        timing = {"limiter_wait_sec": 0.0, "transport_sec": 0.0, "parse_sec": 0.0,
+                  "attempt_count": 0, "outcome": "EMPTY_REQUEST"}
+
+        def _finish(result: dict) -> tuple[dict, dict]:
+            return result, {key: (round(value, 6) if isinstance(value, float) else value)
+                            for key, value in timing.items()}
+
         requested = {int(token): str(key) for token, key in instruments.items() if str(key).strip()}
         if not requested:
-            return {}
+            return _finish({})
+        limiter_started = time.monotonic()
         await self.limiter.acquire()
+        timing["limiter_wait_sec"] = time.monotonic() - limiter_started
+        timing["attempt_count"] = 1
         try:
+            transport_started = time.monotonic()
             response = await self.client.get("/quote", params=[("i", key) for key in requested.values()])
+            timing["transport_sec"] = time.monotonic() - transport_started
             response.raise_for_status()
+            parse_started = time.monotonic()
             payload = response.json().get("data", {})
             reverse = {key: token for token, key in requested.items()}
             result = {reverse[key]: value for key, value in payload.items() if key in reverse and isinstance(value, dict)}
+            timing["parse_sec"] = time.monotonic() - parse_started
             if len(result) != len(requested):
                 logger.warning("kite_quote_instrument_partial requested=%d returned=%d", len(requested), len(result))
-            return result
+            timing["outcome"] = "COMPLETE" if len(result) == len(requested) else "PARTIAL"
+            return _finish(result)
         except (httpx.HTTPStatusError, httpx.RequestError) as exc:
+            if not timing["transport_sec"]:
+                timing["transport_sec"] = time.monotonic() - transport_started
             logger.warning("kite_quote_instrument_failed requested=%d err=%s", len(requested), str(exc))
-            return {}
+            timing["outcome"] = "FAILED"
+            return _finish({})
 
     def _log_quote_batch_failure(self, n_tokens: int):
         """[AUDIT-FIX-2.3] Log a full-batch quote failure once at

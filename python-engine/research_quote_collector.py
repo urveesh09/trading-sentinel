@@ -190,6 +190,21 @@ async def _documented_quotes(kite, contracts: Sequence[Contract], segment: str) 
     return await kite.get_quote(list(request))
 
 
+async def _documented_quotes_timed(
+    kite, contracts: Sequence[Contract], segment: str,
+) -> Tuple[Mapping[int, Mapping[str, Any]], Dict[str, Any]]:
+    """Documented lookup plus limiter/transport attribution where available.
+
+    The capability is checked on the client *class* so permissive test
+    doubles (e.g. ``MagicMock``) keep their existing call path and are
+    explicitly labelled as having no fine timing.
+    """
+    if getattr(type(kite), "get_quote_by_instruments_with_timing", None) is not None:
+        request = {contract.token: f"{segment}:{contract.tradingsymbol}" for contract in contracts}
+        return await kite.get_quote_by_instruments_with_timing(request)
+    return await _documented_quotes(kite, contracts, segment), {"timing_state": "UNAVAILABLE"}
+
+
 class _ProviderDeadlineExceeded(TimeoutError):
     """A single provider operation consumed the remaining collection budget."""
 
@@ -200,6 +215,7 @@ async def _bounded_documented_quotes(
     segment: str,
     *,
     remaining_runtime_sec: Optional[Callable[[], float]],
+    timing_sink: Optional[Callable[[Dict[str, Any]], None]] = None,
 ) -> Mapping[int, Mapping[str, Any]]:
     """Await one quote operation, cancelling it at the tick's remaining budget.
 
@@ -209,19 +225,33 @@ async def _bounded_documented_quotes(
     after a later collection slot begins.  Direct/offline callers retain the
     former unbounded helper behaviour by passing ``None``.
     """
-    operation = _documented_quotes(kite, contracts, segment)
+    started = time.monotonic()
+
+    def _record(timing: Dict[str, Any]) -> None:
+        if timing_sink is not None:
+            timing_sink({**timing, "tokens": len(contracts),
+                         "elapsed_sec": round(time.monotonic() - started, 6)})
+
+    operation = _documented_quotes_timed(kite, contracts, segment)
     if remaining_runtime_sec is None:
-        return await operation
+        data, timing = await operation
+        _record(timing)
+        return data
     remaining = float(remaining_runtime_sec())
     if not math.isfinite(remaining) or remaining <= 0:
         # The coroutine has not been awaited yet.  Close it explicitly before
         # raising, otherwise Python emits an un-awaited-coroutine warning.
         operation.close()
+        _record({"outcome": "DEADLINE_BEFORE_REQUEST"})
         raise _ProviderDeadlineExceeded("no collection runtime remains")
     try:
-        return await asyncio.wait_for(operation, timeout=remaining)
+        data, timing = await asyncio.wait_for(operation, timeout=remaining)
     except asyncio.TimeoutError as exc:
+        # The cancelled provider stage split is unknown; only elapsed is real.
+        _record({"outcome": "DEADLINE_EXCEEDED", "timing_state": "PARTIAL_UNKNOWN"})
         raise _ProviderDeadlineExceeded("provider quote exceeded collection runtime") from exc
+    _record(timing)
+    return data
 
 
 def _index_coverage() -> Dict[str, Any]:
@@ -271,8 +301,14 @@ async def collect_rest_quote_snapshot(
         "collected": 0, "requested": 0, "partial_collected": 0,
         "partial_count": 0, "gaps": [], "indices": {},
         "mode": "KITE_REST_FULL_LOWER_FREQUENCY", "underlying_order": underlyings,
-        "stage_durations_sec": {},
+        "stage_durations_sec": {}, "provider_timing": [],
     }
+
+    def _provider_timing(name: str, stage: str) -> Callable[[Dict[str, Any]], None]:
+        """Retain bounded per-call limiter/transport evidence (S5b)."""
+        def sink(timing: Dict[str, Any]) -> None:
+            result["provider_timing"].append({"underlying": name, "stage": stage, **timing})
+        return sink
 
     def _annotate_result() -> None:
         result["partial_collected"] = partial_collected_ref["n"]
@@ -366,6 +402,14 @@ async def collect_rest_quote_snapshot(
                                    "token": leg.contract.token, "decision_id": leg.decision_id}
                                   for leg in capacity_shortfall)
         rolling_selected: List[Tuple[Contract, str]] = []
+        segment = SPECS[name].segment
+        future: Optional[Contract] = None
+        # [S5b 2026-10-02] Exact legs first.  One request carries the future
+        # reference *and* every active selected leg, so a later deadline on
+        # the optional ATM ladder cannot lose the exact retained contracts.
+        first_contracts: Dict[int, Contract] = {}
+        first_data: Mapping[int, Mapping[str, Any]] = {}
+        first_received_at: Optional[datetime] = None
         try:
             book = books.get(name)
             if book is None or not book.ready(now_ist.date()):
@@ -374,78 +418,101 @@ async def collect_rest_quote_snapshot(
                 future = book.front_future(now_ist.date())
                 if future is None:
                     result["gaps"].append({"underlying": name, "reason": "front_future_unavailable"})
+            if future is not None:
+                first_contracts[future.token] = future
+            for leg in active:
+                first_contracts.setdefault(leg.contract.token, leg.contract)
+            if first_contracts:
+                stage_started = time.monotonic()
+                first_data = await _bounded_documented_quotes(
+                    kite, list(first_contracts.values()), segment,
+                    remaining_runtime_sec=remaining_runtime_sec,
+                    timing_sink=_provider_timing(name, "reference_and_active_legs"),
+                )
+                result["stage_durations_sec"]["provider_quote"] = round(result["stage_durations_sec"].get("provider_quote", 0) + time.monotonic() - stage_started, 6)
+                # Receipt time is captured after the provider call, not from
+                # the tick start.  It is evidence timing, never a validity clock.
+                first_received_at = datetime.now(IST)
+                if not isinstance(first_data, Mapping):
+                    raise ValueError("quote batch must be a mapping")
+            if future is not None:
+                future_quote = first_data.get(future.token) if first_data else None
+                packet_token = future_quote.get("instrument_token") if isinstance(future_quote, Mapping) else None
+                forward = _finite_positive((future_quote or {}).get("last_price"), float)
+                if packet_token not in (None, "", future.token, str(future.token)) or forward is None:
+                    result["gaps"].append({"underlying": name, "reason": "future_reference_invalid", "token": future.token})
                 else:
-                    stage_started = time.monotonic()
-                    future_data = await _bounded_documented_quotes(
-                        kite, [future], SPECS[name].segment,
-                        remaining_runtime_sec=remaining_runtime_sec,
-                    )
-                    result["stage_durations_sec"]["provider_quote"] = round(result["stage_durations_sec"].get("provider_quote", 0) + time.monotonic() - stage_started, 6)
-                    future_quote = future_data.get(future.token) if future_data else None
-                    packet_token = future_quote.get("instrument_token") if isinstance(future_quote, Mapping) else None
-                    forward = _finite_positive((future_quote or {}).get("last_price"), float)
-                    if packet_token not in (None, "", future.token, str(future.token)) or forward is None:
-                        result["gaps"].append({"underlying": name, "reason": "future_reference_invalid", "token": future.token})
-                    else:
-                        rolling_selected = _select_contracts(book, float(forward), now_ist.date(), settings.RESEARCH_QUOTE_STRIKE_WINDOW)
+                    rolling_selected = _select_contracts(book, float(forward), now_ist.date(), settings.RESEARCH_QUOTE_STRIKE_WINDOW)
         except _ProviderDeadlineExceeded:
             if mark_runtime_capped is not None:
                 mark_runtime_capped()
             result["indices"][name]["collection_state"] = "provider_deadline_exceeded"
             result["gaps"].append({"underlying": name, "reason": "provider_deadline_exceeded",
-                                   "stage": "future_reference", "token": future.token})
+                                   "stage": "future_reference" if future is not None else "active_legs",
+                                   "token": future.token if future is not None else None,
+                                   "tokens": len(first_contracts)})
             _mark_current_active_unobserved(name, active_tokens)
             _mark_deadline_skips(underlyings, underlying_index + 1)
             break
         except Exception as exc:
+            first_data = {}
             result["gaps"].append({"underlying": name, "reason": "future_reference_exception", "error_type": type(exc).__name__})
+        # Active decisions survive a missing/changed rolling universe.
+        selected = _with_active_legs(rolling_selected, active)
+        if not selected:
+            await asyncio.to_thread(subscriptions.record_collection, requested_tokens=active_tokens,
+                                    received_tokens=(), now=now_ist, capacity_shortfall=capacity_shortfall)
+            result["indices"][name]["collection_state"] = "completed_no_selectable_contracts"
+            continue
+        tokens = [contract.token for contract, _ in selected]
+        result["indices"][name]["requested_tokens"] = tokens
+        result["requested"] += len(tokens)
+        # Exact legs already observed with the reference are not re-requested.
+        # The future itself is re-read with the ladder, as before, so ladder
+        # options and their forward reference keep one receipt time.
+        prefetched = {token: first_data[token] for token in active_tokens
+                      if first_data and token in first_data}
+        remaining = [(contract, reason) for contract, reason in selected if contract.token not in prefetched]
+        data: Mapping[int, Mapping[str, Any]] = {}
+        batch_received_at = first_received_at or datetime.now(IST)
+        ladder_state: Optional[str] = None
         try:
-            # Active decisions survive a missing/changed rolling universe.
-            selected = _with_active_legs(rolling_selected, active)
-            if not selected:
-                await asyncio.to_thread(subscriptions.record_collection, requested_tokens=active_tokens,
-                                        received_tokens=(), now=now_ist, capacity_shortfall=capacity_shortfall)
-                result["indices"][name]["collection_state"] = "completed_no_selectable_contracts"
-                continue
-            tokens = [contract.token for contract, _ in selected]
-            result["indices"][name]["requested_tokens"] = tokens
-            result["requested"] += len(tokens)
-            stage_started = time.monotonic()
-            data = await _bounded_documented_quotes(
-                kite, [contract for contract, _ in selected], SPECS[name].segment,
-                remaining_runtime_sec=remaining_runtime_sec,
-            )
-            result["stage_durations_sec"]["provider_quote"] = round(result["stage_durations_sec"].get("provider_quote", 0) + time.monotonic() - stage_started, 6)
-            if not isinstance(data, Mapping):
-                raise ValueError("quote batch must be a mapping")
+            if remaining:
+                stage_started = time.monotonic()
+                data = await _bounded_documented_quotes(
+                    kite, [contract for contract, _ in remaining], segment,
+                    remaining_runtime_sec=remaining_runtime_sec,
+                    timing_sink=_provider_timing(name, "quote_batch"),
+                )
+                result["stage_durations_sec"]["provider_quote"] = round(result["stage_durations_sec"].get("provider_quote", 0) + time.monotonic() - stage_started, 6)
+                batch_received_at = datetime.now(IST)
+                if not isinstance(data, Mapping):
+                    raise ValueError("quote batch must be a mapping")
+                if not data:
+                    ladder_state = "empty"
         except _ProviderDeadlineExceeded:
             if mark_runtime_capped is not None:
                 mark_runtime_capped()
             result["indices"][name]["collection_state"] = "provider_deadline_exceeded"
             result["gaps"].append({"underlying": name, "reason": "provider_deadline_exceeded",
-                                   "stage": "quote_batch", "tokens": len(tokens)})
-            _mark_current_active_unobserved(name, active_tokens)
-            _mark_deadline_skips(underlyings, underlying_index + 1)
-            break
+                                   "stage": "quote_batch", "tokens": len(remaining)})
+            data, ladder_state = {}, "deadline"
         except Exception as exc:
             result["gaps"].append({"underlying": name, "reason": "quote_batch_exception", "error_type": type(exc).__name__})
             result["indices"][name]["collection_state"] = "quote_batch_exception"
-            await asyncio.to_thread(subscriptions.record_collection, requested_tokens=active_tokens,
-                                    received_tokens=(), now=now_ist, capacity_shortfall=capacity_shortfall)
-            continue
-        # Receipt time is deliberately captured after the provider call, not
-        # from the scheduler tick's start.  It is evidence timing, never an
-        # advisory validity clock.
-        batch_received_at = datetime.now(IST)
-        if not data:
-            result["gaps"].append({"underlying": name, "reason": "quote_batch_empty", "tokens": len(tokens)})
+            data, ladder_state = {}, "exception"
+        if ladder_state == "empty":
+            result["gaps"].append({"underlying": name, "reason": "quote_batch_empty", "tokens": len(remaining)})
             result["indices"][name]["collection_state"] = "completed_empty_batch"
-            await asyncio.to_thread(subscriptions.record_collection, requested_tokens=active_tokens,
-                                    received_tokens=(), now=batch_received_at,
-                                    capacity_shortfall=capacity_shortfall)
-            continue
         for contract, reason in selected:
-            quote = data.get(contract.token)
+            if contract.token in prefetched:
+                quote, received_at = prefetched[contract.token], first_received_at
+            elif ladder_state is not None:
+                # An unavailable/empty batch is already one explicit gap;
+                # per-contract "missing" gaps would overstate observation.
+                continue
+            else:
+                quote, received_at = data.get(contract.token), batch_received_at
             if quote is None:
                 result["gaps"].append({"underlying": name, "reason": "contract_packet_missing", "token": contract.token})
                 continue
@@ -454,7 +521,7 @@ async def collect_rest_quote_snapshot(
                 result["gaps"].append({"underlying": name, "reason": "returned_token_mismatch", "requested_token": contract.token, "returned_token": str(packet_token)})
                 continue
             try:
-                event = normalise_quote(contract, quote, source="KITE", mode=result["mode"], received_at=batch_received_at, selection_reason=reason, exchange=SPECS[name].segment)
+                event = normalise_quote(contract, quote, source="KITE", mode=result["mode"], received_at=received_at, selection_reason=reason, exchange=segment)
                 stage_started = time.monotonic()
                 await asyncio.to_thread(archive.append, event)
                 result["stage_durations_sec"]["archive_write"] = round(result["stage_durations_sec"].get("archive_write", 0) + time.monotonic() - stage_started, 6)
@@ -471,6 +538,17 @@ async def collect_rest_quote_snapshot(
                 result["gaps"].append({"underlying": name, "reason": "packet_normalisation_exception", "token": contract.token, "error_type": type(exc).__name__})
         received_active = active_tokens.intersection(result["indices"][name]["received_tokens"])
         result["indices"][name]["active_leg_received_tokens"] = sorted(received_active)
+        if ladder_state == "deadline":
+            # Only exact legs actually observed are recorded; deadline-unobserved
+            # legs stay explicit gaps, as before, rather than missing packets.
+            if received_active:
+                await asyncio.to_thread(subscriptions.record_collection, requested_tokens=received_active,
+                                        received_tokens=received_active, now=batch_received_at)
+            unobserved = active_tokens - received_active
+            if unobserved or not active_tokens:
+                _mark_current_active_unobserved(name, unobserved)
+            _mark_deadline_skips(underlyings, underlying_index + 1)
+            break
         await asyncio.to_thread(subscriptions.record_collection, requested_tokens=active_tokens,
                                 received_tokens=received_active, now=batch_received_at,
                                 capacity_shortfall=capacity_shortfall)

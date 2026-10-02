@@ -24,6 +24,7 @@ configure_structlog(level="INFO")
 from config import settings
 from kite_client import KiteClient
 from kite_client import latest_order_state as _kc_latest_order_state
+from kite_client import provider_lane as _kite_provider_lane
 from market_calendar import is_trading_day, prev_trading_day, is_market_open
 from engine import evaluate_signal, calc_ema, evaluate_momentum_signal, calc_zerodha_costs, calc_rsi_series, calc_atr
 from regime import RegimeEngine
@@ -3085,10 +3086,15 @@ async def _run_momentum_screener_impl(t0):
 
     import time as _time
     _t0 = _time.monotonic()
-    gathered = await asyncio.gather(
-        *[_eval_one_momentum_ticker(row) for _, row in universe_rows],
-        return_exceptions=True,
-    )
+    # [S5b 2026-10-02] The ~500-ticker scan is bulk provider work.  Tasks
+    # created here inherit the bulk limiter lane, so short research/F&O/penny
+    # requests no longer queue behind ~50 screener waiters for 40s+.  Bounded
+    # fairness keeps the scan progressing; rate/burst are unchanged.
+    with _kite_provider_lane("bulk"):
+        gathered = await asyncio.gather(
+            *[_eval_one_momentum_ticker(row) for _, row in universe_rows],
+            return_exceptions=True,
+        )
     _elapsed = _time.monotonic() - _t0
     logger.info(
         "momentum_per_ticker_eval_done count=%d elapsed=%.1fs",

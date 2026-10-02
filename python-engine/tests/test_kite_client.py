@@ -91,7 +91,7 @@ class TestRateLimiter:
         with pytest.raises(asyncio.CancelledError):
             await cancelled
         await asyncio.wait_for(limiter.acquire(), timeout=0.2)
-        assert limiter._waiting == {"management": 0, "normal": 0}
+        assert limiter._waiting == {"management": 0, "normal": 0, "bulk": 0}
 
 
 # ---------------------------------------------------------------------

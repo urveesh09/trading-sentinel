@@ -432,8 +432,10 @@ first, then the optional ATM ladder, and retains limiter/transport timing
 for every provider call. Acceptance: bulk cannot starve; normal work is not
 queued behind a 50-waiter bulk backlog; management still preempts both;
 cancellation removes waiters; exact legs survive a ladder deadline.
-Expected effect: the screener's roughly 243 s scan becomes slightly longer; signal logic
-is unchanged.
+Expected effect: the bucket is work-conserving, so the screener's ~243 s scan
+becomes roughly 10–20% longer (estimate 270–285 s). Penny scans and F&O
+snapshots that previously stretched, timed out or were skipped now complete
+first. Signal logic is unchanged. This estimate must be measured after deployment.
 
 S5c — read-only candidate delivery-blocker diagnostic. Join attempt journal,
 persisted ideas, qualification registry and delivery flags; report every
@@ -454,6 +456,22 @@ and a genuinely stale chain (still rejected). The late-chain test fails on the
 previous source with `stale_or_future_leg_quote`. Partner/hedge/scheduler
 suites: 373 passed with the known Starlette deprecation. No validation
 threshold, qualification, profile, delivery, schema or Production change.
+Source commit `f45ce43`.
+
+S5b completion receipt (Dev, October 2): `RateLimiter` gained the `bulk` lane
+(`normal_burst=3`) and `provider_lane()` context; `_run_momentum_screener_impl`
+creates its per-ticker tasks inside the bulk lane. `get_quote_by_instruments`
+now delegates to `get_quote_by_instruments_with_timing` (identical single
+attempt/failure semantics). Research collection requests future plus exact
+active legs first, then the remaining ladder, and retains `provider_timing`.
+Regressions: normal not queued behind a 30-waiter bulk backlog; bulk admitted
+within three normals; management still preempts both and yields to bulk;
+unchanged S2 ordering without bulk; cancellation; context scope/reset;
+timed lookup; an exact leg surviving a ladder deadline (fails on the previous
+collector). 141 affected tests passed with one known skip; warnings-fatal
+subset 24 passed. A pre-existing partner fixture event-loop ordering error
+in combined runs is reproduced on clean HEAD (30 errors) and is unrelated.
+No schema, configuration, rate, concurrency, broker or Production change.
 
 ### S6 — P2: smarter exits on the same opportunities
 

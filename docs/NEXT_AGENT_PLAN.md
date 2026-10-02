@@ -2,11 +2,14 @@
 
 ## October 2 S5 partner research readiness — in progress (Dev)
 
-S5a (partner action clock) is complete in Dev: persistence and protection
-prechecks use the live action clock, so a late-received chain is no longer
-misclassified as a future quote. Remaining S5 source work is S5b (owner-approved
-bulk Kite lane for the momentum screener plus exact-leg-first research
-collection and per-call timing) and S5c (read-only per-candidate
+S5a (partner action clock, commit `f45ce43`) is complete in Dev: persistence
+and protection prechecks use the live action clock, so a late-received chain
+is no longer misclassified as a future quote. S5b is complete in Dev: the
+owner-approved bulk Kite lane admits normal research/F&O/penny/partner requests
+ahead of the momentum screener's per-ticker fetches with bounded fairness, and
+research observes exact active legs with the future reference before the
+optional ladder. Expect the screener to take roughly 10–20% longer; verify it
+on deployed sessions. Remaining S5 source work is S5c (read-only per-candidate
 delivery-blocker diagnostic). Frozen protocol, 20-session holdout,
 qualification package and delivery canary reuse existing tooling and need
 fresh post-promotion sessions. See the consolidated plan's S5 slice for the
