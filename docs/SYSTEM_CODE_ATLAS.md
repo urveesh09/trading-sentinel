@@ -524,6 +524,16 @@ Related tests: `python-engine/tests/test_fno_dr_book.py`
 
 Declared tables: `fno_dr_positions`
 
+## `python-engine/fno_dr_exit_experiment.py`
+
+Frozen, structure-level defined-risk exit experiment (S6). Research-only: callers supply exact selected-leg identities and signed packet bytes. It neither reads a broker nor mutates the defined-risk paper book.
+
+Top-level declarations: `DrObservation` (line 22), `DrEntry` (line 30), `_valid` (line 43), `simulate` (line 64), `freeze_manifest` (line 84), `build_report` (line 93)
+
+Engine dependencies: `momentum_exit_study`
+
+Related tests: `python-engine/tests/test_fno_dr_exit_experiment.py`
+
 ## `python-engine/fno_engine_mom.py`
 
 [FNO-MOM 2026-07-10] Opening-range momentum signal for NIFTY (spec §8). THE rule this module exists to enforce: every signal is computed on NIFTY FRONT-MONTH FUTURES 5-min bars, never on option premium. A premium series is contaminated by theta decay and IV changes at once, so an EMA or RSI on premium measures three things and reports on none of them (spec §8.1). The option is purely the expression vehicle. Entry (on a CLOSED 5-min bar): LONG (buy CE): close > OR_high + 0.25*ATR(14), EMA(21) > EMA(50), RVOL >= 1.2, regime != CRISIS SHORT (buy PE): symmetric below OR_low. "Fresh break" rule: the signal fires only on the bar that CROSSES the threshold (previous close inside the range, current

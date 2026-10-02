@@ -19,6 +19,10 @@
   policy evidence, partial versus terminal cash, rejected-receipt visibility
   and per-version drawdown where supported. Selection remains human review
   only. Focused warnings-fatal tests: 2 passed; no Production change.
+- [x] S6 defined-risk structure exit experiment: exact packet/leg binding,
+  distinct max-loss R, baseline versus frozen target-hold/giveback replay and
+  one entry/exit cost accounting. Focused S6/S8 tests: 4 warnings-fatal passed.
+  Research-only; future frozen HOLDOUT review remains required.
 - [x] S4 runtime wiring: equity paths attached to the existing research request,
   bounded background writer, deadline-close policy, per-entry adapter
   exclusion. End-to-end test plus 1091 selected tests passed. No Production

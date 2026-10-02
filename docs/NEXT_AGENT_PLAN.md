@@ -30,6 +30,11 @@ partial versus terminal cash and rejected evidence. It is explicitly human
 review only. Focused warnings-fatal tests: 2 passed. Future source-complete
 sessions and reviewed versioned proposals remain required.
 
+S6 defined-risk Dev slice is complete: a frozen, exact-leg/source-packet-bound
+structure-level baseline versus target-hold/giveback replay is available, with
+its own max-loss R and one-entry/one-exit cost accounting. Focused S6/S8 tests:
+4 warnings-fatal passed. Future frozen HOLDOUT and human review remain open.
+
 S4 runtime wiring (Dev): subscribed paper tickers ride the research
 collector's existing first quote request into byte-bound envelopes via one
 background writer. The deadline-close policy and per-entry adapter exclusion
@@ -76,8 +81,8 @@ differential; 397 suite tests; commit `02047d4`). Step 2 (done):
 `fno_confirmed_time_extension_v1` and replays the shared ladder on paired
 archive paths. Next operational step: export real single-leg positions as
 entries, build packets from the research archive, freeze a candidate before
-the next session and evaluate only HOLDOUT positions. Remaining S6 source:
-a defined-risk spread exit experiment (different R and leg pricing).
+the next session and evaluate only HOLDOUT positions. The defined-risk spread
+source experiment is now complete below; fresh frozen HOLDOUT/review remains.
 S5a–S6a commits are pushed (`19a5471`); the PR toward Production must be
 opened on GitHub (no `gh` CLI in this environment).
 

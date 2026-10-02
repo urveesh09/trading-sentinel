@@ -748,6 +748,18 @@ qualification or execution authority. Focused checks: 2 warnings-fatal passed.
 Further S8 work needs fresh, source-complete daily evidence and separately
 reviewed versioned proposals; no daily result proves an edge.
 
+S6 defined-risk completion slice (Dev, October 2):
+`fno_dr_exit_experiment.py` is a separate frozen structure-level replay. It
+requires exact selected-leg contract identities and recomputes the source hash
+from supplied packet bytes. The baseline reproduces the retained target/stop/
+hard-flat thresholds; the sole candidate holds a target then exits on a frozen
+structure-level giveback or hard flat. It uses max loss as its distinct R
+denominator and charges entry plus exit once, never borrowing single-leg
+premium economics. Missing hard-flat/invalid observations remain insufficient
+evidence. Focused S6/S8 checks: 4 warnings-fatal passed. It has no runtime
+caller, order, broker or policy authority; future frozen HOLDOUT and review are
+still required.
+
 ### S9 — P1 alongside research: accurate operator state and backlog handling
 
 Files/contracts: `penny_health.py`, `main.py`, `operator_status.py`,

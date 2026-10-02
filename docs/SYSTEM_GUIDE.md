@@ -73,6 +73,17 @@ state. Selection is always `HUMAN_REVIEW_REQUIRED` with no automatic change.
 Focused tests: 2 warnings-fatal passed. Dev-only; no database mutation,
 strategy retune, capital change, qualification, broker, AI or Production change.
 
+## October 2 S6 defined-risk spread exit research (Dev)
+
+`fno_dr_exit_experiment.py` keeps defined-risk spreads separate from the
+single-leg exit experiment. It verifies source-packet bytes and exact selected
+leg identity, replays a current target/stop/hard-flat baseline and one frozen
+target-hold/giveback candidate on structure gross P&L, and uses max loss for R.
+Entry and exit costs are applied once. Invalid clocks, missing hard-flat or
+identity mismatch are insufficient evidence. The module is inert research only;
+focused S6/S8 tests: 4 warnings-fatal passed. No live/paper exit, broker,
+allocation, AI, Production or authorization behavior changed.
+
 ## October 2 S4 passive-path runtime wiring (Dev)
 
 The paper monitor's gateway LTP has no provider timestamp or raw quote, so it
