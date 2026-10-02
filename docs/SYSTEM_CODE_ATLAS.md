@@ -1994,7 +1994,7 @@ Related tests: `python-engine/tests/test_selected_legs_verifier.py`
 
 Crash-tolerant session rotation for append-only operational CSV evidence. The current session remains at the configured path for existing dashboards and operators. At the first write of a new IST session, the prior complete file is moved into a sibling evidence archive with its header and bytes unchanged; an append-only manifest records its digest. No routine retention deletion is performed here: archive expiry requires a separate backup/restore policy.
 
-Top-level declarations: `_session_date` (line 27), `_paths` (line 39), `_atomic_bytes` (line 50), `_write_header` (line 64), `_read_state` (line 71), `_write_state` (line 82), `_digest` (line 86), `_append_manifest` (line 94), `_archive_current` (line 109), `append_session_rows` (line 123)
+Top-level declarations: `_session_date` (line 27), `_paths` (line 39), `_atomic_bytes` (line 50), `_write_header` (line 64), `_read_state` (line 71), `_write_state` (line 82), `_digest` (line 86), `_append_manifest` (line 94), `_manifest_archives` (line 120), `_reconcile_manifest` (line 134), `_is_header_only` (line 149), `_archive_current` (line 160), `append_session_rows` (line 174)
 
 Related tests: `python-engine/tests/test_session_csv.py`
 
