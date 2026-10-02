@@ -1,5 +1,40 @@
 # Trading Sentinel — system guide and engineering handover
 
+## October 2 continuation review — current behavior and limits
+
+See [the independent S7–S10 review](2026-10-02-s7-s10-independent-review.md)
+and the top of NEXT_AGENT_PLAN.md. They supersede older source-complete claims.
+
+Optional-AI reviewers now receive the original task expiry. Deadline-bound
+MiniMax calls use request-local zero retries and deduct queue/prompt/setup
+time before dispatch, limiting socket timeout and wall wait with cleanup
+margin. Exact-deadline completion remains unavailable. Legacy no-deadline
+calls keep configured retries. Daemon join is not transport cancellation;
+strict shutdown, bounded cause/stage counters and original-alert completion
+delivery remain development. Paper proceeds under its existing advisory policy.
+
+S7 timing freezes snapshot exit settings and equity fees; allocation freezes
+snapshot fees too. Runtime-only drift/unknown timing deadline policies are
+refused. Earlier incomplete manifests must be replaced before new future data,
+never retroactively edited. S8 cash uses event day (including earlier admissions)
+and UTC chronology; legacy naive ledger clocks mean UTC. Linked-stream
+`daily_cash_drawdown` is unknown for ambiguous equal clocks, and
+`version_specific_cash_drawdown` is null without management-version lineage.
+The report declares bounded linked cash coverage, not complete daily ledger
+coverage. Full setup/regime/delay/hold/cost learning analytics remain source work.
+
+S6 spread is an inert prototype, not an exact-economics-bound research pipeline.
+R1 covers typed source/economics/cash binding, actual manifest validation and
+finite observations, plus both raw clocks/tokens in the single-leg adapter.
+S9 supported reconciliation/migration and S3 CSV capacity/durable elapsed
+distributions also remain development. Partner qualification, future evidence
+and an authorized delivery canary remain distinct gates. This correction is
+Dev-only: no configuration, schema, broker, messaging, Production or authority
+change. Agent 368 warnings-fatal; focused research 28; expanded engine 1016
+passed with six documented warnings. Tests do not establish profits or delivery.
+The broad Windows process hung after reporting its passes and was stopped;
+that is not clean teardown verification. Focused runs exited normally.
+
 ## October 2 S7a allocation research (Dev)
 
 The paper book admits accepted signals first-come from the fixed INR 50,000
@@ -67,8 +102,8 @@ a GitHub reversion and does not delete prior shadow evidence.
 MOMENTUM_PAPER exact admissions/cash, F&O daily audit sources, and isolated
 momentum/penny shadow evaluations in distinct book/mode/policy rows; it does
 not sum incompatible R values or relabel partial cash as completed trades.
-Version-specific cash drawdown is reported only where an ordered cash stream is
-available. Rejected receipts remain visible, including an explicit absence
+Daily linked cash drawdown requires proven order; version-specific cash drawdown
+is unavailable without actual policy lineage. Rejected receipts retain an absence
 state. Selection is always `HUMAN_REVIEW_REQUIRED` with no automatic change.
 Focused tests: 2 warnings-fatal passed. Dev-only; no database mutation,
 strategy retune, capital change, qualification, broker, AI or Production change.
@@ -120,14 +155,13 @@ the original alert, and obtain post-promotion evidence.
 
 ## October 2 S6 defined-risk spread exit research (Dev)
 
-`fno_dr_exit_experiment.py` keeps defined-risk spreads separate from the
-single-leg exit experiment. It verifies source-packet bytes and exact selected
-leg identity, replays a current target/stop/hard-flat baseline and one frozen
-target-hold/giveback candidate on structure gross P&L, and uses max loss for R.
-Entry and exit costs are applied once. Invalid clocks, missing hard-flat or
-identity mismatch are insufficient evidence. The module is inert research only;
-focused S6/S8 tests: 4 warnings-fatal passed. No live/paper exit, broker,
-allocation, AI, Production or authorization behavior changed.
+`fno_dr_exit_experiment.py` is an inert structure-level prototype, separate
+from the single-leg experiment. It hashes supplied bytes and checks supplied
+leg identities but does not prove they describe the economics or observations.
+Its declared target/stop/hard-flat and hold/giveback simulation uses max loss
+for R and entry/exit cost terms. Independent review reproduced manifest drift
+and NaN-cost acceptance. R1 in the continuation review is required before
+interpreting its evidence. No runtime exit or authority behavior changed.
 
 ## October 2 S4 passive-path runtime wiring (Dev)
 

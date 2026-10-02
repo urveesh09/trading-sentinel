@@ -1,5 +1,37 @@
 # Handover receipt and operator checklist
 
+## October 2 continuation review — current acceptance
+
+Use [the independent S7–S10 review](2026-10-02-s7-s10-independent-review.md)
+and NEXT_AGENT_PLAN.md's top section; older checkboxes are historical receipts.
+
+- [x] Review new commits and four pending S10 files; preserve unrelated user
+  fixtures/audits/Jev artifacts and leave Production untouched.
+- [x] Small S10 deadline/retry, S8 cash order/day/coverage, S7 freeze and minimal
+  reproduced test-loop corrections; no config/schema/order/authority change.
+- [x] Agent 368 warnings-fatal; focused research 28 warnings-fatal; expanded
+  engine 1016 passed with six recorded warnings; daily/partner 48; Penny five;
+  Node health two; Compose eight and rendered 500 MiB.
+  Expanded process hung after its pass summary and required stopping its
+  verified Dev PID; clean teardown remains open. Focused checks exited normally.
+- [ ] R1: full DR typed source/leg/economics/observation/cash and freeze binding;
+  both single-leg raw clocks/tokens and position-economics/cash binding.
+- [ ] R2: supported S9 read-only reconciliation and separately reviewed
+  idempotent expiry/resolution migration, with receipts and race tests.
+- [ ] R3: bounded S10 cause/stage status, once-only valid original-message
+  annotation update and strict worker/transport lifecycle tests.
+- [ ] R4: S3 bounded CSV capacity/off-path writes and durable elapsed/market-
+  hours summaries; actual peak-session/prior-boot retention verification.
+- [ ] R5: S7 source-bound thesis/bar eligibility and separate constrained equity/
+  correlation research; full S8 learning analytics and versioned proposals.
+- [ ] S1/S2 deployed keyed cash/schema/recovery and three market sessions;
+  S4 five reconciled paths; S6/S7 newly frozen future HOLDOUT review.
+- [ ] S5 frozen protocol, initial 20-session target with adequate closes/coverage,
+  authorized qualification and separate delivery canary. No guaranteed tips date.
+- [ ] Remaining Windows socket/aiosqlite/coroutine hygiene: minimal reproducer
+  only; no warnings-clean full suite is claimed. Promote via GitHub only;
+  this review does not push/deploy or send messages.
+
 ## October 2 independent S1–S6 review receipt
 
 - [x] S7a: capital-skipped candidate economics and passive paths; frozen
@@ -19,10 +51,9 @@
   policy evidence, partial versus terminal cash, rejected-receipt visibility
   and per-version drawdown where supported. Selection remains human review
   only. Focused warnings-fatal tests: 2 passed; no Production change.
-- [x] S6 defined-risk structure exit experiment: exact packet/leg binding,
-  distinct max-loss R, baseline versus frozen target-hold/giveback replay and
-  one entry/exit cost accounting. Focused S6/S8 tests: 4 warnings-fatal passed.
-  Research-only; future frozen HOLDOUT review remains required.
+- [ ] S6 spread prototype has mechanism tests, not verified packet/economics
+  binding. R1 source correction is required before HOLDOUT interpretation,
+  followed by independent review; no runtime authority.
 - [x] S9 initial truthful operator-state slice: additive Penny attempt/completed
   clocks and bounded outcome; IST per-source ledger facts with paper books
   kept separate; evidence-labelled Telegram status/dead-letter backlog; health

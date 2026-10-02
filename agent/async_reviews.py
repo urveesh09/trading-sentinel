@@ -438,12 +438,17 @@ class AsyncReviewQueue:
                     accepts_pre_cls = (
                         "pre_classifications" in reviewer_params
                     )
+                    accepts_expiry = "expires_at" in reviewer_params
+                    reviewer_kwargs = (
+                        {"expires_at": task.expires_at} if accepts_expiry else {}
+                    )
                     if accepts_pre_cls and task.pre_classifications:
                         review = self._reviewer(
                             task.signal,
                             task.sentiment,
                             task.regime,
                             pre_classifications=list(task.pre_classifications),
+                            **reviewer_kwargs,
                         )
                     elif accepts_pre_cls:
                         # Pre-classifications empty -> call with
@@ -454,6 +459,7 @@ class AsyncReviewQueue:
                             task.sentiment,
                             task.regime,
                             pre_classifications=None,
+                            **reviewer_kwargs,
                         )
                     else:
                         # Backwards-compatible: 3-arg call shape.
@@ -461,6 +467,7 @@ class AsyncReviewQueue:
                             task.signal,
                             task.sentiment,
                             task.regime,
+                            **reviewer_kwargs,
                         )
                 except Exception:
                     review = unavailable("worker_exception")

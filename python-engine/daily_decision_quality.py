@@ -3,7 +3,7 @@ from __future__ import annotations
 
 import argparse
 import asyncio
-from datetime import date, datetime
+from datetime import date, datetime, timezone
 import json
 from pathlib import Path
 import sqlite3
@@ -25,39 +25,55 @@ def _day(value: date | str) -> date:
         raise ValueError("day must be ISO YYYY-MM-DD") from exc
 
 
-def _same_ist_day(value: object, day: date) -> bool:
+def _event_clock(value: object) -> datetime | None:
     if not isinstance(value, str):
-        return False
+        return None
     try:
         stamp = datetime.fromisoformat(value.replace("Z", "+00:00"))
     except ValueError:
-        return False
-    return stamp.tzinfo is not None and stamp.astimezone(IST).date() == day
+        return None
+    # The retained ledger writer's timezone-less legacy clocks are UTC.
+    return (stamp if stamp.tzinfo is not None else stamp.replace(tzinfo=timezone.utc)).astimezone(timezone.utc)
+
+
+def _same_ist_day(value: object, day: date) -> bool:
+    stamp = _event_clock(value)
+    return stamp is not None and stamp.astimezone(IST).date() == day
 
 
 def _cash_summary(events: list[dict[str, Any]]) -> dict[str, Any]:
     partial = [float(row["pnl"] or 0.0) for row in events if row.get("event_type") == "TRADE_PARTIAL"]
     terminal = [float(row["pnl"] or 0.0) for row in events if row.get("event_type") == "TRADE_CLOSED"]
     equity = peak = drawdown = 0.0
-    for row in events:
+    clocks = [_event_clock(row.get("timestamp")) for row in events]
+    ordered = all(clock is not None for clock in clocks) and len(set(clocks)) == len(clocks)
+    # Grouped admissions are not a chronological cash stream. Equal clocks
+    # without ledger row identity cannot establish the intratimestamp order.
+    cash_events = sorted(zip(clocks, events), key=lambda item: item[0]) if ordered else []
+    for _clock, row in cash_events:
         equity += float(row["pnl"] or 0.0)
         peak = max(peak, equity)
         drawdown = max(drawdown, peak - equity)
     return {"partial_cash": round(sum(partial), 6), "terminal_cash": round(sum(terminal), 6),
             "net_cash": round(sum(partial) + sum(terminal), 6), "cash_event_count": len(events),
-            "version_specific_cash_drawdown": round(drawdown, 6)}
+            "daily_cash_drawdown": round(drawdown, 6) if ordered else None,
+            "cash_ordering": "CHRONOLOGICAL" if ordered else "UNAVAILABLE_CLOCK_ORDER",
+            # A fixed-pool label is not recorded management-policy lineage.
+            "version_specific_cash_drawdown": None}
 
 
 def _momentum_book(db_path: str, day: date) -> dict[str, Any]:
     audit = build_momentum_paper_decision_audit(db_path)
     opportunities = [row for row in audit.get("opportunities", []) if _same_ist_day(row.get("recorded_at"), day)]
-    events = [event for row in opportunities for event in row.get("cash", {}).get("events", [])
-              if _same_ist_day(event.get("timestamp"), day)]
+    events = [event for row in audit.get("opportunities", []) for event in row.get("cash", {}).get("events", [])
+              if event.get("event_type") in {"TRADE_PARTIAL", "TRADE_CLOSED"}
+              and _same_ist_day(event.get("timestamp"), day)]
     rejected = [{"admission_key": row["admission_key"], "outcome": row["outcome"], "reason": row.get("reason")}
                 for row in opportunities if row.get("outcome") != "opened"]
     return {"book": "MOMENTUM_PAPER", "mode": "PAPER", "policy": "MOMENTUM_PAPER_FIXED_POOL_V1",
             "source_lineage": {"reader": "momentum_paper_decision_audit", "status": audit.get("status"),
-                               "cash_truth": audit.get("cash_truth")},
+                               "cash_truth": audit.get("cash_truth"),
+                               "cash_coverage": "LINKED_ADMISSIONS_WITHIN_AUDIT_LIMIT_NOT_ALL_LEDGER_ROWS"},
             "opportunity_count": len(opportunities), "opened_count": sum(row.get("outcome") == "opened" for row in opportunities),
             "rejected_or_not_selected": rejected, "cash": _cash_summary(events),
             "unknown_count": sum(str(row.get("lifecycle", "")).startswith(("UNRESOLVED", "UNAVAILABLE")) for row in opportunities)}

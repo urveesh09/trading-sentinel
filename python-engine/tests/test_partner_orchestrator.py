@@ -102,8 +102,8 @@ def wired(tmp_path, monkeypatch):
 
     monkeypatch.setattr(po, "attach_entry_chain", _attach)
 
-    import asyncio
-    asyncio.get_event_loop()
+    # pytest-asyncio owns the test loop. A preceding asyncio.run() legitimately
+    # clears the policy's current loop; this synchronous fixture needs no loop.
     return SimpleNamespace(db=db, sent=sent, state=state)
 
 

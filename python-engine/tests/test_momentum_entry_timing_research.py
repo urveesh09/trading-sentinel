@@ -9,6 +9,7 @@ from momentum_entry_timing_research import (
     evaluate_entry_timing, freeze_timing_manifest,
 )
 from momentum_exit_study import DEADLINE_EXACT, ExitStudyError, Quote
+from config import settings
 
 
 IST = ZoneInfo("Asia/Kolkata")
@@ -70,3 +71,20 @@ def test_manifest_freezes_terms_and_separates_holdout():
     manifest["source_fingerprint"] = SOURCE
     with pytest.raises(ExitStudyError, match="FROZEN_POLICY_MISMATCH"):
         build_timing_report([_candidate()], manifest)
+
+
+@pytest.mark.parametrize("field", ["MOMENTUM_TIME_STOP_MIN", "ZERODHA_BROKERAGE_MAX"])
+def test_frozen_timing_rejects_runtime_settings_or_fee_drift(monkeypatch, field):
+    manifest = freeze_timing_manifest(experiment_id="drift", max_gap_seconds=60,
+                                      deadline_policy=DEADLINE_EXACT,
+                                      frozen_at=datetime(2026, 10, 1, tzinfo=IST))
+    monkeypatch.setattr(settings, field, getattr(settings, field) + 1)
+    with pytest.raises(ExitStudyError, match="FROZEN_POLICY_MISMATCH"):
+        build_timing_report([_candidate()], manifest)
+
+
+def test_timing_freeze_rejects_unknown_deadline_policy():
+    with pytest.raises(ExitStudyError, match="deadline"):
+        freeze_timing_manifest(experiment_id="invalid", max_gap_seconds=60,
+                               deadline_policy="invented",
+                               frozen_at=datetime(2026, 10, 1, tzinfo=IST))

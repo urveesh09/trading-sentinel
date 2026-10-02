@@ -111,6 +111,11 @@ MINIMAX_ASYNC_REVIEW_DEADLINE_SEC = int(os.getenv("MINIMAX_ASYNC_REVIEW_DEADLINE
 # bumps should be deliberate, with a note in the prompt diff.
 MINIMAX_PROMPT_VERSION = os.getenv("MINIMAX_PROMPT_VERSION", "v1")
 
+# Preserve a small completion/cleanup margin.  A request that cannot leave this
+# margin is not dispatched. Socket deadlines bound normal SDK work; an
+# unresponsive transport cannot be forcibly cancelled by a daemon-thread join.
+MINIMAX_DEADLINE_CLEANUP_SECONDS = 1.0
+
 # A news item that cannot prove a still-current source clock cannot support a
 # catalyst claim.  It is excluded from optional review context rather than
 # shortening (and thereby blocking) a deterministic signal's annotation.
@@ -1068,6 +1073,15 @@ def analyze_with_minimax(
             pre_classifications,
             expires_at,
         )
+    remaining_seconds = None
+    if expires_at is not None:
+        remaining_seconds = (expires_at - started_at).total_seconds()
+        if remaining_seconds <= MINIMAX_DEADLINE_CLEANUP_SECONDS:
+            return _attach_classification_context(
+                advisory_unavailable("review_deadline_insufficient"),
+                pre_classifications,
+                expires_at,
+            )
     if client is None:
         return _attach_classification_context(
             advisory_unavailable("AI_DISABLED"), pre_classifications, expires_at,
@@ -1205,21 +1219,34 @@ def analyze_with_minimax(
     # if 30s were a generous allowance for a reasoning model that spends
     # output tokens on a <think> block before answering.
     #
-    # Now: one retry maximum (bounding what an abandoned thread can still
-    # spend), a per-request timeout that fits a slow-but-healthy call, and a
-    # wall wide enough for the retry. The whole budget stays well inside the
-    # 3-minute poll cadence, so a hung call still cannot stall the pipeline.
+    # Legacy synchronous calls keep their configured retry budget. A review
+    # with an absolute usefulness deadline gets a request-local no-retry client:
+    # per-attempt socket timeouts plus SDK backoff are not a total deadline.
     result_holder: Dict = {}
 
     def _call_minimax():
         try:
+            request_client = client
+            request_timeout = MINIMAX_REQUEST_TIMEOUT_SEC
+            if expires_at is not None:
+                request_client = client.with_options(max_retries=0)
+                # Deduct prompt building, client setup and thread scheduling.
+                remaining = (expires_at - datetime.now(timezone.utc)).total_seconds()
+                request_timeout = min(
+                    MINIMAX_REQUEST_TIMEOUT_SEC,
+                    MINIMAX_WALL_TIMEOUT_SEC - MINIMAX_DEADLINE_CLEANUP_SECONDS,
+                    remaining - MINIMAX_DEADLINE_CLEANUP_SECONDS,
+                )
+                if request_timeout <= 0:
+                    result_holder['deadline_insufficient'] = True
+                    return
             # [MINIMAX-MIGRATION 2026-07-15] MiniMax speaks the OpenAI
             # chat-completions dialect, so the analyst prompt is split into a
             # short system role (identity + the exact JSON contract) and the
             # user role (the trade dossier built above). MiniMax has no
             # Gemini-style server-side schema enforcement, so the contract is
             # carried in the prompt and validated on the way out (below).
-            resp = client.chat.completions.create(
+            resp = request_client.chat.completions.create(
                 model=MINIMAX_MODEL,
                 messages=[
                     {
@@ -1245,7 +1272,7 @@ def analyze_with_minimax(
                 # Belt-and-braces: the SDK's own request timeout backs up the
                 # thread wall. Kept under the wall so the SDK errors (giving us
                 # a clean log line) before the thread is abandoned.
-                timeout=MINIMAX_REQUEST_TIMEOUT_SEC,
+                timeout=request_timeout,
             )
             result_holder['response'] = resp
         except Exception as exc:
@@ -1256,7 +1283,13 @@ def analyze_with_minimax(
     # begins. Each return site below uses ``datetime.now(timezone.utc)``
     # as completed_at, then attaches provenance via ``_attach_provenance``.
     minimax_thread.start()
-    minimax_thread.join(timeout=MINIMAX_WALL_TIMEOUT_SEC)
+    wall_timeout = (
+        max(0.0, min(MINIMAX_WALL_TIMEOUT_SEC,
+                     (expires_at - datetime.now(timezone.utc)).total_seconds()))
+        if expires_at is not None
+        else MINIMAX_WALL_TIMEOUT_SEC
+    )
+    minimax_thread.join(timeout=wall_timeout)
     completed_at = datetime.now(timezone.utc)
 
     if expires_at is not None and completed_at >= expires_at:
@@ -1268,11 +1301,17 @@ def analyze_with_minimax(
 
     if minimax_thread.is_alive():
         logger.error(
-            f"MiniMax timeout ({MINIMAX_WALL_TIMEOUT_SEC}s) for {ticker} - "
+            f"MiniMax timeout ({wall_timeout:.3f}s) for {ticker} - "
             f"analysis skipped, alert still sent without conviction"
         )
         return _attach_provenance(
-            advisory_unavailable(f"timeout_{MINIMAX_WALL_TIMEOUT_SEC}s"),
+            advisory_unavailable(f"timeout_{wall_timeout:.3f}s"),
+            started_at=started_at, completed_at=completed_at,
+            pre_classifications=pre_classifications, expires_at=expires_at,
+        )
+    if result_holder.get('deadline_insufficient'):
+        return _attach_provenance(
+            advisory_unavailable("review_deadline_insufficient"),
             started_at=started_at, completed_at=completed_at,
             pre_classifications=pre_classifications, expires_at=expires_at,
         )

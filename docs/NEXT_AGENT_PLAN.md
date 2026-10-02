@@ -1,5 +1,47 @@
 # Trading Sentinel — next-agent execution plan
 
+## October 2 continuation review — authoritative current status
+
+Start with [the independent S7–S10 review](2026-10-02-s7-s10-independent-review.md).
+Its implementation contracts/status supersede historical completion and next-
+priority statements below. **Not all remaining work is operational**: S6 spread
+is an unbound prototype, and S8 is an initial composer, not complete learning.
+
+Small Dev corrections: S10 original deadline forwarding, dispatch-time budget
+and request-local zero retries; S8 ordered cash including earlier admissions
+and honest drawdown/coverage; S7 settings/fees freeze; reproduced test-fixture
+current-loop dependency removed. Agent 368 warnings-fatal; focused research 28
+warnings-fatal; expanded engine 1016 passed with six recorded warnings; Node
+health two; Compose eight, rendered 500 MiB. No Production/authority change.
+The expanded process hung after its pass summary and was stopped by verified
+Dev PID; its clean teardown is not established. Focused runs exited normally.
+
+Next source queue, with files/tests/rollout/rollback in the review:
+
+1. **R1 / S6:** typed DR source/leg/economics/cash and actual freeze binding;
+   both single-leg raw provider clocks/tokens and position-economics/cash binding.
+   Fix reproduced stale-future, modified-manifest and NaN-cost acceptance
+   before research interpretation. Freeze anew, never rewrite old manifests.
+2. **R2 / S9:** read-only proposed-action reconciliation report and separately
+   reviewed idempotent expiry/resolution migration; preserve rows, verify races,
+   no fabricated fills or historical trade-card resend.
+3. **R3 / S10:** bounded expiry/source/stage counters, once-only still-valid
+   original-alert annotation updates and strict transport/shutdown acceptance.
+   Daemon-thread join is not forced socket cancellation.
+4. **R4 / S3:** bounded/off-path CSV quota/free-space behavior and durable
+   elapsed distributions/market-hours summaries before raw-tail eviction.
+5. **R5 / S7–S8:** immutable completed-bar/thesis/eligibility adapters,
+   separate realized-equity/correlation capacity research, full unique-opportunity
+   learning analytics and genuinely versioned human-reviewed proposals.
+
+After GitHub promotion: S1 keyed cash/schema verification; S2 recovery and three
+market sessions; S3 peak-volume/prior-boot logs; S4 five reconciled paths;
+S5 frozen future protocol, initial 20-session target with adequate closes/
+coverage, authorized qualification and separate delivery canary. S6/S7 need
+future paired HOLDOUT review before a paper-policy pilot. Paper remains
+autonomous, real-money momentum needs owner EXEC, Jev stays deferred. No fixed
+calendar-day promise for tips. This review does not push, deploy or send messages.
+
 ## October 2 independent S1–S6 review — active correction slice
 
 See [the independent review](2026-10-02-s1-s6-independent-review.md) for
@@ -30,10 +72,10 @@ partial versus terminal cash and rejected evidence. It is explicitly human
 review only. Focused warnings-fatal tests: 2 passed. Future source-complete
 sessions and reviewed versioned proposals remain required.
 
-S6 defined-risk Dev slice is complete: a frozen, exact-leg/source-packet-bound
-structure-level baseline versus target-hold/giveback replay is available, with
-its own max-loss R and one-entry/one-exit cost accounting. Focused S6/S8 tests:
-4 warnings-fatal passed. Future frozen HOLDOUT and human review remain open.
+S6 defined-risk prototype exists, with its own max-loss R and entry/exit terms.
+Independent review found its packet contents are not bound to economics,
+manifest verification is incomplete and NaN costs pass. R1 above is required
+source development before using its HOLDOUT labels or paired results.
 
 S9 initial Dev slice: gateway health now labels Telegram bot presence as a
 diagnostic rather than a transport-confirmed connection, surfaces any durable
@@ -102,8 +144,8 @@ differential; 397 suite tests; commit `02047d4`). Step 2 (done):
 `fno_confirmed_time_extension_v1` and replays the shared ladder on paired
 archive paths. Next operational step: export real single-leg positions as
 entries, build packets from the research archive, freeze a candidate before
-the next session and evaluate only HOLDOUT positions. The defined-risk spread
-source experiment is now complete below; fresh frozen HOLDOUT/review remains.
+the next session and evaluate only HOLDOUT positions after R1's binding
+correction. The defined-risk spread prototype also requires R1 before review.
 S5a–S6a commits are pushed (`19a5471`); the PR toward Production must be
 opened on GitHub (no `gh` CLI in this environment).
 
@@ -137,7 +179,7 @@ study packet. Focused S4 evidence tests: 73 passed; compilation passed.
 
 Dev-only source must be pushed/reviewed through GitHub; Production remains
 untouched. Before any deployment/learning conclusion, configure bounded caps,
-connect an existing quote fanout to the passive caller (without a new provider
+verify the implemented existing-request passive fanout (without a new provider
 request), and collect five fresh reconciled lifecycles. Missing/forged/gapped
 paths remain insufficient evidence. No test or deployment proves profitability,
 strategy quality, partner qualification or live authority. Next priority is S5

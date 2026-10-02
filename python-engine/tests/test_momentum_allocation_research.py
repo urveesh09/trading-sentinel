@@ -19,6 +19,13 @@ SOURCE = "sha256:" + "d" * 64
 POOL = 50_000.0
 
 
+def test_allocation_manifest_rejects_fee_override_drift(monkeypatch):
+    manifest = alloc.freeze_allocation_manifest(experiment_id="fee-drift")
+    monkeypatch.setattr(alloc.settings, "ZERODHA_BROKERAGE_MAX", alloc.settings.ZERODHA_BROKERAGE_MAX + 1)
+    with pytest.raises(ExitStudyError, match="cost_schedule"):
+        alloc.verify_allocation_manifest(manifest)
+
+
 def _quotes(start, price_at, end=None):
     end = end or IST.localize(datetime(2026, 9, 25, 15, 15))
     rows, current = [], start

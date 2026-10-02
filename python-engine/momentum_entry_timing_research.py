@@ -7,6 +7,7 @@ The two policies are hypotheses, not a replacement for paper admission.
 from __future__ import annotations
 
 from dataclasses import dataclass
+from copy import deepcopy
 from datetime import datetime
 import hashlib
 import json
@@ -14,7 +15,12 @@ import math
 from pathlib import Path
 from typing import Any, Iterable, Mapping, Sequence
 
-from momentum_exit_study import ExitStudyError, Quote, StudyEntry, _simulate, _validated_quote_path
+from config import settings
+from cost_schedules import equity_intraday_cost_snapshot
+from momentum_exit_study import (
+    DEADLINE_EXACT, DEADLINE_FIRST_WITHIN_GAP, _POLICY_SETTINGS,
+    ExitStudyError, Quote, StudyEntry, _simulate, _validated_quote_path,
+)
 
 
 SCHEMA = "momentum_entry_timing_research_v1"
@@ -147,8 +153,12 @@ def freeze_timing_manifest(*, experiment_id: str, max_gap_seconds: int, deadline
                            frozen_at: datetime) -> dict[str, Any]:
     if not experiment_id or frozen_at.tzinfo is None or not 1 <= int(max_gap_seconds) <= 300:
         raise ExitStudyError("invalid timing freeze terms")
+    if deadline_policy not in (DEADLINE_EXACT, DEADLINE_FIRST_WITHIN_GAP):
+        raise ExitStudyError("invalid timing deadline policy")
     return {"schema": MANIFEST_SCHEMA, "experiment_id": experiment_id, "policies": list(POLICIES),
             "max_gap_seconds": int(max_gap_seconds), "deadline_policy": deadline_policy,
+            "evaluator_settings": deepcopy({name: getattr(settings, name) for name in _POLICY_SETTINGS}),
+            "cost_schedule": equity_intraday_cost_snapshot(),
             "source_fingerprint": _fingerprint(), "frozen_at": frozen_at.isoformat(),
             "holdout_rule": "only signals strictly after frozen_at are HOLDOUT"}
 
@@ -158,6 +168,13 @@ def build_timing_report(candidates: Sequence[TimingCandidate], manifest: Mapping
         raise ExitStudyError("invalid timing manifest")
     if manifest.get("source_fingerprint") != _fingerprint():
         raise ExitStudyError("FROZEN_POLICY_MISMATCH: source fingerprint differs")
+    expected = {"evaluator_settings": {name: getattr(settings, name) for name in _POLICY_SETTINGS},
+                "cost_schedule": equity_intraday_cost_snapshot()}
+    for field, current in expected.items():
+        if manifest.get(field) != current:
+            raise ExitStudyError(f"FROZEN_POLICY_MISMATCH: {field} differs")
+    if manifest.get("deadline_policy") not in (DEADLINE_EXACT, DEADLINE_FIRST_WITHIN_GAP):
+        raise ExitStudyError("invalid timing deadline policy")
     try:
         frozen_at = datetime.fromisoformat(str(manifest["frozen_at"]).replace("Z", "+00:00"))
     except (KeyError, ValueError) as exc:

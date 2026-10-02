@@ -37,6 +37,23 @@ def test_queue_returns_immediately_then_caches_completed_annotation():
         queue.shutdown()
 
 
+def test_queue_forwards_original_deadline_to_compatible_reviewer():
+    observed = []
+
+    def reviewer(*_args, expires_at=None):
+        observed.append(expires_at)
+        return Review(Verdict.APPROVE, conviction=80)
+
+    queue = AsyncReviewQueue(reviewer)
+    try:
+        expiry = datetime.now(timezone.utc) + timedelta(minutes=1)
+        assert queue.submit("deadline", {}, "", "UNKNOWN", expires_at=expiry).state == "QUEUED"
+        _wait_for(queue, "deadline", {"READY"})
+        assert observed == [expiry]
+    finally:
+        queue.shutdown()
+
+
 def test_queue_is_bounded_and_circuit_breaker_is_explicit():
     release = Event()
 

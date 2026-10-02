@@ -16,7 +16,7 @@ Related tests: `agent/tests/test_advisory.py`
 
 No module docstring; use the declarations and callers below.
 
-Top-level declarations: `_usable_classifications` (line 133), `_effective_classification_expiry` (line 152), `_attach_classification_context` (line 171), `_attach_provenance` (line 210), `register_approved_snapshot` (line 289), `_build_classifier_client` (line 335), `_today_str` (line 389), `_load_dedup_state` (line 394), `_save_dedup_state` (line 445), `mark_processed` (line 460), `clear_memory` (line 466), `touch_heartbeat` (line 483), `_is_market_hours` (line 510), `read_scheduler_tick_age` (line 521), `check_engine_liveness` (line 533), `SignalOutput` (line 571), `NewsItem` (line 587), `fetch_signals` (line 602), `fetch_rss_feed` (line 629), `fetch_news_items` (line 646), `_parse_rss_pubdate` (line 709), `_hostname_from_url` (line 732), `_age_label` (line 742), `_fetch_news_bundle_for_ticker` (line 777), `_render_news_bundle` (line 805), `scrape_sentiment` (line 829), `_extract_json_object` (line 846), `_fetch_news_items_for_ticker` (line 900), `_maybe_classify_news` (line 913), `_collect_news_context` (line 957), `_render_classified_section` (line 988), `analyze_with_minimax` (line 1032), `_optional_review_key` (line 1341), `_get_optional_ai_queue` (line 1369), `optional_ai_status` (line 1389), `publish_optional_ai_status` (line 1429), `queue_optional_ai_review` (line 1449), `send_telegram_alert` (line 1508), `system_health_check` (line 1557), `run_momentum_pipeline` (line 1586), `send_conviction_veto_notice` (line 1700), `send_momentum_telegram_alert` (line 1718), `run_pipeline` (line 1830), `main` (line 1891)
+Top-level declarations: `_usable_classifications` (line 138), `_effective_classification_expiry` (line 157), `_attach_classification_context` (line 176), `_attach_provenance` (line 215), `register_approved_snapshot` (line 294), `_build_classifier_client` (line 340), `_today_str` (line 394), `_load_dedup_state` (line 399), `_save_dedup_state` (line 450), `mark_processed` (line 465), `clear_memory` (line 471), `touch_heartbeat` (line 488), `_is_market_hours` (line 515), `read_scheduler_tick_age` (line 526), `check_engine_liveness` (line 538), `SignalOutput` (line 576), `NewsItem` (line 592), `fetch_signals` (line 607), `fetch_rss_feed` (line 634), `fetch_news_items` (line 651), `_parse_rss_pubdate` (line 714), `_hostname_from_url` (line 737), `_age_label` (line 747), `_fetch_news_bundle_for_ticker` (line 782), `_render_news_bundle` (line 810), `scrape_sentiment` (line 834), `_extract_json_object` (line 851), `_fetch_news_items_for_ticker` (line 905), `_maybe_classify_news` (line 918), `_collect_news_context` (line 962), `_render_classified_section` (line 993), `analyze_with_minimax` (line 1037), `_optional_review_key` (line 1380), `_get_optional_ai_queue` (line 1408), `optional_ai_status` (line 1428), `publish_optional_ai_status` (line 1468), `queue_optional_ai_review` (line 1488), `send_telegram_alert` (line 1547), `system_health_check` (line 1596), `run_momentum_pipeline` (line 1625), `send_conviction_veto_notice` (line 1739), `send_momentum_telegram_alert` (line 1757), `run_pipeline` (line 1869), `main` (line 1930)
 
 Related tests: `agent/tests/test_agent_pipeline.py`, `agent/tests/test_agent_schedule.py`, `agent/tests/test_agent_watchdog.py`
 
@@ -340,7 +340,7 @@ Related tests: `python-engine/tests/test_daily_bootstrap.py`
 
 Read-only S8 daily decision-quality report; never a strategy controller.
 
-Top-level declarations: `_day` (line 21), `_same_ist_day` (line 28), `_cash_summary` (line 38), `_momentum_book` (line 51), `_shadow_book` (line 66), `build_daily_decision_quality_report` (line 91), `_main` (line 116)
+Top-level declarations: `_day` (line 21), `_event_clock` (line 28), `_same_ist_day` (line 39), `_cash_summary` (line 44), `_momentum_book` (line 65), `_shadow_book` (line 82), `build_daily_decision_quality_report` (line 107), `_main` (line 132)
 
 Engine dependencies: `fno_audit_report`, `momentum_paper_audit`
 
@@ -966,9 +966,9 @@ Related tests: `python-engine/tests/test_models.py`
 
 Read-only allocation research for momentum-paper opportunities (S7a). The paper book admits accepted signals in arrival order from a fixed pool (``MOMENTUM_PAPER_FIXED_POOL_V1``); later signals can be skipped as ``capital_exhausted``. This module replays the *same* candidates -- opened and capital-skipped, each with a complete verified price path -- under frozen allocation policies on one common cash book: * ``FIRST_ARRIVAL_FIXED_POOL_V1`` -- the current rule, sized by the live ``momentum_paper.paper_position_size`` against undeployed notional; * ``FIXED_EQUAL_V1`` -- each admission batch splits available notional equally; * ``RISK_BUDGET_PROPORTIONAL_V1`` -- risk-sized shares scaled down to
 
-Top-level declarations: `Candidate` (line 53), `_risk_shares` (line 64), `_size_batch` (line 72), `replay_allocation` (line 100), `_source_fingerprint` (line 192), `_frozen_terms` (line 201), `freeze_allocation_manifest` (line 208), `verify_allocation_manifest` (line 220), `build_allocation_report` (line 235), `_main` (line 265)
+Top-level declarations: `Candidate` (line 54), `_risk_shares` (line 65), `_size_batch` (line 73), `replay_allocation` (line 101), `_source_fingerprint` (line 193), `_frozen_terms` (line 202), `freeze_allocation_manifest` (line 210), `verify_allocation_manifest` (line 222), `build_allocation_report` (line 237), `_main` (line 267)
 
-Engine dependencies: `config`, `momentum_exit_study`, `momentum_paper`, `momentum_paper_path_adapter`
+Engine dependencies: `config`, `cost_schedules`, `momentum_exit_study`, `momentum_paper`, `momentum_paper_path_adapter`
 
 Related tests: `python-engine/tests/test_momentum_allocation_research.py`
 
@@ -976,9 +976,9 @@ Related tests: `python-engine/tests/test_momentum_allocation_research.py`
 
 Frozen, broker-free S7b entry-timing hypotheses for momentum evidence. This module deliberately consumes declared completed-bar/quote evidence only. It does not import runtime scanners, storage, a broker, HTTP, or an order path. The two policies are hypotheses, not a replacement for paper admission.
 
-Top-level declarations: `TimingCandidate` (line 29), `_finite` (line 47), `_validate` (line 59), `_entry` (line 83), `evaluate_entry_timing` (line 101), `_fingerprint` (line 137), `freeze_timing_manifest` (line 146), `build_timing_report` (line 156)
+Top-level declarations: `TimingCandidate` (line 35), `_finite` (line 53), `_validate` (line 65), `_entry` (line 89), `evaluate_entry_timing` (line 107), `_fingerprint` (line 143), `freeze_timing_manifest` (line 152), `build_timing_report` (line 166)
 
-Engine dependencies: `momentum_exit_study`
+Engine dependencies: `config`, `cost_schedules`, `momentum_exit_study`
 
 Related tests: `python-engine/tests/test_momentum_entry_timing_research.py`
 

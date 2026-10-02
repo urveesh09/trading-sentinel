@@ -1,9 +1,10 @@
 # Consolidated smart-trader implementation plan — October 1, 2026
 
-Status: **PLAN_ONLY**, saved in Dev. No application implementation, migration,
-Production edit/restart, broker action or partner message is authorized by this
-document. Jev work is deferred. Assess Production; implement in Dev; promote
-through the reviewed GitHub workflow.
+Status: **PARTIALLY_IMPLEMENTED — Dev, independently reviewed October 2**.
+See [the authoritative continuation review](2026-10-02-s7-s10-independent-review.md)
+and NEXT_AGENT_PLAN.md's top section for current source gaps and acceptance.
+This document alone does not authorize Production edits/restarts, broker actions
+or partner messages. Jev remains deferred. Promote through reviewed GitHub.
 
 ## 1. Objective and authority
 
@@ -748,17 +749,19 @@ qualification or execution authority. Focused checks: 2 warnings-fatal passed.
 Further S8 work needs fresh, source-complete daily evidence and separately
 reviewed versioned proposals; no daily result proves an edge.
 
-S6 defined-risk completion slice (Dev, October 2):
+S6 defined-risk prototype slice (Dev, October 2; review-corrected status):
 `fno_dr_exit_experiment.py` is a separate frozen structure-level replay. It
-requires exact selected-leg contract identities and recomputes the source hash
-from supplied packet bytes. The baseline reproduces the retained target/stop/
+checks supplied selected-leg identities and recomputes the hash of supplied
+bytes, but does not bind their contents to economics. The prototype simulates target/stop/
 hard-flat thresholds; the sole candidate holds a target then exits on a frozen
 structure-level giveback or hard flat. It uses max loss as its distinct R
 denominator and charges entry plus exit once, never borrowing single-leg
 premium economics. Missing hard-flat/invalid observations remain insufficient
 evidence. Focused S6/S8 checks: 4 warnings-fatal passed. It has no runtime
 caller, order, broker or policy authority; future frozen HOLDOUT and review are
-still required.
+still required. The independent review's R1 source binding, finite observations
+and actual manifest validation must be completed before interpreting this
+prototype's results; these are not merely fresh-session gates.
 
 ### S9 — P1 alongside research: accurate operator state and backlog handling
 

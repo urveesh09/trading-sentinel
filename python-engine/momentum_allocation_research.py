@@ -33,6 +33,7 @@ from pathlib import Path
 from typing import Any, Mapping, Sequence
 
 from config import settings
+from cost_schedules import equity_intraday_cost_snapshot
 from momentum_exit_study import (
     BASELINE_POLICY, DEADLINE_EXACT, ExitStudyError, Quote, StudyEntry, _POLICY_SETTINGS,
     _canonical_bytes, _simulate, _validated_quote_path, write_study_report_once,
@@ -201,6 +202,7 @@ def _source_fingerprint() -> str:
 def _frozen_terms() -> dict[str, Any]:
     return {"policies": list(POLICIES), "pool_inr": float(settings.MOMENTUM_PAPER_BANKROLL),
             "evaluator_settings": {name: getattr(settings, name) for name in _POLICY_SETTINGS},
+            "cost_schedule": equity_intraday_cost_snapshot(),
             "max_gap_seconds": max(1, min(300, int(settings.MOMENTUM_PAPER_PATH_MAX_GAP_SECONDS))),
             "source_fingerprint": _source_fingerprint()}
 
