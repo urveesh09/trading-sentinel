@@ -38,7 +38,9 @@ broker dispatch, cash settlement, admission or SQLite mutation. Focused
 orchestrator/recovery/audit checks passed 34. Warnings-fatal mode found an
 existing unclosed-socket ResourceWarning in an unrelated stage-duration test,
 so this is not claimed as a clean warnings-fatal suite. This is Dev-only and
-uncommitted; S2 still needs action-clock, priority and full timing work.
+unpushed/not deployed; source commit `5ae54a8` is local on
+`codex/production-correction-hedge-p0`. S2 still needs action-clock, priority
+and full timing work.
 
 ## October 1 Production assessment and smart-trader plan (documentation only)
 

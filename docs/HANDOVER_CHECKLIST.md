@@ -22,8 +22,9 @@
   October 2 initial sub-slice: management provider reads now have explicit
   5-second exit / 10-second DR snapshot caps with cancellation-joined degraded
   paths and bounded read outcomes; 34 focused checks pass. Remaining: action
-  clocks, priority, detailed timing and deployed evidence. Dev-only/uncommitted
-  at this receipt; no broker/settlement/admission mutation is deadline-wrapped.
+  clocks, priority, detailed timing and deployed evidence. Dev-only source
+  commit `5ae54a8` is unpushed/not deployed; no broker/settlement/admission
+  mutation is deadline-wrapped.
 - [x] Reproduce optional-review expiry from mixed fresh/stale/undated sources;
   inspect queue/deadline/completion visibility without provider/message calls.
 - [ ] Implement S10 context/expiry/deadline fixes and bounded completion updates,

@@ -205,7 +205,8 @@ so it is not represented as a clean warnings-fatal suite. No schema/config-file
 migration, provider-rate increase, broker, entry-policy, Production or AI
 runtime change occurred. Remaining S2 work: due-management priority, fresh
 action-time admission checks, limiter/transport/parse/DB timing breakdown and
-deployed-session observations.
+deployed-session observations. Source commit `5ae54a8` is local on
+`codex/production-correction-hedge-p0`; it is not pushed or deployed.
 
 ### S3 — P1: preserve the evidence required to learn
 

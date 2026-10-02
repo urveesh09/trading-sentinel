@@ -55,8 +55,9 @@ uses existing degraded/unpriced handling; it never wraps broker execution,
 cash settlement, admission or a database write. Focused checks pass 34. The
 warnings-fatal variant encounters an existing unclosed-socket ResourceWarning
 in an unrelated stage-duration test, so it is not a clean warnings-fatal
-receipt. This is Dev-local, uncommitted/unpushed/not deployed; complete the
-remaining S2 clock/priority instrumentation before treating the slice done.
+receipt. Source commit `5ae54a8` is Dev-local, unpushed and not deployed;
+complete the remaining S2 clock/priority instrumentation before treating the
+slice done.
 
 ## September 28 Jev decision-layer proposal — design only
 
