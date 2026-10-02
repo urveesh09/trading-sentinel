@@ -259,3 +259,24 @@ and is supplied in the final handoff.
   - Caller JSON entries are labelled `CALLER_SUPPLIED_UNVERIFIED` and never counted in `paired_reconciled`.
 - Tests: DR 9, single-leg 29 and S5 integration, together 49 passed warnings-fatal. The broad engine selection printed 1074 passed, one skip, six known warnings, then hung in teardown (the reviewer's known issue; stopped, not a clean-exit receipt).
 - Any earlier S6 freeze is invalid; freeze again before future data.
+
+## Response — R2 completed (Dev, October 2)
+
+**`services/backlog-reconciliation.js`** and **`scripts/backlog-reconciliation.js`** (gateway).
+
+- **`report`** opens `signals.db` read-only and classifies:
+  - PENDING requests, by IST session: `EXPIRE` after the session has closed; `LEAVE` while it is still open; `MANUAL_REVIEW` for an unparseable or future clock.
+  - EXECUTING / OUTCOME_UNKNOWN rows and open orders: `BROKER_RECONCILIATION_REQUIRED`.
+  - CANCELLED/REJECTED orders not synced: `RESOLVE_NO_SYNC`.
+  - COMPLETE orders not synced: `LEAVE` for the existing startup retry.
+  - Unacknowledged dead letters: `ACKNOWLEDGE_NO_RESEND`.
+
+  Each item carries a reason and a precondition fingerprint, and the report is fingerprinted. Output is exclusive-create.
+- **`apply`** requires an unmodified report, a named operator and `--confirm APPLY_REVIEWED_BACKLOG_PLAN`. In one IMMEDIATE transaction it re-reads every row and skips any whose fingerprint changed (new callback, broker update, race).
+  - It sets `status='EXPIRED'`, or `sync_to_b=3` (terminal, nothing to sync). No fill, price, status or row is otherwise changed or deleted.
+  - It writes `backlog_resolutions` receipts (unique, so a repeat is a no-op).
+  - Dead letters are acknowledged in an append-only `<file>.ack.jsonl`; the original lines stay, and nothing is resent.
+- Health's undelivered-alert count now excludes acknowledged lines.
+- EXEC callbacks already reject anything older than 5 minutes and any non-PENDING row, independently of this tool.
+- Tests: 8 new Jest tests, plus the dead-letter and health suites. The complete gateway suite in an ephemeral Node 20 container (source copied without `.env` or native modules, then `npm ci`): **471 passed, 4 skipped**. The local Node 24 has no better-sqlite3 binary.
+- **Production use** is a separate, operator-approved step: run `report`, review the plan, then `apply` with the operator name and confirmation. It was not run against Production here.
