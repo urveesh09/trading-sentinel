@@ -1,0 +1,547 @@
+{
+  "observed_at": "2026-09-20T14:17:47.979130+00:00",
+  "health": {
+    "penny": {
+      "regime": "UNKNOWN",
+      "last_scan_at": null,
+      "last_scan_age": "never",
+      "last_regime_at": null,
+      "last_regime_age": "set to None",
+      "open_positions": 0,
+      "is_stale": true,
+      "source": "PENNY_PAPER"
+    },
+    "nifty": {
+      "market_regime": "UNKNOWN",
+      "last_swing_scan_at": null,
+      "last_swing_scan_age": "never",
+      "open_positions": 0,
+      "is_stale": true
+    },
+    "halted": false,
+    "halt_reasons": [],
+    "bankroll": {
+      "penny": 100055.3276,
+      "nifty": 4362.721700000001
+    },
+    "security": {
+      "internal_api_secret_configured": true
+    },
+    "overall_status": "DEGRADED",
+    "kite_connected": false,
+    "scheduler_running": true,
+    "release": {
+      "service": "python-engine",
+      "revision": "e591bb38cac923c3a882d352fff59ee3a6683724",
+      "build_utc": "2026-09-20T12:28:41Z",
+      "declared": true
+    },
+    "entry_halted": false,
+    "entry_halt_attribution": null,
+    "order_execution": {
+      "status": "UNVERIFIED",
+      "endpoint": "https://api.kite.trade",
+      "updated_at": null,
+      "reason": "no accepted broker order has verified this route",
+      "http_status": null
+    },
+    "trading_ready": false,
+    "not_trading_reasons": [
+      "no_kite_token",
+      "order_execution_unverified"
+    ]
+  },
+  "settings": {
+    "INITIAL_BANKROLL": 4500.0,
+    "MOMENTUM_POOL_PCT": 0.5555555555555556,
+    "RISK_PCT": 0.1,
+    "MAX_TOTAL_RISK_PCT": 0.6,
+    "MOMENTUM_RISK_PCT_R1": 0.1,
+    "MOMENTUM_RISK_PCT_R2": 0.07,
+    "MOMENTUM_RISK_PCT_R3": 0.0,
+    "FNO_LIVE_TRADING": false,
+    "FNO_DISABLE_LIVE": true,
+    "PENNY_LIVE_TRADING": false,
+    "PENNY_EDGE_DISABLE_LIVE": true,
+    "PARTNER_BOT_ENABLED": true,
+    "PARTNER_MANUAL_ADVISORY_ENABLED": true,
+    "PARTNER_MANUAL_ADVISORY_SHADOW_ENABLED": true,
+    "PARTNER_MANUAL_ADVISORY_DELIVERY_ENABLED": true,
+    "PARTNER_HEDGE_ENABLED": true,
+    "PARTNER_HEDGE_INPUT_REFRESH_ENABLED": false,
+    "PARTNER_HEDGE_PHASE2_ENABLED": false,
+    "PARTNER_HEDGE_PHASE3_ENABLED": false,
+    "PROACTIVE_SHADOW_ENABLED": true,
+    "PROACTIVE_SHADOW_DATA_SOURCE": "LEGACY_FIXTURE_V1",
+    "PROACTIVE_SHADOW_FIXTURE_PATH": "",
+    "PROACTIVE_SHADOW_ACCOUNT_ID": "dev-shadow",
+    "CAS_PHASE1_FNO_UNDERLYINGS": "",
+    "CAPITAL_POLICY_LOSS_TOLERANCE_PCT": null
+  },
+  "table_counts": {
+    "partner_messages": 60,
+    "partner_positions": 0,
+    "partner_position_reconciliations": 0,
+    "partner_vix_history": 0,
+    "partner_hedge_messages": 9,
+    "partner_hedge_gate_evidence": 0,
+    "partner_input_snapshots": 0,
+    "partner_hedge_account_binding": 0,
+    "partner_hedge_portfolio_revision": 1,
+    "partner_input_snapshot_events": 0,
+    "partner_hedge_decision_guards": 0,
+    "partner_hedge_transport_backoff": 0,
+    "partner_hedge_ledger_quarantine": 0,
+    "partner_hedge_delivery_resolutions": 0,
+    "partner_hedge_service_state": 11,
+    "partner_hedge_shadow_evaluations": 0,
+    "proactive_opportunities": 0,
+    "proactive_events": 0,
+    "proactive_cash_flows": 0,
+    "proactive_scan_runs": 1611,
+    "proactive_watchlist": 0,
+    "proactive_shadow_positions": 0,
+    "proactive_shadow_runs": 0,
+    "proactive_shadow_run_steps": 0,
+    "partner_advisory_profiles": 1,
+    "partner_advisory_ideas": 3,
+    "partner_advisory_feedback": 0,
+    "partner_advisory_strategy_qualifications": 0,
+    "partner_advisory_research_artifacts": 0,
+    "partner_advisory_updates": 0,
+    "optional_ai_status_reports": 1,
+    "proactive_market_data_observations": 0,
+    "proactive_shadow_research_runs": 0,
+    "proactive_shadow_research_trials": 0,
+    "partner_advisory_input_status": 2
+  },
+  "latest": {
+    "partner_advisory_profiles": [
+      {
+        "profile_id": "default",
+        "version": 2,
+        "payload": "{\"capital_limit_rs\":100000.0,\"conditional_coverage_units\":null,\"conditional_exposure_assumption\":null,\"confirmed_holdings_revision\":null,\"delivery_end_minute\":915,\"delivery_start_minute\":560,\"enabled_scopes\":[\"MARKET_SETUP\"],\"holding_period\":\"INTRADAY\",\"instruments\":[\"NIFTY\",\"SENSEX\"],\"permitted_structures\":[\"DIRECTIONAL_DEBIT_SPREAD\"],\"preference\":\"ACTIONABLE\",\"profile_id\":\"default\",\"risk_limit_rs\":50000.0,\"timezone\":\"Asia/Kolkata\",\"version\":2}",
+        "updated_at": "2026-09-11T07:38:02.742954+05:30"
+      }
+    ],
+    "partner_advisory_input_status": [
+      {
+        "underlying": "SENSEX",
+        "attempted_at": "2026-09-17T15:14:50.013154+05:30",
+        "stage": "NO_ENTRY_SETUP",
+        "reason": "no_or_break",
+        "entry_state": "NO_ENTRY_SETUP",
+        "observed_at": "2026-09-17T15:10:00+05:30",
+        "received_at": "2026-09-17T15:14:50.013154+05:30",
+        "freshness_seconds": 290.013154,
+        "last_success_at": "2026-09-17T15:14:50.013154+05:30",
+        "profile_state": "SAVED_INTRADAY",
+        "qualification_state": "NOT_EVALUATED",
+        "updated_at": "2026-09-17T15:14:50.013154+05:30"
+      },
+      {
+        "underlying": "NIFTY",
+        "attempted_at": "2026-09-17T15:14:50.013154+05:30",
+        "stage": "NO_ENTRY_SETUP",
+        "reason": "no_or_break",
+        "entry_state": "NO_ENTRY_SETUP",
+        "observed_at": "2026-09-17T15:10:00+05:30",
+        "received_at": "2026-09-17T15:14:50.013154+05:30",
+        "freshness_seconds": 290.013154,
+        "last_success_at": "2026-09-17T15:14:50.013154+05:30",
+        "profile_state": "SAVED_INTRADAY",
+        "qualification_state": "NOT_EVALUATED",
+        "updated_at": "2026-09-17T15:14:50.013154+05:30"
+      }
+    ],
+    "proactive_scan_runs": [
+      {
+        "scan_id": "shadow-config:dfd40668e271f7c35d29",
+        "policy_id": "shadow_registry_v1",
+        "account_id": "dev-shadow",
+        "mode": "SHADOW",
+        "status": "UNAVAILABLE",
+        "observed_at": "2026-09-20T14:15:55.003632+00:00",
+        "reason": "FIXTURE_SOURCE_UNCONFIGURED"
+      },
+      {
+        "scan_id": "shadow-config:227c02e1fe367ff900cb",
+        "policy_id": "shadow_registry_v1",
+        "account_id": "dev-shadow",
+        "mode": "SHADOW",
+        "status": "UNAVAILABLE",
+        "observed_at": "2026-09-20T14:10:55.001412+00:00",
+        "reason": "FIXTURE_SOURCE_UNCONFIGURED"
+      }
+    ],
+    "optional_ai_status_reports": [
+      {
+        "report_key": "optional_ai",
+        "state": "READY",
+        "reported_at": "2026-09-20T14:16:41.083396+00:00",
+        "received_at": "2026-09-20T14:16:41.086222+00:00",
+        "detail_json": "{\"async_requested\": true, \"can_place_orders\": false, \"execution_authority\": \"NONE\", \"policy_allows_annotation\": true, \"queue\": {\"cached\": 0, \"circuit_state\": \"CLOSED\", \"daily_budget\": 40, \"daily_requests\": 0, \"max_pending\": 16, \"pending\": 0}, \"reason\": \"optional_annotation_ready\"}"
+      }
+    ]
+  },
+  "scheduler": [
+    {
+      "day": "2026-09-17",
+      "job_id": "fno_tick",
+      "event_kind": "EXECUTION",
+      "n": 416,
+      "mean_seconds": 3.896,
+      "max_seconds": 130.289
+    },
+    {
+      "day": "2026-09-17",
+      "job_id": "fno_tick",
+      "event_kind": "SCHEDULER_REJECTED",
+      "n": 8,
+      "mean_seconds": null,
+      "max_seconds": null
+    },
+    {
+      "day": "2026-09-17",
+      "job_id": "partner_hedge_delivery_recovery",
+      "event_kind": "EXECUTION",
+      "n": 318,
+      "mean_seconds": 0.028,
+      "max_seconds": 0.085
+    },
+    {
+      "day": "2026-09-17",
+      "job_id": "partner_manual_advisory_lifecycle_tick",
+      "event_kind": "EXECUTION",
+      "n": 636,
+      "mean_seconds": 0.023,
+      "max_seconds": 0.222
+    },
+    {
+      "day": "2026-09-17",
+      "job_id": "partner_manual_advisory_tick",
+      "event_kind": "EXECUTION",
+      "n": 318,
+      "mean_seconds": 1.029,
+      "max_seconds": 39.595
+    },
+    {
+      "day": "2026-09-17",
+      "job_id": "penny_scan_interval",
+      "event_kind": "SCHEDULER_REJECTED",
+      "n": 12,
+      "mean_seconds": null,
+      "max_seconds": null
+    },
+    {
+      "day": "2026-09-17",
+      "job_id": "research_quote_collection",
+      "event_kind": "EXECUTION",
+      "n": 618,
+      "mean_seconds": 4.072,
+      "max_seconds": 114.278
+    },
+    {
+      "day": "2026-09-17",
+      "job_id": "research_quote_collection",
+      "event_kind": "SCHEDULER_REJECTED",
+      "n": 18,
+      "mean_seconds": null,
+      "max_seconds": null
+    },
+    {
+      "day": "2026-09-18",
+      "job_id": "fno_tick",
+      "event_kind": "EXECUTION",
+      "n": 410,
+      "mean_seconds": 0.018,
+      "max_seconds": 0.95
+    },
+    {
+      "day": "2026-09-18",
+      "job_id": "partner_hedge_delivery_recovery",
+      "event_kind": "EXECUTION",
+      "n": 308,
+      "mean_seconds": 0.025,
+      "max_seconds": 0.051
+    },
+    {
+      "day": "2026-09-18",
+      "job_id": "partner_manual_advisory_lifecycle_tick",
+      "event_kind": "EXECUTION",
+      "n": 617,
+      "mean_seconds": 0.022,
+      "max_seconds": 0.118
+    },
+    {
+      "day": "2026-09-18",
+      "job_id": "partner_manual_advisory_tick",
+      "event_kind": "EXECUTION",
+      "n": 308,
+      "mean_seconds": 0.017,
+      "max_seconds": 0.085
+    },
+    {
+      "day": "2026-09-18",
+      "job_id": "research_quote_collection",
+      "event_kind": "EXECUTION",
+      "n": 617,
+      "mean_seconds": 0.024,
+      "max_seconds": 0.223
+    },
+    {
+      "day": "2026-09-20",
+      "job_id": "fno_tick",
+      "event_kind": "EXECUTION",
+      "n": 72,
+      "mean_seconds": 0.019,
+      "max_seconds": 0.041
+    },
+    {
+      "day": "2026-09-20",
+      "job_id": "partner_hedge_delivery_recovery",
+      "event_kind": "EXECUTION",
+      "n": 54,
+      "mean_seconds": 0.028,
+      "max_seconds": 0.047
+    },
+    {
+      "day": "2026-09-20",
+      "job_id": "partner_manual_advisory_lifecycle_tick",
+      "event_kind": "EXECUTION",
+      "n": 108,
+      "mean_seconds": 0.03,
+      "max_seconds": 0.085
+    },
+    {
+      "day": "2026-09-20",
+      "job_id": "partner_manual_advisory_tick",
+      "event_kind": "EXECUTION",
+      "n": 54,
+      "mean_seconds": 0.02,
+      "max_seconds": 0.044
+    },
+    {
+      "day": "2026-09-20",
+      "job_id": "research_quote_collection",
+      "event_kind": "EXECUTION",
+      "n": 108,
+      "mean_seconds": 0.025,
+      "max_seconds": 0.048
+    }
+  ],
+  "archives": {
+    "candidate-evidence": {
+      "files": 3,
+      "bytes": 8467,
+      "dates": {
+        "2026-09-17": 3
+      }
+    },
+    "collection-runs": {
+      "files": 9,
+      "bytes": 5074408,
+      "dates": {
+        "2026-09-18": 1,
+        "2026-09-14": 1,
+        "2026-09-10": 1,
+        "2026-09-17": 1,
+        "2026-09-12": 1,
+        "2026-09-20": 1,
+        "2026-09-11": 1,
+        "2026-09-15": 1,
+        "2026-09-16": 1
+      }
+    },
+    "contract-masters": {
+      "files": 30,
+      "bytes": 64379640,
+      "dates": {
+        "2026-09-10": 6,
+        "2026-09-17": 6,
+        "2026-09-11": 6,
+        "2026-09-15": 6,
+        "2026-09-16": 6
+      }
+    },
+    "operational-fno": {
+      "files": 20,
+      "bytes": 10567213,
+      "dates": {
+        "other": 20
+      }
+    },
+    "partner-candidate-inputs": {
+      "files": 6,
+      "bytes": 2201855,
+      "dates": {
+        "2026-09-17": 6
+      }
+    },
+    "partner-public-inputs": {
+      "files": 990,
+      "bytes": 126292887,
+      "dates": {
+        "2026-09-17": 330,
+        "2026-09-15": 330,
+        "2026-09-16": 330
+      }
+    },
+    "quotes": {
+      "files": 9,
+      "bytes": 107093475,
+      "dates": {
+        "2026-09-10": 2,
+        "2026-09-17": 1,
+        "2026-09-11": 2,
+        "2026-09-15": 2,
+        "2026-09-16": 2
+      }
+    }
+  },
+  "collection_reasons": {
+    "2026-09-10": {
+      "outside_weekday_session": 582,
+      "other": 341
+    },
+    "2026-09-11": {
+      "outside_weekday_session": 516,
+      "other": 341
+    },
+    "2026-09-12": {
+      "outside_weekday_session": 1
+    },
+    "2026-09-14": {
+      "outside_weekday_session": 2
+    },
+    "2026-09-15": {
+      "outside_weekday_session": 538,
+      "other": 340
+    },
+    "2026-09-16": {
+      "outside_weekday_session": 468,
+      "other": 340
+    },
+    "2026-09-17": {
+      "outside_weekday_session": 574,
+      "other": 341
+    },
+    "2026-09-18": {
+      "no_market_data_token": 337,
+      "outside_weekday_session": 280
+    },
+    "2026-09-20": {
+      "outside_weekday_session": 108
+    }
+  },
+  "session_completeness": [
+    {
+      "session_date": "2026-09-15",
+      "expected_attempts_per_index": 150,
+      "per_index": {
+        "NIFTY": {
+          "state": "COMPLETE",
+          "attempted": 150,
+          "expected": 150,
+          "missing_schedule_count": 0,
+          "unavailable_count": 0,
+          "incomplete_count": 0,
+          "stale_input_count": 0,
+          "latest_updated_at_utc": "2026-09-15T09:14:50.363526+00:00"
+        },
+        "SENSEX": {
+          "state": "COMPLETE",
+          "attempted": 150,
+          "expected": 150,
+          "missing_schedule_count": 0,
+          "unavailable_count": 0,
+          "incomplete_count": 0,
+          "stale_input_count": 0,
+          "latest_updated_at_utc": "2026-09-15T09:14:50.375366+00:00"
+        }
+      },
+      "can_qualify": false
+    },
+    {
+      "session_date": "2026-09-16",
+      "expected_attempts_per_index": 150,
+      "per_index": {
+        "NIFTY": {
+          "state": "COMPLETE",
+          "attempted": 150,
+          "expected": 150,
+          "missing_schedule_count": 0,
+          "unavailable_count": 0,
+          "incomplete_count": 0,
+          "stale_input_count": 0,
+          "latest_updated_at_utc": "2026-09-16T09:14:50.372894+00:00"
+        },
+        "SENSEX": {
+          "state": "COMPLETE",
+          "attempted": 150,
+          "expected": 150,
+          "missing_schedule_count": 0,
+          "unavailable_count": 0,
+          "incomplete_count": 0,
+          "stale_input_count": 0,
+          "latest_updated_at_utc": "2026-09-16T09:14:50.384036+00:00"
+        }
+      },
+      "can_qualify": false
+    },
+    {
+      "session_date": "2026-09-17",
+      "expected_attempts_per_index": 150,
+      "per_index": {
+        "NIFTY": {
+          "state": "COMPLETE",
+          "attempted": 150,
+          "expected": 150,
+          "missing_schedule_count": 0,
+          "unavailable_count": 0,
+          "incomplete_count": 0,
+          "stale_input_count": 0,
+          "latest_updated_at_utc": "2026-09-17T09:14:50.353761+00:00"
+        },
+        "SENSEX": {
+          "state": "COMPLETE",
+          "attempted": 150,
+          "expected": 150,
+          "missing_schedule_count": 0,
+          "unavailable_count": 0,
+          "incomplete_count": 0,
+          "stale_input_count": 0,
+          "latest_updated_at_utc": "2026-09-17T09:14:50.365698+00:00"
+        }
+      },
+      "can_qualify": false
+    },
+    {
+      "session_date": "2026-09-18",
+      "expected_attempts_per_index": 150,
+      "per_index": {
+        "NIFTY": {
+          "state": "NEVER_ATTEMPTED",
+          "attempted": 0,
+          "expected": 150,
+          "missing_schedule_count": 150,
+          "unavailable_count": 0,
+          "incomplete_count": 0,
+          "stale_input_count": 0,
+          "latest_updated_at_utc": null
+        },
+        "SENSEX": {
+          "state": "NEVER_ATTEMPTED",
+          "attempted": 0,
+          "expected": 150,
+          "missing_schedule_count": 150,
+          "unavailable_count": 0,
+          "incomplete_count": 0,
+          "stale_input_count": 0,
+          "latest_updated_at_utc": null
+        }
+      },
+      "can_qualify": false
+    }
+  ]
+}

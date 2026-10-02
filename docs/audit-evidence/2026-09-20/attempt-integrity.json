@@ -1,0 +1,82 @@
+[
+  {
+    "date": "2026-09-15",
+    "underlying": "NIFTY",
+    "rows": 165,
+    "unique_minute_slots": 165,
+    "duplicate_minute_slots": 0,
+    "public_states": {
+      "OBSERVED": 165
+    },
+    "terminal_states": {
+      "NO_SETUP": 165
+    }
+  },
+  {
+    "date": "2026-09-15",
+    "underlying": "SENSEX",
+    "rows": 165,
+    "unique_minute_slots": 165,
+    "duplicate_minute_slots": 0,
+    "public_states": {
+      "OBSERVED": 165
+    },
+    "terminal_states": {
+      "NO_SETUP": 165
+    }
+  },
+  {
+    "date": "2026-09-16",
+    "underlying": "NIFTY",
+    "rows": 165,
+    "unique_minute_slots": 165,
+    "duplicate_minute_slots": 0,
+    "public_states": {
+      "OBSERVED": 165
+    },
+    "terminal_states": {
+      "NO_SETUP": 165
+    }
+  },
+  {
+    "date": "2026-09-16",
+    "underlying": "SENSEX",
+    "rows": 165,
+    "unique_minute_slots": 165,
+    "duplicate_minute_slots": 0,
+    "public_states": {
+      "OBSERVED": 165
+    },
+    "terminal_states": {
+      "NO_SETUP": 165
+    }
+  },
+  {
+    "date": "2026-09-17",
+    "underlying": "NIFTY",
+    "rows": 165,
+    "unique_minute_slots": 165,
+    "duplicate_minute_slots": 0,
+    "public_states": {
+      "OBSERVED": 165
+    },
+    "terminal_states": {
+      "NO_SETUP": 162,
+      "CANDIDATE_RECORDED": 3
+    }
+  },
+  {
+    "date": "2026-09-17",
+    "underlying": "SENSEX",
+    "rows": 165,
+    "unique_minute_slots": 165,
+    "duplicate_minute_slots": 0,
+    "public_states": {
+      "OBSERVED": 165
+    },
+    "terminal_states": {
+      "NO_SETUP": 162,
+      "CANDIDATE_RECORDED": 3
+    }
+  }
+]

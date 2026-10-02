@@ -1,0 +1,45 @@
+{
+  "observed_at_utc": "2026-09-20T14:26:43.725090+00:00",
+  "production_head": "e591bb38cac923c3a882d352fff59ee3a6683724",
+  "dev_head": "c0dc9bc68beb4596cbc20235a152881a682bf86e",
+  "tracked_count_prod": 993,
+  "tracked_count_dev": 993,
+  "different_paths": [],
+  "containers": {
+    "python-engine": {
+      "image": "sha256:58162962be9bade3c2d73aa291846dcc7ffda266647a689bad219bd064954dd2",
+      "state": "running",
+      "started_at": "2026-09-20T12:29:40.300684976Z",
+      "exit_code": 0,
+      "oom_killed": false
+    },
+    "node-gateway": {
+      "image": "sha256:3986045b89496143466face6ea1eb739b568fd901c926c1dc9373de90b753ac2",
+      "state": "running",
+      "started_at": "2026-09-20T12:29:40.143152427Z",
+      "exit_code": 0,
+      "oom_killed": false
+    },
+    "agent": {
+      "image": "sha256:e008d591977b7e3692d4f5b5f66c9ba9666de9ff71bbf357c1a56d975b7d83e3",
+      "state": "running",
+      "started_at": "2026-09-20T12:29:40.144403338Z",
+      "exit_code": 0,
+      "oom_killed": false
+    },
+    "quant_ngrok": {
+      "image": "sha256:14d80d083e5b53145f416bbbd36238336c9de4016c43fd950eb2eb845670583b",
+      "state": "exited",
+      "started_at": "2026-09-20T02:28:51.943061487Z",
+      "exit_code": 0,
+      "oom_killed": false
+    },
+    "autoheal": {
+      "image": "sha256:31f580ef0279eaced5b38d631b08c474d70d8403c1c2fdd6ddcf2e879d5f3f7c",
+      "state": "exited",
+      "started_at": "2026-09-20T02:28:51.929480605Z",
+      "exit_code": 137,
+      "oom_killed": false
+    }
+  }
+}

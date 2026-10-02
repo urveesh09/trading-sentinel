@@ -1,0 +1,123 @@
+[
+  {
+    "name": "saved_intraday_profile",
+    "title": "Saved intraday profile",
+    "status": "PASS",
+    "detail": "profile_id=default, version=2, intraday=True, NIFTY+SENSEX=True.",
+    "next_step": "No action needed.",
+    "evidence": {
+      "profile_id": "default",
+      "version": 2,
+      "holding_period": "INTRADAY",
+      "instruments": [
+        "NIFTY",
+        "SENSEX"
+      ],
+      "updated_at": "2026-09-11T07:38:02.742954+05:30"
+    }
+  },
+  {
+    "name": "configured_destination",
+    "title": "Configured Telegram destination + token",
+    "status": "PASS",
+    "detail": "Telegram bot token + chat ID are configured (partner-specific or global fallback).",
+    "next_step": "No action needed.",
+    "evidence": {
+      "partner_token": true,
+      "partner_chat_id": true,
+      "global_token": true,
+      "global_chat_id": true
+    }
+  },
+  {
+    "name": "current_index_inputs",
+    "title": "Current index inputs (NIFTY + SENSEX)",
+    "status": "WARN",
+    "detail": "2 underlying(s) tracked: NIFTY=NO_ENTRY_SETUP/freshness=275603.443141s, SENSEX=NO_ENTRY_SETUP/freshness=275603.443141s",
+    "next_step": "Both NIFTY and SENSEX require a current <=180s receipt. Check the broker login, public-input fetch and advisory lifecycle tick.",
+    "evidence": {
+      "rows": [
+        {
+          "underlying": "NIFTY",
+          "stage": "NO_ENTRY_SETUP",
+          "reason": "no_or_break",
+          "entry_state": "NO_ENTRY_SETUP",
+          "freshness_seconds": 275603.443141,
+          "received_at": "2026-09-17T15:14:50.013154+05:30",
+          "profile_state": "SAVED_INTRADAY",
+          "qualification_state": "NOT_EVALUATED"
+        },
+        {
+          "underlying": "SENSEX",
+          "stage": "NO_ENTRY_SETUP",
+          "reason": "no_or_break",
+          "entry_state": "NO_ENTRY_SETUP",
+          "freshness_seconds": 275603.443141,
+          "received_at": "2026-09-17T15:14:50.013154+05:30",
+          "profile_state": "SAVED_INTRADAY",
+          "qualification_state": "NOT_EVALUATED"
+        }
+      ]
+    }
+  },
+  {
+    "name": "valid_candidate",
+    "title": "Valid candidate generated recently",
+    "status": "WARN",
+    "detail": "Latest idea: id=617afbef0daa6f33a4bafecf at 2026-09-17T12:14:50.013635+05:30 (underlying=NIFTY, status=VALIDATED_SHADOW, current_session=False).",
+    "next_step": "Wait for a genuine current-session setup; do not relax gates merely to create a message.",
+    "evidence": {
+      "advisory_id": "617afbef0daa6f33a4bafecf",
+      "created_at": "2026-09-17T12:14:50.013635+05:30",
+      "underlying": "NIFTY",
+      "status": "VALIDATED_SHADOW",
+      "valid_until": "2026-09-17T12:15:20.321565+05:30",
+      "current_session": false
+    }
+  },
+  {
+    "name": "compatible_qualification",
+    "title": "Genuine compatible qualification exists",
+    "status": "WARN",
+    "detail": "No partner_advisory_strategy_qualifications rows on disk.",
+    "next_step": "Complete and review genuine current-policy research; only then record a qualification linked to an immutable artifact.",
+    "evidence": {}
+  },
+  {
+    "name": "transport_test",
+    "title": "Transport test (last successful send)",
+    "status": "WARN",
+    "detail": "Last message: kind=hedge_eod_summary sent_at=2026-09-09T15:40:00.715725+05:30 delivered=True, recent_7d=False. Total: 9 rows, 9 delivered.",
+    "next_step": "Run an explicitly authorized no-advice transport test if current routing evidence is required; do not manufacture a trade card.",
+    "evidence": {
+      "last_kind": "hedge_eod_summary",
+      "last_sent_at": "2026-09-09T15:40:00.715725+05:30",
+      "last_delivered": true,
+      "last_recent_7d": false,
+      "total_rows": 9,
+      "delivered_count": 9
+    }
+  },
+  {
+    "name": "session_gates",
+    "title": "Manual advisory final dispatch configuration",
+    "status": "PASS",
+    "detail": "manual_advisory_enabled=True, delivery_enabled=True. Advanced Phase-3 hedge evidence is separate and does not block ordinary NIFTY/SENSEX manual advisory cards.",
+    "next_step": "No configuration action needed; evaluate the independent input, candidate, qualification and transport rows above.",
+    "evidence": {
+      "manual_advisory_enabled": true,
+      "manual_advisory_delivery_enabled": true,
+      "advanced_phase3": {
+        "available": true,
+        "staging_days": 0,
+        "required_staging_days": 7,
+        "evidence_window_days": 30,
+        "live_chain_verifications": 0,
+        "sample_reviews": {},
+        "blocks_manual_advisory": false
+      },
+      "advanced_phase3_blocks_manual_advisory": false,
+      "can_place_orders": false
+    }
+  }
+]
