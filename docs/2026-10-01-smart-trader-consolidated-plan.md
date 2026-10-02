@@ -274,6 +274,27 @@ Rollout: Dev config and tests first; effective Production recreation is an
 operator deployment step. Rollback restores config/writers without deleting
 archives. A 500 MiB capacity check alone is not proof of a full session.
 
+S3 completion receipt (Dev, October 2): `python-engine` now renders Docker
+`json-file` retention at `20m x 25` (500 MiB); the verifier fails closed below
+that floor and never prints rendered environment values. Momentum and penny
+signal CSV writers keep their configured current-session path, then atomically
+move the prior IST-session file into a sibling archive on rollover. Each
+archive retains its original header/rows and gets an append-only SHA-256
+manifest entry; unlabelled pre-S3 files are preserved as `legacy-*`, never
+silently assigned to a new session. No automatic archive deletion was added.
+Scheduler telemetry now folds final events into durable IST-day/job/kind
+summaries (outcome counts and finite stage count/total/max) before the raw
+tail can be pruned. Crash `IN_FLIGHT` markers are intentionally excluded from
+the final summary and remain explicit in raw recovery evidence. Existing
+research archive free-space reserve, writer lease and daily write budget remain
+the passive-collection capacity controls. S3 focused suite: 57 passed;
+warnings-fatal rotation/summary suite: 13 passed; Compose verifier: 8 passed
+and rendered 500 MiB. The only schema effect is additive
+`scheduler_daily_summaries` telemetry; no trading-data migration, archive
+deletion, broker, AI authority, Production recreation or deployment occurred. A deployed
+free-space check, prior-boot log preservation and complete-session volume
+measurement remain operational acceptance, not test or profitability claims.
+
 ### S4 — P1: complete equity paths and explain capital-skipped admissions
 
 Files/contracts: `momentum_paper.py`, `main.py`, `momentum_paper_audit.py`,

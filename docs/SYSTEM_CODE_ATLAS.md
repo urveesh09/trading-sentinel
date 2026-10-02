@@ -1534,9 +1534,9 @@ Declared tables: `penny_shadow_evaluations`, `penny_shadow_virtual_trades`
 
 [PENNY-LOG 2026-06-21] Append-only signal log for the penny subsystem. Every penny scan outcome (accepted or rejected) is persisted to: 1. CSV at settings.PENNY_LOG_CSV_PATH (default /data/penny_signals.csv) 2. SQLite table `penny_signals` in settings.DB_PATH Schema (stable contract -- do NOT rename columns, only add): scan_id TEXT scanned_at TEXT -- ISO8601 UTC ticker TEXT leg TEXT -- CNC / MIS accepted INTEGER-- 1 if signal fired, 0 if rejected reject_reason TEXT regime TEXT close REAL stop_loss REAL target_1 REAL target_2 REAL rsi_2 REAL rsi_14 REAL volume_ratio REAL shares INTEGER Best-effort writes: failures in this module must NOT crash the live scan. The caller (scanner) wraps invocat
 
-Top-level declarations: `init_penny_signal_db` (line 57), `log_penny_signal` (line 86)
+Top-level declarations: `init_penny_signal_db` (line 59), `log_penny_signal` (line 88)
 
-Engine dependencies: `config`
+Engine dependencies: `config`, `session_csv`
 
 Related tests: `python-engine/tests/test_penny_signal_log.py`
 
@@ -1926,11 +1926,11 @@ Engine dependencies: `config`, `daily_bootstrap`, `fno_accept_watchdog`, `fno_ho
 
 Bounded, read-only scheduler timing evidence. APScheduler's own log lines are useful for a live operator but cannot answer later whether a job was skipped, ran late, or simply returned because the market was closed. This module records what is actually known without inventing scheduled/start times that an older invocation did not expose.
 
-Top-level declarations: `_utc_now` (line 43), `_iso` (line 47), `init_scheduler_telemetry` (line 55), `record_scheduler_event` (line 61), `start_scheduler_run` (line 95), `complete_scheduler_run` (line 123), `instrument_async_job` (line 143), `telemetry_job` (line 201), `attach_scheduler_listener` (line 208), `_percentiles` (line 236), `_tier_for` (line 319), `_aggregate_by_tier` (line 326), `scheduler_timing_report` (line 418)
+Top-level declarations: `_utc_now` (line 56), `_iso` (line 60), `_session_date` (line 68), `_record_daily_summary` (line 73), `init_scheduler_telemetry` (line 115), `record_scheduler_event` (line 121), `start_scheduler_run` (line 161), `complete_scheduler_run` (line 189), `scheduler_daily_summary_report` (line 218), `instrument_async_job` (line 250), `telemetry_job` (line 308), `attach_scheduler_listener` (line 315), `_percentiles` (line 343), `_tier_for` (line 426), `_aggregate_by_tier` (line 433), `scheduler_timing_report` (line 525)
 
 Related tests: `python-engine/tests/test_scheduler_telemetry.py`
 
-Declared tables: `scheduler_run_telemetry`
+Declared tables: `scheduler_daily_summaries`, `scheduler_run_telemetry`
 
 ## `python-engine/selected_legs_verifier.py`
 
@@ -1939,6 +1939,14 @@ Declared tables: `scheduler_run_telemetry`
 Top-level declarations: `LegStatus` (line 38), `SelectedLegFinding` (line 46), `SelectedLegsReport` (line 96), `_leg_token` (line 147), `_check_unique_tokens` (line 151), `verify_selected_legs` (line 163)
 
 Related tests: `python-engine/tests/test_selected_legs_verifier.py`
+
+## `python-engine/session_csv.py`
+
+Crash-tolerant session rotation for append-only operational CSV evidence. The current session remains at the configured path for existing dashboards and operators. At the first write of a new IST session, the prior complete file is moved into a sibling evidence archive with its header and bytes unchanged; an append-only manifest records its digest. No routine retention deletion is performed here: archive expiry requires a separate backup/restore policy.
+
+Top-level declarations: `_session_date` (line 27), `_paths` (line 39), `_atomic_bytes` (line 50), `_write_header` (line 64), `_read_state` (line 71), `_write_state` (line 82), `_digest` (line 86), `_append_manifest` (line 94), `_archive_current` (line 109), `append_session_rows` (line 123)
+
+Related tests: `python-engine/tests/test_session_csv.py`
 
 ## `python-engine/settlement_assumptions.py`
 
@@ -1952,9 +1960,9 @@ Related tests: `python-engine/tests/test_settlement_assumptions.py`
 
 [MOMENTUM-LOG 2026-06-16] Append-only signal log for momentum scans. Every momentum signal evaluation (accepted or rejected) is persisted to: 1. CSV at settings.MOMENTUM_LOG_CSV_PATH (default /data/momentum_signals.csv) 2. SQLite table `momentum_signals` in settings.DB_PATH This is the data source for future backtests of new entry filters (MC7 RVOL, MC8 RSI trim, ORB structure, etc.). Without it, every filter change is a guess. Schema (stable contract -- do NOT rename columns, only add): scan_id TEXT -- uuid per scan (groups all rows from one scan call) scanned_at TEXT -- ISO8601 UTC timestamp ticker TEXT accepted INTEGER-- 1 if signal fired, 0 if rejected reject_reason TEXT -- empty when ac
 
-Top-level declarations: `init_momentum_log_db` (line 102), `_row_from_dict` (line 115), `_ensure_csv_header` (line 162), `log_momentum_batch` (line 174), `make_scan_id` (line 226), `now_utc_iso` (line 231), `build_row` (line 235)
+Top-level declarations: `init_momentum_log_db` (line 103), `_row_from_dict` (line 116), `_ensure_csv_header` (line 163), `log_momentum_batch` (line 175), `make_scan_id` (line 223), `now_utc_iso` (line 228), `build_row` (line 232)
 
-Engine dependencies: `config`
+Engine dependencies: `config`, `session_csv`
 
 ## `python-engine/skill_test.py`
 

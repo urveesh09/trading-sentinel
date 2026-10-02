@@ -88,6 +88,25 @@ skip. The broad warnings-fatal aggregate retains two unrelated socket warnings.
 No migration, provider capacity, broker, policy, AI, Production or deployment
 change occurred. Deployed recovery/session acceptance remains open.
 
+## October 2 S3 evidence retention completion (Dev)
+
+The Python engine Compose log contract is `json-file` `20m x 25` (500 MiB),
+verified from rendered Compose without exposing environment values. Signal CSV
+evidence now rotates by IST session: the existing configured path stays the
+current-session file, the prior file is atomically preserved under a sibling
+session archive with its header/rows intact, and a SHA-256 manifest records the
+archive. Unknown legacy files are retained separately rather than misdated;
+routine code does not delete archives. Scheduler telemetry keeps a durable
+daily final-outcome rollup by market session/job/kind with outcome and stage
+statistics before bounded raw events can be pruned. Unfinished crash markers
+are not called successful. Research archive capacity/lease protections remain
+unchanged. S3 tests passed 57, with 13 rotation/summary tests warnings-fatal
+and 8 Compose-verifier tests. This is Dev-only configuration/evidence work;
+Its only schema effect is the additive scheduler telemetry-summary table; it
+does not migrate trading evidence.
+deployment requires operator free-space, prior-boot preservation and full
+market-session volume checks. Optional AI remains non-blocking when unavailable.
+
 ## October 1 Production assessment and smart-trader plan (documentation only)
 
 The [consolidated plan](2026-10-01-smart-trader-consolidated-plan.md) records

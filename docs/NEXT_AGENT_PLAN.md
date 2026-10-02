@@ -1,6 +1,6 @@
 # Trading Sentinel — next-agent execution plan
 
-## October 2 S3 evidence-retention slice — next
+## October 2 S3 evidence-retention — Dev complete, operational acceptance open
 
 S2 source completion is committed in Dev and must be promoted only through
 GitHub; Production remains untouched. Start S3 with an inventory of existing
@@ -11,6 +11,23 @@ archive rule. Do not change Production or delete retained evidence. S3 needs
 rendered Compose verification, bounded writer/disk-failure behavior and
 rotation/restart coverage before any deployment request. The optional AI path
 must remain non-blocking when its API is unavailable.
+
+S3 implementation slice (October 2) covered
+`docker-compose.yml`, `scripts/verify_compose_logging.py` and its focused
+tests. The Python engine currently renders `json-file` `20m x 10` (200 MiB),
+below the planned `20m x 25` (500 MiB) retention floor. Raise only that engine
+contract, render and validate it without printing environment values, and test
+rejection of smaller/malformed policies. Rollback is a GitHub reversion of the
+Compose/verifier change; never delete old container logs or research archives.
+Effective recreation/free-space verification is an operator deployment step.
+
+Completion: the rendered Python-engine contract is now 500 MiB; session CSV
+rotation preserves header/rows and SHA-256 manifest evidence; daily scheduler
+rollups retain final outcomes/stage statistics before raw-tail pruning. Verify
+deployed free space, preserve prior-boot logs and measure complete-session
+volume before claiming operational retention. Do not delete archives during
+rollback. Next implementation priority is S4; optional AI remains non-blocking
+if its API is unavailable.
 
 ## October 2 independent S1/S2 review — completed source correction
 

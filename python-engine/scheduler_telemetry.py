@@ -17,6 +17,7 @@ from functools import wraps
 from typing import Any, Awaitable, Callable
 
 import aiosqlite
+from zoneinfo import ZoneInfo
 
 
 BOOT_ID = os.environ.get("TRADING_SENTINEL_BOOT_ID") or uuid.uuid4().hex
@@ -37,7 +38,19 @@ CREATE TABLE IF NOT EXISTS scheduler_run_telemetry (
 );
 CREATE INDEX IF NOT EXISTS idx_scheduler_run_telemetry_job_time
   ON scheduler_run_telemetry(job_id, created_at DESC);
+CREATE TABLE IF NOT EXISTS scheduler_daily_summaries (
+  session_date TEXT NOT NULL,
+  job_id TEXT NOT NULL,
+  event_kind TEXT NOT NULL,
+  runs INTEGER NOT NULL,
+  result_counts_json TEXT NOT NULL,
+  stage_stats_json TEXT NOT NULL,
+  first_recorded_at TEXT NOT NULL,
+  last_recorded_at TEXT NOT NULL,
+  PRIMARY KEY (session_date, job_id, event_kind)
+);
 """
+IST = ZoneInfo("Asia/Kolkata")
 
 
 def _utc_now() -> datetime:
@@ -50,6 +63,53 @@ def _iso(value: datetime | None) -> str | None:
     if value.tzinfo is None or value.utcoffset() is None:
         raise ValueError("scheduler telemetry timestamps must be timezone-aware")
     return value.astimezone(timezone.utc).isoformat()
+
+
+def _session_date(value: datetime) -> str:
+    """Use the market session date, not host/UTC midnight, for retention."""
+    return value.astimezone(IST).date().isoformat()
+
+
+async def _record_daily_summary(
+    db, *, job_id: str, event_kind: str, result: str,
+    occurred_at: datetime, stage_durations: dict[str, Any] | None,
+) -> None:
+    """Fold one final scheduler fact into durable, bounded daily evidence."""
+    import json
+    session_date = _session_date(occurred_at)
+    row = await (await db.execute(
+        "SELECT runs,result_counts_json,stage_stats_json,first_recorded_at "
+        "FROM scheduler_daily_summaries WHERE session_date=? AND job_id=? AND event_kind=?",
+        (session_date, job_id[:120], event_kind[:48]),
+    )).fetchone()
+    if row:
+        runs, result_counts, stage_stats, first = row
+        try:
+            results = json.loads(result_counts)
+            stages = json.loads(stage_stats)
+        except json.JSONDecodeError:
+            results, stages = {}, {}
+    else:
+        runs, results, stages, first = 0, {}, {}, _iso(occurred_at)
+    results[result[:48]] = int(results.get(result[:48], 0)) + 1
+    for name, value in (stage_durations or {}).items():
+        if not isinstance(name, str) or not isinstance(value, (int, float)):
+            continue
+        if not math.isfinite(float(value)) or float(value) < 0:
+            continue
+        stat = stages.setdefault(name[:120], {"count": 0, "total": 0.0, "max": 0.0})
+        stat["count"] = int(stat.get("count", 0)) + 1
+        stat["total"] = round(float(stat.get("total", 0.0)) + float(value), 6)
+        stat["max"] = max(float(stat.get("max", 0.0)), float(value))
+    await db.execute(
+        "INSERT OR REPLACE INTO scheduler_daily_summaries "
+        "(session_date,job_id,event_kind,runs,result_counts_json,stage_stats_json,first_recorded_at,last_recorded_at) "
+        "VALUES (?,?,?,?,?,?,?,?)",
+        (session_date, job_id[:120], event_kind[:48], int(runs) + 1,
+         json.dumps(results, sort_keys=True, separators=(",", ":")),
+         json.dumps(stages, sort_keys=True, separators=(",", ":")),
+         first, _iso(occurred_at)),
+    )
 
 
 async def init_scheduler_telemetry(db_path: str) -> None:
@@ -80,8 +140,14 @@ async def record_scheduler_event(
             "INSERT INTO scheduler_run_telemetry VALUES (?,?,?,?,?,?,?,?,?,?,?,?)",
             (uuid.uuid4().hex, BOOT_ID, job_id[:120], event_kind[:48], _iso(scheduled_at),
              _iso(started_at), _iso(ended_at), elapsed_seconds,
-             result[:48], (reason or "")[:240], payload, _iso(created_at)),
+            result[:48], (reason or "")[:240], payload, _iso(created_at)),
         )
+        if result != "IN_FLIGHT":
+            await _record_daily_summary(
+                db, job_id=job_id, event_kind=event_kind, result=result,
+                occurred_at=ended_at or started_at or created_at,
+                stage_durations=stage_durations,
+            )
         # Keep a fixed forensic tail.  This is deliberately a bounded deletion
         # of telemetry only, never trading or research evidence.
         await db.execute(
@@ -131,13 +197,54 @@ async def complete_scheduler_run(
     async with aiosqlite.connect(db_path, timeout=0.10) as db:
         await db.execute("PRAGMA busy_timeout=100")
         await db.executescript(_SCHEMA)
+        existing = await (await db.execute(
+            "SELECT job_id,event_kind FROM scheduler_run_telemetry WHERE run_id=? AND result='IN_FLIGHT'",
+            (run_id,),
+        )).fetchone()
         cursor = await db.execute(
             "UPDATE scheduler_run_telemetry SET ended_at=?,elapsed_seconds=?,result=?,reason=?,stage_durations_json=? "
             "WHERE run_id=? AND result='IN_FLIGHT'",
             (_iso(ended_at), elapsed_seconds, result[:48], (reason or "")[:240], payload, run_id),
         )
+        if cursor.rowcount == 1 and existing is not None:
+            await _record_daily_summary(
+                db, job_id=existing[0], event_kind=existing[1], result=result,
+                occurred_at=ended_at, stage_durations=stage_durations,
+            )
         await db.commit()
         return cursor.rowcount == 1
+
+
+async def scheduler_daily_summary_report(
+    db_path: str, *, session_date: str | None = None,
+) -> dict[str, Any]:
+    """Read durable market-session rollups without relying on raw retention."""
+    await init_scheduler_telemetry(db_path)
+    selected = session_date or _session_date(_utc_now())
+    if len(selected) != 10:
+        raise ValueError("session_date must be ISO YYYY-MM-DD")
+    async with aiosqlite.connect(db_path) as db:
+        rows = await (await db.execute(
+            "SELECT job_id,event_kind,runs,result_counts_json,stage_stats_json,first_recorded_at,last_recorded_at "
+            "FROM scheduler_daily_summaries WHERE session_date=? ORDER BY job_id,event_kind",
+            (selected,),
+        )).fetchall()
+    import json
+    summaries = []
+    for row in rows:
+        try:
+            results, stages = json.loads(row[3]), json.loads(row[4])
+        except json.JSONDecodeError:
+            results, stages = {}, {}
+        summaries.append({
+            "job_id": row[0], "event_kind": row[1], "runs": row[2],
+            "results": results, "stage_stats": stages,
+            "first_recorded_at": row[5], "last_recorded_at": row[6],
+        })
+    return {
+        "session_date": selected, "summaries": summaries,
+        "note": "Daily summaries contain final scheduler facts only; unfinished crash markers remain visible in the raw telemetry report until separately reconciled.",
+    }
 
 
 def instrument_async_job(

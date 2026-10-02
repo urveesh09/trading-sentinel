@@ -42,6 +42,16 @@
   Focused checks: 105 passed/one known skip; isolated warnings-fatal DR/Kite:
   53 passed/one known skip. Broad warnings-fatal aggregation still exposes two
   unrelated unclosed-socket warnings. Dev only, pending GitHub promotion.
+- [x] Implement S3 evidence retention in Dev: rendered Python-engine logging is
+  `20m x 25` (500 MiB); momentum/penny CSVs rotate by IST session into
+  SHA-256-manifested archives without routine deletion; final scheduler facts
+  are retained in daily outcome/stage rollups before raw-tail pruning. S3
+  focused: 57 passed; warnings-fatal rotation/summary: 13 passed; Compose
+  verifier: 8 passed. No data migration/deletion, broker, AI authority or
+  Production recreation. Rollback is GitHub reversion without archive removal.
+- [ ] Before deployment, verify host free space, preserve prior-boot logs and
+  collect a complete market-session volume/rotation receipt. This does not
+  prove profitability, partner qualification or operational deployment.
 - [ ] Inspect at least three complete deployed sessions; no tests establish
   profitability, partner qualification or operational deployment.
 - [x] Reproduce optional-review expiry from mixed fresh/stale/undated sources;

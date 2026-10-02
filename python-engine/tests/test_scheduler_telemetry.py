@@ -5,7 +5,10 @@ import sqlite3
 
 import pytest
 
-from scheduler_telemetry import instrument_async_job, record_scheduler_event, scheduler_timing_report
+from scheduler_telemetry import (
+    instrument_async_job, record_scheduler_event, scheduler_daily_summary_report,
+    scheduler_timing_report,
+)
 
 
 @pytest.mark.asyncio
@@ -102,3 +105,44 @@ async def test_independent_exit_wrapper_is_not_blocked_by_slow_bulk_wrapper(tmp_
     report = await scheduler_timing_report(db_path)
     assert report["jobs"]["research_quote_collection"]["executed_runs"] == 1
     assert report["jobs"]["partner_manual_advisory_lifecycle_tick"]["executed_runs"] == 1
+
+
+@pytest.mark.asyncio
+async def test_daily_summary_survives_raw_tail_retention_and_keeps_stage_outcomes(tmp_path):
+    db_path = str(tmp_path / "cache.db")
+    ended = datetime(2026, 10, 2, 10, 30, tzinfo=timezone.utc)
+    for index in range(101):
+        await record_scheduler_event(
+            db_path, job_id="fno_tick", event_kind="EXECUTION", result="COMPLETED",
+            ended_at=ended + timedelta(seconds=index), elapsed_seconds=.1,
+            stage_durations={"provider": .2 + index}, retention=100,
+        )
+    daily = await scheduler_daily_summary_report(db_path, session_date="2026-10-02")
+    assert daily["summaries"] == [{
+        "job_id": "fno_tick", "event_kind": "EXECUTION", "runs": 101,
+        "results": {"COMPLETED": 101},
+        "stage_stats": {"provider": {"count": 101, "total": 5070.2, "max": 100.2}},
+        "first_recorded_at": ended.isoformat(),
+        "last_recorded_at": (ended + timedelta(seconds=100)).isoformat(),
+    }]
+    assert len((await scheduler_timing_report(db_path))["events"]) == 100
+
+
+@pytest.mark.asyncio
+async def test_inflight_marker_is_not_counted_as_completed_daily_evidence(tmp_path):
+    db_path = str(tmp_path / "cache.db")
+    entered, release = asyncio.Event(), asyncio.Event()
+
+    async def callback():
+        entered.set()
+        await release.wait()
+        return {"status": "COMPLETED", "stage_durations_sec": {"management": .01}}
+
+    task = asyncio.create_task(instrument_async_job(db_path, "fno_tick", callback)())
+    await entered.wait()
+    assert (await scheduler_daily_summary_report(db_path))["summaries"] == []
+    release.set()
+    await task
+    daily = await scheduler_daily_summary_report(db_path)
+    assert daily["summaries"][0]["results"] == {"COMPLETED": 1}
+    assert daily["summaries"][0]["stage_stats"]["management"]["count"] == 1
