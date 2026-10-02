@@ -51,6 +51,73 @@ def _packet_hash(raw: object) -> str | None:
     return f"sha256:{hashlib.sha256(raw).hexdigest()}"
 
 
+# Opened positions carry their admitted shares; capital-skipped candidates
+# (S7a) carry the shares the fixed-pool rule would have sized with free capital.
+_ECONOMICS_SHARE_FIELD = {
+    "momentum_paper_entry_economics_v1": "shares",
+    "momentum_paper_candidate_economics_v1": "unconstrained_benchmark_shares",
+}
+
+
+def build_allocation_candidates(db_path: str) -> dict[str, Any]:
+    """Opened and capital-skipped candidates with complete verified paths (S7a).
+
+    Read-only.  The exit-study packet above still uses opened admissions only.
+    """
+    from momentum_allocation_research import Candidate
+    from momentum_exit_study import Quote, _entry_from_json
+    empty = {"candidates": [], "unavailable_candidates": [], "deadline_quote_policy": DEADLINE_FIRST_WITHIN_GAP}
+    path = Path(db_path)
+    if not path.is_file():
+        return {**empty, "unavailable_candidates": [{"reason": "database_unavailable_or_missing"}]}
+    con = sqlite3.connect(f"{path.resolve().as_uri()}?mode=ro", uri=True)
+    con.row_factory = sqlite3.Row
+    try:
+        tables = {row[0] for row in con.execute("SELECT name FROM sqlite_master WHERE type='table'")}
+        if not {"momentum_paper_admission_outcomes", "momentum_paper_path_subscriptions",
+                "momentum_paper_path_observations"}.issubset(tables):
+            return {**empty, "unavailable_candidates": [{"reason": "passive_path_schema_unavailable"}]}
+        columns = {row[1] for row in con.execute("PRAGMA table_info(momentum_paper_path_subscriptions)")}
+        kind = "s.subscription_kind" if "subscription_kind" in columns else "'OPENED'"
+        rows = con.execute(
+            "SELECT a.id,a.admission_key,a.ticker,a.outcome,a.recorded_at,a.entry_economics_json,"
+            "a.admission_economics_json,a.source_packet_json,a.source_packet_sha256,s.entry_at,"
+            f"s.study_deadline_at,s.original_shares,{kind} AS subscription_kind "
+            "FROM momentum_paper_admission_outcomes a JOIN momentum_paper_path_subscriptions s "
+            "ON s.admission_key=a.admission_key WHERE a.outcome IN ('opened','zero_shares') "
+            "ORDER BY a.recorded_at,a.id"
+        ).fetchall()
+        max_gap = max(1, min(300, int(settings.MOMENTUM_PAPER_PATH_MAX_GAP_SECONDS)))
+        candidates, unavailable, arrival = [], [], {}
+        for row in rows:
+            built = _entry_path(con, row, max_gap)
+            if isinstance(built, str):
+                unavailable.append({"admission_key": row["admission_key"], "reason": built})
+                continue
+            try:
+                risk_pct = float(json.loads(row["admission_economics_json"])["risk_pct"])
+                if not math.isfinite(risk_pct) or risk_pct <= 0:
+                    raise ValueError
+            except (TypeError, ValueError, KeyError, json.JSONDecodeError):
+                unavailable.append({"admission_key": row["admission_key"],
+                                    "reason": f"risk_pct_unavailable:{row['admission_key']}"})
+                continue
+            entry_row, quotes = built
+            batch_at = _timestamp(row["recorded_at"])
+            arrival[batch_at] = arrival.get(batch_at, -1) + 1
+            candidates.append(Candidate(
+                admission_key=row["admission_key"], kind=str(row["subscription_kind"]),
+                batch_at=batch_at, arrival_index=arrival[batch_at],
+                entry=_entry_from_json(entry_row), risk_pct=risk_pct,
+                quotes=tuple(Quote(observed_at=datetime.fromisoformat(q["observed_at"]).astimezone(
+                    _entry_from_json(entry_row).entry_at.tzinfo), ltp=float(q["ltp"])) for q in quotes),
+            ))
+        return {"candidates": candidates, "unavailable_candidates": unavailable,
+                "deadline_quote_policy": DEADLINE_FIRST_WITHIN_GAP}
+    finally:
+        con.close()
+
+
 def _entry_path(con, row, max_gap: int):
     """Return (entry, quotes) for one exact lifecycle, or the reason it is unavailable.
 
@@ -66,9 +133,10 @@ def _entry_path(con, row, max_gap: int):
         entry = json.loads(row["entry_economics_json"])
     except (TypeError, json.JSONDecodeError):
         return f"entry_economics_unavailable:{key}"
-    if not isinstance(entry, dict) or entry.get("schema") != "momentum_paper_entry_economics_v1" or entry.get("ticker") != row["ticker"]:
+    share_field = _ECONOMICS_SHARE_FIELD.get(entry.get("schema")) if isinstance(entry, dict) else None
+    if share_field is None or entry.get("ticker") != row["ticker"]:
         return f"entry_economics_mismatch:{key}"
-    if entry.get("shares") != row["original_shares"]:
+    if entry.get(share_field) != row["original_shares"]:
         return f"original_quantity_mismatch:{key}"
     entry_at, deadline = _timestamp(row["entry_at"]), _timestamp(row["study_deadline_at"])
     if entry_at is None or deadline is None:
@@ -116,7 +184,7 @@ def _entry_path(con, row, max_gap: int):
         "entry_id": key, "admission_key": key,
         "source_ref": admission_hash, "ticker": entry["ticker"], "entry_at": entry["entry_at"],
         "entry_price": entry["entry_price"], "stop_loss_initial": entry["stop_loss_initial"],
-        "target_1": entry["target_1"], "shares": entry["shares"],
+        "target_1": entry["target_1"], "shares": entry[share_field],
         "atr_14_at_entry": entry.get("atr_14_at_entry"), "vwap_at_entry": entry.get("vwap_at_entry"),
         "regime_at_entry": entry.get("regime_at_entry"),
     }, quotes)

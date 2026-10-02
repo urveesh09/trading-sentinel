@@ -2,6 +2,11 @@
 
 ## October 2 independent S1–S6 review receipt
 
+- [x] S7a: capital-skipped candidate economics and passive paths; frozen
+  first-arrival / fixed-equal / risk-proportional common-book replay. 11 tests
+  warnings-fatal; cross-phase 1114 passed. No sizing or exit change.
+- [ ] After promotion: freeze the allocation manifest before the next session;
+  evaluate holdout batches only. S7b remains.
 - [x] S4 runtime wiring: equity paths attached to the existing research request,
   bounded background writer, deadline-close policy, per-entry adapter
   exclusion. End-to-end test plus 1091 selected tests passed. No Production

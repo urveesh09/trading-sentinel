@@ -9,6 +9,14 @@ fanout/source-packet binding, S5 qualification/canary or the missing S6
 defined-risk experiment and archive/economics binding. No Production mutation,
 authority expansion or profitable-strategy claim follows from this review.
 
+S7a (Dev): capital-skipped admissions now get candidate economics and a
+passive path, and `momentum_allocation_research.py` replays first-arrival
+against equal and risk-proportional allocation on one frozen common book.
+1114 selected tests passed. After promotion: freeze a manifest before the
+next session and evaluate only holdout batches. Next source: S7b
+entry-timing hypotheses and near-miss shadow tracking, or the S6
+defined-risk experiment.
+
 S4 runtime wiring (Dev): subscribed paper tickers ride the research
 collector's existing first quote request into byte-bound envelopes via one
 background writer. The deadline-close policy and per-entry adapter exclusion

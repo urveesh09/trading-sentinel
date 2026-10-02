@@ -658,6 +658,53 @@ opportunity outcomes. Compare net return, drawdown, turnover, cost burden and
 capital use on independent future sessions. Paper-only pilot of a reviewed
 winner, with immutable allocation version and baseline fallback.
 
+S7 implementation slice (Dev, October 2). Inventory: the paper book admits
+accepted signals in arrival order. It sizes each with `paper_position_size`
+from the fixed INR 50,000 pool, capped by undeployed notional
+(`MOMENTUM_PAPER_FIXED_POOL_V1`), and records later ones as
+`zero_shares`/`capital_exhausted` (the BRIGADE/BANDHANBNK/IDFCFIRSTB and
+GABRIEL/SAPPHIRE pattern). `proactive_portfolio_research.py` compares
+`RISK_BUDGET_V1` with `FIXED_EQUAL_V1` on generic shadow proposals. It does
+not model this first-arrival baseline, and capital-skipped candidates have no
+price path, so no counterfactual allocation is measurable.
+
+S7a — capital-skipped evidence and allocation replay.
+- Capture (paper bookkeeping only): a `zero_shares` admission whose reason is
+  `capital_exhausted` or `allocation_rounding` also records immutable
+  candidate economics (`momentum_paper_candidate_economics_v1`, admitted
+  shares 0, unconstrained benchmark shares). It subscribes a passive path
+  with `subscription_kind='CAPITAL_SKIPPED'` (additive nullable column) in
+  the same transaction. No order, size, exit or opened-position change. The
+  exit-study adapter still uses only opened admissions.
+- New inert `momentum_allocation_research.py` reads opened and
+  capital-skipped candidates with complete verified paths. It replays three
+  frozen policies on one common cash book:
+  - `FIRST_ARRIVAL_FIXED_POOL_V1`: the current rule, via the same
+    `paper_position_size`.
+  - `FIXED_EQUAL_V1`: equal notional slices per admission batch.
+  - `RISK_BUDGET_PROPORTIONAL_V1`: risk-sized shares scaled down to
+    available cash.
+  Exits replay the live evaluator. Capital and net cash are released leg by
+  leg, including partials. Outcomes are SELECTED, CAPITAL_UNAVAILABLE or
+  ROUNDED_TO_ZERO. Metrics: net, drawdown, peak deployed, turnover and
+  costs. Freeze manifest and HOLDOUT labels as in S6; the benchmark is
+  labelled fixed, not drawdown-adjusted.
+- Acceptance: no overspend or duplicate admission under simultaneous
+  candidates, input-order permutations (order-invariant policies), zero
+  cash, fees, partial-exit release and restart. First-arrival reproduces the
+  live `paper_position_size` results. Incomplete paths stay unavailable.
+  The BRIGADE-style concentration case is a mechanism check, not evidence.
+
+S7a receipt (Dev, October 2): implemented as planned. First-arrival
+replay matches live admission sizes (BRIGADE 87 shares). Order-invariant
+policies hold across permutations; random books never overspend. A
+capital-skipped candidate is captured and replayed end to end. 11 tests
+warnings-fatal; cross-phase 1114 passed. No live or paper sizing change.
+
+S7b (later): entry-timing hypotheses (completed-bar continuation, bounded
+pullback with a no-chase limit), new-thesis re-entry and shadow tracking of
+rejected/near-miss setups.
+
 ### S8 — P2: daily learning and strategy selection
 
 Files/contracts: proactive comparison/research modules, `fno_audit_report.py`,

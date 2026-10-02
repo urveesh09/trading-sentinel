@@ -942,6 +942,16 @@ Top-level declarations: `Regime` (line 9), `round_float_2dp` (line 17), `round_f
 
 Related tests: `python-engine/tests/test_models.py`
 
+## `python-engine/momentum_allocation_research.py`
+
+Read-only allocation research for momentum-paper opportunities (S7a). The paper book admits accepted signals in arrival order from a fixed pool (``MOMENTUM_PAPER_FIXED_POOL_V1``); later signals can be skipped as ``capital_exhausted``. This module replays the *same* candidates -- opened and capital-skipped, each with a complete verified price path -- under frozen allocation policies on one common cash book: * ``FIRST_ARRIVAL_FIXED_POOL_V1`` -- the current rule, sized by the live ``momentum_paper.paper_position_size`` against undeployed notional; * ``FIXED_EQUAL_V1`` -- each admission batch splits available notional equally; * ``RISK_BUDGET_PROPORTIONAL_V1`` -- risk-sized shares scaled down to
+
+Top-level declarations: `Candidate` (line 53), `_risk_shares` (line 64), `_size_batch` (line 72), `replay_allocation` (line 100), `_source_fingerprint` (line 192), `_frozen_terms` (line 201), `freeze_allocation_manifest` (line 208), `verify_allocation_manifest` (line 220), `build_allocation_report` (line 235), `_main` (line 265)
+
+Engine dependencies: `config`, `momentum_exit_study`, `momentum_paper`, `momentum_paper_path_adapter`
+
+Related tests: `python-engine/tests/test_momentum_allocation_research.py`
+
 ## `python-engine/momentum_exit_experiment.py`
 
 Frozen, read-only paired experiments for momentum-paper exit policies (S6a). This extends the v1 exit study (``momentum_exit_study``) without changing it. The same immutable LTP packet loader, path validation, pure live evaluator, cost model and leg arithmetic are reused. What is added: * a freeze manifest that pins one candidate policy, its parameters, the live evaluator settings and a source fingerprint *before* evaluation, so a policy cannot be re-tuned after its outcomes are seen; * development/holdout labelling: entries at or before the freeze time are ``DEVELOPMENT`` and can never be presented as held-out evidence; * ``thesis_confirmed_extension_v1``: a candidate that changes only the
@@ -976,7 +986,7 @@ Related tests: `python-engine/tests/test_momentum_exits.py`
 
 [MOMENTUM-PAPER 2026-07-26] A paper twin of the live momentum book. WHY THIS EXISTS --------------- Live momentum entry is manual: the screener sends a Telegram EXEC button and a human decides. The ledger therefore records what the *operator* did, never what the *strategy* proposed -- 8 recorded momentum trades in months of running, which is why nothing can be concluded about the strategy from them. A signal that fired at 11:04 while nobody was looking left no trace at all. This book takes EVERY accepted momentum signal automatically, sizes it off its own pool, manages it with the same pure exit logic the live book uses, and books cost-adjusted P&L to source='MOMENTUM_PAPER'. The result is a
 
-Top-level declarations: `paper_position_size` (line 78), `_sig_get` (line 107), `_sqlite_safe` (line 116), `_paper_risk_pct` (line 143), `_admission_signal_key` (line 163), `_admission_source_packet` (line 187), `_zero_share_reason` (line 217), `_realised_paper_cash_basis` (line 233), `_admission_economics` (line 247), `_init_admission_outcomes` (line 271), `_init_path_collector` (line 312), `_study_deadline_utc` (line 344), `_subscribe_paper_path` (line 349), `_parse_observation_clock` (line 362), `active_paper_path_tickers` (line 374), `record_momentum_paper_path_observations` (line 404), `_record_admission_outcome` (line 476), `_bound_admission_outcomes` (line 512), `_supports_paper_admission_identity` (line 522), `record_momentum_paper_upstream_deduplications` (line 534), `_record_disabled_admissions` (line 571), `_record_transaction_failures` (line 595), `open_momentum_paper_positions` (line 625), `_close_paper_position` (line 804), `momentum_paper_monitor` (line 858), `momentum_paper_square_off` (line 956)
+Top-level declarations: `paper_position_size` (line 78), `_sig_get` (line 107), `_sqlite_safe` (line 116), `_paper_risk_pct` (line 143), `_admission_signal_key` (line 163), `_admission_source_packet` (line 187), `_zero_share_reason` (line 220), `_realised_paper_cash_basis` (line 236), `_admission_economics` (line 250), `_init_admission_outcomes` (line 274), `_init_path_collector` (line 315), `_study_deadline_utc` (line 357), `_subscribe_paper_path` (line 362), `_parse_observation_clock` (line 375), `active_paper_path_tickers` (line 387), `record_momentum_paper_path_observations` (line 417), `_record_admission_outcome` (line 489), `_bound_admission_outcomes` (line 525), `_supports_paper_admission_identity` (line 535), `record_momentum_paper_upstream_deduplications` (line 547), `_record_disabled_admissions` (line 584), `_record_transaction_failures` (line 608), `open_momentum_paper_positions` (line 638), `_close_paper_position` (line 840), `momentum_paper_monitor` (line 894), `momentum_paper_square_off` (line 992)
 
 Engine dependencies: `config`, `engine`, `models`, `momentum_exits`, `momentum_path_envelope`, `performance`
 
@@ -1004,9 +1014,9 @@ Related tests: `python-engine/tests/test_momentum_paper_evidence_review.py`
 
 Read-only adapter from passive momentum-paper quote receipts to a study packet. It has no scheduler and no market-data client. A caller may export only a fully verifiable, exact-admission path; otherwise the exact missing evidence is returned and no synthetic study input is produced.
 
-Top-level declarations: `_unavailable` (line 25), `_timestamp` (line 30), `_packet_hash` (line 42), `_entry_path` (line 54), `build_momentum_paper_exit_study_packet` (line 125)
+Top-level declarations: `_unavailable` (line 25), `_timestamp` (line 30), `_packet_hash` (line 42), `build_allocation_candidates` (line 62), `_entry_path` (line 121), `build_momentum_paper_exit_study_packet` (line 193)
 
-Engine dependencies: `config`, `momentum_exit_study`, `momentum_path_envelope`
+Engine dependencies: `config`, `momentum_allocation_research`, `momentum_exit_study`, `momentum_path_envelope`
 
 ## `python-engine/momentum_path_envelope.py`
 

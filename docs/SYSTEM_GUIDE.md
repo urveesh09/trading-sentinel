@@ -1,5 +1,46 @@
 # Trading Sentinel — system guide and engineering handover
 
+## October 2 S7a allocation research (Dev)
+
+The paper book admits accepted signals first-come from the fixed INR 50,000
+pool (`MOMENTUM_PAPER_FIXED_POOL_V1`). Capital-skipped signals previously left
+no price path, so no alternative allocation could be measured.
+
+Capture (paper bookkeeping only): a `zero_shares` admission whose reason is
+`capital_exhausted` or `allocation_rounding` now also records
+`momentum_paper_candidate_economics_v1` (admitted shares 0, plus the shares the
+fixed-pool rule would size with free capital). It subscribes a passive path
+with `subscription_kind='CAPITAL_SKIPPED'` (additive column, default
+`OPENED`) in the same admission transaction. S4 wiring collects it like any
+other path. Nothing is opened, sized or exited differently, and the
+exit-study adapter still uses opened admissions only.
+
+`momentum_allocation_research.py` (inert; `freeze`, `evaluate`) reads opened
+and capital-skipped candidates with complete verified paths
+(`build_allocation_candidates`). It replays three frozen policies on one
+common book:
+- `FIRST_ARRIVAL_FIXED_POOL_V1`: the live rule via `paper_position_size`.
+- `FIXED_EQUAL_V1`: equal notional per admission batch.
+- `RISK_BUDGET_PROPORTIONAL_V1`: risk-sized shares scaled to fit.
+
+Exits replay the live evaluator; notional and net cash are released leg by
+leg. Outcomes are SELECTED, CAPITAL_UNAVAILABLE, ROUNDED_TO_ZERO,
+TICKER_ALREADY_HELD, PATH_UNAVAILABLE or UNRESOLVED. Each policy reports net
+P&L, costs, drawdown, peak deployed and turnover, with the delta versus
+first-arrival, split HOLDOUT/DEVELOPMENT by a frozen manifest. The pool is
+labelled fixed, not drawdown-adjusted. Overspend raises.
+
+Tests (11, warnings-fatal): first-arrival reproduces live admission sizes
+(BRIGADE 87 shares, matching October 1 Production); order-invariant
+policies under every permutation; 90 random books per policy with no
+overspend or duplicate; capital release enabling a later batch; duplicate
+and incomplete candidates; manifest drift refusal and holdout split; and a
+database run in which a capital-skipped candidate is captured, its path
+collected, excluded from the exit study and selected by `FIXED_EQUAL_V1`.
+Cross-phase selection: 1114 passed, one known skip. A synthetic concentration
+example is a mechanism check, not evidence that any policy earns more.
+S7b (entry-timing hypotheses, re-entry and near-miss shadow) remains.
+
 ## October 2 S4 passive-path runtime wiring (Dev)
 
 The paper monitor's gateway LTP has no provider timestamp or raw quote, so it

@@ -214,6 +214,9 @@ def _admission_source_packet(sig, now_utc: datetime) -> tuple[str | None, str | 
     return raw.decode("utf-8"), f"sha256:{hashlib.sha256(raw).hexdigest()}"
 
 
+_CAPITAL_SKIP_REASONS = frozenset({"capital_exhausted", "allocation_rounding"})
+
+
 def _zero_share_reason(close: float, stop: float, pool: float, risk_pct: float,
                        available_capital: float) -> str:
     """Explain a retained ``zero_shares`` result without changing its meaning."""
@@ -339,6 +342,16 @@ async def _init_path_collector(db) -> None:
         f"CREATE INDEX IF NOT EXISTS idx_{_PATH_OBSERVATIONS_TABLE}_key_clock "
         f"ON {_PATH_OBSERVATIONS_TABLE}(admission_key, provider_observed_at)"
     )
+    # [S7a 2026-10-02] Additive: capital-skipped candidates also get a passive
+    # path so allocation research can measure the counterfactual.  Existing
+    # rows are opened-position paths.
+    columns = {row[1] for row in await (await db.execute(
+        f"PRAGMA table_info({_PATH_SUBSCRIPTIONS_TABLE})")).fetchall()}
+    if "subscription_kind" not in columns:
+        await db.execute(
+            f"ALTER TABLE {_PATH_SUBSCRIPTIONS_TABLE} "
+            "ADD COLUMN subscription_kind TEXT NOT NULL DEFAULT 'OPENED'"
+        )
 
 
 def _study_deadline_utc(entry_at: datetime) -> datetime:
@@ -347,15 +360,15 @@ def _study_deadline_utc(entry_at: datetime) -> datetime:
 
 
 async def _subscribe_paper_path(db, admission_key: str, ticker: str, entry_at: datetime,
-                                original_shares: int) -> None:
+                                original_shares: int, *, kind: str = "OPENED") -> None:
     await _init_path_collector(db)
     deadline = _study_deadline_utc(entry_at)
     await db.execute(
         f"INSERT OR IGNORE INTO {_PATH_SUBSCRIPTIONS_TABLE} "
-        "(admission_key,ticker,entry_at,study_deadline_at,original_shares,created_at) "
-        "VALUES (?,?,?,?,?,?)",
+        "(admission_key,ticker,entry_at,study_deadline_at,original_shares,created_at,subscription_kind) "
+        "VALUES (?,?,?,?,?,?,?)",
         (admission_key, ticker, entry_at.astimezone(timezone.utc).isoformat(),
-         deadline.isoformat(), original_shares, entry_at.astimezone(timezone.utc).isoformat()),
+         deadline.isoformat(), original_shares, entry_at.astimezone(timezone.utc).isoformat(), kind),
     )
 
 
@@ -722,9 +735,32 @@ async def open_momentum_paper_positions(db_path: str, accepted: list,
                 if shares < 1:
                     logger.info("momentum_paper_skip ticker=%s reason=zero_shares "
                                 "close=%s stop=%s", ticker, close, stop)
+                    zero_reason = _zero_share_reason(close, stop, pool, risk_pct, available_capital)
+                    candidate_economics = None
+                    if zero_reason in _CAPITAL_SKIP_REASONS:
+                        # [S7a] Evidence only: what the fixed-pool rule would have
+                        # sized with free capital, and a passive path for the
+                        # counterfactual.  Nothing is opened or sized here.
+                        benchmark = paper_position_size(close, stop, pool, risk_pct)
+                        if benchmark >= 1:
+                            candidate_economics = {
+                                "schema": "momentum_paper_candidate_economics_v1",
+                                "ticker": ticker,
+                                "entry_at": now_utc.astimezone(timezone.utc).isoformat(),
+                                "entry_price": close, "admitted_shares": 0,
+                                "unconstrained_benchmark_shares": benchmark,
+                                "risk_pct": risk_pct,
+                                "stop_loss_initial": stop,
+                                "target_1": _sqlite_safe(_sig_get(sig, "target_1")),
+                                "atr_14_at_entry": _sqlite_safe(_sig_get(sig, "atr_at_entry")),
+                                "vwap_at_entry": _sqlite_safe(_sig_get(sig, "vwap")),
+                                "regime_at_entry": _sqlite_safe(_sig_get(sig, "regime")),
+                            }
+                            await _subscribe_paper_path(db, admission_key, ticker, now_utc,
+                                                        benchmark, kind="CAPITAL_SKIPPED")
                     await _record_admission_outcome(
                         db, admission_key, signal_key, ticker, "zero_shares", now_utc,
-                        reason=_zero_share_reason(close, stop, pool, risk_pct, available_capital),
+                        reason=zero_reason, entry_economics=candidate_economics,
                         admission_economics=_admission_economics(
                             pool=pool, deployed=deployed, risk_pct=risk_pct, close=close,
                             stop=stop, shares=0, realised_cash_basis=realised_cash_basis,
