@@ -28,7 +28,7 @@
   kept separate; evidence-labelled Telegram status/dead-letter backlog; health
   probe deadline cleanup. Focused Node health (2), operator status (14) and
   Penny health (5) checks passed. Dev-only; no queue, order, broker, database
-  migration or Production change.
+  migration or Production change. Source commit `5c9834a`, not deployed.
 - [ ] S9 operational backlog handling: review a read-only expiry/reconciliation
   report and a supported idempotent migration for stale requests/callbacks,
   unsynced orders and historical dead letters. Preserve audit records; do not

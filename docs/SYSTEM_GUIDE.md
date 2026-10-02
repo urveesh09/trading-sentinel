@@ -98,7 +98,8 @@ checks: 2 Node health tests, 14 operator-status tests and 5 Penny-health tests
 passed. The old Windows FastAPI import leaves an existing shutdown
 event-loop/socket ResourceWarning after the Penny-health run; it is not hidden
 as a product result. Dev only; no Production, broker, order, queue or database
-migration change.
+migration change. Source commit: `5c9834a` on
+`codex/production-correction-hedge-p0`; not deployed.
 
 ## October 2 S6 defined-risk spread exit research (Dev)
 
