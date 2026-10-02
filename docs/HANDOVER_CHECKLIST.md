@@ -28,7 +28,8 @@
 - [x] Complete S2 Dev source work: provider-stage timing/attempt evidence,
   quote-age evidence and refreshed real action clocks. Focused validation: 59
   passed; compilation/atlas passed. Remaining only: GitHub promotion and three
-  deployed-session receipts; no cadence/rate increase was made.
+  deployed-session receipts; no cadence/rate increase was made. Source commit
+  `d2319e2` is local, unpushed and not deployed.
 - [x] Reproduce optional-review expiry from mixed fresh/stale/undated sources;
   inspect queue/deadline/completion visibility without provider/message calls.
 - [ ] Implement S10 context/expiry/deadline fixes and bounded completion updates,

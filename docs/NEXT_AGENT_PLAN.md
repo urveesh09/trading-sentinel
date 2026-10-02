@@ -68,7 +68,8 @@ refreshes the real action clock after reads and before entry admission, without
 altering supplied replay clocks or completed-bar causality. Exits continue to
 precede optional DR entry work, and no provider-rate/concurrency increase was
 made. Focused coverage passes 59. Pending work is GitHub promotion and three
-complete deployed-session receipts—not another source change.
+complete deployed-session receipts—not another source change. Source commit
+`d2319e2` is local, unpushed and not deployed.
 
 ## September 28 Jev decision-layer proposal — design only
 

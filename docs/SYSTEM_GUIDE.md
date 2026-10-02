@@ -52,7 +52,8 @@ admission cutoffs, and keeps supplied replay clocks deterministic. Exit work
 still precedes optional DR entry and no rate/concurrency setting changed.
 Focused validation passed 59 with compilation and atlas regeneration. This is
 Dev-only/unpushed/not deployed; the remaining S2 acceptance is three deployed
-session receipts, not a source-code gap.
+session receipts, not a source-code gap. Source commit `d2319e2` is local on
+`codex/production-correction-hedge-p0`.
 
 ## October 1 Production assessment and smart-trader plan (documentation only)
 

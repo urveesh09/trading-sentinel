@@ -220,7 +220,8 @@ DR entry work; no rate limit/concurrency increase was made. Focused
 orchestrator/Kite/recovery/audit validation passed 59 and compilation passed.
 The remaining requirement is operational, not a missing source change: GitHub
 promotion followed by three complete session receipts for lag, p95/max,
-deadline, skip and unresolved-exposure review.
+deadline, skip and unresolved-exposure review. Source commit `d2319e2` is
+local on `codex/production-correction-hedge-p0`; it is not pushed or deployed.
 
 ### S3 — P1: preserve the evidence required to learn
 
