@@ -61,6 +61,18 @@ post-freeze HOLDOUT observations. No paper/live entry, allocation, sizing, exit,
 AI, broker, Production environment or trading authority changed. A rollback is
 a GitHub reversion and does not delete prior shadow evidence.
 
+## October 2 S8 daily decision-quality reporting (Dev)
+
+`daily_decision_quality.py` is a read-only daily evidence composer. It keeps
+MOMENTUM_PAPER exact admissions/cash, F&O daily audit sources, and isolated
+momentum/penny shadow evaluations in distinct book/mode/policy rows; it does
+not sum incompatible R values or relabel partial cash as completed trades.
+Version-specific cash drawdown is reported only where an ordered cash stream is
+available. Rejected receipts remain visible, including an explicit absence
+state. Selection is always `HUMAN_REVIEW_REQUIRED` with no automatic change.
+Focused tests: 2 warnings-fatal passed. Dev-only; no database mutation,
+strategy retune, capital change, qualification, broker, AI or Production change.
+
 ## October 2 S4 passive-path runtime wiring (Dev)
 
 The paper monitor's gateway LTP has no provider timestamp or raw quote, so it

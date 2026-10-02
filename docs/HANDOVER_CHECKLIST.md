@@ -15,6 +15,10 @@
   broker, AI, Production or authority change.
 - [ ] Freeze S7b before a new session and evaluate only post-freeze HOLDOUT
   observations; do not promote a timing hypothesis from development evidence.
+- [x] S8 initial read-only daily decision-quality report: distinct book/mode/
+  policy evidence, partial versus terminal cash, rejected-receipt visibility
+  and per-version drawdown where supported. Selection remains human review
+  only. Focused warnings-fatal tests: 2 passed; no Production change.
 - [x] S4 runtime wiring: equity paths attached to the existing research request,
   bounded background writer, deadline-close policy, per-entry adapter
   exclusion. End-to-end test plus 1091 selected tests passed. No Production

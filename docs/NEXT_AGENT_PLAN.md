@@ -24,6 +24,12 @@ Before learning from it, freeze the manifest before a new session and use only
 signals after that freeze as HOLDOUT; no result authorizes a change to entry
 timing. Next meaningful source work is S6's defined-risk experiment.
 
+S8 initial Dev slice: `daily_decision_quality.py` composes isolated daily
+book/policy facts from existing read-only audits and shadow receipts, retaining
+partial versus terminal cash and rejected evidence. It is explicitly human
+review only. Focused warnings-fatal tests: 2 passed. Future source-complete
+sessions and reviewed versioned proposals remain required.
+
 S4 runtime wiring (Dev): subscribed paper tickers ride the research
 collector's existing first quote request into byte-bound envelopes via one
 background writer. The deadline-close policy and per-entry adapter exclusion

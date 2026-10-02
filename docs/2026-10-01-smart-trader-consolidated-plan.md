@@ -737,6 +737,17 @@ no hindsight-optimal exits. At least one rejected hypothesis remains visible.
 Learning proposes versioned changes; it cannot silently retune active trades,
 increase live capital or inherit an old partner qualification.
 
+S8 initial completion slice (Dev, October 2): new read-only
+`daily_decision_quality.py` emits a per-day, per-book/mode/policy report from
+the exact momentum admission/cash audit, F&O daily audit and isolated shadow
+evaluation receipts. Partial and terminal cash are separate, cash drawdown is
+per-book/version, unavailable schemas remain explicit, and rejected evidence
+is retained (or an explicit no-rejected-evidence state is returned). The report
+is `HUMAN_REVIEW_REQUIRED`, `NOT_ASSESSED`, and has no write, tuning, capital,
+qualification or execution authority. Focused checks: 2 warnings-fatal passed.
+Further S8 work needs fresh, source-complete daily evidence and separately
+reviewed versioned proposals; no daily result proves an edge.
+
 ### S9 — P1 alongside research: accurate operator state and backlog handling
 
 Files/contracts: `penny_health.py`, `main.py`, `operator_status.py`,

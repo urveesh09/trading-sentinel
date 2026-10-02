@@ -336,6 +336,16 @@ Engine dependencies: `config`, `fno_instruments`, `fno_underlyings`, `operator_a
 
 Related tests: `python-engine/tests/test_daily_bootstrap.py`
 
+## `python-engine/daily_decision_quality.py`
+
+Read-only S8 daily decision-quality report; never a strategy controller.
+
+Top-level declarations: `_day` (line 21), `_same_ist_day` (line 28), `_cash_summary` (line 38), `_momentum_book` (line 51), `_shadow_book` (line 66), `build_daily_decision_quality_report` (line 91), `_main` (line 116)
+
+Engine dependencies: `fno_audit_report`, `momentum_paper_audit`
+
+Related tests: `python-engine/tests/test_daily_decision_quality.py`
+
 ## `python-engine/decision_clocks_extensions.py`
 
 [WORKFLOW-A.1 2026-09-17] Decision-clock extension helpers. The base ``DecisionClock`` lives in ``partner_decision_clock`` and is the canonical clock contract. This module adds the bounded extension helpers the Workstream A plan calls for without touching the canonical dataclass: - ``build_clock_for_test(...)`` -- deterministic factory that returns a DecisionClock with sensible defaults derived from a single tick instant. - ``validate_clocks(clock) -> list[str]`` -- returns ALL clock problems (instead of raising the first one). - ``has_required_stages(clock) -> bool`` -- asserts the clock has at least public_received, chain_received, and candidate_constructed (the minimum required to support
