@@ -47,6 +47,15 @@ expiry/reconciliation migration for old pending requests, callbacks, unsynced
 orders and historical dead letters; then collect fresh slow-provider and
 no-trade evidence after GitHub promotion. Never use ad-hoc Production SQL.
 
+S10 first Dev slice: stale, undated and timezone-unverifiable classified
+sources are excluded from the optional-AI review context rather than poisoning
+the annotation deadline. The source renderer emits an explicit
+`NEWS_UNAVAILABLE` exclusion summary; deterministic facts may still receive an
+advisory review under `proceed` policy. Fresh sources retain their true
+validity. Focused agent/async-queue checks: 55 warnings-fatal passed. Next:
+make provider transport/retry consume the task's remaining deadline and
+surface completed annotations back to the original operator alert.
+
 S4 runtime wiring (Dev): subscribed paper tickers ride the research
 collector's existing first quote request into byte-bound envelopes via one
 background writer. The deadline-close policy and per-entry adapter exclusion

@@ -101,6 +101,23 @@ as a product result. Dev only; no Production, broker, order, queue or database
 migration change. Source commit: `5c9834a` on
 `codex/production-correction-hedge-p0`; not deployed.
 
+## October 2 S10 optional-AI source validity (Dev, first slice)
+
+Optional AI is an annotation, never an authority change when the configured
+unavailable policy is `proceed`/`advisory`. S10 now removes expired,
+undated, or timezone-unverifiable classified sources from the review context
+instead of allowing one to expire the entire review before queue admission.
+The exact rendered/classified feed context now omits those items and states
+`NEWS_UNAVAILABLE` with an exclusion count; a review with no usable news can
+still assess deterministic market facts without inventing a catalyst. Fresh
+included sources retain their genuine validity bound, and both direct review
+and async queue paths receive only the usable classification list. Focused
+agent/queue checks: 55 warnings-fatal passed. Dev-only; no API call is made by
+the filtering itself, and no paper/live entry, approval, capital, broker or
+Production behaviour changed. Remaining S10 work: forward remaining task
+budget into provider transport/retry, surface completed annotation updates to
+the original alert, and obtain post-promotion evidence.
+
 ## October 2 S6 defined-risk spread exit research (Dev)
 
 `fno_dr_exit_experiment.py` keeps defined-risk spreads separate from the

@@ -912,6 +912,16 @@ effort 2–4 engineering days including completion delivery; run alongside S3/S4
 after S1/S2. No provider request, new message or configuration change was made
 to investigate this report.
 
+October 2 Dev receipt (first source-validity slice): the rendered/classified
+review context excludes stale, undated and timezone-unverifiable source items,
+states `NEWS_UNAVAILABLE` with the exclusion count, and does not let excluded
+items shorten a fresh signal's annotation deadline. Direct and queued review
+paths use the same usable classification list; included source TTLs remain
+bounded. Focused agent/queue checks: 55 warnings-fatal passed. Remaining:
+provider remaining-budget propagation, bounded status counters and idempotent
+completion delivery to the original valid alert. No provider request, new
+message, authority, configuration, Production or order change was made.
+
 ## 4. Delivery sequence and estimated effort
 
 These are engineering estimates, contingent on reproductions, not promised

@@ -33,6 +33,14 @@
   report and a supported idempotent migration for stale requests/callbacks,
   unsynced orders and historical dead letters. Preserve audit records; do not
   use ad-hoc Production SQL or resend stale trade instructions.
+- [x] S10 first source-validity slice: optional-AI review excludes stale,
+  undated and timezone-unverifiable source classifications instead of expiring
+  the whole advisory review; rendered context marks the exclusion as
+  `NEWS_UNAVAILABLE`. Focused agent/queue suite: 55 warnings-fatal passed.
+  Dev-only; no authority, capital, entry, broker or Production change.
+- [ ] S10 remaining: bind provider transport/retry to the task's remaining
+  deadline, update the original alert when an annotation completes, then
+  collect post-promotion evidence under the existing advisory policy.
 - [x] S4 runtime wiring: equity paths attached to the existing research request,
   bounded background writer, deadline-close policy, per-entry adapter
   exclusion. End-to-end test plus 1091 selected tests passed. No Production

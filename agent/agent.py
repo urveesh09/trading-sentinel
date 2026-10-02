@@ -111,6 +111,11 @@ MINIMAX_ASYNC_REVIEW_DEADLINE_SEC = int(os.getenv("MINIMAX_ASYNC_REVIEW_DEADLINE
 # bumps should be deliberate, with a note in the prompt diff.
 MINIMAX_PROMPT_VERSION = os.getenv("MINIMAX_PROMPT_VERSION", "v1")
 
+# A news item that cannot prove a still-current source clock cannot support a
+# catalyst claim.  It is excluded from optional review context rather than
+# shortening (and thereby blocking) a deterministic signal's annotation.
+NEWS_SOURCE_MAX_AGE = timedelta(days=7)
+
 
 # [WORKFLOW-I I.A 2026-09-13] Opt-in flag for including I3 usefulness
 # metrics in the optional-AI status envelope posted to the engine.
@@ -125,6 +130,25 @@ OPTIONAL_AI_REPORT_USEFULNESS = (
 )
 
 
+def _usable_classifications(
+    pre_classifications: Optional[List["ClassificationResult"]],
+    *,
+    now: datetime,
+) -> List["ClassificationResult"]:
+    """Keep only source-bound classifications that are current at ``now``."""
+    usable = []
+    for classification in pre_classifications or []:
+        valid_until = classification.source_valid_until
+        if (
+            valid_until is not None
+            and valid_until.tzinfo is not None
+            and valid_until.utcoffset() is not None
+            and valid_until.astimezone(timezone.utc) > now
+        ):
+            usable.append(classification)
+    return usable
+
+
 def _effective_classification_expiry(
     pre_classifications: Optional[List["ClassificationResult"]],
     requested_expiry: Optional[datetime],
@@ -132,17 +156,15 @@ def _effective_classification_expiry(
     now: Optional[datetime] = None,
 ) -> Optional[datetime]:
     """Bound annotation validity by request and every source clock."""
-    if not pre_classifications:
-        return requested_expiry
     current = now or datetime.now(timezone.utc)
+    usable = _usable_classifications(pre_classifications, now=current)
+    if not usable:
+        return requested_expiry
     bounds = [requested_expiry] if requested_expiry is not None else []
-    for classification in pre_classifications:
-        bound = classification.source_valid_until
-        if bound is None:
-            bound = classification.classified_at or current
-        if bound.tzinfo is None or bound.utcoffset() is None:
-            bound = current
-        bounds.append(bound.astimezone(timezone.utc))
+    bounds.extend(
+        classification.source_valid_until.astimezone(timezone.utc)
+        for classification in usable
+    )
     return min(bounds) if bounds else requested_expiry
 
 
@@ -155,6 +177,9 @@ def _attach_classification_context(
     effective_expiry = _effective_classification_expiry(
         pre_classifications, expires_at,
     )
+    usable = _usable_classifications(
+        pre_classifications, now=datetime.now(timezone.utc),
+    )
     if pre_classifications is None:
         return replace(review, expires_at=effective_expiry)
     source_references = tuple(dict.fromkeys(
@@ -163,15 +188,16 @@ def _attach_classification_context(
             c.source_url,
             c.published_at.isoformat() if c.published_at else "",
         )
-        for c in pre_classifications
+        for c in usable
         if c.source_ref or c.source_url or c.published_at
     ))
     return replace(
         review,
         classification_context_sha256=(
-            news_classifier.classification_context_sha256(pre_classifications)
+            news_classifier.classification_context_sha256(usable)
+            if usable else None
         ),
-        classification_count=len(pre_classifications),
+        classification_count=len(usable),
         source_references=source_references,
         expires_at=effective_expiry,
     )
@@ -931,11 +957,30 @@ def _maybe_classify_news(
 def _collect_news_context(
     ticker: str,
 ) -> tuple[str, Optional[List["ClassificationResult"]]]:
-    """Fetch once, then render and classify the exact same item objects."""
+    """Fetch once, then render/classify only source-current item objects."""
     yahoo_items, google_items = _fetch_news_bundle_for_ticker(ticker)
-    items = [*yahoo_items, *google_items]
+    now = datetime.now(timezone.utc)
+
+    def usable(items: List[NewsItem]) -> List[NewsItem]:
+        return [
+            item for item in items
+            if item.published_at_parsed is not None
+            and item.published_at_parsed.tzinfo is not None
+            and item.published_at_parsed.astimezone(timezone.utc) + NEWS_SOURCE_MAX_AGE > now
+        ]
+
+    usable_yahoo, usable_google = usable(yahoo_items), usable(google_items)
+    excluded = len(yahoo_items) + len(google_items) - len(usable_yahoo) - len(usable_google)
+    items = [*usable_yahoo, *usable_google]
+    rendered = _render_news_bundle(usable_yahoo, usable_google)
+    if excluded:
+        unavailable = (
+            f"NEWS_UNAVAILABLE: excluded {excluded} stale_or_unverifiable "
+            "headline(s); no catalyst claim may rely on them."
+        )
+        rendered = f"{unavailable}\n\n{rendered}" if rendered else unavailable
     return (
-        _render_news_bundle(yahoo_items, google_items),
+        rendered,
         _maybe_classify_news(ticker, items),
     )
 
@@ -1011,6 +1056,9 @@ def analyze_with_minimax(
     existing verdict pipeline contract.
     """
     started_at = datetime.now(timezone.utc)
+    pre_classifications = _usable_classifications(
+        pre_classifications, now=started_at,
+    )
     expires_at = _effective_classification_expiry(
         pre_classifications, expires_at, now=started_at,
     )
@@ -1424,6 +1472,9 @@ def queue_optional_ai_review(
     queue = _get_optional_ai_queue()
     if queue is None:
         return None
+    pre_classifications = _usable_classifications(
+        pre_classifications, now=datetime.now(timezone.utc),
+    )
     requested_expiry = (
         datetime.now(timezone.utc)
         + timedelta(seconds=MINIMAX_ASYNC_REVIEW_DEADLINE_SEC)

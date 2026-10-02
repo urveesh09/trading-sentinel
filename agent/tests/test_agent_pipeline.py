@@ -173,6 +173,45 @@ class TestOptionalAsyncReview:
 
 
 class TestAnalyzeWithMiniMax:
+    def test_stale_classification_does_not_expire_fresh_optional_review(self, agent_mod):
+        from news_classifier import ClassificationResult, NewsCategory
+
+        now = datetime.now(timezone.utc)
+        fresh = ClassificationResult(
+            ticker="RELIANCE", title_hash="fresh", category=NewsCategory.EARNINGS,
+            confidence=0.9, rationale="current result", prompt_version="v1",
+            classified_at=now, source_name="Reuters", source_url="https://example.test/fresh",
+            published_at=now, source_ref="f" * 64,
+            source_valid_until=now + timedelta(minutes=5),
+        )
+        stale = ClassificationResult(
+            ticker="RELIANCE", title_hash="stale", category=NewsCategory.RUMOR,
+            confidence=0.9, rationale="old", prompt_version="v1",
+            classified_at=now - timedelta(days=8), source_name="Old feed",
+            source_url="https://example.test/stale", published_at=now - timedelta(days=8),
+            source_ref="s" * 64, source_valid_until=now - timedelta(seconds=1),
+        )
+        agent_mod.client = MagicMock()
+        agent_mod.client.chat.completions.create.return_value = _fake_llm_response(json.dumps({
+            "conviction_score": 70, "pitch": "current", "rationale": "current", "risks": "normal",
+        }))
+
+        result = agent_mod.analyze_with_minimax(
+            {"ticker": "RELIANCE"}, "fresh evidence only", "BULL",
+            pre_classifications=[fresh, stale],
+            expires_at=now + timedelta(seconds=30),
+        )
+
+        assert result.available is True
+        assert result.classification_count == 1
+        assert result.expires_at > now
+        prompt = "\n".join(
+            message["content"]
+            for message in agent_mod.client.chat.completions.create.call_args.kwargs["messages"]
+        )
+        assert "HEADLINE fresh" in prompt
+        assert "HEADLINE stale" not in prompt
+
     def test_elapsed_deadline_fails_before_model_call(self, agent_mod):
         agent_mod.client = MagicMock()
         result = agent_mod.analyze_with_minimax(
