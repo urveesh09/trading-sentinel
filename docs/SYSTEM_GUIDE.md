@@ -27,6 +27,19 @@ changed. Dev-local source is pending GitHub review/push and is not deployed;
 inspect real post-promotion settlement receipts before making economic claims.
 Source commit `9e26e1b` is local on `codex/production-correction-hedge-p0`.
 
+## October 2 S2 initial management-read containment (Dev)
+
+Existing F&O management now gives cancellable provider reads separate budgets:
+five seconds for futures/open-exit quotes and ten seconds for an open DR chain
+snapshot. The tick records bounded completion/deadline/failure state and
+elapsed/cap seconds per read. A deadline cancels and joins the provider task,
+then retains the existing unpriced/hard-flat handling; it never encloses a
+broker dispatch, cash settlement, admission or SQLite mutation. Focused
+orchestrator/recovery/audit checks passed 34. Warnings-fatal mode found an
+existing unclosed-socket ResourceWarning in an unrelated stage-duration test,
+so this is not claimed as a clean warnings-fatal suite. This is Dev-only and
+uncommitted; S2 still needs action-clock, priority and full timing work.
+
 ## October 1 Production assessment and smart-trader plan (documentation only)
 
 The [consolidated plan](2026-10-01-smart-trader-consolidated-plan.md) records

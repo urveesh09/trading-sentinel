@@ -299,14 +299,19 @@ async def test_dr_hard_flat_management_is_not_suppressed_by_entry_deadline(
 
     monkeypatch.setattr(settings, "FNO_DR_DISABLE_PAPER", False)
     monkeypatch.setattr(settings, "FNO_DR_ENTRY_MARKET_DATA_MAX_SEC", 0.01)
+    monkeypatch.setattr(settings, "FNO_DR_MANAGEMENT_READ_MAX_SEC", 0.01)
     managed = asyncio.Event()
+    cancelled = asyncio.Event()
 
     async def one_open_structure(*_args, **_kwargs):
         return [{"id": 7}]
 
     async def delayed_management_snapshot(*_args, **_kwargs):
-        await asyncio.sleep(0.04)
-        return None  # unpriced hard-flat is an explicit supported path
+        try:
+            await asyncio.sleep(30)
+        except asyncio.CancelledError:
+            cancelled.set()
+            raise
 
     async def manage_hard_flat(_db_path, snapshot, now_ist, *_args, **_kwargs):
         assert snapshot is None
@@ -327,10 +332,12 @@ async def test_dr_hard_flat_management_is_not_suppressed_by_entry_deadline(
 
     assert managed.is_set()
     assert summary["dr_exits"] == 1
-    # It exceeded the 10ms *entry* budget, proving lifecycle management did
-    # not inherit that speculative-read cancellation boundary.  Keep room for
-    # timer granularity on loaded Windows test runners.
-    assert summary["stage_durations_sec"]["defined_risk_snapshot"] >= 0.015
+    # DR management has its own deadline, distinct from the speculative-entry
+    # budget, and cancellation is joined before the tick continues.
+    await asyncio.wait_for(cancelled.wait(), timeout=0.2)
+    assert summary["management_read_outcomes"]["defined_risk_snapshot"] == {
+        "state": "DEADLINE_EXCEEDED", "elapsed_sec": pytest.approx(0.1, abs=0.08), "cap_sec": 0.1,
+    }
     assert "defined_risk_management" in summary["stage_durations_sec"]
 
 

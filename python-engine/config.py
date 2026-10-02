@@ -923,6 +923,10 @@ class Settings(BaseSettings):
     # prepare a new paper defined-risk structure.  It never caps management
     # of an existing structure or a ledger admission write.
     FNO_DR_ENTRY_MARKET_DATA_MAX_SEC: float = 20.0
+    # Existing-position management has independent, cancellable provider-read
+    # caps. They never wrap broker dispatch, settlement, or database mutation.
+    FNO_EXIT_QUOTE_READ_MAX_SEC: float = 5.0
+    FNO_DR_MANAGEMENT_READ_MAX_SEC: float = 10.0
 
     # --- universe ----------------------------------------------------------
     FNO_UNDERLYING:            str   = "NIFTY"    # NIFTY only in P1

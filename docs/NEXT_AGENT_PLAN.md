@@ -45,6 +45,19 @@ slice, then use GitHub promotion and inspect real schema/settlement receipts.
 Source commit `9e26e1b` is local on `codex/production-correction-hedge-p0`;
 it is not pushed or deployed.
 
+## October 2 S2 management-read containment — initial Dev slice
+
+The first S2 sub-slice bounds only cancellable management provider reads:
+five seconds for futures/open-exit quotes and ten seconds for an existing DR
+snapshot. Tick telemetry now exposes per-read completion, deadline or failure
+state plus elapsed/cap seconds. A deadline cancels and joins its read, then
+uses existing degraded/unpriced handling; it never wraps broker execution,
+cash settlement, admission or a database write. Focused checks pass 34. The
+warnings-fatal variant encounters an existing unclosed-socket ResourceWarning
+in an unrelated stage-duration test, so it is not a clean warnings-fatal
+receipt. This is Dev-local, uncommitted/unpushed/not deployed; complete the
+remaining S2 clock/priority instrumentation before treating the slice done.
+
 ## September 28 Jev decision-layer proposal — design only
 
 The revised [Jev decision-layer draft](superpowers/specs/2026-09-27-jev-decision-layer-design.md)

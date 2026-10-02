@@ -61,6 +61,23 @@ def _now_min(now_ist: datetime) -> int:
     return now_ist.hour * 60 + now_ist.minute
 
 
+def _read_cap(value: float) -> float:
+    """Defend a management deadline from an invalid runtime setting."""
+    return max(0.1, float(value))
+
+
+def _record_management_read(
+    observations: Optional[dict], name: str, state: str, started: float, cap_sec: float,
+) -> None:
+    """Retain bounded, non-sensitive evidence for one provider read."""
+    if observations is not None:
+        observations[name] = {
+            "state": state,
+            "elapsed_sec": round(monotonic() - started, 3),
+            "cap_sec": round(cap_sec, 3),
+        }
+
+
 async def _settle_exit_receipt(
     db_path: str, position, receipt: dict,
 ) -> Optional[dict]:
@@ -276,7 +293,7 @@ def _schedule_shadow_observation(
 
 async def _manage_open_positions(
     kite, db_path: str, source: str, executor: FnoExecutor,
-    now_ist: datetime, fut_price: Optional[float],
+    now_ist: datetime, fut_price: Optional[float], *, read_observations: Optional[dict] = None,
 ) -> List[dict]:
     """Check every OPEN position for this leg against the §8.4/§8.5 exit
     ladder. Returns records of closed positions."""
@@ -302,9 +319,29 @@ async def _manage_open_positions(
     if not positions_needing_exit_evaluation:
         return closed
 
-    # One batched quote for every held contract.
+    # One batched quote for every held contract. This is a cancellable provider
+    # read, so it gets a total budget. A timeout joins cancellation and falls
+    # through to the existing unpriced/hard-flat path; no mutation is wrapped.
     tokens = [p.token for p in positions_needing_exit_evaluation if p.token]
-    quotes = await kite.get_quote(tokens) if tokens else {}
+    quotes = {}
+    if tokens:
+        quote_cap = _read_cap(settings.FNO_EXIT_QUOTE_READ_MAX_SEC)
+        quote_started = monotonic()
+        try:
+            quotes = await asyncio.wait_for(kite.get_quote(tokens), timeout=quote_cap)
+            _record_management_read(
+                read_observations, f"exit_quotes:{source}", "COMPLETED", quote_started, quote_cap,
+            )
+        except asyncio.TimeoutError:
+            _record_management_read(
+                read_observations, f"exit_quotes:{source}", "DEADLINE_EXCEEDED", quote_started, quote_cap,
+            )
+            logger.warning("fno_exit_quote_deadline_exceeded source=%s cap_sec=%.3f", source, quote_cap)
+        except Exception as exc:
+            _record_management_read(
+                read_observations, f"exit_quotes:{source}", "FAILED", quote_started, quote_cap,
+            )
+            logger.error("fno_exit_quote_failed source=%s err=%s", source, str(exc))
 
     hard_flat = _now_min(now_ist) >= settings.FNO_HARD_FLAT_MIN
     for p in positions_needing_exit_evaluation:
@@ -801,6 +838,7 @@ async def run_fno_tick(
     summary: dict = {
         "scan_id": scan_id, "entries": [], "exits": [], "note": "",
         "stage_durations_sec": {},
+        "management_read_outcomes": {},
     }
 
     # Rule 56: first-line orchestrator breadcrumb.
@@ -846,7 +884,26 @@ async def run_fno_tick(
 
     # ---- futures price for exit management ---------------------------
     stage_started = monotonic()
-    fut_quote = await kite.get_quote([fut.token])
+    fut_quote = {}
+    fut_quote_cap = _read_cap(settings.FNO_EXIT_QUOTE_READ_MAX_SEC)
+    try:
+        fut_quote = await asyncio.wait_for(kite.get_quote([fut.token]), timeout=fut_quote_cap)
+        _record_management_read(
+            summary["management_read_outcomes"], "futures_quote", "COMPLETED",
+            stage_started, fut_quote_cap,
+        )
+    except asyncio.TimeoutError:
+        _record_management_read(
+            summary["management_read_outcomes"], "futures_quote", "DEADLINE_EXCEEDED",
+            stage_started, fut_quote_cap,
+        )
+        logger.warning("fno_futures_quote_deadline_exceeded cap_sec=%.3f", fut_quote_cap)
+    except Exception as exc:
+        _record_management_read(
+            summary["management_read_outcomes"], "futures_quote", "FAILED",
+            stage_started, fut_quote_cap,
+        )
+        logger.error("fno_futures_quote_failed err=%s", str(exc))
     summary["stage_durations_sec"]["futures_quote"] = round(
         monotonic() - stage_started, 3
     )
@@ -861,10 +918,12 @@ async def run_fno_tick(
         if not settings.FNO_DISABLE_PAPER:
             summary["exits"] += await _manage_open_positions(
                 kite, db_path, FnoSource.FNO_PAPER.value, paper_exec, now_ist, fut_price,
+                read_observations=summary["management_read_outcomes"],
             )
         if not settings.FNO_DISABLE_LIVE:
             summary["exits"] += await _manage_open_positions(
                 kite, db_path, FnoSource.FNO_LIVE.value, live_exec, now_ist, fut_price,
+                read_observations=summary["management_read_outcomes"],
             )
     except Exception as exc:
         logger.error("fno_exit_management_failed err=%s", str(exc), exc_info=True)
@@ -895,10 +954,28 @@ async def run_fno_tick(
             # speculative-entry delay.
             if open_dr:
                 snapshot_started = monotonic()
+                management_cap = _read_cap(settings.FNO_DR_MANAGEMENT_READ_MAX_SEC)
                 try:
-                    snap = await take_chain_snapshot(kite, instruments, now_ist)
+                    snap = await asyncio.wait_for(
+                        take_chain_snapshot(kite, instruments, now_ist), timeout=management_cap,
+                    )
+                    _record_management_read(
+                        summary["management_read_outcomes"], "defined_risk_snapshot", "COMPLETED",
+                        snapshot_started, management_cap,
+                    )
+                except asyncio.TimeoutError:
+                    logger.warning("fno_dr_management_snapshot_deadline_exceeded cap_sec=%.3f", management_cap)
+                    _record_management_read(
+                        summary["management_read_outcomes"], "defined_risk_snapshot", "DEADLINE_EXCEEDED",
+                        snapshot_started, management_cap,
+                    )
+                    snap = None
                 except Exception as exc:
                     logger.error("fno_dr_management_snapshot_failed err=%s", str(exc))
+                    _record_management_read(
+                        summary["management_read_outcomes"], "defined_risk_snapshot", "FAILED",
+                        snapshot_started, management_cap,
+                    )
                     snap = None
                 finally:
                     summary["stage_durations_sec"]["defined_risk_snapshot"] = round(

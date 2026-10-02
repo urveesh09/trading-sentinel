@@ -190,6 +190,23 @@ Rollout/rollback: small independent commits for instrumentation, read budgets
 and request prioritization. No global concurrency/rate increase. Reverse each
 slice through GitHub while retaining receipts and active position obligations.
 
+Initial implementation receipt (Dev, October 2): S2 provider-read containment
+is underway, locally only. `FNO_EXIT_QUOTE_READ_MAX_SEC=5` bounds the futures
+and open single-leg exit quote reads; `FNO_DR_MANAGEMENT_READ_MAX_SEC=10`
+bounds the existing DR snapshot read. Each reports bounded `COMPLETED`,
+`DEADLINE_EXCEEDED` or `FAILED` state, elapsed seconds and cap seconds in the
+tick result. Timeouts cancel and join the read, then preserve the existing
+unpriced/hard-flat handling; broker dispatch, terminal settlement, admission
+and database writes are outside every `wait_for`. The new DR timeout regression
+proves cancellation/join plus management invocation with no snapshot. Focused
+orchestrator/recovery/audit checks passed 34. Warnings-fatal mode exposed an
+existing unclosed-socket ResourceWarning in an unrelated stage-duration test,
+so it is not represented as a clean warnings-fatal suite. No schema/config-file
+migration, provider-rate increase, broker, entry-policy, Production or AI
+runtime change occurred. Remaining S2 work: due-management priority, fresh
+action-time admission checks, limiter/transport/parse/DB timing breakdown and
+deployed-session observations.
+
 ### S3 — P1: preserve the evidence required to learn
 
 Files/contracts: `docker-compose.yml`, `scripts/verify_compose_logging.py`,
@@ -408,6 +425,15 @@ and receipts. Preserve old records on rollback and use GitHub promotion only.
 Added after the owner reported frequent `AI review UNAVAILABLE
 (AI_REVIEW_EXPIRED) - unreviewed` alerts. This is a planning addition, not an
 implemented fix or a reason to block autonomous paper entries.
+
+Availability boundary: an unavailable, timed-out, quota-limited or otherwise
+failed optional AI/API review must remain non-blocking when the configured
+policy is `proceed`/`advisory`. The deterministic paper lifecycle and the
+separate owner-EXEC path continue with an explicit `UNAVAILABLE`/`UNKNOWN`
+annotation; neither may be silently converted into an AI approval. Only an
+already explicit, deliberately configured blocking policy may block on review
+state, and its operator-visible reason must identify that policy rather than
+misrepresent a provider outage as a market or risk decision.
 
 Investigation evidence:
 
