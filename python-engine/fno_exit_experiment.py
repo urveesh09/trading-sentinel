@@ -2,7 +2,7 @@
 
 The baseline replays the *live* ladder (``fno_exit_rules.evaluate_single_leg_exit``)
 over paired futures/option observations, settling exactly as the paper path
-does: fill at the exit basis (best bid, else LTP), ``calc_fno_costs`` and live R
+does: fill at the exit basis (best bid, else LTP), live option charges and live R
 (net / entry premium x FNO_STOP_PREMIUM_PCT x quantity).  One frozen candidate
 is compared on the identical path.  A read-only adapter builds packets from the
 research quote archive.
@@ -30,7 +30,6 @@ from zoneinfo import ZoneInfo
 
 from config import settings
 from cost_schedules import options_cost_snapshot
-from fno_costs import calc_fno_costs
 from fno_exit_rules import evaluate_single_leg_exit, live_single_leg_exit_params
 from exit_experiment_metrics import paired_deltas as _paired_deltas, policy_summary as _policy_summary
 from momentum_exit_study import ExitStudyError, _canonical_bytes, write_study_report_once
@@ -245,9 +244,38 @@ def _validated_path(entry: FnoEntry, observations: Sequence[Observation], max_ga
     return path, None
 
 
-def _leg(entry: FnoEntry, quantity: int, price: float, reason: str, at: datetime) -> dict[str, Any]:
+COST_MODEL = "fno_split_entry_once_exit_per_leg_v1"
+
+
+def _side_cost(premium: float, quantity: int, *, side: str) -> float:
+    """One order's charges from the frozen options schedule.
+
+    ``calc_fno_costs`` charges a whole round trip (two flat orders plus buy
+    stamp duty).  A scaled exit has one entry order and several exit orders,
+    so entry-side charges are applied once and exit-side charges per exit
+    order.  For a single full exit the two sides sum exactly to
+    ``calc_fno_costs`` (proved by a regression), so baseline accounting is
+    unchanged.
+    """
+    rates = options_cost_snapshot()["rates"]
+    value = premium * quantity
+    brokerage = float(rates["brokerage_flat_per_order"])
+    exchange = float(rates["exchange_pct"]) * value
+    sebi = float(rates["sebi_pct"]) * value
+    ipft = float(rates.get("ipft_pct", 0.0)) * value
+    gst = float(rates["gst_pct"]) * (brokerage + exchange + sebi + ipft)
+    if side == "BUY":
+        return brokerage + exchange + sebi + ipft + gst + float(rates["stamp_duty_buy_pct"]) * value
+    return brokerage + exchange + sebi + ipft + gst + float(rates["stt_sell_pct"]) * value
+
+
+def _leg(entry: FnoEntry, quantity: int, price: float, reason: str, at: datetime,
+         *, include_entry_order: bool) -> dict[str, Any]:
     gross = (price - entry.entry_premium) * quantity
-    costs = calc_fno_costs(entry.entry_premium, price, quantity)
+    costs = _side_cost(price, quantity, side="SELL")
+    if include_entry_order:
+        # The single entry order (full quantity) is charged on the first exit leg only.
+        costs += _side_cost(entry.entry_premium, entry.quantity, side="BUY")
     return {"at": at.isoformat(), "reason": reason, "quantity": quantity, "exit_price": round(price, 6),
             "gross_pnl": round(gross, 6), "costs": round(costs, 6), "net_pnl": round(gross - costs, 6)}
 
@@ -295,7 +323,8 @@ def simulate(entry: FnoEntry, path: Sequence[Observation], policy: str) -> dict[
             bank_lots = int(lots * float(CANDIDATE_POLICIES[PARTIAL_POLICY]["bank_fraction_of_lots"]))
             if lots >= 2 and bank_lots >= 1:
                 sold = bank_lots * entry.lot_size
-                legs.append(_leg(entry, sold, obs.exit_basis, "partial_at_target", obs.observed_at))
+                legs.append(_leg(entry, sold, obs.exit_basis, "partial_at_target", obs.observed_at,
+                                     include_entry_order=not legs))
                 remaining -= sold
                 banked = True
         if policy == EXTENSION_POLICY and reason == "time_stop":
@@ -309,7 +338,8 @@ def simulate(entry: FnoEntry, path: Sequence[Observation], policy: str) -> dict[
             if obs.exit_basis <= 0:
                 return {"policy": policy, "status": "UNRESOLVED", "reason": "exit_basis_unavailable",
                         "attempted_exit": reason, "at": obs.observed_at.isoformat(), "legs": legs}
-            legs.append(_leg(entry, remaining, obs.exit_basis, reason, obs.observed_at))
+            legs.append(_leg(entry, remaining, obs.exit_basis, reason, obs.observed_at,
+                            include_entry_order=not legs))
             return _finalise(entry, policy, legs, reason, obs.observed_at, replaced)
         if decision.persist_trail:
             position = replace_trail(position, decision)
@@ -378,7 +408,7 @@ def freeze_manifest(*, experiment_id: str, candidate_policy: str,
         raise FnoExitStudyError("frozen_at must be timezone-aware")
     return {"schema": MANIFEST_SCHEMA, "experiment_id": experiment_id, "baseline_policy": BASELINE_POLICY,
             "candidate_policy": candidate_policy, "candidate_parameters": deepcopy(CANDIDATE_POLICIES[candidate_policy]),
-            "live_settings": _live_settings(), "cost_model": "fno_costs.calc_fno_costs",
+            "live_settings": _live_settings(), "cost_model": COST_MODEL,
             "cost_schedule": options_cost_snapshot(),
             "cost_multipliers": list(COST_MULTIPLIERS), "source_fingerprint": _source_fingerprint(),
             "frozen_at": frozen_at.astimezone(timezone.utc).isoformat(),
@@ -392,7 +422,7 @@ def verify_manifest(manifest: Mapping[str, Any]) -> datetime:
     if policy not in CANDIDATE_POLICIES:
         raise FnoExitStudyError("FROZEN_POLICY_MISMATCH: unknown candidate policy")
     expected = {"baseline_policy": BASELINE_POLICY, "candidate_parameters": CANDIDATE_POLICIES[policy],
-                "cost_model": "fno_costs.calc_fno_costs",
+                "cost_model": COST_MODEL,
                 "cost_schedule": options_cost_snapshot(),
                 "live_settings": _live_settings(), "cost_multipliers": list(COST_MULTIPLIERS),
                 "source_fingerprint": _source_fingerprint()}
@@ -461,52 +491,117 @@ def build_fno_exit_experiment(packet_path: str | os.PathLike[str], manifest: Map
 # Read-only research-archive adapter
 # --------------------------------------------------------------------------
 
-def _event_basis(event: Mapping[str, Any]) -> float:
-    """Best bid when usable, else LTP -- the live paper exit basis."""
-    bids = event.get("buy_depth") or []
-    best = bids[0] if bids and isinstance(bids[0], Mapping) else {}
-    price = best.get("price")
-    if isinstance(price, (int, float)) and math.isfinite(price) and price > 0:
-        return float(price)
-    ltp = event.get("ltp")
-    return float(ltp) if isinstance(ltp, (int, float)) and math.isfinite(ltp) and ltp > 0 else 0.0
+def _raw_digest(raw: Mapping[str, Any]) -> str:
+    """The collector's raw-packet digest (``research_quote_collector.normalise_quote``)."""
+    return hashlib.sha256(json.dumps(dict(raw), sort_keys=True, default=str,
+                                     separators=(",", ":")).encode()).hexdigest()
+
+
+def _raw_price(raw: Mapping[str, Any], *path: Any) -> float | None:
+    value: Any = raw
+    for key in path:
+        if isinstance(key, int):
+            value = value[key] if isinstance(value, list) and len(value) > key else None
+        else:
+            value = value.get(key) if isinstance(value, Mapping) else None
+    if isinstance(value, bool) or not isinstance(value, (int, float)) or not math.isfinite(value) or value <= 0:
+        return None
+    return float(value)
+
+
+def _verified_event(event: Mapping[str, Any]) -> tuple[float | None, float, str]:
+    """Return (ltp, exit basis, digest) recomputed from the archived raw bytes.
+
+    The normalised columns must equal the raw provider packet: a column that
+    disagrees with the bytes it claims to come from is rejected, not trusted.
+    """
+    raw = event.get("raw_packet")
+    if not isinstance(raw, Mapping):
+        raise FnoExitStudyError("archive event lacks its raw provider packet")
+    digest = _raw_digest(raw)
+    if event.get("raw_sha256") != digest:
+        raise FnoExitStudyError("archive event raw_sha256 does not match its raw packet")
+    ltp = _raw_price(raw, "last_price")
+    bid = _raw_price(raw, "depth", "buy", 0, "price")
+    column_ltp = event.get("ltp")
+    if (ltp or 0.0) != (float(column_ltp) if isinstance(column_ltp, (int, float)) else 0.0):
+        raise FnoExitStudyError("archive event ltp column does not match its raw packet")
+    depth = event.get("buy_depth") or []
+    column_bid = depth[0].get("price") if depth and isinstance(depth[0], Mapping) else None
+    if (bid or None) != (float(column_bid) if isinstance(column_bid, (int, float)) and column_bid > 0 else None):
+        raise FnoExitStudyError("archive event bid column does not match its raw packet")
+    # Live paper exit basis: best bid when usable, else LTP.
+    return ltp, (bid if bid is not None else (ltp or 0.0)), digest
+
+
+def _event_clock(value: Any) -> datetime | None:
+    if not isinstance(value, str):
+        return None
+    try:
+        parsed = datetime.fromisoformat(value.replace("Z", "+00:00"))
+    except ValueError:
+        return None
+    return parsed if parsed.tzinfo is not None else None
 
 
 def build_packet_from_archive_events(
     events: Iterable[Mapping[str, Any]], *, entry: Mapping[str, Any], future_token: int,
     study_id: str, max_observation_gap_seconds: int = 120,
 ) -> dict[str, Any]:
-    """Pair futures and exact-option events captured at one receipt.
+    """Pair verified futures and exact-option events captured at one receipt.
 
     Only events whose ``received_at_utc`` is identical for the front future
-    and the exact option token are paired; nothing is interpolated or carried
-    forward.  ``source_ref`` hashes the archived raw-packet digests used.
+    and the exact option are paired; nothing is interpolated or carried
+    forward.  Every used event's raw bytes are re-hashed and its price columns
+    checked against them; contract identity must match; an exact duplicate is
+    idempotent and a conflicting duplicate fails the build.  An observation
+    whose provider clock is after receipt or older than the declared maximum
+    is excluded and counted.  ``source_ref`` is derived from the archived
+    digests -- it binds this packet to those bytes, not to external provenance.
     """
-    option_token = str(entry["option_token"])
-    future = {}
-    option = {}
+    option_token, symbol = str(entry["option_token"]), str(entry["tradingsymbol"])
+    by_token: dict[str, dict[str, Mapping[str, Any]]] = {str(future_token): {}, option_token: {}}
     for event in events:
         contract = event.get("contract") if isinstance(event.get("contract"), Mapping) else {}
         token = str(contract.get("instrument_token"))
         received = event.get("received_at_utc")
-        if not isinstance(received, str):
+        if token not in by_token or not isinstance(received, str):
             continue
-        if token == str(future_token):
-            future[received] = event
-        elif token == option_token:
-            option[received] = event
-    observations, digests = [], []
-    for received in sorted(set(future) & set(option)):
-        fut_ltp = future[received].get("ltp")
-        observations.append({
-            "entry_id": entry["entry_id"], "observed_at": received,
-            "fut_price": float(fut_ltp) if isinstance(fut_ltp, (int, float)) and fut_ltp > 0 else None,
-            "exit_basis": _event_basis(option[received]),
-        })
-        digests += [str(future[received].get("raw_sha256")), str(option[received].get("raw_sha256"))]
+        if token == option_token and contract.get("tradingsymbol") != symbol:
+            raise FnoExitStudyError("archived option identity does not match the entry tradingsymbol")
+        if token == str(future_token) and contract.get("instrument_type") not in (None, "FUT"):
+            raise FnoExitStudyError("future_token does not identify a futures contract")
+        prior = by_token[token].get(received)
+        if prior is not None and prior.get("raw_sha256") != event.get("raw_sha256"):
+            raise FnoExitStudyError(f"conflicting archive events for token {token} at {received}")
+        by_token[token][received] = event
+    futures, options = by_token[str(future_token)], by_token[option_token]
+    observations, digests, excluded = [], [], {}
+    for received in sorted(set(futures) & set(options)):
+        receipt = _event_clock(received)
+        fut_ltp, _fut_basis, fut_digest = _verified_event(futures[received])
+        _opt_ltp, basis, opt_digest = _verified_event(options[received])
+        provider = _event_clock(options[received].get("provider_timestamp_utc"))
+        if receipt is None:
+            reason = "receipt_clock_invalid"
+        elif provider is not None and provider > receipt:
+            reason = "provider_clock_after_receipt"
+        elif provider is not None and (receipt - provider).total_seconds() > max_observation_gap_seconds:
+            reason = "provider_quote_older_than_declared_maximum"
+        else:
+            reason = None
+        if reason is not None:
+            excluded[reason] = excluded.get(reason, 0) + 1
+            continue
+        observations.append({"entry_id": entry["entry_id"], "observed_at": received,
+                             "fut_price": fut_ltp, "exit_basis": basis})
+        digests += [fut_digest, opt_digest]
     source_ref = "sha256:" + hashlib.sha256("\n".join(digests).encode("utf-8")).hexdigest()
     return {"schema": INPUT_SCHEMA, "study_id": study_id,
             "max_observation_gap_seconds": max_observation_gap_seconds,
+            "provenance": {"kind": "derived_from_archived_raw_packet_digests",
+                           "verified_external_provenance": False,
+                           "excluded_observations": dict(sorted(excluded.items()))},
             "entries": [{**dict(entry), "source_ref": source_ref}], "observations": observations}
 
 

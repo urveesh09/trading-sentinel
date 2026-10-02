@@ -176,27 +176,107 @@ def test_freeze_parameters_do_not_alias_policy_and_cost_drift_is_refused(monkeyp
         fx.verify_manifest(fresh)
 
 
-def _event(token, received, ltp, bid=None):
-    return {"contract": {"instrument_token": str(token)}, "received_at_utc": received, "ltp": ltp,
-            "buy_depth": [{"price": bid, "quantity": 75, "orders": 1}] if bid else
-                         [{"price": None, "quantity": None, "orders": None}],
-            "raw_sha256": f"{token}-{received}"}
+def _event(token, received, ltp, bid=None, *, symbol=None, provider_lag_sec=0):
+    """A genuine archive event produced by the collector's own normaliser."""
+    from datetime import date
+    from fno_models import Contract
+    from research_quote_collector import normalise_quote
+
+    if isinstance(received, str):
+        received = datetime.fromisoformat(received.replace("Z", "+00:00"))
+    is_future = token == 999
+    contract = Contract(token, symbol or ("NIFTYFUT" if is_future else "NIFTY26SEP25000CE"), "NIFTY",
+                        date(2026, 9, 30), 0.0 if is_future else 25000.0, "FUT" if is_future else "CE", 75)
+    raw = {"instrument_token": token, "last_price": ltp,
+           "timestamp": (received - timedelta(seconds=provider_lag_sec)).isoformat(),
+           "depth": {"buy": [{"price": bid, "quantity": 75, "orders": 1}] if bid else [],
+                     "sell": [{"price": (bid or ltp) + 0.5, "quantity": 75, "orders": 1}]}}
+    return normalise_quote(contract, raw, source="KITE", mode="KITE_REST_FULL_LOWER_FREQUENCY",
+                           received_at=received, selection_reason="fixture", exchange="NFO")
+
+
+T1, T2, T3 = (datetime(2026, 9, 25, 4, minute, tzinfo=timezone.utc) for minute in (31, 32, 33))
 
 
 def test_archive_adapter_pairs_only_identical_receipts_and_uses_bid_then_ltp():
     events = [
-        _event(999, "2026-09-25T04:31:00Z", 25010.0), _event(501, "2026-09-25T04:31:00Z", 102.0, bid=101.5),
-        _event(999, "2026-09-25T04:32:00Z", 25012.0), _event(501, "2026-09-25T04:32:00Z", 103.0),
-        _event(999, "2026-09-25T04:33:00Z", 25013.0),                     # option missing: not paired
-        _event(777, "2026-09-25T04:33:00Z", 50.0),                        # foreign contract: ignored
+        _event(999, T1, 25010.0), _event(501, T1, 102.0, bid=101.5),
+        _event(999, T2, 25012.0), _event(501, T2, 103.0),
+        _event(999, T3, 25013.0),                     # option missing: not paired
+        _event(777, T3, 50.0),                        # foreign contract: ignored
     ]
     packet = fx.build_packet_from_archive_events(events, entry=_entry(), future_token=999, study_id="adapter")
     rows = packet["observations"]
     assert [(r["observed_at"], r["fut_price"], r["exit_basis"]) for r in rows] == [
-        ("2026-09-25T04:31:00Z", 25010.0, 101.5), ("2026-09-25T04:32:00Z", 25012.0, 103.0)]
+        (events[0]["received_at_utc"], 25010.0, 101.5), (events[2]["received_at_utc"], 25012.0, 103.0)]
     again = fx.build_packet_from_archive_events(events, entry=_entry(), future_token=999, study_id="adapter")
     assert packet["entries"][0]["source_ref"] == again["entries"][0]["source_ref"]
-    assert packet["entries"][0]["source_ref"].startswith("sha256:")
+    assert packet["provenance"]["verified_external_provenance"] is False
+
+
+def test_archive_adapter_accepts_exact_duplicates_and_rejects_conflicts():
+    base = [_event(999, T1, 25010.0), _event(501, T1, 102.0, bid=101.5)]
+    duplicated = base + [dict(base[1])]
+    assert len(fx.build_packet_from_archive_events(duplicated, entry=_entry(), future_token=999,
+                                                   study_id="dup")["observations"]) == 1
+    with pytest.raises(ExitStudyError, match="conflicting archive events"):
+        fx.build_packet_from_archive_events(base + [_event(501, T1, 140.0, bid=139.5)], entry=_entry(),
+                                            future_token=999, study_id="conflict")
+
+
+@pytest.mark.parametrize("tamper, message", [
+    (lambda e: e.update(ltp=999.0), "ltp column"),
+    (lambda e: e["buy_depth"][0].update(price=150.0), "bid column"),
+    (lambda e: e["raw_packet"].update(last_price=150.0), "raw_sha256"),
+    (lambda e: e.pop("raw_packet"), "raw provider packet"),
+])
+def test_archive_adapter_rejects_columns_that_disagree_with_raw_bytes(tamper, message):
+    option = _event(501, T1, 102.0, bid=101.5)
+    tamper(option)
+    with pytest.raises(ExitStudyError, match=message):
+        fx.build_packet_from_archive_events([_event(999, T1, 25010.0), option], entry=_entry(),
+                                            future_token=999, study_id="tamper")
+
+
+def test_archive_adapter_rejects_foreign_option_identity():
+    with pytest.raises(ExitStudyError, match="identity"):
+        fx.build_packet_from_archive_events(
+            [_event(999, T1, 25010.0), _event(501, T1, 102.0, bid=101.5, symbol="NIFTY26SEP25100CE")],
+            entry=_entry(), future_token=999, study_id="identity")
+
+
+def test_archive_adapter_excludes_stale_provider_quotes_and_counts_them():
+    packet = fx.build_packet_from_archive_events(
+        [_event(999, T1, 25010.0), _event(501, T1, 102.0, bid=101.5, provider_lag_sec=600),
+         _event(999, T2, 25012.0), _event(501, T2, 103.0, bid=102.5)],
+        entry=_entry(), future_token=999, study_id="stale", max_observation_gap_seconds=120)
+    assert [row["exit_basis"] for row in packet["observations"]] == [102.5]
+    assert packet["provenance"]["excluded_observations"] == {"provider_quote_older_than_declared_maximum": 1}
+
+
+def test_split_cost_model_equals_round_trip_for_a_single_full_exit():
+    import random
+    rng = random.Random(7)
+    for _ in range(500):
+        premium, exit_price = rng.uniform(5, 400), rng.uniform(1, 600)
+        qty = 75 * rng.randint(1, 6)
+        entry = fx._entry(_entry(entry_premium=premium, premium_stop=premium * 0.75, quantity=qty))
+        leg = fx._leg(entry, qty, exit_price, "x", ENTRY, include_entry_order=True)
+        assert leg["costs"] == pytest.approx(calc_fno_costs(premium, exit_price, qty), abs=1e-6)
+
+
+def test_partial_candidate_charges_the_entry_order_once(tmp_path):
+    pair = _run(tmp_path, _observations(_runner, _runner_basis))["pairs"][0]
+    legs = pair["candidate"]["legs"]
+    entry = fx._entry(_entry())
+    expected = (fx._side_cost(100.0, 150, side="BUY")
+                + fx._side_cost(legs[0]["exit_price"], 75, side="SELL")
+                + fx._side_cost(legs[1]["exit_price"], 75, side="SELL"))
+    assert pair["candidate"]["costs"] == pytest.approx(expected, abs=1e-5)
+    double_counted = (calc_fno_costs(100.0, legs[0]["exit_price"], 75)
+                      + calc_fno_costs(100.0, legs[1]["exit_price"], 75))
+    assert pair["candidate"]["costs"] < double_counted
+    assert entry.quantity == 150
 
 
 def test_cli_builds_packet_from_archive_and_evaluates_without_overwrite(tmp_path):
