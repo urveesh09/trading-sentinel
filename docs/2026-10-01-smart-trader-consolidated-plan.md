@@ -389,6 +389,72 @@ revocable qualification/delivery flags. No legacy broadcaster restoration.
 Personalized hedge activation is a separate track requiring source/account
 binding, complete snapshots, real reconciliation and its own staging evidence.
 
+S5 implementation slice (Dev, October 2). Read-only Production inspection
+(engine image, data volume mounted read-only, no network; stack was already
+stopped for the NSE holiday) established the following before any edit:
+
+- Research collection is bimodal: p50 elapsed about 1.5 s, while 55/56/58
+  runs per session reach the 48 s cap. Each capped run falls 1–4 minutes after
+  :00/:15/:30/:45 IST, and even the one-token future-reference request stalls.
+  No provider timeout/retry was logged. The September 30 engine log shows
+  `run_momentum_screener` fetching 497 tickers for about 243 s, with up to 50
+  concurrent waiters on the shared 3/s, burst-one limiter. Research completes
+  in about 1 s immediately after the screener finishes. The same window shows F&O
+  `chain_snapshot_deadline` and a skipped penny scan. Root cause: shared
+  normal-lane queue contention, not request size or transport.
+- Partner coverage, September 28–October 1: 1,295 attempts were NO_SETUP;
+  22 candidates had complete requested/received contracts. All 22 persisted
+  ideas are `RESEARCH_ONLY` with no qualification registry match, so
+  `strategy_not_qualified_for_delivery` is the universal delivery blocker.
+- Seven September 30 ideas were stored `REJECTED` for
+  `stale_or_future_leg_quote` while the attempt journal recorded the same
+  ticks as `candidate_validated`. `persist_candidate` re-validates at the
+  frozen tick-start clock; a chain received more than 5 seconds after tick
+  start therefore looks like a future quote. This is the S2 frozen-clock
+  defect in the partner path, not a market-quality rejection.
+
+S5a — partner action clock. Files: `partner_orchestrator.py`, its tests.
+Persistence and conditional-protection construction/precheck use the tick's
+live `stage_now()` action clock; explicit replay/test clocks remain frozen.
+No validation threshold, qualification, delivery or profile rule changes.
+Acceptance: a chain received after the 5-second future tolerance persists as
+VALIDATED_SHADOW; explicit replay clocks remain byte-for-byte frozen; an
+actually stale quote still rejects.
+
+S5b — owner-approved bulk provider lane. Files: `kite_client.py`, `main.py`
+(momentum screener per-ticker fetches only), `research_quote_collector.py`,
+tests. Add a `bulk` lane to the shared `RateLimiter`: queued normal requests
+are admitted ahead of bulk, but at most three consecutive normal admissions
+occur while bulk waits (bounded fairness, no starvation). Management priority
+from S2 is unchanged and above both. Rate 3/s, burst one and concurrency stay
+unchanged. Research requests the future reference plus exact active legs
+first, then the optional ATM ladder, and retains limiter/transport timing
+for every provider call. Acceptance: bulk cannot starve; normal work is not
+queued behind a 50-waiter bulk backlog; management still preempts both;
+cancellation removes waiters; exact legs survive a ladder deadline.
+Expected effect: the screener's roughly 243 s scan becomes slightly longer; signal logic
+is unchanged.
+
+S5c — read-only candidate delivery-blocker diagnostic. Join attempt journal,
+persisted ideas, qualification registry and delivery flags; report every
+candidate's ordered blockers and attempt/idea disagreements. No writes,
+qualification, registration or messages.
+
+Steps 2–5 (frozen protocol, 20-session holdout, package, canary) reuse the
+existing tooling and need fresh post-promotion sessions; they are not
+represented as complete by S5a–S5c. Rollback: GitHub reversion of each
+sub-slice; no data migration or evidence deletion.
+
+S5a completion receipt (Dev, October 2): `partner_manual_advisory_tick` now
+persists candidates with `stage_now()` and builds/prechecks conditional
+protection at the same live action clock; explicit replay calls keep the frozen
+tick clock. New end-to-end regressions (real candidate, validation and
+persistence) cover a 20-second-late chain (`VALIDATED_SHADOW`), frozen replay
+and a genuinely stale chain (still rejected). The late-chain test fails on the
+previous source with `stale_or_future_leg_quote`. Partner/hedge/scheduler
+suites: 373 passed with the known Starlette deprecation. No validation
+threshold, qualification, profile, delivery, schema or Production change.
+
 ### S6 — P2: smarter exits on the same opportunities
 
 Files/contracts: existing `momentum_exit_study.py`,

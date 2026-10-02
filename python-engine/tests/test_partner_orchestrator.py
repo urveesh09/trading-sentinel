@@ -15,7 +15,7 @@ import pytz
 import partner_orchestrator as po
 from config import settings
 from fno_engine_mom import MomSignal
-from fno_models import FnoDirection
+from fno_models import FnoDirection, OptionType
 from fno_signal_scan import UnderlyingScan
 from fno_underlyings import UnderlyingSpec
 
@@ -190,6 +190,126 @@ async def test_delayed_chain_past_entry_deadline_cannot_create_backdated_candida
     await po.partner_manual_advisory_tick(tick, clock=lambda: decision_at)
     assert built == []
     assert wired.sent == []
+
+
+def _late_chain_candidate_fixture(monkeypatch, *, tick, chain_received):
+    """Wire one real NIFTY debit-spread candidate whose chain arrives late.
+
+    Returns the persisted-status reader.  The candidate, validation and
+    persistence are the real advisory functions; only provider reads are
+    replaced.  Quotes are stamped at ``chain_received`` exactly as a slow
+    provider read would stamp them.
+    """
+    from fno_chain import ChainSnapshot
+    from fno_instruments import FnoInstruments
+    from fno_models import Contract, ContractQuote
+
+    expiry = date(2026, 9, 10)
+    book = FnoInstruments("NIFTY", segment="NFO")
+    book._load_contracts([
+        Contract(1, "NIFTYFUT", "NIFTY", expiry, 0.0, "FUT", 75),
+        Contract(2, "NIFTYLONG", "NIFTY", expiry, 25000.0, "CE", 75),
+        Contract(3, "NIFTYSHORT", "NIFTY", expiry, 25050.0, "CE", 75),
+    ])
+
+    def quote(contract, bid, ask):
+        return ContractQuote(contract=contract, bid=bid, ask=ask, ltp=(bid + ask) / 2,
+                             oi=10_000, volume=5_000, last_trade_time=chain_received,
+                             bid_quantity=500, ask_quantity=500)
+
+    long_leg = book.option(expiry, 25000.0, OptionType.CE)
+    short_leg = book.option(expiry, 25050.0, OptionType.CE)
+    snapshot = ChainSnapshot(chain_received, expiry, 25000.0, None, 75, None, {
+        (25000.0, "CE"): quote(long_leg, 88.0, 90.0),
+        (25050.0, "CE"): quote(short_leg, 45.0, 47.0),
+    })
+    monkeypatch.setattr(po, "get_instruments_for", lambda _name: book)
+
+    async def public(_kite, spec, _regime, _now, **_kwargs):
+        scan = _fired_scan(bar_ts="2026-09-07 09:55:00")
+        scan.name = spec.name
+        scan.public_requested_at = tick
+        scan.public_received_at = tick
+        scan.research_received_at = tick
+        scan.public_source_id = f"PUBLIC:{spec.name}"
+        return scan
+
+    async def attach(_kite, scan, _now, **_kwargs):
+        scan.chain_requested_at = tick
+        scan.chain_received_at = chain_received
+        scan.chain_source_id = f"CHAIN:{scan.name}"
+        scan.snap = snapshot if scan.name == "NIFTY" else None
+        return scan
+
+    monkeypatch.setattr(po, "observe_underlying", public)
+    monkeypatch.setattr(po, "attach_entry_chain", attach)
+
+
+async def _stored_statuses(db):
+    import aiosqlite
+    async with aiosqlite.connect(db) as conn:
+        rows = await (await conn.execute(
+            "SELECT status, payload FROM partner_advisory_ideas WHERE underlying='NIFTY'"
+        )).fetchall()
+    return [(status, json.loads(payload)["validation_reasons"]) for status, payload in rows]
+
+
+async def _save_intraday_profile(db, now):
+    from partner_manual_advisory import PartnerAdvisoryProfile, save_partner_profile
+    await save_partner_profile(db, PartnerAdvisoryProfile(holding_period="INTRADAY"), now=now)
+
+
+@pytest.mark.asyncio
+async def test_late_chain_candidate_persists_at_live_action_clock(wired, monkeypatch):
+    """S5a: a valid card is not rejected as a 'future' quote by the tick-start clock.
+
+    Production September 30: the attempt journal recorded
+    ``candidate_validated`` while persistence stored ``REJECTED
+    stale_or_future_leg_quote`` because the chain arrived more than five
+    seconds after the frozen tick start.
+    """
+    await _init(wired.db)
+    tick = IST.localize(datetime(2026, 9, 7, 10, 0, 0))
+    chain_received = tick.replace(second=20)
+    live = {"now": chain_received}
+    monkeypatch.setattr(settings, "PARTNER_MANUAL_ADVISORY_ENABLED", True)
+    monkeypatch.setattr(settings, "RESEARCH_ARCHIVE_ENABLED", False)
+    await _save_intraday_profile(wired.db, tick)
+    _late_chain_candidate_fixture(monkeypatch, tick=tick, chain_received=chain_received)
+    await po.partner_manual_advisory_tick(tick, clock=lambda: live["now"])
+    assert await _stored_statuses(wired.db) == [("VALIDATED_SHADOW", [])]
+    assert wired.sent == []
+
+
+@pytest.mark.asyncio
+async def test_explicit_replay_clock_stays_frozen_for_persistence(wired, monkeypatch):
+    """Replay/test callers without a clock keep the frozen tick-start contract."""
+    await _init(wired.db)
+    tick = IST.localize(datetime(2026, 9, 7, 10, 0, 0))
+    chain_received = tick.replace(second=20)
+    monkeypatch.setattr(settings, "PARTNER_MANUAL_ADVISORY_ENABLED", True)
+    monkeypatch.setattr(settings, "RESEARCH_ARCHIVE_ENABLED", False)
+    await _save_intraday_profile(wired.db, tick)
+    _late_chain_candidate_fixture(monkeypatch, tick=tick, chain_received=chain_received)
+    await po.partner_manual_advisory_tick(tick)
+    # Precheck also runs at the frozen clock, so the future-stamped quote is
+    # rejected before persistence -- nothing is stored or rewritten.
+    assert await _stored_statuses(wired.db) == []
+
+
+@pytest.mark.asyncio
+async def test_genuinely_stale_chain_still_rejects_at_live_clock(wired, monkeypatch):
+    """The live clock is not a freshness waiver: an old quote still fails."""
+    await _init(wired.db)
+    tick = IST.localize(datetime(2026, 9, 7, 10, 0, 0))
+    chain_received = tick.replace(second=5)
+    live = {"now": tick.replace(minute=2)}
+    monkeypatch.setattr(settings, "PARTNER_MANUAL_ADVISORY_ENABLED", True)
+    monkeypatch.setattr(settings, "RESEARCH_ARCHIVE_ENABLED", False)
+    await _save_intraday_profile(wired.db, tick)
+    _late_chain_candidate_fixture(monkeypatch, tick=tick, chain_received=chain_received)
+    await po.partner_manual_advisory_tick(tick, clock=lambda: live["now"])
+    assert await _stored_statuses(wired.db) == []
 
 
 @pytest.mark.asyncio

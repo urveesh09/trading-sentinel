@@ -1,5 +1,17 @@
 # Trading Sentinel — next-agent execution plan
 
+## October 2 S5 partner research readiness — in progress (Dev)
+
+S5a (partner action clock) is complete in Dev: persistence and protection
+prechecks use the live action clock, so a late-received chain is no longer
+misclassified as a future quote. Remaining S5 source work is S5b (owner-approved
+bulk Kite lane for the momentum screener plus exact-leg-first research
+collection and per-call timing) and S5c (read-only per-candidate
+delivery-blocker diagnostic). Frozen protocol, 20-session holdout,
+qualification package and delivery canary reuse existing tooling and need
+fresh post-promotion sessions. See the consolidated plan's S5 slice for the
+Production evidence. Production remains untouched.
+
 ## October 2 S4 equity-path evidence — Dev complete, operational acceptance open
 
 S4 now provides bounded, additive paper evidence only. Every new opened

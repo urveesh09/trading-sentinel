@@ -107,6 +107,22 @@ does not migrate trading evidence.
 deployment requires operator free-space, prior-boot preservation and full
 market-session volume checks. Optional AI remains non-blocking when unavailable.
 
+## October 2 S5a partner candidate action clock (Dev)
+
+Read-only Production evidence (September 30) showed seven partner ideas stored
+`REJECTED` with `stale_or_future_leg_quote` while the collection-attempt
+journal recorded the same ticks as `candidate_validated`. `persist_candidate`
+re-validated at the frozen tick-start clock, so an option chain received more
+than five seconds after the tick began looked like a quote from the future.
+The manual-advisory tick now passes its live `stage_now()` action clock to
+persistence and to conditional-protection construction/precheck. Explicit
+replay/test calls without a clock remain frozen. Validation thresholds,
+qualification, profile, delivery and message rules are unchanged; a genuinely
+stale quote still rejects. Partner/hedge/scheduler suites: 373 passed; the
+new late-chain regression fails on the previous source with the Production
+reason. Dev-only; not deployed. This does not qualify any partner strategy:
+every observed idea remains `RESEARCH_ONLY` and qualification-blocked.
+
 ## October 2 S4 equity-path and admission-capital evidence completion (Dev)
 
 New paper-admission outcomes retain an additive, bounded capital snapshot:

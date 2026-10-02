@@ -865,7 +865,9 @@ async def partner_manual_advisory_tick(now: Optional[datetime] = None, *, clock=
                                                reason="advisory_expiry_chain_unavailable")
                 await finish_attempt(spec.name, "UNAVAILABLE", "chain_unavailable")
                 continue
-            await add_explicit_protection(spec, book, snapshot)
+            # Protection quotes were received after the tick started; judge
+            # them at the live action clock (frozen only for explicit replay).
+            await add_explicit_protection(spec, book, snapshot, decision_at=stage_now())
             candidate_clock = decision_clocks[spec.name].with_stage(candidate_constructed_at=stage_now())
             decision_clocks[spec.name] = candidate_clock
             boundary_reason = crossed_entry_boundary(
@@ -989,8 +991,11 @@ async def partner_manual_advisory_tick(now: Optional[datetime] = None, *, clock=
     metrics["overlap_suppressed"] = len(overlapping)
     for candidate in preferred:
         metrics["considered"] += 1
+        # Persistence re-validates the candidate.  Use the live action clock:
+        # the frozen tick start makes a chain received >5s later look like a
+        # future quote and rejects an otherwise valid card (S5a).
         stored = await persist_candidate(
-            settings.DB_PATH, candidate, profile, now=now,
+            settings.DB_PATH, candidate, profile, now=stage_now(),
             validation_options={
                 "max_quote_age_seconds": settings.PARTNER_MANUAL_ADVISORY_MAX_QUOTE_AGE_SEC,
                 "max_spread_pct": settings.PARTNER_MANUAL_ADVISORY_MAX_SPREAD_PCT,

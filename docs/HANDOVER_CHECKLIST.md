@@ -61,6 +61,11 @@
   Focused S4 tests: 73 passed; compilation passed. Additive Dev-only SQLite
   evidence; no strategy/sizing/exit, broker, AI, deployment or Production edit.
   Rollback via GitHub reversion/collector disablement retains evidence.
+- [x] S5a: partner candidate persistence/protection use the live action clock;
+  explicit replay stays frozen; stale quotes still reject. Late-chain
+  regression reproduces the September 30 `stale_or_future_leg_quote`
+  rejection on the old source. Partner/hedge/scheduler suites: 373 passed.
+  Dev only; no threshold, qualification, profile, delivery or message change.
 - [ ] Configure S4 path caps, connect an existing quote fanout without adding a
   provider request, then collect five fresh reconciled passive lifecycles.
   These are instrumentation acceptance only, not proof of profitability,
