@@ -32,7 +32,7 @@ def encode_path_quote_envelope(*, instrument_key: str, quote: Mapping[str, Any])
                       sort_keys=True, separators=(",", ":"), default=str, allow_nan=False).encode("utf-8")
 
 
-def _provider_clock(quote: Mapping[str, Any]) -> datetime:
+def provider_clock(quote: Mapping[str, Any]) -> datetime:
     value = quote.get("timestamp") or quote.get("last_trade_time")
     if not isinstance(value, str) or not value.strip():
         raise PathEnvelopeError("quote has no provider timestamp")
@@ -62,9 +62,9 @@ def verify_path_quote_envelope(packet: bytes, *, ticker: str, ltp: float,
     if (isinstance(price, bool) or not isinstance(price, (int, float)) or not math.isfinite(price)
             or price <= 0 or float(price) != float(ltp)):
         raise PathEnvelopeError("envelope last_price does not match the observation ltp")
-    if provider_observed_at.tzinfo is None or _provider_clock(quote) != provider_observed_at:
+    if provider_observed_at.tzinfo is None or provider_clock(quote) != provider_observed_at:
         raise PathEnvelopeError("envelope provider timestamp does not match provider_observed_at")
 
 
 __all__ = ["ENVELOPE_SCHEMA", "PathEnvelopeError", "encode_path_quote_envelope",
-           "verify_path_quote_envelope"]
+           "provider_clock", "verify_path_quote_envelope"]

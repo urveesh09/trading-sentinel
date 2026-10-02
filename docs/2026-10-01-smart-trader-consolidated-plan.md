@@ -396,6 +396,13 @@ revocable qualification/delivery flags. No legacy broadcaster restoration.
 Personalized hedge activation is a separate track requiring source/account
 binding, complete snapshots, real reconciliation and its own staging evidence.
 
+S4 wiring receipt (Dev, October 2): subscribed paper tickers are attached to
+the research collector's existing first quote request; no provider request is
+added. Envelopes are written by one bounded background writer. The
+`first_at_or_after_1515_within_gap` deadline policy and per-entry adapter
+exclusion remove two blockers that would have kept every real path
+incomplete. 1091 selected tests passed.
+
 S5 implementation slice (Dev, October 2). Read-only Production inspection
 (engine image, data volume mounted read-only, no network; stack was already
 stopped for the NSE holiday) established the following before any edit:

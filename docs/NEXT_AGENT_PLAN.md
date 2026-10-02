@@ -9,6 +9,13 @@ fanout/source-packet binding, S5 qualification/canary or the missing S6
 defined-risk experiment and archive/economics binding. No Production mutation,
 authority expansion or profitable-strategy claim follows from this review.
 
+S4 runtime wiring (Dev): subscribed paper tickers ride the research
+collector's existing first quote request into byte-bound envelopes via one
+background writer. The deadline-close policy and per-entry adapter exclusion
+correct two blockers. 1091 selected tests passed. No Production environment
+change is required. Next: after promotion, verify `momentum_paper_paths`
+telemetry and five reconciled lifecycles.
+
 Review response (Dev): S6 partial fees and archive pairing (`ea8695d`), S3
 crash-recoverable rotation (`c054bf3`) and the S4 typed byte-bound envelope
 (`bfd343d`) are corrected; 1024 selected tests passed. Remaining: S4 fanout

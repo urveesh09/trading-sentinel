@@ -946,7 +946,7 @@ Related tests: `python-engine/tests/test_models.py`
 
 Frozen, read-only paired experiments for momentum-paper exit policies (S6a). This extends the v1 exit study (``momentum_exit_study``) without changing it. The same immutable LTP packet loader, path validation, pure live evaluator, cost model and leg arithmetic are reused. What is added: * a freeze manifest that pins one candidate policy, its parameters, the live evaluator settings and a source fingerprint *before* evaluation, so a policy cannot be re-tuned after its outcomes are seen; * development/holdout labelling: entries at or before the freeze time are ``DEVELOPMENT`` and can never be presented as held-out evidence; * ``thesis_confirmed_extension_v1``: a candidate that changes only the
 
-Top-level declarations: `_source_fingerprint` (line 89), `_evaluator_settings` (line 99), `_aware` (line 103), `freeze_experiment_manifest` (line 109), `verify_experiment_manifest` (line 134), `confirmation` (line 160), `_replaceable` (line 179), `_simulate_thesis` (line 183), `_exposure_metrics` (line 258), `build_exit_experiment` (line 282), `_read_json` (line 347), `_main` (line 357)
+Top-level declarations: `_source_fingerprint` (line 90), `_evaluator_settings` (line 100), `_aware` (line 104), `freeze_experiment_manifest` (line 110), `verify_experiment_manifest` (line 135), `confirmation` (line 161), `_replaceable` (line 180), `_simulate_thesis` (line 184), `_exposure_metrics` (line 259), `build_exit_experiment` (line 283), `_read_json` (line 350), `_main` (line 360)
 
 Engine dependencies: `config`, `cost_schedules`, `exit_experiment_metrics`, `momentum_exit_study`, `momentum_exits`
 
@@ -956,7 +956,7 @@ Related tests: `python-engine/tests/test_momentum_exit_experiment.py`
 
 Read-only paired research for momentum-paper exit policies. This module deliberately has no database, broker, HTTP, scheduler, order, or message dependency. It replays already captured timestamped LTP observations and compares the production pure exit evaluator with one fixed paper-only target-hold/trail alternative. It is not imported by any runtime manager.
 
-Top-level declarations: `ExitStudyError` (line 59), `StudyEntry` (line 64), `Quote` (line 83), `_canonical_bytes` (line 88), `_parse_timestamp` (line 95), `_finite_positive` (line 107), `_optional_positive` (line 119), `_optional_admission_key` (line 125), `_entry_from_json` (line 136), `_quotes_from_json` (line 179), `load_exit_study_packet` (line 197), `_policy_snapshot` (line 233), `_deadline` (line 250), `_validated_quote_path` (line 254), `_position` (line 294), `_leg` (line 310), `_finalise` (line 324), `_close` (line 360), `_apply_current_decision` (line 367), `_simulate` (line 403), `_entry_economics` (line 440), `_insufficient_pair` (line 452), `_summary` (line 469), `build_momentum_exit_study` (line 489), `write_study_report_once` (line 534), `_main` (line 564)
+Top-level declarations: `ExitStudyError` (line 59), `StudyEntry` (line 64), `Quote` (line 83), `_canonical_bytes` (line 88), `_parse_timestamp` (line 95), `_finite_positive` (line 107), `_optional_positive` (line 119), `_optional_admission_key` (line 125), `_entry_from_json` (line 136), `_quotes_from_json` (line 179), `load_exit_study_packet` (line 197), `deadline_policy_of` (line 233), `_policy_snapshot` (line 241), `_deadline` (line 258), `_validated_quote_path` (line 267), `_position` (line 327), `_leg` (line 343), `_finalise` (line 357), `_close` (line 393), `_apply_current_decision` (line 400), `_simulate` (line 436), `_entry_economics` (line 474), `_insufficient_pair` (line 486), `_summary` (line 503), `build_momentum_exit_study` (line 523), `write_study_report_once` (line 570), `_main` (line 600)
 
 Engine dependencies: `config`, `engine`, `momentum_exits`
 
@@ -976,7 +976,7 @@ Related tests: `python-engine/tests/test_momentum_exits.py`
 
 [MOMENTUM-PAPER 2026-07-26] A paper twin of the live momentum book. WHY THIS EXISTS --------------- Live momentum entry is manual: the screener sends a Telegram EXEC button and a human decides. The ledger therefore records what the *operator* did, never what the *strategy* proposed -- 8 recorded momentum trades in months of running, which is why nothing can be concluded about the strategy from them. A signal that fired at 11:04 while nobody was looking left no trace at all. This book takes EVERY accepted momentum signal automatically, sizes it off its own pool, manages it with the same pure exit logic the live book uses, and books cost-adjusted P&L to source='MOMENTUM_PAPER'. The result is a
 
-Top-level declarations: `paper_position_size` (line 78), `_sig_get` (line 107), `_sqlite_safe` (line 116), `_paper_risk_pct` (line 143), `_admission_signal_key` (line 163), `_admission_source_packet` (line 187), `_zero_share_reason` (line 217), `_realised_paper_cash_basis` (line 233), `_admission_economics` (line 247), `_init_admission_outcomes` (line 271), `_init_path_collector` (line 312), `_study_deadline_utc` (line 344), `_subscribe_paper_path` (line 349), `_parse_observation_clock` (line 362), `record_momentum_paper_path_observations` (line 374), `_record_admission_outcome` (line 442), `_bound_admission_outcomes` (line 478), `_supports_paper_admission_identity` (line 488), `record_momentum_paper_upstream_deduplications` (line 500), `_record_disabled_admissions` (line 537), `_record_transaction_failures` (line 561), `open_momentum_paper_positions` (line 591), `_close_paper_position` (line 770), `momentum_paper_monitor` (line 824), `momentum_paper_square_off` (line 922)
+Top-level declarations: `paper_position_size` (line 78), `_sig_get` (line 107), `_sqlite_safe` (line 116), `_paper_risk_pct` (line 143), `_admission_signal_key` (line 163), `_admission_source_packet` (line 187), `_zero_share_reason` (line 217), `_realised_paper_cash_basis` (line 233), `_admission_economics` (line 247), `_init_admission_outcomes` (line 271), `_init_path_collector` (line 312), `_study_deadline_utc` (line 344), `_subscribe_paper_path` (line 349), `_parse_observation_clock` (line 362), `active_paper_path_tickers` (line 374), `record_momentum_paper_path_observations` (line 404), `_record_admission_outcome` (line 476), `_bound_admission_outcomes` (line 512), `_supports_paper_admission_identity` (line 522), `record_momentum_paper_upstream_deduplications` (line 534), `_record_disabled_admissions` (line 571), `_record_transaction_failures` (line 595), `open_momentum_paper_positions` (line 625), `_close_paper_position` (line 804), `momentum_paper_monitor` (line 858), `momentum_paper_square_off` (line 956)
 
 Engine dependencies: `config`, `engine`, `models`, `momentum_exits`, `momentum_path_envelope`, `performance`
 
@@ -1004,7 +1004,7 @@ Related tests: `python-engine/tests/test_momentum_paper_evidence_review.py`
 
 Read-only adapter from passive momentum-paper quote receipts to a study packet. It has no scheduler and no market-data client. A caller may export only a fully verifiable, exact-admission path; otherwise the exact missing evidence is returned and no synthetic study input is produced.
 
-Top-level declarations: `_unavailable` (line 25), `_timestamp` (line 30), `_packet_hash` (line 42), `build_momentum_paper_exit_study_packet` (line 54)
+Top-level declarations: `_unavailable` (line 25), `_timestamp` (line 30), `_packet_hash` (line 42), `_entry_path` (line 54), `build_momentum_paper_exit_study_packet` (line 125)
 
 Engine dependencies: `config`, `momentum_exit_study`, `momentum_path_envelope`
 
@@ -1012,7 +1012,7 @@ Engine dependencies: `config`, `momentum_exit_study`, `momentum_path_envelope`
 
 Typed, source-bound provider envelope for passive momentum-paper paths (S4). A SHA-256 of caller-supplied bytes proves only that the bytes did not change. It does not prove that the separately supplied ticker, LTP or provider clock columns came *from* those bytes. The envelope wraps the exact Kite quote object for one instrument under its documented ``EXCHANGE:SYMBOL`` key, and ``verify_path_quote_envelope`` re-derives ticker, LTP and provider time from the bytes, requiring exact agreement with the stored columns. Pure: no I/O, no provider call.
 
-Top-level declarations: `PathEnvelopeError` (line 23), `encode_path_quote_envelope` (line 27), `_provider_clock` (line 35), `verify_path_quote_envelope` (line 47)
+Top-level declarations: `PathEnvelopeError` (line 23), `encode_path_quote_envelope` (line 27), `provider_clock` (line 35), `verify_path_quote_envelope` (line 47)
 
 ## `python-engine/momentum_replay.py`
 
@@ -1860,9 +1860,9 @@ Declared tables: `selected_leg_collection_gaps`, `selected_leg_subscriptions`
 
 Forward-only NIFTY/SENSEX quote evidence collection. This module is intentionally independent from partner delivery, profiles, qualification and every order API. It records exactly what the permitted provider returned and marks the REST path as lower-frequency; a WebSocket consumer may feed ``ingest_provider_packet`` without changing its evidence format.
 
-Top-level declarations: `_configured_underlyings` (line 35), `_fair_collection_order` (line 40), `_quote_archive` (line 59), `_provider_timestamp` (line 69), `_finite_positive` (line 87), `_five_levels` (line 95), `normalise_quote` (line 112), `_select_contracts` (line 158), `_with_active_legs` (line 173), `_documented_quotes` (line 185), `_documented_quotes_timed` (line 193), `_ProviderDeadlineExceeded` (line 208), `_bounded_documented_quotes` (line 212), `_index_coverage` (line 257), `collect_rest_quote_snapshot` (line 266), `research_quote_collection_tick` (line 574)
+Top-level declarations: `_configured_underlyings` (line 35), `_fair_collection_order` (line 40), `_quote_archive` (line 59), `_provider_timestamp` (line 69), `_finite_positive` (line 87), `_five_levels` (line 95), `normalise_quote` (line 112), `_select_contracts` (line 158), `_with_active_legs` (line 173), `_documented_quotes` (line 185), `_documented_quotes_timed` (line 193), `_paper_path_instruments` (line 213), `_schedule_paper_path_write` (line 226), `_ProviderDeadlineExceeded` (line 265), `_bounded_documented_quotes` (line 269), `_index_coverage` (line 315), `collect_rest_quote_snapshot` (line 324), `research_quote_collection_tick` (line 652)
 
-Engine dependencies: `config`, `fno_instruments`, `fno_models`, `fno_underlyings`, `research_archive`, `research_leg_subscriptions`
+Engine dependencies: `config`, `fno_instruments`, `fno_models`, `fno_underlyings`, `momentum_paper`, `momentum_path_envelope`, `research_archive`, `research_leg_subscriptions`
 
 ## `python-engine/research_study.py`
 

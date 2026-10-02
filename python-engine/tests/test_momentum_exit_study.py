@@ -200,3 +200,30 @@ def test_module_has_no_runtime_order_network_or_storage_capability():
             names.add(node.id)
     assert not (imports & {"httpx", "requests", "aiosqlite", "kite", "fno_executor"})
     assert not (names & {"place_order", "modify_order", "cancel_order", "post", "put", "delete"})
+
+
+# [S4 wiring 2026-10-02] Opt-in closing-quote policy; default stays exact.
+def _late_close_quotes(close_offset_sec):
+    rows = [row for row in _quotes() if row["observed_at"] != "2026-09-25T15:15:00+05:30"]
+    late = datetime.fromisoformat("2026-09-25T15:15:00+05:30") + timedelta(seconds=close_offset_sec)
+    # 15:14:30 keeps the final pre-deadline gap within the declared 60 s.
+    return rows + [{"entry_id": "entry-1", "observed_at": "2026-09-25T15:14:30+05:30", "ltp": 106.0},
+                   {"entry_id": "entry-1", "observed_at": late.isoformat(), "ltp": 106.0}]
+
+
+def test_default_policy_still_requires_an_exact_1515_quote(tmp_path):
+    report = study.build_momentum_exit_study(_write(tmp_path, _packet(quotes=_late_close_quotes(25))))
+    assert report["pairs"][0]["reason"] == "exact_1515_ist_quote_missing"
+    assert "deadline_quote_policy" not in report["evidence_contract"]
+
+
+@pytest.mark.parametrize("offset, status", [(25, "COMPLETE"), (61, "INSUFFICIENT_EVIDENCE")])
+def test_first_quote_within_gap_policy_closes_at_the_real_observation(tmp_path, monkeypatch, offset, status):
+    monkeypatch.setattr(study.settings, "MOMENTUM_USE_SCALE_OUT", False)
+    packet = _packet(quotes=_late_close_quotes(offset), deadline_quote_policy=study.DEADLINE_FIRST_WITHIN_GAP)
+    report = study.build_momentum_exit_study(_write(tmp_path, packet))
+    pair = report["pairs"][0]
+    assert pair["status"] == status
+    if status == "COMPLETE":
+        assert pair["alternative"]["exit_at"] == "2026-09-25T15:15:25+05:30"
+        assert pair["alternative"]["reason"] == "intraday_deadline"

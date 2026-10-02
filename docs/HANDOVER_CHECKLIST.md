@@ -2,6 +2,12 @@
 
 ## October 2 independent S1–S6 review receipt
 
+- [x] S4 runtime wiring: equity paths attached to the existing research request,
+  bounded background writer, deadline-close policy, per-entry adapter
+  exclusion. End-to-end test plus 1091 selected tests passed. No Production
+  environment change needed (defaults apply; `.env` has no override).
+- [ ] After promotion: confirm `momentum_paper_paths` writes in collection runs
+  and five reconciled fresh lifecycles.
 - [x] Review response: S6 one-entry fee allocation and verified archive pairing
   (`ea8695d`); S3 crash-recoverable rotation (`c054bf3`); S4 typed
   byte-bound path envelope (`bfd343d`). Regressions fail on prior source;

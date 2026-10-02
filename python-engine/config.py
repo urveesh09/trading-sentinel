@@ -299,6 +299,11 @@ class Settings(BaseSettings):
     MOMENTUM_PAPER_PATH_RETENTION: int = 100000
     MOMENTUM_PAPER_PATH_PACKET_MAX_BYTES: int = 4096
     MOMENTUM_PAPER_PATH_MAX_GAP_SECONDS: int = 300
+    # [S4 wiring 2026-10-02] Subscribed paper tickers ride along in the research
+    # collector's existing per-minute quote request (no additional request).
+    MOMENTUM_PAPER_PATH_CAPTURE_ENABLED: bool = True
+    MOMENTUM_PAPER_PATH_MAX_TICKERS: int = 20
+    MOMENTUM_PAPER_PATH_EXCHANGE: str = "NSE"
     # Broker-free research side-channel. It evaluates declared variants using
     # frames already fetched by the live scanner and never reaches sizing or
     # order execution, so evidence collection is safe to enable by default.

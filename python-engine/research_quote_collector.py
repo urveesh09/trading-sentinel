@@ -192,6 +192,7 @@ async def _documented_quotes(kite, contracts: Sequence[Contract], segment: str) 
 
 async def _documented_quotes_timed(
     kite, contracts: Sequence[Contract], segment: str,
+    extra_instruments: Optional[Mapping[int, str]] = None,
 ) -> Tuple[Mapping[int, Mapping[str, Any]], Dict[str, Any]]:
     """Documented lookup plus limiter/transport attribution where available.
 
@@ -201,8 +202,64 @@ async def _documented_quotes_timed(
     """
     if getattr(type(kite), "get_quote_by_instruments_with_timing", None) is not None:
         request = {contract.token: f"{segment}:{contract.tradingsymbol}" for contract in contracts}
+        request.update(extra_instruments or {})
         return await kite.get_quote_by_instruments_with_timing(request)
     return await _documented_quotes(kite, contracts, segment), {"timing_state": "UNAVAILABLE"}
+
+
+_path_write_task: Optional["asyncio.Task[int]"] = None
+
+
+def _paper_path_instruments(kite, now_ist: datetime) -> Dict[int, str]:
+    """Subscribed paper tickers to attach to an existing request (S4 wiring)."""
+    if (not settings.MOMENTUM_PAPER_PATH_CAPTURE_ENABLED or not settings.MOMENTUM_PAPER_ENABLED
+            or getattr(type(kite), "get_quote_by_instruments_with_timing", None) is None):
+        return {}
+    from momentum_paper import active_paper_path_tickers
+    tickers = active_paper_path_tickers(settings.DB_PATH, now_ist,
+                                        limit=int(settings.MOMENTUM_PAPER_PATH_MAX_TICKERS))
+    exchange = str(settings.MOMENTUM_PAPER_PATH_EXCHANGE).strip().upper()
+    # Negative keys cannot collide with real instrument tokens.
+    return {-(index + 1): f"{exchange}:{ticker}" for index, ticker in enumerate(tickers)}
+
+
+def _schedule_paper_path_write(data: Mapping[int, Any], instruments: Mapping[int, str],
+                               received_at: datetime) -> Dict[str, Any]:
+    """Hand verified envelopes to one bounded background writer.
+
+    Collection never waits on the trading database: at most one write is in
+    flight, and a busy writer drops this batch as an explicit, counted gap.
+    """
+    global _path_write_task
+    from momentum_path_envelope import PathEnvelopeError, encode_path_quote_envelope, provider_clock
+    observations, invalid = [], 0
+    for key, instrument in instruments.items():
+        quote = data.get(key) if isinstance(data, Mapping) else None
+        price = quote.get("last_price") if isinstance(quote, Mapping) else None
+        try:
+            if isinstance(price, bool) or not isinstance(price, (int, float)) or not math.isfinite(price) or price <= 0:
+                raise PathEnvelopeError("missing last_price")
+            observed_at = provider_clock(quote)
+            observations.append({
+                "ticker": instrument.split(":", 1)[1], "ltp": float(price),
+                "provider_observed_at": observed_at.astimezone(timezone.utc).isoformat(),
+                "receipt_at": received_at.astimezone(timezone.utc).isoformat(),
+                "source_packet": encode_path_quote_envelope(instrument_key=instrument, quote=quote),
+            })
+        except (PathEnvelopeError, TypeError, ValueError):
+            invalid += 1
+    outcome: Dict[str, Any] = {"instruments": len(instruments), "observations": len(observations),
+                               "invalid_or_missing": invalid, "write": "none"}
+    if not observations:
+        return outcome
+    if _path_write_task is not None and not _path_write_task.done():
+        outcome["write"] = "skipped_writer_busy"
+        return outcome
+    from momentum_paper import record_momentum_paper_path_observations
+    _path_write_task = asyncio.create_task(
+        record_momentum_paper_path_observations(settings.DB_PATH, observations))
+    outcome["write"] = "scheduled"
+    return outcome
 
 
 class _ProviderDeadlineExceeded(TimeoutError):
@@ -216,6 +273,7 @@ async def _bounded_documented_quotes(
     *,
     remaining_runtime_sec: Optional[Callable[[], float]],
     timing_sink: Optional[Callable[[Dict[str, Any]], None]] = None,
+    extra_instruments: Optional[Mapping[int, str]] = None,
 ) -> Mapping[int, Mapping[str, Any]]:
     """Await one quote operation, cancelling it at the tick's remaining budget.
 
@@ -229,10 +287,10 @@ async def _bounded_documented_quotes(
 
     def _record(timing: Dict[str, Any]) -> None:
         if timing_sink is not None:
-            timing_sink({**timing, "tokens": len(contracts),
+            timing_sink({**timing, "tokens": len(contracts) + len(extra_instruments or {}),
                          "elapsed_sec": round(time.monotonic() - started, 6)})
 
-    operation = _documented_quotes_timed(kite, contracts, segment)
+    operation = _documented_quotes_timed(kite, contracts, segment, extra_instruments)
     if remaining_runtime_sec is None:
         data, timing = await operation
         _record(timing)
@@ -377,6 +435,13 @@ async def collect_rest_quote_snapshot(
     await asyncio.to_thread(archive.finalize_prior_days, now_ist.astimezone(IST).date().isoformat())
     result["stage_durations_sec"]["archive_finalization"] = round(time.monotonic() - stage_started, 6)
     books = books or {name: get_instruments_for(name) for name in underlyings}
+    try:
+        paper_instruments = await asyncio.to_thread(_paper_path_instruments, kite, now_ist)
+    except Exception as exc:  # evidence capture must never break collection
+        logger.warning("momentum_paper_path_subscription_read_failed err=%s", type(exc).__name__)
+        paper_instruments = {}
+    if paper_instruments:
+        result["momentum_paper_paths"] = {"instruments": len(paper_instruments), "write": "not_attached"}
     for underlying_index, name in enumerate(underlyings):
         # [WORKFLOW-C.F2 2026-09-16] Cap check at the start
         # of each underlying's iteration. If the tick has
@@ -424,10 +489,14 @@ async def collect_rest_quote_snapshot(
                 first_contracts.setdefault(leg.contract.token, leg.contract)
             if first_contracts:
                 stage_started = time.monotonic()
+                # Paper-path equities share the first existing request of the
+                # tick (one attachment per tick); no request is added for them.
+                attach, paper_instruments = paper_instruments, {}
                 first_data = await _bounded_documented_quotes(
                     kite, list(first_contracts.values()), segment,
                     remaining_runtime_sec=remaining_runtime_sec,
                     timing_sink=_provider_timing(name, "reference_and_active_legs"),
+                    extra_instruments=attach or None,
                 )
                 result["stage_durations_sec"]["provider_quote"] = round(result["stage_durations_sec"].get("provider_quote", 0) + time.monotonic() - stage_started, 6)
                 # Receipt time is captured after the provider call, not from
@@ -435,6 +504,15 @@ async def collect_rest_quote_snapshot(
                 first_received_at = datetime.now(IST)
                 if not isinstance(first_data, Mapping):
                     raise ValueError("quote batch must be a mapping")
+                if attach:
+                    first_data = dict(first_data)
+                    equity = {key: first_data.pop(key, None) for key in attach}
+                    try:
+                        result["momentum_paper_paths"] = _schedule_paper_path_write(
+                            equity, attach, first_received_at)
+                    except Exception as exc:
+                        result["momentum_paper_paths"] = {"instruments": len(attach), "write": "failed",
+                                                          "error_type": type(exc).__name__}
             if future is not None:
                 future_quote = first_data.get(future.token) if first_data else None
                 packet_token = future_quote.get("instrument_token") if isinstance(future_quote, Mapping) else None

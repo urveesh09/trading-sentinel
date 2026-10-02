@@ -48,6 +48,7 @@ from momentum_exit_study import (
     _position,
     _simulate as _study_simulate,
     _validated_quote_path,
+    deadline_policy_of,
     load_exit_study_packet,
     write_study_report_once,
 )
@@ -248,7 +249,7 @@ def _simulate_thesis(entry: StudyEntry, quotes: Sequence[Quote], params: Mapping
             if trail < quote.ltp:
                 position["trailing_stop_current"] = max(float(position["trailing_stop_current"]), trail)
     if not state["closed"] and state.get("reason") != "invalid_scale_out_decision":
-        deadline_quote = next(quote for quote in quotes if quote.observed_at == _deadline(entry))
+        deadline_quote = quotes[-1]  # validated path ends with the deadline close quote
         _close(entry, state, deadline_quote.ltp, "intraday_deadline", deadline_quote.observed_at)
     result = _finalise(entry, THESIS_POLICY, state, observed_prices)
     result["exits_replaced"] = replaced
@@ -286,10 +287,11 @@ def build_exit_experiment(packet_path: str | os.PathLike[str], manifest: Mapping
     policy = str(manifest["candidate_policy"])
     params = CANDIDATE_POLICIES[policy]
     max_gap = int(packet["max_quote_gap_seconds"])
+    deadline_policy = deadline_policy_of(packet)
     pairs = []
     for entry in sorted(entries, key=lambda item: item.entry_id):
         sample = "HOLDOUT" if entry.entry_at > frozen_at else "DEVELOPMENT"
-        quotes, issue = _validated_quote_path(entry, grouped[entry.entry_id], max_gap)
+        quotes, issue = _validated_quote_path(entry, grouped[entry.entry_id], max_gap, deadline_policy)
         base = {"entry_id": entry.entry_id, "admission_key": entry.admission_key,
                 "ticker": entry.ticker, "source_ref": entry.source_ref,
                 "entry_economics": _entry_economics(entry), "sample_class": sample}
@@ -326,6 +328,7 @@ def build_exit_experiment(packet_path: str | os.PathLike[str], manifest: Mapping
         "manifest": dict(manifest),
         "evidence_contract": {
             "timezone": "Asia/Kolkata", "max_quote_gap_seconds": max_gap, "deadline": "15:15",
+            "deadline_quote_policy": deadline_policy,
             "missing_or_ambiguous_path": "INSUFFICIENT_EVIDENCE",
             "holdout": "entries strictly after manifest.frozen_at; others are DEVELOPMENT",
             "outcomes_are": "paper_research_only",

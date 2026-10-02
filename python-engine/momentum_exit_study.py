@@ -230,6 +230,14 @@ def load_exit_study_packet(path: str | os.PathLike[str]) -> tuple[dict[str, Any]
     return packet, entries, quotes, f"sha256:{hashlib.sha256(raw_bytes).hexdigest()}"
 
 
+def deadline_policy_of(packet: Mapping[str, Any]) -> str:
+    """Optional input field; absent means the original exact-15:15 rule."""
+    policy = packet.get("deadline_quote_policy", DEADLINE_EXACT)
+    if policy not in _DEADLINE_POLICIES:
+        raise ExitStudyError(f"deadline_quote_policy must be one of {_DEADLINE_POLICIES}")
+    return policy
+
+
 def _policy_snapshot() -> dict[str, Any]:
     snapshot = {name: getattr(settings, name) for name in _POLICY_SETTINGS}
     return {
@@ -251,8 +259,22 @@ def _deadline(entry: StudyEntry) -> datetime:
     return datetime.combine(entry.entry_at.date(), time(15, 15), tzinfo=IST)
 
 
+DEADLINE_EXACT = "exact_1515"
+DEADLINE_FIRST_WITHIN_GAP = "first_at_or_after_1515_within_gap"
+_DEADLINE_POLICIES = (DEADLINE_EXACT, DEADLINE_FIRST_WITHIN_GAP)
+
+
 def _validated_quote_path(entry: StudyEntry, quotes: Sequence[Quote],
-                          max_gap_seconds: int) -> tuple[list[Quote], str | None]:
+                          max_gap_seconds: int,
+                          deadline_policy: str = DEADLINE_EXACT) -> tuple[list[Quote], str | None]:
+    """Validate a path; its last element is always the deadline close quote.
+
+    ``exact_1515`` (the original v1 rule) needs a quote at exactly 15:15:00.
+    ``first_at_or_after_1515_within_gap`` accepts the first observation at or
+    after 15:15 that is within the declared gap -- when the real square-off
+    would execute -- and keeps its actual provider time; nothing is
+    re-stamped to 15:15.
+    """
     if entry.entry_at.time() >= time(15, 15):
         return [], "entry_at_or_after_intraday_deadline"
     deadline = _deadline(entry)
@@ -277,17 +299,28 @@ def _validated_quote_path(entry: StudyEntry, quotes: Sequence[Quote],
             quote.observed_at - previous.observed_at
         ).total_seconds() > max_gap_seconds:
             return [], "quote_gap_exceeds_declared_maximum"
+        if (deadline_policy == DEADLINE_FIRST_WITHIN_GAP and quote.observed_at > deadline
+                and not deadline_quote):
+            gap_from_previous = (quote.observed_at - previous.observed_at).total_seconds() if previous else None
+            if (quote.observed_at - deadline).total_seconds() <= max_gap_seconds and (
+                    gap_from_previous is None or gap_from_previous <= max_gap_seconds):
+                normalised.append(quote)
+                deadline_quote = True
+            break
         previous = quote
         if quote.observed_at <= deadline:
             normalised.append(quote)
         if quote.observed_at == deadline:
             deadline_quote = True
+            if deadline_policy == DEADLINE_FIRST_WITHIN_GAP:
+                break
     if not normalised:
         return [], "no_quotes_at_or_before_intraday_deadline"
     if (normalised[0].observed_at - entry.entry_at).total_seconds() > max_gap_seconds:
         return [], "initial_quote_gap_exceeds_declared_maximum"
     if not deadline_quote:
-        return [], "exact_1515_ist_quote_missing"
+        return [], ("exact_1515_ist_quote_missing" if deadline_policy == DEADLINE_EXACT
+                    else "no_quote_within_gap_at_or_after_1515_ist")
     return normalised, None
 
 
@@ -432,7 +465,8 @@ def _simulate(entry: StudyEntry, quotes: Sequence[Quote], variant: str) -> dict[
                 quote.ltp - (0.5 * r_per_share),
             )
     if not state["closed"]:
-        deadline_quote = next(quote for quote in quotes if quote.observed_at == _deadline(entry))
+        # The validated path always ends with the deadline close quote.
+        deadline_quote = quotes[-1]
         _close(entry, state, deadline_quote.ltp, "intraday_deadline", deadline_quote.observed_at)
     return _finalise(entry, variant, state, observed_prices)
 
@@ -490,9 +524,10 @@ def build_momentum_exit_study(path: str | os.PathLike[str]) -> dict[str, Any]:
     """Build a deterministic paired report without changing any application state."""
     packet, entries, grouped_quotes, input_fingerprint = load_exit_study_packet(path)
     max_gap = int(packet["max_quote_gap_seconds"])
+    deadline_policy = deadline_policy_of(packet)
     pairs = []
     for entry in sorted(entries, key=lambda item: item.entry_id):
-        quotes, issue = _validated_quote_path(entry, grouped_quotes[entry.entry_id], max_gap)
+        quotes, issue = _validated_quote_path(entry, grouped_quotes[entry.entry_id], max_gap, deadline_policy)
         if issue is not None:
             pairs.append(_insufficient_pair(entry, issue))
             continue
@@ -515,6 +550,7 @@ def build_momentum_exit_study(path: str | os.PathLike[str]) -> dict[str, Any]:
             "timezone": "Asia/Kolkata",
             "max_quote_gap_seconds": max_gap,
             "deadline": "15:15",
+            **({"deadline_quote_policy": deadline_policy} if deadline_policy != DEADLINE_EXACT else {}),
             "missing_or_ambiguous_path": "INSUFFICIENT_EVIDENCE",
             "outcomes_are": "paper_research_only",
         },

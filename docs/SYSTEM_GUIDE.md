@@ -1,5 +1,39 @@
 # Trading Sentinel — system guide and engineering handover
 
+## October 2 S4 passive-path runtime wiring (Dev)
+
+The paper monitor's gateway LTP has no provider timestamp or raw quote, so it
+cannot feed source-bound paths. Instead, each research-collector tick attaches
+the active subscribed paper tickers (`NSE:TICKER`, up to
+`MOMENTUM_PAPER_PATH_MAX_TICKERS=20`) to its existing first quote request
+(future plus exact legs). Kite accepts mixed exchanges in one call, so no
+provider request is added; the ladder request is unchanged. Equity packets
+are removed from the F&O data before any research logic runs and wrapped in
+`kite_equity_quote_envelope_v1`. One background writer at a time stores them;
+a busy writer drops the batch as a counted gap (`momentum_paper_paths` in the
+collection result), and collection never waits on the trading database.
+Gated by `MOMENTUM_PAPER_PATH_CAPTURE_ENABLED` (default true),
+`MOMENTUM_PAPER_ENABLED` and research collection. Production `.env` overrides
+none of these, so no environment change is needed.
+
+Two S4 design defects that would have blocked every real path are corrected:
+- Provider timestamps never equal exactly 15:15:00, so the exact-15:15 rule
+  could not complete. Opt-in `deadline_quote_policy:
+  first_at_or_after_1515_within_gap` (v1 study and S6a) closes at the first
+  observation at or after 15:15 within the declared gap, with its real time.
+  Capture keeps observations up to the gap past the deadline. Packets
+  without the field keep the exact rule (unchanged reports).
+- The adapter returned UNAVAILABLE for every path when any one admission was
+  incomplete. It now packs complete entries and lists `unavailable_entries`
+  with reasons; with no complete entry it returns the first reason as before.
+
+Tests: an end-to-end wiring run (real collector, capture, background writer,
+adapter and v1 study, closing at 15:15:25), no-attachment cases, busy-writer
+gap, per-entry exclusion and deadline-policy study tests. Cross-phase
+selection: 1091 passed, one known skip. Dev only. After promotion: confirm
+`momentum_paper_paths` in collection runs and collect five reconciled fresh
+lifecycles before any study is treated as evidence.
+
 ## October 2 review-response corrections (Dev)
 
 - Session CSV rotation is crash-recoverable: unrecorded archives are

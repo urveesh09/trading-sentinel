@@ -34,7 +34,7 @@ from __future__ import annotations
 import hashlib
 import json
 import math
-from datetime import datetime, time, timezone
+from datetime import datetime, time, timedelta, timezone
 from typing import Awaitable, Callable, Optional
 from zoneinfo import ZoneInfo
 
@@ -371,6 +371,36 @@ def _parse_observation_clock(value: object, name: str) -> datetime:
     return parsed.astimezone(timezone.utc)
 
 
+def active_paper_path_tickers(db_path: str, now_utc: datetime, *, limit: int) -> list[str]:
+    """Tickers whose passive path is still collecting (read-only, bounded).
+
+    A subscription stays active from entry until the declared gap past its
+    15:15 IST study deadline, so the closing observation can be captured.
+    """
+    import sqlite3
+    from pathlib import Path
+    path = Path(db_path)
+    if limit < 1 or not path.is_file():
+        return []
+    gap = max(1, min(300, int(settings.MOMENTUM_PAPER_PATH_MAX_GAP_SECONDS)))
+    now_utc = now_utc.astimezone(timezone.utc)
+    try:
+        con = sqlite3.connect(f"{path.resolve().as_uri()}?mode=ro", uri=True, timeout=1.0)
+    except sqlite3.Error:
+        return []
+    try:
+        rows = con.execute(
+            f"SELECT DISTINCT ticker FROM {_PATH_SUBSCRIPTIONS_TABLE} "
+            "WHERE entry_at<=? AND study_deadline_at>=? ORDER BY ticker LIMIT ?",
+            (now_utc.isoformat(), (now_utc - timedelta(seconds=gap)).isoformat(), int(limit)),
+        ).fetchall()
+    except sqlite3.Error:
+        return []  # schema not yet created: nothing is subscribed
+    finally:
+        con.close()
+    return [str(row[0]) for row in rows]
+
+
 async def record_momentum_paper_path_observations(db_path: str, observations: list[dict]) -> int:
     """Persist caller-supplied quote receipts for subscribed paper paths.
 
@@ -388,6 +418,7 @@ async def record_momentum_paper_path_observations(db_path: str, observations: li
             await _init_path_collector(db)
             await db.execute("BEGIN IMMEDIATE")
             packet_cap = max(1, int(settings.MOMENTUM_PAPER_PATH_PACKET_MAX_BYTES))
+            max_gap = max(1, min(300, int(settings.MOMENTUM_PAPER_PATH_MAX_GAP_SECONDS)))
             for raw in observations:
                 try:
                     if not isinstance(raw, dict):
@@ -411,10 +442,13 @@ async def record_momentum_paper_path_observations(db_path: str, observations: li
                 except (TypeError, ValueError, OverflowError):
                     logger.warning("momentum_paper_path_observation_rejected")
                     continue
+                # The closing observation may arrive just after 15:15; keep
+                # observations up to the declared gap past the deadline.
+                closing_window = provider_at - timedelta(seconds=max_gap)
                 rows = await (await db.execute(
                     f"SELECT admission_key,study_deadline_at FROM {_PATH_SUBSCRIPTIONS_TABLE} "
                     "WHERE ticker=? AND entry_at<=? AND study_deadline_at>=?",
-                    (ticker, provider_at.isoformat(), provider_at.isoformat()),
+                    (ticker, provider_at.isoformat(), closing_window.isoformat()),
                 )).fetchall()
                 for admission_key, deadline_raw in rows:
                     deadline = _parse_observation_clock(deadline_raw, "study_deadline_at")
@@ -423,7 +457,7 @@ async def record_momentum_paper_path_observations(db_path: str, observations: li
                         "(admission_key,ticker,provider_observed_at,receipt_at,ltp,deadline_observation,"
                         "source_packet,source_packet_sha256) VALUES (?,?,?,?,?,?,?,?)",
                         (admission_key, ticker, provider_at.isoformat(), receipt_at.isoformat(), ltp,
-                         int(provider_at == deadline), packet, packet_hash),
+                         int(provider_at >= deadline), packet, packet_hash),
                     )
                     written += int(cur.rowcount)
             retention = max(1, int(settings.MOMENTUM_PAPER_PATH_RETENTION))

@@ -15,7 +15,7 @@ import sqlite3
 from typing import Any
 
 from config import settings
-from momentum_exit_study import INPUT_SCHEMA
+from momentum_exit_study import DEADLINE_FIRST_WITHIN_GAP, INPUT_SCHEMA
 from momentum_path_envelope import PathEnvelopeError, verify_path_quote_envelope
 
 
@@ -51,6 +51,77 @@ def _packet_hash(raw: object) -> str | None:
     return f"sha256:{hashlib.sha256(raw).hexdigest()}"
 
 
+def _entry_path(con, row, max_gap: int):
+    """Return (entry, quotes) for one exact lifecycle, or the reason it is unavailable.
+
+    The closing quote is the first observation at or after the 15:15 IST study
+    deadline within ``max_gap`` seconds, with its real provider time; later
+    observations are ignored.  No timestamp is rewritten.
+    """
+    key = row["admission_key"]
+    admission_hash = _packet_hash(row["source_packet_json"])
+    if admission_hash is None or admission_hash != row["source_packet_sha256"]:
+        return f"source_packet_identity_mismatch:{key}"
+    try:
+        entry = json.loads(row["entry_economics_json"])
+    except (TypeError, json.JSONDecodeError):
+        return f"entry_economics_unavailable:{key}"
+    if not isinstance(entry, dict) or entry.get("schema") != "momentum_paper_entry_economics_v1" or entry.get("ticker") != row["ticker"]:
+        return f"entry_economics_mismatch:{key}"
+    if entry.get("shares") != row["original_shares"]:
+        return f"original_quantity_mismatch:{key}"
+    entry_at, deadline = _timestamp(row["entry_at"]), _timestamp(row["study_deadline_at"])
+    if entry_at is None or deadline is None:
+        return f"path_clock_unavailable:{key}"
+    observed = con.execute(
+        "SELECT ticker,provider_observed_at,receipt_at,ltp,deadline_observation,source_packet,source_packet_sha256 "
+        "FROM momentum_paper_path_observations WHERE admission_key=? ORDER BY provider_observed_at,id",
+        (key,),
+    ).fetchall()
+    if not observed:
+        return f"no_quotes:{key}"
+    quotes = []
+    previous = None
+    saw_deadline = False
+    for quote in observed:
+        observed_at, receipt_at = _timestamp(quote["provider_observed_at"]), _timestamp(quote["receipt_at"])
+        if (quote["ticker"] != row["ticker"] or observed_at is None or receipt_at is None
+                or observed_at < entry_at or receipt_at < observed_at):
+            return f"invalid_quote_clock_or_ticker:{key}"
+        if observed_at > deadline and (observed_at - deadline).total_seconds() > max_gap:
+            break  # first post-deadline observation is outside the closing window
+        if (receipt_at - observed_at).total_seconds() > max_gap:
+            return f"quote_receipt_delay_exceeds_declared_maximum:{key}"
+        if not isinstance(quote["ltp"], (int, float)) or not math.isfinite(quote["ltp"]) or quote["ltp"] <= 0:
+            return f"invalid_quote_price:{key}"
+        if _packet_hash(quote["source_packet"]) != quote["source_packet_sha256"]:
+            return f"quote_packet_identity_mismatch:{key}"
+        try:
+            verify_path_quote_envelope(bytes(quote["source_packet"]), ticker=row["ticker"],
+                                       ltp=float(quote["ltp"]), provider_observed_at=observed_at)
+        except PathEnvelopeError:
+            return f"quote_packet_column_mismatch:{key}"
+        if previous is not None and (observed_at <= previous or (observed_at - previous).total_seconds() > max_gap):
+            return f"quote_gap_or_order_invalid:{key}"
+        if previous is None and (observed_at - entry_at).total_seconds() > max_gap:
+            return f"initial_quote_gap_exceeds_declared_maximum:{key}"
+        previous = observed_at
+        quotes.append({"entry_id": key, "observed_at": observed_at.isoformat(), "ltp": float(quote["ltp"])})
+        if observed_at >= deadline:
+            saw_deadline = True
+            break
+    if not saw_deadline:
+        return f"no_quote_within_gap_at_or_after_1515_ist:{key}"
+    return ({
+        "entry_id": key, "admission_key": key,
+        "source_ref": admission_hash, "ticker": entry["ticker"], "entry_at": entry["entry_at"],
+        "entry_price": entry["entry_price"], "stop_loss_initial": entry["stop_loss_initial"],
+        "target_1": entry["target_1"], "shares": entry["shares"],
+        "atr_14_at_entry": entry.get("atr_14_at_entry"), "vwap_at_entry": entry.get("vwap_at_entry"),
+        "regime_at_entry": entry.get("regime_at_entry"),
+    }, quotes)
+
+
 def build_momentum_paper_exit_study_packet(db_path: str, *, study_id: str = "momentum-paper-passive-paths") -> dict[str, Any]:
     """Build an in-memory S1 input packet only when every receipt is exact.
 
@@ -83,67 +154,24 @@ def build_momentum_paper_exit_study_packet(db_path: str, *, study_id: str = "mom
         if not rows:
             return _unavailable("no_passive_paper_paths")
         max_gap = max(1, min(300, int(settings.MOMENTUM_PAPER_PATH_MAX_GAP_SECONDS)))
-        entries, quotes = [], []
+        entries, quotes, unavailable = [], [], []
         for row in rows:
-            admission_hash = _packet_hash(row["source_packet_json"])
-            if admission_hash is None or admission_hash != row["source_packet_sha256"]:
-                return _unavailable(f"source_packet_identity_mismatch:{row['admission_key']}")
-            try:
-                entry = json.loads(row["entry_economics_json"])
-            except (TypeError, json.JSONDecodeError):
-                return _unavailable(f"entry_economics_unavailable:{row['admission_key']}")
-            if not isinstance(entry, dict) or entry.get("schema") != "momentum_paper_entry_economics_v1" or entry.get("ticker") != row["ticker"]:
-                return _unavailable(f"entry_economics_mismatch:{row['admission_key']}")
-            if entry.get("shares") != row["original_shares"]:
-                return _unavailable(f"original_quantity_mismatch:{row['admission_key']}")
-            entry_at, deadline = _timestamp(row["entry_at"]), _timestamp(row["study_deadline_at"])
-            if entry_at is None or deadline is None:
-                return _unavailable(f"path_clock_unavailable:{row['admission_key']}")
-            observed = con.execute(
-                "SELECT ticker,provider_observed_at,receipt_at,ltp,deadline_observation,source_packet,source_packet_sha256 "
-                "FROM momentum_paper_path_observations WHERE admission_key=? ORDER BY provider_observed_at,id",
-                (row["admission_key"],),
-            ).fetchall()
-            if not observed:
-                return _unavailable(f"no_quotes:{row['admission_key']}")
-            previous = None
-            saw_deadline = False
-            for quote in observed:
-                observed_at, receipt_at = _timestamp(quote["provider_observed_at"]), _timestamp(quote["receipt_at"])
-                if (quote["ticker"] != row["ticker"] or observed_at is None or receipt_at is None
-                        or observed_at < entry_at or observed_at > deadline or receipt_at < observed_at):
-                    return _unavailable(f"invalid_quote_clock_or_ticker:{row['admission_key']}")
-                if (receipt_at - observed_at).total_seconds() > max_gap:
-                    return _unavailable(f"quote_receipt_delay_exceeds_declared_maximum:{row['admission_key']}")
-                if not isinstance(quote["ltp"], (int, float)) or not math.isfinite(quote["ltp"]) or quote["ltp"] <= 0:
-                    return _unavailable(f"invalid_quote_price:{row['admission_key']}")
-                if _packet_hash(quote["source_packet"]) != quote["source_packet_sha256"]:
-                    return _unavailable(f"quote_packet_identity_mismatch:{row['admission_key']}")
-                try:
-                    verify_path_quote_envelope(bytes(quote["source_packet"]), ticker=row["ticker"],
-                                               ltp=float(quote["ltp"]), provider_observed_at=observed_at)
-                except PathEnvelopeError:
-                    return _unavailable(f"quote_packet_column_mismatch:{row['admission_key']}")
-                if previous is not None and (observed_at <= previous or (observed_at - previous).total_seconds() > max_gap):
-                    return _unavailable(f"quote_gap_or_order_invalid:{row['admission_key']}")
-                if previous is None and (observed_at - entry_at).total_seconds() > max_gap:
-                    return _unavailable(f"initial_quote_gap_exceeds_declared_maximum:{row['admission_key']}")
-                if observed_at == deadline:
-                    saw_deadline = True
-                previous = observed_at
-                quotes.append({"entry_id": row["admission_key"], "observed_at": observed_at.isoformat(), "ltp": float(quote["ltp"])})
-            if not saw_deadline:
-                return _unavailable(f"exact_1515_ist_quote_missing:{row['admission_key']}")
-            entries.append({
-                "entry_id": row["admission_key"], "admission_key": row["admission_key"],
-                "source_ref": admission_hash, "ticker": entry["ticker"], "entry_at": entry["entry_at"],
-                "entry_price": entry["entry_price"], "stop_loss_initial": entry["stop_loss_initial"],
-                "target_1": entry["target_1"], "shares": entry["shares"],
-                "atr_14_at_entry": entry.get("atr_14_at_entry"), "vwap_at_entry": entry.get("vwap_at_entry"),
-                "regime_at_entry": entry.get("regime_at_entry"),
-            })
+            built = _entry_path(con, row, max_gap)
+            if isinstance(built, str):
+                # One incomplete lifecycle is reported, never allowed to block
+                # every other exact path (S4 wiring correction).
+                unavailable.append({"admission_key": row["admission_key"], "reason": built})
+                continue
+            entry_row, entry_quotes = built
+            entries.append(entry_row)
+            quotes.extend(entry_quotes)
+        if not entries:
+            first = unavailable[0]["reason"]
+            return {**_unavailable(first), "unavailable_entries": unavailable}
         return {"schema": "momentum_paper_path_adapter_v1", "status": "COMPLETE", "reason": None,
+                "unavailable_entries": unavailable,
                 "packet": {"schema": INPUT_SCHEMA, "study_id": study_id, "max_quote_gap_seconds": max_gap,
+                           "deadline_quote_policy": DEADLINE_FIRST_WITHIN_GAP,
                            "entries": entries, "quotes": quotes}}
     except sqlite3.Error:
         return _unavailable("database_query_unavailable")
