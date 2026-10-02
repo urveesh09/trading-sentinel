@@ -193,7 +193,12 @@ _penny_scanner = None
 # on scanner singleton rebuild; 0 means "unknown" (older callers /
 # pre-2026-06-24 deployments will show no diagnostic line).
 _last_penny_scan_universe_size: int = 0
+# ``_last_penny_scan_at`` is the legacy completed-scan clock.  Keep it for
+# existing health consumers; S9 adds an attempt clock and outcome so a slow
+# provider call is not mistaken for a scan that never started.
 _last_penny_scan_at = None  # aware UTC datetime after successful scan_once only
+_last_penny_scan_attempt_at = None  # aware UTC datetime immediately before scan_once
+_last_penny_scan_outcome = "NEVER"  # NEVER | IN_FLIGHT | COMPLETED | TIMED_OUT | FAILED | CANCELLED
 # [AUDIT-FIX-CSV-SPAM 2026-06-26] Process-level one-shot gate for
 # the universe_csv_missing_fallback warning. The fallback works
 # (in-code NIFTY_500_TICKERS has 500 tickers), so emitting the
@@ -342,6 +347,7 @@ async def run_penny_scanner_once():
         logger.warning("penny_scanner_once_skip reason=no_access_token")
         return
     global _last_penny_scan_universe_size, _last_penny_scan_at
+    global _last_penny_scan_attempt_at, _last_penny_scan_outcome
     scanner = _get_penny_scanner()
     if scanner is None:
         # [PENNY-SCAN-SUMMARY 2026-07-06] Surface why the scanner is
@@ -364,6 +370,8 @@ async def run_penny_scanner_once():
     # fictitious winning paper outcome.  Run the paper-only stop check on the
     # existing market-hours cadence before looking for another entry.
     await run_penny_paper_stop_monitor()
+    _last_penny_scan_attempt_at = datetime.now(timezone.utc)
+    _last_penny_scan_outcome = "IN_FLIGHT"
     try:
         result = await asyncio.wait_for(
             scanner.scan_once(as_of=datetime.now(IST)),
@@ -402,7 +410,9 @@ async def run_penny_scanner_once():
             + int(result.get("error", 0))
         )
         _last_penny_scan_at = datetime.now(timezone.utc)
+        _last_penny_scan_outcome = "COMPLETED"
     except asyncio.TimeoutError:
+        _last_penny_scan_outcome = "TIMED_OUT"
         logger.error("penny_scan_timeout scan stuck on Kite; "
                      "next cron slot will resume")
         logger.warning(
@@ -411,7 +421,12 @@ async def run_penny_scanner_once():
             "FIX=penny_scan_timeout was logged -- the scan_once call hung "
             "on a Kite API; next 30s tick will resume"
         )
+    except asyncio.CancelledError:
+        # Do not leave a cancelled scheduler task displayed as an active scan.
+        _last_penny_scan_outcome = "CANCELLED"
+        raise
     except Exception as e:
+        _last_penny_scan_outcome = "FAILED"
         logger.error("penny_scan_failed", error=str(e))
         logger.warning(
             "penny_scan_summary caller_view "

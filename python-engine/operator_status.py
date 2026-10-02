@@ -27,6 +27,7 @@ DESIGN PRINCIPLES (operator-mandated 2026-06-25):
 import logging
 import sqlite3
 from datetime import datetime, timezone
+from zoneinfo import ZoneInfo
 from typing import Any, Dict, Optional
 
 logger = logging.getLogger(__name__)
@@ -34,22 +35,38 @@ logger = logging.getLogger(__name__)
 
 # ---- DB accessors ----------------------------------------------------
 
-def _today_pnl_by_source(db_path: str) -> Dict[str, float]:
+def _today_pnl_by_source(db_path: str, *, now: Optional[datetime] = None) -> Dict[str, float]:
     """Sum today's realised trade rows grouped by source.
     Returns {source: total_pnl} with at least one entry per known source."""
-    today = datetime.now(timezone.utc).date().isoformat()
-    out: Dict[str, float] = {"PENNY": 0.0, "SYSTEM": 0.0, "MOMENTUM": 0.0}
+    today = (now or datetime.now(timezone.utc)).astimezone(ZoneInfo("Asia/Kolkata")).date()
+    out: Dict[str, float] = {
+        "PENNY": 0.0,
+        "SYSTEM": 0.0,
+        "MOMENTUM": 0.0,
+        "MOMENTUM_PAPER": 0.0,
+        "PENNY_PAPER": 0.0,
+        "EDGE_PAPER": 0.0,
+        "FNO_PAPER": 0.0,
+    }
     try:
         with sqlite3.connect(db_path) as con:
             cur = con.execute(
-                "SELECT source, COALESCE(SUM(pnl), 0.0) FROM bankroll_ledger "
-                "WHERE event_type IN ('TRADE_PARTIAL','TRADE_CLOSED') "
-                "AND DATE(timestamp)=? "
-                "GROUP BY source",
-                (today,),
+                "SELECT source, pnl, timestamp FROM bankroll_ledger "
+                "WHERE event_type IN ('TRADE_PARTIAL', 'TRADE_CLOSED')"
             )
-            for source, pnl in cur.fetchall():
-                out[source] = float(pnl)
+            for source, pnl, stamp in cur.fetchall():
+                try:
+                    observed = datetime.fromisoformat(str(stamp).replace("Z", "+00:00"))
+                    # Legacy SQLite rows may have a timezone-less timestamp;
+                    # all writer clocks are UTC, so preserve that contract
+                    # rather than silently dropping historical P&L.
+                    if observed.tzinfo is None:
+                        observed = observed.replace(tzinfo=timezone.utc)
+                    if observed.astimezone(ZoneInfo("Asia/Kolkata")).date() != today:
+                        continue
+                    out[str(source)] = out.get(str(source), 0.0) + float(pnl or 0.0)
+                except (TypeError, ValueError):
+                    continue
     except sqlite3.Error as e:
         logger.warning("status_today_pnl_query_failed error=%s", str(e))
     return out
@@ -234,6 +251,17 @@ def format_status(snap: Dict[str, Any]) -> str:
     lines.append(
         f"Nifty ({n['market_regime']}): {n_bal_str} | "
         f"today {n_sign}Rs {n['pnl_today']:.0f} | open={n['open_positions']}"
+    )
+
+    # These independent paper books are ledger facts, not cash estimates and
+    # must never be folded into the live penny/Nifty summaries above.
+    paper = snap.get("by_source_today", {})
+    lines.append(
+        "Paper ledger today: "
+        f"Momentum {paper.get('MOMENTUM_PAPER', 0.0):+.0f} Rs | "
+        f"Penny {paper.get('PENNY_PAPER', 0.0):+.0f} Rs | "
+        f"Edge {paper.get('EDGE_PAPER', 0.0):+.0f} Rs | "
+        f"F&O {paper.get('FNO_PAPER', 0.0):+.0f} Rs"
     )
 
     return "\n".join(lines)

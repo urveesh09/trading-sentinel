@@ -73,6 +73,33 @@ state. Selection is always `HUMAN_REVIEW_REQUIRED` with no automatic change.
 Focused tests: 2 warnings-fatal passed. Dev-only; no database mutation,
 strategy retune, capital change, qualification, broker, AI or Production change.
 
+## October 2 S9 operator-state truthfulness (Dev)
+
+S9's first additive source slice makes existing operator surfaces say only what
+their evidence supports. Gateway `/health` retains `telegram_status` for
+clients, but no longer calls a constructed bot `connected`: its value is
+`diagnostic_bot_instance_present` with an explicit
+`telegram_status_basis`, or `delivery_backlog_present` when the durable local
+dead-letter count is non-zero. The Python-engine probe deadline is released on
+every response path. Health reads remain SELECT-only and do not queue, resend,
+acknowledge or expire anything.
+
+Penny scan health now preserves the legacy completed-success clock
+(`last_scan_at`) and exposes additive `last_scan_attempted_at`, age and a
+bounded outcome (`NEVER`, `IN_FLIGHT`, `COMPLETED`, `TIMED_OUT`, `FAILED`, or
+`CANCELLED`). An attempt means `scanner.scan_once` was invoked; pre-gate
+returns such as no token are not misrepresented as a scan. This lets a slow
+provider call be distinguished from no completed scan without changing its
+90-second deadline, cadence, provider load or entry behaviour. Operator status
+groups realised ledger rows by IST day and reports Momentum, Penny, Edge and
+F&O paper books separately as ledger facts, never as live cash/balance estimates;
+legacy timezone-less ledger clocks remain UTC as all writers specify. Focused
+checks: 2 Node health tests, 14 operator-status tests and 5 Penny-health tests
+passed. The old Windows FastAPI import leaves an existing shutdown
+event-loop/socket ResourceWarning after the Penny-health run; it is not hidden
+as a product result. Dev only; no Production, broker, order, queue or database
+migration change.
+
 ## October 2 S6 defined-risk spread exit research (Dev)
 
 `fno_dr_exit_experiment.py` keeps defined-risk spreads separate from the

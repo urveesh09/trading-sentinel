@@ -125,6 +125,9 @@ async def build_health_snapshot(db_path: str, penny_source: str = "PENNY") -> Di
           "regime": str,
           "last_scan_at": str (ISO) | None,
           "last_scan_age": str,
+          "last_scan_attempted_at": str (ISO) | None,
+          "last_scan_attempted_age": str,
+          "last_scan_outcome": "NEVER" | "IN_FLIGHT" | "COMPLETED" | "TIMED_OUT" | "FAILED" | "CANCELLED",
           "last_regime_at": str | None,
           "last_regime_age": str,
           "open_positions": int,
@@ -149,6 +152,9 @@ async def build_health_snapshot(db_path: str, penny_source: str = "PENNY") -> Di
             "regime": "UNKNOWN",
             "last_scan_at": None,
             "last_scan_age": "never",
+            "last_scan_attempted_at": None,
+            "last_scan_attempted_age": "never",
+            "last_scan_outcome": "NEVER",
             "last_regime_at": None,
             "last_regime_age": "never",
             "open_positions": 0,
@@ -184,6 +190,7 @@ async def build_health_snapshot(db_path: str, penny_source: str = "PENNY") -> Di
                 "today" if as_of == now.date().isoformat() else f"set to {as_of}"
             )
         last_penny_scan = getattr(_main, "_last_penny_scan_at", None)
+        last_penny_scan_attempt = getattr(_main, "_last_penny_scan_attempt_at", None)
         if last_penny_scan is not None:
             snap["penny"]["last_scan_at"] = (
                 last_penny_scan.isoformat()
@@ -192,6 +199,16 @@ async def build_health_snapshot(db_path: str, penny_source: str = "PENNY") -> Di
             )
         snap["penny"]["last_scan_age"] = _age_str(last_penny_scan, now)
         snap["penny"]["is_stale"] = _is_stale(last_penny_scan, now)
+        if last_penny_scan_attempt is not None:
+            snap["penny"]["last_scan_attempted_at"] = (
+                last_penny_scan_attempt.isoformat()
+                if hasattr(last_penny_scan_attempt, "isoformat")
+                else str(last_penny_scan_attempt)
+            )
+        snap["penny"]["last_scan_attempted_age"] = _age_str(last_penny_scan_attempt, now)
+        snap["penny"]["last_scan_outcome"] = getattr(
+            _main, "_last_penny_scan_outcome", "NEVER"
+        )
     except Exception as e:
         logger.warning("health_penny_section_failed error=%s", str(e))
 
@@ -300,6 +317,8 @@ def format_health(snap: Dict[str, Any]) -> str:
     p = snap["penny"]
     lines.append(
         f"Penny: regime={p['regime']}, last_scan={p['last_scan_age']}, "
+        f"attempt={p.get('last_scan_attempted_age', 'never')}, "
+        f"outcome={p.get('last_scan_outcome', 'UNKNOWN')}, "
         f"last_regime={p['last_regime_age']}, "
         f"open={p['open_positions']}"
     )

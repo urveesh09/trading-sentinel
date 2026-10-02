@@ -793,6 +793,18 @@ the momentum paper balance with penny cash again.
 Rollout/rollback: additive API/UI fields; explicit backlog actions have dry-run
 and receipts. Preserve old records on rollback and use GitHub promotion only.
 
+October 2 Dev receipt (initial source slice): `/health` retains its existing
+Telegram field but marks bot existence as diagnostic-only and exposes the
+dead-letter backlog as evidence; the Python probe timer is released on all
+response paths. Penny health preserves the existing completed-success clock
+and adds attempted clock/age plus bounded outcome. Operator status now groups
+ledger P&L by IST day and displays Momentum, Penny, Edge and F&O paper ledger facts
+without treating them as live cash. Health remains read-only. Focused checks:
+2 Node health tests, 14 operator-status tests and 5 Penny-health tests passed.
+Still open: the reviewed dry-run/reconciliation and supported expiry migration
+for historical requests, callbacks, unsynced orders and dead letters; fresh
+post-promotion no-trade/slow-provider evidence; and no ad-hoc Production SQL.
+
 ### S10 — P1: useful optional AI reviews without immediate source expiry
 
 Added after the owner reported frequent `AI review UNAVAILABLE

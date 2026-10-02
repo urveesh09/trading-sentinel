@@ -35,6 +35,18 @@ structure-level baseline versus target-hold/giveback replay is available, with
 its own max-loss R and one-entry/one-exit cost accounting. Focused S6/S8 tests:
 4 warnings-fatal passed. Future frozen HOLDOUT and human review remain open.
 
+S9 initial Dev slice: gateway health now labels Telegram bot presence as a
+diagnostic rather than a transport-confirmed connection, surfaces any durable
+dead-letter backlog, and releases its Python probe timer on every response
+path. Penny health separates the legacy completed scan clock from a bounded
+attempt/outcome state; operator status uses IST ledger-day attribution and
+lists each paper book without folding it into live cash. Focused checks: 2
+Node, 14 operator-status and 5 Penny-health tests passed. Remaining S9 work is
+operationally sensitive: define a reviewed read-only report and supported
+expiry/reconciliation migration for old pending requests, callbacks, unsynced
+orders and historical dead letters; then collect fresh slow-provider and
+no-trade evidence after GitHub promotion. Never use ad-hoc Production SQL.
+
 S4 runtime wiring (Dev): subscribed paper tickers ride the research
 collector's existing first quote request into byte-bound envelopes via one
 background writer. The deadline-close policy and per-entry adapter exclusion

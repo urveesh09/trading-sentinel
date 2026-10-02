@@ -23,6 +23,16 @@
   distinct max-loss R, baseline versus frozen target-hold/giveback replay and
   one entry/exit cost accounting. Focused S6/S8 tests: 4 warnings-fatal passed.
   Research-only; future frozen HOLDOUT review remains required.
+- [x] S9 initial truthful operator-state slice: additive Penny attempt/completed
+  clocks and bounded outcome; IST per-source ledger facts with paper books
+  kept separate; evidence-labelled Telegram status/dead-letter backlog; health
+  probe deadline cleanup. Focused Node health (2), operator status (14) and
+  Penny health (5) checks passed. Dev-only; no queue, order, broker, database
+  migration or Production change.
+- [ ] S9 operational backlog handling: review a read-only expiry/reconciliation
+  report and a supported idempotent migration for stale requests/callbacks,
+  unsynced orders and historical dead letters. Preserve audit records; do not
+  use ad-hoc Production SQL or resend stale trade instructions.
 - [x] S4 runtime wiring: equity paths attached to the existing research request,
   bounded background writer, deadline-close policy, per-entry adapter
   exclusion. End-to-end test plus 1091 selected tests passed. No Production

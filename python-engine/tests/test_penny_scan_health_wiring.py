@@ -14,6 +14,8 @@ async def test_successful_scan_sets_aware_last_scan_timestamp(monkeypatch):
     scanner.kite.instrument_cache = {"AAA": 1}
     scanner.regime = "PR1_CALM"
     monkeypatch.setattr(main, "_last_penny_scan_at", None)
+    monkeypatch.setattr(main, "_last_penny_scan_attempt_at", None)
+    monkeypatch.setattr(main, "_last_penny_scan_outcome", "NEVER")
     monkeypatch.setattr(main.kite, "access_token", "token")
     monkeypatch.setattr(main, "_within_penny_market_hours", lambda now: True)
     monkeypatch.setattr(main, "is_trading_day", AsyncMock(return_value=True))
@@ -23,6 +25,8 @@ async def test_successful_scan_sets_aware_last_scan_timestamp(monkeypatch):
     assert main._last_penny_scan_at is not None
     assert main._last_penny_scan_at.tzinfo is not None
     assert main._last_penny_scan_at.utcoffset() == timedelta(0)
+    assert main._last_penny_scan_attempt_at is not None
+    assert main._last_penny_scan_outcome == "COMPLETED"
 
 
 @pytest.mark.asyncio
@@ -32,6 +36,8 @@ async def test_failed_scan_does_not_set_last_scan_timestamp(monkeypatch):
     scanner = MagicMock()
     scanner.scan_once = AsyncMock(side_effect=RuntimeError("scan failed"))
     monkeypatch.setattr(main, "_last_penny_scan_at", None)
+    monkeypatch.setattr(main, "_last_penny_scan_attempt_at", None)
+    monkeypatch.setattr(main, "_last_penny_scan_outcome", "NEVER")
     monkeypatch.setattr(main.kite, "access_token", "token")
     monkeypatch.setattr(main, "_within_penny_market_hours", lambda now: True)
     monkeypatch.setattr(main, "is_trading_day", AsyncMock(return_value=True))
@@ -39,6 +45,8 @@ async def test_failed_scan_does_not_set_last_scan_timestamp(monkeypatch):
 
     await main.run_penny_scanner_once()
     assert main._last_penny_scan_at is None
+    assert main._last_penny_scan_attempt_at is not None
+    assert main._last_penny_scan_outcome == "FAILED"
 
 
 @pytest.mark.asyncio
@@ -49,9 +57,13 @@ async def test_health_reports_never_stale_and_recent_healthy(monkeypatch, db_pat
     monkeypatch.setattr(main, "_penny_regime_engine", None)
     monkeypatch.setattr(main, "last_run", datetime.now(timezone.utc))
     monkeypatch.setattr(main, "_last_penny_scan_at", None)
+    monkeypatch.setattr(main, "_last_penny_scan_attempt_at", None)
+    monkeypatch.setattr(main, "_last_penny_scan_outcome", "NEVER")
     never = await build_health_snapshot(db_path, penny_source="PENNY_PAPER")
     assert never["penny"]["last_scan_at"] is None
     assert never["penny"]["last_scan_age"] == "never"
+    assert never["penny"]["last_scan_attempted_at"] is None
+    assert never["penny"]["last_scan_outcome"] == "NEVER"
     assert never["penny"]["is_stale"] is True
 
     monkeypatch.setattr(
@@ -69,6 +81,25 @@ async def test_health_reports_never_stale_and_recent_healthy(monkeypatch, db_pat
     )
     stale = await build_health_snapshot(db_path, penny_source="PENNY_PAPER")
     assert stale["penny"]["is_stale"] is True
+
+
+@pytest.mark.asyncio
+async def test_health_distinguishes_inflight_attempt_from_completed_scan(monkeypatch, db_path):
+    import main
+    from penny_health import build_health_snapshot
+
+    now = datetime.now(timezone.utc)
+    monkeypatch.setattr(main, "_penny_regime_engine", None)
+    monkeypatch.setattr(main, "last_run", now)
+    monkeypatch.setattr(main, "_last_penny_scan_at", now - timedelta(minutes=10))
+    monkeypatch.setattr(main, "_last_penny_scan_attempt_at", now)
+    monkeypatch.setattr(main, "_last_penny_scan_outcome", "IN_FLIGHT")
+
+    snap = await build_health_snapshot(db_path, penny_source="PENNY_PAPER")
+
+    assert snap["penny"]["last_scan_age"] == "10 min ago"
+    assert snap["penny"]["last_scan_attempted_age"] == "just now"
+    assert snap["penny"]["last_scan_outcome"] == "IN_FLIGHT"
 
 
 def test_sync_health_command_uses_current_paper_source(monkeypatch, db_path):

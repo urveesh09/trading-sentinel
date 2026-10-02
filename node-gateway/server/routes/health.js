@@ -18,11 +18,11 @@ router.get('/', async (req, res) => {
   
   // Probe Container B
   const startMs = Date.now();
+  let timeout;
   try {
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 3000); // Strict 3s timeout
+    timeout = setTimeout(() => controller.abort(), 3000); // Strict 3s timeout
     const bRes = await fetch(`${config.PYTHON_ENGINE_URL}/health`, { signal: controller.signal });
-    clearTimeout(timeout);
     if (bRes.ok) {
       pythonEngineStatus = 'reachable';
       pythonEngineMs = Date.now() - startMs;
@@ -39,6 +39,9 @@ router.get('/', async (req, res) => {
     }
   } catch (e) {
     // Fails silently, variables remain 'unreachable'
+  } finally {
+    // Also release the deadline after a non-2xx response or fetch failure.
+    clearTimeout(timeout);
   }
 
   // Calculate token age
@@ -96,7 +99,11 @@ router.get('/', async (req, res) => {
     uptime_seconds: uptime,
     token_status: tokenInfo.status,
     token_age_minutes: tokenAgeMin,
-    telegram_status: "connected", // Simplified, as the bot instance doesn't easily expose health
+    // A bot instance existing is not delivery confirmation.  Preserve the
+    // established field for clients, but make its diagnostic-only basis
+    // explicit and surface the durable dead-letter backlog separately.
+    telegram_status: undeliveredAlerts > 0 ? "delivery_backlog_present" : "diagnostic_bot_instance_present",
+    telegram_status_basis: "bot_instance_and_local_dead_letter_backlog_not_transport_probe",
     telegram_mode: config.TELEGRAM_MODE,
     python_engine: pythonEngineStatus,
     python_engine_ms: pythonEngineMs,
