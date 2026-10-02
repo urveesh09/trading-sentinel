@@ -335,9 +335,11 @@ async def test_dr_hard_flat_management_is_not_suppressed_by_entry_deadline(
     # DR management has its own deadline, distinct from the speculative-entry
     # budget, and cancellation is joined before the tick continues.
     await asyncio.wait_for(cancelled.wait(), timeout=0.2)
-    assert summary["management_read_outcomes"]["defined_risk_snapshot"] == {
-        "state": "DEADLINE_EXCEEDED", "elapsed_sec": pytest.approx(0.1, abs=0.08), "cap_sec": 0.1,
-    }
+    observation = summary["management_read_outcomes"]["defined_risk_snapshot"]
+    assert observation["state"] == "DEADLINE_EXCEEDED"
+    assert observation["elapsed_sec"] == pytest.approx(0.1, abs=0.08)
+    assert observation["cap_sec"] == 0.1
+    assert observation["provider_timing_status"] == "UNAVAILABLE_CLIENT_INTERFACE"
     assert "defined_risk_management" in summary["stage_durations_sec"]
 
 

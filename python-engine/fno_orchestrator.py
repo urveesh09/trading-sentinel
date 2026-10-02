@@ -68,14 +68,59 @@ def _read_cap(value: float) -> float:
 
 def _record_management_read(
     observations: Optional[dict], name: str, state: str, started: float, cap_sec: float,
+    *, provider_timing: Optional[dict] = None,
 ) -> None:
     """Retain bounded, non-sensitive evidence for one provider read."""
     if observations is not None:
-        observations[name] = {
+        observation = {
             "state": state,
             "elapsed_sec": round(monotonic() - started, 3),
             "cap_sec": round(cap_sec, 3),
         }
+        if provider_timing is None:
+            observation["provider_timing_status"] = "UNAVAILABLE_CLIENT_INTERFACE"
+        else:
+            observation["provider_timing_status"] = "PRESENT"
+            for field in (
+                "limiter_wait_sec", "transport_sec", "parse_sec", "attempt_count", "retry_count",
+            ):
+                value = provider_timing.get(field)
+                if isinstance(value, (int, float)) and value >= 0:
+                    observation[field] = round(float(value), 6)
+        observations[name] = observation
+
+
+async def _management_quote(kite, tokens) -> tuple[dict, Optional[dict]]:
+    """Use detailed provider timing when the concrete client exposes it.
+
+    Test/replay adapters deliberately need not implement the observability
+    extension.  Their timing is labelled unavailable rather than simulated.
+    """
+    # Check the concrete type, not an instance attribute: loose test/broker
+    # doubles can synthesize arbitrary AsyncMock attributes that are not the
+    # tuple-returning observability contract.
+    observed = getattr(type(kite), "get_quote_with_timing", None)
+    if callable(observed):
+        result, timing = await observed(kite, tokens)
+        return result, timing if isinstance(timing, dict) else None
+    return await kite.get_quote(tokens), None
+
+
+def _oldest_quote_age_sec(quotes: dict, tokens: list[int], now_ist: datetime) -> Optional[float]:
+    """Return a conservative exact-leg quote-age observation when supplied."""
+    ages: list[float] = []
+    for token in tokens:
+        raw = (quotes.get(token) or {}).get("last_trade_time")
+        if not raw:
+            continue
+        try:
+            observed = datetime.fromisoformat(str(raw)[:19])
+            if observed.tzinfo is None:
+                observed = IST.localize(observed)
+            ages.append(max(0.0, (now_ist - observed.astimezone(IST)).total_seconds()))
+        except (TypeError, ValueError):
+            continue
+    return round(max(ages), 3) if ages else None
 
 
 async def _settle_exit_receipt(
@@ -328,9 +373,12 @@ async def _manage_open_positions(
         quote_cap = _read_cap(settings.FNO_EXIT_QUOTE_READ_MAX_SEC)
         quote_started = monotonic()
         try:
-            quotes = await asyncio.wait_for(kite.get_quote(tokens), timeout=quote_cap)
+            quotes, provider_timing = await asyncio.wait_for(
+                _management_quote(kite, tokens), timeout=quote_cap,
+            )
             _record_management_read(
                 read_observations, f"exit_quotes:{source}", "COMPLETED", quote_started, quote_cap,
+                provider_timing=provider_timing,
             )
         except asyncio.TimeoutError:
             _record_management_read(
@@ -342,6 +390,13 @@ async def _manage_open_positions(
                 read_observations, f"exit_quotes:{source}", "FAILED", quote_started, quote_cap,
             )
             logger.error("fno_exit_quote_failed source=%s err=%s", source, str(exc))
+
+    if read_observations is not None and tokens:
+        observation = read_observations.get(f"exit_quotes:{source}")
+        if observation is not None:
+            age = _oldest_quote_age_sec(quotes, tokens, now_ist)
+            observation["oldest_exact_leg_quote_age_sec"] = age
+            observation["quote_age_status"] = "PRESENT" if age is not None else "UNAVAILABLE"
 
     hard_flat = _now_min(now_ist) >= settings.FNO_HARD_FLAT_MIN
     for p in positions_needing_exit_evaluation:
@@ -833,7 +888,9 @@ async def run_fno_tick(
     """One scan tick. Called by the main.py cron wrapper (which owns the
     calendar gate + no-token guard + Telegram delivery)."""
     db_path = db_path or settings.DB_PATH
+    supplied_now_ist = now_ist
     now_ist = now_ist or datetime.now(IST)
+    tick_started = monotonic()
     scan_id = f"FNO-{now_ist.strftime('%Y%m%d-%H%M%S')}-{uuid4().hex[:6]}"
     summary: dict = {
         "scan_id": scan_id, "entries": [], "exits": [], "note": "",
@@ -887,10 +944,12 @@ async def run_fno_tick(
     fut_quote = {}
     fut_quote_cap = _read_cap(settings.FNO_EXIT_QUOTE_READ_MAX_SEC)
     try:
-        fut_quote = await asyncio.wait_for(kite.get_quote([fut.token]), timeout=fut_quote_cap)
+        fut_quote, provider_timing = await asyncio.wait_for(
+            _management_quote(kite, [fut.token]), timeout=fut_quote_cap,
+        )
         _record_management_read(
             summary["management_read_outcomes"], "futures_quote", "COMPLETED",
-            stage_started, fut_quote_cap,
+            stage_started, fut_quote_cap, provider_timing=provider_timing,
         )
     except asyncio.TimeoutError:
         _record_management_read(
@@ -911,6 +970,15 @@ async def run_fno_tick(
     fq = fut_quote.get(fut.token)
     if fq and fq.get("last_price"):
         fut_price = float(fq["last_price"])
+
+    # A real scheduler tick can cross hard-flat while queued on a provider.
+    # The completed-bar/signal timestamp remains frozen in ``sig`` later, but
+    # management, session cutoffs and admission decisions use a fresh action
+    # clock. Explicit caller clocks are retained for deterministic replay/tests.
+    if supplied_now_ist is None:
+        now_ist = datetime.now(IST)
+    summary["action_clock_ist"] = now_ist.isoformat()
+    summary["management_lag_sec"] = round(monotonic() - tick_started, 3)
 
     # ---- 1) exits first ----------------------------------------------
     stage_started = monotonic()
@@ -944,6 +1012,9 @@ async def run_fno_tick(
             import fno_dr_book as _dr
             await _dr.init_dr_db(db_path)
             open_dr = await _dr.open_structures(db_path)
+            if supplied_now_ist is None:
+                now_ist = datetime.now(IST)
+                summary["action_clock_ist"] = now_ist.isoformat()
             nm_dr = _now_min(now_ist)
             in_dr_window = _dr._entry_lo_min() <= nm_dr <= _dr._entry_hi_min()
 
@@ -1037,6 +1108,9 @@ async def run_fno_tick(
     )
 
     # ---- 2) entries ----------------------------------------------------
+    if supplied_now_ist is None:
+        now_ist = datetime.now(IST)
+        summary["action_clock_ist"] = now_ist.isoformat()
     nm = _now_min(now_ist)
     if not (settings.FNO_ENTRY_START_MIN <= nm < settings.FNO_ENTRY_END_MIN):
         summary["note"] = "outside_entry_window"

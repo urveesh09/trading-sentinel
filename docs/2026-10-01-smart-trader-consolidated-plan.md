@@ -208,6 +208,20 @@ action-time admission checks, limiter/transport/parse/DB timing breakdown and
 deployed-session observations. Source commit `5ae54a8` is local on
 `codex/production-correction-hedge-p0`; it is not pushed or deployed.
 
+Completion receipt (Dev, October 2): the remaining S2 timing/action-clock
+contract is implemented locally. The real Kite quote client exposes bounded
+limiter wait, transport, parse, attempt and retry metrics; management retains
+them where available and explicitly labels fixture/adapter timing unavailable
+rather than inventing values. Exact open-leg quote observations retain a
+conservative oldest quote age. Real scheduler ticks refresh action time after
+provider waits and again before entry-window admission, while explicit
+replay/test clocks stay frozen for causality. Exits still run before optional
+DR entry work; no rate limit/concurrency increase was made. Focused
+orchestrator/Kite/recovery/audit validation passed 59 and compilation passed.
+The remaining requirement is operational, not a missing source change: GitHub
+promotion followed by three complete session receipts for lag, p95/max,
+deadline, skip and unresolved-exposure review.
+
 ### S3 — P1: preserve the evidence required to learn
 
 Files/contracts: `docker-compose.yml`, `scripts/verify_compose_logging.py`,

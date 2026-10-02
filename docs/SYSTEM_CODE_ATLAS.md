@@ -584,7 +584,7 @@ Declared tables: `fno_chain_oi`, `fno_fut_snap`
 
 [FNO-ORCHESTRATOR 2026-07-10] Dual-leg tick runner for the F&O subsystem (spec §10.4). Reuses the EDGE_PAPER / EDGE_LIVE shape from penny_edge_orchestrator: one candidate scan, two legs, bankroll scales the sizing, separate source tags (FNO_PAPER / FNO_LIVE) so the legs cannot see each other's rows. In P1 the live leg is structurally disarmed three ways: FNO_DISABLE_LIVE=True, FNO_LIVE_TRADING=False, FNO_LIVE_BANKROLL=0 -- and even with all three flipped it still refuses unless fno_go_live_check() returns []. run_fno_tick() fires every FNO_SCAN_INTERVAL_SEC during market hours: 1. manage open positions (stops / target+trail / time stop / 15:10 hard flat) -- exits are checked BEFORE entries s
 
-Top-level declarations: `_now_min` (line 60), `_read_cap` (line 64), `_record_management_read` (line 69), `_settle_exit_receipt` (line 81), `_fno_pool_paper` (line 142), `_fno_pool_live` (line 147), `_load_dr_entry_inputs` (line 159), `_fno_equity` (line 212), `_fno_halted` (line 218), `_fetch_futures_bars` (line 239), `_record_shadow_observation` (line 247), `_schedule_shadow_observation` (line 264), `_manage_open_positions` (line 294), `_try_entry_for_leg` (line 580), `run_fno_tick` (line 827), `_bar_already_logged` (line 1181), `format_fno_telegram` (line 1202)
+Top-level declarations: `_now_min` (line 60), `_read_cap` (line 64), `_record_management_read` (line 69), `_management_quote` (line 93), `_oldest_quote_age_sec` (line 109), `_settle_exit_receipt` (line 126), `_fno_pool_paper` (line 187), `_fno_pool_live` (line 192), `_load_dr_entry_inputs` (line 204), `_fno_equity` (line 257), `_fno_halted` (line 263), `_fetch_futures_bars` (line 284), `_record_shadow_observation` (line 292), `_schedule_shadow_observation` (line 309), `_manage_open_positions` (line 339), `_try_entry_for_leg` (line 635), `run_fno_tick` (line 882), `_bar_already_logged` (line 1255), `format_fno_telegram` (line 1276)
 
 Engine dependencies: `affordability`, `config`, `fno_chain`, `fno_costs`, `fno_engine_mom`, `fno_executor`, `fno_gates`, `fno_instruments`, `fno_models`, `fno_risk`, `fno_signal_log`, `operator_alert`, `performance`
 
@@ -844,7 +844,7 @@ Related tests: `python-engine/tests/test_intraday_spread_signal_artifact.py`
 
 No module docstring; use the declarations and callers below.
 
-Top-level declarations: `_interval_minutes` (line 34), `_intraday_cache_gate_evaluate` (line 70), `RateLimiter` (line 183), `KiteClient` (line 203), `latest_order_state` (line 1707)
+Top-level declarations: `_interval_minutes` (line 34), `_intraday_cache_gate_evaluate` (line 70), `RateLimiter` (line 183), `KiteClient` (line 203), `latest_order_state` (line 1736)
 
 Engine dependencies: `config`, `halt_switch`, `operator_alert`, `order_execution_readiness`, `owner_entry_halt`
 

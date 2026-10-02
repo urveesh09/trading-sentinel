@@ -59,6 +59,17 @@ receipt. Source commit `5ae54a8` is Dev-local, unpushed and not deployed;
 complete the remaining S2 clock/priority instrumentation before treating the
 slice done.
 
+## October 2 S2 management clocks and timing — Dev complete, operational evidence pending
+
+S2 now records provider limiter wait, transport, parsing, attempt/retry data
+where the real Kite client provides it; non-production adapters explicitly say
+the fine timing is unavailable. It retains exact-leg oldest quote age and
+refreshes the real action clock after reads and before entry admission, without
+altering supplied replay clocks or completed-bar causality. Exits continue to
+precede optional DR entry work, and no provider-rate/concurrency increase was
+made. Focused coverage passes 59. Pending work is GitHub promotion and three
+complete deployed-session receipts—not another source change.
+
 ## September 28 Jev decision-layer proposal — design only
 
 The revised [Jev decision-layer draft](superpowers/specs/2026-09-27-jev-decision-layer-design.md)

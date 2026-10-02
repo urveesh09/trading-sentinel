@@ -39,8 +39,20 @@ orchestrator/recovery/audit checks passed 34. Warnings-fatal mode found an
 existing unclosed-socket ResourceWarning in an unrelated stage-duration test,
 so this is not claimed as a clean warnings-fatal suite. This is Dev-only and
 unpushed/not deployed; source commit `5ae54a8` is local on
-`codex/production-correction-hedge-p0`. S2 still needs action-clock, priority
-and full timing work.
+`codex/production-correction-hedge-p0`. The completion receipt below records
+the subsequent action-clock and provider-timing work.
+
+## October 2 S2 completion: action clocks and provider timing (Dev)
+
+The real Kite quote client now returns limiter-wait, transport, parsing,
+attempt and retry timing to F&O management; unsupported test/replay adapters
+are explicitly marked unavailable. Management retains a conservative oldest
+exact-leg quote age, refreshes live action time after provider waits and before
+admission cutoffs, and keeps supplied replay clocks deterministic. Exit work
+still precedes optional DR entry and no rate/concurrency setting changed.
+Focused validation passed 59 with compilation and atlas regeneration. This is
+Dev-only/unpushed/not deployed; the remaining S2 acceptance is three deployed
+session receipts, not a source-code gap.
 
 ## October 1 Production assessment and smart-trader plan (documentation only)
 

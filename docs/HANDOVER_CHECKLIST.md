@@ -18,13 +18,17 @@
   unpushed/not deployed at this receipt. Review/push via GitHub and inspect
   deployed receipts before considering S1 operationally complete. Source
   commit: `9e26e1b` on `codex/production-correction-hedge-p0`.
-- [ ] Implement S2 in Dev with focused regression coverage and receipts.
+- [x] Implement S2 in Dev with focused regression coverage and receipts.
   October 2 initial sub-slice: management provider reads now have explicit
   5-second exit / 10-second DR snapshot caps with cancellation-joined degraded
   paths and bounded read outcomes; 34 focused checks pass. Remaining: action
   clocks, priority, detailed timing and deployed evidence. Dev-only source
   commit `5ae54a8` is unpushed/not deployed; no broker/settlement/admission
   mutation is deadline-wrapped.
+- [x] Complete S2 Dev source work: provider-stage timing/attempt evidence,
+  quote-age evidence and refreshed real action clocks. Focused validation: 59
+  passed; compilation/atlas passed. Remaining only: GitHub promotion and three
+  deployed-session receipts; no cadence/rate increase was made.
 - [x] Reproduce optional-review expiry from mixed fresh/stale/undated sources;
   inspect queue/deadline/completion visibility without provider/message calls.
 - [ ] Implement S10 context/expiry/deadline fixes and bounded completion updates,

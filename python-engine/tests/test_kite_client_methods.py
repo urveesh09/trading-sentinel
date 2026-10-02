@@ -111,6 +111,17 @@ def test_get_quote_accepts_single_token(mock_kite_client):
     assert 1001 in result
 
 
+def test_get_quote_with_timing_keeps_quote_contract_and_reports_stages(mock_kite_client):
+    client, _ = mock_kite_client
+    result, timing = asyncio.run(client.get_quote_with_timing([1001]))
+    assert result[1001]["last_price"] == 12.5
+    assert timing["attempt_count"] == 1
+    assert timing["retry_count"] == 0
+    assert all(timing[field] >= 0 for field in (
+        "limiter_wait_sec", "transport_sec", "parse_sec",
+    ))
+
+
 def test_get_instruments_nse_eq_returns_eq_only(mock_kite_client):
     """CSV is parsed; only EQ rows are returned; instrument_cache is updated."""
     client, requests = mock_kite_client

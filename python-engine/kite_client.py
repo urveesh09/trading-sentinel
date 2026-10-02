@@ -838,6 +838,11 @@ class KiteClient:
     _quote_batch_fail_emitted: bool = False
 
     async def get_quote(self, tokens) -> dict:
+        """Compatibility wrapper; ``self.limiter.acquire`` is owned by timing API."""
+        result, _timing = await self.get_quote_with_timing(tokens)
+        return result
+
+    async def get_quote_with_timing(self, tokens) -> tuple[dict, dict]:
         """Fetch live quote for one or more instrument tokens.
         Kite endpoint: GET /quote?i={token1}&i={token2}...
         Returns: dict {token_int: {last_price, ohlc, volume, depth, ...}, ...}
@@ -862,10 +867,24 @@ class KiteClient:
         kite_auth_degraded WARNING once when the per-minute failure
         rate exceeds 30 (today hit ~600/min at the peak).
         """
+        timing = {
+            "limiter_wait_sec": 0.0, "transport_sec": 0.0,
+            "parse_sec": 0.0, "attempt_count": 0, "retry_count": 0,
+        }
+
+        def _finish(result: dict) -> tuple[dict, dict]:
+            return result, {
+                "limiter_wait_sec": round(timing["limiter_wait_sec"], 6),
+                "transport_sec": round(timing["transport_sec"], 6),
+                "parse_sec": round(timing["parse_sec"], 6),
+                "attempt_count": int(timing["attempt_count"]),
+                "retry_count": int(timing["retry_count"]),
+            }
+
         if isinstance(tokens, (int, str)):
             tokens = [tokens]
         if not tokens:
-            return {}
+            return _finish({})
         tokens = [int(t) for t in tokens]
 
         # Retry config (KITE-QUOTE-RETRY 2026-07-02): 3 attempts,
@@ -875,15 +894,22 @@ class KiteClient:
         backoff = 0.5
         last_exc: Optional[Exception] = None
         for attempt in range(1, max_attempts + 1):
+            timing["attempt_count"] = attempt
+            limiter_started = time.monotonic()
             await self.limiter.acquire()
+            timing["limiter_wait_sec"] += time.monotonic() - limiter_started
             try:
+                transport_started = time.monotonic()
                 resp = await self.client.get(
                     "/quote",
                     params=[("i", str(t)) for t in tokens],
                 )
+                timing["transport_sec"] += time.monotonic() - transport_started
                 resp.raise_for_status()
+                parse_started = time.monotonic()
                 data = resp.json().get("data", {})
                 result = {int(k): v for k, v in data.items()}
+                timing["parse_sec"] += time.monotonic() - parse_started
                 if not result and tokens:
                     # [KITE-QUOTE-RETRY] Empty body with 200 OK -- this
                     # is the case today's 2,649 403s turned into. Treat
@@ -891,6 +917,7 @@ class KiteClient:
                     # attempt. If still empty after retries, fall through
                     # to the existing failure logger.
                     if attempt < max_attempts:
+                        timing["retry_count"] += 1
                         logger.warning(
                             "kite_quote_empty_body_retrying attempt=%d/%d tokens=%d",
                             attempt, max_attempts, len(tokens),
@@ -902,7 +929,7 @@ class KiteClient:
                     self._note_quote_rate_failure()
                 elif result:
                     self._note_quote_batch_success()
-                return result
+                return _finish(result)
             except httpx.HTTPStatusError as e:
                 last_exc = e
                 status = e.response.status_code
@@ -911,6 +938,7 @@ class KiteClient:
                 # any 5xx server error.
                 if status in (401, 403, 429) or status >= 500:
                     if attempt < max_attempts:
+                        timing["retry_count"] += 1
                         logger.warning(
                             "kite_quote_http_retry status=%d attempt=%d/%d tokens=%d",
                             status, attempt, max_attempts, len(tokens),
@@ -940,10 +968,11 @@ class KiteClient:
                     )
                 self._log_quote_batch_failure(len(tokens))
                 self._note_quote_rate_failure()
-                return {}
+                return _finish({})
             except httpx.RequestError as e:
                 last_exc = e
                 if attempt < max_attempts:
+                    timing["retry_count"] += 1
                     logger.warning(
                         "kite_quote_request_retry attempt=%d/%d tokens=%d err=%s",
                         attempt, max_attempts, len(tokens), str(e),
@@ -956,11 +985,11 @@ class KiteClient:
                 )
                 self._log_quote_batch_failure(len(tokens))
                 self._note_quote_rate_failure()
-                return {}
+                return _finish({})
         # Should be unreachable given the loops above, but be defensive.
         if last_exc is not None:
             logger.error("kite_quote_failed_unreachable %s", str(last_exc))
-        return {}
+        return _finish({})
 
     async def get_quote_by_instruments(self, instruments: dict[int, str]) -> dict:
         """Documented Kite full-quote lookup keyed by ``EXCHANGE:SYMBOL``.
