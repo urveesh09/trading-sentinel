@@ -2,6 +2,11 @@
 
 ## October 2 independent S1–S6 review receipt
 
+- [x] Review response: S6 one-entry fee allocation and verified archive pairing
+  (`ea8695d`); S3 crash-recoverable rotation (`c054bf3`); S4 typed
+  byte-bound path envelope (`bfd343d`). Regressions fail on prior source;
+  1024 selected tests passed. Dev only, unpushed.
+
 - [x] Revalidate phase commits/contracts and rendered Dev Compose, not just
   prior completion claims. See `2026-10-02-s1-s6-independent-review.md`.
 - [x] Small Dev corrections: DR token/finite prices, passive clock/price

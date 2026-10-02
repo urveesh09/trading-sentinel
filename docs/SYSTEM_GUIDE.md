@@ -1,5 +1,20 @@
 # Trading Sentinel — system guide and engineering handover
 
+## October 2 review-response corrections (Dev)
+
+- Session CSV rotation is crash-recoverable: unrecorded archives are
+  reconciled into the manifest, torn lines isolated, state written before a
+  new header, and header-only files never archived (fixes a permanent
+  `FileExistsError` lockout).
+- Passive momentum paths require `kite_equity_quote_envelope_v1` packets whose
+  ticker, LTP and provider time equal the stored columns, both at capture and
+  at export.
+- The F&O exit experiment charges the entry order once, and its archive
+  adapter verifies raw bytes, identity, duplicates and provider clocks.
+
+See the review's response section. Commits `ea8695d`, `c054bf3`, `bfd343d`;
+Dev-only, unpushed.
+
 ## October 2 independent S1–S6 review (Dev)
 
 [The review](2026-10-02-s1-s6-independent-review.md) supersedes broad phase

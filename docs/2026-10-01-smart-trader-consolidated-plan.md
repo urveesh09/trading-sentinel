@@ -602,6 +602,10 @@ Step 2 contract: new inert `fno_exit_experiment.py`.
     exits are unchanged, and hard flat stays.
 - Development/holdout labelling, exposure metrics and cost-stressed paired
   deltas as in S6a.
+- Review correction (October 2): partial-exit fees now charge the entry
+  order once, and the adapter verifies raw bytes, identity, duplicates and
+  provider clocks (`ea8695d`). S3 rotation recovery (`c054bf3`) and S4 typed
+  envelope (`bfd343d`) are recorded in the review response.
 - Acceptance: baseline parity with the live ladder decisions, no future
   leakage, partial-lot arithmetic, unresolved basis, insufficient paths,
   manifest tamper refusal and adapter pairing/provenance.

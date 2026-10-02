@@ -9,6 +9,12 @@ fanout/source-packet binding, S5 qualification/canary or the missing S6
 defined-risk experiment and archive/economics binding. No Production mutation,
 authority expansion or profitable-strategy claim follows from this review.
 
+Review response (Dev): S6 partial fees and archive pairing (`ea8695d`), S3
+crash-recoverable rotation (`c054bf3`) and the S4 typed byte-bound envelope
+(`bfd343d`) are corrected; 1024 selected tests passed. Remaining: S4 fanout
+wiring, S3 archive quota/elapsed distributions, S5 qualification/canary, S6
+DR experiment and F&O position-economics binding.
+
 Small corrections are implemented in Dev with expanded 948-test regression
 and isolated warnings-fatal checks; see the receipt for commands and known
 runtime-warning limits. Next development: S4 typed source binding and bounded

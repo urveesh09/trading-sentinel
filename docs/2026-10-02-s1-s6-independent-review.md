@@ -107,3 +107,30 @@ review (no fetch/push/deployment performed).
 Existing user golden-fixture edits and untracked documents are excluded.
 The correction's commit identity is supplied with the handoff and can be
 retrieved with `git log -- docs/2026-10-02-s1-s6-independent-review.md`.
+
+## Response — review findings corrected (Dev, October 2)
+
+The reviewer's `31badc9` corrections were re-verified independently (the same
+948-test selection passed). Four further findings were defects in shipped work
+and are now corrected; each new regression fails on the prior source.
+
+| Finding | Correction | Commit |
+|---|---|---|
+| S6 partial-exit fees counted the entry order per exit leg | One entry order plus one exit order per leg (`fno_split_entry_once_exit_per_leg_v1`); equals `calc_fno_costs` for a single full exit (500-case check), so baseline is unchanged | `ea8695d` |
+| S6 archive adapter paired by token/receipt only | Re-hashes raw packets; ltp/bid columns must match bytes; option identity and futures type checked; exact duplicates idempotent, conflicts rejected; stale or future provider quotes excluded and counted; derived `source_ref` labelled not externally verified | `ea8695d` |
+| S3 rotation crash windows | Rotation paths reconcile unrecorded archives (append-only, flagged recovered); torn manifest lines isolated; session state written before the new header; header-only files removed instead of archived. This fixes a permanent `FileExistsError` lockout after a crash between header and state | `c054bf3` |
+| S4 columns not bound to bytes | Typed `kite_equity_quote_envelope_v1`: capture rejects, and export reports, any ticker/LTP/provider-time disagreement with the packet | `bfd343d` |
+
+Verification: F&O experiment 25 passed warnings-fatal; session/signal-log 17;
+S4 passive 13 warnings-fatal; the reviewer's 948 selection plus the session-CSV
+and exit-study files passed 1024. Only the known deprecations and the
+intermittent aiosqlite thread warning remain. The reviewer's integration
+test now supplies the option `tradingsymbol` the hardened adapter requires.
+Fee/source changes intentionally invalidate earlier S6 freezes.
+
+Still open (not corrected here): S4 runtime fanout wiring with bounded
+non-blocking writes and five reconciled fresh lifecycles; S3 durable elapsed
+distributions, market-hours segmentation, a CSV archive quota/free-space
+policy and deployed disk/prior-boot checks; S5 frozen protocol, holdout,
+qualification package and authorized canary; the S6 defined-risk experiment
+and exact position-economics/cash binding for F&O entries.
