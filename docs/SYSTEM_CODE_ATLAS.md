@@ -1148,6 +1148,14 @@ Engine dependencies: `decision_policy`
 
 Related tests: `python-engine/tests/test_partner_decision_clock.py`
 
+## `python-engine/partner_delivery_blockers.py`
+
+Read-only per-candidate partner delivery-blocker diagnostic (S5c). Explains, for every persisted manual-advisory idea, why it was or was not delivered: validation reasons, evidence class, qualification registry match at decision time, delivery reasons and terminal status. It also summarises the separate collection-attempt journal per IST session/index. Contract: - SQLite is opened with ``mode=ro``; a missing database is reported as unavailable and is never created. Nothing is written, registered, qualified, sent or ordered. No network, broker or message imports. - Attempts and ideas share no exact identity, so they are compared only as per-session/index aggregates and a disagreement is label
+
+Top-level declarations: `_open_read_only` (line 45), `_tables` (line 59), `_in_window` (line 63), `_ist_day` (line 73), `candidate_blockers` (line 85), `_idea_rows` (line 121), `_attempt_summary` (line 146), `_qualification_rows` (line 166), `build_delivery_blocker_report` (line 174), `_session_summary` (line 236)
+
+Related tests: `python-engine/tests/test_partner_delivery_blockers.py`
+
 ## `python-engine/partner_fixture_adapter.py`
 
 Deterministic Dev-only partner-account fixture adapter. It deliberately uses the real position and accepted-snapshot interfaces while never contacting a broker. External ids map to broker_order_id solely as a stable fixture identity, not as evidence of an executed broker order.
@@ -1792,7 +1800,7 @@ Operator commands for immutable research preservation (no broker actions).
 
 Top-level declarations: `_json_file` (line 17), `_write_comparison_output` (line 27), `_strategy_comparison` (line 50), `_candidate_file` (line 80), `_replay_spread` (line 93), `_full_policy_diagnostic` (line 126), `main` (line 162)
 
-Engine dependencies: `config`, `intraday_spread_archive_adapter`, `intraday_spread_chronological`, `partner_full_policy_replay`, `partner_qualification`, `partner_qualification_package`, `partner_qualification_verify`, `partner_research_capture`, `proactive_comparison_protocol`, `proactive_intelligence`, `reconciliation_evidence`, `research_archive`
+Engine dependencies: `config`, `intraday_spread_archive_adapter`, `intraday_spread_chronological`, `partner_delivery_blockers`, `partner_full_policy_replay`, `partner_qualification`, `partner_qualification_package`, `partner_qualification_verify`, `partner_research_capture`, `proactive_comparison_protocol`, `proactive_intelligence`, `reconciliation_evidence`, `research_archive`
 
 Related tests: `python-engine/tests/test_research_cli_qualification.py`, `python-engine/tests/test_research_cli_strategy_comparison.py`
 

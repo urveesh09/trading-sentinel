@@ -9,8 +9,11 @@ owner-approved bulk Kite lane admits normal research/F&O/penny/partner requests
 ahead of the momentum screener's per-ticker fetches with bounded fairness, and
 research observes exact active legs with the future reference before the
 optional ladder. Expect the screener to take roughly 10–20% longer; verify it
-on deployed sessions. Remaining S5 source work is S5c (read-only per-candidate
-delivery-blocker diagnostic). Frozen protocol, 20-session holdout,
+on deployed sessions (commit `18c7f2a`). S5c is complete in Dev: the read-only
+`research_cli partner-delivery-blockers` report explains each candidate's
+blockers. S5 source work is complete; the frozen protocol, 20-session holdout,
+qualification package and canary need fresh post-promotion sessions. Next
+implementation priority is S6 (paired exit research), not a live exit change. Frozen protocol, 20-session holdout,
 qualification package and delivery canary reuse existing tooling and need
 fresh post-promotion sessions. See the consolidated plan's S5 slice for the
 Production evidence. Production remains untouched.

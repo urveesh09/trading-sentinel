@@ -473,6 +473,16 @@ subset 24 passed. A pre-existing partner fixture event-loop ordering error
 in combined runs is reproduced on clean HEAD (30 errors) and is unrelated.
 No schema, configuration, rate, concurrency, broker or Production change.
 
+S5c completion receipt (Dev, October 2): new `partner_delivery_blockers.py`
+and the `partner-delivery-blockers` CLI command. Read-only (`mode=ro`), missing
+databases are reported, output is immutable. Tests cover ordered blockers for a
+real research-only shadow card and a validation rejection, aggregate attempt
+disagreement, status classification, malformed payloads, unchanged DB digest
+and refused different overwrite (10 passed warnings-fatal); related CLI,
+qualification, collection and advisory suites passed 110. No schema,
+configuration, qualification, delivery or Production change. S5 steps 2–5
+remain operational and need fresh promoted sessions. S5b commit: `18c7f2a`.
+
 ### S6 — P2: smarter exits on the same opportunities
 
 Files/contracts: existing `momentum_exit_study.py`,

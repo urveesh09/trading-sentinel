@@ -107,6 +107,30 @@ does not migrate trading evidence.
 deployment requires operator free-space, prior-boot preservation and full
 market-session volume checks. Optional AI remains non-blocking when unavailable.
 
+## October 2 S5c partner delivery-blocker diagnostic (Dev)
+
+`research_cli.py partner-delivery-blockers --db <engine-db> [--attempts-db
+<partner-collection-attempts.sqlite3>] [--session-from/--session-to YYYY-MM-DD]
+--output <json>` writes an immutable report (byte-identical retries only).
+For every persisted manual-advisory idea it lists ordered blockers:
+validation reasons, evidence class, qualification-registry match at decision
+time, delivery reasons and terminal status (`SUPERSEDED_*`, `RETIRED_*`,
+`QUEUED_NOT_DISPATCHED`, unknown statuses, or `UNEXPLAINED_NOT_DELIVERED`).
+Attempts and ideas share no exact identity, so the attempt journal is summarised
+per IST session/index and an `attempt_idea_disagreement` is aggregate only; it
+detects the S5a frozen-clock defect class. Qualification rows are registry
+facts, not re-verified packages. Current delivery flags are labelled as today's
+projection, not historical configuration. Databases open with SQLite
+`mode=ro`; a missing file is reported and never created. There is no write,
+registration, qualification, network, broker or message path.
+
+S5c tests: 10 passed warnings-fatal. CLI/qualification/collection/partner
+regression: 110 passed. A Production run was not performed in this session
+(copying Production data was not permitted); run it read-only after promotion.
+Expected first result from the earlier read-only queries: every September
+28–October 1 idea is `EVIDENCE:RESEARCH_ONLY` / no qualification, and the
+September 30 indices show attempt/idea disagreement. Dev-only, not deployed.
+
 ## October 2 S5b shared-provider bulk lane and exact-leg-first research (Dev)
 
 Root cause of the recurring 48-second research caps (read-only Production,
@@ -146,6 +170,7 @@ errors, so that ordering issue pre-dates S5b; the partner suites pass 91 alone.
 HEAD's combined run also showed a timing flake in
 `test_stalled_first_underlying_is_cancelled_and_reports_second_gap`. Both are
 test-hygiene follow-ups. Dev-only; no schema/config migration and not deployed.
+Source commit: `18c7f2a`.
 
 ## October 2 S5a partner candidate action clock (Dev)
 

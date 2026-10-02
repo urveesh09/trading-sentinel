@@ -72,6 +72,12 @@
   exact active legs first, then the ladder, and records per-call timing.
   141 passed/one skip; warnings-fatal subset 24 passed. Pre-existing partner
   fixture ordering errors are reproduced on clean HEAD; follow-up only.
+- [x] S5c: read-only `partner-delivery-blockers` report (ordered per-candidate
+  blockers, aggregate attempt/idea disagreement, registry facts, labelled
+  current-flag projection; `mode=ro`, never creates DBs). 10 passed
+  warnings-fatal; CLI/qualification/partner regression 110 passed.
+- [ ] Run the blocker report read-only on Production after promotion; then
+  freeze the S5 protocol before any fresh holdout session.
 - [ ] After promotion, measure screener elapsed (estimate +10–20%), research
   cap count, `provider_timing` and penny skips on three deployed sessions.
 - [ ] Configure S4 path caps, connect an existing quote fanout without adding a
