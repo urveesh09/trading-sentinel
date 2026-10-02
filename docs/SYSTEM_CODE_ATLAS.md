@@ -536,6 +536,14 @@ Engine dependencies: `fno_costs`, `fno_positions`, `performance`
 
 Related tests: `python-engine/tests/test_fno_exit_recovery.py`, `python-engine/tests/test_fno_exit_recovery_boundary.py`
 
+## `python-engine/fno_exit_rules.py`
+
+Pure single-leg F&O exit ladder shared by live management and research (S6b). Extracted verbatim from ``fno_orchestrator`` so the paper/live manager and the read-only exit experiments evaluate *the same* rules. No I/O, logging or database access happens here: the caller persists trail state, logs the returned facts and performs any exit. Ladder order (unchanged): 0. hard flat (caller-supplied flag) -- unconditional; with a futures quote: 1. underlying stop, 2. trailing stop after the target armed it, 3. premium backstop on the exit basis, 4. time stop (only before the trail is armed; optionally deferred while the premium is in profit); without a futures quote: only the premium backstop can f
+
+Top-level declarations: `SingleLegExitDecision` (line 27), `live_single_leg_exit_params` (line 38), `_age_minutes` (line 48), `evaluate_single_leg_exit` (line 59)
+
+Related tests: `python-engine/tests/test_fno_exit_rules.py`
+
 ## `python-engine/fno_gates.py`
 
 [FNO-GATES 2026-07-10] Entry gates with mandatory witnesses (spec §7 + §9.1). Production penny ran a mathematically unsatisfiable breakout gate for nine months (bar_close > running day_high, 215,814 evaluations, zero accepts) while passing every health check. The defence adopted here from the FIRST commit: every gate is an object that ships a `witness_input()` constructing an input which PASSES it, and CI asserts satisfiability for every gate (tests/test_fno_gate_falsifiability.py). A gate without a witness does not merge. Gates evaluate in spec §7 order; the first failure is THE reject_reason written to /data/fno_signals.csv, which feeds the zero-accept watchdog's histogram (§9.2). `pool_be
@@ -584,9 +592,9 @@ Declared tables: `fno_chain_oi`, `fno_fut_snap`
 
 [FNO-ORCHESTRATOR 2026-07-10] Dual-leg tick runner for the F&O subsystem (spec §10.4). Reuses the EDGE_PAPER / EDGE_LIVE shape from penny_edge_orchestrator: one candidate scan, two legs, bankroll scales the sizing, separate source tags (FNO_PAPER / FNO_LIVE) so the legs cannot see each other's rows. In P1 the live leg is structurally disarmed three ways: FNO_DISABLE_LIVE=True, FNO_LIVE_TRADING=False, FNO_LIVE_BANKROLL=0 -- and even with all three flipped it still refuses unless fno_go_live_check() returns []. run_fno_tick() fires every FNO_SCAN_INTERVAL_SEC during market hours: 1. manage open positions (stops / target+trail / time stop / 15:10 hard flat) -- exits are checked BEFORE entries s
 
-Top-level declarations: `_now_min` (line 60), `_read_cap` (line 64), `_record_management_read` (line 69), `_timed_database_operation` (line 99), `_management_quote` (line 120), `_oldest_quote_age_sec` (line 136), `_settle_exit_receipt` (line 153), `_fno_pool_paper` (line 214), `_fno_pool_live` (line 219), `_load_dr_entry_inputs` (line 231), `_fno_equity` (line 284), `_fno_halted` (line 290), `_fetch_futures_bars` (line 311), `_record_shadow_observation` (line 319), `_schedule_shadow_observation` (line 336), `_manage_open_positions` (line 366), `_try_entry_for_leg` (line 687), `run_fno_tick` (line 952), `_bar_already_logged` (line 1366), `format_fno_telegram` (line 1387)
+Top-level declarations: `_now_min` (line 61), `_read_cap` (line 65), `_record_management_read` (line 70), `_timed_database_operation` (line 100), `_management_quote` (line 121), `_oldest_quote_age_sec` (line 137), `_settle_exit_receipt` (line 154), `_fno_pool_paper` (line 215), `_fno_pool_live` (line 220), `_load_dr_entry_inputs` (line 232), `_fno_equity` (line 285), `_fno_halted` (line 291), `_fetch_futures_bars` (line 312), `_record_shadow_observation` (line 320), `_schedule_shadow_observation` (line 337), `_manage_open_positions` (line 367), `_try_entry_for_leg` (line 596), `run_fno_tick` (line 861), `_bar_already_logged` (line 1275), `format_fno_telegram` (line 1296)
 
-Engine dependencies: `affordability`, `config`, `fno_chain`, `fno_costs`, `fno_engine_mom`, `fno_executor`, `fno_gates`, `fno_instruments`, `fno_models`, `fno_risk`, `fno_signal_log`, `operator_alert`, `performance`
+Engine dependencies: `affordability`, `config`, `fno_chain`, `fno_costs`, `fno_engine_mom`, `fno_executor`, `fno_exit_rules`, `fno_gates`, `fno_instruments`, `fno_models`, `fno_risk`, `fno_signal_log`, `operator_alert`, `performance`
 
 Related tests: `python-engine/tests/test_fno_orchestrator.py`
 

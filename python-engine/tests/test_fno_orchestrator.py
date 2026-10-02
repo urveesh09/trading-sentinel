@@ -736,6 +736,83 @@ async def test_premium_deferral_can_be_switched_off(kite, db_path, book, monkeyp
     assert summary["exits"][0]["reason"] == "time_stop"
 
 
+# ---------------------------------------------------------------------------
+# [S6b 2026-10-02] Characterization of the remaining live single-leg exits.
+# Written and passed against the inline ladder *before* it was extracted into
+# the pure ``fno_exit_rules`` module, then re-run unchanged afterwards.
+# ---------------------------------------------------------------------------
+
+async def _open_single_leg(kite, db_path, monkeypatch):
+    monkeypatch.setattr(settings, "FNO_DR_DISABLE_PAPER", True)
+    from performance import init_ledger
+    await init_ledger(db_path)
+    await run_fno_tick(kite, db_path=db_path, regime="REGIME_1_NORMAL", now_ist=NOW)
+    import aiosqlite
+    async with aiosqlite.connect(db_path) as db:
+        async with db.execute(
+            "SELECT id, direction, entry_underlying, stop_underlying, target_underlying, "
+            "atr_at_entry FROM fno_positions WHERE source='FNO_PAPER' AND status='OPEN'"
+        ) as cur:
+            row = await cur.fetchone()
+    assert row is not None, "fixture must open one paper single-leg position"
+    return row
+
+
+def _with_future(table, price):
+    table[FUT_TOKEN]["last_price"] = price
+    return table
+
+
+@pytest.mark.asyncio
+async def test_underlying_stop_exit_takes_precedence(kite, db_path, book, monkeypatch):
+    _id, direction, entry_u, stop_u, _target, _atr = await _open_single_leg(kite, db_path, monkeypatch)
+    beyond = stop_u - 1.0 if direction == "LONG" else stop_u + 1.0
+    later = NOW + timedelta(minutes=10)
+    # Premium also crushed: the underlying stop is checked first and must win.
+    table = _with_future(_quote_table(book, later, opt_bid_shift=-30.0), beyond)
+    kite.quote_table = table
+    summary = await run_fno_tick(kite, db_path=db_path, regime="REGIME_1_NORMAL", now_ist=later)
+    assert [x["reason"] for x in summary["exits"]] == ["underlying_stop"]
+
+
+@pytest.mark.asyncio
+async def test_target_arms_trail_and_later_trail_stop_exits(kite, db_path, book, monkeypatch):
+    pid, direction, entry_u, stop_u, target_u, atr = await _open_single_leg(kite, db_path, monkeypatch)
+    sign = 1.0 if direction == "LONG" else -1.0
+    beyond_target = target_u + sign * 5.0
+    armed_at = NOW + timedelta(minutes=10)
+    kite.quote_table = _with_future(_quote_table(book, armed_at, opt_bid_shift=+20.0), beyond_target)
+    summary = await run_fno_tick(kite, db_path=db_path, regime="REGIME_1_NORMAL", now_ist=armed_at)
+    assert summary["exits"] == []
+    import aiosqlite
+    async with aiosqlite.connect(db_path) as db:
+        async with db.execute(
+            "SELECT trail_active, trail_stop_underlying, best_underlying FROM fno_positions WHERE id=?",
+            (pid,),
+        ) as cur:
+            active, trail, best = await cur.fetchone()
+    assert active == 1 and best == pytest.approx(beyond_target)
+    assert trail == pytest.approx(beyond_target - sign * settings.FNO_TRAIL_ATR_MULT * atr)
+    # Retrace through the trail but stay beyond the underlying stop.
+    through = trail - sign * 1.0
+    later = armed_at + timedelta(minutes=5)
+    kite.quote_table = _with_future(_quote_table(book, later, opt_bid_shift=+20.0), through)
+    summary = await run_fno_tick(kite, db_path=db_path, regime="REGIME_1_NORMAL", now_ist=later)
+    assert [x["reason"] for x in summary["exits"]] == ["trail_stop"]
+
+
+@pytest.mark.asyncio
+async def test_missing_future_quote_still_allows_premium_backstop_only(kite, db_path, book, monkeypatch):
+    await _open_single_leg(kite, db_path, monkeypatch)
+    later = NOW + timedelta(minutes=settings.FNO_TIME_STOP_MIN + 5)
+    table = _quote_table(book, later, opt_bid_shift=-4.0)
+    table.pop(FUT_TOKEN)
+    kite.quote_table = table
+    summary = await run_fno_tick(kite, db_path=db_path, regime="REGIME_1_NORMAL", now_ist=later)
+    # Time stop needs the underlying; without it only the backstop could fire.
+    assert summary["exits"] == []
+
+
 def test_fno_formatter_keeps_defined_risk_only_activity_visible():
     message = format_fno_telegram({
         "scan_id": "dr-only", "entries": [], "exits": [],

@@ -15,7 +15,16 @@ blockers. S5 source work is complete; the frozen protocol, 20-session holdout,
 qualification package and canary need fresh post-promotion sessions. S5c commit:
 `89a7595`.
 
-## October 2 S6 exit research — S6a complete in Dev
+## October 2 S6 exit research — S6a complete; S6b in progress (Dev)
+
+S6b step 1 (done): the live single-leg F&O exit ladder is now the pure
+`fno_exit_rules.evaluate_single_leg_exit`, shared by the orchestrator and
+research; behaviour proven identical (characterization + 20,000-case
+differential; 397 suite tests). Next: a frozen F&O single-leg exit
+experiment replaying that function on archived futures/option paths.
+S5a–S6a commits are pushed (`19a5471`); the PR toward Production must be
+opened on GitHub (no `gh` CLI in this environment).
+
 
 `momentum_exit_experiment.py` freezes one candidate exit policy before
 evaluation and reports paired, cost-stressed, holdout-labelled results against

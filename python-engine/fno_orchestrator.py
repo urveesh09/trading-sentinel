@@ -35,6 +35,7 @@ import pytz
 import structlog
 
 import fno_positions as fpos
+from fno_exit_rules import evaluate_single_leg_exit, live_single_leg_exit_params
 import fno_shadow
 from config import settings
 from fno_chain import ChainSnapshot, select_strike_by_delta, take_chain_snapshot
@@ -449,140 +450,48 @@ async def _manage_open_positions(
         ltp = float(q.get("last_price") or 0.0)
         exit_px_basis = bid if bid > 0 else ltp
 
-        exit_reason = ""
-        long_view = p.direction == FnoDirection.LONG.value
-
-        if hard_flat:
-            exit_reason = "hard_flat_1510"
-        elif fut_price is not None and fut_price > 0:
-            # progress/trail bookkeeping first
-            best = p.best_underlying or p.entry_underlying
-            best = max(best, fut_price) if long_view else min(best, fut_price)
-            trail_active = bool(p.trail_active)
-            trail_stop = p.trail_stop_underlying
-
-            target_hit = (
-                fut_price >= p.target_underlying if long_view
-                else fut_price <= p.target_underlying
+        # [S6b 2026-10-02] The exit ladder is the pure, shared
+        # ``fno_exit_rules.evaluate_single_leg_exit`` (extracted verbatim so
+        # research replays the identical rules).  Logging and trail
+        # persistence remain here.  Rationale for the time-stop premium
+        # deferral (8 time-stop exits, -Rs 7,010, two cut in profit) is
+        # retained in that module and in config.FNO_TIME_STOP_RESPECTS_PREMIUM.
+        decision = evaluate_single_leg_exit(
+            p, now_ist=now_ist, fut_price=fut_price, exit_px_basis=exit_px_basis,
+            hard_flat=hard_flat, params=live_single_leg_exit_params(settings),
+        )
+        exit_reason = decision.exit_reason
+        if decision.trail_newly_armed:
+            logger.info(
+                "fno_trail_armed id=%d symbol=%s fut=%.1f target=%.1f",
+                p.id, p.tradingsymbol, fut_price, p.target_underlying,
             )
-            if target_hit and not trail_active:
-                trail_active = True
-                logger.info(
-                    "fno_trail_armed id=%d symbol=%s fut=%.1f target=%.1f",
-                    p.id, p.tradingsymbol, fut_price, p.target_underlying,
-                )
-            if trail_active:
-                dist = settings.FNO_TRAIL_ATR_MULT * (p.atr_at_entry or 0.0)
-                new_trail = best - dist if long_view else best + dist
-                if trail_stop is None:
-                    trail_stop = new_trail
-                else:
-                    trail_stop = max(trail_stop, new_trail) if long_view else min(trail_stop, new_trail)
-
-            # 1) underlying stop (structural/volatility, tightest at entry)
-            stopped = (
-                fut_price <= p.stop_underlying if long_view
-                else fut_price >= p.stop_underlying
+        if decision.entry_time_unparseable:
+            # [AUDIT-FIX-PHASE1 2026-07-11] Loud-but-non-blocking.
+            logger.warning(
+                "fno_time_stop_age_parse_failed id=%d entry_time=%r "
+                "-- age_min defaulted to 0; time stop DEFEATED for "
+                "this position (operator must patch entry_time "
+                "to force the exit)",
+                p.id, p.entry_time,
             )
-            # 2) trailing stop after target
-            trailed = (
-                trail_active and trail_stop is not None
-                and (fut_price <= trail_stop if long_view else fut_price >= trail_stop)
+        if decision.time_stop_deferred is not None:
+            deferred = decision.time_stop_deferred
+            logger.info(
+                "fno_time_stop_deferred_in_profit id=%d age=%.0f "
+                "underlying_progress=%.1f needed=%.1f "
+                "premium_pnl_per_unit=%.2f",
+                p.id, deferred["age_min"], deferred["underlying_progress"],
+                deferred["needed"], deferred["premium_pnl_per_unit"],
             )
-            # 3) premium backstop -- the one that bounds risk_per_lot (§8.4)
-            premium_stopped = exit_px_basis > 0 and exit_px_basis <= p.premium_stop
-            # 4) time stop: not +0.5R (underlying points) within 45 min
-            timed_out = False
-            if not trail_active:
-                try:
-                    entry_dt = datetime.fromisoformat(p.entry_time)
-                    if entry_dt.tzinfo is None:
-                        entry_dt = IST.localize(entry_dt)
-                    age_min = (now_ist - entry_dt).total_seconds() / 60.0
-                except (ValueError, TypeError):
-                    # [AUDIT-FIX-PHASE1 2026-07-11] Loud-but-non-blocking.
-                    # Silently fall-through to age=0 means the time
-                    # stop never fires for the malformed row -- a
-                    # position can live forever. Log loudly so the
-                    # operator sees the malformed entry_time and can
-                    # patch the row directly.
-                    logger.warning(
-                        "fno_time_stop_age_parse_failed id=%d entry_time=%r "
-                        "-- age_min defaulted to 0; time stop DEFEATED for "
-                        "this position (operator must patch entry_time "
-                        "to force the exit)",
-                        p.id, p.entry_time,
-                    )
-                    age_min = 0.0
-                if age_min >= settings.FNO_TIME_STOP_MIN:
-                    r_points = abs(p.entry_underlying - p.stop_underlying)
-                    progress = (
-                        fut_price - p.entry_underlying if long_view
-                        else p.entry_underlying - fut_price
-                    )
-                    if progress < settings.FNO_TIME_STOP_MIN_R * r_points:
-                        timed_out = True
-
-                    # [TIME-STOP-PREMIUM 2026-08-04] Do not cut a position that
-                    # is making money.
-                    #
-                    # The clause above measures progress in UNDERLYING points
-                    # while the P&L is in PREMIUM, and on a near-ATM long the
-                    # two are separated by delta. Requiring 0.5R of underlying
-                    # movement on a 31-point R means ~16 index points, which on
-                    # a 0.49-delta contract is ~8 premium points -- a quarter of
-                    # a 30-rupee option. So a contract could be up 15% and still
-                    # read as "gone nowhere".
-                    #
-                    # That is not hypothetical. The time stop is the single
-                    # biggest loser in this book (8 exits, -7,010) and two of
-                    # those eight were CUT WHILE PROFITABLE: 2026-07-23 at
-                    # +286 and 2026-08-03 at +530. Meanwhile trail_stop is the
-                    # only exit reason with positive expectancy in the book's
-                    # entire history (2 exits, +2,869, avg +0.62R) -- and a
-                    # trade can only reach the trail by surviving long enough
-                    # to get there.
-                    #
-                    # So the clock now only cuts trades that are BOTH going
-                    # nowhere on the underlying AND not in profit on premium.
-                    # A losing position is still cut on schedule; the whole
-                    # point of the time stop is preserved.
-                    if timed_out and settings.FNO_TIME_STOP_RESPECTS_PREMIUM:
-                        premium_pnl_per_lot = (exit_px_basis - p.entry_premium)
-                        if p.direction == "SHORT":
-                            premium_pnl_per_lot = -premium_pnl_per_lot
-                        if exit_px_basis > 0 and premium_pnl_per_lot > 0:
-                            timed_out = False
-                            logger.info(
-                                "fno_time_stop_deferred_in_profit id=%d age=%.0f "
-                                "underlying_progress=%.1f needed=%.1f "
-                                "premium_pnl_per_unit=%.2f",
-                                p.id, age_min, progress,
-                                settings.FNO_TIME_STOP_MIN_R * r_points,
-                                premium_pnl_per_lot,
-                            )
-
-            if stopped:
-                exit_reason = "underlying_stop"
-            elif trailed:
-                exit_reason = "trail_stop"
-            elif premium_stopped:
-                exit_reason = "premium_backstop"
-            elif timed_out:
-                exit_reason = "time_stop"
-
-            # persist trail state even when not exiting
-            if not exit_reason:
-                await _timed_database_operation(
-                    db_timing, f"trail_update:{source}", fpos.update_trail(
-                        db_path, p.id, 1 if trail_active else 0, trail_stop, best,
-                    ),
-                )
-        else:
-            # No futures quote this tick: only the premium backstop can
-            # still protect us. Chain staleness blocks entries elsewhere.
-            if exit_px_basis > 0 and exit_px_basis <= p.premium_stop:
-                exit_reason = "premium_backstop"
+        # persist trail state even when not exiting (futures quote present)
+        if decision.persist_trail:
+            await _timed_database_operation(
+                db_timing, f"trail_update:{source}", fpos.update_trail(
+                    db_path, p.id, 1 if decision.trail_active else 0,
+                    decision.trail_stop, decision.best_underlying,
+                ),
+            )
 
         if not exit_reason:
             continue

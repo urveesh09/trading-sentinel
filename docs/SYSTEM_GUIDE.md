@@ -107,6 +107,29 @@ does not migrate trading evidence.
 deployment requires operator free-space, prior-boot preservation and full
 market-session volume checks. Optional AI remains non-blocking when unavailable.
 
+## October 2 S6b shared single-leg F&O exit ladder (Dev; behaviour-preserving)
+
+The live single-leg exit ladder that was inline in `fno_orchestrator.py` is now
+the pure `fno_exit_rules.evaluate_single_leg_exit`, so paper/live management
+and the forthcoming F&O exit experiments evaluate identical rules. Order and
+semantics are unchanged: hard flat; then, with a futures quote, underlying
+stop, trail stop (armed at target, ratcheting from the best underlying by
+`FNO_TRAIL_ATR_MULT` x ATR), premium backstop, and the time stop (before the
+trail only, deferred while premium is in profit when
+`FNO_TIME_STOP_RESPECTS_PREMIUM`); without a futures quote only the backstop.
+The orchestrator still logs trail arming, unparseable entry times and
+deferrals, and persists trail state only when no exit fires with a futures
+quote present.
+
+Verification: new orchestrator characterization tests (underlying stop wins
+over a crushed premium; target arms the trail and a retrace exits on
+`trail_stop`; missing futures quote suppresses the time stop) passed against
+the inline code before extraction and unchanged after it. A seeded
+20,000-case differential test against a frozen transcription of the inline
+block matched every exit reason and every persisted trail value. F&O,
+scheduler and related suites: 397 passed. No configuration, threshold, order,
+settlement or schema change. Dev-only; not deployed.
+
 ## October 2 S6a frozen momentum exit experiments (Dev)
 
 `momentum_exit_experiment.py` is an inert, read-only research CLI. It leaves the
@@ -142,6 +165,7 @@ no-overwrite CLI, no runtime caller). Momentum exit/paper/review suites: 125
 passed. No complete source-bound equity path exists yet (S4 collection is
 not deployed), so no result is claimed. Equity only; F&O single-leg and
 defined-risk experiments are separate future slices. Dev-only, not deployed.
+Source commit: `19a5471` (pushed).
 
 ## October 2 S5c partner delivery-blocker diagnostic (Dev)
 

@@ -76,6 +76,9 @@
   manifest freeze/verify, DEVELOPMENT/HOLDOUT labels, thesis-confirmed time
   stop/target extension, exposure and cost-stressed paired metrics. 13 tests
   warnings-fatal; momentum suites 125 passed. No runtime caller.
+- [x] S6b step 1: extract the live single-leg F&O exit ladder into pure
+  `fno_exit_rules.py` (behaviour-preserving; characterization and 20,000-case
+  differential tests; F&O/scheduler suites 397 passed).
 - [ ] After S4 paths are collecting: freeze the S6 candidate before the next
   session and evaluate HOLDOUT entries only; F&O exit experiments separately.
 - [x] S5c: read-only `partner-delivery-blockers` report (ordered per-candidate

@@ -559,6 +559,17 @@ exits at 15:15 (+1.32R, giveback 0.375R). This is a mechanism check, not
 evidence. No real result exists until S4 paths are collected after the
 freeze.
 
+S6b slice (Dev, October 2): F&O single-leg exit research. Step 1 extracts the
+live inline ladder into pure `fno_exit_rules.py` (called by the orchestrator)
+so research cannot drift from live rules; `fno_backtest.py` already diverges
+(bar-close arming, different order) and is not the reference. Acceptance:
+characterization tests on the inline code before and after, a frozen-oracle
+differential test, and unchanged F&O suites. Step 1 receipt: 3 new
+orchestrator characterization tests, 20,000-case differential match, 397
+suite tests passed; no configuration or behaviour change. Step 2: a frozen
+single-leg experiment on archived futures and exact-option paths, reusing
+the S6a manifest/holdout discipline.
+
 ### S7 — P2: opportunity-aware allocation and entry timing
 
 Files/contracts: `proactive_intelligence.py`, `proactive_portfolio_research.py`,
