@@ -39,7 +39,7 @@ from fno_defined_risk import (
     build_debit_spread, build_iron_condor, select_structure,
     structure_round_trip_cost,
 )
-from fno_models import ContractQuote, FnoDirection, Leg, OptionType
+from fno_models import Contract, ContractQuote, FnoDirection, Leg, OptionType
 
 logger = structlog.get_logger()
 
@@ -422,6 +422,69 @@ def _bound_price_functions(row: dict, snap: Optional[ChainSnapshot]) -> tuple[Op
         price = quote.bid if quantity > 0 else quote.ask
         return float(price) if price and price > 0 else None
     return mid, executable, "ok"
+
+
+def exact_open_leg_tokens(rows: List[dict]) -> list[int]:
+    """Return only validated retained leg tokens for active DR management."""
+    tokens: set[int] = set()
+    for row in rows:
+        bound = _bound_legs_from_row(row)
+        if bound is None:
+            return []
+        tokens.update(int(item["contract"]["token"]) for item in bound)
+    return sorted(tokens)
+
+
+def exact_leg_snapshot_from_quotes(
+    rows: List[dict], raw_quotes: dict, now_ist: datetime, forward: Optional[float],
+) -> Optional[ChainSnapshot]:
+    """Build a valuation snapshot only from the persisted contracts.
+
+    This deliberately refuses missing/mismatched identities.  It prevents a
+    nearest-expiry/ATM reconstruction from valuing an open spread after an
+    expiry rollover or a large forward move.
+    """
+    quotes = {}
+    expiry = None
+    lot_size = None
+    for row in rows:
+        bound = _bound_legs_from_row(row)
+        if bound is None:
+            return None
+        for item in bound:
+            identity = item["contract"]
+            token = int(identity["token"])
+            raw = raw_quotes.get(token)
+            if not isinstance(raw, dict):
+                return None
+            try:
+                contract = Contract(
+                    token=token, tradingsymbol=identity["tradingsymbol"],
+                    name=identity["underlying"], expiry=date.fromisoformat(identity["expiry"]),
+                    strike=float(item["strike"]), instrument_type=identity["instrument_type"],
+                    lot_size=int(identity["lot_size"]),
+                )
+            except (KeyError, TypeError, ValueError):
+                return None
+            depth = raw.get("depth") or {}
+            buys, sells = depth.get("buy") or [], depth.get("sell") or []
+            bid = float(buys[0].get("price") or 0.0) if buys else 0.0
+            ask = float(sells[0].get("price") or 0.0) if sells else 0.0
+            quotes[(contract.strike, contract.instrument_type)] = ContractQuote(
+                contract=contract, bid=bid, ask=ask, ltp=float(raw.get("last_price") or 0.0),
+            )
+            if expiry is None:
+                expiry, lot_size = contract.expiry, contract.lot_size
+            elif expiry != contract.expiry or lot_size != contract.lot_size:
+                return None
+    if not quotes or expiry is None or lot_size is None:
+        return None
+    return ChainSnapshot(
+        taken_at=now_ist, expiry=expiry, forward=float(forward or 0.0),
+        parity_forward=None, lot_size=lot_size, fut_quote=None, quotes=quotes,
+        requested_tokens=tuple(sorted(int(quote.contract.token) for quote in quotes.values())),
+        received_tokens=tuple(sorted(int(raw) for raw in raw_quotes)),
+    )
 
 
 def structure_mtm_rs(legs: List[Leg], lot_size: int, prem) -> Optional[float]:

@@ -227,6 +227,28 @@ promotion must also be followed by three complete session receipts for lag, p95/
 deadline, skip and unresolved-exposure review. Source commit `d2319e2` is
 local on `codex/production-correction-hedge-p0`; it is not pushed or deployed.
 
+S2 completion receipt (Dev, October 2): DR management now requests only the
+persisted, validated leg tokens and constructs its valuation snapshot from
+those identities. It never rebuilds a nearest-expiry/ATM chain for a legacy,
+missing or inconsistent retained identity; that lifecycle remains
+unpriced/unresolved and creates no invented cash. `KiteClient` now shares a
+single token bucket with a bounded management lane: management receives up to
+three consecutive admissions while normal work waits, then a queued normal
+request is admitted. This changes ordering only, not the 3/s rate, burst-one
+capacity or concurrency; cancelled waiters remove themselves. Completed quote
+timing includes limiter, transport, parsing and retry-backoff time. Timeout
+records explicitly say that the cancelled provider stage is partial/unknown.
+Management SQLite stage elapsed time is retained separately and honestly
+labelled as operation elapsed including any lock wait, rather than a fabricated
+lock-only measurement. Focused DR/orchestrator/Kite checks: 105 passed, one
+known skipped test; the isolated DR/Kite warnings-fatal command: 53 passed,
+one known skip. The larger warnings-fatal aggregate still has two unrelated
+unclosed-socket ResourceWarnings, so it is not claimed clean. No migration,
+provider-rate/concurrency, broker, entry policy, AI, Production or deployment
+change. Remaining S2 acceptance is stale-IN_FLIGHT recovery review and three
+complete deployed-session receipts; neither tests nor promotion prove
+profitability or qualification.
+
 ### S3 — P1: preserve the evidence required to learn
 
 Files/contracts: `docker-compose.yml`, `scripts/verify_compose_logging.py`,

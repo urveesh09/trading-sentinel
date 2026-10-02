@@ -70,6 +70,24 @@ shared-provider priority with bounded fairness, and DB-wait/timeout-stage timing
 attribution. Exit-before-entry ordering alone does not implement queue priority.
 See [review and verification](2026-10-02-s1-s2-independent-review.md).
 
+## October 2 S2 exact-leg, shared-priority and timing completion (Dev)
+
+Open defined-risk management reads only the validated persisted leg tokens and
+constructs an exact retained-contract snapshot; it never reconstructs a
+nearest-expiry chain for legacy, missing or inconsistent identity. Those rows
+remain unpriced/unresolved, including at hard-flat, with no fabricated cash.
+The shared Kite token bucket now admits up to three management requests ahead
+of queued normal work before one normal admission, preserving the original
+3/s rate, burst-one capacity and concurrency. Cancelled waiters are removed.
+Completed provider evidence separates limiter, transport, parse and retry
+backoff; deadline cancellation is explicitly partial/unknown. Management DB
+stage elapsed includes any SQLite lock wait and is labelled accordingly rather
+than presented as a false lock-only measurement. Focused checks: 105 passed,
+one known skip; isolated warnings-fatal DR/Kite checks: 53 passed, one known
+skip. The broad warnings-fatal aggregate retains two unrelated socket warnings.
+No migration, provider capacity, broker, policy, AI, Production or deployment
+change occurred. Deployed recovery/session acceptance remains open.
+
 ## October 1 Production assessment and smart-trader plan (documentation only)
 
 The [consolidated plan](2026-10-01-smart-trader-consolidated-plan.md) records

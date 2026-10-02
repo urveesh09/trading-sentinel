@@ -242,6 +242,20 @@ async def test_defined_risk_and_directional_books_share_tick_market_data(
 
 
 @pytest.mark.asyncio
+async def test_management_db_stage_timing_is_explicit_and_does_not_claim_lock_only_time(
+    kite, db_path, monkeypatch,
+):
+    monkeypatch.setattr(settings, "FNO_DR_DISABLE_PAPER", True)
+    summary = await run_fno_tick(
+        kite, db_path=db_path, regime="REGIME_1_NORMAL", now_ist=NOW,
+    )
+    timing = summary["database_stage_timing"]
+    assert timing["measurement"] == "operation_elapsed_includes_sqlite_lock_wait"
+    assert timing["stages"]["open_positions:FNO_PAPER"]["calls"] == 1
+    assert timing["stages"]["open_positions:FNO_PAPER"]["elapsed_sec"] >= 0
+
+
+@pytest.mark.asyncio
 async def test_dr_entry_input_deadline_cancels_only_speculative_reads(
     kite, db_path, book, monkeypatch,
 ):
@@ -306,13 +320,6 @@ async def test_dr_hard_flat_management_is_not_suppressed_by_entry_deadline(
     async def one_open_structure(*_args, **_kwargs):
         return [{"id": 7}]
 
-    async def delayed_management_snapshot(*_args, **_kwargs):
-        try:
-            await asyncio.sleep(30)
-        except asyncio.CancelledError:
-            cancelled.set()
-            raise
-
     async def manage_hard_flat(_db_path, snapshot, now_ist, *_args, **_kwargs):
         assert snapshot is None
         assert now_ist.hour == 15 and now_ist.minute == 11
@@ -321,9 +328,6 @@ async def test_dr_hard_flat_management_is_not_suppressed_by_entry_deadline(
 
     monkeypatch.setattr(fno_dr_book, "open_structures", one_open_structure)
     monkeypatch.setattr(fno_dr_book, "manage_dr_structures", manage_hard_flat)
-    monkeypatch.setattr(
-        fno_orchestrator, "take_chain_snapshot", delayed_management_snapshot,
-    )
     hard_flat = IST.localize(datetime(2026, 7, 10, 15, 11))
 
     summary = await run_fno_tick(
@@ -332,12 +336,9 @@ async def test_dr_hard_flat_management_is_not_suppressed_by_entry_deadline(
 
     assert managed.is_set()
     assert summary["dr_exits"] == 1
-    # DR management has its own deadline, distinct from the speculative-entry
-    # budget, and cancellation is joined before the tick continues.
-    await asyncio.wait_for(cancelled.wait(), timeout=0.2)
     observation = summary["management_read_outcomes"]["defined_risk_snapshot"]
-    assert observation["state"] == "DEADLINE_EXCEEDED"
-    assert observation["elapsed_sec"] == pytest.approx(0.1, abs=0.08)
+    assert observation["state"] == "UNAVAILABLE"
+    assert observation["elapsed_sec"] < 0.1
     assert observation["cap_sec"] == 0.1
     assert observation["provider_timing_status"] == "UNAVAILABLE_CLIENT_INTERFACE"
     assert "defined_risk_management" in summary["stage_durations_sec"]
@@ -803,6 +804,17 @@ def test_exact_leg_quote_age_preserves_offsets_and_requires_complete_coverage():
     assert _oldest_quote_age_sec(quotes, [1, 2], NOW) is None
 
 
+def test_cancelled_management_deadline_keeps_timeout_stage_explicit():
+    from fno_orchestrator import _record_management_read
+    observations = {}
+    _record_management_read(
+        observations, "test", "DEADLINE_EXCEEDED", 0.0, 1.0,
+        timeout_partial=True,
+    )
+    assert observations["test"]["provider_timing_status"] == "PARTIAL_UNAVAILABLE_AFTER_CANCELLATION"
+    assert observations["test"]["timeout_stage"] == "provider_or_limiter_or_retry_unknown"
+
+
 @pytest.mark.asyncio
 async def test_live_dr_management_refreshes_after_snapshot(db_path, kite, monkeypatch):
     import fno_dr_book as dr
@@ -818,19 +830,32 @@ async def test_live_dr_management_refreshes_after_snapshot(db_path, kite, monkey
         def now(cls, tz=None):
             return clock["now"]
 
-    async def open_rows(*args, **kwargs):
-        return [{"id": 7}]
+    legs_json = json.dumps([
+        {"opt_type": "CE", "strike": 25000.0, "quantity": 1, "premium": 100.0,
+         "contract": {"token": 1001, "tradingsymbol": "NIFTY26JUL25000CE", "underlying": "NIFTY",
+                      "expiry": "2026-07-14", "lot_size": 75, "exchange": "NFO", "instrument_type": "CE"}},
+        {"opt_type": "CE", "strike": 25100.0, "quantity": -1, "premium": 50.0,
+         "contract": {"token": 1002, "tradingsymbol": "NIFTY26JUL25100CE", "underlying": "NIFTY",
+                      "expiry": "2026-07-14", "lot_size": 75, "exchange": "NFO", "instrument_type": "CE"}},
+    ])
 
-    async def snapshot(*args, **kwargs):
+    async def open_rows(*args, **kwargs):
+        return [{"id": 7, "legs_json": legs_json}]
+
+    async def exact_quote(_kite, tokens):
+        assert tokens == [1001, 1002]
         clock["now"] = after
-        return None
+        return {
+            1001: {"last_price": 100.0, "depth": {"buy": [{"price": 99.0}], "sell": [{"price": 101.0}]}},
+            1002: {"last_price": 50.0, "depth": {"buy": [{"price": 49.0}], "sell": [{"price": 51.0}]}},
+        }, None
 
     async def manage(db, snap, now):
         managed.append(now)
         return 0
 
     monkeypatch.setattr(fo, "datetime", Clock)
-    monkeypatch.setattr(fo, "take_chain_snapshot", snapshot)
+    monkeypatch.setattr(fo, "_management_quote", exact_quote)
     monkeypatch.setattr(dr, "open_structures", open_rows)
     monkeypatch.setattr(dr, "manage_dr_structures", manage)
     await run_fno_tick(kite, db_path=db_path)

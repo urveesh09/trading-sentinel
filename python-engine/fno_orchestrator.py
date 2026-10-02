@@ -68,7 +68,7 @@ def _read_cap(value: float) -> float:
 
 def _record_management_read(
     observations: Optional[dict], name: str, state: str, started: float, cap_sec: float,
-    *, provider_timing: Optional[dict] = None,
+    *, provider_timing: Optional[dict] = None, timeout_partial: bool = False,
 ) -> None:
     """Retain bounded, non-sensitive evidence for one provider read."""
     if observations is not None:
@@ -78,16 +78,43 @@ def _record_management_read(
             "cap_sec": round(cap_sec, 3),
         }
         if provider_timing is None:
-            observation["provider_timing_status"] = "UNAVAILABLE_CLIENT_INTERFACE"
+            observation["provider_timing_status"] = (
+                "PARTIAL_UNAVAILABLE_AFTER_CANCELLATION" if timeout_partial
+                else "UNAVAILABLE_CLIENT_INTERFACE"
+            )
+            if timeout_partial:
+                observation["timeout_stage"] = "provider_or_limiter_or_retry_unknown"
         else:
             observation["provider_timing_status"] = "PRESENT"
             for field in (
-                "limiter_wait_sec", "transport_sec", "parse_sec", "attempt_count", "retry_count",
+                "limiter_wait_sec", "transport_sec", "parse_sec", "retry_backoff_sec",
+                "attempt_count", "retry_count",
             ):
                 value = provider_timing.get(field)
                 if isinstance(value, (int, float)) and value >= 0:
                     observation[field] = round(float(value), 6)
         observations[name] = observation
+
+
+async def _timed_database_operation(timing: Optional[dict], stage: str, operation):
+    """Measure an awaited DB stage without changing its cancellation semantics.
+
+    SQLite does not expose lock wait separately from statement execution.  The
+    recorded elapsed value therefore deliberately includes both, making a
+    contention-induced stall visible without claiming a false exact split.
+    This helper never adds a timeout around a mutation.
+    """
+    started = monotonic()
+    try:
+        return await operation
+    finally:
+        if timing is not None:
+            stages = timing.setdefault("stages", {})
+            current = stages.setdefault(stage, {"calls": 0, "elapsed_sec": 0.0})
+            current["calls"] += 1
+            current["elapsed_sec"] = round(
+                current["elapsed_sec"] + monotonic() - started, 3
+            )
 
 
 async def _management_quote(kite, tokens) -> tuple[dict, Optional[dict]]:
@@ -101,7 +128,7 @@ async def _management_quote(kite, tokens) -> tuple[dict, Optional[dict]]:
     # tuple-returning observability contract.
     observed = getattr(type(kite), "get_quote_with_timing", None)
     if callable(observed):
-        result, timing = await observed(kite, tokens)
+        result, timing = await observed(kite, tokens, priority="management")
         return result, timing if isinstance(timing, dict) else None
     return await kite.get_quote(tokens), None
 
@@ -339,12 +366,15 @@ def _schedule_shadow_observation(
 async def _manage_open_positions(
     kite, db_path: str, source: str, executor: FnoExecutor,
     now_ist: datetime, fut_price: Optional[float], *, read_observations: Optional[dict] = None,
+    db_timing: Optional[dict] = None,
     action_clock: Optional[Callable[[], datetime]] = None,
 ) -> List[dict]:
     """Check every OPEN position for this leg against the §8.4/§8.5 exit
     ladder. Returns records of closed positions."""
     evaluation_started_at = datetime.now(pytz.UTC)
-    positions = await fpos.open_positions(db_path, source)
+    positions = await _timed_database_operation(
+        db_timing, f"open_positions:{source}", fpos.open_positions(db_path, source),
+    )
     if not positions:
         return []
 
@@ -354,11 +384,17 @@ async def _manage_open_positions(
     closed: List[dict] = []
     positions_needing_exit_evaluation = []
     for p in positions:
-        receipt = await fpos.exit_execution_receipt(db_path, p.id, source)
+        receipt = await _timed_database_operation(
+            db_timing, f"exit_receipt_read:{source}",
+            fpos.exit_execution_receipt(db_path, p.id, source),
+        )
         if receipt is None:
             positions_needing_exit_evaluation.append(p)
             continue
-        recovered = await _settle_exit_receipt(db_path, p, receipt)
+        recovered = await _timed_database_operation(
+            db_timing, f"exit_settlement:{source}",
+            _settle_exit_receipt(db_path, p, receipt),
+        )
         if recovered is not None:
             closed.append(recovered)
 
@@ -384,6 +420,7 @@ async def _manage_open_positions(
         except asyncio.TimeoutError:
             _record_management_read(
                 read_observations, f"exit_quotes:{source}", "DEADLINE_EXCEEDED", quote_started, quote_cap,
+                timeout_partial=True,
             )
             logger.warning("fno_exit_quote_deadline_exceeded source=%s cap_sec=%.3f", source, quote_cap)
         except Exception as exc:
@@ -536,8 +573,10 @@ async def _manage_open_positions(
 
             # persist trail state even when not exiting
             if not exit_reason:
-                await fpos.update_trail(
-                    db_path, p.id, 1 if trail_active else 0, trail_stop, best,
+                await _timed_database_operation(
+                    db_timing, f"trail_update:{source}", fpos.update_trail(
+                        db_path, p.id, 1 if trail_active else 0, trail_stop, best,
+                    ),
                 )
         else:
             # No futures quote this tick: only the premium backstop can
@@ -578,9 +617,12 @@ async def _manage_open_positions(
             )
             continue
 
-        if not await fpos.claim_exit_intent(
-            db_path, p.id, source, evaluation_started_at=evaluation_started_at,
-        ):
+        claimed = await _timed_database_operation(
+            db_timing, f"exit_intent_claim:{source}", fpos.claim_exit_intent(
+                db_path, p.id, source, evaluation_started_at=evaluation_started_at,
+            ),
+        )
+        if not claimed:
             logger.critical("fno_exit_reconciliation_required id=%s source=%s", p.id, source)
             continue
         try:
@@ -606,15 +648,17 @@ async def _manage_open_positions(
         risk_rupees = p.entry_premium * settings.FNO_STOP_PREMIUM_PCT * p.qty
         r_mult = pnl / risk_rupees if risk_rupees > 0 else 0.0
         try:
-            receipt = await fpos.record_exit_execution_receipt(
-                db_path, p.id,
-                exit_time_ist=now_ist, exit_premium=fill,
-                exit_underlying=fut_price or 0.0, exit_reason=exit_reason,
-                gross_pnl=gross, costs=costs, pnl=pnl, r_multiple=r_mult,
-                exit_order_id=result.get("order_id"),
-                source=source, ticker=p.tradingsymbol,
-                settlement_generation=p.settlement_generation + 1,
-                notes=f"fno_exit {exit_reason}",
+            receipt = await _timed_database_operation(
+                db_timing, f"exit_receipt_write:{source}", fpos.record_exit_execution_receipt(
+                    db_path, p.id,
+                    exit_time_ist=now_ist, exit_premium=fill,
+                    exit_underlying=fut_price or 0.0, exit_reason=exit_reason,
+                    gross_pnl=gross, costs=costs, pnl=pnl, r_multiple=r_mult,
+                    exit_order_id=result.get("order_id"),
+                    source=source, ticker=p.tradingsymbol,
+                    settlement_generation=p.settlement_generation + 1,
+                    notes=f"fno_exit {exit_reason}",
+                ),
             )
         except Exception as exc:
             # A broker fill without a durable local receipt is an uncertain
@@ -627,7 +671,10 @@ async def _manage_open_positions(
                 p.id, p.tradingsymbol, result.get("order_id"), str(exc),
             )
             continue
-        settled = await _settle_exit_receipt(db_path, p, receipt)
+        settled = await _timed_database_operation(
+            db_timing, f"exit_settlement:{source}",
+            _settle_exit_receipt(db_path, p, receipt),
+        )
         if settled is not None:
             closed.append(settled)
     return closed
@@ -921,6 +968,10 @@ async def run_fno_tick(
         "scan_id": scan_id, "entries": [], "exits": [], "note": "",
         "stage_durations_sec": {},
         "management_read_outcomes": {},
+        "database_stage_timing": {
+            "measurement": "operation_elapsed_includes_sqlite_lock_wait",
+            "stages": {},
+        },
     }
 
     # Rule 56: first-line orchestrator breadcrumb.
@@ -979,7 +1030,7 @@ async def run_fno_tick(
     except asyncio.TimeoutError:
         _record_management_read(
             summary["management_read_outcomes"], "futures_quote", "DEADLINE_EXCEEDED",
-            stage_started, fut_quote_cap,
+            stage_started, fut_quote_cap, timeout_partial=True,
         )
         logger.warning("fno_futures_quote_deadline_exceeded cap_sec=%.3f", fut_quote_cap)
     except Exception as exc:
@@ -1012,12 +1063,14 @@ async def run_fno_tick(
             summary["exits"] += await _manage_open_positions(
                 kite, db_path, FnoSource.FNO_PAPER.value, paper_exec, now_ist, fut_price,
                 read_observations=summary["management_read_outcomes"],
+                db_timing=summary["database_stage_timing"],
                 action_clock=action_clock,
             )
         if not settings.FNO_DISABLE_LIVE:
             summary["exits"] += await _manage_open_positions(
                 kite, db_path, FnoSource.FNO_LIVE.value, live_exec, now_ist, fut_price,
                 read_observations=summary["management_read_outcomes"],
+                db_timing=summary["database_stage_timing"],
                 action_clock=action_clock,
             )
     except Exception as exc:
@@ -1037,8 +1090,12 @@ async def run_fno_tick(
     if not settings.FNO_DISABLE_PAPER and not settings.FNO_DR_DISABLE_PAPER:
         try:
             import fno_dr_book as _dr
-            await _dr.init_dr_db(db_path)
-            open_dr = await _dr.open_structures(db_path)
+            await _timed_database_operation(
+                summary["database_stage_timing"], "defined_risk_init", _dr.init_dr_db(db_path),
+            )
+            open_dr = await _timed_database_operation(
+                summary["database_stage_timing"], "defined_risk_open_read", _dr.open_structures(db_path),
+            )
             if supplied_now_ist is None:
                 now_ist = datetime.now(IST)
                 summary["action_clock_ist"] = now_ist.isoformat()
@@ -1054,27 +1111,42 @@ async def run_fno_tick(
                 snapshot_started = monotonic()
                 management_cap = _read_cap(settings.FNO_DR_MANAGEMENT_READ_MAX_SEC)
                 try:
-                    snap = await asyncio.wait_for(
-                        take_chain_snapshot(kite, instruments, now_ist), timeout=management_cap,
-                    )
+                    exact_tokens = _dr.exact_open_leg_tokens(open_dr)
+                    if exact_tokens:
+                        raw_quotes, provider_timing = await asyncio.wait_for(
+                            _management_quote(kite, exact_tokens), timeout=management_cap,
+                        )
+                        dr_snap = _dr.exact_leg_snapshot_from_quotes(
+                            open_dr, raw_quotes, now_ist, fut_price,
+                        )
+                        read_name = "defined_risk_snapshot"
+                    else:
+                        # Never rebuild a nearest-expiry ladder for legacy or
+                        # malformed rows: that could price different contracts.
+                        # ``manage_dr_structures`` receives None and keeps the
+                        # lifecycle unresolved (or records a no-cash hard-flat).
+                        dr_snap = None
+                        provider_timing = None
+                        read_name = "defined_risk_snapshot"
                     _record_management_read(
-                        summary["management_read_outcomes"], "defined_risk_snapshot", "COMPLETED",
-                        snapshot_started, management_cap,
+                        summary["management_read_outcomes"], read_name,
+                        "COMPLETED" if dr_snap is not None else "UNAVAILABLE",
+                        snapshot_started, management_cap, provider_timing=provider_timing,
                     )
                 except asyncio.TimeoutError:
                     logger.warning("fno_dr_management_snapshot_deadline_exceeded cap_sec=%.3f", management_cap)
                     _record_management_read(
                         summary["management_read_outcomes"], "defined_risk_snapshot", "DEADLINE_EXCEEDED",
-                        snapshot_started, management_cap,
+                        snapshot_started, management_cap, timeout_partial=True,
                     )
-                    snap = None
+                    dr_snap = None
                 except Exception as exc:
                     logger.error("fno_dr_management_snapshot_failed err=%s", str(exc))
                     _record_management_read(
                         summary["management_read_outcomes"], "defined_risk_snapshot", "FAILED",
                         snapshot_started, management_cap,
                     )
-                    snap = None
+                    dr_snap = None
                 finally:
                     summary["stage_durations_sec"]["defined_risk_snapshot"] = round(
                         monotonic() - snapshot_started, 3
@@ -1087,12 +1159,15 @@ async def run_fno_tick(
                 # manage_dr_structures intentionally accepts ``None`` and
                 # fail-closes a hard-flat structure even without a quote.
                 summary["dr_exits"] = summary.get("dr_exits", 0) + \
-                    await _dr.manage_dr_structures(db_path, snap, now_ist)
+                    await _dr.manage_dr_structures(db_path, dr_snap, now_ist)
                 summary["stage_durations_sec"]["defined_risk_management"] = round(
                     monotonic() - management_started, 3
                 )
 
-            if in_dr_window and not await _dr.open_structures(db_path):
+            remaining_open_dr = await _timed_database_operation(
+                summary["database_stage_timing"], "defined_risk_open_read", _dr.open_structures(db_path),
+            )
+            if in_dr_window and not remaining_open_dr:
                 entry_inputs_started = monotonic()
                 entry_snap, entry_bars, entry_sig, entry_skip_reason = await _load_dr_entry_inputs(
                     kite, instruments, fut.token, regime, evaluation_now_ist, snap,

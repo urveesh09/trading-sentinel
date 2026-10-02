@@ -34,8 +34,14 @@
   frozen signal cutoff, timezone/partial quote-age evidence and scheduler
   completion-log retention. See `2026-10-02-s1-s2-independent-review.md` for
   commands/results and limits. Dev only; existing user changes preserved.
-- [ ] Finish S2 exact-leg DR management reads, shared-provider priority/fairness
-  and DB-wait/timeout-stage attribution; fault-test before GitHub promotion.
+- [x] Finish S2 exact-leg DR management reads, shared-provider priority/fairness
+  and DB-wait/timeout-stage attribution. Exact retained legs are never rebuilt
+  from a nearest chain; bounded three-admission management priority preserves
+  normal fairness and original provider capacity; DB elapsed is honestly
+  labelled inclusive of lock wait; cancelled deadlines are partial/unknown.
+  Focused checks: 105 passed/one known skip; isolated warnings-fatal DR/Kite:
+  53 passed/one known skip. Broad warnings-fatal aggregation still exposes two
+  unrelated unclosed-socket warnings. Dev only, pending GitHub promotion.
 - [ ] Inspect at least three complete deployed sessions; no tests establish
   profitability, partner qualification or operational deployment.
 - [x] Reproduce optional-review expiry from mixed fresh/stale/undated sources;

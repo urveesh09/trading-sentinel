@@ -29,24 +29,22 @@ Files: `python-engine/fno_orchestrator.py`, `fno_dr_book.py`,
 `scheduler_setup.py`, their focused regression tests, all four handover docs,
 and the consolidated plan. No schema or deployment configuration change.
 
-## Remaining S2 development — do next as separate reviewed slices
+## S2 source completion — October 2 follow-up
 
-1. **Exact-held-leg DR management reads:** use retained tokens/expiry, not a
-   nearest-expiry ATM chain reconstruction; retain the same total read budget.
-   Tests must move the forward beyond the retained strike window and change
-   nearest expiry while proving exact open legs remain manageable; absent or
-   mismatched observations must stay unresolved without invented cash.
-2. **Shared-provider priority/fairness:** inspect the limiter/request admission
-   boundary and give due management precedence over queued speculative/research
-   reads without raising request rate/concurrency. Exit-first ordering inside a
-   tick does not prioritize that tick against other jobs. Regression acceptance:
-   saturated research cannot consume the entire management budget while lower
-   priority work still has bounded fairness; cancellation leaves no orphan retry.
-3. **Timing attribution:** distinguish DB wait, DR/provider stages, retry/backoff
-   and timeout-path partial timing. Current detailed quote metrics are returned
-   only on completed calls; a cancelled call cannot prove which stage consumed
-   its budget. Keep unavailable explicit and bounded, without recording secrets.
-4. **Recovery/operational acceptance:** verify stale IN_FLIGHT handling against
+1. **Exact-held-leg DR management reads:** completed. Management requests only
+   retained, validated tokens and builds the snapshot from retained expiry and
+   contract identity. Legacy/malformed/missing identities are not reconstructed;
+   they remain unpriced/unresolved. Regression moves forward beyond the retained
+   window and demonstrates that a changed nearest expiry is irrelevant.
+2. **Shared-provider priority/fairness:** completed. A shared token bucket gives
+   management up to three consecutive admissions ahead of normal queued work,
+   then admits normal work. Rate (3/s), burst (one) and concurrency are unchanged;
+   cancellation removes a queued priority waiter.
+3. **Timing attribution:** completed to what SQLite/provider APIs can prove.
+   Management records DB operation elapsed including lock wait, DR/provider
+   stages, limiter/transport/parse/retry-backoff metrics, and a bounded explicit
+   partial-unknown label when timeout cancellation prevents exact stage proof.
+4. **Recovery/operational acceptance remains:** verify stale IN_FLIGHT handling against
    the plan, then obtain three complete deployed market sessions for lag, p95/max,
    skips, read deadlines and unresolved exposure. These are not profitability
    evidence or automatic partner authorization.
@@ -77,8 +75,8 @@ user artifacts are preserved.
 
 ## Rollout and status
 
-Corrections remain Dev-local, not pushed or deployed at this review. Production
-is untouched and not restarted. Promote/revert the scoped correction through
+The completion follow-up remains Dev-local, not pushed or deployed at this
+receipt. Production is untouched and not restarted. Promote/revert the scoped correction through
 GitHub; preserve active obligations and retained evidence. No migration,
 live-order authority, owner EXEC, AI-default policy, strategy threshold,
 provider rate or scheduler cadence changes. Commit identity, if committed,

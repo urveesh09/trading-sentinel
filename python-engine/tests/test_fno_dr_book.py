@@ -146,6 +146,61 @@ def test_plan_rejects_missing_contract_identity(monkeypatch):
     assert plan_structure(snap, True, FnoDirection.LONG, NOW) is None
 
 
+def test_exact_leg_snapshot_uses_retained_tokens_after_rollover_and_large_move(monkeypatch):
+    """Management must value the opened contracts, never a rebuilt ladder."""
+    monkeypatch.setattr(book, "atm_iv", lambda snap, now: 0.15)
+    entry = FakeSnap(25000, {
+        (25000, OptionType.CE): 120.0, (25100, OptionType.CE): 50.0,
+        (25000, OptionType.PE): 110.0,
+    })
+    planned = plan_structure(entry, True, FnoDirection.LONG, NOW)
+    assert planned is not None
+    row = {"legs_json": book._bound_legs_to_json(planned.contract_legs)}
+    tokens = book.exact_open_leg_tokens([row])
+    assert tokens == sorted(item["contract"]["token"] for item in planned.contract_legs)
+
+    # Simulate a later weekly expiry being nearest and a forward far outside
+    # the retained entry window.  Neither can change the requested identities.
+    quotes = {
+        token: {"last_price": 99.0, "depth": {"buy": [{"price": 98.5}], "sell": [{"price": 99.5}]}}
+        for token in tokens
+    }
+    snapshot = book.exact_leg_snapshot_from_quotes(
+        [row], quotes, NOW, forward=28000.0,
+    )
+    assert snapshot is not None
+    assert snapshot.expiry == date(2026, 7, 30)
+    assert snapshot.forward == 28000.0
+    assert snapshot.requested_tokens == tuple(tokens)
+    assert {quote.contract.token for quote in snapshot.quotes.values()} == set(tokens)
+
+
+def test_exact_leg_snapshot_refuses_missing_or_inconsistent_retained_identity(monkeypatch):
+    monkeypatch.setattr(book, "atm_iv", lambda snap, now: 0.15)
+    entry = FakeSnap(25000, {
+        (25000, OptionType.CE): 120.0, (25100, OptionType.CE): 50.0,
+        (25000, OptionType.PE): 110.0,
+    })
+    planned = plan_structure(entry, True, FnoDirection.LONG, NOW)
+    assert planned is not None
+    row = {"legs_json": book._bound_legs_to_json(planned.contract_legs)}
+    tokens = book.exact_open_leg_tokens([row])
+    incomplete = {tokens[0]: {"last_price": 100.0, "depth": {}}}
+    assert book.exact_leg_snapshot_from_quotes([row], incomplete, NOW, 25000.0) is None
+
+    inconsistent = list(planned.contract_legs)
+    inconsistent[1] = {
+        **inconsistent[1],
+        "contract": {**inconsistent[1]["contract"], "expiry": "2026-08-06"},
+    }
+    bad_row = {"legs_json": book._bound_legs_to_json(tuple(inconsistent))}
+    full = {
+        token: {"last_price": 100.0, "depth": {"buy": [{"price": 99.0}], "sell": [{"price": 101.0}]}}
+        for token in book.exact_open_leg_tokens([bad_row])
+    }
+    assert book.exact_leg_snapshot_from_quotes([bad_row], full, NOW, 25000.0) is None
+
+
 # --------------------------------------------------------------------------
 # mark-to-market + exit
 # --------------------------------------------------------------------------

@@ -1,6 +1,18 @@
 # Trading Sentinel — next-agent execution plan
 
-## October 2 independent S1/S2 review — correction slice
+## October 2 S3 evidence-retention slice — next
+
+S2 source completion is committed in Dev and must be promoted only through
+GitHub; Production remains untouched. Start S3 with an inventory of existing
+engine/Compose log retention, CSV evidence rotation, scheduler summaries and
+archive/restart behavior. Maintain a plan slice before edits: files/contracts,
+peak-session retention calculation, tests, rollout/rollback and no-delete
+archive rule. Do not change Production or delete retained evidence. S3 needs
+rendered Compose verification, bounded writer/disk-failure behavior and
+rotation/restart coverage before any deployment request. The optional AI path
+must remain non-blocking when its API is unavailable.
+
+## October 2 independent S1/S2 review — completed source correction
 
 Review found small S2 gaps: action time was not refreshed after held-option/DR
 reads or at final dispatch, quote-age parsing discarded time-zone offsets, and
@@ -12,7 +24,9 @@ compile, regenerate the atlas and review the diff. Dev only; promotion/rollback
 through GitHub, no Production edit/restart or migration. The original S2 scope
 also includes provider queue priority/fairness, exact-leg management reads and
 DB-wait timing; existing exit-before-entry ordering is not shared-queue priority.
-These are remaining development, not merely three deployed-session observations.
+These source corrections are now complete; stale-IN_FLIGHT recovery review and
+three deployed-session observations remain operational acceptance, not proof of
+profitability, partner qualification or deployment.
 
 ## October 1 consolidated smart-trader plan — active, planning only
 

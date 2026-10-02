@@ -181,24 +181,74 @@ def _intraday_cache_gate_evaluate(
     )
 
 class RateLimiter:
-    def __init__(self, rate: float, burst: int):
+    """Shared token bucket with bounded management priority.
+
+    Every provider caller uses this one limiter.  Management reads may pass
+    ``priority="management"`` so an already-queued research request cannot
+    repeatedly win the next token, but ``management_burst`` prevents a steady
+    stream of exits from starving ordinary/research work forever.  Waiting is
+    cancellation-safe: a cancelled waiter removes itself before another
+    caller is admitted.
+    """
+
+    def __init__(self, rate: float, burst: int, *, management_burst: int = 3):
+        if rate <= 0 or burst < 1 or management_burst < 1:
+            raise ValueError("rate, burst, and management_burst must be positive")
         self.rate = rate
         self.burst = burst
         self.tokens = burst
         self.last_update = time.monotonic()
-        self._lock = asyncio.Lock()
+        self.management_burst = management_burst
+        self._condition = asyncio.Condition()
+        self._waiting = {"management": 0, "normal": 0}
+        self._management_streak = 0
 
-    async def acquire(self):
-        async with self._lock:
-            while True:
-                now = time.monotonic()
-                elapsed = now - self.last_update
-                self.tokens = min(self.burst, self.tokens + elapsed * self.rate)
-                self.last_update = now
-                if self.tokens >= 1:
-                    self.tokens -= 1
-                    return
-                await asyncio.sleep(1 / self.rate)
+    async def acquire(self, *, priority: str = "normal"):
+        """Acquire one shared provider token without exceeding ``rate``.
+
+        Management gets at most ``management_burst`` consecutive admissions
+        while normal work is queued.  This is admission ordering only; it
+        adds no token capacity or parallelism.
+        """
+        lane = "management" if priority == "management" else "normal"
+        admitted = False
+        async with self._condition:
+            self._waiting[lane] += 1
+            try:
+                while True:
+                    now = time.monotonic()
+                    elapsed = now - self.last_update
+                    self.tokens = min(self.burst, self.tokens + elapsed * self.rate)
+                    self.last_update = now
+                    normal_waiting = self._waiting["normal"] > 0
+                    management_waiting = self._waiting["management"] > 0
+                    management_turn = management_waiting and (
+                        not normal_waiting
+                        or self._management_streak < self.management_burst
+                    )
+                    our_turn = (
+                        lane == "management" and management_turn
+                    ) or (
+                        lane == "normal" and not management_turn
+                    )
+                    if our_turn and self.tokens >= 1:
+                        self.tokens -= 1
+                        self._management_streak = (
+                            self._management_streak + 1 if lane == "management" else 0
+                        )
+                        admitted = True
+                        self._condition.notify_all()
+                        return
+                    delay = max(0.001, (1.0 - self.tokens) / self.rate)
+                    try:
+                        await asyncio.wait_for(self._condition.wait(), timeout=delay)
+                    except asyncio.TimeoutError:
+                        # Token replenishment is time-based; wake and recalculate.
+                        pass
+            finally:
+                self._waiting[lane] -= 1
+                if not admitted:
+                    self._condition.notify_all()
 
 class KiteClient:
     def __init__(self, db_path: str):
@@ -842,7 +892,7 @@ class KiteClient:
         result, _timing = await self.get_quote_with_timing(tokens)
         return result
 
-    async def get_quote_with_timing(self, tokens) -> tuple[dict, dict]:
+    async def get_quote_with_timing(self, tokens, *, priority: str = "normal") -> tuple[dict, dict]:
         """Fetch live quote for one or more instrument tokens.
         Kite endpoint: GET /quote?i={token1}&i={token2}...
         Returns: dict {token_int: {last_price, ohlc, volume, depth, ...}, ...}
@@ -869,7 +919,8 @@ class KiteClient:
         """
         timing = {
             "limiter_wait_sec": 0.0, "transport_sec": 0.0,
-            "parse_sec": 0.0, "attempt_count": 0, "retry_count": 0,
+            "parse_sec": 0.0, "retry_backoff_sec": 0.0,
+            "attempt_count": 0, "retry_count": 0,
         }
 
         def _finish(result: dict) -> tuple[dict, dict]:
@@ -877,6 +928,7 @@ class KiteClient:
                 "limiter_wait_sec": round(timing["limiter_wait_sec"], 6),
                 "transport_sec": round(timing["transport_sec"], 6),
                 "parse_sec": round(timing["parse_sec"], 6),
+                "retry_backoff_sec": round(timing["retry_backoff_sec"], 6),
                 "attempt_count": int(timing["attempt_count"]),
                 "retry_count": int(timing["retry_count"]),
             }
@@ -896,7 +948,16 @@ class KiteClient:
         for attempt in range(1, max_attempts + 1):
             timing["attempt_count"] = attempt
             limiter_started = time.monotonic()
-            await self.limiter.acquire()
+            try:
+                await self.limiter.acquire(priority=priority)
+            except TypeError as exc:
+                # Small broker adapters used by replay/tests may still expose
+                # the pre-S2 no-argument limiter contract.  They retain their
+                # existing limiting semantics; only the priority annotation is
+                # unavailable on those adapters.
+                if "priority" not in str(exc):
+                    raise
+                await self.limiter.acquire()
             timing["limiter_wait_sec"] += time.monotonic() - limiter_started
             try:
                 transport_started = time.monotonic()
@@ -922,7 +983,9 @@ class KiteClient:
                             "kite_quote_empty_body_retrying attempt=%d/%d tokens=%d",
                             attempt, max_attempts, len(tokens),
                         )
+                        backoff_started = time.monotonic()
                         await asyncio.sleep(backoff)
+                        timing["retry_backoff_sec"] += time.monotonic() - backoff_started
                         backoff *= 2
                         continue
                     self._log_quote_batch_failure(len(tokens))
@@ -943,7 +1006,9 @@ class KiteClient:
                             "kite_quote_http_retry status=%d attempt=%d/%d tokens=%d",
                             status, attempt, max_attempts, len(tokens),
                         )
+                        backoff_started = time.monotonic()
                         await asyncio.sleep(backoff)
+                        timing["retry_backoff_sec"] += time.monotonic() - backoff_started
                         backoff *= 2
                         continue
                 # [FIX-PHASE3-AUDIT 2026-07-09] Kite returns HTTP 400
@@ -977,7 +1042,9 @@ class KiteClient:
                         "kite_quote_request_retry attempt=%d/%d tokens=%d err=%s",
                         attempt, max_attempts, len(tokens), str(e),
                     )
+                    backoff_started = time.monotonic()
                     await asyncio.sleep(backoff)
+                    timing["retry_backoff_sec"] += time.monotonic() - backoff_started
                     backoff *= 2
                     continue
                 logger.error(
