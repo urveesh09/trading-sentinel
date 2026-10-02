@@ -1,5 +1,15 @@
 # Handover receipt and operator checklist
 
+## October 2 release checklist
+
+- [x] R1–R5 source completed and pushed (R4 `c118598`, R5 `addf46b`).
+- [x] Production `.env`: AI-safe keys appended; backup `.env.bak-2026-10-02`; render verified.
+- [ ] Merge the GitHub PR into Production and recreate containers (operator).
+- [ ] Post-deployment read-only checks listed in NEXT_AGENT_PLAN.
+- [ ] Backlog `apply` only after reviewing `report` (operator approval).
+- [ ] When the AI returns: `ENABLE_NEWS_CLASSIFIER=1`; diagnostics opt-in after verification.
+- [ ] R6 operational acceptance gates.
+
 ## October 2 review priorities R1–R3
 
 - [x] R1: evidence-bound S6 replays (DR v2 and single-leg binding/reconciliation). 49 tests warnings-fatal.

@@ -1,5 +1,17 @@
 # Trading Sentinel — next-agent execution plan
 
+## October 2 — release candidate; operational acceptance next (R6)
+
+All review source items R1–R5 are in Dev and pushed. Promote through the GitHub
+PR to Production, then perform post-deployment checks (read-only first):
+
+1. Containers healthy; the engine runs startup migrations (additive columns only).
+2. Collection runs show `momentum_paper_paths.write` after a paper admission, plus `provider_timing`. Research `runtime_capped` should fall after the screener bulk lane.
+3. The scheduler daily summary shows the `elapsed_distribution` for market hours.
+4. The gateway backlog `report` is reviewed by the operator; `apply` is run only with separate approval.
+5. AI unavailable: alerts arrive with an AI-unavailable banner and paper trading continues; check that no classifier calls happen.
+6. Then R6: three representative sessions, five reconciled paths, fresh S6/S7 freezes before future data, and partner qualification plus a delivery canary (separately authorised).
+
 ## October 2 review priorities — R1–R3 done; R4–R6 remain
 
 R1 `af6f424`, R2 `dcc2f35`, R3 `1550886` in Dev. Next in priority order:

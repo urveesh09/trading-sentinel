@@ -1,5 +1,23 @@
 # Trading Sentinel — system guide and engineering handover
 
+## October 2 source work complete for R1–R5; release and Production environment (Dev)
+
+- **R4 (`c118598`).**
+  - Scheduler summaries keep durable market-hours/off-hours elapsed histograms (p50/p95 bucket upper bounds).
+  - Session CSVs refuse and count writes below a 1 GiB free-space reserve, flag over-quota archives (2 GiB, never pruned), isolate torn rows, and append off the event loop.
+- **R5 (`addf46b`).**
+  - Allocation research gains recorded batch identity, fixed-pool / realised-equity / real-budget bases, concentration metrics and a causal guarantee.
+  - Timing research builds candidates only from verified admission evidence with a frozen zone rule.
+  - The daily decision-quality report adds row-id ordering, unique opportunities, unavailable absent books, per-trade decomposition, lineage, missed allocation and best-winner exclusion.
+
+**Production environment (owner-authorised, October 2).** The optional AI is temporarily unavailable. Production `.env` was backed up to the git-ignored `.env.bak-2026-10-02`, and these keys were appended:
+- `MINIMAX_ASYNC_REVIEW_ENABLED=true` — must stay true; false forces synchronous AI calls inside the alert path.
+- `MINIMAX_UNAVAILABLE_POLICY=proceed` and `MOMENTUM_MINIMAX_REJECT_POLICY=advisory` — AI never blocks.
+- `ENABLE_NEWS_CLASSIFIER=0` — no per-headline classifier calls to a dead provider.
+- `OPTIONAL_AI_REPORT_DIAGNOSTICS=false` — diagnostics stay off.
+
+Dev Compose rendered with this file shows those agent values and engine logging `json-file 20m x 25`. No other Production file, service or data was changed. When the AI returns, set `ENABLE_NEWS_CLASSIFIER=1` and, after verifying engine status posts, optionally `OPTIONAL_AI_REPORT_DIAGNOSTICS=true`.
+
 ## October 2 review priorities R1–R3 completed (Dev)
 
 Response to the S7–S10 independent review (details and receipts in
