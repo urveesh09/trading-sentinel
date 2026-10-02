@@ -1,5 +1,27 @@
 # Trading Sentinel — system guide and engineering handover
 
+## October 2 review priorities R1–R3 completed (Dev)
+
+Response to the S7–S10 independent review (details and receipts in
+`2026-10-02-s7-s10-independent-review.md`):
+
+- **R1 (`af6f424`).** S6 replays are bound to evidence.
+  - The defined-risk experiment v2 derives entries from persisted rows with re-derived economics, uses same-receipt verified leg quotes, replays the live exit and settlement, and reconciles to the ledger.
+  - The single-leg adapter verifies both packets from raw bytes, binds entries to `fno_positions` and the ledger, and counts paired deltas only for reconciled entries.
+- **R2 (`dcc2f35`).** The gateway gains `scripts/backlog-reconciliation.js`.
+  - `report` is a read-only classification of pending requests, interrupted executions, unsynced orders and dead letters.
+  - `apply` takes an operator-reviewed plan, rechecks preconditions in one transaction and writes idempotent receipts. It never deletes, sends, orders or fabricates fills. Dead letters are acknowledged but never resent.
+  - Health counts only unacknowledged dead letters.
+  - Gateway suite (Node 20): 471 passed, 4 skipped.
+- **R3 (`1550886`).** S10 completion.
+  - Bounded diagnostics are published behind `OPTIONAL_AI_REPORT_DIAGNOSTICS` once the engine allow-list is deployed.
+  - A completed review is posted once, as an edit to its original valid alert with the same buttons.
+  - Worker shutdown fails pending reviews closed and discards late results. Socket cancellation is not claimed.
+
+Production was not changed. Still open from the review: R4 (S3 CSV quota and
+market-hours timing distributions), R5 (S7/S8 learning contracts) and every
+operational acceptance gate.
+
 ## October 2 continuation review — current behavior and limits
 
 See [the independent S7–S10 review](2026-10-02-s7-s10-independent-review.md)

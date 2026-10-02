@@ -1,5 +1,17 @@
 # Trading Sentinel — next-agent execution plan
 
+## October 2 review priorities — R1–R3 done; R4–R6 remain
+
+R1 `af6f424`, R2 `dcc2f35`, R3 `1550886` in Dev. Next in priority order:
+- R4: S3 CSV archive quota/free-space handling and durable market-hours elapsed distributions.
+- R5: S7/S8 source-bound entry/thesis evidence, equity-constrained allocation and complete decision-quality analytics.
+- R6: operational acceptance.
+
+Deployment notes:
+- Deploy the engine diagnostics allow-list before setting `OPTIONAL_AI_REPORT_DIAGNOSTICS=true` on the agent.
+- Running the backlog `apply` against Production needs separate operator approval after reviewing its `report` output.
+- Freeze fresh S6 manifests before future data.
+
 ## October 2 continuation review — authoritative current status
 
 Start with [the independent S7–S10 review](2026-10-02-s7-s10-independent-review.md).

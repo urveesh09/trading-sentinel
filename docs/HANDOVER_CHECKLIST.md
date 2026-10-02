@@ -1,5 +1,14 @@
 # Handover receipt and operator checklist
 
+## October 2 review priorities R1–R3
+
+- [x] R1: evidence-bound S6 replays (DR v2 and single-leg binding/reconciliation). 49 tests warnings-fatal.
+- [x] R2: gateway backlog report/apply with idempotent receipts; dead-letter acknowledgement. Node 20 suite 471 passed.
+- [x] R3: S10 diagnostics, once-only completion updates, strict worker shutdown. Agent 383 / engine bridge 74 passed.
+- [ ] Operator: review the backlog `report` in Production, then approve `apply` separately.
+- [ ] Deploy the engine diagnostics allow-list, then enable `OPTIONAL_AI_REPORT_DIAGNOSTICS`.
+- [ ] R4 (S3 retention), R5 (S7/S8 learning), R6 operational acceptance.
+
 ## October 2 continuation review — current acceptance
 
 Use [the independent S7–S10 review](2026-10-02-s7-s10-independent-review.md)
