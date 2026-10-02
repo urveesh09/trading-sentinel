@@ -918,6 +918,16 @@ Top-level declarations: `Regime` (line 9), `round_float_2dp` (line 17), `round_f
 
 Related tests: `python-engine/tests/test_models.py`
 
+## `python-engine/momentum_exit_experiment.py`
+
+Frozen, read-only paired experiments for momentum-paper exit policies (S6a). This extends the v1 exit study (``momentum_exit_study``) without changing it. The same immutable LTP packet loader, path validation, pure live evaluator, cost model and leg arithmetic are reused. What is added: * a freeze manifest that pins one candidate policy, its parameters, the live evaluator settings and a source fingerprint *before* evaluation, so a policy cannot be re-tuned after its outcomes are seen; * development/holdout labelling: entries at or before the freeze time are ``DEVELOPMENT`` and can never be presented as held-out evidence; * ``thesis_confirmed_extension_v1``: a candidate that changes only the
+
+Top-level declarations: `_source_fingerprint` (line 86), `_evaluator_settings` (line 96), `_aware` (line 100), `freeze_experiment_manifest` (line 106), `verify_experiment_manifest` (line 130), `confirmation` (line 154), `_replaceable` (line 173), `_simulate_thesis` (line 177), `_exposure_metrics` (line 252), `_policy_summary` (line 276), `_paired_deltas` (line 295), `build_exit_experiment` (line 321), `_read_json` (line 386), `_main` (line 396)
+
+Engine dependencies: `config`, `momentum_exit_study`, `momentum_exits`
+
+Related tests: `python-engine/tests/test_momentum_exit_experiment.py`
+
 ## `python-engine/momentum_exit_study.py`
 
 Read-only paired research for momentum-paper exit policies. This module deliberately has no database, broker, HTTP, scheduler, order, or message dependency. It replays already captured timestamped LTP observations and compares the production pure exit evaluator with one fixed paper-only target-hold/trail alternative. It is not imported by any runtime manager.

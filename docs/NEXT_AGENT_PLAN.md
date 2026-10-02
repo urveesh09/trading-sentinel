@@ -12,8 +12,20 @@ optional ladder. Expect the screener to take roughly 10–20% longer; verify it
 on deployed sessions (commit `18c7f2a`). S5c is complete in Dev: the read-only
 `research_cli partner-delivery-blockers` report explains each candidate's
 blockers. S5 source work is complete; the frozen protocol, 20-session holdout,
-qualification package and canary need fresh post-promotion sessions. Next
-implementation priority is S6 (paired exit research), not a live exit change. Frozen protocol, 20-session holdout,
+qualification package and canary need fresh post-promotion sessions. S5c commit:
+`89a7595`.
+
+## October 2 S6 exit research — S6a complete in Dev
+
+`momentum_exit_experiment.py` freezes one candidate exit policy before
+evaluation and reports paired, cost-stressed, holdout-labelled results against
+the live evaluator. No runtime caller; no live or paper exit changed. Next S6
+work: once S4 paths are deployed and collecting, freeze
+`thesis_confirmed_extension_v1` (and/or `target_hold_trail_v1`) before the
+next session, then evaluate only HOLDOUT entries. F&O single-leg and
+defined-risk exit experiments need their own path sources and R definitions.
+A positive small sample authorizes nothing; promotion is versioned paper-only
+management after review. Frozen protocol, 20-session holdout,
 qualification package and delivery canary reuse existing tooling and need
 fresh post-promotion sessions. See the consolidated plan's S5 slice for the
 Production evidence. Production remains untouched.

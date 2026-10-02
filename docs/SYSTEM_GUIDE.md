@@ -107,6 +107,42 @@ does not migrate trading evidence.
 deployment requires operator free-space, prior-boot preservation and full
 market-session volume checks. Optional AI remains non-blocking when unavailable.
 
+## October 2 S6a frozen momentum exit experiments (Dev)
+
+`momentum_exit_experiment.py` is an inert, read-only research CLI. It leaves the
+v1 study and its evidence-review consumer unchanged. `freeze` writes an
+immutable manifest (candidate policy and parameters, live evaluator settings,
+cost multipliers, a line-ending-neutral source fingerprint of the study,
+experiment and evaluator modules, and freeze time). `evaluate` refuses any
+mismatch (`FROZEN_POLICY_MISMATCH`), so a policy cannot be re-tuned after its
+outcomes are seen. Entries at or before the freeze are `DEVELOPMENT`; only
+later entries are `HOLDOUT`. September 28–October 1 can therefore never be
+presented as holdout.
+
+Candidates: `target_hold_trail_v1` (reproduces the v1 alternative exactly) and
+`thesis_confirmed_extension_v1`. The latter replays the live pure evaluator and
+replaces only its time-stop or target exit, and only while confirmation known
+at that quote holds: LTP above VWAP-at-entry, not below entry, within 0.5R of
+the running high, and a regime not marked REGIME_3/CRISIS. Volume is not in
+the packet and is declared unused. Once a replacement is active, the
+protective stop is still checked first, losing confirmation exits at that
+observation, the stop only ratchets up (running high minus 1.0R) and 15:15
+IST stays forced. The live +1R scale-out and existing fast-stop VWAP deferral
+are untouched.
+
+Reports add MFE/MAE in R over the exposure window, giveback, minutes exposed,
+worst R, net at 1.0/1.5/2.0x costs, and paired deltas (better/worse/ties,
+mean/median/worst, sum excluding the best, cost-stressed sums), split into
+all/holdout/development. Qualification stays `NOT_ASSESSED`.
+
+Tests: 13 passed warnings-fatal (continuation, bad continuation, gap through
+stop, missing VWAP, crisis regime, target extension, no future leakage, v1
+parity, tamper/stale-settings refusal, development labelling, incomplete path,
+no-overwrite CLI, no runtime caller). Momentum exit/paper/review suites: 125
+passed. No complete source-bound equity path exists yet (S4 collection is
+not deployed), so no result is claimed. Equity only; F&O single-leg and
+defined-risk experiments are separate future slices. Dev-only, not deployed.
+
 ## October 2 S5c partner delivery-blocker diagnostic (Dev)
 
 `research_cli.py partner-delivery-blockers --db <engine-db> [--attempts-db
@@ -130,6 +166,7 @@ regression: 110 passed. A Production run was not performed in this session
 Expected first result from the earlier read-only queries: every September
 28–October 1 idea is `EVIDENCE:RESEARCH_ONLY` / no qualification, and the
 September 30 indices show attempt/idea disagreement. Dev-only, not deployed.
+Source commit: `89a7595`.
 
 ## October 2 S5b shared-provider bulk lane and exact-leg-first research (Dev)
 

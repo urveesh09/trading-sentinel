@@ -510,6 +510,55 @@ Promote a reviewed winner to versioned paper-only management first; retain
 baseline shadow comparison and rollback trigger. Live changes need their own
 explicit scope review and preserve owner-approved entry authority.
 
+S6 implementation slice (Dev, October 2). Inventory: `momentum_exit_study.py`
+(v1) pairs the live pure evaluator with `target_hold_trail_v1` and is consumed
+by `momentum_paper_evidence_review.py`; it stays byte-for-byte unchanged. No
+complete source-bound equity path exists yet (S4 collection is not deployed),
+so step 1 cannot produce a result today. Do not use backfilled or synthetic
+paths as evidence. The live evaluator already banks half at +1R and defers
+the fast time stop while LTP holds above VWAP-at-entry; the remaining hard
+exits are the slow time stop and the final target.
+
+S6a — frozen equity exit experiment. New `momentum_exit_experiment.py`
+reuses the v1 loader, path validation, evaluator replay, costs and legs.
+- `freeze` writes an immutable manifest: candidate policy, all parameters,
+  evaluator settings, code fingerprint (study, experiment and evaluator
+  source) and freeze time. `evaluate` refuses any mismatch.
+- Entries at or before the freeze time are labelled `DEVELOPMENT`; only later
+  entries count as `HOLDOUT`.
+- Candidate registry: `target_hold_trail_v1` (identical to v1's alternative)
+  and `thesis_confirmed_extension_v1`. The latter applies only where the
+  baseline would exit on the slow/fast time stop or the target. It extends
+  only when confirmation known at that quote holds: LTP above VWAP-at-entry,
+  not below entry, within 0.5R of the running high since entry, and a regime
+  not containing REGIME_3/CRISIS. While extended, losing confirmation exits
+  at that observation. The stop only ratchets up (running high minus 1.0R),
+  never below the current stop, and 15:15 IST remains forced. Volume is not
+  in the packet and is declared unused.
+- Metrics per policy: net cash, R, MFE/MAE in R over the exposure window,
+  giveback (peak minus realised R), minutes exposed, worst R, and net at
+  cost multipliers 1.0/1.5/2.0. Paired deltas: counts of wins/losses/ties,
+  mean/median/worst, sum excluding the best delta, and per-cost sums.
+- Acceptance: no future leakage (later quotes cannot change earlier
+  decisions); bad continuation, gap-through-stop, missing VWAP, crisis
+  regime and deadline cases; manifest tamper refusal; candidate
+  `target_hold_trail_v1` reproduces the v1 alternative. Qualification stays
+  `NOT_ASSESSED`; no runtime import.
+
+F&O single-leg and defined-risk exit experiments are separate future slices
+(different R denominators and path sources). Promotion to versioned
+paper-only management requires a reviewed holdout result and is not part of
+S6a. Rollback: delete the inert module via GitHub; no state to migrate.
+
+S6a completion receipt (Dev, October 2): implemented as planned in
+`momentum_exit_experiment.py` plus 13 warnings-fatal tests; momentum
+exit/paper/review suites passed 125. v1 study bytes unchanged. Spot check
+on a synthetic path: the baseline cuts at 90 minutes (+0.05R net); the
+candidate defers it, the live +1R scale-out still fires, and the remainder
+exits at 15:15 (+1.32R, giveback 0.375R). This is a mechanism check, not
+evidence. No real result exists until S4 paths are collected after the
+freeze.
+
 ### S7 — P2: opportunity-aware allocation and entry timing
 
 Files/contracts: `proactive_intelligence.py`, `proactive_portfolio_research.py`,

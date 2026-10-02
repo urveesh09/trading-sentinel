@@ -72,6 +72,12 @@
   exact active legs first, then the ladder, and records per-call timing.
   141 passed/one skip; warnings-fatal subset 24 passed. Pre-existing partner
   fixture ordering errors are reproduced on clean HEAD; follow-up only.
+- [x] S6a: frozen read-only exit experiment (`momentum_exit_experiment.py`):
+  manifest freeze/verify, DEVELOPMENT/HOLDOUT labels, thesis-confirmed time
+  stop/target extension, exposure and cost-stressed paired metrics. 13 tests
+  warnings-fatal; momentum suites 125 passed. No runtime caller.
+- [ ] After S4 paths are collecting: freeze the S6 candidate before the next
+  session and evaluate HOLDOUT entries only; F&O exit experiments separately.
 - [x] S5c: read-only `partner-delivery-blockers` report (ordered per-candidate
   blockers, aggregate attempt/idea disagreement, registry facts, labelled
   current-flag projection; `mode=ro`, never creates DBs). 10 passed
