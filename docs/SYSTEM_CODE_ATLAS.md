@@ -16,7 +16,7 @@ Related tests: `agent/tests/test_advisory.py`
 
 No module docstring; use the declarations and callers below.
 
-Top-level declarations: `_usable_classifications` (line 138), `_effective_classification_expiry` (line 157), `_attach_classification_context` (line 176), `_attach_provenance` (line 215), `register_approved_snapshot` (line 294), `_build_classifier_client` (line 340), `_today_str` (line 394), `_load_dedup_state` (line 399), `_save_dedup_state` (line 450), `mark_processed` (line 465), `clear_memory` (line 471), `touch_heartbeat` (line 488), `_is_market_hours` (line 515), `read_scheduler_tick_age` (line 526), `check_engine_liveness` (line 538), `SignalOutput` (line 576), `NewsItem` (line 592), `fetch_signals` (line 607), `fetch_rss_feed` (line 634), `fetch_news_items` (line 651), `_parse_rss_pubdate` (line 714), `_hostname_from_url` (line 737), `_age_label` (line 747), `_fetch_news_bundle_for_ticker` (line 782), `_render_news_bundle` (line 810), `scrape_sentiment` (line 834), `_extract_json_object` (line 851), `_fetch_news_items_for_ticker` (line 905), `_maybe_classify_news` (line 918), `_collect_news_context` (line 962), `_render_classified_section` (line 993), `analyze_with_minimax` (line 1037), `_optional_review_key` (line 1380), `_get_optional_ai_queue` (line 1408), `optional_ai_status` (line 1428), `publish_optional_ai_status` (line 1468), `queue_optional_ai_review` (line 1488), `send_telegram_alert` (line 1547), `system_health_check` (line 1596), `run_momentum_pipeline` (line 1625), `send_conviction_veto_notice` (line 1739), `send_momentum_telegram_alert` (line 1757), `run_pipeline` (line 1869), `main` (line 1930)
+Top-level declarations: `_usable_classifications` (line 148), `_effective_classification_expiry` (line 167), `_attach_classification_context` (line 186), `_attach_provenance` (line 225), `register_approved_snapshot` (line 304), `_build_classifier_client` (line 350), `_today_str` (line 404), `_load_dedup_state` (line 409), `_save_dedup_state` (line 460), `mark_processed` (line 475), `clear_memory` (line 481), `touch_heartbeat` (line 498), `_is_market_hours` (line 525), `read_scheduler_tick_age` (line 536), `check_engine_liveness` (line 548), `SignalOutput` (line 586), `NewsItem` (line 602), `fetch_signals` (line 617), `fetch_rss_feed` (line 644), `fetch_news_items` (line 661), `_parse_rss_pubdate` (line 724), `_hostname_from_url` (line 747), `_age_label` (line 757), `_fetch_news_bundle_for_ticker` (line 792), `_render_news_bundle` (line 820), `scrape_sentiment` (line 844), `_extract_json_object` (line 861), `_fetch_news_items_for_ticker` (line 915), `_maybe_classify_news` (line 928), `_collect_news_context` (line 981), `_render_classified_section` (line 1014), `analyze_with_minimax` (line 1058), `_optional_review_key` (line 1401), `_get_optional_ai_queue` (line 1429), `optional_ai_status` (line 1449), `publish_optional_ai_status` (line 1495), `queue_optional_ai_review` (line 1515), `queue_optional_ai_review_with_key` (line 1527), `_review_completion_tracker` (line 1591), `_completion_annotation` (line 1599), `_edit_telegram_message` (line 1612), `deliver_review_completions` (line 1640), `send_telegram_alert` (line 1653), `system_health_check` (line 1702), `run_momentum_pipeline` (line 1731), `send_conviction_veto_notice` (line 1846), `send_momentum_telegram_alert` (line 1864), `_register_pending_completion` (line 1967), `_raise_redacted_delivery_error` (line 1984), `run_pipeline` (line 2002), `main` (line 2063)
 
 Related tests: `agent/tests/test_agent_pipeline.py`, `agent/tests/test_agent_schedule.py`, `agent/tests/test_agent_watchdog.py`
 
@@ -32,7 +32,7 @@ Related tests: `agent/tests/test_async_reviews.py`, `agent/tests/test_async_revi
 
 [WORKFLOW-I.4.E 2026-09-14] Bounded contract-health self-evaluation. Per plan §13 ("The typed result must not change capital limits, qualification or order/delivery authority"), this module is the "guard the guards" layer that periodically asserts the bounded contract on the agent's own surfaces: 1. No execution authority in the status envelope (``can_place_orders=False`` + ``authorization_effect=NONE``). 2. No prompt leakage in any persisted snapshot (the bounded status / usefulness envelope has a fixed allow-list of keys; any other key is a leak). 3. No review content in the bounded usefulness snapshot (only counters cross the agent->engine bridge; never pitch/rationale/risks). 4. Classifi
 
-Top-level declarations: `ContractCheck` (line 98), `ContractReport` (line 127), `check_status_envelope_authority` (line 167), `check_no_prompt_leakage` (line 244), `check_usefulness_counters_only` (line 318), `check_classifier_fail_closed` (line 405), `check_review_non_authoritative` (line 504), `evaluate_contract` (line 559)
+Top-level declarations: `ContractCheck` (line 105), `ContractReport` (line 134), `check_status_envelope_authority` (line 174), `check_no_prompt_leakage` (line 260), `check_usefulness_counters_only` (line 334), `check_classifier_fail_closed` (line 421), `check_review_non_authoritative` (line 520), `evaluate_contract` (line 575)
 
 Related tests: `agent/tests/test_contract_health.py`, `agent/tests/test_contract_health_cron.py`
 
@@ -59,6 +59,12 @@ Related tests: `agent/tests/test_news_classifier.py`, `agent/tests/test_news_cla
 Top-level declarations: `print_config` (line 114), `read_snapshot` (line 134), `main` (line 151)
 
 Related tests: `agent/tests/test_optional_ai_metrics.py`
+
+## `agent/review_completion.py`
+
+Once-only delivery of a completed optional-AI review to its original alert. [S10 R3 2026-10-02] A momentum alert can be sent while its optional review is still pending. When that review completes, the operator should see it on the *same* message -- not a new alert, not a new button. Contract - ``register`` persists the original message identity, its exact text and keyboard, the review key and a validity bound (the earlier of the EXEC callback window and the review's own expiry). - ``deliver_due`` consumes each completion at most once. A READY/CACHED review inside the window edits the original message, re-sending the same keyboard unchanged (Telegram drops an omitted keyboard). The edit only
+
+Top-level declarations: `_iso` (line 41), `CompletionTracker` (line 47)
 
 ## `python-engine/affordability.py`
 
@@ -1146,7 +1152,7 @@ Engine dependencies: `config`, `halt_switch`, `market_calendar`, `operator_alert
 
 Persisted, non-authoritative health evidence from the optional AI worker. The agent is deliberately a separate container with no database write access. It posts this small, authenticated status envelope to the engine instead. The record is operational evidence only: no value written here can approve a signal, place an order, or change a deterministic decision.
 
-Top-level declarations: `_parse_aware_timestamp` (line 77), `_init` (line 89), `_clean_usefulness` (line 97), `record_optional_ai_status` (line 231), `load_optional_ai_status` (line 290)
+Top-level declarations: `_parse_aware_timestamp` (line 85), `_init` (line 97), `_clean_usefulness` (line 105), `_clean_diagnostics` (line 239), `record_optional_ai_status` (line 278), `load_optional_ai_status` (line 340)
 
 Engine dependencies: `hedge_analytics`
 

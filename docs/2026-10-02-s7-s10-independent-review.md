@@ -280,3 +280,19 @@ and is supplied in the final handoff.
 - EXEC callbacks already reject anything older than 5 minutes and any non-PENDING row, independently of this tool.
 - Tests: 8 new Jest tests, plus the dead-letter and health suites. The complete gateway suite in an ephemeral Node 20 container (source copied without `.env` or native modules, then `npm ci`): **471 passed, 4 skipped**. The local Node 24 has no better-sqlite3 binary.
 - **Production use** is a separate, operator-approved step: run `report`, review the plan, then `apply` with the operator name and confirmation. It was not run against Production here.
+
+## Response — R3 completed (Dev, October 2)
+
+- **Counters.** `AsyncReviewQueue.diagnostics_snapshot()` reports:
+  - submission outcomes by state; the expiry stage (before submit, in queue, after the call); completed reviews;
+  - excluded stale/unverifiable headlines (`record_source_exclusions`);
+  - classifier timing and failures (`record_classifier`), separate from analyst timing;
+  - in-flight status, in-flight overruns, late results discarded and submits refused after shutdown.
+
+  The agent adds once-only completion outcomes. All are bounded counts and aggregates with no prompts, sources or review text. The agent publishes them as `diagnostics` only when `OPTIONAL_AI_REPORT_DIAGNOSTICS=true` (default false). The engine's strict `_clean_diagnostics` allow-list and the agent's `contract_health` allow-list must be deployed first; a test pins that agent, engine and contract-health key sets are identical.
+- **Completion delivery** (`agent/review_completion.py`). A momentum alert sent while its review is `AI_REVIEW_PENDING` registers the original message (id, exact text, keyboard) with `valid_until` = the earlier of the 300-second EXEC window and the review expiry. Every 15 seconds the agent edits that same message once: it appends a bounded annotation and re-sends the identical keyboard.
+  - It adds no new alert or button, and changes no price, quantity, stop, target or EXEC validity. A REJECT is labelled advisory only.
+  - "message is not modified" counts as delivered, and a timeout is safely retried.
+  - An expired window, an unavailable or expired review, or a state lost to a restart is recorded, never published. Persistence is atomic and bounded in `/tmp`.
+- **Worker lifecycle.** `shutdown()` marks queued and in-flight keys `UNAVAILABLE` (`worker_shutdown`), refuses new submissions and discards any later result (counted, never cached). SIGTERM triggers it. Python cannot force-cancel a socket blocked in a thread; the bound remains the per-request transport timeout fitted under the deadline, now surfaced by `inflight_overruns`.
+- Tests: agent 383 passed warnings-fatal (15 new, repeated 5 times); engine status-bridge group 74 passed (4 new) with the known Starlette/HTTPX deprecations.
