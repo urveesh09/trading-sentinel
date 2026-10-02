@@ -1,5 +1,19 @@
 # Trading Sentinel — next-agent execution plan
 
+## October 2 independent S1/S2 review — correction slice
+
+Review found small S2 gaps: action time was not refreshed after held-option/DR
+reads or at final dispatch, quote-age parsing discarded time-zone offsets, and
+the scheduler omitted management observations from its completion log. Correct
+these in `fno_orchestrator.py` and `scheduler_setup.py`, with cutoff, hard-flat,
+quote-age and replay-clock regressions. Preserve frozen signal evaluation time,
+all authority gates and non-cancellable mutations. Verify the affected suite,
+compile, regenerate the atlas and review the diff. Dev only; promotion/rollback
+through GitHub, no Production edit/restart or migration. The original S2 scope
+also includes provider queue priority/fairness, exact-leg management reads and
+DB-wait timing; existing exit-before-entry ordering is not shared-queue priority.
+These are remaining development, not merely three deployed-session observations.
+
 ## October 1 consolidated smart-trader plan — active, planning only
 
 Start with [the consolidated implementation plan](2026-10-01-smart-trader-consolidated-plan.md).
@@ -59,7 +73,7 @@ receipt. Source commit `5ae54a8` is Dev-local, unpushed and not deployed;
 complete the remaining S2 clock/priority instrumentation before treating the
 slice done.
 
-## October 2 S2 management clocks and timing — Dev complete, operational evidence pending
+## October 2 S2 management clocks and timing — partial Dev scope, review corrected
 
 S2 now records provider limiter wait, transport, parsing, attempt/retry data
 where the real Kite client provides it; non-production adapters explicitly say
@@ -68,8 +82,16 @@ refreshes the real action clock after reads and before entry admission, without
 altering supplied replay clocks or completed-bar causality. Exits continue to
 precede optional DR entry work, and no provider-rate/concurrency increase was
 made. Focused coverage passes 59. Pending work is GitHub promotion and three
-complete deployed-session receipts—not another source change. Source commit
+complete deployed-session receipts. This historical completion claim is
+superseded by the independent review: exact-leg DR reads, queue priority/fairness
+and DB-wait/timeout-stage attribution still require development. Source commit
 `d2319e2` is local, unpushed and not deployed.
+
+Correction slice verification and remaining acceptance are recorded in
+[the independent S1/S2 review](2026-10-02-s1-s2-independent-review.md). Small
+clock/age/logging corrections are in Dev; no migration, rate/cadence change,
+authority expansion, Production edit or restart. Continue with bounded exact-leg
+management and shared-request priority before declaring the full S2 complete.
 
 ## September 28 Jev decision-layer proposal — design only
 

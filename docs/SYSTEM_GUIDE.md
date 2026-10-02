@@ -42,7 +42,7 @@ unpushed/not deployed; source commit `5ae54a8` is local on
 `codex/production-correction-hedge-p0`. The completion receipt below records
 the subsequent action-clock and provider-timing work.
 
-## October 2 S2 completion: action clocks and provider timing (Dev)
+## October 2 S2 action clocks and provider timing (Dev; partial scope)
 
 The real Kite quote client now returns limiter-wait, transport, parsing,
 attempt and retry timing to F&O management; unsupported test/replay adapters
@@ -51,9 +51,24 @@ exact-leg quote age, refreshes live action time after provider waits and before
 admission cutoffs, and keeps supplied replay clocks deterministic. Exit work
 still precedes optional DR entry and no rate/concurrency setting changed.
 Focused validation passed 59 with compilation and atlas regeneration. This is
-Dev-only/unpushed/not deployed; the remaining S2 acceptance is three deployed
-session receipts, not a source-code gap. Source commit `d2319e2` is local on
+Dev-only/unpushed/not deployed. The independent review below supersedes the
+earlier claim that only deployed-session receipts remain. Source commit `d2319e2` is local on
 `codex/production-correction-hedge-p0`.
+
+Independent October 2 review corrected action time after held-option and DR
+reads and at final directional/DR admission, including database reads before
+DR admission. Existing chain/quote freshness thresholds are rechecked at live
+admission; supplied replay clocks remain frozen. Signal evaluation retains its
+own tick-start cutoff independently of refreshed action time. Quote-age evidence
+preserves timezone offsets and reports unavailable when any held leg lacks a
+valid timestamp. The scheduler completion/overrun structured logs now retain
+management read outcomes, action time and management lag (not new scheduler DB
+columns). No mutation is wrapped in a deadline. S1's focused exact-identity,
+atomic/idempotent settlement and unresolved-state checks pass; no historical
+cash is rewritten. Remaining S2 source scope: exact-held-leg DR read selection,
+shared-provider priority with bounded fairness, and DB-wait/timeout-stage timing
+attribution. Exit-before-entry ordering alone does not implement queue priority.
+See [review and verification](2026-10-02-s1-s2-independent-review.md).
 
 ## October 1 Production assessment and smart-trader plan (documentation only)
 

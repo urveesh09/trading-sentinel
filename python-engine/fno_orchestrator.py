@@ -28,7 +28,7 @@ import asyncio
 from concurrent.futures import Future, ThreadPoolExecutor
 from datetime import datetime, timedelta
 from time import monotonic
-from typing import List, Optional
+from typing import Callable, List, Optional
 from uuid import uuid4
 
 import pytz
@@ -112,14 +112,14 @@ def _oldest_quote_age_sec(quotes: dict, tokens: list[int], now_ist: datetime) ->
     for token in tokens:
         raw = (quotes.get(token) or {}).get("last_trade_time")
         if not raw:
-            continue
+            return None
         try:
-            observed = datetime.fromisoformat(str(raw)[:19])
+            observed = datetime.fromisoformat(str(raw))
             if observed.tzinfo is None:
                 observed = IST.localize(observed)
             ages.append(max(0.0, (now_ist - observed.astimezone(IST)).total_seconds()))
         except (TypeError, ValueError):
-            continue
+            return None
     return round(max(ages), 3) if ages else None
 
 
@@ -339,6 +339,7 @@ def _schedule_shadow_observation(
 async def _manage_open_positions(
     kite, db_path: str, source: str, executor: FnoExecutor,
     now_ist: datetime, fut_price: Optional[float], *, read_observations: Optional[dict] = None,
+    action_clock: Optional[Callable[[], datetime]] = None,
 ) -> List[dict]:
     """Check every OPEN position for this leg against the §8.4/§8.5 exit
     ladder. Returns records of closed positions."""
@@ -391,6 +392,8 @@ async def _manage_open_positions(
             )
             logger.error("fno_exit_quote_failed source=%s err=%s", source, str(exc))
 
+    if action_clock is not None:
+        now_ist = action_clock()
     if read_observations is not None and tokens:
         observation = read_observations.get(f"exit_quotes:{source}")
         if observation is not None:
@@ -398,8 +401,10 @@ async def _manage_open_positions(
             observation["oldest_exact_leg_quote_age_sec"] = age
             observation["quote_age_status"] = "PRESENT" if age is not None else "UNAVAILABLE"
 
-    hard_flat = _now_min(now_ist) >= settings.FNO_HARD_FLAT_MIN
     for p in positions_needing_exit_evaluation:
+        if action_clock is not None:
+            now_ist = action_clock()
+        hard_flat = _now_min(now_ist) >= settings.FNO_HARD_FLAT_MIN
         q = quotes.get(p.token) or {}
         depth = q.get("depth") or {}
         buys = depth.get("buy") or []
@@ -636,6 +641,7 @@ async def _try_entry_for_leg(
     kite, db_path: str, source: str, pool: float, executor: FnoExecutor,
     sig: MomSignal, snap: ChainSnapshot, regime: str,
     now_ist: datetime, scan_id: str, is_trading_day: bool,
+    *, action_clock: Optional[Callable[[], datetime]] = None,
 ) -> Optional[dict]:
     """Run the §7 gate ladder + §4 constitution + sizing for ONE leg and,
     if everything passes, place the entry. Logs the evaluation either way."""
@@ -820,6 +826,23 @@ async def _try_entry_for_leg(
         )
         return None
 
+    # Database/limiter waits must not turn an earlier valid evaluation into
+    # authority to enter after cutoff or with a now-stale quote. Replay callers
+    # retain their supplied clock; broker dispatch itself is never cancelled.
+    if action_clock is not None:
+        now_ist = action_clock()
+        ctx.now_min = _now_min(now_ist)
+        ctx.quote_age_sec = (
+            (now_ist - quote.last_trade_time).total_seconds()
+            if quote.last_trade_time else float("inf")
+        )
+        ctx.chain_age_sec = snap.age_sec(now_ist)
+        ok, reject, passed_gates = evaluate_entry_gates_with_trace(ctx)
+        if not ok:
+            await _log(False, reject, **contract_fields,
+                       passed_gates=passed_gates, active_kill_switches=switches)
+            return None
+        today_iso = now_ist.date().isoformat()
     qty = lots * lot_size
     result = await executor.execute_entry(contract.tradingsymbol, qty, ask)
     if result["status"] not in ("paper", "filled"):
@@ -890,6 +913,8 @@ async def run_fno_tick(
     db_path = db_path or settings.DB_PATH
     supplied_now_ist = now_ist
     now_ist = now_ist or datetime.now(IST)
+    evaluation_now_ist = now_ist
+    action_clock = (lambda: datetime.now(IST)) if supplied_now_ist is None else None
     tick_started = monotonic()
     scan_id = f"FNO-{now_ist.strftime('%Y%m%d-%H%M%S')}-{uuid4().hex[:6]}"
     summary: dict = {
@@ -987,11 +1012,13 @@ async def run_fno_tick(
             summary["exits"] += await _manage_open_positions(
                 kite, db_path, FnoSource.FNO_PAPER.value, paper_exec, now_ist, fut_price,
                 read_observations=summary["management_read_outcomes"],
+                action_clock=action_clock,
             )
         if not settings.FNO_DISABLE_LIVE:
             summary["exits"] += await _manage_open_positions(
                 kite, db_path, FnoSource.FNO_LIVE.value, live_exec, now_ist, fut_price,
                 read_observations=summary["management_read_outcomes"],
+                action_clock=action_clock,
             )
     except Exception as exc:
         logger.error("fno_exit_management_failed err=%s", str(exc), exc_info=True)
@@ -1054,6 +1081,9 @@ async def run_fno_tick(
                     )
 
                 management_started = monotonic()
+                if action_clock is not None:
+                    now_ist = action_clock()
+                    summary["action_clock_ist"] = now_ist.isoformat()
                 # manage_dr_structures intentionally accepts ``None`` and
                 # fail-closes a hard-flat structure even without a quote.
                 summary["dr_exits"] = summary.get("dr_exits", 0) + \
@@ -1065,7 +1095,7 @@ async def run_fno_tick(
             if in_dr_window and not await _dr.open_structures(db_path):
                 entry_inputs_started = monotonic()
                 entry_snap, entry_bars, entry_sig, entry_skip_reason = await _load_dr_entry_inputs(
-                    kite, instruments, fut.token, regime, now_ist, snap,
+                    kite, instruments, fut.token, regime, evaluation_now_ist, snap,
                 )
                 summary["stage_durations_sec"]["defined_risk_entry_inputs"] = round(
                     monotonic() - entry_inputs_started, 3
@@ -1087,11 +1117,15 @@ async def run_fno_tick(
                     # under ``wait_for``: a cancelled write would make the
                     # admission outcome ambiguous.
                     entry_started = monotonic()
+                    if action_clock is not None:
+                        now_ist = action_clock()
+                        summary["action_clock_ist"] = now_ist.isoformat()
                     try:
                         opened = await _dr.maybe_open_dr_structure(
                             db_path, entry_snap,
                             entry_sig.direction is not None,
                             entry_sig.direction, now_ist,
+                            action_clock=action_clock,
                         )
                         if opened:
                             summary.setdefault("dr_opened", []).append(opened)
@@ -1119,7 +1153,7 @@ async def run_fno_tick(
     if bars is None:
         stage_started = monotonic()
         try:
-            bars = await _fetch_futures_bars(kite, fut.token, now_ist)
+            bars = await _fetch_futures_bars(kite, fut.token, evaluation_now_ist)
         except Exception as exc:
             logger.error("fno_futures_bars_failed err=%s", str(exc))
             summary["note"] = "futures_bars_failed"
@@ -1131,7 +1165,7 @@ async def run_fno_tick(
 
     if sig is None:
         stage_started = monotonic()
-        sig = evaluate_fno_mom(bars, regime, now_ist)
+        sig = evaluate_fno_mom(bars, regime, evaluation_now_ist)
         summary["stage_durations_sec"]["entry_evaluation"] = round(
             monotonic() - stage_started, 3
         )
@@ -1184,6 +1218,7 @@ async def run_fno_tick(
                 entry = await _try_entry_for_leg(
                     kite, db_path, FnoSource.FNO_PAPER.value, paper_equity,
                     paper_exec, sig, snap, regime, now_ist, scan_id, is_trading_day,
+                    action_clock=action_clock,
                 )
                 if entry:
                     summary["entries"].append(entry)
@@ -1236,6 +1271,7 @@ async def run_fno_tick(
                 entry = await _try_entry_for_leg(
                     kite, db_path, FnoSource.FNO_LIVE.value, live_equity,
                     live_exec, sig, snap, regime, now_ist, scan_id, is_trading_day,
+                    action_clock=action_clock,
                 )
                 if entry:
                     summary["entries"].append(entry)

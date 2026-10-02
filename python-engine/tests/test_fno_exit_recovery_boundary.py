@@ -79,3 +79,26 @@ async def test_executor_does_not_replace_uncertain_order():
     result = await executor.execute_exit("NIFTY", 75, 110, .05)
     assert result["status"] == "unfilled"
     executor._place_limit.assert_awaited_once()
+
+
+@pytest.mark.asyncio
+async def test_exit_read_crossing_hard_flat_uses_fresh_action_time(fno_db):
+    await _insert_open_position(fno_db)
+    kite, executor = setup_executor()
+    before = NOW.replace(hour=15, minute=9, second=59)
+    after = NOW.replace(hour=15, minute=10, second=1)
+    clock = {"now": before}
+
+    async def quote(tokens):
+        clock["now"] = after
+        return {1: {"last_price": 110, "depth": {"buy": [{"price": 110}]}}}
+
+    kite.get_quote.side_effect = quote
+    result = await _manage_open_positions(
+        kite, fno_db, "FNO_PAPER", executor, before, 19500,
+        action_clock=lambda: clock["now"],
+    )
+    assert len(result) == 1
+    with closing(sqlite3.connect(fno_db)) as db:
+        row = db.execute("SELECT exit_reason, exit_time FROM fno_positions").fetchone()
+    assert row == ("hard_flat_1510", after.isoformat())

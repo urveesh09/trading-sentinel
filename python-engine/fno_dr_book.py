@@ -675,6 +675,7 @@ async def maybe_open_dr_structure(
     direction: Optional[FnoDirection],
     now_ist: datetime,
     source: str = SOURCE_PAPER,
+    *, action_clock: Optional[Callable[[], datetime]] = None,
 ) -> Optional[int]:
     """Open ONE structure if flat and inside the entry window. Returns the new
     row id, or None. Never raises."""
@@ -686,10 +687,26 @@ async def maybe_open_dr_structure(
             return None
         if await open_structures(db_path, source):
             return None  # one at a time
+        await init_dr_db(db_path)
+        if action_clock is not None:
+            now_ist = action_clock()
+            nm = now_ist.hour * 60 + now_ist.minute
+            if not (_entry_lo_min() <= nm <= _entry_hi_min()):
+                return None
+            if not 0 <= snap.age_sec(now_ist) <= settings.FNO_MAX_CHAIN_AGE_SEC:
+                logger.info("fno_dr_entry_skipped reason=chain_freshness")
+                return None
         planned = plan_structure(snap, has_directional_signal, direction, now_ist)
         if planned is None:
             return None
-        await init_dr_db(db_path)
+        if action_clock is not None:
+            for leg in planned.structure.legs:
+                quote = snap.quote(leg.strike, leg.opt_type)
+                if (quote is None or quote.last_trade_time is None
+                        or not 0 <= (now_ist - quote.last_trade_time).total_seconds()
+                        <= settings.FNO_MAX_QUOTE_AGE_SEC):
+                    logger.info("fno_dr_entry_skipped reason=quote_freshness")
+                    return None
         row_id = await insert_structure(db_path, source, planned, now_ist)
         s = planned.structure
         logger.info(

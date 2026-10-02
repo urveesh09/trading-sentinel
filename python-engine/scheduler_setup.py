@@ -173,6 +173,9 @@ def register_fno_scheduler_jobs(scheduler):
                 "dr_exits": int((summary or {}).get("dr_exits") or 0),
                 "dr_entry_skip_reason": (summary or {}).get("dr_entry_skip_reason") or "none",
                 "stage_durations_sec": (summary or {}).get("stage_durations_sec") or {},
+                "management_read_outcomes": (summary or {}).get("management_read_outcomes") or {},
+                "action_clock_ist": (summary or {}).get("action_clock_ist"),
+                "management_lag_sec": (summary or {}).get("management_lag_sec"),
             }
             logger.info("fno_tick_complete", **fields)
             if elapsed >= settings.FNO_SCAN_INTERVAL_SEC:

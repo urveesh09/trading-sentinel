@@ -208,8 +208,8 @@ action-time admission checks, limiter/transport/parse/DB timing breakdown and
 deployed-session observations. Source commit `5ae54a8` is local on
 `codex/production-correction-hedge-p0`; it is not pushed or deployed.
 
-Completion receipt (Dev, October 2): the remaining S2 timing/action-clock
-contract is implemented locally. The real Kite quote client exposes bounded
+Historical partial-slice receipt (Dev, October 2): S2 timing/action-clock
+work is implemented locally. The real Kite quote client exposes bounded
 limiter wait, transport, parse, attempt and retry metrics; management retains
 them where available and explicitly labels fixture/adapter timing unavailable
 rather than inventing values. Exact open-leg quote observations retain a
@@ -218,8 +218,12 @@ provider waits and again before entry-window admission, while explicit
 replay/test clocks stay frozen for causality. Exits still run before optional
 DR entry work; no rate limit/concurrency increase was made. Focused
 orchestrator/Kite/recovery/audit validation passed 59 and compilation passed.
-The remaining requirement is operational, not a missing source change: GitHub
-promotion followed by three complete session receipts for lag, p95/max,
+Independent review supersedes the full-completion claim: source work remains
+for exact-held-leg DR reads, shared-provider management priority/fairness and
+DB-wait/timeout-stage attribution. Small post-read/final-admission clock,
+frozen signal cutoff, quote-age and completion-log corrections are documented
+in [the review](2026-10-02-s1-s2-independent-review.md). GitHub
+promotion must also be followed by three complete session receipts for lag, p95/max,
 deadline, skip and unresolved-exposure review. Source commit `d2319e2` is
 local on `codex/production-correction-hedge-p0`; it is not pushed or deployed.
 

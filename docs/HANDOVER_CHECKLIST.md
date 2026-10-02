@@ -25,11 +25,19 @@
   clocks, priority, detailed timing and deployed evidence. Dev-only source
   commit `5ae54a8` is unpushed/not deployed; no broker/settlement/admission
   mutation is deadline-wrapped.
-- [x] Complete S2 Dev source work: provider-stage timing/attempt evidence,
+- [x] Implement S2 provider-stage timing/attempt evidence,
   quote-age evidence and refreshed real action clocks. Focused validation: 59
-  passed; compilation/atlas passed. Remaining only: GitHub promotion and three
-  deployed-session receipts; no cadence/rate increase was made. Source commit
+  passed; compilation/atlas passed. Earlier full-completion claim is superseded
+  by the independent review below; no cadence/rate increase was made. Source commit
   `d2319e2` is local, unpushed and not deployed.
+- [x] Independently review S1/S2; correct post-read/final action clocks,
+  frozen signal cutoff, timezone/partial quote-age evidence and scheduler
+  completion-log retention. See `2026-10-02-s1-s2-independent-review.md` for
+  commands/results and limits. Dev only; existing user changes preserved.
+- [ ] Finish S2 exact-leg DR management reads, shared-provider priority/fairness
+  and DB-wait/timeout-stage attribution; fault-test before GitHub promotion.
+- [ ] Inspect at least three complete deployed sessions; no tests establish
+  profitability, partner qualification or operational deployment.
 - [x] Reproduce optional-review expiry from mixed fresh/stale/undated sources;
   inspect queue/deadline/completion visibility without provider/message calls.
 - [ ] Implement S10 context/expiry/deadline fixes and bounded completion updates,

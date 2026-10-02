@@ -751,3 +751,87 @@ def test_fno_tick_exposes_major_stage_durations(db_path, kite):
     durations = summary["stage_durations_sec"]
     assert {"futures_quote", "exit_management", "defined_risk"} <= set(durations)
     assert all(value >= 0 for value in durations.values())
+
+
+@pytest.mark.parametrize("delay", [timedelta(hours=5), timedelta(seconds=120)])
+@pytest.mark.asyncio
+async def test_live_final_admission_rechecks_time_without_advancing_signal_cutoff(
+    db_path, kite, monkeypatch, delay,
+):
+    import fno_orchestrator as fo
+    monkeypatch.setattr(settings, "FNO_DR_DISABLE_PAPER", True)
+    clock = {"now": NOW}
+    evaluated = []
+
+    class Clock(datetime):
+        @classmethod
+        def now(cls, tz=None):
+            return clock["now"]
+
+    original_read = kite.get_intraday_by_token
+    original_evaluate = fo.evaluate_fno_mom
+
+    async def delayed_read(*args, **kwargs):
+        result = await original_read(*args, **kwargs)
+        clock["now"] = NOW + delay
+        return result
+
+    def evaluate(bars, regime, now):
+        evaluated.append(now)
+        return original_evaluate(bars, regime, now)
+
+    monkeypatch.setattr(fo, "datetime", Clock)
+    monkeypatch.setattr(kite, "get_intraday_by_token", delayed_read)
+    monkeypatch.setattr(fo, "evaluate_fno_mom", evaluate)
+    summary = await run_fno_tick(kite, db_path=db_path, regime="REGIME_1_NORMAL")
+    assert evaluated == [NOW]
+    assert summary["entries"] == []
+    import aiosqlite
+    async with aiosqlite.connect(db_path) as conn:
+        row = await (await conn.execute(
+            "SELECT accepted, reject_reason FROM fno_signals WHERE leg='FNO_PAPER'"
+        )).fetchone()
+    assert row == (0, "entry_window" if delay > timedelta(hours=1) else "chain_freshness")
+
+
+def test_exact_leg_quote_age_preserves_offsets_and_requires_complete_coverage():
+    from fno_orchestrator import _oldest_quote_age_sec
+    quotes = {1: {"last_trade_time": "2026-07-10T04:32:40+00:00"}}
+    assert _oldest_quote_age_sec(quotes, [1], NOW) == 20.0
+    assert _oldest_quote_age_sec(quotes, [1, 2], NOW) is None
+    quotes[2] = {"last_trade_time": "invalid"}
+    assert _oldest_quote_age_sec(quotes, [1, 2], NOW) is None
+
+
+@pytest.mark.asyncio
+async def test_live_dr_management_refreshes_after_snapshot(db_path, kite, monkeypatch):
+    import fno_dr_book as dr
+    import fno_orchestrator as fo
+    monkeypatch.setattr(settings, "FNO_DR_DISABLE_PAPER", False)
+    before = NOW.replace(hour=15, minute=14, second=59)
+    after = before + timedelta(seconds=2)
+    clock = {"now": before}
+    managed = []
+
+    class Clock(datetime):
+        @classmethod
+        def now(cls, tz=None):
+            return clock["now"]
+
+    async def open_rows(*args, **kwargs):
+        return [{"id": 7}]
+
+    async def snapshot(*args, **kwargs):
+        clock["now"] = after
+        return None
+
+    async def manage(db, snap, now):
+        managed.append(now)
+        return 0
+
+    monkeypatch.setattr(fo, "datetime", Clock)
+    monkeypatch.setattr(fo, "take_chain_snapshot", snapshot)
+    monkeypatch.setattr(dr, "open_structures", open_rows)
+    monkeypatch.setattr(dr, "manage_dr_structures", manage)
+    await run_fno_tick(kite, db_path=db_path)
+    assert managed == [after]

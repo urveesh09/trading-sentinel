@@ -102,6 +102,37 @@ def test_sync_registration_does_not_leak_startup_catchup_coroutine():
     assert "_run_penny_edge_scan_safe" in jobs
 
 
+@pytest.mark.asyncio
+async def test_fno_completion_log_preserves_management_observations(monkeypatch):
+    from datetime import datetime
+    from unittest.mock import AsyncMock, MagicMock
+    import main
+    import fno_orchestrator
+    import scheduler_setup
+
+    class Clock(datetime):
+        @classmethod
+        def now(cls, tz=None):
+            return main.IST.localize(datetime(2026, 7, 10, 10, 3))
+
+    evidence = {"futures_quote": {"state": "DEADLINE_EXCEEDED", "cap_sec": 5}}
+    monkeypatch.setattr(scheduler_setup, "datetime", Clock)
+    monkeypatch.setattr(main, "is_trading_day", AsyncMock(return_value=True))
+    monkeypatch.setattr(main, "kite", MagicMock(access_token="test"))
+    monkeypatch.setattr(fno_orchestrator, "run_fno_tick", AsyncMock(return_value={
+        "management_read_outcomes": evidence,
+        "action_clock_ist": "2026-07-10T10:03:02+05:30",
+        "management_lag_sec": 2,
+    }))
+    log = MagicMock()
+    monkeypatch.setattr(main, "logger", log)
+    await _registered_jobs()["_run_fno_tick_safe"]()
+    completion = [call for call in log.info.call_args_list if call.args[0] == "fno_tick_complete"]
+    assert len(completion) == 1
+    assert completion[0].kwargs["management_read_outcomes"] == evidence
+    assert completion[0].kwargs["management_lag_sec"] == 2
+
+
 @pytest.mark.parametrize("closure_name", ALL_CLOSURES)
 @pytest.mark.asyncio
 async def test_closure_resolves_its_globals_when_called(closure_name, monkeypatch):

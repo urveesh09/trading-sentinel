@@ -352,3 +352,36 @@ def test_ledger_write_failure_rolls_back_terminal_position_mutation(tmp_path, mo
             )).fetchone()
             assert cash_count[0] == 0
     asyncio.run(go())
+
+
+@pytest.mark.parametrize("case", ["entry_window", "chain_age", "quote_age", "valid"])
+def test_live_dr_admission_rechecks_after_database_reads(tmp_path, monkeypatch, case):
+    monkeypatch.setattr(book, "atm_iv", lambda snap, now: 0.15)
+    monkeypatch.setattr(book.settings, "FNO_DR_DISABLE_PAPER", False)
+    from datetime import timedelta
+    final_time = NOW.replace(hour=14, minute=46) if case == "entry_window" else NOW
+
+    class TimedSnap(FakeSnap):
+        def age_sec(self, now):
+            return 121 if case == "chain_age" else 0
+
+        def quote(self, strike, opt):
+            quote = super().quote(strike, opt)
+            if quote is not None:
+                quote.last_trade_time = NOW - timedelta(seconds=121 if case == "quote_age" else 0)
+            return quote
+
+    snap = TimedSnap(25000, {
+        (25000, OptionType.CE): 120.0, (25100, OptionType.CE): 50.0,
+        (25000, OptionType.PE): 110.0,
+    })
+
+    async def go():
+        await book.init_dr_db(str(tmp_path / "db.sqlite"))
+        row_id = await book.maybe_open_dr_structure(
+            str(tmp_path / "db.sqlite"), snap, True, FnoDirection.LONG, NOW,
+            action_clock=lambda: final_time,
+        )
+        assert (row_id is not None) == (case == "valid")
+
+    asyncio.run(go())
