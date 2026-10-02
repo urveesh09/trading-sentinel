@@ -13,6 +13,7 @@ from momentum_shadow import (
     evaluate_momentum_shadows,
     momentum_shadow_comparison,
     persist_momentum_shadow_results,
+    momentum_shadow_near_misses,
 )
 
 
@@ -223,6 +224,9 @@ async def test_persistence_is_idempotent_and_aggregate_is_candidate_aware(tmp_pa
     assert by_name["MOM_RECENCY_5"]["top_rejects"][0] == {
         "reason": "too_far", "count": 2,
     }
+    near_misses = await momentum_shadow_near_misses(db_path)
+    assert near_misses["authority"]["authorization_effect"] == "NONE"
+    assert {row["reject_reason"] for row in near_misses["near_misses"]} == {"no_cross", "too_far"}
 
 
 @pytest.mark.asyncio

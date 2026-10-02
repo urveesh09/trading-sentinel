@@ -6,7 +6,15 @@
   first-arrival / fixed-equal / risk-proportional common-book replay. 11 tests
   warnings-fatal; cross-phase 1114 passed. No sizing or exit change.
 - [ ] After promotion: freeze the allocation manifest before the next session;
-  evaluate holdout batches only. S7b remains.
+  evaluate holdout batches only. S7b holdout acceptance remains open.
+- [x] S7b: inert frozen completed-bar continuation versus bounded-pullback
+  no-chase research; no-fill/path outcomes, gap/deadline validation and
+  distinct thesis/state re-entry condition are explicit. Rejected evaluator
+  receipts are available through a bounded isolated-shadow near-miss view.
+  Focused timing/shadow suite: 18 passed warnings-fatal. No entry/exit/sizing,
+  broker, AI, Production or authority change.
+- [ ] Freeze S7b before a new session and evaluate only post-freeze HOLDOUT
+  observations; do not promote a timing hypothesis from development evidence.
 - [x] S4 runtime wiring: equity paths attached to the existing research request,
   bounded background writer, deadline-close policy, per-entry adapter
   exclusion. End-to-end test plus 1091 selected tests passed. No Production

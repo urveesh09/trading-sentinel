@@ -952,6 +952,16 @@ Engine dependencies: `config`, `momentum_exit_study`, `momentum_paper`, `momentu
 
 Related tests: `python-engine/tests/test_momentum_allocation_research.py`
 
+## `python-engine/momentum_entry_timing_research.py`
+
+Frozen, broker-free S7b entry-timing hypotheses for momentum evidence. This module deliberately consumes declared completed-bar/quote evidence only. It does not import runtime scanners, storage, a broker, HTTP, or an order path. The two policies are hypotheses, not a replacement for paper admission.
+
+Top-level declarations: `TimingCandidate` (line 29), `_finite` (line 47), `_validate` (line 59), `_entry` (line 83), `evaluate_entry_timing` (line 101), `_fingerprint` (line 137), `freeze_timing_manifest` (line 146), `build_timing_report` (line 156)
+
+Engine dependencies: `momentum_exit_study`
+
+Related tests: `python-engine/tests/test_momentum_entry_timing_research.py`
+
 ## `python-engine/momentum_exit_experiment.py`
 
 Frozen, read-only paired experiments for momentum-paper exit policies (S6a). This extends the v1 exit study (``momentum_exit_study``) without changing it. The same immutable LTP packet loader, path validation, pure live evaluator, cost model and leg arithmetic are reused. What is added: * a freeze manifest that pins one candidate policy, its parameters, the live evaluator settings and a source fingerprint *before* evaluation, so a policy cannot be re-tuned after its outcomes are seen; * development/holdout labelling: entries at or before the freeze time are ``DEVELOPMENT`` and can never be presented as held-out evidence; * ``thesis_confirmed_extension_v1``: a candidate that changes only the
@@ -1038,7 +1048,7 @@ Related tests: `python-engine/tests/test_momentum_replay.py`
 
 Broker-free paper-shadow evaluation for declared Momentum variants. This module deliberately imports only the pure strategy evaluator plus storage and serialization libraries. It has no Kite, executor, order, or scheduler dependency. Evaluation and persistence are separate operations so callers can test the same immutable frames before choosing where to record the evidence.
 
-Top-level declarations: `MomentumShadowVariant` (line 30), `MomentumShadowExecution` (line 46), `momentum_shadow_execution_config` (line 79), `_json_safe` (line 84), `_normalise_timestamp` (line 100), `_frame_fingerprint` (line 106), `_bars` (line 116), `_identity` (line 134), `_ticker` (line 162), `_selected_variants` (line 169), `evaluate_momentum_shadows` (line 181), `init_momentum_shadow_db` (line 253), `_exit_for_bar` (line 333), `_declared_costs` (line 355), `_advance_and_open` (line 377), `persist_momentum_shadow_results` (line 469), `momentum_shadow_comparison` (line 509)
+Top-level declarations: `MomentumShadowVariant` (line 30), `MomentumShadowExecution` (line 46), `momentum_shadow_execution_config` (line 79), `_json_safe` (line 84), `_normalise_timestamp` (line 100), `_frame_fingerprint` (line 106), `_bars` (line 116), `_identity` (line 134), `_ticker` (line 162), `_selected_variants` (line 169), `evaluate_momentum_shadows` (line 181), `init_momentum_shadow_db` (line 253), `_exit_for_bar` (line 333), `_declared_costs` (line 355), `_advance_and_open` (line 377), `persist_momentum_shadow_results` (line 469), `momentum_shadow_comparison` (line 509), `momentum_shadow_near_misses` (line 629)
 
 Engine dependencies: `config`, `cost_schedules`, `engine`
 

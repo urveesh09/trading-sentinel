@@ -39,7 +39,27 @@ database run in which a capital-skipped candidate is captured, its path
 collected, excluded from the exit study and selected by `FIXED_EQUAL_V1`.
 Cross-phase selection: 1114 passed, one known skip. A synthetic concentration
 example is a mechanism check, not evidence that any policy earns more.
-S7b (entry-timing hypotheses, re-entry and near-miss shadow) remains.
+S7b timing/near-miss research is recorded below; its future-holdout acceptance remains open.
+
+## October 2 S7b frozen entry-timing research (Dev)
+
+S7b adds the inert `momentum_entry_timing_research.py`, with no runtime caller,
+broker, HTTP, database or order dependency. Its frozen report compares only
+`COMPLETED_BAR_CONTINUATION_V1` (the explicitly supplied next completed-bar
+clock and price) with `BOUNDED_PULLBACK_NO_CHASE_V1` (the first existing quote
+inside the supplied pullback zone, never above the no-chase cap). It never
+invents a fill: no entry, no-chase and incomplete path states remain explicit;
+the shared gap/deadline validator and pure current exit evaluator run only
+after entry. Re-entry must identify a newly different thesis/state, and a
+duplicate ticker/thesis/state is not replayed. The existing isolated shadow
+ledger now has a bounded near-miss view over rejected evaluator receipts,
+retaining real reject reason/features/config rather than reconstructing an
+opportunity. Focused timing/shadow tests: 18 warnings-fatal passed.
+
+This is Dev-only research. Freeze terms before a future session and assess only
+post-freeze HOLDOUT observations. No paper/live entry, allocation, sizing, exit,
+AI, broker, Production environment or trading authority changed. A rollback is
+a GitHub reversion and does not delete prior shadow evidence.
 
 ## October 2 S4 passive-path runtime wiring (Dev)
 

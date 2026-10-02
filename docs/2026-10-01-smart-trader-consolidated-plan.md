@@ -701,9 +701,22 @@ policies hold across permutations; random books never overspend. A
 capital-skipped candidate is captured and replayed end to end. 11 tests
 warnings-fatal; cross-phase 1114 passed. No live or paper sizing change.
 
-S7b (later): entry-timing hypotheses (completed-bar continuation, bounded
-pullback with a no-chase limit), new-thesis re-entry and shadow tracking of
-rejected/near-miss setups.
+S7b completion receipt (Dev, October 2): new inert
+`momentum_entry_timing_research.py` freezes exactly two hypotheses:
+`COMPLETED_BAR_CONTINUATION_V1`, entered only at the declared completed-bar
+clock/price, and `BOUNDED_PULLBACK_NO_CHASE_V1`, entered only at the first
+already-observed quote inside the declared pullback zone and never above its
+cap. It replays the existing pure exit evaluator only after a valid entry,
+retains no-entry/no-chase/path-unavailable outcomes, validates deadline/gap
+rules, and splits frozen development from holdout signals. A re-entry must name
+a different thesis or state; duplicate ticker/thesis/state is not replayed.
+`momentum_shadow_near_misses` exposes bounded rejected evaluator receipts from
+the isolated shadow ledger, not reconstructed would-have-traded signals. S7b
+focused timing/shadow tests passed 18 with warnings treated as errors. No
+runtime entry, sizing, exit, broker, AI or Production behavior changed. Freeze
+before a future session and evaluate HOLDOUT only; a timing result is not a
+strategy-promotion or trading-authority result. Rollback is GitHub reversion;
+existing shadow/evidence rows remain intact.
 
 ### S8 — P2: daily learning and strategy selection
 
