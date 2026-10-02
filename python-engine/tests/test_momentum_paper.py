@@ -16,6 +16,8 @@ Two properties matter more than the rest and are tested hardest:
      orders it was never meant to send.
 """
 import asyncio
+from datetime import datetime, timedelta, timezone
+import json
 import sqlite3
 
 import pytest
@@ -28,7 +30,9 @@ from momentum_paper import (
     open_momentum_paper_positions,
     paper_position_size,
     record_momentum_paper_upstream_deduplications,
+    record_momentum_paper_path_observations,
 )
+from momentum_paper_path_adapter import build_momentum_paper_exit_study_packet
 
 
 def _db(tmp_path):
@@ -243,6 +247,63 @@ def test_admission_outcomes_distinguish_held_and_zero_share_inputs(tmp_path, mon
     assert [row[2] for row in _admissions(db)] == [
         "opened", "already_held", "zero_shares",
     ]
+
+
+def test_capital_skip_has_precise_reason_and_fixed_pool_snapshot(tmp_path, monkeypatch):
+    monkeypatch.setattr(settings, "MOMENTUM_PAPER_BANKROLL", 1_000.0)
+    db = _db(tmp_path)
+    assert asyncio.run(open_momentum_paper_positions(db, [
+        _sig("FIRST", close=600.0, stop=590.0), _sig("SECOND", close=600.0, stop=590.0),
+    ])) == ["FIRST"]
+    with sqlite3.connect(db) as con:
+        reason, raw = con.execute(
+            "SELECT reason,admission_economics_json FROM momentum_paper_admission_outcomes "
+            "WHERE ticker='SECOND'"
+        ).fetchone()
+    evidence = json.loads(raw)
+    assert reason == "capital_exhausted"
+    assert evidence["sizing_benchmark_pool_inr"] == 1_000.0
+    assert evidence["sizing_benchmark_label"] == "FIXED_CONFIGURED_PAPER_POOL_NOT_DRAWDOWN_ADJUSTED"
+    assert evidence["available_notional_inr"] == 400.0
+
+
+def test_passive_path_adapter_verifies_bytes_and_preserves_original_quantity(tmp_path):
+    db = _db(tmp_path)
+    entry_at = datetime(2026, 9, 25, 4, 30, tzinfo=timezone.utc)
+    assert asyncio.run(open_momentum_paper_positions(db, [_sig("ACME", 100.0, 98.0, 104.0)], entry_at)) == ["ACME"]
+    observations = []
+    current = entry_at
+    deadline = datetime(2026, 9, 25, 9, 45, tzinfo=timezone.utc)
+    while current <= deadline:
+        observations.append({
+            "ticker": "ACME", "ltp": 100.0, "provider_observed_at": current.isoformat(),
+            "receipt_at": (current + timedelta(seconds=1)).isoformat(),
+            "source_packet": json.dumps({"quote_at": current.isoformat()}).encode(),
+        })
+        current += timedelta(minutes=5)
+    assert asyncio.run(record_momentum_paper_path_observations(db, observations)) == len(observations)
+    # A scale-out-like mutation cannot alter the immutable study quantity.
+    with sqlite3.connect(db) as con:
+        con.execute("UPDATE positions SET shares=1 WHERE ticker='ACME'")
+        con.commit()
+    result = build_momentum_paper_exit_study_packet(db)
+    assert result["status"] == "COMPLETE"
+    assert result["packet"]["entries"][0]["shares"] > 1
+
+
+def test_passive_path_adapter_rejects_forged_quote_packet_identity(tmp_path):
+    db = _db(tmp_path)
+    entry_at = datetime(2026, 9, 25, 4, 30, tzinfo=timezone.utc)
+    asyncio.run(open_momentum_paper_positions(db, [_sig("ACME", 100.0, 98.0, 104.0)], entry_at))
+    packet = b'{"quote":"real"}'
+    asyncio.run(record_momentum_paper_path_observations(db, [{
+        "ticker": "ACME", "ltp": 100.0, "provider_observed_at": entry_at.isoformat(),
+        "receipt_at": entry_at.isoformat(), "source_packet": packet,
+    }]))
+    with sqlite3.connect(db) as con:
+        con.execute("UPDATE momentum_paper_path_observations SET source_packet_sha256='sha256:" + ("0" * 64) + "'")
+        con.commit()
+    assert build_momentum_paper_exit_study_packet(db)["reason"].startswith("quote_packet_identity_mismatch:")
 
 
 def test_disabled_and_upstream_deduplicated_are_explicit_distinct_outcomes(

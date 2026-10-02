@@ -329,6 +329,24 @@ Rollout/rollback: additive bounded evidence, existing collectors reused where
 possible; collector disabled on rollback, historical paths retained. Configure
 storage caps before enabling it. No silent strategy or AI-authority change.
 
+S4 completion receipt (Dev, October 2): accepted paper admissions now seal a
+bounded canonical decision packet and SHA-256 receipt, plus a separate bounded
+capital snapshot containing the fixed configured pool label, realised cash
+basis, deployed/reserved/available notional, risk budget, fee basis and policy
+version. `zero_shares` remains the historical outcome while its reason is now
+specific. A new exact-admission-key subscription table captures immutable
+original quantity and the intraday deadline. The new caller-fed path collector
+stores only supplied provider packet bytes with provider/receipt clocks; it has
+no HTTP or LTP callback, so it cannot add a provider request on admission or
+exit. Its read-only adapter recomputes each source hash from stored bytes and
+fails closed on identity, ticker/key, order, gap or exact-deadline faults before
+emitting a study packet. S4 focused tests: 73 passed; compilation passed.
+This is additive Dev-only instrumentation, not an automatic quote-fanout
+deployment. Configure caps, connect an existing fanout and collect five fresh
+reconciled paths before an operational evidence claim. No sizing, exit, broker,
+AI authority, historical record or Production behavior changed; rollback uses a
+GitHub reversion/collector disablement and retains historical evidence.
+
 ### S5 — P1: complete general partner research and delivery readiness
 
 Files/contracts: `partner_collection_attempts.py`, `research_quote_collector.py`,

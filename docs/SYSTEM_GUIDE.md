@@ -107,6 +107,37 @@ does not migrate trading evidence.
 deployment requires operator free-space, prior-boot preservation and full
 market-session volume checks. Optional AI remains non-blocking when unavailable.
 
+## October 2 S4 equity-path and admission-capital evidence completion (Dev)
+
+New paper-admission outcomes retain an additive, bounded capital snapshot:
+the configured fixed INR 50,000 benchmark is explicitly labelled as **not**
+drawdown-adjusted, while realised paper cash basis, deployed/reserved/available
+notional, risk budget, fee basis and allocation-policy version are recorded for
+the decision. Existing `zero_shares` values remain compatible and now carry a
+precise cause such as `capital_exhausted` or `risk_budget_below_one_share`.
+Opened outcomes also seal the accepted decision inputs as canonical packet bytes
+plus a SHA-256 receipt; the read-only audit recomputes the digest from those
+bytes and reports a mismatch rather than trusting a formatted hash.
+
+Each opened admission registers an exact-key passive path subscription with the
+original share quantity and intraday deadline. The caller-fed collector accepts
+only existing provider packet bytes with both provider-observation and receipt
+clocks; it has no HTTP client or LTP callback and therefore cannot cause a
+provider call on admission or exit. It is bounded by configurable packet and
+row retention. The read-only path adapter rejects absent paths, tickers/keys,
+clock order/gaps, missing exact 15:15 IST observation, altered original
+quantity and forged packet bytes; only a complete path produces an S1 study
+packet. Scale-outs cannot change that immutable study quantity. The adapter is
+an instrumentation surface, not a strategy, sizing, broker, AI or execution
+authority change. Focused S4 evidence tests: 73 passed; `py_compile` passed.
+
+This is Dev-only, additive SQLite evidence. Historical rows remain available
+but cannot become source-verified paths. Rollback is a GitHub reversion or
+collector disablement; it must retain existing receipts/tables. Before any
+operational claim, configure caps, wire an already-existing quote fanout to the
+caller-fed collector, and obtain five fresh reconciled lifecycles. These are
+instrumentation smoke checks, not profitability, qualification or deployment.
+
 ## October 1 Production assessment and smart-trader plan (documentation only)
 
 The [consolidated plan](2026-10-01-smart-trader-consolidated-plan.md) records

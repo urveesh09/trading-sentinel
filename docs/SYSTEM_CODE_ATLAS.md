@@ -942,7 +942,7 @@ Related tests: `python-engine/tests/test_momentum_exits.py`
 
 [MOMENTUM-PAPER 2026-07-26] A paper twin of the live momentum book. WHY THIS EXISTS --------------- Live momentum entry is manual: the screener sends a Telegram EXEC button and a human decides. The ledger therefore records what the *operator* did, never what the *strategy* proposed -- 8 recorded momentum trades in months of running, which is why nothing can be concluded about the strategy from them. A signal that fired at 11:04 while nobody was looking left no trace at all. This book takes EVERY accepted momentum signal automatically, sizes it off its own pool, manages it with the same pure exit logic the live book uses, and books cost-adjusted P&L to source='MOMENTUM_PAPER'. The result is a
 
-Top-level declarations: `paper_position_size` (line 72), `_sig_get` (line 101), `_sqlite_safe` (line 110), `_paper_risk_pct` (line 137), `_admission_signal_key` (line 157), `_init_admission_outcomes` (line 181), `_record_admission_outcome` (line 210), `_bound_admission_outcomes` (line 237), `_supports_paper_admission_identity` (line 247), `record_momentum_paper_upstream_deduplications` (line 259), `_record_disabled_admissions` (line 296), `_record_transaction_failures` (line 320), `open_momentum_paper_positions` (line 350), `_close_paper_position` (line 500), `momentum_paper_monitor` (line 554), `momentum_paper_square_off` (line 652)
+Top-level declarations: `paper_position_size` (line 77), `_sig_get` (line 106), `_sqlite_safe` (line 115), `_paper_risk_pct` (line 142), `_admission_signal_key` (line 162), `_admission_source_packet` (line 186), `_zero_share_reason` (line 216), `_realised_paper_cash_basis` (line 232), `_admission_economics` (line 246), `_init_admission_outcomes` (line 270), `_init_path_collector` (line 311), `_study_deadline_utc` (line 343), `_subscribe_paper_path` (line 348), `_parse_observation_clock` (line 361), `record_momentum_paper_path_observations` (line 373), `_record_admission_outcome` (line 435), `_bound_admission_outcomes` (line 471), `_supports_paper_admission_identity` (line 481), `record_momentum_paper_upstream_deduplications` (line 493), `_record_disabled_admissions` (line 530), `_record_transaction_failures` (line 554), `open_momentum_paper_positions` (line 584), `_close_paper_position` (line 763), `momentum_paper_monitor` (line 817), `momentum_paper_square_off` (line 915)
 
 Engine dependencies: `config`, `engine`, `models`, `momentum_exits`, `performance`
 
@@ -952,7 +952,7 @@ Related tests: `python-engine/tests/test_momentum_paper.py`, `python-engine/test
 
 Read-only, exact-key lifecycle audit for momentum-paper evidence. The audit intentionally refuses ticker/date joins. Only future paper rows with the immutable ``paper_admission_key`` and ledger ``origin_ref`` can form a complete lifecycle; legacy records remain visible as unavailable evidence.
 
-Top-level declarations: `MomentumPaperAuditError` (line 26), `_canonical` (line 30), `_unavailable` (line 34), `_open_readonly` (line 46), `_table_columns` (line 56), `_round` (line 63), `_entry_snapshot` (line 67), `_position_view` (line 79), `_cash_view` (line 93), `build_momentum_paper_decision_audit` (line 132), `_main` (line 275)
+Top-level declarations: `MomentumPaperAuditError` (line 27), `_canonical` (line 31), `_unavailable` (line 35), `_open_readonly` (line 47), `_table_columns` (line 57), `_round` (line 64), `_entry_snapshot` (line 68), `_source_packet_receipt` (line 80), `_position_view` (line 96), `_cash_view` (line 110), `build_momentum_paper_decision_audit` (line 149), `_main` (line 302)
 
 Related tests: `python-engine/tests/test_momentum_paper_audit.py`
 
@@ -965,6 +965,14 @@ Top-level declarations: `MomentumPaperEvidenceReviewError` (line 23), `_canonica
 Engine dependencies: `momentum_exit_study`, `momentum_paper_audit`
 
 Related tests: `python-engine/tests/test_momentum_paper_evidence_review.py`
+
+## `python-engine/momentum_paper_path_adapter.py`
+
+Read-only adapter from passive momentum-paper quote receipts to a study packet. It has no scheduler and no market-data client. A caller may export only a fully verifiable, exact-admission path; otherwise the exact missing evidence is returned and no synthetic study input is produced.
+
+Top-level declarations: `_unavailable` (line 23), `_timestamp` (line 28), `_packet_hash` (line 40), `build_momentum_paper_exit_study_packet` (line 52)
+
+Engine dependencies: `config`, `momentum_exit_study`
 
 ## `python-engine/momentum_replay.py`
 

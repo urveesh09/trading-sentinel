@@ -293,6 +293,12 @@ class Settings(BaseSettings):
     # Bounded decision-forensics ledger for accepted momentum signals.  It
     # stores only an opaque identity, ticker and enumerated admission outcome.
     MOMENTUM_PAPER_ADMISSION_RETENTION: int = 20000
+    # Passive quote-path evidence is deliberately bounded separately from the
+    # admission receipts.  It is written only from already-observed quote
+    # fanout packets; it never authorises or triggers a quote-provider call.
+    MOMENTUM_PAPER_PATH_RETENTION: int = 100000
+    MOMENTUM_PAPER_PATH_PACKET_MAX_BYTES: int = 4096
+    MOMENTUM_PAPER_PATH_MAX_GAP_SECONDS: int = 300
     # Broker-free research side-channel. It evaluates declared variants using
     # frames already fetched by the live scanner and never reaches sizing or
     # order execution, so evidence collection is safe to enable by default.

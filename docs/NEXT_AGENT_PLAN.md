@@ -1,5 +1,27 @@
 # Trading Sentinel — next-agent execution plan
 
+## October 2 S4 equity-path evidence — Dev complete, operational acceptance open
+
+S4 now provides bounded, additive paper evidence only. Every new opened
+admission records immutable v1 entry economics, the explicit fixed configured
+paper-pool capital snapshot, and canonical accepted-signal packet bytes with a
+SHA-256 receipt. The audit recomputes the digest from stored bytes. Existing
+`zero_shares` is retained, with a reason that distinguishes exhausted capital,
+risk budget and invalid input. A passive exact-admission-key subscription keeps
+original quantity through scale-outs. `record_momentum_paper_path_observations`
+accepts caller-supplied provider packet bytes plus provider/receipt clocks only;
+it has no network capability. The read-only path adapter validates packet bytes,
+exact ticker/key, deadline, clock order and configured gaps before it emits a
+study packet. Focused S4 evidence tests: 73 passed; compilation passed.
+
+Dev-only source must be pushed/reviewed through GitHub; Production remains
+untouched. Before any deployment/learning conclusion, configure bounded caps,
+connect an existing quote fanout to the passive caller (without a new provider
+request), and collect five fresh reconciled lifecycles. Missing/forged/gapped
+paths remain insufficient evidence. No test or deployment proves profitability,
+strategy quality, partner qualification or live authority. Next priority is S5
+or the separately scoped S10 work, not a silent sizing or exit-policy change.
+
 ## October 2 S3 evidence-retention — Dev complete, operational acceptance open
 
 S2 source completion is committed in Dev and must be promoted only through

@@ -49,6 +49,22 @@
   focused: 57 passed; warnings-fatal rotation/summary: 13 passed; Compose
   verifier: 8 passed. No data migration/deletion, broker, AI authority or
   Production recreation. Rollback is GitHub reversion without archive removal.
+- [x] Implement S4 admission-capital and passive equity-path evidence in Dev:
+  admitted outcomes retain bounded fixed-pool/cash/deployment/risk/fee policy
+  facts and a precise `zero_shares` reason; the INR 50,000 configured benchmark
+  is explicitly not drawdown-adjusted. Opened keys seal canonical admission
+  packet bytes and an audit-recomputed SHA-256 receipt. Exact-key passive path
+  subscriptions preserve original quantity through scale-outs. The caller-fed
+  collector accepts only already-observed packet bytes and provider/receipt
+  clocks, never fetching data itself; the read-only adapter rejects forged
+  bytes, wrong ticker/key, invalid gaps/clocks or missing exact deadline data.
+  Focused S4 tests: 73 passed; compilation passed. Additive Dev-only SQLite
+  evidence; no strategy/sizing/exit, broker, AI, deployment or Production edit.
+  Rollback via GitHub reversion/collector disablement retains evidence.
+- [ ] Configure S4 path caps, connect an existing quote fanout without adding a
+  provider request, then collect five fresh reconciled passive lifecycles.
+  These are instrumentation acceptance only, not proof of profitability,
+  partner qualification, deployment or trading authority.
 - [ ] Before deployment, verify host free space, preserve prior-boot logs and
   collect a complete market-session volume/rotation receipt. This does not
   prove profitability, partner qualification or operational deployment.
