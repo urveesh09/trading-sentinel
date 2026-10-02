@@ -1,5 +1,19 @@
 # Trading Sentinel — system guide and engineering handover
 
+## October 2 — F&O profit evidence is not qualification
+
+`scripts/assess_fno_profitability.py` is an inert standard-library developer
+CLI: SQLite read-only consistent snapshot, exact source/origin cash matching,
+paper/live and single-leg/spread separation, IST monthly cash, winner-removal
+and realized drawdown. It can stream into an existing container without writing
+source there; output is restricted to new files under Dev docs. Missing,
+duplicate, mismatched or nonfinite settlements remain unavailable. Stored
+position totals are labelled NOT_FULLY_RECONCILED, not silently treated as cash.
+See [October 2 results and replay plan](2026-10-02-fno-profitability-assessment.md).
+Recent positive paper P&L does not prove current-policy multi-month profitability;
+the old constant-IV `fno_backtest.py` is not a full current-policy replay.
+No application behavior, authority, schema or Production configuration changed.
+
 ## October 2 source work complete for R1–R5; release and Production environment (Dev)
 
 - **R4 (`c118598`).**

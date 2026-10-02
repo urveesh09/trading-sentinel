@@ -1,5 +1,16 @@
 # Handover receipt and operator checklist
 
+## October 2 F&O profitability assessment
+
+- [x] Dev-only read-only history CLI; 12 focused warnings-fatal tests; executed
+  against Production SQLite without edits/restarts/provider/order/message calls.
+- [x] Recent linked positive paper and older unreconciled negative results
+  reported separately; no current-policy profitability or allocation claim.
+- [ ] Obtain licensed historical executable option quotes and contract masters.
+- [ ] Full current-policy causal replay, shared capital/cost stress, independent
+  holdout and prospective paper acceptance per the profitability assessment.
+- [ ] Any live pilot/funding requires separate owner authorization.
+
 ## October 2 release checklist
 
 - [x] R1–R5 source completed and pushed (R4 `c118598`, R5 `addf46b`).

@@ -1,5 +1,20 @@
 # Trading Sentinel — next-agent execution plan
 
+## October 2 — current F&O profitability request
+
+Read [the assessment and concrete replay/data plan](2026-10-02-fno-profitability-assessment.md).
+The Dev-only `scripts/assess_fno_profitability.py` ran against Production
+SQLite read-only. Recent linked paper outcomes are +₹10,755.67 single-leg (9)
+and +₹3,187.60 spreads (7), but all retained July–October position rows report
+-₹18,367.22 / -₹3,721.71 and older cash is not exactly reconciled. This is
+operational history, **not a current-policy backtest or funding approval**.
+Quote archive directories cover only September 10–October 1; obtain licensed
+historical executable quotes/contract masters before implementing a full-policy
+chronological replay. Existing constant-IV synthetic backtest is insufficient.
+The report specifies source/settings freeze, shared policy parity, missing-data
+handling, shared-capital portfolio, cost/fill stress and independent holdout.
+No Production edits/restarts, provider calls or live-order authority changes.
+
 ## October 2 — release candidate; operational acceptance next (R6)
 
 All review source items R1–R5 are in Dev and pushed. Promote through the GitHub
