@@ -1,5 +1,15 @@
 # Trading Sentinel — system guide and engineering handover
 
+## October 3 — B6 standard reporting and untouched holdout declaration (Dev only)
+
+`backtest_cli report` now emits evidence-only standard metrics and leaves
+missing fields/risk-adjusted values null. `run --holdout-from/--holdout-to`
+records a future non-overlapping holdout declaration; `compare` requires the
+same snapshot/window/scope/holdout. Trade-sample bootstrap intervals are
+deterministic and explicitly not profitability evidence. Focused B6 tests: 37
+passed, one existing httpx deprecation warning. Dev only, not pushed/deployed.
+See [B6 slice](2026-10-03-b6-standard-reports-holdouts.md).
+
 ## October 3 — B4 Momentum baseline and Range evaluator replay (Dev only)
 
 The Momentum research default is now the shipped `MOM_BASE` evaluator;

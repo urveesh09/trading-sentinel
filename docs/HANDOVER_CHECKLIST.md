@@ -15,7 +15,8 @@
   completed-bar evaluator (70 focused tests, one existing httpx deprecation).
 - [x] B4 source commit `3e03916` is Dev-only; no configuration, migration,
   push or deployment occurred. Catalogue consistency was verified after commit.
-- [ ] B6 standard reports and untouched-holdout guard.
+- [x] B6 evidence-only standard reports, deterministic uncertainty and
+  non-overlapping holdout declaration/comparison guard (37 focused tests).
 - [ ] Real-data/Production read-only checks only after Production is restored;
   GitHub promotion remains owner-controlled.
 

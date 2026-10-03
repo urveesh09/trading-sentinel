@@ -69,6 +69,41 @@ manifests. Rollback removes research code only. Next B6 adds holdout/report
 requirements. B5 stays excluded by the owner; the unresolved cross-book live
 allocation decisions remain owner decisions.
 
+## October 3 — B6 complete: standard reports and held-out comparison guard (Dev only)
+
+**Problem.** `backtest_cli report` currently only echoes a run's summary;
+`compare` checks snapshot/window equality but does not protect an untouched
+holdout boundary or explain whether a metric has an adequate equity clock.
+This can encourage false comparability and selection leakage.
+
+**Delivered.** A deterministic report formatter over archived Backtest Lab
+reports retains policy/code/settings/data manifests,
+separate unavailable/evaluator results from cash-return results, show the
+metrics actually evidenced (gross/net/costs/exposure/turnover/distributions/
+MFE-MAE/holding/drawdown only when present), and label every unavailable field.
+adds an explicit immutable holdout declaration with no overlap and no test-window
+selection; comparisons must require identical snapshot, scope and holdout
+declaration. Bootstrap uncertainty is allowed only for actual closed-trade
+samples and must be deterministically seeded; it is never a profitability or
+deployment verdict.
+
+**Files/contracts.** `backtest_cli.py`, a pure reporting helper, CLI tests and
+docs/catalogue as needed. Reports remain read-only JSON; secrets stay excluded.
+No strategy adapter, broker, cache source, live setting or Production file is
+changed.
+
+**Acceptance completed.** Same manifests and chronology are enforced; holdout is outside
+the development window and declared before scoring; missing/invalid equity
+clocks yield `null` risk-adjusted fields; evaluator-only adapters show no
+invented P&L. Tests cover overlap/repeated-selection rejection, incompatible
+comparison, deterministic uncertainty and unavailable metrics.
+
+**Rollout/rollback/remaining work.** Dev-only generated reports; rollback
+removes report helpers without deleting archived reports. After B6 the B0–B6
+implementation set is complete subject to real-data availability and owner
+review. B5 remains excluded; Production recovery/read-only checks, GitHub push
+and promotion remain separate authorized steps.
+
 ## October 3 — B0/B2 complete: exact classic Penny CNC Connors paper lifecycle (Dev only)
 
 [B2 CNC slice](2026-10-03-b2-penny-cnc-connors-lifecycle.md).
@@ -90,7 +125,8 @@ Runtime findings, not changed:
 
 **Real-data run pending:** Production is stopped.
 
-Next in the B series: **B6**. B5 is excluded at the owner's direction.
+The B0–B6 implementation set is complete in Dev. B5 is excluded at the owner's
+direction; real-data availability, owner review and promotion are separate.
 
 ## October 3 — F1-A owner rule "no extra margin" enforced at both broker boundaries (Dev only)
 

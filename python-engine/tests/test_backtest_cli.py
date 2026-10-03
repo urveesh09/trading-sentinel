@@ -51,3 +51,29 @@ def test_snapshot_run_compare_and_tamper_refusal(tmp_path, capsys):
     assert backtest_cli.main(args + ["--out", str(tmp_path / "c.json")]) == 2       # tampered
     with pytest.raises(backtest_cli.CliError, match="changed"):
         backtest_cli.verify_snapshot(str(snap))
+
+
+def test_standard_report_holdout_guard_and_deterministic_uncertainty(tmp_path, capsys):
+    src, snap = tmp_path / "src.db", tmp_path / "snap.sqlite"
+    _source_db(src)
+    assert backtest_cli.main(["snapshot", "--db", str(src), "--from", "2026-08-10", "--to", "2026-08-10",
+                              "--tickers", "AAA", "--out", str(snap)]) == 0
+    args = ["run", "--snapshot", str(snap), "--strategy", "penny_breakout_mis_lifecycle_1m",
+            "--from", "2026-08-10", "--to", "2026-08-10", "--config", '{"tickers": ["AAA"]}']
+    plain, held = tmp_path / "plain.json", tmp_path / "held.json"
+    assert backtest_cli.main(args + ["--out", str(plain)]) == 0
+    assert backtest_cli.main(args + ["--holdout-from", "2026-08-11", "--holdout-to", "2026-08-12", "--out", str(held)]) == 0
+    capsys.readouterr()
+    assert backtest_cli.main(["report", str(held)]) == 0
+    report = json.loads(capsys.readouterr().out)
+    assert report["holdout"]["status"] == "DECLARED_UNTOUCHED"
+    assert report["standard_metrics"]["risk_adjusted"] is None
+    assert report["standard_metrics"]["net_excluding_best_winner"] is not None
+    assert backtest_cli.main(["compare", str(plain), str(held)]) == 2
+    assert backtest_cli.main(args + ["--holdout-from", "2026-08-10", "--holdout-to", "2026-08-12", "--out", str(tmp_path / "bad.json")]) == 2
+
+    from backtest_reporting import standard_metrics
+    sample = {"dataset_fingerprint": "sha256:fixed", "result": {"trades": [
+        {"status": "CLOSED", "net_pnl": 1.0}, {"status": "CLOSED", "net_pnl": -0.5},
+    ]}}
+    assert standard_metrics(sample)["uncertainty"] == standard_metrics(sample)["uncertainty"]

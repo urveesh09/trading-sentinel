@@ -162,6 +162,7 @@ def _adapter(strategy_id: str):
 
 def run(args) -> dict:
     from backtest_lab import BacktestRequest, BacktestUnavailable
+    from backtest_reporting import validate_holdout
     adapter = _adapter(args.strategy)
     snap = verify_snapshot(args.snapshot)
     supplied = json.loads(args.config) if args.config else {}
@@ -170,6 +171,10 @@ def run(args) -> dict:
     config = adapter.snapshot_config(supplied)
     assumptions = adapter.snapshot_assumptions({})
     request = BacktestRequest(args.strategy, args.start, args.end, config, assumptions)
+    try:
+        holdout = validate_holdout(args.start, args.end, args.holdout_from, args.holdout_to)
+    except ValueError as exc:
+        raise CliError(str(exc)) from exc
     target = _new_file(args.out)
     report = {
         "schema": "sentinel_backtest_report_v1", "created_at": datetime.now(timezone.utc).isoformat(),
@@ -178,6 +183,7 @@ def run(args) -> dict:
         "snapshot": {"path": str(Path(args.snapshot).resolve()), "rows_sha256": snap["rows_sha256"],
                      "request": snap["request"], "source": snap["source"]},
         "policy": policy_manifest(args.strategy, adapter),
+        "holdout": holdout,
         "can_place_orders": False, "can_qualify": False,
     }
     with tempfile.TemporaryDirectory(prefix="sentinel-backtest-") as tmp:
@@ -231,6 +237,10 @@ def compare(args) -> dict:
         raise CliError("not comparable: different snapshots")
     if (a["request"]["from"], a["request"]["to"]) != (b["request"]["from"], b["request"]["to"]):
         raise CliError("not comparable: different windows")
+    if a.get("scope") != b.get("scope"):
+        raise CliError("not comparable: different fidelity scopes")
+    if a.get("holdout") != b.get("holdout"):
+        raise CliError("not comparable: different holdout declarations")
     keys = sorted(set(a.get("metrics") or {}) | set(b.get("metrics") or {}))
     diff = {}
     for key in keys:
@@ -241,17 +251,19 @@ def compare(args) -> dict:
             diff[key] = {"a": va, "b": vb}
     return {"a": {"strategy_id": a["strategy_id"], "scope": a["scope"], "state": a["state"]},
             "b": {"strategy_id": b["strategy_id"], "scope": b["scope"], "state": b["state"]},
-            "snapshot": a["snapshot"]["rows_sha256"], "window": [a["request"]["from"], a["request"]["to"]],
+            "snapshot": a["snapshot"]["rows_sha256"], "window": [a["request"]["from"], a["request"]["to"]], "holdout": a.get("holdout"),
             "metric_differences": diff}
 
 
 def report(args) -> dict:
+    from backtest_reporting import standard_metrics
     data = _load_report(args.report)
     return {"strategy_id": data["strategy_id"], "scope": data["scope"], "state": data["state"],
             "window": [data["request"]["from"], data["request"]["to"]],
             "metrics": data.get("metrics"), "warnings": data.get("warnings"),
             "git_commit": data["policy"]["git_commit"], "git_dirty": data["policy"]["git_dirty"],
-            "snapshot": data["snapshot"]["rows_sha256"]}
+            "snapshot": data["snapshot"]["rows_sha256"], "holdout": data.get("holdout"),
+            "standard_metrics": standard_metrics(data)}
 
 
 def main(argv=None) -> int:
@@ -276,6 +288,8 @@ def main(argv=None) -> int:
     p.add_argument("--from", dest="start", required=True)
     p.add_argument("--to", dest="end", required=True)
     p.add_argument("--config")
+    p.add_argument("--holdout-from")
+    p.add_argument("--holdout-to")
     p.add_argument("--out", required=True)
     p = sub.add_parser("compare")
     p.add_argument("a")
