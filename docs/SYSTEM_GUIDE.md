@@ -25,7 +25,10 @@ evaluation is immutably recorded. The CLI refuses qualification for anything
 below `FULL_PORTFOLIO` fidelity, so the new partial adapter cannot be marketed
 as qualified. See [P1–P4 completion slice](2026-10-03-p1-p4-completion-slice.md).
 Dev only; no configuration migration, Production edit, broker order, push or
-deployment occurred.
+deployment occurred. Source commit `919e042`; immediately after commit the
+focused Python suite passed 90 tests (one existing HTTPX deprecation), the
+gateway executor suite passed 59 tests, compilation/diff checks passed and the
+atlas was regenerated (240 modules).
 
 ## October 3 — P2 reproducibility/publication (Dev only)
 

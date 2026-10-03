@@ -36,6 +36,10 @@ universe, regime, event, broker and scheduler evidence; Momentum, Swing, EDGE
 and Range have the same evidence boundary. P4 has an append-only prospective
 registry and rejects qualification of this partial scope. Do not bypass that
 block or relabel prior/historical date declarations as untouched holdouts.
+P1/P3/P4 source commit `919e042` is Dev-local. No push, deployment or
+Production runtime action occurred. The native Node SQLite ABI limitation is
+recorded in the slice; run its real ledger protocol suite inside the matching
+gateway container before paper observation/promotion.
 
 ## October 3 — authoritative post-implementation review (Dev only)
 

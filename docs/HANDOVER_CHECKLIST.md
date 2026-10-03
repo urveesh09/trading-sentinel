@@ -14,6 +14,10 @@
   retroactive/reused-as-untouched qualification are rejected.
 - [ ] Paper observation of the P1 ledger and FULL_PORTFOLIO evidence for any
   actual qualification remain required before owner-controlled promotion.
+- [x] Source commit `919e042` is Dev-only; Python 90-test focused regression,
+  gateway 59-test executor regression, compile/diff checks and 240-module atlas
+  regeneration passed. The gateway's local native SQLite test ABI mismatch is
+  documented; container-native protocol validation remains a release gate.
 
 ## October 3 independent post-implementation review — current status
 
