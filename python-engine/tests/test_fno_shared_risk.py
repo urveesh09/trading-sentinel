@@ -1,5 +1,5 @@
 """F0 shared F&O risk read-model and reservation characterization tests."""
-from datetime import datetime, timezone
+from datetime import date, datetime, timezone
 
 import aiosqlite
 import pytest
@@ -8,8 +8,10 @@ from fno_dr_book import init_dr_db
 from fno_positions import init_fno_positions_db
 from fno_shared_risk import (
     init_shared_fno_risk_db,
+    SharedFnoRiskPolicy,
     reserve_shared_fno_risk,
     resolve_shared_fno_risk_reservation,
+    shared_fno_entry_policy,
     shared_fno_risk_view,
 )
 from performance import init_ledger
@@ -134,3 +136,103 @@ async def test_reservation_requires_auditable_one_way_resolution(db_path):
     view = await shared_fno_risk_view(db_path, SOURCE, POOL)
     assert view.reservation_count == 0
     assert view.available_worst_case_cash_rs == POOL
+
+
+async def _terminal_cash(db_path, *, pnl, stamp, source=SOURCE, origin_ref=None):
+    async with aiosqlite.connect(db_path) as db:
+        await db.execute(
+            "INSERT INTO bankroll_ledger (timestamp,event_type,pnl,source,origin_ref) "
+            "VALUES (?,?,?,?,?)",
+            (stamp, "TRADE_CLOSED", pnl, source, origin_ref),
+        )
+        await db.commit()
+
+
+@pytest.mark.asyncio
+async def test_shared_policy_counts_dr_and_partial_cash_for_both_new_books(db_path):
+    """Origin labels never decide which F&O loss gets capital protection."""
+    await _ready(db_path)
+    await _terminal_cash(
+        db_path, pnl=-3_100.0, stamp="2026-10-03T10:00:00+05:30",
+        origin_ref="fno_dr_structure:17",
+    )
+    decision = await shared_fno_entry_policy(
+        db_path, source=SOURCE, pool_rs=POOL, today_ist=date(2026, 10, 3),
+    )
+    assert not decision.allowed
+    assert decision.reason.startswith("daily_loss_halt")
+    assert decision.day_pnl_rs == -3_100.0
+
+    # The one immediate admission operation protects either prospective book
+    # with that exact same policy result, rather than a directional-only query.
+    for book, key in (("SINGLE_LEG", "single-after-dr-loss"),
+                      ("DEFINED_RISK", "dr-after-dr-loss")):
+        refused = await reserve_shared_fno_risk(
+            db_path, source=SOURCE, pool_rs=POOL, reservation_key=key,
+            book=book, worst_case_cash_rs=1_000.0,
+            entry_day_ist=date(2026, 10, 3),
+        )
+        assert not refused.allowed
+        assert refused.reason.startswith("daily_loss_halt")
+
+
+@pytest.mark.asyncio
+async def test_shared_policy_keeps_existing_thresholds_and_source_isolation(db_path):
+    await _ready(db_path)
+    # Four distinct weekdays stay beneath the daily limit but pass the existing
+    # 12% weekly brake. A live-source cash row cannot influence paper policy.
+    for day in ("2026-09-28", "2026-09-29", "2026-09-30", "2026-10-01"):
+        await _terminal_cash(
+            db_path, pnl=-1_600.0, stamp=f"{day}T10:00:00+05:30",
+            origin_ref="fno_position:partial",
+        )
+    await _terminal_cash(
+        db_path, pnl=-50_000.0, stamp="2026-10-02T10:00:00+05:30",
+        source="FNO_LIVE", origin_ref="fno_position:live",
+    )
+    decision = await shared_fno_entry_policy(
+        db_path, source=SOURCE, pool_rs=POOL, today_ist=date(2026, 10, 2),
+    )
+    assert not decision.allowed
+    assert decision.reason.startswith("weekly_loss_halt")
+    assert not any("daily_loss_halt" in reason for reason in decision.active_halts)
+
+
+@pytest.mark.asyncio
+async def test_shared_policy_drawdown_and_ambiguous_cash_fail_closed(db_path):
+    await _ready(db_path)
+    await _terminal_cash(
+        db_path, pnl=-12_501.0, stamp="2026-10-02T10:00:00+05:30",
+        origin_ref="fno_position:3",
+    )
+    drawdown = await shared_fno_entry_policy(
+        db_path, source=SOURCE, pool_rs=POOL, today_ist=date(2026, 10, 3),
+    )
+    assert not drawdown.allowed
+    assert any(reason.startswith("drawdown_halt") for reason in drawdown.active_halts)
+
+    await _terminal_cash(
+        db_path, pnl=10.0, stamp="2026-10-03T10:00:00",
+        origin_ref="fno_position:ambiguous-clock",
+    )
+    malformed = await shared_fno_entry_policy(
+        db_path, source=SOURCE, pool_rs=POOL, today_ist=date(2026, 10, 3),
+    )
+    assert not malformed.allowed
+    assert malformed.reason == "invalid_terminal_cash_event"
+
+
+@pytest.mark.asyncio
+async def test_shared_policy_preserves_affordable_clean_admission(db_path):
+    await _ready(db_path)
+    clean = await shared_fno_entry_policy(
+        db_path, source=SOURCE, pool_rs=POOL, today_ist=date(2026, 10, 3),
+        policy=SharedFnoRiskPolicy(),
+    )
+    assert clean.allowed
+    admitted = await reserve_shared_fno_risk(
+        db_path, source=SOURCE, pool_rs=POOL, reservation_key="clean-admission",
+        book="DEFINED_RISK", worst_case_cash_rs=1_000.0,
+        entry_day_ist=date(2026, 10, 3),
+    )
+    assert admitted.allowed

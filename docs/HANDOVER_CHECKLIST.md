@@ -14,8 +14,12 @@
   cash, then atomically consume their receipt with the position insert; exits
   remain allowed. Source commit `0ba2d29` (Dev; pushed). Shared
   loss/drawdown and partial-settlement work remains.
-- [ ] F0-C shared day/week/month/drawdown decisions and partial-spread
-  settlement handling; add restart/race characterization before promotion.
+- [x] F0-C shared day/week/month/drawdown (and existing consecutive-loss)
+  entry decisions for both paper books: all exact F&O terminal/partial cash is
+  common, invalid evidence fails closed and exits remain outside entry halts.
+  Dev-only verification: 24 warnings-fatal focused; 79 normal wider F&O tests.
+- [ ] F0-D actual partial-settlement release and restart/race reconciliation;
+  add characterization before promotion.
 - [ ] F1 owner cash-only funding semantics, broker initial/final margin and
   catastrophe acceptance before live allocation; no live spread authorisation.
 - [ ] B1/B2 interval/zero-volume/session data contracts and full classic Penny

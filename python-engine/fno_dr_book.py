@@ -789,11 +789,23 @@ async def maybe_open_dr_structure(
         # F0-B uses the same fee-inclusive catastrophe reservation as the
         # directional book.  Initialise only durable local schemas; no quote,
         # order, message or exit path is touched here.
-        from fno_shared_risk import reserve_shared_fno_risk
+        from fno_shared_risk import (
+            init_shared_fno_risk_db, policy_from_settings,
+            reserve_shared_fno_risk, shared_fno_entry_policy,
+        )
         from fno_positions import init_fno_positions_db
         from performance import init_ledger
         await init_ledger(db_path)
         await init_fno_positions_db(db_path)
+        await init_shared_fno_risk_db(db_path)
+        shared_policy = policy_from_settings()
+        shared_decision = await shared_fno_entry_policy(
+            db_path, source=source, pool_rs=float(settings.FNO_PAPER_BANKROLL),
+            today_ist=now_ist.date(), policy=shared_policy,
+        )
+        if not shared_decision.allowed:
+            logger.warning("fno_dr_entry_skipped reason=%s", shared_decision.reason)
+            return None
         s = planned.structure
         reservation_key = "dr:%s:%s:%s" % (
             source, now_ist.isoformat(),
@@ -803,6 +815,7 @@ async def maybe_open_dr_structure(
             db_path, source=source, pool_rs=float(settings.FNO_PAPER_BANKROLL),
             reservation_key=reservation_key, book="DEFINED_RISK",
             worst_case_cash_rs=s.max_loss_rs + structure_round_trip_cost(s),
+            entry_day_ist=now_ist.date(), policy=shared_policy,
         )
         if not admission.allowed:
             logger.warning("fno_dr_entry_skipped reason=%s", admission.reason)

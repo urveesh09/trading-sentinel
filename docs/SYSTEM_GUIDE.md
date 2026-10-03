@@ -1,6 +1,6 @@
 # Trading Sentinel — system guide and engineering handover
 
-## October 3 — F0 shared F&O risk foundation (Dev, not yet an admission change)
+## October 3 — F0-C shared F&O entry policy (Dev only; not deployed)
 
 `fno_shared_risk.py` is an additive, source-scoped F&O evidence layer. It reads
 one consistent view of exact source ledger settlement cash plus both books'
@@ -14,14 +14,27 @@ The broader F&O orchestrator/recovery selection passed 52 assertions without
 warnings-as-errors but retains an existing Starlette lifespan deprecation; a
 warnings-fatal combined run also surfaced the documented Windows socket warning.
 
-F0-B now binds each paper single-leg/DR admission to a fee-inclusive
+F0-B binds each paper single-leg/DR admission to a fee-inclusive
 worst-case-cash reservation and consumes it in the same transaction as its
 position row. This preserves feasible paper trades while stopping the two books
 from consuming the same capacity. Executor rejection releases a reservation;
-an uncertain post-fill receipt retains it. Exits remain allowed. Shared
-day/week/month/drawdown enforcement and partial-settlement release are still
-open. Source commit `0ba2d29` is Dev-only and pushed; no Production configuration,
-database, broker, order or authority change.
+an uncertain post-fill receipt retains it.
+
+F0-C makes the existing 6% day, 12% week, 20% month, six-consecutive-loss and
+25% drawdown entry brakes a typed, source-scoped shared policy receipt. It
+uses every exact `TRADE_CLOSED` F&O ledger event—no single-leg origin prefix—so
+defined-risk and partial cash affect both prospective paper books exactly once.
+Naive/malformed terminal cash, missing evidence or invalid policy fails the
+new entry closed. Both DR and directional paths read the receipt, and the
+reservation transaction re-checks it immediately before capacity is consumed.
+The change intentionally keeps sizing, signal/quote selection, structural caps,
+exit management, settlement and live-spread authority unchanged; exits remain
+available during entry halts. Focused shared-policy/risk-switch tests passed
+24 warnings-fatal; the wider 79-test F&O selection passed normally. Its
+warnings-fatal form has one pre-existing Windows socket-lifecycle warning, not
+an assertion failure. Actual partial-settlement release/restart-race repair and
+F1 broker cash/margin preflight remain open. Dev only: no Production database,
+configuration, broker, order or authority change.
 
 ## October 3 — baseline research is not full portfolio backtesting
 

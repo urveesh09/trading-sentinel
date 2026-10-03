@@ -4,6 +4,38 @@
 
 Start with [the successor inheritance](2026-10-03-successor-inheritance.md) and
 [F&O safety / B0–B6 backtest plan](2026-10-03-backtesting-and-fno-safety-plan.md).
+**Completed implementation slice — F0-C shared paper entry-policy receipt (October 3, Dev only).**
+Problem: F0-B atomically reserves paper F&O catastrophe cash across the
+single-leg and defined-risk books, but the legacy directional kill switches and
+drawdown gate do not count defined-risk/partial ledger cash and DR admission
+does not consult them. Contracts: add a typed, source-scoped, fail-closed
+shared-entry-policy receipt in `fno_shared_risk.py`; derive day/week/month
+losses from exact `TRADE_CLOSED` ledger rows (all F&O origins) using explicit
+IST event dates, and derive drawdown from the same shared realised equity view.
+Both new paper entry paths must consult that same receipt; existing position
+management and exits must remain callable during a halt. Do not change signal,
+quote, sizing, structural-limit, broker, live-spread, or settlement authority.
+Acceptance checks: one DR or partial ledger loss halts either prospective book;
+source isolation, malformed/naive clocks and missing required evidence reject
+new entries; no halt is introduced for a profitable/within-limit fixture; the
+drawdown threshold remains the existing 25% allocation policy; and a halted
+tick still manages single-leg/DR exits. Rollout: additive code/tests and paper
+receipt only in Dev, then a local commit and GitHub promotion/review before
+paper observation; no Production configuration/data/process changes. Rollback:
+revert only admission-policy wiring while preserving reservation/ledger
+evidence; an emergency entry disable never removes exit authority. Remaining
+F0 work after this slice: exact partial-settlement release/restart/race
+reconciliation and F1 broker cash/margin preflight. Implementation result:
+both paper admissions now read the typed receipt, and reservation re-checks it
+inside `BEGIN IMMEDIATE`; exact DR/partial `TRADE_CLOSED` cash is common to
+both books, while malformed/naive evidence denies new entries. Existing values
+remain 6%/12%/20%, six losses and 25% drawdown—no new restriction was tuned in.
+Focused `test_fno_shared_risk.py` plus `test_fno_risk_switches.py` passed 24
+warnings-fatal; F&O shared-risk/risk-switch/DR/orchestrator selection passed
+79 normally. The corresponding warnings-fatal wider run hit one documented
+Windows socket-lifecycle warning after 47 assertions. Source commit pending;
+Dev only, not pushed or deployed.
+
 **F0-A foundation is now in Dev:** `fno_shared_risk.py` provides a fail-closed,
 source-scoped view of exact settlement cash plus single-leg/defined-risk
 OPEN/UNRESOLVED losses and durable reservations. Its transactionally inserted

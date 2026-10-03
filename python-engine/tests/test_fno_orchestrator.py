@@ -233,6 +233,42 @@ async def test_paper_entry_end_to_end(kite, db_path):
 
 
 @pytest.mark.asyncio
+async def test_shared_daily_halt_blocks_both_paper_admissions(
+    kite, db_path, monkeypatch,
+):
+    """F0-C must not let the DR branch bypass a directional loss halt."""
+    from performance import init_ledger
+    import aiosqlite
+
+    await init_ledger(db_path)
+    async with aiosqlite.connect(db_path) as db:
+        await db.execute(
+            "INSERT INTO bankroll_ledger (timestamp,event_type,pnl,source,origin_ref) "
+            "VALUES (?,?,?,?,?)",
+            ("2026-07-10T09:30:00+05:30", "TRADE_CLOSED", -15_001.0,
+             "FNO_PAPER", "fno_dr_structure:prior-partial"),
+        )
+        await db.commit()
+
+    summary = await run_fno_tick(
+        kite, db_path=db_path, regime="REGIME_1_NORMAL", now_ist=NOW,
+    )
+    assert summary["entries"] == []
+    assert summary.get("dr_opened", []) == []
+    async with aiosqlite.connect(db_path) as db:
+        directional = await (await db.execute(
+            "SELECT reject_reason,active_kill_switches_json FROM fno_signals "
+            "WHERE leg='FNO_PAPER'"
+        )).fetchone()
+        dr_count = await (await db.execute(
+            "SELECT COUNT(*) FROM fno_dr_positions WHERE source='FNO_PAPER'"
+        )).fetchone()
+    assert directional[0] == "kill_switches_clear"
+    assert "daily_loss_halt" in directional[1]
+    assert dr_count[0] == 0
+
+
+@pytest.mark.asyncio
 async def test_defined_risk_and_directional_books_share_tick_market_data(
     kite, db_path, monkeypatch,
 ):

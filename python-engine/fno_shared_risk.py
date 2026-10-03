@@ -7,17 +7,21 @@ this module does not invent a fill, close a position, or release exposure on a
 timer.  In particular, an ``UNRESOLVED`` structure and an interrupted entry
 reservation remain unavailable capital until an explicit, durable resolution.
 
-The first F0 slice exposes a typed snapshot and an atomic reservation primitive
-without changing an existing entry path.  Wiring either book to reserve and
-consume an admission is a separate change: it must make its position insert
-and reservation transition one idempotent transaction.
+F0-A/B provide the typed snapshot and atomic reservation primitive; the paper
+position writers consume the reservation with their position insert.  F0-C
+adds the common entry-policy receipt: exact source-scoped `TRADE_CLOSED` cash
+from either book drives day/week/month, drawdown and consecutive-loss brakes.
+Both paper admissions consult it and the reservation transaction checks it
+again before consuming capacity.  Entry halts never suppress management or
+exit/settlement work.
 """
 from __future__ import annotations
 
 from dataclasses import dataclass
-from datetime import datetime, timezone
+from datetime import date, datetime, timedelta, timezone
 import math
 from typing import Optional
+from zoneinfo import ZoneInfo
 
 import aiosqlite
 
@@ -35,6 +39,42 @@ CREATE TABLE IF NOT EXISTS fno_risk_reservations (
     resolution_reason TEXT
 )
 """
+
+_IST = ZoneInfo("Asia/Kolkata")
+
+
+@dataclass(frozen=True)
+class SharedFnoRiskPolicy:
+    """Explicit entry-brake policy shared by both F&O paper books.
+
+    These defaults deliberately reproduce the already-shipped directional
+    brakes; F0-C changes their evidence scope, not their level.  The caller
+    may pass a frozen policy receipt when it needs to bind a decision to
+    non-default settings.
+    """
+
+    daily_loss_pct: float = 0.06
+    weekly_loss_pct: float = 0.12
+    monthly_loss_pct: float = 0.20
+    drawdown_pct: float = 0.25
+    max_consecutive_losses: int = 6
+
+
+@dataclass(frozen=True)
+class SharedFnoEntryPolicyDecision:
+    """One source-scoped, fail-closed entry-policy receipt.
+
+    ``active_halts`` is deliberately only an entry admission result.  It has
+    no bearing on position management or exit/settlement authority.
+    """
+
+    allowed: bool
+    reason: str
+    active_halts: tuple[str, ...]
+    day_pnl_rs: Optional[float]
+    week_pnl_rs: Optional[float]
+    month_pnl_rs: Optional[float]
+    view: SharedFnoRiskView
 
 
 @dataclass(frozen=True)
@@ -121,15 +161,21 @@ async def _read_view(
     if missing:
         return _unavailable(source, pool_rs, "missing_required_table:" + ",".join(missing))
 
-    ledger = await (await db.execute(
-        "SELECT COALESCE(SUM(pnl), 0.0) FROM bankroll_ledger "
+    ledger_rows = await (await db.execute(
+        "SELECT pnl FROM bankroll_ledger "
         "WHERE source=? AND event_type='TRADE_CLOSED'", (source,)
-    )).fetchone()
-    # P&L may legitimately be negative, so validate it separately.
-    try:
-        realised_pnl = float(ledger[0] if ledger else 0.0)
-    except (TypeError, ValueError):
-        realised_pnl = float("nan")
+    )).fetchall()
+    # Validate individual rows instead of trusting SQLite's aggregate: an
+    # invalid positive/negative pair must not cancel into apparent capacity.
+    realised_pnl = 0.0
+    for row in ledger_rows:
+        try:
+            pnl = float(row[0])
+        except (TypeError, ValueError):
+            pnl = float("nan")
+        if not math.isfinite(pnl):
+            return _unavailable(source, pool_rs, "nonfinite_realised_pnl")
+        realised_pnl += pnl
     if not math.isfinite(realised_pnl):
         return _unavailable(source, pool_rs, "nonfinite_realised_pnl")
 
@@ -176,6 +222,144 @@ async def _read_view(
     )
 
 
+def _invalid_policy(policy: SharedFnoRiskPolicy) -> bool:
+    percentages = (
+        policy.daily_loss_pct, policy.weekly_loss_pct,
+        policy.monthly_loss_pct, policy.drawdown_pct,
+    )
+    return (
+        any(not isinstance(value, (int, float)) or isinstance(value, bool)
+            or not math.isfinite(float(value)) or not 0 < float(value) <= 1
+            for value in percentages)
+        or type(policy.max_consecutive_losses) is not int
+        or policy.max_consecutive_losses <= 0
+    )
+
+
+def policy_from_settings() -> SharedFnoRiskPolicy:
+    """Freeze the existing configured brakes into an explicit receipt."""
+    from config import settings
+    return SharedFnoRiskPolicy(
+        daily_loss_pct=float(settings.FNO_DAILY_KILL_PCT),
+        weekly_loss_pct=float(settings.FNO_WEEKLY_KILL_PCT),
+        monthly_loss_pct=float(settings.FNO_MONTHLY_KILL_PCT),
+        drawdown_pct=0.25,  # existing directional FNO_MAX_DRAWDOWN_PCT policy
+        max_consecutive_losses=int(settings.FNO_MAX_CONSECUTIVE_LOSSES),
+    )
+
+
+def _policy_unavailable(
+    source: str, pool_rs: float, reason: str,
+) -> SharedFnoEntryPolicyDecision:
+    view = _unavailable(source, pool_rs, reason)
+    return SharedFnoEntryPolicyDecision(
+        allowed=False, reason=reason, active_halts=(reason,),
+        day_pnl_rs=None, week_pnl_rs=None, month_pnl_rs=None, view=view,
+    )
+
+
+async def _read_entry_policy(
+    db: aiosqlite.Connection, *, source: str, pool_rs: float,
+    today_ist: date, policy: SharedFnoRiskPolicy,
+) -> SharedFnoEntryPolicyDecision:
+    """Evaluate policy under the caller's transaction boundary.
+
+    Every F&O terminal/partial cash event shares the same source ledger, so
+    this intentionally has no origin-prefix filter.  Position rows are not a
+    fallback: a ledger timestamp/P&L ambiguity fails the new entry closed.
+    """
+    if _invalid_policy(policy):
+        return _policy_unavailable(source, pool_rs, "invalid_shared_risk_policy")
+    view = await _read_view(db, source, pool_rs)
+    if not view.available:
+        return SharedFnoEntryPolicyDecision(
+            allowed=False, reason=view.reason or "risk_view_unavailable",
+            active_halts=(view.reason or "risk_view_unavailable",),
+            day_pnl_rs=None, week_pnl_rs=None, month_pnl_rs=None, view=view,
+        )
+
+    rows = await (await db.execute(
+        "SELECT id,timestamp,pnl FROM bankroll_ledger "
+        "WHERE source=? AND event_type='TRADE_CLOSED' ORDER BY id DESC",
+        (source,),
+    )).fetchall()
+    iso_year, iso_week, _ = today_ist.isocalendar()
+    week_start = date.fromisocalendar(iso_year, iso_week, 1)
+    month_start = today_ist.replace(day=1)
+    day_pnl = week_pnl = month_pnl = 0.0
+    consecutive_losses = 0
+    latest_loss_day: Optional[date] = None
+    streak_active = True
+    for row in rows:
+        try:
+            stamp = datetime.fromisoformat(str(row[1]))
+            pnl = float(row[2])
+        except (TypeError, ValueError):
+            return _policy_unavailable(source, pool_rs, "invalid_terminal_cash_event")
+        if stamp.tzinfo is None or not math.isfinite(pnl):
+            return _policy_unavailable(source, pool_rs, "invalid_terminal_cash_event")
+        event_day = stamp.astimezone(_IST).date()
+        if event_day >= today_ist:
+            day_pnl += pnl
+        if event_day >= week_start:
+            week_pnl += pnl
+        if event_day >= month_start:
+            month_pnl += pnl
+        if streak_active and pnl < 0:
+            consecutive_losses += 1
+            if latest_loss_day is None:
+                latest_loss_day = event_day
+        else:
+            streak_active = False
+
+    halts: list[str] = []
+    if day_pnl <= -policy.daily_loss_pct * pool_rs:
+        halts.append(f"daily_loss_halt pnl={day_pnl:.0f}")
+    if week_pnl <= -policy.weekly_loss_pct * pool_rs:
+        halts.append(f"weekly_loss_halt pnl={week_pnl:.0f}")
+    if month_pnl <= -policy.monthly_loss_pct * pool_rs:
+        halts.append(f"monthly_loss_halt pnl={month_pnl:.0f}")
+    if view.equity_rs <= 0:
+        halts.append(f"drawdown_halt equity={view.equity_rs:.0f}")
+    elif view.equity_rs < pool_rs * (1.0 - policy.drawdown_pct):
+        halts.append(f"drawdown_halt equity={view.equity_rs:.0f}")
+    if (consecutive_losses >= policy.max_consecutive_losses and latest_loss_day is not None
+            and today_ist <= latest_loss_day + timedelta(days=1)):
+        halts.append(
+            f"consecutive_loss_pause streak={consecutive_losses} last={latest_loss_day}"
+        )
+    return SharedFnoEntryPolicyDecision(
+        allowed=not halts, reason="" if not halts else halts[0],
+        active_halts=tuple(halts), day_pnl_rs=day_pnl, week_pnl_rs=week_pnl,
+        month_pnl_rs=month_pnl, view=view,
+    )
+
+
+async def shared_fno_entry_policy(
+    db_path: str, *, source: str, pool_rs: float, today_ist: date,
+    policy: Optional[SharedFnoRiskPolicy] = None,
+) -> SharedFnoEntryPolicyDecision:
+    """Read the common F&O entry policy; malformed evidence denies entry."""
+    pool = _finite_non_negative(pool_rs)
+    active_policy = policy or policy_from_settings()
+    if pool is None or not isinstance(today_ist, date):
+        return _policy_unavailable(source, pool or 0.0, "invalid_policy_request")
+    try:
+        async with aiosqlite.connect(db_path) as db:
+            await db.execute("PRAGMA query_only=ON")
+            await db.execute("BEGIN")
+            decision = await _read_entry_policy(
+                db, source=source, pool_rs=pool, today_ist=today_ist,
+                policy=active_policy,
+            )
+            await db.rollback()
+            return decision
+    except Exception as exc:
+        return _policy_unavailable(
+            source, pool, f"shared_policy_db_error:{type(exc).__name__}",
+        )
+
+
 async def shared_fno_risk_view(
     db_path: str, source: str, pool_rs: float,
 ) -> SharedFnoRiskView:
@@ -208,6 +392,8 @@ async def reserve_shared_fno_risk(
     book: str,
     worst_case_cash_rs: float,
     created_at: Optional[datetime] = None,
+    entry_day_ist: Optional[date] = None,
+    policy: Optional[SharedFnoRiskPolicy] = None,
 ) -> SharedFnoAdmission:
     """Atomically reserve capacity for an entry, failing closed on ambiguity.
 
@@ -222,6 +408,7 @@ async def reserve_shared_fno_risk(
         view = _unavailable(source, pool or 0.0, "invalid_reservation_request")
         return SharedFnoAdmission(False, "invalid_reservation_request", view)
     stamp = (created_at or datetime.now(timezone.utc)).astimezone(timezone.utc).isoformat()
+    active_policy = policy or policy_from_settings()
     try:
         await init_shared_fno_risk_db(db_path)
         async with aiosqlite.connect(db_path) as db:
@@ -237,6 +424,14 @@ async def reserve_shared_fno_risk(
                 await db.rollback()
                 return SharedFnoAdmission(same and view.available,
                                           "already_reserved" if same else "reservation_key_conflict", view)
+            if entry_day_ist is not None:
+                decision = await _read_entry_policy(
+                    db, source=source, pool_rs=pool, today_ist=entry_day_ist,
+                    policy=active_policy,
+                )
+                if not decision.allowed:
+                    await db.rollback()
+                    return SharedFnoAdmission(False, decision.reason, decision.view)
             view = await _read_view(db, source, pool)
             available = view.available_worst_case_cash_rs
             if not view.available or available is None:
@@ -326,8 +521,9 @@ async def consume_shared_fno_risk_reservation_in_transaction(
 
 
 __all__ = [
-    "SharedFnoAdmission", "SharedFnoRiskView", "init_shared_fno_risk_db",
+    "SharedFnoAdmission", "SharedFnoEntryPolicyDecision", "SharedFnoRiskPolicy",
+    "SharedFnoRiskView", "init_shared_fno_risk_db", "policy_from_settings",
     "consume_shared_fno_risk_reservation_in_transaction",
     "reserve_shared_fno_risk", "resolve_shared_fno_risk_reservation",
-    "shared_fno_risk_view",
+    "shared_fno_entry_policy", "shared_fno_risk_view",
 ]

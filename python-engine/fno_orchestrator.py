@@ -49,7 +49,8 @@ from fno_risk import (
     kill_switch_status, lots_for_pool, min_viable_pool, validate_position,
 )
 from fno_shared_risk import (
-    reserve_shared_fno_risk, resolve_shared_fno_risk_reservation,
+    init_shared_fno_risk_db, policy_from_settings, reserve_shared_fno_risk,
+    resolve_shared_fno_risk_reservation, shared_fno_entry_policy,
 )
 from fno_signal_log import log_fno_signal
 
@@ -638,7 +639,25 @@ async def _try_entry_for_leg(
     open_prem = await fpos.open_premium_committed(db_path, source)
     n_open = len(await fpos.open_positions(db_path, source))
     n_today = await fpos.trades_today(db_path, source, today_iso)
-    switches = await kill_switch_status(db_path, source, pool, now_ist.date())
+    # F0-C makes the paper books share one ledger-bound entry-policy receipt.
+    # Initialise only the additive local evidence schemas; exits/management do
+    # not depend on this branch and remain available when an entry is halted.
+    shared_policy = None
+    if shared_pool_rs is not None and source == FnoSource.FNO_PAPER.value:
+        from performance import init_ledger
+        import fno_dr_book as _dr
+        await init_ledger(db_path)
+        await fpos.init_fno_positions_db(db_path)
+        await _dr.init_dr_db(db_path)
+        await init_shared_fno_risk_db(db_path)
+        shared_policy = policy_from_settings()
+        shared_decision = await shared_fno_entry_policy(
+            db_path, source=source, pool_rs=shared_pool_rs,
+            today_ist=now_ist.date(), policy=shared_policy,
+        )
+        switches = list(shared_decision.active_halts)
+    else:
+        switches = await kill_switch_status(db_path, source, pool, now_ist.date())
     if switches:
         # Rule 72: a halted leg is a WARNING, never an INFO.
         logger.warning("fno_kill_switch_active source=%s switches=%s", source, switches)
@@ -821,6 +840,8 @@ async def _try_entry_for_leg(
             db_path, source=source, pool_rs=shared_pool_rs,
             reservation_key=reservation_key, book="SINGLE_LEG",
             worst_case_cash_rs=worst_case_cash,
+            entry_day_ist=now_ist.date() if shared_policy is not None else None,
+            policy=shared_policy,
         )
         if not admission.allowed:
             await _log(False, admission.reason, **contract_fields, lots=lots,
@@ -1227,9 +1248,7 @@ async def run_fno_tick(
     stage_started = monotonic()
     if not settings.FNO_DISABLE_PAPER:
         paper_equity = await _fno_equity(db_path, FnoSource.FNO_PAPER.value)
-        if _fno_halted(paper_equity, _fno_pool_paper(), FnoSource.FNO_PAPER.value):
-            logger.info("fno_entry_skip source=FNO_PAPER reason=drawdown_halt")
-        elif await fpos.already_entered_bar(db_path, FnoSource.FNO_PAPER.value, sig.bar_ts):
+        if await fpos.already_entered_bar(db_path, FnoSource.FNO_PAPER.value, sig.bar_ts):
             logger.info("fno_entry_skip source=FNO_PAPER reason=bar_already_entered")
         else:
             try:
