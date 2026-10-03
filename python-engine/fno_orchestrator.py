@@ -49,7 +49,8 @@ from fno_risk import (
     kill_switch_status, lots_for_pool, min_viable_pool, validate_position,
 )
 from fno_shared_risk import (
-    DISPATCH_RELEASE_OUTCOMES, DISPATCH_RETAIN_OUTCOMES, claim_shared_fno_entry_dispatch,
+    DISPATCH_RELEASE_OUTCOMES, DISPATCH_RETAIN_OUTCOMES, EntryOccupancy,
+    claim_shared_fno_entry_dispatch,
     init_shared_fno_risk_db, policy_from_settings, reserve_shared_fno_risk,
     resolve_shared_fno_entry_dispatch, shared_fno_entry_policy,
 )
@@ -852,11 +853,21 @@ async def _try_entry_for_leg(
         # F0-R2: a reservation (even an identical retry's) is not authority
         # to dispatch. Exactly one claim per reservation is granted, after the
         # same entry policy is re-read; a now-halted retry never dispatches.
+        # F0-R5: the existing concurrency, trades/day, open-premium and
+        # no-pyramid limits are re-applied atomically here, counting in-flight
+        # claims, so concurrent admissions cannot each pass a stale pre-read.
         claim = await claim_shared_fno_entry_dispatch(
             db_path, reservation_key=reservation_key, source=source, book="SINGLE_LEG",
             pool_rs=shared_pool_rs,
             entry_day_ist=now_ist.date() if shared_policy is not None else None,
             policy=shared_policy,
+            occupancy=EntryOccupancy(
+                entry_day=now_ist.date(), max_open=int(settings.FNO_MAX_CONCURRENT),
+                tradingsymbol=contract.tradingsymbol, planned_premium_rs=ask * qty,
+                max_trades_per_day=int(settings.FNO_MAX_TRADES_PER_DAY),
+                max_open_premium_rs=float(settings.FNO_MAX_OPEN_PREMIUM_PCT) * pool,
+                no_pyramid=True,
+            ),
         )
         if not claim.granted:
             await _log(False, f"dispatch_claim_denied:{claim.reason}", **contract_fields,
@@ -864,6 +875,22 @@ async def _try_entry_for_leg(
             logger.warning("fno_entry_skip source=%s reason=dispatch_claim_denied:%s",
                            source, claim.reason)
             return None
+        # F0-R5: the claim was the last DB wait before dispatch; a live caller
+        # re-reads the real clock so a delay cannot carry a stale admission
+        # past the entry cutoff or quote/chain freshness.
+        if action_clock is not None:
+            late = post_admission_entry_reject(action_clock(), quote, snap)
+            if late:
+                await resolve_shared_fno_entry_dispatch(
+                    db_path, reservation_key=reservation_key, owner=claim.owner,
+                    outcome="no_dispatch",
+                    evidence={"dispatch_certainty": "NOT_SENT", "order_id": None,
+                              "reason": f"post_admission_{late}"},
+                )
+                await _log(False, f"post_admission_{late}", **contract_fields, lots=lots,
+                           max_loss_rupees=ml, **gate_audit_fields)
+                logger.warning("fno_entry_skip source=%s reason=post_admission_%s", source, late)
+                return None
     result = await executor.execute_entry(contract.tradingsymbol, qty, ask)
     if result["status"] not in ("paper", "filled"):
         status = result["status"]
@@ -946,6 +973,24 @@ async def _try_entry_for_leg(
         "lots": lots, "fill": fill, "delta": round(delta_val, 2),
         "iv": round(iv, 3), "source": source,
     }
+
+
+def post_admission_entry_reject(now_ist: datetime, quote, snap) -> Optional[str]:
+    """[F0-R5] Re-check the real clock after the admission DB waits.
+
+    Same thresholds as the entry gates (entry window, contract quote and chain
+    freshness); returns the first failing gate name, or ``None``.
+    """
+    now_min = _now_min(now_ist)
+    if not settings.FNO_ENTRY_START_MIN <= now_min < settings.FNO_ENTRY_END_MIN:
+        return "entry_window"
+    age = ((now_ist - quote.last_trade_time).total_seconds()
+           if quote.last_trade_time else float("inf"))
+    if age > settings.FNO_MAX_QUOTE_AGE_SEC:
+        return "quote_freshness"
+    if snap.age_sec(now_ist) > settings.FNO_MAX_CHAIN_AGE_SEC:
+        return "chain_freshness"
+    return None
 
 
 async def _insert_entry_position(inserter, db_path: str, reservation_key, fields: dict) -> int:

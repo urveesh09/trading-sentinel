@@ -1,5 +1,29 @@
 # Trading Sentinel — next-agent execution plan
 
+## October 3 — F0-R5 implemented in Dev; F0 R1–R5 source work complete
+
+[R5 slice and verification](2026-10-03-fno-f0-r5-occupancy-and-clocks.md).
+- **Occupancy at the claim.** The existing single-leg limits (concurrency,
+  trades/day, open-premium cap, no-pyramid) and "one DR structure at a time"
+  are enforced inside the claim transaction, counting in-flight claims.
+- **Clocks after the claim.** Live callers re-check the cutoff and quote/
+  chain freshness after the claim. A failure releases the entry auditably
+  without dispatch.
+- **Proof.** The review's DR race went from 2 open structures to 1.
+- **Tests.** 12 new; 865 regression passed, plus the known unrelated
+  mark-to-market failure.
+- **Harness note.** A pre-existing pytest-asyncio/`asyncio.run` socket
+  warning appears under `-W error`.
+
+Remaining after F0:
+1. Promote R1–R5 through GitHub.
+2. Run the R3 Production SQL check once the stack is back up.
+3. Observe paper claims and recoveries.
+4. F1 (owner cash-only semantics plus broker margin preflight).
+5. B2 CNC Connors adapter, then B0 and B3–B6.
+
+Dev only, not pushed or deployed.
+
 ## October 3 — F0-R4 implemented in Dev (broker payload binding)
 
 [R4 slice and verification](2026-10-03-fno-f0-r4-broker-payload-binding.md).

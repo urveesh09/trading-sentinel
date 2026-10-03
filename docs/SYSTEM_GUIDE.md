@@ -1,5 +1,23 @@
 # Trading Sentinel — system guide and engineering handover
 
+## October 3 — F0-R5 occupancy in the claim and post-admission clocks (Dev only)
+
+`claim_shared_fno_entry_dispatch(..., occupancy=EntryOccupancy(...))`
+re-applies each book's existing occupancy limits inside its transaction,
+counting positions plus in-flight `DISPATCHING`/`UNRESOLVED` claims
+([R5](2026-10-03-fno-f0-r5-occupancy-and-clocks.md)):
+- single-leg: `FNO_MAX_CONCURRENT`, `FNO_MAX_TRADES_PER_DAY`,
+  `FNO_MAX_OPEN_PREMIUM_PCT × pool`, and no-pyramid on the contract;
+- defined-risk: one structure.
+
+A refusal releases the never-sent reservation
+(`occupancy_denied_before_dispatch:<reason>`).
+
+After the claim, live callers re-read the real clock:
+`post_admission_entry_reject` (directional) and `dr_post_admission_reject`
+(DR) re-check the entry window plus quote and chain freshness. A late entry
+is resolved as `no_dispatch` and is never sent. Exits are untouched.
+
 ## October 3 — F0-R4 broker payload and entry/cost binding (Dev only)
 
 `fno_exit_evidence.py` holds the one pure interpretation of a broker exit

@@ -1,5 +1,12 @@
 # Backtesting Sentinel's shipped modules and F&O safety — October 3
 
+## F0 status override (later October 3)
+
+The F0 independent-review items R1–R5 are implemented in Dev (see
+[R5](2026-10-03-fno-f0-r5-occupancy-and-clocks.md) and its predecessors). F0 is source-complete pending GitHub
+promotion and paper observation. F1, F2, B0, the CNC half of B2, and B3–B6
+remain open.
+
 ## B1/B2 implementation override (later October 3)
 
 B1 (bar data contracts) and the classic Penny MIS half of B2 (exact

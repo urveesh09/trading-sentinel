@@ -49,7 +49,15 @@ async def _partial(db_path, *, qty=150, filled=75, order_id="EXIT01", trade_id="
     if pid is None:
         pid = await _insert_open_position(db_path, source="FNO_LIVE", qty=qty,
                                           max_loss_rupees=100.0 * qty)
-    assert await claim_exit_intent(db_path, pid, "FNO_LIVE")
+    # A new exit evaluation must start strictly after the latest recovery; on
+    # Windows the coarse clock can otherwise stamp both at the same instant.
+    async with aiosqlite.connect(db_path) as db:
+        latest = (await (await db.execute(
+            "SELECT MAX(resolved_at) FROM fno_exit_recoveries WHERE position_id=?", (pid,))).fetchone())[0]
+    evaluation = datetime.now(timezone.utc)
+    if latest is not None:
+        evaluation = max(evaluation, datetime.fromisoformat(latest) + timedelta(milliseconds=1))
+    assert await claim_exit_intent(db_path, pid, "FNO_LIVE", evaluation_started_at=evaluation)
     created = [i for i in await pending_exit_intents(db_path) if i["position_id"] == pid][0]["created_at"]
     kite = _broker(qty=await _qty(db_path, pid), filled=filled, order_id=order_id, trade_id=trade_id)
     await resolve(db_path, kite, pid, created, order_id=order_id)

@@ -53,6 +53,11 @@ F0-R4 re-derives every open partial's receipt from its retained broker
 packet with the same function the live verifier uses (never calling the
 broker), binds it to the position's immutable entry premium and symbol, and
 re-computes its charges from the frozen cost snapshot stored with it.
+
+F0-R5 applies the books' existing occupancy limits (single-leg concurrency,
+trades/day, open-premium cap and no-pyramid; one DR structure at a time)
+inside the claim transaction, counting positions *and* in-flight claims, so
+concurrent admissions can no longer each pass a stale pre-read.
 Positive manual cash is never entry capacity; negative manual cash reduces
 equity. Unknown event types fail closed.
 """
@@ -101,9 +106,16 @@ CREATE TABLE IF NOT EXISTS fno_entry_dispatches (
     evidence_sha256 TEXT,
     operator TEXT,
     position_ref TEXT,
-    resolved_at TEXT
+    resolved_at TEXT,
+    tradingsymbol TEXT,
+    planned_premium_rs REAL,
+    entry_day TEXT
 )
 """
+
+# [F0-R5] Occupancy facts recorded by claims made before R5 added them.
+_DISPATCH_R5_COLUMNS = (("tradingsymbol", "TEXT"), ("planned_premium_rs", "REAL"),
+                        ("entry_day", "TEXT"))
 
 # Terminal claims are evidence; a claim can never return to DISPATCHING or
 # change identity, and no claim row may be deleted.
@@ -117,6 +129,9 @@ FOR EACH ROW WHEN
     OR NEW.reservation_key IS NOT OLD.reservation_key
     OR NEW.source IS NOT OLD.source
     OR NEW.book IS NOT OLD.book
+    OR NEW.tradingsymbol IS NOT OLD.tradingsymbol
+    OR NEW.planned_premium_rs IS NOT OLD.planned_premium_rs
+    OR NEW.entry_day IS NOT OLD.entry_day
 BEGIN
     SELECT RAISE(ABORT, 'fno entry dispatch evidence is immutable');
 END
@@ -225,6 +240,25 @@ class SharedFnoAdmission:
 
 
 @dataclass(frozen=True)
+class EntryOccupancy:
+    """The book's *existing* occupancy limits, re-applied inside the claim.
+
+    Single-leg: ``max_open`` (FNO_MAX_CONCURRENT), ``max_trades_per_day``,
+    ``max_open_premium_rs`` (FNO_MAX_OPEN_PREMIUM_PCT x pool) and
+    ``no_pyramid`` for ``tradingsymbol``. Defined-risk: ``max_open`` (one
+    structure at a time). ``None`` limits are not applied.
+    """
+
+    entry_day: date
+    max_open: int
+    tradingsymbol: Optional[str] = None
+    planned_premium_rs: float = 0.0
+    max_trades_per_day: Optional[int] = None
+    max_open_premium_rs: Optional[float] = None
+    no_pyramid: bool = False
+
+
+@dataclass(frozen=True)
 class SharedFnoDispatchClaim:
     """The one-time right to dispatch the entry bound to a reservation."""
 
@@ -268,6 +302,11 @@ async def init_shared_fno_risk_db(db_path: str) -> None:
     async with aiosqlite.connect(db_path) as db:
         await db.execute(_RESERVATION_DDL)
         await db.execute(_DISPATCH_DDL)
+        columns = {row[1] for row in await (await db.execute(
+            "PRAGMA table_info(fno_entry_dispatches)")).fetchall()}
+        for column, datatype in _DISPATCH_R5_COLUMNS:
+            if column not in columns:
+                await db.execute(f"ALTER TABLE fno_entry_dispatches ADD COLUMN {column} {datatype}")
         await db.execute(_DISPATCH_UPDATE_GUARD_DDL)
         await db.execute(_DISPATCH_NO_DELETE_DDL)
         await db.commit()
@@ -1077,6 +1116,57 @@ def _reconcile_evidence_ok(outcome: str, evidence: object) -> bool:
     return False
 
 
+async def _occupancy_denial(
+    db: aiosqlite.Connection, *, source: str, book: str, reservation_key: str,
+    occupancy: EntryOccupancy,
+) -> str:
+    """First existing-limit violation, counting positions plus in-flight claims."""
+    inflight = await (await db.execute(
+        "SELECT tradingsymbol, planned_premium_rs, entry_day FROM fno_entry_dispatches "
+        "WHERE source=? AND book=? AND state IN ('DISPATCHING', 'UNRESOLVED') "
+        "AND reservation_key<>?", (source, book, reservation_key),
+    )).fetchall()
+    if book == "DEFINED_RISK":
+        open_rows = (await (await db.execute(
+            "SELECT COUNT(*) FROM fno_dr_positions WHERE source=? AND status IN ('OPEN','UNRESOLVED')",
+            (source,))).fetchone())[0]
+        if open_rows + len(inflight) >= occupancy.max_open:
+            return "dr_structure_occupied"
+        return ""
+    positions = await (await db.execute(
+        "SELECT tradingsymbol, entry_premium, qty FROM fno_positions "
+        "WHERE source=? AND status='OPEN'", (source,),
+    )).fetchall()
+    if len(positions) + len(inflight) >= occupancy.max_open:
+        return "concurrency"
+    if occupancy.no_pyramid and occupancy.tradingsymbol and (
+            any(row[0] == occupancy.tradingsymbol for row in positions)
+            or any(row[0] == occupancy.tradingsymbol for row in inflight)):
+        return "already_holding_this_contract"
+    if occupancy.max_trades_per_day is not None:
+        day = occupancy.entry_day.isoformat()
+        entered = (await (await db.execute(
+            "SELECT COUNT(*) FROM fno_positions WHERE source=? AND entry_date=?",
+            (source, day))).fetchone())[0]
+        if entered + sum(1 for row in inflight if row[2] == day) >= occupancy.max_trades_per_day:
+            return "trades_per_day"
+    if occupancy.max_open_premium_rs is not None:
+        committed = 0.0
+        for _symbol, entry, qty in positions:
+            value = _finite_non_negative(entry)
+            if value is None or type(qty) is not int:
+                return "open_premium_unknown"
+            committed += value * qty
+        for _symbol, planned, _day in inflight:
+            value = _finite_non_negative(planned)
+            if value is None:
+                return "inflight_premium_unknown"
+            committed += value
+        if committed + occupancy.planned_premium_rs > occupancy.max_open_premium_rs + 1e-9:
+            return "open_premium_cap"
+    return ""
+
+
 async def claim_shared_fno_entry_dispatch(
     db_path: str,
     *,
@@ -1088,6 +1178,7 @@ async def claim_shared_fno_entry_dispatch(
     policy: Optional[SharedFnoRiskPolicy] = None,
     claimed_at: Optional[datetime] = None,
     observed_at: Optional[datetime] = None,
+    occupancy: Optional[EntryOccupancy] = None,
 ) -> SharedFnoDispatchClaim:
     """Grant the single right to dispatch a reserved entry, or refuse.
 
@@ -1149,11 +1240,29 @@ async def claim_shared_fno_entry_dispatch(
                 if not view.available:
                     await db.rollback()
                     return SharedFnoDispatchClaim(False, view.reason or "risk_view_unavailable", None, view)
+            if occupancy is not None:
+                denial = await _occupancy_denial(
+                    db, source=source, book=book, reservation_key=reservation_key,
+                    occupancy=occupancy,
+                )
+                if denial:
+                    # Nothing was dispatched: release the reservation auditably.
+                    await db.execute(
+                        "UPDATE fno_risk_reservations SET state='RELEASED', resolved_at=?, "
+                        "resolution_reason=? WHERE reservation_key=? AND state='RESERVED'",
+                        (stamp, f"occupancy_denied_before_dispatch:{denial}", reservation_key),
+                    )
+                    await db.commit()
+                    return SharedFnoDispatchClaim(False, denial, None, view)
             owner = uuid4().hex
             await db.execute(
                 "INSERT INTO fno_entry_dispatches "
-                "(reservation_key,source,book,owner,state,claimed_at) VALUES (?,?,?,?,'DISPATCHING',?)",
-                (reservation_key, source, book, owner, stamp),
+                "(reservation_key,source,book,owner,state,claimed_at,tradingsymbol,"
+                "planned_premium_rs,entry_day) VALUES (?,?,?,?,'DISPATCHING',?,?,?,?)",
+                (reservation_key, source, book, owner, stamp,
+                 occupancy.tradingsymbol if occupancy else None,
+                 float(occupancy.planned_premium_rs) if occupancy else None,
+                 occupancy.entry_day.isoformat() if occupancy else None),
             )
             await db.commit()
             return SharedFnoDispatchClaim(True, "claimed", owner, view)
@@ -1272,7 +1381,7 @@ async def reconcile_shared_fno_entry_dispatch(
 
 
 __all__ = [
-    "SharedFnoAdmission", "SharedFnoDispatchClaim", "SharedFnoEntryPolicyDecision",
+    "EntryOccupancy", "SharedFnoAdmission", "SharedFnoDispatchClaim", "SharedFnoEntryPolicyDecision",
     "SharedFnoRiskPolicy", "SharedFnoRiskView", "init_shared_fno_risk_db", "policy_from_settings",
     "DISPATCH_RELEASE_OUTCOMES", "DISPATCH_RETAIN_OUTCOMES", "RECONCILE_OUTCOMES",
     "claim_shared_fno_entry_dispatch", "dispatch_release_evidence_ok",

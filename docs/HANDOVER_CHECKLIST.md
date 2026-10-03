@@ -36,7 +36,8 @@
   ([R3 slice](2026-10-03-fno-f0-r3-cash-clock-completion.md); 20 tests). Run its Production pre-deployment SQL check first.
 - [x] F0-R4: broker payload contents and immutable entry/cost evidence binding
   ([R4 slice](2026-10-03-fno-f0-r4-broker-payload-binding.md); 18 tests).
-- [ ] F0-R5: transactional existing caps and post-admission-wait action clocks.
+- [x] F0-R5: transactional existing caps and post-admission-wait action clocks
+  ([R5 slice](2026-10-03-fno-f0-r5-occupancy-and-clocks.md); 12 tests; DR race 2 -> 1 structure).
 - [ ] GitHub promotion and actual paper/recovery observation; Production
   remains `044c016` and has no shared-risk module at inspection.
 

@@ -1,5 +1,11 @@
 # Independent F0 review and correction plan — October 3, 2026 (IST)
 
+## R5 status update (later October 3) — R1–R5 implemented in Dev
+
+R5 is implemented in Dev; see [the R5 slice](2026-10-03-fno-f0-r5-occupancy-and-clocks.md). All five review items
+now have Dev implementations with tests and defect reproductions. Still
+open: GitHub promotion, Production verification and observation, and F1.
+
 ## R4 status update (later October 3)
 
 R4 is implemented in Dev; see [the R4 slice](2026-10-03-fno-f0-r4-broker-payload-binding.md). R1–R4 are done; R5

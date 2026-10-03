@@ -764,6 +764,23 @@ async def manage_dr_structures(
     return closed
 
 
+def dr_post_admission_reject(now_ist: datetime, snap: ChainSnapshot, planned) -> Optional[str]:
+    """[F0-R5] Entry window plus chain and every leg's quote freshness, re-read
+    after the admission DB waits. Returns the failing check, or ``None``."""
+    nm = now_ist.hour * 60 + now_ist.minute
+    if not (_entry_lo_min() <= nm <= _entry_hi_min()):
+        return "entry_window"
+    if not 0 <= snap.age_sec(now_ist) <= settings.FNO_MAX_CHAIN_AGE_SEC:
+        return "chain_freshness"
+    for leg in planned.structure.legs:
+        quote = snap.quote(leg.strike, leg.opt_type)
+        if (quote is None or quote.last_trade_time is None
+                or not 0 <= (now_ist - quote.last_trade_time).total_seconds()
+                <= settings.FNO_MAX_QUOTE_AGE_SEC):
+            return "quote_freshness"
+    return None
+
+
 async def maybe_open_dr_structure(
     db_path: str,
     snap: ChainSnapshot,
@@ -807,7 +824,8 @@ async def maybe_open_dr_structure(
         # directional book.  Initialise only durable local schemas; no quote,
         # order, message or exit path is touched here.
         from fno_shared_risk import (
-            claim_shared_fno_entry_dispatch, init_shared_fno_risk_db, policy_from_settings,
+            EntryOccupancy, claim_shared_fno_entry_dispatch, init_shared_fno_risk_db,
+            policy_from_settings,
             reserve_shared_fno_risk, resolve_shared_fno_entry_dispatch, shared_fno_entry_policy,
         )
         from fno_positions import init_fno_positions_db
@@ -838,14 +856,29 @@ async def maybe_open_dr_structure(
             logger.warning("fno_dr_entry_skipped reason=%s", admission.reason)
             return None
         # F0-R2: one claim per reservation, after re-reading the entry policy.
+        # F0-R5: "one structure at a time" is enforced inside the claim
+        # transaction, counting in-flight claims; the earlier open_structures()
+        # read is only a cheap early filter.
         claim = await claim_shared_fno_entry_dispatch(
             db_path, reservation_key=reservation_key, source=source, book="DEFINED_RISK",
             pool_rs=float(settings.FNO_PAPER_BANKROLL), entry_day_ist=now_ist.date(),
             policy=shared_policy,
+            occupancy=EntryOccupancy(entry_day=now_ist.date(), max_open=1),
         )
         if not claim.granted:
             logger.warning("fno_dr_entry_skipped reason=dispatch_claim_denied:%s", claim.reason)
             return None
+        if action_clock is not None:
+            late = dr_post_admission_reject(action_clock(), snap, planned)
+            if late:
+                await resolve_shared_fno_entry_dispatch(
+                    db_path, reservation_key=reservation_key, owner=claim.owner,
+                    outcome="no_dispatch",
+                    evidence={"dispatch_certainty": "NOT_SENT", "order_id": None,
+                              "reason": f"post_admission_{late}"},
+                )
+                logger.warning("fno_dr_entry_skipped reason=post_admission_%s", late)
+                return None
         try:
             row_id = await insert_structure(
                 db_path, source, planned, now_ist, reservation_key=reservation_key,
