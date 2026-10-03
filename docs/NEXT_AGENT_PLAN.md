@@ -30,8 +30,8 @@ broker, runtime scheduling or Production file changed. Focused verification:
 
 **Rollout/rollback/remaining work.** Offline Dev tests only; archive manifests
 through the existing CLI. Rollback removes only the new research adapters and
-does not alter archived runs. Next: B4 Momentum/Range scope, then B6 held-out
-reporting, then owner review of the separately listed live cross-book allocation
+does not alter archived runs. Next: B6 held-out reporting, then owner review of
+the separately listed live cross-book allocation
 decisions. GitHub push/promotion and Production read-only checks remain pending.
 
 ## October 3 — B4 complete: Momentum and Range shipped-policy replays (Dev only)

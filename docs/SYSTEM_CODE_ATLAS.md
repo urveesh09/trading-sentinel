@@ -110,7 +110,7 @@ Related tests: `python-engine/tests/test_backtest.py`, `python-engine/tests/test
 
 [B0 2026-10-03] Honest catalogue of shipped strategies and their backtests. Every shipped strategy appears once with the fidelity of the backtest that exists for it today. ``validate_catalogue`` keeps this list and the Backtest Lab registry in agreement, so an adapter cannot be added (or removed) without the catalogue saying what it really replays.
 
-Top-level declarations: `catalogue` (line 57), `validate_catalogue` (line 72), `family_prefixes` (line 97)
+Top-level declarations: `catalogue` (line 58), `validate_catalogue` (line 73), `family_prefixes` (line 98)
 
 Engine dependencies: `backtest_lab`
 

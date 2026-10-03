@@ -13,6 +13,8 @@
   or deployment occurred.
 - [x] B4: Momentum baseline is `MOM_BASE`; Range has an independent
   completed-bar evaluator (70 focused tests, one existing httpx deprecation).
+- [x] B4 source commit `3e03916` is Dev-only; no configuration, migration,
+  push or deployment occurred. Catalogue consistency was verified after commit.
 - [ ] B6 standard reports and untouched-holdout guard.
 - [ ] Real-data/Production read-only checks only after Production is restored;
   GitHub promotion remains owner-controlled.

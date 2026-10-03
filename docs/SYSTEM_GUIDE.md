@@ -10,7 +10,8 @@ evidence is not archived. `range_reversion_daily_evaluator` separately calls
 the shipped `range_reversion_entry` on each completed validated daily bar and
 records verdicts only, never invented P&L or orders. Focused B4 verification:
 70 passed, one existing httpx deprecation warning. Dev only, not pushed or
-deployed. See [B4 slice](2026-10-03-b4-momentum-range-evaluator.md).
+deployed. Source commit `3e03916`; no configuration or migration impact. See
+[B4 slice](2026-10-03-b4-momentum-range-evaluator.md).
 
 ## October 3 — B3 shipped Swing/EDGE daily evaluator replay (Dev only)
 
