@@ -1,5 +1,25 @@
 # Trading Sentinel — system guide and engineering handover
 
+## October 3 — F0 shared F&O risk foundation (Dev, not yet an admission change)
+
+`fno_shared_risk.py` is an additive, source-scoped F&O evidence layer. It reads
+one consistent view of exact source ledger settlement cash plus both books'
+`OPEN`/`UNRESOLVED` structural losses and in-flight reservations. Missing
+schemas, malformed/non-finite values and unpriced exposure are unavailable,
+never capital. Its `BEGIN IMMEDIATE` reservation is idempotent only for the
+same still-reserved request; resolution is one-way and needs a position or
+failure receipt, so interrupted entries are never released by a timer. Focused
+F0 tests: 4 new + 45 existing F&O risk/isolation checks passed warnings-fatal.
+The broader F&O orchestrator/recovery selection passed 52 assertions without
+warnings-as-errors but retains an existing Starlette lifespan deprecation; a
+warnings-fatal combined run also surfaced the documented Windows socket warning.
+
+No caller yet relies on this layer: it does not change single-leg/DR entries,
+exits, capital allocation, settings, Production schema, broker use or trading
+authority. The next F0 slice must atomically bind a reservation to each paper
+admission and make shared fee-inclusive catastrophe/loss controls authoritative
+across both books. Dev only; pending commit/push.
+
 ## October 3 — baseline research is not full portfolio backtesting
 
 `scripts/run_penny_research.py` reuses Lab `penny_breakout_intraday_1m_replay`,

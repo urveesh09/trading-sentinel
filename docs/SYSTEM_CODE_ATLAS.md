@@ -672,6 +672,16 @@ Related tests: `python-engine/tests/test_fno_shadow.py`
 
 Declared tables: `fno_shadow_evaluations`
 
+## `python-engine/fno_shared_risk.py`
+
+Shared, fail-closed F&O paper-risk evidence and reservations. This module is intentionally the only place that may combine the directional ``fno_positions`` and defined-risk ``fno_dr_positions`` books for an F&O admission decision. The books retain their own lifecycle/settlement writers; this module does not invent a fill, close a position, or release exposure on a timer. In particular, an ``UNRESOLVED`` structure and an interrupted entry reservation remain unavailable capital until an explicit, durable resolution. The first F0 slice exposes a typed snapshot and an atomic reservation primitive without changing an existing entry path. Wiring either book to reserve and consume an admission is
+
+Top-level declarations: `SharedFnoRiskView` (line 41), `SharedFnoAdmission` (line 64), `_finite_non_negative` (line 72), `_unavailable` (line 80), `init_shared_fno_risk_db` (line 97), `_table_exists` (line 108), `_read_view` (line 115), `shared_fno_risk_view` (line 179), `reserve_shared_fno_risk` (line 202), `resolve_shared_fno_risk_reservation` (line 265)
+
+Related tests: `python-engine/tests/test_fno_shared_risk.py`
+
+Declared tables: `fno_risk_reservations`
+
 ## `python-engine/fno_signal_log.py`
 
 [FNO-LOG 2026-07-10] Append-only signal log for the F&O subsystem (spec §9.2). Every evaluation -- accepted or rejected, including "engine said no signal" ticks where a bar was actually evaluated -- writes one row to: 1. CSV at settings.FNO_SIGNAL_LOG_PATH (default /data/fno_signals.csv) 2. SQLite table `fno_signals` in settings.DB_PATH Ops rule 75: the CSV, not docker logs, is the ground truth for "is it really doing nothing?". The zero-accept watchdog reads the SQLite table. Schema is a stable contract -- never rename columns, only add. Best-effort writes: failures here must NOT crash the scan tick.

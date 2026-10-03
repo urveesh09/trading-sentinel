@@ -159,6 +159,32 @@ Never turn on live spreads. Rollback reverts the admission policy code only,
 preserving cash/reservation evidence; emergency entry disable is separate from
 exit authority. This slice is **planned, not implemented** in the current turn.
 
+**October 3 F0-A — shared evidence/reservation foundation (Dev only).**
+`fno_shared_risk.py` now supplies a source-scoped, fail-closed read model over
+the exact `TRADE_CLOSED` ledger cash, `OPEN`/`UNRESOLVED` single-leg losses,
+`OPEN`/`UNRESOLVED` defined-risk losses and durable in-flight reservations.
+It rejects missing tables, non-finite cash and missing worst-case values rather
+than treating them as free capital. Its reservation operation takes a SQLite
+immediate transaction, is idempotent only for the exact still-reserved key, and
+has one-way consumed/released receipts; nothing is auto-expired. Focused
+characterization includes cross-book loss, unresolved exposure, malformed
+evidence, source isolation, capacity exhaustion and one-way resolution.
+Verification: `python-engine/winvenv/Scripts/python.exe -W error -m pytest
+python-engine/tests/test_fno_shared_risk.py python-engine/tests/test_fno_risk_switches.py
+python-engine/tests/test_fno_max_loss.py python-engine/tests/test_fno_isolation.py -q`
+reported **49 passed**. The unchanged broader lifecycle selection reported
+**52 passed** without warnings-as-errors; its warnings-fatal version reached
+99 assertions before two known Windows/FastAPI socket-lifespan warnings were
+escalated, so it is not claimed warnings-clean.
+
+This is deliberately **not yet an entry-policy change**: neither existing
+single-leg nor DR admission has been wired to reserve/consume in the same
+transaction as its position insert, and existing exit authority is untouched.
+The next F0 slice must do that end-to-end, bind actual fee-inclusive catastrophe
+cash, make shared day/week/month/drawdown decisions authoritative for both
+books, and add restart/partial-settlement race coverage. No Production schema,
+configuration, broker, order or message action occurred.
+
 #### F1 — cash-only funding and catastrophe acceptance
 
 Before real allocation, pin operator-approved funding semantics. Introduce a

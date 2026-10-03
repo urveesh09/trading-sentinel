@@ -7,7 +7,10 @@
   earlier unavailable samples preserved; no strategy profitability claim.
 - [x] Inert offline CLI and research-only SQLite reader closure; 4 CLI + 11
   replay warnings-fatal; combined 82 passed with one HTTPX deprecation warning.
-- [ ] F0 shared F&O equity/reservation/drawdown/partial+spread loss admission.
+- [x] F0-A Dev foundation: fail-closed cross-book cash/exposure view and
+  transactional one-way reservations; 49 focused F&O checks warnings-fatal.
+- [ ] F0-B bind reservations atomically to both paper admissions, then make
+  shared fee-inclusive loss/drawdown/partial-spread controls authoritative.
 - [ ] F1 owner cash-only funding semantics, broker initial/final margin and
   catastrophe acceptance before live allocation; no live spread authorisation.
 - [ ] B1/B2 interval/zero-volume/session data contracts and full classic Penny

@@ -4,12 +4,17 @@
 
 Start with [the successor inheritance](2026-10-03-successor-inheritance.md) and
 [F&O safety / B0–B6 backtest plan](2026-10-03-backtesting-and-fno-safety-plan.md).
-**F0 is newly identified source work:** paper spread admissions do not share
-single-leg loss/drawdown/reservation gates; single-leg kill-switch queries omit
-spread/partial cash. Implement unified capital/loss admissions before increasing
-exposure. F1 verifies cash-only broker margin/legging safety; no live spread
-authority is implied. Recent positive F&O results do not prove improvement was
-caused at September 17 (that is also a cash-key sample boundary).
+**F0-A foundation is now in Dev:** `fno_shared_risk.py` provides a fail-closed,
+source-scoped view of exact settlement cash plus single-leg/defined-risk
+OPEN/UNRESOLVED losses and durable reservations. Its transactionally inserted
+reservations cannot expire automatically and one-way resolution needs a receipt.
+No entry caller uses it yet, so this has not changed paper trading. Next, bind
+each paper entry's fee-inclusive worst-case cash reservation and position insert
+atomically; make shared loss/drawdown decisions apply to both books, then add
+partial-settlement/restart/race characterization. F1 verifies cash-only broker
+margin/legging safety; no live spread authority is implied. Recent positive F&O
+results do not prove improvement was caused at September 17 (that is also a
+cash-key sample boundary).
 
 Completed: existing Penny minute baseline via new inert Dev CLI; two unavailable
 samples retained, valid two-stock August 11–20 diagnostic has 5,774 evaluations
