@@ -12,7 +12,8 @@
   source commit `7b86d85` (Dev, pushed; Production untouched).
 - [x] F0-B paper admission binding: both books reserve fee-inclusive worst-case
   cash, then atomically consume their receipt with the position insert; exits
-  remain allowed. Shared loss/drawdown and partial-settlement work remains.
+  remain allowed. Source commit `0ba2d29` (Dev; pending push). Shared
+  loss/drawdown and partial-settlement work remains.
 - [ ] F0-C shared day/week/month/drawdown decisions and partial-spread
   settlement handling; add restart/race characterization before promotion.
 - [ ] F1 owner cash-only funding semantics, broker initial/final margin and

@@ -14,7 +14,7 @@ preventing cross-book double spending. Next, make shared loss/drawdown decisions
 apply to both books, then add partial-settlement/restart/race characterization. F1 verifies cash-only broker
 margin/legging safety; no live spread authority is implied. Recent positive F&O
 results do not prove improvement was caused at September 17 (that is also a
-cash-key sample boundary). F0-B is Dev-only and pending commit/push.
+cash-key sample boundary). F0-B source commit: `0ba2d29` (Dev; pending push).
 
 Completed: existing Penny minute baseline via new inert Dev CLI; two unavailable
 samples retained, valid two-stock August 11–20 diagnostic has 5,774 evaluations

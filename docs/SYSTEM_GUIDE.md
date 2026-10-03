@@ -20,7 +20,7 @@ position row. This preserves feasible paper trades while stopping the two books
 from consuming the same capacity. Executor rejection releases a reservation;
 an uncertain post-fill receipt retains it. Exits remain allowed. Shared
 day/week/month/drawdown enforcement and partial-settlement release are still
-open. This is Dev-only pending commit/push; no Production configuration,
+open. Source commit `0ba2d29` is Dev-only pending push; no Production configuration,
 database, broker, order or authority change.
 
 ## October 3 — baseline research is not full portfolio backtesting
