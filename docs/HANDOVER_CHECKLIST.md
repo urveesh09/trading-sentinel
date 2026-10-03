@@ -9,6 +9,8 @@
 - [x] Fixed the shared RSI-history out-of-bounds defect found by B3 binding.
 - [x] Focused B3/engine tests passed (149); one existing httpx deprecation
   warning remains.
+- [x] Source commit `e349b0b` is Dev-only; no configuration, migration, push
+  or deployment occurred.
 - [ ] B4 Momentum and Range scope/lifecycle work.
 - [ ] B6 standard reports and untouched-holdout guard.
 - [ ] Real-data/Production read-only checks only after Production is restored;

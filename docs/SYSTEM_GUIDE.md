@@ -17,7 +17,8 @@ use the matching close-to-close delta (`i - 1`) rather than indexing one past
 the gain/loss arrays. That removes a live scanner `IndexError` once sufficient
 RSI history exists; it does not change policy thresholds or sizing. B3 tests:
 149 passed; one existing httpx deprecation warning. Dev only, not pushed or
-deployed. See [B3 slice](2026-10-03-b3-swing-edge-daily-evaluator.md).
+deployed. Source commit `e349b0b`; no configuration or migration impact. See
+[B3 slice](2026-10-03-b3-swing-edge-daily-evaluator.md).
 
 ## October 3 — B2 CNC Connors lifecycle replay (Dev only)
 
