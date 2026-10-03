@@ -52,7 +52,7 @@ still lists R1–R5; this slice changed no F&O code.
   - Point-in-time universe and regime before any `FULL_PORTFOLIO` claim.
   - The F0 R1–R5 items and F1 remain open.
 
-Dev only, not pushed, not deployed; Production is unchanged at `044c016`.
+Dev only: implementation commit `9a18445`, local, not pushed or deployed; Production is unchanged at `044c016`.
 
 ## October 3 — independent F0 review: acceptance reopened
 

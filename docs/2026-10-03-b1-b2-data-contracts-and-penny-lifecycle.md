@@ -391,3 +391,19 @@ the HTTPX `app` shortcut warning, one occurrence. No assertion failed.
   - minute capture through 15:00;
   - whether to replay future sessions prospectively as a frozen holdout.
 - Independently, the F&O F0 R1–R5 review items and F1.
+
+### Commit receipt
+
+- **Implementation commit.** `9a18445` (`feat(research): add B1 bar data
+  contracts and exact Penny MIS lifecycle replay`) on
+  `codex/production-correction-hedge-p0`. It is Dev-local only: not pushed
+  and not deployed. Production is unchanged at `044c016`.
+- **Post-commit check.**
+  - The working tree was clean.
+  - Regenerating the atlas (231 modules) produced no diff.
+  - All five handover/plan documents link to this slice.
+  - Re-running the B1 + B2 + CLI tests from the committed tree gave 57
+    passed, warnings-fatal.
+- **No migrations.** The change needs no configuration or schema
+  migration: its only additions are new offline modules, an additive Lab
+  metadata field and registry entry, and a CLI option.
