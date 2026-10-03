@@ -104,13 +104,31 @@ Top-level declarations: `_simulate_trade` (line 29), `_compute_stats` (line 123)
 
 Engine dependencies: `config`, `engine`, `models`, `regime`
 
-Related tests: `python-engine/tests/test_backtest.py`, `python-engine/tests/test_backtest_gap_fills.py`, `python-engine/tests/test_backtest_lab.py`
+Related tests: `python-engine/tests/test_backtest.py`, `python-engine/tests/test_backtest_cli.py`, `python-engine/tests/test_backtest_gap_fills.py`, `python-engine/tests/test_backtest_lab.py`
+
+## `python-engine/backtest_catalogue.py`
+
+[B0 2026-10-03] Honest catalogue of shipped strategies and their backtests. Every shipped strategy appears once with the fidelity of the backtest that exists for it today. ``validate_catalogue`` keeps this list and the Backtest Lab registry in agreement, so an adapter cannot be added (or removed) without the catalogue saying what it really replays.
+
+Top-level declarations: `catalogue` (line 53), `validate_catalogue` (line 68), `family_prefixes` (line 93)
+
+Engine dependencies: `backtest_lab`
+
+## `python-engine/backtest_cli.py`
+
+[B0 2026-10-03] One offline entry point for shipped-strategy backtests. python backtest_cli.py catalogue python backtest_cli.py snapshot --db PATH | --container NAME --from D --to D --tickers A,B --out NEW.sqlite python backtest_cli.py coverage --snapshot S --strategy ID python backtest_cli.py run --snapshot S --strategy ID --from D --to D [--config JSON] --out NEW.json python backtest_cli.py compare A.json B.json python backtest_cli.py report R.json Only registered Backtest Lab adapters can run (no arbitrary code or callbacks); only their documented default assumptions are accepted. Every run binds the code release, a secret-free settings hash and the frozen snapshot hash. Nothing here call
+
+Top-level declarations: `CliError` (line 43), `_new_file` (line 47), `_rows_sha256` (line 55), `write_snapshot` (line 69), `snapshot` (line 90), `verify_snapshot` (line 108), `_git` (line 125), `policy_manifest` (line 133), `_adapter` (line 156), `run` (line 163), `coverage` (line 201), `_load_report` (line 221), `compare` (line 228), `report` (line 248), `main` (line 257)
+
+Engine dependencies: `backtest_catalogue`, `backtest_lab`, `config`, `research_data_contracts`
+
+Related tests: `python-engine/tests/test_backtest_cli.py`
 
 ## `python-engine/backtest_lab.py`
 
 Research-only backtest registry, adapters, and immutable run archive. This module has deliberately no broker client or order-execution imports. A BacktestAdapter receives a frozen dataset snapshot and returns research data; future strategies join the lab by implementing the same contract and adding one explicit registry entry.
 
-Top-level declarations: `_utc_now` (line 36), `_json_default` (line 40), `_finite_json_value` (line 54), `_json` (line 78), `_decode` (line 85), `StrategyMetadata` (line 95), `BacktestRequest` (line 117), `PreparedDataset` (line 126), `BacktestUnavailable` (line 133), `BacktestAdapter` (line 137), `_fingerprint_rows` (line 175), `_daily_rows` (line 181), `SwingDailyAdapter` (line 213), `PennyDailyProxyAdapter` (line 293), `PennyWalkForwardConfig` (line 389), `PennyDailyProxyWalkForwardAdapter` (line 420), `_ticker_list` (line 608), `_write_replay_cache` (line 617), `PennyMinuteReplayAdapter` (line 637), `PennyMisLifecycleAdapter` (line 739), `PennyCncConnorsLifecycleAdapter` (line 841), `Momentum15MinuteReplayAdapter` (line 925), `FnoUnavailableAdapter` (line 1022), `init_backtest_lab_db` (line 1057), `_validate_dates` (line 1131), `list_strategies` (line 1142), `submit_run` (line 1182), `_run_background` (line 1218), `_row_to_run` (line 1254), `list_runs` (line 1279), `get_run` (line 1298)
+Top-level declarations: `_utc_now` (line 36), `_json_default` (line 40), `_finite_json_value` (line 54), `_json` (line 78), `_decode` (line 85), `StrategyMetadata` (line 95), `BacktestRequest` (line 118), `PreparedDataset` (line 127), `BacktestUnavailable` (line 134), `BacktestAdapter` (line 138), `_fingerprint_rows` (line 176), `_daily_rows` (line 182), `SwingDailyAdapter` (line 214), `PennyDailyProxyAdapter` (line 294), `PennyWalkForwardConfig` (line 390), `PennyDailyProxyWalkForwardAdapter` (line 421), `_ticker_list` (line 609), `_write_replay_cache` (line 618), `PennyMinuteReplayAdapter` (line 638), `PennyMisLifecycleAdapter` (line 740), `PennyCncConnorsLifecycleAdapter` (line 842), `Momentum15MinuteReplayAdapter` (line 926), `FnoUnavailableAdapter` (line 1023), `init_backtest_lab_db` (line 1058), `_validate_dates` (line 1132), `list_strategies` (line 1143), `submit_run` (line 1183), `_run_background` (line 1219), `_row_to_run` (line 1255), `list_runs` (line 1280), `get_run` (line 1299)
 
 Engine dependencies: `backtest`, `momentum_replay`, `penny_backtest_v2`, `penny_intraday_replay`, `penny_lifecycle_replay`, `research_data_contracts`, `research_penny_cnc_lifecycle`, `walk_forward`
 

@@ -108,8 +108,9 @@ class StrategyMetadata:
     research_only: bool = True
     can_place_orders: bool = False
     # [B0/B2 2026-10-03] Honest fidelity label: EVALUATOR (entry decisions
-    # only), LIFECYCLE (entries plus the shipped exits/capacity) or
-    # FULL_PORTFOLIO. UNSPECIFIED adapters predate the label.
+    # only), LIFECYCLE (entries plus the shipped exits/capacity),
+    # FULL_PORTFOLIO, PROXY (a research stand-in, not the shipped strategy)
+    # or UNAVAILABLE. backtest_catalogue.validate_catalogue rejects others.
     scope: str = "UNSPECIFIED"
 
 
@@ -216,7 +217,7 @@ class SwingDailyAdapter(BacktestAdapter):
         name="Swing Regime (daily)",
         version="1.0.0",
         description="Walk-forward replay of the existing regime-aware swing engine on cached daily bars.",
-        engine="backtest.run_backtest",
+        engine="backtest.run_backtest", scope="PROXY",
         timeframe="1 day",
         capabilities=("single_ticker", "walk_forward", "risk_metrics"),
         data_requirements=("ohlcv_cache daily bars", "at least 200 pre/end rows for the ticker"),
@@ -296,7 +297,7 @@ class PennyDailyProxyAdapter(BacktestAdapter):
         name="Penny Breakout (daily proxy)",
         version="2.0.0",
         description="Executable daily-bar proxy for the existing penny MIS breakout engine.",
-        engine="penny_backtest_v2.run_backtest",
+        engine="penny_backtest_v2.run_backtest", scope="PROXY",
         timeframe="1 day proxy for intraday",
         capabilities=("universe", "gate_funnel", "risk_metrics"),
         data_requirements=("ohlcv_cache daily bars in the selected range",),
@@ -426,7 +427,7 @@ class PennyDailyProxyWalkForwardAdapter(BacktestAdapter):
             "Chronological train-only selection among baseline, relaxed, and phase3, "
             "followed by strictly later non-overlapping daily-proxy OOS folds."
         ),
-        engine="walk_forward + penny_backtest_v2.run_backtest",
+        engine="walk_forward + penny_backtest_v2.run_backtest", scope="PROXY",
         timeframe="1 day proxy for intraday",
         capabilities=("universe", "walk_forward", "strict_oos", "train_only_selection"),
         data_requirements=(
@@ -926,7 +927,7 @@ class Momentum15MinuteReplayAdapter(BacktestAdapter):
     metadata = StrategyMetadata(
         strategy_id="momentum_intraday_15m_replay", name="Momentum (true 15-minute replay)",
         version="1.0.0", description="Chronological production-evaluator replay using explicit 15-minute cache provenance.",
-        engine="momentum_replay", timeframe="15 minute",
+        engine="momentum_replay", timeframe="15 minute", scope="EVALUATOR",
         capabilities=("universe", "true_intraday", "gate_funnel", "costs", "risk_metrics", "chronological_oos"),
         data_requirements=("intraday_cache interval='15minute'", "strictly prior ohlcv_cache daily history"),
         limitations=("15-minute OHLC assumes stop before target.", "Full quantity exits at T1; partial runners and trailing stops are not modelled."),
@@ -1024,7 +1025,7 @@ class FnoUnavailableAdapter(BacktestAdapter):
         strategy_id="fno_momentum_5m",
         name="F&O Momentum (5-minute)", version="1.0.0",
         description="Existing F&O replay engine; registered but unavailable until verified futures bars are persisted.",
-        engine="fno_backtest.run_fno_backtest", timeframe="5 minute futures",
+        engine="fno_backtest.run_fno_backtest", timeframe="5 minute futures", scope="UNAVAILABLE",
         capabilities=("modelled_options", "costs", "risk_metrics"),
         data_requirements=("verified NIFTY futures 5-minute OHLCV with interval and instrument provenance",),
         limitations=("Current cache does not establish the required futures instrument/timeframe provenance.",),
