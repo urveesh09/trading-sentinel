@@ -48,6 +48,9 @@ from fno_models import FnoDirection, FnoSource, Leg, OptionType
 from fno_risk import (
     kill_switch_status, lots_for_pool, min_viable_pool, validate_position,
 )
+from fno_shared_risk import (
+    reserve_shared_fno_risk, resolve_shared_fno_risk_reservation,
+)
 from fno_signal_log import log_fno_signal
 
 logger = structlog.get_logger()
@@ -598,6 +601,7 @@ async def _try_entry_for_leg(
     sig: MomSignal, snap: ChainSnapshot, regime: str,
     now_ist: datetime, scan_id: str, is_trading_day: bool,
     *, action_clock: Optional[Callable[[], datetime]] = None,
+    shared_pool_rs: Optional[float] = None,
 ) -> Optional[dict]:
     """Run the §7 gate ladder + §4 constitution + sizing for ONE leg and,
     if everything passes, place the entry. Logs the evaluation either way."""
@@ -800,8 +804,36 @@ async def _try_entry_for_leg(
             return None
         today_iso = now_ist.date().isoformat()
     qty = lots * lot_size
+    # F0-B: reserve the full structural premium loss plus a zero-premium exit
+    # cost before dispatch.  This preserves feasible admissions: it uses the
+    # existing per-trade sizing and adds no arbitrary threshold, but prevents
+    # the DR and directional books from spending the same worst-case cash.
+    reservation_key = None
+    if shared_pool_rs is not None:
+        from performance import init_ledger
+        await init_ledger(db_path)
+        await fpos.init_fno_positions_db(db_path)
+        import fno_dr_book as _dr
+        await _dr.init_dr_db(db_path)
+        reservation_key = f"single:{source}:{contract.token}:{sig.bar_ts}"
+        worst_case_cash = ml + calc_fno_costs(ask, 0.0, qty)
+        admission = await reserve_shared_fno_risk(
+            db_path, source=source, pool_rs=shared_pool_rs,
+            reservation_key=reservation_key, book="SINGLE_LEG",
+            worst_case_cash_rs=worst_case_cash,
+        )
+        if not admission.allowed:
+            await _log(False, admission.reason, **contract_fields, lots=lots,
+                       max_loss_rupees=ml, **gate_audit_fields)
+            logger.warning("fno_entry_skip source=%s reason=%s", source, admission.reason)
+            return None
     result = await executor.execute_entry(contract.tradingsymbol, qty, ask)
     if result["status"] not in ("paper", "filled"):
+        if reservation_key:
+            await resolve_shared_fno_risk_reservation(
+                db_path, reservation_key=reservation_key, state="RELEASED",
+                resolution_reason=f"entry_{result['status']}",
+            )
         await _log(
             False, f"entry_{result['status']}", **contract_fields, lots=lots,
             **gate_audit_fields,
@@ -810,8 +842,10 @@ async def _try_entry_for_leg(
     fill = float(result["fill_price"])
 
     premium_stop = round((1.0 - settings.FNO_STOP_PREMIUM_PCT) * fill, 2)
-    await fpos.insert_position(
+    inserter = fpos.insert_position_with_risk_reservation if reservation_key else fpos.insert_position
+    await inserter(
         db_path,
+        **({"reservation_key": reservation_key} if reservation_key else {}),
         source=source,
         tradingsymbol=contract.tradingsymbol,
         token=contract.token,
@@ -1202,7 +1236,7 @@ async def run_fno_tick(
                 entry = await _try_entry_for_leg(
                     kite, db_path, FnoSource.FNO_PAPER.value, paper_equity,
                     paper_exec, sig, snap, regime, now_ist, scan_id, is_trading_day,
-                    action_clock=action_clock,
+                    action_clock=action_clock, shared_pool_rs=_fno_pool_paper(),
                 )
                 if entry:
                     summary["entries"].append(entry)
@@ -1255,7 +1289,7 @@ async def run_fno_tick(
                 entry = await _try_entry_for_leg(
                     kite, db_path, FnoSource.FNO_LIVE.value, live_equity,
                     live_exec, sig, snap, regime, now_ist, scan_id, is_trading_day,
-                    action_clock=action_clock,
+                    action_clock=action_clock, shared_pool_rs=_fno_pool_live(),
                 )
                 if entry:
                     summary["entries"].append(entry)

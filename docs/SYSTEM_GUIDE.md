@@ -14,13 +14,14 @@ The broader F&O orchestrator/recovery selection passed 52 assertions without
 warnings-as-errors but retains an existing Starlette lifespan deprecation; a
 warnings-fatal combined run also surfaced the documented Windows socket warning.
 
-No caller yet relies on this layer: it does not change single-leg/DR entries,
-exits, capital allocation, settings, Production schema, broker use or trading
-authority. The next F0 slice must atomically bind a reservation to each paper
-admission and make shared fee-inclusive catastrophe/loss controls authoritative
-across both books. Source commit `7b86d85` on
-`codex/production-correction-hedge-p0`; Dev-only and pushed to GitHub, with no
-Production schema/configuration/database change.
+F0-B now binds each paper single-leg/DR admission to a fee-inclusive
+worst-case-cash reservation and consumes it in the same transaction as its
+position row. This preserves feasible paper trades while stopping the two books
+from consuming the same capacity. Executor rejection releases a reservation;
+an uncertain post-fill receipt retains it. Exits remain allowed. Shared
+day/week/month/drawdown enforcement and partial-settlement release are still
+open. This is Dev-only pending commit/push; no Production configuration,
+database, broker, order or authority change.
 
 ## October 3 — baseline research is not full portfolio backtesting
 

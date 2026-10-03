@@ -213,6 +213,20 @@ async def test_paper_entry_end_to_end(kite, db_path):
     assert json.loads(accepted_rows[0][2])[-1] == "chain_freshness"
     assert json.loads(accepted_rows[0][3]) == []
 
+    # F0-B: both paper books reserve before admission, then their own position
+    # insert consumes that exact reservation in the same transaction.  There
+    # must be no stale AVAILABLE-looking reservation after a successful tick.
+    async with aiosqlite.connect(db_path) as db:
+        async with db.execute(
+            "SELECT book,state,position_ref FROM fno_risk_reservations "
+            "WHERE source='FNO_PAPER' ORDER BY book"
+        ) as cur:
+            reservations = await cur.fetchall()
+    assert reservations == [
+        ("DEFINED_RISK", "CONSUMED", "fno_dr_position:1"),
+        ("SINGLE_LEG", "CONSUMED", "fno_position:1"),
+    ]
+
     # Telegram formatter includes the entry
     msg = format_fno_telegram(summary)
     assert "ENTRY [FNO_PAPER]" in msg

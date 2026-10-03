@@ -304,8 +304,30 @@ async def resolve_shared_fno_risk_reservation(
         return False
 
 
+async def consume_shared_fno_risk_reservation_in_transaction(
+    db: aiosqlite.Connection, *, reservation_key: str, source: str,
+    book: str, position_ref: str, resolved_at: datetime,
+) -> bool:
+    """Consume one reservation using the caller's already-open transaction.
+
+    Position stores use this narrow primitive so a position row and its
+    reservation transition commit together.  It intentionally performs no
+    schema setup and never commits/rolls back the caller's transaction.
+    """
+    if not position_ref or book not in {"SINGLE_LEG", "DEFINED_RISK"}:
+        return False
+    updated = await db.execute(
+        "UPDATE fno_risk_reservations SET state='CONSUMED', resolved_at=?, position_ref=? "
+        "WHERE reservation_key=? AND source=? AND book=? AND state='RESERVED'",
+        (resolved_at.astimezone(timezone.utc).isoformat(), position_ref,
+         reservation_key, source, book),
+    )
+    return updated.rowcount == 1
+
+
 __all__ = [
     "SharedFnoAdmission", "SharedFnoRiskView", "init_shared_fno_risk_db",
+    "consume_shared_fno_risk_reservation_in_transaction",
     "reserve_shared_fno_risk", "resolve_shared_fno_risk_reservation",
     "shared_fno_risk_view",
 ]

@@ -10,8 +10,11 @@
 - [x] F0-A Dev foundation: fail-closed cross-book cash/exposure view and
   transactional one-way reservations; 49 focused F&O checks warnings-fatal;
   source commit `7b86d85` (Dev, pushed; Production untouched).
-- [ ] F0-B bind reservations atomically to both paper admissions, then make
-  shared fee-inclusive loss/drawdown/partial-spread controls authoritative.
+- [x] F0-B paper admission binding: both books reserve fee-inclusive worst-case
+  cash, then atomically consume their receipt with the position insert; exits
+  remain allowed. Shared loss/drawdown and partial-settlement work remains.
+- [ ] F0-C shared day/week/month/drawdown decisions and partial-spread
+  settlement handling; add restart/race characterization before promotion.
 - [ ] F1 owner cash-only funding semantics, broker initial/final margin and
   catastrophe acceptance before live allocation; no live spread authorisation.
 - [ ] B1/B2 interval/zero-volume/session data contracts and full classic Penny

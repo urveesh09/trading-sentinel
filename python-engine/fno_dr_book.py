@@ -597,10 +597,13 @@ async def open_structures(db_path: str, source: str = SOURCE_PAPER) -> List[dict
 
 async def insert_structure(
     db_path: str, source: str, planned: PlannedStructure, now_ist: datetime,
+    *, reservation_key: Optional[str] = None,
 ) -> int:
     s = planned.structure
     cost = structure_round_trip_cost(s)
     async with aiosqlite.connect(db_path) as db:
+        if reservation_key:
+            await db.execute("BEGIN IMMEDIATE")
         cur = await db.execute(
             """INSERT INTO fno_dr_positions
                (source, kind, legs_json, lot_size, lots, entry_underlying,
@@ -611,8 +614,19 @@ async def insert_structure(
              planned.entry_underlying, round(s.net_premium * s.lot_size, 2),
              s.max_profit_rs, s.max_loss_rs, cost, now_ist.isoformat()),
         )
+        row_id = int(cur.lastrowid)
+        if reservation_key:
+            from fno_shared_risk import consume_shared_fno_risk_reservation_in_transaction
+            consumed = await consume_shared_fno_risk_reservation_in_transaction(
+                db, reservation_key=reservation_key, source=source,
+                book="DEFINED_RISK", position_ref=f"fno_dr_position:{row_id}",
+                resolved_at=now_ist,
+            )
+            if not consumed:
+                await db.rollback()
+                raise RuntimeError("shared_risk_reservation_not_consumed")
         await db.commit()
-        return int(cur.lastrowid)
+        return row_id
 
 
 async def _mark_unresolved(
@@ -772,8 +786,30 @@ async def maybe_open_dr_structure(
                         <= settings.FNO_MAX_QUOTE_AGE_SEC):
                     logger.info("fno_dr_entry_skipped reason=quote_freshness")
                     return None
-        row_id = await insert_structure(db_path, source, planned, now_ist)
+        # F0-B uses the same fee-inclusive catastrophe reservation as the
+        # directional book.  Initialise only durable local schemas; no quote,
+        # order, message or exit path is touched here.
+        from fno_shared_risk import reserve_shared_fno_risk
+        from fno_positions import init_fno_positions_db
+        from performance import init_ledger
+        await init_ledger(db_path)
+        await init_fno_positions_db(db_path)
         s = planned.structure
+        reservation_key = "dr:%s:%s:%s" % (
+            source, now_ist.isoformat(),
+            ",".join(str(leg["contract"]["token"]) for leg in planned.contract_legs),
+        )
+        admission = await reserve_shared_fno_risk(
+            db_path, source=source, pool_rs=float(settings.FNO_PAPER_BANKROLL),
+            reservation_key=reservation_key, book="DEFINED_RISK",
+            worst_case_cash_rs=s.max_loss_rs + structure_round_trip_cost(s),
+        )
+        if not admission.allowed:
+            logger.warning("fno_dr_entry_skipped reason=%s", admission.reason)
+            return None
+        row_id = await insert_structure(
+            db_path, source, planned, now_ist, reservation_key=reservation_key,
+        )
         logger.info(
             "fno_dr_opened id=%d kind=%s legs=%d max_loss=%.0f max_profit=%.0f "
             "net_premium_rs=%.0f spot=%.1f",

@@ -188,6 +188,19 @@ cash, make shared day/week/month/drawdown decisions authoritative for both
 books, and add restart/partial-settlement race coverage. No Production schema,
 configuration, broker, order or message action occurred.
 
+**October 3 F0-B — atomic paper-admission binding (Dev only).** Both paper
+entry paths now reserve their full structural worst-case loss plus the existing
+zero-premium catastrophe-exit fee estimate before dispatch/admission. A refused
+or malformed shared view skips only that new entry; it does not change sizing,
+quote selection, strategy conditions, management or exits. On success, the
+single-leg/DR row and its matching reservation consumption share one SQLite
+immediate transaction. A rejected executor explicitly releases its reservation;
+a filled order whose durable receipt fails retains the reservation for
+reconciliation rather than falsely freeing capital. The unchanged paper fixture
+still admits its feasible single leg and debit spread, and proves both consumed
+receipts. Shared day/week/month/drawdown enforcement and actual partial
+settlement release remain the next F0 slice.
+
 #### F1 — cash-only funding and catastrophe acceptance
 
 Before real allocation, pin operator-approved funding semantics. Introduce a

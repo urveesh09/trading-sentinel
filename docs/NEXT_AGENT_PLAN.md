@@ -8,13 +8,13 @@ Start with [the successor inheritance](2026-10-03-successor-inheritance.md) and
 source-scoped view of exact settlement cash plus single-leg/defined-risk
 OPEN/UNRESOLVED losses and durable reservations. Its transactionally inserted
 reservations cannot expire automatically and one-way resolution needs a receipt.
-No entry caller uses it yet, so this has not changed paper trading. Next, bind
-each paper entry's fee-inclusive worst-case cash reservation and position insert
-atomically; make shared loss/drawdown decisions apply to both books, then add
-partial-settlement/restart/race characterization. F1 verifies cash-only broker
+F0-B now binds both paper entries' fee-inclusive worst-case reservations to
+their position insert atomically, preserving feasible fixture admissions while
+preventing cross-book double spending. Next, make shared loss/drawdown decisions
+apply to both books, then add partial-settlement/restart/race characterization. F1 verifies cash-only broker
 margin/legging safety; no live spread authority is implied. Recent positive F&O
 results do not prove improvement was caused at September 17 (that is also a
-cash-key sample boundary). Source commit: `7b86d85` (Dev; pushed, not deployed).
+cash-key sample boundary). F0-B is Dev-only and pending commit/push.
 
 Completed: existing Penny minute baseline via new inert Dev CLI; two unavailable
 samples retained, valid two-stock August 11–20 diagnostic has 5,774 evaluations

@@ -271,6 +271,40 @@ async def insert_position(db_path: str, **fields) -> int:
         return cur.lastrowid
 
 
+async def insert_position_with_risk_reservation(
+    db_path: str, *, reservation_key: str, **fields,
+) -> int:
+    """Insert an OPEN single-leg position and consume its reservation atomically.
+
+    A failed database receipt after a paper/broker fill leaves the reservation
+    intact rather than making capacity available again.  The caller must
+    reconcile that external state; it must never retry the entry blindly.
+    """
+    from fno_shared_risk import consume_shared_fno_risk_reservation_in_transaction
+    await init_fno_positions_db(db_path)
+    fields.setdefault("initial_qty", fields.get("qty"))
+    fields.setdefault("initial_lots", fields.get("lots"))
+    fields.setdefault("initial_max_loss_rupees", fields.get("max_loss_rupees"))
+    cols = ", ".join(fields.keys())
+    marks = ", ".join(["?"] * len(fields))
+    async with aiosqlite.connect(db_path) as db:
+        await db.execute("BEGIN IMMEDIATE")
+        cur = await db.execute(
+            f"INSERT INTO fno_positions ({cols}) VALUES ({marks})", list(fields.values()),
+        )
+        position_id = int(cur.lastrowid)
+        consumed = await consume_shared_fno_risk_reservation_in_transaction(
+            db, reservation_key=reservation_key, source=str(fields["source"]),
+            book="SINGLE_LEG", position_ref=f"fno_position:{position_id}",
+            resolved_at=datetime.now(timezone.utc),
+        )
+        if not consumed:
+            await db.rollback()
+            raise RuntimeError("shared_risk_reservation_not_consumed")
+        await db.commit()
+        return position_id
+
+
 async def open_positions(db_path: str, source: str) -> List[FnoPosition]:
     async with aiosqlite.connect(db_path) as db:
         if not await _table_exists(db):
