@@ -1,4 +1,5 @@
 import asyncio
+import math
 import contextlib
 import contextvars
 import os
@@ -1657,6 +1658,12 @@ class KiteClient:
         blocked = entry_blocker()
         if blocked is not None:
             return blocked
+        # [F1-A 2026-10-03] A new BUY must be fully paid from own uncommitted
+        # cash; broker leverage never funds an entry. Exits are never checked.
+        if intent == "entry" and str(transaction_type).upper() == "BUY":
+            refusal = await self._own_cash_refusal(tradingsymbol, quantity, price)
+            if refusal is not None:
+                return refusal
         try:
             resp = await self.client.post(f"/orders/{variety}", data=params)
             resp.raise_for_status()
@@ -1831,6 +1838,39 @@ class KiteClient:
             logger.error("kite_order_history_failed error=%s", str(e))
             return []
 
+    async def get_funds_margins(self) -> dict | None:
+        """[F1-A] Read-only ``GET /user/margins``; ``None`` when unavailable."""
+        try:
+            resp = await self.client.get("/user/margins")
+            resp.raise_for_status()
+            data = resp.json().get("data")
+            return data if isinstance(data, dict) else None
+        except Exception as exc:
+            logger.error("kite_margins_failed", error=str(exc))
+            return None
+
+    async def _own_cash_refusal(self, tradingsymbol: str, quantity: int, price) -> dict | None:
+        """``None`` when the entry is fully covered by own cash, else a refusal."""
+        def refuse(reason: str) -> dict:
+            logger.error("kite_order_refused_own_cash", tradingsymbol=tradingsymbol, reason=reason)
+            return {"order_id": None, "status": "ERROR", "dispatch_certainty": "NOT_SENT",
+                    "own_cash_refused": True, "message": reason}
+
+        value = _finite(price, non_negative=True)
+        if not value or not isinstance(quantity, int) or quantity <= 0:
+            return refuse("OWN_CASH_EVIDENCE_UNAVAILABLE: entry order value unknown (LIMIT price required)")
+        order_value = value * quantity
+        margins = await self.get_funds_margins()
+        positions = await self.get_broker_positions()
+        orders = await self.orders_snapshot()
+        own = own_uncommitted_cash(margins, positions, orders)
+        if own is None:
+            return refuse("OWN_CASH_EVIDENCE_UNAVAILABLE: margins/positions/orders missing or invalid")
+        if order_value > own:
+            return refuse(f"OWN_CASH_INSUFFICIENT: order value {order_value:.2f} > "
+                          f"own uncommitted cash {own:.2f}")
+        return None
+
     async def orders_snapshot(self) -> list | None:
         """Return today's broker order book, or ``None`` when unreadable.
 
@@ -1887,6 +1927,71 @@ class KiteClient:
         except httpx.RequestError as e:
             logger.error("kite_positions_failed error=%s", str(e))
             return {}
+
+
+_OPEN_ORDER_STATUSES = frozenset({
+    "OPEN", "TRIGGER PENDING", "AMO REQ RECEIVED", "OPEN PENDING", "VALIDATION PENDING",
+    "PUT ORDER REQ RECEIVED", "MODIFY PENDING", "MODIFY VALIDATION PENDING",
+})
+
+
+def _finite(value, *, non_negative: bool = False):
+    if isinstance(value, bool) or not isinstance(value, (int, float)):
+        return None
+    number = float(value)
+    if not math.isfinite(number) or (non_negative and number < 0):
+        return None
+    return number
+
+
+def own_uncommitted_cash(margins, positions, orders):
+    """[F1-A 2026-10-03] Owner rule "no extra margin": own cash still free today.
+
+    ``equity.available.cash`` (never collateral, adhoc margin or broker
+    leverage) minus the cost of open long positions, pending BUY orders and
+    today's realised losses. A short position or any malformed evidence
+    returns ``None`` so the caller refuses the entry.
+    """
+    equity = (margins or {}).get("equity") if isinstance(margins, dict) else None
+    if not isinstance(equity, dict) or equity.get("enabled") is False:
+        return None
+    own_cash = _finite((equity.get("available") or {}).get("cash"), non_negative=True)
+    if own_cash is None:
+        return None
+    realised_loss = 0.0
+    utilised = equity.get("utilised")
+    if isinstance(utilised, dict) and "m2m_realised" in utilised:
+        realised = _finite(utilised.get("m2m_realised"))
+        if realised is None:
+            return None
+        realised_loss = max(0.0, -realised)
+    net = positions.get("net") if isinstance(positions, dict) else None
+    if not isinstance(net, list) or not isinstance(orders, list):
+        return None
+    committed = 0.0
+    for row in net:
+        qty = _finite((row or {}).get("quantity"))
+        if qty is None or qty < 0:
+            return None
+        if qty == 0:
+            continue
+        avg = _finite(row.get("average_price"), non_negative=True)
+        if not avg:
+            return None
+        committed += qty * avg
+    pending = 0.0
+    for order in orders:
+        if str((order or {}).get("status") or "").upper() not in _OPEN_ORDER_STATUSES:
+            continue
+        if str(order.get("transaction_type") or "").upper() != "BUY":
+            continue
+        qty = order.get("pending_quantity", order.get("quantity"))
+        qty = _finite(qty, non_negative=True)
+        price = _finite(order.get("price"), non_negative=True)
+        if qty is None or not price:
+            return None
+        pending += qty * price
+    return max(0.0, own_cash - committed - pending - realised_loss)
 
 
 def latest_order_state(history: list) -> dict:

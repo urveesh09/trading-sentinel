@@ -1,5 +1,16 @@
 # Handover receipt and operator checklist
 
+## October 3 F1-A receipt (Dev only)
+
+- [x] Owner's "no extra margin" definition recorded; read-only audit of every live entry path.
+- [x] Own-cash entry guard in the gateway and the Python broker client
+  ([F1-A](2026-10-03-f1a-own-cash-no-leverage-guard.md)); gateway 58 / Python 16 tests; full Python suite 4733 passed
+  (4 pre-existing failures).
+- [ ] Owner decisions: Penny live caps (2,500 against 2,000), Swing/Momentum
+  book-level allocation, EDGE notional cap.
+- [ ] GitHub promotion; the first live EXEC after deployment should show an
+  `entry_own_cash_preflight` log line.
+
 ## October 3 B1/B2 receipt (Dev only)
 
 - [x] Plan slice before source changes: [2026-10-03-b1-b2-data-contracts-and-penny-lifecycle.md](2026-10-03-b1-b2-data-contracts-and-penny-lifecycle.md).

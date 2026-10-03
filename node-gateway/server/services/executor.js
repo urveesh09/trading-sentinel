@@ -10,7 +10,8 @@ const {
 } = require('./cas-eligibility');
 const {
   TokenExpiredError, ValidationError, PriceDriftError,
-  MarketClosedError, CasPhaseError, OrderExecutionError, InsufficientMarginError
+  MarketClosedError, CasPhaseError, OrderExecutionError, InsufficientMarginError,
+  OwnCashInsufficientError,
 } = require('../utils/errors');
 const { logger } = require('../middleware/logger');
 const { resolveRiskDistance, anchorLevels, sizeToRisk } = require('./risk-geometry');
@@ -41,6 +42,53 @@ function usableEntryMargin(margins) {
   return finiteNonNegative(available.cash);
 }
 
+// [F1-A 2026-10-03] Owner rule "no extra margin": a new BUY must be fully
+// paid from the owner's own cash that is not already committed today. Broker
+// leverage (MIS margin), collateral and adhoc limits never fund an entry.
+const OPEN_ORDER_STATUSES = new Set([
+  'OPEN', 'TRIGGER PENDING', 'AMO REQ RECEIVED', 'OPEN PENDING', 'VALIDATION PENDING',
+  'PUT ORDER REQ RECEIVED', 'MODIFY PENDING', 'MODIFY VALIDATION PENDING',
+]);
+
+function finiteNumber(value) {
+  return typeof value === 'number' && Number.isFinite(value) ? value : null;
+}
+
+function ownUncommittedCash(margins, positions, orders) {
+  const equity = margins?.equity;
+  if (!equity || equity.enabled === false) return null;
+  const ownCash = finiteNonNegative(equity.available?.cash);
+  if (ownCash === null) return null;
+  let realisedLoss = 0;
+  if (equity.utilised && Object.prototype.hasOwnProperty.call(equity.utilised, 'm2m_realised')) {
+    const realised = finiteNumber(equity.utilised.m2m_realised);
+    if (realised === null) return null;
+    realisedLoss = Math.max(0, -realised);
+  }
+  const net = positions?.net;
+  if (!Array.isArray(net) || !Array.isArray(orders)) return null;
+  let committed = 0;
+  for (const row of net) {
+    const qty = finiteNumber(row?.quantity);
+    if (qty === null) return null;
+    if (qty < 0) return null; // a short position means margin is in use: never "own cash"
+    if (qty === 0) continue;
+    const avg = finiteNonNegative(row?.average_price);
+    if (avg === null || avg === 0) return null;
+    committed += qty * avg;
+  }
+  let pending = 0;
+  for (const order of orders) {
+    if (!OPEN_ORDER_STATUSES.has(String(order?.status || '').toUpperCase())) continue;
+    if (String(order?.transaction_type || '').toUpperCase() !== 'BUY') continue;
+    const qty = finiteNonNegative(order?.pending_quantity ?? order?.quantity);
+    const price = finiteNonNegative(order?.price);
+    if (qty === null || price === null || price === 0) return null;
+    pending += qty * price;
+  }
+  return Math.max(0, ownCash - committed - pending - realisedLoss);
+}
+
 function requiredOrderMargin(orderMargins) {
   const row = Array.isArray(orderMargins) ? orderMargins[0] : orderMargins;
   const value = row?.initial?.total ?? row?.total;
@@ -58,6 +106,25 @@ async function preflightEntryMargin(notional, context) {
   if (available === null) {
     throw new OrderExecutionError('MARGIN_EVIDENCE_UNAVAILABLE: broker returned no usable cash balance');
   }
+  let positions;
+  let orders;
+  try {
+    [positions, orders] = await Promise.all([kite.getPositions(), kite.getOrders()]);
+  } catch (err) {
+    throw new OrderExecutionError(`MARGIN_EVIDENCE_UNAVAILABLE: positions/orders: ${err.message}`);
+  }
+  const ownCash = ownUncommittedCash(margins, positions, orders);
+  if (ownCash === null) {
+    throw new OrderExecutionError('MARGIN_EVIDENCE_UNAVAILABLE: own-cash evidence missing or invalid');
+  }
+  if (!(Number.isFinite(notional) && notional > 0)) {
+    throw new OrderExecutionError('MARGIN_EVIDENCE_UNAVAILABLE: invalid order value');
+  }
+  logger.info({
+    event_type: 'entry_own_cash_preflight', ticker: context.ticker,
+    order_value: notional, own_uncommitted_cash: ownCash, product: context.product,
+  });
+  if (notional > ownCash) throw new OwnCashInsufficientError(notional, ownCash);
   let required = notional;
   let requirementBasis = 'conservative_notional_policy';
   if (typeof kite.getOrderMargins === 'function') {
@@ -68,7 +135,9 @@ async function preflightEntryMargin(notional, context) {
         quantity: context.quantity, price: context.price,
       }]);
       const brokerRequired = requiredOrderMargin(calculated);
-      if (brokerRequired !== null) {
+      if (brokerRequired !== null && brokerRequired > required) {
+        // Never lower the requirement below the full order value: a smaller
+        // broker (leveraged) margin is not the owner's funding rule.
         required = brokerRequired;
         requirementBasis = 'broker_order_margin';
       }
@@ -894,6 +963,7 @@ async function executeSignal(signal, action, isIntraday = false) {
 module.exports = {
   executeSignal, syncToEngine, snapToTick,
   finiteNonNegative, usableEntryMargin, requiredOrderMargin, preflightEntryMargin,
+  ownUncommittedCash,
   entryTag, exitTag, orderFillState, reconcilePlacedOrder, recoverAmbiguousPlacement,
   gttMatches, recoverAmbiguousGTT, placeProtectiveStop, marketUnwind,
 };

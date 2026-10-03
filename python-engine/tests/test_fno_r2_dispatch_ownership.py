@@ -336,9 +336,19 @@ def _kite(monkeypatch, handler, *, halted=False):
     verdict = type("Verdict", (), {"allowed": not halted, "reason": "owner halt"})()
     monkeypatch.setattr(kite_client, "is_owner_entry_halted", lambda channel: verdict)
     monkeypatch.setattr(kite_client, "assert_not_halted", lambda channel: None)
+    def routed(request):
+        # F1-A funds evidence is served normally; the scenario applies to the order POST.
+        if request.method == "GET" and request.url.path == "/user/margins":
+            return httpx.Response(200, json={"data": {"equity": {"available": {"cash": 1e7}}}})
+        if request.method == "GET" and request.url.path == "/portfolio/positions":
+            return httpx.Response(200, json={"data": {"net": [], "day": []}})
+        if request.method == "GET" and request.url.path == "/orders":
+            return httpx.Response(200, json={"data": []})
+        return handler(request)
+
     client = KiteClient(db_path=":memory:")
     client.client = httpx.AsyncClient(base_url="https://api.kite.trade",
-                                      transport=httpx.MockTransport(handler))
+                                      transport=httpx.MockTransport(routed))
 
     async def fast_acquire():
         return None

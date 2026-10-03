@@ -57,6 +57,12 @@ def mock_kite_client():
         if request.url.path.startswith("/orders/regular/") and request.method == "DELETE":
             order_id = request.url.path.split("/")[-1]
             return httpx.Response(200, json={"data": {"order_id": order_id}})
+        if request.url.path == "/user/margins":
+            return httpx.Response(200, json={"data": {"equity": {
+                "enabled": True, "available": {"cash": 10_000_000.0, "live_balance": 10_000_000.0},
+                "utilised": {"m2m_realised": 0.0}}}})
+        if request.url.path == "/portfolio/positions":
+            return httpx.Response(200, json={"data": {"net": [], "day": []}})
         if request.url.path == "/orders" and request.method == "GET":
             return httpx.Response(200, json={"data": []})
         if request.url.path == "/orders/ORD-001/trades" and request.method == "GET":
@@ -293,8 +299,9 @@ def test_channel_halt_blocks_only_that_channel(mock_kite_client, halt_dir):
     blocked = asyncio.run(client.place_order(
         tradingsymbol="AAA", quantity=50, intent="entry", channel="penny",
     ))
-    allowed = asyncio.run(client.place_order(
-        tradingsymbol="AAA", quantity=50, intent="entry", channel="momentum",
+    allowed = asyncio.run(client.place_order(  # F1-A: entries carry a LIMIT price
+        tradingsymbol="AAA", quantity=50, order_type="LIMIT", price=12.5,
+        intent="entry", channel="momentum",
     ))
 
     assert blocked.get("halted") is True
@@ -333,8 +340,9 @@ def test_owner_per_channel_halt_blocks_only_named_entry_channel(mock_kite_client
     blocked = asyncio.run(client.place_order(
         tradingsymbol="AAA", quantity=50, intent="entry", channel="penny",
     ))
-    allowed = asyncio.run(client.place_order(
-        tradingsymbol="AAA", quantity=50, intent="entry", channel="fno",
+    allowed = asyncio.run(client.place_order(  # F1-A: entries carry a LIMIT price
+        tradingsymbol="AAA", quantity=50, order_type="LIMIT", price=12.5,
+        intent="entry", channel="fno",
     ))
 
     assert blocked["owner_entry_halted"] is True

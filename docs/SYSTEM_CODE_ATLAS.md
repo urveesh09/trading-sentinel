@@ -914,7 +914,7 @@ Related tests: `python-engine/tests/test_intraday_spread_signal_artifact.py`
 
 No module docstring; use the declarations and callers below.
 
-Top-level declarations: `_interval_minutes` (line 36), `_intraday_cache_gate_evaluate` (line 72), `provider_lane` (line 192), `RateLimiter` (line 209), `KiteClient` (line 294), `latest_order_state` (line 1892)
+Top-level declarations: `_interval_minutes` (line 37), `_intraday_cache_gate_evaluate` (line 73), `provider_lane` (line 193), `RateLimiter` (line 210), `KiteClient` (line 295), `_finite` (line 1938), `own_uncommitted_cash` (line 1947), `latest_order_state` (line 1997)
 
 Engine dependencies: `config`, `halt_switch`, `operator_alert`, `order_execution_readiness`, `owner_entry_halt`
 
@@ -1941,6 +1941,16 @@ Engine dependencies: `fno_models`
 Related tests: `python-engine/tests/test_research_leg_subscriptions.py`
 
 Declared tables: `selected_leg_collection_gaps`, `selected_leg_subscriptions`
+
+## `python-engine/research_penny_cnc_lifecycle.py`
+
+[B2 2026-10-03] Exact classic Penny CNC Connors lifecycle replay (offline). Replays what the shipped ``PENNY_PAPER`` CNC book does, not what the Connors spec describes: * 09:30 IST entry scan (``run_penny_connors_scan``): the scanner fetches Kite day candles *up to today*, so the last bar is today's in-progress candle (~09:15-09:30). It is rebuilt here from validated minute bars; the real ``evaluate_connors_entry`` then runs with the scanner's exact inputs and a real ``PennyRiskEngine``; admission applies the per-ticker reservation, CNC/total caps and the executor's drift / stop checks; paper fills at LTP. * 15:45 IST ``position_tracker.update_daily_positions`` on each final daily bar: stop
+
+Top-level declarations: `PennyCncConfig` (line 54), `partial_candle` (line 72), `scanner_daily_frame` (line 82), `connors_decision` (line 93), `tracker_step` (line 114), `_ltp_at` (line 182), `run_penny_cnc_lifecycle` (line 192)
+
+Engine dependencies: `config`, `engine`, `penny_engine_connors`, `penny_executor`, `penny_models`, `penny_regime`, `penny_risk`, `research_data_contracts`
+
+Related tests: `python-engine/tests/test_research_penny_cnc_lifecycle.py`
 
 ## `python-engine/research_quote_collector.py`
 

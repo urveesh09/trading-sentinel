@@ -1,5 +1,21 @@
 # Trading Sentinel — system guide and engineering handover
 
+## October 3 — F1-A own-cash (no leverage) entry guard (Dev only)
+
+Every live BUY entry must now be fully paid from the owner's own
+uncommitted cash ([F1-A](2026-10-03-f1a-own-cash-no-leverage-guard.md)):
+
+> broker `equity.available.cash` (never collateral, adhoc margin or leverage)
+> − open long position cost − pending BUY orders − today's realised loss
+
+- **Gateway.** `node-gateway` `preflightEntryMargin` enforces it for
+  Momentum/Swing EXEC, refusing with `OWN_CASH_INSUFFICIENT`.
+- **Python.** `KiteClient.place_order` enforces it for Python live
+  entries, refusing with `own_cash_refused` and `NOT_SENT`.
+- **Fail closed.** Missing evidence, short positions and entries without a
+  LIMIT price are refused.
+- **Exits** are untouched.
+
 ## October 3 — F0-R5 occupancy in the claim and post-admission clocks (Dev only)
 
 `claim_shared_fno_entry_dispatch(..., occupancy=EntryOccupancy(...))`

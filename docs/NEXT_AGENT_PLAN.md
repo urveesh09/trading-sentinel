@@ -1,5 +1,28 @@
 # Trading Sentinel — next-agent execution plan
 
+## October 3 — F1-A owner rule "no extra margin" enforced at both broker boundaries (Dev only)
+
+[F1-A slice](2026-10-03-f1a-own-cash-no-leverage-guard.md).
+
+**Owner's definition:** invest only one's own money. No leverage, and
+losses are bounded by the cash put in.
+
+**What is now enforced (gateway Momentum/Swing EXEC, and Python
+Penny/EDGE/F&O live).** Every BUY entry must satisfy:
+
+> full order value ≤ broker `available.cash` − open long cost − pending buys − today's realised loss
+
+- Missing evidence or short positions fail closed. Exits are never checked.
+- Before this change, the gateway accepted leveraged MIS buys by comparing
+  only the broker's roughly-20% MIS margin.
+
+**Tests.** 58 gateway executor tests and 16 Python F1-A tests. The full
+Python suite gave 4733 passed, plus 4 pre-existing baseline failures.
+
+**Owner decisions on book-level over-allocation are listed in the slice.**
+F1 is still open beyond this: broker statement authenticity, any short or
+multi-leg live path, and catastrophe drills.
+
 ## October 3 — F0-R5 implemented in Dev; F0 R1–R5 source work complete
 
 [R5 slice and verification](2026-10-03-fno-f0-r5-occupancy-and-clocks.md).
