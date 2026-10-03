@@ -227,3 +227,16 @@ Covered by tests:
   It is a separate live-path reader and a candidate follow-up.
 - Multi-leg DR fee bound.
 - F1.
+
+### Commit receipt
+
+- **Implementation commit.** `5a3b978` (`fix(fno): canonical cash,
+  observation clock and completed-trade streak (F0-R3)`) on
+  `codex/production-correction-hedge-p0`. It is Dev-local only: not pushed
+  and not deployed. Production is unchanged at `044c016`.
+- **Post-commit check.**
+  - Regenerating the atlas produced no diff.
+  - The guide, plan, checklist and review all link to this slice.
+  - Re-running the R3, R2, R1 and shared-risk tests from the committed tree,
+    warnings-fatal, gave 81 passed.
+- **Migrations.** No schema or settings migration.

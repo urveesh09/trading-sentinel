@@ -21,7 +21,7 @@ Production's stack was found **stopped** at 12:22 IST on October 3; this
 task did not touch it. Before promoting R3, run the slice's read-only SQL
 check on Production.
 
-Next: **R4**, then R5. Dev only, not pushed or deployed.
+Commit `5a3b978` (Dev-local). Next: **R4**, then R5. Dev only, not pushed or deployed.
 
 ## October 3 — F0-R2 implemented in Dev (one dispatch owner)
 
