@@ -18,7 +18,9 @@ No caller yet relies on this layer: it does not change single-leg/DR entries,
 exits, capital allocation, settings, Production schema, broker use or trading
 authority. The next F0 slice must atomically bind a reservation to each paper
 admission and make shared fee-inclusive catastrophe/loss controls authoritative
-across both books. Dev only; pending commit/push.
+across both books. Source commit `7b86d85` on
+`codex/production-correction-hedge-p0`; Dev-only and pending push, with no
+Production schema/configuration/database change.
 
 ## October 3 — baseline research is not full portfolio backtesting
 

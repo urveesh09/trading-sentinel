@@ -176,6 +176,9 @@ reported **49 passed**. The unchanged broader lifecycle selection reported
 **52 passed** without warnings-as-errors; its warnings-fatal version reached
 99 assertions before two known Windows/FastAPI socket-lifespan warnings were
 escalated, so it is not claimed warnings-clean.
+Source commit: `7b86d85` on `codex/production-correction-hedge-p0`; Dev-only
+and pending push/Promotion. This additive local SQLite table is a schema impact
+only once an entry caller invokes it; no deployed database was touched.
 
 This is deliberately **not yet an entry-policy change**: neither existing
 single-leg nor DR admission has been wired to reserve/consume in the same
