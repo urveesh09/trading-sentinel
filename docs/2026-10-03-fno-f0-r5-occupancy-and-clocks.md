@@ -165,3 +165,19 @@ R1–R5 are implemented in Dev. Still open:
   observation of claims, reservations and recoveries.
 - **F1:** owner cash-only funding semantics and the broker margin
   preflight, before any live funding.
+
+### Commit receipt
+
+- **Implementation commit.** `6d41192` (`fix(fno): enforce occupancy in the
+  dispatch claim and re-check clocks (F0-R5)`) on
+  `codex/production-correction-hedge-p0`. It is Dev-local only: not pushed
+  and not deployed. Production is unchanged at `044c016`; its stack was
+  found stopped at 12:22 IST and was not touched.
+- **Post-commit check.**
+  - Regenerating the atlas produced no diff.
+  - The guide, plan, checklist, review and October 3 plan all link to this
+    slice.
+  - Re-running the R1–R5 and shared-risk tests from the committed tree,
+    warnings-fatal, gave 111 passed.
+- **Migrations.** Three additive claim columns, created by
+  `init_shared_fno_risk_db`. There is no settings change.

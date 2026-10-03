@@ -22,7 +22,7 @@ Remaining after F0:
 4. F1 (owner cash-only semantics plus broker margin preflight).
 5. B2 CNC Connors adapter, then B0 and B3–B6.
 
-Dev only, not pushed or deployed.
+Commit `6d41192` (Dev-local). Dev only, not pushed or deployed.
 
 ## October 3 — F0-R4 implemented in Dev (broker payload binding)
 
