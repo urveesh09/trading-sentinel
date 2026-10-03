@@ -161,6 +161,27 @@ def test_edge_evaluator_replay_calls_shipped_scanner_with_frozen_config(db_path,
     assert summary["net_pnl"] is None and summary["selected_count"] == 0
 
 
+def test_range_evaluator_replay_calls_shipped_profile_only_after_completed_bar(db_path, monkeypatch):
+    _seed_daily(db_path, count=40)
+    adapter = backtest_lab.STRATEGY_REGISTRY["range_reversion_daily_evaluator"]
+    config = adapter.snapshot_config({"tickers": ["RELIANCE"]})
+    request = backtest_lab.BacktestRequest(adapter.metadata.strategy_id, "2025-01-20", "2025-01-23",
+                                            config, adapter.metadata.default_assumptions)
+    prepared = adapter.prepare(db_path, request)
+    seen = []
+    real = __import__("range_reversion").range_reversion_entry
+
+    def entry(bars, **kwargs):
+        seen.append(bars[-1]["date"])
+        return real(bars, **kwargs)
+
+    monkeypatch.setattr("range_reversion.range_reversion_entry", entry)
+    result = adapter.execute(prepared, request)
+    summary, _ = adapter.normalize(result, request)
+    assert seen == [item["decision_date"] for item in result["verdicts"]]
+    assert summary["net_pnl"] is None and summary["trade_count"] is None
+
+
 @pytest.mark.asyncio
 async def test_penny_snapshot_fingerprint_includes_pre_window_warmup(db_path):
     _seed_daily(db_path, ticker="CHEAP", count=60)

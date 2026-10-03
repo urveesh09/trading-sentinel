@@ -1,5 +1,17 @@
 # Trading Sentinel — system guide and engineering handover
 
+## October 3 — B4 Momentum baseline and Range evaluator replay (Dev only)
+
+The Momentum research default is now the shipped `MOM_BASE` evaluator;
+`MOM_RECENCY_5` remains an explicit research comparison. It remains only an
+`EVALUATOR`, because its full-T1 virtual shadow exit is not the live partial
+runner/trail and the historical regime, Telegram, broker and shared-capital
+evidence is not archived. `range_reversion_daily_evaluator` separately calls
+the shipped `range_reversion_entry` on each completed validated daily bar and
+records verdicts only, never invented P&L or orders. Focused B4 verification:
+70 passed, one existing httpx deprecation warning. Dev only, not pushed or
+deployed. See [B4 slice](2026-10-03-b4-momentum-range-evaluator.md).
+
 ## October 3 — B3 shipped Swing/EDGE daily evaluator replay (Dev only)
 
 `backtest_lab.py` now has two distinct research-only `EVALUATOR` adapters:

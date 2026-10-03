@@ -110,7 +110,7 @@ Related tests: `python-engine/tests/test_backtest.py`, `python-engine/tests/test
 
 [B0 2026-10-03] Honest catalogue of shipped strategies and their backtests. Every shipped strategy appears once with the fidelity of the backtest that exists for it today. ``validate_catalogue`` keeps this list and the Backtest Lab registry in agreement, so an adapter cannot be added (or removed) without the catalogue saying what it really replays.
 
-Top-level declarations: `catalogue` (line 55), `validate_catalogue` (line 70), `family_prefixes` (line 95)
+Top-level declarations: `catalogue` (line 57), `validate_catalogue` (line 72), `family_prefixes` (line 97)
 
 Engine dependencies: `backtest_lab`
 
@@ -128,9 +128,9 @@ Related tests: `python-engine/tests/test_backtest_cli.py`
 
 Research-only backtest registry, adapters, and immutable run archive. This module has deliberately no broker client or order-execution imports. A BacktestAdapter receives a frozen dataset snapshot and returns research data; future strategies join the lab by implementing the same contract and adding one explicit registry entry.
 
-Top-level declarations: `_utc_now` (line 37), `_json_default` (line 41), `_finite_json_value` (line 55), `_json` (line 79), `_decode` (line 86), `StrategyMetadata` (line 96), `BacktestRequest` (line 119), `PreparedDataset` (line 128), `BacktestUnavailable` (line 135), `BacktestAdapter` (line 139), `_fingerprint_rows` (line 177), `_daily_rows` (line 183), `SwingDailyAdapter` (line 215), `SwingDecisionParityAdapter` (line 295), `EdgeDecisionParityAdapter` (line 371), `PennyDailyProxyAdapter` (line 447), `PennyWalkForwardConfig` (line 543), `PennyDailyProxyWalkForwardAdapter` (line 574), `_ticker_list` (line 762), `_write_replay_cache` (line 771), `PennyMinuteReplayAdapter` (line 791), `PennyMisLifecycleAdapter` (line 893), `PennyCncConnorsLifecycleAdapter` (line 995), `Momentum15MinuteReplayAdapter` (line 1079), `FnoUnavailableAdapter` (line 1176), `init_backtest_lab_db` (line 1211), `_validate_dates` (line 1285), `list_strategies` (line 1296), `submit_run` (line 1336), `_run_background` (line 1372), `_row_to_run` (line 1408), `list_runs` (line 1433), `get_run` (line 1452)
+Top-level declarations: `_utc_now` (line 37), `_json_default` (line 41), `_finite_json_value` (line 55), `_json` (line 79), `_decode` (line 86), `StrategyMetadata` (line 96), `BacktestRequest` (line 119), `PreparedDataset` (line 128), `BacktestUnavailable` (line 135), `BacktestAdapter` (line 139), `_fingerprint_rows` (line 177), `_daily_rows` (line 183), `SwingDailyAdapter` (line 215), `SwingDecisionParityAdapter` (line 295), `EdgeDecisionParityAdapter` (line 371), `RangeReversionEvaluatorAdapter` (line 447), `PennyDailyProxyAdapter` (line 534), `PennyWalkForwardConfig` (line 630), `PennyDailyProxyWalkForwardAdapter` (line 661), `_ticker_list` (line 849), `_write_replay_cache` (line 858), `PennyMinuteReplayAdapter` (line 878), `PennyMisLifecycleAdapter` (line 980), `PennyCncConnorsLifecycleAdapter` (line 1082), `Momentum15MinuteReplayAdapter` (line 1166), `FnoUnavailableAdapter` (line 1263), `init_backtest_lab_db` (line 1298), `_validate_dates` (line 1372), `list_strategies` (line 1383), `submit_run` (line 1423), `_run_background` (line 1459), `_row_to_run` (line 1495), `list_runs` (line 1520), `get_run` (line 1539)
 
-Engine dependencies: `backtest`, `momentum_replay`, `penny_backtest_v2`, `penny_intraday_replay`, `penny_lifecycle_replay`, `research_daily_decision_replay`, `research_data_contracts`, `research_penny_cnc_lifecycle`, `walk_forward`
+Engine dependencies: `backtest`, `momentum_replay`, `penny_backtest_v2`, `penny_intraday_replay`, `penny_lifecycle_replay`, `range_reversion`, `research_daily_decision_replay`, `research_data_contracts`, `research_penny_cnc_lifecycle`, `walk_forward`
 
 Related tests: `python-engine/tests/test_backtest_lab.py`
 
@@ -1102,7 +1102,7 @@ Top-level declarations: `PathEnvelopeError` (line 23), `encode_path_quote_envelo
 
 Decision-grade, broker-free replay of the production 15-minute Momentum evaluator. The module is intentionally library-only: it has no API, scheduler, broker, order, or persistence side effects. Cache access is SQLite read-only and fails closed on ambiguous intraday provenance.
 
-Top-level declarations: `ReplayDataError` (line 26), `ReplayVariant` (line 31), `MomentumReplayConfig` (line 44), `_settings_snapshot` (line 72), `_read_cache` (line 90), `_validate_frame` (line 160), `_daily_frame` (line 183), `_volume_threshold` (line 191), `_exit` (line 198), `_costs` (line 216), `_simulate` (line 228), `_summary` (line 260), `chronological_oos` (line 281), `run_momentum_replay` (line 324)
+Top-level declarations: `ReplayDataError` (line 26), `ReplayVariant` (line 31), `MomentumReplayConfig` (line 44), `_settings_snapshot` (line 74), `_read_cache` (line 92), `_validate_frame` (line 162), `_daily_frame` (line 185), `_volume_threshold` (line 193), `_exit` (line 200), `_costs` (line 218), `_simulate` (line 230), `_summary` (line 262), `chronological_oos` (line 283), `run_momentum_replay` (line 326)
 
 Engine dependencies: `config`, `engine`, `models`, `momentum_shadow`
 

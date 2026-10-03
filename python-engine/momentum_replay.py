@@ -52,7 +52,9 @@ class MomentumReplayConfig:
     lunchtime_volume_threshold: float = 1.75
     lunchtime_start: str = "11:30"
     lunchtime_end: str = "13:15"
-    variants: tuple[str, ...] = ("MOM_BASE", "MOM_RECENCY_5")
+    # MOM_RECENCY_5 is a declared research comparison, not the runtime
+    # evaluator's default. It remains available only when a run names it.
+    variants: tuple[str, ...] = ("MOM_BASE",)
     oos_folds: int = 3
 
     def __post_init__(self):

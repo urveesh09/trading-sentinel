@@ -34,6 +34,41 @@ does not alter archived runs. Next: B4 Momentum/Range scope, then B6 held-out
 reporting, then owner review of the separately listed live cross-book allocation
 decisions. GitHub push/promotion and Production read-only checks remain pending.
 
+## October 3 — B4 complete: Momentum and Range shipped-policy replays (Dev only)
+
+**Problem.** The existing Momentum 15-minute adapter correctly reuses the
+evaluator but models a shadow full-quantity target and has no evidence of the
+manual EXEC/admission path. Range Reversion is a pure entry profile reached
+through the proactive dispatcher and has no Backtest Lab adapter at all. A
+daily Swing result must not be relabelled as Range performance.
+
+**Delivered.** The Momentum replay retains its evaluator scope but defaults to
+the shipped `MOM_BASE`; `MOM_RECENCY_5` is explicit research only. The Range
+evaluator invokes `range_reversion_entry` on completed point-in-time bars,
+records every verdict/reason and reports no P&L. Where
+historical manual approval, archived advisory context, broker admission,
+reservation or exit evidence is missing, declare it unavailable rather than
+construct a counterfactual portfolio. If a pure exact Momentum admission/exit
+kernel is already shared by runtime, bind it with parity tests; otherwise
+document the boundary and do not claim lifecycle completion.
+
+**Files/contracts.** `range_reversion.py`, its dispatcher call site,
+`momentum_replay.py`, Backtest Lab/catalogue, existing B1 data contracts and
+focused tests. Frozen snapshots are read-only; no live/order modules may be
+called. Update guide/checklist/atlas on source changes.
+
+**Acceptance completed.** Range decisions use only completed, prior-known bars and are
+catalogued separately from Swing. Momentum retains its actual evaluator/exit
+assumptions and rejects unverifiable interval/context input. Tests prove
+decision parity/clock behavior and no adapter can place orders. No settings,
+capital policy, Telegram action, broker call, Production edit or deployment.
+Focused verification: 70 passed, one existing httpx deprecation warning.
+
+**Rollout/rollback/remaining work.** Dev-only offline tests and archived
+manifests. Rollback removes research code only. Next B6 adds holdout/report
+requirements. B5 stays excluded by the owner; the unresolved cross-book live
+allocation decisions remain owner decisions.
+
 ## October 3 — B0/B2 complete: exact classic Penny CNC Connors paper lifecycle (Dev only)
 
 [B2 CNC slice](2026-10-03-b2-penny-cnc-connors-lifecycle.md).
@@ -55,8 +90,7 @@ Runtime findings, not changed:
 
 **Real-data run pending:** Production is stopped.
 
-Next in the B series: **B3**, then B4 and B6. B5 is excluded at the owner's
-direction.
+Next in the B series: **B6**. B5 is excluded at the owner's direction.
 
 ## October 3 — F1-A owner rule "no extra margin" enforced at both broker boundaries (Dev only)
 

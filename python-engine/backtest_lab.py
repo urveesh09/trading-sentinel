@@ -444,6 +444,93 @@ class EdgeDecisionParityAdapter(BacktestAdapter):
                 list(self.metadata.limitations))
 
 
+class RangeReversionEvaluatorAdapter(BacktestAdapter):
+    """Point-in-time verdict archive for the shipped Range Reversion profile."""
+    metadata = StrategyMetadata(
+        strategy_id="range_reversion_daily_evaluator", name="Range Reversion (daily evaluator replay)",
+        version="1.0.0", description="Calls range_reversion_entry for each completed daily decision bar.",
+        engine="range_reversion.range_reversion_entry", timeframe="1 day", scope="EVALUATOR",
+        capabilities=("universe", "point_in_time_decisions", "gate_funnel", "shipped_evaluator"),
+        data_requirements=("explicit ticker universe", "15+ validated daily bars per decision",),
+        limitations=(
+            "EVALUATOR scope only: historical proposals, decision cutoffs, advisory/news context, entry fills, exits and allocation are not reconstructed.",
+            "Each verdict is made after that daily bar completes; it is not evidence of an intraday or live order.",
+            "The current profile constants are frozen in the run manifest; no parameter search is performed.",
+        ),
+        default_config={"tickers": [], "window_size": 14, "max_range_pct": 0.06,
+                        "expansion_limit": 1.5, "touch_tolerance_pct": 0.005,
+                        "strict_stop_epsilon": 0.001},
+        default_assumptions={"decision_clock": "completed_daily_bar", "execution": "not_modelled"},
+        parameter_schema={"tickers": {"type": "array", "items": {"type": "string"}, "minItems": 1},
+                          "window_size": {"type": "integer", "minimum": 2},
+                          "max_range_pct": {"type": "number", "minimum": 0},
+                          "expansion_limit": {"type": "number", "minimum": 0},
+                          "touch_tolerance_pct": {"type": "number", "minimum": 0},
+                          "strict_stop_epsilon": {"type": "number", "minimum": 0}},
+    )
+
+    def snapshot_config(self, supplied):
+        merged = super().snapshot_config(supplied)
+        tickers = _ticker_list(merged["tickers"])
+        if not tickers:
+            raise ValueError("Range evaluator replay requires an explicit ticker universe")
+        window = merged["window_size"]
+        if isinstance(window, bool) or not isinstance(window, int) or window < 2:
+            raise ValueError("Range window_size must be an integer of at least 2")
+        fields = {key: float(merged[key]) for key in ("max_range_pct", "expansion_limit", "touch_tolerance_pct", "strict_stop_epsilon")}
+        if any(not math.isfinite(value) or value < 0 for value in fields.values()):
+            raise ValueError("Range thresholds must be finite non-negative numbers")
+        return {"tickers": list(tickers), "window_size": window, **fields}
+
+    def prepare(self, db_path, request):
+        from datetime import timedelta
+        from research_data_contracts import DatasetUnavailable, load_daily_dataset
+        try:
+            data = load_daily_dataset(db_path, tickers=request.config["tickers"],
+                                      before=(date.fromisoformat(request.end_date) + timedelta(days=1)).isoformat())
+        except DatasetUnavailable as exc:
+            raise BacktestUnavailable(str(exc)) from exc
+        invalid = sorted(data.invalid)
+        if invalid:
+            raise BacktestUnavailable("invalid daily history for: " + ", ".join(invalid))
+        missing = sorted(t for t in request.config["tickers"] if not data.bars.get(t))
+        if missing:
+            raise BacktestUnavailable("missing required daily history: " + ", ".join(missing))
+        rows = [(bar.ticker, bar.day.isoformat(), bar.open, bar.high, bar.low, bar.close, bar.volume)
+                for ticker in request.config["tickers"] for bar in data.bars[ticker]]
+        return PreparedDataset(_fingerprint_rows(["ticker", "date", "open", "high", "low", "close", "volume"], rows),
+                               len(rows), {"daily": data.manifest}, data)
+
+    def execute(self, prepared, request):
+        from range_reversion import range_reversion_entry
+        start, end = date.fromisoformat(request.start_date), date.fromisoformat(request.end_date)
+        config = {key: request.config[key] for key in ("window_size", "max_range_pct", "expansion_limit", "touch_tolerance_pct", "strict_stop_epsilon")}
+        verdicts = []
+        for ticker in request.config["tickers"]:
+            history = []
+            for bar in prepared.payload.bars[ticker]:
+                history.append({"date": bar.day.isoformat(), "open": bar.open, "high": bar.high,
+                                "low": bar.low, "close": bar.close, "volume": bar.volume})
+                if start <= bar.day <= end:
+                    verdict = range_reversion_entry(history, **config)
+                    verdicts.append({"ticker": ticker, "decision_date": bar.day.isoformat(),
+                                     "verdict": verdict.to_dict()})
+        if not verdicts:
+            raise BacktestUnavailable("no completed daily decision bars in requested window")
+        accepted = sum(row["verdict"]["signal"] == "ENTER" for row in verdicts)
+        reasons = Counter(row["verdict"]["signal"] for row in verdicts)
+        return {"scope": "EVALUATOR", "clock": "completed_daily_bar", "verdicts": verdicts,
+                "accepted": accepted, "reasons": dict(sorted(reasons.items()))}
+
+    def normalize(self, result, request):
+        return ({"trade_count": None, "net_pnl": None, "net_return_pct": None, "win_rate_pct": None,
+                 "profit_factor": None, "max_drawdown_pct": None, "avg_r": None, "scope": result["scope"],
+                 "decision_count": len(result["verdicts"]), "entry_decisions": result["accepted"],
+                 "verdict_reasons": result["reasons"],
+                 "oos": {"available": False, "reason": "evaluator replay has no portfolio result"}},
+                list(self.metadata.limitations))
+
+
 class PennyDailyProxyAdapter(BacktestAdapter):
     metadata = StrategyMetadata(
         strategy_id="penny_breakout_daily_proxy",
@@ -1083,13 +1170,13 @@ class Momentum15MinuteReplayAdapter(BacktestAdapter):
         engine="momentum_replay", timeframe="15 minute", scope="EVALUATOR",
         capabilities=("universe", "true_intraday", "gate_funnel", "costs", "risk_metrics", "chronological_oos"),
         data_requirements=("intraday_cache interval='15minute'", "strictly prior ohlcv_cache daily history"),
-        limitations=("15-minute OHLC assumes stop before target.", "Full quantity exits at T1; partial runners and trailing stops are not modelled."),
+        limitations=("15-minute OHLC assumes stop before target.", "Full quantity exits at T1; partial runners and trailing stops are not modelled.", "Historical Swing-derived regime, Telegram approval, broker admission and shared capital are not archived; configured context is declared, not inferred."),
         default_config={
             "tickers": [], "bankroll": 4500.0, "momentum_pool": 2500.0,
             "min_candles": 4, "daily_lookback_rows": 30, "market_regime": "BULL",
             "regime": "REGIME_1_NORMAL", "normal_volume_threshold": 1.5,
             "lunchtime_volume_threshold": 1.75, "lunchtime_start": "11:30",
-            "lunchtime_end": "13:15", "variants": ["MOM_BASE", "MOM_RECENCY_5"], "oos_folds": 3,
+            "lunchtime_end": "13:15", "variants": ["MOM_BASE"], "oos_folds": 3,
         },
         default_assumptions={"execution": "frozen_momentum_shadow_slippage_and_MIS_costs", "same_bar_rule": "stop_before_target", "position_lifecycle": "full_quantity_target_1"},
         parameter_schema={
@@ -1203,7 +1290,7 @@ STRATEGY_REGISTRY: dict[str, BacktestAdapter] = {
         SwingDailyAdapter(), SwingDecisionParityAdapter(), EdgeDecisionParityAdapter(), PennyDailyProxyAdapter(),
         PennyDailyProxyWalkForwardAdapter(), PennyMinuteReplayAdapter(),
         PennyMisLifecycleAdapter(), PennyCncConnorsLifecycleAdapter(),
-        Momentum15MinuteReplayAdapter(), FnoUnavailableAdapter(),
+        Momentum15MinuteReplayAdapter(), RangeReversionEvaluatorAdapter(), FnoUnavailableAdapter(),
     )
 }
 

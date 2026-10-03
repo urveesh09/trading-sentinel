@@ -59,8 +59,9 @@ def test_replay_is_prefix_only_first_candidate_idempotent_and_three_fold_oos(tmp
     _cache(path)
     calls = []
     monkeypatch.setattr(replay, "evaluate_momentum_signal", _accept_on_four(calls))
-    first = replay.run_momentum_replay(path)
-    second = replay.run_momentum_replay(path)
+    comparison = replay.MomentumReplayConfig(variants=("MOM_BASE", "MOM_RECENCY_5"))
+    first = replay.run_momentum_replay(path, comparison)
+    second = replay.run_momentum_replay(path, comparison)
     assert first == second
     assert first["coverage"]["selected_interval"] == "15minute"
     assert first["summary"]["entries"] == 10  # 5 days x 2 variants, once each
@@ -81,7 +82,8 @@ def test_variant_arguments_have_production_parity_contract(tmp_path, monkeypatch
     _cache(path, days=1)
     calls = []
     monkeypatch.setattr(replay, "evaluate_momentum_signal", _accept_on_four(calls))
-    result = replay.run_momentum_replay(path)
+    result = replay.run_momentum_replay(path, replay.MomentumReplayConfig(
+        variants=("MOM_BASE", "MOM_RECENCY_5")))
     base = next(item for item in calls if item["kwargs"]["crossover_lookback"] == 3)
     recency = next(item for item in calls if item["kwargs"]["crossover_lookback"] == 5)
     assert base["kwargs"]["max_vwap_distance_atr"] is None
@@ -103,7 +105,8 @@ def test_baseline_replay_decisions_are_the_actual_production_evaluator_outputs(t
         return outcome
 
     monkeypatch.setattr(replay, "evaluate_momentum_signal", capture)
-    result = replay.run_momentum_replay(path)
+    result = replay.run_momentum_replay(path, replay.MomentumReplayConfig(
+        variants=("MOM_BASE", "MOM_RECENCY_5")))
     for variant, lookback in (("MOM_BASE", 3), ("MOM_RECENCY_5", 5)):
         outcomes = [outcome for seen_lookback, outcome in observed if seen_lookback == lookback]
         assert result["funnel"][variant]["evaluations"] == len(outcomes)
@@ -114,6 +117,15 @@ def test_baseline_replay_decisions_are_the_actual_production_evaluator_outputs(t
                 reason = decision.get("reject_reason", "unknown")
                 expected_rejects[reason] = expected_rejects.get(reason, 0) + 1
         assert result["funnel"][variant]["rejects"] == expected_rejects
+
+
+def test_default_replay_variant_is_the_shipped_momentum_evaluator(tmp_path, monkeypatch):
+    path = str(tmp_path / "cache.db")
+    _cache(path, days=1)
+    monkeypatch.setattr(replay, "evaluate_momentum_signal", _accept_on_four([]))
+    result = replay.run_momentum_replay(path)
+    assert result["config"]["variants"] == ["MOM_BASE"]
+    assert set(result["funnel"]) == {"MOM_BASE"}
 
 
 @pytest.mark.parametrize("provenance", ["legacy_unknown", ""])

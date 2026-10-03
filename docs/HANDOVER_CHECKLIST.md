@@ -11,7 +11,8 @@
   warning remains.
 - [x] Source commit `e349b0b` is Dev-only; no configuration, migration, push
   or deployment occurred.
-- [ ] B4 Momentum and Range scope/lifecycle work.
+- [x] B4: Momentum baseline is `MOM_BASE`; Range has an independent
+  completed-bar evaluator (70 focused tests, one existing httpx deprecation).
 - [ ] B6 standard reports and untouched-holdout guard.
 - [ ] Real-data/Production read-only checks only after Production is restored;
   GitHub promotion remains owner-controlled.
