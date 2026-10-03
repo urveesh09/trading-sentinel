@@ -1580,12 +1580,19 @@ class KiteClient:
         that mistake are expensive: a forgotten exit gets blocked and goes
         naked, a forgotten entry trades straight through a halt. Making it
         required converts either mistake into an immediate TypeError.
+
+        [F0-R2 2026-10-03] Every return carries ``dispatch_certainty``:
+        ``NOT_SENT`` (refused before any request left this process),
+        ``BROKER_REJECTED`` (explicit HTTP 4xx, no order created),
+        ``AMBIGUOUS`` (the broker may hold an order: 5xx, a transport error
+        after connecting, or an accepted response without an order id) or
+        ``ACCEPTED``. Callers must not release capital on ``AMBIGUOUS``.
         """
         if intent not in ("entry", "exit"):
             raise ValueError(f"intent must be 'entry' or 'exit', got {intent!r}")
 
         if not tradingsymbol or quantity <= 0:
-            return {"order_id": None, "status": "ERROR",
+            return {"order_id": None, "status": "ERROR", "dispatch_certainty": "NOT_SENT",
                     "message": "tradingsymbol and positive quantity are required"}
 
         def entry_blocker():
@@ -1602,6 +1609,7 @@ class KiteClient:
                 return {
                     "order_id": None,
                     "status": "ERROR",
+                    "dispatch_certainty": "NOT_SENT",
                     "halted": True,
                     "owner_entry_halted": True,
                     "message": f"Owner entry halt: {owner_halt.reason}",
@@ -1621,7 +1629,7 @@ class KiteClient:
                 # string they do not know would read as SUCCESS. The `halted`
                 # flag is there for callers that want to tell the two apart.
                 return {"order_id": None, "status": "ERROR", "halted": True,
-                        "message": str(exc)}
+                        "dispatch_certainty": "NOT_SENT", "message": str(exc)}
             return None
 
         blocked = entry_blocker()
@@ -1660,6 +1668,7 @@ class KiteClient:
             return {
                 "order_id": data.get("order_id"),
                 "status": "PLACED",
+                "dispatch_certainty": "ACCEPTED" if data.get("order_id") else "AMBIGUOUS",
                 "message": "order placed",
             }
         except httpx.HTTPStatusError as e:
@@ -1698,13 +1707,22 @@ class KiteClient:
                             "kite_order_authorization_alert_failed", error=str(alert_exc),
                         )
             return {"order_id": None, "status": "ERROR",
+                    "dispatch_certainty": (
+                        "BROKER_REJECTED" if 400 <= e.response.status_code < 500 else "AMBIGUOUS"
+                    ),
                     "execution_blocked": is_permission_or_static_ip_rejection(
                         e.response.status_code, body
                     ),
                     "message": f"HTTP {e.response.status_code}: {body}"}
         except httpx.RequestError as e:
             logger.error("kite_place_order_failed error=%s", str(e))
-            return {"order_id": None, "status": "ERROR", "message": str(e)}
+            # Only a failure to connect proves the request never left.
+            certainty = (
+                "NOT_SENT" if isinstance(e, (httpx.ConnectError, httpx.ConnectTimeout))
+                else "AMBIGUOUS"
+            )
+            return {"order_id": None, "status": "ERROR", "dispatch_certainty": certainty,
+                    "message": str(e)}
 
     async def modify_order(
         self,

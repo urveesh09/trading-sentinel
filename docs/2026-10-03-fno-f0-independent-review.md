@@ -1,5 +1,10 @@
 # Independent F0 review and correction plan — October 3, 2026 (IST)
 
+## R2 status update (later October 3)
+
+R2 is implemented in Dev; see [the R2 slice](2026-10-03-fno-f0-r2-dispatch-ownership.md). R1 and R2 are done;
+R3–R5 remain open.
+
 ## R1 status update (later October 3)
 
 R1 is implemented in Dev; see [the R1 slice](2026-10-03-fno-f0-r1-fee-inclusive-exposure.md). R2–R5 remain open.

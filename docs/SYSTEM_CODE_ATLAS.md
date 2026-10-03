@@ -634,7 +634,7 @@ Declared tables: `fno_chain_oi`, `fno_fut_snap`
 
 [FNO-ORCHESTRATOR 2026-07-10] Dual-leg tick runner for the F&O subsystem (spec §10.4). Reuses the EDGE_PAPER / EDGE_LIVE shape from penny_edge_orchestrator: one candidate scan, two legs, bankroll scales the sizing, separate source tags (FNO_PAPER / FNO_LIVE) so the legs cannot see each other's rows. In P1 the live leg is structurally disarmed three ways: FNO_DISABLE_LIVE=True, FNO_LIVE_TRADING=False, FNO_LIVE_BANKROLL=0 -- and even with all three flipped it still refuses unless fno_go_live_check() returns []. run_fno_tick() fires every FNO_SCAN_INTERVAL_SEC during market hours: 1. manage open positions (stops / target+trail / time stop / 15:10 hard flat) -- exits are checked BEFORE entries s
 
-Top-level declarations: `_now_min` (line 65), `_read_cap` (line 69), `_record_management_read` (line 74), `_timed_database_operation` (line 104), `_management_quote` (line 125), `_oldest_quote_age_sec` (line 141), `_settle_exit_receipt` (line 158), `_fno_pool_paper` (line 219), `_fno_pool_live` (line 224), `_load_dr_entry_inputs` (line 236), `_fno_equity` (line 289), `_fno_halted` (line 295), `_fetch_futures_bars` (line 316), `_record_shadow_observation` (line 324), `_schedule_shadow_observation` (line 341), `_manage_open_positions` (line 371), `_try_entry_for_leg` (line 600), `run_fno_tick` (line 916), `_bar_already_logged` (line 1328), `format_fno_telegram` (line 1349)
+Top-level declarations: `_now_min` (line 66), `_read_cap` (line 70), `_record_management_read` (line 75), `_timed_database_operation` (line 105), `_management_quote` (line 126), `_oldest_quote_age_sec` (line 142), `_settle_exit_receipt` (line 159), `_fno_pool_paper` (line 220), `_fno_pool_live` (line 225), `_load_dr_entry_inputs` (line 237), `_fno_equity` (line 290), `_fno_halted` (line 296), `_fetch_futures_bars` (line 317), `_record_shadow_observation` (line 325), `_schedule_shadow_observation` (line 342), `_manage_open_positions` (line 372), `_try_entry_for_leg` (line 601), `_insert_entry_position` (line 951), `run_fno_tick` (line 962), `_bar_already_logged` (line 1374), `format_fno_telegram` (line 1395)
 
 Engine dependencies: `affordability`, `config`, `fno_chain`, `fno_costs`, `fno_engine_mom`, `fno_executor`, `fno_exit_rules`, `fno_gates`, `fno_instruments`, `fno_models`, `fno_risk`, `fno_shared_risk`, `fno_signal_log`, `operator_alert`, `performance`
 
@@ -676,13 +676,13 @@ Declared tables: `fno_shadow_evaluations`
 
 Shared, fail-closed F&O paper-risk evidence and reservations. This module is intentionally the only place that may combine the directional ``fno_positions`` and defined-risk ``fno_dr_positions`` books for an F&O admission decision. The books retain their own lifecycle/settlement writers; this module does not invent a fill, close a position, or release exposure on a timer. In particular, an ``UNRESOLVED`` structure and an interrupted entry reservation remain unavailable capital until an explicit, durable resolution. F0-A/B provide the typed snapshot and atomic reservation primitive; the paper position writers consume the reservation with their position insert. F0-C adds the common entry-polic
 
-Top-level declarations: `SharedFnoRiskPolicy` (line 68), `SharedFnoEntryPolicyDecision` (line 85), `SharedFnoRiskView` (line 102), `SharedFnoAdmission` (line 127), `_finite_non_negative` (line 135), `_unavailable` (line 143), `init_shared_fno_risk_db` (line 160), `_table_exists` (line 171), `_whole_non_negative` (line 178), `_finite_number` (line 185), `_recovery_evidence_is_intact` (line 193), `_validate_open_partial_exit_evidence` (line 207), `_read_view` (line 314), `_invalid_policy` (line 425), `policy_from_settings` (line 439), `_policy_unavailable` (line 451), `_read_entry_policy` (line 461), `shared_fno_entry_policy` (line 538), `shared_fno_risk_view` (line 563), `reserve_shared_fno_risk` (line 586), `resolve_shared_fno_risk_reservation` (line 660), `consume_shared_fno_risk_reservation_in_transaction` (line 702)
+Top-level declarations: `SharedFnoRiskPolicy` (line 128), `SharedFnoEntryPolicyDecision` (line 145), `SharedFnoRiskView` (line 162), `SharedFnoAdmission` (line 190), `SharedFnoDispatchClaim` (line 203), `_finite_non_negative` (line 212), `_unavailable` (line 220), `init_shared_fno_risk_db` (line 237), `_table_exists` (line 251), `_whole_non_negative` (line 258), `_finite_number` (line 265), `_recovery_evidence_is_intact` (line 273), `_validate_open_partial_exit_evidence` (line 287), `_read_view` (line 394), `_invalid_policy` (line 510), `policy_from_settings` (line 524), `_policy_unavailable` (line 536), `_read_entry_policy` (line 546), `shared_fno_entry_policy` (line 623), `shared_fno_risk_view` (line 648), `reserve_shared_fno_risk` (line 671), `resolve_shared_fno_risk_reservation` (line 745), `consume_shared_fno_risk_reservation_in_transaction` (line 796), `_encode_evidence` (line 831), `_zero_fill_evidence_ok` (line 845), `dispatch_release_evidence_ok` (line 852), `_reconcile_evidence_ok` (line 866), `claim_shared_fno_entry_dispatch` (line 882), `resolve_shared_fno_entry_dispatch` (line 966), `reconcile_shared_fno_entry_dispatch` (line 1024)
 
 Engine dependencies: `config`
 
 Related tests: `python-engine/tests/test_fno_shared_risk.py`
 
-Declared tables: `fno_risk_reservations`
+Declared tables: `fno_entry_dispatches`, `fno_risk_reservations`
 
 ## `python-engine/fno_signal_log.py`
 
@@ -906,7 +906,7 @@ Related tests: `python-engine/tests/test_intraday_spread_signal_artifact.py`
 
 No module docstring; use the declarations and callers below.
 
-Top-level declarations: `_interval_minutes` (line 36), `_intraday_cache_gate_evaluate` (line 72), `provider_lane` (line 192), `RateLimiter` (line 209), `KiteClient` (line 294), `latest_order_state` (line 1874)
+Top-level declarations: `_interval_minutes` (line 36), `_intraday_cache_gate_evaluate` (line 72), `provider_lane` (line 192), `RateLimiter` (line 209), `KiteClient` (line 294), `latest_order_state` (line 1892)
 
 Engine dependencies: `config`, `halt_switch`, `operator_alert`, `order_execution_readiness`, `owner_entry_halt`
 

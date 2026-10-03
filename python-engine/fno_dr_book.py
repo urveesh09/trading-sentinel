@@ -807,8 +807,8 @@ async def maybe_open_dr_structure(
         # directional book.  Initialise only durable local schemas; no quote,
         # order, message or exit path is touched here.
         from fno_shared_risk import (
-            init_shared_fno_risk_db, policy_from_settings,
-            reserve_shared_fno_risk, shared_fno_entry_policy,
+            claim_shared_fno_entry_dispatch, init_shared_fno_risk_db, policy_from_settings,
+            reserve_shared_fno_risk, resolve_shared_fno_entry_dispatch, shared_fno_entry_policy,
         )
         from fno_positions import init_fno_positions_db
         from performance import init_ledger
@@ -837,9 +837,28 @@ async def maybe_open_dr_structure(
         if not admission.allowed:
             logger.warning("fno_dr_entry_skipped reason=%s", admission.reason)
             return None
-        row_id = await insert_structure(
-            db_path, source, planned, now_ist, reservation_key=reservation_key,
+        # F0-R2: one claim per reservation, after re-reading the entry policy.
+        claim = await claim_shared_fno_entry_dispatch(
+            db_path, reservation_key=reservation_key, source=source, book="DEFINED_RISK",
+            pool_rs=float(settings.FNO_PAPER_BANKROLL), entry_day_ist=now_ist.date(),
+            policy=shared_policy,
         )
+        if not claim.granted:
+            logger.warning("fno_dr_entry_skipped reason=dispatch_claim_denied:%s", claim.reason)
+            return None
+        try:
+            row_id = await insert_structure(
+                db_path, source, planned, now_ist, reservation_key=reservation_key,
+            )
+        except Exception:
+            # Paper DR has no broker leg: a failed local insert created nothing.
+            await resolve_shared_fno_entry_dispatch(
+                db_path, reservation_key=reservation_key, owner=claim.owner,
+                outcome="no_dispatch",
+                evidence={"dispatch_certainty": "NOT_SENT", "order_id": None,
+                          "receipt": "paper_structure_insert_failed"},
+            )
+            raise
         logger.info(
             "fno_dr_opened id=%d kind=%s legs=%d max_loss=%.0f max_profit=%.0f "
             "net_premium_rs=%.0f spot=%.1f",

@@ -1,5 +1,28 @@
 # Trading Sentinel — next-agent execution plan
 
+## October 3 — F0-R2 implemented in Dev (one dispatch owner)
+
+[R2 slice and verification](2026-10-03-fno-f0-r2-dispatch-ownership.md).
+- **Claims.** A reservation is now only a receipt.
+  `claim_shared_fno_entry_dispatch` re-reads the entry policy and grants
+  exactly one `DISPATCHING` owner per reservation. Positions require the
+  claim, and a halted retry is denied and released before dispatch.
+- **Executor.** It re-reads the final order state after a cancel and returns
+  typed outcomes with evidence. Only no-dispatch, explicit 4xx rejection and
+  verified zero-fill outcomes release capital. Partial, unknown and
+  unrecorded fills keep the full reservation (`UNRESOLVED`) until
+  `reconcile_shared_fno_entry_dispatch` is given verified evidence.
+- **Broker client.** `place_order` reports `dispatch_certainty`.
+- **Tests.** 37 new; 666 F&O/broker/settlement passed, plus the known
+  unrelated mark-to-market failure; 118 Penny order-path passed.
+
+Next: **R3**, then R4 and R5. Dev only, not pushed or deployed.
+
+**Operator note.** After any live F&O entry, check for `UNRESOLVED` or
+orphaned `DISPATCHING` rows in `fno_entry_dispatches`
+(`SharedFnoRiskView.unresolved_entry_dispatch_count`). They hold capital by
+design until reconciled.
+
 ## October 3 — F0-R1 implemented in Dev (fee-inclusive exposure)
 
 [R1 slice and verification](2026-10-03-fno-f0-r1-fee-inclusive-exposure.md).

@@ -11,7 +11,8 @@ from fno_dr_book import PlannedStructure, init_dr_db, insert_structure
 from fno_models import FnoDirection, OptionType
 from fno_positions import init_fno_positions_db, insert_position_with_risk_reservation
 from fno_shared_risk import (
-    init_shared_fno_risk_db, reserve_shared_fno_risk, shared_fno_risk_view,
+    claim_shared_fno_entry_dispatch, init_shared_fno_risk_db, reserve_shared_fno_risk,
+    shared_fno_risk_view,
 )
 from performance import init_ledger
 from tests.test_fno_dr_book import LOT, NOW, STEP, FakeSnap
@@ -44,12 +45,20 @@ def _position(**overrides):
     return fields
 
 
-async def _reserve(db_path, key, amount, book_name="SINGLE_LEG"):
-    return await reserve_shared_fno_risk(
-        db_path, source=SOURCE, pool_rs=POOL, reservation_key=key,
+async def _reserve(db_path, key, amount, book_name="SINGLE_LEG", *, claim=True, pool=POOL):
+    """Reserve, then (as every real caller must, F0-R2) claim the dispatch."""
+    admission = await reserve_shared_fno_risk(
+        db_path, source=SOURCE, pool_rs=pool, reservation_key=key,
         book=book_name, worst_case_cash_rs=amount,
         created_at=datetime(2026, 10, 5, 4, 30, tzinfo=timezone.utc),
     )
+    if admission.allowed and claim:
+        granted = await claim_shared_fno_entry_dispatch(
+            db_path, reservation_key=key, source=SOURCE, book=book_name,
+            pool_rs=pool, entry_day_ist=None,
+        )
+        assert granted.granted, granted.reason
+    return admission
 
 
 @pytest.mark.asyncio
@@ -68,7 +77,7 @@ async def test_review_reproduction_single_leg_fee_is_not_released_on_consumption
     assert after.open_worst_case_cash_rs == pytest.approx(7_500.0 + FEE)
     assert after.available_worst_case_cash_rs == pytest.approx(before)   # was 51.58 before R1
 
-    competing = await _reserve(db_path, "single-b", FEE, "DEFINED_RISK")
+    competing = await _reserve(db_path, "single-b", FEE, "DEFINED_RISK", claim=False)
     assert not competing.allowed
     assert competing.reason == "shared_worst_case_cash_exhausted"
 
@@ -136,10 +145,7 @@ async def test_review_reproduction_defined_risk_keeps_frozen_entry_cost(db_path)
     )
     worst = spread.max_loss_rs + structure_round_trip_cost(spread)
     pool = worst + 1.0
-    admitted = await reserve_shared_fno_risk(
-        db_path, source=SOURCE, pool_rs=pool, reservation_key="dr-a",
-        book="DEFINED_RISK", worst_case_cash_rs=worst,
-    )
+    admitted = await _reserve(db_path, "dr-a", worst, "DEFINED_RISK", pool=pool)
     assert admitted.allowed
     await insert_structure(db_path, SOURCE, planned, NOW, reservation_key="dr-a")
     view = await shared_fno_risk_view(db_path, SOURCE, pool)

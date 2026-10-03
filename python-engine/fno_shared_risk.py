@@ -32,6 +32,15 @@ at insert (single-leg ``risk_fee_reserve_rupees``; DR ``entry_cost_rs``).
 A verified partial keeps the full frozen fee (fees rise with quantity), and
 a terminal close hands the exposure over to exact ledger cash. A missing fee
 reserve, or a single-leg loss below its paid premium at risk, fails closed.
+
+F0-R2 separates the idempotent reservation receipt from the one-time right
+to dispatch. ``claim_shared_fno_entry_dispatch`` re-reads the entry policy
+and records exactly one DISPATCHING owner per reservation; only that owner
+may call an executor. Outcomes are typed: capacity is released only for a
+verified no-dispatch, explicit broker rejection or verified terminal zero
+fill. Partial, unknown or unrecorded fills keep the whole reservation until
+an operator reconciles them with evidence. A reservation-backed position can
+only be inserted against a claim, and nothing expires on a timer.
 """
 from __future__ import annotations
 
@@ -42,6 +51,7 @@ import json
 import math
 from pathlib import Path
 from typing import Optional
+from uuid import uuid4
 from zoneinfo import ZoneInfo
 
 import aiosqlite
@@ -60,6 +70,56 @@ CREATE TABLE IF NOT EXISTS fno_risk_reservations (
     resolution_reason TEXT
 )
 """
+
+_DISPATCH_DDL = """
+CREATE TABLE IF NOT EXISTS fno_entry_dispatches (
+    reservation_key TEXT PRIMARY KEY,
+    source TEXT NOT NULL,
+    book TEXT NOT NULL CHECK (book IN ('SINGLE_LEG', 'DEFINED_RISK')),
+    owner TEXT NOT NULL,
+    state TEXT NOT NULL CHECK (state IN ('DISPATCHING', 'FILLED', 'RELEASED', 'UNRESOLVED')),
+    claimed_at TEXT NOT NULL,
+    outcome TEXT,
+    order_id TEXT,
+    evidence_json TEXT,
+    evidence_sha256 TEXT,
+    operator TEXT,
+    position_ref TEXT,
+    resolved_at TEXT
+)
+"""
+
+# Terminal claims are evidence; a claim can never return to DISPATCHING or
+# change identity, and no claim row may be deleted.
+_DISPATCH_UPDATE_GUARD_DDL = """
+CREATE TRIGGER IF NOT EXISTS fno_entry_dispatches_transition_guard
+BEFORE UPDATE ON fno_entry_dispatches
+FOR EACH ROW WHEN
+    OLD.state IN ('FILLED', 'RELEASED')
+    OR (NEW.state = 'DISPATCHING' AND OLD.state <> 'DISPATCHING')
+    OR NEW.owner IS NOT OLD.owner
+    OR NEW.reservation_key IS NOT OLD.reservation_key
+    OR NEW.source IS NOT OLD.source
+    OR NEW.book IS NOT OLD.book
+BEGIN
+    SELECT RAISE(ABORT, 'fno entry dispatch evidence is immutable');
+END
+"""
+
+_DISPATCH_NO_DELETE_DDL = """
+CREATE TRIGGER IF NOT EXISTS fno_entry_dispatches_no_delete
+BEFORE DELETE ON fno_entry_dispatches
+BEGIN
+    SELECT RAISE(ABORT, 'fno entry dispatch evidence is immutable');
+END
+"""
+
+# Executor/broker outcomes that prove no exposure was created.
+DISPATCH_RELEASE_OUTCOMES = frozenset({"no_dispatch", "rejected", "zero_fill_verified"})
+# Outcomes that may hide a fill: the whole reservation is retained.
+DISPATCH_RETAIN_OUTCOMES = frozenset({"partial", "unknown", "filled_unrecorded"})
+RECONCILE_OUTCOMES = frozenset({"zero_fill_verified", "no_order_verified"})
+_MAX_EVIDENCE_BYTES = 65536
 
 _IST = ZoneInfo("Asia/Kolkata")
 
@@ -121,14 +181,31 @@ class SharedFnoRiskView:
     reason: str = ""
     # [F0-R1] Fee portion already included in ``open_worst_case_cash_rs``.
     open_fee_reserve_rs: float = 0.0
+    # [F0-R2] Claims still DISPATCHING or UNRESOLVED (their reservations are
+    # retained in ``reserved_worst_case_cash_rs``).
+    unresolved_entry_dispatch_count: int = 0
 
 
 @dataclass(frozen=True)
 class SharedFnoAdmission:
-    """Result of attempting to reserve worst-case cash for one new entry."""
+    """Result of attempting to reserve worst-case cash for one new entry.
+
+    ``allowed`` means the reservation exists; it is *not* permission to
+    dispatch an order. Only a granted ``SharedFnoDispatchClaim`` is.
+    """
 
     allowed: bool
     reason: str
+    view: SharedFnoRiskView
+
+
+@dataclass(frozen=True)
+class SharedFnoDispatchClaim:
+    """The one-time right to dispatch the entry bound to a reservation."""
+
+    granted: bool
+    reason: str
+    owner: Optional[str]
     view: SharedFnoRiskView
 
 
@@ -165,6 +242,9 @@ async def init_shared_fno_risk_db(db_path: str) -> None:
     """
     async with aiosqlite.connect(db_path) as db:
         await db.execute(_RESERVATION_DDL)
+        await db.execute(_DISPATCH_DDL)
+        await db.execute(_DISPATCH_UPDATE_GUARD_DDL)
+        await db.execute(_DISPATCH_NO_DELETE_DDL)
         await db.commit()
 
 
@@ -317,7 +397,7 @@ async def _read_view(
     """Read one consistent view; caller owns the transaction boundary."""
     required = (
         "bankroll_ledger", "fno_positions", "fno_dr_positions",
-        "fno_exit_recoveries", "fno_risk_reservations",
+        "fno_exit_recoveries", "fno_risk_reservations", "fno_entry_dispatches",
     )
     missing = [name for name in required if not await _table_exists(db, name)]
     if missing:
@@ -402,6 +482,10 @@ async def _read_view(
     single_total = sum(_finite_non_negative(row[1]) or 0.0 for row in single)
     defined_total = sum(_finite_non_negative(row[0]) or 0.0 for row in defined)
     reserved_total = sum(_finite_non_negative(row[0]) or 0.0 for row in reserved)
+    unresolved_claims = (await (await db.execute(
+        "SELECT COUNT(*) FROM fno_entry_dispatches "
+        "WHERE source=? AND state IN ('DISPATCHING', 'UNRESOLVED')", (source,)
+    )).fetchone())[0]
     equity = pool_rs + realised_pnl
     if not math.isfinite(equity):
         return _unavailable(source, pool_rs, "nonfinite_equity")
@@ -419,6 +503,7 @@ async def _read_view(
         reservation_count=len(reserved),
         available=True,
         open_fee_reserve_rs=fee_total,
+        unresolved_entry_dispatch_count=int(unresolved_claims),
     )
 
 
@@ -685,6 +770,15 @@ async def resolve_shared_fno_risk_reservation(
         await init_shared_fno_risk_db(db_path)
         async with aiosqlite.connect(db_path) as db:
             await db.execute("BEGIN IMMEDIATE")
+            # F0-R2: once an entry is claimed for dispatch, only the typed,
+            # evidence-backed dispatch resolution (or a position insert) may
+            # resolve its reservation.
+            claimed = await (await db.execute(
+                "SELECT 1 FROM fno_entry_dispatches WHERE reservation_key=?", (reservation_key,)
+            )).fetchone()
+            if claimed is not None:
+                await db.rollback()
+                return False
             updated = await db.execute(
                 "UPDATE fno_risk_reservations SET state=?, resolved_at=?, position_ref=?, resolution_reason=? "
                 "WHERE reservation_key=? AND state='RESERVED'",
@@ -711,18 +805,279 @@ async def consume_shared_fno_risk_reservation_in_transaction(
     """
     if not position_ref or book not in {"SINGLE_LEG", "DEFINED_RISK"}:
         return False
-    updated = await db.execute(
-        "UPDATE fno_risk_reservations SET state='CONSUMED', resolved_at=?, position_ref=? "
-        "WHERE reservation_key=? AND source=? AND book=? AND state='RESERVED'",
-        (resolved_at.astimezone(timezone.utc).isoformat(), position_ref,
-         reservation_key, source, book),
-    )
-    return updated.rowcount == 1
+    stamp = resolved_at.astimezone(timezone.utc).isoformat()
+    try:
+        updated = await db.execute(
+            "UPDATE fno_risk_reservations SET state='CONSUMED', resolved_at=?, position_ref=? "
+            "WHERE reservation_key=? AND source=? AND book=? AND state='RESERVED'",
+            (stamp, position_ref, reservation_key, source, book),
+        )
+        if updated.rowcount != 1:
+            return False
+        # F0-R2: a reservation-backed position requires its one dispatch
+        # claim; the claim becomes FILLED in the same transaction.
+        claim = await db.execute(
+            "UPDATE fno_entry_dispatches SET state='FILLED', position_ref=?, resolved_at=?, "
+            "outcome=COALESCE(outcome, 'filled') "
+            "WHERE reservation_key=? AND source=? AND book=? "
+            "AND state IN ('DISPATCHING', 'UNRESOLVED')",
+            (position_ref, stamp, reservation_key, source, book),
+        )
+    except aiosqlite.OperationalError:
+        return False
+    return claim.rowcount == 1
+
+
+def _encode_evidence(evidence: object) -> Optional[tuple[str, str]]:
+    if not isinstance(evidence, dict):
+        return None
+    try:
+        raw = json.dumps(evidence, sort_keys=True, separators=(",", ":"),
+                         default=str, allow_nan=False)
+    except (TypeError, ValueError):
+        return None
+    encoded = raw.encode("utf-8")
+    if len(encoded) > _MAX_EVIDENCE_BYTES:
+        return None
+    return raw, hashlib.sha256(encoded).hexdigest()
+
+
+def _zero_fill_evidence_ok(evidence: dict) -> bool:
+    filled = evidence.get("filled_quantity")
+    return (bool(evidence.get("order_id"))
+            and evidence.get("final_status") in {"CANCELLED", "REJECTED"}
+            and type(filled) is int and filled == 0)
+
+
+def dispatch_release_evidence_ok(outcome: str, evidence: object) -> bool:
+    """True only when ``evidence`` proves the outcome created no exposure."""
+    if not isinstance(evidence, dict):
+        return False
+    if outcome == "no_dispatch":
+        return evidence.get("dispatch_certainty") == "NOT_SENT"
+    if outcome == "rejected":
+        return (evidence.get("dispatch_certainty") == "BROKER_REJECTED"
+                and not evidence.get("order_id"))
+    if outcome == "zero_fill_verified":
+        return _zero_fill_evidence_ok(evidence)
+    return False
+
+
+def _reconcile_evidence_ok(outcome: str, evidence: object) -> bool:
+    if not isinstance(evidence, dict):
+        return False
+    if outcome == "zero_fill_verified":
+        return _zero_fill_evidence_ok(evidence)
+    if outcome == "no_order_verified":
+        checked = evidence.get("checked_at")
+        try:
+            aware = datetime.fromisoformat(str(checked)).tzinfo is not None
+        except ValueError:
+            aware = False
+        return (isinstance(evidence.get("account_id"), str) and bool(evidence["account_id"])
+                and aware and evidence.get("matching_orders") == [])
+    return False
+
+
+async def claim_shared_fno_entry_dispatch(
+    db_path: str,
+    *,
+    reservation_key: str,
+    source: str,
+    book: str,
+    pool_rs: float,
+    entry_day_ist: Optional[date],
+    policy: Optional[SharedFnoRiskPolicy] = None,
+    claimed_at: Optional[datetime] = None,
+) -> SharedFnoDispatchClaim:
+    """Grant the single right to dispatch a reserved entry, or refuse.
+
+    Under one ``BEGIN IMMEDIATE`` transaction: the reservation must still be
+    RESERVED with the same source/book, no claim may exist, and the current
+    entry policy (when ``entry_day_ist`` is given, the same scope admission
+    used) must still allow entry. A policy denial releases the never-sent
+    reservation as ``policy_denied_before_dispatch``. An existing claim in
+    any state - including an orphaned DISPATCHING claim after a restart - is
+    never granted again.
+    """
+    pool = _finite_non_negative(pool_rs)
+    if (pool is None or not reservation_key or book not in {"SINGLE_LEG", "DEFINED_RISK"}
+            or (entry_day_ist is not None and not isinstance(entry_day_ist, date))):
+        view = _unavailable(source, pool or 0.0, "invalid_dispatch_claim_request")
+        return SharedFnoDispatchClaim(False, "invalid_dispatch_claim_request", None, view)
+    stamp = (claimed_at or datetime.now(timezone.utc)).astimezone(timezone.utc).isoformat()
+    try:
+        await init_shared_fno_risk_db(db_path)
+        async with aiosqlite.connect(db_path) as db:
+            await db.execute("BEGIN IMMEDIATE")
+            reservation = await (await db.execute(
+                "SELECT source,book,state FROM fno_risk_reservations WHERE reservation_key=?",
+                (reservation_key,),
+            )).fetchone()
+            existing = await (await db.execute(
+                "SELECT state FROM fno_entry_dispatches WHERE reservation_key=?",
+                (reservation_key,),
+            )).fetchone()
+            if reservation is None or reservation[0] != source or reservation[1] != book:
+                view = await _read_view(db, source, pool)
+                await db.rollback()
+                return SharedFnoDispatchClaim(False, "reservation_not_found_or_mismatched", None, view)
+            if existing is not None:
+                view = await _read_view(db, source, pool)
+                await db.rollback()
+                return SharedFnoDispatchClaim(False, f"dispatch_already_claimed:{existing[0]}", None, view)
+            if reservation[2] != "RESERVED":
+                view = await _read_view(db, source, pool)
+                await db.rollback()
+                return SharedFnoDispatchClaim(False, f"reservation_not_reserved:{reservation[2]}", None, view)
+            if entry_day_ist is not None:
+                decision = await _read_entry_policy(
+                    db, source=source, pool_rs=pool, today_ist=entry_day_ist,
+                    policy=policy or policy_from_settings(),
+                )
+                if not decision.allowed:
+                    await db.execute(
+                        "UPDATE fno_risk_reservations SET state='RELEASED', resolved_at=?, "
+                        "resolution_reason=? WHERE reservation_key=? AND state='RESERVED'",
+                        (stamp, f"policy_denied_before_dispatch:{decision.reason}"[:200],
+                         reservation_key),
+                    )
+                    await db.commit()
+                    return SharedFnoDispatchClaim(False, decision.reason, None, decision.view)
+                view = decision.view
+            else:
+                view = await _read_view(db, source, pool)
+                if not view.available:
+                    await db.rollback()
+                    return SharedFnoDispatchClaim(False, view.reason or "risk_view_unavailable", None, view)
+            owner = uuid4().hex
+            await db.execute(
+                "INSERT INTO fno_entry_dispatches "
+                "(reservation_key,source,book,owner,state,claimed_at) VALUES (?,?,?,?,'DISPATCHING',?)",
+                (reservation_key, source, book, owner, stamp),
+            )
+            await db.commit()
+            return SharedFnoDispatchClaim(True, "claimed", owner, view)
+    except Exception as exc:
+        view = _unavailable(source, pool, f"dispatch_claim_db_error:{type(exc).__name__}")
+        return SharedFnoDispatchClaim(False, view.reason, None, view)
+
+
+async def resolve_shared_fno_entry_dispatch(
+    db_path: str,
+    *,
+    reservation_key: str,
+    owner: str,
+    outcome: str,
+    evidence: dict,
+    resolved_at: Optional[datetime] = None,
+) -> Optional[str]:
+    """Record the owner's dispatch outcome once; return the applied outcome.
+
+    A release outcome whose evidence does not prove zero exposure is applied
+    as ``unknown`` (retained), never as a release. Returns ``None`` when the
+    claim is not this owner's DISPATCHING claim or the write fails.
+    """
+    if outcome not in DISPATCH_RELEASE_OUTCOMES | DISPATCH_RETAIN_OUTCOMES or not owner:
+        return None
+    applied = outcome
+    if outcome in DISPATCH_RELEASE_OUTCOMES and not dispatch_release_evidence_ok(outcome, evidence):
+        applied = "unknown"
+    encoded = _encode_evidence(evidence) or _encode_evidence(
+        {"evidence_unserialisable": True, "requested_outcome": outcome})
+    raw, digest = encoded
+    order_id = evidence.get("order_id") if isinstance(evidence, dict) else None
+    stamp = (resolved_at or datetime.now(timezone.utc)).astimezone(timezone.utc).isoformat()
+    try:
+        async with aiosqlite.connect(db_path) as db:
+            await db.execute("BEGIN IMMEDIATE")
+            claim = await (await db.execute(
+                "SELECT 1 FROM fno_entry_dispatches WHERE reservation_key=? AND owner=? "
+                "AND state='DISPATCHING'", (reservation_key, owner),
+            )).fetchone()
+            if claim is None:
+                await db.rollback()
+                return None
+            state = "RELEASED" if applied in DISPATCH_RELEASE_OUTCOMES else "UNRESOLVED"
+            await db.execute(
+                "UPDATE fno_entry_dispatches SET state=?, outcome=?, order_id=?, evidence_json=?, "
+                "evidence_sha256=?, resolved_at=? WHERE reservation_key=? AND owner=? "
+                "AND state='DISPATCHING'",
+                (state, applied, None if order_id is None else str(order_id), raw, digest,
+                 stamp, reservation_key, owner),
+            )
+            if state == "RELEASED":
+                released = await db.execute(
+                    "UPDATE fno_risk_reservations SET state='RELEASED', resolved_at=?, "
+                    "resolution_reason=? WHERE reservation_key=? AND state='RESERVED'",
+                    (stamp, f"entry_{applied}", reservation_key),
+                )
+                if released.rowcount != 1:
+                    await db.rollback()
+                    return None
+            await db.commit()
+            return applied
+    except Exception:
+        return None
+
+
+async def reconcile_shared_fno_entry_dispatch(
+    db_path: str,
+    *,
+    reservation_key: str,
+    operator: str,
+    outcome: str,
+    evidence: dict,
+    resolved_at: Optional[datetime] = None,
+) -> bool:
+    """Operator release of an orphaned/unresolved claim with verified evidence.
+
+    Allowed only for ``zero_fill_verified`` (order id, terminal status, zero
+    filled quantity) or ``no_order_verified`` (account id, aware check time,
+    empty matching-order list). A discovered fill is recorded instead by
+    inserting the position through the normal reservation-consuming writer.
+    """
+    if outcome not in RECONCILE_OUTCOMES or not str(operator or "").strip() \
+            or not _reconcile_evidence_ok(outcome, evidence):
+        return False
+    encoded = _encode_evidence(evidence)
+    if encoded is None:
+        return False
+    raw, digest = encoded
+    stamp = (resolved_at or datetime.now(timezone.utc)).astimezone(timezone.utc).isoformat()
+    try:
+        async with aiosqlite.connect(db_path) as db:
+            await db.execute("BEGIN IMMEDIATE")
+            updated = await db.execute(
+                "UPDATE fno_entry_dispatches SET state='RELEASED', outcome=?, operator=?, "
+                "order_id=COALESCE(order_id, ?), evidence_json=?, evidence_sha256=?, resolved_at=? "
+                "WHERE reservation_key=? AND state IN ('DISPATCHING', 'UNRESOLVED')",
+                (outcome, str(operator).strip()[:80], evidence.get("order_id"), raw, digest,
+                 stamp, reservation_key),
+            )
+            if updated.rowcount != 1:
+                await db.rollback()
+                return False
+            released = await db.execute(
+                "UPDATE fno_risk_reservations SET state='RELEASED', resolved_at=?, "
+                "resolution_reason=? WHERE reservation_key=? AND state='RESERVED'",
+                (stamp, f"operator_reconciled:{outcome}", reservation_key),
+            )
+            if released.rowcount != 1:
+                await db.rollback()
+                return False
+            await db.commit()
+            return True
+    except Exception:
+        return False
 
 
 __all__ = [
-    "SharedFnoAdmission", "SharedFnoEntryPolicyDecision", "SharedFnoRiskPolicy",
-    "SharedFnoRiskView", "init_shared_fno_risk_db", "policy_from_settings",
+    "SharedFnoAdmission", "SharedFnoDispatchClaim", "SharedFnoEntryPolicyDecision",
+    "SharedFnoRiskPolicy", "SharedFnoRiskView", "init_shared_fno_risk_db", "policy_from_settings",
+    "DISPATCH_RELEASE_OUTCOMES", "DISPATCH_RETAIN_OUTCOMES", "RECONCILE_OUTCOMES",
+    "claim_shared_fno_entry_dispatch", "dispatch_release_evidence_ok",
+    "reconcile_shared_fno_entry_dispatch", "resolve_shared_fno_entry_dispatch",
     "consume_shared_fno_risk_reservation_in_transaction",
     "reserve_shared_fno_risk", "resolve_shared_fno_risk_reservation",
     "shared_fno_entry_policy", "shared_fno_risk_view",

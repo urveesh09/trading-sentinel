@@ -49,8 +49,9 @@ from fno_risk import (
     kill_switch_status, lots_for_pool, min_viable_pool, validate_position,
 )
 from fno_shared_risk import (
+    DISPATCH_RELEASE_OUTCOMES, DISPATCH_RETAIN_OUTCOMES, claim_shared_fno_entry_dispatch,
     init_shared_fno_risk_db, policy_from_settings, reserve_shared_fno_risk,
-    resolve_shared_fno_risk_reservation, shared_fno_entry_policy,
+    resolve_shared_fno_entry_dispatch, shared_fno_entry_policy,
 )
 from fno_signal_log import log_fno_signal
 
@@ -848,15 +849,40 @@ async def _try_entry_for_leg(
                        max_loss_rupees=ml, **gate_audit_fields)
             logger.warning("fno_entry_skip source=%s reason=%s", source, admission.reason)
             return None
+        # F0-R2: a reservation (even an identical retry's) is not authority
+        # to dispatch. Exactly one claim per reservation is granted, after the
+        # same entry policy is re-read; a now-halted retry never dispatches.
+        claim = await claim_shared_fno_entry_dispatch(
+            db_path, reservation_key=reservation_key, source=source, book="SINGLE_LEG",
+            pool_rs=shared_pool_rs,
+            entry_day_ist=now_ist.date() if shared_policy is not None else None,
+            policy=shared_policy,
+        )
+        if not claim.granted:
+            await _log(False, f"dispatch_claim_denied:{claim.reason}", **contract_fields,
+                       lots=lots, max_loss_rupees=ml, **gate_audit_fields)
+            logger.warning("fno_entry_skip source=%s reason=dispatch_claim_denied:%s",
+                           source, claim.reason)
+            return None
     result = await executor.execute_entry(contract.tradingsymbol, qty, ask)
     if result["status"] not in ("paper", "filled"):
+        status = result["status"]
         if reservation_key:
-            await resolve_shared_fno_risk_reservation(
-                db_path, reservation_key=reservation_key, state="RELEASED",
-                resolution_reason=f"entry_{result['status']}",
+            outcome = status if status in DISPATCH_RELEASE_OUTCOMES | DISPATCH_RETAIN_OUTCOMES \
+                else "unknown"
+            applied = await resolve_shared_fno_entry_dispatch(
+                db_path, reservation_key=reservation_key, owner=claim.owner,
+                outcome=outcome, evidence=result.get("evidence") or {"status": status},
             )
+            if applied not in DISPATCH_RELEASE_OUTCOMES:
+                logger.critical(
+                    "fno_entry_outcome_unresolved source=%s symbol=%s status=%s applied=%s "
+                    "reservation=%s -- reserved capital retained; reconcile with "
+                    "reconcile_shared_fno_entry_dispatch or record the fill",
+                    source, contract.tradingsymbol, status, applied, reservation_key,
+                )
         await _log(
-            False, f"entry_{result['status']}", **contract_fields, lots=lots,
+            False, f"entry_{status}", **contract_fields, lots=lots,
             **gate_audit_fields,
         )
         return None
@@ -864,9 +890,8 @@ async def _try_entry_for_leg(
 
     premium_stop = round((1.0 - settings.FNO_STOP_PREMIUM_PCT) * fill, 2)
     inserter = fpos.insert_position_with_risk_reservation if reservation_key else fpos.insert_position
-    await inserter(
-        db_path,
-        **({"reservation_key": reservation_key} if reservation_key else {}),
+    try:
+        await _insert_entry_position(inserter, db_path, reservation_key, dict(
         source=source,
         tradingsymbol=contract.tradingsymbol,
         token=contract.token,
@@ -890,7 +915,21 @@ async def _try_entry_for_leg(
         status="OPEN",
         entry_order_id=result.get("order_id"),
         bar_ts=sig.bar_ts,
-    )
+    ))
+    except Exception:
+        if reservation_key:
+            # Paper fills exist only in this process: a failed receipt means no
+            # exposure. A live fill without its receipt keeps the reservation.
+            paper = result["status"] == "paper"
+            await resolve_shared_fno_entry_dispatch(
+                db_path, reservation_key=reservation_key, owner=claim.owner,
+                outcome="no_dispatch" if paper else "filled_unrecorded",
+                evidence={**(result.get("evidence") or {}),
+                          "dispatch_certainty": "NOT_SENT" if paper else "ACCEPTED",
+                          "order_id": None if paper else result.get("order_id"),
+                          "receipt": "position_insert_failed"},
+            )
+        raise
     await _log(
         True, "", **contract_fields, lots=lots, max_loss_rupees=ml,
         **gate_audit_fields,
@@ -907,6 +946,13 @@ async def _try_entry_for_leg(
         "lots": lots, "fill": fill, "delta": round(delta_val, 2),
         "iv": round(iv, 3), "source": source,
     }
+
+
+async def _insert_entry_position(inserter, db_path: str, reservation_key, fields: dict) -> int:
+    """Insert the filled entry, consuming its reservation and claim when bound."""
+    if reservation_key:
+        return await inserter(db_path, reservation_key=reservation_key, **fields)
+    return await inserter(db_path, **fields)
 
 
 # ---------------------------------------------------------------------------

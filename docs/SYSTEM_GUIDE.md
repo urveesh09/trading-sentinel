@@ -1,5 +1,33 @@
 # Trading Sentinel — system guide and engineering handover
 
+## October 3 — F0-R2 single F&O dispatch owner and evidence-backed outcomes (Dev only)
+
+Both F&O books now follow reserve → claim → act → resolve ([R2](2026-10-03-fno-f0-r2-dispatch-ownership.md)).
+
+**Claiming**
+- `claim_shared_fno_entry_dispatch` (one `BEGIN IMMEDIATE`) requires the
+  `RESERVED` reservation and no prior claim, and re-reads the entry policy.
+- It writes one `DISPATCHING` row (random owner token) in
+  `fno_entry_dispatches`. Only that owner may call the executor.
+- A policy denial releases the never-sent reservation. Claims never expire,
+  and `FILLED`/`RELEASED` claims are immutable.
+
+**Executor outcomes**
+- The live `FnoExecutor.execute_entry` returns `filled`, `no_dispatch`,
+  `rejected`, `zero_fill_verified`, `partial` or `unknown` with evidence. It
+  re-reads the final order state after a cancel and keeps cancel errors.
+- `KiteClient.place_order` adds `dispatch_certainty`: `NOT_SENT`,
+  `BROKER_REJECTED`, `AMBIGUOUS` or `ACCEPTED`.
+
+**What frees capital**
+- `resolve_shared_fno_entry_dispatch` frees capital only for verified
+  `no_dispatch`, `rejected` or `zero_fill_verified`. Anything unverifiable is
+  stored as `unknown` and keeps the full reservation.
+- A position insert consumes the reservation and fills the claim atomically.
+- `reconcile_shared_fno_entry_dispatch` lets a named operator release an
+  orphaned or unresolved claim, but only with `zero_fill_verified` or
+  `no_order_verified` evidence.
+
 ## October 3 — F0-R1 fee-inclusive shared F&O exposure (Dev only)
 
 The shared F&O view no longer releases the fee part of a reservation when a
