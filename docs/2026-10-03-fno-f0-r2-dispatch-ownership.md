@@ -230,3 +230,17 @@ restored.
 - F1.
 
 Live entries keep their existing authority gates.
+
+### Commit receipt
+
+- **Implementation commit.** `54c500e` (`fix(fno): single dispatch owner and
+  evidence-backed entry outcomes (F0-R2)`) on
+  `codex/production-correction-hedge-p0`. It is Dev-local only: not pushed
+  and not deployed. Production is unchanged at `044c016`.
+- **Post-commit check.**
+  - Regenerating the atlas produced no diff.
+  - The guide, plan, checklist and review all link to this slice.
+  - Re-running the R2, R1 and shared-risk tests from the committed tree,
+    warnings-fatal, gave 61 passed.
+- **Migrations.** An additive table and two triggers are created by the
+  existing `init_shared_fno_risk_db`. There is no settings change.

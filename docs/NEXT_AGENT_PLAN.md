@@ -16,7 +16,7 @@
 - **Tests.** 37 new; 666 F&O/broker/settlement passed, plus the known
   unrelated mark-to-market failure; 118 Penny order-path passed.
 
-Next: **R3**, then R4 and R5. Dev only, not pushed or deployed.
+Commit `54c500e` (Dev-local). Next: **R3**, then R4 and R5. Dev only, not pushed or deployed.
 
 **Operator note.** After any live F&O entry, check for `UNRESOLVED` or
 orphaned `DISPATCHING` rows in `fno_entry_dispatches`
