@@ -151,6 +151,21 @@ END
 """
 
 
+# [F0-R1 2026-10-03] The fee reserve frozen at entry is part of the shared
+# worst-case cash exposure until the terminal close; it may be written once.
+_FEE_RESERVE_IMMUTABLE_DDL = """
+CREATE TRIGGER IF NOT EXISTS fno_positions_fee_reserve_immutable
+BEFORE UPDATE OF risk_fee_reserve_rupees
+ON fno_positions
+FOR EACH ROW WHEN
+    OLD.risk_fee_reserve_rupees IS NOT NULL
+    AND NEW.risk_fee_reserve_rupees IS NOT OLD.risk_fee_reserve_rupees
+BEGIN
+    SELECT RAISE(ABORT, 'fno fee reserve is immutable');
+END
+"""
+
+
 _RECOVERY_EVIDENCE_UPDATE_IMMUTABLE_DDL = """
 CREATE TRIGGER IF NOT EXISTS fno_exit_recoveries_evidence_update_immutable
 BEFORE UPDATE ON fno_exit_recoveries
@@ -245,7 +260,8 @@ async def init_fno_positions_db(db_path: str) -> None:
                 raise
         for column, datatype in (("initial_qty", "INTEGER"),
                                  ("initial_lots", "INTEGER"),
-                                 ("initial_max_loss_rupees", "REAL")):
+                                 ("initial_max_loss_rupees", "REAL"),
+                                 ("risk_fee_reserve_rupees", "REAL")):
             try:
                 await db.execute(f"ALTER TABLE fno_positions ADD COLUMN {column} {datatype}")
             except aiosqlite.OperationalError as exc:
@@ -293,6 +309,7 @@ async def init_fno_positions_db(db_path: str) -> None:
                 if "duplicate column name" not in str(exc).lower():
                     raise
         await db.execute(_ENTRY_EVIDENCE_IMMUTABLE_DDL)
+        await db.execute(_FEE_RESERVE_IMMUTABLE_DDL)
         await db.execute(_RECOVERY_EVIDENCE_UPDATE_IMMUTABLE_DDL)
         await db.execute(_RECOVERY_EVIDENCE_DELETE_IMMUTABLE_DDL)
         await db.commit()
@@ -305,12 +322,30 @@ async def _table_exists(db) -> bool:
         return (await cur.fetchone()) is not None
 
 
-async def insert_position(db_path: str, **fields) -> int:
-    """Insert an OPEN position; returns the row id."""
-    await init_fno_positions_db(db_path)
+def _with_entry_baselines(fields: dict) -> dict:
+    """Freeze entry quantity/loss baselines and the catastrophe fee reserve.
+
+    [F0-R1 2026-10-03] For a bought option, loss plus charges is largest when
+    the premium goes to zero, so the reserve uses the *actual* fill premium
+    and filled quantity: ``calc_fno_costs(entry_premium, 0, qty)``. A row
+    without those economics gets no reserve and the shared view fails closed;
+    it is never treated as zero fees.
+    """
     fields.setdefault("initial_qty", fields.get("qty"))
     fields.setdefault("initial_lots", fields.get("lots"))
     fields.setdefault("initial_max_loss_rupees", fields.get("max_loss_rupees"))
+    if fields.get("risk_fee_reserve_rupees") is None:
+        entry, qty = fields.get("entry_premium"), fields.get("qty")
+        if isinstance(entry, (int, float)) and isinstance(qty, int) and entry > 0 and qty > 0:
+            from fno_costs import calc_fno_costs
+            fields["risk_fee_reserve_rupees"] = calc_fno_costs(float(entry), 0.0, qty)
+    return fields
+
+
+async def insert_position(db_path: str, **fields) -> int:
+    """Insert an OPEN position; returns the row id."""
+    await init_fno_positions_db(db_path)
+    fields = _with_entry_baselines(fields)
     cols = ", ".join(fields.keys())
     marks = ", ".join(["?"] * len(fields))
     async with aiosqlite.connect(db_path) as db:
@@ -333,9 +368,7 @@ async def insert_position_with_risk_reservation(
     """
     from fno_shared_risk import consume_shared_fno_risk_reservation_in_transaction
     await init_fno_positions_db(db_path)
-    fields.setdefault("initial_qty", fields.get("qty"))
-    fields.setdefault("initial_lots", fields.get("lots"))
-    fields.setdefault("initial_max_loss_rupees", fields.get("max_loss_rupees"))
+    fields = _with_entry_baselines(fields)
     cols = ", ".join(fields.keys())
     marks = ", ".join(["?"] * len(fields))
     async with aiosqlite.connect(db_path) as db:

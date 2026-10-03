@@ -1,5 +1,22 @@
 # Trading Sentinel — next-agent execution plan
 
+## October 3 — F0-R1 implemented in Dev (fee-inclusive exposure)
+
+[R1 slice and verification](2026-10-03-fno-f0-r1-fee-inclusive-exposure.md).
+- Single-leg rows freeze `risk_fee_reserve_rupees` from the actual fill and
+  quantity; DR uses its frozen `entry_cost_rs`.
+- The shared view counts loss plus fee for every OPEN/UNRESOLVED row. A
+  partial keeps the full fee; a close hands over to exact ledger cash.
+- Unbound fee economics, or a single-leg loss below its premium at risk,
+  fail closed. Immutability triggers protect the evidence.
+- The review's reproduction now holds capacity at ₹1, where it previously
+  leaked ₹51.58.
+- Tests: 11 new warnings-fatal; 530 F&O/settlement passed, plus 1
+  pre-existing unrelated mark-to-market failure.
+
+Next: **R2** (single dispatch owner; halt-safe retry; ambiguous entries keep
+capital), then R3–R5. Dev only, not pushed or deployed.
+
 ## October 3 — B1/B2 implemented in Dev (current state; read first)
 
 [B1/B2 slice, results and verification](2026-10-03-b1-b2-data-contracts-and-penny-lifecycle.md). The owner directed this

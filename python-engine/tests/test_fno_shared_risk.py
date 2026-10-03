@@ -39,13 +39,14 @@ async def test_view_combines_exact_cash_and_both_open_books(db_path):
             ("2026-10-03T04:30:00+00:00", "TRADE_CLOSED", -1_500.0, SOURCE),
         )
         await db.execute(
-            "INSERT INTO fno_positions (source,tradingsymbol,status,max_loss_rupees) VALUES (?,?,?,?)",
-            (SOURCE, "NIFTY26OCT25000CE", "OPEN", 7_000.0),
+            "INSERT INTO fno_positions (source,tradingsymbol,status,qty,entry_premium,"
+            "max_loss_rupees,risk_fee_reserve_rupees) VALUES (?,?,?,?,?,?,?)",
+            (SOURCE, "NIFTY26OCT25000CE", "OPEN", 75, 90.0, 7_000.0, 50.0),
         )
         await db.execute(
-            "INSERT INTO fno_dr_positions (source,kind,legs_json,lot_size,lots,max_loss_rs,status) "
-            "VALUES (?,?,?,?,?,?,?)",
-            (SOURCE, "BULL_CALL_DEBIT", "[]", 75, 1, 4_000.0, "UNRESOLVED"),
+            "INSERT INTO fno_dr_positions (source,kind,legs_json,lot_size,lots,max_loss_rs,"
+            "entry_cost_rs,status) VALUES (?,?,?,?,?,?,?,?)",
+            (SOURCE, "BULL_CALL_DEBIT", "[]", 75, 1, 4_000.0, 120.0, "UNRESOLVED"),
         )
         await db.commit()
 
@@ -53,8 +54,10 @@ async def test_view_combines_exact_cash_and_both_open_books(db_path):
     assert view.available
     assert view.realised_pnl_rs == -1_500.0
     assert view.equity_rs == 48_500.0
-    assert view.open_worst_case_cash_rs == 11_000.0
-    assert view.available_worst_case_cash_rs == 37_500.0
+    # F0-R1: structural losses plus both frozen fee reserves.
+    assert view.open_worst_case_cash_rs == 11_170.0
+    assert view.open_fee_reserve_rs == 170.0
+    assert view.available_worst_case_cash_rs == 37_330.0
     assert (view.single_leg_open_count, view.defined_risk_open_count) == (1, 1)
 
 
@@ -278,9 +281,9 @@ async def test_partial_recovery_residual_requires_exact_cash_and_pro_rata_risk(d
         position = await db.execute(
             "INSERT INTO fno_positions "
             "(source,tradingsymbol,status,qty,initial_qty,max_loss_rupees,initial_max_loss_rupees,"
-            "entry_premium,settlement_generation) VALUES (?,?,?,?,?,?,?,?,?)",
-            ("FNO_LIVE", "NIFTY26OCT25000CE", "OPEN", 75, 150, 750.0, 1_500.0,
-             entry, 1),
+            "entry_premium,settlement_generation,risk_fee_reserve_rupees) VALUES (?,?,?,?,?,?,?,?,?,?)",
+            ("FNO_LIVE", "NIFTY26OCT25000CE", "OPEN", 75, 150, 7_500.0, 15_000.0,
+             entry, 1, calc_fno_costs(entry, 0.0, 150)),
         )
         position_id = int(position.lastrowid)
         ledger = await db.execute(
@@ -305,11 +308,12 @@ async def test_partial_recovery_residual_requires_exact_cash_and_pro_rata_risk(d
 
     view = await shared_fno_risk_view(db_path, "FNO_LIVE", POOL)
     assert view.available
-    assert view.open_worst_case_cash_rs == 750.0
+    # Residual structural loss plus the full frozen entry fee reserve (F0-R1).
+    assert view.open_worst_case_cash_rs == pytest.approx(7_500.0 + calc_fno_costs(entry, 0.0, 150))
 
     async with aiosqlite.connect(db_path) as db:
         await db.execute(
-            "UPDATE fno_positions SET max_loss_rupees=751.0 WHERE id=?", (position_id,)
+            "UPDATE fno_positions SET max_loss_rupees=7501.0 WHERE id=?", (position_id,)
         )
         await db.commit()
     tampered = await shared_fno_risk_view(db_path, "FNO_LIVE", POOL)
@@ -318,7 +322,7 @@ async def test_partial_recovery_residual_requires_exact_cash_and_pro_rata_risk(d
 
     async with aiosqlite.connect(db_path) as db:
         await db.execute(
-            "UPDATE fno_positions SET max_loss_rupees=750.0 WHERE id=?", (position_id,)
+            "UPDATE fno_positions SET max_loss_rupees=7500.0 WHERE id=?", (position_id,)
         )
         await db.execute("DELETE FROM bankroll_ledger WHERE id=?", (int(ledger.lastrowid),))
         await db.commit()
@@ -340,9 +344,9 @@ async def test_partial_recovery_cash_and_receipt_evidence_cannot_be_rewritten(db
         position = await db.execute(
             "INSERT INTO fno_positions "
             "(source,tradingsymbol,status,qty,initial_qty,max_loss_rupees,initial_max_loss_rupees,"
-            "entry_premium,settlement_generation) VALUES (?,?,?,?,?,?,?,?,?)",
-            ("FNO_LIVE", "NIFTY26OCT25000CE", "OPEN", 75, 150, 750.0, 1_500.0,
-             entry, 1),
+            "entry_premium,settlement_generation,risk_fee_reserve_rupees) VALUES (?,?,?,?,?,?,?,?,?,?)",
+            ("FNO_LIVE", "NIFTY26OCT25000CE", "OPEN", 75, 150, 7_500.0, 15_000.0,
+             entry, 1, calc_fno_costs(entry, 0.0, 150)),
         )
         position_id = int(position.lastrowid)
         ledger = await db.execute(

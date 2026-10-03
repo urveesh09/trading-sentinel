@@ -1,5 +1,26 @@
 # Trading Sentinel — system guide and engineering handover
 
+## October 3 — F0-R1 fee-inclusive shared F&O exposure (Dev only)
+
+The shared F&O view no longer releases the fee part of a reservation when a
+position is inserted ([R1](2026-10-03-fno-f0-r1-fee-inclusive-exposure.md)).
+- **What counts as exposure.** Each OPEN or UNRESOLVED single-leg row counts
+  `max_loss_rupees + risk_fee_reserve_rupees`. The reserve is
+  `calc_fno_costs(fill, 0, qty)`, frozen at insert, and is the exact
+  worst-case charge for a bought option. Each DR row counts
+  `max_loss_rs + entry_cost_rs`.
+- **Partials and closes.** A verified partial keeps the full frozen fee. A
+  terminal close leaves exposure, and its ledger cash carries the actual
+  fees.
+- **Fail closed.** Missing fee economics, or a single-leg structural loss
+  below its premium at risk, make the view unavailable. Triggers make the
+  reserves immutable.
+- **Reporting.** `SharedFnoRiskView.open_fee_reserve_rs` reports the fee
+  share.
+- **Known limitation.** DR fees use the existing flat round-trip estimate.
+
+Production has no open F&O rows, so this deploys without a stall.
+
 ## October 3 — research bar contracts and exact Penny lifecycle replay (Dev only)
 
 This guide's research tooling now has two offline layers ([slice and evidence](2026-10-03-b1-b2-data-contracts-and-penny-lifecycle.md)).

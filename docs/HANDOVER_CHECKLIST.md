@@ -28,7 +28,8 @@
   warnings-fatal, preserving all exposure and existing exit authority.
 - [x] Final six-file selection: 114 passed, one known Starlette warning,
   normal exit; compilation/atlas (229 modules)/whitespace checks passed.
-- [ ] F0-R1: fee-inclusive exposure conservation after reservation consumption.
+- [x] F0-R1: fee-inclusive exposure conservation after reservation consumption
+  ([R1 slice](2026-10-03-fno-f0-r1-fee-inclusive-exposure.md); 11 warnings-fatal tests; Dev only).
 - [ ] F0-R2: single dispatch ownership, halt-safe retries and ambiguous-entry
   recovery retaining capital until verified resolution.
 - [ ] F0-R3: partial cash, future-clock rejection and completed-trade loss streak.

@@ -566,9 +566,26 @@ CREATE TABLE IF NOT EXISTS fno_dr_positions (
 """
 
 
+# [F0-R1 2026-10-03] Structural loss and the frozen entry fee reserve are the
+# structure's shared worst-case cash until its terminal close. No writer
+# updates them; once populated they cannot be rewritten.
+_DR_RISK_EVIDENCE_IMMUTABLE_DDL = """
+CREATE TRIGGER IF NOT EXISTS fno_dr_positions_risk_evidence_immutable
+BEFORE UPDATE OF max_loss_rs, entry_cost_rs
+ON fno_dr_positions
+FOR EACH ROW WHEN
+    (OLD.max_loss_rs IS NOT NULL AND NEW.max_loss_rs IS NOT OLD.max_loss_rs)
+    OR (OLD.entry_cost_rs IS NOT NULL AND NEW.entry_cost_rs IS NOT OLD.entry_cost_rs)
+BEGIN
+    SELECT RAISE(ABORT, 'fno defined-risk exposure evidence is immutable');
+END
+"""
+
+
 async def init_dr_db(db_path: str) -> None:
     async with aiosqlite.connect(db_path) as db:
         await db.execute(_DDL)
+        await db.execute(_DR_RISK_EVIDENCE_IMMUTABLE_DDL)
         # Additive migration: legacy positions never gain guessed contract
         # identity or valuation.  They remain readable and explicitly
         # unverified by the report/management path.

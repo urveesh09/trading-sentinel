@@ -41,7 +41,9 @@ def broker(*, qty, filled, status="CANCELLED", price=110.0, symbol="NIFTY26SEP19
 
 
 async def claimed(db_path, *, qty=75):
-    pid = await _insert_open_position(db_path, source="FNO_LIVE", qty=qty)
+    # A long option's structural loss is its whole paid premium (100/unit).
+    pid = await _insert_open_position(db_path, source="FNO_LIVE", qty=qty,
+                                      max_loss_rupees=100.0 * qty)
     assert await claim_exit_intent(db_path, pid, "FNO_LIVE")
     intent = (await pending_exit_intents(db_path))[0]
     return pid, intent["created_at"]
@@ -126,7 +128,8 @@ async def test_verified_partial_recovery_releases_only_residual_shared_risk(fno_
     await init_shared_fno_risk_db(fno_db)
     view = await shared_fno_risk_view(fno_db, "FNO_LIVE", 10_000.0)
     assert view.available
-    assert view.open_worst_case_cash_rs == pytest.approx(750.0)
+    # Residual premium loss plus the full fee reserve frozen at entry (F0-R1).
+    assert view.open_worst_case_cash_rs == pytest.approx(7_500.0 + calc_fno_costs(100.0, 0.0, 150))
     assert view.realised_pnl_rs == pytest.approx(
         (110.0 - 100.0) * 75 - calc_fno_costs(100.0, 110.0, 75)
     )
@@ -151,7 +154,7 @@ async def test_partial_then_final_close_reports_total_economics_and_scaled_risk(
         ledger = db.execute("SELECT SUM(pnl),COUNT(*) FROM bankroll_ledger WHERE origin_ref=?", (f"fno_position:{pid}",)).fetchone()
     assert row[0] == pytest.approx(ledger[0])
     assert row[1] - row[2] == pytest.approx(row[0])
-    assert row[3] == 750.0 and row[4] == 1500.0
+    assert row[3] == 7500.0 and row[4] == 15000.0
     assert ledger[1] == 2
     report = await closed_today(fno_db, "FNO_LIVE", datetime.now(IST).date().isoformat())
     assert report[0]["pnl"] == pytest.approx(ledger[0])

@@ -25,6 +25,13 @@ economics and ledger cash agree, while the quantity/loss entry baselines are
 immutable after they are written. Cost schedules can change, so this read
 validates the recorded atomic cost/P&L arithmetic rather than recalculating
 with later settings.
+
+F0-R1 keeps the fee reserve after a reservation is consumed. Each OPEN or
+UNRESOLVED row contributes its structural loss plus the fee reserve frozen
+at insert (single-leg ``risk_fee_reserve_rupees``; DR ``entry_cost_rs``).
+A verified partial keeps the full frozen fee (fees rise with quantity), and
+a terminal close hands the exposure over to exact ledger cash. A missing fee
+reserve, or a single-leg loss below its paid premium at risk, fails closed.
 """
 from __future__ import annotations
 
@@ -112,6 +119,8 @@ class SharedFnoRiskView:
     reservation_count: int
     available: bool
     reason: str = ""
+    # [F0-R1] Fee portion already included in ``open_worst_case_cash_rs``.
+    open_fee_reserve_rs: float = 0.0
 
 
 @dataclass(frozen=True)
@@ -332,13 +341,19 @@ async def _read_view(
     if not math.isfinite(realised_pnl):
         return _unavailable(source, pool_rs, "nonfinite_realised_pnl")
 
-    single = await (await db.execute(
-        "SELECT id,max_loss_rupees,qty,initial_qty,initial_max_loss_rupees,settlement_generation "
+    single_columns = {row[1] for row in await (await db.execute(
+        "PRAGMA table_info(fno_positions)")).fetchall()}
+    if "risk_fee_reserve_rupees" not in single_columns:
+        return _unavailable(source, pool_rs, "single_leg_fee_reserve_unbound")
+    single_rows = await (await db.execute(
+        "SELECT id,max_loss_rupees,qty,initial_qty,initial_max_loss_rupees,settlement_generation,"
+        "entry_premium,risk_fee_reserve_rupees "
         "FROM fno_positions "
         "WHERE source=? AND status IN ('OPEN', 'UNRESOLVED')", (source,)
     )).fetchall()
+    single = [row[:6] for row in single_rows]
     defined = await (await db.execute(
-        "SELECT max_loss_rs FROM fno_dr_positions "
+        "SELECT max_loss_rs,entry_cost_rs FROM fno_dr_positions "
         "WHERE source=? AND status IN ('OPEN', 'UNRESOLVED')", (source,)
     )).fetchall()
     reserved = await (await db.execute(
@@ -364,25 +379,46 @@ async def _read_view(
     if partial_evidence_reason:
         return _unavailable(source, pool_rs, partial_evidence_reason)
 
+    # F0-R1: the fee reserve frozen at entry stays in exposure until the
+    # terminal close; unavailable economics are never zero fees.
+    fee_total = 0.0
+    for row in single_rows:
+        fee = _finite_non_negative(row[7])
+        if fee is None:
+            return _unavailable(source, pool_rs, "single_leg_fee_reserve_unbound")
+        entry = _finite_non_negative(row[6])
+        qty = _whole_non_negative(row[2])
+        loss = _finite_non_negative(row[1])
+        if entry is None or entry <= 0 or qty is None or loss is None \
+                or loss + 0.01 < entry * qty:
+            return _unavailable(source, pool_rs, "structural_loss_below_premium_at_risk")
+        fee_total += fee
+    for row in defined:
+        fee = _finite_non_negative(row[1])
+        if fee is None:
+            return _unavailable(source, pool_rs, "defined_risk_fee_reserve_unbound")
+        fee_total += fee
+
     single_total = sum(_finite_non_negative(row[1]) or 0.0 for row in single)
     defined_total = sum(_finite_non_negative(row[0]) or 0.0 for row in defined)
     reserved_total = sum(_finite_non_negative(row[0]) or 0.0 for row in reserved)
     equity = pool_rs + realised_pnl
     if not math.isfinite(equity):
         return _unavailable(source, pool_rs, "nonfinite_equity")
-    available = equity - single_total - defined_total - reserved_total
+    available = equity - single_total - defined_total - fee_total - reserved_total
     return SharedFnoRiskView(
         source=source,
         pool_rs=pool_rs,
         realised_pnl_rs=realised_pnl,
         equity_rs=equity,
-        open_worst_case_cash_rs=single_total + defined_total,
+        open_worst_case_cash_rs=single_total + defined_total + fee_total,
         reserved_worst_case_cash_rs=reserved_total,
         available_worst_case_cash_rs=max(0.0, available),
         single_leg_open_count=len(single),
         defined_risk_open_count=len(defined),
         reservation_count=len(reserved),
         available=True,
+        open_fee_reserve_rs=fee_total,
     )
 
 

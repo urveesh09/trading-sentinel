@@ -1,5 +1,9 @@
 # Independent F0 review and correction plan — October 3, 2026 (IST)
 
+## R1 status update (later October 3)
+
+R1 is implemented in Dev; see [the R1 slice](2026-10-03-fno-f0-r1-fee-inclusive-exposure.md). R2–R5 remain open.
+
 ## Verdict and scope
 
 Reviewed Dev `2b106f7`, including F0-A–E (`7b86d85`, `0ba2d29`,
