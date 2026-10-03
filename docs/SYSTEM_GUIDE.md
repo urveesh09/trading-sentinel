@@ -49,6 +49,7 @@ risk plus partial-recovery selection: 32 passed (one ASGI route test excluded
 because its existing dependency deprecation is warnings-fatal); broader F&O
 risk/DR/orchestrator coverage: 80 passed normally. Actual paper observation,
 full recovery/restart acceptance and F1 remain open.
+Source commit `7b77341` is Dev-local, not pushed and not deployed.
 
 ## October 3 — baseline research is not full portfolio backtesting
 

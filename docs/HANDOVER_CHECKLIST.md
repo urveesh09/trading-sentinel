@@ -24,7 +24,8 @@
   the shared view; mismatches fail new entries closed. Dev-only verification:
   10 warnings-fatal shared-risk tests; 32 shared-risk/recovery tests with the
   known warning-producing ASGI route test deselected; 80 broader F&O
-  risk/DR/orchestrator tests passed normally.
+  risk/DR/orchestrator tests passed normally. Source commit `7b77341` is
+  Dev-local, not pushed or deployed.
 - [ ] Observe/review paper admissions and recovery evidence after GitHub
   promotion; F1 cash-only broker/margin preflight still precedes live funding.
 - [ ] F1 owner cash-only funding semantics, broker initial/final margin and

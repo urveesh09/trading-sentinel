@@ -30,8 +30,8 @@ This covers actual operator-reconciled partial fills without inventing a paper
 or DR partial fill path. A scalar/cash/receipt mismatch fails closed. Focused
 shared-risk tests: 10 warnings-fatal; shared-risk plus recovery selection: 32
 passed with the existing deprecated-ASGI route test deselected; broader F&O
-risk/DR/orchestrator coverage: 80 passed normally. Source commit pending; Dev
-only, not pushed or deployed.
+risk/DR/orchestrator coverage: 80 passed normally. Source commit `7b77341`;
+Dev only, not pushed or deployed.
 
 **Completed implementation slice — F0-C shared paper entry-policy receipt (October 3, Dev only).**
 Problem: F0-B atomically reserves paper F&O catastrophe cash across the
