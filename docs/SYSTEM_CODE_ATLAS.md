@@ -110,7 +110,7 @@ Related tests: `python-engine/tests/test_backtest.py`, `python-engine/tests/test
 
 [B0 2026-10-03] Honest catalogue of shipped strategies and their backtests. Every shipped strategy appears once with the fidelity of the backtest that exists for it today. ``validate_catalogue`` keeps this list and the Backtest Lab registry in agreement, so an adapter cannot be added (or removed) without the catalogue saying what it really replays.
 
-Top-level declarations: `catalogue` (line 53), `validate_catalogue` (line 68), `family_prefixes` (line 93)
+Top-level declarations: `catalogue` (line 55), `validate_catalogue` (line 70), `family_prefixes` (line 95)
 
 Engine dependencies: `backtest_lab`
 
@@ -128,9 +128,9 @@ Related tests: `python-engine/tests/test_backtest_cli.py`
 
 Research-only backtest registry, adapters, and immutable run archive. This module has deliberately no broker client or order-execution imports. A BacktestAdapter receives a frozen dataset snapshot and returns research data; future strategies join the lab by implementing the same contract and adding one explicit registry entry.
 
-Top-level declarations: `_utc_now` (line 36), `_json_default` (line 40), `_finite_json_value` (line 54), `_json` (line 78), `_decode` (line 85), `StrategyMetadata` (line 95), `BacktestRequest` (line 118), `PreparedDataset` (line 127), `BacktestUnavailable` (line 134), `BacktestAdapter` (line 138), `_fingerprint_rows` (line 176), `_daily_rows` (line 182), `SwingDailyAdapter` (line 214), `PennyDailyProxyAdapter` (line 294), `PennyWalkForwardConfig` (line 390), `PennyDailyProxyWalkForwardAdapter` (line 421), `_ticker_list` (line 609), `_write_replay_cache` (line 618), `PennyMinuteReplayAdapter` (line 638), `PennyMisLifecycleAdapter` (line 740), `PennyCncConnorsLifecycleAdapter` (line 842), `Momentum15MinuteReplayAdapter` (line 926), `FnoUnavailableAdapter` (line 1023), `init_backtest_lab_db` (line 1058), `_validate_dates` (line 1132), `list_strategies` (line 1143), `submit_run` (line 1183), `_run_background` (line 1219), `_row_to_run` (line 1255), `list_runs` (line 1280), `get_run` (line 1299)
+Top-level declarations: `_utc_now` (line 37), `_json_default` (line 41), `_finite_json_value` (line 55), `_json` (line 79), `_decode` (line 86), `StrategyMetadata` (line 96), `BacktestRequest` (line 119), `PreparedDataset` (line 128), `BacktestUnavailable` (line 135), `BacktestAdapter` (line 139), `_fingerprint_rows` (line 177), `_daily_rows` (line 183), `SwingDailyAdapter` (line 215), `SwingDecisionParityAdapter` (line 295), `EdgeDecisionParityAdapter` (line 371), `PennyDailyProxyAdapter` (line 447), `PennyWalkForwardConfig` (line 543), `PennyDailyProxyWalkForwardAdapter` (line 574), `_ticker_list` (line 762), `_write_replay_cache` (line 771), `PennyMinuteReplayAdapter` (line 791), `PennyMisLifecycleAdapter` (line 893), `PennyCncConnorsLifecycleAdapter` (line 995), `Momentum15MinuteReplayAdapter` (line 1079), `FnoUnavailableAdapter` (line 1176), `init_backtest_lab_db` (line 1211), `_validate_dates` (line 1285), `list_strategies` (line 1296), `submit_run` (line 1336), `_run_background` (line 1372), `_row_to_run` (line 1408), `list_runs` (line 1433), `get_run` (line 1452)
 
-Engine dependencies: `backtest`, `momentum_replay`, `penny_backtest_v2`, `penny_intraday_replay`, `penny_lifecycle_replay`, `research_data_contracts`, `research_penny_cnc_lifecycle`, `walk_forward`
+Engine dependencies: `backtest`, `momentum_replay`, `penny_backtest_v2`, `penny_intraday_replay`, `penny_lifecycle_replay`, `research_daily_decision_replay`, `research_data_contracts`, `research_penny_cnc_lifecycle`, `walk_forward`
 
 Related tests: `python-engine/tests/test_backtest_lab.py`
 
@@ -432,7 +432,7 @@ Related tests: `python-engine/tests/test_edge_stats.py`
 
 No module docstring; use the declarations and callers below.
 
-Top-level declarations: `calc_ema` (line 18), `calc_atr` (line 22), `calc_volume_ratio` (line 33), `calc_rsi` (line 44), `calc_rsi_series` (line 82), `calc_slope` (line 147), `evaluate_signal` (line 168), `calc_zerodha_costs` (line 524), `is_cost_viable` (line 587), `calc_relative_strength` (line 610), `calc_vwap` (line 632), `calc_volume_consistency` (line 647), `resolve_momentum_regime_params` (line 658), `_momentum_variant_evidence` (line 713), `evaluate_momentum_signal` (line 743), `_evaluate_momentum_signal_impl` (line 790), `evaluate_mc8_rsi_trim` (line 1206)
+Top-level declarations: `calc_ema` (line 18), `calc_atr` (line 22), `calc_volume_ratio` (line 33), `calc_rsi` (line 44), `calc_rsi_series` (line 82), `calc_slope` (line 152), `evaluate_signal` (line 173), `calc_zerodha_costs` (line 529), `is_cost_viable` (line 592), `calc_relative_strength` (line 615), `calc_vwap` (line 637), `calc_volume_consistency` (line 652), `resolve_momentum_regime_params` (line 663), `_momentum_variant_evidence` (line 718), `evaluate_momentum_signal` (line 748), `_evaluate_momentum_signal_impl` (line 795), `evaluate_mc8_rsi_trim` (line 1211)
 
 Engine dependencies: `config`, `indicators_adaptive`, `models`
 
@@ -1937,6 +1937,14 @@ Top-level declarations: `_json_file` (line 17), `_write_comparison_output` (line
 Engine dependencies: `config`, `intraday_spread_archive_adapter`, `intraday_spread_chronological`, `partner_delivery_blockers`, `partner_full_policy_replay`, `partner_qualification`, `partner_qualification_package`, `partner_qualification_verify`, `partner_research_capture`, `proactive_comparison_protocol`, `proactive_intelligence`, `reconciliation_evidence`, `research_archive`
 
 Related tests: `python-engine/tests/test_research_cli_qualification.py`, `python-engine/tests/test_research_cli_strategy_comparison.py`
+
+## `python-engine/research_daily_decision_replay.py`
+
+Daily decision replays that call the shipped Swing and EDGE code paths. This is deliberately an evaluator study, not a fill or portfolio simulator. Daily cache bars are only visible after their session, so each decision for session D is made from bars strictly before D. Missing market context is a data failure, never a reason to substitute the traded ticker as an index.
+
+Top-level declarations: `DailyReplayUnavailable` (line 22), `_frame` (line 26), `_by_ticker` (line 34), `swing_evaluator_replay` (line 41), `edge_evaluator_replay` (line 129)
+
+Engine dependencies: `engine`, `penny_edge_live`, `regime`
 
 ## `python-engine/research_data_contracts.py`
 

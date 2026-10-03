@@ -1,12 +1,26 @@
 # Handover receipt and operator checklist
 
+## October 3 B3 Swing/EDGE evaluator receipt (Dev only)
+
+- [x] Added separate shipped-function evaluator adapters; retained the old
+  Swing proxy label.
+- [x] Bound daily bar visibility and explicit index/universe requirements;
+  incomplete evidence does not become a proxy fill.
+- [x] Fixed the shared RSI-history out-of-bounds defect found by B3 binding.
+- [x] Focused B3/engine tests passed (149); one existing httpx deprecation
+  warning remains.
+- [ ] B4 Momentum and Range scope/lifecycle work.
+- [ ] B6 standard reports and untouched-holdout guard.
+- [ ] Real-data/Production read-only checks only after Production is restored;
+  GitHub promotion remains owner-controlled.
+
 ## October 3 B2 CNC receipt (Dev only)
 
 - [x] Exact CNC Connors paper lifecycle replay, with tracker and scanner
   parity ([B2 CNC](2026-10-03-b2-penny-cnc-connors-lifecycle.md); 14 + 7 tests). B2 is now complete.
 - [ ] Predeclared CNC real-data run once Production is running again
   (read-only collector).
-- [ ] B0, B3, B4 and B6 (B5 excluded by the owner).
+- [x] B0 and B3; [ ] B4 and B6 (B5 excluded by the owner).
 
 ## October 3 F1-A receipt (Dev only)
 

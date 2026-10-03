@@ -1,5 +1,24 @@
 # Trading Sentinel — system guide and engineering handover
 
+## October 3 — B3 shipped Swing/EDGE daily evaluator replay (Dev only)
+
+`backtest_lab.py` now has two distinct research-only `EVALUATOR` adapters:
+`swing_regime_daily_evaluator` calls the current `engine.evaluate_signal` with
+explicit NIFTY 50/NIFTY BANK history and a declared one-update-per-session
+regime clock; `penny_edge_daily_evaluator` calls the current
+`penny_edge_live.scan_today` on a frozen explicit-universe snapshot. The old
+Swing runner remains a `PROXY` and is not relabelled. These adapters provide
+decision/candidate evidence only: no Telegram approval, live admission,
+historical scheduler state/breadth/event snapshot, fill, exit or shared cash
+portfolio is reconstructed. Missing required evidence fails unavailable.
+
+While binding the real Swing path, `engine.calc_rsi_series` was corrected to
+use the matching close-to-close delta (`i - 1`) rather than indexing one past
+the gain/loss arrays. That removes a live scanner `IndexError` once sufficient
+RSI history exists; it does not change policy thresholds or sizing. B3 tests:
+149 passed; one existing httpx deprecation warning. Dev only, not pushed or
+deployed. See [B3 slice](2026-10-03-b3-swing-edge-daily-evaluator.md).
+
 ## October 3 — B2 CNC Connors lifecycle replay (Dev only)
 
 `research_penny_cnc_lifecycle.py` replays the shipped `PENNY_PAPER` CNC book

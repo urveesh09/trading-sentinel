@@ -8,6 +8,7 @@ one explicit registry entry.
 from __future__ import annotations
 
 import asyncio
+from collections import Counter
 import dataclasses
 import hashlib
 import json
@@ -289,6 +290,158 @@ class SwingDailyAdapter(BacktestAdapter):
         if not summary["trade_count"]:
             warnings.append("No trades fired in this dataset window; performance inference is unavailable.")
         return summary, warnings
+
+
+class SwingDecisionParityAdapter(BacktestAdapter):
+    """Point-in-time calls to the shipped Swing evaluator, not its legacy proxy."""
+    metadata = StrategyMetadata(
+        strategy_id="swing_regime_daily_evaluator", name="Swing Regime (daily evaluator replay)",
+        version="1.0.0",
+        description="Calls engine.evaluate_signal with frozen stock/NIFTY/BankNIFTY history and a declared daily regime clock.",
+        engine="research_daily_decision_replay.swing_evaluator_replay", timeframe="1 day", scope="EVALUATOR",
+        capabilities=("universe", "point_in_time_market_context", "gate_funnel", "shipped_evaluator"),
+        data_requirements=("explicit stock universe", "NIFTY and NIFTY BANK daily history", "200+ prior stock bars and 214+ prior NIFTY bars"),
+        limitations=(
+            "EVALUATOR scope only: it does not simulate Telegram approval, live admission, fills, exits or portfolio cash.",
+            "The historical scheduler clock is not persisted; one pre-open regime update per session is declared.",
+            "Constituent breadth ranks are not archived, so the evaluator receives no fabricated breadth value.",
+        ),
+        default_config={"tickers": [], "nifty_ticker": "NIFTY 50", "banknifty_ticker": "NIFTY BANK", "bankroll": 4500.0},
+        default_assumptions={"bar_visibility": "D_daily_bar_available_only_after_D_session", "regime_clock": "one_before_open_update_per_session"},
+        parameter_schema={"tickers": {"type": "array", "items": {"type": "string"}, "minItems": 1},
+                          "nifty_ticker": {"type": "string"}, "banknifty_ticker": {"type": "string"},
+                          "bankroll": {"type": "number", "minimum": 0.01}},
+    )
+
+    def snapshot_config(self, supplied):
+        merged = super().snapshot_config(supplied)
+        tickers = _ticker_list(merged["tickers"])
+        if not tickers:
+            raise ValueError("Swing evaluator replay requires an explicit ticker universe")
+        indices = {key: str(merged[key]).strip().upper() for key in ("nifty_ticker", "banknifty_ticker")}
+        if not all(indices.values()):
+            raise ValueError("Swing evaluator index tickers must be non-empty")
+        bankroll = float(merged["bankroll"])
+        if not math.isfinite(bankroll) or bankroll <= 0:
+            raise ValueError("bankroll must be a positive finite number")
+        if set(tickers) & set(indices.values()):
+            raise ValueError("stock universe must not include a market-context index")
+        return {"tickers": list(tickers), **indices, "bankroll": bankroll}
+
+    def prepare(self, db_path, request):
+        from datetime import timedelta
+        from research_data_contracts import DatasetUnavailable, load_daily_dataset
+        names = [*request.config["tickers"], request.config["nifty_ticker"], request.config["banknifty_ticker"]]
+        try:
+            data = load_daily_dataset(db_path, tickers=names,
+                                      before=(date.fromisoformat(request.end_date) + timedelta(days=1)).isoformat())
+        except DatasetUnavailable as exc:
+            raise BacktestUnavailable(str(exc)) from exc
+        invalid = sorted(data.invalid)
+        if invalid:
+            raise BacktestUnavailable("invalid daily history for: " + ", ".join(invalid))
+        missing = sorted(name for name in names if not data.bars.get(name))
+        if missing:
+            raise BacktestUnavailable("missing required daily history: " + ", ".join(missing))
+        rows = [(bar.ticker, bar.day.isoformat(), bar.open, bar.high, bar.low, bar.close, bar.volume)
+                for name in names for bar in data.bars[name]]
+        columns = ["ticker", "date", "open", "high", "low", "close", "volume"]
+        return PreparedDataset(_fingerprint_rows(columns, rows), len(rows),
+                               {"daily": data.manifest, "market_context": names[-2:]}, rows)
+
+    def execute(self, prepared, request):
+        from research_daily_decision_replay import DailyReplayUnavailable, swing_evaluator_replay
+        try:
+            return swing_evaluator_replay(prepared.payload, start=request.start_date, end=request.end_date,
+                                          tickers=tuple(request.config["tickers"]), bankroll=request.config["bankroll"],
+                                          nifty_ticker=request.config["nifty_ticker"], banknifty_ticker=request.config["banknifty_ticker"])
+        except DailyReplayUnavailable as exc:
+            raise BacktestUnavailable(str(exc)) from exc
+
+    def normalize(self, result, request):
+        decisions = result["decisions"]
+        reject_reasons = Counter(str(row["detail"].get("reject_reason", "accepted")) for row in decisions)
+        return ({"trade_count": None, "net_pnl": None, "net_return_pct": None, "win_rate_pct": None,
+                 "profit_factor": None, "max_drawdown_pct": None, "avg_r": None, "scope": result["scope"],
+                 "decision_count": len(decisions), "entry_decisions": result["fired"], "reject_reasons": dict(reject_reasons),
+                 "skips": result["skips"], "oos": {"available": False, "reason": "evaluator replay has no portfolio result"}},
+                list(self.metadata.limitations))
+
+
+class EdgeDecisionParityAdapter(BacktestAdapter):
+    """Frozen calls to the exact daily EDGE scanner used by the orchestrator."""
+    metadata = StrategyMetadata(
+        strategy_id="penny_edge_daily_evaluator", name="Adaptive Penny EDGE (daily evaluator replay)",
+        version="1.0.0", description="Calls penny_edge_live.scan_today on a frozen explicit-universe cache.",
+        engine="research_daily_decision_replay.edge_evaluator_replay", timeframe="1 day", scope="EVALUATOR",
+        capabilities=("universe", "shipped_scanner", "shipped_ranking", "gate_funnel"),
+        data_requirements=("explicit EDGE universe", "NIFTYBEES (or configured live scanner proxy) daily history", "21+ daily rows per evaluated ticker"),
+        limitations=(
+            "EVALUATOR scope only: no next-session fill, paper executor, exit, cash reservation or historical event-calendar snapshot is simulated.",
+            "A daily bar is evaluated only after its session; this cannot prove the live scheduler had that completed bar at 09:30.",
+            "Universe membership is exactly the supplied list; historical production universe membership is not inferred.",
+        ),
+        default_config={"tickers": [], "nifty_ticker": "NIFTYBEES", "bankroll": 100000.0, "max_positions": 3, "min_strength": 0.45},
+        default_assumptions={"scanner": "penny_edge_live.scan_today", "bar_visibility": "D_daily_bar_available_only_after_D_session"},
+        parameter_schema={"tickers": {"type": "array", "items": {"type": "string"}, "minItems": 1},
+                          "nifty_ticker": {"type": "string"}, "bankroll": {"type": "number", "minimum": 0.01},
+                          "max_positions": {"type": "integer", "minimum": 1}, "min_strength": {"type": "number", "minimum": 0, "maximum": 1}},
+    )
+
+    def snapshot_config(self, supplied):
+        merged = super().snapshot_config(supplied)
+        tickers = _ticker_list(merged["tickers"])
+        if not tickers:
+            raise ValueError("EDGE evaluator replay requires an explicit ticker universe")
+        nifty = str(merged["nifty_ticker"]).strip().upper()
+        if not nifty or nifty in tickers:
+            raise ValueError("EDGE NIFTY proxy must be non-empty and outside the stock universe")
+        bankroll, strength = float(merged["bankroll"]), float(merged["min_strength"])
+        positions = merged["max_positions"]
+        if not math.isfinite(bankroll) or bankroll <= 0 or not math.isfinite(strength) or not 0 <= strength <= 1:
+            raise ValueError("EDGE bankroll/min_strength are invalid")
+        if isinstance(positions, bool) or not isinstance(positions, int) or positions < 1:
+            raise ValueError("EDGE max_positions must be a positive integer")
+        return {"tickers": list(tickers), "nifty_ticker": nifty, "bankroll": bankroll,
+                "max_positions": positions, "min_strength": strength}
+
+    def prepare(self, db_path, request):
+        from datetime import timedelta
+        from research_data_contracts import DatasetUnavailable, load_daily_dataset
+        names = [*request.config["tickers"], request.config["nifty_ticker"]]
+        try:
+            data = load_daily_dataset(db_path, tickers=names,
+                                      before=(date.fromisoformat(request.end_date) + timedelta(days=1)).isoformat())
+        except DatasetUnavailable as exc:
+            raise BacktestUnavailable(str(exc)) from exc
+        invalid = sorted(data.invalid)
+        if invalid:
+            raise BacktestUnavailable("invalid daily history for: " + ", ".join(invalid))
+        missing = sorted(name for name in names if not data.bars.get(name))
+        if missing:
+            raise BacktestUnavailable("missing required daily history: " + ", ".join(missing))
+        rows = [(bar.ticker, bar.day.isoformat(), bar.open, bar.high, bar.low, bar.close, bar.volume)
+                for name in names for bar in data.bars[name]]
+        columns = ["ticker", "date", "open", "high", "low", "close", "volume"]
+        return PreparedDataset(_fingerprint_rows(columns, rows), len(rows),
+                               {"daily": data.manifest, "universe": request.config["tickers"]}, rows)
+
+    def execute(self, prepared, request):
+        from research_daily_decision_replay import DailyReplayUnavailable, edge_evaluator_replay
+        try:
+            return edge_evaluator_replay(prepared.payload, start=request.start_date, end=request.end_date,
+                                         tickers=tuple(request.config["tickers"]), nifty_ticker=request.config["nifty_ticker"],
+                                         bankroll=request.config["bankroll"], max_positions=request.config["max_positions"],
+                                         min_strength=request.config["min_strength"])
+        except DailyReplayUnavailable as exc:
+            raise BacktestUnavailable(str(exc)) from exc
+
+    def normalize(self, result, request):
+        return ({"trade_count": None, "net_pnl": None, "net_return_pct": None, "win_rate_pct": None,
+                 "profit_factor": None, "max_drawdown_pct": None, "avg_r": None, "scope": result["scope"],
+                 "scan_count": len(result["scans"]), "candidate_count": result["candidates"], "selected_count": result["selected"],
+                 "oos": {"available": False, "reason": "evaluator replay has no portfolio result"}},
+                list(self.metadata.limitations))
 
 
 class PennyDailyProxyAdapter(BacktestAdapter):
@@ -1047,7 +1200,7 @@ class FnoUnavailableAdapter(BacktestAdapter):
 STRATEGY_REGISTRY: dict[str, BacktestAdapter] = {
     adapter.metadata.strategy_id: adapter
     for adapter in (
-        SwingDailyAdapter(), PennyDailyProxyAdapter(),
+        SwingDailyAdapter(), SwingDecisionParityAdapter(), EdgeDecisionParityAdapter(), PennyDailyProxyAdapter(),
         PennyDailyProxyWalkForwardAdapter(), PennyMinuteReplayAdapter(),
         PennyMisLifecycleAdapter(), PennyCncConnorsLifecycleAdapter(),
         Momentum15MinuteReplayAdapter(), FnoUnavailableAdapter(),

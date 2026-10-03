@@ -13,6 +13,7 @@ from engine import (
     calc_atr,
     calc_volume_ratio,
     calc_rsi,
+    calc_rsi_series,
     calc_slope,
     evaluate_signal,
     calc_zerodha_costs,
@@ -153,6 +154,11 @@ class TestCalcVolumeRatio:
 
 class TestCalcRSI:
     """Tests for calc_rsi (Wilder smoothing RSI)."""
+
+    def test_rsi_history_handles_more_than_seed_window_without_oob(self):
+        series = calc_rsi_series(pd.Series(np.linspace(100.0, 140.0, 60)), length=14)
+        assert len(series) == 60
+        assert pd.notna(series.iloc[-1])
 
     def test_rsi_insufficient_data(self):
         """Fewer than length+1 bars should return 0.0."""

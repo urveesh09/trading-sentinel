@@ -1,6 +1,40 @@
 # Trading Sentinel — next-agent execution plan
 
-## October 3 — B2 complete: exact classic Penny CNC Connors paper lifecycle (Dev only)
+## October 3 — B3 complete: shipped Swing/EDGE daily decision parity (Dev only)
+
+**Problem.** The registered `swing_regime_daily` runner is explicitly a
+single-ticker proxy (it substitutes the tested ticker for NIFTY and supplies
+neutral market context). `penny_edge_backtest.py` has older hard-coded
+thresholds, database and fill assumptions. Neither result may be relabelled as
+a replay of the deployed daily decision path.
+
+**Delivered.** Distinct research-only adapters call the shipped Swing evaluator
+and EDGE scanner. They freeze current defaults, retain the old proxy adapter's
+label, and fail unavailable when index/history evidence is absent. This is an
+**EVALUATOR** replay: it reports decisions/candidates and rejects, not a live
+portfolio, fill, broker admission or historical breadth/universe reconstruction.
+
+**Files/contracts.** `python-engine/backtest_lab.py` registry/adapter contract;
+new pure daily replay helper and unit/differential tests; `backtest_catalogue.py`
+family declaration; this plan, the system guide and checklist. Inputs are a
+frozen `ohlcv_cache` snapshot with explicit stock and index symbols; all source
+reads remain read-only.
+
+**Acceptance completed.** Fixtures call the same shipped functions and prove:
+no bar dated D informs a Swing D decision; configured EDGE rank/strength values
+reach the exact scanner through a temporary frozen cache; and the catalogue
+states evaluator-only scope. Binding found and fixed the RSI-history delta
+off-by-one which could abort live Swing scans. No strategy thresholds, capital,
+broker, runtime scheduling or Production file changed. Focused verification:
+149 passed, one existing httpx deprecation warning.
+
+**Rollout/rollback/remaining work.** Offline Dev tests only; archive manifests
+through the existing CLI. Rollback removes only the new research adapters and
+does not alter archived runs. Next: B4 Momentum/Range scope, then B6 held-out
+reporting, then owner review of the separately listed live cross-book allocation
+decisions. GitHub push/promotion and Production read-only checks remain pending.
+
+## October 3 — B0/B2 complete: exact classic Penny CNC Connors paper lifecycle (Dev only)
 
 [B2 CNC slice](2026-10-03-b2-penny-cnc-connors-lifecycle.md).
 - **Entry.** The replay reproduces the 09:30 scan with today's in-progress
@@ -21,8 +55,8 @@ Runtime findings, not changed:
 
 **Real-data run pending:** Production is stopped.
 
-Next in the B series: **B0** (one backtest entry point and catalogue), then
-B3, B4 and B6. B5 is excluded at the owner's direction.
+Next in the B series: **B3**, then B4 and B6. B5 is excluded at the owner's
+direction.
 
 ## October 3 — F1-A owner rule "no extra margin" enforced at both broker boundaries (Dev only)
 
