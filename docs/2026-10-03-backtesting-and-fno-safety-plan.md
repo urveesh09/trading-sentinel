@@ -221,7 +221,8 @@ non-F0 test exclusions); broader F&O admission/lifecycle/DR/orchestrator
 selection: 150 passed normally. Its warnings-fatal form has one pre-existing
 socket-lifecycle warning in an orchestrator timing test. F0 Dev source work is
 complete pending GitHub promotion and paper admission/recovery observation;
-F1 is still required before any live funding. Source commit pending.
+F1 is still required before any live funding. Source commit `a9fef57` is
+Dev-local, not pushed or deployed.
 
 #### F1 — cash-only funding and catastrophe acceptance
 

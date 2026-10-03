@@ -64,7 +64,7 @@ warnings-fatal form has one pre-existing socket-lifecycle warning in an
 orchestrator timing test after 149 assertions. F0's Dev source contract is
 complete pending post-promotion paper admission/recovery observation. F1
 remains the separately authorised broker cash/margin preflight before any live
-funding. Source commit pending; Dev only, not pushed or deployed.
+funding. Source commit `a9fef57`; Dev only, not pushed or deployed.
 
 **Completed implementation slice — F0-C shared paper entry-policy receipt (October 3, Dev only).**
 Problem: F0-B atomically reserves paper F&O catastrophe cash across the

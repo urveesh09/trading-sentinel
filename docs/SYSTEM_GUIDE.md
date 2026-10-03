@@ -66,7 +66,8 @@ orchestrator coverage: 150 passed normally; its warnings-fatal form surfaced
 one pre-existing socket-lifecycle warning in an orchestrator timing test after
 149 assertions. F0 remains Dev-only pending GitHub promotion and real paper
 admission/recovery observation; F1 cash/margin preflight remains required
-before any live funding. Source commit pending.
+before any live funding. Source commit `a9fef57` is Dev-local, not pushed or
+deployed.
 
 ## October 3 — baseline research is not full portfolio backtesting
 

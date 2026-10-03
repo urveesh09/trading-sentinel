@@ -32,7 +32,7 @@
   release. Missing legacy partial economics fail entry closed, never guessed.
   Dev verification: 32 focused warnings-fatal; 150 broader F&O tests normally;
   the warnings-fatal wider selection surfaced one existing socket warning.
-  Source commit pending; Dev-only, not pushed or deployed.
+  Source commit `a9fef57`; Dev-only, not pushed or deployed.
 - [ ] F0 operational acceptance: observe paper admissions and recovery evidence
   after GitHub promotion. F1 cash-only broker/margin preflight still precedes
   live funding.
