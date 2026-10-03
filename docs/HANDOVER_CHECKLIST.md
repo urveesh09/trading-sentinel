@@ -1,5 +1,24 @@
 # Handover receipt and operator checklist
 
+## October 3 B1/B2 receipt (Dev only)
+
+- [x] Plan slice before source changes: [2026-10-03-b1-b2-data-contracts-and-penny-lifecycle.md](2026-10-03-b1-b2-data-contracts-and-penny-lifecycle.md).
+- [x] B1 bar data contracts (`research_data_contracts.py`): 29 warnings-fatal tests.
+- [x] B2 exact classic Penny MIS lifecycle (`penny_lifecycle_replay.py`):
+  22 warnings-fatal tests, including live-scanner parity at every minute and
+  a mutation check on the clock.
+- [x] Lab `penny_breakout_mis_lifecycle_1m` (`LIFECYCLE`) and CLI
+  `--strategy lifecycle`: 6 CLI tests; existing baseline path unchanged.
+- [x] Broad regression: 809 passed, 1 skipped (known Starlette/HTTPX
+  deprecations only).
+- [x] Predeclared read-only Production-data runs archived. Primary: 3 trades,
+  +₹31.52. Sensitivity: 5 trades, +₹81.12. No profitability claim.
+- [ ] Owner decisions: classic Penny kill-switch wiring (currently inert);
+  minute capture through 15:00 for open positions.
+- [ ] CNC Connors exact adapter; B3–B6; point-in-time universe and regime.
+- [ ] F0 R1–R5 (independent review) and F1 remain open; GitHub promotion of
+  these Dev commits.
+
 ## October 3 independent F0 review (supersedes source-complete receipt)
 
 - [x] Review F0-A–E against actual source and isolated adversarial fixtures:

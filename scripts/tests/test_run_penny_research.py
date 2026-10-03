@@ -63,3 +63,38 @@ def test_current_registered_baseline_runs_without_capital_return_claim(tmp_path)
     assert report["metrics"]["net_return_pct"] is None
     assert report["can_place_orders"] is False
     assert report["can_qualify"] is False
+
+
+def test_lifecycle_collection_bounds_and_coverage_only_rule(tmp_path):
+    path = tmp_path / "test.db"
+    seed(path)
+    before = path.read_bytes()
+    result = module.collect(str(path), "2026-08-11", "2026-08-20", [], 2, "lifecycle")
+    assert result["tickers"] == ["AAA", "BBB"] and result["strategy"] == "lifecycle"
+    assert result["selection_rule"].startswith("ALPHABETICAL_AT_LEAST_ONE_COMPLETE_375_BAR")
+    assert path.read_bytes() == before
+    with pytest.raises(ValueError, match="40 tickers"):
+        module.collect(str(path), "2026-08-11", "2026-08-20", [], 41, "lifecycle")
+    with pytest.raises(ValueError, match="20 tickers"):
+        module.collect(str(path), "2026-08-11", "2026-08-20", [], 21)
+
+
+def test_lifecycle_replay_validates_rows_and_reports_lifecycle_scope(tmp_path):
+    path = tmp_path / "test.db"
+    seed(path)
+    with sqlite3.connect(path) as db:
+        db.execute("INSERT INTO intraday_cache VALUES('AAA','15minute','2026-08-11 09:15:00',10,11,9,10,100)")
+    rejected = module.replay_lifecycle(module.collect(str(path), "2026-08-11", "2026-08-11", ["AAA"], 1, "lifecycle"))
+    assert rejected["status"] == "UNAVAILABLE"  # seed has weekend daily rows inside the warm-up
+    assert rejected["result"]["coverage"]["exclusions"][0]["reason"] == "off_calendar_daily_row_in_warmup"
+    with sqlite3.connect(path) as db:
+        db.execute("DELETE FROM ohlcv_cache WHERE strftime('%w',date) IN ('0','6')")
+    report = module.replay_lifecycle(module.collect(str(path), "2026-08-11", "2026-08-11", ["AAA"], 1, "lifecycle"))
+    assert report["strategy_id"] == "penny_breakout_mis_lifecycle_1m"
+    assert report["result"]["scope"] == "LIFECYCLE"
+    coverage = report["result"]["datasets"]["intraday"]
+    assert coverage["row_counts"]["by_label"] == {"15minute": 1, "minute": 375}
+    assert report["status"] == "COMPLETE" and report["summary"]["net_pnl"] is None  # no trades: no P&L
+    assert report["result"]["funnel"]["evaluations"] > 0
+    assert set(report["source_sha256"]) >= {"penny_lifecycle_replay.py", "research_data_contracts.py"}
+    assert report["can_place_orders"] is False and report["can_qualify"] is False

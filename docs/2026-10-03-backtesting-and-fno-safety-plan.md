@@ -1,5 +1,15 @@
 # Backtesting Sentinel's shipped modules and F&O safety — October 3
 
+## B1/B2 implementation override (later October 3)
+
+B1 (bar data contracts) and the classic Penny MIS half of B2 (exact
+lifecycle) are implemented in Dev. See [the B1/B2 slice](2026-10-03-b1-b2-data-contracts-and-penny-lifecycle.md). In the
+catalogue below, *Classic Penny MIS Breakout* now has a `LIFECYCLE` adapter,
+`penny_breakout_mis_lifecycle_1m`. Full runtime gates are replayed except
+universe ranking, regime history, the sector filter and the event calendar.
+The exact CNC Connors adapter and B3–B6 remain planned. F0 R1–R5 status is
+unchanged by this work.
+
 ## Current acceptance override — independent F0 review
 
 The [independent F0 review and R1–R5 correction plan](2026-10-03-fno-f0-independent-review.md)

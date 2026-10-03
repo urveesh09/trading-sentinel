@@ -110,9 +110,9 @@ Related tests: `python-engine/tests/test_backtest.py`, `python-engine/tests/test
 
 Research-only backtest registry, adapters, and immutable run archive. This module has deliberately no broker client or order-execution imports. A BacktestAdapter receives a frozen dataset snapshot and returns research data; future strategies join the lab by implementing the same contract and adding one explicit registry entry.
 
-Top-level declarations: `_utc_now` (line 36), `_json_default` (line 40), `_finite_json_value` (line 54), `_json` (line 78), `_decode` (line 85), `StrategyMetadata` (line 95), `BacktestRequest` (line 113), `PreparedDataset` (line 122), `BacktestUnavailable` (line 129), `BacktestAdapter` (line 133), `_fingerprint_rows` (line 171), `_daily_rows` (line 177), `SwingDailyAdapter` (line 209), `PennyDailyProxyAdapter` (line 289), `PennyWalkForwardConfig` (line 385), `PennyDailyProxyWalkForwardAdapter` (line 416), `_ticker_list` (line 604), `_write_replay_cache` (line 613), `PennyMinuteReplayAdapter` (line 633), `Momentum15MinuteReplayAdapter` (line 734), `FnoUnavailableAdapter` (line 831), `init_backtest_lab_db` (line 865), `_validate_dates` (line 939), `list_strategies` (line 950), `submit_run` (line 988), `_run_background` (line 1024), `_row_to_run` (line 1060), `list_runs` (line 1085), `get_run` (line 1104)
+Top-level declarations: `_utc_now` (line 36), `_json_default` (line 40), `_finite_json_value` (line 54), `_json` (line 78), `_decode` (line 85), `StrategyMetadata` (line 95), `BacktestRequest` (line 117), `PreparedDataset` (line 126), `BacktestUnavailable` (line 133), `BacktestAdapter` (line 137), `_fingerprint_rows` (line 175), `_daily_rows` (line 181), `SwingDailyAdapter` (line 213), `PennyDailyProxyAdapter` (line 293), `PennyWalkForwardConfig` (line 389), `PennyDailyProxyWalkForwardAdapter` (line 420), `_ticker_list` (line 608), `_write_replay_cache` (line 617), `PennyMinuteReplayAdapter` (line 637), `PennyMisLifecycleAdapter` (line 739), `Momentum15MinuteReplayAdapter` (line 841), `FnoUnavailableAdapter` (line 938), `init_backtest_lab_db` (line 973), `_validate_dates` (line 1047), `list_strategies` (line 1058), `submit_run` (line 1097), `_run_background` (line 1133), `_row_to_run` (line 1169), `list_runs` (line 1194), `get_run` (line 1213)
 
-Engine dependencies: `backtest`, `momentum_replay`, `penny_backtest_v2`, `penny_intraday_replay`, `walk_forward`
+Engine dependencies: `backtest`, `momentum_replay`, `penny_backtest_v2`, `penny_intraday_replay`, `penny_lifecycle_replay`, `research_data_contracts`, `walk_forward`
 
 Related tests: `python-engine/tests/test_backtest_lab.py`
 
@@ -1566,6 +1566,16 @@ Engine dependencies: `config`, `penny_engine_breakout`, `penny_shadow`, `walk_fo
 
 Related tests: `python-engine/tests/test_penny_intraday_replay.py`
 
+## `python-engine/penny_lifecycle_replay.py`
+
+[B2 2026-10-03] Exact classic Penny MIS breakout lifecycle replay (offline). Replays the shipped classic Penny MIS book over B1-validated minute bars, calling the same functions the runtime calls, in the runtime's order: * entry: ``PennyScanner._evaluate_ticker_breakout`` input construction -> ``evaluate_breakout_entry`` (with a real ``PennyRiskEngine`` for sizing) -> per-ticker reservation and MIS capacity -> ``PennyExecutor.execute_entry`` drift / stop-breach checks -> fill at the LTP; * exits: the 60-second paper LTP stop monitor (``PENNY_PAPER``) or a broker stop (``PENNY``), the 14:30 ``run_penny_eod_check`` branch order (``time_stop_triggered`` then ``smart_eod_check``) and the 15:00 `
+
+Top-level declarations: `reject_code` (line 83), `PennyLifecycleConfig` (line 93), `settings_snapshot` (line 112), `_TickerDay` (line 141), `_aware` (line 186), `_round` (line 190), `_Replay` (line 194), `_summary` (line 467), `run_penny_lifecycle` (line 517)
+
+Engine dependencies: `config`, `penny_engine_breakout`, `penny_executor`, `penny_models`, `penny_risk`, `penny_shadow`, `research_data_contracts`
+
+Related tests: `python-engine/tests/test_penny_lifecycle_replay.py`
+
 ## `python-engine/penny_models.py`
 
 [PENNY-MODELS 2026-06-21] Pydantic models for the penny-stock subsystem. Owns: - PennySignal: signal record for one accepted penny trade - PennyRegime: per-stock market regime (PR1_CALM, PR2_ELEVATED, PR3_HOT) - PennyLeg: product type literal (CNC, MIS) Hard architectural rule (enforced by tests/test_penny_isolation.py): this module MUST NOT import from engine, regime, risk_engine, portfolio, evaluate_signal, or evaluate_momentum_signal. Allowed shared imports: kite_client, models (base only), config, position_tracker, performance, analytics, stdlib, pydantic.
@@ -1901,6 +1911,16 @@ Top-level declarations: `_json_file` (line 17), `_write_comparison_output` (line
 Engine dependencies: `config`, `intraday_spread_archive_adapter`, `intraday_spread_chronological`, `partner_delivery_blockers`, `partner_full_policy_replay`, `partner_qualification`, `partner_qualification_package`, `partner_qualification_verify`, `partner_research_capture`, `proactive_comparison_protocol`, `proactive_intelligence`, `reconciliation_evidence`, `research_archive`
 
 Related tests: `python-engine/tests/test_research_cli_qualification.py`, `python-engine/tests/test_research_cli_strategy_comparison.py`
+
+## `python-engine/research_data_contracts.py`
+
+[B1 2026-10-03] Immutable, offline bar-data contracts for research replays. Backtests must never confuse one bar interval for another, fill from a bar on which nothing traded, forward-fill a missing session or treat an unverifiable calendar day as a trading day. This module is the single place that decides which cached bars a research replay may use and records why every other row or ticker-day was excluded. Contracts (see docs/2026-10-03-b1-b2-data-contracts-and-penny-lifecycle.md): * A run selects exactly one registered interval label. Other labels on the same ticker-day (for example 15-minute rows next to minute rows) are counted and reported, never merged and never fatal. ``legacy_unknow
+
+Top-level declarations: `DatasetUnavailable` (line 64), `IntervalSpec` (line 69), `interval_spec` (line 93), `TradingCalendar` (line 105), `default_calendar` (line 127), `iso_day` (line 140), `parse_bar_start` (line 148), `_finite` (line 162), `_read_only_connection` (line 172), `_canonical_hash` (line 179), `Bar` (line 190), `CoverageRequirement` (line 211), `IntradayDataset` (line 232), `_row_problem` (line 251), `validate_intraday_rows` (line 271), `load_intraday_dataset` (line 425), `DailyBar` (line 455), `DailyDataset` (line 466), `validate_daily_rows` (line 489), `load_daily_dataset` (line 581)
+
+Engine dependencies: `market_calendar`
+
+Related tests: `python-engine/tests/test_research_data_contracts.py`
 
 ## `python-engine/research_leg_subscriptions.py`
 

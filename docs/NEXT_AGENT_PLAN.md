@@ -1,5 +1,59 @@
 # Trading Sentinel — next-agent execution plan
 
+## October 3 — B1/B2 implemented in Dev (current state; read first)
+
+[B1/B2 slice, results and verification](2026-10-03-b1-b2-data-contracts-and-penny-lifecycle.md). The owner directed this
+task to treat the F&O half of the October 3 plan as done and to implement
+B1/B2. For the record, the [independent F0 review](2026-10-03-fno-f0-independent-review.md)
+still lists R1–R5; this slice changed no F&O code.
+
+- **B1 `research_data_contracts.py`.**
+  - One interval label per run; other labels are reported and never merged;
+    `legacy_unknown` is never usable.
+  - IST bar-start clock; an invalid row invalidates its ticker-day.
+  - Zero-volume bars are marks, not fills.
+  - Coverage statuses: COMPLETE, PARTIAL, INVALID, UNAVAILABLE.
+  - The audited calendar has an explicit validity range.
+  - Daily bars are point-in-time; suspected corporate actions and
+    off-calendar dates are reported, never repaired.
+  - Manifests carry hashes; loaders are read-only.
+- **B2 `penny_lifecycle_replay.py`.** Replays the exact classic Penny MIS
+  lifecycle (scope `LIFECYCLE`):
+  - the live completed-bar clock;
+  - real `PennyRiskEngine` sizing, the circuit filter, one position per
+    ticker and at most 3 MIS positions;
+  - executor drift and stop-breach checks;
+  - the paper LTP stop or a broker stop, the 14:30 smart-EOD / 30-minute
+    time stop, and the 15:00 force close, with no target exit.
+
+  It passed a minute-by-minute parity test against the real
+  `PennyScanner._evaluate_ticker_breakout`. It is registered in the Lab as
+  `penny_breakout_mis_lifecycle_1m` and available through
+  `scripts/run_penny_research.py --strategy lifecycle`.
+- **Tests.**
+  - B1 + B2 + CLI: 57 passed, warnings-fatal.
+  - Broad Penny/Lab/research/calendar selection: 809 passed and 1 skipped;
+    its warnings are the known Starlette/HTTPX deprecations.
+- **Predeclared runs on Production data (read-only).**
+  - Primary (`complete_only`): 3 trades, net +₹31.52; excluding the best
+    winner, −₹5.91.
+  - Sensitivity (`allow_gaps`): 5 trades, net +₹81.12.
+
+  This shows rare entries and dependence on winners running to the 14:30
+  rule. It establishes no profitability, holdout or funding authority.
+- **Findings left for the owner.**
+  - The classic Penny daily kill switch is never fed by runtime
+    settlements, so it is inert.
+  - Minute capture stops at about 14:29 after 2026-09-03, which leaves later
+    sessions without exit evidence.
+  - The bankroll is a fixed setting.
+- **Next.**
+  - CNC Connors exact adapter, then B3–B6.
+  - Point-in-time universe and regime before any `FULL_PORTFOLIO` claim.
+  - The F0 R1–R5 items and F1 remain open.
+
+Dev only, not pushed, not deployed; Production is unchanged at `044c016`.
+
 ## October 3 — independent F0 review: acceptance reopened
 
 Read [the independent F0 review](2026-10-03-fno-f0-independent-review.md)

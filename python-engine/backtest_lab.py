@@ -107,6 +107,10 @@ class StrategyMetadata:
     parameter_schema: dict[str, Any]
     research_only: bool = True
     can_place_orders: bool = False
+    # [B0/B2 2026-10-03] Honest fidelity label: EVALUATOR (entry decisions
+    # only), LIFECYCLE (entries plus the shipped exits/capacity) or
+    # FULL_PORTFOLIO. UNSPECIFIED adapters predate the label.
+    scope: str = "UNSPECIFIED"
 
 
 @dataclass(frozen=True)
@@ -656,6 +660,7 @@ class PennyMinuteReplayAdapter(BacktestAdapter):
             "test_days": {"type": "integer", "minimum": 1}, "step_days": {"type": "integer", "minimum": 1},
             "anchored": {"type": "boolean"},
         },
+        scope="EVALUATOR",
     )
 
     def snapshot_config(self, supplied):
@@ -728,6 +733,108 @@ class PennyMinuteReplayAdapter(BacktestAdapter):
             "max_drawdown_pct": None, "avg_r": sole.get("avg_r") if sole else None,
             "variant_summaries": [{k: row.get(k) for k in ("variant", "paper_entries", "open_trades", "closed_trades", "net_pnl", "profit_factor", "expectancy", "avg_r", "max_drawdown")} for row in rows],
             "oos": {"available": False, "reason": "walk_forward=false"},
+        }, warnings)
+
+
+class PennyMisLifecycleAdapter(BacktestAdapter):
+    """[B2 2026-10-03] Exact classic Penny MIS lifecycle over B1-validated bars."""
+    metadata = StrategyMetadata(
+        strategy_id="penny_breakout_mis_lifecycle_1m",
+        name="Penny Breakout MIS (exact lifecycle, 1-minute)", version="1.0.0",
+        description=("Replays the shipped classic Penny MIS book: live completed-bar clock, real "
+                     "PennyRiskEngine sizing, circuit filter, capacity, executor drift/stop checks, "
+                     "paper LTP or broker stop, 14:30 smart-EOD/time stop and 15:00 force close."),
+        engine="penny_lifecycle_replay", timeframe="1 minute",
+        capabilities=("true_intraday", "gate_funnel", "costs", "risk_metrics", "lifecycle_exits",
+                      "capacity", "coverage_contract"),
+        data_requirements=(
+            "intraday_cache rows labelled interval='minute' passing the B1 bar contract",
+            "strictly prior ohlcv_cache daily history (point-in-time)",
+        ),
+        limitations=(
+            "LIFECYCLE scope: universe ranking, historical regime, sector filter, event calendar, "
+            "broker rejections/partial fills and CNC occupancy are not replayed.",
+            "Historical regime is a declared constant; the runtime regime is not reconstructed.",
+            "Fills require a traded minute bar; one-minute bars cannot order trades inside a minute.",
+        ),
+        default_config={"tickers": [], "book": "PENNY_PAPER", "regime": "PR1_CALM",
+                        "session_policy": "complete_only"},
+        default_assumptions={
+            "clock": "bar_k_minus_1_evaluated_at_boundary_k", "fills": "ltp_on_traded_bar_only",
+            "costs": "frozen_real_equity_MIS", "target_exit": "none_smart_eod_only",
+        },
+        parameter_schema={
+            "tickers": {"type": "array", "items": {"type": "string"}, "minItems": 1},
+            "book": {"enum": ["PENNY_PAPER", "PENNY"]},
+            "regime": {"enum": ["PR1_CALM", "PR2_ELEVATED", "PR3_HOT"]},
+            "session_policy": {"enum": ["complete_only", "allow_gaps"]},
+        },
+        scope="LIFECYCLE",
+    )
+
+    def _config(self, values):
+        from penny_lifecycle_replay import PennyLifecycleConfig
+        return PennyLifecycleConfig(
+            tickers=tuple(values["tickers"]), book=values["book"], regime=values["regime"],
+            session_policy=values["session_policy"],
+        )
+
+    def snapshot_config(self, supplied):
+        merged = super().snapshot_config(supplied)
+        tickers = _ticker_list(merged["tickers"])
+        if not tickers:
+            raise ValueError("the lifecycle replay requires an explicit ticker list")
+        cfg = self._config({**merged, "tickers": tickers})
+        return {"tickers": list(cfg.tickers), "book": cfg.book, "regime": cfg.regime,
+                "session_policy": cfg.session_policy}
+
+    def prepare(self, db_path, request):
+        from research_data_contracts import (
+            COVERAGE_REQUIREMENTS, DatasetUnavailable, load_daily_dataset, load_intraday_dataset,
+        )
+        tickers = request.config["tickers"]
+        try:
+            intraday = load_intraday_dataset(
+                db_path, interval="minute", start=request.start_date, end=request.end_date,
+                tickers=tickers,
+            )
+            daily = load_daily_dataset(db_path, tickers=tickers, before=request.end_date)
+        except DatasetUnavailable as exc:
+            raise BacktestUnavailable(str(exc)) from exc
+        requirement = COVERAGE_REQUIREMENTS[request.config["session_policy"]]
+        if not intraday.usable_days(requirement):
+            raise BacktestUnavailable(
+                f"no ticker-day satisfies session_policy={requirement.name}: "
+                f"{intraday.manifest['status_counts']}"
+            )
+        fingerprint = "sha256:" + hashlib.sha256(
+            (intraday.manifest["dataset_sha256"] + daily.manifest["dataset_sha256"]).encode()
+        ).hexdigest()
+        details = {"intraday": intraday.manifest, "daily": daily.manifest}
+        rows = sum(len(bars) for bars in intraday.bars.values())
+        return PreparedDataset(fingerprint, rows, details, (intraday, daily))
+
+    def execute(self, prepared, request):
+        from penny_lifecycle_replay import run_penny_lifecycle
+        intraday, daily = prepared.payload
+        return run_penny_lifecycle(intraday, daily, self._config(request.config),
+                                   start=request.start_date, end=request.end_date)
+
+    def normalize(self, result, request):
+        summary = result["summary"]
+        warnings = list(self.metadata.limitations) + list(result.get("warnings", []))
+        return ({
+            "trade_count": summary["closed_trades"], "net_pnl": summary["net_pnl"],
+            "net_return_pct": None, "win_rate_pct": summary["win_rate_pct"],
+            "profit_factor": summary["profit_factor"], "max_drawdown_pct": None,
+            "avg_r": summary["avg_r"], "scope": result["scope"], "status": result["status"],
+            "unresolved_trades": summary["unresolved_trades"],
+            "max_drawdown": summary["max_drawdown"],
+            "net_excluding_best_winner": summary["net_excluding_best_winner"],
+            "adverse_fill_bound_net": summary["adverse_fill_bound_net"],
+            "funnel": result["funnel"],
+            "coverage": {k: v for k, v in result["coverage"].items() if k != "exclusions"},
+            "oos": {"available": False, "reason": "single retrospective lifecycle run"},
         }, warnings)
 
 
@@ -857,6 +964,7 @@ STRATEGY_REGISTRY: dict[str, BacktestAdapter] = {
     for adapter in (
         SwingDailyAdapter(), PennyDailyProxyAdapter(),
         PennyDailyProxyWalkForwardAdapter(), PennyMinuteReplayAdapter(),
+        PennyMisLifecycleAdapter(),
         Momentum15MinuteReplayAdapter(), FnoUnavailableAdapter(),
     )
 }
@@ -963,9 +1071,10 @@ async def list_strategies(db_path: str) -> list[dict[str, Any]]:
                     "SELECT name FROM sqlite_master WHERE type='table'"
                 )}
                 daily_count = conn.execute("SELECT count(*) FROM ohlcv_cache").fetchone()[0] if "ohlcv_cache" in tables else 0
-                if isinstance(adapter, (PennyMinuteReplayAdapter, Momentum15MinuteReplayAdapter)):
+                if isinstance(adapter, (PennyMinuteReplayAdapter, PennyMisLifecycleAdapter,
+                                        Momentum15MinuteReplayAdapter)):
                     columns = {row[1] for row in conn.execute("PRAGMA table_info(intraday_cache)")} if "intraday_cache" in tables else set()
-                    interval = "minute" if isinstance(adapter, PennyMinuteReplayAdapter) else "15minute"
+                    interval = "15minute" if isinstance(adapter, Momentum15MinuteReplayAdapter) else "minute"
                     intraday_count = conn.execute(
                         "SELECT count(*) FROM intraday_cache WHERE interval=?", (interval,)
                     ).fetchone()[0] if "interval" in columns else 0

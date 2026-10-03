@@ -1,5 +1,13 @@
 # Successor inheritance — Trading Sentinel, October 3, 2026 (IST)
 
+## Later October 3 — B1/B2 delivered in Dev
+
+B1 data contracts and the exact classic Penny MIS lifecycle replay are
+implemented, tested and documented in [the B1/B2 slice](2026-10-03-b1-b2-data-contracts-and-penny-lifecycle.md). The
+owner directed that F&O work be treated as done for this task; the
+independent review still lists R1–R5 and F1. Dev-only local commits;
+Production `044c016` untouched.
+
 ## Later October 3 review override
 
 F0-A–E were subsequently committed through Dev `2b106f7`. Their source-complete

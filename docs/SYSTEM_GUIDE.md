@@ -1,5 +1,63 @@
 # Trading Sentinel — system guide and engineering handover
 
+## October 3 — research bar contracts and exact Penny lifecycle replay (Dev only)
+
+This guide's research tooling now has two offline layers ([slice and evidence](2026-10-03-b1-b2-data-contracts-and-penny-lifecycle.md)).
+
+**`research_data_contracts.py` (B1)** decides which cached bars a replay may
+use.
+- A run selects one registered interval label (`minute`, `3minute`,
+  `5minute`, `15minute`). Other labels on the same ticker-day are counted,
+  not merged; `legacy_unknown` is refused.
+- Timestamps are IST wall-clock bar starts, visible at start + interval.
+- One invalid row (off grid, outside 09:15–15:29, non-session date,
+  impossible OHLC, negative volume, conflicting duplicate) invalidates that
+  ticker-day.
+- `TRADED` bars are the only executable evidence; zero-volume bars are
+  marks.
+- Each requested trading day is COMPLETE, PARTIAL (with reason codes),
+  INVALID or UNAVAILABLE. Dates outside the audited static calendar are
+  UNAVAILABLE.
+- Daily bars are point-in-time with adjustment basis `UNKNOWN_AS_CACHED`.
+  Moves above 40% and off-calendar daily dates (such as 2026-02-01) are
+  reported, never repaired.
+- Manifests carry an order-independent SHA-256. Loaders open SQLite with an
+  encoded `mode=ro` URI and never create a database.
+
+**`penny_lifecycle_replay.py` (B2)** replays the classic Penny MIS book with
+the shipped functions in runtime order.
+- At minute boundary *k* it evaluates bar *k−1* (the forming bar is dropped,
+  as live does).
+- Fills happen at the LTP: the open of bar *k* when it traded. A stale mark
+  never proves a fill.
+- Entry follows the runtime path: circuit filter, then
+  `evaluate_breakout_entry` with real `PennyRiskEngine` sizing, then one
+  position per ticker and at most 3 MIS positions, then the executor's 2%
+  drift and stop-breach checks.
+- Exits follow the runtime path: the paper LTP stop poll (`PENNY_PAPER`) or
+  an approximate broker stop (`PENNY`), the 14:30 `run_penny_eod_check`
+  branch order, and the 15:00 force close. There is no target exit.
+- Costs use the frozen real equity MIS schedule; the brokerage bypass is
+  never honoured.
+- Scope is `LIFECYCLE`. Universe ranking, historical regime, the sector
+  filter, the event calendar, broker rejections and partial fills, CNC
+  occupancy and scheduler jitter are declared as not replayed.
+
+It is exposed through the Backtest Lab (`penny_breakout_mis_lifecycle_1m`,
+plus a new additive `scope` metadata field) and through
+`scripts/run_penny_research.py --strategy lifecycle`. No runtime trading
+path, schema, setting, broker, order or message behaviour changed.
+
+Observed shipped behaviour, not changed:
+- The classic Penny daily kill switch is never fed by runtime settlements
+  (`record_close` has no caller), so it cannot fire.
+- The Penny bankroll is a fixed setting.
+- Minute bars stop at about 14:29 once the scanner's entry window closes, so
+  sessions after 2026-09-03 lack 14:30/15:00 exit evidence.
+
+Tests: 57 new or extended warnings-fatal tests; 809 passed and 1 skipped in
+the broad Penny/Lab selection. Dev only; not pushed or deployed.
+
 ## October 3 — independent F0 acceptance review (Dev only)
 
 [Independent review and correction plan](2026-10-03-fno-f0-independent-review.md)
