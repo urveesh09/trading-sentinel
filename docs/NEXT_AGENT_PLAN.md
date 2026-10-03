@@ -17,7 +17,7 @@
 - **Tests.** 18 new; 781 regression passed, plus the known unrelated
   mark-to-market failure.
 
-Next: **R5**. Dev only, not pushed or deployed.
+Commit `0bc8fa4` (Dev-local). Next: **R5**. Dev only, not pushed or deployed.
 
 ## October 3 — F0-R3 implemented in Dev (canonical cash, clock, completed trades)
 

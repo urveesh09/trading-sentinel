@@ -170,3 +170,19 @@ function.
 - The live `fno_risk.kill_switch_status` reader.
 - F1. Broker authenticity, as opposed to local integrity, remains an F1 or
   statement-evidence concern.
+
+### Commit receipt
+
+- **Implementation commit.** `0bc8fa4` (`fix(fno): bind retained broker
+  payloads and entry/cost economics (F0-R4)`) on
+  `codex/production-correction-hedge-p0`. It is Dev-local only: not pushed
+  and not deployed. Production is unchanged at `044c016`.
+- **Post-commit check.**
+  - Regenerating the atlas produced no diff (232 modules, now including
+    `fno_exit_evidence.py`).
+  - The guide, plan, checklist and review all link to this slice.
+  - Re-running the R4, shared-risk and recovery tests from the committed
+    tree, warnings-fatal, gave 54 passed. The one deselected test is the
+    known ASGI route test.
+- **Migrations.** One additive column and one trigger, created by the
+  existing `init_fno_positions_db`. There is no settings change.
