@@ -182,4 +182,10 @@ gateway checks are separate from this final affected-selection result.
 No configuration, schema migration, archived-run rewrite or strategy-threshold
 change. Production is running the older declared `044c016` engine and untouched
 by this review. Changes remain Dev-local, not pushed or deployed.
-Source commit identity and immediate consistency check follow in the receipt.
+Source/correction commit: **`284bb4a`** on
+`codex/production-correction-hedge-p0`, Dev-local. Immediately after commit,
+verified guide/plan/checklist/review pointers and recorded test/environment
+results, regenerated the atlas with identical bytes and confirmed a clean
+worktree. This documentation-only receipt follows that verified source commit.
+No remaining work in the authorized review/correction slice; P1-P4 and the
+separate operational acceptance above remain open in the original plan.

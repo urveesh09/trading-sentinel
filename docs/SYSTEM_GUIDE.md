@@ -20,6 +20,9 @@ Production checkout; this review did not restart/edit/promote it. Baseline
 verification: 422 Python/58 gateway tests. Final affected regression: 294
 passed, two existing deprecations; atlas, compile and diff checks passed.
 No Dev runtime acceptance, push or deployment occurred.
+Correction source commit `284bb4a`; immediately verified documentation/plan
+consistency, deterministic atlas and clean Dev worktree. Review/correction work
+is complete; the explicitly listed implementation and operational gaps remain.
 
 ## October 3 — B6 standard reporting and date declaration (Dev only)
 

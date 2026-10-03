@@ -18,6 +18,9 @@ and Dev release operational acceptance remain pending. Production resumed after
 the owner's power cut and reports the older declared engine `044c016`; this
 review did not restart it. Final affected regression: 294 passed, two existing
 deprecations; atlas/compile/diff checks passed.
+Correction source commit `284bb4a` is Dev-local; immediate documentation/plan
+consistency and atlas reproducibility passed. The authorized review is complete;
+implement P1-P4 only in their defined follow-up slices.
 Older receipts below describe delivery at their commit, not current completion
 of the full original plan.
 

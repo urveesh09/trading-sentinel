@@ -11,7 +11,8 @@
   unsupported untouched-holdout certification in Dev.
 - [x] Final affected regression: 294 passed, two existing deprecations; atlas,
   compile, review links and diff consistency passed.
-- [ ] Post-commit identity and documentation receipt.
+- [x] Source commit `284bb4a`; immediate guide/plan/checklist/review consistency,
+  atlas reproducibility and clean worktree verified. Receipt is Dev-local only.
 - [ ] F1-B common account cash reservation, charges/book budgets and catastrophe acceptance.
 - [ ] B0/B1 complete dependency/data/context manifests and point-in-time evidence.
 - [ ] B2/B3/B4 full historical lifecycle/portfolio scope; CNC real-data run.
