@@ -34,7 +34,8 @@ diff and regenerated atlas checked. Large evidence stays locally retained under
 the dated ignored `_local/`; tracked receipts bind it. Production release
 `044c016` was stopped during collection/final read-only check; this task did not
 restart or edit it. Dev only, no orders, push or deployment. Source/research
-commit identity and immediate consistency checks are in the completion receipt.
+commit `4929bea`; immediate consistency, deterministic atlas and clean-worktree
+checks passed. See [completion receipt](2026-10-03-current-system-test-completion.md).
 
 ## October 3 — P1/P3/P4 safety and research completion slice (Dev only)
 

@@ -9,8 +9,9 @@ supersede a claim of complete multi-module profitability testing. All 19 archive
 jobs finished, including preserved unavailable/failed attempts; 11 delivered
 runs bind current source after the EDGE handle-only cleanup. No strategy tuning.
 28 focused tests passed; immutable evidence/source checks, repeat outcomes,
-compile/diff and atlas verification passed. Source/research commit and immediate
-post-commit receipt follow the established documentation ritual.
+compile/diff and atlas verification passed. Source/research commit `4929bea`;
+immediate consistency, deterministic atlas and clean-worktree checks passed.
+See [completion receipt](2026-10-03-current-system-test-completion.md).
 
 The quarter is not fully covered. F&O full-policy/exit replay is unavailable;
 recorded cash is distinct. Penny has actual historical activity, but complete

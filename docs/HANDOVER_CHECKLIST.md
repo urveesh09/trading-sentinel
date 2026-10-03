@@ -16,7 +16,8 @@
   checks, compile/diff and regenerated atlas verified.
 - [x] [Comprehensive results](2026-10-03-current-system-backtest-results.md),
   [plan](2026-10-03-current-system-backtest-plan.md), machine summary and integrity
-  receipt retained. Source commit/immediate consistency in completion receipt.
+  receipt retained. Source commit `4929bea`; immediate documentation consistency,
+  deterministic atlas and clean-worktree checks passed; see completion receipt.
 - [ ] Owner discussion of improvements; no strategy tuning undertaken.
 - [ ] Complete historical context/coverage, Momentum real EOD/partial lifecycle,
   Penny mixed-offset clock normalization, other-book lifecycle/portfolio fidelity,
