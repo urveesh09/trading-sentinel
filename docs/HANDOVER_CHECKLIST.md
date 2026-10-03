@@ -1,5 +1,27 @@
 # Handover receipt and operator checklist
 
+## October 3 independent F0 review (supersedes source-complete receipt)
+
+- [x] Review F0-A–E against actual source and isolated adversarial fixtures:
+  baseline 111 passed, one known Starlette deprecation, normal exit.
+- [x] Correct missing-DB creation by shared readers and false unavailability
+  after verified terminal zero-fill recovery; three new regressions pass
+  warnings-fatal, preserving all exposure and existing exit authority.
+- [x] Final six-file selection: 114 passed, one known Starlette warning,
+  normal exit; compilation/atlas (229 modules)/whitespace checks passed.
+- [ ] F0-R1: fee-inclusive exposure conservation after reservation consumption.
+- [ ] F0-R2: single dispatch ownership, halt-safe retries and ambiguous-entry
+  recovery retaining capital until verified resolution.
+- [ ] F0-R3: partial cash, future-clock rejection and completed-trade loss streak.
+- [ ] F0-R4: broker payload contents and immutable entry/cost evidence binding.
+- [ ] F0-R5: transactional existing caps and post-admission-wait action clocks.
+- [ ] GitHub promotion and actual paper/recovery observation; Production
+  remains `044c016` and has no shared-risk module at inspection.
+
+Full files/contracts/acceptance/rollout/rollback and final verification:
+[independent review](2026-10-03-fno-f0-independent-review.md). B1/B2 remains
+pending; tests and source commits do not establish profitability or deployment.
+
 ## October 3 continuation receipt
 
 - [x] Deep successor inheritance and shipped-module/F&O safety plan.

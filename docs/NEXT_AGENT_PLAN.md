@@ -1,10 +1,37 @@
 # Trading Sentinel — next-agent execution plan
 
+## October 3 — independent F0 review: acceptance reopened
+
+Read [the independent F0 review](2026-10-03-fno-f0-independent-review.md)
+before acting on the earlier completion receipts. Reviewed Dev `2b106f7`;
+Production remains `044c016` and lacks the shared-risk module. Existing F0
+paper gates and atomic writes are implemented; source acceptance is open.
+
+- R1: preserve fee-inclusive exposure through consumed/open/unresolved/partial
+  states, with exact cash conservation across both books.
+- R2: one durable dispatch owner, current-policy retry checks and evidence-backed
+  handling of ambiguous entry/cancel/partial outcomes; no timeout release.
+- R3: canonical partial/terminal cash, aware observation bounds and completed
+  trade identity for the existing consecutive-loss brake.
+- R4: re-derive retained broker payload facts and bind immutable entry/cost
+  economics, beyond checking a digest and consistent scalar arithmetic.
+- R5: enforce existing occupancy/premium/daily/no-pyramid limits atomically,
+  then refresh real deadlines/freshness after the new admission DB waits.
+
+Two bounded corrections are implemented here: shared read helpers do not
+create missing databases, and verified zero-fill recovery retains all exposure
+without false unavailability. Three new regressions pass warnings-fatal; final
+verification is 114 passed with one existing Starlette warning and normal
+exit; compilation/atlas/whitespace checks passed. Commit identity is in the
+review. No schema/configuration
+change, push or Production action. B1/B2 remains the next requested phase;
+do not carry the superseded F0 source-complete claim into that work.
+
 ## October 3 — successor and shipped-module backtesting (current priority)
 
 Start with [the successor inheritance](2026-10-03-successor-inheritance.md) and
 [F&O safety / B0–B6 backtest plan](2026-10-03-backtesting-and-fno-safety-plan.md).
-**Active implementation slice — F0-D verified partial-exit residual exposure (October 3, Dev only).**
+**Historical implemented slice — F0-D verified partial-exit residual exposure (October 3, Dev only).**
 Problem: the existing, operator-authorised `FNO_LIVE` recovery can record a
 broker-verified partial exit and proportionally lower `fno_positions.max_loss_rupees`,
 but the shared F&O view currently trusts that scalar without tying it to the

@@ -1,5 +1,15 @@
 # Successor inheritance — Trading Sentinel, October 3, 2026 (IST)
 
+## Later October 3 review override
+
+F0-A–E were subsequently committed through Dev `2b106f7`. Their source-complete
+receipt is superseded by [the independent F0 review](2026-10-03-fno-f0-independent-review.md):
+fee conservation, dispatch/ambiguity, cash clocks, broker-payload binding and
+transactional admission caps still need R1–R5. Two reader corrections are in
+the review slice; use its final verification/commit receipt. Production remains
+`044c016` without the shared-risk module; B1/B2 remains pending. Sections below
+retain the original pre-F0 inheritance context rather than fresh completion claims.
+
 ## Start here; do not replay the entire conversation
 
 Human's current vision: a smart trader with good entries, flexible evidence-led

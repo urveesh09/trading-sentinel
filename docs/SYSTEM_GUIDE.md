@@ -1,5 +1,28 @@
 # Trading Sentinel — system guide and engineering handover
 
+## October 3 — independent F0 acceptance review (Dev only)
+
+[Independent review and correction plan](2026-10-03-fno-f0-independent-review.md)
+supersedes the F0 source-complete claim below. Shared paper brakes and atomic
+position/reservation writes are implemented, but open exposure loses its fee
+reserve, identical reserved retries can dispatch after a halt, and simultaneous
+DR callers can exceed the existing one-structure cap. Broker payload semantics,
+cash event/clock/completion binding and ambiguous live-entry release also need
+the planned R1–R5 corrections. These are code/isolated-fixture findings, not
+claims of a Production loss or authorization to enter live spreads.
+
+Two bounded reader corrections are implemented in this review: both shared
+read helpers use encoded SQLite `mode=ro` URIs and never create a missing DB;
+a real terminal zero-fill recovery may retain positive entry-premium context
+without being mistaken for partial cash. It retains all open exposure and
+books no cash. No schema, settings, broker call or exit authority changed.
+Baseline review: 111 tests passed with one known Starlette deprecation; the
+three new reader regressions passed warnings-fatal. The final six-file run
+passed 114 tests with that existing deprecation and normal exit; compilation,
+atlas regeneration (229 modules) and whitespace checks passed. Source commit
+is recorded in the review. Production remains `044c016` with
+no shared-risk module deployed; B1/B2 has not begun.
+
 ## October 3 — F0-D verified partial-exit residual exposure (Dev only; not deployed)
 
 `fno_shared_risk.py` is an additive, source-scoped F&O evidence layer. It reads

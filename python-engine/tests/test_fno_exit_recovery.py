@@ -70,6 +70,24 @@ async def test_terminal_zero_fill_releases_intent_with_audit_no_ledger(fno_db):
 
 
 @pytest.mark.asyncio
+async def test_verified_zero_fill_preserves_all_shared_exposure(fno_db):
+    from fno_dr_book import init_dr_db
+    from fno_shared_risk import init_shared_fno_risk_db, shared_fno_risk_view
+
+    await init_dr_db(fno_db)
+    await init_shared_fno_risk_db(fno_db)
+    pid, created = await claimed(fno_db)
+    before = await shared_fno_risk_view(fno_db, "FNO_LIVE", 10_000.0)
+    await resolve(fno_db, broker(qty=75, filled=0), pid, created)
+    after = await shared_fno_risk_view(fno_db, "FNO_LIVE", 10_000.0)
+    assert before.available and after.available
+    assert after.open_worst_case_cash_rs == before.open_worst_case_cash_rs
+    assert after.available_worst_case_cash_rs == before.available_worst_case_cash_rs
+    assert after.realised_pnl_rs == before.realised_pnl_rs == 0.0
+    assert after.single_leg_open_count == 1
+
+
+@pytest.mark.asyncio
 async def test_recovered_intent_requires_new_exit_evaluation(fno_db):
     pid, created = await claimed(fno_db)
     stale_tick = datetime.now(timezone.utc)

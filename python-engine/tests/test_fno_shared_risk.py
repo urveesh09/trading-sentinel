@@ -77,6 +77,32 @@ async def test_view_fails_closed_for_missing_or_malformed_evidence(db_path):
 
 
 @pytest.mark.asyncio
+async def test_shared_readers_never_create_missing_database(tmp_path):
+    path = tmp_path / "missing # risk.db"
+    view = await shared_fno_risk_view(str(path), SOURCE, POOL)
+    assert not view.available
+    assert view.available_worst_case_cash_rs is None
+    assert not path.exists()
+    decision = await shared_fno_entry_policy(
+        str(path), source=SOURCE, pool_rs=POOL, today_ist=date(2026, 10, 3),
+    )
+    assert not decision.allowed
+    assert not path.exists()
+
+
+@pytest.mark.asyncio
+async def test_shared_readers_encode_existing_database_uri(tmp_path):
+    path = tmp_path / "existing # risk.db"
+    await _ready(str(path))
+    view = await shared_fno_risk_view(str(path), SOURCE, POOL)
+    decision = await shared_fno_entry_policy(
+        str(path), source=SOURCE, pool_rs=POOL, today_ist=date(2026, 10, 3),
+    )
+    assert view.available and view.available_worst_case_cash_rs == POOL
+    assert decision.allowed
+
+
+@pytest.mark.asyncio
 async def test_reservation_is_atomic_idempotent_and_prevents_double_spend(db_path):
     await _ready(db_path)
     first = await reserve_shared_fno_risk(

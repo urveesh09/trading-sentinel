@@ -33,6 +33,7 @@ from datetime import date, datetime, timedelta, timezone
 import hashlib
 import json
 import math
+from pathlib import Path
 from typing import Optional
 from zoneinfo import ZoneInfo
 
@@ -285,7 +286,12 @@ async def _validate_open_partial_exit_evidence(
                                             rel_tol=0.0, abs_tol=0.01)):
                     return "invalid_partial_recovery_evidence"
             elif (generation != expected_generation or ledger_id is not None
-                  or any(value is not None for value in (entry_raw, fill_raw, gross_raw, costs_raw, pnl_raw))):
+                  or any(value is not None for value in (fill_raw, gross_raw, costs_raw, pnl_raw))
+                  or (entry_raw is not None and (
+                      _finite_number(entry_raw) is None or float(entry_raw) <= 0))):
+                # The real recovery writer retains entry premium as context
+                # even when a terminal order filled nothing. It is not cash
+                # or a release: quantities/generation remain unchanged.
                 return "invalid_partial_recovery_evidence"
             expected_remaining = remaining
         expected_loss = original_loss * expected_remaining / original_qty
@@ -503,7 +509,7 @@ async def shared_fno_entry_policy(
     if pool is None or not isinstance(today_ist, date):
         return _policy_unavailable(source, pool or 0.0, "invalid_policy_request")
     try:
-        async with aiosqlite.connect(db_path) as db:
+        async with aiosqlite.connect(Path(db_path).resolve().as_uri() + "?mode=ro", uri=True) as db:
             await db.execute("PRAGMA query_only=ON")
             await db.execute("BEGIN")
             decision = await _read_entry_policy(
@@ -531,7 +537,7 @@ async def shared_fno_risk_view(
     if pool is None:
         return _unavailable(source, 0.0, "invalid_pool")
     try:
-        async with aiosqlite.connect(db_path) as db:
+        async with aiosqlite.connect(Path(db_path).resolve().as_uri() + "?mode=ro", uri=True) as db:
             await db.execute("PRAGMA query_only=ON")
             await db.execute("BEGIN")
             view = await _read_view(db, source, pool)

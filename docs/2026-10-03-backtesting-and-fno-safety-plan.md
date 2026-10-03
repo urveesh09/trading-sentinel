@@ -1,5 +1,16 @@
 # Backtesting Sentinel's shipped modules and F&O safety — October 3
 
+## Current acceptance override — independent F0 review
+
+The [independent F0 review and R1–R5 correction plan](2026-10-03-fno-f0-independent-review.md)
+supersedes the source-complete claim in the F0-E receipt. Implemented shared
+paper brakes and atomic inserts remain, but fee-inclusive open exposure,
+one-time dispatch/ambiguous entry recovery, exact cash clocks/completion,
+broker-payload binding and admission occupancy/final clocks are not accepted.
+Two small reader defects were corrected in Dev with regressions: no database
+creation by read helpers and no false exposure release/block after zero fill.
+Production remains unchanged at `044c016`; B1/B2 has not started.
+
 ## Explicit slice before implementation
 
 Reuse the existing Backtest Lab Penny minute adapter, not a new strategy.
