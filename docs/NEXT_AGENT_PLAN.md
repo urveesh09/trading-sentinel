@@ -1,6 +1,6 @@
 # Trading Sentinel — next-agent execution plan
 
-## October 3 — P2 complete; P1 policy input required (Dev only)
+## October 3 — P2 complete; P1 account allocations approved, contingency pending (Dev only)
 
 P2 now recursively binds local transitive source dependencies in the policy
 manifest and exclusively publishes completed snapshot/report artifacts without
@@ -8,11 +8,19 @@ an exists/write race. Focused CLI/Lab verification: 26 passed, one existing
 httpx deprecation warning. Dev-only; no source data, runtime configuration,
 broker, Production, push or deployment action occurred.
 
-P1 needs a single owner-approved account/division allocation policy before it
-can wire a shared live reservation without either borrowing across books or
-needlessly halting valid entries. Required inputs: Penny, Swing, Momentum and
-EDGE allocation ceilings (and whether unused budget may transfer). Until then,
-retain F1-A's individual own-cash guard; do not invent a zero/default budget.
+The owner approved P1 nominal book allocations: Swing ₹1,000, Penny ₹2,000,
+Momentum ₹3,000 and EDGE ₹3,000. Unused allocation may transfer, so the ledger
+must protect the account-wide own-cash limit and record book attribution; it
+must not turn the four nominal allocations into isolated, stranded pools.
+
+Before activating the reservation protocol, obtain the remaining explicit
+charge/gap contingency rule (a fixed amount, percentage, or authorization to
+use a stated bounded broker-cost calculation). That value changes the amount
+of owner capital committed by every entry and must not be silently invented.
+Until then, retain F1-A's individual own-cash guard. P2 source commit
+`28876be` is Dev-only; its focused CLI/Lab verification passed (26 passed,
+one existing httpx deprecation warning). No source data, runtime configuration,
+broker, Production, push or deployment action occurred.
 
 ## October 3 — authoritative post-implementation review (Dev only)
 

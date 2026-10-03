@@ -4,8 +4,10 @@
 
 - [x] Recursive local dependency hashes and exclusive snapshot/report publication.
 - [x] CLI/Lab regression: 26 passed; one existing httpx deprecation warning.
-- [ ] P1 requires owner-approved account/division budget policy before common
-  live admission can be activated safely.
+- [x] Owner account/division ceilings approved: Swing ₹1,000, Penny ₹2,000,
+  Momentum ₹3,000, EDGE ₹3,000; transfers allowed.
+- [ ] P1 needs an explicit charge/gap contingency reserve before common live
+  admission can be activated safely.
 
 ## October 3 independent post-implementation review — current status
 

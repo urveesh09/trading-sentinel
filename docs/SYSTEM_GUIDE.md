@@ -7,7 +7,10 @@ Snapshots and report JSON are created as temporary sibling artifacts then
 published exclusively, eliminating an exists/write overwrite race. Existing
 artifacts remain readable. P2 focused CLI/Lab verification: 26 passed, one
 existing httpx deprecation warning. Dev only, not pushed or deployed. See
-[P2 slice](2026-10-03-p2-reproducibility-publication.md).
+[P2 slice](2026-10-03-p2-reproducibility-publication.md). Owner P1 budgets:
+Swing ₹1,000; Penny ₹2,000; Momentum ₹3,000; EDGE ₹3,000; transfers allowed.
+The outstanding P1 decision is the charge/gap contingency reserve; no live
+reservation is activated until it is explicit.
 
 ## October 3 — independent review and bounded corrections (Dev only)
 
