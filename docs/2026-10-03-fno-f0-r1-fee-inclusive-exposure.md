@@ -140,3 +140,18 @@ identically on the untouched baseline (`git stash` check).
 - R2 (single dispatch owner and ambiguous-entry recovery), R3, R4 and R5.
 - The multi-leg fee bound for DR credit structures (fee-model item above).
 - F1.
+
+### Commit receipt
+
+- **Implementation commit.** `d4fd298` (`fix(fno): keep fee reserve in shared
+  exposure after reservation (F0-R1)`) on
+  `codex/production-correction-hedge-p0`. It is Dev-local only: not pushed
+  and not deployed. Production is unchanged at `044c016`.
+- **Post-commit check.**
+  - Regenerating the atlas produced no diff.
+  - The guide, plan, checklist and review all link to this slice.
+  - Re-running the R1, shared-risk and recovery tests from the committed
+    tree, warnings-fatal, gave 47 passed. The one deselected test is the
+    known ASGI route test, which emits an existing deprecation warning.
+- **Migrations.** An additive column and two triggers are created by the
+  existing init functions. There is no settings change.

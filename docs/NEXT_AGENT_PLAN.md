@@ -14,7 +14,7 @@
 - Tests: 11 new warnings-fatal; 530 F&O/settlement passed, plus 1
   pre-existing unrelated mark-to-market failure.
 
-Next: **R2** (single dispatch owner; halt-safe retry; ambiguous entries keep
+Commit `d4fd298` (Dev-local). Next: **R2** (single dispatch owner; halt-safe retry; ambiguous entries keep
 capital), then R3–R5. Dev only, not pushed or deployed.
 
 ## October 3 — B1/B2 implemented in Dev (current state; read first)
