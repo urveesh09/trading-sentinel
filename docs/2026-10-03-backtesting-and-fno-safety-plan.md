@@ -201,7 +201,7 @@ still admits its feasible single leg and debit spread, and proves both consumed
 receipts. Shared day/week/month/drawdown enforcement and actual partial
 settlement release remain the next F0 slice.
 Source commit: `0ba2d29` on `codex/production-correction-hedge-p0`; Dev-only,
-pending push. It adds an additive local reservation table used by paper entry;
+pushed to GitHub, not deployed. It adds an additive local reservation table used by paper entry;
 no Production schema/data, configuration, broker or message action occurred.
 
 #### F1 — cash-only funding and catastrophe acceptance
