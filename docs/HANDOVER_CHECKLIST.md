@@ -1,5 +1,19 @@
 # Handover receipt and operator checklist
 
+## October 3 continuation receipt
+
+- [x] Deep successor inheritance and shipped-module/F&O safety plan.
+- [x] Existing Penny baseline executed: zero trades on a valid two-stock sample;
+  earlier unavailable samples preserved; no strategy profitability claim.
+- [x] Inert offline CLI and research-only SQLite reader closure; 4 CLI + 11
+  replay warnings-fatal; combined 82 passed with one HTTPX deprecation warning.
+- [ ] F0 shared F&O equity/reservation/drawdown/partial+spread loss admission.
+- [ ] F1 owner cash-only funding semantics, broker initial/final margin and
+  catastrophe acceptance before live allocation; no live spread authorisation.
+- [ ] B1/B2 interval/zero-volume/session data contracts and full classic Penny
+  lifecycle; remaining B0–B6 adapters/provenance/portfolio/holdout work.
+- [ ] R6 deployed evidence and separate partner qualification/canary.
+
 ## October 2 F&O profitability assessment
 
 - [x] Dev-only read-only history CLI; 12 focused warnings-fatal tests; executed

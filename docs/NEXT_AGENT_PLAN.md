@@ -1,5 +1,25 @@
 # Trading Sentinel — next-agent execution plan
 
+## October 3 — successor and shipped-module backtesting (current priority)
+
+Start with [the successor inheritance](2026-10-03-successor-inheritance.md) and
+[F&O safety / B0–B6 backtest plan](2026-10-03-backtesting-and-fno-safety-plan.md).
+**F0 is newly identified source work:** paper spread admissions do not share
+single-leg loss/drawdown/reservation gates; single-leg kill-switch queries omit
+spread/partial cash. Implement unified capital/loss admissions before increasing
+exposure. F1 verifies cash-only broker margin/legging safety; no live spread
+authority is implied. Recent positive F&O results do not prove improvement was
+caused at September 17 (that is also a cash-key sample boundary).
+
+Completed: existing Penny minute baseline via new inert Dev CLI; two unavailable
+samples retained, valid two-stock August 11–20 diagnostic has 5,774 evaluations
+and no entries (profitability unavailable). Small research-only SQLite handle
+closure fixes Windows temp cleanup. CLI 4 and replay 11 warnings-fatal; combined
+82 passed with one existing dependency warning. Full all-module CLI, provider
+history, regime/lifecycle/capital parity are **planned**, not code-complete.
+B1 data contracts/B2 classic Penny lifecycle follow F0. R6 operational acceptance
+and independently authorized partner qualification/canary remain open.
+
 ## October 2 — current F&O profitability request
 
 Read [the assessment and concrete replay/data plan](2026-10-02-fno-profitability-assessment.md).

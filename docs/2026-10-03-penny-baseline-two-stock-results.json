@@ -1,0 +1,435 @@
+{
+  "schema": "sentinel_penny_baseline_diagnostic_v1",
+  "strategy_id": "penny_breakout_intraday_1m_replay",
+  "policy_scope": "CURRENT_DEV_EVALUATOR_NOT_COMPLETE_DEPLOYED_PORTFOLIO",
+  "request": {
+    "strategy_id": "penny_breakout_intraday_1m_replay",
+    "start_date": "2026-08-11",
+    "end_date": "2026-08-20",
+    "config": {
+      "tickers": [
+        "PCJEWELLER",
+        "SOUTHBANK"
+      ],
+      "variants": [
+        "PEN_BASE"
+      ],
+      "minimum_daily_bars": 20,
+      "walk_forward": false,
+      "train_days": 60,
+      "test_days": 20,
+      "step_days": 20,
+      "anchored": true
+    },
+    "assumptions": {
+      "quantity": 1,
+      "cost_model": "frozen_real_equity_MIS",
+      "same_bar_rule": "stop_before_target",
+      "time_exit": "15:00_bar_open"
+    }
+  },
+  "sample": {
+    "requested_start": "2026-08-11",
+    "requested_end": "2026-08-20",
+    "tickers": [
+      "PCJEWELLER",
+      "SOUTHBANK"
+    ],
+    "selection_rule": "EXPLICIT_CLI_TICKERS"
+  },
+  "dataset_fingerprint": "sha256:5af6acfba8a91404c38d0031786387e5ec0861deff805e9ce9ff309f4314124f",
+  "source_sha256": {
+    "penny_intraday_replay.py": "54b034c26ac8ea8cf49953cf3c456325da51bac47a000a7dac9125a1610272c4",
+    "penny_engine_breakout.py": "a709e60b5ea0a0e66b55639c2aced3873e50c2f6a1d0acfbe8acd3b9a6c867a5",
+    "penny_shadow.py": "5e6a44021052e026399f9e4179eb3f7e1d7cb60b66e02bce768b45188133cda6",
+    "penny_risk.py": "fca4764cf3bb5565fbb12c0de5493fd75ae53d77e44a8beca7899e7684c12ac7",
+    "backtest_lab.py": "41dc22332e636faea8e5107d1ca0ab0d73731d91c544a56f3a8a76d0bfdd1e43",
+    "config.py": "b3fb397a51e53b491977069340806ba38ec904f2a0a3067fa80df304b3f1d1b7"
+  },
+  "metrics": {
+    "trade_count": 0,
+    "net_pnl": null,
+    "net_return_pct": null,
+    "win_rate_pct": null,
+    "profit_factor": null,
+    "max_drawdown_pct": null,
+    "avg_r": null,
+    "variant_summaries": [
+      {
+        "variant": "PEN_BASE",
+        "paper_entries": 0,
+        "open_trades": 0,
+        "closed_trades": 0,
+        "net_pnl": null,
+        "profit_factor": null,
+        "expectancy": null,
+        "avg_r": null,
+        "max_drawdown": null
+      }
+    ],
+    "oos": {
+      "available": false,
+      "reason": "walk_forward=false"
+    }
+  },
+  "result": {
+    "status": "complete",
+    "dataset_fingerprint": "sha256:3485ea8b6b511ade1853370c1eb3f09616311a965e9b753a7278912fe57ecc29",
+    "config": {
+      "variants": [
+        "PEN_BASE"
+      ],
+      "minimum_daily_bars": 20,
+      "quantity": 1,
+      "sizing_basis": "ONE_SHARE_FIXED"
+    },
+    "assumptions": {
+      "data_interval": "minute",
+      "candidate_rule": "first_accept_per_ticker_day_variant",
+      "entry_rule": "signal_close_marketable_limit_at_declared_entry",
+      "exit_rule": "subsequent_bars_only_stop_before_target_gap_worse_time_exit_1500_at_open",
+      "sizing": "one_share_fixed",
+      "execution": {
+        "model": "PENNY_ZERODHA_EQUITY_MIS_V1",
+        "origin": "INTRADAY_REPLAY",
+        "schedule_version": "ZERODHA_NSE_EQUITY_INTRADAY_AS_OF_2026-08-10",
+        "effective_date": null,
+        "verified_as_of": "2026-08-10",
+        "market": "NSE_EQUITY_INTRADAY",
+        "is_intraday": true,
+        "brokerage_bypass_honored": false,
+        "rates": {
+          "brokerage_pct": 0.0003,
+          "brokerage_max": 20.0,
+          "stt_mis": 0.00025,
+          "exchange_pct": 3.07e-05,
+          "stamp_duty_pct": 3e-05,
+          "sebi_pct": 1e-06,
+          "ipft_pct": 1e-09,
+          "gst_pct": 0.18
+        }
+      },
+      "regime": "production_default_PR1_CALM"
+    },
+    "funnel": {
+      "PEN_BASE": {
+        "evaluations": 5774,
+        "distinct_candidates": 0,
+        "top_rejects": [
+          {
+            "reason": "breakout not confirmed (close 10.10 <= 10.60)",
+            "count": 35
+          },
+          {
+            "reason": "breakout not confirmed (close 10.09 <= 10.60)",
+            "count": 30
+          },
+          {
+            "reason": "outside breakout time window (556 min)",
+            "count": 16
+          },
+          {
+            "reason": "outside breakout time window (557 min)",
+            "count": 16
+          },
+          {
+            "reason": "outside breakout time window (558 min)",
+            "count": 16
+          },
+          {
+            "reason": "outside breakout time window (559 min)",
+            "count": 16
+          },
+          {
+            "reason": "outside breakout time window (560 min)",
+            "count": 16
+          },
+          {
+            "reason": "outside breakout time window (561 min)",
+            "count": 16
+          },
+          {
+            "reason": "outside breakout time window (562 min)",
+            "count": 16
+          },
+          {
+            "reason": "outside breakout time window (563 min)",
+            "count": 16
+          }
+        ]
+      }
+    },
+    "variants": [
+      {
+        "variant": "PEN_BASE",
+        "config": {
+          "name": "PEN_BASE",
+          "time_start_min": null,
+          "volume_multiplier": null,
+          "effective_time_start_min": 630,
+          "time_end_min": 870,
+          "effective_volume_multiplier": 1.8,
+          "rvol_time_adjusted": true,
+          "breakout_buffer_pct": 0.003,
+          "use_vwap": false,
+          "adaptive_threshold": false,
+          "rsi_max": 70.0,
+          "target_r": 2.0
+        },
+        "evaluations": 5774,
+        "distinct_candidates": 0,
+        "top_rejects": [
+          {
+            "reason": "breakout not confirmed (close 10.10 <= 10.60)",
+            "count": 35
+          },
+          {
+            "reason": "breakout not confirmed (close 10.09 <= 10.60)",
+            "count": 30
+          },
+          {
+            "reason": "outside breakout time window (556 min)",
+            "count": 16
+          },
+          {
+            "reason": "outside breakout time window (557 min)",
+            "count": 16
+          },
+          {
+            "reason": "outside breakout time window (558 min)",
+            "count": 16
+          },
+          {
+            "reason": "outside breakout time window (559 min)",
+            "count": 16
+          },
+          {
+            "reason": "outside breakout time window (560 min)",
+            "count": 16
+          },
+          {
+            "reason": "outside breakout time window (561 min)",
+            "count": 16
+          },
+          {
+            "reason": "outside breakout time window (562 min)",
+            "count": 16
+          },
+          {
+            "reason": "outside breakout time window (563 min)",
+            "count": 16
+          }
+        ],
+        "trades": [],
+        "paper_entries": 0,
+        "open_trades": 0,
+        "closed_trades": 0,
+        "gross_pnl": null,
+        "costs": null,
+        "net_pnl": null,
+        "profit_factor": null,
+        "expectancy": null,
+        "avg_r": null,
+        "max_drawdown": null,
+        "equity": []
+      }
+    ],
+    "diagnostics": {
+      "status": "valid",
+      "requested_from": "2026-08-11",
+      "requested_to": "2026-08-20",
+      "requested_tickers": [
+        "PCJEWELLER",
+        "SOUTHBANK"
+      ],
+      "minute_rows": 5790,
+      "ticker_days": 16,
+      "daily_rows": 1506,
+      "invalid_provenance": [],
+      "missing_daily_history": [],
+      "coverage": [
+        {
+          "ticker": "PCJEWELLER",
+          "trading_date": "2026-08-11",
+          "rows": 375,
+          "first_bar": "2026-08-11T09:15:00",
+          "last_bar": "2026-08-11T15:29:00",
+          "duplicate_timestamps": 0,
+          "missing_minutes_within_span": 0,
+          "has_time_exit_bar": true
+        },
+        {
+          "ticker": "PCJEWELLER",
+          "trading_date": "2026-08-12",
+          "rows": 375,
+          "first_bar": "2026-08-12T09:15:00",
+          "last_bar": "2026-08-12T15:29:00",
+          "duplicate_timestamps": 0,
+          "missing_minutes_within_span": 0,
+          "has_time_exit_bar": true
+        },
+        {
+          "ticker": "PCJEWELLER",
+          "trading_date": "2026-08-13",
+          "rows": 375,
+          "first_bar": "2026-08-13T09:15:00",
+          "last_bar": "2026-08-13T15:29:00",
+          "duplicate_timestamps": 0,
+          "missing_minutes_within_span": 0,
+          "has_time_exit_bar": true
+        },
+        {
+          "ticker": "PCJEWELLER",
+          "trading_date": "2026-08-14",
+          "rows": 375,
+          "first_bar": "2026-08-14T09:15:00",
+          "last_bar": "2026-08-14T15:29:00",
+          "duplicate_timestamps": 0,
+          "missing_minutes_within_span": 0,
+          "has_time_exit_bar": true
+        },
+        {
+          "ticker": "PCJEWELLER",
+          "trading_date": "2026-08-17",
+          "rows": 270,
+          "first_bar": "2026-08-17T09:15:00",
+          "last_bar": "2026-08-17T13:44:00",
+          "duplicate_timestamps": 0,
+          "missing_minutes_within_span": 0,
+          "has_time_exit_bar": false
+        },
+        {
+          "ticker": "PCJEWELLER",
+          "trading_date": "2026-08-18",
+          "rows": 375,
+          "first_bar": "2026-08-18T09:15:00",
+          "last_bar": "2026-08-18T15:29:00",
+          "duplicate_timestamps": 0,
+          "missing_minutes_within_span": 0,
+          "has_time_exit_bar": true
+        },
+        {
+          "ticker": "PCJEWELLER",
+          "trading_date": "2026-08-19",
+          "rows": 375,
+          "first_bar": "2026-08-19T09:15:00",
+          "last_bar": "2026-08-19T15:29:00",
+          "duplicate_timestamps": 0,
+          "missing_minutes_within_span": 0,
+          "has_time_exit_bar": true
+        },
+        {
+          "ticker": "PCJEWELLER",
+          "trading_date": "2026-08-20",
+          "rows": 375,
+          "first_bar": "2026-08-20T09:15:00",
+          "last_bar": "2026-08-20T15:29:00",
+          "duplicate_timestamps": 0,
+          "missing_minutes_within_span": 0,
+          "has_time_exit_bar": true
+        },
+        {
+          "ticker": "SOUTHBANK",
+          "trading_date": "2026-08-11",
+          "rows": 375,
+          "first_bar": "2026-08-11T09:15:00",
+          "last_bar": "2026-08-11T15:29:00",
+          "duplicate_timestamps": 0,
+          "missing_minutes_within_span": 0,
+          "has_time_exit_bar": true
+        },
+        {
+          "ticker": "SOUTHBANK",
+          "trading_date": "2026-08-12",
+          "rows": 375,
+          "first_bar": "2026-08-12T09:15:00",
+          "last_bar": "2026-08-12T15:29:00",
+          "duplicate_timestamps": 0,
+          "missing_minutes_within_span": 0,
+          "has_time_exit_bar": true
+        },
+        {
+          "ticker": "SOUTHBANK",
+          "trading_date": "2026-08-13",
+          "rows": 375,
+          "first_bar": "2026-08-13T09:15:00",
+          "last_bar": "2026-08-13T15:29:00",
+          "duplicate_timestamps": 0,
+          "missing_minutes_within_span": 0,
+          "has_time_exit_bar": true
+        },
+        {
+          "ticker": "SOUTHBANK",
+          "trading_date": "2026-08-14",
+          "rows": 375,
+          "first_bar": "2026-08-14T09:15:00",
+          "last_bar": "2026-08-14T15:29:00",
+          "duplicate_timestamps": 0,
+          "missing_minutes_within_span": 0,
+          "has_time_exit_bar": true
+        },
+        {
+          "ticker": "SOUTHBANK",
+          "trading_date": "2026-08-17",
+          "rows": 270,
+          "first_bar": "2026-08-17T09:15:00",
+          "last_bar": "2026-08-17T13:44:00",
+          "duplicate_timestamps": 0,
+          "missing_minutes_within_span": 0,
+          "has_time_exit_bar": false
+        },
+        {
+          "ticker": "SOUTHBANK",
+          "trading_date": "2026-08-18",
+          "rows": 375,
+          "first_bar": "2026-08-18T09:15:00",
+          "last_bar": "2026-08-18T15:29:00",
+          "duplicate_timestamps": 0,
+          "missing_minutes_within_span": 0,
+          "has_time_exit_bar": true
+        },
+        {
+          "ticker": "SOUTHBANK",
+          "trading_date": "2026-08-19",
+          "rows": 375,
+          "first_bar": "2026-08-19T09:15:00",
+          "last_bar": "2026-08-19T15:29:00",
+          "duplicate_timestamps": 0,
+          "missing_minutes_within_span": 0,
+          "has_time_exit_bar": true
+        },
+        {
+          "ticker": "SOUTHBANK",
+          "trading_date": "2026-08-20",
+          "rows": 375,
+          "first_bar": "2026-08-20T09:15:00",
+          "last_bar": "2026-08-20T15:29:00",
+          "duplicate_timestamps": 0,
+          "missing_minutes_within_span": 0,
+          "has_time_exit_bar": true
+        }
+      ]
+    },
+    "warnings": [
+      "One-minute OHLC cannot resolve intrabar sequencing; stop is assumed before target.",
+      "One-share fills and declared MIS costs are simulations, not broker fills or scalable returns.",
+      "Open trades remain unscored when no later cached bar proves an exit.",
+      "Replay uses the evaluator's default PR1_CALM regime; it does not reconstruct historical market-regime state."
+    ]
+  },
+  "warnings": [
+    "One-minute OHLC cannot resolve intrabar sequencing; stop is assumed before target.",
+    "One-share simulated fills are not broker fills or scalable returns.",
+    "Historical regime state is unavailable; evaluator default PR1_CALM is used.",
+    "One-minute OHLC cannot resolve intrabar sequencing; stop is assumed before target.",
+    "One-share fills and declared MIS costs are simulations, not broker fills or scalable returns.",
+    "Open trades remain unscored when no later cached bar proves an exit.",
+    "Replay uses the evaluator's default PR1_CALM regime; it does not reconstruct historical market-regime state.",
+    "Coverage-selected sample is not a point-in-time Penny universe or portfolio return.",
+    "Replay defaults to PR1_CALM and one-share shadow exits, not all runtime gates, sizing or smart EOD.",
+    "Retrospective exploratory run; no prospective HOLDOUT or funding authority.",
+    "Minute-bar timestamps and simulated immediate entry are model assumptions, not historical fill evidence."
+  ],
+  "can_place_orders": false,
+  "can_qualify": false
+}

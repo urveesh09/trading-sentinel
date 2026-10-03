@@ -1,5 +1,21 @@
 # Trading Sentinel — system guide and engineering handover
 
+## October 3 — baseline research is not full portfolio backtesting
+
+`scripts/run_penny_research.py` reuses Lab `penny_breakout_intraday_1m_replay`,
+PEN_BASE, one share and prior daily volume. It collects bounded Production
+evidence read-only over stdin and replays current Dev in isolated temp files;
+outputs only new Dev documents. The reader now explicitly closes its SQLite
+handle (Windows success/early-return cleanup regression). No trading rule changed.
+Valid August 11–20 PCJEWELLER/SOUTHBANK sample: zero trades; no return claim.
+Two rejected samples retain zero-volume/mixed-interval reasons; no silent data
+repair. It is evaluator/shadow-lifecycle research, not complete scanner/regime/
+capital/broker replay. [F0–F2 and B0–B6 plan](2026-10-03-backtesting-and-fno-safety-plan.md)
+and [successor handover](2026-10-03-successor-inheritance.md) are authoritative.
+Newly identified F0: DR paper entries lack common risk/capital brakes, while
+single-leg kill-switch queries omit spread/partial cash. Do not claim whole-F&O
+capital cannot be depleted or spread margin is zero; the safety work is planned.
+
 ## October 2 — F&O profit evidence is not qualification
 
 `scripts/assess_fno_profitability.py` is an inert standard-library developer

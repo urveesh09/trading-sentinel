@@ -1548,7 +1548,7 @@ Related tests: `python-engine/tests/test_penny_hourly_report.py`
 
 Decision-grade, broker-free replay of classic Penny one-minute evidence. The loader is intentionally strict: only explicitly labelled ``minute`` cache rows are admissible. A requested ticker/day with unknown or mixed interval provenance invalidates the run instead of silently manufacturing confidence.
 
-Top-level declarations: `PennyReplayConfig` (line 34), `_OneShareRisk` (line 52), `_iso_day` (line 57), `_schema_columns` (line 64), `_fingerprint` (line 68), `load_penny_minute_snapshot` (line 77), `_variant_config` (line 202), `_run_fingerprint` (line 221), `_summarize` (line 233), `_run_snapshot` (line 262), `run_penny_intraday_replay` (line 375), `run_penny_intraday_walk_forward` (line 388)
+Top-level declarations: `PennyReplayConfig` (line 35), `_OneShareRisk` (line 53), `_iso_day` (line 58), `_schema_columns` (line 65), `_fingerprint` (line 69), `load_penny_minute_snapshot` (line 78), `_variant_config` (line 203), `_run_fingerprint` (line 222), `_summarize` (line 234), `_run_snapshot` (line 263), `run_penny_intraday_replay` (line 376), `run_penny_intraday_walk_forward` (line 389)
 
 Engine dependencies: `config`, `penny_engine_breakout`, `penny_shadow`, `walk_forward`
 

@@ -7,6 +7,7 @@ provenance invalidates the run instead of silently manufacturing confidence.
 from __future__ import annotations
 
 from collections import Counter
+from contextlib import closing
 from dataclasses import asdict, dataclass
 from datetime import date, datetime
 import hashlib
@@ -94,7 +95,7 @@ def load_penny_minute_snapshot(
         "ticker_days": 0, "daily_rows": 0, "invalid_provenance": [],
         "missing_daily_history": [], "coverage": [],
     }
-    with sqlite3.connect(f"file:{db_path}?mode=ro", uri=True) as db:
+    with closing(sqlite3.connect(f"file:{db_path}?mode=ro", uri=True)) as db:
         intraday_required = {
             "ticker", "interval", "datetime", "open", "high", "low", "close", "volume"
         }
