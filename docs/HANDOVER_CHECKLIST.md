@@ -1,5 +1,12 @@
 # Handover receipt and operator checklist
 
+## October 3 P2 receipt (Dev only)
+
+- [x] Recursive local dependency hashes and exclusive snapshot/report publication.
+- [x] CLI/Lab regression: 26 passed; one existing httpx deprecation warning.
+- [ ] P1 requires owner-approved account/division budget policy before common
+  live admission can be activated safely.
+
 ## October 3 independent post-implementation review — current status
 
 - [x] Audited Dev `4481af0` against the original plan and actual contracts;

@@ -118,7 +118,7 @@ Engine dependencies: `backtest_lab`
 
 [B0 2026-10-03] One offline entry point for shipped-strategy backtests. python backtest_cli.py catalogue python backtest_cli.py snapshot --db PATH | --container NAME --from D --to D --tickers A,B --out NEW.sqlite python backtest_cli.py coverage --snapshot S --strategy ID python backtest_cli.py run --snapshot S --strategy ID --from D --to D [--config JSON] --out NEW.json python backtest_cli.py compare A.json B.json python backtest_cli.py report R.json Only registered Backtest Lab adapters can run (no arbitrary code or callbacks); only their documented default assumptions are accepted. Every run binds the code release, a secret-free settings hash and the frozen snapshot hash. Nothing here call
 
-Top-level declarations: `CliError` (line 43), `_new_file` (line 47), `_rows_sha256` (line 55), `write_snapshot` (line 69), `snapshot` (line 90), `verify_snapshot` (line 108), `_git` (line 125), `policy_manifest` (line 133), `_adapter` (line 156), `run` (line 163), `coverage` (line 207), `_load_report` (line 227), `compare` (line 234), `report` (line 258), `main` (line 269)
+Top-level declarations: `CliError` (line 45), `_new_file` (line 49), `_publish_new_file` (line 57), `_atomic_json_new` (line 72), `_rows_sha256` (line 90), `write_snapshot` (line 104), `snapshot` (line 135), `verify_snapshot` (line 153), `_git` (line 170), `policy_manifest` (line 178), `_adapter` (line 221), `run` (line 228), `coverage` (line 270), `_load_report` (line 290), `compare` (line 297), `report` (line 321), `main` (line 332)
 
 Engine dependencies: `backtest_catalogue`, `backtest_lab`, `backtest_reporting`, `config`, `research_data_contracts`
 

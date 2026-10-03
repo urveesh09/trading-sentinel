@@ -1,5 +1,14 @@
 # Trading Sentinel — system guide and engineering handover
 
+## October 3 — P2 reproducibility/publication (Dev only)
+
+Backtest manifests now recursively bind local transitive Python dependencies.
+Snapshots and report JSON are created as temporary sibling artifacts then
+published exclusively, eliminating an exists/write overwrite race. Existing
+artifacts remain readable. P2 focused CLI/Lab verification: 26 passed, one
+existing httpx deprecation warning. Dev only, not pushed or deployed. See
+[P2 slice](2026-10-03-p2-reproducibility-publication.md).
+
 ## October 3 — independent review and bounded corrections (Dev only)
 
 Current acceptance and remaining work are in the

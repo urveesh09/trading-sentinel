@@ -15,6 +15,7 @@ hash. Nothing here calls the broker, places orders or uses Production routes.
 from __future__ import annotations
 
 import argparse
+import ast
 from contextlib import closing
 from datetime import datetime, timezone
 import hashlib
@@ -26,6 +27,7 @@ import sqlite3
 import subprocess
 import sys
 import tempfile
+import os
 
 ENGINE_DIR = Path(__file__).resolve().parent
 REPO_DIR = ENGINE_DIR.parent
@@ -52,6 +54,39 @@ def _new_file(path: str) -> Path:
     return target
 
 
+def _publish_new_file(temp_path: Path, target: Path) -> None:
+    """Publish a completed artifact exactly once without an exists/write race."""
+    try:
+        # Hard-link creation is exclusive: unlike exists()+replace(), a rival
+        # writer cannot be overwritten between the check and publication.
+        os.link(temp_path, target)
+    except FileExistsError as exc:
+        raise CliError(f"refusing to overwrite existing file: {target}") from exc
+    finally:
+        try:
+            temp_path.unlink()
+        except FileNotFoundError:
+            pass
+
+
+def _atomic_json_new(path: str, payload: dict) -> Path:
+    target = Path(path).resolve()
+    target.parent.mkdir(parents=True, exist_ok=True)
+    fd, name = tempfile.mkstemp(prefix=f".{target.name}.", suffix=".tmp", dir=target.parent)
+    temp_path = Path(name)
+    try:
+        with os.fdopen(fd, "w", encoding="utf-8") as handle:
+            json.dump(payload, handle, indent=2, sort_keys=True, default=str, allow_nan=False)
+            handle.write("\n")
+            handle.flush(); os.fsync(handle.fileno())
+        _publish_new_file(temp_path, target)
+        return target
+    except Exception:
+        try: temp_path.unlink()
+        except FileNotFoundError: pass
+        raise
+
+
 def _rows_sha256(db: sqlite3.Connection) -> str:
     digest = hashlib.sha256()
     for table, order in (("intraday_cache", "ticker,interval,datetime"), ("ohlcv_cache", "ticker,date")):
@@ -67,8 +102,13 @@ def _rows_sha256(db: sqlite3.Connection) -> str:
 # ---- snapshot ------------------------------------------------------------------
 
 def write_snapshot(collected: dict, out: str, *, source: str) -> dict:
-    target = _new_file(out)
-    with closing(sqlite3.connect(target)) as db:
+    target = Path(out).resolve()
+    target.parent.mkdir(parents=True, exist_ok=True)
+    fd, name = tempfile.mkstemp(prefix=f".{target.name}.", suffix=".tmp", dir=target.parent)
+    os.close(fd)
+    temporary = Path(name)
+    try:
+      with closing(sqlite3.connect(temporary)) as db:
         for ddl in _SNAPSHOT_DDL:
             db.execute(ddl)
         db.executemany("INSERT INTO intraday_cache VALUES (?,?,?,?,?,?,?,?,'snapshot')",
@@ -84,7 +124,12 @@ def write_snapshot(collected: dict, out: str, *, source: str) -> dict:
         db.execute("INSERT INTO snapshot_manifest VALUES ('manifest', ?)",
                    (json.dumps(manifest, sort_keys=True),))
         db.commit()
-    return manifest
+      _publish_new_file(temporary, target)
+      return manifest
+    except Exception:
+      try: temporary.unlink()
+      except FileNotFoundError: pass
+      raise
 
 
 def snapshot(args) -> dict:
@@ -136,6 +181,26 @@ def policy_manifest(strategy_id: str, adapter) -> dict:
     modules = {"backtest_lab", "research_data_contracts", "config"}
     modules |= {token for token in re.findall(r"[A-Za-z_][A-Za-z0-9_]*", adapter.metadata.engine)
                 if (ENGINE_DIR / f"{token}.py").is_file()}
+    # Bind recursively imported local source too: a changed cost/exit/helper
+    # module invalidates reproducibility even if the adapter's engine string
+    # did not name it directly.
+    pending = list(modules)
+    while pending:
+        module = pending.pop()
+        path = ENGINE_DIR / f"{module}.py"
+        if not path.is_file():
+            continue
+        try:
+            tree = ast.parse(path.read_text(encoding="utf-8"))
+        except (OSError, SyntaxError):
+            continue
+        for node in ast.walk(tree):
+            names = []
+            if isinstance(node, ast.Import): names = [alias.name.split(".")[0] for alias in node.names]
+            elif isinstance(node, ast.ImportFrom) and node.module: names = [node.module.split(".")[0]]
+            for name in names:
+                if name not in modules and (ENGINE_DIR / f"{name}.py").is_file():
+                    modules.add(name); pending.append(name)
     dumped = settings.model_dump()
     safe = {k: v for k, v in dumped.items() if not any(p in k.upper() for p in SECRET_PATTERNS)}
     prefixes = tuple(family_prefixes(strategy_id))
@@ -175,7 +240,6 @@ def run(args) -> dict:
         holdout = validate_holdout(args.start, args.end, args.holdout_from, args.holdout_to)
     except ValueError as exc:
         raise CliError(str(exc)) from exc
-    target = _new_file(args.out)
     report = {
         "schema": "sentinel_backtest_report_v1", "created_at": datetime.now(timezone.utc).isoformat(),
         "strategy_id": args.strategy, "scope": adapter.metadata.scope,
@@ -198,8 +262,7 @@ def run(args) -> dict:
         except BacktestUnavailable as exc:
             report.update(state="UNAVAILABLE", reason=str(exc), metrics=None, warnings=[str(exc)])
     verify_snapshot(args.snapshot)
-    target.write_text(json.dumps(report, indent=2, sort_keys=True, default=str, allow_nan=False) + "\n",
-                      encoding="utf-8")
+    target = _atomic_json_new(args.out, report)
     return {"output": str(target), "state": report["state"], "scope": report["scope"],
             "metrics": report.get("metrics")}
 

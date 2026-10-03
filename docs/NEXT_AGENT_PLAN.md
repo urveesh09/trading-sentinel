@@ -1,5 +1,19 @@
 # Trading Sentinel — next-agent execution plan
 
+## October 3 — P2 complete; P1 policy input required (Dev only)
+
+P2 now recursively binds local transitive source dependencies in the policy
+manifest and exclusively publishes completed snapshot/report artifacts without
+an exists/write race. Focused CLI/Lab verification: 26 passed, one existing
+httpx deprecation warning. Dev-only; no source data, runtime configuration,
+broker, Production, push or deployment action occurred.
+
+P1 needs a single owner-approved account/division allocation policy before it
+can wire a shared live reservation without either borrowing across books or
+needlessly halting valid entries. Required inputs: Penny, Swing, Momentum and
+EDGE allocation ceilings (and whether unused budget may transfer). Until then,
+retain F1-A's individual own-cash guard; do not invent a zero/default budget.
+
 ## October 3 — authoritative post-implementation review (Dev only)
 
 [Review, correction slice and follow-up acceptance plan](2026-10-03-post-implementation-independent-review.md)
