@@ -177,7 +177,7 @@ reported **49 passed**. The unchanged broader lifecycle selection reported
 99 assertions before two known Windows/FastAPI socket-lifespan warnings were
 escalated, so it is not claimed warnings-clean.
 Source commit: `7b86d85` on `codex/production-correction-hedge-p0`; Dev-only
-and pending push/Promotion. This additive local SQLite table is a schema impact
+and pushed to GitHub; not deployed/Promoted. This additive local SQLite table is a schema impact
 only once an entry caller invokes it; no deployed database was touched.
 
 This is deliberately **not yet an entry-policy change**: neither existing

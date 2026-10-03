@@ -9,7 +9,7 @@
   replay warnings-fatal; combined 82 passed with one HTTPX deprecation warning.
 - [x] F0-A Dev foundation: fail-closed cross-book cash/exposure view and
   transactional one-way reservations; 49 focused F&O checks warnings-fatal;
-  source commit `7b86d85` (Dev, pending push; Production untouched).
+  source commit `7b86d85` (Dev, pushed; Production untouched).
 - [ ] F0-B bind reservations atomically to both paper admissions, then make
   shared fee-inclusive loss/drawdown/partial-spread controls authoritative.
 - [ ] F1 owner cash-only funding semantics, broker initial/final margin and
