@@ -23,7 +23,8 @@ create missing databases, and verified zero-fill recovery retains all exposure
 without false unavailability. Three new regressions pass warnings-fatal; final
 verification is 114 passed with one existing Starlette warning and normal
 exit; compilation/atlas/whitespace checks passed. Commit identity is in the
-review. No schema/configuration
+review. Implementation commit `a3f082f` is Dev-local, with immediate
+post-commit source/atlas/docs/plan consistency verified. No schema/configuration
 change, push or Production action. B1/B2 remains the next requested phase;
 do not carry the superseded F0 source-complete claim into that work.
 

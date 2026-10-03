@@ -214,6 +214,11 @@ excluded route and clock-precision tests. No broad warnings-clean claim is made.
 Compilation of the changed module and two test files passed; atlas regeneration
 indexes 229 Python modules and changes only the shared-risk declaration offsets;
 `git diff --check` passed. No schema/configuration migration is needed for these
-two reader fixes. R1–R5 remain planned, not implemented by this review. Source
-commit identity is recorded in the subsequent documentation receipt and delivery;
-no push or Production deployment is performed.
+two reader fixes. R1–R5 remain planned, not implemented by this review.
+Implementation commit: `a3f082f` (`fix(fno): correct risk readers and reopen F0
+acceptance`), Dev-local only. Immediately after that commit, the working tree
+was clean, changed-source AST declarations matched the generated atlas, all
+five handover/plan documents linked to this review, and its R1–R5/status/test
+receipt consistency checks passed. No push or Production deployment occurred.
+This subsequent documentation receipt records that verified implementation
+identity; it makes no additional source or schema change.
