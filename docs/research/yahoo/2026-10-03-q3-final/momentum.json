@@ -1,0 +1,18 @@
+{
+  "can_place_orders": false,
+  "dates": [
+    "2026-07-01",
+    "2026-09-30"
+  ],
+  "job": "momentum",
+  "metrics": null,
+  "module": "momentum",
+  "qualification": "NOT_ASSESSED",
+  "reason": "Yahoo rejected requested 15m window: YahooDataError: Unprocessable Entity: 15m data not available for startTime=1782844200 and endTime=1790793000. The requested range must be within the last 60 days.",
+  "report_file": "_local\\momentum-report.json",
+  "report_sha256": "sha256:a270e467494991cea76d0d5326fec46ddd247c439df47a4b9600b689a8be2772",
+  "scope": "EVALUATOR",
+  "state": "UNAVAILABLE",
+  "strategy_id": "momentum_intraday_15m_replay",
+  "window_kind": "primary"
+}

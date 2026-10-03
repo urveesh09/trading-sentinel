@@ -1,0 +1,45 @@
+{
+  "can_place_orders": false,
+  "coverage_status": "PARTIAL_UNIVERSE",
+  "dates": [
+    "2026-07-01",
+    "2026-09-30"
+  ],
+  "job": "range",
+  "metrics": {
+    "avg_r": null,
+    "decision_count": 32423,
+    "entry_decisions": 1097,
+    "max_drawdown_pct": null,
+    "net_pnl": null,
+    "net_return_pct": null,
+    "oos": {
+      "available": false,
+      "reason": "evaluator replay has no portfolio result"
+    },
+    "profit_factor": null,
+    "scope": "EVALUATOR",
+    "trade_count": null,
+    "verdict_reasons": {
+      "ENTER": 1097,
+      "WAIT_INSUFFICIENT_BARS": 14,
+      "WAIT_NO_LOWER_TOUCH": 1943,
+      "WAIT_RANGE_EXPANDING": 351,
+      "WAIT_RANGE_NOT_INTACT": 29018
+    },
+    "win_rate_pct": null
+  },
+  "module": "range",
+  "qualification": "NOT_ASSESSED",
+  "report_file": "_local\\range-report.json",
+  "report_sha256": "sha256:6a970832175ef1a164785804e9b13697fc7cce43a7f6d14173b9bd4720b79510",
+  "scope": "EVALUATOR",
+  "state": "SUCCEEDED",
+  "strategy_id": "range_reversion_daily_evaluator",
+  "warnings": [
+    "EVALUATOR scope only: historical proposals, decision cutoffs, advisory/news context, entry fills, exits and allocation are not reconstructed.",
+    "Each verdict is made after that daily bar completes; it is not evidence of an intraday or live order.",
+    "The current profile constants are frozen in the run manifest; no parameter search is performed."
+  ],
+  "window_kind": "primary"
+}

@@ -1,5 +1,28 @@
 # Trading Sentinel — next-agent execution plan
 
+## October 3 — Yahoo interface delivered; historical fidelity limits remain
+
+The owner superseded reliance on Sentinel's retained price history for these
+non-F&O tests. [Yahoo plan](2026-10-03-yahoo-all-module-backtest-plan.md),
+[usage](YAHOO_BACKTEST_GUIDE.md) and [real results](2026-10-03-yahoo-backtest-results.md)
+record the delivered one-script date-argument interface. Native Yahoo OHLCV,
+900-day daily warm-up, immutable raw/import/validated archives and current
+shipped functions are used. No strategy tuning or F&O/broker/Production path.
+70 focused tests passed; final offline repeats and documentation/atlas checks
+are recorded with the source commit receipt.
+
+Q3 daily evaluator outputs are available, including Swing's missing index warm-up.
+Yahoo does not supply expired Q3 minute/15-minute history; primaries stay
+unavailable and Sep 24–30 studies stay separate. Current Penny finds 18 closes
+in that partial-session sensitivity, with fragile +₹15.18 and negative adverse
+fill/winner-exclusion diagnostics. Do not relax entry gates simply to trade more.
+
+Before full-system profit claims, bind real EDGE/Swing/Range execution/exit
+lifecycles, live Momentum partial/trail behavior, historical context/admission
+and marked shared portfolio equity. Current membership/adjusted prices and
+prospective qualification remain limitations. Discuss improvements after the
+owner reviews these new Yahoo results. Dev-only artifacts; no promotion.
+
 ## October 3 — testing finished; discuss improvements before implementing
 
 The owner's latest request is tests first, improvement discussion afterward.

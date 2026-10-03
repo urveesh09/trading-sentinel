@@ -1,5 +1,27 @@
 # Handover receipt and operator checklist
 
+## October 3 Yahoo non-F&O interface — latest research receipt
+
+- [x] One script with inclusive dates, current shipped Lab paths and all-module
+  reports; no Sentinel candle/trade history or F&O/broker/Production access.
+- [x] Yahoo native intervals, 900-day daily warm-up, raw/import/validated hashes,
+  no fabricated volume/candles, whole-invalid-day exclusion and visible partial
+  universes. Explicit current Penny symbol fallback, no live universe change.
+- [x] Requested Q3 primaries preserved; recent intraday/sensitivity studies
+  labelled separately. EDGE/Swing/Range evaluator scope remains explicit.
+- [x] Current Penny activity demonstrated: 18 recent sensitivity closes;
+  Momentum two virtual same-day time exits. No qualification/system return.
+- [x] 70 focused tests passed; no overwrite, offline tampering, clock/identity,
+  session/interval, isolation and drift contracts checked. Final repeated
+  results, compilation/diff and deterministic atlas recorded in the receipt.
+- [x] [Usage guide](YAHOO_BACKTEST_GUIDE.md), [plan](2026-10-03-yahoo-all-module-backtest-plan.md)
+  and [results](2026-10-03-yahoo-backtest-results.md) are consistent. Source commit
+  and immediate post-commit verification recorded after final replay checks.
+- [ ] Complete entry/exit/portfolio fidelity and prospective qualification;
+  downloading Yahoo daily data does not close these gaps.
+- [ ] Owner-controlled promotion. Dev only, no new dependency, runtime schema/
+  configuration change, Production edit, broker orders, push or deployment.
+
 ## October 3 current-system test receipt — latest Dev research status
 
 - [x] Frozen dates/current universes before scoring; baseline `556209c`.

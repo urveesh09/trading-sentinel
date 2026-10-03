@@ -1,0 +1,43 @@
+{
+  "can_place_orders": false,
+  "coverage_status": "PARTIAL_UNIVERSE",
+  "dates": [
+    "2026-09-24",
+    "2026-09-30"
+  ],
+  "job": "penny-joint-recent-diagnostic-gap-sensitivity",
+  "metrics": {
+    "avg_r": null,
+    "max_drawdown_pct": null,
+    "net_pnl": 15.1765,
+    "net_return_pct": null,
+    "oos": {
+      "available": false,
+      "reason": "PORTFOLIO_PARTIAL"
+    },
+    "profit_factor": null,
+    "shared_cash": {
+      "cash_rejected": 0,
+      "final_cash": 2015.1765,
+      "initial_cash": 2000.0,
+      "locked_cash": 0.0,
+      "unresolved": 0
+    },
+    "status": "PARTIAL",
+    "trade_count": 18,
+    "win_rate_pct": null
+  },
+  "module": "penny-joint",
+  "qualification": "NOT_ASSESSED",
+  "report_file": "_local\\penny-joint-recent-diagnostic-gap-sensitivity-report.json",
+  "report_sha256": "sha256:1b928e43f0e2741dd047c5d8d020e66182b200b4986482c73a50eca7d6b53225",
+  "scope": "PORTFOLIO_PARTIAL",
+  "state": "SUCCEEDED",
+  "strategy_id": "penny_joint_lifecycle_portfolio",
+  "warnings": [
+    "Historical universe/regime/sector/event context and scheduler priority are not archived.",
+    "CNC date-only exits hold cash until end of session; no broker partial-fill/rejection evidence exists.",
+    "Reuses same-window shipped lifecycles with UTC-normalized clocks; not live P1 fee/buffer admission."
+  ],
+  "window_kind": "recent-diagnostic"
+}

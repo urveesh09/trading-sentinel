@@ -1,5 +1,34 @@
 # Trading Sentinel — system guide and engineering handover
 
+## October 3 — Yahoo-only non-F&O backtest interface (Dev only)
+
+`scripts/backtest_all_yahoo.py --start YYYY-MM-DD --end YYYY-MM-DD` supplies one
+repeatable Yahoo-only research interface for the shipped non-F&O Lab paths.
+See [usage](YAHOO_BACKTEST_GUIDE.md), [results](2026-10-03-yahoo-backtest-results.md)
+and [plan](2026-10-03-yahoo-all-module-backtest-plan.md). It uses current universe
+names/defaults and fresh Yahoo bars, not Sentinel prices/trades. Native interval,
+identity/currency/clock, raw digest, B1 whole-day rejection, immutable publication
+and source/settings/importer drift checks are preserved. All-null/known closed
+session/metadata-bound final quote placeholders are archived as absent candles.
+The original import and separately validated snapshots both remain available.
+
+Yahoo retention leaves the requested quarter intraday study unavailable; a
+separately declared Sep 24–30 diagnostic and Penny gap sensitivity are explicit.
+Q3 EDGE has 1,142 candidate appearances/167 selections; Swing 171 entry decisions;
+Range 1,097 ENTER verdicts. Recent Penny sensitivity has 18 closes/+₹15.18;
+joint cash reuses them, not extra profit. Recent Momentum has two virtual time
+exits/−₹0.83 with no later-day fallback. Effective daily names: 95/100 Penny and
+499/500 stock; data exclusions remain visible. Scope is still evaluator,
+lifecycle or partial portfolio, not full-system profit/qualification.
+
+The checked-in Penny universe is empty, so the script prefers a nonempty current
+file and otherwise uses an explicit symbol-only October 1 fallback. No live
+universe, thresholds, capital, exits or runtime configuration changed. Downloads
+use the standard library; no dependency added. 70 focused tests passed (one
+existing HTTPX deprecation); final reproducibility/source/data checks and atlas
+regeneration are recorded in the results receipt. Dev only, no Production edit,
+broker action, push or deployment; F&O remains excluded.
+
 ## October 3 — current-system real-data test receipt (Dev only)
 
 [Current-system results](2026-10-03-current-system-backtest-results.md) and

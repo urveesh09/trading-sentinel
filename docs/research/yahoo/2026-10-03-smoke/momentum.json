@@ -1,0 +1,18 @@
+{
+  "can_place_orders": false,
+  "dates": [
+    "2026-09-24",
+    "2026-09-30"
+  ],
+  "job": "momentum",
+  "metrics": null,
+  "module": "momentum",
+  "qualification": "NOT_ASSESSED",
+  "reason": "intraday OHLC values must be finite and positive",
+  "report_file": "_local\\momentum-report.json",
+  "report_sha256": "sha256:cc2c542489d3f70af1df2a047b0e187550434445c1f59b6d8c5fde5236be78c4",
+  "scope": "EVALUATOR",
+  "state": "UNAVAILABLE",
+  "strategy_id": "momentum_intraday_15m_replay",
+  "window_kind": "primary"
+}

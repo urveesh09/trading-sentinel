@@ -1,0 +1,31 @@
+{
+  "daily_effective": {
+    "penny": 3,
+    "stock": 3
+  },
+  "daily_exclusions": {},
+  "daily_requested": {
+    "penny": 3,
+    "stock": 3
+  },
+  "full_coverage_sha256": "sha256:dca4f0219d7e6f34da3df2dc9745d4816eb081b49b981d28dfe40b638293e9b4",
+  "intraday": {
+    "primary:15m": {
+      "state": "AVAILABLE",
+      "status_counts": {
+        "COMPLETE": 13,
+        "INVALID": 1,
+        "PARTIAL": 1
+      }
+    },
+    "primary:1m": {
+      "state": "AVAILABLE",
+      "status_counts": {
+        "INVALID": 1,
+        "PARTIAL": 14
+      }
+    }
+  },
+  "source": "YAHOO_FINANCE_CHART_ONLY",
+  "validated_snapshot": null
+}

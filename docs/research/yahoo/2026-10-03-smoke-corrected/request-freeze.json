@@ -1,0 +1,44 @@
+{
+  "can_place_orders": false,
+  "intraday_diagnostic_days": 7,
+  "modules": [
+    "edge",
+    "momentum",
+    "partner",
+    "penny-cnc",
+    "penny-joint",
+    "penny-mis",
+    "range",
+    "swing"
+  ],
+  "orchestration_sha256": "sha256:f51943fb35b10d2aa311a63e11000c97d44509cc1f4bd868993b8cfe79a2856b",
+  "requested": [
+    "2026-09-24",
+    "2026-09-30"
+  ],
+  "source": "YAHOO_FINANCE_CHART_ONLY",
+  "symbol_mapping": {
+    "NIFTY 50": "^NSEI",
+    "NIFTY BANK": "^NSEBANK",
+    "NIFTYBEES": "NIFTYBEES.NS",
+    "PCJEWELLER": "PCJEWELLER.NS",
+    "RELIANCE": "RELIANCE.NS",
+    "SOUTHBANK": "SOUTHBANK.NS"
+  },
+  "universe": {
+    "penny": [
+      "PCJEWELLER",
+      "RELIANCE",
+      "SOUTHBANK"
+    ],
+    "stock": [
+      "PCJEWELLER",
+      "RELIANCE",
+      "SOUTHBANK"
+    ]
+  },
+  "universe_files": [
+    "C:\\Users\\Urveesh\\Desktop\\trading-sentinel\\python-engine\\data\\nifty500.json",
+    "C:\\Users\\Urveesh\\Desktop\\trading-sentinel\\scripts\\data\\backtest_penny_universe.json"
+  ]
+}

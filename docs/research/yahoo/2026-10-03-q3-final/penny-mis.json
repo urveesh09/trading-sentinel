@@ -1,0 +1,18 @@
+{
+  "can_place_orders": false,
+  "dates": [
+    "2026-07-01",
+    "2026-09-30"
+  ],
+  "job": "penny-mis",
+  "metrics": null,
+  "module": "penny-mis",
+  "qualification": "NOT_ASSESSED",
+  "reason": "Yahoo rejected requested 1m window: YahooDataError: Unprocessable Entity: 1m data not available for startTime=1782844200 and endTime=1783449000. The requested range must be within the last 30 days.",
+  "report_file": "_local\\penny-mis-report.json",
+  "report_sha256": "sha256:f31eb09abf315b70bbb49f092656035c9a56de52c5defbfd7df144bd31bd6310",
+  "scope": "LIFECYCLE",
+  "state": "UNAVAILABLE",
+  "strategy_id": "penny_breakout_mis_lifecycle_1m",
+  "window_kind": "primary"
+}
