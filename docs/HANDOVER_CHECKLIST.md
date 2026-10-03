@@ -17,6 +17,8 @@
   push or deployment occurred. Catalogue consistency was verified after commit.
 - [x] B6 evidence-only standard reports, deterministic uncertainty and
   non-overlapping holdout declaration/comparison guard (37 focused tests).
+- [x] B6 source commit `60bd989` is Dev-only; no configuration, migration,
+  push or deployment occurred.
 - [ ] Real-data/Production read-only checks only after Production is restored;
   GitHub promotion remains owner-controlled.
 
