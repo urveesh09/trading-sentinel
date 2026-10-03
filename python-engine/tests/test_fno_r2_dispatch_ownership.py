@@ -21,6 +21,7 @@ SOURCE = "FNO_PAPER"
 POOL = 50_000.0
 DAY = date(2026, 10, 5)
 AMOUNT = 8_000.0
+OBSERVED = datetime(2026, 10, 5, 6, 0, tzinfo=timezone.utc)   # 11:30 IST on DAY
 
 
 async def _ready(db_path):
@@ -34,13 +35,14 @@ async def _reserve(db_path, key="entry-a", book="SINGLE_LEG"):
     return await reserve_shared_fno_risk(
         db_path, source=SOURCE, pool_rs=POOL, reservation_key=key, book=book,
         worst_case_cash_rs=AMOUNT, entry_day_ist=DAY, policy=SharedFnoRiskPolicy(),
+        observed_at=OBSERVED,
     )
 
 
 async def _claim(db_path, key="entry-a", book="SINGLE_LEG", day=DAY):
     return await claim_shared_fno_entry_dispatch(
         db_path, reservation_key=key, source=SOURCE, book=book, pool_rs=POOL,
-        entry_day_ist=day, policy=SharedFnoRiskPolicy(),
+        entry_day_ist=day, policy=SharedFnoRiskPolicy(), observed_at=OBSERVED,
     )
 
 

@@ -1,5 +1,28 @@
 # Trading Sentinel — next-agent execution plan
 
+## October 3 — F0-R3 implemented in Dev (canonical cash, clock, completed trades)
+
+[R3 slice and verification](2026-10-03-fno-f0-r3-cash-clock-completion.md).
+- **One reader.** The shared view and policy read one validated cash
+  ledger. `TRADE_PARTIAL` and `TRADE_CLOSED` are each counted once.
+- **Fail closed.** Future, naive, non-finite, duplicate-exact and
+  unclassified cash all deny entry; the observation clock defaults to the
+  wall clock. Settled positions without their exact cash also deny entry.
+- **Brakes.** Buckets are bounded by the policy day, and the six-loss pause
+  counts completed trades.
+- **Manual cash.** A positive manual deposit is never capacity.
+- **Legacy rows** (generation 0, or no origin) are reported, not rejected.
+- **Probe.** The pre-R3 code allowed the partial-loss and future-masking
+  cases and falsely paused on six partial exits; R3 fixes all three.
+- **Tests.** 20 new; 727 regression passed, plus the known unrelated
+  mark-to-market failure.
+
+Production's stack was found **stopped** at 12:22 IST on October 3; this
+task did not touch it. Before promoting R3, run the slice's read-only SQL
+check on Production.
+
+Next: **R4**, then R5. Dev only, not pushed or deployed.
+
 ## October 3 — F0-R2 implemented in Dev (one dispatch owner)
 
 [R2 slice and verification](2026-10-03-fno-f0-r2-dispatch-ownership.md).

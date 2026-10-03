@@ -41,6 +41,15 @@ verified no-dispatch, explicit broker rejection or verified terminal zero
 fill. Partial, unknown or unrecorded fills keep the whole reservation until
 an operator reconciles them with evidence. A reservation-backed position can
 only be inserted against a claim, and nothing expires on a timer.
+
+F0-R3 reads one canonical, validated cash ledger for both the view and the
+policy: TRADE_PARTIAL and TRADE_CLOSED are trade cash (counted once); cash
+must be finite, timezone-aware, unique per origin/generation and not after
+the observation instant (wall clock by default); day/week/month buckets are
+bounded by the policy day; settled positions must have their exact cash;
+and the consecutive-loss brake counts completed trades, not cash rows.
+Positive manual cash is never entry capacity; negative manual cash reduces
+equity. Unknown event types fail closed.
 """
 from __future__ import annotations
 
@@ -156,6 +165,11 @@ class SharedFnoEntryPolicyDecision:
     week_pnl_rs: Optional[float]
     month_pnl_rs: Optional[float]
     view: SharedFnoRiskView
+    # [F0-R3] Completed-trade loss streak, observation instant and legacy
+    # cash rows that carry no trade identity (each counted as one trade).
+    completed_loss_streak: Optional[int] = None
+    observed_at: Optional[str] = None
+    legacy_unlinked_cash_events: int = 0
 
 
 @dataclass(frozen=True)
@@ -184,6 +198,10 @@ class SharedFnoRiskView:
     # [F0-R2] Claims still DISPATCHING or UNRESOLVED (their reservations are
     # retained in ``reserved_worst_case_cash_rs``).
     unresolved_entry_dispatch_count: int = 0
+    # [F0-R3] Positive manual cash excluded from equity (never capacity) and
+    # closed rows that predate exact settlement lineage.
+    excluded_positive_manual_cash_rs: float = 0.0
+    legacy_unlinked_closed_positions: int = 0
 
 
 @dataclass(frozen=True)
@@ -391,10 +409,159 @@ async def _validate_open_partial_exit_evidence(
     return ""
 
 
+_TRADE_CASH_TYPES = frozenset({"TRADE_PARTIAL", "TRADE_CLOSED"})
+_ZERO_CASH_TYPES = frozenset({"INITIAL", "TRADE_OPENED"})
+_MANUAL_CASH_TYPES = frozenset({"MANUAL_DEPOSIT", "MANUAL_WITHDRAWAL", "MANUAL_ADJUSTMENT"})
+
+
+@dataclass(frozen=True)
+class _CashEvent:
+    id: int
+    at: datetime
+    event_type: str
+    pnl: float
+    origin_ref: Optional[str]
+    generation: Optional[int]
+
+
+@dataclass(frozen=True)
+class _CashLedger:
+    trade_events: tuple
+    trade_cash_rs: float
+    negative_manual_cash_rs: float
+    positive_manual_cash_rs: float
+    legacy_unlinked_events: int      # no origin, or generation 0 (pre-exact lineage)
+
+
+def _observation_instant(observed_at: Optional[datetime]) -> Optional[datetime]:
+    instant = observed_at or datetime.now(timezone.utc)
+    if not isinstance(instant, datetime) or instant.tzinfo is None:
+        return None
+    return instant.astimezone(timezone.utc)
+
+
+async def _read_cash_ledger(
+    db: aiosqlite.Connection, source: str, observed_at: datetime,
+):
+    """Validated canonical cash for ``source``; a reason string on failure."""
+    rows = await (await db.execute(
+        "SELECT id,timestamp,event_type,pnl,origin_ref,settlement_generation "
+        "FROM bankroll_ledger WHERE source=?", (source,)
+    )).fetchall()
+    trade: list[_CashEvent] = []
+    seen: set = set()
+    trade_total = negative_manual = positive_manual = 0.0
+    legacy = 0
+    for event_id, stamp_raw, event_type, pnl_raw, origin, generation in rows:
+        try:
+            pnl = float(pnl_raw)
+        except (TypeError, ValueError):
+            pnl = float("nan")
+        if not math.isfinite(pnl):
+            return "nonfinite_realised_pnl"
+        if event_type in _ZERO_CASH_TYPES:
+            if pnl != 0.0:
+                return "unclassified_cash_event"
+            continue
+        if event_type not in _TRADE_CASH_TYPES and event_type not in _MANUAL_CASH_TYPES:
+            return "unclassified_cash_event"
+        try:
+            at = datetime.fromisoformat(str(stamp_raw))
+        except (TypeError, ValueError):
+            return "invalid_cash_event"
+        if at.tzinfo is None:
+            return "invalid_cash_event"
+        if at.astimezone(timezone.utc) > observed_at:
+            return "future_cash_event"
+        if event_type in _MANUAL_CASH_TYPES:
+            if pnl < 0:
+                negative_manual += pnl
+            else:
+                positive_manual += pnl
+            continue
+        if origin is not None and type(generation) is int and generation >= 1:
+            # Exact settlements are unique per origin/generation (the ledger
+            # index only covers generation > 0; generation 0 is legacy).
+            key = (origin, generation)
+            if key in seen:
+                return "duplicate_cash_event"
+            seen.add(key)
+        else:
+            legacy += 1
+        trade_total += pnl
+        trade.append(_CashEvent(int(event_id), at, event_type, pnl, origin,
+                                generation if type(generation) is int else None))
+    if not all(math.isfinite(x) for x in (trade_total, negative_manual, positive_manual)):
+        return "nonfinite_realised_pnl"
+    return _CashLedger(tuple(trade), trade_total, negative_manual, positive_manual, legacy)
+
+
+async def _settlement_cash_gap(db: aiosqlite.Connection, source: str, ledger: _CashLedger):
+    """(reason, legacy_count): settled rows must carry their exact cash."""
+    by_origin: dict[str, list] = {}
+    for event in ledger.trade_events:
+        if event.origin_ref is not None and event.generation is not None and event.generation >= 1:
+            by_origin.setdefault(event.origin_ref, []).append(event.generation)
+    legacy = 0
+    single = await (await db.execute(
+        "SELECT id,settlement_generation FROM fno_positions WHERE source=? AND status='CLOSED'",
+        (source,),
+    )).fetchall()
+    for position_id, generation in single:
+        if type(generation) is not int or generation < 1:
+            legacy += 1
+            continue
+        if sorted(by_origin.get(f"fno_position:{position_id}", [])) != list(range(1, generation + 1)):
+            return "missing_settlement_cash", legacy
+    dr_columns = {row[1] for row in await (await db.execute(
+        "PRAGMA table_info(fno_dr_positions)")).fetchall()}
+    state_column = "settlement_state" if "settlement_state" in dr_columns else "NULL"
+    defined = await (await db.execute(
+        f"SELECT id,{state_column} FROM fno_dr_positions WHERE source=? AND status='CLOSED'",
+        (source,),
+    )).fetchall()
+    for structure_id, state in defined:
+        if state != "SETTLED":
+            legacy += 1
+            continue
+        if by_origin.get(f"fno_dr_structure:{structure_id}") != [1]:
+            return "missing_settlement_cash", legacy
+    return "", legacy
+
+
+async def _completed_trades(
+    db: aiosqlite.Connection, source: str, ledger: _CashLedger,
+) -> list[tuple[datetime, int, float]]:
+    """(completion time, last id, net cash) per completed trade, newest first."""
+    single = {f"fno_position:{row[0]}": row[1] for row in await (await db.execute(
+        "SELECT id,status FROM fno_positions WHERE source=?", (source,))).fetchall()}
+    defined = {f"fno_dr_structure:{row[0]}": row[1] for row in await (await db.execute(
+        "SELECT id,status FROM fno_dr_positions WHERE source=?", (source,))).fetchall()}
+    groups: dict[str, list[_CashEvent]] = {}
+    trades: list[tuple[datetime, int, float]] = []
+    for event in ledger.trade_events:
+        if event.origin_ref is None:
+            trades.append((event.at, event.id, event.pnl))     # legacy: one row, one trade
+        else:
+            groups.setdefault(event.origin_ref, []).append(event)
+    for origin, events in groups.items():
+        status = single.get(origin, defined.get(origin))
+        if status is not None and status != "CLOSED":
+            continue                                          # still open: not a completed trade
+        trades.append((max(e.at for e in events), max(e.id for e in events),
+                       sum(e.pnl for e in events)))
+    trades.sort(key=lambda t: (t[0], t[1]), reverse=True)
+    return trades
+
+
 async def _read_view(
     db: aiosqlite.Connection, source: str, pool_rs: float,
+    observed_at: Optional[datetime] = None,
 ) -> SharedFnoRiskView:
     """Read one consistent view; caller owns the transaction boundary."""
+    instant = _observation_instant(observed_at)
+    if instant is None:
+        return _unavailable(source, pool_rs, "invalid_observation_clock")
     required = (
         "bankroll_ledger", "fno_positions", "fno_dr_positions",
         "fno_exit_recoveries", "fno_risk_reservations", "fno_entry_dispatches",
@@ -403,23 +570,17 @@ async def _read_view(
     if missing:
         return _unavailable(source, pool_rs, "missing_required_table:" + ",".join(missing))
 
-    ledger_rows = await (await db.execute(
-        "SELECT pnl FROM bankroll_ledger "
-        "WHERE source=? AND event_type='TRADE_CLOSED'", (source,)
-    )).fetchall()
     # Validate individual rows instead of trusting SQLite's aggregate: an
     # invalid positive/negative pair must not cancel into apparent capacity.
-    realised_pnl = 0.0
-    for row in ledger_rows:
-        try:
-            pnl = float(row[0])
-        except (TypeError, ValueError):
-            pnl = float("nan")
-        if not math.isfinite(pnl):
-            return _unavailable(source, pool_rs, "nonfinite_realised_pnl")
-        realised_pnl += pnl
-    if not math.isfinite(realised_pnl):
-        return _unavailable(source, pool_rs, "nonfinite_realised_pnl")
+    ledger = await _read_cash_ledger(db, source, instant)
+    if isinstance(ledger, str):
+        return _unavailable(source, pool_rs, ledger)
+    gap, legacy_closed = await _settlement_cash_gap(db, source, ledger)
+    if gap:
+        return _unavailable(source, pool_rs, gap)
+    # Positive manual cash is never entry capacity (no top-ups without an
+    # explicit owner policy); negative manual cash is real and reduces equity.
+    realised_pnl = ledger.trade_cash_rs + ledger.negative_manual_cash_rs
 
     single_columns = {row[1] for row in await (await db.execute(
         "PRAGMA table_info(fno_positions)")).fetchall()}
@@ -504,6 +665,8 @@ async def _read_view(
         available=True,
         open_fee_reserve_rs=fee_total,
         unresolved_entry_dispatch_count=int(unresolved_claims),
+        excluded_positive_manual_cash_rs=ledger.positive_manual_cash_rs,
+        legacy_unlinked_closed_positions=legacy_closed,
     )
 
 
@@ -546,6 +709,7 @@ def _policy_unavailable(
 async def _read_entry_policy(
     db: aiosqlite.Connection, *, source: str, pool_rs: float,
     today_ist: date, policy: SharedFnoRiskPolicy,
+    observed_at: Optional[datetime] = None,
 ) -> SharedFnoEntryPolicyDecision:
     """Evaluate policy under the caller's transaction boundary.
 
@@ -555,7 +719,10 @@ async def _read_entry_policy(
     """
     if _invalid_policy(policy):
         return _policy_unavailable(source, pool_rs, "invalid_shared_risk_policy")
-    view = await _read_view(db, source, pool_rs)
+    instant = _observation_instant(observed_at)
+    if instant is None:
+        return _policy_unavailable(source, pool_rs, "invalid_observation_clock")
+    view = await _read_view(db, source, pool_rs, instant)
     if not view.available:
         return SharedFnoEntryPolicyDecision(
             allowed=False, reason=view.reason or "risk_view_unavailable",
@@ -563,39 +730,33 @@ async def _read_entry_policy(
             day_pnl_rs=None, week_pnl_rs=None, month_pnl_rs=None, view=view,
         )
 
-    rows = await (await db.execute(
-        "SELECT id,timestamp,pnl FROM bankroll_ledger "
-        "WHERE source=? AND event_type='TRADE_CLOSED' ORDER BY id DESC",
-        (source,),
-    )).fetchall()
+    ledger = await _read_cash_ledger(db, source, instant)
+    if isinstance(ledger, str):          # the view validated it; defensive only
+        return _policy_unavailable(source, pool_rs, ledger)
     iso_year, iso_week, _ = today_ist.isocalendar()
     week_start = date.fromisocalendar(iso_year, iso_week, 1)
     month_start = today_ist.replace(day=1)
     day_pnl = week_pnl = month_pnl = 0.0
+    for event in ledger.trade_events:
+        event_day = event.at.astimezone(_IST).date()
+        if event_day > today_ist:
+            continue                      # after the policy day (replay); never a credit
+        if event_day == today_ist:
+            day_pnl += event.pnl
+        if event_day >= week_start:
+            week_pnl += event.pnl
+        if event_day >= month_start:
+            month_pnl += event.pnl
     consecutive_losses = 0
     latest_loss_day: Optional[date] = None
-    streak_active = True
-    for row in rows:
-        try:
-            stamp = datetime.fromisoformat(str(row[1]))
-            pnl = float(row[2])
-        except (TypeError, ValueError):
-            return _policy_unavailable(source, pool_rs, "invalid_terminal_cash_event")
-        if stamp.tzinfo is None or not math.isfinite(pnl):
-            return _policy_unavailable(source, pool_rs, "invalid_terminal_cash_event")
-        event_day = stamp.astimezone(_IST).date()
-        if event_day >= today_ist:
-            day_pnl += pnl
-        if event_day >= week_start:
-            week_pnl += pnl
-        if event_day >= month_start:
-            month_pnl += pnl
-        if streak_active and pnl < 0:
-            consecutive_losses += 1
-            if latest_loss_day is None:
-                latest_loss_day = event_day
-        else:
-            streak_active = False
+    for completed_at, _last_id, net in await _completed_trades(db, source, ledger):
+        if completed_at.astimezone(_IST).date() > today_ist:
+            continue
+        if net >= 0:
+            break
+        consecutive_losses += 1
+        if latest_loss_day is None:
+            latest_loss_day = completed_at.astimezone(_IST).date()
 
     halts: list[str] = []
     if day_pnl <= -policy.daily_loss_pct * pool_rs:
@@ -617,12 +778,15 @@ async def _read_entry_policy(
         allowed=not halts, reason="" if not halts else halts[0],
         active_halts=tuple(halts), day_pnl_rs=day_pnl, week_pnl_rs=week_pnl,
         month_pnl_rs=month_pnl, view=view,
+        completed_loss_streak=consecutive_losses, observed_at=instant.isoformat(),
+        legacy_unlinked_cash_events=ledger.legacy_unlinked_events,
     )
 
 
 async def shared_fno_entry_policy(
     db_path: str, *, source: str, pool_rs: float, today_ist: date,
     policy: Optional[SharedFnoRiskPolicy] = None,
+    observed_at: Optional[datetime] = None,
 ) -> SharedFnoEntryPolicyDecision:
     """Read the common F&O entry policy; malformed evidence denies entry."""
     pool = _finite_non_negative(pool_rs)
@@ -635,7 +799,7 @@ async def shared_fno_entry_policy(
             await db.execute("BEGIN")
             decision = await _read_entry_policy(
                 db, source=source, pool_rs=pool, today_ist=today_ist,
-                policy=active_policy,
+                policy=active_policy, observed_at=observed_at,
             )
             await db.rollback()
             return decision
@@ -647,6 +811,7 @@ async def shared_fno_entry_policy(
 
 async def shared_fno_risk_view(
     db_path: str, source: str, pool_rs: float,
+    observed_at: Optional[datetime] = None,
 ) -> SharedFnoRiskView:
     """Return a read-only, consistent shared F&O risk view.
 
@@ -661,7 +826,7 @@ async def shared_fno_risk_view(
         async with aiosqlite.connect(Path(db_path).resolve().as_uri() + "?mode=ro", uri=True) as db:
             await db.execute("PRAGMA query_only=ON")
             await db.execute("BEGIN")
-            view = await _read_view(db, source, pool)
+            view = await _read_view(db, source, pool, observed_at)
             await db.rollback()
             return view
     except Exception as exc:
@@ -679,6 +844,7 @@ async def reserve_shared_fno_risk(
     created_at: Optional[datetime] = None,
     entry_day_ist: Optional[date] = None,
     policy: Optional[SharedFnoRiskPolicy] = None,
+    observed_at: Optional[datetime] = None,
 ) -> SharedFnoAdmission:
     """Atomically reserve capacity for an entry, failing closed on ambiguity.
 
@@ -705,19 +871,19 @@ async def reserve_shared_fno_risk(
             if existing is not None:
                 same = (existing[0] == source and existing[1] == book
                         and existing[2] == "RESERVED" and float(existing[3]) == needed)
-                view = await _read_view(db, source, pool)
+                view = await _read_view(db, source, pool, observed_at)
                 await db.rollback()
                 return SharedFnoAdmission(same and view.available,
                                           "already_reserved" if same else "reservation_key_conflict", view)
             if entry_day_ist is not None:
                 decision = await _read_entry_policy(
                     db, source=source, pool_rs=pool, today_ist=entry_day_ist,
-                    policy=active_policy,
+                    policy=active_policy, observed_at=observed_at,
                 )
                 if not decision.allowed:
                     await db.rollback()
                     return SharedFnoAdmission(False, decision.reason, decision.view)
-            view = await _read_view(db, source, pool)
+            view = await _read_view(db, source, pool, observed_at)
             available = view.available_worst_case_cash_rs
             if not view.available or available is None:
                 await db.rollback()
@@ -734,7 +900,7 @@ async def reserve_shared_fno_risk(
             # Return the post-reservation view, not the pre-check that granted it.
             async with aiosqlite.connect(db_path) as after:
                 await after.execute("BEGIN")
-                post = await _read_view(after, source, pool)
+                post = await _read_view(after, source, pool, observed_at)
                 await after.rollback()
             return SharedFnoAdmission(True, "reserved", post)
     except Exception as exc:
@@ -889,6 +1055,7 @@ async def claim_shared_fno_entry_dispatch(
     entry_day_ist: Optional[date],
     policy: Optional[SharedFnoRiskPolicy] = None,
     claimed_at: Optional[datetime] = None,
+    observed_at: Optional[datetime] = None,
 ) -> SharedFnoDispatchClaim:
     """Grant the single right to dispatch a reserved entry, or refuse.
 
@@ -919,21 +1086,21 @@ async def claim_shared_fno_entry_dispatch(
                 (reservation_key,),
             )).fetchone()
             if reservation is None or reservation[0] != source or reservation[1] != book:
-                view = await _read_view(db, source, pool)
+                view = await _read_view(db, source, pool, observed_at)
                 await db.rollback()
                 return SharedFnoDispatchClaim(False, "reservation_not_found_or_mismatched", None, view)
             if existing is not None:
-                view = await _read_view(db, source, pool)
+                view = await _read_view(db, source, pool, observed_at)
                 await db.rollback()
                 return SharedFnoDispatchClaim(False, f"dispatch_already_claimed:{existing[0]}", None, view)
             if reservation[2] != "RESERVED":
-                view = await _read_view(db, source, pool)
+                view = await _read_view(db, source, pool, observed_at)
                 await db.rollback()
                 return SharedFnoDispatchClaim(False, f"reservation_not_reserved:{reservation[2]}", None, view)
             if entry_day_ist is not None:
                 decision = await _read_entry_policy(
                     db, source=source, pool_rs=pool, today_ist=entry_day_ist,
-                    policy=policy or policy_from_settings(),
+                    policy=policy or policy_from_settings(), observed_at=observed_at,
                 )
                 if not decision.allowed:
                     await db.execute(
@@ -946,7 +1113,7 @@ async def claim_shared_fno_entry_dispatch(
                     return SharedFnoDispatchClaim(False, decision.reason, None, decision.view)
                 view = decision.view
             else:
-                view = await _read_view(db, source, pool)
+                view = await _read_view(db, source, pool, observed_at)
                 if not view.available:
                     await db.rollback()
                     return SharedFnoDispatchClaim(False, view.reason or "risk_view_unavailable", None, view)

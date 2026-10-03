@@ -250,7 +250,7 @@ async def test_shared_policy_drawdown_and_ambiguous_cash_fail_closed(db_path):
         db_path, source=SOURCE, pool_rs=POOL, today_ist=date(2026, 10, 3),
     )
     assert not malformed.allowed
-    assert malformed.reason == "invalid_terminal_cash_event"
+    assert malformed.reason == "invalid_cash_event"   # F0-R3: partial and terminal cash share one reader
 
 
 @pytest.mark.asyncio

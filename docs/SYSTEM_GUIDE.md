@@ -1,5 +1,28 @@
 # Trading Sentinel — system guide and engineering handover
 
+## October 3 — F0-R3 canonical F&O cash, observation clock and completed trades (Dev only)
+
+The shared F&O view and policy now read one validated ledger ([R3](2026-10-03-fno-f0-r3-cash-clock-completion.md)).
+
+**What counts as cash**
+- `TRADE_PARTIAL` and `TRADE_CLOSED` are trade cash.
+- `INITIAL` and `TRADE_OPENED` must be zero.
+- Manual cash: a positive amount is excluded from capacity and reported; a
+  negative amount reduces equity.
+- Anything else fails closed.
+
+**Validity checks.** Cash must be finite and timezone-aware, must not be
+dated after `observed_at` (the wall clock unless injected), and must be
+unique per origin and exact generation.
+
+**Settlement completeness.** A settled single-leg row (generation ≥ 1) or a
+`SETTLED` DR row must have its exact cash. Legacy closed rows are counted in
+`legacy_unlinked_closed_positions`.
+
+**Brakes.** Day, week and month totals stop at the policy day. The six-loss
+pause counts completed trades: cash is grouped by origin, open trades are
+excluded, and the order is completion time, then id.
+
 ## October 3 — F0-R2 single F&O dispatch owner and evidence-backed outcomes (Dev only)
 
 Both F&O books now follow reserve → claim → act → resolve ([R2](2026-10-03-fno-f0-r2-dispatch-ownership.md)).

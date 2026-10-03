@@ -116,7 +116,9 @@ async def test_lifecycle_counts_exposure_once_and_hands_over_to_exact_cash(db_pa
     states.append(unresolved.available_worst_case_cash_rs)
     assert unresolved.single_leg_open_count == 1
     async with aiosqlite.connect(db_path) as db:
-        await db.execute("UPDATE fno_positions SET status='CLOSED' WHERE id=?", (position_id,))
+        # As the exact settlement writer does: generation 1 plus its one cash row.
+        await db.execute("UPDATE fno_positions SET status='CLOSED', settlement_generation=1 "
+                         "WHERE id=?", (position_id,))
         await db.execute(
             "INSERT INTO bankroll_ledger (timestamp,event_type,pnl,source,origin_ref,settlement_generation) "
             "VALUES (?,?,?,?,?,?)",
@@ -124,7 +126,8 @@ async def test_lifecycle_counts_exposure_once_and_hands_over_to_exact_cash(db_pa
              f"fno_position:{position_id}", 1),
         )
         await db.commit()
-    closed = await shared_fno_risk_view(db_path, SOURCE, POOL)
+    closed = await shared_fno_risk_view(
+        db_path, SOURCE, POOL, observed_at=datetime(2026, 10, 5, 10, 0, tzinfo=timezone.utc))
     states.append(closed.available_worst_case_cash_rs)
     assert closed.open_worst_case_cash_rs == 0.0 and closed.open_fee_reserve_rs == 0.0
     assert states == pytest.approx([capacity] * 3)

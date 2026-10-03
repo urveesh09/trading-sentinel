@@ -1,5 +1,10 @@
 # Independent F0 review and correction plan — October 3, 2026 (IST)
 
+## R3 status update (later October 3)
+
+R3 is implemented in Dev; see [the R3 slice](2026-10-03-fno-f0-r3-cash-clock-completion.md). R1–R3 are done; R4 and
+R5 remain open.
+
 ## R2 status update (later October 3)
 
 R2 is implemented in Dev; see [the R2 slice](2026-10-03-fno-f0-r2-dispatch-ownership.md). R1 and R2 are done;
