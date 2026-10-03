@@ -1882,13 +1882,17 @@ class KiteClient:
         try:
             resp = await self.client.get("/orders")
             resp.raise_for_status()
-            data = resp.json().get("data", [])
-            return data if isinstance(data, list) else []
+            payload = resp.json()
+            data = payload.get("data") if isinstance(payload, dict) else None
+            return data if isinstance(data, list) else None
         except httpx.HTTPStatusError as e:
             logger.error("kite_orders_snapshot_failed status=%d", e.response.status_code)
             return None
         except httpx.RequestError as e:
             logger.error("kite_orders_snapshot_failed error=%s", str(e))
+            return None
+        except ValueError as e:
+            logger.error("kite_orders_snapshot_failed invalid_json=%s", str(e))
             return None
 
     async def order_trades(self, order_id: str) -> list | None:

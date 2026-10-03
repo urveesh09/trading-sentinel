@@ -104,7 +104,7 @@ Top-level declarations: `_simulate_trade` (line 29), `_compute_stats` (line 123)
 
 Engine dependencies: `config`, `engine`, `models`, `regime`
 
-Related tests: `python-engine/tests/test_backtest.py`, `python-engine/tests/test_backtest_cli.py`, `python-engine/tests/test_backtest_gap_fills.py`, `python-engine/tests/test_backtest_lab.py`
+Related tests: `python-engine/tests/test_backtest.py`, `python-engine/tests/test_backtest_cli.py`, `python-engine/tests/test_backtest_gap_fills.py`, `python-engine/tests/test_backtest_lab.py`, `python-engine/tests/test_backtest_reporting.py`
 
 ## `python-engine/backtest_catalogue.py`
 
@@ -140,7 +140,9 @@ Declared tables: `backtest_experiments`, `backtest_runs`
 
 Pure, conservative standard metrics for archived backtest reports.
 
-Top-level declarations: `validate_holdout` (line 12), `_number` (line 28), `_bootstrap` (line 32), `standard_metrics` (line 43)
+Top-level declarations: `validate_holdout` (line 12), `_number` (line 30), `report_holdout` (line 34), `_bootstrap` (line 43), `standard_metrics` (line 54)
+
+Related tests: `python-engine/tests/test_backtest_reporting.py`
 
 ## `python-engine/boundary_safety.py`
 
@@ -938,7 +940,7 @@ Related tests: `python-engine/tests/test_intraday_spread_signal_artifact.py`
 
 No module docstring; use the declarations and callers below.
 
-Top-level declarations: `_interval_minutes` (line 37), `_intraday_cache_gate_evaluate` (line 73), `provider_lane` (line 193), `RateLimiter` (line 210), `KiteClient` (line 295), `_finite` (line 1938), `own_uncommitted_cash` (line 1947), `latest_order_state` (line 1997)
+Top-level declarations: `_interval_minutes` (line 37), `_intraday_cache_gate_evaluate` (line 73), `provider_lane` (line 193), `RateLimiter` (line 210), `KiteClient` (line 295), `_finite` (line 1942), `own_uncommitted_cash` (line 1951), `latest_order_state` (line 2001)
 
 Engine dependencies: `config`, `halt_switch`, `operator_alert`, `order_execution_readiness`, `owner_entry_halt`
 

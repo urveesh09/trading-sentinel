@@ -1,5 +1,15 @@
 # Backtesting Sentinel's shipped modules and F&O safety — October 3
 
+## Independent status override after `4481af0`
+
+The [post-implementation independent review](2026-10-03-post-implementation-independent-review.md)
+records delivered slices, small corrections and explicit remaining acceptance.
+The full original plan is incomplete. Historical "B2 complete" below means
+the two declared lifecycle adapters, not reconstructed historical portfolio
+context; B3/B4 are evaluator-only and B6 is a date/report guard. F1 account-wide
+atomic cash admission, complete point-in-time evidence and prospective holdout
+controls still require implementation. B5 stays excluded in the recorded scope.
+
 ## B2 complete (later October 3)
 
 Both halves of B2 now have exact `LIFECYCLE` replays: classic Penny MIS and

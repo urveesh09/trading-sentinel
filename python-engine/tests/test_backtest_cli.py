@@ -66,7 +66,8 @@ def test_standard_report_holdout_guard_and_deterministic_uncertainty(tmp_path, c
     capsys.readouterr()
     assert backtest_cli.main(["report", str(held)]) == 0
     report = json.loads(capsys.readouterr().out)
-    assert report["holdout"]["status"] == "DECLARED_UNTOUCHED"
+    assert report["holdout"]["status"] == "DECLARED_UNVERIFIED"
+    assert report["holdout"]["untouched_verified"] is False
     assert report["standard_metrics"]["risk_adjusted"] is None
     assert report["standard_metrics"]["net_excluding_best_winner"] is not None
     assert backtest_cli.main(["compare", str(plain), str(held)]) == 2
@@ -77,3 +78,16 @@ def test_standard_report_holdout_guard_and_deterministic_uncertainty(tmp_path, c
         {"status": "CLOSED", "net_pnl": 1.0}, {"status": "CLOSED", "net_pnl": -0.5},
     ]}}
     assert standard_metrics(sample)["uncertainty"] == standard_metrics(sample)["uncertainty"]
+
+    archived = json.loads(held.read_text())
+    archived["holdout"]["status"] = "DECLARED_UNTOUCHED"
+    archived["holdout"].pop("untouched_verified")
+    held.write_text(json.dumps(archived))
+    before = held.read_bytes()
+    capsys.readouterr()
+    assert backtest_cli.main(["report", str(held)]) == 0
+    clarified = json.loads(capsys.readouterr().out)["holdout"]
+    assert clarified["status"] == "DECLARED_UNVERIFIED"
+    assert clarified["archived_status"] == "DECLARED_UNTOUCHED"
+    assert clarified["untouched_verified"] is False
+    assert held.read_bytes() == before

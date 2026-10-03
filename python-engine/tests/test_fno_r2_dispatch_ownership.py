@@ -120,6 +120,27 @@ async def test_orphaned_dispatch_after_restart_keeps_capital_until_verified_reco
 # ---- typed outcomes ----------------------------------------------------------
 
 @pytest.mark.asyncio
+@pytest.mark.parametrize("outcome,evidence,expected", [
+    ("zero_fill_verified", {"order_id": "OTHER", "final_status": "CANCELLED", "filled_quantity": 0}, False),
+    ("no_order_verified", {"account_id": "USER01", "checked_at": "2026-10-05T06:00:00+00:00", "matching_orders": []}, False),
+    ("zero_fill_verified", {"order_id": "KNOWN", "final_status": "CANCELLED", "filled_quantity": 0}, True),
+])
+async def test_operator_reconciliation_must_resolve_the_recorded_order(db_path, outcome, evidence, expected):
+    await _ready(db_path)
+    await _reserve(db_path)
+    claim = await _claim(db_path)
+    await resolve_shared_fno_entry_dispatch(
+        db_path, reservation_key="entry-a", owner=claim.owner, outcome="unknown",
+        evidence={"order_id": "KNOWN"})
+    before = await _rows(db_path, "SELECT state,order_id,evidence_json FROM fno_entry_dispatches")
+    assert await reconcile_shared_fno_entry_dispatch(
+        db_path, reservation_key="entry-a", operator="ops", outcome=outcome, evidence=evidence) is expected
+    view = await shared_fno_risk_view(db_path, SOURCE, POOL)
+    assert view.reserved_worst_case_cash_rs == (0.0 if expected else AMOUNT)
+    if not expected:
+        assert await _rows(db_path, "SELECT state,order_id,evidence_json FROM fno_entry_dispatches") == before
+
+@pytest.mark.asyncio
 @pytest.mark.parametrize("outcome,evidence,applied,released", [
     ("rejected", {"dispatch_certainty": "BROKER_REJECTED", "order_id": None}, "rejected", True),
     ("no_dispatch", {"dispatch_certainty": "NOT_SENT", "order_id": None}, "no_dispatch", True),

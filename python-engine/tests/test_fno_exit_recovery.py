@@ -92,13 +92,21 @@ async def test_verified_zero_fill_preserves_all_shared_exposure(fno_db):
 @pytest.mark.asyncio
 async def test_recovered_intent_requires_new_exit_evaluation(fno_db):
     pid, created = await claimed(fno_db)
-    stale_tick = datetime.now(timezone.utc)
     await resolve(fno_db, broker(qty=75, filled=0), pid, created)
+    with closing(sqlite3.connect(fno_db)) as db:
+        stamp = db.execute(
+            "SELECT resolved_at FROM fno_exit_recoveries WHERE position_id=?", (pid,)
+        ).fetchone()[0]
+    recovered_at = datetime.fromisoformat(stamp)
+    # Wall-clock reads can be equal on Windows; exercise the actual boundary.
     assert not await claim_exit_intent(
-        fno_db, pid, "FNO_LIVE", evaluation_started_at=stale_tick,
+        fno_db, pid, "FNO_LIVE", evaluation_started_at=recovered_at - timedelta(microseconds=1),
+    )
+    assert not await claim_exit_intent(
+        fno_db, pid, "FNO_LIVE", evaluation_started_at=recovered_at,
     )
     assert await claim_exit_intent(
-        fno_db, pid, "FNO_LIVE", evaluation_started_at=datetime.now(timezone.utc),
+        fno_db, pid, "FNO_LIVE", evaluation_started_at=recovered_at + timedelta(microseconds=1),
     )
 
 

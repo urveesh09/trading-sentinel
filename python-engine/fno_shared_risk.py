@@ -1135,7 +1135,7 @@ async def _occupancy_denial(
         return ""
     positions = await (await db.execute(
         "SELECT tradingsymbol, entry_premium, qty FROM fno_positions "
-        "WHERE source=? AND status='OPEN'", (source,),
+        "WHERE source=? AND status IN ('OPEN','UNRESOLVED')", (source,),
     )).fetchall()
     if len(positions) + len(inflight) >= occupancy.max_open:
         return "concurrency"
@@ -1342,7 +1342,8 @@ async def reconcile_shared_fno_entry_dispatch(
 
     Allowed only for ``zero_fill_verified`` (order id, terminal status, zero
     filled quantity) or ``no_order_verified`` (account id, aware check time,
-    empty matching-order list). A discovered fill is recorded instead by
+    empty matching-order list when no order id is known). Zero-fill evidence
+    must match any recorded order id. A discovered fill is recorded instead by
     inserting the position through the normal reservation-consuming writer.
     """
     if outcome not in RECONCILE_OUTCOMES or not str(operator or "").strip() \
@@ -1356,6 +1357,15 @@ async def reconcile_shared_fno_entry_dispatch(
     try:
         async with aiosqlite.connect(db_path) as db:
             await db.execute("BEGIN IMMEDIATE")
+            claim = await (await db.execute(
+                "SELECT order_id FROM fno_entry_dispatches WHERE reservation_key=? "
+                "AND state IN ('DISPATCHING', 'UNRESOLVED')", (reservation_key,),
+            )).fetchone()
+            if claim is None or (claim[0] is not None and (
+                    outcome != "zero_fill_verified"
+                    or str(evidence.get("order_id")) != str(claim[0]))):
+                await db.rollback()
+                return False
             updated = await db.execute(
                 "UPDATE fno_entry_dispatches SET state='RELEASED', outcome=?, operator=?, "
                 "order_id=COALESCE(order_id, ?), evidence_json=?, evidence_sha256=?, resolved_at=? "

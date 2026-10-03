@@ -1,5 +1,29 @@
 # Handover receipt and operator checklist
 
+## October 3 independent post-implementation review — current status
+
+- [x] Audited Dev `4481af0` against the original plan and actual contracts;
+  baseline checks: 422 Python and 58 gateway tests passed.
+- [x] Recorded small-correction scope and larger follow-ups before editing:
+  [independent review](2026-10-03-post-implementation-independent-review.md).
+- [x] Corrected known-order reconciliation, unresolved single-leg occupancy,
+  malformed order evidence, partial report aggregates/winner exclusion and
+  unsupported untouched-holdout certification in Dev.
+- [x] Final affected regression: 294 passed, two existing deprecations; atlas,
+  compile, review links and diff consistency passed.
+- [ ] Post-commit identity and documentation receipt.
+- [ ] F1-B common account cash reservation, charges/book budgets and catastrophe acceptance.
+- [ ] B0/B1 complete dependency/data/context manifests and point-in-time evidence.
+- [ ] B2/B3/B4 full historical lifecycle/portfolio scope; CNC real-data run.
+- [ ] B6 prospective freeze/reuse audit, marked equity and session uncertainty.
+- [ ] Dev release operational acceptance and GitHub promotion. Production
+  resumed after the owner's power cut; read-only declared engine identity
+  remains `044c016` and healthy. This review did not restart/edit it. B5 stays excluded.
+
+Older receipts below are historical at their commit. Checked evaluator/lifecycle
+slices do not close missing full-system requirements; older open F0 R1-R5 and
+CNC adapter tasks were subsequently implemented and independently reviewed.
+
 ## October 3 B3 Swing/EDGE evaluator receipt (Dev only)
 
 - [x] Added separate shipped-function evaluator adapters; retained the old
@@ -25,7 +49,8 @@
 ## October 3 B2 CNC receipt (Dev only)
 
 - [x] Exact CNC Connors paper lifecycle replay, with tracker and scanner
-  parity ([B2 CNC](2026-10-03-b2-penny-cnc-connors-lifecycle.md); 14 + 7 tests). B2 is now complete.
+  parity ([B2 CNC](2026-10-03-b2-penny-cnc-connors-lifecycle.md); 14 + 7 tests).
+  This completes the declared paper lifecycle slice, not historical portfolio context.
 - [ ] Predeclared CNC real-data run once Production is running again
   (read-only collector).
 - [x] B0 and B3; [ ] B4 and B6 (B5 excluded by the owner).

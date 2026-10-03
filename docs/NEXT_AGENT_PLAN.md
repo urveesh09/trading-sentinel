@@ -1,6 +1,27 @@
 # Trading Sentinel — next-agent execution plan
 
-## October 3 — B3 complete: shipped Swing/EDGE daily decision parity (Dev only)
+## October 3 — authoritative post-implementation review (Dev only)
+
+[Review, correction slice and follow-up acceptance plan](2026-10-03-post-implementation-independent-review.md)
+supersedes the earlier blanket B0-B6 completion claims. The small correction
+slice covers order-bound F0 reconciliation, unresolved occupancy, malformed
+order-book evidence and truthful report/holdout semantics. No migration/config
+change or Production/push/deployment action is authorized by this review.
+
+Remaining implementation order: **P1 F1-B account-wide atomic own-cash admission**
+and catastrophe acceptance; **P2 B0/B1 complete manifests and point-in-time
+evidence**; **P3 B2/B3/B4 historical lifecycle/portfolio parity**; **P4 B6
+prospective holdout and session-block uncertainty**. The linked slice defines
+files/contracts, adversarial acceptance and rollout/rollback for each.
+B5 remains excluded in the recorded current scope. CNC real-data collection
+and Dev release operational acceptance remain pending. Production resumed after
+the owner's power cut and reports the older declared engine `044c016`; this
+review did not restart it. Final affected regression: 294 passed, two existing
+deprecations; atlas/compile/diff checks passed.
+Older receipts below describe delivery at their commit, not current completion
+of the full original plan.
+
+## October 3 — B3 evaluator slice delivered: shipped Swing/EDGE daily decision parity (Dev only)
 
 **Problem.** The registered `swing_regime_daily` runner is explicitly a
 single-ticker proxy (it substitutes the tested ticker for NIFTY and supplies
@@ -34,7 +55,7 @@ does not alter archived runs. Next: B6 held-out reporting, then owner review of
 the separately listed live cross-book allocation
 decisions. GitHub push/promotion and Production read-only checks remain pending.
 
-## October 3 — B4 complete: Momentum and Range shipped-policy replays (Dev only)
+## October 3 — B4 evaluator slice delivered: Momentum and Range shipped-policy replays (Dev only)
 
 **Problem.** The existing Momentum 15-minute adapter correctly reuses the
 evaluator but models a shadow full-quantity target and has no evidence of the
@@ -69,7 +90,7 @@ manifests. Rollback removes research code only. Next B6 adds holdout/report
 requirements. B5 stays excluded by the owner; the unresolved cross-book live
 allocation decisions remain owner decisions.
 
-## October 3 — B6 complete: standard reports and held-out comparison guard (Dev only)
+## October 3 — B6 reporting slice delivered: standard reports and date comparison guard (Dev only)
 
 **Problem.** `backtest_cli report` currently only echoes a run's summary;
 `compare` checks snapshot/window equality but does not protect an untouched
@@ -81,8 +102,8 @@ reports retains policy/code/settings/data manifests,
 separate unavailable/evaluator results from cash-return results, show the
 metrics actually evidenced (gross/net/costs/exposure/turnover/distributions/
 MFE-MAE/holding/drawdown only when present), and label every unavailable field.
-adds an explicit immutable holdout declaration with no overlap and no test-window
-selection; comparisons must require identical snapshot, scope and holdout
+adds an archived holdout date declaration with no overlap; comparisons require
+identical snapshot, scope and holdout
 declaration. Bootstrap uncertainty is allowed only for actual closed-trade
 samples and must be deterministically seeded; it is never a profitability or
 deployment verdict.
@@ -92,16 +113,17 @@ docs/catalogue as needed. Reports remain read-only JSON; secrets stay excluded.
 No strategy adapter, broker, cache source, live setting or Production file is
 changed.
 
-**Acceptance completed.** Same manifests and chronology are enforced; holdout is outside
-the development window and declared before scoring; missing/invalid equity
-clocks yield `null` risk-adjusted fields; evaluator-only adapters show no
-invented P&L. Tests cover overlap/repeated-selection rejection, incompatible
-comparison, deterministic uncertainty and unavailable metrics.
+**Acceptance completed for this slice.** Snapshot/window/scope/date-declaration
+compatibility and non-overlap are enforced; missing/invalid equity clocks yield
+`null` risk-adjusted fields. Tests cover overlap, incompatible comparison,
+deterministic IID uncertainty and unavailable metrics. They do not establish
+prospective policy freezing or reject repeated selection/prior holdout use.
+New declarations explicitly say `DECLARED_UNVERIFIED`.
 
 **Rollout/rollback/remaining work.** Dev-only generated reports; rollback
-removes report helpers without deleting archived reports. After B6 the B0–B6
-implementation set is complete subject to real-data availability and owner
-review. B5 remains excluded; Production recovery/read-only checks, GitHub push
+removes report helpers without deleting archived reports. The original B0-B6
+plan remains incomplete as listed in the authoritative review above.
+B5 remains excluded; Production recovery/read-only checks, GitHub push
 and promotion remain separate authorized steps.
 
 ## October 3 — B0/B2 complete: exact classic Penny CNC Connors paper lifecycle (Dev only)
@@ -125,8 +147,9 @@ Runtime findings, not changed:
 
 **Real-data run pending:** Production is stopped.
 
-The B0–B6 implementation set is complete in Dev. B5 is excluded at the owner's
-direction; real-data availability, owner review and promotion are separate.
+The CNC paper lifecycle slice is delivered under declared assumptions. The
+original full-system plan is incomplete; see the authoritative review above.
+B5 is excluded in the current recorded scope; promotion is separate.
 
 ## October 3 — F1-A owner rule "no extra margin" enforced at both broker boundaries (Dev only)
 

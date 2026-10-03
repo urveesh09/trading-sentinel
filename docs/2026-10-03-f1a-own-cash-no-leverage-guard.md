@@ -1,5 +1,14 @@
 # F1-A — owner rule "no extra margin": every live entry fully paid from own cash (October 3, 2026)
 
+**Independent review limitation:** this slice checks each entry's notional
+against a broker snapshot. It has no common durable account reservation across
+Python and gateway, so simultaneous entries can pass against the same cash.
+It does not yet establish the owner's account-wide rule. See
+[F1-B acceptance plan](2026-10-03-post-implementation-independent-review.md)
+for atomic commitments, charges/contingency, book budgets and catastrophe tests.
+Malformed Python order-book payloads now remain unavailable rather than empty.
+The audit below describes the pre-F1-A baseline; historical findings are preserved.
+
 ## Owner definition (verbatim intent, October 3)
 
 > "The amount I invest is only what is mine and that amount — not like other

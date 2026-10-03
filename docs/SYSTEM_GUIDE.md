@@ -1,12 +1,39 @@
 # Trading Sentinel — system guide and engineering handover
 
-## October 3 — B6 standard reporting and untouched holdout declaration (Dev only)
+## October 3 — independent review and bounded corrections (Dev only)
+
+Current acceptance and remaining work are in the
+[post-implementation review](2026-10-03-post-implementation-independent-review.md).
+F0 R1-R5 source changes are present. Operator zero-fill reconciliation now must
+match the claim's known order; unresolved single-leg positions continue to occupy
+concurrency, no-pyramid and premium limits. Malformed/missing order-book evidence
+is unavailable, so broker entry/retry checks cannot treat it as an empty book.
+No schema, configuration or strategy-threshold change is involved.
+
+The original plan remains incomplete: F1 account-wide cash reservations and
+catastrophe acceptance; B0/B1 complete source/point-in-time manifests; B2 full
+historical portfolio context; B3/B4 lifecycle/portfolio parity; and B6 prospective
+holdout and session uncertainty. B5 stays excluded in the current recorded plan.
+Production was stopped initially, then resumed after the owner's power cut.
+Read-only identity reports declared engine `044c016` (healthy), matching the
+Production checkout; this review did not restart/edit/promote it. Baseline
+verification: 422 Python/58 gateway tests. Final affected regression: 294
+passed, two existing deprecations; atlas, compile and diff checks passed.
+No Dev runtime acceptance, push or deployment occurred.
+
+## October 3 — B6 standard reporting and date declaration (Dev only)
 
 `backtest_cli report` now emits evidence-only standard metrics and leaves
 missing fields/risk-adjusted values null. `run --holdout-from/--holdout-to`
-records a future non-overlapping holdout declaration; `compare` requires the
+records a non-overlapping date declaration; `compare` requires the
 same snapshot/window/scope/holdout. Trade-sample bootstrap intervals are
-deterministic and explicitly not profitability evidence. Focused B6 tests: 37
+deterministic and explicitly not profitability evidence. New declarations are
+`DECLARED_UNVERIFIED`, with `untouched_verified=false`: date ordering cannot
+prove predeclaration or absence of prior use. Reports expose closed-field
+coverage and leave partial/absent aggregates null; winner exclusion subtracts
+only positive winners. Existing archived reports are preserved; `report`
+clarifies legacy DECLARED_UNTOUCHED labels and includes their archived status.
+Original focused B6 tests: 37
 passed, one existing httpx deprecation warning. Dev only, not pushed/deployed.
 Source commit `60bd989`; no configuration or migration impact. See
 [B6 slice](2026-10-03-b6-standard-reports-holdouts.md).
@@ -66,11 +93,16 @@ deployed. Source commit `e349b0b`; no configuration or migration impact. See
 
 ## October 3 — F1-A own-cash (no leverage) entry guard (Dev only)
 
-Every live BUY entry must now be fully paid from the owner's own
-uncommitted cash ([F1-A](2026-10-03-f1a-own-cash-no-leverage-guard.md)):
+Every live BUY entry now checks its notional against a snapshot of the owner's
+own uncommitted cash ([F1-A](2026-10-03-f1a-own-cash-no-leverage-guard.md)):
 
 > broker `equity.available.cash` (never collateral, adhoc margin or leverage)
 > − open long position cost − pending BUY orders − today's realised loss
+
+This is an individual preflight, without a common atomic Python/gateway cash
+reservation or charge/contingency coverage. Concurrent entries can both use
+the same snapshot; F1-B in the independent review is required before accepting
+the owner's no-leverage rule as an account-wide invariant.
 
 - **Gateway.** `node-gateway` `preflightEntryMargin` enforces it for
   Momentum/Swing EXEC, refusing with `OWN_CASH_INSUFFICIENT`.

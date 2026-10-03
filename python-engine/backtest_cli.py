@@ -256,13 +256,13 @@ def compare(args) -> dict:
 
 
 def report(args) -> dict:
-    from backtest_reporting import standard_metrics
+    from backtest_reporting import report_holdout, standard_metrics
     data = _load_report(args.report)
     return {"strategy_id": data["strategy_id"], "scope": data["scope"], "state": data["state"],
             "window": [data["request"]["from"], data["request"]["to"]],
             "metrics": data.get("metrics"), "warnings": data.get("warnings"),
             "git_commit": data["policy"]["git_commit"], "git_dirty": data["policy"]["git_dirty"],
-            "snapshot": data["snapshot"]["rows_sha256"], "holdout": data.get("holdout"),
+            "snapshot": data["snapshot"]["rows_sha256"], "holdout": report_holdout(data.get("holdout")),
             "standard_metrics": standard_metrics(data)}
 
 

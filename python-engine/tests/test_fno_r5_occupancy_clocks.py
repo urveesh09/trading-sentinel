@@ -67,6 +67,20 @@ async def _reservation(db_path, key):
 # ---- single-leg limits count in-flight claims --------------------------------------
 
 @pytest.mark.asyncio
+@pytest.mark.parametrize("limits,symbol,premium,reason", [
+    ({"max_open": 1}, "NIFTYB", 1_000.0, "concurrency"),
+    ({"max_open": 5}, "NIFTYA", 1_000.0, "already_holding_this_contract"),
+    ({"max_open": 5, "max_open_premium_rs": 8_000.0}, "NIFTYB", 501.0, "open_premium_cap"),
+])
+async def test_unresolved_single_leg_positions_keep_occupying(db_path, limits, symbol, premium, reason):
+    await _ready(db_path)
+    await _open_position(db_path, status="UNRESOLVED")
+    denied = await _claim(db_path, "new", _occ(symbol, premium=premium, **limits))
+    assert not denied.granted and denied.reason == reason
+    assert await _reservation(db_path, "new") == (
+        "RELEASED", f"occupancy_denied_before_dispatch:{reason}")
+
+@pytest.mark.asyncio
 async def test_concurrency_counts_positions_and_in_flight_claims(db_path):
     await _ready(db_path)
     await _open_position(db_path)

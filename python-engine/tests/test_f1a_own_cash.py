@@ -7,7 +7,7 @@ import pytest
 from kite_client import KiteClient, own_uncommitted_cash
 
 
-def _client(monkeypatch, *, cash=20_000.0, realised=0.0, net=None, orders=None, fail=None):
+def _client(monkeypatch, *, cash=20_000.0, realised=0.0, net=None, orders=None, fail=None, order_response=None):
     import kite_client
     verdict = type("Verdict", (), {"allowed": True, "reason": ""})()
     monkeypatch.setattr(kite_client, "is_owner_entry_halted", lambda channel: verdict)
@@ -25,6 +25,8 @@ def _client(monkeypatch, *, cash=20_000.0, realised=0.0, net=None, orders=None, 
         if path == "/portfolio/positions":
             return httpx.Response(200, json={"data": {"net": net or [], "day": []}})
         if path == "/orders" and request.method == "GET":
+            if order_response is not None:
+                return order_response
             return httpx.Response(200, json={"data": orders or []})
         if path == "/orders/regular" and request.method == "POST":
             posts.append(request)
@@ -102,6 +104,27 @@ def test_entry_without_a_limit_price_is_refused(monkeypatch):
     result = asyncio.run(client.place_order(tradingsymbol="AAA", quantity=10, intent="entry",
                                             channel="penny"))
     assert result["own_cash_refused"] is True and posts == []
+
+
+@pytest.mark.parametrize("payload", [{}, {"data": None}, {"data": {}}, {"data": "bad"}, []])
+def test_malformed_order_book_does_not_prove_available_cash(monkeypatch, payload):
+    client, posts = _client(monkeypatch, order_response=httpx.Response(200, json=payload))
+    try:
+        result = _buy(client)
+        assert result["own_cash_refused"] is True and posts == []
+        assert result["message"].startswith("OWN_CASH_EVIDENCE_UNAVAILABLE")
+    finally:
+        asyncio.run(client.client.aclose())
+
+
+def test_invalid_json_order_book_does_not_prove_available_cash(monkeypatch):
+    client, posts = _client(monkeypatch, order_response=httpx.Response(200, text="not-json"))
+    try:
+        result = _buy(client)
+        assert result["own_cash_refused"] is True and posts == []
+        assert result["message"].startswith("OWN_CASH_EVIDENCE_UNAVAILABLE")
+    finally:
+        asyncio.run(client.client.aclose())
 
 
 def test_exits_are_never_checked(monkeypatch):
