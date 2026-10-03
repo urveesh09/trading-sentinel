@@ -48,6 +48,11 @@ must be finite, timezone-aware, unique per origin/generation and not after
 the observation instant (wall clock by default); day/week/month buckets are
 bounded by the policy day; settled positions must have their exact cash;
 and the consecutive-loss brake counts completed trades, not cash rows.
+
+F0-R4 re-derives every open partial's receipt from its retained broker
+packet with the same function the live verifier uses (never calling the
+broker), binds it to the position's immutable entry premium and symbol, and
+re-computes its charges from the frozen cost snapshot stored with it.
 Positive manual cash is never entry capacity; negative manual cash reduces
 equity. Unknown event types fail closed.
 """
@@ -64,6 +69,8 @@ from uuid import uuid4
 from zoneinfo import ZoneInfo
 
 import aiosqlite
+
+from fno_exit_evidence import validate_retained_exit_receipt
 
 
 _RESERVATION_DDL = """
@@ -318,11 +325,17 @@ async def _validate_open_partial_exit_evidence(
     marks = ",".join("?" for _ in positions)
     recoveries = await (await db.execute(
         "SELECT id,position_id,filled_qty,remaining_qty,entry_premium,fill_price,gross_pnl,costs,pnl,"
-        "settlement_generation,ledger_id,broker_evidence_sha256,broker_evidence_json "
+        "settlement_generation,ledger_id,broker_evidence_sha256,broker_evidence_json,"
+        "account_id,order_id,intent_created_at,terminal_status,cost_snapshot_json "
         "FROM fno_exit_recoveries WHERE source=? AND position_id IN (" + marks + ") "
         "ORDER BY position_id,id",
         (source, *positions),
     )).fetchall()
+    # [F0-R4] Entry identity/economics that every receipt must agree with.
+    identity = {int(row[0]): (row[1], row[2]) for row in await (await db.execute(
+        "SELECT id,tradingsymbol,entry_premium FROM fno_positions WHERE source=? AND id IN ("
+        + marks + ")", (source, *positions),
+    )).fetchall()}
     by_position: dict[int, list[tuple]] = {}
     for recovery in recoveries:
         position_id = _whole_non_negative(recovery[1])
@@ -355,10 +368,13 @@ async def _validate_open_partial_exit_evidence(
             return "invalid_partial_recovery_evidence"
         expected_remaining = original_qty
         expected_generation = 0
+        symbol, position_entry = identity.get(position_id, (None, None))
+        position_trade_ids: set[str] = set()
         for recovery in rows:
             (_recovery_id, _position_id, filled_raw, remaining_raw, entry_raw, fill_raw,
              gross_raw, costs_raw, pnl_raw, generation_raw, ledger_id,
-             evidence_digest, evidence_json) = recovery
+             evidence_digest, evidence_json, account_id, order_id, intent_created_at,
+             terminal_status, cost_snapshot_json) = recovery
             filled = _whole_non_negative(filled_raw)
             remaining = _whole_non_negative(remaining_raw)
             generation = _whole_non_negative(generation_raw)
@@ -366,6 +382,22 @@ async def _validate_open_partial_exit_evidence(
                     or filled + remaining != expected_remaining \
                     or not _recovery_evidence_is_intact(evidence_digest, evidence_json):
                 return "invalid_partial_recovery_evidence"
+            # F0-R4: re-derive the receipt from its retained broker packet and
+            # bind it to the position's entry economics and frozen charges.
+            reason, trade_ids = validate_retained_exit_receipt(
+                {"broker_evidence_json": evidence_json, "broker_evidence_sha256": evidence_digest,
+                 "account_id": account_id, "order_id": order_id,
+                 "intent_created_at": intent_created_at, "terminal_status": terminal_status,
+                 "filled_qty": filled, "remaining_qty": remaining, "entry_premium": entry_raw,
+                 "fill_price": fill_raw, "costs": costs_raw,
+                 "cost_snapshot_json": cost_snapshot_json},
+                source=source, tradingsymbol=str(symbol or ""), position_entry_premium=position_entry,
+            )
+            if reason:
+                return reason
+            if position_trade_ids & set(trade_ids):
+                return "recovery_payload_mismatch"
+            position_trade_ids |= set(trade_ids)
             if filled:
                 expected_generation += 1
                 entry = _finite_number(entry_raw)

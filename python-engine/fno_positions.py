@@ -151,6 +151,22 @@ END
 """
 
 
+# [F0-R4 2026-10-03] Entry identity and economics bind every later recovery
+# receipt; no writer changes them once populated.
+_IDENTITY_IMMUTABLE_DDL = """
+CREATE TRIGGER IF NOT EXISTS fno_positions_identity_immutable
+BEFORE UPDATE OF entry_premium, tradingsymbol, source
+ON fno_positions
+FOR EACH ROW WHEN
+    (OLD.entry_premium IS NOT NULL AND NEW.entry_premium IS NOT OLD.entry_premium)
+    OR (OLD.tradingsymbol IS NOT NULL AND NEW.tradingsymbol IS NOT OLD.tradingsymbol)
+    OR NEW.source IS NOT OLD.source
+BEGIN
+    SELECT RAISE(ABORT, 'fno entry identity is immutable');
+END
+"""
+
+
 # [F0-R1 2026-10-03] The fee reserve frozen at entry is part of the shared
 # worst-case cash exposure until the terminal close; it may be written once.
 _FEE_RESERVE_IMMUTABLE_DDL = """
@@ -300,16 +316,19 @@ async def init_fno_positions_db(db_path: str) -> None:
             ledger_id INTEGER, resolved_at TEXT NOT NULL,
             UNIQUE(position_id, intent_created_at), UNIQUE(source, order_id)
         )""")
-        for column in ("entry_premium", "gross_pnl", "costs", "pnl"):
+        for column, datatype in (("entry_premium", "REAL"), ("gross_pnl", "REAL"),
+                                 ("costs", "REAL"), ("pnl", "REAL"),
+                                 ("cost_snapshot_json", "TEXT")):
             try:
                 await db.execute(
-                    f"ALTER TABLE fno_exit_recoveries ADD COLUMN {column} REAL"
+                    f"ALTER TABLE fno_exit_recoveries ADD COLUMN {column} {datatype}"
                 )
             except aiosqlite.OperationalError as exc:
                 if "duplicate column name" not in str(exc).lower():
                     raise
         await db.execute(_ENTRY_EVIDENCE_IMMUTABLE_DDL)
         await db.execute(_FEE_RESERVE_IMMUTABLE_DDL)
+        await db.execute(_IDENTITY_IMMUTABLE_DDL)
         await db.execute(_RECOVERY_EVIDENCE_UPDATE_IMMUTABLE_DDL)
         await db.execute(_RECOVERY_EVIDENCE_DELETE_IMMUTABLE_DDL)
         await db.commit()

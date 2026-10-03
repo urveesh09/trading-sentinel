@@ -1,5 +1,24 @@
 # Trading Sentinel — next-agent execution plan
 
+## October 3 — F0-R4 implemented in Dev (broker payload binding)
+
+[R4 slice and verification](2026-10-03-fno-f0-r4-broker-payload-binding.md).
+- **Shared check.** `fno_exit_evidence.derive_exit_facts` is now the single
+  interpretation of an exit packet. The live verifier and the shared-risk
+  reader both use it; the reader never calls the broker.
+- **Binding.** Every open partial's receipt must match its retained packet:
+  account, order, symbol, tag, status, quantities and weighted price. It
+  must also match the position's immutable entry premium, and recompute its
+  charges from the cost snapshot frozen at write time.
+- **Fail closed.** Empty or forged payloads, consistent wrong prices, wrong
+  costs and missing provenance all deny entry.
+- **Proof.** All 15 corruption tests fail on the pre-R4 reader and pass on
+  R4.
+- **Tests.** 18 new; 781 regression passed, plus the known unrelated
+  mark-to-market failure.
+
+Next: **R5**. Dev only, not pushed or deployed.
+
 ## October 3 — F0-R3 implemented in Dev (canonical cash, clock, completed trades)
 
 [R3 slice and verification](2026-10-03-fno-f0-r3-cash-clock-completion.md).

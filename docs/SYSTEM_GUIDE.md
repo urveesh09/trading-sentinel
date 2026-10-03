@@ -1,5 +1,27 @@
 # Trading Sentinel — system guide and engineering handover
 
+## October 3 — F0-R4 broker payload and entry/cost binding (Dev only)
+
+`fno_exit_evidence.py` holds the one pure interpretation of a broker exit
+packet (`derive_exit_facts`), used by the live recovery verifier and by the
+shared F&O risk reader ([R4](2026-10-03-fno-f0-r4-broker-payload-binding.md)).
+
+**What the reader binds**
+- Each recovery receipt on an open position is re-derived from its stored
+  packet: account, order, symbol, tag, terminal status, filled/remaining
+  quantities, unique trade ids and weighted price.
+- The receipt's entry premium must equal the position's. A trigger makes the
+  position's `entry_premium`, `tradingsymbol` and `source` immutable.
+- Charges are recomputed from the cost schedule snapshot that
+  `resolve_exit_intent` now stores (`cost_snapshot_json`).
+
+**Fail-closed reasons:** `recovery_payload_mismatch`,
+`recovery_entry_economics_mismatch`, `recovery_cost_provenance_unavailable`
+and `recovery_cost_mismatch`.
+
+**Limitation.** A matching digest is local integrity, not broker
+authenticity.
+
 ## October 3 — F0-R3 canonical F&O cash, observation clock and completed trades (Dev only)
 
 The shared F&O view and policy now read one validated ledger ([R3](2026-10-03-fno-f0-r3-cash-clock-completion.md)).

@@ -558,6 +558,14 @@ Top-level declarations: `FnoExecutor` (line 45)
 
 Engine dependencies: `config`, `kite_client`
 
+## `python-engine/fno_exit_evidence.py`
+
+[F0-R4 2026-10-03] One pure interpretation of a broker exit packet. ``verify_broker_exit`` (live, operator-authorised recovery) and the shared F&O risk reader (which must never call the broker) both derive the exit's facts from the same order/trades/net-position packet through ``derive_exit_facts``. The reader additionally binds the retained packet to its immutable receipt, the position's entry economics and the frozen cost schedule with ``validate_retained_exit_receipt``. A matching digest proves only that the stored packet was not changed apart from its digest; it is not broker authenticity. These checks remove the empty-payload and inconsistent-edit paths, not a determined rewrite of rece
+
+Top-level declarations: `RecoveryConflict` (line 33), `_positive_int` (line 37), `_price` (line 43), `broker_time` (line 53), `derive_exit_facts` (line 63), `encode_evidence` (line 142), `valid_cost_snapshot` (line 150), `_aware` (line 165), `validate_retained_exit_receipt` (line 173)
+
+Engine dependencies: `fno_costs`
+
 ## `python-engine/fno_exit_experiment.py`
 
 Frozen, read-only paired experiments for single-leg F&O exits (S6b). The baseline replays the *live* ladder (``fno_exit_rules.evaluate_single_leg_exit``) over paired futures/option observations, settling exactly as the paper path does: fill at the exit basis (best bid, else LTP), live option charges and live R (net / entry premium x FNO_STOP_PREMIUM_PCT x quantity). One frozen candidate is compared on the identical path. A read-only adapter builds packets from the research quote archive. Inert research: no database writes, broker, HTTP, scheduler, order or message dependency and no runtime caller. Equity momentum studies and defined-risk spreads are separate (different R denominators). Quali
@@ -572,9 +580,9 @@ Related tests: `python-engine/tests/test_fno_exit_experiment.py`
 
 Evidence-backed, operator-authorized reconciliation of one F&O exit intent. Broker order/trade/position reads are deliberately required on every resolve. The broker's daily order book cannot prove an older unknown dispatch; those intents remain blocked for statement-level manual reconciliation.
 
-Top-level declarations: `RecoveryConflict` (line 26), `pending_exit_intents` (line 30), `_positive_int` (line 54), `_price` (line 60), `_broker_time` (line 70), `verify_broker_exit` (line 80), `resolve_exit_intent` (line 191)
+Top-level declarations: `pending_exit_intents` (line 31), `verify_broker_exit` (line 55), `resolve_exit_intent` (line 119)
 
-Engine dependencies: `fno_costs`, `fno_positions`, `performance`
+Engine dependencies: `cost_schedules`, `fno_costs`, `fno_exit_evidence`, `fno_positions`, `performance`
 
 Related tests: `python-engine/tests/test_fno_exit_recovery.py`, `python-engine/tests/test_fno_exit_recovery_boundary.py`
 
@@ -644,7 +652,7 @@ Related tests: `python-engine/tests/test_fno_orchestrator.py`
 
 [FNO-POSITIONS 2026-07-10] Position store for the F&O subsystem. Options positions don't fit the equity `positions` table (premium vs price, lots vs shares, underlying-level stops next to premium backstops), so they get their own table. Pool accounting still flows into the shared bankroll_ledger via performance.record_trade_close(source=FNO_PAPER/ FNO_LIVE) at close time -- purely additive next to the existing source tags (spec §10.3). All dates/times stored in IST (the exchange's clock), ISO format. Kill switches and day-queries key off entry_date / exit_date, so the module's "day" can never drift against the trading session the way UTC dates do. Rule 57: every reader preflights the table a
 
-Top-level declarations: `FnoPosition` (line 189), `_row_to_position` (line 232), `init_fno_positions_db` (line 236), `_table_exists` (line 318), `_with_entry_baselines` (line 325), `insert_position` (line 345), `insert_position_with_risk_reservation` (line 360), `open_positions` (line 392), `open_premium_committed` (line 406), `trades_today` (line 420), `already_entered_bar` (line 432), `update_trail` (line 444), `close_position` (line 458), `exit_execution_receipt` (line 490), `claim_exit_intent` (line 509), `record_exit_execution_receipt` (line 535), `SettlementError` (line 646), `PositionNotOpen` (line 650), `SettlementConflict` (line 660), `settle_position_close` (line 685), `settle_position_close_idempotent` (line 916), `closed_today` (line 969)
+Top-level declarations: `FnoPosition` (line 205), `_row_to_position` (line 248), `init_fno_positions_db` (line 252), `_table_exists` (line 337), `_with_entry_baselines` (line 344), `insert_position` (line 364), `insert_position_with_risk_reservation` (line 379), `open_positions` (line 411), `open_premium_committed` (line 425), `trades_today` (line 439), `already_entered_bar` (line 451), `update_trail` (line 463), `close_position` (line 477), `exit_execution_receipt` (line 509), `claim_exit_intent` (line 528), `record_exit_execution_receipt` (line 554), `SettlementError` (line 665), `PositionNotOpen` (line 669), `SettlementConflict` (line 679), `settle_position_close` (line 704), `settle_position_close_idempotent` (line 935), `closed_today` (line 988)
 
 Engine dependencies: `fno_costs`, `fno_shared_risk`, `performance`
 
@@ -676,9 +684,9 @@ Declared tables: `fno_shadow_evaluations`
 
 Shared, fail-closed F&O paper-risk evidence and reservations. This module is intentionally the only place that may combine the directional ``fno_positions`` and defined-risk ``fno_dr_positions`` books for an F&O admission decision. The books retain their own lifecycle/settlement writers; this module does not invent a fill, close a position, or release exposure on a timer. In particular, an ``UNRESOLVED`` structure and an interrupted entry reservation remain unavailable capital until an explicit, durable resolution. F0-A/B provide the typed snapshot and atomic reservation primitive; the paper position writers consume the reservation with their position insert. F0-C adds the common entry-polic
 
-Top-level declarations: `SharedFnoRiskPolicy` (line 137), `SharedFnoEntryPolicyDecision` (line 154), `SharedFnoRiskView` (line 176), `SharedFnoAdmission` (line 208), `SharedFnoDispatchClaim` (line 221), `_finite_non_negative` (line 230), `_unavailable` (line 238), `init_shared_fno_risk_db` (line 255), `_table_exists` (line 269), `_whole_non_negative` (line 276), `_finite_number` (line 283), `_recovery_evidence_is_intact` (line 291), `_validate_open_partial_exit_evidence` (line 305), `_CashEvent` (line 418), `_CashLedger` (line 428), `_observation_instant` (line 436), `_read_cash_ledger` (line 443), `_settlement_cash_gap` (line 499), `_completed_trades` (line 532), `_read_view` (line 557), `_invalid_policy` (line 673), `policy_from_settings` (line 687), `_policy_unavailable` (line 699), `_read_entry_policy` (line 709), `shared_fno_entry_policy` (line 786), `shared_fno_risk_view` (line 812), `reserve_shared_fno_risk` (line 836), `resolve_shared_fno_risk_reservation` (line 911), `consume_shared_fno_risk_reservation_in_transaction` (line 962), `_encode_evidence` (line 997), `_zero_fill_evidence_ok` (line 1011), `dispatch_release_evidence_ok` (line 1018), `_reconcile_evidence_ok` (line 1032), `claim_shared_fno_entry_dispatch` (line 1048), `resolve_shared_fno_entry_dispatch` (line 1133), `reconcile_shared_fno_entry_dispatch` (line 1191)
+Top-level declarations: `SharedFnoRiskPolicy` (line 144), `SharedFnoEntryPolicyDecision` (line 161), `SharedFnoRiskView` (line 183), `SharedFnoAdmission` (line 215), `SharedFnoDispatchClaim` (line 228), `_finite_non_negative` (line 237), `_unavailable` (line 245), `init_shared_fno_risk_db` (line 262), `_table_exists` (line 276), `_whole_non_negative` (line 283), `_finite_number` (line 290), `_recovery_evidence_is_intact` (line 298), `_validate_open_partial_exit_evidence` (line 312), `_CashEvent` (line 450), `_CashLedger` (line 460), `_observation_instant` (line 468), `_read_cash_ledger` (line 475), `_settlement_cash_gap` (line 531), `_completed_trades` (line 564), `_read_view` (line 589), `_invalid_policy` (line 705), `policy_from_settings` (line 719), `_policy_unavailable` (line 731), `_read_entry_policy` (line 741), `shared_fno_entry_policy` (line 818), `shared_fno_risk_view` (line 844), `reserve_shared_fno_risk` (line 868), `resolve_shared_fno_risk_reservation` (line 943), `consume_shared_fno_risk_reservation_in_transaction` (line 994), `_encode_evidence` (line 1029), `_zero_fill_evidence_ok` (line 1043), `dispatch_release_evidence_ok` (line 1050), `_reconcile_evidence_ok` (line 1064), `claim_shared_fno_entry_dispatch` (line 1080), `resolve_shared_fno_entry_dispatch` (line 1165), `reconcile_shared_fno_entry_dispatch` (line 1223)
 
-Engine dependencies: `config`
+Engine dependencies: `config`, `fno_exit_evidence`
 
 Related tests: `python-engine/tests/test_fno_shared_risk.py`
 

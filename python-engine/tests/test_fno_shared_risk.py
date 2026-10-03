@@ -23,6 +23,31 @@ SOURCE = "FNO_PAPER"
 POOL = 50_000.0
 
 
+def _partial_packet(*, filled=75, qty=150, price=90.0, symbol="NIFTY26OCT25000CE",
+                    account="account", order_id="EXIT-1"):
+    """A genuine broker exit packet as ``verify_broker_exit`` retains it (F0-R4)."""
+    import json
+    order = {"order_id": order_id, "placed_by": account, "tradingsymbol": symbol,
+             "exchange": "NFO", "product": "MIS", "transaction_type": "SELL",
+             "tag": "FNO_LIVE", "status": "CANCELLED", "quantity": qty,
+             "filled_quantity": filled, "order_timestamp": "2026-10-03 09:30:05"}
+    trades = [{"trade_id": "T1", "order_id": order_id, "tradingsymbol": symbol,
+               "exchange": "NFO", "product": "MIS", "transaction_type": "SELL",
+               "quantity": filled, "average_price": price,
+               "fill_timestamp": "2026-10-03 09:30:10"}]
+    net = [{"exchange": "NFO", "product": "MIS", "tradingsymbol": symbol,
+            "quantity": qty - filled}]
+    return json.dumps({"account_id": account, "order": order, "trades": trades,
+                       "net_position": net, "observed_at": "2026-10-03T04:01:00+00:00"},
+                      sort_keys=True, default=str, separators=(",", ":"), ensure_ascii=True)
+
+
+def _cost_snapshot_json():
+    import json
+    from cost_schedules import options_cost_snapshot
+    return json.dumps(options_cost_snapshot(), sort_keys=True, separators=(",", ":"))
+
+
 async def _ready(db_path):
     await init_ledger(db_path)
     await init_fno_positions_db(db_path)
@@ -276,7 +301,7 @@ async def test_partial_recovery_residual_requires_exact_cash_and_pro_rata_risk(d
     gross = (fill - entry) * filled
     costs = calc_fno_costs(entry, fill, filled)
     pnl = gross - costs
-    evidence = "{}"
+    evidence = _partial_packet()
     async with aiosqlite.connect(db_path) as db:
         position = await db.execute(
             "INSERT INTO fno_positions "
@@ -297,12 +322,12 @@ async def test_partial_recovery_residual_requires_exact_cash_and_pro_rata_risk(d
             "INSERT INTO fno_exit_recoveries "
             "(position_id,source,intent_created_at,order_id,operator,account_id,"
             "broker_evidence_sha256,broker_evidence_json,terminal_status,filled_qty,"
-            "remaining_qty,entry_premium,fill_price,gross_pnl,costs,pnl,settlement_generation,ledger_id,resolved_at) "
-            "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+            "remaining_qty,entry_premium,fill_price,gross_pnl,costs,pnl,settlement_generation,ledger_id,resolved_at,"
+            "cost_snapshot_json) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
             (position_id, "FNO_LIVE", "2026-10-03T04:00:00+00:00", "EXIT-1",
              "reviewer", "account", hashlib.sha256(evidence.encode()).hexdigest(), evidence,
              "CANCELLED", filled, 75, entry, fill, gross, costs, pnl, 1,
-             int(ledger.lastrowid), "2026-10-03T04:01:00+00:00"),
+             int(ledger.lastrowid), "2026-10-03T04:01:00+00:00", _cost_snapshot_json()),
         )
         await db.commit()
 
@@ -339,7 +364,7 @@ async def test_partial_recovery_cash_and_receipt_evidence_cannot_be_rewritten(db
     gross = (fill - entry) * filled
     costs = calc_fno_costs(entry, fill, filled)
     pnl = gross - costs
-    evidence = "{}"
+    evidence = _partial_packet()
     async with aiosqlite.connect(db_path) as db:
         position = await db.execute(
             "INSERT INTO fno_positions "
@@ -359,12 +384,12 @@ async def test_partial_recovery_cash_and_receipt_evidence_cannot_be_rewritten(db
             "INSERT INTO fno_exit_recoveries "
             "(position_id,source,intent_created_at,order_id,operator,account_id,"
             "broker_evidence_sha256,broker_evidence_json,terminal_status,filled_qty,"
-            "remaining_qty,entry_premium,fill_price,gross_pnl,costs,pnl,settlement_generation,ledger_id,resolved_at) "
-            "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+            "remaining_qty,entry_premium,fill_price,gross_pnl,costs,pnl,settlement_generation,ledger_id,resolved_at,"
+            "cost_snapshot_json) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
             (position_id, "FNO_LIVE", "2026-10-03T04:00:00+00:00", "EXIT-1",
              "reviewer", "account", hashlib.sha256(evidence.encode()).hexdigest(), evidence,
              "CANCELLED", filled, 75, entry, fill, gross, costs, pnl, 1,
-             int(ledger.lastrowid), "2026-10-03T04:01:00+00:00"),
+             int(ledger.lastrowid), "2026-10-03T04:01:00+00:00", _cost_snapshot_json()),
         )
         await db.commit()
     assert (await shared_fno_risk_view(db_path, "FNO_LIVE", POOL)).available

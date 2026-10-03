@@ -1,5 +1,10 @@
 # Independent F0 review and correction plan — October 3, 2026 (IST)
 
+## R4 status update (later October 3)
+
+R4 is implemented in Dev; see [the R4 slice](2026-10-03-fno-f0-r4-broker-payload-binding.md). R1–R4 are done; R5
+remains open.
+
 ## R3 status update (later October 3)
 
 R3 is implemented in Dev; see [the R3 slice](2026-10-03-fno-f0-r3-cash-clock-completion.md). R1–R3 are done; R4 and

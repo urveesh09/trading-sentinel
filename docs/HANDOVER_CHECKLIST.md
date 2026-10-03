@@ -34,7 +34,8 @@
   recovery retaining capital until verified resolution ([R2 slice](2026-10-03-fno-f0-r2-dispatch-ownership.md); 37 tests).
 - [x] F0-R3: partial cash, future-clock rejection and completed-trade loss streak
   ([R3 slice](2026-10-03-fno-f0-r3-cash-clock-completion.md); 20 tests). Run its Production pre-deployment SQL check first.
-- [ ] F0-R4: broker payload contents and immutable entry/cost evidence binding.
+- [x] F0-R4: broker payload contents and immutable entry/cost evidence binding
+  ([R4 slice](2026-10-03-fno-f0-r4-broker-payload-binding.md); 18 tests).
 - [ ] F0-R5: transactional existing caps and post-admission-wait action clocks.
 - [ ] GitHub promotion and actual paper/recovery observation; Production
   remains `044c016` and has no shared-risk module at inspection.
