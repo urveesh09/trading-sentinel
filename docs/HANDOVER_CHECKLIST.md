@@ -17,7 +17,8 @@
 - [x] F0-C shared day/week/month/drawdown (and existing consecutive-loss)
   entry decisions for both paper books: all exact F&O terminal/partial cash is
   common, invalid evidence fails closed and exits remain outside entry halts.
-  Dev-only verification: 24 warnings-fatal focused; 79 normal wider F&O tests.
+  Dev-only verification: 24 warnings-fatal focused; 79 normal wider F&O tests;
+  implementation commit `bc666fe` (local only, not pushed or deployed).
 - [ ] F0-D actual partial-settlement release and restart/race reconciliation;
   add characterization before promotion.
 - [ ] F1 owner cash-only funding semantics, broker initial/final margin and

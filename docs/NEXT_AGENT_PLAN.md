@@ -33,8 +33,8 @@ remain 6%/12%/20%, six losses and 25% drawdown—no new restriction was tuned in
 Focused `test_fno_shared_risk.py` plus `test_fno_risk_switches.py` passed 24
 warnings-fatal; F&O shared-risk/risk-switch/DR/orchestrator selection passed
 79 normally. The corresponding warnings-fatal wider run hit one documented
-Windows socket-lifecycle warning after 47 assertions. Source commit pending;
-Dev only, not pushed or deployed.
+Windows socket-lifecycle warning after 47 assertions. Implementation commit
+`bc666fe`; Dev only, not pushed or deployed.
 
 **F0-A foundation is now in Dev:** `fno_shared_risk.py` provides a fail-closed,
 source-scoped view of exact settlement cash plus single-leg/defined-risk

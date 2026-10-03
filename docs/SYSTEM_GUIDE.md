@@ -34,7 +34,8 @@ available during entry halts. Focused shared-policy/risk-switch tests passed
 warnings-fatal form has one pre-existing Windows socket-lifecycle warning, not
 an assertion failure. Actual partial-settlement release/restart-race repair and
 F1 broker cash/margin preflight remain open. Dev only: no Production database,
-configuration, broker, order or authority change.
+configuration, broker, order or authority change. Implementation commit:
+`bc666fe` (local only; not pushed or deployed).
 
 ## October 3 — baseline research is not full portfolio backtesting
 
