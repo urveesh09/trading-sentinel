@@ -1,0 +1,11 @@
+{
+  "dataset_fingerprint": null,
+  "job": "momentum-final",
+  "metrics": null,
+  "reason": "missing or legacy_unknown interval provenance in requested scope",
+  "report": "C:\\Users\\Urveesh\\Desktop\\trading-sentinel\\docs\\research\\2026-10-03-current-system\\_local\\momentum-final-report.json",
+  "report_sha256": "sha256:37cf6f7a9b1c5ac801ade3aa9a81ea5812d94cc34dd1255f96bdb5aa5538731d",
+  "result_status": null,
+  "scope": "EVALUATOR",
+  "state": "UNAVAILABLE"
+}

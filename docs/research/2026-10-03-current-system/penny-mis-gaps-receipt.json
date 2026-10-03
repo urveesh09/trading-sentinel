@@ -1,0 +1,57 @@
+{
+  "dataset_fingerprint": "sha256:7d79776bec9fa80da632e10a54310ea05b5763f29a962801c32afd2487b5da8a",
+  "job": "penny-mis-gaps",
+  "metrics": {
+    "adverse_fill_bound_net": -11.5893,
+    "avg_r": 1.871715,
+    "coverage": {
+      "requested_ticker_days": 6500,
+      "status_counts": {
+        "COMPLETE": 189,
+        "PARTIAL": 1307,
+        "UNAVAILABLE": 5004
+      },
+      "usable_ticker_days": 1496
+    },
+    "funnel": {
+      "accepted_signals": 17,
+      "admission_outcomes": {
+        "FILLED": 14,
+        "OCCUPIED_SAME_TICKER": 2,
+        "STOP_ALREADY_BREACHED": 1
+      },
+      "evaluations": 430726,
+      "reject_codes": {
+        "BREAKOUT_NOT_CONFIRMED": 94090,
+        "CIRCUIT_BLOCKED": 3616,
+        "INSUFFICIENT_INTRADAY_BARS": 1,
+        "NO_PRIOR_BARS": 1356,
+        "NO_QUOTE_EVIDENCE": 453,
+        "RSI_OVERBOUGHT": 179,
+        "TIME_WINDOW": 133188,
+        "VOLUME_BELOW_PACE": 197826
+      }
+    },
+    "max_drawdown": 37.1429,
+    "max_drawdown_pct": null,
+    "net_excluding_best_winner": 0.2851,
+    "net_pnl": 54.808,
+    "net_return_pct": null,
+    "oos": {
+      "available": false,
+      "reason": "single retrospective lifecycle run"
+    },
+    "profit_factor": 2.475598,
+    "scope": "LIFECYCLE",
+    "status": "PARTIAL",
+    "trade_count": 9,
+    "unresolved_trades": 5,
+    "win_rate_pct": 22.2222
+  },
+  "reason": null,
+  "report": "C:\\Users\\Urveesh\\Desktop\\trading-sentinel\\docs\\research\\2026-10-03-current-system\\_local\\penny-mis-gaps-report.json",
+  "report_sha256": "sha256:bd7416d8daf05cdd28386244fe14539d4e85b9508e293eb52f0a8bdcb63bbcf3",
+  "result_status": "PARTIAL",
+  "scope": "LIFECYCLE",
+  "state": "SUCCEEDED"
+}

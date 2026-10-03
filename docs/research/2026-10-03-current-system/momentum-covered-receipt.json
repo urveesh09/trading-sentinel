@@ -1,0 +1,94 @@
+{
+  "dataset_fingerprint": "sha256:5bc846cfee98291e2f69c0276790d0ace4c4d59e5a1fbd3e740a1a8dfe6cecb3",
+  "job": "momentum-covered",
+  "metrics": {
+    "avg_r": -0.18734069,
+    "max_drawdown_pct": null,
+    "net_pnl": -89.13418,
+    "net_return_pct": null,
+    "oos": {
+      "available": true,
+      "folds": [
+        {
+          "fold": 1,
+          "oos_expectancy": -8.298651,
+          "oos_net_pnl": -66.389205,
+          "oos_trades": 8,
+          "reason": null,
+          "scored": true,
+          "selected_variant": "MOM_BASE",
+          "test_end": "2026-08-26",
+          "test_start": "2026-08-13",
+          "train_end": "2026-08-12",
+          "train_scores": {
+            "MOM_BASE": {
+              "expectancy": -14.5993,
+              "trades": 1
+            }
+          },
+          "train_start": "2026-08-12"
+        },
+        {
+          "fold": 2,
+          "oos_expectancy": -3.07641,
+          "oos_net_pnl": -12.30564,
+          "oos_trades": 4,
+          "reason": null,
+          "scored": true,
+          "selected_variant": "MOM_BASE",
+          "test_end": "2026-09-17",
+          "test_start": "2026-08-28",
+          "train_end": "2026-08-26",
+          "train_scores": {
+            "MOM_BASE": {
+              "expectancy": -8.998723,
+              "trades": 9
+            }
+          },
+          "train_start": "2026-08-12"
+        },
+        {
+          "fold": 3,
+          "oos_expectancy": 0.831993,
+          "oos_net_pnl": 4.159965,
+          "oos_trades": 5,
+          "reason": null,
+          "scored": true,
+          "selected_variant": "MOM_BASE",
+          "test_end": "2026-09-24",
+          "test_start": "2026-09-21",
+          "train_end": "2026-09-17",
+          "train_scores": {
+            "MOM_BASE": {
+              "expectancy": -7.176473,
+              "trades": 13
+            }
+          },
+          "train_start": "2026-08-12"
+        }
+      ],
+      "required_folds": 3,
+      "scored_folds": 3,
+      "status": "scored"
+    },
+    "profit_factor": 0.526446,
+    "trade_count": 18,
+    "variant_comparison": {
+      "avg_r": -0.18734069,
+      "closed_trades": 18,
+      "entries": 18,
+      "expectancy": -4.951899,
+      "max_drawdown": 134.817755,
+      "net_pnl": -89.13418,
+      "open_trades": 0,
+      "profit_factor": 0.526446
+    },
+    "win_rate_pct": null
+  },
+  "reason": null,
+  "report": "C:\\Users\\Urveesh\\Desktop\\trading-sentinel\\docs\\research\\2026-10-03-current-system\\_local\\momentum-covered-report.json",
+  "report_sha256": "sha256:4bf8659ec9126f42ceb48701359c1b57b9dabc8f56a4f859c173d202c08b58e1",
+  "result_status": null,
+  "scope": "EVALUATOR",
+  "state": "SUCCEEDED"
+}

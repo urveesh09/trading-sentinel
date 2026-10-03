@@ -1,5 +1,30 @@
 # Handover receipt and operator checklist
 
+## October 3 current-system test receipt — latest Dev research status
+
+- [x] Frozen dates/current universes before scoring; baseline `556209c`.
+- [x] Stopped Production `044c016` stable DB/WAL/universe copied into Dev;
+  one read-only collection, raw BLOB preservation, immutable data hashes.
+- [x] All 19 module jobs finished; 11 delivered runs match current source;
+  7 original/final outcomes agree. Failed and unavailable attempts retained.
+- [x] Penny MIS/CNC/joint lifecycle, EDGE/Range evaluator and covered-window
+  Momentum diagnostic; full-quarter Momentum and Swing unavailability recorded.
+- [x] F&O full-policy/exit evidence rejects preserved; exactly linked recorded
+  cash explicitly distinguished from a new current-policy backtest.
+- [x] EDGE handle-only cleanup; 28 focused tests passed (existing HTTPX warning).
+  Source/data/report hashes, raw-to-compact counts, UTC-normalized actual cash
+  checks, compile/diff and regenerated atlas verified.
+- [x] [Comprehensive results](2026-10-03-current-system-backtest-results.md),
+  [plan](2026-10-03-current-system-backtest-plan.md), machine summary and integrity
+  receipt retained. Source commit/immediate consistency in completion receipt.
+- [ ] Owner discussion of improvements; no strategy tuning undertaken.
+- [ ] Complete historical context/coverage, Momentum real EOD/partial lifecycle,
+  Penny mixed-offset clock normalization, other-book lifecycle/portfolio fidelity,
+  exact executable F&O input/exit evidence and prospective qualification.
+- [ ] Runtime acceptance and owner-controlled GitHub promotion. This task is
+  Dev-local, no schema/configuration impact, push, orders or deployment;
+  Production engine remains stopped and was not restarted/edited.
+
 ## October 3 P1–P4 receipt (Dev only)
 
 - [x] Recursive local dependency hashes and exclusive snapshot/report publication.

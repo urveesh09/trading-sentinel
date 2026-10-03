@@ -1,0 +1,112 @@
+{
+  "atomic_with_sqlite": false,
+  "days": [
+    "2026-09-17",
+    "2026-09-21",
+    "2026-09-22",
+    "2026-09-23",
+    "2026-09-24",
+    "2026-09-25",
+    "2026-09-28",
+    "2026-09-29",
+    "2026-09-30",
+    "2026-10-01"
+  ],
+  "files": [
+    {
+      "bytes": 7620520,
+      "file": "quotes\\2026-09-17\\quotes-ea1983298a7c8a81.jsonl.gz",
+      "sha256": "sha256:f0e8cc289f8eaec260c821ce06f3d4a313e14fee68f68272c57c157353f199e5"
+    },
+    {
+      "bytes": 295,
+      "file": "quotes\\2026-09-17\\quotes-ea1983298a7c8a81.jsonl.manifest.json",
+      "sha256": "sha256:376e1bd1bb16052bfad5a5124cbbe6d037a537851a2691ea9636ccf4b7ba9575"
+    },
+    {
+      "bytes": 7687101,
+      "file": "quotes\\2026-09-21\\quotes-593c06ba8807a61d.jsonl.gz",
+      "sha256": "sha256:20084a4c9d9f8e843714b30d1e3f77cee7ea1384de26100fa8478597f784a35e"
+    },
+    {
+      "bytes": 295,
+      "file": "quotes\\2026-09-21\\quotes-593c06ba8807a61d.jsonl.manifest.json",
+      "sha256": "sha256:4dd461088a2a513cb16352fb400e461cd6503f75d3136e8b7a1f88b114297030"
+    },
+    {
+      "bytes": 7637963,
+      "file": "quotes\\2026-09-22\\quotes-e20873aac8452853.jsonl.gz",
+      "sha256": "sha256:184ac1275440b6dc9b26f32d78b8b2769210774b03afbd5cd631ed3404c5c468"
+    },
+    {
+      "bytes": 295,
+      "file": "quotes\\2026-09-22\\quotes-e20873aac8452853.jsonl.manifest.json",
+      "sha256": "sha256:bdbcc854a7925879cc9858195e09e6758d43195057b9d035251f5a7e3b742794"
+    },
+    {
+      "bytes": 7290057,
+      "file": "quotes\\2026-09-23\\quotes-33453d010f558b2e.jsonl.gz",
+      "sha256": "sha256:9b679546f258b86496acf56941d6e5f653a07977c4aa2961dc0c9554278b7273"
+    },
+    {
+      "bytes": 295,
+      "file": "quotes\\2026-09-23\\quotes-33453d010f558b2e.jsonl.manifest.json",
+      "sha256": "sha256:81a9ce7f09e393365f924fa251ec877d4abc867c68569a43eff0584360e0554a"
+    },
+    {
+      "bytes": 7712813,
+      "file": "quotes\\2026-09-24\\quotes-fd215365f22b25f6.jsonl.gz",
+      "sha256": "sha256:463adb9d646c86deb7ef2b1a8a61c1639643e31d7017780c9de592cc44fd6c84"
+    },
+    {
+      "bytes": 295,
+      "file": "quotes\\2026-09-24\\quotes-fd215365f22b25f6.jsonl.manifest.json",
+      "sha256": "sha256:f09866792b3c4cd1719defb76b122423c1f0ff2029f3e73ce3ca3bc1f09a06df"
+    },
+    {
+      "bytes": 7086962,
+      "file": "quotes\\2026-09-25\\quotes-a600182c3fdee4db.jsonl.gz",
+      "sha256": "sha256:6d71f0aeea34e8f9e5a8fd16bae09956ac52bde5c63a83ae385eef1229056abe"
+    },
+    {
+      "bytes": 295,
+      "file": "quotes\\2026-09-25\\quotes-a600182c3fdee4db.jsonl.manifest.json",
+      "sha256": "sha256:2584fda4cf611ee9e0c94f513947209e7286a7d81c6179829930f3381bdab203"
+    },
+    {
+      "bytes": 7544057,
+      "file": "quotes\\2026-09-28\\quotes-98a1fcc1bbbafcb5.jsonl.gz",
+      "sha256": "sha256:6f976374c7ac69399cb4899e55f5422dd7c162ef272188ecbb627e7aab043a0d"
+    },
+    {
+      "bytes": 295,
+      "file": "quotes\\2026-09-28\\quotes-98a1fcc1bbbafcb5.jsonl.manifest.json",
+      "sha256": "sha256:1230c263ea9ca9015e51b62c9e3edc8234cd5a5ea0333618b3672445d7cc8119"
+    },
+    {
+      "bytes": 7410352,
+      "file": "quotes\\2026-09-29\\quotes-8d6710b3850c1f92.jsonl.gz",
+      "sha256": "sha256:5331d95674217265cf04fc9b66151d14485797eb2a9a2c2d275627fed3ee6f4c"
+    },
+    {
+      "bytes": 295,
+      "file": "quotes\\2026-09-29\\quotes-8d6710b3850c1f92.jsonl.manifest.json",
+      "sha256": "sha256:7676d16801a6cdd798485c5a6686801ade137459ad7c4270f6e68b3417869b2d"
+    },
+    {
+      "bytes": 7753966,
+      "file": "quotes\\2026-09-30\\quotes-13a652f9a8ed41ec.jsonl.gz",
+      "sha256": "sha256:0d8a1e0a5266fce90d93cf396d6a8001d61df127a2c84f3eb3e91b42ccaf22c8"
+    },
+    {
+      "bytes": 295,
+      "file": "quotes\\2026-09-30\\quotes-13a652f9a8ed41ec.jsonl.manifest.json",
+      "sha256": "sha256:657e6903cb943f35b0d5111075c57eea27276e9f3a6301f5ce404465965b8afa"
+    },
+    {
+      "bytes": 75395186,
+      "file": "quotes\\2026-10-01\\quotes.jsonl.open",
+      "sha256": "sha256:13481ede467f4683398e8c71007569b22f799947d9be0c83ef62d63bfe358572"
+    }
+  ]
+}

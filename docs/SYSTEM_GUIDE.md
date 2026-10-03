@@ -1,5 +1,41 @@
 # Trading Sentinel — system guide and engineering handover
 
+## October 3 — current-system real-data test receipt (Dev only)
+
+[Current-system results](2026-10-03-current-system-backtest-results.md) and
+[frozen execution plan](2026-10-03-current-system-backtest-plan.md) are the latest
+research receipt. Current Dev `556209c` was exercised on retained Production
+history: F&O September 17–October 1; stocks Q3. The only engine correction is
+explicit EDGE SQLite handle closure, with return/exception regressions and the
+first failed replay preserved. No numeric strategy/configuration/schema change.
+
+Penny MIS's complete-session replay closes one trade (+₹37.43) on only 189 of
+6,500 requested stock-days. Its gap sensitivity retains unresolved positions;
+the joint ₹2,000 cash ledger admits seven, settles three and locks ₹1,961.56 in
+four unresolved entries. Production records 84 accepted MIS signal observations
+and 27 later-audited fill events; these are not quarter profitability evidence.
+CNC has zero entries on its evidenced subset; EDGE has 1,242 candidate
+appearances/168 selections; Range 1,095 ENTER verdicts. Swing lacks aligned
+index warm-up. Momentum's quarter is unavailable; its Aug 11–Sep 30 diagnostic
+is −₹89.13 on 18 virtual closes, 16 using later-day fallback exits because EOD
+bars are absent. This cannot establish live MIS performance.
+
+F&O current-policy/exit replay remains unavailable or insufficient. Retained
+paper cash (+₹10,755.67 single-leg/+₹3,187.60 spreads) is operational history,
+not a new policy backtest. Full historical context/lifecycle/portfolio fidelity,
+complete executable F&O evidence and prospective qualification remain open.
+The partial Penny ledger also needs UTC clock normalization before broader
+parity claims; independently normalizing these actual streams leaves all cash
+metrics unchanged. See results for explicit limitations and discussion order.
+
+Verification: 28 focused tests passed (one existing HTTPX deprecation), raw
+report/data/source integrity and unchanged repeat metrics checked; compilation,
+diff and regenerated atlas checked. Large evidence stays locally retained under
+the dated ignored `_local/`; tracked receipts bind it. Production release
+`044c016` was stopped during collection/final read-only check; this task did not
+restart or edit it. Dev only, no orders, push or deployment. Source/research
+commit identity and immediate consistency checks are in the completion receipt.
+
 ## October 3 — P1/P3/P4 safety and research completion slice (Dev only)
 
 P1 adds a cross-runtime durable account-cash reservation in the shared

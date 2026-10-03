@@ -1,0 +1,646 @@
+{
+  "can_place_orders": false,
+  "engine_correction": "EDGE SQLite handle cleanup only",
+  "final_jobs": [
+    {
+      "dataset_fingerprint": "sha256:7d79776bec9fa80da632e10a54310ea05b5763f29a962801c32afd2487b5da8a",
+      "job": "penny-mis-final",
+      "metrics": {
+        "adverse_fill_bound_net": 29.604,
+        "avg_r": 12.231373,
+        "coverage": {
+          "requested_ticker_days": 6500,
+          "status_counts": {
+            "COMPLETE": 189,
+            "PARTIAL": 1307,
+            "UNAVAILABLE": 5004
+          },
+          "usable_ticker_days": 189
+        },
+        "funnel": {
+          "accepted_signals": 1,
+          "admission_outcomes": {
+            "FILLED": 1
+          },
+          "evaluations": 70875,
+          "reject_codes": {
+            "BREAKOUT_NOT_CONFIRMED": 16340,
+            "CIRCUIT_BLOCKED": 659,
+            "NO_PRIOR_BARS": 189,
+            "RSI_OVERBOUGHT": 47,
+            "TIME_WINDOW": 25155,
+            "VOLUME_BELOW_PACE": 28484
+          }
+        },
+        "max_drawdown": 0.0,
+        "max_drawdown_pct": null,
+        "net_excluding_best_winner": 0.0,
+        "net_pnl": 37.428,
+        "net_return_pct": null,
+        "oos": {
+          "available": false,
+          "reason": "single retrospective lifecycle run"
+        },
+        "profit_factor": null,
+        "scope": "LIFECYCLE",
+        "status": "PARTIAL",
+        "trade_count": 1,
+        "unresolved_trades": 0,
+        "win_rate_pct": 100.0
+      },
+      "reason": null,
+      "report": "C:\\Users\\Urveesh\\Desktop\\trading-sentinel\\docs\\research\\2026-10-03-current-system\\_local\\penny-mis-final-report.json",
+      "report_sha256": "sha256:4b5090ab2a23f23e06da520c2620aab73bf88def31d53b1a6bb1b1e85e9e2daf",
+      "result_status": "PARTIAL",
+      "scope": "LIFECYCLE",
+      "state": "SUCCEEDED"
+    },
+    {
+      "dataset_fingerprint": "sha256:85aa42b323207367556102958f0ef9cf751f32b1a0e33906ae793944de80951d",
+      "job": "penny-cnc-final",
+      "metrics": {
+        "avg_r": null,
+        "funnel": {
+          "NO_PARTIAL_CANDLE_EVIDENCE": 5013,
+          "admission_outcomes": {},
+          "evaluations": 1487,
+          "reject_reasons": {
+            "RSI not rising for 2 bars": 149,
+            "RSI(2) not below buy threshold": 535,
+            "below 200 SMA": 439,
+            "below 50 SMA": 261,
+            "insufficient_history": 103
+          }
+        },
+        "max_drawdown_pct": null,
+        "net_excluding_best_winner": null,
+        "net_pnl": null,
+        "net_return_pct": null,
+        "oos": {
+          "available": false,
+          "reason": "single retrospective lifecycle run"
+        },
+        "profit_factor": null,
+        "scope": "LIFECYCLE",
+        "status": "PARTIAL",
+        "trade_count": 0,
+        "unresolved_trades": 0,
+        "win_rate_pct": null
+      },
+      "reason": null,
+      "report": "C:\\Users\\Urveesh\\Desktop\\trading-sentinel\\docs\\research\\2026-10-03-current-system\\_local\\penny-cnc-final-report.json",
+      "report_sha256": "sha256:1c0c89a3abb2b1bdeac7a0ff4157b2042ff406084ca403bc24f8e00bd4caaf93",
+      "result_status": "PARTIAL",
+      "scope": "LIFECYCLE",
+      "state": "SUCCEEDED"
+    },
+    {
+      "dataset_fingerprint": "sha256:85aa42b323207367556102958f0ef9cf751f32b1a0e33906ae793944de80951d",
+      "job": "penny-joint-final",
+      "metrics": {
+        "avg_r": null,
+        "max_drawdown_pct": null,
+        "net_pnl": 37.428,
+        "net_return_pct": null,
+        "oos": {
+          "available": false,
+          "reason": "PORTFOLIO_PARTIAL"
+        },
+        "profit_factor": null,
+        "shared_cash": {
+          "cash_rejected": 0,
+          "final_cash": 2037.428,
+          "initial_cash": 2000.0,
+          "locked_cash": 0.0,
+          "unresolved": 0
+        },
+        "status": "PARTIAL",
+        "trade_count": 1,
+        "win_rate_pct": null
+      },
+      "reason": null,
+      "report": "C:\\Users\\Urveesh\\Desktop\\trading-sentinel\\docs\\research\\2026-10-03-current-system\\_local\\penny-joint-final-report.json",
+      "report_sha256": "sha256:1f41e455cdec76402414c502febf3c1fa7282a8afedf7d472c8592c0e455a187",
+      "result_status": "PARTIAL",
+      "scope": "PORTFOLIO_PARTIAL",
+      "state": "SUCCEEDED"
+    },
+    {
+      "dataset_fingerprint": "sha256:84aab7b36cd1c509fd2140e69b9166d9b67650cb06f51702a91b1402d9c8368b",
+      "job": "edge-retry",
+      "metrics": {
+        "avg_r": null,
+        "candidate_count": 1242,
+        "max_drawdown_pct": null,
+        "net_pnl": null,
+        "net_return_pct": null,
+        "oos": {
+          "available": false,
+          "reason": "evaluator replay has no portfolio result"
+        },
+        "profit_factor": null,
+        "scan_count": 65,
+        "scope": "EVALUATOR",
+        "selected_count": 168,
+        "trade_count": null,
+        "win_rate_pct": null
+      },
+      "reason": null,
+      "report": "C:\\Users\\Urveesh\\Desktop\\trading-sentinel\\docs\\research\\2026-10-03-current-system\\_local\\edge-retry-report.json",
+      "report_sha256": "sha256:68f05b6e3e14714883369077aea10c4cd2d54732ac4ee4bf51bd656b39536c9a",
+      "result_status": null,
+      "scope": "EVALUATOR",
+      "state": "SUCCEEDED"
+    },
+    {
+      "dataset_fingerprint": "sha256:5228c23cc20991d8c3577515b73c6f0d2900ce9699ba7001a18e8d35fb8c1c27",
+      "job": "range-final",
+      "metrics": {
+        "avg_r": null,
+        "decision_count": 32411,
+        "entry_decisions": 1095,
+        "max_drawdown_pct": null,
+        "net_pnl": null,
+        "net_return_pct": null,
+        "oos": {
+          "available": false,
+          "reason": "evaluator replay has no portfolio result"
+        },
+        "profit_factor": null,
+        "scope": "EVALUATOR",
+        "trade_count": null,
+        "verdict_reasons": {
+          "ENTER": 1095,
+          "WAIT_NO_LOWER_TOUCH": 1943,
+          "WAIT_RANGE_EXPANDING": 350,
+          "WAIT_RANGE_NOT_INTACT": 29023
+        },
+        "win_rate_pct": null
+      },
+      "reason": null,
+      "report": "C:\\Users\\Urveesh\\Desktop\\trading-sentinel\\docs\\research\\2026-10-03-current-system\\_local\\range-final-report.json",
+      "report_sha256": "sha256:6614b95d734bbfc53effec08b3859e7a260954c81072d767fb5752a8532822fc",
+      "result_status": null,
+      "scope": "EVALUATOR",
+      "state": "SUCCEEDED"
+    },
+    {
+      "dataset_fingerprint": null,
+      "job": "swing-final",
+      "metrics": null,
+      "reason": "no evaluable sessions after point-in-time warm-up",
+      "report": "C:\\Users\\Urveesh\\Desktop\\trading-sentinel\\docs\\research\\2026-10-03-current-system\\_local\\swing-final-report.json",
+      "report_sha256": "sha256:3dd6fcd1bb84d335d383f128babd74034ee015a9943998478f63e7957e63d0df",
+      "result_status": null,
+      "scope": "EVALUATOR",
+      "state": "UNAVAILABLE"
+    },
+    {
+      "dataset_fingerprint": null,
+      "job": "momentum-final",
+      "metrics": null,
+      "reason": "missing or legacy_unknown interval provenance in requested scope",
+      "report": "C:\\Users\\Urveesh\\Desktop\\trading-sentinel\\docs\\research\\2026-10-03-current-system\\_local\\momentum-final-report.json",
+      "report_sha256": "sha256:37cf6f7a9b1c5ac801ade3aa9a81ea5812d94cc34dd1255f96bdb5aa5538731d",
+      "result_status": null,
+      "scope": "EVALUATOR",
+      "state": "UNAVAILABLE"
+    },
+    {
+      "dataset_fingerprint": null,
+      "job": "fno-full-final",
+      "metrics": null,
+      "reason": "Current cache does not establish the required futures instrument/timeframe provenance.",
+      "report": "C:\\Users\\Urveesh\\Desktop\\trading-sentinel\\docs\\research\\2026-10-03-current-system\\_local\\fno-full-final-report.json",
+      "report_sha256": "sha256:10c142c4a4573434fc8fba5a2d519333dc10fe94f89a5aca64e317e8e588eed7",
+      "result_status": null,
+      "scope": "UNAVAILABLE",
+      "state": "UNAVAILABLE"
+    },
+    {
+      "dataset_fingerprint": "sha256:7d79776bec9fa80da632e10a54310ea05b5763f29a962801c32afd2487b5da8a",
+      "job": "penny-mis-gaps",
+      "metrics": {
+        "adverse_fill_bound_net": -11.5893,
+        "avg_r": 1.871715,
+        "coverage": {
+          "requested_ticker_days": 6500,
+          "status_counts": {
+            "COMPLETE": 189,
+            "PARTIAL": 1307,
+            "UNAVAILABLE": 5004
+          },
+          "usable_ticker_days": 1496
+        },
+        "funnel": {
+          "accepted_signals": 17,
+          "admission_outcomes": {
+            "FILLED": 14,
+            "OCCUPIED_SAME_TICKER": 2,
+            "STOP_ALREADY_BREACHED": 1
+          },
+          "evaluations": 430726,
+          "reject_codes": {
+            "BREAKOUT_NOT_CONFIRMED": 94090,
+            "CIRCUIT_BLOCKED": 3616,
+            "INSUFFICIENT_INTRADAY_BARS": 1,
+            "NO_PRIOR_BARS": 1356,
+            "NO_QUOTE_EVIDENCE": 453,
+            "RSI_OVERBOUGHT": 179,
+            "TIME_WINDOW": 133188,
+            "VOLUME_BELOW_PACE": 197826
+          }
+        },
+        "max_drawdown": 37.1429,
+        "max_drawdown_pct": null,
+        "net_excluding_best_winner": 0.2851,
+        "net_pnl": 54.808,
+        "net_return_pct": null,
+        "oos": {
+          "available": false,
+          "reason": "single retrospective lifecycle run"
+        },
+        "profit_factor": 2.475598,
+        "scope": "LIFECYCLE",
+        "status": "PARTIAL",
+        "trade_count": 9,
+        "unresolved_trades": 5,
+        "win_rate_pct": 22.2222
+      },
+      "reason": null,
+      "report": "C:\\Users\\Urveesh\\Desktop\\trading-sentinel\\docs\\research\\2026-10-03-current-system\\_local\\penny-mis-gaps-report.json",
+      "report_sha256": "sha256:bd7416d8daf05cdd28386244fe14539d4e85b9508e293eb52f0a8bdcb63bbcf3",
+      "result_status": "PARTIAL",
+      "scope": "LIFECYCLE",
+      "state": "SUCCEEDED"
+    },
+    {
+      "dataset_fingerprint": "sha256:85aa42b323207367556102958f0ef9cf751f32b1a0e33906ae793944de80951d",
+      "job": "penny-joint-gaps",
+      "metrics": {
+        "avg_r": null,
+        "max_drawdown_pct": null,
+        "net_pnl": 79.5913,
+        "net_return_pct": null,
+        "oos": {
+          "available": false,
+          "reason": "PORTFOLIO_PARTIAL"
+        },
+        "profit_factor": null,
+        "shared_cash": {
+          "cash_rejected": 7,
+          "final_cash": 118.0313,
+          "initial_cash": 2000.0,
+          "locked_cash": 1961.56,
+          "unresolved": 4
+        },
+        "status": "PARTIAL",
+        "trade_count": 7,
+        "win_rate_pct": null
+      },
+      "reason": null,
+      "report": "C:\\Users\\Urveesh\\Desktop\\trading-sentinel\\docs\\research\\2026-10-03-current-system\\_local\\penny-joint-gaps-report.json",
+      "report_sha256": "sha256:cb2e3fec39ff70ffdb2e2016ba4533f162fc4817ce9c1b9e71cf4e4d0616f3f1",
+      "result_status": "PARTIAL",
+      "scope": "PORTFOLIO_PARTIAL",
+      "state": "SUCCEEDED"
+    },
+    {
+      "dataset_fingerprint": "sha256:5bc846cfee98291e2f69c0276790d0ace4c4d59e5a1fbd3e740a1a8dfe6cecb3",
+      "job": "momentum-covered",
+      "metrics": {
+        "avg_r": -0.18734069,
+        "max_drawdown_pct": null,
+        "net_pnl": -89.13418,
+        "net_return_pct": null,
+        "oos": {
+          "available": true,
+          "folds": [
+            {
+              "fold": 1,
+              "oos_expectancy": -8.298651,
+              "oos_net_pnl": -66.389205,
+              "oos_trades": 8,
+              "reason": null,
+              "scored": true,
+              "selected_variant": "MOM_BASE",
+              "test_end": "2026-08-26",
+              "test_start": "2026-08-13",
+              "train_end": "2026-08-12",
+              "train_scores": {
+                "MOM_BASE": {
+                  "expectancy": -14.5993,
+                  "trades": 1
+                }
+              },
+              "train_start": "2026-08-12"
+            },
+            {
+              "fold": 2,
+              "oos_expectancy": -3.07641,
+              "oos_net_pnl": -12.30564,
+              "oos_trades": 4,
+              "reason": null,
+              "scored": true,
+              "selected_variant": "MOM_BASE",
+              "test_end": "2026-09-17",
+              "test_start": "2026-08-28",
+              "train_end": "2026-08-26",
+              "train_scores": {
+                "MOM_BASE": {
+                  "expectancy": -8.998723,
+                  "trades": 9
+                }
+              },
+              "train_start": "2026-08-12"
+            },
+            {
+              "fold": 3,
+              "oos_expectancy": 0.831993,
+              "oos_net_pnl": 4.159965,
+              "oos_trades": 5,
+              "reason": null,
+              "scored": true,
+              "selected_variant": "MOM_BASE",
+              "test_end": "2026-09-24",
+              "test_start": "2026-09-21",
+              "train_end": "2026-09-17",
+              "train_scores": {
+                "MOM_BASE": {
+                  "expectancy": -7.176473,
+                  "trades": 13
+                }
+              },
+              "train_start": "2026-08-12"
+            }
+          ],
+          "required_folds": 3,
+          "scored_folds": 3,
+          "status": "scored"
+        },
+        "profit_factor": 0.526446,
+        "trade_count": 18,
+        "variant_comparison": {
+          "avg_r": -0.18734069,
+          "closed_trades": 18,
+          "entries": 18,
+          "expectancy": -4.951899,
+          "max_drawdown": 134.817755,
+          "net_pnl": -89.13418,
+          "open_trades": 0,
+          "profit_factor": 0.526446
+        },
+        "win_rate_pct": null
+      },
+      "reason": null,
+      "report": "C:\\Users\\Urveesh\\Desktop\\trading-sentinel\\docs\\research\\2026-10-03-current-system\\_local\\momentum-covered-report.json",
+      "report_sha256": "sha256:4bf8659ec9126f42ceb48701359c1b57b9dabc8f56a4f859c173d202c08b58e1",
+      "result_status": null,
+      "scope": "EVALUATOR",
+      "state": "SUCCEEDED"
+    }
+  ],
+  "fno_exit_baseline_statuses": {
+    "INSUFFICIENT_EVIDENCE": 9
+  },
+  "fno_recorded_paper_cash_NOT_NEW_BACKTEST": {
+    "fno_dr_positions:FNO_PAPER": {
+      "breakeven": 0,
+      "count": 7,
+      "losses": 2,
+      "mean_net_rs": 455.37,
+      "net_rs": 3187.6,
+      "net_without_best_winner_rs": 1527.03,
+      "profit_factor": 3.7001202839378586,
+      "realized_cash_drawdown_rs": 850.66,
+      "win_rate": 0.7142857142857143,
+      "wins": 5
+    },
+    "fno_positions:FNO_PAPER": {
+      "breakeven": 0,
+      "count": 9,
+      "losses": 4,
+      "mean_net_rs": 1195.07,
+      "net_rs": 10755.67,
+      "net_without_best_winner_rs": 3321.13,
+      "profit_factor": 4.232931144038836,
+      "realized_cash_drawdown_rs": 2056.25,
+      "win_rate": 0.5555555555555556,
+      "wins": 5
+    }
+  },
+  "fno_window": [
+    "2026-09-17",
+    "2026-10-01"
+  ],
+  "full_system_backtest_available": false,
+  "joint_penny_sensitivity_detail": {
+    "admitted": 7,
+    "cash_rejected": 7,
+    "final_cash": 118.0313,
+    "initial_cash": 2000.0,
+    "locked_cash": 1961.56,
+    "realized_pnl": 79.5913,
+    "settled": 3,
+    "unresolved": 4
+  },
+  "limitations": [
+    "Fixed current universe, historical membership/context unavailable.",
+    "Incomplete historical coverage; no total system or quarter return.",
+    "Joint trade_count is admitted entries, not closed trades.",
+    "Momentum 16 overnight virtual fallback exits are not live MIS outcomes.",
+    "Mixed-offset ledger ordering remains a future correction; actual metrics agree under normalized UTC.",
+    "Retrospective arithmetic OOS scoring is not untouched qualification."
+  ],
+  "momentum_diagnostic_detail": {
+    "accepted_prefixes": 19,
+    "costs": 41.2056,
+    "coverage": {
+      "bars": 359105,
+      "daily_rows": 159016,
+      "interval_counts": {
+        "15minute": 359105
+      },
+      "selected_interval": "15minute",
+      "ticker_days_missing_prior_daily": 0,
+      "tickers": 499,
+      "trading_days": 33
+    },
+    "distinct_candidates": 18,
+    "evaluation_count": 359105,
+    "exit_reasons": {
+      "overnight_gap_exit": 16,
+      "stop": 1,
+      "target": 1
+    },
+    "gross_pnl": -47.92858,
+    "losses": 12,
+    "not_live_exit_parity": true,
+    "summary": {
+      "avg_r": -0.18734069,
+      "closed_trades": 18,
+      "entries": 18,
+      "expectancy": -4.951899,
+      "max_drawdown": 134.817755,
+      "net_pnl": -89.13418,
+      "open_trades": 0,
+      "profit_factor": 0.526446
+    },
+    "wins": 6
+  },
+  "operational_counts": {
+    "fno_signals": [
+      {
+        "accepted": 0,
+        "category": "ENGINE",
+        "month": null,
+        "n": 587
+      },
+      {
+        "accepted": 0,
+        "category": "FNO_PAPER",
+        "month": null,
+        "n": 10
+      },
+      {
+        "accepted": 1,
+        "category": "FNO_PAPER",
+        "month": null,
+        "n": 9
+      }
+    ],
+    "momentum_signals": [
+      {
+        "accepted": 0,
+        "category": "1.0.0",
+        "month": "2026-07",
+        "n": 172114
+      },
+      {
+        "accepted": 1,
+        "category": "1.0.0",
+        "month": "2026-07",
+        "n": 148
+      },
+      {
+        "accepted": 0,
+        "category": "1.0.0",
+        "month": "2026-08",
+        "n": 161635
+      },
+      {
+        "accepted": 1,
+        "category": "1.0.0",
+        "month": "2026-08",
+        "n": 22
+      },
+      {
+        "accepted": 0,
+        "category": "1.0.0",
+        "month": "2026-09",
+        "n": 191888
+      },
+      {
+        "accepted": 1,
+        "category": "1.0.0",
+        "month": "2026-09",
+        "n": 48
+      }
+    ],
+    "penny_signals": [
+      {
+        "accepted": 0,
+        "category": "CNC",
+        "month": "2026-07",
+        "n": 1013
+      },
+      {
+        "accepted": 0,
+        "category": "EDGE",
+        "month": "2026-07",
+        "n": 7
+      },
+      {
+        "accepted": 1,
+        "category": "EDGE",
+        "month": "2026-07",
+        "n": 2
+      },
+      {
+        "accepted": 0,
+        "category": "MIS",
+        "month": "2026-07",
+        "n": 858665
+      },
+      {
+        "accepted": 1,
+        "category": "MIS",
+        "month": "2026-07",
+        "n": 25
+      },
+      {
+        "accepted": 0,
+        "category": "CNC",
+        "month": "2026-08",
+        "n": 1217
+      },
+      {
+        "accepted": 0,
+        "category": "EDGE",
+        "month": "2026-08",
+        "n": 5
+      },
+      {
+        "accepted": 1,
+        "category": "EDGE",
+        "month": "2026-08",
+        "n": 7
+      },
+      {
+        "accepted": 0,
+        "category": "MIS",
+        "month": "2026-08",
+        "n": 540829
+      },
+      {
+        "accepted": 1,
+        "category": "MIS",
+        "month": "2026-08",
+        "n": 39
+      },
+      {
+        "accepted": 0,
+        "category": "CNC",
+        "month": "2026-09",
+        "n": 1369
+      },
+      {
+        "accepted": 0,
+        "category": "EDGE",
+        "month": "2026-09",
+        "n": 16
+      },
+      {
+        "accepted": 0,
+        "category": "MIS",
+        "month": "2026-09",
+        "n": 323836
+      },
+      {
+        "accepted": 1,
+        "category": "MIS",
+        "month": "2026-09",
+        "n": 20
+      }
+    ]
+  },
+  "production_release": "044c016",
+  "qualification": "NOT_ASSESSED",
+  "quarter": [
+    "2026-07-01",
+    "2026-09-30"
+  ],
+  "schema": "sentinel_current_system_review_summary_v1",
+  "source_baseline": "556209c",
+  "spread_unavailable_entries": 7
+}

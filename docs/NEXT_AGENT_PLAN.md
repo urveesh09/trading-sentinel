@@ -1,5 +1,37 @@
 # Trading Sentinel — next-agent execution plan
 
+## October 3 — testing finished; discuss improvements before implementing
+
+The owner's latest request is tests first, improvement discussion afterward.
+[Results](2026-10-03-current-system-backtest-results.md) and
+[test plan / remaining evidence defects](2026-10-03-current-system-backtest-plan.md)
+supersede a claim of complete multi-module profitability testing. All 19 archived
+jobs finished, including preserved unavailable/failed attempts; 11 delivered
+runs bind current source after the EDGE handle-only cleanup. No strategy tuning.
+28 focused tests passed; immutable evidence/source checks, repeat outcomes,
+compile/diff and atlas verification passed. Source/research commit and immediate
+post-commit receipt follow the established documentation ritual.
+
+The quarter is not fully covered. F&O full-policy/exit replay is unavailable;
+recorded cash is distinct. Penny has actual historical activity, but complete
+minute coverage is 189/6,500 stock-days. Its partial shared-cash sensitivity
+locks four unresolved entries and cash-rejects seven candidates. Momentum has
+16 later-day fallback closes, so its negative diagnostic cannot estimate live
+intraday profitability. Swing lacks index warm-up; EDGE/Range remain evaluators.
+
+Discuss evidence-led priorities with the owner before changing entries/exits:
+historical coverage and context; Penny unresolved exits and CNC gate overlap;
+EDGE/Range/Swing lifecycle contracts; exact Momentum partial/trail/EOD behavior;
+verified executable F&O capture and winner concentration. Normalize mixed UTC/
+IST ledger clocks and retain date-only CNC conservatism before broader portfolio
+claims; independently normalized actual streams agree on this study's metrics.
+No full-system qualification is available. P1/P2/P4 delivered source slices do
+not remove P3 historical fidelity or operational acceptance requirements.
+
+Production `044c016` is currently stopped and was only read/copied into Dev.
+No restart, Production edit, orders, push or promotion occurred. Test artifacts
+and correction are Dev-local; original large snapshots remain locally retained.
+
 ## October 3 — P1/P2/P4 delivered; P3 partial evidence boundary remains (Dev only)
 
 P2 now recursively binds local transitive source dependencies in the policy

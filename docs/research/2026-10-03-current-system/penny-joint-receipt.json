@@ -1,0 +1,31 @@
+{
+  "dataset_fingerprint": "sha256:85aa42b323207367556102958f0ef9cf751f32b1a0e33906ae793944de80951d",
+  "job": "penny-joint",
+  "metrics": {
+    "avg_r": null,
+    "max_drawdown_pct": null,
+    "net_pnl": 37.428,
+    "net_return_pct": null,
+    "oos": {
+      "available": false,
+      "reason": "PORTFOLIO_PARTIAL"
+    },
+    "profit_factor": null,
+    "shared_cash": {
+      "cash_rejected": 0,
+      "final_cash": 2037.428,
+      "initial_cash": 2000.0,
+      "locked_cash": 0.0,
+      "unresolved": 0
+    },
+    "status": "PARTIAL",
+    "trade_count": 1,
+    "win_rate_pct": null
+  },
+  "reason": null,
+  "report": "C:\\Users\\Urveesh\\Desktop\\trading-sentinel\\docs\\research\\2026-10-03-current-system\\_local\\penny-joint-report.json",
+  "report_sha256": "sha256:e7b3c6e927e5e9a785a8ce18ab3bccba62a4147100c8682efdd83811be81a3a6",
+  "result_status": "PARTIAL",
+  "scope": "PORTFOLIO_PARTIAL",
+  "state": "SUCCEEDED"
+}

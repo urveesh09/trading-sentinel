@@ -1,0 +1,41 @@
+{
+  "baseline_policy": "defined_risk_current_target_stop_flat_v1",
+  "candidate_parameters": {
+    "description": "hold a target hit; exit when the mid mark gives back a fraction of max profit from its peak",
+    "floor": "target_level",
+    "stop_and_squareoff": "unchanged_live_rules",
+    "trail_giveback_fraction_of_max_profit": 0.5
+  },
+  "candidate_policy": "defined_risk_target_hold_trail_v1",
+  "cost_multipliers": [
+    1.0,
+    1.5,
+    2.0
+  ],
+  "cost_schedule": {
+    "effective_date": "2026-04-01",
+    "market": "NSE_EQUITY_OPTIONS_PREMIUM",
+    "rates": {
+      "brokerage_flat_per_order": 20.0,
+      "exchange_pct": 0.0003553,
+      "gst_pct": 0.18,
+      "ipft_pct": 1e-09,
+      "sebi_pct": 1e-06,
+      "stamp_duty_buy_pct": 3e-05,
+      "stt_sell_pct": 0.0015
+    },
+    "schedule_version": "ZERODHA_NSE_OPTIONS_2026-04-01"
+  },
+  "experiment_id": "oct3-current-dr-exit-review",
+  "frozen_at": "2026-10-03T14:25:25.008069+00:00",
+  "holdout_rule": "only entries strictly after frozen_at are HOLDOUT",
+  "live_settings": {
+    "FNO_DR_SQUAREOFF_MIN": 910,
+    "FNO_DR_STOP_FRAC": 0.6,
+    "FNO_DR_TARGET_FRAC": 0.5
+  },
+  "max_gap_seconds": 180,
+  "reconciliation_tolerance_rs": 1.0,
+  "schema": "fno_dr_exit_experiment_manifest_v2",
+  "source_fingerprint": "sha256:4c52604616aec28181dd8b0fdd9524c1047720d934898926561f89997ee7273b"
+}

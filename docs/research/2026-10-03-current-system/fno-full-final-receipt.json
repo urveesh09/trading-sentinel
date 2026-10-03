@@ -1,0 +1,11 @@
+{
+  "dataset_fingerprint": null,
+  "job": "fno-full-final",
+  "metrics": null,
+  "reason": "Current cache does not establish the required futures instrument/timeframe provenance.",
+  "report": "C:\\Users\\Urveesh\\Desktop\\trading-sentinel\\docs\\research\\2026-10-03-current-system\\_local\\fno-full-final-report.json",
+  "report_sha256": "sha256:10c142c4a4573434fc8fba5a2d519333dc10fe94f89a5aca64e317e8e588eed7",
+  "result_status": null,
+  "scope": "UNAVAILABLE",
+  "state": "UNAVAILABLE"
+}

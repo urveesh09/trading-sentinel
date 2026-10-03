@@ -1,0 +1,32 @@
+{
+  "dataset_fingerprint": "sha256:5228c23cc20991d8c3577515b73c6f0d2900ce9699ba7001a18e8d35fb8c1c27",
+  "job": "range",
+  "metrics": {
+    "avg_r": null,
+    "decision_count": 32411,
+    "entry_decisions": 1095,
+    "max_drawdown_pct": null,
+    "net_pnl": null,
+    "net_return_pct": null,
+    "oos": {
+      "available": false,
+      "reason": "evaluator replay has no portfolio result"
+    },
+    "profit_factor": null,
+    "scope": "EVALUATOR",
+    "trade_count": null,
+    "verdict_reasons": {
+      "ENTER": 1095,
+      "WAIT_NO_LOWER_TOUCH": 1943,
+      "WAIT_RANGE_EXPANDING": 350,
+      "WAIT_RANGE_NOT_INTACT": 29023
+    },
+    "win_rate_pct": null
+  },
+  "reason": null,
+  "report": "C:\\Users\\Urveesh\\Desktop\\trading-sentinel\\docs\\research\\2026-10-03-current-system\\_local\\range-report.json",
+  "report_sha256": "sha256:17f31a8f2069ca009c81069d7e88a4f94039c6db1b0b323b3bc5ff71cc1eef8d",
+  "result_status": null,
+  "scope": "EVALUATOR",
+  "state": "SUCCEEDED"
+}

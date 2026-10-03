@@ -1,0 +1,42 @@
+{
+  "baseline_policy": "live_single_leg_exit_ladder_v1",
+  "candidate_parameters": {
+    "bank_fraction_of_lots": 0.5,
+    "description": "bank floor(lots/2) lots at the bid when the target arms the trail",
+    "fewer_than_two_lots": "identical_to_baseline"
+  },
+  "candidate_policy": "fno_partial_at_target_v1",
+  "cost_model": "fno_split_entry_once_exit_per_leg_v1",
+  "cost_multipliers": [
+    1.0,
+    1.5,
+    2.0
+  ],
+  "cost_schedule": {
+    "effective_date": "2026-04-01",
+    "market": "NSE_EQUITY_OPTIONS_PREMIUM",
+    "rates": {
+      "brokerage_flat_per_order": 20.0,
+      "exchange_pct": 0.0003553,
+      "gst_pct": 0.18,
+      "ipft_pct": 1e-09,
+      "sebi_pct": 1e-06,
+      "stamp_duty_buy_pct": 3e-05,
+      "stt_sell_pct": 0.0015
+    },
+    "schedule_version": "ZERODHA_NSE_OPTIONS_2026-04-01"
+  },
+  "experiment_id": "oct3-current-exit-review",
+  "frozen_at": "2026-10-03T14:25:25.006084+00:00",
+  "holdout_rule": "only entries strictly after frozen_at are HOLDOUT",
+  "live_settings": {
+    "FNO_HARD_FLAT_MIN": 910,
+    "FNO_STOP_PREMIUM_PCT": 0.25,
+    "FNO_TIME_STOP_MIN": 45.0,
+    "FNO_TIME_STOP_MIN_R": 0.5,
+    "FNO_TIME_STOP_RESPECTS_PREMIUM": true,
+    "FNO_TRAIL_ATR_MULT": 1.0
+  },
+  "schema": "fno_single_leg_exit_experiment_manifest_v1",
+  "source_fingerprint": "sha256:494fb223cb9536c4e2224845abf06c28e237c986af0bcb52ce68170936d68ef7"
+}

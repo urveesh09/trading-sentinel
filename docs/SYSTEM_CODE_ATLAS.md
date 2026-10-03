@@ -1526,7 +1526,7 @@ Related tests: `python-engine/tests/test_penny_edge_engine.py`
 
 [PENNY-EDGE-LIVE 2026-07-01] Live signal scanner that wires penny_edge_engine to the live ohlcv_cache and produces a list of candidate trades for the day. This is the integration layer. It: 1. Loads today's bars from cache.db 2. Computes signal features for every (date, ticker) pair 3. Filters to candidates with strength >= min_strength 4. Sorts by regime-adjusted strength 5. Outputs the top N for execution (paper or live) The actual ORDER PLACEMENT is NOT in this module. The orchestrator (a new penny_edge_orchestrator.py -- to be written) takes the candidates and decides whether to enter paper trades or live trades via the existing penny_executor. The HARD problem we don't solve here: live
 
-Top-level declarations: `scan_today` (line 46), `_rank_for_leg` (line 251), `format_positions_report` (line 274)
+Top-level declarations: `scan_today` (line 47), `_rank_for_leg` (line 250), `format_positions_report` (line 273)
 
 Engine dependencies: `event_calendar`, `penny_edge_backtest`
 

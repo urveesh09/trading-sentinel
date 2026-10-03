@@ -1,0 +1,27 @@
+{
+  "dataset_fingerprint": "sha256:84aab7b36cd1c509fd2140e69b9166d9b67650cb06f51702a91b1402d9c8368b",
+  "job": "edge-retry",
+  "metrics": {
+    "avg_r": null,
+    "candidate_count": 1242,
+    "max_drawdown_pct": null,
+    "net_pnl": null,
+    "net_return_pct": null,
+    "oos": {
+      "available": false,
+      "reason": "evaluator replay has no portfolio result"
+    },
+    "profit_factor": null,
+    "scan_count": 65,
+    "scope": "EVALUATOR",
+    "selected_count": 168,
+    "trade_count": null,
+    "win_rate_pct": null
+  },
+  "reason": null,
+  "report": "C:\\Users\\Urveesh\\Desktop\\trading-sentinel\\docs\\research\\2026-10-03-current-system\\_local\\edge-retry-report.json",
+  "report_sha256": "sha256:68f05b6e3e14714883369077aea10c4cd2d54732ac4ee4bf51bd656b39536c9a",
+  "result_status": null,
+  "scope": "EVALUATOR",
+  "state": "SUCCEEDED"
+}
