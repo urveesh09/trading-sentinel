@@ -1,5 +1,11 @@
 # Backtesting Sentinel's shipped modules and F&O safety — October 3
 
+## B2 complete (later October 3)
+
+Both halves of B2 now have exact `LIFECYCLE` replays: classic Penny MIS and
+[CNC Connors](2026-10-03-b2-penny-cnc-connors-lifecycle.md). The owner excluded B5. The order of the remaining
+work is B0, then B3, B4 and B6.
+
 ## F0 status override (later October 3)
 
 The F0 independent-review items R1–R5 are implemented in Dev (see

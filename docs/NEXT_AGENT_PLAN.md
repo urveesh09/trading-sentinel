@@ -1,5 +1,29 @@
 # Trading Sentinel — next-agent execution plan
 
+## October 3 — B2 complete: exact classic Penny CNC Connors paper lifecycle (Dev only)
+
+[B2 CNC slice](2026-10-03-b2-penny-cnc-connors-lifecycle.md).
+- **Entry.** The replay reproduces the 09:30 scan with today's in-progress
+  candle, rebuilt from minute bars, and calls the real
+  `evaluate_connors_entry` with real sizing, caps and executor checks.
+- **Exits.** It reproduces the 15:45 `update_daily_positions` tracker
+  (stop, T1 50% to breakeven, T2, 15 days), proved equal to the real
+  tracker and scanner by parity tests (14 tests).
+- **Lab and CLI.** `penny_cnc_connors_lifecycle_1d` and `--strategy cnc`.
+
+Runtime findings, not changed:
+- `evaluate_connors_exit` has no caller.
+- Live CNC rows have no exit management besides a broker SL-M.
+- The 09:30 volume gate compares about 15 minutes of volume with a daily
+  median.
+- Partial day candles are cached until replaced.
+- The entry-day stop uses the pre-entry low.
+
+**Real-data run pending:** Production is stopped.
+
+Next in the B series: **B0** (one backtest entry point and catalogue), then
+B3, B4 and B6. B5 is excluded at the owner's direction.
+
 ## October 3 — F1-A owner rule "no extra margin" enforced at both broker boundaries (Dev only)
 
 [F1-A slice](2026-10-03-f1a-own-cash-no-leverage-guard.md).

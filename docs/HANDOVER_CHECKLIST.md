@@ -1,5 +1,13 @@
 # Handover receipt and operator checklist
 
+## October 3 B2 CNC receipt (Dev only)
+
+- [x] Exact CNC Connors paper lifecycle replay, with tracker and scanner
+  parity ([B2 CNC](2026-10-03-b2-penny-cnc-connors-lifecycle.md); 14 + 7 tests). B2 is now complete.
+- [ ] Predeclared CNC real-data run once Production is running again
+  (read-only collector).
+- [ ] B0, B3, B4 and B6 (B5 excluded by the owner).
+
 ## October 3 F1-A receipt (Dev only)
 
 - [x] Owner's "no extra margin" definition recorded; read-only audit of every live entry path.

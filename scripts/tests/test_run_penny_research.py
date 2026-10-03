@@ -98,3 +98,23 @@ def test_lifecycle_replay_validates_rows_and_reports_lifecycle_scope(tmp_path):
     assert report["result"]["funnel"]["evaluations"] > 0
     assert set(report["source_sha256"]) >= {"penny_lifecycle_replay.py", "research_data_contracts.py"}
     assert report["can_place_orders"] is False and report["can_qualify"] is False
+
+
+def test_cnc_collector_reads_only_the_morning_slice_and_validates_end_to_end(tmp_path):
+    path = tmp_path / "cnc.db"
+    seed(path)
+    with sqlite3.connect(path) as db:   # add >= 250 prior daily rows for AAA (weekdays only)
+        day, added = datetime(2026, 8, 10), 0
+        while added < 260:
+            day -= timedelta(days=1)
+            if day.weekday() < 5:
+                db.execute("INSERT INTO ohlcv_cache VALUES(?,?,?,?,?,?,?)",
+                           ("AAA", day.date().isoformat(), 10, 11, 9, 10, 1000))
+                added += 1
+    snapshot = module.collect(str(path), "2026-08-11", "2026-08-11", [], 1, "cnc")
+    assert snapshot["tickers"] == ["AAA"] and snapshot["strategy"] == "cnc"
+    assert {row[2][11:16] for row in snapshot["intraday"]} <= {f"09:{m:02d}" for m in range(15, 31)}
+    report = module.replay_cnc(snapshot)
+    assert report["strategy_id"] == "penny_cnc_connors_lifecycle_1d"
+    assert report["result"]["scope"] == "LIFECYCLE" and report["can_place_orders"] is False
+    assert report["result"]["funnel"]["evaluations"] == 1

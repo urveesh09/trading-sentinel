@@ -1,5 +1,25 @@
 # Trading Sentinel — system guide and engineering handover
 
+## October 3 — B2 CNC Connors lifecycle replay (Dev only)
+
+`research_penny_cnc_lifecycle.py` replays the shipped `PENNY_PAPER` CNC book
+([B2 CNC](2026-10-03-b2-penny-cnc-connors-lifecycle.md)).
+
+**Entry (09:30)**
+- The scanner's `get_historical` fetches Kite day candles up to today, so
+  its last bar is today's in-progress candle. The replay rebuilds that
+  candle from the 09:15–09:29 minute bars.
+- The real `evaluate_connors_entry` runs with `PennyRiskEngine` sizing, CNC
+  caps (2 CNC, 5 total) and the executor drift/stop checks, and the entry
+  fills at the 09:30 LTP.
+
+**Exits (15:45)**
+- The daily tracker applies: stop (only if no target was hit that day), T2,
+  T1 (half the shares, stop to breakeven) and a 15-calendar-day time stop.
+- The trail is disabled because Connors decisions carry no ATR.
+- Costs use `engine.calc_zerodha_costs` for CNC.
+- The Connors spec's `evaluate_connors_exit` is not used at runtime.
+
 ## October 3 — F1-A own-cash (no leverage) entry guard (Dev only)
 
 Every live BUY entry must now be fully paid from the owner's own

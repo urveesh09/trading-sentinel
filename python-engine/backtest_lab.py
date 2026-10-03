@@ -838,6 +838,90 @@ class PennyMisLifecycleAdapter(BacktestAdapter):
         }, warnings)
 
 
+class PennyCncConnorsLifecycleAdapter(BacktestAdapter):
+    """[B2 2026-10-03] Exact classic Penny CNC Connors paper lifecycle."""
+    metadata = StrategyMetadata(
+        strategy_id="penny_cnc_connors_lifecycle_1d",
+        name="Penny CNC Connors (exact paper lifecycle)", version="1.0.0",
+        description=("09:30 scan with today's in-progress candle rebuilt from minute bars, real "
+                     "evaluate_connors_entry + PennyRiskEngine sizing, CNC caps and executor checks; "
+                     "exits by the 15:45 daily tracker (stop/T1 50%/T2/15-day time)."),
+        engine="research_penny_cnc_lifecycle", timeframe="1 day (+ 09:15-09:30 minutes)",
+        capabilities=("lifecycle_exits", "costs", "capacity", "coverage_contract", "gate_funnel"),
+        data_requirements=(
+            "ohlcv_cache daily history (>=250 bars, point-in-time) through the end date",
+            "intraday_cache interval='minute' bars 09:15-09:30 on each entry day",
+        ),
+        limitations=(
+            "LIFECYCLE scope: universe ranking, historical regime, MIS capacity and broker "
+            "rejections are not replayed.",
+            "Paper book only: live PENNY CNC rows have no shipped exit management.",
+            "Daily-bar exits cannot order intraday events; the tracker's own branch order is used.",
+        ),
+        default_config={"tickers": [], "regime": "PR1_CALM"},
+        default_assumptions={"entry": "0930_partial_candle_ltp_fill", "exits": "1545_daily_tracker",
+                             "costs": "engine_calc_zerodha_costs_cnc"},
+        parameter_schema={
+            "tickers": {"type": "array", "items": {"type": "string"}, "minItems": 1},
+            "regime": {"enum": ["PR1_CALM", "PR2_ELEVATED", "PR3_HOT"]},
+        },
+        scope="LIFECYCLE",
+    )
+
+    def snapshot_config(self, supplied):
+        from research_penny_cnc_lifecycle import PennyCncConfig
+        merged = super().snapshot_config(supplied)
+        tickers = _ticker_list(merged["tickers"])
+        if not tickers:
+            raise ValueError("the CNC lifecycle replay requires an explicit ticker list")
+        cfg = PennyCncConfig(tickers=tickers, regime=merged["regime"])
+        return {"tickers": list(cfg.tickers), "regime": cfg.regime}
+
+    def prepare(self, db_path, request):
+        from datetime import date as _date, timedelta as _td
+        from research_data_contracts import (
+            DatasetUnavailable, load_daily_dataset, load_intraday_dataset,
+        )
+        tickers = request.config["tickers"]
+        try:
+            intraday = load_intraday_dataset(db_path, interval="minute", start=request.start_date,
+                                             end=request.end_date, tickers=tickers)
+            daily = load_daily_dataset(db_path, tickers=tickers, before=(
+                _date.fromisoformat(request.end_date) + _td(days=1)).isoformat())
+        except DatasetUnavailable as exc:
+            raise BacktestUnavailable(str(exc)) from exc
+        if not intraday.bars:
+            raise BacktestUnavailable("no validated minute bars for the 09:30 partial candle")
+        fingerprint = "sha256:" + hashlib.sha256(
+            (intraday.manifest["dataset_sha256"] + daily.manifest["dataset_sha256"]).encode()
+        ).hexdigest()
+        return PreparedDataset(fingerprint, sum(len(b) for b in daily.bars.values()),
+                               {"intraday": intraday.manifest, "daily": daily.manifest},
+                               (intraday, daily))
+
+    def execute(self, prepared, request):
+        from research_penny_cnc_lifecycle import PennyCncConfig, run_penny_cnc_lifecycle
+        intraday, daily = prepared.payload
+        return run_penny_cnc_lifecycle(
+            intraday, daily, PennyCncConfig(tickers=tuple(request.config["tickers"]),
+                                            regime=request.config["regime"]),
+            start=request.start_date, end=request.end_date)
+
+    def normalize(self, result, request):
+        summary = result["summary"]
+        warnings = list(self.metadata.limitations) + list(result.get("warnings", []))
+        return ({
+            "trade_count": summary["closed_trades"], "net_pnl": summary["net_pnl"],
+            "net_return_pct": None, "win_rate_pct": summary["win_rate_pct"],
+            "profit_factor": summary["profit_factor"], "max_drawdown_pct": None, "avg_r": None,
+            "scope": result["scope"], "status": result["status"],
+            "unresolved_trades": summary["unresolved_trades"],
+            "net_excluding_best_winner": summary["net_excluding_best_winner"],
+            "funnel": result["funnel"],
+            "oos": {"available": False, "reason": "single retrospective lifecycle run"},
+        }, warnings)
+
+
 class Momentum15MinuteReplayAdapter(BacktestAdapter):
     metadata = StrategyMetadata(
         strategy_id="momentum_intraday_15m_replay", name="Momentum (true 15-minute replay)",
@@ -964,7 +1048,7 @@ STRATEGY_REGISTRY: dict[str, BacktestAdapter] = {
     for adapter in (
         SwingDailyAdapter(), PennyDailyProxyAdapter(),
         PennyDailyProxyWalkForwardAdapter(), PennyMinuteReplayAdapter(),
-        PennyMisLifecycleAdapter(),
+        PennyMisLifecycleAdapter(), PennyCncConnorsLifecycleAdapter(),
         Momentum15MinuteReplayAdapter(), FnoUnavailableAdapter(),
     )
 }
@@ -1072,6 +1156,7 @@ async def list_strategies(db_path: str) -> list[dict[str, Any]]:
                 )}
                 daily_count = conn.execute("SELECT count(*) FROM ohlcv_cache").fetchone()[0] if "ohlcv_cache" in tables else 0
                 if isinstance(adapter, (PennyMinuteReplayAdapter, PennyMisLifecycleAdapter,
+                                        PennyCncConnorsLifecycleAdapter,
                                         Momentum15MinuteReplayAdapter)):
                     columns = {row[1] for row in conn.execute("PRAGMA table_info(intraday_cache)")} if "intraday_cache" in tables else set()
                     interval = "15minute" if isinstance(adapter, Momentum15MinuteReplayAdapter) else "minute"
