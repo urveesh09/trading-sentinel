@@ -14,6 +14,11 @@ from either book drives day/week/month, drawdown and consecutive-loss brakes.
 Both paper admissions consult it and the reservation transaction checks it
 again before consuming capacity.  Entry halts never suppress management or
 exit/settlement work.
+
+F0-D validates an open single-leg residual after a broker-verified partial
+exit against its ordered recovery records, linked exact ledger cash, immutable
+initial quantity/loss and pro-rata remaining catastrophe loss.  A discrepancy
+does not guess a release: it makes the shared view unavailable for new entry.
 """
 from __future__ import annotations
 
@@ -152,11 +157,93 @@ async def _table_exists(db: aiosqlite.Connection, name: str) -> bool:
     return row is not None
 
 
+def _whole_non_negative(value: object) -> Optional[int]:
+    """Accept SQLite's integer quantities, never silently coerce fractions."""
+    if type(value) is not int or value < 0:
+        return None
+    return value
+
+
+async def _validate_open_partial_exit_evidence(
+    db: aiosqlite.Connection, *, source: str, open_positions: list[tuple],
+) -> str:
+    """Bind residual single-leg risk to durable partial-exit evidence.
+
+    A recovery records the broker-confirmed filled/residual quantities and its
+    exact ledger row in the same transaction as the position reduction.  Only
+    an open position with such evidence needs this validation; untouched
+    positions retain their existing structural-loss contract.  This read never
+    changes recovery state or grants capacity.
+    """
+    positions = {int(row[0]): row for row in open_positions}
+    if not positions:
+        return ""
+    marks = ",".join("?" for _ in positions)
+    recoveries = await (await db.execute(
+        "SELECT id,position_id,filled_qty,remaining_qty,settlement_generation,ledger_id "
+        "FROM fno_exit_recoveries WHERE source=? AND position_id IN (" + marks + ") "
+        "ORDER BY position_id,id",
+        (source, *positions),
+    )).fetchall()
+    by_position: dict[int, list[tuple]] = {}
+    for recovery in recoveries:
+        position_id = _whole_non_negative(recovery[1])
+        if position_id is None or position_id not in positions:
+            return "invalid_partial_recovery_evidence"
+        by_position.setdefault(position_id, []).append(recovery)
+
+    for position_id, rows in by_position.items():
+        _id, current_loss, current_qty, initial_qty, initial_loss = positions[position_id]
+        qty = _whole_non_negative(current_qty)
+        original_qty = _whole_non_negative(initial_qty)
+        original_loss = _finite_non_negative(initial_loss)
+        current = _finite_non_negative(current_loss)
+        if qty is None or qty <= 0 or original_qty is None or original_qty <= 0 \
+                or qty > original_qty or original_loss is None or current is None:
+            return "invalid_partial_recovery_evidence"
+        expected_remaining = original_qty
+        expected_generation = 0
+        for recovery in rows:
+            _recovery_id, _position_id, filled_raw, remaining_raw, generation_raw, ledger_id = recovery
+            filled = _whole_non_negative(filled_raw)
+            remaining = _whole_non_negative(remaining_raw)
+            generation = _whole_non_negative(generation_raw)
+            if filled is None or remaining is None or generation is None \
+                    or filled + remaining != expected_remaining:
+                return "invalid_partial_recovery_evidence"
+            if filled:
+                expected_generation += 1
+                if generation != expected_generation or ledger_id is None:
+                    return "invalid_partial_recovery_evidence"
+                ledger = await (await db.execute(
+                    "SELECT source,event_type,origin_ref,settlement_generation,pnl "
+                    "FROM bankroll_ledger WHERE id=?", (ledger_id,)
+                )).fetchone()
+                if (ledger is None or ledger[0] != source or ledger[1] != "TRADE_CLOSED"
+                        or ledger[2] != f"fno_position:{position_id}"
+                        or _whole_non_negative(ledger[3]) != generation
+                        or not isinstance(ledger[4], (int, float))
+                        or isinstance(ledger[4], bool)
+                        or not math.isfinite(float(ledger[4]))):
+                    return "invalid_partial_recovery_evidence"
+            elif generation != expected_generation or ledger_id is not None:
+                return "invalid_partial_recovery_evidence"
+            expected_remaining = remaining
+        expected_loss = original_loss * expected_remaining / original_qty
+        if (expected_remaining != qty or not math.isclose(
+                current, expected_loss, rel_tol=0.0, abs_tol=0.01)):
+            return "invalid_partial_recovery_evidence"
+    return ""
+
+
 async def _read_view(
     db: aiosqlite.Connection, source: str, pool_rs: float,
 ) -> SharedFnoRiskView:
     """Read one consistent view; caller owns the transaction boundary."""
-    required = ("bankroll_ledger", "fno_positions", "fno_dr_positions", "fno_risk_reservations")
+    required = (
+        "bankroll_ledger", "fno_positions", "fno_dr_positions",
+        "fno_exit_recoveries", "fno_risk_reservations",
+    )
     missing = [name for name in required if not await _table_exists(db, name)]
     if missing:
         return _unavailable(source, pool_rs, "missing_required_table:" + ",".join(missing))
@@ -180,7 +267,8 @@ async def _read_view(
         return _unavailable(source, pool_rs, "nonfinite_realised_pnl")
 
     single = await (await db.execute(
-        "SELECT max_loss_rupees FROM fno_positions "
+        "SELECT id,max_loss_rupees,qty,initial_qty,initial_max_loss_rupees "
+        "FROM fno_positions "
         "WHERE source=? AND status IN ('OPEN', 'UNRESOLVED')", (source,)
     )).fetchall()
     defined = await (await db.execute(
@@ -193,14 +281,24 @@ async def _read_view(
     )).fetchall()
 
     amounts: list[float] = []
-    for label, rows in (("single_leg", single), ("defined_risk", defined), ("reservation", reserved)):
+    for label, rows, amount_index in (
+        ("single_leg", single, 1),
+        ("defined_risk", defined, 0),
+        ("reservation", reserved, 0),
+    ):
         for row in rows:
-            amount = _finite_non_negative(row[0])
+            amount = _finite_non_negative(row[amount_index])
             if amount is None:
                 return _unavailable(source, pool_rs, f"invalid_{label}_worst_case_cash")
             amounts.append(amount)
 
-    single_total = sum(_finite_non_negative(row[0]) or 0.0 for row in single)
+    partial_evidence_reason = await _validate_open_partial_exit_evidence(
+        db, source=source, open_positions=single,
+    )
+    if partial_evidence_reason:
+        return _unavailable(source, pool_rs, partial_evidence_reason)
+
+    single_total = sum(_finite_non_negative(row[1]) or 0.0 for row in single)
     defined_total = sum(_finite_non_negative(row[0]) or 0.0 for row in defined)
     reserved_total = sum(_finite_non_negative(row[0]) or 0.0 for row in reserved)
     equity = pool_rs + realised_pnl

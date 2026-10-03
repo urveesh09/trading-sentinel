@@ -19,8 +19,14 @@
   common, invalid evidence fails closed and exits remain outside entry halts.
   Dev-only verification: 24 warnings-fatal focused; 79 normal wider F&O tests;
   implementation commit `bc666fe` (local only, not pushed or deployed).
-- [ ] F0-D actual partial-settlement release and restart/race reconciliation;
-  add characterization before promotion.
+- [x] F0-D verified single-leg partial-settlement residual exposure: recovery
+  quantity/generation, exact ledger cash and pro-rata max loss are bound by
+  the shared view; mismatches fail new entries closed. Dev-only verification:
+  10 warnings-fatal shared-risk tests; 32 shared-risk/recovery tests with the
+  known warning-producing ASGI route test deselected; 80 broader F&O
+  risk/DR/orchestrator tests passed normally.
+- [ ] Observe/review paper admissions and recovery evidence after GitHub
+  promotion; F1 cash-only broker/margin preflight still precedes live funding.
 - [ ] F1 owner cash-only funding semantics, broker initial/final margin and
   catastrophe acceptance before live allocation; no live spread authorisation.
 - [ ] B1/B2 interval/zero-volume/session data contracts and full classic Penny

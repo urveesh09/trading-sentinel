@@ -236,3 +236,57 @@ async def test_shared_policy_preserves_affordable_clean_admission(db_path):
         entry_day_ist=date(2026, 10, 3),
     )
     assert admitted.allowed
+
+
+@pytest.mark.asyncio
+async def test_partial_recovery_residual_requires_exact_cash_and_pro_rata_risk(db_path):
+    await _ready(db_path)
+    async with aiosqlite.connect(db_path) as db:
+        position = await db.execute(
+            "INSERT INTO fno_positions "
+            "(source,tradingsymbol,status,qty,initial_qty,max_loss_rupees,initial_max_loss_rupees) "
+            "VALUES (?,?,?,?,?,?,?)",
+            ("FNO_LIVE", "NIFTY26OCT25000CE", "OPEN", 75, 150, 750.0, 1_500.0),
+        )
+        position_id = int(position.lastrowid)
+        ledger = await db.execute(
+            "INSERT INTO bankroll_ledger "
+            "(timestamp,event_type,pnl,source,origin_ref,settlement_generation) "
+            "VALUES (?,?,?,?,?,?)",
+            ("2026-10-03T10:00:00+05:30", "TRADE_CLOSED", -250.0,
+             "FNO_LIVE", f"fno_position:{position_id}", 1),
+        )
+        await db.execute(
+            "INSERT INTO fno_exit_recoveries "
+            "(position_id,source,intent_created_at,order_id,operator,account_id,"
+            "broker_evidence_sha256,broker_evidence_json,terminal_status,filled_qty,"
+            "remaining_qty,fill_price,settlement_generation,ledger_id,resolved_at) "
+            "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+            (position_id, "FNO_LIVE", "2026-10-03T04:00:00+00:00", "EXIT-1",
+             "reviewer", "account", "a" * 64, "{}", "CANCELLED", 75, 75,
+             90.0, 1, int(ledger.lastrowid), "2026-10-03T04:01:00+00:00"),
+        )
+        await db.commit()
+
+    view = await shared_fno_risk_view(db_path, "FNO_LIVE", POOL)
+    assert view.available
+    assert view.open_worst_case_cash_rs == 750.0
+
+    async with aiosqlite.connect(db_path) as db:
+        await db.execute(
+            "UPDATE fno_positions SET max_loss_rupees=751.0 WHERE id=?", (position_id,)
+        )
+        await db.commit()
+    tampered = await shared_fno_risk_view(db_path, "FNO_LIVE", POOL)
+    assert not tampered.available
+    assert tampered.reason == "invalid_partial_recovery_evidence"
+
+    async with aiosqlite.connect(db_path) as db:
+        await db.execute(
+            "UPDATE fno_positions SET max_loss_rupees=750.0 WHERE id=?", (position_id,)
+        )
+        await db.execute("DELETE FROM bankroll_ledger WHERE id=?", (int(ledger.lastrowid),))
+        await db.commit()
+    missing_cash = await shared_fno_risk_view(db_path, "FNO_LIVE", POOL)
+    assert not missing_cash.available
+    assert missing_cash.reason == "invalid_partial_recovery_evidence"

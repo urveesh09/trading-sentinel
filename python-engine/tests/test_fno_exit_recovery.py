@@ -97,6 +97,24 @@ async def test_terminal_partial_fill_realizes_once_and_preserves_residual(fno_db
 
 
 @pytest.mark.asyncio
+async def test_verified_partial_recovery_releases_only_residual_shared_risk(fno_db):
+    """F0-D reads the durable recovery/cash chain, never an invented release."""
+    pid, created = await claimed(fno_db, qty=150)
+    await resolve(fno_db, broker(qty=150, filled=75), pid, created)
+    from fno_dr_book import init_dr_db
+    from fno_shared_risk import init_shared_fno_risk_db, shared_fno_risk_view
+
+    await init_dr_db(fno_db)
+    await init_shared_fno_risk_db(fno_db)
+    view = await shared_fno_risk_view(fno_db, "FNO_LIVE", 10_000.0)
+    assert view.available
+    assert view.open_worst_case_cash_rs == pytest.approx(750.0)
+    assert view.realised_pnl_rs == pytest.approx(
+        (110.0 - 100.0) * 75 - calc_fno_costs(100.0, 110.0, 75)
+    )
+
+
+@pytest.mark.asyncio
 async def test_partial_then_final_close_reports_total_economics_and_scaled_risk(fno_db):
     pid, created = await claimed(fno_db, qty=150)
     await resolve(fno_db, broker(qty=150, filled=75), pid, created)

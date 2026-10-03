@@ -4,6 +4,35 @@
 
 Start with [the successor inheritance](2026-10-03-successor-inheritance.md) and
 [F&O safety / B0–B6 backtest plan](2026-10-03-backtesting-and-fno-safety-plan.md).
+**Active implementation slice — F0-D verified partial-exit residual exposure (October 3, Dev only).**
+Problem: the existing, operator-authorised `FNO_LIVE` recovery can record a
+broker-verified partial exit and proportionally lower `fno_positions.max_loss_rupees`,
+but the shared F&O view currently trusts that scalar without tying it to the
+recovery receipt and exact ledger cash. Contract: for every still-open
+single-leg position with recovery evidence, validate the ordered filled/residual
+quantities, settlement generations, retained `ledger_id`/source/origin cash,
+and the pro-rata residual catastrophe loss against immutable initial quantity
+and loss. Any missing, stale, duplicate or inconsistent partial evidence makes
+new shared-risk admission unavailable; it never fabricates a release. Closed
+history is not retroactively repaired, and no partial DR execution mechanism is
+invented. Acceptance: a verified partial release exposes only its residual
+worst-case cash; tampered/missing recovery or ledger evidence fails closed;
+concurrent/restart resolution produces one cash row and one residual state;
+unresolved/reserved exposure remains blocked. No signal, sizing, live-entry,
+broker call, DR legging or exit authority change. Rollout: Dev tests and
+additive read validation only, then local commit/review and paper observation;
+rollback reverts the validation, preserving cash/recovery evidence.
+
+Implementation result: residual FNO exposure is accepted only after the
+shared view verifies ordered recovery quantities/generations, the unique
+source/origin/generation ledger event and pro-rata remaining structural loss.
+This covers actual operator-reconciled partial fills without inventing a paper
+or DR partial fill path. A scalar/cash/receipt mismatch fails closed. Focused
+shared-risk tests: 10 warnings-fatal; shared-risk plus recovery selection: 32
+passed with the existing deprecated-ASGI route test deselected; broader F&O
+risk/DR/orchestrator coverage: 80 passed normally. Source commit pending; Dev
+only, not pushed or deployed.
+
 **Completed implementation slice — F0-C shared paper entry-policy receipt (October 3, Dev only).**
 Problem: F0-B atomically reserves paper F&O catastrophe cash across the
 single-leg and defined-risk books, but the legacy directional kill switches and

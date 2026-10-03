@@ -1,6 +1,6 @@
 # Trading Sentinel — system guide and engineering handover
 
-## October 3 — F0-C shared F&O entry policy (Dev only; not deployed)
+## October 3 — F0-D verified partial-exit residual exposure (Dev only; not deployed)
 
 `fno_shared_risk.py` is an additive, source-scoped F&O evidence layer. It reads
 one consistent view of exact source ledger settlement cash plus both books'
@@ -36,6 +36,19 @@ an assertion failure. Actual partial-settlement release/restart-race repair and
 F1 broker cash/margin preflight remain open. Dev only: no Production database,
 configuration, broker, order or authority change. Implementation commit:
 `bc666fe` (local only; not pushed or deployed).
+
+F0-D binds the already operator-authorised FNO live partial-exit recovery to
+the shared-risk read model. An open residual position now supplies capacity only
+when its ordered recovery receipts prove each filled/remaining quantity,
+generation, exact linked ledger event and pro-rata loss against immutable entry
+quantity/loss. A missing or tampered receipt, cash row, generation or residual
+loss fails new shared admission closed; nothing automatically releases. This
+does not create a partial paper/DR executor, change a broker call, or modify
+exit authority. Focused shared-risk checks: 10 warnings-fatal passed; shared
+risk plus partial-recovery selection: 32 passed (one ASGI route test excluded
+because its existing dependency deprecation is warnings-fatal); broader F&O
+risk/DR/orchestrator coverage: 80 passed normally. Actual paper observation,
+full recovery/restart acceptance and F1 remain open.
 
 ## October 3 — baseline research is not full portfolio backtesting
 
