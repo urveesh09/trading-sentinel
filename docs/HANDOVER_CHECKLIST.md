@@ -16,7 +16,8 @@
   results, compilation/diff and deterministic atlas recorded in the receipt.
 - [x] [Usage guide](YAHOO_BACKTEST_GUIDE.md), [plan](2026-10-03-yahoo-all-module-backtest-plan.md)
   and [results](2026-10-03-yahoo-backtest-results.md) are consistent. Source commit
-  and immediate post-commit verification recorded after final replay checks.
+  `df0c379`; all 16 repeat outcomes and 1,203 raw hashes agree. Immediate
+  documentation/atlas/clean-worktree verification passed.
 - [ ] Complete entry/exit/portfolio fidelity and prospective qualification;
   downloading Yahoo daily data does not close these gaps.
 - [ ] Owner-controlled promotion. Dev only, no new dependency, runtime schema/

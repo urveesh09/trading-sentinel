@@ -10,6 +10,8 @@ record the delivered one-script date-argument interface. Native Yahoo OHLCV,
 shipped functions are used. No strategy tuning or F&O/broker/Production path.
 70 focused tests passed; final offline repeats and documentation/atlas checks
 are recorded with the source commit receipt.
+Source/research commit `df0c379` is Dev-local; all 16 repeated outcomes agree,
+and immediate documentation/atlas/clean-worktree checks passed.
 
 Q3 daily evaluator outputs are available, including Swing's missing index warm-up.
 Yahoo does not supply expired Q3 minute/15-minute history; primaries stay

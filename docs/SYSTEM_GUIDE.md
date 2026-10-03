@@ -28,6 +28,9 @@ use the standard library; no dependency added. 70 focused tests passed (one
 existing HTTPX deprecation); final reproducibility/source/data checks and atlas
 regeneration are recorded in the results receipt. Dev only, no Production edit,
 broker action, push or deployment; F&O remains excluded.
+Source/research commit `df0c379`; immediate guide/plan/results, deterministic
+atlas and clean Dev worktree checks passed. The results document records the
+documentation-only receipt update.
 
 ## October 3 — current-system real-data test receipt (Dev only)
 

@@ -114,7 +114,11 @@ importer fingerprints passed the [integrity receipt](research/yahoo/2026-10-03-q
 Source baseline `3cbf0ff`; no new dependency, live schema/configuration change,
 Production edit, broker action, push or deployment. New research configuration
 is only the symbol fallback and immutable Yahoo reports. Source commit and
-immediate documentation/plan consistency are recorded after final verification.
+research delivery **`df0c3791c4ba10e55c0142fa47e1d735883aa8af`** are Dev-local.
+Immediately after commit, guide/plan/checklist/results consistency, byte-identical
+atlas regeneration, all 16 final reports, excluded large local evidence and
+clean Dev worktree checks passed. This receipt update is documentation only;
+its own commit also receives immediate consistency/clean-worktree verification.
 
 Remaining limits: Yahoo intraday retention, current rather than historical
 membership, adjusted-history uncertainty, historical broker/manual/context

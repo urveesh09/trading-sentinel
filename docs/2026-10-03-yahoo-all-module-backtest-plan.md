@@ -103,3 +103,13 @@ Remaining full-system limits are historical membership/context, broker/manual
 admission, evaluator-only lifecycle gaps and prospective qualification. Yahoo
 does not erase these by supplying more OHLCV. Later strategy improvement remains
 a separate owner discussion.
+
+## Delivered receipt
+
+Source/research commit `df0c379` is Dev-local. All 16 original/final outcomes
+agree on the archived Yahoo data; 1,203 raw response digests, both snapshots and
+current source/settings/importer hashes verified. Focused suite: 70 passed, one
+existing HTTPX deprecation. Compilation/diff checks and 240-module atlas
+regeneration passed. Immediately after commit the guide/plan/checklist/results,
+deterministic atlas and clean Dev worktree agreed. No push/deployment/Production
+action. See [results and integrity receipt](2026-10-03-yahoo-backtest-results.md).
