@@ -1163,6 +1163,89 @@ class PennyCncConnorsLifecycleAdapter(BacktestAdapter):
         }, warnings)
 
 
+class PennyJointPortfolioAdapter(BacktestAdapter):
+    """P3 shared-cash reconciliation over the two shipped Penny lifecycles.
+
+    This deliberately remains PORTFOLIO_PARTIAL: it reconciles recorded
+    candidates/fills/exits, but cannot restore historical universe, sector,
+    event and scheduler evidence which neither runtime persisted.
+    """
+    metadata = StrategyMetadata(
+        strategy_id="penny_joint_lifecycle_portfolio", name="Penny MIS + CNC shared-cash portfolio",
+        version="1.0.0", engine="penny_lifecycle_replay + research_penny_cnc_lifecycle + portfolio_parity",
+        timeframe="1 minute + daily", scope="PORTFOLIO_PARTIAL",
+        description="Reconciles explicit MIS and CNC lifecycle trade streams against one conservative own-cash ledger.",
+        capabilities=("shared_cash", "lifecycle_exits", "costs", "partial_exit_evidence", "coverage_contract"),
+        data_requirements=("B1-validated minute and daily evidence for explicit MIS/CNC tickers",),
+        limitations=("Historical universe/regime/sector/event context and scheduler priority are not archived.",
+                     "CNC date-only exits hold cash until end of session; no broker partial-fill/rejection evidence exists."),
+        default_config={"mis_tickers": [], "cnc_tickers": [], "regime": "PR1_CALM",
+                        "session_policy": "complete_only", "initial_cash": 2000.0},
+        default_assumptions={"cash": "full entry notional, timestamp order, exits before entries only on identical known clocks",
+                             "scope": "partial; does not reconstruct unarchived runtime context"},
+        parameter_schema={
+            "mis_tickers": {"type": "array", "items": {"type": "string"}},
+            "cnc_tickers": {"type": "array", "items": {"type": "string"}},
+            "regime": {"enum": ["PR1_CALM", "PR2_ELEVATED", "PR3_HOT"]},
+            "session_policy": {"enum": ["complete_only", "allow_gaps"]},
+            "initial_cash": {"type": "number", "minimum": 0.01},
+        },
+    )
+
+    def snapshot_config(self, supplied):
+        merged = super().snapshot_config(supplied)
+        mis, cnc = _ticker_list(merged["mis_tickers"]), _ticker_list(merged["cnc_tickers"])
+        if not mis and not cnc:
+            raise ValueError("the joint Penny portfolio requires mis_tickers and/or cnc_tickers")
+        cash = merged["initial_cash"]
+        if isinstance(cash, bool) or not isinstance(cash, (int, float)) or not math.isfinite(float(cash)) or cash <= 0:
+            raise ValueError("initial_cash must be positive and finite")
+        return {**merged, "mis_tickers": list(mis), "cnc_tickers": list(cnc), "initial_cash": float(cash)}
+
+    def prepare(self, db_path, request):
+        from datetime import date as _date, timedelta as _td
+        from research_data_contracts import DatasetUnavailable, load_daily_dataset, load_intraday_dataset
+        tickers = sorted(set(request.config["mis_tickers"] + request.config["cnc_tickers"]))
+        try:
+            intraday = load_intraday_dataset(db_path, interval="minute", start=request.start_date,
+                                             end=request.end_date, tickers=tickers)
+            daily = load_daily_dataset(db_path, tickers=tickers, before=(
+                _date.fromisoformat(request.end_date) + _td(days=1)).isoformat())
+        except DatasetUnavailable as exc:
+            raise BacktestUnavailable(str(exc)) from exc
+        if not intraday.bars:
+            raise BacktestUnavailable("no validated minute evidence for joint portfolio")
+        fingerprint = "sha256:" + hashlib.sha256(
+            (intraday.manifest["dataset_sha256"] + daily.manifest["dataset_sha256"]).encode()).hexdigest()
+        return PreparedDataset(fingerprint, sum(len(v) for v in intraday.bars.values()),
+                               {"intraday": intraday.manifest, "daily": daily.manifest}, (intraday, daily))
+
+    def execute(self, prepared, request):
+        from penny_lifecycle_replay import PennyLifecycleConfig, run_penny_lifecycle
+        from research_penny_cnc_lifecycle import PennyCncConfig, run_penny_cnc_lifecycle
+        from portfolio_parity import reconcile_shared_cash
+        intraday, daily = prepared.payload
+        cfg = request.config
+        mis = run_penny_lifecycle(intraday, daily, PennyLifecycleConfig(
+            tickers=tuple(cfg["mis_tickers"]), book="PENNY_PAPER", regime=cfg["regime"],
+            session_policy=cfg["session_policy"]), start=request.start_date, end=request.end_date) if cfg["mis_tickers"] else {"trades": [], "status": "NOT_REQUESTED"}
+        cnc = run_penny_cnc_lifecycle(intraday, daily, PennyCncConfig(
+            tickers=tuple(cfg["cnc_tickers"]), regime=cfg["regime"]),
+            start=request.start_date, end=request.end_date) if cfg["cnc_tickers"] else {"trades": [], "status": "NOT_REQUESTED"}
+        ledger = reconcile_shared_cash((("penny_mis", mis.get("trades", [])),
+                                        ("penny_cnc", cnc.get("trades", []))), initial_cash=cfg["initial_cash"])
+        return {"scope": "PORTFOLIO_PARTIAL", "status": "PARTIAL", "mis": mis, "cnc": cnc,
+                "portfolio": asdict(ledger), "warnings": list(self.metadata.limitations)}
+
+    def normalize(self, result, request):
+        ledger = result["portfolio"]
+        return ({"trade_count": ledger["admitted"], "net_pnl": ledger["realized_pnl"], "net_return_pct": None,
+                 "win_rate_pct": None, "profit_factor": None, "max_drawdown_pct": None, "avg_r": None,
+                 "shared_cash": {k: ledger[k] for k in ("initial_cash", "final_cash", "locked_cash", "cash_rejected", "unresolved")},
+                 "status": result["status"], "oos": {"available": False, "reason": "PORTFOLIO_PARTIAL"}},
+                list(self.metadata.limitations) + list(result.get("warnings", [])))
+
+
 class Momentum15MinuteReplayAdapter(BacktestAdapter):
     metadata = StrategyMetadata(
         strategy_id="momentum_intraday_15m_replay", name="Momentum (true 15-minute replay)",
@@ -1289,7 +1372,7 @@ STRATEGY_REGISTRY: dict[str, BacktestAdapter] = {
     for adapter in (
         SwingDailyAdapter(), SwingDecisionParityAdapter(), EdgeDecisionParityAdapter(), PennyDailyProxyAdapter(),
         PennyDailyProxyWalkForwardAdapter(), PennyMinuteReplayAdapter(),
-        PennyMisLifecycleAdapter(), PennyCncConnorsLifecycleAdapter(),
+        PennyMisLifecycleAdapter(), PennyCncConnorsLifecycleAdapter(), PennyJointPortfolioAdapter(),
         Momentum15MinuteReplayAdapter(), RangeReversionEvaluatorAdapter(), FnoUnavailableAdapter(),
     )
 }

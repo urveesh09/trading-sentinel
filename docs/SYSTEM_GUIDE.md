@@ -1,5 +1,32 @@
 # Trading Sentinel — system guide and engineering handover
 
+## October 3 — P1/P3/P4 safety and research completion slice (Dev only)
+
+P1 adds a cross-runtime durable account-cash reservation in the shared
+`cache.db`. Python live BUY entries and gateway Momentum/Swing EXEC entries
+reserve full bounded order value, calculated worst-case entry charges and a 1%
+fill buffer before dispatch. Reservations retain ambiguous/partial outcomes,
+release only known-not-sent or matching zero-fill terminal proof, and are not
+applied to exits. Book attribution records the owner allocations (Swing
+₹1,000, Penny ₹2,000, Momentum ₹3,000, EDGE ₹3,000); transfers are allowed, so
+the account-wide own-cash limit—not stranded sleeve pools—remains the hard
+constraint. The configured account ID is `kite-primary`.
+
+P3 adds `penny_joint_lifecycle_portfolio`, which reconciles actual MIS/CNC
+lifecycle streams against shared full-notional cash, preserves unresolved
+exposure and explicitly orders known exits/entries. It is `PORTFOLIO_PARTIAL`,
+not a fabricated full-system result: historical universe, regime, event,
+scheduler and broker-fill evidence remains absent for Penny and the other
+books.
+
+P4 adds an append-only prospective qualification registry. A holdout may only
+be frozen before it starts; snapshot/policy/config drift is rejected and every
+evaluation is immutably recorded. The CLI refuses qualification for anything
+below `FULL_PORTFOLIO` fidelity, so the new partial adapter cannot be marketed
+as qualified. See [P1–P4 completion slice](2026-10-03-p1-p4-completion-slice.md).
+Dev only; no configuration migration, Production edit, broker order, push or
+deployment occurred.
+
 ## October 3 — P2 reproducibility/publication (Dev only)
 
 Backtest manifests now recursively bind local transitive Python dependencies.

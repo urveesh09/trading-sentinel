@@ -11,12 +11,13 @@ from typing import Iterable
 
 STATUSES = ("LIFECYCLE", "EVALUATOR_ONLY", "PROXY_ONLY", "NOT_ADAPTED", "UNAVAILABLE",
             "EXCLUDED_BY_OWNER")
-SCOPES = ("EVALUATOR", "LIFECYCLE", "FULL_PORTFOLIO", "PROXY", "UNAVAILABLE")
+SCOPES = ("EVALUATOR", "LIFECYCLE", "PORTFOLIO_PARTIAL", "FULL_PORTFOLIO", "PROXY", "UNAVAILABLE")
 
 SHIPPED_STRATEGIES: tuple[dict, ...] = (
     {"strategy": "classic_penny_mis_breakout", "book": "PENNY_PAPER / PENNY", "product": "MIS",
      "live_gate": "PENNY_LIVE_TRADING (default False)",
-     "adapters": ("penny_breakout_mis_lifecycle_1m", "penny_breakout_intraday_1m_replay"),
+     "adapters": ("penny_breakout_mis_lifecycle_1m", "penny_breakout_intraday_1m_replay",
+                  "penny_joint_lifecycle_portfolio"),
      "status": "LIFECYCLE", "next_step": "point-in-time universe/regime before FULL_PORTFOLIO"},
     {"strategy": "classic_penny_cnc_connors", "book": "PENNY_PAPER", "product": "CNC",
      "live_gate": "PENNY_LIVE_TRADING (default False); live rows have no exit management",

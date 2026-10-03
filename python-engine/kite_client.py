@@ -5,6 +5,7 @@ import contextvars
 import os
 import re
 import time
+import uuid
 from typing import Optional
 import httpx
 import sqlite3
@@ -20,6 +21,7 @@ from order_execution_readiness import (
     mark_authorized as mark_order_execution_authorized,
     mark_blocked as mark_order_execution_blocked,
 )
+from account_cash_reservations import AccountCashReservations, ReservationRefused
 
 logger = structlog.get_logger()
 
@@ -300,6 +302,9 @@ class KiteClient:
         self.limiter = RateLimiter(rate=3.0, burst=1)
         self.instrument_cache = {}
         self._cache_lock = asyncio.Lock()
+        # P1 uses the same durable file as Node's gateway.  ``:memory:`` is
+        # retained for isolated tests; production config resolves to /data.
+        self.account_cash_reservations = AccountCashReservations(db_path)
         # KITE_BASE_URL: direct = "https://api.kite.trade" (default); via OCI relay = "http://161.118.160.180:31527"
         # Relay is a path-preserving forward proxy. Auth + X-Kite-Version headers pass through unchanged.
         self.client = httpx.AsyncClient(base_url=settings.KITE_BASE_URL, timeout=15.0)
@@ -1649,6 +1654,10 @@ class KiteClient:
             params["price"] = float(price)
         if trigger_price is not None:
             params["trigger_price"] = float(trigger_price)
+        # A stable tag makes both broker reconciliation and the shared cash
+        # reservation idempotent.  Kite permits at most 20 characters.
+        if intent == "entry" and str(transaction_type).upper() == "BUY" and not tag:
+            tag = f"AC_{uuid.uuid4().hex[:17]}"
         if tag:
             params["tag"] = tag
 
@@ -1660,8 +1669,15 @@ class KiteClient:
             return blocked
         # [F1-A 2026-10-03] A new BUY must be fully paid from own uncommitted
         # cash; broker leverage never funds an entry. Exits are never checked.
+        reservation_id = None
         if intent == "entry" and str(transaction_type).upper() == "BUY":
             refusal = await self._own_cash_refusal(tradingsymbol, quantity, price)
+            if refusal is not None:
+                return refusal
+            reservation_id, refusal = await self._reserve_account_cash(
+                broker_tag=str(tag or ""), channel=channel, tradingsymbol=tradingsymbol,
+                quantity=quantity, price=price,
+            )
             if refusal is not None:
                 return refusal
         try:
@@ -1672,12 +1688,18 @@ class KiteClient:
             # token + route + static IP may place orders.
             if data.get("order_id"):
                 mark_order_execution_authorized()
-            return {
+            result = {
                 "order_id": data.get("order_id"),
                 "status": "PLACED",
                 "dispatch_certainty": "ACCEPTED" if data.get("order_id") else "AMBIGUOUS",
                 "message": "order placed",
             }
+            if reservation_id:
+                self.account_cash_reservations.mark_dispatch(
+                    reservation_id, broker_order_id=data.get("order_id"),
+                    ambiguous=not bool(data.get("order_id")),
+                )
+            return result
         except httpx.HTTPStatusError as e:
             body = e.response.text[:300] if e.response.text else ""
             logger.error("kite_place_order_failed status=%d body=%s", e.response.status_code, body)
@@ -1713,7 +1735,7 @@ class KiteClient:
                         logger.error(
                             "kite_order_authorization_alert_failed", error=str(alert_exc),
                         )
-            return {"order_id": None, "status": "ERROR",
+            result = {"order_id": None, "status": "ERROR",
                     "dispatch_certainty": (
                         "BROKER_REJECTED" if 400 <= e.response.status_code < 500 else "AMBIGUOUS"
                     ),
@@ -1721,6 +1743,15 @@ class KiteClient:
                         e.response.status_code, body
                     ),
                     "message": f"HTTP {e.response.status_code}: {body}"}
+            if reservation_id:
+                if result["dispatch_certainty"] == "BROKER_REJECTED":
+                    # A POST 4xx has no broker order id; release this local
+                    # reservation through the dedicated known-not-sent path.
+                    self.account_cash_reservations.release_not_sent(reservation_id, "broker_http_4xx")
+                else:
+                    self.account_cash_reservations.mark_dispatch(
+                        reservation_id, broker_order_id=None, ambiguous=True)
+            return result
         except httpx.RequestError as e:
             logger.error("kite_place_order_failed error=%s", str(e))
             # Only a failure to connect proves the request never left.
@@ -1728,8 +1759,15 @@ class KiteClient:
                 "NOT_SENT" if isinstance(e, (httpx.ConnectError, httpx.ConnectTimeout))
                 else "AMBIGUOUS"
             )
-            return {"order_id": None, "status": "ERROR", "dispatch_certainty": certainty,
+            result = {"order_id": None, "status": "ERROR", "dispatch_certainty": certainty,
                     "message": str(e)}
+            if reservation_id:
+                if certainty == "NOT_SENT":
+                    self.account_cash_reservations.release_not_sent(reservation_id, "transport_not_connected")
+                else:
+                    self.account_cash_reservations.mark_dispatch(
+                        reservation_id, broker_order_id=None, ambiguous=True)
+            return result
 
     async def modify_order(
         self,
@@ -1870,6 +1908,47 @@ class KiteClient:
             return refuse(f"OWN_CASH_INSUFFICIENT: order value {order_value:.2f} > "
                           f"own uncommitted cash {own:.2f}")
         return None
+
+    async def _reserve_account_cash(self, *, broker_tag: str, channel: Optional[str],
+                                    tradingsymbol: str, quantity: int, price) -> tuple[str | None, dict | None]:
+        """Atomically retain this entry's cash across Python and gateway paths.
+
+        The preceding F1-A check remains useful for a clear immediate refusal;
+        this second evidence read closes the race between that snapshot and the
+        broker POST.  A failed reservation is a no-send refusal.
+        """
+        def refuse(reason: str) -> tuple[None, dict]:
+            logger.error("kite_order_refused_account_cash", tradingsymbol=tradingsymbol, reason=reason)
+            return None, {"order_id": None, "status": "ERROR", "dispatch_certainty": "NOT_SENT",
+                          "own_cash_refused": True, "message": reason}
+
+        value = _finite(price, non_negative=True)
+        if not value or not isinstance(quantity, int) or quantity <= 0 or not broker_tag:
+            return refuse("ACCOUNT_RESERVATION_EVIDENCE_UNAVAILABLE: bounded LIMIT value/tag required")
+        margins = await self.get_funds_margins()
+        positions = await self.get_broker_positions()
+        orders = await self.orders_snapshot()
+        own = own_uncommitted_cash(margins, positions, orders)
+        if own is None:
+            return refuse("ACCOUNT_RESERVATION_EVIDENCE_UNAVAILABLE: margins/positions/orders missing or invalid")
+        reservation_id = f"PY:{broker_tag}"
+        try:
+            reservation = self.account_cash_reservations.reserve(
+                reservation_id=reservation_id,
+                account_id=settings.ACCOUNT_CASH_ACCOUNT_ID,
+                book=str(channel or "python").strip().lower() or "python",
+                broker_tag=broker_tag,
+                notional=value * quantity,
+                own_uncommitted_cash=own,
+                broker_orders=orders,
+            )
+        except (ReservationRefused, ValueError, sqlite3.Error) as exc:
+            return refuse(str(exc))
+        logger.info("entry_account_cash_reserved", tradingsymbol=tradingsymbol,
+                    reservation_id=reservation.reservation_id, book=channel or "python",
+                    amount=reservation.amount, charge_reserve=reservation.charge_reserve,
+                    fill_buffer=reservation.fill_buffer, available_after=reservation.available_after)
+        return reservation_id, None
 
     async def orders_snapshot(self) -> list | None:
         """Return today's broker order book, or ``None`` when unreadable.

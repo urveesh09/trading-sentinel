@@ -58,6 +58,17 @@ jest.mock('../../db/index', () => ({
   appDb: { prepare: mockDbPrepare },
 }));
 
+// P1 ledger has its own native SQLite handle in production. Keep executor
+// flow tests isolated; protocol behavior is covered by the Python-compatible
+// ledger tests and the gateway uses this exact public surface.
+const mockAccountCashReservations = {
+  reserve: jest.fn(() => ({ reservationId: 'GW:test', amount: 5106, chargeReserve: 3, fillBuffer: 50, availableAfter: 4894 })),
+  markDispatch: jest.fn(),
+  releaseNotSent: jest.fn(),
+  releaseZeroFill: jest.fn(),
+};
+jest.mock('../../services/account-cash-reservations', () => ({ shared: mockAccountCashReservations }));
+
 // Mock fetch for syncToEngine
 global.fetch = jest.fn();
 
@@ -95,6 +106,12 @@ const makeSignal = (overrides = {}) => ({
 });
 
 function setupHappyPath() {
+  mockAccountCashReservations.reserve.mockReset().mockReturnValue({
+    reservationId: 'GW:test', amount: 5106, chargeReserve: 3, fillBuffer: 50, availableAfter: 4894,
+  });
+  mockAccountCashReservations.markDispatch.mockReset();
+  mockAccountCashReservations.releaseNotSent.mockReset();
+  mockAccountCashReservations.releaseZeroFill.mockReset();
   resolveOwnerEntryHalt.mockReset().mockResolvedValue({
     resolved: true, allowed: true, reason: 'allowed',
   });
@@ -394,6 +411,16 @@ describe('executeSignal()', () => {
     await executeSignal(makeSignal(), 'EXEC').catch(err => { caught = err; });
     expect(caught.code).toBe('OWN_CASH_INSUFFICIENT');
     expect(caught.type).toBe('insufficient_margin');
+    expect(kite.placeOrder).not.toHaveBeenCalled();
+  });
+
+  test('P1: shared reservation refusal blocks dispatch after a valid local snapshot', async () => {
+    mockAccountCashReservations.reserve.mockImplementationOnce(() => {
+      throw new Error('ACCOUNT_OWN_CASH_INSUFFICIENT: concurrent reservation retained cash');
+    });
+    let caught;
+    await executeSignal(makeSignal(), 'EXEC').catch(err => { caught = err; });
+    expect(caught.code).toBe('OWN_CASH_INSUFFICIENT');
     expect(kite.placeOrder).not.toHaveBeenCalled();
   });
 

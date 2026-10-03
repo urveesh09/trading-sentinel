@@ -1,6 +1,6 @@
 # Trading Sentinel — next-agent execution plan
 
-## October 3 — P2 complete; P1 account allocations approved, contingency pending (Dev only)
+## October 3 — P1/P2/P4 delivered; P3 partial evidence boundary remains (Dev only)
 
 P2 now recursively binds local transitive source dependencies in the policy
 manifest and exclusively publishes completed snapshot/report artifacts without
@@ -13,14 +13,29 @@ Momentum ₹3,000 and EDGE ₹3,000. Unused allocation may transfer, so the ledg
 must protect the account-wide own-cash limit and record book attribution; it
 must not turn the four nominal allocations into isolated, stranded pools.
 
-Before activating the reservation protocol, obtain the remaining explicit
-charge/gap contingency rule (a fixed amount, percentage, or authorization to
-use a stated bounded broker-cost calculation). That value changes the amount
-of owner capital committed by every entry and must not be silently invented.
-Until then, retain F1-A's individual own-cash guard. P2 source commit
+The owner delegated the outstanding contingency decision: P1 uses full bounded
+entry exposure + calculated charges + a 1% executable-notional reserve. This
+is recorded with P1–P4 contracts, acceptance and rollback in
+[the completion slice](2026-10-03-p1-p4-completion-slice.md). P2 source commit
 `28876be` is Dev-only; its focused CLI/Lab verification passed (26 passed,
 one existing httpx deprecation warning). No source data, runtime configuration,
 broker, Production, push or deployment action occurred.
+
+P1 source admission is now shared across Python and Node through the durable
+`account_cash_reservations` protocol. Its immediate source acceptance covers
+concurrent snapshot overcommitment, visible broker pending-order
+de-duplication, ambiguity/partial retention, zero-fill release and exit
+exemption. The owner-approved book allocation is recorded as attribution and
+the account-wide own-cash invariant supports allowed transfers. Paper
+observation and owner-controlled promotion remain required.
+
+P3 now includes a joint Penny MIS/CNC cash reconciler and a declared
+`PORTFOLIO_PARTIAL` adapter. It improves shared-cash/fill/exit accounting but
+cannot become FULL_PORTFOLIO until the runtime has archived point-in-time
+universe, regime, event, broker and scheduler evidence; Momentum, Swing, EDGE
+and Range have the same evidence boundary. P4 has an append-only prospective
+registry and rejects qualification of this partial scope. Do not bypass that
+block or relabel prior/historical date declarations as untouched holdouts.
 
 ## October 3 — authoritative post-implementation review (Dev only)
 

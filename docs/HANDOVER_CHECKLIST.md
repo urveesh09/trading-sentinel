@@ -1,13 +1,19 @@
 # Handover receipt and operator checklist
 
-## October 3 P2 receipt (Dev only)
+## October 3 P1–P4 receipt (Dev only)
 
 - [x] Recursive local dependency hashes and exclusive snapshot/report publication.
 - [x] CLI/Lab regression: 26 passed; one existing httpx deprecation warning.
 - [x] Owner account/division ceilings approved: Swing ₹1,000, Penny ₹2,000,
   Momentum ₹3,000, EDGE ₹3,000; transfers allowed.
-- [ ] P1 needs an explicit charge/gap contingency reserve before common live
-  admission can be activated safely.
+- [x] P1 shared account-cash reservation: full entry value + calculated entry
+  charges + 1% fill buffer, durable across Python/gateway and never applied to exits.
+- [x] P3 shared-cash Penny joint lifecycle adapter, correctly labelled
+  `PORTFOLIO_PARTIAL`; unresolved exposure remains locked.
+- [x] P4 append-only future holdout registry; policy/data/config drift and
+  retroactive/reused-as-untouched qualification are rejected.
+- [ ] Paper observation of the P1 ledger and FULL_PORTFOLIO evidence for any
+  actual qualification remain required before owner-controlled promotion.
 
 ## October 3 independent post-implementation review — current status
 

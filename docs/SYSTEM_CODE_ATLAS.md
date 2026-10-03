@@ -66,6 +66,16 @@ Once-only delivery of a completed optional-AI review to its original alert. [S10
 
 Top-level declarations: `_iso` (line 41), `CompletionTracker` (line 47)
 
+## `python-engine/account_cash_reservations.py`
+
+Durable, cross-runtime own-cash reservations for live *entry* orders. The gateway and engine share ``/data/cache.db``. Broker balances are a snapshot, so the snapshot alone cannot safely admit two concurrent callers. This module records the amount which the broker has not yet made visible as a pending order or position. It deliberately never releases an ambiguous order.
+
+Top-level declarations: `estimate_entry_charges` (line 25), `required_reservation` (line 42), `_broker_represents` (line 49), `Reservation` (line 72), `ReservationRefused` (line 80), `AccountCashReservations` (line 84)
+
+Related tests: `python-engine/tests/test_account_cash_reservations.py`
+
+Declared tables: `account_cash_reservations`
+
 ## `python-engine/affordability.py`
 
 [WORKFLOW-F 2026-09-13] Paper-vs-live affordability guard (Phase 2). Implements plan section 10.3 — *"Audit true cost per trade relative to expected edge for INR 8k capital. Prevent a large configured paper bankroll from implying owner live affordability."* This module is the F-side seam the promotion-bridge contract (see ``docs/2026-09-13-workflow-g-promotion-bridge.md`` sections 3.3 and 4) depends on for ``APPROVED_LIVE_BUDGET`` decisions. Concretely: * ``evaluate_paper_to_live_affordability(...)`` returns a structured result describing whether a proposed *live* delta is affordable from the *live* bank's current state, the *paper* P&L earned over the same period, and the operator-tunable m
@@ -104,13 +114,13 @@ Top-level declarations: `_simulate_trade` (line 29), `_compute_stats` (line 123)
 
 Engine dependencies: `config`, `engine`, `models`, `regime`
 
-Related tests: `python-engine/tests/test_backtest.py`, `python-engine/tests/test_backtest_cli.py`, `python-engine/tests/test_backtest_gap_fills.py`, `python-engine/tests/test_backtest_lab.py`, `python-engine/tests/test_backtest_reporting.py`
+Related tests: `python-engine/tests/test_backtest.py`, `python-engine/tests/test_backtest_cli.py`, `python-engine/tests/test_backtest_gap_fills.py`, `python-engine/tests/test_backtest_lab.py`, `python-engine/tests/test_backtest_qualification.py`, `python-engine/tests/test_backtest_reporting.py`
 
 ## `python-engine/backtest_catalogue.py`
 
 [B0 2026-10-03] Honest catalogue of shipped strategies and their backtests. Every shipped strategy appears once with the fidelity of the backtest that exists for it today. ``validate_catalogue`` keeps this list and the Backtest Lab registry in agreement, so an adapter cannot be added (or removed) without the catalogue saying what it really replays.
 
-Top-level declarations: `catalogue` (line 58), `validate_catalogue` (line 73), `family_prefixes` (line 98)
+Top-level declarations: `catalogue` (line 59), `validate_catalogue` (line 74), `family_prefixes` (line 99)
 
 Engine dependencies: `backtest_lab`
 
@@ -118,9 +128,9 @@ Engine dependencies: `backtest_lab`
 
 [B0 2026-10-03] One offline entry point for shipped-strategy backtests. python backtest_cli.py catalogue python backtest_cli.py snapshot --db PATH | --container NAME --from D --to D --tickers A,B --out NEW.sqlite python backtest_cli.py coverage --snapshot S --strategy ID python backtest_cli.py run --snapshot S --strategy ID --from D --to D [--config JSON] --out NEW.json python backtest_cli.py compare A.json B.json python backtest_cli.py report R.json Only registered Backtest Lab adapters can run (no arbitrary code or callbacks); only their documented default assumptions are accepted. Every run binds the code release, a secret-free settings hash and the frozen snapshot hash. Nothing here call
 
-Top-level declarations: `CliError` (line 45), `_new_file` (line 49), `_publish_new_file` (line 57), `_atomic_json_new` (line 72), `_rows_sha256` (line 90), `write_snapshot` (line 104), `snapshot` (line 135), `verify_snapshot` (line 153), `_git` (line 170), `policy_manifest` (line 178), `_adapter` (line 221), `run` (line 228), `coverage` (line 270), `_load_report` (line 290), `compare` (line 297), `report` (line 321), `main` (line 332)
+Top-level declarations: `CliError` (line 45), `_new_file` (line 49), `_publish_new_file` (line 57), `_atomic_json_new` (line 72), `_rows_sha256` (line 90), `write_snapshot` (line 104), `snapshot` (line 135), `verify_snapshot` (line 153), `_git` (line 170), `policy_manifest` (line 178), `_adapter` (line 221), `run` (line 228), `freeze_holdout` (line 293), `coverage` (line 319), `_load_report` (line 339), `compare` (line 346), `report` (line 370), `main` (line 381)
 
-Engine dependencies: `backtest_catalogue`, `backtest_lab`, `backtest_reporting`, `config`, `research_data_contracts`
+Engine dependencies: `backtest_catalogue`, `backtest_lab`, `backtest_qualification`, `backtest_reporting`, `config`, `research_data_contracts`
 
 Related tests: `python-engine/tests/test_backtest_cli.py`
 
@@ -128,13 +138,21 @@ Related tests: `python-engine/tests/test_backtest_cli.py`
 
 Research-only backtest registry, adapters, and immutable run archive. This module has deliberately no broker client or order-execution imports. A BacktestAdapter receives a frozen dataset snapshot and returns research data; future strategies join the lab by implementing the same contract and adding one explicit registry entry.
 
-Top-level declarations: `_utc_now` (line 37), `_json_default` (line 41), `_finite_json_value` (line 55), `_json` (line 79), `_decode` (line 86), `StrategyMetadata` (line 96), `BacktestRequest` (line 119), `PreparedDataset` (line 128), `BacktestUnavailable` (line 135), `BacktestAdapter` (line 139), `_fingerprint_rows` (line 177), `_daily_rows` (line 183), `SwingDailyAdapter` (line 215), `SwingDecisionParityAdapter` (line 295), `EdgeDecisionParityAdapter` (line 371), `RangeReversionEvaluatorAdapter` (line 447), `PennyDailyProxyAdapter` (line 534), `PennyWalkForwardConfig` (line 630), `PennyDailyProxyWalkForwardAdapter` (line 661), `_ticker_list` (line 849), `_write_replay_cache` (line 858), `PennyMinuteReplayAdapter` (line 878), `PennyMisLifecycleAdapter` (line 980), `PennyCncConnorsLifecycleAdapter` (line 1082), `Momentum15MinuteReplayAdapter` (line 1166), `FnoUnavailableAdapter` (line 1263), `init_backtest_lab_db` (line 1298), `_validate_dates` (line 1372), `list_strategies` (line 1383), `submit_run` (line 1423), `_run_background` (line 1459), `_row_to_run` (line 1495), `list_runs` (line 1520), `get_run` (line 1539)
+Top-level declarations: `_utc_now` (line 37), `_json_default` (line 41), `_finite_json_value` (line 55), `_json` (line 79), `_decode` (line 86), `StrategyMetadata` (line 96), `BacktestRequest` (line 119), `PreparedDataset` (line 128), `BacktestUnavailable` (line 135), `BacktestAdapter` (line 139), `_fingerprint_rows` (line 177), `_daily_rows` (line 183), `SwingDailyAdapter` (line 215), `SwingDecisionParityAdapter` (line 295), `EdgeDecisionParityAdapter` (line 371), `RangeReversionEvaluatorAdapter` (line 447), `PennyDailyProxyAdapter` (line 534), `PennyWalkForwardConfig` (line 630), `PennyDailyProxyWalkForwardAdapter` (line 661), `_ticker_list` (line 849), `_write_replay_cache` (line 858), `PennyMinuteReplayAdapter` (line 878), `PennyMisLifecycleAdapter` (line 980), `PennyCncConnorsLifecycleAdapter` (line 1082), `PennyJointPortfolioAdapter` (line 1166), `Momentum15MinuteReplayAdapter` (line 1249), `FnoUnavailableAdapter` (line 1346), `init_backtest_lab_db` (line 1381), `_validate_dates` (line 1455), `list_strategies` (line 1466), `submit_run` (line 1506), `_run_background` (line 1542), `_row_to_run` (line 1578), `list_runs` (line 1603), `get_run` (line 1622)
 
-Engine dependencies: `backtest`, `momentum_replay`, `penny_backtest_v2`, `penny_intraday_replay`, `penny_lifecycle_replay`, `range_reversion`, `research_daily_decision_replay`, `research_data_contracts`, `research_penny_cnc_lifecycle`, `walk_forward`
+Engine dependencies: `backtest`, `momentum_replay`, `penny_backtest_v2`, `penny_intraday_replay`, `penny_lifecycle_replay`, `portfolio_parity`, `range_reversion`, `research_daily_decision_replay`, `research_data_contracts`, `research_penny_cnc_lifecycle`, `walk_forward`
 
 Related tests: `python-engine/tests/test_backtest_lab.py`
 
 Declared tables: `backtest_experiments`, `backtest_runs`
+
+## `python-engine/backtest_qualification.py`
+
+Append-only prospective holdout protocol for Backtest Lab (P4). Dates are not evidence of non-observation. A qualification is therefore only created before its holdout begins, freezes exact policy/snapshot fingerprints, and receives a new immutable evaluation event whenever it is run.
+
+Top-level declarations: `QualificationError` (line 18), `canonical_sha256` (line 22), `_read` (line 26), `_lock` (line 43), `_append` (line 53), `freeze` (line 64), `frozen_record` (line 99), `validate_run` (line 108), `record_evaluation` (line 125)
+
+Related tests: `python-engine/tests/test_backtest_qualification.py`
 
 ## `python-engine/backtest_reporting.py`
 
@@ -940,9 +958,9 @@ Related tests: `python-engine/tests/test_intraday_spread_signal_artifact.py`
 
 No module docstring; use the declarations and callers below.
 
-Top-level declarations: `_interval_minutes` (line 37), `_intraday_cache_gate_evaluate` (line 73), `provider_lane` (line 193), `RateLimiter` (line 210), `KiteClient` (line 295), `_finite` (line 1942), `own_uncommitted_cash` (line 1951), `latest_order_state` (line 2001)
+Top-level declarations: `_interval_minutes` (line 39), `_intraday_cache_gate_evaluate` (line 75), `provider_lane` (line 195), `RateLimiter` (line 212), `KiteClient` (line 297), `_finite` (line 2021), `own_uncommitted_cash` (line 2030), `latest_order_state` (line 2080)
 
-Engine dependencies: `config`, `halt_switch`, `operator_alert`, `order_execution_readiness`, `owner_entry_halt`
+Engine dependencies: `account_cash_reservations`, `config`, `halt_switch`, `operator_alert`, `order_execution_readiness`, `owner_entry_halt`
 
 Related tests: `python-engine/tests/test_kite_client.py`, `python-engine/tests/test_kite_client_cache_miss_reason_f3.py`, `python-engine/tests/test_kite_client_methods.py`
 
@@ -1748,7 +1766,15 @@ Top-level declarations: `filter_momentum_signals` (line 9), `filter_and_allocate
 
 Engine dependencies: `config`, `models`
 
-Related tests: `python-engine/tests/test_portfolio.py`
+Related tests: `python-engine/tests/test_portfolio.py`, `python-engine/tests/test_portfolio_parity.py`
+
+## `python-engine/portfolio_parity.py`
+
+Evidence-labelled shared-cash portfolio reconciliation for P3 research. It consumes already archived lifecycle trades. The routine does not invent an entry that a source lifecycle did not expose and retains unresolved exposure; callers must therefore label the output PARTIAL unless every upstream runtime context and fill event is archived.
+
+Top-level declarations: `PortfolioResult` (line 15), `_stamp` (line 26), `reconcile_shared_cash` (line 30)
+
+Related tests: `python-engine/tests/test_portfolio_parity.py`
 
 ## `python-engine/position_tracker.py`
 
@@ -2292,6 +2318,10 @@ Local routes: `GET /`, `POST /invalidate`
 
 Dependencies: `../services/backlog-reconciliation`, `better-sqlite3`, `fs`
 
+## `node-gateway/server/services/account-cash-reservations.js`
+
+Dependencies: `../config`, `better-sqlite3`, `path`
+
 ## `node-gateway/server/services/backlog-reconciliation.js`
 
 Dependencies: `crypto`, `fs`
@@ -2302,7 +2332,7 @@ Dependencies: `../config`, `../utils/market-hours`, `crypto`
 
 ## `node-gateway/server/services/executor.js`
 
-Dependencies: `../config`, `../db/index`, `../middleware/logger`, `../utils/errors`, `../utils/market-hours`, `../utils/retry`, `./cas-eligibility`, `./kite`, `./risk-geometry`, `./telegram`, `./token-store`, `already
+Dependencies: `../config`, `../db/index`, `../middleware/logger`, `../utils/errors`, `../utils/market-hours`, `../utils/retry`, `./account-cash-reservations`, `./cas-eligibility`, `./kite`, `./risk-geometry`, `./telegram`, `./token-store`, `already
   // breached`, `crypto`, `the engine rejected this payload`
 
 ## `node-gateway/server/services/halt-switch.js`

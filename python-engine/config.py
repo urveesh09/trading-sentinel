@@ -40,6 +40,16 @@ class Settings(BaseSettings):
     
     STRATEGY_VERSION: str = "1.0.0"
     DB_PATH: str = "/data/cache.db"
+    # [P1 2026-10-03] Shared live-entry reservation identity and owner-approved
+    # nominal book allocations. Transfers are allowed, so these annotate the
+    # ledger rather than stranding cash in separate broker sub-accounts; the
+    # account-wide own-cash reservation remains the hard admission limit.
+    ACCOUNT_CASH_ACCOUNT_ID: str = "kite-primary"
+    ACCOUNT_BOOK_SWING_LIMIT: float = 1000.0
+    ACCOUNT_BOOK_PENNY_LIMIT: float = 2000.0
+    ACCOUNT_BOOK_MOMENTUM_LIMIT: float = 3000.0
+    ACCOUNT_BOOK_EDGE_LIMIT: float = 3000.0
+    ACCOUNT_BOOK_TRANSFERS_ALLOWED: bool = True
     # Offline proactive research is opt-in.  The scheduled consumer accepts
     # only an explicitly marked local SHADOW fixture and has no broker,
     # transport, or partner-delivery dependency.

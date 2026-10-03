@@ -228,6 +228,7 @@ def _adapter(strategy_id: str):
 def run(args) -> dict:
     from backtest_lab import BacktestRequest, BacktestUnavailable
     from backtest_reporting import validate_holdout
+    from backtest_qualification import QualificationError, validate_run, record_evaluation, canonical_sha256
     adapter = _adapter(args.strategy)
     snap = verify_snapshot(args.snapshot)
     supplied = json.loads(args.config) if args.config else {}
@@ -236,9 +237,21 @@ def run(args) -> dict:
     config = adapter.snapshot_config(supplied)
     assumptions = adapter.snapshot_assumptions({})
     request = BacktestRequest(args.strategy, args.start, args.end, config, assumptions)
+    policy = policy_manifest(args.strategy, adapter)
+    qualification = None
     try:
+        if args.qualification_id and (args.holdout_from or args.holdout_to):
+            raise CliError("a prospective qualification run cannot also use a date-only holdout declaration")
         holdout = validate_holdout(args.start, args.end, args.holdout_from, args.holdout_to)
-    except ValueError as exc:
+        if args.qualification_id:
+            if not args.qualification_registry:
+                raise CliError("--qualification-id requires --qualification-registry")
+            qualification = validate_run(
+                registry=args.qualification_registry, qualification_id=args.qualification_id,
+                strategy_id=args.strategy, window=(args.start, args.end),
+                snapshot_sha256=snap["rows_sha256"], policy=policy, request_config=config,
+            )
+    except (ValueError, QualificationError) as exc:
         raise CliError(str(exc)) from exc
     report = {
         "schema": "sentinel_backtest_report_v1", "created_at": datetime.now(timezone.utc).isoformat(),
@@ -246,8 +259,9 @@ def run(args) -> dict:
         "request": {"from": args.start, "to": args.end, "config": config, "assumptions": assumptions},
         "snapshot": {"path": str(Path(args.snapshot).resolve()), "rows_sha256": snap["rows_sha256"],
                      "request": snap["request"], "source": snap["source"]},
-        "policy": policy_manifest(args.strategy, adapter),
+        "policy": policy,
         "holdout": holdout,
+        "qualification": qualification,
         "can_place_orders": False, "can_qualify": False,
     }
     with tempfile.TemporaryDirectory(prefix="sentinel-backtest-") as tmp:
@@ -263,8 +277,43 @@ def run(args) -> dict:
             report.update(state="UNAVAILABLE", reason=str(exc), metrics=None, warnings=[str(exc)])
     verify_snapshot(args.snapshot)
     target = _atomic_json_new(args.out, report)
+    if qualification:
+        try:
+            record_evaluation(registry=args.qualification_registry,
+                              qualification_id=args.qualification_id,
+                              report_sha256=canonical_sha256(report))
+        except QualificationError as exc:
+            # The report exists, so suppressing failed evidence logging would
+            # be less truthful than reporting a hard run failure to the caller.
+            raise CliError(f"report written but qualification evaluation was not recorded: {exc}") from exc
     return {"output": str(target), "state": report["state"], "scope": report["scope"],
             "metrics": report.get("metrics")}
+
+
+def freeze_holdout(args) -> dict:
+    from backtest_qualification import QualificationError, freeze
+    adapter = _adapter(args.strategy)
+    if adapter.metadata.scope != "FULL_PORTFOLIO":
+        raise CliError(
+            f"{args.strategy} has {adapter.metadata.scope} fidelity; a prospective qualification "
+            "requires a FULL_PORTFOLIO adapter with archived admission/context evidence"
+        )
+    snap = verify_snapshot(args.snapshot)
+    supplied = json.loads(args.config) if args.config else {}
+    if not isinstance(supplied, dict):
+        raise CliError("--config must be a JSON object")
+    config = adapter.snapshot_config(supplied)
+    try:
+        record = freeze(
+            registry=args.registry, strategy_id=args.strategy,
+            development_window=(args.start, args.end), holdout_window=(args.holdout_from, args.holdout_to),
+            snapshot_sha256=snap["rows_sha256"], policy=policy_manifest(args.strategy, adapter),
+            request_config=config,
+        )
+    except (ValueError, QualificationError) as exc:
+        raise CliError(str(exc)) from exc
+    return {"qualification_id": record["qualification_id"], "status": record["status"],
+            "registry": str(Path(args.registry).resolve()), "holdout_window": record["holdout_window"]}
 
 
 def coverage(args) -> dict:
@@ -353,7 +402,18 @@ def main(argv=None) -> int:
     p.add_argument("--config")
     p.add_argument("--holdout-from")
     p.add_argument("--holdout-to")
+    p.add_argument("--qualification-registry")
+    p.add_argument("--qualification-id")
     p.add_argument("--out", required=True)
+    p = sub.add_parser("freeze-holdout")
+    p.add_argument("--registry", required=True)
+    p.add_argument("--snapshot", required=True)
+    p.add_argument("--strategy", required=True)
+    p.add_argument("--from", dest="start", required=True)
+    p.add_argument("--to", dest="end", required=True)
+    p.add_argument("--holdout-from", required=True)
+    p.add_argument("--holdout-to", required=True)
+    p.add_argument("--config")
     p = sub.add_parser("compare")
     p.add_argument("a")
     p.add_argument("b")
@@ -368,7 +428,7 @@ def main(argv=None) -> int:
             problems = validate_catalogue()
             out = {"strategies": catalogue(), "problems": problems}
         else:
-            out = {"snapshot": snapshot, "coverage": coverage, "run": run,
+            out = {"snapshot": snapshot, "coverage": coverage, "run": run, "freeze-holdout": freeze_holdout,
                    "compare": compare, "report": report}[args.command](args)
     except (CliError, ValueError) as exc:
         print(json.dumps({"error": str(exc)}), file=sys.stderr)

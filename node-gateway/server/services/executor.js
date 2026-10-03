@@ -15,6 +15,7 @@ const {
 } = require('../utils/errors');
 const { logger } = require('../middleware/logger');
 const { resolveRiskDistance, anchorLevels, sizeToRisk } = require('./risk-geometry');
+const { shared: accountCashReservations } = require('./account-cash-reservations');
 const crypto = require('crypto');
 
 const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
@@ -151,7 +152,7 @@ async function preflightEntryMargin(notional, context) {
     product: context.product, requirement_basis: requirementBasis,
   });
   if (available < required) throw new InsufficientMarginError(required, available);
-  return { required, available, requirementBasis, observedAt: new Date().toISOString() };
+  return { required, available, requirementBasis, observedAt: new Date().toISOString(), ownCash, orders };
 }
 
 function entryTag(signalId) {
@@ -618,15 +619,35 @@ async function executeSignal(signal, action, isIntraday = false) {
   // This evidence is deliberately immediately before a new entry. It is not a
   // promise that the broker will still accept the order, so later rejection
   // handling remains in place and no exit path consults this function.
-  await preflightEntryMargin(limitPrice * signal.shares, {
+  const idempotencyTag = entryTag(signal.signal_id);
+  const preflight = await preflightEntryMargin(limitPrice * signal.shares, {
     ticker: signal.ticker, product, quantity: signal.shares, price: limitPrice,
   });
+  let accountReservation;
+  try {
+    accountReservation = accountCashReservations.reserve({
+      reservationId: `GW:${idempotencyTag}`,
+      accountId: config.ACCOUNT_CASH_ACCOUNT_ID,
+      book: 'momentum', brokerTag: idempotencyTag,
+      notional: limitPrice * signal.shares,
+      ownUncommittedCash: preflight.ownCash, brokerOrders: preflight.orders,
+    });
+  } catch (err) {
+    const refusal = new OrderExecutionError(err.message);
+    refusal.retryable = false;
+    refusal.code = String(err.message || '').startsWith('ACCOUNT_OWN_CASH_INSUFFICIENT')
+      ? 'OWN_CASH_INSUFFICIENT' : 'ACCOUNT_RESERVATION_EVIDENCE_UNAVAILABLE';
+    throw refusal;
+  }
+  logger.info({ event_type: 'entry_account_cash_reserved', ticker: signal.ticker,
+    reservation_id: accountReservation.reservationId, amount: accountReservation.amount,
+    charge_reserve: accountReservation.chargeReserve, fill_buffer: accountReservation.fillBuffer,
+    available_after: accountReservation.availableAfter, book: 'momentum' });
   // Margin preflight is a broker-network wait. Re-read the owner halt and
   // session clock after that wait so a 15:14:59 entry cannot cross into CAS
   // and dispatch on the earlier verdict.
   await assertOwnerEntrySession(signal.ticker, { refreshClockAfterResolve: true });
   let orderResponse;
-  const idempotencyTag = entryTag(signal.signal_id);
   const entryParams = {
     exchange: "NSE",
     tradingsymbol: signal.ticker,
@@ -644,10 +665,12 @@ async function executeSignal(signal, action, isIntraday = false) {
     orderResponse = await kite.placeOrder(entryParams, { intent: "entry", channel: "momentum" });
   } catch (err) {
     if (err.retryable === false || ['OrderExecutionError', 'TokenExpiredError', 'ValidationError'].includes(err.name)) {
+      accountCashReservations.releaseNotSent(`GW:${idempotencyTag}`, `known_not_sent:${err.name}`);
       throw new OrderExecutionError(`Order Placement Failed: ${err.message}`);
     }
     orderResponse = await recoverAmbiguousPlacement(entryParams, idempotencyTag);
     if (!orderResponse) {
+      accountCashReservations.markDispatch(`GW:${idempotencyTag}`, { ambiguous: true });
       const unknown = new OrderExecutionError(
         `Order placement outcome UNKNOWN for ${signal.ticker}; no resubmission was made. Reconcile broker orders manually.`
       );
@@ -659,6 +682,7 @@ async function executeSignal(signal, action, isIntraday = false) {
 
   const orderId = orderResponse?.order_id;
   if (!orderId) {
+    accountCashReservations.markDispatch(`GW:${idempotencyTag}`, { ambiguous: true });
     const unknown = new OrderExecutionError(
       `Broker returned no order id for ${signal.ticker}; placement outcome is UNKNOWN and was not retried.`
     );
@@ -666,6 +690,7 @@ async function executeSignal(signal, action, isIntraday = false) {
     unknown.outcomeUnknown = true;
     throw unknown;
   }
+  accountCashReservations.markDispatch(`GW:${idempotencyTag}`, { brokerOrderId: orderId });
   
   // Layer 2 Idempotency: Insert into DB immediately
   try {
@@ -691,11 +716,17 @@ async function executeSignal(signal, action, isIntraday = false) {
     ticker: signal.ticker, product: isIntraday ? 'MIS' : 'CNC',
   });
   if (fill.state === 'REJECTED') {
+    accountCashReservations.releaseZeroFill(`GW:${idempotencyTag}`, {
+      brokerOrderId: orderId, terminalStatus: 'REJECTED', filledQuantity: fill.filledQuantity || 0,
+    });
     signalsDb.prepare(`UPDATE executed_orders SET status = 'REJECTED', execution_state = 'REJECTED', notes = ? WHERE order_id = ?`)
       .run(fill.reason, orderId);
     throw new OrderExecutionError(`Order rejected by broker: ${fill.reason}`);
   }
   if (fill.state === 'CANCELLED') {
+    accountCashReservations.releaseZeroFill(`GW:${idempotencyTag}`, {
+      brokerOrderId: orderId, terminalStatus: 'CANCELLED', filledQuantity: fill.filledQuantity || 0,
+    });
     signalsDb.prepare(`UPDATE executed_orders SET status = 'CANCELLED', execution_state = 'CANCELLED_UNFILLED', notes = ? WHERE order_id = ?`)
       .run('entry_cancelled_unfilled', orderId);
     throw new OrderExecutionError(`Order ${orderId} was cancelled without a fill.`);
