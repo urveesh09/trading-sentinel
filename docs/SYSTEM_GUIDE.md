@@ -47,9 +47,26 @@ does not create a partial paper/DR executor, change a broker call, or modify
 exit authority. Focused shared-risk checks: 10 warnings-fatal passed; shared
 risk plus partial-recovery selection: 32 passed (one ASGI route test excluded
 because its existing dependency deprecation is warnings-fatal); broader F&O
-risk/DR/orchestrator coverage: 80 passed normally. Actual paper observation,
-full recovery/restart acceptance and F1 remain open.
+risk/DR/orchestrator coverage: 80 passed normally. It is superseded for
+partial-cash integrity by F0-E below.
 Source commit `7b77341` is Dev-local, not pushed and not deployed.
+
+F0-E completes the F0 **Dev source contract** without changing a threshold,
+signal, sizing rule, broker call or exit authority. The atomic live-recovery
+receipt now persists its entry/fill price and gross/cost/net cash. The shared
+view verifies that immutable receipt's bounded broker-evidence digest,
+fill-arithmetic, source/origin/generation ledger identity, exact net cash and
+pro-rata residual loss before releasing capacity. A new additive migration
+protects recovery rows from update/delete and populated quantity/loss baselines
+from rewrite; legacy partial rows missing the new economic receipt deny entry
+rather than being guessed/backfilled. Focused shared-risk/recovery tests: 32
+passed warnings-fatal, excluding the pre-existing deprecated-ASGI route test
+and an existing clock-precision test. Broader F&O admission/lifecycle/DR/
+orchestrator coverage: 150 passed normally; its warnings-fatal form surfaced
+one pre-existing socket-lifecycle warning in an orchestrator timing test after
+149 assertions. F0 remains Dev-only pending GitHub promotion and real paper
+admission/recovery observation; F1 cash/margin preflight remains required
+before any live funding. Source commit pending.
 
 ## October 3 — baseline research is not full portfolio backtesting
 

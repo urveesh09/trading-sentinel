@@ -33,6 +33,39 @@ passed with the existing deprecated-ASGI route test deselected; broader F&O
 risk/DR/orchestrator coverage: 80 passed normally. Source commit `7b77341`;
 Dev only, not pushed or deployed.
 
+**Completed implementation slice — F0-E receipt-backed partial cash integrity
+(October 3, Dev only).** Problem: F0-D binds a residual to the identity of a
+partial-exit ledger event but does not re-derive that event's P&L from the
+retained fill receipt, and its declared entry quantity/loss baselines are not
+write-protected. An altered fill price, cash value or baseline could therefore
+make an invalid residual appear internally consistent. Contract: the shared
+view must verify the canonical broker-evidence digest, filled receipt price and
+cost-derived cash against the exact ledger row; `initial_qty`, `initial_lots`
+and `initial_max_loss_rupees` become migration-safe immutable baselines once
+populated. Any discrepancy denies new entry without changing existing
+management, exits, broker calls, signal selection, sizing or thresholds.
+Acceptance: real verified partial recovery still exposes its pro-rata residual
+and exact cash; altered evidence, fill price, cash, generation or baseline
+fails closed; legacy-null baselines can be populated once, while a populated
+baseline cannot be rewritten; concurrent/restart recovery continues to yield
+one receipt/cash transition. Rollout: additive Dev schema trigger and read
+validation, local tests/commit, then GitHub promotion and paper observation.
+Rollback: revert only the view validation and trigger migration, retaining all
+settlement/recovery evidence. Implementation result: recovery rows now persist
+the entry/fill/gross/cost/P&L values calculated in their atomic resolution
+transaction, and immutable triggers protect recovery receipts plus populated
+quantity/loss baselines. The shared view verifies the receipt hash, arithmetic,
+ledger identity/cash, ordered generation and pro-rata residual before it grants
+capacity. Existing partial rows lacking the new economic evidence fail closed;
+they are never silently backfilled. Focused shared-risk/recovery tests: 32
+passed warnings-fatal (two documented non-F0 test exclusions). Broader F&O
+admission/lifecycle/DR/orchestrator selection: 150 passed normally; its
+warnings-fatal form has one pre-existing socket-lifecycle warning in an
+orchestrator timing test after 149 assertions. F0's Dev source contract is
+complete pending post-promotion paper admission/recovery observation. F1
+remains the separately authorised broker cash/margin preflight before any live
+funding. Source commit pending; Dev only, not pushed or deployed.
+
 **Completed implementation slice — F0-C shared paper entry-policy receipt (October 3, Dev only).**
 Problem: F0-B atomically reserves paper F&O catastrophe cash across the
 single-leg and defined-risk books, but the legacy directional kill switches and

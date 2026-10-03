@@ -243,6 +243,7 @@ async def resolve_exit_intent(
                 raise RecoveryConflict("intent or position changed during broker inspection")
             generation = int(current["settlement_generation"])
             ledger_id = None
+            gross = costs = pnl = None
             if filled:
                 generation += 1
                 px = proof["fill_price"]
@@ -289,11 +290,12 @@ async def resolve_exit_intent(
             await db.execute("""INSERT INTO fno_exit_recoveries
                 (position_id,source,intent_created_at,order_id,operator,account_id,
                  broker_evidence_sha256,broker_evidence_json,terminal_status,filled_qty,remaining_qty,
-                 fill_price,settlement_generation,ledger_id,resolved_at)
-                VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",
+                 entry_premium,fill_price,gross_pnl,costs,pnl,settlement_generation,ledger_id,resolved_at)
+                VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",
                 (position_id, source, expected_created_at, order_id, operator.strip(),
                  account_id, proof["evidence_sha256"], proof["evidence_json"], proof["status"], filled,
-                 remaining, proof["fill_price"], generation, ledger_id, resolved_at))
+                 remaining, current["entry_premium"], proof["fill_price"], gross, costs, pnl,
+                 generation, ledger_id, resolved_at))
             await db.commit()
         except Exception:
             await db.rollback()

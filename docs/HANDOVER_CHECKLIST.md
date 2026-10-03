@@ -26,8 +26,16 @@
   known warning-producing ASGI route test deselected; 80 broader F&O
   risk/DR/orchestrator tests passed normally. Source commit `7b77341` is
   Dev-local, not pushed or deployed.
-- [ ] Observe/review paper admissions and recovery evidence after GitHub
-  promotion; F1 cash-only broker/margin preflight still precedes live funding.
+- [x] F0-E receipt-backed partial cash integrity: immutable recovery receipts
+  retain entry/fill/gross/cost/net economics; the shared view verifies their
+  broker-evidence digest, ledger cash/generation and residual exposure before
+  release. Missing legacy partial economics fail entry closed, never guessed.
+  Dev verification: 32 focused warnings-fatal; 150 broader F&O tests normally;
+  the warnings-fatal wider selection surfaced one existing socket warning.
+  Source commit pending; Dev-only, not pushed or deployed.
+- [ ] F0 operational acceptance: observe paper admissions and recovery evidence
+  after GitHub promotion. F1 cash-only broker/margin preflight still precedes
+  live funding.
 - [ ] F1 owner cash-only funding semantics, broker initial/final margin and
   catastrophe acceptance before live allocation; no live spread authorisation.
 - [ ] B1/B2 interval/zero-volume/session data contracts and full classic Penny

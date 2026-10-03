@@ -19,11 +19,19 @@ F0-D validates an open single-leg residual after a broker-verified partial
 exit against its ordered recovery records, linked exact ledger cash, immutable
 initial quantity/loss and pro-rata remaining catastrophe loss.  A discrepancy
 does not guess a release: it makes the shared view unavailable for new entry.
+
+F0-E also checks that the retained broker-evidence digest, immutable recovery
+economics and ledger cash agree, while the quantity/loss entry baselines are
+immutable after they are written. Cost schedules can change, so this read
+validates the recorded atomic cost/P&L arithmetic rather than recalculating
+with later settings.
 """
 from __future__ import annotations
 
 from dataclasses import dataclass
 from datetime import date, datetime, timedelta, timezone
+import hashlib
+import json
 import math
 from typing import Optional
 from zoneinfo import ZoneInfo
@@ -164,23 +172,45 @@ def _whole_non_negative(value: object) -> Optional[int]:
     return value
 
 
+def _finite_number(value: object) -> Optional[float]:
+    """Accept finite scalar evidence, including a realised loss."""
+    if not isinstance(value, (int, float)) or isinstance(value, bool):
+        return None
+    number = float(value)
+    return number if math.isfinite(number) else None
+
+
+def _recovery_evidence_is_intact(digest: object, raw: object) -> bool:
+    """Check the bounded broker snapshot before trusting its recovery receipt."""
+    if not isinstance(digest, str) or len(digest) != 64 or not isinstance(raw, str):
+        return False
+    encoded = raw.encode("utf-8")
+    if len(encoded) > 65536:
+        return False
+    try:
+        parsed = json.loads(raw)
+    except (TypeError, ValueError):
+        return False
+    return isinstance(parsed, dict) and hashlib.sha256(encoded).hexdigest() == digest
+
+
 async def _validate_open_partial_exit_evidence(
     db: aiosqlite.Connection, *, source: str, open_positions: list[tuple],
 ) -> str:
     """Bind residual single-leg risk to durable partial-exit evidence.
 
     A recovery records the broker-confirmed filled/residual quantities and its
-    exact ledger row in the same transaction as the position reduction.  Only
-    an open position with such evidence needs this validation; untouched
-    positions retain their existing structural-loss contract.  This read never
-    changes recovery state or grants capacity.
+    exact ledger row in the same transaction as the position reduction. This
+    read also verifies receipt hash/economics before it releases any residual
+    capacity. It never changes recovery state or grants capacity on ambiguity.
     """
     positions = {int(row[0]): row for row in open_positions}
     if not positions:
         return ""
     marks = ",".join("?" for _ in positions)
     recoveries = await (await db.execute(
-        "SELECT id,position_id,filled_qty,remaining_qty,settlement_generation,ledger_id "
+        "SELECT id,position_id,filled_qty,remaining_qty,entry_premium,fill_price,gross_pnl,costs,pnl,"
+        "settlement_generation,ledger_id,broker_evidence_sha256,broker_evidence_json "
         "FROM fno_exit_recoveries WHERE source=? AND position_id IN (" + marks + ") "
         "ORDER BY position_id,id",
         (source, *positions),
@@ -192,28 +222,56 @@ async def _validate_open_partial_exit_evidence(
             return "invalid_partial_recovery_evidence"
         by_position.setdefault(position_id, []).append(recovery)
 
-    for position_id, rows in by_position.items():
-        _id, current_loss, current_qty, initial_qty, initial_loss = positions[position_id]
+    for position_id, position in positions.items():
+        _id, current_loss, current_qty, initial_qty, initial_loss, current_generation = position
         qty = _whole_non_negative(current_qty)
         original_qty = _whole_non_negative(initial_qty)
         original_loss = _finite_non_negative(initial_loss)
         current = _finite_non_negative(current_loss)
+        position_generation = _whole_non_negative(current_generation)
+        rows = by_position.get(position_id, [])
+        if not rows:
+            # A legacy/untouched row may not have the newer baselines. If it
+            # does, it must still describe a wholly open generation; otherwise
+            # a deleted partial receipt could masquerade as fresh exposure.
+            populated = (qty is not None and original_qty is not None
+                         and original_loss is not None and current is not None
+                         and position_generation is not None)
+            if populated and (qty != original_qty or position_generation != 0 or not math.isclose(
+                    current, original_loss, rel_tol=0.0, abs_tol=0.01)):
+                return "invalid_partial_recovery_evidence"
+            continue
         if qty is None or qty <= 0 or original_qty is None or original_qty <= 0 \
-                or qty > original_qty or original_loss is None or current is None:
+                or qty > original_qty or original_loss is None or current is None \
+                or position_generation is None:
             return "invalid_partial_recovery_evidence"
         expected_remaining = original_qty
         expected_generation = 0
         for recovery in rows:
-            _recovery_id, _position_id, filled_raw, remaining_raw, generation_raw, ledger_id = recovery
+            (_recovery_id, _position_id, filled_raw, remaining_raw, entry_raw, fill_raw,
+             gross_raw, costs_raw, pnl_raw, generation_raw, ledger_id,
+             evidence_digest, evidence_json) = recovery
             filled = _whole_non_negative(filled_raw)
             remaining = _whole_non_negative(remaining_raw)
             generation = _whole_non_negative(generation_raw)
             if filled is None or remaining is None or generation is None \
-                    or filled + remaining != expected_remaining:
+                    or filled + remaining != expected_remaining \
+                    or not _recovery_evidence_is_intact(evidence_digest, evidence_json):
                 return "invalid_partial_recovery_evidence"
             if filled:
                 expected_generation += 1
-                if generation != expected_generation or ledger_id is None:
+                entry = _finite_number(entry_raw)
+                fill = _finite_number(fill_raw)
+                gross = _finite_number(gross_raw)
+                costs = _finite_non_negative(costs_raw)
+                recorded_pnl = _finite_number(pnl_raw)
+                if (generation != expected_generation or ledger_id is None
+                        or entry is None or entry <= 0 or fill is None or fill <= 0 or gross is None
+                        or costs is None or recorded_pnl is None
+                        or not math.isclose(gross, (fill - entry) * filled,
+                                            rel_tol=0.0, abs_tol=0.01)
+                        or not math.isclose(recorded_pnl, gross - costs,
+                                            rel_tol=0.0, abs_tol=0.01)):
                     return "invalid_partial_recovery_evidence"
                 ledger = await (await db.execute(
                     "SELECT source,event_type,origin_ref,settlement_generation,pnl "
@@ -222,15 +280,17 @@ async def _validate_open_partial_exit_evidence(
                 if (ledger is None or ledger[0] != source or ledger[1] != "TRADE_CLOSED"
                         or ledger[2] != f"fno_position:{position_id}"
                         or _whole_non_negative(ledger[3]) != generation
-                        or not isinstance(ledger[4], (int, float))
-                        or isinstance(ledger[4], bool)
-                        or not math.isfinite(float(ledger[4]))):
+                        or _finite_number(ledger[4]) is None
+                        or not math.isclose(float(ledger[4]), recorded_pnl,
+                                            rel_tol=0.0, abs_tol=0.01)):
                     return "invalid_partial_recovery_evidence"
-            elif generation != expected_generation or ledger_id is not None:
+            elif (generation != expected_generation or ledger_id is not None
+                  or any(value is not None for value in (entry_raw, fill_raw, gross_raw, costs_raw, pnl_raw))):
                 return "invalid_partial_recovery_evidence"
             expected_remaining = remaining
         expected_loss = original_loss * expected_remaining / original_qty
-        if (expected_remaining != qty or not math.isclose(
+        if (expected_remaining != qty or position_generation != expected_generation
+                or not math.isclose(
                 current, expected_loss, rel_tol=0.0, abs_tol=0.01)):
             return "invalid_partial_recovery_evidence"
     return ""
@@ -267,7 +327,7 @@ async def _read_view(
         return _unavailable(source, pool_rs, "nonfinite_realised_pnl")
 
     single = await (await db.execute(
-        "SELECT id,max_loss_rupees,qty,initial_qty,initial_max_loss_rupees "
+        "SELECT id,max_loss_rupees,qty,initial_qty,initial_max_loss_rupees,settlement_generation "
         "FROM fno_positions "
         "WHERE source=? AND status IN ('OPEN', 'UNRESOLVED')", (source,)
     )).fetchall()

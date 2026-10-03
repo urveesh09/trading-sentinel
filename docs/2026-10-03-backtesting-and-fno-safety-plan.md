@@ -204,6 +204,25 @@ Source commit: `0ba2d29` on `codex/production-correction-hedge-p0`; Dev-only,
 pushed to GitHub, not deployed. It adds an additive local reservation table used by paper entry;
 no Production schema/data, configuration, broker or message action occurred.
 
+**October 3 F0-C through F0-E — shared policy and verified partial residuals
+(Dev only).** F0-C applies the existing day/week/month, drawdown and
+consecutive-loss policies to both paper books from all exact source-scoped
+`TRADE_CLOSED` cash. F0-D makes an open live partial residual usable only when
+its ordered quantity/generation chain, ledger identity and pro-rata loss agree.
+F0-E closes the remaining source-integrity gap: recovery rows persist the
+entry/fill/gross/cost/net values from their atomic resolution transaction, the
+shared view verifies their broker-evidence digest and exact linked ledger cash,
+and additive triggers protect recovery receipts plus populated quantity/loss
+baselines from rewrites. Missing legacy partial economics fail new entry closed;
+no historical data is fabricated. No threshold was tightened, and no broker,
+live-spread, signal, sizing or exit-management authority changed. Focused
+shared-risk/recovery selection: 32 passed warnings-fatal (two documented
+non-F0 test exclusions); broader F&O admission/lifecycle/DR/orchestrator
+selection: 150 passed normally. Its warnings-fatal form has one pre-existing
+socket-lifecycle warning in an orchestrator timing test. F0 Dev source work is
+complete pending GitHub promotion and paper admission/recovery observation;
+F1 is still required before any live funding. Source commit pending.
+
 #### F1 — cash-only funding and catastrophe acceptance
 
 Before real allocation, pin operator-approved funding semantics. Introduce a

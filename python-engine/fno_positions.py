@@ -131,6 +131,45 @@ CREATE TABLE IF NOT EXISTS fno_exit_execution_receipts (
 """
 
 
+# Initial quantity/loss baselines and a recovery receipt are audit evidence,
+# not mutable position state. The migration below may fill a legacy NULL once;
+# after that, an UPDATE cannot rewrite the baseline used by shared-risk
+# admission. Current quantity/loss remain intentionally mutable because a
+# broker-verified partial exit changes them transactionally.
+_ENTRY_EVIDENCE_IMMUTABLE_DDL = """
+CREATE TRIGGER IF NOT EXISTS fno_positions_entry_evidence_immutable
+BEFORE UPDATE OF initial_qty, initial_lots, initial_max_loss_rupees
+ON fno_positions
+FOR EACH ROW WHEN
+    (OLD.initial_qty IS NOT NULL AND NEW.initial_qty IS NOT OLD.initial_qty)
+    OR (OLD.initial_lots IS NOT NULL AND NEW.initial_lots IS NOT OLD.initial_lots)
+    OR (OLD.initial_max_loss_rupees IS NOT NULL
+        AND NEW.initial_max_loss_rupees IS NOT OLD.initial_max_loss_rupees)
+BEGIN
+    SELECT RAISE(ABORT, 'fno entry evidence is immutable');
+END
+"""
+
+
+_RECOVERY_EVIDENCE_UPDATE_IMMUTABLE_DDL = """
+CREATE TRIGGER IF NOT EXISTS fno_exit_recoveries_evidence_update_immutable
+BEFORE UPDATE ON fno_exit_recoveries
+FOR EACH ROW
+BEGIN
+    SELECT RAISE(ABORT, 'fno exit recovery evidence is immutable');
+END;
+"""
+
+_RECOVERY_EVIDENCE_DELETE_IMMUTABLE_DDL = """
+CREATE TRIGGER IF NOT EXISTS fno_exit_recoveries_evidence_delete_immutable
+BEFORE DELETE ON fno_exit_recoveries
+FOR EACH ROW
+BEGIN
+    SELECT RAISE(ABORT, 'fno exit recovery evidence is immutable');
+END
+"""
+
+
 @dataclass
 class FnoPosition:
     """In-memory mirror of one fno_positions row."""
@@ -239,11 +278,23 @@ async def init_fno_positions_db(db_path: str) -> None:
             broker_evidence_sha256 TEXT NOT NULL,
             broker_evidence_json TEXT NOT NULL,
             terminal_status TEXT NOT NULL, filled_qty INTEGER NOT NULL,
-            remaining_qty INTEGER NOT NULL, fill_price REAL,
+            remaining_qty INTEGER NOT NULL, entry_premium REAL, fill_price REAL,
+            gross_pnl REAL, costs REAL, pnl REAL,
             settlement_generation INTEGER NOT NULL,
             ledger_id INTEGER, resolved_at TEXT NOT NULL,
             UNIQUE(position_id, intent_created_at), UNIQUE(source, order_id)
         )""")
+        for column in ("entry_premium", "gross_pnl", "costs", "pnl"):
+            try:
+                await db.execute(
+                    f"ALTER TABLE fno_exit_recoveries ADD COLUMN {column} REAL"
+                )
+            except aiosqlite.OperationalError as exc:
+                if "duplicate column name" not in str(exc).lower():
+                    raise
+        await db.execute(_ENTRY_EVIDENCE_IMMUTABLE_DDL)
+        await db.execute(_RECOVERY_EVIDENCE_UPDATE_IMMUTABLE_DDL)
+        await db.execute(_RECOVERY_EVIDENCE_DELETE_IMMUTABLE_DDL)
         await db.commit()
 
 

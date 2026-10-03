@@ -1,10 +1,12 @@
 """F0 shared F&O risk read-model and reservation characterization tests."""
+import hashlib
 from datetime import date, datetime, timezone
 
 import aiosqlite
 import pytest
 
 from fno_dr_book import init_dr_db
+from fno_costs import calc_fno_costs
 from fno_positions import init_fno_positions_db
 from fno_shared_risk import (
     init_shared_fno_risk_db,
@@ -241,30 +243,37 @@ async def test_shared_policy_preserves_affordable_clean_admission(db_path):
 @pytest.mark.asyncio
 async def test_partial_recovery_residual_requires_exact_cash_and_pro_rata_risk(db_path):
     await _ready(db_path)
+    filled, entry, fill = 75, 100.0, 90.0
+    gross = (fill - entry) * filled
+    costs = calc_fno_costs(entry, fill, filled)
+    pnl = gross - costs
+    evidence = "{}"
     async with aiosqlite.connect(db_path) as db:
         position = await db.execute(
             "INSERT INTO fno_positions "
-            "(source,tradingsymbol,status,qty,initial_qty,max_loss_rupees,initial_max_loss_rupees) "
-            "VALUES (?,?,?,?,?,?,?)",
-            ("FNO_LIVE", "NIFTY26OCT25000CE", "OPEN", 75, 150, 750.0, 1_500.0),
+            "(source,tradingsymbol,status,qty,initial_qty,max_loss_rupees,initial_max_loss_rupees,"
+            "entry_premium,settlement_generation) VALUES (?,?,?,?,?,?,?,?,?)",
+            ("FNO_LIVE", "NIFTY26OCT25000CE", "OPEN", 75, 150, 750.0, 1_500.0,
+             entry, 1),
         )
         position_id = int(position.lastrowid)
         ledger = await db.execute(
             "INSERT INTO bankroll_ledger "
             "(timestamp,event_type,pnl,source,origin_ref,settlement_generation) "
             "VALUES (?,?,?,?,?,?)",
-            ("2026-10-03T10:00:00+05:30", "TRADE_CLOSED", -250.0,
+            ("2026-10-03T10:00:00+05:30", "TRADE_CLOSED", pnl,
              "FNO_LIVE", f"fno_position:{position_id}", 1),
         )
         await db.execute(
             "INSERT INTO fno_exit_recoveries "
             "(position_id,source,intent_created_at,order_id,operator,account_id,"
             "broker_evidence_sha256,broker_evidence_json,terminal_status,filled_qty,"
-            "remaining_qty,fill_price,settlement_generation,ledger_id,resolved_at) "
-            "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+            "remaining_qty,entry_premium,fill_price,gross_pnl,costs,pnl,settlement_generation,ledger_id,resolved_at) "
+            "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
             (position_id, "FNO_LIVE", "2026-10-03T04:00:00+00:00", "EXIT-1",
-             "reviewer", "account", "a" * 64, "{}", "CANCELLED", 75, 75,
-             90.0, 1, int(ledger.lastrowid), "2026-10-03T04:01:00+00:00"),
+             "reviewer", "account", hashlib.sha256(evidence.encode()).hexdigest(), evidence,
+             "CANCELLED", filled, 75, entry, fill, gross, costs, pnl, 1,
+             int(ledger.lastrowid), "2026-10-03T04:01:00+00:00"),
         )
         await db.commit()
 
@@ -290,3 +299,57 @@ async def test_partial_recovery_residual_requires_exact_cash_and_pro_rata_risk(d
     missing_cash = await shared_fno_risk_view(db_path, "FNO_LIVE", POOL)
     assert not missing_cash.available
     assert missing_cash.reason == "invalid_partial_recovery_evidence"
+
+
+@pytest.mark.asyncio
+async def test_partial_recovery_cash_and_receipt_evidence_cannot_be_rewritten(db_path):
+    """F0-E prevents a scalar, cash, or receipt edit from creating capacity."""
+    await _ready(db_path)
+    filled, entry, fill = 75, 100.0, 90.0
+    gross = (fill - entry) * filled
+    costs = calc_fno_costs(entry, fill, filled)
+    pnl = gross - costs
+    evidence = "{}"
+    async with aiosqlite.connect(db_path) as db:
+        position = await db.execute(
+            "INSERT INTO fno_positions "
+            "(source,tradingsymbol,status,qty,initial_qty,max_loss_rupees,initial_max_loss_rupees,"
+            "entry_premium,settlement_generation) VALUES (?,?,?,?,?,?,?,?,?)",
+            ("FNO_LIVE", "NIFTY26OCT25000CE", "OPEN", 75, 150, 750.0, 1_500.0,
+             entry, 1),
+        )
+        position_id = int(position.lastrowid)
+        ledger = await db.execute(
+            "INSERT INTO bankroll_ledger "
+            "(timestamp,event_type,pnl,source,origin_ref,settlement_generation) VALUES (?,?,?,?,?,?)",
+            ("2026-10-03T10:00:00+05:30", "TRADE_CLOSED", pnl,
+             "FNO_LIVE", f"fno_position:{position_id}", 1),
+        )
+        recovery = await db.execute(
+            "INSERT INTO fno_exit_recoveries "
+            "(position_id,source,intent_created_at,order_id,operator,account_id,"
+            "broker_evidence_sha256,broker_evidence_json,terminal_status,filled_qty,"
+            "remaining_qty,entry_premium,fill_price,gross_pnl,costs,pnl,settlement_generation,ledger_id,resolved_at) "
+            "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+            (position_id, "FNO_LIVE", "2026-10-03T04:00:00+00:00", "EXIT-1",
+             "reviewer", "account", hashlib.sha256(evidence.encode()).hexdigest(), evidence,
+             "CANCELLED", filled, 75, entry, fill, gross, costs, pnl, 1,
+             int(ledger.lastrowid), "2026-10-03T04:01:00+00:00"),
+        )
+        await db.commit()
+    assert (await shared_fno_risk_view(db_path, "FNO_LIVE", POOL)).available
+
+    async with aiosqlite.connect(db_path) as db:
+        await db.execute("UPDATE bankroll_ledger SET pnl=pnl+1 WHERE id=?", (int(ledger.lastrowid),))
+        await db.commit()
+    invalid_cash = await shared_fno_risk_view(db_path, "FNO_LIVE", POOL)
+    assert not invalid_cash.available
+    assert invalid_cash.reason == "invalid_partial_recovery_evidence"
+
+    async with aiosqlite.connect(db_path) as db:
+        with pytest.raises(aiosqlite.IntegrityError):
+            await db.execute("UPDATE fno_positions SET initial_qty=75 WHERE id=?", (position_id,))
+        with pytest.raises(aiosqlite.IntegrityError):
+            await db.execute("UPDATE fno_exit_recoveries SET fill_price=91 WHERE id=?", (int(recovery.lastrowid),))
+        with pytest.raises(aiosqlite.IntegrityError):
+            await db.execute("DELETE FROM fno_exit_recoveries WHERE id=?", (int(recovery.lastrowid),))
