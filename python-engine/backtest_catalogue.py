@@ -29,8 +29,10 @@ SHIPPED_STRATEGIES: tuple[dict, ...] = (
      "status": "PROXY_ONLY", "next_step": "kept as research; not a shipped book"},
     {"strategy": "penny_edge_adaptive", "book": "EDGE_PAPER / EDGE", "product": "CNC",
      "live_gate": "PENNY_EDGE_DISABLE_LIVE (default True) + code hard block",
-     "adapters": ("penny_edge_daily_evaluator", "penny_edge_next_open_lifecycle"), "status": "EVALUATOR_ONLY",
-     "next_step": "causal holding clock, executable sizing/fills and persistent cash/position lifecycle before LIFECYCLE"},
+     "adapters": ("penny_edge_daily_evaluator", "penny_edge_next_open_lifecycle", "penny_edge_portfolio_replay"),
+     "status": "EVALUATOR_ONLY",
+     "next_step": "own-cash portfolio replay exists (daily-bar 09:30/15:15 proxies); intraday entry evidence, "
+                  "point-in-time events and runtime paper-book parity before LIFECYCLE"},
     {"strategy": "swing_regime", "book": "SYSTEM (manual EXEC)", "product": "CNC",
      "live_gate": "every EXEC tap is live",
      "adapters": ("swing_regime_daily", "swing_regime_daily_evaluator"), "status": "EVALUATOR_ONLY",

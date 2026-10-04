@@ -603,6 +603,90 @@ class RangeReversionEvaluatorAdapter(BacktestAdapter):
                 list(self.metadata.limitations))
 
 
+class EdgePortfolioReplayAdapter(EdgeNextOpenLifecycleAdapter):
+    """R2 own-cash EDGE portfolio replay (BASELINE live clocks or EDGE_TRADER_V1)."""
+    metadata = StrategyMetadata(
+        strategy_id="penny_edge_portfolio_replay", name="Adaptive Penny EDGE (own-cash portfolio replay)",
+        version="1.0.0", description="Shipped EDGE scan with causal next-session entries, persistent cash/positions, CNC costs and marked equity.",
+        engine="edge_portfolio_replay.run_edge_portfolio", timeframe="1 day", scope="PROXY",
+        capabilities=("universe", "shipped_scanner", "shipped_ranking", "next_session_open", "costs",
+                      "own_cash_portfolio", "marked_equity", "candidate_policy"),
+        data_requirements=("explicit EDGE universe", "NIFTYBEES daily history", "post-window daily tail for open positions"),
+        limitations=(
+            "Daily bars only: the 09:30 entry is approximated by the session open and the 15:15 time exit by the close; intraday order of high/low is unknown (stop wins ties).",
+            "The operator event calendar is the current file, not a point-in-time snapshot; scheduler misfires and broker admission are not replayed.",
+            "Runtime EDGE_PAPER also passes through the daily OHLC position tracker; that mixed paper bookkeeping is not reproduced.",
+            "Own cash only: unlike runtime paper sizing, entries never exceed available cash and a held ticker is not re-entered.",
+        ),
+        default_config={"tickers": [], "nifty_ticker": "NIFTYBEES", "bankroll": 100000.0, "max_positions": 3,
+                        "min_strength": 0.45, "policy": "BASELINE"},
+        default_assumptions={"signal_clock": "D_close", "entry_clock": "D_plus_1_open_as_0930_proxy",
+                             "exit_clock": "stop_before_target_intraday; time_exit_at_close", "cash": "own_cash_no_margin"},
+        parameter_schema={"tickers": {"type": "array", "items": {"type": "string"}, "minItems": 1},
+                          "nifty_ticker": {"type": "string"}, "bankroll": {"type": "number", "minimum": 0.01},
+                          "max_positions": {"type": "integer", "minimum": 1}, "min_strength": {"type": "number", "minimum": 0, "maximum": 1},
+                          "policy": {"enum": ["BASELINE", "EDGE_TRADER_V1"]}},
+    )
+
+    def snapshot_config(self, supplied):
+        policy = str((supplied or {}).get("policy", "BASELINE"))
+        base = super().snapshot_config({k: v for k, v in (supplied or {}).items() if k != "policy"})
+        if policy not in ("BASELINE", "EDGE_TRADER_V1"):
+            raise ValueError("EDGE portfolio policy must be BASELINE or EDGE_TRADER_V1")
+        return {**base, "policy": policy}
+
+    def prepare(self, db_path, request):
+        """Tickers with no history before the window ends were not tradeable
+        then; exclude them with a receipt instead of failing the whole window.
+        Invalid history and a missing NIFTY proxy still make it unavailable."""
+        from research_data_contracts import DatasetUnavailable, load_daily_dataset
+        names = [*request.config["tickers"], request.config["nifty_ticker"]]
+        try:
+            data = load_daily_dataset(
+                db_path, tickers=names,
+                before=(date.fromisoformat(request.end_date) + timedelta(days=10)).isoformat(),
+            )
+        except DatasetUnavailable as exc:
+            raise BacktestUnavailable(str(exc)) from exc
+        invalid = sorted(data.invalid)
+        if invalid:
+            raise BacktestUnavailable("invalid daily history for: " + ", ".join(invalid))
+        if not data.bars.get(request.config["nifty_ticker"]):
+            raise BacktestUnavailable("missing required daily history: " + request.config["nifty_ticker"])
+        absent = sorted(name for name in request.config["tickers"] if not data.bars.get(name))
+        present = [name for name in names if data.bars.get(name)]
+        if len(present) < 2:
+            raise BacktestUnavailable("no EDGE universe ticker has history in this window")
+        rows = [(bar.ticker, bar.day.isoformat(), bar.open, bar.high, bar.low, bar.close, bar.volume)
+                for name in present for bar in data.bars[name]]
+        return PreparedDataset(_fingerprint_rows(["ticker", "date", "open", "high", "low", "close", "volume"], rows),
+                               len(rows), {"daily": data.manifest,
+                                           "universe": [n for n in request.config["tickers"] if n not in absent],
+                                           "not_listed_in_window": absent, "post_window_tail_days": 10}, rows)
+
+    def execute(self, prepared, request):
+        from edge_portfolio_replay import EdgeReplayConfig, EdgeReplayUnavailable, run_edge_portfolio
+        cfg = request.config
+        try:
+            return run_edge_portfolio(prepared.payload, start=request.start_date, end=request.end_date,
+                                      config=EdgeReplayConfig(
+                                          tickers=tuple(prepared.details["universe"]), nifty_ticker=cfg["nifty_ticker"],
+                                          bankroll=cfg["bankroll"], max_positions=cfg["max_positions"],
+                                          min_strength=cfg["min_strength"], policy=cfg["policy"]))
+        except EdgeReplayUnavailable as exc:
+            raise BacktestUnavailable(str(exc)) from exc
+
+    def normalize(self, result, request):
+        s = result["summary"]
+        return ({"trade_count": s["closed"], "net_pnl": s["net_pnl"], "net_return_pct": s["marked_return_pct"],
+                 "win_rate_pct": s["win_rate_pct"], "profit_factor": s["profit_factor"],
+                 "max_drawdown_pct": s["max_marked_drawdown_pct"], "avg_r": None, "scope": result["scope"],
+                 "open_marked": s["open_marked"], "net_excluding_best_winner": s["net_excluding_best_winner"],
+                 "admission_outcomes": result["admission_outcomes"],
+                 "oos": {"available": False, "reason": "single retrospective window; qualification needs a frozen untouched window"}},
+                list(self.metadata.limitations))
+
+
 class PennyDailyProxyAdapter(BacktestAdapter):
     metadata = StrategyMetadata(
         strategy_id="penny_breakout_daily_proxy",
@@ -1448,7 +1532,7 @@ class FnoUnavailableAdapter(BacktestAdapter):
 STRATEGY_REGISTRY: dict[str, BacktestAdapter] = {
     adapter.metadata.strategy_id: adapter
     for adapter in (
-        SwingDailyAdapter(), SwingDecisionParityAdapter(), EdgeDecisionParityAdapter(), EdgeNextOpenLifecycleAdapter(), PennyDailyProxyAdapter(),
+        SwingDailyAdapter(), SwingDecisionParityAdapter(), EdgeDecisionParityAdapter(), EdgeNextOpenLifecycleAdapter(), EdgePortfolioReplayAdapter(), PennyDailyProxyAdapter(),
         PennyDailyProxyWalkForwardAdapter(), PennyMinuteReplayAdapter(),
         PennyMisLifecycleAdapter(), PennyCncConnorsLifecycleAdapter(), PennyJointPortfolioAdapter(),
         Momentum15MinuteReplayAdapter(), RangeReversionEvaluatorAdapter(), FnoUnavailableAdapter(),
