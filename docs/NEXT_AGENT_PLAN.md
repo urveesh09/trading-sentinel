@@ -2,6 +2,16 @@
 
 
 
+## October 4 (late) — start here: successor inheritance and gateway fix
+
+Read [the inheritance doc](2026-10-04-successor-inheritance.md) first.
+
+1. Confirm Production was rebuilt with the container uid fix and the gateway is
+   healthy (it crash-looped with `SQLITE_READONLY` on October 4).
+2. Read and record the round-3 Kite scoring results from the October 5, 17:07
+   Windows task. The in-chat reminder was cancelled; nothing else prompts it.
+3. Then continue with the items below.
+
 ## October 5 — EDGE overnight result and next steps
 
 `edge-overnight-t1` is complete ([study](2026-10-05-edge-overnight-study.md)).

@@ -17,8 +17,11 @@ ARG SENTINEL_BUILD_UTC=unknown
 ARG SENTINEL_SERVICE_NAME=node-gateway
 # su-exec: Alpine's lightweight gosu equivalent for privilege drop in entrypoints
 RUN apk add --no-cache su-exec
-# Create non-root user
-RUN addgroup -S appgroup && adduser -S appuser -G appgroup
+# Create non-root user with uid/gid 1000, shared with python-engine's quantuser:
+# both containers write the shared cache.db and its WAL/SHM files. The base
+# image's `node` user already holds 1000, so it is removed first.
+RUN deluser --remove-home node && addgroup -g 1000 appgroup && \
+    adduser -D -u 1000 -G appgroup appuser
 
 WORKDIR /app
 

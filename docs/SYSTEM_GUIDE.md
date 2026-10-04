@@ -2,6 +2,16 @@
 
 
 
+## October 4 — container users share uid 1000 (actual behavior, Dev)
+
+- `python-engine` (`quantuser`) and `node-gateway` (`appuser`) both run as
+  uid/gid 1000. Both write the shared `cache.db`; the gateway has written it
+  since the account cash reservations (`919e042`).
+- Each entrypoint chowns its databases and their `-wal`/`-shm` files at start.
+- Before this fix the gateway ran as uid 100 and crash-looped with
+  `SQLITE_READONLY` on Production (October 4).
+- Successor handover: [inheritance](2026-10-04-successor-inheritance.md).
+
 ## October 5 — EDGE overnight research candidate (actual behavior, Dev, research only)
 
 [Study](2026-10-05-edge-overnight-study.md). `edge_portfolio_replay` adds:

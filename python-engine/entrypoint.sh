@@ -9,9 +9,10 @@ mkdir -p /data
 # signals.db/app.db ownership, causing SQLITE_READONLY in that container.
 chmod 777 /data
 
-# Fix ownership of OUR OWN file only. Silently ignore if it doesn't exist yet
-# (it will be created with correct ownership after the gosu privilege drop).
-chown quantuser:quantuser /data/cache.db 2>/dev/null || true
+# Fix ownership of OUR OWN database and its WAL/SHM files (node-gateway also
+# writes cache.db under the same uid 1000; older images created them as uid
+# 100). Silently ignore files that don't exist yet.
+chown quantuser:quantuser /data/cache.db /data/cache.db-wal /data/cache.db-shm 2>/dev/null || true
 
 if ! su -s /bin/bash quantuser -c 'touch /data/.write_test && rm -f /data/.write_test'; then
     echo "ERROR: /data is not writable even after permission repair"

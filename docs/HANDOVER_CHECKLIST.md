@@ -2,6 +2,19 @@
 
 
 
+## October 4 (late) — gateway uid fix and successor inheritance
+
+- [x] Diagnosed the Production `node-gateway` crash loop (read-only): uid 100
+  could not write `cache.db` (uid 1000, 644).
+- [x] Both images use uid/gid 1000; entrypoints chown WAL/SHM files.
+- [x] Verified locally: both images built; on a scratch volume reproducing
+  Production ownership, the gateway and engine entrypoints each led to a
+  successful `cache.db` write.
+- [x] [Inheritance doc](2026-10-04-successor-inheritance.md) written. The
+  in-chat reminder was cancelled; the Windows task remains for Oct 5, 17:07.
+- [ ] Owner merges and **rebuilds** Production images; confirm all containers
+  are healthy.
+
 ## October 5 — EDGE overnight study
 
 - [x] Event study on seen Jan–Sep 2026; 1-minute fill and liquidity checks.
