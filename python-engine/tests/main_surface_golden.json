@@ -157,6 +157,12 @@
       "trigger": "cron[minute='*/5', second='55']"
     },
     {
+      "func": "_run_research_future_candles_safe",
+      "id": "research_future_candles",
+      "kwargs": [],
+      "trigger": "cron[day_of_week='mon-fri', hour='15', minute='40']"
+    },
+    {
       "func": "_run_research_quote_collection_safe",
       "id": "research_quote_collection",
       "kwargs": [],

@@ -1,5 +1,12 @@
 # Handover receipt and operator checklist
 
+## October 4 — SENSEX/NIFTY future-candle recording (Dev only)
+
+- [x] `research_future_candles` job (15:40 IST) + exporter includes SENSEX futures.
+- [x] Census/surface goldens regenerated (one job added); new tests 3.
+- [ ] Promote via GitHub so Production records from the next session.
+- Not pushed, not deployed.
+
 ## October 4 — F&O growth slice (Dev only)
 
 - [x] Adaptive risk multiplier + two-strike day halt (live tick, capped-loss book, replay).

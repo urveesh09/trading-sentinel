@@ -15,8 +15,8 @@ What it copies (nothing in /data is modified; SQLite is opened mode=ro):
   A past session's still-open journal (the collector seals a day only when a
   later session runs) is copied too and listed under ``unsealed_days``; the
   active day's journal is never copied;
-* from ``cache.db``: 5-minute candles of every futures token that the archive
-  identifies as a NIFTY future, the ``fno_signals`` evaluation log (point-in-
+* from ``cache.db``: the cached candles (every interval, tagged) of every
+  futures token the archive identifies as a NIFTY or SENSEX future, the ``fno_signals`` evaluation log (point-in-
   time regime and live accept/reject decisions) and the single-leg / defined-
   risk paper positions (for replay parity checks);
 * ``manifest.json`` with source, SHA-256 of every copied file and row counts.
@@ -45,8 +45,8 @@ def _sha(path: Path) -> str:
     return digest.hexdigest()
 
 
-def _nifty_future_tokens(quote_root: Path) -> dict[int, str]:
-    """Token -> tradingsymbol of every archived NIFTY futures contract."""
+def _future_tokens(quote_root: Path) -> dict[int, str]:
+    """Token -> tradingsymbol of every archived index futures contract (NIFTY, SENSEX)."""
     tokens: dict[int, str] = {}
     for segment in sorted([*quote_root.glob("*/quotes-*.jsonl.gz"), *quote_root.glob("*/quotes.jsonl.open")]):
         opener = gzip.open if segment.suffix == ".gz" else open
@@ -55,7 +55,7 @@ def _nifty_future_tokens(quote_root: Path) -> dict[int, str]:
                 if '"instrument_type":"FUT"' not in line:
                     continue
                 contract = json.loads(line).get("contract") or {}
-                if contract.get("underlying") == "NIFTY" and contract.get("instrument_type") == "FUT":
+                if contract.get("underlying") in {"NIFTY", "SENSEX"} and contract.get("instrument_type") == "FUT":
                     tokens[int(contract["instrument_token"])] = contract["tradingsymbol"]
     return tokens
 
@@ -79,7 +79,7 @@ def export(data: Path, out: Path) -> dict:
         shutil.copyfile(segment, target)
         files[str(target.relative_to(out)).replace("\\", "/")] = _sha(target)
 
-    futures = _nifty_future_tokens(quote_root)
+    futures = _future_tokens(quote_root)
     source = sqlite3.connect(f"file:{data / 'cache.db'}?mode=ro", uri=True)
     replay_db = out / "fno-replay.sqlite"
     target = sqlite3.connect(replay_db)

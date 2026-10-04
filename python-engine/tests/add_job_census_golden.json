@@ -165,6 +165,11 @@
     "trigger": "'cron'"
   },
   {
+    "func": "_run_research_future_candles_safe",
+    "id": "'research_future_candles'",
+    "trigger": "'cron'"
+  },
+  {
     "func": "_run_research_quote_collection_safe",
     "id": "'research_quote_collection'",
     "trigger": "'cron'"

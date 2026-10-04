@@ -1,5 +1,12 @@
 # Trading Sentinel — next-agent execution plan
 
+## October 4 — owner direction: Momentum, then Penny; F&O only records SENSEX history
+
+F&O: no further development except SENSEX/NIFTY future-candle recording
+(`research_future_candles`, from the first Production run after promotion).
+Next: smarter Momentum entries/exits plus direct (no-approval) execution, then
+Penny, each tested with the freeze-then-score method.
+
 ## October 4 — F&O growth slice implemented (paper, Dev only)
 
 [Growth slice](2026-10-04-fno-growth-slice.md): adaptive risk (shrink in drawdown,

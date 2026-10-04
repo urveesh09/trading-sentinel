@@ -1072,6 +1072,23 @@ def register_partner_scheduler_jobs(scheduler):
             logger.error("research_quote_collection_crashed err=%s", exc, exc_info=True)
             return {"status": "FAILED", "reason": type(exc).__name__}
 
+    @telemetry_job(settings.DB_PATH, "research_future_candles")
+    async def _run_research_future_candles_safe():
+        # [CALENDAR-GATE] trading day + access token, then one read-only
+        # fetch per underlying/interval; the by-token cache retains it.
+        today = datetime.now(_main.IST).date()
+        if not await _main.is_trading_day(today, settings.DB_PATH):
+            return {"status": "SKIPPED", "reason": "non_trading_day"}
+        if not _main.kite.access_token:
+            logger.warning("research_future_candles_skip reason=no_access_token")
+            return {"status": "SKIPPED", "reason": "no_access_token"}
+        try:
+            from research_future_candles import record_index_future_candles
+            return await record_index_future_candles(_main.kite, datetime.now(_main.IST))
+        except Exception as exc:
+            logger.error("research_future_candles_crashed err=%s", exc, exc_info=True)
+            return {"status": "FAILED", "reason": type(exc).__name__}
+
     async def _run_partner_morning_brief_safe():
         # [CALENDAR-GATE 2026-07-03] gate delegated: partner_orchestrator.
         # _gates_open checks PARTNER_BOT_ENABLED, the session window,
@@ -1211,6 +1228,12 @@ def register_partner_scheduler_jobs(scheduler):
         minute="*/1", second=25,
         id="research_quote_collection",
         max_instances=1, coalesce=True, misfire_grace_time=55,
+    )
+    scheduler.add_job(
+        _run_research_future_candles_safe, "cron",
+        day_of_week="mon-fri", hour=15, minute=40,
+        id="research_future_candles",
+        max_instances=1, coalesce=True, misfire_grace_time=3600,
     )
     scheduler.add_job(
         _run_partner_morning_brief_safe, "cron",

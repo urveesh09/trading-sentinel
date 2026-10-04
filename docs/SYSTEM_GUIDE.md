@@ -1,5 +1,16 @@
 # Trading Sentinel — system guide and engineering handover
 
+## October 4 — index-future candle recording for research (actual behavior, Dev)
+
+- New scheduler job `research_future_candles` (mon–fri 15:40 IST, trading-day and
+  token gated) calls `research_future_candles.record_index_future_candles`: for each
+  `RESEARCH_ARCHIVE_UNDERLYINGS` (NIFTY, SENSEX) front future it fetches the whole
+  session's `5minute` and `minute` candles once; `kite_client.get_intraday_by_token`
+  caches them in `intraday_cache_by_token` (never aged out). Market data only.
+- `scripts/export_fno_replay_dataset.py` now exports NIFTY **and** SENSEX future
+  candles (all cached intervals; the replay reads `5minute`).
+- Owner direction: no further F&O development for now beyond this recording.
+
 ## October 4 — F&O growth slice: adaptive risk, SENSEX, multi-lot capped-loss book (actual behavior, Dev)
 
 [Growth slice](2026-10-04-fno-growth-slice.md). Paper behaviour after this commit:

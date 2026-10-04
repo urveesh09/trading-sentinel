@@ -2066,6 +2066,16 @@ Engine dependencies: `market_calendar`
 
 Related tests: `python-engine/tests/test_research_data_contracts.py`
 
+## `python-engine/research_future_candles.py`
+
+End-of-day index-futures candle recording for research (NIFTY, SENSEX). The F&O replay needs each session's front-future candles. Until now they were retained only as a side effect of the trading tick fetching bars, so an underlying the tick did not evaluate (SENSEX before the growth slice) has no history. This job asks for the whole session once after the close; the broker client's by-token cache (``intraday_cache_by_token``, never aged out) stores it. Read-only market data: no order, sizing or trading-state path.
+
+Top-level declarations: `recorded_underlyings` (line 23), `record_index_future_candles` (line 29)
+
+Engine dependencies: `config`, `fno_underlyings`
+
+Related tests: `python-engine/tests/test_research_future_candles.py`
+
 ## `python-engine/research_leg_subscriptions.py`
 
 Durable, bounded selected-leg retention for intraday research. The rolling ATM collector is useful for discovery but cannot stand in for a contract that a policy actually selected. This small SQLite journal pins the exact dated token/master identity through its declared intraday management deadline. It is research evidence only: it has no order, delivery, profile, or qualification imports.
@@ -2208,7 +2218,7 @@ Related tests: `python-engine/tests/test_saturation_diagnostic.py`
 
 Top-level declarations: `_log_fno_watchdog_payload` (line 29), `register_fno_scheduler_jobs` (line 61), `register_penny_scheduler_jobs` (line 326), `register_partner_scheduler_jobs` (line 999)
 
-Engine dependencies: `config`, `daily_bootstrap`, `fno_accept_watchdog`, `fno_hourly_report`, `fno_instruments`, `fno_orchestrator`, `hedge_advisory`, `operator_alert`, `partner_input_refresh`, `partner_orchestrator`, `penny_accept_watchdog`, `penny_edge_orchestrator`, `penny_premarket_report`, `performance`, `proactive_intelligence`, `research_quote_collector`, `scheduler_telemetry`
+Engine dependencies: `config`, `daily_bootstrap`, `fno_accept_watchdog`, `fno_hourly_report`, `fno_instruments`, `fno_orchestrator`, `hedge_advisory`, `operator_alert`, `partner_input_refresh`, `partner_orchestrator`, `penny_accept_watchdog`, `penny_edge_orchestrator`, `penny_premarket_report`, `performance`, `proactive_intelligence`, `research_future_candles`, `research_quote_collector`, `scheduler_telemetry`
 
 ## `python-engine/scheduler_telemetry.py`
 
