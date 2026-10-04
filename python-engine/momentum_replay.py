@@ -7,7 +7,7 @@ ambiguous intraday provenance.
 from __future__ import annotations
 
 from dataclasses import asdict, dataclass
-from datetime import date, datetime
+from datetime import date
 import hashlib
 import json
 import math
@@ -40,6 +40,20 @@ VARIANTS: Mapping[str, ReplayVariant] = {
 }
 
 
+EXIT_MODELS = ("TARGET_1_PROXY", "LIVE_EXIT_LIFECYCLE", "THESIS_EXIT")
+ENTRY_CLOCKS = ("ACCEPTED_CLOSE", "NEXT_BAR_OPEN")
+# MOM_THESIS_EXIT (declared before scoring): half at T1 when two or more shares
+# remain, breakeven after a +1R close, trail one R under the highest close once
+# the run reaches +1.5R, exit when momentum fails (two closes under the entry
+# VWAP) or stalls (no +0.5R excursion after four bars while under entry).
+THESIS_BREAKEVEN_R = 1.0
+THESIS_TRAIL_START_R = 1.5
+THESIS_TRAIL_R = 1.0
+THESIS_VWAP_FAIL_CLOSES = 2
+THESIS_STALL_BARS = 4
+THESIS_STALL_MFE_R = 0.5
+
+
 @dataclass(frozen=True)
 class MomentumReplayConfig:
     bankroll: float = 4500.0
@@ -59,6 +73,11 @@ class MomentumReplayConfig:
     # LIVE_EXIT_LIFECYCLE is a separate research model that uses the shipped
     # Momentum exit evaluator and never silently substitutes the proxy.
     exit_model: str = "TARGET_1_PROXY"
+    # ACCEPTED_CLOSE reproduces archived receipts: it fills at the accepted
+    # bar's close, a price only known when that bar ends. NEXT_BAR_OPEN is the
+    # executable clock (R3): the next positive-volume bar's open, re-sized to
+    # the decision's rupee risk.
+    entry_clock: str = "ACCEPTED_CLOSE"
     oos_folds: int = 3
 
     def __post_init__(self):
@@ -72,8 +91,10 @@ class MomentumReplayConfig:
             raise ValueError("at least three OOS folds are required")
         if not self.variants or any(name not in VARIANTS for name in self.variants):
             raise ValueError("replay variants must be registered and non-empty")
-        if self.exit_model not in {"TARGET_1_PROXY", "LIVE_EXIT_LIFECYCLE"}:
-            raise ValueError("exit_model must be TARGET_1_PROXY or LIVE_EXIT_LIFECYCLE")
+        if self.exit_model not in EXIT_MODELS:
+            raise ValueError(f"exit_model must be one of {EXIT_MODELS}")
+        if self.entry_clock not in ENTRY_CLOCKS:
+            raise ValueError(f"entry_clock must be one of {ENTRY_CLOCKS}")
         Regime[self.regime]
 
 
@@ -393,10 +414,16 @@ def _simulate_live_exit_lifecycle(candidate: dict, future: pd.DataFrame, executi
                     float(position["trailing_stop_current"]), float(close_action["new_stop"])
                 )
 
+    return _finish_lifecycle(trade, entry, original_quantity, initial_risk, remaining,
+                             float(position["trailing_stop_current"]), unresolved_reason, execution)
+
+
+def _finish_lifecycle(trade: dict, entry: float, original_quantity: int, initial_risk: float, remaining: int,
+                      stop: float, unresolved_reason: str, execution: dict) -> dict:
+    """Close the books on a multi-fill lifecycle; a remainder stays UNRESOLVED."""
     if remaining:
         trade.update({"status": "UNRESOLVED", "remaining_quantity": remaining,
-                      "trailing_stop": round(float(position["trailing_stop_current"]), 6),
-                      "unresolved_reason": unresolved_reason})
+                      "trailing_stop": round(stop, 6), "unresolved_reason": unresolved_reason})
         return trade
     exits = [(float(row["price"]), int(row["quantity"])) for row in trade["fills"]]
     gross = sum((price - entry) * quantity for price, quantity in exits)
@@ -411,8 +438,116 @@ def _simulate_live_exit_lifecycle(candidate: dict, future: pd.DataFrame, executi
     return trade
 
 
+def _simulate_thesis_exit(candidate: dict, future: pd.DataFrame, execution: dict) -> dict:
+    """MOM_THESIS_EXIT on completed 15-minute bars (research candidate).
+
+    Same clock discipline as the live diagnostic: the resting stop is checked
+    first (gap fills at the open), a resting T1 half fills when the high
+    reaches it, close-based decisions use that bar's close, and any raised stop
+    applies from the next bar. The 15:15 square-off is the exact deadline bar.
+    """
+    decision = candidate["decision"]
+    raw_entry = float(decision["entry_price"])
+    entry = raw_entry * (1 + execution["entry_slippage_bps"] / 10000.0)
+    stop = float(decision["stop_loss"])
+    target = float(decision["target_1"])
+    vwap = float(decision.get("vwap") or 0.0)
+    original_quantity = int(decision["shares"])
+    if original_quantity < 1 or not (stop > 0 and entry > stop and target > entry):
+        raise ReplayDataError("accepted Momentum decision has invalid lifecycle geometry")
+    risk = entry - stop
+    initial_risk = risk * original_quantity
+    trade = {
+        "variant": candidate["variant"], "ticker": candidate["ticker"],
+        "trading_date": candidate["trading_date"], "entry_bar_ts": candidate["bar_ts"],
+        "raw_entry": raw_entry, "entry_fill": round(entry, 6), "stop_price": stop,
+        "target_price": target, "quantity": original_quantity, "dataset_fingerprint": candidate["dataset_fingerprint"],
+        "status": "OPEN", "exit_model": "THESIS_EXIT", "initial_risk": round(initial_risk, 6), "fills": [],
+    }
+    exit_slip = execution["exit_slippage_bps"] / 10000.0
+    remaining, partial_done, bars_held = original_quantity, False, 0
+    highest_high, highest_close, below_vwap = entry, entry, 0
+
+    def sell(quantity: int, price: float, reason: str, stamp: pd.Timestamp) -> None:
+        nonlocal remaining
+        trade["fills"].append({"quantity": quantity, "price": round(price * (1 - exit_slip), 6),
+                               "reason": reason, "bar_ts": stamp.isoformat()})
+        remaining -= quantity
+
+    unresolved_reason = "no_executable_exit_or_square_off_evidence"
+    for stamp, bar in future.iterrows():
+        stamp = pd.Timestamp(stamp)
+        if stamp.date().isoformat() != candidate["trading_date"]:
+            unresolved_reason = "missing_intraday_exit_evidence_before_next_session"
+            break
+        if not math.isfinite(float(bar["volume"])) or float(bar["volume"]) <= 0:
+            continue
+        open_, high, low, close = (float(bar[name]) for name in ("open", "high", "low", "close"))
+        if (stamp.hour, stamp.minute) >= (execution["time_exit_hour"], execution["time_exit_minute"]):
+            if (stamp.hour, stamp.minute) != (execution["time_exit_hour"], execution["time_exit_minute"]):
+                unresolved_reason = "missing_exact_square_off_bar"
+                break
+            sell(remaining, open_, "hard_square_off", stamp)
+            break
+        if open_ <= stop:
+            sell(remaining, open_, "stop_gap", stamp)
+            break
+        if low <= stop:
+            sell(remaining, stop, "stop", stamp)
+            break
+        bars_held += 1
+        next_stop = stop
+        if not partial_done and remaining >= 2 and high >= target:
+            sell(remaining // 2, target, "thesis_t1_half", stamp)
+            partial_done = True
+            next_stop = max(next_stop, entry)
+        highest_high, highest_close = max(highest_high, high), max(highest_close, close)
+        below_vwap = below_vwap + 1 if vwap and close < vwap else 0
+        if below_vwap >= THESIS_VWAP_FAIL_CLOSES:
+            sell(remaining, close, "thesis_momentum_failed_vwap", stamp)
+            break
+        if (bars_held >= THESIS_STALL_BARS and highest_high < entry + THESIS_STALL_MFE_R * risk
+                and close < entry):
+            sell(remaining, close, "thesis_stalled", stamp)
+            break
+        if close >= entry + THESIS_BREAKEVEN_R * risk:
+            next_stop = max(next_stop, entry)
+        if highest_high >= entry + THESIS_TRAIL_START_R * risk:
+            next_stop = max(next_stop, highest_close - THESIS_TRAIL_R * risk)
+        stop = next_stop
+    return _finish_lifecycle(trade, entry, original_quantity, initial_risk, remaining, stop,
+                             unresolved_reason, execution)
+
+
+def _next_bar_entry(candidate: dict, future: pd.DataFrame) -> tuple[dict, pd.DataFrame, str | None]:
+    """Move entry to the next same-session positive-volume bar's open (R3).
+
+    The accepted bar's close is only known when that bar ends; the first price
+    an order can get is the following bar's open. Quantity keeps the decision's
+    rupee risk at the new price; an open at or below the stop is a no-fill.
+    """
+    decision = candidate["decision"]
+    same_day = future[(future.index.strftime("%Y-%m-%d") == candidate["trading_date"]) & (future["volume"] > 0)]
+    if same_day.empty:
+        return candidate, future, "no_same_session_bar_after_acceptance"
+    fill_stamp = same_day.index[0]
+    fill = float(same_day.iloc[0]["open"])
+    stop, raw = float(decision["stop_loss"]), float(decision["entry_price"])
+    if fill <= stop:
+        return candidate, future, "next_open_at_or_below_stop"
+    if fill >= float(decision["target_1"]):
+        return candidate, future, "next_open_at_or_above_target"
+    shares = int(int(decision["shares"]) * (raw - stop) // (fill - stop))
+    if shares < 1:
+        return candidate, future, "resized_quantity_zero"
+    moved = {**candidate, "decision": {**decision, "entry_price": fill, "shares": shares},
+             "bar_ts": fill_stamp.isoformat(), "accepted_bar_ts": candidate["bar_ts"]}
+    return moved, future[future.index >= fill_stamp], None
+
+
 def _summary(trades: list[dict]) -> tuple[dict, list[dict]]:
     closed = sorted((t for t in trades if t["status"] == "CLOSED"), key=lambda t: (t["exit_bar_ts"], t["ticker"], t["variant"]))
+    no_fill = sum(t["status"] == "NO_FILL" for t in trades)
     equity, running, peak, drawdown = [], 0.0, 0.0, 0.0
     for trade in closed:
         running += trade["net_pnl"]
@@ -422,7 +557,7 @@ def _summary(trades: list[dict]) -> tuple[dict, list[dict]]:
     wins = sum(t["net_pnl"] for t in closed if t["net_pnl"] > 0)
     losses = -sum(t["net_pnl"] for t in closed if t["net_pnl"] < 0)
     return ({
-        "entries": len(trades), "open_trades": len(trades) - len(closed),
+        "entries": len(trades) - no_fill, "no_fill": no_fill, "open_trades": len(trades) - no_fill - len(closed),
         "closed_trades": len(closed),
         "net_pnl": round(running, 6) if closed else None,
         "expectancy": round(running / len(closed), 6) if closed else None,
@@ -507,6 +642,12 @@ def run_momentum_replay(
         config_snapshot["exit_settings"] = {name: getattr(settings, name) for name in exit_names}
         execution["position_lifecycle"] = "shipped_partial_runner_OHLC_diagnostic_not_exact_quote_replay"
         execution["square_off_evidence"] = "positive_volume_exact_deadline_bar_same_session_only"
+    if config.exit_model == "THESIS_EXIT":
+        config_snapshot["thesis_exit"] = {
+            "breakeven_r": THESIS_BREAKEVEN_R, "trail_start_r": THESIS_TRAIL_START_R, "trail_r": THESIS_TRAIL_R,
+            "vwap_fail_closes": THESIS_VWAP_FAIL_CLOSES, "stall_bars": THESIS_STALL_BARS,
+            "stall_mfe_r": THESIS_STALL_MFE_R}
+        execution["position_lifecycle"] = "MOM_THESIS_EXIT_OHLC_research_candidate"
     digest = hashlib.sha256()
     digest.update(pd.util.hash_pandas_object(intra, index=True).values.tobytes())
     digest.update(pd.util.hash_pandas_object(daily, index=True).values.tobytes())
@@ -549,17 +690,24 @@ def run_momentum_replay(
                             "decision": decision, "dataset_fingerprint": fingerprint,
                             "prefix_bars": length,
                         })
-                        if config.exit_model == "LIVE_EXIT_LIFECYCLE":
-                            candidates[-1]["regime_at_entry"] = config.regime
+                        candidates[-1]["regime_at_entry"] = config.regime
                 else:
                     reason = str(decision.get("reject_reason", "unknown"))
                     funnel[name]["rejects"][reason] = funnel[name]["rejects"].get(reason, 0) + 1
     trades = []
+    runner = {"TARGET_1_PROXY": _simulate, "LIVE_EXIT_LIFECYCLE": _simulate_live_exit_lifecycle,
+              "THESIS_EXIT": _simulate_thesis_exit}[config.exit_model]
     for candidate in candidates:
         future = intra[(intra["ticker"] == candidate["ticker"]) &
                        (intra["datetime"] > pd.Timestamp(candidate["bar_ts"]))].sort_values("datetime")
         future = future.set_index("datetime")
-        runner = _simulate_live_exit_lifecycle if config.exit_model == "LIVE_EXIT_LIFECYCLE" else _simulate
+        if config.entry_clock == "NEXT_BAR_OPEN":
+            candidate, future, refusal = _next_bar_entry(candidate, future)
+            if refusal:
+                trades.append({"variant": candidate["variant"], "ticker": candidate["ticker"],
+                               "trading_date": candidate["trading_date"], "entry_bar_ts": candidate["bar_ts"],
+                               "status": "NO_FILL", "no_fill_reason": refusal})
+                continue
         trades.append(runner(candidate, future, execution))
     summary, equity = _summary(trades)
     coverage = {
@@ -570,9 +718,12 @@ def run_momentum_replay(
     warnings = [
         "Research replay only; it never calls Kite, an executor, or an order path.",
         "15-minute OHLC cannot reveal intrabar path; simultaneous stop/target resolves stop first.",
-        ("Virtual lifecycle exits the full quantity at T1 and cannot model the production partial-T1 runner/trail."
-         if config.exit_model == "TARGET_1_PROXY" else
-         "LIVE_EXIT_LIFECYCLE is a shipped-exit OHLC diagnostic, not exact path replay: partial/target order, high-driven ratchets and completed-bar execution clocks remain ambiguous; broker receipts are unavailable."),
+        {"TARGET_1_PROXY": "Virtual lifecycle exits the full quantity at T1 and cannot model the production partial-T1 runner/trail.",
+         "LIVE_EXIT_LIFECYCLE": "LIVE_EXIT_LIFECYCLE is a shipped-exit OHLC diagnostic, not exact path replay: partial/target order, high-driven ratchets and completed-bar execution clocks remain ambiguous; broker receipts are unavailable.",
+         "THESIS_EXIT": "THESIS_EXIT is a research candidate on completed 15-minute bars: stop first, resting T1 half, close-based thesis decisions, raised stops from the next bar."}[config.exit_model],
+        ("Entries fill at the next positive-volume bar's open, re-sized to the decision's rupee risk."
+         if config.entry_clock == "NEXT_BAR_OPEN" else
+         "Entries fill at the accepted bar's close (legacy clock retained for archived receipts; not executable before the bar ends)."),
         "Entry and exit fills use frozen Momentum shadow slippage and equity MIS cost assumptions.",
     ]
     if missing_daily:

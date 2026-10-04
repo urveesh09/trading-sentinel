@@ -279,3 +279,42 @@ def test_oos_fold_requires_a_close_for_the_train_selected_variant():
     assert result["status"] == "insufficient_data"
     assert result["scored_folds"] < 3
     assert any(fold["reason"] == "selected_variant_has_no_oos_close" for fold in result["folds"])
+
+
+def _thesis_candidate(shares=4):
+    return {"variant": "MOM_BASE", "ticker": "AAA", "trading_date": "2026-08-03",
+            "bar_ts": "2026-08-03T10:45:00", "dataset_fingerprint": "test",
+            "decision": {"entry_price": 100, "stop_loss": 99, "target_1": 102, "shares": shares, "vwap": 99.5}}
+
+
+def _frame(rows):
+    stamps = [row[0] for row in rows]
+    return pd.DataFrame([row[1:] for row in rows], columns=["open", "high", "low", "close", "volume"],
+                        index=pd.to_datetime(stamps))
+
+
+def test_next_bar_entry_uses_open_and_keeps_rupee_risk():
+    candidate = _thesis_candidate()
+    future = _frame([("2026-08-03T11:00:00", 100.5, 101, 100.2, 100.8, 10),
+                     ("2026-08-03T11:15:00", 100.8, 101, 100.5, 100.9, 10)])
+    moved, rest, refusal = replay._next_bar_entry(candidate, future)
+    assert refusal is None and moved["decision"]["entry_price"] == 100.5
+    assert moved["decision"]["shares"] == int(4 * 1 // 1.5) and len(rest) == 2
+    gap = _frame([("2026-08-03T11:00:00", 98.9, 99.2, 98.5, 99.0, 10)])
+    assert replay._next_bar_entry(candidate, gap)[2] == "next_open_at_or_below_stop"
+
+
+def test_thesis_exit_banks_half_then_trails_and_cuts_failed_momentum():
+    execution = replay.momentum_shadow_execution_config()
+    run = _frame([("2026-08-03T11:00:00", 100.2, 102.2, 100.1, 102.0, 10),   # T1 half, breakeven
+                  ("2026-08-03T11:15:00", 102.0, 103.0, 101.9, 102.8, 10),   # +3R high: trail
+                  ("2026-08-03T11:30:00", 102.5, 102.6, 101.5, 101.6, 10)])  # trail hit
+    trade = replay._simulate_thesis_exit(_thesis_candidate(), run, execution)
+    assert [f["reason"] for f in trade["fills"]] == ["thesis_t1_half", "stop"]
+    assert trade["fills"][0]["quantity"] == 2 and trade["status"] == "CLOSED"
+    trail = 102.8 - (trade["entry_fill"] - 99)          # one R under the highest close
+    assert trade["fills"][1]["price"] == pytest.approx(trail * (1 - execution["exit_slippage_bps"] / 10000))
+    fail = _frame([("2026-08-03T11:00:00", 100.0, 100.2, 99.3, 99.4, 10),
+                   ("2026-08-03T11:15:00", 99.4, 99.6, 99.2, 99.3, 10)])
+    trade = replay._simulate_thesis_exit(_thesis_candidate(), fail, execution)
+    assert trade["exit_reason"] == "thesis_momentum_failed_vwap"

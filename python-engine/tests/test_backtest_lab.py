@@ -161,31 +161,6 @@ def test_edge_evaluator_replay_calls_shipped_scanner_with_frozen_config(db_path,
     assert summary["net_pnl"] is None and summary["selected_count"] == 0
 
 
-def test_edge_next_open_lifecycle_is_registered_and_never_uses_signal_close(db_path, monkeypatch):
-    _seed_daily(db_path, count=100)
-    _seed_daily_symbol(db_path, "NIFTYBEES", count=100)
-    adapter = backtest_lab.STRATEGY_REGISTRY["penny_edge_next_open_lifecycle"]
-    config = adapter.snapshot_config({"tickers": ["RELIANCE"], "bankroll": 1000.0})
-    request = backtest_lab.BacktestRequest(adapter.metadata.strategy_id, "2025-03-15", "2025-03-15",
-                                            config, adapter.metadata.default_assumptions)
-    prepared = adapter.prepare(db_path, request)
-    from penny_edge_engine import Position, compute_regime
-
-    def scanner(**kwargs):
-        return {"eligible_tickers": 1, "n_candidates": 1, "n_positions": 1,
-                "rejected_below_threshold": 0, "no_signal_reasons": {},
-                "regime": compute_regime(0.0, 0.5),
-                "positions": [Position("RELIANCE", kwargs["as_of_date"], 100.0, 2, 200.0, 90.0, 1, "MO", .7, .7)]}
-
-    monkeypatch.setattr("penny_edge_live.scan_today", scanner)
-    result = adapter.execute(prepared, request)
-    assert result["scope"] == "PROXY"
-    assert result["trials"]
-    # Synthetic daily data opens above the signal close; the lifecycle must
-    # preserve that executable open rather than using 100.0.
-    assert result["trials"][0]["entry"] != 100.0
-
-
 def test_range_evaluator_replay_calls_shipped_profile_only_after_completed_bar(db_path, monkeypatch):
     _seed_daily(db_path, count=40)
     adapter = backtest_lab.STRATEGY_REGISTRY["range_reversion_daily_evaluator"]

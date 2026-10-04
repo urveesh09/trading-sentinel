@@ -32,13 +32,11 @@ from dataclasses import asdict, dataclass, replace
 from datetime import date, datetime, timedelta, timezone
 import hashlib
 import json
-import re
-from typing import Sequence
 
 import pandas as pd
 
 from research_data_contracts import (
-    COVERAGE_REQUIREMENTS, IST, STATUS_COMPLETE, DailyDataset, IntradayDataset,
+    COVERAGE_REQUIREMENTS, IST, DailyDataset, IntradayDataset,
 )
 
 LIFECYCLE_VERSION = "penny_mis_breakout_lifecycle_v2"
@@ -514,7 +512,7 @@ class _Replay:
         """Same clock, quotes, stop monitor, square-off, costs and cash as the
         baseline; different entry recognition (and, for THESIS, exits)."""
         from adaptive_penny_policy import (
-            DEFAULT_PARAMS, SetupState, TickerMemory, advance_setup, detect_breakout, manage_position,
+            DEFAULT_PARAMS, TickerMemory, advance_setup, detect_breakout, manage_position,
             resting_partial,
         )
         from penny_engine_breakout import mis_time_stop_active, smart_eod_check, time_stop_triggered
