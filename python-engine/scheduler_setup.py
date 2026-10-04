@@ -114,9 +114,32 @@ def register_fno_scheduler_jobs(scheduler):
     # callable for operator/manual use.
     _ = _run_fno_instruments_refresh  # kept: manual/ops entry point
 
+    # [FAST-EXIT 2026-10-04] One lock for every F&O pass: the 90-second tick,
+    # the optional bar-close tick and the optional fast exit loop never overlap.
+    # A pass that finds the lock held is skipped (the running pass is doing the
+    # same work), so management cannot run twice against one position.
+    fno_lock = asyncio.Lock()
+
+    async def _notify_fno(summary: dict) -> None:
+        from fno_orchestrator import format_fno_telegram
+        if not (summary.get("entries") or summary.get("exits")
+                or summary.get("dr_opened") or summary.get("dr_exits")):
+            return
+        try:
+            async with _httpx.AsyncClient() as _client:
+                _response = await _client.post(
+                    f"{settings.CONTAINER_A_URL}/api/internal/notify",
+                    json={"message": format_fno_telegram(summary)},
+                    headers={"X-Internal-Secret": settings.INTERNAL_API_SECRET or ""},
+                    timeout=5.0,
+                )
+                _response.raise_for_status()
+        except Exception as notify_exc:
+            logger.warning("fno_tick_notify_failed err=%s", notify_exc)
+
     @telemetry_job(settings.DB_PATH, "fno_tick")
     async def _run_fno_tick_safe():
-        from fno_orchestrator import format_fno_telegram, run_fno_tick
+        from fno_orchestrator import run_fno_tick
         # [Rule 55] First-line breadcrumb on EVERY invocation. The tick
         # self-gates below; a missing breadcrumb means the scheduler
         # never fired (rule 62 territory), not a quiet market.
@@ -134,29 +157,20 @@ def register_fno_scheduler_jobs(scheduler):
         if not _main.kite.access_token:
             logger.warning("fno_tick_skip reason=no_access_token")
             return
+        if fno_lock.locked():
+            logger.info("fno_tick_skip reason=fno_pass_in_progress")
+            return
         started = monotonic()
         summary = None
         outcome = "ok"
         try:
-            summary = await run_fno_tick(
-                _main.kite,
-                regime=_main._fno_regime_str(),
-                is_trading_day=True,
-            )
-            if (summary.get("entries") or summary.get("exits")
-                    or summary.get("dr_opened") or summary.get("dr_exits")):
-                try:
-                    msg = format_fno_telegram(summary)
-                    async with _httpx.AsyncClient() as _client:
-                        _response = await _client.post(
-                            f"{settings.CONTAINER_A_URL}/api/internal/notify",
-                            json={"message": msg},
-                            headers={"X-Internal-Secret": settings.INTERNAL_API_SECRET or ""},
-                            timeout=5.0,
-                        )
-                        _response.raise_for_status()
-                except Exception as notify_exc:
-                    logger.warning("fno_tick_notify_failed err=%s", notify_exc)
+            async with fno_lock:
+                summary = await run_fno_tick(
+                    _main.kite,
+                    regime=_main._fno_regime_str(),
+                    is_trading_day=True,
+                )
+            await _notify_fno(summary)
         except Exception as exc:
             outcome = "failed"
             logger.error("fno_tick_failed err=%s", exc, exc_info=True)
@@ -196,6 +210,41 @@ def register_fno_scheduler_jobs(scheduler):
         "fno_cron_registered id=fno_tick interval=%ds max_instances=1 coalesce=True",
         settings.FNO_SCAN_INTERVAL_SEC,
     )
+
+    @telemetry_job(settings.DB_PATH, "fno_fast_exit")
+    async def _run_fno_fast_exit_safe():
+        """Manage open single-leg positions every FNO_FAST_EXIT_INTERVAL_SEC."""
+        from fno_orchestrator import run_fno_fast_exit
+        now_ist = datetime.now(IST)
+        nm = now_ist.hour * 60 + now_ist.minute
+        if not (9 * 60 + 15 <= nm <= 15 * 60 + 25) or fno_lock.locked():
+            return
+        if not await _main.is_trading_day(now_ist.date(), settings.DB_PATH) or not _main.kite.access_token:
+            return
+        try:
+            async with fno_lock:
+                summary = await run_fno_fast_exit(_main.kite)
+            if summary.get("exits"):
+                logger.info("fno_fast_exit_closed exits=%d", len(summary["exits"]))
+            await _notify_fno(summary)
+        except Exception as exc:
+            logger.error("fno_fast_exit_failed err=%s", exc, exc_info=True)
+
+    # Both speed-ups ship disabled; enabling them is a deployment decision.
+    if settings.FNO_FAST_EXIT_ENABLED:
+        scheduler.add_job(
+            _run_fno_fast_exit_safe, "interval", seconds=settings.FNO_FAST_EXIT_INTERVAL_SEC,
+            id="fno_fast_exit", max_instances=1, coalesce=True, misfire_grace_time=30,
+        )
+        logger.info("fno_cron_registered id=fno_fast_exit interval=%ds", settings.FNO_FAST_EXIT_INTERVAL_SEC)
+    if settings.FNO_BAR_CLOSE_TRIGGER_ENABLED:
+        # A 5-minute bar is complete at :00/:05/...; fire a regular tick a few
+        # seconds later so a fresh signal does not wait for the free 90 s clock.
+        scheduler.add_job(
+            _run_fno_tick_safe, "cron", minute="*/5", second=settings.FNO_BAR_CLOSE_DELAY_SEC,
+            id="fno_bar_close_tick", max_instances=1, coalesce=True, misfire_grace_time=60,
+        )
+        logger.info("fno_cron_registered id=fno_bar_close_tick delay_sec=%d", settings.FNO_BAR_CLOSE_DELAY_SEC)
 
     async def _run_fno_hourly_report_safe():
         from fno_hourly_report import build_hourly_report, is_in_report_window
@@ -567,7 +616,7 @@ def register_penny_scheduler_jobs(scheduler):
     # per startup, fires immediately (no delay), and the normal cron
     # still owns subsequent days.
     try:
-        from datetime import datetime, time as _dt_time, timezone as _dt_tz
+        from datetime import datetime
         from zoneinfo import ZoneInfo
         _now_ist = datetime.now(ZoneInfo("Asia/Kolkata"))
         _today_0930 = _now_ist.replace(hour=9, minute=30, second=0, microsecond=0)
@@ -686,7 +735,7 @@ def register_penny_scheduler_jobs(scheduler):
     # above already fires the scan if needed; this one only handles
     # exit-time catchup (e.g. container restart right around 15:15).
     try:
-        from datetime import datetime as _dt2, timezone as _dt2_tz
+        from datetime import datetime as _dt2
         from zoneinfo import ZoneInfo
         _now_ist2 = _dt2.now(ZoneInfo("Asia/Kolkata"))
         _today_1515_b = _now_ist2.replace(hour=15, minute=15, second=0, microsecond=0)

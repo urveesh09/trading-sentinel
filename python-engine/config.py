@@ -1050,6 +1050,18 @@ class Settings(BaseSettings):
     # Full-chain evaluation can exceed one minute.  Leave headroom so the next
     # tick is useful work rather than an APScheduler max_instances warning.
     FNO_SCAN_INTERVAL_SEC:     int   = 90
+    # [FAST-EXIT 2026-10-04] Options cannot carry an exchange stop order, so
+    # stops are only as fast as the loop checking them. The fast exit loop
+    # runs ONLY single-leg position management (no entries) every N seconds;
+    # the bar-close trigger fires the regular tick a few seconds after each
+    # 5-minute bar closes instead of waiting for the free 90 s clock. Both are
+    # serialised with the regular tick by one lock and ship OFF: the replay
+    # (docs/2026-10-04-fno-replay-and-speed-slice.md) shows no profit effect at
+    # its 60 s data resolution; the value is protection on fast days.
+    FNO_FAST_EXIT_ENABLED:          bool = False
+    FNO_FAST_EXIT_INTERVAL_SEC:     int  = 10
+    FNO_BAR_CLOSE_TRIGGER_ENABLED:  bool = False
+    FNO_BAR_CLOSE_DELAY_SEC:        int  = 3
 
     # --- backtest model params ([ROADMAP-3.11 2026-07-12]) ------------------
     # fno_backtest.py replays evaluate_fno_mom on REAL futures bars but

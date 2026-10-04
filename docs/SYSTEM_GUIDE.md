@@ -1,5 +1,21 @@
 # Trading Sentinel — system guide and engineering handover
 
+## October 4 — F&O runtime and research changes (actual behavior, Dev)
+
+- `_try_entry_for_leg` now delegates its pure decision to
+  `fno_entry_plan.plan_single_leg_entry` (same order, reasons and log fields);
+  `_read_entry_policy` delegates its arithmetic to `fno_shared_risk.entry_halts`.
+- `run_fno_tick` manages single-leg positions through
+  `_manage_single_leg_books`, also used by the new `run_fno_fast_exit`.
+- `register_fno_scheduler_jobs` holds one asyncio lock for every F&O pass and
+  registers `fno_fast_exit` (`FNO_FAST_EXIT_ENABLED`, default False, every
+  `FNO_FAST_EXIT_INTERVAL_SEC`=10) and `fno_bar_close_tick`
+  (`FNO_BAR_CLOSE_TRIGGER_ENABLED`, default False, `FNO_BAR_CLOSE_DELAY_SEC`=3)
+  only when enabled. With both off, live behaviour is unchanged.
+- Research: `fno_policy_replay.py` (inert) and
+  `scripts/export_fno_replay_dataset.py`; see the
+  [F&O slice](2026-10-04-fno-replay-and-speed-slice.md).
+
 ## October 4 — T2 research replays (actual behavior, Dev)
 
 - `daily_portfolio.py` is the single own-cash daily book for EDGE, Range and

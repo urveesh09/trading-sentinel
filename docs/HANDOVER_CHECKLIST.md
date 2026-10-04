@@ -1,5 +1,16 @@
 # Handover receipt and operator checklist
 
+## October 4 — F&O replay, candidates and speed (Dev only)
+
+- [x] Read-only export of the Production research archive (14 sessions, 166 MB, local only).
+- [x] `fno_entry_plan` / `entry_halts` extracted (behaviour-neutral: 520 → 534 F&O tests pass).
+- [x] Full-policy replay; parity 8 of 9 live paper trades.
+- [x] `fno-trader-v1` frozen (`d973f05`) then scored: shipped baseline best; candidates OFF.
+- [x] Fast exit loop + bar-close trigger implemented, serialised by one lock, default OFF.
+- [ ] Owner: decide whether to paper-enable `FNO_FAST_EXIT_ENABLED` after promotion.
+- [ ] Production must be running for the archive to grow; re-export weekly.
+- Not pushed, not deployed; Production data volume only read.
+
 ## October 4 — T2 Range/Swing/Momentum + CNC audit (Dev only)
 
 - [x] Shared own-cash daily book; EDGE refactor reproduces frozen equity/trades.

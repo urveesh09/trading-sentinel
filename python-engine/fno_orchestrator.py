@@ -882,6 +882,85 @@ async def _insert_entry_position(inserter, db_path: str, reservation_key, fields
 # the tick
 # ---------------------------------------------------------------------------
 
+async def _manage_single_leg_books(
+    kite, db_path: str, fut, summary: dict, paper_exec: FnoExecutor, live_exec: FnoExecutor, *,
+    now_ist: datetime, supplied_now_ist: Optional[datetime], tick_started: float,
+    action_clock: Optional[Callable[[], datetime]],
+) -> tuple[Optional[float], datetime]:
+    """Futures quote, then the single-leg exit ladder for every enabled leg.
+
+    Shared by the scheduled tick and the fast exit loop so both manage open
+    positions through exactly the same reads, ladder and settlement path.
+    Returns the futures price (None when unavailable) and the action clock.
+    """
+    # ---- futures price for exit management ---------------------------
+    stage_started = monotonic()
+    fut_quote = {}
+    fut_quote_cap = _read_cap(settings.FNO_EXIT_QUOTE_READ_MAX_SEC)
+    try:
+        fut_quote, provider_timing = await asyncio.wait_for(
+            _management_quote(kite, [fut.token]), timeout=fut_quote_cap,
+        )
+        _record_management_read(
+            summary["management_read_outcomes"], "futures_quote", "COMPLETED",
+            stage_started, fut_quote_cap, provider_timing=provider_timing,
+        )
+    except asyncio.TimeoutError:
+        _record_management_read(
+            summary["management_read_outcomes"], "futures_quote", "DEADLINE_EXCEEDED",
+            stage_started, fut_quote_cap, timeout_partial=True,
+        )
+        logger.warning("fno_futures_quote_deadline_exceeded cap_sec=%.3f", fut_quote_cap)
+    except Exception as exc:
+        _record_management_read(
+            summary["management_read_outcomes"], "futures_quote", "FAILED",
+            stage_started, fut_quote_cap,
+        )
+        logger.error("fno_futures_quote_failed err=%s", str(exc))
+    summary["stage_durations_sec"]["futures_quote"] = round(
+        monotonic() - stage_started, 3
+    )
+    fut_price = None
+    fq = fut_quote.get(fut.token)
+    if fq and fq.get("last_price"):
+        fut_price = float(fq["last_price"])
+
+    # A real scheduler tick can cross hard-flat while queued on a provider.
+    # The completed-bar/signal timestamp remains frozen in ``sig`` later, but
+    # management, session cutoffs and admission decisions use a fresh action
+    # clock. Explicit caller clocks are retained for deterministic replay/tests.
+    if supplied_now_ist is None:
+        now_ist = datetime.now(IST)
+    summary["action_clock_ist"] = now_ist.isoformat()
+    summary["management_lag_sec"] = round(monotonic() - tick_started, 3)
+
+    # ---- 1) exits first ----------------------------------------------
+    stage_started = monotonic()
+    try:
+        if not settings.FNO_DISABLE_PAPER:
+            summary["exits"] += await _manage_open_positions(
+                kite, db_path, FnoSource.FNO_PAPER.value, paper_exec, now_ist, fut_price,
+                read_observations=summary["management_read_outcomes"],
+                db_timing=summary["database_stage_timing"],
+                action_clock=action_clock,
+            )
+        if not settings.FNO_DISABLE_LIVE:
+            summary["exits"] += await _manage_open_positions(
+                kite, db_path, FnoSource.FNO_LIVE.value, live_exec, now_ist, fut_price,
+                read_observations=summary["management_read_outcomes"],
+                db_timing=summary["database_stage_timing"],
+                action_clock=action_clock,
+            )
+    except Exception as exc:
+        logger.error("fno_exit_management_failed err=%s", str(exc), exc_info=True)
+    finally:
+        summary["stage_durations_sec"]["exit_management"] = round(
+            monotonic() - stage_started, 3
+        )
+
+    return fut_price, now_ist
+
+
 async def run_fno_tick(
     kite, db_path: Optional[str] = None,
     regime: str = "UNKNOWN",
@@ -948,70 +1027,10 @@ async def run_fno_tick(
     sig = None
     snap = None
 
-    # ---- futures price for exit management ---------------------------
-    stage_started = monotonic()
-    fut_quote = {}
-    fut_quote_cap = _read_cap(settings.FNO_EXIT_QUOTE_READ_MAX_SEC)
-    try:
-        fut_quote, provider_timing = await asyncio.wait_for(
-            _management_quote(kite, [fut.token]), timeout=fut_quote_cap,
-        )
-        _record_management_read(
-            summary["management_read_outcomes"], "futures_quote", "COMPLETED",
-            stage_started, fut_quote_cap, provider_timing=provider_timing,
-        )
-    except asyncio.TimeoutError:
-        _record_management_read(
-            summary["management_read_outcomes"], "futures_quote", "DEADLINE_EXCEEDED",
-            stage_started, fut_quote_cap, timeout_partial=True,
-        )
-        logger.warning("fno_futures_quote_deadline_exceeded cap_sec=%.3f", fut_quote_cap)
-    except Exception as exc:
-        _record_management_read(
-            summary["management_read_outcomes"], "futures_quote", "FAILED",
-            stage_started, fut_quote_cap,
-        )
-        logger.error("fno_futures_quote_failed err=%s", str(exc))
-    summary["stage_durations_sec"]["futures_quote"] = round(
-        monotonic() - stage_started, 3
+    fut_price, now_ist = await _manage_single_leg_books(
+        kite, db_path, fut, summary, paper_exec, live_exec, now_ist=now_ist,
+        supplied_now_ist=supplied_now_ist, tick_started=tick_started, action_clock=action_clock,
     )
-    fut_price = None
-    fq = fut_quote.get(fut.token)
-    if fq and fq.get("last_price"):
-        fut_price = float(fq["last_price"])
-
-    # A real scheduler tick can cross hard-flat while queued on a provider.
-    # The completed-bar/signal timestamp remains frozen in ``sig`` later, but
-    # management, session cutoffs and admission decisions use a fresh action
-    # clock. Explicit caller clocks are retained for deterministic replay/tests.
-    if supplied_now_ist is None:
-        now_ist = datetime.now(IST)
-    summary["action_clock_ist"] = now_ist.isoformat()
-    summary["management_lag_sec"] = round(monotonic() - tick_started, 3)
-
-    # ---- 1) exits first ----------------------------------------------
-    stage_started = monotonic()
-    try:
-        if not settings.FNO_DISABLE_PAPER:
-            summary["exits"] += await _manage_open_positions(
-                kite, db_path, FnoSource.FNO_PAPER.value, paper_exec, now_ist, fut_price,
-                read_observations=summary["management_read_outcomes"],
-                db_timing=summary["database_stage_timing"],
-                action_clock=action_clock,
-            )
-        if not settings.FNO_DISABLE_LIVE:
-            summary["exits"] += await _manage_open_positions(
-                kite, db_path, FnoSource.FNO_LIVE.value, live_exec, now_ist, fut_price,
-                read_observations=summary["management_read_outcomes"],
-                db_timing=summary["database_stage_timing"],
-                action_clock=action_clock,
-            )
-    except Exception as exc:
-        logger.error("fno_exit_management_failed err=%s", str(exc), exc_info=True)
-    finally:
-        summary["stage_durations_sec"]["exit_management"] = round(
-            monotonic() - stage_started, 3
-        )
 
     # ---- 1b) defined-risk paper book (Phase 2) -----------------------
     # Rides this same tick: manage any open structure to current mids, then
@@ -1291,6 +1310,54 @@ async def run_fno_tick(
     # slow/locked research DB cannot delay quote selection, sizing, an entry,
     # or the tick return. Reuse the baseline's already-resolved chain.
     _schedule_shadow_observation(db_path, bars, regime, now_ist, snap)
+    return summary
+
+
+async def run_fno_fast_exit(kite, db_path: Optional[str] = None, now_ist: Optional[datetime] = None) -> dict:
+    """[FAST-EXIT 2026-10-04] Manage open single-leg positions between ticks.
+
+    Options cannot carry an exchange stop order, so the underlying/premium
+    stops are only as fast as the loop that checks them. This entry point does
+    nothing but the shared single-leg management (no entries, no defined-risk
+    work) and returns after one database read when no position is open. It is
+    scheduled only when FNO_FAST_EXIT_ENABLED is on and is serialised with the
+    regular tick by the scheduler's F&O lock.
+    """
+    db_path = db_path or settings.DB_PATH
+    supplied_now_ist = now_ist
+    now_ist = now_ist or datetime.now(IST)
+    action_clock = (lambda: datetime.now(IST)) if supplied_now_ist is None else None
+    tick_started = monotonic()
+    summary: dict = {"scan_id": f"FNOX-{now_ist.strftime('%Y%m%d-%H%M%S')}-{uuid4().hex[:6]}",
+                     "entries": [], "exits": [], "note": "", "stage_durations_sec": {},
+                     "management_read_outcomes": {},
+                     "database_stage_timing": {"measurement": "operation_elapsed_includes_sqlite_lock_wait",
+                                               "stages": {}}}
+    sources = [] if settings.FNO_DISABLE_PAPER else [FnoSource.FNO_PAPER.value]
+    if not settings.FNO_DISABLE_LIVE:
+        sources.append(FnoSource.FNO_LIVE.value)
+    open_count = 0
+    for source in sources:
+        open_count += len(await fpos.open_positions(db_path, source))
+    if not open_count:
+        summary["note"] = "no_open_positions"
+        return summary
+    instruments = get_fno_instruments()
+    if not instruments.ready(now_ist.date()) and not instruments.load_from_disk():
+        summary["note"] = "instruments_not_ready"
+        return summary
+    fut = instruments.front_future(now_ist.date())
+    if fut is None:
+        summary["note"] = "no_front_future"
+        return summary
+    paper_exec = FnoExecutor(kite, paper_mode=True, source_tag=FnoSource.FNO_PAPER.value)
+    live_exec = FnoExecutor(kite, paper_mode=not bool(settings.FNO_LIVE_TRADING),
+                            source_tag=FnoSource.FNO_LIVE.value)
+    await _manage_single_leg_books(
+        kite, db_path, fut, summary, paper_exec, live_exec, now_ist=now_ist,
+        supplied_now_ist=supplied_now_ist, tick_started=tick_started, action_clock=action_clock,
+    )
+    summary["note"] = "managed"
     return summary
 
 

@@ -98,6 +98,29 @@ for every daily module.
 5. Add a `Study` entry in `scripts/run_preregistered_study.py`. Then freeze,
    commit, run and record.
 
+## F&O studies (archived quotes, not Yahoo)
+
+F&O option history is not on Yahoo. The engine already archives every NIFTY
+quote batch (future + ATM±5 calls/puts, two expiries, raw packets) on the data
+volume. Export it read-only, then study it with the same tool:
+
+```powershell
+# 1. Export (data volume mounted read-only; output folder must be empty)
+docker run --rm -v production_trading-sentinel_trading_data:/data:ro `
+  -v "C:\Users\Urveesh\Desktop\trading-sentinel\docs\research\fno\<dated>-archive\_local:/out" `
+  -v "C:\Users\Urveesh\Desktop\trading-sentinel\scripts:/scripts:ro" `
+  --entrypoint python production_trading-sentinel-python-engine:latest `
+  /scripts/export_fno_replay_dataset.py --data /data --out /out
+# 2. Quick look at one policy (development days only)
+& $py python-engine\fno_policy_replay.py --data docs\research\fno\<dated>-archive\_local --start <d1> --end <d2> --policy BASELINE
+# 3. Pre-registered comparison: add/adjust a Study with runner="fno_replay", then freeze, commit, run
+```
+
+Always read the replay's `parity_vs_live` block first: the BASELINE must
+reproduce the live paper trades on the same days before any candidate result
+means anything (October 4 receipt: 8 of 9). The replay runs the shipped entry
+planner, gates, exit ladder, costs and brakes; never fork them for research.
+
 ## Window ledger (what has already been seen)
 
 | Module | Development (seen) | Scored untouched (now seen) | Still untouched |
@@ -107,6 +130,7 @@ for every daily module.
 | Range | Jul–Sep 2026 | Jan–Jun 2026 (T2) | 2024–2025 daily |
 | Swing | Jul–Sep 2026 | Jan–Jun 2026 (T2) | 2024–2025 daily |
 | Momentum | Sep 24–30, 2026 | Aug 10–Sep 23 + Oct 1, 2026 (T2) | forward 15-minute data |
+| F&O single-leg | Sep 10–23, 2026 | Sep 24–Oct 1, 2026 (`fno-trader-v1`) | archive sessions from Oct 5, 2026 |
 
 Historical note: the T1 Penny and EDGE freezes were made with the earlier
 per-module scripts (`scripts/run_penny_trader_oos.py`,

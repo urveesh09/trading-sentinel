@@ -624,6 +624,16 @@ Engine dependencies: `config`, `fno_models`
 
 Related tests: `python-engine/tests/test_fno_engine_mom.py`
 
+## `python-engine/fno_entry_plan.py`
+
+Pure single-leg F&O entry planning shared by the live tick and research replay. Extracted from ``fno_orchestrator._try_entry_for_leg`` so the replay evaluates *the same* decision instead of a copy that could drift. Given a fired signal, a chain snapshot and the book's current state, it performs, in the shipped order: strike selection (|delta| closest to FNO_TARGET_DELTA, ATM-or-ITM), the §7 gate ladder, the no-pyramid same-contract refusal, pool sizing under the risk and open-premium caps, the §4 max-loss constitution and the net reward/ risk check. No I/O: the caller reads state, logs the outcome and performs any reservation and dispatch.
+
+Top-level declarations: `EntryState` (line 27), `EntryPlan` (line 40), `quote_age_sec` (line 57), `plan_single_leg_entry` (line 61)
+
+Engine dependencies: `config`, `fno_chain`, `fno_engine_mom`, `fno_gates`, `fno_models`, `fno_risk`
+
+Related tests: `python-engine/tests/test_fno_entry_plan.py`
+
 ## `python-engine/fno_executor.py`
 
 [FNO-EXECUTOR 2026-07-10] Order path for the F&O subsystem (spec §10.1). LIMIT orders only. Never market. The bid-ask spread on an option is the single largest controllable cost. Entry: LIMIT at ask, FNO_FILL_TIMEOUT_SEC then cancel. NEVER chase -- a missed fill is free; a chased fill is not. Exit: LIMIT at bid, escalating to bid - 3 ticks after 15s. Hard flat (15:10): a marketable limit wide enough to guarantee the fill -- the position MUST close. Paper mode fills honestly against the REAL book: entry at ask, exit at bid. Paying the spread in paper is deliberate -- it is the cost model's first-order term and pretending mid-fills would make the paper leg lie (same reasoning as the missing FN
@@ -716,11 +726,21 @@ Declared tables: `fno_chain_oi`, `fno_fut_snap`
 
 [FNO-ORCHESTRATOR 2026-07-10] Dual-leg tick runner for the F&O subsystem (spec §10.4). Reuses the EDGE_PAPER / EDGE_LIVE shape from penny_edge_orchestrator: one candidate scan, two legs, bankroll scales the sizing, separate source tags (FNO_PAPER / FNO_LIVE) so the legs cannot see each other's rows. In P1 the live leg is structurally disarmed three ways: FNO_DISABLE_LIVE=True, FNO_LIVE_TRADING=False, FNO_LIVE_BANKROLL=0 -- and even with all three flipped it still refuses unless fno_go_live_check() returns []. run_fno_tick() fires every FNO_SCAN_INTERVAL_SEC during market hours: 1. manage open positions (stops / target+trail / time stop / 15:10 hard flat) -- exits are checked BEFORE entries s
 
-Top-level declarations: `_now_min` (line 67), `_read_cap` (line 71), `_record_management_read` (line 76), `_timed_database_operation` (line 106), `_management_quote` (line 127), `_oldest_quote_age_sec` (line 143), `_settle_exit_receipt` (line 160), `_fno_pool_paper` (line 221), `_fno_pool_live` (line 226), `_load_dr_entry_inputs` (line 238), `_fno_equity` (line 291), `_fno_halted` (line 297), `_fetch_futures_bars` (line 318), `_record_shadow_observation` (line 326), `_schedule_shadow_observation` (line 343), `_manage_open_positions` (line 373), `_try_entry_for_leg` (line 602), `post_admission_entry_reject` (line 978), `_insert_entry_position` (line 996), `run_fno_tick` (line 1007), `_bar_already_logged` (line 1419), `format_fno_telegram` (line 1440)
+Top-level declarations: `_now_min` (line 66), `_read_cap` (line 70), `_record_management_read` (line 75), `_timed_database_operation` (line 105), `_management_quote` (line 126), `_oldest_quote_age_sec` (line 142), `_settle_exit_receipt` (line 159), `_fno_pool_paper` (line 220), `_fno_pool_live` (line 225), `_load_dr_entry_inputs` (line 237), `_fno_equity` (line 290), `_fno_halted` (line 296), `_fetch_futures_bars` (line 317), `_record_shadow_observation` (line 325), `_schedule_shadow_observation` (line 342), `_manage_open_positions` (line 372), `_try_entry_for_leg` (line 601), `post_admission_entry_reject` (line 856), `_insert_entry_position` (line 874), `_manage_single_leg_books` (line 885), `run_fno_tick` (line 964), `run_fno_fast_exit` (line 1316), `_bar_already_logged` (line 1364), `format_fno_telegram` (line 1385)
 
-Engine dependencies: `affordability`, `config`, `fno_chain`, `fno_costs`, `fno_engine_mom`, `fno_executor`, `fno_exit_rules`, `fno_gates`, `fno_instruments`, `fno_models`, `fno_risk`, `fno_shared_risk`, `fno_signal_log`, `operator_alert`, `performance`
+Engine dependencies: `affordability`, `config`, `fno_chain`, `fno_costs`, `fno_engine_mom`, `fno_entry_plan`, `fno_executor`, `fno_exit_rules`, `fno_gates`, `fno_instruments`, `fno_models`, `fno_risk`, `fno_shared_risk`, `fno_signal_log`, `operator_alert`, `performance`
 
 Related tests: `python-engine/tests/test_fno_orchestrator.py`
+
+## `python-engine/fno_policy_replay.py`
+
+Full-policy single-leg F&O replay over archived quotes (research only). The replay re-runs the *shipped* NIFTY single-leg paper book tick by tick on evidence the live system actually had: * futures 5-minute candles (``fut_candles``) for the day's front future, * every archived NIFTY quote batch (front future + ATM±5 calls/puts for two expiries, raw provider packets verified by ``verify_archive_event``), * the live ``fno_signals`` regime per bar (point-in-time, never re-derived). Decisions call the production code: ``evaluate_fno_mom`` (signal), ``fno_chain._parse_quote_entry`` + ``ChainSnapshot`` (chain view), ``fno_entry_plan.plan_single_leg_entry`` (strike, gates, sizing, max loss, reward/
+
+Top-level declarations: `FnoReplayError` (line 54), `ReplayPolicy` (line 61), `Observation` (line 85), `ReplayData` (line 93), `_last_closed_bar` (line 213), `_aware` (line 220), `OpenLeg` (line 228), `Book` (line 258), `_close_record` (line 268), `SingleLegReplay` (line 291), `summarize` (line 527), `parity_report` (line 543), `run_replay` (line 560)
+
+Engine dependencies: `config`, `fno_chain`, `fno_costs`, `fno_engine_mom`, `fno_entry_plan`, `fno_exit_experiment`, `fno_exit_rules`, `fno_models`, `fno_risk`, `fno_shared_risk`, `intraday_spread_archive_adapter`
+
+Related tests: `python-engine/tests/test_fno_policy_replay.py`
 
 ## `python-engine/fno_positions.py`
 
@@ -758,7 +778,7 @@ Declared tables: `fno_shadow_evaluations`
 
 Shared, fail-closed F&O paper-risk evidence and reservations. This module is intentionally the only place that may combine the directional ``fno_positions`` and defined-risk ``fno_dr_positions`` books for an F&O admission decision. The books retain their own lifecycle/settlement writers; this module does not invent a fill, close a position, or release exposure on a timer. In particular, an ``UNRESOLVED`` structure and an interrupted entry reservation remain unavailable capital until an explicit, durable resolution. F0-A/B provide the typed snapshot and atomic reservation primitive; the paper position writers consume the reservation with their position insert. F0-C adds the common entry-polic
 
-Top-level declarations: `SharedFnoRiskPolicy` (line 159), `SharedFnoEntryPolicyDecision` (line 176), `SharedFnoRiskView` (line 198), `SharedFnoAdmission` (line 230), `EntryOccupancy` (line 243), `SharedFnoDispatchClaim` (line 262), `_finite_non_negative` (line 271), `_unavailable` (line 279), `init_shared_fno_risk_db` (line 296), `_table_exists` (line 315), `_whole_non_negative` (line 322), `_finite_number` (line 329), `_recovery_evidence_is_intact` (line 337), `_validate_open_partial_exit_evidence` (line 351), `_CashEvent` (line 489), `_CashLedger` (line 499), `_observation_instant` (line 507), `_read_cash_ledger` (line 514), `_settlement_cash_gap` (line 570), `_completed_trades` (line 603), `_read_view` (line 628), `_invalid_policy` (line 744), `policy_from_settings` (line 758), `_policy_unavailable` (line 770), `_read_entry_policy` (line 780), `shared_fno_entry_policy` (line 857), `shared_fno_risk_view` (line 883), `reserve_shared_fno_risk` (line 907), `resolve_shared_fno_risk_reservation` (line 982), `consume_shared_fno_risk_reservation_in_transaction` (line 1033), `_encode_evidence` (line 1068), `_zero_fill_evidence_ok` (line 1082), `dispatch_release_evidence_ok` (line 1089), `_reconcile_evidence_ok` (line 1103), `_occupancy_denial` (line 1119), `claim_shared_fno_entry_dispatch` (line 1170), `resolve_shared_fno_entry_dispatch` (line 1274), `reconcile_shared_fno_entry_dispatch` (line 1332)
+Top-level declarations: `SharedFnoRiskPolicy` (line 159), `SharedFnoEntryPolicyDecision` (line 176), `SharedFnoRiskView` (line 198), `SharedFnoAdmission` (line 230), `EntryOccupancy` (line 243), `SharedFnoDispatchClaim` (line 262), `_finite_non_negative` (line 271), `_unavailable` (line 279), `init_shared_fno_risk_db` (line 296), `_table_exists` (line 315), `_whole_non_negative` (line 322), `_finite_number` (line 329), `_recovery_evidence_is_intact` (line 337), `_validate_open_partial_exit_evidence` (line 351), `_CashEvent` (line 489), `_CashLedger` (line 499), `_observation_instant` (line 507), `_read_cash_ledger` (line 514), `_settlement_cash_gap` (line 570), `_completed_trades` (line 603), `_read_view` (line 628), `_invalid_policy` (line 744), `policy_from_settings` (line 758), `_policy_unavailable` (line 770), `_read_entry_policy` (line 780), `EntryHalts` (line 823), `entry_halts` (line 832), `shared_fno_entry_policy` (line 889), `shared_fno_risk_view` (line 915), `reserve_shared_fno_risk` (line 939), `resolve_shared_fno_risk_reservation` (line 1014), `consume_shared_fno_risk_reservation_in_transaction` (line 1065), `_encode_evidence` (line 1100), `_zero_fill_evidence_ok` (line 1114), `dispatch_release_evidence_ok` (line 1121), `_reconcile_evidence_ok` (line 1135), `_occupancy_denial` (line 1151), `claim_shared_fno_entry_dispatch` (line 1202), `resolve_shared_fno_entry_dispatch` (line 1306), `reconcile_shared_fno_entry_dispatch` (line 1364)
 
 Engine dependencies: `config`, `fno_exit_evidence`
 
@@ -2176,7 +2196,7 @@ Related tests: `python-engine/tests/test_saturation_diagnostic.py`
 
 [ROADMAP-4.1 stage 2, 2026-07-13] APScheduler job registration. Extracted verbatim from main.py: register_fno_scheduler_jobs and register_penny_scheduler_jobs, and the 8 async closures they define. This is the piece stage 1 deliberately left behind. Python resolves a function's globals at CALL time against its DEFINING module, so a closure that moves house and loses a free name raises NameError only when the job fires -- in production, inside a `_safe` wrapper that catches it, logs it, and returns. The scan then never runs, silently. Import still succeeds, the job census still sees the registration, and nothing goes red. That is the 2026-07-13 failure signature, and it is why this move waite
 
-Top-level declarations: `_log_fno_watchdog_payload` (line 29), `register_fno_scheduler_jobs` (line 61), `register_penny_scheduler_jobs` (line 277), `register_partner_scheduler_jobs` (line 950)
+Top-level declarations: `_log_fno_watchdog_payload` (line 29), `register_fno_scheduler_jobs` (line 61), `register_penny_scheduler_jobs` (line 326), `register_partner_scheduler_jobs` (line 999)
 
 Engine dependencies: `config`, `daily_bootstrap`, `fno_accept_watchdog`, `fno_hourly_report`, `fno_instruments`, `fno_orchestrator`, `hedge_advisory`, `operator_alert`, `partner_input_refresh`, `partner_orchestrator`, `penny_accept_watchdog`, `penny_edge_orchestrator`, `penny_premarket_report`, `performance`, `proactive_intelligence`, `research_quote_collector`, `scheduler_telemetry`
 

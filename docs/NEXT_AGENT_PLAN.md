@@ -1,5 +1,21 @@
 # Trading Sentinel — next-agent execution plan
 
+## October 4 — F&O replay built; shipped book still best; speed features OFF
+
+[F&O replay and speed slice](2026-10-04-fno-replay-and-speed-slice.md): read-only
+export of the archived NIFTY quote batches, a full-policy single-leg replay
+(8 of 9 live paper trades reproduced), the pure entry planner / entry brakes
+now shared by live and research, and two default-OFF speed features (fast exit
+loop, bar-close trigger) under one F&O lock. Pre-registered `fno-trader-v1`:
+shipped baseline +₹13,306 on Sep 24–Oct 1; FNO_TRADER_V1 +₹7,128 →
+NOT_SUPPORTED_STAYS_OFF (pyramid blocked by the ₹30k structural cap, trend
+filter skipped winners, partial/fast exit neutral).
+
+Next: keep the archive growing and re-export weekly; score new frozen F&O
+rounds only on sessions from Oct 5, 2026 (IV-aware vehicle, time-stop variant,
+BANKNIFTY); paper-enable the fast exit loop for protection after promotion.
+Do not loosen F&O hard limits. Dev only; nothing pushed/deployed.
+
 ## October 4 — T2 scored; improvement options and F&O review written
 
 [T2 receipt](2026-10-04-t2-range-swing-momentum-slice.md): shared own-cash

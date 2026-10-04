@@ -1,0 +1,545 @@
+{
+  "decision": {
+    "checks": {
+      "max_drawdown <= max(1.5 * BASELINE max_drawdown, 5000.0)": true,
+      "net_excluding_best_winner > 0": true,
+      "net_pnl > 0": true,
+      "net_pnl > BASELINE net_pnl": false
+    },
+    "qualification": "NOT_ASSESSED",
+    "verdict": "NOT_SUPPORTED_STAYS_OFF"
+  },
+  "freeze_sha256": "a0026c3038d7abee1717a6aac13e72ab8d87310d898126587c4464e1c3c4a278",
+  "results": {
+    "development": {
+      "default": {
+        "BASELINE": {
+          "closed": 4,
+          "exit_reasons": {
+            "time_stop": 4
+          },
+          "funnel": {
+            "accepted": 4,
+            "already_holding_this_contract": 3,
+            "engine:ema_trend_disagreement": 20,
+            "engine:inside_opening_range_window": 26,
+            "engine:no_or_break": 733,
+            "engine:not_fresh_break": 701,
+            "engine:rvol_below_min": 24,
+            "reward_risk_below_min": 4
+          },
+          "max_drawdown": 1252.1172,
+          "net_excluding_best_winner": -1252.1172,
+          "net_pnl": -1099.3381,
+          "notes": {
+            "grid_phase_live_aligned": 8,
+            "regime_logged_for_bar": 1522
+          },
+          "parity_vs_live": {
+            "live_only": [
+              [
+                "2026-09-21 11:50:00",
+                "NIFTY2692223400CE"
+              ]
+            ],
+            "live_trades": 3,
+            "replay_only": [
+              [
+                "2026-09-10 14:00:00",
+                "NIFTY2691523550PE"
+              ],
+              [
+                "2026-09-21 12:10:00",
+                "NIFTY2692223400CE"
+              ]
+            ],
+            "replayed_trades": 4
+          },
+          "profit_factor": 0.122,
+          "win_rate_pct": 25.0
+        },
+        "FNO_FAST_EXIT": {
+          "closed": 4,
+          "exit_reasons": {
+            "time_stop": 4
+          },
+          "funnel": {
+            "accepted": 4,
+            "already_holding_this_contract": 3,
+            "engine:ema_trend_disagreement": 20,
+            "engine:inside_opening_range_window": 26,
+            "engine:no_or_break": 733,
+            "engine:not_fresh_break": 701,
+            "engine:rvol_below_min": 24,
+            "reward_risk_below_min": 4
+          },
+          "max_drawdown": 1271.2573,
+          "net_excluding_best_winner": -1271.2573,
+          "net_pnl": -1271.2573,
+          "notes": {
+            "grid_phase_live_aligned": 8,
+            "regime_logged_for_bar": 1522
+          },
+          "parity_vs_live": {
+            "live_only": [
+              [
+                "2026-09-21 11:50:00",
+                "NIFTY2692223400CE"
+              ]
+            ],
+            "live_trades": 3,
+            "replay_only": [
+              [
+                "2026-09-10 14:00:00",
+                "NIFTY2691523550PE"
+              ],
+              [
+                "2026-09-21 12:10:00",
+                "NIFTY2692223400CE"
+              ]
+            ],
+            "replayed_trades": 4
+          },
+          "profit_factor": 0.0,
+          "win_rate_pct": 0.0
+        },
+        "FNO_HOUSE_MONEY_PYRAMID": {
+          "closed": 4,
+          "exit_reasons": {
+            "time_stop": 4
+          },
+          "funnel": {
+            "accepted": 4,
+            "already_holding_this_contract": 3,
+            "engine:ema_trend_disagreement": 20,
+            "engine:inside_opening_range_window": 26,
+            "engine:no_or_break": 733,
+            "engine:not_fresh_break": 701,
+            "engine:rvol_below_min": 24,
+            "reward_risk_below_min": 4
+          },
+          "max_drawdown": 1252.1172,
+          "net_excluding_best_winner": -1252.1172,
+          "net_pnl": -1099.3381,
+          "notes": {
+            "grid_phase_live_aligned": 8,
+            "regime_logged_for_bar": 1522
+          },
+          "parity_vs_live": {
+            "live_only": [
+              [
+                "2026-09-21 11:50:00",
+                "NIFTY2692223400CE"
+              ]
+            ],
+            "live_trades": 3,
+            "replay_only": [
+              [
+                "2026-09-10 14:00:00",
+                "NIFTY2691523550PE"
+              ],
+              [
+                "2026-09-21 12:10:00",
+                "NIFTY2692223400CE"
+              ]
+            ],
+            "replayed_trades": 4
+          },
+          "profit_factor": 0.122,
+          "win_rate_pct": 25.0
+        },
+        "FNO_PARTIAL_TRAIL": {
+          "closed": 4,
+          "exit_reasons": {
+            "time_stop": 4
+          },
+          "funnel": {
+            "accepted": 4,
+            "already_holding_this_contract": 3,
+            "engine:ema_trend_disagreement": 20,
+            "engine:inside_opening_range_window": 26,
+            "engine:no_or_break": 733,
+            "engine:not_fresh_break": 701,
+            "engine:rvol_below_min": 24,
+            "reward_risk_below_min": 4
+          },
+          "max_drawdown": 1252.1172,
+          "net_excluding_best_winner": -1252.1172,
+          "net_pnl": -1099.3381,
+          "notes": {
+            "grid_phase_live_aligned": 8,
+            "regime_logged_for_bar": 1522
+          },
+          "parity_vs_live": {
+            "live_only": [
+              [
+                "2026-09-21 11:50:00",
+                "NIFTY2692223400CE"
+              ]
+            ],
+            "live_trades": 3,
+            "replay_only": [
+              [
+                "2026-09-10 14:00:00",
+                "NIFTY2691523550PE"
+              ],
+              [
+                "2026-09-21 12:10:00",
+                "NIFTY2692223400CE"
+              ]
+            ],
+            "replayed_trades": 4
+          },
+          "profit_factor": 0.122,
+          "win_rate_pct": 25.0
+        },
+        "FNO_TRADER_V1": {
+          "closed": 3,
+          "exit_reasons": {
+            "time_stop": 3
+          },
+          "funnel": {
+            "accepted": 3,
+            "already_holding_this_contract": 3,
+            "candidate:not_trend_day": 3,
+            "engine:ema_trend_disagreement": 20,
+            "engine:inside_opening_range_window": 26,
+            "engine:no_or_break": 733,
+            "engine:not_fresh_break": 701,
+            "engine:rvol_below_min": 24,
+            "reward_risk_below_min": 4
+          },
+          "max_drawdown": 814.4642,
+          "net_excluding_best_winner": -814.4642,
+          "net_pnl": -814.4642,
+          "notes": {
+            "grid_phase_live_aligned": 8,
+            "regime_logged_for_bar": 1522
+          },
+          "parity_vs_live": {
+            "live_only": [
+              [
+                "2026-09-17 12:05:00",
+                "NIFTY2692223350CE"
+              ],
+              [
+                "2026-09-21 11:50:00",
+                "NIFTY2692223400CE"
+              ]
+            ],
+            "live_trades": 3,
+            "replay_only": [
+              [
+                "2026-09-10 14:00:00",
+                "NIFTY2691523550PE"
+              ],
+              [
+                "2026-09-21 12:10:00",
+                "NIFTY2692223400CE"
+              ]
+            ],
+            "replayed_trades": 3
+          },
+          "profit_factor": 0.0,
+          "win_rate_pct": 0.0
+        },
+        "FNO_TREND_DAY": {
+          "closed": 3,
+          "exit_reasons": {
+            "time_stop": 3
+          },
+          "funnel": {
+            "accepted": 3,
+            "already_holding_this_contract": 3,
+            "candidate:not_trend_day": 3,
+            "engine:ema_trend_disagreement": 20,
+            "engine:inside_opening_range_window": 26,
+            "engine:no_or_break": 733,
+            "engine:not_fresh_break": 701,
+            "engine:rvol_below_min": 24,
+            "reward_risk_below_min": 4
+          },
+          "max_drawdown": 795.3241,
+          "net_excluding_best_winner": -795.3241,
+          "net_pnl": -642.545,
+          "notes": {
+            "grid_phase_live_aligned": 8,
+            "regime_logged_for_bar": 1522
+          },
+          "parity_vs_live": {
+            "live_only": [
+              [
+                "2026-09-17 12:05:00",
+                "NIFTY2692223350CE"
+              ],
+              [
+                "2026-09-21 11:50:00",
+                "NIFTY2692223400CE"
+              ]
+            ],
+            "live_trades": 3,
+            "replay_only": [
+              [
+                "2026-09-10 14:00:00",
+                "NIFTY2691523550PE"
+              ],
+              [
+                "2026-09-21 12:10:00",
+                "NIFTY2692223400CE"
+              ]
+            ],
+            "replayed_trades": 3
+          },
+          "profit_factor": 0.1921,
+          "win_rate_pct": 33.33
+        }
+      }
+    },
+    "untouched": {
+      "default": {
+        "BASELINE": {
+          "closed": 7,
+          "exit_reasons": {
+            "time_stop": 3,
+            "trail_stop": 3,
+            "underlying_stop": 1
+          },
+          "funnel": {
+            "accepted": 7,
+            "already_holding_this_contract": 4,
+            "engine:ema_trend_disagreement": 7,
+            "engine:inside_opening_range_window": 21,
+            "engine:no_or_break": 671,
+            "engine:not_fresh_break": 362,
+            "engine:rvol_below_min": 15
+          },
+          "max_drawdown": 1990.8913,
+          "net_excluding_best_winner": 6198.8122,
+          "net_pnl": 13306.4867,
+          "notes": {
+            "grid_phase_live_aligned": 6,
+            "regime_logged_for_bar": 1103
+          },
+          "parity_vs_live": {
+            "live_only": [],
+            "live_trades": 6,
+            "replay_only": [
+              [
+                "2026-09-24 11:30:00",
+                "NIFTY26SEP23250PE"
+              ]
+            ],
+            "replayed_trades": 7
+          },
+          "profit_factor": 7.6837,
+          "win_rate_pct": 85.71
+        },
+        "FNO_FAST_EXIT": {
+          "closed": 7,
+          "exit_reasons": {
+            "time_stop": 3,
+            "trail_stop": 3,
+            "underlying_stop": 1
+          },
+          "funnel": {
+            "accepted": 7,
+            "already_holding_this_contract": 4,
+            "engine:ema_trend_disagreement": 7,
+            "engine:inside_opening_range_window": 21,
+            "engine:no_or_break": 671,
+            "engine:not_fresh_break": 362,
+            "engine:rvol_below_min": 15
+          },
+          "max_drawdown": 1990.8913,
+          "net_excluding_best_winner": 6004.1867,
+          "net_pnl": 13111.8612,
+          "notes": {
+            "grid_phase_live_aligned": 6,
+            "regime_logged_for_bar": 1103
+          },
+          "parity_vs_live": {
+            "live_only": [],
+            "live_trades": 6,
+            "replay_only": [
+              [
+                "2026-09-24 11:30:00",
+                "NIFTY26SEP23250PE"
+              ]
+            ],
+            "replayed_trades": 7
+          },
+          "profit_factor": 7.5859,
+          "win_rate_pct": 85.71
+        },
+        "FNO_HOUSE_MONEY_PYRAMID": {
+          "closed": 7,
+          "exit_reasons": {
+            "time_stop": 3,
+            "trail_stop": 3,
+            "underlying_stop": 1
+          },
+          "funnel": {
+            "accepted": 7,
+            "already_holding_this_contract": 4,
+            "engine:ema_trend_disagreement": 7,
+            "engine:inside_opening_range_window": 21,
+            "engine:no_or_break": 671,
+            "engine:not_fresh_break": 362,
+            "engine:rvol_below_min": 15
+          },
+          "max_drawdown": 1990.8913,
+          "net_excluding_best_winner": 6198.8122,
+          "net_pnl": 13306.4867,
+          "notes": {
+            "grid_phase_live_aligned": 6,
+            "pyramid_skipped_constitution": 2,
+            "pyramid_skipped_max_lots": 1,
+            "regime_logged_for_bar": 1103
+          },
+          "parity_vs_live": {
+            "live_only": [],
+            "live_trades": 6,
+            "replay_only": [
+              [
+                "2026-09-24 11:30:00",
+                "NIFTY26SEP23250PE"
+              ]
+            ],
+            "replayed_trades": 7
+          },
+          "profit_factor": 7.6837,
+          "win_rate_pct": 85.71
+        },
+        "FNO_PARTIAL_TRAIL": {
+          "closed": 7,
+          "exit_reasons": {
+            "time_stop": 3,
+            "trail_stop": 3,
+            "underlying_stop": 1
+          },
+          "funnel": {
+            "accepted": 7,
+            "already_holding_this_contract": 4,
+            "engine:ema_trend_disagreement": 7,
+            "engine:inside_opening_range_window": 21,
+            "engine:no_or_break": 671,
+            "engine:not_fresh_break": 362,
+            "engine:rvol_below_min": 15
+          },
+          "max_drawdown": 1990.8913,
+          "net_excluding_best_winner": 6177.5622,
+          "net_pnl": 13285.2367,
+          "notes": {
+            "grid_phase_live_aligned": 6,
+            "partial_banked": 1,
+            "regime_logged_for_bar": 1103
+          },
+          "parity_vs_live": {
+            "live_only": [],
+            "live_trades": 6,
+            "replay_only": [
+              [
+                "2026-09-24 11:30:00",
+                "NIFTY26SEP23250PE"
+              ]
+            ],
+            "replayed_trades": 7
+          },
+          "profit_factor": 7.673,
+          "win_rate_pct": 85.71
+        },
+        "FNO_TRADER_V1": {
+          "closed": 3,
+          "exit_reasons": {
+            "trail_stop": 2,
+            "underlying_stop": 1
+          },
+          "funnel": {
+            "accepted": 3,
+            "candidate:not_trend_day": 17,
+            "engine:ema_trend_disagreement": 7,
+            "engine:inside_opening_range_window": 21,
+            "engine:no_or_break": 671,
+            "engine:not_fresh_break": 362,
+            "engine:rvol_below_min": 15
+          },
+          "max_drawdown": 1990.8913,
+          "net_excluding_best_winner": 19.9907,
+          "net_pnl": 7127.6652,
+          "notes": {
+            "grid_phase_live_aligned": 6,
+            "pyramid_skipped_constitution": 2,
+            "regime_logged_for_bar": 1103
+          },
+          "parity_vs_live": {
+            "live_only": [
+              [
+                "2026-09-28 10:20:00",
+                "NIFTY26SEP22900PE"
+              ],
+              [
+                "2026-09-28 11:50:00",
+                "NIFTY26SEP22900PE"
+              ],
+              [
+                "2026-09-28 13:30:00",
+                "NIFTY26SEP22900PE"
+              ]
+            ],
+            "live_trades": 6,
+            "replay_only": [],
+            "replayed_trades": 3
+          },
+          "profit_factor": 4.5801,
+          "win_rate_pct": 66.67
+        },
+        "FNO_TREND_DAY": {
+          "closed": 3,
+          "exit_reasons": {
+            "trail_stop": 2,
+            "underlying_stop": 1
+          },
+          "funnel": {
+            "accepted": 3,
+            "candidate:not_trend_day": 17,
+            "engine:ema_trend_disagreement": 7,
+            "engine:inside_opening_range_window": 21,
+            "engine:no_or_break": 671,
+            "engine:not_fresh_break": 362,
+            "engine:rvol_below_min": 15
+          },
+          "max_drawdown": 1990.8913,
+          "net_excluding_best_winner": 19.9907,
+          "net_pnl": 7127.6652,
+          "notes": {
+            "grid_phase_live_aligned": 6,
+            "regime_logged_for_bar": 1103
+          },
+          "parity_vs_live": {
+            "live_only": [
+              [
+                "2026-09-28 10:20:00",
+                "NIFTY26SEP22900PE"
+              ],
+              [
+                "2026-09-28 11:50:00",
+                "NIFTY26SEP22900PE"
+              ],
+              [
+                "2026-09-28 13:30:00",
+                "NIFTY26SEP22900PE"
+              ]
+            ],
+            "live_trades": 6,
+            "replay_only": [],
+            "replayed_trades": 3
+          },
+          "profit_factor": 4.5801,
+          "win_rate_pct": 66.67
+        }
+      }
+    }
+  },
+  "schema": "preregistered_study_results_v1",
+  "study": "fno-trader-v1"
+}

@@ -25,8 +25,18 @@
     "trigger": "'cron'"
   },
   {
+    "func": "_run_fno_fast_exit_safe",
+    "id": "'fno_fast_exit'",
+    "trigger": "'interval'"
+  },
+  {
     "func": "_run_fno_hourly_report_safe",
     "id": "'fno_hourly_report'",
+    "trigger": "'cron'"
+  },
+  {
+    "func": "_run_fno_tick_safe",
+    "id": "'fno_bar_close_tick'",
     "trigger": "'cron'"
   },
   {
