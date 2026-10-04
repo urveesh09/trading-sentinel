@@ -27,7 +27,8 @@ performance evidence or a rollout recommendation: manual approval,
 point-in-time universe/event context, depth/fill receipts and shared stock
 portfolio evidence remain absent. Verification: 109 focused tests passed (one
 existing HTTPX deprecation), affected modules compiled and diff checks passed.
-Dev only; no push or deployment. Commit identity is recorded after final checks.
+Dev only; no push or deployment. Source commit `65e050a`; atlas regenerated to
+241 Python modules immediately before the commit.
 
 ## October 3 — non-F&O improvement direction (plan only)
 

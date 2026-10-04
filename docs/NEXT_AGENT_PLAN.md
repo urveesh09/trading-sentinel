@@ -16,6 +16,11 @@ compare equal cash/risk with coverage and all failures retained, then pursue N4
 only if full-system context can be recorded. F&O operational compatibility and
 any broker/paper observation remain separate, unapproved work.
 
+Source implementation commit `65e050a`; 109 focused tests passed (one existing
+HTTPX deprecation), affected modules compiled, `git diff --check` passed and
+the atlas was regenerated to 241 Python modules. Dev only: no push, deployment,
+Production edit, broker action, configuration or schema migration.
+
 ## October 3 — active next direction: smarter non-F&O entries/exits
 
 The owner requested a researched development plan after the Yahoo results.

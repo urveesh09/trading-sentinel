@@ -17,6 +17,9 @@
   candidate gates. See [implementation receipt](2026-10-04-n1-n3-implementation-slice.md).
 - [x] F&O isolation held: no F&O source/configuration, shared reservation,
   scheduler, database schema, broker action, Production edit, push or deploy.
+- [x] Source commit `65e050a`; 109 focused tests passed (one existing HTTPX
+  deprecation), affected modules compiled, diff check passed and atlas was
+  regenerated to 241 modules. Dev only.
 - [ ] N0 operational F&O compatibility baseline; candidate data coverage,
   matched-cash evidence and all-failure trial ledger; N4 untouched
   qualification and separately authorized observation/GitHub rollout.
