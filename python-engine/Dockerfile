@@ -25,8 +25,9 @@ ARG SENTINEL_SERVICE_NAME=python-engine
 # Install curl for HEALTHCHECK and gosu for privilege drop in entrypoint
 RUN apt-get update && apt-get install -y curl gosu && rm -rf /var/lib/apt/lists/*
 
-# Create the non-root user for production security
-RUN useradd -m -s /bin/bash quantuser
+# Create the non-root user for production security. uid/gid 1000 is shared with
+# node-gateway's appuser: both write the shared cache.db and its WAL/SHM files.
+RUN groupadd -g 1000 quantuser && useradd -m -s /bin/bash -u 1000 -g 1000 quantuser
 WORKDIR /app
 
 # Copy the installed Python packages from builder stage
