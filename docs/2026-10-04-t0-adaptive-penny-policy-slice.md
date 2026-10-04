@@ -64,4 +64,5 @@ Result: `75 passed`. `py_compile` and `git diff --check` passed. The shared
 atlas was regenerated against the current Dev tree and now indexes 242 Python
 modules; it remains unstaged because it also contains the existing independent
 review changes that this slice must not absorb. Commit identity is added after
-the isolated source commit. Dev only; no broker action, push or deployment.
+the isolated source commit. Source commit: `b08c934`. Dev only; no broker
+action, push or deployment.
