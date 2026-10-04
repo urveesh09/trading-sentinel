@@ -88,7 +88,7 @@ replay deferred). Live-money limits:
 - Shared caps (concurrency, trades/day, open premium, brakes) cover both indices.
 
 Verification (Windows venv, `python -m pytest tests -q -p no:cacheprovider`):
-see the commit receipt in `HANDOVER_CHECKLIST.md`. New tests:
+commit `e8d93c3`, 4854 passed, 4 skipped, 4 failed (below). New tests:
 `test_fno_adaptive_risk.py` (6), `test_fno_dr_sizing.py` (4),
 `test_fno_sensex.py` (5), two orchestrator tests, one replay test and one
 refresh test. Pre-existing failures, unrelated and verified on `31f84ec`:
