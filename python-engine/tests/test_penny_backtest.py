@@ -663,6 +663,7 @@ def test_breakout_engine_vwap_mode_anchor_kind(monkeypatch):
     """T2-B: when USE_VWAP=True, the engine uses VWAP as the anchor and
     marks anchor_kind='vwap' on the decision."""
     from config import settings
+    monkeypatch.setattr(settings, "PENNY_NOISE_STOP_ENABLED", False)  # anchor/buffer test, not the stop
     monkeypatch.setattr(settings, "PENNY_BREAKOUT_USE_VWAP", True)
     from datetime import datetime
     from penny_engine_breakout import evaluate_breakout_entry
@@ -727,6 +728,7 @@ def test_breakout_engine_adaptive_mode_buffer_is_scaled(monkeypatch):
     """T2-B: when ADAPTIVE=True and the ticker is calmer than typical,
     effective_buffer < base_buffer (tighter threshold)."""
     from config import settings
+    monkeypatch.setattr(settings, "PENNY_NOISE_STOP_ENABLED", False)  # anchor/buffer test, not the stop
     monkeypatch.setattr(settings, "PENNY_BREAKOUT_ADAPTIVE_THRESHOLD", True)
     from datetime import datetime
     from penny_engine_breakout import evaluate_breakout_entry

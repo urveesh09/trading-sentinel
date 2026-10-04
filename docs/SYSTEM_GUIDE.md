@@ -1,5 +1,17 @@
 # Trading Sentinel — system guide and engineering handover
 
+## October 4 — Penny noise-floor stop selected by the owner (actual behavior, Dev)
+
+`penny_engine_breakout.evaluate_breakout_entry` widens the breakout-bar-low stop
+with `noise_floor_stop`: the stop sits at least 1.5% and at least ₹0.03 under
+entry, shares shrink at the same rupee risk, and the target stays at 2R from the
+new stop. It is controlled by `PENNY_NOISE_STOP_ENABLED` (default **True**). The
+owner selected it from development evidence (Sep 7–Oct 1: +₹93 vs +₹78, drawdown
+₹32 vs ₹45); the untouched Kite test (`penny-noise-t3`) is still to be run.
+Penny live trading stays off (`PENNY_LIVE_TRADING=False`), so this changes the
+paper book. Momentum `MOM_SELECTIVE` was not profitable (0 trades) and is not
+enabled; `MOMENTUM_AUTO_EXECUTE` stays false.
+
 ## October 4 — Momentum direct trading (OFF) and round-3 research candidates (actual behavior, Dev)
 
 [Slice](2026-10-04-momentum-penny-smarter-slice.md).

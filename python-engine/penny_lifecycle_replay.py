@@ -50,8 +50,6 @@ TRADER_POLICIES = ("PEN_TRADER_V1", "PEN_TRADER_V1_THESIS", "PEN_BASE_THESIS", "
 # moved out of one-minute noise (PEN_NOISE_STOP) and, for _BE, moved to the
 # entry after a +1R close. Live paper stops sat 0.07-2% under entry.
 NOISE_POLICIES = ("PEN_NOISE_STOP", "PEN_NOISE_STOP_BE")
-NOISE_STOP_MIN_PCT = 0.015
-NOISE_STOP_MIN_RUPEES = 0.03          # three ₹0.01 ticks
 NOISE_BREAKEVEN_R = 1.0
 CANDIDATE_POLICIES = ("BASELINE", "PEN_CONTEXT") + TRADER_POLICIES + NOISE_POLICIES
 
@@ -63,12 +61,11 @@ def noise_floored_decision(decision: dict, target_r: float) -> dict:
     shares shrink so shares x distance never exceeds the shipped risk; the
     target stays ``target_r`` R from the new stop. Zero shares -> refused.
     """
+    from penny_engine_breakout import noise_floor_stop
     entry, stop, shares = float(decision["entry"]), float(decision["stop_loss"]), int(decision["shares"])
-    distance = max(entry - stop, entry * NOISE_STOP_MIN_PCT, NOISE_STOP_MIN_RUPEES)
-    resized = int((shares * (entry - stop)) // distance) if entry > stop else 0
+    new_stop, resized = noise_floor_stop(entry, stop, shares)
     if resized < 1:
         return {**decision, "accept": False, "reject_reason": "position size = 0 (noise-floor stop)"}
-    new_stop = round(entry - distance, 2)
     return {**decision, "stop_loss": new_stop, "shares": resized,
             "target": round(entry + target_r * (entry - new_stop), 2),
             "noise_floor": {"shipped_stop": stop, "shipped_shares": shares}}
@@ -156,7 +153,7 @@ def settings_snapshot(book: str) -> dict:
     from penny_executor import MAX_ENTRY_DRIFT_PCT, STOP_LIMIT_SLIP_PCT, UNWIND_LIMIT_SLIP_PCT
     names = (
         "PENNY_BREAKOUT_TIME_START", "PENNY_BREAKOUT_TIME_END", "PENNY_BREAKOUT_TIME_EXIT",
-        "PENNY_BREAKOUT_VOL_MULT", "PENNY_BREAKOUT_TARGET_R", "PENNY_BREAKOUT_BUFFER_PCT",
+        "PENNY_BREAKOUT_VOL_MULT", "PENNY_BREAKOUT_TARGET_R", "PENNY_NOISE_STOP_ENABLED", "PENNY_BREAKOUT_BUFFER_PCT",
         "PENNY_BREAKOUT_RSI_MAX", "PENNY_BREAKOUT_USE_VWAP", "PENNY_BREAKOUT_ADAPTIVE_THRESHOLD",
         "PENNY_BREAKOUT_RVOL_TIME_ADJUSTED", "PENNY_TIME_STOP_MIN", "PENNY_MIS_SMART_EOD_TIME",
         "PENNY_MIS_SMART_EOD_WITHIN_R", "PENNY_MIS_SMART_EOD_LOSS_MIN",

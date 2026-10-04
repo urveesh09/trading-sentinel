@@ -116,10 +116,29 @@ def test_entry_accepts_when_all_conditions_met():
     assert result["accept"] is True
     assert result["entry_order_type"] == "LIMIT"
     assert result["sl_order_type"] == "SL-M"
-    # Entry at close + 0.3% = 10.43, stop at breakout candle low = 10.30
+    # Entry at close + 0.3% = 10.43. The breakout-candle low (10.30, 0.13 away)
+    # is inside the 1.5% noise floor (0.156), so the stop widens to 10.27 and
+    # size shrinks at the same rupee risk: floor(50 * 0.13 / 0.1565) = 41.
     assert abs(result["entry"] - 10.43) < 0.01
-    assert result["stop_loss"] == 10.30
-    # Risk = 10.43 - 10.30 = 0.13; target = +2R = 10.43 + 0.26 = 10.69
+    assert result["stop_loss"] == 10.27
+    assert result["shares"] == 41
+    # target = +2R from the widened stop = 10.43 + 2 * 0.16 = 10.75
+    assert abs(result["target"] - 10.75) < 0.01
+
+
+def test_entry_keeps_the_candle_low_stop_when_the_noise_floor_is_off(monkeypatch):
+    from config import settings
+    from penny_engine_breakout import evaluate_breakout_entry
+    monkeypatch.setattr(settings, "PENNY_NOISE_STOP_ENABLED", False)
+    mock_risk = MagicMock()
+    mock_risk.position_size.return_value = 50
+    result = evaluate_breakout_entry(
+        ticker="X", cum_vol_today=30000, median_vol_20d=10000,
+        breakout_bar={"high": 10.45, "low": 10.30, "close": 10.40},
+        day_high=10.35, rsi_14=55.0, as_of=datetime(2026, 6, 21, 11, 0),
+        risk_engine=mock_risk,
+    )
+    assert result["stop_loss"] == 10.30 and result["shares"] == 50
     assert abs(result["target"] - 10.69) < 0.01
 
 

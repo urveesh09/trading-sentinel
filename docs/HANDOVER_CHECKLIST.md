@@ -1,5 +1,11 @@
 # Handover receipt and operator checklist
 
+## October 4 — Penny noise-floor stop ON (owner selection) and push
+
+- [x] `PENNY_NOISE_STOP_ENABLED=True` in runtime Penny; tests updated (794 Penny, 4873 engine pass; 4 pre-existing failures).
+- [x] Pushed branch `codex/production-correction-hedge-p0` on owner instruction; promotion to Production via PR merge.
+- Rollback: `PENNY_NOISE_STOP_ENABLED=false`.
+
 ## October 4 — Momentum direct trading + round-3 candidates (Dev only)
 
 - [x] Gateway shared Momentum execution path + auto route (default OFF) + agent wiring.

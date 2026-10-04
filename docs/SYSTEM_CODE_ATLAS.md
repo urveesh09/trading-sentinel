@@ -1620,7 +1620,7 @@ Related tests: `python-engine/tests/test_penny_edge_orchestrator.py`
 
 [PENNY-BREAKOUT 2026-06-21] Volume Breakout MIS signal evaluator + 14:30 smart-EOD rule for the penny subsystem. Spec section 5 covers the full signal flow and the smart-EOD exit logic. Hard architectural rule (enforced by tests/test_penny_isolation.py): this module MUST NOT import from engine, regime, risk_engine, portfolio, evaluate_signal, or evaluate_momentum_signal. Public API: evaluate_breakout_entry(ticker, cum_vol_today, median_vol_20d, breakout_bar, day_high, rsi_14, as_of, risk_engine) -> dict smart_eod_check(pos, current_price, now) -> dict mis_time_stop_active(now) -> bool [PENNY-RSI-CONTRACT 2026-06-25, G3 audit note] The penny subsystem deliberately uses TWO RSI periods, one pe
 
-Top-level declarations: `_rsi_14_wilder` (line 50), `_vwap_from_intraday` (line 78), `_atr_20_from_intraday` (line 120), `_adaptive_threshold_scale` (line 152), `_to_minutes_since_midnight` (line 203), `_regime_from_pct` (line 207), `evaluate_breakout_entry` (line 219), `smart_eod_check` (line 405), `mis_time_stop_active` (line 453), `time_stop_triggered` (line 463)
+Top-level declarations: `_rsi_14_wilder` (line 50), `_vwap_from_intraday` (line 78), `_atr_20_from_intraday` (line 120), `_adaptive_threshold_scale` (line 152), `_to_minutes_since_midnight` (line 203), `_regime_from_pct` (line 207), `evaluate_breakout_entry` (line 219), `smart_eod_check` (line 410), `noise_floor_stop` (line 460), `mis_time_stop_active` (line 475), `time_stop_triggered` (line 485)
 
 Engine dependencies: `config`, `penny_models`
 
@@ -1698,7 +1698,7 @@ Related tests: `python-engine/tests/test_penny_intraday_replay.py`
 
 [B2 2026-10-03] Exact classic Penny MIS breakout lifecycle replay (offline). Replays the shipped classic Penny MIS book over B1-validated minute bars, calling the same functions the runtime calls, in the runtime's order: * entry: ``PennyScanner._evaluate_ticker_breakout`` input construction -> ``evaluate_breakout_entry`` (with a real ``PennyRiskEngine`` for sizing) -> per-ticker reservation and MIS capacity -> ``PennyExecutor.execute_entry`` drift / stop-breach checks -> fill at the LTP; * exits: the 60-second paper LTP stop monitor (``PENNY_PAPER``) or a broker stop (``PENNY``), the 14:30 ``run_penny_eod_check`` branch order (``time_stop_triggered`` then ``smart_eod_check``) and the 15:00 `
 
-Top-level declarations: `noise_floored_decision` (line 59), `trader_policy` (line 77), `reject_code` (line 121), `PennyLifecycleConfig` (line 131), `settings_snapshot` (line 153), `_TickerDay` (line 182), `_aware` (line 227), `_round` (line 231), `_Replay` (line 235), `_summary` (line 811), `_trader_breakdown` (line 861), `run_penny_lifecycle` (line 877)
+Top-level declarations: `noise_floored_decision` (line 57), `trader_policy` (line 74), `reject_code` (line 118), `PennyLifecycleConfig` (line 128), `settings_snapshot` (line 150), `_TickerDay` (line 179), `_aware` (line 224), `_round` (line 228), `_Replay` (line 232), `_summary` (line 808), `_trader_breakdown` (line 858), `run_penny_lifecycle` (line 874)
 
 Engine dependencies: `adaptive_penny_policy`, `config`, `non_fno_research`, `penny_engine_breakout`, `penny_executor`, `penny_models`, `penny_risk`, `penny_shadow`, `research_data_contracts`
 

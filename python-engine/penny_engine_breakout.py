@@ -375,6 +375,11 @@ def evaluate_breakout_entry(
     shares = risk_engine.position_size(entry, stop_loss, sizing_regime)
     if shares <= 0:
         return {"accept": False, "reject_reason": "position size = 0 (regime/cap blocked)"}
+    if settings.PENNY_NOISE_STOP_ENABLED:
+        stop_loss, shares = noise_floor_stop(entry, stop_loss, shares)
+        if shares <= 0:
+            return {"accept": False, "reject_reason": "position size = 0 (noise-floor stop)"}
+        target = round(entry + settings.PENNY_BREAKOUT_TARGET_R * (entry - stop_loss), 2)
 
     return {
         "accept": True,
@@ -446,6 +451,23 @@ def smart_eod_check(pos: dict, current_price: float, now: datetime) -> dict:
     if elapsed_in_loss > timedelta(minutes=settings.PENNY_MIS_SMART_EOD_LOSS_MIN):
         return {"action": "exit_now", "reason": "loss_over_30_min"}
     return {"action": "hold", "reason": "fresh_loss"}
+
+
+NOISE_STOP_MIN_PCT = 0.015
+NOISE_STOP_MIN_RUPEES = 0.03          # three ₹0.01 ticks
+
+
+def noise_floor_stop(entry: float, stop: float, shares: int) -> tuple[float, int]:
+    """Move a stop out of one-minute noise at the same rupee risk.
+
+    Distance becomes max(entry - stop, 1.5% of entry, ₹0.03); shares shrink so
+    shares x distance never exceeds the original risk. Returns (stop, shares);
+    0 shares means the trade is too small to take.
+    """
+    if entry <= stop:
+        return stop, 0
+    distance = max(entry - stop, entry * NOISE_STOP_MIN_PCT, NOISE_STOP_MIN_RUPEES)
+    return round(entry - distance, 2), int((shares * (entry - stop)) // distance)
 
 
 # ---- 15:00 time-stop -------------------------------------------------

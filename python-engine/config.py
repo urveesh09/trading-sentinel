@@ -693,6 +693,10 @@ class Settings(BaseSettings):
     # fire several trades per day to validate the edge.
     PENNY_BREAKOUT_VOL_MULT:       float = 1.8
     PENNY_BREAKOUT_TARGET_R:       float = 2.0
+    # [PENNY-NOISE-STOP 2026-10-04] Owner-selected (dev evidence: +Rs93 vs +Rs78 on
+    # Sep 7-Oct 1, smaller drawdown). The breakout-bar-low stop sat in one-minute
+    # noise; it is widened to >= 1.5% / Rs0.03 under entry at the same rupee risk.
+    PENNY_NOISE_STOP_ENABLED:      bool  = True
     PENNY_BREAKOUT_TIME_START:     int   = 10*60 + 30  # 10:30 IST in minutes
     PENNY_BREAKOUT_TIME_END:       int   = 14*60 + 30  # 14:30 IST in minutes
     # Broker-free evidence side-channel; never reaches PennyExecutor.
