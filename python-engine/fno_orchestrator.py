@@ -38,16 +38,15 @@ import fno_positions as fpos
 from fno_exit_rules import evaluate_single_leg_exit, live_single_leg_exit_params
 import fno_shadow
 from config import settings
-from fno_chain import ChainSnapshot, select_strike_by_delta, take_chain_snapshot
+from fno_chain import ChainSnapshot, take_chain_snapshot
 from fno_costs import calc_fno_costs
 from fno_engine_mom import MomSignal, evaluate_fno_mom
+from fno_entry_plan import EntryState, plan_single_leg_entry
 from fno_executor import FnoExecutor
-from fno_gates import GateContext, evaluate_entry_gates_with_trace
+from fno_gates import evaluate_entry_gates_with_trace
 from fno_instruments import get_fno_instruments
-from fno_models import FnoDirection, FnoSource, Leg, OptionType
-from fno_risk import (
-    kill_switch_status, lots_for_pool, min_viable_pool, validate_position,
-)
+from fno_models import FnoSource
+from fno_risk import kill_switch_status
 from fno_shared_risk import (
     DISPATCH_RELEASE_OUTCOMES, DISPATCH_RETAIN_OUTCOMES, EntryOccupancy,
     claim_shared_fno_entry_dispatch,
@@ -623,23 +622,12 @@ async def _try_entry_for_leg(
             **extra,
         )
 
-    # Strike selection (§8.3): |delta| closest to 0.55, ATM-or-ITM only.
-    opt_type = OptionType.CE if sig.direction == FnoDirection.LONG else OptionType.PE
-    picked = select_strike_by_delta(snap, opt_type, now_ist)
-    if picked is None:
-        await _log(False, "no_strike_solves_delta")
-        return None
-    quote, iv, delta_val = picked
-    contract = quote.contract
-    ask = quote.ask
-    lot_size = snap.lot_size or contract.lot_size
-
-    quote_age = (
-        (now_ist - quote.last_trade_time).total_seconds()
-        if quote.last_trade_time else float("inf")
-    )
+    # Book state is read here; the decision itself is the pure, shared
+    # ``fno_entry_plan.plan_single_leg_entry`` (strike pick, §7 gates,
+    # no-pyramid, sizing, §4 max loss, net reward/risk) so research replays
+    # evaluate exactly this logic.
     open_prem = await fpos.open_premium_committed(db_path, source)
-    n_open = len(await fpos.open_positions(db_path, source))
+    open_rows = await fpos.open_positions(db_path, source)
     n_today = await fpos.trades_today(db_path, source, today_iso)
     # F0-C makes the paper books share one ledger-bound entry-policy receipt.
     # Initialise only the additive local evidence schemas; exits/management do
@@ -664,148 +652,38 @@ async def _try_entry_for_leg(
         # Rule 72: a halted leg is a WARNING, never an INFO.
         logger.warning("fno_kill_switch_active source=%s switches=%s", source, switches)
 
-    ctx = GateContext(
-        now_min=_now_min(now_ist),
-        is_trading_day=is_trading_day,
-        is_expiry_day=instruments.is_expiry_day(now_ist.date()),
-        regime=regime,
-        oi=quote.oi, volume=quote.volume,
-        bid=quote.bid, ask=quote.ask, ltp=quote.ltp,
-        quote_age_sec=quote_age,
-        forward=snap.forward, strike=contract.strike,
-        is_call=(opt_type == OptionType.CE), iv=iv,
-        pool=pool, premium=ask, lot_size=lot_size,
-        open_premium=open_prem, open_positions=n_open, trades_today=n_today,
-        active_kill_switches=switches,
-        chain_age_sec=snap.age_sec(now_ist),
-    )
-    contract_fields = dict(
-        tradingsymbol=contract.tradingsymbol, strike=contract.strike,
-        opt_type=opt_type.value, expiry=contract.expiry.isoformat(),
-        premium=ask, iv=iv, delta=delta_val, spread_pct=quote.spread_pct,
-        oi=quote.oi, volume=quote.volume,
-        min_pool_required=min_viable_pool(
-            ask, lot_size, settings.FNO_STOP_PREMIUM_PCT, settings.FNO_MAX_RISK_PCT,
-        ),
-        # [POOL-AUDIT 2026-08-04] Log the pool the gate was actually evaluated
-        # against, not just the threshold it had to clear.
-        #
-        # Without this the row is unfalsifiable. The 2026-08-03 audit read
-        # min_pool_required=24,821 next to a bankroll_ledger showing FNO_PAPER
-        # at -10,329 and concluded the gate had been bypassed. It had not: the
-        # ledger column omitted the division's allocation, while sizing used
-        # the full 250,000 pool. The two numbers were describing different
-        # things and nothing in the signal row said which one the gate saw.
-        pool_at_eval=round(float(pool), 2),
-    )
-
-    # The evaluator keeps the first-failure decision semantics unchanged while
-    # exposing its already-passed prefix for the append-only audit row.  This
-    # lets an operator distinguish "blocked by a switch after prior gates"
-    # from a hypothetical viable order without weakening any gate.
-    ok, reject, passed_gates = evaluate_entry_gates_with_trace(ctx)
-    gate_audit_fields = {
-        "passed_gates": passed_gates,
-        "active_kill_switches": switches,
-    }
-    if not ok:
-        await _log(False, reject, **contract_fields, **gate_audit_fields)
+    plan = plan_single_leg_entry(sig, snap, regime, now_ist, EntryState(
+        pool=pool, open_premium=open_prem, open_positions=len(open_rows), trades_today=n_today,
+        active_kill_switches=tuple(switches),
+        held_symbols=frozenset(p.tradingsymbol for p in open_rows),
+        is_trading_day=is_trading_day, is_expiry_day=instruments.is_expiry_day(now_ist.date()),
+    ))
+    if not plan.accepted:
+        await _log(False, plan.reject_reason, **plan.log_fields)
+        if plan.reject_reason == "already_holding_this_contract":
+            logger.info(
+                "fno_entry_skip source=%s reason=already_holding_this_contract symbol=%s open_lots=%d",
+                source, plan.quote.contract.tradingsymbol,
+                sum(p.lots for p in open_rows if p.tradingsymbol == plan.quote.contract.tradingsymbol),
+            )
+        elif plan.reject_reason == "reward_risk_below_min":
+            terms = plan.rr_terms
+            logger.info(
+                "fno_entry_skip source=%s reason=reward_risk_below_min symbol=%s "
+                "rr=%.2f min=%.2f reward=%.0f risk=%.0f spread=%.0f "
+                "stop_pts=%.1f target_pts=%.1f delta=%.2f",
+                source, plan.quote.contract.tradingsymbol, plan.reward_risk, settings.FNO_MIN_REWARD_RISK,
+                terms["reward"], terms["risk"], terms["spread"], terms["stop_pts"], terms["target_pts"],
+                terms["delta"],
+            )
         return None
-
-    # [NO-PYRAMID 2026-07-26] Refuse a second position on a contract this leg is
-    # already holding. The existing caps are count-based (FNO_MAX_CONCURRENT) and
-    # premium-based (FNO_MAX_OPEN_PREMIUM_PCT), and already_entered_bar() only
-    # blocks a repeat within the SAME 5-min bar -- so nothing stopped the book
-    # from re-entering the identical strike on a later bar.
-    #
-    # 2026-07-24 is what that looks like: FNO_PAPER opened NIFTY26JUL23700PE at
-    # 10:05 (1 lot, -Rs 1,280), again at 10:35 (1 lot, -Rs 1,926), then again at
-    # 11:00 with 2 lots while the 10:35 leg was still open and already losing
-    # (-Rs 2,512). ~Rs 30k of premium concentrated on one strike, and the third
-    # entry was averaging into a loser the ORB signal had already been wrong
-    # about twice. Same-day re-entry on a DIFFERENT strike stays allowed.
-    held = [p for p in await fpos.open_positions(db_path, source)
-            if p.tradingsymbol == contract.tradingsymbol]
-    if held:
-        await _log(
-            False, "already_holding_this_contract", **contract_fields,
-            **gate_audit_fields,
-        )
-        logger.info(
-            "fno_entry_skip source=%s reason=already_holding_this_contract symbol=%s open_lots=%d",
-            source, contract.tradingsymbol, sum(p.lots for p in held),
-        )
-        return None
-
-    # Sizing (§3): decline rather than oversize.
-    lots = lots_for_pool(
-        pool, ask, lot_size,
-        settings.FNO_STOP_PREMIUM_PCT, settings.FNO_MAX_RISK_PCT,
-        settings.FNO_MAX_LOTS,
-    )
-    # Respect the open-premium cap on the marginal lot too.
-    while lots > 0 and open_prem + lots * ask * lot_size > settings.FNO_MAX_OPEN_PREMIUM_PCT * pool:
-        lots -= 1
-    if lots < 1:
-        await _log(
-            False, "pool_below_min_viable", **contract_fields, lots=0,
-            **gate_audit_fields,
-        )
-        return None
-
-    # §4 constitution -- the order path runs through validate_position.
-    legs = [Leg(opt_type=opt_type, strike=contract.strike, quantity=lots, premium=ask)]
-    ok_ml, reject_ml, ml = validate_position(legs, lot_size)
-    if not ok_ml:
-        await _log(
-            False, reject_ml, **contract_fields, lots=lots,
-            max_loss_rupees=ml, **gate_audit_fields,
-        )
-        return None
-
-    # [NAKED-LEG-EXPECTANCY 2026-07-31] A long option is only a trade if its
-    # payoff at target beats its loss at stop AFTER the spread. Measured on the
-    # premium, this book's geometry was upside down and its record says so:
-    # 12 naked legs, 2 winners, -Rs 15,474 since 2026-07-16. The defined-risk
-    # spreads over the same period ran ~flat on a 1.7:1 structure.
-    #
-    # Two things invert it. First the premium backstop: risk is
-    # min(delta-implied loss at the underlying stop, FNO_STOP_PREMIUM_PCT of
-    # premium), so a -25% backstop can cap the loss BELOW the stop distance --
-    # which sounds protective but means the position is stopped by decay rather
-    # than by the thesis being wrong. Second the spread, paid twice, on an
-    # instrument whose whole edge is a fraction of one underlying point.
-    #
-    # 2026-07-30 is the worked example: risk ~Rs 3,503 against a reward of
-    # ~Rs 2,717 -- 0.78:1 before costs, i.e. negative expectancy at ANY win
-    # rate below 56%, on a book running 17%. This gate refuses that trade.
-    # It does not touch the defined-risk book, which trades earlier in the tick.
-    entry_u = float(snap.forward)
-    stop_pts = abs(entry_u - float(sig.stop_underlying))
-    target_pts = abs(float(sig.target_underlying) - entry_u)
-    abs_delta = abs(float(delta_val)) or 0.0
-    # Premium moves ~delta per underlying point over a short intraday hold.
-    reward_rs = abs_delta * target_pts * (lots * lot_size)
-    risk_prem_pts = min(abs_delta * stop_pts, ask * settings.FNO_STOP_PREMIUM_PCT)
-    risk_rs = risk_prem_pts * (lots * lot_size)
-    # Round-trip spread, paid on entry and exit.
-    spread_rs = (quote.spread_pct or 0.0) * ask * (lots * lot_size)
-    net_reward = reward_rs - spread_rs
-    net_risk = risk_rs + spread_rs
-    rr = (net_reward / net_risk) if net_risk > 0 else 0.0
-    if rr < settings.FNO_MIN_REWARD_RISK:
-        await _log(
-            False, "reward_risk_below_min", **contract_fields,
-            lots=lots, max_loss_rupees=ml, **gate_audit_fields,
-        )
-        logger.info(
-            "fno_entry_skip source=%s reason=reward_risk_below_min symbol=%s "
-            "rr=%.2f min=%.2f reward=%.0f risk=%.0f spread=%.0f "
-            "stop_pts=%.1f target_pts=%.1f delta=%.2f",
-            source, contract.tradingsymbol, rr, settings.FNO_MIN_REWARD_RISK,
-            net_reward, net_risk, spread_rs, stop_pts, target_pts, abs_delta,
-        )
-        return None
+    quote, iv, delta_val = plan.quote, plan.iv, plan.delta
+    contract, opt_type = quote.contract, plan.opt_type
+    ask, lot_size, lots, ml = quote.ask, plan.lot_size, plan.lots, plan.max_loss_rupees
+    ctx = plan.gate_context
+    contract_fields = {key: value for key, value in plan.log_fields.items()
+                       if key not in ("lots", "max_loss_rupees", "passed_gates", "active_kill_switches")}
+    gate_audit_fields = {"passed_gates": plan.log_fields["passed_gates"], "active_kill_switches": switches}
 
     # Database/limiter waits must not turn an earlier valid evaluation into
     # authority to enter after cutoff or with a now-stale quote. Replay callers

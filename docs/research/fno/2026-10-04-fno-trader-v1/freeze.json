@@ -1,0 +1,96 @@
+{
+  "arms": {
+    "BASELINE": {
+      "policy": "BASELINE"
+    },
+    "FNO_FAST_EXIT": {
+      "policy": "FNO_FAST_EXIT"
+    },
+    "FNO_HOUSE_MONEY_PYRAMID": {
+      "policy": "FNO_HOUSE_MONEY_PYRAMID"
+    },
+    "FNO_PARTIAL_TRAIL": {
+      "policy": "FNO_PARTIAL_TRAIL"
+    },
+    "FNO_TRADER_V1": {
+      "policy": "FNO_TRADER_V1"
+    },
+    "FNO_TREND_DAY": {
+      "policy": "FNO_TREND_DAY"
+    }
+  },
+  "books": {
+    "default": {}
+  },
+  "bound": {
+    "snapshot": {
+      "manifest_sha256": "cd84efa600602c0a568f1103d513c021a4efa1e14ddbfea653a1f62e421d8c1f",
+      "quote_days": [
+        "2026-09-10",
+        "2026-09-11",
+        "2026-09-15",
+        "2026-09-16",
+        "2026-09-17",
+        "2026-09-21",
+        "2026-09-22",
+        "2026-09-23",
+        "2026-09-24",
+        "2026-09-25",
+        "2026-09-28",
+        "2026-09-29",
+        "2026-09-30",
+        "2026-10-01"
+      ],
+      "unsealed_days": [
+        "2026-10-01"
+      ]
+    },
+    "sources": {
+      "python-engine/backtest_lab.py": "b154ab8c0af3e0216ee6e8425add3da28bd1f2dcf19622fd64f7a7813b36e2f3",
+      "python-engine/config.py": "a8955fb4c1cd7c1320a4b34b8e22b52f95fb35be4ec19cfb375b74d5f63f2e03",
+      "python-engine/fno_chain.py": "eba99b98e7ca964b487cad31a61e0408415cccd49236cce53a97d3383d0073b7",
+      "python-engine/fno_costs.py": "4162803137aa880135b6b62d4def00f07e460bae17748438200b9c7df8f15719",
+      "python-engine/fno_engine_mom.py": "2f2d74ed34da622b7be1037d238b47dd6a904bed98f0bc9091efb9fe4c43443c",
+      "python-engine/fno_entry_plan.py": "3591440cfb58247852115714128f41631c088238da4facacdf01249755091fc1",
+      "python-engine/fno_exit_experiment.py": "12d03efd508777c6896e5baa3b1a97f7ee322873adb0d6a30327757df2222f8b",
+      "python-engine/fno_exit_rules.py": "864cfb1704ef3f821e93c82efdd9a76850707bd59cf436f02601230a0fa48f61",
+      "python-engine/fno_gates.py": "338ea4625ab041c3046b055298b87d6be4ce8275276b2a89c410d3a0828ae2d9",
+      "python-engine/fno_policy_replay.py": "8a03fac541078da2636c440c31f7689eb0a9f7693028d6329aecd79f30898b68",
+      "python-engine/fno_risk.py": "a20249254ae5a0d0fb83bcba2006e9657ec7d0a978ed2362cdfe2b3a40414631",
+      "python-engine/fno_shared_risk.py": "23b9b7c41b0ddf5146826c478425bc101b8da7e7ca82dc7df7e5f14dd303a84f",
+      "python-engine/intraday_spread_archive_adapter.py": "4b56cf53a07ba136291be05e09ec2524f3e9a041b739192d227ee3689e825578",
+      "python-engine/options_math.py": "cd62879d56020aa5533c2f19c50930501f296619b460a4538f76a75de10ef105",
+      "scripts/run_preregistered_study.py": "5969c09f223fe3996487b733e1d6c708ad4352cc6f41ff02c9dba97b6050e69e"
+    }
+  },
+  "can_place_orders": false,
+  "config": {},
+  "decision_rule": {
+    "book": "default",
+    "candidate": "FNO_TRADER_V1",
+    "drawdown_floor": 5000.0,
+    "drawdown_key": "max_drawdown",
+    "if_promising": "continue broker-free shadow; NOT qualified; no live activation",
+    "otherwise": "hypothesis not supported; candidate stays OFF",
+    "window": "untouched"
+  },
+  "hypothesis": "A faster exit loop, banking half at target, house-money pyramiding and trading only compressed-open days beat the shipped single-leg F&O book (component arms are attribution).",
+  "qualification": "NOT_ASSESSED",
+  "schema": "preregistered_study_freeze_v1",
+  "strategy": "fno_policy_replay.single_leg",
+  "study": "fno-trader-v1",
+  "windows": {
+    "development": [
+      [
+        "2026-09-10",
+        "2026-09-23"
+      ]
+    ],
+    "untouched": [
+      [
+        "2026-09-24",
+        "2026-10-01"
+      ]
+    ]
+  }
+}

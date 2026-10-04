@@ -315,8 +315,9 @@ def test_no_runtime_caller_or_side_effect_imports():
     # sqlite3 is permitted only for read-only evidence binding.
     source = (root / "fno_exit_experiment.py").read_text(encoding="utf-8")
     assert source.count("sqlite3.connect(") == source.count("?mode=ro\", uri=True)")
-    # Only the inert defined-risk experiment reuses the verified archive reader.
-    assert _importers(root, "fno_exit_experiment") == ["fno_dr_exit_experiment.py"]
+    # Only inert research (the defined-risk experiment and the full-policy
+    # replay) reuses the verified archive reader.
+    assert _importers(root, "fno_exit_experiment") == ["fno_dr_exit_experiment.py", "fno_policy_replay.py"]
     # The shared metrics and pure ladder are imported only by research and the
     # (unchanged-behaviour) orchestrator, never the other way round.
     assert _importers(root, "exit_experiment_metrics") == ["fno_dr_exit_experiment.py", "fno_exit_experiment.py",

@@ -69,7 +69,7 @@ import hashlib
 import json
 import math
 from pathlib import Path
-from typing import Optional
+from typing import Optional, Sequence
 from uuid import uuid4
 from zoneinfo import ZoneInfo
 
@@ -804,23 +804,61 @@ async def _read_entry_policy(
     ledger = await _read_cash_ledger(db, source, instant)
     if isinstance(ledger, str):          # the view validated it; defensive only
         return _policy_unavailable(source, pool_rs, ledger)
+    completed = [(at, net) for at, _last_id, net in await _completed_trades(db, source, ledger)]
+    halts = entry_halts(
+        trade_cash=[(event.at, event.pnl) for event in ledger.trade_events],
+        completed_newest_first=completed, today_ist=today_ist, pool_rs=pool_rs,
+        equity_rs=view.equity_rs, policy=policy,
+    )
+    return SharedFnoEntryPolicyDecision(
+        allowed=not halts.active, reason="" if not halts.active else halts.active[0],
+        active_halts=halts.active, day_pnl_rs=halts.day_pnl_rs, week_pnl_rs=halts.week_pnl_rs,
+        month_pnl_rs=halts.month_pnl_rs, view=view,
+        completed_loss_streak=halts.loss_streak, observed_at=instant.isoformat(),
+        legacy_unlinked_cash_events=ledger.legacy_unlinked_events,
+    )
+
+
+@dataclass(frozen=True)
+class EntryHalts:
+    """Pure result of the shared entry brakes for one IST policy day."""
+    active: tuple[str, ...]
+    day_pnl_rs: float
+    week_pnl_rs: float
+    month_pnl_rs: float
+    loss_streak: int
+
+
+def entry_halts(
+    *, trade_cash: Sequence[tuple[datetime, float]],
+    completed_newest_first: Sequence[tuple[datetime, float]],
+    today_ist: date, pool_rs: float, equity_rs: float, policy: SharedFnoRiskPolicy,
+) -> EntryHalts:
+    """Daily/weekly/monthly loss, drawdown and loss-streak brakes.
+
+    ``trade_cash`` holds every settled cash event (aware instant, net rupees);
+    ``completed_newest_first`` holds completed trades' (aware completion
+    instant, net rupees), newest first. Events after the policy day are
+    ignored (never a credit). Shared by the live entry policy and the
+    research replay so both brake identically.
+    """
     iso_year, iso_week, _ = today_ist.isocalendar()
     week_start = date.fromisocalendar(iso_year, iso_week, 1)
     month_start = today_ist.replace(day=1)
     day_pnl = week_pnl = month_pnl = 0.0
-    for event in ledger.trade_events:
-        event_day = event.at.astimezone(_IST).date()
+    for at, pnl in trade_cash:
+        event_day = at.astimezone(_IST).date()
         if event_day > today_ist:
             continue                      # after the policy day (replay); never a credit
         if event_day == today_ist:
-            day_pnl += event.pnl
+            day_pnl += pnl
         if event_day >= week_start:
-            week_pnl += event.pnl
+            week_pnl += pnl
         if event_day >= month_start:
-            month_pnl += event.pnl
+            month_pnl += pnl
     consecutive_losses = 0
     latest_loss_day: Optional[date] = None
-    for completed_at, _last_id, net in await _completed_trades(db, source, ledger):
+    for completed_at, net in completed_newest_first:
         if completed_at.astimezone(_IST).date() > today_ist:
             continue
         if net >= 0:
@@ -836,22 +874,16 @@ async def _read_entry_policy(
         halts.append(f"weekly_loss_halt pnl={week_pnl:.0f}")
     if month_pnl <= -policy.monthly_loss_pct * pool_rs:
         halts.append(f"monthly_loss_halt pnl={month_pnl:.0f}")
-    if view.equity_rs <= 0:
-        halts.append(f"drawdown_halt equity={view.equity_rs:.0f}")
-    elif view.equity_rs < pool_rs * (1.0 - policy.drawdown_pct):
-        halts.append(f"drawdown_halt equity={view.equity_rs:.0f}")
+    if equity_rs <= 0:
+        halts.append(f"drawdown_halt equity={equity_rs:.0f}")
+    elif equity_rs < pool_rs * (1.0 - policy.drawdown_pct):
+        halts.append(f"drawdown_halt equity={equity_rs:.0f}")
     if (consecutive_losses >= policy.max_consecutive_losses and latest_loss_day is not None
             and today_ist <= latest_loss_day + timedelta(days=1)):
         halts.append(
             f"consecutive_loss_pause streak={consecutive_losses} last={latest_loss_day}"
         )
-    return SharedFnoEntryPolicyDecision(
-        allowed=not halts, reason="" if not halts else halts[0],
-        active_halts=tuple(halts), day_pnl_rs=day_pnl, week_pnl_rs=week_pnl,
-        month_pnl_rs=month_pnl, view=view,
-        completed_loss_streak=consecutive_losses, observed_at=instant.isoformat(),
-        legacy_unlinked_cash_events=ledger.legacy_unlinked_events,
-    )
+    return EntryHalts(tuple(halts), day_pnl, week_pnl, month_pnl, consecutive_losses)
 
 
 async def shared_fno_entry_policy(

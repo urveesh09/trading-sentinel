@@ -46,8 +46,9 @@ class Study:
     decision_window: str
     drawdown_key: str
     drawdown_floor: float
-    metrics: str                       # "trades" (realised curve) or "portfolio" (marked equity)
+    metrics: str                       # "trades", "portfolio" or "fno" (replay summary)
     books: dict[str, dict] = field(default_factory=lambda: {"default": {}})
+    runner: str = "backtest_cli"       # or "fno_replay" (archived F&O quotes, snapshot is a dataset folder)
     decision_book: str = "default"
     hypothesis: str = ""
 
@@ -106,6 +107,23 @@ STUDIES: dict[str, Study] = {
         candidate="SWING_TRADER_V1", decision_window="untouched",
         drawdown_key="max_marked_drawdown_pct", drawdown_floor=5.0, metrics="portfolio",
         hypothesis="Waiting for a pullback when extended and letting trend winners run beats the tracker exits."),
+    "fno-trader-v1": Study(
+        strategy="fno_policy_replay.single_leg",
+        snapshot=ROOT / "docs/research/fno/2026-10-04-archive/_local",
+        base_config=lambda: {},
+        sources=("python-engine/fno_policy_replay.py", "python-engine/fno_entry_plan.py",
+                 "python-engine/fno_engine_mom.py", "python-engine/fno_chain.py", "python-engine/fno_gates.py",
+                 "python-engine/fno_risk.py", "python-engine/fno_exit_rules.py", "python-engine/fno_costs.py",
+                 "python-engine/fno_shared_risk.py", "python-engine/options_math.py",
+                 "python-engine/fno_exit_experiment.py", "python-engine/intraday_spread_archive_adapter.py"),
+        windows={"development": (("2026-09-10", "2026-09-23"),), "untouched": (("2026-09-24", "2026-10-01"),)},
+        arms={name: {"policy": name} for name in (
+            "BASELINE", "FNO_FAST_EXIT", "FNO_PARTIAL_TRAIL", "FNO_HOUSE_MONEY_PYRAMID", "FNO_TREND_DAY",
+            "FNO_TRADER_V1")},
+        candidate="FNO_TRADER_V1", decision_window="untouched",
+        drawdown_key="max_drawdown", drawdown_floor=5000.0, metrics="fno", runner="fno_replay",
+        hypothesis="A faster exit loop, banking half at target, house-money pyramiding and trading only "
+                   "compressed-open days beat the shipped single-leg F&O book (component arms are attribution)."),
     "momentum-thesis-t2": Study(
         strategy="momentum_intraday_15m_replay",
         snapshot=YAHOO / "2026-10-04-momentum-window/_local/validated-yahoo.sqlite",
@@ -126,9 +144,19 @@ def _sha(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
+def _verify_dataset(folder: Path) -> dict:
+    """Re-hash every file the F&O dataset manifest lists; any drift fails."""
+    manifest = json.loads((folder / "manifest.json").read_text(encoding="utf-8"))
+    for rel, digest in manifest["files_sha256"].items():
+        if _sha(folder / rel) != digest:
+            raise SystemExit(f"dataset file changed: {rel}")
+    return {"manifest_sha256": _sha(folder / "manifest.json"), "quote_days": manifest["quote_days"],
+            "unsealed_days": manifest.get("unsealed_days", [])}
+
+
 def _bound(study: Study) -> dict:
-    return {"sources": {rel: _sha(ROOT / rel) for rel in (*study.sources, *COMMON_SOURCES)},
-            "snapshot": verify_snapshot(str(study.snapshot))}
+    snapshot = _verify_dataset(study.snapshot) if study.runner == "fno_replay" else verify_snapshot(str(study.snapshot))
+    return {"sources": {rel: _sha(ROOT / rel) for rel in (*study.sources, *COMMON_SOURCES)}, "snapshot": snapshot}
 
 
 def _trade_metrics(reports: list[dict]) -> dict:
@@ -162,6 +190,30 @@ def _portfolio_metrics(reports: list[dict]) -> dict:
         raise SystemExit("portfolio studies score one contiguous range per window")
     result = reports[0]["result"]
     return {**result["summary"], "admission_outcomes": result["admission_outcomes"]}
+
+
+def _fno_metrics(reports: list[dict]) -> dict:
+    if len(reports) != 1:
+        raise SystemExit("F&O studies score one contiguous range per window")
+    result = reports[0]["result"]
+    return {**result["summary"], "funnel": result["funnel"], "notes": result["notes"],
+            "parity_vs_live": {k: result["parity_vs_live"][k] for k in ("live_trades", "replayed_trades",
+                                                                         "live_only", "replay_only")}}
+
+
+def _execute(study: Study, frozen: dict, start: str, end: str, overrides: dict, target: Path) -> dict:
+    """Score one (window range, book, arm) once and return its report."""
+    if study.runner == "fno_replay":
+        from fno_policy_replay import run_replay
+        result = run_replay(study.snapshot, start=start, end=end, policy=overrides["policy"])
+        _atomic_json_new(str(target), {"state": "SUCCEEDED", "result": result})
+    else:
+        run_backtest(SimpleNamespace(
+            snapshot=str(study.snapshot), strategy=study.strategy, start=start, end=end,
+            config=json.dumps({**frozen["config"], **overrides}),
+            holdout_from=None, holdout_to=None, qualification_registry=None, qualification_id=None,
+            out=str(target)))
+    return json.loads(target.read_text())
 
 
 def decide(study: Study, results: dict) -> dict:
@@ -202,7 +254,7 @@ def run(name: str, out: Path) -> None:
         raise SystemExit("bound inputs changed since freeze; refusing to score")
     local = out / "_local"
     local.mkdir(exist_ok=True)
-    combine = _trade_metrics if study.metrics == "trades" else _portfolio_metrics
+    combine = {"trades": _trade_metrics, "portfolio": _portfolio_metrics, "fno": _fno_metrics}[study.metrics]
     results: dict = {}
     for window, ranges in study.windows.items():
         for book, book_overrides in study.books.items():
@@ -212,12 +264,7 @@ def run(name: str, out: Path) -> None:
                     target = local / f"{window}-{book}-{arm.lower()}-{start}.json"
                     if target.exists():
                         raise SystemExit(f"{target} exists; a frozen window is scored once")
-                    run_backtest(SimpleNamespace(
-                        snapshot=str(study.snapshot), strategy=study.strategy, start=start, end=end,
-                        config=json.dumps({**frozen["config"], **book_overrides, **arm_overrides}),
-                        holdout_from=None, holdout_to=None, qualification_registry=None, qualification_id=None,
-                        out=str(target)))
-                    report = json.loads(target.read_text())
+                    report = _execute(study, frozen, start, end, {**book_overrides, **arm_overrides}, target)
                     if report.get("state") != "SUCCEEDED":
                         raise SystemExit(f"{target.name}: {report.get('state')} {report.get('reason') or report.get('error')}")
                     reports.append(report)
