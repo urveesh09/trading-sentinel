@@ -7,6 +7,8 @@
   parallel study runner, [module testing guide](MODULE_TESTING_GUIDE.md).
 - [ ] Kite data (owner login) → freeze → score `momentum-smart-t3`, `penny-noise-t3`.
 - [ ] Owner: set `MOMENTUM_AUTO_EXECUTE=true` only after promotion and a passing study.
+- Commit `a4f1a54`: engine 4872 passed / 4 pre-existing failures; gateway 465 passed / 18 Windows
+  better-sqlite3 binding failures (pre-existing); agent 387 passed.
 - Not pushed, not deployed.
 
 ## October 4 — SENSEX/NIFTY future-candle recording (Dev only)
